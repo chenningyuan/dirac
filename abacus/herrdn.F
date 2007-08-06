@@ -519,7 +519,7 @@ C
             get_length_name=get_length_num(filenum)
             close(filenum)
           ELSE
-            WRITE(lupri,'(a)'), 'Could not open file. name=', filename
+            WRITE(lupri,'(a)') 'Could not open file. name=', filename
             get_length_name=-1
           END IF
         END FUNCTION GET_LENGTH_NAME
@@ -1315,7 +1315,7 @@ C     JHS050707 For a given atomname the corresponding charge is searched for in
           find_charge=0.0
           DO i=1,SIZE(NUCLABEL)
             IF (atomname==NUCLABEL(i)) THEN
-              find_charge=NUCCHARGE(i)
+              find_charge=i
               RETURN
             END IF
           END DO
@@ -1700,7 +1700,7 @@ C     COMMONBLOCKS
       INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
       INTEGER,INTENT(INOUT)::LWORK
 
-      INTEGER      :: KLAST,NSYMOP,i,j,IBSFLAG, KAOVEC, NBLOCK,LINEAR,
+      INTEGER      :: KLAST,NSYMOP,i,j,IBSFLAG, KAOVEC, NBLOCK,
      &                katom,basindex,index
 
       REAL(KIND=8) :: QEXP=D0
@@ -1738,13 +1738,13 @@ C#include "symmet.h"
 C#include "aosotr.h"
 C#include "infpar.h"
 C#include "dcbrkb.h"
-C#ifdef PRG_DIRAC
-C#include "dcbgen.h"
-C#include "dgroup.h"
-C#else
-C#include "gnrinf.h"
-C      LOGICAL LINEAR
-C#endif
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#include "dgroup.h"
+#else
+#include "gnrinf.h"
+      LOGICAL LINEAR
+#endif
 C#include "ibtfun.h"
       
       
@@ -2105,21 +2105,21 @@ C
           INTEGER, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
-          WRITE(lupri,'(a)'), 'ATOMS IN MEMORY'
-          WRITE(lupri,'(a)'), 'Label   x                        y
+          WRITE(lupri,'(a)') 'ATOMS IN MEMORY'
+          WRITE(lupri,'(a)') 'Label   x                        y
      &                        z                        charge       
      &            nuc exponent'
           mol=>firstatom
           DO
             IF (associated(mol)) THEN
-              WRITE(lupri,'(a, f, f, f, f, f)'), 
+              WRITE(lupri,'(a, 4f12.6)') 
      &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
               mol=>mol%next
             ELSE
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)'), 'END DATA'
+        WRITE(lupri,'(a)') 'END DATA'
 
         END SUBROUTINE PRINT_ATOMS
 
@@ -2129,13 +2129,13 @@ C
           INTEGER, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
-          WRITE(lupri,'(a)'), 'BASISSET IN MEMORY'
+          WRITE(lupri,'(a)') 'BASISSET IN MEMORY'
           WRITE(lupri,'(A8,A32, A32, A32)')
      &         'Label','component', 'inputtype','file'
           bas=>firstbas
           DO
             IF (associated(bas)) THEN
-              WRITE(lupri,'(a8, a, a, a)'), 
+              WRITE(lupri,'(a8, a, a, a)') 
      &          TRIM(bas%name),bas%comp,bas%type,bas%file
               WRITE(lupri,*) 'Coefficients', 
      &          bas%jco, bas%fam
@@ -2144,7 +2144,7 @@ C
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)'), 'END DATA'
+        WRITE(lupri,'(a)') 'END DATA'
 
         END SUBROUTINE PRINT_BASIS
 
@@ -2410,7 +2410,7 @@ C                 .INP file, which has to be opened and read.
         inpfile=OPEN_FILE('DIRAC.INP') 
         
         IF (.NOT.(inpfile>0)) THEN
-          WRITE(LUPRI, '(a)'), 'ERROR, could not open DIRAC.INP'
+          WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
           CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
         END IF
 
