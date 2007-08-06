@@ -55,6 +55,3 @@
      &  263.D0, 262.D0, 265.D0, 266.D0
      &  /)
 
-      REAL(KIND=8), PARAMETER :: NUCCHARGE(1:109)=(/
-     & (i, i=1, 109)/)
-
