@@ -17,6 +17,7 @@ call QENTER('CAP_new_stuff')
 
  call HEADER('CAP_new_stuff !',-1)
 
+!.. prepare inputs for AOINTEGRAL routine...
   call test_basis_fu
  
 
@@ -37,6 +38,8 @@ subroutine test_basis_fu
 !
 !------------------------------------------------------------
 use memory
+use Vectors
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

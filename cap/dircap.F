@@ -1,7 +1,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sajeev */
       SUBROUTINE SAJEEV(
-     &   basis_n,ang_pow,ord_expon,
+     &   basis_n,ang_pow,basis_ord,ord_expon,
      &   ord_coe,r_ms,PE_AOr,PE_AOi,
      &   PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
 C    &   NBASF,NANGPOW)
@@ -14,6 +14,7 @@ C
 C On input: 
 C              basis_n
 C              ang_pow
+C              basis_ord
 C              ord_expon
 C              ord_coe ...
 C
@@ -40,7 +41,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 CMI    ... arrays are entering subroutine, check the size !!!!!
 C     integer *4 basis_n(200)
-      integer *4 basis_n(NCBF)
+      integer *4 basis_n(NCBF),basis_ord(NCBF)
 
 C     integer *4 ang_pow(250,3)
       integer *4 ang_pow(NUBF,3)
@@ -85,7 +86,7 @@ CMI     write(LUPRI,*) 'LWORK=',LWORK
       CALL MEMGET('REAL',KTEST,1,WORK,KFREE,LFREE)
       CALL MEMCHK('sajeev 1',WORK,1)
   
-      CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,
+      CALL INPREAD(N_B,ord_expon,ord_coe,R_ms,basis_n,basis_ord,
      &         ang_pow,CAPOVLP,IPRCAP,NCBF,NUBF,WORK(KFREE),LFREE)
 
       CALL MEMCHK('sajeev 2',WORK,1)
@@ -123,7 +124,8 @@ CMI   ... evaluate CAP complex atomic untegrals
        ENDIF
 
 CMI   ... evaluate integrals - fill array with them
-       CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
+       CALL AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,
+     &      basis_ord,ang_pow,
      &      PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
      &      NCBF,NUBF)
         
@@ -262,7 +264,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
       SUBROUTINE INPREAD(
-     &  N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
+     &  N_B,ord_expon,ord_coe,R_ms,basis_n,basis_ord,ang_pow,
      &  CAPOVLP,IPRINT,NCBF,NUBF,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -277,9 +279,10 @@ C   fills these arrays:
 C -----------------------
 C     ord_expon
 C     ord_coe
+C     basis_n
+C     basis_ord
 C     R_ms
 C     ang_pow
-C
 C
 C
 C  Called from: SAJEEV
@@ -327,7 +330,7 @@ C     integer *4 ang_pow(250,3)
 C     integer *4 basis_n(200)
       integer *4 basis_n(NCBF)
       
-      integer *4 basis_ord(MSIZE)
+      integer *4 basis_ord(NCBF)
 
       integer*4 get_lval
 
@@ -386,7 +389,7 @@ C     ... open file for reading integrals
       OPEN(unit=LUinp,file='CAPINT.inp',STATUS='OLD',FORM='FORMATTED')
       READ(LUinp,*) n_atoms
 
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.2) THEN
        CALL HEADER('*****  Output for INPREAD  *****',-1 )
        WRITE(LUPRI,'(2X,A,I3)') 'Number of atoms :',n_atoms
        CALL FLSHFO(LUPRI)
@@ -394,8 +397,10 @@ C     ... open file for reading integrals
 
       g_n=1
       sh=0
-      iiii=1
-      DO  k=1,n_atoms
+CMI ================================================
+CMI       ... cycle over number of atoms ...
+CMI ================================================
+      DO k=1,n_atoms
         READ(LUinp,*) IA
 
         IF (IPRINT.GE.3) THEN
@@ -520,20 +525,17 @@ C          write(lupri,*)
            CALL FLSHFO(LUPRI)
           ENDIF
 
-               do i=1,6
-                   shell_arr(sh+(i-1)*n_con_guass)=shell_d(i)
-                   Shell_basis(g_n+i-1)=shell_d(i)
-                   Shell_atom(g_n+i-1)=k
-C         write(LUPRI,*) 'i,sh,n_con_guass,sh+(i-1)*n_con_guass=',
-C    &    i,sh,sh+(i-1)*n_con_guass
-C          CALL FLSHFO(LUPRI)
-                   ord_expon(sh+(i-1)*n_con_guass)=expon
-                   ord_coe(sh+(i-1)*n_con_guass)=coe
-                do ia_p=1,3
-                 ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
-                enddo
-               enddo
-            ENDDO
+          do i=1,6
+              shell_arr(sh+(i-1)*n_con_guass)=shell_d(i)
+              Shell_basis(g_n+i-1)=shell_d(i)
+              Shell_atom(g_n+i-1)=k
+              ord_expon(sh+(i-1)*n_con_guass)=expon
+              ord_coe(sh+(i-1)*n_con_guass)=coe
+              do ia_p=1,3
+                  ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
+              enddo
+          enddo
+        ENDDO
        
              do  iji=1,6
                if (g_n.gt.NCBF) then
@@ -555,22 +557,22 @@ CMI  *********** F *****************************
                 READ(LUinp,*)nj,expon,coe
 
            IF (IPRINT.GE.3) THEN
-           write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
+             write(lupri,'(2X,A,I2,A,F12.5,A,F12.6)')
      & 'F: nj=',nj,' expon=',expon,' contr.coef=',coe
            ENDIF
 
-                do i=1,10
-                   shell_arr(sh+(i-1)*n_con_guass)=shell_f(i)
-                   Shell_basis(g_n+i-1)=shell_f(i)
-                   Shell_atom(g_n+i-1)=k
+              do i=1,10
+                 shell_arr(sh+(i-1)*n_con_guass)=shell_f(i)
+                 Shell_basis(g_n+i-1)=shell_f(i)
+                 Shell_atom(g_n+i-1)=k
 
-                   ord_expon(sh+(i-1)*n_con_guass)=expon
-                   ord_coe(sh+(i-1)*n_con_guass)=coe
-                   do ia_p=1,3
+                 ord_expon(sh+(i-1)*n_con_guass)=expon
+                 ord_coe(sh+(i-1)*n_con_guass)=coe
+                 do ia_p=1,3
                    ang_pow(sh+(i-1)*n_con_guass,ia_p)=angu_pow_f(i,ia_p)
-                   end do
-                end do
-             END DO
+                 enddo
+              enddo
+             ENDDO
              
              do  iji=1,10
                if (g_n.gt.NCBF) then
@@ -685,8 +687,8 @@ C        ... write into file
      &  ' functions ready.'
        ENDIF
 
+CMI  ... set up important offset basis_ord(i)
       do i=1,n_b
-
          if(i.eq.1)then
            iasp=0
          else
@@ -739,7 +741,8 @@ CMI       write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
 C         do ii=iangi+1,basis_ord(i)
 C         enddo
 
-CMI .... normalization part for primitive gaussians first
+CMI      .... normalization part for primitive gaussians first
+C ======================================================================
           do ii=iangi+1,basis_ord(i)
            do isw=1,3
              R_m(isw)=R_ms(ii,isw)
@@ -783,10 +786,8 @@ C ====================================================================
 
 CMI  ... do second normalization - now apply PE_AO as the norm
           do ii=iangi+1,basis_ord(i)
-
            unnormcoe =  ord_coe(ii)
            ord_coe(ii) = unnormcoe/sqrt(PE_AO)
-
            IF (IPRINT.GE.2) THEN
             write (LUPRI,'(i4,A,A2,A,F12.5,A,F12.5,A,F12.5,A,F12.5)')
      &      ii,'.fu=',shell_arr(ii),
@@ -795,7 +796,6 @@ CMI  ... do second normalization - now apply PE_AO as the norm
      &      ' PE_AO=',PE_AO,' normalized coeff=',
      &      ord_coe(ii)
            ENDIF
-
           enddo
 
           ix = ix + basis_n(i)
@@ -810,8 +810,17 @@ CMI  ... do second normalization - now apply PE_AO as the norm
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck aointegral */
-      SUBROUTINE AOINTEGRAL(N_B,ord_expon,ord_coe,R_ms,basis_n,ang_pow,
-     & PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,NCBF,NUBF) 
+      SUBROUTINE AOINTEGRAL(
+     &  N_B,
+     &  ord_expon,
+     &  ord_coe,
+     &  R_ms,
+     &  basis_ord,
+     &  ang_pow,
+     &  PW,
+     &  PE_AOr,PE_AOi,
+     &  PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
+     &  NCBF,NUBF) 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Core routine for calculating CAP integrals.
@@ -823,8 +832,8 @@ C -------------------
 C           N_B          number of atomic basis functions
 C           ord_expon    exponents of primitives
 C           ord_coe      contraction coefficients
-C           R_ms
-C           basis_n
+C           R_ms         nuclear centers
+C           basis_ord
 C           ang_pow
 C           PW - theta
 C           PE_AOr,PE_AOi, PEXR... arrays for integrals
@@ -844,12 +853,7 @@ C     integer *4 ang_pow(250,3)
 
       integer *4 k_m(3),k_n(3)
 
-C     integer *4 basis_n(200)
-      integer *4 basis_n(NCBF)
-
-CMI ... locall array ...
-C     integer *4 basis_ord(300)
-      integer *4 basis_ord(400)
+      integer *4 basis_ord(NCBF)
      
 CMI ... entering parameter
 C     real *8 ord_expon(250),ord_coe(250)
@@ -891,27 +895,40 @@ C     ... zero array for integrals
          end do
       end do
 
-      IF (IPRCAP.GE.3) THEN
-        CALL HEADER('Output from AOINTEGRAL',-1)
+      IF (IPRCAP.GE.2) THEN
+       CALL HEADER('Output from AOINTEGRAL',-1)
+
+       do ii=1,n_b
+
+         if (ii.eq.1) then
+            iangii=0
+         else
+            iangii=basis_ord(ii-1)
+         endif
+
+         WRITE(LUPRI,'(2X,A,I3,A,I4,A,I3)')
+     &   '***  contr.bas.fu: ',ii,' # offset:',iangii,
+     &   ' # of prim.fu:',basis_ord(ii)-iangii
+
+         Do i=iangii+1,basis_ord(ii)
+          write(LUPRI,'(4X,A,I3,A,3I2)')
+     &    'subset.fu:',i,' ang.pow. x,y,z:',
+     &    ang_pow(i,1),ang_pow(i,2),ang_pow(i,3)
+
+          write(LUPRI,'(4X,A,3F15.7)')
+     &    'R_ms:',R_ms(i,1),R_ms(i,2),R_ms(i,3)
+
+          write(LUPRI,'(4X,A,F15.7,A,F15.7)')
+     &    'expon:',ord_expon(i),
+     &    ' normalized coeff:',ord_coe(i)
+         EndDo
+       enddo
+       CALL FLSHFO(LUPRI)
       ENDIF
 
-C ... prepare offsets for contracted basis functions
-      do i=1,n_b
-         if(i.eq.1)then
-           iasp=0
-         else
-           iasp=basis_ord(i-1)
-         endif
-         basis_ord(i)=iasp+basis_n(i)
-         IF (IPRCAP.GE.3) THEN
-          WRITE(LUPRI,'(2X,A,I3,A,I3,A,I3)')
-     &    'b.fu: ',i,' # of contr.shells:',basis_n(i),
-     &    ' offset:',basis_ord(i)
-          CALL FLSHFO(LUPRI)
-         ENDIF
-      end do
-
+C ******************************************************************
 C     ... run over contracted basis functions
+C ******************************************************************
       DO ii=1,n_b
       DO jj=1,ii
          IPU=IPOINTIJ(ii,jj)
@@ -934,7 +951,7 @@ C        ... i,j points to position of exponents !!!
                R_n(isw)=R_ms(j,isw)
                k_m(isw)=(ang_pow(i,isw))
                k_n(isw)=(ang_pow(j,isw))
-            end do
+            enddo
             R_m(4)=ord_expon(i)
             R_n(4)=ord_expon(j)
 
@@ -973,8 +990,13 @@ C           ... save real and imaginary part of integrals
 C        ... control print out of integrals
          IF (IPRCAP.GE.7) THEN
           IF (CAPOVLP) THEN
-          WRITE(LUPRI,'(2X,A,I3,A,I3,A,F22.8)') 
+           WRITE(LUPRI,'(2X,A,I3,A,I3,A,F22.8)') 
      &    'CAP overlap(',ii,';',jj,')=',PE_AOr(IPU)
+          ELSE IF (DONRCAP) THEN
+           WRITE(LUPRI,'(2X,A,I3,A,I3,A,2F22.8)') 
+     &    'CAP nonrel re,im(',ii,';',jj,')=',PE_AOr(IPU),PE_AOi(IPU)
+          ELSE IF (.NOT.DONRCAP) THEN
+C         ... relativistic stuff ...
           ENDIF
          ENDIF
 
