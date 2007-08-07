@@ -39,72 +39,6 @@ C DATE    : $Date$
 C FILE    : herrdn.F
 C
 C
-#ifdef UNDEF
-/* Comdeck log */
-960705-kr:
--- We use the small component basis for keeping a possible extra STO-3G
-   basis needed when using Hueckel initial guess.
-951115-hjaaj:
--- no warning for THRS .le. 0 if input field blank
--- implemented free format reads for IRIX (has removed character reads
-   which does not work on IRIX and gives nulls on AIX and ?).
-CNTINP: removed unused 'NAVN'; always read NAMN with '(A4)' and never
-   with free format; if free format doesn't work then try formatted;
-ZMAT: Read NAMN with '(A4)', allow free input for IRIX;
-   for CRAY formatted input made last field for CHARGE very long;
-   removed old END=204 branches which were reminiscences from when
-   the input was read directly from file.
-BUILDZ: changed format and output of internal coordinates;
-   removed printing of zero cartesian coords. before printing of
-   the correct cartesian coords.
-950428-kr/hjaaj:
-BASOUT,ORBOUT: removed NPRIM,NPRIMD,NORB,NORBD in parameter list to
- ORBOUT; we think they are related to an old organization of
- small component basis (before IQM(*,2) etc.)
-941219-hjaaj:
-BASINP: s/IQMAX/NHTYP/
-950208-vebjorn
-READI1: NSYMOP is first read as a text to determine if symmetry is to
-        be added (indicated by blanks).
-SYMINP: Has been moved after BASINP, because symmetry has to be added before
-        SYMINP is executed. The full group string CLASS has been added
-        as a parameter to the subroutine.
-SYMADD: Completely new module that adds symmetry on request from user. The
-        full group of the molecule is returned as well.
-BASINP: Has been moved above SYMADD and SYMINP. As a result the updating
-        of the array ISTBNU had to be moved to BASPRO. As this is processing
-        rather than input, the move makes good sense.
-BASPRO: Now takes care of the generation of the symmetry-dependant atoms
-        through the array ISTBNU.
-941119-tsaue:
-READIN: added extra index to arrays IQM,NBLCK,JCO,NUC,NRC,SEG,NOINT,ALPHA,
-        CPRIMU ta accomodat both large and small components
-ACPORB: implemented readin of exponents only
-SYMGRP: New routine determining irreps, characters etc.
-DBLGRP: new routine for handling double group symmetry
-SYMOUT: moved test for IPREAD out of routine,
-   for IPREAD=0 the routine was pretty meaningless
-BASINP: major modifications - check it carefully out !!!
-        may consider replacing NOORBT with MAXIQM wich has
-        more information
-CNTINP: info on angular momentum moved to BASINP
-941114-hjaaj:
-ORBINX: modified CALL SEGORB so no line is longer than 72 char
-        (ORBINX not used)
-940207-hjaaj
-READI1: 'ANG' was not initialized; errors in 'ANG' message format
-931220-hjaaj
-WRONEL: corrected calc. of INAMN and IGTO for LUONEL
-931022-hjaaj
-REAINP: INPTST = IPREAD .gt. 3 (INPTST was not defined)
-expanded tabs with 'expand'
-READI1: If ID3 then reset to blank (for abawalk)
-BASINP: changed format for nuclear charge from F4.1 to F4.0
- (such that an entry '6' is read as 6. and not as 0.6 )
-CNTINP: read in old 3F10 format if error reading coordinates
-        changed format to 3F20.0 instead of 3F20.15
-#endif
-C  /* Deck reainp */
       SUBROUTINE REAINP(WORD,IPRDEF,RELCAL,TSTINP)
 #include "implicit.h"
 #include "priunit.h"
@@ -113,11 +47,7 @@ C  /* Deck reainp */
 C
 C     Note that the parameter MAXPRD also must be set in subroutine REAINI
 C
-#if defined (SYS_T3D)
-      PARAMETER ( MAXPRD = 22 )
-#else
       PARAMETER ( MAXPRD = 30 )
-#endif
       PARAMETER ( NTABLE = 11, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -327,8 +257,6 @@ C        Slaves are already initialized before coming here.
       RETURN
       END
 
-
-
 C     !!! NEW MODULE FOR CONVERTING BETWEEN TYPES !!!
 C     OTHER SOLLUTIONS (C++) ARE MORE THAN WELCOME
 C     JHS, 11-04-2007
@@ -344,7 +272,7 @@ C     Maybe include priunit.h instead of passing output variable?
           INTEGER, INTENT(IN) :: n
           INTEGER             :: i,j
           IF (zerochar<0) zerochar=IACHAR('0')
-          inttochar=''
+          inttochar=' '
           DO i=0,maxint-1
             IF (10**i>n) EXIT
           END DO 
@@ -537,7 +465,7 @@ C
               EXIT
             END IF
         END DO
-          IF (i>LEN(filetypes))  get_extension=''
+          IF (i>LEN(filetypes))  get_extension=' '
         END FUNCTION
                
         SUBROUTINE READ_CHAR(filenum,linewidth,var,index,fixedwidth,
@@ -556,7 +484,7 @@ C     TMP adjust for an optional linewith.
           logical :: ios_temp
           CHARACTER(LEN=linewidth) :: str
           
-          var=''; iprev=index
+          var=' '; iprev=index
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -935,7 +863,7 @@ C     !!! PAM CAPITALIZES THE EXTENSIONS !!!
 
         TYPE atom
 C     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
-          CHARACTER(LEN=namelen)  :: name=''
+          CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0,i=1, 3)/)
           REAL(KIND=8)            :: charge=0
           REAL(KIND=8)            :: nucexp=0
@@ -945,10 +873,10 @@ C     Defines a list for storing atomic data, like coordinates, charges and nucl
 
         TYPE basistype
 C     Defines a list for storing the information about the basis sets.
-          CHARACTER(LEN=namelen)     :: name=''
-          CHARACTER(LEN=basislen)    :: type=''
-          CHARACTER(LEN=basislen)    :: comp=''
-          CHARACTER(LEN=basislen)    :: file=''
+          CHARACTER(LEN=namelen)     :: name=' '
+          CHARACTER(LEN=basislen)    :: type=' '
+          CHARACTER(LEN=basislen)    :: comp=' '
+          CHARACTER(LEN=basislen)    :: file=' '
 C         The following can be assigned for explicitely given basissets or Family type.
           INTEGER, POINTER           :: JCO(:)
           REAL, POINTER              :: FAM(:)
@@ -1070,7 +998,7 @@ C               and writes it to the atoms list.
           REWIND(filenum)
           index=1
           DO
-            name=''
+            name=' '
             x=0
             IF (index<0) EXIT
             CALL READ_VAR(filenum, linelen,name, index) 
@@ -1341,7 +1269,7 @@ C     (Implemented also for the rest)
 
 C     FOR UNIT CONVERSION
           REAL(KIND=8)      :: UNITS=1
-          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=''
+          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=' '
         
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
@@ -1355,7 +1283,7 @@ C     FOR explicitely typed basissets.
           WRITE(lupri,*) 'READING BASIS'
           REWIND(filenum)
           index=1
-          section=''
+          section=' '
           DO
             CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)          
 
@@ -1364,7 +1292,7 @@ C     FOR explicitely typed basissets.
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str              
             ELSE IF (str(1:1)=='*') THEN
-              IF (str=='*END') section=''
+              IF (str=='*END') section=' '
               section(2)=str
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
@@ -1375,7 +1303,7 @@ C               like cc-pVDZ etc. This will be the basisset for all atoms that a
 C               specified in the .SPECIAL section.
                 BACKSPACE(filenum)
                 CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)
-                IF (str>'') THEN
+                IF (str>' ') THEN
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
@@ -1388,10 +1316,10 @@ C               specified in the .SPECIAL section.
      &                section(3)=='.SPECIAL') THEN
 C     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
                 BACKSPACE(filenum)
-                tmpbas%name=''
-                tmpbas%comp=''
-                tmpbas%type=''
-                tmpbas%file=''
+                tmpbas%name=' '
+                tmpbas%comp=' '
+                tmpbas%type=' '
+                tmpbas%file=' '
                 tmpbas%next=>NULL()
                 
                 CALL READ_VAR(filenum,linelen,tmpbas%name,index)
@@ -1461,7 +1389,7 @@ C
               ELSE IF (section(2)=='*CENTERS') THEN
 C     JHS050707 We specify the charges, the others are found in the table of nucdata.h
                 BACKSPACE(filenum)
-                name=''
+                name=' '
                 charge=0
                 nucexp=0
   
@@ -1485,7 +1413,7 @@ C     JHS050707 If a unit is specified, the coordinates in the .XYZ file are giv
 C               units and we have to transform them to a.u.
 C               The conversion factor may be given in Angstrom typed as 'ANGSTROM' or 'A'
 C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTROM'
-                IF (str=='') CYCLE
+                IF (str==' ') CYCLE
                 SELECT CASE(str)
                 CASE('ANGSTROM', 'A')
                   UNITS=1/XTANG
@@ -1493,7 +1421,7 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
                   BACKSPACE(filenum)
                   CALL READ_VAR(filenum, linelen,unitname,index)
                   CALL READ_VAR(filenum, linelen,UNITS,index)
-                  tmpunit=''
+                  tmpunit=' '
                   IF(index>1) CALL READ_VAR(filenum,
      &                 linelen,tmpunit,index,skip=.TRUE.)
                   SELECT CASE(tmpunit)
@@ -1515,7 +1443,7 @@ C     Sort the atoms according to the bases.
           WRITE(LUPRI,*) 'ATOMS SORTED'
 C     Add charges if they are missing
           mol=>firstatom
-          prevname=''
+          prevname=' '
           DO WHILE(ASSOCIATED(mol))
             IF (mol%charge==0) THEN
               IF(.NOT.(mol%name)==prevname) 
@@ -1708,7 +1636,7 @@ C     COMMONBLOCKS
       LOGICAL      :: HERMIT,DOOWN,ANG, ADDSYM=.TRUE.,NOORBTS,NOFITFS, 
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
       CHARACTER(LEN=1)  :: KASYM(3,3)
-      CHARACTER(LEN=72) :: TTITLE(2)=''
+      CHARACTER(LEN=72) :: TTITLE(2)=' '
       CHARACTER(LEN=11) :: SYMTXT
       CHARACTER(LEN=15) :: CLASS
       CHARACTER(LEN=namelen) :: prevname
@@ -1778,7 +1706,7 @@ C     JHS050707 TMP Initialization (NEEDED?)
       NBLCK=0
       ISGEN=0
       SEG=.FALSE.
-      BASREF=''
+      BASREF=' '
       IBLOCK(1:4)=1
 
 C     ccom.h
@@ -2276,8 +2204,6 @@ C
 #endif
 #include "cbirea.h"
 C
-C     JHS TMP Change def of WORK
-C      DIMENSION WORK(LWORK)
       CHARACTER(LEN=8) :: moltype
       REAL(KIND=8)     :: WORK(LWORK)
       LOGICAL          :: HERMIT,NEWFILE,SET
@@ -2333,22 +2259,12 @@ C
 
       REWIND(LUINFO)
 C     JHS TMP reset the variables with the read .mol file
-      MLINE=''
+      MLINE=' '
       NMLINE=0
 
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)') KEYWRD
-#if !defined (PRG_DIRAC)
-      IF (KEYWRD .EQ. 'BASIS ') THEN
-         BASIS = .TRUE.
-      ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
-         ATOMBA = .TRUE.
-      ELSE IF (KEYWRD .NE. 'INTGRL') THEN
-         GOTO 5010
-      END IF
-#else
 C     In Dirac we do the readin the same way whatever KEYWRD is.
-#endif
 C
 C     ********************************************
 C     ***** Allocate memory **********************
@@ -2364,30 +2280,7 @@ C        Number of basis sets : regular, Huckel, fit
       KATOM  = MXCENT
       KANG   = 2*MXQN+1
       KPRIM  = MAXPRI
-      KCMAT  = KPRIM*KPRIM
-      KNONT  = 1
-      KIQM   = KNONT  +  KATOM
-      KBLCK  = KIQM   +  KATOM*KSETS
-      KJCO   = KBLCK  +  KATOM*KSETS
-      KJCO2  = KJCO   +  KATOM*KANG*KSETS
-      KLAST  = KJCO2  +  KATOM*KANG
-C hjj: take as many blocks as fit in memory
-C      (to be able to run tests with memory < 1 mio DP words)
-      LWRK   = LWORK  -  KLAST + 1
-      LBLOCK = 6 + 2*KPRIM + 4*KCMAT
-C      (we reserve size of one block for later allocations)
-      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB, 2*MXCOOR*MXCOOR) + 10000
-C                          ^- for sympro   ^-- for nucpro, pricar
-      KBLOCK = (LWRK-LRESRV)/LBLOCK
-      KBLOCK = MAX(KBLOCK,10)
-C              ... minimum 10 blocks
-      KBLOCK = MIN(KBLOCK,MXSHEL)
-C              ... maximum MXSHEL blocks
-C              (otherwise the program will stop later;
-C              and no reason to allocate all of memory here).
-C
-      IF(KLAST.GT.LWORK) GOTO 5020
-      LWRK   = LWORK  -  KLAST + 1
+      KBLOCK = MXSHEL
 C
 C     ********************************************
 C     ***** Read input file and process data *****
@@ -2400,8 +2293,8 @@ C               These are the only two extensions at the moment.
       SELECT CASE(TRIM(moltype))
       CASE ('MOL')
 
-        CALL READI1(LUINFO,WORK(1),LWORK,
-     &              MXCENT,KANG,KSETS,KBLOCK,KPRIM, HERMIT)
+        CALL READI1(LUINFO,WORK,LWORK,
+     &              KATOM,KANG,KSETS,KBLOCK,KPRIM, HERMIT)
 
 
       CASE ('XYZ')
@@ -2422,7 +2315,7 @@ C     JHS050707 Read the actual files.
 C     JHS050707 Write the coordinates to the commonblocks
         CALL WRITE_ATOMS(LUPRI)
 C     JHS050707 Write the basisset data to the commonblocks
-        CALL WRITE_BASIS(inpfile, LUPRI,WORK(1),LWORK,
+        CALL WRITE_BASIS(inpfile, LUPRI,WORK,LWORK,
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C     JHS050707 Free the reserved memory.
         CALL CLEAR_XYZ(LUPRI)
@@ -2445,8 +2338,6 @@ C
  5000 CONTINUE
       WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open MOLECULE.INP'
       CALL QUIT(' *** ERROR (READIN) unable to open input file LUINFO ')
- 5010 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting INTGRL or BASIS')
  5020 CONTINUE
       CALL STOPIT('READIN','READI1',KLAST,LWORK)
  5030 CONTINUE
@@ -2461,10 +2352,10 @@ C     Reads and processes input file of molecular data
 C
 C       **** Temporary variables used in READIN ****
 C
-C       KATOM   - atomic types
-C       KANG    - angular momentum
-C       KBLOCK  - AO-block
-C       KPRIM   - primitives
+C       KATOM   - number of atomic types
+C       KANG    - number of different angular momenta
+C       KBLOCK  - number of AO-blocks
+C       KPRIM   - maximum number of primitives
 C
 C      (Large/small)
 C       NONT            (KATOM)         - number of symmetry independent
@@ -2501,9 +2392,6 @@ C******************************************************************************
 #include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
-      REAL(KIND=8) :: ALPHA(KPRIM,KBLOCK,KSETS), 
-     &                CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &                CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
 
 C     JHS The following local arrays are allocated at runtime to make memory
 C         management easier.
@@ -2518,6 +2406,9 @@ C         management easier.
      &                       ISGEN(:)
       LOGICAL,ALLOCATABLE :: SEG(:,:)
       CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
+      REAL(KIND=8),ALLOCATABLE :: ALPHA(:,:,:), 
+     &                CPRIM(:,:,:,:),
+     &                CPRIMU(:,:,:,:)
 
 C     JHS
       CHARACTER(LEN=72) :: str
@@ -2547,48 +2438,11 @@ C     JHS The following variables come from a commonblock and are thus kept in F
 #include "gnrinf.h"
       LOGICAL LINEAR
 #endif
-#include "ibtfun.h"
-
-C     JHS TMP For checking arraybounds overwrite KATOM with the max value
-
-      ALLOCATE(NONT(KATOM))
-      ALLOCATE(JCO(KANG,KATOM,KSETS))
-      ALLOCATE(JCO2(KANG,KATOM))
-      ALLOCATE(IBLOCK(MXBSETS))
-      ALLOCATE(NUC(KBLOCK,KSETS))
-      ALLOCATE(IQM(KATOM,KSETS))
-      ALLOCATE(NRC(KBLOCK,KSETS))
-      ALLOCATE(NBLCK(KATOM,KSETS))
-      ALLOCATE(ISGEN(KBLOCK))
-      ALLOCATE(SEG(KBLOCK,KSETS))
-      ALLOCATE(BASREF(10,MXCENT,MXBSETS))
-
-      NONT=0
-      JCO=0
-      JCO2=0
-      IBLOCK=0
-      NUC=0
-      IQM=0
-      NRC=0
-      NBLCK=0
-      ISGEN=0
-      SEG=.FALSE.
-      BASREF=''
-
       ZMAT = .FALSE.
 C
 C***********************************************************************
 C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
 C***********************************************************************
-C***********************************************************************
-C     Card 2: If basis set library, read additional card containing basis set
-C***********************************************************************
-      IF (BASIS) THEN
-         CALL RDLINE(LUINFO)
-         READ (MLINE(NMLINE),'(A)') BASNAM
-         IF (IPREAD .GT. 1) WRITE (LUPRI,'(/A/5X,A/A)') ' Basis set',
-     &      BASNAM,' from the basis set library will be used.'
-      END IF
 C***********************************************************************
 C     Card 2-3: Title cards
 C***********************************************************************
@@ -2614,7 +2468,6 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
-
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF(NONTYP.GT.KATOM) GOTO 5000
@@ -2711,36 +2564,33 @@ C        In 4-component mode Cartesian Gaussians are always used.
             ENDIF
         ENDIF
       ENDIF
-
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
+
+      KATOM  = NONTYP
+      KANG   = 2*MXQN+1 
+      KPRIM  = MAXPRI
+      KCMAT  = KPRIM*KPRIM
+      ALLOCATE(NONT(NONTYP))
+      ALLOCATE(IQM(KATOM,KSETS))
+      ALLOCATE(NBLCK(KATOM,KSETS))
+      ALLOCATE(JCO(KANG,KATOM,KSETS))
+      ALLOCATE(NUC(KBLOCK,KSETS))
+      ALLOCATE(NRC(KBLOCK,KSETS))
+      ALLOCATE(ISGEN(KBLOCK))
+      ALLOCATE(SEG(KBLOCK,KSETS))
+      ALLOCATE(BASREF(10,MXCENT,MXBSETS))
+      ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
+      ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
+      ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
 C
 C     ************************************************
 C     ***** Read orbital and geometry input data *****
 C     ************************************************
 C
-C#if !defined (MOD_DNF)
-C aspg, 2006-060-17: for the time being we go for density fitting
-C       using basinp...
-
-      CALL BASINP(LUINFO,WORK(KLAST),LWORK,NONTYP,NONT,
+      CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
-C#else
-C      CALL CENINP(LUINFO,WORK(KLAST),LWORK,NONTYP,NONT,
-C     &            IQM,NBLCK,JCO,BASREF,
-C     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
-C     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
-C#endif
-C
-C     *************************************************
-C     ***** Process ZMAT coordinates if requested *****
-C     *************************************************
-C
-      IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,
-     &                  BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,
-     &                  KANG,KBLOCK,KPRIM,DOOWN)
-
 C
 C     *************************************************
 C     ***** Add symmetry to molecule if requested *****
@@ -2754,27 +2604,17 @@ C
          CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
-
-C
-C     ****************************************************
-C     ***** Adds an STO-3G basis if Extended Hueckel *****
-C     *****        wanted as starting orbitals       *****
-C     ****************************************************
-C
-C      IF (ADDSTO) CALL STOADD()
 C
 C     ***************************************
 C     ***** Process symmetry input data *****
 C     ***************************************
 C
-
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 C
 C     ***************************************************
 C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
-
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN)
@@ -2783,18 +2623,19 @@ C     *************************************************
 C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
-
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,HERMIT)
 C
+      IF (ALLOCATED(ALPHA)) DEALLOCATE(ALPHA)
+      IF (ALLOCATED(CPRIM)) DEALLOCATE(CPRIM)
+      IF (ALLOCATED(CPRIMU)) DEALLOCATE(CPRIMU)
 
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of input to READIN',0)
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(/)')
       END IF
-
 
 C     Default threshold for distinguishing classical and
 C     non-classical contributions to Coulomb integrals
@@ -2805,15 +2646,14 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
-
+      ALLOCATE(JCO2(KANG,KATOM))
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-C     JHS The check whether the arrays are still allocated is in principle redundand.
+C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(NONT)) DEALLOCATE(NONT)
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
       IF (ALLOCATED(JCO2)) DEALLOCATE(JCO2)
-      IF (ALLOCATED(IBLOCK)) DEALLOCATE(IBLOCK)
       IF (ALLOCATED(NUC)) DEALLOCATE(NUC)
       IF (ALLOCATED(IQM)) DEALLOCATE(IQM)
       IF (ALLOCATED(NRC)) DEALLOCATE(NRC)
@@ -2821,8 +2661,6 @@ C     JHS The check whether the arrays are still allocated is in principle redun
       IF (ALLOCATED(ISGEN)) DEALLOCATE(ISGEN)
       IF (ALLOCATED(BASREF)) DEALLOCATE(BASREF)
       IF (ALLOCATED(SEG)) DEALLOCATE(SEG)
-
-      WRITE(LUPRI,*) 'FINISHED READI1, NODE', MYTID, 'MASTER', MPARID
 
       RETURN
 C
