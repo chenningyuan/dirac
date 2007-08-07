@@ -481,15 +481,13 @@ C     TMP adjust for an optional linewith.
 
           LOGICAL                       :: quoted=.FALSE.
           INTEGER :: iprev, ios, i
-          logical :: ios_temp
           CHARACTER(LEN=linewidth) :: str
           
           var=' '; iprev=index
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-          !IF (.NOT.(ios)) THEN
-          IF (.NOT.(ios_temp)) THEN
+          IF (ios==0) THEN
             IF (present(fixedwidth)) THEN
               DO i=index,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -627,7 +625,6 @@ C     TMP adjust for an optional linewith.
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
           INTEGER :: iprev, ios, idot=0,i
-          logical :: ios_temp
           CHARACTER(LEN=linewidth) :: str
           
           var=0; iprev=index; idot=0
@@ -635,8 +632,7 @@ C     TMP adjust for an optional linewith.
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-         ! IF (.NOT.(ios)) THEN
-          IF (.NOT.(ios_temp)) THEN
+          IF (ios==0) THEN
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -701,13 +697,11 @@ C     TMP adjust for an optional linewith.
           
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
-          logical :: ios_temp 
           var=0; iprev=index; idot=0
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
 
-         ! IF (.NOT.(ios)) THEN
-          IF (.NOT.(ios_temp)) THEN
+          IF (ios==0) THEN
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -771,14 +765,12 @@ C     TMP adjust for an optional linewith.
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
           INTEGER :: iprev, ios,i
-          logical :: ios_temp ! MI - fix for gfortran 
           CHARACTER(LEN=linewidth) :: str
           
           var=0; iprev=index
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
-         ! IF (.NOT.(ios)) THEN
-          IF (.NOT.(ios_temp)) THEN  !!! needs be fixed !!!!
+          IF (ios==0) THEN
             IF (present(fixedwidth)) THEN
               DO i=index+1,MIN(len(str), index+fixedwidth)
                 SELECT CASE (str(i:i))
@@ -1243,7 +1235,7 @@ C     JHS050707 For a given atomname the corresponding charge is searched for in
           find_charge=0.0
           DO i=1,SIZE(NUCLABEL)
             IF (atomname==NUCLABEL(i)) THEN
-              find_charge=i
+              find_charge=REAL(i)
               RETURN
             END IF
           END DO
@@ -1268,8 +1260,8 @@ C     (Implemented also for the rest)
           TYPE(basistype)                    :: tmpbas
 
 C     FOR UNIT CONVERSION
-          REAL(KIND=8)      :: UNITS=1
-          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=' '
+          REAL(KIND=8)      :: UNITS=1.0
+          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=''
         
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
@@ -1279,6 +1271,7 @@ C     FOR UNIT CONVERSION
 
 C     FOR explicitely typed basissets.
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
+
 
           WRITE(lupri,*) 'READING BASIS'
           REWIND(filenum)
@@ -1434,6 +1427,8 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
           END DO
 
 C     JHS050707 We now have add all data that was explicitly added in the .INP file.
+          CALL PRINT_ATOMS(firstatom,lupri)
+
 C     Add default basis.
           CALL SORT_BASIS(firstatom,firstbas,.TRUE.,lupri)
           WRITE(LUPRI,*) 'BASIS SORTED'
@@ -1714,6 +1709,7 @@ C     ccom.h
 C     JHS050707 TMP change this for other coordinte systems
       DOCART=.TRUE.
       DOSPHE=.FALSE.
+      DOOWN=.FALSE.
       NHTYP=0
 
 C     nuclei.h
