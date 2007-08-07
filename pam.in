@@ -819,9 +819,16 @@ while [ -n "$1" ]; do
 #        The last parameters should always be the input file(s)
 #        Process the geometry file first, can be either a
 #        MOLECULE file (extension .mol) or an xyz file (.xyz)
-#        With no extension given we presume it is a .mol file
          MOL=`echo $1 | cut -d'.' -f1`
-         EXT=`echo $1 | cut -s -d'.' -f2`
+         EXT=`echo $1 | cut -s -d'.' -f2-`
+#        We need to check for input files that have dots in the name
+         n=1
+         while [ -n "`echo $EXT | cut -s -d'.' -f2`" ]; do
+               n=`expr $n + 1`
+               MOL=`echo $1 | cut -d'.' -f1-$n`
+               EXT=`echo $EXT | cut -s -d'.' -f2-`
+         done
+#        With no extension given we presume it is a .mol file
          if [ -z "$EXT" ]; then
            EXT='mol'
          fi
