@@ -480,9 +480,8 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher, august 2003.
 C
-C     Miro Ilias, July 2007 - absolute imaginary
-C     eigenenergies printed 
-C     if CARITH=T (throught the introduced IRCW,ECCIM parameters)
+C     Miro Ilias, July 2007 -  total imaginary eigenenergies are printed
+C      if CARITH=T (IRCW,ECCIM parameters)
 C
 C---------------Calling variables--------------------------------------
 C
@@ -729,7 +728,7 @@ C     call FLSHFO(LUPRI)
  1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
  1007 FORMAT(//' Energy eigenvalues in atomic units'
      & //' Level   Rel eigenvalue     Abs eigenvalue     ',
-     & ' Total Energy       Imag abs.eigval   Degeneracy'/)
+     & ' Total Energy       Total imag.ener.  Degeneracy'/)
  1015 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
