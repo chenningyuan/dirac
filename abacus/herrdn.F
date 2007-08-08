@@ -1647,10 +1647,11 @@ C     COMMONBLOCKS
       TYPE(basistype),POINTER       :: baspointer
       TYPE(atom),POINTER            :: mol
 
-      REAL(KIND=8):: WORK(LWORK),
-     &               ALPHA(KPRIM,KBLOCK,KSETS), 
-     &               CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &               CPRIMU(KPRIM,KPRIM,KBLOCK,MXBSETS)
+      REAL(KIND=8):: WORK(LWORK) 
+      REAL(KIND=8),ALLOCATABLE:: 
+     &               ALPHA(:,:,:), 
+     &               CPRIM(:,:,:,:),
+     &               CPRIMU(:,:,:,:)
       INTEGER,ALLOCATABLE :: NONT(:),JCO(:,:,:),JCO2(:,:),IBLOCK(:),
      &                       NUC(:,:),IQM(:,:),NRC(:,:),NBLCK(:,:),
      &                       ISGEN(:)
@@ -1695,6 +1696,9 @@ C#include "ibtfun.h"
       ALLOCATE(ISGEN(KBLOCK))
       ALLOCATE(SEG(KBLOCK,KSETS))
       ALLOCATE(BASREF(10,KATOM,KSETS))
+      ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
+      ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
+      ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
       
 C     JHS050707 TMP Initialization (NEEDED?)
       WRITE(lupri, '(a)') 'Initializing variables.......'
@@ -2026,6 +2030,10 @@ C
           DEALLOCATE(ISGEN)
           DEALLOCATE(BASREF)
           DEALLOCATE(SEG)
+          DEALLOCATE(ALPHA)
+          DEALLOCATE(CPRIM)
+          DEALLOCATE(CPRIMU)
+
 
           WRITE(lupri,*) 'Allocated arrays deleted.'
       
@@ -2304,7 +2312,7 @@ C               These are the only two extensions at the moment.
       CASE ('XYZ')
 C       JHS050707 Information of the basisset and charges are stored in the 
 C                 .INP file, which has to be opened and read.
-        inpfile=OPEN_FILE('DIRAC.INP') 
+        inpfile=OPEN_FILE('DIRAC.INP',LUCMD,'FORMATTED',LUPRI)
         
         IF (.NOT.(inpfile>0)) THEN
           WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
