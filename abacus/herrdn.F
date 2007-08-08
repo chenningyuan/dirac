@@ -1434,6 +1434,12 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
             END IF
           END DO
 
+          IF(.NOT.(ASSOCIATED(firstbas))) THEN
+            WRITE(LUPRI,*) 'No basisset given in input file. 
+     &            Specify a basisset in  **MOLECULE *BASIS .DEFAULT'
+            CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis given in 
+     &           input file.')
+          END IF
 C     JHS050707 We now have add all data that was explicitly added in the .INP file.
           CALL PRINT_ATOMS(firstatom,lupri)
 
