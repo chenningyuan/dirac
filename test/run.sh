@@ -21,13 +21,6 @@ fi
 if [ -z "$TAG" ]; then
    TAG=out
 fi
-if [ "$MOL" = "$MENU" ]; then
-   NEWOUT=${MENU}.${TAG}
-   OLDOUT=${MENU}.out 
-else
-   NEWOUT=${MENU}_${MOL}.${TAG}
-   OLDOUT=${MENU}_${MOL}.out 
-fi
 #
 # Run calculation (pass on additional arguments for pam that are supplied by the caller)
 #
@@ -39,6 +32,18 @@ $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU 
 if [ $EXIT -eq 0 ]; then
 #
 #  Succesful run : check for deviations with the standard output.
+#
+MENU=${MENU%\.inp}
+MOL=${MOL%\.mol}
+MOL=${MOL%\.xyz}
+if [ "$MOL" = "$MENU" ]; then
+   NEWOUT=${MENU}.${TAG}
+   OLDOUT=${MENU}.out 
+else
+   NEWOUT=${MENU}_${MOL}.${TAG}
+   OLDOUT=${MENU}_${MOL}.out 
+fi
+#
 #  Extract report from the output using the filter file
 #
   if [ -z "$FILTER" ]; then
