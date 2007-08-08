@@ -409,17 +409,17 @@ C     Returns the maximum linelength of an already opened file.
 C
           INTEGER, INTENT(IN) :: filenum
           INTEGER, OPTIONAL, INTENT(IN) :: lupri
-          INTEGER             :: ios, newlength
+          INTEGER             :: ios, length, newlength
           CHARACTER(LEN=1)   :: tmpchr
 
           REWIND(filenum)
-          get_length_num=0
+          length=0
           DO
             newlength=0
             DO
               READ(filenum, '(a)', iostat=ios, ADVANCE='no') tmpchr
               IF (ios<0) THEN
-                get_length_num=MAX(get_length_num, newlength)
+                length=MAX(length, newlength)
                 EXIT
               ELSE
                 newlength=newlength+1
@@ -427,12 +427,13 @@ C
             END DO
             IF (ios==-1) THEN
               EXIT
-            ELSE IF (.NOT.(ios==-2)) THEN
+            ELSE IF (.NOT.(ios==-2).and.PRESENT(lupri)) THEN
               WRITE (lupri,'(A)') "WARNING problems encountered 
      &                       while reading file."
             END IF
           END DO
           REWIND(filenum)
+        get_length_num=length
         END FUNCTION GET_LENGTH_NUM
       
         INTEGER FUNCTION GET_LENGTH_NAME(filename, lupri)
@@ -480,9 +481,11 @@ C     TMP adjust for an optional linewith.
           LOGICAL, INTENT(IN), OPTIONAL :: skip
 
           LOGICAL                       :: quoted=.FALSE.
+          LOGICAL                       :: lskip=.FALSE.
           INTEGER :: iprev, ios, i
           CHARACTER(LEN=linewidth) :: str
           
+          if (present(skip)) lskip = skip
           var=' '; iprev=index
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
@@ -498,7 +501,7 @@ C     TMP adjust for an optional linewith.
               END DO
               IF (i-2>index.OR.fixedwidth==1) 
      &          var=str(iprev:i-1)
-              IF (present(skip).AND.skip) THEN
+              IF (lskip) THEN
                 index=1
               ELSE IF (i-1>linewidth) THEN
                 index=1
@@ -520,7 +523,7 @@ C     TMP adjust for an optional linewith.
                   IF (.not.(quoted)) THEN
                     IF (iprev==1.AND.iprev<i) THEN
                       var=str(iprev:i)
-                      IF (present(skip).AND.skip) THEN
+                      IF (lskip) THEN
                         index=1
                       ELSE
                         BACKSPACE(filenum)
@@ -529,7 +532,7 @@ C     TMP adjust for an optional linewith.
                       RETURN
                     ELSE IF (iprev<i-1) THEN
                       var=str(iprev+1:i)
-                      IF (present(skip).AND.skip) THEN
+                      IF (lskip) THEN
                         index=1
                       ELSE
                         BACKSPACE(filenum)
@@ -543,7 +546,7 @@ C     TMP adjust for an optional linewith.
                   quoted=.not.(quoted)
                   if (.not.(quoted)) THEN
                     var=str(iprev+1:i-1)
-                    IF (present(skip).AND.skip) THEN
+                    IF (lskip) THEN
                       index=1
                     ELSE
                       BACKSPACE(filenum)
@@ -624,9 +627,11 @@ C     TMP adjust for an optional linewith.
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
+          LOGICAL                       :: lskip=.FALSE.
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
           
+          if (present(skip)) lskip = skip
           var=0; iprev=index; idot=0
 
 
@@ -644,7 +649,7 @@ C     TMP adjust for an optional linewith.
               END DO
               IF (i-2>index.OR.fixedwidth==1) 
      &          var=READ_NUM8(filenum,index,i-1,ios,idot)
-              IF (present(skip).AND.skip) THEN 
+              IF (lskip) THEN 
                 index=1
               ELSE IF (i>linewidth) THEN 
                 index=1
@@ -663,7 +668,7 @@ C     TMP adjust for an optional linewith.
                 CASE (' ')
                   IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
                     var=READ_NUM8(filenum,iprev,i,ios,idot)
-                    IF (present(skip).AND.skip) THEN 
+                    IF (lskip) THEN 
                       index=1
                     ELSE
                       BACKSPACE(filenum)
@@ -695,8 +700,10 @@ C     TMP adjust for an optional linewith.
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
+          LOGICAL                       :: lskip=.FALSE.
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
+          if (present(skip)) lskip = skip
           var=0; iprev=index; idot=0
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -713,7 +720,7 @@ C     TMP adjust for an optional linewith.
               END DO
               IF (i-2>index.OR.fixedwidth==1)
      &          var=READ_NUM(filenum,index,i-1,ios,idot)
-              IF (present(skip).AND.skip) THEN 
+              IF (lskip) THEN 
                 index=1
               ELSE IF (i>linewidth) THEN 
                 index=1
@@ -732,7 +739,7 @@ C     TMP adjust for an optional linewith.
                 CASE (' ')
                   IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
                     var=READ_NUM(filenum,iprev,i,ios,idot)
-                    IF (present(skip).AND.skip) THEN 
+                    IF (lskip) THEN 
                       index=1
                     ELSE
                       BACKSPACE(filenum)
@@ -764,9 +771,11 @@ C     TMP adjust for an optional linewith.
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
+          LOGICAL                       :: lskip=.FALSE.
           INTEGER :: iprev, ios,i
           CHARACTER(LEN=linewidth) :: str
           
+          if (present(skip)) lskip = skip
           var=0; iprev=index
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -780,7 +789,7 @@ C     TMP adjust for an optional linewith.
               END DO
               IF (i-2>index.OR.fixedwidth==1)
      &          var=READ_INTEGER(filenum,index,i-1,ios)
-              IF (present(skip).AND.skip) THEN 
+              IF (lskip) THEN 
                 index=1
               ELSE IF (i>linewidth) THEN 
                 index=1
@@ -799,7 +808,7 @@ C     TMP adjust for an optional linewith.
                 CASE (' ')
                   IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
                     var=READ_INTEGER(filenum,iprev,i,ios)
-                    IF (present(skip).AND.skip) THEN 
+                    IF (lskip) THEN 
                       index=1
                     ELSE
                       BACKSPACE(filenum)
@@ -979,7 +988,6 @@ C               And reads the needed coefficients from file.
         SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
 C     JHS050707 Reads atom name and coordinates from the .XYZ file 
 C               and writes it to the atoms list.
-         ! TYPE(atom), POINTER, INTENT(INOUT) :: fatom
           TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
           TYPE(atom), POINTER                :: mol=>NULL()
@@ -990,7 +998,7 @@ C               and writes it to the atoms list.
           REWIND(filenum)
           index=1
           DO
-            name=' '
+            name=''
             x=0
             IF (index<0) EXIT
             CALL READ_VAR(filenum, linelen,name, index) 
