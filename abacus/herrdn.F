@@ -704,7 +704,7 @@ C     TMP adjust for an optional linewith.
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
           if (present(skip)) lskip = skip
-          var=0; iprev=index; idot=0
+          var=0.0; iprev=index; idot=0
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
 
@@ -865,9 +865,9 @@ C     !!! PAM CAPITALIZES THE EXTENSIONS !!!
         TYPE atom
 C     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
-          REAL(KIND=8)            :: x(3)=(/(0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0
-          REAL(KIND=8)            :: nucexp=0
+          REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
+          REAL(KIND=8)            :: charge=0.0
+          REAL(KIND=8)            :: nucexp=0.0
           TYPE(atom), POINTER     :: next=>NULL()
         END TYPE atom
         TYPE(atom), POINTER :: firstatom
@@ -899,7 +899,8 @@ C     JHS050707 Adds a new node to the atom list.
           ALLOCATE(mol)
           mol%name=name
           IF (PRESENT(x)) mol%x=x
-          mol%next=>NULL()
+
+          mol%next=>NULL()          
           IF (associated(prevmol)) THEN
             prevmol%next=>mol 
           ELSE
@@ -988,6 +989,8 @@ C               And reads the needed coefficients from file.
         SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
 C     JHS050707 Reads atom name and coordinates from the .XYZ file 
 C               and writes it to the atoms list.
+#include "infpar.h"
+#include "cbirea.h"
           TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
           TYPE(atom), POINTER                :: mol=>NULL()
@@ -995,6 +998,9 @@ C               and writes it to the atoms list.
           REAL(KIND=8)                       :: x(3)
           INTEGER                            :: i,index
           
+          IF (.NOT.(PARHER).AND.IPREAD>1) 
+     &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
+
           REWIND(filenum)
           index=1
           DO
@@ -1011,6 +1017,8 @@ C               and writes it to the atoms list.
 C     JHS050707 If coordinates are missing the atom is not added to the list.
             CALL ADD_ATOM(mol,fatom,name,x)            
           END DO
+
+          IF(.NOT.(PARHER).AND. IPREAD>1) WRITE(LUPRI,*) 'Done'
 
         END SUBROUTINE READ_ATOMS
 
@@ -1255,6 +1263,8 @@ C     JHS050707 For a given atomname the corresponding charge is searched for in
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
 #include "codata.h"
+#include "infpar.h"
+#include "cbirea.h"
 C     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
 C               Reads also Charges, nuclear exponents and the units of the XYZ file.
 C     Stores it in the the basis list.
@@ -1280,8 +1290,9 @@ C     FOR UNIT CONVERSION
 C     FOR explicitely typed basissets.
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
+          IF (.NOT.(PARHER).AND.IPREAD>1) 
+     &      WRITE(LUPRI,*) 'Reading basisset information from file...'
 
-          WRITE(lupri,*) 'READING BASIS'
           REWIND(filenum)
           index=1
           section=' '
@@ -1328,7 +1339,6 @@ C     JHS050707 For some or all atoms we can give an other basisset than the .DE
 
                 CALL READ_VAR(filenum,linelen,tmpbas%comp,index)
                 IF (index<=1) CYCLE
-
                 CALL READ_VAR(filenum,linelen,tmpbas%type,index)                
                 IF (index<=1) THEN
                   tmpbas%file=tmpbas%comp
@@ -1391,8 +1401,8 @@ C
 C     JHS050707 We specify the charges, the others are found in the table of nucdata.h
                 BACKSPACE(filenum)
                 name=' '
-                charge=0
-                nucexp=0
+                charge=0.0
+                nucexp=0.0
   
                 CALL READ_VAR(filenum,linelen,name,index)
                 IF (.NOT.(index>1)) CYCLE
@@ -1440,16 +1450,16 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
             CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis given in 
      &           input file.')
           END IF
-C     JHS050707 We now have add all data that was explicitly added in the .INP file.
-          CALL PRINT_ATOMS(firstatom,lupri)
+          
+          IF(.NOT.(PARHER).AND.IPREAD>1) WRITE(LUPRI,*) 'Done'
 
+C     JHS050707 We now have add all data that was explicitly added in the .INP file.
 C     Add default basis.
+          IF(.NOT.(PARHER).AND.IPREAD>1)
+     &         WRITE(LUPRI,*) 'Processing basissets...'
           CALL SORT_BASIS(firstatom,firstbas,.TRUE.,lupri)
-          WRITE(LUPRI,*) 'BASIS SORTED'
-          CALL PRINT_BASIS(firstbas,lupri)
 C     Sort the atoms according to the bases.
           CALL SORT_ATOMS(firstatom,firstbas,lupri)
-          WRITE(LUPRI,*) 'ATOMS SORTED'
 C     Add charges if they are missing
           mol=>firstatom
           prevname=' '
@@ -1464,16 +1474,19 @@ C     Add charges if they are missing
             mol=>mol%next
           END DO
 
-
+          IF(.NOT.(PARHER).AND.IPREAD>1) WRITE(LUPRI,*) 'Done'
+          
 C     Convert units
-          WRITE(LUPRI,*) 'Coordinates entered in ', unitname
-          WRITE(LUPRI,*) 'Converting ',unitname,'to atomic units'
-          WRITE(LUPRI,*) 'Conversion factor=', UNITS 
-          mol=>firstatom
-          DO WHILE (ASSOCIATED(mol))
-            mol%x=mol%x*UNITS
-            mol=>mol%next
-          END DO
+          IF(.NOT.(UNITS==1.0) .AND. .NOT.(PARHER)) THEN
+            WRITE(LUPRI,*) 'Coordinates entered in ', unitname
+            WRITE(LUPRI,*) 'Converting ',unitname,'to atomic units'
+            WRITE(LUPRI,*) 'Conversion factor=', UNITS 
+            mol=>firstatom
+            DO WHILE (ASSOCIATED(mol))
+              mol%x=mol%x*UNITS
+              mol=>mol%next
+            END DO
+          END IF
 
         END SUBROUTINE READ_BASIS
 
@@ -1509,7 +1522,6 @@ C     COMMONBLOCKS
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
 
-      WRITE(lupri,*) 'Writing atomic data...'
       KATOM=count_atoms(firstatom)
       IF (KATOM>MXCENT) THEN
          WRITE(lupri,*) 'Number of atoms specified greater max number 
@@ -1592,9 +1604,6 @@ C     JHS050707 A function for later use, positions a file to a specific keyword
           REWIND(infile)
           DO            
             CALL READ_VAR(infile,linelen,str,index, skip=.TRUE.)          
-            WRITE(lupri,*) 'SECTION', section
-            WRITE(lupri,*) 'SUBSECTION', subsection
-            WRITE(lupri,*) 'STR', str
             IF (index<0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
@@ -1686,10 +1695,7 @@ C#include "dcbrkb.h"
 C#include "ibtfun.h"
       
       
-      WRITE(lupri, '(a)') 'Writing commonblocks'
       katom=count_atoms(firstatom)
-
-      WRITE(lupri, '(a)') 'Allocating memory...'
 
       ALLOCATE(NONT(KATOM))
       ALLOCATE(JCO(KANG,KATOM,KSETS))
@@ -1707,7 +1713,6 @@ C#include "ibtfun.h"
       ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
       
 C     JHS050707 TMP Initialization (NEEDED?)
-      WRITE(lupri, '(a)') 'Initializing variables.......'
 
       NONT=0
       JCO=0
@@ -1799,7 +1804,6 @@ C     POSITION the input file.
      &             NBLOCK,ISGEN(IBLOCK(1)),
      &             KAOVEC,KPRIM,mol%charge,
      &             1,DSM,BASREF(1,basindex,1))
-            WRITE(lupri,*) 'FINISHED CALLING BASLIB.'
             NBLCK(basindex,1) = NBLOCK
           CASE ('WELLTEMP','EVENTEMP','GEOM')
             IBSFLAG=4
@@ -1861,9 +1865,6 @@ C     PRINT BASISSET
           END IF
           
           
-          WRITE(lupri,*) 'LARGE COMPONENT READ'
-          WRITE(lupri,*) 'READING SMALL COMPONENT'
-
           IF (ASSOCIATED(baspointer%next)) THEN
             IF (baspointer%next%name==baspointer%name) 
      &            baspointer=>baspointer%next
@@ -1970,7 +1971,6 @@ C     JHS060707 TMP Include also the reading of fitsets.
         END IF
       END DO
 
-      WRITE(lupri, '(a)') 'Writing basisset data......'
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
@@ -2023,8 +2023,6 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,basindex,NONT,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-          WRITE(lupri,*) 'FINISHED WRITING TO COMMONBLOCKS'
-
           DEALLOCATE(NONT)
           DEALLOCATE(JCO)
           DEALLOCATE(JCO2)
@@ -2040,9 +2038,6 @@ C
           DEALLOCATE(CPRIM)
           DEALLOCATE(CPRIMU)
 
-
-          WRITE(lupri,*) 'Allocated arrays deleted.'
-      
         END SUBROUTINE WRITE_BASIS
 
         SUBROUTINE PRINT_ATOMS(firstatom, lupri)
@@ -2051,21 +2046,20 @@ C
           INTEGER, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
-          WRITE(lupri,'(a)') 'ATOMS IN MEMORY'
-          WRITE(lupri,'(a)') 'Label   x                        y
-     &                        z                        charge       
-     &            nuc exponent'
+          CALL TITLER('XYZ coordinates read','*',118)
+          WRITE(lupri,'(a,t13,a,t25,a,t37,a,t49,a,t61,a)') 'Label',
+     &         'x','y','z','charge','nuc exp'
           mol=>firstatom
           DO
             IF (associated(mol)) THEN
-              WRITE(lupri,'(a, 4f12.6)') 
+              WRITE(lupri,'(a,t9, 5f12.6)') 
      &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
               mol=>mol%next
             ELSE
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)') 'END DATA'
+        WRITE(lupri,'(a)') ''
 
         END SUBROUTINE PRINT_ATOMS
 
@@ -2075,22 +2069,24 @@ C
           INTEGER, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
-          WRITE(lupri,'(a)') 'BASISSET IN MEMORY'
-          WRITE(lupri,'(A8,A32, A32, A32)')
-     &         'Label','component', 'inputtype','file'
+          CALL TITLER('Basisset read','*',118)
+          WRITE(lupri,'(a,t9,a,t41,a,t73,a)')
+     &         'Label','component', 'input type','file'
           bas=>firstbas
           DO
             IF (associated(bas)) THEN
-              WRITE(lupri,'(a8, a, a, a)') 
+              WRITE(lupri,'(a,t9,a,a,a)') 
      &          TRIM(bas%name),bas%comp,bas%type,bas%file
-              WRITE(lupri,*) 'Coefficients', 
-     &          bas%jco, bas%fam
+              IF(associated(bas%jco).OR.associated(bas%fam))
+     &           WRITE(lupri,*) 'Exponents:', bas%jco, bas%fam
               bas=>bas%next
+
+
             ELSE
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)') 'END DATA'
+        WRITE(lupri,'(a)') ''
 
         END SUBROUTINE PRINT_BASIS
 
@@ -2151,16 +2147,16 @@ C     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
 
 
         SUBROUTINE READ_XYZ(molfile,inpfile, lupri)
+#include "infpar.h"        
 C     THE MAIN SUBROUTINE THAT READS AN XYZ FILE
 
           INTEGER, INTENT(IN) :: molfile,inpfile,lupri
 
           CALL READ_ATOMS(molfile,GET_LENGTH(molfile),firstatom,lupri)
-          WRITE(lupri,*) 'ATOMS READ'
           CALL READ_BASIS(inpfile, GET_LENGTH(inpfile),lupri)
 
-          CALL PRINT_ATOMS(firstatom,lupri)
-          CALL PRINT_BASIS(firstbas,lupri)
+          IF(.NOT.(PARHER)) CALL PRINT_ATOMS(firstatom,lupri)
+          IF(.NOT.(PARHER)) CALL PRINT_BASIS(firstbas,lupri)
             
 
 
@@ -2308,6 +2304,9 @@ C     JHS050707 .MOL files are treated in the old way
 C               .XYZ files are treated using the Module READFILE. In the long
 C                 run this module should also be able to read .MOL files
 C               These are the only two extensions at the moment.
+
+      IF(PARHER) WRITE(LUPRI,*) 'File type found: ', TRIM(moltype)
+
       SELECT CASE(TRIM(moltype))
       CASE ('MOL')
 
@@ -2325,7 +2324,6 @@ C                 .INP file, which has to be opened and read.
           CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
         END IF
 
-        WRITE(LUPRI,*) 'Start reading the xyz file.'
 
 C     JHS050707 Read the actual files.
         CALL READ_XYZ(LUINFO, inpfile, LUPRI)
@@ -2337,7 +2335,6 @@ C     JHS050707 Write the basisset data to the commonblocks
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C     JHS050707 Free the reserved memory.
         CALL CLEAR_XYZ(LUPRI)
-        WRITE(LUPRI,*) 'DONE XYZ'
         CLOSE(inpfile)
 
       CASE DEFAULT
