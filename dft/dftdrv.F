@@ -269,7 +269,6 @@ C    &              KFREE,LFREE)
 #endif
       ENDIF
 
-
 #if defined (MOD_DNF)
       IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
 #else
@@ -704,6 +703,13 @@ C
 C       AOs
 C       ===
 C
+#if defined (MOD_CDFT)
+!     GAO1 are needed for VRG
+      IF(LBIT(LBIT_CDFT,2)) THEN
+        IF(NDER .LT. 1) NDER = 1
+      ENDIF
+#endif
+C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
      &              BUF,WORK,LWORK,NDIMENSION,NDER,DOLND,IPRINT)
@@ -727,6 +733,12 @@ C
 C       Gradient of density
 C       ===================
 C
+#if defined (MOD_CDFT)
+!     gradient is needed for VRG
+      IF(LBIT(LBIT_CDFT,2)) THEN
+        DOGRHO = .TRUE.
+      ENDIF
+#endif
         IF (DOGRHO) THEN
 #if defined (MOD_DNF)
           IF (DF_FITVXC) THEN  ! 
@@ -876,10 +888,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
           ELCTRB = ELCTRB + WGHT*B0
         ENDIF
 #endif
-!       sorry Andre for this non-elegant solution but
-!       i have difficulties to filter out the ifdefs
-!       during debugging ...
-!                                                  radovan
 
 
 !       linear response
@@ -897,11 +905,11 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                   ISYMOP,IHRMOP,GAO,GAO1,
      &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
           ENDIF
-!         current density contribution
+!         VRG contribution
           IF(LBIT(LBIT_CDFT,2)) THEN
-            CALL CDFT_LR(DTRMAT,EXCMAT,NXCMAT,
-     &                   ISYMOP,IHRMOP,GAO,GAO1,
-     &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+            CALL VRG_LR(DTRMAT,EXCMAT,NXCMAT,
+     &                  ISYMOP,IHRMOP,GAO,GAO1,
+     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
           ENDIF
 #endif
         ENDIF

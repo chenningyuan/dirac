@@ -69,7 +69,7 @@ C
       DATA TABLE /'.XXXXXX','.FROMVX','.RYOGRI','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
-     &            '.SAOP  ','.SAOP! ','.SDFT  ','.CDFT  ',
+     &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
      &            '.COLLIN','.XXXXXX','.ZIPGRI','.XXXXXX'/
       DATA SET/.FALSE./
 C

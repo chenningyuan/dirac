@@ -236,20 +236,20 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* CDFT_LR */
-      SUBROUTINE CDFT_LR(DTRMAT,
-     &                   EXCMAT,
-     &                   NXCMAT,
-     &                   ISYMOP,
-     &                   IHRMOP,
-     &                   GAO,
-     &                   GAO1,
-     &                   DENSITY,
-     &                   DENSITY_GRADIENT_NORM,
-     &                   DENSITY_GRADIENT,
-     &                   WEIGHT,
-     &                   IS_GGA,
-     &                   BUF)
+C     /* VRG_LR */
+      SUBROUTINE VRG_LR(DTRMAT,
+     &                  EXCMAT,
+     &                  NXCMAT,
+     &                  ISYMOP,
+     &                  IHRMOP,
+     &                  GAO,
+     &                  GAO1,
+     &                  DENSITY,
+     &                  DENSITY_GRADIENT_NORM,
+     &                  DENSITY_GRADIENT,
+     &                  WEIGHT,
+     &                  IS_GGA,
+     &                  BUF)
 C=======================================================================
 C                                                           radovan bast
 C                                              last revision: march 2007
