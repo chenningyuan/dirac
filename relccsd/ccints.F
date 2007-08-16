@@ -291,7 +291,7 @@ C
       CALL WAIO_SAVE(ITAPT+3)
       CALL WAIO_SAVE(ITAPT+4)
       IMSTAT(1) = 3
-      CALL CCDUMP
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
       call memchk ('after first sort',cc,1)
       WRITE(IW,*)
       WRITE(IW,*) 'Sorting of first 4 classes done.'
@@ -558,7 +558,7 @@ C
       CALL WAIO_SAVE(ITAPT+5)
       CALL WAIO_SAVE(ITAPT+6)
       IMSTAT(2) = 3
-      CALL CCDUMP
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
       call memchk ('after second sort',cc,1)
 C
   600 WRITE (IW,1006)
@@ -571,7 +571,7 @@ C     This is a restart point : save the files and update status.
 C
       CALL WAIO_SAVE(ITAPT+0)
       IMSTAT(3) = 3
-      CALL CCDUMP
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
       ESCF = E0 + E1 
       WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
