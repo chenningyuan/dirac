@@ -1399,6 +1399,17 @@ C
       JVOVO(1) = 0
       JVVVO(1) = 0
       J2VOVO(1) = 0
+C
+C ** additional RELADC arrays
+C
+      J2OOOO(1) = 0
+      J2VOOO(1) = 0
+      J2VVOO(1) = 0
+      J2VOVV(1) = 0
+      J2VVVO(1) = 0
+C
+C filling
+C
       DO IREP = 1, NREP
          JVOXX(IREP+1) = JVOXX(IREP) + MVO(IREP)
          JOOOO(IREP+1) = JOOOO(IREP) + MOO(IREP)*MOO(IREP)
@@ -1408,6 +1419,12 @@ C
          JVVVO(IREP+1) = JVVVO(IREP) + MVV(IREP)*MVO(IREP)
          JREP = MULTB(IREP+NREP,1+NREP,2)
          J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
+
+         J2OOOO(IREP+1) = J2OOOO(IREP) + MOO(IREP)*MOO(JREP)
+         J2VOOO(IREP+1) = J2VOOO(IREP) + MVO(IREP)*MOO(JREP)
+         J2VVOO(IREP+1) = J2VVOO(IREP) + MVV(IREP)*MOO(JREP)
+         J2VOVV(IREP+1) = J2VOVV(IREP) + MVO(IREP)*MVV(JREP)
+         J2VVVO(IREP+1) = J2VVVO(IREP) + MVV(IREP)*MVO(JREP)
       ENDDO
       NDIMX = JVOXX(NREP+1)
 C
@@ -1437,6 +1454,10 @@ C
       LOVOOT(1) = 0
       LVOOOT(1) = 0
       LOVVOT(1) = 0
+C ** additional RELADC arrays
+      LOOVVT(1) = 0
+      LVOVVT(1) = 0
+
       DO IREP = 1, NREP
          LOOVO  (IREP+1) = LOOVO  (IREP) + NO(IREP)*NOVO (IREP)
          LVOVO  (IREP+1) = LVOVO  (IREP) + NV(IREP)*NOVO (IREP)
@@ -1445,6 +1466,9 @@ C
          LOVOOT (IREP+1) = LOVOOT (IREP) + NO(IREP)*NVOOT(IREP)
          LVOOOT (IREP+1) = LVOOOT (IREP) + NV(IREP)*NOOOT(IREP)
          LOVVOT (IREP+1) = LOVVOT (IREP) + NO(IREP)*NVVOT(IREP)
+
+         LOOVVT (IREP+1) = LOOVVT (IREP) + NO(IREP)*NOVVT(IREP)
+         LVOVVT (IREP+1) = LVOVVT (IREP) + NV(IREP)*NOVVT(IREP)
       ENDDO
 C
 C     3-index arrays are used in t3corr : make index arrays
@@ -1798,6 +1822,7 @@ C
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
 C
+
       CALL MEMOPT('REAL',VT ,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',VTA,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
       V4  = VT
@@ -1816,8 +1841,11 @@ C
       SRTALL = .TRUE.
 C
 C  MP2 calculations need less integrals
+C  MP: DHF-ADC also needs all integral classes !
+C  MP: The eqns variable hereby turns on full sorting in this case.
 C
       IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
       CALL RDINTS(IPRNT,NSP,CC(INDEX),CC(KR),CC(INDK),CC(INDL),
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
