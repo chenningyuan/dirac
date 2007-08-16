@@ -14,11 +14,12 @@
 !  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
+!  DOADC - compute ionization spectrum via Green's functions
 
       LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR,                         &
-     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI
+     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC
 
       COMMON /DCLPSI/ DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM,  &
      &                DOCIM, DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, L1ORBM,  &
-     &                L2ORBM, PHCOEF, DOCOSCI
+     &                L2ORBM, PHCOEF, DOCOSCI, DOADC
