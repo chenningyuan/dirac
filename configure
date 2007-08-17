@@ -1848,7 +1848,7 @@ if [ "$mesp" = "mpi" ]; then
 MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
-INCLUDE_DIR     = $mpi_inc
+INCLUDE_DIR     = $mpi_inc -Imodules
 C_INCLUDE_DIR   = $c_mpi_inc
 #
 EOF
