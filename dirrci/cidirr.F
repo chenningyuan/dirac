@@ -958,6 +958,11 @@ C
          ENDRUN = .TRUE.
       ENDIF
 C
+      IF (NVEC+NROOTS.GE.N2) THEN
+         WRITE (6,1010) 'NVEC too large, increase N2'
+         ENDRUN = .TRUE.
+      ENDIF
+C
       IF (ENDRUN) THEN
          DO IROOT = 1, NROOTS
 	  IF (DCORR(IROOT)) THEN
@@ -3303,7 +3308,7 @@ C     DIAGONAL ELEMENTS.
 C     ---------------------------------------------------------------
   300 CONTINUE
       WRITE (6,1020)
-      IF (ISTART.EQ.2) THEN
+      IF (ISTART.NE.3) THEN
          DO 320 IROOT = 1, NROOTS
             IVEC = IROOT
             INDMIN(IROOT) = IDMIN(NDET,DGEL,1)
@@ -3324,6 +3329,7 @@ C
             CALL PUTVEC (IVEC,VECTR(1,IVEC),VECTI(1,IVEC))
   340    CONTINUE
          WRITE(MRCFINV,REC=2) NROOTS,(INDMIN(J),J=1,NROOTS)
+         ISTART=2
       ELSE
          DO 350 IROOT = 1, NROOTS
             IVEC = IROOT
