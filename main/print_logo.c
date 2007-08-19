@@ -59,7 +59,8 @@
    printf("%s",strlogo);
    printf("%s",strsubtitle);
 
-   sysinf(parcal);
+   /* MI: add declaration !!! */
+   /* sysinf(parcal); */
 
    fflush(stdout);
 }

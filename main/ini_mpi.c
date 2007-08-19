@@ -77,6 +77,7 @@
    int par,ierr;
    char *dirpar;
 #endif /* INT_STAR8*/
+
    /*
     * Check if this is a parallel calculation or not;
     * check for DIRPAR in environment
@@ -124,10 +125,20 @@
        * Get number of nodes and the number of this node
        */
 
-      if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
+ /* MI: I found this function definition; so I adapted
+ include "mpi.h"
+int MPI_Comm_rank ( MPI_Comm comm, int *rank ) */
+
+      /*if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )  */
+      if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,(int *) mytid)) ) 
          printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
 
-      if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
+    /* MI: this proscription
+     #include "mpi.h"
+int MPI_Comm_size ( MPI_Comm comm, int *size )
+               */
+      /* if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) ) */
+      if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,(int *) numnod)) )
          printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
       /*  printf(" mytid and numnod %i %i\n",*mytid,*numnod); */

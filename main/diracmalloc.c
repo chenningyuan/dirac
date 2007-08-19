@@ -45,6 +45,10 @@
  */
 
 #include <stdlib.h>
+/* mi: needed for  printf ! */
+#include <stdio.h>
+/* mi: needed for  size_t size ! */
+#include <stddef.h>
 
 
 #include "diracmalloc.head"
@@ -69,11 +73,12 @@ void *pointer;
    pointer = malloc(size);
    if ( pointer == NULL )
    {
-      printf("DIRAC could not allocate memory (%li bytes).\n",size);
+      printf("DIRAC could not allocate memory (%li bytes).\n",size); 
       CALL_QUIT("Dirac could not allocate memory",31); 
    }
 #elif defined (SYS_CONVEX)
-   pointer = nalloc(size);
+  /* mi ???  pointer = nalloc(size); */
+   pointer = malloc(size);
    if ( pointer == NULL )
    {
       printf("DIRAC could not allocate memory (%li bytes).\n",size);

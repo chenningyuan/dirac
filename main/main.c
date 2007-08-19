@@ -79,16 +79,20 @@ extern int main( int argc, char** argv )
 
 {
 
+/* void distribute_env(const char* name, int mytid) */
+
 #if defined (INT_STAR8)	  
    long mytid, size, parcal, mparid, numnod;
    errhandler_type errhandler;
    long *mempointer;
    get_time_struct *gt_first, *gt_last;
+   void distribute_env(const char*, long ); /* MI: taken from gp/gpc.c */
 #else
    int mytid, size, parcal, mparid, numnod;
    errhandler_type errhandler;
    int *mempointer;
    get_time_struct *gt_first, *gt_last;
+   void distribute_env(const char*, int ); /* MI: taken from gp/gpc.c */
 #endif
 
    /*

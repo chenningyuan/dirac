@@ -44,6 +44,8 @@
 
 #include <stdio.h>
 #include <string.h>
+
+
 #if defined (VAR_MPI)
 #include <mpi.h>
 #endif
@@ -54,9 +56,16 @@
 
 #include "mpi_errtrap.head"
 
+
 {
 
 #if defined (VAR_MPI)
+
+
+/*MI: satisfy pgcc ! */
+#include "diracmalloc.head"
+ ;
+
 
 #if defined (INT_STAR8)
    long len;
@@ -72,13 +81,21 @@
    flshfo_(stdout);
 #endif
 
+/* MI: where to hell is "*err" defined ?  */   
+
    fprintf(stdout,"******************************************\n");
    fprintf(stdout,"MPI ERROR: error no. %d\n",*err);
    fprintf(stdout,"Comm                 %d\n",*comm);
    fprintf(stdout,"The PID              %d\n",getpid());
    len = 100;
    errorstring = (char *) diracmalloc(len);
-   MPI_Error_string(*err,errorstring,&len);
+/* MI: defined as
+#include "mpi.h"
+int MPI_Error_string( int errorcode, char *string, int *resultlen )
+*/
+   /* MPI_Error_string(*err,errorstring,&len); */
+   MPI_Error_string((int) *err,  errorstring,  (int *)len);
+
    fprintf(stdout,"Error string         %s\n",errorstring);
    fprintf(stdout,"******************************************\n");
 
@@ -91,4 +108,9 @@
    free(errorstring);
 
 #endif /* VAR_MPI */
+
 }
+
+
+
+
