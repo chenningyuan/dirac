@@ -45,27 +45,26 @@
 #include <stdio.h>
 #include <string.h>
 
-
+/* MI: this is already in "mpi_errtrap.head":
+---------------------------------------------
 #if defined (VAR_MPI)
 #include <mpi.h>
 #endif
-
-#include "mpi_errtrap.head"
- ;
-
+*/
 
 #include "mpi_errtrap.head"
 
+/* header of routine only once
+#include "mpi_errtrap.head"
+*/
 
 {
 
 #if defined (VAR_MPI)
 
-
-/*MI: satisfy pgcc ! */
+/*MI: to satisfy pgcc  */
 #include "diracmalloc.head"
- ;
-
+ ; 
 
 #if defined (INT_STAR8)
    long len;
@@ -76,12 +75,12 @@
 #endif
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-    FLSHFO(stdout);
+   FLSHFO(stdout);
 #else
    flshfo_(stdout);
 #endif
 
-/* MI: where to hell is "*err" defined ?  */   
+/* MI: "*err" declared in mpi_errtrap header  */   
 
    fprintf(stdout,"******************************************\n");
    fprintf(stdout,"MPI ERROR: error no. %d\n",*err);
@@ -108,9 +107,5 @@ int MPI_Error_string( int errorcode, char *string, int *resultlen )
    free(errorstring);
 
 #endif /* VAR_MPI */
-
 }
-
-
-
 
