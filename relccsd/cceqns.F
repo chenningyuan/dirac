@@ -372,7 +372,9 @@ C ... we collect the H array
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
         CALL MPI_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-        IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+        IF(IERR.GT.0) THEN
+           CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
+        ENDIF
         CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
         CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
 
