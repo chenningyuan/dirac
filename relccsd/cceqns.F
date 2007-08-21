@@ -370,6 +370,8 @@ C ... we collect the H array
 
         CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
+CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
+        IERR = 0
         CALL MPI_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
         IF(IERR.GT.0) THEN
