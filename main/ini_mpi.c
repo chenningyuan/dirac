@@ -78,7 +78,7 @@
    char *dirpar;
 #endif /* INT_STAR8*/
 
-   int mytid_temp; /* MI,aug2007 - for older C-compilers */
+   int numnod_temp, mytid_temp; /* MI,aug2007 - for older C-compilers */
 
    /*
     * Check if this is a parallel calculation or not;
@@ -185,6 +185,19 @@ int MPI_Comm_size ( MPI_Comm comm, int *size )
  /*  printf("ini_mpi.c: *mytid (long,int)=%ld %i \n",*mytid,*mytid); */
    mytid_temp = *mytid; *mytid=(int) mytid_temp;
  /*  printf("ini_mpi.c: reconverted *mytid (long,int)=%ld %i \n",*mytid,*mytid); */
+
+/*
+   printf("ini_mpi.c: *parcal (long,int)=%ld %i \n",*parcal,*parcal); 
+   printf("ini_mpi.c: *mparid (long,int)=%ld %i \n",*mparid,*mparid); 
+*/
+
+/* MI,aug07 - this long->int reconversion stuff is now due to icc 8.1 (2005)
+   64-bit hpc-frontal.u-strasbg.fr  */
+
+ /*  printf("ini_mpi.c: *numnod (long,int)=%ld %i \n",*numnod,*numnod); */
+    numnod_temp = *numnod; *numnod=(int) numnod_temp;
+ /*  printf("ini_mpi.c: reconverted *numnod (long,int)=%ld %i \n",*numnod,*numnod); */
+
 #endif
 
 }
