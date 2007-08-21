@@ -813,6 +813,25 @@ C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
 C
+C     Let us synchronize all processes! 
+C
+C SK-- 21-08-07: jobs on my x86-64 platform finish now properly when
+C introducing the following synchronization. 
+C
+#if defined (VAR_MPI)
+      TIME_SYNC     = 0.0D0
+      TIME_SYNC_TOT = 0.0D0
+      DO 8888 I = 1, 2
+        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        TIME_SYNC = MPI_Wtime()
+        WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
+        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        TIME_SYNC_TOT = MPI_Wtime() - TIME_SYNC
+ 8888  CONTINUE
+C
+       WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
+#endif
+C
       RETURN
 C
 1000  FORMAT (/" Total memory available :",T50,I10," MB")
