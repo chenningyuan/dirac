@@ -304,8 +304,6 @@ C=======================================================================
       CALL MEMGET('REAL',KBUF      ,NTBAS(0)*4,
      &            WORK,KFREE,LFREE)
 
-      CALL SETUP_ORBITAL_STRING(WORK(KSTRING))
-
 !     coefficients
 
       CALL DZERO(WORK(KCMO),N2BBASXQ)
@@ -317,6 +315,10 @@ C=======================================================================
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
       CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
+
+!     orbital string
+
+      CALL SETUP_ORBITAL_STRING(WORK(KSTRING))
 
 !     density matrices
 
