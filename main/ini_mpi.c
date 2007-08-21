@@ -78,6 +78,8 @@
    char *dirpar;
 #endif /* INT_STAR8*/
 
+   int mytid_temp; /* MI,aug2007 - for older C-compilers */
+
    /*
     * Check if this is a parallel calculation or not;
     * check for DIRPAR in environment
@@ -90,6 +92,7 @@
       par = atoi(dirpar);
    else
       par = 1;
+
 
    if ( ! par )
    {
@@ -141,7 +144,7 @@ int MPI_Comm_size ( MPI_Comm comm, int *size )
       if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,(int *) numnod)) )
          printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
-      /*  printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
+       /* printf(" mytid and numnod %i %i\n",*mytid,*numnod);  */
 
       if ( *mytid == 0 ) sleep(1);
       /* if master then sleep 1 second
@@ -173,4 +176,15 @@ int MPI_Comm_size ( MPI_Comm comm, int *size )
    *mparid = 0;
    *numnod = 1;
 #endif  /* VAR_MPI */
+
+#if defined (INT_STAR8)
+
+/* MI,aug07 - introduced this stuff for some older C-compilers, like pgcc 5.4.2
+   where on 64bit machines *mytid gives different values for long/int formats */
+
+ /*  printf("ini_mpi.c: *mytid (long,int)=%ld %i \n",*mytid,*mytid); */
+   mytid_temp = *mytid; *mytid=(int) mytid_temp;
+ /*  printf("ini_mpi.c: reconverted *mytid (long,int)=%ld %i \n",*mytid,*mytid); */
+#endif
+
 }
