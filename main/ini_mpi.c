@@ -177,6 +177,8 @@ int MPI_Comm_size ( MPI_Comm comm, int *size )
    *numnod = 1;
 #endif  /* VAR_MPI */
 
+#if defined (VAR_MPI)
+
 #if defined (INT_STAR8)
 
 /* MI,aug07 - introduced this stuff for some older C-compilers, like pgcc 5.4.2
@@ -198,6 +200,8 @@ int MPI_Comm_size ( MPI_Comm comm, int *size )
     numnod_temp = *numnod; *numnod=(int) numnod_temp;
  /*  printf("ini_mpi.c: reconverted *numnod (long,int)=%ld %i \n",*numnod,*numnod); */
 
-#endif
+#endif /* INT_STAR8 */
+
+#endif /* VAR_MPI */
 
 }
