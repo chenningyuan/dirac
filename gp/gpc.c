@@ -75,19 +75,27 @@ int csystem_(const char *cmd, int cmdlen)
 }
 
 #if defined (SYS_CRAY) || defined (SYS_T3D) 
+
 #include <fortran.h>
 #define frac2i FRAC2I
 #define creadreorder CREADREORDER
+
 #elif defined (SYS_HPUX)
+
 /* nothing */
+
 #elif defined (SYS_AIX)
+
 #define frac2i frac2i
 #define creadreorder creadreorder
+
 #else
+
 #define frac2i frac2i_
 #define creadreorder creadreorder_
 #define compoff compoff_
-#endif /*CRAY*/
+
+#endif /*SYS_CRAY etc*/
 
 void c_frac2i();
 void frac2i();
