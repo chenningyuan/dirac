@@ -5,6 +5,7 @@ C
 C      ****  COMPLEX GROUP VERSION  ****
 C
 C      ****  BUILT-IN LANCZOS DIAGONALIZERS  ****
+C      ****     FOR REAL/COMPLEX  CASE       ****
 C
 C      ****  AUTHOR: M.Pernpointner
 C
@@ -1688,10 +1689,13 @@ C
 C
 C  enter real resp. complex Band Lanczos iterations
 C  for symmetric resp. Hermitian matrices
+C  In the first run: no eigenvectors because no eigenvalues are
+C  available
 C
+          LFLAG = .FALSE.
+
           IF(CARITH.EQV..TRUE.) THEN
 
-            LFLAG = .FALSE.
             CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
      &                    CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
@@ -1699,11 +1703,16 @@ C
      &                    INTBUF,ITAPADC+4, ITAPADC+5, ITAPADC+6)
 
             CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
-            write(*,*) ' ----------- memchk lanc done --------'
+
           ELSE
 
-            CALL RLANCZOS(LADC)
-            goto 899
+            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                    CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
+     &                    CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+     &                    INTBUF,ITAPADC+4, ITAPADC+5, ITAPADC+6)
+
+            CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
 
           ENDIF
 
@@ -1729,12 +1738,12 @@ C !!! ATT change happened
           IF(CARITH) THEN 
              CALL ZBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
      &                  CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
+             CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
           ELSE
-c            CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
-c    &                  CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
+             CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+     &                  CC(WRK_ZEV),CC(WRK_RWORK1))
+             CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
           ENDIF
-
-          CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
 c
 c remove spurious/multiple eigenvalues and 
 c analyze eigenvectors of band matrix
@@ -1762,7 +1771,11 @@ c
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
      &           cc(wrk_ipi),itapadc+6,lanthr)
           ELSE
-c           CALL RBLANA()
+            CALL RBLANA(KREP,niter,np,neigenv,no(krep),
+     &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
+     &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
+     &           cc(wrk_ipi),itapadc+6,lanthr)
           ENDIF
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
@@ -1793,7 +1806,12 @@ c
      &                      CC(WRK_EVL),LFLAG, INTBUF,
      &                      ITAPADC+4, ITAPADC+5, ITAPADC+6)
             ELSE
-              CALL RLANCZOS(IDUMMY)
+              CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                      CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                      CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV), 
+     &                      CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ), 
+     &                      CC(WRK_EVL),LFLAG, INTBUF,
+     &                      ITAPADC+4, ITAPADC+5, ITAPADC+6)
             ENDIF
           ENDIF
 c
@@ -7610,86 +7628,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RLANCZOS(IDUMMY)
-      INCLUDE "../relccsd/files.inc"
-
-      write(iw,'(A)') 'At the moment no real band Lanczos available !'
-      write(iw,'(A)') 'Use the external routines that are available.'
-      write(iw,'(A)') 'Continuing with the next symmetry...'
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CMATBLK(LADC,PO,PN,DIAG,BUF,IOI,IOJ,INTBUF,
-     &                   IO_DIA,IO_OFF)
-C
-      IMPLICIT INTEGER (A-Z)
-
-      INTEGER LADC,INTBUF,IO_DIA,IO_OFF
-      COMPLEX*16 PO(LADC), PN(LADC), DIAG(LADC)
-      COMPLEX*16 BUF(INTBUF)
-      INTEGER IOI(INTBUF),IOJ(INTBUF)
-      
-C
-C---------------Description--------------------------------------------
-C
-C  Perform the complex multiplication of the ADC matrix 
-C  with the Krylov vectors. The ADC matrix is Hermitian !
-C  This has to be taken into account. The diagonal elements
-C  are necessarily real. 
-C
-C---------------Common Blocks--------------------------------------
-C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      INTEGER NBUFS,IREC,NACT,JDUMMY,IROW,ICOL
-      COMPLEX*16 A
-      complex*16 zdotc
-C
-C---------------Executable code--------------------------------------
-
-C
-C  the diagonal elements
-C
-      REWIND(IO_DIA)
-      READ(IO_DIA,ERR=88,END=99) (DIAG(IXX),IXX=1,LADC),NBUFS
-
-      DO J = 1, LADC
-        PN(J) = PO(J) * DIAG(J)
-      ENDDO
-
-C  for the off-diagonal elements we note that only the lower triangular
-C  part of the ADC-matrix is stored. the missing contribution is from
-C  the complex conjugate upper triangular part !
-
-c  .. read off-diagonal elements
-
-      REWIND(IO_OFF)
-      DO IREC = 1,NBUFS
-        READ(IO_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF),
-     &                       (IOI(IXX),IXX=1,INTBUF),
-     &                       (IOJ(IXX),IXX=1,INTBUF),
-     &                        NACT,JDUMMY
-        DO K = 1, NACT
-          IROW = IOI(K)
-          ICOL = IOJ(K)
-          A    = BUF(K)
-            PN(IROW) = PN(IROW) + PO(ICOL) * A
-            PN(ICOL) = PN(ICOL) + PO(IROW) * DCONJG(A)
-        ENDDO
-      ENDDO
-
-      RETURN
-
- 88   CALL QUIT('Diagonal read error in CMATBLK')
- 99   CALL QUIT('Unexpected end in CMATBLK')
- 199  CALL QUIT('Off-diagonal read error in CMATBLK')
-
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine Locate(keyword,ilength,ifound)
       Character*10 keyword,line*80
       integer ilength,ifound
