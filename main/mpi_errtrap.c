@@ -54,9 +54,6 @@
 
 #include "mpi_errtrap.head"
 
-/* header of routine only once
-#include "mpi_errtrap.head"
-*/
 
 {
 
@@ -88,6 +85,7 @@
    fprintf(stdout,"The PID              %d\n",getpid());
    len = 100;
    errorstring = (char *) diracmalloc(len);
+
 /* MI: defined as
 #include "mpi.h"
 int MPI_Error_string( int errorcode, char *string, int *resultlen )

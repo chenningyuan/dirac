@@ -46,21 +46,24 @@
 
 #include "print_logo.head"
  ;
+void sysinf(int );
 
 
 #include "print_logo.head"
-
 {
 #include "title.h"
 #include "logo.h"
 #include "subtitle.h"
 
+   int parcal_int;
+
    printf("%s",strtitle);
    printf("%s",strlogo);
    printf("%s",strsubtitle);
 
-   /* MI: add declaration !!! */
-   /* sysinf(parcal); */
+/* hjaaj: make sure sysinf is called with int type, also when "long parcal" */
+   parcal_int = parcal;
+   sysinf(parcal_int);
 
    fflush(stdout);
 }
