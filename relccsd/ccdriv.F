@@ -374,7 +374,7 @@ C
       EPMIN=-1.D0
       EPMAX=-1000.D0
       DO I = 1, 16
-         NACTHI(I) = 0
+         NACTHI(I) = 0 ! it's 0 for (0,2) sector
          NACTPI(I) = 0
       ENDDO
       IHSCHEME=2
@@ -398,9 +398,10 @@ C
 C
 C     Some processing of the input is necessary
 C
-      ER_IH(1,1) = EHMIN
-      ER_IH(2,1) = EHMAX
-      ER_IH(1,2) = EPMIN
+      ER_IH(1,1) = EHMIN ! for (1,0) or (2,0) sectors plus (1,1) sector
+      ER_IH(2,1) = EHMAX ! the same
+CMI ....
+      ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
 C
 C     XIH energy shift sign definition.
@@ -411,7 +412,7 @@ C     Shifts for particles should be negative
       SHIFT_IH(1,1) = -DABS(SHIFTP11)
       SHIFT_IH(2,1) = -DABS(SHIFTP12)
       SHIFT_IH(2,5) = -DABS(SHIFTP2)
-C     Shifts for particles should be positive
+C     Shifts for holes be positive
       SHIFT_IH(1,2) =  DABS(SHIFTH11)
       SHIFT_IH(2,2) =  DABS(SHIFTH12)
       SHIFT_IH(2,6) =  DABS(SHIFTH2)
@@ -915,7 +916,7 @@ C
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
-      INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
+      INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP),NPIORB_ACT(MXREP)
       LOGICAL ASSREP
 C
 C---------------Executable code--------------------------------------
@@ -1193,12 +1194,14 @@ C
       ENDIF
 C
       IF (REPORT.AND.(.NOT.FOCKSP)) THEN
+!        NSYMRP - DIRAC initial symmetry (from RECC input)
             WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
             WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
             WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
          IF (NREP.GT.8) THEN
 C           Write only active irreps (NO or NV > 0)
             NACT_REP = 0
+!           NREP - number of irreps in abelian subgroup
             DO I = 1, NREP
                IF (NO(I)+NV(I).GT.0) THEN
                   NACT_REP = NACT_REP + 1
@@ -1240,11 +1243,14 @@ C
      &                   (NINACT(I)+NACT(I)-NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'inactive virtual ',(NELEC(I)+NVIRT(I)-
      &                    NINACT(I)-NACT(I),I=1,NSYMRP)
+
+!        ... write out reprezentations in Abelian subgroup ...
          IF (NREP.GT.8) THEN
 C           Write only active irreps (NO or NV > 0)
             NACT_REP = 0
             DO I = 1, NREP
                IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                !... move nonzero values to new arrays ...
                   NACT_REP = NACT_REP + 1
                   NIO_ACT(NACT_REP) = NIO(I)
                   NAO_ACT(NACT_REP) = NAO(I)
@@ -1695,7 +1701,21 @@ C
       ENDDO
 C
       IF (FOCKSP) THEN
+
+         IF (REPORT.AND.DOIH) THEN
+CMI      IF (REPORT) THEN
+!         WRITE(IW,'(2X,A)')    
+!    &    'Orbitals in Pi space mentioned with (1), otherwise (0)'    
+!          write(IW,*) 'EHMIN,EPMIN:',ER_IH(1,1),ER_IH(1,2)
+!          write(IW,*) 'EHMAX,EPMAX:',ER_IH(2,1),ER_IH(2,2)
+          ! ... initialization
+          DO IREP = 1, NREP
+            NPIORB(IREP) = 0
+          ENDDO 
+         ENDIF
+
          DO ISP = 1, NSP
+!           ... extract the symmetry of the Abelian subgroup, IREP
             IREP = IREPSP(ISP,2)
             II = IREPSP(ISP,4)
             IF (II.GT.0) THEN
@@ -1703,16 +1723,66 @@ C
             ELSE
                I = IO(NREP+1) + IV(IREP) - II
             ENDIF
+!           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
 C           Always fill this array, used in intermediate Hamiltonian formalism
             IF (I.GT.MAXSPIM)
      &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
+!        ... 0/1 - intermediate Ham. space
             IPIORB(I)=0
             DO J = 1, 2
                IF(EPS(I).LE.ER_IH(2,J).AND.
-     &            EPS(I).GE.ER_IH(1,J)) IPIORB(I)=1
+     &            EPS(I).GE.ER_IH(1,J))  THEN
+                  IPIORB(I)=1
+                  NPIORB(IREP) = NPIORB(IREP) + 1
+               ENDIF
             ENDDO
+            !IF (REPORT.AND.DOIH) THEN
+CMI        IF (REPORT) THEN
+CMI              write(IW,'(A,I3,A,I3,A,I2,A,I3,AF15.7,A,I3,A)')
+CMI  &        'ISP',ISP,' I',I,' IREP:',IREP,' II:',II,
+CMI  &        '...',EPS(I), '  (',IPIORB(I),')'
+CMI         ENDIF
          ENDDO
+
+CMI ..... write only active irreps
+            NACT_REP = 0
+            DO I = 1, NREP
+               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                !... move nonzero values to new arrays ...
+                  NACT_REP = NACT_REP + 1
+                  NPIORB_ACT(NACT_REP) = NPIORB(I) 
+               ENDIF
+            ENDDO
+
+CMI         ... print out if Pi 
+        IF (REPORT.AND.DOIH) THEN
+           !  WRITE(IW,'(/2X,A,I2)') '...configuration with IH'
+
+         IF (NREP.GT.8) THEN
+            NREP1 = 1
+            NREP2 = MIN(NACT_REP,8)
+  12      WRITE (IW,1005) (REPNA_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive occupied',(NIO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active occupied',(NAO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active  Pi virt',
+     &                    (NPIORB_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active virtual ',(NAV_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive virtual ',(NIV_ACT(I),I=NREP1,NREP2)
+            NREP1 = NREP1 + 8
+            NREP2 = MIN(NACT_REP,NREP2+8)
+            IF (NREP1.LE.NACT_REP) GOTO 12
+         ELSE
+            WRITE (IW,1005) (REPNA(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
+            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
+            WRITE (IW,1002) 'Pi of active virt',(NPIORB(I),I=1,NREP)
+            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
+         ENDIF
+
+       ENDIF
+
       ENDIF
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
@@ -1720,6 +1790,9 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
+ 1005 FORMAT (
+     &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
+     &       //T40,8(1X,A4))
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2758,6 +2831,14 @@ C
       FOCKSP = .TRUE.
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
+     
+CMI ... more print out
+      IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
+        WRITE(IW,'1X,A') 'intermediate Hamiltonian version !'
+        WRITE(IW,'(1X,A,F11.7,A,F11.7,A)')
+     &  'Energy range for the Pi space is: <',
+     &   ER_IH(1,2),';',ER_IH(2,2),'>'
+      ENDIF
 C
 C Allocate space for the Fock space CCSD energy calculation
 C

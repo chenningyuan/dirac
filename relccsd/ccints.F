@@ -1235,6 +1235,7 @@ C
 #include "results.inc"
 #include "files.inc"
 #include "ccpar.inc"
+#include "ihm.inc"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1245,6 +1246,7 @@ C
       PARAMETER (SYM_CHECK=1.D-5)
       REAL*8 EPSDIF
       LOGICAL FOCKSP
+      CHARACTER*1 INPI
       CHARACTER*2 ORBTYP
       REAL*8 FF_STRENGTH(2)
       CHARACTER*8 PROP_NAME
@@ -1435,6 +1437,8 @@ C
 C
       CALL FMTOFILE (LTR,FVO,FOO,FVV)
 C
+CMI    write(IW,*) 'EHMIN,EPMIN:',ER_IH(1,1),ER_IH(1,2)
+CMI    write(IW,*) 'EHMAX,EPMAX:',ER_IH(2,1),ER_IH(2,2)
       WRITE (IW,1001)
       II = 1
       I  = 1
@@ -1452,8 +1456,19 @@ C
             ENDIF
             EPSDIF = ABS(EPS(I)-FOO(II))
             IF (ABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FOO(II))
-            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1)
-     &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II)
+
+            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1) THEN
+CMI    ... addition for IH-FSCC
+             IF (FOCKSP.AND.DOIH) THEN
+               INPI=" "
+               IF (IPIORB(I).EQ.1) INPI="*"
+               write(IW,'(2x,A2,I4,I5,2X,A4,4X,2F16.10,1X,A)') 
+     &          ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II),INPI 
+             ELSE
+               WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II)
+             ENDIF
+            ENDIF
+
             IF (.NOT.USEOE) EPS(I) = FOO(II)
             I  = I  + 1
             II = II + (NO(IREP) + 1) * RCW
@@ -1475,8 +1490,18 @@ C
             ENDIF
             EPSDIF = ABS(EPS(I)-FVV(II))
             IF (ABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FVV(II))
-            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2)
-     &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II)
+
+            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2) THEN
+             IF (FOCKSP.AND.DOIH) THEN
+               INPI=" "
+               IF (IPIORB(I).EQ.1) INPI="*"
+               write(IW,'(2x,A2,I4,I5,2X,A4,4X,2F16.10,1X,A)') 
+     &          ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II),INPI 
+             ELSE
+               WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II)
+             ENDIF
+            ENDIF
+
             IF (.NOT.USEOE) EPS(I) = FVV(II)
             I  = I  + 1
             II = II + (NV(IREP) + 1) * RCW
@@ -1484,6 +1509,14 @@ C
          II = II - NV(IREP) * RCW
       ENDDO
 C
+      IF (IPRNT.GE.0.AND.(FOCKSP.AND.DOIH)) THEN
+        WRITE (IW,'(/1X,A)')
+     & 'Spinors in the IH Fock space Pi space are marked with "*"'
+        WRITE(IW,'(1X,A,F11.7,A,F11.7,A)')
+     &  'Energy range for the Pi space is: <',
+     &  ER_IH(1,2),';',ER_IH(2,2),'>'
+      ENDIF
+
       IF (USEOE) THEN
          WRITE (IW,1003)
       ELSE
