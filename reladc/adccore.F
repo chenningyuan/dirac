@@ -443,6 +443,7 @@ C
 C     DHF-ADC(3) Input routine
 C
 C     Reads the user-defined ADC input
+C        and optional input for a specific diagonalizer
 C
 C---------- Calling variables -----------------------------------------
 
@@ -456,9 +457,10 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 AUX
 
-      NAMELIST/CCADC / ADCLEVEL,ADCTITLE,ADCPRINTNM,XREPS,EVLRAN,EVCTHR,
+      NAMELIST/RELADC/ ADCLEVEL,ADCTITLE,ADCPRINTNM,XREPS,EVLRAN,EVCTHR,
      &                 READQKL,DOCONST,VCONV,ADCPRINT,NHOLST,DIAGTYPE,
      &                 INTERFACE
+      NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XTHRESH,XTHRVEC
 c
 c  set some input default values and read ADC input
 c  from file DIRAC.INP
@@ -489,20 +491,25 @@ c
       VCONV = 1.0D-10
       DIAGTYPE = 'LANC'
       REWIND (5)
-      CALL LOCATE('CCADC',5,ITEST)
+      CALL LOCATE('RELADC',5,ITEST)
       IF (ITEST.GT.0) THEN
-         READ (5,CCADC,ERR=19)
+         READ (5,RELADC,ERR=19)
       ELSE
+         WRITE(IW,*)
+         WRITE(IW,*) ' +++   W A R N I N G                 +++'
+         WRITE(IW,*) ' +++ Namelist $RELADC $END not found +++'
+         WRITE(IW,*) ' +++ Resorting to defaults           +++'
+         WRITE(IW,*)
          GOTO 20
       ENDIF
       GOTO 20
-   19 CALL QUIT('Error exit while reading namelist CCADC')
+   19 CALL QUIT('Error exit while reading namelist RELADC')
    20 CONTINUE
 c
 c  check basic values
 c
-      IF( (ADCLEVEL.LT.0).OR.(ADCLEVEL.GT.3))
-     &  CALL QUIT('Illegal ADC level in namelist CCADC')
+      IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
+     &  CALL QUIT('Illegal ADC level in namelist RELADC')
 
       IF(DIAGTYPE.NE.'EXTN') THEN
        IF(DIAGTYPE.NE.'FULL') THEN
@@ -521,7 +528,31 @@ c
         EVLRAN(1) = EVLRAN(2)
         EVLRAN(2) = AUX
       ENDIF
-
+c
+c  set Lanczos defaults and read input from DIRAC.INP
+c
+      DO J=1,8
+        XNITER(J)   = 0
+        XNP(J)      = 0
+        XNEIGENV(J) = 0
+        XTHRESH(J)  = 0.0D0
+        XTHRVEC(J)  = 0.0D0
+      ENDDO
+      REWIND (5)
+      CALL LOCATE('LANINP',5,ITEST)
+      IF (ITEST.GT.0) THEN
+         READ (5,LANINP,ERR=39)
+      ELSE
+         WRITE(IW,*)
+         WRITE(IW,*) ' +++   W A R N I N G                 +++'
+         WRITE(IW,*) ' +++ Namelist $LANINP $END not found +++'
+         WRITE(IW,*) ' +++ Resorting to defaults           +++'
+         WRITE(IW,*)
+         GOTO 40
+      ENDIF
+      GOTO 40
+   39 CALL QUIT('Error exit while reading namelist LANINP')
+   40 CONTINUE
 
       RETURN
       END
@@ -1657,10 +1688,21 @@ c----------------------- FOR THE REAL/COMPLEX CASE ------------------
 c--------------------------------------------------------------------
 c
 c
-c read Lanczos parameters for the real/complex case
+c transfer Lanczos parameters for the main array to the 
+c variables for the current run in symmetry KREP. 
+c No individual input reading !
 c
-          CALL RDLANINP(NITER,NP,NEIGENV,LANTHR,THRVEC)
-          WRITE(IW,*) '+++ L-input param:',NITER,NP,NEIGENV,THRVEC
+C         CALL RDLANINP(NITER,NP,NEIGENV,LANTHR,THRVEC)
+
+          NITER   = XNITER(IRPLOOP)
+          NP      = XNP(IRPLOOP)
+          NEIGENV = XNEIGENV(IRPLOOP)
+          LANTHR  = XTHRESH(IRPLOOP)
+          THRVEC  = XTHRVEC(IRPLOOP)
+          
+          WRITE(IW,*) '+++ L-input param for the current run:'
+          WRITE(IW,*) '+++ NITER,NP,NEIGENV,LANTHR,THRVEC:',
+     &                NITER,NP,NEIGENV,LANTHR,THRVEC
 C
 C  allocate required work space for band Lanczos iterations
 C  real/complex case are accounted for by the RCW variable
@@ -1823,9 +1865,13 @@ c
 c  analyze vectors
 c
           IF(NEIGENV.GT.0) THEN
-            CALL ZVECANALYZE(ITAPADC+6,ITAPADC+7,FILEN2,KREP,LADC,
-     &                       NEIGENV,CC(ICRA),CC(WRK_EVL),
-     &                       CC(WRK_AEV),THRVEC)
+            IF(CARITH) THEN
+              CALL ZVECANALYZE(ITAPADC+6,ITAPADC+7,FILEN2,KREP,LADC,
+     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
+            ELSE
+              CALL RVECANALYZE(ITAPADC+6,ITAPADC+7,FILEN2,KREP,LADC,
+     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
+            ENDIF
           ENDIF
 
 c ----------------- release memory used by the Lanczos routines
@@ -1845,78 +1891,8 @@ c
           write(iw,*)  ' *** ATT ***'
           write(iw,*)  ' *** ATT ***'
           write(iw,*)  ' *** ATT ***'
-          write(iw,*)  ' External Davidson deactivated.'
-C
-C ... we start davidson
-C
-C        generate appropriate file names
-C  FILE6/7 contain the solutions produced by the Davidson algorithm
-C  and restart information. They will be further processed by the
-C  analyzing routine DAVANALYZE
-C  FILE1 contains the spectral lines with nonvanishing hole
-C  contributions. the name of the file is DSPECT.
-C
-
-c          WRITE(FILE1,'(A6,A1,I1,A1)') FILEN1,'.',KREP,CHAR(0)
-c          WRITE(FILE6,'(A6,A1,I1,A1)') FILEN6,'.',KREP,CHAR(0)
-c          WRITE(FILE7,'(A6,A1,I1,A1)') FILEN7,'.',KREP,CHAR(0)
-c          WRITE(IW,'(A,A6,A1,I1)') ' Eigenvalues/vectors written to ',
-c     &              FILEN6,'.',KREP
-c          WRITE(IW,'(A,A6,A1,I1)') ' Davidson restart information in ',
-c     &              FILEN7,'.',KREP
-C
-C open files for solution vectors, restart information and spectrum
-C
-c          OPEN(ITAPADC+6,FILE=FILE6,FORM='UNFORMATTED',STATUS='UNKNOWN')
-c          OPEN(ITAPADC+7,FILE=FILE7,FORM='UNFORMATTED',STATUS='UNKNOWN')
-C
-C  reopen files with packed ADC matrix and diagonal elements
-C
-c          OPEN(ITAPADC+4,FILE=FILE4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-c          OPEN(ITAPADC+5,FILE=FILE5,FORM='UNFORMATTED',STATUS='UNKNOWN')
-C
-C  we call the davidson routines for diagonalization and allocate
-C  a maximum of 10 megawords even if NDIMTV signals more available
-C  memory. This has to do with some dangerous array calculations in the
-C  ERDCTL routine by tarantelli and can lead to a floating point
-C  exception in combination with a 32 bit signed integer representation
-C  even on 64 bit machines. The current davidson routines work for real
-C  matrices only and the RCW parameter is not to be used here !
-C
-c          DAVSPC=50*1024*1024
-c          IF(DAVSPC.GT.IVMAX) DAVSPC = NDIMTV
-c          WRITE(IW,*) ' Allocating memory for Davidson diagonalization'
-c          WRITE(IW,*) ' Available memory (MWORDS):',NDIMTV
-c          WRITE(IW,*) ' Allocated memory (MWORDS):',DAVSPC
-c          CALL MEMOPT('REAL',BUFVVVV,DAVSPC,CC,KFREE,LFREE,ALLOC)
-c          CALL DAVDIAG(CC(BUFVVVV),DAVSPC,ITAPADC+4,ITAPADC+5,
-c     &               ITAPADC+6,ITAPADC+7,LADC,INTBUF,NBUFS)
-c          CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
-C
-C  close all the files in this symmetry
-C
-c          CLOSE(ITAPADC+4)
-c          CLOSE(ITAPADC+5)
-c          CLOSE(ITAPADC+6)
-c          CLOSE(ITAPADC+7)
-C
-C  reopen all files needed for eigenvector analysis
-C
-c          OPEN(ITAPADC+1,FILE=FILE1,FORM='FORMATTED',  STATUS='UNKNOWN')
-c          OPEN(ITAPADC+6,FILE=FILE6,FORM='UNFORMATTED',STATUS='OLD')
-c          OPEN(ITAPADC+7,FILE=FILE7,FORM='UNFORMATTED',STATUS='OLD')
-C
-C  and analyze the vectors
-C
-c          CALL DAVANALYZE(ITAPADC+6,ITAPADC+7,ITAPADC+1,
-c     &                  CC(ICRA),CC(ADCL),LADC,KREP,EVCTHR)
-c          CLOSE(ITAPADC+1)
-c          CLOSE(ITAPADC+6)
-c          CLOSE(ITAPADC+7)
-C
-C  this symmetry is now completely processed. we look at the next one
-C
-c          CALL MEMCHK('ADC-LOOPEND',CC,KFRSAV)
+          write(iw,*)  ' Internal Davidson not available!'
+          write(iw,*)  ' Calculating next symmetry.'
 
         ELSE IF(DIAGTYPE.eq.'EXTN') THEN
 c
