@@ -191,8 +191,8 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZVECANALYZE(IOUNIT,IOUNIT2,FILENAME,KREP,LADC,
-     &                       NEIGENV,ICRA,EVL,EVC,THR)
+      SUBROUTINE RVECANALYZE(IOUNIT,IOUNIT2,FILENAME,KREP,LADC,
+     &                       NEIGENV,EVL,EVC,THR)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -210,7 +210,141 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*6 FILENAME
       CHARACTER*8 DAFILE
-      INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV,ICRA(6,*)
+      INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
+      REAL*8  EVL(LADC),THR
+      REAL*8 EVC(LADC,NEIGENV)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "../relccsd/symm.inc"
+      INCLUDE "../relccsd/files.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 AUEV, WH, WP
+      DATA AUEV /27.2113957D0/
+      CHARACTER*7 EVECFN
+      REAL*8 B
+      character*78 field
+C
+C---------------Executable code--------------------------------------
+C
+      WRITE(IW,800) KREP,THR
+ 800  FORMAT (//" ==================================================="/
+     &        " ===    Eigenvector analysis for symmetry ",I2/
+     &        " ===    Configuration component threshold ",F10.4/
+     &        " ==================================================="//)
+c    &        " ===    From minimum eigenvalue of ",
+c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
+c    &        " ===    to maximum eigenvalue of   ",
+c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
+
+c
+c  open eigenvector file
+c
+      write(evecfn,'(a5,i1)') 'EVEC.',krep
+      open(iounit, file=EVECFN, form='UNFORMATTED',
+     &     access='SEQUENTIAL', status='UNKNOWN')
+      read(iounit) iladc,neigenv
+      if(iladc.ne.ladc) then
+        call quit('Incompatible eigenvector files!')
+      endif
+      write(iw,*) 'There are',neigenv,' eigenvectors on file.'
+      if(neigenv.gt.ladc) then
+        call quit('More eigenvectors than matrix dimension ?')
+      endif
+c
+c  reading eigenvectors for eigenvalues
+c
+      do j=1,neigenv
+        read(iounit) evl(j) 
+        read(iounit) (evc(ix,j),ix=1,ladc)
+      enddo
+      close(iounit)
+c
+c  open direct access file with configuration data
+c
+      WRITE(DAFILE,'(A6,A1,I1)') FILENAME,'.',KREP
+      WRITE(IW,*) 'ADC configuration data read from ',DAFILE
+      IRECL = 78
+      OPEN(iounit2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+c
+c  starting analysis
+c
+      DO 300 I = 1,NEIGENV
+
+        WRITE(iw,*)
+        WRITE(iw,*) '----------------------------------------'
+        WRITE(iw,*) 'Eigenvalue ',I,':',EVL(I),' (a.u.)',
+     &               EVL(I)*AUEV,' (eV)'
+C
+C  determine weight of hole and particle space
+C
+        WH=0.0D0
+        WP=0.0D0
+        DO J=1,LADC
+            B=EVC(J,I)
+            IF(J.LE.NO(KREP)) THEN
+              WH=WH + B*B
+            ELSE
+              WP=WP + B*B
+            ENDIF
+        ENDDO
+        WRITE(iw,860) WH*100.0D0,WP*100.0D0
+        WRITE(iw,*) '----------------------------------------'
+
+        DO 150 J=1,LADC
+          B=EVC(J,I)
+          B = B*B
+          IF(DABS(B).GE.THR) THEN
+            READ(iounit2,REC=J) field
+            WRITE(iw,'(A5,I6,A2,A78)') 'Conf:',J,' |',field
+          ENDIF
+ 150    CONTINUE
+
+ 300  CONTINUE
+
+      CLOSE(iounit2) 
+
+      RETURN
+C
+C  formats...
+C:
+ 850  FORMAT (1X,'number of eigenpairs on output file : ',I4,/,
+     &        1X,'eigenpairs analysis requested for   : ',I4,' roots',/,
+     &        1X,'analysis will be performed    for   : ',I4,' roots')
+ 860  FORMAT (/" Weight of 1h-space:",T25,F6.1,' %'/
+     &         " Weight of 1p-2h-space:",T25,F6.1,' %')
+ 880  FORMAT (/" 1h space"//"   Configuration ",I3,2X,"Spinor ",I3,
+     &        " Irep ",A4," Coeff ",F10.4/)
+ 890  FORMAT (/" 1p-2h space"//"   Configuration ",I4,"   (",
+     &        I2,A4,3X,I2,A4,3X,I2,A4,")"," Coeff ",F10.4)
+ 1100 FORMAT (1X,/,1X,49('-'),/,1X,'# ',I4,' )',1X,
+     &        F12.6,' (eV)',1X,F12.6,' (Hartree)',/,1X,49('-'),/)
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ZVECANALYZE(IOUNIT,IOUNIT2,FILENAME,KREP,LADC,
+     &                       NEIGENV,EVL,EVC,THR)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Analyzes eigenvectors of the ADC matrix
+C     Writes pole strengths and corresponding 1p-2h configuration
+C     to stdout if eigenvector entry is larger than THR.
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : MP
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*6 FILENAME
+      CHARACTER*8 DAFILE
+      INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
       REAL*8  EVL(LADC),THR
       COMPLEX*16 EVC(LADC,NEIGENV)
 C
@@ -374,7 +508,7 @@ c----------------- at the moment only these variables are used
       NITER = 0
       NEIGENV = 0
       THRESH1 = 0.05d0
-      THRVEC = 0.05
+      THRVEC = 0.05D0
 c  thresh1 determines the threshold for the spectral short form
 c  thrvec is the component of the long eigenvector taken into account.
 c----------------- up to here
@@ -1609,9 +1743,9 @@ C
 
       REAL*8 AA,AK,A1K,SUM,SUP
       REAL*8 AUEV,THRS,OVL
-      REAL*8 X1,X2,Y1,Y2
+      REAL*8 X1,Y1
 
-      REAL*8 XM,DDOT,A7
+      REAL*8 XM,DDOT
       DATA AUEV/27.2113957D0/
 
       CHARACTER*7 EVALFN
@@ -1733,7 +1867,7 @@ C.....REMOVE SPURIOUS AND MULTIPLE EIGENVALUES.
  48   CONTINUE
 
       write (6,'(/,A)') '  Information on purging:'
-  55  PRINT 905, JND, N, int(100.0d0*dble(jnd)/dble(n))
+      PRINT 905, JND, N, int(100.0d0*dble(jnd)/dble(n))
  905  FORMAT(4x,'There are',I5,' relevant residues out of',I5, 
      $     '   (',I3,'%)')
       write(6,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
@@ -1760,7 +1894,7 @@ C
 
 c
 c    * * * * * *     S P E C T R U M     * * * * * * * * * * * *
-c  spectrum is purged and available (all eigenvalues with corresponding
+c  spectrum is purged and available: all eigenvalues with corresponding
 c  intensities obtained as squares of the hole/hole components
 c  (pole strengths). IMPORTANT: the band width of the Lanczos matrix
 c  can be larger than the number of actual hole states due to stability
@@ -1995,7 +2129,7 @@ C
       REAL*8 AUEV,THRS,OVL
       REAL*8 X1,X2,Y1,Y2
 
-      COMPLEX*16 XM,ZDOTC,A7
+      COMPLEX*16 XM,ZDOTC
       DATA AUEV/27.2113957D0/
 
       CHARACTER*7 EVALFN
@@ -2117,7 +2251,7 @@ C.....REMOVE SPURIOUS AND MULTIPLE EIGENVALUES.
  48   CONTINUE
 
       write (6,'(/,A)') '  Information on purging:'
-  55  PRINT 905, JND, N, int(100.0d0*dble(jnd)/dble(n))
+      PRINT 905, JND, N, int(100.0d0*dble(jnd)/dble(n))
  905  FORMAT(4x,'There are',I5,' relevant residues out of',I5, 
      $     '   (',I3,'%)')
       write(6,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
@@ -2166,7 +2300,7 @@ c  pole strength
 c
         x1 = 0.0d0
         do i = 1, nholes
-           x1 = x1 + z(i,j)*dconjg(z(i,j))
+           x1 = x1 + DBLE( z(i,j)*dconjg(z(i,j)) )
         enddo
 c
 c  everything goes to file, no threshold
@@ -2177,7 +2311,7 @@ c  error analysis
 c
         y1 = 0.0d0
         do i = 1, np
-          y1 = y1 + z(np+i,j)*dconjg(z(np+i,j))
+          y1 = y1 + DBLE( z(np+i,j)*dconjg(z(np+i,j)) )
         enddo
         y1 = dsqrt(y1)
 c
@@ -2308,13 +2442,13 @@ c
         DO J = 1, NEIGENV 
           x1 = 0
           do i = 1, nholes
-             x1 = x1 + z(i,j)*dconjg(z(i,j))
+             x1 = x1 + DBLE(z(i,j)*dconjg(z(i,j)) )
           enddo
 c         x1 = dsqrt(x1)         
   
           y1 = 0.0d0
           do i = 1, np
-            y1 = y1 + z(np+i,j)*dconjg(z(np+i,j))
+            y1 = y1 + DBLE(z(np+i,j)*dconjg(z(np+i,j)) )
           enddo
           y1 = dsqrt(y1)
           write(6,420) j, x1, d(j)*AUEV, y1, ind(j)
@@ -2382,7 +2516,7 @@ C---------------Local variables--------------------------------------
 C
       INTEGER INFO,LDZ
       CHARACTER*1 JOBZ,UPLO
-      REAL*8 Y,DDOT
+      REAL*8 Y
       REAL*8 AUEV
 
 C
@@ -2464,7 +2598,7 @@ C---------------Local variables--------------------------------------
 C
       INTEGER INFO,LDZ
       CHARACTER*1 JOBZ,UPLO
-      COMPLEX*16 y,zdotc
+      COMPLEX*16 Y
       REAL*8 AUEV
 
 C
