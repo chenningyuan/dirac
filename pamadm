@@ -1194,7 +1194,7 @@ echo
 ##########################################
 ######## take care of f90depend  #########
 ##########################################
-if [ -n "$OOFMOD" ]; then
+#if [ -n "$OOFMOD" ]; then
 cat <<EOF>> Makefile
 
 f90dep:
@@ -1204,7 +1204,7 @@ for ff in $TEMPOOF; do
 	cd $ff; \$(MAKE) f90dep
 EOF
 done
-fi
+#fi
 ################################################
 #echo "Making module Makefiles..."
 ################################################
