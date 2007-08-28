@@ -830,16 +830,6 @@ C     TMP adjust for an optional linewith.
       END MODULE FILE
 
 
-
-
-
-
-
-
-
-
-
-
 C     !!! MODULE FOR READING XYZ FILES !!!
 C     Module for reading xyz files. 
 C     The coordinates are given in the .xyz file.
@@ -1004,7 +994,7 @@ C               and writes it to the atoms list.
           REWIND(filenum)
           index=1
           DO
-            name=''
+            name=' '
             x=0
             IF (index<0) EXIT
             CALL READ_VAR(filenum, linelen,name, index) 
@@ -1279,7 +1269,7 @@ C     (Implemented also for the rest)
 
 C     FOR UNIT CONVERSION
           REAL(KIND=8)      :: UNITS=1.0
-          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=''
+          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=' '
         
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
@@ -2059,7 +2049,7 @@ C
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)') ''
+        WRITE(lupri,'(a)') ' '
 
         END SUBROUTINE PRINT_ATOMS
 
@@ -2086,7 +2076,7 @@ C
               EXIT
             ENDIF
           END DO
-        WRITE(lupri,'(a)') ''
+        WRITE(lupri,'(a)') ' '
 
         END SUBROUTINE PRINT_BASIS
 
