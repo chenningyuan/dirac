@@ -308,7 +308,7 @@ DIMENSION WORK(LWORK)
      IF (CAPOVLP) THEN
          write(LUPRI,*) 'calling DOSAJEEV..1'; CALL  FLSHFO(LUPRI)
         ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-         CALL DOSAJEEV(PW(get_kfree()), ILFREE )
+         CALL DOSAJEEV(PW(get_kfree()), ILFREE)
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
        ILFREE=get_lfree()
         ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
@@ -324,24 +324,29 @@ DIMENSION WORK(LWORK)
          CALL DOSAJEEV(PW(get_kfree()),ILFREE)
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
           
-         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
+         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
          CALL CAP_OVLP_COMP
        ENDIF
         CAPOVLP=.FALSE.
         IF (CAPDIPVEL_SAVE.AND..NOT.DONRCAP) THEN
           CAPDIPVEL = .TRUE.
            write(LUPRI,*) 'calling DOSAJEEV..2'
-          CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+          ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
+          !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+          CALL DOSAJEEV(PW(get_kfree()),ILFREE)
           CALL CAP_DIRAC_AO(icabfo,iobf1_2)
-          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree()) 
+          !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree()) 
+          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE) 
           CALL CAP_DIPVEL_COMP
           call QUIT('CAP_STUFF: comparison')
         ENDIF
         CAPDIPVEL = .FALSE.
            write(LUPRI,*) 'calling DOSAJEEV..3'
-        CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-        CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 4=',ILFREE
+        !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
+        CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+        CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
