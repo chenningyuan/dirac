@@ -916,8 +916,12 @@ C
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
-      INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP),NPIORB_ACT(MXREP)
+      INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
+      !MI: for the IH-FSCC method in linear symmetry
+      INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
       LOGICAL ASSREP
+      INTEGER IOI(0:3), IVA(0:3)
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -1710,7 +1714,8 @@ CMI      IF (REPORT) THEN
 !          write(IW,*) 'EHMAX,EPMAX:',ER_IH(2,1),ER_IH(2,2)
           ! ... initialization
           DO IREP = 1, NREP
-            NPIORB(IREP) = 0
+            NAOPI(IREP) = 0
+            NAVPI(IREP) = 0
           ENDDO 
          ENDIF
 
@@ -1734,9 +1739,38 @@ C           Always fill this array, used in intermediate Hamiltonian formalism
                IF(EPS(I).LE.ER_IH(2,J).AND.
      &            EPS(I).GE.ER_IH(1,J))  THEN
                   IPIORB(I)=1
-                  NPIORB(IREP) = NPIORB(IREP) + 1
                ENDIF
             ENDDO
+
+CMI   ... based on Ephraim advice
+      II = 0 
+      DO IRP = 1, NREP
+       NAVPI(IRP) = 0
+       NAOPI(IRP) = 0
+       IOI(0)=0
+       IOI(1)=NIO(IRP)+IOI(0)
+       IOI(2)=NAO(IRP)+IOI(1)
+       IOI(3)=NAV(IRP)+IOI(2)
+       DO ico=1,3
+       DO I = IOI(ico-1)+1, IOI(ico)
+         II = II + 1
+         ISECTP=0
+         IF (DOIH.AND.ICO.EQ.3) THEN
+             ISECTP=1
+             IF (IPIORB(II).EQ.1) THEN
+               NAVPI(IRP) = NAVPI(IRP) + 1
+             ENDIF
+         ENDIF
+         IF (DOIH.AND.ICO.EQ.2) THEN
+             ISECTP=1
+             IF (IPIORB(II).EQ.1) THEN
+               NAOPI(IRP) = NAOPI(IRP) + 1
+             ENDIF
+         ENDIF
+        ENDDO
+        ENDDO
+       ENDDO
+
             !IF (REPORT.AND.DOIH) THEN
 CMI        IF (REPORT) THEN
 CMI              write(IW,'(A,I3,A,I3,A,I2,A,I3,AF15.7,A,I3,A)')
@@ -1751,7 +1785,8 @@ CMI ..... write only active irreps
                IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
                 !... move nonzero values to new arrays ...
                   NACT_REP = NACT_REP + 1
-                  NPIORB_ACT(NACT_REP) = NPIORB(I) 
+                  NAOPI_ACT(NACT_REP)  = NAOPI(I) 
+                  NAVPI_ACT(NACT_REP)  = NAVPI(I) 
                ENDIF
             ENDDO
 
@@ -1765,10 +1800,10 @@ CMI         ... print out if Pi
   12      WRITE (IW,1005) (REPNA_ACT(I),I=NREP1,NREP2)
           WRITE (IW,1002) 'inactive occupied',(NIO_ACT(I),I=NREP1,NREP2)
           WRITE (IW,1002) 'active occupied',(NAO_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'active  Pi virt',
-     &                    (NPIORB_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active Pi occup',(NAOPI_ACT(I),I=NREP1,NREP2)
           WRITE (IW,1002) 'active virtual ',(NAV_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'inactive virtual ',(NIV_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active Pi virt ',(NAVPI_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive virtual',(NIV_ACT(I),I=NREP1,NREP2)
             NREP1 = NREP1 + 8
             NREP2 = MIN(NACT_REP,NREP2+8)
             IF (NREP1.LE.NACT_REP) GOTO 12
@@ -1776,8 +1811,9 @@ CMI         ... print out if Pi
             WRITE (IW,1005) (REPNA(I),I=1,NREP)
             WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
             WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
-            WRITE (IW,1002) 'Pi of active virt',(NPIORB(I),I=1,NREP)
+            WRITE (IW,1002) 'Pi active occup  ',(NAOPI(I),I=1,NREP)
             WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
+            WRITE (IW,1002) 'Pi active virtual',(NAVPI(I),I=1,NREP)
             WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
          ENDIF
 

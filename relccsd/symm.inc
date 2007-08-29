@@ -11,7 +11,7 @@ C     both kind of irreps at the same time. Usually loops run
 C     only over either fermion or boson irreps at a time.
 C
 !
-!     NPIORB - orbitals per Abelian symmetry assigned for the IH-FSCC Pi space
+!     NAOPI,NAVPI - orbitals per Abelian symmetry assigned for the IH-FSCC Pi space
 !         MXREP is from symm.inc
 !
 
@@ -60,7 +60,8 @@ C     Pointers for symmetry packed arrays.
      & NT3VVT(MXREP),NT3VVVT(MXREP),LLT3VVVT(MXREP,MXREP)
 C     For Fock space : we now have 4 classes of spinors
       COMMON /SYMFSD/ NIO(MXREP),NIV(MXREP),NAO(MXREP),NAV(MXREP),
-     &                NSO(MXREP),NSV(MXREP),NPIORB(MXREP),
+     &                NSO(MXREP),NSV(MXREP),
+     &                NAOPI(MXREP),NAVPI(MXREP), 
      & NIVIO(MXREP),NAVAO(MXREP),NAVSO(MXREP),NSOAV(MXREP),NAOV(MXREP),
      & MAOAV(MXREP),
      & NIOIOT(MXREP),NAOAOT(MXREP),NAVAVT(MXREP),NIVIVT(MXREP),
