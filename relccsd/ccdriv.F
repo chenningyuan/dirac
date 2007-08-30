@@ -2871,7 +2871,7 @@ C
 CMI ... more print out
       IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
         WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
-        WRITE(IW,'(A,F11.7,A,F11.7,A)')
+        WRITE(IW,'(A,F20.7,A,F20.7,A)')
      &  ' Energy range for the Pi space is: <',
      &   ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF

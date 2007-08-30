@@ -1512,7 +1512,7 @@ C
       IF (IPRNT.GE.0.AND.(FOCKSP.AND.DOIH)) THEN
         WRITE (IW,'(/1X,A)')
      & 'Spinors in the IH Fock space Pi space are marked with "*"'
-        WRITE(IW,'(1X,A,F11.7,A,F11.7,A)')
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
      &  'Energy range for the Pi space is: <',
      &  ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF
