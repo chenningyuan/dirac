@@ -13,12 +13,16 @@ C=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbqal.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
+#include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "pgroup.h"
+#include "dcbxrs.h"
 
       DIMENSION CMO(*),
      &          DMAT_AO(*),
@@ -30,10 +34,9 @@ C=======================================================================
 !     allocate memory
 
       CALL MEMGET('REAL',KDMAT_MO,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT_AO_TEMP,N2BBASXQ,WORK,KFREE,LFREE)
 
       CALL DZERO(WORK(KDMAT_MO),N2ORBXQ)
-      CALL DZERO(DMAT_AO,N2BBASXQ)
-
       K = 0
       DO I = 1,NFSYM
         IF(NISH(I) .GT. 0) THEN
@@ -48,19 +51,43 @@ C=======================================================================
         ENDIF
       ENDDO
 
-      DO I = 1,NFSYM
-        CALL QTRANS('MOAO','S',D0,
-     &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &              DMAT_AO(1+I2BASX(I,I)),
-     &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &              WORK(KDMAT_MO+I2ORBX(I,I)),
-     &              NORBT,NORBT,1,IPQTOQ(1,0),
-     &              CMO(1+ICMOQ(I)),
-     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              CMO(1+ICMOQ(I)),
-     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              WORK(KFREE),LFREE,0)
-      ENDDO
+!     CALL DZERO(DMAT_AO,N2BBASXQ)
+!     DO I = 1,NFSYM
+!       CALL QTRANS('MOAO','S',D0,
+!    &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+!    &              DMAT_AO(1+I2BASX(I,I)),
+!    &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+!    &              WORK(KDMAT_MO+I2ORBX(I,I)),
+!    &              NORBT,NORBT,1,IPQTOQ(1,0),
+!    &              CMO(1+ICMOQ(I)),
+!    &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+!    &              CMO(1+ICMOQ(I)),
+!    &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+!    &              WORK(KFREE),LFREE,0)
+!     ENDDO
+
+      JSYMOP = 1
+      IREPOP = 0
+      JOPSY  = JBTOF(IREPOP,1)
+      IH     = 1
+
+!     get AO density matrix
+
+      CALL DZERO(DMAT_AO,N2BBASXQ)
+      CALL DMOLI3(0,IH,DMAT_AO,CMO,WORK(KDMAT_MO),
+     &            WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KDMAT_AO_TEMP),N2BBASXQ)
+      CALL DMOLI3(1,IH,WORK(KDMAT_AO_TEMP),CMO,WORK(KDMAT_MO),
+     &            WORK,KFREE,LFREE)
+      CALL DAXPY(N2BBASXQ,D1,WORK(KDMAT_AO_TEMP),1,DMAT_AO,1)
+
+      IF(NZ .LT. 4) THEN
+        DO IZ = 1,NZ
+          IQ = IPQTOQ(IZ,IREPOP)
+          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
+          CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
+        ENDDO
+      ENDIF
 
       CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
 

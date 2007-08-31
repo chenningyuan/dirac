@@ -622,6 +622,7 @@ C=======================================================================
       PARAMETER (D5 = 5.0D0)
 
       PARAMETER (DP12 = D1/D2)
+      PARAMETER (DP14 = D1/D4)
       PARAMETER (DP23 = D2/D3)
       PARAMETER (DP32 = D3/D2)
       PARAMETER (DP53 = D5/D3)
@@ -828,6 +829,32 @@ C=======================================================================
      &                  BUF)
 
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+
+        IQ = IQ_H !helicity density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_DIVM(.TRUE.,
+     &                  SCALAR,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+
+          CALL DAXPY(1,DP14,SCALAR,1,QUANTITY(0),1)
+        ENDIF
+
+        IQ = IQ_K !kinetic energy density
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GET_DIVJ(.TRUE.,
+     &                  SCALAR,
+     &                  IREP_XVECTOR(IXVECTOR),
+     &                  GAO,
+     &                  GAO1,
+     &                  DMAT_AO(1+IOFF),
+     &                  BUF)
+
+          CALL DAXPY(1,DP14,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
         IQ = IQ_ROTM !rot(magnetization)
