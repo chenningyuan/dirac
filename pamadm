@@ -38,6 +38,7 @@ usage()
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
+   echo '     -adc             : Include ADC electron propagator module'
    echo '     tarfile=make     : only generate new Makefile'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
 }
@@ -71,6 +72,7 @@ setup()
       CDFTMOD=1
       VISUALMOD=1
       EMBMOD=1
+      ADCMOD=1
       echo " - DIRAC administrator ..."
    fi
    #
@@ -175,6 +177,16 @@ setup()
       else
          echo "ab initio/DFT embedding module not included - depends on DFT module "
       fi
+   fi
+   #
+   #  ADC electron propagator module
+   #
+   if [ -n "$ADCMOD" ]; then
+      ADCFLG='-DMOD_ADC'
+      ADCOBJ='$(ADCOBJS)'
+      ADCMAK=ADC_OBJ
+      ADCTAR=1
+      echo " - ADC electron propagator module"
    fi
    #
    #  SDFT/CDFT module
@@ -398,6 +410,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$ADCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/reladc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$CDFTTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -476,8 +493,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
 #   echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -525,7 +542,7 @@ moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
-relccsd/waio.o  \\
+relccsd/waio.o \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
@@ -560,7 +577,7 @@ RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
-relccsd/ccfspc.o  relccsd/waio.o 
+relccsd/ccfspc.o  relccsd/waio.o
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
@@ -753,6 +770,16 @@ cap/dircap.o cap/prepcap.o cap/prepcap90.o cap/capnew.o
 EOF
 fi
 #
+#  Object-files for ADC module
+#
+if [ -n "$ADCMOD" ]; then
+cat <<EOF>> Makefile
+
+ADCOBJS = \\
+reladc/adccore.o reladc/adcsort.o reladc/adcdiag.o
+EOF
+fi
+#
 #  Object-files for the HSMRCC-interface module
 #
 if [ -n "$HSCCMOD" ]; then
@@ -781,7 +808,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \\
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS)\\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
         \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS)
 
@@ -916,6 +943,9 @@ fi
 if [ -n "$EMBMOD" ]; then
    echo '	cd embedding  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$ADCMOD" ]; then
+   echo '	cd reladc   ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
 fi
@@ -950,7 +980,6 @@ if [ -n "$MODULES" ]; then
   echo '#       Fortran90/95 modules # ' >> Makefile
   echo '#--------------------------- # ' >> Makefile
   echo 'mod  :             ;\' >> Makefile
-     echo '     cd  abacus     ; $(MAKE) mod ; cd .. ;\' >> Makefile
   if [ -n "$EMBMOD" ]; then
      echo '     cd  embedding  ; $(MAKE) mod ; cd .. ;\' >> Makefile
   fi
@@ -1065,6 +1094,13 @@ EMB_OBJ :
 	cd embedding; \$(MAKE) all
 EOF
 fi
+if [ -n "$ADCMOD" ]; then
+cat <<EOF>> Makefile
+
+ADC_OBJ :
+	cd reladc; \$(MAKE) all
+EOF
+fi
 if [ -n "$CDFTMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1136,7 +1172,7 @@ EOF
 ###                   Add makedepend targets                         ###
 ########################################################################
 TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
-TEMPOOF="abacus"
+TEMPOOF=
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
 fi
@@ -1161,6 +1197,9 @@ fi
 if [ -n "$EMBMOD" ]; then
    TEMP="$TEMP embedding"
    TEMPOOF="$TEMPOOF embedding"
+fi
+if [ -n "$ADCMOD" ]; then
+   TEMP="$TEMP reladc"
 fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
@@ -1269,6 +1308,9 @@ fi
 if [ -n "$EMBFLG" ]; then
    dirs="$dirs embedding"
 fi
+if [ -n "$ADCFLG" ]; then
+   dirs="$dirs reladc"
+fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
 fi
@@ -1355,6 +1397,9 @@ while [ -n "$1" ]; do
          EMBMOD=1
          # echo "embedding with fortran90/95 modules is on !!!"
 	 MODULES=1
+         ;;
+      -adc)
+         ADCMOD=1
          ;;
       -cdft)
          CDFTMOD=1
