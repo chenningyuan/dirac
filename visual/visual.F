@@ -77,9 +77,9 @@ C=======================================================================
       NCUBE(2) = 80
       NCUBE(3) = 80
 
-      VISUAL_ORIGIN(1) = D0
-      VISUAL_ORIGIN(2) = D0
-      VISUAL_ORIGIN(3) = D0
+      VISUAL_ORIGIN(1) = 0.0D0
+      VISUAL_ORIGIN(2) = 0.0D0
+      VISUAL_ORIGIN(3) = 0.0D0
 
       ADD_3D        = 4.0D0
       COMMON_FACTOR = 1.0D0
@@ -147,11 +147,7 @@ C=======================================================================
           GOTO 100
 
     5     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,5)
-          GOTO 100
-
     6     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,6)
           GOTO 100
 
     7     CONTINUE
@@ -177,11 +173,7 @@ C=======================================================================
           GOTO 100
 
    12     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,9)
-          GOTO 100
-
    13     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,10)
           GOTO 100
 
    14     CONTINUE
@@ -854,7 +846,7 @@ C=======================================================================
      &                  DMAT_AO(1+IOFF),
      &                  BUF)
 
-          CALL DAXPY(1,DP14,SCALAR,1,QUANTITY(0),1)
+          CALL DAXPY(1,DP12,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
         IQ = IQ_ROTM !rot(magnetization)

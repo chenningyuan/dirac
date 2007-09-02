@@ -5,12 +5,12 @@ C     LBIT(LBIT_VISUAL, 1)
 C     LBIT(LBIT_VISUAL, 2) 2D
 C     LBIT(LBIT_VISUAL, 3) 3D
 C     LBIT(LBIT_VISUAL, 4)
-C     LBIT(LBIT_VISUAL, 5) skip +- (SKIPEP)
-C     LBIT(LBIT_VISUAL, 6) skip ++ (SKIPEE)
+C     LBIT(LBIT_VISUAL, 5)
+C     LBIT(LBIT_VISUAL, 6)
 C     LBIT(LBIT_VISUAL, 7) use orbital string
 C     LBIT(LBIT_VISUAL, 8) integrate
-C     LBIT(LBIT_VISUAL, 9) freq +h
-C     LBIT(LBIT_VISUAL,10) freq -h
+C     LBIT(LBIT_VISUAL, 9)
+C     LBIT(LBIT_VISUAL,10)
 C
 C     IQ_N           =  1 !    number density
 C     IQ_M           =  2 !    magnetization

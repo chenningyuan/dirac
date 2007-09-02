@@ -34,7 +34,6 @@ C=======================================================================
 !     allocate memory
 
       CALL MEMGET('REAL',KDMAT_MO,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO_TEMP,N2BBASXQ,WORK,KFREE,LFREE)
 
       CALL DZERO(WORK(KDMAT_MO),N2ORBXQ)
       K = 0
@@ -76,10 +75,6 @@ C=======================================================================
       CALL DZERO(DMAT_AO,N2BBASXQ)
       CALL DMOLI3(0,IH,DMAT_AO,CMO,WORK(KDMAT_MO),
      &            WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KDMAT_AO_TEMP),N2BBASXQ)
-      CALL DMOLI3(1,IH,WORK(KDMAT_AO_TEMP),CMO,WORK(KDMAT_MO),
-     &            WORK,KFREE,LFREE)
-      CALL DAXPY(N2BBASXQ,D1,WORK(KDMAT_AO_TEMP),1,DMAT_AO,1)
 
       IF(NZ .LT. 4) THEN
         DO IZ = 1,NZ
@@ -89,7 +84,7 @@ C=======================================================================
         ENDDO
       ENDIF
 
-      CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
+!     CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
 
 !     release memory
 
@@ -99,10 +94,9 @@ C=======================================================================
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SCATTER_BVEC */
-      SUBROUTINE SCATTER_BVEC(BVEC_EE,
-     &                        BVEC_EP,
-     &                        ICOUNTER_EE,
-     &                        ICOUNTER_EP,
+      SUBROUTINE SCATTER_BVEC(BVEC,
+     &                        ICOUNTER,
+     &                        TYP,
      &                        BMAT,
      &                        IZ,
      &                        IFSYM1,
@@ -125,9 +119,9 @@ C=======================================================================
 #include "dgroup.h"
 #include "dcbbas.h"
 
+      CHARACTER TYP*2
       LOGICAL   LBIT
-      DIMENSION BVEC_EE(*),
-     &          BVEC_EP(*),
+      DIMENSION BVEC(*),
      &          BMAT(NORBT,NORBT,NZ),
      &          STRING(*),
      &          NEI(2),
@@ -153,17 +147,16 @@ C=======================================================================
       DO II = II1,II2
 
         FACTOR = STRING(II - IOFF + NESH(1)*(IFSYM1-1))
-
-        IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !if not skip +- (SKIPEP)
+        IF(TYP(1:1) .EQ. 'P') THEN
           DO IS = IS1,IS2
-            BMAT(IS,II,IZ) = BVEC_EP(ICOUNTER_EP)*FACTOR
-            ICOUNTER_EP = ICOUNTER_EP + 1
+            BMAT(IS,II,IZ) = BVEC(ICOUNTER)*FACTOR
+            ICOUNTER = ICOUNTER + 1
           ENDDO
         ENDIF
-        IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !if not skip ++ (SKIPEE)
+        IF(TYP(1:1) .EQ. 'E') THEN
           DO IS = IS3,IS4
-            BMAT(IS,II,IZ) = BVEC_EE(ICOUNTER_EE)*FACTOR
-            ICOUNTER_EE = ICOUNTER_EE + 1
+            BMAT(IS,II,IZ) = BVEC(ICOUNTER)*FACTOR
+            ICOUNTER = ICOUNTER + 1
           ENDDO
         ENDIF
 
@@ -226,263 +219,127 @@ C=======================================================================
      &     ACCESS = 'SEQUENTIAL',
      &     FORM = 'UNFORMATTED')
 
-!     get dimensions of record IWHICH_XVECTOR(IXVECTOR)
+!     get number of vectors on file
 
-      NBDIM_EE    = 0
-      NBDIM_EP    = 0
-      NR_READS    = 0
-      NR_READS_EE = 0
-      NR_READS_EP = 0
-
+      NR_VECTORS = 0
       REWIND LUNIT_XVECTOR
-  1   CONTINUE
+ 1    CONTINUE
       READ(LUNIT_XVECTOR) LAB1
-      BACKSPACE(LUNIT_XVECTOR)
       IF(LAB1 .EQ. 'END_OF_THIS_FILE') THEN
-        GOTO 10
-      ENDIF
-      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1
-      BACKSPACE(LUNIT_XVECTOR)
-
-      IF(TYP1(1:1) .EQ. 'E') THEN
-        NR_READS    = NR_READS + 1
-        NR_READS_EE = NR_READS_EE + 1
-        IF(TYP1(2:2) .EQ. '+') THEN
-          IH_EE = 1
-        ELSEIF(TYP1(2:2) .EQ. '-') THEN
-          IH_EE = -1
-        ELSE
-          GOTO 12
-        ENDIF
-        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                      JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                      UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EE .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
-          JSYMOP_EE = JSYMOP1
-          NBDIM_EE  = LEN/NZ
-        ENDIF
-        READ(LUNIT_XVECTOR)
-
-      ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        NR_READS    = NR_READS + 1
-        NR_READS_EP = NR_READS_EP + 1
-        IF(TYP1(2:2) .EQ. '+') THEN
-          IH_EP = 1
-        ELSEIF(TYP1(2:2) .EQ. '-') THEN
-          IH_EP = -1
-        ELSE
-          GOTO 12
-        ENDIF
-        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                      JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
-     &                      UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-        IF(NR_READS_EP .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
-          JSYMOP_EP = JSYMOP1
-          NBDIM_EP  = LEN/NZ
-        ENDIF
-        READ(LUNIT_XVECTOR)
-
+        GOTO 2
       ELSE
-        GOTO 12
+        NR_VECTORS = NR_VECTORS + 1
+        READ(LUNIT_XVECTOR)
+        GOTO 1
       ENDIF
-      GOTO 1
- 10   CONTINUE
+ 2    CONTINUE
 
-!     consistency
+!     errors
 
-!     LBIT(LBIT_VISUAL,5) skip +- (SKIPEP)
-!     LBIT(LBIT_VISUAL,6) skip ++ (SKIPEE)
-
-      IF(NR_READS .EQ. 0)
-     &   GOTO 11
-
-      IF(.NOT. LBIT(LBIT_VISUAL,5) .AND.
-     &   .NOT. LBIT(LBIT_VISUAL,6) .AND.
-     &   .NOT. NR_READS_EE .EQ. NR_READS_EP)
-     &   GOTO 11
-
-      IF(.NOT. LBIT(LBIT_VISUAL,5) .AND.
-     &   NR_READS_EP .EQ. 0)
-     &   GOTO 13
-
-      IF(.NOT. LBIT(LBIT_VISUAL,6) .AND.
-     &   NR_READS_EE .EQ. 0)
-     &   GOTO 14
-
-      IF(.NOT. LBIT(LBIT_VISUAL,5) .AND.
-     &   NR_READS_EP .LT. IWHICH_XVECTOR(IXVECTOR))
-     &   GOTO 11
-
-      IF(.NOT. LBIT(LBIT_VISUAL,6) .AND.
-     &   NR_READS_EE .LT. IWHICH_XVECTOR(IXVECTOR))
-     &   GOTO 11
-
-      IF(LBIT(LBIT_VISUAL,5) .AND .
-     &   LBIT(LBIT_VISUAL,6))
-     &   GOTO 15
-
-      GOTO 20
- 11   CONTINUE
+      IF(NR_VECTORS .EQ. 0) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'invalid IWHICH_XVECTOR(IXVECTOR)'
-        WRITE(LUPRI,'(A)') 'or solution vector file corrupt'
+        WRITE(LUPRI,'(A)') 'NR_VECTORS .EQ. 0'
         CALL QUIT('ERROR in VISUAL')
- 12   CONTINUE
+      ENDIF
+
+      IF(IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'invalid operator label'
-        WRITE(LUPRI,'(A)') 'solution vector file corrupt'
+        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS'
         CALL QUIT('ERROR in VISUAL')
- 13   CONTINUE
+      ENDIF
+
+      IF(IWHICH_XVECTOR(IXVECTOR) .LT. 1) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'EP requested but no EP rotation'
-        WRITE(LUPRI,'(A)') 'on solution vector file'
+        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .LT. 1'
         CALL QUIT('ERROR in VISUAL')
- 14   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'EE requested but no EE rotation'
-        WRITE(LUPRI,'(A)') 'on solution vector file'
-        CALL QUIT('ERROR in VISUAL')
- 15   CONTINUE
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'SKIPEP = SKIPEE = .TRUE.'
-        CALL QUIT('ERROR in VISUAL')
- 20   CONTINUE
+      ENDIF
+
+!     move to the right record
+
+      IVECTOR = 0
+      REWIND LUNIT_XVECTOR
+ 3    CONTINUE
+      READ(LUNIT_XVECTOR)
+      IVECTOR = IVECTOR + 1
+      IF(IVECTOR .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
+        BACKSPACE(LUNIT_XVECTOR)
+        GOTO 4
+      ELSE
+        READ(LUNIT_XVECTOR)
+        GOTO 3
+      ENDIF
+ 4    CONTINUE
+
+!     get type and dimensions of record IWHICH_XVECTOR(IXVECTOR)
+
+      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
+     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+     &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
+
+      IF(TYP1(2:2) .EQ. '+') IHERMITICITY =  1
+      IF(TYP1(2:2) .EQ. '-') IHERMITICITY = -1
+
+      JSYMOP                 = JSYMOP1
+      IREP_XVECTOR(IXVECTOR) = JSYMOP - 1
+      IREPOP                 = JSYMOP - 1
+      JOPSY                  = JBTOF(IREP_XVECTOR(IXVECTOR),1)
+      NBDIM                  = LEN/NZ
 
 !     allocate memory
 
-      CALL MEMGET('REAL',KBVEC_EE ,NBDIM_EE*NZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBVEC_EP ,NBDIM_EP*NZ,
+      CALL MEMGET('REAL',KBVEC    ,NBDIM*NZ,
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBMAT    ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO_TEMP,N2BBASXQ,
      &            WORK,KFREE,LFREE)
 
 !     read vector
 
-      REWIND LUNIT_XVECTOR
-      DO I = 1,IWHICH_XVECTOR(IXVECTOR)-1
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-
-        IF(LBIT(LBIT_VISUAL,9) .OR. LBIT(LBIT_VISUAL,10)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-      ENDDO
-
-      IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !"EE" part
-        IF(LBIT(LBIT_VISUAL,10)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-
-        READ(LUNIT_XVECTOR)
-        CALL DZERO(WORK(KBVEC_EE),NBDIM_EE*NZ)
-        CALL READT(LUNIT_XVECTOR,NBDIM_EE*NZ,WORK(KBVEC_EE))
-
-        IF(LBIT(LBIT_VISUAL,9)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-      ELSE
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-        IF(LBIT(LBIT_VISUAL,9) .OR. LBIT(LBIT_VISUAL,10)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-      ENDIF
-
-      IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !"EP" part
-        IF(LBIT(LBIT_VISUAL,10)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-
-        READ(LUNIT_XVECTOR)
-        CALL DZERO(WORK(KBVEC_EP),NBDIM_EP*NZ)
-        CALL READT(LUNIT_XVECTOR,NBDIM_EP*NZ,WORK(KBVEC_EP))
-
-        IF(LBIT(LBIT_VISUAL,9)) THEN
-          READ(LUNIT_XVECTOR)
-          READ(LUNIT_XVECTOR)
-        ENDIF
-      ELSE
-!       READ(LUNIT_XVECTOR)
-!       READ(LUNIT_XVECTOR)
-!       IF(LBIT(LBIT_VISUAL,9) .OR. LBIT(LBIT_VISUAL,10)) THEN
-!         READ(LUNIT_XVECTOR)
-!         READ(LUNIT_XVECTOR)
-!       ENDIF
-      ENDIF
+      CALL DZERO(WORK(KBVEC),NBDIM*NZ)
+      CALL READT(LUNIT_XVECTOR,NBDIM*NZ,WORK(KBVEC))
 
       CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
 
-      IF(LBIT(LBIT_VISUAL,9)) THEN
-        IH_EE = 1
-        IH_EP = IH_EE
-      ENDIF
-      IF(LBIT(LBIT_VISUAL,10)) THEN
-!       IH_EE = -1
-!       dirty trick to multiply the j part with i
-        IH_EE = 1
-        IH_EP = IH_EE
-      ENDIF
-
 !     scatter vector onto MO density matrix
 
-      IHERMITICITY = IH_EE
-      ICOUNTER_EE  = 1
-      ICOUNTER_EP  = 1
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
+      ICOUNTER = 1
 
       DO IZ = 1,NZ
         IF(NFSYM .EQ. 1) THEN
-          CALL SCATTER_BVEC(WORK(KBVEC_EE),
-     &                      WORK(KBVEC_EP),
-     &                      ICOUNTER_EE,
-     &                      ICOUNTER_EP,
+          CALL SCATTER_BVEC(WORK(KBVEC),
+     &                      ICOUNTER,
+     &                      TYP1,
      &                      WORK(KBMAT),
      &                      IZ,
      &                      1,1,
      &                      STRING)
         ELSE
           IF(IHERMITICITY .EQ. 1) THEN
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),
-     &                        WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,
-     &                        ICOUNTER_EP,
+            CALL SCATTER_BVEC(WORK(KBVEC),
+     &                        ICOUNTER,
+     &                        TYP1,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        1,2,
      &                        STRING)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),
-     &                        WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,
-     &                        ICOUNTER_EP,
+            CALL SCATTER_BVEC(WORK(KBVEC),
+     &                        ICOUNTER,
+     &                        TYP1,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,1,
      &                        STRING)
           ELSE
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),
-     &                        WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,
-     &                        ICOUNTER_EP,
+            CALL SCATTER_BVEC(WORK(KBVEC),
+     &                        ICOUNTER,
+     &                        TYP1,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        1,1,
      &                        STRING)
-            CALL SCATTER_BVEC(WORK(KBVEC_EE),
-     &                        WORK(KBVEC_EP),
-     &                        ICOUNTER_EE,
-     &                        ICOUNTER_EP,
+            CALL SCATTER_BVEC(WORK(KBVEC),
+     &                        ICOUNTER,
+     &                        TYP1,
      &                        WORK(KBMAT),
      &                        IZ,
      &                        2,2,
@@ -492,10 +349,6 @@ C=======================================================================
       ENDDO
       CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
 
-      JSYMOP                 = JSYMOP_EE
-      IREP_XVECTOR(IXVECTOR) = JSYMOP - 1
-      JOPSY                  = JBTOF(IREP_XVECTOR(IXVECTOR),1)
-
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ - 1)
         CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF)) !symmetrize
@@ -504,15 +357,12 @@ C=======================================================================
 !     get AO density matrix
 
       CALL DZERO(DMAT_AO,N2BBASXQ)
-      IF(.NOT. LBIT(LBIT_VISUAL,6)) THEN !if not skip ++ (SKIPEE)
-        CALL DMOLI3(0,IH_EE,DMAT_AO,CMO,WORK(KBMAT),
+          IF(TYP1(1:1) .EQ. 'E') THEN
+        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,WORK(KBMAT),
      &              WORK,KFREE,LFREE)
-      ENDIF
-      IF(.NOT. LBIT(LBIT_VISUAL,5)) THEN !if not skip +- (SKIPEP)
-        CALL DZERO(WORK(KDMAT_AO_TEMP),N2BBASXQ)
-        CALL DMOLI3(1,IH_EP,WORK(KDMAT_AO_TEMP),CMO,WORK(KBMAT),
+      ELSEIF(TYP1(1:1) .EQ. 'P') THEN
+        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,WORK(KBMAT),
      &              WORK,KFREE,LFREE)
-        CALL DAXPY(N2BBASXQ,D1,WORK(KDMAT_AO_TEMP),1,DMAT_AO,1)
       ENDIF
 
       IF(NZ .LT. 4) THEN
@@ -527,7 +377,7 @@ C=======================================================================
 
 !     release memory
 
-      CALL MEMREL('SETUP_FO_DMAT_AO',WORK,KBVEC_EE,KBVEC_EE,KFREE,LFREE)
+      CALL MEMREL('SETUP_FO_DMAT_AO',WORK,KBVEC,KBVEC,KFREE,LFREE)
 
       RETURN
       END

@@ -15,8 +15,9 @@
 *VISUAL
 .2D
 .QUANTITIES
-1
+2
 PAMXVC 1 quantity 0
+PAMXVC 2 quantity 0
 .CUBE
 10 10 10
 *END OF
