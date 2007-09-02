@@ -304,6 +304,19 @@ C=======================================================================
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
       ICOUNTER = 1
 
+!     my static electric perturbations are ungerade
+!               magnetic                     gerade
+!
+!     i don't know codewise how to extract gerade/ungerade
+!     from the general operator irrep
+!
+!     with frequency-dependent magnetic perturbations
+!     the code will fail when calculating with symmetry
+!     but for the moment it does its job ...
+
+      IGERADE = -IHERMITICITY
+      IF(DABS(FREQ1) .GT. 1.0D-9) IGERADE = -1
+
       DO IZ = 1,NZ
         IF(NFSYM .EQ. 1) THEN
           CALL SCATTER_BVEC(WORK(KBVEC),
@@ -314,7 +327,7 @@ C=======================================================================
      &                      1,1,
      &                      STRING)
         ELSE
-          IF(IHERMITICITY .EQ. 1) THEN
+          IF(IGERADE .EQ. -1) THEN
             CALL SCATTER_BVEC(WORK(KBVEC),
      &                        ICOUNTER,
      &                        TYP1,
