@@ -91,8 +91,6 @@ CMI     write(LUPRI,*) 'LWORK=',LWORK
 
       CALL MEMCHK('sajeev 2',WORK,1)
 
-C     CALL QEXIT('SAJEEV')
-C     RETURN
 
 CMI ... check the presence of PEMAT in order to decide whether to run 
 CMI   or not the CAP integral evaluation
@@ -130,18 +128,12 @@ CMI   ... evaluate integrals - fill array with them
      &      NCBF,NUBF)
         
 C ============================================================
-CMI     ... write complex atomic integrals into the file
 C
-C ... alter the file name when calculating CAP overlap integrals !
+C ... control print-out of calculated integrals 
 C
 C ============================================================
-CMI      open(unit=LUPEMAT,file='PEMAT',
-C        open(unit=LUPEMAT,file=PEMAT_NAME,
-C    &    STATUS='UNKNOWN',FORM='FORMATTED')
-        
-C        CALL OPNFIL(LUPEMAT,'PEMAT','UNKNOWN','SAJEEV') 
 
-CMI      do ii=1,n_b
+C        do ii=1,n_b
 C           do jj=1,n_b
 C              IPU=IPOINTIJ(ii,jj)
 C              if (jj.gt.ii)go to 301

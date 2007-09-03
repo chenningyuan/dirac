@@ -1298,7 +1298,7 @@ C /* Deck capready */
      &                   WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   read integrals from the PEMAT file under LBL label into the CAP array
+C   read integrals from the PEMAT file under the LBL label into the CAP array
 C
 C   do the symmetry adaptation into the CAPSA array
 C   
@@ -1306,7 +1306,7 @@ C   make triangular matrix of it and SAVE it to the AOPROPER file
 C   
 C   Called from prepcap.F/CAPADAPT
 C
-C Written by Miro ILIAS, May 2007, Tel Aviv
+C   Written by Miro ILIAS, May 2007, Tel Aviv
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -1343,8 +1343,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (IPRCAP.GE.2) THEN
        WRITE(LUPRI,'(/2X,A,A,A)')
-     &  'CAPADAPT: CAP integrals of the label ',
-     &  LBL,' succesfully read from PEMAT file into the CAPSA array.'
+     & 'CAPADAPT: CAP integrals of the label ',
+     & LBL,' succesfully read from PEMAT file into the CAPSA array.'
       ENDIF
 
 C==================================================================
@@ -1354,8 +1354,11 @@ C==================================================================
       IX = 0
       DO I = 1, NBASIS
       DO J = 1, I
+
         IX = IX + 1
+
         IX1 = CMNINDX(I,J)
+
         IF (IX.NE.IX1) THEN
          write(LUPRI,*) 'I,J: ',IX1,IX
          write(LUPRI,*) 'common indexes ',IX1,IX
@@ -1374,6 +1377,12 @@ C       CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
 
         CAP(indx_i) = CAPSA(IX)*CAP_FACT
         CAP(indx_j) = CAPSA(IX)*CAP_FACT
+ 
+        IF (IPRCAP.GE.4) THEN
+         WRITE(LUPRI,'(2X,A,1X,2(A,2I3,F17.10))')
+     &   LBL,'CAP:',I,J,CAPSA(IX),
+     &   ' DIRAC:',ICAPBFO(I),ICAPBFO(J),CAP(indx_i)
+        ENDIF
 
       ENDDO 
       ENDDO 
