@@ -2995,8 +2995,8 @@ C
       COMPLEX*16 CEPSK,CKCVIR,DII,S_UNST,S_STAR,S
       REAL*8 SEC0,SEC1,SEC2,SECA,TITERTIME
 
-      COMPLEX*16 ZDOTC
-      REAL*8 GETIMAG
+      COMPLEX*16 ZDOTC,ZSQRT
+      REAL*8 GETIMAG,ZABS
 C
 C---------------Executable code--------------------------------------
 C

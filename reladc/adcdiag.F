@@ -355,10 +355,10 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 AUEV, WH, WP
+      REAL*8 AUEV, WH, WP, ZABS
       DATA AUEV /27.2113957D0/
       CHARACTER*7 EVECFN
-      COMPLEX*16 B
+      COMPLEX*16 B,ZSQRT
       character*78 field
 C
 C---------------Executable code--------------------------------------
@@ -840,7 +840,7 @@ C
 C
 C---------------Local variables and function definitions ------------
 C
-      COMPLEX*16 Y,ZDOTC,Z1
+      COMPLEX*16 Y,ZDOTC,Z1,ZSQRT
       CHARACTER*7 EVECFN
 C
 C---------------Executable code--------------------------------------
@@ -1485,7 +1485,7 @@ c
       complex*16 b(ndim)
 c     
       integer i
-      complex*16 y,norm
+      complex*16 y,norm,zsqrt
 c     
       norm = (0.0d0, 0.0d0)
       do 10 i = 1, ndim
@@ -1539,7 +1539,7 @@ c     -----------------------------------------------------
       implicit none
 c
       integer m1, m2, mp, mp1, n, np, indx(n)
-      real*8 tiny, d
+      real*8 tiny, d, zabs
       complex*16 a(np,mp), a1(np,mp1)
 c
       parameter (tiny = 1.d-20)
@@ -2127,9 +2127,9 @@ C
 
       REAL*8 AA,AK,A1K,SUM,SUP
       REAL*8 AUEV,THRS,OVL
-      REAL*8 X1,X2,Y1,Y2
+      REAL*8 X1,X2,Y1,Y2,ZABS
 
-      COMPLEX*16 XM,ZDOTC
+      COMPLEX*16 XM,ZDOTC,ZSQRT
       DATA AUEV/27.2113957D0/
 
       CHARACTER*7 EVALFN
