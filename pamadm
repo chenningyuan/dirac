@@ -71,8 +71,9 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
-      EMBMOD=1
-      ADCMOD=1
+      F90MODS=ALL_F90MODS
+#      EMBMOD=1
+#      ADCMOD=1
       echo " - DIRAC administrator ..."
    fi
    #
@@ -980,6 +981,7 @@ if [ -n "$MODULES" ]; then
   echo '#       Fortran90/95 modules # ' >> Makefile
   echo '#--------------------------- # ' >> Makefile
   echo 'mod  :             ;\' >> Makefile
+  echo '     cd  abacus     ; $(MAKE) mod ; cd .. ;\' >> Makefile
   if [ -n "$EMBMOD" ]; then
      echo '     cd  embedding  ; $(MAKE) mod ; cd .. ;\' >> Makefile
   fi
@@ -1172,7 +1174,14 @@ EOF
 ###                   Add makedepend targets                         ###
 ########################################################################
 TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
-TEMPOOF=
+
+#
+#  ... Jetze added F90 module stuff into abacus; include further directories
+# when you extent default pamadm modules with F90 features
+#
+TEMPOOF=abacus
+
+
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
 fi
