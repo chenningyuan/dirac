@@ -37,6 +37,11 @@ if [ "	" = "`echo '\t'`" ]; then
 else
    echo="echo -e"
 fi
+
+#
+# Is 'locate' installed?
+which locate > /dev/null; locate_ok=$?
+
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -261,23 +266,23 @@ liblist="$userlib libatlas"
 case $machine in
    *-ibm)
       liblist="$liblist libesslp2 libessl"
-      complist='xlf f77 f90'
+      complist='xlf f90 f77'
       cclist='xlc xlC cc';;
 
    mips*-sgi) 
       liblist="$liblist libcomplib.sgimath"
-      complist='f77 f90';;
+      complist='f90 f77';;
 
    i[3-6]86-*)
       liblist="$liblist libmkl"
-      complist='ifort ifc g95 pgf90 pgf77 gfortran g77 f77'
+      complist='ifort ifc g95 gfortran pgf90 pgf77 g77 f77'
       cclist='icc gcc pgcc cc'
       debug='gdb';;
 
     x86_64-*)
-#     liblist=$liblist
-      complist='g95 pgf90 pgf77 pathf90 gfortran g77 f77'
-      cclist='gcc pgcc pathcc cc'
+      liblist=$liblist libmkl
+      complist='ifort ifc g95 gfortran pgf90 pgf77 pathf90 g77 f77'
+      cclist='icc gcc pgcc pathcc cc'
       debug='gdb';;
 
    ia64-unknown-linux)
@@ -332,7 +337,7 @@ echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
+	#
 #
 # PARALLEL
 #
@@ -715,7 +720,8 @@ lquick=$quick
 #
    libguess=`./config.status LIB_LIST`
    if [ ! -z "$libguess" ]; then
-      echo Old Makefile.config file uses $libguess
+      ls -l Makefile.config
+      echo This old Makefile.config file uses $libguess
       $echo 'Do you want to use that again ? (Y/n) \c'
       read defblas
       case "$defblas" in   
@@ -739,9 +745,8 @@ fi
 
 nolib () 
 {
-   echo  $LIB' is not a legal library.'
-   rm -f gnyf.F gnyf.x gnyf.o 
-   exit 1;
+   echo  Sorry, $LIB is not a legal library any more.
+   LIB=
 }
 
 if [ ! -z "$LIB" ]; then
@@ -752,7 +757,12 @@ if [ ! -z "$LIB" ]; then
    rm -f gnyf.F gnyf.x gnyf.o
 fi
 extlist='.so .a'
-if [ -z "$LIB" -a -n "$liblist" ]; then
+echo test $LIB and $liblist
+if [ -z "$LIB" ]; then
+#  if [ $locate_ok == 0 ]; then
+#  elif [ -n "$liblist" ]; then
+  if [ -n "$liblist" ]; then
+#
   for testlib in $liblist; do
      for ext in $extlist; do
        for testdir in $dirlist; do
@@ -784,9 +794,10 @@ if [ -z "$LIB" -a -n "$liblist" ]; then
     test -n "$LIB" && break
   done
   fi
+fi
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
-    echo 'Mathematical libraries: none'
+    echo 'Mathematical libraries: none found'
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
