@@ -22,8 +22,13 @@ clean :
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod
 	$(RM) -f ../modules/*.mod
 
-mod : $(F90_MODS)  ;\
-        ln -sf $(PWD)/*.mod ../modules/.
+##
+##  compile Fortran90 module source files and make symbolic links
+## of resulting *.mod files into common linked directory modules
+##
+mod : $(F90_MODS) ;\
+$(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
+##ln -sf $(PWD)/*.mod ../modules/. 
 
 
 dirac.x:
