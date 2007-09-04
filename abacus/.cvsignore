@@ -1,4 +1,5 @@
 .deps
+.mod
 Makefile
 configure
 pam
