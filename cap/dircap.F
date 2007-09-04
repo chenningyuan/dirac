@@ -283,7 +283,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-      PARAMETER(MSIZE=500)
+      PARAMETER(MSIZE=600)
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
@@ -369,6 +369,12 @@ C    ... newest...not defined in Gamess
 
 #include "dummy.h"
       CALL QENTER('INPREAD')
+
+      IF (NCBF.GT.MSIZE) THEN
+        WRITE(LUPRI,'(A,I4,A,I4)') 'INPREAD: number of basis fu:',NCBF,
+     &                 ' while allocated space is MSIZE ',MSIZE
+        CALL QUIT('INPREAD: increase parameter MSIZE !!!')
+      ENDIF
 
 C     ... zero array for number of contracted basis function
 C     do i=1,200
@@ -648,6 +654,11 @@ C ===================================================================
      & ' contracted basis functions=',sh,'/',n_b
        CALL FLSHFO(LUPRI)
 
+       IF (n_b.NE.NCBF) THEN
+        WRITE(LUPRI,*) 'n_b,NCBF=',n_b,NCBF
+        CALL QUIT('INPREAD: n_b <> NCBF !')
+       ENDIF
+
        WRITE(LUPRI,'(/2X,A,I3)')
      & 'Number of R_ms elements (sh)=',sh
        DO I=1,sh
@@ -667,7 +678,7 @@ C ===================================================================
        do i=1,n_b
           write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
      &   ' contr->',basis_n(i)  
-C        ... write into file
+C        ... write into file LUCAP
          WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
        end do
 

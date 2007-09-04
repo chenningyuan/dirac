@@ -612,6 +612,7 @@ C ...  read DIRAC/CAP basis functions ...
 C       .. skip text lines
       READ(LUCD,*)
       READ(LUCL,*)
+
       DO I = 1, NBASIS
 C      ... fill in CAP abfu characteristics
         read(LUCL,*) II1,INC1,AO1
@@ -626,6 +627,7 @@ C      ... fill in DIRAC abfu characteristics
         CALL IOBFSET(IOBF2,I,IPRCAP)
 
         IF (IPRCAP.GE.3) THEN
+C         ...    printout of IOBF parameters 
           write(LUPRI,'(I4,A,I3,A,A4,A,I2,A,I3,A,D14.6)')
      &    II1,'> nucleus:',IOBF1(1,I),' funct: ',AO1,'/',IOBF1(2,I),
      &     ' >  CAP unique fu #:',
@@ -644,21 +646,22 @@ C      ... fill in DIRAC abfu characteristics
       CALL GPCLOSE(LUCD,'KEEP')
       CALL GPCLOSE(LUCL,'KEEP')
 
-C ... according to the DIRAC basis function order fill ICAPBFO
+C=======================================================================
+C     ... according to the DIRAC basis function order fill ICAPBFO
+C=======================================================================
       DO I = 1, NBASIS
         IX = 0
         DO J = 1 , NBASIS
-C         IF (IOBF2(1,I).EQ.IOBF1(1,J).AND.
-C    &        IOBF2(2,I).EQ.IOBF1(2,J).AND.
-C    &        IOBF2(3,I).EQ.IOBF1(3,J)) IX = J        
           IF (IOBF1(1,I).EQ.IOBF2(1,J).AND.
      &        IOBF1(2,I).EQ.IOBF2(2,J).AND.
      &        IOBF1(3,I).EQ.IOBF2(3,J)) IX = J        
         ENDDO
 
         IF (IX.EQ.0) THEN
-          WRITE(LUPRI,*) '  '
-          WRITE(LUPRI,*) '  '
+          WRITE(LUPRI,*) 'CAPADAPT: I,J =',I,J
+          WRITE(LUPRI,*) 'IOBF1(1,I),IOBF2(1,J):',IOBF1(1,I),IOBF2(1,J)
+          WRITE(LUPRI,*) 'IOBF1(2,I),IOBF2(2,J):',IOBF1(2,I),IOBF2(2,J)
+          WRITE(LUPRI,*) 'IOBF1(3,I),IOBF2(3,J):',IOBF1(3,I),IOBF2(3,J)
           CALL QUIT('CAPADAPT: order does not fit !!')
         ENDIF
  
