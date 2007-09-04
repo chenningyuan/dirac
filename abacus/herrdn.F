@@ -456,17 +456,18 @@ C
         FUNCTION GET_EXTENSION(filename)
           CHARACTER(LEN=*), INTENT(IN) :: filename
           CHARACTER(LEN=LEN(filetypes(1))) :: get_extension
-          INTEGER :: i
+          INTEGER :: i, len_ft
           LOGICAL :: ex
   
-          DO i=1, LEN(filetypes)           
+          len_ft = LEN(filetypes)
+          DO i=1, len_ft
             INQUIRE(file=filename//'.'//TRIM(filetypes(i)), exist=ex)
             IF (ex) THEN
               get_extension=TRIM(filetypes(i))
               EXIT
             END IF
         END DO
-          IF (i>LEN(filetypes))  get_extension=' '
+          IF (i>len_ft)  get_extension=' '
         END FUNCTION
                
         SUBROUTINE READ_CHAR(filenum,linewidth,var,index,fixedwidth,
