@@ -35,8 +35,8 @@ subroutine DrvIntGen
 
 9011 format('******************************',/,&
             'HSMRCC INTEGRAL FILE GENERATOR',/,&
-            '******************************',/,&
-           )
+            '******************************'/)    ! MI: gfortran does not accept '/' at the end...
+
 9012 format('Integral CUTOFF is ',E13.8)
 9013 format('Generating 14 Integral Files .. ')
 
@@ -154,11 +154,12 @@ subroutine DrvIntGen
    write(UOUT,9021) ToTTime()
    write(UOUT,9022)
 
-9021 format('Done in ',F6.1,' seconds.',/,)
+!9021 format('Done in ',F6.1,' seconds.',/,)
+9021 format('Done in ',F6.1,' seconds.'/)
 9022 format('**************************************',/,&
             'END OF HSMRCC INTEGRAL FILE GENERATION',/,&
-            '**************************************',/,&
-           )
+            '**************************************'/)
+           
 
    deallocate(GenIntBuf)
    close(UMR2EINT)
@@ -1446,7 +1447,7 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 
    RETURN
 
-END
+END SUBROUTINE PREAD
 
 SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2)
 
@@ -1459,6 +1460,6 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2)
 
    RETURN
 
-END
+END SUBROUTINE PRD
 
 end module IntGenMod

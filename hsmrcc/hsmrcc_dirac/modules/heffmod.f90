@@ -5,7 +5,8 @@ module HEFFModule
    use OrbMod
    use IOmodule
    use VacMod
-   use SymBlock
+   !use SymBlock
+   use SymBlocks
    use s2matele
    use TAmps
    use TIndexMod
@@ -615,8 +616,8 @@ subroutine PrintHEFF
 9011  format(/, &
       "**************************************************************",/, &
       "Effective Hamiltonian Matrix, its eigenvalues and eigenvectors",/, &
-      "**************************************************************",/, &
-            )
+      "**************************************************************") 
+            
    write(UOUT,9012) NSYM_BLOCK
 
 9012  format("number of symmetry blocks = ",i3)
@@ -652,13 +653,13 @@ subroutine PrintHEFF
 9021  format(/,&
              "***********************************************************************",/,&
              "Symmetry Block = ",i3,1x,"Ms2 = ",i3,1x,"Irrep = ",i1,1x,"(",a4,")",1x,"Number of vacua = ",i5,/, &
-             "***********************************************************************",/,&
-            )
+             "***********************************************************************"/)
+            
 9022  format(/,&
              "**************************************",/, &
              "root ms2 irp label 2s+1     energy    ",/, &
-             "**************************************",/, &
-            )
+             "**************************************"/)
+            
 9023  format(i4,1x,i3,1x,1x,i1,1x,1x,a4,1x,i3,1x,1x,F14.9,/)
 9024  format("**************************************",/)
 

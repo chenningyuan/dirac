@@ -1,4 +1,5 @@
-module SymBlock
+!module SymBlock
+module SymBlocks
 
    implicit none
 
@@ -22,4 +23,5 @@ module SymBlock
 
    type (symblock), allocatable, target :: symblock_array(:)
 
-end module SymBlock
+end module SymBlocks
+!end module SymBlock

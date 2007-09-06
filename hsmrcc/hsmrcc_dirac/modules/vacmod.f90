@@ -4,7 +4,8 @@ module VacMod
    use IOModule
    use GMSMod
    use OrbMod
-   use SymBlock
+   !use SymBlock
+   use SymBlocks
    use s2matele
    implicit none
    public
