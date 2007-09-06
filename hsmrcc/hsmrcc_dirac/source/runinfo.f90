@@ -18,7 +18,7 @@ subroutine PrintRunInfo
 
    write(UOUT,9001)
 
-9001 format(                                                                   ,/, &
+9001 format(/,                                                                    &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
             '|      PROGRAM FOR EFFECTIVE AND INTERMEDIATE HAMILTONIAN       |',/, &
             '|     HILBERT SPACE MULTI-REFERENCE COUPLED CLUSTER METHODS     |',/, &
@@ -44,8 +44,7 @@ subroutine PrintRunInfo
             '|                                                               |',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
             '|                INFORMATION ON CURRENT RUN                     |',/, &
-            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
-           )
+            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'/)
 
 !  print out basic parameters
 
@@ -62,8 +61,7 @@ subroutine PrintRunInfo
             '      valence particles   (NPTCL)  = ',i3,/, &
             'Number of electrons       (NELE)   = ',i3,/, &
             'Dimension of model space  (NSTATE) = ',i8,/, &
-            'No. of Cluster Amplitudes (NTSIZE) = ',i8,/, &
-           )
+            'No. of Cluster Amplitudes (NTSIZE) = ',i8,/)
 
 ! ...  print out options used for current run
 
@@ -88,8 +86,8 @@ subroutine PrintRunInfo
             'Use of T/HEFF for Convergence [CONVTAMP] = ',a3,/, &
             'Only Intergal Generation        [NOHSMR] = ',a3,/, &
             'Do not append results           [NOAPND] = ',a3,/, &
-            'Read T-Amplitude guess         [RDGUESS] = ',a3,/, &
-           )
+            'Read T-Amplitude guess         [RDGUESS] = ',a3,/ )  
+           
 
 !  print out other information
 
@@ -107,8 +105,7 @@ subroutine PrintRunInfo
             'Extrapolation Parameter (Beeta) = ',F5.3,/, &
             'Convergence Tolerance           = ',F13.10,/, &
             'Integral Cutoff                 = ',E13.8 ,/, &
-            'Maximum No of Iterations        = ',i3,/, &
-           )
+            'Maximum No of Iterations        = ',i3,/)
 
 !   ...  information from gamess
 
@@ -119,8 +116,8 @@ subroutine PrintRunInfo
             '******************',/,  &
             'Total Electronic Energy         (TotEn) = ',F16.10,/, &
             'Nuclear Energy                  (NucEn) = ',F16.10,/, &
-            'Integral Cutoff used in Gamess (TRFTOL) = ',E16.10,/, &
-           )
+            'Integral Cutoff used in Gamess (TRFTOL) = ',E16.10,/)
+           
 
 !  Print out orbital information
 
@@ -158,8 +155,8 @@ subroutine PrintRunInfo
             '                                Spin-Orbital Information                              ',/,&
             '**************************************************************************************',/,&
             'Orbital Type Spin Irrep IrpLabel OccGMS OccRef Space    Energy     Shift     Shifed-En',/,&
-            '**************************************************************************************',/,&
-           )
+            '**************************************************************************************',/)
+           
 9052 format(i4,3x,1x,a4,1x,a4,1x,i3,2x,2x,a4,2x,1x,i4,2x,1x,i4,2x,1x,1x,a4,1x,F10.6,1x,F10.6,1x,F10.6)
 9053 format(1x)
 9054 format('**************************************************************************************')
@@ -181,8 +178,8 @@ subroutine PrintRunInfo
             '           Information on Model Space Vacua              ',/, &
             '---------------------------------------------------------',/, &
             'Vacuum Orig-Order Ms2Vac Irrep IrpLabel Occupation String',/, &
-            '---------------------------------------------------------',/, &
-           )
+            '---------------------------------------------------------',/)
+           
 9062 format(i4,2x,1x,2x,i4,4x,1x,i4,2x,1x,i3,2x,1x,2x,a4,2x,1x,20(i1))
 9063 format('---------------------------------------------------------')
 9064 format(1x)
