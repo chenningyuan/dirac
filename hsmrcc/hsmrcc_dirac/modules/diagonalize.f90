@@ -144,7 +144,10 @@
 
          if (abort_if_complex.and.(nev.ne.n)) then
             write(UOUT,*) "Complex eigenvalues during diagonalization"
-            write(UOUT,*) ((wr(i), wi(i)),i=1,n)
+            !write(UOUT,*) ( ( wr(i),wi(i) ),i=1,n)
+            do i=1,n
+              write(UOUT,*)  wr(i), wi(i) 
+            enddo
             call flush(UOUT)
             call abort
          endif
