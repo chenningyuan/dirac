@@ -412,7 +412,7 @@ contains
 
       return
 
-      end
+      end subroutine setup_irrep_tables
 
 !===================================================
 !         print out irrep_product table
@@ -447,6 +447,6 @@ contains
  9007 format(A4,2X, '|',2(1H ),10(A4,2X))
  9008 format(6(1H ),'|')
 
-      end
+      end subroutine print_irrep_tables
 
 end module SymInf
