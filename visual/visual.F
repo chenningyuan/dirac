@@ -29,7 +29,7 @@ C=======================================================================
 !                   1         2         3         4
       DATA TABLE /'.XXXXXX','.2D    ','.3D    ','.QUANTI',
 !                   5         6         7         8
-     &            '.SKIPEP','.SKIPEE','.STRING','.INTEGR',
+     &            '.XXXXXX','.XXXXXX','.STRING','.INTEGR',
 !                   9        10        11        12
      &            '.3DADD ','.CUBE  ','.COMMON','.FREQ+H',
 !                  13        14        15        16
@@ -449,13 +449,19 @@ C=======================================================================
             DO J = 1,NJ
               DO K = 1,NK
 
-                PX = RANGE_MIN + (I-1)*(RANGE_MAX - RANGE_MIN)/(NI-1)
-                PY = RANGE_MIN + (J-1)*(RANGE_MAX - RANGE_MIN)/(NJ-1)
-                PZ = RANGE_MIN + (K-1)*(RANGE_MAX - RANGE_MIN)/(NK-1)
+                PX = VISUAL_ORIGIN(1)
+     &             + RANGE_MIN + (I-1)*(RANGE_MAX - RANGE_MIN)/(NI-1)
+                PY = VISUAL_ORIGIN(2)
+     &             + RANGE_MIN + (J-1)*(RANGE_MAX - RANGE_MIN)/(NJ-1)
+                PZ = VISUAL_ORIGIN(3)
+     &             + RANGE_MIN + (K-1)*(RANGE_MAX - RANGE_MIN)/(NK-1)
 
-                IF(ORIENTATION(IORIENTATION) .EQ. 'xy') PZ = D0
-                IF(ORIENTATION(IORIENTATION) .EQ. 'xz') PY = D0
-                IF(ORIENTATION(IORIENTATION) .EQ. 'yz') PX = D0
+                IF(ORIENTATION(IORIENTATION) .EQ. 'xy')
+     &                                        PZ = VISUAL_ORIGIN(3) + D0
+                IF(ORIENTATION(IORIENTATION) .EQ. 'xz')
+     &                                        PY = VISUAL_ORIGIN(2) + D0
+                IF(ORIENTATION(IORIENTATION) .EQ. 'yz')
+     &                                        PX = VISUAL_ORIGIN(1) + D0
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                     GAO,
