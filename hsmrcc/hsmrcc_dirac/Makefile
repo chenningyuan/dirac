@@ -1,21 +1,98 @@
-##################################################
+#################################################
+#
 # This is Makefile for NEWHSMR program
 # This can be compiled with GNU Make
 # (not ordinary Make)
+#
 ##################################################
 
 # Use ksh or bash for shell
+#SHELL = /bin/bash
 
-SHELL = /bin/bash
-
+#
 # control chars for bold display
 # cs : startbold ce : endbold
+#
 
 cs = [1m 
 ce = [m
 
-# Different Directories
+###########################################
+#
+#          FORTRAN90 compiler 
+#
+#    ... from DIRAC
+#
+###########################################
+
+##### include variables from DIRAC Makefile.config !!!  ####
+include ../../Makefile.config
+
+#FC      = pgf90
+#FC      = gfortran
+FC      =  $(F77)
+
+###########################################
+#
+#              C compiler 
+#
+#   ... from DIRAC
+#
+###########################################
+#CC      = pgf90
+#CC      = gcc
+#CCo      = $(CC)
+CCo      = $(F77)
+
+#######################################################
+###
+###           set up libraries from DIRAC
+###
+#######################################################
+#FCLIBS  = -lacml
+#FCLIBS  = -lblas -llapack
+#FCLIBS  = $(LIB_LIST)  -lblas
+FCLIBS  = $(LIB_LIST) 
+#FCLIBS  = $(LIB_LIST)  -lacml
+#FCLIBS  = $(LIB_LIST) -lblas -llapack
+
+## for pgf90 ##
+#LKFLAGS = -Mnomain
+#LKFLAGS = 
+
+CCLIBS  = 
+
+# These are options for generating optimized code
+
+ifeq ($(FC),pgf90)
+### Portland group
+              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+endif
+
+ifeq ($(FC),gfortran)
+## gfortran/gcc
+              FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
+endif
+# ... others combinations...
+#FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -fast
+#FFLAGS  = -I$(moddir)  -fdefault-integer-8 -J$(moddir) $(LDFLAGS)
+#FFLAGS  = -I$(moddir) -J$(moddir) $(LDFLAGS)
+#FFLAGS  = -I$(moddir) -module $(moddir) $(LDFLAGS)  -Mdclchk 
+#FFLAGS  = -I$(moddir)  -fdefault-integer-8 -J$(moddir)
+#CFLAGS  = -I$(moddir) -i8 -i8storage -fast
+#CFLAGS  = -I$(moddir) -fdefault-integer-8 
+
+CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
+
+# These are options for generating a debuggable code
+#FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -g -C
+#CFLAGS  = -I$(moddir) -i8 -i8storage -g
+
+
+#######################################################################
+#   Different directories
 # where the code is present.
+#######################################################################
 
 moddir = modules
 srcdir = source
@@ -30,7 +107,9 @@ vpath %.f90 $(moddir) $(srcdir)
 vpath %.c   $(srcdir)
 vpath %.h   $(moddir)
 
-# Object Files
+#################################
+####     Object Files        ####
+#################################
 
 modobjs := parameters.o   options.o      orbmod.o    iomodule.o   \
            tindexmod.o    timingmod.o    tamps.o     vacmod.o     \
@@ -48,42 +127,56 @@ c89objs := getopt.o hsmrmain.o
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 
-# Compiler flags
 
-FC      = pgf90
-FCLIBS  = -lacml
-LKFLAGS = -Mnomain
+######################################################
+#
+#
+#                  default target
+#
+#
+######################################################
 
-CC      = pgf90
-CCLIBS  = 
+### to fix main dependence form the ../../Makefile.config file
+dirac.x : $(executable)
 
-# These are options for generating optimized code
+###      name of the executable file        ###
+executable = hsmrcc.exe
 
-FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -fast
-CFLAGS  = -I$(moddir) -i8 -i8storage -fast
+# ## overwrite default make !!
+default : $(executable) 
+	@echo "Independent executable file " $(cs) $(executable) $(ce) " is ready." 
 
+##################
+###  linking   ###
+##################
 
-# These are options for generating a debuggable code
-
-#FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -g -C
-#CFLAGS  = -I$(moddir) -i8 -i8storage -g
-
-# defaut target
-
-hsmrcc.exe : $(objects)
-	@echo -n "Linking All Objects Files in" $(cs)$(objdir)$(ce) "into Executable ....."
+$(executable) : $(objects)
+	@echo -n "Linking All Objects Files in" $(cs)$(objdir)$(ce) "into Executable ..."
+	@echo  
+	@echo -n "... where used libraries are " $(cs) $(FCLIBS) $(CCLIBS) $(ce) 
+	@echo  
+	@echo -n "... and used linking flags are " $(cs) $(LKFLAGS) $(FFLAGS) $(ce) 
+	@echo  
 	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) $(FCLIBS) $(CCLIBS)
-	@echo "  Done."
+	@echo "  is done."
 	@echo "The Executable File generated is ==> " $(cs)$(@F)$(ce) " <=="
 
+##################
+###  cleaning  ###
+##################
 clean :
 	@echo -n "Cleaning up objects files in" $(cs)$(objdir)$(ce) " directory ....."
 	@rm -f $(addprefix $(objdir)/,$(objects))
 	@echo "  Done."
+	@echo -n "Cleaning up executable " $(cs)$(executable)$(ce) " in main hsmrcc_dirac directory ....."
+	@rm -f $(executable)
+	@echo "  Done."
 
 # dependencies other than implicit dependencies
 
-# Intermodule Dependencies
+###################################################################
+#              Intermodule Dependencies
+###################################################################
 
 $(f90objs) : $(modobjs)
 tindexmod.o   : parameters.o
@@ -135,10 +228,13 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 
 %.o : %.f90
 	@printf "Compiling F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
+	@echo -n "using" $(cs) $(FC) $(FFLAGS) "-c -o" $(ce)
 	@$(FC) $(FFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " Done."
+	@printf "%s\n" " ...Done."
 
 %.o : %.c
 	@printf "Compiling C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
-	@$(CC) $(CFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " Done."
+	@echo -n "using" $(cs) $(CCo) $(CFLAGS) "-c -o" $(ce)
+	@$(CCo) $(CFLAGS) -c -o $(objdir)/$@ $<
+	@printf "%s\n" " ...Done."
+
