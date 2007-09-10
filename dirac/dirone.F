@@ -305,7 +305,7 @@ C
       CALL NUCAT1(WORK(KONEIN),WORK(KFREE),LFREE,
      &            DOINT,OMITVNUC,IPRINT)
       IF(IPRINT.GE.4) THEN
-        CALL HEADER('Nuclear attraction integrals',-1)
+        CALL HEADER('Nuclear attraction Integrals',-1)
         CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
       ENDIF
 C
@@ -342,6 +342,7 @@ C  /* Deck nucat1 */
 #include "dummy.h"
 #include "mxcent.h"
 C
+      REAL*8 ARPP(NNBBAST)
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
@@ -350,6 +351,7 @@ C
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
+#include "dcbgen.h" 
 C
       CALL QENTER('NUCAT1')
 #include "memint.h"
@@ -373,6 +375,39 @@ C
 C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
+c
+C      *********************************************
+C      **                                         **
+C      **      this part adds ARGOS ARPP          **
+C      **    nuc-elec attraction integrals.       **
+C      **                                         **
+C      *********************************************
+      IF (ECPCALC) then
+      OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
+      READ(59),(ARPP(I),I=1,NNBBAST)
+      close(59)
+      IF (IPRINT .GE. 5) THEN
+        PRINT *,'KNUCS  = ',KNUCS
+        PRINT *,'NNBBASX  = ',NNBBASX
+        PRINT *,'NNBBAST  = ',NNBBAST
+        DO I=0,NNBBAST-1
+          PRINT *, 'KNUCS',KNUCS+i,'=',WORK(KNUCS+i)
+        ENDDO
+        WRITE(LUPRI,'(//A/)')
+     &   '*************************            ISL ISL        '//
+     &   '   *************************'
+        WRITE(LUPRI,'(15X,A//)')
+     &  ' ECP Integrals added to Veff  !!! '
+      END IF
+      DO I=0,NNBBAST-1
+         WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
+      ENDDO
+      IF (IPRINT .GE. 5) then
+        DO I=0,NNBBAST-1
+          PRINT *, 'Veff + core',KNUCS+i,'=',WORK(KNUCS+i)
+        ENDDO
+       ENDIF
+      ENDIF
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 C
 C     Memory deallocation
@@ -456,8 +491,9 @@ CMI     DKn(BSS) AO integrals from the BSSMAT file (lu=LUBSS)
 C
 C     Memory allocation
 C
-       CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
+cisl-b    getting NZ*N2BBASX instead of NZ*NNBBASX
+       CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KONEIN,   N2BBASX,WORK,KFREE,LFREE)
        CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
 C     ************************************************
@@ -604,7 +640,6 @@ C.........Fock matrix
         ENDIF
       ENDDO
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
 C     ================
@@ -622,6 +657,20 @@ C
           ENDIF
         ENDIF
       ENDDO
+c
+c    now add SO integrals
+c     SOPP integrals
+c     ==============
+c     
+      if (ECPCALC) then
+         IOP = IPSOPP
+c      making it square by using N2BBASX
+         CALL PRPMAOso(LU1INT,IOP,N2BBASX,FOCK,
+     &          OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+      endif
+C
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
 C
 C     Reindex to sorted basis
 C     =======================
@@ -931,8 +980,270 @@ C
      &                     PDOINT(KLBL)
       CALL QUIT('PRPMAO: Not able to read COMB')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+C  /* Deck prpmaoso */
+      SUBROUTINE PRPMAOso(LU1INT,IOP,IDIMENS,PMAT,
+     &                  OP1INT,FIRST,WORK,LWORK,IPRINT)
+C*************************************************************************
+****    
+C     
+C     Generates lower triangular/square  matrix of one-electron integrals
+C     corresponding to property IOP of COMMON block XCBPRP
+C
+C     On input:  LU1INT
+C                   IOP
+C     
+C     On output: PMAT - property matrix (boson unsorted)
+C
+C        
+C     Written by Trond Saue May 1996
+C     Last revision: May 19 1996 - tsaue
+C     Dec.2005, MI - adapted for square properties (IDIMENS = NNBBASX or N2BBASX)
+C
+C*************************************************************************
+****
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+C
+      CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
+      LOGICAL FIRST(*), DOINT(4), SQUARE
+CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
+      DIMENSION PMAT(IDIMENS,4),OP1INT(IDIMENS),WORK(LWORK), IDOINT(4)
+C
+      EXTERNAL BDQALGEBRA
 
 
+CMI   ... find out type of AO matrix - triangular or square
+      IF (IDIMENS.NE.N2BBASX.AND.IDIMENS.NE.NNBBASX) THEN
+       write(lupri,*) 'PRPMAO: NNBBASX,N2BBASX,IDIMENS=',
+     &                NNBBASX,N2BBASX,IDIMENS
+       call QUIT('PRPMAO: wrong dimension !!!')
+      ENDIF
+
+CMI   ... this initialization is needed
+      SQUARE = .true.
+C
+C     Extract information about property
+C     ==================================
+C
+      IOPTYP = IPRPTYP(IOP)
+      IF(IPRINT.GE.3) THEN
+        CALL HEADER('Output from PRPMAO',-1)
+        WRITE(LUPRI,*)
+     & 'Generating property matrix for property ',PRPNAM(IOP)
+        IF (SQUARE) THEN
+         write(lupri,*)
+     &   '.... it is the SQUARE matrix '
+        ELSE
+         write(lupri,*)
+     &   '.... it is the LOWER TRIANGULAR matrix '
+        ENDIF
+      ENDIF
+C
+C     Loop over components
+C     ====================
+C
+      IBRPOP = IPRPSYM(IOP)-1
+      NCMP   = MCMP(IOPTYP)
+      DO 11 I = 1,NCMP
+        PFAC  = FACPRP(I,IOP)
+        IF(ABS(PFAC).LT.PTOL) GOTO 11
+C
+C       Extract information about component
+C
+C       SCALAR OPERATOR:
+C       ----------------
+C       KLBL - pointer to list of labels
+C       ISYM - scalar operator is symmetric(1)/antisymmetric(2) about diagonal
+C       IBREP - boson irrep of scalar operator
+C
+C       MATRIX OPERATOR:
+C       ----------------
+C
+C       IM4  - pointer to matrix operator
+C       IFAC - sign of coefficient in linear combination
+C       IFAS - sign of matrix operator
+C         Anti-symmetric scalar operators are provided with an imaginary phase
+C         in order to retain Hermiticity
+C       IMAT - quaternion position of matrix operator
+C
+        KLBL  = IPRPLBL(I,IOP)
+C
+C       Determine what matrix the operator enters
+C       =========================================
+C
+C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
+        IF(PDOINT(KLBL)(2:3) .EQ. '00') THEN
+          IC = 1
+        ELSE IF((PDOINT(KLBL)(1:1) .EQ. '0') .AND.
+     &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN
+          IC = 2
+        ELSE
+          CALL QUIT('PRPMAO: illegal PDOINT!')
+        ENDIF
+        IBRP = IPRLREP(KLBL)
+        IH   = IPRLTYP(KLBL)
+        IM4  = JM4(I,IOPTYP)
+        IZ   = JM4POS(IM4)
+        IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
+        IQP  = IQTOPQ(IQ,IBRPOP)
+        IF(IQP.LE.0) THEN
+          WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
+          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
+          WRITE(LUPRI,'(A,I2,A)') 'IQP(',IQP,').LE.0'
+          CALL WRIXPR(0,IOP)
+          WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
+          WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
+          WRITE(LUPRI,'(A,7I5)')
+     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP :',
+     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP
+          WRITE(LUPRI,'(A)') 'IQTOPQ(1:4,0:NBSYM-1):'
+          DO IZ = 1,4
+             WRITE(LUPRI,'(8I5)') (IQTOPQ(IZ,J),J=0,NBSYM-1)
+          END DO
+          WRITE(LUPRI,'(A)') 'IPQTOQ(1:NZ,0:NBSYM-1):'
+          DO IZ = 1,NZ
+             WRITE(LUPRI,'(8I5)') (IPQTOQ(IZ,J),J=0,NBSYM-1)
+          END DO
+          CALL QUIT('PRPMAO: IQP.LE.0 !!!')
+        END IF
+        IF(IQP.GT.NZ) THEN
+          WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
+          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
+          WRITE(LUPRI,'(A,I2,A,I2,A)') 'IQP(',IQP,').GT.NZ(',
+     &          NZ,')'
+          CALL WRIXPR(0,IOP)
+          WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
+          WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
+          CALL QUIT('PRPMAO: IQP.GT.NZ !!!')
+        ENDIF
+        IF(IPRINT.GE.4) THEN
+          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
+          FMT = MXFORM(PFAC,20)
+          WRITE(LUPRI,'(A,4X,'//FMT//',A,A4)')
+     &      'Factor: ',PFAC,' and PDOINT:',PDOINT(KLBL)
+          WRITE(LUPRI,'(A,I5)') 'Integrals enter matrix :',IQP
+          WRITE(LUPRI,'(A,L1,A,I2)')
+     &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
+
+        ENDIF
+C
+C       Get integral from file
+C
+        CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
+     &              OP1INT,IDIMENS,IPRINT)
+        IF(IPRINT.GE.8) THEN
+          WRITE(LUPRI,'(A)') '* Integrals from AOPROPER'
+          IF (SQUARE) THEN
+           CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
+     &                NTBAS(0),NTBAS(0),1,LUPRI)
+          ELSE
+           CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+          ENDIF
+        ENDIF
+C
+C       Determine factor to scale matrix with
+C       =====================================
+C
+        IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
+        PFAC  = FACPRP(I,IOP)*IFAC
+        IF(PFAC.NE.D1) THEN
+          CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
+          IF(IPRINT.GE.8) THEN
+            WRITE(LUPRI,'(/A,D13.6)')
+     &    '* Scaled integrals with factor=',PFAC
+           IF (SQUARE) THEN
+            CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
+     &              NTBAS(0),NTBAS(0),1,LUPRI)
+           ELSE
+             CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+           ENDIF
+          ENDIF
+        ENDIF
+C
+C       Phase transformation/PDOINT factor if necessary
+C
+c        this is changed so that
+c        PDOINT is now '+', '-', or '0',
+c        corresponding to a factor of -1, +1, or 0 on that block.
+        NM1 = 0
+        DO J = 1,4
+           JCHR = PDOINT(KLBL)(J:J)
+           IF (JCHR .EQ. '+') THEN
+              IDOINT(J) = 0
+              DOINT(J) = .FALSE.
+           ELSE IF (JCHR .EQ. '0') THEN
+              IDOINT(J) = 1
+              DOINT(J) = .TRUE.
+           ELSE IF (JCHR .EQ. '-') THEN
+              NM1 = 1
+              IDOINT(J) = -1
+              DOINT(J) = .TRUE.
+           ELSE
+              CALL QUIT('PRPMAO: Illegal factor in PDOINT')
+           END IF
+        END DO
+C
+        IF (NZ.LT.4 .OR. NM1.GT.0) THEN
+          IF (.NOT.SQUARE) THEN
+           CALL QNPHASE(IZ,IBRP,OP1INT,IDOINT)
+          ELSE
+           CALL QMPHASE('S',IZ,IBRP,OP1INT,DOINT)
+          ENDIF
+
+          IF(IPRINT.GE.8) THEN
+             WRITE(LUPRI,'(A/3A)')
+     &          '* Phase and/or PDOINT transformed integrals:',
+     &          '  ( PDOINT = ',PDOINT(KLBL),' )'
+             IF (SQUARE) THEN
+              CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
+     &             NTBAS(0),NTBAS(0),1,LUPRI)
+             ELSE
+              CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+             ENDIF
+          ENDIF
+        ENDIF
+C
+C       Determine where integrals go and add them on
+C
+        IF(FIRST(IQP)) THEN
+          CALL DCOPY(IDIMENS,OP1INT,1,PMAT(1,IQP),1)
+          FIRST(IQP) = .FALSE.
+        ELSE
+          CALL DAXPY(IDIMENS,D1,OP1INT,1,PMAT(1,IQP),1)
+        ENDIF
+ 11   CONTINUE
+      IF(IPRINT.GE.8) THEN
+        DO IZ = 1,NZ
+          WRITE(LUPRI,'(A,I2,A)') '* Property matrix (IZ=',IZ,')'
+          IF (FIRST(IZ)) THEN
+             WRITE(LUPRI,'(/A)') '  --- zero matrix ---'
+          ELSE
+           IF (SQUARE) THEN
+             CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+     &                   NTBAS(0),NTBAS(0),1,LUPRI)
+           ELSE
+             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),1,LUPRI)
+           ENDIF
+          END IF
+        ENDDO
+      ENDIF
+      RETURN
+C
+C     Not able to read IDOINT information from PDOINT
+C
+      WRITE(LUPRI,'(A,A)') 'PRPMAO: Class label:',PRPLBL(KLBL)
+      WRITE(LUPRI,'(A,A)') 'PRPMAO ERROR: Not able to read COMB =',
+     &                     PDOINT(KLBL)
+      CALL QUIT('PRPMAO: Not able to read COMB')
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
       SUBROUTINE PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,
