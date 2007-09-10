@@ -410,6 +410,11 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.73) THEN
+         JMAXD  = 1
+         JMAXM  = 0
+         DONUC1 = .TRUE.
+         DOMOM1 = .TRUE.
 C
 C hjaaj: INTTYP .gt. 200 are special relativistic operators for Dirac ...
 C
