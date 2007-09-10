@@ -264,10 +264,10 @@ debug='dbx'
 cclist='cc'
 liblist="$userlib libatlas"
 case $machine in
-   *-ibm)
+   *-ibm | powerpc64-unknown-linux* | ppc64* )
       liblist="$liblist libesslp2 libessl"
-      complist='xlf f90 f77'
-      cclist='xlc xlC cc';;
+      complist='xlf_r xlf f90 f77'
+      cclist='xlc_r xlc xlC cc';;
 
    mips*-sgi) 
       liblist="$liblist libcomplib.sgimath"
@@ -281,8 +281,8 @@ case $machine in
 
     x86_64-*)
       liblist=$liblist libmkl
-      complist='ifort ifc g95 gfortran pgf90 pgf77 pathf90 g77 f77'
-      cclist='icc gcc pgcc pathcc cc'
+      complist='ifort ifc g95 gfortran pgf90 pgf77 pathf90 g77 f77 xlf'
+      cclist='icc gcc pgcc pathcc cc xlc'
       debug='gdb';;
 
    ia64-unknown-linux)
@@ -403,7 +403,7 @@ if [ "$par" = "yes" ]; then
 #
    if [ "$mesp" = "mpi" ]; then
       case $machine in
-         *-ibm)
+         *-ibm | powerpc64-unknown-linux* | ppc64* )
             complist="mpxlf_r mpxlf $complist"
             cclist="mpcc_r mpcc $cclist" 
             parlib='no'
@@ -1142,7 +1142,8 @@ case $machine in
 #
 #   IBM
 #
-   *-ibm) 
+   *-ibm | powerpc64-unknown-linux* | ppc64* ) 
+      echo $os
       case $os in
          aix2*) 
             if [ "$mesp" = "dummy" ]; then
@@ -1156,6 +1157,20 @@ case $machine in
                mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
             inc="-I$INCLUDE_DIR";;
+         gnu* )
+            if [ "$mesp" = "dummy" ]; then
+               cpp="$cpp -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
+               ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
+               def='dirac.x'
+            else
+               cpp="$cpp -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
+               ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+	       def='dirmpi.x'
+               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+            fi
+            c_inc="-I$INCLUDE_DIR"
+            inc="-WF,-I$INCLUDE_DIR";;
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp="$cpp -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1171,10 +1186,23 @@ case $machine in
             c_inc="-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
          esac
-         opt='-O3 -qstrict -qextname -q64'
-	 c_opt='-O3 -qstrict -q64'
-         ldflag='-q64 -bmaxdata:0x8000000000'
-         arflag='-X64 rv'
+
+      case $os in
+         gnu* )
+            opt='-O3 -qstrict -qextname -q64'
+   	    c_opt='-O3 -qstrict -q64'
+            ldflag='-q64 '
+            arflag='rv'
+            ;;
+         *)
+            opt='-O3 -qstrict -qextname -q64'
+   	    c_opt='-O3 -qstrict -q64'
+            ldflag='-q64 -bmaxdata:0x8000000000'
+            arflag='-X64 rv'
+            ;;
+         esac
+
+
          ;;
 #
 #  IRIX
