@@ -12,6 +12,7 @@
 !     IPBETAMT   - Pointer to beta matrix in DCBXPR
 !     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
 !     IPKINERG   - Pointer to kinetic energy in DCBXPR
+!     IPSOPP     - Pointer to ECP spin-orbit matrix, SOPP DCBXPR
 !     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
 !     MC         - number of components (1=only large, 2=large+small)
@@ -81,7 +82,7 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK                                             
+     &        INI2C, I2COFK, IPSOPP                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -93,7 +94,7 @@
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
      &                IMFCH, I2CHAM, INI2C, I2COFK,                     &
-     &                I2_HAM                                            
+     &                I2_HAM, IPSOPP                                    
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -103,7 +104,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG
+     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG   &
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
