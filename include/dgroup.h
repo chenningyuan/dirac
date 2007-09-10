@@ -36,7 +36,7 @@
 
 ! CMI ... number of operator types in DIRAC is now in NOPTYP
       INTEGER NOPTYP
-      PARAMETER (NOPTYP = 19)
+      PARAMETER (NOPTYP = 20)
 
 ! *** 4-component operators : Matrix part ***
 !
