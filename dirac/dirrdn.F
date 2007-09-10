@@ -210,7 +210,7 @@ C
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.SPHTRA','.ECP   ','.XXXXXX','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -221,6 +221,7 @@ C
       NOGENINP = .FALSE.
       TWOCOMP  = .FALSE.
       TWOCOMPBSS = .FALSE.
+      ECPCALC  = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
@@ -330,6 +331,9 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
+C&&&& ECP: do ECP calculation, non-relativistic
+            ECPCALC = .TRUE.
+            TWOCOMP = .TRUE.
             GO TO 100
   111     CONTINUE
             GO TO 100
@@ -404,6 +408,9 @@ C
         ISSDIR = 0
         IGTDIR = 0
       ENDIF
+      IF (ECPCALC)
+     &  WRITE(LUPRI,'(1X,A)') 
+     &   '  employing effective-core-potentials (ECP)'
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
@@ -4334,7 +4341,7 @@ C
       IF (TWOCOMP) THEN
         IF(BSS) THEN
           NZC1 = 4 
-        ELSE
+        ELSE IF (.NOT. ECPCALC) THEN
           NZC1 = 1
           NZ   = 1
           SPINFR = .TRUE.
@@ -4465,7 +4472,7 @@ C           ... check on identical nucleus numbers ....
 
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
+      ELSE IF (TWOCOMP.AND..NOT.BSS.AND..NOT.ECPCALC) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
      &       '   - parameter NZ set to one'
       ELSE
@@ -5099,6 +5106,27 @@ CMI   nonrelativistic  kinetic energy integrals ...
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
 CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
+
+c       
+        IF (ECPCALC) THEN
+c     
+c     Spin-orbit integrals for ECP centres ...
+c     ========================================
+c        
+        PNAME            = 'Spin-orbit Pseudopotentials'
+        IPTYP            = 20 ! for the new definition
+        NPCOMP           = 3
+        PFAC(1)          = +1.0
+        PFAC(2)          = +1.0
+        PFAC(3)          = +1.0
+        PLABEL(1)        = 'X1SOPP  '
+        PLABEL(2)        = 'Y1SOPP  '
+        PLABEL(3)        = 'Z1SOPP  '
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+c      ... use IPSOPP defined in dcbham.h
+        IPSOPP           = INDXPR
+        END IF         
 
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
