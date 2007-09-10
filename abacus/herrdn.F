@@ -2394,6 +2394,8 @@ C******************************************************************************
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
+#include "argoscom.h"
+#include "argoscomch.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
 #include "clsfmm.h"
 #include "cbirea.h"
@@ -2428,6 +2430,7 @@ C     JHS The following variables come from a commonblock and are thus kept in F
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
+      integer blk
 
 #include "molinp.h"
 #include "ccom.h"
@@ -2623,7 +2626,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
-     &            DOOWN)
+     &            DOOWN,blk)
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -2631,7 +2634,7 @@ C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
-     &            KBLOCK,KPRIM,HERMIT)
+     &            KBLOCK,KPRIM,HERMIT,blk)
 C
       IF (ALLOCATED(ALPHA)) DEALLOCATE(ALPHA)
       IF (ALLOCATED(CPRIM)) DEALLOCATE(CPRIM)
@@ -2656,6 +2659,21 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
+c**************************************************************
+c**************************************************************
+c**                                                          **
+c**                This is for generating ARGOSIN            **
+c**                                                          **
+c**************************************************************
+c**************************************************************
+      nsag   = NUCIND
+      naordsag = blk
+      ngcsag = blk
+      nstag = MAXREP + 1
+      do i = 0, nstag-1
+         ndag(i) = 1
+      enddo
+c
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(NONT)) DEALLOCATE(NONT)
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
@@ -3683,6 +3701,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
+#include "dcbgen.h"
 C
       IF (GAUNUC.AND.NINT(Q).NE.0) THEN
         IF(QEXP.EQ.D0) THEN
@@ -3690,6 +3709,7 @@ C
         ELSE
            GEXP = QEXP
         ENDIF
+        IF (ECPCALC) GEXP = 6.66D+37
 C
 C       Print out warning if GEXP < 1.0D8
 C
@@ -3704,6 +3724,7 @@ C
      &       Q,' :',GEXP
       ELSE
          GEXP = D0
+         IF (ECPCALC) GEXP = 6.66D+37
       END IF
       NUCSTR = NUCIND + 1
       IF (INPTST) WRITE(LUPRI,'(3X,A)') 'Symmetry independent centers:'
@@ -3782,7 +3803,7 @@ C
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
-     &                  KBLOCK,KPRIM,DOOWN)
+     &                  KBLOCK,KPRIM,DOOWN,blk)
 C
 C*****************************************************************************
 C
@@ -3799,6 +3820,8 @@ C
 #include "codata.h"
 #include "cbirea.h"
 #include "dcbgen.h"
+#include "argoscom.h"
+#include "argoscomch.h"
 
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
@@ -3808,6 +3831,7 @@ C
      &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*1 SPDCAR
+      integer blk
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -4077,7 +4101,7 @@ C
       KLAST = KIREP + MXCORB
       IF (KLAST .GT. LWORK) GOTO 5030
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
-     &            DOOWN)
+     &            DOOWN,blk)
 C
       RETURN
 C
@@ -4615,8 +4639,10 @@ C
 C
 C           Reorder primitive orbitals
 C
+            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &             SEG(NBLOCK),KPRIM,DSM)
+            endif
 C
 C            Normalize orbitals
 C
@@ -4687,8 +4713,10 @@ C
 C
 C        Reorder primitive orbitals
 C
+         if (.not. ECPCALC) then
          CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCI,NRCI,
      &               SEG(NBLOCK),KPRIM,DSM)
+         endif
 C
 C        Normalize orbitals
 C
@@ -4783,8 +4811,10 @@ C
 C
 C           Reorder primitive orbitals
 C
+            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &           SEG(NBLOCK),KPRIM,DSM)
+            endif
 C
 C           Normalize orbitals
 C
@@ -4999,8 +5029,10 @@ C
 C
 C           Reorder primitive orbitals
 C
+            if (.not. ECPCALC) then
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
      &                  SEG(NBLOCK),KPRIM,DSM)
+            endif
 C
 C           Normalize orbitals
 C
@@ -6069,7 +6101,7 @@ C
 C
       END
 C  /* Deck sympro */
-      SUBROUTINE SYMPRO(LVALUE,MVALUE,NVALUE,IRREP,DOOWN)
+      SUBROUTINE SYMPRO(LVALUE,MVALUE,NVALUE,IRREP,DOOWN,blk)
 C*****************************************************************************
 C
 C     SYMPRO generates the symmetry orbitals (SOs) from the list of
@@ -6134,6 +6166,7 @@ C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
+      integer soef, blk
 #include "nuclei.h"
 #include "ccom.h"
 #include "shells.h"
@@ -6145,6 +6178,8 @@ C
 #include "cbirea.h"
 C
 #include "ibtfun.h"
+#include "argoscom.h"
+#include "argoscomch.h"
 C*****************************************************************************
 C Determine ISYMAO:
 C       ISYMAO is a bitstring indicating how atomic orbitals centered in
@@ -6344,6 +6379,75 @@ C
           ENDDO
         ENDDO
       ENDDO
+c
+c---------------------------------------------------------------
+c For ARGOS
+C
+C     Run over Nuclear Centres
+C
+      blk = 0
+      do 401 ICENT = 1, NUCIND
+         nucdega = nucdeg(ICENT)
+         DO 411 IA = 1, KMAX
+            ila = 0
+            icol = 1
+            MULA   = ISTBAO(IA)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            NUMCFA = NUMCF(IA)
+            IC     = LCLASS(IA)
+            ncenta = NCENT(IA)
+            irowmax(icent,NHKTA) = nucdega * KHKTA
+            if (ncenta .eq. ICENT) then
+               if ((ncenta .ne. NCENT(IA-1)) .or.
+     &             (NHKTA .ne. NHKT(IA-1))) then
+                  blk = blk +1
+                  IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
+                  IOFF = NAORBD
+                  DO 421 NA = 1, KHKTA
+                     ila = 0
+                     DO 431 LA = 0, MAXREP
+                        IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
+C
+C              If orbital contributes to this representation:
+C
+c                (IVARB is a bitstring of basic operations with
+C                1 in the positions where the basic operations
+C                has a different parity for the irrep and the
+C                AO(when centered in origo). These basic
+C                operations with different parities must then
+C                not be part of the stabilizer of the center
+C                for the AO).
+C
+                        IF (IBTAND(MULA,IVARB) .EQ. 0) THEN
+                           ila = ila + 1
+                           JKB = 0
+C
+C                 loop over symmetry dependent centers
+C
+                           DO 441 KB = 0, MAXREP
+                              IF (IBTAND(KB,MULA) .EQ. 0) THEN
+                                 JKB              = JKB + 1
+                                 irow = NA + KHKTA*(ila-1)
+                                 icol = NA + KHKTA*(JKB-1)
+                                 CTRANarg(icent,NHKTA,irow,icol) =
+     &                                       PT(IBTAND(KB,IVARB))
+                           soef = nint(CTRANarg(icent,NHKTA,irow,icol))
+                                 ireparg(icent,NHKTA,irow) = LA + 1
+c                                 write(lupri,'(a,i3,i3,i3,i3,a,i3)')
+c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
+                              maxang(icent) = NHKTA
+                              END IF
+  441                      CONTINUE
+                        ELSE
+                        END IF
+  431                CONTINUE
+  421             continue
+               endif
+            endif
+  411    CONTINUE
+  401 CONTINUE
+c
       RETURN
       END
 C  /* Deck symout */
@@ -7624,6 +7728,8 @@ C
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
       EXTERNAL BDPGROUP
 #include "ibtfun.h"
+#include "argoscom.h"
+#include "argoscomch.h"
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -7691,6 +7797,9 @@ C             it works !!!
 C
       IGROUP = MIN(7,NINT((4*NROTS+8*NINVC+6*NREFL)/3.0))
       GROUP  = GROUPS(IGROUP)
+c     export it to ARGOS
+c     ==================
+      ndptag = ndptags(IGROUP)
 C
 C     Generate character table
 C     ========================
@@ -7818,6 +7927,11 @@ C
         DO 130 I = 0,MAXREP
           WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,I3,1X))')
      &      REP(I),'|',(IXVAL(JSOP(J),I),J=0,MAXREP)
+c           
+c     For ARGOS
+c     =========
+            itypag(i) = REP(I)
+c    
   130   CONTINUE
 C
 C       Direct product table
@@ -8311,6 +8425,18 @@ C
       MCMP(19)  = 1
       JM4 (1,19)= 0
       JCOM(1,19)= 1
+C       
+C         
+C     20. iS.P         * dot-product of sigma and vector operator
+C     ==================================
+C
+      MCMP(20)   =  3
+      JM4 (1,20) =  3
+      JM4 (2,20) =  2
+      JM4 (3,20) =  1
+      JCOM(1,20) =  1
+      JCOM(2,20) =  1
+      JCOM(3,20) =  1
 C
 C     Matrix symmetry
 C     ===============
@@ -9152,8 +9278,10 @@ C
 C
 C        Reorder primitive orbitals
 C
+         if (.not. ECPCALC) then
          CALL PRIORD(ALPHA(1,NBLOCK,ICP),CPRIMU(1,1,NBLOCK,ICP),NUCIJ,
      &               NRCIJ,SEG(NBLOCK,ICP),KPRIM,DSM)
+         endif
 C
 C        Normalize orbitals
 C
@@ -9445,11 +9573,14 @@ C Initialize /PGROUP/
 C
 #include "implicit.h"
 #include "pgroup.h"
+#include "argoscom.h"
+#include "argoscomch.h"
 C
       DATA SYMOP/ ' E ','Oyz','Oxz','C2z',
      &            'Oxy','C2y','C2x',' i '/
       DATA GROUPS/ 'C1 ','C2 ','Cs ','Ci ',
      &             'D2 ','C2v','C2h','D2h'/
+      data ndptags/ 0,0,0,0,1,1,1,7/
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rkbrel */
