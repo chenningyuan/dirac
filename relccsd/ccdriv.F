@@ -184,8 +184,10 @@ C
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD
+CMI   ... add sector selectives MAXITxy's
+      NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,MAXIT_SECT,NACTH,NACTP,
+     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT11,MAXIT00
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
@@ -322,6 +324,13 @@ C
       DO ISECT = 2, 6
          FSSECT(ISECT) = 0
       ENDDO
+CMI   ...provide with default values
+      MAXIT02=-1
+      MAXIT01=-1
+      MAXIT00=-1
+      MAXIT11=-1
+      MAXIT20=-1
+CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)
       GOTO 12
@@ -329,12 +338,22 @@ C
    12 CONTINUE
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
+      DO ISECT = 1, 6
+CMI     ...default maximum number iterations per sector
+        MAXIT_SECT(ISECT) = MAXIT
+      ENDDO
       NTOLFS = NTOL
       LTSHFS = TSHOLD
       DO I = 1, 16
-         NINACT(I) = NELEC(I) - NACTH(I)
-         NACT(I) = NACTH(I) + NACTP(I)
+        NINACT(I) = NELEC(I) - NACTH(I)
+        NACT(I) = NACTH(I) + NACTP(I)
       ENDDO
+CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
+      IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
+      IF (MAXIT01.NE.-1) MAXIT_SECT(2) = MAXIT01
+      IF (MAXIT00.NE.-1) MAXIT_SECT(1) = MAXIT00
+      IF (MAXIT11.NE.-1) MAXIT_SECT(4) = MAXIT11
+      IF (MAXIT20.NE.-1) MAXIT_SECT(6) = MAXIT20
 C
 C     Translate easy input to FSSECT type input
 C
@@ -2853,7 +2872,8 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC,FOCKSP,REPORT
-      INTEGER IFSS(6)
+CMI   INTEGER IFSS(6)
+      CHARACTER*2 IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
       REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:,:),
@@ -2988,26 +3008,33 @@ C
 C     Save the zeroth order wave function
       CALL PUTAMPT (CC(T1),CC(T2))
 C
-      IFSS(1) = 00
-      IFSS(2) = 01
-      IFSS(3) = 10
-      IFSS(4) = 11
-      IFSS(5) = 02
-      IFSS(6) = 20
+      IFSS(1) = '00'
+      IFSS(2) = '01'
+      IFSS(3) = '10'
+      IFSS(4) = '11'
+      IFSS(5) = '02'
+      IFSS(6) = '20'
 C
 C     Solve Fock space equation sector by sector
 C
       DO ICURFSS = 1, 6
       IF (FSSECT(ICURFSS).NE.0) THEN
-        ISECT = IFSS(ICURFSS)
-        WRITE (IW,1009) ISECT
+CMI     ISECT = IFSS(ICURFSS)
+CMI     WRITE (IW,1009) ISECT
+        WRITE (IW,1009) IFSS(ICURFSS)
+        WRITE(IW,'(2X,A,I3)')
+     &  '...maximum number of iterations for this sector:',
+     &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
         ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
 CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
 CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS),RCW))
         ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
         ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
-        CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+CMI   ... instead of MAXIT put sector specific MAXITxy
+C       CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+        CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
+     &             CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &             CC(CCC),CC(BB1),CC(BB2),
@@ -3035,7 +3062,7 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1009  FORMAT (//" Solving equations for sector ",I2/)
+1009  FORMAT (//" Solving equations for sector ",A2/)
 1010  FORMAT (//" Sector ",I2," is not implemented."/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
