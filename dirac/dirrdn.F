@@ -3964,6 +3964,20 @@ C              ... hjaaj: DFTINPUT accumulates def. of functional
 C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                   CALL DFTINPUT(LINE, INPERR)
+
+#if defined (MOD_ERI)
+C aspg, 20070909
+c if the calculation is performed with non-hybrid functionals,
+C and j-engine is set, we force dolink to true even if it was
+C not specified in the input, so that no extra work in the
+c integral evaluation is done. for hfxfac set to zero, the
+C link driver just acts to scale the fock matrix according to
+c DIRAOF->SKLFC1
+                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
+                     DOLINK = .TRUE.
+                  ENDIF 
+#endif /* MOD_ERI */
+
                END IF
                DFTHAM = .TRUE.
                DFTADD = .TRUE.
@@ -4491,7 +4505,22 @@ CMI ...  CAP processing
       END IF
 
 #if defined (MOD_DFT)
-      IF(DFTHAM) CALL DFTREPORT()
+      IF(DFTHAM) THEN
+         CALL DFTREPORT()
+
+#if defined (MOD_ERI)
+C aspg, 20070909
+         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
+            WRITE (LUPRI,*) ' '
+            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
+     &                      'together with non-hybrid functionals,'
+            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
+     &                      ' will be calculated.'
+            WRITE (LUPRI,*) ' '
+         ENDIF 
+#endif /* MOD_ERI */
+
+      ENDIF
 #endif
       IF(DOLVC) ISSINT = 0
 C

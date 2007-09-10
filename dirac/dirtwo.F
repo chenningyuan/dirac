@@ -3336,9 +3336,9 @@ C*****************************************************************************
 #include "memint.h"
       I2TYP_TEMP = 1
       NDIM = N2BBASX*NZC1*NFMAT
-      CALL DSCAL(NDIM,D2,DSO,1)
       NDMAT = NFMAT*NZC1
       IF (HFXFAC.NE.D0) THEN  
+        CALL DSCAL(NDIM,D2,DSO,1)
         KIFCTP = 1
         KISYMD = KIFCTP + NDMAT
         KCCFBT = KISYMD + NDMAT
@@ -3357,14 +3357,9 @@ C
      &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &            WORK(KFREE),LFREE)
         CALL DSCAL(NDIM,DP5,DSO,1)
-CCTROND Scale in accordance with DIRAOF->SKLFC1
-        CALL DSCAL(NDIM,DP5,FMAT,1)
-      ELSE
-         WRITE (LUPRI,*) ' Warning! Activating LinK with HFXFAC set '//
-     &                   'to zero may lead to inconsistent results! '//
-     &                   'Remove .LINK from **INTEGRALS and try agan.' 
-         CALL QUIT ('Inconsistent input in the **INTEGRALS section.')
       END IF
+CCTROND Scale in accordance with DIRAOF->SKLFC1
+      CALL DSCAL(NDIM,DP5,FMAT,1)
       RETURN
       END
 C
