@@ -1,0 +1,13 @@
+c    This is for the argos routine
+      INTEGER ngenag, nsag, naordsag, nconsag, ngcsag, itolag,          &
+     &        icutag, aointsag, only1eag, inruag, ncrsag, l1recag,      &
+     &        l2recag, aoint2ag, fsplitag, nstag, ndag(0:7),            &
+     &        ndptags(0:7), ndptag, maxang(60),                         &
+     &        irowmax(60,60), ireparg(60,60,100)
+c      REAL*8 CTRANarg(MXCENT,MXQN,MXCENT*MXQN,MXCENT*MXQN)
+      REAL*8 CTRANarg(60,60,60,60)
+      COMMON /argoscom/ ngenag, nsag, naordsag, nconsag, ngcsag, itolag,&
+     &                  icutag, aointsag, only1eag, inruag, ncrsag,     &
+     &                  l1recag, l2recag, aoint2ag, fsplitag, nstag,    &
+     &                  ndag, ndptags, ndptag,                          &
+     &                  maxang, irowmax, ireparg, CTRANarg
