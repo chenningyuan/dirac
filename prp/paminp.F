@@ -1291,11 +1291,11 @@ C ... fix the LS block for the LevyLe option
 C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.19) THEN
-           CALL QUIT('XPRADD: Illegal IPTYP (not 1-19)!')
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.20) THEN
+           CALL QUIT('XPRADD: Illegal IPTYP (not 1-20)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
-     &          1,1,1,3,3,3,4,4,4,3),IPTYP
+     &          1,1,1,3,3,3,4,4,4,3,2),IPTYP
 C
 C
 C        DIAGONAL and SIGMA:
@@ -1530,6 +1530,11 @@ C     Spin-orbit integrals
 C
       ELSE IF(LABINT(3:8).EQ.'SPNORB') THEN
         CLASSLB = 'SPNORB '
+C          
+C     SOPP integrals for ECP
+C          
+      ELSE IF(LABINT(3:6) .EQ.'SOPP') THEN
+        CLASSLB = 'SOPPINT'
 C
 C     Second moments integrals
 C
@@ -2231,7 +2236,7 @@ C
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2310,6 +2315,10 @@ C
    19 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'BETA     : scalar operator'
+      GOTO 200
+   20 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'SIGMADOT : [sigma.P]'
       GOTO 200
 C
   200 CONTINUE
