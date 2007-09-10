@@ -297,7 +297,7 @@ C
 C     PARAMETER (NTABLE = 58)
 CMI   PARAMETER (NTABLE = 66)
 CMI   PARAMETER (NTABLE = 69)
-      PARAMETER (NTABLE = 72)
+      PARAMETER (NTABLE = 73)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -329,7 +329,7 @@ C
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
      &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE '
+     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT'
      &                         /
 
 C
@@ -349,7 +349,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72
+     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73
      &             ), I
          END IF
   100 CONTINUE
@@ -1832,6 +1832,25 @@ C
          ANTI = .TRUE.
          SQUARE = .FALSE.
       GO TO 200
+C        
+C     SOPP integrals for ECP
+C     ----------------------
+C    
+   73 CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of one-electron spin-orbit integrals for ECP.'
+         INTTYP = 73
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'X1SOPP  '
+         LABINT(2) = 'Y1SOPP  '
+         LABINT(3) = 'Z1SOPP  '
+         INTREP(1) = ISYMAX(1,2)
+         INTREP(2) = ISYMAX(2,2)
+         INTREP(3) = ISYMAX(3,2)
+         ANTI = .TRUE.
+         SQUARE = .TRUE. 
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -1894,6 +1913,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
+#include "dcbgen.h"
       PARAMETER (NTABLE = 54)
       PARAMETER (D2 = 2.D0)
 C
@@ -1909,16 +1929,36 @@ C
 #include "nuclei.h"
 #include "huckel.h"
 #include "cbihr1.h"
+#include "dcbbas.h"
       KLAST = 1
 C
 C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
+      IF (INTTYP .ne. 73) then
       CALL PR1DRV(SOINT,NELMNT,WORK,LWORK,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,DOATOM,INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT)
+      ELSE
+c
+c Read in and print the x, y, z component of ARGOS SOPP integrals
+c
+        DO 601 I = 1, NOPTYP
+          WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1
+            if (I .eq. 1) then
+              open(60,form='unformatted',file='sox',err=5557)
+              READ(60),(SOINT(N,I),N=1,N2BBASX)
+            elseif (I .eq. 2) then
+              open(61,form='unformatted',file='soy',err=5557)
+              READ(61),(SOINT(N,I),N=1,N2BBASX)
+            elseif (I .eq. 3) then
+              OPEN(62,form='unformatted',file='soz',err=5557)
+              READ(62),(SOINT(N,I),N=1,N2BBASX)
+            end if     !  end of read in 
+ 601    continue
+      END IF     !  end of SOPP    
 C
 C     *********************************************************
 C     ***** Transform from Cartesian to spherical moments *****
@@ -2027,6 +2067,9 @@ C 900    continue
       END IF
 C
       RETURN
+ 5557 WRITE(LUPRI,'(A)')' ********* READ ERROR: SOPP INTEGRALS
+     &    *********** '
+      CALL QUIT('SOPP  : SOPP error')
       END
 C  /* Deck ioden */
       FUNCTION IODEN(I)
