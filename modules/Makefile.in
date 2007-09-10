@@ -1,5 +1,11 @@
 include ../Makefile.config
 
+dirac.x: ;\
+       cd .. ; $(MAKE) dirac.x
+
+dirmpi.x: ;\
+        cd .. ; $(MAKE) dirmpi.x
+
 clean : 
 	$(RM) -f *.mod *.MOD
 
