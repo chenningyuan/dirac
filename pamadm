@@ -39,6 +39,7 @@ usage()
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     -adc             : Include ADC electron propagator module'
+   echo '     -ecp             : Include ARGOS ECP module'
    echo '     tarfile=make     : only generate new Makefile'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
 }
@@ -74,6 +75,7 @@ setup()
       F90MODS=ALL_F90MODS
 #      EMBMOD=1
 #      ADCMOD=1
+#      ECPMOD=1
       echo " - DIRAC administrator ..."
    fi
    #
@@ -188,6 +190,16 @@ setup()
       ADCMAK=ADC_OBJ
       ADCTAR=1
       echo " - ADC electron propagator module"
+   fi
+   #
+   #  ECP module
+   #
+   if [ -n "$ECPMOD" ]; then
+      ECPFLG='-DMOD_ECP'
+      ECPOBJ='$(ECPOBJS) $(ECPOBJS_C)'
+      ECPMAK=ECP_OBJ
+      ECPTAR=1
+      echo " - ECP argos module"
    fi
    #
    #  SDFT/CDFT module
@@ -417,6 +429,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/reladc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$ECPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/argosecp/{*.F,*.F90,*.f90,*.h,*.c,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$CDFTTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -495,8 +512,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
 #   echo
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -551,11 +568,11 @@ lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
 lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o \\
 lucita/par_collective_io.o  lucita/par_solver.o  lucita/par_sigma.o \\
-argosecp/argos1.o  argosecp/argos2.o  argosecp/argos3.o argosecp/argos4.o \\
-argosecp/argos5.o  argosecp/argos6.o  \\
-argosecp/colib1.o  argosecp/colib2.o  argosecp/colib3.o  argosecp/colib4.o  \\
-argosecp/colib5.o  argosecp/colib6.o  argosecp/colib7.o  argosecp/colib8.o  \\
-argosecp/colib9.o  argosecp/cnvrt.o   argosecp/argosin1.o argosecp/argosin2.o
+#argosecp/argos1.o  argosecp/argos2.o  argosecp/argos3.o argosecp/argos4.o \\
+#argosecp/argos5.o  argosecp/argos6.o  \\
+#argosecp/colib1.o  argosecp/colib2.o  argosecp/colib3.o  argosecp/colib4.o  \\
+#argosecp/colib5.o  argosecp/colib6.o  argosecp/colib7.o  argosecp/colib8.o  \\
+#argosecp/colib9.o  argosecp/cnvrt.o   argosecp/argosin1.o argosecp/argosin2.o
 #
 # All .o files for C routines in .c files are listed separately from OBJS
 # (otherwise you'll get a lot of irrelevant error messages from ftnchek)
@@ -567,9 +584,9 @@ main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
 main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
-gp/gpc.o \\
-argosecp/falloc.o argosecp/fdate.o argosecp/flushstdout.o argosecp/fwtime.o \\
-argosecp/hostnm.o argosecp/runsec.o argosecp/tsystem.o
+gp/gpc.o 
+#argosecp/falloc.o argosecp/fdate.o argosecp/flushstdout.o argosecp/fwtime.o \\
+#argosecp/hostnm.o argosecp/runsec.o argosecp/tsystem.o
 
 #
 
@@ -788,6 +805,27 @@ reladc/adccore.o reladc/adcsort.o reladc/adcdiag.o
 EOF
 fi
 #
+#  Object-files for the Argos ECP module
+#
+if [ -n "$ECPMOD" ]; then
+cat <<EOF>> Makefile
+
+# 'old' Fotran objects
+ECPOBJS = \\
+argosecp/argos1.o  argosecp/argos2.o  argosecp/argos3.o argosecp/argos4.o \\
+argosecp/argos5.o  argosecp/argos6.o  \\
+argosecp/colib1.o  argosecp/colib2.o  argosecp/colib3.o  argosecp/colib4.o  \\
+argosecp/colib5.o  argosecp/colib6.o  argosecp/colib7.o  argosecp/colib8.o  \\
+argosecp/colib9.o  argosecp/cnvrt.o   argosecp/argosin1.o argosecp/argosin2.o
+
+# C-files for argos ECP
+ECPOBJS_C = \\
+argosecp/falloc.o argosecp/fdate.o argosecp/flushstdout.o argosecp/fwtime.o \\
+argosecp/hostnm.o argosecp/runsec.o argosecp/tsystem.o
+
+EOF
+fi
+#
 #  Object-files for the HSMRCC-interface module
 #
 if [ -n "$HSCCMOD" ]; then
@@ -816,14 +854,14 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS)\\
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS)\\ \$(ECPOBJS)\\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
         \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ ARGOS_OBJ $AUXMAK 
+	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
 	 $AUXOBJ \\
@@ -954,6 +992,9 @@ if [ -n "$EMBMOD" ]; then
 fi
 if [ -n "$ADCMOD" ]; then
    echo '	cd reladc   ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$ECPMOD" ]; then
+   echo '	cd argosecp ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$CDFTMOD" ]; then
    echo '	cd cdft  ; $(MAKE) clean' >> Makefile
@@ -1114,6 +1155,13 @@ ADC_OBJ :
 	cd reladc; \$(MAKE) all
 EOF
 fi
+if [ -n "$ECPMOD" ]; then
+cat <<EOF>> Makefile
+
+ECP_OBJ :
+	cd argosecp; \$(MAKE) all
+EOF
+fi
 if [ -n "$CDFTMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1220,6 +1268,9 @@ if [ -n "$EMBMOD" ]; then
 fi
 if [ -n "$ADCMOD" ]; then
    TEMP="$TEMP reladc"
+fi
+if [ -n "$ECPMOD" ]; then
+   TEMP="$TEMP argosecp"
 fi
 if [ -n "$CDFTMOD" ]; then
    TEMP="$TEMP cdft"
@@ -1331,6 +1382,9 @@ fi
 if [ -n "$ADCFLG" ]; then
    dirs="$dirs reladc"
 fi
+if [ -n "$ECPFLG" ]; then
+   dirs="$dirs argosecp"
+fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
 fi
@@ -1420,6 +1474,9 @@ while [ -n "$1" ]; do
          ;;
       -adc)
          ADCMOD=1
+         ;;
+      -ecp)
+         ECPMOD=1
          ;;
       -cdft)
          CDFTMOD=1
