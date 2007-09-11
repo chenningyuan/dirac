@@ -1,0 +1,46 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : Makefile.in
+#
+
+include ../Makefile.config
+
+F77_OBJS =  argos1.o  argos2.o   argos3.o  argos4.o  argos5.o  argos6.o  \
+            colib1.o  colib2.o  colib3.o  colib4.o  colib5.o  colib6.o \
+            colib7.o  colib8.o  colib9.o \
+            cnvrt.o  \
+            argosin1.o   argosin2.o 
+
+F90_OBJS =
+
+C_OBJS =  falloc.o fdate.o flushstdout.o fwtime.o hostnm.o runsec.o tsystem.o
+
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+
+all:	$(F77_OBJS) $(C_OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.lst *.i
+
+dirac.x:
+	cd .. ; $(MAKE) dirac.x
+
+dirmpi.x:
+	cd .. ; $(MAKE) dirmpi.x
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+falloc.o: extsymbols.h
+fdate.o: extsymbols.h
+flushstdout.o: extsymbols.h
+fwtime.o: extsymbols.h
+hostnm.o: extsymbols.h
