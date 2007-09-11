@@ -382,6 +382,7 @@ make_export()
      \$szCurrDir/basis \\
      \$szCurrDir/basis_dalton \\
      \$szCurrDir/utils 2> export.log
+echo $dirs
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
@@ -550,7 +551,11 @@ lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
 lucita/vecmat.o  lucita/par_lucia.o  lucita/par_io.o \\
 lucita/par_collective_io.o  lucita/par_solver.o  lucita/par_sigma.o \\
-
+argosecp/argos1.o  argosecp/argos2.o  argosecp/argos3.o argosecp/argos4.o \\
+argosecp/argos5.o  argosecp/argos6.o  \\
+argosecp/colib1.o  argosecp/colib2.o  argosecp/colib3.o  argosecp/colib4.o  \\
+argosecp/colib5.o  argosecp/colib6.o  argosecp/colib7.o  argosecp/colib8.o  \\
+argosecp/colib9.o  argosecp/cnvrt.o   argosecp/argosin1.o argosecp/argosin2.o
 #
 # All .o files for C routines in .c files are listed separately from OBJS
 # (otherwise you'll get a lot of irrelevant error messages from ftnchek)
@@ -562,7 +567,9 @@ main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
 main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
-gp/gpc.o
+gp/gpc.o \\
+argosecp/falloc.o argosecp/fdate.o argosecp/flushstdout.o argosecp/fwtime.o \\
+argosecp/hostnm.o argosecp/runsec.o argosecp/tsystem.o
 
 #
 
@@ -816,7 +823,7 @@ TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
+	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ ARGOS_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
 	 $AUXOBJ \\
@@ -911,6 +918,7 @@ clean   :
 	cd relccsd  ; \$(MAKE) clean
 	cd dirrci   ; \$(MAKE) clean
 	cd lucita   ; \$(MAKE) clean
+	cd argosecp ; \$(MAKE) clean
 EOF
 ###
 #     .... cleaning of individual modules
@@ -1042,6 +1050,9 @@ CI_OBJ:
 
 LUCITA_OBJ:
 	cd lucita ; \$(MAKE) all
+
+ARGOS_OBJ:
+	cd argosecp ; \$(MAKE) all
 
 EOF
 if [ -n "$ESRMOD" ]; then
@@ -1301,7 +1312,7 @@ which_modules()
 #  
 #
 MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
-dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
+dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
