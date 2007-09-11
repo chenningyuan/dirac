@@ -383,30 +383,12 @@ C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
       IF (ECPCALC) then
-      OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
-      READ(59),(ARPP(I),I=1,NNBBAST)
-      close(59)
-      IF (IPRINT .GE. 5) THEN
-        PRINT *,'KNUCS  = ',KNUCS
-        PRINT *,'NNBBASX  = ',NNBBASX
-        PRINT *,'NNBBAST  = ',NNBBAST
-        DO I=0,NNBBAST-1
-          PRINT *, 'KNUCS',KNUCS+i,'=',WORK(KNUCS+i)
-        ENDDO
-        WRITE(LUPRI,'(//A/)')
-     &   '*************************            ISL ISL        '//
-     &   '   *************************'
-        WRITE(LUPRI,'(15X,A//)')
-     &  ' ECP Integrals added to Veff  !!! '
-      END IF
-      DO I=0,NNBBAST-1
-         WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
-      ENDDO
-      IF (IPRINT .GE. 5) then
-        DO I=0,NNBBAST-1
-          PRINT *, 'Veff + core',KNUCS+i,'=',WORK(KNUCS+i)
-        ENDDO
-       ENDIF
+         OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
+         READ(59),(ARPP(I),I=1,NNBBAST)
+         close(59)
+         DO I=0,NNBBAST-1
+            WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
+         ENDDO
       ENDIF
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 C
