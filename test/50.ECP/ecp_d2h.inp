@@ -1,0 +1,37 @@
+!
+! This test calculates the SCF energy of 
+! F atom in D2h employing valence-only Hamitonian 
+! for effective-core-potentials.
+! Note the keyword .ECP in **GENERAL.
+!
+**DIRAC
+.TITLE
+F atom D2h  
+.WAVE F
+**GENERAL
+.ECP   
+.DIRECT
+1 1 1
+**INTEGRALS
+*TWOINT
+.SOFOCK
+.SCREEN
+1.0D-12
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.CLOSED SHELL
+2 0
+.OPEN SHELL
+1
+5/0,6
+.INTFLG
+1 1 1
+.MAXITR
+200
+.EVCCNV
+1.0E-8
+.CNVINT
+0.01 0.0001
+*END OF DIRAC
+
