@@ -404,7 +404,7 @@ if [ "$par" = "yes" ]; then
    if [ "$mesp" = "mpi" ]; then
       case $machine in
          *-ibm | powerpc64-unknown-linux* | ppc64* )
-            complist="mpxlf_r mpxlf $complist"
+            complist="mpfort_r mpfort mpxlf_r mpxlf $complist"
             cclist="mpcc_r mpcc $cclist" 
             parlib='no'
             parinc='yes'
@@ -1187,6 +1187,11 @@ case $machine in
             inc="-WF,-I$INCLUDE_DIR";;
          esac
 
+
+         if [ "$localdisks" = "no"]; then
+            cpp="$cpp,-DVAR_PFS"
+         fi
+
       case $os in
          gnu* )
             opt='-O3 -qstrict -qextname -q64'
@@ -1816,7 +1821,7 @@ fi
 #
 #
 case $F77 in
-   xlf) 
+   xlf*|mpfort) 
 # IBM's xlf should be comma delimited, the others take spaces
      cpp="$cpp",'`echo $(MODS) | sed '\''s,^ *,,g'\'' | tr " " ,`'
      ;;
