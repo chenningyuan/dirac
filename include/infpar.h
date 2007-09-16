@@ -51,5 +51,5 @@ extern struct common_infpar {
       INTEGER*4 ISTAT
 #endif
 
-C -- end of infpar.h --
+!C -- end of infpar.h --
 #endif
