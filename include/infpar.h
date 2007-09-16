@@ -37,7 +37,7 @@ extern struct common_infpar {
       INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID, NODE, NODES
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
-      COMMON /DIRACINFPAR/ TOTVAL,                                       &
+      COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
      &       ,NUMNOD, ICOUNT,MTIDS, MPARID, NODE, NODES                  &
      &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
