@@ -86,9 +86,12 @@ contains
 function compatible_2qmtx(amat,bmat) result(compatible)
 !---------------------------------------------------------------------------
 !
-!  Logical function returning compatibility confirmation of two-matrixes
+!    Logical function returning compatibility confirmation 
+!  of two quaternion matrixes
 !
-!------------------------------------------------------------------
+!  If matrixes are fully identical, returns .true.
+!
+!---------------------------------------------------------------------------
 type(QMtx), intent(in) :: amat,bmat
 logical (kind=1) :: compatible
 call QENTER('compatible_2qmtx')
@@ -102,7 +105,7 @@ call QENTER('compatible_2qmtx')
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
                  (amat%array_size == bmat%array_size)  .AND.  & 
                  (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
-                  (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+                 (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
                  (.not.xor(amat%is_real,bmat%is_real))   .AND.  &   
                  (amat%nz == bmat%nz)
 !
@@ -582,7 +585,7 @@ END SUBROUTINE DeAllocQMtx
 function getdiff_qmtx(amat,bmat) result(diff)
 !-------------------------------------------------------------------------
 !
-! returns the average difference of two quatern.matrixes
+! returns the average difference of two FULLY COMPATIBLE quatern.matrixes
 !
 !-------------------------------------------------------------------------
 type(QMtx), intent(in) :: amat,bmat
@@ -603,11 +606,11 @@ diff = 0.D0
 do i=0,amat%array_size -1
  diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
 enddo
+! using size of the allocated array - depends on NZ !
 diff = diff / dfloat(amat%array_size)
 
 call QEXIT('getdiff_qmtx')
 end function getdiff_qmtx
-
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function getdiff_part_qmtx(amat,bmat) result(diff)

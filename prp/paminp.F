@@ -1821,6 +1821,8 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASSLB = 'CAPD1I' 
       ELSE IF(LABINT(2:7).EQ.'CAPDVE') THEN
         CLASSLB = 'CAPDVE' 
+      ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
+        CLASSLB = 'CAPD_VD' 
 C
 C     Unknown LABINT
 C   

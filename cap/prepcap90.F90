@@ -89,7 +89,7 @@ end subroutine test_files
  ! type(DirOper) :: cap_dipvel, dir_dipvel
   type(QMtx) :: cap_dipvel, dir_dipvel 
 ! adjust the threshold
- double precision, parameter :: diff_thrs = 1.0D-6
+ double precision, parameter :: diff_thrs = 1.0D-5
  call QENTER('CAP_DIPVEL_COMP')
 
 ! call add_operator(cap_dipvel,IPCAP_DV); call add_operator(dir_dipvel,IPKINERG)
@@ -101,7 +101,8 @@ end subroutine test_files
  call AddTextQMtx(dir_dipvel,'DIRAC dipole velocity integrals')
 
 !  compare smat & capovlp quaternion matrixes
-  diff = getdiff_part_qmtx(cap_dipvel,dir_dipvel)
+ ! diff = getdiff_part_qmtx(cap_dipvel,dir_dipvel)
+  diff = getdiff_qmtx(cap_dipvel,dir_dipvel)
   write(LUPRI,'(/A)') '*************************************************************'
   write(LUPRI,'(A,D22.10)') '*** comparison of CAP-DIRAC dipole velocity operators: ',diff
   write(LUPRI,'(A)')  '*************************************************************'
@@ -115,6 +116,7 @@ end subroutine test_files
   call  AddTextQMtx(cap_dipvel,'******** difference  CAP - DIRAC ***********')
   call substract_part_qmtx(cap_dipvel,dir_dipvel)
   call QMTxInfo(cap_dipvel)
+  write(LUPRI,'(A,D22.10)') 'absolute difference between CAP-DIRAC dipole velocity operators: ',diff
   CALL FLSHFO(LUPRI)
   call quit('CAP_DIPVEL_COMP: big differences between'//  &
             ' CAP/DIRAC dipole velocity integrals !')

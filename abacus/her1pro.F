@@ -294,10 +294,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-C     PARAMETER (NTABLE = 58)
-CMI   PARAMETER (NTABLE = 66)
-CMI   PARAMETER (NTABLE = 69)
-      PARAMETER (NTABLE = 73)
+      PARAMETER (NTABLE = 77)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -329,7 +326,8 @@ C
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
      &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT'
+     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT',
+     &            'CAPD_VD', 'XXXXXXX', 'XXXXXXX','XXXXXXX'
      &                         /
 
 C
@@ -349,7 +347,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73
+     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74
      &             ), I
          END IF
   100 CONTINUE
@@ -1851,6 +1849,38 @@ C
          INTREP(3) = ISYMAX(3,2)
          ANTI = .TRUE.
          SQUARE = .TRUE. 
+C                           
+C       V_dc integrals coming with CAP_d term  
+C  -------------------------------------------------    
+C    
+   74 CONTINUE
+         INTTYP = 1
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &'PR1DIR: CAPD_VDC integrals'
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'CAPD_VDC'
+         INTREP(1) = 0
+         SQUARE = .FALSE.
+         ANTI = .FALSE.
+      GO TO 200
+C                           
+C&&&&&&&&&&&&&&&&&&&&&&&&&    
+C    
+   75 CONTINUE
+      GO TO 200
+C                           
+C&&&&&&&&&&&&&&&&&&&&&&&&&    
+C    
+   76 CONTINUE
+      GO TO 200
+C                           
+C&&&&&&&&&&&&&&&&&&&&&&&&&    
+C    
+   77 CONTINUE
+      GO TO 200
+
   200 CONTINUE
 C
 C     ***** Print section *****

@@ -18,6 +18,8 @@ C              basis_ord
 C              ord_expon
 C              ord_coe ...
 C
+C              PE_AOr, PE_AOi, PEXR... allocated array
+C
 C              NCBF - # of contracted basis functions
 C              NUBF - # of uncontracted (primitives) basis functions
 C
@@ -26,7 +28,7 @@ C            complex CAP integrals written into formatted file, or test
 C            calculation of overlap integrals only for comparison with
 C            DIRAC
 C
-C  called from DOSAJEEV
+C  called from DOSAJEEV/prepcap.F
 C
 C  Written by Sajeev, adapted to DIRAC by Miro Ilias, Tel Aviv, 2007
 C
@@ -64,9 +66,7 @@ CMI   REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
       REAL*8 PEXR(*),PEXI(*),PEYR(*),PEYI(*),PEZR(*),PEZI(*)
       real *8 BETA0,PE0
       
-CMI   LOGICAL ISFILE, FNDLAB,ARELABS
-CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
-      LOGICAL ISFILE, FNDLAB,ARELABS,IS_OPEN
+      LOGICAL ISFILE, FNDLAB,CHECK_PEMAT
 
       COMPLEX *16 THETA,THETA2,CI,BETA
 
@@ -77,8 +77,9 @@ CMI   LOGICAL*1 ISFILE, FNDLAB,ARELABS,IS_OPEN
 
       IF (IPRCAP.GE.2) THEN
         CALL HEADER('*** Output from SAJEEV ***',-1)
-CMI     write(LUPRI,*) 'LWORK=',LWORK
-        write(LUPRI,*) '>> NCBF=',NCBF,' NUBF=',NUBF
+        write(LUPRI,'(2X,A,I3,A,I3)')
+     &   '>> contracted NCBF=',NCBF,' uncontracted NUBF=',NUBF
+        write(LUPRI,*) 'LWORK=',LWORK
         CALL FLSHFO(LUPRI)
       ENDIF
 
@@ -92,27 +93,8 @@ CMI     write(LUPRI,*) 'LWORK=',LWORK
       CALL MEMCHK('sajeev 2',WORK,1)
 
 
-CMI ... check the presence of PEMAT in order to decide whether to run 
-CMI   or not the CAP integral evaluation
-      ARELABS = .FALSE.
-      INQUIRE(FILE='PEMAT',EXIST=ISFILE,OPENED=IS_OPEN)
-      IF (ISFILE) THEN
-        IF (.NOT.IS_OPEN) THEN
-          CALL OPNFIL(LUPEMAT,'PEMAT','OLD','SAJEEV')
-        ENDIF
-        REWIND(LUPEMAT)
-        IF (CAPOVLP) THEN
-           LBL = 'CAP_OVLP'
-        ELSE
-         IF  (DONRCAP) THEN
-           LBL = 'CAP_RE  '
-         ELSE
-           LBL = 'ZCAPD1I'
-         ENDIF
-        ENDIF
-        IF (FNDLAB(LBL,LUPEMAT)) ARELABS = .TRUE.
-      ENDIF
-      IF (.NOT.ARELABS) THEN
+      IF (.NOT.CHECK_PEMAT) THEN
+
 CMI   ... evaluate CAP complex atomic untegrals
        IF (IPRCAP.GE.0) THEN
          WRITE(LUPRI,'(/2X,A)')
@@ -126,113 +108,12 @@ CMI   ... evaluate integrals - fill array with them
      &      basis_ord,ang_pow,
      &      PW,PE_AOr,PE_AOi,PEXR,PEXI,PEYR,PEYI,PEZR,PEZI,
      &      NCBF,NUBF)
+
+CMI   ... write integrals into the PEMAT file ...
+       CALL  PEMAT_WRITE(PE_AOr,PE_AOi,
+     &  PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
         
-C ============================================================
-C
-C ... control print-out of calculated integrals 
-C
-C ============================================================
-
-C        do ii=1,n_b
-C           do jj=1,n_b
-C              IPU=IPOINTIJ(ii,jj)
-C              if (jj.gt.ii)go to 301
-C              write(LUPEMAT,*) ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
-C           end do
-C301        continue
-C        end do
-
-         REWIND(LUPEMAT)
-         IF (CAPOVLP) THEN
-            LBL='CAP_OVLP'
-            CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-            CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
-            WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP integrals generated, PEMAT label:',LBL
-         ELSE
-           IF (DONRCAP) THEN
-            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
-              BACKSPACE(LUPEMAT)
-              LBL='CAP_RE  '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
-              LBL='CAP_IM  '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PE_AOi)
-             WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
-            ENDIF
-           ELSE 
-C             ... four-component CAP rel. operator 
-            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
-             BACKSPACE(LUPEMAT)
-             IF (.NOT.CAPDIPVEL) THEN
-              LBL='XCAPD1R '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEXR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='XCAPD1I '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEXI)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='YCAPD1R '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEYR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &        'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='YCAPD1I '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEYI)
-              WRITE(LUPRI,'(2X,A,A)')
-     &        'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='ZCAPD1R '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEZR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &        'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='ZCAPD1I '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEZI)
-              WRITE(LUPRI,'(2X,A,A)')
-     &       'CAP relativistic integrals generated, PEMAT label:',LBL
-             ELSE
-CMI          ... CAP dipole velocity integrals
-              LBL='XCAPDVE '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEXR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='YCAPDVE '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEYR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP relativistic integrals generated, PEMAT label:',LBL
-              LBL='ZCAPDVE '
-              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
-              CALL WRITT(LUPEMAT,NNBBASX,PEZR)
-              WRITE(LUPRI,'(2X,A,A)')
-     &      'CAP relativistic integrals generated, PEMAT label:',LBL
-             ENDIF
-            ENDIF    
-         ENDIF
-         ENDIF
-         CALL NEWLAB('EOFLABEL',LUPEMAT,LUPRI)
-
-C        CLOSE(LUPEMAT,STATUS='KEEP')
-
-         IF (IPRCAP.GE.1) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'PEMAT file with CAP integrals ready.'
-         ENDIF
-
       ELSE
-C================================================================================================
-C
-C================================================================================================
        WRITE(LUPRI,'(2X,A)')
      & 'SAJEEV: PEMAT file with desired CAP integrals is'//
      & ' present, not calculating them.'
@@ -242,16 +123,6 @@ C===============================================================================
       RETURN
       END
 
-      integer*4 function get_lval(i,j,k)
-C
-C        to mimic I value in NRMORB ...
-C
-#include "implicit.h"
-#include "priunit.h"
-        integer*4 i,j,k
-        get_lval = i+j+k+1
-      return
-      end
       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck inpread */
@@ -323,8 +194,6 @@ C     integer *4 basis_n(200)
       integer *4 basis_n(NCBF)
       
       integer *4 basis_ord(NCBF)
-
-      integer*4 get_lval
 
       real *8 re(50,3),expon,coe
 C     real *8 ord_expon(250),ord_coe(250)
@@ -893,13 +762,16 @@ C     ... zero array for integrals
               PEYI(IPU)=0.d0
               PEZR(IPU)=0.d0
               PEZI(IPU)=0.d0
+              IF( DCADD)  PE_AOr(IPU)=0.d0
              ENDIF
             ENDIF
          end do
       end do
 
       IF (IPRCAP.GE.2) THEN
-       CALL HEADER('Output from AOINTEGRAL',-1)
+
+       CALL HEADER(
+     & 'Output from AOINTEGRAL - basic info on basis functions',-1)
 
        do ii=1,n_b
 
@@ -930,8 +802,13 @@ C     ... zero array for integrals
       ENDIF
 
 C ******************************************************************
-C     ... run over contracted basis functions
+C     ... run over basis functions and calculate own integrals ...
 C ******************************************************************
+      IF (IPRCAP.GE.2) THEN
+       CALL HEADER(
+     & 'Output from AOINTEGRAL - generation of integrals',-1)
+      ENDIF
+
       DO ii=1,n_b
       DO jj=1,ii
          IPU=IPOINTIJ(ii,jj)
@@ -945,6 +822,10 @@ C ******************************************************************
          else
             iangjj=basis_ord(jj-1)
          endif
+         IF (IPRCAP.GE.2) THEN
+          WRITE(LUPRI,'(2X,A,2I3,A,I3,$)')
+     &    '... calculating CAP integral(s) of ',ii,jj,'/',n_b
+         ENDIF
 C        ... run over primitives in contracted basis functions
 C        ... i,j points to position of exponents !!!
          Do i=iangii+1,basis_ord(ii)
@@ -962,14 +843,14 @@ C        ... i,j points to position of exponents !!!
 CMI         ... get overlap integrals
              CALL PEM(R_m,R_n,K_m,K_n,PEINT)
             ELSE
-CMI         ... get CAP integrals    
+CMI         ... get CAP integrals    (nonrel+Vdc, relativ, Vdc)
              CALL CAPM(R_m,R_n,K_m,K_n,PW,PEINT,
      &          PEINT_D1X,PEINT_D1Y,PEINT_D1Z)
             ENDIF
 
 C           ... contraction coefficients of i,j
             COMUL=ord_coe(i)*ord_coe(j)
-C           ... save real and imaginary part of integrals
+C           ... cumulate real and imaginary part of integrals
             IF (CAPOVLP) THEN
               PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
             ELSE 
@@ -985,13 +866,20 @@ C           ... save real and imaginary part of integrals
 
               PEZR(IPU)= PEZR(IPU)+COMUL*DREAL(PEINT_D1Z)
               PEZI(IPU)= PEZI(IPU)+COMUL*DIMAG(PEINT_D1Z)
+
+              IF (DCADD) PE_AOr(IPU)= PE_AOr(IPU)+COMUL*DREAL(PEINT)
+
              ENDIF
             ENDIF
          END DO 
          END DO
 
+         IF (IPRCAP.GE.2) THEN
+           WRITE(LUPRI,'(A)') ' ... done.'
+           CALL FLSHFO(LUPRI)
+         ENDIF
 C        ... control print out of integrals
-         IF (IPRCAP.GE.7) THEN
+         IF (IPRCAP.GE.5) THEN
           IF (CAPOVLP) THEN
            WRITE(LUPRI,'(2X,A,I3,A,I3,A,F22.8)') 
      &    'CAP overlap(',ii,';',jj,')=',PE_AOr(IPU)
@@ -1000,6 +888,17 @@ C        ... control print out of integrals
      &    'CAP nonrel re,im(',ii,';',jj,')=',PE_AOr(IPU),PE_AOi(IPU)
           ELSE IF (.NOT.DONRCAP) THEN
 C         ... relativistic stuff ...
+           WRITE(LUPRI,'(2X,A,I3,A,I3,A,2F22.8)') 
+     &    'CAPd_X re,im(',ii,';',jj,')=',PEXR(IPU),PEXI(IPU)
+           WRITE(LUPRI,'(2X,A,I3,A,I3,A,2F22.8)') 
+     &    'CAPd_Y re,im(',ii,';',jj,')=',PEYR(IPU),PEYI(IPU)
+           WRITE(LUPRI,'(2X,A,I3,A,I3,A,2F22.8)') 
+     &    'CAPd_Z re,im(',ii,';',jj,')=',PEZR(IPU),PEZI(IPU)
+
+           IF (DCADD) THEN
+             WRITE(LUPRI,'(2X,A,I3,A,I3,A,F22.8)') 
+     &      '..scalar Vdc (',ii,';',jj,')=',PE_AOr(IPU)
+           ENDIF
           ENDIF
          ENDIF
 
@@ -1410,10 +1309,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Called from AOINTEGRAL (from within the 4-fold cycle)
 C
-C   entering parameter "theta" is from the INPQD file
+C   R_m,R_n,K_m,K_n
+C 
+C   entering parameter "theta" was from the INPQD file
 C
 C   returns: 
-C          VCAP - the total nonrel. scalar CAP term for DONRCAP=.true.
+C --------------
+C          VCAP - the total nonrel. scalar CAP term (DONRCAP=.true.)
+C
 C          VCAP_D1X,VCAP_D1Y,VCAP_D1Z relativ. terms  (DONRCAP=.false.)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1519,12 +1422,13 @@ CMI         NSTEP=NGRS(j)
             NSTEP=NGRS(i,j)
 CMI         write(LUPRI,*) 'i,j,NGRS(i,j):',i,j,NGRS(i,j)
             CALL CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_CM,R_CN,K_CM,K_CN,
-     &                    VCAP1C,VCAP1)
+     &                   VCAP1C,VCAP1,X0DC(i),EPSDC(i))
 
-C           ... accumulate for each interval
+C           ... accumulate VCAPS(i) for each interval
             IF (DONRCAP) THEN
-              VCAPS(i)=VCAPS(i)+VCAP1
+              VCAPS(i) = VCAPS(i) + VCAP1
             ELSE
+C           ... relativistic integrals ...
               IF (I.EQ.1) THEN
                 VCAP_D1X = VCAP_D1X + VCAP1C 
               ELSE IF (I.EQ.2) THEN
@@ -1535,13 +1439,13 @@ C           ... accumulate for each interval
                 write(LUPRI,*) 'I=',I
                 CALL QUIT('CAPM: wrong I!')
               ENDIF
+              IF (DCADD) THEN
+C               ... cumulate Vdc x,y,z scalar contributions
+                VCAPS(i) = VCAPS(i) + VCAP1
+              ENDIF
             ENDIF
 
-         end do
-
-CMI ... old subroutines...
-CMI      CALL SMAT(R_KM,R_KN,K_KM,K_KN,0.d0,OVRLPK)
-CMI      CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
+         enddo
 
          CALL SMAT(R_KM,R_KN,K_KM,K_KN,OVRLPK)
          CALL SMAT(R_LM,R_LN,K_LM,K_LN,OVRLPL)
@@ -1559,20 +1463,30 @@ CMI      CALL SMAT(R_LM,R_LN,K_LM,K_LN,0.d0,OVRLPL)
               write(LUPRI,*) 'I=',I
               CALL QUIT('CAPM 2: wrong I!')
            ENDIF
+           IF (DCADD) THEN
+              VCAPS(i)=VCAPS(i)*OVRLPK*OVRLPL
+           ENDIF
          ENDIF
 
       ENDDO ! of I=1,3
              
-C   ... finally add all theree terms - for x,y and z - for DONRCAP=.true.!!!
+C   ... finally add all theree terms - for x,y and z - for DONRCAP=.true., else
+C     for relativistic case where DCADD=.true.
+C --------------------------------------------------------------------------------
       VCAP=VCAPS(1)+VCAPS(2)+VCAPS(3)
-C ------------------------------------------------------------
-
-      IF (IPRCAP.GE.19) THEN
+C --------------------------------------------------------------------------------
+      IF (IPRCAP.GE.10) THEN
        IF (.NOT.DONRCAP) THEN
-        write(LUPRI,*) '** CAPM >>  VCAP_D1X,VCAP_D1Y,VCAP_D1Z:',
-     &      VCAP_D1X,VCAP_D1Y,VCAP_D1Z   
+        WRITE(LUPRI,'(/2X,A,3(2F15.7))')
+     &  '** CAPM >> relativistic VCAP_D1X,VCAP_D1Y,VCAP_D1Z:',
+     &  VCAP_D1X,VCAP_D1Y,VCAP_D1Z 
+        IF (DCADD) THEN
+        WRITE(LUPRI,'(2X,A,2F15.7)')
+     &  '...scalar VDC=',VCAP
+        ENDIF
        ELSE
-        write(LUPRI,*) '** CAPM >>  VCAP=',VCAP
+        WRITE(LUPRI,'(2X,A,2F15.7)')
+     &  '** CAPM >> nonrelativ. VCAP=',VCAP
        ENDIF
       ENDIF
 
@@ -1581,11 +1495,18 @@ C ------------------------------------------------------------
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck capm */
-CMI   SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,VCAPT)
+C  /* Deck capmat1 */
       SUBROUTINE CAPMAT1(CAP_PAR,GRSTP,NSTEP,R_m,R_n,K_m,K_n,
-     &                   VCAP1C,VCAPT)
+     &                   VCAP1C,VCAPT, X_DC, EPS_DC)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C On input:
+C
+C   CAP_PAR, GRST, NSTEP
+C   R_m, R_n, K_m, K_n
+C
+C   X_DC, EPS_DC ... if DCADD=.true., these are DC field components
+C
 C
 C  returns: 
 C
@@ -1630,27 +1551,40 @@ CMI   ... declaration must be for gfortran
       
       data CI/(0.0d0,1.0d0)/
       data M/1.0d00/
+      data TOL/0.00000001/
 
       CALL QENTER('CAPMAT1')
 
+CMI   ... calculate the integration step (per interval)
       STEP=(GRSTP(2)-GRSTP(1))/(NSTEP)
+
+CMI   ... extract X0, lambda, theta parameters
       X0=CAP_PAR(1)
       LAMDA=CAP_PAR(2)
       THETA=CAP_PAR(3)
     
 CMI   ... initialization of summation variables
-      VCAPXT=(0.d0,0.d0)
+      VCAPXT =(0.d0,0.d0)
       VCAPXTy=(0.d0,0.d0)
 
-      VCAPXT_D1C=(0.d0,0.d0)
+      VCAPXT_D1C =(0.d0,0.d0)
       VCAPXTy_D1C=(0.d0,0.d0)
 
 CMI   ... starting position for the integration
       XI=GRSTP(1)
 
+      IF (IPRCAP.GE.46) THEN
+CMI    ... info for integration parameters  ...
+       WRITE(LUPRI,'(2X,A,F12.5,A,I7)')
+     & 'Trapezoidal 1-D integration starting from point',XI,
+     & ' number of subintervals :',NSTEP
+      ENDIF
+
 CMI  ... run over the integration interval with NSTEP nodes
       itx=0
       DO ix=1,NSTEP
+
+C        ... actual position for the integration in +/- ways...
          X=(XI+(ix-1)*STEP)
          Xy=X*(-1.0d0)
 
@@ -1658,12 +1592,16 @@ CMI  ... run over the integration interval with NSTEP nodes
 
          XR=X-R_n(1)
          XRM=X-R_m(1)
+
+         IF(dabs(XR).lt.TOL) XR=TOL ! important for denominator
          DGr=K_n*(XR**(-1))
 
 C         ... 1st derivative
          DG=DGr-(2*R_n(2)*(XR))
        
          XRy=Xy-R_n(1)
+         IF(dabs(XRy).lt.TOL)XRy=TOL
+
          XRMy=Xy-R_m(1)
          DGry=K_n*(XRy**(-1))
 
@@ -1700,30 +1638,42 @@ C        ... 2nd derivative
          GGEXy=(XRy**K_n)*(XRMy**K_m)
          GGy=GGEXy*DEXP(-GG1y)
 
-C        VADD=DCMPLX(0.0d0,0.0d0)
-         VADD=0.0d0
-C        VADDy=DCMPLX(0.0d0,0.0d0)
-         VADDy=0.0d0
-       
+CMI      ... additional electric field
+         IF (DCADD) THEN
+           IF (X.GE.X_DC) THEN
+!          ... VF must be always positive !!!!
+            VF = X - X_DC 
+            VADD=DCMPLX(-VF*EPS_DC,0.0d0)
+           ELSE
+            VADD=DCMPLX(0.0d0,0.0d0)
+           ENDIF
+         ELSE
+            VADD=DCMPLX(0.0d0,0.0d0)
+         ENDIF
+
          IF (DONRCAP) THEN
-CMI      ... nonrelativistic CAP operator
+CMI        ... nonrelativistic CAP operator
            v0x=V0(M,THETA,LAMDA,X0,X)
            V1x=v1(M,THETA,LAMDA,X0,X)*DG
            v2x=v2(M,THETA,LAMDA,X0,X)*D2G
            v0xy=V0(M,THETA,LAMDA,X0,Xy)
            V1xy=v1(M,THETA,LAMDA,X0,Xy)*DGy
            v2xy=v2(M,THETA,LAMDA,X0,Xy)*D2Gy
-           VCAP=(V0x+V1x+V2x+VADD)*GG
-           VCAPy=(V0xy+V1xy+V2xy+VADDy)*GGy
+           VCAP =(V0x +V1x +V2x +VADD)*GG   ! ... include Vdc contribution through VADD
+           VCAPy=(V0xy+V1xy+V2xy-VADD)*GGy  !  
            VCAPX(itx)=VCAP
            VCAPXy(itx)=VCAPy
            if(ix.eq.1) go to 321 
+CMI        ... calculate integral - trapezoidal method
            VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
            VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
-           if (ix.ne.1) VCAPX(2)=VCAPX(1)
-           if (ix.ne.1) VCAPXy(2)=VCAPXy(1)
+           if (ix.ne.1) then
+              VCAPX(2)=VCAPX(1)
+             VCAPXy(2)=VCAPXy(1)
+           endif
          ELSE
-CMI       ... relativistic Hamiltonian
+CMI       ... relativistic Hamiltonian with x,y,z components
+CMI       ... Vdc comes in individual terms ...
           IF (.NOT.CAPDIPVEL) THEN
            V0x  = V0D(M,THETA,LAMDA,X0,X )
            V0xy = V0D(M,THETA,LAMDA,X0,Xy)
@@ -1731,49 +1681,67 @@ CMI       ... relativistic Hamiltonian
 C          V1x  = V1D(M,THETA,LAMDA,X0,X )*DG*DG
            V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy
 C          V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy*DGy
-           VCAP_D1C  = (V0x +V1x +VADD )*GG
-           VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
+CMI        VCAP_D1C  = (V0x +V1x +VADD )*GG
+           VCAP_D1C  = (V0x +V1x       )*GG
+!          VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
+CMI        VCAPy_D1C = (V0xy+V1xy-VADDy)*GGy
+           VCAPy_D1C = (V0xy+V1xy      )*GGy
           ELSE
 CMI       ... CAPDIPVEL = .TRUE.
-C          V1x  =  DCMPLX(1.0D0,0.D0)*DG
-           V1x  =  DG
-C          V1xy =  DCMPLX(1.0D0,0.D0)*DGy
-           V1xy =  DGy
-           VCAP_D1C  = (V1x +VADD )*GG
-C          VCAP_D1C  = (V1x +VADD )
-           VCAPy_D1C = (V1xy+VADDy)*GGy
-C          VCAPy_D1C = (V1xy+VADDy)
+           VCAP_D1C  = GG * DG
+           VCAPy_D1C = GGy* DGy
+C          write(LUPRI,*) 'VCAP_D1C, VCAPy_D1C:',VCAP_D1C, VCAPy_D1C
           ENDIF
-           VCAPX_D1C(itx) = VCAP_D1C
-           VCAPXy_D1C(itx)= VCAPy_D1C
-           if(ix.eq.1) go to 321 
-C         ... numerical (trapezoidal) integration 
+          VCAPX_D1C(itx) = VCAP_D1C
+          VCAPXy_D1C(itx)= VCAPy_D1C
+
+          if(ix.eq.1) go to 321 
+
+C           ... numerical (trapezoidal) integration 
            VCAPXT_D1C=VCAPXT_D1C  +
      &         0.50D0*(VCAPX_D1C(2)+VCAPX_D1C(1))*STEP
            VCAPXTy_D1C=VCAPXTy_D1C+
      &         0.50D0*(VCAPXy_D1C(2)+VCAPXy_D1C(1))*STEP
+
+           IF (DCADD.AND..NOT.CAPDIPVEL) THEN
+C          ... scalar contribution from DC field
+             VCAP =(VADD)*GG
+             VCAPy=(-VADD)*GGy
+             VCAPX(itx)=VCAP
+             VCAPXy(itx)=VCAPy
+             if(ix.eq.1) go to 321 
+             VCAPXT=VCAPXT+0.5*(VCAPX(2)+VCAPX(1))*STEP
+             VCAPXTy=VCAPXTy+0.5*(VCAPXy(2)+VCAPXy(1))*STEP
+             if (ix.ne.1) then
+               VCAPX(2) =VCAPX(1)
+               VCAPXy(2)=VCAPXy(1)
+             endif
+           ENDIF
+
+C          ...rearrange for numerical integration 
            if (ix.ne.1) then
-             VCAPX_D1C(2)=VCAPX_D1C(1)
+             VCAPX_D1C(2) =VCAPX_D1C(1)
              VCAPXy_D1C(2)=VCAPXy_D1C(1)
            endif 
+
          ENDIF
 
+CMI     ... restore the counter
          itx=0
-C         if((zabs(vcap)).lt.(0.00000000001))exit
 
  321     CONTINUE
 
-      END DO
+      ENDDO
 
       IF (DONRCAP) THEN
-CMI    ... nonrelativistic CAP
+CMI     ... nonrelativistic CAP
         VCAPT=VCAPXT+VCAPXTy
-CMI     write(LUPRI,*) 'VCAPXT,VCAPXTy:',VCAPXT,VCAPXTy
       ELSE
-C      ... relativistic CAP
-CMI    ... for V1D_C (x,y,z) term
+CMI    ... summ of 2 integrations (0,+inf) + (0,-inf)
         VCAP1C=VCAPXT_D1C+VCAPXTy_D1C
-CMI     write(LUPRI,*) '*** CAPMAT1 > VCAP1C:',VCAP1C
+        IF (DCADD) THEN
+          VCAPT=VCAPXT+VCAPXTy ! take into account scalar Vdc term
+        ENDIF
       ENDIF
 
       CALL QEXIT('CAPMAT1')
@@ -1891,3 +1859,174 @@ CMI  ... Eq. 17 of Sajeev:2006
       V2 = (1.0D0,0.0D0)/(F0(THETA,LAMBDA,X0,X)**2)
       V2 = ((1.0D0,0.0D0)-V2)/DCMPLX(2.0D0*M)
       END
+
+      LOGICAL FUNCTION CHECK_PEMAT
+C
+C  Check the present of the PEMAT file and integral labels
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbcap.h"
+      LOGICAL ISFILE,IS_OPEN,FNDLAB
+      CHARACTER*8 LBL
+
+      CHECK_PEMAT = .FALSE.
+      INQUIRE(FILE='PEMAT',EXIST=ISFILE,OPENED=IS_OPEN)
+      IF (ISFILE) THEN
+        IF (.NOT.IS_OPEN) THEN
+          CALL OPNFIL(LUPEMAT,'PEMAT','OLD','SAJEEV')
+        ENDIF
+        REWIND(LUPEMAT)
+        IF (CAPOVLP) THEN
+           LBL = 'CAP_OVLP'
+        ELSE
+         IF  (DONRCAP) THEN
+           LBL = 'CAP_RE  '
+         ELSE
+           LBL = 'ZCAPD1I'
+         ENDIF
+        ENDIF
+        IF (FNDLAB(LBL,LUPEMAT)) CHECK_PEMAT = .TRUE.
+      ENDIF
+
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck pemat_write */
+      SUBROUTINE PEMAT_WRITE(PE_AOr,PE_AOi,
+     &            PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C    Save CAP like integrals (in entering arrays) into PEMAT file
+C
+C  Written by Miro Ilias, Sept. 2007, Tel Aviv
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcbcap.h"
+      CHARACTER*8 LBL
+      LOGICAL FNDLAB
+      REAL*8 PE_AOr(*),PE_AOi(*),PEXR(*),PEXI(*),
+     &       PEYR(*),PEYI(*),PEZR(*),PEZI(*)
+
+      CALL QENTER('PEMAT_WRITE')
+
+C        do ii=1,n_b
+C           do jj=1,n_b
+C              IPU=IPOINTIJ(ii,jj)
+C              if (jj.gt.ii)go to 301
+C              write(LUPEMAT,*) ii,jj,CMPLX(PE_AOr(IPU),PE_AOi(IPU))
+C           end do
+C301        continue
+C        end do
+
+      REWIND(LUPEMAT)
+      IF (CAPOVLP) THEN
+            LBL='CAP_OVLP'
+            CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+            CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
+            WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP integrals generated, PEMAT label:',LBL
+      ELSE
+           IF (DONRCAP) THEN
+            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
+              BACKSPACE(LUPEMAT)
+              LBL='CAP_RE  '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
+              LBL='CAP_IM  '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PE_AOi)
+             WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP nonrel. integrals generated, PEMAT label:',LBL
+            ENDIF
+           ELSE 
+C             ... four-component CAP rel. operator 
+            IF (FNDLAB('EOFLABEL',LUPEMAT)) THEN 
+             BACKSPACE(LUPEMAT)
+             IF (.NOT.CAPDIPVEL) THEN
+              LBL='XCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEXR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='XCAPD1I '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEXI)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='YCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEYR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='YCAPD1I '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEYI)
+              WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='ZCAPD1R '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEZR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='ZCAPD1I '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEZI)
+              WRITE(LUPRI,'(2X,A,A)')
+     &       'CAP relativistic integrals generated, PEMAT label:',LBL
+
+              IF (DCADD) THEN
+CMI            ... this is separate scalar contribution from Vdc term
+               LBL='CAPD_VDC'
+               CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+               CALL WRITT(LUPEMAT,NNBBASX,PE_AOr)
+               WRITE(LUPRI,'(2X,A,A)')
+     &        'CAP relativistic Vdc scalar contribution generated,'//
+     &        ' PEMAT label:',LBL
+              ENDIF
+
+             ELSE
+CMI          ... CAP dipole velocity integrals
+              LBL='XCAPDVE '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEXR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='YCAPDVE '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEYR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+              LBL='ZCAPDVE '
+              CALL NEWLAB(LBL,LUPEMAT,LUPRI)
+              CALL WRITT(LUPEMAT,NNBBASX,PEZR)
+              WRITE(LUPRI,'(2X,A,A)')
+     &      'CAP relativistic integrals generated, PEMAT label:',LBL
+             ENDIF
+            ENDIF    
+         ENDIF
+         ENDIF
+         CALL NEWLAB('EOFLABEL',LUPEMAT,LUPRI)
+
+C        CLOSE(LUPEMAT,STATUS='KEEP')
+
+         IF (IPRCAP.GE.1) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'PEMAT file with CAP integrals ready.'
+         ENDIF
+
+
+      CALL QEXIT('PEMAT_WRITE')
+      RETURN
+      END
+
+
