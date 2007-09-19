@@ -804,7 +804,7 @@ C     ... zero array for integrals
 C ******************************************************************
 C     ... run over basis functions and calculate own integrals ...
 C ******************************************************************
-      IF (IPRCAP.GE.2) THEN
+      IF (IPRCAP.GE.4) THEN
        CALL HEADER(
      & 'Output from AOINTEGRAL - generation of integrals',-1)
       ENDIF
@@ -822,7 +822,7 @@ C ******************************************************************
          else
             iangjj=basis_ord(jj-1)
          endif
-         IF (IPRCAP.GE.2) THEN
+         IF (IPRCAP.GE.4) THEN
           WRITE(LUPRI,'(2X,A,2I3,A,I3,$)')
      &    '... calculating CAP integral(s) of ',ii,jj,'/',n_b
          ENDIF
@@ -874,7 +874,7 @@ C           ... cumulate real and imaginary part of integrals
          END DO 
          END DO
 
-         IF (IPRCAP.GE.2) THEN
+         IF (IPRCAP.GE.4) THEN
            WRITE(LUPRI,'(A)') ' ... done.'
            CALL FLSHFO(LUPRI)
          ENDIF
