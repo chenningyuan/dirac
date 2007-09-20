@@ -777,7 +777,7 @@ C     ... zero array for integrals
          end do
       end do
 
-      IF (IPRCAP.GE.2) THEN
+      IF (IPRCAP.GE.3) THEN
 
        CALL HEADER(
      & 'Output from AOINTEGRAL - basic info on basis functions',-1)
