@@ -149,7 +149,12 @@ C
       CALL MEMGET('INTE',KINDHR,  JTOP3,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDSQ,  NRTOP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIODHR,8*NRTOP,WORK,KFREE,LFREE)
+
+      CALL MEMCHK('GABDRV 1',WORK,1)
+
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+
+      CALL MEMCHK('GABDRV 2',WORK,1)
 C
 C     *****************************
 C     ***** First Shell Index *****
@@ -168,6 +173,12 @@ C
         MULTA  = MULT(MULA)
         NSTRA  = IORBSB(IORBSH(ISHELA,1))
         NUCA   = NUCOSH(ISHELA)
+CMI ... selective test as here is the core of the problem
+        IF (NUCA.LT.0) THEN
+          write(LUPRI,*) '>> ISHELA, NUCOSH(ISHELA)=',NUCOSH(ISHELA)
+          call QUIT('negative NUCA !!!')
+        ENDIF
+
         NORBA  = NORBSH(ISHELA)
         CORAX0 = CENTSH(ISHELA,1)
         CORAY0 = CENTSH(ISHELA,2)
@@ -266,6 +277,8 @@ C
           KCKMAX = MAX(KCKTA,KCKTB)
           CALL MEMGET('INTE',KLMNVL,20*KCKMAX        ,
      &                              WORK,KFREE,LFREE)
+CMI      ... check ...
+          CALL MEMCHK('GABDRV 2.8',WORK,1)
 C
 C         First electron
 C
@@ -273,19 +286,44 @@ C
           LNPCOB = 2*NSETB*(NODCAB + 1)
           CALL MEMGET('INTE',KNPCOA,LNPCOA,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KNPCOB,LNPCOB,WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.1',WORK,1)
+
           CALL IZERO(WORK(KNPCOA),LNPCOA)
           CALL IZERO(WORK(KNPCOB),LNPCOB)
+
           CALL MEMGET('INTE',KJSTRA,NSETA               ,
      &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KJSTRB,NSETB               ,
      &                              WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.2',WORK,1)
 C
           CALL MEMGET('REAL',KCORAB,9*NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+
+CMI       write(LUPRI,*) '... KCORAB=',KCORAB
+CMI       write(LUPRI,*) 'NUCA,NUCB,NODCAB=',NUCA,NUCB,NODCAB
+CMI       write(LUPRI,*) '... 9*NUCA*NUCB*NODCAB=',9*NUCA*NUCB*NODCAB
+CMI       write(LUPRI,*) 'KFREE,LFREE:',KFREE,LFREE
+
+CMI      ... here it fails !!! ...
+          CALL MEMCHK('GABDRV 2.8.3',WORK,1)
+
           CALL MEMGET('REAL',KEXPAB,3*NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.4',WORK,1)
+
           CALL MEMGET('REAL',KFACAB,NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+CMI      ... here it fails !!! ...
+C         write(LUPRI,*) '... KFACAB=',KFACAB
+C         write(LUPRI,*) '... NUCA*NUCB*NODCAB=',NUCA*NUCB*NODCAB
+C         write(LUPRI,*) 'KFREE,LFREE:',KFREE,LFREE
+
+          CALL MEMCHK('GABDRV 2.9',WORK,1)
+
           IF (GENAB) THEN
             CALL MEMGET('REAL',KCONTA,2*NORBA*NUCA*NODCAB,
      &                                WORK,KFREE,LFREE)
@@ -346,6 +384,10 @@ C
      &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KINDCD,2*NORBC*NORBD,
      &                              WORK,KFREE,LFREE)
+
+CMI          ... here it fails !!!
+          CALL MEMCHK('GABDRV 3',WORK,1)
+
           CALL GABDR1(GABM,IJOB,WORK(KFREE),LFREE,
      &          UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,
      &          DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
@@ -365,6 +407,7 @@ C               Electron 2:
   200    CONTINUE
   100 CONTINUE
 C
+      CALL MEMCHK('GABDRV 4',WORK,1)
       CALL MEMREL('GABDRV-end',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GABDRV')
       RETURN

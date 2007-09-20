@@ -2568,7 +2568,8 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 
-      PARAMETER (DSM = 1.0D-10)
+CMI   PARAMETER (DSM = 1.0D-10)
+      PARAMETER (DSM = 1.0D-12)
       LOGICAL ORBOUT(KMAX)
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
@@ -2672,8 +2673,16 @@ C
                         ILAST = MAX(ILAST,I)
                      END IF
                   END DO
+CMI               .... we might get negative value !!!!
                   NPRI = ILAST - IOFF
                   NUCOSH(MAXSHL) = NPRI
+CMI           ... check !!!
+                  IF (NPRI.LT.0) THEN
+                   write(LUPRI,*) 'NPRI=',NPRI,' MAXSHL=',MAXSHL
+                   write(LUPRI,*) 'ILAST,IOFF:',ILAST,IOFF
+                   write(LUPRI,*) 'DSM:',DSM
+                   call quit('PAOVE2: negative NPRI ! Decrease DMS !')
+                  ENDIF 
 C
 C                 set gen.cont. shell info
                   NSET       = 1
@@ -2747,6 +2756,12 @@ C
                      END IF
   210             CONTINUE
                   NUCOSH(MAXSHL) = NUCSH
+CMI         ... check it !!
+                  IF (NUCSH.LT.0) THEN
+                    write(LUPRI,*) '...NUCSH, indx MAXSHL:',NUCSH,MAXSHL
+                    call quit('PAOVE2: negative NUCSH !')
+                  ENDIF
+         
                   NSETSH(MAXSHL,1) = NSET
                END IF
                IF (NAOOUT .LT. KMAX) THEN
