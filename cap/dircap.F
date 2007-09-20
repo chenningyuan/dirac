@@ -92,8 +92,7 @@ CMI   REAL*8 PE_AOr(NNBBASX),PE_AOi(NNBBASX)
 
       CALL MEMCHK('sajeev 2',WORK,1)
 
-
-      IF (.NOT.CHECK_PEMAT) THEN
+      IF (.NOT.CHECK_PEMAT()) THEN
 
 CMI   ... evaluate CAP complex atomic untegrals
        IF (IPRCAP.GE.0) THEN
@@ -114,7 +113,7 @@ CMI   ... write integrals into the PEMAT file ...
      &  PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
         
       ELSE
-       WRITE(LUPRI,'(2X,A)')
+       WRITE(LUPRI,'(/2X,A)')
      & 'SAJEEV: PEMAT file with desired CAP integrals is'//
      & ' present, not calculating them.'
       ENDIF
@@ -528,28 +527,34 @@ C ===================================================================
         CALL QUIT('INPREAD: n_b <> NCBF !')
        ENDIF
 
-       WRITE(LUPRI,'(/2X,A,I3)')
+       IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A,I3)')
      & 'Number of R_ms elements (sh)=',sh
-       DO I=1,sh
-        WRITE(LUPRI,'(2X,A,I3,A,3F12.6)')
+        DO I=1,sh
+         WRITE(LUPRI,'(2X,A,I3,A,3F12.6)')
      &  'R_ms(',I,') x,y,z:',R_ms(I,1),R_ms(I,2),R_ms(I,3)
-       ENDDO
-       WRITE(LUPRI,*)
-       CALL FLSHFO(LUPRI)
+        ENDDO
+        WRITE(LUPRI,*)
+        CALL FLSHFO(LUPRI)
+       ENDIF
 
        LUCAP=0
        CALL GPOPEN(LUCAP,
      &  'CAPLBL.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
 
        WRITE(LUCAP,*) 'CAP unique order of atomic basis functions'
-       WRITE(LUPRI,*) 'CAP unique order of atomic basis functions'
 
+       IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,*) 'CAP unique order of atomic basis functions'
+       ENDIF
        do i=1,n_b
+        IF (IPRINT.GE.3) THEN
           write(LUPRI,'(2i4,A6,A,I3)')i,SHELL_ATOM(i),Shell_basis(i),
      &   ' contr->',basis_n(i)  
-C        ... write into file LUCAP
-         WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
-       end do
+        ENDIF
+C        ... write into file LUCAP !
+        WRITE(LUCAP,'(i4,2x,i3,2x,A6)') i,SHELL_ATOM(i),Shell_basis(i)
+       enddo
 
        CALL GPCLOSE(LUCAP,'KEEP')
 
@@ -559,7 +564,7 @@ C        ... write into file LUCAP
      &  ' functions ready.'
        ENDIF
 
-CMI  ... set up important offset basis_ord(i)
+CMI  ... set up important offset -  basis_ord(i)
       do i=1,n_b
          if(i.eq.1)then
            iasp=0
@@ -567,7 +572,7 @@ CMI  ... set up important offset basis_ord(i)
            iasp=basis_ord(i-1)
          endif
          basis_ord(i)=iasp+basis_n(i)
-         IF (IPRCAP.GE.3) THEN
+         IF (IPRINT.GE.3) THEN
           WRITE(LUPRI,'(2X,A,I3,A,I3,A,I3)')
      &    'b.fu: ',i,' # of contr.shells:',basis_n(i),
      &    ' offset:',basis_ord(i)
@@ -594,6 +599,7 @@ C       WRITE(LUPRI,*) 'contraction coefficients:'
 
           iangj = iangi
  
+          IF (IPRINT.GE.3) THEN
           write(lupri,'(/2X,A,I4)')
      &    '*** contracted function #',i
 
@@ -609,6 +615,7 @@ CMI       write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
      &    ' functions (indx from, to):',iangi+1,basis_ord(i)
 
           write(lupri,*) (ord_expon(ii),ii=iangi+1,basis_ord(i) )
+          ENDIF
 
 C         do ii=iangi+1,basis_ord(i)
 C         enddo
@@ -625,8 +632,10 @@ C ======================================================================
            ord_coe(ii)=ord_coe(ii)/sqrt(PEINT)
           enddo
 
+          IF (IPRINT.GE.3) THEN
           write(lupri,*) '1.normalized contraction coefficients:'
           write(lupri,*) (ord_coe(ix+k), k=0, basis_n(i)-1 )
+          ENDIF
 
 CMI  ... second normalization - get PE_AO first
 C ====================================================================
@@ -660,7 +669,7 @@ CMI  ... do second normalization - now apply PE_AO as the norm
           do ii=iangi+1,basis_ord(i)
            unnormcoe =  ord_coe(ii)
            ord_coe(ii) = unnormcoe/sqrt(PE_AO)
-           IF (IPRINT.GE.2) THEN
+           IF (IPRINT.GE.3) THEN
             write (LUPRI,'(i4,A,A2,A,F12.5,A,F12.5,A,F12.5,A,F12.5)')
      &      ii,'.fu=',shell_arr(ii),
      &      ' expon:', ord_expon(ii),
@@ -1860,11 +1869,16 @@ CMI  ... Eq. 17 of Sajeev:2006
       V2 = ((1.0D0,0.0D0)-V2)/DCMPLX(2.0D0*M)
       END
 
-      LOGICAL FUNCTION CHECK_PEMAT
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck check_pemat */
+      LOGICAL FUNCTION CHECK_PEMAT()
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Check the present of the PEMAT file and integral labels
+C
+C      Check the presence of the PEMAT file and  of integral labels
 C
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbcap.h"
@@ -1879,12 +1893,13 @@ C
         ENDIF
         REWIND(LUPEMAT)
         IF (CAPOVLP) THEN
-           LBL = 'CAP_OVLP'
+          LBL = 'CAP_OVLP'
+          IF (FNDLAB(LBL,LUPEMAT)) CHECK_PEMAT = .TRUE.
         ELSE
          IF  (DONRCAP) THEN
-           LBL = 'CAP_RE  '
+          LBL = 'CAP_RE  '
          ELSE
-           LBL = 'ZCAPD1I'
+          LBL = 'ZCAPD1I' ! relativistic case 
          ENDIF
         ENDIF
         IF (FNDLAB(LBL,LUPEMAT)) CHECK_PEMAT = .TRUE.
