@@ -18,3 +18,55 @@ and one formatted file with symmetry information:
       open(USYMINF,file=FileSYMINF)
  $GMS_SRC/"syminf.f90" 
 
+
+    Know-how on hsmrcc stuff
+==================================== 
+
+
+ source/hsmrmain.c - main C code accepting parameters; 
+
+-----------------------------------------------------------------------
+ calling SetHSMRfiles(IFile,OFile)
+
+   FileMR1EINT  = TRIM(IFile)//'.F295'   ! binary
+   FileMR2EINT  = TRIM(IFile)//'.F296'   ! binary
+   FileSYMINF   = TRIM(IFile)//'.F297'   ! text file...
+
+  FileVINF  = TRIM(IFile)//'.VINF'
+
+-----------------------------------------------------------------------
+
+ calling source/hsmrcc.f90  main   HSMRCC (from C)
+
+ calls DrvIntGen (in modules/intgenmod.f90)
+
+-----------------------------------------------------------------------
+
+modules/vinfmod.f90:     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+
+modules/gmsmod.f90:      open(UMR1EINT,file=FileMR1EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+modules/gmsmod.f90:      open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+
+modules/intgenmod.f90:   open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+
+--------------------------------------------------------------------------------------------------
+
+File name = LiH.scf_hsmrcc.gms.F297    formatted, sequential access   record = 1
+ In source file modules/syminf.f90, at line number 96
+
+ - important symmetry information from Gamess
+--------------------------------------------------------------------------------------------------
+
+  Files in working directory:
+================================
+hsmrcc.exe*              LiH.scf_hsmrcc.gms.FHH   LiH.scf_hsmrcc.gms.TAMP  LiH.scf_hsmrcc.gms.VINF_old
+LiH.scf_hsmrcc.gms.COEF  LiH.scf_hsmrcc.gms.FHP   LiH.scf_hsmrcc.gms.TNEW  LiH.scf_hsmrcc.gms.VINT
+LiH.scf_hsmrcc.gms.F295  LiH.scf_hsmrcc.gms.FPP   LiH.scf_hsmrcc.gms.TOLD  pgprof.out
+LiH.scf_hsmrcc.gms.F296  LiH.scf_hsmrcc.gms.HEFF  LiH.scf_hsmrcc.gms.VIND
+LiH.scf_hsmrcc.gms.F297  LiH.scf_hsmrcc.gms.inp   LiH.scf_hsmrcc.gms.VINF
+
+Integrals generator within HSMRCC:
+
+modules/intgenmod.f90
+
+
