@@ -1535,6 +1535,7 @@ C#include "capint.h"
       real *8 R_m(2),R_n(2)
       real *8 CAP_PAR(3)
       real *8 M
+      real *8  X_DC, EPS_DC, VF
       real *8 X0,theta,LAMDA,GRSTP(2)
       complex *16 FFx,fx,Dfx,D2fx
       complex *16 V0x,V1x,V2x
@@ -1547,11 +1548,11 @@ C#include "capint.h"
 
       COMPLEX *16 VCAPT,VCAPXT,VCAPYT,VCAPZT
       COMPLEX *16 VCAPX(4),VCAPX_D1C(4),VCAP1C
-      COMPLEX *16 VCAP,VADD,VF
+      COMPLEX *16 VCAP,VADD
       COMPLEX *16 VCAP_D1C,VCAPy_D1C
       COMPLEX *16 VCAPTy,VCAPXTy,VCAPYTy,VCAPZTy
       COMPLEX *16 VCAPXy(4),VCAPXy_D1C(4)
-      COMPLEX *16 VCAPy,VADDy,VFy
+      COMPLEX *16 VCAPy,VADDy
       COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
       EXTERNAL V0D,V1D
@@ -1653,6 +1654,7 @@ CMI      ... additional electric field
 !          ... VF must be always positive !!!!
             VF = X - X_DC 
             VADD=DCMPLX(-VF*EPS_DC,0.0d0)
+!           VADD=-VF*EPS_DC
            ELSE
             VADD=DCMPLX(0.0d0,0.0d0)
            ENDIF
