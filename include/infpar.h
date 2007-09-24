@@ -13,7 +13,7 @@
 #if defined(__CVERSION__)
 #define MAXNOD 200
 #define MAXCL2 10000
-extern struct common_infpar {
+extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
     long iprpar, ntask, ncode, ndegdi, master, mynum, mytid, nodtot;
@@ -33,12 +33,15 @@ extern struct common_infpar {
       INTEGER MAXNOD, MAXCL2
       PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
       REAL*8 TOTWAL
-      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
+CSK      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
+      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
       INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID, NODE, NODES
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
+CSK      COMMON /DIRACINFPAR/ TOTWAL                                        &
+CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
       COMMON /DIRACINFPAR/ TOTWAL                                        &
-     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
+     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
      &       ,NUMNOD, ICOUNT,MTIDS, MPARID, NODE, NODES                  &
      &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
      &       ,NODNAM, MYNAME
