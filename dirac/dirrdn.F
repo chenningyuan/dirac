@@ -331,9 +331,11 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
+#if defined (MOD_ECP)
 C&&&& ECP: do ECP calculation, non-relativistic
             ECPCALC = .TRUE.
             TWOCOMP = .TRUE.
+#endif
             GO TO 100
   111     CONTINUE
             GO TO 100
@@ -408,10 +410,11 @@ C
         ISSDIR = 0
         IGTDIR = 0
       ENDIF
+#if defined (MOD_ECP)
       IF (ECPCALC)
      &  WRITE(LUPRI,'(1X,A)') 
      &   '  employing effective-core-potentials (ECP)'
-
+#endif
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -5107,7 +5110,8 @@ CMI   nonrelativistic  kinetic energy integrals ...
 CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
-c       
+c
+#if defined (MOD_ECP)
         IF (ECPCALC) THEN
 c     
 c     Spin-orbit integrals for ECP centres ...
@@ -5127,7 +5131,7 @@ c
 c      ... use IPSOPP defined in dcbham.h
         IPSOPP           = INDXPR
         END IF         
-
+#endif
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
 C

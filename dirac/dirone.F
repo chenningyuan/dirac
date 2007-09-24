@@ -382,6 +382,7 @@ C      **      this part adds ARGOS ARPP          **
 C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
+#if defined (MOD_ECP)
       IF (ECPCALC) then
          OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
          READ(59),(ARPP(I),I=1,NNBBAST)
@@ -391,6 +392,8 @@ C      *********************************************
          ENDDO
       ENDIF
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
+#endif
+
 C
 C     Memory deallocation
 C
