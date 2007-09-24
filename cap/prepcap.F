@@ -289,14 +289,21 @@ C       ... print out DC field parameters
      &    '...active coordinates (x,y,z), in a.u.:',
      &    X0DC(1),X0DC(2),X0DC(3)
           DO I=1,3
-            IF (X0DC(I).LT.GINTPT(I,1)) THEN
-              WRITE(LUPRI,*) 'DC field must be active IN the CAP space'
+            IF (X0DC(I).LT.GINTPT(I,1).AND.EPSDC(I).GT.0.0D0) THEN
+              WRITE(LUPRI,*)
+     &       'Nonzero DC field must be active IN the CAP space'
               WRITE(LUPRI,'(2X,2(A,F12.6))')
      &         'DC field is starting from:',X0DC(I),
      &         ' while CAP is staring from:',GINTPT(I,1)
               CALL QUIT('increase the cube for Vdc !')
             ENDIF
           ENDDO
+          WRITE(LUPRI,'(/2X,A)')
+     &   '* WARNING: x,y,z components of the DC field break'//
+     &   ' the overall symmetry as CAP is totally symmetric operator ! '
+          WRITE(LUPRI,'(2X,A/)')
+     &   '...for this you have to use the lowest C1 symmetry...'//
+     &   ' '
         ENDIF
         IF (NOOVLP) THEN
          WRITE(LUPRI,'(2X,A)') 
