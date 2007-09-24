@@ -375,6 +375,8 @@ C
 C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
+
+#if defined (MOD_ECP)
 c
 C      *********************************************
 C      **                                         **
@@ -382,7 +384,6 @@ C      **      this part adds ARGOS ARPP          **
 C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
-#if defined (MOD_ECP)
       IF (ECPCALC) then
          OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
          READ(59),(ARPP(I),I=1,NNBBAST)
@@ -391,8 +392,8 @@ C      *********************************************
             WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
          ENDDO
       ENDIF
-      CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 #endif
+      CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 
 C
 C     Memory deallocation
