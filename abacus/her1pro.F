@@ -1979,13 +1979,13 @@ c
           WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1
             if (I .eq. 1) then
               open(60,form='unformatted',file='sox',err=5557)
-              READ(60),(SOINT(N,I),N=1,N2BBASX)
+              READ(60) (SOINT(N,I),N=1,N2BBASX)
             elseif (I .eq. 2) then
               open(61,form='unformatted',file='soy',err=5557)
-              READ(61),(SOINT(N,I),N=1,N2BBASX)
+              READ(61) (SOINT(N,I),N=1,N2BBASX)
             elseif (I .eq. 3) then
               OPEN(62,form='unformatted',file='soz',err=5557)
-              READ(62),(SOINT(N,I),N=1,N2BBASX)
+              READ(62) (SOINT(N,I),N=1,N2BBASX)
             end if     !  end of read in 
  601    continue
       END IF     !  end of SOPP    
