@@ -6,8 +6,8 @@ c    This is for the argos routine
      &        irowmax(60,60), ireparg(60,60,100)
 c     REAL*8 CTRANarg(MXCENT,MXQN,MXCENT*MXQN,MXCENT*MXQN)
       REAL*8 CTRANarg(60,60,60,60)
-CSK   fixed alignment: REAL, INTERGER
-CSK   COMMON /argoscom/ ngenag, nsag, naordsag, nconsag, ngcsag, itolag,&
+!CSK   fixed alignment: REAL, INTERGER
+!CSK   COMMON /argoscom/ ngenag, nsag, naordsag, nconsag, ngcsag, itolag,&
       COMMON /argoscom/ CTRANarg,                                       &  
      &                  ngenag, nsag, naordsag, nconsag, ngcsag, itolag,&
      &                  icutag, aointsag, only1eag, inruag, ncrsag,     &
