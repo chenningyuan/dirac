@@ -1188,7 +1188,7 @@ case $machine in
          esac
 
 
-         if [ "$localdisks" = "no"]; then
+         if [ "$localdisks" = "no" ]; then
             cpp="$cpp,-DVAR_PFS"
          fi
 
