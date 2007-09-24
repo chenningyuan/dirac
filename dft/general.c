@@ -504,15 +504,15 @@ dftsyncfunc_(int* amImaster)
     int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
-    if(infpar_.nodes==0||Initialized) return;
-    MPI_Bcast(&do_alda,      1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
-    MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
+    if(diracinfpar_.nodes==0||Initialized) return;
+    MPI_Bcast(&do_alda,      1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&dft_conf_len, 1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
         char* line = malloc(dft_conf_len);
         if(*amImaster)
             strcpy(line, DftConfString);
 
-        MPI_Bcast(line, dft_conf_len, MPI_CHAR, infpar_.mparid, MPI_COMM_WORLD);
+        MPI_Bcast(line, dft_conf_len, MPI_CHAR, diracinfpar_.mparid, MPI_COMM_WORLD);
         if(!*amImaster)
             dftinput_(line, &success, dft_conf_len);
 
