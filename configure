@@ -1821,9 +1821,9 @@ fi
 #
 #
 case $F77 in
-   xlf*|mpfort) 
+   xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
-     cpp="$cpp",'`echo $(MODS) | sed '\''s,^ *,,g'\'' | tr " " ,`'
+     cpp="$cpp,\$(MODS)"
      ;;
    *)
      cpp="$cpp \${MODS}"

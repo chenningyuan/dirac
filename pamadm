@@ -510,6 +510,9 @@ EOF
 #
 make_makefile()
 {
+if [ -n "$IBMMOD" ]; then 
+  echo $MODS
+fi
    echo "*** Making general Makefile"
 #   echo
    AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
@@ -1362,7 +1365,11 @@ which_modules()
 {
 #  
 #
+if [ -n "$IBMMOD" ]; then
+MODS="$ERIFLG,$DNFFLG,$FMMFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG,$EMBFLG,$CDFTFLG,$VISUALFLG,$CAPFLG,$HSCCFLG,$LRGMOLFLG,$OOF_FLG"
+else
 MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
+fi
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -1497,6 +1504,10 @@ while [ -n "$1" ]; do
       -oof)
          OOFMOD=1
 	 MODULES=1
+         ;;
+      -ibm)
+         IBMMOD=1
+         echo "activating IBM mods..."
          ;;
       -*)
          echo "Option \"$1\" not recognized."
