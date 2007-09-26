@@ -104,13 +104,45 @@ call QENTER('compatible_2qmtx')
                  (amat%nc(1) == bmat%nc(1)) .AND.  &  
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
                  (amat%array_size == bmat%array_size)  .AND.  & 
-                 (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
-                 (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
-                 (.not.xor(amat%is_real,bmat%is_real))   .AND.  &   
+                      compatible_2qmtx_logical(amat,bmat) .AND. & 
+              !  (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
+              !  (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+              !  (.not.xor(amat%is_real,bmat%is_real))   .AND.  &   
                  (amat%nz == bmat%nz)
 !
 call QEXIT('compatible_2qmtx')
 end function compatible_2qmtx
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function compatible_2qmtx_logical(amat,bmat) result (log_comp)
+!---------------------------------------------------------------------------
+!
+! .... instead of XOR I have to use new function - as g95 has no XOR (only IEOR)
+!
+!---------------------------------------------------------------------------
+type(QMtx), intent(in) :: amat,bmat
+logical (kind=1) :: log_comp
+logical (kind=1) :: simple_mtx2, symm_packed2, is_real2
+call QENTER('compatible_2qmtx_logical')
+
+           ! ......... doing this: xor in NOT in g95 !!!
+              !  (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
+              !  (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+              !  (.not.xor(amat%is_real,bmat%is_real))   .AND.  &   
+  
+     simple_mtx2 = (amat%simple_mtx.AND.bmat%simple_mtx) .OR. &
+                   (.NOT.amat%simple_mtx.AND..NOT.bmat%simple_mtx)
+
+     symm_packed2 = (amat%symm_packed.AND.bmat%symm_packed) .OR. &
+                    (.NOT.amat%symm_packed.AND..NOT.bmat%symm_packed)
+
+     is_real2    = (amat%is_real.AND.bmat%is_real) .OR.   &
+                   (.NOT.amat%is_real.AND..NOT.bmat%is_real) 
+
+  log_comp = simple_mtx2 .AND. symm_packed2 .AND. is_real2 ! resulting
+
+call QEXIT('compatible_2qmtx_logical')
+end function compatible_2qmtx_logical
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -133,9 +165,10 @@ call QENTER('compatible_2qmtx_part')
                  (amat%nr(2) == bmat%nr(2)) .AND.  &
                  (amat%nc(1) == bmat%nc(1)) .AND.  &  
                  (amat%nc(2) == bmat%nc(2)) .AND.  & 
-                 (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
-                  (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
-                 (.not.xor(amat%is_real,bmat%is_real))  
+                      compatible_2qmtx_logical(amat,bmat) 
+          !       (.not.xor(amat%simple_mtx,bmat%simple_mtx))   .AND.  &   
+          !       (.not.xor(amat%symm_packed,bmat%symm_packed) ) .AND.  &
+          !       (.not.xor(amat%is_real,bmat%is_real))  
 !
 call QEXIT('compatible_2qmtx_part')
 end function compatible_2qmtx_part
@@ -175,12 +208,12 @@ function get_qmtx_kstart(qmat) result (kstart_out)
 !----------------------------------------------------------------------
 #include "priunit.h"
 type(QMtx), intent(in) :: qmat
-integer(kind=4) :: kstart_out
+integer(kind=4) :: kstart_out ! returning integer*4 !!!
 !integer :: kstart_out
 call QENTER('get_qmtx_kstart')
   if (.not.qmat%is_alloc) then
-    call QUIT('get_qmtx_kstart: can not return "kstart" position &
-                when memory for matrix is NOT allocated !')
+    call QUIT('get_qmtx_kstart: can not return "kstart" position' & 
+                //'when memory for matrix is NOT allocated !')
   else
     kstart_out =  ( qmat%kstart )
   endif

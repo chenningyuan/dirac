@@ -1026,7 +1026,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL *8 PI,GAMMA1,GAMMA2,PREMULT
       REAL *8 BINC
       INTEGER *4 IFI
-      EXTERNAL ISUMM
+CMI   EXTERNAL ISUMM
+      INTEGER*4 ISUMM
       data PI/3.141592653589793/
 
       OVINT=0.0d0
@@ -1090,9 +1091,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       NFACT=KL
       END
 
-      FUNCTION ISUMM(I)
+CMI ... this is INTEGER*4 function !!      
+CMI   FUNCTION ISUMM(I)
+      INTEGER*4 FUNCTION ISUMM(I)
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER *4 I,K,KL,M,ISUMM
+CMI   INTEGER *4 I,K,KL,M,ISUMM
+      INTEGER *4 I,K,KL,M
       KL=1
       Do k=1,i
          m=(k-((k/2)*2))
@@ -1102,8 +1106,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       End Do
       ISUMM=KL
       END
-
-
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PEM */
@@ -1179,7 +1181,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real *8 GAMMA1, GAMMA2
       real *8 BINC
       data PI/3.141592653589793/
-      EXTERNAL  ISUMM
+CMI   EXTERNAL  ISUMM
+      INTEGER*4 ISUMM
 
       GAMMA=(A(2))+(B(2))
       P=((A(1))*(A(2))+(B(1))*(B(2)))/GAMMA

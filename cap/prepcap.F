@@ -275,7 +275,7 @@ CMI    ...  write out integration parameters
      &     '* number of integration points per interval:'
            WRITE(LUPRI,*) (NGRS(I,J),J=1,NGR(I)-1)
           ELSE
-           CALL QUIT('must have least two subintervals...',-1)
+           CALL QUIT('must have least two subintervals...')
           ENDIF
         ENDDO
         IF (DCADD) THEN

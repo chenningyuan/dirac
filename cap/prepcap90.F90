@@ -216,6 +216,7 @@ subroutine GetUnpckOvlpMtx(smat)
 !
 !===========================================================================
    use QMatrixes
+#include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -235,8 +236,11 @@ call QENTER('GetUnpckOvlpMtx')
    write(LUPRI,*) 'SSMTRC=',SSMTRC
  endif
 
+ ILFREE =  get_lfree() ! must be due to integre conversion !!!
+
 ! call lower level routine
- call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
+ call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), ILFREE )
+ !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
  !call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
 
  if (get_iprint_qmtx() >= 5) then

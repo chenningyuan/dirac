@@ -63,8 +63,8 @@ integer(kind=4) :: kstart_out
 call QENTER('get_vect_kstart')
   if (.not.self%is_alloc) then
     call print_vect_attrib(self)
-    call QUIT('get_vect_kstart: can not return "kstart" position &
-               when memory for vector is NOT allocated !')
+    call QUIT('get_vect_kstart: can not return "kstart" position'  &
+            //' when memory for vector is NOT allocated !')
   else
     kstart_out = self%kstart
   endif

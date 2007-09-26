@@ -3098,7 +3098,7 @@ C
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
       IF(IPRINT.GE.6) THEN
-        WRITE(LUPRI,'(A,X,A3,2X,A1)') 
+        WRITE(LUPRI,'(A,1X,A3,2X,A1)') 
      &    'SPHLOW: Overlap matrix in solid harmonics for',
      &    REP(IREP),COMP(IC)
         CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
@@ -3207,7 +3207,7 @@ C
      &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
       IF(IPRINT.GE.6) THEN
-        WRITE(LUPRI,'(A,X,A3,2X,A1)') 
+        WRITE(LUPRI,'(A,1X,A3,2X,A1)') 
      &    'RKBLOW: Overlap matrix in modified solid harmonics for',
      &    REP(IREP),COMP(IC)
         CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
