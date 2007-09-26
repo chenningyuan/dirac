@@ -1026,25 +1026,34 @@ cat <<EOF>> Makefile
 	\$(RM) -f *~
 EOF
 #########################################################
-#      Treat Fortran90/95 modules (through echo)
+#
+#      Take care of Fortran90/95 modules
+#  ===========================================
+# NOTE: There must be correct order of subdirectories
+#       based on which module files are to be genereated first.
+#
+#      For instance, CAP & HSMRCC functionalities depend 
+#      on OOF modules.
+#
 #########################################################
 echo "       " >> Makefile
 if [ -n "$MODULES" ]; then
-  echo '#       Fortran90/95 modules # ' >> Makefile
+  echo '#--------------------------- # ' >> Makefile
+  echo '#   Fortran90/95 modules     # ' >> Makefile
   echo '#--------------------------- # ' >> Makefile
   echo 'mod  :             ;\' >> Makefile
-  echo '     cd  abacus     ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  echo '     cd  abacus     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   if [ -n "$EMBMOD" ]; then
-     echo '     cd  embedding  ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  echo '     cd  embedding  &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
-     echo '     cd  oof  ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  echo '     cd  oof        &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
   if [ -n "$CAPMOD" ]; then
-     echo '     cd  cap  ; $(MAKE) mod ; cd .. ;\' >> Makefile
+  echo '     cd  cap        &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
   if [ -n "$HSCCMOD" ]; then
-     echo '     cd  hsmrcc  ; $(MAKE) mod ; cd .. ' >> Makefile
+  echo '     cd  hsmrcc     &&   $(MAKE) mod  &&  cd .. ' >> Makefile
   fi
 #
 #
