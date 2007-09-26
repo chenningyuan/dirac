@@ -281,8 +281,7 @@ C?       WRITE(6,*) ' MICDV6 will be called '
      &                 LUDIA,NROOT,
      &                 MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
      &                 SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT,
-     &                 BSCLFAC,IBLOCKAR,IBLKI)
+     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
 C?       WRITE(6,*) ' MICDV6_PAR will be called '
           ELSE
 #if defined (VAR_MPI)
@@ -3250,8 +3249,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,IROOTHOMING,LUWRTOUT,BSCRFAC,IBKINF,
-     &                  IBLOCKI)
+     &                  E_CONV,IROOTHOMING,LUWRTOUT)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -3259,8 +3257,6 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *
 * From MICDV4, Jeppe Olsen, April 1997
 *              Modified : Oct 97 : root homing added
-*
-* parallel adaption, Stefan Knecht, spring-summer 2006
 *
 * Input :
 * =======
@@ -3296,17 +3292,13 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 #include "infpar.h"
 #include "mpif.h"
        DIMENSION ISTAT(MPI_STATUS_SIZE)
-       INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR, IREQ(NUMNOD)
+       INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR
 #endif
-       INTEGER MYSUMM, MYCOMM
        DIMENSION VEC1(*),VEC2(*)
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION H0(*),IPNTR(1)
        DIMENSION H0SCR(*)
-       INTEGER ITEST, IRTNDRAT
-       INTEGER ICOLOR, IKEY
-
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -3320,8 +3312,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *
        DIMENSION FINEIG(1)
        LOGICAL CONVER,RTCNV(10),LUCEND
-       REAL*8 INPRDD, INPROD, INPRDD_DMPIIO, INPRDD_MPIIO 
-       REAL*8 INPRDD_MPIIO_SF 
+       REAL*8 INPRDD, INPROD
        DOUBLE PRECISION tottime,endtime,starttime
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *      New characters used for timing in send of VEC from LU3
@@ -3334,22 +3325,9 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
 * outside (for roothoming :dim = 3*MAXVEC )
        DIMENSION XJEP(10000)
-       INTEGER   IXJEP(10000),NDSAVE,NEWNMD,NDISTIADD
-       DIMENSION NDISTIADD(NMPROC),BSCRFAC(*), IBKINF(*)
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
-       INTEGER(KIND=MPI_OFFSET_KIND) JOFFS,JDISP
-#endif
-       CHARACTER*8 CVECNAME,SCLFACNM
+       INTEGER   IXJEP(10000)
 *
        LUCEND = .FALSE.
-       ITEST = 0
-       NDSAVE = NUMNOD
-       NTESTI = 0
-       NEWNMD = 0
-*.provide for a new communicator ICOMM used in MICDV6
-#if defined(VAR_MPI)
-       CALL MPI_COMM_DUP(MPI_COMM_WORLD,ICOMM,IERR)
-#endif
 C
        WRITE(LUWRTOUT,*) ' '
        WRITE(LUWRTOUT,*) ' '
@@ -3397,107 +3375,22 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
 *.Initial iteration
 * ===================
        ITER = 1
-CSK       CALL REWINO(LU1)
-CSK       IF(MYPROC.EQ.MASTER) THEN
-CSK        DO I = 1, NINVEC
-CSK          write(6,*)'initial vector',I
-CSK          CALL WRTVCD(VEC1,LU1,0,-1)
-CSK        END DO
-CSK       END IF
        CALL REWINO(LU1)
        CALL REWINO(LU2)
 *
-#if defined(VAR_MPI)
-       IF(IRUNPA.GT.0) THEN
-         NPARWAY = 4
-         IRUNPCG = 0
-         ICOLOR = 1
-         IKEY = 1
-         CALL MPI_COMM_SPLIT(ICOMM,ICOLOR,IKEY,MYNEW_COMM,IERR)
-         CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
-       END IF
-#else
        IF(IRUNPA.EQ.0) THEN
          MYNEW_ID = MYPROC
          MYNEW_COMM = 0
        END IF
-#endif
 *
        DO IVEC = 1,NINVEC
          CALL REWINO(LU5)
          CALL REWINO(LU6)
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
-         CVECNAME = 'CVECFILE'
-         SCLFACNM = 'SCLFFILE'
-         SVECNAME = 'S_PARALLEL'
-         IF(IVEC .LT. 10)THEN    ! MPI ID has one digit
-           WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',IVEC
-           WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',IVEC
-           CVECFLL=10
-           SCLFFLL=10
-         ELSE IF(IVEC .LT. 100)THEN  ! MPI ID has two digits
-           WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',IVEC
-           WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',IVEC
-           CVECFLL=11
-           SCLFFLL=11
-         ELSE IF(IVEC .LT. 1000)THEN  ! MPI ID has three digits
-           WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',IVEC
-           WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',IVEC
-           CVECFLL=12
-           SCLFFLL=12
-         ELSE
-           CALL QUIT("NINVEC.GT.1000! Do you really ask for more than
-     &                1000 roots???")
-         ENDIF
-         IF(MYNEW_ID.EQ.0) THEN
-           CALL MPI_FILE_OPEN(MPI_COMM_SELF,CVECTOTN(1:CVECFLL),
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ICVECFL, IERR)
-*
-           CALL MPI_FILE_OPEN(MPI_COMM_SELF,SCLFTOTN(1:SCLFFLL),
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ISCLFCFL, IERR)
-*
-           CALL COPVC_SERPAR_CSCF(LU1,VEC1,BSCRFAC,IBKINF,
-     &         IBLOCKI,1,0,1,-1)
-*
-           CALL MPI_FILE_CLOSE(ICVECFL,IERR)
-           CALL MPI_FILE_CLOSE(ISCLFCFL,IERR)
-           JDISP = 0
-           IF(IVEC.LT.2)THEN
-           CALL MPI_FILE_OPEN(MPI_COMM_SELF,SVECNAME,
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ISVECFL, IERR)
-           CALL MPI_FILE_SET_VIEW(ISVECFL,JDISP,MPI_REAL8,MPI_REAL8,
-     &          "native",MPI_INFO_NULL,IERR)
-           END IF
-           IRDWR = IVEC - 1
-         END IF
-#else
          IF(MYNEW_ID.EQ.0) THEN
             CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
          ENDIF
-#endif
          CALL MV7(VEC1,VEC2,LU5,LU6)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
-         IF(MYNEW_ID.NE.0) THEN
-           GOTO 11
-         END IF
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
-         CALL MPI_FILE_OPEN(MPI_COMM_SELF,CVECTOTN(1:CVECFLL),
-     &        MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &        ICVECFL, IERR)
-         CALL MPI_FILE_SET_VIEW(ICVECFL,JDISP,MPI_REAL8,MPI_REAL8,
-     &          "native",MPI_INFO_NULL,IERR)
-*. Projected matrix
-           DO JVEC = 1, IVEC
-              IJ = IVEC*(IVEC-1)/2 + JVEC
-              APROJ(IJ) = INPRDD_DMPIIO(VEC1,VEC2,ISVECFL,ICVECFL,
-     &                    IBKINF,IBLOCKI,JVEC-1,0)
-           END DO
-*          ^ End of loop over JVEC
-         CALL MPI_FILE_CLOSE(ICVECFL,IERR)
-#else
          CALL REWINO(LU6)
          CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
 *. Projected matrix
@@ -3508,98 +3401,11 @@ CSK       END IF
               APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
            END DO
 *          ^ End of loop over JVEC
-#endif
-***         END IF
-11     CONTINUE
        END DO
 *      ^ End of loop over IVEC
 *. end of initial loop
-#if defined(VAR_MPI)
-#if !defined(SYS_LOCALDISKS)
-       IF(MYNEW_ID.EQ.0) THEN
-         CALL REWINE(LU2,LBLK)
-         DO II = 1, NINVEC
-           CALL COPVC_PARSER_SF(LU2,VEC1,IBKINF,IBLOCKI,
-     &          II-1,0,-1)
-         END DO
-         CALL MPI_FILE_CLOSE(ISVECFL,IERR)
-       END IF
-#endif    
-       CALL MPI_COMM_FREE(MYNEW_COMM,IERR)
-       MYNEW_ID = 0
-#endif
 *
-*
-CSK       IF(MYPROC.EQ.MASTER)THEN
-CSK         WRITE(6,*)'MAXVEC = ',MAXVEC
-CSK         CALL WRTMAT(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,MAXVEC*(MAXVEC+1)/2)
-CSK       ENDIF
-*
-*. determine the (initial) parallel route --> here we go!
-*. NPARWAY controls the parallel fine-grain version that is used
-*. NPARWAY = 0 --> fine-grain route disabled
-*. NPARWAY = 1 --> fg w.r.t c-batches; NPARWAY = 2 --> fg w.r.t c-blocks
-*. IRUNPCG .GT. 0 enables the coarse-grain route, IRUNPCG = 1 incl. M
-*. IRUNPCG .GT. 1 excl. M
-*
-*. 1. number of roots = 1
-*
-      IF(IRUNPA.GT.0) THEN
-        IF(NROOT.EQ.1) THEN
-          IF(NUMNOD.LE.2) THEN
-            NPARWAY = 1
-            IRUNPCG = 0
-          ELSE IF(NUMNOD.GT.2) THEN
-            NPARWAY = 4
-            IRUNPCG = 0
-          END IF
-        END IF
-*      /\ NROOT = 1
-        IF(NROOT.GT.1)THEN
-*
-          IF(NROOT.GT.NMPROC)THEN
-*. as a first test we enable the fine-grain route(s)
-*. instead of the cg ones
-            IF(NMPROC.GE.3) THEN
-*. master is not involved in fg-calculations
-              NPARWAY = 5
-              IRUNPCG = 0
-            ELSE
-*. master is involved in fg-calculations
-              NPARWAY = 2
-              IRUNPCG = 0
-            END IF
-          ELSE IF(NROOT.EQ.NMPROC) THEN
-*. enable cg include the master, disable fg!
-              NPARWAY = 0
-              IRUNPCG = 1
-          ELSE IF(NROOT.LT.NMPROC) THEN
-            IF(NROOT.EQ.NUMNOD)THEN
-*. enable cg, exclude the master, disable fg!
-              NPARWAY = 0
-              IRUNPCG = 2
-            ELSE IF(NROOT.LT.NUMNOD) THEN
-*. determine the ratio between slaves and roots
-              IRTNDRAT = NUMNOD / NROOT
-              IF(IRTNDRAT.GE.3)THEN
-*. master is not involved in fg-calculations, enable cg!
-                NPARWAY = 6
-                IRUNPCG = 3
-              ELSE
-*. master is involved in fg-calculations, enable cg!
-                NPARWAY = 3
-                IRUNPCG = 3
-              END IF
-            END IF
-*          /\nroot.le.numnod?
-          END IF
-*
-        END IF
-*      /\ NROOT > 1
-*
-*
-      ELSE IF(IRUNPA.EQ.0) THEN
-        IRTNDRAT = 0
+      IF(IRUNPA.EQ.0) THEN
         NPARWAY = 0
         IRUNPCG = 0
       END IF
@@ -3620,11 +3426,6 @@ CSK       ENDIF
            END IF
            WRITE(LUWRTOUT,'(A,1X,I4)')
      &'          ==> process power to be used:',NMPROC
-*           WRITE(LUWRTOUT,'(A)')
-*     &' boosts your specific root treatment.'
-*           WRITE(LUWRTOUT,'(A)')
-*     &' Anyway, absolute convergence is merely a matter of time!!!'
-*           WRITE(LUWRTOUT,'(A)')' '
            WRITE(LUWRTOUT,'(A)')' '
          ELSE IF(IRUNPA.EQ.0)THEN
            WRITE(LUWRTOUT,'(A)')
@@ -3635,10 +3436,6 @@ CSK       ENDIF
      &'          ==> s = H x C: computation is done one by one'
            WRITE(LUWRTOUT,'(A)')' '
          END IF
-       END IF
-*
-       IF (MYPROC.NE.MASTER) THEN
-          GOTO 12 
        END IF
 *
        IF( IPRT .GE.5 ) THEN
@@ -3703,16 +3500,11 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
  12    CONTINUE 
        IF (MAXIT .EQ. 1 ) GOTO  1001
 *
-       IF(MYPROC.NE.MASTER) THEN
-          GOTO 101
-       END IF
-*
 *
 * ======================
 *. Loop over iterations
 * ======================
 *
-CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
         write(6,*)
@@ -3892,50 +3684,7 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
          END IF
   100 CONTINUE
   101 CONTINUE
-***pay special attention to this!!!!!!
-#if defined (VAR_MPI)
-      NUMNOD = NDSAVE
-***end of special attention!!!!!!
-      IF (NMPROC.GT.1) THEN
 *
-         CALL MPI_BARRIER(ICOMM, IERR)
-         CALL MPI_BCAST(IADD,1,my_MPI_INTEGER,MASTER,ICOMM,IERR)
-         CALL MPI_BCAST(NVEC,1,my_MPI_INTEGER,MASTER,ICOMM,IERR)
-         CALL MPI_BCAST(CONVER,1,MPI_LOGICAL,MASTER,ICOMM,IERR)
-         CALL MPI_BCAST(ITER,1,my_MPI_INTEGER,MASTER,ICOMM,IERR)
-#if !defined(SYS_LOCALDISKS)
-         IF(ITER.EQ.2)THEN
-           CALL MPI_FILE_OPEN(ICOMM,SVECNAME,
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ISVECFL,IERR)
-           JDISP = 0
-           CALL MPI_FILE_SET_VIEW(ISVECFL,JDISP,MPI_REAL8,MPI_REAL8,
-     &          "native",MPI_INFO_NULL,IERR)
-         END IF
-#endif
-      END IF
-*
-      IF (MYPROC.GE.MASTER) THEN
-       IF( CONVER ) THEN
-         GOTO  1001
-       END IF
-       IF( ITER.GT. MAXIT) THEN
-         ITER = MAXIT
-         GOTO 1001
-       END IF
-      END IF
-      IF (NMPROC.GT.1) THEN
-        IF (MYPROC.GE.MASTER) THEN
-          IF (IADD.EQ.0) THEN
-*
-            GOTO 1001
-*
-          ELSE
-*
-          END IF
-        END IF
-      END IF
-#else
       IF( CONVER ) THEN
          GOTO  1001
       END IF
@@ -3943,7 +3692,6 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
          ITER = MAXIT
          GOTO 1001
       END IF
-#endif
 *
 *
 * ====================================================
@@ -3965,771 +3713,15 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
       END IF
 *
 *. 
-#if defined (VAR_MPI)
-      IF(MYPROC.EQ.MASTER) THEN
-        starttime = MPI_WTIME()
-      END IF
-#endif
-*. determine the parallel route --> here we go!
-*. NPARWAY controls the parallel fine-grain version that is used
-*. NPARWAY = 0 --> fine-grain route disabled
-*. NPARWAY = 1 --> fg w.r.t c-batches; NPARWAY = 2 --> fg w.r.t c-blocks
-*. IRUNPCG .GT. 0 enables the coarse-grain route, IRUNPCG = 1 incl. M
-*. IRUNPCG .GT. 1 excl. M
-*
-*. 1. number of roots = 1 = IADD
-*
-      IF(IRUNPA.GT.0) THEN
-        IF(IADD.EQ.1) THEN
-          IF(NUMNOD.LE.2) THEN
-            NPARWAY = 1
-            IRUNPCG = 0
-CSK            NPARWAY = 3
-CSK            IRUNPCG = 3
-          ELSE IF(NUMNOD.GT.2) THEN
-            NPARWAY = 4
-            IRUNPCG = 0
-          END IF
-        END IF
-*      /\ IADD = 1
-*. 2. number of roots resp. IADD > 1
-        IF(IADD.GT.1)THEN
-*
-          IF(IADD.GT.NMPROC)THEN
-*. as a first test we enable the fine-grain route(s)
-*. instead of the cg ones
-            IF(NMPROC.GE.3) THEN
-*. master is not involved in fg-calculations
-              NPARWAY = 5
-              IRUNPCG = 0
-            ELSE
-*. master is involved in fg-calculations
-              NPARWAY = 2
-              IRUNPCG = 0
-            END IF
-          ELSE IF(IADD.EQ.NMPROC) THEN
-*. enable cg include the master, disable fg!
-              NPARWAY = 0
-              IRUNPCG = 1
-          ELSE IF(IADD.LT.NMPROC) THEN
-            IF(IADD.EQ.NUMNOD)THEN
-*. enable cg, exclude the master, disable fg!
-              NPARWAY = 0
-              IRUNPCG = 2
-            ELSE IF(IADD.LT.NUMNOD) THEN
-*. determine the ratio between slaves and IADD
-              IRTNDRAT = NUMNOD / IADD
-              IF(IRTNDRAT.GE.3)THEN
-*. master is not involved in fg-calculations, enable cg!
-                NPARWAY = 6
-                IRUNPCG = 3
-              ELSE
-*. master is involved in fg-calculations, enable cg!
-                NPARWAY = 3
-                IRUNPCG = 3
-              END IF
-            END IF
-*          /\IADD.le.numnod?
-          END IF
-*
-        END IF
-*      /\ IADD > 1
-*
-*
-      ELSE IF(IRUNPA.EQ.0) THEN
-        IRTNDRAT = 0
+      IF(IRUNPA.EQ.0) THEN
         NPARWAY = 0
         IRUNPCG = 0
       END IF
 *
-#if defined (VAR_MPI)
+      CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)
+      CALL SKPVCD(LU4,NVEC-NROOT,VEC1,1,LBLK)
 *
-      IF(MYPROC.EQ.MASTER) THEN
-          CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)
-          CALL SKPVCD(LU4,NVEC-NROOT,VEC1,1,LBLK)
-      END IF
-*
-*. Begin with the creation of the specific communicator, id ... 
-*
-      IF(IRUNPA.GT.0) THEN
-        IF((NPARWAY.EQ.1).OR.(NPARWAY.EQ.2).OR.(NPARWAY.EQ.4).OR.
-     &    (NPARWAY.EQ.5)) THEN
-          ICOLOR = NPARWAY
-          IKEY = MYPROC
-          CALL MPI_COMM_SPLIT(ICOMM,ICOLOR,IKEY,MYNEW_COMM,IERR)
-          CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
-          GOTO 110
-        ELSE IF((NPARWAY.EQ.3).OR.(NPARWAY.EQ.6)) THEN
-*. MASTER of ALL nodes will not do anything in MV7
-*. MASTER of ALL nodes will send c-blocks to nodes 
-*. MASTER of ALL nodes will recv s-blocks from the nodes
-          DO I = 1, NUMNOD
-            NDISTIADD(I) = 0
-          END DO
-*
-          CALL DIST_NODES(NUMNOD,IADD,NDISTIADD)
-*
-          IF(MYPROC.EQ.MASTER)THEN
-            ICOLOR = MASTER
-            IKEY = MASTER
-          ELSE IF(MYPROC.NE.MASTER)THEN 
-            ICOLOR = NDISTIADD(MYPROC)
-            IKEY = MYPROC    
-          END IF   
-          CALL MPI_COMM_SPLIT(ICOMM,ICOLOR,IKEY,MYNEW_COMM,IERR)
-          CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
-          GOTO 130
-          
-        ELSE IF((NPARWAY.EQ.0).AND.(IRUNPCG.GT.0)) THEN
-          IF(IRUNPCG.LE.2) THEN
-            ICOLOR = NPARWAY
-            IKEY = MYPROC
-*            write(6,*)'IKEY = MYPROC',MYPROC
-            CALL MPI_COMM_SPLIT(ICOMM,ICOLOR,IKEY,MYNEW_COMM,IERR)  
-            MYNEW_ID = 0
-
-#if !defined(SYS_LOCALDISKS)
-            IGO_ON = 0
-            IF(MYPROC.EQ.0.AND.IRUNPCG.EQ.2) IGO_ON = 1
- 105        CONTINUE
-*
-* IRUNPCG = 1
-            IF(MYPROC.EQ.0.AND.IRUNPCG.EQ.1.AND.IGO_ON.LT.IADD) THEN
-*             CONTINUE
-            ELSE IF(MYPROC.EQ.0.AND.IRUNPCG.EQ.1.AND.IGO_ON.GE.IADD)THEN
-              WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',MYPROC
-              WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',MYPROC
-              CVECFLL=10
-              SCLFFLL=10
-              GOTO 120
-            END IF
-* IRUNPCG = 2
-            IF(MYPROC.EQ.0.AND.IRUNPCG.EQ.2.AND.IGO_ON.LE.IADD) THEN
-*             CONTINUE
-            ELSE IF(MYPROC.EQ.0.AND.IRUNPCG.EQ.2.AND.IGO_ON.GT.IADD)THEN
-              GOTO 125
-            END IF
-*            
-            CVECNAME = 'CVECFILE'
-            SCLFACNM = 'SCLFFILE'
-            IF((MYPROC.NE.MASTER.AND.MYPROC.LT. 10).OR.
-     &        (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 10)) THEN 
-* MPI ID has one digit
-              IF(MYPROC.EQ.0) THEN
-                WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',IGO_ON
-                WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',IGO_ON
-              ELSE IF(MYPROC.NE.0) THEN
-                WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',MYPROC
-                WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',MYPROC
-              END IF
-              CVECFLL=10
-              SCLFFLL=10
-            ELSE IF((MYPROC.NE.MASTER.AND.MYPROC.LT. 100).OR.
-     &        (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 100)) THEN
-* MPI ID has two digits
-              IF(MYPROC.EQ.0) THEN
-                WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',IGO_ON
-                WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',IGO_ON
-              ELSE IF(MYPROC.NE.0) THEN  
-                WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',MYPROC
-                WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',MYPROC
-              END IF
-              CVECFLL=11
-              SCLFFLL=11
-            ELSE IF((MYPROC.NE.MASTER.AND.MYPROC.LT. 1000).OR.
-     &        (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 1000)) THEN
-* MPI ID has three digits
-              IF(MYPROC.EQ.0) THEN
-                WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',IGO_ON
-                WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',IGO_ON
-              ELSE IF(MYPROC.NE.0) THEN
-                WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',MYPROC
-                WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',MYPROC
-              END IF
-              CVECFLL=12
-              SCLFFLL=12
-            ENDIF
-*            write(6,*)'CVECTOTN and SCLFTOTN of MYPROC:  ',CVECTOTN,
-*     &      SCLFTOTN,MYPROC
-            IF(MYPROC.EQ.0) THEN
-              CALL MPI_FILE_OPEN(MPI_COMM_SELF,CVECTOTN(1:CVECFLL),
-     &             MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &             ICVECFL,IERR)
-*
-              CALL MPI_FILE_OPEN(MPI_COMM_SELF,SCLFTOTN(1:SCLFFLL),
-     &             MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &             ISCLFCFL, IERR)
-*
-*              write(6,*)'i copy c and scalf for',CVECTOTN,myproc
-              CALL COPVC_SERPAR_CSCF(LU3,VEC1,BSCRFAC,
-     &             IBKINF,IBLOCKI,1,0,1,-1)
-*
-              CALL MPI_FILE_CLOSE(ICVECFL,IERR)
-              CALL MPI_FILE_CLOSE(ISCLFCFL,IERR)
-              IGO_ON = IGO_ON + 1
-              GOTO 105 
-            END IF
-            IF(MYPROC.NE.MASTER) THEN
-              GOTO 120
-            END IF   
-#else
-*
-            IF (MYPROC.NE.MASTER) THEN
-*
-              CALL REWINE(LU5,LBLK)
-              CALL COPVCD_PAR_MS(LU3,LU5,VEC1,MYPROC,ICOMM,LBLK)
-*
-              CALL REWINE(LU6,LBLK)
-              CALL REWINE(LU5,LBLK)
-*
-            ELSE IF(MYPROC.EQ.MASTER) THEN
-*
-*. master computes the first sigma vector, slaves the remaining ones
-*
-              CALL REWINE(LU5,LBLK)
-*
-              IF(IRUNPCG.EQ.1) THEN
-                CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-              END IF
-*
-              DO ISENDCB = 1, NUMNOD
-                CALL COPVCD_PAR_MS(LU3,LU5,VEC1,ISENDCB,ICOMM,LBLK)
-              END DO
-              IF(IRUNPCG.EQ.1) THEN
-                GOTO 120
-              ELSE IF(IRUNPCG.EQ.2) THEN
-                GOTO 125
-              END IF
-*
-            END IF
-#endif
-CSK?            IF(IRUNPCG.EQ.2) THEN
-CSK?             GOTO 125
-CSK?          ELSE 
-CSK?            GOTO 120
-CSK?          END IF
-            GOTO 120
-          END IF 
-*        /\IRUNPCG.EQ. ?           
-        END IF
-*      /\ NPARWAY ?
-      END IF
-*    /\ IRUNPA.GT.0
-*
-*. 1. start of the fine-grain only part
-*
- 110  DO IVEC = 1, IADD
-        IF((NPARWAY.EQ.1).OR.(NPARWAY.EQ.2).OR.(NPARWAY.EQ.4)
-     &  .OR.(NPARWAY.EQ.5))THEN
-#if !defined(SYS_LOCALDISKS)
-         CVECNAME = 'CVECFILE'
-         SCLFACNM = 'SCLFFILE'
-         IF(IADD .LT. 10)THEN    ! MPI ID has one digit
-           WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',IADD
-           WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',IADD
-           CVECFLL=10
-           SCLFFLL=10
-         ELSE IF(IADD .LT. 100)THEN  ! MPI ID has two digits
-           WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',IADD
-           WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',IADD
-           CVECFLL=11
-           SCLFFLL=11
-         ELSE IF(IADD .LT. 1000)THEN  ! MPI ID has three digits
-           WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',IADD
-           WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',IADD
-           CVECFLL=12
-           SCLFFLL=12
-         ENDIF
-         IF(MYNEW_ID.EQ.0) THEN
-           CALL MPI_FILE_OPEN(MPI_COMM_SELF,CVECTOTN(1:CVECFLL),
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ICVECFL, IERR)
-*
-           CALL MPI_FILE_OPEN(MPI_COMM_SELF,SCLFTOTN(1:SCLFFLL),
-     &          MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &          ISCLFCFL, IERR)
-*
-           CALL COPVC_SERPAR_CSCF(LU3,VEC1,BSCRFAC,IBKINF,
-     &          IBLOCKI,1,0,1,-1)
-*
-           CALL MPI_FILE_CLOSE(ICVECFL,IERR)
-           CALL MPI_FILE_CLOSE(ISCLFCFL,IERR)
-         END IF
-#else
-*
-         IF(MYNEW_ID.EQ.0) THEN
-           CALL REWINE(LU5,LBLK)
-           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-         END IF
-*
-#endif
-       END IF
-*
-       IF((NPARWAY.EQ.1.AND.MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.2.AND.
-     &   MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.4.AND.MYNEW_ID.EQ.0).OR.
-     &   (NPARWAY.EQ.5.AND.MYNEW_ID.EQ.0))THEN
-         CALL GETTIM(CPUSIG1,WALLSIG1)
-       END IF
-*
-       IRDWR = IVEC - 1
-*******************************************
-        CALL MV7(VEC1,VEC2,LU5,LU6)
-*******************************************
-       IF((NPARWAY.EQ.1.AND.MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.2.AND.
-     &   MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.4.AND.MYNEW_ID.EQ.0).OR.
-     &   (NPARWAY.EQ.5.AND.MYNEW_ID.EQ.0))THEN
-*
-        CALL GETTIM(CPUSIG2,WALLSIG2)
-        CPUTID = SECTID(CPUSIG2-CPUSIG1)
-        WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        WRITE(6,9450) CPUTID,WALLTID
-*
-#if !defined(SYS_LOCALDISKS)
-*.2.2 Augment projected matrix
-        CALL REWINE( LU1,LBLK)
-        DO JVEC = 1, NROOT
-          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU1,IBKINF,
-     &                IBLOCKI,IRDWR,0,-1) 
-        END DO
-
-        CALL REWINE(LU3,LBLK)
-        DO JVEC = NROOT+1, NVEC+IVEC
-         IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-         APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU3,IBKINF,
-     &               IBLOCKI,IRDWR,0,-1)
-        END DO
-#else 
-        CALL REWINE(LU6,LBLK)
-        CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
-*.2.2 Augment projected matrix
-        CALL REWINE( LU1,LBLK)
-        DO JVEC = 1, NROOT
-          CALL REWINE(LU6,LBLK)
-          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
-        END DO
-
-        CALL REWINE(LU3,LBLK)
-        DO JVEC = NROOT+1, NVEC+IVEC
-         CALL REWINE(LU6,LBLK)
-         IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-         APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
-        END DO
-#endif
-       END IF
-*     /\MASTER!!!
-*
-      END DO
-*
-*
-#if !defined(SYS_LOCALDISKS)
-       IF((NPARWAY.EQ.1.AND.MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.2.AND.
-     &   MYNEW_ID.EQ.0).OR.(NPARWAY.EQ.4.AND.MYNEW_ID.EQ.0).OR.
-     &   (NPARWAY.EQ.5.AND.MYNEW_ID.EQ.0))THEN
-         DO II = 1, IADD
-            CALL COPVC_PARSER_SF(LU4,VEC1,IBKINF,IBLOCKI,
-     &      II-1,0,LBLK)
-         END DO
-       END IF
-#endif
-*. everything is done in the fine-grain only part
-*
-      GOTO 160 
-*
-*. 2. start of coarse grain only part  
-*
- 120  CONTINUE
-*
-*. check timings for sigma vector generation
-
-#if !defined(SYS_LOCALDISKS)
-        IF(IRUNPCG.EQ.1)THEN
-          IRDWR = MYPROC        
-        ELSE IF(IRUNPCG.EQ.2)THEN
-          IRDWR = MYPROC - 1        
-        END IF
-CSK            write(6,*)'IRDWR of MYPROC:  ',IRDWR,MYPROC
-CSK            write(6,*)'CVECTOTN and SCLFTOTN of MYPROC:  ',CVECTOTN,
-CSK     &      SCLFTOTN,MYPROC
-#endif
-        CALL GETTIM(CPUSIG1,WALLSIG1)
-*************************************
-        CALL MV7(VEC1,VEC2,LU5,LU6)
-*************************************
-        CALL GETTIM(CPUSIG2,WALLSIG2)
-        CPUTID = SECTID(CPUSIG2-CPUSIG1)
-        WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        WRITE(6,9450) CPUTID,WALLTID
-*
-*. gather the freh sigma vectors in correct order on LU4 (slave --> master)
-*
- 125  CONTINUE
-*
-#if !defined(SYS_LOCALDISKS)
-      IF(MYPROC.NE.MASTER)THEN
-        CALL MPI_SEND(MYPROC,1,my_MPI_INTEGER,MASTER,300,ICOMM,IERR)
-      ELSE IF(MYPROC.EQ.MASTER) THEN
-        ITEST = 0
-*
-        IF(IRUNPCG.EQ.1) GOTO 127
- 126    CONTINUE
-*
-        CALL MPI_RECV(IRDWR,1,my_MPI_INTEGER,MPI_ANY_SOURCE,300,ICOMM,
-     &       ISTAT,IERR) 
-        IF(IRUNPCG.EQ.2)THEN
-          IRDWR = IRDWR - 1
-        END IF
-*2.2 Augment projected matrix
- 127    CONTINUE
-        CALL REWINE( LU1,LBLK)
-        DO JVEC = 1, NROOT
-          IJ = ((IRDWR+1)+NVEC)*((IRDWR+1)+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU1,IBKINF,IBLOCKI,
-     &                IRDWR,0,LBLK)
-        END DO
-
-        CALL REWINE(LU3,LBLK)
-        DO JVEC = NROOT+1, NVEC+(IRDWR+1)
-         IJ = ((IRDWR+1)+NVEC)*((IRDWR+1)+NVEC-1)/2 + JVEC
-         APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU3,IBKINF,IBLOCKI,
-     &               IRDWR,0,LBLK)
-        END DO
-        ITEST = ITEST + 1
-*
-*. loop with respect to irunpcg
-*
-        IF(IRUNPCG.EQ.1) THEN
-          IF(ITEST.LT.IADD) GOTO 126
-        ELSE IF(IRUNPCG.EQ.2) THEN
-          IF(ITEST.LE.IADD) GOTO 126
-        END IF
-*
-        DO II = 1, IADD
-           CALL COPVC_PARSER_SF(LU4,VEC1,IBKINF,IBLOCKI,
-     &          II-1,0,-1)
-        END DO
-      END IF
-*    /\ SLAVE or MASTER 
-      GOTO 160
-#endif
-      IF(MYPROC.NE.MASTER) THEN
-*
-        CALL REWINE(LU6,LBLK)
-        CALL COPVCD_PAR_SM(LU6,LUSCR_MPI,VEC1,MYPROC,ICOMM,LBLK) 
-        GOTO 149
-*
-*     end of slave part, start of master part
-*
-      ELSE IF(MYPROC.EQ.MASTER.AND.IRUNPCG.LE.2) THEN
-*
-        ICFFSB = 0
-*
-        IF(IRUNPCG.EQ.1)THEN
-          CALL REWINE(LU6,LBLK)
-          CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
-*
-*. modified 2.2. -->  Augment projected matrix
-*
-          CALL REWINE( LU1,LBLK)
-          DO JVEC = 1, NROOT
-            CALL REWINE(LU6,LBLK)
-            IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-            APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
-          END DO
-*
-          CALL REWINE(LU3,LBLK)
-          DO JVEC = NROOT+1, NVEC+(ICFFSB+1)
-            CALL REWINE(LU6,LBLK)
-            IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-            APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
-          END DO
-          ICFFSB = ICFFSB + 1
-        END IF
-*      /\ IRUNPCG.EQ.1
-*
-*. master has finished his part of the calculation 
-*. --> get fresh s-vectors from the nodes
-*
- 129  CONTINUE
-*
-          IF(IRUNPCG.EQ.1) THEN
-            IF(ICFFSB.LE.NUMNOD) THEN
-              CALL REWINE(LUSCR_MPI,LBLK)
-              CALL COPVCD_PAR_SM(LU6,LUSCR_MPI,VEC1,ICFFSB,ICOMM,LBLK)
-            ELSE 
-              GOTO 149
-            END IF
-          ELSE IF(IRUNPCG.EQ.2) THEN
-            IF(ICFFSB.LT.NUMNOD) THEN
-              CALL REWINE(LUSCR_MPI,LBLK)
-              CALL COPVCD_PAR_SM(LU6,LUSCR_MPI,VEC1,ICFFSB+1,ICOMM,LBLK)
-            ELSE
-              GOTO 149
-            END IF
-          END IF
-*
-*        WRITE(6,*)'LU6(node #ICFFSB) --> 51(master)!'
-*
-        CALL REWINE(LUSCR_MPI,LBLK)
-
-        CALL COPVCD(LUSCR_MPI,LU4,VEC1,0,LBLK)
-
-*. 2.2 Augment projected matrix
-        CALL REWINE( LU1,LBLK)
-        DO JVEC = 1, NROOT
-          CALL REWINE(LUSCR_MPI,LBLK)
-          IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LUSCR_MPI,0,LBLK)
-        END DO
-*
-        CALL REWINE(LU3,LBLK)
-        DO JVEC = NROOT+1, NVEC+(ICFFSB+1)
-          CALL REWINE(LUSCR_MPI,LBLK)
-          IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LUSCR_MPI,0,LBLK)
-        END DO
-*
-        ICFFSB = ICFFSB + 1
-        GOTO 129
-*      /\ end over loop of gathering LU6 from nodes
-      END IF
-*    /\MASTER part
-*
-*. everything is done in the coarse-grain only part
-*
-*. 3. coarse grain meets fine-grain
-*
- 130  CONTINUE
-*
-      IF(IRUNPCG.EQ.3) THEN 
-#if !defined(SYS_LOCALDISKS)
-        IGO_ON = 1
- 131    CONTINUE
-*
-* IRUNPCG = 3
-        IF(MYPROC.EQ.0.AND.IGO_ON.GT.IADD) GOTO 140
-*
-        CVECNAME = 'CVECFILE'
-        SCLFACNM = 'SCLFFILE'
-        IF((MYPROC.NE.MASTER.AND.NDISTIADD(MYPROC).LT. 10).OR.
-     &    (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 10)) THEN
-* MPI ID has one digit
-          IF(MYPROC.EQ.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',IGO_ON
-            WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',IGO_ON
-          ELSE IF(MYPROC.NE.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I1)') CVECNAME,'.',NDISTIADD(MYPROC)
-            WRITE (SCLFTOTN,'(A8,A1,I1)') SCLFACNM,'.',NDISTIADD(MYPROC)
-          END IF
-          CVECFLL=10
-          SCLFFLL=10
-        ELSE IF((MYPROC.NE.MASTER.AND.NDISTIADD(MYPROC).LT. 100).OR.
-     &    (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 100)) THEN
-* MPI ID has two digits
-          IF(MYPROC.EQ.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',IGO_ON
-            WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',IGO_ON
-          ELSE IF(MYPROC.NE.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I2)') CVECNAME,'.',NDISTIADD(MYPROC)
-            WRITE (SCLFTOTN,'(A8,A1,I2)') SCLFACNM,'.',NDISTIADD(MYPROC)
-          END IF
-          CVECFLL=11
-          SCLFFLL=11
-        ELSE IF((MYPROC.NE.MASTER.AND.NDISTIADD(MYPROC).LT. 1000).OR.
-     &    (MYPROC.EQ.MASTER.AND.IGO_ON.LT. 1000)) THEN
-* MPI ID has three digits
-          IF(MYPROC.EQ.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',IGO_ON
-            WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',IGO_ON
-          ELSE IF(MYPROC.NE.0) THEN
-            WRITE (CVECTOTN,'(A8,A1,I3)') CVECNAME,'.',NDISTIADD(MYPROC)
-            WRITE (SCLFTOTN,'(A8,A1,I3)') SCLFACNM,'.',NDISTIADD(MYPROC)
-          END IF
-          CVECFLL=12
-          SCLFFLL=12
-        ENDIF
-        IF(MYPROC.EQ.0) THEN
-          CALL MPI_FILE_OPEN(MPI_COMM_SELF,CVECTOTN(1:CVECFLL),
-     &         MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &         ICVECFL,IERR)
-*
-          CALL MPI_FILE_OPEN(MPI_COMM_SELF,SCLFTOTN(1:SCLFFLL),
-     &         MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,
-     &         ISCLFCFL, IERR)
-*
-          CALL COPVC_SERPAR_CSCF(LU3,VEC1,BSCRFAC,IBKINF,
-     &         IBLOCKI,1,0,1,-1)
-*
-          CALL MPI_FILE_CLOSE(ICVECFL,IERR)
-          CALL MPI_FILE_CLOSE(ISCLFCFL,IERR)
-          CALL MPI_ISEND(LUSCR_MPI,1,my_MPI_INTEGER,IGO_ON,11,
-     &         ICOMM,IREQ,IERR)
-          IGO_ON = IGO_ON + 1
-              GOTO 131
-        END IF
-#else
-        IF(MYPROC.LE.IADD.AND.MYPROC.NE.MASTER) THEN
-*
-          CALL REWINE(LU5,LBLK)
-          CALL COPVCD_PAR_MS(LU3,LU5,VEC1,MYPROC,ICOMM,LBLK)
-*
-          CALL REWINE(LU6,LBLK)
-          CALL REWINE(LU5,LBLK)
-*
-        ELSE IF(MYPROC.EQ.MASTER) THEN
-*
-*. master distributes the c-vectors
-*
-          DO ISENDCB = 1, IADD
-            CALL COPVCD_PAR_MS(LU3,LU5,VEC1,ISENDCB,ICOMM,LBLK)
-          END DO
-CSK          write(6,*)'master of all is waiting now'
-          GOTO 141
-*
-        END IF
-*      /\ end of master-slave part
-*Check timings for sigma vector generation
-*
-#endif
-        IRDWR = NDISTIADD(MYPROC) - 1
-CSK        write(6,*)'IRDWR of myproc',IRDWR,myproc
- 140    CONTINUE
-#if !defined(SYS_LOCALDISKS)
-        IF(MYPROC.NE.MASTER) THEN
-          IF(MYNEW_ID.EQ.0) THEN
-            CALL MPI_RECV(LUSCR_MPI,1,my_MPI_INTEGER,0,11,ICOMM,
-     &                    ISTAT,IERR)
-          END IF
-          CALL MPI_BARRIER(MYNEW_COMM,IERR)
-        END IF
-CSK        call mpi_barrier(icomm,ierr)
-        IF(MYPROC.EQ.MASTER) THEN
-           CALL MPI_WAITALL(IGO_ON-1,IREQ,ISTAT,IERR)
-           GOTO 141
-        END IF
-#endif
-        IF(MYNEW_ID.EQ.0) THEN
-          CALL GETTIM(CPUSIG1,WALLSIG1)
-        END IF
-*********************************************
-        CALL MV7(VEC1,VEC2,LU5,LU6)
-*********************************************
-        IF(MYNEW_ID.EQ.0) THEN
-          CALL GETTIM(CPUSIG2,WALLSIG2)
-          CPUTID = SECTID(CPUSIG2-CPUSIG1)
-          WALLTID = SECTID(WALLSIG2-WALLSIG1)
-          WRITE(6,9450) CPUTID,WALLTID
-        END IF
- 141    CONTINUE
-#if !defined(SYS_LOCALDISKS)
-        IF(MYPROC.LE.IADD.AND.MYPROC.NE.MASTER) THEN
-*
-CSK          write(6,*)'here i wait!!!',myproc
-          CALL MPI_SEND(MYPROC,1,my_MPI_INTEGER,MASTER,300,ICOMM,IERR)
-*
-        ELSE IF(MYPROC.EQ.MASTER) THEN
-*
-          ITEST = 0
-*
- 142      CONTINUE
-CSK          write(6,*)'here i wait!!!',myproc
-*
-          CALL MPI_RECV(IRDWR,1,my_MPI_INTEGER,MPI_ANY_SOURCE,300,ICOMM,
-     &         ISTAT,IERR)
-*2.2 Augment projected matrix
-          CALL REWINE( LU1,LBLK)
-          DO JVEC = 1, NROOT
-            IJ = (IRDWR+NVEC)*(IRDWR+NVEC-1)/2 + JVEC
-            APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU1,IBKINF,
-     &                  IBLOCKI,IRDWR-1,0,LBLK)
-          END DO
-
-          CALL REWINE(LU3,LBLK)
-          DO JVEC = NROOT+1, NVEC+IRDWR
-             IJ = (IRDWR+NVEC)*(IRDWR+NVEC-1)/2 + JVEC
-             APROJ(IJ) = INPRDD_MPIIO_SF(VEC1,VEC2,LU3,IBKINF,
-     &                   IBLOCKI,IRDWR-1,0,LBLK)
-          END DO
-          ITEST = ITEST + 1
-*
-*. loop with respect to iadd
-*
-          IF(ITEST.LT.IADD) GOTO 142
-*
-          DO II = 1, IADD
-            CALL COPVC_PARSER_SF(LU4,VEC1,IBKINF,IBLOCKI,
-     &           II-1,0,-1)
-          END DO
-        END IF
-*      /\ SLAVE or MASTER
-#else
-        IF(MYPROC.LE.IADD.AND.MYPROC.NE.MASTER) THEN
-*
-          CALL REWINE(LU6,LBLK)
-          CALL COPVCD_PAR_SM(LU6,LUSCR_MPI,VEC1,MYPROC,ICOMM,LBLK)
-*          write(6,*)'node',MYPROC,'has sent to master'
-*
-        ELSE IF(MYPROC.EQ.MASTER) THEN
-*
-*. master gathers the s-vectors
-*
-          ICFFSB = 0
-*
- 145  CONTINUE
-*
-          IF(ICFFSB.LT.IADD) THEN
-*            write(6,*)'i get from node',ICFFSB+1
-            CALL REWINE(LUSCR_MPI,LBLK)
-            CALL COPVCD_PAR_SM(LU6,LUSCR_MPI,VEC1,ICFFSB+1,ICOMM,LBLK)
-          ELSE
-            GOTO 148
-          END IF
-*
-*        WRITE(6,*)'LU6(node #ICFFSB) --> 51(master)!'
-*
-          CALL REWINE(LUSCR_MPI,LBLK)
-
-          CALL COPVCD(LUSCR_MPI,LU4,VEC1,0,LBLK)
-
-*. 2.2 Augment projected matrix
-          CALL REWINE( LU1,LBLK)
-          DO JVEC = 1, NROOT
-            CALL REWINE(LUSCR_MPI,LBLK)
-            IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-            APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LUSCR_MPI,0,LBLK)
-          END DO
-*
-          CALL REWINE(LU3,LBLK)
-          DO JVEC = NROOT+1, NVEC+(ICFFSB+1)
-            CALL REWINE(LUSCR_MPI,LBLK)
-            IJ = ((ICFFSB+1)+NVEC)*((ICFFSB+1)+NVEC-1)/2 + JVEC
-            APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LUSCR_MPI,0,LBLK)
-          END DO
-*
-          ICFFSB = ICFFSB + 1
-          GOTO 145
-*      /\ end over loop of gathering LU6 from nodes
-        END IF
-*    /\MASTER part
- 148    CONTINUE
-*        CALL MPI_BARRIER(MYNEW_COMM,IERR)
-        GOTO 160
-*
-*. everything is done in the coarse-grain only part
-*
-*        !end of all parallel parts!
-#endif /* !defined(SYS_LOCALDISKS) */
-      END IF
-*    /\ IRUNPCG.EQ.3?
- 149  CONTINUE
-
-#else
-
-          CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)
-          CALL SKPVCD(LU4,NVEC-NROOT,VEC1,1,LBLK)
-
-      
+*     
  150  DO IVEC = 1, IADD
         CALL REWINE(LU5,LBLK)
         CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
@@ -4759,42 +3751,11 @@ C       DO JVEC = NROOT+1, NVEC+IADD
          APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
         END DO
       END DO
-#endif
 *     /\ End do over new trial vectors
-C
-*      if everything is finished; goto waiting loop
-*
- 160  CONTINUE
-       
-#if defined (VAR_MPI)
-      IF(MYPROC.EQ.MASTER.AND.IRUNPA.EQ.1) THEN
-        endtime = MPI_WTIME()
-        tottime = 0.D0
-        tottime = endtime - starttime
-      write(6,*)'>>>  TIME SPENT IN PART 2.1 - 2.3 :',tottime,'SECONDS'
-      END IF
-#endif
-*
-#if defined (VAR_MPI)
-      IF((IRUNPCG.NE.1).OR.(IRUNPCG.NE.2)) THEN
-*         write(6,*)'problem?',myproc,mynew_id
-         CALL MPI_COMM_FREE(MYNEW_COMM,IERR) 
-         MYNEW_ID = 0
-      END IF
-#endif
-      IF(MYPROC.NE.MASTER) THEN
-        GOTO 101
-      END IF
-*
- 170  CONTINUE
-CSK      write(6,*)'APROJ is'
-CSK      CALL WRTMAT(APROJ,1,MAXVEC*(MAXVEC+1)/2,1,MAXVEC*(MAXVEC+1)/2)
 *
 *. 2.3 Diagonalize projected matrix
       NVEC = NVEC + IADD
       CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
-CSK      write(6,*)'APROJ is'
-CSK      CALL WRTMAT(APROJ,1,NVEC*(NVEC+1)/2,1,NVEC*(NVEC+1)/2)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
 *. Test : transform projected matrix
 C TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
@@ -5164,37 +4125,6 @@ CSK        ididaproj = ididaproj + 1
        end if
 CSK       write(6,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
 CSK       write(6,*)'calculated elements of aproj',ididaproj
-*. Test : Orthogonality of new vectors
-CSK       CALL REWINO(LU1)
-CSK       CALL REWINO(LU3)
-CSK       DO IVEC = 1, NVEC
-CSK*
-CSK         CALL REWINO(LU5)
-CSK         IF(IVEC.LE.NROOT) THEN
-CSK           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-CSK         ELSE
-CSK           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-CSK         END IF
-CSK*
-CSK         CALL REWINO(LU1)
-CSK         DO JVEC = 1, MIN(IVEC,NROOT)
-CSK           CALL REWINO(LU5)
-CSK           IJ = IVEC*(IVEC-1)/2+JVEC
-CSK           XJEP(IJ) = INPRDD(VEC1,VEC2,LU5,LU1,0,LBLK)
-CSK         END DO
-CSK         CALL REWINO(LU3)
-CSK         DO JVEC = NROOT+1,IVEC
-CSK           CALL REWINO(LU5)
-CSK           IJ = IVEC*(IVEC-1)/2+JVEC
-CSK           XJEP(IJ) = INPRDD(VEC1,VEC2,LU5,LU3,0,LBLK)
-CSK         END DO
-CSK       END DO
-CSK       if (IPRT.ge.2) then
-CSK         write(6,*) ' Overlap matrix    '
-CSK         call prsym(xjep,nvec)
-CSK       end if
-*
-*
 *  check timing of part3 in loop iteration
        CALL GETTIM(CPUSTEP4,WALLSTEP4)
        CPUTSTEP = SECTID(CPUSTEP4-CPUSTEP3)
@@ -5209,64 +4139,10 @@ CSK       end if
        WRITE(LUWRTOUT,9300) CPUTID,WALLTID
 *. End of resetting business
  999  CONTINUE
-C#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
-C      IF(NMPROC.GE.NROOT+IADD) THEN
-C        CALL MPI_BARRIER(MYNEW_COMM,IERR)
-C        CALL MPI_COMM_FREE(MYNEW_COMM,IERR)
-C        MYNEW_ID = 0
-C        IF(MYPROC.NE.MASTER) GOTO 101
-C      END IF
-C#endif
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
 * ( End of loop over iterations )
-#if defined (VAR_MPI)
-      IF (MYPROC.EQ.MASTER) THEN
-        NUMNOD = NDSAVE
-        DO I= 1, NUMNOD
-        CALL MPI_ISEND(NTESTI,1,my_MPI_INTEGER,I,787,
-     &                 ICOMM,IREQ,IERR)
-        CALL MPI_WAIT(IREQ,ISTAT,IERR)
-        END DO
-      END IF    
-#endif
-*
-#if defined (VAR_MPI)
- 1002 CONTINUE
-      IF (MYPROC.GT.MASTER) THEN
-C        WRITE(6,*)'I am waiting for the end at 1002', MYPROC
-        CALL SLEEP(2)
-        CALL MPI_IPROBE(MASTER,787,ICOMM,LUCEND,ISTAT,IERR)
-        IF (.NOT.LUCEND) GOTO 1002
 C
-        CALL MPI_IRECV(NTESTI,1,my_MPI_INTEGER,MASTER,787,
-     &                ICOMM,IREQ,IERR)
-      END IF
-c
-c
-C
-C let's synchronize all processes --> every process has to wait here!
-C
- 1003  DO 1004 I = 1, 2
-        CALL MPI_BARRIER(ICOMM, IERR)
-        TIME1 = MPI_Wtime()
-        WRITE(LUWRTOUT,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
-        CALL MPI_BARRIER(ICOMM, IERR)
-        TOTAL_TIME = MPI_Wtime() - TIME1
- 1004  CONTINUE
-C
-      IF (MYPROC.EQ.MASTER) THEN
-        WRITE(LUWRTOUT,*) 'SYNC. PROCESS HAS USED', TOTAL_TIME, 'SEC.'
-      END IF
-#if !defined(SYS_LOCALDISKS)
-      CALL MPI_FILE_CLOSE(ISVECFL,IERR)
-#endif
-      CALL MPI_COMM_FREE(ICOMM,IERR)
-C
-#endif
-
-
-
 C
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
@@ -5347,12 +4223,8 @@ C
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
-* 9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL : ',
-*     &A,'(',A,')',I4)
  9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL : ',
      &A,'(',A,')')
-* 9450 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL RUNNING 
-*     & PARALLEL: ',A,'(',A,')',I4)
  9450 FORMAT(' >>>  CPU (WALL) TIME IN PARALLEL SIGMA VECTOR CALL: ',
      &A,'(',A,')')
  9500 FORMAT(' >>>  CPU (WALL) TIME IN CPBACK OF SIGMA VEC: ',A,
