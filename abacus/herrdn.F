@@ -269,8 +269,15 @@ C     Maybe include priunit.h instead of passing output variable?
         
       CONTAINS
         CHARACTER(LEN=maxint) FUNCTION INTTOCHAR(n)
+#include "priunit.h"
           INTEGER, INTENT(IN) :: n
-          INTEGER             :: i,j
+          INTEGER             :: i,j,n_temp
+
+CMI        write(lupri,*) 'INTTOCHAR: n=',n
+CMI ...  NASTY BUG with gfortran/g95 - spoiled integer !!!
+CMI  ... needed help_variable
+           n_temp = n
+
           IF (zerochar<0) zerochar=IACHAR('0')
           inttochar=' '
           DO i=0,maxint-1
@@ -278,7 +285,10 @@ C     Maybe include priunit.h instead of passing output variable?
           END DO 
           IF (i==maxint) i=i-1
           DO j=i,0, -1
-            inttochar(i-j:i-j)=ACHAR(MOD(n/10**j, 10)+zerochar)
+CMI         write(lupri,*) 'n,j,zerochar=',n,j,zerochar
+            inttochar(i-j:i-j)=ACHAR(MOD((n_temp/(10**j)), 10)+zerochar)
+CMI         write(lupri,*) 'n,j,zerochar=',n,j,zerochar
+CMI         write(lupri,*) 'inttochar(i-j:i-j)=',inttochar(i-j:i-j)
           END DO
         END FUNCTION INTTOCHAR
 
@@ -326,7 +336,6 @@ C     JHS 05-07-07
         END INTERFACE
         
         INTERFACE READ_VAR
-
           MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL,READ_REAL8
         END INTERFACE  
         
@@ -568,12 +577,16 @@ C     TMP adjust for an optional linewith.
 
         REAL(KIND=8) FUNCTION READ_NUM8(filenum,iprev,i,ios,idot)
           USE CONVERSION
+#include "priunit.h"
           INTEGER, INTENT(IN)    :: filenum, i, iprev
           INTEGER, INTENT(IN), OPTIONAL :: idot
           INTEGER, INTENT(OUT) :: ios
           CHARACTER(LEN=64) :: chr
          
-          
+          CALL QENTER('READ_NUM8') 
+   
+CMI       write(lupri,*) 'idot,iprev,i=',idot,iprev,i
+
           IF (present(idot) .AND. idot>0) THEN
             chr='(t'//trim(inttochar(iprev+1))//', f'//
      &           trim(inttochar(i-iprev-1))//'.'//
@@ -583,7 +596,15 @@ C     TMP adjust for an optional linewith.
      &           trim(inttochar(i-iprev-1))//')'
           END IF
           BACKSPACE(filenum)
+
+CMI        write(lupri,*) 'chr=',chr
+
           READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_NUM8
+
+CMI        write(lupri,*) 'READ_NUM8=',READ_NUM8
+
+          CALL QEXIT('READ_NUM8') 
+
         END FUNCTION READ_NUM8
 
         REAL FUNCTION READ_NUM(filenum,iprev,i,ios,idot)
@@ -621,6 +642,7 @@ C     TMP adjust for an optional linewith.
         SUBROUTINE READ_REAL8(filenum,linewidth,var,index,fixedwidth,
      &                        skip)
 C     TMP adjust for an optional linewith.
+#include "priunit.h"
           INTEGER, INTENT(IN)           :: filenum
           INTEGER, INTENT(IN)           :: linewidth
           INTEGER, INTENT(INOUT)        :: index
@@ -634,7 +656,6 @@ C     TMP adjust for an optional linewith.
           
           if (present(skip)) lskip = skip
           var=0; iprev=index; idot=0
-
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -688,12 +709,16 @@ C     TMP adjust for an optional linewith.
           ELSE
             index=-1
            END IF
+ 
+CMI       write(LUPRI,*) 'var=',var
+
         END SUBROUTINE READ_REAL8
 
 
         SUBROUTINE READ_REAL(filenum,linewidth,var,index,fixedwidth,
      &                       skip)
 C     TMP adjust for an optional linewith.
+#include "priunit.h"
           INTEGER, INTENT(IN)           :: filenum
           INTEGER, INTENT(IN)           :: linewidth
           INTEGER, INTENT(INOUT)        :: index
@@ -759,6 +784,9 @@ C     TMP adjust for an optional linewith.
           ELSE
             index=-1
            END IF
+
+CMI       write(LUPRI,*) 'var=',var
+
         END SUBROUTINE READ_REAL
 
 
@@ -988,6 +1016,8 @@ C               and writes it to the atoms list.
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
           INTEGER                            :: i,index
+ 
+          CALL QENTER('READ_ATOMS')
           
           IF (.NOT.(PARHER).AND.IPREAD>1) 
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
@@ -1005,11 +1035,18 @@ C               and writes it to the atoms list.
             CALL READ_VAR(filenum, linelen,x(2), index)
             IF (index<=1) CYCLE
             CALL READ_VAR(filenum, linelen,x(3), index)
+
+            IF (IPREAD >= 4) THEN
+              write(lupri,*) 'READ_ATOMS: read coordinates:',
+     &        x(1),x(2),x(3)
+            ENDIF
 C     JHS050707 If coordinates are missing the atom is not added to the list.
             CALL ADD_ATOM(mol,fatom,name,x)            
           END DO
 
           IF(.NOT.(PARHER).AND. IPREAD>1) WRITE(LUPRI,*) 'Done'
+
+          CALL QEXIT('READ_ATOMS')
 
         END SUBROUTINE READ_ATOMS
 
@@ -1482,7 +1519,6 @@ C     Convert units
         END SUBROUTINE READ_BASIS
 
 
-
         SUBROUTINE WRITE_ATOMS(lupri)
 C     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
@@ -1512,6 +1548,7 @@ C     COMMONBLOCKS
 
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
+      CALL QENTER('WRITE_ATOMS')
 
       KATOM=count_atoms(firstatom)
       IF (KATOM>MXCENT) THEN
@@ -1563,6 +1600,14 @@ C     REALLY WRITE COMMONBLOCKS
           NAMEX(3*natom-2)=TRIM(mol%name)//' x'
           CHARGE(natom)=mol%charge
           GNUEXP(natom)=mol%nucexp
+
+CMI     ... control printout
+          IF (IPREAD.GE.4) THEN
+            write(LUPRI,*) 'NAMN(natom)=',NAMN(natom)
+            write(LUPRI,*) 'mol%x:',mol%x(1),mol%x(2),mol%x(3)
+            write(LUPRI,*) 'CORD(:,natom)',
+     &      CORD(1,natom),CORD(2,natom),CORD(3,natom)
+          ENDIF
           
           mol=>mol%next
         END IF
@@ -1581,7 +1626,9 @@ C
 
       NUCIND=natom
 
-        END SUBROUTINE WRITE_ATOMS
+      CALL QEXIT('WRITE_ATOMS')
+
+      END SUBROUTINE WRITE_ATOMS
 
         SUBROUTINE POS_FILE(infile,lupri,linelen,
      &     section,subsection,name,comp)
@@ -1666,6 +1713,7 @@ C     COMMONBLOCKS
 
 C     JHS050707 For type conversion purposes.
       INTEGER :: int8
+      integer blk
 
 #include "molinp.h"
 #include "ccom.h"
@@ -1988,7 +2036,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,basindex,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
-     &            DOOWN)
+     &            DOOWN, blk)
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -1997,7 +2045,7 @@ C
 
       CALL BASOUT(WORK,LWORK,basindex,NONT,IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
-     &            KBLOCK,KPRIM,HERMIT)
+     &            KBLOCK,KPRIM,HERMIT, blk)
 C
 C     TMP copy input to .out file.
 
@@ -4151,7 +4199,7 @@ C
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
-     &                  KBLOCK,KPRIM,HERMIT)
+     &                  KBLOCK,KPRIM,HERMIT,blk)
 C*****************************************************************************
 C
 C     Print orbital and geometry input data
@@ -4180,6 +4228,7 @@ C*****************************************************************************
       CHARACTER*31 SET_TYPE(MXBSETS)
       DIMENSION NPRIM(MXBSETS),NBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
+      integer blk
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -5868,6 +5917,8 @@ C     Statement function to "convert" 0 - 7 to a printable
 C     "binary" form
 C
       IFAKBN(I) = 25*IBTAND(I,4) + 5*IBTAND(I,2) + IBTAND(I,1)
+
+      CALL QENTER('NUCPRO')
 C
 C     *************************************************************
 C     ***** Calculate Distances ,Nuclear Potential Energy and *****
@@ -5942,6 +5993,7 @@ C     **********************************************************
 C
       CALL SYMNCO(LWORK,WORK)
 C
+      CALL QEXIT('NUCPRO')
       RETURN
 C
 C     Error messages:
@@ -5952,7 +6004,7 @@ C
      &      ' Number of atoms in input:',NUCDEP,
      &      ' Number of atoms allowed: ',MXCENT,
      &      ' Increase MXCENT to ',NUCDEP,'.'
-      CALL QUIT('Too many atoms in READIN.')
+      CALL QUIT('NUCPRO: Too many atoms in READIN.')
 C
  1000 FORMAT(2X,A4,5X,3F10.5,6X,/,
      &       16X, 'Stabilizer ',I3,',   with ',I2,
@@ -9823,6 +9875,7 @@ C
 C
 #include "ibtfun.h"
 C
+      CALL QENTER('GETPOT')
       GETPOT = D0
       DO 10 N = 1, NUCIND
          DO 20 M = N, NUCIND
@@ -9834,7 +9887,18 @@ C
      &            + (CORD(3,N)-CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB)))**2
                DIST = SQRT(DS)
                IF (DIST.LT.DP1 .AND. Q(M)*Q(N).NE.D0 .AND.
-     &             .NOT.(NOORBT(M).OR.NOORBT(N)) ) GOTO 5000
+     &             .NOT.(NOORBT(M).OR.NOORBT(N)) ) THEN
+CMI               ... hunting  bug                  
+                 write(LUPRI,*) '(CORD(1,N)-CORD(1,M)):',
+     &                       CORD(1,N)-CORD(1,M)
+                 write(LUPRI,*) '(CORD(2,N)-CORD(2,M)):',
+     &                       CORD(2,N)-CORD(2,M)
+                 write(LUPRI,*) '(CORD(3,N)-CORD(3,M)):',
+     &                       CORD(3,N)-CORD(3,M)
+                 write(LUPRI,*) 'DS=',DS
+                 write(LUPRI,*) 'DIST=sqrt(DS)=',DIST
+                 GOTO 5000
+               ENDIF
 C                  ... exit if close and no floating and no point charge
                IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
                   IF (.NOT.(NOORBT(M).OR.NOORBT(N))) THEN
@@ -9849,13 +9913,14 @@ C                 if (no point charge) then
    20    CONTINUE
    10 CONTINUE
 C
+      CALL QEXIT('GETPOT')
       RETURN
 C
  5000 CONTINUE
       WRITE (LUPRI,'(3(A,I3),A,D15.5)')
      &     ' The nucleus',N,' is too close to the',KB,
      &     'th transformation of nucleus no.',M,' DIST=',DIST
-      CALL QUIT('Nuclei too close.')
+      CALL QUIT('GETPOT: Nuclei too close.')
       END
 C/*  Deck frefrm */
       SUBROUTINE FREFRM(STRING,ISTART,IVAL,RVAL,TYPE)
