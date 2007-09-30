@@ -1801,6 +1801,8 @@ C     JHS060707 TMP We could introduce some additional error checks?
             IQM(basindex,1)=SIZE(baspointer%jco)
             DO i=1,IQM(basindex,1)
               JCO(i,basindex,1)=baspointer%jco(i)
+CMI           write(lupri,*) 'JCO(i,basindex,1)=',JCO(i,basindex,1)
+CMI           call flshfo(lupri)
             END DO           
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(1)
@@ -2639,6 +2641,12 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
+
+CMI  ... with gfortran the allocated space is 'spoiled' with debris
+CMI      and must be cleaned before (in F90 syntax)
+      JCO = 0
+      NUC = 0
+      NRC = 0
 C
 C     ************************************************
 C     ***** Read orbital and geometry input data *****
@@ -3105,6 +3113,11 @@ C                 Assume it is 'LARGE   2    1....'
                   READ (MLINE(NMLINE),'(5X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                END IF
+
+CMI            IF (INPTST.OR.IPREAD.GE.5) THEN
+CMI              WRITE(LUPRI,*) 'read JCO(K,I,1):',
+CMI  &           (JCO(K,I,1), K=1,IQM(I,1))
+CMI            ENDIF
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
@@ -3237,12 +3250,18 @@ C the scf set is in another...
 C
                        IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
                          IF ( NUCT(IR) .GT. 0 ) THEN
-
+CMI           ... filling up !!! the JCO must be INITIALIZED before !!! 
                               JCO(IQ,I,1)= JCO(IQ,I,1)+ 1
                               NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
                               NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
                               SEG(KT,1)  = SEGT(IR)
                               ISGEN(KT)  = ISGENT(IR)
+
+CMI                       write(LUPRI,*) 'JCO(JCO(IQ,I,1)=',JCO(IQ,I,1)
+CMI                       write(LUPRI,*) 'NUC(KT,1)=',NUC(KT,1)
+CMI                       write(LUPRI,*) 'NRC(KT,1)=',NRC(KT,1)
+CMI                       write(LUPRI,*) 'SEG(KT,1)=',SEG(KT,1)
+CMI                       write(LUPRI,*) 'ISGEN(KT)=',ISGEN(KT)
 
                               DO 468 IX=1, NUCT(IR)
                                  ALPHA(IX,KT,1)      =  ALPHAT(IX,IR)
@@ -3352,6 +3371,7 @@ C                    Assume it is 'SMALL   2    1....'
                      READ (MLINE(NMLINE),'(BN,A5,12I5)')
      &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                   END IF
+ 
                END IF
 C
 C              We know the type, call the appropriate reader
@@ -3394,6 +3414,11 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
+CMI               IF (IPREAD .GE. 5 .OR. INPTST) THEN
+CMI                  write(LUPRI,*) 'read JCO(K,I,2):',
+CMI  &              (JCO(K,I,2),K=1,IQM(I,2))
+CMI               ENDIF
+
                   CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
@@ -4935,12 +4960,13 @@ C
 C     Test print
 C
       IF (INPTST) THEN
-         WRITE(LUPRI,'(A)') 'Contraction matrix:'
+         WRITE(LUPRI,'(A,I4,A,I4,A)')
+     &   'Contraction matrix (',NUCIJ,'x',NRCIJ,') :' 
          DO 400 L = 1, NUCIJ
             WRITE (LUPRI,'(E16.10)') ALPHA(L)
             WRITE (LUPRI,'(6(2X,F10.8))') (CPRIMU(L,M),M=1,NRCIJ)
   400    CONTINUE
-      END IF
+      ENDIF
 C
       RETURN
       END
@@ -5200,7 +5226,8 @@ C
 C     Test print
 C
       IF (INPTST) THEN
-         WRITE(LUPRI,'(A)') 'Contraction matrix:'
+         WRITE(LUPRI,'(A,I4,A,I4,A)')
+     &   'Contraction matrix (',NUCIJ,'x',NRCIJ,') :' 
          DO 400 L = 1, NUCIJ
             WRITE (LUPRI,'(E16.10)') ALPHA(L)
             WRITE (LUPRI,'(6(2X,F10.8))') (CPRIMU(L,M),M=1,NRCIJ)
@@ -9407,7 +9434,7 @@ C                   components using the kinetic balance relation
 C             1 - downwards: small L+1 from large L
 C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
-
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -9426,6 +9453,8 @@ C
 C
       IBS = IBLS - 1
       IBU = IBLL + JCO(1,IATOM,1) - 1
+CMI     write(lupri,*) 'check JCO(1,IATOM,1)=',JCO(1,IATOM,1)
+CMI     call flshfo(lupri)
       IBD = IBLL - 1
       JBS = IBS
       IQM(IATOM,2) = 0
@@ -9610,7 +9639,8 @@ C
 C     Test print
 C
       IF (INPTST) THEN
-         WRITE(LUPRI,'(A)') 'Contraction matrix:'
+         WRITE(LUPRI,'(A,I4,A,I4,A)')
+     &   'Contraction matrix (',NUC(IBS,2),'x',NUC(IBS,2),') :' 
          DO 400 L = 1, NUC(IBS,2)
             WRITE (LUPRI,'(E16.10)') ALPHA(L,IBS,2)
             WRITE (LUPRI,'(6(2X,F10.8))')
