@@ -16,14 +16,14 @@
 extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
-    long iprpar, ntask, ncode, ndegdi, master, mynum, mytid, nodtot;
+    long iprpar, ntask, ncode, ndegdi, mynum, mytid, nodtot;
     long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
-    long parher, slave, timing, dedbug, pario;
+    long parher, slave, timing, debug, pario;
 #else
-    int  iprpar, ntask, ncode, ndegdi, master, mynum, mytid, nodtot;
+    int  iprpar, ntask, ncode, ndegdi, mynum, mytid, nodtot;
     int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
     int  parher, slave, timing, debug, pario;
-#endif
+#endif 
 } diracinfpar_;
 #else /* __CVERSION__ */
 !  -- File: infpar.h for DIRAC; specific information for parallel calculations
