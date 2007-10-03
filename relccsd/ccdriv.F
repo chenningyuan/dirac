@@ -517,8 +517,7 @@ C
 C
 #if defined (CC_ALONE)
       This construction works for most systems
-      POINTER (ICC,CC(1))
-      REAL*8 CC
+      REAL*8, ALLOCATABLE:: CC(:)
 #else
       REAL*8 CC(MAXCORE)
 #endif
@@ -615,7 +614,6 @@ C
 C
 C     In case of dynamic allocation :
 C     Allow for overhead : subtract 800 kWord
-C     Allow for file buffers (Cray only) : NCCFIL files with 20 blocks each
 C
 #if defined (CC_ALONE)
          MAXCOR = MAXCOR - 800 * 1024
@@ -658,12 +656,10 @@ C
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &             NSP,IREPSP,IREPSPI)
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
-C     WRITE(IW,1015) 'CCSETI',MXCORR1,MXCORR
 
       MXCORR1 = 0
       CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
       IF (DOENER) MXCORR = MAX(MXCORR,MXCORR1)
-C     WRITE(IW,1015) 'CCENER',MXCORR1,MXCORR
 C
       MXCORR1 = 0
       CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
@@ -672,18 +668,6 @@ C
       MXCORR1 = 0
       CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOSOPR) MXCORR = MAX(MXCORR,MXCORR1)
-C
-C     ------------------------------------------------------------------
-C     MXCORR1 = 0
-C     CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
-C     IF (DOEXC) MXCORR = MAX(MXCORR,MXCORR1)
-C     CCEXC is obsolete since we can now get RPA excitation energies
-C     via the RPA module and CC excitation energies via the FS module
-C     Keep the call for a while, I may change my mind and use this
-C     to debug something. (LV, 15-9-2003)
-C     Btw : Note that I now use the variable DOEXC for use in the
-C     Fock space module !!!
-C     ------------------------------------------------------------------
 C
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
@@ -708,23 +692,7 @@ C
 C  Allocate the memory and check if it is a standalone version
 C
 #if defined (CC_ALONE)
-      IERR = 0
-      IABORT = 0
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL HPALLOC (ICC,MXCORR,IERR,IABORT)
-#endif
-#if defined (SYS_AIX)
-      ICC =  MALLOC (%VAL(MXCORR*8))
-      IF (ICC.EQ.0) IERR = 1
-#endif
-#if defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_DEC)
-      ICC =  MALLOC (MXCORR*8)
-      IF (ICC.EQ.0) IERR = 1
-#endif
-      IF (IERR.NE.0) THEN
-          PRINT*, " Problems allocating ",MXCORR," words"
-          CALL QUIT("MEMORY PROBLEMS")
-      ENDIF
+      ALLOCATE (CC(MXCORR))
 #endif
 C
       WRITE (IW,1001) MXCORR
@@ -780,11 +748,6 @@ C
       WALLSO = WALLSO + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
-C
-CLuuk : See comment regarding CCEXC above
-C     IF (DOEXC ) CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-C    &                        NSP,IREPSPI)
-C     CALL FLSHFO (IW)
 C
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI)
