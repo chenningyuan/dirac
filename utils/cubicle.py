@@ -113,11 +113,11 @@ for i in range(dim_x):
         for k in range(dim_z):
 
             if count < 6:
-               s = s + '  %8.5e' % new_cube_array[index]
+               s = s + '%13.5e' % new_cube_array[index]
                count = count + 1
             else:
                print s
-               s = '  %8.5e' % new_cube_array[index]
+               s = '%13.5e' % new_cube_array[index]
                count = 1
 
             if k == dim_z - 1:
