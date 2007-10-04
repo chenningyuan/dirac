@@ -85,6 +85,8 @@ C
 *. Common block for communicating with sigma
 #include "cands.inc"
 #include "spinfo.inc"
+*  nat. orb. occ. num.
+#include "noccn_inf.inc"
 *
 #include "include/dgroup.h"
 *
@@ -632,12 +634,24 @@ CSK   work with INTEGER*8
 *
 #endif
       LBLK = -1
+      call rewino(LUC) 
+      NPTESTVAR = 00
+      IF( NPTESTVAR .ge. 10 )THEN
+        IF(MYPROC.EQ.MASTER) THEN
+          DO IVEC = 1, NROOT
+            WRITE(LUWRT,*) '  final new C vector before ana',IVEC
+            CALL WRTVCDC(WORK(KVEC1),LUC,0,IRC,LBLK)
+          END DO
+        END IF
+      END IF
+      NPTESTVAR = 00
       call rewino(LUC)
       do JROOT=1,NROOT,1
         call rewino(LUSC61)
         call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
         call rewino(LUSC61)
         WRITE(LUWRT,*)
+        WRITE(LUWRT,*) 'LUC,LUSC61,LUSC37',LUC,LUSC61,LUSC37
         WRITE(LUWRT,'(1H ,A,I3)')
      &  ' ***************************************************'
         WRITE(LUWRT,'(1H ,A,I3)')
@@ -649,10 +663,21 @@ CSK   work with INTEGER*8
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
      &                  ICISTR,IRC)
       end do
-      
+      call rewino(LUC) 
+      NPTESTVAR = 00
+      IF( NPTESTVAR .ge. 10 )THEN
+        IF(MYPROC.EQ.MASTER) THEN
+          DO IVEC = 1, NROOT
+            WRITE(LUWRT,*) '  final new C vector after ana',IVEC
+            CALL WRTVCDC(WORK(KVEC1),LUC,0,IRC,LBLK)
+          END DO
+        END IF
+      END IF
+      NPTESTVAR = 00
+
  888  CONTINUE 
 #if defined (VAR_MPI)
-*     let the slaves wait... is only a short way to go so why not?
+*     let the slaves wait... it is only a short way to go so why not?
       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 #endif
 *
@@ -660,32 +685,90 @@ CSK   work with INTEGER*8
       else if (CIRUN.eq.'DENS1 '.or.CIRUN.eq.'DENS2 ') then
 * Analysis of density and occupation
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*. real or complex eigenvectors
+*
+*     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
-*. real
+*       real
         IRC = 1
       ELSE
-*. Well, complex
+*       well, complex
         IRC = 2
         if (NZ.eq.1) then
-*  quaternion real
+*         quaternion real
           IRC = 1
         end if
       END IF
 *
       LBLK = -1
+*
       if (IDENSI.ne.0) then
         if (IDENSI.eq.1.or.IDENSI.eq.2) then
           write(LUWRT,*) 'IDENSI is ',IDENSI
-          write(LUWRT,*) 'I am not allowed to calculate 
-     & non-relativistic'
-          write(LUWRT,*) 'density matrices YET.'
-          write(LUWRT,*) 'See readin.f or ask the experts 
-     & for instructions'
+          write(LUWRT,*) 
+     &    'I am not allowed to calculate non-relativistic'
+          write(LUWRT,*) ' density matrices YET.'
+          write(LUWRT,*) ' Please ask the experts for instructions'
           Call Abend2( 'LUCIAREL quitting' )
         end if
+#if defined (VAR_MPI)
 *
-*       prepare vector-files for parallel run
+*       arrays for partitioning of the CI vector
+*       (*_MS2 arrays are in CSTATE )
+        call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
+     &                       KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
+     &                       NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
+     &                       IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
+     &                       0,1,WORK(KNODELIST))
+*
+#endif
+*       
+*       calculation of densities for natural orbital occ. numbers
+*
+        IF( NOOCCN_DENS_RUN ) THEN
+*
+          IF( MYPROC .eq. MASTER ) THEN
+            CALL REWINE(LUSC61,LBLK)
+            CALL REWINE(LUSC62,LBLK)
+            CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
+          END IF 
+#if defined (VAR_MPI)
+          IVEC_TMP = 1
+*         right hand-side vector
+          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
+     &                          WORK(KILU1LIST),
+     &                          WORK(KNODELIST),WORK(KBLOCKLIST),
+     &                          NUM_BLOCKS,IVEC_TMP,IRC)
+*          
+          IF( MYPROC .eq. MASTER) THEN
+            CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
+          END IF
+*         left hand-side vector
+          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU2,MY_LU2_OFF,
+     &                          WORK(KILU2LIST),
+     &                          WORK(KNODELIST),WORK(KBLOCKLIST),
+     &                          NUM_BLOCKS,IVEC_TMP,IRC)
+*       files are in place now... say hello
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,'(12X,A)') ' ==================================== '
+        WRITE(LUWRT,'(12X,A)') ' PARALLEL 1p DENSITY MAT. CALCULATION '
+        WRITE(LUWRT,'(12X,A)') ' ==================================== '
+        WRITE(LUWRT,*) ' '
+*
+#else
+*         right hand-side vector to LUSC61
+          CALL COPVCDC(LUC,LUSC61,WORK(KVEC1),0,IRC,LBLK)
+*
+          CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
+*         left hand-side vector on LUSC62
+          CALL COPVCDC(LUC,LUSC62,WORK(KVEC1),0,IRC,LBLK)
+#endif
+*
+          GOTO 895
+*
+        END IF
+*
+*       prepare vector files for pure dens. matrix calc. run (parallel)
+*
 #if defined (VAR_MPI)
         IF( MYPROC .eq. MASTER ) THEN
           CALL REWINE(LUSC61,LBLK)
@@ -702,14 +785,6 @@ CSK   work with INTEGER*8
      &                        WORK(KNODELIST),WORK(KBLOCKLIST),
      &                        NUM_BLOCKS,NROOT,IRC)
 *
-*.      arrays for partitioning of the CI vector
-*       (*_MS2 arrays are in CSTATE )
-        call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
-     &                       KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
-     &                       NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
-     &                       IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
-     &                       0,1,WORK(KNODELIST))
-*
 *       files are in place now... say hello
         WRITE(LUWRT,*) ' '
         WRITE(LUWRT,'(12X,A)') ' =================================== '
@@ -719,208 +794,204 @@ CSK   work with INTEGER*8
 *
 #endif
 *
+ 895    CONTINUE
+*
 *       one-body density matrix
 *       spin-dependent first-order density matrix
 *
-*       start the loops over approximate eigenvectors
-        do JROOT = 1,NROOT,1
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(1H ,A,I3)')
-     &    ' **************************************************'
-          WRITE(LUWRT,'(1H ,A,I3)')
-     &    ' Analysis of Density and occupation for ROOT = ',JROOT
-          WRITE(LUWRT,'(1H ,A,I3)')
-     &    ' **************************************************'
-CTF
-*         New density routines for relativistic (and somewhen also nonrel.)
-*         calculations. DBG_RHO is called and vectors are read from disk
-*         internally.
+        JROOT = 1
+        JROOT_SCR = 0
 *
-          if (IRELACI.eq.1) then
-            INONREL = 0
-          else
-            INONREL = 1
-          end if
-          if (IDENSI.eq.3) then
-            IDEN12 = 1
-            write(LUWRT,*) ' '
-            write(LUWRT,'(2X,A)') 
-     &      ' Computing spin-dependent one-particle density'
-            write(LUWRT,*) ' '
-          else if (IDENSI.eq.4) then
-            IDEN12 = 2
-            write(LUWRT,*) ' '
-            write(LUWRT,'(2X,A)') 
-     &     ' Computing spin-dependent one- and two-particle densities.'
-            write(LUWRT,*) ' '
-          else
-            write(LUWRT,*) 'IDENSI =  ',IDENSI
-            Call Abend2( 'Problemo in gasci. Quitting.' )
-          end if
+        IF( NOOCCN_DENS_RUN ) THEN
+           JROOT_SCR = IDENSI_STATE 
+        ELSE
+           JROOT_SCR = 1
+        END IF
 *
-* Pick current root from multi-root vector on LUC
-* (I guess SKPVCD for skipping a given number of vectors on
-*  file should be used here for convenience ...)
+        if (IRELACI.eq.1) then
+          INONREL = 0
+        else
+          INONREL = 1
+        end if
+        if (IDENSI.eq.3) then
+          IDEN12 = 1
+          write(LUWRT,*) ' '
+          write(LUWRT,'(2X,A)') 
+     &    ' Computing spin-dependent one-particle density'
+          write(LUWRT,*) ' '
+        else if (IDENSI.eq.4) then
+          IDEN12 = 2
+          write(LUWRT,*) ' '
+          write(LUWRT,'(2X,A)') 
+     &   ' Computing spin-dependent one- and two-particle densities.'
+          write(LUWRT,*) ' '
+        else
+          write(LUWRT,*) 'IDENSI =  ',IDENSI
+          Call Abend2( 'Problemo in gasci. Quitting.' )
+        end if
 *
-*         FIXME: modify calling MCSCF-routines for multi-root handling
-*                / SK June 26 2007
-* 
-CSK          if (JROOT.ge.2) then
-C
-C  MCSCF: C vectors are placed to files outside in KR_LUCI_IO.
-C
-c           call copvcdc(LUC,LUHC,WORK(KVEC2),1,IRC,LBLK)
-c           do IRT=1,JROOT-2,1
-c             call copvcdc(LUC,LUHC,WORK(KVEC2),0,IRC,LBLK)
-c           end do
-c           rewind(LUSC61)
-c           rewind(LUSC62)
-c           call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
-c           call copvcdc(LUSC61,LUSC62,WORK(KVEC2),1,IRC,LBLK)
-c         else if (JROOT.eq.1) then
-c           call copvcdc(LUC,LUSC61,WORK(KVEC2),1,IRC,LBLK)
-c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,IRC,LBLK)
-CSK          end if
 *
-         if (IPRDEN.ge.500) then
+        if (IPRDEN .ge. 500 .and. .not. NOOCCN_DENS_RUN) then
           IF( MYPROC .eq. MASTER )THEN
-            write(LUWRT,*) 'Current vector ',JROOT,'  on unit ',LUSC61
+            write(LUWRT,*) 'Current vector',JROOT_SCR,' on unit',LUSC61
             call wrtvcdc(WORK(KVEC1),LUSC61,1,IRC,LBLK)
-            write(LUWRT,*) 'Current vector ',JROOT,'  on unit ',LUSC62
+            write(LUWRT,*) 'Current vector ',JROOT_SCR,' on unit',LUSC62
             call wrtvcdc(WORK(KVEC2),LUSC62,1,IRC,LBLK)
           END IF
+        end if
+*
+        if (SIGDEN_ROUTE.eq.'TRADIT') then
+          call dbg_rho(WORK(KVEC1),WORK(KVEC2),INONREL,IDEN12,JROOT)
+        else if (SIGDEN_ROUTE.eq.'SIGDEN') then
+*
+          if (CIRUN.eq.'DENS1 ') then
+            NTERMS = N1ELINT
+          else if (CIRUN.eq.'DENS2 ') then
+            NTERMS = NALLINT
+          end if
+*
+*         erase T amplitudes from sigma calculation
+          call DZERO(WORK(KT_CC),NTERMS)
+          if( NOOCCN_DENS_RUN ) THEN
+            call DZERO(WORK(KT_CC),NALLINT)
+          endif
+CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
+*
+         if (CIRUN.eq.'DENS1 ') then
+            call rmemchk
          end if
 *
-          if (SIGDEN_ROUTE.eq.'TRADIT') then
-            call dbg_rho(WORK(KVEC1),WORK(KVEC2),INONREL,IDEN12,JROOT)
-          else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-*
-            if (CIRUN.eq.'DENS1 ') then
-              NTERMS = N1ELINT
-            else if (CIRUN.eq.'DENS2 ') then
-              NTERMS = NALLINT
-            end if
-*
-*           erase T amplitudes from sigma calculation
-            call DZERO(WORK(KT_CC),NTERMS)
-*
-           if (CIRUN.eq.'DENS1 ') then
-              WRITE(LUWRT,*) 'CHECKING MEMORY AFTER ZEROING ...'
-              WRITE(LUWRT,*) 'NTERMS ',NTERMS
-              call rmemchk
-           end if
-*
 #if defined (VAR_MPI)
-*           erase old LUCLIST
-            CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
-*
-*           copy right-hand vector to scratch file
-            IF( IRC .eq. 1 ) THEN
-*             real quaternion double group
-              CALL COPVCD_PP_CC_B(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
-     &                            WORK(KLVLBT),
-     &                            WORK(KLVLEBT),WORK(KLVI1BT),
-     &                            WORK(KLVIBT),MY_LU1_OFF,MY_LUC_OFF,
+*         erase old LUCLIST
+          CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
+*         copy right-hand vector to scratch file
+          IF( IRC .eq. 1 ) THEN
+*           real quaternion double group
+            CALL COPVCD_PP_CC_B(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
+     &                          WORK(KLVLBT),
+     &                          WORK(KLVLEBT),WORK(KLVI1BT),
+     &                          WORK(KLVIBT),MY_LU1_OFF,MY_LUC_OFF,
+     &                          WORK(KILU1LIST),WORK(KILUCLIST),
+     &                          WORK(KBLOCKLIST), JROOT - 1 )
+          ELSE
+*           complex quaternion double group
+            CALL COPVCD_PP_CC_B_C(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
+     &                            WORK(KLVLBT),WORK(KLVLEBT),
+     &                            WORK(KLVI1BT),WORK(KLVIBT),
+     &                            MY_LU1_OFF,MY_LUC_OFF,
      &                            WORK(KILU1LIST),WORK(KILUCLIST),
      &                            WORK(KBLOCKLIST), JROOT - 1 )
-            ELSE
-*             complex quaternion double group
-              CALL COPVCD_PP_CC_B_C(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
-     &                              WORK(KLVLBT),WORK(KLVLEBT),
-     &                              WORK(KLVI1BT),WORK(KLVIBT),
-     &                              MY_LU1_OFF,MY_LUC_OFF,
-     &                              WORK(KILU1LIST),WORK(KILUCLIST),
-     &                              WORK(KBLOCKLIST), JROOT - 1 )
-            END IF
+          END IF
 *
 #endif
 *
-*           set offset for left-hand vector on ILU2 (parallel
-*           calculation)
+*         set offset for left-hand vector on ILU2 (parallel
+*         calculation)
 *
-            JVEC_SF = JROOT - 1
+          JVEC_SF = JROOT - 1
 *
-*           compute density matrix elements
+*         compute density matrix elements
 *
 *=======================================================================
-           call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
+          call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
 #if defined (VAR_MPI)
-     &                      ILUC,ILU2,
+     &                     ILUC,ILU2,
 #else
-     &                      LUSC61,LUSC62,
+     &                     LUSC61,LUSC62,
 #endif
-     &                      WORK(KT_CC),2
+     &                     WORK(KT_CC),2
 #if defined (VAR_MPI)
-     &                     ,WORK(KILUCLIST),WORK(KILU2LIST),
-     &                      WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                      IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
+     &                    ,WORK(KILUCLIST),WORK(KILU2LIST),
+     &                     WORK(KBLOCKLIST),WORK(KNODELIST),
+     &                     IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
 #endif
      &                   )
 *=======================================================================
 *
-*           read indices from cpu-specific file INDICES.'MYPROC'
-*           ( written in dist_ints_sigden --> interface_r.F )
-            call memmar(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
-            call read_indices(WORK(KINDEX),NTERMS)
+*         read indices from cpu-specific file INDICES.'MYPROC'
+*         ( written in dist_ints_sigden --> interface_r.F )
+          call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
+          call isetvc(WORK(KINDEX),IZERO,NALLINT*4)
+          call read_indices(WORK(KINDEX),NTERMS)
+CSK          WRITE(LUWRT,*) ' printing index matrix'
+CSK          call IWRTMAMN(WORK(KINDEX),4,NTERMS,4,NTERMS,LUWRT)
 *
-            IPRDEN = 1
+          IPRDEN = 1
 *
 #if defined (VAR_MPI)
 *
-            ISHARE_DENSM = 0
+          ISHARE_DENSM = 0
 *
-*           case 1: only MASTER will get all density matrix elements
-*               --> ISHARE_DENSM = 0
-*           case 2: density matrix elements on all CPUs
-*               --> ISHARE_DENSM = 1
+*         case 1: only MASTER will get all density matrix elements
+*             --> ISHARE_DENSM = 0
+*         case 2: density matrix elements on all CPUs
+*             --> ISHARE_DENSM = 1
 *
-            IF( ISHARE_DENSM .eq. 1 ) THEN
-              WRITE(LUWRT,*) ' WARNING: summation of density matrix '
-              WRITE(LUWRT,*) ' elements on ALL CPUs might cause ' 
-              WRITE(LUWRT,*) ' MPI memory problems !!! '
-              WRITE(LUWRT,*) ' (depending on your MPI implementation)'
-            END IF
-C
+          IF( ISHARE_DENSM .eq. 1 ) THEN
+            WRITE(LUWRT,*) ' WARNING: summation of density matrix '
+            WRITE(LUWRT,*) ' elements on ALL CPUs might cause ' 
+            WRITE(LUWRT,*) ' MPI memory problems !!! '
+            WRITE(LUWRT,*) ' (depending on your MPI implementation)'
+          END IF
 *
-            CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),WORK(KINDEX),
+          IF( NOOCCN_DENS_RUN ) THEN
+            L_MAX_DENS_BLK = 0
+            L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
+*
+            CALL MEMMAR(KMAX_DENS_BLK,L_MAX_DENS_BLK,
+     &                  'ADDL  ',1,'KDMBLK')
+            CALL DZERO(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
+*
+            CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
+     &                             WORK(KINDEX),
+     &                             WORK(KLIHIND),WORK(KSIGNNHX),NTOOB2,
+     &                             WORK(KLABEXTP),WORK(KLOP_REO),
+     &                             WORK(KSIOPREO),IRC,ISHARE_DENSM)
+          ELSE
+CSK            CALL COLLECT_DENS_MAT(WORK(KMAX_DENS_BLK),WORK(KT_CC),
+            CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),
+     &                            WORK(KINDEX),
      &                            WORK(KLIHIND),WORK(KSIGNNHX),NTOOB2,
      &                            WORK(KLABEXTP),WORK(KLOP_REO),
      &                            WORK(KSIOPREO),IRC,ISHARE_DENSM)
+          END IF
 *
 #endif
 *
-            IPRDEN = 00
+          IPRDEN = 00
 *
-            if (IPRDEN.ge.10) then
-              write(LUWRT,*) '======================================='
-              write(LUWRT,'(A,I4)') ' Density matrix for root ',JROOT
-              write(LUWRT,*) '======================================='
-              call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
-     &                     WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
-     &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC)
-            end if
-*
-            IPRDEN = 1
-*           memory check 
-            call rmemchk
-*
-            CALL DZERO(F2,LF2_ZERO)
-*
-CSK            IPRDEN = 50
-*           transfer density matrices to KRMC format
-            call trnsfdens(F1,F2,WORK(KT_CC),
-     &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                    IRC,NTOOB2,IPRDEN)
-            IPRDEN = 1
-*
-          else
-            write(LUWRT,*) 'SIGDEN_ROUTE with unallowed value in gasci.'
-            write(LUWRT,*) 'SIGDEN_ROUTE ',SIGDEN_ROUTE
+          if (IPRDEN.ge.10) then
+           IF( MYPROC .eq. MASTER ) THEN
+             write(LUWRT,*) '======================================='
+             write(LUWRT,'(A,I4)') ' Density matrix for root ',JROOT_SCR
+             write(LUWRT,*) '======================================='
+             call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
+     &                    WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
+     &                    WORK(KLOP_REO),WORK(KSIOPREO),IRC)
+           END IF
           end if
 *
-        end do
-*       ^ loop over roots
+          IPRDEN = 1
+*         memory check 
+          call rmemchk
+*
+          IF( .NOT. NOOCCN_DENS_RUN )THEN
+            CALL DZERO(F2,LF2_ZERO)
+          END IF
+*
+          IPRDEN = 00
+*         transfer density matrices to KRMC format
+          call trnsfdens(F1,F2,WORK(KT_CC),
+     &                  WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                  WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
+     &                  IRC,NTOOB2,IPRDEN)
+          IPRDEN = 1
+*
+        else
+          write(LUWRT,*) 'SIGDEN_ROUTE with unallowed value in gasci.'
+          write(LUWRT,*) 'SIGDEN_ROUTE ',SIGDEN_ROUTE
+        end if
+*
       end if
 *
 *+++++++++++++++++++++++++++++++++++++++++++++++++++

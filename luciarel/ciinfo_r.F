@@ -1135,14 +1135,14 @@ CSK...6-jul-07      LBLOCK = MAX(L2BLOCK,L0BLOCK)
 CSK...6-jul-07 new
       L3BLOCK = MIN(LBLOCK,L3BLOCK)
 CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
-CSK      LSCR12 = MAX(L3BLOCK,2*LSCR2)
-CSK testing...
-      LSCR12 = MAX(L3BLOCK,LSCR2)
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
+      LCJRES_SAVE = LSCR12
 *
       write(luwrt,*) 'L3BLOCK is',L3BLOCK
       write(luwrt,*) 'LBLOCK is',LBLOCK
       write(luwrt,*) 'LSCR2 is',LSCR2
-
+      write(luwrt,*) 'LSCR12 is',LSCR12
+      write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
 *
       call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
 *
@@ -1152,9 +1152,6 @@ CSK testing...
       CALL FLSHFO(LUWRT)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-CSK      if (CIRUN.ne.'ANALYZ') then
-CSK        call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
-CSK      end if
 *
       END
 ***********************************************************************
@@ -5807,14 +5804,24 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
-        WRITE(LUWRT,'(1X,A,1X,I20)')
-     & '  Current available free memory in double words:',L2BLOCK
+CSK        WRITE(LUWRT,'(1X,A,1X,I20)')
+CSK     & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
 *       division by a factor of 4 = safety!
 *
+        L2BLOCK_SAVE_V = 0
+        L2BLOCK_SAVE_V = L2BLOCK
         L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
+*       check if L2BLOCK is a positive integer
+        IF( L2BLOCK .le. 0 )THEN
+*         set back to default...
+          WRITE(LUWRT,*) ' WARNING WARNING WARNING!!!'
+          WRITE(LUWRT,*) ' MEMFAC too large, reset to default == 9'
+          ISMEMFAC = 9
+          L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4
+        END IF
 *
 CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
 CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
@@ -6024,7 +6031,17 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
 *       division by a factor of 4 = safety!
 *
+        L2BLOCK_SAVE_V = 0
+        L2BLOCK_SAVE_V = L2BLOCK
         L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
+*       check if L2BLOCK is a positive integer
+        IF( L2BLOCK .le. 0 )THEN
+*         set back to default...
+          WRITE(LUWRT,*) ' WARNING WARNING WARNING!!!'
+          WRITE(LUWRT,*) ' MEMFAC too large, reset to default == 9'
+          ISMEMFAC = 9
+          L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4 
+        END IF
 *
 CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
 CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
@@ -6051,7 +6068,7 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
       IF( I_SET_L2BLOCK .eq. 1 ) 
-     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
+     &  WRITE(LUWRT,*) ' Allocating for three vectors of length:',LBLOCK
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)

@@ -485,7 +485,7 @@ CSK          write(LUWRT,*)        ' -------------------------'
 CSK          write(LUWRT,*) '  '
           NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
 *
-CSK          write(LUWRT,*) ' NINT_TP =',NINT_TP
+csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *
           CALL DZERO(DENS_SCR,NINT_TP)
 *
@@ -539,6 +539,208 @@ CSK          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *       ^ loop over excitation types
       end do
 *     ^ loop over real and imag part of density matrix elements
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COLLECT_DENS_MAT2(DENS_SCR,DENS,INDEX,IHINDX,
+     &                             SIGN,NASHT,LABEL,IOP_REO,SIGN_REO,
+     &                             ISF,ISHARE)
+C
+C     Written by  S. Knecht         - October 1 2007
+C
+C**********************************************************************
+C
+C     collect density matrix elements from all CPUs to:
+C
+C                                           ISHARE = 0: MASTER  
+C                                           ISHARE = 1: MASTER + NODES 
+C
+C     density matrix DENS for current eigenvector is in SIGDEN ordering
+C     output: updated DENS
+C
+C     Last revision:     S. Knecht       - October  2007
+C
+************************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "ctcc.inc"
+#include "lucipar_rel.inc"
+*
+      dimension DENS(NALLINT),SIGN(NSPOBEX_TP), DENS_SCR(*)
+      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
+     &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
+     &          SIGN_REO(NSPOBEX_TP)
+      INTEGER ISHCOMM, ISHCOLOR, ISHKEY
+*
+      ISHCOLOR = 0
+      ISHKEY   = 0
+*
+      NINT_TOT = N1ELINT + N2ELINT
+*     check for quaternion algebra
+      if (ISF.eq.1) then
+        IRILP = 1
+      else
+        IRILP = 2
+      end if
+*
+*     loop over real and imag part of density matrix elements
+*
+      do IRI = 1,IRILP,1
+        IRUN = 1
+        IRIOFF = 0
+        do JRI = 1,IRI-1,1
+          IRIOFF = IRIOFF + NINT_TOT
+        end do
+        IF( NPTESTVAR .GE. 10 )THEN
+        write(LUWRT,*) '  '
+        write(LUWRT,*) '  '
+        write(LUWRT,'(2X,A)') 
+     &            'updating one- and two-particle densities '
+        write(LUWRT,*) '  '
+        write(LUWRT,'(2X,A,1X,I3)')' parallel update level ', ISHARE
+        write(LUWRT,*) '  '
+        if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
+        if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
+        write(LUWRT,*) ' -------------------------------'
+        END IF
+*       
+*       loop over excitation types
+*
+        do IXTP = 1,NSPOBEX_TP,1
+CSK          write(LUWRT,*) '  '
+CSK          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+CSK          write(LUWRT,*)        ' -------------------------'
+CSK          write(LUWRT,*) '  '
+          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+*
+csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
+*
+          CALL DZERO(DENS_SCR,NINT_TP)
+*
+*
+          IF( ISHARE .eq. 0 )THEN          
+*
+            XXX = 0.0D0
+            XXX = DDOT(NINT_TP,DENS(IRIOFF+IRUN),1,DENS(IRIOFF+IRUN),1)
+*
+            IF( MYPROC .eq. MASTER )THEN
+              ISHCOLOR = 7
+            ELSE
+              IF( XXX .eq. 0.0D0 ) ISHCOLOR = 6
+              IF( XXX .ne. 0.0D0 ) ISHCOLOR = 7
+            END IF
+*           key value: MASTER will be MASTER again
+            ISHKEY = MYPROC
+*           new communicator for REDUCE on MASTER
+            CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
+     &                          ISHCOMM,IERR)
+*
+            IF( ISHCOLOR .eq. 6 ) GOTO 100
+*
+          END IF
+*
+*         start update 
+          IF( ISHARE .eq. 0 )THEN
+*           sum up partial density matrix elements on MASTER
+            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      MPI_SUM,ISHCOMM,MASTER)
+*
+*           copy back updated matrix elements
+            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
+*
+          ELSE IF( ISHARE .eq. 1 )THEN
+*           sum up partial density matrix elements on ALL CPUs
+            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      MPI_SUM,MPI_COMM_WORLD, - 1 )
+*
+*           copy back updated matrix elements
+            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
+          END IF
+*         ^ update either MASTER or all CPUs
+  100     CONTINUE
+*
+          IF( ISHARE .eq. 0 ) CALL MPI_COMM_FREE(ISHCOMM,IERR)
+*
+*         keep track of correct offset
+          IRUN = IRUN + NINT_TP
+        end do
+*       ^ loop over excitation types
+      end do
+*     ^ loop over real and imag part of density matrix elements
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      INTEGER FUNCTION NCALC_MAX_BLK(ISF)
+C
+C     Written by  S. Knecht         - October 1 2007
+C
+C**********************************************************************
+C
+C     calculate max. density matrix elements block:
+C
+C     Last revision:     S. Knecht       - October 1 2007
+C
+************************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "ctcc.inc"
+#include "lucipar_rel.inc"
+*
+      MAX_SCR_ELEMENT = 0
+      NINT_TOT = N1ELINT + N2ELINT
+*
+*     check for quaternion algebra
+*
+      if (ISF.eq.1) then
+        IRILP = 1
+      else
+        IRILP = 2
+      end if
+*
+*     loop over real and imag part of density matrix elements
+*
+      do IRI = 1,IRILP,1
+*       
+*       loop over excitation types
+*
+        do IXTP = 1,NSPOBEX_TP,1
+CSK          write(LUWRT,*) '  '
+CSK          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+CSK          write(LUWRT,*)        ' -------------------------'
+CSK          write(LUWRT,*) '  '
+          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          MAX_SCR_ELEMENT = MAX(MAX_SCR_ELEMENT,NINT_TP)
+*
+csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
+csk          write(LUWRT,*) ' MAX_SCR_ELEMENT =',MAX_SCR_ELEMENT
+*
+        end do
+*       ^ loop over excitation types
+      end do
+*     ^ loop over real and imag part of density matrix elements
+      NCALC_MAX_BLK = MAX_SCR_ELEMENT
 *
       END
 ***********************************************************************

@@ -3102,7 +3102,7 @@ c       stop
       else
         write(6,*) 'No QFT implemented YET in LUCIAREL.'
         write(6,*) 'you specified ',NCT,' indices.'
-        call abend2('Quitting.')
+        call abend2('Quitting in getind_molf.')
       end if
 *
       return
@@ -3310,7 +3310,7 @@ C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
       else
         write(6,*) 'No QFT implemented YET in LUCIAREL.'
         write(6,*) 'you specified ',NCT,' indices.'
-        call abend2('Quitting.')
+        call abend2('Quitting in getind_nz3.')
       end if
 *
       return
@@ -9265,6 +9265,8 @@ Cjan      end do
 *                  Timo Fleig, June 2004
 *                - Revised FSM/IUB ordering section             
 *                  Timo Fleig, November 2006
+*                - revised for proper NO-occupation number runs
+*                  Stefan Knecht, October 2007
 *--------------------------------------------------------------------*
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
@@ -9289,6 +9291,7 @@ Cjan      end do
 #include "dgroup.h"
 #include "dcborb.h"
 #include "lucipar_rel.inc"
+#include "noccn_inf.inc"
 *
       dimension F1(*),F2(*)
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
@@ -9356,6 +9359,7 @@ Cjan      end do
       end do
 *
       if (NTEST.ge.5) then
+        write(LUWRT,*) ' IREOKF array'
         call iwrtmamn(IREOKF,1,II-1,1,MXPORB,LUWRT)
       end if
 *
@@ -9389,6 +9393,7 @@ Cjan      end do
           end if
 *
           NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
           do INT = 1,NINT_TP,1
 *
 * Determine type of density element
@@ -9402,6 +9407,7 @@ Cjan      end do
                 INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
               end if
             end do
+csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
 *
             if (NCT.eq.2) then
               I = IREOKF(INDEX_L(ICSAVE(1))  
@@ -9499,10 +9505,13 @@ Cjan      end do
 *
               end if
 *             ^ Non-redundant density type (see get_hx_rela)
+            else if( NCT.eq. 0 .and. NOOCCN_DENS_RUN )then
+csk               write(LUWRT,*) ' what to do with 4 zero inidces???'
+csk               write(LUWRT,*) ' continuing ...'
             else 
               write(LUWRT,*) 'No QFT implemented YET in LUCIAREL.'
               write(LUWRT,*) 'you specified ',4-NCT,' indices.'
-              call abend2('Quitting.')
+              call abend2('Quitting in trnsfdens.')
             end if
             IRUN = IRUN + 1
           end do
@@ -9572,6 +9581,7 @@ Cjan      end do
           write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
           write(LUWRT,*)        ' -------------------------'
           NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
           do INT = 1,NINT_TP,1
 *
             if (INDEX(1,IRUN).ne.0.and.INDEX(2,IRUN).ne.0) then
@@ -9595,6 +9605,8 @@ Cjan      end do
               IND_R(4) = INDEX(4,IRUN) - (LABEL(4,IXTP) - 1)/2 * NASHT
             else
 *  One-particle density element. No modification.
+csk              write(LUWRT,*) ' One-particle density element for IRUN',
+csk     &                         IRUN
               IND_R(1) = INDEX(1,IRUN)
               IND_R(2) = INDEX(2,IRUN)
               IND_R(3) = INDEX(3,IRUN)

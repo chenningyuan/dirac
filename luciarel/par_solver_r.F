@@ -163,6 +163,9 @@ C?       WRITE(6,*) ' Variational  solver '
 *       Initial iteration
 *      ===================
 *
+*      start timing of initial iteration
+       WALLITR1 = MPI_WTIME()
+        
        CALL DZERO(APROJ, MAXVEC*(MAXVEC+1)/2 )
 *
        ITER = 1
@@ -667,7 +670,7 @@ C
      &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,
      &                      APROJI,APROJR,AVEC,WORK,IPRT,
      &                      NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                      IPREDZN,INONREL,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                      IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
      &                      CONVLIM,IBLOCKL,NPARBLOCK,NBLOCKS,
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
@@ -804,31 +807,16 @@ CSK      end if
          RETURN
        END IF
 *
-       if (IDCOMH.eq.0) then
-          I_DO_COMHAM = 0
-       else if (IDCOMH.eq.1) then
-          I_DO_COMHAM = 1
-       else
-          write(LUWRT,*) 'Problemo in CMICDV.'
-          Call Abend2( 'Quitting.' )
-       end if
-*
-       IF(I_DO_COMHAM .EQ.1) THEN
-         write(LUWRT,*)
-         write(LUWRT,*) ' ===================================== '
-         WRITE(LUWRT,*) ' Control will be transferred to COMHAM '
-         write(LUWRT,*) ' ===================================== '
-         WRITE(LUWRT,*) ' NVAR = ', NVAR
-         CALL COMHAM(NVAR,T_CC,SIGDEN_ROUTE)
-         Call Abend2( ' After COMHAM  ' )
-       END IF
        NZERO = 0
 *
-* ===================
-*.Initial iteration
-* ===================
+*      ===================
+*       Initial iteration
+*      ===================
        ITER = 1
        NVEC = 0
+*      start timing of initial iteration
+       WALLITR1 = MPI_WTIME()
+*              
        IF( MAXIT .GE. 1 ) THEN
 *
        CALL DZERO(APROJR, MAXVEC*(MAXVEC+1)/2 )
@@ -846,20 +834,9 @@ CSK      end if
 *
          CALL ISETVC(LUCLIST,NZERO,NUM_BLOCKS2)
 *
-CSK         WRITE(LUWRT,*) 'LUCLIST for the 1st time:'
-CSK         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-CSK         WRITE(LUWRT,*) 'LU1LIST for the 1st time:'
-CSK         CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-*
          CALL COPVCD_PP_CC_B_C(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                         IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                         LUCLIST,IBLOCKL,IVEC-1)
-*
-CSK         write(LUWRT,*) ' copy survived '
-CSK         WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-CSK         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-CSK         WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
-CSK         CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *        set offset for sigma-file
 *

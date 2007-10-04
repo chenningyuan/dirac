@@ -291,6 +291,22 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
 *
 #endif
 *
+*     Construct and diagonalize complete Hamiltonian 
+*
+      IF( IDCOMH .eq. 1 )THEN
+*
+#if defined(VAR_MPI)
+        IF(NMPROC .gt. 1 ) THEN
+          WRITE(LUWRT,*)  ' I am sorry, but this route only works'
+          WRITE(LUWRT,*)  ' for one CPU'
+          CALL Abend2('STOP for IDCOMH == 1 and more than one CPU')
+        END IF
+#endif
+        CALL COMHAM(VEC1,VEC2,NDIM,T_CC,SIGDEN_ROUTE)
+*
+      END IF
+*
+*
       IF (IRC.EQ.1) THEN
         write(LUWRT,*) ' '
         write(LUWRT,*) ' Quaternion real algebra.           '
@@ -365,7 +381,7 @@ C    &                  E_CONV,IROOTHOMING)
      &                  NROOTS,MAXVEC,NROOTS,
      &                  T_CC,WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
-     &                  LBLK,EIGSHF,0,0,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                  LBLK,EIGSHF,0,0,IHAM12,SIGDEN_ROUTE,
      &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATCH,
@@ -381,7 +397,7 @@ C    &                  E_CONV,IROOTHOMING)
      &              T_CC,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &              0,0,IDCOMH,IHAM12,SIGDEN_ROUTE,THRES_E)
+     &              0,0,IHAM12,SIGDEN_ROUTE,THRES_E)
 *
 #endif
 C     SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
@@ -389,7 +405,7 @@ C     &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
 C     &                  T_CC,
 C     &                  APROJI,APROJR,AVEC,WORK,IPRT,
 C     &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-C     &                  IPREDZN,INONREL,IDCOMH,IHAM12,SIGDEN_ROUTE)
+C     &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE)
 C
       END IF
 *     ^ End if switch real/complex numbers
@@ -825,7 +841,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
      &                  T_CC,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &                  IPREDZN,INONREL,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
      &                  CONVLIM)
 *
 * Multi root Davidson routine for complex Hermitian
@@ -947,25 +963,6 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
            CALL WRTVCDC(VEC1,LUDIA,1,IRC,LBLK)
          END IF
        end if
-*
-       if (IDCOMH.eq.0) then
-          I_DO_COMHAM = 0
-       else if (IDCOMH.eq.1) then
-          I_DO_COMHAM = 1
-       else
-          write(LUWRT,*) 'Problemo in CMICDV.'
-          Call Abend2( 'Quitting.' )
-       end if
-*
-       IF(I_DO_COMHAM .EQ.1) THEN
-         write(LUWRT,*)
-         write(LUWRT,*) ' ===================================== '
-         WRITE(LUWRT,*) ' Control will be transferred to COMHAM '
-         write(LUWRT,*) ' ===================================== '
-         WRITE(LUWRT,*) ' NVAR = ', NVAR
-         CALL COMHAM(NVAR,T_CC,SIGDEN_ROUTE)
-         Call Abend2( ' After COMHAM  ' )
-       END IF
 *
 * ===================
 *.Initial iteration
@@ -1528,7 +1525,7 @@ C!?      ITER = ITER - 1
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE COMHAM(NVAR,T_CC,SIGDEN_ROUTE)
+      SUBROUTINE COMHAM(VEC1,VEC2,NVAR,T_CC,SIGDEN_ROUTE)
 *
 * Construct and diagonalize complete Hamiltonian
 *
@@ -1555,14 +1552,14 @@ C!?      ITER = ITER - 1
       common/CECORER/ECORE
 *
       PARAMETER(MXDIM = 700)
-      DIMENSION VEC1(MXDIM),VEC2(MXDIM)
+      DIMENSION VEC1(*), VEC2(*)
       DIMENSION SCR1((2*MXDIM)**2),SCR2((2*MXDIM)**2)
 *
       NTEST = 000
 *
-      write(6,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-      write(6,*) 'MXDIM in COMHAM set to ',MXDIM
-      write(6,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+      write(LUWRT,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+      write(LUWRT,*) 'MXDIM in COMHAM set to ',MXDIM
+      write(LUWRT,*) '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
 *
       LUIN = LUSC92
       LUOUT = LUSC93
@@ -1580,15 +1577,15 @@ C!?      ITER = ITER - 1
 *
 *. Loop over elements in real part
       DO I = 1, NVAR
-        WRITE(6,*) ' COMHAM : I = ', I
-        CALL FLSHFO(6)
+        WRITE(LUWRT,*) ' COMHAM : I = ', I
+        CALL FLSHFO(LUWRT)
 * Real part
         CALL REWINE(LUDIA,LBLK)
         CALL REWINE(LUIN,LBLK)
         ONE = 1.0D0
 *       !ATTENTION! THE CALL TO THIS SUBROUTINE HAS BEEN CHANGED!
 *       THE FOLLOWING CALLS NEED TO BE ADAPTED
-        WRITE(6,*) ' I might produce shit! Please look into the code'
+        WRITE(LUWRT,*) 'I might produce shit! Please look into the code'
         CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA,
      &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
 #if defined (VAR_MPI)
@@ -1614,9 +1611,9 @@ C!?      ITER = ITER - 1
 #endif
      &                   )
         else
-          write(6,*) 'Route for sigma and densities not allowed.'
-          write(6,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
-          call abend ('Quitting.')
+          write(LUWRT,*) 'Route for sigma and densities not allowed.'
+          write(LUWRT,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
+          call abend2 ('Quitting.')
         end if
 *.
         CALL REWINE(LUOUT,LBLK)
@@ -1628,12 +1625,12 @@ C       CALL WRTMAT(WORK(KHR+(I-1)*NVAR),1,NVAR,1,NVAR)
       END DO
 *
       if (NTEST.ge.50) then
-         WRITE(6,*) ' Real and Imaginary parts of Hamiltonian '
-         CALL WRTMAT(WORK(KHR),NVAR,NVAR,NVAR,NVAR)
-         WRITE(6,*)
-         WRITE(6,*)
-         WRITE(6,*)
-         CALL WRTMAT(WORK(KHI),NVAR,NVAR,NVAR,NVAR)
+         WRITE(LUWRT,*) ' Real and Imaginary parts of Hamiltonian '
+         CALL WRTMATMN(WORK(KHR),NVAR,NVAR,NVAR,NVAR,LUWRT)
+         WRITE(LUWRT,*)
+         WRITE(LUWRT,*)
+         WRITE(LUWRT,*)
+         CALL WRTMATMN(WORK(KHI),NVAR,NVAR,NVAR,NVAR,LUWRT)
       end if
 *
 *. Check imag part > Antihermitian
@@ -1642,10 +1639,10 @@ C       CALL WRTMAT(WORK(KHR+(I-1)*NVAR),1,NVAR,1,NVAR)
         DO J = 1, I
           IF(ABS(WORK(KHI+(I-1)*NVAR+J-1)+WORK(KHI+(J-1)*NVAR+I-1)).
      &           GT.XMXDIFF) THEN
-            Write(6,*)
-            WRITE(6,*)
+            Write(LUWRT,*)
+            WRITE(LUWRT,*)
      &      ' Imag matrix not antihermitean, I,J, H(I,J),H(J,I), DIFF'
-            WRITE(6,*) I,J,WORK(KHI+(I-1)*NVAR+J-1),
+            WRITE(LUWRT,*) I,J,WORK(KHI+(I-1)*NVAR+J-1),
      &                     WORK(KHI+(J-1)*NVAR+I-1),
      &                     WORK(KHI+(I-1)*NVAR+J-1)
      &                     +WORK(KHI+(J-1)*NVAR+I-1)
@@ -1658,10 +1655,10 @@ C       CALL WRTMAT(WORK(KHR+(I-1)*NVAR),1,NVAR,1,NVAR)
         DO J = 1, I
           IF(ABS(WORK(KHR+(I-1)*NVAR+J-1)-WORK(KHR+(J-1)*NVAR+I-1))
      &                .GT.XMXDIFF) THEN
-            Write(6,*)
-            WRITE(6,*)
+            Write(LUWRT,*)
+            WRITE(LUWRT,*)
      &      ' Real matrix not hermitean, I,J, H(I,J),H(J,I), DIFF'
-            WRITE(6,*) I,J,WORK(KHR+(I-1)*NVAR+J-1),
+            WRITE(LUWRT,*) I,J,WORK(KHR+(I-1)*NVAR+J-1),
      &                     WORK(KHR+(J-1)*NVAR+I-1),
      &                     WORK(KHR+(I-1)*NVAR+J-1)
      &                     -WORK(KHR+(J-1)*NVAR+I-1)
@@ -1674,7 +1671,7 @@ C       CALL WRTMAT(WORK(KHR+(I-1)*NVAR),1,NVAR,1,NVAR)
 *. But first reform to lower half form
       SIGNTP = 1.0
       CALL TRIPAK(WORK(KHR),SCR1,1,NVAR,NVAR,SIGNTP)
-      CALL COPVEC(SCR1,WORK(KHR),NVAR*(NVAR+1)/2)
+      CALL DCOPY(NVAR*(NVAR+1)/2,SCR1,1,WORK(KHR),1)
 *. Read in two-electron terms from unit 30
 *. Kept for historical (sentimental) reasons
 C     IDIR2E = 1
@@ -1695,28 +1692,28 @@ C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
       CALL TRIPAK(WORK(KHI),SCR1,1,NVAR,NVAR,SIGNTP)
       CALL DCOPY(NVAR*(NVAR+1)/2,SCR1,1,WORK(KHI),1)
 *
-      write(6,*) 'NVAR : ',NVAR
+      write(LUWRT,*) 'NVAR : ',NVAR
       NVAR_SAVE = NVAR
       CALL CEIGEN(WORK(KHR),WORK(KHI),NVAR,VEC1,SCR1,SCR2)
 C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
-      write(6,*) 'NVAR_SAVE : ',NVAR_SAVE
+      write(LUWRT,*) 'NVAR_SAVE : ',NVAR_SAVE
 *
 *  Add nuclear repulsion energy
       DO I = 1, NVAR_SAVE
          VEC1(I) = VEC1(I) + ECORE
       END DO
 *
-      WRITE(6,*) ' Lowest Eigenvalue ', VEC1(1)
-      WRITE(6,*) ' All eigenvalues '
+      WRITE(LUWRT,*) ' Lowest Eigenvalue ', VEC1(1)
+      WRITE(LUWRT,*) ' All eigenvalues '
       DO I = 1, NVAR_SAVE
-         WRITE(6,'(1X,I4,2X,1F18.10)') I,VEC1(I)
+         WRITE(LUWRT,'(1X,I4,2X,1F18.10)') I,VEC1(I)
       END DO
 *
 *  Print MXANAVEC eigenvectors
       if (IPRWFC.ge.1) then
         do IANA=1,MXANAVEC,1
-          write(6,*)
-          write(6,'(A,1X,I4)') ' Eigenvector number ... ',IANA
+          write(LUWRT,*)
+          write(LUWRT,'(A,1X,I4)') ' Eigenvector number ... ',IANA
         end do
       end if
 *

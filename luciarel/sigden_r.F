@@ -3762,7 +3762,7 @@ CSK     &                   NSMST,ISCALE,XSCALE)
 *
             NTEST = 000
             if (LEN2.gt.0.and.NTEST.ge.100) then
-              write(LUWRT,*) 'WRITING L VECTOR FRACTION for block:',
+              write(LUWRT,*) 'PRINTING L VECTOR FRACTION for block:',
      &                        ISBLK
               call wrtmatmn(SB(ISOFF),1,LEN2,1,LEN2,LUWRT)
             end if
@@ -3887,11 +3887,15 @@ CSK   integer array ...
       CALL IAIBCM_REL(ICSPC,IACTP,IBCTP,WORK(KCIOIO))
 *
       LSIRES = MXINKA**4
+CSKworks      LCJRES = MXINKA**4
+CSKworks      LCJRES = 2 * LCJRES_SAVE
+      LCJRES = LCJRES_SAVE
 *
 *     proper allocation of these resolution matrices:
 *     sigma-part
       call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
 *     c-part
+CSK      write(LUWRT,*)'LCJRES',LCJRES,MXINKA**4,2 * LCJRES_SAVE
       call memmar(KCJRES,LCJRES,'ADDL  ',2,'KCJRES')
 *
 *     arrays for storing NEL consecutive annihilations/creations
@@ -4047,7 +4051,7 @@ CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
 CSK     & '  Current available free memory in double words:',LFREEMEMACT
               
 *
-      CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KVEC3),
+      CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
      &     IASTP,IBSTP,IACTP,IBCTP,MXINKA,WORK(KINSCR),
@@ -4082,7 +4086,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SIGDEN_REL4(NSBLOCK,ISBLOCK,CB,SB,C2,
+      SUBROUTINE SIGDEN_REL4(NSBLOCK,ISBLOCK,CB,SB,
      &           NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
      &           IASTP,IBSTP,IACTP,IBCTP,MAXK,
      &           XINT,
@@ -4179,7 +4183,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
       INTEGER NSSOA_C(NSMST,*),NSSOB_C(NSMST,*)
       dimension SIGN_NHX(NSPOBEX_TP)
 *.Scratch
-      DIMENSION SB(*),CB(*),C2(*)
+      DIMENSION SB(*),CB(*)
       DIMENSION XINT(*)
       DIMENSION I1(*),I2(*),I3(*),I4(*)
       DIMENSION XI1S(*),XI2S(*),XI3S(*)

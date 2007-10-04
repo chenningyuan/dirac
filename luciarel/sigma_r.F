@@ -433,6 +433,12 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *. Input
 #include "implicit.inc"
 #include "ipoist8.inc"
+#if defined(VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif      
+#include "lucipar_rel.inc"
       INTEGER    IKJA(NTA*NKA), IKJB(NTB,NKB)             
       DIMENSION  XKJA(NTA*NKA), XKJB(NTB,NKB)             
 *. Input/Output 
@@ -458,6 +464,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
             IF(JA.NE.0) THEN
                 JAJB = JAJB0 + JA
                 SIGN = XKJA(ITAKA)*SIGNB
+CSK                WRITE(LUWRT,*)'KAKBITAB, JAJB',KAKBITAB, JAJB
                 CKK(KAKBITAB) = SIGN*C(JAJB)
             ELSE 
                CKK(KAKBITAB) = 0.0D0
