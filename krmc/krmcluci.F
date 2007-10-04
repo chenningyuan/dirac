@@ -93,6 +93,8 @@ C
 #include "../luciarel/machine.inc"
 #include "../luciarel/cands.inc"
 #include "../luciarel/input.inc"
+*  nat. orb. occ. num.
+#include "../luciarel/noccn_inf.inc"
 *
 #include "krmcluci_inf.h"
 C
@@ -406,8 +408,23 @@ C
 C
       IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
 C
+C 101: are we running a nat. orb. occ. num. run?
 C
-C     That's it, folks !!
+      NOOCCN_DENS_RUN = .FALSE.
+      MOPT_MX = 0
+      CALL LUCI_TRAVA(CIRUN,'MOPTMX',MOPT_MX,DUMMY,I_COMM_W_ND)
+      IF( MOPT_MX .lt. 0 ) THEN
+        NOOCCN_DENS_RUN = .TRUE.
+      ELSE
+        NOOCCN_DENS_RUN = .FALSE.
+      END IF
+C
+C 102: which state to go for nat. orb. occ. num.?
+C
+      IDENSI_STATE = 0
+      CALL LUCI_TRAVA(CIRUN,'DENS_S',IDENSI_STATE,DUMMY,I_COMM_W_ND)
+C
+C     That's it, dude !!
 C
 C     ... except we are running a parallel calculation
 #if defined (VAR_MPI)
@@ -1413,6 +1430,46 @@ CSK#endif
 CSK        IVAR(1) = IDOPARIO
 CSK        GOTO 100
 CSK      END IF
+C
+C     Nat. orb. occ. num. run
+C
+      IF (CTLSTR .eq. 'MOPTMX') THEN
+C
+        IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
+C
+#if defined (VAR_MPI) 
+         IF( I_COMM_W_ND .eq. 1 )
+     &     CALL MPI_BCAST(NATOLCR,1,MPI_LOGICAL,MASTER,
+     &                    MPI_COMM_WORLD,IERR)
+#endif
+           IF( NATOLCR) THEN
+             IVAR(1) = - 1
+           ELSE
+             IVAR(1) =   1
+           END IF
+           GOTO 100
+        ELSE
+          GOTO 100
+        END IF
+      END IF
+C
+C     Nat. orb. occ. num. state
+C
+      IF (CTLSTR .eq. 'DENS_S') THEN
+C
+        IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
+C
+#if defined (VAR_MPI) 
+         IF( I_COMM_W_ND .eq. 1 )
+     &     CALL MPI_BCAST(IDENSLR_STATE,1,my_MPI_INTEGER,MASTER,
+     &                    MPI_COMM_WORLD,IERR)
+#endif
+           IVAR(1) = IDENSLR_STATE
+           GOTO 100
+        ELSE
+          GOTO 100
+        END IF
+      END IF
 C
       WRITE(LUPRI,'(1X,2A)')
      &   '*** ERROR in LUCI_TRAVA *** Illegal keyword : ',CTLSTR
@@ -2461,6 +2518,9 @@ C
 C     CIRUN = 'DENS1 ' : only one-particle density matrix
 C     CIRUN = 'DENS2 ' : complete          density matrix
 C
+C     MOPT_MXMACRO < 0 : calculation of complete density matrix for 
+C                        final root IDENSLR_STATE (dcbopt.h)
+C
 C     CREFL            : Left CI vector
 C     CREFR            : Right CI vector
 C       general also for transition densities
@@ -2473,6 +2533,10 @@ C                     Only one common call
 C                     to KRMC_LUCI since
 C                     RHO1,RHO2 are always
 C                     allocated.           - Jun 29 2007    S. Knecht
+C                     implementation of 
+C                     multi-root
+C                     natural orbital 
+C                     occupation numbers   - Sep 28 2007    S. Knecht
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2521,16 +2585,25 @@ C     Initialize density matrices to zero
         CALL DZERO(RHO2,L2)
       end if
 C
-C     Write current CI vector(s) to file
-      IO_DENS_IN = 1
-      IF (IO_DENS_IN.EQ.1) THEN
-        CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
-     &                        CREFR,NZCONF*MZ,
-     &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,IRIQ,
-     &                  LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-        CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
+C
+      IF( NATOLCR ) THEN
+C       
+C       CI vector resides on LUCVECT_REL(.0)
+C       --> vector copy in GASCI_REL
+C
+      ELSE
+C
+C       Write current CI vector(s) to file
+        IO_DENS_IN = 1
+        IF (IO_DENS_IN.EQ.1) THEN
+          CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
+          CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
+     &                          CREFR,NZCONF*MZ,
+     &                    DUMMY,1,DUMMY,1,
+     &                    WORK(KRSCR),IDUMMY,2,IRIQ,
+     &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
+          CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
+        END IF
       END IF
 C
 C     Density run of LUCIAREL only
@@ -2607,7 +2680,9 @@ C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
-      IF (NCIROOT.EQ.1) THEN
+C      WRITE(6,*) 'NCIROOT and MOPT_MXMACRO',NCIROOT,MOPT_MXMACRO
+C
+      IF ( NCIROOT.EQ.1 .AND. MOPT_MXMACRO .gt. 0) THEN
         IO_ANAL_IN = 1
         IF (IO_ANAL_IN.EQ.1) THEN
           REWIND LUC
@@ -2779,7 +2854,8 @@ C***********************************************************************
       dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
       dimension ISCR(*)
 *
-      NTESTL = 0
+      NTESTL = 00
+CSK      IPRNT = 000
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.5) then
@@ -2946,6 +3022,7 @@ C
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
+#include "../luciarel/noccn_inf.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
@@ -3094,9 +3171,6 @@ C
         L2 = (2*NASHT)**4 * MZ
         LF2_ZERO = (2*NASHT)**4 * MZ
 C
-        CALL MEMGET('REAL',KRHO2,L2,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KRHO2),L2)
-C
 CSK        END IF
 C
       END IF
@@ -3104,6 +3178,17 @@ C
 C     Transfer data to LUCIAREL common blocks.
 C
       CALL LUCI_TRACOM(CIRUN,1)
+C
+C     attention to nat. orb. occ. num. calculation
+C
+      IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN
+       IF( .NOT. NOOCCN_DENS_RUN ) THEN
+          CALL MEMGET('REAL',KRHO2,L2,WORK,KFREE,LFREE)
+          CALL DZERO(WORK(KRHO2),L2)
+       ELSE
+          CALL MEMGET('REAL',KRHO2, 0,WORK,KFREE,LFREE)
+       END IF
+      END IF
 C
 C     Setup routine for running LUCIAREL
 C

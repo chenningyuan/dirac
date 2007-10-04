@@ -158,7 +158,15 @@ C
          END DO
       END DO
 C
-      IF ( IPRINT .GE. 1 ) THEN
+      IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
+         IF( NATOLCR )THEN
+          WRITE(LUPRI,*) ' '
+          WRITE(LUPRI,'(12X,A)') ' =================================== '
+          WRITE(LUPRI,'(12X,A,I4)') 
+     &                      '            CI STATE ==',IDENSLR_STATE
+          WRITE(LUPRI,'(12X,A)') ' =================================== '
+          WRITE(LUPRI,*) ' '
+         END IF
          WRITE(LUPRI,'(//A/A)')
      &        ' (RGETNO) Occupancies of natural orbitals',
      &        ' ----------------------------------------'
@@ -174,6 +182,7 @@ C
             END IF
          END DO
       END IF
+      IPRINT = 0
 C
  9001 FORMAT(/' Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/' Symmetry',I3,//,(5F14.9))

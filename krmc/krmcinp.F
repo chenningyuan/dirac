@@ -825,7 +825,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 18)
+      PARAMETER (NTABLE = 19)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -838,7 +838,7 @@ C
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
-     &            '.KTRLVL','.PARINT','.MEMFAC'/
+     &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -871,6 +871,7 @@ C
       NATONL    = .FALSE.
       FOCKON    = .FALSE.
       COMPROT   = .FALSE.
+      NATOLCR   = .FALSE.
       COMPFAC   = 0.01D00
 C
 C
@@ -891,7 +892,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18), I
+     &                     11,12,13,14,15,16,17,18,19), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1017,6 +1018,11 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
      &                    'Illegal memory multiplier')
                   END IF
                   GO TO 100
+   19          CONTINUE
+C&&& .NOOCCN: calculate natural orbitals occupation numbers with
+C             LUCIAREL
+               NATOLCR = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1133,6 +1139,9 @@ C
      &     ' * Integrals also for slaves assumed to be in place'
       WRITE(LUPRI,'(A)')
      &     '   No integral broadcast from MASTER to slaves.'
+      END IF
+      IF( NATOLCR )THEN
+        WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
       END IF
 C
   400 RETURN

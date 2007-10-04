@@ -157,7 +157,7 @@ C     ***************************************************
 C
 C
 C hjaaj + sk 04-jul-07: new memory allocation scheme when calling 
-C                       KR-MCSCF with CIONLY       .eq. 1 .or. 
+C                       KR-MCSCF with .CIONLY .or. 
 C                                     MOPT_MXMACRO .lt. 0
 C
       CALL MEMGET('REAL',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
@@ -1123,7 +1123,7 @@ C           TODO FIXME: check trace of PV
 C
          END IF
 C     END IF
-CSK      IPROPT = 5
+      IPROPT = 0
       IF ( IPROPT .GE. 5 ) THEN
          IF (CALCDV) THEN
             WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
@@ -1134,7 +1134,7 @@ CSK      IPROPT = 5
             CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
          END IF
       END IF
-CSK      IPROPT = 0
+      IPROPT = 0
 C
       CALL RTKTIME(.FALSE.,8)
       CALL QEXIT('RMAKDM')
@@ -2742,7 +2742,7 @@ C              check for existing integral file.
 C
             IF (KTRLVL.EQ.5) GOTO 2100
 C
-	    CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+            CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
@@ -2898,18 +2898,58 @@ C
 C
       WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
-      IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
+C     General allocation for NO generation
+C
+      IDENSLR_STATE = 0
+      IPRNO = 3*IPROPT
+      IF( (OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR) .OR. 
+     &     OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+      END IF
+C
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
 C
 CTF   Natural orbital generation currently works only
 CTF   for 1 vector with LUCIAREL. FIXME.
 C
-         IPRNO = 3*IPROPT
-         CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+         WRITE(LUPRI,'(/A)') 
+     &         ' **********************************************'
+         WRITE(LUPRI,'(/A)') 
+     &         ' **********************************************'
+         WRITE(LUPRI,'(/A)') 
+     &         ' ***** Natural orbital occupation numbers *****'
+         WRITE(LUPRI,'(/A)') 
+     &         ' **********************************************'
+         WRITE(LUPRI,'(/A)') 
+     &         ' **********************************************'
+C
+C
+         DO ICNON = 1, NCIROOT
+C
+C         erase old occupation numbers
+C
+          CALL DZERO(WORK(KOCCNO),NORBT)
+          CALL DZERO(WORK(KUNO),N2ASHXQ)
+C
+          IDENSLR_STATE = ICNON
+C
+C         NOTE: IF MOPT_MXMACRO < 0: CREF is not allocated!
+C               requires appropriate treatment in LUCI_DENS ...
+C
+          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+C
+         END DO
+C
+C
+      ELSE IF( OPT_CIPROGRAM .EQ. 'GOSCI' )THEN
+C
          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
-         CALL MEMREL('RCIST.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
+C
+      CALL MEMREL('RCIST.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL RTKTIME(.FALSE.,2)
       CALL QEXIT('RCIST')
