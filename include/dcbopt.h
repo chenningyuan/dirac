@@ -37,6 +37,8 @@
 !                 (19) Tight step contol for ground state also
 !                 (20) Skip extra termination tests
 !
+!     IDENSLR_STATE  - natural orbital occupation numbers for state xxx
+!
 !     Parameters for MCTYPE:
 !
       INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
@@ -51,7 +53,8 @@
      &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
-     &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC
+     &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &        IDENSLR_STATE
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -61,7 +64,8 @@
      &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
-     &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC
+     &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &                IDENSLR_STATE
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
@@ -81,10 +85,10 @@
       LOGICAL FLAG(NOPTFLAGS)
       LOGICAL OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX
       LOGICAL OPT_NOCI, OPT_UCIBOS, OPT_MKCNST
-      LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT
+      LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT, NATOLCR
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
      &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
-     &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT
+     &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP
