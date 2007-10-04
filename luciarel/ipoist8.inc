@@ -48,7 +48,8 @@
 *     these one are needed for calculating dot- and vector products 
 *     batchwise
      &KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,
-     &KRCCTOS,KSCALLOC,KSCALLOC2,KSCALLOC3,KSCRRED,KSCRRED2
+     &KRCCTOS,KSCALLOC,KSCALLOC2,KSCALLOC3,KSCRRED,KSCRRED2,
+     &KMAX_DENS_BLK
 #endif
 *
 * Some additional computed ones:

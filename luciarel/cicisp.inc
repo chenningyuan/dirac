@@ -8,6 +8,6 @@
      &              ISMOST(MXPCSM,MXPCSM),MXSB,MXSOOB,
      &              NBLKIC(MXPCSM,MXPICI),LCOLIC(MXPCSM,MXPICI),
      &              IR04SPC(2,MXPICI),MXNTTS,LCJRES,MXADKBLK,
-     &              ISYM_KRMC
+     &              ISYM_KRMC,LCJRES_SAVE
 
       
