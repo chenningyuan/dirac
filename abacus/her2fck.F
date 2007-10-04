@@ -547,6 +547,7 @@ C...............Direct contributions
      &        'ERROR in INTFC1: specified IFCTYP not implemented.')
           ENDIF
         ELSE IF (IX.EQ.0) THEN
+          DIRFAC = D1
           EXCFAC = DMP5*HFXFAC
 C
 C         General singlet case - no permutational symmetry
