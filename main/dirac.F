@@ -721,10 +721,16 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
+#ifdef MOD_KRMC
 C
 C        start KRMC-LUCIAREL calculation.
 C
          CALL LUCINOD_REL(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+#endif
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -813,10 +819,16 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
+#ifdef MOD_KRMC
 C
 C        start KRMC-LUCIAREL calculation.
 C
          CALL LUCINOD_REL(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+#endif
       ELSE
 C
 C        Unknown task. Abort execution.
