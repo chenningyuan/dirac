@@ -44,6 +44,9 @@
 #                * it is a good idea to play with parameters to check
 #                  convergence and numerical stability
 #
+# integration grid and optimization algorithm are extremely primitive
+# but they do the job ...
+#
 #-------------------------------------------------------------------------------
 
 import sys, string, math, Numeric, Ngl
