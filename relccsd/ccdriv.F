@@ -187,7 +187,7 @@ C
 CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT11,MAXIT00
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
@@ -328,6 +328,7 @@ CMI   ...provide with default values
       MAXIT02=-1
       MAXIT01=-1
       MAXIT00=-1
+      MAXIT10=-1
       MAXIT11=-1
       MAXIT20=-1
 CMI   ... read input namelist
@@ -351,6 +352,7 @@ CMI     ...default maximum number iterations per sector
 CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
       IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
       IF (MAXIT01.NE.-1) MAXIT_SECT(2) = MAXIT01
+      IF (MAXIT10.NE.-1) MAXIT_SECT(3) = MAXIT10
       IF (MAXIT00.NE.-1) MAXIT_SECT(1) = MAXIT00
       IF (MAXIT11.NE.-1) MAXIT_SECT(4) = MAXIT11
       IF (MAXIT20.NE.-1) MAXIT_SECT(6) = MAXIT20
@@ -431,10 +433,10 @@ C     Shifts for particles should be negative
       SHIFT_IH(1,1) = -DABS(SHIFTP11)
       SHIFT_IH(2,1) = -DABS(SHIFTP12)
       SHIFT_IH(2,5) = -DABS(SHIFTP2)
-C     Shifts for holes be positive
-      SHIFT_IH(1,2) =  DABS(SHIFTH11)
-      SHIFT_IH(2,2) =  DABS(SHIFTH12)
-      SHIFT_IH(2,6) =  DABS(SHIFTH2)
+CEE     Shifts for holes must be negative (not positive)
+      SHIFT_IH(1,2) =  -DABS(SHIFTH11)
+      SHIFT_IH(2,2) =  -DABS(SHIFTH12)
+      SHIFT_IH(2,6) =  -DABS(SHIFTH2)
 C     Shifts for hole-particle excitations may be either negative or positive
       SHIFT_IH(2,4) =  SHIFTHP
 C
