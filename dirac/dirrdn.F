@@ -3693,7 +3693,7 @@ Cdirac#include "functionals.h"
 #include "cbieri.h"
 #endif
 C
-      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC
+      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -3718,6 +3718,7 @@ C
 #include "ibtfun.h"
 C
       GAUNT = .FALSE.
+      GAUNT_SAVE = GAUNT
       IOTC = .FALSE.
       SYMSTP = .FALSE.
       INPERR = 0
@@ -4212,7 +4213,8 @@ C&&& XXXX
       END IF
   300 CONTINUE
 
-
+CMI   ... needed for output
+      GAUNT_SAVE = GAUNT
 C
 C    Remove inconsistencies
 C     =====================
@@ -4253,9 +4255,10 @@ CMI     Remove inconsistencies for the TWOCOMP option
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)')
      &  'You cannot specify both TWOCOMP and other otions '//
-     &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ.OR.GAUNT)!'
+     &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ)!'
         CALL QUIT(
-     &  'Conflicting options : TWOCOMP and others (see code) !')
+     &  'Conflicting options : TWOCOMP and others'//
+     &  ' (see the code here) !')
       ENDIF
 C
 C     Remove inconsistencies for the BSS option
@@ -4319,11 +4322,14 @@ CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
 C          write(lupri,*) '.IOTC for .SPINFR'
          ENDIF
          IF (GAUNT) THEN
-CMI        ... AMFI SSO+SOO terms ...
+CMI        ... AMFI SSO+SOO terms
+CMI        ... we have to switch off this term as we are in the 2c framework
+CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3999
          ENDIF
          IF (ONESYS) THEN
+CMI        ... no AMFI contribution
            IBSS = 999
          ENDIF
         ENDIF
@@ -4399,7 +4405,8 @@ C
      &     '        Chem. Phys. Lett. 251, 365 (1996)',
      &     '   Adding :',
      &     '     Mean-field spin-same orbit'
-          IF (GAUNT) THEN
+CMI       IF (GAUNT) THEN
+          IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
      &     '     Mean-field spin-other orbit'
           ENDIF
@@ -4828,6 +4835,8 @@ C         Operator must be symmetric under time reversal
            ENDIF
           ENDIF
         ENDDO
+CMI  ... treat the INPERR as in paminp.F - proper input is required
+        IF (INPERR.GT.0) CALL QUIT('Operator input error in *HAMINP')
       ENDIF
       IF(ONESYS) THEN
         WRITE(LUPRI,'(3X,A)') '- Two-electron part ignored '//
