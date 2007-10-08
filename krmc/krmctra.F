@@ -121,6 +121,9 @@ C     USENOROT controls whether to use NOROT or not.
 C
 C     Written by J. Thyssen - Wed Mar 14 15:03:26 "MET 2001
 C     Last revision :
+C                    S. Knecht - Mon Oct 8 2007
+C                  - test for empty SZTRA array to avoid errorneous 
+C                    4-index transformation
 C
 C***********************************************************************
 #include "implicit.h"
@@ -128,10 +131,16 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dgroup.h"
 C
       CHARACTER*(*) SZTRA(2,4)
+      CHARACTER*4 TESTSTRING
       LOGICAL USENOROT
+      INTEGER ISZERO, ISMXZERO, IZERO
       DIMENSION NOROT(*)
+C
+      TESTSTRING = '    '
+      IZERO = 0
 C
 C     ITRLVL = 0: (uu|uu) transformation
 C     ITRLVL = 1: (gu|uu) transformation
@@ -165,6 +174,44 @@ C            so use 3. order if ITRLVL .eq. 2
          ELSE
             CALL INISZ1('GGGG',SZTRA,USENOROT,NOROT)
          END IF
+      END IF
+C
+C     check whether we are dealing with an empty SZTRA 
+C     character string array
+C
+      ISZERO = 0
+      ISMXZERO = 0
+      DO I = 1, 4
+         DO J = 1,NFSYM
+           ISMXZERO = ISMXZERO + 1
+         END DO
+      END DO
+C
+C     check string
+C
+      DO I = 1, 4
+         DO J = 1,NFSYM
+           IF( SZTRA(J,I) .eq. TESTSTRING ) ISZERO = ISZERO + 1
+         END DO
+      END DO
+C
+      IF( ISZERO .eq. ISMXZERO )THEN
+        WRITE(LUPRI,*) ' Empty orbital string detected !!!'
+        WRITE(LUPRI,*) ' 4-index transformation will be erroneous.'
+        WRITE(LUPRI,*) ' Check parameter MAXORB (mx2orb.h) '//
+     &                   'and try to increase.'
+        WRITE(LUPRI,*) ' Going to quit.'
+        CALL QUIT('*** ERROR in INISZT *** ' //
+     &        'Empty string array SZTRA detected' )
+      ELSE IF( ISZERO .lt. ISMXZERO .AND. ISZERO .gt. IZERO)THEN
+        WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
+        WRITE(LUPRI,*) ' partial empty orbital string detected!'
+        WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
+        WRITE(LUPRI,*) ' 4-index could be erroneous.'
+      ELSE IF( ISZERO .eq. IZERO )THEN
+C
+C       WRITE(LUPRI,*) ' succesful test'
+C    
       END IF
 C
       RETURN
