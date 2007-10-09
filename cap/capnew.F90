@@ -33,11 +33,13 @@
     integer, public :: napg = 0
 
    ! ... simulate R_ms(NUBF,3)
-    type(Array2Dim) :: dir_Rms, dir_ang_pow
+   ! type(Array2Dim) :: dir_Rms, dir_ang_pow
+    type(Array2Dim), save :: dir_Rms, dir_ang_pow
 
 ! ... simulate ang_pow(NUBF,3) ...
 
-    type(Vect) :: dir_basis_n, dir_basis_ord, dir_ord_expon, dir_ord_coe
+    !type(Vect) :: dir_basis_n, dir_basis_ord, dir_ord_expon, dir_ord_coe
+    type(Vect), save :: dir_basis_n, dir_basis_ord, dir_ord_expon, dir_ord_coe
 
   contains
 
@@ -264,7 +266,8 @@ call QENTER('get_napg')
            ' exp:',EXPA,'  normalized contr.coeff:',CONTA
 
            ! that's it !!!
-           IF (CONTA <> 0.0D0)  THEN
+           !IF (CONTA <> 0.0D0)  THEN
+           IF (CONTA .ne. 0.0D0)  THEN
              napg = napg + KHKTA
            ENDIF
 
