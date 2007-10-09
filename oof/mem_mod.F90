@@ -9,9 +9,12 @@ integer, private :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory hand
 ! print level
 integer, private :: iprmem  = 0
 
-! pointer to the working array; public status needed !
+! pointer to the working array; public status is needed !
 real (kind=8),  pointer :: PW(:) 
 !real (kind=8), private,  pointer :: PW(:) ! points to the big WORK array
+
+! logical variable on if memory is sticked or not
+logical (kind=1), private :: is_mem_sticked = .false.
 
   contains
 
@@ -156,6 +159,7 @@ else
   endif
 endif
 PW => WORK ! PW points now to the big WORK array ... 
+is_mem_sticked = .true. ! update logical variable
 LWORK = LWORK_IN ! actualize module variable
 if (size(PW) /= LWORK_IN) then
  if (iprmem > 10) then
@@ -198,6 +202,7 @@ else
   endif
 endif
 nullify(PW);
+is_mem_sticked = .false. ! update logical variable
 !  ... 
 if ( iprmem > print_default ) then
   write(LUPRI,'(A)') 'PW pointer was deassociated!'
@@ -206,9 +211,21 @@ CALL QEXIT('UnStickMemory')
 END SUBROUTINE UnStickMemory
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION IsMemorySticked() result(is_sticked)
+!------------------------------------------------------------------------
+! returns the (private) 'is_mem_sticked' value
+!------------------------------------------------------------------------
+#include "priunit.h"
+logical(kind=1) :: is_sticked
+CALL QENTER('IsMemorySticked')
+is_sticked = is_mem_sticked
+CALL QEXIT('IsMemorySticked')
+END FUNCTION IsMemorySticked
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION get_kfree() result(kfree_out)
 !------------------------------------------------------------------------
-! return the (private) KFREE value
+! returns the (private) KFREE value
 !------------------------------------------------------------------------
 #include "priunit.h"
 !integer :: kfree_out
@@ -225,7 +242,7 @@ END FUNCTION get_kfree
 FUNCTION get_lfree() result(lfree_out)
 !------------------------------------------------------------------------
 !
-!    return the (protected) LFREE value
+!    returns the (protected) LFREE value
 !
 !------------------------------------------------------------------------
 #include "priunit.h"

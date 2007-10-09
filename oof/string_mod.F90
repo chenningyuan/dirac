@@ -9,6 +9,7 @@
    character*1, dimension (:), pointer :: strp  => NULL()
    logical :: is_alloc = .false. ! this default does not work for older F90 compilars !!
    integer (kind=4) :: str_length = 0
+  integer :: iprint_string = 0  ! control print-out variable
  end type string
 
  contains 
@@ -146,18 +147,18 @@ function get_string(self) result(str_out)
 end function get_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine set_no_string(self)
+subroutine set_no_string(self)
 !------------------------------------------------------------------------
 !
-!     sets logical flag indicated allocated string to .FALSE.
+!    sets logical flag indicated allocated string to .FALSE.
 !
 !------------------------------------------------------------------------
-   type(string), dimension(:), intent(inout) :: self
-   call QENTER('mystring/set_no_string')
+type(string), dimension(:), intent(inout) :: self
+call QENTER('mystring/set_no_string')
      self(1)%is_alloc = .FALSE.
      self(1)%str_length = 0
-   call QEXIT('mystring/set_no_string')
- end subroutine set_no_string
+call QEXIT('mystring/set_no_string')
+end subroutine set_no_string
 
- end module mystring
+end module mystring
 

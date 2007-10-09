@@ -1,10 +1,10 @@
 include ../Makefile.config
 
-F77_OBJS = tools77.o
+F77_OBJS =
 
-F90_OBJS = tests.o mem_mod.o qmtx_mod.o string_mod.o vect_mod.o oper_mod.o
+F90_OBJS = tests.o mem_mod.o qmtx_mod.o string_mod.o vect_mod.o oper_mod.o genpoint_mod.o
 
-F90_MODS = qmatrixes.mod  memory.mod  mystring.mod  vectors.mod  operators.mod
+F90_MODS = qmatrixes.mod  memory.mod  mystring.mod  vectors.mod  operators.mod generalpointers.mod
 
 F_CPPS = $(F77_OBJS:.o=.i)
 

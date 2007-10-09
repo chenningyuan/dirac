@@ -4,6 +4,7 @@
   SUBROUTINE TEST_OOF(work,llwork)
  ! SUBROUTINE TEST_OOF
 
+   use Memory
    use QMatrixes
 #include "priunit.h"
 #include "dcbbas.h"

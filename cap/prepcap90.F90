@@ -1,74 +1,3 @@
-!=======================================================================
-!
-! file contains pure Fortran90 classes related to CAP project
-!
-!=======================================================================
-
-  module cap
-
-! private ! must be public that subroutines can be used in F77 parts !
-!#include "dcbcap.h"
-
-!  logical, private :: cap_ovlp
-!   integer(kind=4), private :: iprint
-!   integer(kind=4), private :: iprcap
-!  type cap_int_param
-!  end type cap_int_param
-  contains
-
-  subroutine cap_init
-use QMatrixes
-
-#include "implicit.h"
-#include "priunit.h"
-
-!#include "dcbcap.h"
-
-! iprcap = IPRCAP
-! cap_ovlp = CAP_OVLP
-
-  if (IPRCAP >= 2) then
-   write(LUPRI,*) 'in init routine !'
-   write(LUPRI,*) 'module iprcap =',IPRCAP
-   write(LUPRI,*) 'module cap_ovlp =',CAPOVLP
-!   write(LUPRI,*) 'CPRIMU ',CPRIMU
-!   write(LUPRI,*) 'ALPHA: ',ALPHA
-!   write(LUPRI,*) 'NUC: ',NUC
-
-  endif
-
-! call quit('in cap_init...')
-
-   end subroutine cap_init
-
- end module cap
-
-subroutine test_files
-use QMatrixes
-
-#include "implicit.h"
-#include "priunit.h"
-
-#include "mxcent.h"
-#include "maxorb.h"
-
-#include "aovec.h"
-#include "maxaqn.h"
-#include "primit.h"
-!C#include "cbirea.h"
-#include "chrxyz.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "dummy.h"
-#include "infpar.h"
-
-!  write(LUPRI,*) 'CPRIMU ',CPRIMU
-  write(LUPRI,*) 'ALPHA: ',ALPHA
-!   write(LUPRI,*) 'NUC: ',NUC
-
-  call quit('end in test files...')
-end subroutine test_files
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine CAP_DIPVEL_COMP
 !----------------------------------------------------------------------------
@@ -215,6 +144,7 @@ subroutine GetUnpckOvlpMtx(smat)
 !
 !
 !===========================================================================
+   use Memory
    use QMatrixes
 #include "implicit.h"
 #include "priunit.h"
@@ -279,18 +209,21 @@ DIMENSION WORK(LWORK)
 !  ... control test... 
  !   call test_oof_basis_fu(WORK,LWORK)
 
- call set_vect_iprint(IPRCAP)
+ !call set_vect_iprint(IPRCAP)
+ call set_vect_iprint(12)
 
  write(LUPRI,*) 'before stick into memory...LWORK=',LWORK
 
 ! ... stick the memory  ... 
  call StickMemory(WORK,LWORK)
 
+ ! ... new testing procedure ...
   if (CAPNEW) call CAP_new_stuff
 
-
-     icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
-     iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obatining factors') 
+   icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
+   write(LUPRI,*) 'CAP_STUFF: icabfo allocated !'
+   iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obtaining proper factors') 
+   write(LUPRI,*) 'CAP_STUFF: iobf1_2 allocated !'
 
 !    CALL CAP_DIRAC_AO(icabfo,iobf1_2)  ! fill vectors
 
@@ -328,7 +261,9 @@ DIMENSION WORK(LWORK)
         ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
          CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+         write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 0.1'
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+         write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 1'
           
          !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
@@ -353,6 +288,7 @@ DIMENSION WORK(LWORK)
         !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
         CALL DOSAJEEV(PW(get_kfree()),ILFREE)
         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
+        write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 2'
         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
@@ -387,6 +323,8 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
 
   CALL QENTER('CAP_DIRAC_AO')
 
+ write(LUPRI,*) 'CAP_DIRAC_AO: before calling mymemget!'
+
  call mymemget('INTE',KIOBF1,3*NBASIS)
  call mymemget('INTE',KIOBF2,3*NBASIS)
  call mymemget('INTE',KILC1,NUCDEP)
@@ -405,6 +343,8 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
  call mymemrel('CAP_DIRAC_AO',KIOBF2,KIOBF2)
  call mymemrel('CAP_DIRAC_AO',KIOBF1,KIOBF1)
 
+ write(LUPRI,*) 'CAP_DIRAC_AO: after mymemrel !'
+
  if (get_vect_iprint() >= 4) then
 !   print out icapbfo and iobf1_2
    call print_vector(icapbfo); 
@@ -412,6 +352,7 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
  endif
 
   CALL QEXIT('CAP_DIRAC_AO')
+  write(LUPRI,*) 'CAP_DIRAC_AO: leaving ... '
 
 end subroutine CAP_DIRAC_AO
 

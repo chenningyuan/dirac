@@ -178,7 +178,7 @@ C     integer *4 Shell_atom(200)
       
       integer *4 n_con_guass,nj,g_n,sh,n_c_g
 
-!   ... powers on x,y,z
+!   ... powers on x,y,z = up to "g" 
       integer *4 angu_pow_S(1,3),angu_pow_P(3,3)
       integer *4 angu_pow_D(6,3),angu_pow_F(10,3),angu_pow_G(15,3)
 
@@ -398,7 +398,7 @@ C          write(lupri,*)
               ord_expon(sh+(i-1)*n_con_guass)=expon
               ord_coe(sh+(i-1)*n_con_guass)=coe
               do ia_p=1,3
-                  ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
+                 ang_pow(sh+(i-1)*n_con_guass,ia_p)= angu_pow_d(i,ia_p)
               enddo
           enddo
         ENDDO
@@ -518,7 +518,7 @@ C ===================================================================
        n_b=g_n-1
        
        WRITE(LUPRI,'(/2X,A,I3,A,I3)')
-     & 'Total number of primitive guassians / total number of'//
+     & 'Total number of all primitive guassians / total number of'//
      & ' contracted basis functions=',sh,'/',n_b
        CALL FLSHFO(LUPRI)
 

@@ -8,7 +8,7 @@
 MODULE QMatrixes
 
 ! for allocation/deallocations
-use Memory  
+!use Memory  
 ! deta type for strings
 use mystring
 
@@ -43,6 +43,7 @@ private
  integer (kind=8/IRAT) :: n1,n2
 end type
 
+!
 ! universal structure for the quaternion matrix, either symmetry packed, symmetry unpacked
 ! or simple unsymmetric
 !
@@ -69,11 +70,17 @@ private
 ! short text attached to the matrix
   !character (len=30) :: qmtx_text 
   type(string), dimension(1) :: qmtx_text 
+! ... pointers
+  real(kind=8), dimension(:,:,:), pointer :: p_rA3D1 => NULL(), p_rA3D2 => NULL()
+  !integer,      dimension(:,:,:), pointer :: p_iA3D => NULL()
+  !logical,      dimension(:,:,:), pointer :: p_lA3D => NULL()
+
 end type QMtx
 
 ! common name for contructors
 interface MakeQMtx
-   module procedure MakeQMtxPck, MakeQMtxUnPck
+   module procedure MakeQMtxPck
+   module procedure MakeQMtxUnPck
 end interface 
 
 !interface assignment ( = )
@@ -386,6 +393,7 @@ SUBROUTINE QMtxInfo(qm)
 !  plus the matrix alone, if allocated
 !
 !=========================================================================
+use Memory
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(in) :: qm
@@ -403,7 +411,7 @@ if (is_string(qm%qmtx_text)) then
    !write(LUPRI,*) 'Attached text 1:',get_string(qm%qmtx_text)
   !  write(LUPRI,*) get_string(qm%qmtx_text)
    ! print *,get_string(qm%qmtx_text)
-   write(LUPRI,'(4x,a,$)') 'Attached text:'
+   write(LUPRI,'(4x,a,$)') 'Attached text to QMtx object:'
    call print_string(qm%qmtx_text)
 endif
 
@@ -417,15 +425,16 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
  ioff = qm%kstart
  do ifsym = 1, NFSYM
    write(LUPRI,*) 'fermion symmetry ',ifsym,'/',NFSYM,  &
-  'nrows,ncols,nz:',qm%nr(ifsym),qm%nc(ifsym),qm%nz
+  'nrows, ncols, nz:',qm%nr(ifsym),qm%nc(ifsym),qm%nz
    write(LUPRI,*) 'offset=',qm%ioff_pk
   if (qm%is_alloc) then
 ! ... print QMatrix
    CALL PRQMAT(PW(ioff),qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
                IPQTOQ(1,qm%irep),LUPRI)
   else
-    write(LUPRI,*) 'matrix is not allocated,no print out'
+    write(LUPRI,'(2x,a)') '....matrix is not allocated, no print out'
   endif
+  ! ... offset for the symmetry packed matrix - cycle over ifsym/NFSYM is needed !
   ioff = ioff + qm%ioff_pk
  enddo
 
@@ -437,7 +446,7 @@ else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
     nt = ( qm%nr(1) + qm%nr(2) )
     CALL PRQMAT(PW(qm%kstart),nt,nt,nt,nt,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
   else
-    write(LUPRI,*) 'no printing out - this matrix is not allocated'
+    write(LUPRI,'(2x,a)') 'no print out - this matrix is not allocated'
   endif
 
 else if (qm%simple_mtx) then
@@ -457,9 +466,11 @@ END SUBROUTINE QMtxInfo
 FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in, text) result(qm)
 !-------------------------------------------------------------------
 !
-!   basic constructor for symmetry packed quaternion matrix
+!   basic constructor for the symmetry packed quaternion matrix
 !
 !-------------------------------------------------------------------
+use Memory
+use GeneralPointers
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx) :: qm
@@ -485,9 +496,9 @@ else
 endif
 
 if (present(text)) then
-   call make_string(qm%qmtx_text, text)
+  call make_string(qm%qmtx_text, text)
 else
-   call set_no_string(qm%qmtx_text)
+  call set_no_string(qm%qmtx_text)
 endif
 
 qm%nr(1) = qm_pk_in%nr1
@@ -507,10 +518,13 @@ isize = qm%nr(1)*qm%nc(1)*qm%nz + qm%nr(2)*qm%nc(2)*qm%nz
 qm%array_size = isize
 
 ! allocate array for the matrix
-!CALL MEMGET('REAL',qm%kstart,isize,PW,KFREE,LFREE)
 CALL mymemget('REAL',qm%kstart,isize)
 qm%is_real  = .true.
 qm%is_alloc = .true. ! array is allocated
+
+qm%p_rA3D1 => NULL(); qm%p_rA3D2 => NULL()
+call AssignQmtxPointer(qm)
+! ...assign pointer
 
 !if (iprint_qmtx >=5 ) then
 ! call print_mem_param()
@@ -518,6 +532,63 @@ qm%is_alloc = .true. ! array is allocated
 
 CALL QEXIT('QMatrixes: MakeQMtxPck')
 END FUNCTION MakeQMtxPck
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine AssignQmtxPointer(qm)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+use Memory
+use GeneralPointers
+#include "priunit.h"
+#include "dgroup.h"
+type(QMtx),intent(inout) :: qm
+integer(kind=4) :: ifsym,nt
+integer (kind=8) :: ioff
+call QENTER('QMatrixes: AssignQmtxPointer')
+
+if (.not.qm%is_alloc) then
+  call QUIT('AssignQmtxPointer: matrix(array) NOT allocated !')
+endif
+
+if (qm%is_real) then
+
+  if (.not.qm%symm_packed.and..not.qm%simple_mtx) then
+
+    nt = ( qm%nr(1) + qm%nr(2) ) ! square matrix assumed !
+
+    call AssignQMtx3D_real(PW(qm%kstart), iprint_qmtx, nt,nt,qm%nz )
+    qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
+
+    if (.not.associated(qm%p_rA3D1)) then
+      call QUIT('AssignQMtxArrayPointer:  p_rA3D1 not associated !')
+    endif
+
+  else if (qm%symm_packed.and..not.qm%simple_mtx) then
+   ioff = qm%kstart ! offset
+   do ifsym = 1, NFSYM
+     call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym) , qm%nc(ifsym) , qm%nz )
+     if (ifsym == 1) then
+       qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
+     else if (ifsym == 2) then 
+       qm%p_rA3D2 => p3_real8;  p3_real8=> NULL()
+     else
+       call QUIT('AssignQMtxArrayPointer: ifsym out of range !')
+     endif
+     ioff = ioff + qm%ioff_pk
+   enddo
+  else
+    call QUIT('AssignQMtxArrayPointer: blind branch !')
+  endif 
+else
+  call QUIT('QMatrixes: AssignQmtxPointer - only real quaternion matrixes !')
+endif
+
+call QEXIT('QMatrixes: AssignQmtxPointer')
+
+end subroutine AssignQmtxPointer
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in, text) result(qm)
@@ -531,6 +602,7 @@ FUNCTION MakeQMtxUnPck(qm_upk_in, irp_in, nz_in, text) result(qm)
 !            text - optional text attached to the matrix
 !
 !---------------------------------------------------------------------
+use Memory
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx) :: qm
@@ -601,6 +673,7 @@ SUBROUTINE DeAllocQMtx(qm)
 !   Deallocate quaternion matrix; 
 !
 !-----------------------------------------------------------------------------
+use Memory
 #include "priunit.h"
 type(QMtx) :: qm
 call QENTER('QMatrixes: DeAllocQMtx')
@@ -621,6 +694,7 @@ function getdiff_qmtx(amat,bmat) result(diff)
 ! returns the average difference of two FULLY COMPATIBLE quatern.matrixes
 !
 !-------------------------------------------------------------------------
+use Memory
 type(QMtx), intent(in) :: amat,bmat
 real(kind=8) :: diff
 logical(kind=1) :: compatible
@@ -652,6 +726,7 @@ function getdiff_part_qmtx(amat,bmat) result(diff)
 ! returns the average difference of two quatern.matrixes
 !
 !-------------------------------------------------------------------------
+use Memory
 type(QMtx), intent(in) :: amat,bmat
 real(kind=8) :: diff
 logical(kind=1) :: compatible
@@ -689,6 +764,7 @@ subroutine substract_qmtx(amat,bmat,fac_a,fac_b)
 !  returns result in "amat"
 !
 !--------------------------------------------------------------------
+use Memory  
 type(QMtx), intent(inout) :: amat
 type(QMtx), intent(in) :: bmat
 real(kind=8),intent(in),optional :: fac_a,fac_b
@@ -747,6 +823,7 @@ subroutine substract_part_qmtx(amat,bmat,fac_a,fac_b)
 !  to set the size
 !
 !--------------------------------------------------------------------
+use Memory  
 type(QMtx), intent(inout) :: amat
 type(QMtx), intent(in) :: bmat
 real(kind=8),intent(in),optional :: fac_a,fac_b
@@ -829,3 +906,21 @@ call QEXIT('print_qmtx_attrib')
 end subroutine print_qmtx_attrib
 END MODULE QMatrixes
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine AssignQMtx3D_real(QMtx,iprint,n1,n2,nz)
+!---------------------------------------------------------------------
+!
+! Assign pointer to the 3-dim. array - quaternion matrix
+!
+!---------------------------------------------------------------------
+use GeneralPointers
+#include "priunit.h"
+integer(kind=4), intent(in) :: iprint,n1,n2,nz
+real(kind=8), target :: QMtx(n1,n2,nz)
+call QENTER('AssignQMtx3D_real')
+p3_real8 => QMtx
+if (iprint >= 10) then
+  write(LUPRI,*) 'AssignQMtx3Dreal: real 3dim pointer to the matrix assigned.'
+endif
+call QEXIT('AssignQMtx3_Dreal')
+end subroutine AssignQMtx3D_real

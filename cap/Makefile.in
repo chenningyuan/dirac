@@ -10,7 +10,7 @@ F77_OBJS = dircap.o prepcap.o
 
 F90_OBJS = prepcap90.o capnew.o
 
-F90_MODS = cap.mod
+F90_MODS = cap.mod 
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 

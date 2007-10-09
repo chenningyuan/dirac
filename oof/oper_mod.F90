@@ -80,6 +80,7 @@
 !
 !----------------------------------------------------------------
       use QMatrixes
+      use Memory
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"

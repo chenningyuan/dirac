@@ -10337,6 +10337,9 @@ C
 C    Written by Miro Ilias, January 2007, Tel Aviv
 C
 C***********************************************************************
+
+      !use cap
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -10379,6 +10382,9 @@ C      IF (KLAST.GT.LWORK) CALL STOPIT('BASOUT','CAPOUT',KLAST,LWORK)
        WRITE(LUPRI,'(2X,A)')
      & 'Preparing formatted file "CAPINT.inp" for the CAP module.'
       ENDIF
+ 
+       ! ... for cap module
+      !  napg = 0
 C!
 C!   Prepare another unique file with basis functions for Sajeev's code
 C!
@@ -10583,13 +10589,18 @@ C  /* Deck wribas */
       SUBROUTINE WRIBAS(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &     LUTMP2,LUTMP,ICENT,IPOSEXP,IPRINT)
-C*************************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    Called from CAPOUT
+C   Fill the CAPINT.inp file with input for CAP program
 C
-C    Written by Miro Ilias, Tel Aviv, January 2007
+C   Called from CAPOUT
 C
-C*************************************************************************
+C   Written by Miro Ilias, Tel Aviv, January 2007
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      !use cap
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -10611,6 +10622,8 @@ C     CHARACTER CHRSEG*10,DEG*2
       DIMENSION IPCON(KPRIM)
 
       DATA BLNK /'E','S','P','D','F','G','H','I'/
+
+      CALL QENTER('WRIBAS')
 
       IF (IPRINT.GE.3) THEN
          write(LUPRI,*) '*** In WRIBAS ***'
@@ -10664,6 +10677,9 @@ C         write(LUTMP2,*) 'TYPE:',BLNK(1+J)
  
             WRITE(LUTMP2,*) BLNK(1+J),' ',IBASCOUNT
 
+            !.... increment napg (of cap module)
+           ! napg = napg + IBASCOUNT
+
             IF (IPRINT.GE.3) THEN
              WRITE(LUPRI,*) BLNK(1+J),' ',IBASCOUNT
             ENDIF
@@ -10688,6 +10704,7 @@ C         write(LUTMP2,*) 'TYPE:',BLNK(1+J)
        ENDDO
       ENDDO
 
+      CALL QEXIT('WRIBAS')
       RETURN
       END
 
