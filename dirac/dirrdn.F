@@ -4396,7 +4396,7 @@ C
         IF (IBSS.GT.999) THEN
           WRITE(LUPRI,'(A)')
      &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
-     &     '   interaction provided by the AFMI code. ',
+     &     '   interaction provided by the AMFI code. ',
      &     '   References: ',
      &     '     1) B. Schimmelpfennig, program AMFI, ',
      &     '        Stockholm University, Sweden',
