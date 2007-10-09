@@ -323,7 +323,7 @@ end subroutine print_2Darray
 
       CALL QEXIT('PRINT_REAL_VECTOR')
       RETURN
-      END
+      END SUBROUTINE PRINT_REAL_VECTOR
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRINT_INT_VECTOR(N,IVEC)
@@ -344,7 +344,7 @@ end subroutine print_2Darray
       ENDDO
       CALL QEXIT('PRINT_INT_VECTOR')
       RETURN
-      END
+      END  SUBROUTINE PRINT_INT_VECTOR
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function MakeVector(char_type,isize_in,text) result(self)
