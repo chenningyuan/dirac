@@ -508,17 +508,24 @@ Call ZeroVector(self) ! automatically make it zero
  is_pointer = .false.
 
  if (associated(self%p_rA1D)) then
-  write(LUPRI,'(a)') 'Pointer of "Vect" type variable for "real*8" 1D array.'
+  if (iprint_vect >= 10 ) then
+    write(LUPRI,'(a)') 'MakeVector: pointer of "Vect" type variable is for "real*8" 1D array.'
+  endif
   is_pointer = .true.
  endif  
 
  if (associated(self%p_iA1D)) then
-  write(LUPRI,'(a)') 'Pointer of "Vect" type variable for "integer" 1D array.'
+  if (iprint_vect >= 10 ) then
+    write(LUPRI,'(a)') 'MakeVector: pointer of "Vect" type variable is for "integer" 1D array.'
+  endif
   is_pointer = .true.
  endif  
 
  if (associated(self%p_lA1D)) then
-  write(LUPRI,'(a)') 'Pointer of "Vect" type variable for "logical" 1D array.'
+  if (iprint_vect >= 10 ) then
+    write(LUPRI,'(a)') 'MakeVector: pointer of "Vect" type variable is for "logical" 1D array.'
+    call quit('MakeVector: logical vector not yet programmed !')
+  endif
   is_pointer = .true.
  endif  
 
