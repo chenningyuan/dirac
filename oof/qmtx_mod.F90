@@ -74,7 +74,6 @@ private
   real(kind=8), dimension(:,:,:), pointer :: p_rA3D1 => NULL(), p_rA3D2 => NULL()
   !integer,      dimension(:,:,:), pointer :: p_iA3D => NULL()
   !logical,      dimension(:,:,:), pointer :: p_lA3D => NULL()
-
 end type QMtx
 
 ! common name for contructors
@@ -235,7 +234,11 @@ subroutine set_iprqmtx(iprint)
 #include "priunit.h"
 integer (kind=8/IRAT), intent(in) :: iprint
 CALL QENTER('QMatrixes: set_iprqmt')
- iprint_qmtx = iprint
+iprint_qmtx = iprint
+if (iprint_qmtx >= 6) then
+  write(LUPRI,'(2x,a,i4)')   &  
+  'QMatrixes/set_iprqmt - print level "iprint_qmtx" set to',iprint_qmtx
+endif
 CALL QEXIT('QMatrixes: set_iprqmt')
 end subroutine set_iprqmtx
 
@@ -243,7 +246,7 @@ end subroutine set_iprqmtx
 function get_iprint_qmtx() result(iprint)
 !----------------------------------------------------------------
 !
-!        get the (protected) printing variable
+!           get the (protected) printing variable
 !
 !----------------------------------------------------------------
 !integer (kind=8/IRAT) :: iprint
@@ -381,7 +384,7 @@ SUBROUTINE set_qmtx_nz(qm,nz_in)
 type(QMtx),intent(inout) :: qm
 integer(kind=8/IRAT),intent(in) :: nz_in
 CALL QENTER('set_qmtx_nz')
-  qm%nz = nz_in
+   qm%nz = nz_in
 CALL QEXIT('set_qmtx_nz')
 END SUBROUTINE set_qmtx_nz
 
@@ -397,14 +400,14 @@ use Memory
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(in) :: qm
-integer(kind=4) :: ifsym,nt
+integer(kind=4) :: ifsym, ntr, ntc
 integer (kind=8) :: ioff
 !real (kind=8), pointer, dimension(:) :: my_work_p
 CALL QENTER('QMtxInfo')
 
 CALL HEADER('Output from QMtxInfo',-1)
 
-!call get_mem_pointer(my_work_p)
+write(LUPRI,'(2x,a,i3)') 'print out parameter, iprint_qmtx:',iprint_qmtx
 
 if (is_string(qm%qmtx_text)) then
    !write(LUPRI,'(4x,a,a)') 'Attached text 1:',get_string(qm%qmtx_text)
@@ -416,45 +419,69 @@ if (is_string(qm%qmtx_text)) then
 endif
 
 write(LUPRI,'(4x,a,i1,1x,a,i1)') 'IREP=',qm%irep,'NZ=',qm%nz
+call FLSHFO(LUPRI)
+
+!
+! ... print out only when the matrix is allocated
+!
+if (qm%is_alloc) then
+
 write(LUPRI,'(2x,a,i5,a,i5)') 'start position on the big array:',qm%kstart,   & 
     ' size of the allocated array:',qm%array_size
+call FLSHFO(LUPRI)
 
 if (.not.qm%simple_mtx.and.qm%symm_packed) then
- write(LUPRI,*) 'fermion symmetry packed matrix '
+ write(LUPRI,'(2x,a)') 'fermion symmetry packed matrix '
  !ioff = 1
  ioff = qm%kstart
  do ifsym = 1, NFSYM
    write(LUPRI,*) 'fermion symmetry ',ifsym,'/',NFSYM,  &
   'nrows, ncols, nz:',qm%nr(ifsym),qm%nc(ifsym),qm%nz
    write(LUPRI,*) 'offset=',qm%ioff_pk
-  if (qm%is_alloc) then
-! ... print QMatrix
-   CALL PRQMAT(PW(ioff),qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
-               IPQTOQ(1,qm%irep),LUPRI)
-  else
-    write(LUPRI,'(2x,a)') '....matrix is not allocated, no print out'
-  endif
+!  ... print QMatrix
+  ! CALL PRQMAT(PW(ioff),qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
+   if (ifsym == 1) then
+     if (.not.associated(qm%p_rA3D1)) then
+        call QUIT('QMtxInfo: qm%p_rA3D1 pointer is NOT associated !')
+     endif
+     CALL PRQMAT(qm%p_rA3D1,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
+                   IPQTOQ(1,qm%irep),LUPRI )
+   else if (ifsym == 2) then
+     if (.not.associated(qm%p_rA3D2)) then
+        call QUIT('QMtxInfo: qm%p_rA3D2 pointer is NOT associated !')
+     endif
+     CALL PRQMAT(qm%p_rA3D2,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
+                   IPQTOQ(1,qm%irep),LUPRI )
+   else
+     call QUIT('QMtxInfo: ifsym <> 1 or 2 !')
+   endif
   ! ... offset for the symmetry packed matrix - cycle over ifsym/NFSYM is needed !
   ioff = ioff + qm%ioff_pk
  enddo
 
 else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
 ! ... symmetry unpacked (full) quaternion matrix
-  write(LUPRI,*) 'full (symmetry unpacked) quaternion matrix '
-  if (qm%is_alloc) then
-! ... print TOTAL QMatrix
-    nt = ( qm%nr(1) + qm%nr(2) )
-    CALL PRQMAT(PW(qm%kstart),nt,nt,nt,nt,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
-  else
-    write(LUPRI,'(2x,a)') 'no print out - this matrix is not allocated'
-  endif
-
+   write(LUPRI,'(2X,A)') 'this is full (symmetry unpacked) quaternion matrix '
+   call FLSHFO(LUPRI)
+   if (.not.associated(qm%p_rA3D1)) then
+       call QUIT('QMtxInfo: qm%p_rA3D1 pointer for (symmetry unpacked)' &
+                //' quaternion matrix is NOT associated !')
+   endif
+   ! ... print TOTAL QMatrix
+   ntr = ( qm%nr(1) + qm%nr(2) )
+   ntc = ( qm%nc(1) + qm%nc(2) )
+   if (ntr .ne. ntc) call QUIT('QMtxInfo: no square matrix !')
+   !CALL PRQMAT(PW(qm%kstart),ntr,ntc,ntr,ntc,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
+   CALL PRQMAT(qm%p_rA3D1(1,1,1),ntr,ntc,ntr,ntc,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
 else if (qm%simple_mtx) then
 ! ... print out of a trivial quaternion matrix
-   write(LUPRI,*) 'triavial quaternion matrix'
-    call quit('QMtxInfo: needs to be implemented ')
+   write(LUPRI,*) 'trivial quaternion matrix'
+   call quit('QMtxInfo: trivial quaternion matrix needs to be implemented ')
 else
- call quit('QMtxInfo: blind "if" branch ')
+   call quit('QMtxInfo: blind "if" branch ')
+endif
+  write(LUPRI,'(2x,a)')  &
+  'no matrix print out - this matrix is not allocated'
 endif
 
  call FLSHFO(LUPRI)
@@ -470,7 +497,6 @@ FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in, text) result(qm)
 !
 !-------------------------------------------------------------------
 use Memory
-use GeneralPointers
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx) :: qm
@@ -505,6 +531,7 @@ qm%nr(1) = qm_pk_in%nr1
 qm%nc(1) = qm_pk_in%nc1
 qm%nr(2) = qm_pk_in%nr2
 qm%nc(2) = qm_pk_in%nc2
+
 if (NFSYM == 2) then
   qm%ioff_pk = qm%nr(1) * qm%nc(1) * qm%nz
 else 
@@ -522,9 +549,9 @@ CALL mymemget('REAL',qm%kstart,isize)
 qm%is_real  = .true.
 qm%is_alloc = .true. ! array is allocated
 
+! ... assign pointer
 qm%p_rA3D1 => NULL(); qm%p_rA3D2 => NULL()
 call AssignQmtxPointer(qm)
-! ...assign pointer
 
 !if (iprint_qmtx >=5 ) then
 ! call print_mem_param()
@@ -535,18 +562,18 @@ END FUNCTION MakeQMtxPck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AssignQmtxPointer(qm)
-!---------------------------------------------------------------------
+!----------------------------------------------------------------------
 !
+!            Assign pointers for quanternion matrix
 !
-!
-!---------------------------------------------------------------------
+!----------------------------------------------------------------------
 use Memory
 use GeneralPointers
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(inout) :: qm
-integer(kind=4) :: ifsym,nt
-integer (kind=8) :: ioff
+integer(kind=4) :: ifsym, ntr, ntc
+integer (kind=8) :: ioff ! assumed bigg number 
 call QENTER('QMatrixes: AssignQmtxPointer')
 
 if (.not.qm%is_alloc) then
@@ -557,25 +584,30 @@ if (qm%is_real) then
 
   if (.not.qm%symm_packed.and..not.qm%simple_mtx) then
 
-    nt = ( qm%nr(1) + qm%nr(2) ) ! square matrix assumed !
-
-    call AssignQMtx3D_real(PW(qm%kstart), iprint_qmtx, nt,nt,qm%nz )
+    ntr = ( qm%nr(1) + qm%nr(2) ) ! square matrix assumed !
+    ntc = ( qm%nc(1) + qm%nc(2) ) ! square matrix assumed !
+   
+    if (ntr <> ntc) then
+      call print_qmtx_attrib(qm)
+      call QUIT('AssignQMtxArrayPointer: unpacked matrix is NOT square !')
+    endif
+    call AssignQMtx3D_real(PW(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
     qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
-
     if (.not.associated(qm%p_rA3D1)) then
-      call QUIT('AssignQMtxArrayPointer:  p_rA3D1 not associated !')
+      call QUIT('AssignQMtxArrayPointer: p_rA3D1 not associated !')
     endif
 
   else if (qm%symm_packed.and..not.qm%simple_mtx) then
+
    ioff = qm%kstart ! offset
    do ifsym = 1, NFSYM
-     call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym) , qm%nc(ifsym) , qm%nz )
+     call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
      if (ifsym == 1) then
        qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
-     else if (ifsym == 2) then 
+     else if (ifsym == 2) then
        qm%p_rA3D2 => p3_real8;  p3_real8=> NULL()
      else
-       call QUIT('AssignQMtxArrayPointer: ifsym out of range !')
+       call QUIT('AssignQMtxArrayPointer: ifsym out of bounds (neither 1 nor 2) !')
      endif
      ioff = ioff + qm%ioff_pk
    enddo
@@ -648,8 +680,8 @@ endif
 qm%simple_mtx  = .false.
 qm%symm_packed = .false.
 
-! size of array to be allocated
-isize = (qm%nr(1)+qm%nr(2))*(qm%nr(1)+qm%nr(2))*qm%nz
+! ... total size of array to be allocated
+isize = (qm%nr(1)+qm%nr(2))*(qm%nc(1)+qm%nc(2))*qm%nz
 ! store the size
 qm%array_size = isize
 !if (iprint_qmtx >=5 ) then
@@ -663,6 +695,11 @@ CALL mymemget('REAL',qm%kstart,isize)
 !endif
 qm%is_alloc = .true.
 qm%is_real  = .true.
+
+! ... assign the pointer
+qm%p_rA3D1 => NULL(); qm%p_rA3D2 => NULL()
+call AssignQmtxPointer(qm)
+
 CALL QEXIT('QMatrixes: MakeQMtxUnPck')
 END FUNCTION MakeQMtxUnPck
 
@@ -884,7 +921,7 @@ subroutine print_qmtx_attrib(amat)
 !-------------------------------------------------------------------
 #include "priunit.h"
 type(QMtx), intent(in) :: amat
-call QENTER('print_qmtx_attrib')
+call QENTER('QMatrixes: print_qmtx_attrib')
  write(LUPRI,'(/2x,a)')  & 
  '---------- Basic attributes of the QMtx matrix data type -----------'
  write(LUPRI,'(a,l1,$)') 'is_alloc:',amat%is_alloc
@@ -894,15 +931,16 @@ call QENTER('print_qmtx_attrib')
  if (amat%is_alloc) then
   write(LUPRI,'(a,i7)') 'size of array:',amat%array_size
  endif
- write(LUPRI,'(a,2i3,a,2i3,a,i1,a,i2)') 'nr(1),nc(1);nr(2),nc(2:', &
+ write(LUPRI,'(a,2i3,a,2i3,a,i1,a,i2)') &
+       'dimensions nr(1),nc(1); nr(2),nc(2):', &
        amat%nr(1),amat%nc(1),';',amat%nr(2),amat%nc(2),  & 
        ' --- NZ:',amat%nz,' IREP:',amat%irep
+ call FLSHFO(LUPRI)
  if (is_string(amat%qmtx_text)) then
-  write(LUPRI,'(4x,a,$)') '...attached text:'
+  write(LUPRI,'(2x,a,$)') '...attached text:'
   call print_string(amat%qmtx_text)
  endif
- call FLSHFO(LUPRI)
-call QEXIT('print_qmtx_attrib')
+call QEXIT('QMatrixes: print_qmtx_attrib')
 end subroutine print_qmtx_attrib
 END MODULE QMatrixes
 
@@ -917,10 +955,11 @@ use GeneralPointers
 #include "priunit.h"
 integer(kind=4), intent(in) :: iprint,n1,n2,nz
 real(kind=8), target :: QMtx(n1,n2,nz)
-call QENTER('AssignQMtx3D_real')
+call QENTER('QMatrixes: AssignQMtx3D_real')
 p3_real8 => QMtx
 if (iprint >= 10) then
-  write(LUPRI,*) 'AssignQMtx3Dreal: real 3dim pointer to the matrix assigned.'
+  write(LUPRI,*) 'AssignQMtx3Dreal: real 3dim pointer to the matrix was assigned.'
 endif
-call QEXIT('AssignQMtx3_Dreal')
+call QEXIT('QMatrixes: AssignQMtx3D_real')
 end subroutine AssignQMtx3D_real
+

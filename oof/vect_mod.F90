@@ -27,7 +27,7 @@ private
 end type Vect
 
 type Array2Dim
-! 2-dimensional array based upon single vector
+! ... 2-dimensional array based upon single vector
   integer(kind=4) :: dimens1=0, dimens2=0 ! 2nd dimension
   real(kind=8), dimension(:,:), pointer :: p_rA2D => NULL()
   integer,      dimension(:,:), pointer :: p_iA2D => NULL()
@@ -35,6 +35,18 @@ type Array2Dim
   logical  :: is_alloc = .false.
   type(Vect) :: Vect2D
 end type Array2Dim
+
+type Array3Dim
+! ... 3-dimensional array based upon single vector
+  integer(kind=4) :: dimens1=0, dimens2=0, dimens3=0 ! dimensions
+  real(kind=8), dimension(:,:,:), pointer :: p_rA3D => NULL()
+  integer,      dimension(:,:,:), pointer :: p_iA3D => NULL()
+  logical,      dimension(:,:,:), pointer :: p_lA3D => NULL()
+  logical  :: is_alloc = .false.
+  type(Vect) :: Vect3D
+end type Array3Dim
+
+! TODO: program all 3Dim stuff 
 
 ! ... common routine name (overloading)
 interface Fill2D_Vect
@@ -150,6 +162,9 @@ call QENTER('print_vect_attrib')
 
  write(LUPRI,'(/2x,a)')  &
  '---------- Basic attributes of the "vector" data type -----------'
+
+ write(LUPRI,'(2x,a,i3)') 'print level ',iprint_vect
+
  write(LUPRI,'(a,l1)')   &
  'Is "Vect" data type variable allocated (is_alloc) ?',self%is_alloc
 
@@ -208,6 +223,7 @@ call QENTER('print_2Darray_attrib')
 
  write(LUPRI,'(a,l1)') 'Is "Array2Dim" allocated (is_alloc) ?',self%is_alloc
  write(LUPRI,'(a,2i4)') '"Array2Dim" dimensions :',self%dimens1,self%dimens2
+ CALL FLSHFO(LUPRI)
 
  if (associated(self%p_rA2D)) then
    write(LUPRI,'(a)') 'Pointer of "Array2Dim" type variable for "real*8" 2D array.'
@@ -229,6 +245,49 @@ call QENTER('print_2Darray_attrib')
 
 call QEXIT('print_2Darray_attrib')
 end subroutine print_2Darray_attrib
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_3Darray_attrib(self)
+!-------------------------------------------------------------------
+!
+!   print out only attributes of the data type
+!
+!-------------------------------------------------------------------
+#include "priunit.h"
+type(Array3Dim), intent(in) :: self
+call QENTER('print_3Darray_attrib')
+
+ write(LUPRI,'(/2x,a)')  &
+ '---------- Basic attributes of the derived "Array3Dim" data type -----------'
+ call print_vect_attrib(self%Vect3D)
+
+ write(LUPRI,'(a,l1)') 'Is "Array3Dim" allocated (is_alloc) ?',self%is_alloc
+ write(LUPRI,'(a,3i4)') '"Array3Dim" dimensions :', &
+              self%dimens1,self%dimens2,self%dimens3
+
+ if (associated(self%p_rA3D)) then
+   write(LUPRI,'(a)') 'Pointer of "Array3Dim" type variable for "real*8" 3D array.'
+ else if (associated(self%p_iA3D)) then
+   write(LUPRI,'(a)') 'Pointer of "Array3Dim"  type variable for "integer" 3D array.'
+ else if (associated(self%p_lA3D)) then
+   write(LUPRI,'(a)') 'Pointer of "Array3Dim" type variable for "logical" 3D array.'
+ else 
+   write(LUPRI,'(a)') & 
+   'No pointer of "Array3Dim" ("real*8"/"integer"/"logical") associated.' &
+  //' Not yet allocated.'
+   if (self%is_alloc) then
+     write(LUPRI,'(a)')  &
+     'Error ! No pointer of "Array3Dim" associated while self%is_alloc=.true.!'
+     call QUIT('print_3Darray_attrib: Error ! No pointer of "Array3Dim" associated' & 
+     //' while self%is_alloc=.true.!')
+   endif
+ endif  
+
+ CALL FLSHFO(LUPRI)
+
+call QEXIT('print_3Darray_attrib')
+end subroutine print_3Darray_attrib
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_vector(self)
@@ -255,6 +314,7 @@ else
    write(LUPRI,*) 'associated(self%p_rA1D):',associated(self%p_rA1D)
    write(LUPRI,*) 'associated(self%p_iA1D):',associated(self%p_iA1D)
    write(LUPRI,*) 'associated(self%p_lA1D):',associated(self%p_lA1D)
+   CALL FLSHFO(LUPRI)
    call quit('print_vector: error branch !')
 endif
 call QEXIT('print_vector')
@@ -283,12 +343,14 @@ do j=1,self%dimens2
    write(LUPRI,'(1x,i3,1x,i3,A,D14.7,A,$)') i,j,'->',self%p_rA2D(i,j),'|'
    if (mod(k,4)==0) then
      write(LUPRI,*) 
+     CALL FLSHFO(LUPRI)
      k = 0
    endif
  else if (associated(self%p_iA2D)) then
    write(LUPRI,'(1x,i3,1x,i3,A,I5,A,$)') i,j,'->',self%p_iA2D(i,j),'|'
    if (mod(k,5)==0) then
      write(LUPRI,*) 
+     CALL FLSHFO(LUPRI)
      k = 0
    endif
  else if (associated(self%p_lA2D)) then
@@ -309,6 +371,7 @@ end subroutine print_2Darray
 ! Print out real vector
 !
 ! Written by Miro Ilias, April 2007, Tel Aviv
+!  Last change: MI, Octorer 2007, TA
 !
 !-----------------------------------------------------------------------
 #include "implicit.h"
@@ -318,7 +381,10 @@ end subroutine print_2Darray
 
       DO I = 1, N
         WRITE(LUPRI,'(1X,I4,A,D14.6,A,$)') I,'->',VEC(I),'|'
-        IF (MOD(I,5).EQ.0) WRITE(LUPRI,*)
+        IF (MOD(I,5).EQ.0) THEN
+          WRITE(LUPRI,*)
+          CALL FLSHFO(LUPRI)
+        ENDIF
       ENDDO
 
       CALL QEXIT('PRINT_REAL_VECTOR')
@@ -332,6 +398,7 @@ end subroutine print_2Darray
 !  Print out the integer vector. 
 !
 ! Written by Miro Ilias, April 2007, Tel Aviv
+!  Last change: MI, Octorer 2007, TA
 !
 !-----------------------------------------------------------------------
 #include "implicit.h"
@@ -340,7 +407,10 @@ end subroutine print_2Darray
       CALL QENTER('PRINT_INT_VECTOR')
       DO I = 1, N
         WRITE(LUPRI,'(1X,I3,A,I8,A,$)') I,'->',IVEC(I),'|'
-        IF (MOD(I,5).EQ.0) WRITE(LUPRI,*)
+        IF (MOD(I,5).EQ.0) THEN
+           WRITE(LUPRI,*)
+           CALL FLSHFO(LUPRI)
+        ENDIF
       ENDDO
       CALL QEXIT('PRINT_INT_VECTOR')
       RETURN
@@ -471,10 +541,11 @@ end function MakeVector
 function Make2DimArray(char_type,isize1,isize2,text) result(self)
 !--------------------------------------------------------------------------
 !
-!   basic constructor for 2-dimensional array: real,integer or logical
+!    basic constructor for 2-dimensional array: real,integer or logical
 !
 !  On entry:
 !===============
+!
 !  char_type  'REAL,'INTE','LOGI' for real, integer and logical variables
 !
 !  isize1, isize2    array dimensions
@@ -521,6 +592,64 @@ call Assign2DimArrayPointer(self)
 call QEXIT('Make2DimArray')
 end function Make2DimArray
 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function Make3DimArray(char_type,isize1,isize2,isize3,text) result(self)
+!--------------------------------------------------------------------------
+!
+!   basic constructor for 3-dimensional array: real,integer or logical
+!
+!  On entry:
+!===============
+!  char_type  'REAL,'INTE','LOGI' for real, integer and logical variables
+!
+!  isize1, isize2, isize3    array dimensions
+!
+!  text      string to be attached to the Array3Dim (optional)
+!
+!--------------------------------------------------------------------------
+use Memory
+#include "iratdef.h"
+#include "priunit.h"
+character(*), intent(in) :: char_type
+!integer(kind=8/IRAT),intent(in) :: isize1,isize2
+integer,intent(in) :: isize1,isize2,isize3
+integer(kind=8/IRAT) :: isize
+!integer(kind=8),intent(in) :: isize
+character(*), optional, intent(in) :: text
+type(Array3Dim) :: self
+call QENTER('Make3DimArray')
+
+isize = isize1*isize2*isize3
+
+if (iprint_vect >= 10 ) then
+ call HEADER('Output from Make3DimArray',-1)
+ write(lupri,'(2X,A)') 'entering text is :',text
+ write(lupri,'(2X,A)') 'entering character type :', char_type
+ write(lupri,'(2X,A,3I4)') 'entering dimensions of 3D array :',isize1,isize2,isize3
+ write(lupri,'(2X,A,3I4)') 'total size of 3D array (n1 x n2 x n3) :',isize
+ CALL FLSHFO(LUPRI)
+endif
+
+self%Vect3D = MakeVector(char_type,isize,text)
+!  ...  assign array dimensions
+self%dimens1 = isize1; self%dimens2 = isize2; self%dimens3 = isize3
+self%is_alloc = .true.
+
+if (iprint_vect >= 10 ) then
+ write(lupri,'(A,3I4)') 'Make3DimArray: 3D array was allocated in memory'  &
+ //' (using MakeVector) with dimensions ',self%dimens1,self%dimens2,self%dimens3
+ CALL FLSHFO(LUPRI)
+endif
+
+! assign the pointer
+! ... sometimes older compilers do not initialize variables by declaration
+self%p_rA3D => NULL(); self%p_iA3D => NULL(); self%p_lA3D => NULL()
+call Assign3DimArrayPointer(self)
+
+call QENTER('Make3DimArray')
+end function Make3DimArray
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine Assign2DimArrayPointer(self)
 !--------------------------------------------------------------------------
@@ -559,6 +688,47 @@ endif
 
 call QEXIT('Assign2DimArrayPointer')
 end subroutine Assign2DimArrayPointer
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine Assign3DimArrayPointer(self)
+!--------------------------------------------------------------------------
+!
+!    assign pointer to the 3D array AFTER the memory allocation
+!
+!--------------------------------------------------------------------------
+use Memory
+use GeneralPointers
+#include "priunit.h"
+type(Array3Dim),intent(inout) :: self
+call QENTER('Assign3DimArrayPointer')
+
+if (.not.self%Vect3D%is_alloc) then
+  call print_3Darray_attrib(self) ! ... control printout
+  call QUIT('Assign3DimArrayPointer: vector is NOT allocated !')
+endif
+
+if (self%Vect3D%is_real .AND. .not.self%Vect3D%is_logi) then
+    call AssignVect3D_real(PW(self%Vect3D%kstart), iprint_vect, & 
+                       self%dimens1, self%dimens2, self%dimens3 )
+    self%p_rA3D => p3_real8;  p3_real8=> NULL()
+    if (.not.associated(self%p_rA3D)) then
+      call QUIT('Assign3DimArrayPointer: self%p_rA3D  not associated !')
+    endif
+else if (.not.self%Vect3D%is_real .AND. .not.self%Vect3D%is_logi) then
+    call AssignVect3D_inte(PW(self%Vect3D%kstart), iprint_vect, &
+                       self%dimens1, self%dimens2, self%dimens3 )
+    self%p_iA3D => p3_inte;  p3_inte => NULL()
+    if (.not.associated(self%p_iA3D)) then
+      call QUIT('Assign3DimArrayPointer: self%p_iA3D not associated !')
+    endif
+else if (.not.self%Vect3D%is_real .AND. self%Vect3D%is_logi) then
+    call quit('Assign3DimArrayPointer: branch not yet ready ...')
+else
+    call QUIT('Assign3DimArrayPointer: vector NOT real, neither integer, nor logical !')
+endif
+
+call QEXIT('Assign3DimArrayPointer')
+end subroutine Assign3DimArrayPointer
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine Fill2D_Vect_re(self,what)
@@ -646,23 +816,27 @@ subroutine ZeroVector(self)
 ! For logical vector set them to .FALSE.
 !
 !-----------------------------------------------------------------------
-use Memory
+!use Memory
 #include "priunit.h"
 type(Vect), intent(inout) :: self
 call QENTER('ZeroVector')
 if (self%is_alloc) then
   if (self%is_real.and..not.self%is_logi) then
-     call DZERO( PW(self%kstart), self%array_size )
+    ! call DZERO( PW(self%kstart), self%array_size )
+     call DZERO( self%p_rA1D, self%array_size )
   else if (.not.self%is_real.and..not.self%is_logi) then
-     call IZERO( PW(self%kstart), self%array_size )
+    ! call IZERO( PW(self%kstart), self%array_size )
+     call IZERO( self%p_iA1D, self%array_size )
   else if (.not.self%is_real.and.self%is_logi) then
-     call LZERO( PW(self%kstart), self%array_size )
+     !call LZERO( PW(self%kstart), self%array_size )
+     call quit('ZeroVector: this branch is NOT implemented !')
+     call LZERO( self%p_lA1D, self%array_size )
   else
      call print_vect_attrib(self)
      call QUIT('ZeroVector: dead branch !')
   endif
   if (iprint_vect >= 10 ) then
-    write(lupri,'(2X,A)') 'ZeroVector: vector filled with zeros ! '
+    write(lupri,'(2X,A)') 'ZeroVector: vector was filled with zeros '
   endif
 endif
 call QEXIT('ZeroVector')
@@ -709,7 +883,7 @@ end subroutine DeAllocVect
 subroutine DeAlloc2DArray(self)
 !-----------------------------------------------------------------------
 !
-!                  deallocate the 2D array
+!            deallocate the 2D array
 !
 !-----------------------------------------------------------------------
 use Memory
@@ -722,6 +896,7 @@ if (self%is_alloc) then
  self%dimens1 = 0;  self%dimens2 = 0
  self%p_rA2D => NULL(); self%p_iA2D => NULL(); self%p_lA2D => NULL()
 else 
+ call print_2Darray_attrib(self)
  call QUIT('DeAlloc2DArray: was NOT allocated, can not be deallocated !')
 endif
 if (iprint_vect >= 10) then
@@ -815,6 +990,27 @@ call QEXIT('AssignVect2D_real')
 end subroutine AssignVect2D_real
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine AssignVect3D_real(Vector,iprint,n1,n2,n3)
+!-----------------------------------------------------------------------
+!
+!                 Assign pointer for 3D real array
+!
+!-----------------------------------------------------------------------
+use GeneralPointers
+#include "priunit.h"
+integer(kind=4), intent(in) :: iprint,n1,n2,n3
+real(kind=8), target :: Vector(n1,n2,n3)
+call QENTER('AssignVect3D_real')
+! ... assign pointer from GeneralPointers
+p3_real8 => Vector 
+!
+if (iprint >= 10) then
+ write(LUPRI,*) 'AssignVect3D_real: real 3dim pointer was assigned'
+endif
+call QEXIT('AssignVect3D_real')
+end subroutine AssignVect3D_real
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AssignVect2D_inte(Vector,iprint,n1,n2)
 !-----------------------------------------------------------------------
 !
@@ -828,8 +1024,27 @@ integer(kind=4), intent(in) :: iprint,n1,n2
 call QENTER('AssignVect2D_inte')
 p2_inte => Vector 
 if (iprint >= 10) then
- write(LUPRI,*) 'AssignVect2D_inte: integer 2dim pointer assigned'
+ write(LUPRI,*) 'AssignVect2D_inte: integer 2dim pointer assigned.'
 endif
 call QEXIT('AssignVect2D_inte')
 end subroutine AssignVect2D_inte
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine AssignVect3D_inte(Vector,iprint,n1,n2,n3)
+!-----------------------------------------------------------------------
+!
+!     Assign pointer to the integer 3D-array
+!
+!-----------------------------------------------------------------------
+use GeneralPointers
+#include "priunit.h"
+integer(kind=4), intent(in) :: iprint,n1,n2,n3
+integer, target :: Vector(n1,n2,n3)
+call QENTER('AssignVect3D_inte')
+p3_inte => Vector 
+if (iprint >= 10) then
+ write(LUPRI,*) 'AssignVect3D_inte: integer 2dim pointer was assigned.'
+endif
+call QEXIT('AssignVect3D_inte')
+end subroutine AssignVect3D_inte
 

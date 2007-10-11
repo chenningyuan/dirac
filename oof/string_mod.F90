@@ -9,8 +9,9 @@
    character*1, dimension (:), pointer :: strp  => NULL()
    logical :: is_alloc = .false. ! this default does not work for older F90 compilars !!
    integer (kind=4) :: str_length = 0
-  integer :: iprint_string = 0  ! control print-out variable
  end type string
+
+ integer, private :: iprint_string = 0  ! control print-out variable
 
  contains 
 
@@ -98,16 +99,17 @@ subroutine make_string(self, text)
 subroutine print_string(self)
 !----------------------------------------------------------------------------
 !
-!  print out the string
+!       print out the string
 !
 !----------------------------------------------------------------------------
 #include "priunit.h"
 type(string), dimension(:), intent(in) :: self
- call QENTER('print_string')
+call QENTER('print_string')
   if (self(1)%is_alloc) then
     write(LUPRI,*) (self(1)%strp)
   endif
- call QEXIT('print_string')
+  call FLSHFO(LUPRI)
+call QEXIT('print_string')
 end subroutine print_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -161,4 +163,3 @@ call QEXIT('mystring/set_no_string')
 end subroutine set_no_string
 
 end module mystring
-

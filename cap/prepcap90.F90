@@ -140,7 +140,7 @@ subroutine GetUnpckOvlpMtx(smat)
 !===========================================================================
 !
 !
-!    get unpacked overlap matrix, "smat" - allocate inside, then return
+!     get unpacked overlap matrix, "smat" - allocate inside, then return
 !
 !
 !===========================================================================
@@ -174,11 +174,13 @@ call QENTER('GetUnpckOvlpMtx')
  !call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
 
  if (get_iprint_qmtx() >= 5) then
+   write(LUPRI,*) 'GetUnpckOvlpMtx: going to print info on smat!'
    call print_qmtx_attrib(smat)
    call QMtxInfo(smat)
  endif
 
   call QEXIT('GetUnpckOvlpMtx')
+
 end subroutine GetUnpckOvlpMtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -209,21 +211,21 @@ DIMENSION WORK(LWORK)
 !  ... control test... 
  !   call test_oof_basis_fu(WORK,LWORK)
 
- !call set_vect_iprint(IPRCAP)
- call set_vect_iprint(12)
+ call set_vect_iprint(IPRCAP)
+ !call set_vect_iprint(12)
 
  write(LUPRI,*) 'before stick into memory...LWORK=',LWORK
 
 ! ... stick the memory  ... 
  call StickMemory(WORK,LWORK)
 
- ! ... new testing procedure ...
-  if (CAPNEW) call CAP_new_stuff
+   ! ... new testing procedure ...
+   if (CAPNEW) call CAP_new_stuff
 
    icabfo = MakeVector('INTE',NBASIS,'CAP-DIRAC correspondence')   
-   write(LUPRI,*) 'CAP_STUFF: icabfo allocated !'
+   !write(LUPRI,*) 'CAP_STUFF: icabfo allocated !'
    iobf1_2 = MakeVector('INTE',NBASIS,'AO function types for obtaining proper factors') 
-   write(LUPRI,*) 'CAP_STUFF: iobf1_2 allocated !'
+   !write(LUPRI,*) 'CAP_STUFF: iobf1_2 allocated !'
 
 !    CALL CAP_DIRAC_AO(icabfo,iobf1_2)  ! fill vectors
 
@@ -240,9 +242,9 @@ DIMENSION WORK(LWORK)
      CAPDIPVEL_SAVE = CAPDIPVEL
      CAPDIPVEL = .FALSE.
 
-    call print_mem_param()
+     call print_mem_param()
 
-     ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE=',ILFREE
+     ILFREE=get_lfree();  write(LUPRI,*) '.....ILFREE=',ILFREE
 
      IF (CAPOVLP) THEN
          write(LUPRI,*) 'calling DOSAJEEV..1'; CALL  FLSHFO(LUPRI)
@@ -261,9 +263,9 @@ DIMENSION WORK(LWORK)
         ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
          CALL DOSAJEEV(PW(get_kfree()),ILFREE)
-         write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 0.1'
+        ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 0.1'
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
-         write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 1'
+        ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 1'
           
          !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
@@ -272,7 +274,7 @@ DIMENSION WORK(LWORK)
         CAPOVLP=.FALSE.
         IF (CAPDIPVEL_SAVE.AND..NOT.DONRCAP) THEN
           CAPDIPVEL = .TRUE.
-           write(LUPRI,*) 'calling DOSAJEEV..2'
+         !  write(LUPRI,*) 'calling DOSAJEEV..2'
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
           !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
           CALL DOSAJEEV(PW(get_kfree()),ILFREE)
@@ -283,12 +285,12 @@ DIMENSION WORK(LWORK)
           call QUIT('CAP_STUFF: comparison')
         ENDIF
         CAPDIPVEL = .FALSE.
-           write(LUPRI,*) 'calling DOSAJEEV..3'
+         ! write(LUPRI,*) 'calling DOSAJEEV..3'
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 4=',ILFREE
         !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
         CALL DOSAJEEV(PW(get_kfree()),ILFREE)
         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
-        write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 2'
+       ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 2'
         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
@@ -323,7 +325,7 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
 
   CALL QENTER('CAP_DIRAC_AO')
 
- write(LUPRI,*) 'CAP_DIRAC_AO: before calling mymemget!'
+ !write(LUPRI,*) 'CAP_DIRAC_AO: before calling mymemget!'
 
  call mymemget('INTE',KIOBF1,3*NBASIS)
  call mymemget('INTE',KIOBF2,3*NBASIS)
@@ -343,7 +345,7 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
  call mymemrel('CAP_DIRAC_AO',KIOBF2,KIOBF2)
  call mymemrel('CAP_DIRAC_AO',KIOBF1,KIOBF1)
 
- write(LUPRI,*) 'CAP_DIRAC_AO: after mymemrel !'
+ !write(LUPRI,*) 'CAP_DIRAC_AO: after mymemrel !'
 
  if (get_vect_iprint() >= 4) then
 !   print out icapbfo and iobf1_2
@@ -352,7 +354,7 @@ integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
  endif
 
   CALL QEXIT('CAP_DIRAC_AO')
-  write(LUPRI,*) 'CAP_DIRAC_AO: leaving ... '
+ ! write(LUPRI,*) 'CAP_DIRAC_AO: leaving ... '
 
 end subroutine CAP_DIRAC_AO
 
