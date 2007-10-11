@@ -14,10 +14,10 @@ LOC=`pwd`
 # Installation specfic variables : chose the right defaults for your system
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-QSYS=pbs
-PAMDIR=$HOME/bin
-DEFAULT_MW=100
-DEFAULT_NW=100
+QSYS=LoadLeveler
+PAMDIR=$HOME/devel/BUILDS/linux-ppc64-parallel
+DEFAULT_MW=128
+DEFAULT_NW=128
 DEFAULT_QUEUE=default
 DEFAULT_TIME=15m
 #
@@ -223,7 +223,8 @@ qsub -j oe -N $SHORT -o $jobout -l walltime=$wallt_qsub,nodes=$MPI_NPROC:$QUEUE 
 #### IBM's LoadLeveler ########
   LoadLeveler)
 JTYPE=parallel
-REQUIRE="(Memory >= $MEM_IN_MBYTES)"
+#REQUIRE="(Memory >= $MEM_IN_MBYTES)"
+REQUIRE=""
 CLASS=""
 case $QUEUE in
   default)
@@ -232,13 +233,13 @@ case $QUEUE in
   CLASS="$QUEUE"
   ;;
 esac
-if [ $MPI_NPROC -le 32 ]; then
+if [ $MPI_NPROC -le 64 ]; then
    NNODE=1
-elif [ $MPI_NPROC -le 64 ]; then
-   NNODE=2
-elif [ $MPI_NPROC -le 96 ]; then
-   NNODE=3
 elif [ $MPI_NPROC -le 128 ]; then
+   NNODE=2
+elif [ $MPI_NPROC -le 192 ]; then
+   NNODE=3
+elif [ $MPI_NPROC -le 256 ]; then
    NNODE=4
 else
   echo "$0: Too many nodes requested!"
@@ -255,10 +256,9 @@ cat <<EOJ >$jobinp
 # @ initialdir = $LOC
 # @ output = $jobout
 # @ error = $jobout
-# @ job_type = parallel
 # @ node = $NNODE
-# @ total_tasks = $MPI_NPROC
-# @ requirements = $REQUIRE
+# @ tasks_per_node = $MPI_NPROC
+# @ job_type = parallel
 EOJ
 
 if [ -n "$CLASS" ]; then
@@ -270,6 +270,7 @@ fi
 cat <<EOJ >> $jobinp
 # @ wall_clock_limit = $wallt_ll
 # @ environment = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
+# @ network.MPI = sn_all,not_shared,US
 # @ notification = never
 # @ queue
 
