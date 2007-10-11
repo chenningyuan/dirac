@@ -587,7 +587,8 @@ if (qm%is_real) then
     ntr = ( qm%nr(1) + qm%nr(2) ) ! square matrix assumed !
     ntc = ( qm%nc(1) + qm%nc(2) ) ! square matrix assumed !
    
-    if (ntr <> ntc) then
+    !if (ntr <> ntc) then
+    if (ntr .ne. ntc) then
       call print_qmtx_attrib(qm)
       call QUIT('AssignQMtxArrayPointer: unpacked matrix is NOT square !')
     endif
