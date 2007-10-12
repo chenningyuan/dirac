@@ -43,6 +43,12 @@
 #                * practice first with the harmonic oscillator
 #                * it is a good idea to play with parameters to check
 #                  convergence and numerical stability
+#                * potential and property are approximated by polynomials
+#                  that contain coefficients FROM ZEROTH to nth order (that's what polyfit gives)
+#                  and you might not want that
+#                  (for instance you might insist that the gradient of the potential is zero at equilibrium)
+#                  in this case you can provide your own
+#                  expansion coefficients or program an alternative interpolation scheme
 #
 # integration grid and optimization algorithm are extremely primitive
 # but they do the job ...
