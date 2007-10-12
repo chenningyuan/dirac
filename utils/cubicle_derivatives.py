@@ -82,13 +82,14 @@ def fact(x):
 
 def get_derivative(x_l, y_l, p_order, d_order):
 
+    if d_order > p_order:
+       sys.exit('error: d_order > p_order')
+
     c_l = polyfit(x_l, y_l, p_order)
-
-    d_l = []
     for i in range(d_order + 1):
-        d_l.append(fact(i)*c_l[len(c_l) - i - 1])
+        d = fact(i)*c_l[len(c_l) - i - 1]
 
-    return d_l[d_order]
+    return d
 
 #-------------------------------------------------------------------------------
 
