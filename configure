@@ -1036,7 +1036,6 @@ else
     paropibm=
 fi
 
-#INCLUDE_DIR=include
 INCLUDE_DIR=include
 arflag=
 case $machine in
@@ -1265,7 +1264,7 @@ case $machine in
 #
       case "$F77" in
       mpif*)
-         if "$F77" -show; then
+         if "$F77" -show > /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1290,6 +1289,7 @@ case $machine in
          else 
             F77real=mpif77
          fi
+         echo "Compiler in $F77 found to be $F77real ..."
          ;;
       *)
          F77real=$F77
@@ -1368,6 +1368,7 @@ case $machine in
          else 
             CCreal=mpicc
          fi
+         echo "Compiler in $CC found to be $CCreal ..."
          ;;
       *)
          CCreal=$CC
@@ -1434,7 +1435,7 @@ case $machine in
 #
       case "$F77" in
       mpif*)
-         if "$F77" -show; then
+         if "$F77" -show > /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1446,6 +1447,8 @@ case $machine in
             F77real=ifc
          elif "$F77" $mpishowopt | grep -q ifort; then
             F77real=ifort
+         elif "$F77" $mpishowopt | grep -q gfortran; then
+            F77real=gfortran
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
@@ -1457,6 +1460,7 @@ case $machine in
          else 
             F77real=mpif77
          fi
+         echo "Compiler in $F77 found to be $F77real ..."
          ;;
       *)
          F77real=$F77
@@ -1535,6 +1539,7 @@ case $machine in
          else 
             CCreal=mpicc
          fi
+         echo "Compiler in $CC found to be $CCreal ..."
          ;;
       *)
          CCreal=$CC
@@ -1625,6 +1630,7 @@ case $machine in
          else 
             F77real=mpif77
          fi
+         echo "Compiler in $F77 found to be $F77real ..."
          ;;
       *)
          F77real=$F77
@@ -1648,7 +1654,7 @@ case $machine in
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
          ;;
-       gfortran)
+      gfortran)
          gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
          echo "gfortran version $gfver prc=$prc"
          cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
@@ -1702,6 +1708,7 @@ case $machine in
          else 
             CCreal=mpicc
          fi
+         echo "Compiler in $CC found to be $CCreal ..."
          ;;
       *)
          CCreal=$CC
