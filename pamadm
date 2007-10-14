@@ -514,7 +514,6 @@ if [ -n "$IBMMOD" ]; then
   echo $MODS
 fi
    echo "*** Making general Makefile"
-#   echo
    AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
    AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
@@ -959,7 +958,6 @@ clean   :
 	cd relccsd  ; \$(MAKE) clean
 	cd dirrci   ; \$(MAKE) clean
 	cd lucita   ; \$(MAKE) clean
-	cd argosecp ; \$(MAKE) clean
 EOF
 ###
 #     .... cleaning of individual modules
@@ -985,10 +983,6 @@ if [ -n "$ESRMOD" ]; then
 fi
 if [ -n "$XPPMOD" ]; then
    echo '	cd prp/xpp   ; $(MAKE) clean' >> Makefile
-fi
-if [ -n "$KRMCMOD" ]; then
-   echo '	cd krmc ; $(MAKE) clean' >> Makefile
-   echo '	cd luciarel ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$EMBMOD" ]; then
    echo '	cd embedding  ; $(MAKE) clean' >> Makefile
