@@ -10,7 +10,7 @@ include ../Makefile.config
 F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	    qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
 	    gpjth.o    gplucia.o     gpkrmc.o       gpbast.o \
-	    gplupar.o  global_file.o 
+	    gplupar.o  global_file.o   mpi2macro.o
 
 F90_OBJS =
 
