@@ -424,6 +424,9 @@ C
 CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
+
+      write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
+      write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
 C
 C     XIH energy shift sign definition.
 C     Array with as first dimension 1e/2e shift
@@ -1690,7 +1693,7 @@ C
 C
       IF (FOCKSP) THEN
 
-         IF (REPORT.AND.DOIH) THEN
+!        IF (REPORT.AND.DOIH) THEN
 CMI      IF (REPORT) THEN
 !         WRITE(IW,'(2X,A)')    
 !    &    'Orbitals in Pi space mentioned with (1), otherwise (0)'    
@@ -1701,7 +1704,7 @@ CMI      IF (REPORT) THEN
             NAOPI(IREP) = 0
             NAVPI(IREP) = 0
           ENDDO 
-         ENDIF
+!        ENDIF
 
          DO ISP = 1, NSP
 !           ... extract the symmetry of the Abelian subgroup, IREP
@@ -1720,40 +1723,79 @@ C           Always fill this array, used in intermediate Hamiltonian formalism
 !        ... 0/1 - intermediate Ham. space
             IPIORB(I)=0
             DO J = 1, 2
-               IF(EPS(I).LE.ER_IH(2,J).AND.
-     &            EPS(I).GE.ER_IH(1,J))  THEN
-                  IPIORB(I)=1
+               IF(EPS(I).LE.ER_IH(2,J).AND.   ! EPS(I) <= EHMAX,EPMAX
+     &            EPS(I).GE.ER_IH(1,J)) THEN  ! EPS(I) >= EHMIN,EPMIN
+                 IPIORB(I)=1
                ENDIF
             ENDDO
 
-CMI   ... based on Ephraim advice
-      II = 0 
-      DO IRP = 1, NREP
-       NAVPI(IRP) = 0
-       NAOPI(IRP) = 0
-       IOI(0)=0
-       IOI(1)=NIO(IRP)+IOI(0)
-       IOI(2)=NAO(IRP)+IOI(1)
-       IOI(3)=NAV(IRP)+IOI(2)
-       DO ico=1,3
-       DO I = IOI(ico-1)+1, IOI(ico)
-         II = II + 1
-         ISECTP=0
-         IF (DOIH.AND.ICO.EQ.3) THEN
-             ISECTP=1
-             IF (IPIORB(II).EQ.1) THEN
-               NAVPI(IRP) = NAVPI(IRP) + 1
+            IF (IPIORB(I).EQ.1) THEN
+
+!            write(IW,'(2X,A,2I3,A,F15.6)')
+!    &     'IPIORB(I)=1 in Pi (occ.,virt.) for EPS(',I,IREP,')=',EPS(I)
+
+             IF ( EPS(I).GE.ER_IH(1,1).AND.EPS(I).LE.ER_IH(2,1) ) THEN
+               IF ( NAOPI(IREP).LT.NAO(IREP) ) THEN
+                 NAOPI(IREP) = NAOPI(IREP) + 1
+!              write(IW,'(2X,A,I3,A,I3)')
+!    &         'increasing NAOPI(',IREP,')=',NAOPI(IREP)
+               ELSE
+!              write(IW,*) 'SYMTAB: occ Pi out of bound for IREP=',IREP,
+!    &          ' NAO(IREP)=',NAO(IREP),
+!    &          ' NAOPI(IREP)= ',NAOPI(IREP)
+               ENDIF
              ENDIF
-         ENDIF
-         IF (DOIH.AND.ICO.EQ.2) THEN
-             ISECTP=1
-             IF (IPIORB(II).EQ.1) THEN
-               NAOPI(IRP) = NAOPI(IRP) + 1
+
+             IF ( EPS(I).GE.ER_IH(1,2).AND.EPS(I).LE.ER_IH(2,2) ) THEN
+               IF (NAVPI(IREP) .LT. NAV(IREP) ) THEN
+                 NAVPI(IREP) = NAVPI(IREP) + 1
+!              write(IW,'(2X,A,I3,A,I3)')
+!    &         'increasing NAOVI(',IREP,')=',NAVPI(IREP)
+               ELSE
+!            write(IW,*) 'SYMTAB: virt Pi out of bounds for IREP=',IREP,
+!    &          ' NAV(IREP)=',NAV(IREP),
+!    &          ' NAVPI(IREP)= ',NAVPI(IREP)
+               ENDIF
              ENDIF
-         ENDIF
-        ENDDO
-        ENDDO
+           ENDIF
        ENDDO
+
+
+CMI   ... based on Ephraim advice
+C     II = 0 
+!     DO IRP = 1, NREP
+!      NAVPI(IRP) = 0
+!      NAOPI(IRP) = 0
+!      IOI(0)=0
+!      IOI(1)=NIO(IRP)+IOI(0)
+!      IOI(2)=NAO(IRP)+IOI(1)
+!      IOI(3)=NAV(IRP)+IOI(2)
+!      DO ico=1,3
+!      DO I = IOI(ico-1)+1, IOI(ico)
+!        II = II + 1
+!        write(IW,'(2X,A,I3,A,I3,A,I3,A,F15.6)')
+!    &  'IPIORB(',II,')=',IPIORB(II),' EPS(',II,')=',EPS(II)
+
+!        ISECTP=0
+!        IF (DOIH.AND.ICO.EQ.3) THEN
+!            ISECTP=1
+!            IF (IPIORB(II).EQ.1) THEN
+!              NAVPI(IRP) = NAVPI(IRP) + 1
+!              write(IW,'(2X,A,I3,A,F15.6)')
+!    &         'increasing NAVPI, EPS(',II,')=',EPS(II)
+!            ENDIF
+!        ENDIF
+!        IF (DOIH.AND.ICO.EQ.2) THEN
+!            ISECTP=1
+!            IF (IPIORB(II).EQ.1) THEN
+!              NAOPI(IRP) = NAOPI(IRP) + 1
+!              write(IW,'(2X,A,I3,A,F15.6)')
+!    &         'increasing NAOPI, EPS(',II,')=',EPS(II)
+!            ENDIF
+!        ENDIF
+!       ENDDO
+!       ENDDO
+!      ENDDO
 
             !IF (REPORT.AND.DOIH) THEN
 CMI        IF (REPORT) THEN
@@ -1761,24 +1803,25 @@ CMI              write(IW,'(A,I3,A,I3,A,I2,A,I3,AF15.7,A,I3,A)')
 CMI  &        'ISP',ISP,' I',I,' IREP:',IREP,' II:',II,
 CMI  &        '...',EPS(I), '  (',IPIORB(I),')'
 CMI         ENDIF
-         ENDDO
 
-CMI ..... write only active irreps
-            NACT_REP = 0
-            DO I = 1, NREP
-               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
-                !... move nonzero values to new arrays ...
-                  NACT_REP = NACT_REP + 1
-                  NAOPI_ACT(NACT_REP)  = NAOPI(I) 
-                  NAVPI_ACT(NACT_REP)  = NAVPI(I) 
-               ENDIF
-            ENDDO
+!        ENDDO
 
 CMI         ... print out if Pi 
         IF (REPORT.AND.DOIH) THEN
            !  WRITE(IW,'(/2X,A,I2)') '...configuration with IH'
 
          IF (NREP.GT.8) THEN
+CMI ..... write only active irreps
+            NACT_REP = 0
+            DO I = 1, NREP
+               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                  ! ... move nonzero values to new arrays ...
+                  NACT_REP = NACT_REP + 1
+                  NAOPI_ACT(NACT_REP) = NAOPI(I) 
+                  NAVPI_ACT(NACT_REP) = NAVPI(I) 
+               ENDIF
+            ENDDO
+
             NREP1 = 1
             NREP2 = MIN(NACT_REP,8)
   12      WRITE (IW,1005) (REPNA_ACT(I),I=NREP1,NREP2)
@@ -2856,9 +2899,13 @@ C
 CMI ... more print out
       IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
         WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
-        WRITE(IW,'(A,F20.7,A,F20.7,A)')
-     &  ' Energy range for the Pi space is: <',
-     &   ER_IH(1,2),';',ER_IH(2,2),'>'
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
+     &  'Energy range for the occupied Pi space is: <',
+     &  ER_IH(1,1),';',ER_IH(2,1),'>'
+
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
+     &  'Energy range for the virtual Pi space is:  <',
+     &  ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF
 C
 C Allocate space for the Fock space CCSD energy calculation

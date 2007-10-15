@@ -1461,7 +1461,9 @@ CMI    write(IW,*) 'EHMAX,EPMAX:',ER_IH(2,1),ER_IH(2,2)
 CMI    ... addition for IH-FSCC
              IF (FOCKSP.AND.DOIH) THEN
                INPI=" "
-               IF (IPIORB(I).EQ.1) INPI="*"
+CMI            IF (IPIORB(I).EQ.1) INPI="*"
+               IF (IPIORB(I).EQ.1.AND.
+     &            (ORBTYP.EQ.'Va'.OR.ORBTYP.EQ.'Oa')) INPI="*"
                write(IW,'(2x,A2,I4,I5,2X,A4,4X,2F16.10,1X,A)') 
      &          ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II),INPI 
              ELSE
@@ -1494,7 +1496,9 @@ CMI    ... addition for IH-FSCC
             IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2) THEN
              IF (FOCKSP.AND.DOIH) THEN
                INPI=" "
-               IF (IPIORB(I).EQ.1) INPI="*"
+               IF (IPIORB(I).EQ.1.AND.
+     &            (ORBTYP.EQ.'Va'.OR.ORBTYP.EQ.'Oa')) INPI="*"
+CMI            IF (IPIORB(I).EQ.1) INPI="*"
                write(IW,'(2x,A2,I4,I5,2X,A4,4X,2F16.10,1X,A)') 
      &          ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II),INPI 
              ELSE
@@ -1511,9 +1515,14 @@ CMI    ... addition for IH-FSCC
 C
       IF (IPRNT.GE.0.AND.(FOCKSP.AND.DOIH)) THEN
         WRITE (IW,'(/1X,A)')
-     & 'Spinors in the IH Fock space Pi space are marked with "*"'
+     & 'Spinors in the IH Fock space Pi are marked with "*"'
+
         WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
-     &  'Energy range for the Pi space is: <',
+     &  'Energy range for the occupied Pi space is: <',
+     &  ER_IH(1,1),';',ER_IH(2,1),'>'
+
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
+     &  'Energy range for the virtual Pi space is : <',
      &  ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF
 
