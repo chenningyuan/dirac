@@ -1689,16 +1689,15 @@ CMI        ... calculate integral - trapezoidal method
 CMI       ... relativistic Hamiltonian with x,y,z components
 CMI       ... Vdc comes in individual terms ...
           IF (.NOT.CAPDIPVEL) THEN
-           V0x  = V0D(M,THETA,LAMDA,X0,X )
-           V0xy = V0D(M,THETA,LAMDA,X0,Xy)
+!          V0x  = V0D(M,THETA,LAMDA,X0,X )
+           V0x  = V0D(M,THETA,LAMDA,X0,X )*DG
+!          V0xy = V0D(M,THETA,LAMDA,X0,Xy)
+           V0xy = V0D(M,THETA,LAMDA,X0,Xy)*DGy
+
            V1x  = V1D(M,THETA,LAMDA,X0,X )*DG
-C          V1x  = V1D(M,THETA,LAMDA,X0,X )*DG*DG
            V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy
-C          V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy*DGy
-CMI        VCAP_D1C  = (V0x +V1x +VADD )*GG
+
            VCAP_D1C  = (V0x +V1x       )*GG
-!          VCAPy_D1C = (V0xy+V1xy+VADDy)*GGy
-CMI        VCAPy_D1C = (V0xy+V1xy-VADDy)*GGy
            VCAPy_D1C = (V0xy+V1xy      )*GGy
           ELSE
 CMI       ... CAPDIPVEL = .TRUE.

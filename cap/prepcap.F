@@ -1479,7 +1479,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION CAP(N2BBASX),CAPSA(N2BBASX),CAPSAT(NNBBASX),
      &       ICAPBFO(NBASIS),IOBF1_2(NBASIS),WORK(LWORK)
       INTEGER CMNINDX
-      LOGICAL FNDLAB,SYMMETRIC
+      LOGICAL FNDLAB,SYMMETRIC, LSDEL
       CHARACTER*8 LBL
 
       CALL QENTER('CAPREAD')
@@ -1506,14 +1506,33 @@ C    ... read integrals with label LBL from PEMAT into CAPSA
 C     ... evaluate symmetry of operator
       SYMMETRIC =  (LBL.EQ.'CAP_RE  '.OR. ! real part of CAPnr
      &              LBL.EQ.'CAP_IM  '.OR. ! imaginary part of CAPnr
+!    &              LBL.EQ.'XCAPD1R '.OR. !  
+!    &              LBL.EQ.'YCAPD1R '.OR. !  
+!    &              LBL.EQ.'ZCAPD1R '.OR. !  
+!    &              LBL.EQ.'XCAPD1I '.OR. !  
+!    &              LBL.EQ.'YCAPD1I '.OR. !  
+!    &              LBL.EQ.'ZCAPD1I '.OR. !  
      &              LBL.EQ.'CAPD_VDC'.OR. ! Vdc scalar field contribution
      &              LBL.EQ.'CAP_OVLP')    ! CAP overlap integrals
+
 
       IF (SYMMETRIC) THEN
         SGNFACT = 1.0D0
       ELSE
         SGNFACT = -1.0D0
       ENDIF
+
+C      ... tell to delete LS blocks (for beeing carried with alpha operator)
+      LSDEL =    (
+     &              LBL.EQ.'XCAPD1R '.OR. !  
+     &              LBL.EQ.'YCAPD1R '.OR. !  
+     &              LBL.EQ.'ZCAPD1R '.OR. !  
+     &              LBL.EQ.'XCAPD1I '.OR. !  
+     &              LBL.EQ.'YCAPD1I '.OR. !  
+     &              LBL.EQ.'ZCAPD1I '.OR. !  
+     &              LBL.EQ.'XCAPDVE '.OR. !  
+     &              LBL.EQ.'YCAPDVE '.OR. !  
+     &              LBL.EQ.'ZCAPDVE ' )
 
 C==================================================================
 C       ... in the cycle resort the matrix elements
@@ -1533,18 +1552,24 @@ C==================================================================
          CALL QUIT('CAPADAPT: wrong IX,IX1 !')
         ENDIF
 
+C      ... consider changing sign only for CAP/DIRAC non-diagonal elements
+        IF (I.EQ.J) THEN
+          SGNFACT_SAVE = 1.0D00
+        ELSE
+          SGNFACT_SAVE = SGNFACT
+        ENDIF
+
 C       -------------------------------------------------
 C        .. store  integrals in the DIRAC basic order ..
 C       -------------------------------------------------
 
         indx_i =  NBASIS*(ICAPBFO(I)-1) + ICAPBFO(J) ! common ij index
-        indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I)
+        indx_j =  NBASIS*(ICAPBFO(J)-1) + ICAPBFO(I) ! common ji index
 
-C       CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
         CAP_FACT = GET_CAPAF_FAC(IOBF1_2(I))*GET_CAPAF_FAC(IOBF1_2(J))
 
         CAP(indx_i) = CAPSA(IX)*CAP_FACT
-        CAP(indx_j) = CAPSA(IX)*CAP_FACT*SGNFACT ! only for (j,i)
+        CAP(indx_j) = CAPSA(IX)*CAP_FACT*SGNFACT_SAVE ! only for (j,i)
  
         IF (IPRCAP.GE.4) THEN
          WRITE(LUPRI,'(2X,A,1X,3(A,2I3,1X,D14.8))')
@@ -1565,7 +1590,7 @@ C       CAP_FACT = GET_CAPAF_FAC(IOBF1(2,I))*GET_CAPAF_FAC(IOBF1(2,J))
       ENDIF
 
 C   ... delete SL/LS blocks integrals ....
-      IF (SYMMETRIC) THEN
+      IF (.NOT.LSDEL) THEN
         CALL DELETE_LS(CAP,NBASIS,IPRCAP,.TRUE.)
       ELSE
 CMI  ... delete LL,SS blocks of integrals
@@ -1576,6 +1601,8 @@ CMI  ... delete LL,SS blocks of integrals
        CALL HEADER ('CAPxx integrals in basic DIRAC order'//
      & ' (cleared blocks) ',-1)
        WRITE(LUPRI,'(2X,A,A)') 'The label of integrals is:',LBL
+       WRITE(LUPRI,'(2X,A,L1)') 'Were off-diagonal LS blocks cleared ?',
+     &                          LSDEL
        CALL PRQMAT(CAP,NBASIS,NBASIS,NBASIS,NBASIS,1,
      &             IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -1584,12 +1611,17 @@ C   ...internal DIRAC symmetry adaptation into CAPSA
       IF (LBL.EQ.'CAP_RE  '.OR.
      &    LBL.EQ.'CAP_IM  '.OR.
      &    LBL.EQ.'CAPD_VDC'.OR.
+!    &          LBL.EQ.'XCAPD1R '.OR. !  
+!    &          LBL.EQ.'YCAPD1R '.OR. !  
+!    &          LBL.EQ.'ZCAPD1R '.OR. !  
+!    &          LBL.EQ.'XCAPD1I '.OR. !  
+!    &          LBL.EQ.'YCAPD1I '.OR. !  
+!    &          LBL.EQ.'ZCAPD1I '.OR. !  
      &    LBL.EQ.'CAP_OVLP') THEN
-        IREP=0
+C       IREP=0
 C       IREPD = IRQMAT(1,IREP)
 C       IREPD = IRQMAT(JM4POS(1),IREP)
         IREPD = 0
-C     ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I ') THEN
       ELSE IF (LBL.EQ.'XCAPD1R '.OR.LBL.EQ.'XCAPD1I '.OR.
      &         LBL.EQ.'XCAPDVE ') THEN
         IREPD = ISYMAX(1,2)
@@ -1601,7 +1633,6 @@ C       IREPD = 6
         IREPD = ISYMAX(2,2)
 C       IREPD = IRQMAT(JM4POS(3),IREP)
 C       IREPD = 5
-C     ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I ') THEN
       ELSE IF (LBL.EQ.'ZCAPD1R '.OR.LBL.EQ.'ZCAPD1I '.OR.
      &         LBL.EQ.'ZCAPDVE ') THEN
         IREPD = ISYMAX(3,2)
@@ -1620,7 +1651,8 @@ C   ... only full matrixes must be passed into the subroutine
       IF (IPRCAP.GE.4) THEN
        CALL HEADER ('CAPxx integrals in SO DIRAC order'//
      & ' (after MTAOSO) ',-1)
-       WRITE(LUPRI,'(2X,A,A)') 'The label of integrals is:',LBL
+       WRITE(LUPRI,'(2X,A,A)')
+     & 'The label of these integrals is:',LBL
        CALL PRQMAT(CAPSA,NBASIS,NBASIS,NBASIS,NBASIS,1,
      &             IPQTOQ(1,0),LUPRI)
       ENDIF
