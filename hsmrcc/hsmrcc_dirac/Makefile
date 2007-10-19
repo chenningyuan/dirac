@@ -62,17 +62,33 @@ FCLIBS  = $(LIB_LIST)
 
 CCLIBS  = 
 
-# These are options for generating optimized code
+##########################################################
+#
+# These are options for specific compilers
+#
+#
+#
+##########################################################
+
+# guessed default, if no compiler in the list ....
+              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
 
 ifeq ($(FC),pgf90)
 ### Portland group
-              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
 endif
 
 ifeq ($(FC),gfortran)
 ## gfortran/gcc
-              FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
+              FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) $(LDFLAGS)
 endif
+
+ifeq ($(FC),ifort)
+### Intel Fortran 
+              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
+endif
+
+
 # ... others combinations...
 #FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -fast
 #FFLAGS  = -I$(moddir)  -fdefault-integer-8 -J$(moddir) $(LDFLAGS)
@@ -230,11 +246,11 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 	@printf "Compiling F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(FC) $(FFLAGS) "-c -o" $(ce)
 	@$(FC) $(FFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " ...Done."
+	@printf "%s\n" " ...done."
 
 %.o : %.c
 	@printf "Compiling C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(CCo) $(CFLAGS) "-c -o" $(ce)
 	@$(CCo) $(CFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " ...Done."
+	@printf "%s\n" " ...done."
 
