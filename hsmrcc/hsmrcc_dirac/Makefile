@@ -85,7 +85,7 @@ endif
 
 ifeq ($(FC),ifort)
 ### Intel Fortran 
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) --nofor_main
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
 endif
 
 
