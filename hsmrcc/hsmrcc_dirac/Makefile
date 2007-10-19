@@ -71,22 +71,23 @@ CCLIBS  =
 ##########################################################
 
 # guessed default, if no compiler in the list ....
-              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
 
 ifeq ($(FC),pgf90)
 ### Portland group
-              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
 endif
 
 ifeq ($(FC),gfortran)
 ## gfortran/gcc
-              FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) $(LDFLAGS)
+        FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
 endif
 
 ifeq ($(FC),ifort)
 ### Intel Fortran 
-              FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) $(LDFLAGS)
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) --nofor_main
 endif
+
 
 
 # ... others combinations...
@@ -246,11 +247,11 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 	@printf "Compiling F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(FC) $(FFLAGS) "-c -o" $(ce)
 	@$(FC) $(FFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " ...done."
+	@printf "%s\n" " ...Done."
 
 %.o : %.c
 	@printf "Compiling C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(CCo) $(CFLAGS) "-c -o" $(ce)
 	@$(CCo) $(CFLAGS) -c -o $(objdir)/$@ $<
-	@printf "%s\n" " ...done."
+	@printf "%s\n" " ...Done."
 
