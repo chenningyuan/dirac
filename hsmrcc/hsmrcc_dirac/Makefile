@@ -41,8 +41,8 @@ FC      =  $(F77)
 ###########################################
 #CC      = pgf90
 #CC      = gcc
-#CCo      = $(CC)
-CCo      = $(F77)
+CCo      = $(CC)
+#CCo      = $(F77)
 
 #######################################################
 ###
@@ -58,7 +58,7 @@ FCLIBS  = $(LIB_LIST)
 
 ## for pgf90 ##
 #LKFLAGS = -Mnomain
-#LKFLAGS = 
+LKFLAGS = $(LDFLAGS)
 
 CCLIBS  = 
 
@@ -75,7 +75,8 @@ CCLIBS  =
 
 ifeq ($(FC),pgf90)
 ### Portland group
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+     #   FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
 endif
 
 ifeq ($(FC),gfortran)
@@ -85,7 +86,8 @@ endif
 
 ifeq ($(FC),ifort)
 ### Intel Fortran 
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) --nofor_main
+      #  FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -nofor_main
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
 endif
 
 
