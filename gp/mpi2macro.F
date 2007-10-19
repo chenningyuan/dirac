@@ -6,13 +6,10 @@ C...   The source code in this file is part of
 C...   Dirac, a relativistic ab initio electronic structure program,
 C...   release DIRAC04.0 (2004),
 C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T.
-CFleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V.
-CLarsen,
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
 C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T.
-CWinther
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. CWinther
 C...   (http://dirac.chem.sdu.dk).
 C...
 C...   For a suitable BibTEX entry, see:
@@ -24,8 +21,7 @@ C...   written licence.
 C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the
-Cresearch
+C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
@@ -61,18 +57,282 @@ C======================================================================C
 C
 C     /* deck mpixget */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MPIXGET
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WRITE_A_HELLO(IPROC_TAG)
+      SUBROUTINE MPIXGET( RBUF, ICOUNT, NTYPE_R, ITARGET, IDISPL, 
+     &                    ICOUNT_T, NTYPE_T, MY_WIN)
+C***********************************************************************
 C
-#include "implicit.h"
+C     Communicate a scalar/vector/matrix via a remote memory access (RMA) 
+C     routine provided by MPI-2. Data are put from the target memory  
+C     to the origin.
+C
+C     OUTPUT: 
+C            RBUF:      updated origin buffer with ICOUNT elements of
+C                       type NTYPE_R
+C     INPUT: 
+C            MY_WIN:    memory window on ITARGET (must be initialized!)
+C                       accessed at displacement IDISPL with ICOUNT_T 
+C                       elements of type NTYPE_T
+C
+C     Written by S. Knecht - Oct 17 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
 #include "mpif.h"
 #include "priunit.h"
+#include "mxdim_mpi2.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION RBUF(*), MY_WIN(*)
+      INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
+      INTEGER ICOUNT, ICOUNT_T
+      INTEGER(KIND=MPI_ADDRESS_KIND) IDISPL
 C
-      WRITE(LUPRI,*) 'HELLO FROM MPI-2 file',IPROC_TAG
+      IF( NTYPE_R .eq. 1 ) THEN
+        DATATYPE_OUT = my_MPI_INTEGER
+      ELSE IF ( NTYPE_R .eq. 2 ) THEN
+        DATATYPE_OUT = MPI_REAL8
+      ELSE
+        WRITE(LUPRI,*)' MPIXGET: output datatype "',NTYPE_R,
+     &                  '" does not exist!' 
+        CALL Abend2('ERROR in MPIXGET:: Nonexisting NTYPE_R')
+      END IF
+C
+      IF( NTYPE_T .eq. 1 ) THEN
+        DATATYPE_IN = my_MPI_INTEGER
+      ELSE IF ( NTYPE_T .eq. 2 ) THEN
+        DATATYPE_IN = MPI_REAL8
+      ELSE
+        WRITE(LUPRI,*)' MPIXGET: output datatype "',NTYPE_IN,
+     &                  '" does not exist!' 
+        CALL Abend2('ERROR in MPIXGET:: Nonexisting NTYPE_IN')
+      END IF
+C
+C     lock window (MPI_LOCK_SHARED mode)
+C
+      CALL MPI_WIN_LOCK(MPI_LOCK_SHARED,ITARGET,MPI_MODE_NOCHECK,
+     &                  MY_WIN,IERR)
+C
+C     transfer data     
+C
+      CALL MPI_GET(RBUF,ICOUNT,DATATYPE_OUT,ITARGET,IDISPL,ICOUNT_T,
+     &              DATATYPE_IN, MY_WIN, IERR)
+C
+C     unlock
+C
+      CALL MPI_WIN_UNLOCK(ITARGET,MY_WIN,IERR)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixmem_alloc */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXMEM_ALLOC( MY_POINT, NTYPE, NELEMENT)
+C***********************************************************************
+C
+C     allocate memory by MPI_ALLOC_MEM that is in particular suitable
+C     for memory window handling (lock + unlock). 
+C
+C     INPUT: 
+C            memory pointer MY_POINT (KIND=MPI_ADDRESS_KIND)
+C            number of elements NELEMENT of type NTYPE
+C            
+C            NTYPE == 1: REAL*8
+C            NTYPE == 2: my_MPI_INTEGER
+C
+C     OUTPUT: 
+C            allocated memory
+C                       
+C     Written by S. Knecht - Oct 19 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+#include "mxdim_mpi2.h"
+#include "typesz_mpi2.h"
+      INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
+      INTEGER(kind=MPI_ADDRESS_KIND) MY_POINT
+C
+C     how much memory?
+C
+      MY_MM_NEEDS    = 0 
+      MY_MM_NEEDSSCR = 0
+C
+C     allocate memory type specific
+C
+      IF( NTYPE .eq. 1 ) THEN
+        MY_MM_NEEDSSCR = ISIZE_DP * NELEMENT
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR
+        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,MPI_INFO_NULL,MY_POINT,IERR)
+      ELSE IF ( NTYPE .eq. 2 )THEN
+        MY_MM_NEEDSSCR = ISIZE_my_int * NELEMENT
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR
+        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,MPI_INFO_NULL,MY_POINT,IERR)
+      END IF
+C
+C     WRITE(LUPRI,*) ' allocation successful'
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixmem_free */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXMEM_FREE(RBUF)
+C***********************************************************************
+C
+C     free memory buffer RBUF
+C
+C     INPUT: 
+C            allocated memory buffer RBUF
+C            
+C     OUTPUT: 
+C                       
+C     Written by S. Knecht - Oct 19 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+C
+      CALL MPI_FREE_MEM(RBUF,IERR)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixcalc_typesz */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXCALC_TYPESZ()
+C***********************************************************************
+C
+C     calculate various MPI type sizes (in byte) - store on common block
+C     TYPE_SZMPI2 (typesz_mpi2.h)
+C
+C     Written by S. Knecht - Oct 19 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "typesz_mpi2.h"
+C
+      CALL MPI_TYPE_EXTENT(MPI_REAL8,ISIZE_DP,IERR)
+      CALL MPI_TYPE_EXTENT(my_MPI_INTEGER,ISIZE_my_int,IERR)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixwindow_crt */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXWINDOW_CRT(RBUF,NELEMENT,NTYPE,IDISPL,
+     &                          IWIN_COMM,MY_WIN)
+C***********************************************************************
+C
+C     open memory window to be used in one-sided MPI communication
+C
+C     INPUT: 
+C            array RBUF (should be allocated by mpixmem_alloc to
+C            assure lock functionality)
+C            number of elements NELEMENT of type NTYPE
+C            
+C            NTYPE == 1: REAL*8
+C            NTYPE == 2: my_MPI_INTEGER
+C
+C     OUTPUT: 
+C            new memory window handle MY_WIN shared by all 
+C            processes in calling communicator IWIN_COMM (group).
+C            extension of memory window on each process may be
+C            unsymmetric.
+C                       
+C     Written by S. Knecht - Oct 19 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+#include "mxdim_mpi2.h"
+#include "typesz_mpi2.h"
+      INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
+C
+      IBUF_LENSCR = 0 
+      IBUF_LEN    = 0 
+C
+C     open memory window on each process shared by IWIN_COMM
+C
+      IF( NTYPE .eq. 1 ) THEN
+C
+        IBUF_LENSCR = ISIZE_dp * NELEMENT
+        IBUF_LEN    = IBUF_LENSCR
+C
+        CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_dp,MPI_INFO_NULL,
+     &                      IWIN_COMM,MY_WIN,IERR)
+C
+      ELSE IF ( NTYPE .eq. 2 )THEN
+C
+        IBUF_LENSCR = ISIZE_int * NELEMENT
+        IBUF_LEN    = IBUF_LENSCR
+C
+        CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_dp,MPI_INFO_NULL,
+     &                      IWIN_COMM,MY_WIN,IERR)
+C
+      END IF
+C
+C     WRITE(LUPRI,*) ' window opened', MYID
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixwindow_free */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXWINDOW_FREE(MY_WIN)
+C***********************************************************************
+C
+C     close memory window used in one-sided MPI communication
+C
+C     INPUT: 
+C            memory window handle MY_WIN shared by all processes in
+C            calling communicator IWIN_COMM (group).
+C
+C     OUTPUT: 
+C                       
+C     Written by S. Knecht - Oct 19 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+C
+C     close memory window on each process shared by IWIN_COMM
+C
+      CALL MPI_WIN_FREE(MY_WIN,IERR)
+C
+C     WRITE(LUPRI,*) ' window closed', MYID
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C    /* deck write_a_hello_mpi2 */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WRITE_A_HELLO_MPI2(IPROC_TAG)
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      WRITE(LUPRI,*) 'HELLO FROM MPI-2 routines',IPROC_TAG
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
