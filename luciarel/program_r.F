@@ -148,7 +148,6 @@ C
           IRC = 1
         end if
       END IF
-      write(6,*)
       if (IRELACI.eq.1.and.NZ.eq.1) then
         write(LUWRT,*) ' Quaternion real relativistic CI '
       end if
