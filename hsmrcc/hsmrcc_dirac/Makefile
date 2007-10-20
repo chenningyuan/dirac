@@ -39,34 +39,33 @@ FC      =  $(F77)
 #   ... from DIRAC
 #
 ###########################################
-#CC      = pgf90
-#CC      = gcc
 CCo      = $(CC)
 #CCo      = $(F77)
 
-#######################################################
+##############################################################################
 ###
-###           set up libraries from DIRAC
+###        set up libraries from DIRAC
 ###
-#######################################################
+###  NOTE: in Makefile.config $(LIB_LIST) the -llapack must be before -lblas
+###
+##############################################################################
+FCLIBS  = $(LIB_LIST) 
 #FCLIBS  = -lacml
 #FCLIBS  = -lblas -llapack
 #FCLIBS  = $(LIB_LIST)  -lblas
-FCLIBS  = $(LIB_LIST) 
 #FCLIBS  = $(LIB_LIST)  -lacml
 #FCLIBS  = $(LIB_LIST) -lblas -llapack
 
-## for pgf90 ##
+### linking flags ###
 #LKFLAGS = -Mnomain
 #LKFLAGS = 
+LKFLAGS = $(LDFLAGS) 
 
 CCLIBS  = 
 
 ##########################################################
 #
-# These are options for specific compilers
-#
-#
+#      These are options for specific compilers
 #
 ##########################################################
 
@@ -88,8 +87,6 @@ ifeq ($(FC),ifort)
         FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
 endif
 
-
-
 # ... others combinations...
 #FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -fast
 #FFLAGS  = -I$(moddir)  -fdefault-integer-8 -J$(moddir) $(LDFLAGS)
@@ -106,10 +103,13 @@ CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
 #CFLAGS  = -I$(moddir) -i8 -i8storage -g
 
 
-#######################################################################
-#   Different directories
-# where the code is present.
-#######################################################################
+##########################################################################
+#
+#
+#  Directories for modules, Fortran90/C source files and object files.
+#
+#
+###########################################################################
 
 moddir = modules
 srcdir = source
@@ -156,7 +156,9 @@ objects := $(modobjs) $(f90objs) $(c89objs)
 ### to fix main dependence form the ../../Makefile.config file
 dirac.x : $(executable)
 
+###############################################
 ###      name of the executable file        ###
+###############################################
 executable = hsmrcc.exe
 
 # ## overwrite default make !!
@@ -189,7 +191,7 @@ clean :
 	@rm -f $(executable)
 	@echo "  Done."
 
-# dependencies other than implicit dependencies
+### dependencies other than implicit dependencies
 
 ###################################################################
 #              Intermodule Dependencies
