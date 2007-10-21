@@ -1558,7 +1558,7 @@ C#include "capint.h"
       COMPLEX *16 VCAPy,VADDy
       COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
-      EXTERNAL V0D,V1D
+      EXTERNAL V0D,V0Dm,V1D
 CMI   ... declaration must be for gfortran
       double complex v0,v1,v2,V1D,FF,V0D
       
@@ -1690,9 +1690,11 @@ CMI       ... relativistic Hamiltonian with x,y,z components
 CMI       ... Vdc comes in individual terms ...
           IF (.NOT.CAPDIPVEL) THEN
 !          V0x  = V0D(M,THETA,LAMDA,X0,X )
-           V0x  = V0D(M,THETA,LAMDA,X0,X )*DG
+!          V0x  = V0D(M,THETA,LAMDA,X0,X )*DG
+           V0x  = V0Dm(M,THETA,LAMDA,X0,X  )
 !          V0xy = V0D(M,THETA,LAMDA,X0,Xy)
-           V0xy = V0D(M,THETA,LAMDA,X0,Xy)*DGy
+!          V0xy = V0D(M,THETA,LAMDA,X0,Xy)*DGy
+           V0xy = V0Dm(M,THETA,LAMDA,X0,Xy )
 
            V1x  = V1D(M,THETA,LAMDA,X0,X )*DG
            V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy
@@ -1700,7 +1702,7 @@ CMI       ... Vdc comes in individual terms ...
            VCAP_D1C  = (V0x +V1x       )*GG
            VCAPy_D1C = (V0xy+V1xy      )*GGy
           ELSE
-CMI       ... CAPDIPVEL = .TRUE.
+CMI       ... CAPDIPVEL = .TRUE.; comparison with DIRAC d/dx,d/dy,d/dz analytical integrals
            VCAP_D1C  = GG * DG
            VCAPy_D1C = GGy* DGy
 C          write(LUPRI,*) 'VCAP_D1C, VCAPy_D1C:',VCAP_D1C, VCAPy_D1C
@@ -1834,6 +1836,20 @@ CMI   ...  new derived V0 for the DIRAC Hamiltonian
 C     CA1 = -0.50D0*( (F0(THETA,LAMBDA,X0,X)**(-2)) )
 CMI   write(LUPRI,*) 'V0D function:',CA1
       V0D = CA1 
+      END
+
+CMI   ...  newly derived V0 for the DIRAC Hamiltonian - Moiseyev's version
+      DOUBLE COMPLEX FUNCTION V0Dm(M,THETA,LAMBDA,X0,X)
+      IMPLICIT NONE
+#include "priunit.h"
+      real *8  M,THETA,LAMBDA,X0,X
+      DOUBLE COMPLEX CA1,CA2
+      EXTERNAL F0,F1
+      DOUBLE COMPLEX F0,F1
+C     CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**2))
+      CA1 = -0.50D0*( (F0(THETA,LAMBDA,X0,X)**(-2)) )
+CMI   write(LUPRI,*) 'V0D function:',CA1
+      V0Dm = CA1 
       END
 
 CMI   .... Eq. 16 of Sajeev:2006
