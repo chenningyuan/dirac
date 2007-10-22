@@ -325,6 +325,103 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+C     /* deck mpixwingroup_info */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXWINGROUP_INFO(MY_WIN,INFO_GROUP)
+C***********************************************************************
+C
+C     get info on group of processes sharing a memory window MY_WIN
+C
+C     INPUT: 
+C            shared memory window handle MY_WIN 
+C
+C     OUTPUT: 
+C            duplicate (INFO_GROUP) of initial group handle of processes
+C            sharing the memory window MY_WIN
+C                       
+C     Written by S. Knecht - Oct 22 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+C
+C     get group information
+C
+      CALL MPI_WIN_GET_GROUP(MY_WIN, INFO_GROUP, IERR)
+C
+C     WRITE(LUPRI,*) ' info gathered', MYID
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixwin_attr_info */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXWIN_ATTR_INFO(MY_WIN,INUM)
+C***********************************************************************
+C
+C     get cached attributes on shared memory window
+C
+C     INPUT: 
+C            shared memory window handle MY_WIN 
+C            attribute number: INUM     == 1: window base address 
+C                                       == 2: window size (in bytes)
+C                                       == 3: displacement unit (in
+C                                             memory window)
+C
+C     OUTPUT: 
+C                       
+C     Written by S. Knecht - Oct 22 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+      INTEGER IKEY_VAL
+      INTEGER(KIND=MPI_ADDRESS_KIND) IWIN_ATTR
+      LOGICAL VALUE_PROV
+C
+      VALUE_PROV = .FALSE.
+      IKEY_VAL  = 0
+      IWIN_ATTR = 0
+C
+C     which information is needed?
+C
+      IF( INUM .eq. 1 ) THEN
+        IKEY_VAL = MPI_WIN_BASE
+      ELSE IF( INUM .eq. 2 ) THEN
+        IKEY_VAL = MPI_WIN_SIZE
+      ELSE IF ( INUM .eq. 3 ) THEN
+        IKEY_VAL = MPI_WIN_DISP_UNIT
+      ELSE
+         WRITE(LUPRI,*) 'invalid memory window attribute requested',
+     &                   INUM
+         GOTO 100
+      END IF
+C
+      CALL MPI_WIN_GET_ATTR(MY_WIN,IKEY_VAL,IWIN_ATTR,VALUE_PROV,IERR)
+C
+C     print information
+C
+      IF( INUM .eq. 1 .and. VALUE_PROV ) THEN 
+        WRITE(LUPRI,*) ' window base address at', IWIN_ATTR 
+      ELSE IF( INUM .eq. 2 .and. VALUE_PROV ) THEN 
+        WRITE(LUPRI,*) ' size of window is (in bytes)', IWIN_ATTR 
+      ELSE IF( INUM .eq. 3 .and. VALUE_PROV ) THEN 
+        WRITE(LUPRI,*) ' displacement unit for window is', IWIN_ATTR 
+      END IF 
+C
+ 100  CONTINUE
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
 C    /* deck write_a_hello_mpi2 */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WRITE_A_HELLO_MPI2(IPROC_TAG)
