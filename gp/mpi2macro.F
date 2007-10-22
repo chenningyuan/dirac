@@ -57,8 +57,8 @@ C======================================================================C
 C
 C     /* deck mpixget */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MPIXGET( RBUF, ICOUNT, NTYPE_R, ITARGET, IDISPL, 
-     &                    ICOUNT_T, NTYPE_T, MY_WIN)
+      SUBROUTINE MPIXGET( RBUF, JCOUNT, NTYPE_R, ITARGET, IDISPL, 
+     &                    JCOUNT_T, NTYPE_T, MY_WIN)
 C***********************************************************************
 C
 C     Communicate a scalar/vector/matrix via a remote memory access (RMA) 
@@ -66,11 +66,11 @@ C     routine provided by MPI-2. Data are put from the target memory
 C     to the origin.
 C
 C     OUTPUT: 
-C            RBUF:      updated origin buffer with ICOUNT elements of
+C            RBUF:      updated origin buffer with JCOUNT elements of
 C                       type NTYPE_R
 C     INPUT: 
 C            MY_WIN:    memory window on ITARGET (must be initialized!)
-C                       accessed at displacement IDISPL with ICOUNT_T 
+C                       accessed at displacement IDISPL with JCOUNT_T 
 C                       elements of type NTYPE_T
 C
 C     Written by S. Knecht - Oct 17 2007
@@ -86,7 +86,7 @@ C***********************************************************************
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
-      INTEGER ICOUNT, ICOUNT_T
+      INTEGER JCOUNT, JCOUNT_T
       INTEGER(KIND=MPI_ADDRESS_KIND) IDISPL
 C
       IF( NTYPE_R .eq. 1 ) THEN
@@ -116,7 +116,7 @@ C
 C
 C     transfer data     
 C
-      CALL MPI_GET(RBUF,ICOUNT,DATATYPE_OUT,ITARGET,IDISPL,ICOUNT_T,
+      CALL MPI_GET(RBUF,JCOUNT,DATATYPE_OUT,ITARGET,IDISPL,JCOUNT_T,
      &              DATATYPE_IN, MY_WIN, IERR)
 C
 C     unlock
