@@ -444,27 +444,38 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *. Input/Output 
 C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
       DIMENSION C(NJA*NJB),CKK(*)
+csk      WRITE(LUWRT,*)'NJA,NJB, NKA, NKB',NJA,NJB, NKA, NKB
+csk      WRITE(LUWRT,*)'NTA,NTB ',NTA,NTB
+csk      WRITE(LUWRT,*)'vector IKJA'
+csk      CALL IWRTMAMN(IKJA,1,NTA*NKA,1,NTA*NKA,6)
+csk      WRITE(LUWRT,*)'vector IKJB', IKJB
+csk      CALL IWRTMAMN(IKJB,NTB,NKB,NTB,NKB,6)
 *
       DO ITB = 1, NTB
       DO ITA = 1, NTA
        ITAB = (ITB-1)*NTA+ITA-1
 *
        KAKBITAB = ITAB*NKA*NKB
+csk       WRITE(LUWRT,*)'ITAB',ITAB
        IF(IWAY.EQ.1) THEN
          DO KB = 1, NKB         
           JB = IKJB(ITB,KB)
           IF(JB.NE.0) THEN
+csk           WRITE(LUWRT,*)'JB',JB
            SIGNB = XKJB(ITB,KB)
            JAJB0 = (JB-1)*NJA 
            ITAKA = ITA-NTA
            DO KA = 1, NKA           
             ITAKA = ITAKA + NTA
+csk            WRITE(LUWRT,*)'ITAKA,NTA',ITAKA,NTA
+            JA = IKJA(ITAKA)
+csk            WRITE(LUWRT,*)'JA',JA
             JA = IKJA(ITAKA)
             KAKBITAB = KAKBITAB + 1
             IF(JA.NE.0) THEN
                 JAJB = JAJB0 + JA
                 SIGN = XKJA(ITAKA)*SIGNB
-CSK                WRITE(LUWRT,*)'KAKBITAB, JAJB',KAKBITAB, JAJB
+csk                WRITE(LUWRT,*)'KAKBITAB, JAJB',KAKBITAB, JAJB, JAJB0, JA
                 CKK(KAKBITAB) = SIGN*C(JAJB)
             ELSE 
                CKK(KAKBITAB) = 0.0D0

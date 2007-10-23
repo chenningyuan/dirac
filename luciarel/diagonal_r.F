@@ -950,8 +950,8 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 *. Output
       DIMENSION H1DIA_U(*),H1DIA_B(*)
 *. Just locally
-      dimension IOBPTS_PIC(6+MXPR4T,MXPOBS)
-      dimension IOBPTS2_PIC(6+MXPR4T,MXPOBS)
+      dimension IOBPTS_PIC(MXPNGAS+MXPR4T,MXPOBS)
+      dimension IOBPTS2_PIC(MXPNGAS+MXPR4T,MXPOBS)
 *
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRDIA)
