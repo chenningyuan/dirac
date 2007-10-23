@@ -360,6 +360,7 @@ C
       CALL QENTER('SETXEP')
 C
       NXOPP = 0
+      INDI  = 0 
       DO 10 ISYM = 1,NFSYM
         JSYM  = MOD(ISYM+IOPSY,2) + 1
 C
