@@ -453,7 +453,7 @@ C        as the default for LevyLe/BSS
          XLR_INDSTR(1,I) = ' '
          XLR_INDSTR(3,I) = ' '
       ENDDO
-      ALLOW_TRIPLET = .FALSE.
+      XLR_TRIPLET = .FALSE.
 C
 C     Initialize user-defined linear response properties
 C     ==================================================
@@ -556,8 +556,8 @@ C&&&& MAXRED: max dimension of matrix in reduced system
                   READ(LUCMD,*) MAXRM
                GOTO 100
  11            CONTINUE
-C&&&& TRIPLET: allow triplet excitations in SPINFREE and LEVY-LEBLOND runs
-               ALLOW_TRIPLET = .TRUE.
+C&&&& TRIPLET: allow triplet excitations in SPINFREE runs
+               XLR_TRIPLET = .TRUE.
                GOTO 100
  12            CONTINUE
 C&&&& XLRNRM: normalize trial vectors
@@ -742,6 +742,8 @@ Chj Oct 2000 end
      &  ' which are expelled.'
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
+      IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')
+     &  ' * Triplet excitations allowed.'
       IF (NOSPIA) WRITE(LUPRI,'(A)')
      &  ' * All spin-dependence removed from property operator A'
       IF (NOSPIB) WRITE(LUPRI,'(A)')
@@ -1010,6 +1012,7 @@ C
       LOFFTY    = 0
       STATIC    = (NFREQ.EQ.1.AND.BFREQ(1).EQ.D0)
       UNCOUP    = XLR_UNCOUP
+      TRIPLET   = XLR_TRIPLET
       CNVINT(1) = CNVXLR(1)
       CNVINT(2) = CNVXLR(2)
       ITRINT(1) = ITRILR(1)

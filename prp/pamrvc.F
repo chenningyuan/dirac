@@ -4288,7 +4288,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbxrs.h"
-#include "dcbxlr.h"
 #include "dgroup.h"
 C
       DIMENSION FMO(NORBT,NORBT,NZ), CMO(*), IBEIG(*), FAO(*), WORK(*)
@@ -4327,7 +4326,7 @@ C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
-           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. ALLOW_TRIPLET) THEN
+           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
              CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,

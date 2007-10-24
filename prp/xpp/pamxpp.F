@@ -378,7 +378,7 @@ C
       SAVE SET
       DATA SET/.FALSE./
       DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
-     &            '.EXCITA','-------','.THRESH','.MAXITR',
+     &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','-------','.NONORM',
      &            '-------','-------','.INTFLG','-------',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
@@ -444,6 +444,7 @@ Chj: MAXRM, MXLOAD
       XPP_SKIPEE = .FALSE.
       XPP_LSFG(1)= .TRUE.
       XPP_LSFG(2)= .TRUE.
+      XPP_TRIPLET = .FALSE.
       DO I = 1,NFSYM
          XPP_INDSTR(2,I) = ' '
          XPP_INDSTR(1,I) = ' '
@@ -512,6 +513,8 @@ CHJMAERKE 2000: make input for KEXSIM and KEXSTV ?
                   KEXSTV(I) = KEXCNV(I)
                GO TO 100
     6          CONTINUE
+C&&&& TRIPLET - allow triplet excitations in spinfree calculations
+               XPP_TRIPLET = .TRUE.
                GO TO 100
     7          CONTINUE
 C&&&& THRESH - Threshold for convergence:
@@ -682,6 +685,8 @@ C
         DOXPP = DOXPP.OR.XPPANA
         GOTO 999
       ENDIF
+      IF(SPINFR.AND.XPP_TRIPLET)WRITE(LUPRI,'(A)')
+     &  ' * Triplet excitations allowed.'
 C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
@@ -816,6 +821,7 @@ C     special variables only for linear equations (LINEQ true):
       STERNH    = .FALSE.
       STATIC    = .FALSE.
       UNCOUP    = .FALSE.
+      TRIPLET   = XPP_TRIPLET
 C
 C     Indicate from vectors are read...
 C
