@@ -86,7 +86,7 @@
 /* SK: KRMC MO-transformations produce file-close errors on IBM systems 
    in Juelich resulting in an endless MPI error loop --> this is a quick 
    and dirty fix until the real bug is found (introduced between 
-   JULY 2007 and OCTOBER 2007. 
+   JULY 2007 and OCTOBER 2007.*/ 
 #if defined (SYS_AIX)
    exit(0);
 #endif
