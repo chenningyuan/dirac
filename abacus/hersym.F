@@ -65,6 +65,10 @@ C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
 #include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+#include "infpar.h"
 #include "mxcent.h"
 #include "mxsymm.h"
 #include "priunit.h"
@@ -75,8 +79,11 @@ C*****************************************************************************
       ZERTOL = 1.0D-12
       MAXAXS = 50
       MAXMIR = 25
-      CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-      WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+CSK   only MASTER needs to print the information 
+      IF( MYTID .eq. MPARID )THEN
+        CALL HEADER('SYMADD: Requested addition of symmetry',-1)
+        WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+      END IF
       KCOOR = 1
       KROT = KCOOR + 6 * (MXCENT + 1)
       KIROT = KROT + 6 * (MAXAXS + 1)
@@ -97,6 +104,10 @@ C  /* Deck fndsym */
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
      &                         CLASS,VRML,WORK,LWORK)
 #include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+#include "infpar.h"
 #include "mxsymm.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -163,7 +174,7 @@ C        END IF
  100     CONTINUE
          ATMARR(1,0) = NUCLP
          TEXT = 'Original Coordinates                    '
-         CALL PRNARR(TEXT, MXCENT, ATMARR)
+         IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT, MXCENT, ATMARR)
 C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
 CCCC#ifndef PRG_DIRAC
@@ -182,7 +193,8 @@ C ::: the symmetry elements is constructed.  :::
          IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
      &                          DMRPLN,MAXMIR,WORK,LWORK)
 C
-         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
+         IF( MYTID .eq. MPARID ) 
+     &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
 CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
@@ -194,7 +206,7 @@ CCCC#endif
 CCCC#ifndef PRG_DIRAC
           IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
-            CALL PRNARR(TEXT , MXCENT, ATMARR)
+            IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
           ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
@@ -245,14 +257,16 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
          TMPLN = MLINE(NMLAU)
          WRITE(TMPLN(10:10), '(I1)') NSYMOP
          WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
-         IF (NSYMOP .EQ. 0) THEN
-            WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
-         ELSE IF (NSYMOP .EQ. 1) THEN
-            WRITE(LUPRI, '(/1X,2A)') 'The following element was '
-     &                                           // 'found:   ',SYMM
-         ELSE
-            WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
-     &                                           //  'found:   ',SYMM
+         IF( MYTID .eq. MPARID ) THEN
+           IF (NSYMOP .EQ. 0) THEN
+              WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
+           ELSE IF (NSYMOP .EQ. 1) THEN
+              WRITE(LUPRI, '(/1X,2A)') 'The following element was '
+     &                                             // 'found:   ',SYMM
+           ELSE
+              WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
+     &                                             //  'found:   ',SYMM
+           END IF
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
