@@ -32,24 +32,12 @@ cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.dz.val.bas > dyall.v2z
 cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.tz.val.bas > dyall.v3z
 cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.val.bas > dyall.v4z
 
-cat *.{4d,4p,5s,5p,5d,6s,6p,6d,7s}.dz.core.bas > dyall.cv2z
-cat *.{4d,4p,5s,5p,5d,6s,6p,6d,7s}.tz.core.bas > dyall.cv3z
-cat *.{4d,4p,5s,5p,5d,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
-
-cat *.5f.dz.core1.bas > dyall.5f.c1v2z
-cat *.5f.tz.core1.bas > dyall.5f.c1v3z
-cat *.5f.qz.core1.bas > dyall.5f.c1v4z
-
-cat *.5f.dz.core2.bas > dyall.5f.c2v2z
-cat *.5f.tz.core2.bas > dyall.5f.c2v3z
-cat *.5f.qz.core2.bas > dyall.5f.c2v4z
-
+cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.dz.core.bas > dyall.cv2z
+cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.tz.core.bas > dyall.cv3z
+cat *.{4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
 
 # one must now edit the dyall.{a{,c}}v{2,3,4}z files and
 # set the "Elements supported" section correctly by hand.
 # in order to do that, one has to just collect all the 
 # separate "Elements supported" fields, and leave just one
 # with all the atoms
-#
-# in particular, one should be careful with any archive that
-# contains 5f elements
