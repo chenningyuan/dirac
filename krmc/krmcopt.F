@@ -1081,6 +1081,13 @@ C
 C
 C        Check trace of DV
 C
+C        be a bit more slack (?) when running NO occ. numbers 
+C        with LUCIAREL
+C
+      IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
+        XDEPS = 1.0D-7 
+      END IF
+C
 C     IF (... debug check of DV,PV trace ...) THEN
          IF (CALCDV) THEN
             DO IZ = 1, NZ
@@ -1109,11 +1116,19 @@ C     IF (... debug check of DV,PV trace ...) THEN
      &                 DTRCE(IZ),DTREXP,ABS(DTRCE(IZ)-DTREXP)
                END IF
                IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. DEPS ) THEN
+                  IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
+                    IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. XDEPS ) THEN
+                      GOTO 150
+                    END IF
+                    GOTO 200
+                  END IF
+ 150              CONTINUE
                   IF (IPROPT .LT. 10) THEN
                      IPROPT = 10
                      GOTO 100
                   END IF
                   CALL QUIT('*** ERROR in RMAKDM ***')
+ 200              CONTINUE
                END IF
             END DO
          END IF
