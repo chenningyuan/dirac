@@ -909,12 +909,29 @@ CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
 *
 *         read indices from cpu-specific file INDICES.'MYPROC'
 *         ( written in dist_ints_sigden --> interface_r.F )
-          call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-          call isetvc(WORK(KINDEX),IZERO,NALLINT*4)
+          IF( NOOCCN_DENS_RUN ) THEN
+csk            WRITE(LUWRT,*) ' ********************************'
+csk            WRITE(LUWRT,*) ' NO occupation number calculation'
+csk            WRITE(LUWRT,*) ' ********************************'
+            WRITE(LUWRT,*) ' '
+            WRITE(LUWRT,*) ' Allocating 4-index array of length',
+     &                       NTERMS*4
+            WRITE(LUWRT,*) ' '
+            call memmar(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
+            call isetvc(WORK(KINDEX),IZERO,NTERMS*4)
+          ELSE
+            WRITE(LUWRT,*) ' Allocating 4-index array of length',
+     &                       NALLINT*4
+            WRITE(LUWRT,*) ' '
+            call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
+            call isetvc(WORK(KINDEX),IZERO,NALLINT*4)
+          END IF
           call read_indices(WORK(KINDEX),NTERMS)
-CSK          WRITE(LUWRT,*) ' printing index matrix'
-CSK          call IWRTMAMN(WORK(KINDEX),4,NTERMS,4,NTERMS,LUWRT)
+csk          WRITE(LUWRT,*) ' printing index matrix'
+csk          call IWRTMAMN(WORK(KINDEX),4,NTERMS,4,NTERMS,LUWRT)
 *
+csk          WRITE(LUWRT,*) ' N1ELINT and NALLINT and IRC', 
+csk     &                     N1ELINT, NALLINT, IRC
           IPRDEN = 1
 *
 #if defined (VAR_MPI)
@@ -970,21 +987,29 @@ CSK            CALL COLLECT_DENS_MAT(WORK(KMAX_DENS_BLK),WORK(KT_CC),
            END IF
           end if
 *
-          IPRDEN = 1
-*         memory check 
-          call rmemchk
-*
-          IF( .NOT. NOOCCN_DENS_RUN )THEN
-            CALL DZERO(F2,LF2_ZERO)
-          END IF
-*
           IPRDEN = 00
+csk*         memory check 
+csk          call rmemchk
+*
+*
 *         transfer density matrices to KRMC format
-          call trnsfdens(F1,F2,WORK(KT_CC),
-     &                  WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                  WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                  IRC,NTOOB2,IPRDEN)
-          IPRDEN = 1
+*
+          IF( NOOCCN_DENS_RUN )THEN
+*
+            call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
+     &                        WORK(KLABEXTP),WORK(KLIHIND),
+     &                        WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+*
+          ELSE
+*
+            CALL DZERO(F2,LF2_ZERO)
+*
+            call trnsfdens(F1,F2,WORK(KT_CC),
+     &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
+     &                    IRC,NTOOB2,IPRDEN)
+          END IF
 *
         else
           write(LUWRT,*) 'SIGDEN_ROUTE with unallowed value in gasci.'

@@ -9252,6 +9252,7 @@ Cjan      end do
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Transfer density matrices from excitation class ordering to
@@ -9520,6 +9521,225 @@ csk               write(LUWRT,*) ' continuing ...'
 *       ^ Loop over excitation types
       end do
 *     ^ Loop over Real/Imaginary
+*
+      return
+      end
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+* Transfer density matrices from excitation class ordering to
+* KRMC storage mode
+*
+*  1-particle: molfdir full spinor format
+*
+*--------------------------------------------------------------------*
+*   November 12, 2001, Timo Fleig
+*                - updated for correct one-particle function ordering
+*                  Timo Fleig, June 2004
+*                - Revised FSM/IUB ordering section             
+*                  Timo Fleig, November 2006
+*                - revised for proper NO-occupation number runs
+*                  Stefan Knecht, October 2007
+*      
+*                - only 1-particle ordering, 
+*                  Stefan Knecht - October 2007
+*
+*--------------------------------------------------------------------*
+*
+      subroutine trnsfdens_no(F1,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
+     &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
+*
+*  Input:  DENS
+*  Output: F1
+*
+* #############################################
+*  LABEL is defined as 
+*     1 for unbarred (alpha)
+*    -1 for barred   (beta)
+* #############################################
+*
+#include "implicit.h"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "ctcc.inc"
+*
+#include "dgroup.h"
+#include "dcborb.h"
+#include "lucipar_rel.inc"
+#include "noccn_inf.inc"
+*
+      dimension F1(*)
+      dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
+      dimension INDEX(4,N1ELINT),ICSAVE(4),INDEX_L(4),IND_R(4)
+      dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
+     &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
+     &          IREOKF(MXPORB)
+*
+      NTESTL = 00
+      NTEST = max(IPRNT,NTESTL)
+*
+      NINT_TOT = N1ELINT + N2ELINT
+*
+      if (ISF.eq.1.or.NZ.eq.1) then
+        IRILP = 1
+      else
+        IRILP = 2
+      end if
+*
+      ONE = 1.0D0
+      ONEM = -1.0D0
+      NASHTL2 = NASHTL * 2
+*
+      if (NTEST.ge.2) then
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================================='
+        write(LUWRT,*) ' Transferring densities to MOLFDIR format.'
+        write(LUWRT,*) '=========================================='
+      end if
+*
+*  Fermion symmetry/Kramers reordering (for output density indexing)
+*  KRMC wants - IFSYM loop
+*              - unbarred/barred loop
+*               - GAS loop
+* Determine offset array
+      IADDKF = 1
+      do IFSM = 1,NFSYM
+        do IUBT = 1,2
+          do KGAS = 1,NGAS
+            IOFFKF(IFSM,KGAS,IUBT) = IADDKF
+            IADDKF = IADDKF + NGSH(IFSM,KGAS)
+          end do
+        end do
+      end do
+*
+      if (NTEST.ge.5) then
+        do IUBT = 1,2
+          if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
+          if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+        end do
+      end if
+*
+* Determine reordering array
+      II = 1
+      do IUBT = 1,2
+        do IFSM = 1,NFSYM
+          do KGAS = 1,NGAS
+            do IRN = 1,NGSH(IFSM,KGAS)
+              IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
+              II = II + 1
+            end do
+          end do
+        end do
+      end do
+*
+      if (NTEST.ge.5) then
+        write(LUWRT,*) ' IREOKF array'
+        call iwrtmamn(IREOKF,1,II-1,1,MXPORB,LUWRT)
+      end if
+*
+* Process densities
+      do IRI = 1,IRILP,1
+        IRUN = 1
+        IRIOFF = 0
+        do JRI = 1,IRI-1,1
+          IRIOFF = IRIOFF + NINT_TOT
+        end do
+*
+        if (NTEST.ge.4) then
+          write(6,*)
+          if (IRI.eq.1) write(LUWRT,*) ' Real part     : '
+          if (IRI.eq.2) write(LUWRT,*) ' Imaginary part: '
+          write(6,*) ' -------------------'
+        end if
+*
+*
+        do IXTP = 1,NSPOBEX_TP,1
+*
+          if (NTEST.ge.4) then
+            write(LUWRT,*)
+            write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+            write(LUWRT,*)        ' -------------------------'
+            write(LUWRT,*)
+            write(LUWRT,*) ' LABEL array (for integral indices!):  '
+            write(LUWRT,*) ' Internally, LABEL is reord. for operators.'
+            call iwrtmamn(LABEL(1,IXTP),1,4,1,4,LUWRT)
+            write(LUWRT,*) 'Input LUCIAREL operator order, output dens.'
+            call iwrtmamn(IOP_REO(1,IXTP),1,4,1,4,LUWRT)
+          end if
+*
+          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
+*
+          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+*
+*           real part finished
+*
+            GOTO 222
+*           
+          ELSE IF( IRI. eq. 2 .and. IRUN .eq. ( N1ELINT + 1) ) THEN
+*
+*           well, we have finished the 1-particle part 
+*
+            GOTO 333
+*
+          END IF
+          do INT = 1,NINT_TP,1
+*
+* Determine type of density element
+            NCT = 0
+            do IC=1,4,1
+              if (INDEX(IC,IRUN).ne.0) then
+                NCT = NCT + 1
+                ICSAVE(NCT) = IC
+                IUBFAC = 1
+                if (INDEX(IC,IRUN).lt.0) IUBFAC = -1
+                INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
+              end if
+            end do
+csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
+*
+            if (NCT.eq.2) then
+*
+              I = IREOKF(INDEX_L(ICSAVE(1))  
+     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHTL)
+              J = IREOKF(INDEX_L(ICSAVE(2))  
+     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHTL)
+*
+              IOUT =  (IRI-1)*NASHTL2*NASHTL2 +
+     &                 (J-1) *NASHTL2 +
+     &                  I
+              F1(IOUT) = DENS(IRUN+IRIOFF)
+              if (NTEST.ge.10) then
+                write(LUWRT,'(2I3,1F18.14,A,I4)') 
+     &                    I,J,F1(IOUT),' to pos.',IOUT
+              end if
+*
+            else if( NCT .eq. 0 .or. NCT .eq. 4)then
+csk               write(LUWRT,*) ' what to do with 4 zero inidces???'
+csk               write(LUWRT,*) ' continuing ...'
+csk               write(LUWRT,*) ' what to do with 4 nonzero inidces???'
+csk               write(LUWRT,*) ' continuing ...'
+            else 
+              write(LUWRT,*) 'No QFT implemented YET in LUCIAREL.'
+              write(LUWRT,*) 'you specified ',4-NCT,' indices.'
+              call abend2('Quitting in trnsfdens_no.')
+            end if
+            IRUN = IRUN + 1
+          end do
+*         ^ Loop over integrals in excitation type
+        end do
+*       ^ Loop over excitation types
+ 222    CONTINUE
+      end do
+*     ^ Loop over Real/Imaginary
+*
+ 333  CONTINUE
 *
       return
       end
