@@ -130,6 +130,7 @@ C
      &           IJOB,IORDER,IPACK,UNO,WORK(KFREE),LFREE)
          ELSE
             MATZ = 1
+            IF( NATOLCR ) MATZ = 0
             CALL QDIAG(NZ,NASHT,WORK(KDV),NASHT,NASHT,
      &           WORK(KEIG),MATZ,UNO,NASHT,NASHT,WORK(KFREE),LFREE,IERR)
             IF (IERR .NE. 0) THEN
@@ -146,17 +147,37 @@ C
 C
       JOCC = 0
       JACT = 0
-      DO I = 1, NFSYM
-         DO J = 1, NISH(I)
-            JOCC = JOCC + 1
-            OCCNO(JOCC) = D2
-         END DO
-         DO J = 1, NASH(I)
-            JOCC = JOCC + 1
-            JACT = JACT + 1
-            OCCNO(JOCC) = WORK(KEIG + JACT - 1)
-         END DO
-      END DO
+      JACT_TOT = 0
+*
+*     FIXME: right order of active orbitals if NZ == 2 and 
+*            NO occ. numbers are calculated with LUCIAREL
+*
+      IF( NATOLCR .and. NZ .eq. 2 ) THEN
+        DO I = 1, NFSYM
+           DO J = 1, NISH(I)
+              JOCC = JOCC + 1
+              OCCNO(JOCC) = D2
+           END DO
+           JACT_TOT = JACT_TOT + NASH(I)
+           DO J = 1, NASH(I)
+              JOCC = JOCC + 1
+              JACT = JACT + 1
+              OCCNO(JOCC) = WORK(KEIG + JACT_TOT - JACT )
+           END DO
+        END DO
+      ELSE
+        DO I = 1, NFSYM
+           DO J = 1, NISH(I)
+              JOCC = JOCC + 1
+              OCCNO(JOCC) = D2
+           END DO
+           DO J = 1, NASH(I)
+              JOCC = JOCC + 1
+              JACT = JACT + 1
+              OCCNO(JOCC) = WORK(KEIG + JACT - 1)
+           END DO
+        END DO
+      END IF
 C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
