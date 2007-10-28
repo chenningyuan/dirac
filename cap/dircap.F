@@ -1934,11 +1934,9 @@ C  /* Deck pemat_write */
      &            PEXR,PEXI,PEYR,PEYI,PEZR,PEZI)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C
 C    Save CAP like integrals (in entering arrays) into PEMAT file
 C
 C  Written by Miro Ilias, Sept. 2007, Tel Aviv
-C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2059,9 +2057,105 @@ C        CLOSE(LUPEMAT,STATUS='KEEP')
      &    'PEMAT file with CAP integrals ready.'
          ENDIF
 
-
       CALL QEXIT('PEMAT_WRITE')
       RETURN
       END
 
-
+************************************************************************
+      DOUBLE PRECISION FUNCTION F(N)
+C     ------------------------------------------------------------------
+C     Returns the factorial N!. 
+C     ------------------------------------------------------------------
+      IMPLICIT NONE
+C     ... input parameters ...
+      INTEGER N
+C     ... internal variables ...
+      INTEGER I
+C     ------------------------------------------------------------------
+      IF (N.LT.0) PAUSE 'ERROR: FACTORIAL UNDEFINED'
+      F = 1.0D0
+      DO I = 2,N
+        F = F*DBLE(I)
+      ENDDO
+C     ------------------------------------------------------------------
+C     Last modified: 05. 10. 2003
+      END
+************************************************************************
+************************************************************************
+      DOUBLE PRECISION FUNCTION NK(N,K)
+C     ------------------------------------------------------------------
+C     Returns the binomical coefficient {N \choose K}.
+C     ------------------------------------------------------------------
+      IMPLICIT NONE
+C     ... input parameters ...
+      INTEGER N,K
+C     ... externals ...
+      EXTERNAL F
+      DOUBLE PRECISION F
+C     ------------------------------------------------------------------
+      IF (N.LT.0) PAUSE 'ERROR (NK): N < 0'
+      IF (K.LT.0) PAUSE 'ERROR (NK): K < 0'
+      IF (K.GT.N) PAUSE 'ERROR (NK): K > N'
+      NK = F(N)/(F(N-K)*F(K))
+C     ------------------------------------------------------------------
+C     Last modified: 05. 10. 2003
+      END
+************************************************************************
+************************************************************************
+      DOUBLE PRECISION FUNCTION TRIG(M,N,U,V)
+C     ------------------------------------------------------------------
+C     Returns the value of a trigonometric integral 
+C     TRIG = int_{U}^{V} [sin x]^M [cos x]^N dx . 
+C     ------------------------------------------------------------------
+      IMPLICIT NONE
+C     ... input parameters ...
+      INTEGER M,N
+      DOUBLE PRECISION U,V
+C     ... constants ...
+      DOUBLE PRECISION TOL
+      PARAMETER(TOL=1.0D-15)
+      DOUBLE COMPLEX C0,IM,C2
+      PARAMETER(C0=(0.0D0,0.0D0))
+      PARAMETER(IM=(0.0D0,1.0D0))
+      PARAMETER(C2=(2.0D0,0.0D0))
+C     ... internal variables ...
+      INTEGER JM,JN,K
+      DOUBLE COMPLEX CTRIG,CAUX1,CAUX2,CAUX3
+C     ... externals ...
+      EXTERNAL NK
+      DOUBLE PRECISION NK
+C     ------------------------------------------------------------------
+      IF (M.LT.0) PAUSE 'ERROR (TRIG): M < 0'
+      IF (N.LT.0) PAUSE 'ERROR (TRIG): N < 0'
+C     ------------------------------------------------------------------
+      CTRIG = C0
+      DO JM = 0,M
+      DO JN = 0,N
+C       ----------------------------------------------------------------
+        CAUX1 = DCMPLX(NK(M,JM)*NK(N,JN)*((-1.0D0)**JM))
+C       ----------------------------------------------------------------
+        K = M + N - 2*(JM+JN)
+C       ----------------------------------------------------------------
+        IF (K.EQ.0) THEN
+          CAUX1 = CAUX1*DCMPLX(V-U)
+        ELSE
+          CAUX2 = IM*DCMPLX(DBLE(K))
+          CAUX3 = CDEXP(CAUX2*DCMPLX(V)) - CDEXP(CAUX2*DCMPLX(U))
+          CAUX3 = CAUX3/CAUX2
+          CAUX1 = CAUX1*CAUX3
+        ENDIF
+C       ----------------------------------------------------------------
+        CTRIG = CTRIG + CAUX1
+C       ----------------------------------------------------------------
+      ENDDO
+      ENDDO
+      CTRIG = CTRIG/((C2**M)*(IM**M)*(C2**N))
+C     ------------------------------------------------------------------
+      IF (DABS(DIMAG(CTRIG)).GT.TOL) 
+     &   PAUSE 'ERROR (TRIG): OUTPUT IS NOT A REAL NUMBER'
+C     ------------------------------------------------------------------
+      TRIG = DREAL(CTRIG)
+C     ------------------------------------------------------------------
+C     Last modified: 05. 10. 2003
+      END
+************************************************************************
