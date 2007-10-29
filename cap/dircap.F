@@ -1689,12 +1689,8 @@ CMI        ... calculate integral - trapezoidal method
 CMI       ... relativistic Hamiltonian with x,y,z components
 CMI       ... Vdc comes in individual terms ...
           IF (.NOT.CAPDIPVEL) THEN
-!          V0x  = V0D(M,THETA,LAMDA,X0,X )
-!          V0x  = V0D(M,THETA,LAMDA,X0,X )*DG
-           V0x  = V0Dm(M,THETA,LAMDA,X0,X  )
-!          V0xy = V0D(M,THETA,LAMDA,X0,Xy)
-!          V0xy = V0D(M,THETA,LAMDA,X0,Xy)*DGy
-           V0xy = V0Dm(M,THETA,LAMDA,X0,Xy )
+           V0x  = V0D(M,THETA,LAMDA,X0,X )
+           V0xy = V0D(M,THETA,LAMDA,X0,Xy)
 
            V1x  = V1D(M,THETA,LAMDA,X0,X )*DG
            V1xy = V1D(M,THETA,LAMDA,X0,Xy)*DGy
@@ -1824,7 +1820,8 @@ CMI   CA2 = CA2/DCMPLX(5.0D0*M/8.0D0)
       V0 = CA1 - CA2
       END
 
-CMI   ...  new derived V0 for the DIRAC Hamiltonian
+CMI   ...  newly derived V0 for the DIRAC Hamiltonian
+! ============================================================
       DOUBLE COMPLEX FUNCTION V0D(M,THETA,LAMBDA,X0,X)
       IMPLICIT NONE
 #include "priunit.h"
@@ -1836,20 +1833,6 @@ CMI   ...  new derived V0 for the DIRAC Hamiltonian
 C     CA1 = -0.50D0*( (F0(THETA,LAMBDA,X0,X)**(-2)) )
 CMI   write(LUPRI,*) 'V0D function:',CA1
       V0D = CA1 
-      END
-
-CMI   ...  newly derived V0 for the DIRAC Hamiltonian - Moiseyev's version
-      DOUBLE COMPLEX FUNCTION V0Dm(M,THETA,LAMBDA,X0,X)
-      IMPLICIT NONE
-#include "priunit.h"
-      real *8  M,THETA,LAMBDA,X0,X
-      DOUBLE COMPLEX CA1,CA2
-      EXTERNAL F0,F1
-      DOUBLE COMPLEX F0,F1
-C     CA1 = -0.50D0*(F1(THETA,LAMBDA,X0,X)/(F0(THETA,LAMBDA,X0,X)**2))
-      CA1 = -0.50D0*( (F0(THETA,LAMBDA,X0,X)**(-2)) )
-CMI   write(LUPRI,*) 'V0D function:',CA1
-      V0Dm = CA1 
       END
 
 CMI   .... Eq. 16 of Sajeev:2006
