@@ -2277,11 +2277,21 @@ C
         CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+        IF( CRDFO_MAT ) THEN
 C
-C       Calculate FCmo (TOFILE false: do not write to LUKRM3) :
+C         read FCmo from file LUKRM3
 C
-        CALL RGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL KRMC_GETFCK(WORK(KFC),IPROPT,WORK(KFREE),LFREE)
 C
+          ECORE = ECORE_LR
+C
+        ELSE
+C
+C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
+C
+          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+C
+        END IF
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
         END IF

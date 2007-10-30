@@ -820,12 +820,13 @@ C                    Added CI keyword PARINT. Stefan Knecht
 C                    29.06.2007
 C                    Added CI keyword MEMFAC. Stefan Knecht
 C                    04.07.2007
+C                    
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 19)
+      PARAMETER (NTABLE = 21)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -838,7 +839,8 @@ C
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
-     &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN'/
+     &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN','.RDFOCK',
+     &            '.WRTFCK'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -866,13 +868,15 @@ C
       IRESTRK  =    0
       IDOPARIO =    0
       IMEMFAC  =    9
-      OPT_NOPFQ = .FALSE.
-      OPT_NOFQX = .FALSE.
-      NATONL    = .FALSE.
-      FOCKON    = .FALSE.
-      COMPROT   = .FALSE.
-      NATOLCR   = .FALSE.
-      COMPFAC   = 0.01D00
+      OPT_NOPFQ  = .FALSE.
+      OPT_NOFQX  = .FALSE.
+      NATONL     = .FALSE.
+      FOCKON     = .FALSE.
+      COMPROT    = .FALSE.
+      NATOLCR    = .FALSE.
+      CRDFO_MAT  = .FALSE.
+      CWRTFO_MAT = .FALSE.
+      COMPFAC    = 0.01D00
 C
 C
 C     Process input for *OPTIMIZE
@@ -892,7 +896,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19), I
+     &                     11,12,13,14,15,16,17,18,19,20,21), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1022,6 +1026,14 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
 C&&& .NOOCCN: calculate natural orbitals occupation numbers with
 C             LUCIAREL
                NATOLCR = .TRUE.
+               GO TO 100
+   20          CONTINUE
+C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts 
+               CRDFO_MAT = .TRUE.
+               GO TO 100
+   21          CONTINUE
+C&&& .WRTFCK: write fock matrix in CI start guess module 
+               CWRTFO_MAT = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

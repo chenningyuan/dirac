@@ -1127,7 +1127,7 @@ C     IF (... debug check of DV,PV trace ...) THEN
                      IPROPT = 10
                      GOTO 100
                   END IF
-                  CALL QUIT('*** ERROR in RMAKDM ***')
+                 CALL QUIT('*** ERROR in RMAKDM ***')
  200              CONTINUE
                END IF
             END DO
@@ -1630,6 +1630,8 @@ C
       END IF
 C
       ECORE = ECORE + POTNUC
+      ECORE_LR = 0.0D0
+      ECORE_LR = ECORE
       IF (IPROPT .GE. 4) THEN
           WRITE(LUPRI,9001) POTNUC
           WRITE(LUPRI,9002) ECORE
@@ -3691,6 +3693,7 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbopt.h"
 #include "dcbgen.h"
 C
       DIMENSION WORK(*),FMO(*)
@@ -3698,8 +3701,13 @@ C
 #include "memint.h"
 C
       REWIND(LUKRM3)
-      CALL MOLLAB('FC      ',LUKRM3,LUPRI)
+      IF( CRDFO_MAT) THEN 
+        CALL MOLLAB('FCMO    ',LUKRM3,LUPRI)
+      ELSE
+        CALL MOLLAB('FC      ',LUKRM3,LUPRI)
+      END IF
       CALL READT(LUKRM3,N2ORBXQ,FMO)
+      IF( CRDFO_MAT ) CALL READT(LUKRM3,1,ECORE_LR)
       IF (IPRINT .GE. 5) THEN
          CALL HEADER('Output from KRMC_GETFCK',-1)
          CALL HEADER('KRMC_GETFCK: FMO',-1)
@@ -4403,8 +4411,13 @@ C
       REWIND LUKRM2
 C
       LUKRM3 = 53
-      CALL OPNFIL(LUKRM3,'KRMC_FOCK','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
+      INQUIRE ( FILE = 'KRMC_FOCK', EXIST = EX )
+      IF( EX ) THEN
+        CALL OPNFIL(LUKRM3,'KRMC_FOCK','OLD','PSIOPT')
+      ELSE
+        CALL OPNFIL(LUKRM3,'KRMC_FOCK','UNKNOWN','PSIOPT')
+        CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
+      END IF
       REWIND LUKRM3
 C
       LUKRM4 = 54
