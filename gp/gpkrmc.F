@@ -181,6 +181,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "iratdef.h"
+#include "dcbopt.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -193,6 +194,7 @@ C     Write vector
 C
       LEN = MAX(4,ISIZE)
       CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
+      IF( CWRTFO_MAT ) CALL WRITSQ(LUNIT,IRAT*1,ECORE_LR)
       CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
