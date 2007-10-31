@@ -9,7 +9,11 @@ include ../Makefile.config
 F77_OBJS =  trainp.o trapam.o tradr1.o tradr2.o tradr3.o traone.o \
             traout.o traprp.o tradr4.o tradr5.o tradr6.o
 
+C_OBJS   =
+
 F90_OBJS =
+
+F90_MODS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -19,7 +23,17 @@ ftnchek: $(F77_CPPS)
 all:	$(F77_OBJS) $(F90_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+        $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+##
+##  compile Fortran90 module source files and make symbolic links
+## of resulting *.mod files into common linked directory modules
+##
+mod : $(F90_MODS) ;\
+$(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
+##ln -sf $(PWD)/*.mod ../modules/. 
+
+FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -29,5 +43,9 @@ dirmpi.x:
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJ:.o=.F90)
+
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

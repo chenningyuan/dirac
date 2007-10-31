@@ -1,5 +1,7 @@
   
-  Directory with HSMRCC program.
+  File with "know-how" for the HSMRCC program, which is to be connected to the DIRAC suite.
+***********************************************************************************************
+
 
   DIRAC reads input and makes integral files for the external HSMRCC program of Sham.
 
@@ -68,5 +70,10 @@ LiH.scf_hsmrcc.gms.F297  LiH.scf_hsmrcc.gms.inp   LiH.scf_hsmrcc.gms.VINF
 Integrals generator within HSMRCC:
 
 modules/intgenmod.f90
+
+**********************************************************************************************
+
+minmax.h and tind.h include files have been moved into common include/ directory
+
 
 

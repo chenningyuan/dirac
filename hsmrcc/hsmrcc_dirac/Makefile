@@ -4,15 +4,19 @@
 # This can be compiled with GNU Make
 # (not ordinary Make)
 #
+# Makefile generates standalone hsmrcc.exe program.
+#
+# For the DIRAC enviroment adapted by Miro Ilias, Tel Aviv, 2007
+#
 ##################################################
 
 # Use ksh or bash for shell
 #SHELL = /bin/bash
 
-#
+#-----------------------------------------------
 # control chars for bold display
 # cs : startbold ce : endbold
-#
+#-----------------------------------------------
 
 cs = [1m 
 ce = [m
@@ -142,6 +146,10 @@ f90objs := initguess.o   inihsbase.o   endhsmr.o   makezero.o   \
 
 c89objs := getopt.o hsmrmain.o
 
+#dirac_objs :=
+dirac_objs := ../../gp/gptrygve.o  ../../gp/qpack.o ../../gp/gphjj.o  
+dirac_libs := ../../pdpack/libpdlib.a
+
 objects := $(modobjs) $(f90objs) $(c89objs)
 
 
@@ -176,7 +184,8 @@ $(executable) : $(objects)
 	@echo  
 	@echo -n "... and used linking flags are " $(cs) $(LKFLAGS) $(FFLAGS) $(ce) 
 	@echo  
-	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) $(FCLIBS) $(CCLIBS)
+	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
+                     $(dirac_objs) $(dirac_libs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
 	@echo "The Executable File generated is ==> " $(cs)$(@F)$(ce) " <=="
 
@@ -217,7 +226,9 @@ s2matele      : parameters.o iomodule.o gmsmod.o
 diagonalize.o : iomodule.o
 hmatrix.o     : iomodule.o
 
+########################################################################
 # Subroutines Depending on Modules
+########################################################################
 
 diagrams.o    : parameters.o iomodule.o tamps.o heffmod.o directdiags.o convmod.o renormdiags.o timingmod.o
 hsmrcc.o      : convmod.o intgenmod.o options.o iomodule.o shift.o heffmod.o vinfmod.o

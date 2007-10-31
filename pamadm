@@ -1236,14 +1236,17 @@ UTIL_OBJ:
 
 EOF
 ########################################################################
+### 								     ###
 ###                   Add makedepend targets                         ###
+### 								     ###
+###   NOTE: TEMP and TEMPOOF must be exclusive as some directories   ###
+### contain Fortran90 modules and others not			     ###
+###								     ###
 ########################################################################
-TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
 
-#
-#  ... Jetze added F90 module stuff into abacus; include further directories
-# when you extent default pamadm modules with F90 features
-#
+#TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
+TEMP="dirac prp gp pdpack main relccsd moltra dirrci lucita"
+
 TEMPOOF=abacus
 
 
@@ -1269,7 +1272,7 @@ if [ -n "$KRMCMOD" ]; then
    TEMP="$TEMP krmc luciarel"
 fi
 if [ -n "$EMBMOD" ]; then
-   TEMP="$TEMP embedding"
+#   TEMP="$TEMP embedding"
    TEMPOOF="$TEMPOOF embedding"
 fi
 if [ -n "$ADCMOD" ]; then
@@ -1285,15 +1288,15 @@ if [ -n "$VISUALMOD" ]; then
    TEMP="$TEMP visual"
 fi
 if [ -n "$CAPMOD" ]; then
-   TEMP="$TEMP cap"
+#   TEMP="$TEMP cap"
    TEMPOOF="$TEMPOOF cap"
 fi
 if [ -n "$HSCCMOD" ]; then
-   TEMP="$TEMP hsmrcc"
+#   TEMP="$TEMP hsmrcc"
    TEMPOOF="$TEMPOOF hsmrcc"
 fi
 if [ -n "$OOFMOD" ]; then
-   TEMP="$TEMP oof"
+#   TEMP="$TEMP oof"
    TEMPOOF="$TEMPOOF oof"
 fi
 
@@ -1307,10 +1310,9 @@ for ff in $TEMP; do
 EOF
 done
 echo
-##########################################
-######## take care of f90depend  #########
-##########################################
-#if [ -n "$OOFMOD" ]; then
+#################################################
+######## take care of f90 dependencies  #########
+#################################################
 cat <<EOF>> Makefile
 
 f90dep:
@@ -1320,7 +1322,6 @@ for ff in $TEMPOOF; do
 	cd $ff; \$(MAKE) f90dep
 EOF
 done
-#fi
 ################################################
 #echo "Making module Makefiles..."
 ################################################

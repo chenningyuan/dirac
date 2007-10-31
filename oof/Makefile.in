@@ -2,6 +2,8 @@ include ../Makefile.config
 
 F77_OBJS =
 
+C_OBJS   = 
+
 F90_OBJS = tests.o mem_mod.o qmtx_mod.o string_mod.o vect_mod.o oper_mod.o genpoint_mod.o
 
 F90_MODS = qmatrixes.mod  memory.mod  mystring.mod  vectors.mod  operators.mod generalpointers.mod
@@ -17,7 +19,7 @@ all:  $(F90_MODS) $(F77_OBJS) $(F90_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod
-	$(RM) -f ../modules/*.mod
+	$(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
 ##
 ##  compile Fortran90 module source files and make symbolic links

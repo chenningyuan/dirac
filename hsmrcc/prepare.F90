@@ -1,19 +1,24 @@
 subroutine HSCCINP
 !
-! called from PSIINP
+!
 !
 #include "priunit.h"
 
- write(LUPRI,*) 'in HSCCINP'
-
+  write(LUPRI,*) 'in HSCCINP'
+!
+!  $HSMR 
+!    NCOR=1   ! 1 core MO
+!    NACT=2 
+!    NFRZV=8
+! $END
 
 end subroutine HSCCINP
 
 
-  subroutine HSMRCC_Dirac_input
+subroutine HSMRCC_Dirac_input
 
 
-  end subroutine HSMRCC_Dirac_input
+end subroutine HSMRCC_Dirac_input
 
 !
 !
@@ -124,6 +129,8 @@ endif
 !call read_moltra_integrals
 call read_mrconee; call print_mrconee_data
 
+call read_mdcint ! read MDCINT file
+
 call UnstickMemory
 
 end subroutine HSCC_STUFF
@@ -131,16 +138,22 @@ end subroutine HSCC_STUFF
 ! ----------------------------------
 module io_moltra
 
+! ... logical numbers ... 
 integer (kind=2) :: MDINT=20, MRCONEE=21
+
 CHARACTER*10 DATEX,TIMEX*8
- real*8 :: ECORE
+real*8 :: ECORE
+
 !integer (kind=4) :: NSP
 integer  :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
 CHARACTER*14 REPNT(16)
+
 integer, parameter :: MXREP=32,MAXSP=1000
-character*4 REPN(16),REPNA(MXREP*2)
+character*4 REPN(16), REPNA(MXREP*2)
+
 integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
 real*8 EPS1(MAXSP)
+
 LOGICAL BREIT,SPFR
 
 end module io_moltra
@@ -157,9 +170,17 @@ close(MDINT)
 end subroutine read_moltra_integrals
 
 subroutine read_mrconee
+
  use io_moltra
+
 #include "implicit.h"
 #include "priunit.h"
+
+ logical :: is_mrc
+
+     inquire(FILE='MRCONEE',EXIST=is_mrc)
+
+     if (.not.is_mrc) call QUIT('mrconee file not present !')
 
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED',status = 'old')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE, &
@@ -195,10 +216,33 @@ subroutine print_mrconee_data
 #include "priunit.h"
 
 write(LUPRI,*) 'NREP=',NREP,' NSP=',NSP
-write(LUPRI,*) 'REPNA:',(REPNA(IRP),IRP=1,2*NREP)
-write (LUPRI,*) 'EPS1:',(EPS1(ISP),ISP=1,NSP)
+write(LUPRI,*) 'REPNA: ',(REPNA(IRP),IRP=1,2*NREP)
+write (LUPRI,*) 'EPS1: ',(EPS1(ISP),ISP=1,NSP)
 
 end subroutine print_mrconee_data
+
+!
+!  ... read MDCINT 
+!
+subroutine  read_mdcint
+   use io_moltra
+#include "implicit.h"
+#include "priunit.h"
+
+logical :: is_mdc
+
+inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call QUIT('No MDCINT file!')
+
+open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
+write(LUPRI,*) 'MDCINT open...'
+!READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,( KR(I),KR(-I), I=1,NKR )
+
+CLOSE (MDINT,STATUS='KEEP')
+
+ 10000 CALL QUIT('ERROR READING HEADER MDCINT')
+
+
+end subroutine  read_mdcint
 
 
 SUBROUTINE ASSIGN_POINTERS77(IW,RW,LW,IVW,N1,N2,NNZ)

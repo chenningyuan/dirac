@@ -5,8 +5,8 @@
 #include <string.h>
 #include <libgen.h>
 
-/* The following SetHSMR routines are
- * to pass the values to HSMR program */
+/* The following external Fortran90 SetHSMR routines are
+ * to pass the values to HSMR program.                    */
 
 extern void sethsmrflags_(int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
@@ -18,7 +18,7 @@ extern void sethsmrfiles_(char *,char *,int,int);
 extern void sethsmrconvtol_(double *);
 extern void sethsmrinttol_(double *);
 extern void sethsmrmaxit_(int *);
-extern void hsmrcc_(void);
+extern void hsmrcc_(void);               /* the main program F90 subroutine */
 
 #define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:"
 
