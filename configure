@@ -1848,7 +1848,7 @@ CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
 F77         = $F77
 CC          = $CC
-RM          = -rm
+RM          = rm
 AR          = ar
 EOF
 if [ -n "$arflag" ]; then
