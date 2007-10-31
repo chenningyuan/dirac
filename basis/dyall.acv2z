@@ -1,13 +1,32 @@
 $
-$  REFERENCE
-$ 4-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441; K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
-$ addendum Theor. Chem. Acc. (2002) 108:365; revision Theor. Chem. Acc. (2006) 115:441.
-$ Basis sets available from the Dirac web site, http://dirac.chem.sdu.dk.
-$
-$
 $ Elements Supported
-$ Ga As Ge Br Se  I Sn In Sb Te Bi Pb Tl At Po
+$ Ga As Kr Ge Br Se I Xe Sn In Sb Te Bi Pb Tl At Rn Po
 $
+$  REFERENCE
+$
+$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366; 
+4        addendum    Theor. Chem. Acc. (2002) 108:365;
+$        revision    Theor. Chem. Acc. (2006) 115:441
+$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
+$
+$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
@@ -16,8 +35,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
-$ dyall.4p.dz.bas
 $
+$ Description
 $ 
 $ 4p-Block Double-Zeta Basis Set Archive
 $ =====================================
@@ -198,6 +217,54 @@ $ f functions
     1    0    0
  5.34798650e+00
 
+$ Kr
+a 36
+$ Warning: in symmetry        d, exponent 4.6525124000e-01 is considered to be too close to one already present (4.6525124000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   16    0    0
+ 4.14098740e+06
+ 4.88473540e+05
+ 9.26640300e+04
+ 2.27776350e+04
+ 6.64418070e+03
+ 2.19109860e+03
+ 7.92722390e+02
+ 3.08512340e+02
+ 1.26083420e+02
+ 4.03665990e+01
+ 1.72720370e+01
+ 5.39736980e+00
+ 2.37509130e+00
+ 5.03394410e-01
+ 1.92437310e-01
+ 4.65251240e-01
+$ p functions 
+   12    0    0
+ 9.01590790e+03
+ 1.73131080e+03
+ 5.02261940e+02
+ 1.77201570e+02
+ 6.98507880e+01
+ 2.93416010e+01
+ 1.25014170e+01
+ 5.21990010e+00
+ 2.15741980e+00
+ 5.74981830e-01
+ 1.74772320e-01
+ 7.46380700e+00
+$ d functions 
+    7    0    0
+ 2.25939510e+02
+ 6.64569800e+01
+ 2.44283440e+01
+ 9.88093530e+00
+ 4.03887100e+00
+ 1.58810230e+00
+ 4.65251240e-01
+$ f functions 
+    1    0    0
+ 7.46380700e+00
+
 $ Ge
 a 32
 $ Warning: in symmetry        d, exponent 2.4355143000e-01 is considered to be too close to one already present (2.4355143000e-01) and is not included. threshold: 5.00e-02
@@ -353,8 +420,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
-$ dyall.5p.dz.bas
 $
+$ Description
 $ 
 $ 5p-Block Double-Zeta Basis Set Archive
 $ =====================================
@@ -500,6 +567,67 @@ $ f functions
     1    0    0
  2.67709400e+00
 
+$ Xe
+a 54
+$ Warning: in symmetry        d, exponent 3.3924233000e-01 is considered to be too close to one already present (3.3924233000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   22    0    0
+ 4.79578330e+07
+ 9.04292740e+06
+ 2.19959410e+06
+ 6.14117880e+05
+ 1.91258950e+05
+ 6.49876190e+04
+ 2.37589190e+04
+ 9.24138590e+03
+ 3.78988480e+03
+ 1.62580880e+03
+ 7.24292310e+02
+ 3.31147980e+02
+ 1.45745040e+02
+ 7.18803330e+01
+ 3.53927480e+01
+ 1.51571650e+01
+ 7.66704360e+00
+ 2.98773480e+00
+ 1.43153310e+00
+ 3.67400730e-01
+ 1.44011860e-01
+ 3.39242330e-01
+$ p functions 
+   16    0    0
+ 2.81773750e+05
+ 4.14212880e+04
+ 9.36856350e+03
+ 2.76346060e+03
+ 9.72894040e+02
+ 3.85623880e+02
+ 1.65397230e+02
+ 7.48094180e+01
+ 3.45694510e+01
+ 1.60788110e+01
+ 7.70648410e+00
+ 3.24418790e+00
+ 1.41638810e+00
+ 3.98205340e-01
+ 1.30222230e-01
+ 2.91412710e+00
+$ d functions 
+   11    0    0
+ 1.95959650e+03
+ 5.53672740e+02
+ 2.07645960e+02
+ 8.88217230e+01
+ 4.09925340e+01
+ 1.95816200e+01
+ 9.56107050e+00
+ 4.54825150e+00
+ 2.10524780e+00
+ 9.27044060e-01
+ 3.39242330e-01
+$ f functions 
+    1    0    0
+ 2.91412710e+00
 
 $ Sn
 a 50
@@ -761,8 +889,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
-$ dyall.6p.dz.bas
 $
+$ Description
 $ 
 $ 6p-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -1174,6 +1302,87 @@ $ f functions
  9.59533210e+00
  4.55444770e+00
  1.97652640e+00
+
+$ Rn
+a 86
+$ Warning: in symmetry        d, exponent 2.8667532000e-01 is considered to be too close to one already present (2.8667532000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        f, exponent 2.1274354000e+00 is considered to be too close to one already present (2.1274354000e+00) and is not included. threshold: 5.00e-02
+$ s functions 
+   25    0    0
+ 5.68476600e+07
+ 1.46794060e+07
+ 4.74912560e+06
+ 1.66787660e+06
+ 6.25170530e+05
+ 2.44681430e+05
+ 9.96160400e+04
+ 4.19595350e+04
+ 1.82417350e+04
+ 8.16322270e+03
+ 3.75224970e+03
+ 1.76799030e+03
+ 8.50979570e+02
+ 4.04118110e+02
+ 2.03907120e+02
+ 1.05354320e+02
+ 5.17227450e+01
+ 2.73375320e+01
+ 1.26282080e+01
+ 6.63534680e+00
+ 2.56553900e+00
+ 1.29475080e+00
+ 3.70279590e-01
+ 1.44373170e-01
+ 2.86675320e-01
+$ p functions 
+   21    0    0
+ 1.72824120e+07
+ 3.15641730e+06
+ 7.25282720e+05
+ 1.92412500e+05
+ 5.70898830e+04
+ 1.86765020e+04
+ 6.70190440e+03
+ 2.62169160e+03
+ 1.10574450e+03
+ 4.95179410e+02
+ 2.32404360e+02
+ 1.12459430e+02
+ 5.53557250e+01
+ 2.79136370e+01
+ 1.31728350e+01
+ 6.48261420e+00
+ 2.67263350e+00
+ 1.19863600e+00
+ 3.52585560e-01
+ 1.15893150e-01
+ 2.12743540e+00
+$ d functions 
+   14    0    0
+ 1.41613020e+04
+ 3.58429410e+03
+ 1.25385660e+03
+ 5.17561770e+02
+ 2.35591630e+02
+ 1.14150620e+02
+ 5.74581200e+01
+ 2.94435850e+01
+ 1.49162360e+01
+ 7.49983430e+00
+ 3.63156850e+00
+ 1.71598620e+00
+ 7.60663340e-01
+ 2.86675320e-01
+$ f functions 
+    8    0    0
+ 6.47900270e+02
+ 2.19493860e+02
+ 9.27081990e+01
+ 4.29375190e+01
+ 2.08572780e+01
+ 1.01812230e+01
+ 4.85784110e+00
+ 2.12743540e+00
 
 $ Po
 a 84

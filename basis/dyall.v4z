@@ -1,27 +1,42 @@
 $
-$  REFERENCE
-$ 4-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441; K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
-$ addendum Theor. Chem. Acc. (2002) 108:365; revision Theor. Chem. Acc. (2006) 115:441.
-$ 5-7s,6d: K.G. Dyall, in preparation; 4d,5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483;
-$ 5d:K.G. Dyall, Theor. Chem. Acc. (2004) 112:403
-$ Basis sets available from the Dirac web site, http://dirac.chem.sdu.dk.
-$
-$
 $ Elements Supported
-$ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Ga As Kr Ge Br Se Sr Rb I  Xe Sn  In Sb Te Pt Hf
-$ Ir Re Au W Os Hg Ta Cs Ba Bi Pb Tl At Rn Po Hs Db Mt Rf Rg Uub Sg Ds Bh Fr Ra
+$ Sr Rb Cs Ba Fr Ra
+$ Ga As Kr Ge Br Se I Xe Sn In Sb Te Bi Pb Tl At Rn Po
+$ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Pt Hf Ir Re Au W Os Hg Ta
+$ Hs Db Mt Rf Rg Uub Sg Ds Bh
+$ Md Ac Cm Pu No Am Cf Bk Pa U Th Np Lr Fm Es
 $
+$  REFERENCE
+$
+$ 5s-7s: K.G. Dyall, in preparation.
+$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441
+$    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483.
+$    5d: K.G. Dyall, Theor. Chem. Acc. 112, 403-409 (2004)
+$    6d: K.G. Dyall, in preparation.
+$    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
+$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
+$
+$
+
+
+
+
+
+
+
+
+
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_unedited/4d_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating,4d dipole polarization --output=dyall.4d.qz.bas
+$ invocation: basis_set.py --file=../basis/reference_unedited/4d_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating,4d dipole polarization,4s4p correlating --output=dyall.4d.qz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['valence correlating', '4d dipole polarization']
+$  ['valence correlating', '4d dipole polarization', '4s4p correlating']
 $ 
-$ dyall.4d.qz.bas
 $
+$ Description
 $ 
 $ 4d-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -118,6 +133,7 @@ $
 
 $ Ru
 a 44
+$ Warning: in symmetry        f, exponent 2.3649705000e+00 is considered to be too close to one already present (2.3904233000e+00) and is not included. threshold: 5.00e-02
 $ s functions 
    33    0    0
  8.67995960e+07
@@ -200,16 +216,18 @@ $ d functions
  1.39001630e-01
  6.18087620e-02
 $ f functions 
-    4    0    0
+    5    0    0
  2.39042330e+00
  8.90437150e-01
  3.23510960e-01
  1.07837000e-01
+ 1.17685380e+00
 $ g functions 
-    3    0    0
+    4    0    0
  1.61790020e+00
  5.41752880e-01
  1.80584300e-01
+ 2.11747630e+00
 $ h functions 
     2    0    0
  1.18648430e+00
@@ -299,16 +317,19 @@ $ d functions
  1.87141460e-01
  8.33940480e-02
 $ f functions 
-    4    0    0
+    6    0    0
  3.33094120e+00
  1.27994080e+00
  4.71950490e-01
  1.57316830e-01
+ 2.97035800e+00
+ 1.48022860e+00
 $ g functions 
-    3    0    0
+    4    0    0
  2.35526350e+00
  8.62426590e-01
  2.87475520e-01
+ 2.67382470e+00
 $ h functions 
     2    0    0
  1.73565660e+00
@@ -398,16 +419,19 @@ $ d functions
  9.34711010e-02
  4.10301200e-02
 $ f functions 
-    4    0    0
+    6    0    0
  1.52701310e+00
  5.37430650e-01
  1.91072120e-01
  6.36907100e-02
+ 1.81205510e+00
+ 8.92544400e-01
 $ g functions 
-    3    0    0
+    4    0    0
  9.51410500e-01
  2.88657170e-01
  9.62190600e-02
+ 1.60147040e+00
 $ h functions 
     2    0    0
  6.24396000e-01
@@ -497,16 +521,19 @@ $ d functions
  1.53843620e-01
  6.95166550e-02
 $ f functions 
-    4    0    0
+    6    0    0
  1.91277210e+00
  6.81936150e-01
  2.36464190e-01
  7.88214000e-02
+ 2.17580030e+00
+ 1.09288910e+00
 $ g functions 
-    3    0    0
+    4    0    0
  1.35722450e+00
  4.35279770e-01
  1.45093240e-01
+ 1.97015390e+00
 $ h functions 
     2    0    0
  9.45784270e-01
@@ -514,6 +541,7 @@ $ h functions
 
 $ Pd
 a 46
+$ Warning: in symmetry        f, exponent 2.7690635000e+00 is considered to be too close to one already present (2.8661043000e+00) and is not included. threshold: 5.00e-02
 $ s functions 
    33    0    0
  8.51812590e+07
@@ -596,16 +624,18 @@ $ d functions
  1.33772180e-01
  5.77825220e-02
 $ f functions 
-    4    0    0
+    5    0    0
  2.86610430e+00
  1.06563510e+00
  3.72280090e-01
  1.24093400e-01
+ 1.36589060e+00
 $ g functions 
-    3    0    0
+    4    0    0
  2.04666180e+00
  7.13684780e-01
  2.37894930e-01
+ 2.45874150e+00
 $ h functions 
     2    0    0
  1.51283300e+00
@@ -695,16 +725,19 @@ $ d functions
  8.83555740e-02
  3.81662100e-02
 $ f functions 
-    4    0    0
+    6    0    0
  2.39158830e-01
  2.07281770e-01
  8.28418160e-02
  2.76139400e-02
+ 1.45867720e+00
+ 7.13780050e-01
 $ g functions 
-    3    0    0
+    4    0    0
  3.25386860e-01
  1.25835210e-01
  4.19450700e-02
+ 1.29799520e+00
 $ h functions 
     2    0    0
  2.36519330e-01
@@ -794,16 +827,19 @@ $ d functions
  2.44708900e-01
  1.10682150e-01
 $ f functions 
-    4    0    0
+    6    0    0
  3.63131700e+00
  1.40791020e+00
  5.29555130e-01
  1.76518400e-01
+ 3.19038460e+00
+ 1.60400410e+00
 $ g functions 
-    3    0    0
+    4    0    0
  2.63745470e+00
  9.95665440e-01
  3.31888500e-01
+ 2.90159290e+00
 $ h functions 
     2    0    0
  1.95264690e+00
@@ -893,16 +929,19 @@ $ d functions
  1.34223630e-01
  5.80303880e-02
 $ f functions 
-    4    0    0
+    6    0    0
  2.72353260e+00
  1.02594380e+00
  3.73889850e-01
  1.24630000e-01
+ 2.56797840e+00
+ 1.27931030e+00
 $ g functions 
-    3    0    0
+    4    0    0
  1.85263470e+00
  6.38120580e-01
  2.12706900e-01
+ 2.29533680e+00
 $ h functions 
     2    0    0
  1.36747080e+00
@@ -992,16 +1031,19 @@ $ d functions
  9.34711010e-02
  4.10301200e-02
 $ f functions 
-    4    0    0
+    6    0    0
  1.81106030e+00
  6.52515500e-01
  2.33727870e-01
  7.79092900e-02
+ 2.00075200e+00
+ 9.89849370e-01
 $ g functions 
-    3    0    0
+    4    0    0
  1.17046740e+00
  3.68264250e-01
  1.22754800e-01
+ 1.76797800e+00
 $ h functions 
     2    0    0
  8.19422840e-01
@@ -1091,16 +1133,19 @@ $ d functions
  1.05205040e-01
  4.64519650e-02
 $ f functions 
-    4    0    0
+    6    0    0
  1.02399190e+00
  3.36807070e-01
  1.25481120e-01
  4.18270400e-02
+ 1.63285940e+00
+ 8.08557000e-01
 $ g functions 
-    3    0    0
+    4    0    0
  6.44824200e-01
  2.01300240e-01
  6.71000800e-02
+ 1.46379060e+00
 $ h functions 
     2    0    0
  3.46936920e-01
@@ -1114,8 +1159,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating']
 $ 
-$ dyall.4p.qz.bas
 $
+$ Description
 $ 
 $ 4p-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -1741,8 +1786,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['5s5p correlating', '4s4p correlating', '4s4p polarizing']
 $ 
-$ dyall.5s.qz.bas
 $
+$ Description
 $ 
 $ 5s-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -2037,8 +2082,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating']
 $ 
-$ dyall.5p.qz.bas
 $
+$ Description
 $ 
 $ 5p-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -2764,8 +2809,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', 'valence polarizability']
 $ 
-$ dyall.5d.qz.bas
 $
+$ Description
 $ 
 $ 5d-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -3945,13 +3990,13 @@ $ h functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_unedited/5f_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=5f correlating,6d/7s correlating,6s6p correlating,5f polarizing --output=dyall.5f.qz.bas
+$ invocation: basis_set.py --file=../basis/reference_unedited/5f_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=5f correlating,6d/7s correlating,6s6p correlating,5f polarizing,6d/7s polarizing --output=dyall.5f.qz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['5f correlating', '6d/7s correlating', '6s6p correlating', '5f polarizing']
+$  ['5f correlating', '6d/7s correlating', '6s6p correlating', '5f polarizing', '6d/7s polarizing']
 $ 
-$ dyall.5f.qz.bas
 $
+$ Description
 $ 
 $ 5f-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -4191,7 +4236,7 @@ $ d functions
  8.56472070e-01
  3.69939720e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.56984930e+03
  8.51243290e+02
  3.58096300e+02
@@ -4211,8 +4256,9 @@ $ f functions
  1.14083990e-01
  1.39147180e+00
  7.03989090e-01
+ 5.09506700e-02
 $ g functions 
-    7    0    0
+    8    0    0
  6.34685120e+00
  2.55221410e+00
  9.49770120e-01
@@ -4220,12 +4266,14 @@ $ g functions
  1.46118380e-01
  1.08851220e+00
  1.65880600e-01
+ 6.52574300e-02
 $ h functions 
-    4    0    0
+    5    0    0
  4.65880780e+00
  1.73885280e+00
  2.48913470e-01
  3.03696540e-01
+ 1.11166410e-01
 $ i functions 
     2    0    0
  3.56803830e+00
@@ -4236,6 +4284,8 @@ a 89
 $ Warning: in symmetry        f, exponent 4.7308215000e-01 is considered to be too close to one already present (4.7308215000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        f, exponent 1.5044245000e-01 is considered to be too close to one already present (1.5044245000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        f, exponent 7.9740802000e-02 is considered to be too close to one already present (7.9740802000e-02) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        g, exponent 7.7791802000e-02 is considered to be too close to one already present (7.9740802000e-02) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        h, exponent 1.1639632000e-01 is considered to be too close to one already present (1.1109030000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    37    0    0
  5.80202740e+07
@@ -4341,7 +4391,7 @@ $ d functions
  8.81258000e-01
  3.72221420e-01
 $ f functions 
-   17    0    0
+   18    0    0
  3.30786200e+03
  1.09156680e+03
  4.61380890e+02
@@ -4359,6 +4409,7 @@ $ f functions
  7.97408020e-02
  8.67144650e-01
  4.04379770e-01
+ 5.58390840e-02
 $ g functions 
     7    0    0
  4.73082150e-01
@@ -4489,7 +4540,7 @@ $ d functions
  9.98447970e-01
  4.59904800e-01
 $ f functions 
-   18    0    0
+   19    0    0
  2.33836720e+03
  7.78071850e+02
  3.28229120e+02
@@ -4508,8 +4559,9 @@ $ f functions
  1.81356440e-01
  9.65012960e-02
  1.11822490e+00
+ 5.65089200e-02
 $ g functions 
-    7    0    0
+    8    0    0
  5.03616670e+00
  1.98750870e+00
  7.48934650e-01
@@ -4517,11 +4569,13 @@ $ g functions
  1.39324170e-01
  9.94726470e-01
  1.27203920e-01
+ 8.15850000e-02
 $ h functions 
-    3    0    0
+    4    0    0
  3.45690450e+00
  1.22634630e+00
  2.17471630e-01
+ 1.27346330e-01
 $ i functions 
     2    0    0
  2.85034650e+00
@@ -4634,7 +4688,7 @@ $ d functions
  7.05577550e-01
  3.08603180e-01
 $ f functions 
-   19    0    0
+   20    0    0
  1.97585310e+03
  6.60651720e+02
  2.79215290e+02
@@ -4654,8 +4708,9 @@ $ f functions
  9.09214040e-02
  1.08464930e+00
  5.84802370e-01
+ 5.95396300e-02
 $ g functions 
-    7    0    0
+    8    0    0
  4.27827150e+00
  1.61160040e+00
  5.71929160e-01
@@ -4663,12 +4718,14 @@ $ g functions
  1.61735700e-01
  8.44054160e-01
  9.43672700e-02
+ 1.05912200e-01
 $ h functions 
-    4    0    0
+    5    0    0
  3.04161480e+00
  1.06117320e+00
  2.02720150e-01
  1.75091630e-01
+ 1.32750730e-01
 $ i functions 
     2    0    0
  2.27550010e+00
@@ -4782,7 +4839,7 @@ $ d functions
  8.78350470e-01
  3.78382070e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.66399430e+03
  8.81149210e+02
  3.70369210e+02
@@ -4802,8 +4859,9 @@ $ f functions
  1.17753060e-01
  1.43683250e+00
  7.21197800e-01
+ 4.89261820e-02
 $ g functions 
-    7    0    0
+    8    0    0
  6.65382840e+00
  2.68787180e+00
  1.00296380e+00
@@ -4811,12 +4869,14 @@ $ g functions
  1.56214670e-01
  1.12483290e+00
  1.76068210e-01
+ 6.49069100e-02
 $ h functions 
-    4    0    0
+    5    0    0
  4.92981330e+00
  1.87148370e+00
  2.55228830e-01
  3.28535100e-01
+ 1.06047110e-01
 $ i functions 
     2    0    0
  3.75397750e+00
@@ -4929,7 +4989,7 @@ $ d functions
  7.27992480e-01
  3.18361490e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.06562620e+03
  6.89557370e+02
  2.91207290e+02
@@ -4949,8 +5009,9 @@ $ f functions
  1.00203070e-01
  1.12862730e+00
  6.01102370e-01
+ 6.37342630e-02
 $ g functions 
-    7    0    0
+    8    0    0
  4.55947300e+00
  1.72885410e+00
  6.18552090e-01
@@ -4958,12 +5019,14 @@ $ g functions
  1.32065670e-01
  8.78801990e-01
  1.06109300e-01
+ 8.40005000e-02
 $ h functions 
-    4    0    0
+    5    0    0
  3.28555530e+00
  1.17010940e+00
  2.12494080e-01
  2.00726000e-01
+ 1.35157100e-01
 $ i functions 
     2    0    0
  2.54086020e+00
@@ -5078,7 +5141,7 @@ $ d functions
  7.91928320e-01
  3.44438470e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.31692650e+03
  7.70620660e+02
  3.24835690e+02
@@ -5098,20 +5161,23 @@ $ f functions
  1.02801520e-01
  1.25887210e+00
  6.52851130e-01
+ 5.40372130e-02
 $ g functions 
-    6    0    0
+    7    0    0
  5.51036730e+00
  2.20059450e+00
  8.30202910e-01
  4.61079540e-01
  1.48524940e-01
  9.82086100e-01
+ 7.80715420e-02
 $ h functions 
-    4    0    0
+    5    0    0
  3.98828660e+00
  1.45712670e+00
  2.30876270e-01
  2.52441600e-01
+ 1.21359200e-01
 $ i functions 
     2    0    0
  3.24162980e+00
@@ -5225,7 +5291,7 @@ $ d functions
  7.70554050e-01
  3.35794100e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.23445650e+03
  7.43994920e+02
  3.13804420e+02
@@ -5245,8 +5311,9 @@ $ f functions
  9.96480930e-02
  1.21543350e+00
  6.35770210e-01
+ 5.55195800e-02
 $ g functions 
-    7    0    0
+    8    0    0
  5.08356180e+00
  1.98387560e+00
  7.26077540e-01
@@ -5254,11 +5321,13 @@ $ g functions
  1.41018840e-01
  9.47341700e-01
  1.25031600e-01
+ 7.85695610e-02
 $ h functions 
-    3    0    0
+    4    0    0
  3.61121990e+00
  1.27370350e+00
  2.24476300e-01
+ 1.25068420e-01
 $ i functions 
     2    0    0
  2.94199580e+00
@@ -5267,6 +5336,7 @@ $ i functions
 $ Warning: in symmetry        d, exponent 9.8939355000e-01 is considered to be too close to one already present (9.9420825000e-01) and is not included. threshold: 5.00e-02
 $ Pa
 a 91
+$ Warning: in symmetry        h, exponent 1.2271300000e-01 is considered to be too close to one already present (1.1888660000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    37    0    0
  5.76158720e+07
@@ -5371,7 +5441,7 @@ $ d functions
  9.94208250e-01
  4.03732460e-01
 $ f functions 
-   19    0    0
+   20    0    0
  1.95673920e+03
  6.55309390e+02
  2.77344390e+02
@@ -5391,8 +5461,9 @@ $ f functions
  8.33207860e-02
  9.65319610e-01
  5.60785350e-01
+ 5.59169700e-02
 $ g functions 
-    7    0    0
+    8    0    0
  3.55978910e+00
  1.30925550e+00
  4.64157150e-01
@@ -5400,6 +5471,7 @@ $ g functions
  1.48428290e-01
  7.98900430e-01
  7.82108400e-02
+ 9.96109100e-02
 $ h functions 
     4    0    0
  2.20677810e+00
@@ -5518,7 +5590,7 @@ $ d functions
  9.78387020e-01
  4.19355470e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.01926670e+03
  6.75476730e+02
  2.85711630e+02
@@ -5538,8 +5610,9 @@ $ f functions
  8.55602180e-02
  1.01402890e+00
  5.75962700e-01
+ 5.45732520e-02
 $ g functions 
-    7    0    0
+    8    0    0
  3.92104630e+00
  1.46394610e+00
  5.26357850e-01
@@ -5547,12 +5620,14 @@ $ g functions
  1.31195080e-01
  8.37124610e-01
  9.06884520e-02
+ 8.36807340e-02
 $ h functions 
-    4    0    0
+    5    0    0
  2.52427930e+00
  8.33988760e-01
  1.93249770e-01
  1.43691500e-01
+ 1.23261400e-01
 $ i functions 
     2    0    0
  1.99192080e+00
@@ -5665,7 +5740,7 @@ $ d functions
  1.07095610e+00
  4.31649540e-01
 $ f functions 
-   19    0    0
+   20    0    0
  1.94951630e+03
  6.53212530e+02
  2.76578800e+02
@@ -5685,8 +5760,9 @@ $ f functions
  1.49998680e-01
  9.61030480e-01
  4.48247930e-01
+ 5.04047100e-02
 $ g functions 
-    7    0    0
+    8    0    0
  2.62680040e+00
  8.96024730e-01
  2.85354590e-01
@@ -5694,12 +5770,14 @@ $ g functions
  1.25405870e-01
  8.09472840e-01
  5.04047100e-02
+ 4.21406810e-02
 $ h functions 
-    4    0    0
+    5    0    0
  1.71754750e+00
  5.09950300e-01
  2.77580970e-01
  4.21406810e-02
+ 9.32767400e-02
 $ i functions 
     2    0    0
  1.35140460e+00
@@ -5707,6 +5785,7 @@ $ i functions
 
 $ Np
 a 93
+$ Warning: in symmetry        g, exponent 1.0397400000e-01 is considered to be too close to one already present (1.0220600000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    37    0    0
  5.69309350e+07
@@ -5812,7 +5891,7 @@ $ d functions
  9.89394050e-01
  4.34295380e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.09518640e+03
  6.99964280e+02
  2.95884250e+02
@@ -5832,6 +5911,7 @@ $ f functions
  8.83503080e-02
  1.06070760e+00
  5.91786060e-01
+ 5.80723800e-02
 $ g functions 
     7    0    0
  4.19146460e+00
@@ -5842,11 +5922,12 @@ $ g functions
  8.75163310e-01
  1.02206000e-01
 $ h functions 
-    4    0    0
+    5    0    0
  2.80839100e+00
  9.61274650e-01
  1.96891210e-01
  1.69919800e-01
+ 1.29416000e-01
 $ i functions 
     2    0    0
  2.15839600e+00
@@ -5960,7 +6041,7 @@ $ d functions
  1.15502080e+00
  5.28606600e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.95526480e+03
  9.74425360e+02
  4.09028590e+02
@@ -5980,8 +6061,9 @@ $ f functions
  1.26181620e-01
  1.50972210e+00
  7.63621620e-01
+ 4.68389600e-02
 $ g functions 
-    7    0    0
+    8    0    0
  7.20275930e+00
  2.97031980e+00
  1.14528820e+00
@@ -5989,12 +6071,14 @@ $ g functions
  1.17240600e-01
  1.24845510e+00
  2.55771630e-01
+ 4.35200300e-02
 $ h functions 
-    4    0    0
+    5    0    0
  5.29376920e+00
  2.06510450e+00
  2.51651250e-01
  4.61189700e-01
+ 9.34136210e-02
 $ i functions 
     2    0    0
  4.05563480e+00
@@ -6108,7 +6192,7 @@ $ d functions
  8.34971520e-01
  3.61556820e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.49059270e+03
  8.25980210e+02
  3.47684770e+02
@@ -6128,8 +6212,9 @@ $ f functions
  1.11063250e-01
  1.34679860e+00
  6.86899010e-01
+ 5.30665800e-02
 $ g functions 
-    7    0    0
+    8    0    0
  6.05428940e+00
  2.42113520e+00
  8.97990870e-01
@@ -6137,12 +6222,14 @@ $ g functions
  1.33368630e-01
  1.05267020e+00
  1.56281900e-01
+ 6.37242000e-02
 $ h functions 
-    4    0    0
+    5    0    0
  4.41785920e+00
  1.63457530e+00
  2.41276230e-01
  2.84473410e-01
+ 1.15283000e-01
 $ i functions 
     2    0    0
  3.38371460e+00
@@ -6256,7 +6343,7 @@ $ d functions
  8.13429720e-01
  3.53061060e-01
 $ f functions 
-   19    0    0
+   20    0    0
  2.40548100e+03
  7.98786530e+02
  3.36453620e+02
@@ -6276,8 +6363,9 @@ $ f functions
  1.05988120e-01
  1.30261350e+00
  6.69840930e-01
+ 5.26077220e-02
 $ g functions 
-    7    0    0
+    8    0    0
  5.69079700e+00
  2.25398800e+00
  8.34148390e-01
@@ -6285,12 +6373,14 @@ $ g functions
  1.60346760e-01
  1.01720530e+00
  1.44986830e-01
+ 7.95889000e-02
 $ h functions 
-    4    0    0
+    5    0    0
  4.18267240e+00
  1.53708670e+00
  2.38280430e-01
  2.67167500e-01
+ 1.18271700e-01
 $ i functions 
     2    0    0
  3.35034960e+00
@@ -6304,8 +6394,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['6s6p correlating', '5s5p correlating', '5s5p polarizing']
 $ 
-$ dyall.6s.qz.bas
 $
+$ Description
 $ 
 $ 6s-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -6623,8 +6713,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating']
 $ 
-$ dyall.6p.qz.bas
 $
+$ Description
 $ 
 $ 6p-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -7441,8 +7531,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', '6d dipole polarization']
 $ 
-$ dyall.6d.qz.bas
 $
+$ Description
 $ 
 $ 6d-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
@@ -8763,8 +8853,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['7s7p correlating', '6s6p correlating', '6s6p dipole polarization']
 $ 
-$ dyall.7s.qz.bas
 $
+$ Description
 $ 
 $ 7s Block Quadruple-Zeta Basis Set Archive
 $ =========================================

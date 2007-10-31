@@ -1,18 +1,33 @@
 $
-$  REFERENCE
-$ 4-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441; K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
-$ addendum Theor. Chem. Acc. (2002) 108:365; revision Theor. Chem. Acc. (2006) 115:441.
-$ 5-7s,6d: K.G. Dyall, in preparation; 4d,5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483;
-$ 5d:K.G. Dyall, Theor. Chem. Acc. (2004) 112:403
-$ Basis sets available from the Dirac web site, http://dirac.chem.sdu.dk.
-$
-$
 $ Elements Supported
-$ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Ga As Kr Ge Br Se Sr Rb I  Xe Sn  In Sb Te Pt Hf
-$ Ir Re Au W Os Hg Ta Cs Ba Bi Pb Tl At Rn Po Hs Db Mt Rf Rg Uub Sg Ds Bh Fr Ra
+$ Sr Rb Cs Ba Fr Ra
+$ Ga As Kr Ge Br Se I Xe Sn In Sb Te Bi Pb Tl At Rn Po
+$ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Pt Hf Ir Re Au W Os Hg Ta
+$ Hs Db Mt Rf Rg Uub Sg Ds Bh
+$ Md Ac Cm Pu No Am Cf Bk Pa U Th Np Lr Fm Es
+$
+$  REFERENCE
+$
+$ 5s-7s: K.G. Dyall, in preparation.
+$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366; 
+$        addendum    Theor. Chem. Acc. (2002) 108:365;
+$        revision    Theor. Chem. Acc. (2006) 115:441
+$    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483.
+$    5d: K.G. Dyall, Theor. Chem. Acc. 112, 403-409 (2004)
+$    6d: K.G. Dyall, in preparation.
+$    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
+$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
+$
 $
 
-$ 
+
+
+
+
+
+
+
+$
 $ Basis set library file automatically generatered by basis_set.py
 $ 
 $ invocation: basis_set.py --file=../basis/reference_unedited/4d_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating and dipole polarization --output=dyall.4d.dz.bas
@@ -20,8 +35,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating and dipole polarization']
 $ 
-$ dyall.4d.dz.bas
-$
+$ Description
 $ 
 $ 4d-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -693,8 +707,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating']
 $ 
-$ dyall.4p.dz.bas
 $
+$ Description
 $ 
 $ 4p-Block Double-Zeta Basis Set Archive
 $ =====================================
@@ -1061,8 +1075,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', '4s4p polarizing']
 $ 
-$ dyall.5s.dz.bas
 $
+$ Description
 $ 
 $ 5s-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -1270,8 +1284,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating']
 $ 
-$ dyall.5p.dz.bas
 $
+$ Description
 $ 
 $ 5p-Block Double-Zeta Basis Set Archive
 $ =====================================
@@ -1722,8 +1736,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating and polarizing']
 $ 
-$ dyall.5d.dz.bas
 $
+$ Description
 $ 
 $ 5d-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -2479,13 +2493,13 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_unedited/5f_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=5f correlating,6d/7s correlating,5f polarizing --output=dyall.5f.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_unedited/5f_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=5f correlating,6d/7s correlating,5f polarizing,6d polarizing --output=dyall.5f.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['5f correlating', '6d/7s correlating', '5f polarizing']
+$  ['5f correlating', '6d/7s correlating', '5f polarizing', '6d polarizing']
 $ 
-$ dyall.5f.dz.bas
 $
+$ Description
 $ 
 $ 5f-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -2692,7 +2706,7 @@ $ d functions
  1.86317210e-01
  5.71726910e-02
 $ f functions 
-   11    0    0
+   13    0    0
  7.80592270e+02
  2.62638270e+02
  1.09702900e+02
@@ -2704,6 +2718,8 @@ $ f functions
  9.62286130e-01
  3.31565870e-01
  1.40087170e-01
+ 1.14244520e-01
+ 6.25638570e-02
 $ g functions 
     2    0    0
  2.81826720e+00
@@ -2785,7 +2801,7 @@ $ d functions
  1.55437470e-01
  5.17278690e-02
 $ f functions 
-    9    0    0
+   10    0    0
  7.51846680e+02
  2.54273440e+02
  1.07499830e+02
@@ -2795,6 +2811,7 @@ $ f functions
  5.81485990e+00
  2.60681350e+00
  8.92397640e-02
+ 6.24908020e-02
 $ g functions 
     2    0    0
  8.92397640e-02
@@ -2876,7 +2893,7 @@ $ d functions
  1.84036910e-01
  5.94096730e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.70434210e+02
  2.26183370e+02
  9.44796270e+01
@@ -2888,6 +2905,8 @@ $ f functions
  7.64434980e-01
  2.56036440e-01
  1.15929780e-01
+ 8.57556980e-02
+ 6.78857860e-02
 $ g functions 
     2    0    0
  2.06886770e+00
@@ -2896,6 +2915,7 @@ $ g functions
 $ Pu
 a 94
 $ Warning: in symmetry        f, exponent 1.0891575000e-01 is considered to be too close to one already present (1.0891575000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        f, exponent 7.1323178000e-02 is considered to be too close to one already present (7.3209241000e-02) and is not included. threshold: 5.00e-02
 $ s functions 
    26    0    0
  5.53832140e+07
@@ -2969,7 +2989,7 @@ $ d functions
  1.80250540e-01
  5.91224400e-02
 $ f functions 
-   11    0    0
+   12    0    0
  6.29775640e+02
  2.12673100e+02
  8.88282530e+01
@@ -2981,6 +3001,7 @@ $ f functions
  6.84372390e-01
  2.23835620e-01
  1.08915750e-01
+ 7.32092410e-02
 $ g functions 
     2    0    0
  1.74363050e+00
@@ -3062,7 +3083,7 @@ $ d functions
  1.85612720e-01
  5.62708340e-02
 $ f functions 
-   11    0    0
+   13    0    0
  8.03337250e+02
  2.70135680e+02
  1.12823650e+02
@@ -3074,6 +3095,8 @@ $ f functions
  1.00132210e+00
  3.46037820e-01
  1.45588470e-01
+ 1.19584070e-01
+ 6.04917430e-02
 $ g functions 
     2    0    0
  2.97333640e+00
@@ -3155,7 +3178,7 @@ $ d functions
  1.82303840e-01
  5.93318930e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.49674220e+02
  2.19288210e+02
  9.15947510e+01
@@ -3167,6 +3190,8 @@ $ f functions
  7.24462220e-01
  2.40125810e-01
  1.11777530e-01
+ 7.95906260e-02
+ 7.10962040e-02
 $ g functions 
     2    0    0
  1.88203470e+00
@@ -3248,7 +3273,7 @@ $ d functions
  1.86084510e-01
  5.89694990e-02
 $ f functions 
-   11    0    0
+   13    0    0
  7.13548290e+02
  2.40479090e+02
  1.00457700e+02
@@ -3260,6 +3285,8 @@ $ f functions
  8.43996900e-01
  2.86937910e-01
  1.24964150e-01
+ 9.75517330e-02
+ 6.56869110e-02
 $ g functions 
     2    0    0
  2.36324200e+00
@@ -3341,7 +3368,7 @@ $ d functions
  1.85236480e-01
  5.92636720e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.91769160e+02
  2.33261780e+02
  9.74404390e+01
@@ -3353,6 +3380,8 @@ $ f functions
  8.04257800e-01
  2.71613270e-01
  1.21012860e-01
+ 9.17290080e-02
+ 6.74230990e-02
 $ g functions 
     2    0    0
  2.20863110e+00
@@ -3434,7 +3463,7 @@ $ d functions
  1.68651870e-01
  5.60821580e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.46848570e+02
  2.18643170e+02
  9.17934990e+01
@@ -3446,6 +3475,8 @@ $ f functions
  7.05940730e-01
  2.29130270e-01
  9.81987890e-02
+ 7.43698110e-02
+ 6.59016610e-02
 $ g functions 
     2    0    0
  1.35524640e+00
@@ -3527,7 +3558,7 @@ $ d functions
  1.72879490e-01
  5.72161550e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.54110780e+02
  2.20999250e+02
  9.26986150e+01
@@ -3539,6 +3570,8 @@ $ f functions
  7.41428680e-01
  2.46308550e-01
  1.02978840e-01
+ 8.18256740e-02
+ 6.56834550e-02
 $ g functions 
     2    0    0
  1.52001240e+00
@@ -3619,7 +3652,7 @@ $ d functions
  1.68072570e-01
  5.91955480e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.45144300e+02
  2.18151510e+02
  9.16922860e+01
@@ -3631,6 +3664,8 @@ $ f functions
  6.77590280e-01
  2.12569050e-01
  2.58206830e-01
+ 6.66857210e-02
+ 8.67663520e-02
 $ g functions 
     2    0    0
  1.00609730e+00
@@ -3712,7 +3747,7 @@ $ d functions
  1.76243170e-01
  5.79859020e-02
 $ f functions 
-   11    0    0
+   13    0    0
  6.64344770e+02
  2.24363160e+02
  9.40486370e+01
@@ -3724,6 +3759,8 @@ $ f functions
  7.76148870e-01
  2.62478980e-01
  1.05800990e-01
+ 8.87654650e-02
+ 6.95426610e-02
 $ g functions 
     2    0    0
  1.65956470e+00
@@ -3806,7 +3843,7 @@ $ d functions
  1.82594710e-01
  5.43530700e-02
 $ f functions 
-   11    0    0
+   12    0    0
  8.66564800e+02
  2.91077000e+02
  1.21752040e+02
@@ -3818,6 +3855,7 @@ $ f functions
  1.16250480e+00
  4.19133340e-01
  1.52542080e-01
+ 5.66240340e-02
 $ g functions 
     2    0    0
  3.20998790e+00
@@ -3899,7 +3937,7 @@ $ d functions
  1.86630210e-01
  5.79249090e-02
 $ f functions 
-   11    0    0
+   13    0    0
  7.57978440e+02
  2.55173860e+02
  1.06591950e+02
@@ -3911,6 +3949,8 @@ $ f functions
  9.22945900e-01
  3.16876550e-01
  1.34127660e-01
+ 1.08793760e-01
+ 6.40868700e-02
 $ g functions 
     2    0    0
  2.66593010e+00
@@ -3992,7 +4032,7 @@ $ d functions
  1.86542470e-01
  5.85234430e-02
 $ f functions 
-   11    0    0
+   13    0    0
  7.35643770e+02
  2.47791740e+02
  1.03511900e+02
@@ -4004,6 +4044,8 @@ $ f functions
  8.83568790e-01
  3.02019200e-01
  1.29419880e-01
+ 1.03235430e-01
+ 6.42381890e-02
 $ g functions 
     2    0    0
  2.51441680e+00
@@ -4017,8 +4059,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', '5s5p polarizing']
 $ 
-$ dyall.6s.dz.bas
 $
+$ Description
 $ 
 $ 6s-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -4244,8 +4286,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating']
 $ 
-$ dyall.6p.dz.bas
 $
+$ Description
 $ 
 $ 6p-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -4812,8 +4854,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating and dipole polarization']
 $ 
-$ dyall.6d.dz.bas
 $
+$ Description
 $ 
 $ 6d-Block Double-Zeta Basis Set Archive
 $ ======================================
@@ -5718,8 +5760,8 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', '4s4p polarizing']
 $ 
-$ dyall.7s.dz.bas
 $
+$ Description
 $ 
 $ 7s Block Double-Zeta Basis Set Archive
 $ =====================================
