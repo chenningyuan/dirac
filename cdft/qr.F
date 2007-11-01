@@ -226,6 +226,7 @@ c=======================================================================
 
       parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
       parameter (nr_vars = 5)
+!     parameter (nr_vars = 6)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -276,6 +277,7 @@ c=======================================================================
       if(add_gr) use_var(3) = .true.
       if(add_gs) use_var(4) = .true.
       if(add_gs) use_var(5) = .true.
+!                use_var(6) = .true.
 
       var_is_product(3) = .true.
       var_is_product(4) = .true.
@@ -365,13 +367,22 @@ c=======================================================================
         enddo
       endif
 
+!     M = "S" \cdot "S"
+!     ivar = 6
+!     if(use_var(ivar)) then
+!       do ixyz = ixyz_start,3
+!         var(ixyz,1,ivar) = d0
+!         var(ixyz,2,ivar) = d0
+!         var(ixyz,3,ivar) = var(ixyz,1,2)*var(ixyz,2,2)*d4
+!       enddo
+!     endif
+
       if(add_r .and.       add_gr) call  dftpot2(vxc,w,r_0,gr_0_norm)
       if(add_r .and. .not. add_gr) call  dftpot2(vxc,w,r_0,d0)
       if(add_s .and.       add_gs) call sdftpot2(vxc,w,r_0,gr_0_norm)
       if(add_s .and. .not. add_gs) call sdftpot2(vxc,w,r_0,d0)
 
 #if defined brute_force_it
-!     don't remove this
 !     if i_derivative() doesn't find a non-zero derivative
 !     it will return the pointer 99
       vxc(99) = d0
@@ -449,6 +460,12 @@ c=======================================================================
 !     b(S,S)
       call qr_b(2,2,vxc(fSS),ixyz_start,var,var_pq,use_var)
 
+!     a(M)
+!     ivar = 6
+!     do ixyz = ixyz_start,3
+!       var_pq(ixyz,3,ivar) = vxc(fSS)/d2
+!     enddo
+
 !     b(Z,Z)
       call qr_b(3,3,vxc(fZZ),3,var,var_pq,use_var)
 
@@ -484,6 +501,10 @@ c=======================================================================
       call qr_c(1,2,2,vxc(fRSS),ixyz_start,var,var_pq,use_var)
       call qr_c(2,1,2,vxc(fRSS),ixyz_start,var,var_pq,use_var)
       call qr_c(2,2,1,vxc(fRSS),ixyz_start,var,var_pq,use_var)
+
+!     b(n,M)
+!     call qr_b(1,6,vxc(fRSS)/d2,ixyz_start,var,var_pq,use_var)
+!     call qr_b(6,1,vxc(fRSS)/d2,ixyz_start,var,var_pq,use_var)
 
 !     c(S,S,Z)
       call qr_c(2,2,3,vxc(fSSZ),ixyz_start,var,var_pq,use_var)
@@ -603,6 +624,23 @@ c=======================================================================
           enddo
         enddo
       endif
+
+!     M = "S" \cdot "S"
+!     contributes to the h- part
+!     ivar = 6
+!     if(use_var(ivar)) then
+!       do ixyz = ixyz_start,3
+!         jxyz = 0
+!           do ibc = 1,3
+!             vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+!    &                        + var_pq(ixyz,3,ivar)*var(ixyz,ibc,2)*d2
+!           enddo
+!           ibc = 3
+!             vxc_vector(jxyz,ixyz,ibc,2) = vxc_vector(jxyz,ixyz,ibc,2)
+!    &                        + var_pq(ixyz,1,ivar)*var(ixyz,1,2)*d4
+!    &                        + var_pq(ixyz,2,ivar)*var(ixyz,2,2)*d4
+!       enddo
+!     endif
 
       do ibc = 1,3
         worth_it = max(
