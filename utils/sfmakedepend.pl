@@ -164,7 +164,10 @@ sub new {
 sub find_includes {
 #==================================================================================
 #  
-# Search throughout the file to find keyword of included files
+#  
+#            Search throughout the file to find keyword of included files
+#
+#   called recursively
 #
 #==================================================================================
     my $self = shift;
@@ -215,7 +218,7 @@ sub find_includes {
 		$use = lc($use);
 	    }
 	    $self->{'uses'}{$use} = 1;
-	# Fortran 90 module
+	### Fortran 90 module
 	} elsif (/^\s*module\s+(\w+)/i) {
 	    $modname = $1;
 	#   $modname = "modules/".$1;
@@ -264,7 +267,12 @@ sub find_includes {
 sub print_includes {
 #================================================================================
 #
-# print include files (*.h, *.mod) after print target into makefile
+#
+#    print include files (*.h, *.mod, *.inc, ...) into the makefile 
+#  after print target
+#
+#
+#  called recursively 
 #
 #================================================================================
     my $self = shift;
@@ -274,7 +282,7 @@ sub print_includes {
     my %printed = ();
 
     if ($main::iprint >=5) {
-      print STDOUT "call of print_includes for target >> $target:\n"; }
+        print STDOUT "called 'print_includes' for target >> $target:\n"; }
 
     foreach $file (keys %{$self->{'includes'}}) {
 
@@ -285,21 +293,42 @@ sub print_includes {
 	my $len = length($ref->{'filepath'}) + 1;
 
 	if (($len_sum + $len > 80) &&
-	       (length($target) + 1 < $len_sum)) {
-	    print "\n$target:";
-            # control print out on the screen
+	       (length($target) + 1 < $len_sum) ) {
+
+	 #  if ($main::iprint >=5) { 
+         #   print STDOUT "xxx len=$len ref=$ref ref-filepath=$ref->{'filepath'} :\n"; }
+
+	    print "\n$target:";     # prints target into Makefile ...
+
+            # control print out on the screen as well ...
 	    if ($main::iprint >=5) { 
              print STDOUT "$target:\n"; }
+
 	    $len_sum = length($target) + 1;
+
+	  # if ($main::iprint >=5) { 
+          #   print STDOUT "its len_sum:  $len_sum\n"; }
+
 	}
+
+     #  if ($main::iprint >=5) {
+     #    print STDOUT "going to print...$ref->{'filepath'}  \n"; 
+     #  }
+
 	print " " . $ref->{'filepath'};
+
             # control print out on the screen
-	    if ($main::iprint >=5) { 
-             print STDOUT " " . $ref->{'filepath'} ."\n"; }
+	    if ($main::iprint >=5) {
+              if ( $ref->{'filepath'} )  {
+               print STDOUT "* depends on " . $ref->{'filepath'} ."\n"; }
+               else {print STDOUT "...empty string...\n"; }
+            }
 
 	$printed{$file} = 1;
 	$len_sum += $len;
+
 	$len_sum = $ref->print_includes($target, $len_sum);
+
 	# if ($main::iprint >=5) { print STDOUT " " . $ref->print_includes($target, $len_sum);}
     }
     $len_sum;
@@ -419,18 +448,26 @@ sub find_mods {
 sub print {
 #===========================================================================
 #
-# print basic (include,modules) dependencies of object files
+#
+#
+#         print basic (include,modules) dependencies of object files
+#
+#
 #
 #===========================================================================
     my $self = shift;
     my $source = $self->{'source_file'};
     my $compile_string = "\t" . '$(CFT) $(FFLAGS) -c';
-    my($base, $object, $modname, $flag, $target, $ftarget);
+    my ($base, $object, $modname, $flag, $target, $ftarget);
 
     $base = &main::basename($source, @main::suffixes);
 
-    # ... define target
+    ###  ... define target
     $target = $base . "." . $main::obj_ext;
+
+    if ($main::iprint >= 5) {
+      print STDOUT "source=$source base=$base target=$target main::suffixes=@main::suffixes";
+    }
 
     if ($main::stupid) {
 	$ftarget = $base . "." . $main::ext;
@@ -451,14 +488,16 @@ sub print {
 	    $target .= " $base.$main::add_ext";
 	    $len_sum += length($base) + length($main::add_ext) + 2;
 	}
-       # ... print here
+
+        # ... print here ...
         print "$target:";
          $self->print_includes($target, $len_sum);
         print "\n";
 
-	if ($main::iprint >=5) {
-         # print STDOUT "$target:";
-        }
+       #if ($main::iprint >=5) {
+       #  print STDOUT "...again target, $target: len_sum=$len_sum self is $self->{'source_file'} \
+       #      $self->{'filepath'}  $self->{'includes'} $self->{'uses'}  $self->{'modules'} \n";
+       #}
 
         if ($main::stupid) {
 	    $len_sum = length($ftarget) + 1;
@@ -483,7 +522,15 @@ sub print {
 	@module_files = $self->find_mods();
 	my $len_sum = length($target) + 1;
      ##  print "volaco tu je 1: $target\n";
-	print "$target:";
+        if ($main::iprint >=5) {
+         print STDOUT " ... again print out target: $target for modules ... \n";
+         if (@module_files) {print STDOUT "...there are associated  modules \n";}
+         else {print STDOUT "...no associated  modules !\n";}
+        }
+        # ... print target only if associated with modules !
+        if (@module_files) {  
+	 print "$target:"; }
+
 	foreach $file (@module_files) {
 	    my $len = length($file) + 1;
 	    if (($len_sum + $len > 80) &&
@@ -494,7 +541,8 @@ sub print {
 	    $len_sum += $len;
 	    print " " . $file;
 	    if ($main::iprint >=5) {
-	     print STDOUT "module file: $file ... hash: $main::mod_obj{$file} \n"; }
+	      print STDOUT "module file: $file ... its source file (hash): $main::mod_obj{$file} \n";
+            }
 	    # ... adding object dependency through hash !
             print " " . $main::mod_obj{$file};
 	}
@@ -611,15 +659,17 @@ if ( !( $cray || $parasoft) ) {
 
 foreach $target (sort keys(%sources)) {
   if ($main::iprint >=5) {
-    print STDOUT "---> calling print for target : $target \n";
+    print STDOUT "---> calling print for the target (source file) : $target \n";
   }
-    $sources{$target}->print();
+  $sources{$target}->print();
 }
 
- sort_make();
+  sort_make();
 
 #########################################################
-#            End of main function                       #
+#    							#
+#             End of main function                      #
+#    							#
 #########################################################
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -685,7 +735,7 @@ use File::Basename;
 use Getopt::Long;
 
 # list of supported suffixes
-@suffixes = qw( .c .C .cc .cxx .cpp .f .F .fcm .FCM .f90 .F90 .for);
+@suffixes = qw( .c .C .cc .cxx .cpp .f .F .fcm .FCM .f90 .F90 .for .head .struct);
 # print "supported ".@suffixes." suffixes: @suffixes \n";
 
 ###   http://www.perl.com/doc/manual/html/lib/Getopt/Long.html 
@@ -756,7 +806,7 @@ if ($opt_h) {
 }
 
 if ($opt_pl) {
-    $iprint = $opt_pl;
+    $iprint = $opt_pl; # assign the print level 
 #    print "setting print level $opt_pl \n";
 } else { $iprint = 0; }
 
@@ -785,7 +835,9 @@ if ($opt_a) {
     $add_ext = $opt_a;
 }
 
+# 
 # --- now print out entered arguments
+# 
 if ($iprint >= 5){
  print "\n *** Verbose output from this perl script ***\n";
  print "print level: $iprint\n";
@@ -793,8 +845,8 @@ if ($iprint >= 5){
    print "read include directories : @incdirs \n"; }
  if ($opt_d) {
    print "preprocessor statements: $d_list\n"; }
- print "the file to be modified: $mf\n";
- print "modules extension: $mod_ext\n";
+ print "the makefile to be modified: $mf\n";
+ print "Fortran 90 modules extension: $mod_ext\n";
  print "object files extension: $obj_ext\n";
  if ($opt_a) {
    print "additional target extension: $add_ext \n";
@@ -863,6 +915,6 @@ sub findfile {
 }
 #end sub findfile
 
-#
-#    End of the program file
-#
+#**********************************************************************
+#                   End of the program file
+#**********************************************************************

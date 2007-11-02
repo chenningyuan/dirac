@@ -8,6 +8,8 @@ F77_OBJS = dirac.o
 
 F90_OBJS = 
 
+F90_MODS = 
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
 pre: $(F77_CPPS)
@@ -28,5 +30,9 @@ dirac.x:
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F)  $(C_OBJS:.o=.c)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

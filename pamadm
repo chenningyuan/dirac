@@ -1300,6 +1300,10 @@ if [ -n "$OOFMOD" ]; then
    TEMPOOF="$TEMPOOF oof"
 fi
 
+#################################################
+######## take care of all dependencies  #########
+#################################################
+
 cat <<EOF>> Makefile
 
 depend:
@@ -1309,19 +1313,14 @@ for ff in $TEMP; do
 	cd $ff; \$(MAKE) depend
 EOF
 done
-echo
-#################################################
-######## take care of f90 dependencies  #########
-#################################################
-cat <<EOF>> Makefile
-
-f90dep:
 EOF
 for ff in $TEMPOOF; do
    cat <<EOF>> Makefile
 	cd $ff; \$(MAKE) f90dep
 EOF
 done
+echo
+
 ################################################
 #echo "Making module Makefiles..."
 ################################################
