@@ -10,7 +10,11 @@ include ../Makefile.config
 F77_OBJS = ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
            ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o
 
+C_OBJS   =
+
 F90_OBJS =
+
+F90_MODS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -19,10 +23,21 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(F90_OBJS) $(C_OBJS)
+all:	$(F90_MODS) $(F77_OBJS) $(F90_OBJS) $(C_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod ;\
+        $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+
+##
+##  compile Fortran90 module source files and make symbolic links
+## of resulting *.mod files into common linked directory modules
+##
+mod : $(F90_MODS) ;\
+$(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
+##ln -sf $(PWD)/*.mod ../modules/. 
+
+FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -32,5 +47,9 @@ dirmpi.x:
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
