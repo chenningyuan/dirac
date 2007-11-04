@@ -914,6 +914,42 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #endif
         ENDIF
 
+#if defined check_and_merge_me
+!       quadratic response
+        if(doqr) then
+          call dft_qr_slim(dogga,
+     &                     lbit(lbit_cdft,1),
+     &                     dtrmat,excmat,
+     &                     isymop,ihrmop,gao,gao1,
+     &                     rho,rhogrd,rhg,wght,buf)
+!
+!         the idea here is that   r^[B]           \Omega_{ia}^[C]
+!                                 r^[C]           \Omega_{ia}^[B]
+!                                 r^[BC]          \Omega_{ia}
+!         and the corresponding   q^[B]  \nabla_j \Omega_{ia}^[C]
+!                                 q^[C]  \nabla_j \Omega_{ia}^[B]
+!                                 q^[BC] \nabla_j \Omega_{ia}
+!
+!         can be evaluated using (s)dft_lr
+!         only the remaining part is done in dft_qr
+!
+!         it works but i have seen some problems with the gnu compiler
+!         and didn't have time to investigate
+!         so it's blocked for the moment
+!         the (s)dft_lr have to be adapted to deal
+!         with Hermiticity-general matrices which is easy
+!                                                         radovan
+!
+          call dft_lr_mod(dtrmat,excmat,3,
+     &                    isymop,ihrmop,gao,gao1,
+     &                    rho,rhogrd,rhg,wght,dogga,buf)
+          if(lbit(lbit_cdft,1)) then
+            call sdft_lr_mod(dtrmat,excmat,3,
+     &                       isymop,ihrmop,gao,gao1,
+     &                       rho,rhogrd,rhg,wght,dogga,buf)
+          endif
+        endif
+#endif
 
 !       quadratic response
         IF(DOQR) THEN

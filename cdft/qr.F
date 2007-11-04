@@ -687,3 +687,337 @@ c=======================================================================
 
       return
       end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* dft_qr_slim */
+      subroutine dft_qr_slim(add_grad,
+     &                       add_spin,
+     &                       dtrmat,
+     &                       excmat,
+     &                       isymop,
+     &                       ihrmop,
+     &                       gao,
+     &                       gao1,
+     &                       r_0,
+     &                       gr_0_norm,
+     &                       gr_0,
+     &                       w,
+     &                       buf)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "inforb.h"
+#include "cdft.h"
+#include "dftcom.h"
+#include "../dft/functionals.h"
+
+      logical   add_grad,
+     &          add_spin,
+     &          lbit
+      dimension dtrmat(nbast,nbast,nz,3),
+     &          excmat(nbast,nbast,nz,3),
+     &          isymop(3),
+     &          ihrmop(3),
+     &          gao(*),
+     &          gao1(*),
+     &          buf(*),
+!
+     &          gr_0 (  3),
+     &          gr_b (  3),
+     &          gr_c (  3),
+!
+     &          s_b  (  3),
+     &          s_c  (  3),
+!
+     &          gs_b (3,3),
+     &          gs_c (3,3),
+!
+     &          Y_b  (  3),
+     &          Y_c  (  3),
+     &          Y_bc (  3),
+!
+     &          X_bc (  3),
+!
+     &          v_bc_h_Y_0(3),
+     &          v_bc_h_Y_b(3),
+     &          v_bc_h_Y_c(3),
+     &          v_bc_h_X_b(3),
+     &          v_bc_h_X_c(3),
+!
+!               here we construct (see thesis for notation):
+!
+!               K_{pq,0}^[BC] = r_0^[BC] \Omega_{pq} + q_{0j}^[BC] \nabla \Omega_{pq}
+!               K_{pq,z}^[BC] = r_z^[BC] \Omega_{pq} + q_{zj}^[BC] \nabla \Omega_{pq}
+!               K_{pq,y}^[BC] = r_y^[BC] \Omega_{pq} + q_{yj}^[BC] \nabla \Omega_{pq}
+!               K_{pq,x}^[BC] = r_x^[BC] \Omega_{pq} + q_{xj}^[BC] \nabla \Omega_{pq}
+!
+!               all the rest is done elsewhere
+!
+!               scalar h+ part: r_0^[BC]
+!               s_bc_h
+!               vector h+ part: q_{0j}^[BC] with j = x,y,z
+     &          v_bc_h (  3),
+!               scalar h- part: r_k^[BC]    with k = x,y,z
+     &          s_bc_ah(  3),
+!               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
+     &          v_bc_ah(3,3),
+!
+     &          vxc(99)
+
+#include "ibtfun.h"
+
+        call getrho(r_b,isymop(1)-1,gao,
+     &            dtrmat(1,1,1,1),buf)
+        call getrho(r_c,isymop(2)-1,gao,
+     &            dtrmat(1,1,1,2),buf)
+
+      if(add_spin) then
+        call get_m(.true.,s_b,isymop(1)-1,gao,
+     &                  dtrmat(1,1,1,1),buf)
+        call get_m(.true.,s_c,isymop(2)-1,gao,
+     &                  dtrmat(1,1,1,2),buf)
+      endif
+
+      if(add_grad) then
+        call get_gr_nh(.true.,gr_b,isymop(1)-1,gao,gao1,
+     &                       dtrmat(1,1,1,1),buf)
+        call get_gr_nh(.true.,gr_c,isymop(2)-1,gao,gao1,
+     &                       dtrmat(1,1,1,2),buf)
+
+!       Z = \nabla R \cdot \nabla R
+        Z_b  = d2*ddot(3,gr_0,1,gr_b,1)
+        Z_c  = d2*ddot(3,gr_0,1,gr_c,1)
+        Z_bc = d2*ddot(3,gr_b,1,gr_c,1)
+      endif
+
+      if(add_grad .and. add_spin) then
+        call get_m_dervs_nh(.true.,gs_b,isymop(1)-1,gao,gao1,
+     &                            dtrmat(1,1,1,1),buf)
+        call get_m_dervs_nh(.true.,gs_c,isymop(2)-1,gao,gao1,
+     &                            dtrmat(1,1,1,2),buf)
+
+!       Y = \nabla R \cdot \nabla S
+        do k = k_start,3
+          Y_b (k) = ddot(3,gr_0,1,gs_b(1,k),1)
+          Y_c (k) = ddot(3,gr_0,1,gs_c(1,k),1)
+          Y_bc(k) = ddot(3,gr_b,1,gs_c(1,k),1)
+     &            + ddot(3,gr_c,1,gs_b(1,k),1)
+        enddo
+
+!       X = \nabla S \cdot \nabla S
+        do k = k_start,3
+          X_bc(k) = d2*ddot(3,gs_b(1,k),1,gs_c(1,k),1)
+        enddo
+      endif
+
+      if(add_grad) then
+        call dftpot2(vxc,w,r_0,gr_0_norm)
+      else
+        call dftpot2(vxc,w,r_0,d0)
+      endif
+
+      if(add_spin) then
+        if(add_grad) then
+          call sdftpot2(vxc,w,r_0,gr_0_norm)
+        else
+          call sdftpot2(vxc,w,r_0,d0)
+        endif
+      endif
+
+      k_start = 1
+      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
+
+!-------------------------------------------------------------------------------
+!     collect s_bc_h
+
+      s_bc_h = d0
+
+      s_bc_h = s_bc_h + vxc(fRRR)*(r_b*r_c)
+
+      if(add_grad) then
+        s_bc_h = s_bc_h + vxc(fRRZ)*(r_b*Z_c + Z_b*r_c)
+     &                  + vxc(fRZZ)*(Z_b*Z_c)
+     &                  + vxc(fRZ)*Z_bc
+      endif
+
+      if(add_spin) then
+        do k = k_start,3
+          s_bc_h = s_bc_h + vxc(fRSS)*(s_b(k)*s_c(k))
+
+          if(add_grad) then
+            s_bc_h = s_bc_h + vxc(fRSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                      + vxc(fRYY)*(Y_b(k)*Y_c(k))
+     &                      + vxc(fRX)*X_bc(k)
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+!     collect s_bc_ah
+
+      call dzero(s_bc_ah,3)
+
+      if(add_spin) then
+        do k = k_start,3
+          s_bc_ah(k) = s_bc_ah(k) + vxc(fRSS)*(r_b*s_c(k) + s_b(k)*r_c)
+
+          if(add_grad) then
+           s_bc_ah(k) = s_bc_ah(k) + vxc(fRSY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &                             + vxc(fSSZ)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &                             + vxc(fSZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+     &                             + vxc(fSY)*Y_bc(k)
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+!     collect vector components
+
+      call dzero(v_bc_h,3)
+      call dzero(v_bc_ah,9)
+
+      if(add_grad) then
+
+        v_bc_h_Z_0 = d0
+        v_bc_h_Z_b = d0
+        v_bc_h_Z_c = d0
+
+        v_bc_h_Z_0 = v_bc_h_Z_0
+     &             + vxc(fZZZ)*(Z_b*Z_c)
+     &             + vxc(fRZZ)*(r_b*Z_c + Z_b*r_c)
+     &             + vxc(fRRZ)*(r_b*r_c)
+
+        v_bc_h_Z_0 = v_bc_h_Z_0
+     &             + vxc(fZZ)*Z_bc
+        v_bc_h_Z_b = v_bc_h_Z_b
+     &             + vxc(fRZ)*r_c
+     &             + vxc(fZZ)*Z_c
+        v_bc_h_Z_c = v_bc_h_Z_c
+     &             + vxc(fRZ)*r_b
+     &             + vxc(fZZ)*Z_b
+
+        if(add_spin) then
+
+          call dzero(v_bc_h_Y_0,3)
+          call dzero(v_bc_h_Y_b,3)
+          call dzero(v_bc_h_Y_c,3)
+
+          call dzero(v_bc_h_X_b,3)
+          call dzero(v_bc_h_X_c,3)
+
+          do k = k_start,3
+            v_bc_h_Z_0  = v_bc_h_Z_0
+     &                  + vxc(fZYY)*(Y_b(k)*Y_c(k))
+     &                  + vxc(fSZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                  + vxc(fSSZ)*(s_b(k)*s_c(k))
+
+            v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
+     &                    + vxc(fYY)*Y_bc(k)
+            v_bc_h_Y_b(k) = v_bc_h_Y_b(k)
+     &                    + vxc(fSY)*s_c(k)
+     &                    + vxc(fYY)*Y_c(k)
+            v_bc_h_Y_c(k) = v_bc_h_Y_c(k)
+     &                    + vxc(fSY)*s_b(k)
+     &                    + vxc(fYY)*Y_b(k)
+
+            v_bc_h_X_b(k) = v_bc_h_X_b(k)
+     &                    + vxc(fRX)*r_c
+     &                    + vxc(fZX)*Z_c
+            v_bc_h_X_c(k) = v_bc_h_X_c(k)
+     &                    + vxc(fRX)*r_b
+     &                    + vxc(fZX)*Z_b
+
+            v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
+     &                    + vxc(fRSY)*(r_b*s_c(k) + s_b(k)*r_c)
+     &                    + vxc(fRYY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &                    + vxc(fSZY)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &                    + vxc(fZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+          enddo
+        endif
+
+        do j = 1,3
+          v_bc_h(j) = v_bc_h(j) + v_bc_h_Z_0*gr_0(j)*d2
+     &                          + v_bc_h_Z_b*gr_b(j)*d2
+     &                          + v_bc_h_Z_c*gr_c(j)*d2
+          if(add_spin) then
+            do k = k_start,3
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_Y_0(k)*gr_0(j)
+     &                                    + v_bc_h_Y_b(k)*gr_b(j)
+     &                                    + v_bc_h_Y_c(k)*gr_c(j)
+
+              v_bc_h(j) = v_bc_h(j) + v_bc_h_Y_b(k)*gs_b(j,k)
+     &                              + v_bc_h_Y_c(k)*gs_c(j,k)
+
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_X_b(k)*gs_b(j,k)*d2
+     &                                    + v_bc_h_X_c(k)*gs_c(j,k)*d2
+            enddo
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+
+      s_bc_h =     d2*s_bc_h
+      call dscal(3,d2,v_bc_h,1)
+
+      worth_it = max(
+     &               dabs(s_bc_h),
+     &               dabs(v_bc_h(1)),
+     &               dabs(v_bc_h(2)),
+     &               dabs(v_bc_h(3))
+     &              )
+      if(worth_it .gt. dfthrl) then
+        call doexc2(s_bc_h,
+     &              v_bc_h,
+     &              isymop(3)-1,
+     &              excmat(1,1,1,3),
+     &              gao,
+     &              gao1)
+      endif
+
+      if(.not. add_spin) goto 999
+
+      call dscal(3,d2,s_bc_ah,1)
+      call dscal(9,d2,v_bc_ah,1)
+
+!     scaling the vector h- part v_bc_ah to get symmetrization right
+!     the h+ part v_bc_h is scaled inside doexc2
+      call dscal(9,d2,v_bc_ah,1)
+
+      do k = k_start,3
+        worth_it = max(
+     &                 dabs(s_bc_ah(k)),
+     &                 dabs(v_bc_ah(1,k)),
+     &                 dabs(v_bc_ah(2,k)),
+     &                 dabs(v_bc_ah(3,k))
+     &                )
+        if(worth_it .gt. dfthrl) then
+          call exc_m(add_grad,
+     &               s_bc_ah(k),
+     &               v_bc_ah(1,k),
+     &               k,
+     &               isymop(3),
+     &               excmat(1,1,1,3),
+     &               gao,
+     &               gao1)
+        endif
+      enddo
+
+ 999  continue
+
+      return
+      end
