@@ -856,7 +856,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS)\\ \$(ECPOBJS)\\
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS) \$(ECPOBJS)\\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
         \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS)
 
