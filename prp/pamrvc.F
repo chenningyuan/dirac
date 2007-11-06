@@ -251,8 +251,8 @@ C        -------------------------------------------------
 C
          IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
             CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I+NOSIM),
-     &                     WORK(KZCONF),BCVEC(1,I),
-     &                     WORK(KMOLFFC),WORK(KMUUUU))
+     &                     NZCONF,WORK(KZCONF),BCVEC(1,I),
+     &                     WORK(KMOLFFC),WORK(KMUUUU),IPRXRS)
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,BCVEC(1,I),SCVEC(1,I+NOSIM),
      &                      WORK(KMOLFFC),H2AC,WORK,KFREE,LFREE)
@@ -3341,8 +3341,8 @@ C        Calculate density matrices
 C        --------------------------
 C
          IF ( XRS_CIPROGRAM .EQ. 'GOSCI' ) THEN
-            CALL GOSCI_RMAKDM(.TRUE.,.TRUE.,WORK(KZCONF),CLREF,CRREF,
-     &           WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
+            CALL GOSCI_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
+     &           CLREF,CRREF,WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
             CALL LUCI_DENS(.TRUE.,.TRUE.,WORK(KDVMOLF),WORK(KPVMOLF),
@@ -5029,8 +5029,8 @@ C
 C        Calculate sigma vector
 C
          IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
-            CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I),WORK(KZCONF),CREF,
-     &         WORK(KMOLFFC),WORK(KMUUUU))
+            CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I),NZCONF,
+     &         WORK(KZCONF),CREF,WORK(KMOLFFC),WORK(KMUUUU),IPRXRS)
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,CREF,SCVEC(1,I),
      &                      WORK(KMOLFFC),H2ACX(1,I),WORK,KFREE,LFREE)
