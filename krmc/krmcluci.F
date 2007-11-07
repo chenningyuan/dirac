@@ -2249,7 +2249,7 @@ C     Flag for type of integral interface:
 C     I_IITP = 1: Old 4IND1XXXX0 driven interface
 C     I_IITP = 2: New MRCONEE/MDCINT driven interface
 C
-      N_FCACM = (2*NASHT)*(2*NASHT)*MZ
+      N_FCACM = (2*NASHT)*(2*NASHT)
 C
       I_IITP = 1
 C
@@ -2257,9 +2257,13 @@ C
 C
         print*,' Testing new integral interface (MRCONEE/MDCINT)'
 C
-        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
-        print*,'Allocated for ',N_FCACM,' integrals'
-        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM/MZ),
+        CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KINDK,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KINDL,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRKLR,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRKLI,NZ,WORK,KFREE,LFREE)
+        print*,'Allocated for ',N_FCACM,' integrals, MZ=',MZ
+        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM),
      &                     WORK(KINDK),WORK(KINDL),
      &                     WORK(KRKLR),WORK(KRKLI))
         CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
@@ -2278,7 +2282,7 @@ C
 C       The core Hamiltonian is the active-active part of FC,
 C       a.k.a. FCAC.
 C
-        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
         IF( CRDFO_MAT ) THEN
@@ -2317,12 +2321,12 @@ C
         IF (IPROPT.GE.5) THEN
           WRITE(LUPRI,'(A)') 'Molfdir format FCAC:'
           WRITE(LUPRI,'(A)') 'Real part:'
-          DO I=1,N_FCACM/MZ
+          DO I=1,N_FCACM
             WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
           END DO
           IF (NZ.GT.1) THEN
             WRITE(LUPRI,'(A)') 'Imaginary part:'
-            DO I=N_FCACM/MZ+1,N_FCACM
+            DO I=N_FCACM+1,MZ*N_FCACM
               WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
             END DO
           END IF
@@ -3114,7 +3118,7 @@ C     Flag for type of integral interface:
 C     I_IITP = 1: Old 4IND1XXXX0 driven interface
 C     I_IITP = 2: New MRCONEE/MDCINT driven interface
 C
-      N_FCACM = (2*NASHT)*(2*NASHT)*MZ
+      N_FCACM = (2*NASHT)*(2*NASHT)
 C
       I_IITP = 1
 C
@@ -3122,9 +3126,13 @@ C
 C
         print*,' Testing new integral interface (MRCONEE/MDCINT)'
 C
-        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
-        print*,'Allocated for ',N_FCACM,' integrals'
-        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM/MZ),
+        CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KINDK,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KINDL,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRKLR,NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRKLI,NZ,WORK,KFREE,LFREE)
+        print*,'Allocated for ',N_FCACM,' integrals, MZ=',MZ
+        CALL LCR_RD_MRCMDC(WORK(KFCACM),WORK(KFCACM+N_FCACM),
      &                     WORK(KINDK),WORK(KINDL),
      &                     WORK(KRKLR),WORK(KRKLI))
         CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
@@ -3143,8 +3151,8 @@ C
 C       The core Hamiltonian is the active-active part of FC,
 C       a.k.a. FCAC.
 C
-        CALL MEMGET('REAL',KFCACM,N_FCACM,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KFCACM),N_FCACM)
+        CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KFCACM),MZ*N_FCACM)
 C
 C       Read two-electron integrals:
 C       ----------------------------
