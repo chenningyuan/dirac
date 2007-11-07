@@ -471,17 +471,16 @@ C
 * 21: Type of parallel calculation
 *
       if (IMOKW(21).eq.0) then
-#if defined (VAR_MPI)
-         IODENSEPAR = 2
-         IRUNPA = 1
+         IF (NUMNOD .GT. 0) THEN
+            IODENSEPAR = 2
+            IRUNPA = 1
+         ELSE
+            IODENSEPAR = 0
+            IRUNPA = 0
+         END IF
          IMOKW(21) = 2
-#else
-         IODENSEPAR = 0
-         IRUNPA = 0
-         IMOKW(21) = 2
-#endif
       else if (IMOKW(21).eq.1) then
-#if defined (VAR_MPI)
+        if (NUMNOD .GT. 0) THEN
          if (IPARMODEL.GT.2) then
             write(6,*) 'Keyword PARMOD not compatible with input ',
      &                  IPARMODEL
@@ -500,29 +499,29 @@ C
            IODENSEPAR = 0
            IRUNPA = 1
          END IF
-#else
-         write(6,*) 'Keyword PARMOD does not make sense in a sequential
-     & run. I will ignore and continue.'
+        else
+         write(6,*) 'Keyword PARMOD does not make sense in a sequential'
+     &    //' run. I will ignore and continue.'
          IODENSEPAR = 0
          IRUNPA = 0
          IMOKW(21) = 3
-#endif
+        end if
       end if
 *
 * 22: Type of I/O model in parallel calculation
 *
       if (IMOKW(22).eq.0) then
-#if defined (VAR_MPI)
+        if (NUMNOD .gt. 0) then
          IIOMOD = 1
          IMOKW(22) = 2
          YESSTATEMENT = 'No'
-#else
+        else
          IIOMOD = -1
          IMOKW(22) = 2
          YESSTATEMENT = 'No'
-#endif
+        end if
       else if (IMOKW(22).eq.1) then
-#if defined (VAR_MPI)
+       if (NUMNOD .gt. 0) then
         if(IPARIOMOD.eq.0) then
           IIOMOD = 0
           YESSTATEMENT = 'No'
@@ -538,13 +537,13 @@ C
           IIOMOD = 1
           YESSTATEMENT = 'No'
         end if
-#else
-         write(6,*) 'Keyword PIOMOD does not make sense in a sequential
-     & run. I will ignore and continue.'
+       else
+         write(6,*) 'Keyword PIOMOD does not make sense in a sequential'
+     &    //' run. I will ignore and continue.'
          IIOMOD = -1
          IMOKW(22) = 3 
          YESSTATEMENT = 'No'
-#endif
+       end if
       end if
 *
 * 23: Number of maximum CI Iterations
@@ -7643,21 +7642,19 @@ C
           read (LUTWO) datex,timex,nkr,
      &          (kr(i),kr(-i),i=1,nkr)
         end if
-      end if
 #if defined (VAR_MPI)
-      if (N2EFIL.eq.0) then
-          if (nmproc.gt.1) then
-              call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
+        if (nmproc.gt.1) then
+           call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
+     &                    mpi_comm_world,ierr)
+           do j = 1, nkr
+             call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
      &                      mpi_comm_world,ierr)
-              do j = 1, nkr
-              call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
+             call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
      &                      mpi_comm_world,ierr)
-              call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
-     &                      mpi_comm_world,ierr)
-              end do
-          end if
-      end if
+           end do
+        end if
 #endif
+      end if
 *
       if (2*NKR.ne.MORB) then
         if (myproc.eq.master) then
@@ -7788,7 +7785,8 @@ C
       end if
 *
 #if defined (VAR_MPI)
-      CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+      if (NMPROC .gt. 1)
+     &   CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
 #endif
 *
       RETURN
