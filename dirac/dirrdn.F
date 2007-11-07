@@ -1814,7 +1814,7 @@ C
       IF(LBIT(INTDEF,2)) THEN
         IF(CNVINT(1).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,1P,D8.1)')
-     +    'SL-integrals  below SCF convergence ',CNVINT(1)
+     +    'SL-integrals below SCF convergence ',CNVINT(1)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
      +    'SL-integrals from iteration ',ITRINT(1)
@@ -1823,7 +1823,7 @@ C
       IF(LBIT(INTDEF,3)) THEN
         IF(CNVINT(2).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,1P,D8.1)')
-     +    'SS-integrals  below SCF convergence ',CNVINT(2)
+     +    'SS-integrals below SCF convergence ',CNVINT(2)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
      +    'SS-integrals from iteration ',ITRINT(2)
