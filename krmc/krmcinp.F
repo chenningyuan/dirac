@@ -613,7 +613,7 @@ C
       IF(LBIT(IKRMC_INTDEF,3)) THEN
         IF(DKRMC_CNVINT(2).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,E8.1)')
-     &    'SS-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(2)
+     &    'SS-integrals below KR-MCSCF convergence ',DKRMC_CNVINT(2)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
      &    'SS-integrals from iteration ',IKRMC_ITRINT(2)
