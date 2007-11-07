@@ -1745,9 +1745,13 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
 #if defined (VAR_MPI)
 *
-*       hardwired to 1
+*       hardwired to 1 (if at least two cpu's active, i.e. numnod .gt. 0)
 *
-        IPARALLELIO = 1
+        IF (NUMNOD .GT. 0) THEN
+           IPARALLELIO = 1
+        ELSE
+           IPARALLELIO = -1
+        END IF
 *
 #if defined (SYS_LOCALDISKS)
 *       checking only if parallel file I/O in general is requested
