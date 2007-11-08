@@ -4429,7 +4429,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
       INTEGER LUCIAIN_MPIL
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
-      data KOMMA /1H,/
 *
 *-----------------------------------------------------------------*
 *  Print input for LUCITA input file           
