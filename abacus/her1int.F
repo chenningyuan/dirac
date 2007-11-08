@@ -4933,18 +4933,18 @@ C
          NVALB = NVALUB(ICOMPB)
 C
          CX    = D0
-         SX    = D0
+         SSX   = D0
          SGNC  = D1
          SGNS  = D1
          FACKX = D1
          DO 200 T = 0, LVALA + LVALB
             IF (MOD(T,2) .EQ. 0) THEN
-               CX = CX + SGNC*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
-               SX = SX + SGNS*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               CX  = CX + SGNC*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SSX = SSX + SGNS*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
                SGNC = - SGNC
             ELSE
-               CX = CX + SGNC*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
-               SX = SX + SGNS*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               CX =   CX + SGNC*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SSX = SSX + SGNS*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
                SGNS = - SGNS
             END IF
             FACKX = FACKX*DKX
@@ -4991,12 +4991,12 @@ C
          OZ = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
 C
          INT = INT + 1
-         SHLINT(INT,1) = SHLINT(INT,1) - CX*OY*OZ
-         SHLINT(INT,2) = SHLINT(INT,2) - OX*CY*OZ
-         SHLINT(INT,3) = SHLINT(INT,3) - OX*OY*CZ
-         SHLINT(INT,4) = SHLINT(INT,4) - SX*OY*OZ
-         SHLINT(INT,5) = SHLINT(INT,5) - OX*SY*OZ
-         SHLINT(INT,6) = SHLINT(INT,6) - OX*OY*SZ
+         SHLINT(INT,1) = SHLINT(INT,1) -  CX*OY*OZ
+         SHLINT(INT,2) = SHLINT(INT,2) -  OX*CY*OZ
+         SHLINT(INT,3) = SHLINT(INT,3) -  OX*OY*CZ
+         SHLINT(INT,4) = SHLINT(INT,4) - SSX*OY*OZ
+         SHLINT(INT,5) = SHLINT(INT,5) -  OX*SY*OZ
+         SHLINT(INT,6) = SHLINT(INT,6) -  OX*OY*SZ
   100 CONTINUE
       RETURN
       END
