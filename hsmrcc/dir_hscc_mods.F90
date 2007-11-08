@@ -19,7 +19,8 @@ integer(kind=4) :: iprint_hscc
 contains
 
 subroutine open_dirac_HSMRCC_file
-open(ludh,file='Dirac_for_HSMRCC',status='formatted', access='sequential') 
+!open(ludh,file='Dirac_for_HSMRCC',status='formatted', access='sequential') 
+open(ludh,file='Dirac_for_HSMRCC', access='sequential') 
 end subroutine open_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC
