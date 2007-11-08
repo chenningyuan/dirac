@@ -3526,7 +3526,7 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.31)
      &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
         If ( i.eq.32)
-     &  Line='          in preparation.                         '
+     &  Line='          J. Chem. Phys., accepted.               '
         If ( i.eq.33 .or. i.eq.34 )
      &  Line = StLine
         write(LUOUT,*) Line
