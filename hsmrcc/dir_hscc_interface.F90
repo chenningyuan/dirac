@@ -1,16 +1,94 @@
+
 subroutine HSCCINP
 !
-!
-!
+
+#include "implicit.h"
 #include "priunit.h"
 
-  write(LUPRI,*) 'in HSCCINP'
+   LOGICAL :: NEWDEF
+   CHARACTER:: PROMPT*1=''
+   CHARACTER(len=7) :: WORD='', KEYWORD=''
+
+! ... nice F90 version 
+!character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
+character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
+
+ Call QENTER('HSCCINP')
+
+ write(LUPRI,*) 'in HSCCINP, size of TABLE=',size(TABLE)
+
+ REWIND (LUCMD,IOSTAT=IOS); print *,'input file rewind...' 
+
+ Do While (KEYWORD /='*HSCC  ')
+   READ (LUCMD,'(A7)',ERR=910, END=910) KEYWORD
+   print *,'read KEYWORD=',KEYWORD
+ EndDo
+ call FLSHFO(LUPRI)
+
 !
-!  $HSMR 
-!    NCOR=1   ! 1 core MO
-!    NACT=2 
-!    NFRZV=8
-! $END
+! Initializations...
+!
+
+! ... reading of the rest ...
+!Do While ( PROMPT /= '*'  .or. WORD /= '*END OF' )
+Do 
+
+  Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  print *,'WORD=',WORD
+  KEYWORD = WORD 
+
+! Now decide !
+
+  If (PROMPT == '*' ) Then
+    print *,'WORD with "*" catched !', WORD
+    Exit
+  EndIf
+
+  If ((PROMPT == '#') .or. (PROMPT == '!')) Then
+     print *,'comment catched !', WORD
+     Cycle
+  EndIf
+
+  If (PROMPT == '.') Then
+
+    If (Any(TABLE(1:size(TABLE)) == WORD )) Then
+     Select Case (WORD)
+      Case ('.OPTION')
+        Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
+      Case ('.NELEC')
+        READ(LUCMD,*) NELE
+        print  *,' read NELE=',NELE
+      Case ('.NACT')
+        READ(LUCMD,*) NELE
+        print  *,' read NELE=',NELE
+      Case ('.PRINT')
+        READ(LUCMD,*) iprint_hscc
+        print  *,' read IPRINY_hscc=',iprint_hscc
+      Case Default
+        Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
+        '" is not yet implemented in HSCCINP.'
+      End Select
+    EndIf
+
+  Else
+     WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,'" not recognized in HSCCINP.'
+     CALL PRTAB(size(TABLE),TABLE,WORD//' input keywords',LUPRI)
+     CALL QUIT('Illegal keyword in HSCCINP.')
+
+  EndIf
+
+EndDo
+
+  call QUIT('in HSCCINP !!!')
+
+ Call QEXIT('HSCCINP')
+ Return
+
+910  CONTINUE
+        CALL QUIT('Error reading LUCMD, no "*HSCC" input found !')
+920  CONTINUE
+        CALL QUIT('Error reading LUCMD,after "*HSCC" input some error occured...')
+930  CONTINUE
+        CALL QUIT('Error reading LUCMD,after "*HSCC" input end of file reached...')
 
 end subroutine HSCCINP
 
@@ -69,38 +147,12 @@ end subroutine HSMRCC_Dirac_input
 
   end subroutine make_gamess_syminf
 
-!--------------------------------------------------
-module pointers
-
-integer, dimension(:,:,:), pointer:: IA
-integer, dimension(:), pointer:: IVA
-real*8, dimension(:,:,:), pointer:: RA
-logical, dimension(:,:,:), pointer:: LA
-
-end module pointers
-!--------------------------------------------------
-
-subroutine check_pointers
-! checks content of all filled arrays, which are absorbed in pointers module ....
-use pointers
-#include "implicit.h"
-#include "priunit.h"
- do i=1,4
-  write(LUPRI,'(A,i2,a,i4)') 'vector IVA(',i,')=',IVA(i)
- do j=1,4
- do iz=1,2
-  write(LUPRI,'(A,i2,a,i2,a,i2,a,i4)') 'IA(',i,',',j,',',iz,')=',IA(i,j,iz)
-  write(LUPRI,'(A,i2,a,i2,a,i2,a,f12.6)') 'RA(',i,',',j,',',iz,')=',RA(i,j,iz)
-  write(LUPRI,'(A,i2,a,i2,a,i2,a,l1)') 'LW(',i,',',j,',',iz,')=',LA(i,j,iz)
- enddo
- enddo
- enddo
-return
-end subroutine check_pointers
-
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSCC_STUFF(WORK,LWORK)
 
 use Memory
+use Dirac_HSMRCC
+
 #include "implicit.h"
 #include "priunit.h"
 !integer,intent(in) :: LWORK
@@ -122,13 +174,12 @@ if (check_point) then
  call mymemget('REAL',ipos2,ISIZE)
  call mymemget('LOGI',ipos3,ISIZE)
  call mymemget('INTE',ipos4,ISIZE)
- call assign_pointers77( PW(ipos1), PW(ipos2), PW(ipos3), PW(ipos4),N,N,NNZ)
- call check_pointers
+! call assign_pointers77( PW(ipos1), PW(ipos2), PW(ipos3), PW(ipos4),N,N,NNZ)
+! call check_pointers
 endif
 
 !call read_moltra_integrals
 call read_mrconee; call print_mrconee_data
-
 call read_mdcint ! read MDCINT file
 
 call UnstickMemory
@@ -136,27 +187,6 @@ call UnstickMemory
 end subroutine HSCC_STUFF
 
 ! ----------------------------------
-module io_moltra
-
-! ... logical numbers ... 
-integer (kind=2) :: MDINT=20, MRCONEE=21
-
-CHARACTER*10 DATEX,TIMEX*8
-real*8 :: ECORE
-
-!integer (kind=4) :: NSP
-integer  :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
-CHARACTER*14 REPNT(16)
-
-integer, parameter :: MXREP=32,MAXSP=1000
-character*4 REPN(16), REPNA(MXREP*2)
-
-integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
-real*8 EPS1(MAXSP)
-
-LOGICAL BREIT,SPFR
-
-end module io_moltra
 
 subroutine read_moltra_integrals
  use io_moltra
@@ -243,44 +273,4 @@ CLOSE (MDINT,STATUS='KEEP')
 
 
 end subroutine  read_mdcint
-
-
-SUBROUTINE ASSIGN_POINTERS77(IW,RW,LW,IVW,N1,N2,NNZ)
-!
-!
-! in Fortran77 style !!!
-!
-!
- use pointers
-#include "implicit.h"
-#include "priunit.h"
-INTEGER, TARGET:: IW(N1,N2,NNZ),IVW(N1)
-REAL*8,TARGET :: RW(N1,N2,NNZ)
-LOGICAL, TARGET :: LW(N1,N2,NNZ)
-! .. fill arrays !!!
- DO I=1,N1
-      IVW(I) = I-10
-   DO J=1,N2
-   DO IZ=1,NNZ
-      IW(I,J,IZ) = I*2+J+2*IZ-100
-      RW(I,J,IZ) = DFLOAT(I+J+2*IZ)+0.250
-      IF (I.NE.J) THEN
-        LW(I,J,IZ) = .TRUE.
-       ELSE
-        LW(I,J,IZ) = .FALSE.
-     ENDIF
-   ENDDO
-   ENDDO
- ENDDO
-
-!
-!  ...finally  assign pointers here
-!
-  IA => IW
-  IVA => IVW
-  RA => RW
-  LA => LW
-
-RETURN
-END
 

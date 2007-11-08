@@ -1,10 +1,12 @@
 include ../Makefile.config
 
+F90_OBJS = dir_hscc_mods.o dir_hscc_interface.o 
+
+F90_MODS = io_moltra.mod dirac_hsmrcc.mod file_units.mod
+
 F77_OBJS =
 
-F90_OBJS = prepare.o 
-
-F90_MODS = pointers.mod io_moltra.mod
+C_OBJS   =
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
@@ -13,7 +15,7 @@ pre:     $(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:  $(F90_MODS) $(F77_OBJS) $(F90_OBJS)
+all:  $(F90_MODS) $(F77_OBJS) $(F90_OBJS) $(C_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\

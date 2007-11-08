@@ -408,6 +408,8 @@ C     Input section for module for 4-index transformation
 C
 C     Written by Jon K. Laerdahl, T. Saue and L. Visscher (Dec 1996)
 C
+C     Called from PAMINP/dirrdn.F
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -431,7 +433,7 @@ C
 #include "dcbham.h"
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','xXXXXXX','xXXXXXX'/
+      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','xXXXXXX'/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
@@ -751,6 +753,14 @@ C
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 300
   313 CONTINUE
+#if defined (MOD_HSCC)
+        CALL HSCCINP
+#else
+C       prevent dirac.x running into an infinite loop here
+C       if *HSCC in input but MOD_HSCC not defined !!!
+        CALL QUIT(
+     &  '*HSCC specified, but HSCC is not included in this version')
+#endif
         GO TO 300
   314 CONTINUE
         GO TO 300
@@ -956,8 +966,8 @@ C
 
 #if defined (MOD_HSCC)
       IF (DOHSCC) THEN
-       WRITE(LUPRI,*) 'HSCC stuf !'
-       CALL HSCCINP
+!        WRITE(LUPRI,*) 'HSCC stuff active !'
+!        CALL HSCCINP
       ENDIF
 #endif
 
