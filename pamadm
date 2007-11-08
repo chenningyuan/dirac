@@ -235,8 +235,9 @@ setup()
          CAPTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - CAP module"
-    else
-        echo "CAP module is not included "
+  # else
+      #  echo "CAP module is not included "
+      #  echo 
     fi
    #
    #   HSMRCC Dirac-interface module
@@ -248,8 +249,9 @@ setup()
          HSCCTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - HSMRCC interface module"
-    else
-        echo "HSMRCC interface module is not included "
+  # else
+      #  echo "HSMRCC interface module is not included "
+      #  echo 
     fi
    #
    # Object oriented fortran90/95 mocularity module
@@ -260,18 +262,19 @@ setup()
          OOF_MAK=OOF_OBJ
          OOF_TAR=1
 	 F90MODS=ALL_F90MODS
-         echo " - OOF module - requires Fotran 90/95 compiler"
+         echo " - OOF module"
       else
        #  echo "OOF module not included"
        echo 
    fi
 ############################################################################
 #
-#        Add info on (in-)/active Fotran90/95 modularity model
+#           Add print-out on active Fotran90/95 modularity model
 #
 ############################################################################
   if [ -n "$MODULES" ]; then
-     echo "***    Fortran90/95 modules mode is active !   ****"
+     echo
+     echo " * Fortran90/95 modules mode is active "
   fi
 #  exit
    #
@@ -1313,7 +1316,6 @@ for ff in $TEMP; do
 	cd $ff; \$(MAKE) depend
 EOF
 done
-EOF
 for ff in $TEMPOOF; do
    cat <<EOF>> Makefile
 	cd $ff; \$(MAKE) f90dep
