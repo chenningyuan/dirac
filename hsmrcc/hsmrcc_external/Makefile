@@ -115,9 +115,12 @@ CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
 #
 ###########################################################################
 
+# directory with module source files  ...
 moddir = modules
+# directory with source files  ...
 srcdir = source
-objdir = object
+# directory with objects ...
+objdir = objects
 
 # specifying location of
 # Fortran Source Files
