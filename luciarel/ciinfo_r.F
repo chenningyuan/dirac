@@ -5500,7 +5500,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
 CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
-      IF( I_SET_L2BLOCK .eq. 1 ) THEN
+      IF( I_SET_L2BLOCK .ge. 1 ) THEN
 *
 *       L2BLOCK = max memory for c-vec and sigma-vec from
 *       ( curr. total mem - 3 mio for string info etc.) / 4
@@ -5508,8 +5508,8 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
-CSK        WRITE(LUWRT,'(1X,A,1X,I20)')
-CSK     & '  Current available free memory in double words:',L2BLOCK
+csk        WRITE(LUWRT,'(1X,A,1X,I20)')
+csk     & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
@@ -5517,8 +5517,8 @@ CSK     & '  Current available free memory in double words:',L2BLOCK
 *
         L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
 *
-CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+csk        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
         L2BLOCK = MIN(LCSBLK,L2BLOCK)
 *
@@ -5529,20 +5529,25 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
 *     test if L2BLOCK has become too large...
 *
-      LTEST_BLOCK = 0
-      LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+      IF( I_USE_PC .ne. 0)THEN
+        LTEST_BLOCK = 0
+        LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
 *
-      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
-*       reset to L_COMBI because that is already enough
-        L2BLOCK = LTEST_BLOCK
+        IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+*         reset to L_COMBI because that is already enough
+          L2BLOCK = LTEST_BLOCK
 *
+        END IF
       END IF
 *
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-      IF( I_SET_L2BLOCK .eq. 1) 
-     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
+      IF( I_SET_L2BLOCK .gt. 1 .or. I_USE_PC .eq. 0 ) THEN
+       LBLOCK = MAX(LBLOCK,LCSBLK)
+      END IF
+      IF( I_SET_L2BLOCK .ge. 1 )
+     &  WRITE(LUWRT,*) '  LBLOCK set to:',LBLOCK
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
