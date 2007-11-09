@@ -19556,7 +19556,7 @@ CIBM           PREFER SCALAR
 *
       END
 
-      SUBROUTINE DRSCL( N, SA, SX, INCX )
+      SUBROUTINE DRSCL( N, SA, SSX, INCX )
 *
 *  -- LAPACK auxiliary routine (version 3.0) --
 *     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
@@ -19568,7 +19568,7 @@ CIBM           PREFER SCALAR
       DOUBLE PRECISION   SA
 *     ..
 *     .. Array Arguments ..
-      DOUBLE PRECISION   SX( * )
+      DOUBLE PRECISION   SSX( * )
 *     ..
 *
 *  Purpose
@@ -19588,13 +19588,13 @@ CIBM           PREFER SCALAR
 *          The scalar a which is used to divide each component of x.
 *          SA must be >= 0, or the subroutine will divide by zero.
 *
-*  SX      (input/output) DOUBLE PRECISION array, dimension
+*  SSX      (input/output) DOUBLE PRECISION array, dimension
 *                         (1+(N-1)*abs(INCX))
 *          The n-element vector x.
 *
 *  INCX    (input) INTEGER
-*          The increment between successive values of the vector SX.
-*          > 0:  SX(1) = X(1) and SX(1+(i-1)*INCX) = x(i),     1< i<= n
+*          The increment between successive values of the vector SSX.
+*          > 0:  SSX(1) = X(1) and SSX(1+(i-1)*INCX) = x(i),     1< i<= n
 *
 * =====================================================================
 *
@@ -19661,7 +19661,7 @@ CIBM           PREFER SCALAR
 *
 *     Scale the vector X by MUL
 *
-      CALL DSCAL( N, MUL, SX, INCX )
+      CALL DSCAL( N, MUL, SSX, INCX )
 *
       IF( .NOT.DONE )
      $   GO TO 10

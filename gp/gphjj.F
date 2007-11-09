@@ -719,8 +719,8 @@ C                     basis, e.g. less mo's than ao's)
 C  23-Feb-1989 hjaaj  Note that if NROWV = 0 then only
 C                     eigenvalues will be calculated,
 C                     V matrix will not be referenced.
-C  27-Jul-1990 hjaaj  Changed -CX,+SX transformation to +CX,-SX
-C                     transformation; probably the -CX,+SX
+C  27-Jul-1990 hjaaj  Changed -CX,+SSX transformation to +CX,-SSX
+C                     transformation; probably the -CX,+SSX
 C                     transformation was responsible for that
 C                     the eigenvectors easily changed sign.
 C                     Changed initial test on NB. Changed SD.
@@ -804,31 +804,31 @@ C
          IBB=IB*(IB-1)/2
          DIF=F(IAA+IA)-F(IBB+IB)
          IF( ABS(DIF) .GT. C3) GO TO 271
-            SX=ROOT2
+            SSX=ROOT2
             CX=ROOT2
          GO TO 270
   271       T2X2 =BIG(IB)/DIF
             T2X25=T2X2*T2X2
          IF(T2X25 .GT. C4) GO TO 240
             CX=1.D 00
-            SX=T2X2
+            SSX=T2X2
          GO TO 270
   240    IF(T2X25 .GT. C5) GO TO 250
-            SX=T2X2*(D1 - D1P5*T2X25)
+            SSX=T2X2*(D1 - D1P5*T2X25)
             CX=D1 - DP5*T2X25
          GO TO 270
   250    IF(T2X25 . GT . C6) GO TO 260
             CX=D1+T2X25*(T2X25*D1P375 - DP5 )
-            SX= T2X2*(D1 + T2X25*(T2X25*D3P875 - D1P5))
+            SSX= T2X2*(D1 + T2X25*(T2X25*D3P875 - D1P5))
          GO TO 270
   260       T = DP25  / SQRT(DP25   + T2X25)
             CX= SQRT(DP5   + T)
-            SX= SIGN( SQRT(DP5 - T),T2X2)
+            SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
 #include "ivdep.h"
          DO 275 IR=1,IA
-            T        = F(IAA+IR)*SX
-            F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
+            T        = F(IAA+IR)*SSX
+            F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
             F(IBB+IR)=-T           +F(IBB+IR)*CX
   275    CONTINUE
          IEAA=IAA+IA
@@ -855,17 +855,17 @@ C              ... we have checked above that JBIG(IA) .ne. 0
 C              IF(JBIG(IR)) 360,380,360
             END IF
 #endif
-            T      = F(IEAR)*SX
-            F(IEAR)= F(IEAR)*CX+F(IEBR)*SX
+            T      = F(IEAR)*SSX
+            F(IEAR)= F(IEAR)*CX+F(IEBR)*SSX
             F(IEBR)=-T         +F(IEBR)*CX
             T   =F(IEAR)
             IT  =IA
             IF(IR-IB) 340,310,320
-  310          F(IEAA)=F(IEAA)*CX+F(IEAB)*SX
+  310          F(IEAA)=F(IEAA)*CX+F(IEAB)*SSX
 C              921030+hjaaj: zero f(ab) to avoid round-off errors
-C              F(IEAB)=     TT*CX+F(IEBR)*SX
+C              F(IEAB)=     TT*CX+F(IEBR)*SSX
                F(IEAB)=     D0
-               F(IEBR)=    -TT*SX+F(IEBR)*CX
+               F(IEBR)=    -TT*SSX+F(IEBR)*CX
             GO TO 360
   320       IF(ABS(T) .GE.  ABS(F(IEBR))) GO TO 340
                T   =F(IEBR)
@@ -905,8 +905,8 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
          JBB=(IB-1)*NROWV
 #include "ivdep.h"
          DO 400 I=1,NROWV
-            T=V(JBB+I)*SX
-            V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
+            T=V(JBB+I)*SSX
+            V(JBB+I)=-V(JAA+I)*SSX + V(JBB+I)*CX
   400       V(JAA+I)= V(JAA+I)*CX + T
       GO TO 410
   420 RETURN

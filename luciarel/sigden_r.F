@@ -606,7 +606,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1447,7 +1447,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
      &           KJAD,XKJAD,KJBD,XKJBD,KIAD,XKIAD,KIBD,XKIBD,
      &           ITDIAG,ITABTRNSP,IC_RESTRICT,IS_RESTRICT,
      &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &          ,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S
 #endif
      &           )
@@ -1512,7 +1512,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       INTEGER NIA(*),NIB(*),NJA(*),NJB(*)
       INTEGER IAOC(*),IBOC(*),JAOC(*),JBOC(*)
       INTEGER ICA(*),ICB(*),IAA(*),IAB(*)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       INTEGER IACT_C(*), IACT_S(*)
 #endif
 *.Input or Output
@@ -1563,7 +1563,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       NTEST = 0000
 *
       ISKIP = 0
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *      
 CSK      WRITE(LUWRT,*) ' IACT_C in GNSIDE'
 CSK      CALL IWRTMAMN(IACT_C,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
@@ -1611,14 +1611,14 @@ CSK      WRITE(LUWRT,*) ' IOFF_BLK_S in GNSIDE',IOFF_BLK_S
         END IF
 *
       WRITE(LUWRT,*) ' Input C vector '
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       CALL WRTVH1_PAR(CB,ICSM,NJA,NJB,NSMST,0,IACT_C,IOFF_BLK_C,0)
 #else
       CALL WRTVH1(CB,ICSM,NJA,NJB,NSMST,0)
 #endif
       if (ISD.eq.2) then
          WRITE(LUWRT,*) ' Input S vector '
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
          CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
 #else
          CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
@@ -1638,7 +1638,7 @@ CSK      WRITE(LUWRT,*) 'NIA'
 CSK      CALL IWRTMAMN(NIA,1,NSMST,1,NSMST,LUWRT)
 CSK      WRITE(LUWRT,*) 'NIB'
 CSK      CALL IWRTMAMN(NIB,1,NSMST,1,NSMST,LUWRT)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,NSMST,IACT_S,IOFF_BLK_S,1)
 *
 #else
@@ -1651,7 +1651,7 @@ CSK      CALL IWRTMAMN(NIB,1,NSMST,1,NSMST,LUWRT)
        IF(XSNORM.EQ.0.0D0) ISKIP = 1
       END IF
       IF(ISKIP.EQ.1) GOTO 9999
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     vector partitioning has been changed! we have to be careful
 *     calculating the proper offset for each block ( sigma and c )!!!
@@ -1746,7 +1746,7 @@ C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
        CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
      &                NJKBINTM,IB_AB,ONE,ISMDST,IAB_MAP)
 *. Loop over symmetry-blocks of C and Sigma
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *      initialize offsets for sigma- and c-block loops
        I_BLK_S_SCR = 0
@@ -1760,7 +1760,7 @@ C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
 *                              - sigma-blocks distributed
 *                              - check of 'active' c-blocks enabled
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
         IF( IACT_S( I_BLK_S_SCR ) .ne. MYPROC ) THEN
 CSK          WRITE(LUWRT,*) ' I SKIP S_BLOCK',I_BLK_S_SCR,'with IACT_S',
@@ -1782,14 +1782,14 @@ CSK        WRITE(LUWRT,*) 'IS_INCLUDED is for I_BLK_S_SCR',IS_INCLUDED,
 CSK     &                  I_BLK_S_SCR
 *
         IF(IS_INCLUDED.EQ.1) THEN
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *        reset offset for c-block loop
          I_BLK_C_SCR = 0
          I_BLK_C_SCR = IOFF_BLK_C
 #endif
         DO JASM = 1, NSMST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
         IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
 *
@@ -2112,7 +2112,7 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
 *        ^ End of loop over KASM, KBSM
         END IF
 *       ^ End if symmetryblock of C should be included
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
  2002  CONTINUE
 *      ^ skip c-block not included in active-block-list; only in parallel
 *        calculations
@@ -2122,7 +2122,7 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
 *       ^ End of loop over JASM
        END IF
 *      ^ End if symmetryblock of S should be included
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
  3003  CONTINUE
 *      ^ skip s-block not included in node-list; only in parallel
 *        calculations
@@ -2137,7 +2137,7 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
         IF(ISD.EQ.1) THEN
           WRITE(LUWRT,*) ' Updated sigma block '
 C              WRTVH1(H,IHSM,NRPSM,NCPSM,NSMOB,ISYM)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
           CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
 #else
           CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
@@ -2532,7 +2532,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IBX,SCLFAC,
+      SUBROUTINE MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IBX,SCLFAC,
      &                     ISMDST,IAB)
 
 * Information for mapping |Kstr> = IOP |Irefoc>
@@ -2559,7 +2559,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 *. Output
       INTEGER IX(*),IBX(MXNDGIRR,MXNDGIRR,NOP)
       INTEGER NK(MXPOBS,NOP)
-      DIMENSION SX(*)
+      DIMENSION SSX(*)
 *. Local Scratch
       INTEGER KOC(MXPNGAS),KGRP(MXPNGAS)
       INTEGER ISMDST(*)
@@ -2568,7 +2568,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 *. Notice at each level N the mapping is from !K(N)> to !K(N-1)> 
 *  where !K(0)> is input type and !K(NOP)> is output type
 *
-C     MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC)
+C     MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IB,SCLFAC)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN 
@@ -2614,7 +2614,7 @@ CTF
 *
          IBX(JSMOB,KSMSPGP,JOP) = IOFF
          CALL ADAST_GAS_REL(JSMOB,JGAS,NGAS,KGRP,JSMSPGP,
-     &                  IX(IOFF),SX(IOFF),NKSTR,IEND,
+     &                  IX(IOFF),SSX(IOFF),NKSTR,IEND,
      &                  IFRST,KFRST,KACT,SCLFAC,JAC_ADJ,ISMDST,IAB)
 C             ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
 C    &                  I1,XI1S,NKSTR,IEND,
@@ -2682,7 +2682,7 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
               WRITE(6,*) ' JOP JSM KNSM LK ',JOP,JSM,KNSM,LK
               WRITE(6,*) ' IOFF2 ', IOFF2
               CALL IWRTMA(IX(IOFF2),1,LK,1,LK)        
-              CALL WRTMAT(SX(IOFF2),1,LK,1,LK)        
+              CALL WRTMAT(SSX(IOFF2),1,LK,1,LK)        
              END DO
            END DO
          END DO
@@ -2973,7 +2973,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SIGDEN_CTRL(C,HC,LUC,LUHC,T,ISIGDEN
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                   ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS
 #endif
@@ -2987,7 +2987,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
 #include "implicit.inc"
 * some stuff relevant for parallel runs
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)     
@@ -3016,7 +3016,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
      &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                 NBAT_MS2,IBAT_MS2,0,
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                 2,NPARBLOCK
 #else
      &                 0,IDUMMY
@@ -3024,7 +3024,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
      &                 )
 *
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     ISCLFAC_GROUP array for c-blocks: 
 *     0 = block is not active, > 0: block is active
@@ -3035,7 +3035,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *
       call sigden_rel(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,ISIGDEN
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
      &                IGROUPLIST,IPROCLIST,RCCTOS,WORK(KSCALLOC)
 #endif
@@ -3053,7 +3053,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 ***********************************************************************
       SUBROUTINE SIGDEN_REL(C,HC,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &                      LLUC,LLUHC,T,ISIGDEN
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                     ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
      &                      IGROUPLIST,IPROCLIST,RCCTOS,ISCLFAC_GROUP
 #endif
@@ -3094,7 +3094,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 #include "glbbas.inc"
 #include "ctcc.inc"
 #include "clunit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3108,7 +3108,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
       LOGICAL WRITE_SB
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 #include "lucipar_rel.inc"
 #include "files_r.inc"
 *
@@ -3124,7 +3124,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       IONE = 1
       INT_IOFF1 = 0
       INT_IOFF2 = 0
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IOFF_SCR1 = 0
       IOFF_SCR2 = 0
 #endif
@@ -3158,7 +3158,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
 *
 *     file LUSC37 is not needed in a MPI run
 *
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
       Open(Unit=LUSC37,File=NLUSC37_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
 #endif
@@ -3195,7 +3195,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       end if
 *
 *=====================================================
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     make an update of list ISCLFAC_GROUP using LUCLIST...
 *
@@ -3258,14 +3258,14 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       CALL REWINO(LLUC)
       CALL REWINO(LLUHC)
 *
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 *=====================================================
 *
 *
 *     loop over vectors of sigma and C : MK2 space
 *
       DO IRIS = 1,IRILP,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *       initialize writing (ISIGDEN == 1) resp. reading (ISIGDEN == 2)
         IOFF_SCR1 = 0
         IOFF_SCR2 = 0
@@ -3284,7 +3284,7 @@ C?        WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
         NUM_BLK_ACT_S   = 0
         IOFFSET_SCRATCH = 0
 *
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 *
         if (NTEST.ge.50) then
           write(LUWRT,*)
@@ -3328,7 +3328,7 @@ C         call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
 *
             JBATABS = JBATABS + 1
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *       start various timings...
 *
@@ -3372,7 +3372,7 @@ CSK     &    ICOMPUTE,JBATABS
             GOTO 60
           ENDIF
 *
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 *
             if (ISIGDEN.eq.1) then
               if (NTEST.ge.500) then
@@ -3391,7 +3391,7 @@ CSK     &    ICOMPUTE,JBATABS
               call DZERO(HC,LS)
             end if
 *
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
             call rewino(LLUC)
 #endif
             DO IRIC = 1,IRILP,1
@@ -3401,7 +3401,7 @@ CSK     &    ICOMPUTE,JBATABS
               write(LUWRT,*) ' C     LOOP , IRIC = ',IRIC
               write(LUWRT,*) '-----------------------'
             end if
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *             initialize reading
               IOFF_SCR1_C = 0
               IOFF_SCR2_C = L_COMBI
@@ -3419,7 +3419,7 @@ CSK     &    ICOMPUTE,JBATABS
 *               skip EOV mark between real and imaginary part
                 CALL IFRMDS(IONEM,1,-1,LLUC)
               END IF
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 *
               DO IMK2_C = 1, NMS2VAL
                 MK2_C = MS2VAL(IMK2_C)
@@ -3441,7 +3441,7 @@ CSK     &    ICOMPUTE,JBATABS
                   IACTP = IST_FOR_DT(1,IMK2_C)
                   IBCTP = IST_FOR_DT(2,IMK2_C)
                   NBL_C = NBLK_MS2(IMK2_C)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *                 set new offset
                   IOFF_SCR1_C = IOFF_SCR1_C + IOFF_SCR2_C
                   INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
@@ -3454,7 +3454,7 @@ CSK     &                             IOFF_SCR1_C, INT_IOFF1_C
                   CALL COPNBLKD(LLUC,LUSC37,C,NBL_C,0,LBLK)
 *. End of vector mark
                   CALL ITODS(-1,1,-1,LUSC37)
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
 *
 * Analyze T before doing the job
                   call flush(LUWRT)
@@ -3470,7 +3470,7 @@ C                 end if
      &                             LUSC37,LLUHC,T,
      &                             ISIGDEN,WORK(KVEC3),IASTP,IBSTP,
      &                             IRIS,IRIC,IMK2_C,LUSC41,IPRDEN
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                            ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                             ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &                             LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC
@@ -3478,7 +3478,7 @@ C                 end if
      &                             )
                 end if
 *               ^ End if Kramers restriction
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *               keep track of correct offset
                 IOFF_SCR2_C = 0
                 DO ICBLK = 1, NBL_C
@@ -3488,7 +3488,7 @@ C                 end if
                 NUM_BLK = NUM_BLK + NBL_C
                 INT_IOFF2_C = NBL_C
 *
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
               END DO
 *             ^ End of loop over IMK2_C
             END DO
@@ -3509,12 +3509,12 @@ C                 end if
               end if
               NTEST = 000
               KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
               starttimer = MPI_WTIME()
               IF( ICOMPUTE .eq. 0 ) GOTO 70
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
               do ISBLK = I1BATS(JBATABS),KBATSEND-1,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *               check if block is needed
                 IF( NPARBLOCK(ISBLK) .ne. MYPROC ) GOTO 65
 *
@@ -3557,10 +3557,10 @@ CSK                  WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
                 LEN_T = IBATS(8,ISBLK)
                 call itods(LEN_T,1,-1,LLUHC)
                 call todsc(HC(IOFF),LEN_T,-1,LLUHC)
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
               end do
  70           CONTINUE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
               IF( ICOMPUTE .ne. 0 ) THEN
                 writetime = writetime + MPI_WTIME() - starttimer
                 sbatchtime = sbatchtime + MPI_WTIME() - starttime
@@ -3570,7 +3570,7 @@ CSK too much information?                 WRITE(LUWRT,50000) WALLTID
                 WRITE(LUWRT,60001) WALLTID2
 CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
               END IF
-#endif /* if def VAR_MPI */
+#endif /* if def VAR_MPI2 */
             end if
 *           ^ ISIGDEN == 1
 *
@@ -3579,7 +3579,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
         END DO
 *       ^ End of loop over IMK2_S
 *
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
         if (ISIGDEN.eq.1) then
 * Write end of vector mark between real and imaginary part.
           call itods(-1,1,-1,LLUHC)
@@ -3587,7 +3587,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 * Skip end of vector mark between real and imaginary part.
           call ifrmds(IONEM,1,-1,LLUHC)
         end if
-#endif /* if !def VAR_MPI */
+#endif /* if !def VAR_MPI2 */
 *
       END DO
 *     ^ End of loop over IRIS
@@ -3595,7 +3595,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 *
       CALL QEXIT('SIGDE')
 *
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
 *     close scratch unit for Right vector
       close(unit=LUSC37,status='DELETE')
 *
@@ -3613,7 +3613,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 80000 FORMAT(' >>>  WALL TIME FOR BROADCASTING C-COEFFICIENTS  :
      & ',A)
 *
-#endif /* if !def VAR_MPI */
+#endif /* if !def VAR_MPI2 */
 *
       END
 ***********************************************************************
@@ -3626,7 +3626,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
      &                       I1BATS,IBATS,
      &                       LUC,LUHC,T,ISIGDEN,C2,IASTP,IBSTP,
      &                       IRIS,IRIC,IMK2_C,LUSCR_L,IPRNT
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &                       LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC
@@ -3644,7 +3644,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 * =====
 *
 #include "implicit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3679,7 +3679,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
         WRITE(LUWRT,*) ' SIGDEN2 speaking :'
         WRITE(LUWRT,*) ' ================='
       END IF
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *     initialize scratch variables      
       IOFF_SCR2     = 0
       INT_IOFF3     = 0
@@ -3693,7 +3693,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 *      ISIGDEN = 2 : Read in batch of blocks of lhs vector
 *      unique blocks are read in, expanded and normalized to determinant form
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       INT_IOFF2 = 0
       INT_IOFF3 = I1BATS(JBATABS)
 CSK      WRITE(LUWRT,*) 'NEW INT_IOFF3 in SIGDEN2 FOR JBATABS',INT_IOFF3,
@@ -3706,7 +3706,7 @@ CSK     &                JBATABS
         if (IRIC .eq. 1 .and. IMK2_C .eq. 1 )then
 C
           do ISBLK = I1BATS(JBATABS),I1BATS(JBATABS) + LBATS(JBATABS)-1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             IF( NPARBLOCK( ISBLK ) .ne. MYPROC ) GOTO 100
 *
 *           ... active CPU-block found
@@ -3718,7 +3718,7 @@ C
             ISBSM = IBATS(4,ISBLK)
             ISOFF = IBATS(5,ISBLK)
             LEN2  = IBATS(7,ISBLK)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C           CPU-block - test if non-zero
             IF( LUHCLIST( INT_IOFF_EXPL + ICOUNT_ACT - 1 ).eq.0) GOTO 80
 C
@@ -3735,7 +3735,7 @@ C
             end if
             NTEST = 000
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
             XDUM = 0.0D0
             ISCALE = 1
@@ -3768,7 +3768,7 @@ CSK     &                   NSMST,ISCALE,XSCALE)
             end if
             NTEST = 000
   80        CONTINUE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             IOFF_SCR2 = LEN2
             IOFF_SCR_EXPL = IOFF_SCR_EXPL + IOFF_SCR2
 #endif
@@ -3785,7 +3785,7 @@ CSK     &                   NSMST,ISCALE,XSCALE)
 *. Obtain sigma/density for batch of blocks
       CALL SIGDEN_REL3(LBATS(JBATABS),IBATS(1,I1BATS(JBATABS)),1,
      &                 CB,SB,LUC,T,ISIGDEN,IRIS,IRIC
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                 ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &                 LUHCLIST,INT_IOFF3,LLUC
@@ -3803,7 +3803,7 @@ CSK     &                   NSMST,ISCALE,XSCALE)
 ***********************************************************************
       SUBROUTINE SIGDEN_REL3(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,T,ISIGDEN,
      &                       IRIS,IRIC
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &                       LUHCLIST,INT_IOFF3,LLUC
@@ -3998,7 +3998,7 @@ CSK   integer array...
       CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP))
 *     use all symmetryblocks of given TT
       ITTSS_ORD = 2
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     set proper C-block offset...
       ISTART_BLOCK = INT_IOFF1_C - 1
@@ -4069,7 +4069,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
      &     WORK(KI1GE),WORK(KXI1GE), WORK(KI2GE),WORK(KXI2GE),
      &     WORK(KI3GE),WORK(KXI3GE), WORK(KI4GE),WORK(KXI4GE),
      &     WORK(KSIGNNHX),WORK(KLSPOBEX_FRZ),WORK(KLISMDST)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &    ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &     ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &     LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC
@@ -4102,7 +4102,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
      &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
      &           SIGN_NHX,ISPOBEX_FRZ,ISMDST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &          ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &           ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
      &           LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC
@@ -4154,7 +4154,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -4228,7 +4228,7 @@ CSK        CALL IWRTMAMN(ISPOBEX_AC,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
       END IF
       NTEST = 000
 *
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
@@ -4280,7 +4280,7 @@ CSK     & JCBATCH, NJBLOCK, NCTT_BLK, I1C
      &      ICBLK,JATP,JBTP
           END IF
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *         check if TT-blocks are 'active'! if not, 
 *         skip all loops that will follow.
@@ -4312,7 +4312,7 @@ CSK               WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
 *. first block of next TT block of Sigma
             ISBLK = (ISTT_BLK-1)*NSMST + 1
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *           check if TT-blocks need to be calculated! if not,
 *           skip all loops that follow.
@@ -4373,7 +4373,7 @@ CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
 *. And fetch the c-blocks and transform into unpacked blocks in
 *. determinant normalization
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
                    IC_OFF_BLK     = INT_IOFF1_C
                    IOFF_SCRATCH_C = 0
 #endif
@@ -4385,7 +4385,7 @@ CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
                      JOFF = ICBLOCK(5,JBLK)
                      JLEN = ICBLOCK(7,JBLK)
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *                    check for active blocks
 CSK                     WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
@@ -4446,7 +4446,7 @@ CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
                      END IF
                      NTEST = 000
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
  8888                CONTINUE
                      IOFF_SCR_C = IOFF_SCR_C + JLEN
 #endif
@@ -4480,7 +4480,7 @@ CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
      &                  I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
      &                  ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
      &                  SIGN_EXTERNAL,IPRS,IPRD,ISMDST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                 ,INT_IOFF1_C+ICBLK-1,IS_OFF_BLK+ISBLK-1,
      &                  ISCLFAC_GROUP,NPARBLOCK
 #endif
@@ -4492,7 +4492,7 @@ CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
             NTEST = 000
             IF(NTEST.GE.300) THEN
               WRITE(LUWRT,*) ' Updated sigma blocks ' 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
               CALL WRTVH1_PAR(SB(ISOFF),ISSM,NSSOA_S(1,IATP),
      &                        NSSOB_S(1,IBTP),NSMST,0,NPARBLOCK,
      &                        IS_OFF_BLK+ISBLK-1,1)
@@ -4507,7 +4507,7 @@ CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
 *           ^ skip TT-blocks for sigma if not included in nodelist
 10000     CONTINUE
 *         ^ End of loop over blocks of sigma 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
           IF(IREAD.EQ.0) THEN
 *
