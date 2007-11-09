@@ -1229,15 +1229,10 @@ C    FIXME: This is hardwired now to be irrep number 3.
 C           Should be made flexible later on to account for
 C           different symmetry generator setup.
             if (CIRUN.eq.'CIINII') then
-             if( myproc .eq. master .and. i_comm_w_nd .eq. 1) then
+             if( myproc .eq. master .and. i_comm_w_nd .eq. 0) then
                write(lupri,*) 'WARNING FIXME: IBOSYM hardwired 
      & to irrep 3'
                write(lupri,*) 'You have problems if irrep 3 
-     & not ungerade!!'
-             else
-               write(MSLVOUT_REL,*) 'WARNING FIXME: IBOSYM hardwired 
-     & to irrep 3'
-               write(MSLVOUT_REL,*) 'You have problems if irrep 3 
      & not ungerade!!'
              end if
             end if
@@ -1713,7 +1708,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
         ISPC = 1
         CALL Z_BLKFO_REL(IDC,NMS2VAL,ISPC,IREFSM,KPCLBT,KPCLEBT,
      &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
-     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,-1,0,
+     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,2,0,
      &                   IDUMMY)
         CALL QEXIT('LUCIAR')
         RETURN
