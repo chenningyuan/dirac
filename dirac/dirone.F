@@ -716,7 +716,6 @@ C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996 - tsaue
 C     Dec.2005, MI - generalized for square properties (IDIMENS = NNBBASX or N2BBASX)
 C
-C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1248,8 +1247,9 @@ C
 C         PTRI, OP1INT have size of IDIMENS.
 C
 C    On output:
+C   =============
 C                PMAT - 2c/4c property matrix in SA-AO basis
-C                PTRI(IDIMENS,NZ) - BU property matrix 
+C                PTRI(IDIMENS,NZ) - property matrix in BU AO basis
 C
 C NOTE: In the TWOCOM.and.BSS=.true. case one needs only PMAT array !
 C       All other input parameters in this case can be dummy ...
@@ -1282,8 +1282,6 @@ C
 
       CALL QENTER('PRPMSAO')
 #include "memint.h"
-
-CMI     write(LUPRI,*) 'PRPMSAO: LWORK=',LWORK
 
 CMI ... first MEMCHK does not work !!!
 C      CALL MEMCHK('in PRPMSAO',WORK,1)
@@ -1374,10 +1372,9 @@ C     ... do resort PTRI to the boson sorted basis
         ENDIF
 
 C ====================================================================
-C       ... decide if the picture change transformation is needed
-C ====================================================================
         IF (BSS) THEN
          IPRINT1 = MAX(IPRHAM,IPRPRP)
+C     ... decide if the picture change transformation is needed
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
 C     ... if needed, do the picture change transformation of the PMAT
          IF (YESPCTRA) THEN
@@ -1413,7 +1410,13 @@ C  /* Deck decidepctr */
       SUBROUTINE DECIDEPCTR(DOTRANS,PROPNAME,IPRINT) 
 C*****************************************************************************
 C
-C    Written by Miro ILIAS/Strasbourg/March 2006
+C  Purpose: Decides if the property operator (PROPNAME from the operator list)
+C           has to be picture change transformed (returns logical DOTRANS).
+C
+C  Called from: PRPMSAO
+C               PROP2BSS
+C
+C  Written by Miro ILIAS/Strasbourg/March 2006
 C
 C*****************************************************************************
 #include "implicit.h"      
@@ -1445,14 +1448,13 @@ C*****************************************************************************
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.12) THEN
-      write(lupri,*) 'DECIDEPCTR: prpname=',PROPNAME
-      write(lupri,*) 'DECIDEPCTR: DOTRANS=',DOTRANS
+       write(lupri,'(2X,A,A)') 'DECIDEPCTR: prpname=',PROPNAME
+       write(lupri,'(2X,A,L)') 'DECIDEPCTR: DOTRANS=',DOTRANS
       ENDIF
                                                             
       CALL QEXIT('DECIDEPCTR')                              
       RETURN                                                
       END                                                   
-                                           
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sort2sao */

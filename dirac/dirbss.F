@@ -84,16 +84,17 @@ C ... store H2c_AO in pure LL form ...
         CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
       ENDIF
 
-C ... for calculating properties in pure 2comp. mode do adapt them 
-      IF (TWOCOMPBSS.AND.DOPRP) THEN
-        CALL PROP2BSS(VMAT,WORK(KFREE),LFREE)
+C ... for calculating properties in pure 2comp. mode do adapt 4comp.operators
+C     IF (TWOCOMPBSS.AND.DOPRP) THEN
+      IF (TWOCOMPBSS) THEN
+        CALL PROP2BSS(VMAT,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C ===============================================================================
 C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
       CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_H2C',
      &        VMAT,N2BBASX,LUBSS,IPRHAM)
-C    .. close the BSSMAT file...
+C    ... close the BSSMAT file ...
       CLOSE(LUBSS,STATUS='KEEP')
 
 C ============================================================
@@ -1718,7 +1719,6 @@ C****************************************************************************
         CALL QUIT('SPF_HK: NROW<>NCOL! How it is possible?')
       ENDIF
 
-
       IF (IPRINT. GE. 5) THEN
        write(lupri,*)
        IF (SPFR) THEN
@@ -1828,10 +1828,10 @@ C****************************************************************************
 
       IF (IPRINT.GE.5) THEN
         CALL HEADER('Output from DOPCTRA',-1)
-        write(lupri,*) 'Operator name:',PROPNAME 
-        write(lupri,*) 'time reversal symmetry:',ITIM
-        write(lupri,*) 'fermion rep IREP:',IREP
-        write(lupri,*) 'boson symmetry ISYM:',ISYM
+        write(lupri,'(2X,A,A)')  '         Operator name: ',PROPNAME 
+        write(lupri,'(2X,A,I2)') 'time reversal symmetry: ',ITIM
+        write(lupri,'(2X,A,I2)') '      fermion rep IREP: ',IREP
+        write(lupri,'(2X,A,I2)') '   boson symmetry ISYM: ',ISYM
         write(lupri,*)
       ENDIF
 
@@ -1976,7 +1976,6 @@ C  /* Deck only_ll */
 C**************************************************************************
 C
 C    PURPOSE: Keep only LL block of entering property matrix PRPAO.
-C
 C
 C   Written by Miro ILIAS, Strasbourg, 2006
 C   Last modifications:  MI, June 2006, Prievidza
@@ -7931,14 +7930,13 @@ C  /* Deck extrll */
       SUBROUTINE EXTRLL(IREP,PMAT4C,PMAT2C,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  PURPOSE: Do extract LL block of 4c PMAT4C into 2c PMAT2C;
+C  PURPOSE: Extract LL block of 4c PMAT4C into 2c PMAT2C;
 C           we are in the SA-AO basis.
 C
-C  On input:   IREP - irreducible repres. of operator
+C  On input:   IREP - irreducible repres. of the operator
 C              PMAT4C - four-component matrix
 C
 C  On output:  PMAT2C - two-comp. symm. blocked matrix
-C
 C
 C  Written by Miro Ilias, Strasbourg, March 2006
 C
@@ -7993,8 +7991,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (IPRINT.GE.12) THEN
        CALL HEADER('EXTRLL: Total entering 4c SA-AO oper.',-1)
-
-C      write(lupri,*) 'IREP=',IREP
 
        CALL PRQMAT(PMAT4C,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)

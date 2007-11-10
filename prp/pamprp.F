@@ -8067,7 +8067,7 @@ CMI       IF (IPRDEF .GE. 0) THEN
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prop2bss */
-      SUBROUTINE PROP2BSS(VMAT,WORK,LWORK)
+      SUBROUTINE PROP2BSS(VMAT,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: Run the list of four-component property operators 
@@ -8075,17 +8075,24 @@ C             in DCBPRP and do the picture change
 C             transformation of most of them. Do not transform
 C             certain operators (overlap, connection matrixes...)
 C
-C    Called from: MAKE_H2C (if TWOCOMPBSS and DOPRP are true)
+C             However, all operators of the list are written into BSSMAT in LL-blocks,
+C             either picture change transformed or not. Some of them in LL form 
+C            (like kinetic energy, beta matrix) are useless (MI/Nov 07).
+C             TODO: select operators which do not have to be picked up in LL block.
+C
+C    Called from: MAKE_H2C 
+C      (if TWOCOMPBSS is true, ie when true two-comp. mode with IOTC Hamiltonian is on)
 C
 C    On input:  
 C              VMAT - empty field (N2BBASXQ) to be utilized inside
+C              IPRINT - print level (=IPRHAM)
 C
 C    On output: 
-C              BSS/DKn integrals in LL_only matrix written to the BSSMAT file
+C              BSS/DKn integrals in LL_only matrix are written to the BSSMAT file
 C              under the label P2C_xxxx.
 C            
 C    Written by Miro Ilias, Strasbourg, March 2006
-C    Modifications:
+C    Modifications: Miro Ilias, Tel Aviv, Nov. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -8105,25 +8112,43 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
 C
       DIMENSION WORK(LWORK),VMAT(*)
-      LOGICAL FNDLAB, IS_SQUARE
+      LOGICAL IS_SQUARE, IS_PCTRA
       CHARACTER*8 PRPLABEL
       CHARACTER*4 NUMSTR
 C
       CALL QENTER('PROP2BSS')
 #include "memint.h"
+
+C     ... allocate for LL-only operator 
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
+
+      IF (IPRINT.GE.3) THEN
+        CALL HEADER('*** Output from PROP2BSS ***',-1)
+      ENDIF
+
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
       REWIND (LU1INT)
+
+C     ... run over all operators in the list
       DO I = 1, NPRPS
+
+C       ... get info if this operator is picture change transformed
+        CALL DECIDEPCTR(IS_PCTRA,PRPNAM(I),IPRINT)
+
         IREP = IPRPSYM(I) - 1
-        IF (IPRPRP.GE.3) THEN
-          write(lupri,*) I,' index=',IPRPTYP(I),' name=',
-     &    PRPNAM(I),' tim.rev.=',IPRPTIM(I),' irep=',IREP,
-     &    ' labels:',IPRPLBL(1,I),PRPLBL(IPRPLBL(1,I)),
-     &    ' pdoint=',PDOINT(IPRPLBL(1,I))
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,*)
+          CALL WRIXPR(I,I)
+          IF (IS_PCTRA) THEN
+            WRITE(LUPRI,'(2X,A)')
+     &      'Operator has to be picture change transformed.'
+          ELSE
+            WRITE(LUPRI,'(2X,A)')
+     &      'Operator has NOT to be picture change transformed.'
+          ENDIF
         ENDIF
+
         IF (IPRPTIM(I).EQ.0) THEN
           IDIMENS = N2BBASX
           IS_SQUARE = .TRUE.
@@ -8139,22 +8164,27 @@ C
         CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
         CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
-C
+
+C       ... get operator either in full four-component form, 
+C       .... or picture change transformed one
+C       ...   (occupying in fact only  LL block of his four-comp.matrix)
         INDXPR = I
         IF (IS_SQUARE) THEN
           CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
      &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRPRP)   
+     &         LFREE,IPRINT)   
         ELSE
           CALL PRPMSAO(INDXPR,IDIMENS,WORK(KPTRI),VMAT,
      &         WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &         LFREE,IPRPRP)   
+     &         LFREE,IPRINT)   
         ENDIF
 C     ... deallocate the memory...
         CALL MEMREL('KPTRI',WORK,KWORK,KPTRI,KFREE,LFREE)
-C       .. extract from VMAT into WORK(KPRLL)
-        CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRPRP)
-C      ... save WORK(KPRLL) into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
+
+C       .. extract LL block from VMAT into WORK(KPRLL)
+        CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
+
+C      ... save WORK(KPRLL)into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
 caspg
@@ -8162,23 +8192,29 @@ caspg
            CALL SPH_IOTC(WORK(KPRLL),VMAT,NSPH,IPRINT,WORK(KFREE),LFREE)
            NDIM=NSPH*NSPH*NZ
            CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
-     &              VMAT,NDIM,LUBSS,IPRHAM)
-           IF (IPRPRP.GE.3) THEN
-              WRITE(LUPRI,'(/2X,A)')
-     &        'PROP2BSS: Picture change transformed 2comp. operator '//
-     &        PRPLABEL//
-     &        ' was written to the BSSMAT file in LL block only.'//
-     &        ' A SPHERICAL representation is used.'
-           ENDIF
+     &              VMAT,NDIM,LUBSS,IPRINT)
         else
            CALL W2BSSMAT(1,.TRUE.,PRPLABEL,'PROP2BSS',
-     &              WORK(KPRLL),N2BBASXQ_L,LUBSS,IPRHAM)
-           IF (IPRPRP.GE.3) THEN
-              WRITE(LUPRI,'(/2X,A)')
-     &        'PROP2BSS: Picture change transformed 2comp. operator '//
-     &     PRPLABEL//' was written to the BSSMAT file in LL block only.'
-           ENDIF
+     &              WORK(KPRLL),N2BBASXQ_L,LUBSS,IPRINT)
         endif
+
+        IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &    'PROP2BSS: 2comp. operator '//
+     &    PRPLABEL//'->'//PRPNAM(I)//
+     &    ' was written to the BSSMAT file in LL block .'
+          IF (IS_PCTRA) THEN
+            WRITE(LUPRI,'(2X,A)')
+     &      '...operator was picture change transformed'
+          ELSE
+C            ...           
+            WRITE(LUPRI,'(2X,A)')
+     &      '...operator was NOT picture change transformed'
+          ENDIF
+          if (dosphe) then
+           WRITE(LUPRI,'(2X,A)')' A SPHERICAL representation is used.'
+          endif
+        ENDIF
 caspg
       ENDDO
 C
@@ -8188,7 +8224,7 @@ C
 C
       CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
 C
-      IF (IPRPRP.GE.2) THEN
+      IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)') 
      & 'PROP2BSS: EOFLABEL was renewed after saving all 2c operators '//
      & 'into BSSMAT.'
