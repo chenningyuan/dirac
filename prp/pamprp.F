@@ -5215,7 +5215,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)
 
-C ... RM2H2 terms, IPDSUSC(6-12)
+C ... RM2H2 terms, IPDSUSC(7-12)
         PNAME     = 'LAO-XXRM2H2'
         IPTYP     = 1
         NPCOMP    = 1
@@ -5469,11 +5469,11 @@ C       IF (LEVYLE) THEN
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
 C-----------------------------------------------------------------
-C ... RDSUSNL terms (pointers in are IPDSUSC(IPSUSNL,IPSUSNL+5))
+C ... RDSUSNL terms,  pointers in IPDSUSC(28-33)
 C   are TRUE diamagnetic terms according to the Sternheim  
 C-----------------------------------------------------------------
 C      IF (XLR_SKIPEP) THEN
-C ... do include them 1.RKB-by default,2.UKB - when specified (.MSUSCD)
+C ... do include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
        IF (MSUSCDIA) THEN
         PNAME     = 'LAO-XXRDSUSNL'
         IPTYP     = 1
@@ -5535,7 +5535,7 @@ C ... do include them 1.RKB-by default,2.UKB - when specified (.MSUSCD)
         CALL OP1IND('ZZDSUSN',IPDSUSC(33),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-C ... we need also DSUSCGM DALTON analogues 
+C ... we need also DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
 
       PNAME     = 'DSUSC_CGO-XX'
       IPTYP     = 1
@@ -5631,7 +5631,7 @@ C    It is modelled after TEC's routines
 C    and after the dalton routine 'abacus/abadrv.F/SUSRES' 
 C    
 C    Written by MI, jan. 2003
-C    Last modifications: MI, April 2006     
+C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv     
 C     
 C***********************************************************************
 #include "implicit.h"
@@ -5657,7 +5657,7 @@ C***********************************************************************
       LOGICAL D12, D23, MAGOUT1,MAGOUT2,MAGOUT3
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6),PVAL1(6),
      &         PVAL2(6),DIASUSC(3,3),PARSUS(3,3)
-      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3)
+      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3), EXPVAL_NS(6)
       CHARACTER*6 ABC(3)
       CHARACTER*1 JCA,JCB
       INTEGER ICONVXYZ
@@ -5724,11 +5724,13 @@ C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
         ENDIF 
 
        ENDIF 
+
       ELSE IF (LONDON) THEN 
 C ... accumulate one-electron expectation values into SUSDIA
 C................................................................
-C   1-6...RM2H1, 7-12...RM2H2, 13-18...RM3H3, 
-C  19-27...RDUSLL, 28-33...RDSUSNL, 34-39 - SUSCGO
+C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
+C   IPDSUSC(19-27_...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
+C
         CALL DZERO(SUSDIA,9)
         IJ = 0
         NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3
@@ -5745,28 +5747,54 @@ C  19-27...RDUSLL, 28-33...RDSUSNL, 34-39 - SUSCGO
         ENDDO
         ENDDO
 
+C -------------------------------------------------------
 C  ...  RDSUSLL - 9 terms which have to be symmetrized 
 C -------------------------------------------------------
-C      Symmetrize EXPVAL(19..27)
+C
+C      ...  EXPVAL(IPDSUSC(19..27))
+C
+C              19  20  21
+C              22  23  24
+C              25  26  27
+C
 
-        PLLXY = (EXPVAL(20)+EXPVAL(22))/D2
-        PLLXZ = (EXPVAL(21)+EXPVAL(25))/D2
-        PLLYZ = (EXPVAL(24)+EXPVAL(26))/D2
+C       ... symmetrize off-diagonal terms ...
+        PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
+        PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
+        PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
 
-C .........store RDSUSLL symmetrized quantities...
-        EXPVAL(20)=PLLXY
-        EXPVAL(22)=PLLXY
-        EXPVAL(21)=PLLXZ
-        EXPVAL(25)=PLLXZ
-        EXPVAL(24)=PLLYZ
-        EXPVAL(26)=PLLYZ
-C       ... write out symmetrized RDSUSLL
+C       ... store non-symmetrized data ...
+        IIC=1
+        DO II = 19, 27
+         EXPVAL_NS(IIC) = EXPVAL(IPDSUSC(II))
+         IIC = IIC + 1
+        ENDDO
+
+C ......... store RDSUSLL symmetrized off-diagonal quantities ...
+        EXPVAL(IPDSUSC(20))=PLLXY
+        EXPVAL(IPDSUSC(22))=PLLXY
+        EXPVAL(IPDSUSC(21))=PLLXZ
+        EXPVAL(IPDSUSC(25))=PLLXZ
+        EXPVAL(IPDSUSC(24))=PLLYZ
+        EXPVAL(IPDSUSC(26))=PLLYZ
+
+C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as well
         IF (IPRPRP.GE.3) THEN
-         WRITE(LUPRI,'(/6X,A)')
-     & 'Symmetrized RDSUSLL contibutions to the expect.values:'
-         DO II = 19,27
-          INDXPR = LEXPP(II)
-          WRITE(LUPRI,'(2X,A16,1X,D15.8)') PRPNAM(INDXPR),EXPVAL(II)
+         WRITE(LUPRI,'(/,10X,A)')
+     &   'RDSUSLL contributions to the expect.values:'
+         WRITE(LUPRI,'(A)')
+     &   '-----------------------------------------------------------'//
+     &   '------------'
+         WRITE(LUPRI,'(4X,A)')
+     &   ' Operator             '//
+     &   '  symmetrized       diff. from unsymmetrized'
+         IIC = 1
+         DO II = 19, 27
+           INDXPR = LEXPP(IPDSUSC(II))
+           WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
+     &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),
+     &     ( EXPVAL(IPDSUSC(II))-EXPVAL_NS(IIC) )
+           IIC = IIC + 1
          ENDDO
         ENDIF
 

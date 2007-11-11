@@ -1871,7 +1871,9 @@ C ----------------------------------------------------------
          WRITE(LUPRI,'(/2X,A,I1,I2,A,I1)')
      &   'DOPCTRA: Fermion coreps (left,right/total) I1,I2 / NFSYM: ',
      &   I1,I2,'/',NFSYM
-         write(lupri,*) 'Going to do the picture change transform:',
+         WRITE(LUPRI,'(2X,A,I3,A,I3,A,I3,A,I3)')
+     &   '...sizes of matrixes before and after the picture'//
+     &   ' change transformation: ',
      &   NFBAS(I1,0),' x ',NFBAS(I2,0),' -->',
      &   NFBAS(I1,1),' x ',NFBAS(I2,1)
          CALL FLSHFO(LUPRI)
@@ -1937,9 +1939,9 @@ C .... control output
      &        NFBAS(I2,0),NFBAS(I2,1),NZ,IPQTOQ(1,0),LUPRI)
          ENDIF
 
-          WRITE(LUPRI,'(/A,1X,A16)')
-     & 'DOPCTRA: Symm. blocked TRANSFORMED TWO-COMPONENT'//
-     & ' AO-matrix of property',
+         WRITE(LUPRI,'(/A,1X,A16)')
+     & 'DOPCTRA: Symm. blocked picture change TRANSFORMED'//
+     & ' TWO-COMPONENT AO-matrix of property',
      &  PROPNAME
          WRITE(LUPRI,'(5X,A,I1,I2,A,I1)')
      &    '*** Fermion coreps (left,right/total): ',I1,I2,'/',NFSYM
@@ -1953,8 +1955,11 @@ C .... control output
 
       IF (IPRINT.GE.5) THEN
        WRITE(LUPRI,'(/A,1X,A16)')
-     & 'DOPCTRA: Total (blocked) TRANSFORMED TWO-COMPONENT'//
+     & 'DOPCTRA: Total picture change TRANSFORMED TWO-COMPONENT'//
      & ' AO-matrix of transformed property', PROPNAME
+       WRITE(LUPRI,'(2X,A,I3,A,I2)')
+     & '2-comp. matrix has to be in the upper LL block of size ',
+     & NTBAS(1),' x ',NTBAS(1)
        CALL PRQMAT(PRPAO1,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &          IPQTOQ(1,IREP),LUPRI)
        CALL FLSHFO(LUPRI)

@@ -308,7 +308,7 @@ C ... call the routine in abacus/hergp.F
        ENDIF
 
 C =========================================================================
-CMI ... for the magnetic susceptibilities do handle the RDSUSLLMOD flag
+CMI  ... for the magnetic susceptibilities take care the RDSUSLLMOD flag
 C =========================================================================
        IF (MSUSCP) THEN
         IF (LEVYLE.AND.MODRDSUSLL) THEN
@@ -1104,7 +1104,6 @@ C***********************************************************************
 
       CALL QENTER('RNTLON')
       KFRSAV = KFREE
-
 
 C Open property file (needed connection matrixes, Fock MO matrix)
       CALL OPNFIL(LU1INT,'AOPROPER','OLD','RNTLON')

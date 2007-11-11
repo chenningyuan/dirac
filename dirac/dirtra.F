@@ -3005,7 +3005,7 @@ C   On output:  SAOMO - half transformed overlap matrix
 C
 C   Note(MI,Aug05): It uses NZT,SSMTRC, I2TMT and NTMO variables !
 C
-C    Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C   Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C   Last modifications: M.Ilias, aug 2005
 C
 C***********************************************************************
@@ -3029,16 +3029,27 @@ C
 
       IF (IPRINT.GE.5) THEN
        CALL HEADER('*** Output from MKSAOMO ***',-1)
-       write(lupri,*) 'NZ=',NZ,' >>>> Dirac uses NZT=',NZT
+       write(lupri,'(2X,A,I1,A,I1)')
+     & 'NZ=',NZ,' >>>> Dirac uses NZT=',NZT
        IF (TWOC) THEN
-         write(lupri,*) 'TWOC=.true. => Hard used two-component mode !'
+         write(lupri,'(2X,A)')
+     &   'TWOC=.true. => Hard used two-component mode !'
        ELSE
-         write(lupri,*) 'TWOC=.false. => Used four-component mode'
+         write(lupri,'(2X,A)')
+     &  'TWOC=.false. => Used four-component mode'
+       ENDIF
+       IF (TWOCOMPBSS.AND.BSS) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     &  'IOTC in is pure two-component mode!' 
+       ELSE IF (.NOT.TWOCOMPBSS.AND.BSS) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     &  'IOTC in pure four-component mode'//
+     &  '(full 4comp matrixes, but wasting memory space)!' 
        ENDIF
       ENDIF
       
-       ISIZE = 0
-       DO I = 1,NFSYM
+      ISIZE = 0
+      DO I = 1,NFSYM
         IF (TWOC) THEN
           NREF = NESH(I) 
         ELSE
@@ -3048,13 +3059,14 @@ CMI     ... it uses NZT now !
 CMI     ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
 CMI     ISIZE = ISIZE + NZT*NFBAS(I,0)*NTMO(I)
         ISIZE = ISIZE + NZT*NFBAS(I,0)*NREF
-      IF (IPRINT.GE.5) THEN
-        write(lupri,*)
-     &  'ifsym=',I,'/',NFSYM, ' NFBAS(I,0)=',NFBAS(I,0)
-        write(lupri,*) '>>>> NPSH(I)=',NPSH(I),
-     &  ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
-     &  ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
-      ENDIF
+        IF (IPRINT.GE.5) THEN
+          write(lupri,'(2X,A,I1,A,I1,A,I3)')
+     &    'ifsym=',I,'/',NFSYM, ' NFBAS(I,0)=',NFBAS(I,0)
+          write(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A,I3)')
+     &    '>>>> NPSH(I)=',NPSH(I),
+     &    ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
+     &    ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
+        ENDIF
       ENDDO
 
       CALL DZERO(SAOMO,ISIZE)

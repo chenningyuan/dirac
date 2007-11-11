@@ -451,9 +451,17 @@ C
 CMI   ... control output ...
       IF (IPRHAM.GE.4) THEN
         IF (BSS) THEN
-         CALL HEADER(
-     &   'ONEFCK: One-electron Fock matrix from - '//
-     &   ' BSS 2c Hamiltonian (BSS=.true.,TWOCOMP=.arbitrary)',-1)
+         IF (TWOCOMPBSS) THEN
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock matrix from - '//
+     &    ' BSS 2c Hamiltonian (in pure two-comp mode, '//
+     &    ' saving memory)',-1)
+         ELSE
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock matrix from - '//
+     &    ' BSS 2c Hamiltonian (in four-component mode, '//
+     &    'wasting memory)',-1)
+         ENDIF
         ELSE
           IF (TWOCOMP) THEN
          CALL HEADER(
@@ -470,9 +478,7 @@ CMI   ... control output ...
 CMI...   If BSS is active read one-electron
 CMI     DKn(BSS) AO integrals from the BSSMAT file (lu=LUBSS)
       IF (BSS) THEN
-
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM) 
-
       ELSE
 C
 C     Memory allocation
@@ -499,9 +505,19 @@ C     ==============
 C
       IF(IPRHAM.GE.4) THEN
         IF (BSS) THEN
-         CALL HEADER(
-     &   'ONEFCK: One-electron Fock matrix from - '//
-     &   ' BSS 2c Hamiltonian (BSS=.true.,TWOCOMP=.arbitrary)',-1)
+         IF (TWOCOMPBSS) THEN
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock (symm.blocked SA-AO)'//
+     &    ' matrix from - '//
+     &    ' BSS 2c Hamiltonian (in pure two-comp mode, '//
+     &    ' saving memory)',-1)
+         ELSE
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock (symm.blocked SA-AO)'// 
+     &    'matrix from - '//
+     &    ' BSS 2c Hamiltonian (LL blocks in four-component mode, '//
+     &    'wasting memory)',-1)
+         ENDIF
         ELSE
           IF (TWOCOMP) THEN
          CALL HEADER(
@@ -856,7 +872,15 @@ C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,IDIMENS,IPRINT)
         IF(IPRINT.GE.8) THEN
-          WRITE(LUPRI,'(A)') '* Integrals from AOPROPER'
+          WRITE(LUPRI,'(A,I3)')
+     &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
+          IF (NTBAS(0).EQ.NTBAS(1)) THEN
+           WRITE(LUPRI,'(2X,A)')
+     &   '...two-component framework (only LL block is present) '
+          ELSE
+           WRITE(LUPRI,'(2X,A)')
+     &   '...four-component framework  '
+          ENDIF
           IF (SQUARE) THEN
            CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
      &                NTBAS(0),NTBAS(0),1,LUPRI)
@@ -938,7 +962,7 @@ C         ... accumulate the property ...
  10   CONTINUE
 
       IF(IPRINT.GE.8) THEN
-        DO IZ = 1,NZ
+        DO IZ = 1, NZ
           WRITE(LUPRI,'(A,I2,A)') '* Property matrix (IZ=',IZ,')'
           IF (FIRST(IZ)) THEN
              WRITE(LUPRI,'(/A)') '  --- zero matrix ---'
@@ -1309,7 +1333,7 @@ C     =============================
        write(lupri,'(2X,A,I3,A,A)')
      & '* dealing with the operator with INDXPR=',
      & INDXPR,' name=',PRPNAM(INDXPR)
-       write(lupri,'(2X,A,I1,A,I1,A,I1)')
+       write(lupri,'(2X,A,I1,A,I1,A,I2)')
      & '* operator ISYM=',ISYM,' IREP=',
      & IREP,' ITIM=',ITIM
        IF (IS_SQUARE) THEN
@@ -1417,6 +1441,7 @@ C  Called from: PRPMSAO
 C               PROP2BSS
 C
 C  Written by Miro ILIAS/Strasbourg/March 2006
+C  Last modfications: Miro Ilias/Tel Aviv/November 2007
 C
 C*****************************************************************************
 #include "implicit.h"      
@@ -1429,10 +1454,16 @@ C*****************************************************************************
                                                             
       DOTRANS = .TRUE. 
 
+C ... here is list of operators which DO not have to be picture change tranformed
+C ... LL-forms of some operators (Beta matrix, Kinetic energy...) are not usable, however,
+C ... some are usable (ZANGMOM) 
+
       IF ( PROPNAME.EQ.'Overlap matrix  ' .OR.                   
      &     PROPNAME.EQ.'Nuc. attraction ' .OR.
      &     PROPNAME.EQ.'Beta matrix     ' .OR.
      &     PROPNAME.EQ.'Kinetic energy  ' .OR.
+     &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
+     &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
      &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
      &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
@@ -1447,9 +1478,18 @@ C*****************************************************************************
      &     PROPNAME.EQ.'dS/dB2ZZ        ' 
      &      ) DOTRANS = .FALSE.
 
-      IF (IPRINT.GE.12) THEN
-       write(lupri,'(2X,A,A)') 'DECIDEPCTR: prpname=',PROPNAME
-       write(lupri,'(2X,A,L)') 'DECIDEPCTR: DOTRANS=',DOTRANS
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,*)
+       IF (DOTRANS) THEN
+         WRITE(lupri,'(2X,A,A,A)')
+     &   'DECIDEPCTR: operator of entering name ',PROPNAME,
+     &   ' HAS to be picture change transformed.'
+       ELSE
+         WRITE(lupri,'(2X,A,A,A)')
+     &   'DECIDEPCTR: operator of entering name ',PROPNAME,
+     &   ' DOES NOT to be picture change transformed.'
+       ENDIF
+       CALL FLSHFO(LUPRI)
       ENDIF
                                                             
       CALL QEXIT('DECIDEPCTR')                              
@@ -2199,6 +2239,7 @@ C          the adapted Lowdin matrix VMAT
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
+
         IF(TWOCOMPBSS) THEN
 C
 C         Go back to 2c-mode
@@ -5010,6 +5051,8 @@ C     one component of angular momentum (j in general, l for spinfree
 C     and Levy-Leblond). This can be used for systems that posess
 C     linear symmetry.
 C
+C     Called from GMOTRA
+C
 C     Written by L. Visscher october/november 2003
 C     Modified by T. Saue Jan 12 2007
 C
@@ -5076,6 +5119,8 @@ C
 C     Construct matrix Jz(x,y,z) and transform to eigenvectors of this operator
 C
 C     Routine based on MODHAM and parts of the ZORA diagonalization routine
+C
+C     Called from GLINSM
 C
 C     On input:  VMAT 4c AO-MO RKB transformation matrix
 C
@@ -5173,7 +5218,6 @@ C     each Mj value.
 C
       CALL DZERO (TBUF,N2TMT)
 
-
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
       WRITE (LUPRI,1000)
 C
@@ -5220,7 +5264,7 @@ C
      &                WORK(KFREE),LFREE,IERR)
           ENDIF
           IF (IPRHAM.GE.15) THEN
-           CALL HEADER('LINSYM: Jz_LL eigenvalues/eigenvectors',-1) 
+           CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
            write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
@@ -5260,7 +5304,6 @@ C
 C       Count the Mj-values.
 C       We will either find a negative or a positive value for each Mj.
 C
-
         MJMAX = 0
         DO IX = IEIGE, IEIGE+NL-1
            MJ = NINT(D2*EIG(IX))
@@ -5400,9 +5443,11 @@ C
       DO 30 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &  'LINSYM: Transformation matrix in orthon. basis',-1)
-          CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
+         CALL HEADER(
+     &  'LINSYM: Transformation matrix in orthon. basis (MO->MO)',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
      &                 NORB(I),1,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
@@ -5416,6 +5461,17 @@ C
      &              NORB(I),1,NFBAS(I,0),
      &              VMAT(IOFV),NFBAS(I,0),NORB(I),1,
      &              IPRHAM)
+
+        IF (IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &'LINSYM: Final (symm.blocked) transformation matrix (AO->MO)',-1)
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),
+     &         NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
+        ENDIF
+
         IOFT = IOFT + NFBAS(I,0)*NORB(I)
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
@@ -5432,7 +5488,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck amjmat */
       SUBROUTINE AMJMAT(FOCK,IPRINT,WORK,LWORK)
 C*****************************************************************************
+C
 C     Generate one-electron matrix of Jz
+C
+C     Called from LINSYM
 C
 C     Written by Luuk Visscher, oct 1999
 C
@@ -5471,9 +5530,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck amjma1 */
       SUBROUTINE AMJMA1(FOCK,FTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
-C     Generate one-electron matrix of Jz
 C
-C     Written by Luuk Visscher, oct 1999
+C   Generate one-electron matrix of Jz
+C
+C  Written by Luuk Visscher, oct 1999
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -5488,6 +5548,7 @@ C
       LOGICAL FIRST
       DIMENSION FOCK(*),FTRI(NNBBASX),OP1INT(NNBBASX),
      &          WORK(*)
+      CALL QENTER('AMJMA1')
 C
 C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
@@ -5540,15 +5601,18 @@ C     Output section
 C     ==============
 C
       IF(IPRHAM.GE.4) THEN
-        CALL HEADER('One-electron MJ matrix',-1)
+        CALL HEADER(
+     &  'AMJMA1: One-electron MJ matrix in symm.blocked SA-AO basis',-1)
         DO 10 I = 1,NFSYM
           IF(NFBAS(I,0).EQ.0) GOTO 10
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(FOCK(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
       ENDIF
 C     
+      CALL QEXIT('AMJMA1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
