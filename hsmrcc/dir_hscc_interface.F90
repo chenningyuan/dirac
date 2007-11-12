@@ -1,36 +1,58 @@
-
-subroutine HSCCINP
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine HSCCINP(WORD,reset)
+!-----------------------------------------------------------------------------
 !
+! Read parameters for the external HSMRCC program, which are passed through
+! the file.
+! 
+! Called from TRAINP
+!
+!
+!
+!-----------------------------------------------------------------------------
+
+ use Dirac_HSMRCC  ! ... contains all parameters for the external HSMRCC code
 
 #include "implicit.h"
 #include "priunit.h"
 
-   LOGICAL :: NEWDEF
-   CHARACTER:: PROMPT*1=''
-   CHARACTER(len=7) :: WORD='', KEYWORD=''
+Logical, save :: set = .false.
+Logical, intent(in) :: reset
+
+CHARACTER:: PROMPT*1=''
+CHARACTER(len=7) :: WORD, KEYWORD=''
 
 ! ... nice F90 version 
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
 character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
 
+ if (set) then
+  if (reset) set = .false.
+  write(lupri,*) 'HSCCINP was called .... leaving at the beginning ... '
+  Return
+ endif
+ if (reset) then
+   set = .false.
+ else
+   set = .true.
+ endif
+
  Call QENTER('HSCCINP')
 
  write(LUPRI,*) 'in HSCCINP, size of TABLE=',size(TABLE)
 
- REWIND (LUCMD,IOSTAT=IOS); print *,'input file rewind...' 
+! REWIND (LUCMD,IOSTAT=IOS); print *,'input file rewind...' 
 
- Do While (KEYWORD /='*HSCC  ')
-   READ (LUCMD,'(A7)',ERR=910, END=910) KEYWORD
-   print *,'read KEYWORD=',KEYWORD
- EndDo
+! Do While (KEYWORD /= '*HSCC  ')
+!   READ (LUCMD,'(A7)',ERR=910, END=910) KEYWORD
+!   print *,'read KEYWORD=',KEYWORD
+! EndDo
  call FLSHFO(LUPRI)
 
 !
-! Initializations...
+!  Initializations...
 !
 
-! ... reading of the rest ...
-!Do While ( PROMPT /= '*'  .or. WORD /= '*END OF' )
 Do 
 
   Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  print *,'WORD=',WORD
@@ -45,11 +67,11 @@ Do
 
   If ((PROMPT == '#') .or. (PROMPT == '!')) Then
      print *,'comment catched !', WORD
-     Cycle
+     Cycle ! ... continue the cycle..
   EndIf
-
+  
   If (PROMPT == '.') Then
-
+    ! ... keywords are beginning ...
     If (Any(TABLE(1:size(TABLE)) == WORD )) Then
      Select Case (WORD)
       Case ('.OPTION')
@@ -62,7 +84,7 @@ Do
         print  *,' read NELE=',NELE
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
-        print  *,' read IPRINY_hscc=',iprint_hscc
+        print  *,' read IPRINT_hscc=',iprint_hscc
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
         '" is not yet implemented in HSCCINP.'
@@ -78,7 +100,11 @@ Do
 
 EndDo
 
-  call QUIT('in HSCCINP !!!')
+!  ... print out read parameters ... 
+
+! Call QUIT('in HSCCINP !')
+
+ print *,' returning from HSCCINP ...'
 
  Call QEXIT('HSCCINP')
  Return
@@ -86,9 +112,9 @@ EndDo
 910  CONTINUE
         CALL QUIT('Error reading LUCMD, no "*HSCC" input found !')
 920  CONTINUE
-        CALL QUIT('Error reading LUCMD,after "*HSCC" input some error occured...')
+        CALL QUIT('Error reading LUCMD, after "*HSCC" input some error occured...')
 930  CONTINUE
-        CALL QUIT('Error reading LUCMD,after "*HSCC" input end of file reached...')
+        CALL QUIT('Error reading LUCMD, after "*HSCC" input end of file reached...')
 
 end subroutine HSCCINP
 

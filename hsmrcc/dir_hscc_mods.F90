@@ -1,16 +1,10 @@
-!================
-!   File_Units
-!================
-Module File_Units
-  Integer :: FUPrint, FUDal, FUError, FUHSA, FUPhaseSpc, FileStatus
-End Module File_Units
-
-!--------------------------------------------------
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module Dirac_HSMRCC
+!--------------------------------------------------
 !
-! contains all data from DIRAC for standalone HSMRCC code 
+!  contains all data from DIRAC for standalone HSMRCC code 
 !
+!--------------------------------------------------
 integer (kind=2), parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
 integer (kind=4) ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 
@@ -19,14 +13,17 @@ integer(kind=4) :: iprint_hscc
 contains
 
 subroutine open_dirac_HSMRCC_file
-!open(ludh,file='Dirac_for_HSMRCC',status='formatted', access='sequential') 
-open(ludh,file='Dirac_for_HSMRCC', access='sequential') 
+open(ludh,file='Dirac_for_HSMRCC',status='formatted', access='sequential') 
 end subroutine open_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module io_moltra
+!--------------------------------------------------
+!
+!
+!--------------------------------------------------
 
 ! ... logical numbers ... 
 integer (kind=2) :: MDINT=20, MRCONEE=21

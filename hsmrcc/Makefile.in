@@ -2,7 +2,7 @@ include ../Makefile.config
 
 F90_OBJS = dir_hscc_mods.o dir_hscc_interface.o 
 
-F90_MODS = io_moltra.mod dirac_hsmrcc.mod file_units.mod
+F90_MODS = io_moltra.mod dirac_hsmrcc.mod
 
 F77_OBJS =
 

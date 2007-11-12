@@ -754,7 +754,7 @@ C
         GO TO 300
   313 CONTINUE
 #if defined (MOD_HSCC)
-        CALL HSCCINP
+        CALL HSCCINP(WORD,.false.)
 #else
 C       prevent dirac.x running into an infinite loop here
 C       if *HSCC in input but MOD_HSCC not defined !!!
@@ -766,6 +766,13 @@ C       if *HSCC in input but MOD_HSCC not defined !!!
         GO TO 300
 C
   400 CONTINUE
+
+#if defined (MOD_HSCC)
+      IF (DOHSCC) THEN
+        CALL HSCCINP(WORD,.true.)
+      ENDIF
+#endif
+
 C
 C     Process defaults for 2- and 4-index transformations
 C
@@ -963,14 +970,6 @@ C
       WRITE(LUPRI,'(1X,A,I4)')
      &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
 C
-
-#if defined (MOD_HSCC)
-      IF (DOHSCC) THEN
-!        WRITE(LUPRI,*) 'HSCC stuff active !'
-!        CALL HSCCINP
-      ENDIF
-#endif
-
   999 CONTINUE
       RETURN
  1010 CONTINUE
