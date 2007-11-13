@@ -1551,7 +1551,7 @@ C
 C
 C     communicate necessary information with slaves ...
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUPRI)
 C
@@ -1738,7 +1738,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *       initialize number of process groups sharing a c-vector file
         NFLGRPS_REL = 0
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *       hardwired to 1 (if at least two cpu's active, i.e. numnod .gt. 0)
 *
@@ -2042,7 +2042,7 @@ c           CALL FINMO_REL
 *
 *       free groups
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
         CALL SETUNITS_PAR_CLOSE_REL
         CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,ICOMM)
@@ -2229,7 +2229,7 @@ C
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C
 C     test fock matrix work for slaves
 C
@@ -2342,7 +2342,7 @@ C
       else
         CALL QUIT('LUCI_RCIST: Invalid flag I_IITP.')
       end if
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C
 C     end of slave reading test
 C
@@ -3009,7 +3009,7 @@ C
       CALL DIRAC_PARCTL( 0 )
 C
       END
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCINOD_REL(WORK,LWORK)
 C
@@ -3273,5 +3273,5 @@ C
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       END
-#endif    /* ifdef VAR_MPI */
+#endif    /* ifdef VAR_MPI2 */
 
