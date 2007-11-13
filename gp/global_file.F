@@ -10,7 +10,7 @@ C
 C       variables in Makefile.config, after it has been generated
 C
 
-#if defined (VAR_MPI) 
+#if defined (VAR_MPI2) 
 C
 C Allow for the use of a global file (or parallel file system) in
 C moltra/tradr6.F and friends.
@@ -26,7 +26,7 @@ C
 C ***IMPORTANT*** ***IMPORTANT*** ***IMPORTANT*** ***IMPORTANT***
 C
 C In order to use this modification you have to define VAR_PFS
-C (furthermore, we assume that you already have VAR_MPI defined).
+C (furthermore, we assume that you already have VAR_MPI2 defined).
 C
 C ***IMPORTANT*** ***IMPORTANT*** ***IMPORTANT*** ***IMPORTANT***
 C
@@ -544,9 +544,9 @@ C increase GF_MAXREC in global_file.h
       RETURN
       END
 C
-#else /* VAR_MPI */ 
+#else /* VAR_MPI2 */ 
 C aspg: dummy subroutine to avoid compilation errors in case mpi is 
 C       not enabled and this file somehow ends up in a makefile
       SUBROUTINE GLOBAL_FILE_STUB
       END
-#endif /* VAR_MPI */
+#endif /* VAR_MPI2 */

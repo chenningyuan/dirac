@@ -1991,7 +1991,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 *       SUBVAL : VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
