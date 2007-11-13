@@ -731,6 +731,7 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+#if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
 C        Enter the LUCITA module
@@ -747,6 +748,7 @@ C
      &  'Second order KMCSCF optimization not included in this version')
 
 #endif
+#endif /* VAR_MPI2 */
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -844,6 +846,7 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+#if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
 C        Enter the LUCITA module
@@ -860,6 +863,7 @@ C
      &  'Second order KMCSCF optimization not included in this version')
 
 #endif
+#endif /* VAR_MPI2 */
       ELSE
 C
 C        Unknown task. Abort execution.
