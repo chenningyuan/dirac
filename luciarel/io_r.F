@@ -242,7 +242,7 @@ C
 *
 *
 #include "clunit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -297,7 +297,7 @@ CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
 *. CI diagonal
       LUDIA = 60
       LUDIA_MPIN ="CIDIA_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUDIA_MPI,'(A9,A1,I1)') LUDIA_MPIN,'.',MYPROC
          LUDIA_MPIL=11
@@ -320,7 +320,7 @@ CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
 *. CI vector
       LUC =   61
       LUC_MPIN ="LUCVECT_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUC_MPI,'(A11,A1,I1)') LUC_MPIN,'.',MYPROC
          LUC_MPIL=13
@@ -342,7 +342,7 @@ CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
 *. Sigma vector file
       LUHC =  62
       LUHC_MPIN ="HCFILE_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUHC_MPI,'(A10,A1,I1)') LUHC_MPIN,'.',MYPROC
          LUHC_MPIL=12
@@ -370,7 +370,7 @@ CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
       LUSC2_MPIN ="LUSC2_REL"
       LUSC3 = 72
       LUSC3_MPIN ="LUSC3_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC1_MPI,'(A9,A1,I1)') LUSC1_MPIN,'.',MYPROC
          WRITE (NLUSC2_MPI,'(A9,A1,I1)') LUSC2_MPIN,'.',MYPROC
@@ -416,7 +416,7 @@ CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
       LUSC39_MPIN ="LUSC39_REL"
       LUSC41 = 79
       LUSC41_MPIN ="LUSC41_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A10,A1,I1)') LUSC34_MPIN,'.',MYPROC
          WRITE (NLUSC35_MPI,'(A10,A1,I1)') LUSC35_MPIN,'.',MYPROC
@@ -481,7 +481,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC62 = 67    ! might this work? SK April 24, 2007
       LUSC61_MPIN ="LUSC61_REL"
       LUSC62_MPIN ="LUSC62_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC61_MPI,'(A10,A1,I1)') LUSC61_MPIN,'.',MYPROC
          WRITE (NLUSC62_MPI,'(A10,A1,I1)') LUSC62_MPIN,'.',MYPROC
@@ -511,7 +511,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC93 = 93
       LUSC92_MPIN ="LUSC92_REL"
       LUSC93_MPIN ="LUSC93_REL"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC92_MPI,'(A10,A1,I1)') LUSC92_MPIN,'.',MYPROC
          WRITE (NLUSC93_MPI,'(A10,A1,I1)') LUSC93_MPIN,'.',MYPROC
@@ -537,7 +537,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC95 = 95
       LUSC94_MPIN ="INTEGRALS"
       LUSC95_MPIN ="INDICES"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC94_MPI,'(A9,A1,I1)') LUSC94_MPIN,'.',MYPROC
          WRITE (NLUSC95_MPI,'(A7,A1,I1)') LUSC95_MPIN,'.',MYPROC
@@ -568,7 +568,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC98 = 98
       LUDUMPF = 99
       LUDUMPFN = "LDUMPFILE"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUDUMPF,'(A9,A1,I1)') LUDUMPFN,'.',MYPROC
          LUDUMPFLL=11
@@ -597,7 +597,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUMOUTI = 91
       LUMOUTR_MPIN ="NATSPIR" 
       LUMOUTI_MPIN ="NATSPII" 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUMOUTR_MPI,'(A7,A1,I1)') LUMOUTR_MPIN,'.',MYPROC
          WRITE (NLUMOUTI_MPI,'(A7,A1,I1)') LUMOUTI_MPIN,'.',MYPROC
@@ -636,7 +636,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "ipoist8.inc"
 #include "clunit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

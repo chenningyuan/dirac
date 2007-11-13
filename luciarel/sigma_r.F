@@ -433,7 +433,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *. Input
 #include "implicit.inc"
 #include "ipoist8.inc"
-#if defined(VAR_MPI)
+#if defined(VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

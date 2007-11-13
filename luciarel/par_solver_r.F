@@ -36,7 +36,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 ***********************************************************************
 ***********************************************************************
 *                                                                     *
@@ -203,7 +203,7 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
 *=======================================================================
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS
 #endif
@@ -414,7 +414,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS
 #endif
@@ -846,7 +846,7 @@ CSK      end if
 *
 *=======================================================================
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS
 #endif
@@ -1123,7 +1123,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS
 #endif
@@ -1311,7 +1311,7 @@ C
       END IF
  1001 CONTINUE
 *
-CSK#if defined (VAR_MPI)
+CSK#if defined (VAR_MPI2)
 CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)

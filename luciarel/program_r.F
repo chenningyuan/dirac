@@ -47,7 +47,7 @@ C
 *              Winter of 1998 : Modified for relativistic calculations
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -184,7 +184,7 @@ C
       IZERO =   0
       IIONE =   1
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       IF ( CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'CIINII' .or.
      &     CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' .or. 
@@ -294,7 +294,7 @@ C
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       WRITE(LUWRT,*) ' Diagonal will be written to LUDIA.0 (unit)',
      &                 LUDIA
 #else
@@ -331,7 +331,7 @@ C
          WRITE(LUWRT,*) ' Diagonal not calculated '
       END IF
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       IF( NPTEST_VAR .ge. 10 ) THEN
       ITEST_OFF = 0
@@ -388,7 +388,7 @@ C
 *
 *     restart from previous vector(s)
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       IF( INICI .lt. 0 )THEN
         if ( CIRUN.eq.'SIGMAD'.or.CIRUN.eq.'SIGMA ') GOTO 88 
@@ -436,7 +436,7 @@ CSK          END IF
 *         IF( SIGMAD )   MASTER recieves the corresponding diagonal
 *                        elements to write on LUDIA
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
             IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
 *
@@ -482,13 +482,13 @@ CSK          END IF
 *
 ************************************************************************
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                       ILUC,ILU2,
 #else
      &                       LUC,LUHC,
 #endif
      &                       WORK(KT_CC),1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                      ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                       WORK(KBLOCKLIST),WORK(KNODELIST),
      &                       IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
@@ -496,7 +496,7 @@ CSK          END IF
      &                       )
 ************************************************************************
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
             IF( IAM_NOT_INV .eq. 0 ) GOTO 405
 *
@@ -564,7 +564,7 @@ CSK   work with INTEGER*8
      &     NOCCLS,
      &     IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
      &     WORK(KBLOCKLIST),WORK(KNODELIST),IPROCLIST,IGROUPLIST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
      &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILUCLIST),
      &     WORK(KRCCTOS)
@@ -573,7 +573,7 @@ CSK   work with INTEGER*8
 *
       EREF = EROOT(IRFROOT)
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       IF( IAM_NOT_INV .eq. 0 ) GOTO 505
 *
@@ -625,7 +625,7 @@ CSK   work with INTEGER*8
 * Analysis of optimized wave function
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     only MASTER analyzes the optimized wave function ...
 *
@@ -675,7 +675,7 @@ CSK   work with INTEGER*8
       NPTESTVAR = 00
 
  888  CONTINUE 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *     let the slaves wait... it is only a short way to go so why not?
       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 #endif
@@ -709,7 +709,7 @@ CSK   work with INTEGER*8
           write(LUWRT,*) ' Please ask the experts for instructions'
           Call Abend2( 'LUCIAREL quitting' )
         end if
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *       arrays for partitioning of the CI vector
 *       (*_MS2 arrays are in CSTATE )
@@ -730,7 +730,7 @@ CSK   work with INTEGER*8
             CALL REWINE(LUSC62,LBLK)
             CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
           END IF 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
           IVEC_TMP = 1
 *         right hand-side vector
           CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
@@ -768,7 +768,7 @@ CSK   work with INTEGER*8
 *
 *       prepare vector files for pure dens. matrix calc. run (parallel)
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF( MYPROC .eq. MASTER ) THEN
           CALL REWINE(LUSC61,LBLK)
           CALL REWINE(LUSC62,LBLK)
@@ -860,7 +860,7 @@ CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
             call rmemchk
          end if
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *         erase old LUCLIST
           CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
 *         copy right-hand vector to scratch file
@@ -893,13 +893,13 @@ CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
 *
 *=======================================================================
           call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                     ILUC,ILU2,
 #else
      &                     LUSC61,LUSC62,
 #endif
      &                     WORK(KT_CC),2
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                    ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                     WORK(KBLOCKLIST),WORK(KNODELIST),
      &                     IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
@@ -934,7 +934,7 @@ csk          WRITE(LUWRT,*) ' N1ELINT and NALLINT and IRC',
 csk     &                     N1ELINT, NALLINT, IRC
           IPRDEN = 1
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
           ISHARE_DENSM = 0
 *
@@ -1027,7 +1027,7 @@ csk          call rmemchk
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     reset partitioning of CI vector to 'sequential' fashion
 *

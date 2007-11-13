@@ -1600,7 +1600,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 ***********************************************************************
       SUBROUTINE WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM,
      &                      NBLOCK,IBLOCKL,IBLOCKD,IAM_REAL,JROOT
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                      ,LU1LIST
 #endif
      &                      )
@@ -1612,7 +1612,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 * IBLOCKD.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1623,7 +1623,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *.Scratch
       DIMENSION VEC1(*)
       LOGICAL FOUND_ONE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
       DIMENSION LU1LIST(*)
 #endif
@@ -1644,7 +1644,7 @@ C       Write the vector with the block format of file LUFORM
         IBOT = 1
 C       Loop over records
  1000   CONTINUE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C       initialize offset
         IOFF_SCR1 = 0
         IOFF_SCR2 = 0
@@ -1690,7 +1690,7 @@ CSK     &      write(luwrt,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
 CSK     &      IPLAC(IEFF),VAL(IEFF)
   200     CONTINUE
 C         
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C
 C         new offset
 C
@@ -1715,7 +1715,7 @@ C
           CALL TODSC(VEC1,LBL,-1,LU)
 #endif
 C         Skip record on LUFORM
-#if !defined (VAR_MPI)
+#if !defined (VAR_MPI2)
           CALL FRMDSC(VEC1,LBL,-1,LUFORM,IMZERO,IAMPACK)
           IBOT = IBOT + LBL
           GOTO 1000

@@ -69,7 +69,7 @@ C
 * separate alpha and beta 1-electron integrals  May 1998
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "ipoist8.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -89,7 +89,7 @@ C
       DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION RJKAA(*)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 *. Output
@@ -151,7 +151,7 @@ C
       ITDET = 0
 *
       DO IBLK = 1, NBLOCK
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         JBLOCK = IBLK + ILASTBLK
         IF( NPARBLOCK( JBLOCK ) .ne. MYPROC ) GOTO 2425 
 #endif
@@ -311,7 +311,7 @@ C?          WRITE(6,*)  ' IA = ', IA
             write(6,*) ' number of diagonal elements to disc ',IDET
             CALL WRTMAT(DIAG,1,IDET,1,IDET)
           END IF
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 CSK          IF( IDET .ne. 0 ) THEN
 CSK          write(LUWRT,*) ' number of diagonal elements to disc ',IDET
 CSK          CALL WRTMATMN(DIAG,1,IDET,1,IDET,LUWRT)
@@ -384,7 +384,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "symm.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -393,7 +393,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 *
       DIMENSION IBLTP(*)
       DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 *
@@ -451,7 +451,7 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
      &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
         end if
       end if
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IDIA_OFFSET = 0
 *
 *     calculate offset IDIA_OFFSET for LUDIA file

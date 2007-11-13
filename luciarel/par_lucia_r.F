@@ -42,7 +42,7 @@ C DATE    : $Date$
 C FILE    : par_lucia_r.F
 C
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -1794,6 +1794,8 @@ C
 C     density matrix DENS for current eigenvector is in SIGDEN ordering
 C     output: updated DENS
 C
+C     NO occupation number run version
+C
 C     Last revision:     S. Knecht       - October  2007
 C
 ************************************************************************
@@ -1809,7 +1811,7 @@ C
 #include "lucipar_rel.inc"
 *
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP), DENS_SCR(*)
-      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
+      dimension INDEX(4,N1ELINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY

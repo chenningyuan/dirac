@@ -1668,7 +1668,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2461,7 +2461,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                                WORK(KINTI12),NTEST)
 *
               END IF
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
               IF( IIOMOD_REL .eq. 0 )THEN
 *               ... slaves get the integrals
                 CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,

@@ -49,7 +49,7 @@ C
      &           NCLS,
      &           IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
      &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
      &           RCCTOS
 #endif
@@ -69,7 +69,7 @@ C
       DIMENSION PEIGVC(*), SCR1(*), SCR2(*)
       DIMENSION IBLOCKL(*), NPARBLOCK(*) 
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -90,7 +90,7 @@ C
 *
       NTEST=0
 *
-CSK#if defined (VAR_MPI)
+CSK#if defined (VAR_MPI2)
 CSK      WRITE(LUWRT,*)'  THIS IS MY LUCLIST'
 CSK      CALL IWRTMAMN( LUCLIST, 1, IALL_LUC, 1, IALL_LUC, LUWRT)
 CSK      WRITE(LUWRT,*)'  '
@@ -108,7 +108,7 @@ CSK#endif
 *.obtained
 
           NFINDM = MIN(NDIM,4*NROOTS)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
           CALL FNDMND_PAR_REL(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                        ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
      &                        SCR1,IBLOCKL,NPARBLOCK,NUM_BLOCKS,IPRT)
@@ -164,7 +164,7 @@ c           ISCR1(1) = 16
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &                      LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,
      &                      IROOTS
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                      ,LU1LIST
 #endif
      &                      )
@@ -174,7 +174,7 @@ c           ISCR1(1) = 16
               CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,0,NDIM,
      &                        LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,
      &                        IAM_REAL,IROOTS
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                        ,LU1LIST
 #endif
      &                        )
@@ -194,7 +194,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
             CALL WRSVCD_REL(LU1,LBLK,VEC1,IPNTR,
      &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA,
      &           NUM_BLOCKS,IBLOCKL,NPARBLOCK,IAM_REAL,IROOTS 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &           ,LU1LIST
 #endif
      &           )
@@ -202,7 +202,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
         END IF
       END IF
 *
-CSK#if defined (VAR_MPI)
+CSK#if defined (VAR_MPI2)
 CSK      WRITE(LUWRT,*) 'THIS IS MY LU1LIST'
 CSK      CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 CSK#endif
@@ -268,7 +268,7 @@ CSK#endif
       end if
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 *     scratch array for reducing operations
       MAXSCRRED = MAX( (MAXVEC*(MAXVEC+1)/2) , MAXVEC**2 )
@@ -295,7 +295,7 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
 *
       IF( IDCOMH .eq. 1 )THEN
 *
-#if defined(VAR_MPI)
+#if defined(VAR_MPI2)
         IF(NMPROC .gt. 1 ) THEN
           WRITE(LUWRT,*)  ' I am sorry, but this route only works'
           WRITE(LUWRT,*)  ' for one CPU'
@@ -316,7 +316,7 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
         write(LUWRT,*) ' '
 *
 C
-C#if defined (VAR_MPI)
+C#if defined (VAR_MPI2)
 C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -325,7 +325,7 @@ C#endif
 *
 *       Most general real optimizer
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
         call micdv4_enlmd_rel_par(T_CC,VEC1,VEC2,
      &                  WORK(KRNRM),WORK(KEIG),
@@ -374,7 +374,7 @@ C    &                  E_CONV,IROOTHOMING)
       ELSE
 *. Complex numbers may be encountered
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
         CALL CMICDV_PAR(VEC1,VEC2,WORK(KRNRM),
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
@@ -886,7 +886,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 *
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "ipoist8.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1539,7 +1539,7 @@ C!?      ITER = ITER - 1
 #include "cprnt.inc"
 #include "clunit.inc"
 #include "files_r.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1588,14 +1588,14 @@ C!?      ITER = ITER - 1
         WRITE(LUWRT,*) 'I might produce shit! Please look into the code'
         CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,1,NVAR,LUDIA,
      &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                  ,IDUMMY
 #endif
      &                  )
 * Imaginary part
         CALL WRSVCD_REL(LUIN,LBLK,VEC1,I,ONE,0,NVAR,LUDIA,
      &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IDUMMY
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                  ,IDUMMY
 #endif
      &                  )
@@ -1605,7 +1605,7 @@ C!?      ITER = ITER - 1
           call mv7_rel(VEC1,VEC2,LUIN,LUOUT,0)
         else if (SIGDEN_ROUTE.eq.'SIGDEN') then
           call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
      &                   ,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                    IDUMMY,IDUMMY,IDUMMY
 #endif
@@ -2688,7 +2688,7 @@ C      END IF
 *
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

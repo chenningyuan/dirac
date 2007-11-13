@@ -996,7 +996,7 @@ CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
       character*6 CIRUN
 *
 #include "ipoist8.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1617,7 +1617,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 #include "csm.inc"
 #include "crun.inc"
 #include "cgas.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1641,7 +1641,7 @@ C    &              NL1D,IUB1D(2,10),L1D(10),
 C    &              NL2D,IUB2D(4,10),ISM2D(3,10),L2D(10)
 #include "cintfo.inc"
 C     initial definitions
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       MASTER = MPARID
       MYPROC = MYTID
 *     Add the master node
@@ -1990,7 +1990,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 * ====================
 *
 #include "cicisp.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -3074,7 +3074,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 #include "symm.inc"
 #include "csm.inc"
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5002,7 +5002,7 @@ COLD  MIN1A = MIN1_T
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5591,7 +5591,7 @@ CSK      END IF
         END IF
 *. Batches of C vector
         ITTSS_ORD = 2
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF( I_USE_PC .eq. 1 ) THEN
 *
 *         special routine that uses only node-blocks to determine 
@@ -5890,7 +5890,7 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         END IF
 *. Batches of C vector
         ITTSS_ORD = 2
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF( I_USE_PC .eq. 1 ) THEN
 *
 *         special routine that uses only node-blocks to determine 
@@ -5998,7 +5998,7 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     initialize block array
       CALL INI_BLOCKL(WORK(KBLOCKLIST),NBLOCK,WORK(KPCIBT))
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
      &                         NBLOCK,WORK(KRCCTOS))
@@ -6117,7 +6117,7 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
         END IF
 *. Batches of C vector
         ITTSS_ORD = 2
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF( I_USE_PC .eq. 1 ) THEN
 *
 *         special routine that uses only node-blocks to determine 

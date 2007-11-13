@@ -369,7 +369,7 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 *
       subroutine read_indices(IN,NINTS)
 #include "clunit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

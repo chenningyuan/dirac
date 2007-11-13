@@ -46,7 +46,7 @@ C
      &                      NMS2VAL,NBLOCK)
 *
 #include "implicit.h"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1281,7 +1281,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
