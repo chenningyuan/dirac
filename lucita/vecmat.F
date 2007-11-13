@@ -2326,7 +2326,7 @@ C    &           LUDIA)
 *.Vector is always written in packed form
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

@@ -57,7 +57,7 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -105,7 +105,7 @@ CSK       END IF
             CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
      &                  SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
           ELSE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
      &                      ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
      &                      SCR1,IBLOCKAR,IBLKDSTND,IBLKI,IPRT)
@@ -158,7 +158,7 @@ CSK       END IF
             CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
      &                  LUDIA,JPACK)
           ELSE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
      &                      IBLOCKAR,IBLKDSTND,IBLKI,JPACK)
 #endif
@@ -190,7 +190,7 @@ CSK       END IF
 *. Vectors assumed already in LU1
         IF(IPRT.GT. 1 )
      &  WRITE(LUWRTOUT,*)' Initial CI vector assumed in place '
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF(NPRDET.EQ.0.AND.IODENSEPAR.GT.0)THEN
           IF(MYPROC.EQ.MASTER) THEN
             CALL REWINO(LU1)
@@ -284,7 +284,7 @@ C?       WRITE(6,*) ' MICDV6 will be called '
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
 C?       WRITE(6,*) ' MICDV6_PAR will be called '
           ELSE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             CALL MICDV6_PAR(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
      &                     EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
      &                     LUDIA,NROOT,
@@ -3288,7 +3288,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *
        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "lucipar.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
        DIMENSION ISTAT(MPI_STATUS_SIZE)

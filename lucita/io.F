@@ -41,7 +41,7 @@ C
       SUBROUTINE DISKUN
       IMPLICIT REAL*8           (A-H,O-Z)
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -118,7 +118,7 @@ C
 *. Scratch file for master <--> slave communication
       LUSCR_MPI = 51
       LUSCR_MPIN ="SIGMA_PAR" 
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSCR_MPI,'(A9,A1,I1)') LUSCR_MPIN,'.',MYPROC
          LUSCR_MPIL=13
@@ -146,7 +146,7 @@ C
       LUDIA = 60
 *
       LUDIA_MPIN ="CIDIA"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUDIA_MPI,'(A5,A1,I1)') LUDIA_MPIN,'.',MYPROC
          LUDIA_MPIL=7
@@ -159,7 +159,7 @@ C
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
       ENDIF
-*#elif defined (VAR_MPI)
+*#elif defined (VAR_MPI2)
       
 #else
       NLUDIA_MPI=LUDIA_MPIN
@@ -171,7 +171,7 @@ C
 *. CI vector
       LUC = 61
       LUC_MPIN ="LUCVECT"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUC_MPI,'(A7,A1,I1)') LUC_MPIN,'.',MYPROC
          LUC_MPIL=9
@@ -193,7 +193,7 @@ C
 *. Sigma vector file
       LUHC = 62
       LUHC_MPIN ="HCFILE"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUHC_MPI,'(A6,A1,I1)') LUHC_MPIN,'.',MYPROC
          LUHC_MPIL=8
@@ -221,7 +221,7 @@ C
       LUSC2_MPIN ="LUSC2"
       LUSC3 = 72
       LUSC3_MPIN ="LUSC3"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC1_MPI,'(A5,A1,I1)') LUSC1_MPIN,'.',MYPROC
          WRITE (NLUSC2_MPI,'(A5,A1,I1)') LUSC2_MPIN,'.',MYPROC
@@ -269,7 +269,7 @@ C
       LUSC40_MPIN ="LUSC40"
       LUSC41 = 97
       LUSC41_MPIN ="LUSC41"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A6,A1,I1)') LUSC34_MPIN,'.',MYPROC
          WRITE (NLUSC35_MPI,'(A6,A1,I1)') LUSC35_MPIN,'.',MYPROC

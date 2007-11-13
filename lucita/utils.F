@@ -112,7 +112,7 @@ C
 
 *
 #include "units.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -130,7 +130,7 @@ C
       LU_INTERNAL = LUSC_INT
       SCRFL ="LUSCDL"
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',MYPROC
          FLLNGTH=8

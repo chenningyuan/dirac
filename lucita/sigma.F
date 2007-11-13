@@ -1069,7 +1069,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * Works only for ICISTR .ne. 1, i.e. pure memory version
 * has been eliminated.
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2109,7 +2109,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *
 
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2121,7 +2121,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       INTEGER NMBLOCK,MYLENSUM,IDISTLIST
       INTEGER*8 ICSBTCHB
       DIMENSION ICSBTCHB(NMBLOCK),IDISTLIST(NMBLOCK)
-#if defined (VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined (VAR_MPI2) && !defined(SYS_LOCALDISKS)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
 #endif
 *.Scratch
@@ -2143,7 +2143,7 @@ C     NTEST = MAX(NTEST,IPRNT)
 *
       IF(IRDSCF.GT.0) THEN
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF(NMPROC.GT.1)THEN
           DO I = 1, NMBLOCK
             ICBLINF(I) = 0
@@ -2204,7 +2204,7 @@ CSK         endif
 *. w.r.t. all s-batches --> info stored in ICSBTCHB 
 *
       
-#if defined(VAR_MPI)
+#if defined(VAR_MPI2)
       IF(NPARWAY.GT.3) THEN
        
         ICOMPUTE = 0
@@ -2277,14 +2277,14 @@ C            SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,LUCBLK)
             IOFF = IBATS(6,ISBLK)
             LEN  = IBATS(8,ISBLK)
 C?        write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 CSK       write(6,*)'nothing to do'
 #else
             CALL ITODS(LEN,1,-1,LUHC)
             CALL TODSC(SB(IOFF),LEN,-1,LUHC)
 #endif
           END DO
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 CSK       write(6,*)'ioffset for sb file for myproc',ioffset,myproc
 CSK*       write(6,*)'mylensum for sb file',MYLENSUM
           CALL MPI_FILE_WRITE_AT(ISVECFL,IOFFSET,SB,MYLENSUM,MPI_REAL8,
@@ -2297,7 +2297,7 @@ CSK          CALL WRTMAT(SB,1,MYLENSUM,1,MYLENSUM)
         END IF
       END DO
 *
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 CSK      IF(MYNEW_ID.EQ.0) THEN
 CSK          IOFFSET = 0
 CSK          CALL MPI_FILE_READ_AT(ISVECFL,IOFFSET,CB,MYLENSUM,MPI_REAL8,
@@ -5092,7 +5092,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5508,7 +5508,7 @@ CINSERT_START
 
 
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -5542,7 +5542,7 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION SCLFAC(*),SSCLFAC(*),ICTCMP(NJJJBLK,4)
       INTEGER*8 IMPINFA,MYTOTB,ICSBTCHB
-#if defined (VAR_MPI) && !defined (SYS_LOCALDISKS)
+#if defined (VAR_MPI2) && !defined (SYS_LOCALDISKS)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
 #endif
       DIMENSION IMPINFA(NEWCOMM_PROC,2),MYTOTB(NJJJBLK)
@@ -5627,7 +5627,7 @@ CME   CALL MEMCHK
      &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
 *
       IF(IRUNPA.GT.0) THEN
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
       CALL MPI_FILE_OPEN(MYNEW_COMM,CVECTOTN(1:CVECFLL),
      &     MPI_MODE_RDONLY,MPI_INFO_NULL,ICVECFL,IERR)
            IOFFSET = 0
@@ -5639,7 +5639,7 @@ CSK      do i = 1, 25
 CSK      write(6,*)'CB(',i,') = ',cb(i)
 CSK      end do
 #endif
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
         IF(NMPROC.GT.1)THEN
            CALL COPVEC(SSCLFAC,SCLFAC,NJJJBLK)
 *
@@ -5669,7 +5669,7 @@ CSK      end do
 *
  15   CONTINUE
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
 * check how many C batches do we have
       IF(NPARWAY.GT.0.AND.NPARWAY.LT.4) THEN
@@ -5818,7 +5818,7 @@ CNOV25  NBSTR = NSSOA(IBSM,IBTP)
 C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
       REWIND LUC
 *SK
-*#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+*#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 *      CALL MPI_FILE_OPEN(MYNEW_COMM,CVECTOTN(1:CVECFLL),
 *     &     MPI_MODE_RDONLY,MPI_INFO_NULL,ICVECFL,IERR)
 *           IOFFSET = 0
@@ -5841,7 +5841,7 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
         GOTO 20001 
       END IF
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF(NPARWAY.LT.4.AND.NPARWAY.GT.0) THEN
 *
         CALL CBATCH_LOOP(NSBLOCK,ISBLOCK,CB,SB,C2,
@@ -5949,7 +5949,7 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
           ISCALE = 0
           IF(INTERACT.EQ.1) THEN
 *            WRITE(6,*)'i am here to go for GSTTBL', mynew_id
-#if defined(VAR_MPI)
+#if defined(VAR_MPI2)
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
 **              WRITE(6,*)'i am here to go for GSTTBL', mynew_id
 **              WRITE(6,*)'JOFF =',JOFF
@@ -5984,14 +5984,14 @@ C?          WRITE(6,*) ' Nonvanishing block ', JBLOCK, mynew_id
 CSK              CALL WRTMAT(CB(JOFF),NSSOB(JBSM,JBTP),
 CSK     &                    NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
 CSK     &                    NSSOA(JASM,JATP))
-#endif /* defined(VAR_MPI) */
+#endif /* defined(VAR_MPI2) */
 **            SCLFAC(JBLOCK) = 1.0D0
 *. Note in GSTTBL : ICOOSC only used for CI vectors in core,
           ELSE
 *. not relevant
 C             WRITE(6,*) ' TTSS for C block skipped  '
 C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
             IF((MYNEW_ID.NE.0.AND.NPARWAY.GT.3).OR.(NPARWAY.LT.4))THEN
 #if !defined(SYS_LOCALDISKS)
 *              CALL DO_NOTHING(MYNEW_ID)
@@ -6003,7 +6003,7 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
 #else 
               CALL IFRMDS(LBL,-1,1,LUC)
               CALL SKPRCD2(LBL,-1,LUC)
-#endif /* defined(VAR_MPI) */
+#endif /* defined(VAR_MPI2) */
             SCLFAC(JBLOCK) = 0.0D0
           END IF
 *
@@ -6235,7 +6235,7 @@ CME     CALL MEMCHK
 *  --> we sum the whole sigma vector block on the
 * MASTER that writes it on the disk in routine RASSG3!
 *
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 *
       IF(NPARWAY.GT.0) THEN
         IF(MYNEW_ID.EQ.0) ISUMUP = 1
@@ -6299,7 +6299,7 @@ CSK        write(6,*)'reduced???',myproc,mynew_id
       
       INI_ITS = 0
 21000 CONTINUE
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 *.close!
       CALL MPI_FILE_CLOSE(ICVECFL,IERR)
 *

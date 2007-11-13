@@ -32,7 +32,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *

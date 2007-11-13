@@ -4066,7 +4066,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * /STRINP/,/STINF/,/STRBAS/ and string information in STIN
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

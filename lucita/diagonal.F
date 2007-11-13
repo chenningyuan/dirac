@@ -1061,7 +1061,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * Parallel adaption in January 2007, Stefan Knecht
 *
       IMPLICIT REAL*8           (A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

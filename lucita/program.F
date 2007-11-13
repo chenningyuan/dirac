@@ -67,7 +67,7 @@ C
 #include "intform.inc"
 #include "comjep.inc"
 #include "cc_exc.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -253,7 +253,7 @@ C
       CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
       CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
       CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
       CALL MEMMAN(KCWEIGHT,NBLOCK,'ADDS  ',1,'ICWHT  ')
       CALL MEMMAN(KCWEIGHTF,NBLOCK,'ADDS  ',1,'ICWHTF  ')
@@ -284,7 +284,7 @@ C
       IF( IPRNT .ge. 5 )
      &   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,MYPROC
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF(IODENSEPAR.GT.0) THEN
         CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
      &                       WORK(KCWEIGHTF),WORK(KIBTOTW),
@@ -439,7 +439,7 @@ CSK       WRITE(6,*)'ICISTR',ICISTR
           END IF
           IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
         ELSE
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
           CALL GASDIAT_PAR(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
      &                    WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
      &                    WORK(KBLCKPD))
@@ -575,7 +575,7 @@ CTF
 *
       
       CALL REWINO(LUC)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF(IODENSEPAR.GT.0)THEN
          LBLK = -1
 *. copy c-vectors from nodes and master back to the master
@@ -824,7 +824,7 @@ C In the case of a parallel run, the relevant nodes will be
 C waken up and sent to sleep.
 C
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -837,7 +837,7 @@ C
 *
       IN = LUCMD
       IW = LUPRI
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       MASTER = MPARID
       MYPROC = MYTID
 *     Add the master node
@@ -887,7 +887,7 @@ C
 * Stefan Knecht, Feb. 06 
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -916,7 +916,7 @@ C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH
       INTEGER*8 k8base
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       MASTER = MPARID
       MYPROC = MYTID
 C     Add the master node
@@ -988,7 +988,7 @@ C
 C     initialize number of process groups sharing a c-vector file
       NFLGRPS = 0
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #if defined (SYS_LOCALDISKS)
 C     checking only if parallel file I/O in general is requested
       IF( IIOMOD .eq. 1 ) THEN
@@ -1502,7 +1502,7 @@ C
 #include "cgas.inc"
 #include "oper.inc"
 #include "machine.inc"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -1527,7 +1527,7 @@ C
 *  Open file LUCIAIN from MOLUC conversion program
 *
       IN_MPINN ="LUCIAIN"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NNIN_MPI,'(A7,A1,I1)') IN_MPINN,'.',MYPROC
          IN_MPILL=9
@@ -5499,7 +5499,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "maxorb.h"
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -5512,7 +5512,7 @@ C
 C     Find the slaves and release them
 
       NTEST = -1
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
       DO I = 1,NUMNOD
          CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
@@ -5528,7 +5528,7 @@ C
       CALL DIRAC_PARCTL( 0 )
 C
       END
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCINOD */
       SUBROUTINE LUCINOD(WRK,LWRK)
@@ -5658,4 +5658,4 @@ C
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       END
-#endif    /* ifdef VAR_MPI */
+#endif    /* ifdef VAR_MPI2 */

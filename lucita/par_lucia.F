@@ -32,7 +32,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
@@ -3145,7 +3145,7 @@ C    &                  LUCBLK,IPERTOP,IH0INSPC,IH0SPC)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION SCLFAC(*),SSCLFAC(*),ICTCMP(NJJJBLK,4)
       INTEGER*8 IMPINFA,MYTOTB,ICSBTCHB
-#if defined(VAR_MPI) && !defined(SYS_LOCALDISKS)
+#if defined(VAR_MPI2) && !defined(SYS_LOCALDISKS)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
 #endif
       DIMENSION IMPINFA(NEWCOMM_PROC,2),MYTOTB(NJJJBLK)

@@ -1984,7 +1984,7 @@ C       END DO
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*),NELFGP(*)
 *. block types
       DIMENSION IBLTP(*)
-#if defined (VAR_MPI)
+#if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
