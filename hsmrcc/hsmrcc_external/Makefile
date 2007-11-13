@@ -115,11 +115,11 @@ CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
 #
 ###########################################################################
 
-# directory with module source files  ...
+# ... directory with module source files and module files  ...
 moddir = modules
-# directory with source files  ...
+# ... directory with source files  ...
 srcdir = source
-# directory with objects ...
+# ... directory with objects ...
 objdir = objects
 
 # specifying location of
@@ -150,30 +150,26 @@ f90objs := initguess.o   inihsbase.o   endhsmr.o   makezero.o   \
 
 c89objs := getopt.o hsmrmain.o
 
-#dirac_objs :=
+#######################
+####               ####
+#### DIRAC imports ####
+####               ####
+#######################
 dirac_objs := ../../gp/gptrygve.o  ../../gp/qpack.o ../../gp/gphjj.o  
 dirac_libs := ../../pdpack/libpdlib.a
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 
-
-######################################################
-#
-#
-#                  default target
-#
-#
-######################################################
+###############################################
+###      name of the executable file        ###
+###############################################
 
 ### to fix main dependence form the ../../Makefile.config file
 dirac.x : $(executable)
 
-###############################################
-###      name of the executable file        ###
-###############################################
 executable = hsmrcc.exe
 
-# ## overwrite default make !!
+### default : executable file ###
 default : $(executable) 
 	@echo "Independent executable file " $(cs) $(executable) $(ce) " is ready." 
 
@@ -182,26 +178,31 @@ default : $(executable)
 ##################
 
 $(executable) : $(objects)
-	@echo -n "Linking All Objects Files in" $(cs)$(objdir)$(ce) "into Executable ..."
+	@echo -n "Linking all objects files in" $(cs)$(objdir)$(ce) "into executable ..."
 	@echo  
-	@echo -n "... where used libraries are " $(cs) $(FCLIBS) $(CCLIBS) $(ce) 
+	@echo -n "...   where used system libraries are " $(cs) $(FCLIBS) $(CCLIBS) $(ce) 
 	@echo  
-	@echo -n "... and used linking flags are " $(cs) $(LKFLAGS) $(FFLAGS) $(ce) 
+	@echo -n "...   used compiler linking flags are " $(cs) $(LKFLAGS) $(FFLAGS) $(ce) 
+	@echo  
+	@echo -n "...      and used DIRAC resources are " $(cs) $(dirac_objs) $(dirac_libs) $(ce) 
 	@echo  
 	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
                      $(dirac_objs) $(dirac_libs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
-	@echo "The Executable File generated is ==> " $(cs)$(@F)$(ce) " <=="
+	@echo "The independedr executable file generated is ==> " $(cs)$(@F)$(ce) " <=="
 
 ##################
 ###  cleaning  ###
 ##################
 clean :
-	@echo -n "Cleaning up objects files in" $(cs)$(objdir)$(ce) " directory ....."
+	@echo -n "Cleaning up objects files in" $(cs)$(objdir)$(ce) " directory ..."
 	@rm -f $(addprefix $(objdir)/,$(objects))
 	@echo "  Done."
-	@echo -n "Cleaning up executable " $(cs)$(executable)$(ce) " in main hsmrcc_dirac directory ....."
-	@rm -f $(executable) modules/*.mod
+	@echo -n "Cleaning up module files in" $(cs)$(moddir)$(ce) " directory ..."
+	@rm -f $(moddir)/*.mod
+	@echo "  Done."
+	@echo -n "Cleaning up executable " $(cs)$(executable)$(ce) " in main hsmrcc_external directory ..."
+	@rm -f $(executable) 
 	@echo "  Done."
 
 ### dependencies other than implicit dependencies
