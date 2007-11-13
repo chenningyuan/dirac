@@ -677,6 +677,22 @@ C        CALL SLEEP(1)
 C        GO TO 100
 C     END IF
 C
+C     check for proper LUCITA / LUCIAREL installation
+C
+      ICHECK_MPI2 = - 1 
+#if defined (VAR_MPI2)
+      ICHECK_MPI2 =   0
+#endif
+C
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+     & LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
+      END IF
+C
+C
+C
 C     Start timing.
 C
       CALL GETTIM(CPU1,WALL1)
@@ -778,6 +794,21 @@ C
 C
       CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
+C
+C     check for proper LUCITA / LUCIAREL installation
+C
+      ICHECK_MPI2 = - 1 
+#if defined (VAR_MPI2)
+      ICHECK_MPI2 =   0
+#endif
+C
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+     & LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
+      END IF
+C
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
