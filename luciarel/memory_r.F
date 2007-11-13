@@ -299,7 +299,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *         = FLUSM  : Flush local memory to previous mark
 *         = PRINT  : Print memory allocations
 *         = SFREEM : Print memory allocations
-* IR    : 1 => integer , 2 => real,
+* IR    : 1 => integer , 2 => real, 3 => integer*8
 *         ratio between integer and real is IRAT
 * IDENT : identifier of memory slice,Character*6
 *
@@ -372,6 +372,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
           KFREES = KFREEL +(KADD+1)/IRAT + 2*NPAD
+        ELSE IF( IR .EQ. 2) THEN
+          KFREES = KFREEL + KADD + 2*NPAD
         ELSE
           KFREES = KFREEL + KADD + 2*NPAD
         END IF
@@ -386,8 +388,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
 *
-          WRITE(LUWRT,*) ' Trying to allocate : identifer,length'
-          WRITE(LUWRT,'(20X,A,I9)')IDENT,KADD
+          WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(LUWRT,'(20X,A,2X,2I15)')IDENT, KBASE, KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -416,6 +418,8 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
           KFREEL = KFREEL +(KADD+1)/IRAT + 2*NPAD
+        ELSE IF( IR .EQ. 2) THEN
+          KFREEL = KFREEL + KADD + 2*NPAD
         ELSE
           KFREEL = KFREEL + KADD + 2*NPAD
         END IF
@@ -430,7 +434,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREEL-1
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
-          WRITE(LUWRT,'(24X,A,2I9)')IDENT,KBASE,KADD
+          WRITE(LUWRT,'(24X,A,2X,2I15)')IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
