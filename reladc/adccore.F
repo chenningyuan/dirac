@@ -166,18 +166,18 @@ C
 C---------------Executable code--------------------------------------
 
 c   debug
-      print*
-      print*
-      print*,'*********************************************'
-      print*,'*** parameters given to ADCMAIN            ***'
-      print*
-      print*,'maxcore:',maxcore
-      print*,'intfce:',intfce
-      print*,'ca:',ca
-      print*,'iunin:',iunin
-      print*,'iunut:',iunut
-      print*,'*********************************************'
-      print*
+c     print*
+c     print*
+c     print*,'*********************************************'
+c     print*,'*** parameters given to ADCMAIN            ***'
+c     print*
+c     print*,'maxcore:',maxcore
+c     print*,'intfce:',intfce
+c     print*,'ca:',ca
+c     print*,'iunin:',iunin
+c     print*,'iunut:',iunut
+c     print*,'*********************************************'
+c     print*
 c   debug end
      
 C
@@ -200,6 +200,7 @@ c
      &        /15X,"(A)lgebraic (D)iagrammatic (C)onstruction"//
      &        /20X,"Four-component implementation"//)
       WRITE (IW,1011) MYPROC+1,NMPROC
+      WRITE (IW,*) 'Numbers of words given to ADC:',MAXCORE
 
 C
       CALL WAIO_INIT (IW)
@@ -231,7 +232,7 @@ C
       MAXCOR = MAXCORE
       MXCORR = 0
 C
-C     Read symmetry information
+C     Read symmetry information from MRCONEE
 C
       CALL RDSYMI (NSP,EPS1,IREPSP)
 C
@@ -240,9 +241,12 @@ C
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
-C     Read input
+C     Read input and set IPRNT variable =2 for CCSETI in order
+C     to print out the recomputed orbital energies and orbital numbers
 C
       CALL ADCINPT (IN,IW)
+
+      IPRNT = 2
 C
 C     Number of integer words for REAL*8 and 
 C     number of REAL*8 words per variable (2 for complex groups, 
@@ -289,12 +293,16 @@ C
       LFREE = MAXCOR
 C 
       MXCORR1 = 0
+      write(iw,*) 'kfree,lfree before CCSETI:',kfree,lfree
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &             NSP,IREPSP,IREPSPI)
+      write(iw,*) 'kfree,lfree after CCSETI:',kfree,lfree
       WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
       MXCORR = MAX0(MXCORR,MXCORR1)
       MXCORR1 = 0
+      write(iw,*) 'kfree,lfree before CCADCX:',kfree,lfree
       CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
+      write(iw,*) 'kfree,lfree after CCADCX:',kfree,lfree
       WRITE(IW,*) 'Memory requirements of CCADCX:',MXCORR1
       MXCORR = MAX0(MXCORR,MXCORR1)
 C
@@ -329,12 +337,16 @@ C
       ICALC = 2
       ALLOC = .TRUE.
       KFREE = 1
-      LFREE = MXCORR
+c  this is the original line, causes trouble...
+c     LFREE = MXCORR
+      LFREE = MAXCOR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
       print*,'entering CCSETI second time'
+      write(iw,*) 'kfree,lfree before CCSETI:',kfree,lfree
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
+      write(iw,*) 'kfree,lfree after CCSETI:',kfree,lfree
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1
@@ -350,7 +362,9 @@ C
       LFREE = MAXCOR
 
       print*,'entering CCADCX second time'
+      write(iw,*) 'kfree,lfree before CCADCX:',kfree,lfree
       CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+      write(iw,*) 'kfree,lfree after CCADCX:',kfree,lfree
       CALL FLSHFO (IW)
 C
 C
@@ -393,7 +407,8 @@ C
 C
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1000  FORMAT (/" Total memory available (800 kWord are reserved!):",
+     &T50,I10," MB")
 1001  FORMAT (" Memory used for active modules :",
      &        T50,I10," 8-byte words")
 1002  FORMAT (" Not enough core, increase to at least",
@@ -469,10 +484,10 @@ c
       ADCTITLE='No title given'
       ADCLEVEL = 1
       DO IX=1,8
-        XREPS(IX)=0
         ADCPRINT(IX)=0
       ENDDO
-      DO IX=1,16
+      DO IX=1,32
+        XREPS(IX)=0
         NHOLST(IX)=0
       ENDDO
       ADCPRINTNM(1)='Allocations'
@@ -531,8 +546,8 @@ c
 c
 c  set Lanczos defaults and read input from DIRAC.INP
 c
-      DO J=1,8
-        XNITER(J)   = 0
+      DO J=1,32
+        XNITER(J)   = 100
         XNP(J)      = 0
         XNEIGENV(J) = 0
         XTHRESH(J)  = 0.0D0
@@ -605,7 +620,7 @@ C
       CHARACTER*9 FILE1, FILE2, FILE3, FILE4
       CHARACTER*9 FILE5, FILE6, FILE7, FILE8
       CHARACTER*9 FILE9, FILEA
-      PARAMETER(FILEN1='DSPECT',FILEN2='ADCCNF',
+      PARAMETER(FILEN1='      ',FILEN2='ADCCNF',
      &          FILEN3='ADCINF',FILEN4='ADCDIA',
      &          FILEN5='ADCMPK',FILEN6='DAVSOL',
      &          FILEN7='DAVRST',FILEN8='VVACBD',
@@ -1120,9 +1135,15 @@ c  bosonic irreps exclusively, therefore real arithmetic
 c  and an irrep step of 1 (GROUPTYPE = 8)
 c
         IF(NZ.eq.1) THEN
-          SYMMITER = 2
-          WRITE(IW,*) 'Real fermionic group'
-          WRITE(IW,*) 'Only one Kramers partner calculated!'
+          IF(SPFR.eqv.false) THEN
+            SYMMITER = 2
+            WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
+            WRITE(IW,*) 'Only one Kramers partner calculated!'
+          ELSE
+            SYMMITER = 1
+            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+            WRITE(IW,*) 'No information about Kramers skipping'
+          ENDIF
         ELSE IF(NZ.eq.2) THEN
           SYMMITER = 2
           WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
@@ -1356,6 +1377,9 @@ C                  *************************************************
 C
       WRITE(IW,*) 'XREPS ---->',XREPS
       DO 900 IRPLOOP=1,NREP
+c debug
+c     write(*,*) 'IRPLOOP,xreps(irploop):',nrep,irploop,xreps(irploop)
+c debug end
         IF(XREPS(IRPLOOP).EQ.0) GOTO 900
 c
 c in KREP is the considered symmetry. Central control parameter
@@ -1390,11 +1414,20 @@ C          of a specific ADC run in the selected active space.
 C          The record length IRECL results from the data written in
 C          WCONDAT
 C
-        WRITE(FILE3,'(A6,A1,I1,A1)') FILEN3,'.',KREP,CHAR(0)
-        WRITE(FILE4,'(A6,A1,I1,A1)') FILEN4,'.',KREP,CHAR(0)
-        WRITE(FILE5,'(A6,A1,I1,A1)') FILEN5,'.',KREP,CHAR(0)
+        IF(KREP.GT.9) THEN
+          WRITE(FILE2,'(A6,A1,I2)') FILEN2,'.',KREP
+          WRITE(FILE3,'(A6,A1,I2)') FILEN3,'.',KREP
+          WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP
+          WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP
+        ELSE
+          WRITE(FILE2,'(A6,A2,I1)') FILEN2,'.0',KREP
+          WRITE(FILE3,'(A6,A2,I1)') FILEN3,'.0',KREP
+          WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP
+          WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP
+        ENDIF
 
-        WRITE(IW,*) 'ADC matrix information written to ',FILE3
+        WRITE(IW,*) 'ADC configuration information written to ',FILE2
+        WRITE(IW,*) 'ADC matrix label information written to ',FILE3
         WRITE(IW,*) 'ADC diagonal elements written to  ',FILE4
         WRITE(IW,*) 'Packed ADC matrix written to      ',FILE5
 
@@ -1417,7 +1450,7 @@ C
 C
 C  LADC is the actual ADC matrix size in symmetry KREP
 C  write the relevant information of current symmetry into file3
-C  ADCINF.KREP and the configuration data into file2.
+C  ADCINF.KREP and the configuration data into file2: ADCCNF.KREP
 C  close these files immediately.
 C
         LADC = NVOOT(KREP) + NO(KREP)
@@ -1431,7 +1464,7 @@ C
      &           KREP,NO(KREP),REPNA(KREP),LADC,ITYPE,INTBUF
 
         CLOSE(ITAPADC+3) 
-        CALL WCONDAT(ITAPADC+2,FILEN2,KREP,LADC,EPS)
+        CALL WCONDAT(ITAPADC+2,FILE2,KREP,LADC,EPS)
 C
 C  ***************************  start h/h block  ****************************
 C
@@ -1690,12 +1723,15 @@ c
 c
 c transfer Lanczos parameters for the main array to the 
 c variables for the current run in symmetry KREP. 
-c No individual input reading !
+c The general input was read in during the initialization step.
 c
-C         CALL RDLANINP(NITER,NP,NEIGENV,LANTHR,THRVEC)
-
           NITER   = XNITER(IRPLOOP)
-          NP      = XNP(IRPLOOP)
+          IF(XNP(IRPLOOP).EQ.0) THEN
+            WRITE(IW,*) 'defaulting NP'
+            NP = NO(KREP)
+          ELSE
+            NP = XNP(IRPLOOP)
+          ENDIF
           NEIGENV = XNEIGENV(IRPLOOP)
           LANTHR  = XTHRESH(IRPLOOP)
           THRVEC  = XTHRVEC(IRPLOOP)
@@ -1866,10 +1902,10 @@ c  analyze vectors
 c
           IF(NEIGENV.GT.0) THEN
             IF(CARITH) THEN
-              CALL ZVECANALYZE(ITAPADC+6,ITAPADC+7,FILEN2,KREP,LADC,
+              CALL ZVECANALYZE(ITAPADC+6,ITAPADC+7,FILE2,KREP,LADC,
      &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
             ELSE
-              CALL RVECANALYZE(ITAPADC+6,ITAPADC+7,FILEN2,KREP,LADC,
+              CALL RVECANALYZE(ITAPADC+6,ITAPADC+7,FILE2,KREP,LADC,
      &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
             ENDIF
           ENDIF
@@ -2995,8 +3031,8 @@ C
       COMPLEX*16 CEPSK,CKCVIR,DII,S_UNST,S_STAR,S
       REAL*8 SEC0,SEC1,SEC2,SECA,TITERTIME
 
-      COMPLEX*16 ZDOTC,ZSQRT
-      REAL*8 GETIMAG,ZABS
+      COMPLEX*16 ZDOTC
+      REAL*8 GETIMAG
 C
 C---------------Executable code--------------------------------------
 C
@@ -7145,7 +7181,7 @@ C     Author : MP
 C
 C---------------Calling variables--------------------------------------
 C
-      CHARACTER*6 FILENAME
+      CHARACTER*9 FILENAME
       INTEGER LUN,AKLREP,LENADCM
       REAL*8  EPS(*)
 C
@@ -7161,7 +7197,6 @@ C
       INTEGER bl_conf
       CHARACTER*4 bl_irna
       REAL*8 bl_orbe
-      CHARACTER*8 SSFNAME
       
 C
 C---------------Executable code--------------------------------------
@@ -7195,10 +7230,9 @@ c
 c  create irrep-specific filename, the record length is actually
 c  the length of the field character variable !
 c
-      WRITE(SSFNAME,'(A6,A1,I1)') FILENAME,'.',AKLREP
-      WRITE(IW,*) 'ADC configuration data written to ',SSFNAME
+      WRITE(IW,*) 'ADC configuration data written to ',FILENAME
       IRECL = 78
-      OPEN(LUN,FILE=SSFNAME,ACCESS='DIRECT',RECL=IRECL,
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 
       bl_conf = 0
