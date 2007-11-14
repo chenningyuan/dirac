@@ -1244,7 +1244,7 @@ C
 C
 C
       DO 10 ITER = 2,MAXITR
-#if defined (MOD_DNF)
+#if defined (MOD_DFT)
 C
 C        asymptotic correction
 C                GRAC                    SAOP
