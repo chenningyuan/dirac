@@ -191,7 +191,7 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RVECANALYZE(IOUNIT,IOUNIT2,FILENAME,KREP,LADC,
+      SUBROUTINE RVECANALYZE(IOUNIT,IOUNIT2,DAFILE,KREP,LADC,
      &                       NEIGENV,EVL,EVC,THR)
 C
       IMPLICIT INTEGER (A-Z)
@@ -208,8 +208,7 @@ C     Author : MP
 C
 C---------------Calling variables--------------------------------------
 C
-      CHARACTER*6 FILENAME
-      CHARACTER*8 DAFILE
+      CHARACTER*9 DAFILE
       INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
       REAL*8  EVL(LADC),THR
       REAL*8 EVC(LADC,NEIGENV)
@@ -264,7 +263,6 @@ c
 c
 c  open direct access file with configuration data
 c
-      WRITE(DAFILE,'(A6,A1,I1)') FILENAME,'.',KREP
       WRITE(IW,*) 'ADC configuration data read from ',DAFILE
       IRECL = 78
       OPEN(iounit2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
@@ -325,7 +323,7 @@ C:
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZVECANALYZE(IOUNIT,IOUNIT2,FILENAME,KREP,LADC,
+      SUBROUTINE ZVECANALYZE(IOUNIT,IOUNIT2,DAFILE,KREP,LADC,
      &                       NEIGENV,EVL,EVC,THR)
 C
       IMPLICIT INTEGER (A-Z)
@@ -342,8 +340,7 @@ C     Author : MP
 C
 C---------------Calling variables--------------------------------------
 C
-      CHARACTER*6 FILENAME
-      CHARACTER*8 DAFILE
+      CHARACTER*9 DAFILE
       INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
       REAL*8  EVL(LADC),THR
       COMPLEX*16 EVC(LADC,NEIGENV)
@@ -355,10 +352,10 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 AUEV, WH, WP, ZABS
+      REAL*8 AUEV, WH, WP
       DATA AUEV /27.2113957D0/
       CHARACTER*7 EVECFN
-      COMPLEX*16 B,ZSQRT
+      COMPLEX*16 B
       character*78 field
 C
 C---------------Executable code--------------------------------------
@@ -398,7 +395,6 @@ c
 c
 c  open direct access file with configuration data
 c
-      WRITE(DAFILE,'(A6,A1,I1)') FILENAME,'.',KREP
       WRITE(IW,*) 'ADC configuration data read from ',DAFILE
       IRECL = 78
       OPEN(iounit2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
@@ -457,116 +453,6 @@ C:
  1100 FORMAT (1X,/,1X,49('-'),/,1X,'# ',I4,' )',1X,
      &        F12.6,' (eV)',1X,F12.6,' (Hartree)',/,1X,49('-'),/)
 
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDLANINP(I_NITER,I_NP,I_NEIGENV,R_THRESH,R_THRVEC)
-C
-      IMPLICIT INTEGER (A-Z)
-
-      INTEGER I_NITER,I_NP,I_NEIGENV
-      REAL*8  R_THRESH,R_THRVEC
-C
-C---------------Description--------------------------------------------
-C
-C  read the input control parameters for the Lanczos
-C  at the moment the parameters NITER, NP, NEIGENV and THRVEC
-C  are considered. all other values default to a reasonable value
-C  but are not utilized at the moment.
-C
-C  ATT: Lanczos input values are given via subroutine parameters
-C       and not via NAMELIST.
-C
-C---------------Common Blocks--------------------------------------
-C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      NAMELIST/LANINP/RUNTYPE,RESTART,NP,NITER,NEIGENV,JTRANS,
-     &                WRTTMAT,WRTRES,WRTERF,LONGOUT,THRESH1,
-     &                THRESH2,THRVEC,LMODE,NCV,JWHICH,TOL,SHIFT
-
-      INTEGER RUNTYPE,RESTART,NP,NITER,NEIGENV,JTRANS
-      INTEGER WRTTMAT,WRTRES,WRTERF,LONGOUT,LMODE,NCV,JWHICH
-      REAL*8 THRESH1,THRESH2,THRVEC,TOL,SHIFT
-
-      INTEGER ITEST
-      CHARACTER*7 MATTYPE
-      CHARACTER*30 RUNTYPETEXT(3)
-      DATA RUNTYPETEXT/ 'Eigenvalue run only           ',
-     &                  'Eigenvalue and eigenvector run',
-     &                  'Eigenvector run only          '/
-C
-C---------------Executable code--------------------------------------
-C
-C   preset the lanczos control variables
-C   with reasonable start values
-C
-c----------------- at the moment only these variables are used
-      NP = 1
-      NITER = 0
-      NEIGENV = 0
-      THRESH1 = 0.05d0
-      THRVEC = 0.05D0
-c  thresh1 determines the threshold for the spectral short form
-c  thrvec is the component of the long eigenvector taken into account.
-c----------------- up to here
-      RUNTYPE = 1
-      RESTART = 0
-      JTRANS = 0
-      WRTTMAT = 0
-      WRTRES = 1
-      WRTERF = 0
-      LONGOUT = 0
-      THRESH2 = 0.75d0
-      LMODE = 1
-      NCV = 0
-      JWHICH = -1
-      TOL = 1.0D-5
-      SHIFT = 0.0D0
-C
-C--- read actual parameters from USER input via NAMELIST
-C--- if no input was available resort to default values.
-C
-C
-      REWIND (5)
-      CALL LOCATE('LANINP',6,ITEST)
-      IF (ITEST.GT.0) THEN
-         READ (5,LANINP,ERR=19)
-c        WRITE(IW,*) 'Lanczos parameter successfully read'
-      ELSE
-         GOTO 20
-      ENDIF
-      GOTO 20
-   19 CALL QUIT('Error exit while reading namelist LANINP')
-   20 CONTINUE
-C
-C---  print out run parameters
-C
-      MATTYPE='real   '
-      IF(CARITH) MATTYPE='complex'
-
-c     WRITE(IW,'(A)')  '  *****************'
-c     WRITE(IW,'(A)')  '  ***************** Parameters for Lanczos run:'
-c     WRITE(IW,'(A)')  '  *****************'
-c     WRITE(IW,*)
-c     WRITE(IW,'(A,A7)')  '  ADC-Matrix is       ', MATTYPE
-c     WRITE(IW,'(A,A30)') '  Runtype             ', RUNTYPETEXT(RUNTYPE)
-c     WRITE(IW,'(A,I8)')  '  Vector-block size   ', NP
-c     WRITE(IW,'(A,I8)')  '  No. of iterations   ', NITER
-c     WRITE(IW,'(A,I8)')  '  No. of eigenvectors ', NEIGENV
-
-c
-c  return used variables
-c
-      I_NITER    =  NITER
-      I_NP       =  NP
-      I_NEIGENV  =  NEIGENV
-      R_THRESH   =  THRESH1
-      R_THRVEC   =  THRVEC
-
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RLANCZOS(IRREP, LADC, NP, NITER, NEIGENV, IVX,
@@ -840,7 +726,7 @@ C
 C
 C---------------Local variables and function definitions ------------
 C
-      COMPLEX*16 Y,ZDOTC,Z1,ZSQRT
+      COMPLEX*16 Y,ZDOTC,Z1
       CHARACTER*7 EVECFN
 C
 C---------------Executable code--------------------------------------
@@ -1485,7 +1371,7 @@ c
       complex*16 b(ndim)
 c     
       integer i
-      complex*16 y,norm,zsqrt
+      complex*16 y,norm
 c     
       norm = (0.0d0, 0.0d0)
       do 10 i = 1, ndim
@@ -1539,7 +1425,7 @@ c     -----------------------------------------------------
       implicit none
 c
       integer m1, m2, mp, mp1, n, np, indx(n)
-      real*8 tiny, d, zabs
+      real*8 tiny, d
       complex*16 a(np,mp), a1(np,mp1)
 c
       parameter (tiny = 1.d-20)
@@ -1906,7 +1792,11 @@ c  threshold applies only to the screen output. pole strength = square of
 c  eigenvector component. Write all eigenvalues and pole strength
 c  to file SPEC.X
 c
-      write(evalfn,'(a5,i1,a1)') 'SPEC.',irrep,char(0)
+      if(irrep.gt.9) then
+        write(evalfn,'(a5,i2)') 'SPEC.',irrep
+      else
+        write(evalfn,'(a6,i1)') 'SPEC.0',irrep
+      endif
       open(iounit,file=evalfn,form='FORMATTED',status='UNKNOWN')
       
       cntev=0
@@ -2127,9 +2017,9 @@ C
 
       REAL*8 AA,AK,A1K,SUM,SUP
       REAL*8 AUEV,THRS,OVL
-      REAL*8 X1,X2,Y1,Y2,ZABS
+      REAL*8 X1,X2,Y1,Y2
 
-      COMPLEX*16 XM,ZDOTC,ZSQRT
+      COMPLEX*16 XM,ZDOTC
       DATA AUEV/27.2113957D0/
 
       CHARACTER*7 EVALFN
@@ -2290,7 +2180,11 @@ c  threshold applies only to the screen output. pole strength = square of
 c  eigenvector component. Write all eigenvalues and pole strength
 c  to file SPEC.X
 c
-      write(evalfn,'(a5,i1,a1)') 'SPEC.',irrep,char(0)
+      if(irrep.gt.9) then
+        write(evalfn,'(a5,i2)') 'SPEC.',irrep
+      else
+        write(evalfn,'(a6,i1)') 'SPEC.0',irrep
+      endif
       open(iounit,file=evalfn,form='FORMATTED',status='UNKNOWN')
       
       cntev=0
