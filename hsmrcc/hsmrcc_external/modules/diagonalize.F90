@@ -57,8 +57,8 @@
       double precision  matrix(ldmat,n)
       integer nev
       double precision  ev(n)
-      double precision  rvec(ldmat,n)
-      double precision  lvec(ldmat,n)
+      double precision  rvec(ldmat,n)  ! right vector
+      double precision  lvec(ldmat,n)  ! left vector
       logical abort_if_complex
       logical sort
       logical biortho
@@ -87,6 +87,8 @@
       double precision  norm
       double precision  dtmp
 
+     ! call QEnter('diagonalize')
+
 
       info = 0
       lwork = 8*n
@@ -96,9 +98,8 @@
          a = matrix
          wr = dble(0)
          call DSYEV('v','l',n,a,ldmat,wr,work,lwork,info)
-
-         if (info.ne.0) then
-            write(UOUT,*) "Failure in LAPACK routine DSYEV"
+         if (info <> 0) then
+            write(UOUT,*) "diagonalize: Failure in LAPACK routine DSYEV"
             write(UOUT,*) "INFO  = ",info
             call flush(UOUT)
             call abort
@@ -116,10 +117,25 @@
          wi = dble(0)
          vr = dble(0)
          vl = dble(0)
-         call DGEEV('v','v',n,a,ldmat,wr,wi,vl,ldmat,vr,ldmat,work,lwork,info)
 
+! MI, Nov.2007/TAU
+! ... this strange error occurs (opteron amd64/pgf90 5.2.4) when some dirac object
+!       files are present in compilation: 
+!  ** On entry to DORGQR parameter number  5 had an illegal value
+! ... problem is deep in the linked lapack library
+!
+! .. from library dgeev it calls the dirac routine DORGQR with HURT(i8 problem) parameters
+!
+!     #1  dorghr_ address: 0x4DCA15 
+!=> #0  dorgqr line: "gp_dlapack.F"@7341 address: 0x4AC862 
+!     m = 21474836483 , n = 21474836483 , k = 21474836483 , a = 0x6662948, lda = 4 , tau = 0x66629F0, work = 0x6662A10, lwork = 584115552280 , info = 16106122464 
+!
+!
+! system library routine DGEEV calls dirac -i8 compiled routine DORGQR with wrong parameters
+!
+         call DGEEV('v','v',n,a,ldmat,wr,wi,vl,ldmat,vr,ldmat,work,lwork,info)
          if (info.ne.0) then
-            write(UOUT,*) "Failure in LAPACK routine DGEEV"
+            write(UOUT,*) "diagonalize: Failure in LAPACK routine DGEEV"
             write(UOUT,*) "INFO  = ",info
             call flush(UOUT)
             call abort
@@ -179,7 +195,6 @@
          call DGEMM('t','n',nev,nev,n,1.d00,vl,ldmat,vr,ldmat,0.0d00,ovl,n)
 
          call DGETRF(nev,nev,ovl,n,ipiv,info)
-
          if (info.ne.0) then
             write(UOUT,*) "Failure in LAPACK routine DGETRF"
             write(UOUT,*) "INFO  = ",info
@@ -188,7 +203,6 @@
          endif
 
          call DGETRI(nev,ovl,n,ipiv,work,lwork,info)
-
          if (info.ne.0) then
             write(UOUT,*) "Failure in LAPACK routine DGETRI"
             write(UOUT,*) "INFO  = ",info
@@ -213,6 +227,7 @@
 
       endif
 
+     ! call QExit('diagonalize')
       return
 
       end

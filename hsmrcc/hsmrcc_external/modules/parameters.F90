@@ -88,4 +88,7 @@ module Parameters
    integer :: NSTATE_MAIN
    integer :: NSTATE_INTM
 
+   ! general print level parameter
+   integer :: IPRINT = 0
+
 end module Parameters

@@ -22,7 +22,7 @@ subroutine HSMRCC
 
    ! ... Basic Initialization of HSMR Run ...
 
- call HEADER('',-1)
+! call HEADER('',-1)
 
    call InitHSMRBase
 

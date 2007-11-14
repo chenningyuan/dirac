@@ -668,6 +668,11 @@ subroutine PrintHEFF
 end subroutine PrintHEFF
 
 subroutine DiagHEFF
+!------------------------------------------------------------
+!
+! Diagonalize the efefctive Hamiltonian
+!
+!------------------------------------------------------------
 
    implicit none
    integer :: RightVac, LeftVac, Exct
