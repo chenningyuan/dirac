@@ -1745,7 +1745,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
         IF (NUMNOD .GT. 0) THEN
            IPARALLELIO = 1
         ELSE
-           IPARALLELIO = -1
+           IPARALLELIO = 1
         END IF
 *
 #if defined (SYS_LOCALDISKS)
@@ -2464,6 +2464,8 @@ CSK      IPROPT = 10
      &                  DUMMY,1,DUMMY,1,
      &                  WORK(KRSCR),IDUMMY,2,IRIQ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+C       release memory
+        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
 C
@@ -2471,23 +2473,26 @@ C     Call LUCIAREL
       CALL KRMC_LUCI(FCACM,H2ACM,WORK(KFREE),LFREE,DUMMY,CIRUN)
 C
 C     Read sigma vector on file to SB array.
-      CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
       IO_SIGMA_OUT = 1
       IF (IO_SIGMA_OUT.eq.1) THEN
+        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,
      &                  SB,NZCONF*2,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
      &                  WORK(KRSCR),IDUMMY,1,IRIQ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        CALL MEMREL('LUCI_SIG 2',WORK,1,KRSCR,KFREE,LFREE)
       END IF
       CALL REWINE(LUC,-1)
       IO_C_VEC_OUT = 1
       IF (IO_C_VEC_OUT .eq. 1 ) THEN
+        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,
      &                  CB,NZCONF*2,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
      &                  WORK(KRSCR),IDUMMY,1,IRIQ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        CALL MEMREL('LUCI_SIG 3',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
       IF (SAVDIA) THEN
@@ -2509,10 +2514,11 @@ CSKold     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
 CSKold     &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
 C       Copy "real part" of diagonal to DIAG.
         CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
+        CALL MEMREL('LUCI_SIG D',WORK,1,KDIAG,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
-C
       CALL MEMREL('LUCI_SIGMA',WORK,1,KFRSAV,KFREE,LFREE)
+C
 C
 C     close files ...
 C
