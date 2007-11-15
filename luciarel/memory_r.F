@@ -88,20 +88,26 @@ C
 #include "glbbas.inc"
 CTF adding global info
       common/glbref/ISPC/ISM/ITERGLB
-*.1 : One electron integrals( Complete matrix allocated )
-      call memmar(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1   ')
-*.1.1 : Inactive fock matrix
-      call memmar(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI     ')
-*.2 : Two electron integrals
-      IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
-      call memmar(KINT2,NINT2,'ADDS  ',2,'INT2   ')
-      END IF
-*. Pointers to symmetry block of integrals
-      call memmar(KPINT1,NBINT1,'ADDS  ',2,'PINT1   ')
-      call memmar(KPINT2,NBINT2,'ADDS  ',2,'PINT2   ')
+*
+*     15-11-2007: SK removed allocation of old integral stuff
+*
+      IF( SIGDEN_ROUTE .ne. 'SIGDEN' )THEN
+*       1e- integrals( Complete matrix allocated )
+        call memmar(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1   ')
+*       Inactive fock matrix
+        call memmar(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI     ')
+*       2e- integrals
+        IF(NOINT.EQ.0.AND.INCORE.EQ.1) THEN
+        write(6,*) ' allocating KINT2 with NINT2',NINT2
+        call memmar(KINT2,NINT2,'ADDS  ',2,'INT2   ')
+        END IF
+*       Pointers to symmetry block of integrals
+        call memmar(KPINT1,NBINT1,'ADDS  ',2,'PINT1   ')
+        call memmar(KPINT2,NBINT2,'ADDS  ',2,'PINT2   ')
 *. Symmetry of last index as a function of initial index
-      call memmar(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
-      call memmar(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
+        call memmar(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
+        call memmar(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
+      END IF
 *
 * =============================
 *. For double group integrals
