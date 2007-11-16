@@ -87,7 +87,7 @@ contains
       integer ir, jr, irx, jrx, nrx
       integer kr, krxx(maxirrep)
       integer iabelian, irptype, iavail
-      integer ierr
+      integer :: ierr=0 ! MI: important initialization for gfrortran !
 
       open(USYMINF,file=FileSYMINF)
 
@@ -123,7 +123,8 @@ contains
 
       call setup_irrep_tables(ptgrp,ierr)
       if (ierr.ne.0) then
-         write(UOUT,*) "trouble setting up point group"
+         write(UOUT,*) "ptgrp=",ptgrp," ierr=",ierr
+         write(UOUT,*) "trouble setting up this point group !"
          call flush(UOUT)
          call abort
       endif
@@ -232,13 +233,13 @@ contains
 
       end subroutine read_gamess_syminf
 
+      subroutine setup_irrep_tables(group,ierr)
+
 !     this routine sets up irrep multiplication table for
 !     abelian point groups C1, C2, Cs, Ci, C2h, C2v, D2, D2h
 !
 !     the order of irreps, irrep labels and irrep multiplication table
 !     are the same as used in standard symmetry routines in gamess
-
-      subroutine setup_irrep_tables(group,ierr)
 
       implicit none
       character*(*) group
@@ -394,6 +395,7 @@ contains
       endif
 
       if (numirrep.eq.0) then
+          print *,' group=',group
          ierr = 1
          return
       endif
