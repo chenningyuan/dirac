@@ -336,7 +336,13 @@ C     JHS 05-07-07
         END INTERFACE
         
         INTERFACE READ_VAR
+#if defined (SYS_SX64) 
+CSK       SK: 16-11-2007 on NEC's 64-Bit SX-6/SX-8 machines
+CSK       we do not have REAL! REAL*8 is the minimum...
+          MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL8
+#else
           MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL,READ_REAL8
+#endif
         END INTERFACE  
         
         INTERFACE GET_LENGTH
@@ -714,7 +720,7 @@ CMI       write(LUPRI,*) 'var=',var
 
         END SUBROUTINE READ_REAL8
 
-
+#if !defined (SYS_SX64)
         SUBROUTINE READ_REAL(filenum,linewidth,var,index,fixedwidth,
      &                       skip)
 C     TMP adjust for an optional linewith.
@@ -789,6 +795,7 @@ CMI       write(LUPRI,*) 'var=',var
 
         END SUBROUTINE READ_REAL
 
+#endif /* !defined (SYS_SX64) */
 
         SUBROUTINE READ_INT(filenum,linewidth,var,index,fixedwidth,
      &                      skip)
