@@ -548,7 +548,7 @@ C
 C     Find number if bits in integer JDET.
 C
 C     Written by J. Thyssen - Jan 2 2001
-C     Last revision :
+C     Last revision : S. Knecht - Nov 17 2007
 C
 C***********************************************************************
 #include "implicit.h"
@@ -559,7 +559,13 @@ C
 C
       DIMENSION IBTAB(0:255)
 C
+C     17-11-2007-SK: INTEGER*1 is an illegal value on 64-Bit SX machines
+C     Is this solution still working?
+#if defined (SYS_SX64)
+      INTEGER*4 ID1(4)
+#else
       INTEGER*1 ID1(4)
+#endif /* SYS_SX64 */
       INTEGER*4 ID4
       EQUIVALENCE (ID1(1),ID4)
 C
