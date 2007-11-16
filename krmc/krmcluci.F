@@ -2385,10 +2385,10 @@ C   memory is too small for CREF.
 *        files. Activation flags (IO_RCIST_OUT) should be controlled
 *        from the outside, not hardwired.
         IF (IO_RCIST_OUT.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-          CALL KR_LUCI_IO(1,0,0,CREF,2*NZCONF,DUMMY,1,
+          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+          CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),DUMMY,1,IRIQ,
+     &                    WORK(KRSCR),DUMMY,1,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         END IF
       END IF
@@ -2458,11 +2458,11 @@ C
 CSK      IPROPT = 10
       IF (IO_SIGMA_IN.eq.1) THEN
         REWIND LUC
-        CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
-     &                        DUMMY,1,
+     &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,IRIQ,
+     &                  WORK(KRSCR),IDUMMY,2,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
 C       release memory
         CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
@@ -2475,22 +2475,22 @@ C
 C     Read sigma vector on file to SB array.
       IO_SIGMA_OUT = 1
       IF (IO_SIGMA_OUT.eq.1) THEN
-        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,0,0,
-     &                  SB,NZCONF*2,DUMMY,1,
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,0,0,SB,NZCONF*MZ,
+     &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
+     &                  WORK(KRSCR),IDUMMY,1,MZ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         CALL MEMREL('LUCI_SIG 2',WORK,1,KRSCR,KFREE,LFREE)
       END IF
       CALL REWINE(LUC,-1)
       IO_C_VEC_OUT = 1
       IF (IO_C_VEC_OUT .eq. 1 ) THEN
-        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,0,0,
-     &                  CB,NZCONF*2,DUMMY,1,
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
+     &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
+     &                  WORK(KRSCR),IDUMMY,1,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         CALL MEMREL('LUCI_SIG 3',WORK,1,KRSCR,KFREE,LFREE)
       END IF
@@ -2615,11 +2615,11 @@ C
 C       Write current CI vector(s) to file
         IO_DENS_IN = 1
         IF (IO_DENS_IN.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
      &                          CREFR,NZCONF*MZ,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),IDUMMY,2,IRIQ,
+     &                    WORK(KRSCR),IDUMMY,2,MZ,
      &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
           CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
         END IF
@@ -2709,8 +2709,9 @@ C
           CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
      &                          DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KASCR),IDUMMY,2,IRIQ,
+     &                    WORK(KASCR),IDUMMY,2,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+          CALL MEMREL('LUCI_ANALYZ1',WORK,1,KASCR,KFREE,LFREE)
         END IF
       ELSE IF (NCIROOT.GT.1) THEN
         CONTINUE
@@ -2757,6 +2758,10 @@ C
 C
       CIRUN = 'DIAG  '
 C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
+C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
 C
@@ -2783,10 +2788,10 @@ C
 C     Read diagonal vector from LUCIARELs file
       IO_DIAG_OUT = 1
       IF (IO_DIAG_OUT.EQ.1) THEN
-        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,0,0,DIAG,2*NZCONF,DUMMY,1,
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,0,0,DIAG,NZCONF*MZ,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),DUMMY,1,IRIQ,
+     &                  WORK(KRSCR),DUMMY,1,MZ,
      &                  LUDIA,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
