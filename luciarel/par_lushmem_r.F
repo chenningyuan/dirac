@@ -51,7 +51,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_MEM_T_WIN(T_BUFF,MY_T_COMM, LEN_T, 
+      SUBROUTINE GET_MEM_T_WIN(MY_T_COMM, LEN_T, 
      &                         MY_T_INFO, C_T_INFO )
 C
 C     Written by  S. Knecht         - November 17 2007
