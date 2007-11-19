@@ -156,8 +156,9 @@ c89objs := getopt.o hsmrmain.o
 ####               ####
 #######################
 # ... no dirac objects/libraries ! 
-dirac_objs :=
+#dirac_objs :=
 #dirac_objs := ../../gp/gptrygve.o  ../../gp/qpack.o ../../gp/gphjj.o  
+dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o 
 #dirac_libs := ../../pdpack/libpdlib.a
 dirac_libs := 
 

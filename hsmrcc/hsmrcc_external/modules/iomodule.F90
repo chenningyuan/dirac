@@ -26,7 +26,8 @@ module IOmodule
    integer, parameter :: UCOEF = 28
    integer, parameter :: UCNVR = 29
 
-   integer :: UOUT  = 51
+   !integer :: UOUT  = 51 ! ... moved to parameters ...
+
    integer :: UTOLD = 52
    integer :: UTNEW = 53
    integer :: UTAMP = 54

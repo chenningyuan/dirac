@@ -8,6 +8,7 @@ subroutine PrintInfo
    implicit none
    integer :: i
 
+   call QEnter('PrintInfo')
 !  print convergence information
 
    if (OPTION(CONVTAMP)) then
@@ -23,6 +24,7 @@ subroutine PrintInfo
 
    call PrintHEFF
 
+   call QExit('PrintInfo')
    return
 
 end subroutine PrintInfo

@@ -18,9 +18,14 @@ extern void sethsmrfiles_(char *,char *,int,int);
 extern void sethsmrconvtol_(double *);
 extern void sethsmrinttol_(double *);
 extern void sethsmrmaxit_(int *);
-extern void hsmrcc_(void);               /* the main program F90 subroutine */
 
-#define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:"
+/* the main program F90 subroutine */
+extern void hsmrcc_(void);  
+
+/* routine for setting iprint variable - gneral print level */
+extern void sethsmr_iprint_(int *); 
+
+#define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:"
 
 #define HELP       0
 #define GENINT     1
@@ -51,10 +56,11 @@ extern void hsmrcc_(void);               /* the main program F90 subroutine */
 #define FULL      26
 #define NOAPND    27
 #define RDGUESS   28
+#define IPR       29
 
-#define NOPTS     29
+#define NOPTS     30
 
-int opts[NOPTS]={0};
+int opts[NOPTS]={0}; /* initialize to zero */
 
 struct option longopts[] =
 {
@@ -88,6 +94,7 @@ struct option longopts[] =
     {"full",           no_argument,       &opts[FULL],     1   },
     {"no-append",      no_argument,       &opts[NOAPND],   1   },
     {"read-guess",     no_argument,       &opts[RDGUESS],  1   },
+    {"ipr",            required_argument, &opts[IPR],      1   },
     { 0,                   0,                 0,           0   }
 };
 
@@ -117,7 +124,7 @@ void usage(prog)
     printf("NOTE : Choosing help option disables further processing of other options.\n");
     printf("*************************************************************************\n");
     printf("\n");
-    printf("Program usage: %s [-hvsryTqfagp] [-oCVABmc args ] [--options] input-file \n",prog);
+    printf("Program usage: %s [-hvsryTqfagp] [-oCVABmci args ] [--options] input-file \n",prog);
     printf("\n");
 }
 
@@ -140,6 +147,7 @@ void help()
  "|  -T --rep-time         Report timings for diagram routines.       |",
  "|     --no-append        Do not append in case of restart run.      |",
  "|     --read-guess       Read Initial Guess for T-amplitudes.       |",
+ "|  -i --ipr=[IPRINT]     Read print-out variable.                   |",
  "|                                                                   |",
  "| HSMRCC Options :                                                  |",
  "| ****************                                                  |",
@@ -237,6 +245,7 @@ int main (argc, argv)
    int maxit;
    int ncmo, nemo, nhole, nptcl;
    pid_t pid;
+   int ipr; /* print level... */
 
    /* change argv[0] to contain only base name */
 
@@ -436,12 +445,22 @@ int main (argc, argv)
             break;
 
          case 'm':
-            opts[MAXIT] = 1;
+            opts[MAXIT] = 1; 
             if (strlen(optarg) == 0) {
                printf("%s: argument for option '-%c' must have non-zero length\n",
                       argv[0],c); return (1); }
             if ( readint(optarg,&maxit) != 0 ) {
                printf("%s: Error reading arguments for option '-%c'\n",
+                      argv[0],c); return (-1); }
+            break;
+
+         case 'i':
+            opts[IPR] = 1;
+            if (strlen(optarg) == 0) {
+               printf("%s: argument for option '-%i' must have non-zero length\n",
+                      argv[0],c); return (1); }
+            if ( readint(optarg,&ipr) != 0 ) {
+               printf("%s: Error reading arguments for option '-%i'\n",
                       argv[0],c); return (-1); }
             break;
 
@@ -621,6 +640,9 @@ int main (argc, argv)
       if (opts[RDGUESS]) {
          printf("%s: Error: Option '%s' not meaningful with '--no-hsmr' option.\n",
                 argv[0],"--read-guess"); return (-1); }
+      if (opts[IPR]) {
+         printf("%s: Error: Option '%s' not meaningful with '--no-hsmr' option.\n",
+                argv[0],"--ipr"); return (-1); }
    }
 
    /* Check whether integer input makes sense */
@@ -647,6 +669,8 @@ int main (argc, argv)
       printf("%s: Error: Negative CONVTOL \n",argv[0]); return (-1); }
    if (opts[CONVTOL] && (convtol>1.0e00)) {
       printf("%s: Error: CONVTOL too high \n",argv[0]); return (-1); }
+   if (opts[IPR] && (ipr < 0 || ipr > 100 )) {
+      printf("%s: Error: ipr out of range <0;100>, ipr=\n",argv[0]); return (-1); }
 
    /* Check whether shift parameters are meaningful. */
 
@@ -659,6 +683,17 @@ int main (argc, argv)
          return (-1);}
    }
 */
+
+/*           
+  ------------------------------------------------------------------------------------------
+   Set IPRINT value first so that next F90 routines will have the printing parameter ready.
+  ------------------------------------------------------------------------------------------
+*/
+   if (opts[IPR]) { 
+     printf("hsmrmain.c: entering iprint parameter, ipr=%d\n",ipr);
+     sethsmr_iprint_(&ipr);
+   }
+
 
    /* Set Defaults for Unselected Flags */
 
@@ -713,6 +748,7 @@ int main (argc, argv)
    sethsmrconvtol_(&convtol);
    sethsmrinttol_(&inttol);
    sethsmrmaxit_(&maxit);
+
    if (outfile==NULL) {
       sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
    }
@@ -738,3 +774,5 @@ int main (argc, argv)
    }
    exit(0);
 }
+
+

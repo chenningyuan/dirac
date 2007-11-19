@@ -30,12 +30,12 @@ module Parameters
    integer, parameter :: RENORM = 16
    integer, parameter :: INTGEN = 17
 
-   ! define alpha spin and beeta spin
+   ! define alpha spin and beta spin
 
    integer, parameter :: ALPHA_SPIN = +1
    integer, parameter :: BEETA_SPIN = -1
 
-   ! define core, active and virtual
+   ! define core, active and virtual spinorbitals
 
    integer, parameter :: CORE_ORB = +1
    integer, parameter :: ACTV_ORB =  0
@@ -88,7 +88,30 @@ module Parameters
    integer :: NSTATE_MAIN
    integer :: NSTATE_INTM
 
-   ! general print level parameter
-   integer :: IPRINT = 0
+   ! ... control print-out level parameter
+   integer, private :: IPRINT = 0
+
+   ! ... print-out channel - moved here from module "IOmodule"
+   integer :: UOUT  = 51
+
+   contains
+
+   subroutine set_iprint (ipr)
+   ! ... set the IPRINT variable
+    integer, intent(in) :: ipr
+    integer, parameter :: ipr_max = 100
+    if (ipr < 0 .or. ipr > ipr_max) then
+     write(UOUT,*) 'set_iprint: entering iprint = ',ipr
+     write(UOUT,*) 'set_iprint: wrong entering variable ! must be <0,100>'
+    else 
+      IPRINT = ipr
+    endif
+   end subroutine set_iprint
+
+   function get_iprint() result(ipr)
+   ! ... returns the IPRINT variable
+     integer:: ipr
+     ipr = IPRINT
+   end function get_iprint
 
 end module Parameters

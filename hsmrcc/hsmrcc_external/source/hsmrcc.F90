@@ -20,9 +20,13 @@ subroutine HSMRCC
    double precision, pointer :: VINT(:)
    integer, pointer :: VIND(:)
 
+   call QEnter('HSMRCC')
+
    ! ... Basic Initialization of HSMR Run ...
 
-! call HEADER('',-1)
+   if (get_iprint() > 5 ) then
+     call HEADER(' in HSMRCC',-1)
+   endif
 
    call InitHSMRBase
 
@@ -37,6 +41,7 @@ subroutine HSMRCC
 
       if (OPTION(NOHSMR)) then
          call EndHSMR
+         call QExit('HSMRCC')
          return
       endif
    endif
@@ -101,14 +106,15 @@ subroutine HSMRCC
 
    call EndHSMR
 
+   call QExit('HSMRCC')
    return
 
 contains
 
+subroutine ExchIJ(I,J)
 !
 ! Very simple subroutine - Exchange indexes
 !
-subroutine ExchIJ(I,J)
 
    implicit none
    integer, intent(inout) :: I, J
@@ -123,3 +129,38 @@ subroutine ExchIJ(I,J)
 end subroutine ExchIJ
 
 end subroutine HSMRCC
+
+!C  /* Deck mpapv */
+      SUBROUTINE MPAPV(N,AP,VIN,VOUT)
+!C
+!C  28-Apr-1985 hjaaj
+!C
+!C  VOUT = AP * VIN
+!C
+!C  where VOUT and VIN are N vectors
+!C  and AP is a packed, symmetric N by N matrix.
+!C
+!
+!    ... copyied from Dirac/pdpack/arhpack.F ...
+!  in order to prevent linking of hsmrcc.exe with the FULL Dirac/pdpack/libpdlib.a library
+!
+!#include <implicit.h>
+      IMPLICIT REAL*8 (A-H,O-Z)
+
+      DIMENSION AP(*),VIN(*),VOUT(*)
+      PARAMETER (D0 = 0.0D0)
+!C
+      KI = 0
+      DO 300 I = 1,N
+         VINI = VIN(I)
+         SUM = D0
+         DO 100 J = 1,I-1
+            SUM = SUM + AP(KI+J) * VIN(J)
+            VOUT(J) = VOUT(J) + AP(KI+J) * VINI
+  100    CONTINUE
+         KI = KI + I
+         VOUT(I) = SUM + AP(KI) * VINI
+  300 CONTINUE
+!C
+      RETURN
+      END

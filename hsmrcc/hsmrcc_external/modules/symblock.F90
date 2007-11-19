@@ -5,7 +5,7 @@ module SymBlocks
 
    integer NSYM_BLOCK
 
-   type symblock
+   type symblock ! gfortran complains due to identical module/type names 
       integer :: ms2
       integer :: irp
       integer :: nvac

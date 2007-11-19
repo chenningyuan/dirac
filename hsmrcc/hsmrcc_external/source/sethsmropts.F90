@@ -1,7 +1,25 @@
 !
 !
+!  Set of routines called from maic C-program: hsmrmain.c
 !
 !
+
+
+subroutine SetHSMR_IPRINT(ipr)
+!
+! ... set up the general control print-out variable 
+!
+  use Parameters
+  implicit none
+
+  integer(kind=4), intent(in) :: ipr
+  integer :: ipr_temp 
+   
+  ipr_temp = ipr ! needed proper integer data type 
+  call set_iprint (ipr_temp) ! call module routine
+
+end subroutine SetHSMR_IPRINT
+
 subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
                         FlagRESTART, FlagTTYRUN  , FlagAVGVAL  , &
                         FlagREPTIME, FlagQUAD    , FlagCONVTAMP, &
@@ -10,6 +28,8 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
                         FlagNOAPND , FlagRDGUESS                 )
 
    use Options
+   use Parameters
+
    implicit none
    integer*4, intent(in) :: FlagGENINT , FlagPRNTINF , FlagVERBOSE
    integer*4, intent(in) :: FlagRESTART, FlagTTYRUN  , FlagAVGVAL
@@ -36,14 +56,18 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    if ( FlagNOAPND   == 1 ) OPTION(NOAPND)   = .TRUE.
    if ( FlagRDGUESS  == 1 ) OPTION(RDGUESS)  = .TRUE.
 
+   if (get_iprint() > 5) then
     call print_Options 
+   endif
 
    return
 
 end subroutine SetHSMRflags
 
 subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
-
+!
+! set important parameters for the code
+!
    use Parameters
    implicit none
    integer*4, intent(in) :: ValNCMO,  ValNEMO
@@ -78,7 +102,7 @@ end subroutine SetHSMRshiftpars
 
 subroutine SetHSMRfiles(IFile,OFile)
 !
-! called from hsmrmain.c !!!
+! 
 !
 
    use IOModule
@@ -87,9 +111,11 @@ subroutine SetHSMRfiles(IFile,OFile)
    character(len=*), intent(in) :: OFile
    integer :: ilen, olen
 
-  print *,'SetHSMRfiles called form hsmrmain.c !'
-  print *,'SetHSMRfiles: IFile=',IFile
-  print *,'SetHSMRfiles: OFile=',OFile
+   if (get_iprint()>5) then
+    write(UOUT,*) '>>> SetHSMRfiles called form hsmrmain.c !'
+    write(UOUT,*) 'SetHSMRfiles: IFile=',IFile
+    write(UOUT,*)  'SetHSMRfiles: OFile=',OFile
+   endif
 
    FileHSMR = REPEAT(' ',LEN(FileHSMR))
 
@@ -137,8 +163,9 @@ subroutine SetHSMRfiles(IFile,OFile)
       FileHSMR = TRIM(OFile)
    endif
 
-   print *,'output file is ',FileHSMR
-
+   if (get_iprint()>5) then
+    write(UOUT,*) 'output file is ',FileHSMR
+   endif
    return
 
 end subroutine SetHSMRfiles
@@ -175,3 +202,4 @@ subroutine SetHSMRMaxIt(It)
    MAXITER = It
 
 end subroutine SetHSMRMaxIt
+

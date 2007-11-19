@@ -73,12 +73,18 @@ module SymInf
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine read_gamess_syminf
+!-----------------------------------------------------------------------
+!
 !     this routine reads point group symmetry information
 !     from syminf file generated from gamess.
 !
 !     The data in syminf module are set in this call
-
-      subroutine read_gamess_syminf
+!
+!     Called from modules/gmsmod.F90/InitGMSMod
+!
+!-----------------------------------------------------------------------
 
       implicit none
       character*5 group
@@ -89,7 +95,17 @@ contains
       integer iabelian, irptype, iavail
       integer :: ierr=0 ! MI: important initialization for gfrortran !
 
+      call QEnter('read_gamess_syminf')
+
+      if (get_iprint >= 5) then
+       call Header('Output from "read_gamess_syminf"',-1)
+      endif
+
       open(USYMINF,file=FileSYMINF)
+
+      if (get_iprint() >= 5) then
+        write(UOUT,'(2x,3a)') 'file FileSYMINF=',FileSYMINF,' open.'
+      endif
 
 !     read in point group
 
@@ -229,6 +245,7 @@ contains
 
       close(USYMINF)
 
+      call QExit('read_gamess_syminf')
       return
 
       end subroutine read_gamess_syminf

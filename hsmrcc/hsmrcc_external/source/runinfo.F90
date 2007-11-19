@@ -64,6 +64,7 @@ subroutine PrintRunInfo
             'No. of Cluster Amplitudes (NTSIZE) = ',i8,/)
 
 ! ...  print out options used for current run ...
+   write(UOUT,'(a,i3,/)')  '**************** Program print level:',get_iprint()
 
    write(UOUT,9021) OnOff(OPTION(GENINT)),   OnOff(OPTION(PRNTINF)),  &
                     OnOff(OPTION(VERBOSE)),  OnOff(OPTION(RESTART)),  &
@@ -107,7 +108,9 @@ subroutine PrintRunInfo
             'Integral Cutoff                 = ',E13.8 ,/, &
             'Maximum No of Iterations        = ',i3,/)
 
+
 !   ...  information from gamess
+! TODO: splitt for GAMESS / DIRAC
 
    write(UOUT,9041) TotEn, NucEn, TrfTol
 
