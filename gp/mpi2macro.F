@@ -39,7 +39,7 @@ C DATE    : $Date$
 C FILE    : mpi2macro.F
 C
 C
-#if defined (VAR_MPI) && defined (VAR_MPI2)
+#if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C======================================================================C
@@ -128,7 +128,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     /* deck mpixmem_alloc */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MPIXMEM_ALLOC( MY_POINT, NTYPE, NELEMENT)
+      SUBROUTINE MPIXMEM_ALLOC( MY_POINT, NTYPE, NELEMENT, 
+     &                          MY_INFO, PROV_INFO )
 C***********************************************************************
 C
 C     allocate memory by MPI_ALLOC_MEM that is in particular suitable
@@ -137,6 +138,7 @@ C
 C     INPUT: 
 C            memory pointer MY_POINT (KIND=MPI_ADDRESS_KIND)
 C            number of elements NELEMENT of type NTYPE
+C     SAFETY NOTE: NELEMENT must be an INTEGER*8 (KIND=MPI_OFFSET_KIND)
 C            
 C            NTYPE == 1: REAL*8
 C            NTYPE == 2: my_MPI_INTEGER
@@ -157,22 +159,33 @@ C***********************************************************************
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
       INTEGER(kind=MPI_ADDRESS_KIND) MY_POINT
+      INTEGER(kind=MPI_OFFSET_KIND) NELEMENT
+      LOGICAL PROV_INFO
 C
 C     how much memory?
 C
       MY_MM_NEEDS    = 0 
       MY_MM_NEEDSSCR = 0
 C
+C     do we provide any information (in particular for 
+C     MPI implementations of NEC, IBM, ...)
+C
+      IF( PROV_INFO )THEN
+        IS_INFO = MY_INFO
+      ELSE
+        IS_INFO = MPI_INFO_NULL
+      END IF
+C
 C     allocate memory type specific
 C
       IF( NTYPE .eq. 1 ) THEN
         MY_MM_NEEDSSCR = ISIZE_DP * NELEMENT
         MY_MM_NEEDS    = MY_MM_NEEDSSCR
-        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,MPI_INFO_NULL,MY_POINT,IERR)
+        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
       ELSE IF ( NTYPE .eq. 2 )THEN
         MY_MM_NEEDSSCR = ISIZE_my_int * NELEMENT
         MY_MM_NEEDS    = MY_MM_NEEDSSCR
-        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,MPI_INFO_NULL,MY_POINT,IERR)
+        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
       END IF
 C
 C     WRITE(LUPRI,*) ' allocation successful'
@@ -438,4 +451,4 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DUMMY_MPIXXX2
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#endif /* (VAR_MPI) && (VAR_MPI2)*/
+#endif /* (VAR_MPI2)*/
