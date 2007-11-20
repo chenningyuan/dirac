@@ -150,6 +150,15 @@ C
       CALL RSETWOP(WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
 C
+#if defined (VAR_MPI2)
+C
+C     ***************************************************
+C     *** Initialize common block information         ***
+C     ***************************************************
+C
+      CALL MPIXCALC_TYPESZ()
+C
+#endif
 C
 C     ***************************************************
 C     *** Memory allocation *****************************
