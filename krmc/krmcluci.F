@@ -1643,7 +1643,7 @@ CTF
       character*6 CIRUN
       CHARACTER*72 MACHINENAME
       INTEGER NAMELENGTH
-      logical MCSCF
+      logical MCSCF, SHARED_M
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
@@ -1653,26 +1653,35 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "../luciarel/lucipar_rel.inc"
-*
-*  FIXME: VCT1 and VCT2 unused at the moment. They should carry
-*         input/output vectors controlled by outside KR_LUCI_IO
-*         routine. At the moment, allocation is performed inside
-*         LUCIAREL. The vectors reside on the internal files
-*         fort.20 (D), fort.21 (C), and fort.31 (S).
-*         Renamed files. See diskun.f
-*
+#if defined (VAR_MPI2)
+#include "krmc_shmem.h"
+#include "mxdim_mpi2.h"
+      POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
+#endif
+C
+C  FIXME:
+C         VCT1 and VCT2 unused at the moment. They should carry
+C         input/output vectors controlled by outside KR_LUCI_IO
+C         routine. At the moment, allocation is performed inside
+C         LUCIAREL. The vectors reside on the internal files
+C         fort.20 (D), fort.21 (C), and fort.31 (S).
+C         Renamed files. See diskun.f
+C
 ********************************************
       CALL QENTER('LUCIAR')
 C
+C     shared memory version disabled
 C
-C??      WRITE(LUWRT,*) 'TEST from KRMC_LUCI2',MYPROC
+      SHARED_M = .FALSE.
+C
 C
 C
 C     Compute offset from WRK to WORK
 C
       CALL COMPOFF(WRK,WORK,KBASE)
-C 32 bit:  *kbase = (int) (wrk-work+1);
-C 64 bit:  *kbase = (long) (wrk-work+1);
+C
+C     32 bit:  *kbase = (int) (wrk-work+1);
+C     64 bit:  *kbase = (long) (wrk-work+1);
 C
       WORK(KBASE) = 9991.
       IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
@@ -1682,27 +1691,27 @@ C
         WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
         write(LUWRT,*) ' Absolute memory addresses do not match.'
         write(LUWRT,*) ' Continuing.'
-c       CALL QUIT('Memory addressing error in KRMCLUCI')
+C        CALL QUIT('Memory addressing error in KRMCLUCI')
       END IF
-*
+C 
       MXPWRD = LWRK
       KADD = MXPWRD
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
-*
+C
       NTEST = 0
       IMEMCK = 0
       MCSCF = .true.
-*
-*     debugging print for parallel runs -- control from outside?
-*
+C
+C     debugging print for parallel runs -- control from outside?
+C
       NPTEST_VAR = 0
-*
-*.    Internal string information (stored in WORK, bases in /STRBAS/)
+C
+C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
-*
-*.    Internal subspaces
+C
+C     Internal subspaces
       CALL LCISPC_REL(LCSBLK,IPRCIX)
-*
+C
 ******************************************
       if (CIRUN.eq.'RSTRMC') then
         ISPC = 1
@@ -1719,67 +1728,67 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
         IDUM = 0
         call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
       end if
-*
+C
 *******************************************
       if (CIRUN.ne.'NDET  ') then
 *******************************************
-*
-*.      setting up groups of processors (stored in /LUCIPARREL/)
-*
+C
+C       setting up groups of processors (stored in /LUCIPARREL/)
+C
         CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'GROUPL')
-*
+C
         CALL MEMMAR(KPROCLIST,NMPROC,'ADDS  ',1,'IHOSTL')
         CALL MEMMAR(KGROUPLIST,NMPROC,'ADDS  ',1,'IHOST2')
         CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
-*
+C
         CALL ISETVC(WORK(KPROCLIST),-1,NMPROC)
         CALL ISETVC(WORK(KGROUPLIST),-1,NMPROC)
         CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
-*       initialize number of process groups sharing a c-vector file
+C       initialize number of process groups sharing a c-vector file
         NFLGRPS_REL = 0
-*
+C
 #if defined (VAR_MPI2)
-*
-*       hardwired to 1 (if at least two cpu's active, i.e. numnod .gt. 0)
-*
+C
+C       hardwired to 1 (if at least two cpu's active, i.e. numnod .gt. 0)
+C
         IF (NUMNOD .GT. 0) THEN
            IPARALLELIO = 1
         ELSE
            IPARALLELIO = 1
         END IF
-*
+C
 #if defined (SYS_LOCALDISKS)
-*       checking only if parallel file I/O in general is requested
+C       checking only if parallel file I/O in general is requested
         IF( IPARALLELIO .eq. 1 ) THEN
-*  
+C  
             NAMELENGTH = 0
-*
+C
             CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-*
+C
             CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
      &                               WORK(KPROCLIST),WORK(KPROCLENGTH))
-*
-*           number of groups sharing a file ( = NFLGRPS ) is determined
-*           in the subroutine above. If there is only one group
-*           than we can simulate a shared filesystem.
+C
+C           number of groups sharing a file ( = NFLGRPS ) is determined
+C           in the subroutine above. If there is only one group
+C           than we can simulate a shared filesystem.
       END IF
 #else
-*       in case of a parallel filesystem, we should use it
+C       in case of a parallel filesystem, we should use it
         IF( IPARALLELIO .ge. 0 ) THEN
           NFLGRPS = 1
           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-*         enable parallel I/O mode!!!
+C         enable parallel I/O mode!!!
           IPARALLELIO = 1
         END IF
 #endif /* ifdef SYS_LOCALDISKS */
-*
-*       set-up all useful MPI stuff: communication groups, MPI-files ...
-*                                    all important variables are stored on 
-*                                    common block /LUPARGROUP/
-*
-*       construct new communication groups
+C
+C       set-up all useful MPI stuff: communication groups, MPI-files ...
+C                                    all important variables are stored on 
+C                                    common block /LUPARGROUP/
+C
+C       construct new communication groups
         CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST))
-*
+C
         IF( NPTESTVAR .ge. 20 ) THEN
           WRITE(LUWRT,*) 'this is my old and new rank ',myproc,MYNEW_ID
           WRITE(LUWRT,*) 'this is my grouplist:'
@@ -1787,23 +1796,34 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
           WRITE(LUWRT,*) 'this is my proclist:'
           CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUWRT)
         END IF
-*
-*       open the files for parallel file I/O
-*
+C
+C       open the files for parallel file I/O
+C
         CALL SETUNITS_PAR_OPEN_REL(MY_GROUPN)
-*
+C
 #else
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
         NFLGRPS_REL = 0
 #endif
-*
-*. Allocate work space, general
-*   (position changed as not required for TASK = NDET)
+C
+C       Allocate work space, general
+C 
         CALL ALLOC_REL
-*
-*
-* IDGSTYP determines the integral classes and corresponding operator
-*         classes depending on the double group in use.
+C
+#if defined (VAR_MPI2)
+        IF( SHARED_M ) THEN
+C
+C         allocate T array and open T memory window
+C         using intra-node communicator MYNEW_COMM
+C
+          CALL GET_MEM_T_WIN( MYNEW_COMM, 0, .FALSE. )
+C
+        END IF
+#endif
+C
+C
+C       IDGSTYP determines the integral classes and corresponding operator
+C       classes depending on the double group in use.
         IDGSTYP = -1
         if (PNTGRP.le.4) then
           IDGSTYP = 1
@@ -2039,16 +2059,23 @@ c           CALL FINMO_REL
 *       release memory
 *
         CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
-*
-*       free groups
-*
+C
 #if defined (VAR_MPI2)
-*
+        IF( SHARED_M ) THEN
+C
+C         de-allocate T array and destroy T memory window
+C
+          CALL REL_MEM_T_WIN( T_BUFF )
+C
+        END IF
+C
+C       free groups
+C
         CALL SETUNITS_PAR_CLOSE_REL
         CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,ICOMM)
-*
+C
 #endif
-*
+C
 *******************************************
       end if
 *     ^ End if CIRUN.ne.'NDET  '
