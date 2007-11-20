@@ -51,8 +51,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_MEM_T_WIN(MY_T_COMM, LEN_T, 
-     &                         MY_T_INFO, C_T_INFO )
+      SUBROUTINE GET_MEM_T_WIN(MY_T_COMM, MY_T_INFO, C_T_INFO )
 C
 C     Written by  S. Knecht         - November 17 2007
 C
@@ -61,10 +60,15 @@ C
 C     routine for memory allocation and window creation of the 
 C     integral/density block T to use in parallel shared-memory MPI 
 C     LUCIAREL runs
+C
+C     pointer has to be defined in calling routine as 
+C     POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
+C
+C     LEN_T_BUFF sored on /IBUFF_LENGTH/ (krmc_shmem.h)
 C     
 C     Last revision:
 C
-************************************************************************
+***********************************************************************
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
@@ -73,7 +77,6 @@ C
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
-      POINTER (MY_T_PTR, T_BUFF(LEN_T))
       LOGICAL CINFO
       CINFO = .FALSE.
 C
@@ -81,14 +84,50 @@ C     allocate T memory
 C
       IF( MY_T_INFO .gt. 0 ) CINFO = .TRUE.
 C
-      CALL MPIXMEM_ALLOC( MY_T_PTR, 1, LEN_T, MY_T_INFO, CINFO ) 
+      CALL MPIXMEM_ALLOC( MY_T_PTR, 1, LEN_T_BUFF, MY_T_INFO, CINFO )
 C
 C     open T window
 C
       CALL MPIXWINDOW_CRT(T_BUFF,LEN_T,1,ISIZE_dp,MY_T_COMM,MY_T_WIN)
 C
       END
-************************************************************************
+***********************************************************************
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE REL_MEM_T_WIN( T_BUFF )
+C
+C     Written by  S. Knecht         - November 19 2007
+C
+C**********************************************************************
+C
+C     deallocate and and destroy memory window for integral/density 
+C     block T. 
+C
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "krmc_shmem.h"
+#include "lucipar_rel.inc"
+C
+C     destroy T memory window
+C
+      CALL MPIXWINDOW_FREE( MY_T_WIN )
+C
+C     release memory
+C
+      CALL MPIXMEM_FREE(T_BUFF)
+C
+      END
+***********************************************************************
 #else
 ***********************************************************************
 *                                                                     *
