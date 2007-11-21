@@ -98,6 +98,7 @@ subroutine InitHEFF
 
    allocate(heff_op(NSYM_BLOCK))
 
+   ! ... run over symmetry blocks ...
    do isym_block = 1, NSYM_BLOCK
 
       nvac = symblock_array(isym_block)%nvac
@@ -542,6 +543,7 @@ function NPermLexOrd(Exct)
 
 end function NPermLexOrd
 
+!
 !   This subroutine builds the vaccum expectation
 !   value of the effective hamiltonian.
 
@@ -574,7 +576,7 @@ subroutine BuildHEF0
       enddo
    enddo
 
-   call ReadFile(VHHHH)
+   call ReadFile(VHHHH) ! ... read here two-el.integrals 
    do vac = 1, NSTATE
       EndBufInd = 0
       ij = 0
@@ -600,9 +602,14 @@ subroutine BuildHEF0
 
 end subroutine BuildHEF0
 
-!   This subroutine prints HEFF.
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine PrintHEFF
+!----------------------------------------------------------
+!
+!   This subroutine prints HEFF.
+!
+!----------------------------------------------------------
 
    implicit none
 
@@ -667,12 +674,15 @@ subroutine PrintHEFF
 
 end subroutine PrintHEFF
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine DiagHEFF
-!------------------------------------------------------------
+!-----------------------------------------------------------------
 !
-! Diagonalize the efefctive Hamiltonian
+!             Diagonalize the effective Hamiltonian
 !
-!------------------------------------------------------------
+!  Called (3 times) from "hsmrcc.F90"/HSMRCC
+!
+!-----------------------------------------------------------------
 
    implicit none
    integer :: RightVac, LeftVac, Exct
@@ -682,6 +692,8 @@ subroutine DiagHEFF
    double precision, allocatable :: tmpv(:)
    double precision :: dtmp
    double precision :: ddot
+
+   call QEnter('DiagHEFF')
 
    ! ... Construct HEFF with proper sign  ...
 
@@ -737,6 +749,8 @@ subroutine DiagHEFF
       deallocate(tmpv)
 
    enddo
+
+   call QExit('DiagHEFF')
 
    return
 

@@ -106,6 +106,12 @@
 !                  + sum (k) [ <i|sz|k>*<k|sz|j> ]
 !
 
+      call QEnter('CalcS2MatEle')
+
+      if (get_iprint() >= 7) then
+        write(UOUT,'(2x,a,i4)') 'in CalcS2MatEle: NVMO=',NVMO
+      endif
+
       do j = 1, NVMO
       do i = 1, NVMO
 
@@ -164,15 +170,16 @@
       enddo
       enddo
 
+      call QExit('CalcS2MatEle')
       return
       
       end subroutine CalcS2MatEle
 
-!     returns <i|s+|j>
-
       function opsplus(i,j)
+!      ...  returns <i|s+|j>
 
-      integer i, j
+     ! integer i, j
+      integer, intent(in) :: i, j
       double precision opsplus
 
       opsplus = dble(0)
@@ -185,11 +192,11 @@
 
       end function opsplus
 
-!     returns <i|s-|j>
-
       function opsminus(i,j)
+!      ... returns <i|s-|j>
 
-      integer i, j
+     ! integer i, j
+      integer, intent(in) :: i, j
       double precision opsminus
 
       opsminus = dble(0)
@@ -203,18 +210,18 @@
 
       end function opsminus
 
-!     returns <i|sz|j>
+      function opsz(i,j) result(opsz_out)
+!      ... returns <i|sz|j>
+!     MI: modified to this form when catching some bugs...
+!     ... to fix it it's sufficient switch off pgdbg 5.2.4 -pg flag ...
+      integer, intent(in) :: i, j
+      double precision opsz_out
 
-      function opsz(i,j)
-
-      integer i, j
-      double precision opsz
-
-      opsz = dble(0)
+      opsz_out = dble(0)
 
       if (i.ne.j) return
-      if (SpinOfActvOrb(i).eq.ALPHA_SPIN) opsz = +half
-      if (SpinOfActvOrb(i).eq.BEETA_SPIN) opsz = -half
+      if (SpinOfActvOrb(i).eq.ALPHA_SPIN) opsz_out = +half
+      if (SpinOfActvOrb(i).eq.BEETA_SPIN) opsz_out = -half
 
       return
 

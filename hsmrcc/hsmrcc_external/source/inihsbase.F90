@@ -1,9 +1,12 @@
-!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine InitHSMRBase
+!---------------------------------------------------------
 !
 !  ... Basic Initialization of HSMR Run ...
 !
+! Called from HSMRCC
 !
-subroutine InitHSMRBase
+!---------------------------------------------------------
 
    use Parameters
    use Options
@@ -24,14 +27,20 @@ subroutine InitHSMRBase
    integer :: fseek, ierrno
    external :: fseek
 
+   call QEnter('InitHSMRBase')
+
+   if ( get_iprint() > 5 ) then
+     call HEADER('Output from InitHSMRBase',-1)
+   endif
+
    ! ... Start of Timing ...
 
    call StartTiming
 
-   ! ... Setting up the output file ...
+   ! ... Setting up the output stream ...
 
    if (OPTION(TTYRUN)) then
-      UOUT = 6
+      UOUT = 6 ! ... terminal output ...
    else
       close(6)
       close(5)
@@ -40,9 +49,9 @@ subroutine InitHSMRBase
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
          ierrno = fseek(UOUT,0,2)
          if (ierrno/=0) then
-            write(UOUT,*) 'fseek error on UOUT'
-            call flush(UOUT)
-            call abort
+           write(UOUT,*) 'fseek error on UOUT'
+           call flush(UOUT)
+           call abort
          endif
       endif
    endif
@@ -57,7 +66,6 @@ subroutine InitHSMRBase
    if (.not.OPTION(GENINT)) then
       rewind(UVINF)
       read(UVINF) SvNCMO, SvNHOLE, SvNPTCL, SvNEMO
-!
 !
 !  .... these variables are in the module GMSmod
 !
@@ -109,6 +117,7 @@ subroutine InitHSMRBase
 
    call OpenIntFiles
 
+   call QExit('InitHSMRBase')
    return
 
 end subroutine InitHSMRBase

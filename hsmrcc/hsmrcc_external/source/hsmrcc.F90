@@ -1,3 +1,6 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine HSMRCC
+!---------------------------------------------------------------------------
 !
 !
 ! This is called from main
@@ -5,9 +8,7 @@
 ! calling SetHSMR routines.
 !
 !
-
-subroutine HSMRCC
-
+!---------------------------------------------------------------------------
    use IOModule
    use Options
    use Shift
@@ -25,7 +26,7 @@ subroutine HSMRCC
    ! ... Basic Initialization of HSMR Run ...
 
    if (get_iprint() > 5 ) then
-     call HEADER(' in HSMRCC',-1)
+     call HEADER('Output HSMRCC',-1)
    endif
 
    call InitHSMRBase
@@ -34,7 +35,7 @@ subroutine HSMRCC
 
    if (OPTION(GENINT)) then
 
-    ! ... integral driver (modules/intgenmod.f90)
+     ! ... integrals driver (modules/intgenmod.f90)
       call DrvIntGen
 
       call UpdateVINF
@@ -44,20 +45,21 @@ subroutine HSMRCC
          call QExit('HSMRCC')
          return
       endif
+
    endif
 
    ! ... This point is reached if HSMR    ...
    ! ... iterations have to be performed  ...
 
-   ! ... Initialize HSMR Iterations ...
+   ! ... Initialize for HSMRCC Iterations ...
 
    call InitHSMRIter
 
    call PrintRunInfo
 
-   !
+   !-------------------------------------------------------
    ! ... Begin HSMRCC iterations ...
-   !
+   !-------------------------------------------------------
 
    CurIter = 0
 
@@ -72,6 +74,7 @@ subroutine HSMRCC
 
    call PrintInfo
 
+   ! ... run iterations ...
    do
 
       CurIter = CurIter + 1
@@ -115,7 +118,6 @@ subroutine ExchIJ(I,J)
 !
 ! Very simple subroutine - Exchange indexes
 !
-
    implicit none
    integer, intent(inout) :: I, J
    integer :: K ! local variable 
@@ -141,8 +143,8 @@ end subroutine HSMRCC
 !C  and AP is a packed, symmetric N by N matrix.
 !C
 !
-!    ... copyied from Dirac/pdpack/arhpack.F ...
-!  in order to prevent linking of hsmrcc.exe with the FULL Dirac/pdpack/libpdlib.a library
+!  ... copied from Dirac/pdpack/arhpack.F ...
+!  in order to avoid linking of hsmrcc.exe with the FULL Dirac/pdpack/libpdlib.a library
 !
 !#include <implicit.h>
       IMPLICIT REAL*8 (A-H,O-Z)

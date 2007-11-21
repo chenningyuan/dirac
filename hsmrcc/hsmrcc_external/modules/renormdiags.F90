@@ -14,14 +14,19 @@ module RenormDiags
 contains
 
 subroutine DrvRenorm(vac)
-
+!
+! called from source/diagrams.F90/diagrams
+!
    use TimingMod
    implicit none
    integer, intent(in) :: vac
 
+   call QEnter('DrvRenorm')
+
    call Renorm_HEFF_OneBody(TimeTaken(:,RENORM),vac)
    call Renorm_HEFF_TwoBody(TimeTaken(:,RENORM),vac)
 
+   call QExit('DrvRenorm')
    return
 
 end subroutine DrvRenorm
@@ -69,6 +74,12 @@ subroutine Renorm_HEFF_TwoBody(TimeTaken,vac)
    double precision :: WINT
    real :: dtim, dtime, tarray(2)
 
+   call QEnter('Renorm_HEFF_TwoBody')
+
+   if ( get_iprint() >= 8) then
+    write(UOUT,'(2x,a)') 'Renorm_HEFF_TwoBody: beginning of 4-fold cycle'
+   endif
+
    dtim = dtime(tarray)
 
    do lamda = 1, NVMO
@@ -103,6 +114,11 @@ subroutine Renorm_HEFF_TwoBody(TimeTaken,vac)
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray
 
+   if ( get_iprint() >= 8) then
+    write(UOUT,'(2x,a)') 'Renorm_HEFF_TwoBody: end of the 4-fold cycle'
+   endif
+
+   call QExit('Renorm_HEFF_TwoBody')
    return
 
 end subroutine Renorm_HEFF_TwoBody

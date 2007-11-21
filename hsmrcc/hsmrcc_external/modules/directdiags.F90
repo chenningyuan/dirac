@@ -102,10 +102,17 @@ subroutine DrvDirect(vac)
    implicit none
    integer, intent(in) :: vac
 
+   call QEnter('DrvDirect')
+
    if (.not.Init) then
       write(UOUT,*) 'Direct Diagram module not Initialized'
       call flush(UOUT)
-      call abort
+      call Quit('DrvDirect: Direct Diagram module not Initialized!')
+      !call abort
+   endif
+
+   if (get_iprint >= 9) then
+     write(UOUT,'(2x,a,i3)') 'DrvDirect: beginning for vac=',vac
    endif
 
    call Dir_V2H2P(TimeTaken(:,V2H2P),vac)
@@ -123,6 +130,11 @@ subroutine DrvDirect(vac)
    call Dir_FHP(TimeTaken(:,FHP),vac)
    call Dir_FPP(TimeTaken(:,FPP),vac)
 
+   if (get_iprint >= 9) then
+     write(UOUT,'(2x,a,i3)') '... DrvDirect: end for vac=',vac
+   endif
+
+   call QExit('DrvDirect')
    return
 
 end subroutine DrvDirect

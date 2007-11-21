@@ -49,9 +49,20 @@ subroutine Diagrams
       end subroutine Compensate
    end interface
 
+   call QEnter('Diagrams')
    ! ... Diagram calculation for each vaccum ...
 
+   if (get_iprint() >= 7) then
+    call Header('Output from Diagrams',-1)
+   endif
+
    do vac = 1, NSTATE
+
+      if (get_iprint() >= 7) then
+         write(UOUT,'(2x,a,i3,a,i3)')  &
+         'staring in cycle, for vac/NSTATE=',vac,'/',NSTATE
+      endif
+ 
       TNEW = dble(0)
       read(UTOLD,rec=vac) TOLD
       call DrvDirect(vac)
@@ -68,8 +79,15 @@ subroutine Diagrams
       call MakeZero(TNEW,NTSIZE,vac)
       TDIFF(vac) = SUM(DABS(TNEW-TOLD))
       write(UTNEW,rec=vac) TNEW
+
+      if (get_iprint() >= 7) then
+         write(UOUT,'(2x,a,i3,a,i3,a)')  & 
+         'cycle at the end, for vac/NSTATE=',vac,'/',NSTATE,' ...done!'
+      endif
+
    enddo
 
+   call QExit('Diagrams')
    return
 
 end subroutine Diagrams

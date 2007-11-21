@@ -27,6 +27,8 @@ subroutine DrvIntGen
    integer :: GenIntBufSize
    integer :: i
 
+   call QEnter('DrvIntGen')
+
    ! ... Progress Report on Integral Generation ...
 
    write(UOUT,9011)
@@ -40,7 +42,7 @@ subroutine DrvIntGen
 9012 format('Integral CUTOFF is ',E13.8)
 9013 format('Generating 14 Integral Files .. ')
 
-   ! ... Allocate Ingeral Generation Buffer ...
+   ! ... Allocate Integral Generation Buffer, first get it's size ...
 
    GenIntBufSize = MAXVAL(RecLen)
    GenIntBufSize = MAX(GenIntBufSize,RecLen(FHH)*NumRec(FHH))
@@ -49,10 +51,20 @@ subroutine DrvIntGen
    GenIntBufSize = 100*GenIntBufSize
    allocate(GenIntBuf(GenIntBufSize))
 
+   if ( get_iprint() >= 7) then
+     write(UOUT,'(/2x,a,i6)')  &
+     'DrvIntGen: buffer for integrals allocated, size=',GenIntBufSize
+   endif
+
    ! ... Open Gamess FileMR2EINT file ...
 
    open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    rewind(UMR2EINT)
+
+   if ( get_iprint() >= 7) then
+     write(UOUT,'(/2x,a,a/)')  &
+     'DrvIntGen: gamess integral file opened and rewinded, FileMR2EINT=',FileMR2EINT
+   endif
 
    ! ... Generate Integrals ...
 
@@ -154,15 +166,16 @@ subroutine DrvIntGen
    write(UOUT,9021) ToTTime()
    write(UOUT,9022)
 
-!9021 format('Done in ',F6.1,' seconds.',/,)
 9021 format('Done in ',F6.1,' seconds.'/)
 9022 format('**************************************',/,&
             'END OF HSMRCC INTEGRAL FILE GENERATION',/,&
             '**************************************'/)
-           
 
-   deallocate(GenIntBuf)
+   deallocate(GenIntBuf) ! ... deallocate big buffer memory ...
+
    close(UMR2EINT)
+
+   call QExit('DrvIntGen')
 
    return
 
@@ -1135,6 +1148,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    real :: dtim, dtime, tarray(2)
    external :: dtime
 
+   call QEnter('IntFileGen_TwoBody')
+
    dtim = dtime(tarray)
    ! Calculate number of records that fit
    ! into the buffer.
@@ -1283,6 +1298,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray
 
+   call QExit('IntFileGen_TwoBody')
    return
 
 end subroutine IntFileGen_TwoBody
@@ -1323,6 +1339,8 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    external :: dtime
    ! ... Automatic Array ...
    double precision :: IntF(NumRec*(RecLen/NVMO))
+
+   call QEnter('IntFileGen_OneBody')
 
    dtim = dtime(tarray)
    BufSize = SIZE(GenIntBuf)
@@ -1421,6 +1439,7 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray
 
+   call QExit('IntFileGen_OneBody')
    return
 
 end subroutine IntFileGen_OneBody

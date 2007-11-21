@@ -1,4 +1,4 @@
-!
+!-----------------------------------------------------------------------------------
 !     1. diagonalize a matrix (symmetric or non-symmetric)
 !     2. check for presence of complex eigenvalues (if any)
 !     3. deal with according to abort_if_complex flag
@@ -34,7 +34,7 @@
 !                         eigenvectors should be biorthogonal,
 !                         but each left and right vector should
 !                         be seperately normalized.
-
+!-----------------------------------------------------------------------------------
       subroutine diagonalize            &
                  (                      &
                     sym,                &
@@ -48,6 +48,11 @@
                     sort,               &
                     biortho             &
                  )
+!-----------------------------------------------------------------------------------
+!
+!          Called from DiagHEFF routine
+!
+!-----------------------------------------------------------------------------------
 
       use IOModule
       implicit none
@@ -87,7 +92,7 @@
       double precision  norm
       double precision  dtmp
 
-     ! call QEnter('diagonalize')
+      call QEnter('diagonalize')
 
 
       info = 0
@@ -160,12 +165,18 @@
 
          if (abort_if_complex.and.(nev.ne.n)) then
             write(UOUT,*) "Complex eigenvalues during diagonalization"
+            write(UOUT,'(a,i3,a,i3)')               &
+            '# of real eigevalues found, nev=',nev, &
+            ' matrix dimension, n=',n 
             !write(UOUT,*) ( ( wr(i),wi(i) ),i=1,n)
             do i=1,n
               write(UOUT,*)  wr(i), wi(i) 
             enddo
+            write(UOUT,*) "...aborting..."
             call flush(UOUT)
-            call abort
+            ! call abort
+            call QUIT( 'diagonalize :'//  &
+           'Complex eigenvalues during diagonalization...aborting')
          endif
 
 !        sort real eigenvalues in increasing order
@@ -227,7 +238,7 @@
 
       endif
 
-     ! call QExit('diagonalize')
+      call QExit('diagonalize')
       return
 
       end

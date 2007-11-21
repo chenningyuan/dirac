@@ -19,7 +19,7 @@ extern void sethsmrconvtol_(double *);
 extern void sethsmrinttol_(double *);
 extern void sethsmrmaxit_(int *);
 
-/* the main program F90 subroutine */
+/* the main F90 subroutine */
 extern void hsmrcc_(void);  
 
 /* routine for setting iprint variable - gneral print level */
@@ -759,8 +759,9 @@ int main (argc, argv)
    /* Invoke HSMRCC Driver program */
 
    if (opts[TTYRUN]) {
-/* terminal ouput here !!!  */
+    /* run the main F90 program */
        hsmrcc_();
+       printf(" hsmrmain.c : HSMRCC fortran90 part finished ... \n");
    }
    else {
       if ((pid = fork()) == -1) {printf("%s: Error: Unable to fork child process.\n",argv[0]); return (-1);}
@@ -774,5 +775,4 @@ int main (argc, argv)
    }
    exit(0);
 }
-
 

@@ -1,5 +1,12 @@
 subroutine EndHSMR
-
+!---------------------------------------------------------------
+!
+! Ending procedure od HSMRCC
+!
+!
+! Called from HSMRCC
+!
+!---------------------------------------------------------------
    use Parameters
    use Options
    use IOModule
@@ -17,6 +24,7 @@ subroutine EndHSMR
    integer :: i, a, j, b, ij, ab, ix, ti, ia
    character*7 :: flag_valid
 
+   call QEnter('EndHSMR')
    ! ... For Integral Generation only runs
 
    if (OPTION(NOHSMR)) then
@@ -26,6 +34,7 @@ subroutine EndHSMR
       call EndVacMod
       call EndIOMod
       call CloseVINF
+      call QExit('EndHSMR')
       return
    endif
 
@@ -98,6 +107,7 @@ subroutine EndHSMR
    write(UOUT,*) '--End of HSMR Run--'
    close(UOUT)
 
+   call QExit('EndHSMR')
    return
 
 contains

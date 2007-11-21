@@ -79,6 +79,9 @@ CCLIBS  =
 ifeq ($(FC),pgf90)
 ### Portland group
         FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+       # FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg -Mnomain -Mbounds 
+  # ... -pg flags causing pgdbg error stop !!!
+       # FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg -Mnomain
 endif
 
 ifeq ($(FC),gfortran)
