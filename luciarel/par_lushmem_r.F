@@ -51,20 +51,20 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_MEM_T_WIN(MY_T_COMM, MY_T_INFO, C_T_INFO )
+      SUBROUTINE GET_MEM_T( MY_T_INFO )
 C
 C     Written by  S. Knecht         - November 17 2007
 C
 C**********************************************************************
 C
-C     routine for memory allocation and window creation of the 
-C     integral/density block T to use in parallel shared-memory MPI 
-C     LUCIAREL runs
+C     routine for memory allocation of the integral/density block T 
+C     to use in parallel shared-memory MPI LUCIAREL runs
 C
 C     pointer has to be defined in calling routine as 
 C     POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
 C
-C     LEN_T_BUFF sored on /IBUFF_LENGTH/ (krmc_shmem.h)
+C     LEN_T_BUFF stored on /IBUFF_LENGTH/   (krmc_shmem.h)
+C     MY_T_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
 C     
 C     Last revision:
 C
@@ -82,13 +82,46 @@ C
 C
 C     allocate T memory
 C
-      IF( MY_T_INFO .gt. 0 ) CINFO = .TRUE.
+      IF( MY_T_INFO .ne. 0 ) CINFO = .TRUE.
 C
       CALL MPIXMEM_ALLOC( MY_T_PTR, 1, LEN_T_BUFF, MY_T_INFO, CINFO )
 C
+      END
+***********************************************************************
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_T_WIN( T_BUFF, MY_T_COMM, MY_LEN_T )
+C
+C     Written by  S. Knecht         - November 17 2007
+C
+C**********************************************************************
+C
+C     routine for window creation of the integral/density block T to 
+C     use in parallel shared-memory MPI LUCIAREL runs
+C
+C     T_BUFF is allocated using MPI_ALLOC_MEM.
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+#include "mxdim_mpi2.h"
+#include "typesz_mpi2.h"
+#include "krmc_shmem.h"
+      INTEGER(KIND=MPI_ADDRESS_KIND) MY_LEN_T
+C
 C     open T window
 C
-      CALL MPIXWINDOW_CRT(T_BUFF,LEN_T,1,ISIZE_dp,MY_T_COMM,MY_T_WIN)
+      CALL MPIXWINDOW_CRT( T_BUFF, MY_LEN_T, 1, ISIZE_dp, 
+     &                     MY_T_COMM, MY_T_WIN)
 C
       END
 ***********************************************************************

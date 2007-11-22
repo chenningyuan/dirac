@@ -259,6 +259,7 @@ C
 C            NTYPE == 1: REAL*8
 C            NTYPE == 2: my_MPI_INTEGER
 C
+C
 C     OUTPUT: 
 C            new memory window handle MY_WIN shared by all 
 C            processes in calling communicator IWIN_COMM (group).
@@ -282,6 +283,8 @@ C
       IBUF_LEN    = 0 
 C
 C     open memory window on each process shared by IWIN_COMM
+C     ISIZE_dp resp. ISIZE_int is scaling unit in memory window
+C     --> scale by REAL*8 resp. size_of_int 
 C
       IF( NTYPE .eq. 1 ) THEN
 C
@@ -296,7 +299,7 @@ C
         IBUF_LENSCR = ISIZE_int * NELEMENT
         IBUF_LEN    = IBUF_LENSCR
 C
-        CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_dp,MPI_INFO_NULL,
+        CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_int,MPI_INFO_NULL,
      &                      IWIN_COMM,MY_WIN,IERR)
 C
       END IF
