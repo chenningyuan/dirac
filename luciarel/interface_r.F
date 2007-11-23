@@ -1312,7 +1312,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 1
+      NTEST = 0
 *
 * Constants
       IZERO = 0
@@ -1361,7 +1361,6 @@ C       call reo_info_molcas()
           IRILP = 2
         end if
       end if
-      write(luwrt,*) 'DIST_INTS_SIGDEN: NDIM_TOT ',NDIM_TOT
 *
 * Open ASCII unit for checking integral sorting information
       if (NTEST.ge.1) then

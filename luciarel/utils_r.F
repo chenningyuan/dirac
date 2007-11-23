@@ -382,7 +382,6 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
       open(unit=LUSC95,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &       status='OLD',form='FORMATTED')
       rewind(LUSC95)
-      write(luwrt,*) 'read_indices: NINTS_I8 is', NINTS_I8
       do I=1,NINTS_I8,1
         read(LUSC95,'(4I4)') (IN(J,I),J=1,4)
       end do
