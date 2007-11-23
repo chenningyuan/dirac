@@ -1157,7 +1157,7 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       WRITE(LUWRT,'(3X,A,1X,I15)')
      & 'current available free memory in double words:',LMEMFREE_PTR
       WRITE(LUWRT,'(3X,A,1X,I15)')
-     & 'allocate two CI vector of length:             ',LBLOCK
+     & 'allocate two CI vectors each of length:       ',LBLOCK
       WRITE(LUWRT,'(3X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LCJRES_SAVE
       WRITE(LUWRT,'(3X,A)') 
