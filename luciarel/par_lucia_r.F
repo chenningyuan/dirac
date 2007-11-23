@@ -4844,8 +4844,6 @@ CSK      call memmar(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
 CSK      call memmar(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
 CSK      END DO
 *
-      call memmar(KLSPOBEX_FRZ,NSPOBEX_TP,'ADDL  ',1,'SPOBFR')
-*
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',2,'ISMDST')
 *
       CALL FIND_IMAT_DRV3(NBLOCK,IBLOCK(1,IBOFF),
@@ -4857,10 +4855,10 @@ CSK      END DO
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     ISSM,ICSM,ISIGDEN,NCBATCH,
      &     IDIAG,IRIS,IRIC,
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),
+     &     NSPOBEX_TP,WORK(KLSOBEX),
      &     WORK(KLSPOBEX_AC),
      &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
-     &     WORK(KLSPOBEX_FRZ),WORK(KLISMDST),
+     &     WORK(KLISMDST),
      &     INT_IOFF1_C,ISCLFAC,ICCTOS,ICWEIGHTF,
      &     INT_IOFF1,NUM_SBLK,IAM_BLK_ACT)
 
@@ -4883,10 +4881,10 @@ CSK      END DO
      &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
      &           ISSM,ICSM,ISIGDEN,NCBATCH,
      &           IDIAG,IRIS,IRIC,
-     &           NSPOBEX_TP,ITSPOBEX_TP,IBSPOBEX_TP,
+     &           NSPOBEX_TP,ITSPOBEX_TP,
      &           ISPOBEX_AC,
      &           TOCC1,TOCC2,TOCC3,TOCC4,
-     &           ISPOBEX_FRZ,ISMDST,INT_IOFF1_C,ISCLFAC,ICCTOS,
+     &           ISMDST,INT_IOFF1_C,ISCLFAC,ICCTOS,
      &           ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT)
 *
 *
@@ -4934,13 +4932,8 @@ CSK      END DO
       DIMENSION XI1S(*),XI2S(*),XI3S(*),XI4S(*)
       DIMENSION ISMDST(*)
 *. T-coefficients
-      dimension ITSPOBEX_TP(4*NGAS,*),IBSPOBEX_TP(*)
-      INTEGER ISPOBEX_AC(*),ISPOBEX_FRZ(*)
-*
-* Set undefined array to zero to avoid possible initialization 
-* crashes. (JEPPE: What is this array supposed for?) FIXME.
-* I assume no densities from frozen orbitals!
-      call isetvc(ISPOBEX_FRZ,IZERO,NSPOBEX_TP)
+      dimension ITSPOBEX_TP(4*NGAS,*)
+      INTEGER ISPOBEX_AC(*)
 *
 CSK      WRITE(LUWRT,*) ' THIS IS MY ISCLFAC in the last driver...'
 CSK      CALL IWRTMAMN(ISCLFAC,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
@@ -5050,10 +5043,7 @@ CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
      &                     ITSPOBEX_TP(IAB_OFF,ITTP),
      &                     NGAS,ICON)
 *
-               IF(ICON.EQ.1.AND.ISPOBEX_AC(ITTP).EQ.1.AND.
-     &            .NOT.(ISPOBEX_FRZ(ITTP).EQ.1.AND.ISIGDEN.EQ.2)) THEN
-*
-                 ITB = IBSPOBEX_TP(ITTP)
+               IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
 *
 CSK                 WRITE(LUWRT,*) 'CONNECTION FOUND for ITTP', ICON, ITTP
 * Setting undefined variables to zero:
