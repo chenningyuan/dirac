@@ -1555,6 +1555,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
       COMMON/KKKDUMMY/LEN_C2,LEN_S2
       COMMON/CMXCJ/MXCJ
+      INTEGER*8 ITOFF
 *
       CALL QENTER('GENSIG')
 *
@@ -2164,9 +2165,8 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
 ***********************************************************************
       SUBROUTINE IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
      &                        MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &                        LTSOSO_TP,IBTSOSO_TP,IDIM_T,MSCOMB_CC,
-     &                        MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,
-     &                        N1ELINT,N2ELINT,IPRCC)
+     &                        MSCOMB_CC,MX_TBLK_AS,IFTONE,IFTTWO,
+     &                        ILTTWO,N1ELINT,IPRCC)
 *
 * Dimension of T operators in spin-orbital basis
 *
@@ -2189,13 +2189,28 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
 #include "gasstr.inc"
 #include "csm.inc"
 #include "symm.inc"
+#include "integrals_off.inc"
 *. Specific input
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
 *. Local scratch 
       INTEGER ICA_GRP(MXPNGAS), ICB_GRP(MXPNGAS)
       INTEGER IAA_GRP(MXPNGAS), IAB_GRP(MXPNGAS)
-*.Output : Length of each type and offset for each type
-      INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
+*.Output : offset for each type
+csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
+      INTEGER*8 LEN_SCR1, LEN_SCR2, LEN_SCR3, LEN_SCR4
+      INTEGER*8 LEN_SCR5, LEN_SCR6, LEN_SCR7, LEN_SCR8
+      INTEGER*8 LENGTH, LENGTH2, N2ELINT_I8
+      INTEGER*8 MX_TBLK, MX_TBLK_AS, ITSS_TP_I8
+*
+      LEN_SCR1 = 0
+      LEN_SCR2 = 0
+      LEN_SCR3 = 0
+      LEN_SCR4 = 0
+      LEN_SCR5 = 0
+      LEN_SCR6 = 0
+      LEN_SCR7 = 0
+      LEN_SCR8 = 0
+      ITSS_TP_I8 = 0
 *
       NTEST = 0000
       NTEST = MAX(NTEST,IPRCC)
@@ -2233,7 +2248,9 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
        NEL_AA = IELSUM(ITSOSO_TP(1+2*NGAS,ITSS_TP),NGAS)
        NEL_AB = IELSUM(ITSOSO_TP(1+3*NGAS,ITSS_TP),NGAS)
 *
-       IBTSOSO_TP(ITSS_TP) = LENGTH + 1
+       LEN_SCR8 = LENGTH + 1
+       ITSS_TP_I8 = ITSS_TP
+       IBTSOSO_TP(ITSS_TP_I8) = LEN_SCR8
        DO I_CR_SM = 1, NSMST
 *. symmetry of annihilation strings
         I_AN_SM = IDBGMULT(ISYM,INVELM(I_CR_SM))
@@ -2262,10 +2279,18 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
              END IF
 *
-             LENGTH = LENGTH + LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             LENGTH2 = LENGTH2 + LEN_CA*LEN_CB*LEN_AA*LEN_AB
+             LEN_SCR3 = LEN_CA
+             LEN_SCR4 = LEN_CB
+             LEN_SCR5 = LEN_AA
+             LEN_SCR6 = LEN_AB
+C
+             LEN_SCR1 = LEN_SCR3 * LEN_SCR4 
+             LEN_SCR2 = LEN_SCR5 * LEN_SCR6
+             LEN_SCR7 = LEN_SCR1 * LEN_SCR2
+             LENGTH  = LENGTH  + LEN_SCR7
+             LENGTH2 = LENGTH2 + LEN_SCR7
              if (NTEST.ge.2000) then
-               write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
+               write(6,*) 'LENGTH ', LEN_SCR1 * LEN_SCR2
              end if
 *
              MX_ST_TSOSO = 
@@ -2273,23 +2298,28 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
              MX_ST_TSOSO_BLK = 
      &       MAX(MX_ST_TSOSO_BLK,LEN_CA*NEL_CA,LEN_CB*NEL_CB,
      &                           LEN_AA*NEL_CA,LEN_AB*NEL_CB)
-             MX_TBLK = MAX(MX_TBLK,LEN_CA*LEN_CB*LEN_AA*LEN_AB)
+             MX_TBLK = MAX(MX_TBLK, LEN_SCR7)
              MX_SBSTR = MAX(MX_SBSTR,LEN_CA,LEN_CB,LEN_AA,LEN_AB)
           END DO
         END DO
        END DO
-      LTSOSO_TP(ITSS_TP) = LENGTH2
-      MX_TBLK_AS = MAX(MX_TBLK_AS,LENGTH2)
+      MX_TBLK_AS = MAX( MX_TBLK_AS, LENGTH2 )
       END DO
-*
-      IDIM_T = LENGTH
-*
-* Number of non-spin-flip one- and two electron integrals 
-* (for diagonal):
+C
+      I_TOT_DIM_T = LENGTH
+C
+C     Number of non-spin-flip one- and two electron integrals 
+C     ( for diagonal ):
+C
       N1ELINT = IBTSOSO_TP(IFTTWO) - IBTSOSO_TP(IFTONE)
-      N2ELINT = LENGTH - N1ELINT
+      NINT_2E = LENGTH - N1ELINT
+      N2ELINT_I8 = LENGTH - N1ELINT
 *
       IF(NTEST.GE.3) THEN
+        WRITE(6,*) ' Number of 1e-integrals : ', N1ELINT
+        WRITE(6,*) ' Number of 2e-integrals : ', NINT_2E
+        WRITE(6,*) ' real number of integrals : ', N2ELINT_I8
+        WRITE(6,*) ' final LENGTH : ', LENGTH
         WRITE(6,*) ' Number of T-coefficients ', LENGTH
         WRITE(6,*) ' Largest symmetry block of T ', MX_TBLK
         WRITE(6,*) ' Largest block of T ', MX_TBLK_AS
@@ -2303,11 +2333,12 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
         WRITE(6,*) 
      & ' Largest block of strings of given sym and type ',
      &               MX_ST_TSOSO_BLK
-        WRITE(6,*) ' Number of elements per block '
-        CALL IWRTMA(LTSOSO_TP,1,NTSOSO_TP,1,NTSOSO_TP)
         WRITE(6,*) ' Offset for each block '
-        CALL IWRTMA(IBTSOSO_TP,1,NTSOSO_TP,1,NTSOSO_TP)
+         DO II = 1, NTSOSO_TP
+           WRITE(6,*) 'IBTSOSO_TP(',II,') is ',IBTSOSO_TP(II)
+         END DO
       END IF
+      NTEST = 0000
 *
       RETURN
       END 
@@ -2698,20 +2729,22 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 ***********************************************************************
 * Find number of elements in a given excitation class.
 *
-      function nelm_cc(IOFF,ITP,NXTP,NT)
+      integer*8 function nelm_cc(ITP,NXTP,NT_SCRATCH)
 *
 #include "implicit.inc"
+#include "mxpdim.inc"
+#include "integrals_off.inc"
 *
-      dimension IOFF(NXTP)
+      INTEGER*8 NT_SCRATCH
 *
       if (ITP.lt.NXTP) then
-        NELM_CC = IOFF(ITP+1) - IOFF(ITP)
+        NELM_CC = IBTSOSO_TP(ITP+1) - IBTSOSO_TP(ITP)
       else if (ITP.eq.NXTP) then
-        NELM_CC = NT - IOFF(ITP) + 1
+        NELM_CC = NT_SCRATCH - IBTSOSO_TP(ITP) + 1
       else
         write(6,*) 'Requested excitation type ',ITP
         write(6,*) 'exceeds total number of types ',NXTP
-        stop 'QUITTING in function nelm_cc.'
+        stop 'QUITTING in integer*8 function nelm_cc.'
       end if
 *
       return
@@ -2891,14 +2924,17 @@ C     INTEGER JGRP(MXPNGAS)
 ***********************************************************************
       SUBROUTINE SET_HOP_DBG(IHTYPE,IPRNT)
 *
-* Construct orbital excitation types for different choices 
-* of Hamiltonian operator, double group version
+*     Construct orbital excitation types for different choices
+*     of Hamiltonian operator, double group version
 *
-* 
-* IHTYPE = 1 : Include only Delta MK = 0 terms
-* IHTYPE = 2 : Include Delta Mk = 0 for two-electron part 
-*              and complete one-electron part
-* IHTYPE = 3  : Include all terms for general relativistic Hamiltonian
+*
+*     IHTYPE = 1 : Include only Delta MK = 0 terms
+*     IHTYPE = 2 : Include Delta Mk = 0 for two-electron part
+*                  and complete one-electron part
+*     IHTYPE = 3 : Include all terms for general relativistic
+*     Hamiltonian
+*
+*     added INTEGER*8 adaption: S. Knecht - Nov. 2007
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -2908,10 +2944,21 @@ C     INTEGER JGRP(MXPNGAS)
 #include "cgas.inc"
 #include "cprnt.inc"
 #include "orbinp.inc"
-*. Output
+C
+C         OUTPUT
+C
 #include "ctcc.inc"
-*
-*. Number of spin-orbital exctation operators in H
+#include "integrals_off.inc"
+C
+C     specific input in order to handle large integral arrays on
+C     even on 32-bit systems
+C
+      INTEGER*8 MX_TBLK, MX_TBLK_AS, MSCOMB_T
+C
+C
+C
+C     number of spin-orbital exctation operators in H
+C
       call memmar(KLSOBEX_TEMP,4*NGAS,'ADDS  ',1,'SPOBET')
       IFLAG = 1
       CALL GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
@@ -2919,51 +2966,62 @@ C     INTEGER JGRP(MXPNGAS)
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 IPRNT)
       NSPOBEX_TP = NHX
-*
-*. and the actual spin-orbital excitations
+C
+C     actual spin-orbital excitations
+C
       call memmar(KLSOBEX,4*NGAS*NSPOBEX_TP,'ADDS  ',1,'SPOBEX')
-      call memmar(KLIHIND,4*NSPOBEX_TP,'ADDS  ',1,'IHINDX')
-      call memmar(KSIGNNHX,NSPOBEX_TP,'ADDS  ',2,'SIGNDX')
-      call memmar(KLABEXTP,4*NSPOBEX_TP,'ADDS  ',1,'LABXTP')
-      call memmar(KLOP_REO,4*NSPOBEX_TP,'ADDS  ',1,'OP_REO')
-      call memmar(KSIOPREO,NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
+      call memmar(KLIHIND,     4*NSPOBEX_TP,'ADDS  ',1,'IHINDX')
+      call memmar(KSIGNNHX,      NSPOBEX_TP,'ADDS  ',2,'SIGNDX')
+      call memmar(KLABEXTP,    4*NSPOBEX_TP,'ADDS  ',1,'LABXTP')
+      call memmar(KLOP_REO,    4*NSPOBEX_TP,'ADDS  ',1,'OP_REO')
+      call memmar(KSIOPREO,      NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
       IFLAG = 0
       CALL GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),IPRNT)
-*
-*. Space for info in the different parts of Hamiltonian 
-* KLLSOBEX : Length of this block
-* KLIBSOBEX : Offset for this block
-* KLSPOBEX_AC : Is this spinorbital excitation active 
-*
-      call memmar(KLLSOBEX,NSPOBEX_TP,'ADDS  ',1,'LSPOBX')
-      call memmar(KLIBSOBEX,NSPOBEX_TP,'ADDS  ',1,'LSPOBY')
+C
+C     Space for info in the different parts of Hamiltonian
+C
+C     KLSPOBEX_AC : Is this spinorbital excitation active
+C
       call memmar(KLSPOBEX_AC,NSPOBEX_TP,'ADDS  ',1,'SPOBAC')
-*. ALl spinorbital excitations are initially active
-      IONE = 1
+C
+C     aLl spinorbital excitations are initially active
+C
+      IONE     = 1
+      IZERO_I8 = 0
+C
+      IF( NSPOBEX_TP .gt. MXINT_TP ) THEN
+          WRITE(LUWRT,*) ' STOP in subroutine SET_HOP_DBG !!!'
+          WRITE(LUWRT,*) ' Number of SO-integral types       '
+          WRITE(LUWRT,*) ' larger than MXINT_TP: ', NSPOBEX_TP, MXINT_TP
+          WRITE(LUWRT,*) ' increase MXINT_TP (mxpdim.inc): to',
+     &                     NSPOBEX_TP
+          stop ' Quitting in subroutine SET_HOP_DBG'
+      END IF
+C
       CALL ISETVC(WORK(KLSPOBEX_AC),IONE,NSPOBEX_TP)
-*. Dimensions for total symmetric operators, sym = 1
+      CALL ISETVC8_2(IBTSOSO_TP,IONE,NSPOBEX_TP)
+C
+C     dimensions for total symmetric operators, sym = 1
+C
       ITOTSYM = 1
-      MSCOMB_T = 0 
+      MSCOMB_T = 0
       CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ITOTSYM,
      &           MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &           WORK(KLLSOBEX),WORK(KLIBSOBEX),LEN_T_VEC,
      &           MSCOMB_T,MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,
-     &           N1ELINT,N2ELINT,IPRSIG)
-*
-                 MX_TBLK_MX = MX_TBLK            
-                 MX_ST_TSOSO_MX =  MX_ST_TSOSO 
+     &           N1ELINT,IPRSIG)
+C
+C                output -- transfer common block information
+C
+                 LEN_T_VEC          = I_TOT_DIM_T
+                 N2ELINT            = NINT_2E
+                 MX_TBLK_MX         = MX_TBLK
+                 MX_ST_TSOSO_MX     = MX_ST_TSOSO
                  MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
-*
-C     IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
-C    &           MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-C    &           LTSOSO_TP,IBTSOSO_TP,IDIM_T,MSCOMB_CC,
-C    &           MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,
-C    &           N1ELINT,N2ELINT,IPRCC)
-*
+C
       RETURN 
       END
 ***********************************************************************
@@ -3854,6 +3912,11 @@ CSK     &                   NSMST,ISCALE,XSCALE)
       COMMON/CMXCJ/MXCJ
 *
       COMMON/HIDSCRR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
+C
+C     integer array may become very long
+C
+      INTEGER*8 INTSCR
+C
 #include "cintfo.inc"
 #include "lucipar_rel.inc"
 *
@@ -3871,8 +3934,9 @@ CSK - this may cause problems      LSCR1 = MAX(L0BLOCK,L2BLOCK)
       LSCR1 = MAX(L0BLOCK,LBLOCK)
 *     MXINKA is used for length of batch of strings and Toccs
 *     T-elements                       
-      INTSCR = MIN(MXINKA**4,MX_TBLK_MX)
-      call memmar(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
+      INTSCR = MXINKA**4
+      INTSCR = MIN(INTSCR,MX_TBLK_MX)
+      CALL MEMMAR_I8(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
 *
 *     offsets for alpha and beta supergroups
       NOCTPA_C = NOCTYP(IACTP)
@@ -4029,28 +4093,11 @@ CSK     &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
       LZSCR = (MAX(NAEL_C,NBEL_C)+3)*(NOCOB+1) 
      &         + 2 * NOCOB + NOCOB*NOCOB
       LZ    = (MAX(NAEL_C,NBEL_C)+2) * NOCOB
-CSK      disabled allocation since it looks like we do not need these
-C        arrays!
-C        --> Timo?
 C
-*        Set up to two blocks for orbital conserving operator 
-CSK      DO I1234 = 1, 2
-CSK      call memmar(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
-CSK      call memmar(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
-CSK      call memmar(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
-CSK      END DO
-CSK      call memmar(KLZSCR,LZSCR,'ADDL  ',2,'KLZSCR')
 C
-      call memmar(KLSPOBEX_FRZ,NSPOBEX_TP,'ADDL  ',1,'SPOBFR')
-*
-      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',2,'ISMDST')
-*
-CSK      LFREEMEMACT = 0
-CSK      CALL MEMMAR(LFREEMEMACT,0,'SFREEM',2,'SEEFRM')
-CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
-CSK     & '  Current available free memory in double words:',LFREEMEMACT
-              
-*
+C
+      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',2,'ISMDST')
+C
       CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
@@ -4061,14 +4108,14 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     ISSM,ICSM,ISIGDEN,NCBATCH,T,
      &     IDIAG,IRIS,IRIC,
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIBSOBEX),
+     &     NSPOBEX_TP,WORK(KLSOBEX),
      &     WORK(KLSPOBEX_AC),
      &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
      &     WORK(KI1G),WORK(KXI1G), WORK(KI2G),WORK(KXI2G),
      &     WORK(KI3G),WORK(KXI3G), WORK(KI4G),WORK(KXI4G),
      &     WORK(KI1GE),WORK(KXI1GE), WORK(KI2GE),WORK(KXI2GE),
      &     WORK(KI3GE),WORK(KXI3GE), WORK(KI4GE),WORK(KXI4GE),
-     &     WORK(KSIGNNHX),WORK(KLSPOBEX_FRZ),WORK(KLISMDST)
+     &     WORK(KSIGNNHX),WORK(KLISMDST)
 #if defined (VAR_MPI2)
      &    ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &     ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
@@ -4096,12 +4143,12 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
      &           ISSM,ICSM,ISIGDEN,NCBATCH,
      &           T,
      &           IDIAG,IRIS,IRIC,
-     &           NSPOBEX_TP,ITSPOBEX_TP,IBSPOBEX_TP,
+     &           NSPOBEX_TP,ITSPOBEX_TP,
      &           ISPOBEX_AC,
      &           ITOCC1,ITOCC2,ITOCC3,ITOCC4,
      &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
-     &           SIGN_NHX,ISPOBEX_FRZ,ISMDST
+     &           SIGN_NHX,ISMDST
 #if defined (VAR_MPI2)
      &          ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &           ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
@@ -4175,6 +4222,7 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
 #include "cgas.inc"
 #include "cstate.inc"
 #include "strbas.inc"
+#include "integrals_off.inc"
 *. Specific input
       INTEGER ISBLOCK(8,*)
       INTEGER LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)
@@ -4192,15 +4240,10 @@ CSK     & '  Current available free memory in double words:',LFREEMEMACT
       DIMENSION CJRES(*),SIRES(*)
 *. T-coefficients
       DIMENSION T(*)
-      dimension ITSPOBEX_TP(4*NGAS,*),IBSPOBEX_TP(*)
-      INTEGER ISPOBEX_AC(*),ISPOBEX_FRZ(*)
+      dimension ITSPOBEX_TP(4*NGAS,*)
+      INTEGER ISPOBEX_AC(*)
 *
       CALL QENTER('SIGD4')
-*
-* Set undefined array to zero to avoid possible initialization 
-* crashes. (JEPPE: What is this array supposed for?) FIXME.
-* I assume no densities from frozen orbitals!
-      call isetvc(ISPOBEX_FRZ,IZERO,NSPOBEX_TP)
 *
       ONEM = -1.0D0
       IZERO = 0
@@ -4313,26 +4356,17 @@ CSK               WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
             ISBLK = (ISTT_BLK-1)*NSMST + 1
 *
 #if defined (VAR_MPI2)
-*
-*           check if TT-blocks need to be calculated! if not,
-*           skip all loops that follow.
-*
-*           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*           TAKE CARE OF COMPLEX CASE ??????
-*           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*
+C
+C           check if TT-blocks need to be calculated! if not,
+C           skip all loops that follow.
+C
             ICOMPUTE_S = 0
             NSBLK = NSMST
             IS_OFF_BLK = 0
             IS_OFF_BLK = INT_IOFF3
-CSK            WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
             DO JJBLK = ISBLK, ISBLK + NSBLK - 1
-CSK                WRITE(LUWRT,*) 'Checking for sigma block',
-CSK     &                          IS_OFF_BLK+JJBLK-1
                 IF( NPARBLOCK( JJBLK + IS_OFF_BLK-1 ) .eq. MYPROC ) THEN
                   ICOMPUTE_S = 1
-CSK                  WRITE(LUWRT,*) ' active s block found',
-CSK     &                             IS_OFF_BLK+JJBLK-1
                 END IF
             END DO
             IF( ICOMPUTE_S .eq. 0 ) GOTO 9999
@@ -4364,8 +4398,7 @@ CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
      &                     ITSPOBEX_TP(IAB_OFF,ITTP),
      &                     NGAS,ICON)
 *
-               IF(ICON.EQ.1.AND.ISPOBEX_AC(ITTP).EQ.1.AND.
-     &            .NOT.(ISPOBEX_FRZ(ITTP).EQ.1.AND.ISIGDEN.EQ.2)) THEN
+               IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
 *. Read block in   
                  IF(IREAD.EQ.0) THEN
 *. Number of blocks
@@ -4386,46 +4419,35 @@ CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
                      JLEN = ICBLOCK(7,JBLK)
 *
 #if defined (VAR_MPI2)
-*
-*                    check for active blocks
+C
+C                    check for active blocks
 CSK                     WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
 CSK     &                                IC_OFF_BLK+JBLK-1
 CSK                     WRITE(LUWRT,*) ' IOFF_SCR_C is', IOFF_SCR_C
 CSK                     WRITE(LUWRT,*) ' JLEN is for IST_C_BLK_CT + JBLK', 
 CSK     &                                JLEN, IST_C_BLK_CT + JBLK - 1
-*
+C
                      IF(ISCLFAC_GROUP(IC_OFF_BLK+JBLK-1).eq.0) GOTO 8888
 CSK                     WRITE(LUWRT,*) ' Read-in for JBLK',JBLK,
 CSK     &                                IC_OFF_BLK+JBLK-1
-*                    new offset
+C
+C                    new offset in MPI-2 parallel file
+C
                      IOFF_SCR_C_EXPL = IOFF_SAVE + IOFF_SCR_C 
 CSK                     WRITE(LUWRT,*) ' Read-in at file offset',
 CSK     &                                IOFF_SCR_C_EXPL
 CSK                     WRITE(LUWRT,*) ' memory offset',
 CSK     &                                JOFF
-*
-*                    well, read block in core
-*
-CSK                     ISCALE = 1
-CSK                     CALL GSTTBLD_PAR(CB(JOFF),JATP,JASM,JBTP,JBSM,
-CSK     &                                WORK(KNSTSO(IACTP)),
-CSK     &                                WORK(KNSTSO2(IBCTP)),
-CSK     &                                PSSIGN,IDC,PLSIGN,
-CSK     &                                LLUC,C2,NSMST,ISCALE,XSCALE,
-CSK     &                                IOFF_SCR_C_EXPL,JLEN)
-*
+C
+C                    read block in core
+C
                      CALL GSTTBLD_PAR2(CB(JOFF),LLUC,
      &                                 IOFF_SCR_C_EXPL,JLEN)
-*
+C
 #else
-*
-CSK                     ISCALE = 1
-CSK                     CALL GSTTBLD(CB(JOFF),JATP,JASM,JBTP,JBSM,
-CSK     &                    WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)), 
-CSK     &                    PSSIGN,IDC,PLSIGN,
-CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
-*
+C
                      CALL GSTTBLD2(CB(JOFF),LUC)
+C
 #endif
 *
 * Do real/imaginary scaling according to:
@@ -4454,7 +4476,9 @@ CSK     &                    LUC,C2,NSMST,ISCALE,XSCALE)
                    IREAD = 1
                  END IF
 *                ^ End if block should be read in 
-                 ITB = IBSPOBEX_TP(ITTP)
+csk - 14 Nov 2007 changed to integer*8 offset for huge integral files!
+                 ITB = IBTSOSO_TP(ITTP)
+csk              ITB = IBSPOBEX_TP(ITTP)
 *
 * Setting undefined variables to zero:
                  ITABTRNSP = 0

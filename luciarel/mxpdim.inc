@@ -5,50 +5,66 @@
 #else
       COMMON /CMXPWRD/ MXPWRD, IMAXLBLKSZ
 #endif
-*
-* contains all PARAMETERS defining LUCIA
+!
+!     this file contains all PARAMETERS defining LUCIAREL
+!
+!
+!     max. no. of NR orbitals per type and symmetry (now global)
       parameter (MXTSOB = 40)
-*  Max. no. of NR orbitals per type and symmetry (now global)
-*
-      PARAMETER (MXPIRR = 20)
-      PARAMETER (MXPOBS = 30)
-C     PARAMETER (MXPR4T = -2 )
-      PARAMETER (MXPR4T =  0 )
-      PARAMETER (MXPR0T = 1 )
-      PARAMETER (MXPORB = 510)
-      PARAMETER (MXPXOT = 9)
+!
+      PARAMETER (MXPIRR = 20  )
+      PARAMETER (MXPOBS = 30  )
+      PARAMETER (MXPR4T =  0  )
+      PARAMETER (MXPR0T = 1   )
+      PARAMETER (MXPORB = 510 )
+      PARAMETER (MXPXOT = 9   )
       PARAMETER (MXPXST = 100 )
-      PARAMETER (MXPL = 20 )
-      PARAMETER (MXPXT = 25)
-      PARAMETER (MXPICI = 10)
-      parameter (MXROOT = 30)
-      PARAMETER (MXPSTT = 8000)
-*  !! Has to be increased when larger systems are being treated !! (e.g. Tl)
-*
+      PARAMETER (MXPL   = 20  )
+      PARAMETER (MXPXT  = 25  )
+      PARAMETER (MXPICI = 10  )
+      parameter (MXROOT = 30  )
+!     MXPSTT == max. number of symmetry type-types
+#if defined (LARGE_MOLECULES)
+      PARAMETER (MXPSTT = 20000)
+#else
+      PARAMETER (MXPSTT = 8000 )
+#endif
+!     MXINT_TP == max. number of SO-integral types 
+      INTEGER*8 MXINT_TP
+      PARAMETER (MXINT_TP = 10000)
+!     MXINT_DIA == max. number of diagonal integrals  
+!     could be decreased when running smaller systems
+      INTEGER*8 MXINT_DIA
+#if defined (LARGE_MOLECULES)
+      PARAMETER (MXINT_DIA = 500 000)
+#else
+      PARAMETER (MXINT_DIA = 90 000)
+#endif
+!
       PARAMETER (MXPCSM = 20)
       PARAMETER (MXPCTP = 30)
       PARAMETER (MXCNSM = 8)
       PARAMETER (MTYP = 30)
-*. Note : MXPNGAS = MXPR4T+6 !!
-*. Required in order to handle GAS and RAS within /LUCINP/   
-      PARAMETER (MXPNGAS = 6)
+!     Required in order to handle GAS and RAS within /LUCINP/   
+      PARAMETER (MXPNGAS = 7)
       PARAMETER (MXPNSMST = 8)
-*. Largest allowed division of space for perturbation operator
+!     Largest allowed division of space for perturbation operator
       PARAMETER (MXPPTSPC=20)
-Contains all parameters defining PICASSO
+!     contains all parameters defining PICASSO
       parameter (MXNSPIR = 8)
+!     max. no. of double group irreps, limited to D2H: 12
       parameter (MXNDGIRR = 12)
-* mx. no. of double group irreps, limited to D2H: 12
       parameter (MXNATOMS = 100)
       parameter (MXNSPIPDMGRP = 250)
-*  !! Has to be increased when larger systems are being treated !! (e.g. PbH)
-*
+!
+!     Has to be increased when larger systems are being treated !! (e.g. PbH)
+!
       parameter (MXLISTO = 100)
       parameter (MXBLKO = 1000)
-*. ALLOWD NUMBER OF MK SPACES
+!     ALLOWD NUMBER OF MK SPACES
       PARAMETER(MXPNMK=100)
-*  For MOLCAS compatibility
+!     for MOLCAS compatibility
       parameter (MXTIT = 10)
-* Preliminary for SIGDEN route:
+!     preliminary for SIGDEN route:
       parameter (MXPLCCOP = 20)  ! preliminary for dimensioning
       parameter (MXNOP = 100)    ! Max. no. of exc. operators

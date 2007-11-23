@@ -1268,8 +1268,8 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
-     &                            NASHT,F1,F2,MDIASV,IPOSDIA,IBOSYM,
-     &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
+     &                            NASHT,F1,F2,MDIASV,IBOSYM,
+     &                            LABEL,CIRUN,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -1288,6 +1288,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #endif
 #include "lucipar_rel.inc"
 #include "files_r.inc"
+#include "integrals_off.inc"
 *
 #include "include/dgroup.h"
 *
@@ -1295,9 +1296,9 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
      &          NIAA_STR(MXPNGAS),NIAB_STR(MXPNGAS)
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
-     &          IBSPOBEX_TP(NSPOBEX_TP),LABEL(4,NSPOBEX_TP)
+     &          LABEL(4,NSPOBEX_TP)
       dimension I_ADD(4),INDEX(4),IND_SAVE(4),
-     &          MDIASV(4,*),IPOSDIA(*)
+     &          MDIASV(4,*)           
 *
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
@@ -1307,9 +1308,11 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Space for the construction of SUBSTRINGS
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
+      INTEGER*8 ICOUNT_I8
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
+      NTEST = 1
 *
 * Constants
       IZERO = 0
@@ -1358,6 +1361,7 @@ C       call reo_info_molcas()
           IRILP = 2
         end if
       end if
+      write(luwrt,*) 'DIST_INTS_SIGDEN: NDIM_TOT ',NDIM_TOT
 *
 * Open ASCII unit for checking integral sorting information
       if (NTEST.ge.1) then
@@ -1376,7 +1380,7 @@ C       call reo_info_molcas()
       rewind(LUINSV)
 *
 * Loop over real/imaginary part
-      ICOUNT = 1
+      ICOUNT_I8 = 1
       NDIAINT = 0
       N1DIAINT = 0
       N2DIAINT = 0
@@ -1400,11 +1404,11 @@ C       call reo_info_molcas()
         do IXTP=1,NSPOBEX_TP,1
 *
 * Check for correct pointers to type blocks
-          if (IRI.eq.1.and.ICOUNT.ne.IBSPOBEX_TP(IXTP)) then
+          if (IRI.eq.1.and.ICOUNT_I8.ne.IBTSOSO_TP(IXTP)) then
             write(LUWRT,*) 'Pointers to types do not match numbers'
             write(LUWRT,*) 'of integrals generated.'
             write(LUWRT,*) 'LABEL array: ',(LABEL(I,IXTP),I=1,4,1)
-            write(LUWRT,*) 'int.no.,offset: ',ICOUNT,IBSPOBEX_TP(IXTP)
+            write(LUWRT,*) 'int.no.,offset: ',ICOUNT_I8,IBTSOSO_TP(IXTP)
             write(LUWRT,*) 'Current type: ',IXTP
             call abend2('Quitting.')
           end if
@@ -1816,23 +1820,23 @@ C       call reo_info_molcas()
                                   if (IUBDIA.eq.1) then
                                     NDIAINT = NDIAINT + 1
                                     N1DIAINT = N1DIAINT + 1
-                                    IPOSDIA(NDIAINT) = ICOUNT
+                                    IPOSDIA(NDIAINT) = ICOUNT_I8
                                     MDIASV(1,NDIAINT) = IND_SAVE(1)
                                     MDIASV(2,NDIAINT) = IZERO
                                     MDIASV(3,NDIAINT) = IND_SAVE(2)
                                     MDIASV(4,NDIAINT) = IZERO
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
-C    &             ' at ',ICOUNT
+C    &             ' at ',ICOUNT_I8
                                   else if (IUBDIA.eq.2) then
                                     NDIAINT = NDIAINT + 1
                                     N1DIAINT = N1DIAINT + 1
-                                    IPOSDIA(NDIAINT) = ICOUNT
+                                    IPOSDIA(NDIAINT) = ICOUNT_I8
                                     MDIASV(1,NDIAINT) = IZERO
                                     MDIASV(2,NDIAINT) = IND_SAVE(1)
                                     MDIASV(3,NDIAINT) = IZERO
                                     MDIASV(4,NDIAINT) = IND_SAVE(2)
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
-C    &             ' at ',ICOUNT
+C    &             ' at ',ICOUNT_I8
                                   end if
                                 end if
                               else if (ICNT.eq.4) then
@@ -1844,12 +1848,12 @@ C    &             ' at ',ICOUNT
      &                              (INDEX(2).eq.-INDEX(4))) then
                                   NDIAINT = NDIAINT + 1
                                   N2DIAINT = N2DIAINT + 1
-                                  IPOSDIA(NDIAINT) = ICOUNT
+                                  IPOSDIA(NDIAINT) = ICOUNT_I8
                                   do IR = 1,4,1
                                     MDIASV(IR,NDIAINT) = INDEX(IR)
                                   end do
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
-C    &             ' at ',ICOUNT
+C    &             ' at ',ICOUNT_I8
                                 end if
                               else
                                 write(6,*) ' Diagonal check failed in '
@@ -1868,37 +1872,37 @@ C    &             ' at ',ICOUNT
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
                             end if
 *
-                            T(ICOUNT) = YINT - YXINT
+                            T(ICOUNT_I8) = YINT - YXINT
 *
 * FIXME !! Uncommented sign here!!
-                            if (IXCH.eq.1) T(ICOUNT) = - T(ICOUNT)
+                            if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 * FIXME !! Uncommented sign here!!
 *
                             if (NTEST.ge.1) then
                               if (NTEST.ge.10)
      &                            write(6,'(A,I4,A,4I3,A,1F18.12)') 
-     &                                  'INTEGRAL no. ',ICOUNT,'(',
+     &                                  'INTEGRAL no. ',ICOUNT_I8,'(',
      &                                   (INDEX(M),M=1,4),
-     &                                  ') Value: ',T(ICOUNT)
+     &                                  ') Value: ',T(ICOUNT_I8)
 *                           write integral to file (for debugging):
                               if (IXCH.eq.0) then
                                 write(LUINGR,'(I4,4X,4I3,1F18.14)') 
-     &                                ICOUNT,INDEX(1),
+     &                                ICOUNT_I8,INDEX(1),
      &                                       INDEX(2),
      &                                       INDEX(3),
-     &                                       INDEX(4),T(ICOUNT)
+     &                                       INDEX(4),T(ICOUNT_I8)
                               else
                         write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.14)')
-     &                                ICOUNT,INDEX(1),
+     &                                ICOUNT_I8,INDEX(1),
      &                                       INDEX(2),
      &                                       INDEX(3),
      &                                       INDEX(4),'-',
      &                             I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
-     &                                       T(ICOUNT)
+     &                                       T(ICOUNT_I8)
                               end if
                             end if
                           end if
-                          ICOUNT = ICOUNT + 1
+                          ICOUNT_I8 = ICOUNT_I8 + 1
 *
                         end do
 *                       ^ End loop over alpha creation strings
@@ -1923,7 +1927,7 @@ C    &             ' at ',ICOUNT
       if (NTEST.ge.1.and.(CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 '))
      &   close(LUINGR)
       close(LUINSV)
-      NALLINT = ICOUNT - 1
+      NALLINT = ICOUNT_I8 - 1
 *
       if (NTEST.ge.1) then
         write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
@@ -4626,6 +4630,7 @@ COLD &  '(',KTP,',',KSM,')','(',LTP,',',LSM,')'
 COLD    CALL WRTMAT(XINT,NIK,NJL,NIK,NJL)
 C
 *. New
+        write(6,*) 'GETINT_REL: call GETINCN with KINT2'
         CALL GETINCN(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
      &               IXCHNG,IKSM,JLSM,WORK(KINT2),
      &               WORK(KPINT2),NSMSH,WORK(KINH1),ICOUL)
@@ -4797,6 +4802,7 @@ c       call getinm_sigden()
      &                  WORK(KDITWOE+(IRI-1)*IMOFFSET))
           else
 *. Interface to MOTRA or SIRIUS integrals
+            write(6,*) 'call to getincn with KINT2_2'
             call getincn(XINT,ITP,ISMGET,JTP,JSMGET,KTP,KSMGET,
      &                   LTP,LSMGET,
      &                   IXCHNG,IKSMGET,JLSMGET,WORK(KINT2),
@@ -4813,6 +4819,7 @@ C. Interface to LUCAS integrals
 *
 * Molecule Sweden interface
 *
+            write(6,*) 'call to getincn with KINT2_3'
         call GETINCN(XINT,ITP,ISMGET,JTP,JSMGET,KTP,KSMGET,LTP,LSMGET,
      &               IXCHNG,IKSMGET,JLSMGET,WORK(KINT2),
      &               WORK(KPINT2),NSMSH,WORK(KINH1),ICOUL)
@@ -5094,11 +5101,13 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
 CINA    GTIJKL_REL = GIJKLL(IREOTS(1+NINOB),WORK(KPINT2),WORK(KLSM2),
 CINA &           WORK(KINT2),
 CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
+        write(6,*) ' function GTIJKL_REL: call to GIJKLL with KINT2' 
         GTIJKL_REL = GIJKLL(IREOTS(1),WORK(KPINT2),WORK(KLSM2),
      &           WORK(KINT2),
      &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
        ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5) THEN
 *. MOLCAS OR SIRIUS IMPORT ( I hope integrals are in core !! )
+        write(6,*) ' function GTIJKL_REL 2: call to GIJKLL with KINT2' 
           GTIJKL_REL = GMIJKL_REL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
        END IF
 *
@@ -5424,9 +5433,15 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 * Pointers for double group integrals
         IF(IDBG.EQ.1) CALL INTPNT_DBG
       end if
-*
-*. Pointer for orbital indeces for symmetry blocked matrices
-      CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
+      IF (SIGDEN_ROUTE .ne.'SIGDEN') THEN
+C
+CSK     22-11-2007 not important for SIGDEN_ROUTE == SIGDEN
+C
+C       Pointer for orbital indeces for symmetry blocked matrices
+C
+        CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
+      END IF
+C
       I_AM_TIMO_WORLD = 0
       if (INTIMP.eq.8) I_AM_TIMO_WORLD = 1
 CTF
@@ -8927,6 +8942,8 @@ C
       CALL MEMMAR(KHMAT ,N2ORBX*NCLASS, 'ADDL  ', 2, 'KHMAT ')
       CALL MEMMAR(KH2XY ,N2ORBX*NCLASS, 'ADDL  ', 2, 'KH2XY ')
       CALL MEMMAR(KH2YX ,N2ORBX*NCLASS, 'ADDL  ', 2, 'KH2YX ')
+
+      CALL RMEMCHK
 C
       CALL DZERO(WORK(KHMAT),N2ORBX*NCLASS)
       CALL DZERO(WORK(KH2XY),N2ORBX*NCLASS)
@@ -8939,6 +8956,12 @@ C
      &        IGETINT(WORK(KDXKR12),1+(I-1)*2),
      &        IGETINT(WORK(KDXKR12),I*2)
       end do
+      write(LUWRT,*) '(RGETH2) KDXB12'
+      do i = 1, nfpck12t
+         write(LUWRT,*) I,
+     &        IGETINT(WORK(KDXB12),1+(I-1)*2),
+     &        IGETINT(WORK(KDXB12),I*2)
+      end do
 #endif
 c
 C
@@ -8947,7 +8970,7 @@ C     --------------------
 C
 C     zero arrays
 C
-      IF (DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+      IF (DOH2AC) CALL DZERO8(H2AC,LEN_ALL_INT)
 C
 C     Loop over records in integrals files.
 C
@@ -9300,11 +9323,14 @@ Cjan      end do
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF
+      integer   NINT_TP
 *
       NTESTL = 00
       NTEST = max(IPRNT,NTESTL)
 *
       NINT_TOT = N1ELINT + N2ELINT
+      XNINT_TP_I8 = 0.0D0
 *
       if (ISF.eq.1.or.NZ.eq.1) then
         IRILP = 1
@@ -9393,7 +9419,10 @@ Cjan      end do
             call iwrtmamn(IOP_REO(1,IXTP),1,4,1,4,LUWRT)
           end if
 *
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+          XNINT_TP_I8 = REAL(NINT_TP_I8)
+          NINT_TP_X = IGIVE_I_B(XNINT_TP_I8)
+          NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
           do INT = 1,NINT_TP,1
 *
@@ -9579,11 +9608,13 @@ csk               write(LUWRT,*) ' continuing ...'
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF, N1ELINT_I8 
 *
       NTESTL = 00
       NTEST = max(IPRNT,NTESTL)
 *
-      NINT_TOT = N1ELINT + N2ELINT
+      NINT_TOT   = N1ELINT + N2ELINT
+      N1ELINT_I8 = N1ELINT 
 *
       if (ISF.eq.1.or.NZ.eq.1) then
         IRILP = 1
@@ -9673,7 +9704,10 @@ csk               write(LUWRT,*) ' continuing ...'
             call iwrtmamn(IOP_REO(1,IXTP),1,4,1,4,LUWRT)
           end if
 *
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+          XNINT_TP_I8 = REAL(NINT_TP_I8)
+          NINT_TP_X = IGIVE_I_B(XNINT_TP_I8)
+          NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
           IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
@@ -9702,7 +9736,7 @@ csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
                 INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
               end if
             end do
-csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
+            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
 *
             if (NCT.eq.2) then
 *
@@ -9770,6 +9804,7 @@ csk               write(LUWRT,*) ' continuing ...'
       dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF 
 *
       NINT_TOT = N1ELINT + N2ELINT
       if (ISF.eq.1) then
@@ -9800,8 +9835,11 @@ csk               write(LUWRT,*) ' continuing ...'
           write(LUWRT,*) '  '
           write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
           write(LUWRT,*)        ' -------------------------'
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
-          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
+          NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+          XNINT_TP_I8 = REAL(NINT_TP_I8)
+          NINT_TP_X = IGIVE_I_B(XNINT_TP_I8)
+          NINT_TP = NINT_TP_X
+csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
           do INT = 1,NINT_TP,1
 *
             if (INDEX(1,IRUN).ne.0.and.INDEX(2,IRUN).ne.0) then

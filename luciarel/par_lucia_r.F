@@ -1674,6 +1674,7 @@ C
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
+      INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF
 *
       ISHCOLOR = 0
       ISHKEY   = 0
@@ -1714,7 +1715,9 @@ CSK          write(LUWRT,*) '  '
 CSK          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
 CSK          write(LUWRT,*)        ' -------------------------'
 CSK          write(LUWRT,*) '  '
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+             NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+             XNINT_TP_I8 = REAL(NINT_TP_I8)
+             NINT_TP = IGIVE_I_B(XNINT_TP_I8)
 *
 csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *
@@ -1794,8 +1797,6 @@ C
 C     density matrix DENS for current eigenvector is in SIGDEN ordering
 C     output: updated DENS
 C
-C     NO occupation number run version
-C
 C     Last revision:     S. Knecht       - October  2007
 C
 ************************************************************************
@@ -1811,10 +1812,11 @@ C
 #include "lucipar_rel.inc"
 *
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP), DENS_SCR(*)
-      dimension INDEX(4,N1ELINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
+      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
+      INTEGER*8 NINT_TOT, NINT_TP_I8,IRIOFF
 *
       ISHCOLOR = 0
       ISHKEY   = 0
@@ -1851,13 +1853,16 @@ C
 *       loop over excitation types
 *
         do IXTP = 1,NSPOBEX_TP,1
-CSK          write(LUWRT,*) '  '
-CSK          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
-CSK          write(LUWRT,*)        ' -------------------------'
-CSK          write(LUWRT,*) '  '
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          write(LUWRT,*) '  '
+          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+          write(LUWRT,*)        ' -------------------------'
+          write(LUWRT,*) '  '
+             NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+             XNINT_TP_I8 = REAL(NINT_TP_I8)
+             NINT_TP = IGIVE_I_B(XNINT_TP_I8)
 *
-csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
+          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
+          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP =',NINT_TP
 *
           CALL DZERO(DENS_SCR,NINT_TP)
 *
@@ -2359,7 +2364,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      INTEGER FUNCTION NCALC_MAX_BLK(ISF)
+      INTEGER*8 FUNCTION NCALC_MAX_BLK(ISF)
 C
 C     Written by  S. Knecht         - October 1 2007
 C
@@ -2381,6 +2386,7 @@ C
 #include "ctcc.inc"
 #include "lucipar_rel.inc"
 *
+      INTEGER*8 NINT_TOT, NINT_TP, MAX_SCR_ELEMENT
       MAX_SCR_ELEMENT = 0
       NINT_TOT = N1ELINT + N2ELINT
 *
@@ -2403,7 +2409,7 @@ CSK          write(LUWRT,*) '  '
 CSK          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
 CSK          write(LUWRT,*)        ' -------------------------'
 CSK          write(LUWRT,*) '  '
-          NINT_TP = NELM_CC(WORK(KLIBSOBEX),IXTP,NSPOBEX_TP,NINT_TOT)
+          NINT_TP = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
           MAX_SCR_ELEMENT = MAX(MAX_SCR_ELEMENT,NINT_TP)
 *
 csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
@@ -10174,6 +10180,7 @@ C
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+        L2BLOCK        = LMEMFREE_PTR
 CSK        WRITE(LUWRT,'(1X,A,1X,I20)')
 CSK     & '  Current available free memory in double words:',L2BLOCK
 *

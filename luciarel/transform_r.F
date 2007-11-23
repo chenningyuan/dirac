@@ -1682,6 +1682,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #include "clunit.inc"
 #include "oper.inc"
 #include "ctcc.inc"
+#include "integrals_off.inc"
 *
 #include "dgroup.h"
 *
@@ -1723,6 +1724,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *
       NTESTL = 00
       NTEST = max(IPRINT,NTESTL)
+      NTEST = 000
 *
       if (NTEST.ge.1) then
       WRITE(LUWRT,*) ' ************************************************'
@@ -1829,21 +1831,31 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
         end if
         NALLINT = LEN_T_VEC * IRIMLT
         write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
-        call memmar(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
+        CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
 *
 * Diagonal integrals
         NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
+        IF( NDIAMINT .gt. MXINT_DIA ) THEN
+          WRITE(LUWRT,*) ' STOP in subroutine itrctl !!!'
+          WRITE(LUWRT,*) ' Number of diagonal integrals larger'
+          WRITE(LUWRT,*) ' than MXINT_DIA: ', NDIAMINT, MXINT_DIA
+          WRITE(LUWRT,*) ' increase MXINT_DIA (mxpdim.inc): to', 
+     &                     NDIAMINT
+          stop ' Quitting in subroutine itrctl'
+        END IF
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
-        call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
+        CALL IZERO(IPOSDIA,NDIAMINT)
         write(LUWRT,*) ' Allocating for ',NDIAMINT,
      &' diagonal integrals.'
       end if
 *
 *
-CSK      LMEMFREE = 0
-CSK      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
-CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
-CSK     & '  Current available free memory in double words:',LMEMFREE
+      LMEMFREE = 0
+      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
+      LMEMFREE       = LMEMFREE_PTR
+*
+      WRITE(LUWRT,'(1X,A,1X,I20)')
+     & '  Current available free memory in double words:',LMEMFREE
 *
 ************************************************
 * Set mark for flushing local memory
@@ -2451,7 +2463,8 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
 *
             IF( CIRUN .eq. 'CIINII' )THEN
 *
-              CALL MEMMAR(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+csk           WRITE(LUWRT,*) ' LEN_ALL_INT is', LEN_ALL_INT
+              CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
 *
 *             parallel run - broadcast integrals from MASTER if required
 *
@@ -2464,18 +2477,29 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
 #if defined (VAR_MPI2)
               IF( IIOMOD_REL .eq. 0 )THEN
 *               ... slaves get the integrals
+                LEN_INT_BCAST = 0
+                LEN_INT_BCAST = LEN_ALL_INT
+                IF( LEN_INT_BCAST .lt. 0 )THEN
+                 WRITE(LUWRT,*) ' Sorry, broadcast of integrals exceeds'
+                 WRITE(LUWRT,*) ' my system limits ...                 '
+                 WRITE(LUWRT,*) ' set IIOMOD_REL to 1 and give         '
+                 WRITE(LUWRT,*) ' reading permissions to slaves!       '
+                 Call Abend2(' no integral broadcast possible')
+                END IF
                 CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
      &                         MASTER,MPI_COMM_WORLD,IERR)
               END IF
 #endif
+*
+csk           WRITE(LUWRT,*) ' calling dist_ints_sigden with NDIM_TOT2', 
+csk  &                         NDIM_TOT2
 *
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,WORK(KINTI12),
-     &                              WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
-     &                              WORK(KLIBSOBEX),
+     &                              WORK(KMDIASV),IBOSYM,
      &                              WORK(KLABEXTP),CIRUN,NTEST)
 *
             ELSE
@@ -2485,8 +2509,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,F2,
-     &                              WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
-     &                              WORK(KLIBSOBEX),
+     &                              WORK(KMDIASV),IBOSYM,
      &                              WORK(KLABEXTP),CIRUN,NTEST)
 *
             END IF
@@ -2518,10 +2541,6 @@ C           stop 'AFTER DIST_INTS_SIGDEN.'
 *
 *  Flush local memory to mark set at beginning of do loop
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
-*
-CSK      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
-CSK      WRITE(LUWRT,'(1X,A,1X,I20)')
-CSK     & '  Current available free memory in double words again:',LMEMFREE
 *
       call qexit('ITRCTRL')
       return

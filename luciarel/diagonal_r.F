@@ -563,6 +563,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 #include "orbinp.inc"
 #include "lucinp.inc"
 #include "ctcc.inc"
+#include "integrals_off.inc"
 *
       dimension INDGATH(MXPORB),ISPSF_MO(MXNDGIRR,2),IKPERM(4),
      &          NGSOB(MXPOBS,MXPNGAS),NGSOB2(MXPOBS,MXPNGAS),
@@ -583,9 +584,6 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
       IDUM = 1
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GTDIA2')
       NINT12 = N1ELINT+N2ELINT
-C     call memmar(KINDEX,NINT12*4,'ADDL  ',1,'KINDEX')
-C     print*,'Allocating KINDEX : ',NINT12*4
-C     call read_indices(WORK(KINDEX),NINT12)
 *
 * UUUUC and UUUUE obtained from integral list 3
 *
@@ -674,10 +672,10 @@ C     call read_indices(WORK(KINDEX),NINT12)
                     call geth2dia_sigden(UUUUC(I,J),
      &                                   WORK(KT_CC),
      &                                   I,J,
-     &                                   'COUL',WORK(KLIBSOBEX),NINT12,
+     &                                   'COUL',                NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   WORK(KMDIASV),              
      &                                   N1DIAINT,NDIAINT,NTEST)
                   end do
                 end do
@@ -773,10 +771,10 @@ C     call read_indices(WORK(KINDEX),NINT12)
                     call geth2dia_sigden(UUUUE(I,J),
      &                                   WORK(KT_CC),
      &                                   I,J,
-     &                                   'EXC1',WORK(KLIBSOBEX),NINT12,
+     &                                   'EXC1',                NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   WORK(KMDIASV),              
      &                                   N1DIAINT,NDIAINT,NTEST)
                   end do
                 end do
@@ -876,10 +874,10 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
                       call geth2dia_sigden(UBBUE(I,J),
      &                                   WORK(KT_CC),
      &                                   I,J,
-     &                                   'EXC2',WORK(KLIBSOBEX),NINT12,
+     &                                   'EXC2',                NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS2,
-     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   WORK(KMDIASV),              
      &                                   N1DIAINT,NDIAINT,NTEST)
                     end do
                   end do
@@ -942,6 +940,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 #include "cprnt.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
+#include "integrals_off.inc"
 *
       character*6 SIGDEN_ROUTE
 *
@@ -967,9 +966,6 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GT1DIA')
       call memmar(KLH1,NTOOB**2,'ADDL  ',2,'H1BL  ')
 *
-* Read in indices from INDICES file
-C     call memmar(KINDEX,N1ELINT*4,'ADDL  ',1,'KINDEX')
-C     call read_indices(WORK(KINDEX),N1ELINT)
 *
       if (SIGDEN_ROUTE.eq.'TRADIT') then
 *
@@ -1065,16 +1061,18 @@ C                COPDIA(A,VEC,NDIM,IPACK)
             if (MXNELGS(IGAS).ne.0) then
               IUB = 1
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
-     &                             WORK(KMDIASV),WORK(KPOSDIA),
+     &                             WORK(KMDIASV),              
      &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS,NTEST)
-              call copvec(WORK(KLH1),H1DIA_U(IOFFSD),NGSSH(ISMOB,IGAS))
+              call dcopy(NGSSH(ISMOB,IGAS),WORK(KLH1),1,
+     &                   H1DIA_U(IOFFSD),1)
               IUB = 2
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
-     &                             WORK(KMDIASV),WORK(KPOSDIA),
+     &                             WORK(KMDIASV),              
      &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS2,NTEST)
-              call copvec(WORK(KLH1),H1DIA_B(IOFFSD),NGSSH(ISMOB,IGAS))
+              call dcopy(NGSSH(ISMOB,IGAS),WORK(KLH1),1,
+     &                   H1DIA_B(IOFFSD),1)
             else
               call setvec(H1DIA_U(IOFFSD),ZERO,NGSSH(ISMOB,IGAS))
               call setvec(H1DIA_B(IOFFSD),ZERO,NGSSH(ISMOB,IGAS))
@@ -1107,13 +1105,15 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 * Get diagonal one-electron integrals in SIGDEN formalism.
 *
       subroutine geth1dia_sigden(IUB,XOUT,XINT,
-     &                           MDIASV,IPOSDIA,N1E,N1DIAINT,NUMINT,
+     &                           MDIASV,N1E,N1DIAINT,NUMINT,
      &                           ISTART,IEND,IREOTS,IPRNT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "integrals_off.inc"
 *
-      dimension IREOTS(*),MDIASV(4,*),IPOSDIA(*)
+      dimension IREOTS(*),MDIASV(4,*)
       dimension XINT(N1E),XOUT(*)
 *
       NTESTL = 000
@@ -1173,24 +1173,26 @@ C           XOUT(ICT) = XINT(INT)
 *   Timo Fleig, February 2002
 *
       subroutine geth2dia_sigden(XOUT,XINT,ISEA,JSEA,TYPE,
-     &                           IOFF2,N12,I2DIATP,IKFAC,IKPERM,
-     &                           IREOTS,IREOTS2,
-     &                           MDIASV,IPOSDIA,N1DIAINT,NDIAINT,IPRNT)
+     &                           N12,I2DIATP,IKFAC,IKPERM,
+     &                           IREOTS,IREOTS2,MDIASV,N1DIAINT,
+     &                           NDIAINT,IPRNT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "integrals_off.inc"
 *
       character*4 TYPE
 *
-      dimension IAC(2),JAC(2),IOFF2(*),IKPERM(4),
-     &          IREOTS(*),IREOTS2(*),MDIASV(4,*),IPOSDIA(*)
-      dimension XINT(N12)
+      dimension IAC(2),JAC(2),         IKPERM(4),
+     &          IREOTS(*),IREOTS2(*),MDIASV(4,*)           
+      dimension XINT(NINT12)
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
 *
       IERROR = 1
-      N2B = IOFF2(I2DIATP)
+      N2B = IBTSOSO_TP(I2DIATP)
 C     do INT = N2B,N12,1
       do INT = N1DIAINT+1,NDIAINT,1
         if (TYPE.eq.'COUL') then
@@ -1246,7 +1248,6 @@ C         XOUT = XINT(INT)
       end do
       if (IERROR.eq.1) then
         write(6,*) 'No integral found in geth2dia_sigden.'
-C       write(6,*) 'N2B,N12 = ',N2B,N12
         write(6,*) 'Type of integral = ',TYPE
         write(6,*) 'Index pair ',IREOTS(ISEA),IREOTS2(JSEA)
         write(6,*) 'Indices ',I,J,K,L

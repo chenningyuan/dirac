@@ -619,6 +619,24 @@ C
 C
       RETURN
       END
+C  /* Deck dzero8 */
+      SUBROUTINE DZERO8(DX,LENGTH8)
+#include "implicit.h"
+C   Last revision 23-Nov-2007 by S. Knecht
+C
+C   Subroutine DZERO8 sets a real array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 LENGTH8
+      DIMENSION DX(LENGTH8)
+C
+      IF (LENGTH8.LE.0) RETURN
+C
+      DO 100 I = 1,LENGTH8
+  100    DX(I) = 0.0D00
+C
+      RETURN
+      END
 C  /* Deck isum */
       FUNCTION ISUM(N,IA,INCA)
 C

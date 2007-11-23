@@ -367,7 +367,7 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 ***********************************************************************
 * Read indices from file INDICES
 *
-      subroutine read_indices(IN,NINTS)
+      subroutine read_indices(IN,NINTS_I8)
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -376,12 +376,14 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 #endif
 #include "lucipar_rel.inc"
 #include "files_r.inc"
-      dimension IN(4,NINTS)
+      integer*8 NINTS_I8
+      dimension IN(4,NINTS_I8)
 *
       open(unit=LUSC95,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &       status='OLD',form='FORMATTED')
       rewind(LUSC95)
-      do I=1,NINTS,1
+      write(luwrt,*) 'read_indices: NINTS_I8 is', NINTS_I8
+      do I=1,NINTS_I8,1
         read(LUSC95,'(4I4)') (IN(J,I),J=1,4)
       end do
       close(LUSC95)

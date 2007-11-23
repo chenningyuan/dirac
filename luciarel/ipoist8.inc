@@ -1,7 +1,6 @@
-* For IA64 bit machines with large core memory:
-* DIRAC - LUCIAREL memory alignment requires pointers to be
-* on INTEGER*8 
-#if defined (IA64) || defined (INT_STAR8)
+!
+!    DIRAC - LUCIAREL memory pointers
+!
       INTEGER*8
      &KVEC3, KC2, KISPSAOIN, KISPSAOUT, KLH1D, KLISMDST, KMOAOIN, 
      &KMOAOUT, KSPSAOIN, KSPSAOUT, KBASE, KBOSYM, KDUMMY,
@@ -45,14 +44,13 @@
      &KINTI12,KDXKR12,KDXB12,KDXB34,KHMAT,KH2XY,KH2YX
 #if defined (VAR_MPI)
      &,KILU1LIST,KILU2LIST,KILU3LIST,KILU4LIST,KILU5LIST,KILUCLIST,
-*     these one are needed for calculating dot- and vector products 
-*     batchwise
+!     these one are needed for calculating dot- and vector products 
+!     batchwise
      &KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,
      &KRCCTOS,KSCALLOC,KSCALLOC2,KSCALLOC3,KSCRRED,KSCRRED2,
      &KMAX_DENS_BLK
 #endif
-*
-* Some additional computed ones:
+!
+!     some additional computed ones:
       INTEGER*8
      &KCJRES, KOCSTR_ADD, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT
-#endif

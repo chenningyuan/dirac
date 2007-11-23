@@ -5508,6 +5508,7 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+        L2BLOCK        = LMEMFREE_PTR
 csk        WRITE(LUWRT,'(1X,A,1X,I20)')
 csk     & '  Current available free memory in double words:',L2BLOCK
 *
@@ -5798,8 +5799,6 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
       ELSE IF( ICISTR.EQ.3) THEN
         L0BLOCK = MXSOOB
       END IF
-CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
       IF( I_SET_L2BLOCK .eq. 1 ) THEN
 *
@@ -5809,8 +5808,9 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
-CSK        WRITE(LUWRT,'(1X,A,1X,I20)')
-CSK     & '  Current available free memory in double words:',L2BLOCK
+        L2BLOCK        = LMEMFREE_PTR
+csk     WRITE(LUWRT,'(1X,A,1X,I20)')
+csk  & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
@@ -5828,8 +5828,8 @@ CSK     & '  Current available free memory in double words:',L2BLOCK
           L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4
         END IF
 *
-CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+csk     WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *
         L2BLOCK = MIN(LCSBLK,L2BLOCK)
 *
@@ -6029,6 +6029,7 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
         L2BLOCK = 0
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+        L2BLOCK        = LMEMFREE_PTR
         WRITE(LUWRT,'(1X,A,1X,I20)')
      & '  Current available free memory in double words:',L2BLOCK
 *

@@ -132,6 +132,30 @@ C
 C
       RETURN
       END
+C  /* Deck isetvc8 */
+      SUBROUTINE ISETVC8(IVEC,IVALUE,NDIM8)
+C
+      INTEGER*8 NDIM8
+      DIMENSION IVEC(NDIM8)
+C
+      DO 100 I = 1, NDIM8
+         IVEC(I) = IVALUE
+  100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck isetvc8 */
+      SUBROUTINE ISETVC8_2(IVEC,IVALUE_I8,NDIM)
+C
+      INTEGER*8 IVALUE_I8
+      DIMENSION IVEC(NDIM)
+C
+      DO 100 I = 1, NDIM
+         IVEC(I) = IVALUE_I8
+  100 CONTINUE
+C
+      RETURN
+      END
 C  /* Deck iwrtma */
       SUBROUTINE IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
 C  Jeppe Olsen

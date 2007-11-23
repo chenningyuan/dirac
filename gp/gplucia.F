@@ -3258,6 +3258,22 @@ CMI        IF(INCLUDE .EQ.1) THEN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
+      INTEGER FUNCTION IGIVE_I_B(X_IN)
+#include "implicit.h"
+*
+* return integer value of real*8 element
+*
+*
+      I_OUT = INT( X_IN )
+      IGIVE_I_B = I_OUT
+*
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
       FUNCTION IFREQ(IVEC,IVAL,NDIM)
 *
 * Number of times IVAL occurs in IVEC
@@ -6881,6 +6897,23 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE WRTMATMN8(A,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 NROW8, NCOL8
+      DIMENSION A(NMROW8,NMCOL8)
+C
+      DO 100 I=1,NROW8
+      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL8)
+ 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
       SUBROUTINE IWRTMA8(MAT,NROW,NCOL,NMROW,NMCOL)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
@@ -6904,6 +6937,23 @@ C
 C
       DO 100 I=1,NROW
       WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          * 
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAMN8(MAT,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 NROW8, NCOL8
+      DIMENSION MAT(NMROW8,NMCOL8)
+C
+      DO 100 I=1,NROW8
+      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL8)
  1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
   100 CONTINUE
       END

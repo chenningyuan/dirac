@@ -87,6 +87,7 @@ C
 #include "spinfo.inc"
 *  nat. orb. occ. num.
 #include "noccn_inf.inc"
+#include "integrals_off.inc"
 *
 #include "include/dgroup.h"
 *
@@ -94,6 +95,7 @@ C
       COMMON/CECORER/ECORE
 *
       DIMENSION F1(*), F2(*), IPROCLIST(*), IGROUPLIST(*)
+      INTEGER*8 L_MAX_DENS_BLK
 *
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 *
@@ -848,13 +850,13 @@ CSK   work with INTEGER*8
           else if (CIRUN.eq.'DENS2 ') then
             NTERMS = NALLINT
           end if
-*
-*         erase T amplitudes from sigma calculation
-          call DZERO(WORK(KT_CC),NTERMS)
+C
+C         erase T amplitudes from sigma calculation
+C
+          call DZERO8(WORK(KT_CC),NTERMS)
           if( NOOCCN_DENS_RUN ) THEN
-            call DZERO(WORK(KT_CC),NALLINT)
+            call DZERO8(WORK(KT_CC),NALLINT)
           endif
-CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
 *
          if (CIRUN.eq.'DENS1 ') then
             call rmemchk
@@ -906,9 +908,10 @@ CSK          WRITE(LUWRT,*) 'NTERMS and NALLINT',NTERMS,NALLINT
 #endif
      &                   )
 *=======================================================================
-*
-*         read indices from cpu-specific file INDICES.'MYPROC'
-*         ( written in dist_ints_sigden --> interface_r.F )
+C
+C         read indices from cpu-specific file INDICES.'MYPROC'
+C         ( written in dist_ints_sigden --> interface_r.F )
+C
           IF( NOOCCN_DENS_RUN ) THEN
 csk            WRITE(LUWRT,*) ' ********************************'
 csk            WRITE(LUWRT,*) ' NO occupation number calculation'
@@ -917,21 +920,22 @@ csk            WRITE(LUWRT,*) ' ********************************'
             WRITE(LUWRT,*) ' Allocating 4-index array of length',
      &                       NTERMS*4
             WRITE(LUWRT,*) ' '
-            call memmar(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
-            call isetvc(WORK(KINDEX),IZERO,NTERMS*4)
+C
+            call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
+            call isetvc8(WORK(KINDEX),IZERO,NTERMS*4)
+C
           ELSE
             WRITE(LUWRT,*) ' Allocating 4-index array of length',
      &                       NALLINT*4
             WRITE(LUWRT,*) ' '
-            call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-            call isetvc(WORK(KINDEX),IZERO,NALLINT*4)
+C
+            call memmar_i8(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
+            call isetvc8(WORK(KINDEX),IZERO,NALLINT*4)
+C
           END IF
+C
           call read_indices(WORK(KINDEX),NTERMS)
-csk          WRITE(LUWRT,*) ' printing index matrix'
-csk          call IWRTMAMN(WORK(KINDEX),4,NTERMS,4,NTERMS,LUWRT)
-*
-csk          WRITE(LUWRT,*) ' N1ELINT and NALLINT and IRC', 
-csk     &                     N1ELINT, NALLINT, IRC
+C
           IPRDEN = 1
 *
 #if defined (VAR_MPI2)
@@ -954,9 +958,9 @@ csk     &                     N1ELINT, NALLINT, IRC
             L_MAX_DENS_BLK = 0
             L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
 *
-            CALL MEMMAR(KMAX_DENS_BLK,L_MAX_DENS_BLK,
-     &                  'ADDL  ',1,'KDMBLK')
-            CALL DZERO(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
+            CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
+     &                     1,'KDMBLK')
+            CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
 *
             CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
      &                             WORK(KINDEX),
@@ -964,7 +968,6 @@ csk     &                     N1ELINT, NALLINT, IRC
      &                             WORK(KLABEXTP),WORK(KLOP_REO),
      &                             WORK(KSIOPREO),IRC,ISHARE_DENSM)
           ELSE
-CSK            CALL COLLECT_DENS_MAT(WORK(KMAX_DENS_BLK),WORK(KT_CC),
             CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),
      &                            WORK(KINDEX),
      &                            WORK(KLIHIND),WORK(KSIGNNHX),NTOOB2,

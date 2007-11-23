@@ -191,16 +191,18 @@ c                   IBU = 2
           do IL2=1,NL2D,1
             NINT_CC = NINT_CC + 2 * L2D(IL2)
           end do
-*
+C
+          IF( NINT_CC .lt. 0) WRITE(6,*)
+     &      ' Integer overflow for integral counter ..., check
+     & program correctness'
 C         call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
-C   Done dynamically in itrctl using LEN_T_VEC
+C         done dynamically in itrctl using LEN_T_VEC
         end if
       end if
-*
-*.4. Integrals (ij!kk) -(ik!kj), pointer and space
-      call memmar(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
-      call memmar(KIJKK,NTOOB**2 *(NTOOB+1) / 2, 'ADDS  '
-     &            ,2,'KIJKK ')
+*        4. Integrals (ij!kk) -(ik!kj), pointer and space
+CSK      call memmar(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
+CSK      call memmar(KIJKK,NTOOB**2 *(NTOOB+1) / 2, 'ADDS  '
+CSK     &            ,2,'KIJKK ')
 CTF  Allocate memory for initial guess for CI vector
       IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN
 *. Allocate memory for explicit hamiltonian and roots
@@ -235,10 +237,15 @@ CADDE
         KH0    = 1
         KH0SCR = 1
       END IF
-*. indices for pair of orbitals symmetry ordered
-*
-      call memmar(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
-*
+      IF (SIGDEN_ROUTE .ne. 'SIGDEN') THEN
+C
+CSK     22-11-2007 not needed for SIGDEN_ROUTE == SIGDEN
+C
+C
+C       indices for pair of orbitals symmetry ordered
+C
+        call memmar(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
+      END IF
       IF (NOMOFL.EQ.0) THEN
         write(6,*)
         WRITE(6,*)
@@ -287,93 +294,95 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
-*
-* Memory manager routine for LUCIAREL "R"
-*
-* KBASE : New base address
-*         If TASK = INI, KBASE is offset for memory to be controlled
-*         by MEMMAR
-* KADD  : Dimension of array to be added
-*         If TASK = INI, KADD is total length of array
-* TASK  : = INI    : Initialize                 Character*6
-*         = ADDS   : Add static memory
-*         = ADDL   : Add Local memory
-*         = FLUSH  : Flush local memory
-*         = CHECK  : Check memory paddings
-*         = FREE   : Return first Free word in KBASE
-*         = MARK   : Set a mark at current free adress
-*         = FLUSM  : Flush local memory to previous mark
-*         = PRINT  : Print memory allocations
-*         = SFREEM : Print memory allocations
-* IR    : 1 => integer , 2 => real, 3 => integer*8
-*         ratio between integer and real is IRAT
-* IDENT : identifier of memory slice,Character*6
-*
-* Local Memory not flushed before allocation of additional static memory
-* is tranferred to static memory
-*
+C
+C     Memory manager routine for LUCIAREL "R"
+C
+C     KBASE : New base address
+C             If TASK = INI, KBASE is offset for memory to be controlled
+C             by MEMMAR
+C     KADD  : Dimension of array to be added - KADD is default INTEGER
+C             if TASK = INI, KADD is total length of array
+C     TASK  : 
+C             = INI    : Initialize                 Character*6
+C             = ADDS   : Add static memory
+C             = ADDL   : Add Local memory
+C             = FLUSH  : Flush local memory
+C             = CHECK  : Check memory paddings
+C             = FREE   : Return first Free word in KBASE
+C             = MARK   : Set a mark at current free adress
+C             = FLUSM  : Flush local memory to previous mark
+C             = PRINT  : Print memory allocations
+C             = SFREEM : Print memory allocations
+C     IR    : 1 => integer , 2 => real, 3 => integer*8
+C             ratio between integer and real is IRAT
+C     IDENT : identifier of memory slice, CHARACTER*6
+C
+C     NOTE:    Local Memory not flushed before allocation of additional 
+C              static memory
+C              is tranferred to static memory
+C
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (IA64) || defined (INT_STAR8)
-      integer*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
-#endif
-      CHARACTER*6 TASK,IDENT,IIDENT,MARKC,MARK_ACT
-      PARAMETER(NPAD = 1 )
-      PARAMETER(MAXLVL = 4096 )
-      PARAMETER(MAXMRK = 1024)
-      COMMON/CMEMOR/NWORD,KFREES,KFREEL,IBASE(MAXLVL),IMARK(MAXMRK),
-     &              LENGTH(MAXLVL),IIDENT(MAXLVL),NS,NL,NM,
-     &              MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK),
-     &              MARK_ACT
-*. Two real*8 words, one added NPAD times before each array, another
-*. added NPAD times after each array
+C
+C     memory common block
+C
+#include "memory_r.inc"
+C
+C     Two REAL*8 words, one added NPAD times before each array, another
+C     added NPAD times after each array
+C
       DATA PAD1/0.123456789D0/
       DATA PAD2/0.987654321D0/
-*
+      INTEGER*8 KBASE_LOCAL
+      REAL*8    XBASE_LOCAL
+C
 #include "mxpdim.inc"
 #include "irat.inc"
 #include "wrkspc.inc"
 #include "lucipar_rel.inc"
-*
+C
+      KBASE_LOCAL = 0
+      XBASE_LOCAL = 0.0D0
       ILPRNT = 0
       IF(ILPRNT .NE. 0 ) THEN
         WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
         WRITE(LUWRT,'(3A)') ' TASK , IDENT ', TASK,IDENT
         WRITE(LUWRT,*) '  NS NL NM ',NS,NL,NM
+      WRITE(LUWRT,*) ' MEMMAR: allocate array of length', KADD
       END IF
-*
+C
       ISTOP = 0
       ITSOK  = 1
       IPRNTMP = 0
-*
+C
       IF(TASK(1:5).EQ.'PRINT') THEN
         IPRNTMP = 1
         NSNLI = NS + NL
-*
+C
       ELSE IF(TASK(1:3).EQ.'INI') THEN
-*
-**.Initialize
-*
+C
+C      Initialize
+C
         NS = 0
         NL = 0
         NSNLI = 0
         NM = 0
         KFREES = KBASE
         KFREEL = KBASE
-*
-*       Compute pointer to end element
-*
+C
+C       Compute pointer to end element
+C
         NWORD = KBASE + MXPWRD-1
         IPRNTMP = 0
         ISTOP = 0
-*
-** First free word
-*
+C
+C     First free word
+C
       ELSE IF (TASK(1:4).EQ.'FREE') THEN
         KBASE = KFREEL
         NSNLI = NS+NL
-*
-**. Static memory
-*
+C
+C     Static memory
+C
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
@@ -390,10 +399,10 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WRITE(LUWRT,*) ' But if you try sometime, you may find '
           WRITE(LUWRT,*) ' you get what you need '
           WRITE(LUWRT,*) '                       Jagger/Richard '
-*
+C
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
-*
+C
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
           WRITE(LUWRT,'(20X,A,2X,2I15)')IDENT, KBASE, KADD
           ISTOP = 1
@@ -417,9 +426,9 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    10   CONTINUE
-*
-**. Local memory
-*
+C
+C     Local memory
+C
       ELSE IF(TASK(1:4).EQ.'ADDL') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
@@ -459,18 +468,18 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    20   CONTINUE
-*
-** Flush local memory
-*
+C
+C     Flush local memory
+C
       ELSE IF(TASK(1:5).EQ.'FLUSH') THEN
         NSNLI = NS+NL
         KFREEL = KFREES
         NL = 0
-*. Flush output unit
+C       Flush output unit
         LU6 = 6
         CALL GFLUSH(LU6)
       ELSE IF(TASK(1:4).EQ.'MARK') THEN
-*. Set a mark at current free address
+C       Set a mark at current free address
         NM = NM + 1
         IF(NM.GT.MAXMRK) THEN
           WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
@@ -492,7 +501,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
      &     IDENT,' versus ',MARK_ACT
           STOP ' Error in memory flushing '
         END IF
-*
+C
         NSNLI = NS+NL
         KFREEL = IMARK(NM)
         IF(KFREES.GT.IMARK(NM)) KFREES = IMARK(NM)
@@ -500,23 +509,28 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
         NL = MARKL(NM)
         NS = MARKS(NM)
         NM = NM - 1
-*. Flush output unit
+C       Flush output unit
         LU6 = 6
         CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
       ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
-*. compute current free memory
-        KBASE = NWORD - KFREEL - 1
+C       compute current free memory
+        KBASE_LOCAL = NWORD - KFREEL - 1
         NSNLI = NS+ NL
+        XBASE_LOCAL  = REAL(KBASE_LOCAL) 
+        LMEMFREE_PTR = INT(XBASE_LOCAL)
+csk     WRITE(LUWRT,*) 
+csk  &          ' MEMMAR: KBASE_LOCAL, XBASE_LOCAL, LMEMFREE_PTR',
+csk  &                    KBASE_LOCAL, XBASE_LOCAL, LMEMFREE_PTR
       ELSE
           WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
           WRITE(LUWRT,*) ' Too confused to continue  '
           Call Abend1( 11 )
       END IF
-*
-**. Check paddings
-*
+C
+C     Check paddings
+C
       ICHECK = 1
       ITSOK = 1
       IF(TASK(1:5).EQ.'CHECK'.OR.ICHECK.EQ.1) THEN
@@ -558,7 +572,7 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
   100   CONTINUE
       END IF
  1001 CONTINUE
-*
+C
         IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
           WRITE(LUWRT,'(A,A)') ' Current task : ', TASK
           WRITE(LUWRT,*) ' NS, NL, NSNLI',NS,NL,NSNLI
@@ -601,25 +615,370 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
      &         IIDENT(IL),IBASE(IL),'     -       -    '
             END IF
   200     CONTINUE
-*
-* Marks
-*
+C
+C         Marks
+C
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '======='
           WRITE(LUWRT,*) ' Marks '
           WRITE(LUWRT,*) '======='
           WRITE(LUWRT,*)
-*
+C
           WRITE(LUWRT,*) ' Identifier  Start of free memory '
           WRITE(LUWRT,*) ' ================================='
           DO JMARK = 1, NM
             WRITE(LUWRT,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
           END DO
-*
+C
         IF(ITSOK.EQ.0) 
      &     Call Abend2( ' Error observed by  memory manager ' )
         END IF
-*
+C
+      IF(ISTOP.NE.0) call Abend2
+     &               ( ' Error observed by  memory manager ' )
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE MEMMAR_I8(KBASE,KADD,TASK,IR,IDENT)
+C
+C     Memory manager routine for LUCIAREL "R"
+C
+C     KBASE : New base address
+C             If TASK = INI, KBASE is offset for memory to be controlled
+C             by MEMMAR
+C     KADD  : Dimension of array to be added - KADD is INTEGER*8
+C             if TASK = INI, KADD is total length of array
+C     TASK  :
+C             = INI    : Initialize                 Character*6
+C             = ADDS   : Add static memory
+C             = ADDL   : Add Local memory
+C             = FLUSH  : Flush local memory
+C             = CHECK  : Check memory paddings
+C             = FREE   : Return first Free word in KBASE
+C             = MARK   : Set a mark at current free adress
+C             = FLUSM  : Flush local memory to previous mark
+C             = PRINT  : Print memory allocations
+C             = SFREEM : Print memory allocations
+C     IR    : 1 => integer , 2 => real, 3 => integer*8
+C             ratio between integer and real is IRAT
+C     IDENT : identifier of memory slice, CHARACTER*6
+C
+C     NOTE:    Local Memory not flushed before allocation of additional
+C              static memory
+C              is tranferred to static memory
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+C
+C     memory common block
+C
+#include "memory_r.inc"
+C
+C     MEMMAR_I8 specific
+C
+      INTEGER*8 KADD
+C
+C     Two real*8 words, one added NPAD times before each array, another
+C     added NPAD times after each array
+C
+      DATA PAD1/0.123456789D0/
+      DATA PAD2/0.987654321D0/
+C
+#include "mxpdim.inc"
+#include "irat.inc"
+#include "wrkspc.inc"
+#include "lucipar_rel.inc"
+C
+      ILPRNT = 0
+      IF(ILPRNT .NE. 0 ) THEN
+        WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
+        WRITE(LUWRT,'(3A)') ' TASK , IDENT ', TASK,IDENT
+        WRITE(LUWRT,*) '  NS NL NM ',NS,NL,NM
+      WRITE(LUWRT,*) ' MEMMAR_I8: allocate array of length', KADD
+      END IF
+C
+      ISTOP = 0
+      ITSOK  = 1
+      IPRNTMP = 0
+C
+      IF(TASK(1:5).EQ.'PRINT') THEN
+        IPRNTMP = 1
+        NSNLI = NS + NL
+C
+      ELSE IF(TASK(1:3).EQ.'INI') THEN
+C
+C      Initialize
+C
+        NS = 0
+        NL = 0
+        NSNLI = 0
+        NM = 0
+        KFREES = KBASE
+        KFREEL = KBASE
+C
+C       Compute pointer to end element
+C
+        NWORD = KBASE + MXPWRD-1
+        IPRNTMP = 0
+        ISTOP = 0
+C
+C     First free word
+C
+      ELSE IF (TASK(1:4).EQ.'FREE') THEN
+        KBASE = KFREEL
+        NSNLI = NS+NL
+C
+C     Static memory
+C
+      ELSE IF(TASK(1:4).EQ.'ADDS') THEN
+        KBASE = KFREEL+NPAD
+        IF( IR .EQ. 1 ) THEN
+          KFREES = KFREEL +(KADD+1)/IRAT + 2*NPAD
+        ELSE IF( IR .EQ. 2) THEN
+          KFREES = KFREEL + KADD + 2*NPAD
+        ELSE
+          KFREES = KFREEL + KADD + 2*NPAD
+        END IF
+        IF ( KFREES-1 .GT. NWORD ) THEN
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' You can''t always get what you want'
+          WRITE(LUWRT,*) ' No, you can''t always get what you want'
+          WRITE(LUWRT,*) ' But if you try sometime, you may find '
+          WRITE(LUWRT,*) ' you get what you need '
+          WRITE(LUWRT,*) '                       Jagger/Richard '
+C
+          WRITE(LUWRT,*) ' MEMMAR : work array too short '
+          WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
+C
+          WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(LUWRT,'(20X,A,2X,2I15)')IDENT, KBASE, KADD
+          ISTOP = 1
+          IPRNTMP = 1
+          NSNLI = NS+NL
+          GOTO 1001
+        END IF
+        NS = NS + NL + 1
+        NL = 0
+        NSNLI = NS + NL
+        IF(NS.GT.MAXLVL) THEN
+          WRITE(LUWRT,*) ' Too many levels in MEMMAR '
+          write(LUWRT,*) ' NS has value  ',NS
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
+          Call Abend1( 11 )
+        END IF
+        IIDENT(NS) = IDENT
+        KFREEL = KFREES
+        IBASE(NS) = KBASE
+        DO 10 IPAD = 1, NPAD
+          WORK(KBASE-NPAD-1+IPAD) = PAD1
+          WORK(KFREEL-NPAD-1+IPAD) =  PAD2
+   10   CONTINUE
+C
+C     Local memory
+C
+      ELSE IF(TASK(1:4).EQ.'ADDL') THEN
+        KBASE = KFREEL+NPAD
+        IF( IR .EQ. 1 ) THEN
+          KFREEL = KFREEL +(KADD+1)/IRAT + 2*NPAD
+        ELSE IF( IR .EQ. 2) THEN
+          KFREEL = KFREEL + KADD + 2*NPAD
+        ELSE
+          KFREEL = KFREEL + KADD + 2*NPAD
+        END IF
+        IF ( KFREEL-1 .GT. NWORD ) THEN
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' You can''t always get what you want'
+          WRITE(LUWRT,*) ' No, you can''t always get what you want'
+          WRITE(LUWRT,*) ' But if you try sometime, you may find '
+          WRITE(LUWRT,*) ' you get what you need '
+          WRITE(LUWRT,*) '                       Jagger/Richard '
+
+          WRITE(LUWRT,*) ' MEMMAR : work array too short '
+          WRITE(LUWRT,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(LUWRT,'(24X,A,2X,2I15)')IDENT,KBASE,KADD
+          ISTOP = 1
+          IPRNTMP = 1
+          NSNLI = NS+NL
+          GOTO 1001
+        END IF
+        NL =  NL + 1
+        NSNLI = NS+NL
+        IF(NS+NL.GT.MAXLVL) THEN
+          WRITE(LUWRT,*) ' Too many levels in MEMMAR '
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
+          Call Abend1( 11 )
+        END IF
+        IIDENT(NS+NL) = IDENT
+        IBASE(NS+NL) = KBASE
+        DO 20 IPAD = 1, NPAD
+          WORK(KBASE-NPAD-1+IPAD) = PAD1
+          WORK(KFREEL-NPAD-1+IPAD) =  PAD2
+   20   CONTINUE
+C
+C     Flush local memory
+C
+      ELSE IF(TASK(1:5).EQ.'FLUSH') THEN
+        NSNLI = NS+NL
+        KFREEL = KFREES
+        NL = 0
+C       Flush output unit
+        LU6 = 6
+        CALL GFLUSH(LU6)
+      ELSE IF(TASK(1:4).EQ.'MARK') THEN
+C       Set a mark at current free address
+        NM = NM + 1
+        IF(NM.GT.MAXMRK) THEN
+          WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
+          WRITE(LUWRT,*) ' Increase MAXMRK from ', MAXMRK
+          Call Abend1( 11 )
+        END IF
+        MARKC(NM) = IDENT
+        MARK_ACT = IDENT 
+        IMARK(NM) = KFREEL
+        MARKL(NM) = NL
+        MARKS(NM) = NS
+        NSNLI = NS + NL
+      ELSE IF (TASK(1:5).EQ.'FLUSM') THEN
+        I_AM_INTOLERANT = 1
+        IF(I_AM_INTOLERANT.EQ.1.AND.IDENT(1:6).NE.MARK_ACT(1:6)) THEN
+          WRITE(LUWRT,*) ' Error in Flushing :  MARKS not consistent '
+          WRITE(LUWRT,'(A,A,A,A)')
+     &    ' Actual MARK and MARK to be flushed ',
+     &     IDENT,' versus ',MARK_ACT
+          STOP ' Error in memory flushing '
+        END IF
+C
+        NSNLI = NS+NL
+        KFREEL = IMARK(NM)
+        IF(KFREES.GT.IMARK(NM)) KFREES = IMARK(NM)
+        IF(NM.GT.1) MARK_ACT = MARKC(NM-1)
+        NL = MARKL(NM)
+        NS = MARKS(NM)
+        NM = NM - 1
+C       Flush output unit
+        LU6 = 6
+        CALL GFLUSH(LU6)
+      ELSE IF( TASK(1:5).EQ.'CHECK') THEN
+        NSNLI = NS+ NL
+      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
+C       compute current free memory
+        KBASE = NWORD - KFREEL - 1
+        NSNLI = NS+ NL
+      ELSE
+          WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
+          WRITE(LUWRT,*) ' Too confused to continue  '
+          Call Abend1( 11 )
+      END IF
+C
+C     Check paddings
+C
+      ICHECK = 1
+      ITSOK = 1
+      IF(TASK(1:5).EQ.'CHECK'.OR.ICHECK.EQ.1) THEN
+        DO 100 IL = 1, NSNLI
+          JBASE = IBASE(IL)
+          IF(IL.NE.NSNLI) THEN
+           JBASEN = IBASE(IL+1)
+          ELSE
+           JBASEN = KFREEL + 1
+          END IF
+          L1OK = 1
+          L2OK = 1
+          DO IPAD = 1, NPAD
+            IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
+     &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
+               ITSOK = 0
+               WRITE(LUWRT,*) ' Memory problem for : '
+               WRITE(LUWRT,*) '   Level (IL) ',IL
+               IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
+               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
+               IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
+               ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
+               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &          IIDENT(IL),IBASE(IL),'     -       OKAY '
+               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &            IIDENT(IL),IBASE(IL),'     -       OKAY '
+               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
+                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &          IIDENT(IL),IBASE(IL),'     -       -    '
+               END IF
+            END IF
+          END DO
+  100   CONTINUE
+      END IF
+ 1001 CONTINUE
+C
+        IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
+          WRITE(LUWRT,'(A,A)') ' Current task : ', TASK
+          WRITE(LUWRT,*) ' NS, NL, NSNLI',NS,NL,NSNLI
+          WRITE(LUWRT,'(A,A)') ' Current Identifier : ', IDENT
+          IF (ITSOK.EQ.0) THEN
+            WRITE(LUWRT,*) '  Sorry to say it , but memory is CORRUPTED'
+          END IF
+          WRITE(LUWRT,*) '  Memory map : '
+          WRITE(LUWRT,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
+          WRITE(LUWRT,*) '  ========== ==========  ========= ========= '
+          DO 200 IL = 1, NSNLI
+            JBASE = IBASE(IL)
+            IF(IL.NE.NSNLI) THEN
+             JBASEN = IBASE(IL+1)
+            ELSE
+             JBASEN = KFREEL + 1
+            END IF
+            L1OK = 1
+            L2OK = 1
+            DO 40 IPAD = 1, NPAD
+              IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
+   40       CONTINUE
+            DO 50 IPAD = 1, NPAD
+              IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
+   50       CONTINUE
+            IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &         IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
+            ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
+               WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
+     &         IIDENT(IL),IBASE(IL),'     -       -    '
+            END IF
+  200     CONTINUE
+C
+C         Marks
+C
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) '======='
+          WRITE(LUWRT,*) ' Marks '
+          WRITE(LUWRT,*) '======='
+          WRITE(LUWRT,*)
+C
+          WRITE(LUWRT,*) ' Identifier  Start of free memory '
+          WRITE(LUWRT,*) ' ================================='
+          DO JMARK = 1, NM
+            WRITE(LUWRT,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
+          END DO
+C
+        IF(ITSOK.EQ.0) 
+     &     Call Abend2( ' Error observed by  memory manager ' )
+        END IF
+C
       IF(ISTOP.NE.0) call Abend2
      &               ( ' Error observed by  memory manager ' )
       RETURN
