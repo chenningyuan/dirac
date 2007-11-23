@@ -59,7 +59,7 @@
    char *strwrk,*str;
    int returncode;
 
-   str    = (char *) diracmalloc(20);
+   str    = (char *) diracmalloc(35);
    if (mytid == 0)
    {
       strcpy(str,"DIRWRK");
@@ -72,7 +72,11 @@
    returncode = 0;
    if (strwrk != NULL)
    {
+#if defined (INT_STAR8)
+      *size = atol(strwrk);
+#else
       *size = atoi(strwrk);
+#endif
       if ( *size != 0 )
       {
          returncode = 1;

@@ -80,12 +80,20 @@
    {
      if ( ! mytid )
      {
+#if defined (INT_STAR8)
+      printf("Master   ( %s ): DIRAC allocating %li words of memory\n",un->nodename,*size);
+#else
       printf("Master   ( %s ): DIRAC allocating %i words of memory\n",un->nodename,*size);
+#endif
       fflush( stdout );
      }
      else
      {
+#if defined (INT_STAR8)
+      printf("Node %3i ( %s ): DIRAC allocating %li words of memory\n",mytid,un->nodename,*size);
+#else
       printf("Node %3i ( %s ): DIRAC allocating %i words of memory\n",mytid,un->nodename,*size);
+#endif
       fflush( stdout );
      }
      free(un);
@@ -94,12 +102,20 @@
    {
      if ( ! mytid )
      {
+#if defined (INT_STAR8)
+      printf("Master : DIRAC allocating %li words of memory\n",*size);
+#else
       printf("Master : DIRAC allocating %i words of memory\n",*size);
+#endif
       fflush( stdout );
      }
      else
      {
+#if defined (INT_STAR8)
+      printf("Node %3i : DIRAC allocating %li words of memory\n",mytid,*size);
+#else
       printf("Node %3i : DIRAC allocating %i words of memory\n",mytid,*size);
+#endif
       fflush( stdout );
      }
    }
