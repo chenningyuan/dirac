@@ -1137,18 +1137,18 @@ CSK...6-jul-07 new
 CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
-*
-      write(luwrt,*) 'L3BLOCK is',L3BLOCK
-      write(luwrt,*) 'LBLOCK is',LBLOCK
-      write(luwrt,*) 'LSCR2 is',LSCR2
-      write(luwrt,*) 'LSCR12 is',LSCR12
-      write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
+*     
+      IF( NTEST .gt. 5 )THEN
+        write(luwrt,*) 'L3BLOCK is',L3BLOCK
+        write(luwrt,*) 'LBLOCK is',LBLOCK
+        write(luwrt,*) 'LSCR2 is',LSCR2
+        write(luwrt,*) 'LSCR12 is',LSCR12
+        write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
+      END IF
 *
       call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
 *
-      write(LUWRT,*) 
-     &' Allocating LBLOCK in GET_3BLKS_REL: '
-     &  ,LBLOCK
+      write(LUWRT,*) ' allocate third vector of length: ', LCJRES_SAVE
       CALL FLSHFO(LUWRT)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
@@ -5853,7 +5853,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
       IF( I_SET_L2BLOCK .eq. 1 .and. NTEST .ge. 100 ) 
-     &  WRITE(LUWRT,*) ' allocating for three vectors of length:',LBLOCK
+     &  WRITE(LUWRT,*) ' allocate two vectors of length:',LBLOCK
 *
 *. Loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
@@ -6073,8 +6073,9 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-      IF( I_SET_L2BLOCK .eq. 1 ) 
-     &  WRITE(LUWRT,*) ' Allocating for three vectors of length:',LBLOCK
+      IF( I_SET_L2BLOCK .eq. 1 ) THEN 
+        WRITE(LUWRT,*) ' allocate two vectors of length:',LBLOCK
+      END IF
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
