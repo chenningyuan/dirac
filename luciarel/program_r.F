@@ -296,13 +296,13 @@ C
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
-#if defined (VAR_MPI2)
-      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA.0 (unit)',
-     &                 LUDIA
-#else
-      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA (unit)',
-     &                 LUDIA
-#endif
+CSK#if defined (VAR_MPI2)
+CSK      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA.0 (unit)',
+CSK     &                 LUDIA
+CSK#else
+CSK      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA (unit)',
+CSK     &                 LUDIA
+CSK#endif
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
@@ -652,7 +652,6 @@ CSK   work with INTEGER*8
         call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
         call rewino(LUSC61)
         WRITE(LUWRT,*)
-        WRITE(LUWRT,*) 'LUC,LUSC61,LUSC37',LUC,LUSC61,LUSC37
         WRITE(LUWRT,'(1H ,A,I3)')
      &  ' ***************************************************'
         WRITE(LUWRT,'(1H ,A,I3)')

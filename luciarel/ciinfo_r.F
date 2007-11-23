@@ -1148,7 +1148,20 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
       call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
 *
-      write(LUWRT,*) ' allocate third vector of length: ', LCJRES_SAVE
+      write(LUWRT,*) ' '
+      WRITE(LUWRT,'(3X,A)') 
+     & '=============================================================='
+      WRITE(LUWRT,'(3X,A)') 
+     & '==> allocation of two CI vectors and one resolution vector '
+      WRITE(LUWRT,'(3X,A,1X,I15)')
+     & 'current available free memory in double words:',LMEMFREE_PTR
+      WRITE(LUWRT,'(3X,A,1X,I15)')
+     & 'allocate two CI vector of length:             ',LBLOCK
+      WRITE(LUWRT,'(3X,A,1X,I15)')
+     & 'allocate resolution vector of length:         ',LCJRES_SAVE
+      WRITE(LUWRT,'(3X,A)') 
+     & '=============================================================='
+      write(LUWRT,*) ' '
       CALL FLSHFO(LUWRT)
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
@@ -5852,8 +5865,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-      IF( I_SET_L2BLOCK .eq. 1 .and. NTEST .ge. 100 ) 
-     &  WRITE(LUWRT,*) ' allocate two vectors of length:',LBLOCK
 *
 *. Loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
@@ -6030,8 +6041,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
         L2BLOCK        = LMEMFREE_PTR
-        WRITE(LUWRT,'(1X,A,1X,I20)')
-     & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
@@ -6073,9 +6082,6 @@ CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-      IF( I_SET_L2BLOCK .eq. 1 ) THEN 
-        WRITE(LUWRT,*) ' allocate two vectors of length:',LBLOCK
-      END IF
 *
 CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
