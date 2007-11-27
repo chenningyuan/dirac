@@ -522,6 +522,9 @@ copy_files()
             exitfunc \
          )
       echo "ok"
+      if [ "$EXTOUT" = .MOL ]; then
+	ln -s MOLECULE$EXTOUT MOLECULE.INP
+      fi
    else
       echo "not found"
       EXIT=1
