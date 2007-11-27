@@ -8,7 +8,7 @@ use mystring
 integer(kind=4), private :: iprint_vect=0
 
 type Vect
-private
+!private ! I had to release he private statement due to easy access to pointers !!!
 ! contains position on the PW (WORK) array 
   integer (kind=4) :: kstart 
 !   the total size on the array
@@ -911,6 +911,20 @@ if (iprint_vect >= 10) then
 endif
 call QEXIT('DeAlloc2DArray')
 end subroutine DeAlloc2DArray
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function Access_p_iA1D(self) result(vect_p_iA1D)
+!
+! ... only test routine ...
+!
+! ... does not work for manipulating with indexes (reading/printing) 
+! ... serves ONLY for passing POINTER
+!
+type(Vect), intent(in) :: self
+!real(kind=8), dimension(:), pointer :: vect_p_rA1D => NULL()
+integer, dimension(:), pointer :: vect_p_iA1D 
+vect_p_iA1D => self%p_iA1D
+end function Access_p_iA1D
 
 END MODULE Vectors
 

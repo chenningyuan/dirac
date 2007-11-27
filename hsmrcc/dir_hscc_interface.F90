@@ -8,7 +8,6 @@ subroutine HSCCINP(WORD,reset)
 ! Called from TRAINP
 !
 !
-!
 !-----------------------------------------------------------------------------
 
  use Dirac_HSMRCC  ! ... contains all parameters for the external HSMRCC code
@@ -124,13 +123,16 @@ subroutine HSMRCC_Dirac_input
 
 end subroutine HSMRCC_Dirac_input
 
-!
-!
-!
   subroutine print_HSMRCC_Dirac_info
+!------------------------------------------------------------
+!
+!
+!------------------------------------------------------------
 #include "priunit.h"
 
-  write(LUPRI,9001)
+   write(LUPRI,'(/2x,a/)') 'interface for eff. and intermed.Ham. HSMRCC method'
+
+!  write(LUPRI,9001)
 
 9001 format('                                                                 ',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
@@ -175,7 +177,12 @@ end subroutine HSMRCC_Dirac_input
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSCC_STUFF(WORK,LWORK)
-
+!----------------------------------------------------------------------------------
+!
+!
+!  Called from PAMTRA
+!
+!----------------------------------------------------------------------------------
 use Memory
 use Dirac_HSMRCC
 
@@ -186,6 +193,8 @@ real*8, intent(in) :: WORK(LWORK)
 logical :: check_point = .false.
 !logical :: check_point = .true.
 integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
+
+Call QEnter('HSCC_STUFF')
 
 write(LUPRI,*)
 write(LUPRI,*) 'in HSCC_STUFF !! LWORK=',LWORK
@@ -210,20 +219,11 @@ call read_mdcint ! read MDCINT file
 
 call UnstickMemory
 
+Call QExit('HSCC_STUFF')
 end subroutine HSCC_STUFF
 
 ! ----------------------------------
 
-subroutine read_moltra_integrals
- use io_moltra
-#include "priunit.h"
-!logical is_mdcint, is_mrconee
-open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
-write(LUPRI,*) 'MDCINT open...'
-! READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,  & 
-!                                       (KR(I),KR(-I),I=1,NKR)
-close(MDINT)
-end subroutine read_moltra_integrals
 
 subroutine read_mrconee
 
@@ -277,26 +277,159 @@ write (LUPRI,*) 'EPS1: ',(EPS1(ISP),ISP=1,NSP)
 
 end subroutine print_mrconee_data
 
+subroutine read_mdcint
+!----------------------------------------------------
 !
-!  ... read MDCINT 
+!    ... read MDCINT - testing purposes
 !
-subroutine  read_mdcint
+!----------------------------------------------------
+  ! use Memory
+   use Vectors
    use io_moltra
 #include "implicit.h"
 #include "priunit.h"
+
+type(Vect) :: indk_vect,indl_vect, indmo_vect
+type(Array2Dim) :: cbuf_vect
 
 logical :: is_mdc
 
 inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call QUIT('No MDCINT file!')
 
 open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
-write(LUPRI,*) 'MDCINT open...'
-!READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,( KR(I),KR(-I), I=1,NKR )
+write(LUPRI,'(//2x,a,i3)') 'MDCINT open...lu=',MDINT
 
-CLOSE (MDINT,STATUS='KEEP')
+READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,( KR(I),KR(-I), I=1,NKR )
 
- 10000 CALL QUIT('ERROR READING HEADER MDCINT')
+!READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR
+!READ (MDINT,ERR=10000,END=10000) (  KR(I),KR(-I), I=1,NKR )
 
+if (NKR > NSP2) then
+ call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
+endif
+
+    write(LUPRI,*) 'Info from MDCINT file'
+
+    write(LUPRI,'(A)') 'Integrals have been calculated on the'
+    write(LUPRI,'(A12,$,1X,A)') '      ',DATEX,' at ',TIMEX
+
+
+!do i = 1, NKR
+!  write(LUPRI,'(2x,a,i3,a,i3,a,i3)') 'i=',i,' kr(-i)=',KR(-i),' kr(i)=',KR(i)
+!enddo
+
+        write(LUPRI,*) 'NKR is ',NKR
+        write(LUPRI,*) 'KR array:'
+        do I=1,NKR,1
+          write(LUPRI,'(2I8)') KR(-I),KR(I)
+        end do
+
+!
+! ... read the rest ... integrals and indexes  ...
+! ... allocate memmory for integrals/indexes   ...
+!
+
+is_complex = .false.
+
+ilenght = NKR*NKR ! note: "ccdriv.F":1923 using RCW !!!
+
+indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+
+indl_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+
+cbuf_vect = Make2DimArray('REAL',ilenght,1,'MDCINT two-el. integrals')
+
+indmo_vect = MakeVector('INTE',NKR,'for MDCINT - indmo array')
+
+Call ZeroObject(indmo_vect)
+Call ZeroObject(indk_vect)
+Call ZeroObject(indl_vect)
+Call ZeroObject(cbuf_vect)
+
+do i=1,NKR ! fill...
+  indmo_vect%p_iA1D(i) = i
+enddo
+
+  MOINT = 0
+
+ 1 continue
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
+              (indk_vect%p_iA1D(INZ),INZ=1,NONZR,1),     & 
+              (indl_vect%p_iA1D(INZ),INZ=1,NONZR,1),     &
+              (cbuf_vect%p_rA2D(1,INZ),INZ=1,NONZR,1) 
+
+!   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
+!         (Access_p_iA1D(indk_vect)(INZ),INZ=1,NONZR),    & 
+!         (Access_p_iA1D(indl_vect)(INZ),INZ=1,NONZR),    &
+!               (cbuf_vect%p_rA2D(1,INZ),INZ=1,NONZR) 
+
+    write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
+   
+    MOINT = MOINT + 1
+
+    IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NONZR = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            GOTO 1
+         ENDIF
+    ENDIF
+
+  if (NONZR == -1) then
+   call Quit('NONZR == -1!')
+  endif
+
+ CLOSE (MDINT,STATUS='KEEP')
+
+ do i=1,NONZR
+   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+ enddo
+
+ write(LUPRI,*) 'nonzero integrals from MDCINT together with indexes read ... '
+
+ i = indmo_vect%p_iA1D(KR(IKR))
+ j = indmo_vect%p_iA1D(KR(JKR))
+
+ itr = indmo_vect%p_iA1D(KR(-IKR))
+ jtr = indmo_vect%p_iA1D(KR(-JKR))
+
+ SignIJ = SIGN(1,IKR) * SIGN(1,JKR)
+
+ do INZ = 1, NONZR
+  kkr = indk_vect%p_iA1D(INZ)
+  lkr = indl_vect%p_iA1D(INZ)
+  
+  k = indmo_vect%p_iA1D(KR(kkr))
+  l = indmo_vect%p_iA1D(KR(lkr))
+
+  ktr = indmo_vect%p_iA1D(KR(-kkr))
+  ltr = indmo_vect%p_iA1D(KR(-lkr))
+
+  SignKL = SIGN(1,kkr) * SIGN(1,lkr)
+
+! --> Original integral
+    IF (i.NE.0.AND.j.NE.0.AND.k.NE.0.AND.l.NE.0) THEN
+      write(LUPRI,'(4i3,1x,a,f22.14)')  i,j,k,l,':',cbuf_vect%p_rA2D(1,INZ)
+    ENDIF
+
+ enddo
+
+ return
+
+ 10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
+      CALL QUIT('ERROR READING HEADER MDCINT')
+
+ 10010 WRITE(6,'(/A/A,L10,2A)') & 
+      'END OF FILE branch taken when reading 2-e integrals', &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+       CALL QUIT('END OF FILE READING 2-E INTEGRALS')
+
+ 10020 WRITE(6,'(/A/A,L10,2A)')   &
+      'ERROR branch taken when reading 2-e integrals',  &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
 
 end subroutine  read_mdcint
 

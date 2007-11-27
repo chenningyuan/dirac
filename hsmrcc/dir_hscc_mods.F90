@@ -22,17 +22,23 @@ end module Dirac_HSMRCC
 module io_moltra
 !--------------------------------------------------
 !
+! ...  some stuff for reading moltra integrals ...
 !
 !--------------------------------------------------
 
 ! ... logical numbers ... 
-integer (kind=2) :: MDINT=20, MRCONEE=21
+!integer (kind=4) :: MDINT=20, MRCONEE=21
+integer :: MDINT=20, MRCONEE=21
 
 CHARACTER*10 DATEX,TIMEX*8
 real*8 :: ECORE
 
-!integer (kind=4) :: NSP
-integer  :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
+integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
+
+integer, parameter :: NSP2 = 300 ! static allocation 
+
+INTEGER KR(-NSP2:NSP2)
+
 CHARACTER*14 REPNT(16)
 
 integer, parameter :: MXREP=32,MAXSP=1000
@@ -42,6 +48,10 @@ integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
 real*8 EPS1(MAXSP)
 
 LOGICAL BREIT,SPFR
+
+CHARACTER*10 NEXTFIL
+
+logical :: is_complex
 
 end module io_moltra
 

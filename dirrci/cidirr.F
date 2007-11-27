@@ -2826,6 +2826,10 @@ C
 C
       CHARACTER*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
       CHARACTER*10 NEXTFIL
+      LOGICAL CHECK_INTS
+
+      CHECK_INTS = .FALSE.
+CMI   CHECK_INTS = .TRUE.
 C
 CTROND      REALAR = .TRUE.
       TRESINT = 1.D-12
@@ -2836,6 +2840,16 @@ CTROND      REALAR = .TRUE.
       OPEN(MDCINT,FILE=FNAM(2),FORM='UNFORMATTED')
       Read (mdcint,err=10000,end=10000) datex,timex,nkr,
      & (kr(i),kr(-i),i=1,nkr)
+
+      IF (CHECK_INTS) THEN
+        write(6,*) 'MDCINT control printout; datex=',datex,
+     &  ' timex=',timex,' nkr=',nkr
+        do i = 1, nkr
+         write(6,'(2x,a,i3,a,i3,a,i3)')
+     &   'i=',i,' kr(i)=',kr(i),' kr(-i)=',kr(-i)
+        enddo
+      ENDIF
+
       IF (2*NKR.NE.NORB) 
      &   CALL QUIT('MRCONEE AND MDCINT ARE INCOMPATIBLE')
       IF (BREIT) THEN
@@ -2876,6 +2890,10 @@ C
      &                (indk(inz),indl(inz),inz=1,nz),
      &                (rklr(inz),rkli(inz),inz=1,nz)
       ENDIF
+
+      IF (CHECK_INTS) THEN
+       write(6,*) 'read ikr,jkr,nz:',ikr,jkr,nz
+      ENDIF
 C
       MINT = MINT + NZ
       IF (IKR.EQ.0) THEN
@@ -2888,6 +2906,18 @@ C
             GOTO 30
          ENDIF
       ENDIF
+
+      IF (CHECK_INTS) THEN
+CMI     write(6,*) 'read MDCINT indexes, integrals;  indk, indl, rklr: '
+        write(6,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NZ
+        do i = 1, nz
+CMI      write(6,'(2x,a,i4,a,i4,a,i4,a,f16.6)')
+CMI  &   'i=',i,' indk(i)=',indk(i),
+CMI  &   ' indl(i)=',indl(i),' rklr(i)=',rklr(i)
+         write(6,*) indk(i),indl(i),rklr(i)
+        enddo
+      ENDIF
+
       If (nz.EQ.-1) GoTo 40 ! End of File
       i = indmo(kr(ikr))
       j = indmo(kr(jkr))
@@ -2906,6 +2936,12 @@ C--> Original integral
          IF (I.NE.0.AND.J.NE.0.AND.K.NE.0.AND.L.NE.0) THEN
          TWOR = RKLR(INZ)
          TWOI = RKLI(INZ)
+  
+          IF (CHECK_INTS) THEN
+           write(6,'(a,4i4,a,f12.6)') 'i,j,k,l=',i,j,k,l,
+     &     ' 2-el. integral:',TWOR
+          ENDIF
+
          IJ = (I-1) * NORB + J
          KL = (K-1) * NORB + L
          JI = (J-1) * NORB + I

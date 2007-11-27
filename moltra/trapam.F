@@ -47,6 +47,8 @@ C     Driver routine for 4-index transformation
 C
 C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
 C
+C     Called from main/dirac.F if DOTRA=.true.
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -454,14 +456,13 @@ C
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
 C
+      CALL FLSHFO(LUPRI)
 
 #if defined (MOD_HSCC)
       CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
       CALL QEXIT('PAMTRA')
-      CALL FLSHFO(LUPRI)
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
