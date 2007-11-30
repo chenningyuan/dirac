@@ -909,8 +909,19 @@ mpiccsd.x: GP_OBJ PD_OBJ \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
-
 EOF
+
+#
+#  ... compiler target for the external code
+#
+if [ -n "$HSCCMOD" ]; then
+cat <<EOF>> Makefile
+# ... target - HSMRCC external code
+hs: ;\
+	cd hsmrcc/hsmrcc_external; make  
+EOF
+fi
+
 #
 # Stand-alone DIRRCI
 #
