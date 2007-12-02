@@ -29,7 +29,7 @@ C=======================================================================
 !                   1         2         3         4
       DATA TABLE /'.XXXXXX','.2D    ','.3D    ','.QUANTI',
 !                   5         6         7         8
-     &            '.XXXXXX','.XXXXXX','.STRING','.INTEGR',
+     &            '.XXXXXX','.XXXXXX','.ORBSTR','.INTEGR',
 !                   9        10        11        12
      &            '.3DADD ','.CUBE  ','.COMMON','.FREQ+H',
 !                  13        14        15        16
