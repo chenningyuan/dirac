@@ -94,6 +94,95 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE GET_MEM_T_SCR_CC( MY_T_INFO )
+C
+C     Written by  S. Knecht         - November 28 2007
+C
+C**********************************************************************
+C
+C     routine for memory allocation of the scratch integral/density 
+C     block T 
+C     to use in parallel shared-memory MPI LUCIAREL runs
+C
+C     pointer has to be defined in calling routine as 
+C     POINTER (MY_T_SCR_PTR, T_SCR_CC(IDUMMY_BUFF_SZ))
+C
+C     IS_LENGTH_TT   stored on /LUCIPAR_I8/   (lucipar_rel.inc)
+C     MY_T_SCR_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+#include "mxdim_mpi2.h"
+#include "typesz_mpi2.h"
+#include "krmc_shmem.h"
+      LOGICAL CINFO
+      CINFO = .FALSE.
+C
+C     allocate T memory
+C
+      IF( MY_T_INFO .ne. 0 ) CINFO = .TRUE.
+C
+      CALL MPIXMEM_ALLOC( MY_T_SCR_PTR,1,IS_LENGTH_TT,MY_T_INFO,CINFO)
+C
+      END
+***********************************************************************
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_MEM_XINT_SCR( MY_XINT_INFO )
+C
+C     Written by  S. Knecht         - December 03 2007
+C
+C**********************************************************************
+C
+C     routine for memory allocation of the scratch integral 
+C     block XINT_SCR 
+C     to use in parallel shared-memory MPI LUCIAREL runs
+C
+C     pointer has to be defined in calling routine as 
+C     POINTER (MY_XINT_SCR_PTR, XINT_SCR(IDUMMY_BUFF_SZ))
+C
+C     LEN_ALL_INT       stored on /LUCIPAR_I8/   (lucipar_rel.inc)
+C     MY_XINT_SCR_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+#include "mxdim_mpi2.h"
+#include "typesz_mpi2.h"
+#include "krmc_shmem.h"
+      LOGICAL CINFO
+      CINFO = .FALSE.
+C
+C     allocate XINT_SCR memory
+C
+      IF( MY_XINT_INFO .ne. 0 ) CINFO = .TRUE.
+C
+      CALL MPIXMEM_ALLOC( MY_XINT_SCR_PTR, 1, LEN_ALL_INT, MY_XINT_INFO,
+     &                    CINFO)
+C
+      END
+***********************************************************************
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
       SUBROUTINE GET_T_WIN( T_BUFF, MY_T_COMM, MY_LEN_T )
 C
 C     Written by  S. Knecht         - November 17 2007
@@ -120,8 +209,9 @@ C
 C
 C     open T window
 C
-      CALL MPIXWINDOW_CRT( T_BUFF, MY_LEN_T, 1, ISIZE_dp, 
-     &                     MY_T_COMM, MY_T_WIN)
+csk      write(luwrt,*) ' GET_T_WIN: MY_LEN_T, ISIZE_dp, MY_T_COMM',
+csk     &                            MY_LEN_T, ISIZE_dp, MY_T_COMM
+      CALL MPIXWINDOW_CRT( T_BUFF, MY_LEN_T, 1, MY_T_COMM, MY_T_WIN)
 C
       END
 ***********************************************************************
@@ -158,6 +248,67 @@ C
 C     release memory
 C
       CALL MPIXMEM_FREE(T_BUFF)
+C
+      END
+***********************************************************************
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE REL_MEM_T_SCR( T_SCR_CC )
+C
+C     Written by  S. Knecht         - November 28 2007
+C
+C**********************************************************************
+C
+C     deallocate integral/density scratch block T_SCR_CC. 
+C
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "krmc_shmem.h"
+#include "lucipar_rel.inc"
+C
+C     release memory
+C
+      CALL MPIXMEM_FREE( T_SCR_CC )
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE REL_MEM_XINT_SCR( XINT_SCR )
+C
+C     Written by  S. Knecht         - November 28 2007
+C
+C**********************************************************************
+C
+C     deallocate integral scratch block XINT_SCR. 
+C
+C     
+C     Last revision:
+C
+***********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "krmc_shmem.h"
+#include "lucipar_rel.inc"
+C
+C     release memory
+C
+      CALL MPIXMEM_FREE( XINT_SCR )
 C
       END
 ***********************************************************************

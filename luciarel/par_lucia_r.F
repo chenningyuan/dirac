@@ -1639,9 +1639,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COLLECT_DENS_MAT(DENS_SCR,DENS,INDEX,IHINDX,
-     &                            SIGN,NASHT,LABEL,IOP_REO,SIGN_REO,
-     &                            ISF,ISHARE)
+      SUBROUTINE COLLECT_DENS_MAT(DENS_SCR,DENS,ISF,ISHARE)
 C
 C     Written by  S. Knecht         - June 27 2007
 C
@@ -1669,10 +1667,7 @@ C
 #include "ctcc.inc"
 #include "lucipar_rel.inc"
 *
-      dimension DENS(NALLINT),SIGN(NSPOBEX_TP), DENS_SCR(*)
-      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
-     &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
-     &          SIGN_REO(NSPOBEX_TP)
+      dimension DENS(NALLINT), DENS_SCR(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
       INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF
 *
@@ -1781,9 +1776,7 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COLLECT_DENS_MAT2(DENS_SCR,DENS,INDEX,IHINDX,
-     &                             SIGN,NASHT,LABEL,IOP_REO,SIGN_REO,
-     &                             ISF,ISHARE)
+      SUBROUTINE COLLECT_DENS_MAT2(DENS_SCR,DENS,ISF,ISHARE)
 C
 C     Written by  S. Knecht         - October 1 2007
 C
@@ -1811,10 +1804,7 @@ C
 #include "ctcc.inc"
 #include "lucipar_rel.inc"
 *
-      dimension DENS(NALLINT),SIGN(NSPOBEX_TP), DENS_SCR(*)
-      dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
-     &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
-     &          SIGN_REO(NSPOBEX_TP)
+      dimension DENS(NALLINT), DENS_SCR(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
       INTEGER*8 NINT_TOT, NINT_TP_I8,IRIOFF
 *
@@ -1853,16 +1843,155 @@ C
 *       loop over excitation types
 *
         do IXTP = 1,NSPOBEX_TP,1
-          write(LUWRT,*) '  '
-          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
-          write(LUWRT,*)        ' -------------------------'
-          write(LUWRT,*) '  '
+csk          write(LUWRT,*) '  '
+csk          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+csk          write(LUWRT,*)        ' -------------------------'
+csk          write(LUWRT,*) '  '
              NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
              XNINT_TP_I8 = REAL(NINT_TP_I8)
              NINT_TP = IGIVE_I_B(XNINT_TP_I8)
 *
-          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
-          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP =',NINT_TP
+csk          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
+csk          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP =',NINT_TP
+*
+          CALL DZERO(DENS_SCR,NINT_TP)
+*
+*
+          IF( ISHARE .eq. 0 )THEN          
+*
+            XXX = 0.0D0
+            XXX = DDOT(NINT_TP,DENS(IRIOFF+IRUN),1,DENS(IRIOFF+IRUN),1)
+*
+            IF( MYPROC .eq. MASTER )THEN
+              ISHCOLOR = 7
+            ELSE
+              IF( XXX .eq. 0.0D0 ) ISHCOLOR = 6
+              IF( XXX .ne. 0.0D0 ) ISHCOLOR = 7
+            END IF
+*           key value: MASTER will be MASTER again
+            ISHKEY = MYPROC
+*           new communicator for REDUCE on MASTER
+            CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
+     &                          ISHCOMM,IERR)
+*
+            IF( ISHCOLOR .eq. 6 ) GOTO 100
+*
+          END IF
+*
+*         start update 
+          IF( ISHARE .eq. 0 )THEN
+*           sum up partial density matrix elements on MASTER
+            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      MPI_SUM,ISHCOMM,MASTER)
+*
+*           copy back updated matrix elements
+            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
+*
+          ELSE IF( ISHARE .eq. 1 )THEN
+*           sum up partial density matrix elements on ALL CPUs
+            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
+     &                      MPI_SUM,MPI_COMM_WORLD, - 1 )
+*
+*           copy back updated matrix elements
+            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
+          END IF
+*         ^ update either MASTER or all CPUs
+  100     CONTINUE
+*
+          IF( ISHARE .eq. 0 ) CALL MPI_COMM_FREE(ISHCOMM,IERR)
+*
+*         keep track of correct offset
+          IRUN = IRUN + NINT_TP
+        end do
+*       ^ loop over excitation types
+      end do
+*     ^ loop over real and imag part of density matrix elements
+*
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE COLLECT_DENS_MAT_SM(DENS_SCR,DENS,ISF,ISHARE)
+C
+C     Written by  S. Knecht         - November 30 2007
+C
+C**********************************************************************
+C
+C     collect density matrix elements from all N_MASTER_SM to:
+C
+C                                           ISHARE = 0: MASTER  
+C
+C     density matrix DENS for current eigenvector is in SIGDEN ordering
+C     output: updated DENS
+C
+C     Last revision:     S. Knecht       - November  2007
+C
+************************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "ctcc.inc"
+#include "lucipar_rel.inc"
+*
+      dimension DENS(NALLINT), DENS_SCR(*)
+      INTEGER ISHCOMM, ISHCOLOR, ISHKEY
+      INTEGER*8 NINT_TOT, NINT_TP_I8,IRIOFF
+*
+      ISHCOLOR = 0
+      ISHKEY   = 0
+*
+      NINT_TOT = N1ELINT + N2ELINT
+*     check for quaternion algebra
+      if (ISF.eq.1) then
+        IRILP = 1
+      else
+        IRILP = 2
+      end if
+*
+*     loop over real and imag part of density matrix elements
+*
+      do IRI = 1,IRILP,1
+        IRUN = 1
+        IRIOFF = 0
+        do JRI = 1,IRI-1,1
+          IRIOFF = IRIOFF + NINT_TOT
+        end do
+        IF( NPTESTVAR .GE. 10 )THEN
+        write(LUWRT,*) '  '
+        write(LUWRT,*) '  '
+        write(LUWRT,'(2X,A)') 
+     &            'updating one- and two-particle densities '
+        write(LUWRT,*) '  '
+        write(LUWRT,'(2X,A,1X,I3)')' parallel update level ', ISHARE
+        write(LUWRT,*) '  '
+        if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
+        if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
+        write(LUWRT,*) ' -------------------------------'
+        END IF
+*       
+*       loop over excitation types
+*
+        do IXTP = 1,NSPOBEX_TP,1
+csk       write(LUWRT,*) '  '
+csk       write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+csk       write(LUWRT,*)        ' -------------------------'
+csk       write(LUWRT,*) '  '
+          NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+          XNINT_TP_I8 = REAL(NINT_TP_I8)
+          NINT_TP = IGIVE_I_B(XNINT_TP_I8)
+*
+csk       write(LUWRT,*) ' COLLECT_DENS_MAT_SM: NINT_TP_I8 =',NINT_TP_I8
+csk       write(LUWRT,*) ' COLLECT_DENS_MAT_SM: NINT_TP =',NINT_TP
+*
+          IF( MYNEW_ID_SM .ne. N_MASTER_SM ) NINT_TP = 0
 *
           CALL DZERO(DENS_SCR,NINT_TP)
 *
@@ -2185,8 +2314,7 @@ C
       CHARACTER*72 OLD_NAME
       INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
 C
-C     NTEST =  0
-      NTEST = 10
+      NTEST = 000
       INUMBER = 0
       IFINI = 0
       ICOUNT_GROUPS = 0
@@ -2273,7 +2401,9 @@ C
 C
 C     Transfer information to common block
 C
+#if defined (SYS_LOCALDISKS)
       NFLGRPS_REL = ICOUNT_GROUPS
+#endif
 C
       END
 ***********************************************************************
@@ -2282,7 +2412,117 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GROUP_CONSTRUCTOR_REL(IGROUPLIST,IPROCLIST)
+      SUBROUTINE FIND_GROUP_OF_PROCS_REL_SM(MYOWNNAME,MYNAMELENGTH,
+     &                                     IPROCLIST,NAMELENGTHLIST)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+C
+      DIMENSION IPROCLIST(NMPROC),NAMELENGTHLIST(NMPROC)
+      CHARACTER*72 PNAMELIST(NMPROC),MYOWNNAME,MYSCRNAME
+      CHARACTER*72 OLD_NAME
+      INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
+C
+      NTEST =  0
+csk      NTEST = 100
+      INUMBER = 0
+      IFINI = 0
+      ICOUNT_GROUPS = 0
+C
+C
+C     start with an all_gather of all name length
+C
+      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
+     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
+     &                   MPI_COMM_WORLD,IERR)
+C
+C     ... all name length are stored now!
+C     ... save own name in scratch array!
+C
+      PNAMELIST(MYPROC+1) = MYOWNNAME
+C
+C     ... we start to gather the names ... 
+      DO IPROC = 1, NMPROC
+C
+         MYSCRNAME = MYOWNNAME
+         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
+     &                 IPROC-1,MPI_COMM_WORLD,IERR)
+         IF( MYPROC .NE. IPROC -1 ) THEN
+           PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
+         END IF
+C
+      END DO
+C
+C     test writing if needed
+C
+      IF( NTEST .GE. 100 ) THEN
+       DO IPROC = 1, NMPROC
+        MYSCRNAME = PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
+        WRITE(LUWRT,'(2X,A,1X,I4,1X,A7,1X,A)')'Processor ',IPROC -1,
+     & ' alias ',MYSCRNAME(1:NAMELENGTHLIST(IPROC))
+C    & MYSCRNAME
+       END DO
+      END IF
+C
+C     find all processors on the same deck and reorder (if necessary) 
+C     to get the processors as close as possible, starting with the
+C     master 
+C
+      INUMBER = MASTER + 1
+ 100  CONTINUE
+      IFINI = 0
+      ICOUNT_GROUPS = ICOUNT_GROUPS + 1
+      OLD_NAME = PNAMELIST( INUMBER)(1:NAMELENGTHLIST( INUMBER))
+C
+      DO IPROC = 1, NMPROC
+C
+        MYSCRNAME(1:NAMELENGTHLIST(IPROC)) = 
+     &  PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
+C
+        IF(MYSCRNAME(1:NAMELENGTHLIST(IPROC)) .eq. 
+     &     OLD_NAME(1:NAMELENGTHLIST(INUMBER)))
+     &     IPROCLIST(IPROC) = INUMBER
+C
+      END DO
+C
+C     if finished: IFINI = 1, else 0
+C     search for the next lowest cpu building the 'local group master'
+C
+      IFINI = 1
+      DO IPRC = 1, NMPROC
+        IF(IFINI .ne. 0 .and. IPROCLIST(IPRC) .eq. -1 ) THEN
+          IFINI = 0
+          INUMBER = IPRC
+        END IF
+      END DO
+      IF(IFINI .eq. 0 ) GOTO 100
+C
+C     write the count of 'groups' formed by processes
+C
+      IF( NTEST .ge. 10) THEN
+        WRITE(LUWRT,'(2X,I4,1X,A)') ICOUNT_GROUPS,'group(s) of 
+     & processors found! '
+        IF( NTEST .ge. 50) THEN
+          WRITE(LUWRT,'(2X,A)') 'Complete listing:'
+          WRITE(LUWRT,*) '  '
+          CALL IWRTMAMN(IPROCLIST,1,NMPROC,1,NMPROC,LUWRT)
+        END IF
+        WRITE(LUWRT,*) '  '
+      END IF
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GROUP_CONSTRUCTOR_REL(IGROUPLIST,IPROCLIST,
+     &                                 IPROCLIST_SM)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
@@ -2292,9 +2532,11 @@ C
 #include "lucipar_rel.inc"
 C
       DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
-      INTEGER IKEY, ICOLOR, JKEY, JCOLOR
+      DIMENSION IPROCLIST_SM(NMPROC)
+      INTEGER IKEY, ICOLOR, JKEY, JCOLOR, KCOLOR, KKEY
+      ITEST = 00
 C
-C     intra-node communicator MYNEW_COMM
+C     'intra-node' communicator MYNEW_COMM ( I/O communicator )
 C
       IKEY = MYPROC
       ICOLOR = IPROCLIST(MYPROC+1)
@@ -2308,6 +2550,24 @@ C
       MYNEW_ID = 0
       CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
       CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+C
+C     true intra-node communicator MYNEW_COMM_SM ( "shared memory"
+C     communicator)
+C
+      KKEY = MYPROC
+      KCOLOR = IPROCLIST_SM( MYPROC + 1 )
+csk      WRITE(6,*) ' KKEY and KCOLOR for MYPROC',KKEY, KCOLOR, MYPROC
+C
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,KCOLOR,KKEY,
+     &                    MYNEW_COMM_SM,IERR)
+C
+C       collect useful information about each group,
+C       store on common block
+C
+      NEWCOMM_PROC_SM = 0
+      MYNEW_ID_SM     = 0
+      CALL MPI_COMM_SIZE(MYNEW_COMM_SM,NEWCOMM_PROC_SM,IERR)
+      CALL MPI_COMM_RANK(MYNEW_COMM_SM,MYNEW_ID_SM,IERR)
 C
 C     inter-node communicator ICOMM
 C
@@ -2337,6 +2597,14 @@ C
 C     store personal group number
 C
       MY_GROUPN = ICOLOR
+      IF ( ITEST .ge. 10 )THEN
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,*) ' OUTPUT FROM GROUP_CONSTRUCTOR_REL'
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,*) ' size of MYNEW_COMM   :',NEWCOMM_PROC
+        WRITE(LUWRT,*) ' size of MYNEW_COMM_SM:',NEWCOMM_PROC_SM
+        WRITE(LUWRT,*) ' size of ICOMM        :',ICOMM_SIZE
+      END IF
 C
       END
 ***********************************************************************
@@ -2345,7 +2613,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GROUP_DESTRUCTOR_REL(JCOMM1,JCOMM2)
+      SUBROUTINE GROUP_DESTRUCTOR_REL(JCOMM1,JCOMM2,JCOMM3)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
@@ -2355,7 +2623,8 @@ C
 #include "lucipar_rel.inc"
 C
       CALL MPI_COMM_FREE(JCOMM1,IERR)
-      CALL MPI_COMM_FREE(JCOMM2,IERR)
+      CALL MPI_COMM_FREE(JCOMM3,IERR)
+      IF( SHARED_M ) CALL MPI_COMM_FREE(JCOMM2,IERR)
 C
       END
 ***********************************************************************

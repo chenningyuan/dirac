@@ -348,7 +348,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAT_REL(DIAG,LUDIA,ECORE,ICISTR,IHAM12,
-     &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,
+     &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,T_BUFF,
      &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
      &           NPARBLOCK)
 *
@@ -442,11 +442,11 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
       if (IRECO.eq.1) then
         if (IHAM12.eq.1.or.IHAM12.eq.2) then
           call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),WORK(KPICI1),
-     &                   INTSPACE,ENVIRO,SIGDEN_ROUTE)
+     &                   INTSPACE,T_BUFF,ENVIRO,SIGDEN_ROUTE)
         end if
 *. Obtain 2e integrals needed for diagonal
         if (IHAM12.EQ.2.or.IHAM12.eq.3) then
-          call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),IDENSI,
+          call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),T_BUFF,IDENSI,
      &                    ISPINFREE,NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
      &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
         end if
@@ -533,7 +533,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_DIA_2E(UUUUC,UUUUE,UBBUE,IDENSI,ISPINFREE,
+      SUBROUTINE GET_DIA_2E(UUUUC,UUUUE,UBBUE,T_BUFF,IDENSI,ISPINFREE,
      &                      NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,ISPSF_MO,
      &                      ENVIRO,SIGDEN_ROUTE,IPRNT)
 *
@@ -563,11 +563,21 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 #include "orbinp.inc"
 #include "lucinp.inc"
 #include "ctcc.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 #include "integrals_off.inc"
 *
       dimension INDGATH(MXPORB),ISPSF_MO(MXNDGIRR,2),IKPERM(4),
      &          NGSOB(MXPOBS,MXPNGAS),NGSOB2(MXPOBS,MXPNGAS),
      &          NGSOBT(MXPNGAS),NGSOBT2(MXPNGAS)
+      DIMENSION T_BUFF(*)
+*     Input list of integrals (or in SIGDEN on WORK(KT_CC))
+*     Input list of integrals (or in SIGDEN in "shared memory"
+*     mode on T_BUFF (for "node master" == N_MASTER)
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
@@ -583,7 +593,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 * Read in indices from INDICES file
       IDUM = 1
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GTDIA2')
-      NINT12 = N1ELINT+N2ELINT
+      NINT12 = N1ELINT + N2ELINT
 *
 * UUUUC and UUUUE obtained from integral list 3
 *
@@ -670,9 +680,9 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
                 do I = 1+IOFF,NI+IOFF,1
                   do J = 1+JOFF,NJ+JOFF,1
                     call geth2dia_sigden(UUUUC(I,J),
-     &                                   WORK(KT_CC),
+     &                                   WORK(KT_CC),T_BUFF,
      &                                   I,J,
-     &                                   'COUL',                NINT12,
+     &                                   'COUL',NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,
      &                                   WORK(KMDIASV),              
@@ -769,9 +779,9 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
                 do I = 1+IOFF,NI+IOFF,1
                   do J = 1+JOFF,NJ+JOFF,1
                     call geth2dia_sigden(UUUUE(I,J),
-     &                                   WORK(KT_CC),
+     &                                   WORK(KT_CC),T_BUFF,
      &                                   I,J,
-     &                                   'EXC1',                NINT12,
+     &                                   'EXC1',NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,
      &                                   WORK(KMDIASV),              
@@ -872,9 +882,9 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
                   do I = 1+IOFF,NI+IOFF,1
                     do J = 1+JOFF,NJ+JOFF,1
                       call geth2dia_sigden(UBBUE(I,J),
-     &                                   WORK(KT_CC),
+     &                                   WORK(KT_CC),T_BUFF,
      &                                   I,J,
-     &                                   'EXC2',                NINT12,
+     &                                   'EXC2',NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS2,
      &                                   WORK(KMDIASV),              
@@ -919,7 +929,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GETH1DIA4(H1DIA_U,H1DIA_B,SPININTS,INTSPACE,
+      SUBROUTINE GETH1DIA4(H1DIA_U,H1DIA_B,SPININTS,INTSPACE,T_BUFF,
      &                     ENVIRO,SIGDEN_ROUTE)
 *
 * Fetch unbarred and barred diagonal one-electron integrals
@@ -940,14 +950,22 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 #include "cprnt.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
 #include "integrals_off.inc"
 *
       character*6 SIGDEN_ROUTE
 *
-*. Input list of integrals (or in SIGDEN on WORK(KT_CC))
+*     Input list of integrals (or in SIGDEN on WORK(KT_CC))
+*     Input list of integrals (or in SIGDEN in "shared memory"
+*     mode on T_BUFF (for "node master")  
       DIMENSION SPININTS(INTSPACE)
 *. Output
-      DIMENSION H1DIA_U(*),H1DIA_B(*)
+      DIMENSION H1DIA_U(*),H1DIA_B(*),T_BUFF(*)
 *. Just locally
       dimension IOBPTS_PIC(MXPNGAS+MXPR4T,MXPOBS)
       dimension IOBPTS2_PIC(MXPNGAS+MXPR4T,MXPOBS)
@@ -957,9 +975,9 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 *
       ZERO = 0.D0
       if (NTEST.ge.50) then
-         write(6,*) '----------------------------------------'
-         write(6,*) ' GETH1DIA4 speaking '
-         write(6,*) '----------------------------------------'
+         write(LUWRT,*) '----------------------------------------'
+         write(LUWRT,*) ' GETH1DIA4 speaking '
+         write(LUWRT,*) '----------------------------------------'
       end if
 *
       IDUM = 1
@@ -1054,28 +1072,28 @@ C                COPDIA(A,VEC,NDIM,IPACK)
             ISTART = NORBSM + 1
             IEND = NORBSM + NGSSH(ISMOB,IGAS)
             if (NTEST.ge.50) then
-              write(6,'(2X,A,5I4)') 'IGAS,ISMOB,NORBSM,ISTART,IEND',
+              write(LUWRT,'(2X,A,5I4)') 'IGAS,ISMOB,NORBSM,ISTART,IEND',
      &                               IGAS,ISMOB,NORBSM,ISTART,IEND
             end if
 * Check for occupation of current space
             if (MXNELGS(IGAS).ne.0) then
               IUB = 1
-              call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
+              call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),T_BUFF,
      &                             WORK(KMDIASV),              
      &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS,NTEST)
               call dcopy(NGSSH(ISMOB,IGAS),WORK(KLH1),1,
      &                   H1DIA_U(IOFFSD),1)
               IUB = 2
-              call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
+              call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),T_BUFF,
      &                             WORK(KMDIASV),              
      &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS2,NTEST)
               call dcopy(NGSSH(ISMOB,IGAS),WORK(KLH1),1,
      &                   H1DIA_B(IOFFSD),1)
             else
-              call setvec(H1DIA_U(IOFFSD),ZERO,NGSSH(ISMOB,IGAS))
-              call setvec(H1DIA_B(IOFFSD),ZERO,NGSSH(ISMOB,IGAS))
+              call dzero(H1DIA_U(IOFFSD),NGSSH(ISMOB,IGAS))
+              call dzero(H1DIA_B(IOFFSD),NGSSH(ISMOB,IGAS))
             end if
             IOFFSD = IOFFSD + NGSSH(ISMOB,IGAS)
           end do
@@ -1083,15 +1101,16 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       end if
 *
 *
+csk      NTEST = 00
       IF(NTEST.GE.10) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Diagonal integrals, unbarred '
-        WRITE(6,*)
-        CALL WRTMAT(H1DIA_U,1,NTOOB,1,NTOOB)
-        WRITE(6,*)
-        WRITE(6,*) ' Diagonal integrals, barred '
-        WRITE(6,*)
-        CALL WRTMAT(H1DIA_B,1,NTOOB,1,NTOOB)
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Diagonal integrals, unbarred '
+        WRITE(LUWRT,*)
+        CALL WRTMATMN(H1DIA_U,1,NTOOB,1,NTOOB,LUWRT)
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Diagonal integrals, barred '
+        WRITE(LUWRT,*)
+        CALL WRTMATMN(H1DIA_B,1,NTOOB,1,NTOOB,LUWRT)
       END IF
 *
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GT1DIA')
@@ -1104,7 +1123,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 ***********************************************************************
 * Get diagonal one-electron integrals in SIGDEN formalism.
 *
-      subroutine geth1dia_sigden(IUB,XOUT,XINT,
+      subroutine geth1dia_sigden(IUB,XOUT,XINT,T_BUFF,
      &                           MDIASV,N1E,N1DIAINT,NUMINT,
      &                           ISTART,IEND,IREOTS,IPRNT)
 *
@@ -1112,12 +1131,22 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+#include "krmc_shmem.h"
 *
-      dimension IREOTS(*),MDIASV(4,*)
-      dimension XINT(N1E),XOUT(*)
+      DIMENSION IREOTS(*),MDIASV(4,*)
+      DIMENSION XINT(N1E),XOUT(*),T_BUFF(*)
+      REAL*8 SXINT
+      COMMON/H1DIA_INT/SXINT
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
+csk      NTEST = 100
 *
       IZERO = 0
       ZERO = 0.D0
@@ -1132,11 +1161,41 @@ C         if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
 C    &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
           if (MDIASV(IUB,INT).eq.ISEA_REO.and.MDIASV(IUB+2,INT).eq.
      &        ISEA_REO.and.MDIASV(IUB+1,INT).eq.IZERO) then
+#if defined (VAR_MPI2)
+C
+C             fetch integral from memory window MY_T_WIN located 
+C             with current implementation on "node master".
+C
+              IF( SHARED_M )THEN
+                SXINT = 0.0D0
+                IF( MYNEW_ID_SM .ne. N_MASTER_SM ) THEN
+csk                  write(luwrt,*) ' SXINT,IPOSDIA(INT), MY_T_WIN',
+csk     &                             SXINT,IPOSDIA(INT), MY_T_WIN
+C
+C                 window offset: 0 --> IPOSDIA(INT) - 1
+C
+                  CALL MPIXGET(SXINT,1,2,N_MASTER_SM, IPOSDIA(INT) - 1,
+     &                         1,2,MY_T_WIN)
+csk                  write(luwrt,*) ' MYNEW_ID was calling MPIXGET',
+csk     &                             MYNEW_ID
+csk                  write(luwrt,*) ' with SXINT,IPOSDIA(INT), MY_T_WIN',
+csk     &                             SXINT,IPOSDIA(INT), MY_T_WIN
+                ELSE
+                  SXINT = T_BUFF( IPOSDIA(INT) )
+                END IF
+                if (NTEST.ge.100) then
+                write(LUWRT,'(A,I5,A,I5,A,1F18.12)')
+     &                  'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
+     &                  '  Integral ',SXINT
+                end if
+                XOUT(ICT) = SXINT
+                ICT = ICT + 1
+                GOTO 10
+              END IF
+C
+#endif
             if (NTEST.ge.100) then
-C             write(6,'(A,I5,A,I5,A,1F18.12)') 
-C    &                'Writing integral no. ',INT,'to ',ICT,
-C    &                '  Integral ',XINT(INT)
-              write(6,'(A,I5,A,I5,A,1F18.12)') 
+              write(LUWRT,'(A,I5,A,I5,A,1F18.12)') 
      &                'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
      &                '  Integral ',XINT(IPOSDIA(INT))
             end if
@@ -1146,16 +1205,16 @@ C           XOUT(ICT) = XINT(INT)
             goto 10
           end if
         end do
-        write(6,*) 'No integral found in geth1dia_sigden.'
-        write(6,*) 'Index pair ',ISEA_REO,ISEA_REO
-        stop 'Quitting.'
+        write(LUWRT,*) 'No integral found in geth1dia_sigden.'
+        write(LUWRT,*) 'Index pair ',ISEA_REO,ISEA_REO
+        CALL Abend2( 'Quitting in geth1dia_sigden.')
   10    continue
       end do
       if ((ICT-1).ne.NUMINT) then
-        write(6,*) 'Number of processed integrals: ',ICT-1
-        write(6,*) 'Number of diagonal elements  : ',NUMINT
-        write(6,*) 'Problem in geth1dia_sigden.'
-        stop 'Quitting.'
+        write(LUWRT,*) 'Number of processed integrals: ',ICT-1
+        write(LUWRT,*) 'Number of diagonal elements  : ',NUMINT
+        write(LUWRT,*) 'Problem in geth1dia_sigden.'
+        CALL Abend2( ' Quitting in geth1dia_sigden.')
       end if
 *
       return
@@ -1163,33 +1222,47 @@ C           XOUT(ICT) = XINT(INT)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+
 *                                                                     *
 ***********************************************************************
-* Get diagonal two-electron integrals in SIGDEN formalism.
-*   Timo Fleig, August 2001
-* Modified to account for integrals over true spinors, i.e.
-* explicit reference to unbarred (+) and barred (-) indices (IKFAC).
-* Revised routine.
-*   Timo Fleig, February 2002
-*
-      subroutine geth2dia_sigden(XOUT,XINT,ISEA,JSEA,TYPE,
+      subroutine geth2dia_sigden(XOUT,XINT,T_BUFF,ISEA,JSEA,TYPE,
      &                           N12,I2DIATP,IKFAC,IKPERM,
      &                           IREOTS,IREOTS2,MDIASV,N1DIAINT,
      &                           NDIAINT,IPRNT)
+*
+*     Get diagonal two-electron integrals in SIGDEN formalism.
+*     Timo Fleig, August 2001
+*
+*     Modified to account for integrals over true spinors, i.e.
+*     explicit reference to unbarred (+) and barred (-) indices (IKFAC).
+*
+*     Revised routine - Timo Fleig, February 2002
+*
+*     "shared memory" MPI implementation by Stefan Knecht - Nov. 2007
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "lucipar_rel.inc"
+#include "krmc_shmem.h"
 *
       character*4 TYPE
 *
       dimension IAC(2),JAC(2),         IKPERM(4),
      &          IREOTS(*),IREOTS2(*),MDIASV(4,*)           
-      dimension XINT(NINT12)
+      dimension XINT(NINT12), T_BUFF(*)
+      REAL*8 SXINT2
+      COMMON/H2DIA_INT/SXINT2
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
+csk      NTEST  = 100
 *
       IERROR = 1
       N2B = IBTSOSO_TP(I2DIATP)
@@ -1229,15 +1302,53 @@ C         L = INDEX(IKPERM(3),INT) * IKFAC
      &      J.eq.IREOTS(ISEA).and.
      &      K.eq.IREOTS2(JSEA).and.
      &      L.eq.IREOTS2(JSEA)) then
+#if defined (VAR_MPI2)
+C
+C             fetch integral from memory window MY_T_WIN located 
+C             with current implementation on "node master".
+C
+          IF( SHARED_M )THEN
+                SXINT2 = 0.0D0
+            IF( MYNEW_ID_SM .ne. N_MASTER_SM ) THEN
+csk                  write(luwrt,*) ' SXINT2,IPOSDIA(INT), MY_T_WIN',
+csk     &                             SXINT2,IPOSDIA(INT), MY_T_WIN
+C
+C                 window offset: 0 --> IPOSDIA(INT) - 1
+C
+              CALL MPIXGET(SXINT2,1,2,N_MASTER_SM, IPOSDIA(INT) - 1,
+     &                     1,2,MY_T_WIN)
+csk              write(luwrt,*) ' MYNEW_ID was calling MPIXGET',
+csk     &                         MYNEW_ID
+csk              write(luwrt,*) ' with SXINT2,IPOSDIA(INT), MY_T_WIN',
+csk     &                         SXINT2,IPOSDIA(INT), MY_T_WIN
+            ELSE
+              SXINT2 = T_BUFF( IPOSDIA(INT) )
+            END IF
+C
+            if (NTEST.ge.100) then
+              write(LUWRT,'(A,1X,A,1I4,3X,4I3,1F18.10)')
+     &        'Diagonal int type ',TYPE,
+     &        IPOSDIA(INT),(MDIASV(II,INT),II=1,4),
+     &        SXINT2
+
+            end if
+            XOUT = SXINT2
+            IERROR = 0
+C
+C           finished, next integral
+C
+            GOTO 10
+          END IF
+C
+#endif
           if (NTEST.ge.100) then
 C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
 C    &            'Diagonal int type ',TYPE,
 C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
-            write(6,'(A,1X,A,1I4,3X,4I3,1F18.10)') 
+            write(LUWRT,'(A,1X,A,1I4,3X,4I3,1F18.10)') 
      &            'Diagonal int type ',TYPE,
      &             IPOSDIA(INT),(MDIASV(II,INT),II=1,4),
      &             XINT(IPOSDIA(INT))
-            write(6,*)
           end if
 C         XOUT = XINT(INT)
           XOUT = XINT(IPOSDIA(INT))

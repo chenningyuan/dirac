@@ -42,7 +42,7 @@ C
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
      &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOT,LUINCI,
      &           IPRT,PEIGVC,NPRDET,IPNTR,NP1,NP2,NQ,
-     &           SCR1,ISCR1,SCR2,T_CC,
+     &           SCR1,ISCR1,SCR2,T_CC,T_BUFF,
      &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
@@ -202,18 +202,6 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
         END IF
       END IF
 *
-CSK#if defined (VAR_MPI2)
-CSK      WRITE(LUWRT,*) 'THIS IS MY LU1LIST'
-CSK      CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-CSK#endif
-*
-* ======================================================
-* Initial CI vectors are already on file LU1, do nothing
-* ======================================================
-*
-      IF (INICI.LT.0) WRITE(LUWRT,*)' Initial CI vector assumed 
-     & in place '
-*. Vectors assumed already in LU1
 *
 *                 ========================
 * 2 :                  Diagonalization
@@ -296,10 +284,10 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
       IF( IDCOMH .eq. 1 )THEN
 *
 #if defined(VAR_MPI2)
-        IF(NMPROC .gt. 1 ) THEN
-          WRITE(LUWRT,*)  ' I am sorry, but this route only works'
-          WRITE(LUWRT,*)  ' for one CPU'
-          CALL Abend2('STOP for IDCOMH == 1 and more than one CPU')
+        IF(NMPROC .ge. 1 ) THEN
+          WRITE(LUWRT,*)  ' I am sorry, but this route does not work'
+          WRITE(LUWRT,*)  ' at the moment'
+          CALL Abend2('STOP for IDCOMH == 1 ')
         END IF
 #endif
         CALL COMHAM(VEC1,VEC2,NDIM,T_CC,SIGDEN_ROUTE)
@@ -327,7 +315,7 @@ C#endif
 *
 #if defined (VAR_MPI2)
 *
-        call micdv4_enlmd_rel_par(T_CC,VEC1,VEC2,
+        call micdv4_enlmd_rel_par(T_CC,T_BUFF,VEC1,VEC2,
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,NROOTS,
      &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
@@ -342,7 +330,7 @@ C#endif
 *
 #else
 *
-        call micdv4_enlmd_rel(T_CC,VEC1,VEC2,LU1,LU2,
+        call micdv4_enlmd_rel(T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,LU3,LU4,LU5,LUDIA,NROOTS,
      &                  MAXVEC,NROOTS,WORK(KAPROJ),WORK(KAVEC),
@@ -352,24 +340,7 @@ C#endif
 *
 #endif
 *
-* Special optimizer designed for good preconditioning, therefore
-* only 3*NROOT subspace vectors maximum.
         IROOTHOMING = 0
-C       call micdv6_rel(T_CC,VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
-C    &                  EROOT,MXCIIT,LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,
-C    &                  MAXVEC,NROOT,WORK(KAPROJ),WORK(KAVEC),
-C    &                  WORK(KWORK),IPRT,NPRDIM,
-C    &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
-C    &                  LBLK,EIGSHF,THRES_E,
-C    &                  IROOTHOMING)
-C
-C
-C     SUBROUTINE MICDV6_REL(
-C    &                  VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MXCIIT,
-C    &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
-C    &                  APROJ,AVEC,WORK,IPRTXX,
-C    &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-C    &                  E_CONV,IROOTHOMING)
 *
       ELSE
 *. Complex numbers may be encountered
@@ -379,7 +350,8 @@ C    &                  E_CONV,IROOTHOMING)
         CALL CMICDV_PAR(VEC1,VEC2,WORK(KRNRM),
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
      &                  NROOTS,MAXVEC,NROOTS,
-     &                  T_CC,WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),
+     &                  T_CC,T_BUFF,WORK(KAPROJI),WORK(KAPROJ),
+     &                  WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
      &                  LBLK,EIGSHF,0,0,IHAM12,SIGDEN_ROUTE,
      &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
@@ -394,7 +366,7 @@ C    &                  E_CONV,IROOTHOMING)
         CALL CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,WORK(KRNRM),WORK(KEIG),
      &              SCR2(1),MXCIIT,
      &              NDIM,LU3,LU4,LU5,LU6,LUDIA,NROOTS,MAXVEC,NROOTS,
-     &              T_CC,
+     &              T_CC,T_BUFF,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &              0,0,IHAM12,SIGDEN_ROUTE,THRES_E)
@@ -838,7 +810,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 ***********************************************************************
       SUBROUTINE CMICDV(mv7_rel,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
      &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
-     &                  T_CC,
+     &                  T_CC,T_BUFF,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
@@ -997,7 +969,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
            if (SIGDEN_ROUTE.eq.'TRADIT') then
              call mv7_rel(VEC1,VEC2,LU3,LU4,INONREL)
            else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-             call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,1)
+             call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
            else
              write(LUWRT,*) 'Route for sigma and densities not allowed.'
              write(LUWRT,*) 'SIGDEN_ROUTE is ',SIGDEN_ROUTE
@@ -1248,7 +1220,7 @@ CTF
         if (SIGDEN_ROUTE.eq.'TRADIT') then
           call mv7_rel(VEC1,VEC2,LU3,LU4,INONREL)
         else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,1)
+          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
         end if
 *
         IF(IPRT.GE.10000) THEN
@@ -1604,7 +1576,7 @@ C!?      ITER = ITER - 1
         if (SIGDEN_ROUTE.eq.'TRADIT') then
           call mv7_rel(VEC1,VEC2,LUIN,LUOUT,0)
         else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-          call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,1
+          call sigden_ctrl(VEC1,VEC2,LUIN,LUOUT,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                   ,IDUMMY,IDUMMY,IDUMMY,IDUMMY,
      &                    IDUMMY,IDUMMY,IDUMMY
@@ -1729,7 +1701,8 @@ C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
 ***********************************************************************
 *
       SUBROUTINE MICDV6_REL(
-     &                  T_CC,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
+     &                  T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,
+     &                  MAXIT,
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,NPRDIM,
      &                  H0,IPNTR,NP1,NP2,NQ,H0SCR,
@@ -1780,7 +1753,7 @@ CTF
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION H0(*),IPNTR(1)
        DIMENSION H0SCR(*)
-       dimension T_CC(*)
+       dimension T_CC(*), T_BUFF(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -1850,7 +1823,7 @@ C?   &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
          CALL REWINO(LU6)
          CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
 CTF      CALL MV7(VEC1,VEC2,LU5,LU6)
-         call sigden_ctrl(VEC1,VEC2,LU5,LU6,T_CC,1)
+         call sigden_ctrl(VEC1,VEC2,LU5,LU6,T_CC,T_BUFF,1)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
          CALL REWINO(LU6)
          CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
@@ -2129,7 +2102,7 @@ C        ITER = ITER-1
 * Check timings for sigma vector generation
 C?        CALL GETTIM(CPUSIG1,WALLSIG1)
 CTF     CALL MV7(VEC1,VEC2,LU5,LU6)
-        call sigden_ctrl(VEC1,VEC2,LU5,LU6,T_CC,1)
+        call sigden_ctrl(VEC1,VEC2,LU5,LU6,T_CC,T_BUFF,1)
 C?        CALL GETTIM(CPUSIG2,WALLSIG2)
 C?        CPUTID = SECTID(CPUSIG2-CPUSIG1)
 C?        WALLTID = SECTID(WALLSIG2-WALLSIG1)
@@ -2643,7 +2616,7 @@ C      END IF
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE MICDV4_ENLMD_REL(T_CC,VEC1,VEC2,LU1,LU2,
+      SUBROUTINE MICDV4_ENLMD_REL(T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,
      &                  RNRM,EIG,FINEIG,MAXIT,
      &                  LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
@@ -2699,7 +2672,7 @@ C      END IF
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION H0(*),IPNTR(1)
-       DIMENSION H0SCR(*),T_CC(*)
+       DIMENSION H0SCR(*),T_CC(*), T_BUFF(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -2755,7 +2728,7 @@ C?       WRITE(6,*) ' Variational  solver '
          CALL REWINO(LU4)
          CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
 CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
-         call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,1)
+         call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
          CALL REWINO(LU4)
          CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
@@ -2990,7 +2963,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
         CALL REWINE(LU3,LBLK)
         CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
 CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
-        call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,1)
+        call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
         CALL REWINE(LU4,LBLK)
         CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
 *. Augment projected matrix

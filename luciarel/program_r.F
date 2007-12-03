@@ -38,7 +38,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,IPRNT,EREF,
+      SUBROUTINE GASCI_REL(F1,F2,T_BUFF,INTSPACE,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
@@ -95,6 +95,7 @@ C
       COMMON/CECORER/ECORE
 *
       DIMENSION F1(*), F2(*), IPROCLIST(*), IGROUPLIST(*)
+      DIMENSION T_BUFF(*)
       INTEGER*8 L_MAX_DENS_BLK
 *
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
@@ -157,8 +158,13 @@ C
       write(LUWRT,*) ' Number of determinants/combinations  ',NDET
 *     transfer NDET to common block LUCIPARREL
       L_COMBI = NDET 
+*     transfer IS_LENGHT_TT to common block LUCIPAR_I8
+      IS_LENGTH_TT = 0
+      IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
 *
-*     transfer to CANDS
+*     transfer to CANDS --> check for transition dipole moment runs!!!
+*     IMPLEMENT ME:  transition dipole moment calculations
+*
       ICSM = ISM
       ISSM = ISM
       ICSPC = ISPC
@@ -309,8 +315,8 @@ CSK#endif
         IRECO = 1
         CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
      &               WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
-     &               KPICI1,INTSPACE,IDENSI,NIRREP,ISPINFREE,ENVIRO,
-     &               SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
+     &               KPICI1,INTSPACE,T_BUFF,IDENSI,NIRREP,ISPINFREE,
+     &               ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
 *. End of real part
         CALL ITODS(-1,1,-1,LUDIA)
         IF (IRC.EQ.2) THEN
@@ -318,8 +324,8 @@ CSK#endif
           IRECO = 2
           CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
      &                 WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
-     &                 KPICI1,INTSPACE,IDENSI,NIRREP,ISPINFREE,ENVIRO,
-     &                 SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
+     &                 KPICI1,INTSPACE,T_BUFF,IDENSI,NIRREP,ISPINFREE,
+     &                 ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
 *. End of imaginary  part
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
@@ -335,6 +341,7 @@ CSK#endif
 *
 #if defined (VAR_MPI2)
 *
+      NPTEST_VAR = 00
       IF( NPTEST_VAR .ge. 10 ) THEN
       ITEST_OFF = 0
       DO ILPRECO = 1, IRECO
@@ -354,6 +361,7 @@ CSK#endif
       END DO
       
       ENDIF
+      NPTEST_VAR = 00
 *
 #endif
 
@@ -489,7 +497,7 @@ CSK          END IF
 #else
      &                       LUC,LUHC,
 #endif
-     &                       WORK(KT_CC),1
+     &                       WORK(KT_CC),T_BUFF,1
 #if defined (VAR_MPI2)
      &                      ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                       WORK(KBLOCKLIST),WORK(KNODELIST),
@@ -557,7 +565,7 @@ CSK   work with INTEGER*8
      &     NPRDET,WORK(KSBIDT),
      &     MXP1,MXP2,MXQ,
      &     WORK(KFINDMR),WORK(KFINDMI),WORK(KSCR2),
-     &     WORK(KT_CC),
+     &     WORK(KT_CC),T_BUFF,
      &     ECORE,ICISTR,LBLK,
      &     IDIAG,THRES_E,
      &     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
@@ -852,10 +860,13 @@ CSK   work with INTEGER*8
 C
 C         erase T amplitudes from sigma calculation
 C
-          call DZERO8(WORK(KT_CC),NTERMS)
-          if( NOOCCN_DENS_RUN ) THEN
+          IF( SHARED_M )THEN
+            IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
+              call DZERO8(T_BUFF,NALLINT)
+            END IF
+          ELSE
             call DZERO8(WORK(KT_CC),NALLINT)
-          endif
+          END IF
 *
          if (CIRUN.eq.'DENS1 ') then
             call rmemchk
@@ -899,7 +910,7 @@ C
 #else
      &                     LUSC61,LUSC62,
 #endif
-     &                     WORK(KT_CC),2
+     &                     WORK(KT_CC),T_BUFF,2
 #if defined (VAR_MPI2)
      &                    ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                     WORK(KBLOCKLIST),WORK(KNODELIST),
@@ -908,71 +919,105 @@ C
      &                   )
 *=======================================================================
 C
-C         read indices from cpu-specific file INDICES.'MYPROC'
-C         ( written in dist_ints_sigden --> interface_r.F )
+C         file INDICES.x
 C
-          IF( NOOCCN_DENS_RUN ) THEN
-csk            WRITE(LUWRT,*) ' ********************************'
-csk            WRITE(LUWRT,*) ' NO occupation number calculation'
-csk            WRITE(LUWRT,*) ' ********************************'
-            WRITE(LUWRT,*) ' '
-            WRITE(LUWRT,*) ' Allocating 4-index array of length',
-     &                       NTERMS*4
-            WRITE(LUWRT,*) ' '
+C         IF( .NOT. SHARED_M ) THEN
+C           read indices from cpu-specific file INDICES.'MYPROC'
+C           ( written in dist_ints_sigden --> interface_r.F )
+C         ELSE
+C           read indices from node-master specific file 
+C           ( written in dist_ints_sigden --> interface_r.F )
+C         ENDIF
 C
-            call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
-            call isetvc8(WORK(KINDEX),IZERO,NTERMS*4)
+C         SK-30-11-2007: since only LUCIAREL is parallel at present
+C                        it is sufficient to allocate the 4-INDEX-array
+C                        on the real (!) master
+C                         
+C         FIXME!!!       HAS TO BE CHANGED AS SOON AS THE COMPLETE
+C                        KR-MCSCF IS RUNNING IN PARALLEL!
 C
-          ELSE
-            WRITE(LUWRT,*) ' Allocating 4-index array of length',
-     &                       NALLINT*4
-            WRITE(LUWRT,*) ' '
+          IF( MYPROC .eq. MASTER )THEN
+            IF( NOOCCN_DENS_RUN ) THEN
+              WRITE(LUWRT,*) ' '
+              WRITE(LUWRT,*) ' Allocating 4-index array of length',
+     &                         NTERMS*4
+              WRITE(LUWRT,*) ' '
 C
-            call memmar_i8(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-            call isetvc8(WORK(KINDEX),IZERO,NALLINT*4)
+              call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
+              call isetvc8(WORK(KINDEX),IZERO,NTERMS*4)
+C
+            ELSE
+              WRITE(LUWRT,*) ' Allocating 4-index array of length',
+     &                         NALLINT*4
+              WRITE(LUWRT,*) ' '
+C
+              call memmar_i8(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
+              call isetvc8(WORK(KINDEX),IZERO,NALLINT*4)
+C
+            END IF
+C
+            call read_indices(WORK(KINDEX),NTERMS)
 C
           END IF
-C
-          call read_indices(WORK(KINDEX),NTERMS)
-C
+C         ^ MASTER !!!
           IPRDEN = 1
 *
 #if defined (VAR_MPI2)
 *
-          ISHARE_DENSM = 0
+          IF( SHARED_M )THEN
+C
+C           "shaerd memory" mode:
+C                                T_BUFF is up-to-date for each node
+C                                --> collection from N_MASTER_SM to
+C                                    MASTER
+            ISHARE_DENSM = 0
+C
+            IF( NOOCCN_DENS_RUN ) THEN
+              L_MAX_DENS_BLK = 0
+              L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC)
+              IF( MYNEW_ID_SM .ne. N_MASTER_SM ) L_MAX_DENS_BLK = 0
 *
-*         case 1: only MASTER will get all density matrix elements
-*             --> ISHARE_DENSM = 0
-*         case 2: density matrix elements on all CPUs
-*             --> ISHARE_DENSM = 1
+              CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
+     &                       1,'KDMBLK')
+              CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
 *
-          IF( ISHARE_DENSM .eq. 1 ) THEN
-            WRITE(LUWRT,*) ' WARNING: summation of density matrix '
-            WRITE(LUWRT,*) ' elements on ALL CPUs might cause ' 
-            WRITE(LUWRT,*) ' MPI memory problems !!! '
-            WRITE(LUWRT,*) ' (depending on your MPI implementation)'
-          END IF
-*
-          IF( NOOCCN_DENS_RUN ) THEN
-            L_MAX_DENS_BLK = 0
-            L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
-*
-            CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
-     &                     1,'KDMBLK')
-            CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
-*
-            CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
-     &                             WORK(KINDEX),
-     &                             WORK(KLIHIND),WORK(KSIGNNHX),NTOOB2,
-     &                             WORK(KLABEXTP),WORK(KLOP_REO),
-     &                             WORK(KSIOPREO),IRC,ISHARE_DENSM)
+              CALL COLLECT_DENS_MAT_SM(WORK(KMAX_DENS_BLK),T_BUFF,
+     &                               IRC,ISHARE_DENSM)
+            ELSE
+              CALL COLLECT_DENS_MAT_SM(F2,T_BUFF,IRC,ISHARE_DENSM)
+            END IF
+C
           ELSE
-            CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),
-     &                            WORK(KINDEX),
-     &                            WORK(KLIHIND),WORK(KSIGNNHX),NTOOB2,
-     &                            WORK(KLABEXTP),WORK(KLOP_REO),
-     &                            WORK(KSIOPREO),IRC,ISHARE_DENSM)
+*
+            ISHARE_DENSM = 0
+*
+*           case 1: only MASTER will get all density matrix elements
+*               --> ISHARE_DENSM = 0
+*           case 2: density matrix elements on all CPUs
+*               --> ISHARE_DENSM = 1
+*
+            IF( ISHARE_DENSM .eq. 1 ) THEN
+              WRITE(LUWRT,*) ' WARNING: summation of density matrix '
+              WRITE(LUWRT,*) ' elements on ALL CPUs might cause ' 
+              WRITE(LUWRT,*) ' MPI memory problems !!! '
+              WRITE(LUWRT,*) ' (depending on your MPI implementation)'
+            END IF
+*
+            IF( NOOCCN_DENS_RUN ) THEN
+              L_MAX_DENS_BLK = 0
+              L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
+*
+              CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
+     &                       1,'KDMBLK')
+              CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
+*
+              CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
+     &                               IRC,ISHARE_DENSM)
+            ELSE
+              CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),IRC,ISHARE_DENSM)
+            END IF
           END IF
+C         ^ SHARED_M
 *
 #endif
 *
@@ -983,35 +1028,71 @@ C
              write(LUWRT,*) '======================================='
              write(LUWRT,'(A,I4)') ' Density matrix for root ',JROOT_SCR
              write(LUWRT,*) '======================================='
-             call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
-     &                    WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
-     &                    WORK(KLOP_REO),WORK(KSIOPREO),IRC)
+             IF( SHARED_M )THEN
+               call wrtdens(T_BUFF,WORK(KINDEX),WORK(KLIHIND),
+     &                      WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
+     &                      WORK(KLOP_REO),WORK(KSIOPREO),IRC)
+             ELSE
+               call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
+     &                      WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
+     &                      WORK(KLOP_REO),WORK(KSIOPREO),IRC)
+             END IF
            END IF
           end if
 *
           IPRDEN = 00
-csk*         memory check 
-csk          call rmemchk
-*
+#if defined (VAR_MPI2)
+          IF( MYPROC .ne. MASTER ) GOTO 919
+#endif
 *
 *         transfer density matrices to KRMC format
 *
-          IF( NOOCCN_DENS_RUN )THEN
+          IF( SHARED_M )THEN
+C
+            IF( NOOCCN_DENS_RUN )THEN
 *
-            call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
-     &                        WORK(KLABEXTP),WORK(KLIHIND),
-     &                        WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+              call trnsfdens_no(F1,T_BUFF,WORK(KINDEX),
+     &                          WORK(KLABEXTP),WORK(KLIHIND),
+     &                          WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                          WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
 *
+            ELSE
+*
+              CALL DZERO(F2,LF2_ZERO)
+*
+              call trnsfdens(F1,F2,T_BUFF,
+     &                      WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                      WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                      WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+            END IF
+C
           ELSE
+            IF( NOOCCN_DENS_RUN )THEN
 *
-            CALL DZERO(F2,LF2_ZERO)
+              call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
+     &                          WORK(KLABEXTP),WORK(KLIHIND),
+     &                          WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                          WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
 *
-            call trnsfdens(F1,F2,WORK(KT_CC),
-     &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                    IRC,NTOOB2,IPRDEN)
+            ELSE
+*
+              CALL DZERO(F2,LF2_ZERO)
+*
+              call trnsfdens(F1,F2,WORK(KT_CC),
+     &                      WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                      WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                      WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+            END IF
           END IF
+*
+#if defined (VAR_MPI2)  
+C
+C        all slaves are waiting for the master which is transferring the
+C        densities...
+C
+ 919     CONTINUE
+         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+#endif        
 *
         else
           write(LUWRT,*) 'SIGDEN_ROUTE with unallowed value in gasci.'
@@ -1247,8 +1328,12 @@ C FIXME !!!
 *.              and do the transformation
 *.              of all integrals
 *
+C
+C       FIXME: SK-26-11-2007 implement use of T_BUFF for
+C              LUCIARELs-standalone version
+C
         call picasso(INTSPACE,ISO1,IPRTRA,
-     &               NL2D,IUB2D,ISM2D)
+     &               NL2D,IUB2D,ISM2D,T_BUFF)
         write(6,*) 'Integrals transformed and/or distributed.'
 *
 *

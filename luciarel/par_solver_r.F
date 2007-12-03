@@ -44,7 +44,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MICDV4_ENLMD_REL_PAR(T_CC,VEC1,VEC2,
+      SUBROUTINE MICDV4_ENLMD_REL_PAR(T_CC,T_BUFF,VEC1,VEC2,
      &                  RNRM,EIG,FINEIG,MAXIT,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,LBLK,EIGSHF,
@@ -101,7 +101,7 @@ C
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
-       DIMENSION T_CC(*), RCCTOS(*), SCRRED(*)
+       DIMENSION T_CC(*), RCCTOS(*), SCRRED(*), T_BUFF(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -202,7 +202,7 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *        start calculation: sigma = H x C
 *
 *=======================================================================
-         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
+         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS
@@ -413,7 +413,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         sigmatime = MPI_WTIME()
 *
 *=======================================================================
-        call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
+        call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS
@@ -667,7 +667,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CMICDV_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,
-     &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,
+     &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,T_BUFF,
      &                      APROJI,APROJR,AVEC,WORK,IPRT,
      &                      NPRDIM,IPNTR,LBLK,EIGSHF,
      &                      IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
@@ -845,7 +845,7 @@ CSK      end if
 *        start calculation: sigma = H x C
 *
 *=======================================================================
-         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
+         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS
@@ -1122,7 +1122,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         sigmatime = MPI_WTIME()
 *
 *=======================================================================
-        call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,1
+        call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS

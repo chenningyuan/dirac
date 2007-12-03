@@ -1660,11 +1660,15 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       subroutine itrctl(INTSPACE,ITRA_TYPE,INTITER,
      &                  ENVIRO,ISPINFREE,IFOCKEX,NORB_FULL,
      &                  NL2D,IUB2D,ISM2D,ISYM_T,SIGDEN_ROUTE,
-     &                  F1,F2,IBOSYM,MCSCF,CIRUN)
+     &                  F1,F2,T_BUFF,IBOSYM,MCSCF,CIRUN)
 *
 *---------------------------------------------------
 *  Written by Timo Fleig (including all subroutines)
 *---------------------------------------------------
+*
+*  Implementation of MPI "shared" memory version 
+*  (use of T_BUFF) by Stefan Knecht  
+*
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
@@ -1683,6 +1687,11 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #include "oper.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
+#if defined (VAR_MPI2)
+#include "krmc_shmem.h"
+#include "mxdim_mpi2.h"
+      POINTER (MY_XINT_SCR_PTR, XINT_SCR(IDUMMY_BUFF_SZ))
+#endif
 *
 #include "dgroup.h"
 *
@@ -1691,8 +1700,9 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       character*6 CIRUN
       character*1 COORD
       logical MCSCF
-      dimension INTEG(1000)
+      dimension INTEG(1000), T_BUFF(*)
       dimension NORB_FULL(MXPIRR)
+      integer*8 IDUMMY_LENGTH
 *
 * ITRA_TYPE       Defines the type of transformation
 *---------------------------------------------------
@@ -1823,17 +1833,30 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       end if
 *
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-* Allocate for required integrals/densities only
+C
         if (NZ.eq.1.or.ISPINFREE.eq.1) then
           IRIMLT = 1
         else
           IRIMLT = 2
         end if
+C
+C       number of integrals/density elements
+C
         NALLINT = LEN_T_VEC * IRIMLT
-        write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
-        CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
-*
-* Diagonal integrals
+C
+C       allocate integral/density array (if necessary)
+C
+        IF( SHARED_M ) THEN
+          write(LUWRT,*) ' Allocated for ',NALLINT,' integrals.'
+          IDUMMY_LENGTH = 0
+          CALL MEMMAR_I8(KT_CC,IDUMMY_LENGTH,'ADDS  ',2,'KT_CC ')
+        ELSE
+          write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
+          CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
+        END IF
+C
+C       diagonal integrals
+C
         NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
         IF( NDIAMINT .gt. MXINT_DIA ) THEN
           WRITE(LUWRT,*) ' STOP in subroutine itrctl !!!'
@@ -1850,12 +1873,12 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       end if
 *
 *
-      LMEMFREE = 0
-      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
-      LMEMFREE       = LMEMFREE_PTR
+csk      LMEMFREE = 0
+csk      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
+csk      LMEMFREE       = LMEMFREE_PTR
 *
-      WRITE(LUWRT,'(1X,A,1X,I20)')
-     & '  Current available free memory in double words:',LMEMFREE
+csk      WRITE(LUWRT,'(1X,A,1X,I20)')
+csk     & '  Current available free memory in double words:',LMEMFREE
 *
 ************************************************
 * Set mark for flushing local memory
@@ -1872,6 +1895,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
         call memmar(KDUMAR,NDIM_TOT*2,'ADDL  ',2,'DUMARR')
         call memmar(KIDUMAR,NDIM_TOT*2,'ADDL  ',1,'IDUMAR')
         call memmar(KDIONEE,2*NUM_ONEI,'ADDL  ',2,'IDIONE')
+csk     write(luwrt,*) 'allocating NUM_ONEI stuff',NUM_ONEI
+csk     write(luwrt,*) 'checking NDIM_TOT',NDIM_TOT
         NUM_TWEI = (2*NDIM_TOT)**4
         if (INTIMP.eq.6) then
           call memmar(KDITWOE,2*NUM_TWEI,'ADDL  ',2,'IDITWO')
@@ -2454,6 +2479,9 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                           NL2D,IUB2D,ISM2D,
      &                           ITRALINE,NDIM_TOT,NDIM_TOT2,
      &                           IHAM12,ISPINFREE,IMXDIM,DOUGRP)
+C
+C         distribute 1-/2- e- integrals in SIGDEN formalism
+C
           else if (SIGDEN_ROUTE.eq.'SIGDEN') then
 *
             call memmar(KISTR_CA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CA')
@@ -2464,14 +2492,41 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
             IF( CIRUN .eq. 'CIINII' )THEN
 *
 csk           WRITE(LUWRT,*) ' LEN_ALL_INT is', LEN_ALL_INT
-              CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+#if defined (VAR_MPI2)
+C
+C             dynamic allocation of scratch XINT block (only N_MASTER_SM)
+C             --> use in "shared memory" MPI runs, MPI info available
+C             if IS_DUMMY > 0 and info im[lemented
+C
+              IF( SHARED_M ) THEN
+C
+                IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
+                  IS_DUMMY = 0
+                  CALL GET_MEM_XINT_SCR( IS_DUMMY )
+                END IF
+C
+csk        WRITE(LUWRT,*) ' XINT_SCR  allocated with length',LEN_ALL_INT
+C
+              END IF
+C
+#endif
+              IF( .NOT. SHARED_M ) THEN
+                CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+              END IF
 *
 *             parallel run - broadcast integrals from MASTER if required
 *
               IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
 *
-                CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                                WORK(KINTI12),NTEST)
+                IF( SHARED_M ) THEN
+                   IF( MYNEW_ID_SM .eq. N_MASTER_SM ) THEN
+                     CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
+     &                                     XINT_SCR,NTEST)
+                   END IF
+                ELSE
+                   CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
+     &                                   WORK(KINTI12),NTEST)
+                END IF
 *
               END IF
 #if defined (VAR_MPI2)
@@ -2486,26 +2541,70 @@ csk           WRITE(LUWRT,*) ' LEN_ALL_INT is', LEN_ALL_INT
                  WRITE(LUWRT,*) ' reading permissions to slaves!       '
                  Call Abend2(' no integral broadcast possible')
                 END IF
-                CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
-     &                         MASTER,MPI_COMM_WORLD,IERR)
+                IF( SHARED_M ) THEN
+C
+C                 divide ...                
+C
+                  IXINT_COLOR = 1
+C
+                  IF( MYNEW_ID_SM .eq. N_MASTER_SM ) IXINT_COLOR = 4
+                  IXINT_KEY   = MYPROC
+C
+C                 split MPI_COMM_WORLD into N_MASTER_SM and slaves
+C                 MASTER is always included...
+C
+                  CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,IXINT_COLOR,
+     &                                IXINT_KEY,IXINT_COMM,IERR)
+C
+                  IF( IXINT_COLOR .eq. 1 ) GOTO 818
+C
+C                 communicate integrals
+C
+                  CALL MPI_BCAST(XINT_SCR,LEN_ALL_INT,MPI_REAL8,
+     &                                 MASTER,IXINT_COMM,IERR)
+ 818              CONTINUE
+C
+C                 reunite 
+C
+                  CALL MPI_COMM_FREE(IXINT_COMM,IERR)
+C
+                ELSE
+                  CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
+     &                                 MASTER,MPI_COMM_WORLD,IERR)
+                END IF
               END IF
 #endif
-*
-csk           WRITE(LUWRT,*) ' calling dist_ints_sigden with NDIM_TOT2', 
-csk  &                         NDIM_TOT2
-*
-              call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              WORK(KISTR_CA),WORK(KISTR_CB),
-     &                              WORK(KISTR_AA),WORK(KISTR_AB),
-     &                              NDIM_TOT2,F1,WORK(KINTI12),
-     &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,NTEST)
+C
+C             integrals on WORK(KINTI12) / F1-F2 --> 
+C             distribute to WORK(KT_CC) resp. T_BUFF!
+C
+C             IF( SHARED_M ) integrals on XINT_SCR
+C
+              IF( SHARED_M ) THEN
+                call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                                WORK(KLSOBEX),WORK(KT_CC),
+     &                                T_BUFF,
+     &                                WORK(KISTR_CA),WORK(KISTR_CB),
+     &                                WORK(KISTR_AA),WORK(KISTR_AB),
+     &                                NDIM_TOT2,F1,XINT_SCR,
+     &                                WORK(KMDIASV),IBOSYM,
+     &                                WORK(KLABEXTP),CIRUN,NTEST)
+              ELSE
+                call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                                WORK(KLSOBEX),WORK(KT_CC),
+     &                                T_BUFF,
+     &                                WORK(KISTR_CA),WORK(KISTR_CB),
+     &                                WORK(KISTR_AA),WORK(KISTR_AB),
+     &                                NDIM_TOT2,F1,WORK(KINTI12),
+     &                                WORK(KMDIASV),IBOSYM,
+     &                                WORK(KLABEXTP),CIRUN,NTEST)
+              END IF
 *
             ELSE
 *
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
+     &                              T_BUFF,
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,F2,
@@ -2514,16 +2613,21 @@ csk  &                         NDIM_TOT2
 *
             END IF
 *           ^ CIRUN eq CIINII
-*
-C     subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-C                                 ISOBEX,T,
-C    &                            ISTR_CA,ISTR_CB,
-C                                 ISTR_AA,ISTR_AB,
-C    &                            INDEX,
-C                                 NASHT,F1,F2,IBOSYM,
-C    &                            IBSPOBEX_TP,IHINDX,
-C                                 LABEL,CIRUN,IPRNT)
-C           stop 'AFTER DIST_INTS_SIGDEN.'
+C
+#if defined (VAR_MPI2)
+C
+C           diagonal integral arrays ...
+C    
+            IF( SHARED_M) THEN
+              CALL  MPI_BCAST(WORK(KMDIASV),4*NDIAMINT,my_MPI_INTEGER,0,
+     &                        MYNEW_COMM,IERR)
+              CALL  MPI_BCAST(IPOSDIA,        NDIAMINT,  MPI_INTEGER8,0,
+     &                        MYNEW_COMM,IERR)
+            END IF
+       
+C
+#endif
+C
           end if
         end if
       else
@@ -2531,17 +2635,33 @@ C           stop 'AFTER DIST_INTS_SIGDEN.'
         write(LUWRT,*) 'IFOCKEX is  ',IFOCKEX
         Call Abend2( 'Quitting.' )
       end if
-*     ^ End if external Fock matrix active or not
-*
+C     ^ end if external Fock matrix active or not
+C
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
         write(LUWRT,*)
         write(LUWRT,*) ' Number of integrals/CC amplitudes: ',NALLINT
         write(LUWRT,*) ' (including imaginary parts) '
       end if
-*
-*  Flush local memory to mark set at beginning of do loop
+C
+C     flush local memory to mark set at beginning of do loop
+C
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
-*
+C
+#if defined (VAR_MPI2)
+C
+C     release scratch memory 
+C
+      IF( CIRUN .eq. 'CIINII' .and. SIGDEN_ROUTE.eq.'SIGDEN' ) THEN
+C
+        IF( SHARED_M ) THEN
+          IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
+            CALL REL_MEM_XINT_SCR( XINT_SCR )
+          END IF
+        END IF
+C
+      END IF
+#endif
+C
       call qexit('ITRCTRL')
       return
       end
@@ -2992,7 +3112,7 @@ C           stop 'AFTER DIST_INTS_SIGDEN.'
 *** (poor picasso is merely one of LUCIAREL's subroutines ... :-(
 ***
       subroutine picasso(INTSPACE,ISOOP,IPRTRA,MCSCF,
-     &                   NL2D,IUB2D,ISM2D,F1,F2,IBOSYM,CIRUN)
+     &                   NL2D,IUB2D,ISM2D,F1,F2,T_BUFF,IBOSYM,CIRUN)
 *
 *******************************************************************
 *  !!!  INATIT states iteration point for natural spinor method !!!
@@ -3068,7 +3188,7 @@ C     write(6,*) '     *******************************************'
 *
       call itrctl(INTSPACE,ITRA_TYPE,INTITER,ENVIRO,
      &            ISPINFREE,IFOCKEX,NORB_F,NL2D,IUB2D,ISM2D,ISYM_T,
-     &            SIGDEN_ROUTE,F1,F2,IBOSYM,MCSCF,CIRUN)
+     &            SIGDEN_ROUTE,F1,F2,T_BUFF,IBOSYM,MCSCF,CIRUN)
 *
       return
       end

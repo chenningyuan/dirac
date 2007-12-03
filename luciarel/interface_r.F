@@ -1266,7 +1266,11 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *  Timo Fleig, August 25, 2003
 *----------------------------------------------
 *
+*  Implementation of T_BUFF use for MPIs "shared" memory version
+* 
+*
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
+     &                            T_BUFF,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
      &                            NASHT,F1,F2,MDIASV,IBOSYM,
      &                            LABEL,CIRUN,IPRNT)
@@ -1303,7 +1307,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
      &          IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
-      dimension T(NALLINT)
+      dimension T(NALLINT), T_BUFF(*)
 *
 * Space for the construction of SUBSTRINGS
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
@@ -1312,7 +1316,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 0
+      NTEST = 00
 *
 * Constants
       IZERO = 0
@@ -1362,7 +1366,8 @@ C       call reo_info_molcas()
         end if
       end if
 *
-* Open ASCII unit for checking integral sorting information
+*     open ASCII file for checking integral sorting information
+*
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
@@ -1372,17 +1377,30 @@ C       call reo_info_molcas()
         end if
       end if
 *
-* File for saving index sequence
+*    open file for saving index sequence
+*
       LUINSV = LUSC95
       open(unit=LUINSV,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
       rewind(LUINSV)
-*
-* Loop over real/imaginary part
+C
+C     set counter to start value and initialize
+C
       ICOUNT_I8 = 1
       NDIAINT = 0
       N1DIAINT = 0
       N2DIAINT = 0
+C
+C     "shared" memory mode - only "node master" needed
+C
+#if defined (VAR_MPI2)      
+      IF( SHARED_M ) THEN
+        IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 300
+      END IF
+#endif
+*
+*     Loop over real/imaginary part
+*
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
@@ -1738,7 +1756,7 @@ C       call reo_info_molcas()
 *  Apply only to 2-electron integrals:
 *
                           YXINT = ZERO
-                          YINT = ZERO
+                          YINT  = ZERO
                           if (IXCH.eq.1) then
 * Index sequence reads:
 *  (IJ|KL) (which is not the operator sequence for the desired int!)
@@ -1870,36 +1888,72 @@ C    &             ' at ',ICOUNT_I8
                               call getint_sigden(YINT,INDEX(1),
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
                             end if
-*
-                            T(ICOUNT_I8) = YINT - YXINT
-*
-* FIXME !! Uncommented sign here!!
+C
+csk                              write(luwrt,*) ' YINT - YXINT, ICOUNT_I8',
+csk     &                                         YINT - YXINT, ICOUNT_I8
+                            IF( SHARED_M ) THEN
+                              T_BUFF( ICOUNT_I8 ) = YINT - YXINT
+                            if (IXCH.eq.1) 
+     &                        T_BUFF( ICOUNT_I8 ) = - T_BUFF(ICOUNT_I8) 
+                            ELSE
+                              T(ICOUNT_I8) = YINT - YXINT
+C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
-* FIXME !! Uncommented sign here!!
-*
-                            if (NTEST.ge.1) then
-                              if (NTEST.ge.10)
-     &                            write(6,'(A,I4,A,4I3,A,1F18.12)') 
-     &                                  'INTEGRAL no. ',ICOUNT_I8,'(',
-     &                                   (INDEX(M),M=1,4),
-     &                                  ') Value: ',T(ICOUNT_I8)
-*                           write integral to file (for debugging):
-                              if (IXCH.eq.0) then
-                                write(LUINGR,'(I4,4X,4I3,1F18.14)') 
-     &                                ICOUNT_I8,INDEX(1),
-     &                                       INDEX(2),
-     &                                       INDEX(3),
-     &                                       INDEX(4),T(ICOUNT_I8)
-                              else
+C FIXME !! Uncommented sign here!!
+                            END IF
+C                           ^ SHARED_M ?
+C                        
+                            IF( SHARED_M ) THEN 
+                              if (NTEST.ge.1) then
+                                if (NTEST.ge.10)
+     &                              write(6,'(A,I4,A,4I3,A,1F18.12)') 
+     &                                    'INTEGRAL no. ',ICOUNT_I8,'(',
+     &                                     (INDEX(M),M=1,4),
+     &                                    ') Value: ',T_BUFF(ICOUNT_I8)
+*                             write integral to file (for debugging):
+                                if (IXCH.eq.0) then
+                                  write(LUINGR,'(I4,4X,4I3,1F18.14)') 
+     &                                  ICOUNT_I8,INDEX(1),
+     &                                         INDEX(2),
+     &                                         INDEX(3),
+     &                                         INDEX(4),
+     &                                         T_BUFF(ICOUNT_I8)
+                                else
                         write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.14)')
-     &                                ICOUNT_I8,INDEX(1),
-     &                                       INDEX(2),
-     &                                       INDEX(3),
-     &                                       INDEX(4),'-',
-     &                             I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
-     &                                       T(ICOUNT_I8)
+     &                                  ICOUNT_I8,INDEX(1),
+     &                                         INDEX(2),
+     &                                         INDEX(3),
+     &                                         INDEX(4),'-',
+     &                              I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
+     &                                         T_BUFF(ICOUNT_I8)
+                                end if
                               end if
-                            end if
+                            ELSE 
+                              if (NTEST.ge.1) then
+                                if (NTEST.ge.10)
+     &                              write(6,'(A,I4,A,4I3,A,1F18.12)') 
+     &                                    'INTEGRAL no. ',ICOUNT_I8,'(',
+     &                                     (INDEX(M),M=1,4),
+     &                                    ') Value: ',T(ICOUNT_I8)
+*                             write integral to file (for debugging):
+                                if (IXCH.eq.0) then
+                                  write(LUINGR,'(I4,4X,4I3,1F18.14)') 
+     &                                  ICOUNT_I8,INDEX(1),
+     &                                         INDEX(2),
+     &                                         INDEX(3),
+     &                                         INDEX(4),T(ICOUNT_I8)
+                                else
+                        write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.14)')
+     &                                  ICOUNT_I8,INDEX(1),
+     &                                         INDEX(2),
+     &                                         INDEX(3),
+     &                                         INDEX(4),'-',
+     &                              I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
+     &                                         T(ICOUNT_I8)
+                                end if
+                              end if
+                            END IF
+C                           ^ SHARED_M
                           end if
                           ICOUNT_I8 = ICOUNT_I8 + 1
 *
@@ -1927,7 +1981,26 @@ C    &             ' at ',ICOUNT_I8
      &   close(LUINGR)
       close(LUINSV)
       NALLINT = ICOUNT_I8 - 1
-*
+C
+ 300  CONTINUE
+C
+#if defined (VAR_MPI2)
+C
+C     "node master" <--> slave update 
+C
+      IF( SHARED_M ) THEN
+         CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, N_MASTER_SM, 
+     &                  MYNEW_COMM_SM, IERR)
+         CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, N_MASTER_SM,
+     &                  MYNEW_COMM_SM, IERR)
+         CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
+     &                  MYNEW_COMM_SM, IERR)
+         CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
+     &                  MYNEW_COMM_SM, IERR)
+      END IF
+C
+#endif
+C
       if (NTEST.ge.1) then
         write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
         write(LUWRT,*) '  Total number of integrals   : ',NALLINT
@@ -5436,7 +5509,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 C
 CSK     22-11-2007 not important for SIGDEN_ROUTE == SIGDEN
 C
-C       Pointer for orbital indeces for symmetry blocked matrices
+C       Pointer for orbital indices for symmetry blocked matrices
 C
         CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
       END IF
@@ -9735,7 +9808,7 @@ csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
                 INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
               end if
             end do
-            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
+csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
 *
             if (NCT.eq.2) then
 *
