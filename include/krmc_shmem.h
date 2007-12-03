@@ -7,9 +7,10 @@
 !     ======================================
 !
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_PTR
+      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_PTR, MY_T_SCR_PTR,
+     &                               MY_XINT_SCR_PTR
 !
-      COMMON/MPI_MEMPOINTER/ MY_T_PTR
+      COMMON/MPI_MEMPOINTER/ MY_T_PTR, MY_T_SCR_PTR, MY_XINT_SCR_PTR
 !
 !             MPI memory window handler 
 !     ======================================
