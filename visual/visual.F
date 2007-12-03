@@ -695,11 +695,22 @@ C=======================================================================
 
         IQ = IQ_N !number density
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
-     &                GAO,
-     &                DMAT_AO(1+IOFF),
-     &                BUF)
+          DENSITY = D0
+
+          DO IC = 1,MC
+            IF(IC .EQ. 1) THEN
+              IF(.NOT. IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
+                CALL GETRH1(DENSITY,1,IREP_XVECTOR(IXVECTOR),
+     &                      GAO,DMAT_AO(1+IOFF),BUF)
+              ENDIF
+            ENDIF
+            IF(IC .EQ. 2) THEN
+              IF(.NOT. IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
+                CALL GETRH1(DENSITY,2,IREP_XVECTOR(IXVECTOR),
+     &                      GAO,DMAT_AO(1+IOFF),BUF)
+              ENDIF
+            ENDIF
+          ENDDO
 
           CALL DAXPY(1,D1,DENSITY,1,QUANTITY(0),1)
         ENDIF
