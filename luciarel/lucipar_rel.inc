@@ -21,8 +21,9 @@ CSK   COMMON/LUCIPARREL/         MYPROC, NMPROC, LUWRT,
      &                   IAM_NOT_INV, I_NZERO_LEN, IBLOCKCOMM, 
      &                   ISHARE_DENSM, IPARALLELIO, LF2_ZERO,
      &                   ISMEMFAC, LMEMFREE_PTR
-       INTEGER*8 LEN_ALL_INT
-       COMMON/LUCIPAR_I8/ LEN_ALL_INT 
+       INTEGER*8 LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL
+       COMMON/LUCIPAR_I8/ LEN_ALL_INT, IS_LENGTH_TT, 
+     &                    NINT_TOTAL
 C
 C     MASTER: contains node number of master (0 in general)
 C
@@ -35,12 +36,16 @@ C
 C     IIOMOD_REL: determines integral I/O mode in parallel calculations
 C
       INTEGER MYNEW_ID, MYNEW_COMM, NEWCOMM_PROC, ICOMM, 
-     &        ICOMM_ID, ICOMM_SIZE, MY_GROUPN
+     &        ICOMM_ID, ICOMM_SIZE, MY_GROUPN, N_MASTER,
+     &        MYNEW_ID_SM, MYNEW_COMM_SM, NEWCOMM_PROC_SM,
+     &        N_MASTER_SM
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5, 
      &        IALL_LUC, LUDUMPF
 C
       COMMON/LUPARGROUP/ NEWCOMM_PROC, MYNEW_ID, MYNEW_COMM, ICOMM,
-     &	             ICOMM_ID, ICOMM_SIZE, MY_GROUPN
+     &	                 ICOMM_ID, ICOMM_SIZE, MY_GROUPN, N_MASTER,
+     &                   MYNEW_ID_SM, MYNEW_COMM_SM, NEWCOMM_PROC_SM,
+     &                   N_MASTER_SM
       COMMON/LUCIPFILE/ IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILU6, ILU7,
      &                  ILUC,
      &                  IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,
@@ -56,3 +61,5 @@ C
      &                    MY_LU5_OFF, MY_LUC_OFF,
      &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
 #endif
+      LOGICAL SHARED_M
+      COMMON/LUCI_LOG/ SHARED_M

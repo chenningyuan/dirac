@@ -38,7 +38,7 @@
 #if defined (LARGE_MOLECULES)
       PARAMETER (MXINT_DIA = 500 000)
 #else
-      PARAMETER (MXINT_DIA = 90 000)
+      PARAMETER (MXINT_DIA = 125 000)
 #endif
 !
       PARAMETER (MXPCSM = 20)
