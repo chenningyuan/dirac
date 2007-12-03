@@ -104,9 +104,9 @@ C
       ELSE IF ( NTYPE_T .eq. 2 ) THEN
         DATATYPE_IN = MPI_REAL8
       ELSE
-        WRITE(LUPRI,*)' MPIXGET: output datatype "',NTYPE_IN,
+        WRITE(LUPRI,*)' MPIXGET: output datatype "',NTYPE_T,
      &                  '" does not exist!' 
-        CALL Abend2('ERROR in MPIXGET:: Nonexisting NTYPE_IN')
+        CALL Abend2('ERROR in MPIXGET:: Nonexisting NTYPE_T')
       END IF
 C
 C     lock window (MPI_LOCK_SHARED mode)
@@ -118,6 +118,78 @@ C     transfer data
 C
       CALL MPI_GET(RBUF,JCOUNT,DATATYPE_OUT,ITARGET,IDISPL,JCOUNT_T,
      &              DATATYPE_IN, MY_WIN, IERR)
+C
+C     unlock
+C
+      CALL MPI_WIN_UNLOCK(ITARGET,MY_WIN,IERR)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     /* deck mpixaccum */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MPIXACCUM( RBUF, JCOUNT, NTYPE_R, ITARGET, IDISPL, 
+     &                     JCOUNT_T, NTYPE_T, MY_WIN)
+C***********************************************************************
+C
+C     accumulate a scalar/vector/matrix via a remote memory access (RMA) 
+C     routine provided by MPI-2. Data are put from the origin memory  
+C     to the target memory.
+C
+C     OUTPUT: 
+C            MY_WIN::   updated target memory window with JCOUNT_T 
+C                       elements of type NTYPE_T
+C     INPUT: 
+C            RBUF   :   memory buffer on origin with JCOUNT elements of 
+C                       type NTYPE_R.
+C
+C     allowed OPERATION: MPI_SUM
+C
+C     Written by S. Knecht - NOv 28 2007
+C     Last revision : 
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+#include "priunit.h"
+#include "mxdim_mpi2.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION RBUF(*), MY_WIN(*)
+      INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
+      INTEGER JCOUNT, JCOUNT_T
+      INTEGER(KIND=MPI_ADDRESS_KIND) IDISPL
+C
+      IF( NTYPE_T .eq. 1 ) THEN
+        DATATYPE_OUT = my_MPI_INTEGER
+      ELSE IF ( NTYPE_T .eq. 2 ) THEN
+        DATATYPE_OUT = MPI_REAL8
+      ELSE
+        WRITE(LUPRI,*)' MPIXACCUM: output datatype "',NTYPE_T,
+     &                  '" does not exist!' 
+        CALL Abend2('ERROR in MPIXACCUM: Nonexisting NTYPE_T')
+      END IF
+C
+      IF( NTYPE_R .eq. 1 ) THEN
+        DATATYPE_IN = my_MPI_INTEGER
+      ELSE IF ( NTYPE_R .eq. 2 ) THEN
+        DATATYPE_IN = MPI_REAL8
+      ELSE
+        WRITE(LUPRI,*)' MPIXACCUM: output datatype "',NTYPE_R,
+     &                  '" does not exist!' 
+        CALL Abend2('ERROR in MPIXACCUM: Nonexisting NTYPE_R')
+      END IF
+C
+C     lock window (MPI_LOCK_SHARED mode)
+C
+      CALL MPI_WIN_LOCK(MPI_LOCK_SHARED,ITARGET,MPI_MODE_NOCHECK,
+     &                  MY_WIN,IERR)
+C
+C     transfer data     
+C
+      CALL MPI_ACCUMULATE( RBUF, JCOUNT, DATATYPE_IN, ITARGET, IDISPL,
+     &                    JCOUNT_T, DATATYPE_OUT, MPI_SUM, MY_WIN, IERR)
 C
 C     unlock
 C
@@ -245,8 +317,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     /* deck mpixwindow_crt */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MPIXWINDOW_CRT(RBUF,NELEMENT,NTYPE,IDISPL,
-     &                          IWIN_COMM,MY_WIN)
+      SUBROUTINE MPIXWINDOW_CRT(RBUF,NELEMENT,NTYPE,IWIN_COMM,MY_WIN)
 C***********************************************************************
 C
 C     open memory window to be used in one-sided MPI communication
@@ -278,6 +349,7 @@ C***********************************************************************
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
+      INTEGER(kind=MPI_ADDRESS_KIND) NELEMENT
 C
       IBUF_LENSCR = 0 
       IBUF_LEN    = 0 
