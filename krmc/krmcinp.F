@@ -820,13 +820,21 @@ C                    Added CI keyword PARINT. Stefan Knecht
 C                    29.06.2007
 C                    Added CI keyword MEMFAC. Stefan Knecht
 C                    04.07.2007
+C                    Added CI keyword NOOCCN. Stefan Knecht
+C                    October 2007
+C                    Added CI keyword RDFOCK. Stefan Knecht
+C                    October 2007
+C                    Added CI keyword WRTFCK. Stefan Knecht
+C                    October 2007
+C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
+C                    20.11.2007
 C                    
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 21)
+      PARAMETER (NTABLE = 22)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -840,7 +848,7 @@ C
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
      &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN','.RDFOCK',
-     &            '.WRTFCK'/
+     &            '.WRTFCK','.SHMEMO' /
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -876,6 +884,7 @@ C
       NATOLCR    = .FALSE.
       CRDFO_MAT  = .FALSE.
       CWRTFO_MAT = .FALSE.
+      CSHMEMO    = .FALSE.
       COMPFAC    = 0.01D00
 C
 C
@@ -896,7 +905,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20,21), I
+     &                     11,12,13,14,15,16,17,18,19,20,21,22), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1035,6 +1044,10 @@ C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts
 C&&& .WRTFCK: write fock matrix in CI start guess module 
                CWRTFO_MAT = .TRUE.
                GO TO 100
+   22          CONTINUE
+C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
+               CSHMEMO = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1154,6 +1167,14 @@ C
       END IF
       IF( NATOLCR )THEN
         WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
+      END IF
+C     no shared memory mode for non MPI-2 executables 
+#if !defined (VAR_MPI2)
+      IF( CSHMEMO ) CSHMEMO = .FALSE.
+#endif
+      IF( CSHMEMO )THEN
+        WRITE(LUPRI,'(A)') 
+     &     ' * Running in parallel MPI-2 "shared memory" mode'
       END IF
 C
   400 RETURN

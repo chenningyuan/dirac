@@ -95,6 +95,8 @@ C
 #include "../luciarel/input.inc"
 *  nat. orb. occ. num.
 #include "../luciarel/noccn_inf.inc"
+*  shared memory...
+#include "krmc_shmem.h"
 *
 #include "krmcluci_inf.h"
 C
@@ -423,6 +425,16 @@ C 102: which state to go for nat. orb. occ. num.?
 C
       IDENSI_STATE = 0
       CALL LUCI_TRAVA(CIRUN,'DENS_S',IDENSI_STATE,DUMMY,I_COMM_W_ND)
+C
+C 103: running in "shared memory" mode? 
+C
+      SHARED_M = .FALSE.
+      IS_SHARED_M = 0
+      CALL LUCI_TRAVA(CIRUN,'SHMEMO',IS_SHARED_M,DUMMY,I_COMM_W_ND)
+C
+      IF( IS_SHARED_M .gt. 0) THEN
+        SHARED_M = .TRUE.
+      END IF
 C
 C     That's it, dude !!
 C
@@ -1466,6 +1478,24 @@ C
         END IF
       END IF
 C
+C     shared memory mode
+C
+      IF (CTLSTR .EQ. 'SHMEMO') THEN
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(CSHMEMO,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+#endif
+        IF( CSHMEMO) THEN
+          IVAR(1) =   1
+        ELSE
+          IVAR(1) = - 1
+        END IF
+        GOTO 100
+      END IF
+CSKC
+C
       WRITE(LUPRI,'(1X,2A)')
      &   '*** ERROR in LUCI_TRAVA *** Illegal keyword : ',CTLSTR
       CALL QUIT('*** ERROR in LUCI_TRAVA ***')
@@ -1494,6 +1524,11 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "../luciarel/cprnt.inc"
+#include "../luciarel/lucipar_rel.inc"
+C
+C     set "I/O node master" + "shared memory node master"
+      N_MASTER    = 0
+      N_MASTER_SM = 0
 C
 C     Assign disk units
       CALL DISKUN_REL
@@ -1622,6 +1657,7 @@ C***********************************************************************
 *. Boson symmetry info
 #include "mx2orb.h"
 #include "dcbbos.h"
+#include "dgroup.h"
 *.Memory
 #include "../luciarel/wrkspc.inc"
 #include "../luciarel/ipoist8.inc"
@@ -1639,11 +1675,12 @@ C***********************************************************************
 #include "../luciarel/csm.inc"
 #include "../luciarel/cintfo.inc"
 #include "../luciarel/picasso.inc"
+#include "../luciarel/ctcc.inc"
 CTF
       character*6 CIRUN
       CHARACTER*72 MACHINENAME
-      INTEGER NAMELENGTH
-      logical MCSCF, SHARED_M
+      INTEGER NAMELENGTH, MZ_NUM
+      logical MCSCF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
@@ -1657,6 +1694,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
       POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
+      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_LEN
 #endif
 C
 C  FIXME:
@@ -1670,10 +1708,13 @@ C
 ********************************************
       CALL QENTER('LUCIAR')
 C
-C     shared memory version disabled
+C     shared memory version disabled - set on deck *OPTIMI .SHMEMO
 C
-      SHARED_M = .FALSE.
+csk      SHARED_M = .FALSE.
 C
+      MZ_NUM = 0
+      MZ_NUM = MIN(NZ,2)
+      MIN_ONE = - 1
 C
 C
 C     Compute offset from WRK to WORK
@@ -1737,13 +1778,15 @@ C       setting up groups of processors (stored in /LUCIPARREL/)
 C
         CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
-        CALL MEMMAR(KPROCLIST,NMPROC,'ADDS  ',1,'IHOSTL')
-        CALL MEMMAR(KGROUPLIST,NMPROC,'ADDS  ',1,'IHOST2')
+        CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
+        CALL MEMMAR(KGROUPLIST, NMPROC,'ADDS  ',1,'IHOST2')
         CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
+        CALL MEMMAR(KPROCLIST2, NMPROC,'ADDS  ',1,'IHOST3')
 C
-        CALL ISETVC(WORK(KPROCLIST),-1,NMPROC)
-        CALL ISETVC(WORK(KGROUPLIST),-1,NMPROC)
-        CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
+        CALL ISETVC(WORK(KPROCLIST),  MIN_ONE,NMPROC)
+        CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,NMPROC)
+        CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,NMPROC)
+        CALL ISETVC(WORK(KPROCLIST2), MIN_ONE,NMPROC)
 C       initialize number of process groups sharing a c-vector file
         NFLGRPS_REL = 0
 C
@@ -1782,20 +1825,45 @@ C         enable parallel I/O mode!!!
         END IF
 #endif /* ifdef SYS_LOCALDISKS */
 C
+C       MPI "shared memory" mode
+C
+        IF( SHARED_M )THEN
+C
+           NAMELENGTH = 0
+C
+           CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+C
+           CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
+C
+           CALL FIND_GROUP_OF_PROCS_REL_SM(MACHINENAME,NAMELENGTH,
+     &                              WORK(KPROCLIST2),WORK(KPROCLENGTH))
+C
+        ELSE
+C
+           CALL ISETVC(WORK(KPROCLIST2),1,NMPROC)
+C
+        END IF
+C
 C       set-up all useful MPI stuff: communication groups, MPI-files ...
 C                                    all important variables are stored on 
 C                                    common block /LUPARGROUP/
 C
 C       construct new communication groups
-        CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST))
+        CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
+     &                             WORK(KPROCLIST2))
 C
+csk        NPTESTVAR = 20
         IF( NPTESTVAR .ge. 20 ) THEN
-          WRITE(LUWRT,*) 'this is my old and new rank ',myproc,MYNEW_ID
-          WRITE(LUWRT,*) 'this is my grouplist:'
+          WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
+          WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
+          WRITE(LUWRT,*) 'this is my file grouplist:'
           CALL IWRTMAMN(WORK(KGROUPLIST),1,NMPROC,1,NMPROC,LUWRT)
-          WRITE(LUWRT,*) 'this is my proclist:'
+          WRITE(LUWRT,*) 'this is my complete proclist:'
           CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUWRT)
+          WRITE(LUWRT,*) 'this is my shared memory proclist:'
+          CALL IWRTMAMN(WORK(KPROCLIST2),1,NMPROC,1,NMPROC,LUWRT)
         END IF
+        NPTESTVAR = 0
 C
 C       open the files for parallel file I/O
 C
@@ -1810,20 +1878,9 @@ C       Allocate work space, general
 C 
         CALL ALLOC_REL
 C
-#if defined (VAR_MPI2)
-        IF( SHARED_M ) THEN
-C
-C         allocate T array and open T memory window
-C         using intra-node communicator MYNEW_COMM
-C
-          CALL GET_MEM_T_WIN( MYNEW_COMM, 0, .FALSE. )
-C
-        END IF
-#endif
-C
-C
 C       IDGSTYP determines the integral classes and corresponding operator
 C       classes depending on the double group in use.
+C
         IDGSTYP = -1
         if (PNTGRP.le.4) then
           IDGSTYP = 1
@@ -1833,19 +1890,19 @@ C       classes depending on the double group in use.
           IDGSTYP = 2
         end if
         if (SIGDEN_ROUTE.eq.'SIGDEN') then
-*. Space for Hamiltonian in form suitable for SIGDEN
+C         Space for Hamiltonian in form suitable for SIGDEN
           if (ISO1.eq.0.and.ISO2.eq.0) then
-*    Non-relativistic (or spinfree) Hamiltonian
+C           Non-relativistic (or spinfree) Hamiltonian
             IHTYPE = 1
           else if (ISO1.eq.1.and.ISO2.eq.0) then
-*    Mean-field SO Hamiltonian
+C           Mean-field SO Hamiltonian
             IHTYPE = 2
           else if (ISO1.eq.1.and.ISO2.eq.1.and.ENVIRO(1:6).ne.'DIRAC ')
-*    Relativistic 1- and 2-particle Hamiltonian
+C           Relativistic 1- and 2-particle Hamiltonian
      &         then
             IHTYPE = 3
           else if (ISO1.eq.1.and.ISO2.eq.1.and.ENVIRO(1:6).eq.'DIRAC ')
-*    Dirac-Coulomb case.
+C           Dirac-Coulomb case.
      &         then
             if (IDGSTYP.le.2) then
               IHTYPE = 4
@@ -1863,9 +1920,47 @@ C       classes depending on the double group in use.
           ISYM_T = 1
           call set_hop_dbg(IHTYPE,IPRHAM)
         end if
-*       ^ End if SIGDEN_ROUTE
-*
-*. Symmetry of reference
+C       ^ end if SIGDEN_ROUTE
+C
+C
+#if defined (VAR_MPI2)
+        IF( SHARED_M ) THEN
+C
+C         calculate length of T_BUFF
+C
+          LEN_T_BUFF = 1
+csk          write(luwrt,*) ' LEN_T_VEC and MZ_NUM ', LEN_T_VEC, MZ_NUM
+          IF( MYNEW_ID_SM .eq. N_MASTER_SM ) 
+     &                         LEN_T_BUFF = LEN_T_VEC * MZ_NUM
+C
+C         FIXME: provide information if available
+C
+          IS_DUMMY = 0
+C
+C         allocate T_BUFF array (replaces use of WORK(KT_CC))
+C
+csk          write(luwrt,*) 'allocating T_BUFF with length', LEN_T_BUFF
+          CALL GET_MEM_T( IS_DUMMY )
+C
+C         create memory window (node group specific!)
+C         integrals on the node-master 
+C         --> length for node-slaves == 0
+C
+          MY_T_LEN = 0
+          IF( MYNEW_ID_SM .eq. N_MASTER_SM ) MY_T_LEN = LEN_T_BUFF
+C 
+C         open memory window (collective call for communicator
+C         group MY_NEWCOMM)
+C
+csk          write(luwrt,*) 'open MY_T_WIN with length', MY_T_LEN
+          CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
+csk          write(luwrt,*) ' MY_T_WIN handle', MY_T_WIN
+C
+        END IF
+#endif
+C
+C
+C. Symmetry of reference
         IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
      &             CALL MLSM_REL(IREFSM,IREFPA,IREFSM,'CI',1)
         IF(NOINT.EQ.1) THEN
@@ -1873,58 +1968,61 @@ C       classes depending on the double group in use.
           CALL QEXIT('LUCIAR')
           RETURN
         END IF
-*
+C
         do INATIT=1,NATITER,1
-*
-*  Generate symmetry info and the like
+C
+C         Generate symmetry info and the like
+C
           if (INATIT.eq.1) call luc2pic(ISO1,IPRTRA)
-*
-*. Generate and store pointers for transformed integrals
-*  (and integrals !)
+C
+C         Generate and store pointers for transformed integrals
+C         (and integrals !)
+C
           IF(NOINT.EQ.0.and.INATIT.eq.1) THEN
+C           not in use for SIGDEN_ROUTE == SIGDEN
             CALL INTIM_REL(IPRTRA)
           ELSE
             WRITE(LUWRT,*)
      &        ' No integrals imported (or > 1st NS iteration) '
           END IF
-*
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           if (CIRUN.ne.'ANALYZ') then
             call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
-     &                   NL2D,IBU2D,ISM2D,F1,F2,IBOSYM,CIRUN)
+     &                   NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,IBOSYM,CIRUN)
           end if
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
-*
-* ======================
-* CI in GAS spaces
-* ======================
-*
+C
+C
+C ======================
+C CI in GAS spaces
+C ======================
+C
           ISTOSPC = 0
           IF(IRESTR.EQ.1) ISTOSPC = 1
-*
-*. Restarted Lambda calculations need special attention
-*  since restart is realized in in second calculation
-*  First calculation is used to establish H0
-*
+C
+C. Restarted Lambda calculations need special attention
+C  since restart is realized in in second calculation
+C  First calculation is used to establish H0
+C
           IRESTR_ORIG=IRESTR
           IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
-*
+C
             write(LUWRT,*) 'THIS ROUTE IS STILL FORBIDDEN !!'
             write(LUWRT,'(A16,I2,1F3.1)')
      &            'IRESTR,XLAMBDA =',IRESTR,XLAMBDA
             Call Abend2( 'Quitting.' )
-*
+C
           END IF
-*         ^ End of special handling of restarted calc with
-*           lambda modified op.
-*
+C         ^ End of special handling of restarted calc with
+C           lambda modified op.
+C
           ISKIPEI_INI = ISKIPEI
           DO JCMBSPC = 1, NCMBSPC
             ISKIPEI = 0
-*
-*. Perform GASCI/GASPT calculation for internal space ICISPC
-*
+C
+C. Perform GASCI/GASPT calculation for internal space ICISPC
+C
             if (NTEST.ge.1) then
               WRITE(LUWRT,*)
               WRITE(LUWRT,'(A)')
@@ -1938,21 +2036,21 @@ C       classes depending on the double group in use.
      &        ' Number of calculation in this CI space ',
      &          NSEQCI(JCMBSPC)
             end if
-*
+C
             IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
               WRITE(LUWRT,*)
      &              ' Remember No restart in calc 1 (Lambda calc)'
               IRESTR = 0
               Call Abend2( 'Quitting.' )
             END IF
-*
+C
             I_EXPAND = 1
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
               WRITE(LUWRT,*) ' =================================='
               WRITE(LUWRT,*) '   Modified operator will be used'
               WRITE(LUWRT,*) ' =================================='
               IF(JCMBSPC.EQ.2) THEN
-*. Modify the operator
+C. Modify the operator
                 WRITE(LUWRT,*) ' Operator will be modified '
                 WRITE(LUWRT,*) ' This route is still forbidden! '
                 Call Abend2( 'Quitting.' )
@@ -1983,21 +2081,21 @@ C       classes depending on the double group in use.
                 CALL COPVCD_REL(LUSC39,LUC,WORK(KVEC1),0,LBLK)
               END DO
               call memmar(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
-*. No expansion should follow
+C. No expansion should follow
               I_EXPAND = 0
-*. But normal restart
+C. But normal restart
               IRESTR = 1
             END IF
-*
+C
             DO JSEQ = 1,NSEQCI(JCMBSPC)
               IF((ISEQCI(JSEQ,JCMBSPC).GT.0
      &            .OR.ISEQCI(JSEQ,JCMBSPC).EQ.-5)
      &            .AND. JCMBSPC.NE.1.AND.ISTOSPC.NE.JCMBSPC
      &            .AND.I_EXPAND.EQ.1)                   THEN
-*. Restart from previous spaces ( Assuming a progressing sequence :
-*  spaces are just added, not subtracted )
-*  ( Used for perturbation calculations and CI calculations )
-*
+C. Restart from previous spaces ( Assuming a progressing sequence :
+C  spaces are just added, not subtracted )
+C  ( Used for perturbation calculations and CI calculations )
+C
                 LUIN = LUC
                 LUOUT = LUSC1
                 IF(ICISTR.EQ.1) THEN
@@ -2009,31 +2107,33 @@ C       classes depending on the double group in use.
                 CALL EXPCIV_REL(IREFSM,ISTOSPC,LUIN,JCMBSPC,LUOUT,
      &                          LBLK,LUSC2,
      &                          NROOT,1,IDC,IPRDIA)
-*. Last space where vectors were stored
+C. Last space where vectors were stored
                 ISTOSPC = JCMBSPC
                 ISKIPEI = ISKIPEI_INI
-*. Expanded vector will be used as initial vector in the
-*. zero space calculation. Tell next CI to restart from
-*. CI vectors
+C. Expanded vector will be used as initial vector in the
+C. zero space calculation. Tell next CI to restart from
+C. CI vectors
                 IRESTR = 1
               END IF
               IF(ISEQCI(JSEQ,JCMBSPC).GT.0) THEN
                 IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
-*. No restart from previous vectors - IRST2 has been set to zero
+C  No restart from previous vectors - IRST2 has been set to zero
                   IRESTR = 0
                   WRITE(LUWRT,*) ' No restart from previous vectors'
                 END IF
-*. Good old normal CI !!!!
-*. do CI in space JCMBPSC
+C
+C               Good old normal CI !!!!
+C               do CI in space JCMBPSC
+C
                 MAXIT = ISEQCI(JSEQ,JCMBSPC)
-*
+C
                 ISPC = JCMBSPC
                 ISM = IREFSM
                 ITERGLB = 1
-*
+C
 *=============================================================
 *
-                CALL GASCI_REL(F1,F2,
+                CALL GASCI_REL(F1,F2,T_BUFF,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
@@ -2072,7 +2172,7 @@ C
 C       free groups
 C
         CALL SETUNITS_PAR_CLOSE_REL
-        CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,ICOMM)
+        CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,MYNEW_COMM_SM,ICOMM)
 C
 #endif
 C
@@ -3248,6 +3348,10 @@ C
 C     Setup routine for running LUCIAREL
 C
       CALL LUCI_SETUP()
+C
+C     initialize common block
+C
+      CALL MPIXCALC_TYPESZ()
 C
 C     Run LUCIAREL
 C
