@@ -3057,14 +3057,20 @@ C
 *
 #include "wrkspc.inc"
 #include "cstate.inc"
+#include "ctcc.inc"
 *
       CALL QENTER('SIGDC')
       IDUM = -1107
       CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'SIGDC ')
       IDUM = 0
-*
-*. Arrays for partitioning of sigma
-* (*_MS2 arrays are in CSTATE )
+C
+C     set total number of integrals
+C
+      NINT_TOTAL = N1ELINT + N2ELINT
+      IF( IRC_SAVE .eq. 2 ) NINT_TOTAL = NINT_TOTAL * 2
+C
+C     arrays for partitioning of sigma (*_MS2 arrays are in CSTATE )
+C
       JCMBSPC = 1
       call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
      &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
@@ -3076,17 +3082,25 @@ C
      &                 0,IDUMMY
 #endif
      &                 )
-*
-*
+C
 #if defined (VAR_MPI2)
-*
-*     ISCLFAC_GROUP array for c-blocks: 
-*     0 = block is not active, > 0: block is active
+C
+C     ISCLFAC_GROUP array for c-blocks: 
+C     0 = block is not active, > 0: block is active
+C
       CALL MEMMAR(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'ICLLOC')
-*
+C
 #endif
-*
-*
+CCC   IF( SHARED_M )THEN
+CCC     IF( MYNEW_ID_SM .eq. N_MASTER )THEN
+CCC       WRITE(LUWRT,*) ' MY T_BUFF array '
+CCC     CALL WRTMATMN(T_BUFF,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
+CCC     END IF
+CCC   ELSE
+CCC     WRITE(LUWRT,*) ' MY T array '
+CCC     CALL WRTMATMN(T,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
+CCC   END IF
+C
       call sigden_rel(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,T_BUFF,
      &                ISIGDEN
@@ -3095,10 +3109,10 @@ C
      &                IGROUPLIST,IPROCLIST,RCCTOS,WORK(KSCALLOC)
 #endif
      &                 )
-*
+C
       CALL QEXIT('SIGDC')
       CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'SIGDC ')
-*
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -3182,6 +3196,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
 #if defined (VAR_MPI2)
       IOFF_SCR1 = 0
       IOFF_SCR2 = 0
+      mem_cp_time = 0.0D0
 #endif
 *
       CALL QENTER('SIGDE')
@@ -3658,6 +3673,10 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 *
       WALLTID3 = SECTID(BLOCKTIME)
       WRITE(LUWRT,80000) WALLTID3
+      IF( SHARED_M .and. ISIGDEN .eq. 1 )THEN
+        WALLTID3 = SECTID(mem_cp_time)
+        WRITE(LUWRT,90000) WALLTID3
+      END IF
 *
 50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
      & ',A)
@@ -3666,6 +3685,8 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 60001 FORMAT(' >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
      & ',A)
 80000 FORMAT(' >>>  WALL TIME FOR BROADCASTING C-COEFFICIENTS  :
+     & ',A)
+90000 FORMAT(' >>>  WALL TIME FOR OBTAINING T-ELEMENTS         :
      & ',A)
 *
 #endif /* if !def VAR_MPI2 */
@@ -3933,14 +3954,13 @@ C
       KDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGDE3')
 C
-C     set total number of integrals
-C
-      NINT_TOTAL = N1ELINT + N2ELINT
-C
       NTESTL = 00
       IF(NTESTL.GE.5)
      &WRITE(LUWRT,*) ' SIGDE3 : ISSPC,ICSPC ', ISSPC,ICSPC
 *
+*     set offset for T_BUFF array
+*
+      LEN_T_BUFF_NZ = LEN_T_VEC
 *     local scratch arrays for blocks of C and sigma
       L0BLOCK = MXSOOB
 CSK - this may cause problems      LSCR1 = MAX(L0BLOCK,L2BLOCK)
@@ -4323,15 +4343,6 @@ C
 CSK        WRITE(LUWRT,*) ' List of active T blocks : '
 CSK        CALL IWRTMAMN(ISPOBEX_AC,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
       END IF
-CSK   IF( SHARED_M )THEN
-CSK     IF( MYNEW_ID_SM .eq. N_MASTER )THEN
-CSK       WRITE(LUWRT,*) ' MY T_BUFF array '
-CSK     CALL WRTMATMN(T_BUFF,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-CSK     END IF
-CSK   ELSE
-CSK     WRITE(LUWRT,*) ' MY T array '
-CSK     CALL WRTMATMN(T,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-CSK   END IF
       NTEST = 000
 *
 #if !defined (VAR_MPI2)
@@ -4346,6 +4357,7 @@ CSK   END IF
       IOFF_SCR_C_EXPL = 0
       IOFF_SCR_C_EXPL = IOFF_SCR1_C
       IOFF_SAVE = IOFF_SCR1_C
+      start_timer = 0.0D0
 CSK      WRITE(LUWRT,*) ' GOT NEW OFFSET FOR C-VECTOR FILE',
 CSK     &                 IOFF_SAVE
 CSK      WRITE(LUWRT,*) 'INT_IOFF3 in SIGDEN4',INT_IOFF3
@@ -4494,17 +4506,22 @@ C                  offset for complex case
 C
                    IF( (IRIS .eq. 1 .and. IRIC .eq. 2) 
      &                .or. ( IRIS .eq. 2 .and. IRIC .eq. 1) ) THEN
-                    ITB = ITB + LEN_T_VEC
+                    ITB = ITB + LEN_T_BUFF_NZ
                    END IF
 C
 C                  copy ICPL elements of T
 C
-                   ICPL_I8 = NELM_CC(ITTP,NSPOBEX_TP,NINT_TOTAL)
+                   ICPL_I8 = NELM_CC(ITTP,NSPOBEX_TP,LEN_T_BUFF_NZ)
                    XNINT_TP_I8 = REAL( ICPL_I8 )
                    ICPL = IGIVE_I_B(XNINT_TP_I8)
 C
                    IF( ISIGDEN .eq. 1 )THEN
 C
+CSK                WRITE(LUWRT,*) ' ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ',
+CSK     &                           ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ
+CSK                WRITE(LUWRT,*) ' IRIS, IRIC, NINT_TOTAL',
+CSK     &                           IRIS, IRIC, NINT_TOTAL 
+                     start_timer = MPI_WTIME() 
                      IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
                        CALL DCOPY( ICPL ,T_BUFF(ITB), 1, T_SCR_CC, 1)
                      ELSE
@@ -4513,9 +4530,12 @@ C                      window offset: 0 --> ITB - 1
 C
                        ITB_I8  = ITB - 1
 C
+                       start_timer = MPI_WTIME() 
                        CALL MPIXGET(T_SCR_CC,ICPL_I8,2,N_MASTER_SM,
      &                              ITB_I8,ICPL_I8,2,MY_T_WIN)
                      END IF
+                     mem_cp_time = mem_cp_time + 
+     &                             MPI_WTIME() - start_timer
                    ELSE IF( ISIGDEN .eq. 2 )THEN
                      CALL DZERO8( T_SCR_CC, ICPL_I8)
                    END IF

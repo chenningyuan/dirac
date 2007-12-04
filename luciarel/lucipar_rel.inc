@@ -21,9 +21,11 @@ CSK   COMMON/LUCIPARREL/         MYPROC, NMPROC, LUWRT,
      &                   IAM_NOT_INV, I_NZERO_LEN, IBLOCKCOMM, 
      &                   ISHARE_DENSM, IPARALLELIO, LF2_ZERO,
      &                   ISMEMFAC, LMEMFREE_PTR
-       INTEGER*8 LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL
+       INTEGER*8 LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL, LEN_T_BUFF_NZ
        COMMON/LUCIPAR_I8/ LEN_ALL_INT, IS_LENGTH_TT, 
-     &                    NINT_TOTAL
+     &                    NINT_TOTAL, LEN_T_BUFF_NZ
+       REAL*8 mem_cp_time
+       COMMON/LUCI_REAL/ mem_cp_time
 C
 C     MASTER: contains node number of master (0 in general)
 C

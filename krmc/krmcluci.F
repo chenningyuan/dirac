@@ -1716,11 +1716,11 @@ C
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
 C
-      IF( SHARED_M .and. MZ_NUM .eq. 2 ) THEN
-        write(LUWRT,*) ' shared memory mode for complex arithmetic '
-        write(LUWRT,*) ' needs debug; I will stop now!'
-        CALL Abend2('stop in KRMC_LUCI2: SHARED_M == .TRUE. and NZ ==2')
-      END IF
+CSK      IF( SHARED_M .and. MZ_NUM .eq. 2 ) THEN
+CSK        write(LUWRT,*) ' shared memory mode for complex arithmetic '
+CSK        write(LUWRT,*) ' needs debug; I will stop now!'
+CSK        CALL Abend2('stop in KRMC_LUCI2: SHARED_M == .TRUE. and NZ ==2')
+CSK      END IF
 C
 C
 C
@@ -1936,7 +1936,6 @@ C
 C         calculate length of T_BUFF
 C
           LEN_T_BUFF = 1
-          write(luwrt,*) ' LEN_T_VEC and MZ_NUM ', LEN_T_VEC, MZ_NUM
           IF( MYNEW_ID_SM .eq. N_MASTER_SM ) 
      &                         LEN_T_BUFF = LEN_T_VEC * MZ_NUM
 C
