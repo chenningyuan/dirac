@@ -6,11 +6,15 @@
 !                MPI memory pointer 
 !     ======================================
 !
-#if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_PTR, MY_T_SCR_PTR,
+#if defined (VAR_MPI2) 
+#if ! defined (SYS_AIX) && ! defined (SYS_IBM) 
+      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_PTR,MY_T_SCR_PTR,
      &                               MY_XINT_SCR_PTR
+#endif
 !
-      COMMON/MPI_MEMPOINTER/ MY_T_PTR, MY_T_SCR_PTR, MY_XINT_SCR_PTR
+      COMMON/MPI_MEMPOINTER1/ MY_T_SCR_PTR
+      COMMON/MPI_MEMPOINTER2/ MY_T_PTR
+      COMMON/MPI_MEMPOINTER3/ MY_XINT_SCR_PTR
 !
 !             MPI memory window handler 
 !     ======================================
