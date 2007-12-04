@@ -160,7 +160,10 @@ C
       L_COMBI = NDET 
 *     transfer IS_LENGHT_TT to common block LUCIPAR_I8
       IS_LENGTH_TT = 0
+CMI ... quick fix for serial compilation:
+#if defined (VAR_MPI2)
       IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
+#endif
 *
 *     transfer to CANDS --> check for transition dipole moment runs!!!
 *     IMPLEMENT ME:  transition dipole moment calculations

@@ -4284,7 +4284,12 @@ C
 C
 C     T-coefficients
 C
-      DIMENSION T(*), T_BUFF(*), T_SCR_CC(*)
+CMI   DIMENSION T(*), T_BUFF(*), T_SCR_CC(*)
+      DIMENSION T(*), T_BUFF(*)
+#if defined (VAR_MPI2)
+      DIMENSION T_SCR_CC(*)
+#endif
+
       dimension ITSPOBEX_TP(4*NGAS,*)
       INTEGER ISPOBEX_AC(*), ICPL
       INTEGER*8 ITB
