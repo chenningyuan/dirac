@@ -201,6 +201,10 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
 *        start calculation: sigma = H x C
 *
+*        timing this sigma-vector computation
+*
+         sigmatime = MPI_WTIME()
+*
 *=======================================================================
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
@@ -210,6 +214,12 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
      &                   )
 *=======================================================================
 *
+*        end of timing
+         sigmatime2 = MPI_WTIME()
+         WALLTID = SECTID(sigmatime2-sigmatime)
+         WRITE(LUWRT,9777) WALLTID
+         WRITE(LUWRT,*) '   '
+*
 *        projected matrix using batch structure of CI vector(s)
 *
          CALL INPROD_B_PAR_RL(ILU1,ILU2,VEC1,VEC2,APROJ,
@@ -218,6 +228,13 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
      &                        LU2LIST,IVEC)
 *
    10  CONTINUE
+*
+*      timing of initial iteration
+*
+       WALLITR2 = MPI_WTIME()
+       WALLTID = SECTID(WALLITR2-WALLITR1)
+       WRITE(LUWRT,9888) WALLTID
+       WRITE(LUWRT,*) '   '
 *
 *      synchronize MPI_COMM_WORLD
 * 
@@ -658,6 +675,8 @@ C
  9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
+ 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A)
 *
       END
 ***********************************************************************
@@ -815,7 +834,7 @@ CSK      end if
        ITER = 1
        NVEC = 0
 *      start timing of initial iteration
-       WALLITR1 = MPI_WTIME()
+       xinit_time = MPI_WTIME()
 *              
        IF( MAXIT .GE. 1 ) THEN
 *
@@ -844,6 +863,9 @@ CSK      end if
 *
 *        start calculation: sigma = H x C
 *
+*        timing this sigma-vector computation
+*
+         sigmatime = MPI_WTIME()
 *=======================================================================
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
@@ -852,6 +874,11 @@ CSK      end if
 #endif
      &                   )
 *=======================================================================
+*        end of timing
+         sigmatime2 = MPI_WTIME()
+         WALLTID = SECTID(sigmatime2-sigmatime)
+         WRITE(LUWRT,9777) WALLTID
+         WRITE(LUWRT,*) '   '
 *
 *        projected matrix using batch structure of CI vector(s)
 *
@@ -861,6 +888,13 @@ CSK      end if
      &                          LU2LIST,IVEC)
 *
    10  CONTINUE
+
+*      timing of initial iteration
+*
+       xinit_time2 = MPI_WTIME()
+       WALLTID = SECTID(xinit_time2-xinit_time)
+       WRITE(LUWRT,9888) WALLTID
+       WRITE(LUWRT,*) '   '
 *
 *      synchronize MPI_COMM_WORLD
 *
@@ -1389,6 +1423,8 @@ C!?      ITER = ITER - 1
  9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
+ 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A)
 *
       END
 *
