@@ -301,6 +301,7 @@ C
       MXCORR = MAX0(MXCORR,MXCORR1)
       MXCORR1 = 0
       write(iw,*) 'kfree,lfree before CCADCX:',kfree,lfree
+      write(iw,*) 'entering CCADCX first time* * * * ** * *'
       CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
       write(iw,*) 'kfree,lfree after CCADCX:',kfree,lfree
       WRITE(IW,*) 'Memory requirements of CCADCX:',MXCORR1
@@ -470,12 +471,10 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 AUX
-
-      NAMELIST/RELADC/ ADCLEVEL,ADCTITLE,ADCPRINTNM,XREPS,EVLRAN,EVCTHR,
-     &                 READQKL,DOCONST,VCONV,ADCPRINT,NHOLST,DIAGTYPE,
+      NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,XREPS,
+     &                 NHOLST,READQKL,DOCONST,VCONV,DIAGTYPE,
      &                 INTERFACE
-      NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XTHRESH,XTHRVEC
+      NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XEVLLIM,XTHRVEC
 c
 c  set some input default values and read ADC input
 c  from file DIRAC.INP
@@ -486,10 +485,6 @@ c
       DO IX=1,8
         ADCPRINT(IX)=0
       ENDDO
-      DO IX=1,32
-        XREPS(IX)=0
-        NHOLST(IX)=0
-      ENDDO
       ADCPRINTNM(1)='Allocations'
       ADCPRINTNM(2)=' '
       ADCPRINTNM(3)=' '
@@ -498,13 +493,18 @@ c
       ADCPRINTNM(6)='Bpq-values'
       ADCPRINTNM(7)='SIGMA-matrix'
       ADCPRINTNM(8)=' '
-      EVLRAN(1) = 0.0D0
-      EVLRAN(2) = 100.0D0
-      EVCTHR = 0.5D-01
+      DO IX=1,32
+        XREPS(IX)=0
+        NHOLST(IX)=0
+      ENDDO
       READQKL = .FALSE.
       DOCONST = .TRUE.
       VCONV = 1.0D-10
       DIAGTYPE = 'LANC'
+c 
+c  the INTERFACE variable is set on entry but can be overridden
+c  next read in actual parameters from ADC input
+c
       REWIND (5)
       CALL LOCATE('RELADC',5,ITEST)
       IF (ITEST.GT.0) THEN
@@ -521,7 +521,7 @@ c
    19 CALL QUIT('Error exit while reading namelist RELADC')
    20 CONTINUE
 c
-c  check basic values
+c  check consistencies
 c
       IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
      &  CALL QUIT('Illegal ADC level in namelist RELADC')
@@ -537,20 +537,19 @@ c
         ENDIF
        ENDIF
       ENDIF
-
-      IF(EVLRAN(1) .GT. EVLRAN(2)) THEN
-        AUX=EVLRAN(1)
-        EVLRAN(1) = EVLRAN(2)
-        EVLRAN(2) = AUX
-      ENDIF
 c
 c  set Lanczos defaults and read input from DIRAC.INP
+c  * A minimum of 500 iterations
+c  * defaulting to the number of occupied orbitals
+c  * no eigenvector calculation
+c  * upper limit of printed eigenvalues is 50 electronvolt
+c  * the threshold for eigenvector printing is 0.0d0
 c
       DO J=1,32
-        XNITER(J)   = 100
+        XNITER(J)   = 500
         XNP(J)      = 0
         XNEIGENV(J) = 0
-        XTHRESH(J)  = 0.0D0
+        XEVLLIM(J)  = 50.0D0
         XTHRVEC(J)  = 0.0D0
       ENDDO
       REWIND (5)
@@ -628,7 +627,7 @@ C
       CHARACTER*8 CALTYP(3)
       DATA CALTYP/'ADC(2)','ADC(2x)','ADC(3)'/
       INTEGER IRPLOOP,NBUFS,IBUFPOS
-      REAL*8 ASYM,LANTHR,THRVEC
+      REAL*8 ASYM,LANTHR,EVLLIM,THRVEC
       INTEGER SYMMITER
 
       real*8 ddot
@@ -879,6 +878,8 @@ C  **** ALLOCATIONS #  18-30
 C
         CALL MEMOPT('REAL',CKKSA,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
          IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
+        CALL MEMOPT('REAL',FKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC)
+         IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF1C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
          IF(ADCPRINT(1).NE.0) CALL ALLREP(ALLCNT,KFREE,LFREE)
         CALL MEMOPT('REAL',BUF1D,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1019,9 +1020,7 @@ C
 C  If only memory requirements are requested we return here
 C
       IF(ICALC.EQ.1) THEN
-        IF(MYPROC.EQ.MASTER) THEN
-          WRITE(IW,150) CALTYP(ADCLEVEL),'calculation',MXCORR
-        ENDIF
+        WRITE(IW,150) CALTYP(ADCLEVEL),'calculation',MXCORR
         KFREE = KFRSAV
         LFREE = LFRSAV
         RETURN
@@ -1035,9 +1034,14 @@ C----------------------------------------------------------------------
 C
       CALL MEMCHK('ADC-memcheck after alloc',CC,KFRSAV)
 C
-      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,
-     & EVLRAN,EVCTHR,NSP
-      WRITE (IW,*) 'V-iteration convergence up to',VCONV
+      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,VCONV,NSP
+c --------  corresponding format
+ 165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
+     &         " Title: ",T50,A30/
+     &         " Add constant diagrams (in ADC-3): ",T50,L1/
+     &         " up to a convergence of ",T50,E15.8/
+     &         " Number of spinors:",T50,I5)
+c --------  corresponding format end
 C
 C  print out most essential buffer dimensions for checking purposes
 C  and memory boundaries
@@ -1135,7 +1139,7 @@ c  bosonic irreps exclusively, therefore real arithmetic
 c  and an irrep step of 1 (GROUPTYPE = 8)
 c
         IF(NZ.eq.1) THEN
-          IF(SPFR.eqv.false) THEN
+          IF(SPFR.eqv..FALSE.) THEN
             SYMMITER = 2
             WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
             WRITE(IW,*) 'Only one Kramers partner calculated!'
@@ -1481,7 +1485,8 @@ C
           CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
           CALL MAKE_HH3(KREP,CC(CKKS),CC(CKKSA),EPS,CC(BUFVVVV),
      &                  CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF1D),
-     &                  CC(BUF9A),CC(BUF9B),CC(BUF9C),CC(BUFO1))
+     &                  CC(BUF9A),CC(BUF9B),CC(BUF9C),CC(BUFO1),
+     &                  CC(FKKS),.false.)
           CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
 
 c
@@ -1662,7 +1667,7 @@ c
 c
 c  analyze eigenvectors
 c
-c           CALL VECANALYZE(IW,CC(ICRA),LADC,KREP,EVLRAN,EVCTHR,
+c           CALL VECANALYZE(IW,CC(ICRA),LADC,KREP, xxx xxx
 c    &                      CC(WRK_EVL),CC(WRK_AZZ))
 c
 c  release memory required for real diagonalization
@@ -1727,18 +1732,21 @@ c The general input was read in during the initialization step.
 c
           NITER   = XNITER(IRPLOOP)
           IF(XNP(IRPLOOP).EQ.0) THEN
-            WRITE(IW,*) 'defaulting NP'
             NP = NO(KREP)
+            WRITE(IW,*) 'defaulting NP to',NP
           ELSE
             NP = XNP(IRPLOOP)
           ENDIF
           NEIGENV = XNEIGENV(IRPLOOP)
-          LANTHR  = XTHRESH(IRPLOOP)
+          LANTHR  = 0.0d0
+          EVLLIM  = XEVLLIM(IRPLOOP)
           THRVEC  = XTHRVEC(IRPLOOP)
+
+          CALL PST('Entering LANCZOS diagonalization+')
           
-          WRITE(IW,*) '+++ L-input param for the current run:'
-          WRITE(IW,*) '+++ NITER,NP,NEIGENV,LANTHR,THRVEC:',
-     &                NITER,NP,NEIGENV,LANTHR,THRVEC
+          WRITE(IW,*) '+++ Lanczos-input parameter for symmetry:',KREP
+          WRITE(IW,*) '+++ NITER,NP,NEIGENV,EVLLIM,THRVEC:',
+     &                NITER,NP,NEIGENV,EVLLIM,THRVEC
 C
 C  allocate required work space for band Lanczos iterations
 C  real/complex case are accounted for by the RCW variable
@@ -1847,13 +1855,13 @@ c
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itapadc+6,lanthr)
+     &           cc(wrk_ipi),itapadc+6,lanthr,EVLLIM)
           ELSE
             CALL RBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itapadc+6,lanthr)
+     &           cc(wrk_ipi),itapadc+6,lanthr,EVLLIM)
           ENDIF
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
@@ -1943,9 +1951,11 @@ c
 c
         ENDIF
 
+      WRITE(IW,*) 'Finished ADC calculations for symmetry',KREP
+
  900  CONTINUE
 
-      WRITE(IW,*) 'USER LOOP FINISHED'
+      WRITE(IW,*) 'ADC done for all selected symmetries.'
 C
 C                   ******************************
 C                   ***      END USER LOOP     ***
@@ -1953,12 +1963,6 @@ C                   ******************************
 C
 C
  150  FORMAT (" Core used for ",A8,A," :",T50,I10," 8-byte words")
- 165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
-     &         " Title: ",T50,A30/
-     &         " Add constant diagrams (in ADC-3): ",T50,L1/
-     &         " Range of eigenvalues:",T50,2F15.4/
-     &         " Threshold for printing eigenvectors:",T50,F15.4/
-     &         " Number of spinors:",T50,I5)
  175  FORMAT (" Deviation from symmetry for ADC matrix in irrep ",
      &          I6, E18.10/" Sparsity (%) ",F5.1)
  180  FORMAT (" Starting diagonalization of IREP:",I5)
@@ -3198,12 +3202,12 @@ C  over all k-vectors
 #if defined (BIT64)
       S=SQRT(S)
 #else
-      S=ZSQRT(S)
+      S=SQRT(S)
 #endif
       CALL CPUUSED(SEC2)
-      WRITE(IW,730) ITERC,ZABS(S),SEC2-SEC1
+      WRITE(IW,730) ITERC,ABS(S),SEC2-SEC1
       SEC1=SEC2
-      IF(ZABS(S).GT.VCONV) THEN
+      IF(ABS(S).GT.VCONV) THEN
 C ... not converged yet, reiterate
         CALL XCOPY(LENV,W2,1,W1,1)
         GOTO 111
@@ -4812,13 +4816,20 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKE_HH3(KREP,CKKS,CKKSAUX,EPS,VVVV,
      &                   VVOO1,VVOO2,VVOO3,VVOO4,
-     &                   VOVO1,VOVO2,VOVO3,OOOO1)
+     &                   VOVO1,VOVO2,VOVO3,OOOO1,
+     &                   FKKS,S4P)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
 C     Calculates contributions to the h/h block for ADC(3)
+C     The resulting BKC has to be |><| for all C(3) contributions.
+C
+C     Additionally the routine can be used for the calculation of
+C     some SIGMA(4+) contributions. If the corresponding flag is set
+C     the FKKS array is filled with the third order f_kk' contributions.
+C
 C     The resulting BKC has to be |><| for all C(3) contributions.
 C
 C---------------Last modified------------------------------------------
@@ -4831,6 +4842,8 @@ C
       REAL*8 CKKS(*),CKKSAUX(*),EPS(*),VVVV(*)
       REAL*8 VVOO1(*),VVOO2(*),VVOO3(*),VVOO4(*)
       REAL*8 VOVO1(*),VOVO2(*),VOVO3(*),OOOO1(*)
+      REAL*8 FKKS(*)
+      LOGICAL S4P
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4849,6 +4862,10 @@ c
       OFFS = JJOO(KREP,KREP)*RCW + 1
       LENC = NO(KREP) * NO(KREP)
 
+C if sig4+ then clear the corresponding position in the f_kk' array
+
+      IF(S4P) CALL XCOPY (LENC,A0,0,FKKS(OFFS),1)
+
 C     get <VV||OO> integrals and form
 C          the v_ab,kl   (VVOO1) and
 C          the v^*_ab,kl (VVOO2) and
@@ -4862,15 +4879,22 @@ C
         CALL CONJUGA(NV3,VVOO2,1)
       ENDIF
 C
-C  ...................calculation of C(A)_kk'
+C  .................................................................calculation of C(A)_kk'
 C
 C
 C     contract V_cd,ab with v_ab,kl to A_cd,kl (to buffer VVOO3)
 C     in all symmetries ! the prefactor of 1/4 is cancelled due to
 C     the double index restriction a>b and c>d
+C     In case of S4P the A_cd,kl is divided by the epsilon terms e_cdkl
+C    
+C     If these routines are used for the generation of SIGMA(4+)
+C     some denomiator divisions have to be performed and some hermitian
+C     conjugations have to be omitted.
 C
       CALL RDVVVV(VVVV)
       CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,VVVV,VVOO1,A0,VVOO3,NREP)
+
+      IF(S4P) CALL DENOMVVOO(EPS,VVOO3,VVOO3)
 C
 C   Sort v^*_cd,k'l to v^*_cdl,k':KSREP   (VVOO2)
 C   Sort A_cd,kl to A_cdl,k               (VVOO4)
@@ -4889,10 +4913,19 @@ C   case because no ADDITIONAL complex conjugation is allowed !
 C  
       CALL CNTRCT('T','N',NO,NO,NVVOT,A1,VVOO2,VVOO4,A0,VVOO3,NREP)
       CALL XAXPY (LENC,A1,VVOO3(OFFS),1,CKKS,1)
+      IF (S4P) CALL XAXPY (LENC,A1,VVOO3(OFFS),1,FKKS,1)
       CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
+
+c debug
+c     call xcopy (LENC,A0,0,CKKS(OFFS),1)
+c     write(iw,*) 'matrix control output after part A'
+c     call cmatout(ckks,no(krep),no(krep))
+c debug end
+
 C
-C  ...................calculation of C(B)_kk'
+C  ................................................................calculation of C(B)_kk'
 C
+
 C   get VOVO integrals in buffer VOVO1 and negate them
 C   (V_lc,bm is written in the mathematical formula !)
 C   and the v*_ab,kl integrals to buffer VVOO2
@@ -4949,8 +4982,14 @@ C
       CALL CNTRCT('T','N',NO,NO,NVVOT,-A1,VVOO3,VOVO3,A0,VVOO2,NREP)
       CALL XAXPY (LENC,A1,VVOO2(OFFS),1,CKKS,1)
       CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
+
+c debug
+      write(iw,*) 'matrix control output after part B'
+      call cmatout(ckks,no(krep),no(krep))
+c debug end
+
 C
-C  ...................calculation of C(C)_kk'
+C  ............................................................calculation of C(C)_kk'
 C
 C     v_ab,lm (VVOO1) x V_lm,jk (OOOO1)  ==> A_ab,jk (VVOO3)
 C     A_ab,jk (VVOO3)  ==> A_abj,k (VVOO4)
@@ -4963,6 +5002,7 @@ C     a>b and l>m.
 C
       CALL GETOOOO(OOOO1)
       CALL CNTRCT('N','N',NVVT,NOOT,NOOT,A1,VVOO1,OOOO1,A0,VVOO3,NREP)
+      IF(S4P) CALL  DENOMVVOO(EPS,VVOO3,VVOO3)
       CALL XCOPY(NV3,VVOO1,1,VVOO2,1)
       IF(CARITH) THEN
         CALL CONJUGA(NV3,VVOO2,1)
@@ -4976,12 +5016,13 @@ C  again, no additional complex conjugation !
 C
       CALL CNTRCT('T','N',NO,NO,NVVOT,A1,VVOO4,VVOO3,A0,VVOO2,NREP)
       CALL XCOPY (LENC,VVOO2(OFFS),1,CKKSAUX,1)
+      IF(S4P) CALL XAXPY (LENC,A1,VVOO2(OFFS),1,FKKS,1)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
 
-C  ...................calculation of C(D)_kk'
+C  ............................................................calculation of C(D)_kk'
 C
 C   v_ba,ml (VVOO1) ==> v_bm,al (VOVO1)
 C   V^*_ak,cl (VOVO2) ==> V_al,ck (VOVO3)
@@ -5027,7 +5068,7 @@ C
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             VVOO2,VVOO3)
 C
-C  again no additional complex conjugation ==> 'T' parameter
+C  again no additional complex conjugation ==> 'T' parameter and not 'C'
 C
       CALL CNTRCT('T','N',NO,NO,NVVOT,-A1,VOVO2,VVOO3,A0,VVOO2,NREP)
       CALL XCOPY (LENC,VVOO2(OFFS),1,CKKSAUX,1)
@@ -5035,12 +5076,6 @@ C
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-C
-C    ............ all contributions done
-C
-c     WRITE(IW,*) '---------------------------------------'
-c     WRITE(IW,*) '--- h/h matrix order 0-3 finished -----'
-c     WRITE(IW,*) '---------------------------------------'
 
       RETURN
       END
@@ -6095,6 +6130,24 @@ C
  10   CONTINUE
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DENOMVVOONOT2 (EPS,T2,CT2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Divide VVOO integrals by denominators ea + eb - ej - ei
+C     but such that a>b remains tridiagonal and i,j run independently
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*)
+      REAL*8 T2(*)
+      COMPLEX*16 CT2(*)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -7657,7 +7710,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     
       SUBROUTINE PST(A)
 c
-c  this routine prints an arbitrary character string with a + delimiter
+c  this routine headlines an arbitrary character string with a + delimiter
 c  in the input. is is meant to inform the user about program progress.
 c
       IMPLICIT INTEGER(A-Z)
@@ -7667,10 +7720,14 @@ c
       character*60 b,bt
 
       lim=60
+      m=lim
       do i=1,lim
-        if(a(i:i).eq.'+') m=i
+        if(a(i:i).eq.'+') then
+           m=i
+           goto 44
+        endif
       enddo
-      do i=1,m-1
+ 44   do i=1,m-1
         bt(i:i) = a(i:i)
         b(i:i) = '#'
       enddo
