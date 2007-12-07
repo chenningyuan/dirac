@@ -103,7 +103,7 @@
          a = matrix
          wr = dble(0)
          call DSYEV('v','l',n,a,ldmat,wr,work,lwork,info)
-         if (info <> 0) then
+         if (info /= 0) then
             write(UOUT,*) "diagonalize: Failure in LAPACK routine DSYEV"
             write(UOUT,*) "INFO  = ",info
             call flush(UOUT)
