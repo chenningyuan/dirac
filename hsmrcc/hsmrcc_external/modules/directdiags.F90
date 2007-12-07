@@ -111,7 +111,7 @@ subroutine DrvDirect(vac)
       !call abort
    endif
 
-   if (get_iprint >= 9) then
+   if (get_iprint() >= 9) then
      write(UOUT,'(2x,a,i3)') 'DrvDirect: beginning for vac=',vac
    endif
 
@@ -130,7 +130,7 @@ subroutine DrvDirect(vac)
    call Dir_FHP(TimeTaken(:,FHP),vac)
    call Dir_FPP(TimeTaken(:,FPP),vac)
 
-   if (get_iprint >= 9) then
+   if (get_iprint() >= 9) then
      write(UOUT,'(2x,a,i3)') '... DrvDirect: end for vac=',vac
    endif
 
