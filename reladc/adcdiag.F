@@ -427,7 +427,7 @@ C
         DO 150 J=1,LADC
           B=EVC(J,I)
           B = B*dconjg(B)
-          IF(ZABS(B).GE.THR) THEN
+          IF(ABS(B).GE.THR) THEN
             READ(iounit2,REC=J) field
             WRITE(iw,'(A5,I6,A2,A78)') 'Conf:',J,' |',field
           ENDIF
@@ -856,7 +856,10 @@ c  and will be normalized
 c  form t_i+p,i = |r|, q_i+p,i = r/|r|
 c
         Y = ZDOTC(LADC,R,1,R,1)
-        Y = ZSQRT(Y)
+c       Y = ZSQRT(Y)
+c  att: the PGI compiler does not know zsqrt
+c
+        Y = SQRT(Y)
         T(NP+1,IL) = Y
 
         Y = (1.0d0,0.0d0)/Y
@@ -892,7 +895,6 @@ c
 c  now write out Lanczos matrix when called for the FIRST time !
 c
       IF(.NOT.CFLAG) THEN
-c       write(iw,*) ' writing out Lanczos matrix...'
         open(io_lan,file='TMAT',form='UNFORMATTED',access='SEQUENTIAL',
      &              status='UNKNOWN')
         write(io_lan) np+1,niter
@@ -901,6 +903,12 @@ c       write(iw,*) ' writing out Lanczos matrix...'
         enddo
         close(io_lan)
         write(iw,*) ' Lanczos matrix written.'
+c  debug
+c       write(iw,*) ' Lanczos matrix:'
+c       do j=1,niter
+c         write(*,*) (t(i,j),i=1,np+1)
+c       enddo
+c  debug end
       ENDIF
 c
 c  write out long ADC eigenvectors when eigenvector run finished
@@ -1378,7 +1386,7 @@ c
          norm = norm + b(i)*dconjg(b(i))
  10   continue
 c     
-      y = (1.0d0, 0.0d0) / zsqrt(norm)
+      y = (1.0d0, 0.0d0) / sqrt(norm)
       do 20 i = 1, ndim
          b(i) = b(i) * y
  20   continue
@@ -1465,14 +1473,14 @@ c
 c     Find the pivot
 c     
          do 14 j = k+1, l
-            if (zabs(a(j,1)) .gt. zabs(dum)) then
+            if (abs(a(j,1)) .gt. abs(dum)) then
                dum = a(j,1)
                i = j
             endif
  14      continue
 c     
          indx(k) = i
-         if (zabs(dum) .eq. 0.0d0) then
+         if (abs(dum) .eq. 0.0d0) then
             a(k,1) = dcmplx(tiny, 0.0d0)
          endif
 c     
@@ -1560,7 +1568,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBLANA(IRREP,N,NP,NEIGENV,NHOLES,
      &                  D,ZLONG,Z,T,IND,MLT,LSP,
-     &                  A,A1,B,BX,IPIV,IOUNIT,WTHR)
+     &                  A,A1,B,BX,IPIV,IOUNIT,WTHR,ELIM)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1570,7 +1578,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER IND(N),MLT(N),LSP(N)
       REAL*8 A(N,2*NP+1),A1(N,2*NP+1),B(N),BX(N)
       INTEGER IPIV(N),IOUNIT
-      REAL*8 WTHR
+      REAL*8 WTHR,ELIM
 C
 C---------------Description--------------------------------------------
 C
@@ -1642,6 +1650,9 @@ C
 
 
       CALL PST('Processing the spectrum+')
+      WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
+      WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
+
 c
 c  copy the first and last NP components of the long eigenvectors
 c  to Z in order to apply dieters code easily.
@@ -1802,16 +1813,12 @@ c
       cntev=0
       DO J = 1, JND 
 c
-c  pole strength
+c  pole strength calculation
 c
         x1 = 0.0d0
         do i = 1, nholes
            x1 = x1 + z(i,j)*z(i,j)
         enddo
-c
-c  everything goes to file, no threshold
-c
-        write(iounit,'(I5,2x,F10.4,4x,F12.6)') j,d(j)*AUEV,x1
 c
 c  error analysis
 c
@@ -1821,10 +1828,17 @@ c
         enddo
         y1 = dsqrt(y1)
 c
-c  screen print with threshold and hole components.
+c  everything goes to file, no threshold for pole strength and
+c  no upper limit for the eigenvalues. That means: all eigenvalues
+c  together with their pole strengths and error estimates are written
+c  to the SPEC.XX files.
+c
+        write(iounit,'(I5,2x,F10.4,4x,2F12.6)') j,d(j)*AUEV,x1,y1
+c
+c  print on screen only those eigenvalues that are below the given limit.
 c  use cntev for contiguous numbering !
 c
-        if(x1.gt.wthr) then
+        if(d(j)*AUEV.le.ELIM) THEN
           cntev = cntev + 1
           write(iw,388)
  388      format(//2x,60('-')/'  no.    eigenvalue (eV)   mean-res.',
@@ -1948,7 +1962,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZBLANA(IRREP,N,NP,NEIGENV,NHOLES,
      &                  D,ZLONG,Z,T,IND,MLT,LSP,
-     &                  A,A1,B,BX,IPIV,IOUNIT,WTHR)
+     &                  A,A1,B,BX,IPIV,IOUNIT,WTHR,ELIM)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1958,7 +1972,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER IND(N),MLT(N),LSP(N)
       COMPLEX*16 A(N,2*NP+1),A1(N,2*NP+1),B(N),BX(N)
       INTEGER IPIV(N),IOUNIT
-      REAL*8 WTHR
+      REAL*8 WTHR,ELIM
 C
 C---------------Description--------------------------------------------
 C
@@ -2030,6 +2044,8 @@ C
 
 
       CALL PST('Processing the spectrum+')
+      WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
+      WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
 c
 c  copy the first and last NP components of the long eigenvectors
 c  to Z in order to apply dieters code easily.
@@ -2066,7 +2082,7 @@ C
   50  J   = J + 1
       IF( J .GT. n )                               GOTO  40
 
-      AA=ZABS(ZDOTC(NP,Z(1,J),1,Z(1,J),1))
+      AA=ABS(ZDOTC(NP,Z(1,J),1,Z(1,J),1))
 
       NSP = NSP + 1
       ISP = ISP + 1
@@ -2093,7 +2109,7 @@ C
       OVL = 1.D-5
       IF( DABS( d(J+IA) - d(J+K) ) .GT. THRS )        GOTO  42
 
-      AK=ZABS(ZDOTC(NP,Z(1,J+K),1,Z(1,J+K),1))
+      AK=ABS(ZDOTC(NP,Z(1,J+K),1,Z(1,J+K),1))
 
       IF( AK .LE. 1.D-14 )  THEN
          KK     = K
@@ -2103,7 +2119,7 @@ C
            IF( DABS(d(J+IA)-d(J+K)) .GT. 1.D-2*THRS )   GOTO  42
       END IF
 
-      A1K=zabs(zdotc(NP,Z(1,J+K),1,Z(1,J+IA),1))
+      A1K=abs(zdotc(NP,Z(1,J+K),1,Z(1,J+IA),1))
 
       A1K = A1K*A1K/(SUP*AK)
       IF( DABS( A1K-1.D0 ) .LE. OVL )            THEN
@@ -2197,10 +2213,6 @@ c
            x1 = x1 + DBLE( z(i,j)*dconjg(z(i,j)) )
         enddo
 c
-c  everything goes to file, no threshold
-c
-        write(iounit,'(I5,2x,F10.4,4x,F12.6)') j,d(j)*AUEV,x1
-c
 c  error analysis
 c
         y1 = 0.0d0
@@ -2209,10 +2221,17 @@ c
         enddo
         y1 = dsqrt(y1)
 c
+c  everything goes to file, no threshold for pole strength and
+c  no upper limit for the eigenvalues. That means: all eigenvalues
+c  together with their pole strengths and error estimates are written
+c  to the SPEC.XX files.
+c
+        write(iounit,'(I5,2x,F10.4,4x,2F12.6)') j,d(j)*AUEV,x1,y1
+c
 c  screen print with threshold and hole components.
 c  use cntev for contiguous numbering !
 c
-        if(x1.gt.wthr) then
+        if(d(j)*AUEV.le.ELIM) then
           cntev = cntev + 1
           write(iw,388)
  388      format(//2x,60('-')/'  no.    eigenvalue (eV)   mean-res.',
@@ -2430,14 +2449,13 @@ C
       CALL PST('Diagonalizing real tridiagonal matrix+')
 
 
-c     WRITE(IW,*) 'Parameters of dsbev:'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
+      WRITE(IW,*) 'Parameters for real band diagonalizer'
+      WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
 
       CALL DSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
-c     write(iw,*) 'I returned from dsbev',info
+      WRITE(IW,*) 'Code from DSBEV:',INFO
       IF(INFO.NE.0) THEN
-        WRITE(IW,*) 'Code from DSBEV:',INFO
         CALL QUIT('Error in DSBEV')
       ENDIF
 
@@ -2481,8 +2499,6 @@ C  by calling the appropriate LAPACK routine. This routine
 C  is interfacing in order to avoid too many command line
 C  arguments.
 C  The Lanczos matrix T from the caller comes in the AB array.
-C     ****  ATTENTION ****  due to the usual conventions in the
-C    numerical recipes routines the original matrix T is DESTROYED !!!
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2511,14 +2527,13 @@ C
 
       CALL PST('Diagonalizing hermitian tridiagonal matrix+')
 
-
-c     WRITE(IW,*) 'Parameters of zhbev:'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
+      WRITE(IW,*) 'Parameters for complex band diagonalizer'
+      WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
 
       CALL ZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           WORK, RWORK, INFO)
+      WRITE(IW,*) 'Code from ZHBEV:',INFO
       IF(INFO.NE.0) THEN
-        WRITE(IW,*) 'Code from ZHBEV:',INFO
         CALL QUIT('Error in ZHBEV')
       ENDIF
 
@@ -2537,7 +2552,7 @@ c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
         DO J=1,NP
           Y = Y + Z(J,I)*DCONJG(Z(J,I))
         ENDDO
-        WRITE(IW,111) I,EVL(I),EVL(I)*AUEV,ZABS(Y)
+        WRITE(IW,111) I,EVL(I),EVL(I)*AUEV,ABS(Y)
       ENDDO
 
 c     WRITE(IW,'(/,/)')
