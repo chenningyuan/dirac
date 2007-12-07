@@ -97,7 +97,7 @@ contains
 
       call QEnter('read_gamess_syminf')
 
-      if (get_iprint >= 5) then
+      if (get_iprint() >= 5) then
        call Header('Output from "read_gamess_syminf"',-1)
       endif
 
