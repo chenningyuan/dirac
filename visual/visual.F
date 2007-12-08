@@ -31,9 +31,9 @@ C=======================================================================
 !                   5         6         7         8
      &            '.XXXXXX','.XXXXXX','.ORBSTR','.INTEGR',
 !                   9        10        11        12
-     &            '.3DADD ','.CUBE  ','.COMMON','.FREQ+H',
+     &            '.3DADD ','.CUBE  ','.COMMON','.XXXXXX',
 !                  13        14        15        16
-     &            '.FREQ-H','.ORIGIN','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.ORIGIN','.XXXXXX','.XXXXXX',
 !                  17        18        19        20
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  21        22        23        24
@@ -706,33 +706,26 @@ C=======================================================================
       IQ_M           =  2 !    magnetization
       IQ_DIVM        =  3 !div(magnetization)
       IQ_ROTM        =  4 !rot(magnetization)
-!                       5
-      IQ_J           =  6 !    charge current density
-      IQ_DIVJ        =  7 !div(charge current density)
-      IQ_ROTJ        =  8 !rot(charge current density)
-      IQ_JPARA       =  9 !    paramagnetic charge current density
-      IQ_DIVJPARA    = 10 !div(paramagnetic charge current density)
-      IQ_ROTJPARA    = 11 !rot(paramagnetic charge current density)
-      IQ_JDIA        = 12 !     diamagnetic charge current density
-      IQ_VPARA       = 13 !    paramagnetic velocity density
-      IQ_DIVVPARA    = 14 !div(paramagnetic velocity density)
-      IQ_ROTVPARA    = 15 !rot(paramagnetic velocity density) a.k.a. vorticity
-      IQ_ELF         = 16 !    ELF
-      IQ_K           = 17 !    kinetic energy density
-      IQ_H           = 18 !    helicity density
-      IQ_GAMMA5      = 19 !    \gamma_5 density
-      IQ_NUC1SPINX   = 20 !    -1/(c^2 r_K^3) (r_K \times j)_x
-      IQ_NUC1SPINY   = 21 !    -1/(c^2 r_K^3) (r_K \times j)_y
-      IQ_NUC1SPINZ   = 22 !    -1/(c^2 r_K^3) (r_K \times j)_z
-      IQ_NUC2SPINX   = 23 !    -1/(c^2 r_K^3) (r_K \times j)_x
-      IQ_NUC2SPINY   = 24 !    -1/(c^2 r_K^3) (r_K \times j)_y
-      IQ_NUC2SPINZ   = 25 !    -1/(c^2 r_K^3) (r_K \times j)_z
-      IQ_EDIPX       = 26 !    r_x * number density
-      IQ_EDIPY       = 27 !    r_y * number density
-      IQ_EDIPZ       = 28 !    r_z * number density
-      IQ_MDIPX       = 29 !    -1/2 (r_G \times j)_x
-      IQ_MDIPY       = 30 !    -1/2 (r_G \times j)_y
-      IQ_MDIPZ       = 31 !    -1/2 (r_G \times j)_z
+      IQ_J           =  5 !    charge current density
+      IQ_DIVJ        =  6 !div(charge current density)
+      IQ_ROTJ        =  7 !rot(charge current density)
+      IQ_JPARA       =  8 !    paramagnetic charge current density
+      IQ_DIVJPARA    =  9 !div(paramagnetic charge current density)
+      IQ_ROTJPARA    = 10 !rot(paramagnetic charge current density)
+      IQ_JDIA        = 11 !     diamagnetic charge current density
+      IQ_ELF         = 12 !    ELF
+      IQ_K           = 13 !    kinetic energy density
+      IQ_H           = 14 !    helicity density
+      IQ_GAMMA5      = 15 !    \gamma^5 density
+      IQ_NUCSPINX    = 16 !    -1/(c^2 r_K^3) (r_K \times j)_x
+      IQ_NUCSPINY    = 17 !    -1/(c^2 r_K^3) (r_K \times j)_y
+      IQ_NUCSPINZ    = 18 !    -1/(c^2 r_K^3) (r_K \times j)_z
+      IQ_EDIPX       = 19 !    r_x * number density
+      IQ_EDIPY       = 20 !    r_y * number density
+      IQ_EDIPZ       = 21 !    r_z * number density
+      IQ_MDIPX       = 22 !    -1/2 (r \times j)_x
+      IQ_MDIPY       = 23 !    -1/2 (r \times j)_y
+      IQ_MDIPZ       = 24 !    -1/2 (r \times j)_z
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
@@ -971,8 +964,10 @@ C=======================================================================
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
-        IQ = IQ_NUC1SPINX
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINX) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINY) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINZ)) THEN
+
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
      &               IREP_XVECTOR(IXVECTOR),
@@ -991,159 +986,36 @@ C=======================================================================
           RSQ = RX*RX + RY*RY + RZ*RZ
           FACTOR = -D1/(RSQ**DP32)
 
-          CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINX)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINY)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINZ)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
-        IQ = IQ_NUC1SPINY
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
+        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPX) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPY) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
 
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_NUC1SPINZ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_NUC2SPINX
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_NUC2SPINY
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_NUC2SPINZ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_EDIPX
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GETRHO(DENSITY,
      &                IREP_XVECTOR(IXVECTOR),
      &                GAO,
      &                DMAT_AO(1+IOFF),
      &                BUF)
 
-          CALL DAXPY(1,D1,DENSITY*PX,1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPX)
+     &      CALL DAXPY(1,D1,DENSITY*PX,1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPY)
+     &      CALL DAXPY(1,D1,DENSITY*PY,1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPZ)
+     &      CALL DAXPY(1,D1,DENSITY*PZ,1,QUANTITY(0),1)
         ENDIF
 
-        IQ = IQ_EDIPY
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
-     &                GAO,
-     &                DMAT_AO(1+IOFF),
-     &                BUF)
+        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPX) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPY) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPZ)) THEN
 
-          CALL DAXPY(1,D1,DENSITY*PY,1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_EDIPZ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
-     &                GAO,
-     &                DMAT_AO(1+IOFF),
-     &                BUF)
-
-          CALL DAXPY(1,D1,DENSITY*PZ,1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_MDIPX
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
      &               IREP_XVECTOR(IXVECTOR),
@@ -1161,51 +1033,12 @@ C=======================================================================
 
           FACTOR = -DP12
 
-          CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_MDIPY
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - D0
-          RY = PY - D0
-          RZ = PZ - D0
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          FACTOR = -DP12
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-        ENDIF
-
-        IQ = IQ_MDIPZ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE.,
-     &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
-     &               GAO,
-     &               DMAT_AO(1+IOFF),
-     &               BUF)
-
-          RX = PX - D0
-          RY = PY - D0
-          RZ = PZ - D0
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          FACTOR = -DP12
-
-          CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPX)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPY)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPZ)
+     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
         CALL DAXPY(4,COMMON_FACTOR,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
