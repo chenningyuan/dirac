@@ -33,9 +33,9 @@ C=======================================================================
 !                   9        10        11        12
      &            '.3DADD ','.CUBE  ','.COMMON','.XXXXXX',
 !                  13        14        15        16
-     &            '.XXXXXX','.ORIGIN','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.2DORIG','.GAUGE ','.2DADD ',
 !                  17        18        19        20
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.2DSTEP','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  21        22        23        24
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
 !                  25        26        27        28
@@ -77,12 +77,18 @@ C=======================================================================
       NCUBE(2) = 80
       NCUBE(3) = 80
 
-      VISUAL_ORIGIN(1) = 0.0D0
-      VISUAL_ORIGIN(2) = 0.0D0
-      VISUAL_ORIGIN(3) = 0.0D0
+      ORIGIN_2D(1)    = 0.0D0
+      ORIGIN_2D(2)    = 0.0D0
+      ORIGIN_2D(3)    = 0.0D0
+
+      GAUGE_ORIGIN(1) = 0.0D0
+      GAUGE_ORIGIN(2) = 0.0D0
+      GAUGE_ORIGIN(3) = 0.0D0
 
       ADD_3D        = 4.0D0
       COMMON_FACTOR = 1.0D0
+      ADD_2D        = 4.0D0
+      STEP_2D       = 0.1D0
 
       DO IXVECTOR = 1,MAX_NR_XVECTORS
         IREP_XVECTOR(IXVECTOR)    = 0
@@ -186,14 +192,25 @@ C=======================================================================
           GOTO 100
 
    14     CONTINUE
-          READ(LUCMD,*) VISUAL_ORIGIN(1),
-     &                  VISUAL_ORIGIN(2),
-     &                  VISUAL_ORIGIN(3)
+          READ(LUCMD,*) ORIGIN_2D(1),
+     &                  ORIGIN_2D(2),
+     &                  ORIGIN_2D(3)
           GOTO 100
 
    15     CONTINUE
+          READ(LUCMD,*) GAUGE_ORIGIN(1),
+     &                  GAUGE_ORIGIN(2),
+     &                  GAUGE_ORIGIN(3)
+          GOTO 100
+
    16     CONTINUE
+          READ(LUCMD,*) ADD_2D
+          GOTO 100
+
    17     CONTINUE
+          READ(LUCMD,*) STEP_2D
+          GOTO 100
+
    18     CONTINUE
    19     CONTINUE
    20     CONTINUE
@@ -481,11 +498,14 @@ C=======================================================================
       ENDIF
 
       IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+
+        NR_STEPS = 1 + ADD_2D*D2/STEP_2D
+
         DO IORIENTATION = 1,3
 
-          NI = NCUBE(1)
-          NJ = NCUBE(2)
-          NK = NCUBE(3)
+          NI = NR_STEPS
+          NJ = NR_STEPS
+          NK = NR_STEPS
 
           IF(ORIENTATION(IORIENTATION) .EQ. 'xy') NK = 1
           IF(ORIENTATION(IORIENTATION) .EQ. 'xz') NJ = 1
@@ -496,26 +516,23 @@ C=======================================================================
           WRITE(LUNIT_2D,'(A2)') ORIENTATION(IORIENTATION)
           WRITE(LUNIT_2D,'(A)')
 
-          RANGE_MIN = -6.0D0
-          RANGE_MAX = -RANGE_MIN
-
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
 
-                PX = VISUAL_ORIGIN(1)
-     &             + RANGE_MIN + (I-1)*(RANGE_MAX - RANGE_MIN)/(NI-1)
-                PY = VISUAL_ORIGIN(2)
-     &             + RANGE_MIN + (J-1)*(RANGE_MAX - RANGE_MIN)/(NJ-1)
-                PZ = VISUAL_ORIGIN(3)
-     &             + RANGE_MIN + (K-1)*(RANGE_MAX - RANGE_MIN)/(NK-1)
+                PX = ORIGIN_2D(1)
+     &             - ADD_2D + (I-1)*STEP_2D
+                PY = ORIGIN_2D(1)
+     &             - ADD_2D + (J-1)*STEP_2D
+                PZ = ORIGIN_2D(1)
+     &             - ADD_2D + (K-1)*STEP_2D
 
                 IF(ORIENTATION(IORIENTATION) .EQ. 'xy')
-     &                                        PZ = VISUAL_ORIGIN(3) + D0
+     &                                        PZ = ORIGIN_2D(3)
                 IF(ORIENTATION(IORIENTATION) .EQ. 'xz')
-     &                                        PY = VISUAL_ORIGIN(2) + D0
+     &                                        PY = ORIGIN_2D(2)
                 IF(ORIENTATION(IORIENTATION) .EQ. 'yz')
-     &                                        PX = VISUAL_ORIGIN(1) + D0
+     &                                        PX = ORIGIN_2D(1)
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                     GAO,
@@ -690,7 +707,8 @@ C=======================================================================
 #include "sdpre.h"
 #include "ibtfun.h"
 
-      LOGICAL   LBIT
+      LOGICAL   LBIT,
+     &          NEED_GAO1
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -702,35 +720,55 @@ C=======================================================================
      &          VECTOR_A(3),
      &          VECTOR_B(3)
 
-      IQ_N           =  1 !    number density
-      IQ_M           =  2 !    magnetization
-      IQ_DIVM        =  3 !div(magnetization)
-      IQ_ROTM        =  4 !rot(magnetization)
-      IQ_J           =  5 !    charge current density
-      IQ_DIVJ        =  6 !div(charge current density)
-      IQ_ROTJ        =  7 !rot(charge current density)
-      IQ_JPARA       =  8 !    paramagnetic charge current density
-      IQ_DIVJPARA    =  9 !div(paramagnetic charge current density)
-      IQ_ROTJPARA    = 10 !rot(paramagnetic charge current density)
-      IQ_JDIA        = 11 !     diamagnetic charge current density
-      IQ_ELF         = 12 !    ELF
-      IQ_K           = 13 !    kinetic energy density
-      IQ_H           = 14 !    helicity density
-      IQ_GAMMA5      = 15 !    \gamma^5 density
-      IQ_NUCSPINX    = 16 !    -1/(c^2 r_K^3) (r_K \times j)_x
-      IQ_NUCSPINY    = 17 !    -1/(c^2 r_K^3) (r_K \times j)_y
-      IQ_NUCSPINZ    = 18 !    -1/(c^2 r_K^3) (r_K \times j)_z
-      IQ_EDIPX       = 19 !    r_x * number density
-      IQ_EDIPY       = 20 !    r_y * number density
-      IQ_EDIPZ       = 21 !    r_z * number density
-      IQ_MDIPX       = 22 !    -1/2 (r \times j)_x
-      IQ_MDIPY       = 23 !    -1/2 (r \times j)_y
-      IQ_MDIPZ       = 24 !    -1/2 (r \times j)_z
+      IQ_N           =  1 !                  \psi^\dag        \psi = n
+      IQ_M           =  2 !                  \psi^\dag \Sigma \psi
+      IQ_DIVM        =  3 !    \nabla \cdot  \psi^\dag \Sigma \psi
+      IQ_ROTM        =  4 !    \nabla \times \psi^\dag \Sigma \psi
+      IQ_J           =  5 !-ec               \psi^\dag \alpha \psi = j
+      IQ_DIVJ        =  6 !-ec \nabla \cdot  \psi^\dag \alpha \psi
+      IQ_ROTJ        =  7 !-ec \nabla \times \psi^\dag \alpha \psi
+      IQ_JPARA       =  8 !                  j_para
+      IQ_DIVJPARA    =  9 !    \nabla \cdot  j_para
+      IQ_ROTJPARA    = 10 !    \nabla \times j_para
+      IQ_JDIA        = 11 !                  j_dia (hardcoded for B along z)
+      IQ_ELF         = 12 !                  ELF
+      IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
+      IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
+      IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
+      IQ_NUCSPINX    = 16 !  -1/(c^2 r_K^3) (r_K \times j)_x
+      IQ_NUCSPINY    = 17 !  -1/(c^2 r_K^3) (r_K \times j)_y
+      IQ_NUCSPINZ    = 18 !  -1/(c^2 r_K^3) (r_K \times j)_z
+      IQ_EDIPX       = 19 !                  r_x n
+      IQ_EDIPY       = 20 !                  r_y n
+      IQ_EDIPZ       = 21 !                  r_z n
+      IQ_MDIPX       = 22 !            -1/2 (r_gauge \times j)_x
+      IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
+      IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
+
+      NEED_GAO1 = .FALSE.
+
+      DO IXVECTOR = 1,NR_XVECTORS
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVM    ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTM    ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJ    ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJ    ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_JPARA   ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJPARA) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJPARA) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ELF     ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_K       ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_H       ) NEED_GAO1 = .TRUE.
+      ENDDO
+
+      IF(NEED_GAO1) THEN
+        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+      ELSE
+        CALL GETSOS(GAO,UNUSED,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
+      ENDIF
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
-
-      CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &            BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
 
       DO IXVECTOR = 1,NR_XVECTORS
         IOFF = N2BBASXQ*(IXVECTOR-1)
@@ -984,7 +1022,7 @@ C=======================================================================
           VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
           RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(RSQ**DP32)
+          FACTOR = -D1/(CVAL*CVAL*(RSQ**DP32))
 
           IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINX)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
@@ -1023,9 +1061,9 @@ C=======================================================================
      &               DMAT_AO(1+IOFF),
      &               BUF)
 
-          RX = PX - D0
-          RY = PY - D0
-          RZ = PZ - D0
+          RX = PX - GAUGE_ORIGIN(1)
+          RY = PY - GAUGE_ORIGIN(2)
+          RZ = PZ - GAUGE_ORIGIN(3)
 
           VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)

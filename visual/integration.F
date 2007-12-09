@@ -459,19 +459,19 @@ C=======================================================================
               IF(GRID_ORIENTATION .EQ. 'xy') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PY(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PZ(IPOINT) = VISUAL_ORIGIN(3)
+                PZ(IPOINT) = ORIGIN_2D(3)
               ENDIF
 
               IF(GRID_ORIENTATION .EQ. 'xz') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PY(IPOINT) = VISUAL_ORIGIN(2)
+                PY(IPOINT) = ORIGIN_2D(2)
               ENDIF
 
               IF(GRID_ORIENTATION .EQ. 'yz') THEN
                 PY(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PX(IPOINT) = VISUAL_ORIGIN(1)
+                PX(IPOINT) = ORIGIN_2D(1)
               ENDIF
 
               WEIGHT(IPOINT) = W(I)*W(J)*DIMI*DIMJ
