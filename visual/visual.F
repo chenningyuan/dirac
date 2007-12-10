@@ -735,9 +735,14 @@ C=======================================================================
       IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
       IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
       IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
-      IQ_NUCSPINX    = 16 !  -1/(c^2 r_K^3) (r_K \times j)_x
-      IQ_NUCSPINY    = 17 !  -1/(c^2 r_K^3) (r_K \times j)_y
-      IQ_NUCSPINZ    = 18 !  -1/(c^2 r_K^3) (r_K \times j)_z
+
+!     WARNING: the factor 1/c^2 is missing on purpose for compatibility with the
+!              operators defined in prp/pamprp.F
+      IQ_NUCDIPX     = 16 !      -1/(r_K^3) (r_K \times j)_x
+      IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
+      IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
+
+
       IQ_EDIPX       = 19 !                  r_x n
       IQ_EDIPY       = 20 !                  r_y n
       IQ_EDIPZ       = 21 !                  r_z n
@@ -1002,9 +1007,9 @@ C=======================================================================
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
-        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINX) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINY) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINZ)) THEN
+        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPX) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPY) .OR.
+     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPZ)) THEN
 
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
@@ -1022,13 +1027,13 @@ C=======================================================================
           VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
           RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -D1/(CVAL*CVAL*(RSQ**DP32))
+          FACTOR = -D1/(RSQ**DP32)
 
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINX)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPX)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINY)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPY)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCSPINZ)
+          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPZ)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
