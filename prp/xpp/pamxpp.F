@@ -1024,7 +1024,7 @@ C
      &          CMO(*),EIG(*),IBEIG(*),IORBCL(2,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
-      DATA BLANK16/'                  '/
+      DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
 #include "chrnos.h"
