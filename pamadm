@@ -542,13 +542,13 @@ abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
 abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\\
-abacus/her2out.o    abacus/her2sym.o    abacus/herbas.o\\
+abacus/her2out.o    abacus/her2sym.o    abacus/her2gab.o    abacus/hergp.o\\
 abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\\
-abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
-abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
-abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \\
-abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \\
-abacus/herfckcon.o \\
+abacus/herbas.o     abacus/herrdn.o     abacus/hergroup.o   abacus/herrdn_dirac.o\\
+abacus/hersym.o     abacus/hersol.o     abacus/hertst.o     abacus/hermem.o\\
+abacus/hermodules.o abacus/herfckcon.o \\
+abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o  abacus/abarint.o \\
+abacus/abaopt.o     abacus/abavrml.o    abacus/abawalk.o    abacus/abaop2.o \\
 amfi/amfi.o         amfi/amfi1.o        amfi/amfi2.o        amfi/amfi3.o \\
 amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
@@ -797,7 +797,7 @@ if [ -n "$CAPMOD" ]; then
 cat <<EOF>> Makefile
 
 CAPOBJS = \\
-cap/dircap.o cap/prepcap.o cap/prepcap90.o cap/capnew.o
+cap/dircap.o cap/prepcap.o cap/prepcap90.o cap/capnew.o abacus/herrdn_cap.o
 EOF
 fi
 #
