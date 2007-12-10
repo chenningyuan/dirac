@@ -178,7 +178,6 @@ C
       DATA IROTS/3,5,6/
       DATA IREFL/4,2,1/
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
-      EXTERNAL BDPGROUP
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
