@@ -70,14 +70,14 @@ C
 C
 C     Execute Dirac
 C
-      CALL TIMDAT
+      CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL(WORK,LWORK)
 C
 C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TIMDAT
+      CALL TSTAMP(' ',LUPRI)
       CALL FLSHFO(LUPRI)
       RETURN
       END

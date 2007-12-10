@@ -1060,7 +1060,7 @@ C     =============================
 C
       CALL HEADER('RMOLGRD1: One-electron part',-1)
       IF ( DPRTIM(1,1) .GT. D0 ) THEN
-         CALL TIMDAT
+         CALL TSTAMP(' ',LUPRI)
          WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &               'Estimated CPU time:  ',DPRTIM(1,1),' seconds.'
          WRITE(LUPRI,'(1X,A,F10.2,A/)') 
@@ -1288,7 +1288,7 @@ C
 C
       IF ( LBIT( IGRD_INTBUF, 1 ) ) THEN
          IF ( DPRTIM(2,1) .GT. D0 ) THEN
-            CALL TIMDAT
+            CALL TSTAMP(' ',LUPRI)
             WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(2,1),' seconds.'
             WRITE(LUPRI,'(1X,A,F10.2,A/)') 
@@ -1398,7 +1398,7 @@ C           ... skip LS and SS gradient
 C
       IF ( LBIT ( IGRD_INTBUF, 2 ) ) THEN
          IF ( DPRTIM(3,1) .GT. D0 ) THEN
-            CALL TIMDAT
+            CALL TSTAMP(' ',LUPRI)
             WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(3,1),' seconds.'
             WRITE(LUPRI,'(1X,A,F10.2,A/)') 
@@ -1515,7 +1515,7 @@ C
 C
       IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
          IF ( DPRTIM(4,1) .GT. D0 ) THEN
-            CALL TIMDAT
+            CALL TSTAMP(' ',LUPRI)
             WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(4,1),' seconds.'
             WRITE(LUPRI,'(1X,A,F10.2,A/)') 
