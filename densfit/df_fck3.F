@@ -1730,7 +1730,7 @@ c     For (alpha|beta) in work
 
       return
       END
-
+C
       SUBROUTINE linbcg(n,b,x,itol,tol,itmax,iter,err,
      &                  NDMT,ISYMDM,IFCTYP,GABAL,IPRINT,
      &                  WORK,LWORK)
@@ -1772,7 +1772,7 @@ C     call atimes(n,r,rr,0)
         call asolve(GABAL,n,r,z)
         znrm=snrm(n,z,itol)
       else
-        pause 'illegal itol in linbcg'
+        call quit('illegal itol in linbcg')
       endif
       call asolve(GABAL,n,r,z)
 100   if (iter.le.itmax) then
