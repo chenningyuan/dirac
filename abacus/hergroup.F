@@ -4,22 +4,6 @@ C
 C Purpose: set up point group symmetry information
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      BLOCK DATA BDPGROUP
-C
-C Initialize /PGROUP/
-C
-#include "implicit.h"
-#include "pgroup.h"
-#include "argoscom.h"
-#include "argoscomch.h"
-C
-      DATA SYMOP/ ' E ','Oyz','Oxz','C2z',
-     &            'Oxy','C2y','C2x',' i '/
-      DATA GROUPS/ 'C1 ','C2 ','Cs ','Ci ',
-     &             'D2 ','C2v','C2h','D2h'/
-      data ndptags/ 0,0,0,0,1,1,1,7/
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck syminp */
       SUBROUTINE SYMINP(NSYMOP,KASYM,IFXYZ,CLASS)
 C*****************************************************************************
