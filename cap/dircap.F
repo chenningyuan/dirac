@@ -538,7 +538,7 @@ C ===================================================================
         CALL FLSHFO(LUPRI)
        ENDIF
 
-       LUCAP=0
+       LUCAP=-1
        CALL GPOPEN(LUCAP,
      &  'CAPLBL.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
 

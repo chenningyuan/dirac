@@ -82,7 +82,7 @@ C        get order of expansion from PBC common block
       MAXMMKHK = MAXMMNHK * 2 - 1
       MAXMMKCK = MAXMMNHK * ( MAXMMNHK + 1 ) / 2  
 
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'MM_DATA','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -149,7 +149,7 @@ C
       CALL GPCLOSE(LUINTM,'KEEP')
 
 C     Write counts to a separate file for fast access.
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'MM_CNTS','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE (LUINTM) LMAX_GEN, NBAST, NDISTR, NUCIND, NMOMNT,

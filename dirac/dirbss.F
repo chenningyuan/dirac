@@ -8293,8 +8293,8 @@ C ... rearange INDXLM for splitted basis sets...
      &                   INDXLM,ISTNUCTYP,IPRINT)
 
 C     Open Mean-field input file generated in READIN      
-      LUTMP2 = 0
-      MNFPRP = 0
+      LUTMP2 = -1
+      LUMNFPRP = -1
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 
@@ -8452,12 +8452,12 @@ C      ... decide whether to calculate or not the AOPROPER_MNF.XY file
         IF (.NOT.EXAMF) THEN
 C         WRITE(LUPRI,'(4X,A)')
 C    &  '...this file does not exist, AMFI is utilized ! '
-          CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
+          CALL GPOPEN(LUMNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ELSE 
           WRITE(LUPRI,'(4X,A)')
      &  '...this file does exist, AMFI is not utilized ! '
-          CALL GPOPEN(MNFPRP,AFN,'OLD',' ','UNFORMATTED',
+          CALL GPOPEN(LUMNFPRP,AFN,'OLD',' ','UNFORMATTED',
      &             IDUMMY,.FALSE.)
         ENDIF
 
@@ -8488,17 +8488,17 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-       CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
      &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 
-      REWIND (MNFPRP)
+      REWIND (LUMNFPRP)
 
-      READ(MNFPRP) xa
+      READ(LUMNFPRP) xa
 C    numballcart... total no of functions per centre...
-      READ(MNFPRP) numballcart
+      READ(LUMNFPRP) numballcart
 
 C  ... allocate memmory for this AMFI center
       length3=((numballcart*numballcart)+numballcart)/2
@@ -8511,13 +8511,13 @@ C  ... allocate memmory for this AMFI center
       if (dirbss_verbose) WRITE(LUPRI,'(/,2X,A)')
      & 'AMFI order of (centre specific) basis function: '
       DO I = 1, numballcart
-        READ(MNFPRP) IPTA(I),INDXLMA(I)
+        READ(LUMNFPRP) IPTA(I),INDXLMA(I)
         if (dirbss_verbose)
      &    write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
      &                '(',INDXLMA(I),')'
       ENDDO
 
-      READ(MNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
+      READ(LUMNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
 
       if (dirbss_verbose) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
      &     (ncontrac(I),I=0,Lhigh)
@@ -8580,10 +8580,10 @@ C   ... write out mapping function correspondance....
        ENDDO
 
       if (dirbss_verbose) write(lupri,*)
-      READ(MNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
-      READ(MNFPRP) ya
-      READ(MNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
-      READ(MNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
+      READ(LUMNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
+      READ(LUMNFPRP) ya
+      READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
+      READ(LUMNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
 
       CALL MEMCHK('after AMFI2',WORK,1)
 C ************************************************************************
@@ -8771,7 +8771,7 @@ C        ... release memmory...
       CALL MEMREL('KSOX',WORK,KWORK,KSOX,KFREE,LFREE)
 
       ENDIF ! of NOAMFC
-      CALL GPCLOSE(MNFPRP,'KEEP')
+      CALL GPCLOSE(LUMNFPRP,'KEEP')
 
       ENDDO ! of IATOM
 

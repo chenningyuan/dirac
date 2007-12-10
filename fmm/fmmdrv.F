@@ -660,7 +660,7 @@ C     =========================
 C
 C     total
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
@@ -672,7 +672,7 @@ C
 C
 C     nonclassical 
 C
-      LUONEL = 0
+      LUONEL = -1
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
@@ -791,7 +791,7 @@ c
       LWRK = LWORK - KLAST +1
       CALL DZERO(WORK(KCNTS),NNBASX)
 c
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'MM_DATA','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 C
@@ -824,7 +824,7 @@ C
       CALL GPCLOSE(LUINTM,'KEEP')
 c
 c     Write counts to a separate file for fast access.
-      LUINTM = 0
+      LUINTM = -1
       CALL GPOPEN(LUINTM,'MM_CNTS','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       WRITE (LUINTM) NDISTR, NUCIND, NMOMNT

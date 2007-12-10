@@ -2119,7 +2119,7 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
-      LUMOL = 0
+      LUMOL = -1
       CALL GPOPEN(LUMOL,'ABACUS.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       DO 200 IMLINE = 1,NMLINE
@@ -7196,7 +7196,7 @@ C  /* Deck ircpot */
 #include "mxcent.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
-      LUTRJ = 0
+      LUTRJ = -1
       CALL GPOPEN(LUTRJ,'ABACUS.IRC','OLD','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       NPOINT = 2
