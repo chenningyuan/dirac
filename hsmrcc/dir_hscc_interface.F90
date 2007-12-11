@@ -5,9 +5,9 @@ subroutine HSCCINP(WORD,reset)
 ! Read parameters for the external HSMRCC program, which are passed through
 ! the file.
 ! 
-! Called from TRAINP
+! Called from TRAINP if DOHSCC=.true.
 !
-!
+! Written by Miro ILIAS, Tel Aviv, Prievidza, 2007, 2008
 !-----------------------------------------------------------------------------
 
  use Dirac_HSMRCC  ! ... contains all parameters for the external HSMRCC code
@@ -46,6 +46,7 @@ character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XX
 !   READ (LUCMD,'(A7)',ERR=910, END=910) KEYWORD
 !   print *,'read KEYWORD=',KEYWORD
 ! EndDo
+
  call FLSHFO(LUPRI)
 
 !
@@ -77,13 +78,12 @@ Do
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
       Case ('.NELEC')
         READ(LUCMD,*) NELE
-        print  *,' read NELE=',NELE
+      ! print  *,' read NELE=',NELE
       Case ('.NACT')
-        READ(LUCMD,*) NELE
-        print  *,' read NELE=',NELE
+        READ(LUCMD,*) NACT
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
-        print  *,' read IPRINT_hscc=',iprint_hscc
+      !  print  *,' read IPRINT_hscc=',iprint_hscc
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
         '" is not yet implemented in HSCCINP.'
@@ -100,6 +100,13 @@ Do
 EndDo
 
 !  ... print out read parameters ... 
+
+ WRITE (LUPRI,'(//)')
+ CALL PRSYMB(LUPRI,'=',75,0)
+ WRITE(LUPRI,'(1X,A)') 'HSCCINP: Set-up for the external standalone HSMRCC code'
+ CALL PRSYMB(LUPRI,'=',75,0)
+ WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hscc
+ WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
 
 ! Call QUIT('in HSCCINP !')
 
@@ -179,8 +186,9 @@ end subroutine HSMRCC_Dirac_input
 subroutine HSCC_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
 !
+!  Called from PAMTRA, if defined (MOD_HSCC)
 !
-!  Called from PAMTRA
+!  Written by Miro Ilias, Tel Aviv/Prievidza 2007,2008
 !
 !----------------------------------------------------------------------------------
 use Memory
@@ -188,13 +196,24 @@ use Dirac_HSMRCC
 
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbpsi.h"
+
 !integer,intent(in) :: LWORK
 real*8, intent(in) :: WORK(LWORK)
 logical :: check_point = .false.
 !logical :: check_point = .true.
 integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
 
+!logical :: check_MOints = .false.
+logical :: check_MOints = .true.
+
 Call QEnter('HSCC_STUFF')
+
+if (.not.DOHSCC) then
+ write(LUPRI,'(2x,a)') 'DOHSCC=.false., no HSCC data preparation'
+ Call QExit('HSCC_STUFF')
+ return
+endif
 
 write(LUPRI,*)
 write(LUPRI,*) 'in HSCC_STUFF !! LWORK=',LWORK
@@ -213,9 +232,11 @@ if (check_point) then
 ! call check_pointers
 endif
 
+if (check_MOints) then
 !call read_moltra_integrals
-call read_mrconee; call print_mrconee_data
-call read_mdcint ! read MDCINT file
+ call read_mrconee; call print_mrconee_data
+ call read_mdcint ! read MDCINT file
+endif
 
 call UnstickMemory
 
@@ -277,6 +298,7 @@ write (LUPRI,*) 'EPS1: ',(EPS1(ISP),ISP=1,NSP)
 
 end subroutine print_mrconee_data
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_mdcint
 !----------------------------------------------------
 !
@@ -294,10 +316,15 @@ type(Array2Dim) :: cbuf_vect
 
 logical :: is_mdc
 
+integer :: indk(10000),indl(10000)
+
 inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call QUIT('No MDCINT file!')
 
-open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
-write(LUPRI,'(//2x,a,i3)') 'MDCINT open...lu=',MDINT
+!open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
+open(MDINT,file="MDCINT",form='UNFORMATTED')
+rewind(MDINT)
+
+write(LUPRI,'(//2x,a,i3)') 'MDCINT open and rewinded...lu=',MDINT
 
 READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,( KR(I),KR(-I), I=1,NKR )
 
@@ -308,11 +335,10 @@ if (NKR > NSP2) then
  call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
 endif
 
-    write(LUPRI,*) 'Info from MDCINT file'
+ write(LUPRI,*) 'Info from MDCINT file'
 
-    write(LUPRI,'(A)') 'Integrals have been calculated on the'
-    write(LUPRI,'(A12,$,1X,A)') '      ',DATEX,' at ',TIMEX
-
+ write(LUPRI,'(A)') 'Integrals have been calculated on the'
+ write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
 
 !do i = 1, NKR
 !  write(LUPRI,'(2x,a,i3,a,i3,a,i3)') 'i=',i,' kr(-i)=',KR(-i),' kr(i)=',KR(i)
@@ -331,11 +357,11 @@ endif
 
 is_complex = .false.
 
-ilenght = NKR*NKR ! note: "ccdriv.F":1923 using RCW !!!
+ilenght = NKR*NKR ! note: "ccdriv.F":1923 is using RCW !!!
 
 indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
 
-indl_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 
 cbuf_vect = Make2DimArray('REAL',ilenght,1,'MDCINT two-el. integrals')
 
@@ -346,49 +372,64 @@ Call ZeroObject(indk_vect)
 Call ZeroObject(indl_vect)
 Call ZeroObject(cbuf_vect)
 
-do i=1,NKR ! fill...
-  indmo_vect%p_iA1D(i) = i
-enddo
+!do i=1,NKR ! fill...
+!  indmo_vect%p_iA1D(i) = i
+!enddo
 
   MOINT = 0
 
+  rewind(MDINT)
+  read(MDINT)
+
  1 continue
-   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
-              (indk_vect%p_iA1D(INZ),INZ=1,NONZR,1),     & 
-              (indl_vect%p_iA1D(INZ),INZ=1,NONZR,1),     &
+  ! READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
+   READ(MDINT) IKR,JKR,NONZR,        &
+              !(indk_vect%p_iA1D(INZ),INZ=1,NONZR,1),     & 
+              (indk(INZ),INZ=1,NONZR,1),     & 
+              !(indl_vect%p_iA1D(INZ),INZ=1,NONZR,1),     &
+              (indl(INZ),INZ=1,NONZR,1),     &
               (cbuf_vect%p_rA2D(1,INZ),INZ=1,NONZR,1) 
 
-!   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
-!         (Access_p_iA1D(indk_vect)(INZ),INZ=1,NONZR),    & 
-!         (Access_p_iA1D(indl_vect)(INZ),INZ=1,NONZR),    &
-!               (cbuf_vect%p_rA2D(1,INZ),INZ=1,NONZR) 
+  ! call print_vect_attrib(indk_vect)
+  ! call print_vect_attrib(indl_vect)
 
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
+
+    if (NONZR > ilenght) then
+     call Quit('HSCC: NONZR > ilenght !!!')
+    endif
    
     MOINT = MOINT + 1
 
     IF (IKR.EQ.0) THEN
-         IF (JKR.EQ.0) THEN
-            NONZR = -1
-         ELSE
-            READ (MDINT) NEXTFIL
-            CLOSE (MDINT,STATUS='KEEP')
-            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
-            GOTO 1
-         ENDIF
+        ! IF (JKR.EQ.0) THEN
+        !    NONZR = -1
+        ! ELSE
+        !    READ (MDINT) NEXTFIL
+        !    CLOSE (MDINT,STATUS='KEEP')
+        !    OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+        !    GOTO 1
+        ! ENDIF
+        write(LUPRI,*) 'HSCC: End of file MDCINT.'
+        GoTo 2
     ENDIF
+
+ do i=1,NONZR
+  ! write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+   write(LUPRI,*) indk(i),indl(i),cbuf_vect%p_rA2D(1,i)
+ enddo
+
+    GoTo 1
 
   if (NONZR == -1) then
    call Quit('NONZR == -1!')
   endif
 
- CLOSE (MDINT,STATUS='KEEP')
+! do i=1,NONZR
+!   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+! enddo
 
- do i=1,NONZR
-   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
- enddo
-
- write(LUPRI,*) 'nonzero integrals from MDCINT together with indexes read ... '
+! write(LUPRI,*) 'nonzero integrals from MDCINT together with indexes read ... '
 
  i = indmo_vect%p_iA1D(KR(IKR))
  j = indmo_vect%p_iA1D(KR(JKR))
@@ -417,6 +458,9 @@ enddo
 
  enddo
 
+ 2 continue
+ CLOSE (MDINT,STATUS='KEEP')
+
  return
 
  10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
@@ -431,5 +475,5 @@ enddo
       'ERROR branch taken when reading 2-e integrals',  &
       'CARITH =',CARITH,', INTERFACE =',INTERFACE
 
-end subroutine  read_mdcint
+end subroutine read_mdcint
 
