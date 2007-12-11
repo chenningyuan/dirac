@@ -754,12 +754,14 @@ C
         GO TO 300
   313 CONTINUE
 #if defined (MOD_HSCC)
+!     IF (DOHSCC) THEN
         CALL HSCCINP(WORD,.false.)
+!     ENDIF
 #else
 C       prevent dirac.x running into an infinite loop here
-C       if *HSCC in input but MOD_HSCC not defined !!!
+C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
         CALL QUIT(
-     &  '*HSCC specified, but HSCC is not included in this version')
+     &  '*HSCC specified, but HSCC module is not included in this version')
 #endif
         GO TO 300
   314 CONTINUE
@@ -768,9 +770,9 @@ C
   400 CONTINUE
 
 #if defined (MOD_HSCC)
-      IF (DOHSCC) THEN
-        CALL HSCCINP(WORD,.true.)
-      ENDIF
+!     IF (DOHSCC) THEN
+!       CALL HSCCINP(WORD,.true.)
+!     ENDIF
 #endif
 
 C
