@@ -174,6 +174,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NFM,RCW),INDK(*),INDL(*)
       REAL*8 RKL(*)
+      LOGICAL CHECK_INTS
 C
       NZKL = 0
       IKR1 = IKR
@@ -252,6 +253,17 @@ C
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
+
+      CHECK_INTS = .FALSE.
+
+      IF (CHECK_INTS) THEN
+         write(LUPRI,'(2x,a,3i4)') 'saved IKR1,JKR1,NZKL:',IKR,JKR,NZKL
+         DO INZ = 1, NZKL
+            WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
+     &                                   (RKL(RCW*(INZ-1)+I),I=1,RCW)
+         ENDDO
+      ENDIF
+
 C
 C     We should send in the print flag here, and make this an option.
 C
