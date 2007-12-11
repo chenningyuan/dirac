@@ -52,9 +52,16 @@ module Parameters
    double precision, parameter :: zero = 0.0d00
    double precision, parameter :: one  = 1.0d00
    double precision, parameter :: half = 0.5d00
+
    double precision, parameter :: NaN    = Z'7FF8000000000000'
-   double precision, parameter :: NegInf = Z'FFF0000000000000'
-   double precision, parameter :: PosInf = Z'7FF0000000000000'
+
+  ! ... check it for different compilers !!!
+  ! double precision, parameter :: NegInf = Z'FFF0000000000000'
+   double precision, parameter :: NegInf = -1.0/0.0
+   !double precision, parameter :: NegInf = transfer(Z'FFF0000000000000', 0d0)
+
+  ! double precision, parameter :: PosInf = Z'7FF0000000000000'
+  double precision, parameter :: PosInf = 1.0/0.0
 
    ! HSMRCC parameters
 

@@ -86,7 +86,8 @@ endif
 
 ifeq ($(FC),gfortran)
 ## gfortran/gcc
-        FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
+       # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
+        FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) -fno-range-check
 endif
 
 ifeq ($(FC),ifort)
@@ -196,7 +197,7 @@ $(executable) : $(objects)
 	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
                      $(dirac_objs) $(dirac_libs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
-	@echo "The independedr executable file generated is ==> " $(cs)$(@F)$(ce) " <=="
+	@echo "The independent executable file ==> " $(cs)$(@F)$(ce) " <== was compiled."
 
 ##################
 ###  cleaning  ###

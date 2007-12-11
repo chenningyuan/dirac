@@ -18,7 +18,6 @@ module GMSMod
    double precision, allocatable :: XXPREAD(:)
    integer, allocatable :: IXPREAD(:)
 
-
 contains
 
 subroutine InitGMSMod
@@ -35,8 +34,9 @@ subroutine InitGMSMod
    ! ... read from FileMR2EINT, otherwise it can be read  ...
    ! ... from FileVINF which has a copy of this info      ...
 
-
-  print *,'in InitGMSMod routine !'
+   if (get_iprint() >= 6) then
+     Call Header('Output from InitGMSMod routine',-1)
+   endif
 
    if (OPTION(GENINT)) then
 
@@ -57,8 +57,17 @@ subroutine InitGMSMod
       ! ... Record #3 : IUNIQ, LABELSIZE, NINTMX                           ...
       ! ... Record #4 onwards anti-symmetric 2-e integrals                 ...
 
+      if (get_iprint() >=8) then
+        write(UOUT,*) ' Going to open FileMR1EINT=',FileMR1EINT
+        write(UOUT,*) ' Going to open FileMR2EINT=',FileMR2EINT
+      endif
+
       open(UMR1EINT,file=FileMR1EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
       open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+
+      if (get_iprint() >=8) then
+        write(UOUT,*) 'files FileMR1EINT, FileMR2EINT are open'
+      endif
 
       rewind(UMR1EINT)
       rewind(UMR2EINT)
