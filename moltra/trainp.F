@@ -760,8 +760,8 @@ C
 #else
 C       prevent dirac.x running into an infinite loop here
 C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
-        CALL QUIT(
-     &  '*HSCC specified, but HSCC module is not included in this version')
+        CALL QUIT('*HSCC specified, '//
+     &     'but HSCC module is not included in this version')
 #endif
         GO TO 300
   314 CONTINUE
