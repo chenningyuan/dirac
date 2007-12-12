@@ -255,12 +255,15 @@ C
      &               (RKL(INZ),INZ=1,NZKL*RCW)
 
       CHECK_INTS = .FALSE.
-
+CMI   CHECK_INTS = .true.
       IF (CHECK_INTS) THEN
-         write(LUPRI,'(2x,a,3i4)') 'saved IKR1,JKR1,NZKL:',IKR,JKR,NZKL
+         write(LUPRI,'(2x,a,3i4)')
+     &  'MOLTRA: saved IKR1,JKR1,NZKL ',IKR,JKR,NZKL
+         write(LUPRI,*) '... INDK,INDL,integral:'
          DO INZ = 1, NZKL
-            WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-     &                                   (RKL(RCW*(INZ-1)+I),I=1,RCW)
+CMI         WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
+            WRITE (LUPRI,*) INDK(INZ),INDL(INZ),
+     &                  (RKL(RCW*(INZ-1)+I),I=1,RCW)
          ENDDO
       ENDIF
 
