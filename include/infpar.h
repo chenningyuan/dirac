@@ -28,7 +28,7 @@ extern struct common_diracinfpar {
 #else /* __CVERSION__ */
 !  -- File: infpar.h for DIRAC; specific information for parallel calculations
 !     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
-!        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
+!        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       INTEGER MAXNOD, MAXCL2
       PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
@@ -42,9 +42,14 @@ extern struct common_diracinfpar {
 !CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
       COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
-     &       ,NUMNOD, ICOUNT,MTIDS, MPARID, NODE, NODES                  &
+     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES                         &
      &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
      &       ,NODNAM, MYNAME
+
+      EQUIVALENCE (NODTOT, NUMNOD)
+C     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+C         This equivalence is important such that both e.g. abacus routines using NODTOT
+C         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
 
 #if defined (INT_STAR8)
 !     integer array ISTAT contains MPI_SOURCE information.
