@@ -13,14 +13,15 @@
 #if defined(__CVERSION__)
 #define MAXNOD 200
 #define MAXCL2 10000
+#define nodtot numnod
 extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
-    long iprpar, ntask, ncode, ndegdi, mynum, mytid, nodtot;
+    long iprpar, ntask, ncode, ndegdi, mynum, mytid;
     long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
     long parher, slave, timing, debug, pario;
 #else
-    int  iprpar, ntask, ncode, ndegdi, mynum, mytid, nodtot;
+    int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
     int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
     int  parher, slave, timing, debug, pario;
 #endif 
