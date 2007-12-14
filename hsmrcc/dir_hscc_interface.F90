@@ -311,12 +311,10 @@ subroutine read_mdcint
 #include "implicit.h"
 #include "priunit.h"
 
-type(Vect) :: indk_vect,indl_vect, indmo_vect
+type(Vect) :: indk_vect, indl_vect, indmo_vect
 type(Array2Dim) :: cbuf_vect
 
 logical :: is_mdc
-
-integer :: indk(10000),indl(10000)
 
 inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call QUIT('No MDCINT file!')
 
@@ -326,7 +324,7 @@ rewind(MDINT)
 
 write(LUPRI,'(//2x,a,i3)') 'MDCINT open and rewinded...lu=',MDINT
 
-READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,( KR(I),KR(-I), I=1,NKR )
+READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 
 !READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR
 !READ (MDINT,ERR=10000,END=10000) (  KR(I),KR(-I), I=1,NKR )
@@ -337,7 +335,7 @@ endif
 
  write(LUPRI,*) 'Info from MDCINT file'
 
- write(LUPRI,'(A)') 'Integrals have been calculated on the'
+ write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
  write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
 
 !do i = 1, NKR
@@ -349,7 +347,6 @@ endif
         do I=1,NKR,1
           write(LUPRI,'(2I8)') KR(-I),KR(I)
         end do
-
 !
 ! ... read the rest ... integrals and indexes  ...
 ! ... allocate memmory for integrals/indexes   ...
@@ -382,13 +379,9 @@ Call ZeroObject(cbuf_vect)
   read(MDINT)
 
  1 continue
-  ! READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,        &
-   READ(MDINT) IKR,JKR,NONZR,        &
-              !(indk_vect%p_iA1D(INZ),INZ=1,NONZR,1),     & 
-              (indk(INZ),INZ=1,NONZR,1),     & 
-              !(indl_vect%p_iA1D(INZ),INZ=1,NONZR,1),     &
-              (indl(INZ),INZ=1,NONZR,1),     &
-              (cbuf_vect%p_rA2D(1,INZ),INZ=1,NONZR,1) 
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
+   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      & 
+   ( cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
 
   ! call print_vect_attrib(indk_vect)
   ! call print_vect_attrib(indl_vect)
@@ -398,38 +391,39 @@ Call ZeroObject(cbuf_vect)
     if (NONZR > ilenght) then
      call Quit('HSCC: NONZR > ilenght !!!')
     endif
-   
-    MOINT = MOINT + 1
-
-    IF (IKR.EQ.0) THEN
-        ! IF (JKR.EQ.0) THEN
-        !    NONZR = -1
-        ! ELSE
-        !    READ (MDINT) NEXTFIL
-        !    CLOSE (MDINT,STATUS='KEEP')
-        !    OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
-        !    GOTO 1
-        ! ENDIF
-        write(LUPRI,*) 'HSCC: End of file MDCINT.'
-        GoTo 2
-    ENDIF
 
  do i=1,NONZR
-  ! write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
-   write(LUPRI,*) indk(i),indl(i),cbuf_vect%p_rA2D(1,i)
+   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
  enddo
+   
+    MOINT = MOINT + NONZR
 
-    GoTo 1
+    IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NONZR = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            GOTO 1
+         ENDIF
+        write(LUPRI,*) 'HSCC: End of file MDCINT.'
+        GoTo 1
+    ENDIF
 
-  if (NONZR == -1) then
-   call Quit('NONZR == -1!')
-  endif
+ if (NONZR == -1) then
+  ! call Quit('NONZR == -1!')
+ !  RETURN
+   GoTo 2
+ endif
 
 ! do i=1,NONZR
 !   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
 ! enddo
 
-! write(LUPRI,*) 'nonzero integrals from MDCINT together with indexes read ... '
+!  GoTo 1
+
+ !write(LUPRI,*) 'all nonzero integrals from MDCINT together with indexes read ... '
 
  i = indmo_vect%p_iA1D(KR(IKR))
  j = indmo_vect%p_iA1D(KR(JKR))
