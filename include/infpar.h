@@ -48,9 +48,9 @@ extern struct common_diracinfpar {
      &       ,NODNAM, MYNAME
 
       EQUIVALENCE (NODTOT, NUMNOD)
-C     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
-C         This equivalence is important such that both e.g. abacus routines using NODTOT
-C         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+!C     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+!C         This equivalence is important such that both e.g. abacus routines using NODTOT
+!C         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
 
 #if defined (INT_STAR8)
 !     integer array ISTAT contains MPI_SOURCE information.
