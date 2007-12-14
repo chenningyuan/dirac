@@ -94,7 +94,6 @@
 
       call QEnter('diagonalize')
 
-
       info = 0
       lwork = 8*n
 
@@ -140,10 +139,12 @@
 !
          call DGEEV('v','v',n,a,ldmat,wr,wi,vl,ldmat,vr,ldmat,work,lwork,info)
          if (info.ne.0) then
-            write(UOUT,*) "diagonalize: Failure in LAPACK routine DGEEV"
+            write(UOUT,*)  &
+            "diagonalize: Failure in LAPACK routine DGEEV "
             write(UOUT,*) "INFO  = ",info
             call flush(UOUT)
-            call abort
+            !call abort
+            call Quit('diagonalize: Failure in LAPACK routine DGEEV !')
          endif
 
 !        deal with complex eigenvalues
