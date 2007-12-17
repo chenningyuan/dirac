@@ -942,7 +942,7 @@ C
       integer*4 INZ
 
       REAL*8 RDUM
-      LOGICAL FOCKSP
+      LOGICAL FOCKSP, CHECK_INTS
       CHARACTER*10 NEXTFIL
 C
 C---------------Executable code--------------------------------------
@@ -953,6 +953,10 @@ C     Depending on the MOLTRA transformation algorithm the integrals may
 C     be distributed over the nodes or only on the master
 C     They will always need to be dsitributed at this point
 C 
+
+C     CHECK_INTS = .TRUE.
+      CHECK_INTS = .false.
+
    1  CONTINUE
       IF (MYPROC.EQ.MREADER) THEN
 C
@@ -991,6 +995,15 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
+
+      IF (CHECK_INTS) THEN
+        write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
+        write(6,*) ' ... INDK,INDL,CBUF: '
+        do i=1,NONZR
+          write(6,*) INDK(I),INDL(I),CBUF(1,I)
+        enddo
+      ENDIF
+
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
             NONZR = -1
@@ -1002,6 +1015,11 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
          ENDIF
       ENDIF
       ENDIF
+
+      IF (CHECK_INTS) THEN
+!      call quit('GET2INTS: here end...')
+      ENDIF
+
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
       CALL MPI_BCAST(IKR,  1,my_MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
