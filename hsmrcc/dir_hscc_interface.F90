@@ -8,6 +8,7 @@ subroutine HSCCINP(WORD,reset)
 ! Called from TRAINP if DOHSCC=.true.
 !
 ! Written by Miro ILIAS, Tel Aviv, Prievidza, 2007, 2008
+!
 !-----------------------------------------------------------------------------
 
  use Dirac_HSMRCC  ! ... contains all parameters for the external HSMRCC code
@@ -311,7 +312,7 @@ subroutine read_mdcint
 #include "implicit.h"
 #include "priunit.h"
 
-type(Vect) :: indk_vect, indl_vect, indmo_vect
+type(Vect) :: indk_vect, indl_vect
 type(Array2Dim) :: cbuf_vect
 
 logical :: is_mdc
@@ -325,9 +326,6 @@ rewind(MDINT)
 write(LUPRI,'(//2x,a,i3)') 'MDCINT open and rewinded...lu=',MDINT
 
 READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
-
-!READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR
-!READ (MDINT,ERR=10000,END=10000) (  KR(I),KR(-I), I=1,NKR )
 
 if (NKR > NSP2) then
  call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
@@ -362,16 +360,9 @@ indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 
 cbuf_vect = Make2DimArray('REAL',ilenght,1,'MDCINT two-el. integrals')
 
-indmo_vect = MakeVector('INTE',NKR,'for MDCINT - indmo array')
-
-Call ZeroObject(indmo_vect)
-Call ZeroObject(indk_vect)
-Call ZeroObject(indl_vect)
-Call ZeroObject(cbuf_vect)
-
-!do i=1,NKR ! fill...
-!  indmo_vect%p_iA1D(i) = i
-!enddo
+!Call ZeroObject(indk_vect)
+!Call ZeroObject(indl_vect)
+!Call ZeroObject(cbuf_vect)
 
   MOINT = 0
 
@@ -383,10 +374,13 @@ Call ZeroObject(cbuf_vect)
    ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      & 
    ( cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
 
+    MOINT = MOINT + NONZR
+
   ! call print_vect_attrib(indk_vect)
   ! call print_vect_attrib(indl_vect)
 
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
+    write(LUPRI,'(2x,a,i6)') ' actual number of read integrals:',MOINT
 
     if (NONZR > ilenght) then
      call Quit('HSCC: NONZR > ilenght !!!')
@@ -396,8 +390,6 @@ Call ZeroObject(cbuf_vect)
    write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
  enddo
    
-    MOINT = MOINT + NONZR
-
     IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
             NONZR = -1
@@ -405,10 +397,10 @@ Call ZeroObject(cbuf_vect)
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
             OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            write(LUPRI,*) 'HSCC: proceeding to the next file MDCINT.'
             GOTO 1
          ENDIF
-        write(LUPRI,*) 'HSCC: End of file MDCINT.'
-        GoTo 1
+         !GOTO 1
     ENDIF
 
  if (NONZR == -1) then
@@ -421,42 +413,18 @@ Call ZeroObject(cbuf_vect)
 !   write(LUPRI,*) indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
 ! enddo
 
-!  GoTo 1
+  write(LUPRI,*) 'jumping for the next integral batch ... '
+  GoTo 1
 
- !write(LUPRI,*) 'all nonzero integrals from MDCINT together with indexes read ... '
-
- i = indmo_vect%p_iA1D(KR(IKR))
- j = indmo_vect%p_iA1D(KR(JKR))
-
- itr = indmo_vect%p_iA1D(KR(-IKR))
- jtr = indmo_vect%p_iA1D(KR(-JKR))
-
- SignIJ = SIGN(1,IKR) * SIGN(1,JKR)
-
- do INZ = 1, NONZR
-  kkr = indk_vect%p_iA1D(INZ)
-  lkr = indl_vect%p_iA1D(INZ)
-  
-  k = indmo_vect%p_iA1D(KR(kkr))
-  l = indmo_vect%p_iA1D(KR(lkr))
-
-  ktr = indmo_vect%p_iA1D(KR(-kkr))
-  ltr = indmo_vect%p_iA1D(KR(-lkr))
-
-  SignKL = SIGN(1,kkr) * SIGN(1,lkr)
-
-! --> Original integral
-    IF (i.NE.0.AND.j.NE.0.AND.k.NE.0.AND.l.NE.0) THEN
-      write(LUPRI,'(4i3,1x,a,f22.14)')  i,j,k,l,':',cbuf_vect%p_rA2D(1,INZ)
-    ENDIF
-
- enddo
+ write(LUPRI,*)  &
+ ' all nonzero integrals from MDCINT with indexes read ...closing the file'
 
  2 continue
  CLOSE (MDINT,STATUS='KEEP')
 
  return
 
+ ! .... error outputs ....
  10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
       CALL QUIT('ERROR READING HEADER MDCINT')
 
