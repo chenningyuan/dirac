@@ -1,8 +1,3 @@
-      INTEGER GF_UNIT
-      PARAMETER (GF_UNIT = 91)
-      CHARACTER*(*) GF_NAME
-      PARAMETER (GF_NAME = 'gf-matrix')
-
       INTEGER LF_UNIT
       PARAMETER (LF_UNIT = 92)
       CHARACTER*(10) LF_NAME
@@ -14,23 +9,21 @@
 C aspg, original code from walter
 C     PARAMETER (NGBFSZ = 2047)
 C aspg, enlarged parameter
-      PARAMETER (NGBFSZ = 8191)
+C     PARAMETER (NGBFSZ = 8191)
+      PARAMETER (NGBFSZ = ((BLOCKSIZE/4)-1))
 
       INTEGER MAX_MPI_SIZE
 C aspg, original code from walter
-C     PARAMETER (MAX_MPI_SIZE = 32)
+      PARAMETER (MAX_MPI_SIZE = 32)
 C aspg, enlarged parameter
-      PARAMETER (MAX_MPI_SIZE = 128)
+C     PARAMETER (MAX_MPI_SIZE = 128)
 
       INTEGER GF_RECLEN, GF_MAXREC
       PARAMETER (GF_RECLEN = 4 * BLOCKSIZE)
 C aspg, original code from walter
 C     PARAMETER (GF_MAXREC = 30000)
 C aspg, enlarged parameter
-CSK   PARAMETER (GF_MAXREC = 30000000000)
-CSK   30000000000 is too optimistic for INT*4 :-)
-CSK   modified enlarged parameter
-      PARAMETER (GF_MAXREC = 2147483647)
+      PARAMETER (GF_MAXREC = 64 * BLOCKSIZE)
 
       INTEGER N_BUFFER
       PARAMETER (N_BUFFER = 1024)
