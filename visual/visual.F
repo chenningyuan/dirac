@@ -807,7 +807,7 @@ C=======================================================================
 
         IQ = IQ_ELF
         IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
-          ELF_KIN = D0
+          FERMI_KIN = D0
           DO IXYZ = 1,3
             DO IC = 1,MC
               SCALAR = D0
@@ -819,11 +819,11 @@ C=======================================================================
      &                    DMAT_AO(1+IOFF),
      &                    BUF)
 
-              ELF_KIN = ELF_KIN + SCALAR/D2
+              FERMI_KIN = FERMI_KIN + SCALAR
             ENDDO
           ENDDO
 
-          FACTOR = 0.3D0*((D3*PI*PI)**DP23)
+          FERMI_KIN = FERMI_KIN/D2
 
           CALL GETRHO(DENSITY,
      &                IREP_XVECTOR(IXVECTOR),
@@ -838,14 +838,13 @@ C=======================================================================
      &                 DMAT_AO(1+IOFF),
      &                 BUF)
 
-          GRADIENT_SQUARED = VECTOR_A(1)**D2
-     &                     + VECTOR_A(2)**D2
-     &                     + VECTOR_A(3)**D2
+          GRADIENT_SQUARED = DDOT(3,VECTOR_A,1,VECTOR_A,1)
 
-          H = FACTOR*(DENSITY**DP53)
-          G = ELF_KIN - GRADIENT_SQUARED/(8.0D0*DENSITY)
+          BOSON_KIN = GRADIENT_SQUARED/(8.0D0*DENSITY)
 
-          ELF_CHI = G/H
+          TF_KIN = 0.3D0*((D3*PI*PI)**DP23)*(DENSITY**DP53)
+
+          ELF_CHI = (FERMI_KIN - BOSON_KIN)/TF_KIN
 
           SCALAR = D1/(D1 + ELF_CHI*ELF_CHI)
 
