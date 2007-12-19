@@ -1,3 +1,8 @@
+      INTEGER GF_UNIT
+      PARAMETER (GF_UNIT = 91)
+      CHARACTER*(*) GF_NAME
+      PARAMETER (GF_NAME = 'gf-matrix')
+
       INTEGER LF_UNIT
       PARAMETER (LF_UNIT = 92)
       CHARACTER*(10) LF_NAME
@@ -19,7 +24,11 @@ C aspg, enlarged parameter
 C     PARAMETER (MAX_MPI_SIZE = 128)
 
       INTEGER GF_RECLEN, GF_MAXREC
+#if defined (INT_STAR8)
+      PARAMETER (GF_RECLEN = 8 * BLOCKSIZE)
+#else
       PARAMETER (GF_RECLEN = 4 * BLOCKSIZE)
+#endif
 C aspg, original code from walter
 C     PARAMETER (GF_MAXREC = 30000)
 C aspg, enlarged parameter
