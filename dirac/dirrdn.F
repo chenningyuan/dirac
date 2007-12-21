@@ -1615,6 +1615,9 @@ C     a U(+90) calculation.
      &      'abs(molecular charge) .gt. 2'
          END IF
       END IF
+      IF(BNCRON) THEN
+        DHF_INTTYP= 'Scr. nuclei '
+      ENDIF
 C
       IF (DOBOSSEL) THEN
 C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
