@@ -156,12 +156,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTB */
       SUBROUTINE MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &                  FMAT,NFM,INDK,INDL,RKL)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Write block of integrals to MDINT file. This is the old MOLFDIR
 C     format and should work with both RELCCSD and DIRRCI.
 C
 C     26-6-2002 : Slightly modified to avoid writing of imaginary zeroes
 C     in case of real groups.
+C
+C     Called from SYMFINT.
 C
 C     Written by Luuk Visscher, March 1997
 C
@@ -174,7 +177,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NFM,RCW),INDK(*),INDL(*)
       REAL*8 RKL(*)
-      LOGICAL CHECK_INTS
+
+      CALL QENTER('MDINTB')
+
+      IF (IPRTRA.GE.5) THEN
+        CALL HEADER('Output from MDINTB routine',-1)
+        write(LUPRI,'(2X,A,I4)') '....Integral CLASS=',ICLASS
+C     Class 1 : (i    j    | k    l   )
+C     Class 2 : (i    j    | kbar lbar)
+C     Class 3 : (i    jbar | k    lbar)
+C     Class 4 : (ibar j    | k    lbar)
+C     ...      
+      ENDIF
 C
       NZKL = 0
       IKR1 = IKR
@@ -183,6 +197,13 @@ C
       LL = 0
       DO IREPL = 1, NFSYM
          IREPK = MOD(IREPL+IREPIJ,2) + 1
+
+         IF (IPRTRA.GE.5) THEN
+          WRITE(LUPRI,'(2X,A,I3,A,I3)') 'IREPK=',IREPK,' IREPL=',IREPL
+          WRITE(LUPRI,'(2X,A,I3,A,I3)') ' NSTR3(IREPK)=',NSTR3(IREPK), 
+     &                                  ' NSTR4(IREPL)=',NSTR4(IREPL)
+         ENDIF
+         
          DO L = 1, NSTR4(IREPL)
             LL = LL + 1
             DO K = 1, NSTR3(IREPK)
@@ -246,37 +267,32 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
-C     We may  exceed the maximum file length. Check !
+C     We may exceed the maximum file length. Check it in the following
+C     routine !
 C
       CALL MDINTN (NZKL)
-C
+
+C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
 
-      CHECK_INTS = .FALSE.
-CMI   CHECK_INTS = .true.
-      IF (CHECK_INTS) THEN
-         write(LUPRI,'(2x,a,3i4)')
-     &  'MOLTRA: saved IKR1,JKR1,NZKL ',IKR,JKR,NZKL
-         write(LUPRI,*) '... INDK,INDL,integral:'
-         DO INZ = 1, NZKL
-CMI         WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-            WRITE (LUPRI,*) INDK(INZ),INDL(INZ),
-     &                  (RKL(RCW*(INZ-1)+I),I=1,RCW)
-         ENDDO
-      ENDIF
-
 C
 C     We should send in the print flag here, and make this an option.
-C
-      IF (IPRINT.GE.5) THEN
+C   ------------------------------------------------------------------
+      IF (IPRTRA.GE.5) THEN
+         WRITE(LUPRI,'(2x,a,3i4)')
+     &  'MOLTRA: integrals batch saved;  IKR1,JKR1,NZKL:',
+     &   IKR1,JKR1,NZKL
          DO INZ = 1, NZKL
-            WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-     &                                   (RKL(RCW*(INZ-1)+I),I=1,RCW)
+           WRITE (LUPRI,'(I4,A,I4,A,A,I4,A,I4,A,2f30.16)')
+     &     INZ,'./',NZKL,' >',
+     &     ' INDK=',INDK(INZ),' INDL=',INDL(INZ),
+     &     ' intgrl:',(RKL(RCW*(INZ-1)+I),I=1,RCW)
          ENDDO
       ENDIF
 C
+      CALL QEXIT('MDINTB')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
