@@ -199,7 +199,7 @@ C
      &     'UNFORMATTED',IDUMMY,.FALSE.)
 #if defined (SYS_CRAY) || defined (SYS_T90) || defined (INT_STAR8) && defined (SYS_LINUX) || (defined (SYS_AIX) && defined (VAR_INT64))
       LRECL = LBFINP + LBFINP + 1
-#else if (defined (SYS_AIX) && !defined (VAR_INT64)) || !defined (INT_STAR8) && defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)
+#elif (defined (SYS_AIX) && !defined (VAR_INT64)) || !defined (INT_STAR8) && defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)
       IF (NBASIS .LE. 255) THEN
          LRECL = 2*LBFINP + LBFINP + 1
       ELSE
