@@ -1708,25 +1708,18 @@ C
 ********************************************
       CALL QENTER('LUCIAR')
 C
-C     shared memory version disabled - set on deck *OPTIMI .SHMEMO
-C
-csk      SHARED_M = .FALSE.
-C
       MZ_NUM = 0
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
 C
-CSK      IF( SHARED_M .and. MZ_NUM .eq. 2 ) THEN
-CSK        write(LUWRT,*) ' shared memory mode for complex arithmetic '
-CSK        write(LUWRT,*) ' needs debug; I will stop now!'
-CSK        CALL Abend2('stop in KRMC_LUCI2: SHARED_M == .TRUE. and NZ ==2')
-CSK      END IF
-C
-C
-C
 C     Compute offset from WRK to WORK
 C
+#if defined (INT_STAR8)
       CALL COMPOFF(WRK,WORK,KBASE)
+#else
+      CALL COMPOFF(WRK,WORK,KBASE_I4)
+      KBASE = KBASE_I4
+#endif
 C
 C     32 bit:  *kbase = (int) (wrk-work+1);
 C     64 bit:  *kbase = (long) (wrk-work+1);
@@ -1739,8 +1732,10 @@ C
         WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
         write(LUWRT,*) ' Absolute memory addresses do not match.'
         write(LUWRT,*) ' Continuing.'
-C        CALL QUIT('Memory addressing error in KRMCLUCI')
+C       CALL QUIT('Memory addressing error in KRMCLUCI')
       END IF
+C
+C
 C 
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -1859,7 +1854,7 @@ C       construct new communication groups
         CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
      &                             WORK(KPROCLIST2))
 C
-csk        NPTESTVAR = 20
+C       NPTESTVAR = 20
         IF( NPTESTVAR .ge. 20 ) THEN
           WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
           WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
@@ -1945,7 +1940,8 @@ C
 C
 C         allocate T_BUFF array (replaces use of WORK(KT_CC))
 C
-csk          write(luwrt,*) 'allocating T_BUFF with length', LEN_T_BUFF
+csk       write(6,*) 'allocating T_BUFF with length', LEN_T_BUFF,
+csk  &                          MYPROC
           CALL GET_MEM_T( IS_DUMMY )
 C
 C         create memory window (node group specific!)
@@ -1958,9 +1954,9 @@ C
 C         open memory window (collective call for communicator
 C         group MY_NEWCOMM)
 C
-csk          write(luwrt,*) 'open MY_T_WIN with length', MY_T_LEN
+csk       write(6,*) 'open MY_T_WIN with length', MY_T_LEN,MYPROC
           CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
-csk          write(luwrt,*) ' MY_T_WIN handle', MY_T_WIN
+csk       write(6,*) ' MY_T_WIN handle', MY_T_WIN,MYPROC
 C
         END IF
 #endif
