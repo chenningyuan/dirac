@@ -250,13 +250,24 @@ C
 C
 C     allocate memory type specific
 C
+C     print some debug info
+C
+C
+csk   WRITE(LUPRI,*) ' ISIZE_DP and NELEMENT ',ISIZE_DP,
+csk  &                                         ISIZE_my_int
+csk   WRITE(LUPRI,*) ' allocation of NELEMENT',NELEMENT
+C
+C
+C
       IF( NTYPE .eq. 1 ) THEN
         MY_MM_NEEDSSCR = ISIZE_DP * NELEMENT
         MY_MM_NEEDS    = MY_MM_NEEDSSCR
+csk     WRITE(LUPRI,*) ' allocation of MY_MM_NEEDS',MY_MM_NEEDS
         CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
       ELSE IF ( NTYPE .eq. 2 )THEN
         MY_MM_NEEDSSCR = ISIZE_my_int * NELEMENT
         MY_MM_NEEDS    = MY_MM_NEEDSSCR
+csk     WRITE(LUPRI,*) ' allocation of MY_MM_NEEDS',MY_MM_NEEDS
         CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
       END IF
 C
@@ -305,13 +316,14 @@ C
 C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "typesz_mpi2.h"
 C
       CALL MPI_TYPE_EXTENT(MPI_REAL8,ISIZE_DP,IERR)
       CALL MPI_TYPE_EXTENT(my_MPI_INTEGER,ISIZE_my_int,IERR)
-C
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -322,23 +334,23 @@ C***********************************************************************
 C
 C     open memory window to be used in one-sided MPI communication
 C
-C     INPUT: 
+C     INPUT:
 C            array RBUF (should be allocated by mpixmem_alloc to
 C            assure lock functionality)
 C            number of elements NELEMENT of type NTYPE
-C            
+C
 C            NTYPE == 1: REAL*8
 C            NTYPE == 2: my_MPI_INTEGER
 C
 C
-C     OUTPUT: 
-C            new memory window handle MY_WIN shared by all 
+C     OUTPUT:
+C            new memory window handle MY_WIN shared by all
 C            processes in calling communicator IWIN_COMM (group).
 C            extension of memory window on each process may be
 C            unsymmetric.
-C                       
+C
 C     Written by S. Knecht - Oct 19 2007
-C     Last revision : 
+C     Last revision :
 C
 C
 C***********************************************************************
@@ -351,18 +363,20 @@ C***********************************************************************
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
       INTEGER(kind=MPI_ADDRESS_KIND) NELEMENT
 C
-      IBUF_LENSCR = 0 
-      IBUF_LEN    = 0 
+      IBUF_LENSCR = 0
+      IBUF_LEN    = 0
 C
 C     open memory window on each process shared by IWIN_COMM
 C     ISIZE_dp resp. ISIZE_int is scaling unit in memory window
-C     --> scale by REAL*8 resp. size_of_int 
+C     --> scale by REAL*8 resp. size_of_int
 C
       IF( NTYPE .eq. 1 ) THEN
 C
         IBUF_LENSCR = ISIZE_dp * NELEMENT
         IBUF_LEN    = IBUF_LENSCR
 C
+csk     WRITE(LUPRI,*) ' MPIXWINDOW_CRT: IBUF_LEN and ISIZE_dp',
+csk  &                                   IBUF_LEN, ISIZE_dp
         CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_dp,MPI_INFO_NULL,
      &                      IWIN_COMM,MY_WIN,IERR)
 C
@@ -370,13 +384,15 @@ C
 C
         IBUF_LENSCR = ISIZE_int * NELEMENT
         IBUF_LEN    = IBUF_LENSCR
+csk     WRITE(LUPRI,*) ' MPIXWINDOW_CRT: IBUF_LEN and ISIZE_int',
+csk  &                                   IBUF_LEN, ISIZE_int
 C
         CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_int,MPI_INFO_NULL,
      &                      IWIN_COMM,MY_WIN,IERR)
 C
       END IF
 C
-C     WRITE(LUPRI,*) ' window opened', MYID
+csk   WRITE(LUPRI,*) ' window opened', MYID
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
