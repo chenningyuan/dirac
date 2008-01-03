@@ -3012,12 +3012,12 @@ C
       MX_TBLK_MX         = MX_TBLK
       MX_ST_TSOSO_MX     = MX_ST_TSOSO
       MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
-csk      WRITE(LUWRT,*) ' OUTPUT FROM SET_HOP_DBG:' 
-csk      WRITE(LUWRT,*) '       LEN_T_VEC          =',LEN_T_VEC 
-csk      WRITE(LUWRT,*) '       N2ELINT            =',N2ELINT 
-csk      WRITE(LUWRT,*) '       MX_TBLK_MX         =',MX_TBLK_MX
-csk      WRITE(LUWRT,*) '       MX_ST_TSOSO_MX     =',MX_ST_TSOSO_MX
-csk      WRITE(LUWRT,*) '       MX_ST_TSOSO_BLK_MX =',MX_ST_TSOSO_BLK_MX
+C     WRITE(LUWRT,*) ' OUTPUT FROM SET_HOP_DBG:' 
+C     WRITE(LUWRT,*) '       LEN_T_VEC          =',LEN_T_VEC 
+C     WRITE(LUWRT,*) '       N2ELINT            =',N2ELINT 
+C     WRITE(LUWRT,*) '       MX_TBLK_MX         =',MX_TBLK_MX
+C     WRITE(LUWRT,*) '       MX_ST_TSOSO_MX     =',MX_ST_TSOSO_MX
+C     WRITE(LUWRT,*) '       MX_ST_TSOSO_BLK_MX =',MX_ST_TSOSO_BLK_MX
 C
       END
 ***********************************************************************
@@ -3091,15 +3091,17 @@ C
       CALL MEMMAR(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'ICLLOC')
 C
 #endif
-CCC   IF( SHARED_M )THEN
-CCC     IF( MYNEW_ID_SM .eq. N_MASTER )THEN
-CCC       WRITE(LUWRT,*) ' MY T_BUFF array '
-CCC     CALL WRTMATMN(T_BUFF,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-CCC     END IF
-CCC   ELSE
-CCC     WRITE(LUWRT,*) ' MY T array '
-CCC     CALL WRTMATMN(T,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-CCC   END IF
+C     IF( SHARED_M )THEN
+C       IF( MYNEW_ID_SM .eq. N_MASTER )THEN
+C         WRITE(LUWRT,*) ' NINT_TOTAL is ',NINT_TOTAL
+C         WRITE(LUWRT,*) ' MY T_BUFF array '
+C       CALL WRTMATMN8(T_BUFF,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
+C       END IF
+C     ELSE
+C       WRITE(LUWRT,*) ' NINT_TOTAL is ',NINT_TOTAL
+C       WRITE(LUWRT,*) ' MY T array '
+C       CALL WRTMATMN8(T,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
+C     END IF
 C
       call sigden_rel(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,T_BUFF,
@@ -4517,10 +4519,10 @@ C
 C
                    IF( ISIGDEN .eq. 1 )THEN
 C
-CSK                WRITE(LUWRT,*) ' ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ',
-CSK     &                           ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ
-CSK                WRITE(LUWRT,*) ' IRIS, IRIC, NINT_TOTAL',
-CSK     &                           IRIS, IRIC, NINT_TOTAL 
+c               WRITE(LUWRT,*) ' ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ',
+c    &                           ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ
+c               WRITE(LUWRT,*) ' IRIS, IRIC, NINT_TOTAL',
+c    &                           IRIS, IRIC, NINT_TOTAL 
                      start_timer = MPI_WTIME() 
                      IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
                        CALL DCOPY( ICPL ,T_BUFF(ITB), 1, T_SCR_CC, 1)
@@ -4531,8 +4533,8 @@ C
                        ITB_I8  = ITB - 1
 C
                        start_timer = MPI_WTIME() 
-                       CALL MPIXGET(T_SCR_CC,ICPL_I8,2,N_MASTER_SM,
-     &                              ITB_I8,ICPL_I8,2,MY_T_WIN)
+                       CALL MPIXGET(T_SCR_CC,ICPL,2,N_MASTER_SM,
+     &                              ITB_I8,ICPL,2,MY_T_WIN)
                      END IF
                      mem_cp_time = mem_cp_time + 
      &                             MPI_WTIME() - start_timer
@@ -4544,8 +4546,8 @@ C                  ^ ISIGDEN
 C                ^ SHARED_M
 csk      IF( SHARED_M ) THEN
 csk      WRITE(LUWRT,*) ' ITTP, ICPL_I8, ITB_I8', ITTP, ICPL_I8, ITB_I8
-csk      WRITE(LUWRT,*) ' MY first T_SCR_CC block'
-csk      CALL WRTMATMN(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
+c        WRITE(LUWRT,*) ' MY first T_SCR_CC block'
+c        CALL WRTMATMN8(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -4692,24 +4694,24 @@ C                    update if necessary
 C
                      IF( XXX .ne. 0.0D0 ) THEN
 C
-                        CALL MPIXACCUM(T_SCR_CC,ICPL_I8,2,N_MASTER_SM,
-     &                                 ITB_I8,ICPL_I8,2,MY_T_WIN)
+                        CALL MPIXACCUM(T_SCR_CC,ICPL,2,N_MASTER_SM,
+     &                                 ITB_I8,ICPL,2,MY_T_WIN)
                      END IF
                    END IF
 C                  ^ ISIGDEN
                  END IF
 C                ^ SHARED_M
-csk      IF( SHARED_M ) THEN
-csk      WRITE(LUWRT,*) ' ITTP, ICPL_I8, ITB_I8', ITTP, ICPL_I8, ITB_I8
-csk      WRITE(LUWRT,*) ' MY first T_SCR_CC block'
-csk      CALL WRTMATMN(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
+c        IF( SHARED_M ) THEN
+c        WRITE(LUWRT,*) ' ITTP, ICPL_I8, ITB_I8', ITTP, ICPL_I8, ITB_I8
+c        WRITE(LUWRT,*) ' MY first T_SCR_CC block'
+c        CALL WRTMATMN8(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 csk      WRITE(LUWRT,*) ' Stefan forced me to stop in SIGDEN_REL3'
 csk
-csk      stop ' Stefan forced me to stop in SIGDEN_REL3'
-csk      END IF
+csk      stop ' Stefan forced me to stop in SIGDEN_REL4'
+c        END IF
 #endif
 C
                END IF

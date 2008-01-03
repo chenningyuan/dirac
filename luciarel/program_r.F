@@ -967,9 +967,15 @@ C         ^ MASTER !!!
 *
 #if defined (VAR_MPI2)
 *
+C           WRITE(LUWRT,*) ' MY T (BUFF) array'
+C           IF( SHARED_M )THEN
+C             CALL WRTMATMN8(T_BUFF,1,NALLINT,1,NALLINT,LUWRT)
+C           ELSE
+C             CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+C           END IF
           IF( SHARED_M )THEN
 C
-C           "shaerd memory" mode:
+C           "shared memory" mode:
 C                                T_BUFF is up-to-date for each node
 C                                --> collection from N_MASTER_SM to
 C                                    MASTER
@@ -1088,6 +1094,17 @@ C
             END IF
           END IF
 *
+C
+C
+C         WRITE(LUWRT,*) ' MY updated densities'
+C         WRITE(LUWRT,*) '           F1        '
+C         CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
+C         IF (.NOT. NOOCCN_DENS_RUN )THEN
+C           WRITE(LUWRT,*) '           F2        '
+C           CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
+C         END IF
+C
+C
 #if defined (VAR_MPI2)  
 C
 C        all slaves are waiting for the master which is transferring the

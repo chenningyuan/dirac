@@ -7,7 +7,8 @@
 !     ======================================
 !
 #if defined (VAR_MPI2)
-      INTEGER(KIND=MPI_ADDRESS_KIND) ISIZE_dp, ISIZE_my_int
+!     INTEGER(KIND=MPI_ADDRESS_KIND) ISIZE_dp, ISIZE_my_int
+      INTEGER ISIZE_dp, ISIZE_my_int
 !
       COMMON/TYPE_SZMPI2/ ISIZE_dp, ISIZE_my_int
 !
