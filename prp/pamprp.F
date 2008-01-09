@@ -3403,7 +3403,7 @@ Cold code        CALL TRAHES(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2)
 C
 C       Analyze results
 C
-        CALL AROUND('DIRAC - Final spin-spin-couplings')
+        CALL AROUND('Final spin-spin-couplings J (Hz)')
 CTROND  Insert dimensions !!
         WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
@@ -3439,7 +3439,43 @@ CTROND  Insert dimensions !!
           ENDDO
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
-C
+!radovan: print out reduced SSCC in SI units
+        CALL AROUND('Final reduced spin-spin-couplings K (SI)')
+        WRITE(LUPRI,'(2A15,5(2X,A12))')
+     &  'At1  #  iso  : ','At2  #  iso  : ',
+     &  'Isotropic   ','Anisotropic ','Asymmetry   ',
+     &  'S parameter ','A parameter '
+        CALL PRSYMB(LUPRI,'-',100,0)
+        DO I = 1,NSPEC
+          IISO   = IATINF(3,I)
+          IATOM1 = IATINF(1,I)
+          DO J = 1,(I-1)
+            JISO   = IATINF(3,J)
+            IATOM2 = IATINF(1,J)
+            IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+            CALL SPIANA(CHESS,SPNPAR(1,IATIJ),IATOM1,IATOM2,
+     &                      WORK,KFREE,LFREE)
+            DO I3 = 1,IISO
+              IF(IATOM1.EQ.IATOM2) THEN
+                J3END = I3 - 1
+              ELSE
+                J3END = JISO
+              ENDIF
+              DO J3 = 1,J3END
+                FACTOR = AUTOHZ/3.85000804D-1
+                WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
+     &                NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
+     &                FACTOR*SPNPAR(1,IATIJ),
+     &                FACTOR*SPNPAR(2,IATIJ),
+     &                       SPNPAR(3,IATIJ),
+     &                FACTOR*SPNPAR(4,IATIJ),
+     &                FACTOR*SPNPAR(5,IATIJ)
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',100,0)
+
       ENDDO
       CALL QEXIT('PRP_SPNSP1')
       RETURN
@@ -3943,7 +3979,7 @@ C      ( => new version of TRAHES)
 C
 C       Analyze results
 C
-      CALL AROUND('DIRAC - DSO contribution to spin-spin-couplings')
+      CALL AROUND('DSO contribution to SSCC J (Hz)')
 CTROND  Insert dimensions !!
       WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
@@ -3979,7 +4015,43 @@ CTROND  Insert dimensions !!
         ENDDO
       ENDDO
       CALL PRSYMB(LUPRI,'-',100,0)
-C
+!radovan: print out reduced SSCC in SI units
+      CALL AROUND('DSO contribution to reduced SSCC K (SI)')
+      WRITE(LUPRI,'(2A15,5(2X,A12))')
+     &  'At1  #  iso  : ','At2  #  iso  : ',
+     &  'Isotropic   ','Anisotropic ','Asymmetry   ',
+     &  'S parameter ','A parameter '
+      CALL PRSYMB(LUPRI,'-',100,0)
+      DO I = 1,NSPEC
+        IISO   = IATINF(3,I)
+        IATOM1 = IATINF(1,I)
+        DO J = 1,(I-1)
+          JISO   = IATINF(3,J)
+          IATOM2 = IATINF(1,J)
+          IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+          CALL SPIANA(CHESS,SPNPAR(1,IATIJ),IATOM1,IATOM2,
+     &                    WORK,KFREE,LFREE)
+          DO I3 = 1,IISO
+            IF(IATOM1.EQ.IATOM2) THEN
+              J3END = I3 - 1
+            ELSE
+              J3END = JISO
+            ENDIF
+            DO J3 = 1,J3END
+              FACTOR = AUTOHZ/3.85000804D-1
+              WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
+     &              NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
+     &              FACTOR*SPNPAR(1,IATIJ),
+     &              FACTOR*SPNPAR(2,IATIJ),
+     &                     SPNPAR(3,IATIJ),
+     &              FACTOR*SPNPAR(4,IATIJ),
+     &              FACTOR*SPNPAR(5,IATIJ)
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',100,0)
+
       CALL QEXIT('PRP_DSO1')
       RETURN
       END
