@@ -51,12 +51,14 @@ Program TEST_SEC_QUANT
  !  call Insert_KD(d_ij,head)
  !  call Insert_SQO(b,head)
 
- call print_string(pos)
+! call print_string(pos)
+  call print_all_strings(HL)
 
  call process_strings(HL)
 
 
 
-End Program TEST_SEC_QUANT
 
+
+End Program TEST_SEC_QUANT
 
