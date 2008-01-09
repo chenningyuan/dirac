@@ -133,37 +133,3 @@ end subroutine ExchIJ
 
 end subroutine HSMRCC
 
-!C  /* Deck mpapv */
-      SUBROUTINE MPAPV(N,AP,VIN,VOUT)
-!C
-!C  28-Apr-1985 hjaaj
-!C
-!C  VOUT = AP * VIN
-!C
-!C  where VOUT and VIN are N vectors
-!C  and AP is a packed, symmetric N by N matrix.
-!C
-!
-!  ... copied from Dirac/pdpack/arhpack.F ...
-!  in order to avoid linking of hsmrcc.exe with the FULL Dirac/pdpack/libpdlib.a library
-!
-!#include <implicit.h>
-      IMPLICIT REAL*8 (A-H,O-Z)
-
-      DIMENSION AP(*),VIN(*),VOUT(*)
-      PARAMETER (D0 = 0.0D0)
-!C
-      KI = 0
-      DO 300 I = 1,N
-         VINI = VIN(I)
-         SUM = D0
-         DO 100 J = 1,I-1
-            SUM = SUM + AP(KI+J) * VIN(J)
-            VOUT(J) = VOUT(J) + AP(KI+J) * VINI
-  100    CONTINUE
-         KI = KI + I
-         VOUT(I) = SUM + AP(KI) * VINI
-  300 CONTINUE
-!C
-      RETURN
-      END
