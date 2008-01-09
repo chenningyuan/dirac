@@ -916,7 +916,9 @@ EOF
 #
 if [ -n "$HSCCMOD" ]; then
 cat <<EOF>> Makefile
-# ... target - HSMRCC external code
+#---------------------------------------------
+# ... target - the standalone HSMRCC code
+#---------------------------------------------
 hs: ;\
 	cd hsmrcc/hsmrcc_external; make  
 EOF
@@ -1019,6 +1021,7 @@ if [ -n "$CAPMOD" ]; then
 fi
 if [ -n "$HSCCMOD" ]; then
    echo '	cd hsmrcc  ; $(MAKE) clean' >> Makefile
+   echo '	cd hsmrcc/second_quant ; $(MAKE) clean' >> Makefile
 fi
 # cleaning of *.o files
 if [ -n "$OOFMOD" ]; then
@@ -1038,6 +1041,7 @@ EOF
 #
 #      Take care of Fortran90/95 modules
 #  ===========================================
+#
 # NOTE: There must be correct order of subdirectories
 #       based on which module files are to be genereated first.
 #
@@ -1262,8 +1266,8 @@ EOF
 #TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
 TEMP="dirac prp gp pdpack main relccsd moltra dirrci lucita"
 
+# ... F90 modules introduced
 TEMPOOF=abacus
-
 
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
@@ -1309,6 +1313,7 @@ fi
 if [ -n "$HSCCMOD" ]; then
 #   TEMP="$TEMP hsmrcc"
    TEMPOOF="$TEMPOOF hsmrcc"
+   TEMPOOF="$TEMPOOF hsmrcc/second_quant"
 fi
 if [ -n "$OOFMOD" ]; then
 #   TEMP="$TEMP oof"
@@ -1420,6 +1425,7 @@ if [ -n "$CAPFLG" ]; then
 fi
 if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc"
+   dirs="$dirs hsmrcc/second_quant"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
