@@ -825,10 +825,10 @@ C waken up and sent to sleep.
 C
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "infpar.h"
 #include "priunit.h"
 #include "lucipar.inc"
       DIMENSION WRK(LWRK)
@@ -887,8 +887,8 @@ C
 * Stefan Knecht, Feb. 06 
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#if defined (VAR_MPI2)
 #include "infpar.h"
+#if defined (VAR_MPI2)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif

@@ -100,10 +100,10 @@ C
 #include "luci.inc"
 #include "units.inc"
 #if defined (VAR_MPI)
-#include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "infpar.h"
 #include "lucipar.inc"
 *
       parameter (NCMD = 21)
@@ -470,6 +470,9 @@ C
 *
 * 21: Type of parallel calculation
 *
+csk      write(6,*) ' start:  NUMNOD, IODENSEPAR, IRUNPA',
+csk     &                     NUMNOD, IODENSEPAR, IRUNPA
+*
       if (IMOKW(21).eq.0) then
          IF (NUMNOD .GT. 0) THEN
             IODENSEPAR = 2
@@ -507,6 +510,8 @@ C
          IMOKW(21) = 3
         end if
       end if
+csk      write(6,*) ' middle: NUMNOD, IODENSEPAR, IRUNPA',
+csk     &                     NUMNOD, IODENSEPAR, IRUNPA
 *
 * 22: Type of I/O model in parallel calculation
 *
@@ -643,6 +648,10 @@ C        .. we do not accept user input of less than 100 000 !
         trunc_fac = 1.0D-10
       end if
 *
+csk      write(6,*) ' end   : NUMNOD, IODENSEPAR, IRUNPA',
+csk     &                     NUMNOD, IODENSEPAR, IRUNPA
+csk      write(6,*) ' end   : IPARMODEL',
+csk     &                     IPARMODEL
       if(irunpa.eq.1) then
         performci = 'parallel'
       else if(irunpa.eq.0) then
@@ -3526,7 +3535,7 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.31)
      &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
         If ( i.eq.32)
-     &  Line='          J. Chem. Phys., accepted.               '
+     &  Line='          J. Chem. Phys., 128 (2008) 014108       '
         If ( i.eq.33 .or. i.eq.34 )
      &  Line = StLine
         write(LUOUT,*) Line
