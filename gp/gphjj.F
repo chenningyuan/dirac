@@ -1008,6 +1008,40 @@ C
    20 CONTINUE
       RETURN
       END
+
+C  /* Deck mpapv */
+      SUBROUTINE MPAPV(N,AP,VIN,VOUT)
+C
+C  28-Apr-1985 hjaaj
+C
+C  VOUT = AP * VIN
+C
+C  where VOUT and VIN are N vectors
+C  and AP is a packed, symmetric N by N matrix.
+C
+CMI ... copied from pdpack/arhpack.F due to linking problems 
+CMI    with DIRAC gp/ routines 
+CMI    in ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
+C
+#include <implicit.h>
+      DIMENSION AP(*),VIN(*),VOUT(*)
+      PARAMETER (D0 = 0.0D0)
+C
+      KI = 0
+      DO 300 I = 1,N
+         VINI = VIN(I)
+         SUM = D0
+         DO 100 J = 1,I-1
+            SUM = SUM + AP(KI+J) * VIN(J)
+            VOUT(J) = VOUT(J) + AP(KI+J) * VINI
+  100    CONTINUE
+         KI = KI + I
+         VOUT(I) = SUM + AP(KI) * VINI
+  300 CONTINUE
+C
+      RETURN
+      END
+
 C  /* Deck defopn */
       SUBROUTINE DEFOPN(LU)
 C

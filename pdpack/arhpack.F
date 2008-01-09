@@ -193,7 +193,9 @@ C
       RETURN
       END
 C  /* Deck mpapv */
-      SUBROUTINE MPAPV(N,AP,VIN,VOUT)
+CMI   SUBROUTINE MPAPV(N,AP,VIN,VOUT)
+      SUBROUTINE XXXMPAPV(N,AP,VIN,VOUT)
+CMI ... moved to gp/gphjj.F
 C
 C  28-Apr-1985 hjaaj
 C
