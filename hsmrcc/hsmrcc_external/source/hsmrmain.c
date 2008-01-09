@@ -11,7 +11,7 @@
 extern void sethsmrflags_(int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
-                          int *,int *                 );
+                          int *,int *,int *           );
 extern void sethsmrpars_(int *,int *,int *,int *);
 extern void sethsmrshiftpars_(double *,double *,double *,double *);
 extern void sethsmrfiles_(char *,char *,int,int);
@@ -25,7 +25,7 @@ extern void hsmrcc_(void);
 /* routine for setting iprint variable - gneral print level */
 extern void sethsmr_iprint_(int *); 
 
-#define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:"
+#define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:d"
 
 #define HELP       0
 #define GENINT     1
@@ -56,9 +56,11 @@ extern void sethsmr_iprint_(int *);
 #define FULL      26
 #define NOAPND    27
 #define RDGUESS   28
-#define IPR       29
+#define IPR       29   /*  parameter for general print-out  */
 
-#define NOPTS     30
+#define DIRAC     30 /* flag for DIRAC input  */
+
+#define NOPTS     31
 
 int opts[NOPTS]={0}; /* initialize to zero */
 
@@ -95,6 +97,7 @@ struct option longopts[] =
     {"no-append",      no_argument,       &opts[NOAPND],   1   },
     {"read-guess",     no_argument,       &opts[RDGUESS],  1   },
     {"ipr",            required_argument, &opts[IPR],      1   },
+    {"DIRAC-input",    no_argument,       &opts[DIRAC],    1   },
     { 0,                   0,                 0,           0   }
 };
 
@@ -147,7 +150,11 @@ void help()
  "|  -T --rep-time         Report timings for diagram routines.       |",
  "|     --no-append        Do not append in case of restart run.      |",
  "|     --read-guess       Read Initial Guess for T-amplitudes.       |",
- "|  -i --ipr=[IPRINT]     Read print-out variable.                   |",
+ "|  -i --ipr=[IPRINT]     Read control print-out variable.           |",
+ "|                                                                   |",
+ "|   DIRAC read-in :                                                 |",
+ "| *****************                                                 |",
+ "|  -d --DIRAC-input      Read all data from DIRAC enviroment.       |",
  "|                                                                   |",
  "| HSMRCC Options :                                                  |",
  "| ****************                                                  |",
@@ -358,6 +365,10 @@ int main (argc, argv)
 
          case 'y':
             opts[TTYRUN] = 1;
+            break;
+
+         case 'd':
+            opts[DIRAC] = 1;
             break;
 
          case 'a':
@@ -741,7 +752,7 @@ int main (argc, argv)
                  &opts[REPTIME], &opts[QUAD]    , &opts[TAMP]    ,
                  &opts[NOHSMR] , &opts[MAXIT]   , &opts[INTTOL]  ,
                  &opts[CONVTOL], &opts[SHFTCORE], &opts[SHFTVIRT],
-                 &opts[NOAPND] , &opts[RDGUESS]);
+                 &opts[NOAPND] , &opts[RDGUESS] , &opts[DIRAC]   );
 
    sethsmrpars_(&ncmo,&nhole,&nptcl,&nemo);
    sethsmrshiftpars_(&scval,&svval,&saval,&beeta);
@@ -759,11 +770,11 @@ int main (argc, argv)
    /* Invoke HSMRCC Driver program */
 
    if (opts[TTYRUN]) {
-    /* run the main F90 program */
+    /* run the main F90 program in the terminal window */
        hsmrcc_();
        printf(" hsmrmain.c : HSMRCC fortran90 part finished ... \n");
    }
-   else {
+   else { /* run the program as the backgroung job */
       if ((pid = fork()) == -1) {printf("%s: Error: Unable to fork child process.\n",argv[0]); return (-1);}
       if (pid==0) {hsmrcc_(); exit(0);}
       if (pid!=0) {

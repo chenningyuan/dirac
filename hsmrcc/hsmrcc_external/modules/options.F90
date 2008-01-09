@@ -1,9 +1,11 @@
+!--------------------------------------------------------------------
 !
+!          Module with options stored in logical arrays
 !
-!       Module with options stored in logical array
-!
-!
+!--------------------------------------------------------------------
 module Options
+
+! ... note: source/hsmrmain.c contains similar parametes, but these do not overlap
 
    implicit none
    integer, parameter :: GENINT   =  1
@@ -23,7 +25,11 @@ module Options
    integer, parameter :: SHFTVIRT = 15
    integer, parameter :: NOAPND   = 16
    integer, parameter :: RDGUESS  = 17
-   integer, parameter :: NUMOPTS  = 17
+   integer, parameter :: DIRACp   = 18  ! ... can not be "DIRAC"
+
+   ! ... total number of integer options ...
+   integer, parameter :: NUMOPTS  = 18
+
 !    logical arrays ... 
    logical :: OPTION(NUMOPTS) = .FALSE.
    logical :: OPTPRV(NUMOPTS) = .FALSE.
@@ -34,7 +40,7 @@ module Options
 
   ! use IOModule
 !
-!  simple print out ....
+! ... very simple print out ...
 
  ! print *,'UOUT=',UOUT
 
@@ -46,7 +52,9 @@ module Options
   print *,' OPTION  [GENINT] =',OPTION(GENINT)
   print *,' OPTION [PRNTINF] =',OPTION(PRNTINF)
   print *,' OPTION [MAXIT] =',OPTION(MAXIT)
+  print *,' OPTION [DIRACp] =',OPTION(DIRACp)
 
  end subroutine print_Options
 
 end module Options
+

@@ -1,14 +1,17 @@
+!*****************************************************************
 !
 !
-!  Set of routines called from maic C-program: hsmrmain.c
+!   Set of routines called from the C-driver program: hsmrmain.c
 !
 !
-
+!*****************************************************************
 
 subroutine SetHSMR_IPRINT(ipr)
+!-----------------------------------------------------------------
 !
-! ... set up the general control print-out variable 
+!        ... set up the general control print-out variable 
 !
+!-----------------------------------------------------------------
   use Parameters
   implicit none
 
@@ -25,7 +28,7 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
                         FlagREPTIME, FlagQUAD    , FlagCONVTAMP, &
                         FlagNOHSMR , FlagMAXIT   , FlagINTTOL  , &
                         FlagCNVTOL , FlagSHFTCORE, FlagSHFTVIRT, &
-                        FlagNOAPND , FlagRDGUESS                 )
+                        FlagNOAPND , FlagRDGUESS , FlagDIRAC     )
 
    use Options
    use Parameters
@@ -36,7 +39,7 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    integer*4, intent(in) :: FlagREPTIME, FlagQUAD    , FlagCONVTAMP
    integer*4, intent(in) :: FlagNOHSMR , FlagMAXIT   , FlagINTTOL
    integer*4, intent(in) :: FlagCNVTOL , FlagSHFTCORE, FlagSHFTVIRT
-   integer*4, intent(in) :: FlagNOAPND , FlagRDGUESS
+   integer*4, intent(in) :: FlagNOAPND , FlagRDGUESS , FlagDIRAC
 
    if ( FlagGENINT   == 1 ) OPTION(GENINT)   = .TRUE.
    if ( FlagPRNTINF  == 1 ) OPTION(PRNTINF)  = .TRUE.
@@ -55,9 +58,12 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    if ( FlagSHFTVIRT == 1 ) OPTION(SHFTVIRT) = .TRUE.
    if ( FlagNOAPND   == 1 ) OPTION(NOAPND)   = .TRUE.
    if ( FlagRDGUESS  == 1 ) OPTION(RDGUESS)  = .TRUE.
+ 
+   ! ... DIRAC on
+   if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE.
 
    if (get_iprint() > 5) then
-    call print_Options 
+      call print_Options 
    endif
 
    return
@@ -66,7 +72,7 @@ end subroutine SetHSMRflags
 
 subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
 !
-! set important parameters for the code
+!        set important parameters for the code
 !
    use Parameters
    implicit none
@@ -101,20 +107,23 @@ subroutine SetHSMRshiftpars(SCVal,SVVal,SAVal,BeetaVal)
 end subroutine SetHSMRshiftpars
 
 subroutine SetHSMRfiles(IFile,OFile)
-!
+!----------------------------------------------------------
 ! 
+!       Routine for setting files for HSMRCC run.
 !
-
+!----------------------------------------------------------
    use IOModule
    implicit none
    character(len=*), intent(in) :: IFile
    character(len=*), intent(in) :: OFile
    integer :: ilen, olen
 
-   if (get_iprint()>5) then
+   Call QEnter('SetHSMRfiles')
+
+   if (get_iprint() > 5) then
     write(UOUT,*) '>>> SetHSMRfiles called form hsmrmain.c !'
     write(UOUT,*) 'SetHSMRfiles: IFile=',IFile
-    write(UOUT,*)  'SetHSMRfiles: OFile=',OFile
+    write(UOUT,*) 'SetHSMRfiles: OFile=',OFile
    endif
 
    FileHSMR = REPEAT(' ',LEN(FileHSMR))
@@ -122,13 +131,17 @@ subroutine SetHSMRfiles(IFile,OFile)
    ilen = LEN_TRIM(IFile)
    if (ilen == 0) then
       Write(*,*) 'Input File of Zero Length'
-      call abort
-   endif
-   if (TRIM(IFile)==REPEAT(' ',ilen)) then
-      Write(*,*) 'blank Input File'
-      call abort
+      Write(UOUT,*) 'Input File of Zero Length'
+      !call abort
+      call Quit('SetHSMRfiles: Input File of Zero Length !')
    endif
 
+   if (TRIM(IFile)==REPEAT(' ',ilen)) then
+      !Write(*,*) 'blank Input File'
+      Write(UOUT,*) 'blank Input File'
+      !call abort
+      call Quit('SetHSMRfiles: blank Input File!')
+   endif
 
 ! =================================================
 !       Gamess produced files read by HSMRCC 
@@ -138,7 +151,6 @@ subroutine SetHSMRfiles(IFile,OFile)
    FileSYMINF   = TRIM(IFile)//'.F297'   ! text file...
 
    FileVINF  = TRIM(IFile)//'.VINF'
-
 
    FileVINT  = TRIM(IFile)//'.VINT'
    FileVIND  = TRIM(IFile)//'.VIND'
@@ -158,14 +170,18 @@ subroutine SetHSMRfiles(IFile,OFile)
    else
       if (TRIM(OFile)==REPEAT(' ',olen)) then
          Write(*,*) 'blank Output File'
-         call abort
+         Write(UOUT,*) 'blank Output File'
+         !call abort
+         call Quit('SetHSMRfiles: blank Output File')
       endif
       FileHSMR = TRIM(OFile)
    endif
 
    if (get_iprint()>5) then
-    write(UOUT,*) 'output file is ',FileHSMR
+    write(UOUT,*) 'HSNRCC output file is ',FileHSMR
    endif
+
+   Call QExit('SetHSMRfiles')
    return
 
 end subroutine SetHSMRfiles

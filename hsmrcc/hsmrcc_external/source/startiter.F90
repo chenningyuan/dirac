@@ -7,6 +7,8 @@ subroutine StartIter
    implicit none
    integer :: vac
 
+   call QEnter('StartIter')
+
    ! ... Restart the timer for ther iteration ...
 
    call StartTiming
@@ -33,6 +35,8 @@ subroutine StartIter
 !  BCL = dble(0)
 !  BCR = dble(0)
 !
+
+   call QExit('StartIter')
    return
 
 end subroutine StartIter

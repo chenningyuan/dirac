@@ -55,6 +55,7 @@ subroutine HSMRCC
 
    call InitHSMRIter
 
+   ! ... print-out info on the current run
    call PrintRunInfo
 
    !-------------------------------------------------------

@@ -1,4 +1,4 @@
-#################################################
+###########################################################################
 #
 # This is Makefile for NEWHSMR program
 # This can be compiled with GNU Make
@@ -6,9 +6,10 @@
 #
 # Makefile generates standalone hsmrcc.exe program.
 #
-# For the DIRAC enviroment adapted by Miro Ilias, Tel Aviv, 2007
+# For the DIRAC enviroment adapted by Miro Ilias, Tel Aviv, 2007,
+#                                                 Prievidza, 2008
 #
-##################################################
+#############################################################################
 
 # Use ksh or bash for shell
 #SHELL = /bin/bash
@@ -23,13 +24,13 @@ ce = [m
 
 ###########################################
 #
-#          FORTRAN90 compiler 
+#           FORTRAN90 compiler 
 #
 #    ... from DIRAC
 #
 ###########################################
 
-##### include variables from DIRAC Makefile.config !!!  ####
+##### include variables from DIRAC Makefile.config !!!  #####
 include ../../Makefile.config
 
 #FC      = pgf90
@@ -46,13 +47,13 @@ FC      =  $(F77)
 CCo      = $(CC)
 #CCo      = $(F77)
 
-##############################################################################
+#################################################################################
 ###
 ###        set up libraries from DIRAC
 ###
 ###  NOTE: in Makefile.config $(LIB_LIST) the -llapack must be before -lblas
 ###
-##############################################################################
+#################################################################################
 FCLIBS  = $(LIB_LIST) 
 #FCLIBS  = -lacml
 #FCLIBS  = -lblas -llapack
@@ -104,12 +105,12 @@ endif
 #CFLAGS  = -I$(moddir) -i8 -i8storage -fast
 #CFLAGS  = -I$(moddir) -fdefault-integer-8 
 
+# ... C-compiler flags
 CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
 
 # These are options for generating a debuggable code
 #FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -g -C
 #CFLAGS  = -I$(moddir) -i8 -i8storage -g
-
 
 ##########################################################################
 #
@@ -121,8 +122,10 @@ CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
 
 # ... directory with module source files and module files  ...
 moddir = modules
+
 # ... directory with source files  ...
 srcdir = source
+
 # ... directory with objects ...
 objdir = objects
 
@@ -177,7 +180,9 @@ dirac.x : $(executable)
 
 executable = hsmrcc.exe
 
+#================================
 ### default : executable file ###
+#================================
 default : $(executable) 
 	@echo "Independent executable file " $(cs) $(executable) $(ce) " is ready." 
 
@@ -197,7 +202,7 @@ $(executable) : $(objects)
 	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
                      $(dirac_objs) $(dirac_libs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
-	@echo "The independent executable file ==> " $(cs)$(@F)$(ce) " <== was compiled."
+	@echo "The independent executable file ==> " $(cs)$(@F)$(ce) " <== was generated."
 
 ##################
 ###  cleaning  ###

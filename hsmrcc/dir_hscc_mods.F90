@@ -1,32 +1,64 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module Dirac_HSMRCC
-!--------------------------------------------------
+!----------------------------------------------------------------------------------
 !
-!  contains all data from DIRAC for standalone HSMRCC code 
+!  contains all data from DIRAC for the standalone HSMRCC code 
 !
-!--------------------------------------------------
+!----------------------------------------------------------------------------------
 integer (kind=2), parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
 integer (kind=4) ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 
-integer(kind=4) :: iprint_hscc
+!integer(kind=4), private :: iprint_hscc = 0
+integer(kind=4), public :: iprint_hscc = 0
 
 contains
 
-subroutine open_dirac_HSMRCC_file
-!open(ludh,file='Dirac_for_HSMRCC',status='formatted', access='sequential') 
-end subroutine open_dirac_HSMRCC_file
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_dirac_HSMRCC_file
+!----------------------------------------------------------------------------------
+!
+!   prepare file with DIRAC symmetry..etc info for the standalone HSMRCC program
+!
+!----------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+
+character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
+ 
+call QEnter('prepare_dirac_HSMRCC_file')
+
+if (iprint_hscc >= 5) then
+   call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
+endif
+
+!open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
+open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
+
+write(ludh,*) '.PRINT LEVEL'
+write(ludh,*) iprint_hscc
+write(ludh,*) '.other stuff...'
+
+if (iprint_hscc >= 5) then
+ write(LUPRI,'(2x,a,a)') '...open file for HSMRCC dirac input:',dirac_file
+endif
+
+close(ludh,status="keep")
+
+call QExit('prepare_dirac_HSMRCC_file')
+end subroutine prepare_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module io_moltra
-!--------------------------------------------------
+!----------------------------------------------------------------------------------
 !
-! ...  some stuff for reading moltra integrals ...
+!    contains variables and 'member' routines for reading 
+!  moltra integral files MRCONEE & MDCINT
 !
-!--------------------------------------------------
+!----------------------------------------------------------------------------------
 
-! ... logical numbers ... 
+! ... file numbers ... 
 !integer (kind=4) :: MDINT=20, MRCONEE=21
 integer :: MDINT=20, MRCONEE=21
 
@@ -35,13 +67,17 @@ real*8 :: ECORE
 
 integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
 
+!--------------------------------------------------------
 integer, parameter :: NSP2 = 300 ! static allocation 
+!--------------------------------------------------------
 
 INTEGER KR(-NSP2:NSP2)
 
 CHARACTER*14 REPNT(16)
 
-integer, parameter :: MXREP=32,MAXSP=1000
+!--------------------------------------------------------
+     integer, parameter :: MXREP=32, MAXSP=1000
+!--------------------------------------------------------
 character*4 REPN(16), REPNA(MXREP*2)
 
 integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
@@ -51,7 +87,358 @@ LOGICAL BREIT,SPFR
 
 CHARACTER*10 NEXTFIL
 
-logical :: is_complex
+logical :: is_complex, mrconee_read = .false.
+
+ contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine read_mrconee
+!----------------------------------------------------------------------------------
+!
+!
+!----------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+
+logical :: is_mrc
+
+ Call QEnter('read_mrconee')
+
+ inquire(FILE='MRCONEE',EXIST=is_mrc)
+
+ if (.not.is_mrc) call QUIT('mrconee file not present !')
+
+  OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED',status = 'old')
+
+  READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,NFSYM,NZ,SPFR,NORBT
+
+  READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)  & 
+                      ,(NELEC(IRP),IRP=1,NSYMRP)
+
+  READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+  READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
+
+! ... IREPSP is to be used as 2-dimensional array, read it like that
+  READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),EPS1(ISP),ISP=1,NSP)
+
+  mrconee_read = .true.
+
+  CLOSE (MRCONEE,STATUS='KEEP')
+
+  Call QExit('read_mrconee')
+  return
+
+  10 WRITE (LUPRI,*) "Missing information on MRCONEE, I assume"//  & 
+                     " this is a MOLFDIR file ... QUIT !"
+  Call Quit('read_mrconee: some error in reading MRCONEE file!')
+
+end subroutine read_mrconee
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_mrconee_data
+!----------------------------------------------------------------------------------
+!
+!        Print read data from the MRCONEE file if these were read 
+!
+!----------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+
+Call QEnter('print_mrconee_data')
+
+if (.not.mrconee_read) then
+  Write(LUPRI,*) 'MRCONEE file was not read...'
+  Call QExit('print_mrconee_data')
+  Return
+endif
+
+Call Header('MRCONEE print-out',-1)
+
+write(LUPRI,*)  ' NSP=',NSP
+write(LUPRI,*)  ' BREIT=',BREIT
+write(LUPRI,*)  ' ECORE=',ECORE
+write(LUPRI,*)  ' NFSYM=',NFSYM
+write(LUPRI,*)  ' NZ=',NZ
+write(LUPRI,*)  ' SPFR=',SPFR
+write(LUPRI,*)  ' NORBT=',NORBT
+
+write(LUPRI,*)  ' NSYMRP=',NSYMRP
+
+write(LUPRI,*)  '** REPNT(1-NSYMRP) **'
+DO IRP = 1, NSYMRP
+  write(LUPRI,*) 'IRP=',IRP,' REPNT(IRP)=',REPNT(IRP)
+ENDDO
+
+write(LUPRI,*)  '** NELEC(1-NSYMRP) **'
+DO IRP = 1, NSYMRP
+  write(LUPRI,*) 'IRP=',IRP,' NELEC(IRP)=',NELEC(IRP)
+ENDDO
+
+write(LUPRI,*)  'reducible representations, NREP=',NREP
+write(LUPRI,*)  '** REPNA: **'
+DO IRP = 1, 2*NREP
+  write(LUPRI,*) 'IRP=',IRP,' REPNA(IRP)=',REPNA(IRP)
+ENDDO
+
+write (LUPRI,*) '*** EPS1, IREPSP:'
+DO ISP = 1, NSP
+  write (LUPRI,*) 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+                   IREPSP(ISP),IREPSP(NSP+ISP), &
+                  ' EPS1(ISP)=',EPS1(ISP)
+ENDDO
+
+write (LUPRI,*) '*** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
+write (LUPRI,*) ' NREP, 2*NREP:',NREP,(2*NREP)
+DO I=1,2*NREP
+DO J=1,2*NREP
+  write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
+ENDDO
+ENDDO
+
+Call QExit('print_mrconee_data')
+
+end subroutine print_mrconee_data
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine read_mdcint
+!-------------------------------------------------------------------------
+!
+!    ... read the MDCINT file - testing purposes
+!
+!-------------------------------------------------------------------------
+  use Memory
+  use Vectors
+#include "implicit.h"
+#include "priunit.h"
+
+type(Vect) :: indk_vect, indl_vect
+type(Array2Dim) :: cbuf_vect
+
+logical :: is_mdc , check_mem = .false.
+
+integer :: RCW
+
+Call QEnter('read_mdcint')
+
+Call Header('MDCINT control print-out',-1)
+
+! ... check if memory block is present
+if (.not.IsMemorySticked() ) then
+ write(LUPRI,*) 'read_mdcint: memory array not present !' 
+ call Quit('read_mdcint: memory array not present !  ')
+else
+ write(LUPRI,*) 'read_mdcint: memory sticked !' 
+endif
+
+! ... check if MRCONEE was read 
+if (.NOT.mrconee_read) then
+ write(LUPRI,*) 'read_mdcint: MRCONEE file was not read before !' 
+ call Quit('read_mdcint: MRCONEE file was not read before !  ')
+!else
+! write(LUPRI,*) 'read_mdcint: memory sticked !' 
+endif
+
+inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call Quit('No MDCINT file!')
+
+open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
+!open(MDINT,file="MDCINT",form='UNFORMATTED')
+rewind(MDINT)
+
+write(LUPRI,'(//2x,a,i3)') 'The MDCINT file open and rewinded...lu=',MDINT
+
+READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
+
+if (NKR > NSP2) then
+ call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
+endif
+
+if (NKR /= NORBT .and. 2*NKR /= NORBT) then
+ write(LUPRI,*) 'NKR=',NKR,' NORBT=',NORBT
+ write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
+ call Quit('MRCONEE and MDCINT are incompatible !')
+endif
+
+ write(LUPRI,*) 'Info from MDCINT file'
+
+ write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
+ write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
+
+!do i = 1, NKR
+!  write(LUPRI,'(2x,a,i3,a,i3,a,i3)') 'i=',i,' kr(-i)=',KR(-i),' kr(i)=',KR(i)
+!enddo
+
+   write(LUPRI,*) 'NKR is ',NKR
+   write(LUPRI,*) 'KR array, KR(+I),KR(-I), I=1,NKR :'
+   do I=1,NKR
+     write(LUPRI,'(2I8)') KR(I),KR(-I)
+   enddo
+!
+! ... read the rest ... integrals and indexes  ...
+! ... allocate memmory for integrals/indexes   ...
+
+! ... determine whether entering 2-electron integrals are real or complex 
+is_complex = .NOT.SPFR .AND. (NZ == 2 .or. NZ ==4)
+
+if (is_complex) then
+  RCW = 2
+else
+  RCW = 1
+endif
+
+write(LUPRI,'(/2x,a,i1/)') 'the parameter RCW =',RCW
+
+ilenght = NKR*NKR ! 
+
+ write(LUPRI,*) 'calculated array size, ilenght=',ilenght
+
+ call print_mem_param
+
+indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+
+ call print_mem_param
+
+indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
+
+ call print_mem_param
+
+! ... note: "ccdriv.F":1923 is using RCW !!!
+cbuf_vect = Make2DimArray('REAL', RCW, ilenght, 'MDCINT two-electron integrals')
+
+ call print_mem_param
+
+!check_mem = .true.
+if (check_mem) then
+call set_vect_iprint(15)
+Call ZeroObject(indk_vect)
+Call ZeroObject(indl_vect)
+Call ZeroObject(cbuf_vect)
+ write(LUPRI,*) 'going to deallocate all objects ...'
+ call DeAllocObject(cbuf_vect)
+ call DeAllocObject(indl_vect)
+ call DeAllocObject(indk_vect)
+ write(LUPRI,*) 'going to quit here due to memory check...'
+ call Quit('read_mdcint: quit here due to memory check !')
+endif
+
+!Call ZeroObject(indk_vect)
+!Call ZeroObject(indl_vect)
+!Call ZeroObject(cbuf_vect)
+
+  MOINT = 0
+
+  rewind(MDINT)
+  read(MDINT)
+
+ 1 continue
+
+  if (is_complex) then
+
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
+   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),     INZ=1,NONZR,1),  & 
+   ( cbuf_vect%p_rA2D(1,INZ), cbuf_vect%p_rA2D(2,INZ), INZ=1,NONZR,1) 
+
+  else
+
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
+   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      & 
+   ( cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
+
+  endif
+
+  if (NONZR > ilenght) then
+    write(LUPRI,*) 'NONZR :',NONZR,' ilenght :',ilenght
+    write(LUPRI,*) 'NONZR > ilenght; out of memory allocation !'
+    call Quit('NONZR > ilenght; out of memory allocation !')
+  endif
+
+   MOINT = MOINT + NONZR
+
+  ! call print_vect_attrib(indk_vect)
+  ! call print_vect_attrib(indl_vect)
+
+    write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
+    write(LUPRI,'(2x,a,i6)') ' actual number of read integrals:',MOINT
+    CALL FLSHFO(LUPRI)
+
+ do i=1,NONZR
+   if (.NOT.is_complex) then
+     write(LUPRI,*) 'k,l, real int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+     write(LUPRI,*) 'I,J,K,L:',KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
+    ! CALL FLSHFO(LUPRI)
+   else
+     write(LUPRI,*) 'k,l,cmplx int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),  &
+                     cbuf_vect%p_rA2D(1,i), cbuf_vect%p_rA2D(2,i)
+    ! CALL FLSHFO(LUPRI)
+   endif
+
+   write(LUPRI,'(2x,a,4i5)') 'unrestricted, unique(>0) indexes, I,J,K,L:',  &
+     KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
+   CALL FLSHFO(LUPRI)
+
+ enddo
+   
+    IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NONZR = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            write(LUPRI,*) 'HSCC: proceeding to the next file MDCINT.'
+            GOTO 1
+         ENDIF
+         !GOTO 1
+    ENDIF
+
+ if (NONZR == -1) then
+  ! call Quit('NONZR == -1!')
+ !  RETURN
+   GoTo 2
+ endif
+
+ write(LUPRI,*) '... jumping to read the next integral batch in the file ... '
+ CALL FLSHFO(LUPRI)
+ GoTo 1
+
+ 2 continue
+
+ write(LUPRI,*)  &
+ ' all integrals from the MDCINT file read ...closing the file'
+ CALL FLSHFO(LUPRI)
+
+ CLOSE (MDINT,STATUS='KEEP')
+
+ write(LUPRI,*)  &
+ ' ... going to deallocate objects in LIFO order ... '
+ CALL FLSHFO(LUPRI)
+
+! ... deallocate objects in LIFO order ...
+ call DeAllocObject(cbuf_vect)
+ write(LUPRI,*) 'cbuf_vect released ...'; CALL FLSHFO(LUPRI)
+
+ call DeAllocObject(indl_vect)
+ write(LUPRI,*) 'indl_vect released ...'; CALL FLSHFO(LUPRI)
+
+ call DeAllocObject(indk_vect)
+ write(LUPRI,*) 'indk_vect released ...'; CALL FLSHFO(LUPRI)
+
+ write(LUPRI,*) 'leavig "read_mdcint"...bye bye'; CALL FLSHFO(LUPRI)
+ Call QExit('read_mdcint')
+ return
+
+!     ... reading file error outputs ...
+ 10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
+      CALL QUIT('ERROR READING HEADER MDCINT')
+
+ 10010 WRITE(6,'(/A/A,L10,2A)') & 
+      'END OF FILE branch taken when reading 2-e integrals', &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+       CALL QUIT('END OF FILE READING 2-E INTEGRALS')
+
+ 10020 WRITE(6,'(/A/A,L10,2A)')   &
+      'ERROR branch taken when reading 2-e integrals',  &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+
+end subroutine read_mdcint
 
 end module io_moltra
-

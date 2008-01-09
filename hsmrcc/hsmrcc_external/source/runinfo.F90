@@ -1,7 +1,12 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine PrintRunInfo
+!----------------------------------------------------------------
 !
-!  print basic run info ...
+!                  print basic run info ...
 !
+!        Called from source/hsmrcc.F90/HSMRCC routine
+!
+!----------------------------------------------------------------
    use Parameters
    use Options
    use IOModule
@@ -196,7 +201,7 @@ subroutine PrintRunInfo
 contains
 
    character*3 function OnOff(flag)
-! ... elegant print-out ...
+   ! ... elegant print-out of strings ON/OFF...
    implicit none
    logical flag
 

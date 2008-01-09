@@ -2,9 +2,8 @@ module SymInf
 
    use IOmodule
    implicit none
-   private
 
-!  public variables
+   private ! ... specify variables as private by default
 
    integer, parameter :: maxirrep = 8
    character*4 point_group
@@ -13,12 +12,16 @@ module SymInf
    integer totally_symmetric_irrep
    character*4 irrep_label(maxirrep)
 
+!  public variables
+
    public :: maxirrep
    public :: point_group
    public :: naxis, norder, numirrep
    public :: irrep_product
    public :: totally_symmetric_irrep
    public :: irrep_label
+
+ ! ... public routines ...
 
    public :: read_gamess_syminf
    public :: print_irrep_tables
@@ -80,7 +83,7 @@ contains
 !     this routine reads point group symmetry information
 !     from syminf file generated from gamess.
 !
-!     The data in syminf module are set in this call
+!     The data in syminf module are set in this call.
 !
 !     Called from modules/gmsmod.F90/InitGMSMod
 !
@@ -93,7 +96,8 @@ contains
       integer ir, jr, irx, jrx, nrx
       integer kr, krxx(maxirrep)
       integer iabelian, irptype, iavail
-      integer :: ierr=0 ! MI: important initialization for gfrortran !
+      integer :: ierr=0 ! MI: important initialization for gfrortran 
+                        ! which does not assign automatically zeroes 
 
       call QEnter('read_gamess_syminf')
 
@@ -104,7 +108,9 @@ contains
       open(USYMINF,file=FileSYMINF)
 
       if (get_iprint() >= 5) then
-        write(UOUT,'(2x,3a)') 'file FileSYMINF=',FileSYMINF,' open.'
+        write(UOUT,'(2x,a,$)')  &
+        'open file with Gamess symmetry information, FileSYMINF='
+        write(UOUT,'(a)') FileSYMINF
       endif
 
 !     read in point group
@@ -118,6 +124,12 @@ contains
 
       read(USYMINF,9001) group, naxis, norder
  9001 format(3X,A5,3X,2X,1X,I2,2X,2X,1X,I3,1X)
+
+      if (get_iprint() >= 5) then
+         write(UOUT,'(2x,a,a)')  'group=',group
+         write(UOUT,'(2x,a,i3)') 'naxis=',naxis
+         write(UOUT,'(2x,a,i3)') 'norder=',norder
+      endif
 
       ptgrp = " "
 
@@ -133,16 +145,24 @@ contains
 
       if (ptgrp.eq." ") then
          write(UOUT,*) "unable to read point group information from syminf"
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('unable to read point group information from syminf')
+      endif
+
+      if (get_iprint() >= 5) then
+         write(UOUT,'(2x,a,a)') 'ptgrp=',ptgrp
       endif
 
       call setup_irrep_tables(ptgrp,ierr)
       if (ierr.ne.0) then
+         write(UOUT,*) "read_gamess_syminf: error output :" 
          write(UOUT,*) "ptgrp=",ptgrp," ierr=",ierr
-         write(UOUT,*) "trouble setting up this point group !"
+         write(UOUT,*) "trouble in setting up this point group !"
          call flush(UOUT)
-         call abort
+        !call abort
+         call Quit('read_gamess_syminf: trouble in setting up this point group !')
       endif
 
 !     read type of group
@@ -150,9 +170,15 @@ contains
       read(USYMINF,*)
       read(USYMINF,*) iabelian
       if (iabelian.ne.0) then
-         write(UOUT,*) "syminf file contains non-abelian group"
-         call flush(UOUT)
-         call abort
+         write(UOUT,*) "syminf file contains non-abelian group!"
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('syminf file contains non-abelian group!')
+      endif
+
+      if (get_iprint() >= 5) then
+        write(UOUT,'(2x,a,i3)') 'iabelian=',iabelian
       endif
 
 !     read number of irreps
@@ -161,10 +187,15 @@ contains
       read(USYMINF,*) nir
       if (nir.ne.numirrep) then
          write(UOUT,*) "syminf file contains invalid numirrep"
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('syminf file contains invalid numirrep')
       endif
-         
+
+      if (get_iprint() >= 5) then
+        write(UOUT,'(2x,a,2i3)') 'nir,numirrep:',nir,numirrep
+      endif
 
 !     read in type of irreps
 
@@ -172,8 +203,14 @@ contains
       read(USYMINF,*) irptype
       if (irptype.ne.0) then
          write(UOUT,*) "syminf file contains a group with complex irreps"
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('syminf file contains a group with complex irreps')
+      endif
+
+      if (get_iprint() >= 5) then
+         write(UOUT,'(2x,a,i3)') 'irptype=',irptype
       endif
 
 !     read in availability of irreps
@@ -181,9 +218,16 @@ contains
       read(USYMINF,*)
       read(USYMINF,*) iavail
       if (iavail.ne.1) then
-         write(UOUT,*) "syminf file contains a group whose irrep labels are not available"
-         call flush(UOUT)
-         call abort
+         write(UOUT,*)  &
+         "syminf file contains a group whose irrep labels are not available !"
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('syminf file contains a group whose irrep labels are not available !')
+      endif
+
+      if (get_iprint() >= 5) then
+         write(UOUT,'(2x,a,i3)') 'iavail=',iavail
       endif
 
 !     skip ao/salc irrep information
@@ -225,8 +269,10 @@ contains
 
          if ((irx.ne.ir).or.(jrx.ne.jr).or.(nrx.ne.1 )) then
             write(UOUT,*) "Error reading irrep multiplication table from syminf file "
-            call flush(UOUT)
-            call abort
+            !call flush(UOUT)
+            call flushout
+            !call abort
+            call Quit('Error reading irrep multiplication table from syminf file')
          endif
 
          read(USYMINF,*) (krxx(kr),kr=1,nir)
@@ -234,8 +280,11 @@ contains
          if (krxx(irrep_product(ir,jr)).ne.1) then
             write(UOUT,*) "irrep product table in syminf file does"
             write(UOUT,*) "not match the irrep table of the program"
-            call flush(UOUT)
-            call abort
+            !call flush(UOUT)
+            call flushout
+            !call abort
+            call Quit('irrep product table in syminf file does' &
+                    //' not match the irrep table of the program')
          endif
 
       enddo
@@ -245,23 +294,34 @@ contains
 
       close(USYMINF)
 
+      if (get_iprint() >= 5) then
+        write(UOUT,'(2x,a)') '...control print-out of the multiplication table:'
+        call print_irrep_tables
+      endif
+
       call QExit('read_gamess_syminf')
       return
 
       end subroutine read_gamess_syminf
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine setup_irrep_tables(group,ierr)
-
+!-----------------------------------------------------------------------
+!
 !     this routine sets up irrep multiplication table for
 !     abelian point groups C1, C2, Cs, Ci, C2h, C2v, D2, D2h
 !
 !     the order of irreps, irrep labels and irrep multiplication table
 !     are the same as used in standard symmetry routines in gamess
+!
+!-----------------------------------------------------------------------
 
       implicit none
       character*(*) group
       integer ierr
       integer ir, jr
+
+      Call QEnter('setup_irrep_tables')
 
       numirrep = 0
       irrep_product = 0
@@ -412,8 +472,10 @@ contains
       endif
 
       if (numirrep.eq.0) then
-          print *,' group=',group
+         !print *,' group=',group
+         write(UOUT,*) ' group=',group
          ierr = 1
+         Call QExit('setup_irrep_tables')
          return
       endif
 
@@ -429,17 +491,21 @@ contains
       enddo
       enddo
 
+      Call QExit('setup_irrep_tables')
       return
 
       end subroutine setup_irrep_tables
 
-!===================================================
-!         print out irrep_product table
-!===================================================
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine print_irrep_tables
-
+!----------------------------------------------------------------------
+!
+!         print out irrep_product table from Gamess enviroment
+!
+!----------------------------------------------------------------------
       implicit none
       integer ir, jr
+      call QEnter('print_irrep_tables')
 
       write(UOUT,9001) point_group
       write(UOUT,9002) (irrep_label(ir),ir=1,numirrep)
@@ -448,11 +514,16 @@ contains
       if (numirrep.eq.4) write(UOUT,9005)
       if (numirrep.eq.8) write(UOUT,9006)
       do ir = 1, numirrep
-         write(UOUT,9007) irrep_label(ir), (irrep_label(irrep_product(ir,jr)),jr=1,numirrep)
+         write(UOUT,9007) irrep_label(ir),  &
+         (irrep_label(irrep_product(ir,jr)),jr=1,numirrep)
          write(UOUT,9008)
       enddo
       write(UOUT,*)
+  
+      !call flush(UOUT)
+      call flushout
 
+      call QExit('print_irrep_tables')
       return
 
  9001 format("---------------------------------------",3(1H-),/,    &

@@ -56,12 +56,16 @@ module Parameters
    double precision, parameter :: NaN    = Z'7FF8000000000000'
 
   ! ... check it for different compilers !!!
+
   ! double precision, parameter :: NegInf = Z'FFF0000000000000'
-   double precision, parameter :: NegInf = -1.0/0.0
-   !double precision, parameter :: NegInf = transfer(Z'FFF0000000000000', 0d0)
+ !  gfortran 4-1
+  ! double precision, parameter :: NegInf = -1.0/0.0
+ !  gfortran 4-2
+   double precision, parameter :: NegInf = transfer(Z'FFF0000000000000', 0d0)
 
   ! double precision, parameter :: PosInf = Z'7FF0000000000000'
-  double precision, parameter :: PosInf = 1.0/0.0
+  !double precision, parameter :: PosInf = 1.0/0.0
+  double precision, parameter :: PosInf = transfer(Z'7FF0000000000000', 0d0)
 
    ! HSMRCC parameters
 
@@ -95,11 +99,23 @@ module Parameters
    integer :: NSTATE_MAIN
    integer :: NSTATE_INTM
 
-   ! ... control print-out level parameter
+   ! ... control print-out parameter
    integer, private :: IPRINT = 0
 
-   ! ... print-out channel - moved here from module "IOmodule"
+   ! ... print-out channel - moved here from the module "IOmodule"
    integer :: UOUT  = 51
+
+   ! ------------------------------
+   ! ... DIRAC input parameters ...
+   ! ------------------------------
+   type dirac 
+   ! ... flag for the DIRAC input 
+     logical :: is = .false.
+   ! ... flag for boson/fermion symmetry
+     logical :: spinfree = .true.  
+   end type dirac
+ 
+  ! private :: dirac
 
    contains
 
@@ -107,18 +123,26 @@ module Parameters
    ! ... set the IPRINT variable
     integer, intent(in) :: ipr
     integer, parameter :: ipr_max = 100
+    call QEnter('set_iprint')
     if (ipr < 0 .or. ipr > ipr_max) then
      write(UOUT,*) 'set_iprint: entering iprint = ',ipr
      write(UOUT,*) 'set_iprint: wrong entering variable ! must be <0,100>'
+     call Quit('set_iprint: wrong entering variable ! must be <0,100>')
     else 
       IPRINT = ipr
     endif
+    call QExit('set_iprint')
    end subroutine set_iprint
 
    function get_iprint() result(ipr)
    ! ... returns the IPRINT variable
-     integer:: ipr
+     integer :: ipr
      ipr = IPRINT
    end function get_iprint
+
+   subroutine flushout
+   ! ... short version for flushing out the buffer
+    call flush(UOUT)
+   end subroutine flushout
 
 end module Parameters

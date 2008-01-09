@@ -23,11 +23,11 @@ subroutine mymemget( datatype, kbase, length )
 !************************************************************************
 !
 !  public procedure to replace the common MEMGET procedure
-! with hidding of private variables: KFREE,LFREE
+! with hidding of private variables KFREE,LFREE
 !
-! Parameters:  datatype
-!              kbase
-!              length
+! Parameters:  datatype : 'REAL','INTE','LOGI'
+!              kbase    : starting position on superarray
+!              length   : length of allocated array 
 !
 !************************************************************************
 #include "priunit.h"
@@ -76,19 +76,10 @@ call QEXIT('mymemrel')
 end subroutine mymemrel
  
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!subroutine mem_ini
-!************************************************************************
-!
-!
-!************************************************************************
-
-!end subroutine mem_ini
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_mem_param 
 !************************************************************************
 !
-!     print out the DIRAC memmory parameters
+!        print out the DIRAC memory parameters
 !
 !************************************************************************
 #include "priunit.h"
@@ -158,7 +149,9 @@ else
     write(LUPRI,*) 'PW is not associated'
   endif
 endif
+! ..................................................
 PW => WORK ! PW points now to the big WORK array ... 
+! ..................................................
 is_mem_sticked = .true. ! update logical variable
 LWORK = LWORK_IN ! actualize module variable
 if (size(PW) /= LWORK_IN) then
@@ -169,6 +162,7 @@ if (size(PW) /= LWORK_IN) then
  endif
  CALL QUIT('StickMemory: error in length !')
 endif
+
 ! initialize the memmory
 #include "memint.h"
 
@@ -213,12 +207,15 @@ END SUBROUTINE UnStickMemory
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION IsMemorySticked() result(is_sticked)
 !------------------------------------------------------------------------
-! returns the (private) 'is_mem_sticked' value
+!
+! returns the (private) 'is_mem_sticked' value which is indicator
+! of the presence of the large memory block PW => WORK
+!
 !------------------------------------------------------------------------
 #include "priunit.h"
 logical(kind=1) :: is_sticked
 CALL QENTER('IsMemorySticked')
-is_sticked = is_mem_sticked
+ is_sticked = is_mem_sticked
 CALL QEXIT('IsMemorySticked')
 END FUNCTION IsMemorySticked
 
@@ -251,7 +248,8 @@ integer(kind=4) :: lfree_out
 CALL QENTER('get_lfree')
  lfree_out = LFREE
  if (iprmem >= 15) then
-  write(LUPRI,*) 'get_lfree: LFREE=',LFREE,'lfree_out=',lfree_out
+  write(LUPRI,'(2x,a,i8,a,i8)')  &
+  'Memory/get_lfree: LFREE:',LFREE,' = lfree_out:',lfree_out
  endif
 CALL QEXIT('get_lfree')
 END FUNCTION get_lfree
@@ -260,7 +258,7 @@ END FUNCTION get_lfree
 FUNCTION get_lwork() result(lwork_out)
 !------------------------------------------------------------------------
 !
-! return the (protected) LWORK value
+! return the (module protected) LWORK value
 !
 !------------------------------------------------------------------------
 #include "priunit.h"
@@ -273,6 +271,5 @@ CALL QENTER('get_lwork')
  endif
 CALL QEXIT('get_lwork')
 END FUNCTION get_lwork
-
 
 END MODULE Memory
