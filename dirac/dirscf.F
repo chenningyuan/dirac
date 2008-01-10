@@ -915,6 +915,9 @@ C     Freeze orbitals by zeroing off-diagonal elements of FMO
 C     =======================================================
 C
       IF (DOMOFREEZE) THEN
+         IF (.NOT.DIISAO) THEN
+            CALL QUIT('.MOFREEZE Requires .DIISAO')
+         ENDIF
          CALL FMO_FREEZE(FMO)
       ENDIF
 C
