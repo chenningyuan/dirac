@@ -1,2 +1,1 @@
-! this test calculates the three lowest A-ungerade excitation energies for helium
-! using the collinear and noncollinear form of the xc-kernel
+! tests SDFT linear and quadratic response
