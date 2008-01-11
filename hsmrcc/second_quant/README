@@ -1,6 +1,15 @@
  
   Evaluator of strings of second quantization operators.
 
+  All data structures are based upon doubly linked list.
+
+  Program is working with several data types:
+
+             string_member - for one member (operator, kronecker delta, indexed term)
+             one_string - encapsulates bunch of "string_member"s
+  
+             head_cell - DLL of heads points to strings
+
   Still in development.
 
 

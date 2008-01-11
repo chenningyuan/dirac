@@ -4,11 +4,14 @@
 Program TEST_SEC_QUANT
 
   use Operators_string
+
+  use control_print
+
   type(dll_member), pointer :: head => null()
   
-  type(KronDelta) :: d_ij, d_ab
+  type(KronDelta), pointer :: d_ij, d_ab
 
-  type(SQOper) :: i,j,a,b
+  type(SQOper), pointer :: i,j,a,b
 
   type(heads_list) :: HL
 
@@ -18,19 +21,23 @@ Program TEST_SEC_QUANT
 
 !  type(one_string), target ::  os
 
- ! d_ij = make_kron_delta(1,2);  call print_kd(d_ij)
- ! d_ab = make_kron_delta(3,4);  call print_kd(d_ab)
+  call set_iprint(10)
 
+  allocate(d_ij)
+  d_ij = make_kron_delta(1,2);  call print_kd(d_ij)
+
+  allocate(d_ab)
+  d_ab = make_kron_delta(3,4);  call print_kd(d_ab)
+
+  allocate(i)
   i = make_sqo(1); ! call print_sqo(i)
 
-!  j=make_sqo(2,.true.)
+  allocate(j)
+  j = make_sqo(2); ! call print_sqo(i)
 
+   allocate(a)
   a = make_sqo(3,.true.);
 !  call print_sqo(a)
-
-!  b=make_sqo(4)
-
-!  os = create_string(head,0.50D0)
 
   allocate(pos)
   pos = create_string(head,0.50D0)
@@ -43,10 +50,16 @@ Program TEST_SEC_QUANT
 
    HL%main_head=>pSH
 
-   call Insert_SQO(i,head)
+ !  call Insert_SQO(i,head)
  pos%head => head 
 
-   call Insert_SQO(a,head)
+ !  call Insert_SQO(a,head)
+ ! call Insert_KD_end(pos,d_ij)
+  call Insert_SQOp_end(pos,i)
+  call Insert_SQOp_end(pos,j)
+  call Insert_KD_end(pos,d_ij)
+  call Insert_SQOp_end(pos,a)
+  call Insert_KD_end(pos,d_ab)
 
  !  call Insert_KD(d_ij,head)
  !  call Insert_SQO(b,head)
@@ -54,11 +67,10 @@ Program TEST_SEC_QUANT
 ! call print_string(pos)
   call print_all_strings(HL)
 
- call process_strings(HL)
+ ! call rearrange_string(pos)
 
+   call move_element_beg(pos,2)
 
-
-
+! call process_strings(HL)
 
 End Program TEST_SEC_QUANT
-

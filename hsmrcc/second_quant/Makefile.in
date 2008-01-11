@@ -1,15 +1,16 @@
-##  dwell on 
+####   depends on  ####
 include ../../Makefile.config
 
 default: secquant
 
 F77_OBJS =
 
+F90_OBJS = indxquant_mod.o kron_delta.o operstr_mod.o sq_oper.o prnt_mod.o test.o
+
+F90_MODS = indexed_quantities.mod  kroneckerdelta.mod  secquantoperator.mod \
+           operators_string.mod  control_print.mod
+
 C_OBJS   = 
-
-F90_OBJS = indxquant_mod.o kron_delta.o operstr_mod.o sq_oper.o test.o
-
-F90_MODS = indexed_quantities.mod kroneckerdelta.mod secquantoperator.mod operators_string.mod 
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
@@ -34,14 +35,14 @@ $(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
-#### object files from DIRAC ####
+#### object files from DIRAC - contain general purpose routines ####
 dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
 
 ## dummy entry to handle the "default:" in Makefile.config:
 dirac.x dirmpi.x:
 
 secquant:  $(F90_OBJS) $(F90_MODS)
-	$(F77) $(LDFLAGS) -o SecQuant.x $(F90_OBJS) $(dirac_objs)
+	$(F77) $(LDFLAGS) -o SecQuant.x $(F90_OBJS) $(dirac_objs) $(LIB_LIST)
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
