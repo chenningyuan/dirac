@@ -167,28 +167,50 @@ dftpot0_(FirstDrv *ds,
 void
 dftpot1_(SecondDrv *ds,
          const real* weight,
-         const real* rho, 
+         const real* rho,
          const real* grad)
 {
-    FunSecondFuncDrv drvs;
-    FunDensProp dp;
-    drv2_clear(&drvs);
-    /* HP does not grok C99's { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
-    dp.rhoa  = dp.rhob  = *rho *0.5;
-    dp.grada = dp.gradb = *grad*0.5; 
-    dp.gradab = dp.grada * dp.gradb;
-    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
-    if(do_alda)
-        LDAFunctional.second(&drvs, *weight, &dp);
-    else
-        selected_func->second(&drvs, *weight, &dp);
-         
-    ds->fR  = 0; /* NOT USED */
-    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
-    ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
-    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
-    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001) + 
-              drvs.df00101* * grad + 0.25*drvs.df00002* *grad* *grad;
+  FunSecondFuncDrv drvs;
+  FunDensProp dp;
+
+  real grada, grada2, grada3;
+  real bygrada, bygrada2, bygrada3;
+  real by2, by4, by8, by16, by32;
+
+  drv2_clear(&drvs);
+
+  dp.rhoa   = dp.rhob  = *rho *0.5;
+  dp.grada  = dp.gradb = *grad*0.5;
+  dp.gradab = dp.grada * dp.gradb;
+
+  grada  = *grad*0.5;
+  grada2 = grada*grada;
+  grada3 = grada*grada2;
+
+  bygrada  = 1.0/grada;
+  bygrada2 = 1.0/grada2;
+  bygrada3 = 1.0/grada3;
+
+  by2   = 0.50000000;
+  by4   = 0.25000000;
+  by8   = 0.12500000;
+  by16  = 0.06250000;
+  by32  = 0.03125000;
+
+  dp.subsystem[0] = NULL;
+  dp.subsystem[1] = NULL;
+
+  if(do_alda)
+    LDAFunctional.second(&drvs, *weight, &dp);
+  else
+    selected_func->second(&drvs, *weight, &dp);
+
+  ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+
+  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
+  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
 }
 
 void

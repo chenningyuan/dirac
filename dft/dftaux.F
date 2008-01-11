@@ -31,26 +31,41 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
-C 
-C /* Deck dft_linres */
-#if defined (MOD_DNF)
-Caspg: extra argument to keep track of b0, used for debugging of df-vxc-lr
-      SUBROUTINE DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
-#else
-      SUBROUTINE DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-#endif /* MOD_DNF */
 C
-C     T. Helgaker sep 99/oct 00
-C     adapted to DIRAC by T.Saue May 3 2001
-C
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* dft_lr */
+      subroutine dft_lr(dtrmat,
+     &                  excmat,
+     &                  nxcmat,
+     &                  isymop,
+     &                  ihrmop,
+!
+!                       allow_nonhermitian allows us to use
+!                       this routine also for the evaluation
+!                       of quadratic response contributions
+     &                  allow_nonhermitian,
+!
+     &                  gao,
+     &                  gao1,
+     &                  r_0,
+     &                  gr_0_norm,
+     &                  gr_0,
+     &                  w,
+     &                  dogga,
+     &                  buf)
+c=======================================================================
+c     linear transformation, spin density contribution is in sdft_lr
+c-----------------------------------------------------------------------
+c     T. Helgaker, T. Saue
+c                                  last revision: january 2008 (radovan)
+c=======================================================================
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C
-      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0,D2=2.0D0)
-C
+
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
+
 #include "inforb.h"
 #include "nuclei.h"
 #if defined (PRG_DIRAC)
@@ -61,79 +76,93 @@ C
 #endif
 #include "dftcom.h"
 #include "functionals.h"
-C
-      INTEGER A, B
-      LOGICAL DOGGA, TRPLET, LBIT
-      DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
-     &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          GAO(NBAST), GAO1(NBAST,3),
-     &          RHG(3),VT(3), VXC(DERVS2), BUF(*)
-      DIMENSION B3(3)
-C
-      DO IM = 1,NXCMAT
-      IREPOP = ISYMOP(IM)-1
-      IF(IHRMOP(IM).EQ.1) THEN
-C
-C       Get perturbed density
-C       =====================
-C
-        CALL GETRHO(B0,IREPOP,GAO,DTRMAT(1,1,1,IM),BUF)
-#if defined (MOD_DNF)
-c       write (*,*) 'debug, in dft_lr: b0',b0
-#endif /* MOD_DNF */
-C
-C       ***************
-C       ***** LDA *****
-C       ***************
-C
-        IF(.NOT.DOGGA) THEN
-          IF(DABS(B0).GT.DFTHRL) THEN
-C
-C           Calculated VT
-C
-            CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
-            SXC = VXC(FRR)*B0
-C
-C           Linear transformation
-C
-            CALL DOEXC1(SXC,IREPOP,EXCMAT(1,1,1,IM),GAO)
-          END IF
-        ELSE
-C
-C         ***************
-C         ***** GGA *****
-C         ***************
-C
-          CALL GETGRHO(B3,IREPOP,GAO,GAO1,DTRMAT(1,1,1,IM),BUF)
-          BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
-C
-          IF (BMAX.GT.DFTHRL) THEN
-            CALL DFTPOT1(VXC,WGHT,RHO,RHOGRD)
-            BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
-            FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
-            SXC = VXC(FRR)*B0 + VXC(FRZ)*BR
-            DO I = 1,3
-              VT(I) = (VXC(FZ0)*B3(I)+FACR*RHG(I))/RHOGRD
-            ENDDO
-#if defined (MOD_DNF)
-c        write (*,*) 'debug: '
-c        write (*,'(A3,E20.12)') '       b3(i,j,k)',b3(1),b3(2),b3(3)
-c        write (*,'(A3,E20.12)') '      rhg(i,j,k)',rhg(1),rhg(2),rhg(3)
-c        write (*,'(A3,E20.12)') '       vt(i,j,k)',vt(1),vt(2),vt(3)
-c        write (*,'(A2,E20.12)') ' sxc,b0,br,f1,f2',sxc,b0,br,
-c    &                              VXC(FRR)*B0,VXC(FRZ)*BR
-#endif /* MOD_DNF */
-C           Linear transformation
-C
-            CALL DOEXC2(SXC,VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
-CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
-          END IF
-        END IF
-      ENDIF
-      ENDDO
-      RETURN
-      END
+
+      logical   dogga,
+     &          lbit,
+     &          allow_nonhermitian
+      dimension dtrmat(nbast,nbast,nz,nxcmat),
+     &          excmat(nbast,nbast,nz,nxcmat),
+     &          isymop(nxcmat),
+     &          ihrmop(nxcmat),
+     &          gao(nbast),
+     &          gao1(nbast,3),
+     &          buf(*),
+!
+     &          gr_0(3),
+     &          gr_b(3),
+!
+     &          vxc_b(3),
+!
+     &          vxc(99)
+
+      do im = 1,nxcmat
+        irepop = isymop(im) - 1
+
+        if(ihrmop(im) .eq. -1) goto 99
+        if((ihrmop(im) .lt. 1) .and. (.not. allow_nonhermitian)) goto 99
+
+        call getrho(r_b,irepop,gao,
+     &              dtrmat(1,1,1,im),buf)
+
+        if(.not. dogga) then
+
+!-------------------------------------------------------------------------------
+!         LDA
+
+          if(dabs(r_b) .gt. dfthrl) then
+
+            call dftpot1(vxc,w,r_0,d0)
+            sxc_b = vxc(fRR)*r_b
+
+            call doexc1(sxc_b,irepop,excmat(1,1,1,im),gao)
+          endif
+        else
+
+!-------------------------------------------------------------------------------
+!         GGA
+
+          if(allow_nonhermitian) then
+            call get_gr_nh(.true.,gr_b,irepop,gao,gao1,
+     &                     dtrmat(1,1,1,im),buf)
+          else
+            call getgrho(gr_b,irepop,gao,gao1,
+     &                   dtrmat(1,1,1,im),buf)
+          endif
+
+          worth_it = max(
+     &                   dabs(r_b),
+     &                   dabs(gr_b(1)),
+     &                   dabs(gr_b(2)),
+     &                   dabs(gr_b(3))
+     &                  )
+
+          if(worth_it .gt. dfthrl) then
+            call dftpot1(vxc,w,r_0,gr_0_norm)
+
+            Z_b = d2*ddot(3,gr_0,1,gr_b,1)
+
+            sxc_b = vxc(fRR)*r_b
+     &            + vxc(fRZ)*Z_b
+
+            do j = 1,3
+              vxc_b(j) = vxc(fZZ)*Z_b*gr_0(j)
+     &                 + vxc(fRZ)*r_b*gr_0(j)
+     &                 + vxc(fZ0)*gr_b(j)
+            enddo
+
+!           this factor is *not* for the symmetrization later
+!           it comes from Z_b = gr_0 \cdot gr_b + gr_b \cdot gr_0
+            call dscal(3,d2,vxc_b,1)
+
+            call doexc2(sxc_b,vxc_b,irepop,excmat(1,1,1,im),gao,gao1)
+          endif
+        endif
+ 99     continue
+      enddo
+
+      return
+      end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dft_qr(dtrmat,excmat,isymop,ihrmop,gao,gao1,
      &                  rho,nrmgrd,grdrho,wght,dogga,buf)
 !***********************************************************************
@@ -146,14 +175,14 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     dtrmat(*,*,*,3) --- BC density matrix
 !     isymop          --- operator symmetry
 !     ihrmop          --- operator hermiticity
-!     gao             --- 
-!     gao1            --- 
+!     gao             ---
+!     gao1            ---
 !     rho             --- \rho in current grid point
 !     nrmgrd          --- |\nabla\rho| in current grid point
 !                         (corresponds to rhogrd in LR)
 !     grdrho          --- \nabla\rho in current grid point
 !                         (corresponds to rhg in LR)
-!     wght            --- 
+!     wght            ---
 !     dogga           --- LDA or GGA
 !     buf             --- scratch memory
 !
@@ -259,8 +288,8 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     Get the functional derivatives
          call dftpot2(vxc,wght,rho,0D0)
 !
-!     Constructing g^{[C]B} 
-         if(dabs(rho_B).gt.dfthrl) then 
+!     Constructing g^{[C]B}
+         if(dabs(rho_B).gt.dfthrl) then
 !
 !           Calculate sxc
             sxc = vxc(frr)*rho_B
@@ -270,7 +299,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          end if
 !
 !     Constructing g^{[B]C}
-         if(dabs(rho_C).gt.dfthrl) then 
+         if(dabs(rho_C).gt.dfthrl) then
 !
 !           Calculate sxc
             sxc = vxc(frr)*rho_C
@@ -280,7 +309,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          END IF
 !
 !     Constructing h^{[BC]}
-         if(dabs(rho_BC).gt.dfthrl) then 
+         if(dabs(rho_BC).gt.dfthrl) then
 !
 !           Calculate sxc
             sxc = 2.0D0*vxc(frrr)*rho_B*rho_C + vxc(frr)*rho_BC
@@ -289,7 +318,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
             call doexc1(sxc,irepbcop,excmat(1,1,1,3),gao)
          end if
 !
-      else  
+      else
 !
 !         ***************
 !         ***** GGA *****
@@ -365,7 +394,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !     \zeta^{BC} = \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
 !     Note the factor 4 which comes from that \rho^{BC} is already symmetrized,
 !     and, hence, a factor 2 is enough on the first line.
-         zeta_BC = 2.0D0*(grdrho_BC(1)*grdrho(1) + 
+         zeta_BC = 2.0D0*(grdrho_BC(1)*grdrho(1) +
      &                    grdrho_BC(2)*grdrho(2) +
      &                    grdrho_BC(3)*grdrho(3)) +
      &             4.0d0*(grdrho_B(1)*grdrho_C(1) +
@@ -376,14 +405,14 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          call dftpot2(vxc,wght,rho,nrmgrd)
 !
 !     Constructing g^{[B]C}
-!     
+!
          bmax = max(abs(rho_B),
      &              abs(grdrho_B(1)),abs(grdrho_B(2)),abs(grdrho_B(3)))
          if (bmax.gt.dfthrl) then
 !
 !           Calculate sxc
             sxc  = vxc(frr)*rho_B + vxc(frz)*zeta_B
-!     
+!
 !           Calculate vt
             facr = vxc(frz)*rho_B + vxc(fzz)*zeta_B
             do i=1,3
@@ -396,14 +425,14 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          end if
 !
 !     Constructing g^{[C]B}
-!     
+!
          cmax = max(abs(rho_C),
      &              abs(grdrho_C(1)),abs(grdrho_C(2)),abs(grdrho_C(3)))
          if (cmax.gt.dfthrl) then
 !
 !           Calculate sxc
             sxc  = vxc(frr)*rho_C + vxc(frz)*zeta_C
-!     
+!
 !           Calculate vt
             facr = vxc(frz)*rho_C + vxc(fzz)*zeta_C
             do I=1,3
@@ -416,7 +445,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
          end if
 !
 !     Constructing h^{[BC]}
-!     
+!
          bcmax = max(bmax,cmax,abs(rho_BC),
      &            abs(grdrho_BC(1)),abs(grdrho_BC(2)),abs(grdrho_BC(3)))
          if (bcmax.gt.dfthrl) then
@@ -424,9 +453,9 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
 !           Calculate sxc
             sxc =  2.0D0*vxc(frrr)*rho_B*rho_C +
      &             2.0d0*vxc(frrz)*(rho_B*zeta_C+rho_C*zeta_B) +
-     &             2.0D0*vxc(frzz)*zeta_B*zeta_C+vxc(frr)*rho_BC + 
+     &             2.0D0*vxc(frzz)*zeta_B*zeta_C+vxc(frr)*rho_BC +
      &             vxc(frz)*zeta_BC
-!     
+!
 !           Calculate vt
             facr = 2.0D0*vxc(fzzz)*zeta_B*zeta_C +
      &             2.0d0*vxc(frzz)*(rho_B*zeta_C+rho_C*zeta_B) +
@@ -435,7 +464,7 @@ CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
             facb = 2.0d0*vxc(frz)*rho_C + 2.0d0*vxc(fzz)*zeta_C
             facc = 2.0d0*vxc(frz)*rho_B + 2.0d0*vxc(fzz)*zeta_B
             do i=1,3
-               vt(i) = 2.0D0 * ( facr*grdrho(i) + 
+               vt(i) = 2.0D0 * ( facr*grdrho(i) +
      &                           facb*grdrho_B(i) + facc*grdrho_C(i) +
      &                           vxc(fz0) * grdrho_BC(i) )
             end do
@@ -514,16 +543,16 @@ c
 #include "implicit.h"
 #include "dcbham.h"
       HFXMU = W
-      HFXATT = BETA 
+      HFXATT = BETA
       END
 C /* Deck dft_df_lr */
-#if defined (MOD_DNF) 
+#if defined (MOD_DNF)
       SUBROUTINE fit_DFT_LR(pCFIT,pVXCint,NXCMAT,ISYMOP,IHRMOP,
      &                      GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
      &                      nskipped)
 C
 C adapted from DFT_LR for density fitting
-C andre gomes and radovan bast, january 2007 
+C andre gomes and radovan bast, january 2007
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -549,7 +578,7 @@ C
      &          RHG(3),VT(3), VXC(DERVS2)
       DIMENSION B3(3)
 C
-      if (NXCMAT.GT.1) 
+      if (NXCMAT.GT.1)
      &   CALL QUIT ('DF-VXC not working for multiple densities yet...')
 
       DO IM = 1,NXCMAT
@@ -590,7 +619,7 @@ C  getting gradient from perturbed fitted density
 C
            DO IXYZ = 1,3
               IOFF = NBASISAUX * (IXYZ - 1) + 1
-              b3(ixyz) = 
+              b3(ixyz) =
      &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,pCFIT,1)
            ENDDO
            BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))

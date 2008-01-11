@@ -88,9 +88,9 @@ struct DftDensity_ {
  * so maybe these lines are helpful when someone else looks at the code!
  *
  * thanks Christoph!
- * potential and linear response need cleanup,
+ * potential still needs cleanup,
  * there Z is not (yet) \nabla R \cdot \nabla R
- * ok for QR,
+ * ok for LR and QR,
  *        radovan
  *
  */ 

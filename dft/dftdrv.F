@@ -882,8 +882,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                        NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
      &                        RHO,RHOGRD,RHG,WGHT,DOGGA,B0,nskipped)
            else  ! df_fitvxc
-              CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+!             CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+!    &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+             call dft_lr(dtrmat,excmat,nxcmat,
+     &                   isymop,ihrmop,.false.,
+     &                   gao,gao1,
+     &                   rho,rhogrd,rhg,wght,dogga,buf)
            endif
           ELCTRB = ELCTRB + WGHT*B0
         ENDIF
@@ -893,9 +897,10 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !       linear response
         IF(DOLR) THEN
 #if !defined (MOD_DNF)
-          CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,
-     &                ISYMOP,IHRMOP,GAO,GAO1,
-     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          call dft_lr(dtrmat,excmat,nxcmat,
+     &                isymop,ihrmop,.false.,
+     &                gao,gao1,
+     &                rho,rhogrd,rhg,wght,dogga,buf)
 #endif
 
 #if defined (MOD_CDFT)
@@ -940,9 +945,10 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !         with Hermiticity-general matrices which is easy
 !                                                         radovan
 !
-          call dft_lr_mod(dtrmat,excmat,3,
-     &                    isymop,ihrmop,gao,gao1,
-     &                    rho,rhogrd,rhg,wght,dogga,buf)
+          call dft_lr(dtrmat,excmat,3,
+     &                isymop,ihrmop,.true.,
+     &                gao,gao1,
+     &                rho,rhogrd,rhg,wght,dogga,buf)
           if(lbit(lbit_cdft,1)) then
             call sdft_lr_mod(dtrmat,excmat,3,
      &                       isymop,ihrmop,gao,gao1,
