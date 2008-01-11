@@ -151,7 +151,6 @@ c=======================================================================
             enddo
 
 !           this factor is *not* for the symmetrization later
-!           it comes from Z_b = gr_0 \cdot gr_b + gr_b \cdot gr_0
             call dscal(3,d2,vxc_b,1)
 
             call doexc2(sxc_b,vxc_b,irepop,excmat(1,1,1,im),gao,gao1)
