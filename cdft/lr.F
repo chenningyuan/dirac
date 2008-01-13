@@ -32,32 +32,38 @@ C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SDFT_LR */
-      SUBROUTINE SDFT_LR(DTRMAT,
-     &                   EXCMAT,
-     &                   NXCMAT,
-     &                   ISYMOP,
-     &                   IHRMOP,
-     &                   GAO,
-     &                   GAO1,
-     &                   R,
-     &                   GR_NORM,
-     &                   GR,
-     &                   W,
-     &                   IS_GGA,
-     &                   BUF)
-C=======================================================================
-C     describe me ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                               last revision: june 2007
-C=======================================================================
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* sdft_lr */
+      subroutine sdft_lr(dtrmat,
+     &                   excmat,
+     &                   nxcmat,
+     &                   isymop,
+     &                   ihrmop,
+!
+!                        allow_nonhermitian allows us to use
+!                        this routine also for the evaluation
+!                        of quadratic response contributions
+     &                   allow_nonhermitian,
+!
+     &                   gao,
+     &                   gao1,
+     &                   r_0,
+     &                   gr_0_norm,
+     &                   gr_0,
+     &                   w,
+     &                   is_gga,
+     &                   buf)
+c=======================================================================
+c     linear transformation, spin density contribution
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                            last revision: january 2008
+c=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -70,111 +76,127 @@ C=======================================================================
 #include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   IS_GGA,
-     &          LBIT
-      DIMENSION DTRMAT(*),
-     &          EXCMAT(*),
-     &          ISYMOP(*),
-     &          IHRMOP(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          GR(3),
-     &          BUF(*),
-     &          S_b(3),
-     &          GS_b(3,3),
-     &          VXC(99) !dirty fix
+      logical   is_gga,
+     &          lbit,
+     &          allow_nonhermitian
+      dimension dtrmat(*),
+     &          excmat(*),
+     &          isymop(*),
+     &          ihrmop(*),
+     &          gao(*),
+     &          gao1(*),
+     &          buf(*),
+!
+     &          gr_0(  3),
+     &          s_b (  3),
+     &          gs_b(3,3),
+!
+     &          vxc(99)
 
-      ISTART = 1
-      IF(LBIT(LBIT_CDFT,3)) ISTART = 3 !collinear approximation
+      k_start = 1
+      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
 
-      DO IMAT = 1,NXCMAT !loop over all frequencies
-        IF(IHRMOP(IMAT) .EQ. -1) THEN
+      do im = 1,nxcmat
+        irepop = isymop(im) - 1
 
-          JOFF = NBAST*NBAST*NZ*(IMAT-1)
+        if(ihrmop(im) .eq.  1) goto 99
+        if((ihrmop(im) .gt.-1) .and. (.not. allow_nonhermitian)) goto 99
 
-          CALL GET_M(.TRUE.,
-     &               S_b,
-     &               ISYMOP(IMAT)-1,
-     &               GAO,
-     &               DTRMAT(1+JOFF),
-     &               BUF)
+        im_off = nbast*nbast*nz*(im-1)
 
-          IF(IS_GGA) THEN
-            CALL GET_M_DERVS(.TRUE.,
-     &                       GS_b,
-     &                       ISYMOP(IMAT)-1,
-     &                       GAO,
-     &                       GAO1,
-     &                       DTRMAT(1+JOFF),
-     &                       BUF)
-          ENDIF
+        call get_m(.true.,
+     &             s_b,
+     &             isymop(im)-1,
+     &             gao,
+     &             dtrmat(1+im_off),
+     &             buf)
 
-          TEST_ME_FIRST = DSQRT(DDOT(3,S_b,1,S_b,1))
+        if(is_gga) then
+          if(allow_nonhermitian) then
+            call get_m_dervs_nh(.true.,
+     &                          gs_b,
+     &                          isymop(im)-1,
+     &                          gao,
+     &                          gao1,
+     &                          dtrmat(1+im_off),
+     &                          buf)
+          else
+            call get_m_dervs(.true.,
+     &                       gs_b,
+     &                       isymop(im)-1,
+     &                       gao,
+     &                       gao1,
+     &                       dtrmat(1+im_off),
+     &                       buf)
+          endif
+        endif
 
-          IF(IS_GGA) THEN
-            TEST_ME_FIRST = MAX(
-     &                          TEST_ME_FIRST,
-     &                          DABS(GS_b(1,1)),
-     &                          DABS(GS_b(1,2)),
-     &                          DABS(GS_b(1,3)),
-     &                          DABS(GS_b(2,1)),
-     &                          DABS(GS_b(2,2)),
-     &                          DABS(GS_b(2,3)),
-     &                          DABS(GS_b(3,1)),
-     &                          DABS(GS_b(3,2)),
-     &                          DABS(GS_b(3,3))
-     &                         )
-          ENDIF
+        worth_it = dsqrt(ddot(3,s_b,1,s_b,1))
 
-          IF(TEST_ME_FIRST .GT. DFTHRL) THEN
+        if(is_gga) then
+          worth_it = max(
+     &                   worth_it,
+     &                   dabs(gs_b(1,1)),
+     &                   dabs(gs_b(1,2)),
+     &                   dabs(gs_b(1,3)),
+     &                   dabs(gs_b(2,1)),
+     &                   dabs(gs_b(2,2)),
+     &                   dabs(gs_b(2,3)),
+     &                   dabs(gs_b(3,1)),
+     &                   dabs(gs_b(3,2)),
+     &                   dabs(gs_b(3,3))
+     &                  )
+        endif
 
-            IF(IS_GGA) THEN
-              CALL SDFTPOT1(VXC,W,R,GR_NORM)
-            ELSE
-              CALL SDFTPOT1(VXC,W,R,D0)
-            ENDIF
+        if(worth_it .gt. dfthrl) then
 
-            DO ixyz = ISTART,3
-              CALL SDFT_LR_COLLINEAR(VXC,
-     &                               EXCMAT(1+JOFF),
-     &                               ISYMOP(IMAT),
-     &                               GAO,
-     &                               GAO1,
-     &                               ixyz,
-     &                               S_b(ixyz),
-     &                               GS_b(1,ixyz),
-     &                               GR,
-     &                               IS_GGA)
-            ENDDO
-          ENDIF
-        ENDIF
-      ENDDO
+          if(is_gga) then
+            call sdftpot1(vxc,w,r_0,gr_0_norm)
+          else
+            call sdftpot1(vxc,w,r_0,d0)
+          endif
 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SDFT_LR_COLLINEAR */
-      SUBROUTINE SDFT_LR_COLLINEAR(VXC,
-     &                             EXCMAT,
-     &                             ISYMOP,
-     &                             GAO,
-     &                             GAO1,
-     &                             ixyz,
-     &                             S_b,
-     &                             GS_b,
-     &                             GR,
-     &                             IS_GGA)
-C=======================================================================
-C     describe me ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                               last revision: june 2007
-C=======================================================================
+          do k = k_start,3
+            call sdft_lr_collinear(vxc,
+     &                             excmat(1+im_off),
+     &                             isymop(im),
+     &                             gao,
+     &                             gao1,
+     &                             k,
+     &                             s_b(k),
+     &                             gs_b(1,k),
+     &                             gr_0,
+     &                             is_gga)
+          enddo
+        endif
+ 99     continue
+      enddo
+
+      return
+      end
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     /* sdft_lr_collinear */
+      subroutine sdft_lr_collinear(vxc,
+     &                             excmat,
+     &                             isymop,
+     &                             gao,
+     &                             gao1,
+     &                             k,
+     &                             s_b,
+     &                             gs_b,
+     &                             gr_0,
+     &                             is_gga)
+c=======================================================================
+c     describe me ...
+c-----------------------------------------------------------------------
+c                                                           radovan bast
+c                                               last revision: june 2007
+c=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -187,54 +209,52 @@ C=======================================================================
 #include "dftcom.h"
 #include "../dft/functionals.h"
 
-      LOGICAL   IS_GGA
-      DIMENSION VXC(*),
-     &          EXCMAT(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          GS_b(3),
-     &          GR(3),
-     &          Y_pq(3),
-     &          X_pq_b(3),
-     &          VXC_VECTOR(3)
+      logical   is_gga
+      dimension vxc(*),
+     &          excmat(*),
+     &          gao(*),
+     &          gao1(*),
+     &          gs_b(3),
+     &          gr_0(3),
+     &          y_pq(3),
+     &          x_pq_b(3),
+     &          vxc_vector(3)
 
 
-      S_pq = VXC(fSS)*S_b
+      vxc_scalar = vxc(fss)*s_b
 
-      IF(IS_GGA) THEN
-        Y_b = DDOT(3,GR,1,GS_b,1)
+      if(is_gga) then
+        y_b = ddot(3,gr_0,1,gs_b,1)
 
-        DO jxyz = 1,3
-          X_pq_b(jxyz) = VXC(fX)
+        do j = 1,3
+          x_pq_b(j) = vxc(fx)
 
-          Y_pq(jxyz) = S_b*VXC(fSY) + Y_b*VXC(fYY)
-        ENDDO
+          y_pq(j) = s_b*vxc(fsy) + y_b*vxc(fyy)
+        enddo
 
-        S_pq = S_pq + VXC(fSY)*Y_b
-      ENDIF
+        vxc_scalar = vxc_scalar + vxc(fsy)*y_b
+      endif
 
-      VXC_SCALAR = S_pq
+      if(is_gga) then
+        do j = 1,3
+          vxc_vector(j) = y_pq(j)*gr_0(j)
+     &                  + x_pq_b(j)*gs_b(j)*d2
+        enddo
 
-      IF(IS_GGA) THEN
-        DO jxyz = 1,3
-          VXC_VECTOR(jxyz) = Y_pq(jxyz)*GR(jxyz)
-     &                     + X_pq_b(jxyz)*GS_b(jxyz)*D2
-        ENDDO
+        call dscal(3,d2,vxc_vector,1) !symmetrization later in the code
+      endif
 
-        CALL DSCAL(3,D2,VXC_VECTOR,1) !symmetrization later in the code
-      ENDIF
+      call exc_m(is_gga,
+     &           vxc_scalar,
+     &           vxc_vector,
+     &           k,
+     &           isymop,
+     &           excmat,
+     &           gao,
+     &           gao1)
 
-      CALL EXC_M(IS_GGA,
-     &           VXC_SCALAR,
-     &           VXC_VECTOR,
-     &           ixyz,
-     &           ISYMOP,
-     &           EXCMAT,
-     &           GAO,
-     &           GAO1)
-
-      RETURN
-      END
+      return
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VRG_LR */
       SUBROUTINE VRG_LR(DTRMAT,

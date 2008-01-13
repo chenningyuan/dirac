@@ -895,7 +895,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 
 !       linear response
-        IF(DOLR) THEN
+        if(dolr) then
 #if !defined (MOD_DNF)
           call dft_lr(dtrmat,excmat,nxcmat,
      &                isymop,ihrmop,.false.,
@@ -904,20 +904,21 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #endif
 
 #if defined (MOD_CDFT)
-!         magnetization (a.k.a. spin density) contribution
-          IF(LBIT(LBIT_CDFT,1)) THEN
-            CALL SDFT_LR(DTRMAT,EXCMAT,NXCMAT,
-     &                   ISYMOP,IHRMOP,GAO,GAO1,
-     &                   RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-          ENDIF
+!         spin magnetization contribution
+          if(lbit(lbit_cdft,1)) then
+            call sdft_lr(dtrmat,excmat,nxcmat,
+     &                   isymop,ihrmop,.false.,
+     &                   gao,gao1,
+     &                   rho,rhogrd,rhg,wght,dogga,buf)
+          endif
 !         VRG contribution
-          IF(LBIT(LBIT_CDFT,2)) THEN
-            CALL VRG_LR(DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,GAO,GAO1,
-     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-          ENDIF
+          if(lbit(lbit_cdft,2)) then
+            call vrg_lr(dtrmat,excmat,nxcmat,
+     &                  isymop,ihrmop,gao,gao1,
+     &                  rho,rhogrd,rhg,wght,dogga,buf)
+          endif
 #endif
-        ENDIF
+        endif
 
 #if defined check_and_merge_me
 !       quadratic response
@@ -927,32 +928,28 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                     dtrmat,excmat,
      &                     isymop,ihrmop,gao,gao1,
      &                     rho,rhogrd,rhg,wght,buf)
-!
-!         the idea here is that   r^[B]           \Omega_{ia}^[C]
-!                                 r^[C]           \Omega_{ia}^[B]
-!                                 r^[BC]          \Omega_{ia}
-!         and the corresponding   q^[B]  \nabla_j \Omega_{ia}^[C]
-!                                 q^[C]  \nabla_j \Omega_{ia}^[B]
-!                                 q^[BC] \nabla_j \Omega_{ia}
-!
+
+!         the idea here is that   r^[b]               \omega_{ia}^[c]
+!                                 r^[c]               \omega_{ia}^[b]
+!                                 r^[bc]              \omega_{ia}
+!         and the corresponding   q^[b]  \cdot \nabla \omega_{ia}^[c]
+!                                 q^[c]  \cdot \nabla \omega_{ia}^[b]
+!                                 q^[bc] \cdot \nabla \omega_{ia}
+
 !         can be evaluated using (s)dft_lr
-!         only the remaining part is done in dft_qr
-!
-!         it works but i have seen some problems with the gnu compiler
-!         and didn't have time to investigate
-!         so it's blocked for the moment
-!         the (s)dft_lr have to be adapted to deal
-!         with Hermiticity-general matrices which is easy
-!                                                         radovan
-!
+!         only the remaining part is done in (s)dft_qr
+
           call dft_lr(dtrmat,excmat,3,
      &                isymop,ihrmop,.true.,
      &                gao,gao1,
      &                rho,rhogrd,rhg,wght,dogga,buf)
+
+!         spin magnetization contribution
           if(lbit(lbit_cdft,1)) then
-            call sdft_lr_mod(dtrmat,excmat,3,
-     &                       isymop,ihrmop,gao,gao1,
-     &                       rho,rhogrd,rhg,wght,dogga,buf)
+            call sdft_lr(dtrmat,excmat,3,
+     &                   isymop,ihrmop,.true.,
+     &                   gao,gao1,
+     &                   rho,rhogrd,rhg,wght,dogga,buf)
           endif
         endif
 #endif

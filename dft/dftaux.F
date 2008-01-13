@@ -51,7 +51,7 @@ c     /* dft_lr */
      &                  gr_0_norm,
      &                  gr_0,
      &                  w,
-     &                  dogga,
+     &                  is_gga,
      &                  buf)
 c=======================================================================
 c     linear transformation, spin density contribution is in sdft_lr
@@ -77,7 +77,7 @@ c=======================================================================
 #include "dftcom.h"
 #include "functionals.h"
 
-      logical   dogga,
+      logical   is_gga,
      &          lbit,
      &          allow_nonhermitian
       dimension dtrmat(nbast,nbast,nz,nxcmat),
@@ -91,7 +91,7 @@ c=======================================================================
      &          gr_0(3),
      &          gr_b(3),
 !
-     &          vxc_b(3),
+     &          vxc_vector(3),
 !
      &          vxc(99)
 
@@ -104,7 +104,7 @@ c=======================================================================
         call getrho(r_b,irepop,gao,
      &              dtrmat(1,1,1,im),buf)
 
-        if(.not. dogga) then
+        if(.not. is_gga) then
 
 !-------------------------------------------------------------------------------
 !         LDA
@@ -112,9 +112,9 @@ c=======================================================================
           if(dabs(r_b) .gt. dfthrl) then
 
             call dftpot1(vxc,w,r_0,d0)
-            sxc_b = vxc(fRR)*r_b
+            vxc_scalar = vxc(fRR)*r_b
 
-            call doexc1(sxc_b,irepop,excmat(1,1,1,im),gao)
+            call doexc1(vxc_scalar,irepop,excmat(1,1,1,im),gao)
           endif
         else
 
@@ -141,19 +141,20 @@ c=======================================================================
 
             Z_b = d2*ddot(3,gr_0,1,gr_b,1)
 
-            sxc_b = vxc(fRR)*r_b
-     &            + vxc(fRZ)*Z_b
+            vxc_scalar = vxc(fRR)*r_b
+     &                 + vxc(fRZ)*Z_b
 
             do j = 1,3
-              vxc_b(j) = vxc(fZZ)*Z_b*gr_0(j)
-     &                 + vxc(fRZ)*r_b*gr_0(j)
-     &                 + vxc(fZ0)*gr_b(j)
+              vxc_vector(j) = vxc(fZZ)*Z_b*gr_0(j)
+     &                      + vxc(fRZ)*r_b*gr_0(j)
+     &                      + vxc(fZ0)*gr_b(j)
             enddo
 
 !           this factor is *not* for the symmetrization later
-            call dscal(3,d2,vxc_b,1)
+            call dscal(3,d2,vxc_vector,1)
 
-            call doexc2(sxc_b,vxc_b,irepop,excmat(1,1,1,im),gao,gao1)
+            call doexc2(vxc_scalar,vxc_vector,
+     &                  irepop,excmat(1,1,1,im),gao,gao1)
           endif
         endif
  99     continue
