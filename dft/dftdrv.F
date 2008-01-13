@@ -920,14 +920,14 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #endif
         endif
 
-#if defined check_and_merge_me
 !       quadratic response
         if(doqr) then
-          call dft_qr_slim(dogga,
-     &                     lbit(lbit_cdft,1),
-     &                     dtrmat,excmat,
-     &                     isymop,ihrmop,gao,gao1,
-     &                     rho,rhogrd,rhg,wght,buf)
+#if defined (MOD_CDFT)
+          call sdft_qr(dogga,
+     &                 lbit(lbit_cdft,1),
+     &                 dtrmat,excmat,
+     &                 isymop,ihrmop,gao,gao1,
+     &                 rho,rhogrd,rhg,wght,buf)
 
 !         the idea here is that   r^[b]               \omega_{ia}^[c]
 !                                 r^[c]               \omega_{ia}^[b]
@@ -936,8 +936,8 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !                                 q^[c]  \cdot \nabla \omega_{ia}^[b]
 !                                 q^[bc] \cdot \nabla \omega_{ia}
 
-!         can be evaluated using (s)dft_lr
-!         only the remaining part is done in (s)dft_qr
+!         can be evaluated using (s)dft_lr (below)
+!         only the remaining part is done in sdft_qr (above)
 
           call dft_lr(dtrmat,excmat,3,
      &                isymop,ihrmop,.true.,
@@ -951,39 +951,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                   gao,gao1,
      &                   rho,rhogrd,rhg,wght,dogga,buf)
           endif
-        endif
-#endif
-
-!       quadratic response
-        IF(DOQR) THEN
-#if defined (MOD_CDFT)
-!         magnetization (a.k.a. spin density) contribution
-          IF(LBIT(LBIT_CDFT,1)) THEN
-            CALL DFT_RESPONSE(.TRUE.,
-     &                        .TRUE.,
-     &                        DOGGA,
-     &                        DOGGA,
-     &                        DTRMAT,EXCMAT,
-     &                        ISYMOP,IHRMOP,GAO,GAO1,
-     &                        RHO,RHOGRD,RHG,WGHT,BUF)
-          ELSE
-!           CALL DFT_RESPONSE(.TRUE.,
-!    &                        .FALSE.,
-!    &                        DOGGA,
-!    &                        .FALSE.,
-!    &                        DTRMAT,EXCMAT,
-!    &                        ISYMOP,IHRMOP,GAO,GAO1,
-!    &                        RHO,RHOGRD,RHG,WGHT,BUF)
-            CALL DFT_QR(DTRMAT,EXCMAT,
-     &                  ISYMOP,IHRMOP,GAO,GAO1,
-     &                  RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
-          ENDIF
 #else
-          CALL DFT_QR(DTRMAT,EXCMAT,
-     &                ISYMOP,IHRMOP,GAO,GAO1,
-     &                RHO,RHOGRD,RHG,WGHT,DOGGA,BUF)
+          call dft_qr(dtrmat,excmat,
+     &                isymop,ihrmop,gao,gao1,
+     &                rho,rhogrd,rhg,wght,dogga,buf)
 #endif
-        ENDIF
+        endif
 
   300 CONTINUE !end of loop over grid points
 

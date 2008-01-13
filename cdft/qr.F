@@ -198,22 +198,22 @@ c=======================================================================
       return
       end
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c     /* dft_response */
-      subroutine dft_response(add_r,
-     &                        add_s,
-     &                        add_gr,
-     &                        add_gs,
-     &                        dtrmat,
-     &                        excmat,
-     &                        isymop,
-     &                        ihrmop,
-     &                        gao,
-     &                        gao1,
-     &                        r_0,
-     &                        gr_0_norm,
-     &                        gr_0,
-     &                        w,
-     &                        buf)
+c     /* sdft_qr_old */
+      subroutine sdft_qr_old(add_r,
+     &                       add_s,
+     &                       add_gr,
+     &                       add_gs,
+     &                       dtrmat,
+     &                       excmat,
+     &                       isymop,
+     &                       ihrmop,
+     &                       gao,
+     &                       gao1,
+     &                       r_0,
+     &                       gr_0_norm,
+     &                       gr_0,
+     &                       w,
+     &                       buf)
 c=======================================================================
 c     describe me ...
 c-----------------------------------------------------------------------
@@ -688,20 +688,20 @@ c=======================================================================
       return
       end
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c     /* dft_qr_slim */
-      subroutine dft_qr_slim(add_grad,
-     &                       add_spin,
-     &                       dtrmat,
-     &                       excmat,
-     &                       isymop,
-     &                       ihrmop,
-     &                       gao,
-     &                       gao1,
-     &                       r_0,
-     &                       gr_0_norm,
-     &                       gr_0,
-     &                       w,
-     &                       buf)
+c     /* sdft_qr */
+      subroutine sdft_qr(add_grad,
+     &                   add_spin,
+     &                   dtrmat,
+     &                   excmat,
+     &                   isymop,
+     &                   ihrmop,
+     &                   gao,
+     &                   gao1,
+     &                   r_0,
+     &                   gr_0_norm,
+     &                   gr_0,
+     &                   w,
+     &                   buf)
 c=======================================================================
 c     describe me ...
 c-----------------------------------------------------------------------
@@ -780,6 +780,9 @@ c=======================================================================
 
 #include "ibtfun.h"
 
+      k_start = 1
+      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
+
         call getrho(r_b,isymop(1)-1,gao,
      &            dtrmat(1,1,1,1),buf)
         call getrho(r_c,isymop(2)-1,gao,
@@ -837,9 +840,6 @@ c=======================================================================
           call sdftpot2(vxc,w,r_0,d0)
         endif
       endif
-
-      k_start = 1
-      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
 
 !-------------------------------------------------------------------------------
 !     collect s_bc_h
