@@ -760,10 +760,10 @@ c=======================================================================
 !
 !               here we construct (see thesis for notation):
 !
-!               K_{pq,0}^[BC] = r_0^[BC] \Omega_{pq} + q_{0j}^[BC] \nabla \Omega_{pq}
-!               K_{pq,z}^[BC] = r_z^[BC] \Omega_{pq} + q_{zj}^[BC] \nabla \Omega_{pq}
-!               K_{pq,y}^[BC] = r_y^[BC] \Omega_{pq} + q_{yj}^[BC] \nabla \Omega_{pq}
-!               K_{pq,x}^[BC] = r_x^[BC] \Omega_{pq} + q_{xj}^[BC] \nabla \Omega_{pq}
+!               K_{pq,0}^(BC) = r_0^(BC) \Omega_{pq,0} + q_{0j}^(BC) \nabla_j \Omega_{pq,0}
+!               K_{pq,z}^(BC) = r_z^(BC) \Omega_{pq,z} + q_{zj}^(BC) \nabla_j \Omega_{pq,z}
+!               K_{pq,y}^(BC) = r_y^(BC) \Omega_{pq,y} + q_{yj}^(BC) \nabla_j \Omega_{pq,y}
+!               K_{pq,x}^(BC) = r_x^(BC) \Omega_{pq,x} + q_{xj}^(BC) \nabla_j \Omega_{pq,x}
 !
 !               all the rest is done elsewhere
 !

@@ -929,12 +929,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                 isymop,ihrmop,gao,gao1,
      &                 rho,rhogrd,rhg,wght,buf)
 
-!         the idea here is that   r^[b]               \omega_{ia}^[c]
-!                                 r^[c]               \omega_{ia}^[b]
-!                                 r^[bc]              \omega_{ia}
-!         and the corresponding   q^[b]  \cdot \nabla \omega_{ia}^[c]
-!                                 q^[c]  \cdot \nabla \omega_{ia}^[b]
-!                                 q^[bc] \cdot \nabla \omega_{ia}
+!         the idea here is that   r^[B]               \omega_{ia}^[C]
+!                                 r^[C]               \omega_{ia}^[B]
+!                                 r^[BC]              \omega_{ia}
+!         and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
+!                                 q^[C]  \cdot \nabla \omega_{ia}^[B]
+!                                 q^[BC] \cdot \nabla \omega_{ia}
 
 !         can be evaluated using (s)dft_lr (below)
 !         only the remaining part is done in sdft_qr (above)
@@ -943,8 +943,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                isymop,ihrmop,.true.,
      &                gao,gao1,
      &                rho,rhogrd,rhg,wght,dogga,buf)
-
-!         spin magnetization contribution
           if(lbit(lbit_cdft,1)) then
             call sdft_lr(dtrmat,excmat,3,
      &                   isymop,ihrmop,.true.,
