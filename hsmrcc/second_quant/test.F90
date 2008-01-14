@@ -7,7 +7,7 @@ Program TEST_SEC_QUANT
 
   use control_print
 
-  type(dll_member), pointer :: head => null()
+  type(dll_member), pointer :: head => null(), k, d_ik
   
   type(KronDelta), pointer :: d_ij, d_ab
 
@@ -30,7 +30,7 @@ Program TEST_SEC_QUANT
   d_ab = make_kron_delta(3,4);  call print_kd(d_ab)
 
   allocate(i)
-  i = make_sqo(1); ! call print_sqo(i)
+  i = make_sqo(1,.true.); ! call print_sqo(i)
 
   allocate(j)
   j = make_sqo(2); ! call print_sqo(i)
@@ -72,8 +72,28 @@ Program TEST_SEC_QUANT
  !call exchange_string_elements(pos,1,3)
  call exchange_string_elements(pos,2,3)
  ! call exchange_string_elements(pos,1,2)
+ call print_string(pos)
 
-  call print_string(pos)
+ allocate(k); allocate(d_ik)
+ k = make_sqo_cell(3); call print_one_member(k)
+ d_ik = make_kd_cell(1,3); call print_one_member(d_ik)
+ call  insert_element(pos,3,k)
+ call  insert_element(pos,1,d_ik)
+
+ call print_string(pos)
+
+ call remove_element(pos,1)
+ call remove_element(pos,1)
+ call Insert_SQOp_end(pos,i)
+ call remove_element(pos,1)
+ call remove_element(pos,1)
+ call exchange_string_elements(pos,1,2)
+
+ call print_string(pos)
+ call print_all_strings(HL)
+
+ call process_strings(HL)
+
 
 ! call process_strings(HL)
 

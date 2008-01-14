@@ -67,7 +67,7 @@ end subroutine print_sqo
 function is_sqo_filled(this) result(is)
 !----------------------------------------------------------------------------
 !
-! returns info if the second quantization operator is properly filled
+!    returns info if the second quantization operator is properly filled
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"

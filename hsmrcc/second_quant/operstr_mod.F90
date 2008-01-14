@@ -11,19 +11,24 @@ use Indexed_Quantities
 use Control_print
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-  type string_member
+type string_member
 !---------------------------------------------------------------------------------
 !
 ! ... one string member (creat/anihil. operator, Kronecker delta, indexed term...)
 !
 !---------------------------------------------------------------------------------
-    type(SQOper),   pointer :: pSQOper => null()
-    type(KronDelta),pointer :: pKronDelta => null()
-    type(indexed_term), pointer :: pIndxTerm  => null()
-  end type string_member
+  type(SQOper),       pointer ::    pSQOper => null()
+  type(KronDelta),    pointer :: pKronDelta => null()
+  type(indexed_term), pointer :: pIndxTerm  => null()
+end type string_member
 
-! ... one member with 2 pointers (to be in the doubly linked list) ...
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 type dll_member
+!---------------------------------------------------------------------------------
+!
+!    ... one member with 2 pointers (to be in the doubly linked list) ...
+!
+!---------------------------------------------------------------------------------
  type(string_member) :: member
  type(dll_member), pointer :: previous => null(), next => null()
 end type dll_member
@@ -74,6 +79,49 @@ type heads_list
 end type heads_list
 
  contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function make_sqo_cell(i,is_creat) result (this)
+!----------------------------------------------------------------------------
+!
+!                   Returns second quantized operator cell
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: i
+logical, optional, intent(in) :: is_creat
+type(dll_member) :: this
+type(SQOper), target :: this_sqo
+call QEnter('make_sqo_cell')
+
+ this_sqo = make_sqo(i,is_creat)
+
+ this%member%pSQOper =>  this_sqo
+
+call QExit('make_sqo_cell')
+end function make_sqo_cell
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function make_kd_cell(i,j) result (this)
+!----------------------------------------------------------------------------
+!
+!      Returns cell with KD
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: i,j
+type(dll_member) :: this
+type(KronDelta), target :: this_kd
+call QEnter('make_kd_cell')
+
+ this_kd = make_kron_delta(i,j)
+
+ this%member%pKronDelta =>  this_kd
+
+call QExit('make_kd_cell')
+end function make_kd_cell
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function create_string(head, factor) result(this)
@@ -297,7 +345,7 @@ end subroutine Insert_KD_end
 subroutine print_all_strings(heads)
 !------------------------------------------------------------------------
 !
-!                print all strings under list "heads"
+!       print all strings under list "heads"
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -307,7 +355,7 @@ type(heads_list), intent(in) :: heads
 type(head_cell), pointer :: temp
 call QEnter('print_all_strings')
 
-write(LUPRI,*) 'in print_all_strings:'
+write(LUPRI,'(/,2x,a)') '***  print_all_strings:  ***'
 
 if (associated(heads%main_head)) then
 
@@ -315,7 +363,7 @@ if (associated(heads%main_head)) then
 ! ... cycle ...
  temp => heads%main_head
  do while (associated(temp))
-  write(LUPRI,'(2x,a,i3)') ' string #',i
+  write(LUPRI,'(5x,a,i3)') '.... string #',i
   call print_string(temp%p_string)
   temp => temp%next
   i = i + 1
@@ -491,10 +539,10 @@ type(heads_list), intent(inout) :: heads
 type(head_cell), pointer :: temp
 call QEnter('process_strings')
 
-write(LUPRI,*) 
-write(LUPRI,*) 'in process_strings...'
-
-!call print_all_strings(heads)
+if (get_iprint() >= 5) then
+  write(LUPRI,*) 
+  write(LUPRI,*) 'in process_strings...'
+endif
 
 ! ... go string after string ...
 
@@ -531,6 +579,8 @@ subroutine process_one_string(this)
 !            at the beginning:   P1 i a+ P2
 !
 ! after evaluating commutator:   P1 d_ia P2 - P1 a+ i P2
+!
+!             where P1, P2 are bunches of elements 
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -936,21 +986,26 @@ end subroutine get_string_element
 subroutine insert_element(this_string,i_in,this_elem)
 !------------------------------------------------------------------------
 !
-! insert element into the string
+!   insert element cell into the string
 !
-! on entry:  this_string
-!            i_in
-!            this_elem
+!   on entry:  this_string
+!              i_in
+!              this_elem
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: this_string
 integer, intent(in) :: i_in
-type(dll_member), pointer :: this_elem, temp, temp1
+type(dll_member), pointer :: this_elem, temp, temp1, temp2
 logical :: on_head = .false.
 
 call QEnter('insert_element')
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a,i3)')  &
+  'insert_element: entering position in the string:',i_in
+endif 
 
 if (.not.associated(this_string)) then
   write(LUPRI,'(/,2x,a)') 'insert_element: entering "this_string" not associated !' 
@@ -962,14 +1017,20 @@ else
   endif
 endif
 
-i = i_n
+i = i_in
 
-if (i > this_string%n) then
-  if (get_iprint() >= 5) then
-    write(LUPRI,'(2x,a,i3)')  &
-    'insert_element: entering position changed to the end',this_string%n
-  endif 
+if (i_in > this_string%n) then
   i = this_string%n
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(2x,a,i3,a,i3)')  &
+    'insert_element: entering position ',i_in,' changed to the end, i=',i
+  endif 
+else if (i_in < 0) then
+  i = 1
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(2x,a,i3,a,i3)')  &
+    'insert_element: entering position ',i_in,' changed to the neginning, i=',i
+  endif 
 endif
 
 if (i == 0) then
@@ -979,27 +1040,48 @@ endif
 ! ... get the pointer to the i-th element of the string
 call get_string_element(this_string,i,temp)
 
-allocate(temp1)
+if (get_iprint() >=5) then
+  write(LUPRI,'(/,2x,a,i3,a)') '*** insert_element: ',i,'. member cell'
+  call print_one_member(temp)
+endif
+
+allocate(temp1); temp1 => this_elem
 
 if (on_head) then
 ! ... insert element at the very beginning of the string ...
-temp1%next => this_string%head
-temp1%previous => null()
+  temp1%next => this_string%head
+  temp1%previous => null()
 
-this_string%head%previous => temp
-
-
+  this_string%head%previous => temp1
+  this_string%head => temp1
 
 else
 ! ... insert element AFTER the i-th element "temp" 
-
+   temp2 => temp%next
+! ... 
+   temp%next => temp1
+   temp1%previous => temp
+! ... 
+   if (associated(temp2)) then
+     temp2%previous => temp1
+     temp1%next => temp2
+   else
+   ! ... temp1 is the last member
+     this_string%rear => temp1
+   endif
 endif
 
+! ... increase counter for number of elements in the string 
+this_string%n  =  this_string%n  +  1
 
+if (get_iprint() >=5) then
+ write(LUPRI,'(/,2x,a)') '*** insert_element> print the whole string:'
+ call print_string(this_string)
+ write(LUPRI,'(2x,a,i3)') 'number of elements, n=',this_string%n
+endif
 
 call QExit('insert_element')
 end subroutine insert_element
-
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine check_string(this_string,i)
@@ -1038,6 +1120,8 @@ end subroutine check_string
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine find_splitting(this)
 !------------------------------------------------------------------------
+!
+!
 !
 !
 !------------------------------------------------------------------------
