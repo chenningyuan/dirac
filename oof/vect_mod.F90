@@ -12,18 +12,22 @@ type Vect
 ! contains position on the PW (WORK) array 
   integer (kind=4) :: kstart 
 !   the total size on the array
-  integer (kind=8) :: array_size = 0
+ ! integer (kind=8) :: array_size = 0
+  integer :: array_size = 0
 ! ...important flag to check if vector is allocated !
   logical ::  is_alloc = .false.
 ! may be real or integer 
   logical ::  is_real = .false.
   logical ::  is_logi = .false.
+
 ! short text attached to the vector
   type(string), dimension(1) :: vect_text
+
 ! ... pointers - very effective tools 
   real(kind=8), dimension(:), pointer :: p_rA1D => NULL()
   integer,      dimension(:), pointer :: p_iA1D => NULL()
   logical,      dimension(:), pointer :: p_lA1D => NULL()
+
 end type Vect
 
 type Array2Dim
@@ -46,9 +50,9 @@ type Array3Dim
   type(Vect) :: Vect3D
 end type Array3Dim
 
-! TODO: program all 3Dim stuff 
+! yet TODO: program all 3Dim stuff 
 
-! ... common routine name (overloading)
+! ... common routine names (methods overloading)
 interface Fill2D_Vect
   module procedure Fill2D_Vect_re
   module procedure Fill2D_Vect_int
@@ -118,13 +122,13 @@ call QENTER('get_vect_kstart')
 call QEXIT('get_vect_kstart')
 end function get_vect_kstart
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_vect_iprint(iprint)
-!=======================================================
+!==============================================================
 !
 ! set up the print variable in the module: iprint_vect
 !
-!=======================================================
+!==============================================================
 #include "priunit.h"
 #include "iratdef.h"
 integer (kind=8/IRAT), intent(in) :: iprint
@@ -208,18 +212,21 @@ end subroutine print_vect_attrib
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_2Darray_attrib(self)
-!-------------------------------------------------------------------
+!------------------------------------------------------------------------
 !
-!   print out only attributes of the vector data type
+!   print out only attributes of the entering vector data type "self"
 !
-!-------------------------------------------------------------------
+!------------------------------------------------------------------------
 #include "priunit.h"
 type(Array2Dim), intent(in) :: self
 call QENTER('print_2Darray_attrib')
 
  write(LUPRI,'(/2x,a)')  &
  '---------- Basic attributes of the derived "Array2Dim" data type -----------'
+
  call print_vect_attrib(self%Vect2D)
+
+ write(LUPRI,'(a,i3)') 'module print level:',iprint_vect
 
  write(LUPRI,'(a,l1)') 'Is "Array2Dim" allocated (is_alloc) ?',self%is_alloc
  write(LUPRI,'(a,2i4)') '"Array2Dim" dimensions :',self%dimens1,self%dimens2
@@ -524,7 +531,7 @@ Call ZeroVector(self) ! automatically make it zero
  if (associated(self%p_lA1D)) then
   if (iprint_vect >= 10 ) then
     write(LUPRI,'(a)') 'MakeVector: pointer of "Vect" type variable is for "logical" 1D array.'
-    call quit('MakeVector: logical vector not yet programmed !')
+    call Quit('MakeVector: logical vector is not yet programmed !')
   endif
   is_pointer = .true.
  endif  
@@ -867,13 +874,21 @@ end subroutine Zero2DArray
 subroutine DeAllocVect(self)
 !-----------------------------------------------------------------------
 !
-!     deallocate the vector
+!        deallocate the entering vector "self"
 !
 !-----------------------------------------------------------------------
 use Memory
 #include "priunit.h"
 type(Vect),intent(inout) :: self
 call QENTER('DeAllocVect')
+
+if (iprint_vect >= 10) then
+  write(LUPRI,'(/,2X,A)') 'DeAllocVect: going to deallocate the vector'
+  call PrintObject(self)
+  write(LUPRI,'(/2X,A)') 'DeAllocVect: related memory parameters to this vector:'
+  call print_mem_param
+endif
+
 if (self%is_alloc) then
  call mymemrel('Vectors: DeAllocVect',self%kstart,self%kstart)
  self%is_alloc = .false.
@@ -882,6 +897,14 @@ if (self%is_alloc) then
 else
  call QUIT('DeAllocVect: was NOT allocated !')
 endif
+
+if (iprint_vect >= 10) then
+  write(LUPRI,'(/,2X,A)') 'DeAllocVect: vector was deallocated'
+  call PrintObject(self)
+  write(LUPRI,'(/2X,A)') 'DeAllocVect: related memory parameters of this released vector:'
+  call print_mem_param
+endif
+
 call QEXIT('DeAllocVect')
 end subroutine DeAllocVect
 
@@ -890,13 +913,21 @@ end subroutine DeAllocVect
 subroutine DeAlloc2DArray(self)
 !-----------------------------------------------------------------------
 !
-!            deallocate the 2D array
+!            deallocate the 2D array "self"
 !
 !-----------------------------------------------------------------------
 use Memory
 #include "priunit.h"
 type(Array2Dim), intent(inout) :: self
 call QENTER('DeAlloc2DArray')
+
+if (iprint_vect >= 10 ) then
+  write(LUPRI,'(/2X,A)') 'DeAlloc2DArray: going to deallocate the entering 2D-array:'
+  call PrintObject(self)
+  write(LUPRI,'(/2X,A)') 'DeAlloc2DArray: related memory parameters of this 2D-array:'
+  call print_mem_param
+endif
+
 if (self%is_alloc) then
  call DeAllocVect(self%Vect2D)
  self%is_alloc = .false.
@@ -904,10 +935,11 @@ if (self%is_alloc) then
  self%p_rA2D => NULL(); self%p_iA2D => NULL(); self%p_lA2D => NULL()
 else 
  call print_2Darray_attrib(self)
- call QUIT('DeAlloc2DArray: was NOT allocated, can not be deallocated !')
+ call QUIT('DeAlloc2DArray: array was NOT allocated, thus cannot be deallocated !')
 endif
 if (iprint_vect >= 10) then
- write(LUPRI,*) 'DeAlloc2DArray: 2D array deallocated in memory.'
+ write(LUPRI,*) 'DeAlloc2DArray: 2D array was deallocated in memory.'
+ call print_mem_param
 endif
 call QEXIT('DeAlloc2DArray')
 end subroutine DeAlloc2DArray
