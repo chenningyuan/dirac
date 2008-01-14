@@ -43,33 +43,37 @@ Program TEST_SEC_QUANT
   pos = create_string(head,0.50D0)
 
   allocate(pSH)
+  pSH%p_string => pos 
 
-!  SH%p_string=>os 
+  HL%main_head=>pSH
 
-   pSH%p_string => pos 
+  pos%head => head 
 
-   HL%main_head=>pSH
-
- !  call Insert_SQO(i,head)
- pos%head => head 
-
- !  call Insert_SQO(a,head)
- ! call Insert_KD_end(pos,d_ij)
   call Insert_SQOp_end(pos,i)
   call Insert_SQOp_end(pos,j)
   call Insert_KD_end(pos,d_ij)
-  call Insert_SQOp_end(pos,a)
-  call Insert_KD_end(pos,d_ab)
-
- !  call Insert_KD(d_ij,head)
- !  call Insert_SQO(b,head)
+!  call Insert_SQOp_end(pos,a)
+!  call Insert_KD_end(pos,d_ab)
 
 ! call print_string(pos)
   call print_all_strings(HL)
 
  ! call rearrange_string(pos)
 
-   call move_element_beg(pos,2)
+ ! call move_element_beg(pos,2)
+ ! call move_element_beg(pos,5)
+
+!  call remove_element(pos,2)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+!  call remove_element(pos,1)
+
+ !call exchange_string_elements(pos,1,3)
+ call exchange_string_elements(pos,2,3)
+ ! call exchange_string_elements(pos,1,2)
+
+  call print_string(pos)
 
 ! call process_strings(HL)
 

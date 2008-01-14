@@ -121,13 +121,6 @@ call QEnter('create_string')
 call QExit ('create_string')
 end function create_string
 
-! subroutine Insert_KD(head,i,j)
-! adds kronecker delta to the end of operator_string list
- !  type(string_member), pointer :: head
- !  integer(kind=4), intent(in) :: i,j
- !  type(string), pointer :: temp
-! end subroutine Insert_KD
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 recursive subroutine Insert_SQO_rec(this, head)
 !--------------------------------------------------------------------------------------
@@ -215,6 +208,7 @@ endif
 
 call QExit('Insert_SQOp_end')
 end subroutine Insert_SQOp_end
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine Insert_KD_end(this_string,this_kd)
 !-------------------------------------------------------------------------------
@@ -298,6 +292,7 @@ end subroutine Insert_KD_end
     call Insert_KD_rec(this,head%next)
  endif 
  end subroutine Insert_KD_rec
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_all_strings(heads)
 !------------------------------------------------------------------------
@@ -342,14 +337,16 @@ subroutine print_string(head)
 ! together with the factor 
 !
 !------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
 type(one_string), pointer :: head
 
 call QEnter('print_string')
 if (.not.associated(head)) then
-  write(*,'(/,2x,a)') 'print_string: entering "head" not associated !' 
+  write(LUPRI,'(/,2x,a)') 'print_string: entering "head" not associated !' 
   call Quit('print_string: entering "head" not associated !')
 else
-  write(*,'(/,a,f12.5)')   & 
+  write(LUPRI,'(/,a,f12.5)')   & 
   '*** printing  one string of elements with the factor',head%factor
   call print_members(head%head)
 endif
@@ -357,53 +354,114 @@ endif
 call QExit('print_string')
 end subroutine print_string
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_string_reverse(this_string)
+!--------------------------------------------------------------------------
+!
+!   print-out string of elements of the string pointed with 'this_string'
+! together with the factor 
+!
+!--------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+
+call QEnter('print_string_reverse')
+
+if (.not.associated(this_string)) then
+  write(LUPRI,'(/,2x,a)') 'print_string_reverse: entering "this_string" not associated !' 
+  call Quit('print_string_reverse: entering "this_string" not associated !')
+else
+  write(LUPRI,'(/,a,f12.5)')   & 
+  '*** printing string elements in reverse order; factor:',this_string%factor
+  call print_members_reverse(this_string%rear)
+endif
+
+call QExit('print_string_reverse')
+end subroutine print_string_reverse
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_members(head)
 !------------------------------------------------------------------------
 !
-! prints out one string of members (operators, kron.deltas, indexed terms) ...
+! prints one string of members (operators, kron.deltas, indexed terms) ...
 !
 !------------------------------------------------------------------------
-  !type(dll_member), pointer, intent(in) :: head
-  type(dll_member), pointer :: head, temp
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer :: head, temp
+call QEnter('print_members')
 
- write(*,'(a)') '* individual elements in the string:'
+write(LUPRI,'(a)') '* individual elements in the string:'
 
- if (.not.associated(head)) then
-  write(*,'(2x,a)')   &
+if (.not.associated(head)) then
+  write(LUPRI,'(2x,a)')   &
  "...string of members (operators, kron.deltas, indexed terms) empty"
- else
+else
    temp => head
    do while (associated(temp))
      call print_one_member(temp)
      temp => temp%next
    enddo
- endif
+endif
+
+call QExit('print_members')
+
 end subroutine print_members
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_members_reverse(rear)
+!------------------------------------------------------------------------
+!
+!                  print string elements from the rear
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer  :: rear, temp
+call QEnter('print_members_reverse')
+
+write(LUPRI,'(a)') & 
+'* individual elements of the string in the reverse order:'
+
+if (.not.associated(rear)) then
+  write(LUPRI,'(2x,a)')   &
+  "...string of members (operators, kron.deltas, indexed terms) empty"
+else
+   temp => rear 
+   do while (associated(temp))
+     call print_one_member(temp)
+     temp => temp%previous
+   enddo
+endif
+
+call QExit('print_members_reverse')
+end subroutine print_members_reverse
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine print_one_member(this)
+subroutine print_one_member(this)
 ! -----------------------------------------------------------------
 !
-!     print-out one member according to entering pointer
+!  print-out one member according to the entering pointer "this"
 !
 ! -----------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-  type(dll_member), pointer :: this
+type(dll_member), pointer :: this
 
-  call QEnter('print_one_member')
+call QEnter('print_one_member')
 
-  if (.not.associated(this)) then
+if (.not.associated(this)) then
     write(LUPRI,*) 'print_one_member: entering pointer is not associated !'
-    call Quit('print_one_member: entering pointer is not associated !')
-  endif
+   ! call Quit('print_one_member: entering pointer is not associated !')
+else
 
-  if (associated(this%member%pSQOper)) then
+if (associated(this%member%pSQOper)) then
    call print_sqo(this%member%pSQOper)
-  else if (associated(this%member%pKronDelta)) then
+else if (associated(this%member%pKronDelta)) then
    call print_kd(this%member%pKronDelta)
-  else
+else
    write(LUPRI,'(2x,a)') '*** print_one_member dead branch output ***'
    write(LUPRI,'(2x,a,l)')   &
    'associated(this%member%pSQOper):',associated(this%member%pSQOper)
@@ -411,13 +469,14 @@ end subroutine print_members
    'associated(this%member%pKronDelta):',associated(this%member%pKronDelta)
    write(LUPRI,'(2x,a,l)')   &
    'associated(this%member%pIndxTerm):',associated(this%member%pIndxTerm)
-
    call Quit('print_one_member: neither SQOp, nor Kron.delta !')
-  endif
+endif
 
- call QExit('print_one_member')
+endif
 
- end subroutine print_one_member
+call QExit('print_one_member')
+
+end subroutine print_one_member
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine process_strings(heads)
@@ -509,7 +568,7 @@ subroutine rearrange_string(this)
 !------------------------------------------------------------------------
 !
 !  rearrange string that all indexed terms and kronecker deltas are 
-! on the left separated from the rest -  bunch 
+! on the left separated from the rest -  from bunch 
 ! of creation/anihilation operators.
 !
 !------------------------------------------------------------------------
@@ -542,49 +601,439 @@ end subroutine rearrange_string
 subroutine move_element_beg(this_string,i)
 !------------------------------------------------------------------------
 !
-!   move element in string from  position "i" to the very beginning
+!   move element in the string from  position "i" to the very beginning
+!
+! On input: this_string - pointer to the string
+!             i - position
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: this_string
 integer, intent(in) :: i
-type(dll_member), pointer :: temp, temp1, this_element
+type(dll_member), pointer :: temp, temp1, temp2
 call QEnter('move_element_beg')
 
-if (.not.associated(this_string)) then
- write(LUPRI,'(2x,a)') 'move_element_beg: entering string NOT associated (allocated) !'
- call Quit('move_element_beg: entering string NOT associated (allocated) !')
-else
- if (.not.associated(this_string%head)) then
-  write(LUPRI,'(2x,a)') 'move_element_beg: entering string is empty !'
-  call Quit('move_element_beg: entering string is empty (no member elements) !')
- endif
- if (i<0 .or. i>this_string%n) then
-  write(LUPRI,'(2x,a,i3,a,i3)')  'number of elements in the string:',  &
-   this_string%n, 'while position to be moved at the beginning:',i
-  call Quit('move_element_beg: wrong position to be moved ')
- endif
+!call check_string(this_string,i)
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/2x,a,i3)')  &
+  'in "move_element_beg:" to be moved element no:',i
 endif
 
-  if (get_iprint() >= 5) then
-     write(LUPRI,'(2x,a)') 'in "move_element_beg:" '
-  endif
+!-----------------------------------------------------------
+!    ... move only the element which is NOT the first
+!-----------------------------------------------------------
+if ( i == 1) then
 
-j = 1
+ if (get_iprint() >= 5) then
+    write(LUPRI,'(/2x,a,i3)')  &
+   'in "move_element_beg:" to be moved element no:',i
+ endif
 
- temp => this_string%head
- do while (j < i)
-   temp => temp%next
-   j = j + 1
-   if (get_iprint() >= 5) then
-     write(LUPRI,'(2x,i3,a)') j,'. element in the string'
-     call print_one_member(temp)
-   endif
- enddo
+else  ! i>1 
+
+!j = 1
+!temp => this_string%head
+!temp1 => temp
+!do while (j < i)
+!  if (get_iprint() >= 5) then
+!    write(LUPRI,'(2x,i3,a)') j,'. element processed in the string'
+!    call print_one_member(temp)
+!  endif
+!  temp1 => temp
+!  temp => temp%next
+!  j = j + 1
+!enddo
+
+call  get_string_element(this_string,i,temp)
+
+! ... element before ...
+temp1 => temp%previous
+! ... element after ...
+temp2 => temp%next
+
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a,i3)') '... catched this member no ',i
+ call print_one_member(temp)
+
+ write(LUPRI,'(2x,a,$)') '... the element before: '
+ call print_one_member(temp1)
+
+ write(LUPRI,'(2x,a,$)') '... the element after: '
+ call print_one_member(temp2)
+endif
+
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a)')   &
+ '*** move_element_beg: control print-out before reordering the string:'
+ call print_string(this_string)
+ call print_string_reverse(this_string)
+endif
+
+! stop 'here stop ...'
+
+!---------------------------------------------------------------------
+! ... move j-th element "temp" to the beginning: redirect pointers
+!---------------------------------------------------------------------
+
+temp1%next => temp2
+
+if (associated(temp2)) then
+  temp2%previous => temp1
+endif
+
+if (get_iprint() >= 105) then
+ write(LUPRI,'(/,2x,a)')   &
+ '*** move_element_beg: control print-out 1:'
+ call print_one_member(temp1%next)
+ call print_one_member(temp2%previous)
+endif
+
+! stop 'here stop 1...'
+
+!  call print_string(this_string)
+!  call print_string_reverse(this_string)
+
+! stop 'here stop 2...'
+
+temp%previous => null() !... first element in the DLL
+temp%next => this_string%head
+
+this_string%head%previous =>temp
+
+this_string%head => temp ! ... finally set the head 
+
+endif
+
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a)')   &
+ 'move_element_beg: control print-out of reordered string:'
+ call print_string(this_string)
+endif
 
 call QExit('move_element_beg')
 end subroutine move_element_beg
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine remove_element(this_string,i)
+!------------------------------------------------------------------------
+!
+!  remove i-th element from the entering string
+!
+!  On input: this_string - pointer to the string
+!             i - position
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+integer, intent(in) :: i
+type(dll_member), pointer :: temp, temp1, temp2
+call QEnter('remove_element')
+
+call get_string_element(this_string,i,temp)
+
+! ... previous element
+temp1 => temp%previous
+! ... next element
+temp2 => temp%next
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/2x,a,i3)')  &
+  '"remove_element": to be removed element no:',i
+  call print_one_member(temp)
+  write(LUPRI,'(2x,a,$)') '... the element before: '
+  call print_one_member(temp1)
+  write(LUPRI,'(2x,a,$)') '... the element after: '
+  call print_one_member(temp2)
+endif
+
+deallocate(temp)
+this_string%n  =  this_string%n - 1
+
+if (associated(temp1).and.associated(temp2)) then
+! ... in the between
+  temp1%next => temp2
+  temp2%previous => temp1
+else if (associated(temp1).and..not.associated(temp2)) then
+! ... last element 
+   temp1%next => null()
+   this_string%rear => temp1
+else if (.not.associated(temp1).and.associated(temp2)) then
+!... first element
+   this_string%head => temp2
+   temp2%previous => null()
+else if (.not.associated(temp1).and..not.associated(temp2)) then
+! ... the only one element in the string
+   this_string%head => null()
+   this_string%rear => null()
+else
+  call Quit('remove_element - dead branch !')
+endif
+
+call QExit('remove_element')
+end subroutine remove_element
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine exchange_string_elements(this_string,i_in,j_in)
+!------------------------------------------------------------------------
+!
+!          Exchange 2 elements in the string, i-th and j-th.
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+integer, intent(in) :: i_in,j_in
+type(dll_member), pointer :: temp_i,temp_j,temp_i1,temp_i2,temp_j1,temp_j2
+call QEnter('exchange_string_elements')
+
+i = i_in; j = j_in
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a,2i3)') &
+  '*** exchange_string_elements: going to exchange elements ',i,j
+endif
+
+if (i == j) then
+  write(LUPRI,'(/,2x,a)') 'two identical elements ! Quit !'
+  call Quit('two identical elements ! no possible exchanhe !')
+else if (i > j) then
+
+ if (get_iprint() >= 5) then
+   write(LUPRI,'(/,2x,a)')   &
+   'exchange_string_elements: i> j - going to exchange i,j'
+ endif
+
+ k = j; j = i; i = k  
+
+endif 
+
+call get_string_element(this_string,i,temp_i)
+
+if (get_iprint() >= 5) then
+   write(LUPRI,'(/,2x,a,i3,$)')   &
+   'exchange_string_elements: element # ',i
+   call print_one_member(temp_i)
+endif
+
+call get_string_element(this_string,j,temp_j)
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a,i3,$)')   &
+  'exchange_string_elements: element # ',j
+  call print_one_member(temp_j)
+endif
+
+temp_i1 => temp_i%previous 
+temp_i2 => temp_i%next
+
+temp_j1 => temp_j%previous
+temp_j2 => temp_j%next
+
+! --------------------------------------------
+!         ... redirect pointers ...
+! --------------------------------------------
+if ( .not. (j == i + 1) ) then
+! ... 2 elements, not one after another
+
+temp_i%previous => temp_j1
+temp_i%next => temp_j2
+
+temp_j%previous => temp_i1
+temp_j%next => temp_i2
+
+if (associated(temp_i1)) then
+! ... element before i-th element
+ temp_i1%next => temp_j
+else
+! ... i is the first element, take care of the head 
+ this_string%head => temp_j
+endif
+
+if (associated(temp_i2)) then
+ temp_i2%previous => temp_j
+endif
+
+if (associated(temp_j1)) then
+ temp_j1%next => temp_i
+endif
+
+if (associated(temp_j2)) then
+ temp_j2%previous => temp_i
+else
+! ... j is the last element, take care of the rear 
+  this_string%rear => temp_i
+endif
+
+else
+!-------------------------------------------------
+!      ... 2 elements, one after another
+!-------------------------------------------------
+if (associated(temp_i1)) then
+! ... element before i-th element
+ temp_i1%next => temp_j
+else
+! ... i is the first element, take care of the head 
+ this_string%head => temp_j
+endif
+
+if (associated(temp_j2)) then
+ temp_j2%previous => temp_i
+else
+! ... j is the last element, take care of the rear 
+  this_string%rear => temp_i
+endif
+
+temp_i%previous => temp_j
+temp_i%next => temp_j2
+
+temp_j%previous => temp_i1
+temp_j%next => temp_i
+
+endif
+
+call QExit('exchange_string_elements')
+end subroutine exchange_string_elements
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine get_string_element(this_string,i,temp)
+!------------------------------------------------------------------------
+!
+!        returns pointer to the i-th element in the string
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+integer, intent(in) :: i
+type(dll_member), pointer :: temp
+call QEnter('get_string_element')
+
+call check_string(this_string,i)
+
+j = 1
+temp => this_string%head
+
+do while (j < i)
+
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(2x,a,i3,a)') 'get_string_element:',j, &
+    '. element processed in the string'
+    call print_one_member(temp)
+  endif
+
+  temp => temp%next
+  j = j + 1
+
+enddo
+
+call QExit('get_string_element')
+end subroutine get_string_element
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine insert_element(this_string,i_in,this_elem)
+!------------------------------------------------------------------------
+!
+! insert element into the string
+!
+! on entry:  this_string
+!            i_in
+!            this_elem
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+integer, intent(in) :: i_in
+type(dll_member), pointer :: this_elem, temp, temp1
+logical :: on_head = .false.
+
+call QEnter('insert_element')
+
+if (.not.associated(this_string)) then
+  write(LUPRI,'(/,2x,a)') 'insert_element: entering "this_string" not associated !' 
+  call Quit('insert_element: entering "this_string" not associated !')
+else
+  if (.not.associated(this_elem)) then
+    write(LUPRI,'(/,2x,a)') 'insert_element: entering element "this_elem" not associated !' 
+    call Quit('insert_element: entering element "this_elem" not associated !')
+  endif
+endif
+
+i = i_n
+
+if (i > this_string%n) then
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(2x,a,i3)')  &
+    'insert_element: entering position changed to the end',this_string%n
+  endif 
+  i = this_string%n
+endif
+
+if (i == 0) then
+ on_head = .true.; i = 1
+endif
+
+! ... get the pointer to the i-th element of the string
+call get_string_element(this_string,i,temp)
+
+allocate(temp1)
+
+if (on_head) then
+! ... insert element at the very beginning of the string ...
+temp1%next => this_string%head
+temp1%previous => null()
+
+this_string%head%previous => temp
+
+
+
+else
+! ... insert element AFTER the i-th element "temp" 
+
+endif
+
+
+
+call QExit('insert_element')
+end subroutine insert_element
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine check_string(this_string,i)
+!------------------------------------------------------------------------
+!
+!    checks the string and i-th position of the element
+!
+!  call when we want pick up i-th element from the string
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+integer, intent(in) :: i
+call QEnter('check_string')
+
+if (.not.associated(this_string)) then
+ write(LUPRI,'(2x,a)') 'check_string: entering string NOT associated (allocated) !'
+ call Quit('check_string: entering string NOT associated (allocated) !')
+else
+ if (.not.associated(this_string%head)) then
+  write(LUPRI,'(2x,a)') 'check_string: entering string is empty !'
+  call Quit('check_string: entering string is empty (no member elements) !')
+ endif
+ if (i<0 .or. i>this_string%n) then
+  write(LUPRI,'(2x,a,i3,a,i3)')  'check_string: number of elements in the string:',  &
+    this_string%n,' while position to be manipulated:',i
+  call Quit('check_string: wrong element position in the string to be manipulated !')
+ endif
+endif
+
+call QExit('check_string')
+end subroutine check_string
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine find_splitting(this)
