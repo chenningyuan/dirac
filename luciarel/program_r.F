@@ -701,7 +701,6 @@ CSK   work with INTEGER*8
 * Analysis of density and occupation
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
-      WRITE(LUWRT,*) ' REORD_IJKL is ', REORD_IJKL
 *     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
 *       real
