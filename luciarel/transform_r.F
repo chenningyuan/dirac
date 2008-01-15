@@ -1700,6 +1700,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       character*6 CIRUN
       character*1 COORD
       logical MCSCF
+      logical GET_UPDATE_SM, GET_UPDATE_M_SM, GET_UPDATE_ALL
+      logical GET_NO_UPDATE
       dimension INTEG(1000), T_BUFF(*)
       dimension NORB_FULL(MXPIRR)
       integer*8 IDUMMY_LENGTH
@@ -1719,6 +1721,14 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *                 Excluding integrals with an odd number of bars
 *
 *
+C
+C     initialize 
+C
+      GET_UPDATE_SM   = .FALSE. 
+      GET_UPDATE_M_SM = .FALSE.
+      GET_UPDATE_ALL  = .FALSE.
+      GET_NO_UPDATE   = .FALSE.
+C
       if (ENVIRO(1:6).eq.'MOLCAS') then
         FNONEAO = 'ONEINT'
         FNONEMO = 'TRAONE'
@@ -1853,6 +1863,7 @@ C
         ELSE
           write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
           CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
+          CALL DZERO8(WORK(KT_CC),NALLINT)
         END IF
 C
 C       diagonal integrals
@@ -1868,6 +1879,7 @@ C
         END IF
         call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
         CALL IZERO(IPOSDIA,NDIAMINT)
+        CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
         write(LUWRT,*) ' Allocating for ',NDIAMINT,
      &' diagonal integrals.'
       end if
@@ -2482,13 +2494,107 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
 C
 C         distribute 1-/2- e- integrals in SIGDEN formalism
 C
-          else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-*
+          else if ( SIGDEN_ROUTE .eq. 'SIGDEN' ) then
+C
             call memmar(KISTR_CA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CA')
             call memmar(KISTR_CB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_CB')
             call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
-*
+C
+            IF( REORD_IJKL ) THEN 
+              IF( CIRUN .eq. 'CIINII') THEN 
+#if defined (VAR_MPI2)
+C
+                IF( IIOMOD_REL .eq. 1 ) THEN
+                  IF( SHARED_M ) THEN
+                    GET_UPDATE_SM = .TRUE.
+                    IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 787
+                  ELSE
+                    GET_NO_UPDATE = .TRUE.
+                  END IF
+C
+                ELSE
+                  IF( SHARED_M ) THEN
+                    GET_UPDATE_M_SM = .TRUE.
+                  ELSE
+                    GET_UPDATE_ALL = .TRUE.
+                  END IF
+                  IF( MYPROC .ne. MASTER ) GOTO 787
+                END IF
+C               ^ IIOMOD_REL
+#endif
+C
+                WRITE(LUWRT,'(A)') ' '
+                WRITE(LUWRT,'(A)') 
+     &          '  ===================================='
+                WRITE(LUWRT,'(A)') 
+     &          '  Reading from integral file IJKL_REOD'
+                WRITE(LUWRT,'(A)') 
+     &          '  ===================================='
+                WRITE(LUWRT,'(A)') ' '
+C
+                 
+C
+                CALL READ_IJKL_GAS( WORK(KT_CC), T_BUFF, 
+     &                              WORK(KMDIASV), NDIAMINT)
+C
+ 787            CONTINUE
+C
+C               update slaves, node-masters ...
+C
+#if defined (VAR_MPI2) 
+C
+                IF( NMPROC .gt. 1 ) THEN
+                  CALL GET_IJKL_UPDATE( WORK(KT_CC), T_BUFF,
+     &                                  WORK(KMDIASV), NDIAMINT,
+     &                                  GET_UPDATE_SM, 
+     &                                  GET_UPDATE_M_SM, 
+     &                                  GET_UPDATE_ALL, 
+     &                                  GET_NO_UPDATE )
+                END IF
+C
+#endif
+                GOTO 1001
+C
+              ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN
+C
+                WRITE(LUWRT,*)' '
+                WRITE(LUWRT,*)' Resorting integrals...'
+                WRITE(LUWRT,*)' '
+C
+#if defined (VAR_MPI2)
+                IF( NFLGRPS_REL .eq. 1 )THEN
+                  IF( MYPROC .ne. MASTER ) GOTO 1001
+                ELSE
+                  IF( IIOMOD_REL .eq. 1 ) THEN
+                    IF( SHARED_M ) THEN
+                      IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 1001
+                    ELSE
+                      IF( MYNEW_ID .ne. N_MASTER ) GOTO 1001
+                    END IF
+C
+                  ELSE
+                    IF( MYPROC .ne. MASTER ) GOTO 1001
+                  END IF
+C                 ^ IIOMOD_REL
+                END IF
+C               ^ NFLGRPS_REL
+#endif
+                CALL WRITE_IJKL_GAS( WORK(KT_CC), T_BUFF,
+     &                               INTIMP,ISPINFREE,ISYM_T,
+     &                               WORK(KLSOBEX),WORK(KISTR_CA),
+     &                               WORK(KISTR_CB),WORK(KISTR_AA),
+     &                               WORK(KISTR_AB),NDIM_TOT2,
+     &                               F1,WORK(KMDIASV),IBOSYM,
+     &                               WORK(KLABEXTP),CIRUN,NTEST,
+     &                               NDIAMINT )
+C
+                GOTO 1001
+              END IF
+C             ^ CIRUN ???
+            END IF
+C           ^ REORD_IJKL
+C
             IF( CIRUN .eq. 'CIINII' )THEN
 *
 csk           WRITE(LUWRT,*) ' LEN_ALL_INT is', LEN_ALL_INT
@@ -2529,18 +2635,19 @@ C
                 END IF
 *
               END IF
+C             ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
 #if defined (VAR_MPI2)
               IF( IIOMOD_REL .eq. 0 )THEN
 *               ... slaves get the integrals
                 LEN_INT_BCAST = 0
                 LEN_INT_BCAST = LEN_ALL_INT
-                IF( LEN_INT_BCAST .lt. 0 )THEN
-                 WRITE(LUWRT,*) ' Sorry, broadcast of integrals exceeds'
-                 WRITE(LUWRT,*) ' my system limits ...                 '
-                 WRITE(LUWRT,*) ' set IIOMOD_REL to 1 and give         '
-                 WRITE(LUWRT,*) ' reading permissions to slaves!       '
-                 Call Abend2(' no integral broadcast possible')
-                END IF
+CSK             IF( LEN_INT_BCAST .lt. 0 )THEN
+CSK              WRITE(LUWRT,*) ' Sorry, broadcast of integrals exceeds'
+CSK              WRITE(LUWRT,*) ' my system limits ...                 '
+CSK              WRITE(LUWRT,*) ' set IIOMOD_REL to 1 and give         '
+CSK              WRITE(LUWRT,*) ' reading permissions to slaves!       '
+CSK              Call Abend2(' no integral broadcast possible')
+CSK             END IF
                 IF( SHARED_M ) THEN
 C
 C                 divide ...                
@@ -2620,9 +2727,9 @@ C           diagonal integral arrays ...
 C    
             IF( SHARED_M) THEN
               CALL  MPI_BCAST(WORK(KMDIASV),4*NDIAMINT,my_MPI_INTEGER,0,
-     &                        MYNEW_COMM,IERR)
+     &                        MYNEW_COMM_SM,IERR)
               CALL  MPI_BCAST(IPOSDIA,        NDIAMINT,  MPI_INTEGER8,0,
-     &                        MYNEW_COMM,IERR)
+     &                        MYNEW_COMM_SM,IERR)
             END IF
        
 C
@@ -2642,11 +2749,6 @@ C
         write(LUWRT,*) ' Number of integrals/CC amplitudes: ',NALLINT
         write(LUWRT,*) ' (including imaginary parts) '
       end if
-C
-C     flush local memory to mark set at beginning of do loop
-C
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
-C
 #if defined (VAR_MPI2)
 C
 C     release scratch memory 
@@ -2661,6 +2763,12 @@ C
 C
       END IF
 #endif
+C
+1001  CONTINUE
+C
+C     flush local memory to mark set at beginning of do loop
+C
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 C
       call qexit('ITRCTRL')
       return

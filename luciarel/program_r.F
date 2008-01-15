@@ -102,7 +102,9 @@ C
 *
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRNT)
-*
+C
+C
+C
       IF(NTEST.GE.3) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ====================================='
@@ -314,6 +316,8 @@ CSK     &                 LUDIA
 CSK#endif
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
+C
+C
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         IRECO = 1
         CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
@@ -344,7 +348,7 @@ CSK#endif
 *
 #if defined (VAR_MPI2)
 *
-      NPTEST_VAR = 00
+      NPTEST_VAR = 0
       IF( NPTEST_VAR .ge. 10 ) THEN
       ITEST_OFF = 0
       DO ILPRECO = 1, IRECO
@@ -697,6 +701,7 @@ CSK   work with INTEGER*8
 * Analysis of density and occupation
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
+      WRITE(LUWRT,*) ' REORD_IJKL is ', REORD_IJKL
 *     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
 *       real

@@ -432,8 +432,18 @@ C
       IS_SHARED_M = 0
       CALL LUCI_TRAVA(CIRUN,'SHMEMO',IS_SHARED_M,DUMMY,I_COMM_W_ND)
 C
-      IF( IS_SHARED_M .gt. 0) THEN
+      IF( IS_SHARED_M .gt. 0 ) THEN
         SHARED_M = .TRUE.
+      END IF
+C
+C 104: using GAS-schem specific integral file resp. writing it
+C
+      REORD_IJKL = .FALSE.
+      IS_REORD_IJKL = 0
+      CALL LUCI_TRAVA(CIRUN,'IJKLRO',IS_REORD_IJKL,DUMMY,I_COMM_W_ND)
+C
+      IF( IS_REORD_IJKL .gt. 0 ) THEN
+        REORD_IJKL = .TRUE.
       END IF
 C
 C     That's it, dude !!
@@ -1494,6 +1504,23 @@ C
         END IF
         GOTO 100
       END IF
+C
+C     enable integral reordering mode
+C
+      IF (CTLSTR .EQ. 'IJKLRO') THEN
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(CINT_REORD,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+#endif
+        IF( CINT_REORD) THEN
+          IVAR(1) =   1
+        ELSE
+          IVAR(1) = - 1
+        END IF
+        GOTO 100
+      END IF
 CSKC
 C
       WRITE(LUPRI,'(1X,2A)')
@@ -1591,7 +1618,7 @@ C
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUPRI)
 C
       IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or.
-     &    CIRUN .eq. 'SIGMAD') THEN
+     &    CIRUN .eq. 'SIGMAD' .or. CIRUN .eq. 'IJKLRO') THEN
 C
         CALL SYNC_NODES_REL_P2(F1,F2,CIRUN)
 C
@@ -1725,17 +1752,15 @@ C     32 bit:  *kbase = (int) (wrk-work+1);
 C     64 bit:  *kbase = (long) (wrk-work+1);
 C
       WORK(KBASE) = 9991.
-      IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
-        write(LUWRT,*) ' WARNING from KRMC_LUCI:'
-        WRITE(LUWRT,'(A,3X,I22)')     '      KBASE  = ',KBASE
-        WRITE(LUWRT,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
-        WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
-        write(LUWRT,*) ' Absolute memory addresses do not match.'
-        write(LUWRT,*) ' Continuing.'
-C       CALL QUIT('Memory addressing error in KRMCLUCI')
-      END IF
 C
-C
+CSK      IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
+CSK        write(LUWRT,*) ' WARNING from KRMC_LUCI:'
+CSK        WRITE(LUWRT,'(A,3X,I22)')     '      KBASE  = ',KBASE
+CSK        WRITE(LUWRT,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
+CSK        WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
+CSK        write(LUWRT,*) ' Absolute memory addresses do not match.'
+CSK        write(LUWRT,*) ' Continuing.'
+CSK      END IF
 C 
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -1820,7 +1845,8 @@ C           than we can simulate a shared filesystem.
 #else
 C       in case of a parallel filesystem, we should use it
         IF( IPARALLELIO .ge. 0 ) THEN
-          NFLGRPS = 1
+csk          NFLGRPS = 1
+          NFLGRPS_REL = 1
           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
 C         enable parallel I/O mode!!!
           IPARALLELIO = 1
@@ -1950,6 +1976,7 @@ C         --> length for node-slaves == 0
 C
           MY_T_LEN = 0
           IF( MYNEW_ID_SM .eq. N_MASTER_SM ) MY_T_LEN = LEN_T_BUFF
+          CALL DZERO8(T_BUFF,MY_T_LEN)
 C 
 C         open memory window (collective call for communicator
 C         group MY_NEWCOMM)
@@ -1994,6 +2021,7 @@ C
      &                   NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,IBOSYM,CIRUN)
           end if
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
+          IF ( CIRUN .eq. 'IJKLRO' ) GOTO 300
 C
 C
 C ======================
@@ -2155,6 +2183,9 @@ C
 c           WRITE(6,*) ' I am going to call FINMO '
 c           CALL FINMO_REL
           end if
+C
+ 300      CONTINUE
+C
         end do
 *       ^ End loop over natural spinor iterations (default=1)
 *
@@ -2264,6 +2295,13 @@ C
         write(LUPRI,*) ' ANALYZ flag call '
         write(LUPRI,*) ' ------           '
         write(LUPRI,*) '   Analyzing the current CI vector(s).'
+        write(LUPRI,*)
+      else if (CIRUN.eq.'IJKLRO') then
+        write(LUPRI,*)
+        write(LUPRI,*) ' IJKLRO flag call '
+        write(LUPRI,*) ' ------           '
+        write(LUPRI,*) '   Reordering all (ij|kl) according to GAS     '
+        write(LUPRI,*) '   scheme. Saving to file IJKL_REOD.           '
         write(LUPRI,*)
       else if (CIRUN.eq.'DIAG  ') then
         write(LUPRI,*)
@@ -2532,6 +2570,122 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCI_IJKLRO(CMO,WORK,LWORK)
+C***********************************************************************
+C
+C     Do integral resorting and write to file
+C    
+C     !!!!!!!!!!!!!!!!!!!!!!  GAS-scheme specific !!!!!!!!!!!!!!!!!!!!!!
+C
+C     Written by S. Knecht                                - Jan 09 2008
+C     Last revision :                                                  
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      CHARACTER*6 CIRUN
+C
+      DIMENSION WORK(*), CMO(*)
+C
+#include "../luciarel/lucipar_rel.inc"
+C
+#include "memint.h"
+C
+      CIRUN = 'IJKLRO'
+      MZ = MIN(NZ,2)
+C
+      KFRSAV = KFREE
+C
+      N_FCACM = (2*NASHT)*(2*NASHT)
+C
+C     Calculate core Hamiltonian:
+C     ---------------------------
+C
+C     The core Hamiltonian is the active-active part of FC,
+C     a.k.a. FCAC.
+C
+      CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      IF( CRDFO_MAT ) THEN
+C
+C       read FCmo from file LUKRM3
+C
+        CALL KRMC_GETFCK(WORK(KFC),IPROPT,WORK(KFREE),LFREE)
+C
+        ECORE = ECORE_LR
+C
+      ELSE
+C
+C       Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
+C
+        CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+C
+      END IF
+      IF (IPROPT.GE.1) THEN
+        WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
+      END IF
+C
+C     Get active-active part of FCmo:
+C
+      CALL RGETAC(WORK(KFC),WORK(KFCAC),IPROPT)
+      IF (IPROPT.GE.5) THEN
+        WRITE(LUPRI,'(A)') 'Active Fock matrix:'
+        DO I=1,N2ASHXQ,1
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCAC+I-1)
+        END DO
+      END IF
+C
+C     Transform quaternion FCACmo to molfdir type FCAC.
+C
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPROPT)
+C
+      IF (IPROPT.GE.5) THEN
+        WRITE(LUPRI,'(A)') 'Molfdir format FCAC:'
+        WRITE(LUPRI,'(A)') 'Real part:'
+        DO I=1,N_FCACM
+          WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
+        END DO
+        IF (NZ.GT.1) THEN
+          WRITE(LUPRI,'(A)') 'Imaginary part:'
+          DO I=N_FCACM+1,MZ*N_FCACM
+            WRITE(6,'(1I3,1F18.14)') I,WORK(KFCACM+I-1)
+          END DO
+        END IF
+      END IF
+C
+      CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+C
+C     Introduce LUCIAREL action
+      CALL LUCI_TASK(CIRUN)
+C
+C     read two-electron integrals in luciarel/transform_r.F 
+C     (subroutine itrctl) 
+C
+      LEN_ALL_INT = 0
+      LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
+C
+C     Transfer data to LUCIAREL common blocks.
+      CALL LUCI_TRACOM(CIRUN,0)
+C
+C     Setup routines for running LUCIAREL
+      CALL LUCI_SETUP()
+C
+C     Call LUCIAREL
+      CALL KRMC_LUCI(WORK(KFCACM),DUMMY,WORK(KFREE),LFREE,DUMMY,
+     &               CIRUN)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SIGMA(SAVDIA,DIAG,CB,SB,FCACM,H2ACM,
      &                      WORK,KFREE,LFREE)
 C***********************************************************************
@@ -2701,6 +2855,7 @@ C
       DIMENSION WORK(*),RHO1(*),RHO2(*),CREFL(*),CREFR(*)
 C
 #include "../luciarel/clunit.inc"
+#include "../luciarel/lucipar_rel.inc"
 C
       KFRSAV = KFREE
 C
@@ -2732,6 +2887,8 @@ C     Initialize density matrices to zero
         L2 = (2*NASHT)**4 * MZ
         CALL DZERO(RHO2,L2)
       end if
+C
+      LF2_ZERO = L2
 C
 C
       IF( NATOLCR ) THEN
@@ -3328,7 +3485,17 @@ C
         L2 = (2*NASHT)**4 * MZ
         LF2_ZERO = (2*NASHT)**4 * MZ
 C
-CSK        END IF
+      ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN 
+C
+        N_FCACM = (2*NASHT)*(2*NASHT)
+        LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
+C
+        CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KH2AC,          0,WORK,KFREE,LFREE)
+C
+        CALL DZERO(WORK(KFCACM),MZ*N_FCACM)
+C
+        CALL SYNC_NODES_REL_P2(WORK(KFCACM),WORK(KH2AC),CIRUN)
 C
       END IF
 C
@@ -3391,6 +3558,13 @@ C
 C       Call LUCIAREL for setting up vector partitioning information.
         CALL KRMC_LUCI2(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
+      ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN 
+C
+C       Call LUCIAREL for integral reordering.
+        CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
+     &                  DUMMY,CIRUN)
+C
+        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
 C
 C     close files ...

@@ -250,11 +250,7 @@ C
 #include "lucipar_rel.inc"
 #include "files_r.inc"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
-      INTEGER LUSC344_MPIL, LUDUMPFLL
-      CHARACTER*9 LUDUMPFN
-      CHARACTER*13 NLUDUMPF
-*
-CSK      WRITE(6,*) 'I have been in LUCI_SETUP',MYPROC
+      INTEGER LUSC344_MPIL
 *
 * =========================
 * Standard input and output
@@ -566,27 +562,12 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC96 = 96     ! File MRCONEE
       LUSC97 = 97     ! File MDCINT
       LUSC98 = 98
-      LUDUMPF = 99
-      LUDUMPFN = "LDUMPFILE"
-#if defined (VAR_MPI2)
-      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUDUMPF,'(A9,A1,I1)') LUDUMPFN,'.',MYPROC
-         LUDUMPFLL=11
-      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUDUMPF,'(A9,A1,I2)') LUDUMPFN,'.',MYPROC
-         LUDUMPFLL=12
-      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUDUMPF,'(A9,A1,I3)') LUDUMPFN,'.',MYPROC
-         LUDUMPFLL=13
-      ELSE
-        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
-      ENDIF
-#else
-      NLUDUMPF = LUDUMPFN
-      LUDUMPFLL=9
-#endif
-      Open(Unit=LUDUMPF,File=NLUDUMPF(1:LUDUMPFLL),
-     &     Status='UNKNOWN', Form='FORMATTED')
+C
+C     file for reordered GAS-specific integrals
+C
+      IIJKL_ROD    = 99
+      NIIJKL_ROD   = "IJKL_REOD"
+      IIJKL_ROD_LL = 9
 *           
 * =================
 * Output files
@@ -643,7 +624,6 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
 #endif
 #include "lucipar_rel.inc"
 *
-CSK      WRITE(6,*) 'I have been in LUCI_CLOSEDOWN',MYPROC
       CLOSE(UNIT=LUDIA,STATUS='KEEP')
       CLOSE(UNIT=LUC,STATUS='KEEP')
       CLOSE(UNIT=LUHC,STATUS='KEEP')
@@ -659,8 +639,6 @@ CSK      WRITE(6,*) 'I have been in LUCI_CLOSEDOWN',MYPROC
       CLOSE(UNIT=LUSC41,STATUS='KEEP')
       CLOSE(UNIT=LUSC61,STATUS='DELETE')
       CLOSE(UNIT=LUSC62,STATUS='DELETE')
-      CLOSE(UNIT=LUDUMPF,STATUS='KEEP')
-CSK      CLOSE(UNIT=LUDUMPF,STATUS='DELETE')
 *
       END 
 ***********************************************************************

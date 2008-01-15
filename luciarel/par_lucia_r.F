@@ -6144,9 +6144,6 @@ CSK          END IF
         END IF
 CSK          WRITE(LUWRT,*) 'final VEC1'
 CSK          WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
-CSK          CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUDUMPF)
-CSK     &                  LUWRT)
 CSK          WRITE(LUWRT,*) 'final VEC2'
 CSK          CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
 CSK     &                  LUWRT)
@@ -7798,7 +7795,7 @@ C
 C
 CSK          WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
 CSK          CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUDUMPF)
+CSK     &                  LUWRT)
 C
 C
 C         VEC2 == VEC2 + VEC1 * scal-FACTOR 
@@ -7825,7 +7822,7 @@ CSK          WRITE(LUWRT,*) '  ( HX - EX ) '
 CSK          CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
 CSK     &                  LUWRT)
 CSK        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                LUDUMPF)
+CSK     &                LUWRT)
 C
         CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
@@ -8050,7 +8047,7 @@ C
 C
 CSK          WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
 CSK          CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUDUMPF)
+CSK     &                  LUWRT)
 C
 C
 C                  -EIGAPR * X + HX * FACTOR
@@ -8198,7 +8195,7 @@ C
 C
 CSK          WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
 CSK          CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUDUMPF)
+CSK     &                  LUWRT)
 C
 C
 C                  -EIGAPR * X + HX * FACTOR
@@ -8429,7 +8426,7 @@ C
 C         scratch writing, needed!!! reason???
 C
 CSK          CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUDUMPF)
+CSK     &                  LUWRT)
 C
         IF( LEBATCH(ISBATCH) .gt. 0 )THEN
           IF( INV .ne. 0 ) THEN
@@ -9752,7 +9749,7 @@ C
 C
       IF( MYPROC .eq. MASTER )THEN
 C
-        IF( CIRUN .eq. 'CIINII') THEN
+        IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'IJKLRO' ) THEN
           IIOMOD_REL = IDOPARIO
         END IF
 C
@@ -9781,11 +9778,54 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-C       determine INTEGRAL handling in SYNC_NODES_REL_P2
+C       determine INTEGRAL handling
         CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
-        IF( IIOMOD_REL .eq. 1 )THEN
+      ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
+C
+        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+C
+      ELSE IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
+C
+        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+C
+      ELSE IF( CIRUN .eq. 'ANALYZ') THEN
+C
+        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+C
+      ELSE IF( CIRUN .eq. 'IJKLRO') THEN
+        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+C       determine INTEGRAL handling
+        CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+      END IF
+C
+      IF( IIOMOD_REL .eq. 1 )THEN
 C
 C       all needed for proper read-in of integrals...?
 C
@@ -9822,39 +9862,8 @@ C
         CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
-        END IF
-C       ^ IIOMOD_REL == 1
-C
-      ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
-C
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
-C
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'ANALYZ') THEN
-C
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
       END IF
+C     ^ IIOMOD_REL == 1
 C
       END
 ***********************************************************************
@@ -9911,7 +9920,7 @@ C     store some important information
 C
 C     broadcast only for SIGMA and SIGMAD (current fix for large-scale 
 C     CIINII runs). FIXME: large-scale KR-MCSCF - SK - july 10, 2007
-      IF( CIRUN .ne. 'CIINII' )THEN
+      IF( CIRUN .ne. 'CIINII' .or. CIRUN .ne. 'IJKLRO' )THEN
 C       ... integrals
         CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
      &                 MPI_COMM_WORLD,IERR)

@@ -1055,8 +1055,9 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 *
       else if (SIGDEN_ROUTE.eq.'SIGDEN') then
         IOFFSD = 1
-*
-* GAS-SYMM ordering (GAS is outer loop!)
+C
+C       GAS-SYMM ordering (GAS is outer loop!)
+C
         do IGAS=1,NGAS,1
           do ISMOB=1,NSMOB/2,1
 * Determine index range for this symmetry/GAS block:

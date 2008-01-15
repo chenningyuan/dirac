@@ -1988,15 +1988,17 @@ C
 C
 C     "node master" <--> slave update 
 C
-      IF( SHARED_M ) THEN
-         CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, N_MASTER_SM, 
-     &                  MYNEW_COMM_SM, IERR)
-         CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, N_MASTER_SM,
-     &                  MYNEW_COMM_SM, IERR)
-         CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
-     &                  MYNEW_COMM_SM, IERR)
-         CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
-     &                  MYNEW_COMM_SM, IERR)
+      IF( CIRUN .ne. 'IJKLRO' ) THEN
+        IF( SHARED_M ) THEN
+           CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, N_MASTER_SM, 
+     &                    MYNEW_COMM_SM, IERR)
+           CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, N_MASTER_SM,
+     &                    MYNEW_COMM_SM, IERR)
+           CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
+     &                    MYNEW_COMM_SM, IERR)
+           CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
+     &                    MYNEW_COMM_SM, IERR)
+        END IF
       END IF
 C
 #endif

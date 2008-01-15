@@ -70,8 +70,6 @@ C
 *
       MYNSLV = 0
 *
-CSK      WRITE(LUDUMPF,*)'NDISTND(1)=',NDISTND(1)
-CSK      WRITE(LUDUMPF,*)'LUOUT =',LUOUT
       IF( IREW .NE. 0 ) THEN
         IF (MYPROC.NE.MASTER) THEN
           CALL REWINE( LUIN ,LBLK)
@@ -1308,14 +1306,9 @@ CSK      NTEST = 10
 500   CONTINUE
 CSK      IF(NTEST.GT.0) THEN
         IF(MYPROC.EQ.MASTER) THEN
-CSK          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-CSK     &    MYPROC:',MYPROC
           WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
      &    MYPROC:',MYPROC
           DO ISTI = 1, IMINNP
-CSK            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
-CSK     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-CSK     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
             WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
      &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
      &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
@@ -2133,14 +2126,9 @@ CSK      LEBATCHAVE = LEBATCHTOT / NMPROC
 500   CONTINUE
 CSK      IF(NTEST.GT.0) THEN
         IF(MYPROC.EQ.MASTER) THEN
-CSK          WRITE(LUDUMPF,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-CSK     &    MYPROC:',MYPROC
           WRITE(6,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
      &    MYPROC:',MYPROC
           DO ISTI = 1, NMPROC
-CSK            WRITE(LUDUMPF,'(3X,A,I17,A,I17,A,1X,I17)')
-CSK     &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-CSK     &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
             WRITE(6,'(3X,A,I17,A,I17,A,1X,I17)')
      &      'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
      &      ' blocks with a total length of',NPARBLKWT(2,ISTI)
