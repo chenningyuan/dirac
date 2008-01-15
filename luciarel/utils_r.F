@@ -639,6 +639,7 @@ C
       CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
 C
       END
+#if defined (VAR_MPI2)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -660,11 +661,9 @@ C
 C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-#if defined (VAR_MPI2)
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "mxpdim.inc"
 #include "lucipar_rel.inc"
 #include "ctcc.inc"
@@ -771,3 +770,4 @@ C
  500  CONTINUE
 C
       END
+#endif
