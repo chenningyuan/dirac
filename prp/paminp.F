@@ -81,7 +81,7 @@ C
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
-     &             '.NOPCTR','.EXCDIP','.MAGOUT','.XXXXXX', 
+     &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
@@ -115,6 +115,7 @@ C
       EFN          = .FALSE.
       EFT          = .FALSE.
       EFTNTL       = .FALSE.
+      OPTROT       = .FALSE.
       NQCC         = .FALSE.
       DSO          = .FALSE.
       NSTDIA       = .FALSE.
@@ -371,7 +372,9 @@ C&&&& .MAGOUT - specify the hard-output for the magnetizability
             READ(LUCMD,*) IMAGOUT
             GO TO 100
   132    CONTINUE 
-C&&&& XXXXXX
+C&&&& OPTROT - do optical rotation
+            DOXLR = .TRUE.
+            OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
 C&&&& XXXXXX
@@ -406,7 +409,7 @@ C
          WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
       END DO
 
-CMI ...for magnetic susceptibility, NMR shielding constatngs and rotational
+CMI ...for magnetic susceptibility, NMR shielding constants and rotational
 CMI   g_tensors operator centers might be changed
       WRITE(LUPRI,'(1X,A)') 
      &'These initial settings of center and origins'//
@@ -820,9 +823,10 @@ C     5   Common factor for all components
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbgen.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 23)
+      PARAMETER (NTABKW = 24)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -832,12 +836,12 @@ C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
-      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'FOCKMAT ',
-     &           'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
-     &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
-     &           'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ',
-     &           'XBETASIG', 'YBETASIG', 'ZBETASIG', 'XiBETAAL',
-     &           'YiBETAAL', 'ZiBETAAL', 'BETA    '/
+      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
+     &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
+     &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
+     &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
+     &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
+     &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    '/
 C
       CALL QENTER('XPRINP')
 C
@@ -920,7 +924,7 @@ C        default diagonal operator name = label
          NPCOMP    = 1
          NFAC      = 0
          IKW       = 1
-       ELSE IF (IKW .EQ. 1) THEN
+      ELSE IF (IKW .EQ. 1) THEN
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -940,8 +944,8 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .GT. 4) THEN
-              IPTYP = I - 4
+           IF (I .GT. 5) THEN
+              IPTYP = I - 5
               NLABEL= 0
               NFAC  = 0
               IKW = 2
@@ -952,7 +956,7 @@ C          ====================================================
 C          (the matrix is assumed totally symmetric 
 C           under point group and time reversal symmetry)
 C
-           IF (I .EQ. 4) THEN
+           IF (I .EQ. 5) THEN
               IPTYP = 0
               NLABEL= 0
               NFAC  = 0
@@ -960,7 +964,7 @@ C
               ISYXPR = 1
               ITRXPR = 1
            END IF
-           GO TO (4,5,6,1,1,1,1,1,2,2,2,3,
+           GO TO (4,5,6,7,1,1,1,1,1,2,2,2,3,
      &            1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
@@ -997,6 +1001,12 @@ C&&&&    Read a common factor for each component
     6    CONTINUE
            IKW  = 5
          GO TO 300
+C&&&     Multiply with current value of the speed of light
+    7    CONTINUE
+           PFAC(1) = PFAC(1)*CVAL          
+           PFAC(2) = PFAC(2)*CVAL          
+           PFAC(3) = PFAC(3)*CVAL          
+         GO TO 100
 C
 C     Read property labels for each component
 C     =======================================
@@ -1023,7 +1033,8 @@ C
          I    = 16 - LTKN + 1
          TOKEN16 = BLANK16
          TOKEN16(I:16) = LINE(ITKN:JTKN)
-         READ(TOKEN16,'(F16.0)') PFAC(NFAC)
+         READ(TOKEN16,'(F16.0)') TMP
+         PFAC(NFAC) = TMP*PFAC(NFAC)
          IF (NFAC .GE. NPCOMP) IKW = 1
 C
 C     Read a common factor for all components

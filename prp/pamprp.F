@@ -1318,6 +1318,12 @@ C
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
+C     Optical rotation
+C
+      IF (OPTROT) THEN
+        CALL DEF_OPTROT(WORK,LWORK,IPRPRP)
+      ENDIF
+C
 C
 C     PV contribution to NMR shielding
       IF(PVC_SHIELD) CALL DEFINE_PVC_SHIELD(WORK,LWORK)
@@ -8331,5 +8337,181 @@ C
       ENDIF
 
       CALL QEXIT('PROP2BSS')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_OPTROT */
+      SUBROUTINE DEF_OPTROT(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for optical rotation; based on DEF_SHIELD
+C     and DEF_EPOLAR
+C     Written by T. Saue and K. Ruud Jan 8 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+      CALL DEF_OPTROT1(WORK(KFREE),LFREE,IPRINT)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_optrot1 */
+      SUBROUTINE DEF_OPTROT1(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for optical rotation; based on DEF_SHIELD
+C     and DEF_EPOLAR
+C     Written by T. Saue and K. Ruud Jan 8 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
+#include "dcbnmr.h"
+#include "chrxyz.h"
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
+      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+      CALL QENTER('DEF_OPTROT1')
+C
+C     First define left-hand operators
+C
+      PNAME     = 'X-Dipole length '
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      PLABEL(1) = 'XDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('XEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      IPEPOLAR(1,1) = INDOP1
+C
+      PNAME     = 'Y-Dipole length '
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      PLABEL(1) = 'YDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('YEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      IPEPOLAR(2,1) = INDOP1
+C
+      PNAME     = 'Z-Dipole length '
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      PLABEL(1) = 'ZDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('ZEPOLA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      IPEPOLAR(3,1) = INDOP1
+C
+C     Define right hand operators
+C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
+C
+
+      IF (LONDON) THEN
+        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+      ELSE
+C
+C     Conventional atomic orbitals
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+      NPCOMP = 2
+      PFAC(1)  = 0.5D0*CVAL
+      PFAC(2)  = 0.5D0*CVAL
+      PFAC(3)  = 0.5D0*G1FAC
+C X component of B-field
+      PNAME     = 'X magnetic field'
+      IPTYP     = IOP(1)
+      PLABEL(1) = 'ZDIPLEN'
+      PLABEL(2) = 'YDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
+     &             LLRBPU,NLRBPT,INDXPR,MAXLLR)
+#if !defined (XH4)
+C Y component of B-field
+      PNAME     = 'Y magnetic field'
+      IPTYP     = IOP(2)
+      PLABEL(1) = 'XDIPLEN'
+      PLABEL(2) = 'ZDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+C Z component of B-field
+      PNAME     = 'Z magnetic field'
+      IPTYP     = IOP(3)
+      PLABEL(1) = 'YDIPLEN'
+      PLABEL(2) = 'XDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+#endif
+      ENDIF
+C
+C     Print section for optical rotation:
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)') ' Optical rotation :'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+C     A operators
+C     ===========
+C
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(1X,A)')
+     &'** A operators for opticla rotation **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1, 3
+        INDOP1 = IPEPOLAR(I,1)
+        INDXPR = LLRAPU(INDOP1)
+        CALL WRIXPR(INDOP1,INDXPR)
+       ENDDO
+C
+C     B operators
+C     ===========
+C
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(A)') ' ** B operators optical rotation **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,3
+        INDOP1 = IPSHIELD(I+MXCOOR)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRBPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+
+      CALL QEXIT('DEF_OPTROT1')
       RETURN
       END
