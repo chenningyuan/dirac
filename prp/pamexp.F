@@ -64,7 +64,6 @@ C
       CALL QENTER('PRPEXP')
 #include "memint.h"
 C
-c     CALL MEMCHK('begin prpexp',WORK,1)
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
@@ -510,8 +509,6 @@ C     DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
 
       CALL QENTER('PRPEX2')
 
-C      CALL MEMCHK('PRPEX2 1.0',WORK,1)
-
       EXPVAL = D0
 C
 C     Check symmetry
@@ -584,8 +581,6 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
      &              FIRST,WORK(KFREE),LFREE,IPRINT)
       ENDIF
 
-C      CALL MEMCHK('PRPEX2 2.0',WORK,1)
-C
 C     
 C
  90   CONTINUE     
@@ -626,8 +621,6 @@ C
      &          PMAT(N2BBASX,NZ)
 
       CALL QENTER('PRPEX3')
-
-C      CALL MEMCHK('PRPEX3 1.0',WORK,1)
 
       IREP = IPRPSYM(INDXPR)-1
       ITIM = IPRPTIM(INDXPR)
@@ -1107,7 +1100,6 @@ CMI ... Needed for SQUARE matrixes of some property operators!
 C     CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
 
 C
-      CALL MEMCHK('voor prpex1_mp2',WORK,1)
       CALL PRPEX1_MP2(WORK(KEXP),WORK(KEXPST),WORK(KCMO),WORK(KEIG),
 CMI  &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
      &            WORK(KDMAT),WORK(KPMAT),
@@ -1235,7 +1227,6 @@ CMI ....  modified for square matrixes of properties...get SA-AO matrix into PMA
         CALL FLSHFO(LUPRI)
 
       ENDDO
-      CALL MEMCHK('na verwachtingswaarde',WORK,1)
 C
 C     Write expectation values to file
 C     ================================
