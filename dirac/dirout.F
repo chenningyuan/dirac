@@ -1499,24 +1499,34 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 C
+C     Initialize (return of no HOMO or LUMO)
 C
-C     Check HOMO-LUMO gap and check for negative virtuals
-C
-CLV   ELUMO = EIG(1+NPSH(1)+NOCC(1))
-CLV   EHOMO = EIG(1+NPSH(1))
-C     These initializations do not work in the (unlikely) case of
-C     just one function in irrep 1. Below my pragmatic solution that
-C     should work in most conceivable cases. LV, 1-9-2000.
-      ELUMO = 1.D15
-      EHOMO = -1.D15
-C
-      IF (SPINFR) THEN
-        ILUMO = IBEIG(IORB(1)+NPSH(1)+NOCC(1)+1)
-        IHOMO = IBEIG(IORB(1)+NPSH(1)+1)
-      ELSE
-        ILUMO = 1
-        IHOMO = 1
-      ENDIF
+      IHOMO = -1
+      DO I = 1,NFSYM
+        IF(NOCC(I).GT.0) THEN
+          IF (SPINFR) THEN
+            IHOMO = IBEIG(IORB(I)+NPSH(I)+1)
+          ELSE
+           IHOMO = I
+          ENDIF
+          GOTO 10
+        ENDIF
+      ENDDO
+ 10   CONTINUE
+      IF(IHOMO.LT.0) RETURN
+      ILUMO = -1
+      DO I = 1,NFSYM
+        IF(NSSH(I).GT.0) THEN
+          IF (SPINFR) THEN
+            ILUMO = IBEIG(IORB(I)+NPSH(I)+NOCC(I)+1)
+          ELSE
+            ILUMO = I
+          ENDIF
+          GOTO 20
+        ENDIF
+      ENDDO
+ 20   CONTINUE
+      IF(ILUMO.LT.0) RETURN
       DO I = 1,NFSYM
          DO J = 1,NSSH(I)
             IF (ELUMO .GT. EIG(IORB(I)+NPSH(I)+NOCC(I)+J)) THEN
