@@ -1699,7 +1699,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       character*6 SIGDEN_ROUTE
       character*6 CIRUN
       character*1 COORD
-      logical MCSCF
+      logical MCSCF,EX
       logical GET_UPDATE_SM, GET_UPDATE_M_SM, GET_UPDATE_ALL
       logical GET_NO_UPDATE
       dimension INTEG(1000), T_BUFF(*)
@@ -2558,9 +2558,6 @@ C
 C
               ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN
 C
-                WRITE(LUWRT,*)' '
-                WRITE(LUWRT,*)' Resorting integrals...'
-                WRITE(LUWRT,*)' '
 C
 #if defined (VAR_MPI2)
                 IF( NFLGRPS_REL .eq. 1 )THEN
@@ -2580,6 +2577,23 @@ C                 ^ IIOMOD_REL
                 END IF
 C               ^ NFLGRPS_REL
 #endif
+C
+                EX = .FALSE. 
+C
+                INQUIRE(FILE='IJKL_REOD',EXIST=EX)
+C
+                IF( EX ) THEN
+                  WRITE(LUWRT,*)' '
+                  WRITE(LUWRT,*)' using provided integral file '
+                  WRITE(LUWRT,*)' IJKL_REOD! '
+                  WRITE(LUWRT,*)' '
+                  EX = .FALSE.
+                  GOTO 1001
+                END IF
+C
+                WRITE(LUWRT,*)' '
+                WRITE(LUWRT,*)' Resorting integrals...'
+                WRITE(LUWRT,*)' '
                 CALL WRITE_IJKL_GAS( WORK(KT_CC), T_BUFF,
      &                               INTIMP,ISPINFREE,ISYM_T,
      &                               WORK(KLSOBEX),WORK(KISTR_CA),
