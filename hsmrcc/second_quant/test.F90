@@ -35,7 +35,7 @@ Program TEST_SEC_QUANT
   allocate(j)
   j = make_sqo(2); ! call print_sqo(i)
 
-   allocate(a)
+  allocate(a)
   a = make_sqo(3,.true.);
 !  call print_sqo(a)
 

@@ -59,7 +59,8 @@ type head_cell
 ! ... content - pointer to one_string
  type(one_string), pointer :: p_string => null()
 ! ... pointers to previous, next head cells 
- type(head_cell), pointer :: previous => null(), next => null()
+ type(head_cell), pointer :: previous => null()
+ type(head_cell), pointer ::     next => null()
 end type head_cell
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -158,9 +159,9 @@ call QEnter('create_string')
      this%factor = 1.0D0
    endif
 
-   ! rather secure zero number of elements
+   ! rather secure zero number of elements and the tail
    this%n = 0
-
+   this%rear => null()  
 !else
 !  write(*,'(2x,a)') '"one_string" cell not allocated, because ' &
 !                  //'entering pointer "head" is not associated !'
@@ -195,8 +196,9 @@ subroutine Insert_SQOp_end(this_string,this_oper)
 !
 !  insert second quantized operator at the end of the string
 !
-! this_string
-! this_oper
+!  this_string
+!
+!  this_oper
 !
 !-------------------------------------------------------------------------------
 #include "implicit.h"
@@ -230,10 +232,12 @@ if (.not.associated(this_string%head)) then
 
 !  ... catch error if there is some
  if (associated(this_string%rear) .or. (this_string%n > 0) ) then
-   write(LUPRI,'(2x,a)') 'Some error in the empty entering string !'
+   write(LUPRI,'(/,2x,a)') 'Some error in the empty entering string :'
+   write(LUPRI,'(2x,a,l)')        &
+   '...associated(this_string%head)=',associated(this_string%head)
    write(LUPRI,'(2x,a,l)')        &
    '...associated(this_string%rear)=',associated(this_string%rear)
-   write(LUPRI,'(2x,a,i3)') 'this_string%n=',this_string%n
+   write(LUPRI,'(2x,a,i3)') 'number of string elements, this_string%n=',this_string%n
    call Quit('Some error in the empty entering string !')
  endif
 
@@ -363,7 +367,7 @@ if (associated(heads%main_head)) then
 ! ... cycle ...
  temp => heads%main_head
  do while (associated(temp))
-  write(LUPRI,'(5x,a,i3)') '.... string #',i
+  write(LUPRI,'(/,5x,a,i3)') '.... *** string #',i
   call print_string(temp%p_string)
   temp => temp%next
   i = i + 1
@@ -378,25 +382,25 @@ call QExit('print_all_strings')
 end subroutine print_all_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine print_string(head)
+subroutine print_string(p_this_string)
 !------------------------------------------------------------------------
 !
-!   print-out string of elements of the string pointed with 'head'
+!   print-out string of elements of the string pointed with "p_this_string"
 ! together with the factor 
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-type(one_string), pointer :: head
-
+type(one_string), pointer :: p_this_string
 call QEnter('print_string')
-if (.not.associated(head)) then
-  write(LUPRI,'(/,2x,a)') 'print_string: entering "head" not associated !' 
-  call Quit('print_string: entering "head" not associated !')
+
+if (.not.associated(p_this_string)) then
+  write(LUPRI,'(/,2x,a)') 'print_string: entering "p_this_string" not associated !' 
+  call Quit('print_string: entering "p_this_string" not associated !')
 else
   write(LUPRI,'(/,a,f12.5)')   & 
-  '*** printing  one string of elements with the factor',head%factor
-  call print_members(head%head)
+  '*** printing  one string of elements with the factor',p_this_string%factor
+  call print_members(p_this_string%head)
 endif
 
 call QExit('print_string')
@@ -554,13 +558,18 @@ endif
 i = 1
 ! ... cycle ... string after string ...
 temp => heads%main_head
-do while (associated(temp))
-  write(LUPRI,'(2x,a,i3)') ' string #',i
+!do while (associated(temp))
+  write(LUPRI,'(/,2x,a,i3)') '...string #',i
   !call process_one_string(temp%p_string)
   call process_one_string(temp)
-  temp => temp%next
-  i = i + 1
-enddo
+!  temp => temp%next
+!  i = i + 1
+!enddo
+
+if (get_iprint() >= 7) then
+   write(LUPRI,'(/,2x,a)') ''
+   call print_all_strings(heads)
+endif
 
 call QExit('process_strings')
 end subroutine process_strings
@@ -587,12 +596,13 @@ subroutine process_one_string(this)
 #include "priunit.h"
 !type(one_string), pointer :: this
 type(head_cell), pointer :: this, this2, this_temp
-type(dll_member), pointer :: temp
+!type(dll_member), pointer :: temp
 call QEnter('process_one_string')
 
 if (.not.associated(this)) then
- write(LUPRI,*) 'process_one_string: this string is NOT allocated !'
- call Quit('process_one_string: this string is NOT allocated !')
+ write(LUPRI,'(/,2x,a)')  &
+ 'process_one_string: entering string for analyse is NOT allocated !'
+ call Quit('process_one_string: entering string is NOT allocated !')
 endif
 
 if (.not.associated(this%p_string)) then
@@ -605,7 +615,7 @@ if (get_iprint() >= 5) then
  call print_string(this%p_string)
 endif
 
-!... find first splitting place 
+! ... find first splitting place 
 itype = -1; ipos = -1
 call find_splitting(this%p_string, itype, ipos)
 
@@ -616,13 +626,13 @@ if (ipos > 0) then
     write(LUPRI,'(/,2x,a)') '*** process_one_string - allocating next string '
   endif
 
-  this2 => null()
   allocate(this2)
   this2%p_string => null()
 
   allocate(this_temp)
+
 ! ... place "this2" after this ...
-  this_temp => this%next
+ ! this_temp => this%next
 
   this2%previous => this
   this2%next => this_temp
@@ -631,12 +641,22 @@ if (ipos > 0) then
   !this%next%previous => this
   this_temp%previous => this2
 
+  this_temp => this%next
   this%next => this2
 
   call duplicate_string(this%p_string, this2%p_string )
 
+  if (get_iprint() >= 7) then
+     write(LUPRI,'(/,2x,a)') 'process_one_string: copied string:'
+     call print_string(this2%p_string)
+  endif
+
+  ! .. chain both strings
+  this%next => this2;  this2%previous => this;  this2%next => null() 
+
 endif
 
+!call quit('process_one_string')
 
 call QExit('process_one_string')
 end subroutine process_one_string
@@ -645,21 +665,109 @@ end subroutine process_one_string
 subroutine duplicate_string(this_string, copied_string)
 !------------------------------------------------------------------------
 !
+!  duplicate string - allocation of memory inside
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer ::  this_string, copied_string
+type(dll_member), pointer :: temp, temp1, temp2
 call QEnter('duplicate_string')
 
 if ( get_iprint() >= 5 ) then
-  write(LUPRI,'(2x,a)') '*** duplicate_string: ***'
+  write(LUPRI,'(/,2x,a)') '*** duplicate_string ***'
 endif
 
+if (.not.associated(this_string)) then
+  write(LUPRI,'(2x,a)') 'entering string NOT allocated ! Exit !'
+  call Quit('duplicate_string : entering string NOT allocated !')
+else
+  if (.not.associated(this_string%head)) then
+    write(LUPRI,'(2x,a)') 'entering string  is empty! Exit !'
+    call Quit('duplicate_string : entering string is empty !')
+  endif 
+endif
 
+allocate(copied_string)
+
+temp1 => copied_string%head;  temp2 => temp
+temp => this_string%head;  
+i = 0
+do while (associated(temp))
+
+  i = i + 1
+
+  call insert_member(i,temp,temp1)
+
+  if (get_iprint() >= 7) then
+    write(LUPRI,'(/,2x,a,i3,a,$)')  &
+    'duplicate_string: ',i,'. old member element:'
+    call print_one_member(temp)
+    write(LUPRI,'(2x,a,$)') '              the same new member element:'
+    call print_one_member(temp1)
+  endif
+
+  if (i == 1) then
+    copied_string%head => temp1; temp1%previous => null(); temp1%next => null()
+  else if (i > 1) then
+    temp2%next => temp1; temp1%previous => temp2
+  endif
+
+  temp2 => temp1  ! ... save previous element
+  temp => temp%next
+enddo
+
+copied_string%rear  =>  temp1
+copied_string%n  =  this_string%n
+copied_string%factor  =  this_string%factor
+
+! ... after copying element after element print out whole new string
+if (get_iprint() >= 7) then
+  write(LUPRI,'(/,2x,a)')  'duplicated string:'
+  call print_string(copied_string)
+endif
+
+!call quit('end in duplicate_string')
 
 call QExit('duplicate_string')
 end subroutine duplicate_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine insert_member(i,member_exist,member_new)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: i
+type(dll_member), pointer :: member_exist, member_new
+logical :: is_operator,  is_term 
+call QEnter('insert_member')
+
+if (get_iprint() >= 7) then
+  write(LUPRI,'(/,2x,a)') 'insert_member: duplicating string elements'
+endif
+
+if (.not.associated(member_exist)) then
+   write(LUPRI,'(/,2x,a)') 'insert_member: entering element does NOT exist !'
+   call Quit('insert_member: entering element does NOT exist !')
+endif
+
+allocate(member_new)
+member_new = member_exist
+
+if (get_iprint() >= 7) then
+   write(LUPRI,'(/,2x,a,i3,a,$)') 'insert_member: ',i,'. old member element:'
+   call print_one_member(member_exist)
+   write(LUPRI,'(2x,a,$)') '           the same new member element:'
+   call print_one_member(member_new)
+endif
+
+!call quit('insert_member')
+call QExit('insert_member')
+end subroutine insert_member
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine rearrange_string(this)
