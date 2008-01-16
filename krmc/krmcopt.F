@@ -2754,8 +2754,19 @@ CSK            WRITE(LUPRI,*) ' KTRLVL',KTRLVL
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
 C
             IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
+C
                EX = .FALSE.
-C              check for existing integral file.
+C
+C              check for existing integral files
+C
+               IF( CINT_REORD ) THEN
+C
+                 INQUIRE ( FILE = 'IJKL_REOD', EXIST = EX )
+C
+                 IF ( EX ) GOTO 1500
+C
+               END IF
+C
                INQUIRE ( FILE = '4INDINFO', EXIST = EX )
                IF ( .NOT. EX ) THEN
                  IF (KTRLVL.EQ.5)
@@ -2767,6 +2778,8 @@ C              check for existing integral file.
             END IF
 C
             IF (KTRLVL.EQ.5) GOTO 2100
+C
+ 1500       CONTINUE
 C
             CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
 C
