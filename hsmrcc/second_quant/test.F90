@@ -7,11 +7,11 @@ Program TEST_SEC_QUANT
 
   use control_print
 
-  type(dll_member), pointer :: head => null(), k, d_ik
-  
   type(KronDelta), pointer :: d_ij, d_ab
 
   type(SQOper), pointer :: i,j,a,b
+
+  type(dll_member), pointer :: head => null(), k, d_ik
 
   type(heads_list) :: HL
 
@@ -21,7 +21,7 @@ Program TEST_SEC_QUANT
 
 !  type(one_string), target ::  os
 
-  call set_iprint(10)
+ ! call set_iprint(10)
 
   allocate(d_ij)
   d_ij = make_kron_delta(1,2);  call print_kd(d_ij)
@@ -52,13 +52,45 @@ Program TEST_SEC_QUANT
   call Insert_SQOp_end(pos,i)
   call Insert_SQOp_end(pos,j)
   call Insert_KD_end(pos,d_ij)
-!  call Insert_SQOp_end(pos,a)
-!  call Insert_KD_end(pos,d_ab)
+  call Insert_SQOp_end(pos,a)
+  call Insert_KD_end(pos,d_ab)
 
-! call print_string(pos)
-  call print_all_strings(HL)
+ call print_string(pos)
+
+
+  !call print_all_strings(HL)
+
+  call rearrange_string(pos)
+  call print_string(pos)
+
+  call set_iprint(10)
+ call process_strings(HL)
+
+
+
+ ! call exchange_string_elements(pos,1,3)
+ ! call print_string(pos)
+
+ ! call exchange_string_elements(pos,5,3)
+ ! call print_string(pos)
+
+ ! call set_iprint(10)
 
  ! call rearrange_string(pos)
+ ! call print_string(pos)
+
+ ! call remove_element(pos,5)
+ ! call remove_element(pos,4)
+ ! call remove_element(pos,3)
+ ! call print_string(pos)
+
+ ! call rearrange_string(pos)
+  !call move_element_beg(pos,3)
+  !call print_string(pos)
+
+  !call rearrange_string(pos)
+  !call print_string(pos)
+
 
  ! call move_element_beg(pos,2)
  ! call move_element_beg(pos,5)
@@ -70,29 +102,30 @@ Program TEST_SEC_QUANT
 !  call remove_element(pos,1)
 
  !call exchange_string_elements(pos,1,3)
- call exchange_string_elements(pos,2,3)
+ !call exchange_string_elements(pos,2,3)
  ! call exchange_string_elements(pos,1,2)
- call print_string(pos)
+ !call print_string(pos)
 
- allocate(k); allocate(d_ik)
- k = make_sqo_cell(3); call print_one_member(k)
- d_ik = make_kd_cell(1,3); call print_one_member(d_ik)
- call  insert_element(pos,3,k)
- call  insert_element(pos,1,d_ik)
+ !allocate(k); allocate(d_ik)
+ !k = make_sqo_cell(3); call print_one_member(k)
+ !d_ik = make_kd_cell(1,3); call print_one_member(d_ik)
+ !call  insert_element(pos,3,k)
+ !call  insert_element(pos,1,d_ik)
 
- call print_string(pos)
+ !call print_string(pos)
 
- call remove_element(pos,1)
- call remove_element(pos,1)
- call Insert_SQOp_end(pos,i)
- call remove_element(pos,1)
- call remove_element(pos,1)
- call exchange_string_elements(pos,1,2)
+ !call remove_element(pos,1)
+ !call remove_element(pos,1)
+ !call Insert_SQOp_end(pos,i)
+ !call remove_element(pos,1)
+ !call remove_element(pos,1)
+ !call exchange_string_elements(pos,1,2)
+ !call exchange_string_elements(pos,1,2)
 
- call print_string(pos)
- call print_all_strings(HL)
+ !call print_string(pos)
+ !call print_all_strings(HL)
 
- call process_strings(HL)
+ !call process_strings(HL)
 
 
 ! call process_strings(HL)

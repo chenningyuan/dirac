@@ -530,7 +530,7 @@ end subroutine print_one_member
 subroutine process_strings(heads)
 !------------------------------------------------------------------------
 !
-!   most important routine - process strings of elements
+!     most important routine - process all strings of elements
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -586,7 +586,7 @@ subroutine process_one_string(this)
 #include "implicit.h"
 #include "priunit.h"
 !type(one_string), pointer :: this
-type(head_cell), pointer :: this
+type(head_cell), pointer :: this, this2, this_temp
 type(dll_member), pointer :: temp
 call QEnter('process_one_string')
 
@@ -600,49 +600,148 @@ if (.not.associated(this%p_string)) then
  call Quit('process_one_string: this string is NOT allocated !')
 endif
 
-write(LUPRI,*) 'processing ONE allocated string...'
-
-call print_string(this%p_string)
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a)') 'processing ONE allocated string...'
+ call print_string(this%p_string)
+endif
 
 !... find first splitting place 
-call find_splitting(this%p_string)
+itype = -1; ipos = -1
+call find_splitting(this%p_string, itype, ipos)
 
-! .. allocate one more string ...
+! ... allocate one more string and duplicate the string 
+if (ipos > 0) then
+
+  if ( get_iprint() >= 5 ) then
+    write(LUPRI,'(/,2x,a)') '*** process_one_string - allocating next string '
+  endif
+
+  this2 => null()
+  allocate(this2)
+  this2%p_string => null()
+
+  allocate(this_temp)
+! ... place "this2" after this ...
+  this_temp => this%next
+
+  this2%previous => this
+  this2%next => this_temp
+ ! this2%next => this%next
+
+  !this%next%previous => this
+  this_temp%previous => this2
+
+  this%next => this2
+
+  call duplicate_string(this%p_string, this2%p_string )
+
+endif
 
 
 call QExit('process_one_string')
 end subroutine process_one_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine duplicate_string(this_string, copied_string)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer ::  this_string, copied_string
+call QEnter('duplicate_string')
+
+if ( get_iprint() >= 5 ) then
+  write(LUPRI,'(2x,a)') '*** duplicate_string: ***'
+endif
+
+
+
+call QExit('duplicate_string')
+end subroutine duplicate_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine rearrange_string(this)
 !------------------------------------------------------------------------
 !
+!
 !  rearrange string that all indexed terms and kronecker deltas are 
-! on the left separated from the rest -  from bunch 
-! of creation/anihilation operators.
+! on the left separated from the rest -  from a bunch 
+! of creation/anihilation operators, which cannot be simply exchanged
+!
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: this
 type(dll_member), pointer :: temp, temp1
+logical :: is_operator,  is_term 
 call QEnter('rearrange_string')
 
-write(LUPRI,'(/,2x,a)') 'rearranging the string...'
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a)') 'going to rearrange the string...'
+endif
 
 if (.not.associated(this)) then
  write(LUPRI,'(2x,a)') 'rearrange_string: entering string NOT associated (allocated) !'
  call Quit('rearrange_string: entering string NOT associated (allocated) !')
-else
- if (.not.associated(this%head)) then
-  write(LUPRI,'(2x,a)') 'rearrange_string: entering string is empty !'
-  call Quit('rearrange_string: entering string is empty (no member elements) !')
- endif
 endif
 
-! ... go element after element
-ipos = 0
+if (.not.associated(this%head)) then
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(2x,a)')  & 
+    'rearrange_string: entering string is empty ! leaving this routine'
+  endif
+else
 
+ is_term = .true.
+
+ do while (is_term)
+
+    ! ... go element after element
+    ipos = 0
+    ipos_term = 0
+    temp => this%head
+    is_operator = .false. 
+    is_term = .false.
+
+    do while (  associated(temp) .and. .not.is_term   )
+      ipos = ipos + 1
+      if  (associated(temp%member%pSQOper)) is_operator = .true.
+      if  (is_operator  .and.   &
+          (associated(temp%member%pKronDelta).or.associated(temp%member%pIndxTerm))) then
+          ipos_term = ipos; is_term = .true.
+          if (get_iprint() >= 5) then
+            write(LUPRI,'(2x,a,i3)')  & 
+           'rearrange_string: catched element to be moved to the beginnig,'  &
+         //' position', ipos_term
+          endif
+      endif
+      temp => temp%next
+    enddo
+
+    if (is_term) then
+
+       if (get_iprint() >= 5) then
+         write(LUPRI,'(2x,a)') 'after the operator found term !'
+         call get_string_element(this,ipos_term,temp1)
+         call print_one_member(temp1)
+       endif
+
+!    ... move term to the beginning ...
+       call move_element_beg(this,ipos_term)
+
+       if ( get_iprint() >= 5 ) then
+         write(LUPRI,'(2x,a)') 'term moved to the beginning  !'
+         call print_string(this) 
+       endif
+
+    endif
+
+  enddo
+
+endif
 
 call QExit('rearrange_string')
 end subroutine rearrange_string
@@ -1118,24 +1217,76 @@ end subroutine check_string
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine find_splitting(this)
+subroutine find_splitting(this, itype, ipos)
 !------------------------------------------------------------------------
 !
+!   find type and position in the entering string for splitting
 !
+!  itype , ipos
 !
+!   itype = 1
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: this
+integer, intent(inout) ::  itype, ipos
+type(dll_member), pointer :: temp, temp1
+call QEnter('find_splitting')
 
 if (.not.associated(this)) then
- write(LUPRI,*) ': this string is NOT allocated !'
+ write(LUPRI,'(2x,a)') ': this string is NOT allocated !'
  call Quit(' this string is NOT allocated !')
+else
+ if (.not.associated(this%head)) then
+  write(LUPRI,'(2x,a)') ': this string is empty !'
+  call Quit('find_splitting: this string is empty !')
+ endif
 endif
 
-write(LUPRI,*) 'in find_splitting...'
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a)')  &
+  'in find_splitting...searching for splitting position of the entering string'
+endif
 
+if (this%n >= 2) then
+
+  temp => this%head
+  temp1 => temp%next
+  ipos = 0
+  i = 0
+  do while (associated(temp)) 
+    i = i + 1
+! ... seeking for a+ i sequence
+    if (associated(temp%member%pSQOper).and.associated(temp1%member%pSQOper)) then
+
+      if  &
+      (.not.(temp%member%pSQOper%is_creation_oper).and.(temp1%member%pSQOper%is_creation_oper).and. &
+             temp%member%pSQOper%p /=  temp1%member%pSQOper%p )  then
+          itype = 1; ipos = i
+          if ( get_iprint() >=5 ) then
+            write(LUPRI,'(2x,a,i3,a)') 'catched splitting position of p q+, at p:',ipos, &
+            ', leaving cycle...'
+          endif
+         Exit
+      endif
+
+    endif
+    temp => temp%next
+    temp1 => temp1%next
+  enddo
+
+  if (ipos > 0) then
+    if ( get_iprint() >=5 ) then
+      write(LUPRI,'(/,2x,a)')   &
+      'string members for splitting: P1 p q+ P2 = P1 d_pq P2 - P1 q+ p P2'
+      call print_one_member(temp); call print_one_member(temp1)
+    endif
+  endif
+
+endif
+
+call QExit('find_splitting')
 end subroutine find_splitting
 
 End Module Operators_string

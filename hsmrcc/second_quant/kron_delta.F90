@@ -1,6 +1,8 @@
 
 Module KroneckerDelta
 
+  use Control_print
+
 type, public :: KronDelta
  !private
   !integer(kind=4) :: p=0, q=0
@@ -20,7 +22,11 @@ subroutine print_kd(self)
 #include "implicit.h"
 #include "priunit.h"
 type(KronDelta), intent(in) :: self
-write(LUPRI,'(3x,a,2i3)') 'kronecker delta, indexes #:',self%p,self%q
+call QEnter('print_kd')
+if (get_iprint() >= 5) then
+  write(LUPRI,'(3x,a,2i3)') 'kronecker delta, indexes #:',self%p,self%q
+endif
+call QExit('print_kd')
 end subroutine print_kd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,8 +44,8 @@ call QEnter('make_kron_delta')
  if (i>0 .and. j>0) then
    this%p = i; this%q = j
  else 
-  write(LUPRI,*) 'entering parameters for KD: p,q=',p,q
-  write(LUPRI,*) 'entering parameters for kronecker delta must by > 0 !'
+  write(LUPRI,'(2x,a,2i3)') 'entering parameters for KD: p,q=',p,q
+  write(LUPRI,'(2x,a)') 'entering parameters for kronecker delta must by > 0 !'
   call Quit('entering parameters for kronecker delta must by > 0 !')
  endif
 
