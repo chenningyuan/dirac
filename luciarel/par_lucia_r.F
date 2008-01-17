@@ -9920,8 +9920,11 @@ C     store some important information
 C
 C     broadcast only for SIGMA and SIGMAD (current fix for large-scale 
 C     CIINII runs). FIXME: large-scale KR-MCSCF - SK - july 10, 2007
-      IF( CIRUN .ne. 'CIINII' .or. CIRUN .ne. 'IJKLRO' )THEN
+      IF( CIRUN .eq. 'SIGMA' )THEN
 C       ... integrals
+        CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+      ELSE IF( CIRUN .eq. 'SIGMAD')THEN
         CALL MPI_BCAST(F2,NASHT*NASHT*NNASHX*NZ*3,MPI_REAL8,MASTER,
      &                 MPI_COMM_WORLD,IERR)
       END IF
