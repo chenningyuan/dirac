@@ -85,6 +85,11 @@ C=======================================================================
       IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
       IOFF   = NBAST*NBAST*(IQ-1)
 
+      ioff_min = 0
+      ioff_max = nbast*nbast*3
+      if(ioff .lt. ioff_min) call quit('ioff .lt. ioff_min in exc_m')
+      if(ioff .gt. ioff_max) call quit('ioff .gt. ioff_max in exc_m')
+
       CALL EXC_GENERAL(IS_GGA,VXC_S,VXC_V,F,IU,IV,
      &                 IREPOP,EXCMAT(1+IOFF),GAO,GAO1)
       IF(MC .EQ. 2) THEN

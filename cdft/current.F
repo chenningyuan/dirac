@@ -269,21 +269,27 @@ C=======================================================================
 #include "ibtfun.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
-      IOFF = NBAST*NBAST
+      ioff     = nbast*nbast
+      joff_max = nbast*nbast*3
 #else
-      IOFF = NTBAS(0)*NTBAS(0)
+      ioff     = ntbas(0)*ntbas(0)
+      joff_max = ntbas(0)*ntbas(0)*3
 #endif
 
-      IF(LGET .AND. RESET) DENSITY = D0
+      if(lget .and. reset) density = d0
 
-      INTERMEDIATE = IREPOP
-      JOFF = 0
+      intermediate = irepop
 
-      IF(.NOT. ITRANSFORM .EQ. 0) THEN
-        INTERMEDIATE = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),IREPOP)
-        IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
-        JOFF = IOFF*(IQ-1)
-      ENDIF
+      joff     = 0
+      joff_min = 0
+      if(.not. itransform .eq. 0) then
+        intermediate = ibtxor(isymax(ixyz,itransform),irepop)
+        iq = iqtopq(5-ixyz,isymax(ixyz,2))
+        joff = ioff*(iq-1)
+      endif
+
+      if(joff .lt. joff_min) call quit('joff .lt. joff_min')
+      if(joff .gt. joff_max) call quit('joff .gt. joff_max')
 
       ICHECK = K + L
       IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 1
