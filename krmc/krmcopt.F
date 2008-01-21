@@ -2924,7 +2924,14 @@ C
 C
            CALL LUCI_IJKLRO(CMO,WORK(KFREE),LFREE)
 C
-           IF( MAXCIT .le. 0 ) GOTO 1000 
+           IF( MAXCIT .le. 0 ) THEN
+C
+             IF( NATOLCR ) THEN
+               GOTO 500
+             ELSE
+               GOTO 1000
+             ENDIF
+           ENDIF
 C
          END IF
 C
@@ -2942,6 +2949,7 @@ C
      &         OPT_CIPROGRAM,'"'
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
+ 500  CONTINUE
 C
       WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
