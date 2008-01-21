@@ -16,16 +16,16 @@ contains
 subroutine print_kd(self)
 !------------------------------------------------------------------
 !
-!  print-out  kronecker delta 
+!    print-out  kronecker delta 
 !
 !------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(KronDelta), intent(in) :: self
 call QEnter('print_kd')
-if (get_iprint() >= 5) then
+!if (get_iprint() >= 5) then
   write(LUPRI,'(3x,a,2i3)') 'kronecker delta, indexes #:',self%p,self%q
-endif
+!endif
 call QExit('print_kd')
 end subroutine print_kd
 
@@ -33,6 +33,7 @@ end subroutine print_kd
 function make_kron_delta(i,j) result(this)
 !------------------------------------------------------------------
 !
+!              create pure Kronecker delta
 !
 !------------------------------------------------------------------
 #include "implicit.h"
@@ -48,6 +49,11 @@ call QEnter('make_kron_delta')
   write(LUPRI,'(2x,a)') 'entering parameters for kronecker delta must by > 0 !'
   call Quit('entering parameters for kronecker delta must by > 0 !')
  endif
+
+if (get_iprint() >= 15) then
+  write(LUPRI,'(2x,a,$)') 'make_kron_delta: created "KronDelta" type'
+  call print_kd(this)
+endif
 
 call QExit('make_kron_delta')
 end function make_kron_delta

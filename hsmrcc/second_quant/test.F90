@@ -7,6 +7,9 @@ Program TEST_SEC_QUANT
 
   use control_print
 
+#include "implicit.h"
+#include "priunit.h"
+
   type(KronDelta), pointer :: d_ij, d_ab
 
   type(SQOper), pointer :: i,j,a,b
@@ -24,10 +27,10 @@ Program TEST_SEC_QUANT
  ! call set_iprint(10)
 
   allocate(d_ij)
-  d_ij = make_kron_delta(1,2);  call print_kd(d_ij)
+  d_ij = make_kron_delta(1,2); ! call print_kd(d_ij)
 
   allocate(d_ab)
-  d_ab = make_kron_delta(3,4);  call print_kd(d_ab)
+  d_ab = make_kron_delta(3,4); ! call print_kd(d_ab)
 
   allocate(i)
   i = make_sqo(1,.true.); ! call print_sqo(i)
@@ -55,8 +58,9 @@ Program TEST_SEC_QUANT
   call Insert_SQOp_end(pos,a)
   call Insert_KD_end(pos,d_ab)
 
- call print_string(pos)
-
+  write(LUPRI,'(/,2x,a)') '*** printing full string:'
+  call print_string(pos)
+ ! call quit('end here...')
 
   !call print_all_strings(HL)
 

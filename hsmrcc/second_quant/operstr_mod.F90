@@ -107,19 +107,41 @@ end function make_sqo_cell
 function make_kd_cell(i,j) result (this)
 !----------------------------------------------------------------------------
 !
-!      Returns cell with KD
+!               Returns cell "this" with the Kronecker delta
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 integer, intent(in) :: i,j
-type(dll_member) :: this
+!type(dll_member) :: this
+type(dll_member), target :: this
+type(dll_member), pointer :: temp
 type(KronDelta), target :: this_kd
 call QEnter('make_kd_cell')
 
- this_kd = make_kron_delta(i,j)
+! ... true Kronecker delta ...
+this_kd = make_kron_delta(i,j)
 
- this%member%pKronDelta =>  this_kd
+this%member%pKronDelta => this_kd
+
+! ... check  for  older compilers, like pgf90 5.2-4 (opteron64, Tel Aviv)
+if (associated(this%member%pSQOper)) then
+  write(LUPRI,'(2x,a)') 'make_kd_cell: pSQOper randomly associated !'
+  this%member%pSQOper  => null()
+endif
+
+if (associated(this%member%pIndxTerm)) then
+  write(LUPRI,'(2x,a)') 'make_kd_cell: pIndxTerm randomly associated !'
+  this%member%pIndxTerm   => null()
+endif
+
+temp => this
+ 
+if ( get_iprint() >= 5 ) then
+  write(LUPRI,'(2x,a,$)') 'make_kd_cell: created Kronecker delta:'
+  !call print_one_member(this)
+  call print_one_member(temp)
+endif
 
 call QExit('make_kd_cell')
 end function make_kd_cell
@@ -359,7 +381,8 @@ type(heads_list), intent(in) :: heads
 type(head_cell), pointer :: temp
 call QEnter('print_all_strings')
 
-write(LUPRI,'(/,2x,a)') '***  print_all_strings:  ***'
+write(LUPRI,'(/,2x,a)')  &
+'***  print_all_strings: printing all strings  ***'
 
 if (associated(heads%main_head)) then
 
@@ -458,7 +481,6 @@ else
 endif
 
 call QExit('print_members')
-
 end subroutine print_members
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -505,13 +527,15 @@ type(dll_member), pointer :: this
 call QEnter('print_one_member')
 
 if (.not.associated(this)) then
-    write(LUPRI,*) 'print_one_member: entering pointer is not associated !'
+    write(LUPRI,'(/,2x,a)')   & 
+    'print_one_member: entering pointer is not associated !'
    ! call Quit('print_one_member: entering pointer is not associated !')
 else
 
 if (associated(this%member%pSQOper)) then
    call print_sqo(this%member%pSQOper)
 else if (associated(this%member%pKronDelta)) then
+  ! write(LUPRI,'(2x,a)') 'this%member%pKronDelta !'
    call print_kd(this%member%pKronDelta)
 else
    write(LUPRI,'(2x,a)') '*** print_one_member dead branch output ***'
@@ -530,11 +554,11 @@ call QExit('print_one_member')
 
 end subroutine print_one_member
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine process_strings(heads)
 !------------------------------------------------------------------------
 !
-!     most important routine - process all strings of elements
+!      most important routine - process all strings of elements
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -544,8 +568,7 @@ type(head_cell), pointer :: temp
 call QEnter('process_strings')
 
 if (get_iprint() >= 5) then
-  write(LUPRI,*) 
-  write(LUPRI,*) 'in process_strings...'
+   write(LUPRI,'(/,2x,a)') 'in process_strings...'
 endif
 
 ! ... go string after string ...
@@ -558,16 +581,16 @@ endif
 i = 1
 ! ... cycle ... string after string ...
 temp => heads%main_head
-!do while (associated(temp))
+do while (associated(temp))
   write(LUPRI,'(/,2x,a,i3)') '...string #',i
   !call process_one_string(temp%p_string)
   call process_one_string(temp)
-!  temp => temp%next
-!  i = i + 1
-!enddo
+  temp => temp%next
+  i = i + 1
+enddo
 
 if (get_iprint() >= 7) then
-   write(LUPRI,'(/,2x,a)') ''
+   write(LUPRI,'(/,2x,a)') '**** process_strings: printing all strings ****'
    call print_all_strings(heads)
 endif
 
@@ -578,7 +601,7 @@ end subroutine process_strings
 subroutine process_one_string(this)
 !------------------------------------------------------------------------
 !
-! Process entering string : apply commutator relation
+! Process entering string : apply commutator relations
 !
 !     example:
 ! ----------------
@@ -596,6 +619,7 @@ subroutine process_one_string(this)
 #include "priunit.h"
 !type(one_string), pointer :: this
 type(head_cell), pointer :: this, this2, this_temp
+logical :: found_splitting
 !type(dll_member), pointer :: temp
 call QEnter('process_one_string')
 
@@ -615,46 +639,54 @@ if (get_iprint() >= 5) then
  call print_string(this%p_string)
 endif
 
-! ... find first splitting place 
-itype = -1; ipos = -1
-call find_splitting(this%p_string, itype, ipos)
+! ... initialization ...
+found_splitting = .true.
+do while ( found_splitting )
 
-! ... allocate one more string and duplicate the string 
-if (ipos > 0) then
+  ! ... find first the splitting place 
+  itype = -1; ipos = -1
+  found_splitting = .false.
+  call find_splitting(this%p_string, itype, ipos )
 
-  if ( get_iprint() >= 5 ) then
-    write(LUPRI,'(/,2x,a)') '*** process_one_string - allocating next string '
-  endif
+  ! ... allocate one more string and duplicate the string 
+  if (ipos > 0) then
 
-  allocate(this2)
-  this2%p_string => null()
+    found_splitting = .true.
 
-  allocate(this_temp)
+    if ( get_iprint() >= 5 ) then
+     write(LUPRI,'(/,2x,a)')  &
+     '*** process_one_string - allocating and processing next string as splitting found '
+    endif
 
-! ... place "this2" after this ...
- ! this_temp => this%next
+    allocate(this2)
+    this2%p_string => null()
 
-  this2%previous => this
-  this2%next => this_temp
- ! this2%next => this%next
+    allocate(this_temp)
 
-  !this%next%previous => this
-  this_temp%previous => this2
+    this2%previous => this
+    this2%next => this_temp
 
-  this_temp => this%next
-  this%next => this2
+    this_temp%previous => this2
 
-  call duplicate_string(this%p_string, this2%p_string )
+    this_temp => this%next
+    this%next => this2
 
-  if (get_iprint() >= 7) then
-     write(LUPRI,'(/,2x,a)') 'process_one_string: copied string:'
-     call print_string(this2%p_string)
-  endif
+    call duplicate_string(this%p_string, this2%p_string )
+
+    if (get_iprint() >= 7) then
+       write(LUPRI,'(/,2x,a)')   &
+       'process_one_string: duplicated string:'
+       call print_string(this2%p_string)
+    endif
 
   ! .. chain both strings
-  this%next => this2;  this2%previous => this;  this2%next => null() 
+    this%next => this2;  this2%previous => this;  this2%next => null() 
 
-endif
+    call process_2_strings(this%p_string, this2%p_string, ipos )
+
+ endif
+
+enddo
 
 !call quit('process_one_string')
 
@@ -662,10 +694,150 @@ call QExit('process_one_string')
 end subroutine process_one_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine process_2_strings(this_string, copied_string, ipos)
+!------------------------------------------------------------------------
+!
+!  process 2 identical strings - built in commutator relation
+! ---------------------------------------------------------------
+!
+!  P1 i a+ P2 = P1 ( d_ia - a+ i ) P2 = P1 d_ia P2 - P1 a+ i P2
+!
+!            at the beginning:   P1 i a+ P2  2 times
+!
+! after evaluating commutator:   P1 d_ia P2 - P1 a+ i P2
+!
+!             where P1, P2 are bunches of elements 
+!
+!  ipos - position of i operator in the entering strings
+!                              "this_string, copied_string"
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: ipos
+type(one_string), pointer ::  this_string, copied_string
+type(dll_member), pointer :: d_ia, temp_i, temp_a
+call QEnter('process_2_strings')
+
+if ( get_iprint() >= 5 ) then
+  write(LUPRI,'(/,2x,a)') '*** process_2_strings ***'
+endif
+
+allocate(temp_i); allocate(temp_a)
+
+temp_i = get_dll_member(this_string,ipos)
+
+if (.not.associated(temp_i%member%pSQOper)) then
+   call print_one_member(temp_i)
+   call Quit(' process_2_strings: picked element not creat/anihil. operator!')
+else if  (.not.(temp_i%member%pSQOper%p > 0) .or.   &
+               (temp_i%member%pSQOper%is_creation_oper) ) then
+   call print_one_member(temp_i)
+   call Quit(' process_2_strings: picked element not creat/anihil. operator!')
+endif
+
+temp_a = get_dll_member(this_string,ipos+1)
+
+if (.not.associated(temp_a%member%pSQOper)) then
+   call print_one_member(temp_a)
+   call Quit(' process_2_strings: picked element not creat/anihil. operator!')
+else if(.not.(temp_a%member%pSQOper%p > 0) .or.  &
+        .not.(temp_a%member%pSQOper%is_creation_oper) ) then
+   call print_one_member(temp_a)
+   call Quit(' process_2_strings: picked element not creat/anihil. operator!')
+endif
+
+if ( get_iprint() >= 5 ) then
+  write(LUPRI,'(/,2x,a)') '*** process_2_strings: 2 picked elements i a +'
+   call print_one_member(temp_i)
+   call print_one_member(temp_a)
+endif
+
+! ... create kronecker delta ...
+allocate(d_ia)
+d_ia = make_kd_cell(temp_i%member%pSQOper%p, temp_a%member%pSQOper%p)
+
+call remove_element(this_string, ipos)
+call insert_element(this_string, ipos, d_ia)
+call remove_element(this_string, ipos)
+! ... set new number of elements
+this_string%n = this_string%n - 1
+
+call exchange_string_elements(copied_string, ipos, ipos+1) 
+
+! ... change the factor, replace/eliminates terms ...
+copied_string%factor = - copied_string%factor
+
+if ( get_iprint() >= 5 )  then
+ write(LUPRI,'(/,2x,a)')  &
+ '*** process_2_strings: adapted 2 subsequent strings'
+ call print_string(this_string)
+ call print_string(copied_string)
+! call quit('...in process_2_strings')
+ call FLSHFO(LUPRI)
+endif
+
+call QExit('process_2_strings')
+end subroutine process_2_strings
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_dll_member(this_string,ipos) result(elem)
+!------------------------------------------------------------------------
+!
+!       returns element from the string at the position 'ipos'
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in) :: ipos
+type(dll_member), target :: elem
+type(dll_member), pointer :: temp
+type(one_string), pointer ::  this_string
+call QEnter('get_dll_member')
+
+if ( get_iprint() >= 5 ) then
+  write(LUPRI,'(/,2x,a)') '*** get_dll_member ***'
+endif
+
+if (.not.associated(this_string)) then
+   write(LUPRI,'(/,2x,a)')   &
+   'get_dll_member: entering string NOT associated !'
+   call Quit('get_dll_member: entering string NOT associated !')
+else
+  if (this_string%n < ipos .or. ipos <= 0) then
+    write(LUPRI,'(/,2x,a,i3,a,i3)')   &
+    'get_dll_member: number of elem=',this_string%n,' position, ipos=',ipos
+  endif
+endif
+
+temp => this_string%head;  i = 0
+do while(associated(temp))
+  i = i + 1
+  if (i == ipos) then
+    elem = temp
+    Exit ! leave the cycle when 'ipos'. element is catched
+  endif
+  temp => temp%next
+enddo
+
+if (get_iprint() >=5) then
+  write(LUPRI,'(2x,a,$)') 'get_dll_member: picked element'
+  !call print_one_member(elem) 
+  call print_one_member(temp) 
+endif
+
+call QExit('get_dll_member')
+end function get_dll_member
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine duplicate_string(this_string, copied_string)
 !------------------------------------------------------------------------
 !
-!  duplicate string - allocation of memory inside
+! duplicate string - allocation of memory for the new one is inside
+!
+!  on entry: this_string
+!
+!  on output: copied_string 
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -1323,7 +1495,6 @@ endif
 call QExit('check_string')
 end subroutine check_string
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine find_splitting(this, itype, ipos)
 !------------------------------------------------------------------------
@@ -1347,7 +1518,7 @@ if (.not.associated(this)) then
  call Quit(' this string is NOT allocated !')
 else
  if (.not.associated(this%head)) then
-  write(LUPRI,'(2x,a)') ': this string is empty !'
+  write(LUPRI,'(2x,a)') 'find_splitting: this string is empty !'
   call Quit('find_splitting: this string is empty !')
  endif
 endif
@@ -1355,23 +1526,25 @@ endif
 if (get_iprint() >= 5) then
   write(LUPRI,'(/,2x,a)')  &
   'in find_splitting...searching for splitting position of the entering string'
+  call FLSHFO(LUPRI)
 endif
 
 if (this%n >= 2) then
 
   temp => this%head
-  temp1 => temp%next
+  !temp1 => temp%next
+  if (associated(temp)) temp1 => temp%next
   ipos = 0
   i = 0
-  do while (associated(temp)) 
+  do while ( associated(temp).and.associated(temp1) ) 
     i = i + 1
 ! ... seeking for a+ i sequence
     if (associated(temp%member%pSQOper).and.associated(temp1%member%pSQOper)) then
 
-      if  &
-      (.not.(temp%member%pSQOper%is_creation_oper).and.(temp1%member%pSQOper%is_creation_oper).and. &
-             temp%member%pSQOper%p /=  temp1%member%pSQOper%p )  then
-          itype = 1; ipos = i
+      if  (.not.( temp%member%pSQOper%is_creation_oper).and.  &
+                (temp1%member%pSQOper%is_creation_oper).and. &
+                  temp%member%pSQOper%p /=  temp1%member%pSQOper%p )  then
+                    itype = 1; ipos = i
           if ( get_iprint() >=5 ) then
             write(LUPRI,'(2x,a,i3,a)') 'catched splitting position of p q+, at p:',ipos, &
             ', leaving cycle...'
@@ -1380,8 +1553,10 @@ if (this%n >= 2) then
       endif
 
     endif
-    temp => temp%next
-    temp1 => temp1%next
+   ! temp => temp%next
+     if (associated(temp)) temp => temp%next
+   ! temp1 => temp1%next
+    if (associated(temp1)) temp1 => temp1%next
   enddo
 
   if (ipos > 0) then
@@ -1389,6 +1564,11 @@ if (this%n >= 2) then
       write(LUPRI,'(/,2x,a)')   &
       'string members for splitting: P1 p q+ P2 = P1 d_pq P2 - P1 q+ p P2'
       call print_one_member(temp); call print_one_member(temp1)
+    endif
+  else
+    if ( get_iprint() >=5 ) then
+      write(LUPRI,'(/,2x,a)')   &
+      'find_splitting: nothing found for splitting the string !'
     endif
   endif
 
