@@ -42,6 +42,10 @@ Program TEST_SEC_QUANT
   a = make_sqo(3,.true.);
 !  call print_sqo(a)
 
+  allocate(b)
+  !b = make_sqo(4,.true.);
+  b = make_sqo(4,.false.);
+
   allocate(pos)
   pos = create_string(head,0.50D0)
 
@@ -52,6 +56,7 @@ Program TEST_SEC_QUANT
 
   pos%head => head 
 
+  call Insert_SQOp_end(pos,b)
   call Insert_SQOp_end(pos,i)
   call Insert_SQOp_end(pos,j)
   call Insert_KD_end(pos,d_ij)
@@ -64,7 +69,7 @@ Program TEST_SEC_QUANT
 
   !call print_all_strings(HL)
 
-  call rearrange_string(pos)
+!  call rearrange_string(pos)
   call print_string(pos)
 
   call set_iprint(10)

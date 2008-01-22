@@ -126,18 +126,23 @@ this%member%pKronDelta => this_kd
 
 ! ... check  for  older compilers, like pgf90 5.2-4 (opteron64, Tel Aviv)
 if (associated(this%member%pSQOper)) then
-  write(LUPRI,'(2x,a)') 'make_kd_cell: pSQOper randomly associated !'
+  if (get_iprint() >= 55) then
+    write(LUPRI,'(2x,a)') 'make_kd_cell: pSQOper randomly associated !'
+  endif
   this%member%pSQOper  => null()
 endif
 
 if (associated(this%member%pIndxTerm)) then
-  write(LUPRI,'(2x,a)') 'make_kd_cell: pIndxTerm randomly associated !'
+  if (get_iprint() >= 55) then
+    write(LUPRI,'(2x,a)') 'make_kd_cell: pIndxTerm randomly associated !'
+  endif
   this%member%pIndxTerm   => null()
 endif
 
+!allocate(temp)
 temp => this
  
-if ( get_iprint() >= 5 ) then
+if ( get_iprint() >= 35 ) then
   write(LUPRI,'(2x,a,$)') 'make_kd_cell: created Kronecker delta:'
   !call print_one_member(this)
   call print_one_member(temp)
@@ -421,8 +426,9 @@ if (.not.associated(p_this_string)) then
   write(LUPRI,'(/,2x,a)') 'print_string: entering "p_this_string" not associated !' 
   call Quit('print_string: entering "p_this_string" not associated !')
 else
-  write(LUPRI,'(/,a,f12.5)')   & 
-  '*** printing  one string of elements with the factor',p_this_string%factor
+  write(LUPRI,'(/,a,i3,a,f12.5)')   & 
+  '*** printing  one string of ',p_this_string%n, &
+  ' elements and with the attached factor',p_this_string%factor
   call print_members(p_this_string%head)
 endif
 
@@ -512,14 +518,13 @@ endif
 call QExit('print_members_reverse')
 end subroutine print_members_reverse
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_one_member(this)
-! -----------------------------------------------------------------
+!------------------------------------------------------------------
 !
-!  print-out one member according to the entering pointer "this"
+!   print-out one member according to the entering pointer "this"
 !
-! -----------------------------------------------------------------
+!------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(dll_member), pointer :: this
@@ -527,9 +532,9 @@ type(dll_member), pointer :: this
 call QEnter('print_one_member')
 
 if (.not.associated(this)) then
-    write(LUPRI,'(/,2x,a)')   & 
-    'print_one_member: entering pointer is not associated !'
-   ! call Quit('print_one_member: entering pointer is not associated !')
+   write(LUPRI,'(/,2x,a)')   & 
+   'print_one_member: entering pointer is not associated !'
+    !call Quit('print_one_member: entering pointer is not associated !')
 else
 
 if (associated(this%member%pSQOper)) then
@@ -582,7 +587,10 @@ i = 1
 ! ... cycle ... string after string ...
 temp => heads%main_head
 do while (associated(temp))
-  write(LUPRI,'(/,2x,a,i3)') '...string #',i
+  if (get_iprint() >= 5) then
+    write(LUPRI,'(/,2x,a,i3)')  &
+    '...going to process string #',i
+  endif
   !call process_one_string(temp%p_string)
   call process_one_string(temp)
   temp => temp%next
@@ -635,7 +643,17 @@ if (.not.associated(this%p_string)) then
 endif
 
 if (get_iprint() >= 5) then
- write(LUPRI,'(/,2x,a)') 'processing ONE allocated string...'
+ write(LUPRI,'(/,2x,a)')  &
+ 'process_one_string: processing this ONE entering string...'
+ call print_string(this%p_string)
+endif
+
+! ... rearrange string - move deltas, indexed terms left
+call rearrange_string(this%p_string)
+
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a)')  &
+ 'process_one_string: now REARRANGED string going to be processed...'
  call print_string(this%p_string)
 endif
 
@@ -655,7 +673,7 @@ do while ( found_splitting )
 
     if ( get_iprint() >= 5 ) then
      write(LUPRI,'(/,2x,a)')  &
-     '*** process_one_string - allocating and processing next string as splitting found '
+     '*** process_one_string - creating next string as splitting place was found ! '
     endif
 
     allocate(this2)
@@ -679,10 +697,12 @@ do while ( found_splitting )
        call print_string(this2%p_string)
     endif
 
-  ! .. chain both strings
-    this%next => this2;  this2%previous => this;  this2%next => null() 
+    ! ... insert the string after the main string, chain it
+    this2%next      => this%next
+    this2%previous  => this
+    this%next       => this2
 
-    call process_2_strings(this%p_string, this2%p_string, ipos )
+    call process_2_strings(this%p_string, this2%p_string, ipos)
 
  endif
 
@@ -716,11 +736,16 @@ subroutine process_2_strings(this_string, copied_string, ipos)
 #include "priunit.h"
 integer, intent(in) :: ipos
 type(one_string), pointer ::  this_string, copied_string
-type(dll_member), pointer :: d_ia, temp_i, temp_a
+!type(dll_member), pointer :: d_ia, temp_i, temp_a
+type(dll_member), pointer :: pd_ia, temp_i, temp_a
+type(dll_member), target :: d_ia
 call QEnter('process_2_strings')
 
 if ( get_iprint() >= 5 ) then
-  write(LUPRI,'(/,2x,a)') '*** process_2_strings ***'
+  write(LUPRI,'(/,2x,a)')   &
+  '*** process_2_strings: going to process 2 subsequent entering strings ***'
+  call print_string(this_string)
+  call print_string(copied_string)
 endif
 
 allocate(temp_i); allocate(temp_a)
@@ -748,24 +773,35 @@ else if(.not.(temp_a%member%pSQOper%p > 0) .or.  &
 endif
 
 if ( get_iprint() >= 5 ) then
-  write(LUPRI,'(/,2x,a)') '*** process_2_strings: 2 picked elements i a +'
+   write(LUPRI,'(/,2x,a,2i3)')  &
+   'process_2_strings: picked 2 operators p q+ from the string, positions ', &
+   ipos, ipos+1
    call print_one_member(temp_i)
    call print_one_member(temp_a)
 endif
 
+write(LUPRI,*) 'd_ia made before: '; call print_string(this_string)
 ! ... create kronecker delta ...
-allocate(d_ia)
+!d_ia => null()
+!allocate(d_ia)
 d_ia = make_kd_cell(temp_i%member%pSQOper%p, temp_a%member%pSQOper%p)
+pd_ia => d_ia
+!call print_one_member(d_ia)
+call print_one_member(pd_ia)
+write(LUPRI,*) 'd_ia made after: '; call print_string(this_string)
+
+! ... adapt first string ...
+call remove_element(this_string, ipos)
+
+!call insert_element(this_string, ipos, d_ia)
+call insert_element(this_string, ipos, pd_ia)
 
 call remove_element(this_string, ipos)
-call insert_element(this_string, ipos, d_ia)
-call remove_element(this_string, ipos)
-! ... set new number of elements
-this_string%n = this_string%n - 1
 
+! ... adapt second, copied string ...
 call exchange_string_elements(copied_string, ipos, ipos+1) 
 
-! ... change the factor, replace/eliminates terms ...
+! ... change the factor ...
 copied_string%factor = - copied_string%factor
 
 if ( get_iprint() >= 5 )  then
@@ -784,7 +820,7 @@ end subroutine process_2_strings
 function get_dll_member(this_string,ipos) result(elem)
 !------------------------------------------------------------------------
 !
-!       returns element from the string at the position 'ipos'
+!     returns element from the string at the position 'ipos'
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -795,22 +831,26 @@ type(dll_member), pointer :: temp
 type(one_string), pointer ::  this_string
 call QEnter('get_dll_member')
 
-if ( get_iprint() >= 5 ) then
-  write(LUPRI,'(/,2x,a)') '*** get_dll_member ***'
+if ( get_iprint() >= 35 ) then
+  write(LUPRI,'(/,2x,a,i3)') '*** get_dll_member *** : wanted element ',ipos
 endif
 
 if (.not.associated(this_string)) then
    write(LUPRI,'(/,2x,a)')   &
-   'get_dll_member: entering string NOT associated !'
-   call Quit('get_dll_member: entering string NOT associated !')
+   'get_dll_member: entering string is NOT associated !'
+   call Quit('get_dll_member: entering string is NOT associated !')
 else
   if (this_string%n < ipos .or. ipos <= 0) then
     write(LUPRI,'(/,2x,a,i3,a,i3)')   &
-    'get_dll_member: number of elem=',this_string%n,' position, ipos=',ipos
+    'get_dll_member: number of string elements=',this_string%n,  &
+    ' while wrong position in the string, ipos=',ipos
+    write(LUPRI,'(2x,a)') 'get_dll_member: control print-out of the whole string'
+    call print_string(this_string)
+    call Quit('get_dll_member: wrong position of the element in the string !')
   endif
 endif
 
-temp => this_string%head;  i = 0
+temp => this_string%head; i = 0
 do while(associated(temp))
   i = i + 1
   if (i == ipos) then
@@ -820,9 +860,9 @@ do while(associated(temp))
   temp => temp%next
 enddo
 
-if (get_iprint() >=5) then
-  write(LUPRI,'(2x,a,$)') 'get_dll_member: picked element'
-  !call print_one_member(elem) 
+if (get_iprint() >= 37) then
+  write(LUPRI,'(2x,a,i3,a,$)')  &
+  'get_dll_member: picked element from postion ',ipos,' ...'
   call print_one_member(temp) 
 endif
 
@@ -846,7 +886,7 @@ type(one_string), pointer ::  this_string, copied_string
 type(dll_member), pointer :: temp, temp1, temp2
 call QEnter('duplicate_string')
 
-if ( get_iprint() >= 5 ) then
+if ( get_iprint() >= 25 ) then
   write(LUPRI,'(/,2x,a)') '*** duplicate_string ***'
 endif
 
@@ -871,7 +911,7 @@ do while (associated(temp))
 
   call insert_member(i,temp,temp1)
 
-  if (get_iprint() >= 7) then
+  if (get_iprint() >= 27) then
     write(LUPRI,'(/,2x,a,i3,a,$)')  &
     'duplicate_string: ',i,'. old member element:'
     call print_one_member(temp)
@@ -894,8 +934,9 @@ copied_string%n  =  this_string%n
 copied_string%factor  =  this_string%factor
 
 ! ... after copying element after element print out whole new string
-if (get_iprint() >= 7) then
-  write(LUPRI,'(/,2x,a)')  'duplicated string:'
+if (get_iprint() >= 25) then
+  write(LUPRI,'(/,2x,a)')  &
+  '*** duplicate_string: allocated duplicated string:'
   call print_string(copied_string)
 endif
 
@@ -917,7 +958,7 @@ type(dll_member), pointer :: member_exist, member_new
 logical :: is_operator,  is_term 
 call QEnter('insert_member')
 
-if (get_iprint() >= 7) then
+if (get_iprint() >= 37) then
   write(LUPRI,'(/,2x,a)') 'insert_member: duplicating string elements'
 endif
 
@@ -929,7 +970,7 @@ endif
 allocate(member_new)
 member_new = member_exist
 
-if (get_iprint() >= 7) then
+if (get_iprint() >= 37) then
    write(LUPRI,'(/,2x,a,i3,a,$)') 'insert_member: ',i,'. old member element:'
    call print_one_member(member_exist)
    write(LUPRI,'(2x,a,$)') '           the same new member element:'
@@ -959,7 +1000,7 @@ type(dll_member), pointer :: temp, temp1
 logical :: is_operator,  is_term 
 call QEnter('rearrange_string')
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
   write(LUPRI,'(/,2x,a)') 'going to rearrange the string...'
 endif
 
@@ -969,7 +1010,7 @@ if (.not.associated(this)) then
 endif
 
 if (.not.associated(this%head)) then
-  if (get_iprint() >= 5) then
+  if (get_iprint() >= 25) then
     write(LUPRI,'(2x,a)')  & 
     'rearrange_string: entering string is empty ! leaving this routine'
   endif
@@ -992,7 +1033,7 @@ else
       if  (is_operator  .and.   &
           (associated(temp%member%pKronDelta).or.associated(temp%member%pIndxTerm))) then
           ipos_term = ipos; is_term = .true.
-          if (get_iprint() >= 5) then
+          if (get_iprint() >= 28) then
             write(LUPRI,'(2x,a,i3)')  & 
            'rearrange_string: catched element to be moved to the beginnig,'  &
          //' position', ipos_term
@@ -1003,7 +1044,7 @@ else
 
     if (is_term) then
 
-       if (get_iprint() >= 5) then
+       if (get_iprint() >= 28) then
          write(LUPRI,'(2x,a)') 'after the operator found term !'
          call get_string_element(this,ipos_term,temp1)
          call print_one_member(temp1)
@@ -1012,7 +1053,7 @@ else
 !    ... move term to the beginning ...
        call move_element_beg(this,ipos_term)
 
-       if ( get_iprint() >= 5 ) then
+       if ( get_iprint() >= 28 ) then
          write(LUPRI,'(2x,a)') 'term moved to the beginning  !'
          call print_string(this) 
        endif
@@ -1045,7 +1086,7 @@ call QEnter('move_element_beg')
 
 !call check_string(this_string,i)
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 35) then
   write(LUPRI,'(/2x,a,i3)')  &
   'in "move_element_beg:" to be moved element no:',i
 endif
@@ -1055,25 +1096,12 @@ endif
 !-----------------------------------------------------------
 if ( i == 1) then
 
- if (get_iprint() >= 5) then
+ if (get_iprint() >= 35) then
     write(LUPRI,'(/2x,a,i3)')  &
    'in "move_element_beg:" to be moved element no:',i
  endif
 
 else  ! i>1 
-
-!j = 1
-!temp => this_string%head
-!temp1 => temp
-!do while (j < i)
-!  if (get_iprint() >= 5) then
-!    write(LUPRI,'(2x,i3,a)') j,'. element processed in the string'
-!    call print_one_member(temp)
-!  endif
-!  temp1 => temp
-!  temp => temp%next
-!  j = j + 1
-!enddo
 
 call  get_string_element(this_string,i,temp)
 
@@ -1082,7 +1110,7 @@ temp1 => temp%previous
 ! ... element after ...
 temp2 => temp%next
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a,i3)') '... catched this member no ',i
  call print_one_member(temp)
 
@@ -1093,11 +1121,11 @@ if (get_iprint() >= 5) then
  call print_one_member(temp2)
 endif
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a)')   &
  '*** move_element_beg: control print-out before reordering the string:'
  call print_string(this_string)
- call print_string_reverse(this_string)
+! call print_string_reverse(this_string)
 endif
 
 ! stop 'here stop ...'
@@ -1135,7 +1163,7 @@ this_string%head => temp ! ... finally set the head
 
 endif
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a)')   &
  'move_element_beg: control print-out of reordered string:'
  call print_string(this_string)
@@ -1168,6 +1196,7 @@ temp1 => temp%previous
 ! ... next element
 temp2 => temp%next
 
+!if (get_iprint() >= 25) then
 if (get_iprint() >= 5) then
   write(LUPRI,'(/2x,a,i3)')  &
   '"remove_element": to be removed element no:',i
@@ -1179,6 +1208,7 @@ if (get_iprint() >= 5) then
 endif
 
 deallocate(temp)
+! ... decreasenumber of elements ...
 this_string%n  =  this_string%n - 1
 
 if (associated(temp1).and.associated(temp2)) then
@@ -1201,6 +1231,13 @@ else
   call Quit('remove_element - dead branch !')
 endif
 
+!if (get_iprint() >= 25) then
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a)')  &
+  'remove_element: printed updated string with removed element:'
+  call print_string(this_string)
+endif
+
 call QExit('remove_element')
 end subroutine remove_element
 
@@ -1220,9 +1257,9 @@ call QEnter('exchange_string_elements')
 
 i = i_in; j = j_in
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
   write(LUPRI,'(/,2x,a,2i3)') &
-  '*** exchange_string_elements: going to exchange elements ',i,j
+  '*** exchange_string_elements: going to exchange 2 string elements ',i,j
 endif
 
 if (i == j) then
@@ -1230,18 +1267,18 @@ if (i == j) then
   call Quit('two identical elements ! no possible exchanhe !')
 else if (i > j) then
 
- if (get_iprint() >= 5) then
+  if (get_iprint() >= 25) then
    write(LUPRI,'(/,2x,a)')   &
    'exchange_string_elements: i> j - going to exchange i,j'
- endif
+  endif
 
- k = j; j = i; i = k  
+  k = j; j = i; i = k  
 
 endif 
 
 call get_string_element(this_string,i,temp_i)
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 27) then
    write(LUPRI,'(/,2x,a,i3,$)')   &
    'exchange_string_elements: element # ',i
    call print_one_member(temp_i)
@@ -1249,7 +1286,7 @@ endif
 
 call get_string_element(this_string,j,temp_j)
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 27) then
   write(LUPRI,'(/,2x,a,i3,$)')   &
   'exchange_string_elements: element # ',j
   call print_one_member(temp_j)
@@ -1323,6 +1360,12 @@ temp_j%next => temp_i
 
 endif
 
+if (get_iprint() >= 25) then
+   write(LUPRI,'(/,2x,a)')   &
+   '*** exchange_string_elements: printing updated string'
+   call print_string(this_string)
+endif
+
 call QExit('exchange_string_elements')
 end subroutine exchange_string_elements
 
@@ -1347,7 +1390,7 @@ temp => this_string%head
 
 do while (j < i)
 
-  if (get_iprint() >= 5) then
+  if (get_iprint() >= 35) then
     write(LUPRI,'(2x,a,i3,a)') 'get_string_element:',j, &
     '. element processed in the string'
     call print_one_member(temp)
@@ -1365,7 +1408,7 @@ end subroutine get_string_element
 subroutine insert_element(this_string,i_in,this_elem)
 !------------------------------------------------------------------------
 !
-!   insert element cell into the string
+!   insert element into the string
 !
 !   on entry:  this_string
 !              i_in
@@ -1381,6 +1424,7 @@ logical :: on_head = .false.
 
 call QEnter('insert_element')
 
+!if (get_iprint() >= 25) then
 if (get_iprint() >= 5) then
   write(LUPRI,'(/,2x,a,i3)')  &
   'insert_element: entering position in the string:',i_in
@@ -1400,13 +1444,13 @@ i = i_in
 
 if (i_in > this_string%n) then
   i = this_string%n
-  if (get_iprint() >= 5) then
+  if (get_iprint() >= 27) then
     write(LUPRI,'(2x,a,i3,a,i3)')  &
     'insert_element: entering position ',i_in,' changed to the end, i=',i
   endif 
 else if (i_in < 0) then
   i = 1
-  if (get_iprint() >= 5) then
+  if (get_iprint() >= 27) then
     write(LUPRI,'(2x,a,i3,a,i3)')  &
     'insert_element: entering position ',i_in,' changed to the neginning, i=',i
   endif 
@@ -1419,12 +1463,14 @@ endif
 ! ... get the pointer to the i-th element of the string
 call get_string_element(this_string,i,temp)
 
-if (get_iprint() >=5) then
+if (get_iprint() >= 27) then
   write(LUPRI,'(/,2x,a,i3,a)') '*** insert_element: ',i,'. member cell'
   call print_one_member(temp)
 endif
 
-allocate(temp1); temp1 => this_elem
+allocate(temp1)
+!temp1 => this_elem
+temp1 = this_elem
 
 if (on_head) then
 ! ... insert element at the very beginning of the string ...
@@ -1453,10 +1499,11 @@ endif
 ! ... increase counter for number of elements in the string 
 this_string%n  =  this_string%n  +  1
 
-if (get_iprint() >=5) then
- write(LUPRI,'(/,2x,a)') '*** insert_element> print the whole string:'
+!if (get_iprint() >= 25) then
+if (get_iprint() >= 5) then
+ write(LUPRI,'(/,2x,a)')   &
+ '*** insert_element> print the newly updated string:'
  call print_string(this_string)
- write(LUPRI,'(2x,a,i3)') 'number of elements, n=',this_string%n
 endif
 
 call QExit('insert_element')
@@ -1523,7 +1570,7 @@ else
  endif
 endif
 
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
   write(LUPRI,'(/,2x,a)')  &
   'in find_splitting...searching for splitting position of the entering string'
   call FLSHFO(LUPRI)
@@ -1545,7 +1592,7 @@ if (this%n >= 2) then
                 (temp1%member%pSQOper%is_creation_oper).and. &
                   temp%member%pSQOper%p /=  temp1%member%pSQOper%p )  then
                     itype = 1; ipos = i
-          if ( get_iprint() >=5 ) then
+          if ( get_iprint() >= 27 ) then
             write(LUPRI,'(2x,a,i3,a)') 'catched splitting position of p q+, at p:',ipos, &
             ', leaving cycle...'
           endif
@@ -1560,13 +1607,13 @@ if (this%n >= 2) then
   enddo
 
   if (ipos > 0) then
-    if ( get_iprint() >=5 ) then
+    if ( get_iprint() >= 25 ) then
       write(LUPRI,'(/,2x,a)')   &
       'string members for splitting: P1 p q+ P2 = P1 d_pq P2 - P1 q+ p P2'
       call print_one_member(temp); call print_one_member(temp1)
     endif
   else
-    if ( get_iprint() >=5 ) then
+    if ( get_iprint() >= 25 ) then
       write(LUPRI,'(/,2x,a)')   &
       'find_splitting: nothing found for splitting the string !'
     endif
