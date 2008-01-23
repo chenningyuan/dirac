@@ -107,9 +107,10 @@ end function make_sqo_cell
 function make_kd_cell(i,j) result (this)
 !----------------------------------------------------------------------------
 !
-!               Returns cell "this" with the Kronecker delta
+!    Returns cell "this" with the Kronecker delta  "d_ij"
 !
 !----------------------------------------------------------------------------
+use KroneckerDelta
 #include "implicit.h"
 #include "priunit.h"
 integer, intent(in) :: i,j
@@ -489,7 +490,6 @@ endif
 call QExit('print_members')
 end subroutine print_members
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_members_reverse(rear)
 !------------------------------------------------------------------------
 !
@@ -588,8 +588,8 @@ i = 1
 temp => heads%main_head
 do while (associated(temp))
   if (get_iprint() >= 5) then
-    write(LUPRI,'(/,2x,a,i3)')  &
-    '...going to process string #',i
+    write(LUPRI,'(/,2x,a,i5)')  &
+    '...going to process string in the list #',i
   endif
   !call process_one_string(temp%p_string)
   call process_one_string(temp)
@@ -666,7 +666,7 @@ do while ( found_splitting )
   found_splitting = .false.
   call find_splitting(this%p_string, itype, ipos )
 
-  ! ... allocate one more string and duplicate the string 
+  ! ... allocate one more string,  duplicate it and insert behind strings
   if (ipos > 0) then
 
     found_splitting = .true.
@@ -676,17 +676,19 @@ do while ( found_splitting )
      '*** process_one_string - creating next string as splitting place was found ! '
     endif
 
+    ! ... insert the string after the main string, chain it
     allocate(this2)
     this2%p_string => null()
 
-    allocate(this_temp)
-
     this2%previous => this
-    this2%next => this_temp
 
-    this_temp%previous => this2
+    if (associated(this%next)) then
+      this2%next => this%next
+      this%next%previous => this2
+    else
+      nullify( this2%next) ! this2 is the last string
+    endif
 
-    this_temp => this%next
     this%next => this2
 
     call duplicate_string(this%p_string, this2%p_string )
@@ -695,12 +697,9 @@ do while ( found_splitting )
        write(LUPRI,'(/,2x,a)')   &
        'process_one_string: duplicated string:'
        call print_string(this2%p_string)
+       if (associated(this2%next)) write(LUPRI,'(2x,a)')  &
+       '...next string FOLLOWS ... '
     endif
-
-    ! ... insert the string after the main string, chain it
-    this2%next      => this%next
-    this2%previous  => this
-    this%next       => this2
 
     call process_2_strings(this%p_string, this2%p_string, ipos)
 
@@ -737,8 +736,8 @@ subroutine process_2_strings(this_string, copied_string, ipos)
 integer, intent(in) :: ipos
 type(one_string), pointer ::  this_string, copied_string
 !type(dll_member), pointer :: d_ia, temp_i, temp_a
-type(dll_member), pointer :: pd_ia, temp_i, temp_a
-type(dll_member), target :: d_ia
+type(dll_member), pointer :: d_ia, temp_i, temp_a
+logical, save :: first_entry = .true.
 call QEnter('process_2_strings')
 
 if ( get_iprint() >= 5 ) then
@@ -783,18 +782,17 @@ endif
 write(LUPRI,*) 'd_ia made before: '; call print_string(this_string)
 ! ... create kronecker delta ...
 !d_ia => null()
-!allocate(d_ia)
+nullify(d_ia)
+allocate(d_ia)
 d_ia = make_kd_cell(temp_i%member%pSQOper%p, temp_a%member%pSQOper%p)
-pd_ia => d_ia
-!call print_one_member(d_ia)
-call print_one_member(pd_ia)
+  write(LUPRI,'(1x,a,$)') 'allocated d_ia:' ;call print_one_member(d_ia)
 write(LUPRI,*) 'd_ia made after: '; call print_string(this_string)
 
 ! ... adapt first string ...
 call remove_element(this_string, ipos)
 
-!call insert_element(this_string, ipos, d_ia)
-call insert_element(this_string, ipos, pd_ia)
+call insert_element(this_string, ipos, d_ia)
+deallocate(d_ia)
 
 call remove_element(this_string, ipos)
 
@@ -1196,8 +1194,8 @@ temp1 => temp%previous
 ! ... next element
 temp2 => temp%next
 
-!if (get_iprint() >= 25) then
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
+!if (get_iprint() >= 5) then
   write(LUPRI,'(/2x,a,i3)')  &
   '"remove_element": to be removed element no:',i
   call print_one_member(temp)
@@ -1231,8 +1229,8 @@ else
   call Quit('remove_element - dead branch !')
 endif
 
-!if (get_iprint() >= 25) then
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
+!if (get_iprint() >= 5) then
   write(LUPRI,'(/,2x,a)')  &
   'remove_element: printed updated string with removed element:'
   call print_string(this_string)
@@ -1408,7 +1406,7 @@ end subroutine get_string_element
 subroutine insert_element(this_string,i_in,this_elem)
 !------------------------------------------------------------------------
 !
-!   insert element into the string
+!   insert element into specified position in the string
 !
 !   on entry:  this_string
 !              i_in
@@ -1424,8 +1422,8 @@ logical :: on_head = .false.
 
 call QEnter('insert_element')
 
-!if (get_iprint() >= 25) then
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
+!if (get_iprint() >= 5) then
   write(LUPRI,'(/,2x,a,i3)')  &
   'insert_element: entering position in the string:',i_in
 endif 
@@ -1455,7 +1453,8 @@ else if (i_in < 0) then
     'insert_element: entering position ',i_in,' changed to the neginning, i=',i
   endif 
 endif
-
+ 
+ on_head = .false. ! pgf90 6.2.4 securing
 if (i == 0) then
  on_head = .true.; i = 1
 endif
@@ -1499,8 +1498,8 @@ endif
 ! ... increase counter for number of elements in the string 
 this_string%n  =  this_string%n  +  1
 
-!if (get_iprint() >= 25) then
-if (get_iprint() >= 5) then
+if (get_iprint() >= 25) then
+!if (get_iprint() >= 5) then
  write(LUPRI,'(/,2x,a)')   &
  '*** insert_element> print the newly updated string:'
  call print_string(this_string)

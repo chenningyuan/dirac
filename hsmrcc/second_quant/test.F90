@@ -12,7 +12,7 @@ Program TEST_SEC_QUANT
 
   type(KronDelta), pointer :: d_ij, d_ab
 
-  type(SQOper), pointer :: i,j,a,b
+  type(SQOper), pointer :: i,j,a,b,o1,o2,o3
 
   type(dll_member), pointer :: head => null(), k, d_ik
 
@@ -32,49 +32,50 @@ Program TEST_SEC_QUANT
   allocate(d_ab)
   d_ab = make_kron_delta(3,4); ! call print_kd(d_ab)
 
-  allocate(i)
-  i = make_sqo(1,.true.); ! call print_sqo(i)
+  !allocate(i)
+  allocate(o3)
+  !i = make_sqo(1,.true.); ! call print_sqo(i)
+  o3 = make_sqo(3); ! call print_sqo(i)
 
-  allocate(j)
-  j = make_sqo(2); ! call print_sqo(i)
+  !allocate(j)
+  allocate(o2)
+  o2 = make_sqo(2); ! call print_sqo(i)
 
-  allocate(a)
-  a = make_sqo(3,.true.);
+  allocate(o1)
+  o1 = make_sqo(1,.true.);
 !  call print_sqo(a)
 
-  allocate(b)
-  !b = make_sqo(4,.true.);
-  b = make_sqo(4,.false.);
-
   allocate(pos)
-  pos = create_string(head,0.50D0)
+ ! pos = create_string(head,0.50D0)
+  pos = create_string(head)
 
   allocate(pSH)
+
   pSH%p_string => pos 
+ ! pSH%previous => null(); pSH%next => null()
 
   HL%main_head=>pSH
 
   pos%head => head 
 
-  call Insert_SQOp_end(pos,b)
-  call Insert_SQOp_end(pos,i)
-  call Insert_SQOp_end(pos,j)
-  call Insert_KD_end(pos,d_ij)
-  call Insert_SQOp_end(pos,a)
-  call Insert_KD_end(pos,d_ab)
+ ! call Insert_SQOp_end(pos,b)
+  call Insert_SQOp_end(pos,o3)
+  call Insert_SQOp_end(pos,o2)
+  call Insert_SQOp_end(pos,o1)
+ ! call Insert_KD_end(pos,d_ij)
+ ! call Insert_KD_end(pos,d_ab)
 
-  write(LUPRI,'(/,2x,a)') '*** printing full string:'
-  call print_string(pos)
+ ! write(LUPRI,'(/,2x,a)') '*** printing full string:'
+ ! call print_string(pos)
  ! call quit('end here...')
 
   !call print_all_strings(HL)
 
 !  call rearrange_string(pos)
-  call print_string(pos)
+ ! call print_string(pos)
 
   call set_iprint(10)
  call process_strings(HL)
-
 
 
  ! call exchange_string_elements(pos,1,3)
@@ -99,7 +100,6 @@ Program TEST_SEC_QUANT
 
   !call rearrange_string(pos)
   !call print_string(pos)
-
 
  ! call move_element_beg(pos,2)
  ! call move_element_beg(pos,5)
@@ -135,8 +135,6 @@ Program TEST_SEC_QUANT
  !call print_all_strings(HL)
 
  !call process_strings(HL)
-
-
 ! call process_strings(HL)
 
 End Program TEST_SEC_QUANT
