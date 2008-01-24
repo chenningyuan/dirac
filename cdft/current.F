@@ -108,8 +108,9 @@ C=======================================================================
       ENDIF
 
       IF(LDEC(IOPTION,4,2)) THEN
-        A = -137.0359998D0
-        B = -137.0359998D0
+C.......using current value of c
+        A = -CVAL
+        B = -CVAL
       ENDIF
       IF(LDEC(IOPTION,4,4)) B = -D1
 
@@ -279,16 +280,19 @@ C=======================================================================
       if(lget .and. reset) density = d0
 
       intermediate = irepop
-
       joff     = 0
       joff_min = 0
       if(.not. itransform .eq. 0) then
         intermediate = ibtxor(isymax(ixyz,itransform),irepop)
-        iq = iqtopq(5-ixyz,isymax(ixyz,2))
+        iq = JM4POS(4-ixyz)
+        iq = iqtopq(iq,isymax(ixyz,2))
+C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
         joff = ioff*(iq-1)
       endif
-
-      if(joff .lt. joff_min) call quit('joff .lt. joff_min')
+      if(joff .lt. joff_min) then
+        WRITE(6,*) 'INFO..',irepop,ixyz,jm4pos(5-ixyz),iq,joff
+        call quit('joff .lt. joff_min')
+      endif
       if(joff .gt. joff_max) call quit('joff .gt. joff_max')
 
       ICHECK = K + L

@@ -82,7 +82,9 @@ C=======================================================================
       ITRANSFORM = 2
 
       IREPOP = IBTXOR(ISYMAX(IXYZ,ITRANSFORM),ISYMOP-1)
-      IQ     = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+      iq = JM4POS(4-ixyz)
+      IQ     = IQTOPQ(IQ,ISYMAX(IXYZ,2))
+C      iq = iqtopq(5-ixyz,isymax(ixyz,2))
       IOFF   = NBAST*NBAST*(IQ-1)
 
       ioff_min = 0
