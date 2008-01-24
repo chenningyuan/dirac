@@ -108,7 +108,6 @@ C=======================================================================
       ENDIF
 
       IF(LDEC(IOPTION,4,2)) THEN
-C.......using current value of c
         A = -CVAL
         B = -CVAL
       ENDIF
