@@ -115,22 +115,26 @@ use KroneckerDelta
 #include "priunit.h"
 integer, intent(in) :: i,j
 !type(dll_member) :: this
-type(dll_member), target :: this
-type(dll_member), pointer :: temp
-type(KronDelta), target :: this_kd
+!type(dll_member), target :: this
+type(dll_member), pointer :: this
+!type(dll_member), pointer :: temp
+!type(KronDelta), target :: this_kd
+type(KronDelta), pointer :: this_kd
 call QEnter('make_kd_cell')
 
 ! ... true Kronecker delta ...
-this_kd = make_kron_delta(i,j)
+this_kd => make_kron_delta(i,j)
+
+nullify(this); allocate(this)
 
 this%member%pKronDelta => this_kd
 
-! ... check  for  older compilers, like pgf90 5.2-4 (opteron64, Tel Aviv)
+! ... check  for older compilers, like pgf90 5.2-4 (opteron64, Tel Aviv)
 if (associated(this%member%pSQOper)) then
   if (get_iprint() >= 55) then
     write(LUPRI,'(2x,a)') 'make_kd_cell: pSQOper randomly associated !'
   endif
-  this%member%pSQOper  => null()
+  this%member%pSQOper => null()
 endif
 
 if (associated(this%member%pIndxTerm)) then
@@ -141,12 +145,12 @@ if (associated(this%member%pIndxTerm)) then
 endif
 
 !allocate(temp)
-temp => this
+!temp => this
  
 if ( get_iprint() >= 35 ) then
   write(LUPRI,'(2x,a,$)') 'make_kd_cell: created Kronecker delta:'
-  !call print_one_member(this)
-  call print_one_member(temp)
+  call print_one_member(this)
+ ! call print_one_member(temp)
 endif
 
 call QExit('make_kd_cell')
@@ -156,7 +160,7 @@ end function make_kd_cell
 function create_string(head, factor) result(this)
 !---------------------------------------------------------------------------
 !
-!  constructor, returns "one_string" cell
+!  constructor, allocates and returns "one_string" cell
 !
 !  entering "head" - pointer to the first element in string 
 !
@@ -167,14 +171,15 @@ function create_string(head, factor) result(this)
 #include "priunit.h"
 type(dll_member), pointer, optional :: head
 real(kind=8), intent(in), optional :: factor 
-!type(one_string), pointer :: this
-type(one_string) :: this
+type(one_string), pointer :: this
+!type(one_string) :: this
 
 call QEnter('create_string')
 
 !if (associated(head)) then
 
-   !allocate(this)
+   nullify(this)
+   allocate(this)
 
    if (present(head)) then
      !if (associated(head))  this%head = head
@@ -190,6 +195,7 @@ call QEnter('create_string')
    ! rather secure zero number of elements and the tail
    this%n = 0
    this%rear => null()  
+
 !else
 !  write(*,'(2x,a)') '"one_string" cell not allocated, because ' &
 !                  //'entering pointer "head" is not associated !'
@@ -563,7 +569,7 @@ end subroutine print_one_member
 subroutine process_strings(heads)
 !------------------------------------------------------------------------
 !
-!      most important routine - process all strings of elements
+!         most important routine - process all strings of elements
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -579,7 +585,7 @@ endif
 ! ... go string after string ...
 
 if (.NOT.associated(heads%main_head)) then
-  write(LUPRI,*) 'heads%main_head NOT associated !'
+  write(LUPRI,'(/,2x,a)') 'heads%main_head NOT associated !'
   call Quit('heads%main_head NOT associated !')
 endif
 
@@ -604,6 +610,41 @@ endif
 
 call QExit('process_strings')
 end subroutine process_strings
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine cancel_strings(heads)
+!------------------------------------------------------------------------
+!
+!           ...  deallocates all strings in the list
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(heads_list), intent(inout) :: heads
+type(head_cell), pointer :: temp
+call QEnter('cancel_strings')
+
+if (get_iprint() >= 5) then
+  write(LUPRI,'(/,2x,a)') 'in cancel_strings...'
+endif
+
+i = 1
+!   ... cycle ... string after string ...
+temp => heads%main_head
+!do while (associated(temp))
+!  if (get_iprint() >= 5) then
+!    write(LUPRI,'(/,2x,a,i5)')  &
+!    '...going to process string in the list #',i
+!  endif
+  !call process_one_string(temp%p_string)
+  !call process_one_string(temp)
+!  temp => temp%next
+!  i = i + 1
+!enddo
+
+
+call QExit('cancel_strings')
+end subroutine cancel_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine process_one_string(this)
@@ -702,6 +743,10 @@ do while ( found_splitting )
     endif
 
     call process_2_strings(this%p_string, this2%p_string, ipos)
+
+    ! ... rearrange both updated string - move deltas, indexed terms left
+    call rearrange_string( this%p_string)
+    call rearrange_string(this2%p_string)
 
  endif
 

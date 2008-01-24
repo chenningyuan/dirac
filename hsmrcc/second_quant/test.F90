@@ -26,32 +26,36 @@ Program TEST_SEC_QUANT
 
  ! call set_iprint(10)
 
-  allocate(d_ij)
-  d_ij = make_kron_delta(1,2); ! call print_kd(d_ij)
+  !allocate(d_ij)
+  d_ij => make_kron_delta(1,2); ! call print_kd(d_ij)
 
   allocate(d_ab)
   d_ab = make_kron_delta(3,4); ! call print_kd(d_ab)
 
   !allocate(i)
-  allocate(o3)
+  !allocate(o3)
   !i = make_sqo(1,.true.); ! call print_sqo(i)
-  o3 = make_sqo(3); ! call print_sqo(i)
+  !o3 = make_sqo(3); ! call print_sqo(i)
+  o3 => make_sqo(3); ! call print_sqo(i)
 
   !allocate(j)
-  allocate(o2)
-  o2 = make_sqo(2); ! call print_sqo(i)
+  !allocate(o2)
+  !o2 = make_sqo(2); ! call print_sqo(i)
+  o2 => make_sqo(2); ! call print_sqo(i)
 
-  allocate(o1)
-  o1 = make_sqo(1,.true.);
+  !allocate(o1)
+  !o1 = make_sqo(1,.true.);
+  o1 => make_sqo(1,.true.);
 !  call print_sqo(a)
 
-  allocate(pos)
+  !allocate(pos)
  ! pos = create_string(head,0.50D0)
-  pos = create_string(head)
+  pos => create_string(head)
 
   allocate(pSH)
 
   pSH%p_string => pos 
+
  ! pSH%previous => null(); pSH%next => null()
 
   HL%main_head=>pSH
@@ -77,6 +81,7 @@ Program TEST_SEC_QUANT
   call set_iprint(10)
  call process_strings(HL)
 
+  call cancel_strings(HL)
 
  ! call exchange_string_elements(pos,1,3)
  ! call print_string(pos)
