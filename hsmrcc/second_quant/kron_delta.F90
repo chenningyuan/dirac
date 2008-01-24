@@ -49,7 +49,12 @@ integer,intent(in) :: i,j
 type(KronDelta), pointer :: this
 call QEnter('make_kron_delta')
 
- nullify(this) ; allocate(this, stat=istat) 
+nullify(this) ; allocate(this, stat=ierr) 
+if (ierr /= 0) then
+  write(LUPRI,'(2x,a)')  &
+  'make_kron_delta: memory allocation error; ierr=',ierr
+  call Quit('make_kron_delta: memory allocation error !')
+endif
 
 if (i>0 .and. j>0) then
   this%p = i; this%q = j

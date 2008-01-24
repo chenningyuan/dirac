@@ -71,37 +71,90 @@ type heads_list
 !
 !------------------------------------------------------------------------
 ! ...  head
-   type(head_cell), pointer :: main_head => null()
+ type(head_cell), pointer :: main_head => null()
 ! ... tail
-   type(head_cell), pointer :: main_rear => null()
+ type(head_cell), pointer :: main_rear => null()
 ! ... number of elements in the DLL of "head_cell" type elements
  integer(kind=4) :: n = 0
 
 end type heads_list
 
- contains
+contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function make_sqo_cell(i,is_creat) result (this)
 !----------------------------------------------------------------------------
 !
-!                   Returns second quantized operator cell
+!            Returns ALLOCATED second quantized operator cell
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 integer, intent(in) :: i
 logical, optional, intent(in) :: is_creat
-type(dll_member) :: this
-type(SQOper), target :: this_sqo
+type(dll_member), pointer :: this
+type(SQOper), pointer :: this_sqo
 call QEnter('make_sqo_cell')
 
- this_sqo = make_sqo(i,is_creat)
+this_sqo => make_sqo(i,is_creat)
 
- this%member%pSQOper =>  this_sqo
+nullify(this)
+allocate(this,stat=ierr)
+if (ierr /= 0) then
+   write(LUPRI,'(/,2x,a,i4)')  'make_sqo_cell: allocation error ! ierr=',ierr
+   call Quit('make_sqo_cell: allocation error !')
+endif
+
+this%member%pSQOper  =>  this_sqo
 
 call QExit('make_sqo_cell')
 end function make_sqo_cell
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_sqo_cell(this)
+!----------------------------------------------------------------------------
+!
+!  DEALLOCATES sec.quantiz.operator memory cell
+!
+!----------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer :: this
+call QEnter('deallocate_sqo_cell')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_sqo_cell: sqo cell pointer NOT associated !'
+else
+
+ if (.not.associated(this%member%pSQOper)) then
+   write(LUPRI,'(/,2x,a)')  &
+   'deallocate_sqo_cell: sqo cell pointer NOT associated !'
+ else
+    deallocate(this%member%pSQOper, stat=ierr)
+    if (ierr /= 0) then
+      write(LUPRI,'(/,2x,a,i3)')  &
+      'deallocate_sqo_cell: error in deallocation of' &
+      //'"this%member%pSQOper";ierr=',ierr
+      call Quit('deallocate_sqo_cell: error in deallocation of'&
+      //'"this%member%pSQOper')
+    endif
+    nullify(this%member%pSQOper)
+ endif
+
+ deallocate(this, stat=ierr)
+ if (ierr /= 0) then
+   write(LUPRI,'(/,2x,a,i3)')  &
+  'deallocate_sqo_cell: error in deallocation of' &
+  //'"this";ierr=',ierr
+  call Quit('deallocate_sqo_cell: error in deallocation of' &
+  //'"this"')
+ endif
+ nullify(this)
+endif
+
+call QExit('deallocate_sqo_cell')
+end subroutine deallocate_sqo_cell
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function make_kd_cell(i,j) result (this)
@@ -114,18 +167,20 @@ use KroneckerDelta
 #include "implicit.h"
 #include "priunit.h"
 integer, intent(in) :: i,j
-!type(dll_member) :: this
-!type(dll_member), target :: this
 type(dll_member), pointer :: this
-!type(dll_member), pointer :: temp
-!type(KronDelta), target :: this_kd
 type(KronDelta), pointer :: this_kd
 call QEnter('make_kd_cell')
 
 ! ... true Kronecker delta ...
 this_kd => make_kron_delta(i,j)
 
-nullify(this); allocate(this)
+nullify(this)
+allocate(this,stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a,i5)')  &
+  'make_kd_cell: error in allocation; ierr=  ',ierr
+  call Quit('make_kd_cell: error in allocation !')
+endif
 
 this%member%pKronDelta => this_kd
 
@@ -141,12 +196,9 @@ if (associated(this%member%pIndxTerm)) then
   if (get_iprint() >= 55) then
     write(LUPRI,'(2x,a)') 'make_kd_cell: pIndxTerm randomly associated !'
   endif
-  this%member%pIndxTerm   => null()
+  this%member%pIndxTerm   =>   null()
 endif
 
-!allocate(temp)
-!temp => this
- 
 if ( get_iprint() >= 35 ) then
   write(LUPRI,'(2x,a,$)') 'make_kd_cell: created Kronecker delta:'
   call print_one_member(this)
@@ -155,6 +207,52 @@ endif
 
 call QExit('make_kd_cell')
 end function make_kd_cell
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_kd_cell(this)
+!---------------------------------------------------------------------------
+!
+!                DEALLOCATE kronecker delta cell
+!
+!---------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer :: this
+call QEnter('deallocate_kd_cell')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_kd_cell: Kron.delta cell pointer NOT associated !'
+else
+
+ if (.not.associated(this%member%pKronDelta)) then
+   write(LUPRI,'(/,2x,a)')  &
+   'deallocate_kd_cell: Kron.delta cell pointer NOT associated !'
+ else
+    deallocate(this%member%pKronDelta, stat=ierr)
+    if (ierr /= 0) then
+      write(LUPRI,'(/,2x,a,i3)')  &
+      'deallocate_kd_cell: error in deallocation of' &
+      //'"this%member%pKronDelta";ierr=',ierr
+      call Quit('deallocate_kd_cell: error in deallocation of'&
+      //'"this%member%pKronDelta')
+    endif
+    nullify(this%member%pKronDelta)
+ endif
+
+ deallocate(this, stat=ierr)
+ if (ierr /= 0) then
+   write(LUPRI,'(/,2x,a,i3)')  &
+  'deallocate_kd_cell: error in deallocation of' &
+  //'"this";  ierr=',ierr
+  call Quit('deallocate_sqo_cell: error in deallocation of' &
+  //'"this"')
+ endif
+ nullify(this)
+endif
+
+call QExit('deallocate_kd_cell')
+end subroutine deallocate_kd_cell
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function create_string(head, factor) result(this)
@@ -172,14 +270,16 @@ function create_string(head, factor) result(this)
 type(dll_member), pointer, optional :: head
 real(kind=8), intent(in), optional :: factor 
 type(one_string), pointer :: this
-!type(one_string) :: this
-
 call QEnter('create_string')
 
-!if (associated(head)) then
-
    nullify(this)
-   allocate(this)
+   allocate(this, stat = ierr )
+
+   if (ierr /= 0) then
+     write(LUPRI,'(/,2x,a,i5)')  &
+     'create_string: error in allocation; ierr=',ierr
+     call Quit('create_string: error in allocation !')
+   endif
 
    if (present(head)) then
      !if (associated(head))  this%head = head
@@ -196,10 +296,6 @@ call QEnter('create_string')
    this%n = 0
    this%rear => null()  
 
-!else
-!  write(*,'(2x,a)') '"one_string" cell not allocated, because ' &
-!                  //'entering pointer "head" is not associated !'
-!endif
 
 call QExit ('create_string')
 end function create_string
@@ -1250,8 +1346,14 @@ if (get_iprint() >= 25) then
   call print_one_member(temp2)
 endif
 
-deallocate(temp)
-! ... decreasenumber of elements ...
+deallocate(temp, stat = ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a,i5)')  &
+  '"remove_element": error in deallocation ! ierr =',ierr
+  call Quit('"remove_element": error in deallocation !')
+endif
+
+! ... decrease  number of elements ...
 this_string%n  =  this_string%n - 1
 
 if (associated(temp1).and.associated(temp2)) then
@@ -1453,9 +1555,9 @@ subroutine insert_element(this_string,i_in,this_elem)
 !
 !   insert element into specified position in the string
 !
-!   on entry:  this_string
-!              i_in
-!              this_elem
+!   on entry:  this_string - entering string
+!              i_in        - position in the string
+!              this_elem   - entering element
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -1512,12 +1614,22 @@ if (get_iprint() >= 27) then
   call print_one_member(temp)
 endif
 
-allocate(temp1)
+!----------------------------------------------------
+! ... ALLOCATES NEW MEMORY POSITION !
+!----------------------------------------------------
+allocate(temp1, stat = ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a)') 'error in allocation!'
+  call Quit('insert_element: error in allocation !')
+endif
 !temp1 => this_elem
-temp1 = this_elem
+
+!  ... store entering "this_element" into new fresh memory
+temp1 = this_elem 
 
 if (on_head) then
-! ... insert element at the very beginning of the string ...
+!   ... insert element at the very beginning of the string ...
+! -------------------------------------------------------------   
   temp1%next => this_string%head
   temp1%previous => null()
 
@@ -1525,7 +1637,8 @@ if (on_head) then
   this_string%head => temp1
 
 else
-! ... insert element AFTER the i-th element "temp" 
+!        ... insert element AFTER the i-th element "temp" 
+! -------------------------------------------------------------   
    temp2 => temp%next
 ! ... 
    temp%next => temp1

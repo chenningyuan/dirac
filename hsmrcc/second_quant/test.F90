@@ -12,7 +12,7 @@ Program TEST_SEC_QUANT
 
   type(KronDelta), pointer :: d_ij, d_ab
 
-  type(SQOper), pointer :: i,j,a,b,o1,o2,o3
+  type(SQOper), pointer :: i,j,a,b,o1,o2,o3,o4
 
   type(dll_member), pointer :: head => null(), k, d_ik
 
@@ -29,19 +29,21 @@ Program TEST_SEC_QUANT
   !allocate(d_ij)
   d_ij => make_kron_delta(1,2); ! call print_kd(d_ij)
 
-  allocate(d_ab)
-  d_ab = make_kron_delta(3,4); ! call print_kd(d_ab)
+  !allocate(d_ab)
+  d_ab => make_kron_delta(3,4); ! call print_kd(d_ab)
 
   !allocate(i)
   !allocate(o3)
   !i = make_sqo(1,.true.); ! call print_sqo(i)
   !o3 = make_sqo(3); ! call print_sqo(i)
+
+  o4 => make_sqo(4)
   o3 => make_sqo(3); ! call print_sqo(i)
 
   !allocate(j)
   !allocate(o2)
   !o2 = make_sqo(2); ! call print_sqo(i)
-  o2 => make_sqo(2); ! call print_sqo(i)
+  o2 => make_sqo(2,.true.); ! call print_sqo(i)
 
   !allocate(o1)
   !o1 = make_sqo(1,.true.);
@@ -63,6 +65,7 @@ Program TEST_SEC_QUANT
   pos%head => head 
 
  ! call Insert_SQOp_end(pos,b)
+  call Insert_SQOp_end(pos,o4)
   call Insert_SQOp_end(pos,o3)
   call Insert_SQOp_end(pos,o2)
   call Insert_SQOp_end(pos,o1)
