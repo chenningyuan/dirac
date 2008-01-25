@@ -93,17 +93,6 @@ for property in property_l:
 
 property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
 
-#plot_numerov(potential_x_l,
-#             potential_y_l,
-#             potential_coefficients,
-#             property_x_l,
-#             property_y_l,
-#             property_coefficients,
-#             'q / a.u.', 
-#             'E(q) / E~B~h~N~', 
-#             'E~B~PNC~N~(q) / E~B~h~N~', 
-#             'plot')
-
 #-------------------------------------------------------------------------------
 
 nr_points = nr_steps + 1
@@ -114,6 +103,8 @@ potential              = zeros(nr_points, Float)
 property               = zeros(nr_points, Float)
 g                      = zeros(nr_points, Float)
 psi                    = zeros(nr_points, Float)
+psi_squared_save       = zeros([nr_solutions, nr_points], Float)
+energy_save            = zeros(nr_solutions, Float)
 
 for i in range(nr_points):
     q[i] = q_min + i*step
@@ -222,6 +213,8 @@ while nr_nodes_last < nr_solutions:
          expectation_value = 0.0
          for i in range(nr_points):
              expectation_value = expectation_value + property[i]*psi[i]*psi[i]
+             psi_squared_save[nr_nodes-1][i] = psi[i]*psi[i]
+         energy_save[nr_nodes-1] = energy_guess
 
          if nr_nodes == 1:
             expectation_value_reference = expectation_value
@@ -254,3 +247,17 @@ while nr_nodes_last < nr_solutions:
       energy_guess = energy_guess + energy_step
 
 print
+
+#plot_numerov(potential_x_l,
+#             potential_y_l,
+#             potential_coefficients,
+#             property_x_l,
+#             property_y_l,
+#             property_coefficients,
+#             q,
+#             psi_squared_save,
+#             energy_save,
+#             'q / a.u.',
+#             'E(q) / E~B~h~N~',
+#             'E~B~PV~N~(q) / E~B~h~N~',
+#             'plot')
