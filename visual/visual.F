@@ -317,6 +317,8 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO1     ,NTBAS(0)*3,
      &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAO2     ,NTBAS(0)*6,
+     &            WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNCNT     ,NTBAS(0),
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF      ,NTBAS(0)*4,
@@ -365,6 +367,7 @@ C=======================================================================
       CALL VISUAL_DRIVER(WORK(KDMAT_AO),
      &                   WORK(KGAO),
      &                   WORK(KGAO1),
+     &                   WORK(KGAO2),
      &                   WORK(KNCNT),
      &                   WORK(KBUF),
      &                   WORK(KFREE),LFREE)
@@ -373,6 +376,7 @@ C=======================================================================
         CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
      &                          WORK(KGAO),
      &                          WORK(KGAO1),
+     &                          WORK(KGAO2),
      &                          WORK(KNCNT),
      &                          WORK(KBUF),
      &                          WORK(KFREE),LFREE)
@@ -389,6 +393,7 @@ C     /* VISUAL_DRIVER */
       SUBROUTINE VISUAL_DRIVER(DMAT_AO,
      &                         GAO,
      &                         GAO1,
+     &                         GAO2,
      &                         NCNT,
      &                         BUF,
      &                         WORK,LWORK)
@@ -423,6 +428,7 @@ C=======================================================================
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
+     &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
      &          WORK(LWORK),
@@ -471,6 +477,7 @@ C=======================================================================
           CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                               GAO,
      &                               GAO1,
+     &                               GAO2,
      &                               XYZ_LIST(IPOINT_IN_LIST,1),
      &                               XYZ_LIST(IPOINT_IN_LIST,2),
      &                               XYZ_LIST(IPOINT_IN_LIST,3),
@@ -537,6 +544,7 @@ C=======================================================================
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                     GAO,
      &                                     GAO1,
+     &                                     GAO2,
      &                                     PX,PY,PZ,
      &                                     NCNT,
      &                                     BUF,
@@ -638,6 +646,7 @@ C=======================================================================
               CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                   GAO,
      &                                   GAO1,
+     &                                   GAO2,
      &                                   PX,PY,PZ,
      &                                   NCNT,
      &                                   BUF,
@@ -664,6 +673,7 @@ C     /* GET_QUANTITY_IN_POINT */
       SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                 GAO,
      &                                 GAO1,
+     &                                 GAO2,
      &                                 PX,PY,PZ,
      &                                 NCNT,
      &                                 BUF,
@@ -708,10 +718,12 @@ C=======================================================================
 #include "ibtfun.h"
 
       LOGICAL   LBIT,
-     &          NEED_GAO1
+     &          NEED_GAO1,
+     &          NEED_GAO2
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
+     &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
      &          QUANTITY(0:3),
@@ -742,7 +754,6 @@ C=======================================================================
       IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
       IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
 
-
       IQ_EDIPX       = 19 !                  r_x n
       IQ_EDIPY       = 20 !                  r_y n
       IQ_EDIPZ       = 21 !                  r_z n
@@ -750,24 +761,37 @@ C=======================================================================
       IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
       IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
 
+      IQ_GRADIENT    = 25 !
+      IQ_LAPLACIAN   = 26 !
+
       NEED_GAO1 = .FALSE.
+      NEED_GAO2 = .FALSE.
 
       DO IXVECTOR = 1,NR_XVECTORS
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVM    ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTM    ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJ    ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJ    ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_JPARA   ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJPARA) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJPARA) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ELF     ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_K       ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_H       ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVM     ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTM     ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJ     ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJ     ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_JPARA    ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJPARA ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJPARA ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ELF      ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_K        ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_H        ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_GRADIENT ) NEED_GAO1 = .TRUE.
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_LAPLACIAN) NEED_GAO1 = .TRUE.
+
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_LAPLACIAN) NEED_GAO2 = .TRUE.
       ENDDO
 
       IF(NEED_GAO1) THEN
-        CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+        IF(NEED_GAO2) THEN
+          CALL GETSOS(GAO,GAO1,GAO2,UNUSED,NCNT,PX,PY,PZ,
+     &                BUF,WORK(KFREE),LFREE,NTBAS(0),2,.FALSE.,0)
+        ELSE
+          CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
+     &                BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+        ENDIF
       ELSE
         CALL GETSOS(GAO,UNUSED,UNUSED,UNUSED,NCNT,PX,PY,PZ,
      &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
@@ -803,6 +827,35 @@ C=======================================================================
           ENDDO
 
           CALL DAXPY(1,D1,DENSITY,1,QUANTITY(0),1)
+        ENDIF
+
+        IQ = IQ_GRADIENT
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GETGRHO(VECTOR_A,
+     &                 IREP_XVECTOR(IXVECTOR),
+     &                 GAO,
+     &                 GAO1,
+     &                 DMAT_AO(1+IOFF),
+     &                 BUF)
+
+          CALL DAXPY(3,D1,VECTOR_A,1,QUANTITY(1),1)
+        ENDIF
+
+        IQ = IQ_LAPLACIAN
+        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+          CALL GETLRHO(RXX,
+     &                 RXY,
+     &                 RXZ,
+     &                 RYY,
+     &                 RYZ,
+     &                 RZZ,
+     &                 GAO,
+     &                 GAO1,
+     &                 GAO2,
+     &                 DMAT_AO(1+IOFF),
+     &                 BUF)
+
+          CALL DAXPY(1,D1,RXX + RYY + RZZ,1,QUANTITY(0),1)
         ENDIF
 
         IQ = IQ_ELF
