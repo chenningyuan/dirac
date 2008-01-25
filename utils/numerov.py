@@ -96,7 +96,7 @@ property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
 
 #plot_one_x_two_y(potential_x_l, potential_y_l,
 #                 property_x_l, property_y_l,
-#                 'Q', 'E(Q)', 'E~B~PNC~N~(Q)', 'property')
+#                 'q / a.u.', 'E(q) / E~B~h~N~', 'E~B~PNC~N~(q) / E~B~h~N~', 'plot')
 
 #-------------------------------------------------------------------------------
 
