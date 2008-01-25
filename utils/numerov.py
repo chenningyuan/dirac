@@ -58,8 +58,7 @@
 import sys, string, math, Numeric, Ngl
 from pylab import *
 from numerov_parameters import *
-#sys.path.append('/home/bast/schreibtisch/python')
-#from gp import *
+#from plot_numerov import *
 
 #-------------------------------------------------------------------------------
 
@@ -94,9 +93,16 @@ for property in property_l:
 
 property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
 
-#plot_one_x_two_y(potential_x_l, potential_y_l,
-#                 property_x_l, property_y_l,
-#                 'q / a.u.', 'E(q) / E~B~h~N~', 'E~B~PNC~N~(q) / E~B~h~N~', 'plot')
+#plot_numerov(potential_x_l,
+#             potential_y_l,
+#             potential_coefficients,
+#             property_x_l,
+#             property_y_l,
+#             property_coefficients,
+#             'q / a.u.', 
+#             'E(q) / E~B~h~N~', 
+#             'E~B~PNC~N~(q) / E~B~h~N~', 
+#             'plot')
 
 #-------------------------------------------------------------------------------
 
