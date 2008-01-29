@@ -47,6 +47,18 @@ FC      =  $(F77)
 CCo      = $(CC)
 #CCo      = $(F77)
 
+
+#################################################################################
+#
+#    preprocessor statement - either 32bit architecture or 64bit 
+#
+#        DON'T FORGET TO SET IT FOR (older) 32bit architectures !
+#
+#################################################################################
+
+ARCH = -DARCH32BIT
+#ARCH = 
+
 #################################################################################
 ###
 ###        set up libraries from DIRAC
@@ -162,12 +174,7 @@ c89objs := getopt.o hsmrmain.o
 #### DIRAC imports ####
 ####               ####
 #######################
-# ... no dirac objects/libraries ! 
-#dirac_objs :=
-#dirac_objs := ../../gp/gptrygve.o  ../../gp/qpack.o ../../gp/gphjj.o  
 dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o 
-#dirac_libs := ../../pdpack/libpdlib.a
-dirac_libs := 
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 
@@ -197,10 +204,10 @@ $(executable) : $(objects)
 	@echo  
 	@echo -n "...   used compiler linking flags are " $(cs) $(LKFLAGS) $(FFLAGS) $(ce) 
 	@echo  
-	@echo -n "...      and used DIRAC resources are " $(cs) $(dirac_objs) $(dirac_libs) $(ce) 
+	@echo -n "...      and used DIRAC resources are " $(cs) $(dirac_objs) $(ce) 
 	@echo  
-	@$(FC) -o $@ $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
-                     $(dirac_objs) $(dirac_libs) $(FCLIBS) $(CCLIBS)
+	@$(FC) -o $@ $(ARCH) $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
+                     $(dirac_objs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
 	@echo "The independent executable file ==> " $(cs)$(@F)$(ce) " <== was generated."
 
@@ -276,8 +283,8 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 
 %.o : %.F90
 	@printf "Compiling F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
-	@echo -n "using" $(cs) $(FC) $(FFLAGS) "-c -o" $(ce)
-	@$(FC) $(FFLAGS) -c -o $(objdir)/$@ $<
+	@echo -n "using" $(cs) $(FC) $(ARCH) $(FFLAGS) "-c -o" $(ce)
+	@$(FC) $(ARCH) $(FFLAGS) -c -o $(objdir)/$@ $<
 	@printf "%s\n" " ...Done."
 
 %.o : %.c

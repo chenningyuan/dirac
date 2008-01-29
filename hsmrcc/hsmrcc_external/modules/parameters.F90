@@ -8,9 +8,25 @@ module Parameters
 
    implicit none
 
-   ! number of integers in floating point number (machine dependent)
-
+!----------------------------------------------------------------------------
+!       number of integers in floating point number (machine dependent)
+!----------------------------------------------------------------------------
+!
+!  ... copyied from GAMESS-US
+!
+!C     THIS IS THE NUMBER OF INTEGERS IN A WORKING PRECISION
+!C     FLOATING POINT NUMBER, WHICH IS MOST COMMONLY 64 BITS.
+!C     THUS SYSTEMS WITH 64 BIT INTEGERS USE A VALUE OF 1, WHILE
+!C          SYSTEMS WITH 32 BIT INTEGERS USE A VALUE OF 2.
+!
+!----------------------------------------------------------------------------
+! select 32/64-bit code by preprocessor statement
+!----------------------------------------------------------------------------
+#if defined (ARCH32BIT)
+   integer, parameter :: INTSFP = 2 
+#else
    integer, parameter :: INTSFP = 1
+#endif
 
    ! number of logical files and subroutines
 

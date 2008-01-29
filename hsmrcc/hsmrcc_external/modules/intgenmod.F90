@@ -1282,11 +1282,22 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
             do ASBufInd = 1, IABS(NumIntRec)
                NPACK = NPACKIC + ASBufInd
                ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(2*NPACK-1)
+               P = ISHFT( LABEL, -16 )
+               Q = IAND(  LABEL, 65535 )
+               LABEL = IXPREAD(2*NPACK)
+               R = ISHFT( LABEL, -16 )
+               S = IAND(  LABEL, 65535 )
+#else
                LABEL = IXPREAD(NPACK)
-               P = ISHFT( LABEL, -48 )
+               P =       ISHFT( LABEL, -48 )
                Q = IAND( ISHFT( LABEL, -32 ), 65535 )
                R = IAND( ISHFT( LABEL, -16 ), 65535 )
                S = IAND( LABEL, 65535 )
+#endif
                ! Now all permutations are
                ! generated & added to buffer.
                call SetIntBuf(StRec,EnRec,RecLen,P,Q,R,S,+ASInt)
@@ -1302,6 +1313,15 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
             do ASBufInd = 1, IABS(NumIntRec)
                NPACK = NPACKIC + ASBufInd
                ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -24 )
+               Q = IAND( ISHFT( LABEL, -16 ), 255 )
+               R = IAND( ISHFT( LABEL,  -8 ), 255 )
+               S = IAND(        LABEL,        255 )
+#else
                IF ( MOD(NPACK,2) .EQ. 0 ) THEN
                   LABEL = IXPREAD(NPACK/2)
                   P = IAND( ISHFT( LABEL, -24 ), 255 )
@@ -1315,6 +1335,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                   R = IAND( ISHFT( LABEL, -40 ), 255 )
                   S = IAND( ISHFT( LABEL, -32 ), 255 )
                ENDIF
+#endif
                ! Now all permutations are
                ! generated & added to buffer.
                call SetIntBuf(StRec,EnRec,RecLen,P,Q,R,S,+ASInt)
@@ -1448,11 +1469,22 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
          do ASBufInd = 1, IABS(NumIntRec)
             NPACK = NPACKIC + ASBufInd
             ASInt = XXPREAD(NPACK)
-            LABEL = IXPREAD(NPACK)
-            P = ISHFT( LABEL, -48 )
-            Q = IAND( ISHFT( LABEL, -32 ), 65535 )
-            R = IAND( ISHFT( LABEL, -16 ), 65535 )
-            S = IAND( LABEL, 65535 )
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(2*NPACK-1)
+               P = ISHFT( LABEL, -16 )
+               Q = IAND(  LABEL, 65535 )
+               LABEL = IXPREAD(2*NPACK)
+               R = ISHFT( LABEL, -16 )
+               S = IAND(  LABEL, 65535 )
+#else
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -48 )
+               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               S = IAND( LABEL, 65535 )
+#endif
             ! Now all permutations are
             ! generated & added to buffer.
             call SetIntBuf(NumRec,RecLen,P,Q,R,S,+ASInt)
@@ -1468,19 +1500,29 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
          do ASBufInd = 1, IABS(NumIntRec)
             NPACK = NPACKIC + ASBufInd
             ASInt = XXPREAD(NPACK)
-            IF ( MOD(NPACK,2) .EQ. 0 ) THEN
-               LABEL = IXPREAD(NPACK/2)
-               P = IAND( ISHFT( LABEL, -24 ), 255 )
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -24 )
                Q = IAND( ISHFT( LABEL, -16 ), 255 )
                R = IAND( ISHFT( LABEL,  -8 ), 255 )
-               S = IAND( LABEL, 255 )
-            ELSE
-               LABEL = IXPREAD((NPACK/2)+1)
-               P = ISHFT( LABEL, -56 )
-               Q = IAND( ISHFT( LABEL, -48 ), 255 )
-               R = IAND( ISHFT( LABEL, -40 ), 255 )
-               S = IAND( ISHFT( LABEL, -32 ), 255 )
-            ENDIF
+               S = IAND(        LABEL,        255 )
+#else
+               IF ( MOD(NPACK,2) .EQ. 0 ) THEN
+                  LABEL = IXPREAD(NPACK/2)
+                  P = IAND( ISHFT( LABEL, -24 ), 255 )
+                  Q = IAND( ISHFT( LABEL, -16 ), 255 )
+                  R = IAND( ISHFT( LABEL,  -8 ), 255 )
+                  S = IAND( LABEL, 255 )
+               ELSE
+                  LABEL = IXPREAD((NPACK/2)+1)
+                  P = ISHFT( LABEL, -56 )
+                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+               ENDIF
+#endif
             ! Now all permutations are
             ! generated & added to buffer.
             call SetIntBuf(NumRec,RecLen,P,Q,R,S,+ASInt)
