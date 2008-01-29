@@ -26,7 +26,7 @@ module IOmodule
    integer, parameter :: UCOEF = 28
    integer, parameter :: UCNVR = 29
 
-   !integer :: UOUT  = 51 ! ... moved to parameters ...
+   !integer :: UOUT  = 51 ! ... moved to parameters as this module looks more general 
 
    integer :: UTOLD = 52
    integer :: UTNEW = 53
@@ -114,14 +114,17 @@ contains
 
 subroutine InitIOMod
 
-   implicit none
+ implicit none
+
+ call QEnter('InitIOMod')
 
    ! ... Initialization Check ...
 
    if (Init) then
       write(UOUT,*) 'Error Initializing IOMod'
       call flush(UOUT)
-      call abort
+     ! call abort
+      call Quit('InitIOMod:  Error Initializing IOMod !')
    endif
    Init = .TRUE.
 
@@ -170,6 +173,8 @@ subroutine InitIOMod
    if (.not.allocated(NZIntRec_VPHPP)) allocate(NZIntRec_VPHPP(NumRec(VPHPP)))
    if (.not.allocated(NZIntRec_V2HHP)) allocate(NZIntRec_V2HHP(NumRec(V2HHP)))
    if (.not.allocated(NZIntRec_VHHHP)) allocate(NZIntRec_VHHHP(NumRec(VHHHP)))
+
+   call QExit('InitIOMod')
 
    return
 

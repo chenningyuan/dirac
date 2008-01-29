@@ -6,6 +6,7 @@
 !
 !*****************************************************************
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMR_IPRINT(ipr)
 !-----------------------------------------------------------------
 !
@@ -23,12 +24,18 @@ subroutine SetHSMR_IPRINT(ipr)
 
 end subroutine SetHSMR_IPRINT
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
                         FlagRESTART, FlagTTYRUN  , FlagAVGVAL  , &
                         FlagREPTIME, FlagQUAD    , FlagCONVTAMP, &
                         FlagNOHSMR , FlagMAXIT   , FlagINTTOL  , &
                         FlagCNVTOL , FlagSHFTCORE, FlagSHFTVIRT, &
                         FlagNOAPND , FlagRDGUESS , FlagDIRAC     )
+!-----------------------------------------------------------------
+!
+!  set up of various HSMRCC flags 
+!
+!-----------------------------------------------------------------
 
    use Options
    use Parameters
@@ -58,9 +65,7 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    if ( FlagSHFTVIRT == 1 ) OPTION(SHFTVIRT) = .TRUE.
    if ( FlagNOAPND   == 1 ) OPTION(NOAPND)   = .TRUE.
    if ( FlagRDGUESS  == 1 ) OPTION(RDGUESS)  = .TRUE.
- 
-   ! ... DIRAC on
-   if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE.
+   if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE.  ! ... DIRAC on
 
    if (get_iprint() > 5) then
       call print_Options 

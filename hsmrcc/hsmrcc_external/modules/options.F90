@@ -1,11 +1,12 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module Options
 !--------------------------------------------------------------------
 !
 !          Module with options stored in logical arrays
 !
-!--------------------------------------------------------------------
-module Options
-
 ! ... note: source/hsmrmain.c contains similar parametes, but these do not overlap
+!
+!--------------------------------------------------------------------
 
    implicit none
    integer, parameter :: GENINT   =  1
@@ -36,24 +37,30 @@ module Options
 
  contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine print_Options
-
-  ! use IOModule
+!--------------------------------------------------------------------------
 !
-! ... very simple print out ...
+!
+!                  ... very simple print out ...
+!
+!
+!--------------------------------------------------------------------------
+ use Parameters
 
- ! print *,'UOUT=',UOUT
+ call QEnter('print_Options')
 
- ! write(UOUT,*) ' OPTION  [GENINT] =',OPTION(GENINT)
- ! write(UOUT,*) ' OPTION [PRNTINF] =',OPTION(PRNTINF)
- ! write(UOUT,*)
+ call Header('*** Print out of OPTION ***')
 
-  print *,'print_Options ....'
-  print *,' OPTION  [GENINT] =',OPTION(GENINT)
-  print *,' OPTION [PRNTINF] =',OPTION(PRNTINF)
-  print *,' OPTION [MAXIT] =',OPTION(MAXIT)
-  print *,' OPTION [DIRACp] =',OPTION(DIRACp)
+ write(UOUT,'(/,2x,a)') 'print_Options ....'
+ write(UOUT,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
+ write(UOUT,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
+ write(UOUT,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
+ write(UOUT,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
 
+ !call Quit('print_Options')
+
+ call QExit('print_Options')
  end subroutine print_Options
 
 end module Options

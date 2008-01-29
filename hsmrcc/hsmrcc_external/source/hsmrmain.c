@@ -58,7 +58,7 @@ extern void sethsmr_iprint_(int *);
 #define RDGUESS   28
 #define IPR       29   /*  parameter for general print-out  */
 
-#define DIRAC     30 /* flag for DIRAC input  */
+#define DIRAC     30   /* flag for own DIRAC input  */
 
 #define NOPTS     31
 
@@ -486,8 +486,9 @@ int main (argc, argv)
    if (c == BAD_OPTION) return (-1);
    if (opts[HELP]) { usage(argv[0]); help(); return (0);}
 
-   if (optind == argc) {
-      printf("%s: Error: input file not specified\n",argv[0]); return (-1); }
+   /*  Don't care about gamess-like input file if this is DIRAC based run  */
+   if (optind == argc && !opts[DIRAC] ) {
+      printf("%s: Error in hsmrmain.c: input file not specified\n",argv[0]); return (-1); }
 
    if (optind < argc) {
       if (strlen(argv[optind]) == 0) {
@@ -760,11 +761,13 @@ int main (argc, argv)
    sethsmrinttol_(&inttol);
    sethsmrmaxit_(&maxit);
 
-   if (outfile==NULL) {
-      sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
-   }
-   else {
-      sethsmrfiles_(inpfile,outfile,strlen(inpfile),strlen(outfile));
+   if ( !opts[DIRAC] ) {
+     if (outfile==NULL) {
+       sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
+     }
+     else {
+       sethsmrfiles_(inpfile,outfile,strlen(inpfile),strlen(outfile));
+     }
    }
 
    /* Invoke HSMRCC Driver program */

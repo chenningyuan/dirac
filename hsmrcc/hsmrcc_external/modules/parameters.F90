@@ -163,7 +163,7 @@ module Parameters
    end function get_iprint
 
    subroutine flushout
-   ! ... short version for flushing out the buffer
+   ! ... shorter version for flushing out the buffer
     call flush(UOUT)
    end subroutine flushout
 

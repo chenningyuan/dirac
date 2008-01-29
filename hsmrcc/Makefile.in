@@ -35,6 +35,12 @@ FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
+##############################################
+### compile related standalone HSMRCC code ###
+##############################################
+hs:   
+	cd hsmrcc_external; make
+
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 

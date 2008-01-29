@@ -3,9 +3,8 @@ subroutine HSMRCC
 !---------------------------------------------------------------------------
 !
 !
-! This is called from main
-! program written in C after
-! calling SetHSMR routines.
+!  This subroutine is called from main
+! program written in C after calling all SetHSMR routines.
 !
 !
 !---------------------------------------------------------------------------

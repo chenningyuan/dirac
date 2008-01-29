@@ -44,6 +44,8 @@ endif
 
 close(ludh,status="keep")
 
+!call Quit('prepare_dirac_HSMRCC_file')
+
 call QExit('prepare_dirac_HSMRCC_file')
 end subroutine prepare_dirac_HSMRCC_file
 
