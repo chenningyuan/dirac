@@ -76,4 +76,99 @@ modules/intgenmod.f90
 minmax.h and tind.h include files have been moved into common include/ directory
 
 
+=====================================================================================
 
+
+C     ----- INITIALIZE VARIABLES FOR NAMELIST $HSMR -----
+C
+C     THE FOLLOWING OPTIONS HAVE BEEN IMPLEMENTED
+C
+c     EXORB
+c     *****
+c              EXCHANGE ORBITAL PAIRS BEFORE MAKING SUBDIVISION OF
+c              FULL ORBITAL INTO CORE, ACTIVE AND VIRTUAL SPACE.
+c              THIS INFORMATION IS TO BE PROVIDED IN $EXCHMO CARD
+c              AS FOLLOWS.
+c
+c        FOR RHF/ROHF
+c        ------------
+c
+c              $EXCHMO
+c              I1,I2
+c              I3,I4
+c              ..
+c              ..
+c              ..
+c              $END
+c
+c        I1,I2 ARE MOS TO BE EXCHANGED
+c
+C        FOR UHF
+C        -------
+C
+C              $EXCHMO
+C              ORBTYP,I1,I2
+C              ORBTYP,I3,I4
+C              ..
+C              ..
+C              ..
+C              $END
+C
+C        ORBTYP = +1 FOR ALPHA ORBITALS
+C        ORBTYP = -1 FOR BETA  ORBITALS
+C        I1,I2 ARE MOS TO BE EXCHANGED
+C      
+C     NFRZV
+C     *****
+C              FREEZE LAST NFRZV ORBITALS
+C              AFTER CARRYING OUT ANY
+C              ORBITAL EXCHANGE ACCORDING
+C              TO EXORB OPTION ABOVE
+C              (SAME VALUE FOR BOTH ALPHA AND BETA ORBITALS)
+c              DEFAULT IS 0, MEANS NO FREEZING
+C
+C     TRFTOL
+C     ******
+C              CUTOFF TOLERANCE FOR TRANSFORMED
+C              INTEGRALS (DEFAULT=1.0D-10)
+c
+C     NCOR
+C     ****
+C              NUMBER OF CORE ORBITALS
+C              
+C     NACT
+C     ****
+C              NUMBER OF ACTIVE ORBITALS
+C              
+C     NVIR
+C     ****
+C              NUMBER OF VIRTUAL ORBITALS
+c
+C     NACTEL
+C     ******
+C              NUMBER OF ACTIVE ELECTRONS (DETERMINES NHOLE AND NPTCL)
+C
+C     PMAIN
+C     *****
+c              AFTER MAKING SUBDIVISION OF ORBITAL SPACE INTO
+c              CORE, ACTIVE AND VIRTUAL, WE CONSIDER ACTIVE
+c              ORBITALS, AND FURTHER DIVIDE THEM INTO MAIN AND
+C              INTERMEDIATE SPACE. THE ACTIVE ORBITALS ARE
+c              RELABELLED FROM 1 TO NACT.
+c
+c              PMAIN IS THE LIST OF ACTIVE ORBITALS IN MAIN SPACE. REST OF
+c              ACTIVE ORBITALS ARE IN INTERMEDIATE SPACE.
+c
+c              EXAMPLE :
+c
+c                 SUPPOSE THERE ARE 10 ACTIVE ORBITALS, AND WE WISH
+c                 TO INCLUDE ORBITALS 2, 3 AND 5 AS MAIN, WE SPECIFY
+c                 PMAIN INPUT IN $HSMR CARD AS FOLLOWS.
+c
+c                 $HSMR NCOR=.. NACT=.. NVIR=.. PMAIN(1)=2,3,5 $END
+c
+c     NOTE :: THE ORBITAL INDICES ABOVE REFER TO SPATIAL ORBITALS
+c             DURING THE TRANSFORMATION THEY ARE CONVERTED TO SPIN ORBITALS
+c             SUCH THAT FOR A GIVEN SPATIAL ORBITAL, CORRESPONDING ALPHA
+c             ORBITAL COMES FIRST FOLLOWED BY BEETA ORBITAL. THIS ORDERING
+c             IS ASSUMED IN HSMRCC PROGRAM. SEE SETUP_MRCCORBS FOR DETAILS.
