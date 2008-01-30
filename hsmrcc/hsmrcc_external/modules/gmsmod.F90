@@ -1,10 +1,10 @@
-!
-!
-!
-!
-!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module GMSMod
-
+!------------------------------------------------------------------------
+!
+!                     Necessary stuff from Gamess
+!
+!------------------------------------------------------------------------
    use Parameters
    use Options
    use IOModule
@@ -27,6 +27,8 @@ subroutine InitGMSMod
    double precision :: d1, d2, d3
    logical :: errflag
    integer NXX, IXX
+
+   call QEnter('InitGMSMod')
 
    ! ... Obtain information for Variables of GMSMod       ...
    ! ... There are two ways to obtain this info           ...
@@ -88,8 +90,10 @@ subroutine InitGMSMod
          write(UOUT,*) 'Invalid Data in File UMR1EINT'
          write(UOUT,*) "file = ",FileMR1EINT
          write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('Invalid Data in File UMR1EINT')
       endif
 
       read(UMR2EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9
@@ -206,8 +210,10 @@ subroutine InitGMSMod
           ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
            (NINTMX.LE.0)) then
          write(UOUT,*) 'Invalid Data in File UVINF'
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('Invalid Data in File UVINF')
       endif
 
       if (NTMO /= NSO) then
@@ -236,10 +242,19 @@ subroutine InitGMSMod
                   OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
       SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
       OccRef = OccGMSRef
-
       ! ... Set other variables in GMSMod
-
    endif
+
+   write(UOUT,'(/,a,/,a,i2,a,i2)')    &
+   '---------------------------------------------------------------------------------', &
+   'InitGMSMod: read LABELSIZE=',LABELSIZE,' and set INTSFP=',INTSFP
+#if defined (ARCH32BIT) 
+   write(UOUT,'(a)') '...we are on the 32-bit architecture '
+#else
+   write(UOUT,'(a)') '...we are on the 64-bit architecture '
+#endif
+   write(UOUT,'(a)')  &
+   '---------------------------------------------------------------------------------'
 
    ! ... allocate gamess integral buffers
 
@@ -254,6 +269,8 @@ subroutine InitGMSMod
 
    if (.not.allocated(XXPREAD)) allocate(XXPREAD(NXX))
    if (.not.allocated(IXPREAD)) allocate(IXPREAD(IXX))
+
+   call QExit('InitGMSMod')
 
    return
 
