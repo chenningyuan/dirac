@@ -1342,7 +1342,8 @@ C=======================================================================
       DO IM = 1,NMAT
         IF(.NOT. IHRMOP(IM) .EQ. 1) THEN
           DO IXYZ = 1,3
-            IQ = IQTOPQ(5-IXYZ,ISYMAX(IXYZ,2))
+            iq = jm4pos(4-ixyz)
+            iq = iqtopq(iq,isymax(ixyz,2))
             IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
             DO 110 IREP1 = 0,NBSYM-1
               IREP2 = IBTXOR(IREP1,IREPOP)
