@@ -50,7 +50,7 @@ module Options
 
  call QEnter('print_Options')
 
- call Header('*** Print out of OPTION ***')
+ call Header('*** Printing out OPTIONs ***',-1)
 
  write(UOUT,'(/,2x,a)') 'print_Options ....'
  write(UOUT,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
