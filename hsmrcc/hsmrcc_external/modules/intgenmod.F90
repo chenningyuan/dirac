@@ -52,7 +52,7 @@ subroutine DrvIntGen
    allocate(GenIntBuf(GenIntBufSize))
 
    if ( get_iprint() >= 7) then
-     write(UOUT,'(/2x,a,i6)')  &
+     write(UOUT,'(/2x,a,i12)')  &
      'DrvIntGen: buffer for integrals allocated, size=',GenIntBufSize
    endif
 
@@ -1258,6 +1258,11 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
    do IndBlock = 1, NumBlocks
 
+      if (get_iprint() >= 20) then
+        write(UOUT,'(2x,a,i4,a,i4)') 'IntFileGen_TwoBody: IndBlock/NumBlocks=',  &
+        IndBlock,'/',NumBlocks
+      endif
+
       StRec = (IndBlock-1)*NumRecBuf + 1
       EnRec = MIN(IndBlock*NumRecBuf,NumRec)
 
@@ -1598,7 +1603,9 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2)
    implicit none
    INTEGER IS, NX, NINTMX,MAX2
    DOUBLE PRECISION XX(NINTMX)
-   INTEGER IX(MAX2)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+!  INTEGER IX(MAX2)   ! ... for less than 256 spinorobitals
+   INTEGER IX(MAX2/2) ! ... for 64 bit AND more than 256 spinorobitals
 
    READ(IS) NX,IX,XX
 
