@@ -363,7 +363,8 @@ function NumBlock_VPPPP()
          NZInt = NZInt + NZIntRec(IntRec)
          IntRec = IntRec + 1
       enddo
-      if (NZInt == 0) stop 'Error NZInt=0'
+      !if (NZInt == 0) stop 'Error NZInt=0'
+      if (NZInt == 0) call Quit('NumBlock_VPPPP: Error NZInt=0, pos 1')
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -410,7 +411,8 @@ function NumBlock_VPH2P()
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      if (NZInt == 0) stop 'Error NZInt=0'
+      !if (NZInt == 0) stop 'Error NZInt=0'
+      if (NZInt == 0) call Quit('NumBlock_VPH2P: Error NZInt=0')
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -457,7 +459,8 @@ function NumBlock_VPHPP()
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      if (NZInt == 0) stop 'Error NZInt=0'
+      !if (NZInt == 0) stop 'Error NZInt=0'
+      if (NZInt == 0) call Quit('NumBlock_VPHPP: Error NZInt=0')
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -505,7 +508,8 @@ subroutine SetupBlkRead_VPPPP
          NZInt = NZInt + NZIntRec(IntRec)
          IntRec = IntRec + 1
       enddo
-      if ( NZInt == 0 ) stop 'Error NZInt=0'
+      !if ( NZInt == 0 ) stop 'Error NZInt=0'
+      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPPPP: Error NZInt=0')
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
@@ -563,7 +567,8 @@ subroutine SetupBlkRead_VPH2P
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      if ( NZInt == 0 ) stop 'Error NZInt=0'
+      !if ( NZInt == 0 ) stop 'Error NZInt=0'
+      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPH2P: Error NZInt=0')
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
@@ -621,7 +626,8 @@ subroutine SetupBlkRead_VPHPP
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      if ( NZInt == 0 ) stop 'Error NZInt=0'
+      !if ( NZInt == 0 ) stop 'Error NZInt=0'
+      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPHPP: Error NZInt=0')
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
