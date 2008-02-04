@@ -3667,7 +3667,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 48,NDIR = 8)
+      PARAMETER (NTABLE = 52,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3715,11 +3715,14 @@ C
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
-     &            '.BSS4  ','.CMPEIG','.XXXXXX','.XXXXXX'/
+     &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
 C
+      CALL QENTER('HAMINP')
+
       GAUNT = .FALSE.
       GAUNT_SAVE = GAUNT
       IOTC = .FALSE.
@@ -3782,6 +3785,9 @@ C     ... trasfer 2c-> 4c and 4c->2c
       USEDF   = .FALSE.
       CONT2C  = .FALSE.
       CMPEIG  = .FALSE.
+CMI   ... own keywords for 1. or 2.order Douglas-Kroll-Hess with AMFI SSO 
+      DKH1    = .FALSE.
+      DKH2    = .FALSE.
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
@@ -3850,7 +3856,8 @@ C     Keep track of number of changes and added finite field operators
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
-     &                141,142,143,144,145,146,147,148),I
+     &                141,142,143,144,145,146,147,148,149,150, 
+     &                151,152),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4134,7 +4141,7 @@ C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
             READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
             GO TO 100
   137     CONTINUE
-C&&&  IOTC: one-step infinite-order two-component relativistic Hamiltonian
+C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
 CMI  it's BSS_RKB+AMFI; later fix this options when interacting
 CMI  with other flags...
              IOTC = .TRUE.
@@ -4197,13 +4204,37 @@ C      as they need to be modified within BSS transformations
 C&&& BSS4: do BSS in 4c-mode
              GO TO 100
   146     CONTINUE
-C&&& CMPEIG: compare eigenvalues of 2c and 4c Hamiltonian
+C&&& CMPEIG: add comparison between eigenvalues of 2c and 4c Hamiltonian
              CMPEIG = .TRUE.
              GO TO 100
   147     CONTINUE
-C&&& XXXX
+C&&& DKH2: complex flag for second order Douglas-Kroll-Hess with AMFI SSO
+             DKH2 = .TRUE.
+             BSS = .TRUE.
+             NOPRTR = .FALSE.
+             IBSS = 2022
+             TWOCOMPBSS = .TRUE.
+             TWOCOMP = .TRUE.
              GO TO 100
   148     CONTINUE
+C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other 
+             DKH1 = .TRUE.
+             BSS = .TRUE.
+             NOPRTR = .FALSE.
+             IBSS = 2011
+             TWOCOMPBSS = .TRUE.
+             TWOCOMP = .TRUE.
+             GO TO 100
+  149     CONTINUE
+C&&& XXXX
+             GO TO 100
+  150     CONTINUE
+C&&& XXXX
+             GO TO 100
+  151     CONTINUE
+C&&& XXXX
+             GO TO 100
+  152     CONTINUE
 C&&& XXXX
              GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -4270,6 +4301,7 @@ C     =====================================================
           CALL QUIT(
      &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
       ENDIF
+
       IF (BSS) THEN
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
           CALL QUIT(
@@ -4280,19 +4312,27 @@ C     =====================================================
      &'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP & BSS !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
-          CALL QUIT(
-     &  'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS!')
+         CALL QUIT(
+     &   'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS!')
         ENDIF
 C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
           CALL QUIT(
-     &'HAMINP: Conflicting options ZORA & BSS !')
+     &    'HAMINP: Conflicting options ZORA & BSS !')
         ENDIF
         IF (DIRCON(1)) THEN
-          CALL QUIT(
-     &   'HAMINP: Can not use the contracted basis set for'//
-     &   ' the BSS Hamiltonian !')
-CMI  &'  HAMINP: Conflicting options ZORA/PROJEC & BSS !')
+         CALL QUIT(
+     &  'HAMINP: Can not use the contracted basis set for'//
+     &  ' the BSS Hamiltonian !')
+        ENDIF
+
+CMI  ... check not combining .IOTC, .DKH1, .DKH2
+        IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
+          WRITE(LUPRI,'(/,2x,3(A,L))')
+     &    'HAMINP: conflicting options; IOTC=',IOTC,' DKH1=',DKH1,
+     &    ' DKH2=',DKH2
+          CALL QUIT('HAMINP: Conflicting options IOTC & DKH1 or '//
+     &    'DKH2 & DKH2 or IOTC & DKH1 !')
         ENDIF
 
 CMI  ... todo: more precise specification needed
@@ -4337,6 +4377,42 @@ CMI        ... no AMFI contribution
          ENDIF
         ENDIF
 
+CMI   ... fix the DKH2 keyword interaction with .GAUNT,.ONESYS,.SPINFR
+        IF (DKH2) THEN
+          IF (SPINFR) THEN
+            IBSS = 002
+          ENDIF
+          IF (GAUNT) THEN
+CMI        ... AMFI SSO+SOO terms
+CMI        ... we have to switch off this term as we are in the 2c framework
+CMI        ... instead we use GAUNT_SAVE
+           GAUNT = .FALSE.
+           IBSS = 3022
+          ENDIF
+          IF (ONESYS) THEN
+CMI        ... no AMFI contribution
+           IBSS = 022
+          ENDIF
+        ENDIF ! end of DKH2
+
+CMI   ... fix the DKH1 keyword interaction with .GAUNT,.ONESYS,.SPINFR
+        IF (DKH1) THEN
+          IF (SPINFR) THEN
+            IBSS = 001
+          ENDIF
+          IF (GAUNT) THEN
+CMI        ... AMFI SSO+SOO terms
+CMI        ... we have to switch off this term as we are in the 2c framework
+CMI        ... instead we use GAUNT_SAVE
+           GAUNT = .FALSE.
+           IBSS = 3011
+          ENDIF
+          IF (ONESYS) THEN
+CMI        ... no AMFI contribution
+           IBSS = 011
+          ENDIF
+        ENDIF ! end of DKH1
+          
       ENDIF ! End of .BSS
 C
 C     If Gaunt is set we always want to include these integrals
@@ -4380,6 +4456,7 @@ C
      & '    by a simple one-step transformation." ',
      & '    J. Chem. Phys., 126 (2007) 064102. '
         ELSE
+C         .... two-step method of Barysz
           WRITE(LUPRI,'(A,I5)')
      & ' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
           WRITE(LUPRI,'(A)')
@@ -4390,12 +4467,22 @@ C
      & '     from Douglas-Kroll-Hess second order method to the '//
      &   'infinite order two-component method.",',
      & '     J. Chem. Phys., in preparation.'
+          IF (DKH2) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &     '*  second-order Douglas-Kroll-Hess method, .DKH2' 
+          ENDIF
+          IF (DKH1) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &     '* first-order Douglas-Kroll-Hess, .DKH1, very poor method !'
+          ENDIF
         ENDIF
+
         IF(TWOCOMP) THEN
           WRITE(LUPRI,'(1X,A)') '  - running in 2-component modus'
         ELSE
           WRITE(LUPRI,'(1X,A)') '  - running in 4-component modus'
         ENDIF
+C       ... take care of AMFI contribution
         IF (IBSS.GT.999) THEN
           WRITE(LUPRI,'(A)')
      &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
@@ -4419,6 +4506,7 @@ CMI       IF (GAUNT) THEN
      &     ' are modified due to the total charge of the system:',
      &     IMFCH
           ENDIF
+CMI    .... treat AMFI centers, if selected in the input          
           IF (.NOT.ALLAMFA) THEN
           WRITE(LUPRI,'(1X,A,I2,A,$)')
      &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
@@ -4470,6 +4558,12 @@ C           ... check on identical nucleus numbers ....
               ENDDO
             ENDDO
           ENDIF
+          ENDIF
+CMI       ... take care of AMFI CSC test transformation, if specified through entering IBSS number
+          IF (IBSS.GT.999.AND.IBSS.LE.1999) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &     '* only C->S->C transformation of 2comp.'//
+     &     'Hamiltonian; AMFI integrals calculated, but NOT added !'
           ENDIF
         ENDIF
         
@@ -5037,6 +5131,7 @@ C
 C
       IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
 C
+      CALL QEXIT('HAMINP')
       RETURN
 C
  1000 FORMAT (//' Information about the ',A,' kinetic balance scheme:')

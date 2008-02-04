@@ -79,7 +79,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
 
       ENDIF
 
-C ... store H2c_AO in pure LL form ...
+C ... store transformed H2c_AO Hamiltonian in pure "LL" form ...
       IF (TWOCOMPBSS.AND.(I2COFK.EQ.1.OR.I2COFK.EQ.2)) THEN
         CALL H2CTOLL(I2COFK,VMAT,WORK(KFREE),LFREE,IPRHAM)
       ENDIF
@@ -124,9 +124,10 @@ C   .... do set up appropriate integrals...
       INTDEF = 1
       INTGEN = INTDEF
       IF (IPRHAM.GE.3) THEN
-        WRITE(LUPRI,*) 
-     &    'MAKE_H2C: SL,SS,GT integrals not calculated !'
+        WRITE(LUPRI,'(2x,a)') 
+     & 'MAKE_H2C: SL,SS,GT integrals not calculated !'
       ENDIF
+C     ... set number of components to 1 (=> two-component mode)      
       MC = 1
       SSMTRC_SAVE = SSMTRC
       SSMTRC = 0.0D0
@@ -213,8 +214,8 @@ C.... it's H1AO_DK or H1AO_DK2 in LL basis
      &'ONEFCK: Wrong value of the entering I2COFK!')
       ENDIF                                  
 C
-C     Read two-component hamiltonian integrals from file
-C     ====================================================
+C     Read chosen two-component hamiltonian integrals from file BSSMAT
+C     ==================================================================
 C
       CALL RFBSSMAT(HAM2CL,.FALSE.,'GETH2CAO',
      &      FOCK,N2BBASXQ,LUBSS,IPRINT)
@@ -861,10 +862,11 @@ C
 C  PURPOSE: Read the LBL record label from the BSSMAT file into
 C           the entering TMAT array
 C
-C  On input: LBL - the label of the record
-C            KEEP_OPEN - flag on keeping  the BSSMAT file open
-C            FROMSUB - the name of the routine from which RFBSSMAT is called
-C            TMAT - array
+C  On input: LBL - label of the record to be read
+C            KEEP_OPEN - flag for keeping the BSSMAT file open after
+C                        reading
+C            FROMSUB -  name of the routine from which RFBSSMAT is called
+C            TMAT - array for the record
 C            ISIZE - the size of the record
 C            LUBSS - file unit number ...
 C
@@ -884,15 +886,18 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (IPRINT.GE.3) THEN
        CALL HEADER('*** Output from the RFBSSMAT routine ***',-1)
-       write(lupri,*) '* RFBSSMAT called from routine:',FROMSUB
-       write(lupri,*) '* The label to be read from BSSMAT:',LBL
-       write(lupri,*) '* Length of the record on the file:',ISIZE
+       write(lupri,'(2x,a,a)')
+     &            '* RFBSSMAT called from routine:',FROMSUB
+       write(lupri,'(2x,a,a)')
+     &            '* The label to be read from BSSMAT:',LBL
+       write(lupri,'(2x,a,i8)')
+     &         '* Length of the record on the file:',ISIZE
       ENDIF
 
       INQUIRE(FILE='BSSMAT',EXIST=IS_HERE,OPENED=IS_OPEN)
 
       IF (.NOT.IS_HERE) THEN
-       WRITE(LUPRI,*) 'RFBSSMAT from ',FROMSUB,
+       WRITE(LUPRI,'(/,2x,a,a,a)') 'RFBSSMAT from ',FROMSUB,
      &   ': BSSMAT file is not present !'
        CALL QUIT('RFBSSMAT: BSSMAT file is not present !')
       ENDIF
@@ -900,11 +905,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (.NOT.IS_OPEN) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
        IF (IPRINT.GE.3) THEN
-        write(lupri,*) '* Opening the BSSMAT file.'
+        write(lupri,'(2x,a)') '* Opening the BSSMAT file.'
        ENDIF
       ELSE
        IF (IPRINT.GE.3) THEN
-        write(lupri,*) '* BSSMAT file is open.'
+        write(lupri,'(2x,a)') '* BSSMAT file was already open. '//
+     &                         ' No opening.'
        ENDIF
       ENDIF
 
@@ -912,11 +918,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (FNDLAB(LBL,LUBSS)) THEN
         CALL READT(LUBSS,ISIZE,TMAT)
         IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,*)
-     & '* RFBSSMAT: ',LBL,' record  was read from the file BSSMAT'
+         WRITE(LUPRI,'(2x,a,a,a)')
+     &   '* RFBSSMAT: ',LBL,' record  was read from the file BSSMAT'
         ENDIF
       ELSE
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(2x,a,a,a,a)')
      & 'RFBSSMAT from ',FROMSUB,': ',LBL,' record was'//
      & ' NOT FOUND in the file BSSMAT !'
        CALL QUIT('RFBSSMAT: Record NOT FOUND in the file BSSMAT!') 
@@ -925,11 +931,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (.NOT.KEEP_OPEN) THEN
         CLOSE(LUBSS,STATUS='KEEP')
         IF (IPRINT.GE.3) THEN
-          write(lupri,*) '* BSSMAT file left closed.'
+         write(lupri,'(2x,a)')  
+     &   '* BSSMAT file left closed.'
         ENDIF
       ELSE
         IF (IPRINT.GE.3) THEN
-          write(lupri,*) '* BSSMAT file left open.'
+         write(lupri,'(2x,a)')
+     &   '* BSSMAT file left open.'
         ENDIF
       ENDIF
 
@@ -947,6 +955,7 @@ C  PURPOSE: WRITE the LBL record (stored in TMAT) to the BSSMAT file
 C           acording to IW, KEEP_OPEN parameters.
 C
 C  On input:
+C -----------
 C            IW - integer number (1-4) specifying how to write the record
 C
 C              IW = 1: find EOFLABEL, write record, renew EOFLABEL
@@ -981,22 +990,26 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from the W2BSSMAT routine ***',-1)
-        write(lupri,*) '* W2BSSMAT was called from routine: ',FROMSUB
-        write(lupri,*) '* Entering parameter on how to write IW=',IW
-        write(lupri,*) '* The entering label for record: ',LBL
-        write(lupri,*)
+        write(lupri,'(2x,a,a)')  
+     &   '* W2BSSMAT was called from routine: ',FROMSUB
+        write(lupri,'(2x,a,i2)') 
+     &   '* Entering parameter on how to write IW=',IW
+        write(lupri,'(2x,a,a)') 
+     &   '* The entering label for record: ',LBL
+        write(lupri,'(2x,a,i5)')
      &  '* Entering size of record (double words) ISIZE=',ISIZE
-        write(lupri,*)
+        write(lupri,'(2x,a,i3)')
      &  '* Entering logical unit of the file, LUBSS=',LUBSS
-        write(lupri,*)
-     &  '* Keeping BSSMAT open after (T/F):',KEEP_OPEN
+        write(lupri,'(2x,a,l)')
+     &  '* Keeping BSSMAT file open after writing the record (T/F):',
+     &  KEEP_OPEN
         CALL FLSHFO(LUPRI)
       ENDIF
 
       IF (ISIZE.LE.0) THEN
        WRITE(LUPRI,*) 'W2BSSMAT from ',FROMSUB,
      &                ': Entering ISIZE=',ISIZE
-       CALL QUIT('W2BSSMAT: wrong value of ISIZE !')
+       CALL QUIT('W2BSSMAT: wrong value of ISIZE ! <= 0 !')
       ENDIF
 
 C     ... find out about the BSSMAT file
@@ -1005,19 +1018,19 @@ C     ... find out about the BSSMAT file
       IF (.NOT.IS_OPEN.AND.IS_HERE) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','OLD',FROMSUB)
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     &  '* BSSMAT does exist, open as an old file.'
+        write(lupri,'(2x,a)')
+     &  '* BSSMAT does exist, opening as an old file.'
        ENDIF
       ELSE IF (.NOT.IS_HERE.AND..NOT.IS_OPEN) THEN
        CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN',FROMSUB)
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     &  '* BSSMAT does not exist, open it as an UNKNOWN file.'
+        write(lupri,'(2x,a)')
+     &  '* BSSMAT does not exist, opening as an UNKNOWN file.'
        ENDIF
       ELSE IF (IS_HERE.AND.IS_OPEN) THEN
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     &  '* BSSMAT does exist and is open.'
+        write(lupri,'(2x,a)')
+     &  '* BSSMAT file does exist and is created.'
        ENDIF
        CONTINUE
       ELSE
@@ -1035,21 +1048,22 @@ C     ... find out about the BSSMAT file
           IF (IW.EQ.1) THEN
             CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
             IF (IPRINT.GE.3) THEN
-             WRITE(LUPRI,*)
+             WRITE(LUPRI,'(2x,a,a,a)')
      &      '* Code 1:',LBL,' record '//
      &      'was WRITTEN to the file BSSMAT after the EOFLABEL,'//
      &      ' which was renewed.'
             ENDIF
           ELSE
            IF (IPRINT.GE.3) THEN
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(2x,a,a,a)')
      & '* Code 2:',LBL,' record was WRITTEN to the file BSSMAT'//
      & ' after the EOFLABEL, which was NOT renewed.'
            ENDIF
           ENDIF
         ELSE                                                       
-         WRITE(LUPRI,*) 
-     &     'W2BSSMAT from ',FROMSUB,': EOFLABEL not found on BSSMAT !'        
+         WRITE(LUPRI,'(2x,a,a,a)') 
+     &     'W2BSSMAT called from ',FROMSUB,
+     &     ': EOFLABEL not found on BSSMAT !' 
          CALL QUIT( 
      & 'W2BSSMAT: Error, EOFLABEL not found in BSSMAT file!')    
         ENDIF
@@ -1059,13 +1073,13 @@ C     ... find out about the BSSMAT file
         IF (IW.EQ.3) THEN
           CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
           IF (IPRINT.GE.3) THEN
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(2x,a,a)')
      &      '* Code 3:',LBL,' record '//
      &     'was WRITTEN to file BSSMAT. EOFLABEL was renewed.'
           ENDIF
         ELSE IF (IW.EQ.4.OR.IW.EQ.5) THEN
           IF (IPRINT.GE.3) THEN
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(2x,a,a,a)')
      &     '* Code 4:',LBL,' record '//
      &     'was WRITTEN to the file BSSMAT. EOFLABEL NOT renewed.'
            ENDIF
@@ -1073,11 +1087,11 @@ C     ... find out about the BSSMAT file
       ELSE IF (IW.EQ.6) THEN
        CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
+        write(lupri,'(2x,a)')
      &  '* Code 6: Only the EOFLABEL was added.'
        ENDIF
       ELSE
-       WRITE(LUPRI,*) 'W2BSSMAT from ', FROMSUB,
+       WRITE(LUPRI,'(2x,a,a,i2)') 'W2BSSMAT called from ', FROMSUB,
      &                ': Entering code IW=',IW
        CALL QUIT('W2BSSMAT: Wrong value of entering IW ! Must be 1-5 !')
       ENDIF
@@ -1091,8 +1105,8 @@ C     ... close the file if not set to keep it open
        ENDIF
       ELSE
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     &  '* BSSMAT file left open.'
+        write(lupri,'(2x,a)')
+     &  '* BSSMAT file was left open.'
        ENDIF
       ENDIF
 
@@ -1260,11 +1274,12 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C             
 C****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
-
       DIMENSION S(LR,LC,NZX)
+      
+      CALL QENTER('TEST_DIAG_MTX')
 
       SUM_DE  = SUM_DIAG_EL(S,N,LR,LC,NZX)
       SUM_DEN = SUM_DE/DFLOAT(N)
@@ -1274,19 +1289,24 @@ C****************************************************************************
      &'Sum of diagonal elements /N :',SUM_DEN
       WRITE(LUPRI,'(2X,A,D12.5)') 
      &'Sum of off-diagonal elements :',SUM_ODE 
+      CALL FLSHFO(LUPRI)
 
       IF (DABS(SUM_DEN-D1).GT.THRNULL) THEN
         WRITE(LUPRI,'(2X,A)') 
      & 'TEST_DIAG_MTX: WARNING, sum of diagonal elements/N'//
      &' of a unit matrix differs too much from 1!'
+       CALL FLSHFO(LUPRI)
       ENDIF
 
       IF (DABS(SUM_ODE-D0).GT.THRNULL) THEN 
        WRITE(LUPRI,'(2X,A)') 
      &'TEST_DIAG_MTX: WARNING, sum of off-diagonal elements of a unit'//
      &' matrix differs too much from 0!'
+       CALL FLSHFO(LUPRI)
       ENDIF
 
+
+      CALL QEXIT('TEST_DIAG_MTX')
       RETURN
       END
 
@@ -1298,7 +1318,7 @@ C  /* Deck EXTR_BSS_INFO */
      &                    START2C,I2CHAM,
      &                    DO2C4C,INI2C,I2COFK,
      &                    YREQ1,IC_AMFI,GETPCTM,IPRINT)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C PURPOSE:
 C ========
@@ -1331,7 +1351,8 @@ C            SAVESO1  - flag to decide to save SO1 elements (from H1) into the B
 C
 C  to be added at the later stage to the final spin-free 2c Hamilt.(BSSsfB,BSSsfE,DKH2sfB,DKH2sfE)
 C
-C            ONLYTRA - flag for C->S->C transformation
+C            ONLYTRA - flag for C->S->C transformation of H2c for test
+C                       of AMFI routine working in spherical basis
 C
 C            ELIM_SF
 C
@@ -1339,13 +1360,13 @@ C            IC_AMFI - flag for AMFI subroutine
 C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 C
       LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF,
-     &      NOFPB,BLOCKD,YREQ1,DO4C2C,START2C,DO2C4C,
-     &       USEDF,SAVESO1,GETPCTM,CONT2C
+     &        NOFPB,BLOCKD,YREQ1,DO4C2C,START2C,DO2C4C,
+     &        USEDF,SAVESO1,GETPCTM,CONT2C
 
       CALL QENTER('EXTR_BSS_INFO')
 
@@ -1520,8 +1541,8 @@ C       ... AMFI gives only SO1 integrals
       IF (IPA.EQ.1) THEN
         ONLYTRA=.TRUE.
         ADD_AMFI=.TRUE.
-C     ... AMFI gives SO1+MFSO2 integrals,
-C        but these are added to the Hamiltionian with ZERO weight
+C     ... AMFI calculated SO1+MFSO2 integrals,
+C        but these are added to the Hamiltionian with ZERO weight !
         IC_AMFI = 3
         WRITE(LUPRI,'(/2X,A)')
      &'* C->S->C transformation + AMFI run(test), but no adding'//
@@ -1558,7 +1579,7 @@ C        but these are added to the Hamiltionian with ZERO weight
      &  '* AMFI contribution is NOT included.'
       ENDIF
 
-C ... treat the GETPCTM flag - for the infinite order do always prepare
+C ...   treat the GETPCTM flag - for the infinite order always prepare
 C     the picture change transformation matrix !
       GETPCTM = .FALSE.
 C     IF (.NOT.SPINFR.AND..NOT.SAVESO1.AND.IPZ.EQ.9) THEN
@@ -1616,6 +1637,7 @@ C     ... pure 2c mode after the DC-SCF ...
        ENDIF
       ENDIF
       WRITE(LUPRI,*)
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('EXTR_BSS_INFO')
       RETURN
       END
@@ -8053,7 +8075,6 @@ C             INDXLM - index of typ
 C             IPNUC - index nuclei (1-NUCDEP)
 C             ISTNUCTYP - integer array for storing ICENT, INDXLM 
 C 
-C 
 C          ... for each sperical AO in AMFI triangular matrixes
 C             IPTA - typ of spherical AO for AMFI
 C             INDXLMA - index of AMFI type
@@ -9156,12 +9177,12 @@ C    ... print out H2c matrix in AO "xhi" basis
 
       CALL MEMREL('AMFI_STUFF',WORK,KWORK,KWORK,KFREE,LFREE)
 
-C  SAVE THE CSC TRANSFOMED INTEGRALS 
+C  SAVE THE CSC TRANSFORMED INTEGRALS 
       CALL W2BSSMAT(1,.TRUE.,'H1AO_DK2','AMFI_STUFF',
      &              H2CAO,N2BBASXQ,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
-     &'AMFI_STUFF: CSC transformed relativistic atomic integrals'//
+     &'AMFI_STUFF: C-S-C transformed relativistic atomic integrals'//
      &' were written into the BSSMAT file, EOFLABEL renewed.'
       ENDIF
 

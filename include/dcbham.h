@@ -71,6 +71,9 @@
 !     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
 !     CMPEIG     - for IOTC: compare eigenvalues of 2c and 4c Hamiltonian
 !
+!     DKH1       - own flag for 1st order DKH - very rough ...
+!     DKH2       - own flag for second order DKH 
+!
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
 !     CAP        - flag for complex absoption potential to be used only at the FSCC correlated level
@@ -104,7 +107,8 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG  
+     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
+     &        DKH1, DKH2
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
@@ -117,7 +121,8 @@
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG
+     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
+     &                DKH1, DKH2
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 
