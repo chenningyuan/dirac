@@ -499,7 +499,7 @@ if (associated(heads%main_head)) then
  temp => heads%main_head
  do while (associated(temp))
   write(LUPRI,'(/,5x,a,i3)') '.... *** string #',i
-  call print_string(temp%p_string)
+  call print_string_elem(temp%p_string)
   temp => temp%next
   i = i + 1
  enddo
@@ -513,7 +513,7 @@ call QExit('print_all_strings')
 end subroutine print_all_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine print_string(p_this_string)
+subroutine print_string_elem(p_this_string)
 !------------------------------------------------------------------------
 !
 !   print-out string of elements of the string pointed with "p_this_string"
@@ -523,11 +523,11 @@ subroutine print_string(p_this_string)
 #include "implicit.h"
 #include "priunit.h"
 type(one_string), pointer :: p_this_string
-call QEnter('print_string')
+call QEnter('print_string_elem')
 
 if (.not.associated(p_this_string)) then
-  write(LUPRI,'(/,2x,a)') 'print_string: entering "p_this_string" not associated !' 
-  call Quit('print_string: entering "p_this_string" not associated !')
+  write(LUPRI,'(/,2x,a)') 'print_string_elem: entering "p_this_string" not associated !' 
+  call Quit('print_string_elem: entering "p_this_string" not associated !')
 else
   write(LUPRI,'(/,a,i3,a,f12.5)')   & 
   '*** printing  one string of ',p_this_string%n, &
@@ -535,8 +535,8 @@ else
   call print_members(p_this_string%head)
 endif
 
-call QExit('print_string')
-end subroutine print_string
+call QExit('print_string_elem')
+end subroutine print_string_elem
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_string_reverse(this_string)
@@ -782,7 +782,7 @@ endif
 if (get_iprint() >= 5) then
  write(LUPRI,'(/,2x,a)')  &
  'process_one_string: processing this ONE entering string...'
- call print_string(this%p_string)
+ call print_string_elem(this%p_string)
 endif
 
 ! ... rearrange string - move deltas, indexed terms left
@@ -791,7 +791,7 @@ call rearrange_string(this%p_string)
 if (get_iprint() >= 5) then
  write(LUPRI,'(/,2x,a)')  &
  'process_one_string: now REARRANGED string going to be processed...'
- call print_string(this%p_string)
+ call print_string_elem(this%p_string)
 endif
 
 ! ... initialization ...
@@ -833,7 +833,7 @@ do while ( found_splitting )
     if (get_iprint() >= 7) then
        write(LUPRI,'(/,2x,a)')   &
        'process_one_string: duplicated string:'
-       call print_string(this2%p_string)
+       call print_string_elem(this2%p_string)
        if (associated(this2%next)) write(LUPRI,'(2x,a)')  &
        '...next string FOLLOWS ... '
     endif
@@ -884,8 +884,8 @@ call QEnter('process_2_strings')
 if ( get_iprint() >= 5 ) then
   write(LUPRI,'(/,2x,a)')   &
   '*** process_2_strings: going to process 2 subsequent entering strings ***'
-  call print_string(this_string)
-  call print_string(copied_string)
+  call print_string_elem(this_string)
+  call print_string_elem(copied_string)
 endif
 
 allocate(temp_i); allocate(temp_a)
@@ -920,14 +920,14 @@ if ( get_iprint() >= 5 ) then
    call print_one_member(temp_a)
 endif
 
-write(LUPRI,*) 'd_ia made before: '; call print_string(this_string)
+write(LUPRI,*) 'd_ia made before: '; call print_string_elem(this_string)
 ! ... create kronecker delta ...
 !d_ia => null()
 nullify(d_ia)
 allocate(d_ia)
 d_ia = make_kd_cell(temp_i%member%pSQOper%p, temp_a%member%pSQOper%p)
   write(LUPRI,'(1x,a,$)') 'allocated d_ia:' ;call print_one_member(d_ia)
-write(LUPRI,*) 'd_ia made after: '; call print_string(this_string)
+write(LUPRI,*) 'd_ia made after: '; call print_string_elem(this_string)
 
 ! ... adapt first string ...
 call remove_element(this_string, ipos)
@@ -946,8 +946,8 @@ copied_string%factor = - copied_string%factor
 if ( get_iprint() >= 5 )  then
  write(LUPRI,'(/,2x,a)')  &
  '*** process_2_strings: adapted 2 subsequent strings'
- call print_string(this_string)
- call print_string(copied_string)
+ call print_string_elem(this_string)
+ call print_string_elem(copied_string)
 ! call quit('...in process_2_strings')
  call FLSHFO(LUPRI)
 endif
@@ -984,7 +984,7 @@ else
     'get_dll_member: number of string elements=',this_string%n,  &
     ' while wrong position in the string, ipos=',ipos
     write(LUPRI,'(2x,a)') 'get_dll_member: control print-out of the whole string'
-    call print_string(this_string)
+    call print_string_elem(this_string)
     call Quit('get_dll_member: wrong position of the element in the string !')
   endif
 endif
@@ -1076,7 +1076,7 @@ copied_string%factor  =  this_string%factor
 if (get_iprint() >= 25) then
   write(LUPRI,'(/,2x,a)')  &
   '*** duplicate_string: allocated duplicated string:'
-  call print_string(copied_string)
+  call print_string_elem(copied_string)
 endif
 
 !call quit('end in duplicate_string')
@@ -1194,7 +1194,7 @@ else
 
        if ( get_iprint() >= 28 ) then
          write(LUPRI,'(2x,a)') 'term moved to the beginning  !'
-         call print_string(this) 
+         call print_string_elem(this) 
        endif
 
     endif
@@ -1263,7 +1263,7 @@ endif
 if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a)')   &
  '*** move_element_beg: control print-out before reordering the string:'
- call print_string(this_string)
+ call print_string_elem(this_string)
 ! call print_string_reverse(this_string)
 endif
 
@@ -1305,7 +1305,7 @@ endif
 if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a)')   &
  'move_element_beg: control print-out of reordered string:'
- call print_string(this_string)
+ call print_string_elem(this_string)
 endif
 
 call QExit('move_element_beg')
@@ -1380,7 +1380,7 @@ if (get_iprint() >= 25) then
 !if (get_iprint() >= 5) then
   write(LUPRI,'(/,2x,a)')  &
   'remove_element: printed updated string with removed element:'
-  call print_string(this_string)
+  call print_string_elem(this_string)
 endif
 
 call QExit('remove_element')
@@ -1508,7 +1508,7 @@ endif
 if (get_iprint() >= 25) then
    write(LUPRI,'(/,2x,a)')   &
    '*** exchange_string_elements: printing updated string'
-   call print_string(this_string)
+   call print_string_elem(this_string)
 endif
 
 call QExit('exchange_string_elements')
@@ -1660,7 +1660,7 @@ if (get_iprint() >= 25) then
 !if (get_iprint() >= 5) then
  write(LUPRI,'(/,2x,a)')   &
  '*** insert_element> print the newly updated string:'
- call print_string(this_string)
+ call print_string_elem(this_string)
 endif
 
 call QExit('insert_element')

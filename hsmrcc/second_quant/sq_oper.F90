@@ -4,10 +4,8 @@ use control_print
 
 type, public :: SQOper
  !private
-   !integer(kind=4) :: p = 0
    integer :: p = 0
    logical :: is_creation_oper = .false.
-   !type(SQOper), pointer :: next => null()
 end type SQOper
  
  contains

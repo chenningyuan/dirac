@@ -65,10 +65,11 @@ Program TEST_SEC_QUANT
   pos%head => head 
 
  ! call Insert_SQOp_end(pos,b)
-  call Insert_SQOp_end(pos,o4)
+ ! call Insert_SQOp_end(pos,o4)
   call Insert_SQOp_end(pos,o3)
   call Insert_SQOp_end(pos,o2)
-  call Insert_SQOp_end(pos,o1)
+ ! call Insert_SQOp_end(pos,o1)
+
  ! call Insert_KD_end(pos,d_ij)
  ! call Insert_KD_end(pos,d_ab)
 
