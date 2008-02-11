@@ -61,8 +61,8 @@ nullify(this)
 allocate(this, stat=ierr)
 
 if (ierr /= 0) then
-  write(LUPRI,'(2x,a)') 'make_it: error in allocation !'
-  call Quit('make_it: error in allocation !')
+  write(LUPRI,'(2x,a)') 'make_it: error in "indexed_term" cell allocation !'
+  call Quit('make_it: error in in "indexed_term" cell allocation !')
 endif
 
 ! ... check even number of indexes
@@ -75,14 +75,15 @@ this%nindx = nindx_in
 
 this%id = id_in
 
-allocate(this%indxs(nindx),stat=ierr)
+allocate(this%indxs(this%nindx),stat=ierr)
 if (ierr /= 0) then
-  write(LUPRI,'(2x,a)') 'error in allocation !'
-  call Quit('make_it: error in allocation !')
+  write(LUPRI,'(2x,a)') 'error in allocation of "this%indxs(nindx)" !'
+  call Quit('make_it: error in allocation of  "this%indxs(nindx)" !')
 endif
 
 this%indxs = -1 
 
+! ... if present string on parameter list, treat it 
 if ( present(it_name_in) ) then
    call cancel_string(this%it_name)
    call make_string(this%it_name,it_name_in)
@@ -95,7 +96,7 @@ end function  make_it
 subroutine cancel_it(this)
 !----------------------------------------------------------------------------
 !
-!                   completely deallocates indexed term
+!       completely deallocates entering indexed term
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"
