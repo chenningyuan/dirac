@@ -22,7 +22,6 @@ function make_sqo(i,is_creat) result (this)
 integer, intent(in) :: i
 logical, optional, intent(in) :: is_creat
 type(SQOper), pointer :: this 
-
 call QEnter('make_sqo')
 
 if (get_iprint() > 70) then
@@ -122,7 +121,6 @@ function is_sqo_filled(this) result(is)
 !----------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-!type(SQOper), intent(in) :: this
 type(SQOper), pointer :: this
 logical :: is 
 call QEnter('is_sqo_filled')

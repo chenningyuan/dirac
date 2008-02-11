@@ -7,6 +7,8 @@ module control_print
 !
 !-----------------------------------------------------------
 
+!use mystring
+
 integer, private :: iprint = 0
 
 contains

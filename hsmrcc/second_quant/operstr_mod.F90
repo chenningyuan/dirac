@@ -455,12 +455,69 @@ call QExit('Insert_KD_end')
 end subroutine Insert_KD_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine Insert_IndxTerm_end(this_string,this_it)
+!------------------------------------------------------------------------
+!
+!  Inserts "indexed term" at the end of the string
+!
+!-------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this_string
+type(indexed_term), pointer :: this_it
+type(dll_member), pointer :: temp, temp1
+call QEnter('Insert_IndxTerm_end')
+
+! .. entering string must be allocated - check it !
+if (.not.associated(this_string)) then
+  write(LUPRI,*) 'Insert_IndxTerm_end: entering pointer NOT associated ! Abort !'
+  call Quit('Insert_IndxTerm_end: entering pointer NOT associated ! Abort !')
+endif
+
+! entering second quantized operator must be alocated - check it !
+if (.not.associated(this_it)) then
+  write(LUPRI,'(2x,a)') 'Insert_IndxTerm_end: entering sec.quant.oper. NOT associated ! Abort !'
+  call Quit('Insert_IndxTerm_end: entering pointer of IT NOT associated ! Abort !')
+endif
+
+if (.not.associated(this_string%head)) then
+
+ if (associated(this_string%rear) .or. (this_string%n > 0) ) then
+   write(LUPRI,'(2x,a)') 'Some error in the empty entering string !'
+   write(LUPRI,'(2x,a,l)')        &
+   '...associated(this_string%rear)=',associated(this_string%rear)
+   write(LUPRI,'(2x,a,i3)') 'this_string%n=',this_string%n
+   call Quit('Some error in the empty entering string !')
+ endif
+
+! ... the string is empty yet ,ie head => null()  ...
+  allocate (this_string%head)
+  this_string%head%member%pIndxTerm => this_it
+  this_string%rear => this_string%head
+  this_string%n = 1
+else
+
+  ! ... string contains at least one member; add element to the rear
+  allocate(temp)  
+  temp%previous => this_string%rear
+  this_string%rear%next => temp
+  temp%next => null()
+  this_string%rear => temp
+  this_string%rear%member%pIndxTerm => this_it ! ... points to the operator
+  this_string%n = this_string%n + 1
+
+endif
+
+call QExit('Insert_IndxTerm_end')
+end subroutine Insert_IndxTerm_end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  recursive subroutine Insert_KD_rec(this, head)
-!--------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 !
 ! ... inserts kron.delta into doubly linked list of mixed elements
 !
-!--------------------------------------------------------------------------------------
+!--------------------------------------------------------------------------------
  type(KronDelta), intent(inout) :: this 
  type(dll_member), pointer :: head
 
@@ -634,9 +691,9 @@ type(dll_member), pointer :: this
 call QEnter('print_one_member')
 
 if (.not.associated(this)) then
-   write(LUPRI,'(/,2x,a)')   & 
-   'print_one_member: entering pointer is not associated !'
-    !call Quit('print_one_member: entering pointer is not associated !')
+  write(LUPRI,'(/,2x,a)')   & 
+  'print_one_member: entering pointer is not associated !'
+  !call Quit('print_one_member: entering pointer is not associated !')
 else
 
 if (associated(this%member%pSQOper)) then
@@ -644,15 +701,17 @@ if (associated(this%member%pSQOper)) then
 else if (associated(this%member%pKronDelta)) then
   ! write(LUPRI,'(2x,a)') 'this%member%pKronDelta !'
    call print_kd(this%member%pKronDelta)
+else if (associated(this%member%pIndxTerm)) then
+   call print_it(this%member%pIndxTerm)
 else
-   write(LUPRI,'(2x,a)') '*** print_one_member dead branch output ***'
+   write(LUPRI,'(/,2x,a)') '*** print_one_member dead branch output ***'
    write(LUPRI,'(2x,a,l)')   &
    'associated(this%member%pSQOper):',associated(this%member%pSQOper)
    write(LUPRI,'(2x,a,l)')   &
    'associated(this%member%pKronDelta):',associated(this%member%pKronDelta)
    write(LUPRI,'(2x,a,l)')   &
    'associated(this%member%pIndxTerm):',associated(this%member%pIndxTerm)
-   call Quit('print_one_member: neither SQOp, nor Kron.delta !')
+   call Quit('print_one_member: not SQOp, not Kron.delta, not indexed term !')
 endif
 
 endif

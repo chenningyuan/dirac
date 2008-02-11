@@ -35,8 +35,9 @@ $(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
-#### object files from DIRAC - contain general purpose routines ####
-dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
+#### object files from DIRAC - general purpose routines ####
+dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o \
+               ../../oof/string_mod.o
 
 ## dummy entry to handle the "default:" in Makefile.config:
 dirac.x dirmpi.x:

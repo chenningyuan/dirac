@@ -4,8 +4,8 @@
 Program TEST_SEC_QUANT
 
   use Operators_string
-
-  use control_print
+!  use Indexed_Quantities
+!  use control_print
 
 #include "implicit.h"
 #include "priunit.h"
@@ -13,6 +13,8 @@ Program TEST_SEC_QUANT
   type(KronDelta), pointer :: d_ij, d_ab
 
   type(SQOper), pointer :: i,j,a,b,o1,o2,o3,o4
+
+  type(indexed_term), pointer :: Tia, Tijab, Xib
 
   type(dll_member), pointer :: head => null(), k, d_ik
 
@@ -31,6 +33,10 @@ Program TEST_SEC_QUANT
 
   !allocate(d_ab)
   d_ab => make_kron_delta(3,4); ! call print_kd(d_ab)
+
+   Tia => make_it(2,2,'Tia')
+   call fill_indexes(Tia,2,3)
+   call print_it(Tia)  ; !call quit('here')
 
   !allocate(i)
   !allocate(o3)
@@ -65,10 +71,12 @@ Program TEST_SEC_QUANT
   pos%head => head 
 
  ! call Insert_SQOp_end(pos,b)
- ! call Insert_SQOp_end(pos,o4)
+  call Insert_SQOp_end(pos,o4)
+
+  call Insert_IndxTerm_end(pos,Tia)
   call Insert_SQOp_end(pos,o3)
   call Insert_SQOp_end(pos,o2)
- ! call Insert_SQOp_end(pos,o1)
+  call Insert_SQOp_end(pos,o1)
 
  ! call Insert_KD_end(pos,d_ij)
  ! call Insert_KD_end(pos,d_ab)
