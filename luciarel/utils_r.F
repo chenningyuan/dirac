@@ -761,7 +761,7 @@ C
         GOTO 500
       ELSE
         WRITE(LUWRT,*) ' GET_IJKL_UPDATE: ERROR! WHO SHOULD GET AN
-     & UPDATE???'
+     & UPDATE? '
         CALL Abend2( 'error in GET_IJKL_UPDATE! Check logical flags! ')
       ENDIF
 C
