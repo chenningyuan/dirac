@@ -118,12 +118,23 @@
 /* MI: use correct type casting for the error function
      'int MPI_Errhandler_create(MPI_Handler_function *function,MPI_Errhandler *errhandler)'   */
      /* if ( (ierr = MPI_Errhandler_create(&mpi_errtrap, errhandler)) )  */
+#if !defined (SYS_SX64)
       if ( (ierr = MPI_Errhandler_create((MPI_Handler_function *) &mpi_errtrap, errhandler)) )  
          printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
       if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
          printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+#else
+      /*
+       * avoiding errhorhandler crashes on SX machines; reason unknown!
+       * 10-02-08 S. Knecht
+      if ( (ierr = MPI_Errhandler_create((MPI_Handler_function *) &mpi_errtrap, errhandler)) )  
+         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
+      if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
+         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+      */
+#endif
       /*
        * Get number of nodes and the number of this node
        */

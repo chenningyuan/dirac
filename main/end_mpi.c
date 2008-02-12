@@ -76,10 +76,17 @@
    /*
     * Free MPI error handler
     */
-
+#if !defined (SYS_SX64)
    if (  ( ierr = MPI_Errhandler_free(&errhandler)) )
       printf("MPI_Errhandler_Free error %i in end_mpi()\n",ierr);
-
+#else
+   /*
+    * avoiding errhorhandler crashes on SX machines; reason unknown!
+    * 10-02-08 S. Knecht
+   if (  ( ierr = MPI_Errhandler_free(&errhandler)) )
+      printf("MPI_Errhandler_Free error %i in end_mpi()\n",ierr);
+    */
+#endif
    /*
     *  Finalize MPI
     */
