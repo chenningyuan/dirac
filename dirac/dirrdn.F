@@ -4328,7 +4328,7 @@ C ...   DIRCON(1) means contracted L component basis set !
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
-          WRITE(LUPRI,'(/,2x,3(A,L))')
+          WRITE(LUPRI,'(/,2x,3(A,L6))')
      &    'HAMINP: conflicting options; IOTC=',IOTC,' DKH1=',DKH1,
      &    ' DKH2=',DKH2
           CALL QUIT('HAMINP: Conflicting options IOTC & DKH1 or '//

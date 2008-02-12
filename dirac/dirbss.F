@@ -1000,7 +1000,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &  '* Entering size of record (double words) ISIZE=',ISIZE
         write(lupri,'(2x,a,i3)')
      &  '* Entering logical unit of the file, LUBSS=',LUBSS
-        write(lupri,'(2x,a,l)')
+        write(lupri,'(2x,a,l6)')
      &  '* Keeping BSSMAT file open after writing the record (T/F):',
      &  KEEP_OPEN
         CALL FLSHFO(LUPRI)
