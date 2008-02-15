@@ -41,9 +41,7 @@ module Options
  subroutine print_Options
 !--------------------------------------------------------------------------
 !
-!
-!                  ... very simple print out ...
-!
+!           ... simple print out of basic options in DIRAC ...
 !
 !--------------------------------------------------------------------------
  use Parameters
@@ -52,11 +50,14 @@ module Options
 
  call Header('*** Printing out OPTIONs ***',-1)
 
- write(UOUT,'(/,2x,a)') 'print_Options ....'
- write(UOUT,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
- write(UOUT,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
- write(UOUT,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
- write(UOUT,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
+! write(UOUT,'(/,2x,a)') 'print_Options ....'
+ write(*,'(/,2x,a)') 'print_Options ....'
+! write(UOUT,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
+ write(*,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
+ write(*,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
+ write(*,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
+ write(*,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
+ write(*,*) '  UOUT=',UOUT
 
  !call Quit('print_Options')
 

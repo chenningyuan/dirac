@@ -22,8 +22,14 @@ extern void sethsmrmaxit_(int *);
 /* the main F90 subroutine */
 extern void hsmrcc_(void);  
 
-/* routine for setting iprint variable - gneral print level */
+/* routine for setting general print level variable - iprint */
 extern void sethsmr_iprint_(int *); 
+
+extern void qenter_c_(char *, int *);
+//extern void qenter_c_(char *);
+//extern void qenter(char *);
+//extern void qenter_(char *);
+//extern void qexit_(char *);
 
 #define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:d"
 
@@ -130,7 +136,6 @@ void usage(prog)
     printf("Program usage: %s [-hvsryTqfagp] [-oCVABmci args ] [--options] input-file \n",prog);
     printf("\n");
 }
-
 
 void help()
 {
@@ -253,6 +258,12 @@ int main (argc, argv)
    int ncmo, nemo, nhole, nptcl;
    pid_t pid;
    int ipr; /* print level... */
+   char routine_name[]="hsmrmain.c:int main(argc,argv)";
+
+  // qenter_c_("hsmrmain.c",strlen("hsmrmain.c"));
+   qenter_c_(routine_name, (int *) strlen(routine_name));
+  // qenter_c_("hsmrmain.c");
+  // qenter_("hsmrmain.c");
 
    /* change argv[0] to contain only base name */
 
@@ -761,7 +772,7 @@ int main (argc, argv)
    sethsmrinttol_(&inttol);
    sethsmrmaxit_(&maxit);
 
-   if ( !opts[DIRAC] ) {
+   if ( !opts[DIRAC] ) { /* Gamess files */
      if (outfile==NULL) {
        sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
      }
@@ -769,6 +780,10 @@ int main (argc, argv)
        sethsmrfiles_(inpfile,outfile,strlen(inpfile),strlen(outfile));
      }
    }
+   else /* when HSMRCC is based solely upon the DIRAC program  */
+     {
+       sethsmrfiles_(inpfile,outfile,0,0);
+     }
 
    /* Invoke HSMRCC Driver program */
 
@@ -787,6 +802,7 @@ int main (argc, argv)
          fclose(stderr);
       }
    }
+   qexit_c_(routine_name, (int *) strlen(routine_name));
    exit(0);
 }
 

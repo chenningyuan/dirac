@@ -35,6 +35,10 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
 !
 !  set up of various HSMRCC flags 
 !
+! special note for the DIRAC flag ...
+!
+!  called from main C program in "hsmrmain.c"
+!
 !-----------------------------------------------------------------
 
    use Options
@@ -47,6 +51,8 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    integer*4, intent(in) :: FlagNOHSMR , FlagMAXIT   , FlagINTTOL
    integer*4, intent(in) :: FlagCNVTOL , FlagSHFTCORE, FlagSHFTVIRT
    integer*4, intent(in) :: FlagNOAPND , FlagRDGUESS , FlagDIRAC
+
+   Call QEnter('SetHSMRflags')
 
    if ( FlagGENINT   == 1 ) OPTION(GENINT)   = .TRUE.
    if ( FlagPRNTINF  == 1 ) OPTION(PRNTINF)  = .TRUE.
@@ -65,16 +71,26 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    if ( FlagSHFTVIRT == 1 ) OPTION(SHFTVIRT) = .TRUE.
    if ( FlagNOAPND   == 1 ) OPTION(NOAPND)   = .TRUE.
    if ( FlagRDGUESS  == 1 ) OPTION(RDGUESS)  = .TRUE.
-   if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE.  ! ... DIRAC on
+!  ... DIRAC is on
+   if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE. 
 
    if (get_iprint() > 5) then
       call print_Options 
    endif
 
+   if (OPTION(DIRACp)) then
+     write(UOUT,'(/,2x,a,/)') 'SetHSMRflags: DIRAC is ON!'
+     write(*,'(/,2x,a,/)') 'SetHSMRflags 2: DIRAC is ON!'
+     call flushout
+     !call Quit('SetHSMRflags')
+   endif
+
+   Call QExit('SetHSMRflags')
    return
 
 end subroutine SetHSMRflags
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
 !
 !        set important parameters for the code
@@ -93,6 +109,7 @@ subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
 
 end subroutine SetHSMRpars
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRshiftpars(SCVal,SVVal,SAVal,BeetaVal)
 
    use Shift
@@ -111,24 +128,44 @@ subroutine SetHSMRshiftpars(SCVal,SVVal,SAVal,BeetaVal)
 
 end subroutine SetHSMRshiftpars
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRfiles(IFile,OFile)
-!----------------------------------------------------------
+!----------------------------------------------------------------------
 ! 
-!       Routine for setting files for HSMRCC run.
+!     Routine for setting files for HSMRCC run.
 !
-!----------------------------------------------------------
+!   Called from main C-program hsmrmain.c.
+!
+!----------------------------------------------------------------------
    use IOModule
+   use Options
+
    implicit none
+
    character(len=*), intent(in) :: IFile
    character(len=*), intent(in) :: OFile
    integer :: ilen, olen
 
    Call QEnter('SetHSMRfiles')
 
-   if (get_iprint() > 5) then
-    write(UOUT,*) '>>> SetHSMRfiles called form hsmrmain.c !'
-    write(UOUT,*) 'SetHSMRfiles: IFile=',IFile
-    write(UOUT,*) 'SetHSMRfiles: OFile=',OFile
+   if (OPTION(DIRACp)) then
+     Write(*,'(2x,a)') 'SetHSMRfiles: SetHSMRfiles: DIRAC is on!'
+     Write(*,*) 'UOUT=',UOUT
+     Write(UOUT,*) '2. UOUT=',UOUT ! does NOT work...
+   endif
+
+   if (get_iprint() >= 5) then
+    !write(UOUT,'(/,2x,a)') '>>> SetHSMRfiles called form hsmrmain.c !'
+    write(*,'(/,2x,a)') '>>> SetHSMRfiles called form hsmrmain.c !'
+   ! write(UOUT,'(2x,a,a)') 'SetHSMRfiles: IFile=',IFile
+    write(*,'(2x,a,a)') 'SetHSMRfiles: IFile=',IFile
+   ! write(UOUT,'(2x,a,a)') 'SetHSMRfiles: OFile=',OFile
+    write(*,'(2x,a,a)') 'SetHSMRfiles: OFile=',OFile
+   endif
+
+   if (OPTION(DIRACp)) then
+     Write(*,'(2x,a)') 'SetHSMRfiles: DIRAC is on!'
+     Call Quit('SetHSMRfiles xx: DIRAC is on!')
    endif
 
    FileHSMR = REPEAT(' ',LEN(FileHSMR))
@@ -155,6 +192,10 @@ subroutine SetHSMRfiles(IFile,OFile)
    FileMR2EINT  = TRIM(IFile)//'.F296'   ! binary
    FileSYMINF   = TRIM(IFile)//'.F297'   ! text file...
 
+!---------------------------------------------------------
+!  ... the rest are own HSMRCC generated files
+!---------------------------------------------------------
+
    FileVINF  = TRIM(IFile)//'.VINF'
 
    FileVINT  = TRIM(IFile)//'.VINT'
@@ -175,15 +216,24 @@ subroutine SetHSMRfiles(IFile,OFile)
    else
       if (TRIM(OFile)==REPEAT(' ',olen)) then
          Write(*,*) 'blank Output File'
-         Write(UOUT,*) 'blank Output File'
+         Write(UOUT,'(2x,a)') 'SetHSMRfiles: blank Output File'
          !call abort
          call Quit('SetHSMRfiles: blank Output File')
       endif
       FileHSMR = TRIM(OFile)
    endif
 
-   if (get_iprint()>5) then
-    write(UOUT,*) 'HSNRCC output file is ',FileHSMR
+   if (get_iprint() >= 8) then
+    write(UOUT,'(2x,a,a)') 'HSNRCC output file is ',FileHSMR
+    write(UOUT,'(2x,a,a)') 'FileVINT=',FileVINT
+    write(UOUT,'(2x,a,a)') 'FileVIND=',FileVIND
+    write(UOUT,'(2x,a,a)') 'FileFHH=',FileFHH
+    write(UOUT,'(2x,a,a)') 'FileFHP=',FileFHP
+    write(UOUT,'(2x,a,a)') 'FileFPP=',FileFPP
+    write(UOUT,'(2x,a,a)') 'FileTAMP=',FileTAMP
+    write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
+    write(UOUT,'(2x,a,a)') 'FileTNEW=',FileTNEW
+    write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
    endif
 
    Call QExit('SetHSMRfiles')
@@ -223,4 +273,22 @@ subroutine SetHSMRMaxIt(It)
    MAXITER = It
 
 end subroutine SetHSMRMaxIt
+
+subroutine QEnter_C(RoutineName)
+!
+!  C substitute of DIRAC QENTER
+!
+character(len=*), intent(in) :: RoutineName
+!write(*,*) 'QEnter_C...RoutineName=',RoutineName
+Call QEnter(RoutineName)
+end subroutine QEnter_C
+
+subroutine QExit_C(RoutineName)
+!
+!  C substitute of DIRAC QEXIT
+!
+character(len=*), intent(in) :: RoutineName
+!write(*,*) 'QExit_C...RoutineName=',RoutineName
+Call QExit(RoutineName)
+end subroutine QExit_C
 

@@ -11,14 +11,24 @@ module VINFMod
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine OpenVINF
-
-! called from InitHSMRBase
-
+!------------------------------------------------------------------------------
+!
+!    Open GAMESS file  
+!
+!    called from InitHSMRBase
+!
+!------------------------------------------------------------------------------
    implicit none
+   call QEnter('OpenVINF')
 
-   print *,'OpenVINF:  going to open the Gamess input file FileVINF=',FileVINF
-   print *,'...and OPTION(GENINT)=',OPTION(GENINT)
+   if (get_iprint() >=7) then
+     write(UOUT,'(/,2x,a,a80)')   & 
+     'OpenVINF:  going to open the Gamess input file FileVINF=',FileVINF
+     write(UOUT,*) ' UVINF=',UVINF,' FileVINF=',FileVINF
+     write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
+   endif
 
    if (OPTION(GENINT)) then
 !     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
@@ -27,6 +37,7 @@ subroutine OpenVINF
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    endif
 
+   call QExit('OpenVINF')
    return
 
 end subroutine OpenVINF

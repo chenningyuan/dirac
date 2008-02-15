@@ -17,12 +17,12 @@ contains
 subroutine prepare_dirac_HSMRCC_file
 !----------------------------------------------------------------------------------
 !
-!   prepare file with DIRAC symmetry..etc info for the standalone HSMRCC program
+!    prepare file with DIRAC symmetry..etc info for the subsequent
+!  standalone HSMRCC program
 !
 !----------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-
 character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
  
 call QEnter('prepare_dirac_HSMRCC_file')
