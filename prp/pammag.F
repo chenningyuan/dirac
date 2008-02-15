@@ -1104,10 +1104,6 @@ C***********************************************************************
 
       CALL QENTER('RNTLON')
       KFRSAV = KFREE
-
-C Open property file (needed connection matrixes, Fock MO matrix)
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','RNTLON')
-
 C Open file for the London reorthonormalization contribution, {T(1),H(0)} 
       OPEN(LUFCKL,FILE='FCKLON',FORM='UNFORMATTED',
      &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN') ! Why 8* and not 3*?
@@ -1147,7 +1143,9 @@ C      modified density matrixes, MDM_x/y/z, in AO basis
 
 C ... define e-p/e shells for reorthonormalization
       EPMIX = DOEPRN
-
+C Open property file (needed connection matrixes, Fock MO matrix)
+      CALL OPNFIL(LU1INT,'AOPROPER','OLD','RNTLON')
+C
       DOPCTRA_SAVE=DOPCT
       DOPCT=.FALSE.
 C ... run over components x/y/z
@@ -3015,7 +3013,6 @@ C
 
       CALL QENTER('DEF_D1HBLOND')
 #include "memint.h"
-
       IPRINT = IPRPRP
 
       IF (IMP.EQ.1) THEN
