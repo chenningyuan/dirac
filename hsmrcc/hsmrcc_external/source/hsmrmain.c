@@ -26,10 +26,10 @@ extern void hsmrcc_(void);
 extern void sethsmr_iprint_(int *); 
 
 extern void qenter_c_(char *, int *);
-//extern void qenter_c_(char *);
+/*extern void qenter_c_(char *);
 //extern void qenter(char *);
 //extern void qenter_(char *);
-//extern void qexit_(char *);
+//extern void qexit_(char *); */
 
 #define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:d"
 
@@ -262,10 +262,10 @@ int main (argc, argv)
    /* name for QEnter/QExit stuff  */
    char routine_name[]="hsmrmain.c:int main(argc,argv)"; 
 
-  // qenter_c_("hsmrmain.c",strlen("hsmrmain.c"));
+  /* // qenter_c_("hsmrmain.c",strlen("hsmrmain.c")); */
    qenter_c_(routine_name, (int *) strlen(routine_name));
-  // qenter_c_("hsmrmain.c");
-  // qenter_("hsmrmain.c");
+ /*  // qenter_c_("hsmrmain.c");
+  // qenter_("hsmrmain.c"); */
 
    /* change argv[0] to contain only base name */
 
