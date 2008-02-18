@@ -1639,17 +1639,20 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 #else
    if (LABSIZ == 2 ) then
 !   ... for 64 bit AND more than 256 spinorobitals
-     MAX2_DIM = MAX2/2
+    ! MAX2_DIM = MAX2/2 ! this does not work !!!
+     MAX2_DIM = MAX2 ! ... this works at least for short time ...
    else
      MAX2_DIM = MAX2
    endif
 #endif
 
-   if (get_iprint() > 20) then
-     write(UOUT,'(2x,a,i2,a,i2)') 'PREAD: LABSIZ=',LABSIZ,' NWDVAR=',NWDVAR
-     write(UOUT,*) 'PREAD:  MAX2=',MAX2,' and size in PRD, MAX2_DIM=',MAX2_DIM
+   if (get_iprint() >= 20) then
+     write(UOUT,'(/,2x,a,i2,a,i2)')   &
+     '** Output from PREAD: LABSIZ=',LABSIZ,' NWDVAR=',NWDVAR
+     write(UOUT,'(2x,2(a,i7))')    &
+     'MAX2=',MAX2,' and dimension in PRD, MAX2_DIM=',MAX2_DIM
      !write(UOUT,*) 'size(IX)=',size(IX)
-     write(UOUT,*) 'NAO, NSO, NFRZV:',NAO, NSO, NFRZV
+ !    write(UOUT,*) 'NAO, NSO, NFRZV:',NAO, NSO, NFRZV
    endif
 
    CALL PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
@@ -1673,7 +1676,13 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
    INTEGER IX(MAX2_DIM) ! ... this is general I hope /MI,16.2.2008...
 
+! ... for 64bit/LABELSIZE=2 error: PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
    READ(IS) NX,IX,XX
+
+   if (get_iprint() >= 22) then
+     write(UOUT,'(2x,a,i8)')   &
+     'PREAD: read NX=',NX
+   endif
 
    RETURN
 
