@@ -258,7 +258,9 @@ int main (argc, argv)
    int ncmo, nemo, nhole, nptcl;
    pid_t pid;
    int ipr; /* print level... */
-   char routine_name[]="hsmrmain.c:int main(argc,argv)";
+
+   /* name for QEnter/QExit stuff  */
+   char routine_name[]="hsmrmain.c:int main(argc,argv)"; 
 
   // qenter_c_("hsmrmain.c",strlen("hsmrmain.c"));
    qenter_c_(routine_name, (int *) strlen(routine_name));
@@ -717,7 +719,6 @@ int main (argc, argv)
      sethsmr_iprint_(&ipr);
    }
 
-
    /* Set Defaults for Unselected Flags */
 
    if (!opts[TAMP]    && !opts[HEFF])  opts[TAMP]   = 1;
@@ -780,7 +781,7 @@ int main (argc, argv)
        sethsmrfiles_(inpfile,outfile,strlen(inpfile),strlen(outfile));
      }
    }
-   else /* when HSMRCC is based solely upon the DIRAC program  */
+   else /* when the HSMRCC run is based solely upon the DIRAC program  */
      {
        sethsmrfiles_(inpfile,outfile,0,0);
      }

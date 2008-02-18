@@ -45,13 +45,20 @@ subroutine InitHSMRBase
       close(6)
       close(5)
       close(0)
-      open(UOUT,file=FileHSMR)
+      open(UOUT,file=FileHSMR) ! ... output to the file ...
+      if ( get_iprint() >= 15 ) then
+          write(UOUT,'(2x,a,i3)') 'InitHSMRBase: UOUT variable set to ',UOUT
+          write(UOUT,'(2x,a,a)')  &
+          'InitHSMRBase: UOUT assigned file is ',FileHSMR
+      endif
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
          ierrno = fseek(UOUT,0,2)
          if (ierrno/=0) then
-           write(UOUT,*) 'fseek error on UOUT'
-           call flush(UOUT)
-           call abort
+           write(UOUT,*) 'InitHSMRBase: fseek error on UOUT'
+          ! call flush(UOUT)
+           call flushout
+           !call abort
+           call Quit('InitHSMRBase: fseek error on UOUT!')
          endif
       endif
    endif
@@ -91,7 +98,7 @@ subroutine InitHSMRBase
       endif
    endif
 
-   ! ... Initialize GMSMod ...
+   ! ... Initialize gamess module, GMSMod ...
 
    call InitGMSMod
 

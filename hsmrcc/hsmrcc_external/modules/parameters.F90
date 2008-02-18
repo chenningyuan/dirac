@@ -2,7 +2,7 @@
 module Parameters
 !------------------------------------------------------------------------------
 !
-!
+!              important data parameters for the HSMRCC run
 !
 !------------------------------------------------------------------------------
 
@@ -12,7 +12,7 @@ module Parameters
 !       number of integers in floating point number (machine dependent)
 !----------------------------------------------------------------------------
 !
-!  ... copyied from GAMESS-US
+!  ... copied from GAMESS-US
 !
 !C     THIS IS THE NUMBER OF INTEGERS IN A WORKING PRECISION
 !C     FLOATING POINT NUMBER, WHICH IS MOST COMMONLY 64 BITS.
@@ -20,7 +20,7 @@ module Parameters
 !C          SYSTEMS WITH 32 BIT INTEGERS USE A VALUE OF 2.
 !
 !----------------------------------------------------------------------------
-! select 32/64-bit code by preprocessor statement
+!     select 32/64-bit code by the preprocessor statement
 !----------------------------------------------------------------------------
 #if defined (ARCH32BIT)
    integer, parameter :: INTSFP = 2 
@@ -121,7 +121,7 @@ module Parameters
    integer :: NSTATE_MAIN
    integer :: NSTATE_INTM
 
-   ! ... control print-out parameter
+   ! ... control print-out parameter (introduced by MI)
    integer, private :: IPRINT = 0
 
    ! ... print-out channel - moved here from the module "IOmodule"
@@ -163,7 +163,7 @@ module Parameters
    end function get_iprint
 
    subroutine flushout
-   ! ... shorter version for flushing out the buffer
+   ! ... short version for flushing out the buffer
     call flush(UOUT)
    end subroutine flushout
 

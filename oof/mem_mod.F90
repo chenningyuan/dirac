@@ -93,7 +93,8 @@ write(LUPRI,'(3(A,I12,/),A,I12)')                &
 if (associated(PW)) then
    !write(LUPRI,'(A)') '----> Pointer PW is associated with the WORK array.'
    if (size(PW) /= LWORK) then
-     write(LUPRI,*) ' size(PW), LWORK:',size(PW), LWORK
+     write(LUPRI,'(2x,a,2i9)')  &
+     ' size(PW), LWORK:',size(PW),LWORK
      call quit('print_mem_param: LWORK .ne. size(PW) !')
    endif
    CALL MEMCHK('print_mem_param',PW,1)

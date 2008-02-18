@@ -1159,6 +1159,38 @@ function PackRSHP(R,S)
 
 end function PackRSHP
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,from_where)
+!----------------------------------------------------------------------------
+!
+!     check P,Q,R,S,LABELSIZE,LABEL,NPACK parameters of Gamess integrals
+!
+!  text string "from_where" specifies exact place of call in the code
+!
+!  Written by Miro ILIAS, Prievidza, 2008
+!
+!----------------------------------------------------------------------------
+integer :: P, Q, R, S
+integer :: LABELSIZE, LABEL, NPACK
+character(len=*) :: from_where
+call QEnter('check_PQRS')
+
+if (P==0 .or. Q==0 .or. R==0 .or. S==0) then
+ write(UOUT,'(/,2x,a)') '*** check_PQRS error catch ***'
+ write(UOUT,'(2x,a,a)')  &
+ 'entering text label:',from_where
+ write(UOUT,'(2x,3(a,i5))')  &
+ 'entering LABELSIZE=',LABELSIZE,'  NPACK=',NPACK,'  LABEL=',LABEL
+ if (LABEL == 0) then
+   write(UOUT,'(2x,a)') 'LABEL .eq. 0 ! wrong IXPREAD(:) before !'
+ endif
+ write(UOUT,'(2x,4(a,i2))') '...thus P=',P,' Q=',Q,' R=',R,' S=',S
+ call Quit('check_PQRS: wrong indexes P,Q,R,S !')
+endif
+
+call QExit('check_PQRS')
+end subroutine check_PQRS
+
 subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                               StartRec,EndngRec,TotNZInt,NZIntRec,         &
                               SetIntBuf,ResolvRec,RecordNumPQ,RecordNumRS, &
@@ -1296,12 +1328,14 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                LABEL = IXPREAD(2*NPACK)
                R = ISHFT( LABEL, -16 )
                S = IAND(  LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, aa ')
 #else
                LABEL = IXPREAD(NPACK)
                P =       ISHFT( LABEL, -48 )
                Q = IAND( ISHFT( LABEL, -32 ), 65535 )
                R = IAND( ISHFT( LABEL, -16 ), 65535 )
                S = IAND( LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
 #endif
                ! Now all permutations are
                ! generated & added to buffer.
@@ -1326,6 +1360,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                Q = IAND( ISHFT( LABEL, -16 ), 255 )
                R = IAND( ISHFT( LABEL,  -8 ), 255 )
                S = IAND(        LABEL,        255 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ba')
 #else
                IF ( MOD(NPACK,2) .EQ. 0 ) THEN
                   LABEL = IXPREAD(NPACK/2)
@@ -1333,12 +1368,14 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                   Q = IAND( ISHFT( LABEL, -16 ), 255 )
                   R = IAND( ISHFT( LABEL,  -8 ), 255 )
                   S = IAND( LABEL, 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bb')
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
                   P = ISHFT( LABEL, -56 )
                   Q = IAND( ISHFT( LABEL, -48 ), 255 )
                   R = IAND( ISHFT( LABEL, -40 ), 255 )
                   S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
                ENDIF
 #endif
                ! Now all permutations are
@@ -1483,12 +1520,14 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                LABEL = IXPREAD(2*NPACK)
                R = ISHFT( LABEL, -16 )
                S = IAND(  LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ca')
 #else
                LABEL = IXPREAD(NPACK)
                P =       ISHFT( LABEL, -48 )
                Q = IAND( ISHFT( LABEL, -32 ), 65535 )
                R = IAND( ISHFT( LABEL, -16 ), 65535 )
                S = IAND( LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, cb')
 #endif
             ! Now all permutations are
             ! generated & added to buffer.
@@ -1513,6 +1552,7 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                Q = IAND( ISHFT( LABEL, -16 ), 255 )
                R = IAND( ISHFT( LABEL,  -8 ), 255 )
                S = IAND(        LABEL,        255 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, da')
 #else
                IF ( MOD(NPACK,2) .EQ. 0 ) THEN
                   LABEL = IXPREAD(NPACK/2)
@@ -1520,12 +1560,14 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                   Q = IAND( ISHFT( LABEL, -16 ), 255 )
                   R = IAND( ISHFT( LABEL,  -8 ), 255 )
                   S = IAND( LABEL, 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, db')
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
                   P = ISHFT( LABEL, -56 )
                   Q = IAND( ISHFT( LABEL, -48 ), 255 )
                   R = IAND( ISHFT( LABEL, -40 ), 255 )
                   S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, dc')
                ENDIF
 #endif
             ! Now all permutations are
@@ -1580,7 +1622,7 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
    INTEGER LABSIZ, NWDVAR, IS, NX, NINTMX
    DOUBLE PRECISION XX(NINTMX)
    INTEGER IX(*)
-   INTEGER MAX2
+   INTEGER MAX2, MAX2_DIM
 
    IF (LABSIZ.EQ.1) THEN
       IF(NWDVAR.EQ.2) MAX2 = NINTMX
@@ -1592,20 +1634,44 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
       WRITE(6,*) 'PREAD: CONFUSION WITH -LABSIZ-'
    END IF
 
-   CALL PRD(IS,XX,IX,NX,NINTMX, MAX2 )
+#if defined (ARCH32BIT)
+   MAX2_DIM = MAX2
+#else
+   if (LABSIZ == 2 ) then
+!   ... for 64 bit AND more than 256 spinorobitals
+     MAX2_DIM = MAX2/2
+   else
+     MAX2_DIM = MAX2
+   endif
+#endif
+
+   if (get_iprint() > 20) then
+     write(UOUT,'(2x,a,i2,a,i2)') 'PREAD: LABSIZ=',LABSIZ,' NWDVAR=',NWDVAR
+     write(UOUT,*) 'PREAD:  MAX2=',MAX2,' and size in PRD, MAX2_DIM=',MAX2_DIM
+     !write(UOUT,*) 'size(IX)=',size(IX)
+     write(UOUT,*) 'NAO, NSO, NFRZV:',NAO, NSO, NFRZV
+   endif
+
+   CALL PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
    RETURN
 
 END SUBROUTINE PREAD
 
-SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2)
+SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
    implicit none
-   INTEGER IS, NX, NINTMX,MAX2
+   INTEGER IS, NX, NINTMX,MAX2,MAX2_DIM
    DOUBLE PRECISION XX(NINTMX)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 !  INTEGER IX(MAX2)   ! ... for less than 256 spinorobitals
-   INTEGER IX(MAX2/2) ! ... for 64 bit AND more than 256 spinorobitals
+ !  INTEGER IX(MAX2/2) ! ... for 64 bit AND more than 256 spinorobitals
+
+ ! INTEGER IX(*)     ! ... perhaps general case - this does not work 
+ !                   - compiler Error: Data
+ ! transfer element at (1) cannot be a full reference to an assumed-size array
+
+   INTEGER IX(MAX2_DIM) ! ... this is general I hope /MI,16.2.2008...
 
    READ(IS) NX,IX,XX
 

@@ -31,15 +31,15 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
                         FlagNOHSMR , FlagMAXIT   , FlagINTTOL  , &
                         FlagCNVTOL , FlagSHFTCORE, FlagSHFTVIRT, &
                         FlagNOAPND , FlagRDGUESS , FlagDIRAC     )
-!-----------------------------------------------------------------
+!------------------------------------------------------------------------
 !
 !  set up of various HSMRCC flags 
 !
-! special note for the DIRAC flag ...
+!  special note for the DIRAC flag ...
 !
-!  called from main C program in "hsmrmain.c"
+!  called as the first F90 routine from main C program in "hsmrmain.c"
 !
-!-----------------------------------------------------------------
+!------------------------------------------------------------------------
 
    use Options
    use Parameters
@@ -71,8 +71,9 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    if ( FlagSHFTVIRT == 1 ) OPTION(SHFTVIRT) = .TRUE.
    if ( FlagNOAPND   == 1 ) OPTION(NOAPND)   = .TRUE.
    if ( FlagRDGUESS  == 1 ) OPTION(RDGUESS)  = .TRUE.
-!  ... DIRAC is on
+!  ... when DIRAC is on
    if ( FlagDIRAC    == 1 ) OPTION(DIRACp)   = .TRUE. 
+
 
    if (get_iprint() > 5) then
       call print_Options 
@@ -132,9 +133,9 @@ end subroutine SetHSMRshiftpars
 subroutine SetHSMRfiles(IFile,OFile)
 !----------------------------------------------------------------------
 ! 
-!     Routine for setting files for HSMRCC run.
+!  Routine for setting files for HSMRCC run.
 !
-!   Called from main C-program hsmrmain.c.
+!  Called as the last F90 routine from the main C-program "hsmrmain.c".
 !
 !----------------------------------------------------------------------
    use IOModule

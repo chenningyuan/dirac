@@ -2,7 +2,7 @@
 module GMSMod
 !------------------------------------------------------------------------
 !
-!                     Necessary stuff from Gamess
+!           Necessary stuff read from Gamess integral files
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -202,24 +202,29 @@ subroutine InitGMSMod
 
       if ((NAO <= 0).or.(NSO <= 0).or.(NFRZV < 0).or.(NSO > 2*(NAO - NFRZV)))then
          write(UOUT,*) 'Invalid Data in File UVINF'
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('InitGMSMod: Invalid Data in File UVINF !')
       endif
 
       if (((IUNIQ.NE.0).and.(IUNIQ.NE.1)).or.              &
           ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
            (NINTMX.LE.0)) then
-         write(UOUT,*) 'Invalid Data in File UVINF'
+         write(UOUT,*) ' IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
+         write(UOUT,*) 'Invalid Data in File UVINF, 2! '
          !call flush(UOUT)
          call flushout
          !call abort
-         call Quit('Invalid Data in File UVINF')
+         call Quit('InitGMSMod: Invalid Data in File UVINF 2 !')
       endif
 
       if (NTMO /= NSO) then
+         write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
          write(UOUT,*) 'Current NTMO is not valid for integral file'
          call flush(UOUT)
-         call abort
+         !call abort
+         call Quit('InitGMSMod: Current NTMO is not valid for integral file')
       endif
 
       ! ... Allocate for next read ...
@@ -245,19 +250,10 @@ subroutine InitGMSMod
       ! ... Set other variables in GMSMod
    endif
 
-   write(UOUT,'(/,a,/,a,i2,a,i2)')    &
-   '---------------------------------------------------------------------------------', &
-   'InitGMSMod: read LABELSIZE=',LABELSIZE,' and set INTSFP=',INTSFP
-#if defined (ARCH32BIT) 
-   write(UOUT,'(a)') '...we are on the 32-bit architecture '
-#else
-   write(UOUT,'(a)') '...we are on the 64-bit architecture '
-#endif
-   write(UOUT,'(a)')  &
-   '---------------------------------------------------------------------------------'
-
    ! ... allocate gamess integral buffers
 
+
+   ! ... set up size for gamess integral labels
    NXX = NINTMX
    IF (LABELSIZE.EQ.1) THEN
       IF(INTSFP.EQ.2) IXX = NXX
@@ -267,11 +263,26 @@ subroutine InitGMSMod
       IF(INTSFP.EQ.1) IXX = NXX
    ENDIF
 
+   ! ... double precision array for Gamess integrals ...
    if (.not.allocated(XXPREAD)) allocate(XXPREAD(NXX))
+
+   ! ... integer array for Gamess integral labels ...
    if (.not.allocated(IXPREAD)) allocate(IXPREAD(IXX))
 
-   call QExit('InitGMSMod')
+! ... control print-out ... 
+   write(UOUT,'(/,a,/,a,i2,a,i2,/,2(a,i7))')    &
+   '----------------------------------------------------------------------------',    &
+   'InitGMSMod: read LABELSIZE=',LABELSIZE,'; set INTSFP (parameters.F90) ',INTSFP,   & 
+   '...read NXX=',NXX,' and set IXX=',IXX
+#if defined (ARCH32BIT) 
+   write(UOUT,'(a)') '...we are on the 32-bit architecture '
+#else
+   write(UOUT,'(a)') '...we are on the 64-bit architecture '
+#endif
+   write(UOUT,'(a)')  &
+   '-----------------------------------------------------------------------------'
 
+   call QExit('InitGMSMod')
    return
 
 end subroutine InitGMSMod
