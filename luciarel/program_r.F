@@ -314,6 +314,14 @@ CSK#else
 CSK      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA (unit)',
 CSK     &                 LUDIA
 CSK#endif
+#if defined (VAR_MPI2)
+      IF( USE_EX_IDIA ) THEN
+        WRITE(LUWRT,*) '  saving CPU/WALL-time in this MPI run   '
+        WRITE(LUWRT,*) '  using existing diagonal file DIAPAR.1. '
+        WRITE(LUWRT,*) '                                         '
+        GOTO 55 
+      END IF
+#endif
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
 C
@@ -347,6 +355,8 @@ C
       END IF
 *
 #if defined (VAR_MPI2)
+*
+ 55   CONTINUE
 *
       NPTEST_VAR = 0
       IF( NPTEST_VAR .ge. 10 ) THEN

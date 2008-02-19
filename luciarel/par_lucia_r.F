@@ -4352,11 +4352,13 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "lucipar_rel.inc"
+#include "mxmcgas.h"
+#include "dcbkrmc.h"
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU7BL,PLU5BL, PLUCBL
       CHARACTER*10 PDIA, PLU1, PLU2, PLU3, PLU4, PLU5, PLU6, PLU7, PLUC
       CHARACTER*6 PDIABL 
       INTEGER PFILELENGTH
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IDIA_SIZE
       IDISP = 0
       PFILELENGTH = 0
 C
@@ -4439,6 +4441,26 @@ C
      &        "native",MPI_INFO_NULL,IERR)
       CALL MPI_FILE_SET_VIEW(ILUC,IDISP,MPI_REAL8,MPI_REAL8,
      &        "native",MPI_INFO_NULL,IERR)
+C
+C     IF (NFLGRPS_REL == 1 .and. ICIONLY .eq. 1) THEN
+C       check for existing DIAPAR.1 which could be reused...
+C     END IF
+C
+      USE_EX_IDIA = .FALSE.
+C
+      IF( MYPROC .eq. MASTER )THEN
+        IF( NEWCOMM_PROC .eq. NMPROC .and. ICIONLY .eq. 1)THEN
+          IDIA_SIZE = 0
+          CALL MPI_FILE_GET_SIZE(IDIA,IDIA_SIZE,IERR)
+csk          WRITE(LUWRT,*) ' DIAPAR.1 found with size (bytes):',IDIA_SIZE
+          IF( IDIA_SIZE .gt. 0 ) USE_EX_IDIA = .TRUE.
+        END IF
+      END IF
+      CALL MPI_BCAST(USE_EX_IDIA,1,MPI_LOGICAL,0,MYNEW_COMM,IERR)
+C
+csk      IF( USE_EX_IDIA )THEN
+csk       WRITE(LUWRT,*) ' existing DIAPAR.1 found which may be reused.'
+csk      END IF
 C
       END
 ***********************************************************************
