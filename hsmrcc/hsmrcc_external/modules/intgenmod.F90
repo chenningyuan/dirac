@@ -1390,6 +1390,11 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                call SetIntBuf(StRec,EnRec,RecLen,S,R,Q,P,+ASInt)
             enddo
          ENDIF
+         if (get_iprint() >= 22) then
+            write(UOUT,'(2x,a,i8)')   &
+            'IntFileGen_TwoBody: read NumIntRec=',NumIntRec
+            call flushout
+         endif
          if (NumIntRec <= 0) exit
       enddo
 
@@ -1616,13 +1621,24 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
 
 end subroutine IntFileGen_OneBody
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
+!--------------------------------------------------------------
+!
+!    Driver for reading Gamess integral files
+!
+! Called from : IntFileGen_OneBody
+!               IntFileGen_TwoBody
+!
+!--------------------------------------------------------------
 
    implicit none
    INTEGER LABSIZ, NWDVAR, IS, NX, NINTMX
    DOUBLE PRECISION XX(NINTMX)
    INTEGER IX(*)
    INTEGER MAX2, MAX2_DIM
+
+   Call QEnter('PREAD')
 
    IF (LABSIZ.EQ.1) THEN
       IF(NWDVAR.EQ.2) MAX2 = NINTMX
@@ -1657,6 +1673,7 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 
    CALL PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
+   Call QExit('PREAD')
    RETURN
 
 END SUBROUTINE PREAD
@@ -1666,6 +1683,8 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
    implicit none
    INTEGER IS, NX, NINTMX,MAX2,MAX2_DIM
    DOUBLE PRECISION XX(NINTMX)
+   integer (kind=8), save :: ic = 0
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 !  INTEGER IX(MAX2)   ! ... for less than 256 spinorobitals
  !  INTEGER IX(MAX2/2) ! ... for 64 bit AND more than 256 spinorobitals
@@ -1676,15 +1695,24 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
    INTEGER IX(MAX2_DIM) ! ... this is general I hope /MI,16.2.2008...
 
-! ... for 64bit/LABELSIZE=2 error: PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
+   Call QEnter('PRD')
+
+! ... for 64bit/LABELSIZE=2 error:
+!  PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
+   ic = ic + 1
    READ(IS) NX,IX,XX
+  ! READ(IS,ERR=1200) NX,IX,XX
 
    if (get_iprint() >= 22) then
-     write(UOUT,'(2x,a,i8)')   &
-     'PREAD: read NX=',NX
+     write(UOUT,'(2x,2(a,i8))')   &
+     'PREAD: read NX=',NX,' ic=',ic
+     call flushout
    endif
 
+   Call QExit('PRD')
    RETURN
+
+ 1200  Call Quit('PRD: Gamess unformatted/sequential file reading error exit !')
 
 END SUBROUTINE PRD
 
