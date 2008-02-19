@@ -1118,9 +1118,26 @@ C**********************************************************************
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION RCCTOS(*), NPARBLOCK(*), IBLOCKL(*)
 #include "lucipar_rel.inc"
+#include "typesz_mpi2.h"
 #include "wrkspc.inc"
 #include "ipoist8.inc"
-      NNULL = 0
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IWRITE_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IREAD_BYTE, IS_BYTE8_2
+      INTEGER IBLINFO_FILE, IFL_BLK_MPI
+      CHARACTER*14 PLUBL_INFO
+      CHARACTER*16 PLUBL_INFOL
+      LOGICAL STORE_BLK_INFO, EX
+C
+      NNULL        = 0
+      IBLINFO_FILE = 0
+      IDISP        = 0
+      IOFFSET      = 0
+      IS_BYTE8     = 0
+      IS_BYTE8_2   = 0
+      IWRITE_BYTE  = 0
+      IREAD_BYTE   = 0
+      IFL_BLK_MPI  = 0
 C
 C     set mark for local memory
 C
@@ -1136,12 +1153,79 @@ C
           I_NZERO_LEN_SCR = I_NZERO_LEN_SCR + 1
         END IF
       END DO
+C     transfer to common block /LUCIPARREL/
+      I_NZERO_LEN = I_NZERO_LEN_SCR
+C
+C     block distribution info file
+C
+      PLUBL_INFO = 'BLOCK_INFO_MPI'
+C
+C     set correct name
+C
+      WRITE(PLUBL_INFOL,'(A14,A1,I1)') PLUBL_INFO,'.',MASTER
+      IBLINFO_FILE = 16
+C
+      EX = .FALSE.
+      IF( MYPROC .eq. MASTER )THEN
+        INQUIRE(FILE=PLUBL_INFOL(1:IBLINFO_FILE),EXIST=EX)
+      END IF
+      CALL MPI_BCAST(EX,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      IF( EX )THEN
+        IF( MYPROC .eq. MASTER )THEN
+          CALL MPI_FILE_OPEN(MPI_COMM_SELF,"BLOCK_INFO_MPI.0",
+     &                       MPI_MODE_CREATE + MPI_MODE_RDWR,
+     &                       MPI_INFO_NULL,IFL_BLK_MPI,IERR)
+C
+          CALL MPI_FILE_SET_VIEW(IFL_BLK_MPI,IDISP,MPI_BYTE,MPI_BYTE,
+     &                           "native",MPI_INFO_NULL,IERR)
+C
+          IOFFSET    = 0
+          IS_BYTE8   = ISIZE_my_int
+          IS_BYTE8_2 = NDIM
+          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
+          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,NPARBLOCK,
+     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+          IOFFSET    = IOFFSET + IREAD_BYTE
+          IS_BYTE8   = ISIZE_my_int
+          IS_BYTE8_2 = NDIM
+          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
+          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,RCCTOS,
+     &                          IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+          IOFFSET    = IOFFSET + IREAD_BYTE
+          IS_BYTE8   = ISIZE_my_int
+          IS_BYTE8_2 = 1
+          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
+          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,ICOUNTABLK_C,
+     &                          IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+          CALL MPI_FILE_CLOSE(IFL_BLK_MPI,IERR)
+        END IF
+        CALL MPI_BCAST(NPARBLOCK,NDIM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(RCCTOS,NDIM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(ICOUNTABLK_C,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+csk        WRITE(LUWRT,*) ' NPARBLOCK (read in)'
+csk        CALL IWRTMAMN(NPARBLOCK,1,NDIM,1,NDIM,LUWRT)
+csk        WRITE(LUWRT,*) ' RCCTOS (read in)'
+csk        CALL IWRTMAMN(RCCTOS,1,NDIM,1,NDIM,LUWRT)
+csk        WRITE(LUWRT,*) ' ICOUNTABLK_C (read in)',ICOUNTABLK_C
+C       print information obtained
+        CALL PRINT_BLOCK_DISTR(NDIM,NPARBLOCK)
+C
+        IAM_NOT_INV = 1
+        IF( MYPROC .ge. ICOUNTABLK_C ) THEN
+          IAM_NOT_INV = 0
+          IMINUS2 = - 2
+          CALL ISETVC(NPARBLOCK,IMINUS2,NDIM)
+        END IF
+C
+        GOTO 100
+      END IF
 C
 C     initialize also RCCTOS 
       CALL ISETVC(RCCTOS,NNULL,NDIM)
       CALL I_DO_RCCTOS(IBLOCKL,RCCTOS,NUM_BLOCKS,1)
-C     transfer to common block /LUCIPARREL/
-      I_NZERO_LEN = I_NZERO_LEN_SCR
 C
       CALL MEMMAR(KCWEIGHTF,  I_NZERO_LEN,   'ADDL  ',1,'ICWGHT')
       CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS,    'ADDL  ',1,'IM_BLK')
@@ -1150,7 +1234,6 @@ C
       CALL ISETVC(WORK(KICCTOS),NNULL,I_NZERO_LEN**2)
       CALL ISETVC(WORK(KAM_BLK_ACT),NNULL,NUM_BLOCKS)
       CALL ISETVC(WORK(KCWEIGHTF),NNULL,I_NZERO_LEN)
-     
 C
       CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACT),IBLOCKL,NDIM)
 C
@@ -1168,6 +1251,47 @@ C     store information in RCCTOS
 C
       CALL FIND_CCTOS_REL(RCCTOS,NPARBLOCK,WORK(KICCTOS),IBLOCKL,
      &                    IRC_SAVE,NDIM)
+C
+csk     WRITE(LUWRT,*) ' NPARBLOCK (write out)'
+csk     CALL IWRTMAMN(NPARBLOCK,1,NDIM,1,NDIM,LUWRT)
+csk     WRITE(LUWRT,*) ' RCCTOS (write out)'
+csk     CALL IWRTMAMN(RCCTOS,1,NDIM,1,NDIM,LUWRT)
+csk     WRITE(LUWRT,*) ' ICOUNTABLK_C (write out)',ICOUNTABLK_C
+      STORE_BLK_INFO = .TRUE.
+C
+C     store information on file - may be useful on vector machines!
+C
+      IF( STORE_BLK_INFO .AND. MYPROC .eq. MASTER )THEN
+C
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,PLUBL_INFOL(1:IBLINFO_FILE),
+     &                     MPI_MODE_CREATE + MPI_MODE_RDWR,
+     &                     MPI_INFO_NULL,IFL_BLK_MPI,IERR)
+C
+        CALL MPI_FILE_SET_VIEW(IFL_BLK_MPI,IDISP,MPI_BYTE,MPI_BYTE,
+     &                         "native",MPI_INFO_NULL,IERR)
+C
+        IOFFSET     = 0
+        IS_BYTE8    = ISIZE_my_int
+        IS_BYTE8_2  = NDIM
+        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
+        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,NPARBLOCK,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IS_BYTE8    = ISIZE_my_int
+        IS_BYTE8_2  = NDIM
+        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
+        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,RCCTOS,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IS_BYTE8    = ISIZE_my_int
+        IS_BYTE8_2  = 1
+        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
+        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,ICOUNTABLK_C,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+        CALL MPI_FILE_CLOSE(IFL_BLK_MPI,IERR)
+      END IF
+ 100  CONTINUE
 C
 C     flush local memory
 C
@@ -1300,15 +1424,18 @@ CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
      &                     MXSIZE
       END IF
 *
-      IMINNP = NMPROC
-      NTEMPP = IMINNP
+      IMINNP       = NMPROC
+      NTEMPP       = IMINNP
+C     store on common block
+      ICOUNTABLK_C = ICOUNTABLK
+C
       IF( ICOUNTABLK .lt. NMPROC ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
         IF( NPTEST .ge. 0 ) THEN
           IF( MYPROC .EQ. 0 ) THEN
             WRITE(LUWRT,*) 'subroutine BLOCK_DISTR_1 speaking!'
             WRITE(LUWRT,*) 'number of active blocks lower than number of
-     &                      procs --> I only use',IMINNP - 1,'procs'
+     &                      procs --> I only use',IMINNP,'procs'
           END IF
         END IF
         NTEMPP = IMINNP
@@ -1455,6 +1582,46 @@ C
         END DO
       END IF
 8888  CONTINUE
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PRINT_BLOCK_DISTR(NDIM,NPARBLOCK)
+C
+C     print block distribution as read from file 
+C     BLOCK_INFO_MPI."MYPROC".
+C
+C     Written by  S. Knecht         - February 19 2008
+C
+C**********************************************************************
+#include "implicit.h"
+#include "lucipar_rel.inc"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION NPARBLOCK(NDIM)
+C
+      WRITE(LUWRT,*)' '
+      WRITE(LUWRT,'(20X,A)')'================================'
+      WRITE(LUWRT,'(20X,A)')' Summation of even distribution '
+      WRITE(LUWRT,'(20X,A)')' reduced output read from file  '
+      WRITE(LUWRT,'(20X,A)')'        BLOCK_INFO_MPI.0        '
+      WRITE(LUWRT,'(20X,A)')'================================'
+      WRITE(LUWRT,*)' '
+      DO ISTI = 1, NMPROC
+        ITLBND = 0
+        DO IBLK = 1, NDIM
+          IF( NPARBLOCK(IBLK) .eq. ISTI -1 ) THEN
+            ITLBND = ITLBND + 1
+          END IF
+        END DO
+        WRITE(LUWRT,'(3X,A,1X,I4,1X,A,1X,I6,1X,A)')
+     & 'CPU',ISTI-1,' computes',ITLBND,'blocks'
+      END DO
 C
       END
 ***********************************************************************
@@ -3358,12 +3525,12 @@ C
         DO IBLK = 1, NBLOCKS
 C
           ILEN = IBLOCKL( IBLK )
-CSK          WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
+csk          WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
           IF( ILEN .GT. 0 ) THEN
 C
 C           get number of CPU that will recieve the block
             I_NEED_BLK = NPARBLOCK( IBLK )
-CSK            WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
+csk            WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
 C
             IF( MYPROC .ne. MASTER .AND. MYPROC .NE. I_NEED_BLK ) 
      &         GOTO 500
@@ -3384,9 +3551,9 @@ C               recieve block and transfer to file
                 CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,MASTER,91,
      &                        MPI_COMM_WORLD,ISTAT,IERR)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-CSK                WRITE(6,*) ' S will write this to disk for block',
-CSK     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-CSK                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
+csk                WRITE(6,*) ' S will write this to disk for block',
+csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
                 CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)
 C
@@ -3432,9 +3599,9 @@ C               count active blocks
 C
                 IF( IMZERO .eq. 0 ) THEN
 C
-CSK                  WRITE(LUWRT,*) ' M will write this to disk for block',
-CSK     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-CSK                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
+csk                  WRITE(LUWRT,*) ' M will write this to disk for block',
+csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)
@@ -3609,8 +3776,8 @@ C         skip end-of-vector marker on file LUIN
 C
       END DO
 C     ^ loop over vectors
-CSK      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
-CSK      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
+csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
 ***********************************************************************
