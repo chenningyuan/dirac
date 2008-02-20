@@ -1393,6 +1393,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
          if (get_iprint() >= 22) then
             write(UOUT,'(2x,a,i8)')   &
             'IntFileGen_TwoBody: read NumIntRec=',NumIntRec
+            if (NumIntRec <= 0) write(UOUT,'(2x,a)') &
+            '...negative, going to exit cycle of reading Gamess file !'
             call flushout
          endif
          if (NumIntRec <= 0) exit
@@ -1621,7 +1623,7 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
 
 end subroutine IntFileGen_OneBody
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 !--------------------------------------------------------------
 !
@@ -1678,7 +1680,15 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 
 END SUBROUTINE PREAD
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
+!--------------------------------------------------------------
+!
+!        Own reading from the open Gamess file 
+!
+!  Called from subroutine PREAD.
+!
+!--------------------------------------------------------------
 
    implicit none
    INTEGER IS, NX, NINTMX,MAX2,MAX2_DIM
@@ -1699,11 +1709,11 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
 ! ... for 64bit/LABELSIZE=2 error:
 !  PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
-   ic = ic + 1
    READ(IS) NX,IX,XX
   ! READ(IS,ERR=1200) NX,IX,XX
 
    if (get_iprint() >= 22) then
+     ic = ic + 1
      write(UOUT,'(2x,2(a,i8))')   &
      'PREAD: read NX=',NX,' ic=',ic
      call flushout

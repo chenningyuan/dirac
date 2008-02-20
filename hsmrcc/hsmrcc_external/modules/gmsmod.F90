@@ -166,15 +166,24 @@ subroutine InitGMSMod
       read(UMR1EINT) HCoreMatrix
       read(UMR2EINT) IUNIQ, LABELSIZE, NINTMX
 
+      if ( get_iprint() >=8 ) then
+        write(UOUT,'(2x,a,i2,a,i2,a,i8)')  &
+        ' InitGMSMod: from UMR2EINT read IUNIQ=',IUNIQ,  &
+        ' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
+      endif
+
       if (((IUNIQ.NE.0).and.(IUNIQ.NE.1)).or.              &
           ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
            (NINTMX.LE.0)) then
          write(UOUT,*) 'Invalid Data in File UMR2EINT'
-         call flush(UOUT)
-         call abort
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('Invalid Data in File UMR2EINT')
       endif
 
-      close(UMR1EINT)
+      ! ... close files ...
+      close(UMR1EINT) 
       close(UMR2EINT)
 
       ! read gamess symmetry info ...
@@ -287,9 +296,20 @@ subroutine InitGMSMod
 
 end subroutine InitGMSMod
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine EndGMSMod
+!--------------------------------------------------------------------
+!
+! Deallocate all allocated arrays.
+!
+! Called from :
+!
+! TODO: include stat checking of deallocation
+!--------------------------------------------------------------------
 
    implicit none
+
+   call QEnter('EndGMSMod')
 
    if (allocated(SpinOfOrb))     deallocate(SpinOfOrb)
    if (allocated(SpinOfActvOrb)) deallocate(SpinOfOrb)
@@ -305,6 +325,8 @@ subroutine EndGMSMod
 
    if (allocated(XXPREAD)) deallocate(XXPREAD)
    if (allocated(IXPREAD)) deallocate(IXPREAD)
+
+   call QExit('EndGMSMod')
 
    return
 
