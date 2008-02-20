@@ -1499,6 +1499,13 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 C
+
+!     initialize EHOMO and ELUMO
+!     Below my pragmatic solution that
+!     should work in most conceivable cases. LV, 1-9-2000.
+      ELUMO = 1.D15
+      EHOMO = -1.D15
+
 C     Initialize (return of no HOMO or LUMO)
 C
       IHOMO = -1
