@@ -6917,3 +6917,33 @@ CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
 24    CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C*/ Deck Totmass */
+      FUNCTION TOTMASS()
+C***********************************************************************
+C
+C  Calculate total mass of molecule
+C
+C  Rip-off from LNROUT in DALTON.
+C  However, somewhat simplified: As a first go, this routine
+C  provides the mass of the molecule using the most abundant isotopes.
+C
+C  Written by T. Saue Feb 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+#include "mxcent.h"
+C
+#include "nuclei.h"
+      TOTMASS = D0
+      DO IATOM = 1, NUCIND
+        NCHARG = NINT(CHARGE(IATOM))
+        IF (NCHARG .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
+          TOTMASS = TOTMASS + NUCDEG(IATOM)*DISOTP(NCHARG,1,'MASS')
+        ENDIF
+      END DO
+C
+      RETURN
+      END
