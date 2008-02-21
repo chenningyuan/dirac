@@ -1479,7 +1479,7 @@ C
          SQUARE = .TRUE. ! True specification
       GO TO 200
 C
-C      Lodnon contribution from r_N to magnetic properties, RM1RN
+C      London contribution from r_N to magnetic properties, RM1RN
 C      (Thomas Enevoldsen)
 C     --------------------------------------------------------------------
 CMI          integral  (c/2).< r_n x alpha >
