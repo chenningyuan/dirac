@@ -63,7 +63,7 @@ C
 C     Initialize 
 C     ===================
 C
-CMI   LONDON = SHIELD .OR. MSUSCP
+CMI   LONDON = SHIELD .OR. MSUSCP .OR. OPTROT
 CMI ... by default we use conventional orbitals to ease running DIRAC tests
       LONDON = .FALSE.
       SYMCON = .FALSE.
@@ -253,7 +253,7 @@ C ... call the routine in abacus/hergp.F
      &' terms for the H(B) property gradient !'
        ENDIF
 
-       IF (NOORTH.AND.SHIELD) THEN
+       IF (NOORTH.AND. (SHIELD.OR.OPTROT)) THEN
          WRITE(LUPRI,'(/,1X,A)')
      &': No calculation of {T(1),H(m_K)} reorthonormalization'//
      &' terms for the H(B m_K) expectation value terms !'
@@ -329,7 +329,7 @@ C =========================================================================
        ENDIF
       ELSE 
 C   .... defined conventional atomic orbitals (AO), not London AO
-       IF (SHIELD.OR.MSUSCP) THEN
+       IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
         WRITE(LUPRI,'(1X,A)')
      &': Used conventional atomic orbitals, not London orbitals !'
         WRITE(LUPRI,'(1X,A)')
@@ -2987,7 +2987,7 @@ C     gradient dH/dB|B=0 (A,B,or both)
 C     when using London orbitals for the specified magnetic dependent
 C     property IMP:
 C
-C     IMP = 1 .... NMR shielding (TEC)
+C     IMP = 1 .... NMR shielding, optical rotation (TEC)
 C     IMP = 2 .... magnetic susceptibility (MI)
 C     IMP = 3 ...  and more (to be added later)
 C
@@ -3000,7 +3000,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-      PARAMETER(DI2 = 0.5D0, DM1 = -1.0D0, D2 = 2.0D0, D1 = 1.0D0)
+      PARAMETER(DMI2 = -0.5D0, DM1 = -1.0D0, D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -3016,8 +3016,10 @@ C
       IPRINT = IPRPRP
 
       IF (IMP.EQ.1) THEN
-       CALL HEADER(
+        IF(SHIELD) CALL HEADER(
      &'DEF_D1HBLOND: Operators for NMR shieldings with LAO!',-1)
+        IF(OPTROT) CALL HEADER(
+     &'DEF_D1HBLOND: Operators for optical rotation with LAO!',-1)
       ELSE IF (IMP.EQ.2) THEN
        CALL HEADER(
      &'DEF_D1HBLOND: Operators for magnetic'//
@@ -3087,8 +3089,8 @@ C
       PNAME    = 'LAO-XRM1RN'
       IPTYP    = 5
       NPCOMP   = 2
-      PFAC(1)  = DI2*CVAL
-      PFAC(2)  = DI2*CVAL
+      PFAC(1)  = -DMI2*CVAL
+      PFAC(2)  = -DMI2*CVAL
       PLABEL(1) = 'ZRM1RN'
       PLABEL(2) = 'YRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3155,8 +3157,8 @@ C
       PNAME     = 'LAO-YRM1RN'
       IPTYP     = 6
       NPCOMP    = 2
-      PFAC(1)   = DI2*CVAL
-      PFAC(2)   = DI2*CVAL
+      PFAC(1)   = -DMI2*CVAL
+      PFAC(2)   = -DMI2*CVAL
       PLABEL(1) = 'XRM1RN'
       PLABEL(2) = 'ZRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3221,8 +3223,8 @@ C
       PNAME     = 'LAO-ZRM1RN'
       IPTYP     = 7
       NPCOMP    = 2
-      PFAC(1)   = DI2*CVAL
-      PFAC(2)   = DI2*CVAL
+      PFAC(1)   = -DMI2*CVAL
+      PFAC(2)   = -DMI2*CVAL
       PLABEL(1) = 'YRM1RN'
       PLABEL(2) = 'XRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3236,7 +3238,7 @@ C----------------------------------------------------------------
       IPTYP  = 1
       NPCOMP = 1
       IF (SYMCON) THEN
-        PFAC(1) = -DI2
+        PFAC(1) = DMI2
         LABELC='dS/dB'
         ILABELC = 5
       ELSE
@@ -3269,7 +3271,7 @@ C----------------------------------------------------------------
 C ... Symmetry connection term T(1)=S(1)
        IPTYP  = 1
        NPCOMP = 1
-C      PFAC(1) = -DI2
+C      PFAC(1) = DMI2
        PFAC(1) = D1
        LABELC='dS/dB'
        ILABELC = 5
@@ -3349,7 +3351,6 @@ C Specify latter PFAC(1)!!!
        IPCON23(6) = INDXPR
       ENDIF
 
-CMI   CALL QUIT('DEF_D1HBLOND')
       CALL QEXIT('DEF_D1HBLOND')
       RETURN
       END

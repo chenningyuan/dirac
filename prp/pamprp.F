@@ -1466,7 +1466,12 @@ C
 C       CALL PRP_ROTG(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
         CALL PRP_ROTG(ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
-
+C
+C     Optical rotation
+C
+      IF (OPTROT) THEN
+        CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
+      ENDIF
 C
 C     Memory deallocation
 C     -------------------
@@ -4134,7 +4139,8 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &          DMI2 = -0.5D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -4172,7 +4178,7 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
 CMI previously were here + signs (old TEC's convention)
-CMI but the - sign is correct, so everythink is rearranged
+CMI but the - sign is correct, so everything is rearranged
       PFAC(1)  = -CVAL
       PFAC(2)  = -CVAL
       NPCOMP   = 2
@@ -4275,9 +4281,9 @@ C
 C         Conventional atomic orbitals
 C
       NCOMP = 2
-      PFAC(1)  = 0.5D0*CVAL
-      PFAC(2)  = 0.5D0*CVAL
-      PFAC(3)  =  0.5D0*G1FAC
+      PFAC(1)  = -DMI2*CVAL
+      PFAC(2)  = -DMI2*CVAL
+      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
          PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'
@@ -6438,7 +6444,7 @@ CMI ... take care of the correct form of PRPLBL(IPL) name
             IB = MOD(I+2,3) + 1
 CMI   ... for compatibility with Dalton exp.values (NSLO) !
 CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
-CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
+CTROND            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
 CMI   ... new sign convention !!!
             TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
          ENDDO
@@ -6476,7 +6482,7 @@ C         ... extract the reorthonormalization part into the PMAT
          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
 C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
-CMI      CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
+CTROND         CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
       END IF
 
 C
@@ -6552,11 +6558,9 @@ C            write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
                JA = IBUFA(IA)
                KA = IPSHIELD(JA)
 C...           First extract the e-e contribution
-CMI            TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB,2)
                TMPMAT(IPTAX(JB,2),JA) = -ABLRF(IFREQ,KA,KB,2)
 C...           then extract the e-p "diamagnetic" contribution
                TMPMAT(IPTAX(JB,2),JA+NCMAT)
-CMI  &            = ABLRF(IFREQ,KA,KB,3)
      &            = -ABLRF(IFREQ,KA,KB,3)
             ENDDO
          ENDDO
@@ -8372,7 +8376,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      PARAMETER(DM1 = -1.0D0,DMI2 = -0.5D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -8401,7 +8405,7 @@ C
       PNAME     = 'X-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
-      PFAC(1)   = D1
+      PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
@@ -8411,7 +8415,7 @@ C
       PNAME     = 'Y-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
-      PFAC(1)   = D1
+      PFAC(1)   = DM1
       PLABEL(1) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
@@ -8421,7 +8425,7 @@ C
       PNAME     = 'Z-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
-      PFAC(1)   = D1
+      PFAC(1)   = DM1
       PLABEL(1) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
@@ -8445,9 +8449,10 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
       NPCOMP = 2
-      PFAC(1)  = 0.5D0*CVAL
-      PFAC(2)  = 0.5D0*CVAL
-      PFAC(3)  = 0.5D0*G1FAC
+CTROND: Using DALTON sign convention for now. To fix later.
+      PFAC(1)  = -DMI2*CVAL
+      PFAC(2)  = -DMI2*CVAL
+      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
       IPTYP     = IOP(1)
@@ -8490,7 +8495,7 @@ C     ===========
 C
        CALL PRSYMB(LUPRI,'-',75,0)
        WRITE(LUPRI,'(1X,A)')
-     &'** A operators for opticla rotation **'
+     &'** A operators for optical rotation **'
        CALL PRSYMB(LUPRI,'-',75,0)
        DO I = 1, 3
         INDOP1 = IPEPOLAR(I,1)
@@ -8514,4 +8519,94 @@ C
 
       CALL QEXIT('DEF_OPTROT1')
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Prp_optrot */
+      SUBROUTINE PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Output routine for optical rotation, based on LNROUT from DALTON
+C     Written by T. Saue in collaboration with K. Ruud Feb 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbxlr.h"
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KTEMP,9,WORK,KFREE,LFREE)
+CTROND      CALL MEMGET('REAL',KBETA,NBFREQ,WORK,KFREE,LFREE)
+      CALL PRP_OPTRO1(ABLRF,ABCNV,WORK(KTEMP),
+     &            WORK,KFREE,LFREE)
+      CALL MEMREL('PRP_OPTROT',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Prp_optrot */
+      SUBROUTINE PRP_OPTRO1(ABLRF,ABCNV,TMPMAT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Output routine for optical rotation, based on LNROUT from DALTON
+C     Written by T. Saue in collaboration with K. Ruud Feb 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0,
+     &          FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4))
+#include "mxcent.h"
+C
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
+      EXTERNAL TOTMASS
+C
+      IF(LONDON) THEN
+        CALL AROUND('Optical rotation (London)')
+      ELSE
+        CALL AROUND('Optical rotation (no London)')
+      ENDIF
+      TMASS = TOTMASS()
+      WRITE(6,*) '* Molecular mass:',TMASS,FACTOR
+      FAC = FACTOR/TMASS
+      WRITE(LUPRI,*)
+      DO IFREQ = 1,NBFREQ
+        FREQ = BFREQ(IFREQ)*XTKAYS
+        WRITE(LUPRI,'(/A,3(F12.6,A))') 
+     &        '* Frequency: ',BFREQ(IFREQ),' au  = ',
+     &         XTNM/BFREQ(IFREQ), ' nm = ',FREQ,' cm-1'
+        WRITE(LUPRI,*)
+C
+C       Extract mixed electric dipole-magnetic dipole polarizability
+C
+        DO I2 = 1,3
+          IB = IPSHIELD(I2+MXCOOR)
+          DO I1 = 1,3
+            IE = IPEPOLAR(I1,1)
+            TMPMAT(IE,IB) = -ABLRF(IFREQ,IE,IB,1)
+          ENDDO
+        ENDDO
+        WRITE(LUPRI,'(/10X,A/)')
+     &    'G tensor:'
+        WRITE(LUPRI,9009) 'Bx','By','Bz'
+        WRITE(LUPRI,9008) 'Ex',(TMPMAT(1,I), I=1,3)
+        WRITE(LUPRI,9008) 'Ey',(TMPMAT(2,I), I=1,3)
+        WRITE(LUPRI,9008) 'Ez',(TMPMAT(3,I), I=1,3)
+        OR_BETA = (TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3))/D3/BFREQ(IFREQ)
+        OR_ALPHA = FAC*FREQ*FREQ*OR_BETA
+        WRITE(LUPRI,'(4(/10X,A,F12.6))') 
+     &    'Beta             :',OR_BETA,
+     &    'Optical rotation :',OR_ALPHA
+      ENDDO
+ 9008 FORMAT (16X,A,2X,3F12.7)
+ 9009 FORMAT (27X,3(A,10X)/)
+
+      RETURN
+C
       END
