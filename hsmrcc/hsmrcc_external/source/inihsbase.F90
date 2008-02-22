@@ -4,7 +4,7 @@ subroutine InitHSMRBase
 !
 !  ... Basic Initialization of HSMR Run ...
 !
-! Called from HSMRCC
+! Called from "source/hsmrcc.F90"/HSMRCC
 !
 !---------------------------------------------------------
 
@@ -121,7 +121,6 @@ subroutine InitHSMRBase
    call InitVacMod
 
    ! ... Open Integral Files ...
-
    call OpenIntFiles
 
    call QExit('InitHSMRBase')

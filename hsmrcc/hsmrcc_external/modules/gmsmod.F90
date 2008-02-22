@@ -20,7 +20,15 @@ module GMSMod
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitGMSMod
+!---------------------------------------------------------------------------
+!
+! Initialize Gamess stuff.
+!
+! Called source/inihsbase.F90/InitHSMRBase
+!
+!---------------------------------------------------------------------------
 
    implicit none
    integer j1, j2, j3, j4, j5, j6, j7, j8, j9
@@ -261,7 +269,6 @@ subroutine InitGMSMod
 
    ! ... allocate gamess integral buffers
 
-
    ! ... set up size for gamess integral labels
    NXX = NINTMX
    IF (LABELSIZE.EQ.1) THEN
@@ -278,7 +285,7 @@ subroutine InitGMSMod
    ! ... integer array for Gamess integral labels ...
    if (.not.allocated(IXPREAD)) allocate(IXPREAD(IXX))
 
-! ... control print-out ... 
+   !             ... control print-out ... 
    write(UOUT,'(/,a,/,a,i2,a,i2,/,2(a,i7))')    &
    '----------------------------------------------------------------------------',    &
    'InitGMSMod: read LABELSIZE=',LABELSIZE,'; set INTSFP (parameters.F90) ',INTSFP,   & 
@@ -304,7 +311,7 @@ subroutine EndGMSMod
 !
 ! Called from :
 !
-! TODO: include stat checking of deallocation
+! TODO: include status checking of deallocations
 !--------------------------------------------------------------------
 
    implicit none

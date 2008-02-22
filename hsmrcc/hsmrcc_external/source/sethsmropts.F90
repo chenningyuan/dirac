@@ -1,7 +1,7 @@
 !*****************************************************************
 !
 !
-!   Set of routines called from the C-driver program: hsmrmain.c
+!  Set of routines called from the main C (driver) program: hsmrmain.c
 !
 !
 !*****************************************************************
@@ -10,7 +10,9 @@
 subroutine SetHSMR_IPRINT(ipr)
 !-----------------------------------------------------------------
 !
-!        ... set up the general control print-out variable 
+!     ... set up the general control print-out variable 
+!
+!  Called from main C driver "hsmrmain.c"
 !
 !-----------------------------------------------------------------
   use Parameters
@@ -80,7 +82,7 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
    endif
 
    if (OPTION(DIRACp)) then
-     write(UOUT,'(/,2x,a,/)') 'SetHSMRflags: DIRAC is ON!'
+  !  write(UOUT,'(/,2x,a,/)') 'SetHSMRflags: DIRAC is ON!'
      write(*,'(/,2x,a,/)') 'SetHSMRflags 2: DIRAC is ON!'
      call flushout
      !call Quit('SetHSMRflags')
@@ -91,21 +93,28 @@ subroutine SetHSMRflags(FlagGENINT , FlagPRNTINF , FlagVERBOSE , &
 
 end subroutine SetHSMRflags
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
+!------------------------------------------------------------------------
 !
-!        set important parameters for the code
+!              set few parameters for the code
 !
+! TODO: Check their values ...
+!
+!------------------------------------------------------------------------
    use Parameters
    implicit none
    integer*4, intent(in) :: ValNCMO,  ValNEMO
    integer*4, intent(in) :: ValNHOLE, ValNPTCL
+
+   Call QEnter('SetHSMRpars')
 
    NCMO  = ValNCMO
    NHOLE = ValNHOLE
    NPTCL = ValNPTCL
    NEMO  = ValNEMO
 
+   Call QExit('SetHSMRpars')
    return
 
 end subroutine SetHSMRpars
@@ -129,15 +138,15 @@ subroutine SetHSMRshiftpars(SCVal,SVVal,SAVal,BeetaVal)
 
 end subroutine SetHSMRshiftpars
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine SetHSMRfiles(IFile,OFile)
-!----------------------------------------------------------------------
+!--------------------------------------------------------------------------------
 ! 
-!  Routine for setting files for HSMRCC run.
+!    Routine for setting input/output files for HSMRCC run.
 !
-!  Called as the last F90 routine from the main C-program "hsmrmain.c".
+! Called as the last F90 routine from the main C-program "hsmrmain.c".
 !
-!----------------------------------------------------------------------
+!--------------------------------------------------------------------------------
    use IOModule
    use Options
 
@@ -151,8 +160,8 @@ subroutine SetHSMRfiles(IFile,OFile)
 
    if (OPTION(DIRACp)) then
      Write(*,'(2x,a)') 'SetHSMRfiles: SetHSMRfiles: DIRAC is on!'
-     Write(*,*) 'UOUT=',UOUT
-     Write(UOUT,*) '2. UOUT=',UOUT ! does NOT work...
+     !Write(*,*) 'UOUT=',UOUT
+    ! Write(UOUT,*) '2. UOUT=',UOUT ! does NOT work...
    endif
 
    if (get_iprint() >= 5) then
@@ -166,11 +175,12 @@ subroutine SetHSMRfiles(IFile,OFile)
 
    if (OPTION(DIRACp)) then
      Write(*,'(2x,a)') 'SetHSMRfiles: DIRAC is on!'
-     Call Quit('SetHSMRfiles xx: DIRAC is on!')
+     !Call Quit('SetHSMRfiles xx: DIRAC is on!')
    endif
 
-   FileHSMR = REPEAT(' ',LEN(FileHSMR))
+   if (.not. OPTION(DIRACp) ) then
 
+   FileHSMR = REPEAT(' ',LEN(FileHSMR))
    ilen = LEN_TRIM(IFile)
    if (ilen == 0) then
       Write(*,*) 'Input File of Zero Length'
@@ -180,18 +190,20 @@ subroutine SetHSMRfiles(IFile,OFile)
    endif
 
    if (TRIM(IFile)==REPEAT(' ',ilen)) then
-      !Write(*,*) 'blank Input File'
-      Write(UOUT,*) 'blank Input File'
+      Write(*,*) 'blank Input File'
+      !Write(UOUT,*) 'blank Input File'
       !call abort
       call Quit('SetHSMRfiles: blank Input File!')
    endif
 
-! =================================================
-!       Gamess produced files read by HSMRCC 
-! =================================================
+! =========================================================================
+!    Gamess produced files read by HSMRCC - open only for Gamess reading
+! =========================================================================
    FileMR1EINT  = TRIM(IFile)//'.F295'   ! binary
    FileMR2EINT  = TRIM(IFile)//'.F296'   ! binary
    FileSYMINF   = TRIM(IFile)//'.F297'   ! text file...
+
+   endif
 
 !---------------------------------------------------------
 !  ... the rest are own HSMRCC generated files
@@ -211,6 +223,8 @@ subroutine SetHSMRfiles(IFile,OFile)
    FileCOEF  = TRIM(IFile)//'.COEF'
    FileCNVR  = TRIM(IFile)//'.CNVR'
 
+if (.not. OPTION(DIRACp)) then
+
    olen = LEN_TRIM(OFile)
    if (olen == 0) then
       FileHSMR = TRIM(IFile)//'.HSMR'
@@ -224,8 +238,10 @@ subroutine SetHSMRfiles(IFile,OFile)
       FileHSMR = TRIM(OFile)
    endif
 
-   if (get_iprint() >= 8) then
-    write(UOUT,'(2x,a,a)') 'HSNRCC output file is ',FileHSMR
+endif
+
+ if (get_iprint() >= 8) then
+    write(UOUT,'(2x,a,a)') 'HSMRCC output file is ',FileHSMR
     write(UOUT,'(2x,a,a)') 'FileVINT=',FileVINT
     write(UOUT,'(2x,a,a)') 'FileVIND=',FileVIND
     write(UOUT,'(2x,a,a)') 'FileFHH=',FileFHH
@@ -235,10 +251,10 @@ subroutine SetHSMRfiles(IFile,OFile)
     write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
     write(UOUT,'(2x,a,a)') 'FileTNEW=',FileTNEW
     write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
-   endif
+ endif
 
-   Call QExit('SetHSMRfiles')
-   return
+ Call QExit('SetHSMRfiles')
+ return
 
 end subroutine SetHSMRfiles
 
