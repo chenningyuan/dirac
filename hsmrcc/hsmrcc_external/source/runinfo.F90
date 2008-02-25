@@ -51,10 +51,18 @@ subroutine PrintRunInfo
             '|                INFORMATION ON CURRENT RUN                     |',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'/)
 
-!  print out basic parameters
+! ... print-out whether it is DIRAC or GAMESS run
+if (OPTION(DIRACp)) then
+  write(UOUT,8010)   &
+  '*** This is DIRAC based HSMRCC run. ***'
+else
+  write(UOUT,8010)   &
+  '*** This is GAMESS based HSMRCC run. ***'
+endif
+8010 format(8x,a,/)
 
-   write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
-
+! ... print out basic parameters
+write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
 9011 format('****************',/,&
             'Basic Parameters',/,&
             '****************',/,&
@@ -69,14 +77,14 @@ subroutine PrintRunInfo
             'No. of Cluster Amplitudes (NTSIZE) = ',i8,/)
 
 ! ...  print out options used for current run ...
-   write(UOUT,'(a,i3,/)')  '**************** Program print level:',get_iprint()
+   write(UOUT,'(a,i4)')  '**************** Program print level:',get_iprint()
 
    write(UOUT,9021) OnOff(OPTION(GENINT)),   OnOff(OPTION(PRNTINF)),  &
                     OnOff(OPTION(VERBOSE)),  OnOff(OPTION(RESTART)),  &
                     OnOff(OPTION(AVGVAL)),   OnOff(OPTION(REPTIME)),  &
                     OnOff(OPTION(QUAD)),     OnOff(OPTION(CONVTAMP)), &
                     OnOff(OPTION(NOHSMR)),   OnOff(OPTION(NOAPND)),   &
-                    OnOff(OPTION(RDGUESS))
+                    OnOff(OPTION(RDGUESS)),  OnOff(OPTION(DIRACp))
 
 
 9021 format('************',/,&
@@ -92,9 +100,9 @@ subroutine PrintRunInfo
             'Use of T/HEFF for Convergence [CONVTAMP] = ',a3,/, &
             'Only Intergal Generation        [NOHSMR] = ',a3,/, &
             'Do not append results           [NOAPND] = ',a3,/, &
-            'Read T-Amplitude guess         [RDGUESS] = ',a3,/ )  
+            'Read T-Amplitude guess         [RDGUESS] = ',a3,/, &   
+            'DIRAC based run                 [DIRACp] = ',a3,/ )  
            
-
 !  print out other information
 
    write(UOUT,9031) CoreShiftVal, VirtShiftVal, ActvShiftVal, OnOff(OPTION(AVGVAL)), &
@@ -113,19 +121,19 @@ subroutine PrintRunInfo
             'Integral Cutoff                 = ',E13.8 ,/, &
             'Maximum No of Iterations        = ',i3,/)
 
-
 !   ...  information from gamess
 ! TODO: splitt for GAMESS / DIRAC
-
-   write(UOUT,9041) TotEn, NucEn, TrfTol
-
-9041 format('******************',/,  &
+if (OPTION(DIRACp)) then
+ write(UOUT,'(/,2x,a)') 'DIRAC information...'
+else
+  write(UOUT,9041) TotEn, NucEn, TrfTol
+  9041 format('******************',/,  &
             'Gamess Information',/,  &
             '******************',/,  &
             'Total Electronic Energy         (TotEn) = ',F16.10,/, &
             'Nuclear Energy                  (NucEn) = ',F16.10,/, &
             'Integral Cutoff used in Gamess (TRFTOL) = ',E16.10,/)
-           
+endif           
 
 !  Print out orbital information
 

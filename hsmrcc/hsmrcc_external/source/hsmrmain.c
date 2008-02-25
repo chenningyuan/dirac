@@ -6,7 +6,7 @@
 #include <libgen.h>
 
 /* The following external Fortran90 SetHSMR routines are
- * to pass the values to HSMR program.                    */
+ * to pass various values to the HSMR program.           */
 
 extern void sethsmrflags_(int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
@@ -26,10 +26,6 @@ extern void hsmrcc_(void);
 extern void sethsmr_iprint_(int *); 
 
 extern void qenter_c_(char *, int *);
-/*extern void qenter_c_(char *);
-//extern void qenter(char *);
-//extern void qenter_(char *);
-//extern void qexit_(char *); */
 
 #define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:d"
 
@@ -166,7 +162,7 @@ void help()
  "|                                                                   |",
  "|  -q --quadratic        Enable quadratic approximation             |",
  "|                            for renormalization terms.             |",
- "|  -f --full             All renromalization terms.                 |",
+ "|  -f --full             All renormalization terms.                 |",
  "|  -a --avg-val          Average valence MO energy values.          |",
  "|     --no-avg-val       Do not Average valence MO energy values.   |",
  "|  -o --out-file=[FILE]  Direct HSMRCC output to FILE.              |",
@@ -239,6 +235,8 @@ int readint(opt,val)
 
 }
 
+/*   Main program   */
+
 int main (argc, argv)
    int argc;
    char **argv;
@@ -261,12 +259,15 @@ int main (argc, argv)
 
    /* name for QEnter/QExit stuff  */
    char routine_name[]="hsmrmain.c:int main(argc,argv)"; 
-
-  /* // qenter_c_("hsmrmain.c",strlen("hsmrmain.c")); */
    qenter_c_(routine_name, (int *) strlen(routine_name));
- /*  // qenter_c_("hsmrmain.c");
-  // qenter_("hsmrmain.c"); */
 
+   /* short printout */
+    printf("\n");
+    printf("*************************************************************************\n");
+    printf("                  HSMRCC starting from main C-driver.                    \n");
+    printf("*************************************************************************\n");
+    printf("\n");
+    
    /* change argv[0] to contain only base name */
 
    argv[0] = basename(argv[0]);
@@ -803,6 +804,7 @@ int main (argc, argv)
          fclose(stderr);
       }
    }
+
    qexit_c_(routine_name, (int *) strlen(routine_name));
    exit(0);
 }

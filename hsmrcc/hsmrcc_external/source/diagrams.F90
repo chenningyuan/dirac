@@ -53,14 +53,14 @@ subroutine Diagrams
    ! ... Diagram calculation for each vaccum ...
 
    if (get_iprint() >= 7) then
-    call Header('Output from Diagrams',-1)
+     call Header('Output from Diagrams',-1)
    endif
 
    do vac = 1, NSTATE
 
       if (get_iprint() >= 7) then
-         write(UOUT,'(2x,a,i3,a,i3)')  &
-         'staring in cycle, for vac/NSTATE=',vac,'/',NSTATE
+        write(UOUT,'(2x,a,i3,a,i3)')  &
+        'beginning in the cycle for vac/NSTATE=',vac,'/',NSTATE
       endif
  
       TNEW = dble(0)
@@ -81,8 +81,8 @@ subroutine Diagrams
       write(UTNEW,rec=vac) TNEW
 
       if (get_iprint() >= 7) then
-         write(UOUT,'(2x,a,i3,a,i3,a)')  & 
-         'cycle at the end, for vac/NSTATE=',vac,'/',NSTATE,' ...done!'
+        write(UOUT,'(2x,a,i3,a,i3,a)')  & 
+        'cycle at the end, for vac/NSTATE=',vac,'/',NSTATE,'...done!'
       endif
 
    enddo

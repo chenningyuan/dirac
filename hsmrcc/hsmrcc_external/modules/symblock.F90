@@ -1,6 +1,11 @@
 !module SymBlock
 module SymBlocks
-
+!------------------------------------------------------------------
+!
+!   Gfortran does not accept identical names of module and of
+!  a derived data type inside.
+!
+!------------------------------------------------------------------
    implicit none
 
    integer NSYM_BLOCK

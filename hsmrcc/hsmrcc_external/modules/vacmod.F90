@@ -29,16 +29,32 @@ module VacMod
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitVacMod
-
+!---------------------------------------------------------------------------
+!
+!                     Initialize vacuum module
+!
+!---------------------------------------------------------------------------
    implicit none
 
+   call QEnter('InitVacMod')
+
+   if (get_iprint() >= 7) then
+    write(UOUT,'(/,2x,a,i4)')  &
+    '...Output from InitVacMod...parameter for allocations NSTATE=',NSTATE
+   endif
+
    if (Init) then
-      write(UOUT,*) 'VacMod already Initialized'
-      call flush(UOUT)
-      call abort
+     write(UOUT,'(/,2x,a)') 'InitVacMod: VacMod already initialized !'
+     !call flush(UOUT)
+     call flushout
+     !call abort
+     call Quit('InitVacMod: VacMod already initialized !')
    endif
    Init = .TRUE.
+
+! MI: TODO - add allocation checks   
 
    if (.not.allocated(VacString))   allocate(VacString(NSTATE))
    if (.not.allocated(VacTable))    allocate(VacTable(NSTATE,NSTATE))
@@ -51,6 +67,7 @@ subroutine InitVacMod
 
    call GenVac
 
+   call QExit('InitVacMod')
    return
 
 end subroutine InitVacMod
@@ -59,13 +76,18 @@ subroutine EndVacMod
 
    implicit none
 
+   call QEnter('EndVacMod')
+
    if (.not.Init) then
-      write(UOUT,*) 'VacMod not Initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'EndVacMod: VacMod not initialized !'
+      !call flush(UOUT)
+      call flushout
+      !call abort
+      call Quit('EndVacMod: VacMod not initialized !')
    endif
    Init = .FALSE.
 
+ ! ... TODO: include proper mem check
    if (allocated(VacString))   deallocate(VacString)
    if (allocated(VacTable))    deallocate(VacTable)
    if (allocated(OccVac))      deallocate(OccVac)
@@ -75,6 +97,7 @@ subroutine EndVacMod
    if (allocated(RevOrderVac)) deallocate(RevOrderVac)
    if (allocated(IsMainVac))   deallocate(IsMainVac)
 
+   call QExit('EndVacMod')
    return
 
 end subroutine EndVacMod
@@ -85,9 +108,12 @@ function IsHole(i,vac)
    integer, intent(in) :: i, vac
    logical :: IsHole
 
+   call QEnter('IsHole')
+
    IsHole = (i<=NCMO)
    if (.not.IsHole) IsHole = BTEST(VacString(vac),(i-NCMO))
 
+   call QExit('IsHole')
    return
 
 end function IsHole
@@ -136,13 +162,22 @@ function HoleNum(i,vac)
    integer :: HoleNum
    integer :: j, k
 
-   if (.not.IsActHole(i,vac)) stop 'HoleNum : index not act hole'
+   call QEnter('HoleNum')
+
+   !if (.not.IsActHole(i,vac)) stop 'HoleNum : index not act hole'
+   if (.not.IsActHole(i,vac)) then
+     write(UOUT,*) 'HoleNum error ! i=',i,'  vac=',vac, &
+     ' IsActHole(i,vac):',IsActHole(i,vac)
+     call Quit('HoleNum : index not active hole !')
+   endif
+
    k = 0
    do j = 1, i
       if (IsActHole(j,vac)) k = k + 1
    enddo
    HoleNum = k
 
+   call QExit('HoleNum')
    return
 
 end function HoleNum
@@ -154,6 +189,8 @@ function PtclNum(a,vac)
    integer :: PtclNum
    integer :: b, c
 
+   call QEnter('PtclNum')
+
    if (.not.IsActPtcl(a,vac)) stop 'PtclNum : index not act ptcl'
    c = 0
    do b = 1, a
@@ -161,19 +198,22 @@ function PtclNum(a,vac)
    enddo
    PtclNum = c
 
+   call QExit('PtclNum')
    return
 
 end function PtclNum
 
 function VacNum(tvac)
-
+!
+!
+!
    implicit none
    integer, intent(in) :: tvac
    integer :: VacNum
    integer :: vac
 
    do vac = 1, NSTATE
-      if ( VacString(vac) == tvac ) exit
+     if ( VacString(vac) == tvac ) exit
    enddo
    VacNum = vac
 
@@ -256,9 +296,11 @@ function Exct2(i,j,a,b,vac)
 
 end function Exct2
 
+!------------------------------------------------------------------------------
 ! This program is upto quadruple (double) excitations
 ! within model space. Higher excitations, if required,
 ! can be introduced in a similar fashion.
+!------------------------------------------------------------------------------
 
 subroutine GenVac
 
@@ -271,9 +313,15 @@ subroutine GenVac
    integer :: nvac, ivac, nvac_sum
    integer :: isym_block
 
+   call QEnter('GenVac')
+
+!-----------------------------------------------------------------------------------
+!
 !  RefVac = 2**(NHOLE+1) - 2
 !
 !  RefVac is read from OccRef (which at the moment is read from gamess OccGMSRef)
+!
+!-----------------------------------------------------------------------------------
 
    RefVac = 0
    do i = 1, NVMO
@@ -281,10 +329,12 @@ subroutine GenVac
       if (OccRef(NCMO+i).eq.1) then
          RefVac = IBSET(RefVac,i)
       else
-         write(UOUT,*) "Incorrect Occupation in OccRef array"
-         write(UOUT,*) OccRef
-         call flush(UOUT)
-         call abort
+         write(UOUT,*) "Incorrect Occupation in OccRef array...see array OccRef"
+         write(UOUT,*) '* OccRef: ',OccRef
+         !call flush(UOUT)
+         call flushout
+         !call abort
+         call Quit('GenVac: Incorrect Occupation in OccRef array !')
       endif
    enddo
 
@@ -302,7 +352,10 @@ subroutine GenVac
       CurrVac = RefVac
       CurrVac = IBCLR(CurrVac,i)
       CurrVac = IBSET(CurrVac,a+NHOLE)
-      VacString(vac) =  CurrVac
+      VacString(vac) = CurrVac
+      if (get_iprint() >= 10) then
+        write(UOUT,*) 'i,a:',i,a,' VacString(',vac,')=',VacString(vac)
+      endif
    enddo
    enddo
 
@@ -319,6 +372,9 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,a+NHOLE)
       CurrVac = IBSET(CurrVac,b+NHOLE)
       VacString(vac) = CurrVac
+      if (get_iprint() >= 10) then
+        write(UOUT,*) 'i,j,a,b:',i,j,a,b,' VacString(',vac,')=',VacString(vac)
+      endif
    enddo
    enddo
    enddo
@@ -582,6 +638,7 @@ subroutine GenVac
                RevOrderVac(ovac) = vac
             endif
          enddo
+
          if (nvac.ne.0) isym_block = isym_block + 1
          if (nvac.ne.0) nvac_sum = nvac_sum + nvac
 
@@ -592,13 +649,16 @@ subroutine GenVac
    NSYM_BLOCK = isym_block
 
    if (nvac_sum.ne.NSTATE) then
-      write(UOUT,*) "something wrong in finding symmetry blocks"
-      call flush(UOUT)
-      call abort
+      write(UOUT,'(/,2x,a)')  &
+      "nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
+      write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
+      !call flush(UOUT)
+      call flushout
+      !call abort
+      call Quit('GenVac: something wrong in finding symmetry blocks !')
    endif
 
-   ! allocate symblock_array and fill its elements
-
+   ! ... allocate symblock_array and fill its elements
    allocate(symblock_array(NSYM_BLOCK))
 
    isym_block = 0
@@ -671,12 +731,17 @@ subroutine GenVac
 
    enddo
 
-   if (isym_block.ne.NSYM_BLOCK) then
-      write(UOUT,*) "something wrong in creating sym_blocks"
-      call flush(UOUT)
-      call abort
+   if (isym_block /= NSYM_BLOCK) then
+     write(UOUT,'(/,2x,a)')   &
+     'isym_block <> NSYM_BLOCK; something wrong in creating sym_blocks !'
+     write(UOUT,*) 'isym_block=',isym_block,' NSYM_BLOCK=',NSYM_BLOCK
+      !call flush(UOUT)
+     call flushout
+      !call abort
+     call Quit('GenVac')
    endif
 
+   call QExit('GenVac')
    return
 
 end subroutine GenVac
