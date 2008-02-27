@@ -2474,16 +2474,16 @@ C
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
 C
-C        Solve relativistic MP2 lambda equations
+C        Get MP2 amplitudes and lambdas
 C
-         IF (.NOT. NOZG)
-     &      CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
 C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
+C
 C        Solve Z-vector equations 
 C
          IF (.NOT. NOZG) THEN
@@ -2532,10 +2532,9 @@ C
 #endif
 CMI      CALL MEMCHK('mp2g 0.1',CC,1)
 C
-C        Solve relativistic MP2 lambda equations
+C        Get MP2 amplitudes and lambdas
 C
-         IF (.NOT.NOZG)
-     &      CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 
 CMI      CALL MEMCHK('mp2g 0.2',CC,1)
 C
