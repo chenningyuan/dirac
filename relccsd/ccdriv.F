@@ -180,7 +180,7 @@ C
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
-     &                 MAXIT,MAXDIM,NTOL
+     &                 MAXIT,MAXDIM,NTOL,NOZG
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
@@ -249,6 +249,7 @@ C
       DOMP2GOLD = .FALSE.
       DOCCSDG   = .FALSE.
       DOCCSDTG  = .FALSE.
+      NOZG      = .FALSE.
       NEOPER = 1
       NAMEE(1) = 'ZDIPLEN '
       MAXDIM = 8
@@ -2475,7 +2476,8 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+         IF (.NOT. NOZG)
+     &      CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
 C        Get amplitude part of density matrix
 C
@@ -2484,18 +2486,24 @@ C
      &                 CC(DVO),CC(DOV),CC(DMO))
 C        Solve Z-vector equations 
 C
-         TOL = 10.0D0**(-NTOLGR)
-         MAXIT  = MXITGR
-         MAXDIM = MXDIMGR
-         CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
-     &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
-     &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
-     &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-     &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+         IF (.NOT. NOZG) THEN
+            TOL = 10.0D0**(-NTOLGR)
+            MAXIT  = MXITGR
+            MAXDIM = MXDIMGR
+            CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
+     &                  CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
+     &                  CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                  CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
+     &                  CC(CCC),CC(BB1),CC(BB2),TOL)
+         END IF
 C
 C        Calculate expecation value
 C
-         WRITE (IW,1002) '    MP2'
+         IF (NOZG) THEN
+            WRITE (IW,1002) 'MP2 noZ'
+         ELSE
+            WRITE (IW,1002) '    MP2'
+         END IF
          DO EOPER = 1, NEOPER
             EOFF = (EOPER-1)*NDIMX*RCW+1
             CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
@@ -2526,7 +2534,8 @@ CMI      CALL MEMCHK('mp2g 0.1',CC,1)
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+         IF (.NOT.NOZG)
+     &      CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 
 CMI      CALL MEMCHK('mp2g 0.2',CC,1)
 C
@@ -2546,8 +2555,9 @@ C
 
 C        Solve Z-vector equations 
 C
-         CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
-     &                NBUF3,CC(XMO),CC(DMO))
+         IF (.NOT.NOZG)
+     &      CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
+     &                   NBUF3,CC(XMO),CC(DMO))
 
 CMI      ... here it fails in the Levy-Leblond mode....
          CALL MEMCHK('mp2g 1.1.1',CC,T2)
@@ -2569,6 +2579,8 @@ C
 C        Multiply denstity matrix with property matrices
 C        (i.e. calculate expectation value)
 C
+         IF (NOZG) WRITE (IW,'(/A)')
+     &   ' *** MP2 second-order density matrix without relaxation terms'
          KFREE1=1
          LFREE1=NBUF3*RCW
          CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
