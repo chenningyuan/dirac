@@ -2031,6 +2031,136 @@ CMI     to calculate eigenvectors!!
   420 RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qorder3 */
+      SUBROUTINE QORDER3(N,EVAL,QEVEC,LVR,LVC,NEVEC,NZ,IJOB)
+C***********************************************************************
+C
+C Purpose: order the N values in EVAL and
+C          their associated quaternion vectors in QEVEC:
+C     IJOB.EQ. 2  -  absolute ascending order  
+C                    ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C     IJOB.EQ. 1  -  ascending order   EVAL(i+1) .ge. EVAL(i)
+C     IJOB.EQ.-1  -  descending order   EVAL(i+1) .le. EVAL(i)
+C     IJOB.EQ.-2  -  absolute descending order  
+C                    ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C     IJOB.EQ.0  -  return
+C          
+C          Generalization of routine ORDER3 by T.Saue Aug 1996
+C          to quaternion eigenvectors by H.J.Aa.Jensen Feb 2008
+C
+C***********************************************************************
+#include "implicit.h"
+      DIMENSION EVAL(N), QEVEC(LVR,LVC,NZ)
+C     active dimension: QEVEC(1:NEVEC,1:N,NZ)
+      IF (N.LE.1.OR.IJOB.EQ.0) RETURN
+      II = IJOB + 3
+      GOTO (1,2,3,4,5) II
+1     CONTINUE
+C***********************************************************************
+C IJOB.EQ.-2  -  absolute descending order 
+C                ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C***********************************************************************
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (ABS(EVAL(J)) .GE. ABS(EMIN)) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)   =EMIN
+            IF (NEVEC .GT. 0) THEN
+               DO IZ = 1,NZ
+                  CALL DSWAP(NEVEC,QEVEC(1,I,IZ),1,QEVEC(1,IMIN,IZ),1)
+               END DO
+            ENDIF
+         ENDIF
+      ENDDO
+      RETURN
+2     CONTINUE
+C***********************************************************************
+C      IJOB.EQ.-1  -  descending order   EVAL(i+1) .le. EVAL(i)
+C***********************************************************************
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (EVAL(J) .GE. EMIN) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)=EMIN
+            IF (NEVEC .GT. 0) THEN
+               DO IZ = 1,NZ
+                  CALL DSWAP(NEVEC,QEVEC(1,I,IZ),1,QEVEC(1,IMIN,IZ),1)
+               END DO
+            ENDIF
+         ENDIF
+      ENDDO
+      RETURN
+3     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 0  -  return
+C***********************************************************************
+      RETURN
+4     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 1  -  ascending order   
+C                  EVAL(i+1) .ge. EVAL(i)
+C***********************************************************************
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (EVAL(J) .LT. EMIN) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)=EMIN
+            IF (NEVEC .GT. 0) THEN
+               DO IZ = 1,NZ
+                  CALL DSWAP(NEVEC,QEVEC(1,I,IZ),1,QEVEC(1,IMIN,IZ),1)
+               END DO
+            ENDIF
+         ENDIF
+      ENDDO
+      RETURN
+5     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 2  -  absolute ascending order  
+C                  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C***********************************************************************
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (ABS(EVAL(J)).LT.ABS(EMIN)) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)=EMIN
+            IF (NEVEC .GT. 0) THEN
+               DO IZ = 1,NZ
+                  CALL DSWAP(NEVEC,QEVEC(1,I,IZ),1,QEVEC(1,IMIN,IZ),1)
+               END DO
+            ENDIF
+         ENDIF
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck order3 */
       SUBROUTINE ORDER3(EVEC,EVAL,LDM,N,NEVEC,IJOB)
 C***********************************************************************
