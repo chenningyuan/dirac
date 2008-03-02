@@ -648,3 +648,246 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate MP2 nat. orb. and nat. orb. occ. num.
+C
+C     Called from: CCFOPR/ccdriv.F
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht and Hans Joergen Aa. Jensen, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+      DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
+C
+      CALL QENTER('MP2_NATORB')
+C
+      KFRSAV=KFREE
+C
+      WRITE(LUPRI,'(//A/A/A)')
+     &' **************************************************************',
+     &' *************** MP2 natural orbital calculation **************',
+     &' **************************************************************'
+C      
+      IMO_NAT  = 0
+      IOCC_NAT = 0
+C
+      IMO_NAT  = NORBT*NESHT*NZ
+      IOCC_NAT = NESHT
+C
+C     memory allocation
+C     -----------------
+      CALL MEMGET('REAL',KCMO_NAT ,IMO_NAT ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCC_NAT ,IOCC_NAT,WORK,KFREE,LFREE)
+C
+C     initialize
+C
+      CALL DZERO(WORK(KCMO_NAT), IMO_NAT)
+      CALL DZERO(WORK(KOCC_NAT),IOCC_NAT)
+C
+C     build diagonal according to Fock matrix
+C     ---------------------------------------
+      CALL ADD_TWO_FOCK(DMO,NOPRNT)
+C
+C     calculate NO occ. num. 
+C     ----------------------
+      CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
+     &                    WORK,KFREE,LFREE,NOPRNT)
+C
+C     save nat. orb. occ. num. and transform. matrix to file KRMC_NATORB
+C     ------------------------------------------------------------------
+      LUNATORB = 89
+      OPEN(Unit=LUNATORB,File="KRMC_NATORB",Status='UNKNOWN',
+     &     Form='UNFORMATTED')
+      WRITE(LUNATORB)(WORK(KOCC_NAT-1+J), J=1,IOCC_NAT)
+      WRITE(LUNATORB)(WORK(KCMO_NAT-1+J), J=1,IMO_NAT )
+      CLOSE(Unit=LUNATORB,Status='KEEP')
+C
+CSK   CALL WRTKRMC(WORK(KCMO_NAT),NORBT,NZ,INAT_FILE)
+CSK   CALL WRTKRMC(WORK(KCMO_NAT),NORBT,NZ,INAT_FILE)
+C
+C     memory deallocation
+C     -------------------
+      CALL MEMREL('MP2_NATORB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('MP2_NATORB')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,WORK,KFREE,
+     &                          LFREE,NOPRNT)
+C***********************************************************************
+C
+C     diagonalize second order density matrix DMO
+C     and calculate nat. orb. occ. num.
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht and Hans Joergen Aa. Jensen, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+      DIMENSION OCC_NAT(*), CMO_NAT(NORBT,NESHT,NZ)
+      DIMENSION DMO(NORBT,NORBT,*), WORK(*)
+C
+      IF ( NOPRNT .ge. 5 )THEN
+         CALL HEADER(
+     &               'MP2_NATORB_GEN: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      IOFF2 = 1
+C
+      DO IFSYM = 1, NFSYM  
+C
+        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+C
+        IF(DOJACO) THEN
+           CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
+     &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF2,IOFF2,1),
+     &                 WORK(KFREE),LFREE)
+        ELSE
+           CALL QDIAG(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
+     &                OCC_NAT(IOFF2),1,
+     &                CMO_NAT(IOFF2,IOFF2,1),NORBT,NESH(IFSYM),
+     &                WORK(KFREE),LFREE,IERR)
+CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
+CSK        CALL HEADER(
+CSK  &     'MP2_NATORB_GEN: Eigenvalues unsorted:',-1)
+CSK        WRITE(LUPRI,'(I5,F25.10)')
+CSK  &     (J,OCC_NAT(IOFF2-1+J),J=1,NESH(IFSYM)) 
+C          reorder eigenvalues and eigenvectors: descending order ==>
+C          IORDER = - 1
+           IORDER = - 1
+           CALL QORDER3(NESH(IFSYM),OCC_NAT(IOFF2),
+     &                  CMO_NAT(IOFF2,IOFF2,1),
+     &                  NORBT,NESH(IFSYM),NESH(IFSYM),NZ,IORDER)
+        ENDIF
+        IOFF2 = IOFF2 + NESH(IFSYM)
+      END DO
+C
+C     debug print section
+C
+      IOFF2 = 1
+      IF ( NOPRNT .ge. 5 ) THEN
+         DO IFSYM = 1, NFSYM
+           CALL HEADER(
+     &     'MP2_NATORB_GEN: Eigenvectors :',-1)
+           WRITE(LUPRI,*) ' fermionic irrep', IFSYM
+           CALL PRQMAT(CMO_NAT(IOFF2,IOFF2,1),
+     &                 NORBT,NESH(IFSYM),NORBT,NESH(IFSYM),
+     &                 NZ,IPQTOQ(1,0),LUPRI)
+           IOFF2 = IOFF2 + NESH(IFSYM)
+         END DO
+      ENDIF
+C
+C     MP2 - nat. orb. occ. num.
+C
+      IOFF2 = 1
+C
+      DO I = 1, NFSYM
+         NOCCI = NESH(I)
+         IF (NOCCI .EQ. 0) THEN
+            WRITE(LUPRI,9001) I
+         ELSE
+            OCCSUM = DSUM(NOCCI,OCC_NAT(IOFF2),1)
+            WRITE(LUPRI,9002) I, (OCC_NAT(IOFF2-1+J),J=1,NESH(I))
+            WRITE(LUPRI,9003) OCCSUM
+         END IF
+         IOFF2 = IOFF2 + NESH(I)
+      END DO
+C
+ 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
+ 9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
+     &            I3,//,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADD_TWO_FOCK(DMO,NOPRNT)
+C***********************************************************************
+C
+C     build proper diagonal part in second order density matrix DMO
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "../moltra/dcbtr3.h"
+C
+      DIMENSION DMO(NORBT,NORBT,*)
+C
+      D2 = 2.0D0
+C
+      IF ( NOPRNT .ge. 10 )THEN
+         CALL HEADER(
+     &               'ADD_TWO_FOCK input: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      IOFF2 = 1
+C
+      DO IFSYM = 1, NFSYM  
+        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+C
+C       zero 'wrong' offdiagonal terms for frozen orbs
+C
+CSK        WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
+C
+        DO IZ = 1, NZ
+          CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
+        END DO
+C
+        IOCC_A = 0
+        DO I = 1, NOCC(IFSYM)
+           DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
+           IOCC_A = IOCC_A + 1
+        END DO
+      END DO
+C
+      IF ( NOPRNT .ge. 10 )THEN
+         CALL HEADER(
+     &               'ADD_TWO_FOCK output: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      END

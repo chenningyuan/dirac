@@ -180,7 +180,7 @@ C
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
-     &                 MAXIT,MAXDIM,NTOL,NOZG
+     &                 MAXIT,MAXDIM,NTOL,NOZG,DONATORB
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
@@ -250,6 +250,7 @@ C
       DOCCSDG   = .FALSE.
       DOCCSDTG  = .FALSE.
       NOZG      = .FALSE.
+      DONATORB  = .FALSE.
       NEOPER = 1
       NAMEE(1) = 'ZDIPLEN '
       MAXDIM = 8
@@ -511,6 +512,7 @@ C
 #include "ccpar.inc"
 #include "waio.h"
 #if defined (VAR_MPI)
+CSK#include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -2521,6 +2523,8 @@ C
       IF (DOMP2G) THEN
 C
           WRITE (IW,1008) 
+          IF( DONATORB ) WRITE (IW,'(/A)') 
+     &    ' --> asking for MP2 natural orbital and occupation numbers!'
 C
 C         Slaves will only help in the integral calculation.
 C
@@ -2578,13 +2582,23 @@ C
 C        Multiply denstity matrix with property matrices
 C        (i.e. calculate expectation value)
 C
-         IF (NOZG) WRITE (IW,'(/A)')
+         IF( .NOT. DONATORB )THEN
+           IF (NOZG) WRITE (IW,'(/A)')
      &   ' *** MP2 second-order density matrix without relaxation terms'
+           KFREE1=1
+           LFREE1=NBUF3*RCW
+           CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
+         ELSE
+C
+C        MP2 - nat. orb. and nat. orb. occ. num.
+C
+         IPRINT_NO = 1
          KFREE1=1
          LFREE1=NBUF3*RCW
-         CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
-
-CMI      CALL MEMCHK('mp2g 2.1',WORK,1)
+C
+         CALL MP2_NATORB(CC(DMO),IPRINT_NO,CC(BUF3),KFREE1,LFREE1)
+         END IF
+C
          CALL MEMCHK('mp2g 2.1',CC,1)
 C
 C        Release the slaves (in case of parallel runs)
