@@ -3616,6 +3616,10 @@ C <---
       NEWPRP = .TRUE.
       RELCAL = .TRUE.
 C
+C     Initialize CNTMAT from cbirea
+C
+      CNTMAT = .FALSE.
+C
 C     Initialize SIRIPC from DALTON
 C
       NEWGEO = .TRUE.
@@ -4320,11 +4324,12 @@ C ...   DIRCON(1) means contracted L component basis set !
           CALL QUIT(
      &    'HAMINP: Conflicting options ZORA & BSS !')
         ENDIF
-        IF (DIRCON(1)) THEN
-         CALL QUIT(
-     &  'HAMINP: Can not use the contracted basis set for'//
-     &  ' the BSS Hamiltonian !')
-        ENDIF
+CTROND        IF (DIRCON(1)) THEN
+CTROND          CALL QUIT(
+CTROND     &   'HAMINP: Can not use the contracted basis set for'//
+CTROND     &   ' the BSS Hamiltonian !')
+CMI  &'  HAMINP: Conflicting options ZORA/PROJEC & BSS !')
+CTROND        ENDIF
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
@@ -4700,8 +4705,8 @@ CMI     but for precursive four-component matrix elements !!!
              WRITE(LUPRI,'(2X,A)')
      & 'WARNING: for BSS transformation the contracted'//
      & ' L component basis is not implemented!'
-        CALL QUIT('HAMINIP: contracted basis not implemented'//
-     &   ' for BSS/DO2C4C/DO4C2C')
+CTROND        CALL QUIT('HAMINIP: contracted basis not implemented'//
+CTROND     &   ' for BSS/DO2C4C/DO4C2C')
          ENDIF
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
@@ -6442,6 +6447,7 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "cbirea.h"
       CHARACTER WORD*7,PROMPT*1
 C
 C     Read menu file
@@ -6473,6 +6479,7 @@ C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   ') THEN
            TWOCOMP=.TRUE. 
            TWOCOMPBSS=.TRUE.
+           CNTMAT=.TRUE.
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.

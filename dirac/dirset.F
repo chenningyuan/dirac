@@ -88,6 +88,7 @@ C
       IF (TWOCOMPBSS) THEN                     
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
+        CNTMAT = .FALSE.
         IPREAD = IPREAD - 5
         CALL READIN(WORK,LWORK,.FALSE.)
         CALL SETDC1(IPREAD)
