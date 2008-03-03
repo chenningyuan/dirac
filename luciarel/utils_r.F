@@ -705,8 +705,10 @@ C       LEN_ALL_INT is INTEGER*8: this might not work with
 C       every MPI implementation (IBM?); anyway bcast should 
 C       NOT be our first choice...
 C
+#if defined (VAR_MPI2)
         CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
      &                 MASTER,IXCOMM,IERR)
+#endif
 C
       END IF
 C
