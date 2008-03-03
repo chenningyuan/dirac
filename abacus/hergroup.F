@@ -464,14 +464,27 @@ C
 C     Align rotations and quaternion irreps,
 C     for complex groups this is important....
 C
+C     The three quaternion units are equivalent and can
+C     thus be interchanged. Normally one makes the mapping
+C       (x,y,z) --> (k,j,i)
+C     and this is the default, including complex groups with
+C     a totally symmetric z-rotation
+C
+C     Variables IXQ, IYQ and IZQ gives the mapping from coordinates
+C     to quaternion units 1,2, and 3, whereas IQ1, IQ2 and IQ3 gives
+C     the reverse mapping.
+C
       IQ1 = 3
       IQ2 = 2
       IQ3 = 1
       IZQ = 2
       IYQ = 3
       IXQ = 4
+C.....complex groups
       IF(NZ.EQ.2) THEN
         IF(ITOT.EQ.1) THEN
+C.........totally symmetric x-rotation
+C         (x,y,z) --> (i,k,j)
           IQ1 = 1
           IQ2 = 3
           IQ3 = 2
@@ -479,6 +492,8 @@ C
           IZQ = 3
           IYQ = 4
         ELSEIF(ITOT.EQ.2) THEN
+C.........totally symmetric y-rotation
+C         (x,y,z) --> (j,i,k)
           IQ1 = 2
           IQ2 = 1
           IQ3 = 3
@@ -591,7 +606,7 @@ C
           JMROI (3) = 4
           JMROI (4) = 4
 C         ..non-totally symmetric rotation
-        IRNT           = ISYMAX(IQ2,2)
+          IRNT           = ISYMAX(IQ2,2)
           IPQTOQ(1,0   ) = 1
           IPQTOQ(2,0   ) = 2
           IPQTOQ(1,IRNT) = 4
@@ -649,7 +664,6 @@ C     Give signs of quaternion phases: 1,i,-j,k
 C
       IQPH(1,1) =  1
       IQPH(2,1) =  1
-CTROND      IQPH(3,1) = -1
       IQPH(3,1) =  1
       IQPH(4,1) =  1
 C
@@ -657,7 +671,6 @@ C     ...and their Hermitian conjugates: 1,-i, j,-k
 C
       IQPH(1,2) =  1
       IQPH(2,2) = -1
-CTROND      IQPH(3,2) =  1
       IQPH(3,2) = -1
       IQPH(4,2) = -1
 C
