@@ -3884,8 +3884,11 @@ C       Looping is over
 C                       - atomic type
 C                         - symmetry independent center
 C                           - shell
-C                             - component
-C                               - degeneracy of center
+C                             - degeneracy of center
+C                               - component
+C       [NOTE that in DALTON the looping over degeneracy and components
+C        is reversed !]
+
 C
       CALL HEADER('Contracted Orbitals',1)
       IF(ICLS.EQ.1) THEN
