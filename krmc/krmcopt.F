@@ -1005,7 +1005,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-9 )
+      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-8 )
 C
 #include "dcborb.h"
 #include "dcbgen.h"
@@ -2968,16 +2968,10 @@ C
 CTF   Natural orbital generation currently works only
 CTF   for 1 vector with LUCIAREL. FIXME.
 C
-         WRITE(LUPRI,'(/A)') 
-     &         ' **********************************************'
-         WRITE(LUPRI,'(/A)') 
-     &         ' **********************************************'
-         WRITE(LUPRI,'(/A)') 
-     &         ' ***** Natural orbital occupation numbers *****'
-         WRITE(LUPRI,'(/A)') 
-     &         ' **********************************************'
-         WRITE(LUPRI,'(/A)') 
-     &         ' **********************************************'
+         WRITE(LUPRI,'(//A/A/A)') 
+     &'  *************************************************************',
+     &'  ************* Natural orbital occupation numbers ************',
+     &'  *************************************************************'
 C
 C
          DO ICNON = 1, NCIROOT

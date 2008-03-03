@@ -1974,7 +1974,7 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              IF(ISD.EQ.1) THEN
                if ((IRIS.eq.1.and.IRIC.eq.2).or.
      &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( .not. SHARED_M )then
+                 if( IT_SHL .lt. 0 )then
                    ITOFF = ITOFF + LEN_T_VEC
                  end if
                end if
@@ -2071,7 +2071,7 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
 C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
                if ((IRIS.eq.1.and.IRIC.eq.2).or.
      &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( .not. SHARED_M )then
+                 if( IT_SHL .lt. 0 )then
                    ITOFF = ITOFF + LEN_T_VEC
                  end if
                end if
@@ -3029,7 +3029,8 @@ C
       SUBROUTINE SIGDEN_CTRL(C,HC,LUC,LUHC,T,T_BUFF,ISIGDEN
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
-     &                    IGROUPLIST,IPROCLIST,RCCTOS
+     &                    IGROUPLIST,IPROCLIST,RCCTOS,
+     &                    IT_TTPL,IT_TTOL
 #endif
      &                   )
 *
@@ -3108,7 +3109,8 @@ C
      &                ISIGDEN
 #if defined (VAR_MPI2)
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
-     &                IGROUPLIST,IPROCLIST,RCCTOS,WORK(KSCALLOC)
+     &                IGROUPLIST,IPROCLIST,RCCTOS,WORK(KSCALLOC),
+     &                IT_TTPL,IT_TTOL
 #endif
      &                 )
 C
@@ -3126,7 +3128,8 @@ C
      &                      LLUC,LLUHC,T,T_BUFF,ISIGDEN
 #if defined (VAR_MPI2)
      &                     ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,
-     &                      IGROUPLIST,IPROCLIST,RCCTOS,ISCLFAC_GROUP
+     &                      IGROUPLIST,IPROCLIST,RCCTOS,ISCLFAC_GROUP,
+     &                      IT_TTPL,IT_TTOL
 #endif
      &                 )
 *
@@ -3545,7 +3548,8 @@ C                 end if
 #if defined (VAR_MPI2)
      &                            ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                             ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &                             LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC
+     &                             LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC,
+     &                             IT_TTPL,IT_TTOL
 #endif
      &                             )
                 end if
@@ -3613,10 +3617,10 @@ CSK                END IF
                 END IF
 *               transfer block to disc
                 IF( WRITE_SB ) THEN
-CSK                  WRITE(LUWRT,*) 'I transfer to file block ISBLK',
-CSK     &                            ISBLK
-CSK                  CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
-CSK                  WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
+csk                  WRITE(LUWRT,*) 'I transfer to file block ISBLK',
+csk     &                            ISBLK
+csk                  CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
+csk                  WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
      &                                   MPI_REAL8,ISTAT,IERR)
                 END IF
@@ -3707,7 +3711,8 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
 #if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &                       LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC
+     &                       LUHCLIST,IOFF_SCR1,INT_IOFF1,LLUC,
+     &                       IT_TTPL,IT_TTOL
 #endif
      &                       )
 *
@@ -3866,7 +3871,8 @@ CSK     &                   NSMST,ISCALE,XSCALE)
 #if defined (VAR_MPI2)
      &                ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                 ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &                 LUHCLIST,INT_IOFF3,LLUC
+     &                 LUHCLIST,INT_IOFF3,LLUC,
+     &                 IT_TTPL,IT_TTOL
 #endif
      &                 )
 *
@@ -3884,7 +3890,8 @@ CSK     &                   NSMST,ISCALE,XSCALE)
 #if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &                       LUHCLIST,INT_IOFF3,LLUC
+     &                       LUHCLIST,INT_IOFF3,LLUC,
+     &                       IT_TTPL,IT_TTOL
 #endif
      &                       )
 *
@@ -3978,12 +3985,13 @@ CSK - this may cause problems      LSCR1 = MAX(L0BLOCK,L2BLOCK)
 *     --> use in "shared memory" MPI runs, MPI info available
 *     if IS_DUMMY > 0 and info im[lemented
 *
-      IF( SHARED_M ) THEN
+      IF( IT_SHL .ge. 0 ) THEN
 *
         IS_DUMMY = 0
-        CALL GET_MEM_T_SCR_CC( IS_DUMMY ) 
+        CALL GET_MEM_T_SCR_CC( IS_DUMMY )
 *
 csk        WRITE(LUWRT,*) ' T_SCR_CC allocated with length',IS_LENGTH_TT
+csk        CALL DZERO8(T_SCR_CC,IS_LENGTH_TT)
 *
       END IF
 *
@@ -4171,7 +4179,8 @@ C
 #if defined (VAR_MPI2)
      &    ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &     ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &     LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,T_SCR_CC
+     &     LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,T_SCR_CC,
+     &     IT_TTPL,IT_TTOL
 #endif
      &     )
 *
@@ -4182,7 +4191,7 @@ C
 *
 #if defined (VAR_MPI2)
 *
-      IF( SHARED_M ) THEN
+      IF( IT_SHL .ge. 0 ) THEN
         CALL REL_MEM_T_SCR( T_SCR_CC )
       END IF
 *
@@ -4215,7 +4224,8 @@ C
 #if defined (VAR_MPI2)
      &          ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &           ISCLFAC_GROUP,NPARBLOCK,IBLOCKL,
-     &           LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,T_SCR_CC
+     &           LUHCLIST,INT_IOFF3,ISTART_BLK,LLUC,T_SCR_CC,
+     &           IT_TTPL,IT_TTOL
 #endif
      &           )
 *
@@ -4269,9 +4279,10 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
-      DIMENSION NPARBLOCK(*), IBLOCKL(*)
+      DIMENSION NPARBLOCK(*), IBLOCKL(*), IT_TTPL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SAVE
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
       INTEGER(KIND=MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
 #endif
 #include "lucipar_rel.inc"
@@ -4294,7 +4305,7 @@ C     specific input
 C     general input
       INTEGER NSSOA_S(NSMST,*),NSSOB_S(NSMST,*)
       INTEGER NSSOA_C(NSMST,*),NSSOB_C(NSMST,*)
-      dimension SIGN_NHX(NSPOBEX_TP)
+      DIMENSION SIGN_NHX(NSPOBEX_TP)
 C     scratch
       DIMENSION SB(*),CB(*)
       DIMENSION XINT(*)
@@ -4306,7 +4317,6 @@ C
 C
 C     T-coefficients
 C
-CMI   DIMENSION T(*), T_BUFF(*), T_SCR_CC(*)
       DIMENSION T(*), T_BUFF(*)
 #if defined (VAR_MPI2)
       DIMENSION T_SCR_CC(*)
@@ -4324,6 +4334,9 @@ C
       ICPL         = 0
       ICPL_I8      = 0
       ITB_I8       = 0
+C     process id
+      ID_ACCUM     = -1 
+      ID_GET       = -1 
 C
       NTESTL = 000
       NTEST = MAX(NTESTL,max(IPRS,IPRD))
@@ -4342,8 +4355,6 @@ C
      &      WRITE(LUWRT,'(10X,I6,4I3,I8)') 
      &      IBLOCK,(ISBLOCK(II,IBLOCK),II=1,5)
           END DO
-CSK        WRITE(LUWRT,*) ' List of active T blocks : '
-CSK        CALL IWRTMAMN(ISPOBEX_AC,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
       END IF
       NTEST = 000
 *
@@ -4463,12 +4474,12 @@ CSK     &      ISBLK,IATP,IBTP,ISOFF
 C
             ILATP = IATP + IOCTPA - 1
             ILBTP = IBTP + IOCTPB - 1
-CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
 C
 C           loop over spinorbital-excitation types 
 C
             DO 8000 ITTP = 1, NSPOBEX_TP
 C
+csk            WRITE(LUWRT,*) ' Check connections for TT block',ITTP
               ICA_OFF = 1
               ICB_OFF = 1 +  NGAS
               IAA_OFF = 1 +2*NGAS
@@ -4476,64 +4487,55 @@ C
 C
 C             check connections 
 C
-               CALL GXFSTR(NELFSPGP(1,ILATP),NELFSPGP(1,ILBTP),
-     &                     NELFSPGP(1,IRATP),NELFSPGP(1,IRBTP),
-     &                     ITSPOBEX_TP(ICA_OFF,ITTP), 
-     &                     ITSPOBEX_TP(IAA_OFF,ITTP),
-     &                     ITSPOBEX_TP(ICB_OFF,ITTP), 
-     &                     ITSPOBEX_TP(IAB_OFF,ITTP),
-     &                     NGAS,ICON)
+              CALL GXFSTR(NELFSPGP(1,ILATP),NELFSPGP(1,ILBTP),
+     &                    NELFSPGP(1,IRATP),NELFSPGP(1,IRBTP),
+     &                    ITSPOBEX_TP(ICA_OFF,ITTP), 
+     &                    ITSPOBEX_TP(IAA_OFF,ITTP),
+     &                    ITSPOBEX_TP(ICB_OFF,ITTP), 
+     &                    ITSPOBEX_TP(IAB_OFF,ITTP),
+     &                    NGAS,ICON)
 C
-               IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
+              IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
 C
-C                offset for T / T_BUFF array
+C                offset for T array
 C
                  ITB = IBTSOSO_TP(ITTP)
-csk                 WRITE(LUWRT,*) ' ITB offset for T for type ITTP', ITB,
-csk     &                                                      ITTP
-C
-#if defined (VAR_MPI2)
 C
 C                ISIGDEN ==1
 C
 C                "shared memory" MPI mode:
-C                                N_MASTER_SM: T_BUFF   --> T_SCR_CC
-C                                slaves     : MY_T_WIN --> T_SCR_CC  
+C                                get T-block from window to T_SCR_CC
 C
-C                FIXME: check complex case!!!
+#if defined (VAR_MPI2)
+                 IF( IT_SHL .ge. 0 )THEN
 C
-                 IF( SHARED_M )THEN
+C                  get ICPL8 elements of T
 C
-C                  offset for complex case
-C
-                   IF( (IRIS .eq. 1 .and. IRIC .eq. 2) 
-     &                .or. ( IRIS .eq. 2 .and. IRIC .eq. 1) ) THEN
-                    ITB = ITB + LEN_T_BUFF_NZ
-                   END IF
-C
-C                  copy ICPL elements of T
-C
-                   ICPL_I8 = NELM_CC(ITTP,NSPOBEX_TP,LEN_T_BUFF_NZ)
+                   ICPL_I8     = NELM_CC(ITTP,NSPOBEX_TP,LEN_T_BUFF_NZ)
                    XNINT_TP_I8 = REAL( ICPL_I8 )
-                   ICPL = IGIVE_I_B(XNINT_TP_I8)
+                   ICPL        = IGIVE_I_B(XNINT_TP_I8)
+C                  determine T type for use in T list
+                   IXXTTP = ITTP
+                   IF( (IRIS .eq. 1 .and. IRIC .eq. 2)
+     &                .or. ( IRIS .eq. 2 .and. IRIC .eq. 1) ) THEN
+                      IXXTTP = ITTP + NSPOBEX_TP
+                   END IF
+C                  process id and window offset (complex case included)
+                   ID_GET = IT_TTPL( IXXTTP )
+C                  check for availability
+                   IF( ID_GET .lt. 0) GOTO 8000
+C                  window offset
+                   ITB_I8 = IT_TTOL( IXXTTP )
 C
                    IF( ISIGDEN .eq. 1 )THEN
-C
-c               WRITE(LUWRT,*) ' ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ',
-c    &                           ICPL_I8, ICPL, ITB, LEN_T_BUFF_NZ
-c               WRITE(LUWRT,*) ' IRIS, IRIC, NINT_TOTAL',
-c    &                           IRIS, IRIC, NINT_TOTAL 
+C                    get it
+csk              write(luwrt,*) ' GET call: ID_GET, ITB_I8, IXXTTP, ICPL',
+csk     &                                   ID_GET, ITB_I8, IXXTTP, ICPL
                      start_timer = MPI_WTIME() 
-                     IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
-                       CALL DCOPY( ICPL ,T_BUFF(ITB), 1, T_SCR_CC, 1)
+                     IF( MYNEW_ID_SM .eq. ID_GET )THEN
+                       CALL DCOPY(ICPL,T_BUFF(ITB_I8+1),1,T_SCR_CC,1)
                      ELSE
-C
-C                      window offset: 0 --> ITB - 1
-C
-                       ITB_I8  = ITB - 1
-C
-                       start_timer = MPI_WTIME() 
-                       CALL MPIXGET(T_SCR_CC,ICPL,2,N_MASTER_SM,
+                       CALL MPIXGET(T_SCR_CC,ICPL,2,ID_GET,
      &                              ITB_I8,ICPL,2,MY_T_WIN)
                      END IF
                      mem_cp_time = mem_cp_time + 
@@ -4543,18 +4545,7 @@ C
                    END IF
 C                  ^ ISIGDEN
                  END IF
-C                ^ SHARED_M
-csk      IF( SHARED_M ) THEN
-csk      WRITE(LUWRT,*) ' ITTP, ICPL_I8, ITB_I8', ITTP, ICPL_I8, ITB_I8
-c        WRITE(LUWRT,*) ' MY first T_SCR_CC block'
-c        CALL WRTMATMN8(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      WRITE(LUWRT,*) ' Stefan forced me to stop in SIGDEN_REL3'
-csk
-csk      stop ' Stefan forced me to stop in SIGDEN_REL3'
-csk      END IF
+C                ^ IT_SHL 
 #endif
 C
 C                read C block in
@@ -4671,49 +4662,33 @@ C
 C
 C              update T_BUFF
 C
-#if defined (VAR_MPI2)
 C
 C                ISIGDEN ==2
 C
 C                "shared memory" MPI mode:
 C                                    all : T_SCR_CC --> MY_T_WIN 
 C
-C                FIXME: check complex case!!!
-C
-                 IF( SHARED_M )THEN
+                 IF( IT_SHL .ge. 0 )THEN
 C
                    IF( ISIGDEN .eq. 2 )THEN
 C
-C                    window offset: 0 --> ITB - 1
-C
-                     ITB_I8  = ITB - 1
-C
                      XXX = DDOT( ICPL, T_SCR_CC, 1, T_SCR_CC, 1 )
-C
 C                    update if necessary
-C
                      IF( XXX .ne. 0.0D0 ) THEN
-C
-                        CALL MPIXACCUM(T_SCR_CC,ICPL,2,N_MASTER_SM,
+C                       process id and window offset
+C                       (complex case included)
+#if defined (VAR_MPI2)
+C                       use ID_GET as ID_ACCUM
+                        ID_ACCUM = ID_GET
+C                       window offset determined above
+                        CALL MPIXACCUM(T_SCR_CC,ICPL,2,ID_ACCUM,
      &                                 ITB_I8,ICPL,2,MY_T_WIN)
+#endif
                      END IF
                    END IF
 C                  ^ ISIGDEN
                  END IF
-C                ^ SHARED_M
-c        IF( SHARED_M ) THEN
-c        WRITE(LUWRT,*) ' ITTP, ICPL_I8, ITB_I8', ITTP, ICPL_I8, ITB_I8
-c        WRITE(LUWRT,*) ' MY first T_SCR_CC block'
-c        CALL WRTMATMN8(T_SCR_CC,1,ICPL_I8,1,ICPL_I8,LUWRT)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk      WRITE(LUWRT,*) ' Stefan forced me to stop in SIGDEN_REL3'
-csk
-csk      stop ' Stefan forced me to stop in SIGDEN_REL4'
-c        END IF
-#endif
-C
+C                ^ IT_SHL
                END IF
 C              ^ end if connection 
  8000       CONTINUE

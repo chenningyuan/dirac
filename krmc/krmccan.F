@@ -181,16 +181,15 @@ C
 C
       IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
          IF( NATOLCR )THEN
-          WRITE(LUPRI,*) ' '
-          WRITE(LUPRI,'(12X,A)') ' =================================== '
-          WRITE(LUPRI,'(12X,A,I4)') 
-     &                      '            CI STATE ==',IDENSLR_STATE
-          WRITE(LUPRI,'(12X,A)') ' =================================== '
-          WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,'(//A/A/A)')
+     &' **************************************************************',
+     &' *************** CI natural orbital calculation ***************',
+     &' **************************************************************'
          END IF
-         WRITE(LUPRI,'(//A/A)')
-     &        ' (RGETNO) Occupancies of natural orbitals',
-     &        ' ----------------------------------------'
+         ICI_RT = IDENSLR_STATE
+         WRITE(LUPRI,'(//A,I3,/A)')
+     &        '   Natural orbital occupation numbers for state:',ICI_RT,
+     &        '   ------------------------------------------------'
          DO I = 1, NFSYM
             NOCCI = NOCC(I)
             IF (NOCCI .EQ. 0) THEN
@@ -205,9 +204,9 @@ C
       END IF
       IPRINT = 0
 C
- 9001 FORMAT(/' Symmetry',I3,//,'   No occupied orbitals')
- 9002 FORMAT(/' Symmetry',I3,//,(5F14.9))
- 9003 FORMAT(/' Sum =',T15,F14.9)
+ 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
+ 9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
 C
       IF ( IPRINT .GE. 5 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM

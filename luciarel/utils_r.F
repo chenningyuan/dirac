@@ -35,6 +35,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *
@@ -67,6 +68,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *  Dummy routine for normal compilations
@@ -77,6 +79,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *
@@ -95,6 +98,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION I_GET_ADJSYM(ISYM)
@@ -125,6 +129,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION IFRMR_REL(WORK,IROFF,IELMNT)
@@ -146,6 +151,7 @@ C     PARAMETER(IRAT = 2 )
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION IMNMX_REL(IVEC,NDIM,MINMAX)
@@ -177,6 +183,7 @@ C     PARAMETER(IRAT = 2 )
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Use Kramers symmetry (if flag is activated) on a particle
@@ -216,6 +223,7 @@ C     IFAC = IFAC * IFLOC
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INPRDDC(VEC1,VEC2,LU1,LU2,
@@ -294,6 +302,119 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+C**********************************************************************
+      INTEGER FUNCTION IPICK_T_ACTIVE(IT_CTALL,IT_CTONE,LPROC_NM,
+     &                                NDIM,IMULT)
+C
+C     find all active T-blocks for all (LPROC_NM) CPU's 
+C
+C     Written by S. Knecht - Feb 01 2008
+C
+C     Last revision :
+C
+C**********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#if defined (VAR_MPI2)
+#include "mpif.h"
+#include "infpar.h"
+#endif
+#include "lucipar_rel.inc"
+      DIMENSION IT_CTALL(*), IT_CTONE(*)
+      INTEGER ICOUNT_TBLK, IOFF_ONE
+C
+      IPICK_T_ACTIVE = 0
+      ICOUNT_TBLK    = 0
+      NTEST          = 0
+C
+      IF( NTEST .gt. 0 )THEN
+        IF( IMULT .eq. 1 ) WRITE(LUWRT,*) ' real part of T'
+        IF( IMULT .eq. 2 ) WRITE(LUWRT,*) ' imag part of T'
+        WRITE(LUWRT,*) ' T dimension: ',NDIM
+        WRITE(LUWRT,*) ' T group dimension: ', LPROC_NM
+        IF( IMULT .eq. 1 ) THEN 
+          WRITE(LUWRT,*) ' TOTAL T BLOCK ARRAY    '
+          CALL IWRTMAMN(IT_CTALL,LPROC_NM,NDIM*IRC_SAVE,LPROC_NM,
+     &                  NDIM*IRC_SAVE,LUWRT)
+        END IF
+      END IF
+C
+C     start search...
+C
+      DO 200 ICT = 1, NDIM
+C
+        INUM_P = 0
+ 100    CONTINUE
+        INUM_P = INUM_P + 1
+        IOFF   = NDIM * IRC_SAVE*(INUM_P-1)+(NDIM*(IMULT-1)) + ICT
+        IF( IT_CTALL(IOFF) .gt. 0 )THEN
+          ICOUNT_TBLK = ICOUNT_TBLK + 1
+          IOFF_ONE = ICOUNT_TBLK + NDIM * ( IMULT - 1 )
+csk          IT_CTONE( IOFF_ONE ) = ICT + NDIM * ( IMULT - 1 )
+          IT_CTONE( IOFF_ONE ) = ICT
+C         this block is active, go for the next one
+          GOTO 200
+        END IF
+        IF( INUM_P .lt. LPROC_NM ) GOTO 100
+C
+ 200  CONTINUE
+C
+csk      WRITE(LUWRT,'(A,I7)') ' total active T blocks: ',ICOUNT_TBLK
+C
+csk      WRITE(LUWRT,*) ' ACTIVE T BLOCKS'
+csk      CALL IWRTMAMN(IT_CTONE,1,NDIM*IRC_SAVE,1,NDIM*IRC_SAVE,LUWRT)
+C
+      IPICK_T_ACTIVE = ICOUNT_TBLK
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+C**********************************************************************
+      INTEGER*8 FUNCTION IGET_MY_T_LEN(IT_TTPL,IMULT)
+C
+C     find all active T-blocks for all (LPROC_NM) CPU's 
+C
+C     Written by S. Knecht - Feb 01 2008
+C
+C     Last revision :
+C
+C**********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#if defined (VAR_MPI2)
+#include "mpif.h"
+#include "infpar.h"
+#endif
+#include "lucipar_rel.inc"
+#include "ctcc.inc"
+      DIMENSION IT_TTPL(*)
+      INTEGER*8 J_COUNT_LEN, ITLTND, IILENGTH
+C
+      IGET_MY_T_LEN = 0
+      J_COUNT_LEN   = 0
+      IILENGTH      = 0
+C
+      DO JMULT = 1, IMULT
+        DO IBLK = 1, NSPOBEX_TP
+          IF( IT_TTPL( IBLK + ( NSPOBEX_TP * (JMULT - 1 ) ) ) 
+     &        .eq. MYNEW_ID_SM )THEN
+            IILENGTH    = NELM_CC(IBLK,NSPOBEX_TP,NINT_TOTAL)
+            J_COUNT_LEN = J_COUNT_LEN + IILENGTH
+          END IF
+        END DO
+      END DO
+C
+      IGET_MY_T_LEN = J_COUNT_LEN
+csk      WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *  Unfold lower triangle square matrix to full size;
@@ -328,6 +449,7 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Copy vector to defined partition of matrix
@@ -395,10 +517,144 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
+     &                        INTSPACE,IPRNT,IOFF_T_IJKL)
+C**********************************************************************
+C
+C     write sorted integrals back on file - driver routine                         
+C
+C     NOTE: (ij|kl) sorting is GAS-specific
+C
+C     Written by S. Knecht - Jan 10 2008
+C     Last revision :
+C
+C
+C***********************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+* =====
+*.Input
+* =====
+*
+*./ORBINP/ : NACOB used
+*
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "cprnt.inc"
+#include "cgas.inc"
+#include "gasstr.inc"
+#include "symm.inc"
+#include "oper.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IS_LENGHT8
+#endif
+#include "lucipar_rel.inc"
+#include "typesz_mpi2.h"
+      CHARACTER*6 ENVIRO, SIGDEN_ROUTE
+C
+
+      IS_BYTE8   = 0
+      IS_LENGHT8 = 0
+C     local memory
+      IDUM = 0
+      call memmar(KDUM,  IDUM,    'MARK  ',IDUM,'T_DIAG')
+C
+CTF   Total number of orbitals and active orbitals (spinors, actually)
+CTF   from BOTH sets, barred and unbarred !
+      NTOOBTOT = NTOOB + NTOOB2
+      NACOBTOT = NACOB + NACOB2
+C
+      call memmar(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
+      call memmar(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
+      call memmar(KLK2  ,NTOOB**2,'ADDL  ',2,'KLK   ')
+      call memmar(KLH1DA,NTOOB, 'ADDL  ',2,'KLH1DA')
+      call memmar(KLH1DB,NTOOB, 'ADDL  ',2,'KLH1DB')
+C
+      CALL DZERO(WORK(KLH1DA),NTOOB)
+      CALL DZERO(WORK(KLH1DB),NTOOB)
+      CALL DZERO(WORK(KLJ)   ,NTOOB**2)
+      CALL DZERO(WORK(KLK)   ,NTOOB**2)
+      CALL DZERO(WORK(KLK2)  ,NTOOB**2)
+C
+      if (IHAM12.eq.1.or.IHAM12.eq.2) then
+        call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),DUMMY,
+     &                   INTSPACE,T_BUFF,ENVIRO,SIGDEN_ROUTE)
+      end if
+C     obtain 2e integrals needed for diagonal
+      if (IHAM12.EQ.2.or.IHAM12.eq.3) then
+        call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),T_BUFF,0,
+     &                  ISPINFREE,NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &                  ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRNT)
+      end if
+C
+C     write out to disk
+C
+#if defined(VAR_MPI2)
+C
+      IOFFSET     = 0
+      IWRITE_BYTE = 0 
+      IOFFSET     = IOFF_T_IJKL
+      IS_BYTE8    = ISIZE_dp
+      IS_LENGHT8  = NTOOB
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IS_BYTE8    = ISIZE_dp
+      IS_LENGHT8  = NTOOB
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IS_BYTE8    = ISIZE_dp
+      IS_LENGHT8  = NTOOB**2
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLJ),
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IS_BYTE8    = ISIZE_dp
+      IS_LENGHT8  = NTOOB**2
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK),
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C     
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IS_BYTE8    = ISIZE_dp
+      IS_LENGHT8  = NTOOB**2
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK2),
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+#endif
+C     flush local memory
+      call memmar(KDUM,  IDUM,    'FLUSM ',IDUM,'T_DIAG')
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
       SUBROUTINE WRITE_IJKL_GAS(T,T_BUFF,INTIMP,ISPINFREE,ISYM_T,
      &                          ISOBEX,ISTR_CA,ISTR_CB,ISTR_AA,
      &                          ISTR_AB,NASHT,F1,MDIASV,IBOSYM, 
-     &                          LABEL,CIRUN,IPRNT,NDIAMINT)
+     &                          LABEL,CIRUN,IPRNT,NDIAMINT,ENVIRO,
+     &                          SIGDEN_ROUTE,INTSPACE)
 C**********************************************************************
 C
 C     write sorted integrals back on file - driver routine                         
@@ -416,9 +672,6 @@ C***********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
-      POINTER (MY_XINT_SCR_PTR, XINT_SCR(IDUMMY_BUFF_SZ))
 #endif
 #include "lucipar_rel.inc"
 #include "mxpdim.inc"
@@ -438,77 +691,54 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'IJKLRO')
 C
-#if defined (VAR_MPI2)
+      CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
 C
-C     dynamic allocation of scratch XINT block (only N_MASTER_SM)
-C      --> use in "shared memory" MPI runs, MPI info available
-C     if IS_DUMMY > 0 and info im[lemented
+      IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
 C
-      IF( SHARED_M ) THEN
-C
-        IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
-          IS_DUMMY = 0
-          CALL GET_MEM_XINT_SCR( IS_DUMMY )
-        END IF
-C
-      END IF
-C
-#endif
-      IF( .NOT. SHARED_M ) THEN
-         CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
-      END IF
-C
-C
-      IF( SHARED_M ) THEN
-         CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                         XINT_SCR,IPRNT)
-      ELSE
-         CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
+        CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
      &                         WORK(KINTI12),IPRNT)
       END IF
+C     ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
+      IF( IIOMOD_REL .eq. 0 )THEN
 C
+C       LEN_ALL_INT is INTEGER*8: this might not work with 
+C       every MPI implementation (IBM?); anyway bcast should 
+C       NOT be our first choice...
 C
-      IF( SHARED_M ) THEN
-        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                        ISOBEX,T,T_BUFF,
-     &                        ISTR_CA,ISTR_CB,ISTR_AA,
-     &                        ISTR_AB,NASHT,F1,XINT_SCR, 
-     &                        MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+        CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
+     &                 MASTER,IXCOMM,IERR)
 C
-      ELSE
-C
-        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                        ISOBEX,T,T_BUFF,
-     &                        ISTR_CA,ISTR_CB,ISTR_AA,
-     &                        ISTR_AB,NASHT,F1,WORK(KINTI12), 
-     &                        MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
       END IF
 C
-      WRITE(LUWRT,'(A)') ' ' 
+      call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                      ISOBEX,T,T_BUFF,
+     &                      ISTR_CA,ISTR_CB,ISTR_AA,
+     &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+C
+      WRITE(LUWRT,'(A)') ' '
       WRITE(LUWRT,'(A)')
      & '  =========================================='
       WRITE(LUWRT,'(A)')
      & '  Storing sorted integrals on file IJKL_REOD'
+      IF( IT_SHL .eq. - 2 ) THEN
+        WRITE(LUWRT,'(A)')
+     & '     file type  : (ij|kl)-sharing format    '
+      ELSE
+        WRITE(LUWRT,'(A)')
+     & '     file type  : standard (ij|kl) format   '
+      ENDIF
       WRITE(LUWRT,'(A)')
      & '  =========================================='
       WRITE(LUWRT,'(A)') ' ' 
 
 C
-      CALL IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT )
+      CALL IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
+     &                  SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT )
 C
 C     flush local memory
 C
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'IJKLRO')
-#if defined (VAR_MPI2)
-C
-C     release scratch memory
-C
-      IF( SHARED_M ) THEN
-        CALL REL_MEM_XINT_SCR( XINT_SCR )
-      END IF
-C
-#endif
-
 C
       END
 ***********************************************************************
@@ -517,7 +747,8 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT )
+      SUBROUTINE IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
+     &                        SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT)
 C**********************************************************************
 C
 C     write sorted integrals on file
@@ -530,49 +761,103 @@ C
 C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IWRITE_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL
+#endif
 #include "mxpdim.inc"
 #include "lucipar_rel.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
+#include "typesz_mpi2.h"
       DIMENSION T_BUFF(*), T(NALLINT), MDIASV(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_OUT
 C
       NINT_TOT = N1ELINT + N2ELINT
-      I_START  = 0
-      I_END    = 0
-      I_OUT    = 0
-C     
-C     open integral file
+      IS_BYTE8    = 0
+      IWRITE_BYTE = 0
+      I_START     = 0
+      I_END       = 0
+      I_OUT       = 0
+      IF( IT_SHL .eq. - 2 )THEN
+#if defined (VAR_MPI2)
+        IDISP    = 0
+        IOFFSET  = 0
 C
-csk      WRITE(LUWRT,*) ' NALLINT ',NALLINT
-      OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &     Status='UNKNOWN',Form='UNFORMATTED')
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
+     &                         IIJKL_ROD,IERR)
 C
-C     write all information that is needed
+        CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
+     &                         "native",MPI_INFO_NULL,IERR)
 C
-      WRITE(IIJKL_ROD) NALLINT
+        IOFFSET     = 0 
+        IWRITE_BYTE = ISIZE_int8
+        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NALLINT,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IWRITE_BYTE = ISIZE_my_int
+        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NDIAINT,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IWRITE_BYTE = ISIZE_my_int
+        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IWRITE_BYTE = ISIZE_my_int
+        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
-      IF( .NOT. SHARED_M ) THEN
+C       T in SIGDEN ordered format
 C
-        WRITE(IIJKL_ROD) (T(I_OUT), I_OUT = 1, NALLINT)
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+        IS_BYTE8    = ISIZE_dp
+        IWRITE_BYTE = NALLINT * IS_BYTE8
+csk        WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
+csk        WRITE(LUWRT,*) ' # elements in bytes = ',IWRITE_BYTE
+csk        CALL WRTMATMN(T,1,NALLINT,1,NALLINT,LUWRT)
+        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T,
+     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+csk        WRITE(LUWRT,*) ' write-out at ',IOFFSET
 C
+C       T diagonal in GASDIAT_REL ordered format
+C
+        IOFF_T_IJKL = 0
+        IOFF_T_IJKL = IOFFSET + IWRITE_BYTE
+csk        WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
+csk     &                   IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
+C
+        CALL WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
+     &                    INTSPACE,IPRNT,IOFF_T_IJKL)
+C
+        CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+C
+#endif
       ELSE
-        WRITE(IIJKL_ROD) (T_BUFF(I_OUT), I_OUT = 1, NALLINT)
-csk        CALL WRTMATMN8(T_BUFF,1,NALLINT,1,NALLINT,LUWRT)
-      ENDIF
 C
-C     some more information ...
+C       open integral file
 C
-csk      WRITE(LUWRT,*) ' NDIAMINT',NDIAMINT
-      WRITE(IIJKL_ROD) NDIAINT,N1DIAINT,N2DIAINT
+        OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &       Status='UNKNOWN',Form='UNFORMATTED')
+C
+C       write all information that is needed
+C
+        WRITE(IIJKL_ROD) NALLINT,NDIAINT,N1DIAINT,N2DIAINT
 csk      CALL IWRTMAMN8(IPOSDIA,1,NDIAMINT,1,NDIAMINT,LUWRT)
 csk      CALL IWRTMAMN(MDIASV,1,4*NDIAMINT,1,4*NDIAMINT,LUWRT)
-      WRITE(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
-      WRITE(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
+        WRITE(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
+        WRITE(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
+C       ... integrals
+        WRITE(IIJKL_ROD) (T(I_OUT), I_OUT = 1, NALLINT)
 C
-C     close
+C       close
 C
-      CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
+        CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
+      END IF
 C
       END
 ***********************************************************************
@@ -581,7 +866,8 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE READ_IJKL_GAS( T, T_BUFF, MDIASV, NDIAMINT )
+      SUBROUTINE READ_IJKL_GAS(T,T_BUFF,T_BUFF_D,IT_TTPL,
+     &                         MDIASV,NDIAMINT)
 C**********************************************************************
 C
 C     read sorted integrals from file
@@ -594,49 +880,122 @@ C
 C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IREAD_BYTE, IOFFSET_T
+#endif
 #include "mxpdim.inc"
 #include "lucipar_rel.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
-      DIMENSION T_BUFF(*), T(NALLINT), MDIASV(*)
+#include "orbinp.inc"
+#include "typesz_mpi2.h"
+      DIMENSION T_BUFF(*),T(NALLINT),MDIASV(*),IT_TTPL(*)
+      DIMENSION T_BUFF_D(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_IN
 C
       NINT_TOT = N1ELINT + N2ELINT
       I_START  = 0
       I_END    = 0
       I_OUT    = 0
+      IF( IT_SHL .ge. 0 )THEN
+#if defined (VAR_MPI2)
 C
-C     open integral file
+        IDISP    = 0
+        IOFFSET  = 0
 C
-      OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &     Status='OLD',Form='UNFORMATTED')
-      REWIND(IIJKL_ROD)
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                     MPI_MODE_RDONLY,MPI_INFO_NULL,
+     &                     IIJKL_ROD,IERR)
 C
-C     read all integrals in
+        CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
+     &                         "native",MPI_INFO_NULL,IERR)
 C
-      READ(IIJKL_ROD) NALLINT
-csk      WRITE(LUWRT,*) ' NALLINT ',NALLINT
+        IOFFSET     = 0
+        IREAD_BYTE  = ISIZE_int8
+        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NALLINT,
+     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk        WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
+        IOFFSET     = IOFFSET + IREAD_BYTE
+        IREAD_BYTE  = ISIZE_my_int
+        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NDIAINT,
+     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk        WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
+        IOFFSET     = IOFFSET + IREAD_BYTE
+        IREAD_BYTE  = ISIZE_my_int
+        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk        WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
+        IOFFSET     = IOFFSET + IREAD_BYTE
+        IREAD_BYTE  = ISIZE_my_int
+        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk        WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
 C
-      IF( .NOT. SHARED_M ) THEN
-        READ(IIJKL_ROD) (T(I_IN), I_IN = 1, NALLINT)
+C       T in SIGDEN ordered format
+C
+        IOFFSET     = IOFFSET + IREAD_BYTE
+        IOFFSET_T   = IOFFSET
+csk        WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
+C
+C       raed-in integrals to T_BUFF according to type list IT_TTPL
+C
+        CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,NSPOBEX_TP,IOFFSET_T)
+csk        WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
+csk                                                  MY_T_LEN
+csk        CALL WRTMATMN(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+C
+C       T diagonal in GASDIAT_REL ordered format
+C
+        IS_BYTE8    = ISIZE_dp
+        IREAD_BYTE  = NALLINT    * IS_BYTE8
+        IOFFSET     = IOFFSET_T  + IREAD_BYTE
+        IREAD_BYTE  = MY_T_LEN_D * IS_BYTE8
+csk        WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
+csk        WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
+        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
+     &                        IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+csk        WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
+csk                                                  MY_T_LEN_D
+csk        CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
+C
+        CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+C
+#endif
       ELSE
-        READ(IIJKL_ROD) (T_BUFF(I_IN), I_IN = 1, NALLINT)
-      ENDIF
 C
-csk        CALL WRTMATMN8 (T_BUFF,1,NALLINT,1,NALLINT,LUWRT)
+C       open integral file
 C
-C     some more information ...
+        OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &       Status='OLD',Form='UNFORMATTED')
 C
-      READ(IIJKL_ROD) NDIAINT,N1DIAINT,N2DIAINT
+        REWIND(IIJKL_ROD)
+C
+C       read all integrals in
+C
+        READ(IIJKL_ROD) NALLINT,NDIAINT,N1DIAINT,N2DIAINT
+csk      WRITE(LUWRT,*) ' NALLINT ',NALLINT
 csk      WRITE(LUWRT,*) ' NDIAMINT',NDIAMINT
-      READ(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
-      READ(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
+        READ(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
+        READ(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
 csk      CALL IWRTMAMN8(IPOSDIA,1,NDIAMINT,1,NDIAMINT,LUWRT)
 csk      CALL IWRTMAMN(MDIASV,1,4*NDIAMINT,1,4*NDIAMINT,LUWRT)
 C
-C     close
+        READ(IIJKL_ROD) (T(I_IN), I_IN = 1, NALLINT)
 C
-      CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
+C       close
+C
+        CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
+C
+      END IF
 C
       END
 #if defined (VAR_MPI2)
@@ -768,6 +1127,57 @@ C
 C     finally ...
 C
  500  CONTINUE
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE CHECK_CONSIST( CHECK_VAL, CHECK_VEC, NDIM )
+C**********************************************************************
+C
+C     check if logical is consistent on each CPU
+C
+C     Written by S. Knecht - Feb 22 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+      LOGICAL CHECK_VAL, CHECK_VEC(*), CHECK_SCR
+C
+      CHECK_SCR = .FALSE.
+C
+csk      WRITE(6,*) ' subroutine CHECK_CONSIST: CHECK_VAL is ',   
+csk     &             CHECK_VAL
+C
+      IF( CHECK_VAL ) THEN
+        DO II = 1, NDIM
+          CHECK_SCR = CHECK_VEC(II)
+          IF( .NOT. CHECK_SCR )THEN
+             WRITE(LUWRT,*) ' subroutine CHECK_CONSIST: unconsistency 
+     &   detected ', CHECK_SCR
+            CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
+     &   detected' )
+          END IF
+        END DO
+      ELSE
+        DO II = 1, NDIM
+          CHECK_SCR = CHECK_VEC(II)
+          IF( CHECK_SCR )THEN
+             WRITE(LUWRT,*) ' subroutine CHECK_CONSIST: unconsistency 
+     &   detected ', CHECK_SCR
+            CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
+     &   detected' )
+          END IF
+        END DO
+      END IF
 C
       END
 #endif

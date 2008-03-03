@@ -51,7 +51,7 @@ C
      &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
-     &           RCCTOS
+     &           RCCTOS,IT_TTPL,IT_TTOL
 #endif
      &     )
 *
@@ -75,6 +75,8 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
+      DIMENSION IT_TTPL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 #include "cstate.inc"
 #endif
 #include "lucipar_rel.inc"
@@ -326,7 +328,8 @@ C#endif
      &                  LUCLIST,NBATCH,
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,
-     &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST)
+     &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST,
+     &                  IT_TTPL,IT_TTOL)
 *
 #else
 *
@@ -359,7 +362,8 @@ C#endif
      &                  LUCLIST,NBATCH,
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,WORK(KSCRRED),
-     &                  WORK(KSCRRED2),IGROUPLIST,IPROCLIST)
+     &                  WORK(KSCRRED2),IGROUPLIST,IPROCLIST,
+     &                  IT_TTPL,IT_TTOL)
 *
 #else
 *

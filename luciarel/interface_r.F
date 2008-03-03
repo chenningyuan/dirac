@@ -1390,14 +1390,6 @@ C
       NDIAINT = 0
       N1DIAINT = 0
       N2DIAINT = 0
-C
-C     "shared" memory mode - only "node master" needed
-C
-#if defined (VAR_MPI2)      
-      IF( SHARED_M ) THEN
-        IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 300
-      END IF
-#endif
 *
 *     Loop over real/imaginary part
 *
@@ -1889,46 +1881,11 @@ C    &             ' at ',ICOUNT_I8
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
                             end if
 C
-csk                              write(luwrt,*) ' YINT - YXINT, ICOUNT_I8',
-csk     &                                         YINT - YXINT, ICOUNT_I8
-                            IF( SHARED_M ) THEN
-                              T_BUFF( ICOUNT_I8 ) = YINT - YXINT
-                            if (IXCH.eq.1) 
-     &                        T_BUFF( ICOUNT_I8 ) = - T_BUFF(ICOUNT_I8) 
-                            ELSE
                               T(ICOUNT_I8) = YINT - YXINT
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-                            END IF
-C                           ^ SHARED_M ?
 C                        
-                            IF( SHARED_M ) THEN 
-                              if (NTEST.ge.1) then
-                                if (NTEST.ge.10)
-     &                              write(6,'(A,I4,A,4I3,A,1F18.12)') 
-     &                                    'INTEGRAL no. ',ICOUNT_I8,'(',
-     &                                     (INDEX(M),M=1,4),
-     &                                    ') Value: ',T_BUFF(ICOUNT_I8)
-*                             write integral to file (for debugging):
-                                if (IXCH.eq.0) then
-                                  write(LUINGR,'(I4,4X,4I3,1F18.14)') 
-     &                                  ICOUNT_I8,INDEX(1),
-     &                                         INDEX(2),
-     &                                         INDEX(3),
-     &                                         INDEX(4),
-     &                                         T_BUFF(ICOUNT_I8)
-                                else
-                        write(LUINGR,'(I4,4X,4I3,1X,A,1X,4I3,1F18.14)')
-     &                                  ICOUNT_I8,INDEX(1),
-     &                                         INDEX(2),
-     &                                         INDEX(3),
-     &                                         INDEX(4),'-',
-     &                              I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
-     &                                         T_BUFF(ICOUNT_I8)
-                                end if
-                              end if
-                            ELSE 
                               if (NTEST.ge.1) then
                                 if (NTEST.ge.10)
      &                              write(6,'(A,I4,A,4I3,A,1F18.12)') 
@@ -1952,8 +1909,6 @@ C
      &                                         T(ICOUNT_I8)
                                 end if
                               end if
-                            END IF
-C                           ^ SHARED_M
                           end if
                           ICOUNT_I8 = ICOUNT_I8 + 1
 *
@@ -1983,25 +1938,6 @@ C                           ^ SHARED_M
       NALLINT = ICOUNT_I8 - 1
 C
  300  CONTINUE
-C
-#if defined (VAR_MPI2)
-C
-C     "node master" <--> slave update 
-C
-      IF( CIRUN .ne. 'IJKLRO' ) THEN
-        IF( SHARED_M ) THEN
-           CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, N_MASTER_SM, 
-     &                    MYNEW_COMM_SM, IERR)
-           CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, N_MASTER_SM,
-     &                    MYNEW_COMM_SM, IERR)
-           CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
-     &                    MYNEW_COMM_SM, IERR)
-           CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, N_MASTER_SM, 
-     &                    MYNEW_COMM_SM, IERR)
-        END IF
-      END IF
-C
-#endif
 C
       if (NTEST.ge.1) then
         write(LUWRT,*) ' DIST_INTS_SIGDEN reporting   : '
@@ -9158,7 +9094,7 @@ CSK        IPRINT = 10
 CSK      ELSE
 CSK        IPRINT = 00
 CSK      END IF
-      IPRINT = 00
+csk      IPRINT = 10
       IF (IPRINT .GE. 10) THEN
          IF (DOH2AC) THEN
             CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),6)
@@ -9826,6 +9762,8 @@ csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
               if (NTEST.ge.10) then
                 write(LUWRT,'(2I3,1F18.14,A,I4)') 
      &                    I,J,F1(IOUT),' to pos.',IOUT
+                write(LUWRT,*) ' original position IRUN+IRIOFF',
+     &                           IRUN+IRIOFF
               end if
 *
             else if( NCT .eq. 0 .or. NCT .eq. 4)then
@@ -9851,6 +9789,276 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       return
       end
+#if defined (VAR_MPI2)
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+* Transfer density matrices from excitation class ordering to
+* KRMC storage mode
+*
+*  1-particle: molfdir full spinor format
+*
+*--------------------------------------------------------------------*
+*   November 12, 2001, Timo Fleig
+*                - updated for correct one-particle function ordering
+*                  Timo Fleig, June 2004
+*                - Revised FSM/IUB ordering section             
+*                  Timo Fleig, November 2006
+*                - revised for proper NO-occupation number runs
+*                  Stefan Knecht, October 2007
+*      
+*                - only 1-particle ordering, 
+*                  Stefan Knecht - October 2007
+*
+*                - shared memory mode: Stefan Knecht - February 2008
+*
+*--------------------------------------------------------------------*
+*
+      subroutine trnsfdens_no_sm(F1,DENS,IT_TTPL,IT_TTOL,INDEX,
+     &                           LABEL,IHINDX,SIGN,IOP_REO,
+     &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
+*
+*  Input:  DENS
+*  Output: F1
+*
+* #############################################
+*  LABEL is defined as 
+*     1 for unbarred (alpha)
+*    -1 for barred   (beta)
+* #############################################
+*
+#include "implicit.h"
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "lucipar_rel.inc"
+#include "krmc_shmem.h"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "ctcc.inc"
+*
+#include "dgroup.h"
+#include "dcborb.h"
+#include "noccn_inf.inc"
+
+*
+      dimension F1(*), IT_TTPL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
+      dimension INDEX(4,N1ELINT),ICSAVE(4),INDEX_L(4),IND_R(4)
+      dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
+     &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
+     &          IREOKF(MXPORB)
+      INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF, N1ELINT_I8, ITB_I8
+      INTEGER*8 IRUN_XTP, IOFF_GET 
+      INTEGER ID_GET
+*
+      IRUN_XTP = 0
+      IOFF_GET = 0
+      ID_GET   = 0
+      ITB_I8   = 0
+      NTESTL   = 00
+      NTEST = max(IPRNT,NTESTL)
+*
+      NINT_TOT   = N1ELINT + N2ELINT
+      N1ELINT_I8 = N1ELINT 
+*
+      if (ISF.eq.1.or.NZ.eq.1) then
+        IRILP = 1
+      else
+        IRILP = 2
+      end if
+*
+      ONE = 1.0D0
+      ONEM = -1.0D0
+      NASHTL2 = NASHTL * 2
+*
+      if (NTEST.ge.2) then
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================================='
+        write(LUWRT,*) ' Transferring densities to MOLFDIR format.'
+        write(LUWRT,*) '=========================================='
+      end if
+*
+*  Fermion symmetry/Kramers reordering (for output density indexing)
+*  KRMC wants - IFSYM loop
+*              - unbarred/barred loop
+*               - GAS loop
+* Determine offset array
+      IADDKF = 1
+      do IFSM = 1,NFSYM
+        do IUBT = 1,2
+          do KGAS = 1,NGAS
+            IOFFKF(IFSM,KGAS,IUBT) = IADDKF
+            IADDKF = IADDKF + NGSH(IFSM,KGAS)
+          end do
+        end do
+      end do
+*
+      if (NTEST.ge.5) then
+        do IUBT = 1,2
+          if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
+          if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+        end do
+      end if
+*
+* Determine reordering array
+      II = 1
+      do IUBT = 1,2
+        do IFSM = 1,NFSYM
+          do KGAS = 1,NGAS
+            do IRN = 1,NGSH(IFSM,KGAS)
+              IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
+              II = II + 1
+            end do
+          end do
+        end do
+      end do
+*
+      if (NTEST.ge.5) then
+        write(LUWRT,*) ' IREOKF array'
+        call iwrtmamn(IREOKF,1,II-1,1,MXPORB,LUWRT)
+      end if
+*
+* Process densities
+      do IRI = 1,IRILP,1
+        IRUN = 1
+        IRIOFF = 0
+        do JRI = 1,IRI-1,1
+          IRIOFF = IRIOFF + NINT_TOT
+        end do
+*
+        if (NTEST.ge.4) then
+          write(6,*)
+          if (IRI.eq.1) write(LUWRT,*) ' Real part     : '
+          if (IRI.eq.2) write(LUWRT,*) ' Imaginary part: '
+          write(6,*) ' -------------------'
+        end if
+*
+*
+        do IXTP = 1,NSPOBEX_TP,1
+*
+          if (NTEST.ge.4) then
+            write(LUWRT,*)
+            write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+            write(LUWRT,*)        ' -------------------------'
+            write(LUWRT,*)
+            write(LUWRT,*) ' LABEL array (for integral indices!):  '
+            write(LUWRT,*) ' Internally, LABEL is reord. for operators.'
+            call iwrtmamn(LABEL(1,IXTP),1,4,1,4,LUWRT)
+            write(LUWRT,*) 'Input LUCIAREL operator order, output dens.'
+            call iwrtmamn(IOP_REO(1,IXTP),1,4,1,4,LUWRT)
+          end if
+*
+          NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+          XNINT_TP_I8 = REAL(NINT_TP_I8)
+          NINT_TP_X = IGIVE_I_B(XNINT_TP_I8)
+          NINT_TP = NINT_TP_X
+csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
+*
+          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+*
+*           real part finished
+*
+            GOTO 222
+*           
+          ELSE IF( IRI. eq. 2 .and. IRUN .eq. ( N1ELINT + 1) ) THEN
+*
+*           well, we have finished the 1-particle part 
+*
+            GOTO 333
+*
+          END IF
+          IRUN_XTP = 0
+          do INT = 1,NINT_TP,1
+*
+* Determine type of density element
+            NCT = 0
+            do IC=1,4,1
+              if (INDEX(IC,IRUN).ne.0) then
+                NCT = NCT + 1
+                ICSAVE(NCT) = IC
+                IUBFAC = 1
+                if (INDEX(IC,IRUN).lt.0) IUBFAC = -1
+                INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
+              end if
+            end do
+csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
+*
+            if (NCT.eq.2) then
+*
+              I = IREOKF(INDEX_L(ICSAVE(1))  
+     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHTL)
+              J = IREOKF(INDEX_L(ICSAVE(2))  
+     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHTL)
+*
+              IOUT =  (IRI-1)*NASHTL2*NASHTL2 +
+     &                 (J-1) *NASHTL2 +
+     &                  I
+csk              F1(IOUT) = DENS(IRUN+IRIOFF)
+              IXXTTP = IXTP
+              IF( IRI .eq. 2 ) THEN
+                IXXTTP = ITTP + NSPOBEX_TP
+              END IF
+              IF( IRUN_XTP .eq. 0 )THEN
+C               process id and window offset (complex case included)
+                ID_GET = IT_TTPL( IXXTTP )
+C               check for availability
+                IF( ID_GET .lt. 0) THEN
+                  IRUN = IRUN + NINT_TP
+                  GOTO 155
+                END IF
+C               window offset
+                ITB_I8 = IT_TTOL( IXXTTP )
+              END IF
+              IOFF_GET = ITB_I8 + IRUN_XTP
+              YDENS = 0.0D0
+              IF( MYNEW_ID_SM .eq. ID_GET )THEN
+                YDENS = DENS(IOFF_GET+1)
+              ELSE
+                CALL MPIXGET(YDENS,1,2,ID_GET,
+     &                       IOFF_GET,1,2,MY_T_WIN)
+              END IF
+              F1(IOUT) = YDENS
+              if (NTEST.ge.10) then
+                write(LUWRT,'(2I3,1F18.14,A,I4)') 
+     &                    I,J,F1(IOUT),' to pos.',IOUT
+                write(LUWRT,*) ' original position IRUN+IRIOFF',
+     &                           IRUN+IRIOFF, IOFF_GET
+              end if
+*
+            else if( NCT .eq. 0 .or. NCT .eq. 4)then
+csk               write(LUWRT,*) ' what to do with 4 zero inidces???'
+csk               write(LUWRT,*) ' continuing ...'
+csk               write(LUWRT,*) ' what to do with 4 nonzero inidces???'
+csk               write(LUWRT,*) ' continuing ...'
+            else 
+              write(LUWRT,*) 'No QFT implemented YET in LUCIAREL.'
+              write(LUWRT,*) 'you specified ',4-NCT,' indices.'
+              call abend2('Quitting in trnsfdens_no_sm.')
+            end if
+            IRUN_XTP = IRUN_XTP + 1
+            IRUN = IRUN + 1
+          end do
+*         ^ Loop over integrals in excitation type
+ 155      CONTINUE
+        end do
+*       ^ Loop over excitation types
+ 222    CONTINUE
+      end do
+*     ^ Loop over Real/Imaginary
+*
+ 333  CONTINUE
+*
+      return
+      end
+#endif
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

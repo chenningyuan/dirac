@@ -145,7 +145,7 @@ C                       type NTYPE_R.
 C
 C     allowed OPERATION: MPI_SUM
 C
-C     Written by S. Knecht - NOv 28 2007
+C     Written by S. Knecht - Nov 28 2007
 C     Last revision : 
 C
 C
@@ -164,7 +164,7 @@ C
       IF( NTYPE_T .eq. 1 ) THEN
         DATATYPE_OUT = my_MPI_INTEGER
       ELSE IF ( NTYPE_T .eq. 2 ) THEN
-        DATATYPE_OUT = MPI_REAL8
+        DATATYPE_OUT = MPI_DOUBLE_PRECISION
       ELSE
         WRITE(LUPRI,*)' MPIXACCUM: output datatype "',NTYPE_T,
      &                  '" does not exist!' 
@@ -174,7 +174,7 @@ C
       IF( NTYPE_R .eq. 1 ) THEN
         DATATYPE_IN = my_MPI_INTEGER
       ELSE IF ( NTYPE_R .eq. 2 ) THEN
-        DATATYPE_IN = MPI_REAL8
+        DATATYPE_IN = MPI_DOUBLE_PRECISION
       ELSE
         WRITE(LUPRI,*)' MPIXACCUM: output datatype "',NTYPE_R,
      &                  '" does not exist!' 
@@ -185,8 +185,6 @@ C     lock window (MPI_LOCK_SHARED mode)
 C
       CALL MPI_WIN_LOCK(MPI_LOCK_SHARED,ITARGET,MPI_MODE_NOCHECK,
      &                  MY_WIN,IERR)
-C
-C     transfer data     
 C
       CALL MPI_ACCUMULATE( RBUF, JCOUNT, DATATYPE_IN, ITARGET, IDISPL,
      &                    JCOUNT_T, DATATYPE_OUT, MPI_SUM, MY_WIN, IERR)
@@ -250,26 +248,23 @@ C
 C
 C     allocate memory type specific
 C
-C     print some debug info
-C
-C
-csk   WRITE(LUPRI,*) ' ISIZE_DP and NELEMENT ',ISIZE_DP,
-csk  &                                         ISIZE_my_int
-csk   WRITE(LUPRI,*) ' allocation of NELEMENT',NELEMENT
-C
-C
-C
       IF( NTYPE .eq. 1 ) THEN
-        MY_MM_NEEDSSCR = ISIZE_DP * NELEMENT
-        MY_MM_NEEDS    = MY_MM_NEEDSSCR
-csk     WRITE(LUPRI,*) ' allocation of MY_MM_NEEDS',MY_MM_NEEDS
-        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
+        MY_MM_NEEDSSCR = ISIZE_DP
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR * NELEMENT
       ELSE IF ( NTYPE .eq. 2 )THEN
-        MY_MM_NEEDSSCR = ISIZE_my_int * NELEMENT
-        MY_MM_NEEDS    = MY_MM_NEEDSSCR
-csk     WRITE(LUPRI,*) ' allocation of MY_MM_NEEDS',MY_MM_NEEDS
-        CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
+        MY_MM_NEEDSSCR = ISIZE_my_int
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR * NELEMENT
+      ELSE IF ( NTYPE .eq. 3 )THEN
+        MY_MM_NEEDSSCR = ISIZE_int8
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR * NELEMENT
+      ELSE IF ( NTYPE .eq. 4 )THEN
+        MY_MM_NEEDSSCR = ISIZE_log
+        MY_MM_NEEDS    = MY_MM_NEEDSSCR * NELEMENT
       END IF
+C
+csk     WRITE(LUPRI,*) ' allocation of MY_MM_NEEDS',MY_MM_NEEDS
+C
+      CALL MPI_ALLOC_MEM(MY_MM_NEEDS,IS_INFO,MY_POINT,IERR)
 C
 C     WRITE(LUPRI,*) ' allocation successful'
 C
@@ -323,6 +318,9 @@ C***********************************************************************
 C
       CALL MPI_TYPE_EXTENT(MPI_REAL8,ISIZE_DP,IERR)
       CALL MPI_TYPE_EXTENT(my_MPI_INTEGER,ISIZE_my_int,IERR)
+      CALL MPI_TYPE_EXTENT(MPI_INTEGER8,ISIZE_int8,IERR)
+      CALL MPI_TYPE_EXTENT(MPI_INTEGER,ISIZE_intdef,IERR)
+      CALL MPI_TYPE_EXTENT(MPI_LOGICAL,ISIZE_log,IERR)
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -375,8 +373,8 @@ C
         IBUF_LENSCR = ISIZE_dp * NELEMENT
         IBUF_LEN    = IBUF_LENSCR
 C
-csk     WRITE(LUPRI,*) ' MPIXWINDOW_CRT: IBUF_LEN and ISIZE_dp',
-csk  &                                   IBUF_LEN, ISIZE_dp
+csk        WRITE(LUPRI,*) ' MPIXWINDOW_CRT: IBUF_LEN and ISIZE_dp',
+csk     &                                   IBUF_LEN, ISIZE_dp
         CALL MPI_WIN_CREATE(RBUF,IBUF_LEN,ISIZE_dp,MPI_INFO_NULL,
      &                      IWIN_COMM,MY_WIN,IERR)
 C
@@ -392,7 +390,7 @@ C
 C
       END IF
 C
-csk   WRITE(LUPRI,*) ' window opened', MYID
+csk      WRITE(LUPRI,*) ' window opened: MY_WIN', MYID
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

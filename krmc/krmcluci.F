@@ -423,20 +423,59 @@ C
 C
 C 102: which state to go for nat. orb. occ. num.?
 C
-      IDENSI_STATE = 0
+      IDENSI_STATE = - 1
       CALL LUCI_TRAVA(CIRUN,'DENS_S',IDENSI_STATE,DUMMY,I_COMM_W_ND)
 C
 C 103: running in "shared memory" mode? 
 C
-      SHARED_M = .FALSE.
-      IS_SHARED_M = 0
+      SHARED_M    =   .FALSE.
+      IS_SHARED_M =   0
+      LEVEL_SM    = - 1
+      IT_SHL      = - 1
+      IC_SHL      = - 1
+C
       CALL LUCI_TRAVA(CIRUN,'SHMEMO',IS_SHARED_M,DUMMY,I_COMM_W_ND)
 C
       IF( IS_SHARED_M .gt. 0 ) THEN
         SHARED_M = .TRUE.
       END IF
+      IF( SHARED_M )THEN
+        CALL LUCI_TRAVA(CIRUN,'SHMLVL',LEVEL_SM,DUMMY,I_COMM_W_ND)
+      END IF
 C
-C 104: using GAS-schem specific integral file resp. writing it
+      IF( LEVEL_SM .eq. 0 ) THEN
+C       disable shared memory usage
+        IT_SHL = - 1
+        IC_SHL = - 1
+        SHARED_M = .FALSE. 
+        LEVEL_SM = - 1
+      ELSE IF( LEVEL_SM .eq. 1 ) THEN
+        IT_SHL =   0
+        IC_SHL = - 1
+      ELSE IF( LEVEL_SM .eq. 2 ) THEN
+        IT_SHL = - 1
+        IC_SHL =   0
+      ELSE IF( LEVEL_SM .eq. 3 ) THEN
+        IT_SHL =   0
+        IC_SHL =   0
+      ELSE IF( LEVEL_SM .eq. 4 ) THEN
+        IT_SHL =   1
+        IC_SHL =   0
+      ELSE IF( LEVEL_SM .eq. 5 ) THEN
+        IT_SHL =   0
+        IC_SHL =   1
+      ELSE IF( LEVEL_SM .eq. 6 ) THEN
+        IT_SHL =   1
+        IC_SHL =   1
+      END IF
+      IF( CIRUN .eq. 'IJKLRO' )THEN
+        IF( IT_SHL .ge. 0 )THEN
+          IT_SHL = - 2
+        END IF
+      END IF
+C
+C
+C 104: using GAS-scheme specific integral file resp. writing it
 C
       REORD_IJKL = .FALSE.
       IS_REORD_IJKL = 0
@@ -1505,6 +1544,19 @@ C
         GOTO 100
       END IF
 C
+C     shared memory mode - runlevel
+C
+      IF (CTLSTR .EQ. 'SHMLVL') THEN
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(ISHMEM_TYPE,1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+#endif
+          IVAR(1) =   ISHMEM_TYPE
+        GOTO 100
+      END IF
+C
 C     enable integral reordering mode
 C
       IF (CTLSTR .EQ. 'IJKLRO') THEN
@@ -1707,7 +1759,7 @@ CTF
       character*6 CIRUN
       CHARACTER*72 MACHINENAME
       INTEGER NAMELENGTH, MZ_NUM
-      logical MCSCF
+      logical MCSCF, RUN_SHMEM_T
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
@@ -1717,12 +1769,6 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "../luciarel/lucipar_rel.inc"
-#if defined (VAR_MPI2)
-#include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
-      POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
-      INTEGER(KIND=MPI_ADDRESS_KIND) MY_T_LEN
-#endif
 C
 C  FIXME:
 C         VCT1 and VCT2 unused at the moment. They should carry
@@ -1751,19 +1797,9 @@ C
 C     32 bit:  *kbase = (int) (wrk-work+1);
 C     64 bit:  *kbase = (long) (wrk-work+1);
 C
-      WORK(KBASE) = 9991.
-C
-CSK      IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
-CSK        write(LUWRT,*) ' WARNING from KRMC_LUCI:'
-CSK        WRITE(LUWRT,'(A,3X,I22)')     '      KBASE  = ',KBASE
-CSK        WRITE(LUWRT,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
-CSK        WRITE(LUWRT,'(A,3X,1F22.16)') ' WRK(1)      = ',WRK(1)
-CSK        write(LUWRT,*) ' Absolute memory addresses do not match.'
-CSK        write(LUWRT,*) ' Continuing.'
-CSK      END IF
-C 
       MXPWRD = LWRK
       KADD = MXPWRD
+C     initialize memory
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
 C
       NTEST = 0
@@ -1857,14 +1893,28 @@ C       MPI "shared memory" mode
 C
         IF( SHARED_M )THEN
 C
-           NAMELENGTH = 0
+          IF( LEVEL_SM .lt. 6 ) THEN
 C
-           CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+C            level 0 and 5: build node-groups for shared memory usage
 C
-           CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
+             NAMELENGTH = 0
 C
-           CALL FIND_GROUP_OF_PROCS_REL_SM(MACHINENAME,NAMELENGTH,
-     &                              WORK(KPROCLIST2),WORK(KPROCLENGTH))
+             CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+C
+             CALL ISETVC(WORK(KPROCLENGTH),-1,NMPROC)
+C
+             CALL FIND_GROUP_OF_PROCS_REL_SM(MACHINENAME,NAMELENGTH,
+     &                          WORK(KPROCLIST2),WORK(KPROCLENGTH))
+C
+          ELSE
+C
+C            level 6:   modelling global shared memory 
+C                       NOTE: you need a fast inter-node connect,
+C                           e.g. InfiniBand, Myrinet, etc ...
+C
+             CALL ISETVC(WORK(KPROCLIST2),1,NMPROC)
+C           
+          END IF
 C
         ELSE
 C
@@ -1950,46 +2000,8 @@ C           Dirac-Coulomb case.
         end if
 C       ^ end if SIGDEN_ROUTE
 C
+C       symmetry of reference
 C
-#if defined (VAR_MPI2)
-        IF( SHARED_M ) THEN
-C
-C         calculate length of T_BUFF
-C
-          LEN_T_BUFF = 1
-          IF( MYNEW_ID_SM .eq. N_MASTER_SM ) 
-     &                         LEN_T_BUFF = LEN_T_VEC * MZ_NUM
-C
-C         FIXME: provide information if available
-C
-          IS_DUMMY = 0
-C
-C         allocate T_BUFF array (replaces use of WORK(KT_CC))
-C
-csk       write(6,*) 'allocating T_BUFF with length', LEN_T_BUFF,
-csk  &                          MYPROC
-          CALL GET_MEM_T( IS_DUMMY )
-C
-C         create memory window (node group specific!)
-C         integrals on the node-master 
-C         --> length for node-slaves == 0
-C
-          MY_T_LEN = 0
-          IF( MYNEW_ID_SM .eq. N_MASTER_SM ) MY_T_LEN = LEN_T_BUFF
-          CALL DZERO8(T_BUFF,MY_T_LEN)
-C 
-C         open memory window (collective call for communicator
-C         group MY_NEWCOMM)
-C
-csk       write(6,*) 'open MY_T_WIN with length', MY_T_LEN,MYPROC
-          CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
-csk       write(6,*) ' MY_T_WIN handle', MY_T_WIN,MYPROC
-C
-        END IF
-#endif
-C
-C
-C. Symmetry of reference
         IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
      &             CALL MLSM_REL(IREFSM,IREFPA,IREFSM,'CI',1)
         IF(NOINT.EQ.1) THEN
@@ -2015,10 +2027,19 @@ C           not in use for SIGDEN_ROUTE == SIGDEN
      &        ' No integrals imported (or > 1st NS iteration) '
           END IF
 C
+          RUN_SHMEM_T = .FALSE.
+C
+          IF( IT_SHL .ge. 0 ) THEN 
+            RUN_SHMEM_T = .TRUE.
+            IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
+          END IF
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           if (CIRUN.ne.'ANALYZ') then
+CSK         IDUMMY ==> IT_TTPL
             call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
-     &                   NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,IBOSYM,CIRUN)
+     &                   NL2D,IBU2D,ISM2D,F1,F2,DUMMY1,DUMMY2,
+     &                   IDUMMY,IBOSYM,CIRUN,RUN_SHMEM_T)
           end if
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           IF ( CIRUN .eq. 'IJKLRO' ) GOTO 300
@@ -2163,7 +2184,7 @@ C
 C
 *=============================================================
 *
-                CALL GASCI_REL(F1,F2,T_BUFF,
+                CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
@@ -2194,18 +2215,12 @@ C
         CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
 C
 #if defined (VAR_MPI2)
-        IF( SHARED_M ) THEN
-C
-C         de-allocate T array and destroy T memory window
-C
-          CALL REL_MEM_T_WIN( T_BUFF )
-C
-        END IF
 C
 C       free groups
 C
         CALL SETUNITS_PAR_CLOSE_REL
-        CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,MYNEW_COMM_SM,ICOMM)
+        CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,MYNEW_COMM_SM,ICOMM,
+     &                            MYNEW_COMM_SM_C)
 C
 #endif
 C

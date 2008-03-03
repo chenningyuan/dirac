@@ -348,7 +348,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAT_REL(DIAG,LUDIA,ECORE,ICISTR,IHAM12,
-     &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,T_BUFF,
+     &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,T_BUFF,T_BUFF_D,
      &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
      &           NPARBLOCK)
 *
@@ -391,7 +391,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 #endif
 #include "lucipar_rel.inc"
 *
-      DIMENSION IBLTP(*)
+      DIMENSION IBLTP(*), T_BUFF_D(*)
       DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
 #if defined (VAR_MPI2)
       INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
@@ -440,17 +440,49 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
       call memmar(KLRJKA,MXNSTR, 'ADDL  ',2,'KLRJKA')
 *
       if (IRECO.eq.1) then
-        if (IHAM12.eq.1.or.IHAM12.eq.2) then
-          call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),WORK(KPICI1),
-     &                   INTSPACE,T_BUFF,ENVIRO,SIGDEN_ROUTE)
+        if( IT_SHL .ge. 0)then
+C
+          IOFF_T_D = 1
+C
+          CALL DCOPY(NTOOB,T_BUFF_D,1,WORK(KLH1DA),1)
+          IOFF_T_D = IOFF_T_D + NTOOB
+          CALL DCOPY(NTOOB,T_BUFF_D(IOFF_T_D),1,WORK(KLH1DB),1)
+          IOFF_T_D = IOFF_T_D + NTOOB
+          CALL DCOPY(NTOOB**2,T_BUFF_D(IOFF_T_D),1,WORK(KLJ),1)
+          IOFF_T_D = IOFF_T_D + NTOOB**2
+          CALL DCOPY(NTOOB**2,T_BUFF_D(IOFF_T_D),1,WORK(KLK),1)
+          IOFF_T_D = IOFF_T_D + NTOOB**2
+          CALL DCOPY(NTOOB**2,T_BUFF_D(IOFF_T_D),1,WORK(KLK2),1)
+C
+CCC       WRITE(LUWRT,*) ' T_BUFF_D:'
+CCC       CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
+CCC       WRITE(LUWRT,*) ' WORK(KLH1DA):'
+CCC       CALL WRTMATMN(WORK(KLH1DA),1,NTOOB,1,NTOOB,LUWRT)
+CCC       WRITE(LUWRT,*) ' WORK(KLH1DB):'
+CCC       CALL WRTMATMN(WORK(KLH1DB),1,NTOOB,1, NTOOB,LUWRT)
+CCC       WRITE(LUWRT,*) ' WORK(KLJ):'
+CCC       CALL WRTMATMN(WORK(KLJ),1, NTOOB**2,1, NTOOB**2,LUWRT)
+CCC       WRITE(LUWRT,*) ' WORK(KLK):'
+CCC       CALL WRTMATMN(WORK(KLK),1, NTOOB**2,1, NTOOB**2,LUWRT)
+CCC       WRITE(LUWRT,*) ' WORK(KLK2):'
+CCC       CALL WRTMATMN(WORK(KLK2),1, NTOOB**2,1, NTOOB**2,LUWRT)
+C
+        else
+          if (IHAM12.eq.1.or.IHAM12.eq.2) then
+            call geth1dia4(WORK(KLH1DA),WORK(KLH1DB),WORK(KPICI1),
+     &                     INTSPACE,T_BUFF,ENVIRO,SIGDEN_ROUTE)
+          end if
+*         obtain 2e integrals needed for diagonal
+          if (IHAM12.EQ.2.or.IHAM12.eq.3) then
+            call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),T_BUFF,
+     &                      IDENSI,ISPINFREE,NGAS,NGSOB,NGSOB2,
+     &                      NGSOBT,NGSOBT2,ISPSF_MO,ENVIRO,
+     &                      SIGDEN_ROUTE,IPRDIA)
+          end if
         end if
-*. Obtain 2e integrals needed for diagonal
-        if (IHAM12.EQ.2.or.IHAM12.eq.3) then
-          call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),T_BUFF,IDENSI,
-     &                    ISPINFREE,NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
-        end if
+C       ^  IT_SHL?
       end if
+C
 #if defined (VAR_MPI2)
       IDIA_OFFSET = 0
 *
@@ -902,6 +934,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       end if
 *     ^ end if non-vanishing integral lists
 *
+csk      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' Two-electron integrals for CI diagonal'
@@ -920,6 +953,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
           CALL WRTMAT(UBBUE,NTOOB,NTOOB,NTOOB,NTOOB)
         end if
       END IF
+csk      NTEST = 000
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GTDIA2')
 *
       RETURN
@@ -983,7 +1017,6 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       IDUM = 1
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GT1DIA')
       call memmar(KLH1,NTOOB**2,'ADDL  ',2,'H1BL  ')
-*
 *
       if (SIGDEN_ROUTE.eq.'TRADIT') then
 *
@@ -1102,7 +1135,7 @@ C
       end if
 *
 *
-csk      NTEST = 00
+csk      NTEST = 10
       IF(NTEST.GE.10) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' Diagonal integrals, unbarred '
@@ -1162,39 +1195,7 @@ C         if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
 C    &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
           if (MDIASV(IUB,INT).eq.ISEA_REO.and.MDIASV(IUB+2,INT).eq.
      &        ISEA_REO.and.MDIASV(IUB+1,INT).eq.IZERO) then
-#if defined (VAR_MPI2)
 C
-C             fetch integral from memory window MY_T_WIN located 
-C             with current implementation on "node master".
-C
-              IF( SHARED_M )THEN
-                SXINT = 0.0D0
-                IF( MYNEW_ID_SM .ne. N_MASTER_SM ) THEN
-csk                  write(luwrt,*) ' SXINT,IPOSDIA(INT), MY_T_WIN',
-csk     &                             SXINT,IPOSDIA(INT), MY_T_WIN
-C
-C                 window offset: 0 --> IPOSDIA(INT) - 1
-C
-                  CALL MPIXGET(SXINT,1,2,N_MASTER_SM, IPOSDIA(INT) - 1,
-     &                         1,2,MY_T_WIN)
-csk                  write(luwrt,*) ' MYNEW_ID was calling MPIXGET',
-csk     &                             MYNEW_ID
-csk                  write(luwrt,*) ' with SXINT,IPOSDIA(INT), MY_T_WIN',
-csk     &                             SXINT,IPOSDIA(INT), MY_T_WIN
-                ELSE
-                  SXINT = T_BUFF( IPOSDIA(INT) )
-                END IF
-                if (NTEST.ge.100) then
-                write(LUWRT,'(A,I5,A,I5,A,1F18.12)')
-     &                  'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
-     &                  '  Integral ',SXINT
-                end if
-                XOUT(ICT) = SXINT
-                ICT = ICT + 1
-                GOTO 10
-              END IF
-C
-#endif
             if (NTEST.ge.100) then
               write(LUWRT,'(A,I5,A,I5,A,1F18.12)') 
      &                'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
@@ -1218,6 +1219,7 @@ C           XOUT(ICT) = XINT(INT)
         CALL Abend2( ' Quitting in geth1dia_sigden.')
       end if
 *
+csk      NTEST = 000
       return
       end
 ***********************************************************************
@@ -1303,45 +1305,7 @@ C         L = INDEX(IKPERM(3),INT) * IKFAC
      &      J.eq.IREOTS(ISEA).and.
      &      K.eq.IREOTS2(JSEA).and.
      &      L.eq.IREOTS2(JSEA)) then
-#if defined (VAR_MPI2)
 C
-C             fetch integral from memory window MY_T_WIN located 
-C             with current implementation on "node master".
-C
-          IF( SHARED_M )THEN
-                SXINT2 = 0.0D0
-            IF( MYNEW_ID_SM .ne. N_MASTER_SM ) THEN
-csk                  write(luwrt,*) ' SXINT2,IPOSDIA(INT), MY_T_WIN',
-csk     &                             SXINT2,IPOSDIA(INT), MY_T_WIN
-C
-C                 window offset: 0 --> IPOSDIA(INT) - 1
-C
-              CALL MPIXGET(SXINT2,1,2,N_MASTER_SM, IPOSDIA(INT) - 1,
-     &                     1,2,MY_T_WIN)
-csk              write(luwrt,*) ' MYNEW_ID was calling MPIXGET',
-csk     &                         MYNEW_ID
-csk              write(luwrt,*) ' with SXINT2,IPOSDIA(INT), MY_T_WIN',
-csk     &                         SXINT2,IPOSDIA(INT), MY_T_WIN
-            ELSE
-              SXINT2 = T_BUFF( IPOSDIA(INT) )
-            END IF
-C
-            if (NTEST.ge.100) then
-              write(LUWRT,'(A,1X,A,1I4,3X,4I3,1F18.10)')
-     &        'Diagonal int type ',TYPE,
-     &        IPOSDIA(INT),(MDIASV(II,INT),II=1,4),
-     &        SXINT2
-
-            end if
-            XOUT = SXINT2
-            IERROR = 0
-C
-C           finished, next integral
-C
-            GOTO 10
-          END IF
-C
-#endif
           if (NTEST.ge.100) then
 C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
 C    &            'Diagonal int type ',TYPE,
@@ -1367,6 +1331,7 @@ C         XOUT = XINT(INT)
       end if
 *
   10  continue
+csk      NTEST = 0
       return
       end
 ***********************************************************************

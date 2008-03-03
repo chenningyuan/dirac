@@ -38,6 +38,7 @@
 !                 (20) Skip extra termination tests
 !
 !     IDENSLR_STATE  - natural orbital occupation numbers for state xxx
+!     ISHMEM_TYPE    - type of MPI-2 based shared memory level
 !
 !     Parameters for MCTYPE:
 !
@@ -54,7 +55,7 @@
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
      &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
-     &        IDENSLR_STATE
+     &        IDENSLR_STATE, ISHMEM_TYPE
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -65,7 +66,7 @@
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
-     &                IDENSLR_STATE
+     &                IDENSLR_STATE, ISHMEM_TYPE
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&

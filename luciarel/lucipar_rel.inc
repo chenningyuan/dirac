@@ -11,8 +11,8 @@ C
      &        IIOMOD_REL, NFLGRPS_REL, NROOT_SAVE, NVEC_SAVE,
      &        IRC_SAVE, JVEC_SF, NUM_BLOCKS2,L_COMBI,IAM_NOT_INV,
      &        I_NZERO_LEN, IBLOCKCOMM, ISHARE_DENSM, IPARALLELIO,
-     &        LF2_ZERO, ISMEMFAC, LMEMFREE_PTR, IIJKL_ROD_LL, 
-     &        ICOUNTABLK_C
+     &        LF2_ZERO, ISMEMFAC, LMEMFREE_PTR, IIJKL_ROD_LL,
+     &        LEVEL_SM, IT_SHL, IC_SHL, ICOUNTABLK_C
 	PARAMETER (MSLVOUT_REL = 7)
       COMMON/LUCIPARREL/ MASTER, MYPROC, NMPROC, LUWRT, 
      &                   NPTEST_VAR, NUM_BLOCKS, IIOMOD_REL,
@@ -20,35 +20,41 @@ C
      &                   IRC_SAVE, JVEC_SF, NUM_BLOCKS2,L_COMBI,
      &                   IAM_NOT_INV, I_NZERO_LEN, IBLOCKCOMM, 
      &                   ISHARE_DENSM, IPARALLELIO, LF2_ZERO,
-     &                   ISMEMFAC, LMEMFREE_PTR, IIJKL_ROD_LL, 
-     &                   ICOUNTABLK_C
-       INTEGER*8 LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL, LEN_T_BUFF_NZ
+     &                   ISMEMFAC, LMEMFREE_PTR, IIJKL_ROD_LL,
+     &                   LEVEL_SM, IT_SHL, IC_SHL, ICOUNTABLK_C
+       INTEGER*8 LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL, LEN_T_BUFF_NZ,
+     &           MY_T_LEN, MY_T_LEN_D
        COMMON/LUCIPAR_I8/ LEN_ALL_INT, IS_LENGTH_TT, 
-     &                    NINT_TOTAL, LEN_T_BUFF_NZ
+     &                    NINT_TOTAL, LEN_T_BUFF_NZ, MY_T_LEN, 
+     &                    MY_T_LEN_D
        REAL*8 mem_cp_time
        COMMON/LUCI_REAL/ mem_cp_time
-C
-C     MASTER: contains node number of master (0 in general)
-C
-C     MYPROC:  -"-     own process number. According to MPI
-C             counting starts at zero.....# proc -1 !
-C
-C     NMPROC:  -"-     total number of processes (including master !)
-C
-C
-C     IIOMOD_REL: determines integral I/O mode in parallel calculations
-C
+!
+!     MASTER: contains node number of master (0 in general)
+!
+!     MYPROC:  -"-     own process number. According to MPI
+!             counting starts at zero.....# proc -1 !
+!
+!     NMPROC:  -"-     total number of processes (including master !)
+!
+!
+!     IIOMOD_REL: determines integral I/O mode in parallel calculations
+!
       INTEGER MYNEW_ID, MYNEW_COMM, NEWCOMM_PROC, ICOMM, 
      &        ICOMM_ID, ICOMM_SIZE, MY_GROUPN, N_MASTER,
      &        MYNEW_ID_SM, MYNEW_COMM_SM, NEWCOMM_PROC_SM,
-     &        N_MASTER_SM
+     &        N_MASTER_SM, MYNEW_ID_SM_C, MYNEW_COMM_SM_C, 
+     &        NEWCOMM_PROC_SM_C, N_MASTER_SM_C, IXCOMM, IXCOMM_SZ, 
+     &        IXCOMM_RK
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5, 
      &        IALL_LUC, IIJKL_ROD
 C
       COMMON/LUPARGROUP/ NEWCOMM_PROC, MYNEW_ID, MYNEW_COMM, ICOMM,
      &	                 ICOMM_ID, ICOMM_SIZE, MY_GROUPN, N_MASTER,
      &                   MYNEW_ID_SM, MYNEW_COMM_SM, NEWCOMM_PROC_SM,
-     &                   N_MASTER_SM
+     &                   N_MASTER_SM, MYNEW_ID_SM_C, MYNEW_COMM_SM_C, 
+     &                   NEWCOMM_PROC_SM_C, N_MASTER_SM_C, IXCOMM, 
+     &                   IXCOMM_SZ, IXCOMM_RK
       COMMON/LUCIPFILE/ IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILU6, ILU7,
      &                  ILUC,
      &                  IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,
@@ -64,8 +70,8 @@ C
      &                    MY_LU5_OFF, MY_LUC_OFF,
      &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
 #endif
-      LOGICAL SHARED_M, REORD_IJKL, USE_EX_IDIA
-      COMMON/LUCI_LOG/ SHARED_M, REORD_IJKL, USE_EX_IDIA
+      LOGICAL SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA
+      COMMON/LUCI_LOG/ SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA
 !     character block
       CHARACTER*9 NIIJKL_ROD
       COMMON/LUCI_CHAR/ NIIJKL_ROD

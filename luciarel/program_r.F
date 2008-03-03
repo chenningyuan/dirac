@@ -38,8 +38,9 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,T_BUFF,INTSPACE,ISM,ISPC,IPRNT,EREF,
-     &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
+      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,
+     &                     IPRNT,EREF,ECORE_KRMC,CIRUN,IPROCLIST,
+     &                     IGROUPLIST)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -51,7 +52,6 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
 #endif
 #include "lucipar_rel.inc"
 #include "ipoist8.inc"
@@ -75,12 +75,11 @@ C
 #include "cprnt.inc"
 #include "oper.inc"
 #include "gasstr.inc"
-*
 #include "cgas.inc"
 #include "lucinp.inc"
 #include "ctcc.inc"
-*
 #include "csfbas.inc"
+#include "cintfo.inc"
 *
 *. Common block for communicating with sigma
 #include "cands.inc"
@@ -88,22 +87,41 @@ C
 *  nat. orb. occ. num.
 #include "noccn_inf.inc"
 #include "integrals_off.inc"
-*
 #include "include/dgroup.h"
-*
-*./CECORE/
+#include "mx2orb.h"
+#include "../krmc/dcbbos.h"
+*     /CECORE/
       COMMON/CECORER/ECORE
-*
       DIMENSION F1(*), F2(*), IPROCLIST(*), IGROUPLIST(*)
-      DIMENSION T_BUFF(*)
       INTEGER*8 L_MAX_DENS_BLK
-*
+C     memory pointer for TT-block distribution among CPU's
+C     memory pointer for TT-block offsets
+C     memory pointer for T coefficients
+C     memory pointer for T diag block
+C     memory pointer for C1 vector block
+C     memory pointer for C2 vector block
+#if defined (VAR_MPI2)
+#include "krmc_shmem.h"
+#include "mxdim_mpi2.h"
+      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL
+      POINTER (MY_TTPL_PTR, IT_TTPL(IDUMMY_BUFF_SZ))
+      POINTER (MY_TTOL_PTR, IT_TTOL(IDUMMY_BUFF_SZ))
+      POINTER (MY_T_PTR   , T_BUFF(IDUMMY_BUFF_SZ))
+      POINTER (MY_T_D_PTR , T_BUFF_D(IDUMMY_BUFF_SZ))
+      POINTER (MY_XT_PTR  , XT_BUFF(IDUMMY_BUFF_SZ))
+      POINTER (MY_VEC1_PTR, VEC1_BUFF(IDUMMY_BUFF_SZ))
+      POINTER (MY_VEC2_PTR, VEC2_BUFF(IDUMMY_BUFF_SZ))
+#endif
+C
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
-*
+C
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRNT)
-C
-C
+C     set some variables ...
+      MIN2  = - 2
+      IZERO =   0
+      IIONE =   1
 C
       IF(NTEST.GE.3) THEN
         WRITE(LUWRT,*)
@@ -134,76 +152,159 @@ C
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
         END DO
         END DO
-*
-*
+C
        END IF
-*
+C
       ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
-*
-*. real or complex eigenvectors
+      write(LUWRT,*) ' Number of determinants/combinations  ',NDET
+C     transfer NDET to common block LUCIPARREL
+      L_COMBI = NDET 
+C
+C     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
-*. real
+C       real
         IRC = 1
       ELSE
         IRC = 2
-*. Well, generally complex, but
+C       well, generally complex, but
         if (NZ.eq.1) then
-*  quaternion real
+C         quaternion real
           IRC = 1
         end if
       END IF
       if (IRELACI.eq.1.and.NZ.eq.1) then
         write(LUWRT,*) ' Quaternion real relativistic CI '
       end if
-*
-      write(LUWRT,*) ' Number of determinants/combinations  ',NDET
-*     transfer NDET to common block LUCIPARREL
-      L_COMBI = NDET 
-*     transfer IS_LENGHT_TT to common block LUCIPAR_I8
-      IS_LENGTH_TT = 0
-CMI ... quick fix for serial compilation:
-#if defined (VAR_MPI2)
-      IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
-#endif
-*
-*     transfer to CANDS --> check for transition dipole moment runs!!!
-*     IMPLEMENT ME:  transition dipole moment calculations
-*
+C
+C     transfer to CANDS --> check for transition dipole 
+C     moment runs: determine symmetry of vecs C1 and C2 
+C     --> mu = <C1|(x,y,z)|C2>
+C     IMPLEMENT ME:  transition dipole moment calculations
+C
       ICSM = ISM
       ISSM = ISM
       ICSPC = ISPC
       ISSPC = ISPC
-*     transfer to LUCIPARREL
+C     transfer to LUCIPARREL
       IRC_SAVE = IRC
-*
+C
       IF(NOCSF.EQ.1) THEN
         NVAR = NDET
       ELSE
         NVAR = NCSASM(ISM)
       END IF
       IF (IPRNT.GE.5) WRITE(LUWRT,*) '  NVAR in GASCI ', NVAR
-*
-*     partition CI vector - for all MS2 spaces into batches
-*     (*_MS2 arrays are in CSTATE )
-*
-      CALL Z_BLKFO_REL_START(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
-     &                       KNODELIST,KBLOCKLIST,KRCCTOS,
-     &                       NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                       IBAT_MS2,1,0,IDUMMY,IRC)
-*
-*     set some variables ...
-      MIN2  = - 2
-      IZERO =   0
-      IIONE =   1
-*
+C
 #if defined (VAR_MPI2)
-*
+      IF( IT_SHL .ge. 0 )THEN
+C
+C       allocate T-block list
+C
+        MY_TTPL_LEN = NSPOBEX_TP * IRC
+        CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
+     &                      MPI_INFO_NULL, .FALSE.)
+        MY_TTOL_LEN = NSPOBEX_TP * IRC
+        CALL MPIXMEM_ALLOC( MY_TTOL_PTR, 3, MY_TTOL_LEN,
+     &                      MPI_INFO_NULL, .FALSE.)
+        CALL IMINO8(IT_TTOL,MY_TTOL_LEN)
+      END IF
+#endif
+C
+C     partition CI vector - for all MS2 spaces into batches
+C     (*_MS2 arrays are in CSTATE )
+C
+      CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                   KNODELIST,KBLOCKLIST,KRCCTOS,
+     &                   NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
+     &                   IBAT_MS2,1,0,IDUMMY,IRC,IT_TTPL)
+C
+#if defined (VAR_MPI2)
+C     
+
+C
+C
+C     INFO about T block distribution on IT_TTPL
+C     ==> if (shared memory route active) then
+C            allocate T buff, (read (ij|kl) in), open T window
+C         end if
+C     <==
+C
+      IF( IT_SHL .ge. 0 )THEN
+C
+C       calculate length of T_BUFF
+C
+        LEN_T_BUFF   = IGET_MY_T_LEN( IT_TTPL, IRC )
+        MY_T_LEN     = LEN_T_BUFF
+        LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
+        MY_T_LEN_D   = LEN_T_D_BUFF
+C
+C       FIXME: provide information if available
+C
+        IS_DUMMY = 0
+C
+C       allocate T_BUFF array (replaces use of WORK(KT_CC))
+C
+        CALL GET_MEM_T( IS_DUMMY )
+        CALL GET_MEM_T_D( IS_DUMMY )
+C
+C       zero arrays
+C
+        CALL DZERO8(T_BUFF,MY_T_LEN)
+        CALL DZERO8(T_BUFF_D,MY_T_LEN_D)
+C
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,'(A)') '  +++++++++++++++++++++++++++ '
+        WRITE(LUWRT,'(A)') '  revised integral allocation '
+        WRITE(LUWRT,'(A)') '  +++++++++++++++++++++++++++ '
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,'(A,1X,I15)')
+     &    '  diagonal T elements       :', MY_T_LEN_D
+        WRITE(LUWRT,'(A,1X,I15)')
+     &    '  process unique T elements :', MY_T_LEN
+        WRITE(LUWRT,*) ' '
+
+C
+C       read in all (active) blocked integrals (T blocks)
+C       ==> integrals required for diagonal H on T_BUFF_D
+C
+        IF (CIRUN .ne. 'ANALYZ' ) THEN
+C           FIXME: 11-02-08 SK: definition of IBU2D?
+          call picasso(INTSPACE,ISO1,IPRNT, .TRUE. ,
+     &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
+     &                 T_BUFF_D,IT_TTPL,IBOSYM,CIRUN,.FALSE.)
+        END IF
+C
+C       open memory window (collective call for communicator
+C       group MY_NEWCOMM_SM)
+C
+        CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
+C
+        CALL CALC_WIN_OFFSET(IT_TTPL,IT_TTOL,NSPOBEX_TP,IRC)
+C
+csk        WRITE(LUWRT,*) ' printing offset array IT_TTOL'
+csk        CALL IWRTMAMN8(IT_TTOL,1,MY_TTOL_LEN,1,MY_TTOL_LEN,LUWRT)
+C
+C       transfer IS_LENGHT_TT to common block LUCIPAR_I8
+C       == max. T block length
+C
+        IS_LENGTH_TT = 0
+        IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
+C
+      END IF
+#endif
+C
+      CALL Z_BLKFO_REL_2(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                   NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
+     &                   IBAT_MS2,1,0,IDUMMY,IRC)
+C
+#if defined (VAR_MPI2)
+C
       IF ( CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'CIINII' .or.
      &     CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' .or. 
      &     CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ' ) THEN
-*
-*       dummy file array allocation for 'remaining' CPUs
+C
+C       dummy file array allocation for 'remaining' CPUs
         IF( IAM_NOT_INV .eq. 0 ) THEN
           IALL_LU1 = 1
           IALL_LU2 = 1
@@ -212,91 +313,88 @@ CMI ... quick fix for serial compilation:
           IALL_LU5 = 1
           IALL_LUC = NUM_BLOCKS2
         END IF
-*
+C
         CALL CALC_OFF_MPI_FILE('ILUC  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                         WORK(KNODELIST),1)
-*
+C
         CALL CALC_OFF_MPI_FILE('ILU1  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                         WORK(KNODELIST),MXCIV+NROOT)
-*
+C
         CALL CALC_OFF_MPI_FILE('ILU2  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                         WORK(KNODELIST),MXCIV+NROOT)
-*
-*       initialize general offset for ILUC
+C
+C       initialize general offset for ILUC
         MY_LUC_OFF = 0
-*
-*       length for allocation of file arrays
+C
+C       length for allocation of file arrays
         IALL_LU1 = ( MXCIV + NROOT ) * MY_ACT_BLK2
         IALL_LU2 = ( MXCIV + NROOT ) * MY_ACT_BLK2
         IALL_LUC = NUM_BLOCKS2
-*
-*       allocate file arrays
+C
+C       allocate file arrays
         CALL MEMMAR(KILU1LIST,IALL_LU1,'ADDS  ',1,'LU1LST')
         CALL MEMMAR(KILU2LIST,IALL_LU2,'ADDS  ',1,'LU2LST')
         CALL MEMMAR(KILUCLIST,IALL_LUC,'ADDS  ',1,'LUCLST')
-*       initialize ...
+C       initialize ...
         CALL ISETVC(WORK(KILU1LIST),IZERO,IALL_LU1)
         CALL ISETVC(WORK(KILU2LIST),IZERO,IALL_LU2)
         CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
-*
+C
         IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMAD' .or. 
      &      CIRUN .eq. 'DIAG  ') THEN 
-*
+C
           CALL CALC_OFF_MPI_FILE('LUDIA ',IGROUPLIST,WORK(KBLOCKLIST),
      &                           WORK(KNODELIST),1)
-*
+C
           IF( CIRUN .eq. 'CIINII' ) THEN
-*
+C
             CALL CALC_OFF_MPI_FILE('ILU3  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                             WORK(KNODELIST),NROOT)
-*
+C
             CALL CALC_OFF_MPI_FILE('ILU4  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                             WORK(KNODELIST),1)
-*
+C
             CALL CALC_OFF_MPI_FILE('ILU5  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                             WORK(KNODELIST),1)
-*
-*           some more file arays ... 
+C
+C           some more file arays ... 
             IALL_LU3 = ( NROOT ) * MY_ACT_BLK2
             IALL_LU4 = ( 1 )     * MY_ACT_BLK2
             IALL_LU5 = ( 1 )     * MY_ACT_BLK2
-*           allocate ...
+C           allocate ...
             CALL MEMMAR(KILU3LIST,IALL_LU3,'ADDS  ',1,'LU3LST')
             CALL MEMMAR(KILU4LIST,IALL_LU4,'ADDS  ',1,'LU4LST')
             CALL MEMMAR(KILU5LIST,IALL_LU5,'ADDS  ',1,'LU5LST')
-*           initialize ...
+C           initialize ...
             CALL ISETVC(WORK(KILU3LIST),IZERO,IALL_LU3)
             CALL ISETVC(WORK(KILU4LIST),IZERO,IALL_LU4)
             CALL ISETVC(WORK(KILU5LIST),IZERO,IALL_LU5)
-*
+C
           END IF
-*         ^ CIRUN == CIINII
+C         ^ CIRUN == CIINII
         END IF            
-*       ^ CIRUN == CIINII .or. CIRUN == SIGMAD .or. CIRUN == DIAG
+C       ^ CIRUN == CIINII .or. CIRUN == SIGMAD .or. CIRUN == DIAG
       END IF
-*     ^ CIRUN == DIAG .or. CIRUN == CIINII .or. CIRUN == SIGMA ...
-*
-*
+C     ^ CIRUN == DIAG .or. CIRUN == CIINII .or. CIRUN == SIGMA ...
 #endif
-*
-*. Class divisions of dets
+C     Class divisions of dets
       IF(ICLSSEL.EQ.1) THEN
         WRITE(LUWRT,*) ' Info for class selection constructed'
         WRITE(LUWRT,*) ' Not implemented for relativistic version '
         Call Abend2
      & ( ' GASCI : CLSSEL not implemented for relativistic version' )
       END IF
-*
-*     allocate memory : 2 vector blocks + 1 vector/scratch blocks
+C
+C     allocate memory : 2 vector blocks + 1 vector/scratch blocks
       I_USE_SBLOCK=1
       IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
         CALL GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
-*       LSCR2 : Will be used for resolution matrices, save
+C       LSCR2 : Will be used for resolution matrices, save
         LCJRES = LSCR2
       END IF
-*
-*. CI diagonal - if required
-*
+C
+C     CI diagonal - if required
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       if (CIRUN.eq.'DIAG  '.or.CIRUN.eq.'CIINII'.or.
      &    CIRUN.eq.'SIGMA '.or.CIRUN.eq.'SIGMAD') then
@@ -307,41 +405,35 @@ CMI ... quick fix for serial compilation:
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
-CSK#if defined (VAR_MPI2)
-CSK      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA.0 (unit)',
-CSK     &                 LUDIA
-CSK#else
-CSK      WRITE(LUWRT,*) ' Diagonal will be written to LUDIA (unit)',
-CSK     &                 LUDIA
-CSK#endif
 #if defined (VAR_MPI2)
       IF( USE_EX_IDIA ) THEN
         WRITE(LUWRT,*) '  saving CPU/WALL-time in this MPI run   '
         WRITE(LUWRT,*) '  using existing diagonal file DIAPAR.1. '
         WRITE(LUWRT,*) '                                         '
-        GOTO 55 
+        GOTO 55
       END IF
 #endif
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
 C
-C
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         IRECO = 1
         CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
      &               WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
-     &               KPICI1,INTSPACE,T_BUFF,IDENSI,NIRREP,ISPINFREE,
+     &               KPICI1,INTSPACE,T_BUFF,T_BUFF_D,IDENSI,
+     &               NIRREP,ISPINFREE,
      &               ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
-*. End of real part
+C       end of real part
         CALL ITODS(-1,1,-1,LUDIA)
         IF (IRC.EQ.2) THEN
-* Diagonal once again- for the imaginary part
+C         diagonal once again- for the imaginary part
           IRECO = 2
           CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
      &                 WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
-     &                 KPICI1,INTSPACE,T_BUFF,IDENSI,NIRREP,ISPINFREE,
+     &                 KPICI1,INTSPACE,T_BUFF,T_BUFF_D,IDENSI,
+     &                 NIRREP,ISPINFREE,
      &                 ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
-*. End of imaginary  part
+C       end of imaginary  part
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(LUWRT,*) ' Diagonal constructed  '
@@ -353,13 +445,14 @@ C
       ELSE
          WRITE(LUWRT,*) ' Diagonal not calculated '
       END IF
-*
+c
 #if defined (VAR_MPI2)
-*
+C
  55   CONTINUE
-*
+C
       NPTEST_VAR = 0
       IF( NPTEST_VAR .ge. 10 ) THEN
+      IRECO = IRC_SAVE
       ITEST_OFF = 0
       DO ILPRECO = 1, IRECO
         ITEST_OFF = MY_DIA_OFF + MY_VEC1_IOFF * ( ILPRECO - 1 )
@@ -379,17 +472,15 @@ C
       
       ENDIF
       NPTEST_VAR = 00
-*
 #endif
-
-*
+c
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
         end if
         if (CIRUN.ne.'DIAG  ') then
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
-*. Transfer control to optimization routine
-*
+c
+c     transfer control to optimization routine
+c
       MINST = 1
       IF(IRESTR.EQ.0) THEN
         INICI = 0
@@ -398,96 +489,89 @@ C
       END IF
       NPRDET = 0
       LBLK = -1
-*. This is a CI and not a perturbation calculation
+C     this is a CI and not a perturbation calculation
       IPERTOP = 0
-*. real or complex eigenvectors
+C     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
-*. real
+C       real
         IRC = 1
       ELSE
-*. Well, complex
+C       well, complex
         IRC = 2
         if (NZ.eq.1) then
-*  quaternion real
+C         quaternion real
           IRC = 1
         end if
       END IF
-*
-*     restart from previous vector(s)
-*
+C
+C     restart from previous vector(s)
+C
 #if defined (VAR_MPI2)
-*
+C
       IF( INICI .lt. 0 )THEN
         if ( CIRUN.eq.'SIGMAD'.or.CIRUN.eq.'SIGMA ') GOTO 88 
           WRITE(LUWRT,'(2X,A)') 
      &    ' restart file LUCVECT_REL.0 will be copied to'//
      &    ' MPI-readable format ...'
-CSK          IF( MYPROC .eq. MASTER ) THEN
-CSK            WRITE(LUWRT,*) 'THIS IS MY RESTART FILE',MYPROC
-CSK            CALL REWINE(LUC,-1)
-CSK            DO IIROOT = 1, NROOT
-CSK              CALL WRTVCDC(WORK(KVEC1),LUC,0,IRC,-1)
-CSK            END DO
-CSK          END IF
-*
+C
          IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
-*
+C
          CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                         WORK(KILU1LIST),
      &                         WORK(KNODELIST),WORK(KBLOCKLIST),
      &                         NBLOCK,NROOT,IRC)
-*
+C
         WRITE(LUWRT,'(2X,A)') ' restart file is now in place! '
-*
+C
       END IF
  88   CONTINUE
-*
+C
 #endif
-*
-*
+C
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           if (CIRUN.eq.'SIGMAD'.or.CIRUN.eq.'SIGMA ') then
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
-*         C-vector resides on MASTER in file LUC
-*
-*                        ============
-*                        PARALLEL RUN
-*                        ============
-*
-*         NODES recieve the appropriate C-blocks
-*
-*         MASTER recieves the corresponding SIGMA-blocks to 
-*         write on LUHC
-*
-*         IF( SIGMAD )   MASTER recieves the corresponding diagonal
-*                        elements to write on LUDIA
-*
+C
+C         C-vector resides on MASTER in file LUC
+C
+C                        ============
+C                        PARALLEL RUN
+C                        ============
+C
+C         NODES recieve the appropriate C-blocks
+C
+C         MASTER recieves the corresponding SIGMA-blocks to 
+C         write on LUHC
+C
+C         IF( SIGMAD )   MASTER recieves the corresponding diagonal
+C                        elements to write on LUDIA
+C
 #if defined (VAR_MPI2)
-*
+C
             IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
-*
+C
             CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                            WORK(KILU1LIST),
      &                            WORK(KNODELIST),WORK(KBLOCKLIST),
      &                            NBLOCK,IIONE,IRC)
-*
-*.    Arrays for partitioning of the CI vector
-*     (*_MS2 arrays are in CSTATE )
+C
+C            Arrays for partitioning of the CI vector
+C            (*_MS2 arrays are in CSTATE )
              call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
      &                            KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
      &                            NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
      &                            IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
      &                            IZERO,IIONE,WORK(KNODELIST))
-*
-*           set offset for sigma-file
+C
+C           set offset for sigma-file
             JVEC_SF = 0
-*
-*           erase old LUCLIST
+C
+C           erase old LUCLIST
             CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
-*
+C
             IF( IRC .eq. 1 ) THEN
-*             real quaternion double group
+C             real quaternion double group
               CALL COPVCD_PP_CC_B(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
      &                            WORK(KLVLBT),WORK(KLVLEBT),
      &                            WORK(KLVI1BT),WORK(KLVIBT),
@@ -495,7 +579,7 @@ CSK          END IF
      &                            WORK(KILU1LIST),WORK(KILUCLIST),
      &                            WORK(KBLOCKLIST),IZERO)
             ELSE
-*             complex quaternion double group
+C             complex quaternion double group
               CALL COPVCD_PP_CC_B_C(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
      &                              WORK(KLVLBT),WORK(KLVLEBT),
      &                              WORK(KLVI1BT),WORK(KLVIBT),
@@ -503,10 +587,10 @@ CSK          END IF
      &                              WORK(KILU1LIST),WORK(KILUCLIST),
      &                              WORK(KBLOCKLIST),IZERO)
             END IF
-*
+C
 #endif
-*           start calculation: sigma = H x C
-*
+C           start calculation: sigma = H x C
+C
 ************************************************************************
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
 #if defined (VAR_MPI2)
@@ -518,47 +602,46 @@ CSK          END IF
 #if defined (VAR_MPI2)
      &                      ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                       WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                       IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
+     &                       IGROUPLIST,IPROCLIST,WORK(KRCCTOS),
+     &                       IT_TTPL,IT_TTOL
 #endif
      &                       )
 ************************************************************************
-*
+C
 #if defined (VAR_MPI2)
-*
+C
             IF( IAM_NOT_INV .eq. 0 ) GOTO 405
-*
+C
             IF( MYPROC .eq. MASTER )  CALL REWINO(LUHC)
-CSK      WRITE(LUWRT,*) 'THIS IS MY LU2LIST'
-CSK      CALL IWRTMAMN(WORK(KILU2LIST),1,IALL_LU2,1,IALL_LU2,LUWRT)
-*
+C
             LBLK = -1
-*
+C
             CALL COPVCD_PAR_BDRIV_REL(ILU2,LUHC,WORK(KVEC1),
      &                                WORK(KNODELIST),NUM_BLOCKS,
      &                                WORK(KBLOCKLIST),
      &                                MPI_COMM_WORLD,LBLK,IIONE,
      &                                WORK(KILU2LIST),MY_LU2_OFF,IRC)
-*
-*
+C
+C
             IF( CIRUN .eq. 'SIGMAD' ) THEN
-*
-*             save H diagonal on MASTER
-*
+C
+C             save H diagonal on MASTER
+C
               IF( MYPROC .eq. MASTER ) CALL REWINE(LUDIA,LBLK)
-*             H is a hermitian matrix...
+C             H is a hermitian matrix...
               CALL COPVCD_PAR_BDRIV_DIA_REL2(IDIA,LUDIA,WORK(KVEC1),
      &                                       WORK(KNODELIST),NUM_BLOCKS,
      &                                       WORK(KBLOCKLIST),
      &                                       MPI_COMM_WORLD,LBLK,IIONE,
      &                                       MY_DIA_OFF)
             END IF
-*           ^ CIRUN .eq. SIGMAD
+C           ^ CIRUN .eq. SIGMAD
  405    CONTINUE
-*
+C
 #endif
           else
-*
-* Allocate some scratch space
+C
+C     allocate some scratch space
       NFINDM = min(NVAR,4*NROOT)
       call memmar(KFINDMR,4*NFINDM+1,'ADDL  ',2,'FINDMR')
 CSK   for some reason (?) allocation with 4*NFINDM+1 does not 
@@ -574,7 +657,7 @@ CSK   work with INTEGER*8
         call quit('Stop in LUCIAREL.')
       end if
       call memmar(KSCR2,NROOT,'ADDL  ',2,'SCR2S ')
-*
+C
       CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
      &     NVAR,NBLK,NROOT,MXCIV,MAXIT,MXROOT,
@@ -594,24 +677,24 @@ CSK   work with INTEGER*8
 #if defined (VAR_MPI2)
      &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
      &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILUCLIST),
-     &     WORK(KRCCTOS)
+     &     WORK(KRCCTOS),IT_TTPL,IT_TTOL
 #endif
      &     )
-*
+C
       EREF = EROOT(IRFROOT)
-*
+C
 #if defined (VAR_MPI2)
-*
+C
       IF( IAM_NOT_INV .eq. 0 ) GOTO 505
-*
+C
       CALL REWINO(LUC)
-*
+C
       LBLK = -1
-*     copy c-vectors from nodes and master back to the master
-*     purpose: master does the ana-stuff
-*
-*     NOTE: only C-vectors will be saved.
-*
+C     copy c-vectors from nodes and master back to the master
+C     purpose: master does the ana-stuff
+C
+C     NOTE: only C-vectors will be saved.
+C
       CALL REWINO(LUC)
       CALL REWINO(LUSC41)
       DO JROOT = 1, NROOT
@@ -639,25 +722,25 @@ CSK   work with INTEGER*8
         END IF
       END IF
       NPTESTVAR = 00
-*
+C
  505    CONTINUE
 #endif
-*
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           end if
-*         ^ CIRUN ne SIGMAD or SIGMA
+C         ^ CIRUN ne SIGMAD or SIGMA
         end if
-*       ^ CIRUN ne DIAG
+C       ^ CIRUN ne DIAG
       else if (CIRUN.eq.'ANALYZ') then
-* Analysis of optimized wave function
+C     analysis of optimized wave function
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
+C
 #if defined (VAR_MPI2)
-*
-*     only MASTER analyzes the optimized wave function ...
-*
+C
+C     only MASTER analyzes the optimized wave function ...
+C
       IF( MYPROC .ne. MASTER ) GOTO 888
-*
+C
 #endif
       LBLK = -1
       call rewino(LUC) 
@@ -683,7 +766,7 @@ CSK   work with INTEGER*8
      &  ' Analysis of Optimized Wave Function for ROOT = ',JROOT
         WRITE(LUWRT,'(1H ,A,I3)')
      &  ' ***************************************************'
-*
+C
         call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
      &                  ICISTR,IRC)
@@ -702,30 +785,32 @@ CSK   work with INTEGER*8
 
  888  CONTINUE 
 #if defined (VAR_MPI2)
-*     let the slaves wait... it is only a short way to go so why not?
+C     let the slaves wait... it is only a short way to go so why not?
       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 #endif
-*
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       else if (CIRUN.eq.'DENS1 '.or.CIRUN.eq.'DENS2 ') then
-* Analysis of density and occupation
+C
+C     analysis of density and occupation
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
-*     real or complex eigenvectors
+C
+C     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
-*       real
+C       real
         IRC = 1
       ELSE
-*       well, complex
+C       well, complex
         IRC = 2
         if (NZ.eq.1) then
-*         quaternion real
+C         quaternion real
           IRC = 1
         end if
       END IF
-*
+C
       LBLK = -1
-*
+C
       if (IDENSI.ne.0) then
         if (IDENSI.eq.1.or.IDENSI.eq.2) then
           write(LUWRT,*) 'IDENSI is ',IDENSI
@@ -736,21 +821,21 @@ CSK   work with INTEGER*8
           Call Abend2( 'LUCIAREL quitting' )
         end if
 #if defined (VAR_MPI2)
-*
-*       arrays for partitioning of the CI vector
-*       (*_MS2 arrays are in CSTATE )
+C
+C       arrays for partitioning of the CI vector
+C       (*_MS2 arrays are in CSTATE )
         call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
      &                       KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
      &                       NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
      &                       IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
      &                       0,1,WORK(KNODELIST))
-*
+C
 #endif
-*       
-*       calculation of densities for natural orbital occ. numbers
-*
+C       
+C       calculation of densities for natural orbital occ. numbers
+C       ---------------------------------------------------------
         IF( NOOCCN_DENS_RUN ) THEN
-*
+C
           IF( MYPROC .eq. MASTER ) THEN
             CALL REWINE(LUSC61,LBLK)
             CALL REWINE(LUSC62,LBLK)
@@ -758,81 +843,83 @@ CSK   work with INTEGER*8
           END IF 
 #if defined (VAR_MPI2)
           IVEC_TMP = 1
-*         right hand-side vector
+C         right hand-side vector
           CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
      &                          WORK(KILU1LIST),
      &                          WORK(KNODELIST),WORK(KBLOCKLIST),
      &                          NUM_BLOCKS,IVEC_TMP,IRC)
-*          
+C          
           IF( MYPROC .eq. MASTER) THEN
             CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
           END IF
-*         left hand-side vector
+C         left hand-side vector
           CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU2,MY_LU2_OFF,
      &                          WORK(KILU2LIST),
      &                          WORK(KNODELIST),WORK(KBLOCKLIST),
      &                          NUM_BLOCKS,IVEC_TMP,IRC)
-*       files are in place now... say hello
+C       files are in place now... say hello
         WRITE(LUWRT,*) ' '
         WRITE(LUWRT,'(12X,A)') ' ==================================== '
         WRITE(LUWRT,'(12X,A)') ' PARALLEL 1p DENSITY MAT. CALCULATION '
         WRITE(LUWRT,'(12X,A)') ' ==================================== '
         WRITE(LUWRT,*) ' '
-*
+C
+C
+C
 #else
-*         right hand-side vector to LUSC61
+C         right hand-side vector to LUSC61
           CALL COPVCDC(LUC,LUSC61,WORK(KVEC1),0,IRC,LBLK)
-*
+C
           CALL SKPVCD(LUC,IRC * (IDENSI_STATE - 1),WORK(KVEC1),1,LBLK)
-*         left hand-side vector on LUSC62
+C         left hand-side vector on LUSC62
           CALL COPVCDC(LUC,LUSC62,WORK(KVEC1),0,IRC,LBLK)
 #endif
-*
+C
           GOTO 895
-*
+C
         END IF
-*
-*       prepare vector files for pure dens. matrix calc. run (parallel)
-*
+C
+C       prepare vector files for pure dens. matrix calc. run (parallel)
+C       ---------------------------------------------------------------
 #if defined (VAR_MPI2)
         IF( MYPROC .eq. MASTER ) THEN
           CALL REWINE(LUSC61,LBLK)
           CALL REWINE(LUSC62,LBLK)
         END IF
-*       right hand-side vector on LUSC61
+C       right hand-side vector on LUSC61
         CALL COP_REST_VEC_REL(WORK(KVEC1),LUSC61,ILU1,MY_LU1_OFF,
      &                        WORK(KILU1LIST),
      &                        WORK(KNODELIST),WORK(KBLOCKLIST),
      &                        NUM_BLOCKS,NROOT,IRC)
-*       left hand-side vector on LUSC62
+C       left hand-side vector on LUSC62
         CALL COP_REST_VEC_REL(WORK(KVEC1),LUSC62,ILU2,MY_LU2_OFF,
      &                        WORK(KILU2LIST),
      &                        WORK(KNODELIST),WORK(KBLOCKLIST),
      &                        NUM_BLOCKS,NROOT,IRC)
-*
-*       files are in place now... say hello
+C
+C       files are in place now... say hello
         WRITE(LUWRT,*) ' '
         WRITE(LUWRT,'(12X,A)') ' =================================== '
         WRITE(LUWRT,'(12X,A)') ' PARALLEL DENSITY MATRIX CALCULATION '
         WRITE(LUWRT,'(12X,A)') ' =================================== '
         WRITE(LUWRT,*) ' '
-*
+C
 #endif
-*
+C
  895    CONTINUE
-*
-*       one-body density matrix
-*       spin-dependent first-order density matrix
-*
+C
+C       one-body density matrix
+C       spin-dependent first-order density matrix
+C
         JROOT = 1
         JROOT_SCR = 0
-*
+C
         IF( NOOCCN_DENS_RUN ) THEN
            JROOT_SCR = IDENSI_STATE 
         ELSE
            JROOT_SCR = 1
         END IF
-*
+C
         if (IRELACI.eq.1) then
           INONREL = 0
         else
@@ -854,8 +941,8 @@ CSK   work with INTEGER*8
           write(LUWRT,*) 'IDENSI =  ',IDENSI
           Call Abend2( 'Problemo in gasci. Quitting.' )
         end if
-*
-*
+C
+C
         if (IPRDEN .ge. 500 .and. .not. NOOCCN_DENS_RUN) then
           IF( MYPROC .eq. MASTER )THEN
             write(LUWRT,*) 'Current vector',JROOT_SCR,' on unit',LUSC61
@@ -864,11 +951,11 @@ CSK   work with INTEGER*8
             call wrtvcdc(WORK(KVEC2),LUSC62,1,IRC,LBLK)
           END IF
         end if
-*
+C
         if (SIGDEN_ROUTE.eq.'TRADIT') then
           call dbg_rho(WORK(KVEC1),WORK(KVEC2),INONREL,IDEN12,JROOT)
         else if (SIGDEN_ROUTE.eq.'SIGDEN') then
-*
+C
           if (CIRUN.eq.'DENS1 ') then
             NTERMS = N1ELINT
           else if (CIRUN.eq.'DENS2 ') then
@@ -877,24 +964,29 @@ CSK   work with INTEGER*8
 C
 C         erase T amplitudes from sigma calculation
 C
-          IF( SHARED_M )THEN
-            IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
-              call DZERO8(T_BUFF,NALLINT)
-            END IF
+          IF( IT_SHL .ge. 0 )THEN
+            call DZERO8(T_BUFF,MY_T_LEN)
           ELSE
             call DZERO8(WORK(KT_CC),NALLINT)
           END IF
-*
+C
+CSK    WRITE(LUWRT,*) ' start: MY T (BUFF) array'
+CSK    IF( IT_SHL .ge. 0 )THEN
+CSK      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+CSK    ELSE
+CSK      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+CSK    END IF
+C
          if (CIRUN.eq.'DENS1 ') then
             call rmemchk
          end if
-*
+C
 #if defined (VAR_MPI2)
-*         erase old LUCLIST
+C         erase old LUCLIST
           CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
-*         copy right-hand vector to scratch file
+C         copy right-hand vector to scratch file
           IF( IRC .eq. 1 ) THEN
-*           real quaternion double group
+C           real quaternion double group
             CALL COPVCD_PP_CC_B(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
      &                          WORK(KLVLBT),
      &                          WORK(KLVLEBT),WORK(KLVI1BT),
@@ -902,7 +994,7 @@ C
      &                          WORK(KILU1LIST),WORK(KILUCLIST),
      &                          WORK(KBLOCKLIST), JROOT - 1 )
           ELSE
-*           complex quaternion double group
+C           complex quaternion double group
             CALL COPVCD_PP_CC_B_C(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
      &                            WORK(KLVLBT),WORK(KLVLEBT),
      &                            WORK(KLVI1BT),WORK(KLVIBT),
@@ -910,16 +1002,17 @@ C
      &                            WORK(KILU1LIST),WORK(KILUCLIST),
      &                            WORK(KBLOCKLIST), JROOT - 1 )
           END IF
-*
+C
 #endif
-*
-*         set offset for left-hand vector on ILU2 (parallel
-*         calculation)
-*
+C
+C         set offset for left-hand vector on ILU2 
+C         (parallel calculation)
+C
           JVEC_SF = JROOT - 1
-*
-*         compute density matrix elements
-*
+C
+C         compute density matrix elements
+C         -------------------------------
+C
 *=======================================================================
           call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),
 #if defined (VAR_MPI2)
@@ -931,7 +1024,8 @@ C
 #if defined (VAR_MPI2)
      &                    ,WORK(KILUCLIST),WORK(KILU2LIST),
      &                     WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                     IGROUPLIST,IPROCLIST,WORK(KRCCTOS)
+     &                     IGROUPLIST,IPROCLIST,WORK(KRCCTOS),
+     &                     IT_TTPL,IT_TTOL
 #endif
      &                   )
 *=======================================================================
@@ -978,136 +1072,142 @@ C
           END IF
 C         ^ MASTER !!!
           IPRDEN = 1
-*
+C
 #if defined (VAR_MPI2)
-*
-C           WRITE(LUWRT,*) ' MY T (BUFF) array'
-C           IF( SHARED_M )THEN
-C             CALL WRTMATMN8(T_BUFF,1,NALLINT,1,NALLINT,LUWRT)
-C           ELSE
-C             CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
-C           END IF
-          IF( SHARED_M )THEN
 C
-C           "shared memory" mode:
-C                                T_BUFF is up-to-date for each node
-C                                --> collection from N_MASTER_SM to
-C                                    MASTER
-            ISHARE_DENSM = 0
+CSK    WRITE(LUWRT,*) ' MY T (BUFF) array'
+CSK    IF( IT_SHL .ge. 0 )THEN
+CSK      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+CSK    ELSE
+CSK      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+CSK    END IF
+          ISHARE_DENSM = 0
 C
-            IF( NOOCCN_DENS_RUN ) THEN
-              L_MAX_DENS_BLK = 0
-              L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC)
-              IF( MYNEW_ID_SM .ne. N_MASTER_SM ) L_MAX_DENS_BLK = 0
-*
-              CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
-     &                       1,'KDMBLK')
-              CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
-*
-              CALL COLLECT_DENS_MAT_SM(WORK(KMAX_DENS_BLK),T_BUFF,
-     &                               IRC,ISHARE_DENSM)
-            ELSE
-              CALL COLLECT_DENS_MAT_SM(F2,T_BUFF,IRC,ISHARE_DENSM)
-            END IF
+C         case 1: only MASTER will get all density matrix elements
+C             --> ISHARE_DENSM = 0
+C         case 2: density matrix elements on all CPUs
+C             --> ISHARE_DENSM = 1
 C
-          ELSE
-*
-            ISHARE_DENSM = 0
-*
-*           case 1: only MASTER will get all density matrix elements
-*               --> ISHARE_DENSM = 0
-*           case 2: density matrix elements on all CPUs
-*               --> ISHARE_DENSM = 1
-*
-            IF( ISHARE_DENSM .eq. 1 ) THEN
-              WRITE(LUWRT,*) ' WARNING: summation of density matrix '
-              WRITE(LUWRT,*) ' elements on ALL CPUs might cause ' 
-              WRITE(LUWRT,*) ' MPI memory problems !!! '
-              WRITE(LUWRT,*) ' (depending on your MPI implementation)'
-            END IF
-*
+          IF( ISHARE_DENSM .eq. 1 ) THEN
+            WRITE(LUWRT,*) ' WARNING: summation of density matrix '
+            WRITE(LUWRT,*) ' elements on ALL CPUs may cause ' 
+            WRITE(LUWRT,*) ' MPI memory problems !!! '
+            WRITE(LUWRT,*) ' (depending on your MPI implementation)'
+          END IF
+C
+          IF( IT_SHL .lt. 0 )THEN
+C
             IF( NOOCCN_DENS_RUN ) THEN
               L_MAX_DENS_BLK = 0
               L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
-*
+C
               CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
      &                       1,'KDMBLK')
               CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
-*
+C
               CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
      &                               IRC,ISHARE_DENSM)
             ELSE
               CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),IRC,ISHARE_DENSM)
             END IF
-          END IF
-C         ^ SHARED_M
-*
-#endif
-*
-          IPRDEN = 00
-*
-          if (IPRDEN.ge.10) then
-           IF( MYPROC .eq. MASTER ) THEN
-             write(LUWRT,*) '======================================='
-             write(LUWRT,'(A,I4)') ' Density matrix for root ',JROOT_SCR
-             write(LUWRT,*) '======================================='
-             IF( SHARED_M )THEN
-               call wrtdens(T_BUFF,WORK(KINDEX),WORK(KLIHIND),
-     &                      WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
-     &                      WORK(KLOP_REO),WORK(KSIOPREO),IRC)
-             ELSE
-               call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
-     &                      WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
-     &                      WORK(KLOP_REO),WORK(KSIOPREO),IRC)
-             END IF
-           END IF
-          end if
-*
-          IPRDEN = 00
-#if defined (VAR_MPI2)
-          IF( MYPROC .ne. MASTER ) GOTO 919
-#endif
-*
-*         transfer density matrices to KRMC format
-*
-          IF( SHARED_M )THEN
-C
-            IF( NOOCCN_DENS_RUN )THEN
-*
-              call trnsfdens_no(F1,T_BUFF,WORK(KINDEX),
-     &                          WORK(KLABEXTP),WORK(KLIHIND),
-     &                          WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                          WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
-*
-            ELSE
-*
-              CALL DZERO(F2,LF2_ZERO)
-*
-              call trnsfdens(F1,F2,T_BUFF,
-     &                      WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                      WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                      WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
-            END IF
 C
           ELSE
+C
+C           make sure each CPU gets here before starting T block 
+C           collection
+C
+            CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C
+            IF( IT_SHL .eq. 0 )THEN
+C
+               MY_XT_BUFF_LEN = NCALC_MAX_BLK(IRC)
+C
+               CALL MPIXMEM_ALLOC(MY_XT_PTR,1,MY_XT_BUFF_LEN,
+     &                            MPI_INFO_NULL,.FALSE.)
+               CALL DZERO8(XT_BUFF,MY_XT_BUFF_LEN)
+               CALL COLLECT_DENS_MAT_SM_LOC(T_BUFF,XT_BUFF,IT_TTPL,
+     &                                      IT_TTOL,IRC,ISHARE_DENSM)
+               CALL MPIXMEM_FREE(XT_BUFF)
+C
+            END IF
+C
+C           parallel MCSCF: provide WORK(KINDEX) to all CPU's
+C
+          END IF
+C         ^ IT_SHL .lt. 0
+C
+#endif
+C
+          IPRDEN = 00
+C
+          IF (IPRDEN .ge. 10 ) THEN
+            IF( MYPROC .eq. MASTER .and. IT_SHL .lt. 0 ) THEN
+              write(LUWRT,*) '======================================='
+              write(LUWRT,'(A,I4)') ' Density matrix for root ',
+     &                                JROOT_SCR
+              write(LUWRT,*) '======================================='
+              call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
+     &                     WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
+     &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC)
+            END IF
+          END IF
+C
+          IPRDEN = 00
+#if defined (VAR_MPI2)
+C
+C         parallel MCSCF: use all CPU's to transfer the density 
+C         matrices...
+C
+          IF( MYPROC .ne. MASTER ) GOTO 919
+#endif
+C
+C         transfer density matrices to KRMC format
+C         ----------------------------------------
+C
+C         local or global T distribution
+          IF( IT_SHL .ge. 0 )THEN
+#if defined (VAR_MPI2)
             IF( NOOCCN_DENS_RUN )THEN
-*
+C
+              call trnsfdens_no_sm(F1,T_BUFF,IT_TTPL,IT_TTOL,
+     &                             WORK(KINDEX),
+     &                             WORK(KLABEXTP),WORK(KLIHIND),
+     &                             WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                             WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+C
+            ELSE
+C
+              CALL DZERO(F2,LF2_ZERO)
+C
+C             FIXME: WRITE ME!!!
+C
+csk           call trnsfdens_sm(F1,F2,T_BUFF,IT_TTPL,IT_TTOL,
+csk     &                       WORK(KINDEX),
+csk     &                       WORK(KLABEXTP),WORK(KLIHIND),
+csk     &                       WORK(KSIGNNHX),WORK(KLOP_REO),
+csk     &                       WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+            END IF
+#endif
+C         no T distribution
+          ELSE
+            IF( NOOCCN_DENS_RUN )THEN
+C
               call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
      &                          WORK(KLABEXTP),WORK(KLIHIND),
      &                          WORK(KSIGNNHX),WORK(KLOP_REO),
      &                          WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
-*
+C
             ELSE
-*
+C
               CALL DZERO(F2,LF2_ZERO)
-*
+C
               call trnsfdens(F1,F2,WORK(KT_CC),
      &                      WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
      &                      WORK(KSIGNNHX),WORK(KLOP_REO),
      &                      WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
             END IF
           END IF
-*
+C
 C
 C
 C         WRITE(LUWRT,*) ' MY updated densities'
@@ -1127,40 +1227,50 @@ C
  919     CONTINUE
          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 #endif        
-*
+C
         else
           write(LUWRT,*) 'SIGDEN_ROUTE with unallowed value in gasci.'
           write(LUWRT,*) 'SIGDEN_ROUTE ',SIGDEN_ROUTE
         end if
-*
+C
       end if
-*
+C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       else
         write(LUWRT,*) 'CIRUN has unallowed value :',CIRUN
         call quit('Stopping in GASCI')
       end if
-*     ^ CIRUN cases for MCSCF calls.
+C     ^ CIRUN cases for MCSCF calls.
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
-*
-*
+C
+C
 #if defined (VAR_MPI2)
-*
-*     reset partitioning of CI vector to 'sequential' fashion
-*
-*     (*_MS2 arrays are in CSTATE )
+      IF( IT_SHL .ge. 0) THEN
+C
+C       de-allocate T-block list
+C
+C
+C       de-allocate T array and destroy T memory window
+C
+        CALL MPIXMEM_FREE( IT_TTPL )
+        CALL REL_MEM_T_WIN( T_BUFF )
+        CALL MPIXMEM_FREE( T_BUFF_D )
+C
+      END IF
+C
+C     reset partitioning of CI vector to 'sequential' fashion
+C     (*_MS2 arrays are in CSTATE )
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
      &                 IBAT_MS2,0,0,IDUMMY)
-*
+C
 #endif
-*
       write(LUWRT,*) 
       write(LUWRT,'(A25,A6)') '  I have completed task  ',CIRUN
       write(LUWRT,*) ' Returning to KRMC.'
       write(LUWRT,*) 
-*
+C
       call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI ')
       RETURN
       END
@@ -1367,7 +1477,7 @@ C       FIXME: SK-26-11-2007 implement use of T_BUFF for
 C              LUCIARELs-standalone version
 C
         call picasso(INTSPACE,ISO1,IPRTRA,
-     &               NL2D,IUB2D,ISM2D,T_BUFF)
+     &               NL2D,IUB2D,ISM2D,T_BUFF )
         write(6,*) 'Integrals transformed and/or distributed.'
 *
 *

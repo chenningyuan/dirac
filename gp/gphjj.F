@@ -702,7 +702,41 @@ C
 C
       RETURN
       END
-
+C  /* Deck izero8 */
+      SUBROUTINE IZERO8(INTI8,LENGTH8)
+C...................................................................
+C   modified routine IZERO - S. Knecht - 19-Feb-2008
+C
+C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 INTI8(*),LENGTH8
+C
+      IF (LENGTH8.LE.0) RETURN
+C
+      DO 100 I=1,LENGTH8
+  100    INTI8(I) = 0
+C
+      RETURN
+      END
+C  /* Deck imino8 */
+      SUBROUTINE IMINO8(INTI8,LENGTH8)
+C...................................................................
+C   modified routine IZERO - S. Knecht - 19-Feb-2008
+C
+C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 INTI8(*),LENGTH8, IMIN1
+C
+      IF (LENGTH8.LE.0) RETURN
+      IMIN1 = - 1
+C
+      DO 100 I=1,LENGTH8
+  100    INTI8(I) = IMIN1
+C
+      RETURN
+      END
 C  /* Deck lzero */
       SUBROUTINE LZERO(LOGI,LENGTH)
 C...................................................................

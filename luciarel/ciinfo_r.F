@@ -5511,8 +5511,6 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       ELSE IF( ICISTR.EQ.3) THEN
         L0BLOCK = MXSOOB
       END IF
-CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
       IF( I_SET_L2BLOCK .ge. 1 ) THEN
 *
@@ -5733,11 +5731,11 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE Z_BLKFO_REL_START(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
-     &                             KNODELIST,KBLOCKLIST,KRCCTOS,
-     &                             NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
-     &                             NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
-     &                             I_USE_PC,NPARBLOCK,IRC)
+      SUBROUTINE Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                         KNODELIST,KBLOCKLIST,KRCCTOS,
+     &                         NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
+     &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
+     &                         I_USE_PC,NPARBLOCK,IRC,IT_TTPL)
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -5747,9 +5745,6 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *
 * KPCLBT  : Length of each Batch ( in blocks)
 * KPCLEBT : Length of each Batch ( in elements)
-* KPCI1BT : Length of each block
-* KPCIBT  : Info on each block
-* KPCBLTP : Block type for each symmetry
 *
 * NBATCH : Number of batches
 * NBLOCK : Number of blocks
@@ -5773,19 +5768,25 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 #include "strinp.inc"
 * new
 #include "lucipar_rel.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 *
 *.output
+      DIMENSION IT_TTPL(*)
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ========================== '
-        WRITE(6,*) ' Output from Z_BLKFO_START  '
-        WRITE(6,*) ' ========================== '
-        WRITE(6,*)
-        WRITE(6,*) ' ISM, ISPC = ', ISM,ISPC
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ========================== '
+        WRITE(LUWRT,*) ' Output from Z_BLKFO_REL_1  '
+        WRITE(LUWRT,*) ' ========================== '
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
 *
 *     pointers to output arrays
@@ -5998,7 +5999,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
       CALL MEMMAR(KRCCTOS,   NUM_BLOCKS2,'ADDS  ',1,'RCCTOS')
 *.    ^ These should be preserved after exit so put mark for
 *       flushing after
-      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLK2')
 *
       MIN2  = - 2
       IZERO =   0
@@ -6013,9 +6013,72 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 #if defined (VAR_MPI2)
 *
       CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                         NBLOCK,WORK(KRCCTOS))
-*
+     &                         NBLOCK,WORK(KRCCTOS),IT_TTPL)
 #endif
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE Z_BLKFO_REL_2(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+     &                         NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
+     &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
+     &                         I_USE_PC,NPARBLOCK,IRC)
+*
+* Construct information about batch and block structure of CI space
+* defined by ISPC,ISM.
+*
+* Output is given in the form of pointers to vectors in WORK
+* and  NBLK_MS2,IBLK_MS2 which should be dimensioned outside
+*
+* KPCLBT  : Length of each Batch ( in blocks)
+* KPCLEBT : Length of each Batch ( in elements)
+*
+* NBATCH : Number of batches
+* NBLOCK : Number of blocks
+*
+* NBLK_MS2 : Number of blocks with a given MS2 values
+* IBLK_MS2 : First block with a given MS2 value
+*
+* Jeppe Olsen, Feb. 98
+*
+* For relativistic program
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "cicisp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "strbas.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "strinp.inc"
+* new
+#include "lucipar_rel.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+*
+      INTEGER NBLK_MS2(*), IBLK_MS2(*)
+      INTEGER NBAT_MS2(*), IBAT_MS2(*)
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ========================== '
+        WRITE(LUWRT,*) ' Output from Z_BLKFO_REL_2  '
+        WRITE(LUWRT,*) ' ========================== '
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ISM, ISPC = ', ISM,ISPC
+      END IF
+*
+      IDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLK2')
 *     moved here since they are not in use for GASCI_REL
       call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
       call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
@@ -6059,8 +6122,8 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
           L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4 
         END IF
 *
-CSK        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK     &                    L0BLOCK,L2BLOCK,LCSBLK
+csk        WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
         L2BLOCK = MIN(LCSBLK,L2BLOCK)
 *

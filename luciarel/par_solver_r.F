@@ -52,7 +52,7 @@ C
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATV,
      &                  LBATV,LEBATV,I1BATV,IBATV,RCCTOS,SCRRED,
-     &                  IGROUPLIST,IPROCLIST)
+     &                  IGROUPLIST,IPROCLIST,IT_TTPL,IT_TTOL)
 *
 *     Davidson algorithm , requires two blocks in core
 *     parallel Multi root version
@@ -102,6 +102,8 @@ C
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
        DIMENSION T_CC(*), RCCTOS(*), SCRRED(*), T_BUFF(*)
+       DIMENSION IT_TTPL(*) 
+       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -209,7 +211,8 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
-     &                    IGROUPLIST,IPROCLIST,RCCTOS
+     &                    IGROUPLIST,IPROCLIST,RCCTOS,
+     &                    IT_TTPL,IT_TTOL
 #endif
      &                   )
 *=======================================================================
@@ -257,7 +260,6 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
          EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
    20  CONTINUE
 *
-
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
          WRITE(LUWRT,'(5F18.13)')
@@ -433,7 +435,8 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
-     &                   IGROUPLIST,IPROCLIST,RCCTOS
+     &                   IGROUPLIST,IPROCLIST,RCCTOS,
+     &                   IT_TTPL,IT_TTOL
 #endif
      &                  )
 *=======================================================================
@@ -694,7 +697,7 @@ C
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      RCCTOS,SCRRED_R,SCRRED_I,IGROUPLIST,
-     &                      IPROCLIST)
+     &                      IPROCLIST,IT_TTPL,IT_TTOL)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -762,6 +765,8 @@ C
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
+      DIMENSION IT_TTPL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 *
 * Dimensioning required of local vectors
 *      APROJR : MAXVEC*(MAXVEC+1)/2
@@ -870,7 +875,8 @@ CSK      end if
          call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
-     &                    IGROUPLIST,IPROCLIST,RCCTOS
+     &                    IGROUPLIST,IPROCLIST,RCCTOS,
+     &                    IT_TTPL,IT_TTOL
 #endif
      &                   )
 *=======================================================================
@@ -1004,8 +1010,8 @@ CTF      ITER = ITER + 1
 *
            IADD = IADD + 1
 *
-CSK           WRITE(LUWRT,*) 'THIS IS MY LU5LIST after part1'
-CSK           CALL IWRTMAMN(LU5LIST,1,IALL_LU5,1,IALL_LU5,LUWRT)
+csk           WRITE(LUWRT,*) 'THIS IS MY LU5LIST after part1'
+csk           CALL IWRTMAMN(LU5LIST,1,IALL_LU5,1,IALL_LU5,LUWRT)
 *
            CALL H0M1TD_REL_PAR_CX(ILU3,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                            LU3LIST,LU5LIST,NBATV,LBATV,LEBATV,
@@ -1130,8 +1136,8 @@ CTF
 *
         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
-CSK        WRITE(LUWRT,*) 'LU1LIST again:'
-CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+csk        WRITE(LUWRT,*) 'LU1LIST again:'
+csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       reset LUCLIST
 *
@@ -1141,10 +1147,10 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                        IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                        LUCLIST,IBLOCKL, NVEC + IVEC - 1 )
 *
-CSK        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-CSK        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-CSK        WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
-CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+csk        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
+csk        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
+csk        WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
+csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       set offset for sigma-file
 *
@@ -1159,7 +1165,8 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
-     &                   IGROUPLIST,IPROCLIST,RCCTOS
+     &                   IGROUPLIST,IPROCLIST,RCCTOS,
+     &                   IT_TTPL,IT_TTOL
 #endif
      &                  )
 *=======================================================================

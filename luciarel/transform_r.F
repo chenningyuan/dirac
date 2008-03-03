@@ -1660,7 +1660,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       subroutine itrctl(INTSPACE,ITRA_TYPE,INTITER,
      &                  ENVIRO,ISPINFREE,IFOCKEX,NORB_FULL,
      &                  NL2D,IUB2D,ISM2D,ISYM_T,SIGDEN_ROUTE,
-     &                  F1,F2,T_BUFF,IBOSYM,MCSCF,CIRUN)
+     &                  F1,F2,T_BUFF,T_BUFF_D,IT_TTPL,IBOSYM,
+     &                  MCSCF,CIRUN)
 *
 *---------------------------------------------------
 *  Written by Timo Fleig (including all subroutines)
@@ -1690,7 +1691,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
-      POINTER (MY_XINT_SCR_PTR, XINT_SCR(IDUMMY_BUFF_SZ))
+      LOGICAL CHECK_FILE
+      POINTER (MY_CHECK_F_PTR, CHECK_FILE(IDUMMY_BUFF_SZ))
 #endif
 *
 #include "dgroup.h"
@@ -1701,8 +1703,8 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       character*1 COORD
       logical MCSCF,EX
       logical GET_UPDATE_SM, GET_UPDATE_M_SM, GET_UPDATE_ALL
-      logical GET_NO_UPDATE
-      dimension INTEG(1000), T_BUFF(*)
+      logical GET_NO_UPDATE, ALLOC_INT
+      dimension INTEG(1000), T_BUFF(*), T_BUFF_D(*), IT_TTPL(*)
       dimension NORB_FULL(MXPIRR)
       integer*8 IDUMMY_LENGTH
 *
@@ -1850,20 +1852,106 @@ C
           IRIMLT = 2
         end if
 C
+C
 C       number of integrals/density elements
 C
         NALLINT = LEN_T_VEC * IRIMLT
 C
 C       allocate integral/density array (if necessary)
 C
-        IF( SHARED_M ) THEN
-          write(LUWRT,*) ' Allocated for ',NALLINT,' integrals.'
-          IDUMMY_LENGTH = 0
-          CALL MEMMAR_I8(KT_CC,IDUMMY_LENGTH,'ADDS  ',2,'KT_CC ')
+C       who needs it?
+C
+        ALLOC_INT = .TRUE.
+C
+C       IT_SHL == - 2    :  if MPI-shared memory AND CIRUN == .IJKLRO
+C       IT_SHL == - 1    :  if not MPI-shared memory
+C       IT_SHL == 0 or 1 :  if MPI-shared memory
+C
+        IF( IT_SHL .eq. - 2 )THEN
+C
+C         what may happen if we do a little DIRTY trick?
+C         simulating local disks but having a global disk!!!
+C         will it crash??? SK - Feb08
+C
+          IF( NFLGRPS_REL .eq. 1 ) THEN
+            IF( MYPROC .ne. MASTER ) ALLOC_INT = .FALSE.
+          ELSE
+            IF( MYNEW_ID .ne. N_MASTER ) ALLOC_INT = .FALSE.
+          END IF
+C
+        ELSE IF( IT_SHL .eq. - 1 )THEN
+C
+          IF( CIRUN .eq. 'IJKLRO' )THEN
+            IF( NFLGRPS_REL .eq. 1 ) THEN
+              IF( MYPROC .ne. MASTER ) ALLOC_INT = .FALSE.
+            ELSE
+              IF( MYNEW_ID .ne. N_MASTER ) ALLOC_INT = .FALSE.
+            END IF
+          END IF
+C
         ELSE
+          ALLOC_INT = .FALSE.
+        END IF
+C
+        EX = .FALSE.
+C
+        IF( CIRUN .eq. 'IJKLRO' )THEN
+          IF( ALLOC_INT )THEN
+            INQUIRE(FILE='IJKL_REOD',EXIST=EX)
+C
+            IF( EX ) THEN
+              WRITE(LUWRT,*)' '
+              WRITE(LUWRT,*)' using provided integral file '
+              WRITE(LUWRT,*)' IJKL_REOD! '
+              WRITE(LUWRT,*)' '
+            END IF
+            IXXX_CLR = 1
+          ELSE  
+            IXXX_CLR = 2
+          END IF
+csk          WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
+#if defined(VAR_MPI2)
+          IXXX_KEY  = MYPROC
+          IXCOMM_SZ = 0
+          IXCOMM_RK = 0
+          IXCOMM    = 0
+          CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,IXXX_CLR,
+     &                         IXXX_KEY,IXCOMM,IERR)
+          CALL MPI_COMM_SIZE(IXCOMM,IXCOMM_SZ,IERR)
+          CALL MPI_COMM_RANK(IXCOMM,IXCOMM_RK,IERR)
+csk          WRITE(6,*) ' IXCOMM_SZ, IXCOMM_RK, IXCOMM',
+csk     &                 IXCOMM_SZ, IXCOMM_RK, IXCOMM_SZ
+          IF( ALLOC_INT )THEN
+            MY_CHECK_F_LEN = IXCOMM_SZ
+            CALL MPIXMEM_ALLOC( MY_CHECK_F_PTR, 4, MY_CHECK_F_LEN,
+     &                          MPI_INFO_NULL, .FALSE. )
+C
+            CHECK_FILE( IXCOMM_RK + 1 ) = EX
+C
+            CALL MPI_ALLGATHER(EX,1,MPI_LOGICAL,CHECK_FILE,1,
+     &                         MPI_LOGICAL,IXCOMM,IERR)
+            CALL CHECK_CONSIST( EX, CHECK_FILE, IXCOMM_SZ )
+            CALL MPIXMEM_FREE( CHECK_FILE )
+          END IF
+          CALL MPI_COMM_FREE(IXCOMM,IERR)
+C         consistency is checked
+C         update MPI_COMM_WORLD
+          CALL MPI_BCAST(EX,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+C          
+#endif
+        END IF
+C       CIRUN == IJKLRO
+        IF( EX ) THEN
+          GOTO 1011
+        END IF
+C
+        IF( ALLOC_INT ) THEN
           write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
           CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
           CALL DZERO8(WORK(KT_CC),NALLINT)
+        ELSE
+          IDUMMY_LENGTH = 0
+          CALL MEMMAR_I8(KT_CC,IDUMMY_LENGTH,'ADDS  ',2,'KT_CC ')
         END IF
 C
 C       diagonal integrals
@@ -1877,20 +1965,18 @@ C
      &                     NDIAMINT
           stop ' Quitting in subroutine itrctl'
         END IF
-        call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
-        CALL IZERO(IPOSDIA,NDIAMINT)
-        CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
-        write(LUWRT,*) ' Allocating for ',NDIAMINT,
+        IF( ALLOC_INT )THEN
+          call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
+          CALL IZERO(IPOSDIA,NDIAMINT)
+          CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
+          write(LUWRT,*) ' Allocating for ',NDIAMINT,
      &' diagonal integrals.'
+        ELSE
+          call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')
+          CALL IZERO(IPOSDIA,NDIAMINT)
+        END IF
       end if
 *
-*
-csk      LMEMFREE = 0
-csk      CALL MEMMAR(LMEMFREE,0,'SFREEM',2,'SEEFRM')
-csk      LMEMFREE       = LMEMFREE_PTR
-*
-csk      WRITE(LUWRT,'(1X,A,1X,I20)')
-csk     & '  Current available free memory in double words:',LMEMFREE
 *
 ************************************************
 * Set mark for flushing local memory
@@ -2505,95 +2591,58 @@ C
               IF( CIRUN .eq. 'CIINII') THEN 
 #if defined (VAR_MPI2)
 C
-                IF( IIOMOD_REL .eq. 1 ) THEN
-                  IF( SHARED_M ) THEN
-                    GET_UPDATE_SM = .TRUE.
-                    IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 787
-                  ELSE
-                    GET_NO_UPDATE = .TRUE.
-                  END IF
-C
+                IF( IT_SHL .lt. 0 )THEN
+                  WRITE(LUWRT,'(A)') ' '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') 
+     &            '  Reading from integral file IJKL_REOD'
+                  WRITE(LUWRT,'(A)')
+     &            '   file type: standard (ij|kl) format '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') ' '
                 ELSE
-                  IF( SHARED_M ) THEN
-                    GET_UPDATE_M_SM = .TRUE.
-                  ELSE
-                    GET_UPDATE_ALL = .TRUE.
-                  END IF
-                  IF( MYPROC .ne. MASTER ) GOTO 787
+C
+                  WRITE(LUWRT,'(A)') ' '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') 
+     &            '  Reading from integral file IJKL_REOD'
+                  WRITE(LUWRT,'(A)')
+     &            '   file type: (ij|kl)-sharing format  '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') ' '
+C
                 END IF
-C               ^ IIOMOD_REL
 #endif
 C
-                WRITE(LUWRT,'(A)') ' '
-                WRITE(LUWRT,'(A)') 
-     &          '  ===================================='
-                WRITE(LUWRT,'(A)') 
-     &          '  Reading from integral file IJKL_REOD'
-                WRITE(LUWRT,'(A)') 
-     &          '  ===================================='
-                WRITE(LUWRT,'(A)') ' '
+                CALL READ_IJKL_GAS(WORK(KT_CC),T_BUFF,T_BUFF_D, 
+     &                             IT_TTPL,WORK(KMDIASV),NDIAMINT)
 C
-                 
-C
-                CALL READ_IJKL_GAS( WORK(KT_CC), T_BUFF, 
-     &                              WORK(KMDIASV), NDIAMINT)
-C
- 787            CONTINUE
-C
-C               update slaves, node-masters ...
-C
-#if defined (VAR_MPI2) 
-C
-                IF( NMPROC .gt. 1 ) THEN
-                  CALL GET_IJKL_UPDATE( WORK(KT_CC), T_BUFF,
-     &                                  WORK(KMDIASV), NDIAMINT,
-     &                                  GET_UPDATE_SM, 
-     &                                  GET_UPDATE_M_SM, 
-     &                                  GET_UPDATE_ALL, 
-     &                                  GET_NO_UPDATE )
-                END IF
-C
-#endif
                 GOTO 1001
 C
               ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN
 C
-C
 #if defined (VAR_MPI2)
-                IF( NFLGRPS_REL .eq. 1 )THEN
-                  IF( MYPROC .ne. MASTER ) GOTO 1001
-                ELSE
-                  IF( IIOMOD_REL .eq. 1 ) THEN
-                    IF( SHARED_M ) THEN
-                      IF( MYNEW_ID_SM .ne. N_MASTER_SM ) GOTO 1001
-                    ELSE
-                      IF( MYNEW_ID .ne. N_MASTER ) GOTO 1001
-                    END IF
 C
-                  ELSE
-                    IF( MYPROC .ne. MASTER ) GOTO 1001
-                  END IF
-C                 ^ IIOMOD_REL
+                IF( ALLOC_INT )THEN
+                  IXXX_CLR = 1
+                ELSE  
+                  IXXX_CLR = 2
                 END IF
-C               ^ NFLGRPS_REL
+                IXXX_KEY = MYPROC
+                CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,IXXX_CLR,
+     &                              IXXX_KEY,IXCOMM,IERR)
+C
+                IF( IXXX_CLR .eq. 2 ) GOTO 797
 #endif
-C
-                EX = .FALSE. 
-C
-                INQUIRE(FILE='IJKL_REOD',EXIST=EX)
-C
-                IF( EX ) THEN
-                  WRITE(LUWRT,*)' '
-                  WRITE(LUWRT,*)' using provided integral file '
-                  WRITE(LUWRT,*)' IJKL_REOD! '
-                  WRITE(LUWRT,*)' '
-                  EX = .FALSE.
-                  GOTO 1001
-                END IF
 C
                 WRITE(LUWRT,*)' '
                 WRITE(LUWRT,*)' Resorting integrals...'
                 WRITE(LUWRT,*)' '
+C
                 CALL WRITE_IJKL_GAS( WORK(KT_CC), T_BUFF,
      &                               INTIMP,ISPINFREE,ISYM_T,
      &                               WORK(KLSOBEX),WORK(KISTR_CA),
@@ -2601,7 +2650,14 @@ C
      &                               WORK(KISTR_AB),NDIM_TOT2,
      &                               F1,WORK(KMDIASV),IBOSYM,
      &                               WORK(KLABEXTP),CIRUN,NTEST,
-     &                               NDIAMINT )
+     &                               NDIAMINT,ENVIRO,SIGDEN_ROUTE,
+     &                               INTSPACE)
+C
+ 797            CONTINUE
+C
+#if defined (VAR_MPI2)
+                CALL MPI_COMM_FREE(IXCOMM,IERR)
+#endif
 C
                 GOTO 1001
               END IF
@@ -2610,44 +2666,23 @@ C             ^ CIRUN ???
 C           ^ REORD_IJKL
 C
             IF( CIRUN .eq. 'CIINII' )THEN
-*
-csk           WRITE(LUWRT,*) ' LEN_ALL_INT is', LEN_ALL_INT
-#if defined (VAR_MPI2)
 C
-C             dynamic allocation of scratch XINT block (only N_MASTER_SM)
-C             --> use in "shared memory" MPI runs, MPI info available
-C             if IS_DUMMY > 0 and info im[lemented
-C
-              IF( SHARED_M ) THEN
-C
-                IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
-                  IS_DUMMY = 0
-                  CALL GET_MEM_XINT_SCR( IS_DUMMY )
-                END IF
-C
-csk        WRITE(LUWRT,*) ' XINT_SCR  allocated with length',LEN_ALL_INT
-C
+              IF( IT_SHL .ge. 0 )THEN
+                WRITE(LUWRT,*) ' Running in MPI-shared memory mode     '
+                WRITE(LUWRT,*) ' needs usage of integral file          '
+                WRITE(LUWRT,*) ' IJKL_REOD. Programm will abort        '
+                WRITE(LUWRT,*) ' now. Restart job with option .IJKLRO !'
+                CALL Abend2('.SHMEMO option requires option .IJKLRO ')
               END IF
 C
-#endif
-              IF( .NOT. SHARED_M ) THEN
-                CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
-              END IF
-*
-*             parallel run - broadcast integrals from MASTER if required
-*
+              CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+C
+C             parallel run - broadcast integrals from MASTER if required
+C
               IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
-*
-                IF( SHARED_M ) THEN
-                   IF( MYNEW_ID_SM .eq. N_MASTER_SM ) THEN
-                     CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                                     XINT_SCR,NTEST)
-                   END IF
-                ELSE
-                   CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                                   WORK(KINTI12),NTEST)
-                END IF
-*
+C
+                 CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
+     &                                 WORK(KINTI12),NTEST)
               END IF
 C             ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
 #if defined (VAR_MPI2)
@@ -2662,67 +2697,23 @@ CSK              WRITE(LUWRT,*) ' set IIOMOD_REL to 1 and give         '
 CSK              WRITE(LUWRT,*) ' reading permissions to slaves!       '
 CSK              Call Abend2(' no integral broadcast possible')
 CSK             END IF
-                IF( SHARED_M ) THEN
-C
-C                 divide ...                
-C
-                  IXINT_COLOR = 1
-C
-                  IF( MYNEW_ID_SM .eq. N_MASTER_SM ) IXINT_COLOR = 4
-                  IXINT_KEY   = MYPROC
-C
-C                 split MPI_COMM_WORLD into N_MASTER_SM and slaves
-C                 MASTER is always included...
-C
-                  CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,IXINT_COLOR,
-     &                                IXINT_KEY,IXINT_COMM,IERR)
-C
-                  IF( IXINT_COLOR .eq. 1 ) GOTO 818
-C
-C                 communicate integrals
-C
-                  CALL MPI_BCAST(XINT_SCR,LEN_ALL_INT,MPI_REAL8,
-     &                                 MASTER,IXINT_COMM,IERR)
- 818              CONTINUE
-C
-C                 reunite 
-C
-                  CALL MPI_COMM_FREE(IXINT_COMM,IERR)
-C
-                ELSE
-                  CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
-     &                                 MASTER,MPI_COMM_WORLD,IERR)
-                END IF
+                CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
+     &                              MASTER,MPI_COMM_WORLD,IERR)
               END IF
 #endif
 C
 C             integrals on WORK(KINTI12) / F1-F2 --> 
 C             distribute to WORK(KT_CC) resp. T_BUFF!
 C
-C             IF( SHARED_M ) integrals on XINT_SCR
-C
-              IF( SHARED_M ) THEN
-                call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                                WORK(KLSOBEX),WORK(KT_CC),
-     &                                T_BUFF,
-     &                                WORK(KISTR_CA),WORK(KISTR_CB),
-     &                                WORK(KISTR_AA),WORK(KISTR_AB),
-     &                                NDIM_TOT2,F1,XINT_SCR,
-     &                                WORK(KMDIASV),IBOSYM,
-     &                                WORK(KLABEXTP),CIRUN,NTEST)
-              ELSE
-                call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                                WORK(KLSOBEX),WORK(KT_CC),
-     &                                T_BUFF,
-     &                                WORK(KISTR_CA),WORK(KISTR_CB),
-     &                                WORK(KISTR_AA),WORK(KISTR_AB),
-     &                                NDIM_TOT2,F1,WORK(KINTI12),
-     &                                WORK(KMDIASV),IBOSYM,
-     &                                WORK(KLABEXTP),CIRUN,NTEST)
-              END IF
-*
+              call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                              WORK(KLSOBEX),WORK(KT_CC),
+     &                              T_BUFF,
+     &                              WORK(KISTR_CA),WORK(KISTR_CB),
+     &                              WORK(KISTR_AA),WORK(KISTR_AB),
+     &                              NDIM_TOT2,F1,WORK(KINTI12),
+     &                              WORK(KMDIASV),IBOSYM,
+     &                              WORK(KLABEXTP),CIRUN,NTEST)
             ELSE
-*
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
      &                              T_BUFF,
@@ -2731,25 +2722,11 @@ C
      &                              NDIM_TOT2,F1,F2,
      &                              WORK(KMDIASV),IBOSYM,
      &                              WORK(KLABEXTP),CIRUN,NTEST)
-*
+C
             END IF
-*           ^ CIRUN eq CIINII
-C
-#if defined (VAR_MPI2)
-C
-C           diagonal integral arrays ...
-C    
-            IF( SHARED_M) THEN
-              CALL  MPI_BCAST(WORK(KMDIASV),4*NDIAMINT,my_MPI_INTEGER,0,
-     &                        MYNEW_COMM_SM,IERR)
-              CALL  MPI_BCAST(IPOSDIA,        NDIAMINT,  MPI_INTEGER8,0,
-     &                        MYNEW_COMM_SM,IERR)
-            END IF
-       
-C
-#endif
-C
+C           ^ CIRUN eq CIINII?
           end if
+C         ^ SIGDEN_ROUTE ?
         end if
       else
         write(LUWRT,*) 'Problem in itrctl.'
@@ -2763,26 +2740,14 @@ C
         write(LUWRT,*) ' Number of integrals/CC amplitudes: ',NALLINT
         write(LUWRT,*) ' (including imaginary parts) '
       end if
-#if defined (VAR_MPI2)
-C
-C     release scratch memory 
-C
-      IF( CIRUN .eq. 'CIINII' .and. SIGDEN_ROUTE.eq.'SIGDEN' ) THEN
-C
-        IF( SHARED_M ) THEN
-          IF( MYNEW_ID_SM .eq. N_MASTER_SM )THEN
-            CALL REL_MEM_XINT_SCR( XINT_SCR )
-          END IF
-        END IF
-C
-      END IF
-#endif
 C
 1001  CONTINUE
 C
 C     flush local memory to mark set at beginning of do loop
 C
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
+C
+1011  CONTINUE
 C
       call qexit('ITRCTRL')
       return
@@ -3234,7 +3199,8 @@ C
 *** (poor picasso is merely one of LUCIAREL's subroutines ... :-(
 ***
       subroutine picasso(INTSPACE,ISOOP,IPRTRA,MCSCF,
-     &                   NL2D,IUB2D,ISM2D,F1,F2,T_BUFF,IBOSYM,CIRUN)
+     &                   NL2D,IUB2D,ISM2D,F1,F2,T_BUFF,
+     &                   T_BUFF_D,IT_TTPL,IBOSYM,CIRUN,RUN_WO_T_BUFF)
 *
 *******************************************************************
 *  !!!  INATIT states iteration point for natural spinor method !!!
@@ -3245,6 +3211,7 @@ C
 *
       integer POI(30)
       logical MCSCF
+      logical RUN_WO_T_BUFF
       common /WORKPIC/IPOI
 *
 #include "mxpdim.inc"
@@ -3252,7 +3219,9 @@ C
 #include "symm.inc"
 #include "onel.inc"
 #include "crun.inc"
-*
+C
+      IF( RUN_WO_T_BUFF ) RETURN
+C
 * for integral summation
       ISUMNEW = 1
 * for global purposes
@@ -3310,7 +3279,8 @@ C     write(6,*) '     *******************************************'
 *
       call itrctl(INTSPACE,ITRA_TYPE,INTITER,ENVIRO,
      &            ISPINFREE,IFOCKEX,NORB_F,NL2D,IUB2D,ISM2D,ISYM_T,
-     &            SIGDEN_ROUTE,F1,F2,T_BUFF,IBOSYM,MCSCF,CIRUN)
+     &            SIGDEN_ROUTE,F1,F2,T_BUFF,T_BUFF_D,IT_TTPL,IBOSYM,
+     &            MCSCF,CIRUN)
 *
       return
       end

@@ -866,27 +866,28 @@ C
 C     Initialization
 C     --------------
 C
-      MAXCIT   =    4
-      MXCIV    =    0
-      IOPTST   = 1515
-      KTRLVL   =    3
-      IKRMCCNO =  - 3
-      NCIROOT  =    1
-      IANACI   =    0
-      IRESTRK  =    0
-      IDOPARIO =    0
-      IMEMFAC  =    9
-      OPT_NOPFQ  = .FALSE.
-      OPT_NOFQX  = .FALSE.
-      NATONL     = .FALSE.
-      FOCKON     = .FALSE.
-      COMPROT    = .FALSE.
-      NATOLCR    = .FALSE.
-      CRDFO_MAT  = .FALSE.
-      CWRTFO_MAT = .FALSE.
-      CSHMEMO    = .FALSE.
-      CINT_REORD = .FALSE.
-      COMPFAC    = 0.01D00
+      MAXCIT      =    4
+      MXCIV       =    0
+      IOPTST      = 1515
+      KTRLVL      =    3
+      IKRMCCNO    =  - 3
+      NCIROOT     =    1
+      IANACI      =    0
+      IRESTRK     =    0
+      IDOPARIO    =    0
+      IMEMFAC     =    9
+      ISHMEM_TYPE =  - 1
+      OPT_NOPFQ   = .FALSE.
+      OPT_NOFQX   = .FALSE.
+      NATONL      = .FALSE.
+      FOCKON      = .FALSE.
+      COMPROT     = .FALSE.
+      NATOLCR     = .FALSE.
+      CRDFO_MAT   = .FALSE.
+      CWRTFO_MAT  = .FALSE.
+      CSHMEMO     = .FALSE.
+      CINT_REORD  = .FALSE.
+      COMPFAC     = 0.01D00
 C
 C
 C     Process input for *OPTIMIZE
@@ -1025,8 +1026,8 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
                   IF( IMEMFAC .LE. 0 ) THEN
                     WRITE(LUPRI,'(//3A,I6)')
      &                    '*** ERROR in ROPTINP *** ',
-     &                    ' Illegal multiplier for  
-     &                      subtracting scratch memory: ',
+     &                    ' Illegal multiplier for ',
+     &                    ' subtracting scratch memory: ',
      &                     IMEMFAC
                     CALL QUIT('*** ERROR in ROPTINP *** ' //
      &                    'Illegal memory multiplier')
@@ -1048,6 +1049,42 @@ C&&& .WRTFCK: write fock matrix in CI start guess module
    22          CONTINUE
 C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
                CSHMEMO = .TRUE.
+               READ(LUCMD,*) ISHMEM_TYPE
+#if !defined (VAR_MPI2)
+                  IF( CSHMEMO ) THEN
+                    WRITE(LUPRI,'(//3A)')
+     &                    '*** ERROR in ROPTINP *** ',
+     &                    ' shared memory calculations in sequential',
+     &                    ' mode are not permitted '
+                    CALL QUIT('*** ERROR in ROPTINP *** ' //
+     &                    ' sequential run but MPI routines requested')
+                  END IF
+#else
+                  IF( ISHMEM_TYPE .gt. 6 ) THEN
+                   WRITE(LUPRI,'(//A)')
+     &                ' *** ERROR in ROPTINP *** '  
+                   WRITE(LUPRI,'(//A)')
+     &                ' unknown shared memory run-level! '  
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 0: no shared memory in use'
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 1: sharing node-wise (ij|kl)'
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 2: sharing node-wise |C> '
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 3: sharing node-wise (ij|kl) + |C>'
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 4: sharing global (ij|kl) + node-wise |C>'
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 5: sharing global |C> + node-wise (ij|kl)'
+                   WRITE(LUPRI,'(A)')
+     &                ' LEVEL 6: sharing global (ij|kl) + |C> '
+                   WRITE(LUPRI,'(//A,I3)')
+     &                ' you asked for LEVEL ',ISHMEM_TYPE
+                    CALL QUIT('*** ERROR in ROPTINP *** ' //
+     &                    ' unknown shared memory run-level')
+                  END IF
+#endif
                GO TO 100
    23          CONTINUE
 C&&& .SHMEMO: do GAS-scheme specific integral reordering resp. use
@@ -1181,6 +1218,28 @@ C     no shared memory mode for non MPI-2 executables
       IF( CSHMEMO )THEN
         WRITE(LUPRI,'(A)') 
      &     ' * Running in parallel MPI-2 "shared memory" mode'
+        IF( ISHMEM_TYPE .eq. 0) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 0: disabling shared memory usage'
+        ELSE IF( ISHMEM_TYPE .eq. 1) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 1: sharing node-wise (ij|kl) '
+        ELSE IF(  ISHMEM_TYPE .eq. 2 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 2: sharing node-wise |C> vector'
+        ELSE IF(  ISHMEM_TYPE .eq. 3 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 3: sharing node-wise (ij|kl) + |C> vector'
+        ELSE IF(  ISHMEM_TYPE .eq. 4 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 4: sharing global (ij|kl) + node-wise |C>'
+        ELSE IF(  ISHMEM_TYPE .eq. 5 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 5: sharing global |C> + node-wise (ij|kl)'
+        ELSE IF(  ISHMEM_TYPE .eq. 6 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &     ' --> chosen level 6: sharing global (ij|kl) + |C> vector  '
+        END IF
       END IF
       IF( CINT_REORD )THEN
         WRITE(LUPRI,'(A)') 
