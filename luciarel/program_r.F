@@ -760,11 +760,11 @@ C
         call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
         call rewino(LUSC61)
         WRITE(LUWRT,*)
-        WRITE(LUWRT,'(1H ,A,I3)')
+        WRITE(LUWRT,'(A,I3)')
      &  ' ***************************************************'
-        WRITE(LUWRT,'(1H ,A,I3)')
+        WRITE(LUWRT,'(A,I3)')
      &  ' Analysis of Optimized Wave Function for ROOT = ',JROOT
-        WRITE(LUWRT,'(1H ,A,I3)')
+        WRITE(LUWRT,'(A,I3)')
      &  ' ***************************************************'
 C
         call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
@@ -1436,7 +1436,8 @@ C FIXME !!!
           call abend2('Quitting.')
         end if
         ISYM_T = 1
-        call set_hop_dbg(IHTYPE,IPRHAM)
+        NO_TTWO = 0
+        call set_hop_dbg(IHTYPE,NO_TTWO,IPRHAM)
       END IF
 *. Symmetry of reference
       IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
@@ -1799,7 +1800,7 @@ c         CALL FINMO_REL
 *. Change to upper case
 C          UPPCAS(LINE,LENGTH)
       CALL UPPCAS(CARD,MXPLNC)
-C?      WRITE(6,'(1H ,A,A)') ' Upper case form ', CARD
+C?      WRITE(6,'(A,A)') ' Upper case form ', CARD
       IF(CARD(1:1).EQ.'*'.OR.CARD(1:1).EQ.'#'.OR.
      &     CARD(1:1).EQ.'!') THEN
 *. Skip comment cards
@@ -1809,8 +1810,8 @@ C?      WRITE(6,'(1H ,A,A)') ' Upper case form ', CARD
          GOTO 1001
       ELSE IF(MOLCS.EQ.0.AND.CARD(1:1).NE.'.') THEN
 *. Line out of context
-         WRITE(LUOUT,'(1H ,A)') ' Warning, card out of context : '
-         WRITE(LUOUT,'(1H ,A)') CARD
+         WRITE(LUOUT,'(A)') ' Warning, card out of context : '
+         WRITE(LUOUT,'(A)') CARD
          NWARN = NWARN + 1
       ELSE IF(MOLCS.EQ.1.OR.CARD(1:1).EQ.'.') THEN
          IF(MOLCS.EQ.1) THEN
@@ -1887,7 +1888,7 @@ C?      WRITE(6,'(1H ,A,A)') ' Upper case form ', CARD
                   NIRREP = 2
                ELSE
                   WRITE(6,*) ' Unknown double group '
-                  WRITE(LUOUT,'(1H ,A)') CARD
+                  WRITE(LUOUT,'(A)') CARD
                   ISETKW(2) = -1
                   NERROR = NERROR + 1
                   NIRREP = 0
@@ -2048,7 +2049,7 @@ c       END IF
            ELSE
               ISETKW(5) = - 1
               WRITE(6,*) ' Illegal card for EXTSPC : '
-              WRITE(6,'(1H ,A)') CARD1
+              WRITE(6,'(A)') CARD1
               NERROR = NERROR + 1
            END IF
            GOTO 999
@@ -2196,7 +2197,7 @@ C!         READ(LUIN,*) MXER30
                READ(LUIN,*) XWCNF
             ELSE
                WRITE(LUOUT,*) ' Error : Illegal card in INTSEL :'
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(A)') CARD1
                ISETKW(15) = - 1
                NERROR = NERROR + 1
             END IF
@@ -2573,7 +2574,7 @@ C?       WRITE(6,'(A)') CARD1
 *.
             ELSE
                WRITE(LUOUT,*) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(A)') CARD1
                NERROR = NERROR + 1
             END IF
 * Zero order energy :
@@ -2592,7 +2593,7 @@ C?       WRITE(6,'(A)') CARD1
                WRITE(6,*) ' Zero order energy =',E0READ
             ELSE
                WRITE(6,*) ' Unknown form of zero order energy '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(A)') CARD1
                NERROR = NERROR + 1
             END IF
 *
@@ -2618,7 +2619,7 @@ C?       WRITE(6,'(A)') CARD1
                MPORENR = 2
             ELSE
                WRITE(LUOUT) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(A)') CARD1
                NERROR = NERROR + 1
             END IF
 *
@@ -2645,7 +2646,7 @@ C?       WRITE(6,'(A)') CARD1
                MPORENZ = 2
             ELSE
                WRITE(LUOUT) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(A)') CARD1
                NERROR = NERROR + 1
             END IF
             IAPRZER = 1
@@ -4586,7 +4587,7 @@ C       IDENSI = 1
 *
 *
       IF(NMISS.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A,I9)')
+        WRITE(LUOUT,'(A,I9)')
      &  ' Number of missing required keyword ', NMISS
         WRITE(LUOUT,*)
      &  ' You have wounded me I give up '
@@ -4641,43 +4642,43 @@ c     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
       WRITE(LUOUT,*) '************************'
       WRITE(LUOUT,*)
       IF(IDBGCI.EQ.0.AND.IRELACI.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Non-relativistic calculation in spatial pointgroup'
       ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Non-relativistic calculation in double group '
       ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Relativistic calculation in double group '
       ELSE IF(IDBGCI.EQ.0.AND.IRELACI.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Relativistic calculation in spatial pointgroup '
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     This is dangerous. You better think about it! '
       END IF
       IF(IRELACI.EQ.1) THEN
         IF(ISO1.EQ.1.AND.ISO2.EQ.1) then
           if (ENVIRO(1:6).eq.'DIRAC ') then
-            WRITE(LUOUT,'(1H ,A)')
+            WRITE(LUOUT,'(A)')
      &  '         Dirac-Coulomb operator '
           else
-            WRITE(LUOUT,'(1H ,A)')
+            WRITE(LUOUT,'(A)')
      &  '         One- and two- electron spin-orbit operator '
           end if
         end if
         IF(ISO1.EQ.1.AND.ISO2.EQ.0) then
           if (ENVIRO(1:6).ne.'DIRAC ') then
-            WRITE(LUOUT,'(1H ,A)')
+            WRITE(LUOUT,'(A)')
      &  '         One-electron spin-orbit (mean-field) operator '
           else
-            WRITE(LUOUT,'(1H ,A)')
+            WRITE(LUOUT,'(A)')
      &  '         Dirac-Coulomb Hamiltonian        '
           end if 
         end if
         if (ISO1.eq.0.and.ISO2.eq.0.and.ENVIRO(1:6).eq.'DIRAC ') then
-          write(LUOUT,'(1H ,A)')
+          write(LUOUT,'(A)')
      &  '         Dirac-Coulomb Hamiltonian        '
-          write(LUOUT,'(1H ,A)')
+          write(LUOUT,'(A)')
      &  '         Spinfree formalism               '
         end if
         if (ISO1.EQ.0.AND.ISO2.EQ.1) then
@@ -4687,23 +4688,23 @@ c     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
             write(6,*) 'This is relativistic theory!'
             call Abend2 ('Input error.')
           end if
-          WRITE(LUOUT,'(1H ,A)')
+          WRITE(LUOUT,'(A)')
      &  '         Two-electron spin-orbit operator '
         end if
       END IF
       if (IFOCKEX.eq.1) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '         Fock matrix gen. externally for inactive orbitals '
-        WRITE(LUOUT,'(1H ,A43,8I4)')
+        WRITE(LUOUT,'(A43,8I4)')
      &  '         Full orbital basis in symmetries: ',
      &            (NORB_F(ISYM),ISYM=1,NSMSH,1)
       end if
       if (INTIMP.eq.1) then
         if (ORBFILE) then
-          WRITE(LUOUT,'(1H ,A)')
+          WRITE(LUOUT,'(A)')
      &    '         MO vector read from formatted ASCII file INPORB '
       else
-          WRITE(LUOUT,'(1H ,A)')
+          WRITE(LUOUT,'(A)')
      &    '         MO vector read from RASSCF file JOBIPH          '
         end if
       end if
@@ -4716,77 +4717,77 @@ c     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
       WRITE(LUOUT,*)
 *. Point group
       IF(PNTGRP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ D2H'
       ELSE IF(PNTGRP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ C inf v'
       ELSE IF(PNTGRP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ D inf h'
       ELSE IF(PNTGRP.EQ.4) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ O3'
       ELSE IF(PNTGRP.EQ.5) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Double group ........... C1'
       ELSE IF(PNTGRP.EQ.6) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Double group ........... Ci'
       ELSE IF(PNTGRP.EQ.7) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Double group ........... Cs'
       ELSE IF(PNTGRP.EQ.8) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Double group ........... C2'
       ELSE IF(PNTGRP.EQ.9) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Double group ........... C2H'
       END IF
 *.Spatial symmetry
       IF(PNTGRP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     Spatial symmetry ....... ', IREFSM
       ELSE IF(PNTGRP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
       ELSE IF(PNTGRP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
-        IF(IREFPA.EQ.1) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.1) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Gerade'
-        IF(IREFPA.EQ.2) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.2) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Ungerade'
       ELSE IF(PNTGRP.EQ.4) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     L  value ............... ', IREFL
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
-        IF(IREFPA.EQ.1) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.1) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Gerade'
-        IF(IREFPA.EQ.2) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.2) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Ungerade'
        ELSE IF(PNTGRP.GE.5.AND.PNTGRP.LE.9) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     Double group symmetry... ', IREFSM
       END IF
 *.Spin
       WRITE(LUOUT,*)
       IF(IRELACI.EQ.0.AND.IDBGCI.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &    '     2 times spinprojection  ', MS2
-c       WRITE(LUOUT,'(1H ,A,I2)')
+c       WRITE(LUOUT,'(A,I2)')
 c    &    '     Spin multiplicity ....  ', MULTS
       ELSE
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &    '     2*reference value of MK ', MK2REF
-        WRITE(LUOUT,'(1H ,A,I2,A,I2)')
+        WRITE(LUOUT,'(A,I2,A,I2)')
      &    '     Allowed interval of MK2 ',
      &          MK2REF-MK2DEL,' to ', MK2REF+MK2DEL
         WRITE(6,*)
       END IF
 *.Number of active electrons
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '     Active electrons .....  ', NACTEL
       WRITE(LUOUT,*)
       WRITE(LUOUT,*) '*********************************************'
@@ -4798,56 +4799,56 @@ c    &    '     Spin multiplicity ....  ', MULTS
 *
 *. NOT a GAS expansion, NOT IN USE !!!!!
 *
-      WRITE(LUOUT,'(1H ,A,10I4)')
+      WRITE(LUOUT,'(A,10I4)')
      &  '                Irrep ',(I,I = 1,NSMSH)
-      WRITE(LUOUT,'(1H ,A,2X,10A)')
+      WRITE(LUOUT,'(A,2X,10A)')
      &  '                ===== ',('====',I = 1,NSMSH)
 *
 *. Inactive
       IF(ISETKW(7).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Inactive         ',(NINASH(I),I=1,NSMSH)
       END IF
 *. Core
       IF(ISETKW(8).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Core             ',(NRS0SH(I,1),I=1,NSMSH)
       END IF
 *. RAS1
       IF(ISETKW(9).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Ras1             ',(NRSSH(I,1),I=1,NSMSH)
       END IF
 *. RAS2/ACTIVE
       IF(ISETKW(10).EQ.1) THEN
         IF(INTSPC.EQ.1) THEN
-          WRITE(LUOUT,'(1H ,A,10I4)')
+          WRITE(LUOUT,'(A,10I4)')
      &  '     Active           ',(NRSSH(I,2),I=1,NSMSH)
         ELSE IF(INTSPC.EQ.2) THEN
-          WRITE(LUOUT,'(1H ,A,10I4)')
+          WRITE(LUOUT,'(A,10I4)')
      &  '     Ras2             ',(NRSSH(I,2),I=1,NSMSH)
         END IF
       END IF
 *. RAS3
       IF(ISETKW(11).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Ras3             ',(NRSSH(I,3),I=1,NSMSH)
       END IF
-      IF(INTSPC.EQ.2.AND.IMLCR3.EQ.1) WRITE(LUOUT,'(1H ,A)')
+      IF(INTSPC.EQ.2.AND.IMLCR3.EQ.1) WRITE(LUOUT,'(A)')
      &  '     ( RAS 3 space supplied by courtesy of TRAONE )'
 *. Secondary space
       IF(ISETKW(13).EQ.1) THEN
         DO 310 ITP = 1,MXR4TP
-          WRITE(LUOUT,'(1H ,A,I2,A,10I4)')
+          WRITE(LUOUT,'(A,I2,A,10I4)')
      &  '     Secondary',ITP,'      ',(NRS4SH(I,ITP),I=1,NSMSH)
   310   CONTINUE
       END IF
 *. Deleted space
       IF(ISETKW(26).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Deleted          ',(NDELSH(I),I=1,NSMSH)
       END IF
-      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(1H ,A)')
+      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(A)')
      &  '     ( Deleted shells supplied by courtesy of TRAONE )'
 *. Occupation constraints
 
@@ -4856,16 +4857,16 @@ c    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUOUT,*)
         IFRST = 1
         IF(ISETKW(9).EQ.1) THEN
-         WRITE(LUOUT,'(1H ,A,I2)')
+         WRITE(LUOUT,'(A,I2)')
      &  '     Zero order space, Minimal occupation in Ras1 .. ',MNRS10
          IFRST = 0
         END IF
         IF(ISETKW(11).EQ.1) THEN
           IF(IFRST.EQ.1) THEN
-            WRITE(LUOUT,'(1H ,A,I2)')
+            WRITE(LUOUT,'(A,I2)')
      &  '     Zero order space, Maximal occupation in Ras3 .. ',MXRS30
           ELSE
-            WRITE(LUOUT,'(1H ,A,I2)')
+            WRITE(LUOUT,'(A,I2)')
      &  '                       Maximal occupation in Ras3 .. ',MXRS30
           END IF
         END IF
@@ -4873,16 +4874,16 @@ c    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUOUT,*)
         IFRST = 1
         IF(ISETKW(9).EQ.1) THEN
-         WRITE(LUOUT,'(1H ,A,I2)')
+         WRITE(LUOUT,'(A,I2)')
      &  '     Reference  space, Minimal occupation in Ras1 .. ',MNRS1R
          IFRST = 0
         END IF
         IF(ISETKW(11).EQ.1) THEN
           IF(IFRST.EQ.1) THEN
-            WRITE(LUOUT,'(1H ,A,I2)')
+            WRITE(LUOUT,'(A,I2)')
      &  '     Reference  space, Maximal occupation in Ras3 .. ',MXRS3R
           ELSE
-            WRITE(LUOUT,'(1H ,A,I2)')
+            WRITE(LUOUT,'(A,I2)')
      &  '                       Maximal occupation in Ras3 .. ',MXRS3R
           END IF
         END IF
@@ -4890,12 +4891,12 @@ c    &    '     Spin multiplicity ....  ', MULTS
 *.Core space
       WRITE(LUOUT,*)
       IF(ISETKW(8).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &  '     Largest number of excitations out of core .....   ',MXHR0
       END IF
 *.Secondary space
       IF(ISETKW(13).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &  '     Largest number of excitations to secondary space  ',MXER4
       END IF
 
@@ -4917,9 +4918,9 @@ c    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUOUT,'(A)')
      &  ' ========================================='
       END IF
-      WRITE(LUOUT,'(1H ,A,10I4,A)')
+      WRITE(LUOUT,'(A,10I4,A)')
      &  '                Irrep ',(I,I = 1,NSMSH)
-      WRITE(LUOUT,'(1H ,A,2X,10A,A)')
+      WRITE(LUOUT,'(A,2X,10A,A)')
      &  '                ===== ',('====',I = 1,NSMSH )
       DO IGAS = 1, NGAS
         WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -5012,9 +5013,9 @@ c    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUOUT,*) '*  Roots  *'
       WRITE(LUOUT,*) '*********** '
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,A,I3)')
+      WRITE(LUOUT,'(A,I3)')
      &  '     Number of roots to be obtained ', NROOT
-      WRITE(LUOUT,'(1H ,A,(20I3))')
+      WRITE(LUOUT,'(A,(20I3))')
      &  '     Roots to be obtained ', (IROOT(I),I=1, NROOT )
 *
       WRITE(LUOUT,*)
@@ -5026,115 +5027,115 @@ c    &    '     Spin multiplicity ....  ', MULTS
       WRITE(6,'(A,A6)') '      Program environment... ', ENVIRO
 *. Integral transformation
       IF(ITRANS.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     Initial integral transformation, level = ', ITRANS
       END IF
 *. Initial spinor transformation
       IF(ISPEXP_INI.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Initial spinor expansion obtained from MO expansion'
       ELSE IF (ISPEXP_INI.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Initial spinor expansion read in '
       else if (ISPEXP_INI.eq.3) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Reading integrals over transformed spinors. '
       END IF
 *. No. of particle Hamiltonian
       if (IPARHAM.eq.1) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Only 1-particle Hamiltonian under consideration '
       else if (IPARHAM.eq.2) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Full 1- and 2-particle Hamiltonian active       '
       else if (IPARHAM.eq.3) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Only 2-particle Hamiltonian under consideration '
       end if
 *. Integral import
       IF(NOINT.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No integrals will be read in       '
       ELSE IF(NOINT.EQ.0) THEN
       IF(INTIMP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in MOLCAS format '
       ELSE IF(INTIMP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in LUCAS format '
       ELSE IF(INTIMP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in formatted form (E22.15) ',
      &  '      From unit 13'
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     All integrals of correct symmetry combination read in'
       ELSE IF(INTIMP.EQ.5) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in DALTON/SIRIUS format '
       else if (INTIMP.eq.6) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in DIRAC format '
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '       Dirac-Coulomb Hamiltonian curr. assumed '
       else if (INTIMP.eq.8) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in MOLECULE-SWEDEN format '
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     one-electron ints from unit 2, transformation '
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     spin-orbit ints from SOMFINT_*, trafo '
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     two-electron ints from unit 13, transformed '
       END IF
 *. Integral storage
-      IF(INCORE.EQ.1) WRITE(LUOUT,'(1H ,A)')
+      IF(INCORE.EQ.1) WRITE(LUOUT,'(A)')
      &  '     All integrals stored in core'
       END IF
       WRITE(LUOUT,*)
 * ( END IF for NOINT
 *. CSF or SD expansion
       IF(NOCSF.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     CI optimization performed with CSF''s '
       ELSE
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     CI optimization performed with SD''s '
       END IF
 *. Ms,Ml combinations
       IF(ISETKW(27).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,F8.3)')
+        WRITE(LUOUT,'(A,F8.3)')
      &  '     Spin combinations used with sign ',PSSIGN
       END IF
       IF(ISETKW(28).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,F8.3)')
+        WRITE(LUOUT,'(A,F8.3)')
      &  '     ML   combinations used with sign ',PLSIGN
       END IF
 *. Initial approximation to vectors
       WRITE(LUOUT,*)
       IF(IRESTR.EQ.1.AND.IRESTRF.EQ.0) THEN
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &  '     Restarted calculation '
       ELSE IF(IRESTRF.EQ.1) THEN
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &  '     Restarted calculation from REFERENCE space expansion'
       ELSE
          IF(MXP1.NE.0) THEN
-           WRITE(LUOUT,'(1H ,A)')
+           WRITE(LUOUT,'(A)')
      &  '     Initial vectors obtained from explicit Hamiltonian'
          ELSE IF(MXP1.EQ.0) THEN
-           WRITE(LUOUT,'(1H ,A)')
+           WRITE(LUOUT,'(A)')
      &  '     Initial vectors obtained from diagonal'
          END IF
       END IF
 *. Handling of degeneracies of initial vectors
       IF(INIDEG.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Symmetric combination of degenerate initial vectors'
       ELSE IF (INIDEG.EQ.-1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Antisymmetric combination of degenerate initial vectors'
       ELSE IF (INIDEG.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No combination of degenerate initial vectors'
       END IF
 *. CI storage mode
@@ -5155,112 +5156,116 @@ c    &    '     Spin multiplicity ....  ', MULTS
       END IF
       IF(LCSBLK.NE.0) WRITE(6,'(A,I10)')
      &  '      Smallest allowed size of sigma- and C-batch ',LCSBLK
-      WRITE(LUOUT,'(1H ,A,I4)')
+      WRITE(LUOUT,'(A,I4)')
      &  '     Dimension of block of resolution strings ', MXINKA
       IF(ICJKAIB.EQ.1) THEN
         WRITE(6,*)
      &  '     C(Ka,Jb,j) matrices will be used in alpha-beta loop '
       END IF
-      IF(MOCAA.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+      IF(MOCAA.NE.0) WRITE(LUOUT,'(A,I4)')
      &  '     MOC method used for alpha-alpha+beta-beta loop '
-      IF(MOCAB.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+      IF(MOCAB.NE.0) WRITE(LUOUT,'(A,I4)')
      &  '     MOC method used for alpha-beta loop            '
 *
       WRITE(LUOUT,*)
       IF(IDENSI.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No calculation of density matrices  '
       ELSE IF(IDENSI.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     One-body density matrix calculated '
       ELSE IF(IDENSI.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     One- and two-body density matrices  calculated '
       else if (IDENSI.eq.3) then
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Spin-dependent one-body density matrix calculated '
-        WRITE(LUOUT,'(1H ,A)')
+      else if (IDENSI.eq.4) then
+        WRITE(LUOUT,'(A)')
      &  '     Spin-dependent one- and two-body densities
      &        calculated '
+      else
+        WRITE(LUOUT,'(A,I15)')
+     &  '     Unknown code for density matrices :',IDENSI
       END IF
 *
 *
 *. Diagonalization information
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '     CI diagonalization : '
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '     ==================== '
 *. Subspace Hamiltonian
       IF(MXP1+MXP2+MXQ .EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '        No subspace Hamiltonian '
       ELSE
-        WRITE(LUOUT,'(1H ,A,3I4)')
+        WRITE(LUOUT,'(A,3I4)')
      &  '        Dimensions of subspace Hamiltonian ',MXP1,MXP2,MXQ
       END IF
 *. Diagonalizer
       IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : MINDV4 '
       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : MICDV4 '
       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.3) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : CMICDV '
       ELSE IF(IDIAG.EQ.2) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        Diagonalizer : PICO2  '
       END IF
 *. No restart in CI calc 2
       IF(IRST2.EQ.0) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        No restart from previous vectors in second calc '
       END IF
       IF(ISKIPEI.EQ.1) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        Initial energy evaluations skipped after first calc'
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        (Only active in connection with TERACI )'
       END IF
 *
 *
 *
 *. Number of iterations
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUOUT,'(1H ,A,E11.5)')
+      WRITE(LUOUT,'(A,E11.5)')
      &  '        Convergence threshold for energy',THRES_E
       WRITE(6,*)
       IF(IDIAG.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,E11.5)')
+        WRITE(LUOUT,'(A,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
-        WRITE(LUOUT,'(1H ,A,E11.5)')
+        WRITE(LUOUT,'(A,E11.5)')
      &   '        Individual first order wavefunction threshold ',C_THRE
         IF(ICLSSEL.EQ.1) THEN
          WRITE(LUOUT,*)
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &   '         Class selection will be performed : '
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &   '         =================================== '
-         WRITE(LUOUT,'(1H ,A,E11.5)')
+         WRITE(LUOUT,'(A,E11.5)')
      &    '          Total second order energy threshold ',E_CONV
-         WRITE(LUOUT,'(1H ,A,E11.5)')
+         WRITE(LUOUT,'(A,E11.5)')
      &    '          Total first order wavefunction threshold ',C_CONV
         ELSE
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &'            No class selection in iterative procedure '
         END IF
       END IF
 *
       IF(IPERT.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '     Perturbation calculation'
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     ======================= '
         WRITE(6,*)
      &  '        Root Choosen as zero order state ', IRFROOT
@@ -5413,81 +5418,81 @@ COLD &     ' ====================================================== '
 *. Print levels
 *
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,A)')  '     Print levels : '
+      WRITE(LUOUT,'(A)')  '     Print levels : '
       IF(ISETKW(29).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for string    information = ', IPRSTR
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for string    information = ', IPRSTR
       END IF
       IF(ISETKW(95).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for wave function info    = ', IPRWFC
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for wave function info    = ', IPRWFC
       END IF
       IF(ISETKW(30).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for CI space  information = ', IPRCIX
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for CI space  information = ', IPRCIX
       END IF
       IF(ISETKW(31).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for orbital   information = ', IPRORB
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for orbital   information = ', IPRORB
       END IF
       IF(ISETKW(65).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for density matrix        = ', IPRDEN
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for density matrix        = ', IPRDEN
       END IF
       IF(ISETKW(32).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for iterative information = ', IPRDIA
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for iterative information = ', IPRDIA
       END IF
       IF(ISETKW(36).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for External blocks       = ', IPRXT
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for External blocks       = ', IPRXT
       END IF
       IF(ISETKW(89).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for transformation info   = ', IPRTRA
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for transformation info   = ', IPRTRA
       END IF
       IF(ISETKW(90).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for sigma vector info   = ', IPRSIG
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for sigma vector info   = ', IPRSIG
       END IF
 *
       IF(IPROCC.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Occupation of SD''s/ configurations           = ',IPROCC
       END IF
 *
-      IF(MOLCS.EQ.1) WRITE(LUOUT,'(1H ,A,E18.9)')
+      IF(MOLCS.EQ.1) WRITE(LUOUT,'(A,E18.9)')
      &  '      Core energy : ', ECORE
 *
       IF(IDMPIN.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
         WRITE(6,*) ' Integrals written in formatted form (E22.15)'
         WRITE(6,*) ' on file 90 '
       END IF
@@ -5505,100 +5510,100 @@ COLD &     ' ====================================================== '
 *
 * Introduce LUCIAREL
 *
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'****************************************************************'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*                                                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*           Welcome to LUCIAREL, a direct relativistic         *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*                                CI program                    *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*                                                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'* LUCIA written by Jeppe Olsen, University of Lund, Sweden     *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'* Relativistic CI version by Timo Fleig and Jeppe Olsen        *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    - Double group symmetry implemented: JO and TF            *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    - Time-reversal symmetry implemented: JO and TF           *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    - Integral transformation section (one-el, spin-orbit): TF*'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    - Integral transformation section (two-el): JO and TF     *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*                                                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'* V 2.0                                                        *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'* Version of November 2000                                     *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.0       R-GAS-CI                                         *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.1       MOLCAS version                                   *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.2       External Fock matrices from MOTRA in use         *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.3       Density matrices can be obtained                 *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*             (Implement C_1, C_i, and C_2h)                   *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    1.3.1     Integral transformation section generalized     *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.4       Resolution matrix batching active                *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.5       Analysis of optimized CI vectors possible        *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.6       Quaternionic and complex double groups active    *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.7       MOLCAS 5.0 version (input section changed)       *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    1.7.1     Abend calls for parallel runs included          *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    1.7.2     SEWARD-AMFI calls implemented for MOLCAS4.3 - 5.*'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   1.8       DIRAC 4-component version                        *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    1.8.1     Spinfree formalism (Dyall, 1993) implemented    *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*    1.8.2     Full spin-dependent formalism part. implemented *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*                    ------------                              *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*   2.0       Version for relativistic MCSCF                   *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'*              General sigma and density (from CC) implemented *'
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &'****************************************************************'
 *
       WRITE(6,*)
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
      &' In case of trouble please contact : '
       WRITE(6,*)
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' Timo Fleig, Theoretical Chemistry, Faculty of Sciences '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' Free University of Amsterdam                   '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' De Boelelaan 1083, NL-1081 HV Amsterdam, NL    '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' Telephone : +31 20 44 47627 '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' E-mail : fleig@chem.vu.nl '
       WRITE(6,*)
      &' or : '
       WRITE(6,*)
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' Jeppe Olsen, Teoretisk Kemi, Aarhus Universitet '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' Langelandsgade 140, DK-8000 Aarhus C '
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &' E-mail : jeppe@signe.teokem.lu.se  or'
-      WRITE(6,'(1H ,12X,2A)')
+      WRITE(6,'(12X,2A)')
      &'          jeppe@aausgi.uni-c.dk'
       WRITE(6,*)
-      WRITE(6,'(1H ,8X,A)')
+      WRITE(6,'(8X,A)')
       write(6,*)
       write(6,*)
       write(6,*) '-----------------------------------'

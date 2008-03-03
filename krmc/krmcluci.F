@@ -1996,7 +1996,13 @@ C           Dirac-Coulomb case.
             call abend2('Quitting.')
           end if
           ISYM_T = 1
-          call set_hop_dbg(IHTYPE,IPRHAM)
+          IF (CIRUN .EQ. 'DENS1 ' .or. CIRUN .EQ. 'VOPER1') THEN
+             NO_TTWO = 1
+C            ... no two-electron excitations
+          ELSE
+             NO_TTWO = 0
+          END IF
+          call set_hop_dbg(IHTYPE,NO_TTWO,IPRHAM)
         end if
 C       ^ end if SIGDEN_ROUTE
 C

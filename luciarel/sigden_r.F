@@ -561,16 +561,17 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
+      SUBROUTINE GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,IHINDX,
      &                       SIGN_NHX,I2DIATP,LABEL,IOP_REO,SIGN_OPREO,
      &                       IPRNT)
 *
 * Obtain number (IFLAG = 1) 
-* or number and types (IFLAG.NE.1) of excitations in 
-* relativistic Hamiltonian 
+* or number and types (IFLAG.NE.1) of excitations in relativistic Hamiltonian 
 *
 *--------------------------------
+* Hans Joergen Aa. Jensen and Stefan Knecht Mar 2008
+*   NO_TTWO.gt.0 for only one-electron terms
 * Jeppe Olsen and Timo Fleig
 *   March/April 2001
 * Orbital and electron number limitations
@@ -725,6 +726,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *                       1-electron and 2-electron integrals:
       IFTONE = 1
       IFTTWO = NHX + 1
+      IF (NO_TTWO .GT. 0) GOTO 200
 *
 * operator:
 *. a+i alpha  a+j alpha  a k alpha  a l alpha, ordered so i.ge.j, k.ge.l
@@ -860,7 +862,9 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
       END DO
 *
 * First type of integrals for 2-electron diagonal
-      I2DIATP = NHX + 1
+  200 I2DIATP = NHX + 1
+      IF (NO_TTWO .GT. 0) GO TO 300
+C     ... skip next set of two-electron terms
 *
 * operator:
 *. a+i alpha  a+j beta  a k beta  a l alpha
@@ -965,7 +969,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
       end if
 *
 * Last type of non-spin-flip integrals
-      ILTTWO = NHX
+  300 ILTTWO = NHX
 *
 * one-electron spin orbit
 *
@@ -1049,6 +1053,8 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *
 * Two-electron terms with Delta mk .ne. 0
 *
+      if (NO_TTWO .eq. 0) THEN
+*         include two-electron terms when NO_TTWO .gt. 0
       if (IHTYPE.eq.3.or.IHTYPE.eq.5) THEN
 *
 **********************************************************
@@ -1270,6 +1276,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
         END DO
 *
       end if
+*     end if (IHTYPE.eq.3.or.IHTYPE.eq.5)
 *
 **********************************************************
 *  Spin-dependent spinor basis. E.g. DIRAC environment   *
@@ -1406,6 +1413,10 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
           END DO
         END DO
       end if
+*     end if (IHTYPE .eq. 4)
+*
+      end if
+*     end if (NO_TTWO .gt. 0)
 *
       if (IFLAG.ne.1.and.NTEST.ge.50) then
         do I=1,NHX
@@ -2912,7 +2923,7 @@ C     INTEGER JGRP(MXPNGAS)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SET_HOP_DBG(IHTYPE,IPRNT)
+      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,IPRNT)
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -2921,8 +2932,9 @@ C     INTEGER JGRP(MXPNGAS)
 *     IHTYPE = 1 : Include only Delta MK = 0 terms
 *     IHTYPE = 2 : Include Delta Mk = 0 for two-electron part
 *                  and complete one-electron part
-*     IHTYPE = 3 : Include all terms for general relativistic
-*     Hamiltonian
+*     IHTYPE = 3 : Include all terms for general relativistic Hamiltonian
+*
+*     NO_TTWO .gt. 0 : do not include two-electron terms
 *
 *     added INTEGER*8 adaption: S. Knecht - Nov. 2007
 *
@@ -2952,7 +2964,7 @@ C     number of spin-orbital exctation operators in H
 C
       call memmar(KLSOBEX_TEMP,4*NGAS,'ADDS  ',1,'SPOBET')
       IFLAG = 1
-      CALL GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
+      CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 IPRNT)
@@ -2967,7 +2979,7 @@ C
       call memmar(KLOP_REO,    4*NSPOBEX_TP,'ADDS  ',1,'OP_REO')
       call memmar(KSIOPREO,      NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
       IFLAG = 0
-      CALL GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
+      CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),

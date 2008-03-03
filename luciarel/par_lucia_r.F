@@ -1167,6 +1167,11 @@ C
       IT_ACTIVE_I  = 0
       STORE_BLK_INFO = .TRUE.
 C
+C     set mark for local memory
+C
+      IDUM = 0
+      CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'BLOCKD')
+C
 C
 C     calculate number of 'active blocks'
       I_NZERO_LEN_SCR = 0
@@ -1194,7 +1199,7 @@ C
         INQUIRE(FILE=PLUBL_INFOL(1:IBLINFO_FILE),EXIST=EX)
       END IF
 C
-C     tell nodes whether file exists or not
+C     bcast information whether file exists or not
 C
       CALL MPI_BCAST(EX,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
 C
@@ -1301,17 +1306,15 @@ C
         END IF
 C
         IWRITE_T_DIST = 0
-        IF( IT_SHL .ge. 0 .and. IT_INFO_INC .eq. 0 ) THEN 
+        IF( IT_SHL .ge. 0 .and. IT_INFO_INC .ge. 0 ) THEN 
           IWRITE_T_DIST = 1
+          GOTO 50
+        ELSE IF( IT_SHL .ge. 0 .and. IT_INFO_INC .lt. 0 )THEN
           GOTO 50
         END IF
         GOTO 100
       END IF
-C
-C     set mark for local memory
-C
-      IDUM = 0
-      CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'BLOCKD')
+ 33   CONTINUE
 C
 C     initialize also RCCTOS 
       CALL ISETVC(RCCTOS,NNULL,NDIM)
@@ -1380,7 +1383,9 @@ csk        CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
         CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,ICOUNTABLK_C,
      &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 csk        WRITE(LUWRT,*) ' (write) active C blocks',ICOUNTABLK_C
-        IT_INFO_INC = 1
+        IT_INFO_INC =  - 1
+C       set to - 1 for compability with one-electron operator calls
+C       SK - Mar 2008
         IF( IT_SHL .eq. - 1 ) IT_INFO_INC = 0
         IOFFSET     = IOFFSET + IWRITE_BYTE
         IS_BYTE8    = ISIZE_my_int
@@ -1393,12 +1398,6 @@ C
       END IF
 C
  50   CONTINUE
-C
-C     flush local memory
-C
-      IDUM = 0
-      CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
-C
       IF( SHARED_M ) THEN
         IF( IT_SHL .ge. 0 )THEN
 C
@@ -1528,6 +1527,11 @@ C         release scratch memory
       END IF
 C
 100   CONTINUE
+C
+C     flush local memory
+C
+      IDUM = 0
+      CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
 C
       END
 ***********************************************************************
