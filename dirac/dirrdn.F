@@ -3412,9 +3412,9 @@ C
       IPRCMP    = 1
       DO I = 1,NFSYM
         VECPRI(I) = ' '
-        IF(NOCC(I).EQ.0) THEN
+        IF(NOCC(I).EQ.1) THEN
           WRITE(VECPRI(I),'(I1)') 1
-        ELSEIF(NOCC(I).GT.0) THEN
+        ELSEIF(NOCC(I).GT.1) THEN
           WRITE(VECPRI(I),'(I1,A2,I4)') 1,'..',NOCC(I)
         ENDIF
       ENDDO
