@@ -1600,6 +1600,9 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *  correct symmetry . Nk is provided by this routine.
 *
 CTF   DIMENSION IOFFI(LOFFI)
+*     set mark for local memory
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'ADSTN ')
       call memman(KLOFFI,LOFFI,'ADDL',1,'LLOFFI')
 *
       CALL QENTER('ADSTN ')
@@ -1887,7 +1890,10 @@ C?      write(6,*) ' KACGRP ', KACGRP
         END IF
       END IF
 *
-      call memman(KLOFFI,LOFFI,'FREE',1,'LLOFFI')
+csk   call memman(KLOFFI,LOFFI,'FREE',1,'LLOFFI')
+*     eliminate local memory
+      CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'DENSI ')
+
       CALL QEXIT('ADSTN ')
       RETURN
       END
