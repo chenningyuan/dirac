@@ -649,7 +649,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,WORK,KFREE,LFREE)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -672,6 +672,7 @@ C***********************************************************************
 #include "dcbgen.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
+      LOGICAL NOZG
 C
       CALL QENTER('MP2_NATORB')
 C
@@ -700,7 +701,7 @@ C
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
-      CALL ADD_TWO_FOCK(DMO,NOPRNT)
+      CALL ADD_TWO_FOCK(DMO,NOZG,NOPRNT)
 C
 C     calculate NO occ. num. 
 C     ----------------------
@@ -828,7 +829,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADD_TWO_FOCK(DMO,NOPRNT)
+      SUBROUTINE ADD_TWO_FOCK(DMO,NOZG,NOPRNT)
 C***********************************************************************
 C
 C     build proper diagonal part in second order density matrix DMO
@@ -850,6 +851,7 @@ C***********************************************************************
 #include "../moltra/dcbtr3.h"
 C
       DIMENSION DMO(NORBT,NORBT,*)
+      LOGICAL NOZG
 C
       D2 = 2.0D0
 C
@@ -870,9 +872,11 @@ C       zero 'wrong' offdiagonal terms for frozen orbs
 C
 CSK        WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
 C
-        DO IZ = 1, NZ
-          CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
-        END DO
+        IF( .NOT. NOZG )THEN
+          DO IZ = 1, NZ
+            CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
+          END DO
+        END IF
 C
         IOCC_A = 0
         DO I = 1, NOCC(IFSYM)
