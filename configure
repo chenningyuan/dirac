@@ -645,7 +645,7 @@ fi
 #        fi
 #    done
 #    IFS="$ac_save_ifs"
-#    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
+#    test -z5D "$ac_cv_prog_F77" && ac_cv_prog_F77=""
 #    F77="$ac_cv_prog_F77"
 #    if test -n "$F77"; then
 #        echo
@@ -1061,7 +1061,8 @@ else
     paropibm=
 fi
 
-INCLUDE_DIR=include
+INCLUDE_DIR=\$\(INSTALLDIR\)\/include
+MODULE_DIR=\$\(INSTALLDIR\)\/modules
 arflag=
 case $machine in
 #
@@ -1325,6 +1326,7 @@ case $machine in
       case "$F77real" in
       g95)
          opt="-O3 -ffast-math -Wno=155"
+	 mod="-fmod=$MODULE_DIR"
          ;;
       g77|f77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
@@ -1347,15 +1349,18 @@ case $machine in
          esac
          c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
          opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+	 mod="-J$MODULE_DIR"
          ;;
       pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
+	 mod="-module $MODULE_DIR" 
          ;;
       ifc)
          opt="-O3 -ip -w"
          ccp="$ccp -DVAR_IFC"
          ldflag="-O3 -ip"
+	 mod="-module $MODULE_DIR"
 # ifc is old, so print a warning
          echo
          echo WARNING: 
@@ -1367,10 +1372,12 @@ case $machine in
          opt="-O3 -ip -w -assume byterecl"
          ccp="$ccp -DVAR_IFC"
          ldflag="-nofor_main"
+	 mod="-module $MODULE_DIR"
          ;;
       pathf90)
          ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
          ccp="$ccp -DVAR_EKO"
+	 mod="-module $MODULE_DIR"
          ;;
       esac
 
@@ -1496,6 +1503,7 @@ case $machine in
       case "$F77real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -i8"
+	 mod="-fmod=$MODULE_DIR"
          ;;
       g77|f77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
@@ -1517,15 +1525,18 @@ case $machine in
          esac
          c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
          opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fdefault-integer-8"
+	 mod="-J$MODULE_DIR"
          ;;
       pgf90|pgf77)
          opt="-fastsse -i8"
          ccp="$ccp -DVAR_PGCC"
+	 mod="-module $MODULE_DIR" 
          ;;
       ifc)
          opt="-O3 -ip -w -i8"
          ccp="$ccp -DVAR_IFC"
          ldflag="-O3 -ip"
+	 mod="-module $MODULE_DIR"
 # ifc is old, so print a warning
          echo
          echo WARNING: 
@@ -1537,11 +1548,13 @@ case $machine in
          opt="-O3 -ip -w -assume byterecl -i8"
          ccp="$ccp -DVAR_IFC"
          ldflag="-nofor_main"
+	 mod="-module $MODULE_DIR"
          ;;
       pathf90)
 	   opt="-i8"
          ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
          ccp="$ccp -DVAR_EKO"
+	 mod="-module $MODULE_DIR"
          ;;
       esac
 
@@ -1630,7 +1643,8 @@ case $machine in
 # If we are using mpif77/mpif90/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-      case "$F77" in
+      
+case "$F77" in
       mpif*)
          if "$F77" -show >&/dev/null; then
             # MPICH
@@ -1664,6 +1678,7 @@ case $machine in
       case "$F77real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -i8"
+	 mod="-fmod=$MODULE_DIR"
          ;;
       g77|f77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
@@ -1678,7 +1693,8 @@ case $machine in
       pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
-         ;;
+	 mod="-module $MODULE_DIR" 
+        ;;
       gfortran)
          gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
          echo "gfortran version $gfver prc=$prc"
@@ -1691,11 +1707,13 @@ case $machine in
          esac
          c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
          opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fdefault-integer-8"
+	 mod="-J$MODULE_DIR"
          ;;
       ifc)
          opt="-O3 -ip -w -i8"
          ccp="$ccp -DVAR_IFC"
          ldflag="-O3 -ip"
+	 mod="-module $MODULE_DIR"
 # ifc is old, so print a warning
          echo
          echo WARNING: 
@@ -1707,10 +1725,12 @@ case $machine in
          opt="-O3 -ip -w  -assume byterecl -i8"
          ccp="$ccp -DVAR_IFC"
          ldflag="-nofor_main"
+	 mod="-module $MODULE_DIR"
          ;;
       pathf90)
          ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium -i8"
          ccp="$ccp -DVAR_EKO"
+	 mod="-module $MODULE_DIR"
          ;;
       esac
 
@@ -1783,6 +1803,7 @@ case $machine in
       g95)
          opt='-O3 -ffast-math -Wno=155'
 	 c_opt='-O3'
+	 mod="-fmod=$MODULE_DIR"
          ;;
       g77)
          opt='-O2 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
@@ -1795,6 +1816,7 @@ case $machine in
       xlf)
          opt='-O2 -qextname'
          c_opt='-O2'
+	 mod="-qmoddir=$MODULE_DIR"
          ;;
       esac
       inc="-I$INCLUDE_DIR";;
@@ -1834,7 +1856,7 @@ else
    depend_flags=`echo $cpp $inc $parinc | sed -e 's/,/\ /g'`
 fi
 ##### 
-   depend_flags="$depend_flags -Imodules"
+#   depend_flags="$depend_flags -module $MODULE_DIR"
 #####
 #
 #  Check for special C-directives
@@ -1867,7 +1889,9 @@ cat <<EOF > Makefile.config
 ARCH        = $guess
 #
 #
+INSTALLDIR  = $INSTALL_DIR
 WRKMEM      = $memsiz
+INCLUDE_DIR = $inc -I$MODULE_DIR
 DEPEND_FLAGS= $depend_flags 
 CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
@@ -1882,8 +1906,8 @@ ARFLAGS     = $arflag
 EOF
 fi
 cat <<EOF >> Makefile.config
-OPTFLAGS    = $opt
-OPTGFLAGS   = -g $opt
+OPTFLAGS    = $opt $mod
+OPTGFLAGS   = -g $opt $mod 
 OPTIFLAGS   = -E
 C_OPTFLAGS  = $c_opt
 LDFLAGS     = $ldflag
@@ -1893,10 +1917,8 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #INCLUDE_DIR = $inc
-INCLUDE_DIR = $inc -Imodules
 C_INCLUDE_DIR = $c_inc
 LIB_LIST    = $LIB
-INSTALLDIR  = $INSTALL_DIR
 #
 default : $def
 EOF
@@ -1924,7 +1946,7 @@ if [ "$mesp" = "mpi" ]; then
 MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
-INCLUDE_DIR     = $mpi_inc -Imodules
+INCLUDE_DIR     = $mpi_inc -I$MODULE_DIR
 C_INCLUDE_DIR   = $c_mpi_inc
 #
 EOF
