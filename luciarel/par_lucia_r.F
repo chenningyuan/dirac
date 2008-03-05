@@ -1165,7 +1165,12 @@ C
       IT_INFO_INC  = 0
       IT_ACTIVE_R  = 0
       IT_ACTIVE_I  = 0
-      STORE_BLK_INFO = .TRUE.
+C     write/read info file
+C
+C     FIXME: check reading/writing of BLOCK_INFO_MPI.0 for 
+C            NOOCCN_DENS_RUN! SK - 5-03-2008! 
+C
+      STORE_BLK_INFO = .FALSE.
 C
 C     set mark for local memory
 C
@@ -1198,6 +1203,7 @@ C
       IF( MYPROC .eq. MASTER )THEN
         INQUIRE(FILE=PLUBL_INFOL(1:IBLINFO_FILE),EXIST=EX)
       END IF
+      EX = .FALSE.
 C
 C     bcast information whether file exists or not
 C
@@ -2614,14 +2620,17 @@ C
 #include "ctcc.inc"
 #include "lucipar_rel.inc"
 *
-      dimension DENS(NALLINT), DENS_SCR(*)
+      dimension DENS(*), DENS_SCR(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
       INTEGER*8 NINT_TOT, NINT_TP_I8,IRIOFF
 *
-      ISHCOLOR = 0
-      ISHKEY   = 0
+      ISHCOLOR   = 0
+      ISHKEY     = 0
+      NINT_TP_I8 = 0
 *
       NINT_TOT = N1ELINT + N2ELINT
+csk      WRITE(LUWRT,*) ' NINT_TOT, N1ELINT, N2ELINT',
+csk     &                 NINT_TOT, N1ELINT, N2ELINT
 *     check for quaternion algebra
       if (ISF.eq.1) then
         IRILP = 1
@@ -2661,8 +2670,11 @@ csk          write(LUWRT,*) '  '
              XNINT_TP_I8 = REAL(NINT_TP_I8)
              NINT_TP = IGIVE_I_B(XNINT_TP_I8)
 *
-csk          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
-csk          write(LUWRT,*) ' COLLECT_DENS_MAT2: NINT_TP =',NINT_TP
+csk           write(6,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
+csk           write(6,*) ' COLLECT_DENS_MAT2: NINT_TP    =',NINT_TP
+csk           write(6,*) ' COLLECT_DENS_MAT2: IRUN       =',IRUN
+csk           write(6,*) ' COLLECT_DENS_MAT2: IRIOFF     =',IRIOFF
+csk           write(6,*) ' COLLECT_DENS_MAT2: IXTP       =',IXTP  
 *
           CALL DZERO(DENS_SCR,NINT_TP)
 *
