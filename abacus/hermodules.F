@@ -653,6 +653,12 @@ C         The following can be assigned for explicitely given basissets or Famil
         END TYPE basistype
         TYPE(basistype), POINTER :: firstbas
 
+C     Global variables
+C     Symmetry of the molecule
+        LOGICAL :: ADDSYM=.TRUE.
+        INTEGER :: NSYMOP=0
+        CHARACTER(LEN=1) :: KASYM(3,3)=' '
+
 
 
       CONTAINS
@@ -1063,6 +1069,7 @@ C     FOR UNIT CONVERSION
           CHARACTER(LEN=namelen)             :: name, prevname
           REAL(KIND=8)                       :: charge, nucexp
           LOGICAL                            :: CONT=.FALSE.
+          CHARACTER(LEN=9) :: symtxt
 
 C     FOR explicitely typed basissets.
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
@@ -1070,9 +1077,17 @@ C     FOR explicitely typed basissets.
           IF (.NOT.(PARHER).AND.IPREAD>1) 
      &      WRITE(LUPRI,*) 'Reading basisset information from file...'
 
+C     initialization for security
           REWIND(filenum)
+
           index=1
           section=' '
+
+          NSYMOP=0
+          ADDSYM=.TRUE.
+          KASYM(:,:)=' '
+          WRITE(LUPRI,*) 'INIT',NSYMOP,ADDSYM,KASYM
+
           DO
             CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)          
 
@@ -1085,6 +1100,12 @@ C     FOR explicitely typed basissets.
               section(2)=str
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
+               SELECT CASE(section(2))
+               CASE('*SYMMETRY')
+                  
+                  IF (section(3)=='.NOSYM') ADDSYM=.FALSE.
+               END SELECT
+
             ELSE IF(section(1)=='**MOLECULE') THEN
               IF (section(2)=='*BASIS'.AND.section(3)=='.DEFAULT') THEN
 C     JHS050707 In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
@@ -1170,10 +1191,24 @@ C                SELECT CASE (section(3))
 C                CASE ('.SPHERICAL'); coordintesys='S'
 C                CASE ('.OWN'); 
 C                 
-
-
-
-
+      
+             ELSE IF(section(2)=='*SYMMETRY') THEN
+                BACKSPACE(filenum)
+                index=1
+                CALL READ_VAR(filenum,linelen,NSYMOP,index,skip=.FALSE.)                
+                do i=1,3
+                  do j=1,3
+                    if (index<=0) then
+                      write(LUPRI,*) 
+     &                   'ERROR:hermodules.F reading symmetry.'
+            CALL QUIT('*** ERROR READ_BASIS, symmetry not
+     &                     correctly specified')
+                    CALL READ_VAR(filenum,linelen,kasym(i,j),
+     &           index,1,.FALSE.)
+                    end if
+                  end do
+                end do
+                  
               ELSE IF (section(2)=='*CENTERS') THEN
 C     JHS050707 We specify the charges, the others are found in the table of nucdata.h
                 BACKSPACE(filenum)
@@ -1205,6 +1240,7 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
                 SELECT CASE(str)
                 CASE('ANGSTROM', 'A')
                   UNITS=1/XTANG
+                  unitname='angstrom'
                 CASE DEFAULT
                   BACKSPACE(filenum)
                   CALL READ_VAR(filenum, linelen,unitname,index)
@@ -1433,14 +1469,13 @@ C     COMMONBLOCKS
       INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
       INTEGER,INTENT(INOUT)::LWORK
 
-      INTEGER      :: KLAST,NSYMOP,i,j,IBSFLAG, KAOVEC, NBLOCK,
+      INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,
      &                katom,basindex,index
 
       REAL(KIND=8) :: QEXP=D0
       REAL         :: MXSPD
-      LOGICAL      :: HERMIT,DOOWN,ANG, ADDSYM=.TRUE.,NOORBTS,NOFITFS, 
+      LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS, 
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
-      CHARACTER(LEN=1)  :: KASYM(3,3)
       CHARACTER(LEN=72) :: TTITLE(2)=' '
       CHARACTER(LEN=11) :: SYMTXT
       CHARACTER(LEN=15) :: CLASS
@@ -1780,6 +1815,7 @@ C     ***** Process symmetry input data *****
 C     ***************************************
 C
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
+
 C
 C     ***************************************************
 C     ***** Process orbital and geometry input data *****
