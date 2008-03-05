@@ -134,6 +134,14 @@ extern int main( int argc, char** argv )
     * Allocate memory
     */
 
+#ifdef INT_STAR8
+   if (sizeof(long) != 8)
+   {
+       printf("Warning: Fortran uses 64 bit integers but the C code only 32 bit.\n"
+	      "You will not be able to use more than 2 or 4 GB of memory!\n");
+   }
+#endif
+
    mempointer = alloc_mem(mytid,&size);
 
    /*
