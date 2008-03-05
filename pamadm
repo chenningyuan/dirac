@@ -1365,13 +1365,14 @@ for link in $dirs; do
       rm -f $link/include
    fi
    ln -sf ../include $link/include
-   if [ $link != modules  ]; then
-     echo "Making link from modules to $link/modules"
-     if [ -d $link/modules ]; then
-        rm -f $link/modules
-     fi
-     ln -sf ../modules $link/modules
-   fi
+# JHS in the end links should be replaced by relative or absolute paths
+#   if [ $link != modules  ]; then
+#     echo "Making link from modules to $link/modules"
+#     if [ -d $link/modules ]; then
+#        rm -f $link/modules
+#     fi
+#     ln -sf ../modules $link/modules
+#   fi
 done
 }
 #
