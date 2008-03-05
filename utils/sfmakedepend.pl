@@ -2,6 +2,7 @@
 #
 #
 # Usage: sfmakedepend [-s] [-e ext] [-f file] [-I incdir]
+#                     [-M modulepath]
 #                     [-m mod_ext] [-c] [-p] [-g] [-h] [-o obj_ext]
 #                     [-a add_ext] [-pl print_level] [-d cpp_variables] file ...
 #
@@ -39,6 +40,9 @@
 # is to list the dependency as "my_mod.mod" since this is what
 # NAG f90 and IBM xlf both use.  Let me know if other compilers
 #perl version is  use a different filename for the module information.
+#
+# The [-M modulepath] tells sfmakedepend where the .mod files can
+# be found.
 #
 # The [-c] option specifies that the Cray compiler is being used.
 # This compiler requires a "-p file.o" option for each object file
@@ -138,6 +142,10 @@
 # This script is still in the development in order to make it more 
 # powerfull for exact Fotran90 dependencies.
 #
+# JHS feb07, Extended to be able to pass the exact path of a module
+# file, so that modules in a different directory can be found.
+# 
+#
 ######################################################################
 
 package source_file;
@@ -221,8 +229,6 @@ sub find_includes {
 	### Fortran 90 module
 	} elsif (/^\s*module\s+(\w+)/i) {
 	    $modname = $1;
-	#   $modname = "modules/".$1;
-        #    print "MODNAME: $modname\n";
 	    if ($main::iprint >=5 ) {
 	      print "found module> $1\n"; }
 	    if ($main::sgi || $main::hp) {
@@ -402,15 +408,10 @@ sub find_mods {
 
     foreach $modname (keys %{$self->{'uses'}}) {
 
-#         $modname = "modules/".$modname;
-         # print STDOUT "HERE modified : $modname\n";
-         # print "HERE modified : $modname\n";
-  #       print "HERE 1 ! xxxx/$modname\n";
-  #       print " and $main::mymodnames\n";
   #
          if ( index($main::mymodnames,$modname)==-1) 
-         { $modname="modules/".$modname; 
-   #        print "module modname : $modname \n"
+         { $modname=$modname; 
+#           print "JHS module modname : $modname \n"
            }
          else
          {
@@ -532,6 +533,8 @@ sub print {
 	 print "$target:"; }
 
 	foreach $file (@module_files) {
+	    $file=$main::modulepath . "/" . $file;
+	    print STDOUT "$file";
 	    my $len = length($file) + 1;
 	    if (($len_sum + $len > 80) &&
 	     (length($target) + 1 < $len_sum)) {
@@ -631,7 +634,7 @@ if ( !( $cray || $parasoft) ) {
         ($name, $path, $suffix) =
           &fileparse($sources{$mod_files{$modname}}->{'filepath'}, @suffixes);
 
-	  $object = $path . "/" . $name . "." . $obj_ext;
+	  $object = $name . "." . $obj_ext;
 
 	  $object =~ s#^\.//##; # convert .//xxx.o to xxx.o
 
@@ -639,7 +642,7 @@ if ( !( $cray || $parasoft) ) {
           $main::mod_obj{$modnameindx} = $object;
 
 	if ($main::iprint >=5) {
-	  print STDOUT "$modname.$mod_ext: $object \
+	  print STDOUT "$modulepath/$modname.$mod_ext: $object \
 	   ... in hash table: $main::mod_obj{$modnameindx} \n";
 	 }
 	  print "$modname.$mod_ext: $object\n";
@@ -733,16 +736,21 @@ sub get_inline_args{
 #============================================
 use File::Basename;
 use Getopt::Long;
+Getopt::Long::Configure('no_ignore_case');
 
 # list of supported suffixes
 @suffixes = qw( .c .C .cc .cxx .cpp .f .F .fcm .FCM .f90 .F90 .for .head .struct);
 # print "supported ".@suffixes." suffixes: @suffixes \n";
 
 ###   http://www.perl.com/doc/manual/html/lib/Getopt/Long.html 
-GetOptions("s", "e=s", "f=s", "I=s@", "d=s", "m=s", "c", "p", "pl=i", "g", "h", "o=s", "a=s")
+GetOptions("s", "e=s", "f=s", "I=s@", "M=s", "d=s", "m=s", "c", "p", "pl=i", "g", "h", "o=s", "a=s", "Q=s")
   || die "problem in GetOptions !" ;
 
 # For compilers that don't invoke cpp for you
+if ($opt_Q) {
+    exit();
+}
+
 if ($opt_s) {
 	$stupid = 1;
 }
@@ -759,6 +767,11 @@ if (@opt_I) {
     @incdirs = @opt_i;
 }
 #print "include directories: @incdirs \n";
+if ($opt_M) {
+    $modulepath = $opt_M;
+} else {
+    $modulepath='';
+}
 
 # list of -Dxxx preprocessor variables for which *.F, *.F90 source files are going to be checked
 if ($opt_d) {
