@@ -25,9 +25,7 @@ clean :
 ##  compile Fortran90 module source files and make symbolic links
 ## of resulting *.mod files into common linked directory modules
 ##
-mod : $(F90_MODS) ;\
-$(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
-##ln -sf $(PWD)/*.mod ../modules/. 
+mod: $(F90_MODS)
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
@@ -41,6 +39,6 @@ depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 
 f90dep: ;\
-       ../utils/sfmakedepend.pl -I include $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F)
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
  
 # DO NOT DELETE

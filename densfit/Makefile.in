@@ -10,6 +10,8 @@ include ../Makefile.config
 F77_OBJS = df_dirac.o df_fck3.o df_utils.o df_vxc.o 
 F90_OBJS = 
 
+F90_MODS =
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
 pre:	$(F77_CPPS)
@@ -18,6 +20,8 @@ ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
 all:	$(F77_OBJS) $(F90_OBJS)
+
+mod: $(F90_MODS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -31,4 +35,7 @@ depend:
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
 

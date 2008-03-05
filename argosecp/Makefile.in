@@ -14,6 +14,8 @@ F77_OBJS =  argos1.o  argos2.o   argos3.o  argos4.o  argos5.o  argos6.o  \
 
 F90_OBJS =
 
+F90_MODS =
+
 C_OBJS =  falloc.o fdate.o flushstdout.o fwtime.o hostnm.o runsec.o tsystem.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
@@ -28,6 +30,8 @@ all:	$(F77_OBJS) $(C_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.lst *.i
 
+mod: $(F90_MODS)
+
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
@@ -37,6 +41,9 @@ dirmpi.x:
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 falloc.o: extsymbols.h

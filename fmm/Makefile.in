@@ -16,6 +16,8 @@ mm_buffers.o        mm_input.o          mm_sort.o            mm_T_pair_tests.o  
 mm_densfit.o        mm_interface.o      mm_standalone_drv.o  mm_tree_T_buffer.o   mm_W_pair_builder.o \
 mm_driver.o         mm_map_builder.o    mm_stats.o           mm_T_worker.o        mm_W_worker.o
 
+F90_MODS =
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
 pre:	$(F77_CPPS)
@@ -34,8 +36,14 @@ dirmpi.x:
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
+mod: $(F90_MODS)
 
 depend:
 	../utils/f90dep.pl $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend 
 include Makefile.depend
+
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.

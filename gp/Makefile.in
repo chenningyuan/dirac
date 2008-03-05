@@ -14,6 +14,8 @@ F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 
 F90_OBJS =
 
+F90_MODS =
+
 C_OBJS = gpc.o
 
 MXM_OBJS = mxmpack.o
@@ -42,6 +44,7 @@ mxm:	$(MXM_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
+mod: $(F90_MODS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -53,5 +56,8 @@ dirmpi.x:
 depend: setcomp
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

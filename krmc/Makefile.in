@@ -21,6 +21,8 @@ F77_OBJS =  krmcopt.o \
 
 F90_OBJS =
 
+F90_MODS =
+
 C_OBJS = gendet.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
@@ -35,6 +37,8 @@ all:	$(F77_OBJS) $(C_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
+mod: $(F90_MODS)
+
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
@@ -44,4 +48,7 @@ dirmpi.x:
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 
+f90dep: ;\
+       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
