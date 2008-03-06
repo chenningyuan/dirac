@@ -855,6 +855,10 @@ C
 C
       D2 = 2.0D0
 C
+C     add "alpha" and "beta" by scaling with 2.0
+C
+      CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
+C
       IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
      &               'ADD_TWO_FOCK input: DMO :',-1)
