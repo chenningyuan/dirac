@@ -4,9 +4,9 @@ F77_OBJS =
 
 C_OBJS   = 
 
-F90_OBJS = tests.o mem_mod.o qmtx_mod.o string_mod.o vect_mod.o oper_mod.o genpoint_mod.o
+F90_OBJS = genpoint_mod.o mem_mod.o string_mod.o vect_mod.o qmtx_mod.o oper_mod.o genpoint_mod.o tests.o
 
-F90_MODS = qmatrixes.mod  memory.mod  mystring.mod  vectors.mod  operators.mod generalpointers.mod
+F90_MODS = generalpointers.mod memory.mod mystring.mod vectors.mod qmatrixes.mod operators.mod 
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
