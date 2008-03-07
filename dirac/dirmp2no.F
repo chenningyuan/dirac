@@ -337,7 +337,7 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &               WORK,KFREE,LFREE)
       ENDIF
-#ifdef mp2no-fock
+#ifdef mp2no_fock
       IF(IONMVO) THEN
 C
 C       Generate MP2NOs by the Bauschlicher method (ionic Fock)
