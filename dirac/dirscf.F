@@ -3094,8 +3094,11 @@ C
         ENDDO
 C
 C       Insert dummy eigenvalues...
+C       7-mar-2008: NO! We want these eigenvalues for
+C                   active space selection in LUCITA, LUCIAREL etc.
+C                   Stefan and Hans Joergen.
 C
-        CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
+CSK+HJAaJ   CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
       END IF
       END DO
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
