@@ -1,0 +1,7 @@
+! dcbmp2no.h -- info for MP2 natural orbitals
+      CHARACTER VECMP2NO*72
+      LOGICAL xxxx
+      COMMON/CBLMP2NO/xxxx
+      COMMON/CBIMP2NO/IPRMP2NO,INTMP2NO,IF2MP2NO
+      COMMON/CBCMP2NO/VECMP2NO(2)
+

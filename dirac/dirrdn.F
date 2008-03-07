@@ -2059,11 +2059,11 @@ C
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
-     &             '*OPTIMI','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &             '*OPTIMI','*MP2 NO','XXXXXXX','XXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
-     &             '.PHCOEF','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.PHCOEF','.MP2 NO','xXXXXXX','xXXXXXX'/
 C
       NJOBS = 0
 C
@@ -2234,6 +2234,8 @@ C&&&& PHCOEF: Phase adjustment of coefficients
             PHCOEF = .TRUE.
             GO TO 100
  114     CONTINUE
+C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
+            DOMP2NO = .TRUE.
             GO TO 100
  115     CONTINUE
             GO TO 100
@@ -2268,6 +2270,8 @@ C
       IF(DOMP2) WRITE(LUPRI,'(A)') ' * MP2 calculation'
       IF(DOMVO) WRITE(LUPRI,'(A)')
      &   ' * Generate modified virtual orbitals'
+      IF(DOMP2NO) WRITE(LUPRI,'(A)')
+     &   ' * Generate MP2 natural orbitals'
       IF(DOKRMC) WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted MCSCF calculation'
 #ifndef MOD_KRMC
@@ -2329,7 +2333,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2372,6 +2376,13 @@ C
         CALL ROPTINP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
+   10 CONTINUE
+        CALL MP2NOINP(WORD,.FALSE.,WORK,LWORK)
+        GO TO 200
+   11 CONTINUE
+        GO TO 200
+   12 CONTINUE
+        GO TO 200
 C
     1 CONTINUE
 C
@@ -2384,6 +2395,7 @@ C     IF (DORES) CALL RESINP(WORD,.TRUE.,WORK,LWORK)
 C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
       CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
+      CALL MP2NOINP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
