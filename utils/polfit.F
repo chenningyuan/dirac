@@ -108,7 +108,7 @@ C
       WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
       WRITE(LUPRI,'(A)') '* Do you want to find min. of curve (y/n) ?'
       READ(LUCMD,'(A1)') REPLY
-      IF(REPLY.NE.'y') GOTO 666
+      IF(REPLY.NE.'y') GOTO 664
 C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
 C      XVAL = X(MIND(NP,Y))
@@ -125,7 +125,21 @@ C* Give coordinates of local minimum
         WRITE(ILOGG,'(A,F17.10,A,F17.10,A)') '* Local minimum:  (',
      +        XMIN,',',YMIN,')'
       ENDIF
+ 664  CONTINUE
+      WRITE(LUPRI,'(A)') 
+     &  '* Do you want a function value at some point(y/n) ?'
+      READ(LUCMD,'(A1)') REPLY
+      IF(REPLY.NE.'y') GOTO 665
+      WRITE(LUPRI,'(A)') 
+     &  '* Give point:'
+      READ(LUCMD,*) XMIN   
+      YMIN = POLVAL(NORDER,C,XMIN)      
+      WRITE(LUPRI,'(3X,F6.3,4X,E22.16)') XMIN,YMIN
+      WRITE(ILOGG,'(3X,A,F6.3,4X,E22.16)') 
+     &  'Selected value: ',XMIN,YMIN
+      GOTO 664
 C* Calculate derivatives:
+ 665  CONTINUE
       WRITE(LUPRI,'(A)') 
      &  '* Do you want derivatives of curve at minimum(y/n) ?'
       READ(LUCMD,'(A1)') REPLY
