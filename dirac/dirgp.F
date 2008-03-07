@@ -1349,6 +1349,34 @@ C
 C     Read coefficients from unformatted DFCOEF, 
 C     take out symmetry and write to unformatted DFACMO 
 C
+C     There is a catch:
+C       In HERMIT the basis set is generally symmetry-adapted. 
+C       Routines like WTSOAO will transform from this SO-basis
+C       to an AO-basis, where the symmetry adaption is taken out.
+C       In this AO-basis looping is over
+C        - atomic type
+C         - symmetry independent center
+C          - shell
+C           - degeneracy of center
+C             - component
+C       [NOTE that in DALTON the looping over degeneracy and components
+C        is reversed !]
+C
+C       A consequence of this is that the ordering of the AO-basis may change
+C       if the symmetry of the system is lowered, that is one does not use the
+C       full symmetry.
+C
+C       In order to make a more universal AO-basis, ACMOUT will modify the
+C       basis set ordering such that the looping goes as
+C        - atomic type
+C         - symmetry independent center
+C           - degeneracy of center
+C             - shell
+C               - component
+C
+C       This is not completely foolproof, so the import of DFACMO to another
+C       symmetry has to be handled with care !
+C       
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
@@ -1416,6 +1444,15 @@ C
       DIMENSION IDIM(3)
 #include "memint.h"
 C
+C     First check if file DFCOEF is there
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'ACMOUT: Unformatted file DFCOEF not found !'
+          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
+      ENDIF
+C
 C     Find correct ordering of nuclei
 C
       CALL LSQMA1(INUC)
@@ -1436,13 +1473,7 @@ C
 C     Get coefficients from DFCOEF --> stored in CMO1
 C     ===============================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'ACMOUT: Unformatted file DFCOEF not found !'
-          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
-      ENDIF
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')        
       CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
      &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -2755,6 +2786,455 @@ C
         CALL PRSYMB(LUPRI,'-',40,0)
         CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
       ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmout */
+      SUBROUTINE ACMOIN(WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients in C1 symmetry from unformatted DFACMO,
+C     adapt to current symmetry and write to unformatted DFCOEF
+C
+C     Written by T. Saue Mar 3 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "cbirea.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION WORK(LWORK)
+      CALL QENTER('ACMOIN')
+#include "memint.h"
+C
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO1,N2BBASX*4 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO2,N2BBASX*4 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG1,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG2,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG1,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG2,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINUC,NTBAS(0)  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NTBAS(0)*2,WORK,KFREE,LFREE)
+C
+      CALL ACMOI1(WORK(KCMO1),WORK(KEIG1),WORK(KIBG1),
+     &            WORK(KCMO2),WORK(KEIG2),WORK(KIBG2),
+     &            WORK(KINUC),WORK(KIBUF),IPREAD,
+     &            WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('ACMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('ACMOIN')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmou1 */
+      SUBROUTINE ACMOI1(CMO1,EIG1,IBEIG1,CMO2,EIG2,IBEIG2,INUC,
+     &                  IBUF,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients from unformatted DFCOEF, 
+C     take out symmetry and write to unformatted DFACMO 
+C
+C     Written by T.Saue May 26 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcblab.h"
+#include "dgroup.h"
+#include "nuclei.h"
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
+     &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
+     &          INUC(*),IBUF(*),WORK(LWORK)
+      DIMENSION IDIM(3),NBF(2)
+#include "memint.h"
+C
+C     First check if file DFACMO is there
+C
+      INQUIRE(FILE='DFACMO',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'ACMOIN: Unformatted file DFACMO not found !'
+          CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
+      ENDIF
+C
+C     Get coefficients from DFACMO --> stored in CMO2
+C     ===============================================
+C
+      CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
+      READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+      NDIM = NTBAS(0)*NORBT*4
+      CALL READT(LUCOEF,NDIM,CMO2)
+      CALL READT(LUCOEF,NORBT,EIG2)
+      CALL READT(LUCOEF,NORBT,IBEIG2)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : Coefficients read from DFACMO'
+          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Find correct ordering of nuclei
+C
+      CALL LSQMA1(INUC)
+      I1 = 0
+      I2 = 0
+      DO IC = 1,2
+        DO ICENT = 1,NUCDEP
+          DO IB = 1,NTBAS(IC)
+          IF(INUC(I1+IB).EQ.ICENT) THEN
+            I2 = I2 + 1
+            IBUF(I1+IB) = I2
+          ENDIF
+          ENDDO
+        ENDDO
+        I1 = I1 + NTBAS(IC)
+      ENDDO
+C
+C     Get correct row ordering (NBAS) --> stored in CMO1     
+C     ==================================================
+C
+      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : row-ordered coefficients'
+          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
+C
+      NDIM = NORBT*4
+      CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : raw SO coefficients'
+          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Analyze distribution of symmetry on quaternion units
+C     and prepare for compression
+C
+        CALL QSYMANA(CMO2,NTBAS(0),NORBT,NBF,IBUF)
+        DO IFRP = 1,NFSYM
+          IF(NORB(IFRP).NE.NBF(IFRP)) THEN
+            WRITE(LUPRI,'()')
+     &        '*** ERROR: ACMOIN Fermion ircop:',IFRP,
+     &        '     Expected : ',NORB(IFRP),
+     &        '     Found    : ',NBF(IFRP)
+            CALL QUIT('ACMOIN: Wrong number of orbitals !')
+          ENDIF
+        ENDDO
+C
+C     Compact orbitals (and orbital energies) to sorted basis -> CMO1
+C
+      CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
+      IF(IPRINT.GE.3) THEN
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(A,A,I2)') 
+     &      '* ACMOIN : final SO coefficients.',
+     &      ' Fermion ircop ',IFRP
+          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDDO
+      ENDIF
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','ACMOIN')
+      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck qsymana */
+      SUBROUTINE QSYMANA(CMO,NB,NO,NBF,IBUF)
+C***********************************************************************
+C
+C     Input: Non-compressed quaternion MO-coefficients
+C            in terms of symmetry-adapted basis functions
+c            in unsorted basis (HERMIT order).
+C     This routine will prepare for compression by checking if the 
+C     coefficients have the right (quaternion) phase, that is that 
+C     the symmetry-adapted functions are in the expected positions.
+C
+C     In the DIRAC the real and imaginary parts of a spinor have
+C     fixed symmetries, that is
+C
+C     La  ( 0 , R_z)
+C     Lb  (R_y, R_x)
+C     Sa  (xyz, z  )
+C     Sb  ( y , x  )
+C
+C     where R_q is rotation about axis q.
+C
+C     If the system has inversion symmetry such that there is a second
+C     fermion ircop, the symmetry distribution in the second ircop is
+C
+C     La  (xyz, z  )
+C     Lb  ( y , x  )
+C     Sa  ( 0 , R_z)
+C     Sb  (R_y, R_x)
+C
+C     This information is contained in the array JSPINR(IM,IC,IFRP)
+C     where IM = 1,4 is the part, IC=1,2 refers to large or small component
+C     and IFRP refers to fermion ircop.
+C            
+C     A quaternion number is given by 
+C       q = a + bi + cj +dk
+C     where (i,j,k) are the quaternion units. In general the quaternion
+C     units i,j and k come in positions 2, 3, and 4, respectively.
+C     There are two exceptions for complex group, having one totally symmetric
+C     rotation (see routine DBLGRP):
+C      - for a totally symmetric x-rotation the mapping is (x,y,z) --> (i,k,j)
+C      - for a totally symmetric y-rotation the mapping is (x,y,z) --> (j,i,k)
+C     contrary to the standard mapping
+C      (x,y,z) --> (k,j,i)
+C
+C     Written by T. Saue Mar 4 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+      PARAMETER(D0=0.0D0,DTOL=1.0D-1)
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dcbqal.h"
+      DIMENSION CMO(NB,NO,4),IBUF(NO,2)
+      DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
+#include "dcbibt.h"
+C
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C     Initialize
+      II = 0
+      DO IC = 1,MC
+        DO IREP = 0,7
+          DO IQ = 1,4
+            II = II + 1
+            IB(II,2) = IQ
+            IB(II,3) = IREP
+            IB(II,4) = IC
+          ENDDO
+        ENDDO
+      ENDDO
+      NBF(1) = 0
+      NBF(2) = 0
+      DO JORB = 1,NO
+        CALL DZERO(WB,64)
+C
+C       Accumulate gerade and ungerade norms
+C
+        TMP(1)=D0
+        TMP(2)=D0
+        DO IC = 1,MC
+          DO IREP = 0,MAXREP
+            ISYM = IREP + 1
+            IFRP = JBTOF(IREP,IC)
+            IBB  = ICOS (ISYM,IC)
+            NBB  = NBBAS(IREP,IC)
+            IBRQ = IBTXOR(IREP,III(IC))
+            IF(NBB.GT.0) THEN
+              DO IQ = 1,4
+                WB(IQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
+     &                   CMO(IBB+1,JORB,IQ),1)
+                TMP(IFRP) = TMP(IFRP) + WB(IQ,ISYM,IC)
+              ENDDO
+C
+C             Order contributions
+C
+              CALL INDEXX(4,WB(1,ISYM,IC),IB)
+C       
+C             Find the number of non-zero contributions;
+C             it has to be less or equal to NZ,
+C             otherwise the compression of coefficients will fail.
+C
+              MZ = 0
+              DO IQ = 4,1,-1
+                IF(WB(IB(IQ,1),ISYM,IC).GT.D0) MZ = MZ + 1
+              ENDDO
+              IF(MZ.GT.NZ) THEN
+                WRITE(LUPRI,'(A,I5)')
+     &          '*** ERROR (QSYMANA): MO-coefficient no. ',JORB
+                IF(IC.EQ.1) THEN
+                  WRITE(LUPRI,'(3X,A,A3,A,I3,A)')
+     &          'Large component basis functions of symmetry ',
+     &           REP(IREP),' has ',MZ,' non-zero components'
+                ELSE 
+                  WRITE(LUPRI,'(3X,A,A3,A,I3,A)')
+     &          'Large component basis functions of symmetry ',
+     &           REP(IREP),' has ',MZ,' non-zero components'
+                ENDIF
+                CALL QUIT('QSYMANA. Compression will fail !')
+              ENDIF
+            ENDIF
+          ENDDO ! End loop over boson irreps
+        ENDDO ! End loop over large and small components
+C
+C       Decide parity of MO
+C
+        IF(TMP(1).GT.TMP(2)) THEN
+          IBUF(JORB,1) = 1
+          NBF(1) = NBF(1) + 1
+          IF(TMP(2).GT.DTOL) THEN
+            WRITE(LUPRI,'(A,I5,3X,E7.2)')
+     &        '*** WARNING from QSYMANA: Contamination of orbital:',
+     &        JORB,TMP(2)
+          ENDIF
+        ELSE
+          IBUF(JORB,1) = 2
+          NBF(2) = NBF(2) + 1
+          IF(TMP(1).GT.DTOL) THEN
+            WRITE(LUPRI,'(A,I5,3X,E7.2)')
+     &        '*** WARNING from QSYMANA: Contamination of orbital:',
+     &        JORB,TMP(1)
+          ENDIF
+        ENDIF
+C
+C       Check if a quaternion phase transformation (IQ) is necessary
+C
+        CALL INDEXX(64,WB,IB)
+C
+C       For now only consider largest contribution;
+C       a consistency check can be included later
+C       by scanning through more contributions
+C
+        II   = IB(64,1)
+        IQ   = IB(II,2)
+        IREP = IB(II,3)
+        IC   = IB(II,4)
+        IBRQ = IBTXOR(IREP,III(IC))        
+        IBUF(JORB,2) = IQMULT(IQ,IPQTOQ(1,IBRQ),1)
+      ENDDO ! End loop over coefficients
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mkqcmo */
+      SUBROUTINE MKQCMO(CBU,EIGU,IBEIGU,CBS,EIGS,IBEIGS,NBF,IBUF)
+C***********************************************************************
+C
+C     Starting from quaternion MO-coefficients in unsorted basis
+C     make compressed coefficients in sorted basis
+C
+C     Written by T.Saue Mar 4 2008
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DM1 = -1.0D0)
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+C
+#include "dcblab.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+C
+      DIMENSION CBU(*),EIGU(*),IBEIGU(*),
+     &          CBS(NCMOTQ),EIGS(*),IBEIGS(*),IBUF(NORBT,2),NBF(2)
+      EXTERNAL BDQALGEBRA
+C
+      CALL DZERO(CBS,NCMOTQ)
+      NBF(1) = 0
+      NBF(2) = 0
+      DO JU = 1,NORBT
+        IFRP = IBUF(JU,1)
+        JQ   = IBUF(JU,2)
+        NBS = NFBAS(IFRP,0)
+        NOS = NORB(IFRP)
+        NBF(IFRP) = NBF(IFRP)+1
+        JS = IORB(IFRP) + NBF(IFRP)
+        EIGS(JS) = EIGU(JU)
+        IBEIGS(JS) = IBEIGU(JU)
+        IOFF = ICMOQ(IFRP)+1
+        CALL MKQCMO1(CBU,NTBAS(0),NORBT,JU,IFRP,JQ,
+     &               CBS(IOFF),NBS,NOS,NBF(IFRP))
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck mkqcmo1 */
+      SUBROUTINE MKQCMO1(CBU,NBU,NOU,IVU,IFRP,JQ,CBS,NBS,NOS,IVS)
+C***********************************************************************
+C
+C     Starting from quaternion MO-coefficient CBU(IVU) in unsorted basis
+C     make compressed coefficient CBS(IVS) in sorted basis.
+C
+C     JQ is a quaternion unit used for phase transformation if needed.
+C
+C     Written by T.Saue Mar 4 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+      PARAMETER(DM1=-1.0D0)
+C
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcbqal.h"
+      DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
+#include "dcbibt.h"
+C
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C
+      NBRP = 4/NZ
+      DO IC = 1,MC
+        DO ISYM = 1,NBRP
+          IP    = MOD(IFRP+IC,2) + 1
+          IBSYM = JFSYM(ISYM,IP)
+          IBRP  = IBSYM - 1
+          IS    = IBBAS(IBRP,IC) - IBAS(IFRP) + 1
+          IU    = ICOS(IBSYM,IC) + 1 
+          IBRQ  = IBTXOR(IBRP,III(IC))
+          NBB   = NBBAS(IBRP,IC)
+          DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IBRQ)
+            KQ = IQMULT(IQ,JQ,1)
+            CALL DCOPY(NBB,CBU(IU,IVU,KQ),1,CBS(IS,IVS,IZ),1)
+            IFAC = IQPHASE(IQ,JQ,1)
+            IF(IFAC.EQ.-1) CALL DSCAL(NBB,DM1,CBS(IS,IVS,IZ),1)
+          ENDDO
+        ENDDO
+      ENDDO
 C
       RETURN
       END

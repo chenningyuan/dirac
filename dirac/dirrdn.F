@@ -211,7 +211,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.XXXXXX','.XXXXXX',
-     &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -345,7 +345,9 @@ C&&&& ECP: do ECP calculation, non-relativistic
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
             DOACUT = .TRUE.
             GO TO 100
+C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
+            DOACIN = .TRUE.
             GO TO 100
   115    CONTINUE
             GO TO 100
@@ -455,6 +457,12 @@ C
      &     ' DFPCMO and written to DFCOEF'
       IF(DOPUT) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
+      IF(DOACUT) WRITE(LUPRI,'(1X,A,A)')
+     &     '* MO-coefficients dumped in C1 format to',
+     &     ' unformatted file DFACMO'
+      IF(DOACIN) WRITE(LUPRI,'(1X,A,A)')
+     &     '* MO-coefficients imported in C1 format from',
+     &     ' unformatted file DFACMO'
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
       IF(NOSET) WRITE(LUPRI,'(1X,A)')
@@ -3593,6 +3601,7 @@ C
       DOPIN    = .FALSE.
       DOPUT    = .FALSE.
       DOACUT   = .FALSE.
+      DOACIN   = .FALSE.
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
