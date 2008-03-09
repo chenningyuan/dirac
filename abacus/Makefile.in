@@ -55,7 +55,8 @@ depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(SLAVE_OBJS:.o=.F)
 
 f90dep: ;\
-       ../utils/sfmakedepend.pl -I include -M $(INSTALLDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+	echo $(SOURCEDIR);\
+       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
