@@ -1061,8 +1061,8 @@ else
     paropibm=
 fi
 
-INCLUDE_DIR=\$\(INSTALLDIR\)\/include
-MODULE_DIR=\$\(INSTALLDIR\)\/modules
+INCLUDE_DIR=\$\(SOURCEDIR\)\/include
+MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 case $machine in
 #
@@ -1889,7 +1889,11 @@ cat <<EOF > Makefile.config
 ARCH        = $guess
 #
 #
+# Location of the binaries
 INSTALLDIR  = $INSTALL_DIR
+# Location of the source files
+SOURCEDIR   = `pwd`
+
 WRKMEM      = $memsiz
 INCLUDE_DIR = $inc -I$MODULE_DIR
 DEPEND_FLAGS= $depend_flags 
