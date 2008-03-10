@@ -275,20 +275,23 @@ case $machine in
 
    i[3-6]86-*)
       liblist="$liblist libmkl"
-      complist='ifort ifc g95 gfortran pgf90 pgf77 g77 f77'
+    # complist='ifort ifc g95 gfortran pgf90 pgf77 g77 f77'
+      complist='ifort ifc gfortran g95 pgf90 pgf77 g77 f77'
       cclist='icc gcc pgcc cc'
       debug='gdb';;
 
     x86_64-*)
       liblist=$liblist libmkl
-      complist='ifort ifc g95 gfortran pgf90 pgf77 pathf90 g77 f77 xlf'
+    # complist='ifort ifc g95 gfortran pgf90 pgf77 pathf90 g77 f77 xlf'
+      complist='ifort ifc gfortran g95 pgf90 pgf77 pathf90 g77 f77 xlf'
       cclist='icc gcc pgcc pathcc cc xlc'
       debug='gdb';;
 
    ia64-unknown-linux)
       liblist="$liblist libmkl_ipf libmkl_itp"
-      complist='ifort efc g95 g77 f77'
-      cclist='icc ecc gcc cc'
+     # complist='ifort efc g95 g77 f77'
+      complist='ifort efc pgf90 g95 g77 f77'
+      cclist='icc ecc pgcc gcc cc'
       debug='gdb';;
 
    *apple*)
