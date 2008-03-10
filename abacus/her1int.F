@@ -989,6 +989,7 @@ C
       LWRK   = LWORK - KLAST + 1
 C
       IF (INTTYP .EQ. 62) THEN
+C     Integrals for Parity Violation - chirality
          CALL PR1PRV(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
@@ -1001,6 +1002,7 @@ C
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC)
       ELSE
+C     Diamagnetic spin-orbit integrals
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,NPOINT,LABINT,
      &               INTTYP,NOPTYP,NBAST,DOATOM,WEIGHT,ABSCIS,TRIANG,
