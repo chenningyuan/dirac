@@ -2164,6 +2164,9 @@ C
       END
 C  /* Deck ntypts */
       SUBROUTINE NTYPTS(NOPTYP)
+C
+C     Checking size of NOPTYP
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
