@@ -1,6 +1,6 @@
       INTEGER MXFAMEXP
       PARAMETER (MXFAMEXP = 100)
-C     MAXPRD = default value for MAXPRI
+!C     MAXPRD = default value for MAXPRI
       INTEGER MAXPRD
       PARAMETER ( MAXPRD = 35 )
 
