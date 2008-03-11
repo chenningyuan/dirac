@@ -1235,6 +1235,8 @@ case $machine in
             ;;
          esac
 
+	 mod="-qmoddir=$MODULE_DIR"
+
 
          ;;
 #
