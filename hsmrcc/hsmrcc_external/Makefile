@@ -56,8 +56,8 @@ CCo      = $(CC)
 #
 #################################################################################
 
-ARCH = -DARCH32BIT
-#ARCH = 
+#ARCH = -DARCH32BIT
+ARCH = 
 
 #################################################################################
 ###
@@ -100,7 +100,8 @@ endif
 ifeq ($(FC),gfortran)
 ## gfortran/gcc
        # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
-        FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) -fno-range-check
+       # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) -fno-range-check
+        FFLAGS  = -I$(moddir) $(OPTFLAGS) -fno-range-check
 endif
 
 ifeq ($(FC),ifort)
