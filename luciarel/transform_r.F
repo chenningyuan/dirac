@@ -1691,8 +1691,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
-      LOGICAL CHECK_FILE
-      POINTER (MY_CHECK_F_PTR, CHECK_FILE(IDUMMY_BUFF_SZ))
+      POINTER (MY_CHECK_F_PTR, ICHECK_FILE(IDUMMY_BUFF_SZ))
 #endif
 *
 #include "dgroup.h"
@@ -1730,6 +1729,7 @@ C
       GET_UPDATE_M_SM = .FALSE.
       GET_UPDATE_ALL  = .FALSE.
       GET_NO_UPDATE   = .FALSE.
+      EX_GAT          = .FALSE.
 C
       if (ENVIRO(1:6).eq.'MOLCAS') then
         FNONEAO = 'ONEINT'
@@ -1909,7 +1909,7 @@ C
           ELSE  
             IXXX_CLR = 2
           END IF
-csk          WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
+CSK       WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
 #if defined(VAR_MPI2)
           IXXX_KEY  = MYPROC
           IXCOMM_SZ = 0
@@ -1919,25 +1919,50 @@ csk          WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
      &                         IXXX_KEY,IXCOMM,IERR)
           CALL MPI_COMM_SIZE(IXCOMM,IXCOMM_SZ,IERR)
           CALL MPI_COMM_RANK(IXCOMM,IXCOMM_RK,IERR)
-csk          WRITE(6,*) ' IXCOMM_SZ, IXCOMM_RK, IXCOMM',
-csk     &                 IXCOMM_SZ, IXCOMM_RK, IXCOMM_SZ
           IF( ALLOC_INT )THEN
             MY_CHECK_F_LEN = IXCOMM_SZ
-            CALL MPIXMEM_ALLOC( MY_CHECK_F_PTR, 4, MY_CHECK_F_LEN,
+            CALL MPIXMEM_ALLOC( MY_CHECK_F_PTR, 2, MY_CHECK_F_LEN,
      &                          MPI_INFO_NULL, .FALSE. )
 C
-            CHECK_FILE( IXCOMM_RK + 1 ) = EX
+            CALL IZERO(CHECK_FILE,IXCOMM_SZ)
 C
-            CALL MPI_ALLGATHER(EX,1,MPI_LOGICAL,CHECK_FILE,1,
-     &                         MPI_LOGICAL,IXCOMM,IERR)
-            CALL CHECK_CONSIST( EX, CHECK_FILE, IXCOMM_SZ )
-            CALL MPIXMEM_FREE( CHECK_FILE )
+            IEX_GAT   = 0 
+C
+            IF( EX ) THEN
+              IEX_GAT = 1
+            ELSE
+              IEX_GAT = 0
+            END IF
+C
+CSK            CALL MPI_BARRIER(IXCOMM,IERR)
+CSK            WRITE(6,*) ' MYPROC: IEX_GAT is',MYPROC, IEX_GAT
+C
+            CALL MPI_GATHER(IEX_GAT,1,my_MPI_INTEGER,ICHECK_FILE,1,
+     &                      my_MPI_INTEGER,0,IXCOMM,IERR)
+CSK            CALL MPI_BARRIER(IXCOMM,IERR)
+            NPTESTVAR = 0
+CSK         NPTESTVAR = 20
+            IF( NPTESTVAR .ge. 20 )THEN
+              CALL MPI_BARRIER(IXCOMM,IERR)
+              DO IJK = 1, IXCOMM_SZ
+                CALL MPI_BARRIER(IXCOMM,IERR)
+                IF( IXCOMM_RK .eq. IJK - 1 )THEN
+                  WRITE(6,*) ' my ICHECK_FILE array', 
+     &                         MYPROC, MYNEW_ID, IXCOMM_RK
+                  DO JJJ = 1, IXCOMM_SZ
+                     WRITE(6,*) ' ICHECK_FILE(',jjj,') = ',
+     &                            ICHECK_FILE(jjj)
+                  END DO
+                END IF
+              END DO
+            END IF
+            IF( IXCOMM_RK .eq. 0 )
+     &      CALL CHECK_CONSIST( ICHECK_FILE, IXCOMM_SZ )
+            CALL MPIXMEM_FREE( ICHECK_FILE )
           END IF
           CALL MPI_COMM_FREE(IXCOMM,IERR)
-C         consistency is checked
-C         update MPI_COMM_WORLD
+C         consistency is checked; update MPI_COMM_WORLD
           CALL MPI_BCAST(EX,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-C          
 #endif
         END IF
 C       CIRUN == IJKLRO

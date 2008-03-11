@@ -1137,7 +1137,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE CHECK_CONSIST( CHECK_VAL, CHECK_VEC, NDIM )
+      SUBROUTINE CHECK_CONSIST( ICHECK_VEC, NDIM )
 C**********************************************************************
 C
 C     check if logical is consistent on each CPU
@@ -1151,35 +1151,24 @@ C***********************************************************************
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ICHECK_VEC(*)
 #include "lucipar_rel.inc"
-      LOGICAL CHECK_VAL, CHECK_VEC(*), CHECK_SCR
 C
-      CHECK_SCR = .FALSE.
+      ICHECK_SCR   = ICHECK_VEC(1)
+      ICHECK_SCR_2 = 0
 C
-csk      WRITE(6,*) ' subroutine CHECK_CONSIST: CHECK_VAL is ',   
-csk     &             CHECK_VAL
+CSK      WRITE(6,*) ' subroutine CHECK_CONSIST: CHECK_SCR is ',   
+CSK     &             ICHECK_SCR
 C
-      IF( CHECK_VAL ) THEN
-        DO II = 1, NDIM
-          CHECK_SCR = CHECK_VEC(II)
-          IF( .NOT. CHECK_SCR )THEN
+      DO II = 1, NDIM
+         ICHECK_SCR_2 = ICHECK_VEC(II)
+         IF( ICHECK_SCR_2 .ne. ICHECK_SCR )THEN
              WRITE(LUWRT,*) ' subroutine CHECK_CONSIST: unconsistency 
-     &   detected ', CHECK_SCR
+     &   detected ', ICHECK_SCR, ICHECK_SCR_2
             CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
      &   detected' )
           END IF
-        END DO
-      ELSE
-        DO II = 1, NDIM
-          CHECK_SCR = CHECK_VEC(II)
-          IF( CHECK_SCR )THEN
-             WRITE(LUWRT,*) ' subroutine CHECK_CONSIST: unconsistency 
-     &   detected ', CHECK_SCR
-            CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
-     &   detected' )
-          END IF
-        END DO
-      END IF
+      END DO
 C
       END
 #endif
