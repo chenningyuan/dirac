@@ -1729,7 +1729,6 @@ C
       GET_UPDATE_M_SM = .FALSE.
       GET_UPDATE_ALL  = .FALSE.
       GET_NO_UPDATE   = .FALSE.
-      EX_GAT          = .FALSE.
 C
       if (ENVIRO(1:6).eq.'MOLCAS') then
         FNONEAO = 'ONEINT'
