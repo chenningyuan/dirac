@@ -18,5 +18,5 @@ Moelcular oxygen. Ground and excited states (X, a, b).
 *END OF
 
  &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
- &CCFSPC MAXIT=100, NACTP=2,2,0,0, FSSECT=1,1,0,0,1,0, &END
+ &CCFSPC MAXIT=100, DOEA2=T, NACTP=2,2,0,0 &END
 
