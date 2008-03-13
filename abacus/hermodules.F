@@ -1088,6 +1088,10 @@ C     initialization for security
           KASYM(:,:)=' '
           WRITE(LUPRI,*) 'INIT',NSYMOP,ADDSYM,KASYM
 
+C     Standard for xyz is angstrom.
+          UNITS=1/XTANG
+
+
           DO
             CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)          
 
@@ -1241,6 +1245,9 @@ C               Note: Angstroms are known and can be specified by 'A' or 'ANGSTR
                 CASE('ANGSTROM', 'A')
                   UNITS=1/XTANG
                   unitname='angstrom'
+                CASE('AU')
+                  UNITS=XTANG
+                  unitname='au'
                 CASE DEFAULT
                   BACKSPACE(filenum)
                   CALL READ_VAR(filenum, linelen,unitname,index)
