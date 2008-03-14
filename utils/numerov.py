@@ -172,7 +172,7 @@ while nr_nodes_last < nr_solutions:
       psi[0]   = 0.0
       psi[1]   = 1.0e-6
       for i in range(nr_points):
-          g[i] = reduced_mass*1836.152701*(2.0*potential[i] - 2.0*energy_guess)
+          g[i] = reduced_mass*1822.888479031408*(2.0*potential[i] - 2.0*energy_guess)
           if i > 1:
              psi[i] = 2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step*step*5.0/6.0 + g[i-2]*psi[i-2]*step*step/12.0
              psi[i] = psi[i]/(1.0 - g[i]*step*step/12.0)
