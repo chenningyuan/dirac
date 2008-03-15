@@ -527,12 +527,9 @@ C=======================================================================
             DO J = 1,NJ
               DO K = 1,NK
 
-                PX = ORIGIN_2D(1)
-     &             - ADD_2D + (I-1)*STEP_2D
-                PY = ORIGIN_2D(1)
-     &             - ADD_2D + (J-1)*STEP_2D
-                PZ = ORIGIN_2D(1)
-     &             - ADD_2D + (K-1)*STEP_2D
+                PX = ORIGIN_2D(1) - ADD_2D + (I-1)*STEP_2D
+                PY = ORIGIN_2D(2) - ADD_2D + (J-1)*STEP_2D
+                PZ = ORIGIN_2D(3) - ADD_2D + (K-1)*STEP_2D
 
                 IF(ORIENTATION(IORIENTATION) .EQ. 'xy')
      &                                        PZ = ORIGIN_2D(3)
