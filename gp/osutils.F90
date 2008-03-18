@@ -1,6 +1,6 @@
 ! This module contains functions to communicate with the operating system.
 ! ulfek march 2008
-module osutils
+module os_utils
        contains
 ! Gets an environment variable and converts it to an integer.
 ! Return default if the variable is not defined or conversion fails
@@ -23,4 +23,4 @@ function get_environment_integer(name, default)
         get_environment_integer = default
   endif
 end function get_environment_integer
-end module osutils
+end module os_utils
