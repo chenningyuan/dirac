@@ -106,7 +106,9 @@ IF( IPAREX .ne. 0 )THEN
 !
 ! we count the number of slave nodes, subtract the master
 !
-  NUMNOD = NUMPROC - 1
+! at present this subtraction is still done in the subroutine DIRAC (dirac.F)
+! NUMNOD = NUMPROC - 1
+  NUMNOD = NUMPROC
 !
   PARCAL = .TRUE.
 !
