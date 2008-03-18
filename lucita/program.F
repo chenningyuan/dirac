@@ -38,7 +38,8 @@ C
 *                                                                     *
 ***********************************************************************
 *
-      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST)
+      SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
+     &                 IGROUPLIST)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -71,8 +72,9 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 
 *
 C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
@@ -88,7 +90,7 @@ C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
-      dimension ISYMS(MXPIRR),IPROCLIST(NMPROC)
+      DIMENSION ISYMS(MXPIRR),IPROCLIST(NMPROC), IGROUPLIST(NMPROC)
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GASCI ')
       NTEST = 0
@@ -107,34 +109,34 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       NNULL = 0
 *
       IF(NTEST.GE.1) THEN
-        WRITE(LUWRTOUT,*)
-        WRITE(LUWRTOUT,*) ' ====================================='
-        WRITE(LUWRTOUT,*) ' Control has been transferred to GASCI'
-        WRITE(LUWRTOUT,*) ' ====================================='
-        WRITE(LUWRTOUT,*)
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ====================================='
+        WRITE(LUWRT,*) ' Control has been transferred to GASCI'
+        WRITE(LUWRT,*) ' ====================================='
+        WRITE(LUWRT,*)
       END IF
       IF(NTEST.GE.5) THEN
-        WRITE(LUWRTOUT,'(A)') '  A few pertinent data : '
-        WRITE(LUWRTOUT,*)
-        WRITE(LUWRTOUT,'(A,I2)') '  CI space         ',ISPC
-        WRITE(LUWRTOUT,*)
-        WRITE(LUWRTOUT,*) ' Number of GAS spaces included '
+        WRITE(LUWRT,'(A)') '  A few pertinent data : '
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,'(A,I2)') '  CI space         ',ISPC
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Number of GAS spaces included '
      &,LCMBSPC(ISPC)
         WRITE(LUWRTOUT,'(A,10I3)') '  GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
-        WRITE(LUWRTOUT,*)
-        WRITE(LUWRTOUT,*) ' Occupation constraints : '
-        WRITE(LUWRTOUT,*) '========================= '
-        WRITE(LUWRTOUT,*)
-        WRITE(LUWRTOUT,*)
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' Occupation constraints : '
+        WRITE(LUWRT,*) '========================= '
+        WRITE(LUWRT,*)
+        WRITE(LUWRT,*)
         DO JJGASSPC = 1, LCMBSPC(ISPC)
          JGASSPC = ICMBSPC(JJGASSPC,ISPC)
-        WRITE(LUWRTOUT,*)
+        WRITE(LUWRT,*)
      &  ' Gas space  Min acc. occupation Max acc. occupation '
-        WRITE(LUWRTOUT,*)
+        WRITE(LUWRT,*)
      &  ' ================================================== '
         DO IGAS = 1, NGAS
-          WRITE(LUWRTOUT,'(3X,I2,13X,I3,16X,I3)') IGAS,
+          WRITE(LUWRT,'(3X,I2,13X,I3,16X,I3)') IGAS,
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
         END DO
         END DO
@@ -144,14 +146,14 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       WRITE(LUWRTOUT,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(LUWRTOUT,*) ' Number of determinants/combinations  ',NDET
+      WRITE(LUWRT,*) ' Number of determinants/combinations  ',NDET
       IF(NDET.EQ.0) THEN
-       WRITE(LUOUT,*) 'the number of determinants/combinations is zero.'
-       WRITE(LUOUT,*) ' I am sure that fascinating discussions about '
-       WRITE(LUOUT,*) ' the energy of such a wave function exists, '
-       WRITE(LUOUT,*) ' but I am just a dumb program, so I will stop'
-       WRITE(LUOUT,*)
-       WRITE(LUOUT,*) ' GASCI : Vanishing number of parameters '
+       WRITE(LUWRT,*) 'the number of determinants/combinations is zero.'
+       WRITE(LUWRT,*) ' I am sure that fascinating discussions about '
+       WRITE(LUWRT,*) ' the energy of such a wave function exists, '
+       WRITE(LUWRT,*) ' but I am just a dumb program, so I will stop'
+       WRITE(LUWRT,*)
+       WRITE(LUWRT,*) ' GASCI : Vanishing number of parameters '
        Call Abend2(' GASCI : Vanishing number of parameters ')
       END IF
 *.Transfer to CANDS
@@ -180,11 +182,8 @@ C     L2BLOCK = max memory for c-vec and sigma-vec from
 C     (total mem - h2ac mem - 2 mio for string info etc.)
 C
       CALL MEMMAN(L2BLOCK,0,'SFREEM',2,'SHOWMM')
-      WRITE(LUOUT,'(1X,A,1X,I20)')
-     & 'Current available free memory in double words:',L2BLOCK
-CSKT      WRITE(LUOUT,'(1X,A,1X,I20)') 
-CSKT     & 'MXNTTS**2 in GASCI',MXNTTS**2
-      
+C     common block information
+      LMEMFREE_PTR = L2BLOCK
 C     we want to keep three blocks in memory at the same time
 C     CB,SB,VEC3(=C2). estimated scratch memory: 3 000 000 real*8
 C     division by a factor of 4 = safety!
@@ -192,15 +191,30 @@ CSKold      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
       L2BLOCK = (L2BLOCK - 3 000 000 )/4
 
       IF (IPRNT.GE.5) THEN
-        WRITE(LUOUT,*) '  NVAR in GASCI         ', NVAR
-        WRITE(LUOUT,*) '  L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK ',
+        WRITE(LUWRT,*) '  NVAR in GASCI         ', NVAR
+        WRITE(LUWRT,*) '  L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK ',
      &                    L0BLOCK,L1BLOCK,L2BLOCK,LCSBLK
       END IF
 C
       L2BLOCK = MIN(LCSBLK,L2BLOCK)
-CtestBATCHES      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
+C     check for size of L2BLOCK
+      LTEST_BLOCK = 0
+      LTEST_BLOCK = MIN(L2BLOCK,NVAR)
+*
+      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+*       reset to NVAR because that is already enough
+        L2BLOCK = LTEST_BLOCK
+*
+      END IF
+*
+*     ... set LBLOCK value
+*
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-Cactual      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+CtestBATCHES      
+csk   LBLOCK  = MIN(L0BLOCK,L2BLOCK)
+C     store on common block in parluci.h
+      LBLOCK_LUCI = LBLOCK
+Cactual  LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 Cold     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 C     Information about block structure- needed by new PICO2 routine.
@@ -241,10 +255,14 @@ C     batches  of C vector
 C     Number of BLOCKS
       NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &       + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
+C
+C     transfer to common block in parluci.h
+C
+      NUM_BLOCKS  = NBLOCK
+      NUM_BLOCKS2 = NBLOCK
       WRITE(LUWRTOUT,*) ' Number of blocks ', NBLOCK
-CSKold      WRITE(LUWRTOUT,*) ' Number of batches ', NBATCH
       CALL MEMMAN(KLCI1BTSCR,NTTS  ,'ADDL  ',1,'CI1BTS')
-      CALL COPVEC(WORK(KLCI1BT),WORK(KLCI1BTSCR),NTTS)
+      CALL ICOPY(NTTS,WORK(KLCI1BT),1,WORK(KLCI1BTSCR),1)
 C     length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
 C
@@ -252,45 +270,98 @@ C     check connections between sigma and c-blocks
 C
       CALL MEMMAN(KBSCLFC,NBLOCK,'ADDL  ',2,'BSCLFC')
       CALL MEMMAN(KBLCKIF,NBLOCK,'ADDS  ',1,'IBLINF')
-      CALL COPVEC(WORK(KLCI1BT),WORK(KBLCKIF),NBLOCK)
-#if defined (VAR_MPI2)
-      CALL MEMMAN(KIBTOTW,NBLOCK,'ADDS  ',2,'IBTOTW')
-      CALL MEMMAN(KCWEIGHT,NBLOCK,'ADDS  ',1,'ICWHT  ')
-      CALL MEMMAN(KCWEIGHTF,NBLOCK,'ADDS  ',1,'ICWHTF  ')
-      CALL ISETVC(WORK(KCWEIGHT),NNULL,NBLOCK)
-      CALL ISETVC(WORK(KCWEIGHTF),NNULL,NBLOCK)
-#endif
+      CALL ICOPY(NBLOCK,WORK(KLCI1BT),1,WORK(KBLCKIF),1)
 C     arrays for block distribution among cpu's (parallel run),
 C     some more scratch arrays needed for communication in the 
 C     diagonalizer
       CALL MEMMAN(KBLCKPD,NBLOCK,'ADDS  ',1,'IBLCKP')
-      CALL MEMMAN(KBLCKWT,2*NMPROC,'ADDS  ',1,'IBLCKW')
-      CALL ISETVC(WORK(KBLCKWT),NNULL,2*NMPROC)
       IMIN2 = -2
       CALL ISETVC(WORK(KBLCKPD),IMIN2,NBLOCK)
       IMAXALLO = MAX(MXCIV**2,MXCIV*(MXCIV+1)/2)
-      CALL MEMMAN(KSCRREDSP,2*IMAXALLO,'ADDL  ',2,'SCRRED')
-C     Allocate with maximal group size = NMPROC
-      CALL MEMMAN(KGROUPLIST,NMPROC,'ADDS  ',1,'GROUPL')
-      CALL ISETVC(WORK(KGROUPLIST),NNULL,NMPROC)
+      CALL MEMMAN(KSCRREDSP, 2*IMAXALLO,'ADDL  ',2,'SCRRED')
+      CALL MEMMAN(KSCRREDSP2,2*IMAXALLO,'ADDL  ',2,'SCRRD2')
 C
 C     allocate new array that replaces global ICCTOS
 C
-      CALL MEMMAN(KRCCTOS,NBLOCK,'ADDS  ',2,'RCCTOS')
-      CALL DZERO(WORK(KRCCTOS),NBLOCK)
+      CALL MEMMAN(KRCCTOS,NBLOCK,'ADDS  ',1,'RCCTOS')
+      CALL IZERO(WORK(KRCCTOS),NBLOCK)
 C
 C     find optimal block distribution among cpu's
 C
-      IF( IPRNT .ge. 5 )
-     &   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,MYPROC
+C     WORK(KBLCKIF) == list of all blocks containing their length
+C     WORK(KBLCKPD) == list of all blocks containing their assigned CPU
+C     --> this is the most important array! :)
+C
+CSK   WRITE(LUWRTOUT,*) 'I am using IDISTROUTE = ', IDISTROUTE,MYPROC
 C
 #if defined (VAR_MPI2)
-      IF(IODENSEPAR.GT.0) THEN
-        CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
-     &                       WORK(KCWEIGHTF),WORK(KIBTOTW),
-     &                       WORK(KBLCKWT),WORK(KRCCTOS),WORK(KBSCLFC),
-     &                       WORK(KCWEIGHT),NVAR,IPROCLIST)
-      END IF
+      CALL BLOCK_DISTR_DRV(NBLOCK,WORK(KBLCKIF),WORK(KBLCKPD),
+     &                     WORK(KRCCTOS),WORK(KBSCLFC),
+     &                     NVAR,IPROCLIST)
+csk   WRITE(LUCIWT,*) ' block length'
+csk   CALL IWRTMAMN(WORK(KBLCKIF),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   WRITE(LUCIWT,*) ' distribution'
+csk   CALL IWRTMAMN(WORK(KBLCKPD),1,NBLOCK,1,NBLOCK,LUCIWT)
+csk   WRITE(LUCIWT,*) ' RCCTOS output'
+csk   CALL IWRTMAMN(WORK(KRCCTOS),1,NBLOCK,1,NBLOCK,LUCIWT)
+C
+C     MPI file I/O setup
+C
+      CALL CALC_OFF_MPI_FILE2('ILUC  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
+      CALL CALC_OFF_MPI_FILE2('ILU1  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),      NROOT)
+csk  &                        WORK(KBLCKPD),MXCIV+NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU2  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV+NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU3  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU4  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU5  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV + NROOT)
+      CALL CALC_OFF_MPI_FILE2('ILU6  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
+      CALL CALC_OFF_MPI_FILE2('ILU7  ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),MXCIV)
+      CALL CALC_OFF_MPI_FILE2('LUDIA ',IGROUPLIST,WORK(KBLCKIF),
+     &                        WORK(KBLCKPD),1)
+C     initialize general offset for ILUC
+C
+C     NOTE: LU2 and LU4 have to have the same offset:
+C           --> initial s-vec to LU2 else LU4
+C
+      MY_LUC_OFF = 0
+C     length for allocation of file arrays
+      IALL_LUC = NUM_BLOCKS2
+      IALL_LU1 = (         NROOT ) * MY_ACT_BLK2
+csk   IALL_LU2 = (         NROOT ) * MY_ACT_BLK2
+csk   IALL_LU1 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+      IALL_LU2 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+      IALL_LU3 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+      IALL_LU4 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+      IALL_LU5 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+      IALL_LU6 = ( 1 )             * MY_ACT_BLK2
+      IALL_LU7 = ( MXCIV )         * MY_ACT_BLK2
+C     allocate file arrays
+      CALL MEMMAN(KILUCLIST,IALL_LUC,'ADDS  ',1,'LUCLST')
+      CALL MEMMAN(KILU1LIST,IALL_LU1,'ADDS  ',1,'LU1LST')
+      CALL MEMMAN(KILU2LIST,IALL_LU2,'ADDS  ',1,'LU2LST')
+      CALL MEMMAN(KILU3LIST,IALL_LU3,'ADDS  ',1,'LU3LST')
+      CALL MEMMAN(KILU4LIST,IALL_LU4,'ADDS  ',1,'LU4LST')
+      CALL MEMMAN(KILU5LIST,IALL_LU5,'ADDS  ',1,'LU5LST')
+      CALL MEMMAN(KILU6LIST,IALL_LU6,'ADDS  ',1,'LU6LST')
+      CALL MEMMAN(KILU7LIST,IALL_LU7,'ADDS  ',1,'LU7LST')
+C     initialize ...
+      CALL IZERO(WORK(KILUCLIST),IALL_LUC)
+      CALL IZERO(WORK(KILU1LIST),IALL_LU1)
+      CALL IZERO(WORK(KILU2LIST),IALL_LU2)
+      CALL IZERO(WORK(KILU3LIST),IALL_LU3)
+      CALL IZERO(WORK(KILU4LIST),IALL_LU4)
+      CALL IZERO(WORK(KILU5LIST),IALL_LU5)
+      CALL IZERO(WORK(KILU6LIST),IALL_LU6)
+      CALL IZERO(WORK(KILU7LIST),IALL_LU7)
+C
 #endif
 *. Class divisions of  dets
 *. ( Well, in principle I am against class division, but I
@@ -335,93 +406,102 @@ C       WRITE(6,*) ' Number of electrons ', NEL
         CALL MEMMAN(KLCLSD,NOCCLS,'ADDL  ',2,'CLSDE ')
         CALL MEMMAN(KLCLSDT,NOCCLS,'ADDL  ',2,'CLSDET')
       END IF
-*. If PICO2/SBLOCK are used, three blocks are used in PICO2, so
-*...
-*. Sblock is used in general nowadays so,
+*     sblock is used in general nowadays so,
       I_USE_SBLOCK=1
       IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
 *. Largest block of strings in zero order space
-      MXSTBL0 = MXNSTR
+        MXSTBL0 = MXNSTR
 *. type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
+        IATP = 1
+        IBTP = 2
 *. alpha and beta strings with an electron removed
-      IATPM1 = 3
-      IBTPM1 = 4
+        IATPM1 = 3
+        IBTPM1 = 4
 *. alpha and beta strings with two electrons removed
-      IATPM2 = 5
-      IBTPM2 = 6
+        IATPM2 = 5
+        IBTPM2 = 6
 *
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*. Largest number of strings of given symmetry and type
-      MAXA = 0
-      IF(NAEL.GE.1) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-C?      WRITE(6,*) ' MAXA1 1', MAXA1
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      IF(NAEL.GE.2) THEN
-C?      WRITE(6,*) ' KNSTSO for -2 elecs'
-C?      CALL IWRTMA(WORK(KNSTSO(IATPM2)),NSMST,NOCTYP(IATPM2),
-C?   &              NSMST,NOCTYP(IATPM2))
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-C?      WRITE(6,*) ' MAXA1 2', MAXA1
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      MAXB = 0
-      IF(NBEL.GE.1) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
-C?      WRITE(6,*) ' MAXB1 1', MAXB1
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      IF(NBEL.GE.2) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
-C?      WRITE(6,*) ' MAXB1 2', MAXB1
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      MXSTBL = MAX(MAXA,MAXB,MXSTBL0)
-      IF(IPRCIX.GE.2 ) WRITE(LUWRTOUT,*)
-     &' Largest block of strings with given symmetry and type',MXSTBL
-*. Largest number of resolution strings and spectator strings
-*  that can be treated simultaneously
-      MAXI = MIN( MXINKA,MXSTBL)
-      MAXK = MIN( MXINKA,MXSTBL)
-*.scratch space for projected matrices and a CI block
-*
-*. Scratch space for CJKAIB resolution matrices
-*. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
+        NAEL = NELEC(IATP)
+        NBEL = NELEC(IBTP)
+*.      largest number of strings of given symmetry and type
+        MAXA = 0
+        IF(NAEL.GE.1) THEN
+          MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
+C?        WRITE(6,*) ' MAXA1 1', MAXA1
+          MAXA = MAX(MAXA,MAXA1)
+        END IF
+        IF(NAEL.GE.2) THEN
+C?        WRITE(6,*) ' KNSTSO for -2 elecs'
+C?        CALL IWRTMA(WORK(KNSTSO(IATPM2)),NSMST,NOCTYP(IATPM2),
+C?   &                NSMST,NOCTYP(IATPM2))
+          MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
+C?        WRITE(6,*) ' MAXA1 2', MAXA1
+          MAXA = MAX(MAXA,MAXA1)
+        END IF
+        MAXB = 0
+        IF(NBEL.GE.1) THEN
+          MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
+C?        WRITE(6,*) ' MAXB1 1', MAXB1
+          MAXB = MAX(MAXB,MAXB1)
+        END IF
+        IF(NBEL.GE.2) THEN
+          MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
+C?        WRITE(6,*) ' MAXB1 2', MAXB1
+          MAXB = MAX(MAXB,MAXB1)
+        END IF
+        MXSTBL = MAX(MAXA,MAXB,MXSTBL0)
+        IF(IPRCIX.GE.2 ) WRITE(LUWRTOUT,*)
+     &  ' Largest block of strings with given symmetry and type',MXSTBL
+*       largest number of resolution strings and spectator strings
+*       that can be treated simultaneously
+        MAXI = MIN( MXINKA,MXSTBL)
+        MAXK = MIN( MXINKA,MXSTBL)
+*.      Scratch space for CJKAIB resolution matrices
+*.      Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
         IOCTPA = IBSPGPFTP(IATP)
         IOCTPB = IBSPGPFTP(IBTP)
         CALL MXRESCPH(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &              NSMST,NSTFSMSPGP,MXPNSMST,
-     &              NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
-     &              NELFSPGP,
-     &              MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
-     &              IPHGAS,NHLFSPGP,MNHL,IADVICE)
+     &                NSMST,NSTFSMSPGP,MXPNSMST,
+     &                NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
+     &                NELFSPGP,
+     &                MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
+     &                IPHGAS,NHLFSPGP,MNHL,IADVICE)
         IF(IPRCIX.GE.2) THEN
-         WRITE(LUWRTOUT,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-         WRITE(LUWRTOUT,*) 'GASCI  : MXADKBLK ', MXADKBLK
+        WRITE(LUWRTOUT,*) 'GASCI  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
+     &                              MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
+        WRITE(LUWRTOUT,*) 'GASCI  : MXADKBLK ', MXADKBLK
         END IF
         LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
-        IF(IPRCIX.GE.2)
-     &  WRITE(LUWRTOUT,*) ' Space for resolution matrices ',LSCR2
-*. for Passive/active division
+C
+C       resolution block
+C
         LSCR12 = MAX(LBLOCK,2*LSCR2)
-CSK        WRITE(LUWRTOUT,*) 'LSCR12 is max(LBLOCK,2*LSCR2) is ',LSCR12
-C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
       END IF
+C     ^ I_USE_SBLOCK == 1
+C
+C     CI vector blocks
+C
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-CSK
-*
-*. CI diagonal - if required
-CSK       WRITE(6,*)'ICISTR',ICISTR
-      IF(MYPROC.EQ.MASTER) WRITE(6,'(1X,A,1X,I10)')
-     & 'largest vector block in CI-expansion',LBLOCK
-*
+C
+      write(LUWRTOUT,*) ' '
+      WRITE(LUWRTOUT,'(3X,A)')
+     & '=============================================================='
+      WRITE(LUWRTOUT,'(3X,A)')
+     & '==> allocation of two CI vectors and one resolution vector <=='
+      write(LUWRTOUT,*) ' '
+      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+     & 'current available free memory in double words:',LMEMFREE_PTR
+      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+     & 'allocate two CI vectors each of length:       ',LBLOCK
+      WRITE(LUWRTOUT,'(3X,A,1X,I15)')
+     & 'allocate resolution vector of length:         ',LSCR2
+      WRITE(LUWRTOUT,'(3X,A)')
+     & '=============================================================='
+      write(LUWRTOUT,*) ' '
+      CALL FLSHFO(LUWRTOUT)
+C
       IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
@@ -430,28 +510,48 @@ CSK       WRITE(6,*)'ICISTR',ICISTR
         IF(ICISTR.GE.2) CALL REWINO(LUDIA)
         I12 = 2
         SHIFT = ECORE_ORIG-ECORE
-        IF(IODENSEPAR.EQ.0) THEN
-          CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
-     &                 WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
-          IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
-            CALL REWINO(LUDIA)
-            CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
-          END IF
-          IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
-        ELSE
-#if defined (VAR_MPI2)
-          CALL GASDIAT_PAR(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
-     &                    WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
-     &                    WORK(KBLCKPD))
-#endif
+C       construct H diagonal
+        CALL GASDIAT(WORK(KVEC1),LUDIA,SHIFT,ICISTR,I12,
+     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
+     &               WORK(KBLCKPD))
+        IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
+          CALL REWINO(LUDIA)
+          CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
         END IF
+        IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
       ELSE
          WRITE(LUWRTOUT,*) ' Diagonal not calculated '
       END IF
+#if defined (VAR_MPI2)
+C     debug printing
+      NPTEST_VAR = 00
+      IF( NPTEST_VAR .ge. 10 ) THEN
+        ITEST_OFF = 0
+        ITEST_OFF = MY_DIA_OFF
+        DO IIBLK = 1, NUM_BLOCKS
+            ILEN = 0
+            CALL GET_BLOCK_PROC(WORK(KBLCKPD),IIBLK,IPROC)
+            IF( MYPROC .eq. IPROC ) THEN
+              CALL GET_BLOCK_LENGTH(WORK(KBLCKIF),IIBLK,ILEN)
+              CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
+     &                              MPI_REAL8,ISTAT,IERR)
+              WRITE(LUWRT,*) ' Diagonal elements',ILEN
+              CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
+              ITEST_OFF = ITEST_OFF + ILEN
+          END IF
+        END DO
+      ENDIF
+      NPTEST_VAR = 00
+CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK      WRITE(LUWRTOUT,*) ' Thats it',MYPROC
+CSK      CALL Abend2( 'Stefan forced me to stop after diagonal' )
+#endif
 *
-*. Explicit Hamiltonian
+*     explicit Hamiltonian
 *
-*  This part is not tested and thus excluded by flag:
+*     this part is not tested and thus excluded by flag:
 *
 #ifdef PERTURBATION_LUCITA
       IF(IPROCC. NE. 0 .OR. MXP1+MXP2+MXQ .NE. 0 ) THEN
@@ -540,7 +640,28 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       ELSE
         MULSPCA = 0
       END IF
-*
+#if defined (VAR_MPI2)
+C
+C     copy restart vector to MPI-file format
+C
+      IF( INICI .lt. 0) THEN
+C
+         WRITE(LUWRTOUT,'(2X,A)')
+     &   ' restart file LUCVECT.0 will be copied to'//
+     &   ' MPI-readable format ...'
+C
+         IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,LBLK)
+C
+         CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
+     &                         WORK(KILU1LIST),
+     &                         WORK(KBLCKPD),WORK(KBLCKIF),
+     &                         NBLOCK,NROOT,IRC_SAVE)
+C
+        WRITE(LUWRTOUT,'(2X,A)') ' restart file is now in place! '
+C
+      END IF
+C
+#endif
       CALL CIEIG5(MV7,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
      &     NVAR,NBLK,NROOT,MXCIV,MAXIT,LUCIVI,IPRNT,WORK(KSBEVC),
@@ -555,16 +676,17 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
      &     WORK(KLCLSD),WORK(KLCLSDT),ISKIPEI,WORK(KLC2B),WORK(KLCLSA2),
      &     LBLOCK,IROOTHOMING,WORK(KLBASSPC),WORK(KLEBASC),
      &     WORK(KLCBASC),NCISPC,MULSPCA,IPAT,LPAT,ISPC,LUWRTOUT,
-     &     WORK(KBSCLFC),WORK(KBLCKIF),NBLOCK,WORK(KBLCKPD),
-     &     WORK(KBLCKWT),WORK(KSCRREDSP),WORK(KRCCTOS),IPROCLIST,
-     &     WORK(KGROUPLIST))
+     &     WORK(KBLCKIF),WORK(KBLCKPD),
+     &     WORK(KSCRREDSP),WORK(KSCRREDSP2),WORK(KRCCTOS),IPROCLIST,
+     &     IGROUPLIST
+#if defined (VAR_MPI2)
+     &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
+     &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
+     &     WORK(KILU7LIST),WORK(KILUCLIST)
+#endif
+     &     )
+C
       EREF = EROOT(IRFROOT)
-C?    WRITE(6,*) ' Memcheck after CIEIG5'
-C?    CALL MEMCHK
-*. Density matrices
-*
-* One-body density matrix
-*
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
 *  So change NROOTS accordingly, otherwise program crashes.
@@ -572,75 +694,90 @@ CTF
         NROOT_SAVE = NROOT
         NROOT = 1
       end if
-*
-      
+C
+C     rewine C-vector file
+C
       CALL REWINO(LUC)
+C
 #if defined (VAR_MPI2)
-      IF(IODENSEPAR.GT.0)THEN
-         LBLK = -1
-*. copy c-vectors from nodes and master back to the master
-*. purpose: master does the ana-stuff
-        CALL REWINO(LUC)
+C
+      IF( IAM_NOT_INV .eq. 0 ) GOTO 505
+C
+      LBLK = -1
+C
+C     copy c-vectors from nodes and master back to the master
+C
+C     NOTE: only C-vectors will be saved.
+C
+      CALL REWINO(LUC)
+      CALL REWINO(LUSC41)
+      DO JROOT = 1, NROOT
+        CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
+     &                            WORK(KBLCKPD),NUM_BLOCKS2,
+     &                            WORK(KBLCKIF),
+     &                            MPI_COMM_WORLD,LBLK,JROOT,
+     &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
+      END DO
+      IF(MYPROC.EQ.MASTER) THEN
         CALL REWINO(LUSC41)
+        CALL REWINO(LUC)
         DO JROOT = 1, NROOT
-CSK          CALL REWINO(LUC)
-CSK          CALL REWINO(LUSC41)
-CSK          IF(JROOT.NE.1) CALL SKPVCD(LUC,JROOT-1,WORK(KVEC1),0,LBLK)
-CSK          IF(JROOT.NE.1.AND.MYPROC.EQ.MASTER) 
-CSK     &    CALL SKPVCD(LUSC41,JROOT-1,WORK(KVEC1),0,LBLK)
-          CALL COPVCD_PAR_BDRIV(LUC,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
-     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
-        END DO 
+          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
+        ENDDO
+        CALL REWINO(LUC)
+      END IF
+      NPTESTVAR = 00
+      IF( NPTESTVAR .ge. 10 )THEN
         IF(MYPROC.EQ.MASTER) THEN
-          CALL REWINO(LUSC41)
-          CALL REWINO(LUC)
-          DO JROOT = 1, NROOT
-            CALL COPVCD(LUSC41,LUC,WORK(KVEC1),0,LBLK)
-          ENDDO
-          CALL REWINO(LUC)
-        ENDIF
-        IF(NROOT.EQ.1)THEN
-          CALL REWINO(LUHC)
-          CALL REWINO(LUSC41)
-          CALL COPVCD_PAR_BDRIV(LUHC,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
-     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
-          IF(MYPROC.EQ.MASTER) CALL COPVCD(LUSC41,LUHC,WORK(KVEC1),1,
-     &                                     LBLK)
-          CALL REWINO(LUSC1)
-          CALL REWINO(LUSC41)
-          CALL COPVCD_PAR_BDRIV(LUSC1,LUSC41,WORK(KVEC1),WORK(KBLCKPD),
-     &                          NBLOCK,MPI_COMM_WORLD,0,-1,LUDUMPF)
-          IF(MYPROC.EQ.MASTER) CALL COPVCD(LUSC41,LUSC1,WORK(KVEC1),1,
-     &                                     LBLK)
-        ENDIF
-      ENDIF
+          DO IVEC = 1, NROOT
+            WRITE(LUWRT,*) '  final new C vector',IVEC
+            CALL WRTVCD(WORK(KVEC1),LUC,0,LBLK)
+          END DO
+        END IF
+      END IF
+      CALL REWINO(LUC)
+      NPTESTVAR = 00
+C
+ 505    CONTINUE
 *
 #endif
+C
       IF(MYPROC.EQ.MASTER) THEN
+C
+C       new default: print always NO occ. numbers (IDENSI = 1)
+C                    which are useful for detailed analysis
+C
+        IF( IDENSI .gt. 0 )THEN
+          IF( IPRDEN .le. 0 )IPRDEN = 1 
+        ELSE
+          IDENSI = 1
+          IF( IPRDEN .le. 0 )IPRDEN = 1 
+        END IF
+C
       DO JROOT = 1, NROOT
         if (IPRNCIV.ge.1) then
-          WRITE(LUWRTOUT,*)
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' **************************************************'
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Analysis of occupation for ROOT = ',JROOT
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' **************************************************'
-          WRITE(LUWRTOUT,*)
+          WRITE(LUWRT,*)
         end if
         if (IPRDEN.ge.1) then
-          WRITE(LUWRTOUT,*)
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' **************************************************'
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Analysis of Density and occupation for ROOT = ',JROOT
-          WRITE(LUWRTOUT,'(1H ,A,I3)')
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' **************************************************'
-          WRITE(LUWRTOUT,*)
+          WRITE(LUWRT,*)
         end if
         IF(ICISTR.EQ.1) THEN
           CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
-          CALL COPVEC(WORK(KVEC1),WORK(KVEC2),NVAR)
+          CALL DCOPY(NVAR,WORK(KVEC1),1,WORK(KVEC2),1)
           IF(IDENSI.EQ.1) THEN
             KRHO2 = 1
           END IF
@@ -652,16 +789,12 @@ CSK     &    CALL SKPVCD(LUSC41,JROOT-1,WORK(KVEC1),0,LBLK)
         ELSE
           IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
              CALL REWINO(LUSC1)
-csk      write(6,*)'problem here by LUC --> LUSC!', myproc
              CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
              CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
-csk      write(6,*)'problem here 2!', myproc
           END IF
-csk      write(6,*)'problem here 3!', myproc
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
-csk      write(6,*)'problem here 4!', myproc
-*
+C
           IF (NROOT.GT.1) THEN
             if (IPRNCIV.ge.1) then
               CALL REWINO(LUSC1)
@@ -675,7 +808,7 @@ csk      write(6,*)'problem here 4!', myproc
      &                    LUC,ICISTR)
             end if
           END IF
-*
+C
           IF (IPRNCIV.EQ.2) THEN
              WRITE(LUWRTOUT,*)
              WRITE(LUWRTOUT,*) ' ======================'
@@ -696,12 +829,13 @@ csk      write(6,*)'problem here 4!', myproc
 *    /\ end over master
 *
 CTF
-*  If TERACI has been chosen, only 1 root is determined.
-*  Reset number of roots.
+C     If TERACI has been chosen, only 1 root is determined.
+C     Reset number of roots.
+C
       if (IDIAG.eq.2) NROOT = NROOT_SAVE
-
-*. For testing purposes : calculate energy and Fock matrix
-*
+C
+C      for testing purposes : calculate energy and Fock matrix
+C
        ITEST = 0
        IF(ITEST.EQ.1.AND.IDENSI.EQ.2) THEN
          WRITE(LUOUT,*) 'calling EN_FROM_DEN'
@@ -712,40 +846,41 @@ CTF
          CALL MEMMAN(KLFOO,NTOOB**2,'ADDL  ',2,'FOO   ')
          CALL FOCK_MAT(WORK(KLFOO),2)
        END IF
-*
-*. Regenerate densities for reference root
-*
-C?     write(6,*) ' IRFROOT and NROOT ',IRFROOT, NROOT
-       IF(MYPROC.EQ.MASTER) THEN
-       IF(IH0ROOT.NE.NROOT) THEN
-*. Position vectors
-         CALL REWINO(LUC)
-*         write(6,*)'problem here GASCI (1)', myproc
-         DO JROOT = 1, IH0ROOT
+C
+Cold   regenerate densities for reference root
+C
+C
+C      density matrices -- natural orbital occupation numbers 
+C               one- and two-body density matrix 
+C               --------------------------------
+C
+       IF( MYPROC .eq. MASTER ) THEN
+         IF( IPRDEN .gt. 0 )IPRDEN = 0 
+         IF(IH0ROOT.NE.NROOT) THEN
+*          position vectors
+           CALL REWINO(LUC)
+           DO JROOT = 1, IH0ROOT
+             IF(ICISTR.EQ.1) THEN
+               CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
+             ELSE
+               CALL REWINO(LUSC1)
+               CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
+             END IF
+           END DO
            IF(ICISTR.EQ.1) THEN
-             CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
+             CALL DCOPY(NVAR,WORK(KVEC1),1,WORK(KVEC2),1)
+             CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
+     &                   WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)
            ELSE
              CALL REWINO(LUSC1)
-             CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
-           END IF
-         END DO
-         IF(ICISTR.EQ.1) THEN
-           CALL COPVEC(WORK(KVEC1),WORK(KVEC2),NVAR)
-COLD       CALL DENSI1(WORK(KRHO1),WORK(KVEC1),WORK(KVEC2),0  ,0  ,1)
-           CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
-     &          WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)
-         ELSE
-           CALL REWINO(LUSC1)
-           CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
-COLD       CALL DENSI1(WORK(KRHO1),WORK(KVEC1),WORK(KVEC2),
-COLD &                 LUSC1,LUSC2,1)
+             CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
              CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
-     &            WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
+     &                   WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
+           END IF
          END IF
        END IF
-       END IF
-*     /\ end over master
-*
+C      ^ END IF MYPROC .eq. MASTER 
+C
        IF(IEXTKOP.EQ.1) THEN
          WRITE(LUOUT,*) ' Control will be transferred to EXTKOP'
          CALL EXTKOP
@@ -765,11 +900,13 @@ C?   &  ' Control will be transferred to the response module'
      &                  WORK(KVEC1),WORK(KVEC2),EREF)
 C?      WRITE(6,*) ' Home from CI_RESPONS'
       END IF
-*
+C
+C     flush local memory
+C    
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
-*
-csk      write(6,*)'problem here (GASCI) 3', myproc
-* Eliminate scratch units:
+C
+C     eliminate scratch units
+C     -----------------------
       close(unit=LUSC2,status='DELETE')
       close(unit=LUSC3,status='DELETE')
       close(unit=LUSC34,status='DELETE')
@@ -780,8 +917,7 @@ csk      write(6,*)'problem here (GASCI) 3', myproc
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
       close(unit=LUSC41,status='DELETE')
-      close(unit=LUDUMPF,status='KEEP')
-*
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -830,7 +966,7 @@ C
 #endif
 #include "infpar.h"
 #include "priunit.h"
-#include "lucipar.inc"
+#include "parluci.h"
       DIMENSION WRK(LWRK)
 *
 *----------------Executable code--------------------------------------
@@ -848,20 +984,18 @@ C
       NMPROC = 1
 #endif
 C
-C     Summon the slaves, who are waiting in the general menu routine.
-C
+C     summon the slaves, who are waiting in the general menu routine
+C     --------------------------------------------------------------
       CALL LUMSTI
 C
-C      Enter the generic LUCITA routine (master becomes 
-C      now somewhat like primus inter pares -- "first among equals")
-C
+C     Enter the generic LUCITA routine (master becomes 
+C     now somewhat like primus inter pares -- "first among equals")
+C     -------------------------------------------------------------
       CALL PAMLU(WRK,LWRK,IN,IW)
 C
-C     Return the slaves to the general menu routine.
-C
+C     return the slaves to the general menu routine
+C     ---------------------------------------------
       CALL LUMSTE
-C
-C
 C
       END
 ***********************************************************************
@@ -892,7 +1026,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 #include "files.inc"
 #include "priunit.h"
 *. Parameters for dimensioning
@@ -914,23 +1048,17 @@ C
       DIMENSION WRK(LWRK)
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
-      INTEGER NAMELENGTH
-      INTEGER*8 k8base
-#if defined (VAR_MPI2)
-      MASTER = MPARID
-      MYPROC = MYTID
-C     Add the master node
-      NMPROC = NUMNOD + 1
-#else
-      MASTER = 0
-      MYPROC = 0
-      NMPROC = 1
-#endif
-      NAMELENGTH = 0
-      IN = IUNIN
-      IW = IUNUT
+      INTEGER NAMELENGTH, MIN_ONE
+      INTEGER*8 K8BASE
+C
+      MIN_ONE    = - 1
+      NAMELENGTH =   0
+CSK   IN = IUNIN
+CSK   IW = IUNUT
       LUIN = IUNIN
       LUOUT = IUNUT
+      LUCIWT = LUOUT
+      LUWRT = LUOUT
 C 
       CALL QENTER('REST ')
 C     No floating point underflow
@@ -974,78 +1102,79 @@ C    ======================================================
       CALL INPCTL(LUIN,LUCMOL,LUOUT)
 C
 C     check value for LCSBLK
-      IF(IMAXLBLKSZ.NE.LCSBLK) THEN
+      IF( IMAXLBLKSZ .gt. LCSBLK) THEN
         LCSBLK = IMAXLBLKSZ
       END IF
+C
+C     LUCITA is used in SPINFREE calculations: no complex part
+C
+      IRC_SAVE = 1
 C
 C     usage of parallel file I/O in the davidson routine needs to be 
 C     checked and set properly
 C
-      CALL MEMMAN(KPROCLIST,NMPROC,'ADDS  ',1,'IHOSTL')
+      CALL MEMMAN(KPROCLIST  ,NMPROC,'ADDS  ',1,'IHOSTL')
+      CALL MEMMAN(KGROUPLIST ,NMPROC,'ADDS  ',1,'IHOST2')
       CALL MEMMAN(KPROCLENGTH,NMPROC,'ADDL  ',1,'INAMEL')
 C
-      CALL ISETVC(WORK(KPROCLIST),-1,NMPROC)
+      CALL ISETVC(WORK(KPROCLIST),  MIN_ONE,NMPROC)
+      CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,NMPROC)
+      CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,NMPROC)
 C     initialize number of process groups sharing a c-vector file
-      NFLGRPS = 0
+      NFLGRPS     = 0
 C
 #if defined (VAR_MPI2)
+C
+C     parallel I/O mode for parallel runs / executable
+C
+      IIOMOD = 1
+C
 #if defined (SYS_LOCALDISKS)
-C     checking only if parallel file I/O in general is requested
       IF( IIOMOD .eq. 1 ) THEN
 C
-          CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
 C
-          CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
-     &         WORK(KPROCLIST),WORK(KPROCLENGTH))
-C       
-        IF( IFILESYSTEM .eq. 0 ) THEN
-C         number of groups sharing a file ( = NFLGRPS ) is determined 
-C         in the subroutine above. If there is only one group  
-C         than we can simulate a shared filesystem ( IFILESYSTEM = 1 )
-          IF( NFLGRPS .eq. 1 ) IFILESYSTEM = 1
-        ELSE
-          IF( NFLGRPS .gt. 1 ) THEN
-           WRITE(LUOUT,*) ' WARNING!!! Keyword .FILSYS not set properly.
-     & I recognized it, therefore I will continue'
-           WRITE(LUOUT,*) ' Setting .FILSYS to 0 would have avoided this
-     & warning.'
-           IFILESYSTEM = 0
-           GOTO 10
-          END IF
-          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-        END IF
- 10     CONTINUE
+         CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
+     &                            WORK(KPROCLIST),WORK(KPROCLENGTH))
+C
+         IF( NFLGRPS .eq. 1 ) THEN 
+            CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+         END IF
       END IF
 #else
 C     in case of a parallel filesystem, we should use it
-      IF( IIOMOD .eq. 1 .and. IFILESYSTEM .eq. 0 ) THEN
-        IFILESYSTEM = 1
-        NFLGRPS = 1
-        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-      ELSE IF( IIOMOD .eq. 1 .and. IFILESYSTEM .eq. 1 ) THEN
+      IF( IIOMOD .eq. 1 ) THEN
         NFLGRPS = 1
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
       END IF
 #endif
-CSK      WRITE(LUOUT,*) ' IFILESYSTEM, NFLGRPS, IIOMOD, IODENSEPAR',
-CSK     &                 IFILESYSTEM, NFLGRPS, IIOMOD, IODENSEPAR
+C
+C      set-up all useful MPI stuff: communication groups, MPI-files ...
+C                                   all important variables are stored
+C                                   on common block /LUPARGROUP/
+C
+C      construct new communication groups
+       CALL GROUP_CONSTRUCTOR(WORK(KGROUPLIST),WORK(KPROCLIST))
+C
+C      NPTESTVAR = 20
+       IF( NPTESTVAR .ge. 20 ) THEN
+         WRITE(LUOUT,*) 'this is my old and new rank ',myproc, MYNEW_ID
+         WRITE(LUOUT,*) 'this is my file grouplist:'
+         CALL IWRTMAMN(WORK(KGROUPLIST),1,NMPROC,1,NMPROC,LUOUT)
+         WRITE(LUOUT,*) 'this is my complete proclist:'
+         CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUOUT)
+       END IF
+       NPTESTVAR = 0
+C
+C      open the files for parallel file I/O
+C
+       CALL SETUNITS_PAR_OPEN(MY_GROUPN)
+CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+CSK       CALL Abend2('Sorry, I stop')
+C
 #endif
-C
-C     set some parallel variables to default for sequential runs 
-C
-      IF(IRUNPA.EQ.0) THEN
-        IRTNDRAT = 0
-        NPARWAY = 0
-        IRUNPCG = 0
-      ELSE IF(IRUNPA.GT.0.AND.IODENSEPAR.EQ.0)THEN
-        IF(NMPROC.EQ.1) WRITE(6,*) 'This parallel 
-     & version is not running for one CPU!'
-        IF(NMPROC.EQ.1) 
-     & CALL Abend2('Sorry, I need more than one CPU to run this 
-     & version in parallel')
-      END IF
-C
-C
 C
 C     Ratio beteeen real and integer word length
       CALL ZIRAT
@@ -1271,7 +1400,8 @@ C           Good old normal CI !!!!
 C           do CI in space JCMBPSC
             MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
-            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,WORK(KPROCLIST))
+            CALL GASCI(IREFSM,JCMBSPC,IPRDIA,EREF,LUOUT,
+     &                 WORK(KPROCLIST),WORK(KGROUPLIST))
 C
 *. Modified one-electron operator in first it
             IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
@@ -1407,14 +1537,18 @@ C     I_RESTRT_CC.EQ.1
         CALL PR_MATML_STAT
       END IF
 *
-c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       CALL QEXIT('REST ')
 *
-* Eliminate scratch units:
-CSK      close(unit=LUSC1,status='DELETE')
+*     eliminate scratch units:
       close(unit=LU91,status='DELETE')
-CSK      write(6,*)'LUSCR1,MYPROC', LUSCR1,MYPROC
-CSK      close(unit=LUSCR1,status='DELETE')
+C
+#if defined (VAR_MPI2)
+C
+C     close MPI-I/O files and free groups
+C
+      CALL SETUNITS_PAR_CLOSE
+      CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
+#endif
 C
       WRITE (LUOUT,*) '                          '
       WRITE (LUOUT,*) ' I am home from the loops '
@@ -1507,7 +1641,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 *./CECORE/
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
       CHARACTER IN_MPINN*7
@@ -5472,7 +5606,7 @@ C     LUCITA version by Stefan Knecht, Feb. 06
 C    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "lucipar.inc"
+#include "parluci.h"
 #include "maxorb.h"
 #include "dcbgen.h"
 C
@@ -5505,7 +5639,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 #include "dcbgen.h"
 #include "infpar.h"
-#include "lucipar.inc"
+#include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
@@ -5545,7 +5679,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar.inc"
+#include "parluci.h"
 #include "files.inc"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
@@ -5630,14 +5764,14 @@ C
   930 CONTINUE
       WORD3 = WORD
 *
-*    pointer in DIRAC.INP should now be positioned behind *LUCITA
+*     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
-        CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-        CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+      CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
+      CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
 *
 *     now let's call the working routine!
 *
-        CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
+      CALL PAMLU(WRK,LWRK,LUCMD,MSLVOUT)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
 *
@@ -5648,7 +5782,6 @@ C
       LUEND = .FALSE.
       CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
-
     1    CONTINUE
          CALL SLEEP(1)
          CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,LUEND,ISTAT,IERR)

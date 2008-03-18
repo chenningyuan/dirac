@@ -3096,7 +3096,6 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
 * IOCOC(IATP,IBTP)  = 1 =>      allowed combination
 * IOCOC(IATP,IBTP)  = 0 => not allowed combination
 *
-#include "../lucita/lucipar.inc"
 *.Input
       INTEGER ICMBSPC(LCMBSPC)
       INTEGER MNMXOC(MXPNGAS,2,*)
@@ -3154,12 +3153,10 @@ CMI        IF(INCLUDE .EQ.1) THEN
   100 CONTINUE
 *
       IF ( NTEST .GE. 300 ) THEN
-        IF(MYPROC.EQ.MASTER)THEN
           WRITE(6,*)
           WRITE(6,*) ' Matrix giving allowed combinations of types '
           WRITE(6,*)
           CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        END IF
       END IF
 *
       RETURN
@@ -7662,9 +7659,9 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
             WRITE(6,*) ' Since I cannot procede I will stop '
             WRITE(6,*) ' Insufficient buffer detected in '//
      &                     ' PART_CIV2_SPC'
-            WRITE(6,*) '  LENGTH ',LENGTH
+            WRITE(6,*) '  LENGTH, LBLOCK ',LENGTH
             WRITE(6,*) ' Alter GAS space of raise Buffer from',MXLNG
-            stop ' In PART_CIV2_SPC because of N_TRY .ge. 1. '
+            call abend2(' In PART_CIV2_SPC because of N_TRY .ge. 1. ')
           END IF
 *
           I_SAVE_IBLOCK = IBLOCK

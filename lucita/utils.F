@@ -116,7 +116,7 @@ C
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar.inc"
+#include "parluci.h"
 #endif
       
 

@@ -37,9 +37,9 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE CIEIG5(MV7,INICI,EROOT,VEC1,
+      SUBROUTINE CIEIG5(MV7,INICI,EROOTL,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU41,
-     &           NDIM,NBLK,NROOT,MAXVEC,MXCIIT,LUINCI,
+     &           NDIM,NBLK,NROOTSL,MAXVEC,MXCIIT,LUINCI,
      &           IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
      &           EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
      &           NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,INIDEG,
@@ -47,8 +47,14 @@ C
      &           NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,BLKS_A,
      &           CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,MXLNG,
      &           IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
-     &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKI,
-     &           IBLKDSTND,IBLKNDNB,SCRRED,RCCTOS,IPROCLIST,IGROUPLIST)
+     &           MULSPC,IPAT,LPAT,ISPC,LUWRTOUT,IBLOCKAR,
+     &           IBLKDSTND,SCRRED,SCRRED2,RCCTOS,IPROCLIST,IGROUPLIST
+#if defined (VAR_MPI2)
+     &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LU6LIST,
+     &           LU7LIST,LUCLIST
+#endif
+     &           )
+
 *
 * Master routine for CI diagonalization
 *
@@ -61,9 +67,31 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
+      DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
+      DIMENSION LU7LIST(*), LU6LIST(*)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 #include "files.inc"
+#include "mxpdim.inc"
+C     Definition of c and sigma
+      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+C        /ORBINP/ : NACOB used
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+C        Used: NSMOB
+#include "lucinp.inc"
+#include "cprnt.inc"
+#include "glbbas.inc"
+#include "oper.inc"
       LOGICAL CA
 C
 C
@@ -74,7 +102,7 @@ C     DIMENSION INIDET(100)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
-      DIMENSION EROOT(NROOT),RCCTOS(IBLKI)
+      DIMENSION EROOTL(NROOTSL), RCCTOS(*)
 C
 C     parameter used in parallel scheme /sk march 2007/
 C
@@ -85,36 +113,34 @@ C
 C?    WRITE(6,*)
 C?    WRITE(6,*) ' IROOTHOMING in CIEIG5 ', IROOTHOMING
       NTEST=0
-*
-*               ====================================
-** 1 :               INITIAL VARIATIONAL SUBSPACE
-*               ====================================
-*
+C
+C               ====================================
+C  1 :               INITIAL VARIATIONAL SUBSPACE
+C               ====================================
+C
       IF( INICI .EQ. 0 ) THEN
         IF(NPRDET .EQ. 0 ) THEN
-* ==================================================
-*. Initial guess from lowest elements of CI diagonal
-* ==================================================
-* In order treat degeneracies, the lowest 4 * NROOT elements are
-*.obtained
-CSK       IF(MYPROC.EQ.MASTER) THEN
-CSK        write(LUWRTOUT,*) ' CIEIG5 NDIM NROOT ', NDIM,NROOT
-CSK       END IF
-          NFINDM = MIN(NDIM,4*NROOT)
-          IF(IODENSEPAR.EQ.0) THEN
-            CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
-     &                  SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
-          ELSE
+C         ==================================================
+C          Initial guess from lowest elements of CI diagonal
+C         ==================================================
+C
+C         in order treat degeneracies, the lowest 4 * NROOTSL
+C         elements are obtained
+C
+          NFINDM = MIN(NDIM,4*NROOTSL)
+C
 #if defined (VAR_MPI2)
-            CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
-     &                      ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
-     &                      SCR1,IBLOCKAR,IBLKDSTND,IBLKI,IPRT)
+          CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
+     &                    ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
+     &                    SCR1,IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,IPRT)
+#else
+          CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,ISCR1(1+2*NFINDM),
+     &                SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
 #endif
-          END IF
           CALL REWINO(LU1)
           IBASE = 1
           TEST = 1.0D-10
-          DO 100 IROOT = 1, NROOT
+          DO 100 IROOTSI = 1, NROOTSL
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
@@ -127,14 +153,8 @@ CSK       END IF
             END IF
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              IF(MYPROC.EQ.MASTER) THEN
-                WRITE(LUWRTOUT,*) ' WARNING WARNING WARNING WARNING ! '
-                WRITE(LUWRTOUT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-                WRITE(LUWRTOUT,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
-                WRITE(LUWRTOUT,*) ' CONSIDERATION SINCE INIDEG = 0 '
-                WRITE(LUWRTOUT,*)
-                WRITE(LUWRTOUT,*) ' I hope you know what you are doing '
-              END IF
+              WRITE(LUCIWT,*) ' WARNING WARNING WARNING WARNING ! '
+              WRITE(LUCIWT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
               NDEG = 1
             END IF
 
@@ -154,15 +174,14 @@ CSK       END IF
             ELSE
               JPACK = 0
             END IF
-          IF(IODENSEPAR.EQ.0) THEN
-            CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA,JPACK)
-          ELSE
 #if defined (VAR_MPI2)
             CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
-     &                      IBLOCKAR,IBLKDSTND,IBLKI,JPACK)
+     &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
+     &                      IROOTSI,LU1LIST)
+#else
+            CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &                  LUDIA,JPACK)
 #endif
-          END IF
             IBASE = IBASE + NDEG
   100     CONTINUE
         ELSE
@@ -175,9 +194,9 @@ CSK       END IF
           ELSE
             JPACK = 0
           END IF
-          DO 1984 IROOT = 1, NROOT
+          DO 1984 IROOTSI = 1, NROOTSL
             CALL WRSVCD(LU1,LBLK,VEC1,IPNTR,
-     &           PEIGVC((IROOT-1)*NPRDET+1),NPRDET,NDIM,LUDIA,JPACK)
+     &           PEIGVC((IROOTSI-1)*NPRDET+1),NPRDET,NDIM,LUDIA,JPACK)
  1984     CONTINUE
         END IF
       END IF
@@ -187,28 +206,9 @@ CSK       END IF
 * ======================================================
 *
       IF( INICI .LT. 0 ) THEN
-*. Vectors assumed already in LU1
+*.      vectors assumed already in LU1/ILU1 (parallel)
         IF(IPRT.GT. 1 )
      &  WRITE(LUWRTOUT,*)' Initial CI vector assumed in place '
-#if defined (VAR_MPI2)
-        IF(NPRDET.EQ.0.AND.IODENSEPAR.GT.0)THEN
-          IF(MYPROC.EQ.MASTER) THEN
-            CALL REWINO(LU1)
-            CALL REWINO(LU41)
-            DO IROOT = 1, NROOT
-              CALL COPVCD(LU1,LU41,VEC1,0,LBLK)
-            END DO
-          ENDIF
-            CALL REWINO(LU1)
-            CALL REWINO(LU41)
-          DO IROOT = 1, NROOT 
-            CALL COPVCD_PAR_BDRIV2(LU41,LU1,VEC1,IBLKDSTND,
-     &                            IBLKI,MPI_COMM_WORLD,0,-1,LUDUMPF)
-          END DO
-          CALL REWINO(LU1)
-          CALL REWINO(LU41)
-        ENDIF
-#endif
       END IF
 *
 *                 ========================
@@ -218,36 +218,82 @@ CSK       END IF
       CALL QENTER('CIEIG')
 * Inverse iteration modified Davidson with 2 vectors in core
       IF(IPRT .GE. 5 ) THEN
-         WRITE(LUWRTOUT,*)
-         WRITE(LUWRTOUT,'(A,I3)')
-     &   '  Number of roots to be converged..  ',NROOT
-         WRITE(LUWRTOUT,*)
+         WRITE(LUCIWT,*)
+         WRITE(LUCIWT,'(A,I3)')
+     &   '  Number of roots to be converged..  ',NROOTSL
+         WRITE(LUCIWT,*)
 C        WRITE(6,'(A,I3)')
 C    &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(LUWRTOUT,*)
-         WRITE(LUWRTOUT,'(A,I3)')
+         WRITE(LUCIWT,*)
+         WRITE(LUCIWT,'(A,I3)')
      &   '  Allowed number of CI iterations  ..',MXCIIT
       END IF
 *
       KRNRM = 1
-      KEIG = KRNRM + MXCIIT*NROOT
-      KFIN = KEIG  + MXCIIT*NROOT
-      KAPROJ = KFIN + NROOT
+      KEIG = KRNRM + MXCIIT*NROOTSL
+      KFIN = KEIG  + MXCIIT*NROOTSL
+      KAPROJ = KFIN + NROOTSL
       KAVEC = KAPROJ + MAXVEC*(MAXVEC+1)/2
       KWORK = KAVEC + MAXVEC ** 2
       KLFREE = KWORK + MAXVEC*(MAXVEC+1)
       IF( IPRT .GE. 5 ) THEN
-         WRITE(6,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(6,'(6I8)')  KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
+         WRITE(LUCIWT,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
+         WRITE(LUCIWT,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
       END IF
       IF( KLFREE-1 .GT. LLWRK) THEN
-           WRITE(6,'(A,2I5)' )
+           WRITE(LUCIWT,'(A,2I5)' )
      &     ' Not enough memory in CIEIG5 : neeeded and available ',
      &     KLFREE-1, LLWRK
-           WRITE(6,'(A,2I5)' )
+           WRITE(LUCIWT,'(A,2I5)' )
      &     ' Increase parameter LLWRK in CIEIG5 to   ', KLFREE-1
            Call Abend2( ' insufficient memory in cieig5 ' )
        END IF
+*
+#if defined (VAR_MPI2)
+C
+C     partition CI vector with max. batch length using LBLOCK
+C
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'CIEIG5')
+C
+      IATP = 1
+      IBTP = 2
+      NOCTPA = NOCTYP(IATP)
+      NOCTPB = NOCTYP(IBTP)
+C     Offset for supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+C
+      NAEL = NELEC(IATP)
+      NBEL = NELEC(IBTP)
+C     Arrays giving allowed type combinations
+      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
+      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),0)
+C
+      KSVST = 1
+C     Arrays giving block type
+      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
+      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
+C     Arrays for partitioning of sigma
+      NTTS = MXNTTS
+      CALL MEMMAN(KLXLBT ,NTTS   ,'ADDL  ' ,1,'CLBT  ')
+      CALL MEMMAN(KLXLEBT ,NTTS  ,'ADDL  ' ,1,'CLEBT ')
+      CALL MEMMAN(KLXI1BT,NTTS   ,'ADDL  ' ,1,'CI1BT ')
+      CALL MEMMAN(KLXIBT ,8*NTTS ,'ADDL  ' ,1,'CIBT  ')
+C     partition the CI-vactor in batches
+      ITTSS_ORD = 2
+C
+      CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
+     &                   LBLOCK_LUCI,
+     &                   WORK(KSIOIO),ISMOST(1,ISSM),
+     &                   NBATCH,WORK(KLXLBT),WORK(KLXLEBT),
+     &                   WORK(KLXI1BT),WORK(KLXIBT),0,ITTSS_ORD,
+     &                   IBLKDSTND,IBLOCKI)
+#endif
 *
        IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
 *. Routine using two complete vectors in core
@@ -255,15 +301,15 @@ C    &   '  Largest allowed number of vectors..',MAXVEC
          IPICO = 0
          IF(MXCIIT.NE.0) THEN
          CALL MINDV4(MV7,VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &              EROOT     ,MXCIIT,NDIM,LU3,LUDIA,NROOT,
-     &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
+     &              EROOTL     ,MXCIIT,NDIM,LU3,LUDIA,NROOTSL,
+     &              MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &              SCR1(KWORK) ,IPRT,
      &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,EIGSHF,
      &              IOLSEN,IPICO)
          ELSE
 *. No iterations, set energy to 0
-           DO IROOT = 1, NROOT
-             EROOT(IROOT) = 0.0D0
+           DO IROOTSI = 1, NROOTSL
+             EROOTL(IROOTSI) = 0.0D0
            END DO
          END IF
 CJO-Start
@@ -273,34 +319,36 @@ CJO-End
 *. Routine using two blocks in core
 *
         I_USE_MICDV6 = 1
-        IF(.NOT.(MAXVEC.EQ.2.AND.NROOT.EQ.1)) THEN
-          IF(IODENSEPAR.EQ.0) THEN
+        IF(.NOT.(MAXVEC.EQ.2.AND.NROOTSL.EQ.1)) THEN
 C?       WRITE(6,*) ' MICDV6 will be called '
-            CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &                 EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-     &                 LUDIA,NROOT,
-     &                 MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-     &                 SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
-C?       WRITE(6,*) ' MICDV6_PAR will be called '
-          ELSE
 #if defined (VAR_MPI2)
-            CALL MICDV6_PAR(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &                     EROOT,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-     &                     LUDIA,NROOT,
-     &                     MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
-     &                     SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                     H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                     LUWRTOUT,BSCLFAC,IBLOCKAR,IBLKDSTND,IBLKI,
-     &                     SCRRED,RCCTOS,IPROCLIST,IGROUPLIST)
+          CALL MICDV6_PAR(VEC1,VEC2,SCR1(KRNRM),SCR1(KEIG),
+     &                    EROOTL,MXCIIT,NDIM,NROOTSL,
+     &                    MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &                    SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &                    H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
+     &                    LUWRTOUT,IBLOCKAR,IBLKDSTND,
+     &                    SCRRED,SCRRED2,RCCTOS,
+     &                    LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                    LU6LIST,LU7LIST,LUCLIST,NBATCH,
+     &                    WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
+     &                    WORK(KLXIBT),IGROUPLIST,IPROCLIST)
+
+#else
+          CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
+     &                EROOTL,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
+     &                LUDIA,NROOTSL,
+     &                MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
+     &                SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
+     &                H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,LUWRTOUT)
+C?       WRITE(6,*) ' MICDV6_PAR will be called '
 #endif
-          END IF
         ELSE
 *. Special version for one root 2 vectors
 C?       WRITE(6,*) ' MICDV5 will be called '
          CALL MICDV5(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &              EROOT     ,MXCIIT,NDIM,LU3,LU4,LU5,LUDIA,NROOT,
-     &              MAXVEC,NROOT,SCR1(KAPROJ),SCR1(KAVEC),
+     &              EROOTL     ,MXCIIT,NDIM,LU3,LU4,LU5,LUDIA,NROOTSL,
+     &              MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
      &              SCR1(KWORK) ,IPRT,
      &              NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
      &              THRES_E)
@@ -310,7 +358,7 @@ C?       WRITE(6,*) ' MICDV5 will be called '
          NSUB = 0
 C?       WRITE(6,*) ' ISKIPEI before call to PICO2',ISKIPEI
          CALL PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,SCR1(KRNRM),SCR1(KEIG),
-     &        EROOT,MXCIIT,NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,
+     &        EROOTL,MXCIIT,NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,
      &        IPRT,
      &        NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
      &        THRES_E,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
@@ -323,6 +371,11 @@ C?       WRITE(6,*) ' ISKIPEI before call to PICO2',ISKIPEI
        END IF
        ENOT = SCR1(KFIN)
        CALL QEXIT('CIEIG')
+#if defined (VAR_MPI2)
+C     eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
+#endif
 *
       RETURN
       END
@@ -3287,7 +3340,7 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *
 *
        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include "lucipar.inc"
+#include "parluci.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
@@ -3329,13 +3382,14 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 *
        LUCEND = .FALSE.
 C
-       WRITE(LUWRTOUT,*) ' '
-       WRITE(LUWRTOUT,*) ' '
-       WRITE(LUWRTOUT,*) '                  :::::::::::::::::::'
-       WRITE(LUWRTOUT,*) '                    Entering MICDV6  '
-       WRITE(LUWRTOUT,*) '                  :::::::::::::::::::'
-       WRITE(LUWRTOUT,*) ' '
-       WRITE(LUWRTOUT,*) ' '
+      WRITE(LUCIWT,'(10X,A)') '                           '
+      WRITE(LUCIWT,'(10X,A)')
+     &' **************************************************'
+      WRITE(LUCIWT,'(10X,A)')
+     &'     entering MICDV6 (sequential solver routine)   '
+      WRITE(LUCIWT,'(10X,A)')
+     &' **************************************************'
+      WRITE(LUCIWT,'(10X,A)') '                           '
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
@@ -3404,39 +3458,6 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        END DO
 *      ^ End of loop over IVEC
 *. end of initial loop
-*
-      IF(IRUNPA.EQ.0) THEN
-        NPARWAY = 0
-        IRUNPCG = 0
-      END IF
-
-       IF(MYPROC.EQ.MASTER) THEN
-         IF(IRUNPA.GT.0)THEN
-           WRITE(LUWRTOUT,'(A)')
-     &'             Parallel calculation (initial setup) '
-           WRITE(LUWRTOUT,'(A)')
-     &'             ==================================== '
-           IF(IRUNPCG.GT.0) THEN
-           WRITE(LUWRTOUT,'(A)')
-     &'          ==> s = H x C: coarse-grain route is active'
-           END IF
-           IF(NPARWAY.GT.0) THEN
-           WRITE(LUWRTOUT,'(A)')
-     &'          ==> s = H x C: fine-grain route is active'
-           END IF
-           WRITE(LUWRTOUT,'(A,1X,I4)')
-     &'          ==> process power to be used:',NMPROC
-           WRITE(LUWRTOUT,'(A)')' '
-         ELSE IF(IRUNPA.EQ.0)THEN
-           WRITE(LUWRTOUT,'(A)')
-     &'                        Serial calculation'
-           WRITE(LUWRTOUT,'(A)')
-     &'                        ================== '
-           WRITE(LUWRTOUT,'(A)')
-     &'          ==> s = H x C: computation is done one by one'
-           WRITE(LUWRTOUT,'(A)')' '
-         END IF
-       END IF
 *
        IF( IPRT .GE.5 ) THEN
          WRITE(6,*) ' INITIAL PROJECTED MATRIX  '
@@ -3710,12 +3731,6 @@ CSK                WRITE(6,*)   DELTA,GAMMA,FACTOR
         END DO
        END IF
        CALL REWINO(LU3)
-      END IF
-*
-*. 
-      IF(IRUNPA.EQ.0) THEN
-        NPARWAY = 0
-        IRUNPCG = 0
       END IF
 *
       CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)

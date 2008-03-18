@@ -456,14 +456,15 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
       DIMENSION L(*),R(*)
 *.Output
       DIMENSION RHO1(*),RHO2(*)
-*. Before I forget it :
+      IF( I12 .eq. 0 ) RETURN
+*     before I forget it :
       CALL QENTER('DENSI')
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'DENSI ')
       ZERO = 0.0D0
-      CALL SETVEC(RHO1,ZERO ,NACOB ** 2 )
+      CALL DZERO(RHO1,NACOB ** 2 )
       IF(I12.EQ.2)
-     &CALL SETVEC(RHO2,ZERO ,NACOB ** 2 *(NACOB**2+1)/2)
+     &CALL DZERO(RHO2,NACOB ** 2 *(NACOB**2+1)/2)
 *
 C?     WRITE(6,*) ' ISSPC ICSPC in DENSI2 ',ISSPC,ICSPC
 *

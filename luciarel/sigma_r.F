@@ -438,7 +438,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif      
-#include "lucipar_rel.inc"
+#include "parluci.h"
       INTEGER    IKJA(NTA*NKA), IKJB(NTB,NKB)             
       DIMENSION  XKJA(NTA*NKA), XKJB(NTB,NKB)             
 *. Input/Output 

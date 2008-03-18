@@ -947,7 +947,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *. General input  
 #include "mxpdim.inc"
 #include "symm.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *. Specific input 
       INTEGER NA(NSMST),NB(NSMST), IACTLIST(*)
 *. Output
@@ -1617,7 +1617,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *.Input
       DIMENSION IPLAC(*),VAL(*), IBLOCKL(*), IBLOCKD(*)
 *.Scratch

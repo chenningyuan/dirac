@@ -1345,7 +1345,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * ====================
 *
 #include "cicisp.inc"
-#include "lucipar.inc"
+#include "parluci.h"
       CALL QENTER('LCISP')
 *
 *
@@ -1716,6 +1716,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
       DIMENSION RHO1SM(*),OCCNUM(*),XNAT(*)
 *. Scratch ( Largest symmetry block )
       DIMENSION SCR(*)
+#include "parluci.h"
 *
       NTESTL = 0
       NTEST = MAX(NTESTL,IPRDEN)
@@ -1744,11 +1745,11 @@ C        ISM = (IPARI-1)*NML + MNML - 1
         END DO
 *
         IF (NTEST.GE.2) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' Density matrix for symmetry  = ', ISMOB
-          WRITE(6,*) ' ======================================='
-          WRITE(6,*)
-          CALL WRTMAT(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB)
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' Density matrix for symmetry  = ', ISMOB
+          WRITE(LUWRT,*) ' ======================================='
+          WRITE(LUWRT,*)
+          CALL WRTMATMN(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB,LUWRT)
         END IF
 *. Pack and diagonalize
         SIGN = 1.0D0
@@ -1778,30 +1779,35 @@ C        ISM = (IPARI-1)*NML + MNML - 1
               SS = OCCNUM(IOBOFF-1+IOB-1)
               OCCNUM(IOBOFF-1+IOB-1) = OCCNUM(IOBOFF-1+IOB)
               OCCNUM(IOBOFF-1+IOB)   = SS
-              write(6,*) ' Orbitals interchanged ',
+              write(LUWRT,*) ' Orbitals interchanged ',
      &        IOBOFF-1+IOB,IOBOFF-2+IOB
             END IF
           END IF
         END DO
 *
         IF (NTEST.GE.1) THEN
-          WRITE(6,*)
-          WRITE(6,*)
+          WRITE(LUWRT,*) ' '
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Natural occupation numbers for symmetry = ', ISMOB
-          WRITE(6,*)
-     &    ' ==================================================='
-          WRITE(6,*)
-          CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
+          WRITE(LUWRT,'(2X ,A)')
+     &    ' __________________________________________________'
+          OCCSUM = DSUM(LOB,OCCNUM(IOBOFF),1)
+          WRITE(LUWRT,9002) (OCCNUM(IOBOFF+J-1),J=1,LOB)
+          WRITE(LUWRT,9003) OCCSUM
+csk       CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
           IF (NTEST.GE.2) THEN
-            WRITE(6,*)
-            WRITE(6,*) ' Corresponding Eigenvectors '
-            WRITE(6,*)
-            CALL WRTMAT(XNAT(IMTOFF),LOB,LOB,LOB,LOB)
+            WRITE(LUWRT,*)
+            WRITE(LUWRT,*) ' Corresponding Eigenvectors '
+            WRITE(LUWRT,*)
+            CALL WRTMATMN(XNAT(IMTOFF),LOB,LOB,LOB,LOB,LUWRT)
           END IF
         END IF
       END DO
 *. ( End of loop over orbital symmetries )
 *
+ 9002 FORMAT(/,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
+C
       RETURN
       END
 ***********************************************************************
@@ -1989,7 +1995,7 @@ C       END DO
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
             
 *
       CALL QENTER('NGASD')

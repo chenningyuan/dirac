@@ -1678,7 +1678,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "symm.inc"

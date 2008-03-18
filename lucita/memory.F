@@ -91,8 +91,8 @@ C
 *. Zero to avoid problems with elements that will not
 *. be initialized
       ZERO = 0.0D0
-      CALL SETVEC(WORK(KINT1),ZERO,NTOOB**2)
-      CALL SETVEC(WORK(KINT1O),ZERO,NTOOB**2)
+      CALL DZERO(WORK(KINT1),NTOOB**2)
+      CALL DZERO(WORK(KINT1O),NTOOB**2)
 *.1.1 : Inactive fock matrix
       CALL MEMMAN(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI    ')
       CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
@@ -119,10 +119,6 @@ C
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2
       IF(IDENSI.EQ.2)
      &CALL MEMMAN(KRHO2,LRHO2     ,'ADDS  ',2,'RHO2  ')
-*.4. Integrals (ij!kk) -(ik!kj), pointer and space
-CJO   CALL MEMMAN(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
-CJO   CALL MEMMAN(KIJKK,NTOOB**2 *(NTOOB+1) / 2, 'ADDS  '
-CJO  &            ,2,'KIJKK ')
       KPNIJ = 1
       KIJKK = 1
       IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN

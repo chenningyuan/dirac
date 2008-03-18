@@ -338,7 +338,7 @@ C
 #include "mxpdim.inc"
 #include "irat.inc"
 #include "wrkspc.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
       KBASE_LOCAL = 0
       XBASE_LOCAL = 0.0D0
@@ -690,7 +690,7 @@ C
 #include "mxpdim.inc"
 #include "irat.inc"
 #include "wrkspc.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
       ILPRNT = 0
       IF(ILPRNT .NE. 0 ) THEN

@@ -95,7 +95,7 @@ C
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
-#include "lucipar_rel.inc"
+#include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
@@ -112,7 +112,7 @@ C
 *      SCRRED : MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2)
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10)
+       LOGICAL CONVER,RTCNV(100)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
        CHARACTER WPART22*12
@@ -126,6 +126,11 @@ C
        WRITE(LUWRT,*) '               Entering rel. MICDV4_par     '
        WRITE(LUWRT,*) '             ============================   '
        WRITE(LUWRT,*) '                                            '
+*
+*      no screening 
+*
+       CSCREEN = .FALSE.
+       TIMING  = .FALSE.
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
@@ -284,6 +289,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
  1000 CONTINUE
 *       start timing of iteration
         WALLITR1 = MPI_WTIME()
+        starttime = MPI_WTIME()
 *
         write(LUWRT,*)
         write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
@@ -307,9 +313,9 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *
 *        reset scratch file lists ...
 *
-         CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
-         CALL ISETVC(LU4LIST,NZERO,IALL_LU4)
-         CALL ISETVC(LU5LIST,NZERO,IALL_LU5)
+         CALL IZERO(LU3LIST,IALL_LU3)
+         CALL IZERO(LU4LIST,IALL_LU4)
+         CALL IZERO(LU5LIST,IALL_LU5)
 *
          EIGAPR = EIG(ITER-1,IROOT)
 *
@@ -376,6 +382,10 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
          END IF
 *        ^ converged?
   100 CONTINUE
+      endtime = MPI_WTIME()
+      WALLTID = SECTID(endtime-starttime)
+      IF( TIMING )
+     &WRITE(LUWRT,9250) WALLTID
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
@@ -392,6 +402,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *     2.1: multiply new directions with matrix
 *
       starttime = MPI_WTIME()
+      xixidletime = 0.0D0
 *
 
       CALL DZERO(SCRRED,LZERO_SCRRED)
@@ -402,7 +413,9 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *       copy c-vector to working-file ILUC
 *
 *
+        xidletime = MPI_WTIME()
         CALL MPI_BARRIER(MYNEW_COMM,IERR)
+        xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 CSK        WRITE(LUWRT,*) 'LU1LIST again:'
 CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
@@ -458,9 +471,11 @@ C       end of timing
 *
 *      synchronize MPI_COMM_WORLD
 *
+       xidletime = MPI_WTIME()
        CALL DZERO(APROJ(ISTRED),IMUSTRED)
        CALL REDVEC_REL(SCRRED(ISTRED),APROJ(ISTRED),IMUSTRED,2,
      &                 MPI_SUM,MPI_COMM_WORLD,-1)
+       xixidletime = xixidletime - xidletime + MPI_WTIME()
 *
 *     2.2: diagonalize projected matrix
 *
@@ -474,6 +489,20 @@ C       end of timing
 *     TIMING FOR PARTS 2.1 - 2.2
       WPART22 = SECTID(tottime)
       WRITE(LUWRT,9350) WPART22
+*
+      IF( TIMING )THEN
+*
+        WALLTID = SECTID(xixidletime)
+*
+*       print idle time
+*
+        WRITE(LUWRT,'(/A,1X,A)')
+     &  ' additional information: idle time in part 2     :',WALLTID
+        xpercent = (xixidletime/tottime) * 100
+        WRITE(LUWRT,'(A,F14.9,A/)')
+     &  ' ratio (idle time)/(time part 2) =',xpercent,' %'
+*
+      END IF
 *
 *     store new eigenvalues
 *
@@ -534,13 +563,11 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *       update WORK array to get correct scaling factor
 *
         CALL DZERO(WORK,NROOT)
-CSK        CALL REDVEC_REL(SCRRED,WORK,NROOT,2,MPI_SUM,MPI_COMM_WORLD,-1)
 *
 *       no scaling, we should already work in a normalized basis
 *
         CALL SETVEC(WORK,1.0D0,NROOT)
         CALL ISETVC(LU1LIST,NZERO,NROOT*MY_ACT_BLK1)
-CSK        CALL ISETVC(LU1LIST,NZERO,NROOT)
 *
         DO IROOT = 1, NROOT
 *
@@ -675,6 +702,7 @@ C
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
 
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
+ 9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)
  9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
@@ -747,7 +775,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
@@ -786,6 +814,10 @@ C
        WRITE(LUWRT,*) '                       Entering CMICDV_PAR  '
        WRITE(LUWRT,*) '                     ======================='
        write(LUWRT,*) '  '
+*
+*      no screening 
+*
+       CSCREEN = .FALSE.
 *
 *
 *      initialize LZERO_SCRRED

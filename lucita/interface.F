@@ -104,7 +104,7 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
-#include "lucipar.inc"
+#include "parluci.h"
 *
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
@@ -470,85 +470,47 @@ C
 *
 * 21: Type of parallel calculation
 *
-csk      write(6,*) ' start:  NUMNOD, IODENSEPAR, IRUNPA',
-csk     &                     NUMNOD, IODENSEPAR, IRUNPA
-*
       if (IMOKW(21).eq.0) then
-         IF (NUMNOD .GT. 0) THEN
-            IODENSEPAR = 2
-            IRUNPA = 1
-         ELSE
-            IODENSEPAR = 0
-            IRUNPA = 0
-         END IF
+#if defined (VAR_MPI2)
+         IODENSEPAR = 2
+         IRUNPA     = 1
+         IPARMODEL  = 2
+#else
+         IODENSEPAR = 0
+         IRUNPA     = 0
+         IPARMODEL  = 0
+#endif
          IMOKW(21) = 2
       else if (IMOKW(21).eq.1) then
-        if (NUMNOD .GT. 0) THEN
-         if (IPARMODEL.GT.2) then
-            write(6,*) 'Keyword PARMOD not compatible with input ',
-     &                  IPARMODEL
-            write(6,*) 'I will ignore your input.'
-            write(6,*) 'Program will continue.'
-            IMOKW(21) = 3
-            IPARMODEL = 1
-         endif  
-         IF(IPARMODEL.EQ.0)THEN
-           IODENSEPAR = 1
-           IRUNPA = 1
-         ELSE IF(IPARMODEL.EQ.1) THEN
-           IODENSEPAR = 2
-           IRUNPA = 1
-         ELSE IF(IPARMODEL.EQ.2) THEN
-           IODENSEPAR = 0
-           IRUNPA = 1
-         END IF
-        else
-         write(6,*) 'Keyword PARMOD does not make sense in a sequential'
-     &    //' run. I will ignore and continue.'
+#if defined (VAR_MPI2)
+         IODENSEPAR = 2
+         IRUNPA     = 1
+         IPARMODEL  = 2
+#else
          IODENSEPAR = 0
-         IRUNPA = 0
-         IMOKW(21) = 3
-        end if
+         IRUNPA     = 0
+         IPARMODEL  = 0
+#endif
       end if
-csk      write(6,*) ' middle: NUMNOD, IODENSEPAR, IRUNPA',
-csk     &                     NUMNOD, IODENSEPAR, IRUNPA
 *
 * 22: Type of I/O model in parallel calculation
 *
       if (IMOKW(22).eq.0) then
-        if (NUMNOD .gt. 0) then
+#if defined (VAR_MPI2)
          IIOMOD = 1
-         IMOKW(22) = 2
+         YESSTATEMENT = 'Yes'
+#else
+         IIOMOD = 0
          YESSTATEMENT = 'No'
-        else
-         IIOMOD = -1
-         IMOKW(22) = 2
-         YESSTATEMENT = 'No'
-        end if
+#endif
       else if (IMOKW(22).eq.1) then
-       if (NUMNOD .gt. 0) then
-        if(IPARIOMOD.eq.0) then
-          IIOMOD = 0
-          YESSTATEMENT = 'No'
-        else if(IPARIOMOD.eq.1) then
-          IIOMOD = 1
-          YESSTATEMENT = 'Yes'
-        else
-          write(6,*) 'Keyword PIOMOD not compatible with input ',
-     &                IPARIOMOD
-          write(6,*) 'I will ignore your input.'
-          write(6,*) 'Program will continue.'
-          IMOKW(22) = 3
-          IIOMOD = 1
-          YESSTATEMENT = 'No'
-        end if
-       else
-         write(6,*) 'Keyword PIOMOD does not make sense in a sequential'
-     &    //' run. I will ignore and continue.'
-         IIOMOD = -1
-         IMOKW(22) = 3 
+#if defined (VAR_MPI2)
+         IIOMOD = 1
+         YESSTATEMENT = 'Yes'
+#else
+         IIOMOD = 0
          YESSTATEMENT = 'No'
-       end if
+#endif
       end if
 *
 * 23: Number of maximum CI Iterations
@@ -575,31 +537,12 @@ csk     &                     NUMNOD, IODENSEPAR, IRUNPA
 C        .. we do not accept user input of less than 100 000 !
       end if
 *
-* 25: File system in use (local/parallel)
-*
-      if (IMOKW(25).eq.0) then
-         IFILESYSTEM = 0
-         IMOKW(25) = 2
-      else if (IMOKW(25).eq.1) then
-        if(IFILESYS.lt.0) then 
-          IFILESYSTEM = 0
-        else 
-          IFILESYSTEM = MIN(IFILESYS,1)
-          if( IIOMOD .eq. 0 .and. IFILESYSTEM .eq. 1 ) then 
-            write(6,*) 'Keyword FILSYS not set correctly. 
-     &      You should define PIOMOD properly (1 instead of 0). 
-     &      I will ignore and continue with a zero value for FILSYS.'
-            IFILESYSTEM = 0
-          end if
-        end if
-      end if
-*
 * 26: Distribution routine to use (only relevant in parallel case) 
 *
       IDISTROUTE = 0
       if (IMOKW(26).eq.0) then
         IDISTROUTE = 2
-        IMOKW(26) = 2
+        IMOKW(26)  = 2
       else if (IMOKW(26).eq.1) then
         if( I_USE_DIST_ROUTE .eq. 1 ) then
           IDISTROUTE = I_USE_DIST_ROUTE
@@ -615,28 +558,6 @@ C        .. we do not accept user input of less than 100 000 !
         endif
       end if
 *
-* 27: Fractional Files in DAVIDSON ROUTINE (?)
-*
-      CHUNK_FILE = .FALSE.
-*
-      if (IMOKW(27).eq.0) then
-        CHUNK_FILE = .FALSE.
-        IMOKW(27) = 2
-      else if (IMOKW(27).eq.1) then
-        if( IFRACTFILE .eq. 0 ) then
-          CHUNK_FILE = .FALSE.
-        else if ( IFRACTFILE .eq. 1 ) then
-          CHUNK_FILE = .TRUE.
-        else
-          write(6,*) 'Value for keyword FRCTFL incorrect ',
-     &               IFRACTFILE
-          write(6,*) 'I will ignore your input.'
-          write(6,*) 'Program will continue.'
-          CHUNK_FILE = .FALSE.   
-          IMOKW(27) = 2
-        endif
-      end if
-*
 * 28: Truncate residual vectors before creating new trial vector?
 *     (14-jun-07, hjaaj)
 *
@@ -648,10 +569,6 @@ C        .. we do not accept user input of less than 100 000 !
         trunc_fac = 1.0D-10
       end if
 *
-csk      write(6,*) ' end   : NUMNOD, IODENSEPAR, IRUNPA',
-csk     &                     NUMNOD, IODENSEPAR, IRUNPA
-csk      write(6,*) ' end   : IPARMODEL',
-csk     &                     IPARMODEL
       if(irunpa.eq.1) then
         performci = 'parallel'
       else if(irunpa.eq.0) then
@@ -760,35 +677,14 @@ csk     &                     IPARMODEL
 * 10e: file system in parallel calculation
 *
       if( irunpa .gt. 0 ) then
-        if( CHUNK_FILE ) THEN
-          YESSTATEMENT = 'Yes'
-        else
-          YESSTATEMENT = 'No'
-        end if
         write(LUOUT,'(A42,I1)')
      &  ' Parallel distribution routine ........ ',IDISTROUTE
-        write(LUOUT,'(/A42,A3)')
-     &  ' Fractional Files ..................... ',YESSTATEMENT
-        write(LUOUT,*)
-        if( ifilesystem .eq. 0 ) THEN
-          YESSTATEMENT = 'No'
-        else
-          YESSTATEMENT = 'Yes'
-        end if
-        write(LUOUT,'(A42,A3)')
-     &  ' Parallel Filesystem in use ........... ',YESSTATEMENT
-        write(LUOUT,*)
-        if(ifilesystem .eq. 1 ) then
-        write(LUOUT,'(A)')
-     &  '   WARNING! I expect now to work on a parallel filesystem.'
-        write(LUOUT,*)
-        end if
       end if
 *
 * 10f: truncation factor
 *
       write(LUOUT,'(/A42,1P,D10.2)')
-     &  '  Truncation Factor ..................... ',ctrunc_fac
+     &  ' Truncation Factor ..................... ',ctrunc_fac
       write(LUOUT,*)
                    
 * 11: INAC specification of inactive orbitals per symmetry
@@ -936,7 +832,7 @@ csk     &                     IPARMODEL
       implicit real*8 (A-H,O-Z)
 *
 #include "multd2h.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 *
 *--------------------------------------
 *  Timo Fleig, October 2000
@@ -1162,7 +1058,8 @@ csk     &                     IPARMODEL
       end if
 *
       if (myproc.eq.master) then
-      write(6,'(A)') ' Complete real list of 2-el. ints processed. '
+        write(LUWRT,'(A)') 
+     &       ' Complete real list of 2-el. ints processed. '
       end if
 *
       return
@@ -1875,7 +1772,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "orbinp.inc"
 #include "crun.inc"
 #include "lucinp.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 *
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
 C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
@@ -3481,7 +3378,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
       Write(LUOUT,*)
       Write(LUOUT,*)
-      nLine=34
+      nLine=35
       Do i=1,nLine
         Line=BlLine
         If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
@@ -3536,7 +3433,9 @@ c       Write(*,Fmt) '*'//Line//'*'
      &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
         If ( i.eq.32)
      &  Line='          J. Chem. Phys., 128 (2008) 014108       '
-        If ( i.eq.33 .or. i.eq.34 )
+        If ( i.eq.33)
+     &  Line='                                                  '
+        If ( i.eq.34 .or. i.eq.35 )
      &  Line = StLine
         write(LUOUT,*) Line
       End Do
@@ -3844,7 +3743,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "orbinf_lucita.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
 
@@ -4163,7 +4062,7 @@ C
 #include "lucinp.inc"
 #include "csm.inc"
 #include "orbinp.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *./CECORE/
@@ -4428,7 +4327,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 *
       logical MSCOMB
       character*2 TYPELUC(MXSEQ)
@@ -6216,6 +6115,7 @@ CC        IVFLEV = 1               ! could be made more flexible
 #include "multd2h.inc"
 #include "files.inc"
 #include "clunit.inc"
+#include "parluci.h"
 *
       integer SYDI
       dimension SYDI(NIRR_PN)
@@ -6224,11 +6124,12 @@ CC        IVFLEV = 1               ! could be made more flexible
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
+      NTEST  = 00
       if (NTEST.ge.1) then
-        write(LUDUMPF,*)
-        write(LUDUMPF,*) '=========================='
-        write(LUDUMPF,*) ' numints_red speaking:    '
-        write(LUDUMPF,*) '=========================='
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================='
+        write(LUWRT,*) ' numints_red speaking:    '
+        write(LUWRT,*) '=========================='
       end if
 *
 * Set up triangular array
@@ -6252,47 +6153,47 @@ CC        IVFLEV = 1               ! could be made more flexible
    10   continue
       end do
       if (NTEST.ge.5) then
-        write(LUDUMPF,*) 'Symmetry packing labels:'
+        write(LUWRT,*) 'Symmetry packing labels:'
         call iwrtma(IQISYM,NOCC,1,NOCC,1)
       end if
 *
 * Number of symmetry blocks and total number of integrals
       INIT = 1
       do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(LUDUMPF,*) 'ISP =',ISP
+        if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
         NSP=IQISYM(ISP)
         if (NSP.eq.0.and.NTEST.ge.1) then
-          write(LUDUMPF,*) 'Number of symm for P is  ',NSP
-          write(LUDUMPF,*) 'Skipping two-el. int. read.'
+          write(LUWRT,*) 'Number of symm for P is  ',NSP
+          write(LUWRT,*) 'Skipping two-el. int. read.'
           goto 333
         end if
-        if (NTEST.ge.10) write(LUDUMPF,*) 'NSP =',NSP
+        if (NTEST.ge.10) write(LUWRT,*) 'NSP =',NSP
         NOP=SYDI(NSP)
         do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(LUDUMPF,*) 'ISQ =',ISQ
+          if (NTEST.ge.10) write(LUWRT,*) 'ISQ =',ISQ
           NSQ = IQISYM(ISQ)
           NOQ = SYDI(NSQ)
           ISPQ = MULTD2H(NSP,NSQ)
-          if (NTEST.ge.10) write(LUDUMPF,*) 'NSQ =',NSQ
-          ntest = 10
+          if (NTEST.ge.10) write(LUWRT,*) 'NSQ =',NSQ
+          ntest = 00
           do ISR=1,ISP,1
-            if (NTEST.ge.10) write(LUDUMPF,*) 'ISR =',ISR
+            if (NTEST.ge.10) write(LUWRT,*) 'ISR =',ISR
             NSR = IQISYM(ISR)
             NOR = SYDI(NSR)
             ISPQR = MULTD2H(ISPQ,NSR)
             ISSM=ISR
             if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(LUDUMPF,*) 'NSR =',NSR
+            if (NTEST.ge.10) write(LUWRT,*) 'NSR =',NSR
             do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(LUDUMPF,*) 'ISS =',ISS
+              if (NTEST.ge.10) write(LUWRT,*) 'ISS =',ISS
               NSS=IQISYM(ISS)
               NOS=SYDI(NSS)
               if (NTEST.ge.10) then
-                write(LUDUMPF,'(A,4I6)') 
+                write(LUWRT,'(A,4I6)') 
      &          'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(LUDUMPF,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
+                write(LUWRT,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
               end if
-              if (NTEST.ge.10) write(LUDUMPF,*) 'NSS =',NSS
+              if (NTEST.ge.10) write(LUWRT,*) 'NSS =',NSS
               if(NSS.NE.ISPQR) goto 40
               if(NOS*NOR*NOQ*NOP.eq.0) goto 40
 *
@@ -6325,7 +6226,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               INIT = INIT + 1
               IGLSUM = IGLSUM + NIGL
               if (NTEST.ge.1) then
-                 write(LUDUMPF,601) NSP,NSQ,NSR,NSS,NIGL
+                 write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
               end if
 40          continue
           end do
@@ -6337,8 +6238,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
      &             ,4I2,' IS : ',I10)
 *
-*      close(LUDUMPF)
-      return
       end
 ***********************************************************************
 *                                                                     *
@@ -6512,7 +6411,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "clunit.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 *
       dimension NBASD(MXPIRR),NSTR(2)
 *
@@ -7423,7 +7322,7 @@ c     call XFLUSH(6)
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "lucipar.inc"
+#include "parluci.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
 
@@ -7592,7 +7491,7 @@ C
 *
       implicit real*8 (A-H,O-Z)
 *
-#include "lucipar.inc"
+#include "parluci.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
 #include "infpar.h"
@@ -7974,7 +7873,7 @@ c
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 *
       character*6 WAFFCT
       dimension IBOSYM(MORB),ICT(MXPIRR),NSTR(NFSYM),NSSH_L(NBSYM),

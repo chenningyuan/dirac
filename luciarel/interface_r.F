@@ -51,7 +51,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -1290,7 +1290,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "files_r.inc"
 #include "integrals_off.inc"
 *
@@ -5848,6 +5848,7 @@ C     Only SO operator doesn't make any sense!
 *
 #include "mxpdim.inc"
 #include "symm.inc"
+#include "parluci.h"
 *
       dimension IDEKS(MXPORB),IQISYM(MXPIRR)
 *
@@ -5855,14 +5856,14 @@ C     Only SO operator doesn't make any sense!
       NTEST = max(NTESTL,IPRINT)
 *
       if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) '=========================='
-        write(6,*) ' numints_red speaking:    '
-        write(6,*) '=========================='
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================='
+        write(LUWRT,*) ' numints_red_rel speaking:'
+        write(LUWRT,*) '=========================='
         if (NTEST.ge.5) then
-          write(6,*) 'Point group multiplication table:'
+          write(LUWRT,*) 'Point group multiplication table:'
           call iwrtma(IPGMULT,NIRR_PN,NIRR_PN,MXNSPIR,MXNSPIR)
-          write(6,*) 'Symmetry dimension array:'
+          write(LUWRT,*) 'Symmetry dimension array:'
           call iwrtma(SYDI,NIRR_PN,1,NIRR_PN,1)
         end if
       end if
@@ -5883,45 +5884,45 @@ C     Only SO operator doesn't make any sense!
    10   continue
       end do
       if (NTEST.ge.5) then
-        write(6,*) 'Symmetry packing labels:'
+        write(LUWRT,*) 'Symmetry packing labels:'
         call iwrtma(IQISYM,NOCC,1,NOCC,1)
       end if
 *
 * Number of symmetry blocks and total number of integrals
       INIT = 1
       do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(6,*) 'ISP =',ISP
+        if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
         NSP=IQISYM(ISP)
         if (NSP.eq.0) then
-          write(6,*) 'Number of symm for P is  ',NSP
-          write(6,*) 'Skipping two-el. int. read.'
+          write(LUWRT,*) 'Number of symm for P is  ',NSP
+          write(LUWRT,*) 'Skipping two-el. int. read.'
           goto 333
         end if
-        if (NTEST.ge.10) write(6,*) 'NSP =',NSP
+        if (NTEST.ge.10) write(LUWRT,*) 'NSP =',NSP
         NOP=SYDI(NSP)
         do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(6,*) 'ISQ =',ISQ
+          if (NTEST.ge.10) write(LUWRT,*) 'ISQ =',ISQ
           NSQ = IQISYM(ISQ)
           NOQ = SYDI(NSQ)
           ISPQ = IPGMULT(NSP,NSQ)
-          if (NTEST.ge.10) write(6,*) 'NSQ =',NSQ
+          if (NTEST.ge.10) write(LUWRT,*) 'NSQ =',NSQ
           do ISR=1,ISP,1
-            if (NTEST.ge.10) write(6,*) 'ISR =',ISR
+            if (NTEST.ge.10) write(LUWRT,*) 'ISR =',ISR
             NSR = IQISYM(ISR)
             NOR = SYDI(NSR)
             ISPQR = IPGMULT(ISPQ,NSR)
             ISSM=ISR
             if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(6,*) 'NSR =',NSR
+            if (NTEST.ge.10) write(LUWRT,*) 'NSR =',NSR
             do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(6,*) 'ISS =',ISS
+              if (NTEST.ge.10) write(LUWRT,*) 'ISS =',ISS
               NSS=IQISYM(ISS)
               NOS=SYDI(NSS)
               if (NTEST.ge.10) then
-                write(6,'(A,4I6)') 'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(6,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
+                write(LUWRT,'(A,4I6)') 'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
+                write(LUWRT,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
               end if
-              if (NTEST.ge.10) write(6,*) 'NSS =',NSS
+              if (NTEST.ge.10) write(LUWRT,*) 'NSS =',NSS
               if(NSS.NE.ISPQR) goto 40
               if(NOS*NOR*NOQ*NOP.eq.0) goto 40
 *
@@ -5954,7 +5955,7 @@ C     Only SO operator doesn't make any sense!
               INIT = INIT + 1
               IGLSUM = IGLSUM + NIGL
               if (NTEST.ge.1) then
-                 write(6,601) NSP,NSQ,NSR,NSS,NIGL
+                 write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
               end if
 40          continue
           end do
@@ -7072,6 +7073,7 @@ C?    end do
 #include "input.inc"
 #include "symm.inc"
 #include "clunit.inc"
+#include "parluci.h"
 *
       parameter (LOCLEN=666)
 *. Input
@@ -7180,8 +7182,8 @@ C?    end do
       do ISP=1,NIRR_PN,1
          NSP=QISYM(ISP)
          if (NSP.eq.0) then
-            write(6,*) 'Number of symm for P is  ',NSP
-            write(6,*) 'Skipping two-el. int. read.'
+            write(LUWRT,*) 'Number of symm for P is  ',NSP
+            write(LUWRT,*) 'Skipping two-el. int. read.'
             goto 333
          end if
          NOP=NORBMOL(NSP)
@@ -7232,14 +7234,14 @@ C?    end do
                   IOFFSET(INIT) = IOFFSET(INIT-1) + NIGL
                   IGLSUM = IGLSUM + NIGL
                   if (NTEST.ge.100) then
-                     write(6,601) NSP,NSQ,NSR,NSS,NIGL
+                     write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
                   end if
 40             continue
             end do
          end do
 * Number of non-vanishing symmetry blocks
          NSMBLK = INIT - 1
-         write(6,*) '# Symm blocks: ',NSMBLK
+         write(LUWRT,*) '# Symm blocks: ',NSMBLK
 333      continue
       end do
 601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
@@ -8865,7 +8867,7 @@ C
 #include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "wrkspc.inc"
 #include "ipoist8.inc"
 C
@@ -9324,7 +9326,7 @@ Cjan      end do
 *
 #include "dgroup.h"
 #include "dcborb.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "noccn_inf.inc"
 *
       dimension F1(*),F2(*)
@@ -9609,7 +9611,7 @@ csk               write(LUWRT,*) ' continuing ...'
 *
 #include "dgroup.h"
 #include "dcborb.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "noccn_inf.inc"
 *
       dimension F1(*)
@@ -9834,7 +9836,7 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "krmc_shmem.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -10080,7 +10082,7 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP)
       dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),

@@ -78,7 +78,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 #include "pgroup.h"
 #include "dgroup.h"
@@ -1076,7 +1076,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 #include "../luciarel/mxpdim.inc"
 C
@@ -1603,7 +1603,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "../luciarel/cprnt.inc"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 C     set "I/O node master" + "shared memory node master"
       N_MASTER    = 0
@@ -1645,7 +1645,7 @@ C***********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
       CHARACTER*6 CIRUN
 C     initial definitions
 #if defined (VAR_MPI)
@@ -1768,7 +1768,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 C  FIXME:
 C         VCT1 and VCT2 unused at the moment. They should carry
@@ -1855,38 +1855,33 @@ C       initialize number of process groups sharing a c-vector file
 C
 #if defined (VAR_MPI2)
 C
-C       hardwired to 1 (if at least two cpu's active, i.e. numnod .gt. 0)
+C       hardwired to 1, otherwise it fails...
 C
-        IF (NUMNOD .GT. 0) THEN
-           IPARALLELIO = 1
-        ELSE
-           IPARALLELIO = 1
-        END IF
+        IPARALLELIO = 1
 C
 #if defined (SYS_LOCALDISKS)
+C
 C       checking only if parallel file I/O in general is requested
+C
         IF( IPARALLELIO .eq. 1 ) THEN
 C  
-            NAMELENGTH = 0
+           NAMELENGTH = 0
 C
-            CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+           CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
 C
-            CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
-     &                               WORK(KPROCLIST),WORK(KPROCLENGTH))
+           CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
+     &                                  WORK(KPROCLIST),
+     &                                  WORK(KPROCLENGTH))
 C
-C           number of groups sharing a file ( = NFLGRPS ) is determined
-C           in the subroutine above. If there is only one group
-C           than we can simulate a shared filesystem.
-      END IF
+C          number of groups sharing a file ( = NFLGRPS ) is determined
+C          in the subroutine above. If there is only one group
+C          than we can simulate a shared filesystem.
+C
+        END IF
 #else
 C       in case of a parallel filesystem, we should use it
-        IF( IPARALLELIO .ge. 0 ) THEN
-csk          NFLGRPS = 1
-          NFLGRPS_REL = 1
-          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-C         enable parallel I/O mode!!!
-          IPARALLELIO = 1
-        END IF
+        NFLGRPS_REL = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
 #endif /* ifdef SYS_LOCALDISKS */
 C
 C       MPI "shared memory" mode
@@ -2406,7 +2401,7 @@ C
       DIMENSION WORK(*),CMO(*),CREF(*)
 C
 #include "../luciarel/clunit.inc"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 #include "memint.h"
 C
@@ -2613,7 +2608,7 @@ C
 C
       DIMENSION WORK(*), CMO(*)
 C
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 #include "memint.h"
 C
@@ -2876,7 +2871,7 @@ C
       DIMENSION WORK(*),RHO1(*),RHO2(*),CREFL(*),CREFR(*)
 C
 #include "../luciarel/clunit.inc"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
       KFRSAV = KFREE
 C
@@ -3277,7 +3272,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbgen.h"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
 C     ITASK = 6 for parallel KRMC-LUCIAREL
 C
@@ -3303,7 +3298,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 #include "dcbgen.h"
 #include "infpar.h"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
@@ -3344,7 +3339,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "infpar.h"
 #include "mpif.h"
-#include "../luciarel/lucipar_rel.inc"
+#include "parluci.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION WORK(LWORK)
       LOGICAL LUEND

@@ -4076,7 +4076,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar.inc"
+#include "parluci.h"
 #endif
 *. Input
 *     (and /LUCINP/ not occuring here )

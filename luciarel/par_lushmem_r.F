@@ -70,7 +70,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
       DIMENSION IT_TTPL(*) 
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_PROC, ISLEN_ACT_BLK
@@ -133,7 +133,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       LOGICAL CINFO
@@ -175,7 +175,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
@@ -209,7 +209,7 @@ C
 C     pointer has to be defined in calling routine as 
 C     POINTER (MY_T_SCR_PTR, T_SCR_CC(IDUMMY_BUFF_SZ))
 C
-C     IS_LENGTH_TT   stored on /LUCIPAR_I8/   (lucipar_rel.inc)
+C     IS_LENGTH_TT   stored on /LUCIPAR_I8/   (parluci.h)
 C     MY_T_SCR_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
 C     
 C     Last revision:
@@ -219,7 +219,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
@@ -253,7 +253,7 @@ C
 C     pointer has to be defined in calling routine as 
 C     POINTER (MY_XINT_SCR_PTR, XINT_SCR(IDUMMY_BUFF_SZ))
 C
-C     LEN_ALL_INT       stored on /LUCIPAR_I8/   (lucipar_rel.inc)
+C     LEN_ALL_INT       stored on /LUCIPAR_I8/   (parluci.h)
 C     MY_XINT_SCR_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
 C     
 C     Last revision:
@@ -263,7 +263,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
@@ -303,7 +303,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
@@ -342,7 +342,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
 #include "krmc_shmem.h"
@@ -380,7 +380,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 C     destroy T memory window
 C
@@ -416,7 +416,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 C     destroy C memory window
 C
@@ -452,7 +452,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 C     release memory
 C
@@ -482,7 +482,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 C     release memory
 C

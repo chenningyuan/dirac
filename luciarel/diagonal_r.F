@@ -74,7 +74,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
 *.General input
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -389,7 +389,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       DIMENSION IBLTP(*), T_BUFF_D(*)
       DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
@@ -600,7 +600,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "integrals_off.inc"
 *
       dimension INDGATH(MXPORB),ISPSF_MO(MXNDGIRR,2),IKPERM(4),
@@ -989,7 +989,7 @@ csk      NTEST = 000
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "integrals_off.inc"
 *
       character*6 SIGDEN_ROUTE
@@ -1170,7 +1170,7 @@ csk      NTEST = 10
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "krmc_shmem.h"
 *
       DIMENSION IREOTS(*),MDIASV(4,*)
@@ -1252,7 +1252,7 @@ csk      NTEST = 000
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "krmc_shmem.h"
 *
       character*4 TYPE

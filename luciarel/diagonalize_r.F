@@ -79,7 +79,7 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 #include "cstate.inc"
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
 *     output from subspace diagonalization
 *
@@ -140,10 +140,6 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
               WRITE(LUWRT,*) ' WARNING WARNING WARNING WARNING ! '
               WRITE(LUWRT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-C             WRITE(6,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
-C             WRITE(6,*) ' CONSIDERATION SINCE  INIDEG = 0 '
-C             WRITE(6,*)
-C             WRITE(6,*) ' I hope you know what you are doing '
               NDEG = 1
             END IF
 
@@ -867,7 +863,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
@@ -1520,7 +1516,7 @@ C!?      ITER = ITER - 1
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 
 *
       character*6 SIGDEN_ROUTE
@@ -2670,7 +2666,7 @@ C      END IF
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)

@@ -2331,7 +2331,7 @@ C    &           LUDIA)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
       
 *.Input
       DIMENSION IPLAC(*),VAL(*)

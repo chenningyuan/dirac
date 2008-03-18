@@ -247,7 +247,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "files_r.inc"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL
@@ -622,7 +622,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       CLOSE(UNIT=LUDIA,STATUS='KEEP')
       CLOSE(UNIT=LUC,STATUS='KEEP')

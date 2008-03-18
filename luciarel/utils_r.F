@@ -320,7 +320,7 @@ C**********************************************************************
 #include "mpif.h"
 #include "infpar.h"
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
       DIMENSION IT_CTALL(*), IT_CTONE(*)
       INTEGER ICOUNT_TBLK, IOFF_ONE
 C
@@ -388,7 +388,7 @@ C**********************************************************************
 #include "mpif.h"
 #include "infpar.h"
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ctcc.inc"
       DIMENSION IT_TTPL(*)
       INTEGER*8 J_COUNT_LEN, ITLTND, IILENGTH
@@ -497,7 +497,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "files_r.inc"
       integer*8 NINTS_I8
       dimension IN(4,NINTS_I8)
@@ -559,7 +559,7 @@ C***********************************************************************
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
       INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IS_LENGHT8
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "typesz_mpi2.h"
       CHARACTER*6 ENVIRO, SIGDEN_ROUTE
 C
@@ -673,7 +673,7 @@ C***********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "symm.inc"
@@ -772,7 +772,7 @@ C***********************************************************************
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL
 #endif
 #include "mxpdim.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 #include "typesz_mpi2.h"
@@ -890,7 +890,7 @@ C***********************************************************************
       INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IREAD_BYTE, IOFFSET_T
 #endif
 #include "mxpdim.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 #include "orbinp.inc"
@@ -1026,7 +1026,7 @@ C***********************************************************************
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "mxpdim.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ctcc.inc"
 #include "integrals_off.inc"
       DIMENSION T_BUFF(*), T(NALLINT), MDIASV(*)
@@ -1151,8 +1151,8 @@ C***********************************************************************
 #include "mpif.h"
 #include "infpar.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
       DIMENSION ICHECK_VEC(*)
-#include "lucipar_rel.inc"
 C
       ICHECK_SCR   = ICHECK_VEC(1)
       ICHECK_SCR_2 = 0

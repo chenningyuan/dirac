@@ -46,7 +46,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar.inc"
+#include "parluci.h"
 #include "files.inc"
 #include "clunit.inc"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
@@ -351,12 +351,6 @@ C
 *  LUCITA converted input unit for parallel calculations
       LU_LUWRT = 95
 *
-*. dumpf file
-      LUDUMPF = 98
-      NDUMPF = 'DUMPFL'
-      Open(Unit=LUDUMPF,File=NDUMPF,
-     &     Status='UNKNOWN',Form='FORMATTED')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *

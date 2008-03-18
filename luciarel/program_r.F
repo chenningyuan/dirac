@@ -53,7 +53,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ipoist8.inc"
 *
       EXTERNAL MV7_REL

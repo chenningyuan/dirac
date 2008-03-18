@@ -1001,7 +1001,7 @@ CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -1636,7 +1636,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *.CSMPRD
       INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
       COMMON/CSMPRDR/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
@@ -2009,7 +2009,7 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       NTESTL = 0
       NTEST = MAX(NTESTL,IPRNT)
@@ -3093,7 +3093,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
@@ -3978,7 +3978,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -4206,7 +4206,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       INTEGER LEBATCH(*)
       INTEGER I1BATCH(*)
       INTEGER IBATCH(8,*)
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       I_SAVE_IBLOCK = 0
       N_TRY = 0
@@ -4407,7 +4407,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -4594,7 +4594,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -5021,7 +5021,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 *. Input
       DIMENSION NSHPIR(*),NOSPIR(*),IOSPIR(*)
@@ -5470,7 +5470,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 #include "gasstr.inc"
 #include "strinp.inc"
 * new
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
 *.output
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
@@ -5767,7 +5767,7 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 #include "gasstr.inc"
 #include "strinp.inc"
 * new
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
@@ -6057,7 +6057,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 #include "gasstr.inc"
 #include "strinp.inc"
 * new
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"

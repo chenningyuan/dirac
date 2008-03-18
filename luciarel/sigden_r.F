@@ -612,7 +612,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -1516,7 +1516,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 #include "symm.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *     
 *.Input
       DIMENSION CB(*)
@@ -2523,7 +2523,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       INTEGER NIA(*), NIB(*), IOFF1, IOFF2, INCLUDE_LIST(*)
 *. General input
 #include "symm.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
       LEN   = 0
       IOFF2 = 0
@@ -2951,7 +2951,7 @@ C         OUTPUT
 C
 #include "ctcc.inc"
 #include "integrals_off.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C
 C     specific input in order to handle large integral arrays on
 C     even on 32-bit systems
@@ -3059,7 +3059,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)     
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3104,17 +3104,6 @@ C
       CALL MEMMAR(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'ICLLOC')
 C
 #endif
-C     IF( SHARED_M )THEN
-C       IF( MYNEW_ID_SM .eq. N_MASTER )THEN
-C         WRITE(LUWRT,*) ' NINT_TOTAL is ',NINT_TOTAL
-C         WRITE(LUWRT,*) ' MY T_BUFF array '
-C       CALL WRTMATMN8(T_BUFF,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-C       END IF
-C     ELSE
-C       WRITE(LUWRT,*) ' NINT_TOTAL is ',NINT_TOTAL
-C       WRITE(LUWRT,*) ' MY T array '
-C       CALL WRTMATMN8(T,1,NINT_TOTAL,1,NINT_TOTAL,LUWRT) 
-C     END IF
 C
       call sigden_rel(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,T_BUFF,
@@ -3185,8 +3174,6 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-C     DIMENSION IPROCLIST(*), RCCTOS(*), ISCLFAC(*), ISCLFAC_LOCAL(*)
-C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
@@ -3195,7 +3182,7 @@ C     DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
       LOGICAL WRITE_SB
 #endif /* if def VAR_MPI2 */
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "files_r.inc"
 *
 #include "include/dgroup.h"
@@ -3417,11 +3404,11 @@ C         call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
 *
 #if defined (VAR_MPI2)
 *
-*       start various timings...
+*           start various timings...
 *
-             starttime = mpi_wtime()
-             sbatchtime = 0.0D0
-             writetime = 0.0D0
+            starttime  = mpi_wtime()
+            sbatchtime = 0.0D0
+            writetime  = 0.0D0
 *
 *         check whether a cpu needs to call sigden_rel2
 *
@@ -3749,7 +3736,7 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_EXPL
       INTEGER INT_IOFF1, INT_IOFF2, INT_IOFF3, INT_IOFF_EXPL
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "gasstr.inc"
@@ -3962,7 +3949,7 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
@@ -4297,7 +4284,7 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
       INTEGER(KIND=MPI_ADDRESS_KIND) ICPL_I8, ITB_I8
 #endif
-#include "lucipar_rel.inc"
+#include "parluci.h"
 C     general input
 #include "mxpdim.inc"
 #include "csm.inc"
@@ -4794,7 +4781,7 @@ C
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
 *. Input and output
       DIMENSION TCC(NCA*NCB*NAA*NAB), T_SCR_CC(*)
       DIMENSION TCC_SUB(NCA_SUB,NCB_SUB,NAA_SUB,NAB_SUB)
@@ -5110,7 +5097,7 @@ C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
 #include "mxpdim.inc"
 *. General input
 #include "symm.inc"
-#include "lucipar_rel.inc"
+#include "parluci.h"
       INTEGER NRPSM(NSMOB),NCPSM(NSMOB), IACTL(*)
 *. Specific input
       DIMENSION H(*)
