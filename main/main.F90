@@ -51,13 +51,14 @@ program dirprg
   mparid  = 0
   numnod  = 1
 #endif
-!    SK -19-03-2008 bugfix: call DIRAC / DIRNOD with iparcal (not parcal)
   if (parcal) iparcal = 1
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC master allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
+     call printtitle
      call printlogo
+     call printsubtitle
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
      memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM)

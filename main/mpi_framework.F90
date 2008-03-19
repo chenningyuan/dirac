@@ -76,7 +76,6 @@ IPAREX = GET_ENVIRONMENT_INTEGER('DIRPAR',1)
 ! initialize MPI_COMM_WORLD
 !
 IF( IPAREX .ne. 0 )THEN
-   print *,'init_init' 
   CALL MPI_INIT( IERR )
   IF( IERR .ne. 0 ) THEN
      WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXINIT ** MPI initialization failed. '
@@ -90,13 +89,11 @@ IF( IPAREX .ne. 0 )THEN
 !     12-03-2008.
 !     any suggestions?
 !
-   print *,'mpi_comm_rank' 
   CALL MPI_COMM_RANK(MPI_COMM_WORLD, MYTID, IERR)
   IF( IERR .ne. 0 ) THEN
      WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXINIT ** call to MPI_COMM_RANK failed. '
      CALL Abend2( 'Error calling MPI_COMM_RANK' )
   END IF
-  print *,'mpi_comm_size' 
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD, NUMPROC, IERR)
   IF( IERR .ne. 0 ) THEN
      WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXINIT ** call to MPI_COMM_SIZE failed. '
@@ -114,7 +111,6 @@ IF( IPAREX .ne. 0 )THEN
 ! synchronize loosely, so the nodes may print to output before the master
 ! goes on printing header ...
 !
-   print *,'mpi_barrier' 
   CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 #if defined (MPE)
