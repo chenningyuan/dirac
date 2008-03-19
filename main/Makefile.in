@@ -4,7 +4,7 @@ C_OBJS =
 
 F77_OBJS = dirac.o
 
-F90_OBJS = main.o mpi_framework.o
+F90_OBJS = main.o mpi_framework.o logo.o
 
 F90_MODS = 
 

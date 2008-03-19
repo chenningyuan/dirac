@@ -57,13 +57,12 @@ program dirprg
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC master allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
-     print *,'calling dirac'
+     call printlogo
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
      memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC slave allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
-     print *,'calling dirnod'
      call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
   endif
 #ifdef VAR_MPI

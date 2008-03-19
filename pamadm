@@ -537,7 +537,7 @@ dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o  dirac/dirbss.o dirac/dirmp2no.o \\
-main/dirac.o main/main.o main/mpi_framework.o\\
+main/dirac.o main/main.o main/mpi_framework.o main/logo.o\\
 abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
