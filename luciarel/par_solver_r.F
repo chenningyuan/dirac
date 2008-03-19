@@ -130,7 +130,7 @@ C
 *      no screening 
 *
        CSCREEN = .FALSE.
-       TIMING  = .FALSE.
+       TIMING  = .TRUE.
 *
        IPICO = 0
        IF(IPICO.NE.0) THEN
@@ -483,22 +483,27 @@ C       end of timing
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
       CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
 *
-      endtime = MPI_WTIME()
-      tottime = 0.D0
-      tottime = endtime - starttime
-*     TIMING FOR PARTS 2.1 - 2.2
+      endtime      = MPI_WTIME()
+      tottime      = 0.0D0
+      tottime_save = 0.0D0
+      tottime      = endtime - starttime
+C     TIMING FOR PARTS 2.1 - 2.2
+      tottime_save = tottime
       WPART22 = SECTID(tottime)
       WRITE(LUWRT,9350) WPART22
 *
       IF( TIMING )THEN
+*
+        xixidletime_save = 0.0D0
+        xixidletime_save = xixidletime
 *
         WALLTID = SECTID(xixidletime)
 *
 *       print idle time
 *
         WRITE(LUWRT,'(/A,1X,A)')
-     &  ' additional information: idle time in part 2     :',WALLTID
-        xpercent = (xixidletime/tottime) * 100
+     &  ' accumulated idle time in part 2                 :',WALLTID
+        xpercent = (xixidletime_save/tottime_save) * 100
         WRITE(LUWRT,'(A,F14.9,A/)')
      &  ' ratio (idle time)/(time part 2) =',xpercent,' %'
 *
