@@ -1508,6 +1508,11 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
@@ -2029,6 +2034,9 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              FACTORC = 0.0D0
              FACTORAB = 1.0D0*SIGNXXX
 *
+#if defined (VAR_MPI2)
+             xxxsitime = MPI_WTIME()
+#endif
              IF(ISD.EQ.1) THEN
                CALL MATML7(SIRES,CJRES,TBSUB,
      &         LKAB,LCAB,LKAB,LAAB,LCAB,LAAB,FACTORC,FACTORAB,2)
@@ -2057,6 +2065,9 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
                  write(LUWRT,*)
                END IF
              END IF
+#if defined (VAR_MPI2)
+             xcomputesi = xcomputesi - xxxsitime + MPI_WTIME()
+#endif
 * =================================================================
 * For sigma :
 * S(Ia,IB) = SI(Ia,Ib) + <Ka!O+_ca!Ia><Kb!O+cb!Ib>SIRES(Ka,Kb,Ica,Icb)
@@ -3194,9 +3205,13 @@ C
       INTEGER IONE, INT_IOFF1, INT_IOFF2
       INTEGER INT_IOFF1_C, INT_IOFF2_C
 *
-      IONE = 1
-      INT_IOFF1 = 0
-      INT_IOFF2 = 0
+      IONE        = 1
+      INT_IOFF1   = 0
+      INT_IOFF2   = 0
+      ISI_CALC_BL = 0
+      IBI_MULT_BL = 0
+      xreadtimebi = 0.0D0
+      xcomputesi  = 0.0D0
 #if defined (VAR_MPI2)
       IOFF_SCR1 = 0
       IOFF_SCR2 = 0
@@ -3622,6 +3637,7 @@ csk                  CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
 csk                  WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
      &                                   MPI_REAL8,ISTAT,IERR)
+                  ISI_CALC_BL = ISI_CALC_BL + 1
                 END IF
 *               keep track of correct offset
                 IOFF_SCR2 = LEN_T
@@ -3632,6 +3648,7 @@ csk                  WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
                 LEN_T = IBATS(8,ISBLK)
                 call itods(LEN_T,1,-1,LLUHC)
                 call todsc(HC(IOFF),LEN_T,-1,LLUHC)
+                ISI_CALC_BL = ISI_CALC_BL + 1
 #endif /* if def VAR_MPI2 */
               end do
  70           CONTINUE
@@ -3669,7 +3686,6 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
       call memmar(KDUM ,IDUM,'FLUSM ',2,'SIGDEN')
 *
       CALL QEXIT('SIGDE')
-*
 #if !defined (VAR_MPI2)
 *     close scratch unit for Right vector
       close(unit=LUSC37,status='DELETE')
@@ -3682,6 +3698,28 @@ CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
         WALLTID3 = SECTID(mem_cp_time)
         WRITE(LUWRT,90000) WALLTID3
       END IF
+C
+      IF( TIMING ) THEN
+C
+C       print statistics
+C
+        WRITE(LUWRT,'(/A)')
+     &  '               H x b_i contraction run statistics  '
+        WRITE(LUWRT,'(A/)')
+     &  '              ____________________________________ '
+        WRITE(LUWRT,'(2X,A,1X,I4)')
+     &  ' number of s_i blocks calculated          : ',ISI_CALC_BL
+        WRITE(LUWRT,'(2X,A,1X,I4)')
+     &  ' total number of b_i read from disk       : ',IBI_MULT_BL
+        WALLTID = SECTID(xreadtimebi)
+        WRITE(LUWRT,'(2X,A,1X,A)')
+     &  ' read time for b_i blocks from disk       : ', WALLTID
+        WALLTID = SECTID(xcomputesi)
+        WRITE(LUWRT,'(2X,A,1X,A/)')
+     &  ' matrix x vector multiplication time      : ', WALLTID
+C
+      END IF
+C
 *
 50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
      & ',A)
@@ -4591,14 +4629,18 @@ CSK     &                                JOFF
 C
 C                    read block in core
 C
+                     xxxbitime = MPI_WTIME()
                      CALL GSTTBLD_PAR2(CB(JOFF),LLUC,
      &                                 IOFF_SCR_C_EXPL,JLEN)
+                     xreadtimebi = xreadtimebi-xxxbitime+MPI_WTIME()
 C
 #else
 C
                      CALL GSTTBLD2(CB(JOFF),LUC)
 C
 #endif
+C
+                     IBI_MULT_BL = IBI_MULT_BL + 1
 C                    real/imaginary scaling according to:
 C                    S_r = (H_r . C_r) - (H_i . C_i)
 C

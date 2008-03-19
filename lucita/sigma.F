@@ -2148,6 +2148,10 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       DIMENSION SB(*),CB(*),SSCLFAC(*)
       NZERO = 0
       IONE  = 1
+      xreadtimebi = 0.0D0
+      xcomputesi  = 0.0D0
+      ISI_CALC_BL = 0
+      IBI_MULT_BL = 0
 *
       CALL QENTER('RASSG')
       NTEST = 00
@@ -2329,6 +2333,7 @@ csk        CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,LUCIWT)
 csk        WRITE(LUCIWT,*) 'offset,length',IOFF_SCR1,LEN
               CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
      &                               MPI_REAL8,ISTAT,IERR)
+              ISI_CALC_BL = ISI_CALC_BL + 1
            END IF
 *          keep track of correct offset
            IOFF_SCR2 = LEN
@@ -2366,6 +2371,28 @@ C
 80000 FORMAT(' >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :
      & ',A)
 *
+C
+      IF( TIMING ) THEN
+C
+C       print statistics
+C
+        WRITE(LUWRT,'(/A)')
+     &  '               H x b_i contraction run statistics  '
+        WRITE(LUWRT,'(A/)')
+     &  '              ____________________________________ '
+        WRITE(LUWRT,'(2X,A,1X,I4)')
+     &  ' number of s_i blocks calculated          : ',ISI_CALC_BL
+        WRITE(LUWRT,'(2X,A,1X,I4)')
+     &  ' total number of b_i read from disk       : ',IBI_MULT_BL
+        WALLTID = SECTID(xreadtimebi)
+        WRITE(LUWRT,'(2X,A,1X,A)')
+     &  ' read time for b_i blocks from disk       : ', WALLTID
+        WALLTID = SECTID(xcomputesi)
+        WRITE(LUWRT,'(2X,A,1X,A/)')
+     &  ' pure matrix x vector multiplication time : ', WALLTID
+C
+      END IF
+C
 #else
 C     write EOF mark
       CALL ITODS(-1,1,-1,LUHC)
@@ -5788,9 +5815,12 @@ C
 C            file offset
 C
 csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
+             xxxreadtime = MPI_WTIME()
              CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
      &                             LBL,MPI_REAL8,ISTAT,IERR)
 csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
+             xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
+             IBI_MULT_BL = IBI_MULT_BL + 1
              SCLFAC(JBLOCK) = 1.0D0
           ELSE
              SCLFAC(JBLOCK) = 0.0D0
@@ -5993,6 +6023,10 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                    IJOP   = -1
                 END IF
 *
+#if defined (VAR_MPI2)
+                xxxcomputtime = MPI_WTIME()
+#endif
+*
                 CALL RSSBCB2(IASM,IATP,IOCTPA,
      &               IBSM,IBTP,IOCTPB,
      &               LLASM,LLATP,LLBSM,LLBTP,NGAS,
@@ -6013,6 +6047,9 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &               IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,XFAC,
      &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
      &               MXTSOB,SOMESCR,SOMEH,XIJILS)
+#if defined (VAR_MPI2)
+                xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
+#endif
 C
  8764         CONTINUE
               END IF
