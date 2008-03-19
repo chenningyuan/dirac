@@ -537,7 +537,7 @@ dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o  dirac/dirbss.o dirac/dirmp2no.o \\
-main/dirac.o \\
+main/dirac.o main/main.o main/mpi_framework.o\\
 abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
@@ -554,7 +554,7 @@ amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
-gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o \\
+gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -584,11 +584,6 @@ lucita/par_solver.o  \\
 #
 
 C_OBJS = \\
-main/alloc_mem.o    main/csectid.o \\
-main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
-main/get_memsize.o  main/ini_mpi.o    main/main.o \\
-main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
-main/get_time.o \\
 gp/gpc.o 
 #argosecp/falloc.o argosecp/fdate.o argosecp/flushstdout.o argosecp/fwtime.o \\
 #argosecp/hostnm.o argosecp/runsec.o argosecp/tsystem.o

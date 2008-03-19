@@ -12,9 +12,9 @@ F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	    gpjth.o    gplucia.o     gpkrmc.o       gpbast.o \
 	    gplupar.o  global_file.o   mpi2macro.o
 
-F90_OBJS =
+F90_OBJS = osutils.o
 
-F90_MODS =
+F90_MODS = os_utils.mod
 
 C_OBJS = gpc.o
 
