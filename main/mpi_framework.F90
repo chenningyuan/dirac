@@ -66,7 +66,6 @@ MYTID      = 0
 NUMNOD     = 0
 NUMPROC    = 0
 MPARID     = 0
-PARCAL     = .FALSE.
 !
 !
 ! check for parallel execution

@@ -38,28 +38,33 @@ program dirprg
   use os_utils
   implicit none
 #include "infpar.h"
+#include "dcbgen.h"
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, parcal, status, length, ios
+  integer :: memsize, iparcal, status, length, ios
+! initialize parcal (dcbgen.h) - SK - 19-03-2008
+  parcal  = .false.
 #ifdef VAR_MPI 
   call mpixinit()
 #else
-  parcal = 0
-  mytid  = 0
-  mparid = 0
-  numnod = 1
+  iparcal = 0
+  mytid   = 0
+  mparid  = 0
+  numnod  = 1
 #endif
+!    SK -19-03-2008 bugfix: call DIRAC / DIRNOD with iparcal (not parcal)
+  if (parcal) iparcal = 1
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC master allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
      print *,'calling dirac'
-     call dirac(parcal,mytid,mparid,numnod,memory,memsize)
+     call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
      memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC slave allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
      print *,'calling dirnod'
-     call dirnod(parcal,mytid,mparid,numnod,memory,memsize)
+     call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
   endif
 #ifdef VAR_MPI
   call mpixfinalize()
