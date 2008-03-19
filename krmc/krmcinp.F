@@ -874,7 +874,11 @@ C
       NCIROOT     =    1
       IANACI      =    0
       IRESTRK     =    0
+#if !defined (SYS_LOCALDISKS)
+      IDOPARIO    =    1
+#else
       IDOPARIO    =    0
+#endif
       IMEMFAC     =    9
       ISHMEM_TYPE =  - 1
       OPT_NOPFQ   = .FALSE.
