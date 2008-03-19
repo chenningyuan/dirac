@@ -2713,9 +2713,12 @@ C             ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
               IF( IIOMOD_REL .eq. 0 )THEN
 *               ... slaves get the integrals
                 LEN_INT_BCAST = 0
+#if defined (INT_STAR8)
                 LEN_INT_BCAST = LEN_ALL_INT
+#else
                 XLENALL = REAL(LEN_ALL_INT)
                 LEN_INT_BCAST = IGIVE_I_B(XLENALL)
+#endif
                 CALL MPI_BCAST(WORK(KINTI12),LEN_INT_BCAST,MPI_REAL8,
      &                              MASTER,MPI_COMM_WORLD,IERR)
               END IF
