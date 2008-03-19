@@ -1380,24 +1380,26 @@ C
           END DO
           IF( IGROUPBLK .eq. 1 ) THEN
 C
-csk         WRITE(LUWRT,*) 'ACTIVE BLOCK ',IBLK
-csk         WRITE(LUWRT,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
+csk         WRITE(6,*) 'ACTIVE BLOCK ',IBLK
+csk         WRITE(6,*) 'START READING AT IOFFSET_IN = ',IOFFSET_IN
             xrw_time = MPI_WTIME()
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN,SEGMNT,LBL,
      &                            MPI_REAL8,ISTAT,IERR)
+csk         WRITE(6,*) 'MY read-in result '
+csk         CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
             read_write = read_write + MPI_WTIME() - xrw_time
             IBI_DIST_NBLOCKS = IBI_DIST_NBLOCKS + 1
 C
           END IF
 C
 C         find the sending root processor
-csk       write(LUWRT,*) ' processor list:myproc,mynew_id,icomm_id',
+csk       write(6,*) ' processor list:myproc,mynew_id,icomm_id',
 csk  &    myproc,mynew_id,icomm_id
-csk       CALL IWRTMAMN(IPROCLIST,1,NMPROC,1,NMPROC,LUWRT)
+csk       CALL IWRTMAMN(IPROCLIST,1,NMPROC,1,NMPROC,6)
 csk       CALL MPI_BARRIER(ICOMM,IERR)
           ROOTPROC = IPROCLIST(ISCRNODE+1) - 1
-csk       write(LUWRT,*)' ROOT proc should send: ICOMM_ID, ROOTPROC',
-csk  &    ICOMM_ID,ROOTPROC
+csk       write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC,MYPROC',
+csk  &    ICOMM_ID,ROOTPROC,MYPROC
 C
 C         decide whether it is necessary to take part in communication
 C
@@ -1405,6 +1407,7 @@ C
           NNKEY = 0
           NNKEY = MYPROC + 1
           IF( MYPROC .eq. ROOTPROC ) NNKEY = 0
+csk       WRITE(6,*) ' MYPROC,ROOTPROC,NNKEY',MYPROC,ROOTPROC,NNKEY
           IF( ISCALFAC_GROUP(IBLK) .ne. 0 ) THEN
             NNCOLOR = 7
           ELSE
@@ -1556,9 +1559,9 @@ C
 C
 C       print statistics
 C
-        WRITE(LUWRT,'(/A/)') 
+        WRITE(LUWRT,'(/A)') 
      &  '               coefficients exchange statistics  '
-        WRITE(LUWRT,'(A)')   
+        WRITE(LUWRT,'(A/)')   
      &  '              __________________________________ '
         WRITE(LUWRT,'(2X,A,1X,I4)')   
      &  ' number of b_i blocks distributed         : ',IBI_DIST_NBLOCKS
@@ -1568,7 +1571,7 @@ C
         WRITE(LUWRT,'(2X,A,1X,A)')   
      &  ' time spent in b_i communication (bcast)  : ', WALLTID
         WALLTID = SECTID(read_write)
-        WRITE(LUWRT,'(2X,A,1X,A)')   
+        WRITE(LUWRT,'(2X,A,1X,A/)')   
      &  ' time spent in saving coefficients on disk: ', WALLTID
 C
       END IF
@@ -3018,6 +3021,168 @@ C
      &                           ICTRL_VC4,ICTRLOFF4)
 C
         END DO
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GROUP_CONSTRUCTOR_REL(IGROUPLIST,IPROCLIST,
+     &                                 IPROCLIST_SM)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+C
+      DIMENSION IPROCLIST(NMPROC),IGROUPLIST(NMPROC)
+      DIMENSION IPROCLIST_SM(NMPROC)
+      INTEGER IKEY, ICOLOR, JKEY, JCOLOR, KCOLOR, KKEY
+      INTEGER LCOLOR, LKEY
+      ITEST = 00
+C     ITEST = 10
+C
+C     'intra-node' communicator MYNEW_COMM ( I/O communicator )
+C
+      IKEY = MYPROC
+      ICOLOR = IPROCLIST(MYPROC+1)
+C
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ICOLOR,IKEY,MYNEW_COMM,IERR)
+C
+C     collect useful information about each group,
+C     store on common block
+C
+      NEWCOMM_PROC = 0
+      MYNEW_ID = 0
+      CALL MPI_COMM_SIZE(MYNEW_COMM,NEWCOMM_PROC,IERR)
+      CALL MPI_COMM_RANK(MYNEW_COMM,MYNEW_ID,IERR)
+C
+C     T-communicator MYNEW_COMM_SM ( 1st "shared memory" communicator)
+C
+      KKEY = MYPROC
+      IF( IT_SHL .eq. - 1 .or. IT_SHL .eq. - 2 )THEN
+        KCOLOR = IPROCLIST_SM( MYPROC + 1 )
+      ELSE IF( IT_SHL .eq. 0 )THEN
+        KCOLOR = IPROCLIST_SM( MYPROC + 1 )
+      ELSE IF( IT_SHL .eq. 1 )THEN
+        KCOLOR = 1
+      END IF
+C
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,KCOLOR,KKEY,
+     &                    MYNEW_COMM_SM,IERR)
+C
+C       collect useful information about each group,
+C       store on common block
+C
+      NEWCOMM_PROC_SM = 0
+      MYNEW_ID_SM     = 0
+      CALL MPI_COMM_SIZE(MYNEW_COMM_SM,NEWCOMM_PROC_SM,IERR)
+      CALL MPI_COMM_RANK(MYNEW_COMM_SM,MYNEW_ID_SM,IERR)
+C
+C     C-communicator MYNEW_COMM_SM_C ( 2nd "shared memory" communicator)
+C
+      LKEY = MYPROC
+      IF( IC_SHL .eq. - 1 )THEN
+        LCOLOR = IPROCLIST_SM( MYPROC + 1 )
+      ELSE IF( IC_SHL .eq. 0 )THEN
+        LCOLOR = IPROCLIST_SM( MYPROC + 1 )
+      ELSE IF( IC_SHL .eq. 1 )THEN
+        LCOLOR = 1
+      END IF
+C
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,LCOLOR,LKEY,
+     &                    MYNEW_COMM_SM_C,IERR)
+C
+C       collect useful information about each group,
+C       store on common block
+C
+      NEWCOMM_PROC_SM_C = 0
+      MYNEW_ID_SM_C     = 0
+      CALL MPI_COMM_SIZE(MYNEW_COMM_SM_C,NEWCOMM_PROC_SM_C,IERR)
+      CALL MPI_COMM_RANK(MYNEW_COMM_SM_C,MYNEW_ID_SM_C,IERR)
+C
+C     set node-master (might be MASTER of all CPU's)
+      N_MASTER_SM_C = 0
+C
+C     inter-node communicator ICOMM
+C
+      IF( MYNEW_ID .eq. 0 ) THEN
+        JKEY = IPROCLIST(MYPROC+1)
+        JCOLOR = 2
+      ELSE
+        JKEY = IPROCLIST(MYPROC+1)
+        JCOLOR = 3
+      END IF
+C
+      CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,JCOLOR,JKEY,ICOMM,IERR)
+C
+C     collect again ...     
+C
+      ICOMM_ID = 0
+      ICOMM_SIZE = 0
+      CALL MPI_COMM_RANK(ICOMM,ICOMM_ID,IERR)
+      CALL MPI_COMM_SIZE(ICOMM,ICOMM_SIZE,IERR)
+C
+C     set-up and store group information 
+C
+      CALL SET_GROUP_TABLE_REL(IGROUPLIST,IPROCLIST,ICOLOR)
+C
+C     store personal group number
+C
+      MY_GROUPN = ICOLOR
+      IF ( ITEST .ge. 10 )THEN
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,*) ' OUTPUT FROM GROUP_CONSTRUCTOR_REL'
+        WRITE(LUWRT,*) ' '
+        WRITE(LUWRT,*) ' size of MYNEW_COMM     :',NEWCOMM_PROC
+        WRITE(LUWRT,*) ' size of MYNEW_COMM_SM  :',NEWCOMM_PROC_SM
+        WRITE(LUWRT,*) ' size of MYNEW_COMM_SM_C:',NEWCOMM_PROC_SM_C
+        WRITE(LUWRT,*) ' size of ICOMM          :',ICOMM_SIZE
+      END IF
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE SET_GROUP_TABLE_REL(IGROUPLIST,IPROCLIST,ICOLOR)
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+C
+C     INPUT
+      DIMENSION IPROCLIST(NMPROC)
+C     OUTPUT
+      DIMENSION IGROUPLIST(NMPROC)
+C
+      INUMB = 1
+      DO IPROC = 1, NMPROC
+C
+        IF( IPROCLIST(IPROC) .eq. ICOLOR ) THEN
+C         put in the process tag ( master is 0 )
+          IGROUPLIST(INUMB) = IPROC - 1
+          INUMB = INUMB + 1
+        END IF
+C
+      END DO
+C
+      IF( INUMB-1 .gt. NEWCOMM_PROC ) THEN
+        WRITE(LUWRT,*) 'Error in SET_GROUP_TABLE_REL: more CPUs assigned
+     & as included in this group!'
+        WRITE(LUWRT,*) 'assigned CPUs, group size',INUMB-1,NEWCOMM_PROC
+        CALL Abend2('Error detected in gp/gplupar.F: 
+     &               SET_GROUP_TABLE_REL')
+      END IF
 C
       END
 ***********************************************************************
@@ -9620,13 +9785,13 @@ csk       WRITE(LUWRT,*) ' IPLAC(IEFF), IEFF',IPLAC(IEFF), IEFF
              FOUND_ONE = .TRUE.
           END IF
 C
-csk       NTEST = 10
+          NTEST = 00
 C
           IF(NTEST.GE.10) THEN
             IF( IPLAC(IEFF).GE.IBOTTO.AND.IPLAC(IEFF).LE.IBOTTO+LBL-1)
-     &      write(LUCIWT,*) 'IBOT,IBOTTO+LBL-1',IBOTTO,IBOTTO+LBL-1
+     &      write(6,*) 'IBOT,IBOTTO+LBL-1',IBOTTO,IBOTTO+LBL-1
             IF( IPLAC(IEFF).GE.IBOTTO.AND.IPLAC(IEFF).LE.IBOTTO+LBL-1)
-     &      write(LUCIWT,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
+     &      write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
      &      IPLAC(IEFF),VAL(IEFF)
           END IF
 *
