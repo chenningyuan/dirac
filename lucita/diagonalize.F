@@ -332,7 +332,7 @@ C?       WRITE(6,*) ' MICDV6 will be called '
      &                    LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                    LU6LIST,LU7LIST,LUCLIST,NBATCH,
      &                    WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
-     &                    WORK(KLXIBT),IGROUPLIST,IPROCLIST)
+     &                    WORK(KLXIBT),IPROCLIST,IGROUPLIST)
 
 #else
           CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),

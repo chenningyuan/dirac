@@ -1115,10 +1115,12 @@ C     checked and set properly
 C
       CALL MEMMAN(KPROCLIST  ,NMPROC,'ADDS  ',1,'IHOSTL')
       CALL MEMMAN(KGROUPLIST ,NMPROC,'ADDS  ',1,'IHOST2')
+      CALL MEMMAN(KGROUPLIST2,NMPROC,'ADDS  ',1,'IHOST3')
       CALL MEMMAN(KPROCLENGTH,NMPROC,'ADDL  ',1,'INAMEL')
 C
       CALL ISETVC(WORK(KPROCLIST),  MIN_ONE,NMPROC)
       CALL ISETVC(WORK(KGROUPLIST), MIN_ONE,NMPROC)
+      CALL ISETVC(WORK(KGROUPLIST2),MIN_ONE,NMPROC)
       CALL ISETVC(WORK(KPROCLENGTH),MIN_ONE,NMPROC)
 C     initialize number of process groups sharing a c-vector file
       NFLGRPS     = 0
@@ -1149,20 +1151,31 @@ C     in case of a parallel filesystem, we should use it
       END IF
 #endif
 C
-C      set-up all useful MPI stuff: communication groups, MPI-files ...
+C     compatibilty with LUCIAREL
+C
+      SHARED_M = .FALSE.
+      IT_SHL   = - 1
+      IC_SHL   = - 1
+      CALL ISETVC(WORK(KGROUPLIST2),1,NMPROC)
+C
+C     set-up all useful MPI stuff: communication groups, MPI-files ...
 C                                   all important variables are stored
 C                                   on common block /LUPARGROUP/
 C
 C      construct new communication groups
-       CALL GROUP_CONSTRUCTOR(WORK(KGROUPLIST),WORK(KPROCLIST))
+       CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
+     &                            WORK(KGROUPLIST2))
 C
-C      NPTESTVAR = 20
+       NPTESTVAR = 00
        IF( NPTESTVAR .ge. 20 ) THEN
-         WRITE(LUOUT,*) 'this is my old and new rank ',myproc, MYNEW_ID
-         WRITE(LUOUT,*) 'this is my file grouplist:'
-         CALL IWRTMAMN(WORK(KGROUPLIST),1,NMPROC,1,NMPROC,LUOUT)
-         WRITE(LUOUT,*) 'this is my complete proclist:'
-         CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUOUT)
+          WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
+          WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
+          WRITE(LUWRT,*) 'this is my file grouplist:'
+          CALL IWRTMAMN(WORK(KGROUPLIST),1,NMPROC,1,NMPROC,LUWRT)
+          WRITE(LUWRT,*) 'this is my complete proclist:'
+          CALL IWRTMAMN(WORK(KPROCLIST),1,NMPROC,1,NMPROC,LUWRT)
+          WRITE(LUWRT,*) 'this is my shared memory proclist:'
+          CALL IWRTMAMN(WORK(KGROUPLIST2),1,NMPROC,1,NMPROC,LUWRT)
        END IF
        NPTESTVAR = 0
 C
