@@ -23,7 +23,8 @@ C
      &        MSLVOUT_REL, LUWRT, IIOMOD_REL, NFLGRPS_REL, NROOT_SAVE,
      &        NVEC_SAVE, L_COMBI, I_NZERO_LEN, ISHARE_DENSM,
      &        IPARALLELIO, LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL,
-     &        LEVEL_SM, IT_SHL, IC_SHL, ICOUNTABLK_C
+     &        LEVEL_SM, IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
+     &        IBI_MULT_BL
 C
       PARAMETER (MSLVOUT_REL = 7)
 C
@@ -42,7 +43,8 @@ C
      &                NFLGRPS_REL, NROOT_SAVE, NVEC_SAVE, L_COMBI, 
      &                I_NZERO_LEN, ISHARE_DENSM, IPARALLELIO, 
      &                LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL, LEVEL_SM, 
-     &                IT_SHL, IC_SHL, ICOUNTABLK_C,
+     &                IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
+     &                IBI_MULT_BL,
      &                LMEMFREE_PTR
 C
 C     MPI file lists and MPI file handles
@@ -72,8 +74,10 @@ C
       COMMON/LUCIPAR_I8/  LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL,
      &                    LEN_T_BUFF_NZ, MY_T_LEN, MY_T_LEN_D
 !     double precision block
-      DOUBLE PRECISION  RNORM_FAC, TRUNC_FAC, mem_cp_time
-      COMMON/LUCI_REAL/ RNORM_FAC, TRUNC_FAC, mem_cp_time
+      DOUBLE PRECISION  RNORM_FAC, TRUNC_FAC, mem_cp_time, xreadtimebi,
+     &                  xcomputesi
+      COMMON/LUCI_REAL/ RNORM_FAC, TRUNC_FAC, mem_cp_time, xreadtimebi,
+     &                  xcomputesi
 !     logical block
       LOGICAL CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA
 !
