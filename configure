@@ -1729,7 +1729,7 @@ case "$F77" in
       ifort)
          opt="-O3 -ip -w  -assume byterecl -i8"
          ccp="$ccp -DVAR_IFC"
-         ldflag="-nofor_main"
+         ldflag=""
 	 mod="-module $MODULE_DIR"
          ;;
       pathf90)
@@ -1822,6 +1822,7 @@ case "$F77" in
          opt='-O2 -qextname'
          c_opt='-O2'
 	 mod="-qmoddir=$MODULE_DIR"
+	 f90_extraflags=-qfree=f90
          ;;
       esac
       inc="-I$INCLUDE_DIR";;
@@ -1919,6 +1920,7 @@ OPTFLAGS    = $opt $mod
 OPTGFLAGS   = -g $opt $mod 
 OPTIFLAGS   = -E
 C_OPTFLAGS  = $c_opt
+F90_OPTFLAGS = $opt $mod $f90_extraflags
 LDFLAGS     = $ldflag
 CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
  -noargumants -arguments=number \\
@@ -1978,17 +1980,17 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F
 .F.i:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F > \$*.i
 .F90.o:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F90
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -c \$*.F90
 .F90.g:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F90
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -c \$*.F90
 .F90.i:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F90 > \$*.i
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
 .f90.o:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -cpp -c \$*.f90
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -cpp -c \$*.f90
 .f90.g:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -cpp -c \$*.f90
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
 .f90.i:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) -cpp \$*.f90 > \$*.i
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 .c.i:
