@@ -2714,14 +2714,9 @@ C             ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
 *               ... slaves get the integrals
                 LEN_INT_BCAST = 0
                 LEN_INT_BCAST = LEN_ALL_INT
-CSK             IF( LEN_INT_BCAST .lt. 0 )THEN
-CSK              WRITE(LUWRT,*) ' Sorry, broadcast of integrals exceeds'
-CSK              WRITE(LUWRT,*) ' my system limits ...                 '
-CSK              WRITE(LUWRT,*) ' set IIOMOD_REL to 1 and give         '
-CSK              WRITE(LUWRT,*) ' reading permissions to slaves!       '
-CSK              Call Abend2(' no integral broadcast possible')
-CSK             END IF
-                CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
+                XLENALL = REAL(LEN_ALL_INT)
+                LEN_INT_BCAST = IGIVE_I_B(XLENALL)
+                CALL MPI_BCAST(WORK(KINTI12),LEN_INT_BCAST,MPI_REAL8,
      &                              MASTER,MPI_COMM_WORLD,IERR)
               END IF
 #endif
