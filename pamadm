@@ -1051,6 +1051,7 @@ if [ -n "$MODULES" ]; then
   echo '#--------------------------- # ' >> Makefile
   echo 'mod  :             ;\' >> Makefile
   echo '     cd  abacus     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '     cd  gp         &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   if [ -n "$EMBMOD" ]; then
   echo '     cd  embedding  &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
@@ -1259,10 +1260,10 @@ EOF
 ########################################################################
 
 #TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
-TEMP="dirac prp gp pdpack main relccsd moltra dirrci lucita"
+TEMP="dirac prp pdpack main relccsd moltra dirrci lucita"
 
 # ... F90 modules introduced
-TEMPOOF=abacus
+TEMPOOF="abacus gp"
 
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
