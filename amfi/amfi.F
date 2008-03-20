@@ -370,7 +370,7 @@ cbs   and renormalizes them
       enddo 
 
       if (makemean.and.(.not.oneonly).and.ifinite.le.1) 
-     *call getAOsx(Lhigh,IACH)
+     *call getAOsx(Lhigh,IACH,WRK,LFREE)
 
 
 cbs                        

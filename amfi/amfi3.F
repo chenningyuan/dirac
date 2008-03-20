@@ -1,4 +1,3 @@
-
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
@@ -23,7 +22,6 @@ C     it would not accept the variable loop limits in the ml loop.
 CMI   ... addition 
       integer function indx_LML
 
-c     data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax)
       data sss_normasHERMIT
      &    /1.0d0, 1.0d0,1.0d0,1.0d0,
      &     1.0d0,1.0d0,3.46410162d0,1.0d0,2.0d0,
@@ -31,9 +29,6 @@ c     data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax)
      &     2.0d0,-1.6329932d0,
      &   3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
      &  -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/ 
-CMI  &     2.0000,2.828427124746190d0,9.16515139d0,4.3204938d0,
-CMI  &   -3.4156503d0,4.3204938d0,18.330303d0,-0.942809041582d0,-4.0d0/
-CMI    ... old (last) g-factors...
       IPNT(I,J)=(J*J-J)/2+I 
 cbs   get back the real number of functions for the finite nucleus   
       if (ifinite.eq.2) ncontrac(0)=ncontrac_keep
@@ -1789,7 +1784,7 @@ cbs   now transform by rootovlp*dummy*rootovlp
       end  
 
 CMI ..................................
-      subroutine getAOsx(lhigh,IACH)                  
+      subroutine getAOsx(lhigh,IACH,WORK,LWORK)                  
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1799,6 +1794,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       character*12    occtext,occread
       character*18  textnorbmf,textnorbmf2    
       logical EX
+      DIMENSION WORK(LWORK)
 
 #include "amfi_if.h"
 c     logical amfi3_verbose
@@ -1809,7 +1805,7 @@ c     amfi3_verbose = .true.
       Inquire(File='AO-expansion',exist=EX) 
       if (.not.EX)  then
 CBS   write(6,*) 'get occupations from DATA-block'
-      call getAOs2(lhigh,IACH)
+      call getAOs2(lhigh,IACH,WORK,LWORK)
       return
       endif 
       LUAOEX = -1
@@ -1845,7 +1841,7 @@ CBS   write(6,*) 'get occupations from DATA-block'
       end 
 
 
-      subroutine getAOs2(lhigh,IACH)
+      subroutine getAOs2(lhigh,IACH,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
 #include "para.h"
@@ -1858,6 +1854,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       dimension xorb(MxprimL,MxContL,0:lmax)
       dimension ovlpprimcont(MxcontL,MxprimL),
      *dummytrafo(MxcontL,MxprimL)
+      DIMENSION WORK(LWORK)
 
 #include "amfi_if.h"
 c     logical amfi3_verbose
@@ -1917,7 +1914,7 @@ CMI   endif
 
 CMI   call system('relscf < TOSCF > scf.out')
 CMI ... run internal atomic SCF code which reads TOSCF input file
-      CALL INT_AT_SCF
+      CALL INT_AT_SCF(WORK,LWORK)
 
       open(unit=7,file='fort.7',form='formatted',
      *status='unknown')
