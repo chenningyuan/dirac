@@ -176,7 +176,7 @@ IF( IERR .ne. 0 ) THEN
 END IF
 END SUBROUTINE MPIXFINALIZE
 !
-!      /* Deck MPIXINIT */
+!      /* Deck DIST_ENV */
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE DIST_ENV(ITASK)
 !**********************************************************************************
@@ -240,7 +240,7 @@ IF( ITASK .eq. 0 )THEN
       CALL MPI_BCAST(BASDIR_SCR,LEN_LOCAL,MPI_CHARACTER,MPARID,MPI_COMM_WORLD,IERR)
    END IF
    BASDIR(1:LEN_LOCAL) = BASDIR_SCR(1:LEN_LOCAL)
-   IF (MYTID .eq. MPARID) WRITE(LUPRI,'(2A)') ' Basis set dir.    : ',BASDIR(1:LEN_LOCAL)
+!  IF (MYTID .eq. MPARID) WRITE(LUPRI,'(2A)') ' Basis set dir.    : ',BASDIR(1:LEN_LOCAL)
 !
 ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 !
@@ -315,8 +315,62 @@ ELSE IF ( ITASK .eq. 2 ) THEN ! ITASK == 2: DIRNOD
 END IF ! ITASK
 !
 END SUBROUTINE DIST_ENV
+
+!
+!      /* Deck SYNC_NODES */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
+!**********************************************************************************
+!
+!          called from DIRAC main routine - write DIRAC information in ordered
+!          way - smarter solutions are welcome.
+!
+!          written by Stefan Knecht, Duesseldorf 2008
+!
+!          ITASK == 0: print memory allocation; IVARIABLE = memsize (from
+!                      calling routine)
+!          ITASK == 1: call timer and print timing results
+!
+!**********************************************************************************
+!
+#include "implicit.h"
+#include "priunit.h"
+#include "mpif.h"
+#include "infpar.h"
+  INTEGER :: IERR, IJ, LHOST, ILEN
+  PARAMETER (ILEN=72)
+  CHARACTER (LEN=ILEN) HOST
+!
+  IERR  = 0
+  LHOST = 0
+! ordered start-up info print
+  IF( ITASK .eq. 0 )THEN
+    CALL MPI_GET_PROCESSOR_NAME(HOST,LHOST,IERR)
+    IF( MYTID .eq. MPARID ) print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**16,' MB) of memory'
+    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
+    DO IJ = 1, (NUMNOD - 1)
+       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+       IF( MYTID .eq. IJ )  print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid,'(',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**16,' MB) of memory'
+       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
+    END DO
+!   ordered last printing
+  ELSE IF( ITASK .eq. 1 )THEN
+    DO IJ = 1, NUMNOD
+      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      IF( MYTID .eq. IJ ) THEN
+         CALL STOPWATCH(0,MYTID)
+         CALL FLSHFO(LUPRI)
+      END IF
+      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+    END DO
+  END IF
+!
+END SUBROUTINE SYNC_NODES
+!
 #else
-! Empty files are not allowed, at least no by ifort /ulfek
+! Empty files are not allowed, at least not by ifort /ulfek
 SUBROUTINE MPI_STUB
 END SUBROUTINE 
 
