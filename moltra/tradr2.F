@@ -209,6 +209,12 @@ C     Release the slaves...
 C     (ITASK = -1)
 C     
          CALL DIRAC_PARCTL( -1 )
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
       ELSE
 #endif
 C
@@ -2878,6 +2884,12 @@ C
      &        'timing information from node #', INOD
       END DO
       CALL DIRAC_PARCTL( -1 )
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
 C
 C     Print timing info
 C
