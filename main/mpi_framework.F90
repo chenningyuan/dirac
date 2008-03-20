@@ -158,25 +158,22 @@ SUBROUTINE MPIXFINALIZE()
 #include "priunit.h"
 #include "mpif.h"
 #include "infpar.h"
-#include "dcbgen.h"
 INTEGER :: IERR
 !
 IERR = 0
-IF( PARCAL )THEN
 #if defined (MPE)
 ! stop logging
-  CALL MPE_STOP_LOG()
-  CALL MPE_FINISH_LOG("mpilog")
+CALL MPE_STOP_LOG()
+CALL MPE_FINISH_LOG("mpilog")
 #endif
 !
 ! finalize MPI
 !
-  CALL MPI_Finalize( IERR )
-  IF( IERR .ne. 0 ) THEN
-     WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXFINALIZE ** call to MPI_FINALIZE failed. '
-     CALL Abend2( 'Error calling MPI_FINALIZE' )
-  END IF
-END IF ! PARCAL == .TRUE.
+CALL MPI_Finalize( IERR )
+IF( IERR .ne. 0 ) THEN
+   WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXFINALIZE ** call to MPI_FINALIZE failed. '
+   CALL Abend2( 'Error calling MPI_FINALIZE' )
+END IF
 END SUBROUTINE MPIXFINALIZE
 !
 !      /* Deck MPIXINIT */
