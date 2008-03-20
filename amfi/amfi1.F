@@ -89,7 +89,8 @@ CMI ... reading in
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
       if (amfi1_verbose) then 
-         write(LUPRI,*) ' Functions will go up to an L-value of : ',Lhigh
+         write(LUPRI,*) 
+     &     ' Functions will go up to an L-value of : ',Lhigh
          write(LUPRI,'(A19,F7.2)') chcharge,charge    
       endif
       call initired
