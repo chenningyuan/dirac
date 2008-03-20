@@ -2380,9 +2380,9 @@ C
      &  '               H x b_i contraction run statistics  '
         WRITE(LUWRT,'(A/)')
      &  '              ____________________________________ '
-        WRITE(LUWRT,'(2X,A,1X,I4)')
+        WRITE(LUWRT,'(2X,A,1X,I9)')
      &  ' number of s_i blocks calculated          : ',ISI_CALC_BL
-        WRITE(LUWRT,'(2X,A,1X,I4)')
+        WRITE(LUWRT,'(2X,A,1X,I9)')
      &  ' total number of b_i read from disk       : ',IBI_MULT_BL
         WALLTID = SECTID(xreadtimebi)
         WRITE(LUWRT,'(2X,A,1X,A)')
