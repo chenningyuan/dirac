@@ -4465,6 +4465,16 @@ C
       CALL MPI_BCAST(NTEST,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF (NTEST.NE.-1) CALL QUIT('TRANOD: Received wrong NTEST message')
 C
+#if defined (VAR_PFS)
+      IF( ISTRAT .ne. 6 )THEN
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+C
+      END IF
+#endif
+C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRANOD')
 C

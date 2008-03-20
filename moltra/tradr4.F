@@ -377,6 +377,14 @@ C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+C
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
+C
       CALL MEMREL('TRDR4T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR4T')
 C
