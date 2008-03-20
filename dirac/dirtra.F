@@ -3799,3 +3799,64 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DENSMO_TO_DENSAO (DMO,DAO)
+C***********************************************************************
+C
+C     Transform density matrix in MO form to AO format using coefficients
+C     taken from DFCOEF
+C     Written by L. Visscher, March 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+C
+      REAL*8  DMO(NORBT,NORBT,NZ), DAO(N2BBASX,NZ)
+      REAL*8, ALLOCATABLE :: CMO(:),WORK(:)
+      LOGICAL FILEX
+C
+C     Allocate the memory that is required by QTRANS (REACMO will not
+C     use the work memory). QTRANS needs to store the halftransformed
+C     matrix that has the same dimension as the MO coefficients
+C
+      KFREE = 1
+      LFREE = NCMOTQ
+      ALLOCATE (WORK(LFREE))
+      ALLOCATE (CMO(NCMOTQ))
+     
+C
+C     Read the MO coefficients
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2, 
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+C     Perform the transformation
+      DO IFSYM = 1,NFSYM
+          CALL QTRANS('MOAO','S',D0,
+     &       NFBAS(IFSYM,0),NFBAS(IFSYM,0),
+     &       NORB(IFSYM),NORB(IFSYM),
+     &       DAO(I2BASX(IFSYM,IFSYM)+1,1),NTBAS(0),NTBAS(0),
+     &       NZ,IPQTOQ(1,0),
+     &       DMO(IORB(IFSYM)+1,IORB(IFSYM)+1,1),NORBT,NORBT,
+     &       NZ,IPQTOQ(1,0),
+     &       CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),NORB(IFSYM),
+     &       NZ,IPQTOQ(1,0),
+     &       CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),NORB(IFSYM),
+     &       NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,1)
+      END DO
+   
+C     Free the memory
+      DEALLOCATE (WORK)
+      DEALLOCATE (CMO)
+
+      END

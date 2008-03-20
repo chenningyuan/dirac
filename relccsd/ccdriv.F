@@ -165,6 +165,8 @@ C
 #include "ihm.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "mxcent.h"
+#include "dcbprp.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -262,6 +264,23 @@ C
       GOTO 6
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
+C     Switch on evaluation of property output if necessary
+      IF (DOMP2G) THEN
+          DOEXP = .TRUE.
+          IPRPWF = 0
+          DO I = 1, NPRPWF
+             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          END DO
+          IF (IPRPWF.EQ.0) THEN
+             IF (NPRPWF .GE. MXPRPWF) THEN
+                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRPWF = NPRPWF + 1
+                IPRPWF = NPRPWF
+             END IF
+             PRPWF(IPRPWF) = 'MP2 '
+          END IF
+      END IF
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
       NTOLGR = NTOL
@@ -2580,24 +2599,21 @@ C        Create upper triangle of density matrix
 C
          CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
 C
-C        Multiply denstity matrix with property matrices
-C        (i.e. calculate expectation value)
+C        Write density matrix to file for later processing
 C
-         IF( .NOT. DONATORB )THEN
-           IF (NOZG) WRITE (IW,'(/A)')
-     &   ' *** MP2 second-order density matrix without relaxation terms'
-           KFREE1=1
-           LFREE1=NBUF3*RCW
-           CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
-         ELSE
+         CALL STORE_CC_DENSITY ('MP2 ',CC(DMO))
 C
-C        MP2 - nat. orb. and nat. orb. occ. num.
+C        Generate natural orbitals, if desired
 C
-         IPRINT_NO = 1
-         KFREE1=1
-         LFREE1=NBUF3*RCW
+         IF( DONATORB )THEN
 C
-         CALL MP2_NATORB(CC(DMO),IPRINT_NO,NOZG,CC(BUF3),KFREE1,LFREE1)
+C         MP2 - nat. orb. and nat. orb. occ. num.
+C
+          IPRINT_NO = 1
+          KFREE1=1
+          LFREE1=NBUF3*RCW
+C
+          CALL MP2_NATORB(CC(DMO),IPRINT_NO,NOZG,CC(BUF3),KFREE1,LFREE1)
          END IF
 C
          CALL MEMCHK('mp2g 2.1',CC,1)

@@ -899,3 +899,131 @@ C
       END IF
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      PARAMETER (HALF=0.5D0)
+      CHARACTER*4 WF                     ! Wave function type
+      CHARACTER*2 BASIS                  ! Representation
+      REAL*8 DMAT(*)                     ! Density matrix
+      INTEGER IERR                       ! Error code
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      LOGICAL FND,FNDLAB
+      CHARACTER*8 LABEL
+C
+C---------------Executable code--------------------------------------
+ 
+      SELECT CASE (WF)
+         CASE ("MP2 ")
+            WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
+            LABEL = 'MP2 DENS'
+            IERR = 0
+         CASE ("HF  ")
+            WRITE (LUPRI,*) " Generating Hartree-Fock density matrix"
+            IERR = 0
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented density: ",WF
+            WRITE (LUPRI,*) " Will use Hartree-Fock density matrix"
+            IERR = 1
+      END SELECT
+
+C     Read the appropriate correlated density from file
+
+      ALLOCATE (DMO(NORBT,NORBT,NZ))
+      CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
+      FND =  FNDLAB(LABEL,MCCDENS)
+      CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+
+C     Add the closed shell Hartree-Fock contribution
+
+C     The add_two routine scales by 2, scale back to the orginal afterwards
+      CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+      CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+
+      SELECT CASE (BASIS)
+         CASE ("MO")
+            CALL DCOPY (N2ORBTQ,DMO,1,DMAT,1)
+         CASE ("AO")
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented basis: ",BASIS
+            WRITE (LUPRI,*) " Use density matrix in AO basis "
+            IERR = IERR + 2
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+      END SELECT
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE STORE_CC_DENSITY (WF,DMO)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*4 WF                     ! Wave function type
+      REAL*8 DMO(*)                      ! Density matrix (MO-basis)
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 LABEL
+C---------------Executable code--------------------------------------
+ 
+      WRITE (LUPRI,*) " Storing the ",WF," density matrix on file"
+      LABEL = WF//'DENS'
+
+C     Write the correlated density to file
+
+      CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
+      CALL NEWLAB(LABEL,MCCDENS,LUPRI)
+      CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+
+      END
