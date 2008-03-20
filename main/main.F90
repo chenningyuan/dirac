@@ -41,16 +41,16 @@ program dirprg
 #include "dcbgen.h"
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios
-! initialize parcal (dcbgen.h) - SK - 19-03-2008
-  parcal  = .false.
 #ifdef VAR_MPI 
   call mpixinit()
 #else
+  parcal  = .false.
   iparcal = 0
   mytid   = 0
   mparid  = 0
-  numnod  = 1
+  numnod  = 0
 #endif
+  call stopwatch(1,numnod)
   if (parcal) iparcal = 1
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
@@ -59,12 +59,21 @@ program dirprg
      call printtitle
      call printlogo
      call printsubtitle
+     call sysinf(iparcal)
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
      memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM)
      print '(a,i0,a,i0,a)', 'DIRAC slave allocating ',memsize,' words (',memsize/2**16,' MB) of memory'     
      allocate(memory(memsize))
      call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
+  endif
+  if (mytid == 0) then
+     print '(a)', '*****************************************************'
+  endif
+  ! TODO: put barriers to print banners correctly. Master should run stopwatch last of all.
+  call stopwatch(0,mytid)
+  if (mytid == 0) then
+     print '(a)','********** E N D   of   D I R A C  output  **********'
   endif
 #ifdef VAR_MPI
   call mpixfinalize()

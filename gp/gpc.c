@@ -54,57 +54,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/utsname.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include "patchlevel.h"
 #include "compinfo.h"
 
-/*
-  Workaround for buggy fortran SYSTEM() on some
-  platforms (intel fortran 8.x-9.x)
-*/
-int csystem_(const char *cmd, int cmdlen)
-{
-  int i;
-  char *s;
-  s = malloc(cmdlen+1);
-  for (i=0;i<cmdlen;i++)
-    s[i] = cmd[i];
-  s[cmdlen] = 0;
-  i = system(cmd);
-  free(s);
-  return i;
-}
 
-#if defined (SYS_CRAY) || defined (SYS_T3D) 
-
-#include <fortran.h>
-#define frac2i FRAC2I
-#define creadreorder CREADREORDER
-
-#elif defined (SYS_HPUX)
-
-/* nothing */
-
-#elif defined (SYS_AIX)
-
-#define frac2i frac2i
-#define creadreorder creadreorder
-
-#else
-
-#define frac2i frac2i_
-#define creadreorder creadreorder_
-#define compoff compoff_
-
-#endif /*SYS_CRAY etc*/
-
-void c_frac2i();
-void frac2i();
-/* void sysinf(); */
-void sysinf(int );
-/* void creadreorder(); */
-void creadreorder(char *, int *, int *, int *);
-/* void distribute_env(); */
-void distribute_env(const char*, int);
 
 /*
  * Take string of tokens and return new ordering
@@ -118,16 +73,10 @@ void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
 
    *ireord = 0;
    
-   /*
-   printf("string: %s\n",string);
-    */
    token = strtok(string,",");
 
    while ( token != NULL )
    {
-      /*
-      printf("Token %2i: %s\n",*ireord,token);
-       */
       itemp = atoi(token);
       if ( itemp <= 0 ) return;
       if ( (*ireord = *ireord + 1) > (*mxreord) ) 
@@ -140,66 +89,59 @@ void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
    }
 }
 
-/* 
- * Take string s and return the fraction n/d
- */
-
-void c_frac2i(s,f) 
-char *s;
-double *f;
-
+static void print_time(time_t secs, FILE *dst)
 {
-   char *s1;
-   int d,n;
-
-   s1 = strstr(s,"/");
-   /*
-    * If no '/' present in string then it is a float
-    * else it is a 'n/d'
-    */
-   if ( s1 == (char *) NULL ) 
-   {
-      *f = atof(s);
-   }
-   else
-   {
-      s1++;
-      d = atoi(s1);
-      n = atoi(s);
-      *f = ((double) n) / ((double) d);
-   }
+    if (secs > 60*60*24)
+    {
+	int days = secs / (60*60*24);
+	fprintf(dst,"%idays",days);
+	secs -= days*60*60*24;
+    }
+    if (secs > 60*60)
+    {
+	int hrs = secs / (60*60);
+	fprintf(dst,"%ih",hrs);
+	secs -= hrs*60*60;
+    }
+    if (secs > 60)
+    {
+	int mins = secs / (60);
+	fprintf(dst,"%imin",mins);
+	secs -= mins*60;
+    }
+    fprintf(dst,"%is",(int)secs);
 }
 
-void
-#if defined(SYS_CRAY) || defined (SYS_T3D)
-frac2i(f,fcd)
-double *f;
-_fcd fcd;
-#else
-frac2i(f,s,l)
-double *f;
-char *s;
-int l;
-#endif
-
+/* Start timers, or stop and print cpu and wall time*/
+void stopwatch_(int *start, int *node_nr)
 {
-   char *temp;
-#if defined(SYS_CRAY) || defined (SYS_T3D)
-   int l;
-   char *s;
-
-   l = _fcdlen(fcd);
-   s = _fcdtocp(fcd);
-#endif
-   temp = (char *) malloc(l+1);
-   strncpy(temp, s, l);
-   temp[l] = '\0';
-   c_frac2i(temp,f);
-   free(temp);
+    static struct timeval start_wall;
+    if (*start)
+    {
+	gettimeofday(&start_wall, NULL);
+    }
+    else
+    {
+	struct rusage rusage;
+	if (getrusage(RUSAGE_SELF,&rusage) == 0)
+	{
+	    /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld\n",
+		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+	}
+	if (*node_nr == 0) /* print wall time only on the master */
+	{
+	    struct timeval end_wall;
+	    gettimeofday(&end_wall, NULL);
+	    printf(">>>> Total WALL time used in DIRAC: ");
+	    print_time(end_wall.tv_sec - start_wall.tv_sec,stdout);
+	    printf("\n");
+	}
+    }
 }
 
-
-void sysinf(int parcal)
+void sysinf_(int *parcal)
 
 {
    struct utsname *un;
@@ -219,7 +161,7 @@ void sysinf(int parcal)
       printf( " Operating system  : %s %s\n" , un->sysname, un->release);
       printf( " Machine           : %s\n" , un->machine);
    }
-   if ( ! parcal )
+   if ( ! *parcal )
       printf( " Run               : Sequential\n");
    else
       printf( " Run               : Parallel\n");
@@ -306,6 +248,23 @@ int icommsize_(const int *istart, const int *iend)
 }
 
 
+/*
+  Workaround for buggy fortran SYSTEM() on some
+  platforms (intel fortran 8.x-9.x)
+*/
+int csystem_(const char *cmd, int cmdlen)
+{
+  int i;
+  char *s;
+  s = malloc(cmdlen+1);
+  for (i=0;i<cmdlen;i++)
+    s[i] = cmd[i];
+  s[cmdlen] = 0;
+  i = system(cmd);
+  free(s);
+  return i;
+}
+
 #ifdef VAR_IFC
  /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
@@ -340,19 +299,20 @@ void getenv_(const char* str, char* val, int strl, int vall)
   strncpy(name, str, strl);
   name[strl] = '\0';
 
-  /*printf("getenv(%s) called with strl=%d, vall=%d '%s'\n",
-    name, strl, vall, getenv(name));*/
   if( (envv=getenv(name)) != NULL)
     strncpy(val, envv, vall);
   else val[0] = '\0';
-  /*printf("getenv(%s) returned '%s' (%d, %d)\n", name, val, strl, vall);*/
+
   for(i=strlen(val); i< vall; i++)
     val[i] = ' ';
 }
 
-void system_(char* str, int strlen)
-{
-  printf("Bloody crayio. I ignore your commands.\n");
+void system_(char* str, int len)
+{    
+    char *buf = alloca(len+1);
+    buf[len] = 0;
+    strncpy(buf,str,len);
+    printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
 }
 
 void flush_(int* lu)
@@ -397,4 +357,4 @@ double* malloc_(int cnt)
 {
   return malloc(cnt);
 }
-#endif
+#endif /* VAR_IFC */

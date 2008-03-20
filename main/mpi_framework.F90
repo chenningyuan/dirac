@@ -128,8 +128,6 @@ IF( IPAREX .ne. 0 )THEN
   CALL MPE_START_LOG()
 #endif  /* MPE */
 !
-END IF ! IPAREX
-!
 ! distribute environment variables
 !
 ! ITASK = 0: "BASDIR"
@@ -139,7 +137,9 @@ END IF ! IPAREX
   CALL DIST_ENV(0) !later in the DIRAC run???
   CALL DIST_ENV(1)
   CALL DIST_ENV(2)
-!
+ELSE
+	PARCAL = .FALSE.
+END IF ! IPAREX
 END SUBROUTINE MPIXINIT
 
 !
