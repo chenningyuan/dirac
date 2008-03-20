@@ -1974,6 +1974,7 @@ cat <<EOF>> Makefile.config
 #
 .SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
 
+%.mod : %.s  #delete the gnu make builtin rule for .mod files 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .F.g:
