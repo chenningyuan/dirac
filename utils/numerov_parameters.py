@@ -9,9 +9,9 @@ q_max            = -q_min
 energy_precision = 1e-10
 nr_solutions     = 3
 
-# units: reduced mass is in amu, as it comes out in Gaussian
-#        q is in Angstrom (makes sense if you use Gaussian)
-#        potential and property are in a.u.
+# units: reduced mass is in amu, as it comes out in GAUSSIAN
+#        q is in angstrom (makes sense if you use GAUSSIAN)
+#        potential and property are in hartree
 
 # btw: this example is the HF PV shift (C-F stretch)
 #      in CHFClBr (table II in Schwerdtfeger et al. PRA 71, 012103 (2005))
@@ -29,6 +29,14 @@ potential_l.append([ 0.02,-0.61103262365e+03])
 potential_l.append([ 0.05,-0.61103110894e+03])
 potential_l.append([ 0.10,-0.61102641160e+03])
 potential_l.append([ 0.25,-0.61100326033e+03])
+
+potential_harmonic_l = []
+#                              q     potential(q)
+potential_harmonic_l.append([-0.02,-0.61103259217e+03])
+potential_harmonic_l.append([-0.01,-0.61103285334e+03])
+potential_harmonic_l.append([ 0.00,-0.61103293760e+03])
+potential_harmonic_l.append([ 0.01,-0.61103285720e+03])
+potential_harmonic_l.append([ 0.02,-0.61103262365e+03])
 
 property_l = []
 #                    q     property(q)

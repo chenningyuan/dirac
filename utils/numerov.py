@@ -6,7 +6,7 @@
 # corresponding to a normal mode
 # numericaly using the Numerov-Cooley algorithm
 #
-# last modification: 24/01/2008 (radovan bast)
+# last modification: 25/03/2008 (radovan bast)
 #
 # you give:        potential at several points along the normal mode
 #                  property values at several points along the normal mode
@@ -76,85 +76,6 @@ def shift_minimum_to_zero(l):
 
 #-------------------------------------------------------------------------------
 
-potential_x_l = []
-potential_y_l = []
-for potential in potential_l:
-    potential_x_l.append(potential[0]/0.529177249)
-    potential_y_l.append(potential[1])
-
-shift_minimum_to_zero(potential_y_l)
-potential_coefficients = polyfit(potential_x_l, potential_y_l, degree_potential)
-
-property_x_l = []
-property_y_l = []
-for property in property_l:
-    property_x_l.append(property[0]/0.529177249)
-    property_y_l.append(property[1])
-
-property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
-
-#-------------------------------------------------------------------------------
-
-nr_points = nr_steps + 1
-step      = (q_max - q_min)/nr_steps
-
-q                      = zeros(nr_points, Float)
-potential              = zeros(nr_points, Float)
-property               = zeros(nr_points, Float)
-g                      = zeros(nr_points, Float)
-psi                    = zeros(nr_points, Float)
-psi_squared_save       = zeros([nr_solutions, nr_points], Float)
-energy_save            = zeros(nr_solutions, Float)
-
-for i in range(nr_points):
-    q[i] = q_min + i*step
-    for j in range(len(potential_coefficients)):
-        k = len(potential_coefficients) - j - 1
-        potential[i] = potential[i] + (q[i]**j)*potential_coefficients[k]
-    for j in range(len(property_coefficients)):
-        k = len(property_coefficients) - j - 1
-        property[i] = property[i] + (q[i]**j)*property_coefficients[k]
-
-#-------------------------------------------------------------------------------
-
-energy_guess  = 1e-4
-energy_step   = 1e-4
-nr_nodes_last = 0
-
-expectation_value_reference = 0.0
-zero_point_energy           = 0.0
-
-print
-print 'reduced_mass     = ', reduced_mass
-print 'degree_potential = ', degree_potential
-print 'degree_property  = ', degree_property
-print 'nr_steps         = ', nr_steps
-print 'q_min            = ', q_min
-print 'q_max            = ', q_max
-print 'energy_precision = ', energy_precision
-print 'nr_solutions     = ', nr_solutions
-print
-
-s = '%10s' % 'energy'                   \
-  + '%29s' % 'transition frequency'     \
-  + '%14s' % 'property'                 \
-  + '%20s' % 'shift'                    \
-  + '%21s' % 'shift'                    \
-  + '%16s' % 'nodes'                    \
-  + '%23s' % '99.9% probability'
-print s
-s = '%10s' % '(a.u.)'  \
-  + '%22s' % '(cm^-1)' \
-  + '%20s' % '(a.u.)'  \
-  + '%22s' % '(a.u.)'  \
-  + '%20s' % '(Hz)'    \
-  + '%33s' % 'within'
-print s
-
-print
-
-#-------------------------------------------------------------------------------
-
 def normalize(psi):
 
     norm = 0.0
@@ -167,86 +88,193 @@ def normalize(psi):
 
 #-------------------------------------------------------------------------------
 
-while nr_nodes_last < nr_solutions:
+def run_numerov(potential_coefficients,
+                property_coefficients,
+                reduced_mass,
+                nr_steps,
+                q_min,
+                q_max,
+                energy_precision,
+                nr_solutions):
 
-      psi[0]   = 0.0
-      psi[1]   = 1.0e-6
-      for i in range(nr_points):
-          g[i] = reduced_mass*1822.888479031408*(2.0*potential[i] - 2.0*energy_guess)
-          if i > 1:
-             psi[i] = 2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step*step*5.0/6.0 + g[i-2]*psi[i-2]*step*step/12.0
-             psi[i] = psi[i]/(1.0 - g[i]*step*step/12.0)
+    s = '%10s' % 'energy'                   \
+      + '%29s' % 'transition frequency'     \
+      + '%14s' % 'property'                 \
+      + '%20s' % 'shift'                    \
+      + '%21s' % 'shift'                    \
+      + '%16s' % 'nodes'                    \
+      + '%23s' % '99.9% probability'
+    print s
 
-      psi = normalize(psi)
+    s = '%10s' % '(a.u.)'  \
+      + '%22s' % '(cm^-1)' \
+      + '%20s' % '(a.u.)'  \
+      + '%22s' % '(a.u.)'  \
+      + '%20s' % '(Hz)'    \
+      + '%33s' % 'within'
+    print s
 
-      nr_nodes = 0
-      i_save   = nr_points
-      for i in range(nr_points):
-          if (psi[i]/psi[i-1]) < 0.0:
-             nr_nodes = nr_nodes + 1
-             i_save = i
+    nr_points = nr_steps + 1
+    step      = (q_max - q_min)/nr_steps
 
-      for i in range(nr_points):
-          if i > i_save:
-             psi[i] = 0.0
+    q                      = zeros(nr_points, Float)
+    potential              = zeros(nr_points, Float)
+    property               = zeros(nr_points, Float)
+    g                      = zeros(nr_points, Float)
+    psi                    = zeros(nr_points, Float)
+    psi_squared_save       = zeros([nr_solutions, nr_points], Float)
+    energy_save            = zeros(nr_solutions, Float)
 
-      psi = normalize(psi)
+    for i in range(nr_points):
+        q[i] = q_min + i*step
+        for j in range(len(potential_coefficients)):
+            k = len(potential_coefficients) - j - 1
+            potential[i] = potential[i] + (q[i]**j)*potential_coefficients[k]
+        for j in range(len(property_coefficients)):
+            k = len(property_coefficients) - j - 1
+            property[i] = property[i] + (q[i]**j)*property_coefficients[k]
 
-      if (abs(energy_step) < energy_precision) and (nr_nodes > nr_nodes_last):
+    energy_guess  = 1e-4
+    energy_step   = 1e-4
+    nr_nodes_last = 0
 
-         norm = 0.0
-         done = 0
-         for i in range(len(psi)):
-             norm = norm + psi[i]*psi[i]
-             if (norm > 0.999) and not done:
-                i_right = i
-                done    = 1
+    expectation_value_reference = 0.0
+    zero_point_energy           = 0.0
 
-         norm = 0.0
-         done = 0
-         for i in range(nr_points-1, -1, -1):
-             norm = norm + psi[i]*psi[i]
-             if (norm > 0.999) and not done:
-                i_left = i
-                done   = 1
+    while nr_nodes_last < nr_solutions:
 
-         expectation_value = 0.0
-         for i in range(nr_points):
-             expectation_value = expectation_value + property[i]*psi[i]*psi[i]
-             psi_squared_save[nr_nodes-1][i] = psi[i]*psi[i]
-         energy_save[nr_nodes-1] = energy_guess
+          psi[0]   = 0.0
+          psi[1]   = 1.0e-6
+          for i in range(nr_points):
+              g[i] = reduced_mass*1822.888479031408*(2.0*potential[i] - 2.0*energy_guess)
+              if i > 1:
+                 psi[i] = 2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step*step*5.0/6.0 + g[i-2]*psi[i-2]*step*step/12.0
+                 psi[i] = psi[i]/(1.0 - g[i]*step*step/12.0)
 
-         if nr_nodes == 1:
-            expectation_value_reference = expectation_value
-            zero_point_energy = energy_guess
+          psi = normalize(psi)
 
-         transition_frequency = (energy_guess - zero_point_energy)*2.194746313705e5
+          nr_nodes = 0
+          i_save   = nr_points
+          for i in range(nr_points):
+              if (psi[i]/psi[i-1]) < 0.0:
+                 nr_nodes = nr_nodes + 1
+                 i_save = i
 
-         shift_au = (expectation_value - expectation_value_reference)
-         shift_hz = shift_au*6.579683920721e15
+          for i in range(nr_points):
+              if i > i_save:
+                 psi[i] = 0.0
 
-         s = '%12.8f'          % energy_guess               \
-           + '%22.8f'          % transition_frequency       \
-           + '%22.8e'          % expectation_value          \
-           + '%22.8e'          % shift_au                   \
-           + '%22.8e'          % shift_hz                   \
-           + '%s'              % str(nr_nodes - 1).rjust(8) \
-           + '%15.2f .. %1.2f' % (q[i_left], q[i_right])
-         print s
+          psi = normalize(psi)
 
-         energy_step   = 1.0e-4
-         nr_nodes_last = nr_nodes_last + 1
+          if (abs(energy_step) < energy_precision) and (nr_nodes > nr_nodes_last):
 
-      if nr_nodes > nr_nodes_last:
-         if energy_step > 0.0:
-            energy_step = energy_step/(-10.0)
-      else:
-         if energy_step < 0.0:
-            energy_step = energy_step/(-10.0)
+             norm = 0.0
+             done = 0
+             for i in range(len(psi)):
+                 norm = norm + psi[i]*psi[i]
+                 if (norm > 0.999) and not done:
+                    i_right = i
+                    done    = 1
 
-      energy_guess = energy_guess + energy_step
+             norm = 0.0
+             done = 0
+             for i in range(nr_points-1, -1, -1):
+                 norm = norm + psi[i]*psi[i]
+                 if (norm > 0.999) and not done:
+                    i_left = i
+                    done   = 1
+
+             expectation_value = 0.0
+             for i in range(nr_points):
+                 expectation_value = expectation_value + property[i]*psi[i]*psi[i]
+                 psi_squared_save[nr_nodes-1][i] = psi[i]*psi[i]*4.0
+             energy_save[nr_nodes-1] = energy_guess
+
+             if nr_nodes == 1:
+                expectation_value_reference = expectation_value
+                zero_point_energy = energy_guess
+
+             transition_frequency = (energy_guess - zero_point_energy)*2.194746313705e5
+
+             shift_au = (expectation_value - expectation_value_reference)
+             shift_hz = shift_au*6.579683920721e15
+
+             s = '%12.8f'          % energy_guess               \
+               + '%22.8f'          % transition_frequency       \
+               + '%22.8e'          % expectation_value          \
+               + '%22.8e'          % shift_au                   \
+               + '%22.8e'          % shift_hz                   \
+               + '%s'              % str(nr_nodes - 1).rjust(8) \
+               + '%15.2f .. %1.2f' % (q[i_left], q[i_right])
+             print s
+
+             energy_step   = 1.0e-4
+             nr_nodes_last = nr_nodes_last + 1
+
+          if nr_nodes > nr_nodes_last:
+             if energy_step > 0.0:
+                energy_step = energy_step/(-10.0)
+          else:
+             if energy_step < 0.0:
+                energy_step = energy_step/(-10.0)
+
+          energy_guess = energy_guess + energy_step
+
+    return q, psi_squared_save, energy_save
+
+#-------------------------------------------------------------------------------
+
+potential_x_l = []
+potential_y_l = []
+for potential in potential_l:
+    potential_x_l.append(potential[0]/0.529177249)
+    potential_y_l.append(potential[1])
+
+shift_minimum_to_zero(potential_y_l)
+potential_coefficients = polyfit(potential_x_l, potential_y_l, degree_potential)
+
+potential_harmonic_x_l = []
+potential_harmonic_y_l = []
+for potential_harmonic in potential_harmonic_l:
+    potential_harmonic_x_l.append(potential_harmonic[0]/0.529177249)
+    potential_harmonic_y_l.append(potential_harmonic[1])
+
+shift_minimum_to_zero(potential_harmonic_y_l)
+potential_harmonic_coefficients = polyfit(potential_harmonic_x_l, potential_harmonic_y_l, 2)
+
+property_x_l = []
+property_y_l = []
+for property in property_l:
+    property_x_l.append(property[0]/0.529177249)
+    property_y_l.append(property[1])
+
+property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
+
+#-------------------------------------------------------------------------------
 
 print
+print 'reduced_mass     = ', reduced_mass
+print 'degree_potential = ', degree_potential
+print 'degree_property  = ', degree_property
+print 'nr_steps         = ', nr_steps
+print 'q_min            = ', q_min
+print 'q_max            = ', q_max
+print 'energy_precision = ', energy_precision
+print 'nr_solutions     = ', nr_solutions
+print
+
+print 'anharmonic'
+print '=========='
+print
+
+q, psi_squared_save, energy_save = run_numerov(potential_coefficients,
+                                               property_coefficients,
+                                               reduced_mass,
+                                               nr_steps,
+                                               q_min,
+                                               q_max,
+                                               energy_precision,
+                                               nr_solutions)
 
 #plot_numerov(potential_x_l,
 #             potential_y_l,
@@ -261,3 +289,17 @@ print
 #             'E(q) / E~B~h~N~',
 #             'E~B~PV~N~(q) / E~B~h~N~',
 #             'plot')
+
+print
+print 'harmonic'
+print '========'
+print
+
+run_numerov(potential_harmonic_coefficients,
+            property_coefficients,
+            reduced_mass,
+            nr_steps,
+            q_min,
+            q_max,
+            energy_precision,
+            nr_solutions)
