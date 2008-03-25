@@ -70,8 +70,12 @@ program dirprg
      call sysinf(iparcal)
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
+#ifdef VAR_MPI
      allocate(memory(memsize))
      call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
+#else
+     call quit('Internal error in main.F90. Quitting.')
+#endif
   endif
   if (mytid == 0) then
      print '(a)', '*****************************************************'
