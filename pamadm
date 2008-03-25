@@ -1387,7 +1387,7 @@ which_modules()
 if [ -n "$IBMMOD" ]; then
 # I assume that DFTFLG is always activated...
    MODS="$DFTFLG"
-   for mod in $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
       do 
       MODS="$MODS,$mod"
       done
