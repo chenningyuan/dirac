@@ -99,6 +99,8 @@
                              
                InfoMessage  = 'Unknown error!'
                ErrorMessage = InfoMessage
+               trace_result = 'unknown (stack trace info unavailable)'
+
                call get_traceback_info (printAllocCaller,trace_result,charArrayLength)
                
                select case (status)

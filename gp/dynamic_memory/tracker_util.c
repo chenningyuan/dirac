@@ -1,10 +1,13 @@
+/*
+ * $Id$
+ *
+ * tracker_util.c : functions to retrieve information from memory usage (addresses, amount of free memory)
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if !defined (SYS_LINUX)
-#define SYS_LINUX
-#endif
 
 #if defined (SYS_LINUX)
 #include <sys/sysinfo.h>
@@ -32,9 +35,6 @@ void get_memory_address (void *variable, int *address)
 {
    char bufvar[BUFFERSIZE]; 
 
-#if defined (DEBUG_TRACKUTIL)
-   printf("\nvar=%p (in integer format=%i)\n",variable,variable);
-#endif
    snprintf (bufvar,(BUFFERSIZE-1),"%i",variable);
 
 // address_string = malloc(strlen(bufvar)*sizeof(char)); 
@@ -44,7 +44,7 @@ void get_memory_address (void *variable, int *address)
 }
 
 
-// reads memory information. note, sysinfo is linux-specific
+// reads memory information. note, sysinfo is linux-specific 
 
 #if defined (INTEL)
 void get_memory_info_(char *fstring, int *flength)

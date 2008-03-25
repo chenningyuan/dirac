@@ -3,6 +3,8 @@ rm *.a *.o *.mod
 xlf -O3 -g  -pg -c memory_tracker.f90
 xlf -O3 -g  -pg -c memory_allocator.f90
 xlf -O3 -g  -pg -c test_allocator.f90
+#xlc -O3 -g  -DSYS_LINUX -pg -c -I/usr/include tracing.c
+#xlc -O3 -g  -DSYS_LINUX -pg -c -I/usr/include tracker_util.c
 xlc -O3 -g  -pg -c -I/usr/include tracing.c
 xlc -O3 -g  -pg -c -I/usr/include tracker_util.c
 

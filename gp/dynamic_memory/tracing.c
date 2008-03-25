@@ -1,24 +1,33 @@
-#include <execinfo.h>
+/*
+ * $Id$
+ *
+ * tracing.c : functions to retrieve information from the execution stack and process them into fortran-friendly data
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#if defined (SYS_LINUX)
+#include <execinfo.h>
+#endif
 
 #define MAXSIZE_SYMBOL (300)
 #define MAXDEPTH_TRACE  (30)
 
-const enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
-const enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
+enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
+enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
 
-
-// public (i.e. callable from fortran) functions. the usual tricks to
-// get the symbols right for the different compilers apply
+// public (callable from fortran) functions. 
 
 #if defined (INTEL)
-void get_traceback_info_(enum allowedActions, char *fstring, int *fsize);
+void get_traceback_info_(enum allowedActions*, char *fstring, int *fsize);
 #else
-void get_traceback_info_(enum allowedActions, char *fstring, int *fsize);
+void get_traceback_info (enum allowedActions*, char *fstring, int *fsize);
 #endif
 
-// internal (i.e. not meant to be called from fortran) function
+// internal (not meant to be called from fortran) function
 
 void retrieve_symbol(enum retrieveSymbolKinds, char *result, char *backtrace_string);
 void print_rawtrace_to_stdout(size_t size, char **strings);
@@ -44,39 +53,44 @@ void get_traceback_info (enum allowedActions *action, char *fstring, int *fsize)
 #endif
 {
   void *array[MAXDEPTH_TRACE];
-  size_t size;
-  char **strings;
+  size_t size = 0;
+  char **strings = NULL;
   size_t i=3, j, k = 0;
   char symbol_name[MAXSIZE_SYMBOL];
 
+// only support to linux for now. for other systems the traceback is yet to be implemented
+// mac osx 10.5 should have the same interface
+#if defined (SYS_LINUX)
 // calls to gnu libc routines
-
    size    = backtrace (array, MAXDEPTH_TRACE);
    strings = backtrace_symbols (array, size);
+#endif /* SYS_LINUX */
 
+   if ( strings != NULL ) 
+   {
 // now we branch off for the different pieces of the trace we want 
 // to use
-//print_rawtrace_to_stdout(size,strings);
-   if ( *action == printAllToStdout ) 
-   {
-      retrieve_symbol(symbolRetAddr,symbol_name,strings[i]);
-//      print_full_trace(size,strings,fstring);
-   }
-   else if ( *action == printAllocCaller )
-   {
-      retrieve_symbol(symbolName,symbol_name,strings[i]);
-      print_trace_to_string(symbol_name,fstring,*fsize);
-   }
-   else if ( *action == printPrettyTrace )
-   {
-      print_prettytrace_to_stdout(size,strings);
-   }
-   else if ( *action == prinRawTrace )
-   {
-      print_rawtrace_to_stdout(size,strings);
-   }
+      if ( *action == printAllToStdout ) 
+      {
+         retrieve_symbol(symbolRetAddr,symbol_name,strings[i]);
+//         print_full_trace(size,strings,fstring);
+      }
+      else if ( *action == printAllocCaller )
+      {
+         retrieve_symbol(symbolName,symbol_name,strings[i]);
+         print_trace_to_string(symbol_name,fstring,*fsize);
+      }
+      else if ( *action == printPrettyTrace )
+      {
+         print_prettytrace_to_stdout(size,strings);
+      }
+      else if ( *action == prinRawTrace )
+      {
+         print_rawtrace_to_stdout(size,strings);
+      }
 
-   free (strings);
+      free (strings);
+   }
 }
 
 
@@ -140,7 +154,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
 
 void print_trace_to_string(char *symbol_in, char *symbol_out, int length)
 {
-   size_t i,j=1,n;
+   size_t i,j=0,n;
    
    n = strlen(symbol_in);
 
@@ -156,8 +170,6 @@ void print_trace_to_string(char *symbol_in, char *symbol_out, int length)
       symbol_out[i] = ' ';
 
    symbol_out[length-1] = '\0';
-
-//   printf("    returning symbol name2 : %s  \n",symbol_out);
 }
 
 
