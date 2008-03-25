@@ -2643,7 +2643,8 @@ C
 #endif
 C
                 CALL READ_IJKL_GAS(WORK(KT_CC),T_BUFF,T_BUFF_D, 
-     &                             IT_TTPL,WORK(KMDIASV),NDIAMINT)
+     &                             IT_TTPL,WORK(KMDIASV),NDIAMINT,
+     &                             NSPOBEX_TP,N1ELINT)
 C
                 GOTO 1001
 C

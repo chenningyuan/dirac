@@ -374,9 +374,9 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 C**********************************************************************
-      INTEGER*8 FUNCTION IGET_MY_T_LEN(IT_TTPL,IMULT)
+      INTEGER*8 FUNCTION IGET_MY_T_LEN(IT_TTPL,IDIM,N1INT,IMULT)
 C
-C     find all active T-blocks for all (LPROC_NM) CPU's 
+C     find all active T-blocks for all CPU's 
 C
 C     Written by S. Knecht - Feb 01 2008
 C
@@ -391,24 +391,36 @@ C**********************************************************************
 #include "parluci.h"
 #include "ctcc.inc"
       DIMENSION IT_TTPL(*)
-      INTEGER*8 J_COUNT_LEN, ITLTND, IILENGTH
+      INTEGER*8 J_COUNT_LEN, IILENGTH
 C
       IGET_MY_T_LEN = 0
       J_COUNT_LEN   = 0
       IILENGTH      = 0
 C
+C     set total number of integrals
+C
+      NINT_TOTAL = N1INT + N2ELINT
+      NINT_TOTAL = NINT_TOTAL * IMULT
+csk   WRITE(LUWRT,*) ' NINT_TOTAL, N1INT, N2ELINT:', 
+csk  &                 NINT_TOTAL, N1INT, N2ELINT
+csk   WRITE(LUWRT,*) ' IDIM, IMULT:', 
+csk  &                 IDIM, IMULT
+csk   CALL IWRTMAMN(IT_TTPL,1,IDIM*IMULT,1,
+csk  &              IDIM*IMULT,LUWRT)
+C
       DO JMULT = 1, IMULT
-        DO IBLK = 1, NSPOBEX_TP
-          IF( IT_TTPL( IBLK + ( NSPOBEX_TP * (JMULT - 1 ) ) ) 
+        DO IBLK = 1, IDIM
+          IF( IT_TTPL( IBLK + ( IDIM * (JMULT - 1 ) ) ) 
      &        .eq. MYNEW_ID_SM )THEN
-            IILENGTH    = NELM_CC(IBLK,NSPOBEX_TP,NINT_TOTAL)
+            IILENGTH    = NELM_CC(IBLK,IDIM,NINT_TOTAL)
+csk         WRITE(LUWRT,*) ' IILENGTH:', IILENGTH
             J_COUNT_LEN = J_COUNT_LEN + IILENGTH
           END IF
         END DO
       END DO
 C
       IGET_MY_T_LEN = J_COUNT_LEN
-csk      WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
+csk   WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
 C
       END
 ***********************************************************************
@@ -556,8 +568,14 @@ C***********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IS_LENGHT8
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
+#if defined (INT_STAR8)
+      INTEGER(KIND=MPI_OFFSET_KIND)  IWRITE_BYTE
+#else
+      INTEGER IWRITE_BYTE
+#endif
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_LENGHT8
 #endif
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -607,35 +625,55 @@ C
       IOFFSET     = IOFF_T_IJKL
       IS_BYTE8    = ISIZE_dp
       IS_LENGHT8  = NTOOB
+#if defined (INT_STAR8)
       IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+#else
+      IWRITE_BYTE = ISIZE_dp * NTOOB
+#endif
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
       IS_LENGHT8  = NTOOB
+#if defined (INT_STAR8)
       IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+#else
+      IWRITE_BYTE = ISIZE_dp * NTOOB
+#endif
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
       IS_LENGHT8  = NTOOB**2
+#if defined (INT_STAR8)
       IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+#else
+      IWRITE_BYTE = ISIZE_dp * NTOOB**2
+#endif
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLJ),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
       IS_LENGHT8  = NTOOB**2
+#if defined (INT_STAR8)
       IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+#else
+      IWRITE_BYTE = ISIZE_dp * NTOOB**2
+#endif
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C     
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
       IS_LENGHT8  = NTOOB**2
+#if defined (INT_STAR8)
       IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+#else
+      IWRITE_BYTE = ISIZE_dp * NTOOB**2
+#endif
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLK2),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
@@ -768,7 +806,12 @@ C***********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IWRITE_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
+#if defined (INT_STAR8)
+      INTEGER(KIND=MPI_OFFSET_KIND)  IWRITE_BYTE
+#else
+      INTEGER IWRITE_BYTE
+#endif
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL
 #endif
 #include "mxpdim.inc"
@@ -818,13 +861,20 @@ C       T in SIGDEN ordered format
 C
         IOFFSET     = IOFFSET + IWRITE_BYTE
         IS_BYTE8    = ISIZE_dp
+#if defined (INT_STAR8)
         IWRITE_BYTE = NALLINT * IS_BYTE8
-csk        WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
-csk        WRITE(LUWRT,*) ' # elements in bytes = ',IWRITE_BYTE
-csk        CALL WRTMATMN(T,1,NALLINT,1,NALLINT,LUWRT)
+#else
+        XLENALL = REAL(NALLINT)
+        NALLINT_I4 = IGIVE_I_B(XLENALL)
+        IWRITE_BYTE = NALLINT_I4 * ISIZE_dp
+#endif
+csk     WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
+csk     WRITE(LUWRT,*) ' # elements in bytes = ',IWRITE_BYTE
+csk     CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
         CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T,
      &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' write-out at ',IOFFSET
+csk     WRITE(LUWRT,*) ' write-out at ',IOFFSET
+csk     WRITE(LUWRT,*) ' write-out to ',IIJKL_ROD
 C
 C       T diagonal in GASDIAT_REL ordered format
 C
@@ -869,7 +919,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE READ_IJKL_GAS(T,T_BUFF,T_BUFF_D,IT_TTPL,
-     &                         MDIASV,NDIAMINT)
+     &                         MDIASV,NDIAMINT,IDIM_TYP,N1_INT)
 C**********************************************************************
 C
 C     read sorted integrals from file
@@ -887,10 +937,15 @@ C***********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IREAD_BYTE, IOFFSET_T
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IOFFSET_T
+#if defined (INT_STAR8)
+      INTEGER(KIND=MPI_OFFSET_KIND)  IREAD_BYTE
+#else
+      INTEGER IREAD_BYTE
 #endif
-#include "mxpdim.inc"
+#endif
 #include "parluci.h"
+#include "mxpdim.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 #include "orbinp.inc"
@@ -899,10 +954,12 @@ C***********************************************************************
       DIMENSION T_BUFF_D(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_IN
 C
-      NINT_TOT = N1ELINT + N2ELINT
+      NINT_TOT = N1_INT + N2ELINT
       I_START  = 0
       I_END    = 0
       I_OUT    = 0
+csk   WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
+csk  &                 IDIM_TYP, N1_INT, N2ELINT
       IF( IT_SHL .ge. 0 )THEN
 #if defined (VAR_MPI2)
 C
@@ -947,9 +1004,13 @@ C
         IOFFSET_T   = IOFFSET
 csk        WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
 C
-C       raed-in integrals to T_BUFF according to type list IT_TTPL
+C       read-in integrals to T_BUFF according to type list IT_TTPL
 C
-        CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,NSPOBEX_TP,IOFFSET_T)
+csk     WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
+csk  &                   IDIM_TYP, N1_INT
+csk     CALL IWRTMAMN(IT_TTPL,1,IDIM_TYP,1,IDIM_TYP,LUWRT)
+        CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,IDIM_TYP,N1_INT,
+     &                       IOFFSET_T)
 csk        WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
 csk                                                  MY_T_LEN
 csk        CALL WRTMATMN(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
@@ -957,9 +1018,14 @@ C
 C       T diagonal in GASDIAT_REL ordered format
 C
         IS_BYTE8    = ISIZE_dp
-        IREAD_BYTE  = NALLINT    * IS_BYTE8
-        IOFFSET     = IOFFSET_T  + IREAD_BYTE
+        IOFFSET     = IOFFSET_T  + ( NALLINT * IS_BYTE8 )
+#if defined (INT_STAR8)
         IREAD_BYTE  = MY_T_LEN_D * IS_BYTE8
+#else
+        XLENTD        = REAL(MY_T_LEN_D)
+        MY_T_LEN_D_I4 = IGIVE_I_B(XLENTD)
+        IREAD_BYTE    = MY_T_LEN_D_I4 * ISIZE_dp
+#endif
 csk        WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
 csk        WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
         CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,

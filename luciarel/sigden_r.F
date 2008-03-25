@@ -2326,7 +2326,7 @@ C
       NINT_2E = LENGTH - N1ELINT
       N2ELINT_I8 = LENGTH - N1ELINT
 *
-csk      NTEST = 5
+csk   NTEST = 5
       IF(NTEST.GE.3) THEN
         WRITE(6,*) ' Number of 1e-integrals : ', N1ELINT
         WRITE(6,*) ' Number of 2e-integrals : ', NINT_2E
@@ -3087,11 +3087,6 @@ C
       IDUM = -1107
       CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'SIGDC ')
       IDUM = 0
-C
-C     set total number of integrals
-C
-      NINT_TOTAL = N1ELINT + N2ELINT
-      IF( IRC_SAVE .eq. 2 ) NINT_TOTAL = NINT_TOTAL * 2
 C
 C     arrays for partitioning of sigma (*_MS2 arrays are in CSTATE )
 C

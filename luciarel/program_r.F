@@ -202,6 +202,7 @@ C
 C       allocate T-block list
 C
         MY_TTPL_LEN = NSPOBEX_TP * IRC
+        write(luwrt,*) ' MY_TTPL_LEN', MY_TTPL_LEN
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         MY_TTOL_LEN = NSPOBEX_TP * IRC
@@ -234,10 +235,14 @@ C
 C
 C       calculate length of T_BUFF
 C
-        LEN_T_BUFF   = IGET_MY_T_LEN( IT_TTPL, IRC )
+        LEN_T_BUFF   = IGET_MY_T_LEN(IT_TTPL,NSPOBEX_TP,
+     &                               N1ELINT,IRC)
         MY_T_LEN     = LEN_T_BUFF
         LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
         MY_T_LEN_D   = LEN_T_D_BUFF
+csk     write(luwrt,*) ' LEN_T_BUFF, MY_T_LEN, MY_T_LEN_D',
+csk  &                   LEN_T_BUFF, MY_T_LEN, MY_T_LEN_D
+csk     CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
 C
 C       FIXME: provide information if available
 C
@@ -252,6 +257,13 @@ C       zero arrays
 C
         CALL DZERO8(T_BUFF,MY_T_LEN)
         CALL DZERO8(T_BUFF_D,MY_T_LEN_D)
+C
+C       update LBLOCK
+C
+csk     CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+csk  &                     KNODELIST,KBLOCKLIST,KRCCTOS,
+csk  &                     NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
+csk  &                     IBAT_MS2,2,0,IDUMMY,IRC,IT_TTPL)
 C
         WRITE(LUWRT,*) ' '
         WRITE(LUWRT,'(A)') '  +++++++++++++++++++++++++++ '
@@ -274,6 +286,9 @@ C           FIXME: 11-02-08 SK: definition of IBU2D?
      &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
      &                 T_BUFF_D,IT_TTPL,IBOSYM,CIRUN,.FALSE.)
         END IF
+C
+csk     CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+csk     CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
 C
 C       open memory window (collective call for communicator
 C       group MY_NEWCOMM_SM)

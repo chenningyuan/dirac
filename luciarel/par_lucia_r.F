@@ -405,13 +405,17 @@ C
      &                                   NEWCOMM_PROC_SM,NSPOBEX_TP,2)
           END IF
 C
+csk       WRITE(LUWRT,*) ' IT_ACTIVE_R, IT_ACTIVE_I, NSPOBEX_TP',
+csk  &                     IT_ACTIVE_R, IT_ACTIVE_I, NSPOBEX_TP
 csk       WRITE(LUWRT,*) ' showing array IBTSOSO_TP'
-csk       CALL IWRTMAMN(IBTSOSO_TP,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
+csk       CALL IWRTMAMN8(IBTSOSO_TP,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
 csk       WRITE(LUWRT,*) ' showing array IPOSDIA'
-csk       CALL IWRTMAMN(IPOSDIA,1,NDIAINT,1,NDIAINT,LUWRT)
+csk       CALL IWRTMAMN8(IPOSDIA,1,NDIAINT,1,NDIAINT,LUWRT)
 C
           CALL T_BLOCK_DISTR(IT_TTPL,IT_CTALL,IT_CTONE,I_APROC,
      &                       NSPOBEX_TP,IT_ACTIVE_R,IT_ACTIVE_I)
+csk       WRITE(LUWRT,*) ' showing array IT_TTPL'
+csk       CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
 C
 C         store information on file - may be useful on vector machines!
 C
@@ -3068,7 +3072,7 @@ C
       DIMENSION ISCLFAC(*), ICCTOS(I_NZERO_LEN,I_NZERO_LEN) 
       DIMENSION ICWEIGHTF(*)
 #include "parluci.h"
-#include "include/dgroup.h"
+#include "dgroup.h"
 C     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 C     scratch
@@ -8205,7 +8209,7 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE READ_INT_TTYPES(T_BUFF,IT_TTPL,NDIM,IOFF_T)
+      SUBROUTINE READ_INT_TTYPES(T_BUFF,IT_TTPL,NDIM,N1_INT,IOFF_T)
 C
 C     read in integrals to T_BUFF according to T-type list IT_TTPL
 C
@@ -8225,12 +8229,17 @@ C**********************************************************************
 #include "typesz_mpi2.h"
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), IT_TTPL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T, IOFF_SCR, IREAD_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T, IOFF_SCR
+#if defined (INT_STAR8)
+      INTEGER(KIND=MPI_OFFSET_KIND)  IREAD_BYTE
+#else
+      INTEGER IREAD_BYTE
+#endif
       INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, ISLEN_TBL, NINT_8, N1_8
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_B, INUM_BYTE
 C
-      N1_8       = N1ELINT
-      NINT_8     = N1_8 + N2ELINT 
+      N1_8       = N1_INT
+      NINT_8     = N1_8 + N2ELINT
       IOFF_SCR   = 0
       IREAD_BYTE = 0
       INUM_BYTE  = 0
@@ -8238,22 +8247,28 @@ C
       ISLEN_TBL  = 0
       IOFF_SCR   = IOFF_T 
       IOFF_T_B   = 1
-csk      WRITE(LUWRT,*) ' IOFF_SCR, IS_BYTE8, NINT_8, IFILE_T',
-csk     &                 IOFF_SCR, IS_BYTE8, NINT_8, IFILE_T
-csk      WRITE(LUWRT,*) ' showing IT_TTPL'
-csk      CALL IWRTMAMN(IT_TTPL,1,NDIM,1,NDIM,LUWRT)
+csk   WRITE(LUWRT,*) ' IOFF_SCR, IS_BYTE8, NINT_8, NDIM, N1_INT',
+csk  &                 IOFF_SCR, IS_BYTE8, NINT_8, NDIM, N1_INT
+csk   WRITE(LUWRT,*) ' showing IT_TTPL with IRC_SAVE',IRC_SAVE
+csk   CALL IWRTMAMN(IT_TTPL,1,NDIM*IRC_SAVE,1,NDIM*IRC_SAVE,LUWRT)
       DO IMULT = 1, IRC_SAVE
         DO IJKL = 1, NDIM
 C
           ISLEN_TBL = NELM_CC(IJKL,NDIM,NINT_8)
-csk        WRITE(LUWRT,*) ' ISLEN_TBL',ISLEN_TBL
+csk     WRITE(LUWRT,*) ' ISLEN_TBL',ISLEN_TBL
 C
           ITYPE = IJKL + NDIM * ( IMULT - 1)
           IF( IT_TTPL( ITYPE ) .eq. MYNEW_ID_SM )THEN
+#if defined (INT_STAR8)
             IREAD_BYTE = IS_BYTE8 * ISLEN_TBL
-csk          WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
-csk     &                                      IOFF_SCR,   IREAD_BYTE
-csk          WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
+#else
+            XLENTIT      = REAL(ISLEN_TBL)
+            ISLEN_TBL_I4 = IGIVE_I_B(XLENTIT) 
+            IREAD_BYTE   = ISIZE_dp * ISLEN_TBL_I4
+#endif
+csk       WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
+csk  &                                      IOFF_SCR,   IREAD_BYTE
+csk       WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
             CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
      &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
             IOFF_T_B = IOFF_T_B + ISLEN_TBL

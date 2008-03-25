@@ -5789,22 +5789,6 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
         WRITE(LUWRT,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
 *
-*     pointers to output arrays
-      NTTS = MXNTTS
-      CALL MEMMAR(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
-      CALL MEMMAR(KPCBLTP,   NSMST,'ADDL  ',1,'CBLTP ')
-*.    ^ These should be preserved after exit so put mark for 
-*       flushing after
-*
-      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLKS')
-*
-*     moved here since they are not in use for GASCI_REL
-      call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
-      call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
-      call memmar(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BT ')
-*
-      IDUM = 0
-*
 *     allowed length of each batch
       IF(ICISTR.EQ.1) THEN
 *       assumes determinants
@@ -5815,7 +5799,7 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
         L0BLOCK = MXSOOB
       END IF
 *
-      IF( I_SET_L2BLOCK .eq. 1 ) THEN
+      IF( I_SET_L2BLOCK .ge. 1 ) THEN
 *
 *       L2BLOCK = max memory for c-vec and sigma-vec from
 *       ( curr. total mem - 3 mio for string info etc.) / 4
@@ -5867,6 +5851,24 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ... set LBLOCK value
 *
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+*
+      IF( I_SET_L2BLOCK .eq. 2 ) RETURN
+*
+*     pointers to output arrays
+      NTTS = MXNTTS
+      CALL MEMMAR(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
+      CALL MEMMAR(KPCBLTP,   NSMST,'ADDL  ',1,'CBLTP ')
+*.    ^ These should be preserved after exit so put mark for 
+*       flushing after
+*
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLKS')
+*
+*     moved here since they are not in use for GASCI_REL
+      call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
+      call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
+      call memmar(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BT ')
+*
+      IDUM = 0
 *
 *. Loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
