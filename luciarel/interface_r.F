@@ -1294,7 +1294,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "files_r.inc"
 #include "integrals_off.inc"
 *
-#include "include/dgroup.h"
+#include "dgroup.h"
 *
       character*6 CIRUN
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
@@ -3138,7 +3138,7 @@ c       stop
 *
 #include "implicit.h"
 #include "ipoist8.inc"
-#include "include/dgroup.h"
+#include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
       dimension DMFC(*),H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)

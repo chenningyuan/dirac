@@ -3196,7 +3196,7 @@ C
 #include "parluci.h"
 #include "files_r.inc"
 *
-#include "include/dgroup.h"
+#include "dgroup.h"
 *
 *     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)

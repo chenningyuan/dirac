@@ -87,7 +87,7 @@ C
 *  nat. orb. occ. num.
 #include "noccn_inf.inc"
 #include "integrals_off.inc"
-#include "include/dgroup.h"
+#include "dgroup.h"
 #include "mx2orb.h"
 #include "../krmc/dcbbos.h"
 *     /CECORE/
