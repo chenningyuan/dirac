@@ -7,9 +7,23 @@ module os_utils
 function get_environment_integer(name, default)
   implicit none
   integer :: default, get_environment_integer, length, status, i, ios
+#if defined (SYS_SX64)
+  integer :: getenv
+#endif
   character(len=*) :: name
   character(len=128) :: value
-  call get_environment_variable('DIRWRK', value, length, status)
+! get_environment_variable not available with sxf90 compiler - SK - 25-03-08
+#if defined (SYS_SX64)  
+  status = getenv(name, value)
+! status == 0: mismatch; status == 1: succes;
+  if(status==0) then
+     status=1
+  else
+     status=0
+  end if
+#else
+  call get_environment_variable(name, value, length, status)
+#endif  
   if (status==0) then
      read (value,*,iostat=ios) i
      if (ios/=0) then
