@@ -1348,28 +1348,6 @@ for makefile in $dirs; do
    echo MODS=$MODS > $makefile/Makefile
    cat $makefile/Makefile.in >> $makefile/Makefile
 done
-##################################################
-#
-#    Make links to include and modules
-#
-##################################################
-echo
-for link in $dirs; do
-#
-   echo "Making link from include to $link/include"
-   if [ -d $link/include ]; then
-      rm -f $link/include
-   fi
-   ln -sf ../include $link/include
-# JHS in the end links should be replaced by relative or absolute paths
-#   if [ $link != modules  ]; then
-#     echo "Making link from modules to $link/modules"
-#     if [ -d $link/modules ]; then
-#        rm -f $link/modules
-#     fi
-#     ln -sf ../modules $link/modules
-#   fi
-done
 }
 #
 #
