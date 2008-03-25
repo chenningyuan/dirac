@@ -202,7 +202,7 @@ C
 C       allocate T-block list
 C
         MY_TTPL_LEN = NSPOBEX_TP * IRC
-        write(luwrt,*) ' MY_TTPL_LEN', MY_TTPL_LEN
+csk     write(luwrt,*) ' MY_TTPL_LEN', MY_TTPL_LEN
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         MY_TTOL_LEN = NSPOBEX_TP * IRC
