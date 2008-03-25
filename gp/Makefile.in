@@ -14,7 +14,7 @@ F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 
 F90_OBJS = osutils.o memory_allocator.o memory_tracker.o
 
-F90_MODS = os_utils.mod memory_allocator.mod memory_tracker.mod
+F90_MODS = os_utils.mod memory_tracker.mod memory_allocator.mod 
 
 C_OBJS = gpc.o tracing.o tracker_util.o
 
@@ -57,7 +57,7 @@ depend: setcomp
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 
 f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F)
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

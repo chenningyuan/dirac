@@ -15,9 +15,9 @@ LOC=`pwd`
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 QSYS=LoadLeveler
-PAMDIR=$HOME/devel/BUILDS/linux-ppc64-parallel
-DEFAULT_MW=128
-DEFAULT_NW=128
+PAMDIR=/home/v20/devel/cvs/snapshots/newmalloc/Dirac
+DEFAULT_MW=256
+DEFAULT_NW=256
 DEFAULT_QUEUE=default
 DEFAULT_TIME=15m
 #
@@ -222,7 +222,7 @@ qsub -j oe -N $SHORT -o $jobout -l walltime=$wallt_qsub,nodes=$MPI_NPROC:$QUEUE 
 ;;
 #### IBM's LoadLeveler ########
   LoadLeveler)
-JTYPE=parallel
+JTYPE=serial
 #REQUIRE="(Memory >= $MEM_IN_MBYTES)"
 REQUIRE=""
 CLASS=""
@@ -233,13 +233,13 @@ case $QUEUE in
   CLASS="$QUEUE"
   ;;
 esac
-if [ $MPI_NPROC -le 64 ]; then
+if [ $MPI_NPROC -le 32 ]; then
    NNODE=1
-elif [ $MPI_NPROC -le 128 ]; then
+elif [ $MPI_NPROC -le 64 ]; then
    NNODE=2
-elif [ $MPI_NPROC -le 192 ]; then
+elif [ $MPI_NPROC -le 96 ]; then
    NNODE=3
-elif [ $MPI_NPROC -le 256 ]; then
+elif [ $MPI_NPROC -le 128 ]; then
    NNODE=4
 else
   echo "$0: Too many nodes requested!"
@@ -252,26 +252,17 @@ cat <<EOJ >$jobinp
 #
 # loadl stuff
 #
-# @ shell = /bin/sh
-# @ initialdir = $LOC
-# @ output = $jobout
-# @ error = $jobout
-# @ node = $NNODE
-# @ tasks_per_node = $MPI_NPROC
-# @ job_type = parallel
-EOJ
-
-if [ -n "$CLASS" ]; then
-cat <<EOJ >>$jobinp
-# @ class = $CLASS
-EOJ
-fi
-
-cat <<EOJ >> $jobinp
+# @ shell            = /bin/sh
+# @ initialdir       = $LOC
+# @ output           = $jobout 
+# @ error            = $jobout 
+# @ node             = $NNODE 
+# @ tasks_per_node   = $MPI_NPROC 
+# @ job_type         = parallel
 # @ wall_clock_limit = $wallt_ll
-# @ environment = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
-# @ network.MPI = sn_all,not_shared,US
-# @ notification = never
+# @ environment      = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
+# @ network.MPI      = sn_all,not_shared,US
+# @ notification     = never
 # @ queue
 
 #
