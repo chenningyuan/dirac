@@ -68,7 +68,7 @@ subroutine make_string(self, text)
  subroutine cancel_string(self)
 !----------------------------------------------------------------
 !
-!   cancel (deallocte) the string
+!   cancel (deallocate) the string
 !
 !----------------------------------------------------------------
 #include "priunit.h"
@@ -82,7 +82,7 @@ subroutine make_string(self, text)
  !    write(LUPRI,*) 'mystring:cancel_string entering string: ',self(1)%strp
  !    write(LUPRI,*) ' length of string is:',self(1)%str_length
      deallocate(self(1)%strp, stat = dealloc_stat)
-     if (dealloc_stat > 0) then
+     if (dealloc_stat /= 0) then
        write(LUPRI,*) 'dellocation error !, dealloc_stat=',dealloc_stat
        write(LUPRI,*) ' length of the delloc. string was:',self(1)%str_length
        call FLSHFO(LUPRI)
@@ -127,10 +127,10 @@ end subroutine print_string
  end function is_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-function get_string(self) result(str_out)
+function Xget_string(self) result(str_out)
 !-------------------------------------------------------------------
 !
-!              return the string
+!        should return the string
 !
 !-------------------------------------------------------------------
   type(string), dimension(:), intent(in) :: self
@@ -146,7 +146,85 @@ function get_string(self) result(str_out)
     str_out=''
   endif
   call QEXIT('get_string')
+end function Xget_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_string(self) result(str_out)
+!-------------------------------------------------------------------
+!
+!                    should return the string
+!
+!-------------------------------------------------------------------
+  type(string), dimension(:), intent(in) :: self
+  !character :: str_out  !  fix for gfortran
+  !character(len=20) :: str_out ! the rest of length is filled with rubbish
+  !character(*), allocatable(:),save :: str_out
+  !character*1, dimension (:), pointer, save :: str_out  => NULL()
+  !character*1, dimension (:), pointer :: str_out  => NULL()
+  character*1, dimension (:), pointer :: str_out  
+
+  integer(kind=4) :: i
+
+  call QENTER('get_string')
+
+  !if ( allocated(str_out(1)) ) then
+  !if ( associated(str_out(1)) ) then
+  if ( associated(str_out) ) then
+   deallocate(str_out); nullify(str_out)
+  endif
+  !allocate( str_out(self(1)%str_length) )
+
+  if (self(1)%is_alloc) then
+
+   allocate( str_out(self(1)%str_length) )
+
+   do i = 1, self(1)%str_length
+    str_out(i:i) = self(1)%strp(i)
+   enddo
+  else
+    str_out=''
+  endif
+
+  call QEXIT('get_string')
 end function get_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine copy_strings(source,dest)
+!-----------------------------------------------------------------------
+!
+!  copy allocated "source" -> "dest"; allocate "dest" first
+!
+!-----------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+!type(string), dimension(:), intent(inout) :: source, dest
+!type(string), dimension(1), intent(inout) :: source, dest
+type(string), dimension(1), intent(inout) :: source, dest
+call QEnter('copy_strings')
+
+if (.not.source(1)%is_alloc) then
+   call Quit('copy_strings: "source" is NOT allocated !')
+endif
+
+if (associated(dest(1)%strp)) then
+  call cancel_string(dest)
+endif
+
+allocate( dest(1)%strp(source(1)%str_length), stat =  ierr )
+if (ierr /= 0) then
+  call Quit('copy_strings: allocation error of "dest(1)%strp" !')
+endif
+
+dest(1)%is_alloc   = .true.
+dest(1)%str_length = source(1)%str_length
+
+!...copy the text
+do i = 1, dest(1)%str_length
+ dest(1)%strp(i) = source(1)%strp(i)
+enddo
+
+call QExit('copy_strings')
+end subroutine copy_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_no_string(self)
