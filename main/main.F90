@@ -35,6 +35,7 @@
 ! this file by ulfek march 2008
 
 program dirprg
+  use memory_allocator
   use os_utils
   implicit none
 #include "infpar.h"
@@ -63,7 +64,7 @@ program dirprg
   print '(a,i0,a,i0,a)', 'DIRAC master allocating ',memsize,' words (',memsize/2**16,' MB) of memory'
 #endif
   if (mytid == 0) then
-     allocate(memory(memsize))
+     call alloc(memory,memsize)
      call printtitle
      call printlogo
      call printsubtitle
@@ -71,7 +72,7 @@ program dirprg
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
 #ifdef VAR_MPI
-     allocate(memory(memsize))
+     call alloc(memory,memsize)
      call dirnod(iparcal,mytid,mparid,numnod,memory,memsize)
 #else
      call quit('Internal error in main.F90. Quitting.')
