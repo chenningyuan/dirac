@@ -6,10 +6,15 @@ default: secquant
 F77_OBJS =
 
 #  - must be proper order of modules - first independent, then dependent on previous modules
-F90_OBJS =  prnt_mod.o indxquant_mod.o kron_delta.o sq_oper.o operstr_mod.o test.o
+#F90_OBJS =  prnt_mod.o spinor_spec_mod.o indxquant_mod.o kron_delta.o  \
 
-F90_MODS = indexed_quantities.mod  kroneckerdelta.mod  secquantoperator.mod \
-           operators_string.mod  control_print.mod
+F90_OBJS =  prnt_mod.o indxquant_mod.o kron_delta.o  \
+            sq_oper.o operstr_mod.o  eval_mod.o test.o  
+
+#F90_MODS = indexed_quantities.mod spinorsspecification.mod kroneckerdelta.mod  secquantoperator.mod \
+
+F90_MODS = indexed_quantities.mod kroneckerdelta.mod  secquantoperator.mod \
+           operators_string.mod  control_print.mod  evaluate_strings.mod
 
 C_OBJS   = 
 

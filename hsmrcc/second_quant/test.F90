@@ -3,7 +3,10 @@
 !
 Program TEST_SEC_QUANT
 
-  use Operators_string
+ use Operators_string
+ use  Evaluate_strings
+
+! use SpinorsSpecification
 !  use Indexed_Quantities
 !  use control_print
 
@@ -14,7 +17,7 @@ Program TEST_SEC_QUANT
 
   type(SQOper), pointer :: i,j,a,b,o1,o2,o3,o4
 
-  type(indexed_term), pointer :: Tia, Tijab, Xib
+  type(indexed_term), pointer :: Tia, h_pq, Tijab, Xib
 
   type(dll_member), pointer :: head => null(), k, d_ik
 
@@ -29,31 +32,35 @@ Program TEST_SEC_QUANT
  ! call set_iprint(10)
 
   !allocate(d_ij)
-  d_ij => make_kron_delta(1,2); ! call print_kd(d_ij)
+  !d_ij => make_kron_delta(1,2); ! call print_kd(d_ij)
 
   !allocate(d_ab)
-  d_ab => make_kron_delta(3,4); ! call print_kd(d_ab)
+ ! d_ab => make_kron_delta(3,4); ! call print_kd(d_ab)
 
    Tia => make_it(2,2,'Tia')
-   call fill_indexes(Tia,2,3)
+   !call fill_indexes(Tia,2,3)
+   call fill_indexes(Tia,4,3)
    call print_it(Tia)  ; !call quit('here')
+
+   h_pq => make_it(1,2,'h_pq')
+   !call fill_indexes(Tia,2,3)
+   call fill_indexes(h_pq,1,2)
+   call print_it(h_pq)  ; !call quit('here')
 
   !allocate(i)
   !allocate(o3)
   !i = make_sqo(1,.true.); ! call print_sqo(i)
   !o3 = make_sqo(3); ! call print_sqo(i)
 
-  o4 => make_sqo(4)
-  o3 => make_sqo(3); ! call print_sqo(i)
+  o4 => make_sqo(4,.false.,.true.)
+  o3 => make_sqo(3,.true.,.false.); ! call print_sqo(i)
 
-  !allocate(j)
-  !allocate(o2)
-  !o2 = make_sqo(2); ! call print_sqo(i)
-  o2 => make_sqo(2,.true.); ! call print_sqo(i)
+  o2 => make_sqo(2,.false.); ! call print_sqo(i)
+ ! o2 => make_sqo(2,.true.); ! call print_sqo(i)
 
-  !allocate(o1)
   !o1 = make_sqo(1,.true.);
   o1 => make_sqo(1,.true.);
+
 !  call print_sqo(a)
 
   !allocate(pos)
@@ -67,16 +74,15 @@ Program TEST_SEC_QUANT
  ! pSH%previous => null(); pSH%next => null()
 
   HL%main_head=>pSH
-
   pos%head => head 
 
- ! call Insert_SQOp_end(pos,b)
-  call Insert_SQOp_end(pos,o4)
+  call Insert_IndxTerm_end(pos,h_pq)
+  call Insert_SQOp_end(pos,o1)
+  call Insert_SQOp_end(pos,o2)
 
   call Insert_IndxTerm_end(pos,Tia)
   call Insert_SQOp_end(pos,o3)
-  call Insert_SQOp_end(pos,o2)
-  call Insert_SQOp_end(pos,o1)
+  call Insert_SQOp_end(pos,o4)
 
  ! call Insert_KD_end(pos,d_ij)
  ! call Insert_KD_end(pos,d_ab)
@@ -91,7 +97,12 @@ Program TEST_SEC_QUANT
  ! call print_string(pos)
 
   call set_iprint(10)
- call process_strings(HL)
+
+ ! call set_upper_occ(2)
+  call set_evaluate(.true.)
+  call process_strings(HL)
+
+ ! if (do_evaluate()) call process_exp_val_strings(HL)
 
   call cancel_strings(HL)
 

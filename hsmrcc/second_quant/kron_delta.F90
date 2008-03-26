@@ -75,5 +75,87 @@ endif
 call QExit('make_kron_delta')
 end function make_kron_delta
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_kd(this)
+!------------------------------------------------------------------
+!  deallocated Krond.delta
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: this
+call QEnter('deallocate_kd')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_kd: entering pointer "this" NOT allocated !'
+  call Quit('deallocate_kd: entering pointer "this" NOT allocated !')
+else
+
+ if ( get_iprint() >= 8 )  then
+   write(LUPRI,'(/,2x,a)')   & 
+   '*** deallocate_kd: going to deallocate this Kron.delta:'
+   call print_kd(this)
+ endif
+
+ deallocate(this, stat=ierr)
+ if (ierr /= 0) then
+    write(LUPRI,'(2x,a)')  &
+   'deallocate_kd: memory deallocation error; ierr=',ierr
+    call Quit('deallocate_kd: memory deallocation error !')
+ endif
+ nullify(this)
+endif
+
+call QExit('deallocate_kd')
+end subroutine deallocate_kd
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine copy_kd(source, dest)
+!------------------------------------------------------------------
+!
+!            copy Kronecker deltas:  source -> dest
+!
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: source, dest
+call QEnter('copy_kd')
+
+if (.not.associated(source).or..not.associated(dest)) then
+  call Quit('copy_kd: "source" or "dest" NOT allocated !')
+endif
+
+dest%p = source%p
+dest%q = source%q
+
+if ( get_iprint() >=8 ) then
+ write(LUPRI,'(/,2x,a)') '*** copy_kd: source'
+ call print_kd(source)
+ write(LUPRI,'(/,2x,a)') '*** copy_kd: destination'
+ call print_kd(dest)
+endif
+
+call QExit('copy_kd')
+end subroutine copy_kd
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_KD(kd1,kd2) result(equal)
+!------------------------------------------------------------------
+!
+!          Compare two Kronecker deltas, "kd1", "kd2"
+!
+!------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(KronDelta), pointer :: kd1,kd2
+logical :: equal
+call QEnter('equal_KD')
+equal = .false.
+if (associated(kd1).and.associated(kd2)) then
+   if ( (kd1%p==kd2%p).and.(kd1%q==kd2%q)) equal = .true.
+endif
+call QExit('equal_KD')
+end function equal_KD
+
 End Module KroneckerDelta
 

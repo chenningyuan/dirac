@@ -8,6 +8,7 @@ use KroneckerDelta
 use SecQuantOperator
 use Indexed_Quantities
 
+!use SpinorsSpecification
 use Control_print
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -67,7 +68,7 @@ end type head_cell
 type heads_list
 !------------------------------------------------------------------------
 !
-!             DLL of heads of various strings; 
+!             DLL of heads pointing to strings; 
 !
 !------------------------------------------------------------------------
 ! ...  head
@@ -85,7 +86,7 @@ contains
 function make_sqo_cell(i,is_creat) result (this)
 !----------------------------------------------------------------------------
 !
-!            Returns ALLOCATED second quantized operator cell
+!           Returns ALLOCATED second quantized operator cell
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"
@@ -114,7 +115,7 @@ end function make_sqo_cell
 subroutine deallocate_sqo_cell(this)
 !----------------------------------------------------------------------------
 !
-!  DEALLOCATES sec.quantiz.operator memory cell
+!      DEALLOCATES sec.quantiz.operator memory cell; returns null
 !
 !----------------------------------------------------------------------------
 #include "implicit.h"
@@ -131,15 +132,16 @@ else
    write(LUPRI,'(/,2x,a)')  &
    'deallocate_sqo_cell: sqo cell pointer NOT associated !'
  else
-    deallocate(this%member%pSQOper, stat=ierr)
-    if (ierr /= 0) then
-      write(LUPRI,'(/,2x,a,i3)')  &
-      'deallocate_sqo_cell: error in deallocation of' &
-      //'"this%member%pSQOper";ierr=',ierr
-      call Quit('deallocate_sqo_cell: error in deallocation of'&
-      //'"this%member%pSQOper')
-    endif
-    nullify(this%member%pSQOper)
+  !  deallocate(this%member%pSQOper, stat=ierr)
+   ! if (ierr /= 0) then
+    !  write(LUPRI,'(/,2x,a,i3)')  &
+    !  'deallocate_sqo_cell: error in deallocation of' &
+    !  //'"this%member%pSQOper";ierr=',ierr
+    !  call Quit('deallocate_sqo_cell: error in deallocation of'&
+    !  //'"this%member%pSQOper')
+    !endif
+    !nullify(this%member%pSQOper)
+    call deallocate_sqo(this%member%pSQOper)
  endif
 
  deallocate(this, stat=ierr)
@@ -229,15 +231,16 @@ else
    write(LUPRI,'(/,2x,a)')  &
    'deallocate_kd_cell: Kron.delta cell pointer NOT associated !'
  else
-    deallocate(this%member%pKronDelta, stat=ierr)
-    if (ierr /= 0) then
-      write(LUPRI,'(/,2x,a,i3)')  &
-      'deallocate_kd_cell: error in deallocation of' &
-      //'"this%member%pKronDelta";ierr=',ierr
-      call Quit('deallocate_kd_cell: error in deallocation of'&
-      //'"this%member%pKronDelta')
-    endif
-    nullify(this%member%pKronDelta)
+   ! deallocate(this%member%pKronDelta, stat=ierr)
+   ! if (ierr /= 0) then
+    !  write(LUPRI,'(/,2x,a,i3)')  &
+    !  'deallocate_kd_cell: error in deallocation of' &
+    !  //'"this%member%pKronDelta";ierr=',ierr
+    !  call Quit('deallocate_kd_cell: error in deallocation of'&
+    !  //'"this%member%pKronDelta')
+    !endif
+    !nullify(this%member%pKronDelta)
+     call deallocate_kd(this%member%pKronDelta)
  endif
 
  deallocate(this, stat=ierr)
@@ -253,6 +256,44 @@ endif
 
 call QExit('deallocate_kd_cell')
 end subroutine deallocate_kd_cell
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_it_cell(this)
+!---------------------------------------------------------------------------
+!
+!                  DEALLOCATE "indexed_quantity" memory cell 
+!
+!---------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer :: this
+call QEnter('deallocate_it_cell')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)')  &
+  'deallocate_it_cell: IndxTerm cell pointer NOT associated !'
+else
+
+ if (.not.associated(this%member%pIndxTerm)) then
+   write(LUPRI,'(/,2x,a)')  &
+   'deallocate_it_cell: Kron.delta cell pointer NOT associated !'
+ else
+    call cancel_it(this%member%pIndxTerm)
+ endif
+
+ deallocate(this, stat=ierr)
+ if (ierr /= 0) then
+   write(LUPRI,'(/,2x,a,i3)')  &
+  'deallocate_it_cell: error in deallocation of' &
+  //'"this";  ierr=',ierr
+  call Quit('deallocate_it_cell: error in deallocation of' &
+  //'"this"')
+ endif
+ nullify(this)
+endif
+
+call QExit('deallocate_it_cell')
+end subroutine deallocate_it_cell
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function create_string(head, factor) result(this)
@@ -274,7 +315,6 @@ call QEnter('create_string')
 
    nullify(this)
    allocate(this, stat = ierr )
-
    if (ierr /= 0) then
      write(LUPRI,'(/,2x,a,i5)')  &
      'create_string: error in allocation; ierr=',ierr
@@ -292,10 +332,9 @@ call QEnter('create_string')
      this%factor = 1.0D0
    endif
 
-   ! rather secure zero number of elements and the tail
+! ... rather secure zero number of elements and the tail
    this%n = 0
    this%rear => null()  
-
 
 call QExit ('create_string')
 end function create_string
@@ -458,7 +497,7 @@ end subroutine Insert_KD_end
 subroutine Insert_IndxTerm_end(this_string,this_it)
 !------------------------------------------------------------------------
 !
-!  Inserts "indexed term" at the end of the string
+!          Inserts "indexed term" at the end of the string
 !
 !-------------------------------------------------------------------------
 #include "implicit.h"
@@ -730,24 +769,28 @@ subroutine process_strings(heads)
 #include "implicit.h"
 #include "priunit.h"
 type(heads_list), intent(inout) :: heads
-type(head_cell), pointer :: temp
+type(head_cell), pointer :: temp, temp_prev
+!logical :: equal_head_cells
 call QEnter('process_strings')
 
 if (get_iprint() >= 5) then
-   write(LUPRI,'(/,2x,a)') 'in process_strings...'
+   call Header('*** Output from "process_strings" ***',-1)
+ !  write(LUPRI,'(/,2x,a)') 'in process_strings...'
 endif
 
 ! ... go string after string ...
 
 if (.NOT.associated(heads%main_head)) then
-  write(LUPRI,'(/,2x,a)') 'heads%main_head NOT associated !'
-  call Quit('heads%main_head NOT associated !')
+  write(LUPRI,'(/,2x,a)')   &
+  'process_strings: heads%main_head NOT associated !'
+  call Quit('process_strings: heads%main_head NOT associated !')
 endif
 
 i = 1
 ! ... cycle ... string after string ...
 temp => heads%main_head
 do while (associated(temp))
+  temp_prev => temp ! save the last address
   if (get_iprint() >= 5) then
     write(LUPRI,'(/,2x,a,i5)')  &
     '...going to process string in the list #',i
@@ -758,54 +801,227 @@ do while (associated(temp))
   i = i + 1
 enddo
 
+! ... store (and check) total number of strings
+
+heads%n = i-1
+if (heads%n <= 0) then
+ write(LUPRI,'(/,2x,a,i6)') 'process_strings: wrong number of strings! i=',i
+ call Quit('process_strings: wrong number of strings!')
+endif
+
+! ... save the rear ...
+heads%main_rear => temp_prev
+!if (heads%main_rear .eq. heads%main_head) then
+if (equal_head_cells(heads%main_rear,heads%main_head)) then
+ if (heads%n  /= 1) then
+   write(LUPRI,'(2x,a,i7)')   & 
+   'process_strings: something wrong about heads%n=',heads%n
+   call Quit('process_strings: something wrong about heads%n !')
+ endif
+endif
+
+!if (get_iprint() >= 12) then
+if (get_iprint() >= 9) then
+   write(LUPRI,'(/,2x,a,i5)') '...number of strings:',heads%n
+   write(LUPRI,'(/,8x,a)')  'first string in the list... '
+   call print_string_elem(heads%main_head%p_string)
+
+   write(LUPRI,'(/,8x,a)')  'last string in the list... '
+   !call print_string_elem(temp_prev%p_string)
+   call print_string_elem(heads%main_rear%p_string)
+
+!   call Quit('...in process_strings')
+endif
+
+
 if (get_iprint() >= 7) then
+   call Header('**** process_strings: printing all strings ****',-1)
    write(LUPRI,'(/,2x,a)') '**** process_strings: printing all strings ****'
    call print_all_strings(heads)
 endif
+
+! ... process all strings for removing those giving zero in expect.value
+!if ( is_spinors_specif() ) then
+ ! write(LUPRI,*) 'spinors specification ! highest occup.',get_upper_occ()
+!  call process_exp_val_strings(heads)
+!endif
 
 call QExit('process_strings')
 end subroutine process_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine cancel_strings(heads)
+function is_rearranged_string(this) result(is)
 !------------------------------------------------------------------------
 !
+! Check whether the string is rearranged, ie all creation operators 
+! are on the left, all anihilation on the right
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: this
+logical :: is, creat, anihil
+type(dll_member), pointer :: temp
+call QEnter('is_rearranged_string')
+is = .false.
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a,/)')   &
+  'is_rearranged_string: entering string NOT associated !'
+  call Quit('is_rearranged_string: entering string NOT associated !')
+endif
+
+if (.not.associated(this%head)) then
+! ... empty string ...
+  if (this%n /= 0) then
+    write(LUPRI,*) 'is_rearranged_string: head=NULL but this%n=',this%n
+    call Quit('is_rearranged_string: head=NULL but this%n =/ 0 !!!')
+  endif
+  is = .true.
+else
+  if (get_iprint() >= 28) then
+    write(LUPRI,'(/,2x,a)') 'is_rearranged_string: elements'
+  endif
+  temp => this%head; i=0
+
+  anihil = .false.
+   creat = .false.
+
+  do while (associated(temp)) 
+
+    if (get_iprint() >= 36) then
+      call print_one_member(temp)
+    endif
+
+    if  (associated(temp%member%pSQOper)) then
+      if (.not.is_sqo_filled(temp%member%pSQOper)) then
+         write(LUPRI,'(/,2x,a,/)')  &
+         'is_rearranged_string: SQoper NOT filled !'
+         call Quit('is_rearranged_string: SQoper NOT filled !')
+      endif
+      if (get_iprint() >= 36) then
+        write(LUPRI,'(2x,a,/)') 'we have sec. quantized operator !'
+        !call print_sqo(temp%member%pSQOper)
+      endif
+
+      if (temp%member%pSQOper%is_creation_oper) then
+         creat = .true.
+         if (anihil) then
+           is = .false.
+           Exit
+         endif
+      else
+         anihil = .true.
+         is = .true.
+      endif
+    endif
+    i = i + 1; temp => temp%next
+  enddo
+
+!--------------------------------------------------------------------------------
+! ... string is rearranged also when there are no creat/anihil. operators,
+!    or when there are only creation or only anihilation operators
+!--------------------------------------------------------------------------------
+  if (      (anihil.and..not.creat).or.  &
+       (.not.anihil.and.     creat).or.  & 
+       (.not.anihil.and..not.creat) ) is = .true.
+endif
+
+call QExit('is_rearranged_string')
+end function is_rearranged_string
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine cancel_strings(heads)
+!------------------------------------------------------------------------
+! 
 !           ...  deallocates all strings in the list
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 type(heads_list), intent(inout) :: heads
-type(head_cell), pointer :: temp
+type(head_cell), pointer :: temp, temp_save
 call QEnter('cancel_strings')
 
 if (get_iprint() >= 5) then
-  write(LUPRI,'(/,2x,a)') 'in cancel_strings...'
+  call Header('in cancel_strings...',-1)
+ ! write(LUPRI,'(/,2x,a)') 'in cancel_strings...'
 endif
 
 i = 1
-!   ... cycle ... string after string ...
+!   ... cycle ... string after string from the head...
 temp => heads%main_head
-!do while (associated(temp))
-!  if (get_iprint() >= 5) then
-!    write(LUPRI,'(/,2x,a,i5)')  &
-!    '...going to process string in the list #',i
-!  endif
-  !call process_one_string(temp%p_string)
-  !call process_one_string(temp)
-!  temp => temp%next
-!  i = i + 1
-!enddo
-
+do while (associated(temp))
+  if (get_iprint() >= 5) then
+     write(LUPRI,'(/,2x,a,i5)')  &
+     '...going to deallocate string in the list #',i
+  endif
+  temp_save => temp
+  call deallocate_one_string(temp)
+  temp => temp_save%next
+  i = i + 1
+enddo
 
 call QExit('cancel_strings')
 end subroutine cancel_strings
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine deallocate_one_string(this)
+!------------------------------------------------------------------------
+!
+!                  Deallocates one string; returns null
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(head_cell), pointer :: this
+type(dll_member), pointer :: temp, temp_save
+call QEnter('deallocate_one_string')
+
+if (.not.associated(this)) then
+  write(LUPRI,'(/,2x,a)') 'deallocate_one_string: string NOT allocated !'
+  call Quit('deallocate_one_string: string NOT allocated !')
+endif
+
+if (.not.associated(this%p_string)) then
+  write(LUPRI,'(/,2x,a)')  & 
+  'deallocate_one_string: string "this%p_string" is NOT allocated !'
+  call Quit('deallocate_one_string: string "this%p_string" is NOT allocated !')
+endif
+
+if (associated(this%p_string%head)) then
+  temp => this%p_string%head
+  do while (associated(temp))
+    temp_save => temp
+   
+    if (associated(temp%member%pSQOper)) then
+       call deallocate_sqo_cell(temp)
+    else if (associated(temp%member%pKronDelta)) then
+       call deallocate_kd_cell(temp)
+    else if (associated(temp%member%pIndxTerm)) then
+       call deallocate_it_cell(temp)
+    else 
+       call Quit('deallocate_one_string: error branch !')
+    endif
+    temp => temp_save%next
+  enddo
+
+endif
+
+deallocate(this,stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a)') 'deallocate_one_string: error in deallocation !'
+  call Quit('deallocate_one_string: error in deallocation of "this" !')
+endif
+nullify(this)
+
+call QExit('deallocate_one_string')
+end subroutine deallocate_one_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine process_one_string(this)
 !------------------------------------------------------------------------
 !
-! Process entering string : apply commutator relations
+!  Process entering string : apply commutator relations
 !
 !     example:
 ! ----------------
@@ -816,7 +1032,7 @@ subroutine process_one_string(this)
 !
 ! after evaluating commutator:   P1 d_ia P2 - P1 a+ i P2
 !
-!             where P1, P2 are bunches of elements 
+!           where P1, P2 are substrings (collection of elements)
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -862,7 +1078,7 @@ do while ( found_splitting )
   found_splitting = .false.
   call find_splitting(this%p_string, itype, ipos )
 
-  ! ... allocate one more string,  duplicate it and insert behind strings
+  ! ... allocate one more string, duplicate it and insert behind strings
   if (ipos > 0) then
 
     found_splitting = .true.
@@ -899,7 +1115,7 @@ do while ( found_splitting )
 
     call process_2_strings(this%p_string, this2%p_string, ipos)
 
-    ! ... rearrange both updated string - move deltas, indexed terms left
+    ! ... rearrange both updated strings - move deltas, indexed terms left
     call rearrange_string( this%p_string)
     call rearrange_string(this2%p_string)
 
@@ -983,7 +1199,12 @@ write(LUPRI,*) 'd_ia made before: '; call print_string_elem(this_string)
 ! ... create kronecker delta ...
 !d_ia => null()
 nullify(d_ia)
-allocate(d_ia)
+allocate(d_ia,stat=ierr)
+if (ierr /= 0) then
+ write(LUPRI,'(/,2x,a)') 'process_2_strings: error in allocation; ierr=',ierr
+ call Quit('process_2_strings: error in allocation!')
+endif
+
 d_ia = make_kd_cell(temp_i%member%pSQOper%p, temp_a%member%pSQOper%p)
   write(LUPRI,'(1x,a,$)') 'allocated d_ia:' ;call print_one_member(d_ia)
 write(LUPRI,*) 'd_ia made after: '; call print_string_elem(this_string)
@@ -992,7 +1213,11 @@ write(LUPRI,*) 'd_ia made after: '; call print_string_elem(this_string)
 call remove_element(this_string, ipos)
 
 call insert_element(this_string, ipos, d_ia)
-deallocate(d_ia)
+deallocate(d_ia,stat=ierr)
+if (ierr /= 0) then
+ write(LUPRI,'(/,2x,a)') 'process_2_strings: error in "d_ia" dallocation; ierr=',ierr
+ call Quit('process_2_strings: error in "d_ia" deallocation!')
+endif
 
 call remove_element(this_string, ipos)
 
@@ -1071,7 +1296,7 @@ end function get_dll_member
 subroutine duplicate_string(this_string, copied_string)
 !------------------------------------------------------------------------
 !
-! duplicate string - allocation of memory for the new one is inside
+!  duplicate string - allocation of memory for the new one is inside
 !
 !  on entry: this_string
 !
@@ -1098,7 +1323,11 @@ else
   endif 
 endif
 
-allocate(copied_string)
+allocate(copied_string,stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a,i4)')  'duplicate_string: allocation error ! ierr=',ierr
+  call Quit('duplicate_string: allocation error !')
+endif
 
 temp1 => copied_string%head;  temp2 => temp
 temp => this_string%head;  
@@ -1107,7 +1336,7 @@ do while (associated(temp))
 
   i = i + 1
 
-  call insert_member(i,temp,temp1)
+  call insert_member(temp,temp1)
 
   if (get_iprint() >= 27) then
     write(LUPRI,'(/,2x,a,i3,a,$)')  &
@@ -1144,14 +1373,14 @@ call QExit('duplicate_string')
 end subroutine duplicate_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine insert_member(i,member_exist,member_new)
+subroutine insert_member(member_exist,member_new)
 !------------------------------------------------------------------------
 !
+! Allocated dll_member "member_new" and copies "member_exist" into it.
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-integer, intent(in) :: i
 type(dll_member), pointer :: member_exist, member_new
 logical :: is_operator,  is_term 
 call QEnter('insert_member')
@@ -1165,11 +1394,18 @@ if (.not.associated(member_exist)) then
    call Quit('insert_member: entering element does NOT exist !')
 endif
 
-allocate(member_new)
-member_new = member_exist
+allocate(member_new,stat=ierr)
+if (ierr /= 0) then
+  write(LUPRI,'(/,2x,a,i4)')  &
+  'insert_member: "member_new" allocation error ! ierr=',ierr
+  call Quit('insert_member: "member_new" allocation error !')
+endif
+
+! duplicated dll_member
+call duplicate_dll_member(member_exist,member_new)
 
 if (get_iprint() >= 37) then
-   write(LUPRI,'(/,2x,a,i3,a,$)') 'insert_member: ',i,'. old member element:'
+   write(LUPRI,'(/,2x,a,$)') 'insert_member: old member element:'
    call print_one_member(member_exist)
    write(LUPRI,'(2x,a,$)') '           the same new member element:'
    call print_one_member(member_new)
@@ -1179,6 +1415,37 @@ endif
 call QExit('insert_member')
 end subroutine insert_member
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine duplicate_dll_member(member_exist,member_new)
+!------------------------------------------------------------------------
+!
+!          copies dll_member:   member_exist -> member_new
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(dll_member), pointer :: member_exist, member_new
+call QEnter('duplicate_dll_member')
+
+if (.not.associated(member_exist).or..not.associated(member_new)) then
+ call Quit('duplicate_dll_member: member_exist or member_new NOT associated !')
+endif
+
+if (associated(member_exist%member%pSQOper)) then
+    allocate(member_new%member%pSQOper,stat=ierr)
+    call copy_sqo(member_exist%member%pSQOper,member_new%member%pSQOper)
+else if (associated(member_exist%member%pKronDelta)) then
+    allocate(member_new%member%pKronDelta,stat=ierr)
+    call copy_kd(member_exist%member%pKronDelta,member_new%member%pKronDelta)
+else if (associated(member_exist%member%pIndxTerm)) then
+    allocate(member_new%member%pIndxTerm,stat=ierr)
+    call copy_it(member_exist%member%pIndxTerm,member_new%member%pIndxTerm)
+else
+  call Quit('duplicate_dll_member: dead branch !')
+endif
+
+call QExit('duplicate_dll_member')
+end subroutine duplicate_dll_member
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine rearrange_string(this)
@@ -1272,7 +1539,7 @@ subroutine move_element_beg(this_string,i)
 !   move element in the string from  position "i" to the very beginning
 !
 ! On input: this_string - pointer to the string
-!             i - position
+!    i - position of the element to be moved at the beginning
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -1290,7 +1557,7 @@ if (get_iprint() >= 35) then
 endif
 
 !-----------------------------------------------------------
-!    ... move only the element which is NOT the first
+!   ... move only the element which is NOT the first
 !-----------------------------------------------------------
 if ( i == 1) then
 
@@ -1311,10 +1578,8 @@ temp2 => temp%next
 if (get_iprint() >= 35) then
  write(LUPRI,'(/,2x,a,i3)') '... catched this member no ',i
  call print_one_member(temp)
-
  write(LUPRI,'(2x,a,$)') '... the element before: '
  call print_one_member(temp1)
-
  write(LUPRI,'(2x,a,$)') '... the element after: '
  call print_one_member(temp2)
 endif
@@ -1449,7 +1714,7 @@ end subroutine remove_element
 subroutine exchange_string_elements(this_string,i_in,j_in)
 !------------------------------------------------------------------------
 !
-!          Exchange 2 elements in the string, i-th and j-th.
+!       Exchange 2 arbitrary elements in the string, i-th and j-th.
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -1678,7 +1943,7 @@ endif
 !----------------------------------------------------
 allocate(temp1, stat = ierr)
 if (ierr /= 0) then
-  write(LUPRI,'(/,2x,a)') 'error in allocation!'
+  write(LUPRI,'(/,2x,a)') 'insert_element: error in allocation!'
   call Quit('insert_element: error in allocation !')
 endif
 !temp1 => this_elem
@@ -1731,7 +1996,7 @@ subroutine check_string(this_string,i)
 !
 !    checks the string and i-th position of the element
 !
-!  call when we want pick up i-th element from the string
+!  called when  pick up of i-th element from the string wanted
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -1762,7 +2027,7 @@ end subroutine check_string
 subroutine find_splitting(this, itype, ipos)
 !------------------------------------------------------------------------
 !
-!   find type and position in the entering string for splitting
+!  find type and position in the entering string for splitting
 !
 !  itype , ipos
 !
@@ -1839,6 +2104,97 @@ endif
 
 call QExit('find_splitting')
 end subroutine find_splitting
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_head_cells(hc1,hc2) result(equal)
+!------------------------------------------------------------------------------
+!
+!     Check whether two "head_cell" pointers "hc1,hc2" are pointing 
+! to the same content - list of strings
+!
+!------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(head_cell), pointer :: hc1, hc2
+logical :: equal
+call QEnter('equal_head_cells')
+
+equal = .false.;
+
+if (associated(hc1).and.associated(hc2)) then
+
+  if (associated(hc1%p_string).and. associated(hc2%p_string)) then
+     equal = equal_strings(hc1%p_string,hc2%p_string)
+  endif
+
+endif
+
+call QExit('equal_head_cells')
+end function equal_head_cells
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_strings(str1,str2) result (equal)
+!------------------------------------------------------------------------------
+!
+! Check whether two-strings are equal.  Verify element after element.
+!
+! Called from: equal_head_cells
+!
+!------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(one_string), pointer :: str1,str2
+type(dll_member), pointer :: temp1, temp2
+logical :: equal, equal_elem, all_equal_elem
+call QEnter('equal_strings')
+
+equal = .false.
+if (associated(str1) .and. associated(str2)) then
+
+ if ( (str1%factor == str2%factor) .and. (str1%n == str2%n)) then
+   temp1 => str1%head; temp2 => str2%head
+   all_equal_elem = .true.
+   do while (associated(temp1).and.associated(temp2))
+    equal_elem = equal_elements(temp1%member,temp2%member)
+    all_equal_elem = all_equal_elem .and. equal_elem
+    temp1 => temp1%next; temp2 => temp2%next
+   enddo
+  
+ endif
+
+endif
+
+call QExit('equal_strings')
+end function equal_strings
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function equal_elements(elem1,elem2) result (equal)
+!------------------------------------------------------------------------------------
+!
+!  Compare two entering string members "elem1,elem2". Returns .true. if these
+! are equal.
+!
+!------------------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+type(string_member), intent(in) :: elem1,elem2
+logical :: equal
+call QEnter('equal_elements')
+equal = .false.
+
+if (associated(elem1%pSQOper).and.associated(elem2%pSQOper)) then
+   equal = equal_SQ_operators(elem1%pSQOper,elem2%pSQOper)
+else if (associated(elem1%pKronDelta).and.associated(elem2%pKronDelta)) then
+   equal = equal_KD(elem1%pKronDelta,elem2%pKronDelta)
+else if (associated(elem1%pIndxTerm).and.associated(elem2%pIndxTerm)) then
+   equal = equal_IndxTerms(elem1%pIndxTerm,elem2%pIndxTerm)
+else
+   write(LUPRI,'(2x,a)') 'equal_elements: dead branch !' 
+   call Quit('equal_elements: dead branch !')
+endif
+
+call QExit('equal_elements')
+end function equal_elements
 
 End Module Operators_string
 
