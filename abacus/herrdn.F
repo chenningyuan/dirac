@@ -940,14 +940,14 @@ C
          NOFITFS = .TRUE.
          INUC = NUCIND
 C
-C***********************************************************************
+C***********************************************************************C
 C        Card 6: ATOMIC DATA
 C         Q     - nuclear charge
 C         NONT  - number of symmetry independent atoms
 C         IQM   - maximum angular quantum number (s=1,p=2,d=3 etc.)
 C         NHTYP - maximum angular quantum number for ALL orbitals
 C         JCO   - number of AO-blocks for each l-value
-C***********************************************************************
+***********************************************************************
 C
          CALL RDLINE(LUINFO)
 C
@@ -3452,6 +3452,13 @@ C       KCKT    - number of Cartesian components
 C       SEGM    - segmented contraction
 C       LCLASS  - component: large(1) or small(0)
 C       CENT    - coordinates of center
+C        Card 6: ATOMIC DATA
+C         Q     - nuclear charge
+C         NONT  - number of symmetry independent atoms
+C         IQM   - maximum angular quantum number (s=1,p=2,d=3 etc.)
+C         NHTYP - maximum angular quantum number for ALL orbitals
+C         JCO   - number of AO-blocks for each l-value
+
 C*****************************************************************************
                      NUCO  (ISHELL) = NUC(KBCH)
                      NRCO  (ISHELL) = NCONT
@@ -4854,61 +4861,14 @@ C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
 #include "priunit.h"
+#include "nucdata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
-      DIMENSION ASYMB(109), AMASS(109)
-      CHARACTER*3 ASYMB
-      DATA (ASYMB(I),I = 1,109)
-     1/'H  ', 'He ', 'Li ', 'Be ', 'B  ',
-     2 'C  ', 'N  ', 'O  ', 'F  ', 'Ne ',
-     3 'Na ', 'Mg ', 'Al ', 'Si ', 'P  ',
-     4 'S  ', 'Cl ', 'Ar ', 'K  ', 'Ca ',
-     5 'Sc ', 'Ti ', 'V  ', 'Cr ', 'Mn ',
-     6 'Fe ', 'Co ', 'Ni ', 'Cu ', 'Zn ',
-     7 'Ga ', 'Ge ', 'As ', 'Se ', 'Br ',
-     8 'Kr ', 'Rb ', 'Sr ', 'Y  ', 'Zr ',
-     9 'Nb ', 'Mo ', 'Tc ', 'Ru ', 'Rh ',
-     O 'Pd ', 'Ag ', 'Cd ', 'In ', 'Sn ',
-     1 'Sb ', 'Te ', 'I  ', 'Xe ', 'Cs ',
-     2 'Ba ', 'La ', 'Ce ', 'Pr ', 'Nd ',
-     3 'Pm ', 'Sm ', 'Eu ', 'Gd ', 'Tb ',
-     4 'Dy ', 'Ho ', 'Er ', 'Tm ', 'Yb ',
-     5 'Lu ', 'Hf ', 'Ta ', 'W  ', 'Re ',
-     6 'Os ', 'Ir ', 'Pt ', 'Au ', 'Hg ',
-     7 'Tl ', 'Pb ', 'Bi ', 'Po ', 'At ',
-     8 'Rn ', 'Fr ', 'Ra ', 'Ac ', 'Th ',
-     9 'Pa ', 'U  ', 'Np ', 'Pu ', 'Am ',
-     O 'Cm ', 'Bk ', 'Cf ', 'Es ', 'Fm ',
-     1 'Md ', 'No ', 'Lw ', 'Uuq', 'Uup',
-     2 'Uuh', 'Uus', 'Uuo', 'Uue'/
-      DATA (AMASS(I),I = 1,109)
-     1/ 1.D0, 4.D0, 7.D0, 9.D0, 11.D0,
-     2  12.D0, 14.D0, 16.D0, 19.D0, 20.D0,
-     3  23.D0, 24.D0, 27.D0, 28.D0, 31.D0,
-     4  32.D0, 35.D0, 40.D0, 39.D0, 40.D0,
-     5  45.D0, 48.D0, 51.D0, 52.D0, 55.D0,
-     6  56.D0, 59.D0, 58.D0, 63.D0, 64.D0,
-     7  69.D0, 74.D0, 75.D0, 80.D0, 79.D0,
-     8  84.D0, 85.D0, 88.D0, 89.D0, 90.D0,
-     9  93.D0, 98.D0, 98.D0, 102.D0, 103.D0,
-     O  106.D0, 107.D0, 114.D0, 115.D0, 120.D0,
-     1  121.D0, 130.D0, 127.D0, 132.D0, 133.D0,
-     2  138.D0, 139.D0, 140.D0, 141.D0, 144.D0,
-     3  145.D0, 152.D0, 153.D0, 158.D0, 159.D0,
-     4  162.D0, 162.D0, 168.D0, 169.D0, 174.D0,
-     5  175.D0, 180.D0, 181.D0, 184.D0, 187.D0,
-     6  192.D0, 193.D0, 195.D0, 197.D0, 202.D0,
-     7  205.D0, 208.D0, 209.D0, 209.D0, 210.D0,
-     8  222.D0, 223.D0, 226.D0, 227.D0, 232.D0,
-     9  231.D0, 238.D0, 237.D0, 244.D0, 243.D0,
-     O  247.D0, 247.D0, 251.D0, 252.D0, 257.D0,
-     1  258.D0, 259.D0, 262.D0, 261.D0, 262.D0,
-     2  263.D0, 262.D0, 265.D0, 266.D0/
 C
       INUC = CHARGE+0.2D0
       A = CHARGE*FAC2
-      IF (INUC.LE.109) A = AMASS(INUC)
+      IF (INUC.LE.109) A = NUCMASS(INUC)
       A = A**DP3
       DELTA = (AF/(BF*A+CF))
       DELTA = FAC*DELTA*DELTA
@@ -5439,6 +5399,7 @@ C
       RETURN
 
    11 MLINE(NMLINE)='        '
+C     JHS Remove the next line?
       WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL. 
      &     NODE=',MYTID
       IF (NMLINE>1) THEN
