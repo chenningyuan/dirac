@@ -1137,10 +1137,10 @@ C  /* Deck readt */
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: END reading file  ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: END reading file, unit ',IT
       CALL QUIT(STRING)
  20   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: Error reading file',IT
+      WRITE (STRING,'(A25,I5)') 'READT: Error reading file, unit ',IT
       CALL QUIT(STRING)
       END
 C  /* Deck writi */
