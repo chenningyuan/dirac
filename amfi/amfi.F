@@ -893,9 +893,11 @@ cbs   determine the size icont4 for the radial integrals
       iconOO=iconSO+icont4   
       KLAST = ICONOO + ICONT4
 CMI   IF (KLAST .GT. LFREE) CALL STOPIT('AMFI  ','ANGULAR',KLAST,LFREE)
-      IF (KLAST .GT. LFREE) THEN  
+      IF (KLAST .GT. LFREE) THEN 
+        WRITE(LUPRI,*) 
         WRITE(LUPRI,*) 'angular: KLAST,LFREE:',KLAST,LFREE
-        CALL QUIT('angular: work space exceeded.')
+        CALL QUIT(
+     & 'angular: work space exceeded;allocate more memory in DIRAC !') 
       ENDIF
       LLEFT = LFREE - KLAST + 1
       call gencoul(l1,l2,l3,l4,makemean,bonn,breit,
