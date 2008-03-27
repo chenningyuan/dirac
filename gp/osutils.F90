@@ -7,13 +7,10 @@ module os_utils
 function get_environment_integer(name, default)
   implicit none
   integer :: default, get_environment_integer, length, status, i, ios
-#if defined (SYS_SX64)
-  integer :: getenv
-#endif
   character(len=*) :: name
   character(len=128) :: value
-! get_environment_variable not available with sxf90 compiler - SK - 25-03-08
-#if defined (SYS_SX64)  
+#ifndef FORTRAN2003  
+  integer :: getenv
   status = getenv(name, value)
 ! status == 0: mismatch; status == 1: succes;
   if(status==0) then
