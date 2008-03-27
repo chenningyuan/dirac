@@ -74,13 +74,13 @@
 !            subroutine allocErrorHandler(status,size,data_kind,ignoreError)
             subroutine allocErrorHandler(status,size,data_kind)
                integer, parameter             :: charArrayLength = 132
-               integer(kind=kint), optional   :: size
+               integer, optional              :: size
                integer, optional              :: data_kind
 !               logical, optional              :: ignoreError
               logical          :: ignoreError
 
                integer                        :: status
-               integer(kind=kint)             :: kbytesRequested
+               integer                        :: kbytesRequested
                logical                        :: isFatal = .True.
                character(len=charArrayLength) :: ErrorMessage, InfoMessage
                character(len=charArrayLength) :: trace_result
@@ -160,7 +160,7 @@
             end subroutine allocErrorHandler
 
             subroutine allocInitAllocated(data,size)
-               integer(kind=kint)  :: i, size
+               integer  :: i, size
                real(kind=kreal), allocatable, target :: data(:)
 
                call initData(data,size)
@@ -181,14 +181,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             subroutine initDataReal(data,size)
-               integer(kind=kint) :: i,size
+               integer :: i,size
                real(kind=kreal) :: data(:)
 
                forall (i=1:size) data(i) = 0.0D0
             end subroutine initDataReal
   
             subroutine initDataInt(data,size)
-               integer(kind=kint) :: i, size
+               integer :: i, size
                integer :: data(:)
 
                forall (i=1:size) data(i) = 0
@@ -200,7 +200,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
             subroutine alloc_real(data,size)
-               integer(kind=kint)            :: size, status
+               integer            :: size, status
                real(kind=kreal), allocatable, target :: data(:)
               
                if (.not.allocated(data)) then
@@ -234,7 +234,7 @@
 
             subroutine alloc_int(data,size)
                integer  :: status
-               integer(kind=kint) :: size
+               integer :: size
                integer, allocatable :: data(:)
                
                if (.not.allocated(data)) then
