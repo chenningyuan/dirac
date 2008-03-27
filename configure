@@ -230,6 +230,9 @@ if [ -z "${guess}" ]; then
       guess=`./config.status ARCH`
    fi
    if [ $quick = 0 ]; then
+       if echo "$guess" | grep -q x86_64; then
+	   echo "Note: For 32 bit code generation use "`echo "$guess"|sed s/x86_64/i686/`
+       fi
       $echo "System [$guess]: \c"
       read answer
    else
