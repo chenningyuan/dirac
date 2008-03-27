@@ -61,7 +61,7 @@ program dirprg
 #ifdef VAR_MPI
   call sync_nodes(memsize,0)
 #else
-  print '(a,i0,a,i0,a)', 'DIRAC master allocating ',memsize,' words (',memsize/2**16,' MB) of memory'
+  print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)

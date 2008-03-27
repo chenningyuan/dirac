@@ -346,12 +346,12 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 ! ordered start-up info print
   IF( ITASK .eq. 0 )THEN
     CALL MPI_GET_PROCESSOR_NAME(HOST,LHOST,IERR)
-    IF( MYTID .eq. MPARID ) print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**16,' MB) of memory'
+    IF( MYTID .eq. MPARID ) print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**17,' MB) of memory'
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
     DO IJ = 1, (NUMNOD - 1)
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-       IF( MYTID .eq. IJ )  print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid,'(',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**16,' MB) of memory'
+       IF( MYTID .eq. IJ )  print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid,'(',HOST(1:LHOST),') allocating ',IVARIABLE,' words (',IVARIABLE/2**17,' MB) of memory'
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
     END DO

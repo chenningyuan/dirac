@@ -10,14 +10,12 @@ function get_environment_integer(name, default)
   character(len=*) :: name
   character(len=128) :: value
 #ifndef FORTRAN2003  
-  integer :: getenv
-  status = getenv(name, value)
-! status == 0: mismatch; status == 1: succes;
-  if(status==0) then
-     status=1
-  else
-     status=0
-  end if
+  call getenv(name, value)
+  if (len_trim(value) == 0) then
+     status = 1
+  else  
+     status = 0 
+  endif
 #else
   call get_environment_variable(name, value, length, status)
 #endif  

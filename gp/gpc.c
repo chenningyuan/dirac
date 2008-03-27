@@ -293,7 +293,7 @@ void getenv_(const char* str, char* val, int strl, int vall)
   int i;
 
   if(strl>sizeof(name)-1) {
-    printf("oops\n");
+    printf("gpc.c:getenv(): input string too long (I suck!)\n");
     return;
   }
   strncpy(name, str, strl);
