@@ -1232,7 +1232,7 @@ case $machine in
             ;;
          *)
             opt='-O3 -qstrict -qextname -q64'
-   	    c_opt='-O3 -qstrict -q64'
+   	    c_opt='-O3 -qstrict -qcpluscmt -q64'
             ldflag='-q64 -bmaxdata:0x8000000000'
             arflag='-X64 rv'
             ;;
