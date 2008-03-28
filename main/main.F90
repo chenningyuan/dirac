@@ -88,6 +88,7 @@ program dirprg
      call stopwatch(0,mytid)
      print '(a)','********** E N D   of   D I R A C  output  **********'
   endif
+  call dealloc(memory)
 #ifdef VAR_MPI
   call mpixfinalize()
 #endif
