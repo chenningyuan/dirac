@@ -111,26 +111,33 @@ void print_rawtrace_to_stdout(size_t size, char **strings)
 /* Obtain a backtrace and print it to stdout. */
 void print_prettytrace_to_stdout (size_t size, char **strings)
 {
-   size_t i;
+   size_t i, j, failure_point;
    char symbol_name[MAXSIZE_SYMBOL];
  
-   // minus five below is 2 from the glibc, one from this function 
-   // and 2 from the fortran side (error handler and the allocation
+   // minus five below is 2 from the glibc (the lowest 2 on the stack), one from this function,
+   // one from get_traceback_info and one from the fortran side (the caller of get_traceback_info)
    
-   printf ("\n Traceback from allocation call: %zd frames.\n\n",(size-3));
+   failure_point = 2;
+   j = (size - failure_point - 2);
+   retrieve_symbol(symbolName,symbol_name,strings[failure_point]);
+   printf ("\n Traceback from this point (%s): %zd frames.\n\n",symbol_name,j);
+   j--;
 
-   for (i = 3; i < size; i++)
+   // then start trace from below the caller of get_backtrace_info down the stack
+
+   for (i = failure_point+1; i < (size-2); i++)
    {
       retrieve_symbol(symbolName,symbol_name,strings[i]);
       
       if (strncmp(symbol_name,"",1))
       {
-         printf("%3d   function name:   %30s\n",(size-i),symbol_name);
+         printf("%3d   function name:   %30s\n",j,symbol_name);
       }
       else
       {
-         printf("%3d   function name:   Unknown\n",(size-i));
+         printf("%3d   function name:   Unknown\n",j);
       }
+      j--;
    }
    printf("\n");
 

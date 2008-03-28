@@ -258,7 +258,7 @@ C  /* Deck quit */
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #endif
-      CHARACTER TEXT*(*), STRING*70
+      CHARACTER TEXT*(*), STRING*70, BLA*1
 C
 #if defined (VAR_MPI)
       IF (MYTID .GT. 0) THEN
@@ -287,6 +287,15 @@ C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
 #endif
       CALL FLSHFO(LUPRI)
+
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1) 
+#else
+      CALL TRACE
+#endif /* SYS_LINUX */
+
 #if defined (VAR_MPI)
 #   if defined (PRG_DIRAC)
       IF(PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
@@ -297,7 +306,6 @@ C     Write to stderr
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
-      CALL TRACE
       STOP 1000
       END
 C  /* Deck opendx */

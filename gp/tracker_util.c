@@ -15,22 +15,20 @@
 
 #define BUFFERSIZE (512)
 
-void get_memory_address_(void *variable, int *address);
+void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
 
 // variable: is the real 
 // address_string: is a character string with the memory address of variable
+//                 question is whether or not this should always be long int in all archs.. we need to be able to hold up to 64 bit ints
 
-void get_memory_address_(void *variable, int *address)
+void get_memory_address_(void *variable, long int *address)
 {
    char bufvar[BUFFERSIZE]; 
 
-   snprintf (bufvar,(BUFFERSIZE-1),"%i",variable);
+   snprintf (bufvar,(BUFFERSIZE-1),"%li",variable);
 
-// address_string = malloc(strlen(bufvar)*sizeof(char)); 
-// strncpy(address_string,bufvar,strlen(bufvar));
-
-   *address = atoi(bufvar); 
+   *address = atol(bufvar); 
 }
 
 

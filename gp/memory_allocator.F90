@@ -144,8 +144,9 @@
                      write (*,*) ' '
                      write (*,*) InfoMessage
                      write (*,*) ' '
-                     call get_traceback_info (printPrettyTrace,dummy,1)
-                     call quit2(ErrorMessage)
+! temporarily this traceback call has been enablen in quit_ so we don't need it now...
+!                    call get_traceback_info (printPrettyTrace,dummy,1)
+                     call quit(ErrorMessage)
                   endif
                else
                   write (*,*) ' '

@@ -206,12 +206,15 @@ C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
 C  Printe traceback from Q stack
 C
+      CHARACTER BLA*1
       COMMON /QSTACK/ LEVELQ, LQTREE
-CMI   PARAMETER (MXQLVL = 100)
-CMI   CHARACTER*8   QNAMES(MXQLVL)
-CMI   COMMON /QSTACC/ QNAMES
 #include "qnames.h"
 C
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now  
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1)
+#else
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
@@ -229,6 +232,7 @@ C
      & ' ==============================================='
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
+#endif /* SYS_LINUX */
  9000 CONTINUE
       RETURN
       END
