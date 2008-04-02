@@ -1194,8 +1194,8 @@ C
      &           '* Open shell #',IOPEN,', f = ',DF(IOPEN)
               CALL PREIGN2(EIG(IOFF(IFSYM)),
      &                     IFIRST,NMULT,NACSH(IFSYM,IOPEN),FMTE)
-              IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
             END IF
+            IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
           END DO
 C
 C         Virtual eigenvalues
