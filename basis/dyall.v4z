@@ -1,15 +1,15 @@
 $
 $ Elements Supported
-$ Sr Rb Cs Ba Fr Ra
-$ Ga As Kr Ge Br Se I Xe Sn In Sb Te Bi Pb Tl At Rn Po
-$ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Pt Hf Ir Re Au W Os Hg Ta
-$ Hs Db Mt Rf Rg Uub Sg Ds Bh
-$ Md Ac Cm Pu No Am Cf Bk Pa U Th Np Lr Fm Es
-$ Pr La Yb Nd Ce Gd Ho Sm Dy Eu Tm Er Tb Lu Pm
+$ K  Ca Rb Sr Cs Ba Fr Ra 
+$ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
+$ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg 
+$ Rf Db Sg Bh Hs Mt Uub
+$ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
+$ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
 $
 $  REFERENCE
 $
-$ 5s-7s: K.G. Dyall, in preparation.
+$ 4s-7s: K.G. Dyall, in preparation.
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum    Theor. Chem. Acc. (2002) 108:365;
 $        revision    Theor. Chem. Acc. (2006) 115:441
@@ -27,9 +27,888 @@ $
 
 
 
+$ 
+$ Basis set library file automatically generatered by basis_set.py
+$ 
+$ invocation: basis_set.py --file=../basis/reference_unedited/4s_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=4s4p correlating,3s3p correlating,3s3p polarizing --output=dyall.4s.qz.bas
+$ 
+$ These are the sets of functions selected from the TCA archive (apart from SCF):
+$  ['4s4p correlating', '3s3p correlating', '3s3p polarizing']
+$ 
+$ dyall.4s.qz.bas
+$
+$ Description
+$ 
+$ 4s-Block Quadruple-Zeta Basis Set Archive
+$ =========================================
+$ 
+$ 
+$ Date: 29 Jan 2008
+$ 
+$ 
+$ When publishing work that uses these basis sets, please use the following citation:
+$ 
+$ K.G. Dyall, in preparation. Available from the Dirac web site, http://dirac.chem.sdu.dk.
+$ 
+$ 
+$ 
+$ This archive contains the exponents and the SCF orbital coefficients, given with
+$ respect to normalized (spherical or 2-spinor) Gaussian functions, for the basis
+$ sets described in the above articles. The SCF exponent sets reported include the
+$ functions for the 4p and the valence correlating d functions. The d sets were
+$ reoptimized after replacement of the outermost two SCF d functions with the three
+$ valence correlating d functions, which were held fixed.  In all the following
+$ descriptions, this is the set referred to as the SCF exponent set.
+$ 
+$ The contractions are taken from SCF calculations on a weighted average of the
+$ 4s^n and 4p^n configurations, with a weight ratio of 4:1.
+$ 
+$ The archive is set out as follows.
+$ 
+$ 1. Exponents and SCF coefficients for Dirac-Hartree-Fock wave functions, in order
+$    of Z. The large component functions are given first, followed by the small 
+$    component functions. Both components are labelled with the large component
+$    symmetry type, but the primitive functions for the small component are
+$    those obtained by restricted kinetic balance from the large component.
+$    The spin-orbit components have a "-" label for j=l-1/2 and a "+" label for
+$    j=l+1/2.
+$ 
+$ 2. Exponents and SCF coefficients for spin-free modified Dirac-Hartree-Fock wave
+$    functions, in order of Z. The large component functions are given first, 
+$    followed by the pseudo-large component functions, then the Foldy-Wouthuysen
+$    transformed large component functions. Note that all components have the same
+$    symmetry type. 
+$ 
+$ 3. Exponents of 4s4p correlating functions.
+$ 
+$ 4. Exponents of 3s3p correlating functions.
+$ 
+$ 5. Exponents of 2s2p correlating functions.
+$ 
+$ 6. Exponents of 3s3p polarizing functions
+$ 
+$ 
+$ Basis set construction.
+$ ----------------------
+$ 
+$ For the s elements, the outer core (n-1)s and (n-1)p must be included in the
+$ valence.  For Sr, the valence np is considered an occupied orbital and is
+$ correlated; hence there are extra correlating functions for Sr.
+$ 
+$ Several different types of basis sets may be constructed by adding primitive 
+$ functions to the SCF set. These basis sets are described below.
+$ 
+$ NOTE: Functions are counted from the function with the smallest exponent to the largest. 
+$ 
+$ 1. Valence and outer core. To the SCF occupied set, add the following:
+$    1st, 2nd, 4th, 5th, 6th, and 8th s primitives from the SCF set
+$    1st, 2nd, 3rd, 5th, 7th, and 8th p primitives from the SCF set
+$    3s3p correlating 3d2f1g set
+$    4s4p correlating set (2d1f for K, 2d2f1g for Ca)
+$ 
+$    (HF + 6s6p5d3f1g/4f2g valence/outer core)
+$ 
+$ 
+$ 2. Core 2s2p correlation. To basis set 1, add the following:
+$    9th, 10th, and 12th s primitives from the SCF set
+$    9th, 11th, and 12th p primitives from the SCF set
+$    2s2p correlating 3d2f1g set; omit the outermost d for Ca. 
+$ 
+$    (HF + 6s6p5d3f1g/4f2g valence/outer core + 3s3p3/2d2f1g core)
+$ 
+$ 
+$ 3. Outer core (3s3p) polarization. To any of the above basis sets, add the 
+$    s, p, f, and g polarizing functions.
+$ 
+$ 
+$ 
+$ 
+$ 
 
+$ K
+a 19
+$ s functions 
+   31    0    0
+ 1.13549080e+08
+ 2.44783820e+07
+ 6.74102680e+06
+ 2.11254520e+06
+ 7.31996590e+05
+ 2.73831410e+05
+ 1.08936220e+05
+ 4.53987750e+04
+ 1.96582160e+04
+ 8.82413500e+03
+ 4.09167180e+03
+ 1.95290830e+03
+ 9.57195760e+02
+ 4.80522930e+02
+ 2.46322910e+02
+ 1.28634800e+02
+ 6.82901190e+01
+ 3.66685110e+01
+ 1.97172680e+01
+ 1.03503070e+01
+ 5.52191220e+00
+ 2.96049020e+00
+ 1.52677330e+00
+ 7.87029580e-01
+ 3.97742360e-01
+ 1.97736340e-01
+ 4.82402560e-02
+ 3.49678040e-02
+ 2.11473060e-02
+ 1.10653410e-02
+ 9.76670440e-02
+$ p functions 
+   22    0    0
+ 9.29525080e+04
+ 1.50639830e+04
+ 3.90192150e+03
+ 1.29542860e+03
+ 5.00261640e+02
+ 2.13634900e+02
+ 9.78926840e+01
+ 4.72686330e+01
+ 2.37197900e+01
+ 1.21807590e+01
+ 6.35814610e+00
+ 3.35039300e+00
+ 1.74571200e+00
+ 9.10471140e-01
+ 4.76562730e-01
+ 2.52410080e-01
+ 1.32673860e-01
+ 5.66889680e-02
+ 2.79319350e-02
+ 1.42877970e-02
+ 7.38139410e-03
+ 8.67245320e-02
+$ d functions 
+    6    0    0
+ 9.52412990e-02
+ 2.63333830e-02
+ 2.87798320e+00
+ 1.13950840e+00
+ 4.70229030e-01
+ 3.26087470e-01
+$ f functions 
+    4    0    0
+ 6.06891410e-02
+ 1.61969150e+00
+ 6.99098690e-01
+ 2.40326160e-01
+$ g functions 
+    2    0    0
+ 1.29553830e+00
+ 4.45361660e-01
 
+$ Ca
+a 20
+$ s functions 
+   31    0    0
+ 1.04228680e+08
+ 2.16345110e+07
+ 5.82914700e+06
+ 1.81107750e+06
+ 6.29268530e+05
+ 2.38191280e+05
+ 9.65204830e+04
+ 4.13021380e+04
+ 1.84975000e+04
+ 8.61449840e+03
+ 4.14723830e+03
+ 2.05304080e+03
+ 1.04058390e+03
+ 5.38295110e+02
+ 2.83526160e+02
+ 1.51710610e+02
+ 8.22848820e+01
+ 4.50766320e+01
+ 2.47464020e+01
+ 1.31922150e+01
+ 7.18284620e+00
+ 3.95343270e+00
+ 2.15504710e+00
+ 1.13150220e+00
+ 5.91667370e-01
+ 3.04283910e-01
+ 1.12958450e-01
+ 6.57966130e-02
+ 3.36436460e-02
+ 1.69852570e-02
+ 1.85395360e-01
+$ p functions 
+   21    0    0
+ 1.26579830e+05
+ 1.99250810e+04
+ 5.01201930e+03
+ 1.62941940e+03
+ 6.20126370e+02
+ 2.62087690e+02
+ 1.19192000e+02
+ 5.72247710e+01
+ 2.86053750e+01
+ 1.46603650e+01
+ 7.64564830e+00
+ 4.03210840e+00
+ 2.10677560e+00
+ 1.09079260e+00
+ 5.61328900e-01
+ 2.86357470e-01
+ 1.29433690e-01
+ 6.32649060e-02
+ 3.03511570e-02
+ 1.44643290e-02
+ 1.92520920e-01
+$ d functions 
+    6    0    0
+ 1.63218420e-01
+ 7.17542960e-02
+ 6.09873650e+00
+ 1.70417080e+00
+ 6.56538400e-01
+ 4.60158330e-01
+$ f functions 
+    5    0    0
+ 1.99058800e-01
+ 1.18385170e-01
+ 1.97600260e+00
+ 8.74015400e-01
+ 3.41353710e-01
+$ g functions 
+    3    0    0
+ 1.86062450e-01
+ 1.60298690e+00
+ 6.26059350e-01
 
+$ 
+$ Basis set library file automatically generatered by basis_set.py
+$ 
+$ invocation: basis_set.py --file=../basis/reference_unedited/4p_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating --output=dyall.4p.qz.bas
+$ 
+$ These are the sets of functions selected from the TCA archive (apart from SCF):
+$  ['valence correlating']
+$ 
+$ dyall.4p.qz.bas
+$
+$ Description
+$ 
+$ 4p-Block Quadruple-Zeta Basis Set Archive
+$ =========================================
+$ 
+$ 
+$ Date: 31 May 2006
+$ 
+$ 
+$ When publishing work that uses these basis sets, please use the following citation:
+$ 
+$ K.G. Dyall, Theor. Chem. Acc. (2006) 115:441. Basis sets available from the Dirac web site, 
+$ http://dirac.chem.sdu.dk.
+$ 
+$ 
+$ 
+$ This archive contains the exponents and the SCF spinor or orbital coefficients, 
+$ given with respect to normalized (spherical or 2-spinor) Gaussian functions, for
+$ the basis sets described in the above article. The outermost two d functions in the
+$ SCF exponent set were replaced by the three valence correlating d functions and 
+$ the remaining exponents reoptimized. In all the following descriptions, this is 
+$ the set referred to as the SCF exponent set.
+$ 
+$ The archive is set out as follows.
+$ 
+$ 1. Exponents and SCF coefficients for Dirac-Hartree-Fock wave functions, in order
+$    of Z. The large component functions are given first, followed by the small 
+$    component functions. Both components are labelled with the large component
+$    symmetry type, but the primitive functions for the small component are
+$    those obtained by restricted kinetic balance from the large component.
+$    The spin-orbit components have a "-" label for j=l-1/2 and a "+" label for
+$    j=l+1/2.
+$ 
+$ 2. Exponents and SCF coefficients for spin-free modified Dirac-Hartree-Fock wave
+$    functions, in order of Z. The large component functions are given first, 
+$    followed by the pseudo-large component functions, then the Foldy-Wouthuysen
+$    transformed large component functions. Note that all components have the same
+$    symmetry type. 
+$ 
+$ 3. Exponents of diffuse s, p, d, f, and g functions.
+$ 
+$ 4. Exponents of valence correlating functions.
+$ 
+$ 5. Exponents of core correlating functions.
+$ 
+$ 
+$ 
+$ Basis set construction.
+$ ----------------------
+$ 
+$ Several different types of basis sets may be constructed by adding primitive 
+$ functions. These basis sets are described below.
+$ 
+$ NOTE: Functions are counted from the function with the smallest exponent to the largest. 
+$ 
+$ 1. Valence flexibility (equivalent to cc-pvqz). To the SCF occupied set, add the following:
+$    1st, 2nd, and 4th s primitives from the SCF set
+$    1st, 3rd, and 4th p primitives from the SCF set
+$    1st, 2nd, and 3rd d primitives from the SCF set (correlating 3d)
+$    valence correlating 2f1g functions.
+$ 
+$    This it the recommended valence contraction, because it provides the best balance 
+$    between valence flexibility and valence correlation. There is less than 100 uEh
+$    spread in the energies for all possible choices of 3 of the outermost 4 p functions.
+$ 
+$    This basis set has a less-than-optimal correlation energy. Losses in the s set 
+$    relative to the best correlation energy are up to 64 uEh for Kr, and in the p set 
+$    vary from 35 uEh for Ga to 923 uEh for Kr. The optimum p set is 3rd, 4th, 5th, 
+$    which does not provide the best  valence flexibility and correlates the second
+$    innermost antinode of the 4p function. The losses in the s set are insignificant, 
+$    but the losses in the p set might be significant in an extrapolation. However, 
+$    extrapolation is used to obtain accurate results, and without core correlation, 
+$    the extrapolation might not be useful. The addition of the core correlating set 
+$    (set 2 below) adds the functions that provide the optimum p correlation. 
+$ 
+$    An alternative for the p set is 1st, 2nd, 4th, which has smaller losses but
+$    does not provide the optimum p correlation when the core set is added.
+$ 
+$    A contraction designed for optimum valence correlation is given in basis set 3.
+$ 
+$    (HF + 3s3p3d2f1g valence)
+$ 
+$ 2. Core-valence flexibility. To basis set 1, add the following:
+$    5th, 6th, and 7th s primitives from the SCF set
+$    5th, 6th, and 7th p primitives from the SCF set
+$    4th, 6th, and 7th d primitives from the SCF set
+$    core correlating 3f2g1h functions.
+$ 
+$    (HF + 3s3p3d2f1g valence + 3s3p3d3f2g1h core)
+$ 
+$ 3. Valence correlation. To the SCF occupied set, add the following:
+$    3rd, 4th, and 5th s primitives from the SCF set
+$    3rd, 4th, and 5th p primitives from the SCF set
+$    1st, 2nd, and 3rd d primitives from the SCF set (correlating 3d)
+$    valence correlating 2f1g functions.
+$ 
+$    Note: The outermost s and p primitives are not uncontracted in this basis set, 
+$    which could result in less-than-optimal valence flexibility, and might degrade
+$    the quality of molecular calculations. The s set is not quite optimal for Ge,
+$    Ga and As, but the errors are about 10 uEh. The optimal s set for these elements
+$    is 1st, 2nd, and 4th. 
+$ 
+$    (HF + 3s3p3d2f1g valence)
+$ 
+$ 4. Core-valence correlation. To basis set 3, add the following:
+$    6th, 7th, and 8th s primitives from the SCF set
+$    6th, 7th, and 8th p primitives from the SCF set
+$    4th, 6th, and 7th d primitives from the SCF set
+$    core correlating 3f2g1h functions.
+$ 
+$    (HF + 3s3p3d2f1g valence + 3s3p3d3f2g1h core)
+$ 
+$ 5. Diffuse basis: add the diffuse s, p, d, f, and g functions to any of the above
+$    basis sets.
+$ 
+$ 
+$ 
+$ 
+$ 
+
+$ Ga
+a 31
+$ Warning: in symmetry        d, exponent 4.3141448000e-01 is considered to be too close to one already present (4.3141448000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 2.0957447000e-01 is considered to be too close to one already present (2.0957447000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 8.3120762000e-02 is considered to be too close to one already present (8.3120762000e-02) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 9.96089450e+07
+ 2.44831720e+07
+ 7.61552490e+06
+ 2.65237060e+06
+ 1.01712380e+06
+ 4.20623900e+05
+ 1.84428790e+05
+ 8.41297020e+04
+ 3.95307380e+04
+ 1.90529580e+04
+ 9.39666300e+03
+ 4.72979770e+03
+ 2.42518430e+03
+ 1.26480780e+03
+ 6.70024560e+02
+ 3.60443700e+02
+ 1.96990840e+02
+ 1.09120160e+02
+ 6.09090650e+01
+ 3.35830920e+01
+ 1.89034270e+01
+ 1.07030750e+01
+ 6.00108720e+00
+ 3.22591020e+00
+ 1.71590900e+00
+ 8.90966450e-01
+ 3.61458970e-01
+ 1.87413180e-01
+ 9.04125770e-02
+ 4.23405670e-02
+$ p functions 
+   21    0    0
+ 1.59297070e+06
+ 2.33812940e+05
+ 5.09422690e+04
+ 1.41733510e+04
+ 4.74137090e+03
+ 1.81743370e+03
+ 7.69292060e+02
+ 3.50283990e+02
+ 1.68571890e+02
+ 8.46628690e+01
+ 4.38118140e+01
+ 2.31883170e+01
+ 1.24307370e+01
+ 6.60221460e+00
+ 3.44178030e+00
+ 1.75991010e+00
+ 8.72010120e-01
+ 3.66397680e-01
+ 1.59088830e-01
+ 6.82556000e-02
+ 2.89847310e-02
+$ d functions 
+   13    0    0
+ 1.18749620e+03
+ 3.44560180e+02
+ 1.31308060e+02
+ 5.74935080e+01
+ 2.71362840e+01
+ 1.34399330e+01
+ 6.85110340e+00
+ 3.49998840e+00
+ 1.76630530e+00
+ 8.78040420e-01
+ 4.31414480e-01
+ 2.09574470e-01
+ 8.31207620e-02
+$ f functions 
+    2    0    0
+ 4.90072500e-01
+ 2.04131130e-01
+$ g functions 
+    1    0    0
+ 4.18122790e-01
+
+$ As
+a 33
+$ Warning: in symmetry        d, exponent 6.3012231000e-01 is considered to be too close to one already present (6.3012231000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 3.1372774000e-01 is considered to be too close to one already present (3.1372774000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 1.3106028000e-01 is considered to be too close to one already present (1.3106028000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 1.00115510e+08
+ 2.58411380e+07
+ 8.51118880e+06
+ 3.13773140e+06
+ 1.27769750e+06
+ 5.57671020e+05
+ 2.54374900e+05
+ 1.18326800e+05
+ 5.58488520e+04
+ 2.68076040e+04
+ 1.31031970e+04
+ 6.52903970e+03
+ 3.32155390e+03
+ 1.72529900e+03
+ 9.13798750e+02
+ 4.92727300e+02
+ 2.69728370e+02
+ 1.49216980e+02
+ 8.28794950e+01
+ 4.53466740e+01
+ 2.53952190e+01
+ 1.43043650e+01
+ 7.98826490e+00
+ 4.33298450e+00
+ 2.33589500e+00
+ 1.23815990e+00
+ 5.55919720e-01
+ 2.88711800e-01
+ 1.39917950e-01
+ 6.56551670e-02
+$ p functions 
+   21    0    0
+ 2.34152350e+06
+ 3.44580800e+05
+ 7.43814590e+04
+ 2.03056620e+04
+ 6.64231340e+03
+ 2.49574810e+03
+ 1.03974180e+03
+ 4.67768090e+02
+ 2.23097250e+02
+ 1.11341930e+02
+ 5.73962470e+01
+ 3.02860400e+01
+ 1.62247280e+01
+ 8.65461990e+00
+ 4.53759510e+00
+ 2.34664730e+00
+ 1.18965090e+00
+ 5.34791670e-01
+ 2.45230350e-01
+ 1.09406100e-01
+ 4.73862320e-02
+$ d functions 
+   13    0    0
+ 1.60183680e+03
+ 4.60418240e+02
+ 1.74788640e+02
+ 7.64659830e+01
+ 3.62104910e+01
+ 1.80125290e+01
+ 9.25291460e+00
+ 4.78630940e+00
+ 2.45993060e+00
+ 1.25268970e+00
+ 6.30122310e-01
+ 3.13727740e-01
+ 1.31060280e-01
+$ f functions 
+    2    0    0
+ 5.95325010e-01
+ 2.27299900e-01
+$ g functions 
+    1    0    0
+ 5.01828780e-01
+
+$ Kr
+a 36
+$ Warning: in symmetry        d, exponent 9.9954695000e-01 is considered to be too close to one already present (9.9954695000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 5.4212722000e-01 is considered to be too close to one already present (5.4212722000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 2.3094343000e-01 is considered to be too close to one already present (2.3094343000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 9.80722630e+07
+ 2.63969790e+07
+ 9.30612460e+06
+ 3.74159550e+06
+ 1.67601810e+06
+ 7.77127690e+05
+ 3.60917770e+05
+ 1.67521320e+05
+ 7.84716200e+04
+ 3.73282720e+04
+ 1.81147910e+04
+ 8.98468480e+03
+ 4.55336550e+03
+ 2.35434430e+03
+ 1.23954890e+03
+ 6.63242450e+02
+ 3.60035700e+02
+ 1.97765290e+02
+ 1.09263620e+02
+ 5.96935040e+01
+ 3.34963480e+01
+ 1.89573980e+01
+ 1.06813260e+01
+ 5.79511320e+00
+ 3.19234240e+00
+ 1.74262660e+00
+ 8.68140330e-01
+ 4.46194140e-01
+ 2.19473480e-01
+ 1.03764970e-01
+$ p functions 
+   21    0    0
+ 3.67939170e+06
+ 5.44893310e+05
+ 1.16639880e+05
+ 3.12188220e+04
+ 9.94980120e+03
+ 3.64614470e+03
+ 1.48758970e+03
+ 6.58162900e+02
+ 3.09679500e+02
+ 1.52857060e+02
+ 7.81568820e+01
+ 4.09922550e+01
+ 2.18965040e+01
+ 1.17020770e+01
+ 6.16536130e+00
+ 3.23295890e+00
+ 1.68109320e+00
+ 8.13485220e-01
+ 3.84708060e-01
+ 1.75633980e-01
+ 7.70292300e-02
+$ d functions 
+   13    0    0
+ 2.33030450e+03
+ 6.60368010e+02
+ 2.49060080e+02
+ 1.08617710e+02
+ 5.15265820e+01
+ 2.57287980e+01
+ 1.33084090e+01
+ 6.96609750e+00
+ 3.64680990e+00
+ 1.90635780e+00
+ 9.99546950e-01
+ 5.42127220e-01
+ 2.30943430e-01
+$ f functions 
+    2    0    0
+ 9.61765760e-01
+ 4.18637850e-01
+$ g functions 
+    1    0    0
+ 7.51236770e-01
+
+$ Ge
+a 32
+$ Warning: in symmetry        d, exponent 5.2213344000e-01 is considered to be too close to one already present (5.2213344000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 2.5282693000e-01 is considered to be too close to one already present (2.5282693000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 1.0387971000e-01 is considered to be too close to one already present (1.0387971000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 1.00653300e+08
+ 2.58795420e+07
+ 8.41614650e+06
+ 3.02809510e+06
+ 1.18621900e+06
+ 4.95354820e+05
+ 2.18392770e+05
+ 1.00281020e+05
+ 4.74371110e+04
+ 2.29278610e+04
+ 1.12808510e+04
+ 5.65111020e+03
+ 2.88553310e+03
+ 1.50131520e+03
+ 7.94974390e+02
+ 4.27963360e+02
+ 2.33911240e+02
+ 1.29436320e+02
+ 7.20898130e+01
+ 3.95951910e+01
+ 2.22307780e+01
+ 1.25502240e+01
+ 7.01764420e+00
+ 3.78397160e+00
+ 2.02511410e+00
+ 1.06110440e+00
+ 4.48212850e-01
+ 2.33515090e-01
+ 1.13079410e-01
+ 5.30643060e-02
+$ p functions 
+   21    0    0
+ 1.96655630e+06
+ 2.88679730e+05
+ 6.25057810e+04
+ 1.71960290e+04
+ 5.67928160e+03
+ 2.15315230e+03
+ 9.03753980e+02
+ 4.08978720e+02
+ 1.95930550e+02
+ 9.81027840e+01
+ 5.06808790e+01
+ 2.67899690e+01
+ 1.43622490e+01
+ 7.64995950e+00
+ 3.99943430e+00
+ 2.05526180e+00
+ 1.02937770e+00
+ 4.46925850e-01
+ 2.01059200e-01
+ 8.85077120e-02
+ 3.80829010e-02
+$ d functions 
+   13    0    0
+ 1.38690360e+03
+ 4.00377890e+02
+ 1.52301110e+02
+ 6.66744670e+01
+ 3.15302510e+01
+ 1.56526170e+01
+ 8.01195210e+00
+ 4.12025570e+00
+ 2.09917490e+00
+ 1.05570630e+00
+ 5.22133440e-01
+ 2.52826930e-01
+ 1.03879710e-01
+$ f functions 
+    2    0    0
+ 5.08270040e-01
+ 1.88572650e-01
+$ g functions 
+    1    0    0
+ 4.52867340e-01
+
+$ Br
+a 35
+$ Warning: in symmetry        d, exponent 8.7026678000e-01 is considered to be too close to one already present (8.7026678000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 4.5992947000e-01 is considered to be too close to one already present (4.5992947000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 1.9525117000e-01 is considered to be too close to one already present (1.9525117000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 1.00415160e+08
+ 2.66835160e+07
+ 9.16122790e+06
+ 3.54871890e+06
+ 1.52639230e+06
+ 6.93656920e+05
+ 3.21216590e+05
+ 1.49349130e+05
+ 7.01983430e+04
+ 3.35721480e+04
+ 1.63924550e+04
+ 8.17116240e+03
+ 4.15362240e+03
+ 2.15100300e+03
+ 1.13360200e+03
+ 6.07162390e+02
+ 3.29979160e+02
+ 1.81489400e+02
+ 1.00423250e+02
+ 5.49563080e+01
+ 3.08070260e+01
+ 1.73917370e+01
+ 9.75798560e+00
+ 5.25758350e+00
+ 2.86830630e+00
+ 1.54951180e+00
+ 7.47947020e-01
+ 3.84705400e-01
+ 1.88856060e-01
+ 8.93378600e-02
+$ p functions 
+   21    0    0
+ 3.15366940e+06
+ 4.65842980e+05
+ 9.99991800e+04
+ 2.69431070e+04
+ 8.65996050e+03
+ 3.19973140e+03
+ 1.31486000e+03
+ 5.85166370e+02
+ 2.76669700e+02
+ 1.37132010e+02
+ 7.03587070e+01
+ 3.70147400e+01
+ 1.98159800e+01
+ 1.05994890e+01
+ 5.58469380e+00
+ 2.92068970e+00
+ 1.50996210e+00
+ 7.16822320e-01
+ 3.36348190e-01
+ 1.52633690e-01
+ 6.67243500e-02
+$ d functions 
+   13    0    0
+ 2.07164150e+03
+ 5.89926610e+02
+ 2.23008160e+02
+ 9.73759810e+01
+ 4.61836290e+01
+ 2.30405740e+01
+ 1.18973730e+01
+ 6.20836310e+00
+ 3.23421740e+00
+ 1.67913740e+00
+ 8.70266780e-01
+ 4.59929470e-01
+ 1.95251170e-01
+$ f functions 
+    2    0    0
+ 8.26946570e-01
+ 3.41662860e-01
+$ g functions 
+    1    0    0
+ 6.57431470e-01
+
+$ Se
+a 34
+$ Warning: in symmetry        d, exponent 7.4698096000e-01 is considered to be too close to one already present (7.4698096000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 3.8360324000e-01 is considered to be too close to one already present (3.8360324000e-01) and is not included. threshold: 5.00e-02
+$ Warning: in symmetry        d, exponent 1.6186774000e-01 is considered to be too close to one already present (1.6186774000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   30    0    0
+ 9.91593100e+07
+ 2.62169770e+07
+ 8.89176750e+06
+ 3.37340510e+06
+ 1.40999320e+06
+ 6.26665740e+05
+ 2.88825180e+05
+ 1.35034650e+05
+ 6.37195390e+04
+ 3.04676530e+04
+ 1.48546830e+04
+ 7.40208290e+03
+ 3.76660030e+03
+ 1.95394990e+03
+ 1.03146730e+03
+ 5.53049130e+02
+ 3.00772450e+02
+ 1.65609510e+02
+ 9.18101700e+01
+ 5.02849310e+01
+ 2.82504620e+01
+ 1.59845840e+01
+ 8.98132090e+00
+ 4.82168400e+00
+ 2.60970400e+00
+ 1.39454080e+00
+ 6.50176260e-01
+ 3.35849380e-01
+ 1.63814060e-01
+ 7.71081150e-02
+$ p functions 
+   21    0    0
+ 2.75309490e+06
+ 4.05936960e+05
+ 8.73316060e+04
+ 2.36574650e+04
+ 7.66184430e+03
+ 2.85273970e+03
+ 1.17994340e+03
+ 5.27857690e+02
+ 2.50591040e+02
+ 1.24587060e+02
+ 6.40482650e+01
+ 3.37325840e+01
+ 1.80608930e+01
+ 9.64781230e+00
+ 5.07098480e+00
+ 2.63733410e+00
+ 1.35088570e+00
+ 6.25167050e-01
+ 2.90392000e-01
+ 1.30783230e-01
+ 5.69184460e-02
+$ d functions 
+   13    0    0
+ 1.92909660e+03
+ 5.50957200e+02
+ 2.08581490e+02
+ 9.11604120e+01
+ 4.32554600e+01
+ 2.15761540e+01
+ 1.11367520e+01
+ 5.80495570e+00
+ 3.00791390e+00
+ 1.53558400e+00
+ 7.46980960e-01
+ 3.83603240e-01
+ 1.61867740e-01
+$ f functions 
+    2    0    0
+ 7.04177410e-01
+ 2.78907440e-01
+$ g functions 
+    1    0    0
+ 5.72879080e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -39,6 +918,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', '4d dipole polarization', '4s4p correlating']
 $ 
+$ dyall.4d.qz.bas
 $
 $ Description
 $ 
@@ -46,7 +926,7 @@ $ 4d-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
 $ 
 $ 
-$ Date: 2 Mar 2007
+$ Date: 23 Jul 2007
 $ 
 $ 
 $ When publishing work that uses these basis sets, please use the following citation:
@@ -1158,34 +2038,40 @@ $ h functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_unedited/4p_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating --output=dyall.4p.qz.bas
+$ invocation: basis_set.py --file=../basis/reference_unedited/4f_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=4f correlating,5d/6s correlating,4f dipole polarization --output=dyall.4f.qz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['valence correlating']
+$  ['4f correlating', '5d/6s correlating', '4f dipole polarization']
 $ 
+$ dyall.4f.qz.bas
 $
 $ Description
 $ 
-$ 4p-Block Quadruple-Zeta Basis Set Archive
+$ 4f-Block Quadruple-Zeta Basis Set Archive
 $ =========================================
 $ 
 $ 
-$ Date: 31 May 2006
+$ Date: 19 Mar 2008
 $ 
 $ 
 $ When publishing work that uses these basis sets, please use the following citation:
 $ 
-$ K.G. Dyall, Theor. Chem. Acc. (2006) 115:441. Basis sets available from the Dirac web site, 
-$ http://dirac.chem.sdu.dk.
+$ A.S.P. Gomes and K.G. Dyall, in preparation.
+$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 $ 
 $ 
 $ 
 $ This archive contains the exponents and the SCF spinor or orbital coefficients, 
 $ given with respect to normalized (spherical or 2-spinor) Gaussian functions, for
-$ the basis sets described in the above article. The outermost two d functions in the
-$ SCF exponent set were replaced by the three valence correlating d functions and 
-$ the remaining exponents reoptimized. In all the following descriptions, this is 
-$ the set referred to as the SCF exponent set.
+$ the quadruple-zeta basis sets described in the above article.  The contractions
+$ are taken from SCF calculations on a weighted average of the valence configurations:
+$ 
+$ * For La, Ce, Gd, and Lu, where the 5d is occupied in the ground state, the
+$ 4f^n-1 5d^1 6s^2 and 4f^n-1 5d^1 6p^2 configurations were used with a 9:1 weight ratio.
+$ Note that for La the 4f is empty: this element is treated as a transition metal.
+$ 
+$ * For the rest (Pr - Eu, Tb - Yb), the 4f^n 6s^2, 4f^n-1 5d^1 6s^2, and 4f^n 6p^2
+$ configurations were used with a weight ratio of 6:3:1.
 $ 
 $ The archive is set out as follows.
 $ 
@@ -1203,584 +2089,2010 @@ $    followed by the pseudo-large component functions, then the Foldy-Wouthuysen
 $    transformed large component functions. Note that all components have the same
 $    symmetry type. 
 $ 
-$ 3. Exponents of diffuse s, p, d, f, and g functions.
+$ 3. Exponents of correlating functions for the 4f shell, the 5d and 6s shells, 
+$    and the 4d shell.
 $ 
-$ 4. Exponents of valence correlating functions.
-$ 
-$ 5. Exponents of core correlating functions.
+$ 4. Exponents of dipole polarizing functions for the 4f shell.
 $ 
 $ 
 $ 
 $ Basis set construction.
 $ ----------------------
 $ 
-$ Several different types of basis sets may be constructed by adding primitive 
-$ functions. These basis sets are described below.
+$ Contracted basis sets can be constructed by adding primitive functions to the SCF 
+$ set. These basis sets are described below. Note that the term "quadruple zeta" applies 
+$ to the s and p set. The d set is quintuple zeta. This is a result of keeping a 
+$ reasonable energy balance for the basis sets. The general rule is that shells with 
+$ l>1 require an extra function, and the second shell for a given l requires an extra function. 
 $ 
 $ NOTE: Functions are counted from the function with the smallest exponent to the largest. 
 $ 
-$ 1. Valence flexibility (equivalent to cc-pvqz). To the SCF occupied set, add the following:
-$    1st, 2nd, and 4th s primitives from the SCF set
-$    1st, 3rd, and 4th p primitives from the SCF set
-$    1st, 2nd, and 3rd d primitives from the SCF set (correlating 3d)
-$    valence correlating 2f1g functions.
 $ 
-$    This it the recommended valence contraction, because it provides the best balance 
-$    between valence flexibility and valence correlation. There is less than 100 uEh
-$    spread in the energies for all possible choices of 3 of the outermost 4 p functions.
+$ 1. Valence. The valence space is split into two spatial regions, the outer containing
+$    the 5d, 6s, and 6p, and the inner containing the 4f, 5s, and 5p. The uncontracted
+$    functions for these two sets are described separately. However, because all these 
+$    shells are active or semi-active, the description below should be regarded as a 
+$    single contracted set. 4f flexibility is not included for Ac, which is a transition
+$    metal, but it is included for Th because the 4f is low-lying. 
 $ 
-$    This basis set has a less-than-optimal correlation energy. Losses in the s set 
-$    relative to the best correlation energy are up to 64 uEh for Kr, and in the p set 
-$    vary from 35 uEh for Ga to 923 uEh for Kr. The optimum p set is 3rd, 4th, 5th, 
-$    which does not provide the best  valence flexibility and correlates the second
-$    innermost antinode of the 4p function. The losses in the s set are insignificant, 
-$    but the losses in the p set might be significant in an extrapolation. However, 
-$    extrapolation is used to obtain accurate results, and without core correlation, 
-$    the extrapolation might not be useful. The addition of the core correlating set 
-$    (set 2 below) adds the functions that provide the optimum p correlation. 
+$    To the SCF functions, add the following primitives.
 $ 
-$    An alternative for the p set is 1st, 2nd, 4th, which has smaller losses but
-$    does not provide the optimum p correlation when the core set is added.
+$    For 5d/6s/6p flexibility: 
+$    1st, 2nd, and 4th s primitives from the SCF set 
+$    1st, 2nd, and 4th p primitive from the SCF set 
+$    1st, 2nd, and 3rd d primitives from the SCF set 
+$    1st, 2nd, and 3rd f primitives from the SCF set
+$    correlating 2g1h for the 5d/6s shells.
 $ 
-$    A contraction designed for optimum valence correlation is given in basis set 3.
+$    For 5s/5p flexibility: 
+$    5th, 6th, and 8th s primitives from the SCF set
+$    6th, 7th, and 8th p primitives from the SCF set 
+$    3rd, 4th, and 5th d primitives from the SCF set
+$    4th and 5th f primitives from the SCF set
+$    
+$    The outer g function from the 4f correlating set is adequate for correlating 
+$    the 5s and 5p.
 $ 
-$    (HF + 3s3p3d2f1g valence)
+$    For 4f flexibility: 
+$    5th, 6th, and 8th s primitives from the SCF set
+$    6th, 7th, and 8th p primitives from the SCF set 
+$    4th, 5th, and 6th d primitives from the SCF set
+$    3rd, 4th, 5th, and 6th f primitives from the SCF set
+$    correlating 3g2h1i functions for the 4f shell.
 $ 
-$ 2. Core-valence flexibility. To basis set 1, add the following:
-$    5th, 6th, and 7th s primitives from the SCF set
-$    5th, 6th, and 7th p primitives from the SCF set
-$    4th, 6th, and 7th d primitives from the SCF set
-$    core correlating 3f2g1h functions.
+$    The combined set is therefore:
+$    1st, 2nd, 4th, 5th, 6th, and 8th s primitives from the SCF set 
+$    1st, 2nd, 4th, 6th, 7th, and 8th p primitives from the SCF set
+$    1st - 6th d primitives from the SCF set
+$    1st - 6th f primitives from the SCF set
+$    correlating 2g1h for the 5d/6s shells.
+$    correlating 3g2h1i functions for the 4f shell.
 $ 
-$    (HF + 3s3p3d2f1g valence + 3s3p3d3f2g1h core)
+$    If linear dependence is encountered in the d set, omit the 2nd d, or delete the 5d 
+$    SCF function. 
 $ 
-$ 3. Valence correlation. To the SCF occupied set, add the following:
-$    3rd, 4th, and 5th s primitives from the SCF set
-$    3rd, 4th, and 5th p primitives from the SCF set
-$    1st, 2nd, and 3rd d primitives from the SCF set (correlating 3d)
-$    valence correlating 2f1g functions.
 $ 
-$    Note: The outermost s and p primitives are not uncontracted in this basis set, 
-$    which could result in less-than-optimal valence flexibility, and might degrade
-$    the quality of molecular calculations. The s set is not quite optimal for Ge,
-$    Ga and As, but the errors are about 10 uEh. The optimal s set for these elements
-$    is 1st, 2nd, and 4th. 
+$ 2. Valence + 4d correlation.  This set adds functions for correlating the 4d. 
+$    Excitations from the 4d into the 4f shell are important for correlating the 4f. 
 $ 
-$    (HF + 3s3p3d2f1g valence)
+$    To basis set 1, add the following:
+$    10th, 11th, and 12th s primitives from the SCF set
+$    10th, 11th, and 12th p primitives from the SCF set 
+$    7th, 8th, and 9th d primitives from the SCF set 
+$    6th, 7th, and 8th f primitives from the SCF set 
 $ 
-$ 4. Core-valence correlation. To basis set 3, add the following:
-$    6th, 7th, and 8th s primitives from the SCF set
-$    6th, 7th, and 8th p primitives from the SCF set
-$    4th, 6th, and 7th d primitives from the SCF set
-$    core correlating 3f2g1h functions.
+$    The optimized g and h functions overlap well enough with those from the 4f 
+$    correlating set that these functions do not need to be added. 
 $ 
-$    (HF + 3s3p3d2f1g valence + 3s3p3d3f2g1h core)
 $ 
-$ 5. Diffuse basis: add the diffuse s, p, d, f, and g functions to any of the above
-$    basis sets.
+$ 3. Dipole polarization of the 4f. Add the polarizing i function.
+$ 
+$    There is a fair degree of overlap of the polarizing g and h functions with 
+$    the outer correlating g and h functions for the 5d/6s shells. The polarizing
+$    g and h are therefore not needed, except perhaps the h function for Lu.
+$ 
+$ 
+$ 4. Dipole polarization of the 5d.
+$ 
+$    The outer SCF f function and 5d/6s correlating g and h function should be 
+$    sufficient for polarization of the 5d. (This follows from the similarity of 
+$    the correlating and polarizing f functions for the dz basis set).
 $ 
 $ 
 $ 
 $ 
 $ 
 
-$ Ga
-a 31
-$ Warning: in symmetry        d, exponent 4.3141448000e-01 is considered to be too close to one already present (4.3141448000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 2.0957447000e-01 is considered to be too close to one already present (2.0957447000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 8.3120762000e-02 is considered to be too close to one already present (8.3120762000e-02) and is not included. threshold: 5.00e-02
+$ Pr
+a 59
 $ s functions 
-   30    0    0
- 9.96089450e+07
- 2.44831720e+07
- 7.61552490e+06
- 2.65237060e+06
- 1.01712380e+06
- 4.20623900e+05
- 1.84428790e+05
- 8.41297020e+04
- 3.95307380e+04
- 1.90529580e+04
- 9.39666300e+03
- 4.72979770e+03
- 2.42518430e+03
- 1.26480780e+03
- 6.70024560e+02
- 3.60443700e+02
- 1.96990840e+02
- 1.09120160e+02
- 6.09090650e+01
- 3.35830920e+01
- 1.89034270e+01
- 1.07030750e+01
- 6.00108720e+00
- 3.22591020e+00
- 1.71590900e+00
- 8.90966450e-01
- 3.61458970e-01
- 1.87413180e-01
- 9.04125770e-02
- 4.23405670e-02
+   35    0    0
+ 7.34237380e+07
+ 1.95070880e+07
+ 6.66243340e+06
+ 2.52644530e+06
+ 1.04073390e+06
+ 4.50451920e+05
+ 2.03049470e+05
+ 9.44061100e+04
+ 4.51254340e+04
+ 2.21035070e+04
+ 1.10776520e+04
+ 5.67414900e+03
+ 2.96818260e+03
+ 1.58416060e+03
+ 8.61660340e+02
+ 4.76907500e+02
+ 2.68183800e+02
+ 1.53413920e+02
+ 9.08613190e+01
+ 5.59691340e+01
+ 3.56726060e+01
+ 2.20633200e+01
+ 1.37641840e+01
+ 8.29065480e+00
+ 4.72027770e+00
+ 2.77607810e+00
+ 1.61214980e+00
+ 9.43364990e-01
+ 5.25421370e-01
+ 3.04936190e-01
+ 1.79044000e-01
+ 9.25192740e-02
+ 4.93171360e-02
+ 2.59420940e-02
+ 1.35606010e-02
 $ p functions 
-   21    0    0
- 1.59297070e+06
- 2.33812940e+05
- 5.09422690e+04
- 1.41733510e+04
- 4.74137090e+03
- 1.81743370e+03
- 7.69292060e+02
- 3.50283990e+02
- 1.68571890e+02
- 8.46628690e+01
- 4.38118140e+01
- 2.31883170e+01
- 1.24307370e+01
- 6.60221460e+00
- 3.44178030e+00
- 1.75991010e+00
- 8.72010120e-01
- 3.66397680e-01
- 1.59088830e-01
- 6.82556000e-02
- 2.89847310e-02
+   30    0    0
+ 4.11413770e+07
+ 9.40107010e+06
+ 2.53206880e+06
+ 7.65143610e+05
+ 2.52656960e+05
+ 8.98505470e+04
+ 3.41662070e+04
+ 1.38538040e+04
+ 5.97753980e+03
+ 2.73171700e+03
+ 1.31281230e+03
+ 6.58511000e+02
+ 3.42217200e+02
+ 1.82845800e+02
+ 9.99479070e+01
+ 5.53278150e+01
+ 3.07977500e+01
+ 1.75112210e+01
+ 1.00843200e+01
+ 5.81367350e+00
+ 3.29179920e+00
+ 1.85636090e+00
+ 1.01545000e+00
+ 5.48045600e-01
+ 2.97555710e-01
+ 1.61618970e-01
+ 8.17214150e-02
+ 4.19914990e-02
+ 2.14605100e-02
+ 1.08640150e-02
 $ d functions 
-   13    0    0
- 1.18749620e+03
- 3.44560180e+02
- 1.31308060e+02
- 5.74935080e+01
- 2.71362840e+01
- 1.34399330e+01
- 6.85110340e+00
- 3.49998840e+00
- 1.76630530e+00
- 8.78040420e-01
- 4.31414480e-01
- 2.09574470e-01
- 8.31207620e-02
+   19    0    0
+ 2.79003130e+04
+ 6.95860550e+03
+ 2.41569060e+03
+ 9.96450210e+02
+ 4.58454300e+02
+ 2.27159260e+02
+ 1.18315010e+02
+ 6.39707830e+01
+ 3.53599690e+01
+ 1.98640820e+01
+ 1.12637050e+01
+ 6.35436270e+00
+ 3.52011150e+00
+ 1.92217780e+00
+ 1.01185300e+00
+ 4.86332690e-01
+ 2.24781190e-01
+ 9.97390280e-02
+ 4.17392960e-02
 $ f functions 
-    2    0    0
- 4.90072500e-01
- 2.04131130e-01
+   16    0    0
+ 4.14879970e+02
+ 1.43097540e+02
+ 6.10938220e+01
+ 2.89505830e+01
+ 1.43798050e+01
+ 7.41751410e+00
+ 3.84976920e+00
+ 1.97998210e+00
+ 9.95089380e-01
+ 4.80748040e-01
+ 2.19380750e-01
+ 8.98445130e-02
+ 3.67946440e-02
+ 5.34348860e-01
+ 1.93241250e-01
+ 8.38357230e-02
 $ g functions 
-    1    0    0
- 4.18122790e-01
+    6    0    0
+ 8.40820940e+00
+ 2.75920550e+00
+ 8.90536520e-01
+ 6.07090540e-01
+ 1.57982810e-01
+ 1.07191510e-01
+$ h functions 
+    4    0    0
+ 5.16524230e+00
+ 1.51223410e+00
+ 2.12586110e-01
+ 1.82023600e-01
+$ i functions 
+    2    0    0
+ 3.65616830e+00
+ 4.40083250e-01
 
-$ As
-a 33
-$ Warning: in symmetry        d, exponent 6.3012231000e-01 is considered to be too close to one already present (6.3012231000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 3.1372774000e-01 is considered to be too close to one already present (3.1372774000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 1.3106028000e-01 is considered to be too close to one already present (1.3106028000e-01) and is not included. threshold: 5.00e-02
+$ La
+a 57
 $ s functions 
-   30    0    0
- 1.00115510e+08
- 2.58411380e+07
- 8.51118880e+06
- 3.13773140e+06
- 1.27769750e+06
- 5.57671020e+05
- 2.54374900e+05
- 1.18326800e+05
- 5.58488520e+04
- 2.68076040e+04
- 1.31031970e+04
- 6.52903970e+03
- 3.32155390e+03
- 1.72529900e+03
- 9.13798750e+02
- 4.92727300e+02
- 2.69728370e+02
- 1.49216980e+02
- 8.28794950e+01
- 4.53466740e+01
- 2.53952190e+01
- 1.43043650e+01
- 7.98826490e+00
- 4.33298450e+00
- 2.33589500e+00
- 1.23815990e+00
- 5.55919720e-01
- 2.88711800e-01
- 1.39917950e-01
- 6.56551670e-02
+   35    0    0
+ 7.38998860e+07
+ 1.96337220e+07
+ 6.69226430e+06
+ 2.52858530e+06
+ 1.03669290e+06
+ 4.46501660e+05
+ 2.00209130e+05
+ 9.26181440e+04
+ 4.41086390e+04
+ 2.15749900e+04
+ 1.08180500e+04
+ 5.54969990e+03
+ 2.90906580e+03
+ 1.55667050e+03
+ 8.49798890e+02
+ 4.72637460e+02
+ 2.66980570e+02
+ 1.52062660e+02
+ 8.86817930e+01
+ 5.23988840e+01
+ 3.11949000e+01
+ 1.85595230e+01
+ 1.14550750e+01
+ 7.01390250e+00
+ 4.12738850e+00
+ 2.56414740e+00
+ 1.56261770e+00
+ 8.93692190e-01
+ 5.18124440e-01
+ 2.96051750e-01
+ 1.64867360e-01
+ 9.86312820e-02
+ 5.14856830e-02
+ 2.74651440e-02
+ 1.44326980e-02
 $ p functions 
-   21    0    0
- 2.34152350e+06
- 3.44580800e+05
- 7.43814590e+04
- 2.03056620e+04
- 6.64231340e+03
- 2.49574810e+03
- 1.03974180e+03
- 4.67768090e+02
- 2.23097250e+02
- 1.11341930e+02
- 5.73962470e+01
- 3.02860400e+01
- 1.62247280e+01
- 8.65461990e+00
- 4.53759510e+00
- 2.34664730e+00
- 1.18965090e+00
- 5.34791670e-01
- 2.45230350e-01
- 1.09406100e-01
- 4.73862320e-02
+   30    0    0
+ 3.99140650e+07
+ 8.99361980e+06
+ 2.40264730e+06
+ 7.21679430e+05
+ 2.37257610e+05
+ 8.41080680e+04
+ 3.19366670e+04
+ 1.29572260e+04
+ 5.60107620e+03
+ 2.56542970e+03
+ 1.23556400e+03
+ 6.20986970e+02
+ 3.23315200e+02
+ 1.73029210e+02
+ 9.47082210e+01
+ 5.24982100e+01
+ 2.93706240e+01
+ 1.68396030e+01
+ 9.86038860e+00
+ 5.77201940e+00
+ 3.27278490e+00
+ 1.84266010e+00
+ 9.98818470e-01
+ 5.30213170e-01
+ 2.77886310e-01
+ 1.38263160e-01
+ 8.77445540e-02
+ 4.47548550e-02
+ 2.29364580e-02
+ 1.15164160e-02
 $ d functions 
-   13    0    0
- 1.60183680e+03
- 4.60418240e+02
- 1.74788640e+02
- 7.64659830e+01
- 3.62104910e+01
- 1.80125290e+01
- 9.25291460e+00
- 4.78630940e+00
- 2.45993060e+00
- 1.25268970e+00
- 6.30122310e-01
- 3.13727740e-01
- 1.31060280e-01
+   19    0    0
+ 2.50637210e+04
+ 6.28548300e+03
+ 2.19339750e+03
+ 9.08358070e+02
+ 4.19170210e+02
+ 2.08148440e+02
+ 1.08577100e+02
+ 5.87678670e+01
+ 3.25061400e+01
+ 1.82613230e+01
+ 1.03591360e+01
+ 5.84883100e+00
+ 3.24036940e+00
+ 1.77272800e+00
+ 9.36617440e-01
+ 4.54881150e-01
+ 2.12725710e-01
+ 9.54659530e-02
+ 4.04169010e-02
 $ f functions 
-    2    0    0
- 5.95325010e-01
- 2.27299900e-01
+    3    0    0
+ 5.80877920e-01
+ 1.93167970e-01
+ 8.21761470e-02
 $ g functions 
+    2    0    0
+ 4.84954380e-01
+ 1.30103160e-01
+$ h functions 
     1    0    0
- 5.01828780e-01
+ 1.69562370e-01
 
-$ Kr
-a 36
-$ Warning: in symmetry        d, exponent 9.9954695000e-01 is considered to be too close to one already present (9.9954695000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 5.4212722000e-01 is considered to be too close to one already present (5.4212722000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 2.3094343000e-01 is considered to be too close to one already present (2.3094343000e-01) and is not included. threshold: 5.00e-02
+$ Yb
+a 70
 $ s functions 
-   30    0    0
- 9.80722630e+07
- 2.63969790e+07
- 9.30612460e+06
- 3.74159550e+06
- 1.67601810e+06
- 7.77127690e+05
- 3.60917770e+05
- 1.67521320e+05
- 7.84716200e+04
- 3.73282720e+04
- 1.81147910e+04
- 8.98468480e+03
- 4.55336550e+03
- 2.35434430e+03
- 1.23954890e+03
- 6.63242450e+02
- 3.60035700e+02
- 1.97765290e+02
- 1.09263620e+02
- 5.96935040e+01
- 3.34963480e+01
- 1.89573980e+01
- 1.06813260e+01
- 5.79511320e+00
- 3.19234240e+00
- 1.74262660e+00
- 8.68140330e-01
- 4.46194140e-01
- 2.19473480e-01
- 1.03764970e-01
+   35    0    0
+ 6.59734260e+07
+ 1.75730420e+07
+ 6.03686290e+06
+ 2.31486160e+06
+ 9.74980010e+05
+ 4.35723420e+05
+ 2.04701990e+05
+ 9.96542500e+04
+ 4.99833160e+04
+ 2.56634850e+04
+ 1.34406990e+04
+ 7.15989290e+03
+ 3.87535560e+03
+ 2.13070570e+03
+ 1.18989030e+03
+ 6.74297690e+02
+ 3.87242140e+02
+ 2.24813970e+02
+ 1.33621610e+02
+ 8.12811580e+01
+ 5.09398030e+01
+ 3.22805260e+01
+ 2.03946850e+01
+ 1.25032440e+01
+ 7.28744560e+00
+ 4.32100010e+00
+ 2.52340510e+00
+ 1.41752400e+00
+ 7.91574000e-01
+ 4.41984990e-01
+ 2.43453710e-01
+ 1.18784130e-01
+ 6.17391390e-02
+ 3.19226840e-02
+ 1.64204950e-02
 $ p functions 
-   21    0    0
- 3.67939170e+06
- 5.44893310e+05
- 1.16639880e+05
- 3.12188220e+04
- 9.94980120e+03
- 3.64614470e+03
- 1.48758970e+03
- 6.58162900e+02
- 3.09679500e+02
- 1.52857060e+02
- 7.81568820e+01
- 4.09922550e+01
- 2.18965040e+01
- 1.17020770e+01
- 6.16536130e+00
- 3.23295890e+00
- 1.68109320e+00
- 8.13485220e-01
- 3.84708060e-01
- 1.75633980e-01
- 7.70292300e-02
+   30    0    0
+ 4.91789210e+07
+ 1.28380860e+07
+ 3.76888450e+06
+ 1.21236380e+06
+ 4.19038500e+05
+ 1.53895280e+05
+ 5.96788850e+04
+ 2.43755730e+04
+ 1.04821780e+04
+ 4.74162680e+03
+ 2.24896530e+03
+ 1.11287880e+03
+ 5.71147910e+02
+ 3.01896170e+02
+ 1.63528400e+02
+ 8.99890040e+01
+ 4.99948610e+01
+ 2.83902750e+01
+ 1.62940400e+01
+ 9.29736010e+00
+ 5.20744640e+00
+ 2.88885410e+00
+ 1.55272710e+00
+ 8.27489130e-01
+ 4.40336460e-01
+ 2.33462800e-01
+ 1.12690390e-01
+ 5.60052050e-02
+ 2.73229180e-02
+ 1.32117930e-02
 $ d functions 
-   13    0    0
- 2.33030450e+03
- 6.60368010e+02
- 2.49060080e+02
- 1.08617710e+02
- 5.15265820e+01
- 2.57287980e+01
- 1.33084090e+01
- 6.96609750e+00
- 3.64680990e+00
- 1.90635780e+00
- 9.99546950e-01
- 5.42127220e-01
- 2.30943430e-01
+   19    0    0
+ 4.45144170e+04
+ 1.08521940e+04
+ 3.67769540e+03
+ 1.48746560e+03
+ 6.74028750e+02
+ 3.30013120e+02
+ 1.70355940e+02
+ 9.14634240e+01
+ 5.02710170e+01
+ 2.81464460e+01
+ 1.58313540e+01
+ 8.79574650e+00
+ 4.80219900e+00
+ 2.55974290e+00
+ 1.30121570e+00
+ 5.87266130e-01
+ 2.51861480e-01
+ 1.03644490e-01
+ 4.02739370e-02
 $ f functions 
-    2    0    0
- 9.61765760e-01
- 4.18637850e-01
+   16    0    0
+ 7.41088060e+02
+ 2.54100270e+02
+ 1.08466990e+02
+ 5.17449560e+01
+ 2.60131210e+01
+ 1.35617370e+01
+ 7.10812220e+00
+ 3.67586960e+00
+ 1.84867430e+00
+ 8.88347000e-01
+ 4.00359300e-01
+ 1.60718770e-01
+ 6.45183510e-02
+ 7.47180640e-01
+ 1.92033100e-01
+ 1.02161180e-01
 $ g functions 
-    1    0    0
- 7.51236770e-01
+    6    0    0
+ 1.69299790e+01
+ 5.84305730e+00
+ 1.93167410e+00
+ 4.66918250e-01
+ 1.51293630e-01
+ 1.88875790e-01
+$ h functions 
+    4    0    0
+ 1.20158600e+01
+ 3.89458590e+00
+ 2.35228250e-01
+ 3.80805950e-01
+$ i functions 
+    2    0    0
+ 7.82630300e+00
+ 7.65242530e-01
 
-$ Ge
-a 32
-$ Warning: in symmetry        d, exponent 5.2213344000e-01 is considered to be too close to one already present (5.2213344000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 2.5282693000e-01 is considered to be too close to one already present (2.5282693000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 1.0387971000e-01 is considered to be too close to one already present (1.0387971000e-01) and is not included. threshold: 5.00e-02
+$ Nd
+a 60
+$ Warning: in symmetry        f, exponent 5.4637879000e-01 is considered to be too close to one already present (5.2981063000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   30    0    0
- 1.00653300e+08
- 2.58795420e+07
- 8.41614650e+06
- 3.02809510e+06
- 1.18621900e+06
- 4.95354820e+05
- 2.18392770e+05
- 1.00281020e+05
- 4.74371110e+04
- 2.29278610e+04
- 1.12808510e+04
- 5.65111020e+03
- 2.88553310e+03
- 1.50131520e+03
- 7.94974390e+02
- 4.27963360e+02
- 2.33911240e+02
- 1.29436320e+02
- 7.20898130e+01
- 3.95951910e+01
- 2.22307780e+01
- 1.25502240e+01
- 7.01764420e+00
- 3.78397160e+00
- 2.02511410e+00
- 1.06110440e+00
- 4.48212850e-01
- 2.33515090e-01
- 1.13079410e-01
- 5.30643060e-02
+   35    0    0
+ 7.32552600e+07
+ 1.94762790e+07
+ 6.66516820e+06
+ 2.53661350e+06
+ 1.05114130e+06
+ 4.58321370e+05
+ 2.08259960e+05
+ 9.75797810e+04
+ 4.69781660e+04
+ 2.31686260e+04
+ 1.16972420e+04
+ 6.04295800e+03
+ 3.19093370e+03
+ 1.71844870e+03
+ 9.41883990e+02
+ 5.24449120e+02
+ 2.95897690e+02
+ 1.67501420e+02
+ 9.76126960e+01
+ 5.80264700e+01
+ 3.52347850e+01
+ 2.17563010e+01
+ 1.37856260e+01
+ 8.51600500e+00
+ 4.98440110e+00
+ 2.99995410e+00
+ 1.77350540e+00
+ 1.01613760e+00
+ 5.80249090e-01
+ 3.35593340e-01
+ 1.91722190e-01
+ 9.38658660e-02
+ 5.06871810e-02
+ 2.67221330e-02
+ 1.39508590e-02
 $ p functions 
-   21    0    0
- 1.96655630e+06
- 2.88679730e+05
- 6.25057810e+04
- 1.71960290e+04
- 5.67928160e+03
- 2.15315230e+03
- 9.03753980e+02
- 4.08978720e+02
- 1.95930550e+02
- 9.81027840e+01
- 5.06808790e+01
- 2.67899690e+01
- 1.43622490e+01
- 7.64995950e+00
- 3.99943430e+00
- 2.05526180e+00
- 1.02937770e+00
- 4.46925850e-01
- 2.01059200e-01
- 8.85077120e-02
- 3.80829010e-02
+   30    0    0
+ 4.22553650e+07
+ 9.78209040e+06
+ 2.65695640e+06
+ 8.07216270e+05
+ 2.67485880e+05
+ 9.53203850e+04
+ 3.62783140e+04
+ 1.47081590e+04
+ 6.33940050e+03
+ 2.89224480e+03
+ 1.38727170e+03
+ 6.94507700e+02
+ 3.60317160e+02
+ 1.92281770e+02
+ 1.05031480e+02
+ 5.81379440e+01
+ 3.23874050e+01
+ 1.84432290e+01
+ 1.06396990e+01
+ 6.13666340e+00
+ 3.47823920e+00
+ 1.96649590e+00
+ 1.08319110e+00
+ 5.87327770e-01
+ 3.19442160e-01
+ 1.73429210e-01
+ 8.60164450e-02
+ 4.40832850e-02
+ 2.23938540e-02
+ 1.12626480e-02
 $ d functions 
-   13    0    0
- 1.38690360e+03
- 4.00377890e+02
- 1.52301110e+02
- 6.66744670e+01
- 3.15302510e+01
- 1.56526170e+01
- 8.01195210e+00
- 4.12025570e+00
- 2.09917490e+00
- 1.05570630e+00
- 5.22133440e-01
- 2.52826930e-01
- 1.03879710e-01
+   19    0    0
+ 2.93791060e+04
+ 7.30877560e+03
+ 2.53091900e+03
+ 1.04193280e+03
+ 4.78663760e+02
+ 2.36905480e+02
+ 1.23290770e+02
+ 6.66212230e+01
+ 3.68098090e+01
+ 2.06760180e+01
+ 1.17195980e+01
+ 6.60667360e+00
+ 3.65796160e+00
+ 1.99466130e+00
+ 1.04764270e+00
+ 5.00722250e-01
+ 2.29960230e-01
+ 1.01400140e-01
+ 4.21675820e-02
 $ f functions 
-    2    0    0
- 5.08270040e-01
- 1.88572650e-01
+   15    0    0
+ 4.48298830e+02
+ 1.54618040e+02
+ 6.60329020e+01
+ 3.13510500e+01
+ 1.56096520e+01
+ 8.07275760e+00
+ 4.20357710e+00
+ 2.16881580e+00
+ 1.09345690e+00
+ 5.29810630e-01
+ 2.42477880e-01
+ 9.95865960e-02
+ 4.09005970e-02
+ 1.46165300e-01
+ 7.84318130e-02
 $ g functions 
-    1    0    0
- 4.52867340e-01
+    6    0    0
+ 9.17466210e+00
+ 3.04562670e+00
+ 9.92587790e-01
+ 5.36162650e-01
+ 1.46121260e-01
+ 1.20604120e-01
+$ h functions 
+    4    0    0
+ 6.00968540e+00
+ 1.82116300e+00
+ 1.89755700e-01
+ 2.21279940e-01
+$ i functions 
+    2    0    0
+ 4.04447430e+00
+ 4.91422800e-01
 
-$ Br
-a 35
-$ Warning: in symmetry        d, exponent 8.7026678000e-01 is considered to be too close to one already present (8.7026678000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 4.5992947000e-01 is considered to be too close to one already present (4.5992947000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 1.9525117000e-01 is considered to be too close to one already present (1.9525117000e-01) and is not included. threshold: 5.00e-02
+$ Ce
+a 58
+$ Warning: in symmetry        f, exponent 5.9665430000e-01 is considered to be too close to one already present (5.8896033000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   30    0    0
- 1.00415160e+08
- 2.66835160e+07
- 9.16122790e+06
- 3.54871890e+06
- 1.52639230e+06
- 6.93656920e+05
- 3.21216590e+05
- 1.49349130e+05
- 7.01983430e+04
- 3.35721480e+04
- 1.63924550e+04
- 8.17116240e+03
- 4.15362240e+03
- 2.15100300e+03
- 1.13360200e+03
- 6.07162390e+02
- 3.29979160e+02
- 1.81489400e+02
- 1.00423250e+02
- 5.49563080e+01
- 3.08070260e+01
- 1.73917370e+01
- 9.75798560e+00
- 5.25758350e+00
- 2.86830630e+00
- 1.54951180e+00
- 7.47947020e-01
- 3.84705400e-01
- 1.88856060e-01
- 8.93378600e-02
+   35    0    0
+ 7.36868180e+07
+ 1.95900900e+07
+ 6.70068070e+06
+ 2.54724040e+06
+ 1.05309340e+06
+ 4.57815640e+05
+ 2.07368780e+05
+ 9.68976910e+04
+ 4.65975830e+04
+ 2.30004390e+04
+ 1.16185700e+04
+ 5.98665540e+03
+ 3.14070500e+03
+ 1.67647330e+03
+ 9.10379080e+02
+ 5.02540280e+02
+ 2.81331470e+02
+ 1.58051040e+02
+ 9.17080260e+01
+ 5.43988560e+01
+ 3.30158690e+01
+ 2.03434260e+01
+ 1.29082640e+01
+ 7.98930370e+00
+ 4.60449000e+00
+ 2.79405100e+00
+ 1.66457470e+00
+ 9.65597450e-01
+ 5.44724610e-01
+ 3.08431280e-01
+ 1.70919040e-01
+ 9.59556250e-02
+ 5.03406800e-02
+ 2.68781770e-02
+ 1.42080460e-02
 $ p functions 
-   21    0    0
- 3.15366940e+06
- 4.65842980e+05
- 9.99991800e+04
- 2.69431070e+04
- 8.65996050e+03
- 3.19973140e+03
- 1.31486000e+03
- 5.85166370e+02
- 2.76669700e+02
- 1.37132010e+02
- 7.03587070e+01
- 3.70147400e+01
- 1.98159800e+01
- 1.05994890e+01
- 5.58469380e+00
- 2.92068970e+00
- 1.50996210e+00
- 7.16822320e-01
- 3.36348190e-01
- 1.52633690e-01
- 6.67243500e-02
+   30    0    0
+ 4.03451890e+07
+ 9.14331930e+06
+ 2.45157890e+06
+ 7.38230720e+05
+ 2.43089260e+05
+ 8.62586140e+04
+ 3.27677880e+04
+ 1.32933790e+04
+ 5.74489800e+03
+ 2.63063990e+03
+ 1.26646210e+03
+ 6.36139640e+02
+ 3.31016620e+02
+ 1.77108390e+02
+ 9.69600260e+01
+ 5.37659390e+01
+ 3.00047150e+01
+ 1.70964980e+01
+ 9.88498630e+00
+ 5.73120520e+00
+ 3.25595870e+00
+ 1.85207290e+00
+ 1.03078900e+00
+ 5.60803360e-01
+ 3.05995020e-01
+ 1.66232140e-01
+ 8.30267970e-02
+ 4.25364730e-02
+ 2.18724140e-02
+ 1.11596270e-02
 $ d functions 
-   13    0    0
- 2.07164150e+03
- 5.89926610e+02
- 2.23008160e+02
- 9.73759810e+01
- 4.61836290e+01
- 2.30405740e+01
- 1.18973730e+01
- 6.20836310e+00
- 3.23421740e+00
- 1.67913740e+00
- 8.70266780e-01
- 4.59929470e-01
- 1.95251170e-01
+   19    0    0
+ 2.64871180e+04
+ 6.62375550e+03
+ 2.30533670e+03
+ 9.52790200e+02
+ 4.39008040e+02
+ 2.17757460e+02
+ 1.13502030e+02
+ 6.14004490e+01
+ 3.39512170e+01
+ 1.90734950e+01
+ 1.08185310e+01
+ 6.10664820e+00
+ 3.38363550e+00
+ 1.84969960e+00
+ 9.75632900e-01
+ 4.71433690e-01
+ 2.19209940e-01
+ 9.78343620e-02
+ 4.11833010e-02
 $ f functions 
-    2    0    0
- 8.26946570e-01
- 3.41662860e-01
+   15    0    0
+ 4.43946030e+02
+ 1.53682830e+02
+ 6.57885750e+01
+ 3.14016900e+01
+ 1.57090370e+01
+ 8.17887530e+00
+ 4.31368970e+00
+ 2.26695420e+00
+ 1.17381240e+00
+ 5.88960330e-01
+ 2.81095570e-01
+ 1.21082580e-01
+ 5.21566100e-02
+ 2.42777960e-01
+ 9.36314780e-02
 $ g functions 
-    1    0    0
- 6.57431470e-01
+    6    0    0
+ 7.43139080e+00
+ 2.42945410e+00
+ 7.79989840e-01
+ 6.20372130e-01
+ 1.83737340e-01
+ 1.56826650e-01
+$ h functions 
+    4    0    0
+ 4.52559460e+00
+ 1.31866190e+00
+ 3.54283050e-01
+ 2.65133370e-01
+$ i functions 
+    2    0    0
+ 3.26586090e+00
+ 6.56641920e-01
 
-$ Se
-a 34
-$ Warning: in symmetry        d, exponent 7.4698096000e-01 is considered to be too close to one already present (7.4698096000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 3.8360324000e-01 is considered to be too close to one already present (3.8360324000e-01) and is not included. threshold: 5.00e-02
-$ Warning: in symmetry        d, exponent 1.6186774000e-01 is considered to be too close to one already present (1.6186774000e-01) and is not included. threshold: 5.00e-02
+$ Gd
+a 64
 $ s functions 
-   30    0    0
- 9.91593100e+07
- 2.62169770e+07
- 8.89176750e+06
- 3.37340510e+06
- 1.40999320e+06
- 6.26665740e+05
- 2.88825180e+05
- 1.35034650e+05
- 6.37195390e+04
- 3.04676530e+04
- 1.48546830e+04
- 7.40208290e+03
- 3.76660030e+03
- 1.95394990e+03
- 1.03146730e+03
- 5.53049130e+02
- 3.00772450e+02
- 1.65609510e+02
- 9.18101700e+01
- 5.02849310e+01
- 2.82504620e+01
- 1.59845840e+01
- 8.98132090e+00
- 4.82168400e+00
- 2.60970400e+00
- 1.39454080e+00
- 6.50176260e-01
- 3.35849380e-01
- 1.63814060e-01
- 7.71081150e-02
+   35    0    0
+ 6.92315980e+07
+ 1.84301470e+07
+ 6.32340650e+06
+ 2.41829100e+06
+ 1.01143570e+06
+ 4.46835280e+05
+ 2.06587240e+05
+ 9.87578140e+04
+ 4.85644340e+04
+ 2.44249630e+04
+ 1.25253760e+04
+ 6.53763180e+03
+ 3.47104790e+03
+ 1.87355410e+03
+ 1.02736060e+03
+ 5.71513270e+02
+ 3.21848880e+02
+ 1.82064830e+02
+ 1.05292560e+02
+ 6.16445860e+01
+ 3.64882220e+01
+ 2.31195030e+01
+ 1.50428820e+01
+ 9.68288790e+00
+ 5.76688760e+00
+ 3.53518590e+00
+ 2.11497150e+00
+ 1.21629690e+00
+ 6.94260760e-01
+ 3.93600990e-01
+ 2.18819860e-01
+ 1.24892420e-01
+ 6.32497370e-02
+ 3.26864850e-02
+ 1.67813890e-02
 $ p functions 
-   21    0    0
- 2.75309490e+06
- 4.05936960e+05
- 8.73316060e+04
- 2.36574650e+04
- 7.66184430e+03
- 2.85273970e+03
- 1.17994340e+03
- 5.27857690e+02
- 2.50591040e+02
- 1.24587060e+02
- 6.40482650e+01
- 3.37325840e+01
- 1.80608930e+01
- 9.64781230e+00
- 5.07098480e+00
- 2.63733410e+00
- 1.35088570e+00
- 6.25167050e-01
- 2.90392000e-01
- 1.30783230e-01
- 5.69184460e-02
+   30    0    0
+ 4.57729430e+07
+ 1.12679130e+07
+ 3.18411950e+06
+ 9.95659120e+05
+ 3.36900230e+05
+ 1.21817400e+05
+ 4.67582500e+04
+ 1.90080490e+04
+ 8.17768100e+03
+ 3.71454020e+03
+ 1.77228310e+03
+ 8.82546120e+02
+ 4.55643110e+02
+ 2.42103460e+02
+ 1.31729950e+02
+ 7.27502200e+01
+ 4.05293620e+01
+ 2.30774030e+01
+ 1.33577500e+01
+ 7.75309160e+00
+ 4.39829270e+00
+ 2.48592580e+00
+ 1.36514370e+00
+ 7.40835740e-01
+ 3.99645120e-01
+ 2.13185720e-01
+ 1.00634420e-01
+ 5.03850540e-02
+ 2.51417150e-02
+ 1.24784610e-02
 $ d functions 
-   13    0    0
- 1.92909660e+03
- 5.50957200e+02
- 2.08581490e+02
- 9.11604120e+01
- 4.32554600e+01
- 2.15761540e+01
- 1.11367520e+01
- 5.80495570e+00
- 3.00791390e+00
- 1.53558400e+00
- 7.46980960e-01
- 3.83603240e-01
- 1.61867740e-01
+   19    0    0
+ 3.53772960e+04
+ 8.72155030e+03
+ 2.99209540e+03
+ 1.22263910e+03
+ 5.58478340e+02
+ 2.75193370e+02
+ 1.42750770e+02
+ 7.69439760e+01
+ 4.24306230e+01
+ 2.38108250e+01
+ 1.34639070e+01
+ 7.55589690e+00
+ 4.16724530e+00
+ 2.25600300e+00
+ 1.17253940e+00
+ 5.47735370e-01
+ 2.44956460e-01
+ 1.05201090e-01
+ 4.26223890e-02
 $ f functions 
-    2    0    0
- 7.04177410e-01
- 2.78907440e-01
+   16    0    0
+ 6.44037970e+02
+ 2.21828470e+02
+ 9.48497700e+01
+ 4.53985010e+01
+ 2.28729580e+01
+ 1.19804640e+01
+ 6.35729360e+00
+ 3.35147100e+00
+ 1.73452370e+00
+ 8.66763160e-01
+ 4.10707560e-01
+ 1.74962000e-01
+ 7.45340590e-02
+ 6.34337730e-01
+ 1.61317900e-01
+ 8.58553140e-02
 $ g functions 
-    1    0    0
- 5.72879080e-01
+    6    0    0
+ 1.23566930e+01
+ 4.24876380e+00
+ 1.42713530e+00
+ 3.99425110e-01
+ 1.39818590e-01
+ 2.32955170e-01
+$ h functions 
+    4    0    0
+ 7.95056770e+00
+ 2.45644050e+00
+ 2.10142760e-01
+ 4.00971440e-01
+$ i functions 
+    2    0    0
+ 5.52706910e+00
+ 9.02198450e-01
+
+$ Ho
+a 67
+$ s functions 
+   35    0    0
+ 6.77667670e+07
+ 1.80417460e+07
+ 6.19346870e+06
+ 2.37114300e+06
+ 9.94389960e+05
+ 4.41111710e+05
+ 2.04904480e+05
+ 9.83106720e+04
+ 4.84723290e+04
+ 2.44471060e+04
+ 1.25881040e+04
+ 6.60589950e+03
+ 3.52891870e+03
+ 1.91678470e+03
+ 1.05740310e+03
+ 5.91761800e+02
+ 3.35647910e+02
+ 1.92348590e+02
+ 1.12751770e+02
+ 6.73148080e+01
+ 4.13959020e+01
+ 2.65232850e+01
+ 1.70805650e+01
+ 1.06737500e+01
+ 6.33499110e+00
+ 3.80623630e+00
+ 2.25644550e+00
+ 1.30620740e+00
+ 7.33550840e-01
+ 4.10950930e-01
+ 2.25617160e-01
+ 1.26872790e-01
+ 6.23967930e-02
+ 3.17633050e-02
+ 1.61475500e-02
+$ p functions 
+   30    0    0
+ 4.74357640e+07
+ 1.19970800e+07
+ 3.44997450e+06
+ 1.09275640e+06
+ 3.73275440e+05
+ 1.35876130e+05
+ 5.23684930e+04
+ 2.13201120e+04
+ 9.16429440e+03
+ 4.15266590e+03
+ 1.97533730e+03
+ 9.80667750e+02
+ 5.04872570e+02
+ 2.67597160e+02
+ 1.45290710e+02
+ 8.00877810e+01
+ 4.45961040e+01
+ 2.54562820e+01
+ 1.47754010e+01
+ 8.61048630e+00
+ 4.92323270e+00
+ 2.79859620e+00
+ 1.54962570e+00
+ 8.34878110e-01
+ 4.42810390e-01
+ 2.31993430e-01
+ 1.08372880e-01
+ 5.42933190e-02
+ 2.65293730e-02
+ 1.28595100e-02
+$ d functions 
+   19    0    0
+ 3.99763530e+04
+ 9.79435070e+03
+ 3.33811690e+03
+ 1.35670490e+03
+ 6.17156120e+02
+ 3.03127540e+02
+ 1.56867470e+02
+ 8.43984450e+01
+ 4.64723430e+01
+ 2.60550880e+01
+ 1.46981630e+01
+ 8.21117250e+00
+ 4.50888100e+00
+ 2.42430070e+00
+ 1.24798230e+00
+ 5.72993770e-01
+ 2.50994760e-01
+ 1.05554000e-01
+ 4.18919640e-02
+$ f functions 
+   16    0    0
+ 6.56026240e+02
+ 2.25446000e+02
+ 9.62906780e+01
+ 4.59277550e+01
+ 2.30565650e+01
+ 1.20119360e+01
+ 6.29864150e+00
+ 3.26357270e+00
+ 1.64745370e+00
+ 7.96231750e-01
+ 3.61921350e-01
+ 1.47022710e-01
+ 5.97247900e-02
+ 6.97696910e-01
+ 1.75915940e-01
+ 9.29317000e-02
+$ g functions 
+    6    0    0
+ 1.44860400e+01
+ 4.98053420e+00
+ 1.65040200e+00
+ 3.55076070e-01
+ 1.33409850e-01
+ 1.75366650e-01
+$ h functions 
+    4    0    0
+ 9.96413000e+00
+ 3.16239010e+00
+ 2.25783920e-01
+ 3.36025860e-01
+$ i functions 
+    2    0    0
+ 6.64895580e+00
+ 7.06497620e-01
+
+$ Sm
+a 62
+$ Warning: in symmetry        f, exponent 5.9120098000e-01 is considered to be too close to one already present (6.1614890000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   35    0    0
+ 7.05536190e+07
+ 1.87603150e+07
+ 6.42256440e+06
+ 2.44711700e+06
+ 1.01766680e+06
+ 4.46524830e+05
+ 2.04563800e+05
+ 9.66343090e+04
+ 4.68660510e+04
+ 2.32533810e+04
+ 1.17875730e+04
+ 6.09634720e+03
+ 3.21350120e+03
+ 1.72538150e+03
+ 9.43431450e+02
+ 5.24825070e+02
+ 2.96364910e+02
+ 1.69076990e+02
+ 9.89715100e+01
+ 5.91322190e+01
+ 3.62699020e+01
+ 2.31918990e+01
+ 1.48718040e+01
+ 9.23230900e+00
+ 5.39610760e+00
+ 3.23968120e+00
+ 1.90524120e+00
+ 1.06606180e+00
+ 5.97310200e-01
+ 3.36233830e-01
+ 1.88705550e-01
+ 1.01254150e-01
+ 5.25424270e-02
+ 2.75412170e-02
+ 1.43604620e-02
+$ p functions 
+   30    0    0
+ 4.36637170e+07
+ 1.04223290e+07
+ 2.88708650e+06
+ 8.89839360e+05
+ 2.98000240e+05
+ 1.06997700e+05
+ 4.09091670e+04
+ 1.66132490e+04
+ 7.15643670e+03
+ 3.25914400e+03
+ 1.55982850e+03
+ 7.79183240e+02
+ 4.03423460e+02
+ 2.18472250e+02
+ 1.21147930e+02
+ 6.57561050e+01
+ 3.51951700e+01
+ 1.93021850e+01
+ 1.07958140e+01
+ 6.19329210e+00
+ 3.52142570e+00
+ 2.00981210e+00
+ 1.12379050e+00
+ 6.10174930e-01
+ 3.30377700e-01
+ 1.77458160e-01
+ 8.53613010e-02
+ 4.34448340e-02
+ 2.21316160e-02
+ 1.12048940e-02
+$ d functions 
+   19    0    0
+ 3.23579640e+04
+ 8.01017630e+03
+ 2.76023880e+03
+ 1.13193860e+03
+ 5.18471480e+02
+ 2.56029750e+02
+ 1.33027910e+02
+ 7.17976970e+01
+ 3.96355650e+01
+ 2.22559920e+01
+ 1.26024680e+01
+ 7.09060400e+00
+ 3.91964020e+00
+ 2.13028850e+00
+ 1.11334480e+00
+ 5.26100690e-01
+ 2.38474230e-01
+ 1.03806200e-01
+ 4.26186140e-02
+$ f functions 
+   15    0    0
+ 5.10544480e+02
+ 1.75974770e+02
+ 7.51762860e+01
+ 3.57757640e+01
+ 1.78743800e+01
+ 9.27538220e+00
+ 4.84868690e+00
+ 2.51003930e+00
+ 1.26909050e+00
+ 6.16148900e-01
+ 2.82363260e-01
+ 1.16055910e-01
+ 4.77008710e-02
+ 1.53331710e-01
+ 8.25137150e-02
+$ g functions 
+    6    0    0
+ 1.07127860e+01
+ 3.60112830e+00
+ 1.18363810e+00
+ 7.54268800e-01
+ 1.64647920e-01
+ 1.42826620e-01
+$ h functions 
+    4    0    0
+ 7.27481170e+00
+ 2.26241820e+00
+ 1.97858270e-01
+ 2.73000290e-01
+$ i functions 
+    2    0    0
+ 4.81035040e+00
+ 5.80452840e-01
+
+$ Dy
+a 66
+$ s functions 
+   35    0    0
+ 6.79156340e+07
+ 1.80830630e+07
+ 6.20729670e+06
+ 2.37633910e+06
+ 9.96428610e+05
+ 4.41939160e+05
+ 2.05208460e+05
+ 9.83904610e+04
+ 4.84553840e+04
+ 2.44004050e+04
+ 1.25416820e+04
+ 6.56796740e+03
+ 3.49996420e+03
+ 1.89671890e+03
+ 1.04558050e+03
+ 5.86046570e+02
+ 3.33395960e+02
+ 1.91651700e+02
+ 1.12674950e+02
+ 6.73674520e+01
+ 4.10669030e+01
+ 2.63734330e+01
+ 1.69204500e+01
+ 1.05595500e+01
+ 6.24365520e+00
+ 3.74291840e+00
+ 2.20091320e+00
+ 1.27628770e+00
+ 7.08442040e-01
+ 3.94218340e-01
+ 2.14205080e-01
+ 1.18507120e-01
+ 5.86714190e-02
+ 3.01294810e-02
+ 1.54914840e-02
+$ p functions 
+   30    0    0
+ 4.64276510e+07
+ 1.16096410e+07
+ 3.31386480e+06
+ 1.04405650e+06
+ 3.55317360e+05
+ 1.29032910e+05
+ 4.96717390e+04
+ 2.02184690e+04
+ 8.69586710e+03
+ 3.94447280e+03
+ 1.87856910e+03
+ 9.33806060e+02
+ 4.81351550e+02
+ 2.55434830e+02
+ 1.38841250e+02
+ 7.65956440e+01
+ 4.26676880e+01
+ 2.43432490e+01
+ 1.41047250e+01
+ 8.19294770e+00
+ 4.67183830e+00
+ 2.65089330e+00
+ 1.46617030e+00
+ 7.92570590e-01
+ 4.22748400e-01
+ 2.22586060e-01
+ 1.03918000e-01
+ 5.22833840e-02
+ 2.57342760e-02
+ 1.25649830e-02
+$ d functions 
+   19    0    0
+ 3.84394500e+04
+ 9.43723540e+03
+ 3.22352100e+03
+ 1.31250670e+03
+ 5.97874750e+02
+ 2.93968350e+02
+ 1.52242700e+02
+ 8.19560060e+01
+ 4.51472390e+01
+ 2.53188950e+01
+ 1.42940140e+01
+ 7.99791180e+00
+ 4.39857750e+00
+ 2.37066030e+00
+ 1.22452170e+00
+ 5.65506100e-01
+ 2.49466440e-01
+ 1.05666020e-01
+ 4.22317780e-02
+$ f functions 
+   16    0    0
+ 6.27472610e+02
+ 2.15783290e+02
+ 9.21753220e+01
+ 4.39558190e+01
+ 2.20522250e+01
+ 1.14835650e+01
+ 6.02075970e+00
+ 3.12064360e+00
+ 1.57671240e+00
+ 7.63207790e-01
+ 3.47733920e-01
+ 1.41724560e-01
+ 5.77621270e-02
+ 6.77737290e-01
+ 1.70915820e-01
+ 9.04537040e-02
+$ g functions 
+    6    0    0
+ 1.36919950e+01
+ 4.69687010e+00
+ 1.55651340e+00
+ 3.71396690e-01
+ 1.36157860e-01
+ 1.70503530e-01
+$ h functions 
+    4    0    0
+ 9.34572420e+00
+ 2.95329110e+00
+ 2.20837870e-01
+ 3.23509290e-01
+$ i functions 
+    2    0    0
+ 6.26361080e+00
+ 6.86128190e-01
+
+$ Eu
+a 63
+$ Warning: in symmetry        g, exponent 1.5439944000e-01 is considered to be too close to one already present (1.5240866000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   35    0    0
+ 7.04536950e+07
+ 1.87528880e+07
+ 6.43286130e+06
+ 2.45907750e+06
+ 1.02755000e+06
+ 4.53295550e+05
+ 2.08987290e+05
+ 9.94257430e+04
+ 4.85778850e+04
+ 2.42770950e+04
+ 1.23896940e+04
+ 6.44527910e+03
+ 3.41295980e+03
+ 1.83805770e+03
+ 1.00640970e+03
+ 5.59648350e+02
+ 3.15275420e+02
+ 1.77946290e+02
+ 1.03013590e+02
+ 6.05807820e+01
+ 3.63437440e+01
+ 2.33566140e+01
+ 1.51616350e+01
+ 9.49855300e+00
+ 5.50783740e+00
+ 3.32632050e+00
+ 1.98310530e+00
+ 1.17132680e+00
+ 6.50880730e-01
+ 3.62759010e-01
+ 1.97536090e-01
+ 1.14167350e-01
+ 5.60525950e-02
+ 2.88642770e-02
+ 1.48548330e-02
+$ p functions 
+   30    0    0
+ 4.46748160e+07
+ 1.07847380e+07
+ 3.00902630e+06
+ 9.32254010e+05
+ 3.13386340e+05
+ 1.12804740e+05
+ 4.31824460e+04
+ 1.75379990e+04
+ 7.54874640e+03
+ 3.43337720e+03
+ 1.64093020e+03
+ 8.18618600e+02
+ 4.23336120e+02
+ 2.25240350e+02
+ 1.22687960e+02
+ 6.77775820e+01
+ 3.77230670e+01
+ 2.14419620e+01
+ 1.23452170e+01
+ 7.10093830e+00
+ 4.00977610e+00
+ 2.25343780e+00
+ 1.23142720e+00
+ 6.61400300e-01
+ 3.54173000e-01
+ 1.88096940e-01
+ 8.96649540e-02
+ 4.56286690e-02
+ 2.31558830e-02
+ 1.16525670e-02
+$ d functions 
+   19    0    0
+ 3.38773410e+04
+ 8.36884840e+03
+ 2.87744550e+03
+ 1.17791140e+03
+ 5.38810230e+02
+ 2.65801460e+02
+ 1.37993170e+02
+ 7.44246150e+01
+ 4.10604740e+01
+ 2.30476190e+01
+ 1.30414500e+01
+ 7.32856080e+00
+ 4.04667800e+00
+ 2.19509950e+00
+ 1.14409300e+00
+ 5.37522080e-01
+ 2.42019200e-01
+ 1.04645040e-01
+ 4.26793480e-02
+$ f functions 
+   16    0    0
+ 5.40487050e+02
+ 1.86209100e+02
+ 7.95536900e+01
+ 3.78882330e+01
+ 1.89550560e+01
+ 9.84813990e+00
+ 5.15439120e+00
+ 2.67051800e+00
+ 1.35078340e+00
+ 6.55724650e-01
+ 3.00279490e-01
+ 1.23267690e-01
+ 5.06025980e-02
+ 6.15880360e-01
+ 1.58009660e-01
+ 8.41733860e-02
+$ g functions 
+    5    0    0
+ 1.13609610e+01
+ 3.86901990e+00
+ 1.28127440e+00
+ 5.34114210e-01
+ 1.52408660e-01
+$ h functions 
+    4    0    0
+ 7.38091460e+00
+ 2.26252320e+00
+ 2.05083250e-01
+ 2.72644430e-01
+$ i functions 
+    2    0    0
+ 5.10756950e+00
+ 6.15485550e-01
+
+$ Tm
+a 69
+$ s functions 
+   35    0    0
+ 6.70268560e+07
+ 1.78535710e+07
+ 6.13380210e+06
+ 2.35183980e+06
+ 9.89706030e+05
+ 4.41674500e+05
+ 2.07103650e+05
+ 1.00571830e+05
+ 5.02647710e+04
+ 2.56939730e+04
+ 1.33947660e+04
+ 7.10351700e+03
+ 3.82664790e+03
+ 2.09344510e+03
+ 1.16403680e+03
+ 6.57966390e+02
+ 3.77482060e+02
+ 2.18508370e+02
+ 1.28709290e+02
+ 7.66657490e+01
+ 4.63660230e+01
+ 2.88677190e+01
+ 1.82286500e+01
+ 1.13947620e+01
+ 6.74021480e+00
+ 4.08820360e+00
+ 2.45243450e+00
+ 1.46840900e+00
+ 8.22946130e-01
+ 4.60876480e-01
+ 2.52456490e-01
+ 1.19540780e-01
+ 6.28761710e-02
+ 3.22867630e-02
+ 1.64634570e-02
+$ p functions 
+   30    0    0
+ 4.88822870e+07
+ 1.26201090e+07
+ 3.67800810e+06
+ 1.17663660e+06
+ 4.04973890e+05
+ 1.48249630e+05
+ 5.73548640e+04
+ 2.33932530e+04
+ 1.00551780e+04
+ 4.54995390e+03
+ 2.15975370e+03
+ 1.06976160e+03
+ 5.49542070e+02
+ 2.90717980e+02
+ 1.57582710e+02
+ 8.67588490e+01
+ 4.82294270e+01
+ 2.74294980e+01
+ 1.57995000e+01
+ 9.07906450e+00
+ 5.11798460e+00
+ 2.85751690e+00
+ 1.54301860e+00
+ 8.19016960e-01
+ 4.31025330e-01
+ 2.25079420e-01
+ 1.04555330e-01
+ 5.23793760e-02
+ 2.59320950e-02
+ 1.27308120e-02
+$ d functions 
+   19    0    0
+ 4.30228370e+04
+ 1.05072900e+04
+ 3.56774240e+03
+ 1.44537540e+03
+ 6.55806790e+02
+ 3.21431390e+02
+ 1.66061400e+02
+ 8.92180410e+01
+ 4.90650760e+01
+ 2.74831320e+01
+ 1.54736240e+01
+ 8.61348890e+00
+ 4.71233640e+00
+ 2.51965800e+00
+ 1.28680320e+00
+ 5.84090920e-01
+ 2.52279590e-01
+ 1.04574090e-01
+ 4.09211250e-02
+$ f functions 
+   16    0    0
+ 7.12792320e+02
+ 2.44592220e+02
+ 1.04431930e+02
+ 4.98203710e+01
+ 2.50362430e+01
+ 1.30507740e+01
+ 6.84225810e+00
+ 3.54117110e+00
+ 1.78342530e+00
+ 8.58791330e-01
+ 3.88223970e-01
+ 1.56512510e-01
+ 6.30980260e-02
+ 7.42832560e-01
+ 1.86635980e-01
+ 9.78682230e-02
+$ g functions 
+    6    0    0
+ 1.61158640e+01
+ 5.55717170e+00
+ 1.83926940e+00
+ 4.03142790e-01
+ 1.43112230e-01
+ 1.84183960e-01
+$ h functions 
+    4    0    0
+ 1.12566040e+01
+ 3.60686090e+00
+ 2.35933040e-01
+ 3.61190130e-01
+$ i functions 
+    2    0    0
+ 7.44284520e+00
+ 7.45324610e-01
+
+$ Er
+a 68
+$ s functions 
+   35    0    0
+ 6.71333400e+07
+ 1.78727900e+07
+ 6.13278950e+06
+ 2.34617120e+06
+ 9.83294630e+05
+ 4.36222620e+05
+ 2.02895610e+05
+ 9.75867440e+04
+ 4.82679520e+04
+ 2.44218590e+04
+ 1.26120100e+04
+ 6.63796020e+03
+ 3.55884550e+03
+ 1.94184090e+03
+ 1.07654210e+03
+ 6.05032050e+02
+ 3.44044810e+02
+ 1.97389230e+02
+ 1.15601040e+02
+ 6.88640450e+01
+ 4.22383820e+01
+ 2.76252610e+01
+ 1.81357450e+01
+ 1.14300010e+01
+ 6.79672680e+00
+ 4.06093430e+00
+ 2.38581600e+00
+ 1.38266910e+00
+ 7.69437680e-01
+ 4.28487420e-01
+ 2.33713440e-01
+ 1.24021370e-01
+ 6.20252730e-02
+ 3.16175870e-02
+ 1.61198990e-02
+$ p functions 
+   30    0    0
+ 4.80402210e+07
+ 1.22811140e+07
+ 3.55607850e+06
+ 1.13224380e+06
+ 3.88180610e+05
+ 1.41624210e+05
+ 5.46729650e+04
+ 2.22872270e+04
+ 9.58462730e+03
+ 4.34145240e+03
+ 2.06346290e+03
+ 1.02349230e+03
+ 5.26436780e+02
+ 2.78759460e+02
+ 1.51197900e+02
+ 8.32705600e+01
+ 4.63017550e+01
+ 2.63565000e+01
+ 1.52112450e+01
+ 8.77729870e+00
+ 4.96835120e+00
+ 2.78887210e+00
+ 1.51628100e+00
+ 8.08246530e-01
+ 4.26949320e-01
+ 2.23767640e-01
+ 1.03260350e-01
+ 5.17905760e-02
+ 2.56275710e-02
+ 1.25874320e-02
+$ d functions 
+   19    0    0
+ 4.14952960e+04
+ 1.01525730e+04
+ 3.45400320e+03
+ 1.40148850e+03
+ 6.36669690e+02
+ 3.12366090e+02
+ 1.61506530e+02
+ 8.68297730e+01
+ 4.77802760e+01
+ 2.67759680e+01
+ 1.50904580e+01
+ 8.41560030e+00
+ 4.61280580e+00
+ 2.47341040e+00
+ 1.26835510e+00
+ 5.79009470e-01
+ 2.51858400e-01
+ 1.05162830e-01
+ 4.14468590e-02
+$ f functions 
+   16    0    0
+ 6.84469170e+02
+ 2.35049380e+02
+ 1.00376140e+02
+ 4.78825740e+01
+ 2.40513000e+01
+ 1.25344460e+01
+ 6.57257080e+00
+ 3.40380410e+00
+ 1.71637770e+00
+ 8.28093850e-01
+ 3.75412570e-01
+ 1.51946820e-01
+ 6.14998990e-02
+ 7.19859500e-01
+ 1.80050920e-01
+ 9.53711820e-02
+$ g functions 
+    6    0    0
+ 1.53152010e+01
+ 5.27543240e+00
+ 1.74793530e+00
+ 3.58546840e-01
+ 1.34372820e-01
+ 1.79965720e-01
+$ h functions 
+    4    0    0
+ 1.06317780e+01
+ 3.39462650e+00
+ 2.29796650e-01
+ 3.49507450e-01
+$ i functions 
+    2    0    0
+ 7.06079340e+00
+ 7.26972430e-01
+
+$ Tb
+a 65
+$ s functions 
+   35    0    0
+ 6.90517360e+07
+ 1.83782720e+07
+ 6.30356500e+06
+ 2.40983430e+06
+ 1.00811470e+06
+ 4.45868180e+05
+ 2.06407920e+05
+ 9.86816120e+04
+ 4.84763650e+04
+ 2.43611220e+04
+ 1.25007050e+04
+ 6.54012390e+03
+ 3.48563430e+03
+ 1.89072960e+03
+ 1.04279520e+03
+ 5.83907150e+02
+ 3.31294550e+02
+ 1.89050170e+02
+ 1.10425750e+02
+ 6.53739040e+01
+ 3.91851980e+01
+ 2.46934550e+01
+ 1.57577040e+01
+ 9.92590670e+00
+ 5.86466770e+00
+ 3.57135180e+00
+ 2.13096630e+00
+ 1.21748540e+00
+ 6.92460770e-01
+ 3.92365370e-01
+ 2.18978010e-01
+ 1.15847340e-01
+ 5.91066120e-02
+ 3.03635990e-02
+ 1.55383870e-02
+$ p functions 
+   30    0    0
+ 4.60304980e+07
+ 1.13731040e+07
+ 3.22104630e+06
+ 1.00887800e+06
+ 3.41824340e+05
+ 1.23721390e+05
+ 4.75223550e+04
+ 1.93243950e+04
+ 8.31217220e+03
+ 3.77354530e+03
+ 1.79920630e+03
+ 8.95386440e+02
+ 4.62011160e+02
+ 2.45364830e+02
+ 1.33447120e+02
+ 7.36454990e+01
+ 4.09935140e+01
+ 2.33395730e+01
+ 1.34665640e+01
+ 7.75926510e+00
+ 4.37996580e+00
+ 2.45202520e+00
+ 1.32665530e+00
+ 7.05515140e-01
+ 3.73464730e-01
+ 1.96868680e-01
+ 9.31637880e-02
+ 4.67582850e-02
+ 2.34780600e-02
+ 1.17552690e-02
+$ d functions 
+   19    0    0
+ 3.68918920e+04
+ 9.07518420e+03
+ 3.10664330e+03
+ 1.26726070e+03
+ 5.78102020e+02
+ 2.84567160e+02
+ 1.47496400e+02
+ 7.94518040e+01
+ 4.37907360e+01
+ 2.45665960e+01
+ 1.38807770e+01
+ 7.77870370e+00
+ 4.28433730e+00
+ 2.31434320e+00
+ 1.19921020e+00
+ 5.56975930e-01
+ 2.47395590e-01
+ 1.05523630e-01
+ 4.24671800e-02
+$ f functions 
+   16    0    0
+ 5.98586580e+02
+ 2.05983840e+02
+ 8.79967030e+01
+ 4.19499230e+01
+ 2.10291180e+01
+ 1.09440810e+01
+ 5.73586020e+00
+ 2.97329920e+00
+ 1.50324870e+00
+ 7.28580050e-01
+ 3.32651340e-01
+ 1.35974020e-01
+ 5.55805220e-02
+ 6.57777670e-01
+ 1.65915700e-01
+ 8.79757070e-02
+$ g functions 
+    6    0    0
+ 1.28899850e+01
+ 4.41968320e+00
+ 1.46645000e+00
+ 3.87717310e-01
+ 1.38905860e-01
+ 1.65285440e-01
+$ h functions 
+    4    0    0
+ 8.60432820e+00
+ 2.67913920e+00
+ 2.15891820e-01
+ 3.01969180e-01
+$ i functions 
+    2    0    0
+ 5.88157910e+00
+ 6.62920230e-01
+
+$ Lu
+a 71
+$ s functions 
+   35    0    0
+ 6.58240610e+07
+ 1.75274030e+07
+ 6.01674730e+06
+ 2.30410500e+06
+ 9.68572980e+05
+ 4.32074580e+05
+ 2.02816660e+05
+ 9.87299130e+04
+ 4.95080290e+04
+ 2.54106800e+04
+ 1.33234760e+04
+ 7.12384380e+03
+ 3.87733610e+03
+ 2.14384070e+03
+ 1.20274330e+03
+ 6.84344330e+02
+ 3.94969410e+02
+ 2.31636940e+02
+ 1.38755590e+02
+ 8.44554170e+01
+ 5.22484320e+01
+ 3.43645790e+01
+ 2.20415800e+01
+ 1.36476690e+01
+ 7.93798740e+00
+ 4.73244350e+00
+ 2.76689840e+00
+ 1.59019680e+00
+ 8.85949010e-01
+ 4.90505100e-01
+ 2.62545570e-01
+ 1.43590630e-01
+ 7.22453400e-02
+ 3.72379730e-02
+ 1.90911860e-02
+$ p functions 
+   30    0    0
+ 5.03530670e+07
+ 1.33179260e+07
+ 3.94405090e+06
+ 1.27715670e+06
+ 4.43639020e+05
+ 1.63510540e+05
+ 6.35512020e+04
+ 2.59839930e+04
+ 1.11727670e+04
+ 5.04936100e+03
+ 2.39171510e+03
+ 1.18176930e+03
+ 6.05643240e+02
+ 3.19732740e+02
+ 1.73006950e+02
+ 9.51565440e+01
+ 5.29172110e+01
+ 3.01282780e+01
+ 1.74023430e+01
+ 1.00408310e+01
+ 5.67729660e+00
+ 3.17890550e+00
+ 1.71948080e+00
+ 9.15400540e-01
+ 4.82832700e-01
+ 2.51856850e-01
+ 1.17813910e-01
+ 5.78490000e-02
+ 2.83242420e-02
+ 1.38007910e-02
+$ d functions 
+   19    0    0
+ 4.59464490e+04
+ 1.11842850e+04
+ 3.78360070e+03
+ 1.52801630e+03
+ 6.91594320e+02
+ 3.38284380e+02
+ 1.74492340e+02
+ 9.36219320e+01
+ 5.14265840e+01
+ 2.87788330e+01
+ 1.61691400e+01
+ 8.96465850e+00
+ 4.88322780e+00
+ 2.59392710e+00
+ 1.31155830e+00
+ 5.88639160e-01
+ 2.50729120e-01
+ 1.02442300e-01
+ 3.95289350e-02
+$ f functions 
+   16    0    0
+ 8.59088470e+02
+ 2.94223290e+02
+ 1.25623140e+02
+ 6.01328010e+01
+ 3.03853910e+01
+ 1.59487310e+01
+ 8.45609090e+00
+ 4.43879580e+00
+ 2.27757980e+00
+ 1.12391550e+00
+ 5.23617060e-01
+ 2.18078010e-01
+ 9.08259550e-02
+ 7.82848260e-01
+ 1.95506420e-01
+ 1.04424530e-01
+$ g functions 
+    6    0    0
+ 1.86328560e+01
+ 6.53462030e+00
+ 2.22348060e+00
+ 3.42997060e-01
+ 1.29027310e-01
+ 2.91669230e-01
+$ h functions 
+    4    0    0
+ 1.31505180e+01
+ 4.34767690e+00
+ 2.41329870e-01
+ 5.70314660e-01
+$ i functions 
+    2    0    0
+ 8.58031690e+00
+ 1.12553910e+00
+
+$ Pm
+a 61
+$ Warning: in symmetry        f, exponent 5.6984508000e-01 is considered to be too close to one already present (5.7458334000e-01) and is not included. threshold: 5.00e-02
+$ s functions 
+   35    0    0
+ 7.25116730e+07
+ 1.92946460e+07
+ 6.61473510e+06
+ 2.52562500e+06
+ 1.05254340e+06
+ 4.62430770e+05
+ 2.12071420e+05
+ 1.00344240e+05
+ 4.87889950e+04
+ 2.42826610e+04
+ 1.23459900e+04
+ 6.39985380e+03
+ 3.37824660e+03
+ 1.81447350e+03
+ 9.91112970e+02
+ 5.49982960e+02
+ 3.09291970e+02
+ 1.74582100e+02
+ 1.01101170e+02
+ 5.93971520e+01
+ 3.53787450e+01
+ 2.18567490e+01
+ 1.37981830e+01
+ 8.58169190e+00
+ 4.97850720e+00
+ 3.03665380e+00
+ 1.82254420e+00
+ 1.06338130e+00
+ 6.08008950e-01
+ 3.48565100e-01
+ 1.95975330e-01
+ 9.66329600e-02
+ 5.14060280e-02
+ 2.69972190e-02
+ 1.40837000e-02
+$ p functions 
+   30    0    0
+ 4.33873910e+07
+ 1.02053010e+07
+ 2.80063630e+06
+ 8.57293850e+05
+ 2.85648510e+05
+ 1.02187450e+05
+ 3.89785050e+04
+ 1.58126620e+04
+ 6.81179260e+03
+ 3.10440260e+03
+ 1.48729240e+03
+ 7.43781360e+02
+ 3.85511700e+02
+ 2.05528800e+02
+ 1.12144350e+02
+ 6.20233790e+01
+ 3.45443860e+01
+ 1.96542130e+01
+ 1.13345090e+01
+ 6.53271880e+00
+ 3.68387540e+00
+ 2.06611420e+00
+ 1.12293880e+00
+ 6.00997960e-01
+ 3.21981280e-01
+ 1.72132480e-01
+ 8.39444300e-02
+ 4.27623770e-02
+ 2.18164020e-02
+ 1.10594810e-02
+$ d functions 
+   19    0    0
+ 3.08637090e+04
+ 7.65925530e+03
+ 2.64579060e+03
+ 1.08711890e+03
+ 4.98683830e+02
+ 2.46534050e+02
+ 1.28193810e+02
+ 6.92260020e+01
+ 3.82303460e+01
+ 2.14696020e+01
+ 1.21633060e+01
+ 6.85058480e+00
+ 3.79029020e+00
+ 2.06355060e+00
+ 1.08121320e+00
+ 5.13838020e-01
+ 2.34453990e-01
+ 1.02724170e-01
+ 4.24487710e-02
+$ f functions 
+   15    0    0
+ 4.80038830e+02
+ 1.65525830e+02
+ 7.07051930e+01
+ 3.36148720e+01
+ 1.67686570e+01
+ 8.68870170e+00
+ 4.53458220e+00
+ 2.34434990e+00
+ 1.18413220e+00
+ 5.74583340e-01
+ 2.63283700e-01
+ 1.08238260e-01
+ 4.44977030e-02
+ 1.49345360e-01
+ 8.05276890e-02
+$ g functions 
+    6    0    0
+ 9.93735160e+00
+ 3.32463160e+00
+ 1.08958520e+00
+ 7.16389600e-01
+ 1.60845350e-01
+ 1.31911220e-01
+$ h functions 
+    4    0    0
+ 6.63025670e+00
+ 2.03632340e+00
+ 1.93459830e-01
+ 2.46528590e-01
+$ i functions 
+    2    0    0
+ 4.44271110e+00
+ 5.37859210e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -1790,6 +4102,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['5s5p correlating', '4s4p correlating', '4s4p polarizing']
 $ 
+$ dyall.5s.qz.bas
 $
 $ Description
 $ 
@@ -2064,12 +4377,12 @@ $ d functions
  1.16453490e+00
  6.90598180e-01
  3.08922670e-01
- 1.68822330e-01
- 4.15548620e-02
+ 8.78357850e-02
+ 2.37758180e-02
  2.52240840e-01
 $ f functions 
     4    0    0
- 1.10587560e-01
+ 5.69831620e-02
  1.13732910e+00
  5.19801060e-01
  3.03993840e-01
@@ -2086,6 +4399,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating']
 $ 
+$ dyall.5p.qz.bas
 $
 $ Description
 $ 
@@ -2813,6 +5127,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', 'valence polarizability']
 $ 
+$ dyall.5d.qz.bas
 $
 $ Description
 $ 
@@ -3999,6 +6314,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['5f correlating', '6d/7s correlating', '6s6p correlating', '5f polarizing', '6d/7s polarizing']
 $ 
+$ dyall.5f.qz.bas
 $
 $ Description
 $ 
@@ -6398,6 +8714,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['6s6p correlating', '5s5p correlating', '5s5p polarizing']
 $ 
+$ dyall.6s.qz.bas
 $
 $ Description
 $ 
@@ -6717,6 +9034,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating']
 $ 
+$ dyall.6p.qz.bas
 $
 $ Description
 $ 
@@ -7535,6 +9853,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', '6d dipole polarization']
 $ 
+$ dyall.6d.qz.bas
 $
 $ Description
 $ 
@@ -8857,6 +11176,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['7s7p correlating', '6s6p correlating', '6s6p dipole polarization']
 $ 
+$ dyall.7s.qz.bas
 $
 $ Description
 $ 
@@ -9217,2063 +11537,4 @@ $ g functions
  1.21315830e-01
  6.34349910e-01
  3.08871430e-01
-
-$ 
-$ Basis set library file automatically generatered by basis_set.py
-$ 
-$ invocation: basis_set.py --file=.//4f_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=4f correlating,5d/6s correlating,4f dipole polarization,5d/6s dipole polarization --output=dyall.4f.qz.bas
-$ 
-$ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['4f correlating', '5d/6s correlating', '4f dipole polarization', '5d/6s dipole polarization']
-$ 
-$ dyall.4f.qz.bas
-$
-$
-$ Description
-$ 
-$ 4f-Block Quadruple-Zeta Basis Set Archive
-$ =========================================
-$ 
-$ 
-$ Date: 16 Nov 2007
-$ 
-$ 
-$ When publishing work that uses these basis sets, please use the following citation:
-$ 
-$ A.S.P. Gomes and K.G. Dyall, in preparation.
-$ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$ 
-$ 
-$ 
-$ This archive contains the exponents and the SCF spinor or orbital coefficients, 
-$ given with respect to normalized (spherical or 2-spinor) Gaussian functions, for
-$ the double-zeta basis sets described in the above article.  The contractions
-$ are taken from SCF calculations on a weighted average of the valence configurations:
-$ 
-$ * For La, Ce, Gd, and Lu, where the 5d is occupied in the ground state, the
-$ 4f^n-1 5d^1 6s^2 and 4f^n-1 5d^1 6p^2 configurations were used with a 9:1 weight ratio.
-$ Note that for La the 4f is empty: this element is treated as a transition metal.
-$ 
-$ * For the rest (Pr - Eu, Tb - Yb), the 4f^n 6s^2, 4f^n-1 5d^1 6s^2, and 4f^n 6p^2
-$ configurations were used with a weight ratio of 6:3:1.
-$ 
-$ The archive is set out as follows.
-$ 
-$ 1. Exponents and SCF coefficients for Dirac-Hartree-Fock wave functions, in order
-$    of Z. The large component functions are given first, followed by the small 
-$    component functions. Both components are labelled with the large component
-$    symmetry type, but the primitive functions for the small component are
-$    those obtained by restricted kinetic balance from the large component.
-$    The spin-orbit components have a "-" label for j=l-1/2 and a "+" label for
-$    j=l+1/2.
-$ 
-$ 2. Exponents and SCF coefficients for spin-free modified Dirac-Hartree-Fock wave
-$    functions, in order of Z. The large component functions are given first, 
-$    followed by the pseudo-large component functions, then the Foldy-Wouthuysen
-$    transformed large component functions. Note that all components have the same
-$    symmetry type. 
-$ 
-$ 3. Exponents of correlating functions for the 4f shell, the 5d and 6s shells, 
-$    and the 4d shell.
-$ 
-$ 4. Exponents of dipole polarizing functions for the 4f shell.
-$ 
-$ 
-$ 
-$ Basis set construction.
-$ ----------------------
-$ 
-$ Contracted basis sets can be constructed by adding primitive functions to the SCF 
-$ set. These basis sets are described below. Note that the term "quadruple zeta" applies 
-$ to the s and p set. The d set is quintuple zeta. This is a result of keeping a 
-$ reasonable energy balance for the basis sets. The general rule is that shells with 
-$ l>1 require an extra function, and the second shell for a given l requires an extra function. 
-$ 
-$ NOTE: Functions are counted from the function with the smallest exponent to the largest. 
-$ 
-$ 
-$ 1. Valence. The valence space is split into two spatial regions, the outer containing
-$    the 5d, 6s, and 6p, and the inner containing the 4f, 5s, and 5p. The uncontracted
-$    functions for these two sets are described separately. However, because all these 
-$    shells are active or semi-active, the description below should be regarded as a 
-$    single contracted set. 4f flexibility is not included for Ac, which is a transition
-$    metal, but it is included for Th because the 4f is low-lying. 
-$ 
-$    To the SCF functions, add the following primitives.
-$ 
-$    For 5d/6s/6p flexibility: 
-$     s primitive from the SCF set 
-$     p primitive from the SCF set 
-$     d primitive from the SCF set 
-$    1st, 2nd and 4th f primitives from the SCF set
-$    correlating 2g1h for the 5d/6s shells.
-$ 
-$    For 5s/5p flexibility: 
-$     s primitive from the SCF set
-$     p primitive from the SCF set 
-$     d primitive from the SCF set
-$    4th and 5th f primitives from the SCF set
-$    
-$    The outer g function from the 4f correlating set is adequate for correlating 
-$    the 5s and 5p.
-$ 
-$    For 4f flexibility: 
-$     s primitive from the SCF set
-$     p primitive from the SCF set 
-$     d primitive from the SCF set
-$     and  f primitive from the SCF set
-$    correlating 3g2h1i functions for the 4f shell.
-$ 
-$    The combined set is therefore:
-$     and  s primitives from the SCF set 
-$     and  p primitives from the SCF set
-$     and  d primitives from the SCF set
-$     and  f primitives from the SCF set, and the even-tempered extension
-$ 
-$ 
-$ 
-$    If linear dependence is encountered in the d set, omit the 2nd d, or delete the 5d 
-$    SCF function. 
-$ 
-$    (HF + 2s2p2d3f1g)
-$ 
-$ 2. Valence + 4d correlation.  This set adds functions for correlating the 4d. 
-$    Excitations from the 4d into the 4f shell are important for correlating the 4f. 
-$ 
-$    To basis set 1, add the following:
-$     s primitive from the SCF set
-$     p primitive from the SCF set 
-$     d primitive from the SCF set 
-$    5th, 6th, and 7th f primitives from the SCF set 
-$ 
-$    The optimized g and h functions overlap well enough with those from the 4f 
-$    correlating set that these functions do not need to be added. 
-$ 
-$ 3. Dipole polarization of the 4f. Add the polarizing i function.
-$ 
-$    There is a fair degree of overlap of the polarizing g and h functions with 
-$    the outer correlating g and h functions for the 5d/6s shells. The polarizing
-$    g and h are therefore not needed, except perhaps the h function for Lu.
-$ 
-$ 4. Dipole polarization of the 5d.
-$ 
-$    The outer SCF f function and 5d/6s correlating g and h function should be 
-$    sufficient for polarization of the 5d. (This follows from the similarity of 
-$    the correlating and polarizing f functions for the dz basis set).
-$ 
-$ 
-$ 
-$ 
-$ 
-
-$ Pr
-a 59
-$ s functions 
-   35    0    0
- 7.34237380e+07
- 1.95070880e+07
- 6.66243340e+06
- 2.52644530e+06
- 1.04073390e+06
- 4.50451920e+05
- 2.03049470e+05
- 9.44061100e+04
- 4.51254340e+04
- 2.21035070e+04
- 1.10776520e+04
- 5.67414900e+03
- 2.96818260e+03
- 1.58416060e+03
- 8.61660340e+02
- 4.76907500e+02
- 2.68183800e+02
- 1.53413920e+02
- 9.08613190e+01
- 5.59691340e+01
- 3.56726060e+01
- 2.20633200e+01
- 1.37641840e+01
- 8.29065480e+00
- 4.72027770e+00
- 2.77607810e+00
- 1.61214980e+00
- 9.43364990e-01
- 5.25421370e-01
- 3.04936190e-01
- 1.79044000e-01
- 9.25192740e-02
- 4.93171360e-02
- 2.59420940e-02
- 1.35606010e-02
-$ p functions 
-   30    0    0
- 4.11413770e+07
- 9.40107010e+06
- 2.53206880e+06
- 7.65143610e+05
- 2.52656960e+05
- 8.98505470e+04
- 3.41662070e+04
- 1.38538040e+04
- 5.97753980e+03
- 2.73171700e+03
- 1.31281230e+03
- 6.58511000e+02
- 3.42217200e+02
- 1.82845800e+02
- 9.99479070e+01
- 5.53278150e+01
- 3.07977500e+01
- 1.75112210e+01
- 1.00843200e+01
- 5.81367350e+00
- 3.29179920e+00
- 1.85636090e+00
- 1.01545000e+00
- 5.48045600e-01
- 2.97555710e-01
- 1.61618970e-01
- 8.17214150e-02
- 4.19914990e-02
- 2.14605100e-02
- 1.08640150e-02
-$ d functions 
-   19    0    0
- 2.79003130e+04
- 6.95860550e+03
- 2.41569060e+03
- 9.96450210e+02
- 4.58454300e+02
- 2.27159260e+02
- 1.18315010e+02
- 6.39707830e+01
- 3.53599690e+01
- 1.98640820e+01
- 1.12637050e+01
- 6.35436270e+00
- 3.52011150e+00
- 1.92217780e+00
- 1.01185300e+00
- 4.86332690e-01
- 2.24781190e-01
- 9.97390280e-02
- 4.17392960e-02
-$ f functions 
-   16    0    0
- 4.14879970e+02
- 1.43097540e+02
- 6.10938220e+01
- 2.89505830e+01
- 1.43798050e+01
- 7.41751410e+00
- 3.84976920e+00
- 1.97998210e+00
- 9.95089380e-01
- 4.80748040e-01
- 2.19380750e-01
- 8.98445130e-02
- 3.67946440e-02
- 5.34348860e-01
- 1.93241250e-01
- 8.38357230e-02
-$ g functions 
-    6    0    0
- 8.40820940e+00
- 2.75920550e+00
- 8.90536520e-01
- 6.07090540e-01
- 1.57982810e-01
- 1.07191510e-01
-$ h functions 
-    4    0    0
- 5.16524230e+00
- 1.51223410e+00
- 2.12586110e-01
- 1.82023600e-01
-$ i functions 
-    2    0    0
- 3.65616830e+00
- 4.40083250e-01
-
-$ La
-a 57
-$ s functions 
-   35    0    0
- 7.38998860e+07
- 1.96337220e+07
- 6.69226430e+06
- 2.52858530e+06
- 1.03669290e+06
- 4.46501660e+05
- 2.00209130e+05
- 9.26181440e+04
- 4.41086390e+04
- 2.15749900e+04
- 1.08180500e+04
- 5.54969990e+03
- 2.90906580e+03
- 1.55667050e+03
- 8.49798890e+02
- 4.72637460e+02
- 2.66980570e+02
- 1.52062660e+02
- 8.86817930e+01
- 5.23988840e+01
- 3.11949000e+01
- 1.85595230e+01
- 1.14550750e+01
- 7.01390250e+00
- 4.12738850e+00
- 2.56414740e+00
- 1.56261770e+00
- 8.93692190e-01
- 5.18124440e-01
- 2.96051750e-01
- 1.64867360e-01
- 9.86312820e-02
- 5.14856830e-02
- 2.74651440e-02
- 1.44326980e-02
-$ p functions 
-   30    0    0
- 3.99140650e+07
- 8.99361980e+06
- 2.40264730e+06
- 7.21679430e+05
- 2.37257610e+05
- 8.41080680e+04
- 3.19366670e+04
- 1.29572260e+04
- 5.60107620e+03
- 2.56542970e+03
- 1.23556400e+03
- 6.20986970e+02
- 3.23315200e+02
- 1.73029210e+02
- 9.47082210e+01
- 5.24982100e+01
- 2.93706240e+01
- 1.68396030e+01
- 9.86038860e+00
- 5.77201940e+00
- 3.27278490e+00
- 1.84266010e+00
- 9.98818470e-01
- 5.30213170e-01
- 2.77886310e-01
- 1.38263160e-01
- 8.77445540e-02
- 4.47548550e-02
- 2.29364580e-02
- 1.15164160e-02
-$ d functions 
-   19    0    0
- 2.50637210e+04
- 6.28548300e+03
- 2.19339750e+03
- 9.08358070e+02
- 4.19170210e+02
- 2.08148440e+02
- 1.08577100e+02
- 5.87678670e+01
- 3.25061400e+01
- 1.82613230e+01
- 1.03591360e+01
- 5.84883100e+00
- 3.24036940e+00
- 1.77272800e+00
- 9.36617440e-01
- 4.54881150e-01
- 2.12725710e-01
- 9.54659530e-02
- 4.04169010e-02
-$ f functions 
-    3    0    0
- 5.80877920e-01
- 1.93167970e-01
- 8.21761470e-02
-$ g functions 
-    2    0    0
- 4.84954380e-01
- 1.30103160e-01
-$ h functions 
-    1    0    0
- 1.69562370e-01
-
-$ Yb
-a 70
-$ s functions 
-   35    0    0
- 6.59734260e+07
- 1.75730420e+07
- 6.03686290e+06
- 2.31486160e+06
- 9.74980010e+05
- 4.35723420e+05
- 2.04701990e+05
- 9.96542500e+04
- 4.99833160e+04
- 2.56634850e+04
- 1.34406990e+04
- 7.15989290e+03
- 3.87535560e+03
- 2.13070570e+03
- 1.18989030e+03
- 6.74297690e+02
- 3.87242140e+02
- 2.24813970e+02
- 1.33621610e+02
- 8.12811580e+01
- 5.09398030e+01
- 3.22805260e+01
- 2.03946850e+01
- 1.25032440e+01
- 7.28744560e+00
- 4.32100010e+00
- 2.52340510e+00
- 1.41752400e+00
- 7.91574000e-01
- 4.41984990e-01
- 2.43453710e-01
- 1.18784130e-01
- 6.17391390e-02
- 3.19226840e-02
- 1.64204950e-02
-$ p functions 
-   30    0    0
- 4.91789210e+07
- 1.28380860e+07
- 3.76888450e+06
- 1.21236380e+06
- 4.19038500e+05
- 1.53895280e+05
- 5.96788850e+04
- 2.43755730e+04
- 1.04821780e+04
- 4.74162680e+03
- 2.24896530e+03
- 1.11287880e+03
- 5.71147910e+02
- 3.01896170e+02
- 1.63528400e+02
- 8.99890040e+01
- 4.99948610e+01
- 2.83902750e+01
- 1.62940400e+01
- 9.29736010e+00
- 5.20744640e+00
- 2.88885410e+00
- 1.55272710e+00
- 8.27489130e-01
- 4.40336460e-01
- 2.33462800e-01
- 1.12690390e-01
- 5.60052050e-02
- 2.73229180e-02
- 1.32117930e-02
-$ d functions 
-   19    0    0
- 4.45144170e+04
- 1.08521940e+04
- 3.67769540e+03
- 1.48746560e+03
- 6.74028750e+02
- 3.30013120e+02
- 1.70355940e+02
- 9.14634240e+01
- 5.02710170e+01
- 2.81464460e+01
- 1.58313540e+01
- 8.79574650e+00
- 4.80219900e+00
- 2.55974290e+00
- 1.30121570e+00
- 5.87266130e-01
- 2.51861480e-01
- 1.03644490e-01
- 4.02739370e-02
-$ f functions 
-   16    0    0
- 7.41088060e+02
- 2.54100270e+02
- 1.08466990e+02
- 5.17449560e+01
- 2.60131210e+01
- 1.35617370e+01
- 7.10812220e+00
- 3.67586960e+00
- 1.84867430e+00
- 8.88347000e-01
- 4.00359300e-01
- 1.60718770e-01
- 6.45183510e-02
- 7.47180640e-01
- 1.92033100e-01
- 1.02161180e-01
-$ g functions 
-    6    0    0
- 1.69299790e+01
- 5.84305730e+00
- 1.93167410e+00
- 4.66918250e-01
- 1.51293630e-01
- 1.88875790e-01
-$ h functions 
-    4    0    0
- 1.20158600e+01
- 3.89458590e+00
- 2.35228250e-01
- 3.80805950e-01
-$ i functions 
-    2    0    0
- 7.82630300e+00
- 7.65242530e-01
-
-$ Nd
-a 60
-$ Warning: in symmetry        f, exponent 5.4637879000e-01 is considered to be too close to one already present (5.2981063000e-01) and is not included. threshold: 5.00e-02
-$ s functions 
-   35    0    0
- 7.32552600e+07
- 1.94762790e+07
- 6.66516820e+06
- 2.53661350e+06
- 1.05114130e+06
- 4.58321370e+05
- 2.08259960e+05
- 9.75797810e+04
- 4.69781660e+04
- 2.31686260e+04
- 1.16972420e+04
- 6.04295800e+03
- 3.19093370e+03
- 1.71844870e+03
- 9.41883990e+02
- 5.24449120e+02
- 2.95897690e+02
- 1.67501420e+02
- 9.76126960e+01
- 5.80264700e+01
- 3.52347850e+01
- 2.17563010e+01
- 1.37856260e+01
- 8.51600500e+00
- 4.98440110e+00
- 2.99995410e+00
- 1.77350540e+00
- 1.01613760e+00
- 5.80249090e-01
- 3.35593340e-01
- 1.91722190e-01
- 9.38658660e-02
- 5.06871810e-02
- 2.67221330e-02
- 1.39508590e-02
-$ p functions 
-   30    0    0
- 4.22553650e+07
- 9.78209040e+06
- 2.65695640e+06
- 8.07216270e+05
- 2.67485880e+05
- 9.53203850e+04
- 3.62783140e+04
- 1.47081590e+04
- 6.33940050e+03
- 2.89224480e+03
- 1.38727170e+03
- 6.94507700e+02
- 3.60317160e+02
- 1.92281770e+02
- 1.05031480e+02
- 5.81379440e+01
- 3.23874050e+01
- 1.84432290e+01
- 1.06396990e+01
- 6.13666340e+00
- 3.47823920e+00
- 1.96649590e+00
- 1.08319110e+00
- 5.87327770e-01
- 3.19442160e-01
- 1.73429210e-01
- 8.60164450e-02
- 4.40832850e-02
- 2.23938540e-02
- 1.12626480e-02
-$ d functions 
-   19    0    0
- 2.93791060e+04
- 7.30877560e+03
- 2.53091900e+03
- 1.04193280e+03
- 4.78663760e+02
- 2.36905480e+02
- 1.23290770e+02
- 6.66212230e+01
- 3.68098090e+01
- 2.06760180e+01
- 1.17195980e+01
- 6.60667360e+00
- 3.65796160e+00
- 1.99466130e+00
- 1.04764270e+00
- 5.00722250e-01
- 2.29960230e-01
- 1.01400140e-01
- 4.21675820e-02
-$ f functions 
-   15    0    0
- 4.48298830e+02
- 1.54618040e+02
- 6.60329020e+01
- 3.13510500e+01
- 1.56096520e+01
- 8.07275760e+00
- 4.20357710e+00
- 2.16881580e+00
- 1.09345690e+00
- 5.29810630e-01
- 2.42477880e-01
- 9.95865960e-02
- 4.09005970e-02
- 1.46165300e-01
- 7.84318130e-02
-$ g functions 
-    6    0    0
- 9.17466210e+00
- 3.04562670e+00
- 9.92587790e-01
- 5.36162650e-01
- 1.46121260e-01
- 1.20604120e-01
-$ h functions 
-    4    0    0
- 6.00968540e+00
- 1.82116300e+00
- 1.89755700e-01
- 2.21279940e-01
-$ i functions 
-    2    0    0
- 4.04447430e+00
- 4.91422800e-01
-
-$ Ce
-a 58
-$ Warning: in symmetry        f, exponent 5.9665430000e-01 is considered to be too close to one already present (5.8896033000e-01) and is not included. threshold: 5.00e-02
-$ s functions 
-   35    0    0
- 7.36868180e+07
- 1.95900900e+07
- 6.70068070e+06
- 2.54724040e+06
- 1.05309340e+06
- 4.57815640e+05
- 2.07368780e+05
- 9.68976910e+04
- 4.65975830e+04
- 2.30004390e+04
- 1.16185700e+04
- 5.98665540e+03
- 3.14070500e+03
- 1.67647330e+03
- 9.10379080e+02
- 5.02540280e+02
- 2.81331470e+02
- 1.58051040e+02
- 9.17080260e+01
- 5.43988560e+01
- 3.30158690e+01
- 2.03434260e+01
- 1.29082640e+01
- 7.98930370e+00
- 4.60449000e+00
- 2.79405100e+00
- 1.66457470e+00
- 9.65597450e-01
- 5.44724610e-01
- 3.08431280e-01
- 1.70919040e-01
- 9.59556250e-02
- 5.03406800e-02
- 2.68781770e-02
- 1.42080460e-02
-$ p functions 
-   30    0    0
- 4.03451890e+07
- 9.14331930e+06
- 2.45157890e+06
- 7.38230720e+05
- 2.43089260e+05
- 8.62586140e+04
- 3.27677880e+04
- 1.32933790e+04
- 5.74489800e+03
- 2.63063990e+03
- 1.26646210e+03
- 6.36139640e+02
- 3.31016620e+02
- 1.77108390e+02
- 9.69600260e+01
- 5.37659390e+01
- 3.00047150e+01
- 1.70964980e+01
- 9.88498630e+00
- 5.73120520e+00
- 3.25595870e+00
- 1.85207290e+00
- 1.03078900e+00
- 5.60803360e-01
- 3.05995020e-01
- 1.66232140e-01
- 8.30267970e-02
- 4.25364730e-02
- 2.18724140e-02
- 1.11596270e-02
-$ d functions 
-   19    0    0
- 2.64871180e+04
- 6.62375550e+03
- 2.30533670e+03
- 9.52790200e+02
- 4.39008040e+02
- 2.17757460e+02
- 1.13502030e+02
- 6.14004490e+01
- 3.39512170e+01
- 1.90734950e+01
- 1.08185310e+01
- 6.10664820e+00
- 3.38363550e+00
- 1.84969960e+00
- 9.75632900e-01
- 4.71433690e-01
- 2.19209940e-01
- 9.78343620e-02
- 4.11833010e-02
-$ f functions 
-   15    0    0
- 4.43946030e+02
- 1.53682830e+02
- 6.57885750e+01
- 3.14016900e+01
- 1.57090370e+01
- 8.17887530e+00
- 4.31368970e+00
- 2.26695420e+00
- 1.17381240e+00
- 5.88960330e-01
- 2.81095570e-01
- 1.21082580e-01
- 5.21566100e-02
- 2.42777960e-01
- 9.36314780e-02
-$ g functions 
-    6    0    0
- 7.43139080e+00
- 2.42945410e+00
- 7.79989840e-01
- 6.20372130e-01
- 1.83737340e-01
- 1.56826650e-01
-$ h functions 
-    4    0    0
- 4.52559460e+00
- 1.31866190e+00
- 3.54283050e-01
- 2.65133370e-01
-$ i functions 
-    2    0    0
- 3.26586090e+00
- 6.56641920e-01
-
-$ Gd
-a 64
-$ s functions 
-   35    0    0
- 6.92315980e+07
- 1.84301470e+07
- 6.32340650e+06
- 2.41829100e+06
- 1.01143570e+06
- 4.46835280e+05
- 2.06587240e+05
- 9.87578140e+04
- 4.85644340e+04
- 2.44249630e+04
- 1.25253760e+04
- 6.53763180e+03
- 3.47104790e+03
- 1.87355410e+03
- 1.02736060e+03
- 5.71513270e+02
- 3.21848880e+02
- 1.82064830e+02
- 1.05292560e+02
- 6.16445860e+01
- 3.64882220e+01
- 2.31195030e+01
- 1.50428820e+01
- 9.68288790e+00
- 5.76688760e+00
- 3.53518590e+00
- 2.11497150e+00
- 1.21629690e+00
- 6.94260760e-01
- 3.93600990e-01
- 2.18819860e-01
- 1.24892420e-01
- 6.32497370e-02
- 3.26864850e-02
- 1.67813890e-02
-$ p functions 
-   30    0    0
- 4.57729430e+07
- 1.12679130e+07
- 3.18411950e+06
- 9.95659120e+05
- 3.36900230e+05
- 1.21817400e+05
- 4.67582500e+04
- 1.90080490e+04
- 8.17768100e+03
- 3.71454020e+03
- 1.77228310e+03
- 8.82546120e+02
- 4.55643110e+02
- 2.42103460e+02
- 1.31729950e+02
- 7.27502200e+01
- 4.05293620e+01
- 2.30774030e+01
- 1.33577500e+01
- 7.75309160e+00
- 4.39829270e+00
- 2.48592580e+00
- 1.36514370e+00
- 7.40835740e-01
- 3.99645120e-01
- 2.13185720e-01
- 1.00634420e-01
- 5.03850540e-02
- 2.51417150e-02
- 1.24784610e-02
-$ d functions 
-   19    0    0
- 3.53772960e+04
- 8.72155030e+03
- 2.99209540e+03
- 1.22263910e+03
- 5.58478340e+02
- 2.75193370e+02
- 1.42750770e+02
- 7.69439760e+01
- 4.24306230e+01
- 2.38108250e+01
- 1.34639070e+01
- 7.55589690e+00
- 4.16724530e+00
- 2.25600300e+00
- 1.17253940e+00
- 5.47735370e-01
- 2.44956460e-01
- 1.05201090e-01
- 4.26223890e-02
-$ f functions 
-   16    0    0
- 6.44037970e+02
- 2.21828470e+02
- 9.48497700e+01
- 4.53985010e+01
- 2.28729580e+01
- 1.19804640e+01
- 6.35729360e+00
- 3.35147100e+00
- 1.73452370e+00
- 8.66763160e-01
- 4.10707560e-01
- 1.74962000e-01
- 7.45340590e-02
- 6.34337730e-01
- 1.61317900e-01
- 8.58553140e-02
-$ g functions 
-    6    0    0
- 1.23566930e+01
- 4.24876380e+00
- 1.42713530e+00
- 3.99425110e-01
- 1.39818590e-01
- 2.32955170e-01
-$ h functions 
-    4    0    0
- 7.95056770e+00
- 2.45644050e+00
- 2.10142760e-01
- 4.00971440e-01
-$ i functions 
-    2    0    0
- 5.52706910e+00
- 9.02198450e-01
-
-$ Ho
-a 67
-$ s functions 
-   35    0    0
- 6.77667670e+07
- 1.80417460e+07
- 6.19346870e+06
- 2.37114300e+06
- 9.94389960e+05
- 4.41111710e+05
- 2.04904480e+05
- 9.83106720e+04
- 4.84723290e+04
- 2.44471060e+04
- 1.25881040e+04
- 6.60589950e+03
- 3.52891870e+03
- 1.91678470e+03
- 1.05740310e+03
- 5.91761800e+02
- 3.35647910e+02
- 1.92348590e+02
- 1.12751770e+02
- 6.73148080e+01
- 4.13959020e+01
- 2.65232850e+01
- 1.70805650e+01
- 1.06737500e+01
- 6.33499110e+00
- 3.80623630e+00
- 2.25644550e+00
- 1.30620740e+00
- 7.33550840e-01
- 4.10950930e-01
- 2.25617160e-01
- 1.26872790e-01
- 6.23967930e-02
- 3.17633050e-02
- 1.61475500e-02
-$ p functions 
-   30    0    0
- 4.74357640e+07
- 1.19970800e+07
- 3.44997450e+06
- 1.09275640e+06
- 3.73275440e+05
- 1.35876130e+05
- 5.23684930e+04
- 2.13201120e+04
- 9.16429440e+03
- 4.15266590e+03
- 1.97533730e+03
- 9.80667750e+02
- 5.04872570e+02
- 2.67597160e+02
- 1.45290710e+02
- 8.00877810e+01
- 4.45961040e+01
- 2.54562820e+01
- 1.47754010e+01
- 8.61048630e+00
- 4.92323270e+00
- 2.79859620e+00
- 1.54962570e+00
- 8.34878110e-01
- 4.42810390e-01
- 2.31993430e-01
- 1.08372880e-01
- 5.42933190e-02
- 2.65293730e-02
- 1.28595100e-02
-$ d functions 
-   19    0    0
- 3.99763530e+04
- 9.79435070e+03
- 3.33811690e+03
- 1.35670490e+03
- 6.17156120e+02
- 3.03127540e+02
- 1.56867470e+02
- 8.43984450e+01
- 4.64723430e+01
- 2.60550880e+01
- 1.46981630e+01
- 8.21117250e+00
- 4.50888100e+00
- 2.42430070e+00
- 1.24798230e+00
- 5.72993770e-01
- 2.50994760e-01
- 1.05554000e-01
- 4.18919640e-02
-$ f functions 
-   16    0    0
- 6.56026240e+02
- 2.25446000e+02
- 9.62906780e+01
- 4.59277550e+01
- 2.30565650e+01
- 1.20119360e+01
- 6.29864150e+00
- 3.26357270e+00
- 1.64745370e+00
- 7.96231750e-01
- 3.61921350e-01
- 1.47022710e-01
- 5.97247900e-02
- 6.97696910e-01
- 1.75915940e-01
- 9.29317000e-02
-$ g functions 
-    6    0    0
- 1.44860400e+01
- 4.98053420e+00
- 1.65040200e+00
- 3.55076070e-01
- 1.33409850e-01
- 1.75366650e-01
-$ h functions 
-    4    0    0
- 9.96413000e+00
- 3.16239010e+00
- 2.25783920e-01
- 3.36025860e-01
-$ i functions 
-    2    0    0
- 6.64895580e+00
- 7.06497620e-01
-
-$ Sm
-a 62
-$ Warning: in symmetry        f, exponent 5.9120098000e-01 is considered to be too close to one already present (6.1614890000e-01) and is not included. threshold: 5.00e-02
-$ s functions 
-   35    0    0
- 7.05536190e+07
- 1.87603150e+07
- 6.42256440e+06
- 2.44711700e+06
- 1.01766680e+06
- 4.46524830e+05
- 2.04563800e+05
- 9.66343090e+04
- 4.68660510e+04
- 2.32533810e+04
- 1.17875730e+04
- 6.09634720e+03
- 3.21350120e+03
- 1.72538150e+03
- 9.43431450e+02
- 5.24825070e+02
- 2.96364910e+02
- 1.69076990e+02
- 9.89715100e+01
- 5.91322190e+01
- 3.62699020e+01
- 2.31918990e+01
- 1.48718040e+01
- 9.23230900e+00
- 5.39610760e+00
- 3.23968120e+00
- 1.90524120e+00
- 1.06606180e+00
- 5.97310200e-01
- 3.36233830e-01
- 1.88705550e-01
- 1.01254150e-01
- 5.25424270e-02
- 2.75412170e-02
- 1.43604620e-02
-$ p functions 
-   30    0    0
- 4.36637170e+07
- 1.04223290e+07
- 2.88708650e+06
- 8.89839360e+05
- 2.98000240e+05
- 1.06997700e+05
- 4.09091670e+04
- 1.66132490e+04
- 7.15643670e+03
- 3.25914400e+03
- 1.55982850e+03
- 7.79183240e+02
- 4.03423460e+02
- 2.18472250e+02
- 1.21147930e+02
- 6.57561050e+01
- 3.51951700e+01
- 1.93021850e+01
- 1.07958140e+01
- 6.19329210e+00
- 3.52142570e+00
- 2.00981210e+00
- 1.12379050e+00
- 6.10174930e-01
- 3.30377700e-01
- 1.77458160e-01
- 8.53613010e-02
- 4.34448340e-02
- 2.21316160e-02
- 1.12048940e-02
-$ d functions 
-   19    0    0
- 3.23579640e+04
- 8.01017630e+03
- 2.76023880e+03
- 1.13193860e+03
- 5.18471480e+02
- 2.56029750e+02
- 1.33027910e+02
- 7.17976970e+01
- 3.96355650e+01
- 2.22559920e+01
- 1.26024680e+01
- 7.09060400e+00
- 3.91964020e+00
- 2.13028850e+00
- 1.11334480e+00
- 5.26100690e-01
- 2.38474230e-01
- 1.03806200e-01
- 4.26186140e-02
-$ f functions 
-   15    0    0
- 5.10544480e+02
- 1.75974770e+02
- 7.51762860e+01
- 3.57757640e+01
- 1.78743800e+01
- 9.27538220e+00
- 4.84868690e+00
- 2.51003930e+00
- 1.26909050e+00
- 6.16148900e-01
- 2.82363260e-01
- 1.16055910e-01
- 4.77008710e-02
- 1.53331710e-01
- 8.25137150e-02
-$ g functions 
-    6    0    0
- 1.07127860e+01
- 3.60112830e+00
- 1.18363810e+00
- 7.54268800e-01
- 1.64647920e-01
- 1.42826620e-01
-$ h functions 
-    4    0    0
- 7.27481170e+00
- 2.26241820e+00
- 1.97858270e-01
- 2.73000290e-01
-$ i functions 
-    2    0    0
- 4.81035040e+00
- 5.80452840e-01
-
-$ Dy
-a 66
-$ s functions 
-   35    0    0
- 6.79156340e+07
- 1.80830630e+07
- 6.20729670e+06
- 2.37633910e+06
- 9.96428610e+05
- 4.41939160e+05
- 2.05208460e+05
- 9.83904610e+04
- 4.84553840e+04
- 2.44004050e+04
- 1.25416820e+04
- 6.56796740e+03
- 3.49996420e+03
- 1.89671890e+03
- 1.04558050e+03
- 5.86046570e+02
- 3.33395960e+02
- 1.91651700e+02
- 1.12674950e+02
- 6.73674520e+01
- 4.10669030e+01
- 2.63734330e+01
- 1.69204500e+01
- 1.05595500e+01
- 6.24365520e+00
- 3.74291840e+00
- 2.20091320e+00
- 1.27628770e+00
- 7.08442040e-01
- 3.94218340e-01
- 2.14205080e-01
- 1.18507120e-01
- 5.86714190e-02
- 3.01294810e-02
- 1.54914840e-02
-$ p functions 
-   30    0    0
- 4.64276510e+07
- 1.16096410e+07
- 3.31386480e+06
- 1.04405650e+06
- 3.55317360e+05
- 1.29032910e+05
- 4.96717390e+04
- 2.02184690e+04
- 8.69586710e+03
- 3.94447280e+03
- 1.87856910e+03
- 9.33806060e+02
- 4.81351550e+02
- 2.55434830e+02
- 1.38841250e+02
- 7.65956440e+01
- 4.26676880e+01
- 2.43432490e+01
- 1.41047250e+01
- 8.19294770e+00
- 4.67183830e+00
- 2.65089330e+00
- 1.46617030e+00
- 7.92570590e-01
- 4.22748400e-01
- 2.22586060e-01
- 1.03918000e-01
- 5.22833840e-02
- 2.57342760e-02
- 1.25649830e-02
-$ d functions 
-   19    0    0
- 3.84394500e+04
- 9.43723540e+03
- 3.22352100e+03
- 1.31250670e+03
- 5.97874750e+02
- 2.93968350e+02
- 1.52242700e+02
- 8.19560060e+01
- 4.51472390e+01
- 2.53188950e+01
- 1.42940140e+01
- 7.99791180e+00
- 4.39857750e+00
- 2.37066030e+00
- 1.22452170e+00
- 5.65506100e-01
- 2.49466440e-01
- 1.05666020e-01
- 4.22317780e-02
-$ f functions 
-   16    0    0
- 6.27472610e+02
- 2.15783290e+02
- 9.21753220e+01
- 4.39558190e+01
- 2.20522250e+01
- 1.14835650e+01
- 6.02075970e+00
- 3.12064360e+00
- 1.57671240e+00
- 7.63207790e-01
- 3.47733920e-01
- 1.41724560e-01
- 5.77621270e-02
- 6.77737290e-01
- 1.70915820e-01
- 9.04537040e-02
-$ g functions 
-    6    0    0
- 1.36919950e+01
- 4.69687010e+00
- 1.55651340e+00
- 3.71396690e-01
- 1.36157860e-01
- 1.70503530e-01
-$ h functions 
-    4    0    0
- 9.34572420e+00
- 2.95329110e+00
- 2.20837870e-01
- 3.23509290e-01
-$ i functions 
-    2    0    0
- 6.26361080e+00
- 6.86128190e-01
-
-$ Eu
-a 63
-$ Warning: in symmetry        g, exponent 1.5439944000e-01 is considered to be too close to one already present (1.5240866000e-01) and is not included. threshold: 5.00e-02
-$ s functions 
-   35    0    0
- 7.04536950e+07
- 1.87528880e+07
- 6.43286130e+06
- 2.45907750e+06
- 1.02755000e+06
- 4.53295550e+05
- 2.08987290e+05
- 9.94257430e+04
- 4.85778850e+04
- 2.42770950e+04
- 1.23896940e+04
- 6.44527910e+03
- 3.41295980e+03
- 1.83805770e+03
- 1.00640970e+03
- 5.59648350e+02
- 3.15275420e+02
- 1.77946290e+02
- 1.03013590e+02
- 6.05807820e+01
- 3.63437440e+01
- 2.33566140e+01
- 1.51616350e+01
- 9.49855300e+00
- 5.50783740e+00
- 3.32632050e+00
- 1.98310530e+00
- 1.17132680e+00
- 6.50880730e-01
- 3.62759010e-01
- 1.97536090e-01
- 1.14167350e-01
- 5.60525950e-02
- 2.88642770e-02
- 1.48548330e-02
-$ p functions 
-   30    0    0
- 4.46748160e+07
- 1.07847380e+07
- 3.00902630e+06
- 9.32254010e+05
- 3.13386340e+05
- 1.12804740e+05
- 4.31824460e+04
- 1.75379990e+04
- 7.54874640e+03
- 3.43337720e+03
- 1.64093020e+03
- 8.18618600e+02
- 4.23336120e+02
- 2.25240350e+02
- 1.22687960e+02
- 6.77775820e+01
- 3.77230670e+01
- 2.14419620e+01
- 1.23452170e+01
- 7.10093830e+00
- 4.00977610e+00
- 2.25343780e+00
- 1.23142720e+00
- 6.61400300e-01
- 3.54173000e-01
- 1.88096940e-01
- 8.96649540e-02
- 4.56286690e-02
- 2.31558830e-02
- 1.16525670e-02
-$ d functions 
-   19    0    0
- 3.38773410e+04
- 8.36884840e+03
- 2.87744550e+03
- 1.17791140e+03
- 5.38810230e+02
- 2.65801460e+02
- 1.37993170e+02
- 7.44246150e+01
- 4.10604740e+01
- 2.30476190e+01
- 1.30414500e+01
- 7.32856080e+00
- 4.04667800e+00
- 2.19509950e+00
- 1.14409300e+00
- 5.37522080e-01
- 2.42019200e-01
- 1.04645040e-01
- 4.26793480e-02
-$ f functions 
-   16    0    0
- 5.40487050e+02
- 1.86209100e+02
- 7.95536900e+01
- 3.78882330e+01
- 1.89550560e+01
- 9.84813990e+00
- 5.15439120e+00
- 2.67051800e+00
- 1.35078340e+00
- 6.55724650e-01
- 3.00279490e-01
- 1.23267690e-01
- 5.06025980e-02
- 6.15880360e-01
- 1.58009660e-01
- 8.41733860e-02
-$ g functions 
-    5    0    0
- 1.13609610e+01
- 3.86901990e+00
- 1.28127440e+00
- 5.34114210e-01
- 1.52408660e-01
-$ h functions 
-    4    0    0
- 7.38091460e+00
- 2.26252320e+00
- 2.05083250e-01
- 2.72644430e-01
-$ i functions 
-    2    0    0
- 5.10756950e+00
- 6.15485550e-01
-
-$ Tm
-a 69
-$ s functions 
-   35    0    0
- 6.70268560e+07
- 1.78535710e+07
- 6.13380210e+06
- 2.35183980e+06
- 9.89706030e+05
- 4.41674500e+05
- 2.07103650e+05
- 1.00571830e+05
- 5.02647710e+04
- 2.56939730e+04
- 1.33947660e+04
- 7.10351700e+03
- 3.82664790e+03
- 2.09344510e+03
- 1.16403680e+03
- 6.57966390e+02
- 3.77482060e+02
- 2.18508370e+02
- 1.28709290e+02
- 7.66657490e+01
- 4.63660230e+01
- 2.88677190e+01
- 1.82286500e+01
- 1.13947620e+01
- 6.74021480e+00
- 4.08820360e+00
- 2.45243450e+00
- 1.46840900e+00
- 8.22946130e-01
- 4.60876480e-01
- 2.52456490e-01
- 1.19540780e-01
- 6.28761710e-02
- 3.22867630e-02
- 1.64634570e-02
-$ p functions 
-   30    0    0
- 4.88822870e+07
- 1.26201090e+07
- 3.67800810e+06
- 1.17663660e+06
- 4.04973890e+05
- 1.48249630e+05
- 5.73548640e+04
- 2.33932530e+04
- 1.00551780e+04
- 4.54995390e+03
- 2.15975370e+03
- 1.06976160e+03
- 5.49542070e+02
- 2.90717980e+02
- 1.57582710e+02
- 8.67588490e+01
- 4.82294270e+01
- 2.74294980e+01
- 1.57995000e+01
- 9.07906450e+00
- 5.11798460e+00
- 2.85751690e+00
- 1.54301860e+00
- 8.19016960e-01
- 4.31025330e-01
- 2.25079420e-01
- 1.04555330e-01
- 5.23793760e-02
- 2.59320950e-02
- 1.27308120e-02
-$ d functions 
-   19    0    0
- 4.30228370e+04
- 1.05072900e+04
- 3.56774240e+03
- 1.44537540e+03
- 6.55806790e+02
- 3.21431390e+02
- 1.66061400e+02
- 8.92180410e+01
- 4.90650760e+01
- 2.74831320e+01
- 1.54736240e+01
- 8.61348890e+00
- 4.71233640e+00
- 2.51965800e+00
- 1.28680320e+00
- 5.84090920e-01
- 2.52279590e-01
- 1.04574090e-01
- 4.09211250e-02
-$ f functions 
-   16    0    0
- 7.12792320e+02
- 2.44592220e+02
- 1.04431930e+02
- 4.98203710e+01
- 2.50362430e+01
- 1.30507740e+01
- 6.84225810e+00
- 3.54117110e+00
- 1.78342530e+00
- 8.58791330e-01
- 3.88223970e-01
- 1.56512510e-01
- 6.30980260e-02
- 7.42832560e-01
- 1.86635980e-01
- 9.78682230e-02
-$ g functions 
-    6    0    0
- 1.61158640e+01
- 5.55717170e+00
- 1.83926940e+00
- 4.03142790e-01
- 1.43112230e-01
- 1.84183960e-01
-$ h functions 
-    4    0    0
- 1.12566040e+01
- 3.60686090e+00
- 2.35933040e-01
- 3.61190130e-01
-$ i functions 
-    2    0    0
- 7.44284520e+00
- 7.45324610e-01
-
-$ Er
-a 68
-$ s functions 
-   35    0    0
- 6.71333400e+07
- 1.78727900e+07
- 6.13278950e+06
- 2.34617120e+06
- 9.83294630e+05
- 4.36222620e+05
- 2.02895610e+05
- 9.75867440e+04
- 4.82679520e+04
- 2.44218590e+04
- 1.26120100e+04
- 6.63796020e+03
- 3.55884550e+03
- 1.94184090e+03
- 1.07654210e+03
- 6.05032050e+02
- 3.44044810e+02
- 1.97389230e+02
- 1.15601040e+02
- 6.88640450e+01
- 4.22383820e+01
- 2.76252610e+01
- 1.81357450e+01
- 1.14300010e+01
- 6.79672680e+00
- 4.06093430e+00
- 2.38581600e+00
- 1.38266910e+00
- 7.69437680e-01
- 4.28487420e-01
- 2.33713440e-01
- 1.24021370e-01
- 6.20252730e-02
- 3.16175870e-02
- 1.61198990e-02
-$ p functions 
-   30    0    0
- 4.80402210e+07
- 1.22811140e+07
- 3.55607850e+06
- 1.13224380e+06
- 3.88180610e+05
- 1.41624210e+05
- 5.46729650e+04
- 2.22872270e+04
- 9.58462730e+03
- 4.34145240e+03
- 2.06346290e+03
- 1.02349230e+03
- 5.26436780e+02
- 2.78759460e+02
- 1.51197900e+02
- 8.32705600e+01
- 4.63017550e+01
- 2.63565000e+01
- 1.52112450e+01
- 8.77729870e+00
- 4.96835120e+00
- 2.78887210e+00
- 1.51628100e+00
- 8.08246530e-01
- 4.26949320e-01
- 2.23767640e-01
- 1.03260350e-01
- 5.17905760e-02
- 2.56275710e-02
- 1.25874320e-02
-$ d functions 
-   19    0    0
- 4.14952960e+04
- 1.01525730e+04
- 3.45400320e+03
- 1.40148850e+03
- 6.36669690e+02
- 3.12366090e+02
- 1.61506530e+02
- 8.68297730e+01
- 4.77802760e+01
- 2.67759680e+01
- 1.50904580e+01
- 8.41560030e+00
- 4.61280580e+00
- 2.47341040e+00
- 1.26835510e+00
- 5.79009470e-01
- 2.51858400e-01
- 1.05162830e-01
- 4.14468590e-02
-$ f functions 
-   16    0    0
- 6.84469170e+02
- 2.35049380e+02
- 1.00376140e+02
- 4.78825740e+01
- 2.40513000e+01
- 1.25344460e+01
- 6.57257080e+00
- 3.40380410e+00
- 1.71637770e+00
- 8.28093850e-01
- 3.75412570e-01
- 1.51946820e-01
- 6.14998990e-02
- 7.19859500e-01
- 1.80050920e-01
- 9.53711820e-02
-$ g functions 
-    6    0    0
- 1.53152010e+01
- 5.27543240e+00
- 1.74793530e+00
- 3.58546840e-01
- 1.34372820e-01
- 1.79965720e-01
-$ h functions 
-    4    0    0
- 1.06317780e+01
- 3.39462650e+00
- 2.29796650e-01
- 3.49507450e-01
-$ i functions 
-    2    0    0
- 7.06079340e+00
- 7.26972430e-01
-
-$ Tb
-a 65
-$ s functions 
-   35    0    0
- 6.90517360e+07
- 1.83782720e+07
- 6.30356500e+06
- 2.40983430e+06
- 1.00811470e+06
- 4.45868180e+05
- 2.06407920e+05
- 9.86816120e+04
- 4.84763650e+04
- 2.43611220e+04
- 1.25007050e+04
- 6.54012390e+03
- 3.48563430e+03
- 1.89072960e+03
- 1.04279520e+03
- 5.83907150e+02
- 3.31294550e+02
- 1.89050170e+02
- 1.10425750e+02
- 6.53739040e+01
- 3.91851980e+01
- 2.46934550e+01
- 1.57577040e+01
- 9.92590670e+00
- 5.86466770e+00
- 3.57135180e+00
- 2.13096630e+00
- 1.21748540e+00
- 6.92460770e-01
- 3.92365370e-01
- 2.18978010e-01
- 1.15847340e-01
- 5.91066120e-02
- 3.03635990e-02
- 1.55383870e-02
-$ p functions 
-   30    0    0
- 4.60304980e+07
- 1.13731040e+07
- 3.22104630e+06
- 1.00887800e+06
- 3.41824340e+05
- 1.23721390e+05
- 4.75223550e+04
- 1.93243950e+04
- 8.31217220e+03
- 3.77354530e+03
- 1.79920630e+03
- 8.95386440e+02
- 4.62011160e+02
- 2.45364830e+02
- 1.33447120e+02
- 7.36454990e+01
- 4.09935140e+01
- 2.33395730e+01
- 1.34665640e+01
- 7.75926510e+00
- 4.37996580e+00
- 2.45202520e+00
- 1.32665530e+00
- 7.05515140e-01
- 3.73464730e-01
- 1.96868680e-01
- 9.31637880e-02
- 4.67582850e-02
- 2.34780600e-02
- 1.17552690e-02
-$ d functions 
-   19    0    0
- 3.68918920e+04
- 9.07518420e+03
- 3.10664330e+03
- 1.26726070e+03
- 5.78102020e+02
- 2.84567160e+02
- 1.47496400e+02
- 7.94518040e+01
- 4.37907360e+01
- 2.45665960e+01
- 1.38807770e+01
- 7.77870370e+00
- 4.28433730e+00
- 2.31434320e+00
- 1.19921020e+00
- 5.56975930e-01
- 2.47395590e-01
- 1.05523630e-01
- 4.24671800e-02
-$ f functions 
-   16    0    0
- 5.98586580e+02
- 2.05983840e+02
- 8.79967030e+01
- 4.19499230e+01
- 2.10291180e+01
- 1.09440810e+01
- 5.73586020e+00
- 2.97329920e+00
- 1.50324870e+00
- 7.28580050e-01
- 3.32651340e-01
- 1.35974020e-01
- 5.55805220e-02
- 6.57777670e-01
- 1.65915700e-01
- 8.79757070e-02
-$ g functions 
-    6    0    0
- 1.28899850e+01
- 4.41968320e+00
- 1.46645000e+00
- 3.87717310e-01
- 1.38905860e-01
- 1.65285440e-01
-$ h functions 
-    4    0    0
- 8.60432820e+00
- 2.67913920e+00
- 2.15891820e-01
- 3.01969180e-01
-$ i functions 
-    2    0    0
- 5.88157910e+00
- 6.62920230e-01
-
-$ Lu
-a 71
-$ s functions 
-   35    0    0
- 6.58240610e+07
- 1.75274030e+07
- 6.01674730e+06
- 2.30410500e+06
- 9.68572980e+05
- 4.32074580e+05
- 2.02816660e+05
- 9.87299130e+04
- 4.95080290e+04
- 2.54106800e+04
- 1.33234760e+04
- 7.12384380e+03
- 3.87733610e+03
- 2.14384070e+03
- 1.20274330e+03
- 6.84344330e+02
- 3.94969410e+02
- 2.31636940e+02
- 1.38755590e+02
- 8.44554170e+01
- 5.22484320e+01
- 3.43645790e+01
- 2.20415800e+01
- 1.36476690e+01
- 7.93798740e+00
- 4.73244350e+00
- 2.76689840e+00
- 1.59019680e+00
- 8.85949010e-01
- 4.90505100e-01
- 2.62545570e-01
- 1.43590630e-01
- 7.22453400e-02
- 3.72379730e-02
- 1.90911860e-02
-$ p functions 
-   30    0    0
- 5.03530670e+07
- 1.33179260e+07
- 3.94405090e+06
- 1.27715670e+06
- 4.43639020e+05
- 1.63510540e+05
- 6.35512020e+04
- 2.59839930e+04
- 1.11727670e+04
- 5.04936100e+03
- 2.39171510e+03
- 1.18176930e+03
- 6.05643240e+02
- 3.19732740e+02
- 1.73006950e+02
- 9.51565440e+01
- 5.29172110e+01
- 3.01282780e+01
- 1.74023430e+01
- 1.00408310e+01
- 5.67729660e+00
- 3.17890550e+00
- 1.71948080e+00
- 9.15400540e-01
- 4.82832700e-01
- 2.51856850e-01
- 1.17813910e-01
- 5.78490000e-02
- 2.83242420e-02
- 1.38007910e-02
-$ d functions 
-   19    0    0
- 4.59464490e+04
- 1.11842850e+04
- 3.78360070e+03
- 1.52801630e+03
- 6.91594320e+02
- 3.38284380e+02
- 1.74492340e+02
- 9.36219320e+01
- 5.14265840e+01
- 2.87788330e+01
- 1.61691400e+01
- 8.96465850e+00
- 4.88322780e+00
- 2.59392710e+00
- 1.31155830e+00
- 5.88639160e-01
- 2.50729120e-01
- 1.02442300e-01
- 3.95289350e-02
-$ f functions 
-   16    0    0
- 8.59088470e+02
- 2.94223290e+02
- 1.25623140e+02
- 6.01328010e+01
- 3.03853910e+01
- 1.59487310e+01
- 8.45609090e+00
- 4.43879580e+00
- 2.27757980e+00
- 1.12391550e+00
- 5.23617060e-01
- 2.18078010e-01
- 9.08259550e-02
- 7.82848260e-01
- 1.95506420e-01
- 1.04424530e-01
-$ g functions 
-    6    0    0
- 1.86328560e+01
- 6.53462030e+00
- 2.22348060e+00
- 3.42997060e-01
- 1.29027310e-01
- 2.91669230e-01
-$ h functions 
-    4    0    0
- 1.31505180e+01
- 4.34767690e+00
- 2.41329870e-01
- 5.70314660e-01
-$ i functions 
-    2    0    0
- 8.58031690e+00
- 1.12553910e+00
-
-$ Pm
-a 61
-$ Warning: in symmetry        f, exponent 5.6984508000e-01 is considered to be too close to one already present (5.7458334000e-01) and is not included. threshold: 5.00e-02
-$ s functions 
-   35    0    0
- 7.25116730e+07
- 1.92946460e+07
- 6.61473510e+06
- 2.52562500e+06
- 1.05254340e+06
- 4.62430770e+05
- 2.12071420e+05
- 1.00344240e+05
- 4.87889950e+04
- 2.42826610e+04
- 1.23459900e+04
- 6.39985380e+03
- 3.37824660e+03
- 1.81447350e+03
- 9.91112970e+02
- 5.49982960e+02
- 3.09291970e+02
- 1.74582100e+02
- 1.01101170e+02
- 5.93971520e+01
- 3.53787450e+01
- 2.18567490e+01
- 1.37981830e+01
- 8.58169190e+00
- 4.97850720e+00
- 3.03665380e+00
- 1.82254420e+00
- 1.06338130e+00
- 6.08008950e-01
- 3.48565100e-01
- 1.95975330e-01
- 9.66329600e-02
- 5.14060280e-02
- 2.69972190e-02
- 1.40837000e-02
-$ p functions 
-   30    0    0
- 4.33873910e+07
- 1.02053010e+07
- 2.80063630e+06
- 8.57293850e+05
- 2.85648510e+05
- 1.02187450e+05
- 3.89785050e+04
- 1.58126620e+04
- 6.81179260e+03
- 3.10440260e+03
- 1.48729240e+03
- 7.43781360e+02
- 3.85511700e+02
- 2.05528800e+02
- 1.12144350e+02
- 6.20233790e+01
- 3.45443860e+01
- 1.96542130e+01
- 1.13345090e+01
- 6.53271880e+00
- 3.68387540e+00
- 2.06611420e+00
- 1.12293880e+00
- 6.00997960e-01
- 3.21981280e-01
- 1.72132480e-01
- 8.39444300e-02
- 4.27623770e-02
- 2.18164020e-02
- 1.10594810e-02
-$ d functions 
-   19    0    0
- 3.08637090e+04
- 7.65925530e+03
- 2.64579060e+03
- 1.08711890e+03
- 4.98683830e+02
- 2.46534050e+02
- 1.28193810e+02
- 6.92260020e+01
- 3.82303460e+01
- 2.14696020e+01
- 1.21633060e+01
- 6.85058480e+00
- 3.79029020e+00
- 2.06355060e+00
- 1.08121320e+00
- 5.13838020e-01
- 2.34453990e-01
- 1.02724170e-01
- 4.24487710e-02
-$ f functions 
-   15    0    0
- 4.80038830e+02
- 1.65525830e+02
- 7.07051930e+01
- 3.36148720e+01
- 1.67686570e+01
- 8.68870170e+00
- 4.53458220e+00
- 2.34434990e+00
- 1.18413220e+00
- 5.74583340e-01
- 2.63283700e-01
- 1.08238260e-01
- 4.44977030e-02
- 1.49345360e-01
- 8.05276890e-02
-$ g functions 
-    6    0    0
- 9.93735160e+00
- 3.32463160e+00
- 1.08958520e+00
- 7.16389600e-01
- 1.60845350e-01
- 1.31911220e-01
-$ h functions 
-    4    0    0
- 6.63025670e+00
- 2.03632340e+00
- 1.93459830e-01
- 2.46528590e-01
-$ i functions 
-    2    0    0
- 4.44271110e+00
- 5.37859210e-01
 

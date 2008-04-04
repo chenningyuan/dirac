@@ -3,7 +3,7 @@
 =========================================
 
 
-Date: 16 Nov 2007
+Date: 19 Mar 2008
 
 
 When publishing work that uses these basis sets, please use the following citation:
@@ -15,7 +15,7 @@ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 
 This archive contains the exponents and the SCF spinor or orbital coefficients, 
 given with respect to normalized (spherical or 2-spinor) Gaussian functions, for
-the double-zeta basis sets described in the above article.  The contractions
+the quadruple-zeta basis sets described in the above article.  The contractions
 are taken from SCF calculations on a weighted average of the valence configurations:
 
 * For La, Ce, Gd, and Lu, where the 5d is occupied in the ground state, the
@@ -70,58 +70,59 @@ NOTE: Functions are counted from the function with the smallest exponent to the 
    To the SCF functions, add the following primitives.
 
    For 5d/6s/6p flexibility: 
-    s primitive from the SCF set 
-    p primitive from the SCF set 
-    d primitive from the SCF set 
-   1st, 2nd and 4th f primitives from the SCF set
+   1st, 2nd, and 4th s primitives from the SCF set 
+   1st, 2nd, and 4th p primitive from the SCF set 
+   1st, 2nd, and 3rd d primitives from the SCF set 
+   1st, 2nd, and 3rd f primitives from the SCF set
    correlating 2g1h for the 5d/6s shells.
 
    For 5s/5p flexibility: 
-    s primitive from the SCF set
-    p primitive from the SCF set 
-    d primitive from the SCF set
+   5th, 6th, and 8th s primitives from the SCF set
+   6th, 7th, and 8th p primitives from the SCF set 
+   3rd, 4th, and 5th d primitives from the SCF set
    4th and 5th f primitives from the SCF set
    
    The outer g function from the 4f correlating set is adequate for correlating 
    the 5s and 5p.
 
    For 4f flexibility: 
-    s primitive from the SCF set
-    p primitive from the SCF set 
-    d primitive from the SCF set
-    and  f primitive from the SCF set
+   5th, 6th, and 8th s primitives from the SCF set
+   6th, 7th, and 8th p primitives from the SCF set 
+   4th, 5th, and 6th d primitives from the SCF set
+   3rd, 4th, 5th, and 6th f primitives from the SCF set
    correlating 3g2h1i functions for the 4f shell.
 
    The combined set is therefore:
-    and  s primitives from the SCF set 
-    and  p primitives from the SCF set
-    and  d primitives from the SCF set
-    and  f primitives from the SCF set, and the even-tempered extension
-
-
+   1st, 2nd, 4th, 5th, 6th, and 8th s primitives from the SCF set 
+   1st, 2nd, 4th, 6th, 7th, and 8th p primitives from the SCF set
+   1st - 6th d primitives from the SCF set
+   1st - 6th f primitives from the SCF set
+   correlating 2g1h for the 5d/6s shells.
+   correlating 3g2h1i functions for the 4f shell.
 
    If linear dependence is encountered in the d set, omit the 2nd d, or delete the 5d 
    SCF function. 
 
-   (HF + 2s2p2d3f1g)
 
 2. Valence + 4d correlation.  This set adds functions for correlating the 4d. 
    Excitations from the 4d into the 4f shell are important for correlating the 4f. 
 
    To basis set 1, add the following:
-    s primitive from the SCF set
-    p primitive from the SCF set 
-    d primitive from the SCF set 
-   5th, 6th, and 7th f primitives from the SCF set 
+   10th, 11th, and 12th s primitives from the SCF set
+   10th, 11th, and 12th p primitives from the SCF set 
+   7th, 8th, and 9th d primitives from the SCF set 
+   6th, 7th, and 8th f primitives from the SCF set 
 
    The optimized g and h functions overlap well enough with those from the 4f 
    correlating set that these functions do not need to be added. 
+
 
 3. Dipole polarization of the 4f. Add the polarizing i function.
 
    There is a fair degree of overlap of the polarizing g and h functions with 
    the outer correlating g and h functions for the 5d/6s shells. The polarizing
    g and h are therefore not needed, except perhaps the h function for Lu.
+
 
 4. Dipole polarization of the 5d.
 
@@ -300,6 +301,41 @@ Dirac-Hartree-Fock basis sets
    19  4.0416901E-02 -1.1571060E-07 -2.9948471E-05  1.0019774E-01
 
 
+                           4f-
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+    9  9.9999999E+99  1.0000000E-00
+   10  9.9999999E+99  1.0000000E-00
+   11  9.9999999E+99  1.0000000E-00
+   12  9.9999999E+99  1.0000000E-00
+   13  9.9999999E+99  1.0000000E-00
+
+
+                           4f+
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+    9  9.9999999E+99  1.0000000E-00
+   10  9.9999999E+99  1.0000000E-00
+   11  9.9999999E+99  1.0000000E-00
+   12  9.9999999E+99  1.0000000E-00
+   13  9.9999999E+99  1.0000000E-00
+
+
+
 
   Small component functions
   -------------------------
@@ -457,6 +493,39 @@ Dirac-Hartree-Fock basis sets
    18  9.5465953E-02  4.1926700E-09 -6.2783299E-07 -9.6669204E-04
    19  4.0416901E-02  5.0676891E-11  5.8399071E-08 -1.9445794E-04
 
+
+                           4f-
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+    9  9.9999999E+99  1.0000000E-00
+   10  9.9999999E+99  1.0000000E-00
+   11  9.9999999E+99  1.0000000E-00
+   12  9.9999999E+99  1.0000000E-00
+   13  9.9999999E+99  1.0000000E-00
+
+
+                           4f+
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+    9  9.9999999E+99  1.0000000E-00
+   10  9.9999999E+99  1.0000000E-00
+   11  9.9999999E+99  1.0000000E-00
+   12  9.9999999E+99  1.0000000E-00
+   13  9.9999999E+99  1.0000000E-00
 
 
 
@@ -11252,6 +11321,7 @@ Exponents of 4f correlating functions
 
           g               g               g               h               h               i
 
+La   9.9999999E+99   9.9999999E+99   9.9999999E+99   9.9999999E+99   9.9999999E+99   9.9999999E+99
 Ce   7.4313908E+00   2.4294541E+00   7.7998984E-01   4.5255946E+00   1.3186619E+00   3.2658609E+00
 Pr   8.4082094E+00   2.7592055E+00   8.9053652E-01   5.1652423E+00   1.5122341E+00   3.6561683E+00
 Nd   9.1746621E+00   3.0456267E+00   9.9258779E-01   6.0096854E+00   1.8211630E+00   4.0444743E+00
@@ -11320,6 +11390,7 @@ Exponents of 4f dipole polarization functions
 
           g               h               i
 
+La   9.9999999E+99   9.9999999E+99   9.9999999E+99
 Ce   1.5682665E-01   2.6513337E-01   6.5664192E-01
 Pr   1.0719151E-01   1.8202360E-01   4.4008325E-01
 Nd   1.2060412E-01   2.2127994E-01   4.9142280E-01

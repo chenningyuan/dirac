@@ -3,7 +3,7 @@
 ======================================
 
 
-Date: 16 Nov 2007
+Date: 12 Mar 2008
 
 
 When publishing work that uses these basis sets, please use the following citation:
@@ -42,7 +42,8 @@ The archive is set out as follows.
    symmetry type. 
 
 3. Exponents of correlating functions for the 4f shell, the 5d and 6s shells, 
-   and the 4d shell.
+   and the 4d shell. These are the optimized functions; only those that are 
+   not represented in the SCF set are used in the basis set construction. 
 
 4. Exponents of dipole polarization functions for the 4f shell and for the 5d 
    and 6s shells.
@@ -79,41 +80,42 @@ NOTE: Functions are counted from the function with the smallest exponent to the 
 
    For 5s/5p flexibility: 
    4th s primitive from the SCF set
-   4th p primitive from the SCF set 
+   3rd p primitive from the SCF set 
    3rd d primitive from the SCF set
 
-   For 4f flexibility:
+   For 4f flexibility (Ce-Lu):
    4th s primitive from the SCF set
-   4th p primitive from the SCF set 
+   3rd p primitive from the SCF set 
    3rd d primitive from the SCF set
-   1st and 2nd f primitive from the SCF set, except for La (no f functions)  
-   correlating g function for the 4f shell, except for La.
+   2nd and 3rd f primitives from the SCF set
+   correlating g function for the 4f shell
 
-   The combined set is therefore:
+   The combined set for Ce-Lu is therefore:
    2nd and 4th s primitives from the SCF set 
-   2nd and 4th p primitives from the SCF set
+   2nd and 3rd p primitives from the SCF set
    1st and 3rd d primitives from the SCF set
-   1st and 2nd f primitives from the SCF set, and the even-tempered extension
-   Correlating g function for the 4f shell, except for Ac.
+   1st, 2nd, and 3rd f primitives from the SCF set
+   Correlating g function for the 4f shell.
 
+   The combined set for La is therefore:
+   2nd and 4th s primitives from the SCF set 
+   2nd and 3rd p primitives from the SCF set
+   1st and 3rd d primitives from the SCF set
+   Correlating f function for the 5d and 6s shells.
 
-   If linear dependence is encountered in the d set, omit the 2nd d, or delete the 5d 
-   SCF function. 
-
-   (HF + 2s2p2d3f1g)
 
 2. Valence + 4d correlation.  This set adds functions for correlating the 4d. 
    Excitations from the 4d into the 4f shell are important for correlating the 4f. 
 
    To basis set 1, add the following:
-   6th s primitive from the SCF set
-   6th p primitive from the SCF set 
+   5th s primitive from the SCF set
+   5th p primitive from the SCF set 
    6th d primitive from the SCF set 
-   4th f primitive from the SCF set 
+   5th f primitive from the SCF set 
 
-   (HF + 3s3p5d4f1g)
 
 3. Dipole polarization of the 4f. Add the polarizing g function. 
+
 
 4. Dipole polarization of the 5d.  
 
@@ -249,6 +251,31 @@ Dirac-Hartree-Fock basis sets
    13  7.8984252E-02 -2.3089659E-05  5.7659279E-04  3.9440513E-01
 
 
+                           4f-
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+
+
+                           4f+
+
+    1  9.9999999E+99  1.0000000E-00
+    2  9.9999999E+99  1.0000000E-00
+    3  9.9999999E+99  1.0000000E-00
+    4  9.9999999E+99  1.0000000E-00
+    5  9.9999999E+99  1.0000000E-00
+    6  9.9999999E+99  1.0000000E-00
+    7  9.9999999E+99  1.0000000E-00
+    8  9.9999999E+99  1.0000000E-00
+
+
+
 
   Small component functions
   -------------------------
@@ -360,7 +387,6 @@ Dirac-Hartree-Fock basis sets
    11  6.5708218E-01  1.9972188E-06 -5.8597435E-04 -1.9790140E-03
    12  2.4085414E-01 -3.2290034E-07  7.0651803E-07 -2.7072666E-03
    13  7.8984252E-02  6.2713465E-08 -1.5644496E-06 -1.0700357E-03
-
 
 
 
@@ -8146,6 +8172,7 @@ Exponents of 4f correlating functions
 
           g
 
+La   9.9999999E+99
 Ce   2.4115484E+00
 Pr   2.7361305E+00
 Nd   3.0328899E+00
@@ -8214,6 +8241,7 @@ Exponents of 4f dipole polarization functions
 
           g
 
+La   9.9999999E+99
 Ce   4.8487177E-01
 Pr   3.2934075E-01
 Nd   3.6851050E-01

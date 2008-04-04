@@ -1,27 +1,15 @@
 $
 $ Elements Supported
-$ Ga As Ge Br Se I Sn In Sb Te Bi Pb Tl At Po
+$ Ga Ge As Se Br In Sn Sb Te I  Tl Pb Bi Po At 
 $
 $  REFERENCE
 $
-$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441.
+$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
+$        addendum    Theor. Chem. Acc. (2002) 108:365;
+$        revision    Theor. Chem. Acc. (2006) 115:441
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 $
 $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -35,6 +23,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', 'diffuse']
 $ 
+$ dyall.4p.qz.bas
 $
 $ Description
 $ 
@@ -605,6 +594,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', 'diffuse']
 $ 
+$ dyall.5p.qz.bas
 $
 $ Description
 $ 
@@ -1261,6 +1251,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['valence correlating', 'diffuse']
 $ 
+$ dyall.6p.qz.bas
 $
 $ Description
 $ 

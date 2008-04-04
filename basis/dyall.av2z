@@ -1,10 +1,10 @@
 $
 $ Elements Supported
-$ Ga As Ge Br Se I Sn In Sb Te Bi Pb Tl At Po
+$ Ga Ge As Se Br In Sn Sb Te I  Tl Pb Bi Po At
 $
 $  REFERENCE
 $
-$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366; 
+$ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum    Theor. Chem. Acc. (2002) 108:365;
 $        revision    Theor. Chem. Acc. (2006) 115:441
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
@@ -13,21 +13,9 @@ $
 
 
 
- 
 
 
-
-
-
-
-
-
-
-
-
-
-
-$
+$ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
 $ invocation: basis_set.py --file=../basis/reference_unedited/4p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,diffuse --output=dyall.4p.dz.bas
@@ -35,6 +23,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
+$ dyall.4p.dz.bas
 $
 $ Description
 $ 
@@ -165,8 +154,9 @@ $ d functions
  1.91389540e-01
  5.23958680e-02
 $ f functions 
-    1    0    0
+    2    0    0
  3.93743940e+00
+ 7.29394340E-01
 
 $ As
 a 33
@@ -214,8 +204,9 @@ $ d functions
  3.02713190e-01
  1.00852340e-01
 $ f functions 
-    1    0    0
+    2    0    0
  5.34798650e+00
+ 1.22852480E+00
 
 
 $ Ge
@@ -264,8 +255,9 @@ $ d functions
  2.43551430e-01
  7.49176230e-02
 $ f functions 
-    1    0    0
+    2    0    0
  4.64271290e+00
+ 9.66656260E-01 
 
 $ Br
 a 35
@@ -313,8 +305,9 @@ $ d functions
  4.32158950e-01
  1.59020310e-01
 $ f functions 
-    1    0    0
+    2    0    0
  6.75853350e+00
+ 1.79715170E+00
 
 $ Se
 a 34
@@ -362,8 +355,9 @@ $ d functions
  3.65720970e-01
  1.28304400e-01
 $ f functions 
-    1    0    0
+    2    0    0
  6.05326000e+00
+ 1.50752950E+00
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -373,6 +367,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
+$ dyall.5p.dz.bas
 $
 $ Description
 $ 
@@ -517,8 +512,9 @@ $ d functions
  2.98523850e-01
  1.23237630e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.67709400e+00
+ 1.21693500E+00
 
 
 $ Sn
@@ -581,8 +577,9 @@ $ d functions
  1.84430760e-01
  6.09867920e-02
 $ f functions 
-    1    0    0
+    2    0    0
  1.96599480e+00
+ 7.27041910E-01
 
 $ In
 a 49
@@ -644,8 +641,9 @@ $ d functions
  1.50882920e-01
  4.37084690e-02
 $ f functions 
-    1    0    0
+    2    0    0
  1.72896180e+00
+ 5.81789580E-01 
 
 $ Sb
 a 51
@@ -707,8 +705,9 @@ $ d functions
  2.21234800e-01
  7.98754890e-02
 $ f functions 
-    1    0    0
+    2    0    0
  2.20302790e+00
+ 8.85180770E-01
 
 $ Te
 a 52
@@ -770,8 +769,9 @@ $ d functions
  2.59354130e-01
  1.00387500e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.44006100e+00
+ 1.04949990E+00
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -781,6 +781,7 @@ $
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
 $  ['correlating', 'diffuse']
 $ 
+$ dyall.6p.dz.bas
 $
 $ Description
 $ 
@@ -939,7 +940,7 @@ $ d functions
  2.02232070e-01
  6.96834540e-02
 $ f functions 
-    8    0    0
+    9    0    0
  5.51023050e+02
  1.86924360e+02
  7.88015410e+01
@@ -948,6 +949,7 @@ $ f functions
  8.45836180e+00
  3.96752280e+00
  1.68654420e+00
+ 6.67301970E-01
 
 $ Pb
 a 82
@@ -1021,7 +1023,7 @@ $ d functions
  1.75459930e-01
  5.57726240e-02
 $ f functions 
-    8    0    0
+    9    0    0
  5.20138450e+02
  1.76510090e+02
  7.43430140e+01
@@ -1030,6 +1032,7 @@ $ f functions
  7.90770330e+00
  3.68433520e+00
  1.54783110e+00
+ 5.60408710E-01
 
 $ Tl
 a 81
@@ -1103,7 +1106,7 @@ $ d functions
  1.50267780e-01
  4.10356480e-02
 $ f functions 
-    8    0    0
+    9    0    0
  4.89995590e+02
  1.66331970e+02
  6.99800850e+01
@@ -1112,6 +1115,7 @@ $ f functions
  7.36995780e+00
  3.40866130e+00
  1.41384690e+00
+ 4.52629430E-01
 
 $ At
 a 85
@@ -1185,7 +1189,7 @@ $ d functions
  2.56992820e-01
  1.09389180e-01
 $ f functions 
-    8    0    0
+    9    0    0
  6.14902930e+02
  2.08417200e+02
  8.79848050e+01
@@ -1194,6 +1198,8 @@ $ f functions
  9.59533210e+00
  4.55444770e+00
  1.97652640e+00
+ 8.78194270E-01
+
 
 $ Po
 a 84
@@ -1267,7 +1273,7 @@ $ d functions
  2.29483250e-01
  9.04070040e-02
 $ f functions 
-    8    0    0
+    9    0    0
  5.82612870e+02
  1.97561080e+02
  8.33493580e+01
@@ -1276,4 +1282,5 @@ $ f functions
  9.02103230e+00
  4.25765080e+00
  1.82952430e+00
+ 7.73526070E-01
 
