@@ -519,9 +519,7 @@ C=======================================================================
           IF(ORIENTATION(IORIENTATION) .EQ. 'yz') NI = 1
 
           WRITE(LUNIT_2D,'(A)')
-          WRITE(LUNIT_2D,'(A)')
-          WRITE(LUNIT_2D,'(A2)') ORIENTATION(IORIENTATION)
-          WRITE(LUNIT_2D,'(A)')
+          WRITE(LUNIT_2D,'(A)') 'plane: ' // ORIENTATION(IORIENTATION)
 
           DO I = 1,NI
             DO J = 1,NJ
@@ -550,7 +548,7 @@ C=======================================================================
 
 !               write to file
 
-                WRITE(LUNIT_2D,'(7F20.10)') PX, PY, PZ,
+                WRITE(LUNIT_2D,'(7E18.10)') PX, PY, PZ,
      &                                      QUANTITY(0,1),
      &                                      QUANTITY(1,1),
      &                                      QUANTITY(2,1),
