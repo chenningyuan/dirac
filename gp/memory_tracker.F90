@@ -18,6 +18,9 @@
 ! this provides functionality for the memory_allocator module to keep
 ! track of memory comsumption
 !
+!  MI/5.4.'08:
+!  to compile it with GNU, gfortran-4.2 is needed (not the default gfortran-4.1)
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       module memory_tracker
@@ -26,11 +29,11 @@
 
          private
 
-         integer, parameter :: kreal = 8, kcomplex = 8
+         integer, parameter :: kchar = 1, kint = 4, kreal = 8, kcomplex = 8
 
          type, public :: fString
-            integer :: size = 0 
-            character, allocatable :: s(:) 
+            integer(kind=kint)  :: size = 0 
+            character(kind=kchar), allocatable :: s(:) 
          end type fString
 
 !
@@ -39,7 +42,7 @@
 ! a void pointer in fortran... maybe redefine as an interface to pointers is better?
 !
          type, public :: memoryContent
-            integer, pointer     :: iContent 
+            integer(kind=kint), pointer     :: iContent 
             real(kind=kreal), pointer       :: rContent 
         end type memoryContent
             
@@ -51,8 +54,8 @@
 
 
          type, public :: memChunk
-            integer                  :: size = 0                ! size of the memory, in bytes
-            integer                  :: address = 0             ! address of the memory
+            integer(kind=kint)       :: size = 0                ! size of the memory, in bytes
+            integer(kind=kint)       :: address = 0             ! address of the memory
             type (memoryContent)     :: content
             type (memChunk), pointer :: next, prev              ! for the linked list
             type (fString), pointer  :: routine                 ! optionally holds the name of the routine where this chunk was allocated 
@@ -66,14 +69,14 @@
             type (memChunk), pointer :: firstActive, lastActive          ! list of allocated chunks
             type (memChunk), pointer :: firstFreed,  lastFreed           ! list of deallocated chunks
             type (memChunk), pointer :: largestActive, smallestActive    ! largest and smallest active chunks for this group
-            integer                  :: largestEver, smallestEver        ! size of largest and smallest ever for this group, in bytes
+            integer(kind=kint)       :: largestEver, smallestEver        ! size of largest and smallest ever for this group, in bytes
          end type memGroup
 
 
          type, public :: memTracker
             integer                  :: ngroups
             type (memGroup), pointer :: first, last                      ! first and last active groups
-            integer                  :: largestEver, smallestEver        ! size of globally largest and smallest allocations in bytes 
+            integer(kind=kint)       :: largestEver, smallestEver        ! size of globally largest and smallest allocations in bytes 
             type (fString)           :: largestLabel, smallestLabel
          end type memTracker
          
