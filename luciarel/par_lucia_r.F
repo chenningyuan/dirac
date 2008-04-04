@@ -7818,8 +7818,6 @@ C       determine INTEGRAL handling
      &                 MPI_COMM_WORLD,IERR)
       END IF
 C
-      IF( IIOMOD_REL .eq. 1 )THEN
-C
 C       all needed for proper read-in of integrals...?
 C
         CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
@@ -7854,9 +7852,6 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-C
-      END IF
-C     ^ IIOMOD_REL == 1
 C
       END
 ***********************************************************************
