@@ -10,7 +10,7 @@ element_symbols = ['dummy', 'H ','He','Li','Be','B' ,'C' , 'N','O' ,'F' ,'Ne',
                             'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac','Th',    
                             'Pa','U' ,'Np','Pu','Am','Cm','Bk','Cf','Es','Fm',    
                             'Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt','Ds',
-                            'Rg','Uub']
+                            'Rg','Uub','foo','Uun','bar','Uuh','baz','Uuo']
 
 
 def get_element_number(symbol):

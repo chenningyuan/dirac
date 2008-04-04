@@ -90,8 +90,8 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 block=4f
 zeta=tz
 
-val="4f correlating,5d/6s correlating,5s5p correlating,4f dipole polarization,5d dipole polarization"
-core="4f correlating,5d/6s correlating,5s5p correlating,4f dipole polarization,5d dipole polarization,4d correlating"
+val="4f correlating,5d/6s correlating,5s/5p correlating,4f dipole polarization"
+core="4f correlating,5d/6s correlating,5s/5p correlating,4f dipole polarization,4d correlating"
 
 echo $val
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
@@ -111,8 +111,8 @@ block=4f
 zeta=qz
 
 
-val="4f correlating,5d/6s correlating,5s5p correlating,4f dipole polarization,5d/6s dipole polarization"
-core="4f correlating,5d/6s correlating,5s5p correlating,4f dipole polarization,5d/6s dipole polarization,4d correlating"
+val="4f correlating,5d/6s correlating,4f dipole polarization"
+core="4f correlating,5d/6s correlating,4f dipole polarization,4d correlating"
 
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \

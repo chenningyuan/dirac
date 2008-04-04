@@ -13,10 +13,12 @@ zeta=dz
 block=4d
 val="valence correlating and dipole polarization"
 core="valence correlating and dipole polarization,3d correlating"
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -26,10 +28,12 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 block=5d
 val="valence correlating and polarizing"
 core="valence correlating and polarizing,4f core correlating"
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -39,10 +43,12 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 block=6d
 val="valence correlating and dipole polarization"
 core="valence correlating and dipole polarization,5f correlating"
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -54,10 +60,12 @@ block=4d
 val="valence correlating,4d dipole polarization,4s4p correlating"
 core="valence correlating,4d dipole polarization,4s4p correlating,3d correlating"
 for zeta in tz qz; do
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -68,10 +76,12 @@ block=6d
 val="valence correlating,6d dipole polarization"
 core="valence correlating,6d dipole polarization,5f correlating"
 for zeta in tz qz; do
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -82,10 +92,12 @@ block=5d
 val="valence correlating,valence polarizability"
 core="valence correlating,valence polarizability,4f core correlating"
 zeta=tz
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \
@@ -96,10 +108,12 @@ block=5d
 val="valence correlating,valence polarizability"
 core="valence correlating,valence polarizability,outer core (5s5p) correlating g,4f core correlating'"
 zeta=qz
+echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$val" \
                        --output=dyall.$block.$zeta.bas > dyall.$block.$zeta.val.bas  
+echo "processing "$block" "$basis" "$zeta" "$core" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
                        --polarization_type="$core" \

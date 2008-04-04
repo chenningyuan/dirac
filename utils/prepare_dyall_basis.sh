@@ -28,13 +28,13 @@ cat *.{4p,5p,6p}.tz.aug-core.bas > dyall.acv3z
 cat *.{4p,5p,6p}.qz.aug-core.bas > dyall.acv4z
 
 # and now withouth diffuses
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.dz.val.bas > dyall.v2z
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.tz.val.bas > dyall.v3z
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.val.bas > dyall.v4z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.dz.val.bas > dyall.v2z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.tz.val.bas > dyall.v3z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.qz.val.bas > dyall.v4z
 
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.dz.core.bas > dyall.cv2z
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.tz.core.bas > dyall.cv3z
-cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.dz.core.bas > dyall.cv2z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.tz.core.bas > dyall.cv3z
+cat *.{4s,4p,4d,4f,5s,5p,5d,5f,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
 
 # one must now edit the dyall.{a{,c}}v{2,3,4}z files and
 # set the "Elements supported" section correctly by hand.
@@ -42,6 +42,7 @@ cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
 # separate "Elements supported" fields, and leave just one
 # with all the atoms
 #
+rm *.bas
 
 #
 # as of the time of the latest commit for this file (see Id above)
@@ -51,16 +52,16 @@ cat *.{4f,4d,4p,5s,5p,5d,5f,6s,6p,6d,7s}.qz.core.bas > dyall.cv4z
 #<---- starts here
 #  $
 #  $ Elements Supported
-#  $ Sr Rb Cs Ba Fr Ra
-#  $ Ga As Kr Ge Br Se I Xe Sn In Sb Te Bi Pb Tl At Rn Po
-#  $ Ru Ag Nb Tc Pd Y Cd Rh Mo Zr Pt Hf Ir Re Au W Os Hg Ta
-#  $ Hs Db Mt Rf Rg Uub Sg Ds Bh
-#  $ Md Ac Cm Pu No Am Cf Bk Pa U Th Np Lr Fm Es
-#  $ Pr La Yb Nd Ce Gd Ho Sm Dy Eu Tm Er Tb Lu Pm
+#  $ K  Ca Rb Sr Cs Ba Fr Ra
+#  $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn
+#  $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
+#  $ Rf Db Sg Bh Hs Mt Uub
+#  $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
+#  $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
 #  $
 #  $  REFERENCE
 #  $
-#  $ 5s-7s: K.G. Dyall, in preparation.
+#  $ 4s-7s: K.G. Dyall, in preparation.
 #  $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 #  $        addendum    Theor. Chem. Acc. (2002) 108:365;
 #  $        revision    Theor. Chem. Acc. (2006) 115:441

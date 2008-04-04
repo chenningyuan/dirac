@@ -10,6 +10,7 @@ ARCHIVE_DIR=../basis/reference_unedited
 
 for block in  4p 5p 6p; do
 
+#note, for the double-zeta, add the polarizing f function by hand on the core.bas files?
    zeta=dz
 
    python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
