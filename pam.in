@@ -174,7 +174,7 @@ setup_command()
    #
    # MPI?
    #
-   if [ "$DIRACPAR" = "1" ]; then
+   if [ "$DIRPAR" = "1" ]; then
 #  Parallel run ($MPIARG allows any MPI run argument):
       DIRAC_CMD="$MPIRUN $MPIARG"
 #     Set number of processors:      
@@ -606,7 +606,7 @@ save_old_output()
 #
 set_dirac_environment()
 {
-   export DIRACPAR # tell dirac.x if parallel run or not
+   export DIRPAR # tell dirac.x if parallel run or not
    export BASDIR # tell dirac.x which directories to search for basis sets
    if [ -n "$MEMORY" ]; then
       DIRWRK=$MEMORY; export DIRWRK
@@ -663,7 +663,7 @@ initialize()
    SCR_DIR=
 
    MPI_NPROC=
-   DIRACPAR=0 # initialize to sequential
+   DIRPAR=0 # initialize to sequential
    MPIARG=
 
    NICE=
@@ -770,7 +770,7 @@ while [ -n "$1" ]; do
       -mpi)
          shift
          MPI_NPROC=$1
-         DIRACPAR=1 # set to parallel run
+         DIRPAR=1 # set to parallel run
          ;;
       -mpiarg)
          shift
@@ -864,7 +864,7 @@ print_header
 copy_files
 save_old_output
 setup_command
-if [ "$DIRACPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
+if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
 execute_dirac
