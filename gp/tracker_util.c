@@ -9,9 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined (SYS_LINUX)
+#include <system_flavor.h>
+
+#if (SYS_FLAVOR == LINUX)
+#define LINUX_IFACE_MEMORY
+#endif
+
+// using linux's interface to memory
+#if defined (LINUX_IFACE_MEMORY)
 #include <sys/sysinfo.h>
-#endif /* SYS_LINUX */
+#endif /* LINUX_IFACE_MEMORY */
 
 #define BUFFERSIZE (512)
 
@@ -40,7 +47,7 @@ void get_memory_info_(char *fstring, int *flength)
    size_t i, len;
    int status;
 
-#if defined (SYS_LINUX)
+#if defined (LINUX_IFACE_MEMORY)
    struct sysinfo info;
    
    status = sysinfo(&info);
@@ -49,7 +56,7 @@ void get_memory_info_(char *fstring, int *flength)
       total_bytes  = info.freeram * info.mem_unit;
       total_kbytes = total_bytes / 1024;
    }
-#endif /* SYS_LINUX */
+#endif /* LINUX_IFACE_MEMORY */
 
    snprintf(fstring,(size_t)(*flength),"%li Kb",total_kbytes);
    len = strlen(fstring);

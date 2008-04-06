@@ -9,7 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined (SYS_LINUX)
+#include <system_flavor.h>
+
+#if (SYS_FLAVOR == LINUX)
+#define GNU_TRACEBACK
+#endif
+
+#if defined (GNU_TRACEBACK)
 #include <execinfo.h>
 #endif
 
@@ -52,11 +58,11 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 
 // only support to linux for now. for other systems the traceback is yet to be implemented
 // mac osx 10.5 should have the same interface
-#if defined (SYS_LINUX)
+#if defined (GNU_TRACEBACK)
 // calls to gnu libc routines
    size    = backtrace (array, MAXDEPTH_TRACE);
    strings = backtrace_symbols (array, size);
-#endif /* SYS_LINUX */
+#endif /* GNU_TRACEBACK */
 
    if ( strings != NULL ) 
    {
