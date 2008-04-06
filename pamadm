@@ -556,6 +556,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
+gp/kinds.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
