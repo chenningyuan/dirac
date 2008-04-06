@@ -785,7 +785,7 @@ if [ -n "$VISUALMOD" ]; then
 cat <<EOF>> Makefile
 
 VISUALOBJS = \\
-visual/dmat.o visual/visual.o visual/integration.o
+visual/dmat.o visual/visual.o visual/integration.o visual/vector_algebra.o
 EOF
 fi
 #
