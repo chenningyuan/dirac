@@ -8,9 +8,9 @@ include ../Makefile.config
 
 F77_OBJS = dmat.o visual.o integration.o
 
-F90_OBJS = vector_algebra.o
+F90_OBJS = vector_algebra.o even_grid.o
 
-F90_MODS = vector_algebra_m.mod
+F90_MODS = vector_algebra_m.mod even_grid_class.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 

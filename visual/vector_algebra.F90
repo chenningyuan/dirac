@@ -1,7 +1,6 @@
 
 !-------------------------------------------------------------------------------
 !      collection of vector algebra operations
-!      assumes dp scalars and vector components
 !
 !      radovan bast (2008-04-06)
 !      inspiration: the nice code example of A. Bay and T. Monteiro
@@ -14,122 +13,186 @@ module vector_algebra_m
 
   implicit none
 
-  type vector_t
+  type dp_vector_t
     real(kind_dp) :: x
     real(kind_dp) :: y
     real(kind_dp) :: z
-  end type vector_t
+  end type dp_vector_t
 
   interface operator(+)
-    module procedure vector_plus_vector
+    module procedure dp_vector_plus_dp_vector
   end interface
 
   interface operator(-)
-    module procedure vector_minus_vector
+    module procedure dp_vector_minus_dp_vector
   end interface
 
   interface operator(*)
-    module procedure scalar_times_vector, vector_times_scalar, vector_dot_vector
+    module procedure dp_scalar_times_dp_vector
+    module procedure i4_scalar_times_dp_vector
+    module procedure dp_vector_times_dp_scalar
+    module procedure dp_vector_times_i4_scalar
+    module procedure dp_vector_dot_dp_vector
   end interface
 
-  interface operator(.cross.)
-    module procedure vector_cross_vector
+  interface operator(/)
+    module procedure dp_vector_divided_by_dp_scalar
+    module procedure dp_vector_divided_by_i4_scalar
+  end interface
+
+  interface operator(.x.)
+    module procedure dp_vector_cross_dp_vector
   end interface
 
   interface assignment(=)
-    module procedure copy_vector_to_vector, copy_array_to_vector, copy_scalar_to_vector_components
+    module procedure copy_dp_vector_to_dp_vector
+    module procedure copy_dp_array_to_dp_vector
+    module procedure copy_dp_scalar_to_dp_vector_components
   end interface
 
 contains
 
-  subroutine set_vector(v, a, b, c)
-    type(vector_t), intent(out) :: v
-    real(kind_dp),  intent(in)  :: a, b, c
+  subroutine set_dp_vector(v, a, b, c)
+    type(dp_vector_t), intent(out) :: v
+    real(kind_dp),     intent(in)  :: a, b, c
 
     v%x = a
     v%y = b
     v%z = c
-  end subroutine set_vector
+  end subroutine set_dp_vector
 
-  function vector_plus_vector(u, v)
-    type(vector_t), intent(in) :: u, v
-    type(vector_t) vector_plus_vector
+  function dp_vector_plus_dp_vector(u, v) result(w)
+    type(dp_vector_t), intent(in) :: u, v
+    type(dp_vector_t)             :: w
 
-    vector_plus_vector%x = u%x + v%x
-    vector_plus_vector%y = u%y + v%y
-    vector_plus_vector%z = u%z + v%z
-  end function vector_plus_vector
+    w%x = u%x + v%x
+    w%y = u%y + v%y
+    w%z = u%z + v%z
+  end function dp_vector_plus_dp_vector
 
-  function vector_minus_vector(u, v)
-    type(vector_t), intent(in) :: u, v
-    type(vector_t) vector_minus_vector
+  function dp_vector_minus_dp_vector(u, v) result(w)
+    type(dp_vector_t), intent(in) :: u, v
+    type(dp_vector_t)             :: w
 
-    vector_minus_vector%x = u%x - v%x
-    vector_minus_vector%y = u%y - v%y
-    vector_minus_vector%z = u%z - v%z
-  end function vector_minus_vector
+    w%x = u%x - v%x
+    w%y = u%y - v%y
+    w%z = u%z - v%z
+  end function dp_vector_minus_dp_vector
 
-  function scalar_times_vector(s, v)
-    real(kind_dp),  intent(in) :: s
-    type(vector_t), intent(in) :: v
-    type(vector_t) scalar_times_vector
+  function dp_scalar_times_dp_vector(s, v) result(u)
+    type(dp_vector_t), intent(in) :: v
+    real(kind_dp),     intent(in) :: s
+    type(dp_vector_t)             :: u
 
-    scalar_times_vector%x = s*v%x
-    scalar_times_vector%y = s*v%y
-    scalar_times_vector%z = s*v%z
-  end function scalar_times_vector
+    u%x = s*v%x
+    u%y = s*v%y
+    u%z = s*v%z
+  end function dp_scalar_times_dp_vector
 
-  function vector_times_scalar(v, s)
-    real(kind_dp),  intent(in) :: s
-    type(vector_t), intent(in) :: v
-    type(vector_t) vector_times_scalar
+  function i4_scalar_times_dp_vector(s, v) result(u)
+    type(dp_vector_t), intent(in) :: v
+    integer(kind_i4),  intent(in) :: s
+    type(dp_vector_t)             :: u
 
-    vector_times_scalar%x = s*v%x
-    vector_times_scalar%y = s*v%y
-    vector_times_scalar%z = s*v%z
-  end function vector_times_scalar
+    u%x = s*v%x
+    u%y = s*v%y
+    u%z = s*v%z
+  end function i4_scalar_times_dp_vector
 
-  function vector_dot_vector(u, v)
-    type(vector_t), intent(in) :: u, v
-    real(kind_dp) vector_dot_vector
+  function dp_vector_times_dp_scalar(v, s) result(u)
+    type(dp_vector_t), intent(in) :: v
+    real(kind_dp),     intent(in) :: s
+    type(dp_vector_t)             :: u
 
-    vector_dot_vector = u%x*v%x + u%y*v%y + u%z*v%z
-  end function vector_dot_vector
+    u%x = s*v%x
+    u%y = s*v%y
+    u%z = s*v%z
+  end function dp_vector_times_dp_scalar
 
-  function vector_cross_vector(u, v)
-    type(vector_t), intent(in) :: u, v
-    type(vector_t) vector_cross_vector
+  function dp_vector_times_i4_scalar(v, s) result(u)
+    type(dp_vector_t), intent(in) :: v
+    integer(kind_i4),  intent(in) :: s
+    type(dp_vector_t)             :: u
 
-    vector_cross_vector%x = u%y*v%z - u%z*v%y
-    vector_cross_vector%y = u%z*v%x - u%x*v%z
-    vector_cross_vector%z = u%x*v%y - u%y*v%x
-  end function vector_cross_vector
+    u%x = s*v%x
+    u%y = s*v%y
+    u%z = s*v%z
+  end function dp_vector_times_i4_scalar
 
-  subroutine copy_vector_to_vector(u, v)
-    type(vector_t), intent(out) :: u
-    type(vector_t), intent(in)  :: v
+  function dp_vector_dot_dp_vector(u, v) result(s)
+    type(dp_vector_t), intent(in) :: u, v
+    real(kind_dp)                 :: s
+
+    s = u%x*v%x + u%y*v%y + u%z*v%z
+  end function dp_vector_dot_dp_vector
+
+  function dp_vector_divided_by_dp_scalar(v, s) result(u)
+    type(dp_vector_t), intent(in) :: v
+    real(kind_dp),     intent(in) :: s
+    type(dp_vector_t)             :: u
+
+    u%x = v%x/s
+    u%y = v%y/s
+    u%z = v%z/s
+  end function dp_vector_divided_by_dp_scalar
+
+  function dp_vector_divided_by_i4_scalar(v, s) result(u)
+    type(dp_vector_t), intent(in) :: v
+    integer(kind_i4),  intent(in) :: s
+    type(dp_vector_t)             :: u
+
+    u%x = v%x/s
+    u%y = v%y/s
+    u%z = v%z/s
+  end function dp_vector_divided_by_i4_scalar
+
+  function dp_vector_cross_dp_vector(u, v) result(w)
+    type(dp_vector_t), intent(in) :: u, v
+    type(dp_vector_t)             :: w
+
+    w%x = u%y*v%z - u%z*v%y
+    w%y = u%z*v%x - u%x*v%z
+    w%z = u%x*v%y - u%y*v%x
+  end function dp_vector_cross_dp_vector
+
+  subroutine copy_dp_vector_to_dp_vector(u, v)
+    type(dp_vector_t), intent(out) :: u
+    type(dp_vector_t), intent(in)  :: v
 
     u%x = v%x
     u%y = v%y
     u%z = v%z
-  end subroutine copy_vector_to_vector
+  end subroutine copy_dp_vector_to_dp_vector
 
-  subroutine copy_array_to_vector(v, m)
-    type(vector_t), intent(out) :: v
-    real(kind_dp),  intent(in)  :: m(3)
+  subroutine copy_dp_array_to_dp_vector(v, m)
+    type(dp_vector_t), intent(out) :: v
+    real(kind_dp),     intent(in)  :: m(3)
 
     v%x = m(1)
     v%y = m(2)
     v%z = m(3)
-  end subroutine copy_array_to_vector
+  end subroutine copy_dp_array_to_dp_vector
 
-  subroutine copy_scalar_to_vector_components(v, s)
-    type(vector_t), intent(out) :: v
-    real(kind_dp),  intent(in)  :: s
+  subroutine copy_dp_scalar_to_dp_vector_components(v, s)
+    type(dp_vector_t), intent(out) :: v
+    real(kind_dp),     intent(in)  :: s
 
     v%x = s
     v%y = s
     v%z = s
-  end subroutine copy_scalar_to_vector_components
+  end subroutine copy_dp_scalar_to_dp_vector_components
+
+  subroutine normalize_dp_vector_to(v, norm)
+    type(dp_vector_t), intent(out) :: v
+    real(kind_dp),     intent(in)  :: norm
+
+    real(kind_dp)                  :: actual_norm
+
+    actual_norm = (v%x**2.0d0 + v%y**2.0d0 + v%z**2.0d0)**0.5d0
+
+    v%x = norm*v%x/actual_norm
+    v%y = norm*v%y/actual_norm
+    v%z = norm*v%z/actual_norm
+  end subroutine normalize_dp_vector_to
 
 end module vector_algebra_m
