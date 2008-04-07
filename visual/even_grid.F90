@@ -60,7 +60,7 @@ contains
     ac_along_u = ac*self%u
     ac_along_v = ac*self%v
 
-    change to l = max(ab_along_u, ac_along_v)
+    l = max(ab_along_u, ac_along_v)
 
     f = l/self%nr_steps(1)
 
