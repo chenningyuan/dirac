@@ -195,4 +195,11 @@ contains
     v%z = norm*v%z/actual_norm
   end subroutine normalize_dp_vector_to
 
+  function dp_vector_norm(v) result(norm)
+    type(dp_vector_t), intent(in) :: v
+    real(kind_dp)                 :: norm
+
+    norm = (v%x**2.0d0 + v%y**2.0d0 + v%z**2.0d0)**0.5d0
+  end function dp_vector_norm
+
 end module vector_algebra_m

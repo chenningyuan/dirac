@@ -13,13 +13,18 @@ module even_grid_class
 
   implicit none
 
+  type grid_data_t
+    real(kind_dp), dimension(:), pointer :: x, y, z, w
+  end type grid_data_t
+
   type even_grid_t
-    type(dp_vector_t)   :: origin, u, v, w
-    integer(kind_i4) :: nr_steps(3)
+    type(dp_vector_t) :: origin, u, v, w
+    integer(kind_i4)  :: nr_steps(3)
+    type(grid_data_t) :: grid_data
   end type even_grid_t
 
-  public even_grid_t
-  public init_even_grid, del_even_grid
+  public grid_data_t, even_grid_t
+  public init_even_grid, del_even_grid, plot_even_grid
 
   private
 
@@ -28,11 +33,14 @@ module even_grid_class
 contains
 
   subroutine init_even_grid(self)
-    type(even_grid_t) :: self
+    type(even_grid_t), intent(inout) :: self
 
-    type(dp_vector_t) :: a, b, c, ab, ac, avg
-    real(kind_dp)     :: ab_along_u, ac_along_u, ac_along_v, l, f
-    integer(kind_i4)  :: nr_steps = 50
+    type(dp_vector_t)                :: a, b, c, ab, ac, avg
+    real(kind_dp)                    :: ab_along_u, ac_along_u, ac_along_v, l, f
+
+    self%nr_steps(1) = 50
+    self%nr_steps(2) = 50
+    self%nr_steps(3) = 0
 
     call set_dp_vector(a, 0.0d0, 4.0d0, 1.0d0)
     call set_dp_vector(b, 1.0d0, 2.0d0, 0.0d0)
@@ -52,54 +60,86 @@ contains
     ac_along_u = ac*self%u
     ac_along_v = ac*self%v
 
-    l = max(ac_along_u, ac_along_v) !change to l = max(ab_along_u, ac_along_v)
+    change to l = max(ab_along_u, ac_along_v)
 
-    f = l/nr_steps
+    f = l/self%nr_steps(1)
 
     call normalize_dp_vector_to(self%u, f)
     call normalize_dp_vector_to(self%v, f)
 
     avg = (a + b + c)/3.0d0
- 
-    self%origin = avg - nr_steps*self%u - nr_steps*self%v
 
-    write(*,*) 'origin%x ', self%origin%x
-    write(*,*) 'origin%y ', self%origin%y
-    write(*,*) 'origin%z ', self%origin%z
-
-
-
-!for i in range(2*nr_steps + 1):
-!    for j in range(2*nr_steps + 1):
-!
-!        p[0] = bottom_left[0] + i*u[0] + j*v[0]
-!        p[1] = bottom_left[1] + i*u[1] + j*v[1]
-!        p[2] = bottom_left[2] + i*u[2] + j*v[2]
-!
-!        scalar = fake_density(a, b, c, p)
-!
-!        quasi_x = i*scale - l
-!        quasi_y = j*scale - l
-!
-!        j = fake_current(a, p)
-!
-!        uector_along_u = j[0]*u[0] + j[1]*u[1] + j[2]*u[2]
-!        uector_along_v = j[0]*v[0] + j[1]*v[1] + j[2]*v[2]
-!
-!        print "%14.6e%14.6e%14.6e%14.6e%14.6e" % (quasi_x, quasi_y, scalar, uector_along_u, uector_along_v)
-
-
-
-
-
-
-
-
+    self%origin = avg - self%nr_steps(1)*self%u - self%nr_steps(2)*self%v
   end subroutine init_even_grid
+
+  subroutine plot_even_grid(self)
+    type(even_grid_t), intent(inout) :: self
+
+    type(dp_vector_t)                :: p
+    real(kind_dp)                    :: quasi_x, quasi_y
+    real(kind_dp)                    :: vector_density_along_u, vector_density_along_v
+    real(kind_dp)                    :: scalar_density
+    type(dp_vector_t)                :: vector_density
+    integer(kind_i4)                 :: i, j
+
+    do i = 0, 2*self%nr_steps(1)
+      do j = 0, 2*self%nr_steps(2)
+
+         p = self%origin + i*self%u + j*self%v
+
+         scalar_density = fake_scalar_density(p)
+         vector_density = fake_vector_density(p)
+
+         quasi_x = i*dp_vector_norm(self%u)
+         quasi_y = j*dp_vector_norm(self%v)
+
+         vector_density_along_u = vector_density*self%u
+         vector_density_along_v = vector_density*self%v
+
+         write(*,'(5e18.10)') quasi_x, quasi_y, scalar_density, vector_density_along_u, vector_density_along_v
+
+      enddo
+    enddo
+  end subroutine plot_even_grid
 
   subroutine del_even_grid(self)
     type(even_grid_t) :: self
 
   end subroutine del_even_grid
+
+  function fake_scalar_density(p) result(density)
+    type(dp_vector_t), intent(in) :: p
+    real(kind_dp)                 :: density
+
+    type(dp_vector_t)             :: a, b, c, ap, bp, cp
+    real(kind_dp)                 :: norm_ap, norm_bp, norm_cp
+
+    call set_dp_vector(a, 0.0d0, 4.0d0, 1.0d0)
+    call set_dp_vector(b, 1.0d0, 2.0d0, 0.0d0)
+    call set_dp_vector(c, 0.0d0, 0.0d0, 5.0d0)
+
+    ap = p - a
+    bp = p - b
+    cp = p - c
+
+    density = 1.0d0/dp_vector_norm(ap) + 1.0d0/dp_vector_norm(bp) + 1.0d0/dp_vector_norm(cp)
+  end function fake_scalar_density
+
+  function fake_vector_density(p) result(density)
+    type(dp_vector_t), intent(in) :: p
+    type(dp_vector_t)             :: density
+
+    type(dp_vector_t)             :: a, ap, n
+
+    call set_dp_vector(a, 0.0d0, 4.0d0, 1.0d0)
+
+    ap = p - a
+
+    call set_dp_vector(n, 0.0d0, 0.0d0, 1.0d0)
+
+    density = ap .x. n
+
+    call normalize_dp_vector_to(density, 1.0d0)
+  end function fake_vector_density
 
 end module even_grid_class
