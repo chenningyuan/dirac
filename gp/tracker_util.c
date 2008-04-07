@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <system_flavor.h>
+#include "system_flavor.h"
 
 #if (SYS_FLAVOR == LINUX)
 #define LINUX_IFACE_MEMORY
