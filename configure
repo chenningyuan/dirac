@@ -1394,7 +1394,7 @@ case $machine in
 
       case "$CC" in
       openmpicc| mpicc)
-         if $CC -show >&/dev/null; then
+         if $CC -show 2>&1 /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1571,7 +1571,7 @@ case $machine in
 
       case "$CC" in
       mpicc)
-         if mpicc -show >&/dev/null; then
+         if mpicc -show 2>&1 /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1657,7 +1657,7 @@ case $machine in
       
 case "$F77" in
       mpif*)
-         if "$F77" -show >&/dev/null; then
+         if "$F77" -show 2>&1 /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1747,7 +1747,7 @@ case "$F77" in
 
       case "$CC" in
       mpicc)
-         if mpicc -show >&/dev/null; then
+         if mpicc -show 2>&1 /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
