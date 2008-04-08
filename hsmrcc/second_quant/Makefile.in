@@ -44,7 +44,7 @@ FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 
 #### object files from DIRAC - general purpose routines ####
 dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o \
-               ../../oof/string_mod.o
+               ../../oof/string_mod.o ../../gp/tracing.o
 
 ## dummy entry to handle the "default:" in Makefile.config:
 dirac.x dirmpi.x:

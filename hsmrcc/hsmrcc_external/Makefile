@@ -175,7 +175,7 @@ c89objs := getopt.o hsmrmain.o
 #### DIRAC imports ####
 ####               ####
 #######################
-dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o 
+dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o   ../../gp/tracing.o
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 
