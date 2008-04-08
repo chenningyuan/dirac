@@ -127,10 +127,11 @@ contains
 
       if (get_iprint() >= 5) then
          write(UOUT,'(2x,a,a)')  'group=',group
-         write(UOUT,'(2x,a,i3)') 'naxis=',naxis
-         write(UOUT,'(2x,a,i3)') 'norder=',norder
+         write(UOUT,'(2x,a,i2)') 'naxis=',naxis
+         write(UOUT,'(2x,a,i2)') 'norder=',norder
       endif
 
+!    ... set up point group ...      
       ptgrp = " "
 
       if (group.eq."C1")                     ptgrp = C1
@@ -144,7 +145,8 @@ contains
       if ((group.eq."DNH").and.(naxis.eq.2)) ptgrp = D2h
 
       if (ptgrp.eq." ") then
-         write(UOUT,*) "unable to read point group information from syminf"
+         write(UOUT,*)   &
+         'read_gamess_syminf: unable to read point group information from syminf'
          !call flush(UOUT)
          call flushout
          !call abort
@@ -156,11 +158,13 @@ contains
       endif
 
       call setup_irrep_tables(ptgrp,ierr)
+
       if (ierr.ne.0) then
          write(UOUT,*) "read_gamess_syminf: error output :" 
          write(UOUT,*) "ptgrp=",ptgrp," ierr=",ierr
          write(UOUT,*) "trouble in setting up this point group !"
-         call flush(UOUT)
+        ! call flush(UOUT)
+         call flushout
         !call abort
          call Quit('read_gamess_syminf: trouble in setting up this point group !')
       endif
@@ -295,7 +299,7 @@ contains
       close(USYMINF)
 
       if (get_iprint() >= 5) then
-        write(UOUT,'(2x,a)') '...control print-out of the multiplication table:'
+        write(UOUT,'(/,2x,a)') '...control print-out of the multiplication table:'
         call print_irrep_tables
       endif
 
@@ -326,7 +330,7 @@ contains
       numirrep = 0
       irrep_product = 0
       do ir = 1, maxirrep
-         irrep_label(ir) = nolabel
+        irrep_label(ir) = nolabel
       enddo
 
       if (group.eq.C1) then
