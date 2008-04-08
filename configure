@@ -247,6 +247,7 @@ fi
 guess=`./config.sub $guess 2>/dev/null` 
 
 $echo "Configuring $guess..."
+flavor=$guess
 machine=`echo $guess | sed 's/-[^-]*$//'`
 if [ "$machine" != "$guess" ]; then 
    os=`echo $guess | sed 's/.*-//'`
@@ -1863,7 +1864,7 @@ fi
 # the os. also, if the gnu loader is used, the -E flag has to be
 # passed on to allow the symbols to be generated 
 
-case $os in
+case $flavor in
    *linux*)
       ccp="$ccp -DSYS_FLAVOR=LINUX -I."
       ldflag="$ldflag -Wl,-E"
