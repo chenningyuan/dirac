@@ -30,8 +30,8 @@
          double precision, pointer             :: p_mem
          v2size = 10
 
-         write (*,*) 'memory address 0a: ',c_loc(vdatarl)
-         write (*,*) 'memory address 0b: ',c_loc(vdatadb)
+!        write (*,*) 'memory address 0a: ',c_loc(vdatarl)
+!        write (*,*) 'memory address 0b: ',c_loc(vdatadb)
 
          call allocator_init
 !         call allocator_setGroupName('main')
@@ -46,8 +46,8 @@
          call get_memory_address(vdatarl, p_mem3)
          write (*,*) 'memory address 3: [',p_mem3,']'
 
-         write (*,*) 'memory address 4: ',c_loc(vdatarl)
-         write (*,*) 'memory address 5: ',c_loc(vdatadb)
+!        write (*,*) 'memory address 4: ',c_loc(vdatarl)
+!        write (*,*) 'memory address 5: ',c_loc(vdatadb)
 
          call compare_memory(p_mem2,p_mem3)
 
@@ -76,8 +76,8 @@
          call get_memory_address(vdatarl, p_mem3)
          write (*,*) 'memory address 3: [',p_mem3,']'
          call compare_memory(p_mem2,p_mem3)
-         write (*,*) 'memory address 4: ',c_loc(vdatarl)
-         write (*,*) 'memory address 5: ',c_loc(vdatadb)
+!        write (*,*) 'memory address 4: ',c_loc(vdatarl)
+!        write (*,*) 'memory address 5: ',c_loc(vdatadb)
          write (*,*) 'is 4 allocated? ',allocated(vdatarl)
          write (*,*) 'is 5 allocated? ',allocated(vdatadb)
 

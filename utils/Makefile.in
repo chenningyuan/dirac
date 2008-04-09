@@ -11,7 +11,7 @@ include ../Makefile.config
 #F77_OBJS = twofit.o labread.o rspread.o polfit.o
 F77_OBJS = twofit.o labread.o rspread.o polfit.o qjaco.o mx2fit.o vibcal.o
 
-F90_OBJS =
+F90_OBJS = test_allocator.o
 
 F90_MODS =
 

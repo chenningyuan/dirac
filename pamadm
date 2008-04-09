@@ -956,6 +956,8 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/qjaco.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
 	utils/vibcal.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
+	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 EOF
 
 #########################################################
