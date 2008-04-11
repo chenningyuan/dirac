@@ -25,11 +25,11 @@
 enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
 enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
 
-// public (callable from fortran) functions. 
+/* public (callable from fortran) functions.  */
 
 void get_traceback_info_(enum allowedActions*, char *fstring, int *fsize);
 
-// internal (not meant to be called from fortran) function
+/* internal (not meant to be called from fortran) function */
 
 void retrieve_symbol(enum retrieveSymbolKinds, char *result, char *backtrace_string);
 void print_rawtrace_to_stdout(size_t size, char **strings);
@@ -37,16 +37,16 @@ void get_name_from_caller(size_t size, char **strings);
 void print_trace_to_string(char *symbol_in, char *symbol_out, int length);
 void print_prettytrace_to_stdout (size_t size, char **strings);
 
-// interface to fortran
+/* interface to fortran */
 
-//
-// get_traceback_info: will perform the traceback and get whatever information we want and copy it to the result string or prints to stdout
-//
-// variables:
-//    action  : specifies what to retieve and what to do with it
-//    result  : when passing information back to the fortran program, *result is the fortran array holding the data
-//    fsize   : when passing information back to the fortran program, *fsize holds the size of the "result" array in fortran
-//
+/*
+   get_traceback_info: will perform the traceback and get whatever information we want and copy it to the result string or prints to stdout
+  
+   variables:
+      action  : specifies what to retieve and what to do with it
+      result  : when passing information back to the fortran program, *result is the fortran array holding the data
+      fsize   : when passing information back to the fortran program, *fsize holds the size of the "result" array in fortran
+*/
 
 void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 {
@@ -56,22 +56,22 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
   size_t i=3, j, k = 0;
   char symbol_name[MAXSIZE_SYMBOL];
 
-// only support to linux for now. for other systems the traceback is yet to be implemented
-// mac osx 10.5 should have the same interface
+/* only support to linux for now. for other systems the traceback is yet to be implemented
+   mac osx 10.5 should have the same interface */
 #if defined (GNU_TRACEBACK)
-// calls to gnu libc routines
+/* calls to gnu libc routines */
    size    = backtrace (array, MAXDEPTH_TRACE);
    strings = backtrace_symbols (array, size);
 #endif /* GNU_TRACEBACK */
 
    if ( strings != NULL ) 
    {
-// now we branch off for the different pieces of the trace we want 
-// to use
+/* now we branch off for the different pieces of the trace we want 
+   to use */
       if ( *action == printAllToStdout ) 
       {
          retrieve_symbol(symbolRetAddr,symbol_name,strings[i]);
-//         print_full_trace(size,strings,fstring);
+/*         print_full_trace(size,strings,fstring); */
       }
       else if ( *action == printAllocCaller )
       {
@@ -92,14 +92,14 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 }
 
 
-// internal functions
+/* internal functions */
 
 
-//
-// print_rawtrace_to_stdout: gets the information from the trace and prints it as it is to stdout
-//
-// size    : depth of the trace
-// strings : information from the trace
+/*
+   print_rawtrace_to_stdout: gets the information from the trace and prints it as it is to stdout
+  
+   size    : depth of the trace
+   strings : information from the trace */
 
 void print_rawtrace_to_stdout(size_t size, char **strings)
 {
@@ -120,8 +120,8 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
    size_t i, j, failure_point;
    char symbol_name[MAXSIZE_SYMBOL];
  
-   // minus five below is 2 from the glibc (the lowest 2 on the stack), one from this function,
-   // one from get_traceback_info and one from the fortran side (the caller of get_traceback_info)
+   /* minus five below is 2 from the glibc (the lowest 2 on the stack), one from this function,
+      one from get_traceback_info and one from the fortran side (the caller of get_traceback_info) */
    
    failure_point = 2;
    j = (size - failure_point - 2);
@@ -129,7 +129,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
    printf ("\n Traceback from this point (%s): %zd frames.\n\n",symbol_name,j);
    j--;
 
-   // then start trace from below the caller of get_backtrace_info down the stack
+   /* then start trace from below the caller of get_backtrace_info down the stack */
 
    for (i = failure_point+1; i < (size-2); i++)
    {
@@ -151,11 +151,11 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
 
 
 
-// print_trace_to_string:
-//
-// symbol_in  :  holds a C string with the already processed (no parenthesis or brackets) trace symbol (function name+entry address or return adress)
-// symbol_out : 
-// length     : integer that 
+/* print_trace_to_string:
+  
+   symbol_in  :  holds a C string with the already processed (no parenthesis or brackets) trace symbol (function name+entry address or return adress)
+   symbol_out : 
+   length     : integer that */
 
 void print_trace_to_string(char *symbol_in, char *symbol_out, int length)
 {

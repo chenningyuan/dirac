@@ -15,7 +15,7 @@
 #define LINUX_IFACE_MEMORY
 #endif
 
-// using linux's interface to memory
+/* using linux's interface to memory */
 #if defined (LINUX_IFACE_MEMORY)
 #include <sys/sysinfo.h>
 #endif /* LINUX_IFACE_MEMORY */
@@ -25,9 +25,9 @@
 void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
 
-// variable: is the real 
-// address_string: is a character string with the memory address of variable
-//                 question is whether or not this should always be long int in all archs.. we need to be able to hold up to 64 bit ints
+/* variable: is the real 
+   address_string: is a character string with the memory address of variable
+                   question is whether or not this should always be long int in all archs.. we need to be able to hold up to 64 bit ints */
 
 void get_memory_address_(void *variable, long int *address)
 {
@@ -39,7 +39,7 @@ void get_memory_address_(void *variable, long int *address)
 }
 
 
-// reads memory information. note, sysinfo is linux-specific 
+/* reads memory information. note, sysinfo is linux-specific */
 
 void get_memory_info_(char *fstring, int *flength)
 {
