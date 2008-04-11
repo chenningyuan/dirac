@@ -82,7 +82,7 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.AORESP','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -131,6 +131,7 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
+      aoresponse   = .false.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -377,7 +378,11 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
-C&&&& XXXXXX
+#if defined(MOD_AORESPONSE)
+            aoresponse = .true.
+            dipole     = .true.
+            doexp      = .true.
+#endif
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX
