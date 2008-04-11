@@ -378,11 +378,11 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
-#if defined(MOD_AORESPONSE)
+#ifdef MOD_AORESPONSE
             aoresponse = .true.
             dipole     = .true.
             doexp      = .true.
-#endif
+#endif /* MOD_AORESPONSE */
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX
