@@ -6,11 +6,11 @@
 
 include ../Makefile.config
 
-F77_OBJS = dmat.o visual.o integration.o
+F77_OBJS = dmat.o integration.o visual.o
 
-F90_OBJS = vector_algebra.o even_grid.o
+F90_OBJS = vector_algebra.o even_grid.o scf_density.o
 
-F90_MODS = vector_algebra_m.mod even_grid_class.mod
+F90_MODS = vector_algebra_m.mod even_grid_class.mod scf_density_class.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -19,13 +19,17 @@ pre:	$(F77_CPPS)
 ftnchek:pre
 	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(F90_OBJS)
-
-mod: $(F90_MODS)
-
+all:	$(F90_MODS) $(F77_OBJS) $(F90_OBJS)
 
 clean :
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+        $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+
+##
+##  compile Fortran90 module source files and make symbolic links
+## of resulting *.mod files into common linked directory modules
+##
+mod: $(F90_MODS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -38,6 +42,7 @@ depend:
 
 f90dep: ;\
        ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+ 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

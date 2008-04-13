@@ -223,6 +223,7 @@ setup()
       VISUALOBJ='$(VISUALOBJS)'
       VISUALMAK=VISUAL_OBJ
       VISUALTAR=1
+      F90MODS=ALL_F90MODS
       echo " - visualization module"
    fi
    #
@@ -785,7 +786,8 @@ if [ -n "$VISUALMOD" ]; then
 cat <<EOF>> Makefile
 
 VISUALOBJS = \\
-visual/dmat.o visual/visual.o visual/integration.o visual/vector_algebra.o visual/even_grid.o
+visual/dmat.o visual/visual.o visual/integration.o visual/vector_algebra.o visual/even_grid.o \\
+visual/scf_density.o
 EOF
 fi
 #
@@ -1057,6 +1059,9 @@ if [ -n "$MODULES" ]; then
   echo 'mod  :             ;\' >> Makefile
   echo '     cd  abacus     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   echo '     cd  gp         &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  if [ -n "$VISUALMOD" ]; then
+  echo '     cd  visual     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  fi
   if [ -n "$EMBMOD" ]; then
   echo '     cd  embedding  &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
@@ -1306,6 +1311,7 @@ if [ -n "$CDFTMOD" ]; then
 fi
 if [ -n "$VISUALMOD" ]; then
    TEMP="$TEMP visual"
+   TEMPOOF="$TEMPOOF visual"
 fi
 if [ -n "$CAPMOD" ]; then
 #   TEMP="$TEMP cap"
@@ -1498,6 +1504,7 @@ while [ -n "$1" ]; do
          ;;
       -visual)
          VISUALMOD=1
+	 MODULES=1
          ;;
       -cap)
          CAPMOD=1
