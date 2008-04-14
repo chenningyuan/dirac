@@ -190,7 +190,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-      LOGICAL TOBE,BF1,BF2,BF3
+      LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
@@ -217,19 +217,14 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-        NPOS = 0
-        IF(PARCAL) THEN
-           BF1  = FIRST1
-           BF2  = FIRST2
-           BF3  = FIRST3
-           FIRST1 = .TRUE.
-           FIRST2 = .TRUE.
-           FIRST3 = .TRUE.
-           NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-           NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-           NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        ENDIF
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        call SaveTaskDistribFlags(saveflags)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+        call SetIntTaskArrayDimension(NPOS,PARCAL)
+        if (NPOS.GT.0) THEN
+           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        else
+           KPOS = KFREE
+        endif
 C
 C       Closed shell Hartree - Fock
 C       ===========================
@@ -243,11 +238,9 @@ C       Get core density matrix
         CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
-        IF(PARCAL) THEN
-          FIRST1 = BF1
-          FIRST2 = BF2
-          FIRST3 = BF3
-        ENDIF
+
+        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
         CALL MEMREL('GTCFC1.TWOFCK',WORK,1,KFRSAV,KFREE,LFREE)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        

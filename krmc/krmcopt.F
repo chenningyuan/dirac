@@ -1288,16 +1288,14 @@ C
             CALL QUIT('no inactive nor active orbitals...')
          END IF
       END IF
-      NPOS = 0
-      IF (PARCAL) THEN
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        FIRST1 = .TRUE.
-        FIRST2 = .TRUE.
-        FIRST3 = .TRUE.
-      END IF
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
 C     ***************************************************
 C     *** Get one-electron density matrices *************
@@ -1585,16 +1583,13 @@ C
 C
          NFMAT = 1
 C
-         NPOS = 0
-         IF (PARCAL) THEN
-            NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-            NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-            NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-            FIRST1 = .TRUE.
-            FIRST2 = .TRUE.
-            FIRST3 = .TRUE.
-         END IF
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+         call SetIntTaskArrayDimension(NPOS,PARCAL)
+         if (NPOS.GT.0) THEN
+            CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         else
+            KPOS = KFREE
+         endif
 C
 C        ***************************************************
 C        *** Get one-electron density matrices *************

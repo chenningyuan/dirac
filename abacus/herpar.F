@@ -386,6 +386,7 @@ C
 C     Print the index array.
 C
       IF (IPRPAR .GE. 10) THEN
+C     IF (.TRUE.) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
@@ -538,6 +539,7 @@ C
       IF (NEWGEO) THEN
          CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,
      &       MPI_COMM_WORLD,IERR)
+
 C........inforb.h
          NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
          CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -2256,3 +2258,88 @@ C
 C
       RETURN
       END
+
+Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+C
+C aspg, 20080411
+C
+C  Parallel calculations require an integer array describing the
+C  slave tasks as argument to TWOFCK.
+C
+C  below are some utility routines to handle the transfer of such
+C  information. they are pretty much what was in the STEX_GET_NPOS
+C  subroutine by ulfek but it seems better to decouple the setting
+C  of the FIRST* variables (used to indicate that this is the first
+C  time the integral code is being called for a given class of
+C  integrals - LL,SL,SS,GT) and the settinf of the dimension of the
+C  integer array (heferred to in the code as NPOS)
+C
+C  i have made the names a bit longer than usual, but at least i hope
+C it makes it more obvious what is happening.
+C
+
+C
+C  SaveTaskDistribFlags:
+C
+C  saves the content of the FIRST* flags into the array
+C  saveflags for later use
+C
+      SUBROUTINE SaveTaskDistribFlags(saveflags)
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL saveflags(4)
+
+      saveflags(1) = FIRST1
+      saveflags(2) = FIRST2
+      saveflags(3) = FIRST3
+      saveflags(4) = FIRST4
+      END
+C
+C  SetTaskDistribFlags:
+C
+C  sets the FIRST* variables to make TWOFCK fill the array
+C  with new content.
+C
+      SUBROUTINE SetTaskDistribFlags(flags)
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL FLAGS(4)
+
+      FIRST1 = flags(1)
+      FIRST2 = flags(2)
+      FIRST3 = flags(3)
+      FIRST4 = flags(4)
+      END
+C
+C  SetIntTaskArrayDimension: sets TskArrDim
+C
+C  TskArrDim will give the dimension of the variable "NPOS" in
+C  the case of parallel calculations. for serial runs, it will
+C  have value zero
+C
+      SUBROUTINE SetIntTaskArrayDimension(TskArrDim,isParallel)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
+      logical isParallel
+      integer TskArrDim
+
+      TskArrDim = 0
+      IF (isParallel) THEN
+C  We will always allocate the maximum size, even if some
+C  integral classes are inactive (keep the code simple)
+         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
+         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
+         TskArrDim = TskArrDim + NSMLBL*(NSMLBL+1)/2
+         TskArrDim = TskArrDim + NSMLBL*NLRGBL
+      ENDIF
+      END
+C
+Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                                                                          

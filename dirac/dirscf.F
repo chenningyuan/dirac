@@ -1154,18 +1154,14 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
-      NPOS = 0
-      IF(PARCAL) THEN
-C       We will always allocate the maximum size, even if some 
-C       integral classes are inactive (keep the code simple)
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        NPOS = NPOS + NSMLBL*NLRGBL
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      ELSE
-        KPOS = KFREE
-      ENDIF
+
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
 C     Initiate/restart SCF-cycle
 C
@@ -2912,7 +2908,7 @@ C
 #include "dcbmvo.h"
 #include "blocks.h"
 C
-      LOGICAL BF1,BF2,BF3
+      LOGICAL SAVEFLAGS(4)
       DIMENSION WORK(*)
 C
 #include "memint.h"
@@ -2923,30 +2919,23 @@ C
       CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      NPOS = 0
-      IF (PARCAL) THEN
-        BF1  = FIRST1
-        BF2  = FIRST2
-        BF3  = FIRST3
-        FIRST1 = .TRUE.
-        FIRST2 = .TRUE.
-        FIRST3 = .TRUE.
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-      ENDIF
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+C
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
       CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      IF (PARCAL) THEN
-         FIRST1 = BF1
-         FIRST2 = BF2
-         FIRST3 = BF3
-      ENDIF
+      IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4389,18 +4378,15 @@ C
 C     Some memory allocation
 C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      NPOS = 0
-      IF(PARCAL) THEN
-C       We will always allocate the maximum size, even if some 
-C       integral classes are inactive (keep the code simple)
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        NPOS = NPOS + NSMLBL*NLRGBL
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      ELSE
-        KPOS = KFREE
-      ENDIF
+
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
 C     Modify some variables to make things work...
 C

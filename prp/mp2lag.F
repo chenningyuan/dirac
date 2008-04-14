@@ -163,16 +163,14 @@ C
 C            
 C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
 C            
-      NPOS = 0
-      IF(PARCAL) THEN
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2 
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-      ENDIF       
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-      FIRST1 = .TRUE.
-      FIRST2 = .TRUE.
-      FIRST3 = .TRUE.
+
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
 C     Memory allocation
 C     ====================================================

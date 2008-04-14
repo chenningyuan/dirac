@@ -3457,7 +3457,7 @@ C
 #include "dcbham.h"
 #include "cbihr2.h"
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
-      LOGICAL TOBE,BF1,BF2,BF3
+      LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
      &          WORK(*)
@@ -3477,19 +3477,16 @@ C
       ELSE
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
-        NPOS = 0
-        IF(PARCAL) THEN
-          BF1  = FIRST1
-          BF2  = FIRST2
-          BF3  = FIRST3
-          FIRST1 = .TRUE.
-          FIRST2 = .TRUE.
-          FIRST3 = .TRUE.
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        ENDIF
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
+        call SaveTaskDistribFlags(saveflags)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+        call SetIntTaskArrayDimension(NPOS,PARCAL)
+        if (NPOS.GT.0) THEN
+           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        else
+           KPOS = KFREE
+        endif
+
 C
 C       Closed shell Hartree - Fock
 C       ===========================
@@ -3511,11 +3508,9 @@ C       Hermitian operator
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
      &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
-        IF(PARCAL) THEN
-          FIRST1 = BF1
-          FIRST2 = BF2
-          FIRST3 = BF3
-        ENDIF
+
+        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
       ENDIF
 C
 C     3a. Solvent: get solvent contribution

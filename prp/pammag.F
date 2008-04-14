@@ -1239,16 +1239,15 @@ C     IFCKOP(3) = 1
       IFCKOP(3) = JBTOF(ISYM(3)-1,1)
 
       NFMTX = 3 ! Number of Fock matrixes - 3(x,y,z)
-      NPOS = 0
-      IF(PARCAL) THEN 
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        FIRST1=.TRUE.
-        FIRST2=.TRUE.
-        FIRST3=.TRUE.
-      ENDIF
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
+
 C ... get all 3 terms, {T(1),g(0)-add}_x/y/z,
 C ...  into WORK(KF2TR(1-3)) AT ONCE !
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,

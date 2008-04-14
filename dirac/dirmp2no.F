@@ -250,7 +250,7 @@ C
 #include "dcbmp2no.h"
 #include "blocks.h"
 C
-      LOGICAL BF1,BF2,BF3
+      LOGICAL SAVEFLAGS(4)
       DIMENSION WORK(*)
 C
 #include "memint.h"
@@ -261,31 +261,22 @@ C
       CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      NPOS = 0
-      IF (PARCAL) THEN
-        BF1  = FIRST1
-        BF2  = FIRST2
-        BF3  = FIRST3
-        FIRST1 = .TRUE.
-        FIRST2 = .TRUE.
-        FIRST3 = .TRUE.
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-      ENDIF
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
 C
       CALL MP2NOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MP2NOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      IF (PARCAL) THEN
-         FIRST1 = BF1
-         FIRST2 = BF2
-         FIRST3 = BF3
-      ENDIF
-      RETURN
+      IF (PARCAL) call SetTaskDistribFlags(saveflags)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mp2noge1 */

@@ -672,10 +672,6 @@ c     Multiply with -j from the right
 
 
       SUBROUTINE STEX_GET_NPOS(NPOS)
-C     Parallel calculations require an integer array describing the
-C     slave tasks as argument to TWOFCK. This subroutine calculates
-C     its length, and sets the FIRST* variables to make TWOFCK fill
-C     the array with new content.
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -686,17 +682,9 @@ C     the array with new content.
 #include "cbihr2.h"
 #include "blocks.h"
 #include "dcbfir.h"
-      NPOS = 0
-      IF(PARCAL) THEN
-C     ulfek: Should we save the old state of the first vars, like
-C     it is done in pamset.F ?
-         FIRST1 = .TRUE.
-         FIRST2 = .TRUE.
-         FIRST3 = .TRUE.
-         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-       ENDIF
+      integer npos
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
       END
 
       SUBROUTINE STEX_CALC_INTEGRALS(CMO,WORK,KFREE,LFREE)

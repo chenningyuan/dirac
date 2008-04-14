@@ -2974,15 +2974,8 @@ C
 C
 C Settings for parallel calculation
 C
-      NPOS = 0
-      IF (PARCAL) THEN
-         FIRST1 = .TRUE.
-         FIRST2 = .TRUE.
-         FIRST3 = .TRUE.         
-         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-      END IF
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
 C
 C Print
 C
