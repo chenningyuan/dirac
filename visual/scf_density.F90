@@ -13,7 +13,6 @@ module scf_density_class
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 
   type gao_data_t
     integer(kind_i4)              :: max_derivative
@@ -26,14 +25,14 @@ module scf_density_class
 
   type density_t
     real(kind_dp)     :: scalar
+    logical           :: is_vector
     type(dp_vector_t) :: vector
-    integer(kind_i4)  :: hermiticity
+    integer(kind_i4)  :: t_symmetry
+    integer(kind_i4)  :: transforms_as
     logical           :: diagonal
+    logical           :: times_minus_im
     real(kind_dp)     :: factor_lx
     real(kind_dp)     :: factor_xs
-    logical           :: grad
-    logical           :: div
-    logical           :: rot
   end type density_t
 
   public gao_data_t, density_t
@@ -48,60 +47,65 @@ module scf_density_class
 
 contains
 
-  subroutine init_density(self, op, kind)
+  subroutine init_density(self, kind)
     type(density_t), intent(inout) :: self
-    character,       intent(in)    :: op
     character,       intent(in)    :: kind
+
+#include "dcbgen.h"
 
     self%scalar = 0.0d0
     self%vector = 0.0d0
 
-    self%grad   = .false.
-    self%div    = .false.
-    self%rot    = .false.
-
-    select case (op)
-      case ('none')
-      case ('grad')
-        self%grad = .true.
-      case ('div')
-        self%div  = .true.
-      case ('rot')
-        self%rot  = .true.
-      case default
-      call quit('error in init_density')
+    select case (kind)
+      case ('s', 'a', 'iba', 'bs')
+        self%is_vector = .true.
+      case ('1', 'g', 'ibg', 'b')
+        self%is_vector = .false.
     end select
 
     select case (kind)
-      case ('n', 'gamma5')
-        self%hermiticity =  1
-      case ('j', 's', 'bs')
-        self%hermiticity = -1
-      case default
-      call quit('error in init_density')
+      case ('1', 'g', 'iba', 'b')
+        self%t_symmetry =  1
+      case ('s', 'a', 'ibg', 'bs')
+        self%t_symmetry = -1
     end select
 
     select case (kind)
-      case ('n', 'gamma5', 's', 'bs')
+      case ('1', 'g', 'ibg', 'b')
+        self%transforms_as = 0
+      case ('a', 'iba')
+        self%transforms_as = 1
+      case ('s', 'bs')
+        self%transforms_as = 2
+    end select
+
+    select case (kind)
+      case ('1', 's', 'b', 'bs')
         self%diagonal = .true.
-      case ('j')
+      case ('g', 'a', 'ibg', 'iba')
         self%diagonal = .false.
-      case default
-      call quit('error in init_density')
     end select
 
     select case (kind)
-      case ('n', 'gamma5', 's')
+      case ('ibg', 'iba')
+        self%times_minus_im = .true.
+      case ('1', 's', 'g', 'a', 'b', 'bs')
+        self%times_minus_im = .false.
+    end select
+
+    select case (kind)
+      case ('1', 's', 'g')
         self%factor_lx =  1.0d0
         self%factor_xs =  1.0d0
-      case ('bs')
+      case ('ibg', 'b', 'bs')
         self%factor_lx =  1.0d0
         self%factor_xs = -1.0d0
-      case ('j')
+      case ('a')
         self%factor_lx = -cval
         self%factor_xs = -cval
-      case default
-      call quit('error in init_density')
+      case ('ibaa')
+        self%factor_lx = -cval
+        self%factor_xs =  cval
     end select
   end subroutine init_density
 
@@ -216,71 +220,81 @@ contains
 
     self%buffer = 0.0d0
 
-    call getsos(self%gao, self%gao1, self%gao2,           &
-                dummy_dp, self%gao_center, p%x, p%y, p%z, &
-                self%buffer, dummy_dp, dummy_i4,          &
-                self%gao_center, self%max_derivative,     &
+    call getsos(self%gao, self%gao1, self%gao2,                   &
+                dummy_dp, self%gao_center,                        &
+                p%component(1),  p%component(2),  p%component(3), &
+                self%buffer, dummy_dp, dummy_i4,                  &
+                self%gao_center, self%max_derivative,             &
                 .false., 0)
   end subroutine get_gao_data
 
-  subroutine get_or_put_density(density, matrix, get_density, irepop, gao_data)
-    type(density_t),  intent(inout)         :: density
+  subroutine get_or_put_density(op, density, matrix, get_density, irepop, gao_data)
+    character(*),     intent(in)            :: op
+    type(density_t),  intent(inout), target :: density
     real(kind_dp),    intent(inout), target :: matrix(:, :, :)
     logical,          intent(in)            :: get_density
     integer(kind_i4), intent(in)            :: irepop
     type(gao_data_t), intent(in), target    :: gao_data
 
+    real(kind_dp),    pointer               :: density_pointer
     real(kind_dp),    pointer               :: matrix_iz_block(:, :), gao_slice_left(:), gao_slice_right(:), buffer(:)
+    integer(kind_i4)                        :: component_lx, component_xs, ixyz, iz
 
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "symmet.h"
 
+    if (density%diagonal) then
+      component_lx = 1
+      component_xs = 2
+    else
+      component_lx = 2
+      component_xs = 1
+    end if
 
-!'grad' 'div' 'rot'
+    buffer => gao_data%buffer
 
-
-
-
-
-
-
-!     1 get   1 "nothing"     1 "nothing"   1 1_{4x4}
-!     2 put   2 \nabla        2 \cdot       2 c \alpha
-!                             3 \times      3 \Sigma
-!                                           4 \beta\Sigma
-!                                           5 \gamma_5
-
-
-
-
-    logical                                 :: diagonal
-    real(kind_dp)                           :: scale_by
-
-
-
-
-!   diagonal = .true.
     gao_slice_left  => gao_data%gao
     gao_slice_right => gao_data%gao
-    buffer => gao_data%buffer
-    matrix_iz_block => matrix(:, :, 1)
 
+    if (density%is_vector) then
+      do ixyz = 1, 3
 
+        iz = jm4pos(4 - ixyz)
+        iz = iqtopq(iz, isymax(ixyz, 2))
 
+        matrix_iz_block => matrix(:, :, iz)
 
-    call general_density_block(density%scalar, matrix_iz_block, get_density, irepop, gao_slice_left, gao_slice_right, &
-                               buffer, 1, 1, 1.0d0)
+        call general_density_block(density_pointer, matrix_iz_block,                               &
+                                   get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
+                                   gao_slice_left, gao_slice_right,                                &
+                                   buffer, 1, component_lx, density%factor_lx)
+        call general_density_block(density_pointer, matrix_iz_block,                               &
+                                   get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
+                                   gao_slice_left, gao_slice_right,                                &
+                                   buffer, component_xs, 2, density%factor_xs)
 
+      end do
+    else
 
+      matrix_iz_block => matrix(:, :, 1)
 
+      call general_density_block(density_pointer, matrix_iz_block, &
+                                 get_density, irepop,              &
+                                 gao_slice_left, gao_slice_right,  &
+                                 buffer, 1, component_lx, density%factor_lx)
+      call general_density_block(density_pointer, matrix_iz_block, &
+                                 get_density, irepop,              &
+                                 gao_slice_left, gao_slice_right,  &
+                                 buffer, component_xs, 2, density%factor_xs)
 
-
-
-
-
-
+    end if
   end subroutine get_or_put_density
 
-  subroutine general_density_block(density, matrix, get_density, irepop, gao_slice_left, gao_slice_right, &
-                                   buffer, component_left, component_right, scale_by)
+  subroutine general_density_block(density, matrix, get_density, irepop,    &
+                                   gao_slice_left, gao_slice_right, buffer, &
+                                   component_left, component_right, scale_by)
     real(kind_dp),    intent(inout)      :: density
     real(kind_dp),    intent(inout)      :: matrix(:, :)
     logical,          intent(in)         :: get_density
@@ -292,33 +306,37 @@ contains
     integer(kind_i4)                     :: i1, i2, n1, n2, j, irep1, irep2
     real(kind_dp)                        :: ddot, f
 
-    do irep1 = 0, nbsym - 1
-      n1 = nbbas(irep1, component_left)
-      if (n1 > 0) then
+#include "dcbham.h"
 
-        irep2 = ieor(irep1, irepop)
-        n2 = nbbas(irep2, component_right)
-        if (n2 > 0) then
+    if (.not.((component_left + component_right > 2) .and. (mc == 1))) then
+      do irep1 = 0, nbsym - 1
+        n1 = nbbas(irep1, component_left)
+        if (n1 > 0) then
 
-          if(get_density) then
-            i1 = ibbas(irep1, component_left)  + 1
-            i2 = ibbas(irep2, component_right) + 1
+          irep2 = ieor(irep1, irepop)
+          n2 = nbbas(irep2, component_right)
+          if (n2 > 0) then
 
-            call dgemv('n', nbbas(irep1, component_left), nbbas(irep2, component_right), 1.0d0, &
-                       matrix(i1, i2), ntbas(0), gao_slice_right(i2), 1, 0.0d0, buffer, 1)
-            density = density + scale_by*ddot(nbbas(irep1, component_left), gao_slice_left(i1), 1, buffer, 1)
-          else
-            i1 = ibbas(irep1, component_left)
-            i2 = ibbas(irep2, component_right)
+            if (get_density) then
+              i1 = ibbas(irep1, component_left)  + 1
+              i2 = ibbas(irep2, component_right) + 1
 
-            do j = 1, n2
-              f = scale_by*density*gao_slice_right(i2 + j)
-              call daxpy(n1, f, gao_slice_left(i1 + 1), 1, matrix(i1 + 1, i2 + j), 1)
-            end do
+              call dgemv('n', nbbas(irep1, component_left), nbbas(irep2, component_right), 1.0d0, &
+                         matrix(i1, i2), ntbas(0), gao_slice_right(i2), 1, 0.0d0, buffer, 1)
+              density = density + scale_by*ddot(nbbas(irep1, component_left), gao_slice_left(i1), 1, buffer, 1)
+            else
+              i1 = ibbas(irep1, component_left)
+              i2 = ibbas(irep2, component_right)
+
+              do j = 1, n2
+                f = scale_by*density*gao_slice_right(i2 + j)
+                call daxpy(n1, f, gao_slice_left(i1 + 1), 1, matrix(i1 + 1, i2 + j), 1)
+              end do
+            end if
           end if
         end if
-      end if
-    end do
+      end do
+    end if
   end subroutine general_density_block
 
   subroutine print_square_q_matrix(matrix, matrix_dimension)
@@ -335,7 +353,6 @@ contains
                 nz,               &
                 ipqtoq(1, 0),     &
                 lupri)
-
   end subroutine print_square_q_matrix
 
 end module scf_density_class
