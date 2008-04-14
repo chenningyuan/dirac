@@ -1336,7 +1336,7 @@ case $machine in
 
       case "$F77real" in
       g95)
-         opt="-O3 -ffast-math -Wno=155"
+         opt="-O3 -ffast-math -Wno=155 -fno-second-underscore"
 	 mod="-fmod=$MODULE_DIR"
          ;;
       g77|f77)
