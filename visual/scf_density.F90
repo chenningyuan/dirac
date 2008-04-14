@@ -266,28 +266,28 @@ contains
 
         matrix_iz_block => matrix(:, :, iz)
 
-        call general_density_block(density_pointer, matrix_iz_block,                               &
-                                   get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
-                                   gao_slice_left, gao_slice_right,                                &
-                                   buffer, 1, component_lx, density%factor_lx)
-        call general_density_block(density_pointer, matrix_iz_block,                               &
-                                   get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
-                                   gao_slice_left, gao_slice_right,                                &
-                                   buffer, component_xs, 2, density%factor_xs)
+!       call general_density_block(density_pointer, matrix_iz_block,                               &
+!                                  get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
+!                                  gao_slice_left, gao_slice_right,                                &
+!                                  buffer, 1, component_lx, density%factor_lx)
+!       call general_density_block(density_pointer, matrix_iz_block,                               &
+!                                  get_density, ieor(isymax(ixyz, density%transforms_as), irepop), &
+!                                  gao_slice_left, gao_slice_right,                                &
+!                                  buffer, component_xs, 2, density%factor_xs)
 
       end do
     else
 
       matrix_iz_block => matrix(:, :, 1)
 
-      call general_density_block(density_pointer, matrix_iz_block, &
-                                 get_density, irepop,              &
-                                 gao_slice_left, gao_slice_right,  &
-                                 buffer, 1, component_lx, density%factor_lx)
-      call general_density_block(density_pointer, matrix_iz_block, &
-                                 get_density, irepop,              &
-                                 gao_slice_left, gao_slice_right,  &
-                                 buffer, component_xs, 2, density%factor_xs)
+!     call general_density_block(density_pointer, matrix_iz_block, &
+!                                get_density, irepop,              &
+!                                gao_slice_left, gao_slice_right,  &
+!                                buffer, 1, component_lx, density%factor_lx)
+!     call general_density_block(density_pointer, matrix_iz_block, &
+!                                get_density, irepop,              &
+!                                gao_slice_left, gao_slice_right,  &
+!                                buffer, component_xs, 2, density%factor_xs)
 
     end if
   end subroutine get_or_put_density
