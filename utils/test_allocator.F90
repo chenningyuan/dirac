@@ -81,42 +81,49 @@
          write (*,*) 'is 4 allocated? ',allocated(vdatarl)
          write (*,*) 'is 5 allocated? ',allocated(vdatadb)
 
-!         call allocator_PrintStats()
+      !   call allocator_PrintStats()
+
+           !call get_memory_info(kbytesAvailable,charArrayLength)
+         ! MI: how to find out the amount of free memory ?
+         print *,'before 1.large allocations...available', &
+                   kbytesAvailable,' kbytes'
 
          v2size = 100000000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 1, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
-         call dealloc(vdatadb)
+         call dealloc(vdatadb) ! mi: 2 times, it should continue
+
+         print *,'before 2. large allocations...available', &
+                   kbytesAvailable,' kbytes'
           
          v2size = 1000000000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 2, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
          v2size = 2207784000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 3, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
          v2size = 22077845000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 4, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
          v2size = 100000000000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 5, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
-
          v2size = 100000000000
-         write (*,*) 'large allocation test, n =',v2size
+         write (*,*) 'large allocation test 6, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)

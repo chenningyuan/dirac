@@ -965,6 +965,12 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
       # ...  testing program for the new  DIRAC memory allocator
 	\$(F77)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
+
+ta    : GP_OBJ PD_OBJ UTIL_OBJ 
+      # ...  testing program for the new  DIRAC memory allocator
+	\$(F77)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
+	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
+
 EOF
 
 #########################################################

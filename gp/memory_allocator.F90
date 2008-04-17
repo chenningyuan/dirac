@@ -119,8 +119,8 @@
                      kbytesRequested = (size*data_kind)/1024
 
                      InfoMessage  = 'Error! Allocation failed!'
-                     write (*,*) kbytesRequested
-                     write (*,*) kbytesAvailable
+                    ! write (*,*) kbytesRequested
+                    ! write (*,*) kbytesAvailable !MI: in the next    message 
                      write (InfoMessage,'(a,i12,a)') 'Attempted to allocate ',kbytesRequested, &
                                                      ' kB but only '//kbytesAvailable(1:24)//'available'
 
