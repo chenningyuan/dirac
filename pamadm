@@ -954,11 +954,16 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/rspread.o 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
 	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
+
+      # ... testing program for the quaternion jacobi diagonalization 
+	\$(F77) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
 	utils/qjaco.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
+
+	\$(F77) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
 	utils/vibcal.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
+
+      # ...  testing program for the new  DIRAC memory allocator
+	\$(F77)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 EOF
 
@@ -1048,7 +1053,7 @@ EOF
 #       based on which module files are to be genereated first.
 #
 #      For instance, CAP & HSMRCC functionalities depend 
-#      on OOF modules.
+#      upon OOF modules.
 #
 #########################################################
 echo "       " >> Makefile
@@ -1272,8 +1277,8 @@ EOF
 #TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
 TEMP="dirac prp pdpack main relccsd moltra dirrci lucita"
 
-# ... F90 modules introduced
-TEMPOOF="abacus gp"
+# ... directories with F90 modules 
+TEMPOOF="abacus gp utils"
 
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
