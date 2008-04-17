@@ -714,7 +714,11 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-         CALL QUIT("INCREASE MWORD")
+C aspg: comment out this for now, because MAXCOR in the dynamic
+C       setup should either be disregarded (and we allocate until)
+C       we fail OR by querying the operating system for the amount
+C       of free memory it has.
+cc       CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
