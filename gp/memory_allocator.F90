@@ -200,14 +200,18 @@
 ! memory allocation routines
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-            subroutine alloc_real(data,size)
+            subroutine alloc_real(data,size,id)
                integer            :: size, status
+               character(len=*), optional :: id
                real(kind=kreal), allocatable, target :: data(:)
               
                if (.not.allocated(data)) then
                   allocate(data(size),stat=status) 
 
                   if ( status.ne.0 ) then
+                     if (present(id)) then
+                        write (*,*) 'Warning: for identifier ',id
+                     endif
                      call allocErrorHandler(allocateFailure,size,kind(data))
 
                   else
@@ -233,15 +237,19 @@
                
 !            end subroutine registerAllocationReal
 
-            subroutine alloc_int(data,size)
+            subroutine alloc_int(data,size,id)
                integer  :: status
                integer :: size
+               character(len=*), optional :: id
                integer, allocatable :: data(:)
                
                if (.not.allocated(data)) then
                   allocate(data(size),stat=status)
 
                   if ( status.ne.0 ) then
+                     if (present(id)) then
+                        write (*,*) 'Warning: for identifier ',id
+                     endif
                      call allocErrorHandler(allocateFailure,size,kind(data))
 
                   else
@@ -261,14 +269,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 
-            subroutine dealloc_real(data)
+            subroutine dealloc_real(data, id)
                integer :: status
+               character(len=*), optional :: id
                real(kind=kreal), allocatable :: data(:)
 
                if (allocated(data)) then
                   deallocate(data,stat=status)
                   
                   if ( status.ne.0 ) then
+                     if (present(id)) then
+                        write (*,*) 'Warning: for identifier ',id
+                     endif
                      call allocErrorHandler(deallocateFailure)
                      
                   endif
