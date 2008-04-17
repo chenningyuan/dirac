@@ -131,7 +131,6 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
-      aoresponse   = .false.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -378,11 +377,7 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
-#ifdef MOD_AORESPONSE
-            aoresponse = .true.
-            dipole     = .true.
-            doexp      = .true.
-#endif /* MOD_AORESPONSE */
+C&&&& XXXXXX
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX

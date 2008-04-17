@@ -35,6 +35,7 @@ usage()
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -cdft            : Include SDFT/CDFT module'
    echo '     -visual          : Include visualization module'
+   echo '     -aoresponse      : Include AO response module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
@@ -225,6 +226,17 @@ setup()
       VISUALTAR=1
       F90MODS=ALL_F90MODS
       echo " - visualization module"
+   fi
+   #
+   #  AO response module
+   #
+   if [ -n "$AORESPONSEMOD" ]; then
+      AORESPONSEFLG='-DMOD_AORESPONSE'
+      AORESPONSEOBJ='$(AORESPONSEOBJS)'
+      AORESPONSEMAK=AORESPONSE_OBJ
+      AORESPONSETAR=1
+      F90MODS=ALL_F90MODS
+      echo " - AO response module"
    fi
    #
    #         CAP module
@@ -448,6 +460,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/visual/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$AORESPONSETAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/aoresponse/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$CAPTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -518,8 +535,8 @@ if [ -n "$IBMMOD" ]; then
   echo $MODS
 fi
    echo "*** Making general Makefile"
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $AORESPONSEOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
    #
    # Write current Makefile
    #
@@ -791,6 +808,16 @@ visual/scf_density.o
 EOF
 fi
 #
+#  Object-files for AO response module
+#
+if [ -n "$AORESPONSEMOD" ]; then
+cat <<EOF>> Makefile
+
+AORESPONSEOBJS = \\
+aoresponse/aoresponse_main.o
+EOF
+fi
+#
 #  Object-files for CAP module
 #
 if [ -n "$CAPMOD" ]; then
@@ -862,7 +889,7 @@ OBJSMXM = gp/mxmpack.o
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
 	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS) \$(ECPOBJS)\\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
-        \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS)
+        \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS) \$(AORESPONSEOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -1029,6 +1056,9 @@ fi
 if [ -n "$VISUALMOD" ]; then
    echo '	cd visual  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$AORESPONSEMOD" ]; then
+   echo '	cd aoresponse  ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$CAPMOD" ]; then
    echo '	cd cap  ; $(MAKE) clean' >> Makefile
 fi
@@ -1072,6 +1102,9 @@ if [ -n "$MODULES" ]; then
   echo '     cd  gp         &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   if [ -n "$VISUALMOD" ]; then
   echo '     cd  visual     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  fi
+  if [ -n "$AORESPONSEMOD" ]; then
+  echo '     cd  aoresponse &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
   fi
   if [ -n "$EMBMOD" ]; then
   echo '     cd  embedding  &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
@@ -1218,6 +1251,13 @@ VISUAL_OBJ :
 	cd visual; \$(MAKE) all
 EOF
 fi
+if [ -n "$AORESPONSEMOD" ]; then
+cat <<EOF>> Makefile
+
+AORESPONSE_OBJ :
+	cd aoresponse; \$(MAKE) all
+EOF
+fi
 if [ -n "$CAPMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1324,6 +1364,10 @@ if [ -n "$VISUALMOD" ]; then
    TEMP="$TEMP visual"
    TEMPOOF="$TEMPOOF visual"
 fi
+if [ -n "$AORESPONSEMOD" ]; then
+   TEMP="$TEMP aoresponse"
+   TEMPOOF="$TEMPOOF aoresponse"
+fi
 if [ -n "$CAPMOD" ]; then
 #   TEMP="$TEMP cap"
    TEMPOOF="$TEMPOOF cap"
@@ -1387,12 +1431,12 @@ which_modules()
 if [ -n "$IBMMOD" ]; then
 # I assume that DFTFLG is always activated...
    MODS="$DFTFLG"
-   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
       do 
       MODS="$MODS,$mod"
       done
 else
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
 fi
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
@@ -1421,6 +1465,9 @@ if [ -n "$CDFTFLG" ]; then
 fi
 if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
+fi
+if [ -n "$AORESPONSEFLG" ]; then
+   dirs="$dirs aoresponse"
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
@@ -1515,6 +1562,10 @@ while [ -n "$1" ]; do
          ;;
       -visual)
          VISUALMOD=1
+	 MODULES=1
+         ;;
+      -aoresponse)
+         AORESPONSEMOD=1
 	 MODULES=1
          ;;
       -cap)

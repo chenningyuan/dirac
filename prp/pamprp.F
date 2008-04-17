@@ -1354,10 +1354,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#ifdef MOD_AORESPONSE
-      use aoresponse_interface_m
-#endif /* MOD_AORESPONSE */
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1380,11 +1376,6 @@ C     Dipole moment
 C
       IF(DIPOLE) THEN
         CALL PRP_DIPOLE(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
-#ifdef MOD_AORESPONSE
-        if (aoresponse) then
-          call get_aoresponse()
-        end if
-#endif /* MOD_AORESPONSE */
       ENDIF
 C
 C     Quadrupole moment
