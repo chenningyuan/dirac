@@ -1050,10 +1050,9 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C*****************************************************************************
-C#ifdef MOD_EMB
-C      USE Embedding
-C#endif
-
+#ifdef MOD_EMB
+      USE FDE_MOD, ONLY: GetFDEPotential_FromFile, DO_FDE
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1065,19 +1064,9 @@ C
 #include "dgroup.h"
 #include "cbihr1.h"
 
-#if defined (MOD_EMB)
-#include "fde.h"
-#endif
-
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
 
-c!     Initialize Embedding Module
-c!     ===========================
-c
-c#ifdef MOD_EMB
-c      CALL start_Embedding ()
-c#endif
 
 C
 C     Generate one-electron Fock matrix and write to file
@@ -1524,7 +1513,7 @@ C
       CLOSE(LUFCK2,STATUS='KEEP')
       CLOSE(LUCYCL,STATUS='KEEP')
       CLOSE(LUEVEC,STATUS='KEEP')
-C
+
       CALL QEXIT('SCFCY1')
       RETURN
  1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
