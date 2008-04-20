@@ -3689,6 +3689,9 @@ C     Last revision: May 27 1998 - tsaue and kmi
 C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
+#if defined (MOD_EMB)
+      USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3713,9 +3716,6 @@ C
 #if defined (MOD_DFT)
 #include "dftcom.h"
 Cdirac#include "functionals.h"
-#endif
-#if defined (MOD_EMB)
-#include "fde.h"
 #endif
 #if defined (MOD_ERI)
 #include "cbieri.h"
@@ -4201,7 +4201,7 @@ C&&& POSVAC: Use positronic vacuum polarisation
   142     CONTINUE
 C&&& FDE: Frozen density embedding switch 
 #if defined (MOD_EMB)
-             DO_FDE = .TRUE.
+C             DO_FDE = .TRUE.
              CALL FDEINI()
 #endif
              GO TO 100
