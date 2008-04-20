@@ -35,6 +35,22 @@
 !
 ! in the end  : the embedding potential is added to fdemat. 
 !
+      MODULE FDE_MOD
+C      IMPLICIT NONE
+      USE GRID_FILE
+      USE FILE, ONLY: OPEN_FILE
+
+      PRIVATE
+      PUBLIC GetFDEPotential_FromFile, FDEINI,FDEINP,FDE_GRIDOUT
+      PUBLIC DO_FDE,DO_GRID_OUT
+           
+      LOGICAL,SAVE :: DO_FDE=.FALSE.,DO_GRID_OUT=.FALSE.
+      INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47
+      INTEGER,SAVE :: print_fde=0
+      CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',GRIDOUT_NAME=''
+      
+      CONTAINS
+
       SUBROUTINE GetFDEPotential_FromFile(fdemat,work,lwork)
 #include "implicit.h"
 #include "priunit.h"
@@ -45,18 +61,20 @@
 #include "dftcom.h"
 #include "ccom.h"
 #include "inforb.h"
-#include "fde.h"
-      integer p,q
-      dimension work(lwork)
+      INTEGER :: p,q,npoints
+      TYPE(GRID_DATA),POINTER :: points(:)
+      REAL(KIND=8) :: work(lwork)
+      REAL(KIND=8),ALLOCATABLE :: GAO(:),BUF(:),NCNT(:)
+
 #if defined (PRG_DIRAC)
-      dimension fdemat(nbast,nbast)
+      REAL(KIND=8) :: fdemat(nbast,nbast)
 #else
 !     maybe better to make implicit size for dalton, or in general?
 !     dimension fdemat(*)
 #include "symmet.h"
-      dimension fdemat(nnbasx)
+      REAL(KIND=8) :: fdemat(nnbasx)
 #endif
-      logical debug, embpot_found
+      LOGICAL :: debug, embpot_found
 !
       call qenter('GetFDEPotential_FromFile')
 #include "memint.h"
@@ -73,9 +91,10 @@
       write (LUPRI,*) ' '
       inquire(FILE=FDEPOT,EXIST=embpot_found)
       if (.not.embpot_found) then
+         write(LUPRI,*) 'JHS', FDEPOT, embpot_found
          call quit ('Fatal error: FDE potential file not present')
       endif
-
+ 
       if (debug) then
 !        for testing purposes, we will use this file to dump the grid we read.
          open(lutesting,
@@ -95,39 +114,30 @@
 !     the grid. the size of the grid is then used to allocate workspace for 
 !     reading the actual grid, along with the embedding potential at each point
       rewind lufdepot
-      read (lufdepot,*) npoints
-      if (debug) write (LUPRI,*) 'debug: #points to be read:',npoints
 
-      if (npoints.gt.0) then
-         CALL MEMGET('REAL',KX,NPOINTS,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KY,NPOINTS,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KZ,NPOINTS,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KW,NPOINTS,WORK,KFREE,LFREE)
-      else
-         call quit ('Fatal error: empty FDE potential file')
-      endif
+      CALL READ_GRID(lufdepot,points,npoints)
 
-      CALL RYO_GRID(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
-     &              lufdepot,NPOINTs)
-      close (lufdepot)
-
-      if (debug) then
-         call header ('1-electron matrix, before fde update',-1)
-         call printdmat(1,ndimension,fdemat)
-      endif
+C      if (debug) then
+C         call header ('1-electron matrix, before fde update',-1)
+C         call PRINTDMAT(1,ndimension,fdemat)
+C      endif
 
 !     we allocate the variables to hold the value of the basis functions
 !     at the grid ponts, and also some work arrays
 #if defined (PRG_DIRAC)
-      call memget ('REAL',kgao ,  ndimension,work,kfree,lfree)
-      call memget ('REAL',kbuf ,4*ndimension,work,kfree,lfree)
-      call memget ('REAL',kncnt,4*ndimension,work,kfree,lfree)
+      ALLOCATE(GAO(NDIMENSION))
+      ALLOCATE(NCNT(4*NDIMENSION))
+      ALLOCATE(BUF(4*NDIMENSION))
 #else
-      call memget ('REAL',kgao ,  ndimension*ntypso,work,kfree,lfree)
-      call memget ('REAL',kncnt,  ndimension,work,kfree,lfree)
+      ALLOCATE(GAO(NDIMENSION*NTYPESO))
+      ALLOCATE(KNCNT(NDIMENSION))
       call setupsos(0,.false.,idum1,idum2)
 #endif
 
+C     Initialize variables.
+      gao=0
+      NCNT=0
+      BUF=0
       nder   = 0
       iprint = 0
       irepop = 0
@@ -135,53 +145,54 @@
       if (debug) write (lutesting,'(I10)') npoints
 
       do i = 1, npoints              ! begin numerical integration
-         ioff = i-1
-
 
          if (debug)                                 ! dump of grid points 
-     &   write (lutesting,'(4(E25.18,2X))') work(kx+ioff),work(ky+ioff),
-     &                                      work(kz+ioff),work(kw+ioff)
+     &   write (lutesting,*) points(i)%x,points(i)%vc
+
 
 #if defined (PRG_DIRAC)
 !       we get the value of all gaussians at the current grid point with 
 !       routines from dft
-         call getsos(work(kgao),dummy,dummy,dummy,
-     &               work(kcnt),
-     &               work(kx+ioff),
-     &               work(ky+ioff),
-     &               work(kz+ioff),
-     &               work(kbuf),
+         call getsos(gao,dummy,dummy,dummy,
+     &               ncnt,
+     &               points(i)%x(1),
+     &               points(i)%x(2),
+     &               points(i)%x(3),BUF,
      &               work,lwork,ndimension,0,.false.,iprfde)
 
-!         only the upper triangular part of the one electron embedding 
-!         potential matrix is calculated.
-          do p = 1, ndimension
-            do q = p, ndimension
-               
-!              first we get the value of the orbital pair (gamma_pq) at point i
-!              and multiply it by the embedding potential, and just for the
-!              LL or SS blocks... 
-               if ((p.le.nlarge).and.(q.gt.nlarge)) then
-                  gamma_pq      = 0
-               else
-                  gamma_pq      = work(kgao+(p-1))*work(kgao+(q-1))
-               endif
-               ep_pq_update  = work(kw+ioff)*gamma_pq
+!        only the upper triangular part of the one electron embedding 
+!        potential matrix is calculated. 
+         do p = 1, ndimension
+           do q = p, ndimension
+              
+!            first we get the value of the orbital pair (gamma_pq) at point i
+!            and multiply it by the embedding potential, and just for the
+!            LL or SS blocks... 
+             if ((p.le.nlarge).and.(q.gt.nlarge)) then
+               gamma_pq      = 0
+             else
+               gamma_pq      = gao(p)*gao(q)
+             endif
+             ep_pq_update  = points(i)%vc*gamma_pq
 
-!              in dirac, we can work with the full matrix
-               fdemat(p,q) = fdemat(p,q) + ep_pq_update 
-               fdemat(q,p) = fdemat(p,q)
+!            in dirac, we can work with the full matrix
+             fdemat(p,q) = fdemat(p,q) + ep_pq_update 
+             fdemat(q,p) = fdemat(p,q)
 
-            enddo ! loop over q
-         enddo ! loop over p
+          enddo ! loop over q
+        enddo ! loop over p
 !
 #else   /* DALTON */
-!       getsos_fde is a simplification of getsos for our case. if there was
+!       getsos_fde is a simplific
+
+
+
+ation of getsos for our case. if there was
 !       no symmetry, getaos could have been used directly... 
-         call getsos_fde(work(kgao),work(kcnt),
-     &               work(kx+ioff),
-     &               work(ky+ioff),
-     &               work(kz+ioff),
+         call getsos_fde(gao,ncnt,
+     &               points(i)%x(1),
+     &               points(i)%x(2),
+     &               points(i)%x(3),
      &               work,lwork,
      &               ndimension,dfthri,iprdfe)
 
@@ -205,9 +216,9 @@
              do p = 1,naos(lambda)                 
                 do q = p,naos(lambda)    ! loop over the unique elements
 
-                   gamma_pq      = work(kgao+ibas_offt+(p-1))
-     &                           * work(kgao+ibas_offt+(q-1))
-                   ep_pq_update  = work(kw+ioff)*gamma_pq
+                   gamma_pq      = gao(ibas_offt+p)
+     &                           * work(ibas_offt+q)
+                   ep_pq_update  = points(i)%vc*gamma_pq
 
 !              we do the indexing for packed array storage [ij=i+j(j-1)/2] (see
 !              e.g the lapack documentation), but taking care of the offsetting
@@ -234,38 +245,34 @@
 
 #if defined (PRG_DIRAC)
 ! wonder why this crashes with dalton...
-      call memrel ('fde-grid',work,kx,kx,kfree,lfree)
 #endif
 
-      if (debug) close (lutesting)
+      DEALLOCATE(NCNT)
+      DEALLOCATE(BUF)
+      DEALLOCATE(GAO)
+      
+      DEALLOCATE(points)
+      
+      if (debug) close(lutesting)
       call qexit('GetFDEPotential_FromFile')
 
-      end
-
+      END SUBROUTINE
 
       SUBROUTINE FDEINI()
-#include "implicit.h"
-#include "priunit.h"
-#include "fde.h"
-!     set defalts for common /FDE/ 
-!     filename for embedding potential file
-      FDEPOT = 'EMBPOT'
-!     print level
-      IPRFDE = 0
-      END
+
+      END SUBROUTINE
 
 
       SUBROUTINE FDEINP(WORD,FDEHAM)
 #include "implicit.h"
 #include "priunit.h" 
-      PARAMETER (NTABLE = 4)
+#include "dcbgen.h"
+      PARAMETER (NTABLE = 8)
 C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include "fde.h"
 C
-      logical fdeham,newdef
-      DATA TABLE /'.EMBPOT','.PRINT ','.XXXXXX','.XXXXXX'/
+      logical :: FDEHAM,newdef
 C
 #include "memint.h"
 
@@ -275,103 +282,249 @@ C
       iunit = LUPRI
 #endif
 
-      NEWDEF = (WORD .EQ. '*FDE   ')
       ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-            write (*,*) 'processing line: ',word
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO ( 1, 2, 3, 4), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in FDEINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in FDEINP.')
- 1             CONTINUE
+      IF (WORD(1:7)=='*FDE   ') THEN
+        WORD1 = WORD
+        DO
+          READ (LUCMD, '(A7)') WORD
+          write (*,*) 'processing line: ',word
+          SELECT CASE (WORD(1:1))
+          CASE('!','#')
+            CYCLE
+          CASE('.')
+            ICHANG = ICHANG + 1
+            SELECT CASE(WORD(1:7))
+            CASE ('.OPTION')
+              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+              CYCLE
+            CASE ('.EMBPOT')
 ! read filename for the embedding potential
-               write (*,*) 'reading potential filename' 
-               READ(LUCMD,'(A30)') FDEPOT 
-               write (*,*) 'file is ',fdepot
-               GO TO 100
- 2             CONTINUE
+              write (*,*) 'reading potential filename' 
+              READ(LUCMD,'(A30)') FDEPOT 
+              write (*,*) 'file is ',fdepot
+C     JHS TMP hack for the case there is no embedding potential
+              DO_FDE=.TRUE.
+            CASE ('.PRINT')
 ! set printlevel 
-               write (*,*) 'reading potential filename' 
-               READ(LUCMD,*) IPRFDE 
-               write (*,*) 'print level is ',iprfde
-               GO TO 100
- 3             CONTINUE
-! add action here
-               GO TO 100
- 4             CONTINUE
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in FDEINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in FDEINP.')
-            END IF
+              write (*,*) 'reading potential filename' 
+              READ(LUCMD,*) print_fde 
+              write (*,*) 'print level is ',iprfde
+            CASE ('.GRIDOU')
+! WRITE TO THIS GRIDFILE
+              READ(LUCMD,'(A30)') GRIDOUT_NAME
+              DO_GRID_OUT=.TRUE.
+              DOPRP=.TRUE.
+              WRITE(LUPRI,*) 'FDE GRID for updated density',GRIDOUT_NAME
+            CASE DEFAULT
+              WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *           '" not recognized in FDEINP.'
+              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+              CALL QUIT('Illegal keyword in FDEINP.')
+            END SELECT
+          CASE('*')
+            EXIT
+          CASE DEFAULT
+            WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *         '" not recognized in FDEINP.'
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            CALL QUIT('Illegal prompt in FDEINP.')
+          END SELECT
+        END DO
       END IF
-  300 CONTINUE
 
 !     options are echoed
-      IF(.NOT.FDEHAM) GOTO 999
-      write (lupri,*) ' '
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &   ' Frozen Density Embedding Calculation Setup'
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A,I5)')  ' * Print level: ',IPRFDE
-      write(LUPRI,'(A,A60)') ' * FDE Potential read from file: ',FDEPOT
-      write (lupri,*) ' '
-  999 CONTINUE
-      end
+      IF(FDEHAM) THEN
+        write (lupri,*) ' '
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)')
+     &     ' Frozen Density Embedding Calculation Setup'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
+        write(LUPRI,'(A,A60)') ' * FDE Potential read from file: ',FDEPOT
+        write (lupri,*) ' '
+      END IF
+
+      END SUBROUTINE
+
+
+      SUBROUTINE TIME()
+#include "priunit.h"
+      INTEGER :: file
+      
+      INTEGER,save :: time_val1(8)=0
+      INTEGER      :: time_val2(8), delta_time
+      LOGICAL      :: test
+!     For timing
+      CHARACTER(LEN=12) :: date_tmp,time_tmp,zone_tmp
+
+      test=.FALSE.
+      DO i=1,8; if(.NOT.(time_val1(i)==0)) test=.TRUE.
+      END DO
+
+      IF (.NOT.(test)) THEN
+        CALL DATE_AND_TIME(date_tmp,time_tmp,zone_tmp,time_val1)
+        RETURN
+      END IF
+
+      CALL DATE_AND_TIME(date_tmp,time_tmp,zone_tmp,time_val2)
+
+      delta_time=1*(time_val2(7)-time_val1(7))
+     &         +60*(time_val2(6)-time_val1(6))
+     &         +60*(time_val2(5)-time_val1(5))
+     &       +3600*(time_val2(4)-time_val1(4))
+
+      WRITE(LUPRI,*) 'time_val1:', time_val1(:)
+      WRITE(LUPRI,*) 'time_val2:', time_val2(:)
+      WRITE(LUPRI,*) 'Time spent in embedding output routine: ', 
+     &     delta_time, ' s.'
+      WRITE(LUPRI,*) 'Time spent in embedding output routine: ', 
+     &     time_val2(4)-time_val1(4), ' d.',
+     &     time_val2(5)-time_val1(5), ' h.',
+     &     time_val2(6)-time_val1(6), ' m.',
+     &     time_val2(7)-time_val1(7), ' s.'
+      time_val1(:)=time_val2(:)
+
+      END SUBROUTINE
+
+      SUBROUTINE FDE_GRIDOUT(WORK,LWORK)
+      USE VC_GRID
+C      IMPLICIT NONE
+
+#include "priunit.h"
+#include "dcbbas.h"
+#include "maxaqn.h"
+#if defined (MOD_DNF)
+#include "densfit.h"
+#endif
+#include "onecom.h"
+#include "ccom.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+C     Passed variables
+      REAL(KIND=8) :: WORK(*)
+      INTEGER :: print_fde, LWORK
+
+C     Local variables
+      REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
+      REAL(KIND=8) :: CMO(NTBAS(0),NTBAS(0),4)
+      TYPE(grid_data),POINTER :: points(:) 
+      INTEGER :: npoints, i
+      INTEGER(KIND=8) :: NDIMENSION
+C     JHS THROW AWAY IN THE END?
+      INTEGER :: NDER=0, DOLND=0
+
+      REAL(KIND=8),ALLOCATABLE :: GAO(:), GAO1(:),GAO2(:),BUF(:),NCNT(:)
+      REAL(KIND=8),ALLOCATABLE :: GAB1(:)
+
+      REAL(KIND=8)::dummy,TOLS,TOLOG
+      REAL(KIND=8)::gexp=0.0,ncentc=1.0,factor=1.0
+      
+
+      WRITE(LUPRI,*) 'EMBEDDING DRIVE CALLED. FILE:', GRIDOUT_NAME,LWORK
+      CALL TIME()
+
+      NDIMENSION=NTBAS(0)
+#if defined (MOD_DNF)
+      IF(DF_FITVXC) NDIMENSION=MAX(NTBAS(0), NBASISAUX)
+#endif
+
+      ALLOCATE(GAO(NDIMENSION))
+      ALLOCATE(GAO1(3*NDIMENSION))
+      ALLOCATE(GAO2(6*NDIMENSION))
+      ALLOCATE(GAB1(3*NDIMENSION))
+      ALLOCATE(NCNT(NDIMENSION))
+      ALLOCATE(BUF(4*NDIMENSION))
+      
+C     Initialize the matrices to zero.
+      GAO=0.0
+      GAO1=0.0
+      GAO2=0.0
+      BUF=0.0
+      NCNT=0.0
+      GAB1=0.0
+      DMAT=0.0
+
+
+
+
+C     JHS Construct the density matrix.
+C     
+C     For the case of the SCF density:
+C     Get CMO from file.
+      CMO(:,:,:)=0.0
+      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1,LWORK)
+      if (print_fde>20) then
+         WRITE(LUPRI,*) 'CMO', CMO
+         WRITE(LUPRI,*) 'DMAT OLD', DMAT
+      end if
+
+C     SCF construct density matrix
+      CALL DENMAT(DMAT,CMO,print_fde)
+
+C     Correct DMAT for occupationnumbers
+
+
+C     TMP scaling
+      DMAT(:,:,:)=2*DMAT(:,:,:)
+
+
+C     GET an id for LUGRIDOUT.
+      LUGRIDOUT=OPEN_FILE(GRIDOUT_NAME)
+      IF (LUGRIDOUT<0)
+     &     CALL QUIT('ERROR OPENING GRIDOUT FILE. FILE: '
+     &     //GRIDOUT_NAME)
+      IF (LUGRIDOUT==0)
+     &     CALL QUIT('FILE FOR GRIDOUT DOES NOT EXISTS. FILE: '
+     &     //GRIDOUT_NAME)
+
+      CALL READ_GRID(LUGRIDOUT,points,npoints)
+      CLOSE(LUGRIDOUT)
+      WRITE(LUPRI,*) 'Grid read from file.'
+
+      
+
+      WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
+      DO i=1,size(points)
+C     JHS Get the values of the basisfunctions in every gridpoint
+        CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
+     &              points(i)%x(1),points(i)%x(2),points(i)%x(3),
+     &              BUF,WORK,LWORK,NDIMENSION,2,DOLND,print_fde)
+C     JHS calculate the SCF density and it's derivatives. 
+        CALL GETRHO(points(i)%rho,0,GAO,DMAT,BUF)
+        CALL GETGRHO(points(i)%grad_rho,0,GAO,GAO1,DMAT,BUF)
+        CALL GETLRHO(
+     &       points(i)%hes_rho(1),points(i)%hes_rho(2),
+     &       points(i)%hes_rho(3),points(i)%hes_rho(4),
+     &       points(i)%hes_rho(5),points(i)%hes_rho(6),
+     &       GAO,GAO1,GAO2,DMAT,BUF)
+C     JHS Calculate the coulomb potential.
+      END DO
+
+      IF (ALLOCATED(GAO)) DEALLOCATE(GAO)
+      IF (ALLOCATED(GAO1)) DEALLOCATE(GAO1)
+      IF (ALLOCATED(GAO2)) DEALLOCATE(GAO2)
+      IF (ALLOCATED(GAB1)) DEALLOCATE(GAB1)
+      IF (ALLOCATED(NCNT)) DEALLOCATE(NCNT)
+
+      WRITE(LUPRI,*) 
+     &    'Calculating the coulomb potential and its derivatives.'
+C      FLUSH(LUPRI)
+      CALL EMB_VC(DMAT,points,print_fde, WORK,LWORK)
+
+      WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
+      CALL WRITE_XML(GRIDOUT_NAME,points)
+      
+      DEALLOCATE(points)
+      CALL TIME()
+
+      END SUBROUTINE
+
 
 !
 ! auxiliary routines
 !
-#if !defined (PRG_DIRAC) /* e.g. for dalton */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* RYO_GRID */
-      SUBROUTINE RYO_GRID(X,Y,Z,W,LUNIT,NR_POINTS)
-C=======================================================================
-C     read your own grid from file
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                           last revision: february 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-      DIMENSION X(NR_POINTS),
-     &          Y(NR_POINTS),
-     &          Z(NR_POINTS),
-     &          W(NR_POINTS)
-
-      DO I = 1,NR_POINTS
-        READ(LUNIT,*) X(I), Y(I), Z(I), W(I)
-      ENDDO
-
-      RETURN
-      END
-#endif
 !
 ! in case we use dalton 2.0 or dirac without enabling ERI
 ! we include printdmat.
@@ -381,27 +534,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* PRINTDMAT */
 C aspg
 C taken from eri/eri2ftuv.F, added here for convenience
+
       SUBROUTINE PRINTDMAT( NSIM, NORBT, D )
 #include "implicit.h"
 #include "priunit.h"
+      INTEGER :: NSIM, NORBT
+      REAL(KIND=8) :: D(:)
 
-      DIMENSION D(*)
-
-      DO 200 ISIM=1,NSIM
+      DO ISIM=1,NSIM
         WRITE( LUPRI, * ) 'MATRIX NUMBER : ', ISIM
-          DO 100 I=1,NORBT
-            WRITE( LUPRI, 400 ) (D((I-1)*NORBT+J),J=1,NORBT)
- 100      CONTINUE
- 200  CONTINUE
+        DO I=1,NORBT
+          WRITE( LUPRI, 400 ) (D((I-1)*NORBT+J),J=1,NORBT)
+        END DO
+      END DO
 
  400  FORMAT(6F16.12)
 
       RETURN
-      END
+      END SUBROUTINE
 C
 #endif
 
 #if !defined (PRG_DIRAC)
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETSOS_FDE(GSO,NCNT,PX,PY,PZ,WORK,LWORK,NBAST,
      &                      DFTHRI,IPRINT)
@@ -440,3 +598,5 @@ C
       END IF
       END
 #endif
+
+      END MODULE FDE_MOD
