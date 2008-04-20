@@ -2707,6 +2707,24 @@ C
      &                '  Restarting CI calculation from vector. '
                       IOPT_INTFLG = IOPT_INTDEF
                       JTRLVL = 0
+                      IF( (NATOLCR .or. IANACI .eq. 1) .and. MAXCIT .le.
+     &                     0 )THEN
+C
+C                       RESTART from KRMCOLD in MCSCF run
+C                       Generate restart and vector blocking information
+C                       for LUCIAREL CI vectors:
+C
+                        WRITE(LUPRI,'(/A)')
+     &                        ' (ROPTST)  Restarting KRMC with' //
+     &                        ' LUCIAREL CI module'
+                        CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
+                        CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
+                        IF (IPRINT .GE. 0) THEN
+                           WRITE(LUPRI,'(/A)')
+     &                         ' (ROPTST)  CI start vector read from' //
+     &                         ' label CREF on file KRMCOLD'
+                        END IF
+                      END IF
                       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
                       CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
                       CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
