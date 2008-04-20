@@ -152,6 +152,10 @@ contains
 
 
 
+
+
+
+
   subroutine solve_perturbed_ao_dmat(property_index, ao_dmat, work, kfree, lfree)
     integer(kind_i4), intent(in)    :: property_index
 !   real(kind_dp),    intent(out)   :: ao_dmat(:, :, :)
@@ -168,11 +172,14 @@ contains
 
     integer :: IOP
     integer :: ksave
-    integer :: ifreq
+    integer :: ifreq, factor
+    integer :: half_length, max_full_length
 
     real(kind_dp),    allocatable :: eigenvalues_reduced(:), eigenvectors_reduced(:), convergence(:)
     real(kind_dp),    allocatable :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
     integer(kind_i4), allocatable :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
+
+    real(kind_dp),    allocatable :: response_vector_pp(:), response_vector_pn(:)
 
 
     real(kind_dp)                        :: frequencies(1)
@@ -289,28 +296,253 @@ contains
     deallocate(prop_gradient_pp)
     deallocate(prop_gradient_pn)
 
+    deallocate(ibtyp_pointer_c)
+
+    deallocate(convergence)
 
 
 
 
 
 
+!   construct the pp and pn response vectors
+!   ========================================
 
-!   construct the response vector from the solution in the reduced space
-!   ====================================================================
+    nesim = 0
+    npsim = 0
+    ncsim = 0
 
-    call lrvec(property_index, ibtyp, ibtyp_pointer_c, ibtyp_pointer_pp, ibtyp_pointer_pn, &
-               eigenvalues_reduced, eigenvectors_reduced, work(kfree), lfree)
+    if (static) then
+      factor = 1
+    else
+      factor = 2
+    end if
+
+    allocate(response_vector_pp(mzyee*nz))
+    allocate(response_vector_pn(mzyep*nz))
+
+    if (nzxope > 0) then
+
+      nesim           = nfreq*factor
+      half_length     = nzxope
+      max_full_length = mzyee
+
+      call construct_response_vector('opp', property_index,                     &
+                                     response_vector_pp,                        &
+                                     half_length, max_full_length,              &
+                                     ibtyp, ibtyp_pointer_pp,                   &
+                                     eigenvalues_reduced, eigenvectors_reduced, &
+                                     work, kfree, lfree)
+    end if
+
+    if (nzxopp > 0) then
+
+      npsim           = nfreq*factor
+      half_length     = nzxopp
+      max_full_length = mzyep
+
+      call construct_response_vector('opn', property_index,                     &
+                                     response_vector_pn,                        &
+                                     half_length, max_full_length,              &
+                                     ibtyp, ibtyp_pointer_pn,                   &
+                                     eigenvalues_reduced, eigenvectors_reduced, &
+                                     work, kfree, lfree)
+    end if
+
+    deallocate(response_vector_pp)
+    deallocate(response_vector_pn)
 
     deallocate(ibtyp)
-    deallocate(ibtyp_pointer_c)
     deallocate(ibtyp_pointer_pp)
     deallocate(ibtyp_pointer_pn)
   
     deallocate(eigenvalues_reduced)
     deallocate(eigenvectors_reduced)
-    deallocate(convergence)
+
+
+!   construct perturbed AO density matrices
+!   =======================================
+
+
+
+
+!     CALL SETGMT(ISYMOP,IHRMOP,IFCKOP,IBCVC,IBEVC,IBPVC,IBTYP,IPRXRS)
+!
+!     Calculate AO density matrices
+!     -----------------------------
+!
+!     Note: reuse memory and save in FMO:
+!        DVT(1..NCSIM), [DCX, DVX](1..NESIM), [DCX, DVX](1..NPSIM)
+!     Only the necessary matrices are saved.
+!
+!     CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
+!    &     WORK,KFREE,LFREE)
+
+
+
+
 
   end subroutine solve_perturbed_ao_dmat
+
+  subroutine construct_response_vector(vector_type, property_index,               &
+                                       response_vector_full,                      &
+                                       half_length, max_full_length,              &
+                                       ibtyp, ibtyp_pointer,                      &
+                                       eigenvalues_reduced, eigenvectors_reduced, &
+                                       work, kfree, lfree)
+
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "dcbxrs.h"
+#include "../prp/dcbxqr.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
+
+#include "dcbxpr.h"
+    character(*), intent(in) :: vector_type
+    real(kind_dp),    intent(inout) :: work(lfree)
+    integer,          intent(inout) :: kfree
+    integer,          intent(inout) :: lfree
+!
+    real(kind_dp),    allocatable :: response_vector_z(:, :, :)
+    real(kind_dp),    allocatable :: response_vector_y(:, :, :)
+    real(kind_dp)                 :: response_vector_full(:)
+    real(kind_dp),    allocatable :: buffer(:)
+!
+    integer :: property_index, IBTYP,ibtyp_pointer, nbtyp, nbred, lubvec, lufile
+    integer :: factor, half_length, max_full_length
+    integer :: KVECZ, KVECY, KRSPVC, Kbuffer, KIVECS, nzypar, ifr, iz, i, irec
+      PARAMETER ( D1=1.0D0, DM1=-1.0D0, DH=0.5D0 )
+      CHARACTER FILNAM*6,FILRSP*8,TYP*1
+      DIMENSION IBTYP(2,*), ibtyp_pointer(*), &
+                eigenvalues_reduced(*),eigenvectors_reduced(NREDM,*)
+
+
+
+
+
+    allocate(response_vector_z(half_length, nz, nfreq))
+    allocate(response_vector_y(half_length, nz, nfreq))
+    allocate(buffer(half_length*nz))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    select case (vector_type)
+      case ('opp')
+        nbtyp = 1
+        NBRED  = NERED
+        LUBVEC = LUBOE
+        FILNAM = 'PAMBOE'
+        TYP    = 'E'
+        LUFILE = LUQREE
+        FILRSP = 'QRVEC.EE'
+      case ('opn')
+        nbtyp = 2
+        NBRED  = NPRED
+        LUBVEC = LUBOP
+        FILNAM = 'PAMBOP'
+        TYP    = 'P'
+        LUFILE = LUQREP
+        FILRSP = 'QRVEC.EP'
+      case default
+        call quit('error in construct_response_vector_sub, unknown vector type')
+    end select
+
+!
+!     Construct response solution vectors by summing the trial
+!     vectors multiplied by the eigenvectors in the reduced
+!     system. Note that the trial vectors are of the form 
+!     (Z+Y) and (Z-Y).
+!
+    write(*, *) 'blub 1'
+      OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED', &
+           ACCESS='DIRECT',RECL=8*half_length*NZ,STATUS='OLD')
+      CALL DZERO(response_vector_z,half_length*NZ*NFREQ)
+      CALL DZERO(response_vector_y,half_length*NZ*NFREQ)
+      CALL MEMGET('INTE',KIVECS,NFREQ,WORK,KFREE,LFREE)
+      CALL XRSXV1(1,NBTYP,response_vector_z,eigenvectors_reduced,NFREQ,IBTYP,ibtyp_pointer,     WORK(KIVECS),buffer)
+      CALL XRSXV1(-1,NBTYP,response_vector_y,eigenvectors_reduced,NFREQ,IBTYP,ibtyp_pointer,   WORK(KIVECS),buffer)
+      CALL MEMREL('LRVEC1',WORK,KIVECS,KIVECS,KFREE,LFREE)
+      CLOSE(LUBVEC,STATUS='DELETE')
+!
+!     Write response vector to file: / Z \
+!                                    \ Y*/
+!
+      OPEN(LUFILE,FILE=FILRSP,FORM='UNFORMATTED', &
+           ACCESS='DIRECT',RECL=8*max_full_length*NZ,STATUS='UNKNOWN')
+!
+!     Zeroing response vector
+!
+      CALL DZERO(response_vector_full,max_full_length*NZ)
+
+      NZYPAR = 2*half_length
+
+      DO IFR=1,NFREQ
+
+         DO IZ=1,NZ
+            CALL DCOPY(half_length,response_vector_z(1,IZ,IFR),1,    response_vector_full(1+(IZ-1)*NZYPAR),1)
+            CALL DCOPY(half_length,response_vector_z(1,IZ,IFR),1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
+            CALL DAXPY(half_length,D1,response_vector_y(1,IZ,IFR),1,        response_vector_full(1+(IZ-1)*NZYPAR),1)
+            CALL DAXPY(half_length,DM1,response_vector_y(1,IZ,IFR),1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
+            IF (IPQTOQ(IZ,JSYMOP-1).GT.1)  &
+                 CALL DSCAL(half_length,DM1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
+         END DO
+         CALL DSCAL(max_full_length*NZ,DH,response_vector_full,1)
+         CALL INDQR(property_index,eigenvalues_reduced(IFR),IREC)
+         CALL WRTDAC(LUFILE,max_full_length*NZ,response_vector_full,IREC)
+!
+!     Write info to QRINFO file to be used on restart
+!
+         DNORM=DNORM2(max_full_length*NZ,response_vector_full,1)
+!        CALL WRTQR(PRPNAM(property_index),TYP,eigenvalues_reduced(IFR),IREC,DNORM)
+
+      END DO
+      CLOSE(LUFILE,STATUS='KEEP')
+!
+!     Print section
+!
+!     IF(IPRXQR.GE.10) THEN
+         WRITE(LUPRI,'(/2A,/A,5(/5F12.8))')  &
+              'blub Writing response vectors with label: ', &
+              PRPNAM(property_index),' at frequencies: ', &
+              (eigenvalues_reduced(I), I=1,NFREQ)
+         WRITE(LUPRI,'(2A)') ' to file: ',FILRSP
+!
+         CALL HEADER('X(+) vectors in LRVEC1',-1)
+         CALL PRBVEC(LUPRI,response_vector_z,NFREQ,half_length)
+         CALL HEADER('X(-) vectors in LRVEC1',-1)
+         CALL PRBVEC(LUPRI,response_vector_y,NFREQ,half_length)
+!     ENDIF
+
+
+
+
+
+
+
+
+    deallocate(response_vector_z)
+    deallocate(response_vector_y)
+    deallocate(buffer)
+
+  end subroutine construct_response_vector
 
 end module aoresponse_main_m
