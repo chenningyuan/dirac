@@ -1884,6 +1884,7 @@ C       in case of a parallel filesystem, we should use it
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
 #endif /* ifdef SYS_LOCALDISKS */
 C       no integral broadcast necessary
+        write(6,*) 'mcscf is ',MCSCF
         IF( NFLGRPS_REL .eq. 1 ) IIOMOD_REL = 1
 C
 C       MPI "shared memory" mode
@@ -2547,13 +2548,28 @@ C FIXME: Direct handling hardwired for the moment. Later, this
 C        should be made dynamical and controlled from the outside.
 C        Possibly also integrals reside on file in LUCIAREL
       IO_RCIST_IN = 0
-CC    IF (IO_RCIST_IN.EQ.1) THEN
+C
+C     SK - 03-04-08: analyzing converged MCSCF vector with LUCIAREL
+C                    set MOPT_MXMACRO to 0 and MAXCIT to 0
+C
+      IF( MOPT_MXMACRO .eq. 0 .and. MAXCIT .eq. 0 ) IO_RCIST_IN = 1
+      IF (IO_RCIST_IN.EQ.1) THEN
 CC      CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
 CC   &                  WORK(KFCACM),N2ASHXQ,WORK(KH2AC),
 CC   &                  (2*NASHT)**4*2,
 CC   &                  DUMMY,DUMMY,2,IRIQ,
 CC   &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-CC    END IF
+        REWIND LUC
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
+     &                  DUMMY,1,
+     &                  DUMMY,1,DUMMY,1,
+     &                  WORK(KRSCR),IDUMMY,2,MZ,
+     &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+C       release memory
+        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
+      END IF
+C
 C
 C
 C     Call LUCIAREL
