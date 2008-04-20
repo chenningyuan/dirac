@@ -137,6 +137,7 @@ C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
+      USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -269,6 +270,16 @@ C
       IF (DOEXP .OR. DOXLR .OR. DOCCM) THEN
          CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KLRCNV),
      &            WORK,KFREE,LFREE)
+      END IF
+C
+C**************************************************************************************
+C*****  OUTPUT of density, derivatives of density, and coulomb potential on a grid ****
+C**************************************************************************************
+C
+C JHS 17 apr 2008
+C
+      IF (DO_GRID_OUT) THEN
+         CALL FDE_GRIDOUT(WORK,LFREE)
       END IF
 C
 CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
