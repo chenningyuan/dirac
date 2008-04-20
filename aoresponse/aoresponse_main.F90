@@ -5,6 +5,8 @@ module aoresponse_main_m
 
   implicit none
 
+#include "priunit.h"
+
 ! type gao_data_t
 !   integer(kind_i4)              :: max_derivative
 !   integer(kind_i4), allocatable :: gao_center(:)
@@ -49,7 +51,7 @@ contains
     real(kind_dp)                        :: dip
     integer                              :: i
 
-  
+
 
       call init_mo_coef(mo_coef)
       call get_mo_coef(mo_coef)
@@ -63,7 +65,7 @@ contains
 
 !   write(*, *) 'calling PRPXL1_clone'
 !   call PRPXL1_clone(WORK,KFREE,LFREE)
- 
+
 
 
     do i = 1, 10
@@ -189,7 +191,7 @@ contains
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
     frequencies(1) = 0.0d0
- 
+
 
 
 
@@ -229,7 +231,7 @@ contains
 
 !     initialize configurational and orbital parameters
 !     =================================================
-  
+
 
          KSAVE  = KFREE
 
@@ -301,10 +303,6 @@ contains
     deallocate(convergence)
 
 
-
-
-
-
 !   construct the pp and pn response vectors
 !   ========================================
 
@@ -318,21 +316,25 @@ contains
       factor = 2
     end if
 
-    allocate(response_vector_pp(mzyee*nz))
-    allocate(response_vector_pn(mzyep*nz))
-
     if (nzxope > 0) then
 
       nesim           = nfreq*factor
       half_length     = nzxope
       max_full_length = mzyee
 
-      call construct_response_vector('opp', property_index,                     &
-                                     response_vector_pp,                        &
-                                     half_length, max_full_length,              &
-                                     ibtyp, ibtyp_pointer_pp,                   &
-                                     eigenvalues_reduced, eigenvectors_reduced, &
-                                     work, kfree, lfree)
+      allocate(response_vector_pp(max_full_length*nz))
+
+      call construct_response_vector('opp', property_index,   &
+                                     response_vector_pp,      &
+                                     half_length,             &
+                                     ibtyp, ibtyp_pointer_pp, &
+                                     eigenvalues_reduced,     &
+                                     eigenvectors_reduced)
+      call header('response_vector_pp',-1)
+      call prbvec(lupri, response_vector_pp, nfreq, max_full_length)
+
+      deallocate(response_vector_pp)
+
     end if
 
     if (nzxopp > 0) then
@@ -341,27 +343,37 @@ contains
       half_length     = nzxopp
       max_full_length = mzyep
 
-      call construct_response_vector('opn', property_index,                     &
-                                     response_vector_pn,                        &
-                                     half_length, max_full_length,              &
-                                     ibtyp, ibtyp_pointer_pn,                   &
-                                     eigenvalues_reduced, eigenvectors_reduced, &
-                                     work, kfree, lfree)
-    end if
+      allocate(response_vector_pn(max_full_length*nz))
 
-    deallocate(response_vector_pp)
-    deallocate(response_vector_pn)
+      call construct_response_vector('opn', property_index,   &
+                                     response_vector_pn,      &
+                                     half_length,             &
+                                     ibtyp, ibtyp_pointer_pn, &
+                                     eigenvalues_reduced,     &
+                                     eigenvectors_reduced)
+      call header('response_vector_pn',-1)
+      call prbvec(lupri, response_vector_pn, nfreq, max_full_length)
+
+      deallocate(response_vector_pn)
+
+    end if
 
     deallocate(ibtyp)
     deallocate(ibtyp_pointer_pp)
     deallocate(ibtyp_pointer_pn)
-  
+
     deallocate(eigenvalues_reduced)
     deallocate(eigenvectors_reduced)
 
 
 !   construct perturbed AO density matrices
 !   =======================================
+
+    call quit('blub')
+
+
+
+
 
 
 
@@ -384,163 +396,93 @@ contains
 
   end subroutine solve_perturbed_ao_dmat
 
-  subroutine construct_response_vector(vector_type, property_index,               &
-                                       response_vector_full,                      &
-                                       half_length, max_full_length,              &
-                                       ibtyp, ibtyp_pointer,                      &
-                                       eigenvalues_reduced, eigenvectors_reduced, &
-                                       work, kfree, lfree)
-
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
+  subroutine construct_response_vector(vector_type, property_index, &
+                                       response_vector,             &
+                                       half_length,                 &
+                                       ibtyp, ibtyp_pointer,        &
+                                       eigenvalues_reduced,         &
+                                       eigenvectors_reduced)
 #include "dcbxrs.h"
-#include "../prp/dcbxqr.h"
-#include "dcbibn.h"
-#include "dcborb.h"
 #include "dgroup.h"
 
-#include "dcbxpr.h"
-    character(*), intent(in) :: vector_type
-    real(kind_dp),    intent(inout) :: work(lfree)
-    integer,          intent(inout) :: kfree
-    integer,          intent(inout) :: lfree
-!
-    real(kind_dp),    allocatable :: response_vector_z(:, :, :)
-    real(kind_dp),    allocatable :: response_vector_y(:, :, :)
-    real(kind_dp)                 :: response_vector_full(:)
-    real(kind_dp),    allocatable :: buffer(:)
-!
-    integer :: property_index, IBTYP,ibtyp_pointer, nbtyp, nbred, lubvec, lufile
-    integer :: factor, half_length, max_full_length
-    integer :: KVECZ, KVECY, KRSPVC, Kbuffer, KIVECS, nzypar, ifr, iz, i, irec
-      PARAMETER ( D1=1.0D0, DM1=-1.0D0, DH=0.5D0 )
-      CHARACTER FILNAM*6,FILRSP*8,TYP*1
-      DIMENSION IBTYP(2,*), ibtyp_pointer(*), &
-                eigenvalues_reduced(*),eigenvectors_reduced(NREDM,*)
+    character(*),     intent(in)    :: vector_type
+    integer(kind_i4), intent(in)    :: property_index
+    real(kind_dp),    intent(out)   :: response_vector(:)
+    integer(kind_i4), intent(in)    :: half_length, ibtyp(2, *), ibtyp_pointer(*)
+    real(kind_dp),    intent(in)    :: eigenvalues_reduced(*), eigenvectors_reduced(*)
 
+    real(kind_dp),    allocatable   :: response_vector_z(:, :, :)
+    real(kind_dp),    allocatable   :: response_vector_y(:, :, :)
+    integer(kind_i4), allocatable   :: ivecs(:)
+    real(kind_dp),    allocatable   :: buffer(:)
 
-
-
-
-    allocate(response_vector_z(half_length, nz, nfreq))
-    allocate(response_vector_y(half_length, nz, nfreq))
-    allocate(buffer(half_length*nz))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    character(6)                    :: file_name
+    integer(kind_i4)                :: length, factor, file_unit, ifreq, iz, nbtyp, nbred
 
     select case (vector_type)
       case ('opp')
         nbtyp = 1
-        NBRED  = NERED
-        LUBVEC = LUBOE
-        FILNAM = 'PAMBOE'
-        TYP    = 'E'
-        LUFILE = LUQREE
-        FILRSP = 'QRVEC.EE'
+        nbred  = nered
+        file_unit = luboe
+        file_name = 'PAMBOE'
       case ('opn')
         nbtyp = 2
-        NBRED  = NPRED
-        LUBVEC = LUBOP
-        FILNAM = 'PAMBOP'
-        TYP    = 'P'
-        LUFILE = LUQREP
-        FILRSP = 'QRVEC.EP'
+        nbred  = npred
+        file_unit = lubop
+        file_name = 'PAMBOP'
       case default
-        call quit('error in construct_response_vector_sub, unknown vector type')
+        call quit('error in construct_response_vector, unknown vector type')
     end select
 
-!
-!     Construct response solution vectors by summing the trial
-!     vectors multiplied by the eigenvectors in the reduced
-!     system. Note that the trial vectors are of the form 
-!     (Z+Y) and (Z-Y).
-!
-    write(*, *) 'blub 1'
-      OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED', &
-           ACCESS='DIRECT',RECL=8*half_length*NZ,STATUS='OLD')
-      CALL DZERO(response_vector_z,half_length*NZ*NFREQ)
-      CALL DZERO(response_vector_y,half_length*NZ*NFREQ)
-      CALL MEMGET('INTE',KIVECS,NFREQ,WORK,KFREE,LFREE)
-      CALL XRSXV1(1,NBTYP,response_vector_z,eigenvectors_reduced,NFREQ,IBTYP,ibtyp_pointer,     WORK(KIVECS),buffer)
-      CALL XRSXV1(-1,NBTYP,response_vector_y,eigenvectors_reduced,NFREQ,IBTYP,ibtyp_pointer,   WORK(KIVECS),buffer)
-      CALL MEMREL('LRVEC1',WORK,KIVECS,KIVECS,KFREE,LFREE)
-      CLOSE(LUBVEC,STATUS='DELETE')
-!
-!     Write response vector to file: / Z \
-!                                    \ Y*/
-!
-      OPEN(LUFILE,FILE=FILRSP,FORM='UNFORMATTED', &
-           ACCESS='DIRECT',RECL=8*max_full_length*NZ,STATUS='UNKNOWN')
-!
-!     Zeroing response vector
-!
-      CALL DZERO(response_vector_full,max_full_length*NZ)
+    allocate(response_vector_z(half_length, nz, nfreq))
+    allocate(response_vector_y(half_length, nz, nfreq))
+    allocate(ivecs(nfreq))
+    allocate(buffer(half_length*nz))
 
-      NZYPAR = 2*half_length
+    response_vector_z = 0.0d0
+    response_vector_y = 0.0d0
 
-      DO IFR=1,NFREQ
+    open(file_unit,               &
+         file = file_name,        &
+         form = 'unformatted',    &
+         access = 'direct',       &
+         recl = 8*half_length*nz, &
+         status = 'old')
 
-         DO IZ=1,NZ
-            CALL DCOPY(half_length,response_vector_z(1,IZ,IFR),1,    response_vector_full(1+(IZ-1)*NZYPAR),1)
-            CALL DCOPY(half_length,response_vector_z(1,IZ,IFR),1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
-            CALL DAXPY(half_length,D1,response_vector_y(1,IZ,IFR),1,        response_vector_full(1+(IZ-1)*NZYPAR),1)
-            CALL DAXPY(half_length,DM1,response_vector_y(1,IZ,IFR),1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
-            IF (IPQTOQ(IZ,JSYMOP-1).GT.1)  &
-                 CALL DSCAL(half_length,DM1,     response_vector_full(1+half_length+(IZ-1)*NZYPAR),1)
-         END DO
-         CALL DSCAL(max_full_length*NZ,DH,response_vector_full,1)
-         CALL INDQR(property_index,eigenvalues_reduced(IFR),IREC)
-         CALL WRTDAC(LUFILE,max_full_length*NZ,response_vector_full,IREC)
-!
-!     Write info to QRINFO file to be used on restart
-!
-         DNORM=DNORM2(max_full_length*NZ,response_vector_full,1)
-!        CALL WRTQR(PRPNAM(property_index),TYP,eigenvalues_reduced(IFR),IREC,DNORM)
+    call xrsxv1( 1, nbtyp, response_vector_z, &
+                    eigenvectors_reduced, nfreq, ibtyp, ibtyp_pointer, ivecs, buffer)
+    call xrsxv1(-1, nbtyp, response_vector_y, &
+                    eigenvectors_reduced, nfreq, ibtyp, ibtyp_pointer, ivecs, buffer)
 
-      END DO
-      CLOSE(LUFILE,STATUS='KEEP')
-!
-!     Print section
-!
-!     IF(IPRXQR.GE.10) THEN
-         WRITE(LUPRI,'(/2A,/A,5(/5F12.8))')  &
-              'blub Writing response vectors with label: ', &
-              PRPNAM(property_index),' at frequencies: ', &
-              (eigenvalues_reduced(I), I=1,NFREQ)
-         WRITE(LUPRI,'(2A)') ' to file: ',FILRSP
-!
-         CALL HEADER('X(+) vectors in LRVEC1',-1)
-         CALL PRBVEC(LUPRI,response_vector_z,NFREQ,half_length)
-         CALL HEADER('X(-) vectors in LRVEC1',-1)
-         CALL PRBVEC(LUPRI,response_vector_y,NFREQ,half_length)
-!     ENDIF
+    close(file_unit, &
+          status = 'delete')
 
+    response_vector = 0.0d0
 
+    length = 2*half_length
 
+    do ifreq = 1, nfreq
+      do iz = 1, nz
 
+        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, &
+                   response_vector(1 + (iz-1)*length), 1)
+        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, &
+                   response_vector(1 + (iz-1)*length + half_length), 1)
+        call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, &
+                   response_vector(1 + (iz-1)*length), 1)
+        call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, &
+                   response_vector(1 + (iz-1)*length + half_length), 1)
 
+        if (ipqtoq(iz, jsymop - 1) > 1) then
+          call dscal(half_length, -1.0d0, response_vector(1 + half_length + (iz-1)*length), 1)
+        end if
 
-
+      end do
+    end do
 
     deallocate(response_vector_z)
     deallocate(response_vector_y)
+    deallocate(ivecs)
     deallocate(buffer)
 
   end subroutine construct_response_vector
