@@ -1,13 +1,13 @@
 include ../Makefile.config
 
-F77_OBJS = diremb.o
+F77_OBJS = 
 
 #F90_OBJS = embedding.o emb_settings.o emb_frozen_orbitals.o
 ##F90_OBJS = embd.o emb_set.o emb_froz_orb.o
-F90_OBJS = 
+F90_OBJS = grid_file.o emb1int.o diremb.o
 
 #F90_MODS = emb_settings.mod  emb_frozen_orbitals.mod  embedding.mod
-F90_MODS = 
+F90_MODS = grid_file.mod vc_grid.mod fde_mod.mod
 
 F_CPPS = $(F77_OBJS:.o=.i)
 
