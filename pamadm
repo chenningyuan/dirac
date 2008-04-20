@@ -574,7 +574,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
-gp/kinds.o \\
+gp/kinds.o          gp/vector_functions.o    \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -644,8 +644,8 @@ GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
-gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o      gp/tracing.o \\
-gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o
+gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o      gp/vector_functions.o \\
+gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
 
 EOF
 #
@@ -781,7 +781,7 @@ if [ -n "$EMBMOD" ]; then
 cat <<EOF>> Makefile
 
 EMBOBJS = \\
-embedding/diremb.o
+embedding/grid_file.o  embedding/emb1int.o   embedding/diremb.o
 #embedding/embd.o embedding/emb_froz_orb.o embedding/emb_set.o
 
 EOF
@@ -1348,7 +1348,6 @@ if [ -n "$KRMCMOD" ]; then
    TEMP="$TEMP krmc luciarel"
 fi
 if [ -n "$EMBMOD" ]; then
-#   TEMP="$TEMP embedding"
    TEMPOOF="$TEMPOOF embedding"
 fi
 if [ -n "$ADCMOD" ]; then
@@ -1548,7 +1547,6 @@ while [ -n "$1" ]; do
          ;;
       -emb|-embedding)
          EMBMOD=1
-         # echo "embedding with fortran90/95 modules is on !!!"
 	 MODULES=1
          ;;
       -adc)
