@@ -403,7 +403,7 @@ C      IMPLICIT NONE
 #include "dcbgen.h"
 C     Passed variables
       REAL(KIND=8) :: WORK(*)
-      INTEGER :: print_fde, LWORK
+      INTEGER :: LWORK
 
 C     Local variables
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
