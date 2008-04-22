@@ -158,101 +158,110 @@ contains
 
 
 
-  subroutine solve_perturbed_ao_dmat(property_index, ao_dmat, work, kfree, lfree)
+  subroutine solve_perturbed_ao_dmat(property_index, &
+!                                    frequencies,    &
+                                     ao_dmat,        &
+                                     work, kfree, lfree)
     integer(kind_i4), intent(in)    :: property_index
+!   real(kind_dp),    intent(in)    :: frequencies(:)
+    real(kind_dp)                   :: frequencies(1)
 !   real(kind_dp),    intent(out)   :: ao_dmat(:, :, :)
     real(kind_dp)                   :: ao_dmat
     real(kind_dp),    intent(inout) :: work(lfree)
-    integer,          intent(inout) :: kfree
-    integer,          intent(inout) :: lfree
-
+    integer(kind_i4), intent(inout) :: kfree
+    integer(kind_i4), intent(inout) :: lfree
 
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "../prp/dcbxqr.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 
-    integer :: IOP
-    integer :: ksave
-    integer :: ifreq, factor
-    integer :: half_length, max_full_length
+    integer(kind_i4)                :: ifsym, factor, half_length, max_full_length
+    integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
+    integer(kind_i4), allocatable   :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
+    real(kind_dp),    allocatable   :: eigenvalues_reduced(:), eigenvectors_reduced(:)
+    real(kind_dp),    allocatable   :: convergence(:)
+    real(kind_dp),    allocatable   :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
+    real(kind_dp),    allocatable   :: response_vector_pp(:), response_vector_pn(:)
+    logical                         :: skip_pp, skip_pn
+    character(72)                   :: orbital_string(3,2)
 
-    real(kind_dp),    allocatable :: eigenvalues_reduced(:), eigenvectors_reduced(:), convergence(:)
-    real(kind_dp),    allocatable :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
-    integer(kind_i4), allocatable :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
-
-    real(kind_dp),    allocatable :: response_vector_pp(:), response_vector_pn(:)
-
-
-    real(kind_dp)                        :: frequencies(1)
-
-      LOGICAL EXST,ZERO
-      CHARACTER TTYP(-1:1)*2
-      SAVE TTYP
-      DATA TTYP /'T-','T0','T+'/
     frequencies(1) = 0.0d0
 
 
+!   get orbital string
+!   ==================
+
+    do ifsym = 1, nfsym
+      orbital_string(1, ifsym) = ' '
+      orbital_string(2, ifsym) = ' '
+      orbital_string(3, ifsym) = ' '
+    end do
+
+    skip_pp = .false.
+    skip_pn = .false.
+
+    call ostring(orbital_string, &
+                 skip_pp,        &
+                 skip_pn,        &
+                 work, kfree, lfree)
 
 
-!     initialize symmetry independent variables
-!     =========================================
+!   initialize symmetry independent variables
+!   =========================================
 
-      LINEQ = .TRUE.
-      FKRMC = .FALSE.
-      LSVCFG(1) = .TRUE.
-      LSVCFG(2) = .TRUE.
-      TKNORM = XQRNRM
-      DIAGHE = XQRDIH
-      IPRXRS = 0
-      THCXRS = THCQR
-      RESFAC = RESXQR
-      MAXITR = ITRXQR
-      NREDM  = MAXQRM
-      N2REDM = MAXQRM*MAXQRM
-      LOFFTY = 0
-      CNVINT(1) = CNVXQR(1)
-      CNVINT(2) = CNVXQR(2)
-      ITRINT(1) = ITRIQR(1)
-      ITRINT(2) = ITRIQR(2)
-      INTDEF = INTXQR
-      UNCOUP = .FALSE.
-      STERNH = .FALSE.
+    lineq     = .true.
+    fkrmc     = .false.
+    lsvcfg(1) = .true.
+    lsvcfg(2) = .true.
+    tknorm    = .false.
+    diaghe    = .true.
+    iprxrs    = 0
+    thcxrs    = 1.0d-5
+    resfac    = 1.0d3
+    maxitr    = 30
+    nredm     = 400
+    n2redm    = 400*400
+    loffty    = 0
+    cnvint(1) = 1.0d20
+    cnvint(2) = 1.0d20
+    itrint(1) = 1
+    itrint(2) = 1
+    uncoup    = .false.
+    sternh    = .false.
 
+    ill_int   = iand(intgen, 1)
+    isl_int   = iand(intgen/2, 1)
+    iss_int   = iand(intgen/4, 1)
+    igt_int   = iand(intgen/8, 1)
 
-
-
-
-
-
-
-      iop = 1
+    intdef    = ill_int + 2*isl_int + 4*iss_int + 8*igt_int
 
 
-!     initialize configurational and orbital parameters
-!     =================================================
+!   initialize configurational and orbital parameters
+!   =================================================
 
+    jsymop = iprpsym(property_index)
+    jtimop = iprptim(property_index)
+    jopsy  = jbtof(jsymop - 1, 1)
+    nfreq  = size(frequencies)
+    nexsim = nfreq
+    nexstv = nfreq
+    nexcnv = nfreq
+    ncred  = 0
+    nered  = 0
+    npred  = 0
+    nzred  = ncred + nered + npred
 
-         KSAVE  = KFREE
+    static = .false.
+    if (nfreq == 1 .and. frequencies(1) == 0.0d0) then
+      static = .true.
+    end if
 
-         JSYMOP = IPRPSYM(property_index)
-         JTIMOP = IPRPTIM(property_index)
-         JOPSY  = JBTOF(JSYMOP-1,1)
-         NFREQ  = LQROP(IOP,2)
-         NEXSIM = NFREQ
-         NEXSTV = NFREQ
-         NEXCNV = NFREQ
-         NCRED  = 0
-         NERED  = 0
-         NPRED  = 0
-         NZRED  = NCRED+NERED+NPRED
-         STATIC = (NFREQ.EQ.1 .AND. QRFREQ(1,IOP).EQ. 0.0d0)
-
-         CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP, &
-                     WORK,KFREE,LFREE, 0)
-
-
-
+    call xrspar(orbital_string, &
+                skip_pp,        &
+                skip_pn,        &
+                work,kfree,lfree, 0)
 
 
 !   get property gradient
@@ -262,37 +271,48 @@ contains
     allocate(prop_gradient_pp(nzxopeq))
     allocate(prop_gradient_pn(nzxoppq))
 
+    call pamgrd(property_index,   &
+                prop_gradient_c,  &
+                prop_gradient_pp, &
+                prop_gradient_pn, &
+                jopsy,            &
+                work(kzconf),     &
+                work(kzxope),     &
+                work(kzxopp),     &
+                nzconf,           &
+                nzxope,           &
+                nzxopp,           &
+                work, kfree, lfree, 0)
 
-         CALL PAMGRD(property_index,prop_gradient_c, prop_gradient_pp, prop_gradient_pn, &
-              JOPSY,WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),      &
-              NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE, 0)
-
-!   TODO: check the norm of the property gradient
+!   todo: check the norm of the property gradient
 !         and if below threshold then skip things
 
 
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
-    allocate(ibtyp(2*NREDM))
-    allocate(ibtyp_pointer_c(NREDM))
-    allocate(ibtyp_pointer_pp(NREDM))
-    allocate(ibtyp_pointer_pn(NREDM))
+    allocate(ibtyp(2*nredm))
+    allocate(ibtyp_pointer_c(nredm))
+    allocate(ibtyp_pointer_pp(nredm))
+    allocate(ibtyp_pointer_pn(nredm))
 
     allocate(eigenvalues_reduced(nexsim))
-    allocate(eigenvectors_reduced(NREDM*NEXSIM))
+    allocate(eigenvectors_reduced(nredm*nexsim))
     allocate(convergence(nfreq))
 
     call dcopy(nfreq, frequencies, 1, eigenvalues_reduced, 1)
 
-
-
-
-
-         CALL XRSCTL(prop_gradient_c, prop_gradient_pp, prop_gradient_pn, &
-              ibtyp, ibtyp_pointer_c, ibtyp_pointer_pp, ibtyp_pointer_pn, &
-              convergence,eigenvalues_reduced,eigenvectors_reduced,   &
-              WORK,KFREE,LFREE)
+    call xrsctl(prop_gradient_c,      &
+                prop_gradient_pp,     &
+                prop_gradient_pn,     &
+                ibtyp,                &
+                ibtyp_pointer_c,      &
+                ibtyp_pointer_pp,     &
+                ibtyp_pointer_pn,     &
+                convergence,          &
+                eigenvalues_reduced,  &
+                eigenvectors_reduced, &
+                work,kfree,lfree)
 
     deallocate(prop_gradient_c)
     deallocate(prop_gradient_pp)
@@ -320,16 +340,19 @@ contains
 
       nesim           = nfreq*factor
       half_length     = nzxope
-      max_full_length = mzyee
+      max_full_length = nzxope*2
 
       allocate(response_vector_pp(max_full_length*nz))
 
-      call construct_response_vector('opp', property_index,   &
-                                     response_vector_pp,      &
-                                     half_length,             &
-                                     ibtyp, ibtyp_pointer_pp, &
-                                     eigenvalues_reduced,     &
+      call construct_response_vector('pp',                 &
+                                     property_index,       &
+                                     response_vector_pp,   &
+                                     half_length,          &
+                                     ibtyp,                &
+                                     ibtyp_pointer_pp,     &
+                                     eigenvalues_reduced,  &
                                      eigenvectors_reduced)
+
       call header('response_vector_pp',-1)
       call prbvec(lupri, response_vector_pp, nfreq, max_full_length)
 
@@ -341,16 +364,19 @@ contains
 
       npsim           = nfreq*factor
       half_length     = nzxopp
-      max_full_length = mzyep
+      max_full_length = nzxopp*2
 
       allocate(response_vector_pn(max_full_length*nz))
 
-      call construct_response_vector('opn', property_index,   &
-                                     response_vector_pn,      &
-                                     half_length,             &
-                                     ibtyp, ibtyp_pointer_pn, &
-                                     eigenvalues_reduced,     &
+      call construct_response_vector('pn',                 &
+                                     property_index,       &
+                                     response_vector_pn,   &
+                                     half_length,          &
+                                     ibtyp,                &
+                                     ibtyp_pointer_pn,     &
+                                     eigenvalues_reduced,  &
                                      eigenvectors_reduced)
+
       call header('response_vector_pn',-1)
       call prbvec(lupri, response_vector_pn, nfreq, max_full_length)
 
@@ -366,7 +392,7 @@ contains
     deallocate(eigenvectors_reduced)
 
 
-!   construct perturbed AO density matrices
+!   construct perturbed ao density matrices
 !   =======================================
 
     call quit('blub')
@@ -378,17 +404,17 @@ contains
 
 
 
-!     CALL SETGMT(ISYMOP,IHRMOP,IFCKOP,IBCVC,IBEVC,IBPVC,IBTYP,IPRXRS)
+!     call setgmt(isymop,ihrmop,ifckop,ibcvc,ibevc,ibpvc,ibtyp,iprxrs)
 !
-!     Calculate AO density matrices
+!     calculate ao density matrices
 !     -----------------------------
 !
-!     Note: reuse memory and save in FMO:
-!        DVT(1..NCSIM), [DCX, DVX](1..NESIM), [DCX, DVX](1..NPSIM)
-!     Only the necessary matrices are saved.
+!     note: reuse memory and save in fmo:
+!        dvt(1..ncsim), [dcx, dvx](1..nesim), [dcx, dvx](1..npsim)
+!     only the necessary matrices are saved.
 !
-!     CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
-!    &     WORK,KFREE,LFREE)
+!     call dmolitx(fmo,bevec,bpvec,cmo,dvt,dv,ihrmop,ndmat,
+!    &     work,kfree,lfree)
 
 
 
@@ -396,36 +422,41 @@ contains
 
   end subroutine solve_perturbed_ao_dmat
 
-  subroutine construct_response_vector(vector_type, property_index, &
-                                       response_vector,             &
-                                       half_length,                 &
-                                       ibtyp, ibtyp_pointer,        &
-                                       eigenvalues_reduced,         &
+  subroutine construct_response_vector(vector_type,          &
+                                       property_index,       &
+                                       response_vector,      &
+                                       half_length,          &
+                                       ibtyp,                &
+                                       ibtyp_pointer,        &
+                                       eigenvalues_reduced,  &
                                        eigenvectors_reduced)
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    character(*),     intent(in)    :: vector_type
-    integer(kind_i4), intent(in)    :: property_index
-    real(kind_dp),    intent(out)   :: response_vector(:)
-    integer(kind_i4), intent(in)    :: half_length, ibtyp(2, *), ibtyp_pointer(*)
-    real(kind_dp),    intent(in)    :: eigenvalues_reduced(*), eigenvectors_reduced(*)
+    character(*),     intent(in)  :: vector_type
+    integer(kind_i4), intent(in)  :: property_index
+    real(kind_dp),    intent(out) :: response_vector(:)
+    integer(kind_i4), intent(in)  :: half_length
+    integer(kind_i4), intent(in)  :: ibtyp(2, *)
+    integer(kind_i4), intent(in)  :: ibtyp_pointer(*)
+    real(kind_dp),    intent(in)  :: eigenvalues_reduced(*)
+    real(kind_dp),    intent(in)  :: eigenvectors_reduced(*)
 
-    real(kind_dp),    allocatable   :: response_vector_z(:, :, :)
-    real(kind_dp),    allocatable   :: response_vector_y(:, :, :)
-    integer(kind_i4), allocatable   :: ivecs(:)
-    real(kind_dp),    allocatable   :: buffer(:)
+    real(kind_dp),    allocatable :: response_vector_z(:, :, :)
+    real(kind_dp),    allocatable :: response_vector_y(:, :, :)
+    integer(kind_i4), allocatable :: ivecs(:)
+    real(kind_dp),    allocatable :: buffer(:)
 
-    character(6)                    :: file_name
-    integer(kind_i4)                :: length, factor, file_unit, ifreq, iz, nbtyp, nbred
+    character(6)                  :: file_name
+    integer(kind_i4)              :: length, factor, file_unit, ifreq, iz, nbtyp, nbred, ioff
 
     select case (vector_type)
-      case ('opp')
+      case ('pp')
         nbtyp = 1
         nbred  = nered
         file_unit = luboe
         file_name = 'PAMBOE'
-      case ('opn')
+      case ('pn')
         nbtyp = 2
         nbred  = npred
         file_unit = lubop
@@ -464,17 +495,16 @@ contains
     do ifreq = 1, nfreq
       do iz = 1, nz
 
-        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, &
-                   response_vector(1 + (iz-1)*length), 1)
-        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, &
-                   response_vector(1 + (iz-1)*length + half_length), 1)
-        call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, &
-                   response_vector(1 + (iz-1)*length), 1)
-        call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, &
-                   response_vector(1 + (iz-1)*length + half_length), 1)
+        ioff = (iz - 1)*length
+        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+        call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+
+        ioff = (iz - 1)*length + half_length
+        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+        call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
 
         if (ipqtoq(iz, jsymop - 1) > 1) then
-          call dscal(half_length, -1.0d0, response_vector(1 + half_length + (iz-1)*length), 1)
+          call dscal(half_length, -1.0d0, response_vector(1 + (iz - 1)*length + half_length), 1)
         end if
 
       end do
