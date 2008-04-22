@@ -137,7 +137,10 @@ C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
-      USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
+#if defined (MOD_EMB)
+!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
+      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -278,9 +281,11 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
+#if defined (MOD_EMB)
       IF (DO_GRID_OUT) THEN
          CALL FDE_GRIDOUT(WORK,LFREE)
       END IF
+#endif
 C
 CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('PAMPR1')
