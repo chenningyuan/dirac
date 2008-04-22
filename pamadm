@@ -74,7 +74,7 @@ setup()
       CDFTMOD=1
       VISUALMOD=1
       F90MODS=ALL_F90MODS
-#      EMBMOD=1
+      EMBMOD=1
 #      ADCMOD=1
 #      ECPMOD=1
       echo " - DIRAC administrator ..."
