@@ -160,13 +160,12 @@ contains
 
   subroutine solve_perturbed_ao_dmat(property_index, &
 !                                    frequencies,    &
-                                     ao_dmat,        &
+!                                    ao_dmat,        &
                                      work, kfree, lfree)
     integer(kind_i4), intent(in)    :: property_index
 !   real(kind_dp),    intent(in)    :: frequencies(:)
     real(kind_dp)                   :: frequencies(1)
-!   real(kind_dp),    intent(out)   :: ao_dmat(:, :, :)
-    real(kind_dp)                   :: ao_dmat
+    real(kind_dp),    allocatable   :: ao_dmat(:)
     real(kind_dp),    intent(inout) :: work(lfree)
     integer(kind_i4), intent(inout) :: kfree
     integer(kind_i4), intent(inout) :: lfree
@@ -176,13 +175,16 @@ contains
 #include "dcbgen.h"
 #include "dgroup.h"
 
-    integer(kind_i4)                :: ifsym, factor, half_length, max_full_length
+    integer(kind_i4)                :: ifsym, factor, half_length, max_full_length, nr_dmat
     integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
     integer(kind_i4), allocatable   :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
+    integer(kind_i4), allocatable   :: isymop(:), ihrmop(:), ifckop(:)
     real(kind_dp),    allocatable   :: eigenvalues_reduced(:), eigenvectors_reduced(:)
     real(kind_dp),    allocatable   :: convergence(:)
     real(kind_dp),    allocatable   :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
     real(kind_dp),    allocatable   :: response_vector_pp(:), response_vector_pn(:)
+    real(kind_dp),    allocatable   :: mo_coef(:, :, :)
+    real(kind_dp)                   :: dummy_dp
     logical                         :: skip_pp, skip_pn
     character(72)                   :: orbital_string(3,2)
 
@@ -230,7 +232,7 @@ contains
     uncoup    = .false.
     sternh    = .false.
 
-    ill_int   = iand(intgen, 1)
+    ill_int   = iand(intgen,   1)
     isl_int   = iand(intgen/2, 1)
     iss_int   = iand(intgen/4, 1)
     igt_int   = iand(intgen/8, 1)
@@ -338,7 +340,7 @@ contains
 
     if (nzxope > 0) then
 
-      nesim           = nfreq*factor
+      npsim           = nfreq*factor
       half_length     = nzxope
       max_full_length = nzxope*2
 
@@ -355,8 +357,6 @@ contains
 
       call header('response_vector_pp',-1)
       call prbvec(lupri, response_vector_pp, nfreq, max_full_length)
-
-      deallocate(response_vector_pp)
 
     end if
 
@@ -380,8 +380,6 @@ contains
       call header('response_vector_pn',-1)
       call prbvec(lupri, response_vector_pn, nfreq, max_full_length)
 
-      deallocate(response_vector_pn)
-
     end if
 
     deallocate(ibtyp)
@@ -397,28 +395,48 @@ contains
 
     call quit('blub')
 
+    allocate(isymop(ntsim))
+    allocate(ihrmop(ntsim))
+    allocate(ifckop(ntsim))
 
+    call setgmt(isymop,           &
+                ihrmop,           &
+                ifckop,           &
+                ibtyp_pointer_c,  &
+                ibtyp_pointer_pp, &
+                ibtyp_pointer_pn, &
+                ibtyp, 0)
 
+    allocate(ao_dmat(ntsim))
 
+    call init_mo_coef(mo_coef)
+    call get_mo_coef(mo_coef)
 
+!   ao_dmat order: 1...nesim, 1...npsim
+    call dmolitx(ao_dmat,            &
+                 response_vector_pp, &
+                 response_vector_pn, &
+                 mo_coef,            &
+                 dummy_dp,           &
+                 dummy_dp,           &
+                 ihrmop,             &
+                 nr_dmat,            &
+                 work, kfree, lfree)
 
+    call del_mo_coef(mo_coef)
 
+    if (nzxope > 0) then
+      deallocate(response_vector_pp)
+    end if
+    if (nzxopp > 0) then
+      deallocate(response_vector_pn)
+    end if
 
-!     call setgmt(isymop,ihrmop,ifckop,ibcvc,ibevc,ibpvc,ibtyp,iprxrs)
-!
-!     calculate ao density matrices
-!     -----------------------------
-!
-!     note: reuse memory and save in fmo:
-!        dvt(1..ncsim), [dcx, dvx](1..nesim), [dcx, dvx](1..npsim)
-!     only the necessary matrices are saved.
-!
-!     call dmolitx(fmo,bevec,bpvec,cmo,dvt,dv,ihrmop,ndmat,
-!    &     work,kfree,lfree)
+    deallocate(ao_dmat)
 
-
-
-
+    deallocate(isymop)
+    deallocate(ihrmop)
+    deallocate(ifckop)
 
   end subroutine solve_perturbed_ao_dmat
 
