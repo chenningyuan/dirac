@@ -1884,7 +1884,6 @@ C       in case of a parallel filesystem, we should use it
         CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
 #endif /* ifdef SYS_LOCALDISKS */
 C       no integral broadcast necessary
-        write(6,*) 'mcscf is ',MCSCF
         IF( NFLGRPS_REL .eq. 1 ) IIOMOD_REL = 1
 C
 C       MPI "shared memory" mode
