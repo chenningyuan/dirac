@@ -40,8 +40,9 @@ program dirprg
   implicit none
 #include "infpar.h"
 #include "dcbgen.h"
+#include "mpif.h"
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, iparcal, status, length, ios, idummy
+  integer :: memsize, iparcal, status, length, ios, idummy, ierr
 #ifdef VAR_MPI 
   call mpixinit()
 #else
@@ -53,12 +54,15 @@ program dirprg
 #endif
   call stopwatch(1,numnod)
   if (parcal) iparcal = 1
+
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
   else
-     memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM)
+     memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
   endif
+
 #ifdef VAR_MPI
+  call mpi_barrier(mpi_comm_world,ierr)
   call sync_nodes(memsize,0)
 #else
   print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
