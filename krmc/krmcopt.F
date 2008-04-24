@@ -2511,12 +2511,14 @@ C
       DIMENSION CREF(*), CMO(*)
       LOGICAL VERBOSE
 C
-      LOGICAL LBIT
+      LOGICAL LBIT, RCI_MCORB
       CHARACTER SZTRA(2,4)*80
 CSK only for test      IPRINT = 5
 C
       CALL QENTER('ROPTST')
       KFRSAV = KFREE
+      RCI_MCORB = .FALSE.
+                       
 C
 C     Start timer
 C
@@ -2586,7 +2588,8 @@ C
      &                '  from MC orbitals! '
                IF (LBIT(IWRT,1)) 
      &           CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-                 GOTO 1250
+                 RCI_MCORB = .TRUE.
+                 GOTO 1100
                ENDIF 
                GO TO 1000
             END IF
@@ -2685,6 +2688,8 @@ C
       IF (IRCIST .EQ. 0) GOTO 2100
 C
       IF ( MCTYPE .GE. JMCMIN ) THEN
+C
+         IF( RCI_MCORB ) GOTO 1250
 C
 C        (2.1) Read CREF from KRMCOLD
 C              or restart plain LUCIAREL from CI vector
