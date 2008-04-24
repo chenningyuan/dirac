@@ -40,7 +40,9 @@ program dirprg
   implicit none
 #include "infpar.h"
 #include "dcbgen.h"
+#ifdef VAR_MPI 
 #include "mpif.h"
+#endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr
 #ifdef VAR_MPI 
