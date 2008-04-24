@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# utility to add cube files (radovan bast - 31 aug 2007)
+# utility to add/subtract cube files (radovan bast - 31 aug 2007)
 #
 # examples: ./cubicle.py -1 cube1 -f 0.5 -2 cube2 > new_cube
 #           here new_cube = cube1 + 0.5*cube2
@@ -10,7 +10,7 @@
 #
 # it assumes that the cube files have same dimensions, nr. of atoms, and so on
 
-import sys, string, os, re
+import string
 from optparse import OptionParser
 
 #-------------------------------------------------------------------------------
