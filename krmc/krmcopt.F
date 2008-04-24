@@ -2544,6 +2544,8 @@ C     bit 2 of IROST: read OLDORB on KRMCSCF
 C     bit 3 of IROST: read DFCOEF from DHF program
 C     bit 4 of IROST: start on H1DIAG
 C
+csk      IPROPT = 10
+C
       IF (IPROPT .GE. 2) THEN
          WRITE(LUPRI,'(4(/A,I4))')
      &        ' (ROPTST)  Control parameter   (ISTART) =',ISTART,
@@ -2571,6 +2573,21 @@ C
      &                 ' (ROPTST)  Start orbitals read from' //
      &                 ' label NEWORB on file KRMCOLD'
                END IF
+C
+C              SK - 22-04-08: start plain CI calculation from MCSCF 
+C                             orbitals
+C
+C              FIXME: re-write start guess code for orbital and vector 
+C                     reading more human readable. SK- 22-04-08
+C
+               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+                 WRITE(LUPRI,'(/A)')
+     &                '  (ROPTST)  Starting CI calculation ' //
+     &                '  from MC orbitals! '
+               IF (LBIT(IWRT,1)) 
+     &           CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+                 GOTO 1250
+               ENDIF 
                GO TO 1000
             END IF
          END IF
@@ -2650,10 +2667,6 @@ C
       END IF
 C
       IF (LBIT(IWRT,1)) CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-CSK      IF (LBIT(IWRT,1)) THEN
-CSK        WRITE(LUPRI,*) ' (ROPTST) write coefficients to file'
-CSK        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-CSK      END IF
 C
  1100 CONTINUE
       CALL FLSHFO(LUPRI)
@@ -2756,12 +2769,12 @@ C
 C
 C        (2.3) Do MAXCIT CI iterations
 C
+1250     CONTINUE
+C
          IF (LBIT(IRCIST,3)) THEN
 C
 C           Do a 0th order 4-index transformation.
 C
-CSK            WRITE(LUPRI,*) ' (ROPTST) do the 0th order index ...'
-CSK            WRITE(LUPRI,*) ' KTRLVL',KTRLVL
             IOPT_INTFLG = IOPT_INTDEF
             JTRLVL = 0
             CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
