@@ -50,17 +50,16 @@ MODULE GRID_FILE
   
   !     XML output settings.
   !     Table that gives the tags that belong to existing variable names.
-  CHARACTER(LEN=12),parameter :: tags(2,7)= &
-       &    (/ &
+  CHARACTER(LEN=12),parameter :: tags(2,7)= reshape( (/&
        &     'grad_rho',  'GRADRHO', &
        &     'hes_rho',   'HESRHO', &
        &     'grid',      'GRID', &
        &     'gridpoints','GRIDPOINT', &
        &     'rho',       'RHO', &
        &     'vc',        'COULOMB', &
-       &     'weight',    'WEIGHT'/)
+       &     'weight',    'WEIGHT'/),(/2,7/))
   INTEGER :: indent=0
-  
+
 CONTAINS
   
   

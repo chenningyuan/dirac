@@ -83,7 +83,7 @@ C     PASSED variables
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(*)
       REAL(KIND=8) :: WORK(*)
-      INTEGER(KIND=8) :: LWORK
+      INTEGER :: LWORK
 
 C     JHS MAKE LATER OPTIONAL
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
@@ -127,7 +127,7 @@ C     PASSED variables
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
       REAL(KIND=8) :: WORK(*)
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
-      INTEGER(KIND=8) :: LWORK
+      INTEGER :: LWORK
 
 C     Local Variables
       INTEGER :: ISHELA,ISHELB,ICA,ICB,NA,IREP,NB
@@ -383,7 +383,7 @@ C     PASSED variables
       REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(gridpoints))
       REAL(KIND=8) :: WORK(*)
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
-      INTEGER(KIND=8) :: LWORK
+      INTEGER :: LWORK
 
 
 C     Local variables
