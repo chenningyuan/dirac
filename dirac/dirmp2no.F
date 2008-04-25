@@ -64,22 +64,23 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-C  FIXME ideas for options: (7-Mar-2008)
 C  .MAXVIRT - maximum number of virtuals in MP2
 C             if energy criterium gives more then max energy will be
 C             reduced
+C  .SCHEME  - transformation scheme used for MOLTRA (default 4)
+C  .SELECT  - select min NO for active orbitals afterwards (relccsd,
+C             lucita, kr-mcscf, luciarel, ...)
+C             Default: e.g. "NO-occ 1.99 0.001 0.1" in analogy with the
+C             "energy -10.0 20.0 0.2"          |--> 10%
+C
+C  FIXME more ideas for options: (18-Apr-2008)
+C
 C  .FOCKNO  - transform to selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
-C  .SCHEME  - for MOLTRA (default 4 or 6 ?)
-C  .SELECT  - select min NO for active orbitals afterwards (relccsd,
-C             lucita, kr-mcscf, luciarel, ?).
-C             Default: e.g. "NO-occ 1.99 0.001 10%" in analogy with the
-C             "energy -10.0 20.0 0.2"
-C
 C  
       SAVE SET
       DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT',
-     &            'xxxxxxx','xxxxxxx','xxxxxxx','xXXXXXX'/
+     &            '.MAX VS','.SCHEME','.SEL NO','xXXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -105,14 +106,15 @@ C
       IGTINT = IBTAND(INTGEN/8,1)
       IFCMP2NO = 1
       IFEMP2NO = 1
+C     initialize string of active orbitals for 4-index/MP2 calculation
+C     initialize string of active NO orbitals for subsequent correlation
+C     step
       DO I = 1,NFSYM
         VECMP2NO(I) = 'energy -10.0 20.0 0.2 '
-        IF(NOCC(I).EQ.0) THEN
-          WRITE(VECMP2NO(I),'(I1)') 1
-        ELSEIF(NOCC(I).GT.0) THEN
-          WRITE(VECMP2NO(I),'(I1,A2,I4)') 1,'..',NOCC(I)
-        ENDIF
+        VECNOSEL(I) = 'NO-occ 1.99 0.001 0.1 '
       ENDDO
+      IMAXVSP     = JMAXVSP
+      IAOMOSCHEME = 4
 C
 C     Process input from CBIMP2NO
 C     =========================
@@ -162,13 +164,17 @@ C&&& F2CONT: Specify Coulomb/exchange contributions
                   READ(LUCMD,*) IFCMP2NO,IFEMP2NO
                GO TO 100
     5          CONTINUE
-C&&& 
+C&&& MAX VS: Specify max. number of virt. spinors in NO-MP2 calculation
+                  READ(LUCMD,*) IMAXVSP
                GO TO 100
     6          CONTINUE
-C&&& 
+C&&& SCHEME: Specify integral transformation scheme for MP2 (RELCCSD
+C            module) calculation 
+                  READ(LUCMD,*) IAOMOSCHEME
                GO TO 100
     7          CONTINUE
-C&&&
+C&&& SEL NO: Select min NO for subsequent correlation calculation
+                  READ(LUCMD,*) (VECNOSEL(I),I=1,NFSYM)
                GO TO 100
     8          CONTINUE
                GO TO 100

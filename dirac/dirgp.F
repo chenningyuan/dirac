@@ -1042,6 +1042,131 @@ C
      & F10.4,' because of near-degeneracies.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck numls4 */
+      SUBROUTINE NUMLS4(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
+C*****************************************************************************
+C
+C     Gives the list of NOs that fulfill the energy selection 
+C     criteria to use in subsequent correlation calculation
+C
+C     Input: 
+C           IP = 0: Only IP as OUTPUT
+C           IP > 0: Give also list
+C           IP < 0: Exit after printing the criteria 
+C
+C     Output:
+C           IP : number of elements in the list A.
+C
+C     IRNGE1..IRNGE2 is range of allowed values in A.
+C     EIG   : List of eigenvalues
+C
+C     S. Knecht, April 2008 
+C
+C     based on NUMLS2 by L. Visscher.
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      CHARACTER A*(*)
+      DIMENSION EIG(*)
+      DIMENSION ILIST(NLIST)
+      LOGICAL CHMIN,CHMAX
+C     
+C     Determine begin and end of the part of the string that contains
+C     the energy values
+C
+      NA = LEN(A)
+      MA = INDEX(A(1:NA),'NO-occ') + 6
+C     
+      READ (A(MA:NA),*,END=900,ERR=900) OLOW,OHIGH,OGAP
+C
+      IF (IP.EQ.-666) THEN
+         IP = 0
+         RETURN
+      ENDIF
+C
+      WRITE (LUPRI,1000) OLOW,OHIGH,OGAP*100
+C
+C     Check that the specified OLOW and OHIGH are separated by a 
+C     large enough gap from the next lower/higher energies
+C
+   1  OMIN = 1.0D-14
+      OMAX = 2.0D0
+C
+C     Set start and end of search region
+C
+      IF (IRNGE1.LT.0) THEN
+         ISTART = IRNGE1 + 1
+      ELSEIF (IRNGE1.GT.0) THEN
+         ISTART = IRNGE1
+      ELSE
+         CALL QUIT ("Error in occupation-based vector 
+     &               selection; IRNGE1 (NUMLST4)")
+      ENDIF
+C
+      IF (IRNGE2.LT.0) THEN
+         IEND = IRNGE2 + 1
+      ELSEIF (IRNGE2.GT.0) THEN
+         IEND = IRNGE2
+      ELSE
+         CALL QUIT ("Error in occupation-based vector 
+     &               selection; IRNGE2 (NUMLST4)")
+      ENDIF
+C
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.GE.OLOW.AND.OI.LE.OHIGH) THEN
+           IF (OMIN.GT.OI) OMIN = OI
+           IF (OMAX.LT.OI) OMAX = OI
+        ENDIF
+      ENDDO
+C
+      CHMIN = .FALSE.
+      CHMAX = .FALSE.
+C
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.LT.OMIN.AND.OI.GE.OMIN-(OGAP*OLOW)) THEN
+           IF (OLOW.GT.OI) OLOW = OI
+           CHMIN = .TRUE.
+        ENDIF
+        IF (OI.GT.OMAX.AND.OI.LE.OMAX+(OGAP*OHIGH)) THEN
+           IF (OHIGH.LT.OI) OHIGH = OI
+           CHMAX = .TRUE.
+        ENDIF
+      ENDDO
+C
+      IF (CHMIN) WRITE (LUPRI,1001) 'minimum',OLOW
+      IF (CHMAX) WRITE (LUPRI,1001) 'maximum',OHIGH
+C
+      IF (CHMIN.OR.CHMAX) GOTO 1
+C
+C     Determine the NOs that fall within this occupation range
+C
+      ICNT = 0
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.GE.OLOW.AND.OI.LE.OHIGH) THEN
+           ICNT = ICNT + 1
+           IF (IP.NE.0) ILIST(ICNT) = I
+        ENDIF
+      ENDDO
+C
+      IP = ICNT
+      RETURN
+C
+ 900  CONTINUE
+      WRITE(LUPRI,'(//A)')
+     &' NUMLS4: Error reading selection criteria, the string is ',
+     &  A(1:NA)
+      CALL QUIT('NUMLS4: Error in Input')
+ 1000 FORMAT (5X,'Occupation selection of active natural orbitals :',
+     & F10.2,' < occ. < ',F8.2,' with a relative gap of ',F8.4,'%')
+ 1001 FORMAT (/' Changed ',A7,' occupation for active NO range to ',
+     & F10.4,' because of near-degeneracies.')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readnm */
       SUBROUTINE READNM(I,NUM,A)
       CHARACTER A*(*),TEGN*1
