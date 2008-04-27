@@ -272,7 +272,7 @@ C ======================================================================
       CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,SAVESO1,ADD_AMFI,
      &     ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,NOPRTR,BLOCKD,
      &     DO4C2C,USEDF,CONT2C,START2C,I2CHAM,DO2C4C,INI2C,I2COFK,
-     &     YREQ1,IC_AMFI,GETPCTM,IPRHAM)
+     &     YREQ1,IC_AMFI,GETPCTM,NOAMFI,IPRHAM)
 C  ... do not compare eigenvalues for ONLYSO1 = T
       CMPEIG = CMPEIG.AND..NOT.ONLYSO1
 C     ... do initiate the important FreeParticleBasis flag!
@@ -1317,7 +1317,7 @@ C  /* Deck EXTR_BSS_INFO */
      &                    NOFPB,BLOCKD,DO4C2C,USEDF,CONT2C,
      &                    START2C,I2CHAM,
      &                    DO2C4C,INI2C,I2COFK,
-     &                    YREQ1,IC_AMFI,GETPCTM,IPRINT)
+     &                    YREQ1,IC_AMFI,GETPCTM,NOAMFI,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C PURPOSE:
@@ -1325,7 +1325,7 @@ C ========
 C     Set control variables based on IBSS coding
 C     IBSS = axyz
 C
-C        a - 1 to 6, defines AMFI flags..
+C        a - 1 to 6, defines AMFI flags.. - if NOAMFI=.true., zero the "a" !
 C
 C        x - .gt. 0: define spinfree before (as 4-comp)
 C            .eq. 0: define spinfree at end
@@ -1335,7 +1335,7 @@ C        y - order of spin-orbit term:
 C            0 - spinfree, 1 - first order for DK2/BSS, 2+ - full.
 C
 C        z - order of Douglas-Kroll transformation
-C            (0, 1, 2, or 9), where 9 is full.
+C            (0, 1, 2, or 9), where 9 is full(infinite).
 C
 C     Pick up the x,y,z variables from IBSS = xyz
 C
@@ -1366,7 +1366,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF,
      &        NOFPB,BLOCKD,YREQ1,DO4C2C,START2C,DO2C4C,
-     &        USEDF,SAVESO1,GETPCTM,CONT2C
+     &        USEDF,SAVESO1,GETPCTM,CONT2C,NOAMFI
 
       CALL QENTER('EXTR_BSS_INFO')
 
@@ -1377,7 +1377,7 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
 
       IF (DO2C4C.AND.START2C) THEN
        WRITE(LUPRI,'(/2X,A,I2/)')
-     & 'Before running the four-component Dirac-Fock'//
+     & 'Before the four-component Dirac-Fock'//
      & '  procedure run preliminary'//
      & ' TWO-COMPONENT (infinite order) SCF ! code INI2C=',INI2C
       ENDIF
@@ -1450,6 +1450,13 @@ C       this is still TODO ...
 C     ... for lower orders do always use the FP "k"- basis !
          NOFPB = .FALSE.
          BLOCKD = .FALSE.
+      ENDIF
+
+C      ... remove AMFI contributions !
+      IF (IPA.GT.0.AND.NOAMFI) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &  'Do not employ AMFI contribution due to .NOAMFI flag !'
+        IPA = 0
       ENDIF
 
       ELIM_SF=.FALSE.
@@ -1528,7 +1535,8 @@ C     ... by default do not include SO1 addition to spin-free Hamiltonians DK2,B
 C      .... flag IBSS=010 - activate the ONLYSO1 flag
       ONLYSO1=.FALSE.
       ADD_AMFI=.FALSE.
-      IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0) THEN
+CMI   IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0) THEN
+      IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0.AND..NOT.NOAMFI) THEN
          WRITE (LUPRI,'(/2X,A)')
      &  '* only SO1 terms (for comparison with AMFI, then quit)'
         ONLYSO1=.TRUE.
@@ -9322,6 +9330,144 @@ C
      &            WORK(KFREE),LFREE,IPRINT)
  20     CONTINUE
  10   CONTINUE
+C
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck amfi_relscf_inp */
+      SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C               Input reading for AMFI/RELSCF.
+C
+C    Called from HAMINP.
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "amfi_if.h"
+      PARAMETER (NTABLE = 20)
+      PARAMETER (D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
+     &           DTHRS=1.0D-13, DP5 = 0.50D00)
+C
+      LOGICAL SET, NEWDEF,RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+C
+      SAVE SET
+      DATA TABLE /'.PRNT_A','.PRNT_S','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+
+C     CALL TITLER('AMFI/RELSCF input reading','*',127)
+
+C
+C        *** Initialize default values ***
+C
+        IPR_AMFI = 0
+      IPR_RELSCF = 0
+C 
+C
+C     Process input for AMFI/RELSCF
+C     ==================================
+C
+      NEWDEF = (WORD .EQ. '*AMFI  ')
+
+      ICHANG = 0
+      IF (NEWDEF) THEN
+
+         CALL TITLER('AMFI/RELSCF input reading','*',127)
+
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GOTO ( 1, 2, 3, 4,
+     &                      5, 6, 7), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in AMFI_RELSCF_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in AMFI_RELSCF_INP.')
+ 1             CONTINUE
+C&&& INPQD: read the PW number 'theta'
+               READ(LUCMD,*) IPR_AMFI
+               GO TO 100
+ 2             CONTINUE
+C&&& INPCAP: read integration parameters
+                 READ(LUCMD,*) IPR_RELSCF
+               GO TO 100
+ 3             CONTINUE
+C&&& 
+                 GO TO 100
+ 4               CONTINUE
+C&&& 
+                 GO TO 100
+ 5               CONTINUE
+C&&& 
+                 GO TO 100
+ 6               CONTINUE
+C&&& 
+                 GO TO 100
+ 7               CONTINUE
+C&&& 
+C&&& XXXXXX
+                 GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     &            '" not recognized .'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in ....')
+            END IF
+      END IF
+
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(4X,A)')
+     & 'Set-up for AMFI/RELSCF calculations'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+      IF (.NOT.NEWDEF) THEN
+        WRITE(LUPRI,'(2x,a)')
+     &  '...no reading under *AMFI, thus default settings'
+      ENDIF
+
+      WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
+      WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
+C
+  999 CONTINUE
 C
       RETURN
       END

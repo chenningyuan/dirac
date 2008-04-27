@@ -3704,6 +3704,7 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "amfi_if.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -3728,7 +3729,7 @@ C
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
-     &             '*FDE   ','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &             '*FDE   ','*AMFI  ','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.LVCORR','.LVNEW ','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
@@ -3741,7 +3742,7 @@ C
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.NOAMFI','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3800,7 +3801,7 @@ CMI ... default for BSS - do always the preliminary free particle basis transfor
       NOPRTR  = .FALSE.
 C      ... for the infinite order solve the R-equation 2
       YREQ1   = .FALSE.
-C      ... default - do not do block diagonalization !
+C      ... default - do not perform the numerical block diagonalization !
       BLOCKD  = .FALSE.
 C     ... trasfer 2c-> 4c and 4c->2c
       DO2C4C  = .FALSE.
@@ -3816,8 +3817,11 @@ CMI   ... own keywords for 1. or 2.order Douglas-Kroll-Hess with AMFI SSO
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
-C     ... no specifications for AMFI center
+CMI   ... no specifications for individual AMFI center
       ALLAMFA = .TRUE.
+CMI     ... default initialization 
+      NOAMFI = .FALSE.
+
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
@@ -4251,7 +4255,8 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              TWOCOMP = .TRUE.
              GO TO 100
   149     CONTINUE
-C&&& XXXX
+C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
+             NOAMFI = .TRUE.
              GO TO 100
   150     CONTINUE
 C&&& XXXX
@@ -4503,13 +4508,21 @@ C         .... two-step method of Barysz
           ENDIF
         ENDIF
 
-        IF(TWOCOMP) THEN
+        IF (TWOCOMP) THEN
           WRITE(LUPRI,'(1X,A)') '  - running in 2-component modus'
         ELSE
           WRITE(LUPRI,'(1X,A)') '  - running in 4-component modus'
         ENDIF
+
 C       ... take care of AMFI contribution
-        IF (IBSS.GT.999) THEN
+
+CMI ... no AMFI
+        IF (BSS.AND.NOAMFI) THEN
+         WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution in the '  
+     &   //'2-component mode !'
+        ENDIF
+CMI     IF (IBSS.GT.999) THEN
+        IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
           WRITE(LUPRI,'(A)')
      &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
      &     '   interaction provided by the AMFI code. ',
@@ -4585,14 +4598,17 @@ C           ... check on identical nucleus numbers ....
             ENDDO
           ENDIF
           ENDIF
-CMI       ... take care of AMFI CSC test transformation, if specified through entering IBSS number
+
+CMI       ... take care of AMFI CSC test transformation, if specified through the entering IBSS number
           IF (IBSS.GT.999.AND.IBSS.LE.1999) THEN
            WRITE(LUPRI,'(1X,A)')
      &     '* only C->S->C transformation of 2comp.'//
      &     'Hamiltonian; AMFI integrals calculated, but NOT added !'
           ENDIF
+
         ENDIF
         
+CMI ... this is on TODO list
         IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
      & '* after (few) two-component SCF iterations do'//
      & ' jump at the four-component level ! Code INI2C=',INI2C
@@ -4600,6 +4616,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through en
      & '* after finishing four-component SCF procedure '//
      & ' perform BSS transformation of Dirac-Fock operator'//
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+
         IF(CMPEIG) WRITE(LUPRI,'(1X,A)')
      & '* Comparing eigenvalues of 2c and 4c Hamiltonians.'
 
@@ -5130,6 +5147,10 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 #endif
         GO TO 200
     6 CONTINUE
+CMI  ... reading input routine for AMFI+RELSCF
+        IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
+          CALL AMFI_RELSCF_INP(WORD,.FALSE.)
+        ENDIF
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -5152,6 +5173,9 @@ CJuly2003
 #ifdef MOD_EMB
       IF (DO_FDE) CALL FDEINP(WORD,.TRUE.)
 #endif
+      IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
+         CALL AMFI_RELSCF_INP(WORD,.TRUE.)
+      ENDIF
 C
  500  CONTINUE
 C

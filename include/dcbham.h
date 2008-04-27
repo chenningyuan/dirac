@@ -76,7 +76,9 @@
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
-!     CAP        - flag for complex absoption potential to be used only at the FSCC correlated level
+!     CAP        - flag for complex absoption potential used only with the FSCC method
+!
+!     NOAMFI      - do not include AMFI contributions at all
 !
 
       INTEGER MAX1OPER
@@ -108,7 +110,7 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2
+     &        DKH1, DKH2, NOAMFI
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
@@ -122,7 +124,7 @@
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
-     &                DKH1, DKH2
+     &                DKH1, DKH2, NOAMFI
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 

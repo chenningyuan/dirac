@@ -19,18 +19,23 @@ C***** NAME ADDMA
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ALARM
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C     ONE CONFIGURATION
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
+C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
      *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
@@ -73,12 +78,17 @@ C
   105 RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   
       SUBROUTINE AT3(WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C
 C     CHANGE FOLLOWING TWO VALUES TO INCREASE DIMENSIONS OF PROGRAM
 C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
@@ -88,13 +98,17 @@ C
 #include "memint.h"
       MXBAS=MXB
       MXOCC=MXO
-      if (relscf_verbose) WRITE (LUPRI,991) MXBAS,MXOCC
+C     if (relscf_verbose) WRITE (LUPRI,991) MXBAS,MXOCC
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,991) MXBAS,MXOCC
 991   FORMAT(/' MAXIMAL NUMBER OF BASIS FUNCTIONS   =',I10/,
      *        ' MAXIMAL NUMBER OF OCCUPIED ORBITALS =',I10/)
 C
 C     10000 CALCULATIONS IN ONE CHUNK SHOULD BE ENOUGH ...
 C
-      CALL MEMGET('REAL',KC     ,LDIMC  ,WORK,KFREE,LFREE)
+C     CALL MEMCHK('before  INPUT_AT34 1',WORK,1)
+
+CMI   CALL MEMGET('REAL',KC     ,LDIMC  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KC     ,LDIMC+1  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCTRAN ,LDIMC  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPQN   ,MXB    ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KZETA  ,MXB    ,WORK,KFREE,LFREE)
@@ -104,28 +118,46 @@ C
       CALL MEMGET('INTE',KNBVAR ,MXB    ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIORCN ,MXB    ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCREAD ,MXB*MXO,WORK,KFREE,LFREE)
+       
+      CALL MEMCHK('before  INPUT_AT34',WORK,1)
+
       CALL INPUT_AT34(WORK(KC),WORK(KCTRAN),WORK(KPQN),WORK(KZETA),
      &           WORK(KZETINC),WORK(KITRAN),WORK(KNROW),WORK(KNBVAR),
      &           WORK(KIORCN),WORK(KCREAD),WORK(KFREE),LFREE)
+
+      CALL MEMCHK('after  INPUT_AT34',WORK,1)
+
+
       CALL MEMREL('AT3',WORK,KWORK,KWORK,KFREE,LFREE)
+
       RETURN
       END
 
-C     AT34R 1.0 - RELATIVISTIV ROUTINES FOR AT34 - 14.5.87
-C     BERND HESS
-
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AT34R(N,ISIZE,CHARGE,
      *SMAT,V,H,EV2,MULT,BU,P,G,EIG,SINV,REVT,
      *AUX,OVE,EW,E,AA,RR,TT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C     AT34R 1.0 - RELATIVISTIV ROUTINES FOR AT34 - 14.5.87
+C     BERND HESS
 C
 C     INPUT: SMAT    OVERLAP MATRIX
 C            V     POTENTIAL
 C            H     RELATIVISTIC KINETIC ENERGY
 C            EV2   PVP INTEGRALS
 C
+C
+C Array dimensions fixes:
+C--------------------------
+C  MULT(ISIZE) -> MULT(*), MULT part of REL, which is from MEMGET
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION V(ISIZE),SMAT(ISIZE),MULT(ISIZE),P(ISIZE),G(ISIZE),
+CMI   DIMENSION V(ISIZE),SMAT(ISIZE),MULT(ISIZE),P(ISIZE),G(ISIZE),
+      DIMENSION V(ISIZE),SMAT(ISIZE),MULT(*),P(ISIZE),G(ISIZE),
      *H(ISIZE),BU(ISIZE),EV2(ISIZE),
      *EIG(N,N),SINV(N,N),REVT(N,N),AUX(N,N),OVE(N,N),
      *EW(N),E(N),AA(N),RR(N),TT(N)
@@ -274,8 +306,15 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AT3DIM(NCOVAR,C,CTRAN,PQN,ZETA,ZETINC,ITRAN,
      &                  NROW,NBVAR,IORCN,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C   Contains many memory allocations (MEMGET) for the HFMAIN subroutine.
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
@@ -288,7 +327,8 @@ C
 #include "amfi_if.h"
 c     logical relscf_verbose
       DIMENSION WORK(LWORK)
-      DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+      DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
      &          ITRAN(LDIMC),NROW(MXB),NBVAR(MXB),IORCN(MXB)
 #include "memint.h"
 C
@@ -306,9 +346,16 @@ C
       CALL MEMGET('REAL', K1,LQM  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL', N2,LQM  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL', N3,LPQ  ,WORK,KFREE,LFREE)
+
       CALL MEMGET('REAL', N4,LPQ  ,WORK,KFREE,LFREE)
+
+CMI   write(LUPRI,*) 'before HFMAIN...LPQ=',LPQ
+
       CALL MEMGET('REAL', N5,LPQ  ,WORK,KFREE,LFREE)
+
+CMI            DT(LPQ,2) 
       CALL MEMGET('REAL', N6,LPQ*2,WORK,KFREE,LFREE)
+
       CALL MEMGET('REAL', N7,LPQ*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL', N8,LPQ  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL', N9,LPQ  ,WORK,KFREE,LFREE)
@@ -336,16 +383,29 @@ C
       MXLPQ=MX100*(MX100+1)/2
       NREL=7*MXLPQ+5*MX100*MX100+5*MX100
       IF (NREL.LT.4*LPQ) NREL=4*LPQ
+
       CALL MEMGET('REAL',N25,NREL   ,WORK,KFREE,LFREE)
+
       CALL MEMGET('REAL',N26,MX100  ,WORK,KFREE,LFREE)
+
+!           ...  S100
       CALL MEMGET('REAL',N27,MXLPQ  ,WORK,KFREE,LFREE)
+
       CALL MEMGET('REAL',N28,MXLPQ  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',N29,MXLPQ  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',N30,MX100*4,WORK,KFREE,LFREE)
+
+      CALL MEMCHK('before HFMAIN',WORK,1)
+
 C//SKIPCc1
-      if (relscf_verbose) 
-     &   WRITE (LUPRI,*) KFREE,
-     &                   ' DOUBLE WORDS ARE REQUIRED TO RUN THIS CASE'
+C     if (relscf_verbose) 
+      IF (IPR_RELSCF.GE.2) THEN 
+        WRITE (LUPRI,*) KFREE,
+     & '(KFREE) DOUBLE WORDS ARE REQUIRED (COMMING IN WORK ARRAY)'
+     & //'TO RUN THIS CASE'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
 !      IF(NCOVAR.NE.0) GO TO 11
       CALL HFMAIN(WORK(K1),WORK(N2),WORK(N3),WORK(N4),WORK(N5),
      &            WORK(N6),WORK(N7),WORK(N8),WORK(N9),WORK(N10),
@@ -355,7 +415,11 @@ C//SKIPCc1
      &            WORK(N26),WORK(N27),WORK(N28),WORK(N29),WORK(N30),
      &            C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN,
      &            WORK(KFREE),LFREE)
+
+      CALL MEMCHK('after HFMAIN',WORK,1)
+
       CALL MEMREL('AT34DIM',WORK,KWORK,KWORK,KFREE,LFREE)
+
       RETURN
       END
 
@@ -489,7 +553,8 @@ C
       IF (L .GE. 0) GOTO 1
       L=-L
       L=(L+1023)/1024
-      WRITE (6,100) TEXT,K,ICORE,L
+
+      WRITE (LUPRI,100) TEXT,K,ICORE,L
 100   FORMAT(' ***'/,' *** NEED MORE CORE AT ',A8/,
      *       ' *** NEED ',I10,' IBM+ WORDS'/,
      *       ' *** HAVE ',I10,' IBM+ WORDS'/,
@@ -504,7 +569,10 @@ C
       IF (ICORE.GT.0) GOTO 3
       L=MSK-KSK
       IC=(L+1023)/1024
-      if (relscf_verbose) WRITE (LUPRI,101) L,IC
+CMI   if (relscf_verbose) WRITE (LUPRI,101) L,IC
+      IF (IPR_RELSCF.GE.2) THEN
+          WRITE (LUPRI,101) L,IC
+      ENDIF
 101   FORMAT(' DYNAMIC CORE USED SO FAR ',I10,' WORDS (',I10,
      *'K)')
 3     RETURN
@@ -514,11 +582,16 @@ C
 4     IC=(MSK+1023)/1024
       KSK=MSK-KSK
       L=(KSK+1023)/1024
-      if (relscf_verbose) WRITE (LUPRI,102) MSK,IC,KSK,L
+CMI   if (relscf_verbose) WRITE (LUPRI,102) MSK,IC,KSK,L
+      if (IPR_RELSCF.GE.2)  THEN
+          WRITE (LUPRI,102) MSK,IC,KSK,L
 102   FORMAT(' DYNAMIC STORAGE: ',I8,' WORDS (',I5,'K ) - USED ',
      *I8,' WORDS (',I5,'K)'//,
      *' E N D   O F   C A L C U L A T I O N')
-      STOP
+      ENDIF
+
+CMI   STOP
+      CALL QUIT('some error output')
       END
 
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)
@@ -562,21 +635,29 @@ C
       DCOF=D
       RETURN
       END
-
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENSI(
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C
 C     ONE CONFIGURATION
 C
+C MI - what is C;  what are its dimensions  ?
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
-     *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
+     *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+!    *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
 C
 C     COMPUTE THE DENSITY MATRICES
@@ -596,12 +677,19 @@ C
         NOSHIC=NOSH(I)
         NCSHIC=NCSH(I)
         NOCSH=NOSHIC+NCSHIC
+
+CMI    ... this is second index for C(MXBF,1) !
         J1=J1+NOCSH
+
         IF (NOSHIC.GT.0) IS=1
         IF (NCSHIC.GT.0) IK=1
         DO M=1,NBAS1
           DO N=1,M
+
+CMI         write(LUPRI,*) 'I,M,J1,N,J1:',I,M,J1,N,J1
+
             TERM1=OCCUP(I)*C(M,J1)*C(N,J1)
+
             TERM2=0.D0
             DO J=1,NCSHIC
               J2=J+NSTEP
@@ -711,7 +799,7 @@ C
       SUBROUTINE DIAGX(A,N,EIG,EW,SINV,AUX,IC)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION A(2),AUX(N,N),SINV(N,N),EIG(N,N),EW(2)
+      DIMENSION A(*),AUX(N,N),SINV(N,N),EIG(N,N),EW(*)
       TOL=1.D-15
       IJ=0
       DO I=1,N
@@ -746,6 +834,8 @@ C
      *P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C     ONE CONFIGURATION
 C     SOLVE FC=ESC
 C     NBAS1=DIMENSION OF THE MATRIX F AND VECTOR C
@@ -755,10 +845,12 @@ C     OR S,STARTING AT NSTEP+1 FOR THE F AND S SUPERVECTOR, AND OF
 C     LENGTH N1
 C     NO DEFINE THE COLUMN CORRESPONDING TO THE VECTOR C IN A MATRIX C
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(2),PCAP(2),
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),GMIN(MXBF,1),SMIN(MXBF,1),
@@ -919,23 +1011,30 @@ C     TEST CONVERGENCE
   140 RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ENERGYX
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
 c     logical relscf_verbose
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
-     *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
-     *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
+C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
+     *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
+     *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+     *C(MXBF,*),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
+     *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 C
 c     relscf_verbose = .false.
@@ -985,13 +1084,19 @@ C
 C
       IF (NUMVAR.EQ.0) RETURN
       CPU=SECONDX()
-      if (relscf_verbose) 
-     &   WRITE (6,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
-   65 FORMAT(I5,5(1X,D16.10),I5,F14.2)
+
+CMI  if (relscf_verbose) 
+      IF (IPR_RELSCF.GE.2) THEN
+       WRITE (LUPRU,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
+   65  FORMAT(I5,5(1X,D16.10),I5,F14.2)
+      ENDIF
+
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EVEN2(N,V,G,E,A,R,TT,AUXF,AUXG,AUXH)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     EVEN2 - BERND HESS - V 1.0 - 5.2.86
 C     CALCULATE EVEN2 OPERATORS
@@ -1007,9 +1112,10 @@ C     R       R-FACTORS (DIAGONAL)
 C     TT      NONREL. KINETIC ENERGY (DIAGONAL)
 C     AUXF,AUXG,AUXH  SCRATCH ARAYS
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION V(2),G(2),E(N),R(N),A(N),TT(N),AUXF(N,N),
+      DIMENSION V(*),G(*),E(N),R(N),A(N),TT(N),AUXF(N,N),
      *AUXG(N,N),AUXH(N,N)
       M=N
       IJ=0
@@ -1145,6 +1251,7 @@ C
       KK=N1+N2
       IMAX=II+JJ+KK+3
       IF (IMAX.LE.20) GOTO 2
+
 C
 C    ERROR BRANCH: ANGULAR MOMENTUM  > MAXIMUM GIVEN BY ARRAY GAM
 C
@@ -1152,6 +1259,7 @@ C
 1002  FORMAT(' ILLEGAL ANGULAR MOMENTUM (PVP)'/,
      *       ' L1,M1,N1,L2,M2,N2,LAMBDA PRINTED'/,1X,7I5)
       STOP 1002
+      CALL QUIT('error output !')
 C
 C    COMPUTE INTEGRAL OVER DERIVATIVE OF THE FUNCTIONS
 C
@@ -1186,22 +1294,35 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE EXTRAP(IAV,SCR,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C     ONE CONFIGURATION
 C     SCF ITERATIONS AND EXTRAPOLATIONS
 C     MODIFIED 17.7.87 - BERND HESS - AVERAGING/ORTHOGONALIZATION
+C
+C
+C   C(MXBF,1)  -->   C(MXBF,*)
+C   CM1SCF(MXBF,1) --> CM1SCF(MXBF,*)
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
       DIMENSION SCR(*),
-     *          P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+C    *          P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+     *          P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+CMI  *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
 C
       NBIAS=BIAS
@@ -1225,6 +1346,7 @@ C
         DO J=1,NSH
           J1=J+NSTEP
           DO M=1,NBAS1
+CMI          ... complains of J1 in CM1SCF !
             TERM=ABS(C(M,J1)-CM1SCF(M,J1))
             IF (TERM-SUP) 45,45,40
    40       SUP=TERM
@@ -1312,7 +1434,7 @@ C***** NAME FILLMA
       SUBROUTINE FILLMA(N,S,OVE)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION S(2),OVE(N,N)
+      DIMENSION S(*),OVE(N,N)
       IJ=0
       DO I=1,N
         DO J=1,I
@@ -1347,10 +1469,22 @@ C***** NAME FILLMA
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GAUSS(N,X,W)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C Array dim.fixes:
+C------------------
+C
+C  X(2) -> X(*)
+C  W(2) -> W(*)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION X(2), W(2)
+CMI   DIMENSION X(2), W(2)
+      DIMENSION X(*), W(*)
       DIMENSION GPT(166),GWT(166),P3(2),W3(2)
       EQUIVALENCE (P3(1),GPT(165)),(W3(1),GWT(165))
       INTEGER NS(16),LOCS(16)
@@ -1554,9 +1688,11 @@ C***** NAME FILLMA
       N1 = 1
       N2 = N
       DO L = L1, L2
+CMI ....   for array 'x', upper bound of dimension 1 exceeded 
         X(N2) = GPT(L)
         X(N1) = - GPT(L)
         W(N1) = GWT(L)
+CMI  ...  for array 'w', upper bound of dimension 1 exceeded
         W(N2) = GWT(L)
         N1 = N1 + 1
         N2 = N2 - 1
@@ -1672,17 +1808,29 @@ CICI
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
-C     ONE CONFIGURATION
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+C
+C       ONE CONFIGURATION
+C
+C MI:
+C  C(MXBF,1) -> C(MXBF,*)
+C  SMIN(MXBF,1) ->  SMIN(MXBF,*)
+C  GMIN(MXBF,1) ->  GMIN(MXBF,*)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),
-     *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),GMIN(MXBF,1),SMIN(MXBF,1),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+CMI  *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),GMIN(MXBF,1),SMIN(MXBF,1),
+     *EC(*),CM1(*),Z1(*),Z2(2),DELZ(2),GMIN(MXBF,*),SMIN(MXBF,*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
 C
 C     COMPUTE IN THE FOLLOWING ORDER THE MATRICES QCAP,PCAP,SMIN,QMIN,
@@ -1826,26 +1974,39 @@ CICI
       RETURN
       END
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HFMAIN
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,REL,Z100,
      *    S100,T100,U100,ZADD,C,ITRAN,CTRAN,NROW,PQN,ZETA,
      &    NBVAR,ZETINC,IORCN,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     MAIN PROGRAM ONE CONFIGURATION LCAO ATOMIC SCF CALCULATION
+C
+C  Called from AT3DIM where most parameters are allocated through
+C  MEMGET.
+C
+C
+C   C(MXBF,1) -> C(MXBF,*)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 #include "scfarr.h"
 
-      DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),DT(LPQ,2),
-     &          DOS(LPQ,2),PCAP(LPQ),QCAP(LPQ),FC(LPQ),FO(LPQ),
+CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),DT(LPQ,2),
+      DIMENSION P(LQM),Q(LQM),S(LPQ),U(*),T(LPQ),DT(LPQ,*),
+C    &          DOS(LPQ,2),PCAP(LPQ),QCAP(LPQ),FC(LPQ),FO(LPQ),
+     &          DOS(LPQ,*),PCAP(LPQ),QCAP(LPQ),FC(LPQ),FO(LPQ),
      &          CM1SCF(MXBF,NOR),CM2SCF(MXBF,NOR),CSAV1(MXBF,NOR),
      &          CSAV2(MXBF,NOR),GMIN(*),SMIN(*),THRE(NOR),EPS(NOR),
      &          EC(MXBF),CM1(MXBF),Z1(MXBF),Z2(MXBF),DELZ(MXBF),
      &          REL(*),Z100(MX100),S100(*),T100(*),U100(*),
-     &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
+CMI  &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
+     &          ZADD(MX100,4),C(MXBF,*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
      &          ZETINC(MXB),ITRAN(*),NROW(MXB),NBVAR(MXB),IORCN(MXB)
       DIMENSION WORK(LWORK)
       COMMON /CLOCKX/ CPU,CLK
@@ -1882,6 +2043,9 @@ C     MAIN PROGRAM ONE CONFIGURATION LCAO ATOMIC SCF CALCULATION
       MVAR=0
       IEX=0
       NRUN=1
+
+CMI        return
+
 C
 C     ITERATION STARTS - CALCULATION OF INTEGRALS
 C
@@ -1891,12 +2055,23 @@ C
       CALL MEMGET('REAL',KUN100,NDIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTN100,NDIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHCORR,NDIM,WORK,KFREE,LFREE)
+
+      CALL MEMCHK('before QEISG',WORK,1)
+
       CALL OEISG(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,REL,Z100,
      *    S100,T100,U100,ZADD,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN,
      &    NDIM,WORK(KUN100),WORK(KTN100),WORK(KHCORR))
+
+      CALL MEMCHK('after QEISG',WORK,1)
+C     write(LUPRI,*) 'after QEIGS memory check is OK'
+
+      CALL MEMREL('HFMAIN-after QEISG',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMCHK('after QEISG 2',WORK,1)
+
+CMI        return
 
       if (ncall.eq.1) 
      *  call teig(P,Q,NSYM,NBAS,NOSH,ZETA,AJMN,U,OCCUP,ndimpq)
@@ -1913,6 +2088,7 @@ C
       NITSC1=1
       NITSC2=1
       NCONV=0
+
 C
 C     CONSTRUCT DENSITY MATRIX FROM VECTOR
 C
@@ -1922,6 +2098,8 @@ C
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+
+      CALL MEMCHK('after DENSI',WORK,1)
 C
 C     CALCULATE ENERGY, IF APPLICABLE
 C
@@ -1930,9 +2108,16 @@ C
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 
-      if (relscf_verbose) write(6,"(a,i3,1x,f26.12)")
-     & ' total energy iteration', nitscf,energ
+      CALL MEMCHK('HFMAIN after ENERGY',WORK,1)
+CMI        return
 
+CMI   if (relscf_verbose) write(6,"(a,i3,1x,f26.12)")
+      IF (IPR_RELSCF.GE.2) then
+        write(LUPRI,"(a,i3,1x,f26.12)")
+     & ' total energy iteration', nitscf,energ
+      ENDIF
+
+CMI  ... check this print...
       IF (IPRINT.GT.1) THEN
       CALL PREN(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
@@ -1946,21 +2131,37 @@ C
       IOS=0
       IF (NRUN.EQ.1.AND.IPR.GT.0) THEN
       IF (JPARM.LT.3 .AND. KPARM.NE.IPARM(JPARM+1)) THEN
-      if (relscf_verbose) then
-         IF (KPARM.EQ.0) WRITE (6,*) ' ### NON-RELATIVISTIC APPROX. ###'
-         IF (KPARM.EQ.1) WRITE (6,*) ' ### SQR APPROX.              ###'
-         IF (KPARM.EQ.2) WRITE (6,*) ' ### EV APPROX.               ###'
+
+CMI   if (relscf_verbose) then
+      if (IPR_RELSCF.GE.2) then
+         IF (KPARM.EQ.0) WRITE (LUPRI,*)
+     &          ' ### NON-RELATIVISTIC APPROX. ###'
+         IF (KPARM.EQ.1) WRITE (LUPRI,*)
+     &           ' ### SQR APPROX.              ###'
+         IF (KPARM.EQ.2) WRITE (LUPRI,*) 
+     &           ' ### EV APPROX.               ###'
       endif
+
       CALL PREN(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+
+      CALL MEMCHK('HFMAIN after PREN',WORK,1)
+
+
       ELSE
-      if (relscf_verbose) then
-         IF (KPARM.EQ.0) WRITE (6,*) ' ### NON-RELATIVISTIC RESULT  ###'
-         IF (KPARM.EQ.1) WRITE (6,*) ' ### SQR OPERATOR RESULT      ###'
-         IF (KPARM.EQ.2) WRITE (6,*) ' ### EV  OPERATOR RESULT      ###'
+
+CMI   if (relscf_verbose) then
+      if (IPR_RELSCF.GE.2) then
+         IF (KPARM.EQ.0) WRITE (LUPRI,*)
+     &   ' ### NON-RELATIVISTIC RESULT  ###'
+         IF (KPARM.EQ.1) WRITE (6,*) 
+     &    ' ### SQR OPERATOR RESULT      ###'
+         IF (KPARM.EQ.2) WRITE (6,*) 
+     &    ' ### EV  OPERATOR RESULT      ###'
       endif
+
       CALL PREN(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
@@ -1990,6 +2191,9 @@ C
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+
+CMI        return
+
 C
 C     SAVE THE RESULTS OF THE PRECEDING SCF RUNS
       NSTEP2=0
@@ -2000,6 +2204,7 @@ C     SAVE THE RESULTS OF THE PRECEDING SCF RUNS
           J1=J+NSTEP2
           DO M=1,NBAS1
             CM2SCF(M,J1)=CM1SCF(M,J1)
+CMI         ... index J1 in C out of boundaries !
             CM1SCF(M,J1)=C(M,J1)
           END DO
         END DO
@@ -2049,6 +2254,9 @@ C
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 
+C          write(LUPRI,*) 'good return here !, NALARM=',NALARM
+C          return
+
       IF (NALARM.LE.0) GO TO 20
 C
 C     IF SELF CONSISTENCE DIVERGENCE OR TOO MANY ITERATIONS,
@@ -2063,6 +2271,10 @@ C
       ZETA(NBVAR1)=ZSAV(2)
       WRITE (6,*) ZSAV(2),ESAV(2)
       IDEBUG=1
+
+C          write(LUPRI,*) 'problematic return here !'
+C          return
+
 C
 C     RESTORE DENSITY
 C
@@ -2084,12 +2296,16 @@ C
       NALARM=0
       GOTO 15
       ENDIF
+
+      CALL MEMCHK('HFMAIN 1.1',WORK,1)
+CMI        return
 C
    80 CALL ALARM
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
       GO TO 251
+
    85 IF (NRUN.GT.1) GO TO 130
 C
 C     OPEN SUBROUTINE EXPONENT VARIATION
@@ -2151,7 +2367,10 @@ C
   130 CONTINUE
       RED=ABS((ENERG-ESAV(1))/ESAV(1))
       IF (RED.GE.RMNED) GO TO 140
-  135 if (relscf_verbose) WRITE(LUPRI,136) RED,RMNED
+
+C 135 if (relscf_verbose) WRITE(LUPRI,136) RED,RMNED
+  135 if (IPR_RELSCF.GE.2) WRITE(LUPRI,136) RED,RMNED
+
   136 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E12.2,1X,
      *       'SMALLER THAN RMNED',E12.2)
       NRUN=1
@@ -2229,17 +2448,32 @@ C
       GO TO 80
 
 251   CONTINUE
+
       CALL OUTPUTX
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+
+      CALL MEMCHK('HFMAIN end',WORK,1)
+
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INPAR(NR,N ,A,B,C,X,W,NP,XP,WP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C   Array dim. fixes
+C---------------------
+C X(2) -> X(*)
+C W(2) -> W(*)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION N (2),A(2),B(2),C(2),X(2),W(2),NP(2),XP(2),WP(2),
+CMI   DIMENSION N (2),A(2),B(2),C(2),X(2),W(2),NP(2),XP(2),WP(2),
+      DIMENSION N (2),A(2),B(2),C(2),X(*),W(*),NP(2),XP(2),WP(2),
      1          X1(150),W1(150),X2(12),W2(12)
       DATA DMAX/1.D60/
       IF (NR.EQ.1) GO TO 40
@@ -2325,7 +2559,9 @@ C
         D2 = T1 / BETA
         D1 = ((A(I) + B(I)) + (A(I) - B(I)) / BETA) * .5D0
         DO J = 1, N1
+CMI      ....   for array 'x', upper bound of dimension 1 exceeded 
           X(NX) = D1 + D2 / (1.D0 - BETA * X1(J+1))
+CMI      ....   for array 'w', upper bound of dimension 1 exceeded
           W(NX) = T1 * W1(J+1) / ((1.D0 - BETA * X1(J+1))
      1                              * (1.D0 - BETA * X1(J+1)))
           NX = NX + 1
@@ -2378,7 +2614,7 @@ C
       CALL CHECK(0,0,0)
       END
 
-C*********************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       SUBROUTINE INPUT_AT34(C,CTRAN,PQN,ZETA,ZETINC,ITRAN,NROW,NBVAR,
      &                 IORCN,CREAD,WORK,LWORK)
 C
@@ -2391,7 +2627,10 @@ C***********************************************************************
 C     ARRAYS SIZES:
 C     C: NOR*MXBF*NSYM AND  CTRAN,ITRAN: MXBAS*MXOCC     *
 C***********************************************************************
-      DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+CMI   DIMENSION C(0:LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+      DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+C     DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
      *          ITRAN(LDIMC),NROW(MXB),NBVAR(MXB),IORCN(MXB),
      *          CREAD(MXB*MXO),WORK(LWORK)
 C
@@ -2411,8 +2650,16 @@ C
       CHARACTER*4 NBLANK,BSTATE,STATE
       logical *4 EX
       DATA OPER /'NON-REL ','SQR     ','EV      '/
+
+!  ... gfortran gives warning /mi      
+CMI   DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /4H    /
       DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /4H    /
+C     DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /    /
+
       DATA NCOUNT /0/
+
+CMI   write(LUPRI,*) 'INPUT_AT34: NBLANK=',NBLANK
+CMI   write(LUPRI,*) 'INPUT_AT34: IBLANK=',IBLANK
 C
 c     relscf_verbose = .false.
 C
@@ -2517,6 +2764,7 @@ C
 C
 2080  FORMAT(12A4)
 
+! ... reading from a very simple input file !
       LUTOSCF = 9
       OPEN(UNIT=LUTOSCF,FILE='TOSCF',STATUS='OLD',FORM='FORMATTED')
       READ(LUTOSCF,*,END=2002) charge
@@ -2524,7 +2772,6 @@ C
       READ(LUTOSCF,*) (NCSH(I),I=1,4)
       READ(LUTOSCF,*) (NOOC(I),I=1,4)
       READ(LUTOSCF,*) IREL
-
 
       if (IREL.eq.0) then
       Iparm(1)=0
@@ -2584,15 +2831,17 @@ C
       NCOVAR=0
       ZN=CHARGE
 C
-      if (.not.relscf_verbose) then
-         write (lupri,*)
-         write (lupri,*)  
-     &   '         for additional output, please switch on '//
-     &         'verbose output level'
-         write (lupri,*)  
-     &   '         from within the AMFI control options.'
-         write (lupri,*)
-      else 
+CMI   if (.not.relscf_verbose) then
+CMI      write (lupri,*)
+CMI      write (lupri,*)  
+CMI  &   '         for additional output, please switch on '//
+CMI  &         'verbose output level'
+CMI      write (lupri,*)  
+CMI  &   '         from within the AMFI control options.'
+CMI      write (lupri,*)
+CMI   else 
+
+      IF (IPR_RELSCF.GE.2) THEN
 
       WRITE(LUPRI,80) (NAME(I),I=1,12)
    80 FORMAT ('1',4X,'ATOMIC HARTREE-FOCK PROGRAM '/5X,
@@ -2641,6 +2890,7 @@ C 125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I1,5X))
   135 FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/ )
       WRITE(LUPRI,140) (AJMN(I),I=1,24)
       endif
+
       DO i=1,24
            ajmn(i)=0.5*ajmn(i)
       END DO
@@ -2681,14 +2931,17 @@ C 125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I1,5X))
       I=I-1
       IF ((RMXED.LT.1.D-5).OR.(RMXED.GT.0.1)) GO TO 370
 C
-      if (relscf_verbose) WRITE (6,145)
+CMI   if (relscf_verbose) WRITE (6,145)
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,145)
   145 FORMAT ('0',5X,'BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL
      1 EXPONENTS)'//15X,'S',28X,'P',28X,'D',28X,'F'/ )
+
   160 FORMAT(4(5X,F4.1,5X,F15.6))
 C
       NBAS1=NBAS(1)
       IF (NSYM.GT.1) GO TO 155
-       if (relscf_verbose) then
+C      if (relscf_verbose) then
+       if (IPR_RELSCF.GE.2) then
           DO   I=1,NBAS1
              WRITE(LUPRI,160)  PQN(I),ZETA(I)
           END DO
@@ -2700,10 +2953,15 @@ C
       NBA3=1
   197 DO 185 I=NBA3,NBAS2
        J=NBAS1+I
-  185 if (relscf_verbose) WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J)
+
+C 185 if (relscf_verbose) WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J)
+  185 if (IPR_RELSCF.GE.2) WRITE(LUPRI,160)
+     &            PQN(I),ZETA(I),PQN(J),ZETA(J)
+
   196 IF (NBAS1.EQ.NBAS2) GO TO 215
        NBA2=NBAS2+1
-       if (relscf_verbose) then
+CMI    if (relscf_verbose) then
+       if (IPR_RELSCF.GE.2) then
           DO   I=NBA2,NBAS1
              WRITE(LUPRI,160) PQN(I),ZETA(I)
           END DO
@@ -2716,14 +2974,18 @@ C
   207 DO 195  I=NBA4,NBAS3
        J=NBAS1+I
        K=NBAS1+NBAS2+I
-  195 if (relscf_verbose) 
+
+C 195 if (relscf_verbose) 
+  195 if (IPR_RELSCF.GE.2) 
      &   WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K)
+
   206 IF (NBAS3.EQ.NBAS2) GO TO 196
       NBA3=NBAS3+1
       GO TO 197
 C
   157 NBAS4=NBAS(4)
-      if (relscf_verbose) then
+CMI   if (relscf_verbose) then
+      if (IPR_RELSCF.GE.2) then
          DO I=1,NBAS4
             J=NBAS1+I
             K=NBAS1+NBAS2+I
@@ -2753,14 +3015,16 @@ C
       MXBF=NBASM
 
       IF(IVEC.EQ.1) THEN
-         if (relscf_verbose) WRITE(LUPRI,*) ' INPUT VECTORS'
+C        if (relscf_verbose) WRITE(LUPRI,*) ' INPUT VECTORS'
+         if (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' INPUT VECTORS'
          DO I=1,4*MXBF
            C(I)=0
          END DO
          IEND=0
          inquire(FILE='STARTORB',EXIST=EX)
          istartunit=44
-         if (EX.and.relscf_verbose) 
+CMI      if (EX.and.relscf_verbose) 
+         if (EX.and.IPR_RELSCF.GE.2) 
      &      write(LUPRI,*) 'starting orbitals read from file'
          if (EX) OPEN(UNIT=istartunit,STATUS='UNKNOWN',FILE='STARTORB')
          if (EX) rewind(istartunit)
@@ -2786,6 +3050,9 @@ C
              do II=IBEG,IEND
               C(II)=0d0
               Enddo
+C             write(LUPRI,*) 'C index:',
+C    &         IBEG,I,NBAS(L),NTTC, IBEG+I*NBAS(L)/NTTC-1,
+C    &         ' max:',LDIMC
               C(IBEG+I*NBAS(L)/NTTC-1)=1d0
              endif
              if (relscf_verbose) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
@@ -2868,7 +3135,8 @@ C
       if (relscf_verbose) WRITE (LUPRI,970) LDIMC
 970   FORMAT(' #### DIMENSION OVERFLOW: ARRAY C #####'/,
      *' NOR*MXBF*NSYM > ',I6/)
-      STOP 'DIMENSION OVERFLOW ARRAY C'
+CMI   STOP 'DIMENSION OVERFLOW ARRAY C'
+       CALL QUIT( 'DIMENSION OVERFLOW ARRAY C')
       ENDIF
 C
 C     INPUTS CALLS AT3DIM, WHICH PASSES ARRAY ADDRESSES TO
@@ -2898,13 +3166,17 @@ C
       STOP 'INPUTERR'
       END
 
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE JACOB(A,B,EIG,N,RANGE,IC)
-#include <implicit.h>
-#include <priunit.h>
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C     IC=1 EIGNEVALUES AND VECTORS REARRANGED
 C       =0 LEFT AS THEY ARE
-      DIMENSION A(N,N),B(N,N),EIG(2)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION A(N,N),B(N,N),EIG(*)
       ENUI=0.D0
       U1=N
       DO I=1,N
@@ -2995,8 +3267,11 @@ C       =0 LEFT AS THEY ARE
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE JACVAO(A,N,EIVU,EIVR,THRSH)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     V 2.0 - VECTORIZED VERSION - BERND HESS
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION A(N,N),EIVU(N),EIVR(N,N)
@@ -3151,26 +3426,35 @@ C      PLACE EIGENVALUES IN EIVU
       RETURN
       END
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE JDAAA
      *(P,Q,S,U,T,DT,V,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,W,THRE,EPS,EPSI,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
-C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C$    VERSION INCLUDING IDK ARRAY
 C
 C     THIS SUBROUTINE  DIAGONALIZES THE HARTREE-FOCK MATRIX  FC AND FO
 C         SYMMETRY BY SYMMETRY,NBAS(N) IS SMALLER OR EQUAL TO 15
 C
+C
+C  C(MXBF,1)  ->    C(MXBF,*)
+C   U(2)  -> U(*)
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),W(2),THRE(2),EPS(2),
-     *EPSI(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(2),DT(*),V(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),W(*),THRE(*),EPS(*),
+     *EPSI(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
 
       M1=0
@@ -3185,7 +3469,10 @@ C
           DO J=1,I
             IJ=NSTEP+J
             MM=MM+1
+
+C           write(LUPRI,*) 'IJ=',IJ, 'LPQ=',LPQ
             DT(IJ)=S(MM)
+
           END DO
           JI=I
           DO J=1,I
@@ -3369,10 +3656,12 @@ C#    WRITE (6,991) I,SUM
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   
 CMI   PROGRAM MAIN
       SUBROUTINE INT_AT_SCF(WORK,LWORK)
-CMI
-
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
 C  DELC@
 C     CRAY CHANGES ARE MARKED BY c
 C     RELATIVISTIC VERSION
@@ -3399,8 +3688,16 @@ C     ORBITALS (CLOSED PLUS OPEN)
 C     TO INCREASE DIMENSIONS CHANGE STATEMENTS ENCLOSED BY
 C     C##DIM ... C##
 C
+C  Instead of separated program  called as subroutine from  AMFI
+C  getAOs2
+C
+C
+C
+C
+C
 CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "amfi_if.h"
@@ -3409,30 +3706,50 @@ c     logical relscf_verbose
       REAL*8 GJ0,GK0
       REAL*8 WORK
       DIMENSION WORK(LWORK)
-      if (relscf_verbose) WRITE (LUPRI,100)
-100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)
+
+!     if (relscf_verbose) WRITE (LUPRI,100)
+C     if (IPR_RELSCF.GE.2) WRITE (LUPRI,100)
+C100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)
+      IF (IPR_RELSCF.GE.0) THEN
+        CALL HEADER('*** PROGRAM AT34 - ALLIANT - @V ***',-1)
+      ENDIF
+
+C     CALL FLSHFO(LUPRI)
+
       CALL AT3(WORK,LWORK)
+
       RETURN
       END
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE OEISG(IPARAM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,REL,Z100,
      *    S100,T100,U100,ZADD,C,ITRAN,CTRAN,NROW,PQN,
      &    ZETA,NBVAR,ZETINC,IORCN,NDIM,UN100,TN100,HCORR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C  REL(2) -> REL(*) because REL is from MEMGET
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
+#include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C
-      DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),
-     &          DT(2),DOS(2),PCAP(2),QCAP(2),FC(2),FO(2),
+CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),
+      DIMENSION P(LQM),Q(LQM),S(LPQ),U(*),T(LPQ),
+     &          DT(*),DOS(*),PCAP(*),QCAP(*),FC(*),FO(*),
      &          CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     &          CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),
-     &          THRE(2),EPS(2),EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     &          REL(2),Z100(100),S100(2),T100(2),U100(2),ZADD(MX100,4),
-     &          C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
-     &          ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
+     &          CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),
+     &          THRE(*),EPS(*),EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+CMI  &          REL(2),Z100(100),S100(2),T100(2),U100(2),ZADD(MX100,4),
+     &          REL(*),Z100(*),S100(*),T100(*),U100(*),ZADD(MX100,4),
+     &          C(MXBF,*),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
+     &          ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
 C
 C     ONE CONFIGURATION
 C     ONE ELECTRON INTEGRAL PROGRAM
@@ -3538,6 +3855,7 @@ C************************************************************
             VPQP2=FACTO(NPQ+1)/ZPQ**(0.5D0*(NPQ+2))
             TERM2=VPQP2-VPQ*(WP+WQ)+WP*WQ*VPQM2
             TERM1=1.D0/DSQRT(VP*VQ)
+
             S100(IJ)=TERM1*VPQ
             U100(IJ)=TERM1*VPQ1
             UN100(IJ)=TERM1*VPQ1
@@ -3581,6 +3899,7 @@ C
            K=NBAS1*(NBAS1+1)/2
            DO I=1,K
               U(NSTEP+I)=U100(I)
+              write(LUPRI,*) 'U index=',NSTEP+I
            END DO
         ENDIF
 
@@ -3644,21 +3963,35 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE OUTPUTX
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C MI: array dim. fixes:
+C----------------------------
+C  C(MXBF,1) -> C(MXBF,*)
+C  Q(2)      -> Q(*)
+C  P(2)      -> P(*)
+C  U(2)       --> U(*)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
 #include "relscf_dim.h"
 
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
-     *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
-     *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
+CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(*),
+     *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
 
       COMMON/WIGXXX/ A1,A2,EXP1,EXP2,UP(MXB),DOWN(MXB),IUP(4),NGAUSS
 C
@@ -3774,14 +4107,18 @@ C
       IF (NPRINT.NE.0) GO TO 5
       if (relscf_verbose) WRITE (6,15) (S(I),I=1,N1T)
       GO TO 106
+
     4 IF (NPRINT.EQ.0) GO TO 106
+
     5 if (relscf_verbose) WRITE (6,10) (S(I),I=1,N1T)
    10 FORMAT ('1'//,5X,'MATRICES AND SUPERMATRICES OF INTEGRALS BETWEEN
      1BASIS FUNCTIONS'//,6X,'S MATRIX'//(6X,10F12.6))
    15 FORMAT('1'//,5X,'S MATRIX'//(6X,10F12.6))
    25 FORMAT(6X,10F12.6)
+
       if (relscf_verbose) WRITE(6,30)    (U(I),I=1,N1T)
    30 FORMAT ('0',5X,'U MATRIX'/(6X,10F12.6))
+
       if (relscf_verbose) WRITE(6,35)    (T(I),I=1,N1T)
    35 FORMAT ('0',5X,'T MATRIX'/(6X,10F12.6))
 C
@@ -3835,33 +4172,52 @@ C
       if (relscf_verbose) WRITE (6,13)
    13 FORMAT ('0',5X,19HTYPE GAUSS ORBITALS)
    14 IF (NSVD.EQ.1) GO TO 500
+
       if (relscf_verbose) WRITE (6,504)
   504 FORMAT('0',5X,'SINGLE VECTOR DIAGONALIZATION')
       GO TO 506
-  500 if (relscf_verbose) WRITE (6,505)
+
+C 500 if (relscf_verbose) WRITE (6,505)
+  500 if (IPR_RELSCF.GE.2) WRITE (LUPRI,505)
   505 FORMAT ('0',5X,'JACOBI DIAGONALIZATION')
+
+
   123 FORMAT('0',5X,'CUT OFF PARAMETERS =',F10.6,3X,F10.6)
   425 FORMAT('0',5X,'WIGNER PARAMETERS   A1 =',F10.6,3X,'EXP1 =',F10.6,
      *       /,26X,'A2 =',F10.6,3X,'EXP2 =',F10.6)
-  506 if (relscf_verbose) WRITE (6,120) ZN
+
+C 506 if (relscf_verbose) WRITE (6,120) ZN
+  506 if (IPR_RELSCF.GE.2) WRITE (LUPRI,120) ZN
   120 FORMAT ('0',5X,'CHARGE =',F10.6,//,6X,
      1'SYMMETRY SPECIES',11X,'S',5X,'P',5X,'D',5X,'F')
-      if (relscf_verbose) WRITE(6,130) (NBAS(I),I=1,NSYM)
+
+CMI   if (relscf_verbose) WRITE(6,130) (NBAS(I),I=1,NSYM)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,130) (NBAS(I),I=1,NSYM)
   130 FORMAT(6X,'NUMBER OF BASIS FUNCTIONS=',I2,3(4X,I2))
-      if (relscf_verbose) WRITE(6,135) (NCSH(I),I=1,NSYM)
+
+CMI   if (relscf_verbose) WRITE(6,135) (NCSH(I),I=1,NSYM)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,135) (NCSH(I),I=1,NSYM)
 C 135 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',I1,3(5X,I1))
   135 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',I2,3(5X,I2))
       DO I=1,NSYM
         NOOC(I)=OCCUP(I)+0.01D0
       END DO
-      if (relscf_verbose) WRITE(6,140) (NOOC (I),I=1,NSYM)
+
+CM    if (relscf_verbose) WRITE(6,140) (NOOC (I),I=1,NSYM)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,140) (NOOC (I),I=1,NSYM)
   140 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(1X,I1,4X))
-      if (relscf_verbose) WRITE(6,150)
+
+CMI   if (relscf_verbose) WRITE(6,150)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,150)
   150 FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/)
       fact=2.
-      if (relscf_verbose) WRITE(6,151) (fact*AJMN(I),I=1,24)
+
+CMI   if (relscf_verbose) WRITE(6,151) (fact*AJMN(I),I=1,24)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,151) (fact*AJMN(I),I=1,24)
   151 FORMAT(5D21.8)
-      if (relscf_verbose) WRITE(6,152)
+
+CMI   if (relscf_verbose) WRITE(6,152)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,152)
   152 FORMAT ('0',5X,'BASIS FUNCTIONS (PRINCIPAL QUANTUM NUMBER, ORBITAL
      1 EXPONENTS)'//,15X,'S',28X,'P',28X,'D',28X,'F'/)
   160 FORMAT(4(5X,F4.1,5X,F15.6))
@@ -3869,7 +4225,8 @@ C
       NBAS1=NSAVF(1)
       IF (NSYM.GT.1) GO TO 155
        DO   I=1,NBAS1
-        if (relscf_verbose) WRITE(6,160)  PQN(I),ZETA(I)
+CMI     if (relscf_verbose) WRITE(6,160)  PQN(I),ZETA(I)
+        if (IPR_RELSCF.GE.2)  WRITE(LUPRI,160)  PQN(I),ZETA(I)
        END DO
        GO TO 215
 C
@@ -3878,11 +4235,14 @@ C
       NBA3=1
   197 DO 185 I=NBA3,NBAS2
        J=NBAS1+I
-  185 if (relscf_verbose) WRITE(6,160)  PQN(I),ZETA(I),PQN(J),ZETA(J)
+CMI85 if (relscf_verbose) WRITE(6,160)  PQN(I),ZETA(I),PQN(J),ZETA(J)
+  185 if (IPR_RELSCF.GE.2) WRITE(LUPRI,160)PQN(I),ZETA(I),PQN(J),ZETA(J)
+
   196 IF (NBAS1.EQ.NBAS2) GO TO 215
        NBA2=NBAS2+1
        DO   I=NBA2,NBAS1
-        if (relscf_verbose) WRITE(6,160) PQN(I),ZETA(I)
+CMI     if (relscf_verbose) WRITE(6,160) PQN(I),ZETA(I)
+        if (IPR_RELSCF.GE.2) WRITE(LUPRI,160) PQN(I),ZETA(I)
        END DO
        GO TO 215
 C
@@ -3892,8 +4252,11 @@ C
   207 DO 195  I=NBA4,NBAS3
        J=NBAS1+I
        K=NBAS1+NBAS2+I
-  195 if (relscf_verbose) 
-     &    WRITE(6,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K)
+
+C 195 if (relscf_verbose) 
+  195 if (IPR_RELSCF.GE.2) 
+     &    WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K)
+
   206 IF (NBAS3.EQ.NBAS2) GO TO 196
       NBA3=NBAS3+1
       GO TO 197
@@ -3903,18 +4266,31 @@ C
         J=NBAS1+I
         K=NBAS1+NBAS2+I
         L=NBAS1+NBAS2+NBAS3+I
-      if (relscf_verbose) 
-     &  WRITE(6,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K),
+
+CMI   if (relscf_verbose) 
+      if (IPR_RELSCF.GE.2) 
+     &  WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K),
      *               PQN(L),ZETA(L)
+
       END DO
+
       IF(NBAS4.EQ.NBAS3) GO TO 206
       NBA4=NBAS4+1
       GO TO 207
-  215 if (relscf_verbose) WRITE(LUPRI,220) NITSCF,THRSCF
+
+C 215 if (relscf_verbose) WRITE(LUPRI,220) NITSCF,THRSCF
+  215 if (IPR_RELSCF.GE.2) WRITE(LUPRI,220) NITSCF,THRSCF
+
   220 FORMAT('0',5X,'FINAL SCF RESULTS OBTAINED AT COMPUTATION NO',I2,
      *       5X,'SCF THRESHOLD =',E11.4)
-      if (relscf_verbose) WRITE (LUPRI,1225)
-      if (relscf_verbose) WRITE(6,230) ENERG,POT,CIN,VIR
+
+CMI   if (relscf_verbose) WRITE (LUPRI,1225)
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,1225)
+
+
+CMI   if (relscf_verbose) WRITE(6,230) ENERG,POT,CIN,VIR
+      if (IPR_RELSCF.GE.2) WRITE(6,230) ENERG,POT,CIN,VIR
+
 CMI   IF(NPENFA.EQ.1) WRITE(1,1230) ENERG,VIR
  1225 FORMAT('0',5X,'TOTAL HF ENERGY',4X,'POTENTIAL ENERGY',4X,
      *'KINETIC ENERGY',4X,'VIRIAL THEOREM')
@@ -3930,40 +4306,72 @@ CMI   IF(NPENFA.EQ.1) WRITE(1,1230) ENERG,VIR
  1232 FORMAT(2X,'EPS=',5X,5(F12.5,','))
  1233 FORMAT(2X,'WIG=',F12.6,',',2X,'WIGNER=',F12.6,',')
       GO TO 231
- 1002 if (relscf_verbose) WRITE(LUPRI,1226)
-      if (relscf_verbose) WRITE(LUPRI,230) ENERG,POT,CIN,VIR,ENCOR
+
+C1002 if (relscf_verbose) WRITE(LUPRI,1226)
+ 1002 if (IPR_RELSCF.GE.2) WRITE(LUPRI,1226)
+
+CMI   if (relscf_verbose) WRITE(LUPRI,230) ENERG,POT,CIN,VIR,ENCOR
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,230) ENERG,POT,CIN,VIR,ENCOR
+
 CMI   IF(NPENFA.EQ.1) WRITE(1,1231) ENERG,VIR,ENCOR
-  231 if (relscf_verbose) WRITE(6,255)
+C 231 if (relscf_verbose) WRITE(6,255)
+  231 if (IPR_RELSCF.GE.2) WRITE(LUPRI,255)
+
   255 FORMAT('0',5X,'ORBITAL ENERGIES, EIGENVECTORS, AND DIAGONALIZATION
      * THRESHOLD')
+
 CMI   IF(NPENFA.EQ.1) WRITE(1,1229) POT,CIN
       IMAX=0
       DO LIE=1,NSHT,8
         IMIN=IMAX+1
         IMAX=IMAX+8
         IF(IMAX.GT.NSHT) IMAX=NSHT
-        if (relscf_verbose) WRITE(6,265) (EPS(I),I=IMIN,IMAX)
+
+CMI     if (relscf_verbose) WRITE(6,265) (EPS(I),I=IMIN,IMAX)
+        IF (IPR_RELSCF.GE.2) THEN
+          WRITE(LUPRI,265) (EPS(I),I=IMIN,IMAX)
+        ENDIF
   265   FORMAT('0',5X,F11.5,7(4X,F10.5))
-        if (relscf_verbose) WRITE (6,20)
+
+
+CMI     if (relscf_verbose) WRITE (6,20)
+        if (IPR_RELSCF.GE.2) THEN
+           WRITE (LUPRI,20)
+        ENDIF
    20   FORMAT (' ')
+
         DO I=1,NBASM
-          if (relscf_verbose) WRITE(6,290) (C(I,J),J=IMIN,IMAX)
+CMI       if (relscf_verbose) WRITE(6,290) (C(I,J),J=IMIN,IMAX)
+          IF (IPR_RELSCF.GE.2) THEN
+            WRITE(LUPRI,290) (C(I,J),J=IMIN,IMAX)
+          ENDIF
         END DO
   290   FORMAT(3X,8F14.6)
+
+
         IF(NSVD.EQ.0) then 
-           if (relscf_verbose) WRITE(LUPRI,295) (THRE(J),J=IMIN,IMAX)
+CMI        if (relscf_verbose) WRITE(LUPRI,295) (THRE(J),J=IMIN,IMAX)
+           IF (IPR_RELSCF.GE.2) THEN
+              WRITE(LUPRI,295) (THRE(J),J=IMIN,IMAX)
+           ENDIF
         endif
   295   FORMAT('0',5X,E11.4,7(4X,E10.4))
       END DO
       IF(NSVD.EQ.1) then 
-         if (relscf_verbose) WRITE(LUPRI,295) THRSH
+CMI      if (relscf_verbose) WRITE(LUPRI,295) THRSH
+         IF (IPR_RELSCF.GE.2) THEN
+            WRITE(LUPRI,295) THRSH
+         ENDIF
       endif
 CMI   IF(NPENFA.EQ.1) WRITE(1,1232) (EPS(I),I=1,NSHT)
 C
 C     SET UP R FOR ORBITAL OR WIGNER
 C
       IF(NORBIT.EQ.1) then 
-         if (relscf_verbose) WRITE (6,310)
+CMI      if (relscf_verbose) WRITE (6,310)
+         IF (IPR_RELSCF.GE.2) THEN
+           WRITE (LUPRI,310)
+         ENDIF
       endif
   310 FORMAT ('1'//,5X,'TABULATION OF ORBITAL WAVE FUNCTIONS'//9X,'R'/)
       II=1
@@ -3973,6 +4381,7 @@ C
         RI=RF
         RF=RF+NSIZE(I)*RADINC(I)
         RM=(RI+RF)*0.5D0-RADINC(I)*5.0D0
+CMI      ...   for array 'q', upper bound of dimension 1 exceeded ....
         CALL INPAR(1,NGAUSS,RI,RF,RM,Q(II),Q(JJ),0,DUMMY,DUMMY)
         II=II+NGAUSS
         JJ=JJ+NGAUSS
@@ -4042,11 +4451,15 @@ C
           NSTEP2=NSTEP2+NBAS1
         END DO
         DO I=1,NSHT
+CMI  ....  for array 'p', upper bound of dimension 1 exceeded
           P(K)=S(I)**2
           K=K+1
         END DO
         IF(NORBIT.EQ.1) then 
-           if (relscf_verbose) WRITE (6,330) R,(S(I),I=1,NSHT)
+CMI        if (relscf_verbose) WRITE (6,330) R,(S(I),I=1,NSHT)
+           IF (IPR_RELSCF.GE.2) THEN
+              WRITE (LUPRI,330) R,(S(I),I=1,NSHT)
+           ENDIF
         endif
   330   FORMAT(2X,9(4X,F9.6))
       END DO
@@ -4054,8 +4467,11 @@ C
 C     COMPUTE THE ORBITAL DENSITIES
 C
       IF(NORBIT.EQ.0) GO TO 421
-      if (relscf_verbose) WRITE(6,360)
+CMI   if (relscf_verbose) WRITE(6,360)
+      if (IPR_RELSCF.GE.2) THEN
+         WRITE(LUPRI,360)
   360 FORMAT ('1'//,5X,'TABULATION OF ORBITAL DENSITIES'//9X,'R'/)
+      ENDIF
       K=1
       DO ITER=1,NUMBER
         TOT=0.D0
@@ -4065,8 +4481,12 @@ C
           K1=K1+1
         END DO
         K1=K1-1
-        if (relscf_verbose) WRITE(6,375) (P(I),I=K,K1),TOT
+CMI     if (relscf_verbose) WRITE(6,375) (P(I),I=K,K1),TOT
+        IF (IPR_RELSCF.GE.2) THEN
+           WRITE(LUPRI,375) (P(I),I=K,K1),TOT
   375   FORMAT(3X,10(3X,F9.6))
+        ENDIF
+
         K=K+NSHT+1
       END DO
 C
@@ -4096,7 +4516,10 @@ C
       CNST=A1*(2.0D0-1.0D0/( EXP((E -7.0D0)*0.5D0)+1.0D0))
       WIG   =WIGNER   *12.56637061D0
       WIGNER=WIG*CNST
-      if (relscf_verbose) PRINT 424, UPR,DOWNR,SUM,WIG,WIGNER
+CMI   if (relscf_verbose) PRINT 424, UPR,DOWNR,SUM,WIG,WIGNER
+      if (IPR_RELSCF.GE.2) THEN
+         WRITE(LUPRI,424) UPR,DOWNR,SUM,WIG,WIGNER
+      ENDIF
   424 FORMAT('0SPIN UP   DENSITY =',F12.6,
      */,' SPIN DOWN DENSITY =',F12.6,
      */,' TOTAL     DENSITY =',F12.6,
@@ -4117,41 +4540,48 @@ CMI   IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PREN(IPARAM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     PRINT INTERMEDIATE ITERATION RESULTS
 C
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
-     *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
-     *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
-     *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
+CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
+     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(*),
+     *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
+     *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
+     *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 #include "amfi_if.h"
 c     logical relscf_verbose
 c     relscf_verbose = .false.
 C
-      IF (NITSCF.EQ.1.and.relscf_verbose) THEN
+CMI   IF (NITSCF.EQ.1.and.relscf_verbose) THEN
+      IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
          IF (IPARAM.EQ.0) THEN
-            WRITE (6,200)
+            WRITE (LUPRI,200)
 200   FORMAT(' --- NON-RELATIVISTIC RESULT ---')
          ENDIF
          IF (IPARAM.EQ.1) THEN
-            WRITE (6,201)
+            WRITE (LUPRI,201)
 201   FORMAT(' --- SQR MATRIX RESULT ---')
          ENDIF
          IF (IPARAM.EQ.3) THEN
-            WRITE (6,203)
+            WRITE (LUPRI,203)
 203   FORMAT(' --- EXTERNAL FIELD NO-PAIR RESULT ---')
          ENDIF
-         WRITE (6,100)
+         WRITE (LUPRI,100)
   100  FORMAT(8X,'IT',18X,'TOTAL',14X,'POTENTIAL',16X,'KINETIC',
      * 7X,'VIRIAL RELATION')
          RETURN
@@ -4172,13 +4602,19 @@ C
         END DO
         POTN=POTN+U(I)*ENERG
         CIN=CIN+T(I)*ENERG
-      END DO
+      ENDDO
+
       POT=POT-ZN*POTN
       ENERG=CIN+POT
       VIR=POT/CIN
 C
-      if (relscf_verbose) WRITE (6,65) NITSCF,ENERG,POT,CIN,VIR
-   65 FORMAT(5X,I5,4(3X,D20.10))
+CMI   if (relscf_verbose) WRITE (6,65) NITSCF,ENERG,POT,CIN,VIR
+      if (IPR_RELSCF.GE.2) THEN
+CMI      WRITE (LUPRI,65) NITSCF,ENERG,POT,CIN,VIR
+         WRITE (LUPRI,'(5X,I5,4(3X,D20.10))') NITSCF,ENERG,POT,CIN,VIR
+CMI65 FORMAT(5X,I5,4(3X,D20.10))
+      ENDIF
+
       RETURN
       END
 
@@ -4294,14 +4730,21 @@ C
 c     logical relscf_verbose
 c     relscf_verbose = .false.
 
-      if (relscf_verbose) WRITE (6,*) TEXT
+CMI   if (relscf_verbose) WRITE (6,*) TEXT
+      IF (IPR_RELSCF.GE.2) THEN
+         WRITE (LUPRI,*) TEXT
+      ENDIF
+
       NSTEP2=0
       DO I=1,NSYM
         NBAS1=NBAS(I)
         NSH=NCSH(I)+NOSH(I)
         DO J=1,NSH
           J1=J+NSTEP2
-          if (relscf_verbose) WRITE (6,980) I,J,(C(M,J1),M=1,NBAS1)
+CMI       if (relscf_verbose) WRITE (6,980) I,J,(C(M,J1),M=1,NBAS1)
+          if (IPR_RELSCF.GE.2) THEN
+            WRITE (LUPRI,980) I,J,(C(M,J1),M=1,NBAS1)
+          ENDIF
         END DO
   980   FORMAT(1X,2I5,8D12.4,(/,11X,8D12.4))
         NSTEP2=NSTEP2+NSH
@@ -4384,10 +4827,13 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RELOP
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C      RELOP - PROGRAM TO CALCULATE RELATIVISTIC ONE-ELECTRON
 C      OPERATORS IN A BASIS SET OF GAUSSIAN FUNCTIONS
 C      V 1.0 - 12.3.86 - BERND HESS
-      SUBROUTINE RELOP
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_crelop.h"
@@ -4400,16 +4846,23 @@ C
 c     logical relscf_verbose
 c     relscf_verbose = .false.
 
-      if (relscf_verbose) WRITE (6,100)
-100   FORMAT(/,
+CMI   if (relscf_verbose) WRITE (6,100)
+      if (IPR_RELSCF.GE.2)  THEN
+         WRITE (LUPRI,100)
+100      FORMAT(/,
      X' ****** RELATIVISTIC OPERATORS V 1.0 - BERND HESS ******'
      X//)
+      ENDIF
+
       PI=4.D0*DATAN(1.D0)
       ZWP=2.D0*PI
       ZWPH32=ZWP**1.5D0
       ZWPH12=DSQRT(ZWP)
       SQPI=DSQRT(PI)
+
+CMI   ... rough value of speed of light
       VELIT=137.036D0
+
       PREA=1.D0/(VELIT*VELIT)
       CSQ=VELIT*VELIT
       FAK(1)=1.D0
@@ -4438,13 +4891,17 @@ C
 C
       DO N=1,20
         GA(N)=GAM(N-1)
-      END DO
+      ENDDO
+
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SCHMID(C,N,NBAS1,MXBF,S,SCR)
 #include <implicit.h>
 #include <priunit.h>
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C     V 1.0 - 17.7.87 - BERND HESS
 C
 C     SCHMIDT-ORTHOGONALIZATION OF N-TH VECTOR IN C TO THE N-1 VECTORS
@@ -4462,7 +4919,9 @@ C               ON OUTPUT, THIS ARRAY HOLDS OVERLAPS OF THE N-TH
 C               VECTOR (BEFORE ORTHOGONALIZATION) WITH THE N-1 VECTORS
 C               OF LOWER INDEX
 C
-      DIMENSION C(MXBF,1),S(*),SCR(*)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C     DIMENSION C(MXBF,1),S(*),SCR(*)
+      DIMENSION C(MXBF,*),S(*),SCR(*)
       IF (N.LE.1) RETURN
       NM1=N-1
 C
@@ -4546,9 +5005,7 @@ C     ******************************************************************
       END
 
       SUBROUTINE SOG(N,SS,SINV,P,G,A1)
-#include <implicit.h>
-#include <priunit.h>
-      DIMENSION SS(2),P(2),G(2),A1(2),SINV(N,N)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     SUBROUTINE TO CALCULATE TRANSFORMATION TO SCHMIDT-
 C     ORTHOGONALIZED BASIS.
@@ -4559,6 +5016,11 @@ C     P (ISIZE)      OUTPUT TRANSFORMATION MATRIX
 C     G (ISIZE)      SCRATCH
 C     A1(N)          SCRATCH
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include <implicit.h>
+#include <priunit.h>
+CMI   DIMENSION SS(2),P(2),G(2),A1(2),SINV(N,N)
+      DIMENSION SS(*),P(*),G(*),A1(*),SINV(N,N)
       JL=0
       IQ=0
       DO J=1,N
@@ -4773,7 +5235,7 @@ C
       SUBROUTINE TRSM(A,B,C,N,H,W)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION A(2),B(N,N),C(2),H(N,N),W(N,N)
+      DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     TRANSFORM SYMMETRIC MATRIX A BY UNITARY TRANSFORMATION
 C     IN B. RESULT IS IN C
@@ -4811,7 +5273,7 @@ C
       SUBROUTINE TRSMT(A,B,C,N,H,W)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION A(2),B(N,N),C(2),H(N,N),W(N,N)
+      DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     B*A*BT
 C
@@ -4848,14 +5310,20 @@ C
       return
       end
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZEXTRA
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "relscf_dim.h"
-      DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(2),PCAP(2),
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
@@ -4938,6 +5406,7 @@ C
    10 RETURN
       END
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TEIG(P,Q,NSYM,NBAS,NOSH,ZETA,ajmn,U,OCCUP,ndimpq)
 #include <implicit.h>
 #include <priunit.h>
@@ -4949,7 +5418,8 @@ C.......................................................................
       LOGICAL RELFLG
 
       dimension p(*),q(*),occup(*)
-      DIMENSION NBAS(5),NOSH(5),ZETA(60),AJMN(24),U(1900),NCCUP(5)
+CMI   DIMENSION NBAS(5),NOSH(5),ZETA(60),AJMN(24),U(1900),NCCUP(5)
+      DIMENSION NBAS(5),NOSH(5),ZETA(60),AJMN(24),U(*),NCCUP(5)
       DIMENSION TWOPOW(14), PIFAC(14)
 
 C.......................................................................
@@ -5249,7 +5719,8 @@ C                   LAB. OF MOL. STRUCTURE AND SPECTRA,
 C                   DEPT. OF PHYSICS, UNIV. OF CHICAGO.
 C     (VERY HARD TO GET).
 C.......................................................................
-      DIMENSION NOSH(2),AJMN(2),NCCUP(2),IANUM(90),IADEN(90)
+CMI   DIMENSION NOSH(2),AJMN(2),NCCUP(2),IANUM(90),IADEN(90)
+      DIMENSION NOSH(2),AJMN(24),NCCUP(2),IANUM(90),IADEN(90)
       DATA IANUM /-1,-5,2,-2,-1,-1,-2,-1,-1,-1,2,-9,2,2,-4,-26,9,-7,-58,
      X            -34,-3,-1,-1,-1,-2,-2,-2,-1,-1,-3,-174,-34,-1,-13,9,
      X            -1,2,2,-13,4,2,100,-6,-23,-53,3125,-11,-256,-722,
@@ -5271,7 +5742,7 @@ c     logical relscf_verbose
 c     relscf_verbose = .false.
 
       IEXCHG = 20
-      DO I = 1,24
+      DO I = 1,24  ! MI: AJMN has range 1-24 !
         AJMN(I) = 0.0
       END DO
       ICOUNT = 0
@@ -5300,10 +5771,15 @@ c     relscf_verbose = .false.
       DO I = 1,IEXCHG
         AJMN(I) = 0.5*AJMN(I)
       END DO
-      if (relscf_verbose) WRITE(6,135)
-  135 FORMAT ('0',5X,'AUTOMATIC VECTOR COUPLING COEFFICIENTS K'/ )
-      if (relscf_verbose) WRITE(6,200) (2*AJMN(I),I=1,24)
+CMI   if (relscf_verbose) WRITE(6,135)
+      IF (IPR_RELSCF.GE.2) THEN
+        WRITE(LUPRI,135)
+  135   FORMAT ('0',5X,'AUTOMATIC VECTOR COUPLING COEFFICIENTS K'/ )
+CMI   if (relscf_verbose) WRITE(6,200) (2*AJMN(I),I=1,24)
+         WRITE(LUPRI,200) (2*AJMN(I),I=1,24)
   200    FORMAT(4F18.14)
+      ENDIF
+
   140 FORMAT(5D21.8)
       RETURN
       END
