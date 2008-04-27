@@ -1452,10 +1452,10 @@ C     ... for lower orders do always use the FP "k"- basis !
          BLOCKD = .FALSE.
       ENDIF
 
-C      ... remove AMFI contributions !
+C      ... remove AMFI contribution when .NOAMFI present
       IF (IPA.GT.0.AND.NOAMFI) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &  'Do not employ AMFI contribution due to .NOAMFI flag !'
+        WRITE(LUPRI,'(2X,A)') 
+     &  '* Hard removal of the AMFI contribution due to .NOAMFI flag'
         IPA = 0
       ENDIF
 
