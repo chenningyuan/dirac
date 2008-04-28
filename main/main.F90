@@ -38,6 +38,7 @@ program dirprg
   use memory_allocator
   use os_utils
   implicit none
+#include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #ifdef VAR_MPI 
@@ -75,6 +76,7 @@ program dirprg
      call printlogo
      call printsubtitle
      call sysinf(iparcal)
+     call flush(lupri)
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
 #ifdef VAR_MPI
@@ -93,6 +95,7 @@ program dirprg
   if (mytid == 0) then
      call stopwatch(0,mytid)
      print '(a)','********** E N D   of   D I R A C  output  **********'
+     print '(a/)', '*****************************************************'
   endif
   call dealloc(memory)
 #ifdef VAR_MPI

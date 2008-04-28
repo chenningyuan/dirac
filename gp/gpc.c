@@ -173,7 +173,7 @@ void sysinf_(int *parcal)
 
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
-
+   fflush(stdout);
    free(un);
 }
 
