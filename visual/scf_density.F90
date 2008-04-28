@@ -38,10 +38,11 @@ module scf_density_class
   public gao_data_t, density_t
 
   public init_density
-  public init_ao_dmat, del_ao_dmat, init_mo_coef, del_mo_coef, get_mo_coef, get_ao_dmat_zo
+  public init_ao_dmat, del_ao_dmat, init_mo_coef, del_mo_coef, get_mo_coef, get_zo_ao_dmat
   public init_gao_data, del_gao_data, get_gao_data
   public get_or_put_density, general_density_block
   public print_square_q_matrix
+  public print_q_vector
 
   private
 
@@ -170,7 +171,7 @@ contains
 !   call print_square_q_matrix(self, ntbas(0))
   end subroutine get_mo_coef
 
-  subroutine get_ao_dmat_zo(ao_dmat_zo, mo_coef)
+  subroutine get_zo_ao_dmat(ao_dmat_zo, mo_coef)
     real(kind_dp), intent(out) :: ao_dmat_zo(:, :, :)
     real(kind_dp), intent(in)  :: mo_coef(:, :, :)
 
@@ -179,7 +180,7 @@ contains
     call genden(ao_dmat_zo, mo_coef, 1, 0)
 
     call dscal(n2bbasxq, 2.0d0, ao_dmat_zo, 1)
-  end subroutine get_ao_dmat_zo
+  end subroutine get_zo_ao_dmat
 
   subroutine init_gao_data(self)
     type(gao_data_t), intent(inout) :: self
@@ -353,6 +354,24 @@ contains
                 nz,               &
                 ipqtoq(1, 0),     &
                 lupri)
+
   end subroutine print_square_q_matrix
+
+  subroutine print_q_vector(vector, vector_dimension)
+    real(kind_dp),    intent(in) :: vector(:)
+    integer(kind_i4), intent(in) :: vector_dimension
+
+#include "priunit.h"
+
+    call prqmat(vector,           &
+                vector_dimension, &
+                1,                &
+                vector_dimension, &
+                1,                &
+                nz,               &
+                ipqtoq(1, 0),     &
+                lupri)
+
+  end subroutine print_q_vector
 
 end module scf_density_class
