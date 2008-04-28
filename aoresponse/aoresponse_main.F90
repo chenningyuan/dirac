@@ -244,7 +244,7 @@ contains
     tknorm    = .false.
     diaghe    = .true.
     iprxrs    = 0
-    thcxrs    = 1.0d-5
+    thcxrs    = 1.0d-9
     resfac    = 1.0d3
     maxitr    = 30
     nredm     = 400
@@ -353,8 +353,8 @@ contains
     call dealloc(prop_gradient_c)
     call dealloc(prop_gradient_pp)
     call dealloc(prop_gradient_pn)
-
     call dealloc(convergence)
+    call dealloc(eigval)
 
 
 !   construct the pp and pn response vectors
@@ -422,46 +422,28 @@ contains
 
     end if
 
-
     if (do_pn) then
+
       call alloc(response_vector_pn, length_pn, nz, nr_freq)
+
+      response_vector_pn = 0.0
+
+      call construct_response_vector('pn',               &
+                                     ih,                 &
+                                     response_vector_pn, &
+                                     length_pn,          &
+                                     nr_freq,            &
+                                     ibtyp,              &
+                                     ibtyp_pointer_pn,   &
+                                     eigvec)
+
+      if (debug_me) then
+        call header('response_vector_pn',-1)
+        call prbvec(lupri, response_vector_pn, nr_freq, length_pn)
+      end if
+
     end if
 
-
-
-
-
-
-!   if (nzxopp > 0) then
-
-!     if (static) then
-!       npsim = nr_freq
-!     else
-!       npsim = nr_freq*2
-!     end if
-
-!     half_length     = nzxopp
-!     max_full_length = nzxopp*2
-
-!     call alloc(response_vector_pn, max_full_length*nz)
-!     response_vector_pn = 0.0
-
-!     call construct_response_vector('pn',               &
-!                                    response_vector_pn, &
-!                                    half_length,        &
-!                                    nr_freq,            &
-!                                    ibtyp,              &
-!                                    ibtyp_pointer_pn,   &
-!                                    eigvec)
-
-!     if (debug_me) then
-!       call header('response_vector_pn',-1)
-!       call prbvec(lupri, response_vector_pn, nr_freq, max_full_length)
-!     end if
-
-!   end if
-
-    call dealloc(eigval)
     call dealloc(eigvec)
 
 
@@ -492,6 +474,10 @@ contains
     mo_coef      = 0.0d0
 
     call get_mo_coef(mo_coef)
+    nesim = nr_freq
+    npsim = nr_freq
+    ihrmop(1) = 1
+    ihrmop(2) = 1
 
     call dmolitx(temp_ao_dmat,       &
                  response_vector_pp, &
@@ -508,13 +494,8 @@ contains
     perturbed_ao_dmat = 0.0d0
 
 !   if (static) then
-
-      if (nzxope > 0) then
-        call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 1), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
-      end if
-!     if (nzxopp > 0) then
-!       call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 2), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
-!     end if
+    call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 1), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 2), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
 
 !   else
 
@@ -585,24 +566,22 @@ contains
     character(6)                    :: file_name
     integer(kind_i4)                :: file_unit, nbtyp
 
+    call alloc(ivecs, nr_freq)
+
     select case (vector_type)
       case ('pp')
         nbtyp     = 1
         file_unit = luboe
         file_name = 'PAMBOE'
+        call alloc(buffer, nzxopeq)
       case ('pn')
         nbtyp     = 2
         file_unit = lubop
         file_name = 'PAMBOP'
+        call alloc(buffer, nzxoppq)
       case default
         call quit('error in construct_response_vector, unknown vector type')
     end select
-
-    call alloc(ivecs, nr_freq)
-    call alloc(buffer, nzxopeq)
-
-!   response_vector_z = 0.0d0
-!   response_vector_y = 0.0d0
 
     open(file_unit,              &
          file   = file_name,     &
@@ -611,39 +590,18 @@ contains
          recl   = 8*length*nz,   &
          status = 'old')
 
-    call xrsxv1(ih, nbtyp, response_vector, &
-                    eigvec, nr_freq, ibtyp, ibtyp_pointer, ivecs, buffer)
+    call xrsxv1(ih,              &
+                nbtyp,           &
+                response_vector, &
+                eigvec,          &
+                nr_freq,         &
+                ibtyp,           &
+                ibtyp_pointer,   &
+                ivecs,           &
+                buffer)
 
     close(file_unit, &
           status = 'delete')
-
-!   length = 2*half_length
-
-!   do ifreq = 1, nr_freq
-
-!     if (debug_me) then
-!       call header('response_vector_z',-1)
-!       call print_q_vector((/response_vector_z(:, :, ifreq)/), half_length)
-!       call header('response_vector_y',-1)
-!       call print_q_vector((/response_vector_y(:, :, ifreq)/), half_length)
-!     end if
-
-!     do iz = 1, nz
-
-!       ioff = (iz - 1)*length
-!       call dcopy(half_length,        response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-!       call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-
-!       ioff = (iz - 1)*length + half_length
-!       call dcopy(half_length,        response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-!       call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-
-!       if (ipqtoq(iz, jsymop - 1) > 1) then
-!         call dscal(half_length, -1.0d0, response_vector(1 + ioff), 1)
-!       end if
-
-!     end do
-!   end do
 
     call dealloc(ivecs)
     call dealloc(buffer)
