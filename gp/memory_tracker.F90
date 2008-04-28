@@ -33,7 +33,7 @@
 
          type, public :: fString
             integer(kind=kint)  :: size = 0 
-            character(kind=kchar), allocatable :: s(:) 
+            character, pointer :: s(:) 
          end type fString
 
 !

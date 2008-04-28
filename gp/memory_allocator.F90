@@ -32,27 +32,45 @@
                   
          implicit none
          private
-         public alloc, dealloc, initData, allocator_init
+         public alloc, dealloc, allocp, deallocp, initData, allocator_init
 
          interface alloc
-            module procedure alloc_real
+            module procedure alloc_real_1d
+            module procedure alloc_real_2d
+            module procedure alloc_real_3d
             module procedure alloc_int
          end interface alloc
 
+         interface allocp
+            module procedure alloc_preal
+            module procedure alloc_pint
+         end interface allocp
+
          interface dealloc
-            module procedure dealloc_real
+            module procedure dealloc_real_1d
+            module procedure dealloc_real_2d
+            module procedure dealloc_real_3d
             module procedure dealloc_int
          end interface dealloc
 
+         interface deallocp
+            module procedure dealloc_preal
+            module procedure dealloc_pint_0d
+            module procedure dealloc_pint_1d
+         end interface deallocp
+
          interface initData
-            module procedure initDataReal
+            module procedure initData_real_1d
+            module procedure initData_real_2d
+            module procedure initData_real_3d
             module procedure initDataInt
          end interface initData
 
 
 ! error codes, variable kinds
 
-         integer, parameter :: kchar = 1, kint = 4, kreal = 8, kcomplex = 8
+         integer, parameter :: charArrayLength = 132
+         integer, parameter :: kreal = 8, kcomplex = 8
 
          integer, parameter :: alreadyAllocated = 1, alreadyDeallocated = 2, &
                                allocateFailure  = 3, deallocateFailure  = 4
@@ -72,30 +90,50 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !            subroutine allocErrorHandler(status,size,data_kind,ignoreError)
-            subroutine allocErrorHandler(status,size,data_kind)
-               integer, parameter             :: charArrayLength = 132
+            subroutine allocErrorHandler(status,size,data_kind,var_id,ignoreError)
+               integer                        :: status
+! optional arguments
+               logical, optional              :: ignoreError
                integer, optional              :: size
                integer, optional              :: data_kind
-!               logical, optional              :: ignoreError
-              logical          :: ignoreError
-
-               integer                        :: status
-               integer                        :: kbytesRequested
-               logical                        :: isFatal = .True.
+               character(len=*), optional     :: var_id 
+! local variables
+               logical                        :: ignoreErrorLocal, isFatal
+               integer                        :: kbytesRequested, sizeLocal, kindLocal
                character(len=charArrayLength) :: ErrorMessage, InfoMessage
                character(len=charArrayLength) :: trace_result
                character(len=charArrayLength) :: kbytesAvailable
                character(len=1)               :: dummy
 
-!               if (.not.present(ignoreError)) then
-!                  ignoreError = .False.
-!               else
-!                  write (*,*) ignoreError
-!               endif
-!               if (.not.present(size))        size = 0
-!               if (.not.present(data_kind))   data_kind = 4
+
+               isFatal = .True.
+               if (present(ignoreError)) then
+                  ignoreErrorLocal = .False.
+               else
+                  ignoreErrorLocal = .True.
+               endif
+
+               if (present(size)) then 
+                  sizeLocal = size
+               else
+                  sizeLocal = 0
+               endif
+
+               if (present(data_kind)) then
+                  kindLocal = data_kind
+               else
+                  kindLocal = 4
+               endif
+
+               if (present(var_id)) then
+                  if (var_id.ne.'None') then
+                     write (*,*) ' '
+                     write (*,*) ' *** Warning: for identifier '//var_id
+                     write (*,*) ' '
+                  endif
+               endif
  
-               ignoreError = .False.
+               ignoreErrorlocal = .False.
                              
                InfoMessage  = 'Unknown error!'
                ErrorMessage = InfoMessage
@@ -116,14 +154,15 @@
                   
                   case (allocateFailure)
                      call get_memory_info(kbytesAvailable,charArrayLength)
-                     kbytesRequested = (size*data_kind)/1024
+                     kbytesRequested = (sizeLocal*kindLocal)/1024
 
                      InfoMessage  = 'Error! Allocation failed!'
-                    ! write (*,*) kbytesRequested
-                    ! write (*,*) kbytesAvailable !MI: in the next    message 
+!                    write (*,*) kbytesRequested
+!                    write (*,*) kbytesAvailable
                      write (InfoMessage,'(a,i12,a)') 'Attempted to allocate ',kbytesRequested, &
                                                      ' kB but only '//kbytesAvailable(1:24)//'available'
 
+!                    call catfile()
                      ErrorMessage = 'Memory allocation failure at '//trace_result
                      isFatal = .True.
 
@@ -136,7 +175,7 @@
                end select
 
                if (isFatal) then
-                  if (ignoreError) then
+                  if (ignoreErrorLocal) then
                      write (*,*) ' '
                      write (*,*) 'Non-fatal error at '//trace_result//'. The program will continue.'
                      write (*,*) ' '
@@ -144,8 +183,6 @@
                      write (*,*) ' '
                      write (*,*) InfoMessage
                      write (*,*) ' '
-! temporarily this traceback call has been enablen in quit_ so we don't need it now...
-!                    call get_traceback_info (printPrettyTrace,dummy,1)
                      call quit(ErrorMessage)
                   endif
                else
@@ -181,12 +218,26 @@
 ! initialization for data
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            subroutine initDataReal(data,size)
+            subroutine initData_real_1d(data,size)
                integer :: i,size
                real(kind=kreal) :: data(:)
 
                forall (i=1:size) data(i) = 0.0D0
-            end subroutine initDataReal
+            end subroutine initData_real_1d
+
+            subroutine initData_real_2d(data,size1,size2)
+               integer :: i,j,size1,size2
+               real(kind=kreal) :: data(:,:)
+
+               forall (i=1:size1, j=1:size2) data(i,j) = 0.0D0
+            end subroutine initData_real_2d
+
+            subroutine initData_real_3d(data,size1,size2,size3)
+               integer :: i,j,k,size1,size2,size3
+               real(kind=kreal) :: data(:,:,:)
+
+               forall (i=1:size1, j=1:size2, k=1:size3) data(i,j,k) = 0.0D0
+            end subroutine initData_real_3d
   
             subroutine initDataInt(data,size)
                integer :: i, size
@@ -200,104 +251,346 @@
 ! memory allocation routines
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-            subroutine alloc_real(data,size,id)
-               integer            :: size, status
-               character(len=*), optional :: id
+
+!            subroutine registerAllocationReal(data,size)
+!               real(kind=kreal), allocatable, target :: data(:)
+!               integer, pointer           :: p_mem
+!               character(len=300)                    :: trace_result
+
+!               call get_memory_address(data, p_mem)
+!               call print_trace_allocfromfnct(trace_result)
+!               call appendAllocation(chunk,p_mem,trace_result)
+
+!            end subroutine registerAllocationReal
+
+
+!
+! using allocatables
+!
+            subroutine alloc_real_1d(data,size,id)
+               integer                               :: size, status
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
                real(kind=kreal), allocatable, target :: data(:)
               
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
+               endif
+
                if (.not.allocated(data)) then
                   allocate(data(size),stat=status) 
 
                   if ( status.ne.0 ) then
-                     if (present(id)) then
-                        write (*,*) 'Warning: for identifier ',id
-                     endif
-                     call allocErrorHandler(allocateFailure,size,kind(data))
-
+                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
                   else
                      call initData(data,size)
-!                     call registerAllocation(data,size)
-
+!                    call registerAllocation(data,size)
                   endif
                else
-                  call allocErrorHandler(alreadyAllocated)
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_1d
 
+            subroutine alloc_real_2d(data,size1,size2,id)
+               integer                               :: size1,size2, status
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:,:)
+              
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
                endif
 
-            end subroutine alloc_real
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2),stat=status) 
 
-!            subroutine registerAllocationReal(data,size)
-!               real(kind=kreal), allocatable, target :: data(:)
-!               integer(kind=kint), pointer           :: p_mem
-!               character(len=300)                    :: trace_result
-               
-!               call get_memory_address(data, p_mem)
-!               call print_trace_allocfromfnct(trace_result)
-!!               call appendAllocation(chunk,p_mem,trace_result)
-               
-!            end subroutine registerAllocationReal
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size1*size2,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size1,size2)
+!                    call registerAllocation(data,size)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_2d
+
+
+            subroutine alloc_real_3d(data,size1,size2,size3,id)
+               integer                               :: size1,size2, size3, status
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:,:,:)
+              
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2,size3),stat=status) 
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size1*size2,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size1,size2,size3)
+!                    call registerAllocation(data,size)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_3d
 
             subroutine alloc_int(data,size,id)
-               integer  :: status
-               integer :: size
-               character(len=*), optional :: id
-               integer, allocatable :: data(:)
+               integer                        :: size, status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, allocatable, target   :: data(:)
                
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
                if (.not.allocated(data)) then
                   allocate(data(size),stat=status)
 
                   if ( status.ne.0 ) then
-                     if (present(id)) then
-                        write (*,*) 'Warning: for identifier ',id
-                     endif
-                     call allocErrorHandler(allocateFailure,size,kind(data))
-
+                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
                   else
                      call initData(data,size)
-
                   endif
                else
-                  call allocErrorHandler(alreadyAllocated)
-
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
                endif
-
             end subroutine alloc_int
 
+!
+! using pointers
+!
+
+            subroutine alloc_preal(data,size,id)
+               integer                        :: size, status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), pointer      :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.associated(data)) then
+                  allocate(data(size),stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_preal
+
+            subroutine alloc_pint(data,size,id)
+               integer                        :: size, status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, pointer               :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.associated(data)) then
+                  allocate(data(size),stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_pint
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! memory deallocation routines
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 
-            subroutine dealloc_real(data, id)
-               integer :: status
-               character(len=*), optional :: id
-               real(kind=kreal), allocatable :: data(:)
+            subroutine dealloc_real_1d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
 
                if (allocated(data)) then
                   deallocate(data,stat=status)
                   
                   if ( status.ne.0 ) then
-                     if (present(id)) then
-                        write (*,*) 'Warning: for identifier ',id
-                     endif
-                     call allocErrorHandler(deallocateFailure)
-                     
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
                   endif
-                  
                else
-                  call allocErrorHandler(alreadyDeallocated)
-                  
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
                endif
-               
-            end subroutine dealloc_real
+            end subroutine dealloc_real_1d
+
+            subroutine dealloc_real_2d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_real_2d
+
+            subroutine dealloc_real_3d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_real_3d
 
 
-            subroutine dealloc_int(data)
+            subroutine dealloc_preal(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), pointer      :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (associated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_preal
+
+            subroutine dealloc_int(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
                integer, allocatable :: data(:)
 
-               deallocate(data)
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
             end subroutine dealloc_int
+
+            subroutine dealloc_pint_1d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, pointer               :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (associated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_pint_1d
+
+            subroutine dealloc_pint_0d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, pointer               :: data
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (associated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_pint_0d
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! interface to the tracker
