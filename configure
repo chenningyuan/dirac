@@ -1826,7 +1826,7 @@ case "$F77" in
          ;;
       xlf)
          opt='-O2 -qextname'
-         c_opt='-O2'
+         c_opt='-O2 -qcpluscmt'
 	 mod="-qmoddir=$MODULE_DIR"
 	 f90_extraflags=-qfree=f90
          ;;
