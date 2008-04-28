@@ -28,25 +28,22 @@ contains
     integer(kind_i4), allocatable   :: op_index(:)
     real(kind_dp),    allocatable   :: freq(:)
     real(kind_dp),    allocatable   :: zo_ao_dmat(:, :, :)
-!   real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :, :)
-    real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :)
+    real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :, :, :)
     real(kind_dp),    allocatable   :: ao_pmat(:, :, :, :)
     real(kind_dp),    allocatable   :: mo_coef(:, :, :)
 
-    integer(kind_i4)                :: nr_op, nr_freq, iop
+    integer(kind_i4)                :: nr_op, nr_freq, iop, ifreq
     real(kind_dp)                   :: ddot, value
 
     nr_op   = 1
     nr_freq = 1
 
-    allocate(op_index(nr_op))
-    allocate(freq(nr_freq))
-    allocate(zo_ao_dmat(ntbas(0), ntbas(0), nz))
-!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
-!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nr_op, nr_freq))
-    allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, 2))
+    call alloc(op_index, nr_op)
+    call alloc(freq, nr_freq)
+    call alloc(zo_ao_dmat, ntbas(0), ntbas(0), nz)
+    allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nr_freq, 2, nr_op))
     allocate(ao_pmat(ntbas(0), ntbas(0), nz, nr_op))
-    allocate(mo_coef(ntbas(0), ntbas(0), nz))
+    call alloc(mo_coef, ntbas(0), ntbas(0), nz)
 
     op_index          = 0
     freq              = 0.0d0
@@ -54,6 +51,9 @@ contains
     perturbed_ao_dmat = 0.0d0
     ao_pmat           = 0.0d0
     mo_coef           = 0.0d0
+
+    freq(1) = 0.1d0
+!   freq(1) = 0.0d0
 
     static = .false.
     if (nr_freq == 1 .and. freq(1) == 0.0d0) then
@@ -65,31 +65,37 @@ contains
     call get_mo_coef(mo_coef)
     call get_zo_ao_dmat(zo_ao_dmat, mo_coef)
 
-    do iop = 1, 1
-
+    do iop = 1, nr_op
       call get_ao_pmat(op_index(iop),         &
                        ao_pmat(:, :, :, iop), &
                        work, kfree, lfree)
 
+      call solve_perturbed_ao_dmat(op_index(iop),                         &
+                                   freq,                                  &
+                                   perturbed_ao_dmat(:, :, :, :, :, iop), &
+                                   work, kfree, lfree)
+    end do
+
+
+    do iop = 1, nr_op
+
       value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, zo_ao_dmat, 1)
       write(*, *) 'D(0)*P = ', value
 
-      call solve_perturbed_ao_dmat(op_index(iop),     &
-                                   freq,              &
-                                   perturbed_ao_dmat, &
-                                   work, kfree, lfree)
+      do ifreq = 1, nr_freq
 
-      value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, perturbed_ao_dmat(:, :, :, 1), 1)
-      write(*, *) 'D(1)*P = ', value*2.0d0
+        value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, perturbed_ao_dmat(:, :, :, ifreq, 1, iop), 1)
+        write(*, *) 'freq = ', freq(ifreq), '    D(1)*P = ', value
 
+      end do
     end do
 
-    deallocate(op_index)
-    deallocate(freq)
-    deallocate(zo_ao_dmat)
+    call dealloc(op_index)
+    call dealloc(freq)
+    call dealloc(zo_ao_dmat)
     deallocate(perturbed_ao_dmat)
     deallocate(ao_pmat)
-    deallocate(mo_coef)
+    call dealloc(mo_coef)
 
   end subroutine aoresponse_driver
 
@@ -170,7 +176,8 @@ contains
                                      work, kfree, lfree)
     integer(kind_i4), intent(in)    :: op_index
     real(kind_dp),    intent(in)    :: freq(:)
-    real(kind_dp),    intent(out)   :: perturbed_ao_dmat(:, :, :, :)
+    real(kind_dp),    intent(out)   :: perturbed_ao_dmat(:, :, :, :, :)
+    real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
     real(kind_dp),    intent(inout) :: work(lfree)
     integer(kind_i4), intent(inout) :: kfree
     integer(kind_i4), intent(inout) :: lfree
@@ -181,20 +188,27 @@ contains
 #include "dcbbas.h"
 #include "dgroup.h"
 
-    integer(kind_i4)                :: i, ifsym, half_length, max_full_length, nr_dmat, nr_freq
+    integer(kind_i4)                :: ifreq, ifsym, half_length, max_full_length, nr_dmat, nr_freq
+    integer(kind_i4)                :: counter, pp_pn_counter, pp_pn_counter_max, ih
     integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
     integer(kind_i4), allocatable   :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
     integer(kind_i4), allocatable   :: isymop(:), ihrmop(:), ifckop(:)
     real(kind_dp),    allocatable   :: eigval(:), eigvec(:)
     real(kind_dp),    allocatable   :: convergence(:)
     real(kind_dp),    allocatable   :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
-    real(kind_dp),    allocatable   :: response_vector_pp(:), response_vector_pn(:)
+    real(kind_dp),    allocatable   :: response_vector_pp(:, :, :), response_vector_pn(:, :, :)
     real(kind_dp),    allocatable   :: mo_coef(:, :, :)
     real(kind_dp)                   :: dummy_dp
     logical                         :: skip_pp, skip_pn
-    logical                         :: debug_me = .false.
+    logical                         :: debug_me = .true.
     character(72)                   :: orbital_string(3,2)
 
+
+
+
+
+    logical                         :: do_pp, do_pn
+    integer(kind_i4)                :: length_pp, length_pn
 
 !   set common block
 !   ================
@@ -218,16 +232,6 @@ contains
                  skip_pp,        &
                  skip_pn,        &
                  work, kfree, lfree)
-
-    if (debug_me) then
-      write(*, *) 'debug solve_perturbed_ao_dmat'
-
-      do ifsym = 1, nfsym
-        write(*, *) 'orbital_string(1, ', ifsym, ') = ', orbital_string(1, ifsym)
-        write(*, *) 'orbital_string(2, ', ifsym, ') = ', orbital_string(2, ifsym)
-        write(*, *) 'orbital_string(3, ', ifsym, ') = ', orbital_string(3, ifsym)
-      end do
-    end if
 
 
 !   initialize symmetry independent variables
@@ -277,14 +281,6 @@ contains
     npred   = 0
     nzred   = ncred + nered + npred
 
-    if (debug_me) then
-      write(*, *) 'debug solve_perturbed_ao_dmat'
-
-      write(*, *) 'jsymop = ', jsymop
-      write(*, *) 'jtimop = ', jtimop
-      write(*, *) 'jopsy  = ', jopsy
-    end if
-
     call xrspar(orbital_string, &
                 skip_pp,        &
                 skip_pn,        &
@@ -318,14 +314,9 @@ contains
                 work, kfree, lfree, 0)
 
     if (debug_me) then
-      write(*, *) 'debug solve_perturbed_ao_dmat'
-
-      write(*, *)
-      write(*, *) 'prop_gradient_pp:'
+      call header('prop_gradient_pp',-1)
       call print_q_vector(prop_gradient_pp, nzxopeq)
-
-      write(*, *)
-      write(*, *) 'prop_gradient_pn:'
+      call header('prop_gradient_pn',-1)
       call print_q_vector(prop_gradient_pn, nzxoppq)
     end if
 
@@ -369,26 +360,56 @@ contains
 !   construct the pp and pn response vectors
 !   ========================================
 
+
+
+    do_pp = .false.
+    do_pn = .false.
+
+    length_pp = nzxope
+    length_pn = nzxopp
+
+    if (length_pp > 0 .and. .not. skip_pp) then
+      do_pp = .true.
+    end if
+    if (length_pn > 0 .and. .not. skip_pn) then
+      do_pn = .true.
+    end if
+
+
+
+
+
     nesim = 0
     npsim = 0
     ncsim = 0
 
-    if (nzxope > 0) then
-
+    if (length_pp > 0) then
       if (static) then
         nesim = nr_freq
       else
         nesim = nr_freq*2
       end if
+    end if
+    if (length_pn > 0) then
+      if (static) then
+        npsim = nr_freq
+      else
+        npsim = nr_freq*2
+      end if
+    end if
 
-      half_length     = nzxope
-      max_full_length = nzxope*2
+    ih = 1
 
-      call alloc(response_vector_pp, max_full_length*nz)
+    if (do_pp) then
+
+      call alloc(response_vector_pp, length_pp, nz, nr_freq)
+
+      response_vector_pp = 0.0
 
       call construct_response_vector('pp',               &
+                                     ih,                 &
                                      response_vector_pp, &
-                                     half_length,        &
+                                     length_pp,          &
                                      nr_freq,            &
                                      ibtyp,              &
                                      ibtyp_pointer_pp,   &
@@ -396,38 +417,49 @@ contains
 
       if (debug_me) then
         call header('response_vector_pp',-1)
-        call prbvec(lupri, response_vector_pp, nr_freq, max_full_length)
+        call prbvec(lupri, response_vector_pp, nr_freq, length_pp)
       end if
 
     end if
 
-    if (nzxopp > 0) then
 
-      if (static) then
-        npsim = nr_freq
-      else
-        npsim = nr_freq*2
-      end if
-
-      half_length     = nzxopp
-      max_full_length = nzxopp*2
-
-      call alloc(response_vector_pn, max_full_length*nz)
-
-      call construct_response_vector('pn',               &
-                                     response_vector_pn, &
-                                     half_length,        &
-                                     nr_freq,            &
-                                     ibtyp,              &
-                                     ibtyp_pointer_pn,   &
-                                     eigvec)
-
-      if (debug_me) then
-        call header('response_vector_pn',-1)
-        call prbvec(lupri, response_vector_pn, nr_freq, max_full_length)
-      end if
-
+    if (do_pn) then
+      call alloc(response_vector_pn, length_pn, nz, nr_freq)
     end if
+
+
+
+
+
+
+!   if (nzxopp > 0) then
+
+!     if (static) then
+!       npsim = nr_freq
+!     else
+!       npsim = nr_freq*2
+!     end if
+
+!     half_length     = nzxopp
+!     max_full_length = nzxopp*2
+
+!     call alloc(response_vector_pn, max_full_length*nz)
+!     response_vector_pn = 0.0
+
+!     call construct_response_vector('pn',               &
+!                                    response_vector_pn, &
+!                                    half_length,        &
+!                                    nr_freq,            &
+!                                    ibtyp,              &
+!                                    ibtyp_pointer_pn,   &
+!                                    eigvec)
+
+!     if (debug_me) then
+!       call header('response_vector_pn',-1)
+!       call prbvec(lupri, response_vector_pn, nr_freq, max_full_length)
+!     end if
+
+!   end if
 
     call dealloc(eigval)
     call dealloc(eigvec)
@@ -453,14 +485,15 @@ contains
     call dealloc(ibtyp_pointer_pp)
     call dealloc(ibtyp_pointer_pn)
 
-!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
+    allocate(temp_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
     allocate(mo_coef(ntbas(0), ntbas(0), nz))
 
-    mo_coef = 0.0d0
+    temp_ao_dmat = 0.0d0
+    mo_coef      = 0.0d0
 
     call get_mo_coef(mo_coef)
 
-    call dmolitx(perturbed_ao_dmat,  &
+    call dmolitx(temp_ao_dmat,       &
                  response_vector_pp, &
                  response_vector_pn, &
                  mo_coef,            &
@@ -471,6 +504,47 @@ contains
                  work, kfree, lfree)
 
     deallocate(mo_coef)
+
+    perturbed_ao_dmat = 0.0d0
+
+!   if (static) then
+
+      if (nzxope > 0) then
+        call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 1), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+      end if
+!     if (nzxopp > 0) then
+!       call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 2), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+!     end if
+
+!   else
+
+!     pp_pn_counter_max = 0
+
+!     if (nzxope > 0) then
+!       pp_pn_counter_max = pp_pn_counter_max + 1
+!     end if
+!     if (nzxopp > 0) then
+!       pp_pn_counter_max = pp_pn_counter_max + 1
+!     end if
+!     if (pp_pn_counter_max == 0) then
+!       call quit('error: pp_pn_counter_max == 0')
+!     end if
+
+!     counter = 0
+
+!     do pp_pn_counter = 1, pp_pn_counter_max
+!       do ifreq = 1, nr_freq
+!         do ih = 1, 2
+!           counter = counter + 1
+!           call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, counter), 1, perturbed_ao_dmat(:, :, :, ifreq, ih), 1)
+!         end do
+!       end do
+!     end do
+!   end if
+
+    call dscal(ntbas(0)*ntbas(0)*nz*nr_freq*2, 2.0d0, perturbed_ao_dmat, 1)
+
+    deallocate(temp_ao_dmat)
 
     call dealloc(isymop)
     call dealloc(ihrmop)
@@ -483,43 +557,33 @@ contains
       call dealloc(response_vector_pn)
     end if
 
-    if (debug_me) then
-      write(*, *) 'debug solve_perturbed_ao_dmat'
-
-      do i = 1, nr_dmat
-        write(*, *)
-        write(*, *) 'perturbed_ao_dmat ', i
-        call print_square_q_matrix(perturbed_ao_dmat(:, :, :, i), ntbas(0))
-      end do
-    end if
-
   end subroutine solve_perturbed_ao_dmat
 
   subroutine construct_response_vector(vector_type,     &
+                                       ih,              &
                                        response_vector, &
-                                       half_length,     &
+                                       length,          &
                                        nr_freq,         &
                                        ibtyp,           &
                                        ibtyp_pointer,   &
                                        eigvec)
-    character(*),     intent(in)  :: vector_type
-    real(kind_dp),    intent(out) :: response_vector(:)
-    integer(kind_i4), intent(in)  :: half_length
-    integer(kind_i4), intent(in)  :: nr_freq
-    integer(kind_i4), intent(in)  :: ibtyp(2, *)
-    integer(kind_i4), intent(in)  :: ibtyp_pointer(*)
-    real(kind_dp),    intent(in)  :: eigvec(*)
+    character(*),     intent(in)    :: vector_type
+    integer(kind_i4), intent(in)    :: ih
+    real(kind_dp),    intent(inout) :: response_vector(:, :, :)
+    integer(kind_i4), intent(in)    :: length
+    integer(kind_i4), intent(in)    :: nr_freq
+    integer(kind_i4), intent(in)    :: ibtyp(2, *)
+    integer(kind_i4), intent(in)    :: ibtyp_pointer(*)
+    real(kind_dp),    intent(in)    :: eigvec(*)
 
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    real(kind_dp),    allocatable :: response_vector_z(:, :, :)
-    real(kind_dp),    allocatable :: response_vector_y(:, :, :)
-    integer(kind_i4), allocatable :: ivecs(:)
-    real(kind_dp),    allocatable :: buffer(:)
-
-    character(6)                  :: file_name
-    integer(kind_i4)              :: length, file_unit, ifreq, iz, nbtyp, ioff
+    integer(kind_i4), allocatable   :: ivecs(:)
+    real(kind_dp),    allocatable   :: buffer(:)
+                                    
+    character(6)                    :: file_name
+    integer(kind_i4)                :: file_unit, nbtyp
 
     select case (vector_type)
       case ('pp')
@@ -534,53 +598,53 @@ contains
         call quit('error in construct_response_vector, unknown vector type')
     end select
 
-    allocate(response_vector_z(half_length, nz, nr_freq))
-    allocate(response_vector_y(half_length, nz, nr_freq))
     call alloc(ivecs, nr_freq)
-    call alloc(buffer, half_length*nz)
+    call alloc(buffer, nzxopeq)
 
-    response_vector_z = 0.0d0
-    response_vector_y = 0.0d0
+!   response_vector_z = 0.0d0
+!   response_vector_y = 0.0d0
 
-    open(file_unit,                 &
-         file   = file_name,        &
-         form   = 'unformatted',    &
-         access = 'direct',         &
-         recl   = 8*half_length*nz, &
+    open(file_unit,              &
+         file   = file_name,     &
+         form   = 'unformatted', &
+         access = 'direct',      &
+         recl   = 8*length*nz,   &
          status = 'old')
 
-    call xrsxv1( 1, nbtyp, response_vector_z, &
-                    eigvec, nr_freq, ibtyp, ibtyp_pointer, ivecs, buffer)
-    call xrsxv1(-1, nbtyp, response_vector_y, &
+    call xrsxv1(ih, nbtyp, response_vector, &
                     eigvec, nr_freq, ibtyp, ibtyp_pointer, ivecs, buffer)
 
     close(file_unit, &
           status = 'delete')
 
-    response_vector = 0.0d0
+!   length = 2*half_length
 
-    length = 2*half_length
+!   do ifreq = 1, nr_freq
 
-    do ifreq = 1, nr_freq
-      do iz = 1, nz
+!     if (debug_me) then
+!       call header('response_vector_z',-1)
+!       call print_q_vector((/response_vector_z(:, :, ifreq)/), half_length)
+!       call header('response_vector_y',-1)
+!       call print_q_vector((/response_vector_y(:, :, ifreq)/), half_length)
+!     end if
 
-        ioff = (iz - 1)*length
-        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-        call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+!     do iz = 1, nz
 
-        ioff = (iz - 1)*length + half_length
-        call daxpy(half_length, 1.0d0, response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
-        call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+!       ioff = (iz - 1)*length
+!       call dcopy(half_length,        response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+!       call daxpy(half_length, 1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
 
-        if (ipqtoq(iz, jsymop - 1) > 1) then
-          call dscal(half_length, -1.0d0, response_vector(1 + (iz - 1)*length + half_length), 1)
-        end if
+!       ioff = (iz - 1)*length + half_length
+!       call dcopy(half_length,        response_vector_z(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
+!       call daxpy(half_length,-1.0d0, response_vector_y(1, iz, ifreq), 1, response_vector(1 + ioff), 1)
 
-      end do
-    end do
+!       if (ipqtoq(iz, jsymop - 1) > 1) then
+!         call dscal(half_length, -1.0d0, response_vector(1 + ioff), 1)
+!       end if
 
-    deallocate(response_vector_z)
-    deallocate(response_vector_y)
+!     end do
+!   end do
+
     call dealloc(ivecs)
     call dealloc(buffer)
 
