@@ -8,95 +8,95 @@ module aoresponse_main_m
 
 #include "priunit.h"
 
-! type gao_data_t
-!   integer(kind_i4)              :: max_derivative
-!   integer(kind_i4), allocatable :: gao_center(:)
-!   real(kind_dp),    allocatable :: gao(:)
-!   real(kind_dp),    allocatable :: gao1(:)
-!   real(kind_dp),    allocatable :: gao2(:)
-!   real(kind_dp),    allocatable :: buffer(:)
-! end type gao_data_t
+  public aoresponse_driver
+  public get_ao_pmat
+  public solve_perturbed_ao_dmat
 
-  public open_response_driver, get_ao_pmat, solve_perturbed_ao_dmat
-
-  private ! everything below
+  private
 
 contains
 
+  subroutine aoresponse_driver(work, kfree, lfree)
+    real(kind_dp),    intent(inout) :: work(lfree)
+    integer(kind_i4), intent(inout) :: kfree
+    integer(kind_i4), intent(inout) :: lfree
 
-
-
-
-
-
-
-
-
-
-
-
-
-! subroutine open_response_driver(work, kfree, lfree, ao_dmat_fo)
-  subroutine open_response_driver(work, kfree, lfree)
 #include "dcbbas.h"
+#include "dcbxrs.h"
 #include "dgroup.h"
-    real(kind_dp), intent(inout)         :: work(lfree)
-    integer,       intent(inout)         :: kfree
-    integer,       intent(inout)         :: lfree
-!   real(kind_dp), intent(in)            :: ao_dmat_fo(ntbas(0)*ntbas(0)*nz)
 
-    real(kind_dp),           allocatable :: pmat(:, :, :)
-    real(kind_dp),    allocatable        :: ao_dmat_zo(:, :, :)
-    real(kind_dp),    allocatable        :: mo_coef(:, :, :)
-    real(kind_dp)                        :: ddot
-    real(kind_dp)                        :: dip
-    integer                              :: i
+    integer(kind_i4), allocatable   :: op_index(:)
+    real(kind_dp),    allocatable   :: freq(:)
+    real(kind_dp),    allocatable   :: zo_ao_dmat(:, :, :)
+!   real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :, :)
+    real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :)
+    real(kind_dp),    allocatable   :: ao_pmat(:, :, :, :)
+    real(kind_dp),    allocatable   :: mo_coef(:, :, :)
 
+    integer(kind_i4)                :: nr_op, nr_freq, iop
+    real(kind_dp)                   :: ddot, value
 
+    nr_op   = 1
+    nr_freq = 1
 
-      call init_mo_coef(mo_coef)
-      call get_mo_coef(mo_coef)
+    allocate(op_index(nr_op))
+    allocate(freq(nr_freq))
+    allocate(zo_ao_dmat(ntbas(0), ntbas(0), nz))
+!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
+!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nr_op, nr_freq))
+    allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, 2))
+    allocate(ao_pmat(ntbas(0), ntbas(0), nz, nr_op))
+    allocate(mo_coef(ntbas(0), ntbas(0), nz))
 
-      call init_ao_dmat(ao_dmat_zo)
-      call get_ao_dmat_zo(ao_dmat_zo, mo_coef)
+    op_index          = 0
+    freq              = 0.0d0
+    zo_ao_dmat        = 0.0d0
+    perturbed_ao_dmat = 0.0d0
+    ao_pmat           = 0.0d0
+    mo_coef           = 0.0d0
 
-      call del_mo_coef(mo_coef)
+    static = .false.
+    if (nr_freq == 1 .and. freq(1) == 0.0d0) then
+      static = .true.
+    end if
 
+    op_index(1) = 5
 
+    call get_mo_coef(mo_coef)
+    call get_zo_ao_dmat(zo_ao_dmat, mo_coef)
 
-!   write(*, *) 'calling PRPXL1_clone'
-!   call PRPXL1_clone(WORK,KFREE,LFREE)
+    do iop = 1, 1
 
+      call get_ao_pmat(op_index(iop),         &
+                       ao_pmat(:, :, :, iop), &
+                       work, kfree, lfree)
 
+      value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, zo_ao_dmat, 1)
+      write(*, *) 'D(0)*P = ', value
 
-    do i = 1, 10
-       call init_ao_dmat(pmat)
-       call get_ao_pmat(i, pmat, work, kfree, lfree)
-       dip = ddot(ntbas(0)*ntbas(0)*nz, pmat, 1, ao_dmat_zo, 1)
-!      dip = ddot(ntbas(0)*ntbas(0)*nz, pmat, 1, ao_dmat_fo, 1)
-!      call print_square_q_matrix(pmat, ntbas(0))
-       write(*, *) 'blub', i, dip
+      call solve_perturbed_ao_dmat(op_index(iop),     &
+                                   freq,              &
+                                   perturbed_ao_dmat, &
+                                   work, kfree, lfree)
 
-       call del_ao_dmat(pmat)
+      value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, perturbed_ao_dmat(:, :, :, 1), 1)
+      write(*, *) 'D(1)*P = ', value*2.0d0
+
     end do
 
-    call del_ao_dmat(ao_dmat_zo)
+    deallocate(op_index)
+    deallocate(freq)
+    deallocate(zo_ao_dmat)
+    deallocate(perturbed_ao_dmat)
+    deallocate(ao_pmat)
+    deallocate(mo_coef)
 
+  end subroutine aoresponse_driver
 
-
-
-  end subroutine open_response_driver
-
-
-
-
-
-
-
-  subroutine get_ao_pmat(property_index, &
-                         ao_pmat,        &
+  subroutine get_ao_pmat(op_index, &
+                         ao_pmat,  &
                          work, kfree, lfree)
-    integer(kind_i4), intent(in)    :: property_index
+    integer(kind_i4), intent(in)    :: op_index
     real(kind_dp),    intent(out)   :: ao_pmat(:, :, :)
     real(kind_dp),    intent(inout) :: work(lfree)
     integer,          intent(inout) :: kfree
@@ -107,15 +107,16 @@ contains
 #include "dcbgen.h"
 #include "dcbxpr.h"
 
-    logical                         :: file_exists, is_square
-    real(kind_dp)                   :: dummy_dp
-    integer(kind_i4)                :: file_unit, dummy_i4, idimension
     real(kind_dp),    allocatable   :: ptri(:)
     real(kind_dp),    allocatable   :: op1int(:)
     logical,          allocatable   :: first(:)
 
+    logical                         :: file_exists, is_square
+    real(kind_dp)                   :: dummy_dp
+    integer(kind_i4)                :: file_unit, dummy_i4, idimension
+
     is_square = .false.
-    if (iprptim(property_index) == 0) then
+    if (iprptim(op_index) == 0) then
       is_square = .true.
     end if
 
@@ -125,8 +126,8 @@ contains
       idimension = nnbbasx
     end if
 
-    allocate(ptri(nz*idimension))
-    allocate(op1int(idimension))
+    call alloc(ptri, nz*idimension)
+    call alloc(op1int, idimension)
     allocate(first(nz))
 
     file_unit = lu1int
@@ -134,43 +135,42 @@ contains
     file_exists = .false.
     inquire(file = 'AOPROPER', exist = file_exists)
     if (.not. file_exists) then
-      call quit('file AOPROPER not found')
+      call quit('file aoproper not found')
     end if
 
-    open(file_unit,          &
-         file = 'AOPROPER',  &
-         status = 'unknown', &
-         form = 'unformatted')
+    open(file_unit,           &
+         file   = 'AOPROPER', &
+         status = 'unknown',  &
+         form   = 'unformatted')
 
     rewind file_unit
 
-    call prpex2(property_index, &
-                dummy_dp,       &
-                .false.,        &
-                idimension,     &
-                ptri,           &
-                ao_pmat,        &
-                op1int,         &
-                first,          &
+    call prpex2(op_index,   &
+                dummy_dp,   &
+                .false.,    &
+                idimension, &
+                ptri,       &
+                ao_pmat,    &
+                op1int,     &
+                first,      &
                 work, kfree, lfree, 0)
 
     close(file_unit, &
           status = 'keep')
 
-    deallocate(ptri)
-    deallocate(op1int)
+    call dealloc(ptri)
+    call dealloc(op1int)
     deallocate(first)
 
   end subroutine get_ao_pmat
 
-  subroutine solve_perturbed_ao_dmat(property_index, &
-!                                    frequencies,    &
-!                                    ao_dmat,        &
+  subroutine solve_perturbed_ao_dmat(op_index,          &
+                                     freq,              &
+                                     perturbed_ao_dmat, &
                                      work, kfree, lfree)
-    integer(kind_i4), intent(in)    :: property_index
-!   real(kind_dp),    intent(in)    :: frequencies(:)
-    real(kind_dp)                   :: frequencies(1)
-    real(kind_dp),    allocatable   :: ao_dmat(:, :, :, :)
+    integer(kind_i4), intent(in)    :: op_index
+    real(kind_dp),    intent(in)    :: freq(:)
+    real(kind_dp),    intent(out)   :: perturbed_ao_dmat(:, :, :, :)
     real(kind_dp),    intent(inout) :: work(lfree)
     integer(kind_i4), intent(inout) :: kfree
     integer(kind_i4), intent(inout) :: lfree
@@ -181,37 +181,23 @@ contains
 #include "dcbbas.h"
 #include "dgroup.h"
 
-    integer(kind_i4)                :: ifsym, half_length, max_full_length, nr_dmat
+    integer(kind_i4)                :: i, ifsym, half_length, max_full_length, nr_dmat, nr_freq
     integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
     integer(kind_i4), allocatable   :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
     integer(kind_i4), allocatable   :: isymop(:), ihrmop(:), ifckop(:)
-    real(kind_dp),    allocatable   :: eigenvalues(:), eigenvectors(:)
+    real(kind_dp),    allocatable   :: eigval(:), eigvec(:)
     real(kind_dp),    allocatable   :: convergence(:)
     real(kind_dp),    allocatable   :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
     real(kind_dp),    allocatable   :: response_vector_pp(:), response_vector_pn(:)
     real(kind_dp),    allocatable   :: mo_coef(:, :, :)
     real(kind_dp)                   :: dummy_dp
     logical                         :: skip_pp, skip_pn
+    logical                         :: debug_me = .false.
     character(72)                   :: orbital_string(3,2)
 
 
-
-    logical                         :: debug_me
-!   character(16)                   :: operator_name
-    integer(kind_i4)                :: i
-!   integer(kind_i4)                :: ITRXPR, IND1OP, LAQROP,NAQROP, ISYXPR
-
-
-    debug_me = .true.
-
-    frequencies(1) = 0.0d0
-!   property_index = property_index - 2
-
-
-
-
-!   set common block dcbidx
-!   =======================
+!   set common block
+!   ================
 
     call setdcbidx()
 
@@ -278,17 +264,18 @@ contains
 !   initialize configurational and orbital parameters
 !   =================================================
 
-    jsymop = iprpsym(property_index)
-    jtimop = iprptim(property_index)
-    jopsy  = jbtof(jsymop - 1, 1)
-    nfreq  = size(frequencies)
-    nexsim = nfreq
-    nexstv = nfreq
-    nexcnv = nfreq
-    ncred  = 0
-    nered  = 0
-    npred  = 0
-    nzred  = ncred + nered + npred
+    nr_freq = size(freq)
+    jsymop  = iprpsym(op_index)
+    jtimop  = iprptim(op_index)
+    jopsy   = jbtof(jsymop - 1, 1)
+    nfreq   = nr_freq
+    nexsim  = nr_freq
+    nexstv  = nr_freq
+    nexcnv  = nr_freq
+    ncred   = 0
+    nered   = 0
+    npred   = 0
+    nzred   = ncred + nered + npred
 
     if (debug_me) then
       write(*, *) 'debug solve_perturbed_ao_dmat'
@@ -296,11 +283,6 @@ contains
       write(*, *) 'jsymop = ', jsymop
       write(*, *) 'jtimop = ', jtimop
       write(*, *) 'jopsy  = ', jopsy
-    end if
-
-    static = .false.
-    if (nfreq == 1 .and. frequencies(1) == 0.0d0) then
-      static = .true.
     end if
 
     call xrspar(orbital_string, &
@@ -314,15 +296,15 @@ contains
 
     nzconfq = 0
 
-    allocate(prop_gradient_c(nzconfq))
-    allocate(prop_gradient_pp(nzxopeq))
-    allocate(prop_gradient_pn(nzxoppq))
+    call alloc(prop_gradient_c,  nzconfq)
+    call alloc(prop_gradient_pp, nzxopeq)
+    call alloc(prop_gradient_pn, nzxoppq)
 
     prop_gradient_c  = 0.0d0
     prop_gradient_pp = 0.0d0
     prop_gradient_pn = 0.0d0
 
-    call pamgrd(property_index,   &
+    call pamgrd(op_index,         &
                 prop_gradient_c,  &
                 prop_gradient_pp, &
                 prop_gradient_pn, &
@@ -354,34 +336,34 @@ contains
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
-    allocate(ibtyp(2*nredm))
-    allocate(ibtyp_pointer_c(nredm))
-    allocate(ibtyp_pointer_pp(nredm))
-    allocate(ibtyp_pointer_pn(nredm))
+    call alloc(ibtyp, 2*nredm)
+    call alloc(ibtyp_pointer_c,  nredm)
+    call alloc(ibtyp_pointer_pp, nredm)
+    call alloc(ibtyp_pointer_pn, nredm)
 
-    allocate(eigenvalues(nexsim))
-    allocate(eigenvectors(nredm*nexsim))
-    allocate(convergence(nfreq))
+    call alloc(eigval, nexsim)
+    call alloc(eigvec, nredm*nexsim)
+    call alloc(convergence, nr_freq)
 
-    call dcopy(nfreq, frequencies, 1, eigenvalues, 1)
+    call dcopy(nr_freq, freq, 1, eigval, 1)
 
-    call xrsctl(prop_gradient_c,      &
-                prop_gradient_pp,     &
-                prop_gradient_pn,     &
-                ibtyp,                &
-                ibtyp_pointer_c,      &
-                ibtyp_pointer_pp,     &
-                ibtyp_pointer_pn,     &
-                convergence,          &
-                eigenvalues,          &
-                eigenvectors,         &
+    call xrsctl(prop_gradient_c,  &
+                prop_gradient_pp, &
+                prop_gradient_pn, &
+                ibtyp,            &
+                ibtyp_pointer_c,  &
+                ibtyp_pointer_pp, &
+                ibtyp_pointer_pn, &
+                convergence,      &
+                eigval,           &
+                eigvec,           &
                 work,kfree,lfree)
 
-    deallocate(prop_gradient_c)
-    deallocate(prop_gradient_pp)
-    deallocate(prop_gradient_pn)
+    call dealloc(prop_gradient_c)
+    call dealloc(prop_gradient_pp)
+    call dealloc(prop_gradient_pn)
 
-    deallocate(convergence)
+    call dealloc(convergence)
 
 
 !   construct the pp and pn response vectors
@@ -394,28 +376,27 @@ contains
     if (nzxope > 0) then
 
       if (static) then
-        nesim = nfreq
+        nesim = nr_freq
       else
-        nesim = nfreq*2
+        nesim = nr_freq*2
       end if
 
       half_length     = nzxope
       max_full_length = nzxope*2
 
-      allocate(response_vector_pp(max_full_length*nz))
+      call alloc(response_vector_pp, max_full_length*nz)
 
-      call construct_response_vector('pp',                 &
-                                     property_index,       &
-                                     response_vector_pp,   &
-                                     half_length,          &
-                                     ibtyp,                &
-                                     ibtyp_pointer_pp,     &
-                                     eigenvalues,          &
-                                     eigenvectors)
+      call construct_response_vector('pp',               &
+                                     response_vector_pp, &
+                                     half_length,        &
+                                     nr_freq,            &
+                                     ibtyp,              &
+                                     ibtyp_pointer_pp,   &
+                                     eigvec)
 
       if (debug_me) then
         call header('response_vector_pp',-1)
-        call prbvec(lupri, response_vector_pp, nfreq, max_full_length)
+        call prbvec(lupri, response_vector_pp, nr_freq, max_full_length)
       end if
 
     end if
@@ -423,42 +404,41 @@ contains
     if (nzxopp > 0) then
 
       if (static) then
-        npsim = nfreq
+        npsim = nr_freq
       else
-        npsim = nfreq*2
+        npsim = nr_freq*2
       end if
 
       half_length     = nzxopp
       max_full_length = nzxopp*2
 
-      allocate(response_vector_pn(max_full_length*nz))
+      call alloc(response_vector_pn, max_full_length*nz)
 
-      call construct_response_vector('pn',                 &
-                                     property_index,       &
-                                     response_vector_pn,   &
-                                     half_length,          &
-                                     ibtyp,                &
-                                     ibtyp_pointer_pn,     &
-                                     eigenvalues,          &
-                                     eigenvectors)
+      call construct_response_vector('pn',               &
+                                     response_vector_pn, &
+                                     half_length,        &
+                                     nr_freq,            &
+                                     ibtyp,              &
+                                     ibtyp_pointer_pn,   &
+                                     eigvec)
 
       if (debug_me) then
         call header('response_vector_pn',-1)
-        call prbvec(lupri, response_vector_pn, nfreq, max_full_length)
+        call prbvec(lupri, response_vector_pn, nr_freq, max_full_length)
       end if
 
     end if
 
-    deallocate(eigenvalues)
-    deallocate(eigenvectors)
+    call dealloc(eigval)
+    call dealloc(eigvec)
 
 
 !   construct perturbed ao density matrices
 !   =======================================
 
-    allocate(isymop(ntsim))
-    allocate(ihrmop(ntsim))
-    allocate(ifckop(ntsim))
+    call alloc(isymop, ntsim)
+    call alloc(ihrmop, ntsim)
+    call alloc(ifckop, ntsim)
 
     call setgmt(isymop,           &
                 ihrmop,           &
@@ -468,18 +448,19 @@ contains
                 ibtyp_pointer_pn, &
                 ibtyp, 0)
 
-    deallocate(ibtyp)
-    deallocate(ibtyp_pointer_c)
-    deallocate(ibtyp_pointer_pp)
-    deallocate(ibtyp_pointer_pn)
+    call dealloc(ibtyp)
+    call dealloc(ibtyp_pointer_c)
+    call dealloc(ibtyp_pointer_pp)
+    call dealloc(ibtyp_pointer_pn)
 
-    allocate(ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
+!   allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
+    allocate(mo_coef(ntbas(0), ntbas(0), nz))
 
-    call init_mo_coef(mo_coef)
+    mo_coef = 0.0d0
+
     call get_mo_coef(mo_coef)
 
-!   ao_dmat order: 1...nesim, 1...npsim
-    call dmolitx(ao_dmat,            &
+    call dmolitx(perturbed_ao_dmat,  &
                  response_vector_pp, &
                  response_vector_pn, &
                  mo_coef,            &
@@ -489,52 +470,48 @@ contains
                  nr_dmat,            &
                  work, kfree, lfree)
 
+    deallocate(mo_coef)
+
+    call dealloc(isymop)
+    call dealloc(ihrmop)
+    call dealloc(ifckop)
+
+    if (nzxope > 0) then
+      call dealloc(response_vector_pp)
+    end if
+    if (nzxopp > 0) then
+      call dealloc(response_vector_pn)
+    end if
+
     if (debug_me) then
       write(*, *) 'debug solve_perturbed_ao_dmat'
 
-      do i = 1, nesim + npsim
+      do i = 1, nr_dmat
         write(*, *)
-        write(*, *) 'ao_dmat ', i
-        call print_square_q_matrix(ao_dmat(:, :, :, i), ntbas(0))
+        write(*, *) 'perturbed_ao_dmat ', i
+        call print_square_q_matrix(perturbed_ao_dmat(:, :, :, i), ntbas(0))
       end do
     end if
 
-    call del_mo_coef(mo_coef)
-
-    if (nzxope > 0) then
-      deallocate(response_vector_pp)
-    end if
-    if (nzxopp > 0) then
-      deallocate(response_vector_pn)
-    end if
-
-    deallocate(ao_dmat)
-
-    deallocate(isymop)
-    deallocate(ihrmop)
-    deallocate(ifckop)
-
   end subroutine solve_perturbed_ao_dmat
 
-  subroutine construct_response_vector(vector_type,          &
-                                       property_index,       &
-                                       response_vector,      &
-                                       half_length,          &
-                                       ibtyp,                &
-                                       ibtyp_pointer,        &
-                                       eigenvalues,          &
-                                       eigenvectors)
-#include "dcbxrs.h"
-#include "dgroup.h"
-
+  subroutine construct_response_vector(vector_type,     &
+                                       response_vector, &
+                                       half_length,     &
+                                       nr_freq,         &
+                                       ibtyp,           &
+                                       ibtyp_pointer,   &
+                                       eigvec)
     character(*),     intent(in)  :: vector_type
-    integer(kind_i4), intent(in)  :: property_index
     real(kind_dp),    intent(out) :: response_vector(:)
     integer(kind_i4), intent(in)  :: half_length
+    integer(kind_i4), intent(in)  :: nr_freq
     integer(kind_i4), intent(in)  :: ibtyp(2, *)
     integer(kind_i4), intent(in)  :: ibtyp_pointer(*)
-    real(kind_dp),    intent(in)  :: eigenvalues(*)
-    real(kind_dp),    intent(in)  :: eigenvectors(*)
+    real(kind_dp),    intent(in)  :: eigvec(*)
+
+#include "dcbxrs.h"
+#include "dgroup.h"
 
     real(kind_dp),    allocatable :: response_vector_z(:, :, :)
     real(kind_dp),    allocatable :: response_vector_y(:, :, :)
@@ -542,42 +519,40 @@ contains
     real(kind_dp),    allocatable :: buffer(:)
 
     character(6)                  :: file_name
-    integer(kind_i4)              :: length, file_unit, ifreq, iz, nbtyp, nbred, ioff
+    integer(kind_i4)              :: length, file_unit, ifreq, iz, nbtyp, ioff
 
     select case (vector_type)
       case ('pp')
-        nbtyp = 1
-        nbred  = nered
+        nbtyp     = 1
         file_unit = luboe
         file_name = 'PAMBOE'
       case ('pn')
-        nbtyp = 2
-        nbred  = npred
+        nbtyp     = 2
         file_unit = lubop
         file_name = 'PAMBOP'
       case default
         call quit('error in construct_response_vector, unknown vector type')
     end select
 
-    call alloc((/response_vector_z/), half_length*nz*nfreq)
-    call alloc((/response_vector_y/), half_length*nz*nfreq)
-    call alloc(ivecs, nfreq)
+    allocate(response_vector_z(half_length, nz, nr_freq))
+    allocate(response_vector_y(half_length, nz, nr_freq))
+    call alloc(ivecs, nr_freq)
     call alloc(buffer, half_length*nz)
 
     response_vector_z = 0.0d0
     response_vector_y = 0.0d0
 
-    open(file_unit,               &
-         file = file_name,        &
-         form = 'unformatted',    &
-         access = 'direct',       &
-         recl = 8*half_length*nz, &
+    open(file_unit,                 &
+         file   = file_name,        &
+         form   = 'unformatted',    &
+         access = 'direct',         &
+         recl   = 8*half_length*nz, &
          status = 'old')
 
     call xrsxv1( 1, nbtyp, response_vector_z, &
-                    eigenvectors, nfreq, ibtyp, ibtyp_pointer, ivecs, buffer)
+                    eigvec, nr_freq, ibtyp, ibtyp_pointer, ivecs, buffer)
     call xrsxv1(-1, nbtyp, response_vector_y, &
-                    eigenvectors, nfreq, ibtyp, ibtyp_pointer, ivecs, buffer)
+                    eigvec, nr_freq, ibtyp, ibtyp_pointer, ivecs, buffer)
 
     close(file_unit, &
           status = 'delete')
@@ -586,7 +561,7 @@ contains
 
     length = 2*half_length
 
-    do ifreq = 1, nfreq
+    do ifreq = 1, nr_freq
       do iz = 1, nz
 
         ioff = (iz - 1)*length
@@ -604,8 +579,8 @@ contains
       end do
     end do
 
-    call dealloc((/response_vector_z/))
-    call dealloc((/response_vector_y/))
+    deallocate(response_vector_z)
+    deallocate(response_vector_y)
     call dealloc(ivecs)
     call dealloc(buffer)
 
