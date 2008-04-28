@@ -4131,7 +4131,7 @@ C
 C
             IF(IPRXRS.GE.8) THEN
                WRITE(LUPRI,'(A,I5)')
-     &              '* DMOLITX1: Modified active (e-p) matrix no.:',I
+     &              '* DMOLITX1: Modified inactive (e-p) matrix no.:',I
                CALL PRQMAT(DMAT(1,IM),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
             END IF
