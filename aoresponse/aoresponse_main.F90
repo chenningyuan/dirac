@@ -38,12 +38,12 @@ contains
     nr_op   = 1
     nr_freq = 1
 
-    call alloc(op_index, nr_op)
-    call alloc(freq, nr_freq)
-    call alloc(zo_ao_dmat, ntbas(0), ntbas(0), nz)
-    allocate(perturbed_ao_dmat(ntbas(0), ntbas(0), nz, nr_freq, 2, nr_op))
-    allocate(ao_pmat(ntbas(0), ntbas(0), nz, nr_op))
-    call alloc(mo_coef, ntbas(0), ntbas(0), nz)
+    call alloc(op_index,          nr_op)
+    call alloc(freq,              nr_freq)
+    call alloc(zo_ao_dmat,        ntbas(0), ntbas(0), nz)
+    call alloc(perturbed_ao_dmat, ntbas(0), ntbas(0), nz, nr_freq, 2, nr_op)
+    call alloc(ao_pmat,           ntbas(0), ntbas(0), nz, nr_op)
+    call alloc(mo_coef,           ntbas(0), ntbas(0), nz)
 
     op_index          = 0
     freq              = 0.0d0
@@ -52,20 +52,22 @@ contains
     ao_pmat           = 0.0d0
     mo_coef           = 0.0d0
 
-    freq(1) = 0.1d0
-!   freq(1) = 0.0d0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    op_index(1) = 5
+    freq(1) = 0.0d0
+!   freq(2) = 0.2d0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     static = .false.
     if (nr_freq == 1 .and. freq(1) == 0.0d0) then
       static = .true.
     end if
 
-    op_index(1) = 5
-
     call get_mo_coef(mo_coef)
     call get_zo_ao_dmat(zo_ao_dmat, mo_coef)
 
     do iop = 1, nr_op
+
       call get_ao_pmat(op_index(iop),         &
                        ao_pmat(:, :, :, iop), &
                        work, kfree, lfree)
@@ -93,8 +95,8 @@ contains
     call dealloc(op_index)
     call dealloc(freq)
     call dealloc(zo_ao_dmat)
-    deallocate(perturbed_ao_dmat)
-    deallocate(ao_pmat)
+    call dealloc(perturbed_ao_dmat)
+    call dealloc(ao_pmat)
     call dealloc(mo_coef)
 
   end subroutine aoresponse_driver
@@ -132,7 +134,7 @@ contains
       idimension = nnbbasx
     end if
 
-    call alloc(ptri, nz*idimension)
+    call alloc(ptri,   nz*idimension)
     call alloc(op1int, idimension)
     allocate(first(nz))
 
@@ -177,7 +179,6 @@ contains
     integer(kind_i4), intent(in)    :: op_index
     real(kind_dp),    intent(in)    :: freq(:)
     real(kind_dp),    intent(out)   :: perturbed_ao_dmat(:, :, :, :, :)
-    real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
     real(kind_dp),    intent(inout) :: work(lfree)
     integer(kind_i4), intent(inout) :: kfree
     integer(kind_i4), intent(inout) :: lfree
@@ -188,27 +189,43 @@ contains
 #include "dcbbas.h"
 #include "dgroup.h"
 
-    integer(kind_i4)                :: ifreq, ifsym, half_length, max_full_length, nr_dmat, nr_freq
-    integer(kind_i4)                :: counter, pp_pn_counter, pp_pn_counter_max, ih
-    integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
-    integer(kind_i4), allocatable   :: ibtyp(:), ibtyp_pointer_c(:), ibtyp_pointer_pp(:), ibtyp_pointer_pn(:)
-    integer(kind_i4), allocatable   :: isymop(:), ihrmop(:), ifckop(:)
-    real(kind_dp),    allocatable   :: eigval(:), eigvec(:)
+    integer(kind_i4), allocatable   :: ibtyp(:)
+    integer(kind_i4), allocatable   :: ibtyp_pointer_c(:)
+    integer(kind_i4), allocatable   :: ibtyp_pointer_pp(:)
+    integer(kind_i4), allocatable   :: ibtyp_pointer_pn(:)
+
+    integer(kind_i4), allocatable   :: isymop(:)
+    integer(kind_i4), allocatable   :: ihrmop(:)
+    integer(kind_i4), allocatable   :: ifckop(:)
+
+    real(kind_dp),    allocatable   :: eigval(:)
+    real(kind_dp),    allocatable   :: eigvec(:)
     real(kind_dp),    allocatable   :: convergence(:)
-    real(kind_dp),    allocatable   :: prop_gradient_c(:), prop_gradient_pp(:), prop_gradient_pn(:)
-    real(kind_dp),    allocatable   :: response_vector_pp(:, :, :), response_vector_pn(:, :, :)
+
+    real(kind_dp),    allocatable   :: prop_gradient_c(:)
+    real(kind_dp),    allocatable   :: prop_gradient_pp(:)
+    real(kind_dp),    allocatable   :: prop_gradient_pn(:)
+
+    real(kind_dp),    allocatable   :: response_vector_pph(:, :, :)
+    real(kind_dp),    allocatable   :: response_vector_ppa(:, :, :)
+    real(kind_dp),    allocatable   :: response_vector_pnh(:, :, :)
+    real(kind_dp),    allocatable   :: response_vector_pna(:, :, :)
+
+    real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
     real(kind_dp),    allocatable   :: mo_coef(:, :, :)
+
     real(kind_dp)                   :: dummy_dp
-    logical                         :: skip_pp, skip_pn
+    logical                         :: skip_pp, skip_pn, do_pp, do_pn
     logical                         :: debug_me = .true.
     character(72)                   :: orbital_string(3,2)
 
-
-
-
-
-    logical                         :: do_pp, do_pn
+    integer(kind_i4)                :: i, ifsym, nr_freq, nr_dmat
     integer(kind_i4)                :: length_pp, length_pn
+    integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
+
+    skip_pp = .false.
+    skip_pn = .false.
+
 
 !   set common block
 !   ================
@@ -224,9 +241,6 @@ contains
       orbital_string(2, ifsym) = ' '
       orbital_string(3, ifsym) = ' '
     end do
-
-    skip_pp = .false.
-    skip_pn = .false.
 
     call ostring(orbital_string, &
                  skip_pp,        &
@@ -327,14 +341,13 @@ contains
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
-    call alloc(ibtyp, 2*nredm)
+    call alloc(ibtyp,            2*nredm)
     call alloc(ibtyp_pointer_c,  nredm)
     call alloc(ibtyp_pointer_pp, nredm)
     call alloc(ibtyp_pointer_pn, nredm)
-
-    call alloc(eigval, nexsim)
-    call alloc(eigvec, nredm*nexsim)
-    call alloc(convergence, nr_freq)
+    call alloc(convergence,      nr_freq)
+    call alloc(eigval,           nr_freq)
+    call alloc(eigvec,           nredm*nr_freq)
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
 
@@ -360,8 +373,6 @@ contains
 !   construct the pp and pn response vectors
 !   ========================================
 
-
-
     do_pp = .false.
     do_pn = .false.
 
@@ -375,167 +386,177 @@ contains
       do_pn = .true.
     end if
 
-
-
-
-
-    nesim = 0
-    npsim = 0
-    ncsim = 0
-
-    if (length_pp > 0) then
-      if (static) then
-        nesim = nr_freq
-      else
-        nesim = nr_freq*2
-      end if
-    end if
-    if (length_pn > 0) then
-      if (static) then
-        npsim = nr_freq
-      else
-        npsim = nr_freq*2
-      end if
-    end if
-
-    ih = 1
-
     if (do_pp) then
 
-      call alloc(response_vector_pp, length_pp, nz, nr_freq)
+      call alloc(response_vector_pph, length_pp, nz, nr_freq)
+      call alloc(response_vector_ppa, length_pp, nz, nr_freq)
 
-      response_vector_pp = 0.0
+      response_vector_pph = 0.0
+      response_vector_ppa = 0.0
 
-      call construct_response_vector('pp',               &
-                                     ih,                 &
-                                     response_vector_pp, &
-                                     length_pp,          &
-                                     nr_freq,            &
-                                     ibtyp,              &
-                                     ibtyp_pointer_pp,   &
+      call construct_response_vector('pp',                &
+                                     1,                   &
+                                     response_vector_pph, &
+                                     length_pp,           &
+                                     nr_freq,             &
+                                     ibtyp,               &
+                                     ibtyp_pointer_pp,    &
                                      eigvec)
 
+      if (.not. static) then
+        call construct_response_vector('pp',                &
+                                       -1,                  &
+                                       response_vector_ppa, &
+                                       length_pp,           &
+                                       nr_freq,             &
+                                       ibtyp,               &
+                                       ibtyp_pointer_pp,    &
+                                       eigvec)
+      end if
+
       if (debug_me) then
-        call header('response_vector_pp',-1)
-        call prbvec(lupri, response_vector_pp, nr_freq, length_pp)
+        call header('response_vector_pph',-1)
+        call prbvec(lupri, response_vector_pph, nr_freq, length_pp)
+        call header('response_vector_ppa',-1)
+        call prbvec(lupri, response_vector_ppa, nr_freq, length_pp)
       end if
 
     end if
 
     if (do_pn) then
 
-      call alloc(response_vector_pn, length_pn, nz, nr_freq)
+      call alloc(response_vector_pnh, length_pn, nz, nr_freq)
+      call alloc(response_vector_pna, length_pn, nz, nr_freq)
 
-      response_vector_pn = 0.0
+      response_vector_pnh = 0.0
+      response_vector_pna = 0.0
 
-      call construct_response_vector('pn',               &
-                                     ih,                 &
-                                     response_vector_pn, &
-                                     length_pn,          &
-                                     nr_freq,            &
-                                     ibtyp,              &
-                                     ibtyp_pointer_pn,   &
+      call construct_response_vector('pn',                &
+                                     1,                   &
+                                     response_vector_pnh, &
+                                     length_pn,           &
+                                     nr_freq,             &
+                                     ibtyp,               &
+                                     ibtyp_pointer_pn,    &
                                      eigvec)
 
+      if (.not. static) then
+        call construct_response_vector('pn',                &
+                                       -1,                  &
+                                       response_vector_pna, &
+                                       length_pn,           &
+                                       nr_freq,             &
+                                       ibtyp,               &
+                                       ibtyp_pointer_pn,    &
+                                       eigvec)
+      end if
+
       if (debug_me) then
-        call header('response_vector_pn',-1)
-        call prbvec(lupri, response_vector_pn, nr_freq, length_pn)
+        call header('response_vector_pnh',-1)
+        call prbvec(lupri, response_vector_pnh, nr_freq, length_pn)
+        call header('response_vector_pna',-1)
+        call prbvec(lupri, response_vector_pna, nr_freq, length_pn)
       end if
 
     end if
 
+    call dealloc(ibtyp)
+    call dealloc(ibtyp_pointer_c)
+    call dealloc(ibtyp_pointer_pp)
+    call dealloc(ibtyp_pointer_pn)
     call dealloc(eigvec)
 
 
 !   construct perturbed ao density matrices
 !   =======================================
 
+    nesim = 0
+    npsim = 0
+
+    if (do_pp) then
+      nesim = nr_freq
+    end if
+    if (do_pn) then
+      npsim = nr_freq
+    end if
+
+    ntsim = nesim + npsim
+
     call alloc(isymop, ntsim)
     call alloc(ihrmop, ntsim)
     call alloc(ifckop, ntsim)
 
-    call setgmt(isymop,           &
-                ihrmop,           &
-                ifckop,           &
-                ibtyp_pointer_c,  &
-                ibtyp_pointer_pp, &
-                ibtyp_pointer_pn, &
-                ibtyp, 0)
+    do i = 1, ntsim
+      isymop(i) = jsymop
+      ifckop(i) = 1
+    end do
 
-    call dealloc(ibtyp)
-    call dealloc(ibtyp_pointer_c)
-    call dealloc(ibtyp_pointer_pp)
-    call dealloc(ibtyp_pointer_pn)
-
-    allocate(temp_ao_dmat(ntbas(0), ntbas(0), nz, nesim + npsim))
-    allocate(mo_coef(ntbas(0), ntbas(0), nz))
-
-    temp_ao_dmat = 0.0d0
-    mo_coef      = 0.0d0
-
-    call get_mo_coef(mo_coef)
-    nesim = nr_freq
-    npsim = nr_freq
-    ihrmop(1) = 1
-    ihrmop(2) = 1
-
-    call dmolitx(temp_ao_dmat,       &
-                 response_vector_pp, &
-                 response_vector_pn, &
-                 mo_coef,            &
-                 dummy_dp,           &
-                 dummy_dp,           &
-                 ihrmop,             &
-                 nr_dmat,            &
-                 work, kfree, lfree)
-
-    deallocate(mo_coef)
+    call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
+    call alloc(mo_coef,      ntbas(0), ntbas(0), nz)
 
     perturbed_ao_dmat = 0.0d0
+    mo_coef           = 0.0d0
 
-!   if (static) then
-    call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 1), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
-    call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, 2), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+    call get_mo_coef(mo_coef)
 
-!   else
+    do i = 1, ntsim
+      ihrmop(i) = 1
+    end do
 
-!     pp_pn_counter_max = 0
+    temp_ao_dmat = 0.0d0
 
-!     if (nzxope > 0) then
-!       pp_pn_counter_max = pp_pn_counter_max + 1
-!     end if
-!     if (nzxopp > 0) then
-!       pp_pn_counter_max = pp_pn_counter_max + 1
-!     end if
-!     if (pp_pn_counter_max == 0) then
-!       call quit('error: pp_pn_counter_max == 0')
-!     end if
+    call dmolitx(temp_ao_dmat,        &
+                 response_vector_pph, &
+                 response_vector_pnh, &
+                 mo_coef,             &
+                 dummy_dp,            &
+                 dummy_dp,            &
+                 ihrmop,              &
+                 nr_dmat,             &
+                 work, kfree, lfree)
 
-!     counter = 0
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
 
-!     do pp_pn_counter = 1, pp_pn_counter_max
-!       do ifreq = 1, nr_freq
-!         do ih = 1, 2
-!           counter = counter + 1
-!           call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, temp_ao_dmat(:, :, :, counter), 1, perturbed_ao_dmat(:, :, :, ifreq, ih), 1)
-!         end do
-!       end do
-!     end do
-!   end if
+    if (.not. static) then
+
+      do i = 1, ntsim
+        ihrmop(i) = -1
+      end do
+
+      temp_ao_dmat = 0.0d0
+
+      call dmolitx(temp_ao_dmat,        &
+                   response_vector_ppa, &
+                   response_vector_pna, &
+                   mo_coef,             &
+                   dummy_dp,            &
+                   dummy_dp,            &
+                   ihrmop,              &
+                   nr_dmat,             &
+                   work, kfree, lfree)
+
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, perturbed_ao_dmat(:, :, :, 1, 2), 1)
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, perturbed_ao_dmat(:, :, :, 1, 2), 1)
+
+    end if
 
     call dscal(ntbas(0)*ntbas(0)*nz*nr_freq*2, 2.0d0, perturbed_ao_dmat, 1)
 
-    deallocate(temp_ao_dmat)
+    call dealloc(temp_ao_dmat)
+    call dealloc(mo_coef)
 
     call dealloc(isymop)
     call dealloc(ihrmop)
     call dealloc(ifckop)
 
-    if (nzxope > 0) then
-      call dealloc(response_vector_pp)
+    if (do_pp) then
+      call dealloc(response_vector_pph)
+      call dealloc(response_vector_ppa)
     end if
-    if (nzxopp > 0) then
-      call dealloc(response_vector_pn)
+    if (do_pn) then
+      call dealloc(response_vector_pnh)
+      call dealloc(response_vector_pna)
     end if
 
   end subroutine solve_perturbed_ao_dmat
@@ -562,7 +583,7 @@ contains
 
     integer(kind_i4), allocatable   :: ivecs(:)
     real(kind_dp),    allocatable   :: buffer(:)
-                                    
+
     character(6)                    :: file_name
     integer(kind_i4)                :: file_unit, nbtyp
 
@@ -601,7 +622,7 @@ contains
                 buffer)
 
     close(file_unit, &
-          status = 'delete')
+          status = 'keep')
 
     call dealloc(ivecs)
     call dealloc(buffer)
