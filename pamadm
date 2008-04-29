@@ -30,7 +30,7 @@ usage()
    echo '     -largemolecules  : Increases commom blocks to handle more atoms and basis sets'
    echo '     -fmm             : Include fast multipole method'
    echo '     -esr             : Include ESR property module'
-   echo '     -xpp             : Include PP excitation energy module'
+   echo '     -xpp             : Include PP excitation energy and STEX modules'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -cdft            : Include SDFT/CDFT module'
@@ -101,14 +101,14 @@ setup()
       echo " - ESR property module (ESR)"
    fi
    #
-   #  XPP
+   #  XPP and STEX
    #
    if [ -n "$XPPMOD" ]; then
-      XPPFLG='-DMOD_XPP'
+      XPPFLG='-DMOD_XPP -DMOD_STEX'
       XPPOBJ='$(XPPOBJS)'
       XPPMAK=XPP_OBJ
       XPPTAR=1
-      echo " - Excitation energy module (XPP)"
+      echo " - Excitation energy module (XPP and STEX)"
    fi
    #
    #  KRMC and LUCIAREL
@@ -655,8 +655,7 @@ EOF
 if [ -n "$ESRMOD" ]; then
 cat <<EOF>> Makefile
 
-ESROBJS = \\
-prp/esr/pamesr.o prp/esr/pamesrci.o
+ESROBJS = prp/esr/pamesr.o prp/esr/pamesrci.o
 EOF
 fi
 #
@@ -665,8 +664,7 @@ fi
 if [ -n "$XPPMOD" ]; then
 cat <<EOF>> Makefile
 
-XPPOBJS = \\
-prp/xpp/pamxpp.o
+XPPOBJS = prp/xpp/pamxpp.o prp/pamstex.o
 EOF
 fi
 
