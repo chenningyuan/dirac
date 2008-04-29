@@ -167,8 +167,9 @@
                      InfoMessage  = 'Error! Allocation failed!'
 !                    write (*,*) kbytesRequested
 !                    write (*,*) kbytesAvailable
-                     write (InfoMessage,'(a,i12,a)') 'Attempted to allocate ',kbytesRequested, &
-                                                     ' kB but only '//kbytesAvailable(1:24)//'available'
+                     write (InfoMessage,'(a,i9,a)')                       &
+                        'Attempted to allocate',kbytesRequested,' Kb '//  &
+                        'but memory available is '//kbytesAvailable(1:24)
 
 !                    call catfile()
                      ErrorMessage = 'Memory allocation failure at '//trace_result

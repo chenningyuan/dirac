@@ -22,11 +22,14 @@
          use memory_allocator
 
          integer, parameter :: kreal = 8, kcomplex = 8
+         integer, parameter :: charArrayLength = 132
 
          integer                :: v2size, v1size, p_mem2,p_mem3
          double precision, allocatable, target :: vdatadb(:), vdatarl(:)
          real(kind=kreal), allocatable :: matrix(:,:)
          real(kind=kreal), pointer             :: p_mem, p_mem42(:)
+       
+         character(len=charArrayLength) :: kbytesAvailable
 
          v2size = 10
 
@@ -63,7 +66,7 @@
 
          write (*,*) 'outside rbla'
          do i=1,v2size
-            vdatarl(i) = 0.001 * rand()
+            vdatarl(i) = 0.002 
             write (*,*) 'prep data ',vdatarl(i)
          enddo
 
@@ -94,10 +97,11 @@
 
       !   call allocator_PrintStats()
 
-           !call get_memory_info(kbytesAvailable,charArrayLength)
+         call get_memory_info(kbytesAvailable,charArrayLength)
          ! MI: how to find out the amount of free memory ?
-         print *,'before 1.large allocations...available', &
+         write(*,*) 'before 1.large allocations...available', &
                    kbytesAvailable,' kbytes'
+         call catfile()
 
          v2size = 1000
          write (*,*) 'large allocation test, n =',v2size
@@ -106,7 +110,7 @@
          call dealloc(vdatadb)
          call dealloc(vdatadb)
           
-         v2size = 1000000
+         v2size = 10000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
@@ -116,14 +120,14 @@
          print *,'before 2. large allocations...available', &
                    kbytesAvailable,' kbytes'
           
-         v2size = 1000000000
+         v2size = 100000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
          call dealloc(vdatadb)
           
-         v2size = 2207784000
+         v2size = 1000000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size,id="reallylarge")
          write (*,*) 'is it allocated? ',allocated(vdatadb)
@@ -175,7 +179,7 @@
            enddo
            write (*,*) 'inside rbla 2'
            do i=1,size
-              data(i) = 2.1 * rand()
+              data(i) = 2.1 
               write (*,*) ' new data ',data(i)
            enddo
            write (*,*) 'leaving rbla'

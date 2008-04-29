@@ -23,6 +23,7 @@
 #endif /* LINUX_IFACE_MEMORY */
 
 #define BUFFERSIZE (512)
+#define TYPICAL_FCHAR_LENGTH (132)
 
 void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
@@ -63,7 +64,13 @@ void get_memory_info_(char *fstring, int *flength)
    snprintf(fstring,(size_t)(*flength),"%li Kb",total_kbytes);
    len = strlen(fstring);
    
-   if ( len <= *flength )
+   if ( *flength > TYPICAL_FCHAR_LENGTH )
+      printf ("warning: possible problem with fortran character array size\n"
+              "         value passed to get_memory_info() is %d\n"
+              "         typical value in the code is however %d\n",
+              *flength,TYPICAL_FCHAR_LENGTH);
+
+   if ( len < *flength )
    {
       for ( i = len; i < *flength; i++)
          fstring[i] = ' ';
