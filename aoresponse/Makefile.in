@@ -3,9 +3,9 @@ include ../Makefile.config
 
 F77_OBJS = 
 
-F90_OBJS = aoresponse_main.o
+F90_OBJS = aoresponse_main.o dirac_matrix_operations.o
 
-F90_MODS = aoresponse_main_m.mod
+F90_MODS = aoresponse_main_m.mod dirac_matrix_operations_m.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
