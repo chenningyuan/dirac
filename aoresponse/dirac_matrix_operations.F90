@@ -3,6 +3,7 @@ module dirac_matrix_operations_m
 ! author:           andreas johan thorvaldsen
 ! porting to dirac: radovan bast
 
+#define baddress loc
 ! this file must be compiled without inlining
 
 ! manual allocation and deallocation of matrices is cumbersome to program
@@ -94,40 +95,31 @@ module dirac_matrix_operations_m
     module procedure isdefmat
   end interface
 
+  type ref_pointer_t
+    type(matrix), pointer :: m
+  end type ref_pointer_t
+
+  type data_pointer_t
+    real(kind_dp), pointer :: d(:)
+  end type data_pointer_t
+
+  integer(kind_i4) :: nr_ref   = 0
+  integer(kind_i4) :: max_ref  = 0
+  integer(kind_i4) :: nr_data  = 0
+  integer(kind_i4) :: max_data = 0
+
+  integer          :: stack_direction ! growth direction of the stack: -1 or +1
 
 
 
 
 
 
-
-
-
-
-
-
-
-    !no array-of-pointer in fortran, so use array
-    !of derived type containing pointer instead
-    type refp
-        type(matrix),pointer:: m
-    end type
-
-    type datp
-        real*8,pointer:: d(:)
-    end type
-
-    !number of references, current book-keeping buffer size
-    integer:: nref=0,maxref=0
-    !number of matrix datas allocated, current book-keeping buffer size
-    integer:: ndat=0,maxdat=0
-    !growth direction of the stack, -1 or +1
-    integer:: stkdir !different for i686,itanium,xeon, fex.
 
     !pointers to all type(matrix) referring to a matrix data (%elements)
-    type(refp),allocatable:: ref(:) !1:numref<maxref
+    type(ref_pointer_t),allocatable:: ref(:) !1:numref<max_ref
     !one pointer to each of the allocated %elements(:)
-    type(datp),allocatable:: dat(:) !1:numdat<maxdat
+    type(data_pointer_t),allocatable:: dat(:) !1:numdat<max_dat
     !index in dat referred to by each ref
     integer,allocatable:: idx(:)
     !number of references to each dat
@@ -135,10 +127,6 @@ module dirac_matrix_operations_m
 
 
 contains
-
-#ifndef var_ifc
-#define baddress loc
-#endif /* var_ifc */
 
   subroutine mat_init(a, nrow, ncol)
     type(matrix)                 :: a
@@ -291,34 +279,34 @@ contains
 
     subroutine allocif()
     !if needed allocate/extend the tables ref,dat,idx,cnt
-        type(refp):: tref(nref); type(datp):: tdat(maxdat)
-        integer:: tidx(nref),tcnt(maxdat),i
-        if (nref<maxref-1.and.ndat<maxdat-1) return
-        if (nref>=maxref-1) then
-            if (maxref==0) call getdir() !only once
-            if (maxref/=0) tref = ref(1:nref)
-            if (maxref/=0) tidx = idx(1:nref)
-            if (maxref/=0) deallocate(ref,idx)
-            allocate(ref(max(64,2*maxref)))
-            allocate(idx(max(64,2*maxref)))
-            ref(1:nref) = tref
-            idx(1:nref) = tidx
-            maxref = max(64,2*maxref)
+        type(ref_pointer_t):: tref(nr_ref); type(data_pointer_t):: tdat(max_data)
+        integer:: tidx(nr_ref),tcnt(max_data),i
+        if (nr_ref<max_ref-1.and.nr_data<max_data-1) return
+        if (nr_ref>=max_ref-1) then
+            if (max_ref==0) call getdir() !only once
+            if (max_ref/=0) tref = ref(1:nr_ref)
+            if (max_ref/=0) tidx = idx(1:nr_ref)
+            if (max_ref/=0) deallocate(ref,idx)
+            allocate(ref(max(64,2*max_ref)))
+            allocate(idx(max(64,2*max_ref)))
+            ref(1:nr_ref) = tref
+            idx(1:nr_ref) = tidx
+            max_ref = max(64,2*max_ref)
         endif
-        if (ndat>=maxdat-1) then
-            if (maxdat/=0) tdat = dat(1:maxdat)
-            if (maxdat/=0) tcnt = cnt(1:maxdat)
-            if (maxdat/=0) deallocate(dat,cnt)
-            allocate(dat(max(8,2*maxdat)))
-            allocate(cnt(max(8,2*maxdat))); cnt=0
-            dat(1:maxdat) = tdat
-            cnt(1:maxdat) = tcnt
-            maxdat = max(8,2*maxdat)
+        if (nr_data>=max_data-1) then
+            if (max_data/=0) tdat = dat(1:max_data)
+            if (max_data/=0) tcnt = cnt(1:max_data)
+            if (max_data/=0) deallocate(dat,cnt)
+            allocate(dat(max(8,2*max_data)))
+            allocate(cnt(max(8,2*max_data))); cnt=0
+            dat(1:max_data) = tdat
+            cnt(1:max_data) = tcnt
+            max_data = max(8,2*max_data)
         endif
     contains
         subroutine getdir()
             integer:: j
-            stkdir = merge(-1,1,baddress(j)<baddress(i))
+            stack_direction = merge(-1,1,baddress(j)<baddress(i))
         end subroutine
     end subroutine
 
@@ -326,16 +314,16 @@ contains
     subroutine delabove(k)
         integer:: k,i,j
         call allocif()
-        do i=nref,1,-1
-            if ((baddress(ref(i)%m)-baddress(k))*stkdir<0) exit
+        do i=nr_ref,1,-1
+            if ((baddress(ref(i)%m)-baddress(k))*stack_direction<0) exit
             j = idx(i)
             cnt(j) = cnt(j)-1
             if (cnt(j)==0) then
                 deallocate(dat(j)%d)
-                ndat = ndat-1
+                nr_data = nr_data-1
             endif
         enddo
-        nref = i
+        nr_ref = i
     end subroutine
 
 
@@ -343,27 +331,27 @@ contains
         type(Matrix),intent(in),target:: A
         integer:: i,j,k; logical:: found,zero,same
         !see if any reference from A is recorded
-        do i=nref,0,-1
+        do i=nr_ref,0,-1
             if (i==0) exit
-            if ((baddress(ref(i)%m)-baddress(A))*stkdir<0) exit
+            if ((baddress(ref(i)%m)-baddress(A))*stack_direction<0) exit
         enddo; j=i+1; k=idx(j)
-        found  = (j/=nref+1.and.associated(ref(j)%m,A))
+        found  = (j/=nr_ref+1.and.associated(ref(j)%m,A))
         zero = (.not.associated(A%elements).or.abs(baddress(A%elements)-baddress(i))<2**28)
         same = .false.; if (found) same = associated(dat(k)%d,A%elements)
         !if A is recorded, but now is zero or A%elements is on the stack, remove the previous record
         if (found.and.zero) then
-             ref(j:nref-1) = ref(j+1:nref)
-             idx(j:nref-1) = idx(j+1:nref)
-             nref = nref-1
+             ref(j:nr_ref-1) = ref(j+1:nr_ref)
+             idx(j:nr_ref-1) = idx(j+1:nr_ref)
+             nr_ref = nr_ref-1
         endif
         !if A was recorded as referring to some other data, remove that
         if (found.and..not.same) then
             cnt(k) = cnt(k)-1
             if (cnt(k)==0) deallocate(dat(k)%d)
-            if (cnt(k)==0) ndat = ndat-1
+            if (cnt(k)==0) nr_data = nr_data-1
         endif
         !see if A%elements is already recorded as some dat(k)%d
-        do i=maxdat,1,-1
+        do i=max_data,1,-1
             if (cnt(i)==0) then
                 k = i; cycle
             elseif (associated(A%elements,dat(i)%d)) then
@@ -372,16 +360,16 @@ contains
         enddo
         !if A is not already recorded, make space for it
         if (.not.found.and..not.zero) then
-            ref(j+1:nref+1) = ref(j:nref)
-            idx(j+1:nref+1) = idx(j:nref)
-            nref = nref+1
+            ref(j+1:nr_ref+1) = ref(j:nr_ref)
+            idx(j+1:nr_ref+1) = idx(j:nr_ref)
+            nr_ref = nr_ref+1
         endif
         !insert A
         if (.not.zero) then
             ref(j)%m => A
             idx(j) = k
             dat(k)%d => A%elements
-            if (cnt(k)==0) ndat = ndat+1
+            if (cnt(k)==0) nr_data = nr_data+1
             if (.not.same) cnt(k) = cnt(k)+1
         endif
     end subroutine
@@ -393,14 +381,14 @@ contains
         type(Matrix),intent(inout),target:: A
         integer:: i,j,k
         !find the reference, if exists
-        do j=nref,1,-1
-            if ((baddress(ref(j)%m)-baddress(A))*stkdir<=0) exit
+        do j=nr_ref,1,-1
+            if ((baddress(ref(j)%m)-baddress(A))*stack_direction<=0) exit
         enddo; k=idx(j)
         !if A%elements is not the recorded dat(k)%d, see if A%elements is referenced by some
         !other matrix. If not, deallocate A%elements
         if (A%nrow/=-1.and.associated(A%elements).and..not. &
             (associated(ref(j)%m,A).and.associated(dat(k)%d,A%elements))) then
-            do i=maxdat,0,-1
+            do i=max_data,0,-1
                 if (cnt(i)==0) cycle
                 if (associated(A%elements,dat(i)%d)) exit
                 if (i==1) deallocate(A%elements)
@@ -408,13 +396,13 @@ contains
         endif
         !if a reference from A was found, remove it
         if (associated(ref(j)%m,A)) then
-            ref(j:nref-1) = ref(j+1:nref)
-            idx(j:nref-1) = idx(j+1:nref)
-            nref = nref-1
+            ref(j:nr_ref-1) = ref(j+1:nr_ref)
+            idx(j:nr_ref-1) = idx(j+1:nr_ref)
+            nr_ref = nr_ref-1
             cnt(k) = cnt(k)-1
             if (cnt(k)==0) then
                 deallocate(dat(k)%d)
-                ndat = ndat-1
+                nr_data = nr_data-1
             endif
         endif
         A%nrow=-1; nullify(A%elements)
