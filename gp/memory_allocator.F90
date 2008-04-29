@@ -38,6 +38,9 @@
             module procedure alloc_real_1d
             module procedure alloc_real_2d
             module procedure alloc_real_3d
+            module procedure alloc_real_4d
+            module procedure alloc_real_5d
+            module procedure alloc_real_6d
             module procedure alloc_int
          end interface alloc
 
@@ -50,6 +53,9 @@
             module procedure dealloc_real_1d
             module procedure dealloc_real_2d
             module procedure dealloc_real_3d
+            module procedure dealloc_real_4d
+            module procedure dealloc_real_5d
+            module procedure dealloc_real_6d
             module procedure dealloc_int
          end interface dealloc
 
@@ -63,6 +69,9 @@
             module procedure initData_real_1d
             module procedure initData_real_2d
             module procedure initData_real_3d
+            module procedure initData_real_4d
+            module procedure initData_real_5d
+            module procedure initData_real_6d
             module procedure initDataInt
          end interface initData
 
@@ -89,7 +98,6 @@
 ! error handling in allocation and other goodies
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!            subroutine allocErrorHandler(status,size,data_kind,ignoreError)
             subroutine allocErrorHandler(status,size,data_kind,var_id,ignoreError)
                integer                        :: status
 ! optional arguments
@@ -238,6 +246,27 @@
 
                forall (i=1:size1, j=1:size2, k=1:size3) data(i,j,k) = 0.0D0
             end subroutine initData_real_3d
+
+            subroutine initData_real_4d(data,size1,size2,size3,size4)
+               integer :: i,j,k,l,size1,size2,size3,size4
+               real(kind=kreal) :: data(:,:,:,:)
+
+               forall (i=1:size1, j=1:size2, k=1:size3, l=1:size4) data(i,j,k,l) = 0.0D0
+            end subroutine initData_real_4d
+
+            subroutine initData_real_5d(data,size1,size2,size3,size4,size5)
+               integer :: i,j,k,l,m,size1,size2,size3,size4,size5
+               real(kind=kreal) :: data(:,:,:,:,:)
+
+               forall (i=1:size1, j=1:size2, k=1:size3, l=1:size4, m=1:size5) data(i,j,k,l,m) = 0.0D0
+            end subroutine initData_real_5d
+
+            subroutine initData_real_6d(data,size1,size2,size3,size4,size5,size6)
+               integer :: i,j,k,l,m,n,size1,size2,size3,size4,size5,size6
+               real(kind=kreal) :: data(:,:,:,:,:,:)
+
+               forall (i=1:size1, j=1:size2, k=1:size3, l=1:size4, m=1:size5, n=1:size6) data(i,j,k,l,m,n) = 0.0D0
+            end subroutine initData_real_6d
   
             subroutine initDataInt(data,size)
                integer :: i, size
@@ -294,7 +323,7 @@
             end subroutine alloc_real_1d
 
             subroutine alloc_real_2d(data,size1,size2,id)
-               integer                               :: size1,size2, status
+               integer                               :: size1,size2, status, totalsize
                character(len=*), optional            :: id
                character(len=charArrayLength)        :: local_id
                real(kind=kreal), allocatable, target :: data(:,:)
@@ -308,9 +337,11 @@
                if (.not.allocated(data)) then
                   allocate(data(size1,size2),stat=status) 
 
+                  totalsize = size1*size2
                   if ( status.ne.0 ) then
-                     call allocErrorHandler(allocateFailure,size1*size2,kind(data),var_id=local_id)
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
                   else
+!                    call initData(data,totalsize)
                      call initData(data,size1,size2)
 !                    call registerAllocation(data,size)
                   endif
@@ -319,9 +350,8 @@
                endif
             end subroutine alloc_real_2d
 
-
             subroutine alloc_real_3d(data,size1,size2,size3,id)
-               integer                               :: size1,size2, size3, status
+               integer                               :: size1,size2, size3, status, totalsize
                character(len=*), optional            :: id
                character(len=charArrayLength)        :: local_id
                real(kind=kreal), allocatable, target :: data(:,:,:)
@@ -335,16 +365,100 @@
                if (.not.allocated(data)) then
                   allocate(data(size1,size2,size3),stat=status) 
 
+                  totalsize = size1*size2*size3
                   if ( status.ne.0 ) then
-                     call allocErrorHandler(allocateFailure,size1*size2,kind(data),var_id=local_id)
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
                   else
+!                    call initData(data,totalsize)
                      call initData(data,size1,size2,size3)
-!                    call registerAllocation(data,size)
                   endif
                else
                   call allocErrorHandler(alreadyAllocated,var_id=local_id)
                endif
             end subroutine alloc_real_3d
+
+            subroutine alloc_real_4d(data,size1,size2,size3,size4,id)
+               integer                               :: size1,size2, size3, size4, status, totalsize
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:,:,:,:)
+              
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2,size3,size4),stat=status) 
+
+                  totalsize = size1*size2*size3*size4
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
+                  else
+!                    call initData(data,totalsize)
+                     call initData(data,size1,size2,size3,size4)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_4d
+
+            subroutine alloc_real_5d(data,size1,size2,size3,size4,size5,id)
+               integer                               :: size1,size2, size3, size4,size5, status, totalsize
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:,:,:,:,:)
+              
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2,size3,size4,size5),stat=status) 
+
+                  totalsize = size1*size2*size3*size4*size5
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
+                  else
+!                    call initData(data,totalsize)
+                     call initData(data,size1,size2,size3,size4,size5)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_5d
+
+            subroutine alloc_real_6d(data,size1,size2,size3,size4,size5,size6,id)
+               integer                               :: size1,size2,size3,size4,size5,size6
+               integer                               :: status, totalsize
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:,:,:,:,:,:)
+              
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None' 
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2,size3,size4,size5,size6),stat=status) 
+
+                  totalsize = size1*size2*size3*size4*size5*size6
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
+                  else
+!                    call initData(data,totalsize)
+                     call initData(data,size1,size2,size3,size4,size5,size6)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_6d
+
 
             subroutine alloc_int(data,size,id)
                integer                        :: size, status
@@ -498,6 +612,75 @@
                   call allocErrorHandler(alreadyDeallocated,var_id=local_id)
                endif
             end subroutine dealloc_real_3d
+
+            subroutine dealloc_real_4d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:,:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_real_4d
+
+            subroutine dealloc_real_5d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:,:,:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_real_5d
+
+            subroutine dealloc_real_6d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), allocatable  :: data(:,:,:,:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_real_6d
 
 
             subroutine dealloc_preal(data, id)
