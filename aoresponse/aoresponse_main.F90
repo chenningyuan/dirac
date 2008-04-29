@@ -19,20 +19,32 @@ module aoresponse_main_m
 contains
 
   subroutine test_matrix_operations()
-    type(matrix)     :: A, B
-    integer(kind_i4) :: ndim = 10
+    type(matrix)     :: A, B, C
+    integer(kind_i4) :: ndim = 3
 
     call mat_init(A, ndim, ndim)
 
-    A%elms = 0.0d0
-    B = 0.2d0*A
+    A%elements = 1.0d0
+    A%ih       = -1
+    call mat_print(A, 'A%elements = 1.0d0')
 
-    call printmat(A)
-    call printmat(B)
+    B = 0.5d0*A
+    call mat_print(B, 'B = 0.5d0*A')
+
+    B = 0.5d0*B
+    call mat_print(B, 'B = 0.5d0*B')
+
+    C = 0.5d0*B
+    call mat_print(C, 'C = 0.5d0*B')
+
     B = 0
-    call printmat(B)
+    call mat_print(B, 'B = 0')
+
+    C = 0
+    call mat_print(B, 'C = 0')
 
     call mat_free(A)
+    call mat_print(A, 'mat_free(A)')
 
   end subroutine test_matrix_operations
 
