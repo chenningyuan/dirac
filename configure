@@ -294,7 +294,6 @@ case $machine in
 
    ia64-unknown-linux)
       liblist="$liblist libmkl_ipf libmkl_itp"
-     # complist='ifort efc g95 g77 f77'
       complist='ifort efc pgf90 g95 g77 f77'
       cclist='icc ecc pgcc gcc cc'
       debug='gdb';;
@@ -345,7 +344,7 @@ echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-	#
+#
 #
 # PARALLEL
 #
@@ -385,6 +384,7 @@ if [ -z "${par}" ]; then
            echo  "                                  - KR-MCSCF using LUCIAREL  "
            echo  "                                  - MOLTRA (scheme 6)        "
          fi
+#
          $echo 'Will your nodes use local disks? (y/N) \c'
          read localdisks
          case "$localdisks" in
@@ -1315,6 +1315,8 @@ case $machine in
             F77real=ifort
          elif "$F77" $mpishowopt | grep -q gfortran; then
             F77real=gfortran
+         elif "$F77" $mpishowopt | grep -q pathf90; then
+            F77real=pathf90
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
@@ -1404,6 +1406,8 @@ case $machine in
 
          if $CC $mpishowopt | grep -q icc; then
             CCreal=icc
+         elif $CC $mpishowopt | grep -q pathcc; then
+            CCreal=pathcc
          elif $CC $mpishowopt | grep -q pgcc; then
             CCreal=pgcc
          elif $CC $mpishowopt | grep -q gcc; then
@@ -1492,6 +1496,8 @@ case $machine in
             F77real=ifort
          elif "$F77" $mpishowopt | grep -q gfortran; then
             F77real=gfortran
+         elif "$F77" $mpishowopt | grep -q pathf90; then
+            F77real=pathf90
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
@@ -1581,6 +1587,8 @@ case $machine in
 
          if mpicc $mpishowopt | grep -q icc; then
             CCreal=icc
+         elif mpicc $mpishowopt | grep -q pathcc; then
+            CCreal=pathcc
          elif mpicc $mpishowopt | grep -q pgcc; then
             CCreal=pgcc
          elif mpicc $mpishowopt | grep -q gcc; then
@@ -1671,6 +1679,8 @@ case "$F77" in
             F77real=ifort
          elif "$F77" $mpishowopt | grep -q gfortran; then
             F77real=gfortran
+         elif "$F77" $mpishowopt | grep -q pathf90; then
+            F77real=pathf90
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
@@ -1757,6 +1767,8 @@ case "$F77" in
 
          if mpicc $mpishowopt | grep -q icc; then
             CCreal=icc
+         elif mpicc $mpishowopt | grep -q pathcc; then
+            CCreal=pathcc
          elif mpicc $mpishowopt | grep -q pgcc; then
             CCreal=pgcc
          elif mpicc $mpishowopt | grep -q gcc; then
