@@ -19,7 +19,10 @@ module dirac_matrix_operations_m
 !This file must be compiled without inlining
 
     use kinds_m
+    use memory_allocator
     implicit none
+
+#include "dgroup.h"
 
    TYPE Matrix
       !number of rows, number of columns
@@ -52,6 +55,7 @@ module dirac_matrix_operations_m
 
 
     public Matrix,print,trps,norm,iszero,isdef,MatrixStats
+    public mat_init, mat_free, printmat
     public assignment(=),operator(+),operator(-)
     public operator(*),operator(/),operator(**),trab
     private !rest is private
@@ -142,9 +146,36 @@ module dirac_matrix_operations_m
 
 
 contains
+
 #ifndef VAR_IFC
 #define baddress loc
 #endif /* VAR_IFC */
+
+  subroutine mat_init(a,nrow,ncol)
+     implicit none
+     type(matrix) :: a
+     integer, intent(in) :: nrow, ncol
+     integer :: nsize
+
+     nullify(a%elms)
+     a%nrow = nrow
+     a%ncol = ncol
+     nsize = a%nrow*a%ncol
+     call alloc(a%elms, nsize)
+  end subroutine
+
+  subroutine mat_free(a)
+     implicit none
+     TYPE(Matrix) :: a
+     integer :: nsize
+     if (.not.ASSOCIATED(a%elms)) then
+       print*,'memory previously released!!'
+       STOP 'Error in mat_dense_free - memory previously released'
+     endif
+     nsize = SIZE(a%elms)
+     call dealloc(a%elms)
+     NULLIFY(a%elms)
+  end subroutine
 
     subroutine allocif()
     !if needed allocate/extend the tables ref,dat,idx,cnt
@@ -438,9 +469,19 @@ contains
     subroutine PrintMat(A,w)
         type(Matrix),intent(in):: A; integer:: i,ww,d
         integer,optional:: w
+#include "priunit.h"
         call delabove(i)
         if (A%nrow==-1) stop 'Matrix print(A) : A undefined'
         if (associated(A%elms)) then
+
+    call prqmat(A%elms, &
+                A%nrow, &
+                A%ncol, &
+                A%nrow, &
+                A%ncol, &
+                nz,               &
+                ipqtoq(1, 0),     &
+                lupri)
             d = max(1,ceiling(log10(max(maxval(A%elms),-10*minval(A%elms)))))
             ww = 8; if (present(w)) ww = max(w,d+2); d = ww-d-2
 #ifdef VAR_IFC

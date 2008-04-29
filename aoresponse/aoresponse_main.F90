@@ -3,11 +3,13 @@ module aoresponse_main_m
   use kinds_m
   use scf_density_class
   use memory_allocator
+  use dirac_matrix_operations_m
 
   implicit none
 
 #include "priunit.h"
 
+  public test_matrix_operations
   public aoresponse_driver
   public get_ao_pmat
   public solve_perturbed_ao_dmat
@@ -15,6 +17,24 @@ module aoresponse_main_m
   private
 
 contains
+
+  subroutine test_matrix_operations()
+    type(matrix)     :: A, B
+    integer(kind_i4) :: ndim = 10
+
+    call mat_init(A, ndim, ndim)
+
+    A%elms = 0.0d0
+    B = 0.2d0*A
+
+    call printmat(A)
+    call printmat(B)
+    B = 0
+    call printmat(B)
+
+    call mat_free(A)
+
+  end subroutine test_matrix_operations
 
   subroutine aoresponse_driver(work, kfree, lfree)
     real(kind_dp),    intent(inout) :: work(lfree)
