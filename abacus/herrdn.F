@@ -291,9 +291,9 @@ C
 C
       CHARACTER(LEN=8) :: moltype
       REAL(KIND=8)     :: WORK(LWORK)
-      LOGICAL          :: HERMIT,NEWFILE,SET
+      LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
-      INTEGER          :: inpfile, rc=0
+      INTEGER          :: inpfile
 
 C     JHS
       CHARACTER(LEN=72) :: str
@@ -326,25 +326,27 @@ C
 C
 C     PARHER is true for slaves, false for master.
 C     If (PARHER) then RDLINE reads from common block transferred
-C     from master, not from file LUINFO.
+C       from master, not from file LUINFO.
 C
       NEWFILE = LUINFO .NE. LUCMD
       IF (NEWFILE) THEN
-        moltype=GET_EXTENSION('MOLECULE')
-        rc=OPEN_FILE('MOLECULE'//'.'//moltype, 
-     &               LUINFO, formatted='FORMATTED', lupri=LUPRI)
+          moltype='MOL'
+          CALL GPINQ('MOLECULE.MOL','EXIST',FEXIST)
+        IF (FEXIST) GO TO 100
+          moltype='XYZ'
+          CALL GPINQ('MOLECULE.XYZ','EXIST',FEXIST)
+        IF (FEXIST) GO TO 100
+          CALL QUIT('Unable to open MOLECULE input file')
+  100   CONTINUE
+        LUINFO = -1
+        CALL GPOPEN (LUINFO,'MOLECULE.'//moltype,'OLD',' ',
+     &               'FORMATTED',IDUMMY,.FALSE.)
       END IF
-      IF (rc <=0) THEN
-        WRITE (LUPRI,'(//A)') '*** ERROR *** unable to open MOLECULE.
-     &        '//moltype
-        CALL QUIT('*** ERROR (READIN) unable to open input file 
-     &       LUINFO')
-      END IF
+
       ATOMDF  = .FALSE.
 
       REWIND(LUINFO)
 C     JHS TMP reset the variables with the read .mol file
-      MLINE=' '
       NMLINE=0
 
       CALL RDLINE(LUINFO)
@@ -382,7 +384,7 @@ C               These are the only two extensions at the moment.
       SELECT CASE(TRIM(moltype))
       CASE ('MOL')
 
-        CALL READI1(LUINFO,WORK,LWORK,
+        CALL READ_MOL(LUINFO,WORK,LWORK,
      &              KATOM,KANG,KSETS,KBLOCK,KPRIM, HERMIT)
 
 
@@ -419,19 +421,9 @@ C     JHS050707 Free the reserved memory.
       IF (IPREAD .GT. 20) CALL REAPRI
 
       RETURN
-C
-C Error messages:
-C
- 5000 CONTINUE
-      WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open MOLECULE.INP'
-      CALL QUIT(' *** ERROR (READIN) unable to open input file LUINFO ')
- 5020 CONTINUE
-      CALL STOPIT('READIN','READI1',KLAST,LWORK)
- 5030 CONTINUE
-      CALL QUIT('Wrong keyword. Expecting FINISH')
       END
 C  /* Deck readi1 */
-      SUBROUTINE READI1(LUINFO,WORK,LWORK,
+      SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
 C
@@ -779,8 +771,8 @@ C       Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *   ' >>> READI1 error, no. of atomic types    ',NONTYP,
-     *   '                   current maximum number ',KATOM
+     *   ' >>> READ_MOL error, no. of atomic types    ',NONTYP,
+     *   '                     current maximum number ',KATOM
       CALL QUIT('Too many atomic types')
       END
 C  /* Deck baspar */
@@ -961,7 +953,7 @@ C
               WRITE (LUPRI,'(/A)')
      &        'Atoms and their geometry is read in Z-matrix format.'
               IF (.NOT. BASIS) THEN
-                 WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+                 WRITE (LUPRI,'(/A)') '*** READ_MOL ERROR:'
                  CALL QUIT('Z-matrix only implemented with BASIS')
               END IF
            END IF
@@ -5365,7 +5357,7 @@ C
       DATA NMLN_LASTREAD /0/
       SAVE NMLN_LASTREAD
 C
-C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new readin,
+C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
       IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
@@ -5390,10 +5382,9 @@ C
      &        ' Increase dimension in /MOLINP/ to at least',NMLINE
          CALL QUIT('*** ERROR *** Too many input lines for READIN')
       END IF
-      IF((MLINE(NMLINE)(1:1).EQ.'#') .OR.
-     $     (MLINE(NMLINE)(1:1).EQ.'!') .OR.
-     $     (MLINE(NMLINE)(1:1) .EQ. '$' ))
-     &     GOTO 10
+      IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
+     $   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
+     $   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
       NMLN_LASTREAD = NMLINE
 
       RETURN
