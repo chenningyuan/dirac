@@ -19,32 +19,80 @@ module aoresponse_main_m
 contains
 
   subroutine test_matrix_operations()
-    type(matrix)     :: A, B, C
-    integer(kind_i4) :: ndim = 3
 
-    call mat_init(A, ndim, ndim)
+    type(matrix)     :: D22, D23, D32, D33
+    type(matrix)     :: A, B, C, D, E
+    real(kind_dp)    :: accept = 1.0d-5
 
-    A%elements = 1.0d0
-    A%ih       = -1
-    call mat_print(A, 'A%elements = 1.0d0')
+    call mat_init(D22, 2, 2)
+    call mat_init(D23, 2, 3)
+    call mat_init(D32, 3, 2)
+    call mat_init(D33, 3, 3)
 
-    B = 0.5d0*A
-    call mat_print(B, 'B = 0.5d0*A')
+    D22%elements = 1.0d0
+    D23%elements = 1.0d0
+    D32%elements = 1.0d0
+    D33%elements = 1.0d0
 
-    B = 0.5d0*B
-    call mat_print(B, 'B = 0.5d0*B')
+    A = 1.0d0*D22
+    B = 0.5d0*D22
+    C = 0.5d0*D23
+    D = 0.5001d0*D23
+    E = 0.500000001d0*D23
 
-    C = 0.5d0*B
-    call mat_print(C, 'C = 0.5d0*B')
+    call compare_matrices(A, B, accept, 'should fail due to values')
+    call compare_matrices(A, C, accept, 'should fail due to shapes')
+    call compare_matrices(B, C, accept, 'should fail due to shapes')
+    call compare_matrices(C, D, accept, 'should fail due to values, threshold')
+    call compare_matrices(C, E, accept, 'comparing C and E')
 
+    A = 0
     B = 0
-    call mat_print(B, 'B = 0')
-
     C = 0
-    call mat_print(B, 'C = 0')
+    D = 0
+    E = 0
 
-    call mat_free(A)
-    call mat_print(A, 'mat_free(A)')
+
+
+
+
+
+
+
+!   call mat_init(A, ndim, ndim)
+
+!   A%elements = 1.0d0
+!   A%ih       = -1
+!   call mat_print(A, 'A%elements = 1.0d0')
+
+!   B = 0.5d0*A
+!   B%elements(6) = 137.0d0
+!   call mat_print(B, 'B = 0.5d0*A')
+
+!   B = 0.5d0*B
+!   call mat_print(B, 'B = 0.5d0*B')
+
+!   C = 1.0d0*B
+!   call mat_print(C, 'C = 0.5d0*B')
+
+!   call compare_matrices(B, C, accept, 'hier')
+
+!   B = 0
+!   call mat_print(B, 'B = 0')
+
+!   C = 0
+!   call mat_print(B, 'C = 0')
+
+!   call mat_free(A)
+!   call mat_print(A, 'mat_free(A)')
+
+
+
+
+    call mat_free(D22)
+    call mat_free(D23)
+    call mat_free(D32)
+    call mat_free(D33)
 
   end subroutine test_matrix_operations
 

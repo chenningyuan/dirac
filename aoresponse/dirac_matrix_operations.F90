@@ -43,6 +43,8 @@ module dirac_matrix_operations_m
   public norm
   public iszero
   public isdef
+  public compare_dp_arrays
+  public compare_matrices
 
   private
 
@@ -52,18 +54,18 @@ module dirac_matrix_operations_m
   end interface
 
   interface operator(+)
-    module procedure matplusmat
+    module procedure matrix_plus_matrix
   end interface
 
   interface operator(-)
-    module procedure matminusmat
-    module procedure matneg
+    module procedure matrix_minus_matrix
+    module procedure matrix_negative
   end interface
 
   interface operator(*)
     module procedure dp_times_matrix
-    module procedure inttimesmat
-    module procedure matmulmat
+    module procedure i4_times_matrix
+    module procedure matrix_times_matrix
   end interface
 
   interface operator(/)
@@ -72,7 +74,7 @@ module dirac_matrix_operations_m
   end interface
 
   interface operator(**)
-    module procedure matdotmat
+    module procedure matrix_dot_matrix
   end interface
 
   interface trab
@@ -99,9 +101,9 @@ module dirac_matrix_operations_m
     type(matrix), pointer :: m
   end type ref_pointer_t
 
-  type data_pointer_t
+  type dat_pointer_t
     real(kind_dp), pointer :: d(:)
-  end type data_pointer_t
+  end type dat_pointer_t
 
   integer(kind_i4) :: nr_ref   = 0
   integer(kind_i4) :: max_ref  = 0
@@ -110,21 +112,11 @@ module dirac_matrix_operations_m
 
   integer          :: stack_direction ! growth direction of the stack: -1 or +1
 
+  type(ref_pointer_t), allocatable :: ref(:)
+  type(dat_pointer_t), allocatable :: dat(:)
 
-
-
-
-
-
-    !pointers to all type(matrix) referring to a matrix data (%elements)
-    type(ref_pointer_t),allocatable:: ref(:) !1:numref<max_ref
-    !one pointer to each of the allocated %elements(:)
-    type(data_pointer_t),allocatable:: dat(:) !1:numdat<max_dat
-    !index in dat referred to by each ref
-    integer,allocatable:: idx(:)
-    !number of references to each dat
-    integer,allocatable:: cnt(:)
-
+  integer, allocatable :: index_in_dat(:)
+  integer, allocatable :: nr_ref_to_dat(:)
 
 contains
 
@@ -202,8 +194,8 @@ contains
 
     a%nrow = b%nrow
     a%ncol = b%ncol
-    a%nz   = b%nz  
-    a%ih   = b%ih  
+    a%nz   = b%nz
+    a%ih   = b%ih
 
     a%elements => b%elements
 
@@ -251,8 +243,8 @@ contains
 
     b%nrow = a%nrow
     b%ncol = a%ncol
-    b%nz   = a%nz  
-    b%ih   = a%ih  
+    b%nz   = a%nz
+    b%ih   = a%ih
 
     nullify(b%elements)
 
@@ -264,6 +256,197 @@ contains
     call insref(b)
 
   end function dp_times_matrix
+
+  function matrix_plus_matrix(a, b) result(c)
+    type(matrix),  intent(in) :: a, b
+    type(matrix)              :: c
+
+    integer(kind_i4)          :: i
+
+    call delabove(i)
+
+    if (a%nrow == -1) then
+      call quit('a undefined in c = a+b')
+    end if
+    if (b%nrow == -1) then
+      call quit('b undefined in c = a+b')
+    end if
+    if (a%nrow /= b%nrow) then
+      call quit('different shapes in c = a+b')
+    end if
+    if (a%ncol /= b%ncol) then
+      call quit('different shapes in c = a+b')
+    end if
+    if (a%nz /= b%nz) then
+      call quit('different shapes in c = a+b')
+    end if
+
+    c%nrow = a%nrow
+    c%ncol = a%ncol
+    c%nz   = a%nz
+
+    nullify(c%elements)
+
+    if (associated(a%elements) .and. associated(b%elements)) then
+      call alloc(c%elements, c%nrow*c%ncol*c%nz)
+      c%elements = a%elements + b%elements
+    else if (associated(a%elements)) then
+      c%elements => a%elements
+    else if (associated(b%elements)) then
+      c%elements => b%elements
+    end if
+
+    call insref(c)
+
+  end function matrix_plus_matrix
+
+  function matrix_minus_matrix(a, b) result(c)
+    type(matrix),  intent(in) :: a, b
+    type(matrix)              :: c
+
+    c = a + (-b)
+
+  end function matrix_minus_matrix
+
+  function matrix_negative(a) result(b)
+    type(matrix),  intent(in) :: a
+    type(matrix)              :: b
+
+    b = (-1.0d0)*a
+
+  end function matrix_negative
+
+  function i4_times_matrix(i, a) result(b)
+    integer(kind_i4), intent(in) :: i
+    type(matrix),     intent(in) :: a
+    type(matrix)                 :: b
+
+    b = (-1.0d0*i)*a
+
+  end function i4_times_matrix
+
+  function matrix_times_matrix(a, b) result(c)
+    type(matrix),  intent(in) :: a, b
+    type(matrix)              :: c
+
+    integer(kind_i4)          :: i, k, l, m, n
+
+    call delabove(i)
+
+    if (a%nrow == -1) then
+      call quit('a undefined in c = a*b')
+    end if
+    if (b%nrow == -1) then
+      call quit('b undefined in c = a*b')
+    end if
+    if (a%ncol /= b%nrow) then
+      call quit('incompatible shapes in c = a*b')
+    end if
+    if (a%nz /= b%nz) then
+      call quit('different shapes in c = a*b')
+    end if
+
+    c%nrow = a%nrow
+    c%ncol = b%ncol
+    c%nz   = a%nz
+
+    if (associated(a%elements) .and. associated(b%elements)) then
+      call alloc(c%elements, c%nrow*c%ncol*c%nz)
+
+      c%elements = reshape(matmul(reshape(a%elements(1:a%nrow*a%ncol), (/a%nrow, a%ncol/)), &
+                   reshape(b%elements(1:b%nrow*b%ncol), (/b%nrow, b%ncol/))), (/c%nrow*c%ncol/))
+    end if
+
+    call insref(c)
+
+  end function matrix_times_matrix
+
+  function matrix_dot_matrix(a, b) result(r)
+    type(matrix),  intent(in) :: a, b
+    real(kind_dp)             :: r
+
+    if (a%nrow == -1) then
+      call quit('a undefined in r = a**b')
+    end if
+    if (b%nrow == -1) then
+      call quit('b undefined in r = a**b')
+    end if
+    if (a%nrow /= b%nrow) then
+      call quit('different shapes in r = a**b')
+    end if
+    if (a%ncol /= b%ncol) then
+      call quit('different shapes in r = a**b')
+    end if
+    if (a%nz /= b%nz) then
+      call quit('different shapes in r = a**b')
+    end if
+
+    r = 0.0d0
+
+    if (.not.(associated(a%elements) .and. associated(b%elements))) return
+
+    r = sum(a%elements*b%elements)
+
+  end function matrix_dot_matrix
+
+  function compare_dp_arrays(a, b, accept) result(ok)
+    real(kind_dp), intent(in)    :: a(:), b(:)
+    real(kind_dp), intent(in)    :: accept
+    logical                      :: ok
+
+    integer(kind_i4)           :: i
+
+    if (size(a) /= size(b)) then
+      ok = .false.
+    else
+      ok = .true.
+
+      do i = 1, size(a)
+        if (abs(a(i) - b(i)) > accept) then
+          ok = .false.
+        end if
+      end do
+    end if
+
+  end function compare_dp_arrays
+
+  subroutine compare_matrices(a, b, accept, label)
+    type(matrix),  intent(in)           :: a, b
+    real(kind_dp), intent(in)           :: accept
+    character(*),  intent(in), optional :: label
+
+#include "priunit.h"
+
+    logical                             :: shape_ok, values_ok
+
+    shape_ok  = .true.
+
+    if (a%nrow /= b%nrow) then
+      shape_ok = .false.
+    end if
+    if (a%ncol /= b%ncol) then
+      shape_ok = .false.
+    end if
+    if (a%nz /= b%nz) then
+      shape_ok = .false.
+    end if
+
+    if (.not. shape_ok) then
+      write(*, *) 'matrix shapes not ok -- (', label, ')'
+    else
+      values_ok = compare_dp_arrays(a%elements, b%elements, accept)
+      if (.not. values_ok) then
+        write(*, *) 'matrix values not ok -- (', label, ')'
+      end if
+    end if
+
+    if (shape_ok .and. values_ok) then
+        write(*, *) '                  ok -- (', label, ')'
+    end if
+
+  end subroutine compare_matrices
+
+
 
 
 
@@ -277,30 +460,31 @@ contains
 
 
 
+
     subroutine allocif()
-    !if needed allocate/extend the tables ref,dat,idx,cnt
-        type(ref_pointer_t):: tref(nr_ref); type(data_pointer_t):: tdat(max_data)
-        integer:: tidx(nr_ref),tcnt(max_data),i
+    !if needed allocate/extend the tables ref,dat,index_in_dat,nr_ref_to_dat
+        type(ref_pointer_t):: tref(nr_ref); type(dat_pointer_t):: tdat(max_data)
+        integer:: tindex_in_dat(nr_ref),tnr_ref_to_dat(max_data),i
         if (nr_ref<max_ref-1.and.nr_data<max_data-1) return
         if (nr_ref>=max_ref-1) then
             if (max_ref==0) call getdir() !only once
             if (max_ref/=0) tref = ref(1:nr_ref)
-            if (max_ref/=0) tidx = idx(1:nr_ref)
-            if (max_ref/=0) deallocate(ref,idx)
+            if (max_ref/=0) tindex_in_dat = index_in_dat(1:nr_ref)
+            if (max_ref/=0) deallocate(ref,index_in_dat)
             allocate(ref(max(64,2*max_ref)))
-            allocate(idx(max(64,2*max_ref)))
+            allocate(index_in_dat(max(64,2*max_ref)))
             ref(1:nr_ref) = tref
-            idx(1:nr_ref) = tidx
+            index_in_dat(1:nr_ref) = tindex_in_dat
             max_ref = max(64,2*max_ref)
         endif
         if (nr_data>=max_data-1) then
             if (max_data/=0) tdat = dat(1:max_data)
-            if (max_data/=0) tcnt = cnt(1:max_data)
-            if (max_data/=0) deallocate(dat,cnt)
+            if (max_data/=0) tnr_ref_to_dat = nr_ref_to_dat(1:max_data)
+            if (max_data/=0) deallocate(dat,nr_ref_to_dat)
             allocate(dat(max(8,2*max_data)))
-            allocate(cnt(max(8,2*max_data))); cnt=0
+            allocate(nr_ref_to_dat(max(8,2*max_data))); nr_ref_to_dat=0
             dat(1:max_data) = tdat
-            cnt(1:max_data) = tcnt
+            nr_ref_to_dat(1:max_data) = tnr_ref_to_dat
             max_data = max(8,2*max_data)
         endif
     contains
@@ -316,9 +500,9 @@ contains
         call allocif()
         do i=nr_ref,1,-1
             if ((baddress(ref(i)%m)-baddress(k))*stack_direction<0) exit
-            j = idx(i)
-            cnt(j) = cnt(j)-1
-            if (cnt(j)==0) then
+            j = index_in_dat(i)
+            nr_ref_to_dat(j) = nr_ref_to_dat(j)-1
+            if (nr_ref_to_dat(j)==0) then
                 deallocate(dat(j)%d)
                 nr_data = nr_data-1
             endif
@@ -327,208 +511,147 @@ contains
     end subroutine
 
 
-    subroutine insref(A)
-        type(Matrix),intent(in),target:: A
+    subroutine insref(a)
+        type(matrix),intent(in),target:: a
         integer:: i,j,k; logical:: found,zero,same
-        !see if any reference from A is recorded
+        !see if any reference from a is recorded
         do i=nr_ref,0,-1
             if (i==0) exit
-            if ((baddress(ref(i)%m)-baddress(A))*stack_direction<0) exit
-        enddo; j=i+1; k=idx(j)
-        found  = (j/=nr_ref+1.and.associated(ref(j)%m,A))
-        zero = (.not.associated(A%elements).or.abs(baddress(A%elements)-baddress(i))<2**28)
-        same = .false.; if (found) same = associated(dat(k)%d,A%elements)
-        !if A is recorded, but now is zero or A%elements is on the stack, remove the previous record
+            if ((baddress(ref(i)%m)-baddress(a))*stack_direction<0) exit
+        enddo; j=i+1; k=index_in_dat(j)
+        found  = (j/=nr_ref+1.and.associated(ref(j)%m,a))
+        zero = (.not.associated(a%elements).or.abs(baddress(a%elements)-baddress(i))<2**28)
+        same = .false.; if (found) same = associated(dat(k)%d,a%elements)
+        !if a is recorded, but now is zero or a%elements is on the stack, remove the previous record
         if (found.and.zero) then
              ref(j:nr_ref-1) = ref(j+1:nr_ref)
-             idx(j:nr_ref-1) = idx(j+1:nr_ref)
+             index_in_dat(j:nr_ref-1) = index_in_dat(j+1:nr_ref)
              nr_ref = nr_ref-1
         endif
-        !if A was recorded as referring to some other data, remove that
+        !if a was recorded as referring to some other data, remove that
         if (found.and..not.same) then
-            cnt(k) = cnt(k)-1
-            if (cnt(k)==0) deallocate(dat(k)%d)
-            if (cnt(k)==0) nr_data = nr_data-1
+            nr_ref_to_dat(k) = nr_ref_to_dat(k)-1
+            if (nr_ref_to_dat(k)==0) deallocate(dat(k)%d)
+            if (nr_ref_to_dat(k)==0) nr_data = nr_data-1
         endif
-        !see if A%elements is already recorded as some dat(k)%d
+        !see if a%elements is already recorded as some dat(k)%d
         do i=max_data,1,-1
-            if (cnt(i)==0) then
+            if (nr_ref_to_dat(i)==0) then
                 k = i; cycle
-            elseif (associated(A%elements,dat(i)%d)) then
+            elseif (associated(a%elements,dat(i)%d)) then
                 k = i; exit
             endif
         enddo
-        !if A is not already recorded, make space for it
+        !if a is not already recorded, make space for it
         if (.not.found.and..not.zero) then
             ref(j+1:nr_ref+1) = ref(j:nr_ref)
-            idx(j+1:nr_ref+1) = idx(j:nr_ref)
+            index_in_dat(j+1:nr_ref+1) = index_in_dat(j:nr_ref)
             nr_ref = nr_ref+1
         endif
-        !insert A
+        !insert a
         if (.not.zero) then
-            ref(j)%m => A
-            idx(j) = k
-            dat(k)%d => A%elements
-            if (cnt(k)==0) nr_data = nr_data+1
-            if (.not.same) cnt(k) = cnt(k)+1
+            ref(j)%m => a
+            index_in_dat(j) = k
+            dat(k)%d => a%elements
+            if (nr_ref_to_dat(k)==0) nr_data = nr_data+1
+            if (.not.same) nr_ref_to_dat(k) = nr_ref_to_dat(k)+1
         endif
     end subroutine
 
-    subroutine delref(A)
-    !if A is not recorded, deallocate A%elements
-    !if A is recorded as referring to dat(k)%d, but refers to A%elements - deallocate(A%elements)
-    !if A is recorded, referring to recorded dat(k)%d - decrement refcount for dat(k)%d
-        type(Matrix),intent(inout),target:: A
+    subroutine delref(a)
+    !if a is not recorded, deallocate a%elements
+    !if a is recorded as referring to dat(k)%d, but refers to a%elements - deallocate(a%elements)
+    !if a is recorded, referring to recorded dat(k)%d - decrement refcount for dat(k)%d
+        type(matrix),intent(inout),target:: a
         integer:: i,j,k
         !find the reference, if exists
         do j=nr_ref,1,-1
-            if ((baddress(ref(j)%m)-baddress(A))*stack_direction<=0) exit
-        enddo; k=idx(j)
-        !if A%elements is not the recorded dat(k)%d, see if A%elements is referenced by some
-        !other matrix. If not, deallocate A%elements
-        if (A%nrow/=-1.and.associated(A%elements).and..not. &
-            (associated(ref(j)%m,A).and.associated(dat(k)%d,A%elements))) then
+            if ((baddress(ref(j)%m)-baddress(a))*stack_direction<=0) exit
+        enddo; k=index_in_dat(j)
+        !if a%elements is not the recorded dat(k)%d, see if a%elements is referenced by some
+        !other matrix. if not, deallocate a%elements
+        if (a%nrow/=-1.and.associated(a%elements).and..not. &
+            (associated(ref(j)%m,a).and.associated(dat(k)%d,a%elements))) then
             do i=max_data,0,-1
-                if (cnt(i)==0) cycle
-                if (associated(A%elements,dat(i)%d)) exit
-                if (i==1) deallocate(A%elements)
+                if (nr_ref_to_dat(i)==0) cycle
+                if (associated(a%elements,dat(i)%d)) exit
+                if (i==1) deallocate(a%elements)
             enddo
         endif
-        !if a reference from A was found, remove it
-        if (associated(ref(j)%m,A)) then
+        !if a reference from a was found, remove it
+        if (associated(ref(j)%m,a)) then
             ref(j:nr_ref-1) = ref(j+1:nr_ref)
-            idx(j:nr_ref-1) = idx(j+1:nr_ref)
+            index_in_dat(j:nr_ref-1) = index_in_dat(j+1:nr_ref)
             nr_ref = nr_ref-1
-            cnt(k) = cnt(k)-1
-            if (cnt(k)==0) then
+            nr_ref_to_dat(k) = nr_ref_to_dat(k)-1
+            if (nr_ref_to_dat(k)==0) then
                 deallocate(dat(k)%d)
                 nr_data = nr_data-1
             endif
         endif
-        A%nrow=-1; nullify(A%elements)
+        a%nrow=-1; nullify(a%elements)
     end subroutine
 
 
-    function MatPlusMat(A,B) result(C)
-        type(Matrix),intent(in):: A,B
-        type(Matrix):: C; integer:: i
-        call delabove(i)
-        if (A%nrow==-1) stop 'Matrix A+B : A undefined'
-        if (B%nrow==-1) stop 'Matrix A+B : B undefined'
-        if (A%nrow/=B%nrow.or.A%ncol/=B%ncol) stop 'Matrix A+B : different shapes'
-        C%nrow=A%nrow; C%ncol=A%ncol; nullify(C%elements)
-        if (associated(A%elements).and.associated(B%elements)) then
-            allocate(C%elements(C%nrow*C%ncol))
-            C%elements = A%elements+B%elements
-        elseif (associated(A%elements)) then
-            C%elements => A%elements
-        elseif (associated(B%elements)) then
-            C%elements => B%elements
-        endif
-        call insref(C)
+
+
+
+
+    function matdivreal(a,r) result(b)
+        type(matrix),intent(in):: a
+        real*8,intent(in):: r; type(matrix):: b
+        b = (1d0/r)*a
     end function
 
-    function MatMinusMat(A,B) result(C)
-        type(Matrix),intent(in):: A,B
-        type(Matrix):: C
-        C = A + (-B)
+    function matdivint(a,i) result(b)
+        type(matrix),intent(in):: a
+        integer,intent(in):: i; type(matrix):: b
+        b = (1d0/i)*a
     end function
 
 
-    function MatNeg(A) result(B)
-        type(Matrix),intent(in):: A
-        type(Matrix):: B
-        B = (-1d0)*A
-    end function
-
-    function IntTimesMat(i,A) result(B)
-        type(Matrix),intent(in):: A
-        integer,intent(in):: i; type(Matrix):: B
-        B = (1d0*i)*A
-    end function
-
-    function MatDivReal(A,r) result(B)
-        type(Matrix),intent(in):: A
-        real*8,intent(in):: r; type(Matrix):: B
-        B = (1d0/r)*A
-    end function
-
-    function MatDivInt(A,i) result(B)
-        type(Matrix),intent(in):: A
-        integer,intent(in):: i; type(Matrix):: B
-        B = (1d0/i)*A
-    end function
-
-    function MatMulMat(A,B) result(C)
-        type(Matrix),intent(in):: A,B
-        type(Matrix):: C
-        integer:: i,k,l,m,n
-        call delabove(i)
-        if (A%nrow==-1) stop 'Matrix A*B : A undefined'
-        if (B%nrow==-1) stop 'Matrix A*B : B undefined'
-        if (A%ncol/=B%nrow) stop 'Matrix A*B : incompatible shapes'
-        C%nrow=A%nrow; C%ncol=B%ncol
-        if (associated(A%elements).and.associated(B%elements)) then
-            allocate(C%elements(C%nrow*C%ncol))
-            C%elements = reshape(matmul(reshape(A%elements(1:A%nrow*A%ncol),(/A%nrow,A%ncol/)), &
-                     reshape(B%elements(1:B%nrow*B%ncol),(/B%nrow,B%ncol/))),(/C%nrow*C%ncol/))
-        endif
-        call insref(C)
-    end function
-
-    function MatDotMat(A,B) result(r)
-        type(Matrix),intent(in):: A,B; real*8:: r
-        if (A%nrow==-1) stop 'Matrix A**B : A undefined'
-        if (B%nrow==-1) stop 'Matrix A**B : B undefined'
-        if (A%nrow/=B%nrow) stop 'Matrix A**B : different number of rows'
-        if (A%ncol/=B%ncol) stop 'Matrix A**B : different number of cols'
+    function trmatmulmat(a,b) result(r)
+        type(matrix),intent(in):: a,b; real*8:: r
+        if (a%nrow==-1) stop 'matrix trab(a,b) : a undefined'
+        if (b%nrow==-1) stop 'matrix trab(a,b) : b undefined'
+        if (a%nrow/=b%ncol) stop 'matrix trab(a,b) : not compatible shapes'
+        if (a%ncol/=b%nrow) stop 'matrix trab(a,b) : not compatible shapes'
         r = 0d0
-        if (.not.(associated(A%elements).and.associated(B%elements))) return
-        r = sum(A%elements*B%elements)
+        if (.not.(associated(a%elements).and.associated(b%elements))) return
+        r = sum(transpose(reshape(a%elements,(/a%nrow,a%ncol/)))*reshape(b%elements,(/b%nrow,b%ncol/)))
     end function
 
-    function TrMatMulMat(A,B) result(r)
-        type(Matrix),intent(in):: A,B; real*8:: r
-        if (A%nrow==-1) stop 'Matrix trab(A,B) : A undefined'
-        if (B%nrow==-1) stop 'Matrix trab(A,B) : B undefined'
-        if (A%nrow/=B%ncol) stop 'Matrix trab(A,B) : not compatible shapes'
-        if (A%ncol/=B%nrow) stop 'Matrix trab(A,B) : not compatible shapes'
-        r = 0d0
-        if (.not.(associated(A%elements).and.associated(B%elements))) return
-        r = sum(transpose(reshape(A%elements,(/A%nrow,A%ncol/)))*reshape(B%elements,(/B%nrow,B%ncol/)))
-    end function
-
-    function TrpsMat(A) result(B)
-        type(Matrix),intent(in):: A; type(Matrix):: B
+    function trpsmat(a) result(b)
+        type(matrix),intent(in):: a; type(matrix):: b
         integer:: i; call delabove(i)
-        if (A%nrow==-1) stop 'Matrix trps(A) : A undefined'
-        B%nrow=A%ncol; B%ncol=A%nrow
-        if (associated(A%elements)) then
-            allocate(B%elements(B%nrow*B%ncol))
-            B%elements = reshape(transpose(reshape(A%elements,(/A%nrow,A%ncol/))),(/B%nrow*B%ncol/))
+        if (a%nrow==-1) stop 'matrix trps(a) : a undefined'
+        b%nrow=a%ncol; b%ncol=a%nrow
+        if (associated(a%elements)) then
+            allocate(b%elements(b%nrow*b%ncol))
+            b%elements = reshape(transpose(reshape(a%elements,(/a%nrow,a%ncol/))),(/b%nrow*b%ncol/))
         endif
-        call insref(B)
+        call insref(b)
     end function
 
-    function NormMat(A) result(r)
-        type(Matrix),intent(in):: A; real*8:: r
-        if (A%nrow==-1) stop 'Matrix A**B : A undefined'
+    function normmat(a) result(r)
+        type(matrix),intent(in):: a; real*8:: r
+        if (a%nrow==-1) stop 'matrix a**b : a undefined'
         r = 0d0
-        if (.not.associated(A%elements)) return
-        r = sqrt(sum(A%elements**2))
+        if (.not.associated(a%elements)) return
+        r = sqrt(sum(a%elements**2))
     end function
 
-    function IsZeroMat(A) result(z)
-        type(Matrix),intent(in):: A; logical:: z
+    function iszeromat(a) result(z)
+        type(matrix),intent(in):: a; logical:: z
         integer:: i; call delabove(i)
-        if (A%nrow==-1) stop 'Matrix iszero(A) : A undefined'
-        z = (A%nrow/=-1.and..not.associated(A%elements))
+        if (a%nrow==-1) stop 'matrix iszero(a) : a undefined'
+        z = (a%nrow/=-1.and..not.associated(a%elements))
     end function
 
-    function IsDefMat(A) result(d)
-        type(Matrix),intent(in):: A; logical:: d
+    function isdefmat(a) result(d)
+        type(matrix),intent(in):: a; logical:: d
         integer:: i; call delabove(i)
-        d = (A%nrow/=-1)
+        d = (a%nrow/=-1)
     end function
 
 
