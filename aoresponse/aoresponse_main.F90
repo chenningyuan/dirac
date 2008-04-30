@@ -22,7 +22,9 @@ contains
 
     type(matrix)     :: D22, D23, D32, D33
     type(matrix)     :: A, B, C, D, E
+    type(matrix)     :: M, N
     real(kind_dp)    :: accept = 1.0d-5
+    real(kind_dp)    :: r, s
 
     call mat_init(D22, 2, 2)
     call mat_init(D23, 2, 3)
@@ -40,11 +42,11 @@ contains
     D = 0.5001d0*D23
     E = 0.500000001d0*D23
 
-    call compare_matrices(A, B, accept, 'should fail due to values')
-    call compare_matrices(A, C, accept, 'should fail due to shapes')
-    call compare_matrices(B, C, accept, 'should fail due to shapes')
-    call compare_matrices(C, D, accept, 'should fail due to values, threshold')
-    call compare_matrices(C, E, accept, 'comparing C and E')
+    call compare_matrices(A, B, accept, 'testing compare_matrices, should fail due to values')
+    call compare_matrices(A, C, accept, 'testing compare_matrices, should fail due to shapes')
+    call compare_matrices(B, C, accept, 'testing compare_matrices, should fail due to shapes')
+    call compare_matrices(C, D, accept, 'testing compare_matrices, should fail due to values')
+    call compare_matrices(C, E, accept, 'testing compare_matrices')
 
     A = 0
     B = 0
@@ -52,6 +54,86 @@ contains
     D = 0
     E = 0
 
+    M = 1.0d0*D23
+    N = 1.0d0*D32
+
+    M%elements = 0.0d0
+    N%elements = 0.0d0
+
+    M%elements( 1) =  1.0d0
+    M%elements( 2) =  2.0d0
+    M%elements( 3) =  3.0d0
+    M%elements( 4) =  4.0d0
+    M%elements( 5) =  5.0d0
+    M%elements( 6) =  6.0d0
+    M%elements( 7) =  7.0d0
+    M%elements( 8) =  8.0d0
+    M%elements( 9) =  9.0d0
+    M%elements(10) = 10.0d0
+    M%elements(11) = 11.0d0
+    M%elements(12) = 12.0d0
+    M%elements(13) = 13.0d0
+    M%elements(14) = 14.0d0
+    M%elements(15) = 15.0d0
+    M%elements(16) = 16.0d0
+    M%elements(17) = 17.0d0
+    M%elements(18) = 18.0d0
+    M%elements(19) = 19.0d0
+    M%elements(20) = 20.0d0
+    M%elements(21) = 21.0d0
+    M%elements(22) = 22.0d0
+    M%elements(23) = 23.0d0
+    M%elements(24) = 24.0d0
+
+    N%elements( 1) =  1.0d0
+    N%elements( 2) =  2.0d0
+    N%elements( 3) =  3.0d0
+    N%elements( 4) =  4.0d0
+    N%elements( 5) =  5.0d0
+    N%elements( 6) =  6.0d0
+    N%elements( 7) =  7.0d0
+    N%elements( 8) =  8.0d0
+    N%elements( 9) =  9.0d0
+    N%elements(10) = 10.0d0
+    N%elements(11) = 11.0d0
+    N%elements(12) = 12.0d0
+    N%elements(13) = 13.0d0
+    N%elements(14) = 14.0d0
+    N%elements(15) = 15.0d0
+    N%elements(16) = 16.0d0
+    N%elements(17) = 17.0d0
+    N%elements(18) = 18.0d0
+    N%elements(19) = 19.0d0
+    N%elements(20) = 20.0d0
+    N%elements(21) = 21.0d0
+    N%elements(22) = 22.0d0
+    N%elements(23) = 23.0d0
+    N%elements(24) = 24.0d0
+
+    A = 1.0d0*M
+    B = 1.0d0*N
+
+    C = 2.0d0*A
+    D = A + A + A + (-A)
+    E = 4.0d0*A - A - A
+
+    call compare_matrices(C, D, accept, 'testing matrix plus/minus')
+    call compare_matrices(D, E, accept, 'testing matrix plus/minus')
+    call compare_matrices(A, E, accept, 'testing matrix plus/minus, should fail due to values')
+
+    r = A**A
+
+    call compare_dp(r, 4900.0d0, accept, 'checking matrix ddot')
+
+    r = B**B
+    s = norm(A)*norm(B)
+
+    call compare_dp(r, s, accept, 'checking matrix_norm')
+
+    C = A/0.5d0
+    D = A/2 + A/2 + A
+
+    call compare_matrices(C, D, accept, 'testing matrix/r and matrix/i')
 
 
 
@@ -59,35 +141,19 @@ contains
 
 
 
-!   call mat_init(A, ndim, ndim)
-
-!   A%elements = 1.0d0
-!   A%ih       = -1
-!   call mat_print(A, 'A%elements = 1.0d0')
-
-!   B = 0.5d0*A
-!   B%elements(6) = 137.0d0
-!   call mat_print(B, 'B = 0.5d0*A')
-
-!   B = 0.5d0*B
-!   call mat_print(B, 'B = 0.5d0*B')
-
-!   C = 1.0d0*B
-!   call mat_print(C, 'C = 0.5d0*B')
-
-!   call compare_matrices(B, C, accept, 'hier')
-
-!   B = 0
-!   call mat_print(B, 'B = 0')
-
-!   C = 0
-!   call mat_print(B, 'C = 0')
-
-!   call mat_free(A)
-!   call mat_print(A, 'mat_free(A)')
 
 
 
+
+
+    A = 0
+    B = 0
+    C = 0
+    D = 0
+    E = 0
+
+    M = 0
+    N = 0
 
     call mat_free(D22)
     call mat_free(D23)

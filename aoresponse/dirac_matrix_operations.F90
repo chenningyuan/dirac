@@ -38,11 +38,12 @@ module dirac_matrix_operations_m
   public mat_init
   public mat_free
   public mat_print
-  public trab
-  public trps
+! public trab
+! public trps
   public norm
-  public iszero
-  public isdef
+! public iszero
+! public isdef
+  public compare_dp
   public compare_dp_arrays
   public compare_matrices
 
@@ -69,33 +70,33 @@ module dirac_matrix_operations_m
   end interface
 
   interface operator(/)
-    module procedure matdivreal
-    module procedure matdivint
+    module procedure divide_matrix_by_dp
+    module procedure divide_matrix_by_i4
   end interface
 
   interface operator(**)
     module procedure matrix_dot_matrix
   end interface
 
-  interface trab
-    module procedure trmatmulmat
-  end interface
-
-  interface trps
-    module procedure trpsmat
-  end interface
-
   interface norm
-    module procedure normmat
+    module procedure matrix_norm
   end interface
 
-  interface iszero
-    module procedure iszeromat
-  end interface
+! interface trab
+!   module procedure trmatmulmat
+! end interface
 
-  interface isdef
-    module procedure isdefmat
-  end interface
+! interface trps
+!   module procedure trpsmat
+! end interface
+
+! interface iszero
+!   module procedure iszeromat
+! end interface
+
+! interface isdef
+!   module procedure isdefmat
+! end interface
 
   type ref_pointer_t
     type(matrix), pointer :: m
@@ -389,6 +390,38 @@ contains
 
   end function matrix_dot_matrix
 
+  function matrix_norm(a) result(r)
+    type(matrix),  intent(in) :: a
+    real(kind_dp)             :: r
+
+    if (a%nrow == -1) then
+      call quit('a undefined in matrix_norm')
+    end if
+
+    r = 0.0d0
+    if (.not. associated(a%elements)) return
+    r = sqrt(sum(a%elements**2.0d0))
+
+  end function matrix_norm
+
+  function divide_matrix_by_dp(a, r) result(b)
+    type(matrix),  intent(in) :: a
+    real(kind_dp), intent(in) :: r
+    type(matrix)              :: b
+
+    b = (1.0d0/r)*a
+
+  end function divide_matrix_by_dp
+
+  function divide_matrix_by_i4(a, i) result(b)
+    type(matrix),     intent(in) :: a
+    integer(kind_i4), intent(in) :: i
+    type(matrix)                 :: b
+
+    b = (1.0d0/i)*a
+
+  end function divide_matrix_by_i4
+
   function compare_dp_arrays(a, b, accept) result(ok)
     real(kind_dp), intent(in)    :: a(:), b(:)
     real(kind_dp), intent(in)    :: accept
@@ -446,6 +479,20 @@ contains
 
   end subroutine compare_matrices
 
+  subroutine compare_dp(r, s, accept, label)
+    real(kind_dp), intent(in)           :: r, s, accept
+    character(*),  intent(in), optional :: label
+
+#include "priunit.h"
+
+    if (abs(r - s) > accept) then
+      write(*, *) 'scalar check  not ok -- (', label, ')'
+    else
+      write(*, *) '                  ok -- (', label, ')'
+    end if
+
+  end subroutine compare_dp
+
 
 
 
@@ -457,9 +504,6 @@ contains
 !!!!!!!!!!!!!!!!
 !       everything below needs revision - in progress ...  --radovan
 !!!!!!!!!!!!!!!!
-
-
-
 
     subroutine allocif()
     !if needed allocate/extend the tables ref,dat,index_in_dat,nr_ref_to_dat
@@ -494,7 +538,6 @@ contains
         end subroutine
     end subroutine
 
-
     subroutine delabove(k)
         integer:: k,i,j
         call allocif()
@@ -509,7 +552,6 @@ contains
         enddo
         nr_ref = i
     end subroutine
-
 
     subroutine insref(a)
         type(matrix),intent(in),target:: a
@@ -592,24 +634,6 @@ contains
         a%nrow=-1; nullify(a%elements)
     end subroutine
 
-
-
-
-
-
-    function matdivreal(a,r) result(b)
-        type(matrix),intent(in):: a
-        real*8,intent(in):: r; type(matrix):: b
-        b = (1d0/r)*a
-    end function
-
-    function matdivint(a,i) result(b)
-        type(matrix),intent(in):: a
-        integer,intent(in):: i; type(matrix):: b
-        b = (1d0/i)*a
-    end function
-
-
     function trmatmulmat(a,b) result(r)
         type(matrix),intent(in):: a,b; real*8:: r
         if (a%nrow==-1) stop 'matrix trab(a,b) : a undefined'
@@ -631,14 +655,6 @@ contains
             b%elements = reshape(transpose(reshape(a%elements,(/a%nrow,a%ncol/))),(/b%nrow*b%ncol/))
         endif
         call insref(b)
-    end function
-
-    function normmat(a) result(r)
-        type(matrix),intent(in):: a; real*8:: r
-        if (a%nrow==-1) stop 'matrix a**b : a undefined'
-        r = 0d0
-        if (.not.associated(a%elements)) return
-        r = sqrt(sum(a%elements**2))
     end function
 
     function iszeromat(a) result(z)
