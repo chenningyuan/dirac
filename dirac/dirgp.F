@@ -2261,6 +2261,7 @@ C.....loop over fragments
      &     'Fragment coefficient file ',FRAGFIL(IFRAG),' not present'
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
+C
         CALL OPNFIL(LUCOEF,FRAGFIL(IFRAG),'OLD','SELFRAG')
         IF(LBIT(IOPT,1)) THEN
           WRITE(LUPRI,'(A,A6)') 
@@ -3007,7 +3008,7 @@ C
       NDIM = NTBAS(0)*NORBT*4
       CALL READT(LUCOEF,NDIM,CMO2)
       CALL READT(LUCOEF,NORBT,EIG2)
-      CALL READT(LUCOEF,NORBT,IBEIG2)
+      CALL READI(LUCOEF,NORBT,IBEIG2)
       CLOSE(LUCOEF,STATUS='KEEP')
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
