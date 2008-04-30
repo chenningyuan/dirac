@@ -33,11 +33,7 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
-C
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : gptrygve.F
-C
 C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
@@ -649,17 +645,6 @@ C
 #endif
       RETURN
       END
-C
-C panor: The 48 bit shift done below:
-C        IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-C        genereates a compilation error on SUN Solaris 32 bit
-C        architectures. The subroutine is commented out because 
-C        it is presently not used in Dirac. 2004-08-28
-C
-#if defined (MOD_DNF)
-C aspg, 2006-06-17
-C uncommented the function for the density fitting case..
-C
 C  /* Deck aolab4 */
       SUBROUTINE AOLAB4(IINDPK,NMAX,NIBUF,NBITS,IINDX4,N)
 C
@@ -667,7 +652,8 @@ C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
 C     Generalized 25-Oct-1993 hjaaj
 C                 31-Jul-1996 hjaaj (new NIBUF parameter)
 C
-C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
+C     Unpack 4 integer indices packed in NIBUF *4 integer(s)
+C     or one *8 integer.
 C
 #include "implicit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
@@ -676,39 +662,42 @@ C
       N = IINDPK(NIBUF*NMAX+1)
 C
       IF (NIBUF .EQ. 1) THEN
-      IF (NBITS .EQ. 8) THEN
-         DO 100 I = 1,N
+        IF (NBITS .EQ. 8) THEN
+          DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
- 100    CONTINUE
-       ELSE IF (NBITS .EQ. 16) THEN
-          DO 200 I = 1,N
-             LABEL = IINDPK(I)
-             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
- 200    CONTINUE
-       ELSE
-          CALL QUIT('AOLAB4 error')
-      END IF
-      ELSE
-         DO 300 I = 1,N
+            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
+            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+          END DO
+        ELSE IF (NBITS .EQ. 16) THEN
+#ifdef INT_STAR8
+          DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-            LABEL = IINDPK(NMAX+I)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
+            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
- 300    CONTINUE
+            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
+          END DO
+#else
+          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
+#endif
+        ELSE
+          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
+        END IF
+      ELSE
+        DO I = 1,N
+          LABEL = IINDPK(I)
+          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+          LABEL = IINDPK(NMAX+I)
+          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+        END DO
       END IF
 C
       RETURN
       END
-#endif /* MOD_DNF */
 C  /* Deck GPOPEN */
       SUBROUTINE GPOPEN(LUNIT,FILEIN,STATIN,ACCEIN,FORMIN,NELEM,OLDDX)
 C
