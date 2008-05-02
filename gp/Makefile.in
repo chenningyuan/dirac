@@ -12,8 +12,7 @@ F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	    gpjth.o    gplucia.o     gpkrmc.o       gpbast.o \
 	    gplupar.o  global_file.o   mpi2macro.o
 
-F90_OBJS = vector_functions.o osutils.o memory_allocator.o memory_tracker.o \
-           kinds.o
+F90_OBJS = vector_functions.o osutils.o kinds.o memory_tracker.o memory_allocator.o
 
 F90_MODS = vector_fun.mod    os_utils.mod memory_tracker.mod memory_allocator.mod \
            kinds_m.mod
