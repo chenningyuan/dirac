@@ -134,7 +134,6 @@ IF( IPAREX .ne. 0 )THEN
 ! ITASK = 1: "DIRWRK"
 ! ITASK = 2: "DIRNOD"
 !
-  CALL DIST_ENV(0) !later in the DIRAC run???
   CALL DIST_ENV(1)
   CALL DIST_ENV(2)
 ELSE
@@ -211,19 +210,14 @@ IERR      = 0
 !
 IF( ITASK .eq. 0 )THEN
    IF( MYTID .eq. MPARID )THEN
+!tsaue: Adding initialization until I have checked what happend for SYS_T3D and SYS_T90....
+      LEN_LOCAL = LBASDIR
 #if defined (SYS_T3D) || defined (SYS_T90)
       CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDIR,IERR)
 #else
       CALL GETENV('BASDIR',BASDIR_SCR)
 #endif
-      LEN_LOCAL = LBASDIR
-10    CONTINUE
-      IF ( LEN_LOCAL .gt. 0 ) THEN
-          IF ( BASDIR_SCR(LEN_LOCAL:LEN_LOCAL) .EQ. ' ' ) THEN
-              LEN_LOCAL = LEN_LOCAL - 1
-              GOTO 10
-          END IF
-      END IF
+      LEN_LOCAL = LEN_TRIM(BASDIR_SCR)
 !
 !     If string is empty add current directory
 !
@@ -231,6 +225,8 @@ IF( ITASK .eq. 0 )THEN
           BASDIR_SCR(1:1) = '.'
           LEN_LOCAL   = 1
       END IF
+! add a trailing blank to avoid problems
+      BASDIR_SCR(LEN_LOCAL+1:LEN_LOCAL+1) = ' '
    END IF ! MYTID .eq. MPARID
 ! 
 !  update slaves

@@ -242,7 +242,6 @@ C        *************************************************
 C        *** Call PSIDHF for Roothaan/DIIS iterations  ***
 C        *************************************************
 C
-CMI      IF (MAXITR.GT.0) THEN
          IF (MAXITR.GT.0.OR.MAXIT2.GT.0) THEN
             CALL PSIDHF(WFCONV,WORK,LWORK)
          END IF
@@ -261,6 +260,10 @@ c    &   'Second order SCF optimization not included in this version')
 c        ... let it stop below ... /hjaaj Feb 2004
 #endif
          END IF
+C........Export mean-field integrals
+CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
+CTROND         IF(.TRUE.) CALL PAMFI(WORK,LWORK)
+C
          IF(DOANA) CALL PAMANA(WORK,LWORK)
          IF(.NOT.WFCONV) THEN
 C        ... DHF not converged;
@@ -662,28 +665,6 @@ Csk      write(6,*) 'node will recieve itask',MYTID
      &              MPI_COMM_WORLD,ISTAT,IERR)
 Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
-C     The code below may be useful for some architectures but 
-C     fixes a MPI implementation problem and has as side effect
-C     a slowdown om massively parallel calculations on small
-C     systems with many tasks.  I therefore disabled it.
-C     LV 6-8-2004
-C
-C     Check whether there is a new task waiting : if not
-C     the slave may sleep for one second. This is useful on
-C     shared memory architectures where MPI_RECV is implemented
-C     using an idle loop that consumes unnecessary CPU when
-C     waiting in a serial part of the code.
-C
-C     CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-C    &                NEWTASK,ISTAT,IERR)
-C     IF (NEWTASK) THEN
-C        CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
-C    &                 MPI_COMM_WORLD,ISTAT,IERR)
-C     ELSE
-C        CALL SLEEP(1)
-C        GO TO 100
-C     END IF
-C
 C     check for proper LUCITA / LUCIAREL installation
 C
       ICHECK_MPI2 = - 1 
@@ -697,8 +678,6 @@ C
      & LUCIAREL run; you do not have a MPI-2 library installed'
        CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
       END IF
-C
-C
 C
 C     Start timing.
 C
@@ -889,46 +868,6 @@ C
       END
 #endif /* VAR_MPI */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirctl */
-      SUBROUTINE GETBASDIR()
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
-#include "dcbgen.h"
-C
-C     Check environment variable BASDIR
-C
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
-      CALL GETENV ('BASDIR',BASDIR)
-#endif
-      LENBAS = LBASDIR
- 10   CONTINUE
-      IF ( LENBAS .GT. 0 ) THEN
-         IF ( BASDIR(LENBAS:LENBAS) .EQ. ' ' ) THEN
-            LENBAS = LENBAS - 1
-            GOTO 10
-         END IF
-      END IF
-C
-C     If string is empty add current directory 
-C
-      IF ( LENBAS .EQ. 0 ) THEN
-C
-         BASDIR(1:1) = '.'
-         LENBAS = 1
-C
-      END IF
-C
-      IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(2A)')
-     $     ' Basis set dir.    : ',BASDIR(1:LENBAS)
-C 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirac_parctl */
       SUBROUTINE DIRAC_PARCTL(ITASK)
 C
@@ -968,5 +907,30 @@ C        slave should be in main menu, ready to receive task
      &   'but this is a sequential Dirac version !')
 
 #endif /* VAR_MPI */
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getbasdir */
+      SUBROUTINE GETBASDIR()
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infpar.h"
+#include "dcbgen.h"
+C
+C     Check environment variable BASDIR
+C
+#if defined (VAR_MPI)
+      IF (PARCAL) THEN
+        CALL DIST_ENV(0) 
+      ELSE
+#endif /* VAR_MPI */
+#if defined (SYS_T3D) || defined (SYS_T90)
+        CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+#else
+        CALL GETENV ('BASDIR',BASDIR)
+#endif /* VAR_MPI */
+      ENDIF
       RETURN
       END

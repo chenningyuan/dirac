@@ -830,7 +830,6 @@ C*              proofing the subroutine.                 *
 C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
 C*********************************************************
-C
       CHARACTER*(*) BASNAM
       CHARACTER*140 STRING
       CHARACTER SIGN
@@ -848,31 +847,31 @@ C
 C     We loop over these directories in search for the basis set and
 c     element given.
 C
+C     Depending on the machine, the string has trailing blanks
+C     (ASCII char=32) or null elements (ASCII=0).
       ISTART = 1
+      IBLANK=INDEX(BASDIR,CHAR(32))
+      INULL =INDEX(BASDIR,CHAR(0))
+      ISTOP=MAX(IBLANK,INULL)
+      IF(ISTOP.EQ.0) THEN
+C       If string is empty add current directory 
+        BASDIR(1:1) = '.'
+        ISTOP = 1
+      ELSE
+        ISTOP=ISTOP-1
+      ENDIF
 C     
  10   CONTINUE
 C     
 C     Find next colon in BASDIR
 C     
-      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
 C     
 C     In there are no colons, we are the last directory in BASDIR
 C     
-      IF ( ICOLON .EQ. ISTART - 1 ) THEN
-C        
-C        Find end of string
-C        
-         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
-C        
-C        If end of string = start of string there are no more
-C        directories, so we gracefully die...
-C
-         IF ( ICOLON .EQ. ISTART ) 
-     &        GOTO 300
-      END IF
+      IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
-      STRING = BASDIR(ISTART:IEND)
-      ISTART = ICOLON + 1
+      STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
 C
@@ -912,6 +911,8 @@ C
             GOTO 20
          END IF   
       END IF
+      ISTART = ICOLON + 1
+      IF(ISTART.GT.ISTOP) GOTO 300
       GOTO 10
  300  CONTINUE
       LSTR = 1
