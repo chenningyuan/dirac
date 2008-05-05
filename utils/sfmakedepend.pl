@@ -143,7 +143,7 @@
 # powerfull for exact Fotran90 dependencies.
 #
 # JHS feb07, Extended to be able to pass the exact path of a module
-# file, so that modules in a different directory can be found.
+# file, so that modules in a different directories can be found.
 # 
 #
 ######################################################################
@@ -746,6 +746,15 @@ Getopt::Long::Configure('no_ignore_case');
 GetOptions("s", "e=s", "f=s", "I=s@", "M=s", "d=s", "m=s", "c", "p", "pl=i", "g", "h", "o=s", "a=s", "Q=s")
   || die "problem in GetOptions !" ;
 
+### first take care of the print-level
+if ($opt_pl) {
+    $iprint = $opt_pl; # assign the print level 
+#    print "setting print level $opt_pl \n";
+} else { $iprint = 0; }
+
+  print STDOUT "debugging print level set to: $iprint \n";
+
+
 # For compilers that don't invoke cpp for you
 if ($opt_Q) {
     exit();
@@ -776,9 +785,7 @@ if ($opt_M) {
 # list of -Dxxx preprocessor variables for which *.F, *.F90 source files are going to be checked
 if ($opt_d) {
   $d_list = $opt_d;
-#  print "d_list: $d_list \n";
-   preproc_list($d_list) ;
-#  print "NEW d_list: @d_list \n";
+  preproc_list($d_list) ;
 }
 
 if ($opt_f) {
@@ -817,13 +824,6 @@ if ($opt_g) {
 if ($opt_h) {
     $hp = 1;
 }
-
-if ($opt_pl) {
-    $iprint = $opt_pl; # assign the print level 
-#    print "setting print level $opt_pl \n";
-} else { $iprint = 0; }
-
-  print STDOUT "debugging print level set to: $iprint \n";
 
 #
 # need to add some more dependencies so the .f file gets created
@@ -871,20 +871,39 @@ if ($iprint >= 5){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 sub preproc_list {
 #================================================================================
+#
 #  process list of preprocessor statements which are in the array @d_list
+#
 #================================================================================
-  print "  ...  d_list:  $d_list \n";
+  if ($main::iprint >= 3) {
+    print "preproc_list  ...  d_list:  $d_list \n";
+  }
+
   @d_list = split(/ /,$d_list);
-  print "  splitted  @d_list \n";
+
+  if ($main::iprint >= 3) {
+     print "  splitted  @d_list \n";   }
+
   $i=0;
   foreach $D_var (@d_list) {
-  # print "D_var in array: $D_var $i @d_list[$i] \n";
-    $D_var = substr $D_var, 2;
+
+   if ($main::iprint >= 3) {
+     print "D_var in array: $D_var $i @d_list[$i] \n"; }
+
+# ... remove first 2 characters to extract preprocessor variable 'xxx' from the '-Dxxx' flag
+    $D_var = substr $D_var, 2; 
+
     @d_list[$i]=$D_var;
-   print "new member: @d_list[$i]\n ";
-      $i++;
+
+   if ($main::iprint >= 3) {
+      print "new member: @d_list[$i]\n "; }
+
+   $i++;
   }
-  # print "newly modified array:  @d_list \n";
+
+   if ($main::iprint >= 3) {
+      print "newly modified array:  @d_list \n";  }
+
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
