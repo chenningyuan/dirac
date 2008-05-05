@@ -24,6 +24,6 @@
      &                  IPRNLD, IDENSD, MXHL1D, MXEL3D, INGASD, NSEQCD, &
      &                  IRSTLT, MXCIVE,IPARMODEL,IPARIOMOD,ICIMAXITER,  &
      &                  IMAXBLKSIZE, IFILESYS, I_USE_DIST_ROUTE,        &
-     &                  IFRACTFILE
+     &                  IFRACTFILE, IN_MEMFAC
       REAL*8 CTRUNC_FAC
 	COMMON /LUCTINFR/ CTRUNC_FAC

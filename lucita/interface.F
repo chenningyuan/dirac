@@ -569,6 +569,16 @@ C        .. we do not accept user input of less than 100 000 !
         trunc_fac = 1.0D-10
       end if
 *
+*
+* 29: memory multiplier ...
+*    
+*
+      if (IMOKW(29).eq.1) then
+         ISMEMFAC  = in_memfac 
+      else
+         ISMEMFAC  = 3
+      end if
+
       if(irunpa.eq.1) then
         performci = 'parallel'
       else if(irunpa.eq.0) then

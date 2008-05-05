@@ -2462,7 +2462,7 @@ C
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
      &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS',
-     &            '.DISTRT','.FRCTFL','.TRUNCF','XXXXXXX','XXXXXXX'/
+     &            '.DISTRT','.FRCTFL','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2664,6 +2664,9 @@ C                 vector
                   IMOKW(28) = 1
                GO TO 100
    29          CONTINUE
+C&&& MEMFAC     : memory multiplier                                    
+                  READ(LUCMD,*) IN_MEMFAC
+                  IMOKW(29) = 1
                GO TO 100
    30          CONTINUE
                GO TO 100

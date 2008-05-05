@@ -188,7 +188,7 @@ C     we want to keep three blocks in memory at the same time
 C     CB,SB,VEC3(=C2). estimated scratch memory: 3 000 000 real*8
 C     division by a factor of 4 = safety!
 CSKold      L2BLOCK = (L2BLOCK - 1 500 000 - (MXNTTS**2))/4
-      L2BLOCK = (L2BLOCK - 3 000 000 )/4
+      L2BLOCK = (L2BLOCK - ( 1 000 000 * ISMEMFAC)  )/4
 
       IF (IPRNT.GE.5) THEN
         WRITE(LUWRT,*) '  NVAR in GASCI         ', NVAR
