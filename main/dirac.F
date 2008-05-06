@@ -930,7 +930,9 @@ C
         CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
 #else
         CALL GETENV ('BASDIR',BASDIR)
-#endif /* VAR_MPI */
+#endif
+#if defined (VAR_MPI)
       ENDIF
+#endif /* VAR_MPI */
       RETURN
       END
