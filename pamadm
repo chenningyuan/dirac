@@ -1390,7 +1390,7 @@ depend:
 EOF
 for ff in $TEMP; do
    cat <<EOF>> Makefile
-	cd $ff; \$(MAKE) depend
+	cd $ff; touch Makefile.depend; \$(MAKE) depend
 EOF
 done
 for ff in $TEMPOOF; do
