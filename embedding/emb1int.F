@@ -90,8 +90,7 @@ C     JHS MAKE LATER OPTIONAL
       
       TOLS=THRS**2
       TOLOG=2*LOG(THRS)
-C     JHS DEBUG PRINT
-      IPRINT=0
+
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
 C     JHS Transform Density matrix to AO basis.
@@ -655,12 +654,6 @@ C
       END DO
       END DO
 
-      IF (iprint>=10) THEN
-         WRITE(LUPRI,*) 'JHS, CART_VC'
-         WRITE(LUPRI,*) 'JHS, ADER'
-         WRITE(LUPRI,*) ADER(:,:)
-      END IF     
-
 
       RETURN
       END SUBROUTINE
@@ -716,13 +709,6 @@ C
                INDM = MAX(INDA,INDB)
                RINT = FAC*AO(NA,NB)
                IND  = INDOFF + (INDM*(INDM - 3))/2 + INDA + INDB
-               IF (iprint==39) then
-                  WRITE(LUPRI,*) 'JHS, IND',IND
-
-                  WRITE(LUPRI,*) FAC,INDA,INDB,INDM,INDOFF
-                  WRITE(LUPRI,*) 'FAC,INDA,INDB,INDM,INDOFF'
-                  WRITE(LUPRI,*) FAC,INDA,INDB,INDM,INDOFF
-               END IF
                SO(INDA,INDB) = SO(INDA,INDB) + RINT
             END IF
             END DO

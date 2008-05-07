@@ -348,6 +348,7 @@ C     JHS TMP hack for the case there is no embedding potential
 
 
       SUBROUTINE TIME()
+C     Simple timing function
 #include "priunit.h"
       INTEGER :: file
       
@@ -373,8 +374,6 @@ C     JHS TMP hack for the case there is no embedding potential
      &         +60*(time_val2(5)-time_val1(5))
      &       +3600*(time_val2(4)-time_val1(4))
 
-      WRITE(LUPRI,*) 'time_val1:', time_val1(:)
-      WRITE(LUPRI,*) 'time_val2:', time_val2(:)
       WRITE(LUPRI,*) 'Time spent in embedding output routine: ', 
      &     delta_time, ' s.'
       WRITE(LUPRI,*) 'Time spent in embedding output routine: ', 
@@ -420,8 +419,9 @@ C     JHS THROW AWAY IN THE END?
       REAL(KIND=8)::dummy,TOLS,TOLOG
       REAL(KIND=8)::gexp=0.0,ncentc=1.0,factor=1.0
       
+      CALL TITLER('Output of density to XML file','*',118)
+      WRITE(LUPRI,*) 'Name of the outputfile:', GRIDOUT_NAME,LWORK
 
-      WRITE(LUPRI,*) 'EMBEDDING DRIVE CALLED. FILE:', GRIDOUT_NAME,LWORK
       CALL TIME()
 
       NDIMENSION=NTBAS(0)
