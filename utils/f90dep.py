@@ -1,19 +1,20 @@
 #! /usr/bin/env python
 #
-# script to generate the f90 dependency list
+# script to generate Makefile.depend
 #
-# based on f90dep.pl  by pawel salek
-#          mkdep90.py by jonas juselius
+# based on f90dep.pl  written by Pawel Salek
+#          mkdep90.py written by Jonas Juselius
 #
-# last revision 2008-05-07 radovan bast
+# radovan bast 2008-05-07
 #
-# it assumes all *.h under ../include and all modules under ../modules
+# it assumes all included *.h   under ../include
+#        and all used     *.mod under ../modules
 
 import sys, string, re, os
 
-use      = re.compile('\s*use\s+(\w+)[^!,]*',                          re.I)
-module   = re.compile('\s*module(?!\s+procedure)\s+(\w+)[^!,]*',       re.I)
-#include = re.compile('\s*#?include\s+["<\']?([\w\._]+)[">\']?[^!,]*', re.I)
+use     = re.compile('\s*use\s+(\w+)[^!,]*',                          re.I)
+module  = re.compile('\s*module(?!\s+procedure)\s+(\w+)[^!,]*',       re.I)
+include = re.compile('/include/(\w+\.h)[^!,]*', re.I)
 
 class dep_file_c:
 
@@ -81,18 +82,15 @@ for file in file_l:
         if m is not None:
            dep_file_l[-1].module_name = string.lower(m.group(1)) + '.mod'
 
-        if '../include/' in line:
-           buffer = string.split(line, '../include/')
-           buffer = string.split(buffer[1], '"')
-           dep_file_l[-1].add_include(buffer[0])
+        m = include.search(line)
+        if m is not None:
+           dep_file_l[-1].add_include(string.lower(m.group(1)))
 
         m = use.match(line)
         if m is not None:
            dep_file_l[-1].add_use(string.lower(m.group(1)) + '.mod')
 
 #-------------------------------------------------------------------------------
-
-# check where includes and used modules are
 
 include_path = os.path.abspath('..') + '/include/'
 use_path     = os.path.abspath('..') + '/modules/'
