@@ -1364,7 +1364,6 @@ if [ -n "$VISUALMOD" ]; then
 fi
 if [ -n "$AORESPONSEMOD" ]; then
    TEMP="$TEMP aoresponse"
-   TEMPOOF="$TEMPOOF aoresponse"
 fi
 if [ -n "$CAPMOD" ]; then
 #   TEMP="$TEMP cap"

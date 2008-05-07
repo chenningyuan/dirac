@@ -3,9 +3,13 @@ include ../Makefile.config
 
 F77_OBJS = 
 
-F90_OBJS = dirac_matrix_operations.o aoresponse_main.o
+F90_OBJS = dirac_matrix_operations.o \
+           aoresponse_main.o \
+           propint.o
 
-F90_MODS = dirac_matrix_operations_m.mod aoresponse_main_m.mod
+F90_MODS = dirac_matrix_operations_m.mod \
+           aoresponse_main_m.mod \
+           propint.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
@@ -33,11 +37,7 @@ dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../utils/f90dep.py $(CPP_FLAGS) $(F90_OBJS:.o=.F90) $(F77_OBJS:.o=.F) > Makefile.depend
 
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include Makefile.depend
 
