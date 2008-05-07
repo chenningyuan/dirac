@@ -479,11 +479,11 @@ C             Transform Fock matrix to current orthonormal MO-basis
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRSCF)
-             KOFF = I2TMOT(I) + NPSH(I)*(NTMO(I)+1) + 1
+             KOFF = I2TMOT(I) + NPSHMF(I)*(NTMO(I)+1) + 1
              CALL HEADER
      &       ('DIISER: Fock matrix (occ-nesh) in current MO-basis',-1)
              WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-             CALL PRQMAT(EBUF(KOFF),NESH(I),NOCC(I),
+             CALL PRQMAT(EBUF(KOFF),NESHMF(I),NOCC(I),
      &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
 C...........closed shell
@@ -574,15 +574,15 @@ C     Transform error vector to current orthonormal MO-basis
           WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
           KOFF = KBUF + NPSH(I)*NTMO(I)
           IF(IPRSCF.GE.3) THEN
-            CALL PRQMAT(WORK(KOFF),NTMO(I),NOCC(I),
+            CALL PRQMAT(WORK(KOFF),NTMO(I),NOCCMF(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
           NDIM = NTMO(I)*NTMO(I)
-          DO J1 = 1,NOCC(I)
+          DO J1 = 1,NOCCMF(I)
             GMAX = D0
             J2 = 0
             KOFF = KOFF + NPSH(I)
-            DO K = 1,NESH(I)
+            DO K = 1,NESHMF(I)
               GTMP=WORK(KOFF)*WORK(KOFF)
               DO IZ = 2,NZ
                 KK = KOFF + NDIM
