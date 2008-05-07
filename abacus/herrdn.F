@@ -417,7 +417,7 @@ C     JHS050707 Free the reserved memory.
         CALL QUIT(' *** ERROR (READIN) unable to detect extension')
       END SELECT
 
-
+      CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
 
       RETURN
