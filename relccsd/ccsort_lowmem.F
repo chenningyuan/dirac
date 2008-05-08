@@ -1,0 +1,794 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : $Id$
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+C
+      use memory_allocator
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Driver to generate the sorted integral files, using a tradeoff
+C     between memory usage and number of passes for sorting
+C
+C     Menu driven routine. Depending on value of ICALC
+C
+C       1) Calculate memory requirements for the different modules
+C       2) Produce desired integral files or rebuild Fock matrix
+C          - OOOO, VOOO, VVOO and VOVO files
+C          - VOVV file
+C          - VVVV file
+C          - Fock matrix
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : me
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "diis.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "waio.h"
+#include "complex.inc"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+C
+C---------------Local variables--------------------------------------
+C
+      LOGICAL ALLOC_ME,SRTALL
+      INTEGER*8 NVT
+Caspg, replacing memget
+      integer,      allocatable, target :: a_kr(:),     a_index(:), 
+     &                                     a_indk(:),   a_indl(:), 
+     &                                     a_ibuf(:)
+      real(kind=8), allocatable, target :: a_cbuf(:),   a_buf1(:), 
+     &                                     a_buf2(:),   a_foo(:), 
+     &                                     a_fvv(:),    a_fvo(:),
+     &                                     a_ints(:),   a_intsa(:)
+C
+      integer:: total_mem_new = 0
+C
+Caspg, replacing memget
+C
+C---------------Executable code--------------------------------------
+C
+      ALLOC_ME = ICALC.GE.2
+      write (*,*) 'alloc me? ',alloc_me
+C
+C  Allocate core for integral sorting step
+C
+      if (alloc_me) then
+      call alloc(a_kr,2*NSP+2, id="kr")                   !  total_mem_new = total_mem_new + (2*NSP+2)
+      IF (EQNS.EQ.'FOCKSP') THEN                          !
+         CALL alloc(a_INDEX,NSP*NSP*16, id="index")       !  total_mem_new = total_mem_new + (NSP*NSP*16)
+      ELSE                                                !
+         CALL alloc(a_INDEX,NSP*NSP*4, id="index")        !  total_mem_new = total_mem_new + (NSP*NSP*4)
+      ENDIF                                               !
+      CALL alloc(a_INDK,NSP*NSP    , id="indk")           !  total_mem_new = total_mem_new + (NSP*NSP)
+      CALL alloc(a_INDL,NSP*NSP    , id="indl")           !  total_mem_new = total_mem_new + (NSP*NSP)
+      CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")           !  total_mem_new = total_mem_new + (NSP*NSP*RCW)
+      IF (EQNS.EQ.'FOCKSP') THEN                          !
+         CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")      !  total_mem_new = total_mem_new + (NSP*NSP*7*256)
+      ELSE                                                !
+         CALL alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )      !  total_mem_new = total_mem_new + (NSP*NSP*7*16)
+      ENDIF                                               !
+      CALL alloc(a_BUF1,NSP*NSP, id="buf1" )              !  total_mem_new = total_mem_new + (NSP*NSP)
+      CALL alloc(a_BUF2,NSP*NSP, id="buf2" )              !  total_mem_new = total_mem_new + (NSP*NSP)
+      CALL alloc(a_FOO,NFOO*RCW, id="foo" )               !  total_mem_new = total_mem_new + (NFOO*RCW)
+      CALL alloc(a_FVO,NFVO*RCW, id="fvo" )               !  total_mem_new = total_mem_new + (NFVO*RCW)
+      CALL alloc(a_FVV,NFVV*RCW, id="fvv" )               !  total_mem_new = total_mem_new + (NFVV*RCW)
+      endif ! if alloc_me true
+
+      total_mem_new = (2*NSP+2) + (NSP*NSP*(1+1+RCW+1+1)) 
+     &              + (RCW*(NFOO+NFVO+NFVV))
+
+      IF (EQNS.EQ.'FOCKSP') THEN
+         total_mem_new = total_mem_new + (NSP*NSP*(16+(7*256)))
+      ELSE
+         total_mem_new = total_mem_new + (NSP*NSP*(4+(7*16)))
+      ENDIF
+
+      MXCORR = MAX(MXCORR,total_mem_new)
+      write(*,*) 
+     & 'debug : total_mem_new after initial allocs =',
+     &                 total_mem_new,mxcorr
+Caspg, replacing memget
+C
+C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
+C     parts of the above arrays are not needed anymore and could be used
+C     for buffering the VOVV and VVVV integrals as well. but this is not
+C     a critical shortage of memory so far.
+C
+C     The maximum necessary size is
+C
+      NVT = MAX(NV5,NV6)
+      NVT = MAX(NVT,NV4)
+      NVT = MAX(NVT,JOOOO(2))
+      NVT = MAX(NVT,JVOOO(2))
+C
+C     The remaining space is
+C how to do it without memget()?
+C
+c     NVF = (LFREE-4) / (2 * RCW )
+c     write(*,*) 'debug : nvf =',nvf
+c     write(*,*) 'debug : nvt =',nvt
+C
+C  Determine number of available buffers with respect to free memory
+C  Records are defined for integers, calculate how many real or
+C  complex words we can store on these in MINBUF
+C  -----------------------------------------------------------------
+C
+      MINBUF = NWORDS_ON_RECORD / (RCW * IRW)
+c     IF (NVT.LT.NVF) THEN
+         NBUF = NVT / MINBUF + 1
+c     ELSE
+c        NBUF = NVF / MINBUF
+c     ENDIF
+      IF (NBUF.LT.1) NBUF = 1
+      NVT = NBUF * MINBUF
+C
+C     We must be able to store at least a NV4 size array, check that.
+C     Since we use this array as work in MAKEFM we also need to store the
+C     first representation of the sorted (non-triangular) OOOO and VOOO ints
+C
+      NVTMIN = MAX(NVT,NV4)
+      NVTMIN = MAX(NVTMIN,JOOOO(2))
+      NVTMIN = MAX(NVTMIN,JVOOO(2))
+C
+C     in this new scheme we only work with one array that will hold 
+C     the different classes, one at a time
+
+      if (alloc_me) then
+         call alloc(a_ints, NVTMIN*RCW)
+         call alloc(a_intsa,NVTMIN*RCW)
+      endif
+
+      total_mem_new = total_mem_new + 2*(NVTMIN*RCW)
+
+C     write (*,*) 'debug: nfoo',nfoo,'nfvo',nfvo,'nfvv',nfvv 
+C     write (*,*) 'debug: nvt',nvt,'nvtmin',nvtmin
+
+      MXCORR = MAX(MXCORR,total_mem_new)
+
+      if (mytid.eq.0) write(*,*) 'debug : total_mem_new after nvtmin =',
+     &                            total_mem_new,mxcorr
+C
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "reading and sorting integrals",MXCORR
+         RETURN
+      ENDIF
+C
+C  Read integrals & make fock matrices
+C
+      SRTALL = .TRUE.
+C
+C  MP2 calculations need less integrals
+C  MP: DHF-ADC also needs all integral classes !
+C  MP: The eqns variable hereby turns on full sorting in this case.
+C
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
+C
+      CALL RDINTS_LM(IPRNT,NSP,a_INDEX,a_KR,a_INDK,a_INDL,a_CBUF,a_IBUF,
+     &               NVTMIN,a_BUF1,a_BUF2,IREPSP,IREPSPI,EPS,
+     &               a_FOO,a_FVO,a_FVV,a_ints,a_intsa,BREIT,SRTALL,
+     &               INTERFACE)
+
+      if (alloc_me) then
+         call dealloc(a_kr)
+         CALL dealloc(a_INDEX)
+         CALL dealloc(a_INDK)
+         CALL dealloc(a_INDL)
+         CALL dealloc(a_CBUF)
+         CALL dealloc(a_IBUF) 
+         CALL dealloc(a_BUF1)
+         CALL dealloc(a_BUF2)
+         CALL dealloc(a_FOO)
+         CALL dealloc(a_FVO)
+         CALL dealloc(a_FVV)
+         call dealloc(a_ints)
+         call dealloc(a_intsa)
+      endif
+C
+      RETURN
+1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RDINTS_LM(IPRNT,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
+     &                     BUF1,BUF2,IREPSP,IREPSPI,
+     &                     EPS,FOO,FVO,FVV,INTS,INTSA,BREIT,SRTALL,
+     &                     INTERFACE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Reads 1-electron and 2-electron integrals
+C     Constructs Fock matrix elements
+C     This version reads from files created by TMOONE & ROTRAN or DIRAC
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : me
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "complex.inc"
+#include "results.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "waio.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER*8 NVT
+      INTEGER NSP
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
+      INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      REAL*8 FOO(*),FVO(*),FVV(*)
+      REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
+      REAL*8 EPS(*)
+      REAL*8 INTS(RCW,*),INTSA(RCW,*)
+      LOGICAL BREIT,SRTALL
+      CHARACTER*10 INTERFACE
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 E0,E1
+      CHARACTER*10 DATEX,TIMEX*8
+      LOGICAL FOCKSP
+      INTEGER*8 NF,NL,IND,ICOUNT,ITRSGN
+      CHARACTER*10 FNODE,LFNAM
+C
+C
+C---------------Executable code--------------------------------------
+C
+C
+      IF (SRTALL) THEN
+         WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                   'VOVV',NV5,'VVVV',NV6
+      ELSE
+         WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
+      ENDIF
+C
+      CALL FLSHFO (IW)
+      FOCKSP = EQNS.EQ.'FOCKSP'
+C
+      IF (FOCKSP) THEN
+         CALL FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
+      ELSE
+         CALL MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
+      ENDIF
+C
+C  Check buffer size for passing of VOVV and VVVV integrals
+C
+      IF (MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8).NE.0)
+     &    CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
+C
+C  INITIALIZE READING OF COULOMB INTEGRALS
+C
+      IF (MYPROC.EQ.0) THEN
+         FNODE = 'MDCINT    '
+      ELSE
+         FNODE = LFNAM('MDCINT')
+      ENDIF
+      OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
+      REWIND(MDINT)
+      IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
+         IF (MYPROC.EQ.MASTER) THEN
+C           The oldest MOLFDIR file format
+            READ (MDINT,ERR=10000,END=10) DATEX,TIMEX,NKR,
+     &       (IDUM,I=1,4*NKR),(KR(I),KR(-I),I=1,NKR)
+            GO TO 11
+C           The newer MOLFDIR file format = identical to older DIRAC
+   10       READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
+     &       (KR(I),KR(-I),I=1,NKR)
+   11       CONTINUE
+         ENDIF
+      ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
+         IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+         READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
+     &                                    (KR(I),KR(-I),I=1,NKR)
+         ENDIF
+         MREADER = MASTER
+      ELSE
+         WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
+         CALL QUIT('Adapt RDINTS')
+      ENDIF
+      write (*,*) 'debug: fnode ',fnode,'  mreader',mreader
+C
+C     In the older schemes, the slaves have no knowledge of nkr and kr, broadcast
+C     and check for consistency afterwards
+C
+#if defined (VAR_MPI)
+      IF (NMPROC .GT. 1) THEN
+         CALL MPI_BCAST(NKR,1,my_MPI_INTEGER,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(KR,2*NSP+1,my_MPI_INTEGER,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+      END IF
+#endif
+      IF (2*NKR.NE.NSP) 
+     &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
+      ITRSGN = 1
+C
+C  Initialize writing to sorted integral files
+C
+      CALL WAIO_OPEN(ITAPT+0)
+C
+C  We may have already sorted these integrals when restarting, in that case jump ahead
+C
+      IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
+         WRITE (IW,1010)
+         GOTO 150
+      ENDIF
+C
+C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
+C
+    1 ICOUNT = 0
+C
+C     GET THE OOOO, VOOO, VVOO AND VOVO INTEGRALS, one at a time...
+C
+C     first the oooo, symmetric and antisymmetric parts
+      call integral_pass(interface,'OOOO',ints,intsa,nvt,nv1,1,1,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode)
+C
+C     then the vooo, symmetric and antisymmetric parts
+    2 ICOUNT = 0
+      call integral_pass(interface,'VOOO',ints,intsa,nvt,nv2,2,2,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode)
+C
+C     then the vvoo, symmetric and antisymmetric parts
+    3 ICOUNT = 0
+      call integral_pass(interface,'VVOO',ints,intsa,nvt,nv3,4,3,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode)
+C
+C     then the vovo, symmetric and antisymmetric parts
+    4 ICOUNT = 0
+      call integral_pass(interface,'VOVO',ints,intsa,nvt,nv4,6,4,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode)
+C
+C     This is a restart point : save the files and update status.
+C
+  150 CONTINUE
+      IMSTAT(1) = 3
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
+C
+C  We may have already sorted these integrals when restarting, in that case jump ahead
+C
+      IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
+         WRITE (IW,1011)
+         GOTO 550
+      ENDIF
+C
+C     Determine # of passes necessary for treating VOVV integrals
+C     on a specific node
+C
+      IF (.NOT.SRTALL) GOTO 600
+C
+C     then the vovv, symmetric and antisymmetric parts
+    5 ICOUNT = 0
+      call integral_pass(interface,'VOVV',ints,intsa,nvt,nv5par,14,5,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode,fnam)
+C
+C     then the vovv, symmetric and antisymmetric parts
+    6 ICOUNT = 0
+      call integral_pass(interface,'VVVV',ints,intsa,nvt,nv6par,16,6,
+     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+     &                             cbuf,ibuf,mreader,fnode,fnam)
+
+C
+  500 CLOSE(MDINT)
+C
+C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
+C  Breit is only used with MOLFDIR in this version
+C
+      IF (BREIT.AND.ITRSGN.EQ.1) THEN
+         WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
+         OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
+         REWIND(MDINT)
+         IF (MYPROC.EQ.MASTER) THEN
+            READ (MDINT,ERR=10001,END=10001) DATEX,TIMEX,NKR2
+            IF (NKR2.NE.NKR) GOTO 10003
+         ENDIF
+         ITRSGN = -1
+         GOTO 1
+      ELSEIF (BREIT) THEN
+         WRITE (IW,1000) 'Breit',DATEX,TIMEX,ICOUNT
+      ELSE
+         WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
+      ENDIF
+C
+C     This is a restart point : save the files and update status.
+C
+  550 CONTINUE
+      IMSTAT(2) = 3
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
+C
+  600 WRITE (IW,1006)
+C     since we don't keep the integrals, we set up the fock matrix here
+      CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,ints,intsa,FOO,FVO,FVV,E0,E1)
+
+C
+C     This is a restart point : save the files and update status.
+C
+      CALL WAIO_SAVE(ITAPT+0)
+      IMSTAT(3) = 3
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
+C
+      ESCF = E0 + E1 
+      WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
+      ESCF = ESCF + ECORE
+      ETOT = ESCF
+C
+ 1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
+     &/' File time :',T20,A8,/' # of integrals',I16)
+ 1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
+     &/' Zero order electronic energy :',T40,F25.15 
+     &/' First order electronic energy :',T40,F25.15 
+     &/' Electronic energy :',T40,F25.15 
+     &/' SCF energy :',T40,F25.15) 
+ 1004 FORMAT (/' Expanding and sorting integrals to unique types :'/
+     & (' Type ',A4,' :',I10,' integrals'))
+ 1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
+ 1006 FORMAT (/' Finished sorting of integrals')
+ 1010 FORMAT (/' Skipping integral sorting step 1')
+ 1011 FORMAT (/' Skipping integral sorting step 2')
+ 1012 FORMAT (/' Skipping Fock-matrix build')
+      RETURN
+10000 CALL QUIT('ERROR READING HEADER MDCINT')
+10001 CALL QUIT('ERROR READING HEADER MDBINT')
+10003 CALL QUIT('MDCINT AND MDBINT FILES ARE INCOMPATIBLE')
+10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
+10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
+      END
+
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C 
+      subroutine integral_pass(interface,integral_class,ints,intsa,nvt,
+     &                         nvpar,curr_typ,io_unit,
+     &                         icount,kr,nsp,index,itrsgn,indk,indl,
+     &                                   cbuf,ibuf,mreader,fnode)
+      IMPLICIT INTEGER (A-Z)
+C
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "complex.inc"
+#include "results.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "waio.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+
+      INTEGER nonzr,nze
+      INTEGER NSP, ICOUNT
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
+      INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
+      CHARACTER*10 FNODE
+
+      LOGICAL BREIT,SRTALL
+      CHARACTER*10 INTERFACE
+      REAL*8 CBUF(RCW,*)
+
+      character(len=4) :: integral_class ! label for this integral class
+      integer:: curr_typ ! integral type we are currently processing
+      integer:: io_unit, nvt, nvpar, itrsgn
+      real(kind=8) :: ints(RCW,*), intsa(RCW,*)
+
+C     first open file for this integral class
+      CALL WAIO_OPEN(ITAPT+io_unit)
+C
+C     Determine # of passes necessary for treating a given integral class 
+C     on a specific node
+C
+      NPASS = (NVPAR-1) / NVT + 1
+      NSECT = 1
+      NL    = 0
+      write (*,*) 'npass,nvt,nvpar',npass,nvt,nvpar
+      WRITE (IW,1005) NPASS,integral_class
+      CALL FLSHFO (IW)
+C
+C   start of IPASS loop for this integral class
+C
+C ----------------------------
+      DO IPASS = 1, NPASS
+C ----------------------------
+
+      NF = NL + 1
+      NL = MIN(NL+NVT,NVPAR)
+      N  = NL - NF + 1
+      NSEC = N*IRW*RCW / NWORDS_ON_RECORD
+      IF (MOD(N*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
+C
+      IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+         CLOSE (MDINT,STATUS='KEEP')
+         IF (BREIT.AND.ITRSGN.EQ.-1) THEN
+             OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
+         ELSE
+             OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
+         ENDIF
+         READ (MDINT)
+         MREADER = MASTER
+      ENDIF
+C
+      CALL XCOPY (nvt,A0,0,ints ,1)
+      CALL XCOPY (nvt,A0,0,intsa,1)
+C
+c     write (*,*) 'curr typ',curr_typ
+c     write (*,*) 'nze before calling get2ints',nze
+  200 continue 
+      if (curr_typ.lt.10) then
+         CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
+     &                  NONZR,NZE,CBUF,IBUF,MREADER)
+      else
+         CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,curr_typ,INDK,INDL,
+     &                  NONZR,NZE,CBUF,IBUF,MREADER)
+      endif
+      write (*,*) 'nze after calling get2ints',nze
+      
+      IF (NONZR.LT.0) THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+             MREADER = MREADER + 1
+             GOTO 200
+         ELSE
+             GOTO 210
+         ENDIF
+      ELSE
+         ICOUNT = ICOUNT + NONZR
+      ENDIF
+      DO 202 INZE = 1, NZE
+            ITYP = IBUF(1,INZE)
+            IREP = IBUF(2,INZE) 
+            IND1 = IBUF(3,INZE)
+            IND2 = IBUF(4,INZE)
+            ITRS = IBUF(5,INZE)
+            JTRS = IBUF(6,INZE)
+            I    = IBUF(7,INZE)
+
+            if (ITYP.EQ.1.and.curr_typ.eq.1) THEN
+                  IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
+                  write (*,*) 'ind + ',ind,ityp,curr_typ
+                  ints(1,IND)  = CBUF(1,I) * ITRS
+                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.-1.and.curr_typ.eq.1) THEN
+                  IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
+                  write (*,*) 'ind - ',ind,ityp,curr_typ
+                  intsa(1,IND) = CBUF(1,I) * ITRS
+                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.2.and.curr_typ.eq.2) THEN
+                  IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
+                  write (*,*) 'ind + ',ind,ityp,curr_typ
+                  ints(1,IND)  = CBUF(1,I) * ITRS
+                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.-2.and.curr_typ.eq.2) THEN
+                  IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
+                  write (*,*) 'ind - ',ind,ityp,curr_typ
+                  intsa(1,IND) = CBUF(1,I) * ITRS
+                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+             elseif (ITYP.EQ.4.and.curr_typ.eq.4) THEN
+                  IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+                  write (*,*) 'ind + ',ind
+                  ints(1,IND)  = CBUF(1,I) * ITRS
+                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.-4.and.curr_typ.eq.4) THEN
+                  IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+                  write (*,*) 'ind - ',ind
+                  intsa(1,IND) = CBUF(1,I) * ITRS
+                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.6.and.curr_typ.eq.6) THEN
+                  IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
+                  write (*,*) 'ind + ',ind
+                  ints(1,IND)  = CBUF(1,I) * ITRS
+                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.-6.and.curr_typ.eq.6) THEN
+                  IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
+                  write (*,*) 'ind - ',ind
+                  intsa(1,IND) = CBUF(1,I) * ITRS
+                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+
+            elseif (iabs(ityp).eq.14) then
+               IND = IVOVVT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
+            elseif (iabs(ityp).eq.16) then
+               IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+            endif
+
+C if we are on the first four classes, we have already determined the index and can
+C put the integral in place
+            if ( iabs(ityp).eq.00) then
+
+               IF (ITYP.EQ.curr_typ) THEN
+                  write (*,*) 'ind + ',ind
+                  ints(1,IND)  = CBUF(1,I) * ITRS
+                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+               ELSEIF (ITYP.EQ.-cur_typ) THEN
+                  write (*,*) 'ind - ',ind
+                  intsa(1,IND) = CBUF(1,I) * ITRS
+                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+               ENDIF
+
+C for classes 5 and 6 we need some extra work in determining the index..
+
+            elseif (iabs(ityp).eq.14) then
+
+                IF (ITYP.EQ.curr_typ) THEN
+                   IF (IND.GT.IDIST(3,2,IREP).AND.
+     &                 IND.LE.IDIST(4,2,IREP)) THEN
+C                now check relative offset if we need it in
+C                the current pass
+                      IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                      IF (IND.GE.NF.AND.IND.LE.NL) THEN
+                         IND = IND - NF + 1
+                  write (*,*) 'ind + ',ind
+                         ints(1,IND)  = CBUF(1,I) * ITRS
+                         IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+                      ENDIF
+                   ENDIF
+                elseif (ITYP.EQ.-curr_typ) THEN
+                   IF (IND.GT.IDIST(3,2,IREP).AND.
+     &                 IND.LE.IDIST(4,2,IREP)) THEN
+C             Check absolute address and decide if this integral goes
+C             to this node
+                      IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                      IF (IND.GE.NF.AND.IND.LE.NL) THEN
+                         IND = IND - NF + 1
+                  write (*,*) 'ind - ',ind
+                         intsa(1,IND) = CBUF(1,I) * ITRS
+                         IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+                      ENDIF
+                   ENDIF 
+                endif
+
+             elseif (iabs(ityp).eq.16) then
+
+                IF (ITYP.EQ.curr_typ) THEN
+                   IF (IND.GT.IDIST(3,1,IREP).AND.
+     &                 IND.LE.IDIST(4,1,IREP)) THEN
+C                now check relative offset if we need it in
+C                the current pass
+                      IND = IND -IDIST(3,1,IREP) + IDIST(5,1,IREP)
+                      IF (IND.GE.NF.AND.IND.LE.NL) THEN
+                         IND = IND - NF + 1
+                  write (*,*) 'ind + ',ind
+                         ints(1,IND)  = CBUF(1,I) * ITRS
+                         IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+                      ENDIF
+                   ENDIF
+                elseif (ITYP.EQ.-curr_typ) THEN
+                   IF (IND.GT.IDIST(3,1,IREP).AND.
+     &                 IND.LE.IDIST(4,1,IREP)) THEN
+C             Check absolute address and decide if this integral goes
+C             to this node
+                      IND = IND -IDIST(3,1,IREP) + IDIST(5,1,IREP)
+                      IF (IND.GE.NF.AND.IND.LE.NL) THEN
+                         IND = IND - NF + 1
+                  write (*,*) 'ind - ',ind
+                         intsa(1,IND) = CBUF(1,I) * ITRS
+                         IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+                      ENDIF
+                   ENDIF 
+                endif
+
+             endif
+
+  202 CONTINUE
+      GOTO 200
+C
+C     ADD THE DIRECT AND EXCHANGE INTEGRALS
+C
+  210 continue
+      if (curr_typ.lt.10) then
+         CALL XAXPY (nvpar,-A1,intsa,1,ints,1)
+      else
+         CALL XAXPY (N,-A1,intsa,1,ints,1)
+      endif
+C
+C     ADD BREIT AND COULOMB INTEGRALS
+C
+      IF (BREIT.AND.ITRSGN.LT.0) THEN
+c        write (*,*) 'before rread in pass',ipass
+         if (curr_typ.lt.10) then
+            CALL RREAD(ITAPT+io_unit,intsa,nvpar*RCW*IRW,1)
+            CALL XAXPY(nvpar,A1,intsa,1,ints,1)
+         else
+            CALL RREAD(ITAPT+io_unit,intsa,N*RCW*IRW,NSECT)
+            CALL XAXPY(N,A1,intsa,1,ints,1)
+         endif
+      ENDIF
+c     write (*,*) 'before rwrit in pass',ipass
+      if (curr_typ.lt.10) then
+         CALL RWRIT(ITAPT+io_unit,ints,nvpar*RCW*IRW,1)
+      else
+         CALL RWRIT(ITAPT+io_unit,ints,N*RCW*IRW,NSECT)
+         NSECT = NSECT + NSEC
+      endif
+C
+C  end of IPASS LOOP
+C ----------------------
+      ENDDO
+C ----------------------
+c     write (*,*) 'before waio_save',io_unit
+      CALL WAIO_SAVE(ITAPT+io_unit)
+      WRITE(IW,*) integral_class,' sorting done.'
+      write (*,*) 'debug, icount',icount
+      CALL FLSHFO (IW)
+C
+ 1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
+      RETURN
+10000 CALL QUIT('ERROR READING HEADER MDCINT')
+10001 CALL QUIT('ERROR READING HEADER MDBINT')
+10003 CALL QUIT('MDCINT AND MDBINT FILES ARE INCOMPATIBLE')
+10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
+10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
+      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
