@@ -38,11 +38,11 @@ module dirac_matrix_operations_m
   public mat_init
   public mat_free
   public mat_print
-! public trab
+  public trab
 ! public trps
   public norm
-! public iszero
-! public isdef
+  public iszero
+  public isdef
   public compare_dp
   public compare_dp_arrays
   public compare_matrices
@@ -82,21 +82,21 @@ module dirac_matrix_operations_m
     module procedure matrix_norm
   end interface
 
-! interface trab
-!   module procedure trmatmulmat
-! end interface
+  interface trab
+    module procedure transposed_matrix_times_matrix
+  end interface
 
 ! interface trps
 !   module procedure trpsmat
 ! end interface
 
-! interface iszero
-!   module procedure iszeromat
-! end interface
+  interface iszero
+    module procedure matrix_is_zero
+  end interface
 
-! interface isdef
-!   module procedure isdefmat
-! end interface
+  interface isdef
+    module procedure matrix_is_defined
+  end interface
 
   type ref_pointer_t
     type(matrix), pointer :: m
@@ -634,7 +634,7 @@ contains
         a%nrow=-1; nullify(a%elements)
     end subroutine
 
-    function trmatmulmat(a,b) result(r)
+    function transposed_matrix_times_matrix(a,b) result(r)
         type(matrix),intent(in):: a,b; real*8:: r
         if (a%nrow==-1) stop 'matrix trab(a,b) : a undefined'
         if (b%nrow==-1) stop 'matrix trab(a,b) : b undefined'
@@ -657,14 +657,14 @@ contains
         call insref(b)
     end function
 
-    function iszeromat(a) result(z)
+    function matrix_is_zero(a) result(z)
         type(matrix),intent(in):: a; logical:: z
         integer:: i; call delabove(i)
         if (a%nrow==-1) stop 'matrix iszero(a) : a undefined'
         z = (a%nrow/=-1.and..not.associated(a%elements))
     end function
 
-    function isdefmat(a) result(d)
+    function matrix_is_defined(a) result(d)
         type(matrix),intent(in):: a; logical:: d
         integer:: i; call delabove(i)
         d = (a%nrow/=-1)

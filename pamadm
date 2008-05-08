@@ -813,7 +813,9 @@ if [ -n "$AORESPONSEMOD" ]; then
 cat <<EOF>> Makefile
 
 AORESPONSEOBJS = \\
-aoresponse/dirac_matrix_operations.o aoresponse/aoresponse_main.o
+aoresponse/dirac_matrix_operations.o \\
+aoresponse/aoresponse_main.o \\
+aoresponse/propint.o
 EOF
 fi
 #
