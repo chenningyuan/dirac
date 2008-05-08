@@ -12,9 +12,9 @@
 
 import sys, string, re, os
 
-use     = re.compile('\s*use\s+(\w+)[^!,]*',                          re.I)
-module  = re.compile('\s*module(?!\s+procedure)\s+(\w+)[^!,]*',       re.I)
-include = re.compile('/include/(\w+\.h)[^!,]*', re.I)
+use     = re.compile('\s*use\s+(\w+)', re.I)
+module  = re.compile('\s*module(?!\s+procedure)\s+(\w+)', re.I)
+include = re.compile('include/([\w\.]+)', re.I)
 
 class dep_file_c:
 
@@ -47,7 +47,7 @@ if os.path.exists('/lib/cpp'):
    cpp_enabled = 1
 
 if not cpp_enabled:
-   print 'warning: cpp preprocessing not enabled'
+   print 'warning: C preprocessing not enabled'
 
 cpp_l  = []
 file_l = []
