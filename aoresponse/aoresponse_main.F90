@@ -13,6 +13,7 @@ module aoresponse_main_m
 
   public test_propint
   public test_matrix_operations
+  public aoresponse_input
   public aoresponse_driver
   public get_ao_pmat
   public solve_perturbed_ao_dmat
@@ -20,6 +21,29 @@ module aoresponse_main_m
   private
 
 contains
+
+  subroutine aoresponse_input(work, lwork)
+    real(kind_dp),    intent(inout) :: work(lwork)
+    integer(kind_i4), intent(inout) :: lwork
+
+    integer(kind_i4)                :: indxpr, isyxpr, itrxpr
+    real(kind_dp)                   :: factor(17)
+    character*16                    :: label(17)
+
+    factor(1) = 1.0d0
+    label(1)  = 'ZDIPLEN'
+
+    call xprind('zdiplen', &
+                1,         &
+                1,         &
+                factor,    &
+                label,     &
+                indxpr,    &
+                isyxpr,    &
+                itrxpr,    &
+                work, lwork, 0)
+
+  end subroutine aoresponse_input
 
   subroutine test_propint()
 
@@ -385,7 +409,7 @@ contains
 
     real(kind_dp)                   :: dummy_dp
     logical                         :: skip_pp, skip_pn, do_pp, do_pn
-    logical                         :: debug_me = .true.
+    logical                         :: debug_me = .false.
     character(72)                   :: orbital_string(3,2)
 
     integer(kind_i4)                :: i, ifsym, nr_freq, nr_dmat

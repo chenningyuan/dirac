@@ -137,6 +137,10 @@ C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
+#ifdef MOD_AORESPONSE
+      use aoresponse_main_m
+#endif /* MOD_AORESPONSE */
+
 #if defined (MOD_EMB)
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
       USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
@@ -286,6 +290,13 @@ C
          CALL FDE_GRIDOUT(WORK,LFREE)
       END IF
 #endif
+
+#ifdef MOD_AORESPONSE
+      if (test_aoresponse) then
+        call aoresponse_driver(work, kfree, lfree)
+      end if
+#endif /* MOD_AORESPONSE */
+
 C
 CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('PAMPR1')

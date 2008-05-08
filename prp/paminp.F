@@ -54,6 +54,11 @@ C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+
+#ifdef MOD_AORESPONSE
+      use aoresponse_main_m
+#endif /* MOD_AORESPONSE */
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -131,6 +136,7 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
+      test_aoresponse = .false.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -377,7 +383,10 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
-C&&&& XXXXXX
+#ifdef MOD_AORESPONSE
+            call aoresponse_input(work, lwork)
+            test_aoresponse = .true.
+#endif /* MOD_AORESPONSE */
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX
