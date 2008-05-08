@@ -1,123 +1,131 @@
-#!/usr/bin/env python
 import sys, re, os
+
+class FriendlyFile:
+    def __init__(self, path, mode):
+        self.f = open(path,mode)
+        self.line_nr = 0
+        self.path = path
+    def readline(self):
+        l = self.f.readline()
+        if len(l) > 0:
+            self.line_nr += 1
+        # sys.stderr.write('Read line %i: %s\n' % (self.line_nr,l))
+        return l
+    def locstring(self):
+        return "%s:%i" % (self.path,self.line_nr)
     
-"""A C pre-preprocessor to take out certain sections of source
-files, depending on the preprocessor directives. This can be used in the
-future to prepare a release. 
 
-For example, to remove the code which would be included only if -DMOD_DFT
-is given you could do
+re_ifdef = re.compile('^\s*#\s*ifdef\s+(\w*)')
+re_ifndef = re.compile('^\s*#\s*ifndef\s+(\w*)')
+re_else = re.compile('^\s*#\s*else')
+re_endif = re.compile('^#\s*endif')
+re_if = re.compile('^\s*#\s*if\s+(\S*)')
+re_elif = re.compile('^\s*#\s*elif\s+(\S*)')
 
-cppp.py -UMOD_DFT */*.F
+defined = []
+undefined = []
 
-This will completely remove all sections
 
-#ifdef MOD_DFT
-...
+def process_chunk(infile, dst, do_echo = 1, cond_active = 0):
+    line = infile.readline()
+    while len(line) > 0:
+        # Warn in case of unsupported lines
+        # TODO: Must match whole token instead of string.find()
+#         if re_if.match(line) or re_elif.match(line):
+#             found = 0
+#             for n in defined:
+#                 if line.find(n) > -1:
+#                     found = 1
+#                     break
+#             for n in undefined:
+#                 if line.find(n) > -1:
+#                     found = 1
+#                     break
+#             if found:
+#                 sys.stderr.write("Warning at %s\n" % infile.locstring())
+#                 sys.stderr.write("The line '%s' seem to contain one of your active symbols. This is not supported.\n" % line.strip())  
+        # Actual work
+
+        if re_ifdef.match(line):
+            m = re_ifdef.match(line)
+            name = m.group(1)
+            if name in defined:
+                process_chunk(infile,dst,do_echo, cond_active = 1)
+            elif name in undefined:
+                process_chunk(infile,dst,do_echo = 0, cond_active = 1)
+            else:
+                if do_echo: dst.write(line)
+                process_chunk(infile,dst,do_echo, cond_active = 0)
+        elif re_ifndef.match(line):
+            m = re_ifndef.match(line)
+            name = m.group(1)
+            if name in undefined:
+                process_chunk(infile,dst,do_echo, cond_active = 1)
+            elif name in defined:
+                process_chunk(infile,dst,do_echo = 0, cond_active = 1)
+            else:
+                if do_echo: dst.write(line)
+                process_chunk(infile,dst,do_echo, cond_active = 0)
+        elif re_if.match(line):
+            if do_echo: dst.write(line)
+            process_chunk(infile,dst,do_echo, cond_active = 0)
+        elif re_else.match(line):
+            if cond_active:
+                do_echo = 1 - do_echo
+            elif do_echo:
+                dst.write(line)
+        elif re_endif.match(line):
+            if (not cond_active) and do_echo:
+                dst.write(line)
+            return
+        elif do_echo:
+            dst.write(line)
+                      
+        line = infile.readline()
+
+usage = """Usage: cppp [-DMACRO ..] [-UMACRO ...] FILE [FILE ..]
+For each FILE perform a partial C preprocessing of #ifdef and #ifndef
+directives, completely removing sections that cannot be reached with
+the given macros defined (-D) or undefined (-U).
+
+For example, the file
+
+#ifdef A
+So A was defined
+#ifdef C
+#ifndef B
+Only if B is not defined
+#endif
+#endif
+#else
+A was not defined
 #endif
 
-It is also possible to use -DMOD_DEF, which will remove the #ifdef but
-not the content between the #ifdef/#endif.
+With the arguments -DA -UB will be transformed to
 
-Currently the script can handle 
-
-#ifdef XYZ
-#if defined (XYZ)
-#ifndef XYZ
-#if !defined (XYZ)
+So A was defined
+#ifdef C
+Only if B is not defined
 #endif
 
-The script cannot handle compound statements (#if !defined(A) && !defined(B)),
-so it will stop if such a line contains some of the macros we are removing.
-Macros with an actual value (-DMOD_DFT=213 would not work).
 
-WARNING: The script will modify the files in-place, so run it on a copy of 
-your source tree!
+NOTE: The program does not process #if statements, although they are reproduced
+correctly in the preprocessed files. You may have to manually convert such statements
+to chained #ifdef's.
+
+NOTE2: The files are modified IN PLACE! Run this on a copy of the source tree.
+
+By U. Ekstrom, <uekstrom@gmail.com> 2008
+
 """
 
 
-def usage():
-    print 'Usage: cppp [-DSYM ..] [-USYM ..] FILES'
-    print ' A C pre-preprocessor'
-    print ' Modifies FILES by assuming that some macros are always'
-    print ' defined (-D), and some macros never defined (-U).'
-    print ' The corresponding #if/#endif and enclosed text is removed.'
-    print ' The files are modified in-place!'
-    print ' This script requires Python 2.3 or newer.'
-    print ' By <ulfek@few.vu.nl> April 2008'
-
-def tokenize(line):
-    re_split = re.compile('\W')
-    return re_split.split(line)
-
-def union(list1,list2):
-    l = []
-    for i1 in list1:
-        if i1 in list2:
-            l.append(i1)
-    return l
-
-def do_filter(defined, undefined, filename, infile, outfile):
-    re_ifdef = re.compile('^#\W*if(def| defined\W*[\(]*)\W*(\w*)')
-    re_ifndef = re.compile('^#\W*if(ndef|\W*!\W*defined\W*[\(]*)\W*(\w*)')
-    re_endif = re.compile('^#[ \t]*endif.*')
-    re_complicated = re.compile('^#\W*if[^/]*[&|].*$')
-    line_nr = 1
-    cond_stack = [] # Append 'D' for defined and 'U' for undefined, 'I' for other #if things.    
-    for line in infile.xreadlines():
-        if re_complicated.match(line):
-            tokens = tokenize(line)
-            if len(union(defined,tokens)) > 0 or len(union(undefined,tokens)) > 0:
-                print 'Error: %s:%i' % (filename,line_nr)
-                print '  Line too complicated and it contains my tokens:',line.rstrip()
-                print '  Fix the cppp script or make a simpler #if.. statement'
-                return -1
-            else:
-                if 'U' not in cond_stack:
-                    outfile.write(line)
-        else:
-            m = re_ifdef.match(line)
-            if m:
-#                print '---If line:',line.rstrip()
-#                print '---macro: "%s"' % m.group(2)
-                if m.group(2) in defined:
-                    cond_stack.append('D')
-                elif m.group(2) in undefined:
-                    cond_stack.append('U')
-                else:
-                    cond_stack.append('I')
-                    outfile.write(line)
-            else:
-                m = re_ifndef.match(line)
-                if m:
-#                    print '---Ifndef line:',line.rstrip()
-#                    print '---macro: "%s"' % m.group(2)
-                    if m.group(2) in defined:
-                        cond_stack.append('U')
-                    elif m.group(2) in undefined:
-                        cond_stack.append('D')
-                    else:
-                        cond_stack.append('I')
-                        outfile.write(line)
-                else:
-                    m = re_endif.match(line)
-                    if m:
-                        t = cond_stack.pop() # Might want to check for unbalanced #endif here
-                        if t == 'I': # write #ifdef only if we also wrote the #if.. 
-                            outfile.write(line)
-                    else:
-                        if 'U' not in cond_stack:
-                            outfile.write(line)
-        line_nr += 1
-    return 0
-            
-
 def main():
-    defined = []
-    undefined = []
     filenames = []
-
     target = filenames
+    if len(sys.argv) == 1:
+        print usage
+        return    
     for arg in sys.argv[1:]:
         if arg.find('-D') == 0:
             arg = arg[2:]
@@ -129,27 +137,14 @@ def main():
             target.append(arg)
             if target in [defined, undefined]:
                 if '=' in arg:
-                    print 'Error: Giving a symbol a value (%s) is not supported. Quitting!' % arg
+                    print 'Error: Giving a macro a value (%s) is not supported. Quitting!' % arg
                     return -1
             target = filenames
-
-#    print 'Defined:',defined
-#    print 'Undefined:',undefined
-#    print 'Files',filenames
     for fn in filenames:
-        ofname = fn+'.cppptmp'
-        f = open(fn,'r')
-        of = open(ofname,'w')
-        print fn
-        res = do_filter(defined,undefined,fn,f,of)
-        if res == 0:
-            os.rename(ofname,fn)
-        else:
-            os.remove(ofname)
-            
+        f = FriendlyFile(fn,'r')
+        fout = open(fn+'.cppp~','w')
+        process_chunk(f,fout)
+        fout.close()
+        os.rename(fn+'.cppp~',fn)
 
-if len(sys.argv) < 2 or sys.argv[1] in ['-h','--help','-help']:
-    usage()
-else:
-    main()
-    
+main()
