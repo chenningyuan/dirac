@@ -4,11 +4,14 @@ module aoresponse_main_m
   use scf_density_class
   use memory_allocator
   use dirac_matrix_operations_m
+  use propint
+  use pertdens
 
   implicit none
 
 #include "priunit.h"
 
+  public test_propint
   public test_matrix_operations
   public aoresponse_driver
   public get_ao_pmat
@@ -17,6 +20,26 @@ module aoresponse_main_m
   private
 
 contains
+
+  subroutine test_propint()
+
+    type(Matrix):: S,D,F,Df(3),Ff(3)
+    real*8:: w,Eff(3,3)
+    S=S; D=D; F=F !track them
+    call PertDensF((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/w/))
+!    print '("Dx")'; call print(Df(1),7)
+!    print '("Dy")'; call print(Df(2),7)
+!    print '("Dz")'; call print(Df(3),7)
+!    print '("Fx")'; call print(Ff(1),7)
+!    print '("Fy")'; call print(Ff(2),7)
+!    print '("Fz")'; call print(Ff(3),7)
+    Eff=0; call PropEnergy((/'EL'/),(/D,Df/),Eff)
+    print '("Polarizability -Eff w="f6.3/3(3f18.13/))',w,-Eff
+    Df(1)=0; Df(2)=0; Df(3)=0
+    Ff(1)=0; Ff(2)=0; Ff(3)=0
+    print*
+
+  end subroutine test_propint
 
   subroutine test_matrix_operations()
 

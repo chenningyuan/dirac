@@ -5,11 +5,13 @@ F77_OBJS =
 
 F90_OBJS = dirac_matrix_operations.o \
            aoresponse_main.o \
-           propint.o
+           propint.o \
+           pertdens.o
 
 F90_MODS = dirac_matrix_operations_m.mod \
            aoresponse_main_m.mod \
-           propint.mod
+           propint.mod \
+           pertdens.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 

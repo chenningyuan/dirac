@@ -39,7 +39,7 @@ module dirac_matrix_operations_m
   public mat_free
   public mat_print
   public trab
-! public trps
+  public trps
   public norm
   public iszero
   public isdef
@@ -86,9 +86,9 @@ module dirac_matrix_operations_m
     module procedure transposed_matrix_times_matrix
   end interface
 
-! interface trps
-!   module procedure trpsmat
-! end interface
+  interface trps
+    module procedure trpsmat
+  end interface
 
   interface iszero
     module procedure matrix_is_zero
