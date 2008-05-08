@@ -3,3 +3,4 @@ Makefile
 *.o
 *.i
 ftnchek.out
+Makefile.depend
