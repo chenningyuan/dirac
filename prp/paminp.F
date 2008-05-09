@@ -56,7 +56,7 @@ C
 C***********************************************************************
 
 #ifdef MOD_AORESPONSE
-      use aoresponse_main_m
+      use aoresponse_input_m
 #endif /* MOD_AORESPONSE */
 
 #include "implicit.h"

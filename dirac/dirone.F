@@ -1381,6 +1381,7 @@ C     ... do resort PTRI to the boson sorted basis
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
 
+!radovan: work is not used inside prpmao
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
      &                WORK(KFREE),LFREE,IPRINT2)   
 
@@ -1388,6 +1389,7 @@ C     ... do resort PTRI to the boson sorted basis
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
 
+!radovan: work is not used inside prpmao
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
      &                       WORK(KFREE),LFREE,IPRINT2)   
 

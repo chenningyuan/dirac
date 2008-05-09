@@ -6,6 +6,7 @@ module aoresponse_main_m
   use dirac_matrix_operations_m
   use propint
   use pertdens
+  use aoresponse_input_m
 
   implicit none
 
@@ -13,7 +14,6 @@ module aoresponse_main_m
 
   public test_propint
   public test_matrix_operations
-  public aoresponse_input
   public aoresponse_driver
   public get_ao_pmat
   public solve_perturbed_ao_dmat
@@ -22,46 +22,20 @@ module aoresponse_main_m
 
 contains
 
-  subroutine aoresponse_input(work, lwork)
-    real(kind_dp),    intent(inout) :: work(lwork)
-    integer(kind_i4), intent(inout) :: lwork
-
-    integer(kind_i4)                :: indxpr, isyxpr, itrxpr
-    real(kind_dp)                   :: factor(17)
-    character*16                    :: label(17)
-
-    factor(1) = 1.0d0
-    label(1)  = 'ZDIPLEN'
-
-    call xprind('zdiplen', &
-                1,         &
-                1,         &
-                factor,    &
-                label,     &
-                indxpr,    &
-                isyxpr,    &
-                itrxpr,    &
-                work, lwork, 0)
-
-  end subroutine aoresponse_input
-
   subroutine test_propint()
 
-    type(Matrix):: S,D,F,Df(3),Ff(3)
-    real*8:: w,Eff(3,3)
-    S=S; D=D; F=F !track them
-    call PertDensF((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/w/))
-!    print '("Dx")'; call print(Df(1),7)
-!    print '("Dy")'; call print(Df(2),7)
-!    print '("Dz")'; call print(Df(3),7)
-!    print '("Fx")'; call print(Ff(1),7)
-!    print '("Fy")'; call print(Ff(2),7)
-!    print '("Fz")'; call print(Ff(3),7)
-    Eff=0; call PropEnergy((/'EL'/),(/D,Df/),Eff)
-    print '("Polarizability -Eff w="f6.3/3(3f18.13/))',w,-Eff
-    Df(1)=0; Df(2)=0; Df(3)=0
+    type(Matrix):: S,D,F,Ff(3)
+    real*8:: Ef(3)
+    integer:: NOI(0),i,j,k
+    character*4:: NOP(0)
+    S=S; D=D; F=F
+    Ff(1)=0*S; Ff(2)=0*S; Ff(3)=0*S
+    call PropFock((/'EL'/),(/D/),Ff)
     Ff(1)=0; Ff(2)=0; Ff(3)=0
+    Ef=0; call PropEnergy((/'EL'/),(/D/),Ef)
+    print '("Dipole moment -Ef"/3f18.13/)',-Ef
     print*
+
 
   end subroutine test_propint
 
@@ -226,6 +200,9 @@ contains
     real(kind_dp),    allocatable   :: mo_coef(:, :, :)
 
     integer(kind_i4)                :: nr_op, nr_freq, iop, ifreq
+!!!!!!!!!!!!!!!!!!
+    integer(kind_i4)                :: i, j
+!!!!!!!!!!!!!!!!!!
     real(kind_dp)                   :: ddot, value
 
     nr_op   = 1
@@ -246,6 +223,19 @@ contains
     mo_coef           = 0.0d0
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    do i = 1, 2
+      do j = 1, 3
+
+        write(*, *) 'blub', i, j, perturbation_field(i)%component(j)%op_index
+
+      end do
+    end do
+
+
+
+!   write(*, *) 'index ex: ', e_field%component(1)%op_index
+!   write(*, *) 'index ey: ', e_field%component(2)%op_index
+!   write(*, *) 'index ez: ', e_field%component(3)%op_index
     op_index(1) = 5
     freq(1) = 0.0d0
 !   freq(2) = 0.2d0
@@ -261,9 +251,7 @@ contains
 
     do iop = 1, nr_op
 
-      call get_ao_pmat(op_index(iop),         &
-                       ao_pmat(:, :, :, iop), &
-                       work, kfree, lfree)
+      call get_ao_pmat(op_index(iop), ao_pmat(:, :, :, iop))
 
       call solve_perturbed_ao_dmat(op_index(iop),                         &
                                    freq,                                  &
@@ -294,27 +282,23 @@ contains
 
   end subroutine aoresponse_driver
 
-  subroutine get_ao_pmat(op_index, &
-                         ao_pmat,  &
-                         work, kfree, lfree)
-    integer(kind_i4), intent(in)    :: op_index
-    real(kind_dp),    intent(out)   :: ao_pmat(:, :, :)
-    real(kind_dp),    intent(inout) :: work(lfree)
-    integer,          intent(inout) :: kfree
-    integer,          intent(inout) :: lfree
+  subroutine get_ao_pmat(op_index, ao_pmat)
+    integer(kind_i4), intent(in)  :: op_index
+    real(kind_dp),    intent(out) :: ao_pmat(:, :, :)
 
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
 
-    real(kind_dp),    allocatable   :: ptri(:)
-    real(kind_dp),    allocatable   :: op1int(:)
-    logical,          allocatable   :: first(:)
+    real(kind_dp),    allocatable :: ptri(:)
+    real(kind_dp),    allocatable :: op1int(:)
+    logical,          allocatable :: first(:)
+    real(kind_dp),    allocatable :: work(:)
 
-    logical                         :: file_exists, is_square
-    real(kind_dp)                   :: dummy_dp
-    integer(kind_i4)                :: file_unit, dummy_i4, idimension
+    logical                       :: file_exists, is_square
+    real(kind_dp)                 :: dummy_dp
+    integer(kind_i4)              :: file_unit, dummy_i4, idimension, kfree, lfree
 
     is_square = .false.
     if (iprptim(op_index) == 0) then
@@ -330,6 +314,9 @@ contains
     call alloc(ptri,   nz*idimension)
     call alloc(op1int, idimension)
     allocate(first(nz))
+    call alloc(work, 2*nz*n2bbasx)
+    kfree = 1
+    lfree = 2*nz*n2bbasx
 
     file_unit = lu1int
 
@@ -362,6 +349,7 @@ contains
     call dealloc(ptri)
     call dealloc(op1int)
     deallocate(first)
+    call dealloc(work)
 
   end subroutine get_ao_pmat
 
