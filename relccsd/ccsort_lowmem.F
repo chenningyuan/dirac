@@ -186,14 +186,26 @@ C
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
+      write(*,*) 'debug : nvf =',nvf
+      write(*,*) 'debug : nvt =',nvt
+      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
 C
 C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,NV4)
+      write(*,*) 'debug : nvtmin =',nvtmin
       NVTMIN = MAX(NVTMIN,JOOOO(2))
+      write(*,*) 'debug : nvtmin =',nvtmin
       NVTMIN = MAX(NVTMIN,JVOOO(2))
+      write(*,*) 'debug : nvtmin =',nvtmin
+      if (MOD(NVTMIN,MINBUF).NE.0) then
+         IEXTRA = MOD(NVTMIN,MINBUF)
+         NVTMIN = NVTMIN+IEXTRA
+         NVTMIN = (NVTMIN/MINBUF)*MINBUF
+      endif
+      write(*,*) 'debug : new nvtmin =',nvtmin
 C
 C     in this new scheme we only work with one array that will hold 
 C     the different classes, one at a time
@@ -291,7 +303,7 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER*8 NVT
+      INTEGER NVT
       INTEGER NSP
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
@@ -333,8 +345,16 @@ C
 C
 C  Check buffer size for passing of VOVV and VVVV integrals
 C
-      IF (MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8).NE.0)
-     &    CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
+      IF (MOD(NVT*IRW*RCW,NWORDS_ON_RECORD).NE.0) then
+          write (*,*) 'invalid buffer size in rdints'
+          write (*,*) 'NVT',NVT
+          write (*,*) 'IRW',IRW
+          write (*,*) 'RCW',RCW
+          write (*,*) 'NWORDS_ON_RECORD8',NWORDS_ON_RECORD8
+          write (*,*) 'MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8)',
+     &                 MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8)
+          CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
+      endif
 C
 C  INITIALIZE READING OF COULOMB INTEGRALS
 C
