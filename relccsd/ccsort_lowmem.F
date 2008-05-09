@@ -96,6 +96,7 @@ Caspg, replacing memget
      &                                     a_ints(:),   a_intsa(:)
 C
       integer:: total_mem_new = 0
+      integer:: freemem = 0
 C
 Caspg, replacing memget
 C
@@ -107,14 +108,14 @@ C
 C  Allocate core for integral sorting step
 C
       if (alloc_me) then
-      call alloc(a_kr,2*NSP+2, id="kr")                   !  total_mem_new = total_mem_new + (2*NSP+2)
+      call alloc(a_kr,2*NSP+2, id="kr")                   !  total_mem_new = total_mem_new + (2*NSP+2)/2
       IF (EQNS.EQ.'FOCKSP') THEN                          !
-         CALL alloc(a_INDEX,NSP*NSP*16, id="index")       !  total_mem_new = total_mem_new + (NSP*NSP*16)
+         CALL alloc(a_INDEX,NSP*NSP*16, id="index")       !  total_mem_new = total_mem_new + (NSP*NSP*16)/2
       ELSE                                                !
-         CALL alloc(a_INDEX,NSP*NSP*4, id="index")        !  total_mem_new = total_mem_new + (NSP*NSP*4)
+         CALL alloc(a_INDEX,NSP*NSP*4, id="index")        !  total_mem_new = total_mem_new + (NSP*NSP*4)/2
       ENDIF                                               !
-      CALL alloc(a_INDK,NSP*NSP    , id="indk")           !  total_mem_new = total_mem_new + (NSP*NSP)
-      CALL alloc(a_INDL,NSP*NSP    , id="indl")           !  total_mem_new = total_mem_new + (NSP*NSP)
+      CALL alloc(a_INDK,NSP*NSP    , id="indk")           !  total_mem_new = total_mem_new + (NSP*NSP)/2
+      CALL alloc(a_INDL,NSP*NSP    , id="indl")           !  total_mem_new = total_mem_new + (NSP*NSP)/2
       CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")           !  total_mem_new = total_mem_new + (NSP*NSP*RCW)
       IF (EQNS.EQ.'FOCKSP') THEN                          !
          CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")      !  total_mem_new = total_mem_new + (NSP*NSP*7*256)
@@ -128,14 +129,19 @@ C
       CALL alloc(a_FVV,NFVV*RCW, id="fvv" )               !  total_mem_new = total_mem_new + (NFVV*RCW)
       endif ! if alloc_me true
 
-      total_mem_new = (2*NSP+2) + (NSP*NSP*(1+1+RCW+1+1)) 
-     &              + (RCW*(NFOO+NFVO+NFVV))
+      total_mem_new = ( (2*NSP+2)+(NSP*NSP)+(NSP*NSP))*kind(integer)
+     &              + ( (NSP*NSP*RCW)+(NSP*NSP)+(NSP*NSP)+(NFOO*RCW)
+     &                 +(NFVO*RCW)+(NFVV*RCW) )*8
 
       IF (EQNS.EQ.'FOCKSP') THEN
-         total_mem_new = total_mem_new + (NSP*NSP*(16+(7*256)))
+         total_mem_new = total_mem_new + (NSP*NSP*16)*kind(integer)
+     &                 + (NSP*NSP*7*256)*8
       ELSE
-         total_mem_new = total_mem_new + (NSP*NSP*(4+(7*16)))
+         total_mem_new = total_mem_new + (NSP*NSP*4)*kind(integer) 
+     &                 + (NSP*NSP*7*16)*8
       ENDIF
+
+      total_mem_new = total_mem_new / 8
 
       MXCORR = MAX(MXCORR,total_mem_new)
       write(*,*) 
@@ -158,9 +164,14 @@ C
 C     The remaining space is
 C how to do it without memget()?
 C
+      call get_free_mwords (freemem)
+      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
+      NVF = (freemem)*(1024) / (2 * RCW ) 
+
 c     NVF = (LFREE-4) / (2 * RCW )
-c     write(*,*) 'debug : nvf =',nvf
-c     write(*,*) 'debug : nvt =',nvt
+      write(*,*) 'debug : nvf =',nvf
+      write(*,*) 'debug : nvt =',nvt
+      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -168,11 +179,11 @@ C  complex words we can store on these in MINBUF
 C  -----------------------------------------------------------------
 C
       MINBUF = NWORDS_ON_RECORD / (RCW * IRW)
-c     IF (NVT.LT.NVF) THEN
+      IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
-c     ELSE
-c        NBUF = NVF / MINBUF
-c     ENDIF
+      ELSE
+         NBUF = NVF / MINBUF
+      ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
 C
@@ -188,8 +199,8 @@ C     in this new scheme we only work with one array that will hold
 C     the different classes, one at a time
 
       if (alloc_me) then
-         call alloc(a_ints, NVTMIN*RCW)
-         call alloc(a_intsa,NVTMIN*RCW)
+         call alloc(a_ints, NVTMIN*RCW, id="ints")
+         call alloc(a_intsa,NVTMIN*RCW, id="intsa")
       endif
 
       total_mem_new = total_mem_new + 2*(NVTMIN*RCW)
@@ -595,7 +606,7 @@ c     write (*,*) 'nze before calling get2ints',nze
          CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,curr_typ,INDK,INDL,
      &                  NONZR,NZE,CBUF,IBUF,MREADER)
       endif
-      write (*,*) 'nze after calling get2ints',nze
+c     write (*,*) 'nze after calling get2ints',nze
       
       IF (NONZR.LT.0) THEN
          IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
@@ -617,45 +628,37 @@ c     write (*,*) 'nze before calling get2ints',nze
             I    = IBUF(7,INZE)
 
             if (ITYP.EQ.1.and.curr_typ.eq.1) THEN
-                  IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
-                  write (*,*) 'ind + ',ind,ityp,curr_typ
-                  ints(1,IND)  = CBUF(1,I) * ITRS
-                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+               IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
+               ints(1,IND)  = CBUF(1,I) * ITRS
+               IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.-1.and.curr_typ.eq.1) THEN
-                  IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
-                  write (*,*) 'ind - ',ind,ityp,curr_typ
-                  intsa(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+               IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
+               intsa(1,IND) = CBUF(1,I) * ITRS
+               IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.2.and.curr_typ.eq.2) THEN
-                  IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
-                  write (*,*) 'ind + ',ind,ityp,curr_typ
-                  ints(1,IND)  = CBUF(1,I) * ITRS
-                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+               IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
+               ints(1,IND)  = CBUF(1,I) * ITRS
+               IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.-2.and.curr_typ.eq.2) THEN
-                  IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
-                  write (*,*) 'ind - ',ind,ityp,curr_typ
-                  intsa(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
-             elseif (ITYP.EQ.4.and.curr_typ.eq.4) THEN
-                  IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-                  write (*,*) 'ind + ',ind
-                  ints(1,IND)  = CBUF(1,I) * ITRS
-                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+               IND = IVOOOT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
+               intsa(1,IND) = CBUF(1,I) * ITRS
+               IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+            elseif (ITYP.EQ.4.and.curr_typ.eq.4) THEN
+               IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+               ints(1,IND)  = CBUF(1,I) * ITRS
+               IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.-4.and.curr_typ.eq.4) THEN
-                  IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-                  write (*,*) 'ind - ',ind
-                  intsa(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+               IND = IVVOOTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+               intsa(1,IND) = CBUF(1,I) * ITRS
+               IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.6.and.curr_typ.eq.6) THEN
-                  IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
-                  write (*,*) 'ind + ',ind
-                  ints(1,IND)  = CBUF(1,I) * ITRS
-                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
+               IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
+               ints(1,IND)  = CBUF(1,I) * ITRS
+               IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
             elseif (ITYP.EQ.-6.and.curr_typ.eq.6) THEN
-                  IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
-                  write (*,*) 'ind - ',ind
-                  intsa(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
+               IND = IVOVO(IREP)   + (IND1-1)*NVO(IREP)  + IND2
+               intsa(1,IND) = CBUF(1,I) * ITRS
+               IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
 
             elseif (iabs(ityp).eq.14) then
                IND = IVOVVT(IREP)  + (IND1-1)*NVO(IREP)  + IND2
@@ -663,23 +666,9 @@ c     write (*,*) 'nze before calling get2ints',nze
                IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
             endif
 
-C if we are on the first four classes, we have already determined the index and can
-C put the integral in place
-            if ( iabs(ityp).eq.00) then
-
-               IF (ITYP.EQ.curr_typ) THEN
-                  write (*,*) 'ind + ',ind
-                  ints(1,IND)  = CBUF(1,I) * ITRS
-                  IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
-               ELSEIF (ITYP.EQ.-cur_typ) THEN
-                  write (*,*) 'ind - ',ind
-                  intsa(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
-               ENDIF
-
 C for classes 5 and 6 we need some extra work in determining the index..
 
-            elseif (iabs(ityp).eq.14) then
+            if (iabs(ityp).eq.14) then
 
                 IF (ITYP.EQ.curr_typ) THEN
                    IF (IND.GT.IDIST(3,2,IREP).AND.
@@ -689,7 +678,7 @@ C                the current pass
                       IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
                       IF (IND.GE.NF.AND.IND.LE.NL) THEN
                          IND = IND - NF + 1
-                  write (*,*) 'ind + ',ind
+c                 write (*,*) 'ind + ',ind
                          ints(1,IND)  = CBUF(1,I) * ITRS
                          IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
                       ENDIF
@@ -702,7 +691,7 @@ C             to this node
                       IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
                       IF (IND.GE.NF.AND.IND.LE.NL) THEN
                          IND = IND - NF + 1
-                  write (*,*) 'ind - ',ind
+c                 write (*,*) 'ind - ',ind
                          intsa(1,IND) = CBUF(1,I) * ITRS
                          IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
                       ENDIF
@@ -719,7 +708,7 @@ C                the current pass
                       IND = IND -IDIST(3,1,IREP) + IDIST(5,1,IREP)
                       IF (IND.GE.NF.AND.IND.LE.NL) THEN
                          IND = IND - NF + 1
-                  write (*,*) 'ind + ',ind
+c                 write (*,*) 'ind + ',ind
                          ints(1,IND)  = CBUF(1,I) * ITRS
                          IF (CARITH) ints(2,IND) = CBUF(2,I) * JTRS
                       ENDIF
@@ -732,7 +721,7 @@ C             to this node
                       IND = IND -IDIST(3,1,IREP) + IDIST(5,1,IREP)
                       IF (IND.GE.NF.AND.IND.LE.NL) THEN
                          IND = IND - NF + 1
-                  write (*,*) 'ind - ',ind
+c                 write (*,*) 'ind - ',ind
                          intsa(1,IND) = CBUF(1,I) * ITRS
                          IF (CARITH) intsa(2,IND) = CBUF(2,I) * JTRS
                       ENDIF
