@@ -27,7 +27,8 @@
 
 void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
-void get_free_mwords_(int *freemw);
+/* void get_free_mwords_(int *freemw); */
+void get_free_mwords_(size_t *freemw);
 
 /* variable: is the real 
    address_string: is a character string with the memory address of variable
