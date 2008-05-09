@@ -293,9 +293,9 @@ C
 
 #ifdef MOD_AORESPONSE
       if (test_aoresponse) then
-!       call test_propint()
+        call test_propint()
 !       call quit('over and out')
-        call aoresponse_driver(work, kfree, lfree)
+!       call aoresponse_driver()
       end if
 #endif /* MOD_AORESPONSE */
 

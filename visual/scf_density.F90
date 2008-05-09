@@ -38,7 +38,7 @@ module scf_density_class
   public gao_data_t, density_t
 
   public init_density
-  public init_ao_dmat, del_ao_dmat, init_mo_coef, del_mo_coef, get_mo_coef, get_zo_ao_dmat
+! public init_ao_dmat, del_ao_dmat, init_mo_coef, del_mo_coef, get_mo_coef, get_zo_ao_dmat
   public init_gao_data, del_gao_data, get_gao_data
   public get_or_put_density, general_density_block
   public print_square_q_matrix
@@ -110,77 +110,77 @@ contains
     end select
   end subroutine init_density
 
-  subroutine init_ao_dmat(self)
-    real(kind_dp), intent(inout), allocatable :: self(:, :, :)
+! subroutine init_ao_dmat(self)
+!   real(kind_dp), intent(inout), allocatable :: self(:, :, :)
 
-    allocate(self(ntbas(0), ntbas(0), nz))
-    self = 0.0d0
-  end subroutine init_ao_dmat
+!   allocate(self(ntbas(0), ntbas(0), nz))
+!   self = 0.0d0
+! end subroutine init_ao_dmat
 
-  subroutine del_ao_dmat(self)
-    real(kind_dp), intent(inout), allocatable :: self(:, :, :)
+! subroutine del_ao_dmat(self)
+!   real(kind_dp), intent(inout), allocatable :: self(:, :, :)
 
-    deallocate(self)
-  end subroutine del_ao_dmat
+!   deallocate(self)
+! end subroutine del_ao_dmat
 
-  subroutine init_mo_coef(self)
-    real(kind_dp), intent(inout), allocatable :: self(:, :, :)
+! subroutine init_mo_coef(self)
+!   real(kind_dp), intent(inout), allocatable :: self(:, :, :)
 
-    allocate(self(ntbas(0), ntbas(0), nz))
-    self = 0.0d0
-  end subroutine init_mo_coef
+!   allocate(self(ntbas(0), ntbas(0), nz))
+!   self = 0.0d0
+! end subroutine init_mo_coef
 
-  subroutine del_mo_coef(self)
-    real(kind_dp), intent(inout), allocatable :: self(:, :, :)
+! subroutine del_mo_coef(self)
+!   real(kind_dp), intent(inout), allocatable :: self(:, :, :)
 
-    deallocate(self)
-  end subroutine del_mo_coef
+!   deallocate(self)
+! end subroutine del_mo_coef
 
-  subroutine get_mo_coef(self)
-    real(kind_dp), intent(inout), target :: self(:, :, :)
+! subroutine get_mo_coef(self)
+!   real(kind_dp), intent(inout), target :: self(:, :, :)
 
-    real(kind_dp), allocatable           :: eigenvalues(:)
-    integer, parameter                   :: file_unit = 70
-    logical                              :: file_exists
-    real(kind_dp)                        :: dummy_dp
-    integer(kind_i4)                     :: dummy_i4
+!   real(kind_dp), allocatable           :: eigenvalues(:)
+!   integer, parameter                   :: file_unit = 70
+!   logical                              :: file_exists
+!   real(kind_dp)                        :: dummy_dp
+!   integer(kind_i4)                     :: dummy_i4
 
-    file_exists = .false.
-    inquire(file = 'DFCOEF', exist = file_exists)
-    if (.not. file_exists) then
-      call quit('error in get_cmo, file DFCOEF not found')
-    end if
+!   file_exists = .false.
+!   inquire(file = 'DFCOEF', exist = file_exists)
+!   if (.not. file_exists) then
+!     call quit('error in get_cmo, file DFCOEF not found')
+!   end if
 
-    open(file_unit,            &
-         file = 'DFCOEF',      &
-         status = 'old',       &
-         form = 'unformatted', &
-         access = 'sequential')
+!   open(file_unit,            &
+!        file = 'DFCOEF',      &
+!        status = 'old',       &
+!        form = 'unformatted', &
+!        access = 'sequential')
 
-    rewind file_unit
+!   rewind file_unit
 
-    allocate(eigenvalues(norbt))
+!   allocate(eigenvalues(norbt))
 
-    call reacmo(file_unit, 'DFCOEF', self, eigenvalues, dummy_i4, dummy_dp, 6, &
-                dummy_dp, dummy_i4, dummy_i4)
+!   call reacmo(file_unit, 'DFCOEF', self, eigenvalues, dummy_i4, dummy_dp, 6, &
+!               dummy_dp, dummy_i4, dummy_i4)
 
-    deallocate(eigenvalues)
+!   deallocate(eigenvalues)
 
-    close(file_unit, status = 'keep')
+!   close(file_unit, status = 'keep')
 
 !   call print_square_q_matrix(self, ntbas(0))
-  end subroutine get_mo_coef
+! end subroutine get_mo_coef
 
-  subroutine get_zo_ao_dmat(ao_dmat_zo, mo_coef)
-    real(kind_dp), intent(out) :: ao_dmat_zo(:, :, :)
-    real(kind_dp), intent(in)  :: mo_coef(:, :, :)
+! subroutine get_zo_ao_dmat(ao_dmat_zo, mo_coef)
+!   real(kind_dp), intent(out) :: ao_dmat_zo(:, :, :)
+!   real(kind_dp), intent(in)  :: mo_coef(:, :, :)
 
-    ao_dmat_zo = 0.0d0
+!   ao_dmat_zo = 0.0d0
 
-    call genden(ao_dmat_zo, mo_coef, 1, 0)
+!   call genden(ao_dmat_zo, mo_coef, 1, 0)
 
-    call dscal(n2bbasxq, 2.0d0, ao_dmat_zo, 1)
-  end subroutine get_zo_ao_dmat
+!   call dscal(n2bbasxq, 2.0d0, ao_dmat_zo, 1)
+! end subroutine get_zo_ao_dmat
 
   subroutine init_gao_data(self)
     type(gao_data_t), intent(inout) :: self

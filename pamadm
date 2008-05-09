@@ -815,6 +815,7 @@ cat <<EOF>> Makefile
 AORESPONSEOBJS = \\
 aoresponse/aoresponse_input.o \\
 aoresponse/dirac_matrix_operations.o \\
+aoresponse/dirac_interface.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
 aoresponse/aoresponse_main.o
