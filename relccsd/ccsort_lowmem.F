@@ -34,9 +34,7 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : $Id$
+C  $Id$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
@@ -103,7 +101,7 @@ C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
-      write (*,*) 'alloc me? ',alloc_me
+c     write (*,*) 'alloc me? ',alloc_me
 C
 C  Allocate core for integral sorting step
 C
@@ -144,9 +142,9 @@ C
       total_mem_new = total_mem_new / 8
 
       MXCORR = MAX(MXCORR,total_mem_new)
-      write(*,*) 
-     & 'debug : total_mem_new after initial allocs =',
-     &                 total_mem_new,mxcorr
+c     write(*,*) 
+c    & 'debug : total_mem_new after initial allocs =',
+c    &                 total_mem_new,mxcorr
 Caspg, replacing memget
 C
 C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
@@ -165,12 +163,12 @@ C     The remaining space is
 C how to do it without memget()?
 C
       call get_free_mwords (freemem)
-      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
+c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
       NVF = (freemem)*(1024) / (2 * RCW ) 
 
 c     NVF = (LFREE-4) / (2 * RCW )
-      write(*,*) 'debug : nvf =',nvf
-      write(*,*) 'debug : nvt =',nvt
+      write(*,*) 'debug : nvf1=',nvf
+      write(*,*) 'debug : nvt1=',nvt
       write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
 C
 C  Determine number of available buffers with respect to free memory
@@ -186,26 +184,24 @@ C
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
-      write(*,*) 'debug : nvf =',nvf
-      write(*,*) 'debug : nvt =',nvt
-      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
+      write(*,*) 'debug : nvt2=',nvt
 C
 C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,NV4)
-      write(*,*) 'debug : nvtmin =',nvtmin
+c     write(*,*) 'debug : nvtmin =',nvtmin
       NVTMIN = MAX(NVTMIN,JOOOO(2))
-      write(*,*) 'debug : nvtmin =',nvtmin
+c     write(*,*) 'debug : nvtmin =',nvtmin
       NVTMIN = MAX(NVTMIN,JVOOO(2))
-      write(*,*) 'debug : nvtmin =',nvtmin
+c     write(*,*) 'debug : nvtmin =',nvtmin
       if (MOD(NVTMIN,MINBUF).NE.0) then
          IEXTRA = MOD(NVTMIN,MINBUF)
          NVTMIN = NVTMIN+IEXTRA
          NVTMIN = (NVTMIN/MINBUF)*MINBUF
       endif
-      write(*,*) 'debug : new nvtmin =',nvtmin
+
 C
 C     in this new scheme we only work with one array that will hold 
 C     the different classes, one at a time
@@ -222,11 +218,23 @@ C     write (*,*) 'debug: nvt',nvt,'nvtmin',nvtmin
 
       MXCORR = MAX(MXCORR,total_mem_new)
 
-      if (mytid.eq.0) write(*,*) 'debug : total_mem_new after nvtmin =',
-     &                            total_mem_new,mxcorr
+c     if (mytid.eq.0) write(*,*) 'debug : total_mem_new after nvtmin =',
+c    &                            total_mem_new,mxcorr
 C
       IF (ICALC.EQ.1) THEN
+         WRITE (IW,*) ''
+         WRITE (IW,*) 'Note: Low(er)-memory strategy active for RELCCSD'
+         WRITE (IW,*) ''
+         WRITE (IW,*) '      This means that the size of the VOVO '
+         WRITE (IW,*) '      integral class will be used as a measure'
+         WRITE (IW,*) '      of the amount of space for the buffers'
+         WRITE (IW,*) '      in the integral sorting, at the expense of'
+         WRITE (IW,*) '      increasing the number of passes for VOVV'
+         WRITE (IW,*) '      and VVVV'
+         WRITE (IW,*) ''
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
+         WRITE (IW,1001) "integral sorting buffers only",(2*NVTMIN*RCW)
+         WRITE (IW,*) ''
          RETURN
       ENDIF
 C
@@ -386,7 +394,7 @@ C           The newer MOLFDIR file format = identical to older DIRAC
          WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
          CALL QUIT('Adapt RDINTS')
       ENDIF
-      write (*,*) 'debug: fnode ',fnode,'  mreader',mreader
+c     write (*,*) 'debug: fnode ',fnode,'  mreader',mreader
 C
 C     In the older schemes, the slaves have no knowledge of nkr and kr, broadcast
 C     and check for consistency afterwards
@@ -586,7 +594,7 @@ C
       NPASS = (NVPAR-1) / NVT + 1
       NSECT = 1
       NL    = 0
-      write (*,*) 'npass,nvt,nvpar',npass,nvt,nvpar
+c     write (*,*) 'npass,nvt,nvpar',npass,nvt,nvpar
       WRITE (IW,1005) NPASS,integral_class
       CALL FLSHFO (IW)
 C
@@ -620,6 +628,9 @@ c     write (*,*) 'curr typ',curr_typ
 c     write (*,*) 'nze before calling get2ints',nze
   200 continue 
       if (curr_typ.lt.10) then
+         if (npass.gt.1) 
+     &   call quit('multipass sort not implemented for this class')
+       
          CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
      &                  NONZR,NZE,CBUF,IBUF,MREADER)
       else
@@ -789,7 +800,7 @@ C ----------------------
 c     write (*,*) 'before waio_save',io_unit
       CALL WAIO_SAVE(ITAPT+io_unit)
       WRITE(IW,*) integral_class,' sorting done.'
-      write (*,*) 'debug, icount',icount
+c     write (*,*) 'debug, icount',icount
       CALL FLSHFO (IW)
 C
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
