@@ -25,11 +25,17 @@
          integer, parameter :: charArrayLength = 132
 
          integer                :: v2size, v1size, p_mem2,p_mem3
+         integer                :: maxsize, minimal, nstep,direction
          double precision, allocatable, target :: vdatadb(:), vdatarl(:)
          real(kind=kreal), allocatable :: matrix(:,:)
          real(kind=kreal), pointer             :: p_mem, p_mem42(:)
        
          character(len=charArrayLength) :: kbytesAvailable
+
+         maxsize   = 0
+         minimal   = 16
+         nstep     = 10
+         direction = 1
 
          v2size = 10
 
@@ -103,16 +109,50 @@
                    kbytesAvailable,' kbytes'
          call catfile()
 
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, no previous allocations'
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction) 
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
+
          v2size = 1000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size,id="datadb30")
          write (*,*) 'is it allocated? ',allocated(vdatadb)
+
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction) 
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
+
          call dealloc(vdatadb)
          call dealloc(vdatadb)
           
          v2size = 10000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
+
+         maxsize = 0
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
+
+
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
          call dealloc(vdatadb) ! mi: 2 times, it should continue
@@ -123,6 +163,18 @@
          v2size = 100000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
+
+         maxsize = 0
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
+
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
          call dealloc(vdatadb)
@@ -130,18 +182,51 @@
          v2size = 1000000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size,id="reallylarge")
+
+         maxsize = 0
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
          v2size = 22077845000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
+
+         maxsize = 0
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
          v2size = 100000000000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
+
+         maxsize = 0
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 
@@ -149,6 +234,16 @@
          v2size = 100000000000
          write (*,*) 'large allocation test, n =',v2size
          call alloc(vdatadb,v2size)
+
+         write (*,*) ' '
+         write (*,*) 'testing alloc_maxsize, allocation of',(v2size/(1204*1024*8)),'mwords active' 
+         write (*,*) '   minimal mwords required   :',minimal
+         write (*,*) '   number of steps attepmted :',nstep
+         write (*,*) '   direction of search       :',direction
+         write (*,*) '   maximum mwords start      :',maxsize
+         call alloc_maxsize(maxsize,minimal,nstep,direction)
+         write (*,*) '   maximum mwords end        :',maxsize
+         write (*,*) ' '
          write (*,*) 'is it allocated? ',allocated(vdatadb)
          call dealloc(vdatadb)
 

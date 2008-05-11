@@ -177,7 +177,7 @@ C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,LOWMEM,
      &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
@@ -469,7 +469,8 @@ C     Input for the sorting routine.
 C     We can add a finite field here, if desired
 C     This assumes that PRTRA is called as well !
 C
-      USEOE = .TRUE.
+      LOWMEM  = .FALSE.
+      USEOE   = .TRUE.
       NORECMP = .FALSE.
       ADD_FINITE_FIELD = .FALSE.
       DO IOPER = 1, MAXOP
@@ -681,8 +682,14 @@ C
       LFREE = MAXCOR
 C 
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
+
+      if (lowmem) then
+         call CCSETI_LM (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
+      else
+         CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
+     &                NSP,IREPSP,IREPSPI)
+      endif
+
       IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
@@ -714,7 +721,7 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-         CALL QUIT("INCREASE MWORD")
+         if (.not.lowmem) CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
@@ -741,8 +748,14 @@ C
       LFREE = MXCORR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
-      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
+      IF (DOSORT) THEN
+         if (lowmem) then
+            call CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+         else
+            CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
+         endif
+      endif
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1

@@ -584,7 +584,7 @@ prp/excprp.o\\
 moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o moltra/tradr5.o \\
 moltra/tradr6.o moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\
-relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
+relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o relccsd/ccsort_lowmem.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
 relccsd/waio.o \\
@@ -620,7 +620,7 @@ PDLIB = -Lpdpack -lpdlib
 #
 
 RELCCSD_OBJS = \\
-relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
+relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o relccsd/ccsort_lowmem.o  \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
 relccsd/ccfspc.o  relccsd/waio.o

@@ -27,8 +27,8 @@
 
 void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
-/* void get_free_mwords_(int *freemw); */
 void get_free_mwords_(size_t *freemw);
+void get_maximum_mwords_(size_t *maxmw);
 
 /* variable: is the real 
    address_string: is a character string with the memory address of variable
@@ -98,10 +98,11 @@ void get_free_mwords_(size_t *freemw)
       total_kbytes = total_bytes / 1024;
    }
    *freemw = (size_t)(total_kbytes/(1024*8)); 
-/*
+
    printf ("Debug: getFreeMwords() found %d (%ld,%ld) mWords avaiable\n",*freemw,*freemw,total_kbytes);
    catfile_();
-*/
+   showlimits_();
+
 #else
    *freemw = (size_t)(total_kbytes);
 /*
@@ -110,11 +111,43 @@ void get_free_mwords_(size_t *freemw)
 #endif /* LINUX_IFACE_MEMORY */
 }
 
+void get_maximum_mwords_(size_t *maxmw)
+{
+   unsigned long total_bytes = 1, total_kbytes = 0;
+   size_t i, len;
+   int status;
+
+#if defined (LINUX_IFACE_MEMORY)
+   struct sysinfo info;
+
+   status = sysinfo(&info);
+   if (status == 0)
+   {
+      total_bytes  = info.totalram * info.mem_unit;
+      total_kbytes = total_bytes / 1024;
+   }
+   *maxmw = (size_t)(total_kbytes/(1024*8));
+
+   printf ("Debug: get_maximum_mwords() found %d (%ld,%ld) mWords avaiable\n",*maxmw,*maxmw,total_kbytes);
+   catfile_();
+   showlimits_();
+
+#else
+   *maxmw = (size_t)(total_kbytes);
+/*
+   printf ("Debug: getFreeMwords() found %d (%ld) mWords avaiable\n",*freemw,*freemw);
+*/
+#endif /* LINUX_IFACE_MEMORY */
+}
+
+
 
 
 void catfile_(void)
 {
+   printf (" --------------------- contents of /proc/meminfo -------------------- \n");
    (void)system("cat /proc/meminfo"); 
+   printf (" -------------------------------------------------------------------- \n");
 }
 
 void showlimits_(void)

@@ -164,12 +164,12 @@ C how to do it without memget()?
 C
       call get_free_mwords (freemem)
 c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
-      NVF = (freemem)*(1024) / (2 * RCW ) 
+      NVF = ((freemem*1024)-4) / (2 * RCW ) 
 
 c     NVF = (LFREE-4) / (2 * RCW )
       write(*,*) 'debug : nvf1=',nvf
       write(*,*) 'debug : nvt1=',nvt
-      write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
+      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -180,7 +180,8 @@ C
       IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
       ELSE
-         NBUF = NVF / MINBUF
+c         NBUF = NVF / MINBUF + mod(NVF / MINBUF)
+         NBUF = NVF / MINBUF 
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
@@ -191,15 +192,17 @@ C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,NV4)
-c     write(*,*) 'debug : nvtmin =',nvtmin
+      write(*,*) 'debug : nvtminA=',nvtmin
       NVTMIN = MAX(NVTMIN,JOOOO(2))
-c     write(*,*) 'debug : nvtmin =',nvtmin
+      write(*,*) 'debug : nvtminB=',nvtmin
       NVTMIN = MAX(NVTMIN,JVOOO(2))
-c     write(*,*) 'debug : nvtmin =',nvtmin
+      write(*,*) 'debug : nvtminC=',nvtmin
+      NVTMIN = NVTMIN + MINBUF 
+      write(*,*) 'debug : nvtminD=',nvtmin
       if (MOD(NVTMIN,MINBUF).NE.0) then
          IEXTRA = MOD(NVTMIN,MINBUF)
          NVTMIN = NVTMIN+IEXTRA
-         NVTMIN = (NVTMIN/MINBUF)*MINBUF
+         NVTMIN = ((NVTMIN/MINBUF)+1)*MINBUF
       endif
 
 C
@@ -358,9 +361,9 @@ C
           write (*,*) 'NVT',NVT
           write (*,*) 'IRW',IRW
           write (*,*) 'RCW',RCW
-          write (*,*) 'NWORDS_ON_RECORD8',NWORDS_ON_RECORD8
-          write (*,*) 'MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8)',
-     &                 MOD(NVT*IRW*RCW,NWORDS_ON_RECORD8)
+          write (*,*) 'NWORDS_ON_RECORD',NWORDS_ON_RECORD
+          write (*,*) 'MOD(NVT*IRW*RCW,NWORDS_ON_RECORD)',
+     &                 MOD(NVT*IRW*RCW,NWORDS_ON_RECORD)
           CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
       endif
 C

@@ -32,10 +32,11 @@
                   
          implicit none
          private
-         public alloc, dealloc, allocp, deallocp, initData, allocator_init
+         public alloc, dealloc, allocp, deallocp, initData, allocator_init, alloc_maxsize
 
          interface alloc
             module procedure alloc_real_1d
+            module procedure alloc_real_1di8
             module procedure alloc_real_2d
             module procedure alloc_real_3d
             module procedure alloc_real_4d
@@ -67,6 +68,7 @@
 
          interface initData
             module procedure initData_real_1d
+            module procedure initData_real_1di8
             module procedure initData_real_2d
             module procedure initData_real_3d
             module procedure initData_real_4d
@@ -74,6 +76,10 @@
             module procedure initData_real_6d
             module procedure initDataInt
          end interface initData
+
+         interface alloc_maxsize
+            module procedure alloc_maxsize_k8
+         end interface alloc_maxsize 
 
 
 ! error codes, variable kinds
@@ -115,6 +121,8 @@
 
 
                isFatal = .True.
+               ignoreErrorlocal = .False.
+
                if (present(ignoreError)) then
                   ignoreErrorLocal = .False.
                else
@@ -141,7 +149,7 @@
                   endif
                endif
  
-               ignoreErrorlocal = .False.
+!              ignoreErrorlocal = .False.
                              
                InfoMessage  = 'Unknown error!'
                ErrorMessage = InfoMessage
@@ -226,6 +234,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! initialization for data
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            subroutine initData_real_1di8(data,size)
+               integer(kind=8) :: i,size
+               real(kind=kreal) :: data(:)
+
+               forall (i=1:size) data(i) = 0.0D0
+            end subroutine initData_real_1di8
 
             subroutine initData_real_1d(data,size)
                integer :: i,size
@@ -460,6 +475,32 @@
                endif
             end subroutine alloc_real_6d
 
+            subroutine alloc_real_1di8(data,size,id)
+               integer(kind=8)                       :: size
+               integer                               :: status
+               character(len=*), optional            :: id
+               character(len=charArrayLength)        :: local_id
+               real(kind=kreal), allocatable, target :: data(:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size),stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size)
+!                    call registerAllocation(data,size)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_real_1di8
 
             subroutine alloc_int(data,size,id)
                integer                        :: size, status
@@ -786,7 +827,48 @@
 !         call trackInitGroup('main')
       end subroutine allocator_init
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+      subroutine alloc_maxsize_k8(maxsize,minimal,nstep,direction)
+         integer :: step, minimal, mykind, direction,i,nstep,maximum, status,maxsize
+         real(kind=8), allocatable :: data(:)
 
+         maxsize = minimal
+
+         call get_maximum_mwords(maximum)
+
+         if (maximum.gt.minimal) then
+
+            step = (2*maximum - minimal)/nstep
+
+            if (direction.eq.1) then            ! from minimal to maximal
+               do i=minimal,(2*maximum),step
+                  allocate(data(i*1024*1024*8),stat=status)
+                  if (status.eq.0) then
+                     call initData(data,(i*1024*1024*8))
+                     write (*,*) 'allocation ok for',i,'mwords'
+                     maxsize = i
+                     deallocate(data)
+                  else
+                     write (*,*) 'allocation failed for',i,'mwords'
+                  endif 
+               enddo
+            else
+               do i=maximum,minimal,-step
+                  allocate(data(i*1024*1024*8),stat=status)
+                  if (status.eq.0) then
+                     call initData(data,(i*1024*1024*8))
+                     write (*,*) 'allocation ok for',i,'mwords'
+                     maxsize = i
+                     deallocate(data)
+                  else
+                     write (*,*) 'allocation failed for',i,'mwords'
+                  endif 
+               enddo
+            endif
+          endif
+
+       end subroutine alloc_maxsize_k8
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 ! end of memory allocator module definition
