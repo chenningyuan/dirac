@@ -365,30 +365,26 @@ makefile += 'PDLIB = -Lpdpack -lpdlib\n\n'
 makefile += 'TOTAL_F_OBJECTS = $(F77_OBJECTS) $(F90_OBJECTS)\n\n'
 makefile += 'F_CPPS = $(TOTAL_F_OBJECTS:.o=.i)\n\n'
 
-makefile += 'dirac.x: ALL_F90MODS'
-makefile += ' \\\n\tEXTRA_STUFF'
+dirac_target  = ' \\\n\tEXTRA_STUFF'
 for directory in directory_l:
     if not directory == 'utils':
        directory_object = string.replace(directory, '/', '') + '_object'
-       makefile += ' \\\n\t' + directory_object.upper()
-makefile += '\n\t$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \\\n'
-makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) \\\n'
-makefile += '\t$(PDLIB) $(LIB_LIST)\n\n'
+       dirac_target += ' \\\n\t' + directory_object.upper()
+dirac_target += '\n\t$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \\\n'
+dirac_target += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) \\\n'
+dirac_target += '\t$(PDLIB) $(LIB_LIST)'
+
+makefile += 'dirac.x: ALL_F90MODS'
+makefile += dirac_target + '\n\n'
+
+makefile += 'dirmpi.x: ALL_F90MODS'
+makefile += dirac_target + ' \\\n'
+makefile += '\t$(MPI_LIB_PATH) $(MPI_LIB)\n\n'
 
 makefile += 'pre: $(F_CPPS)\n\n'
 
 makefile += 'ftnchek: pre\n'
 makefile += '\tftnchek $(CHEKFLAGS) $(F_CPPS) > dirac.ftnchek\n\n'
-
-makefile += 'dirmpi.x: ALL_F90MODS'
-makefile += ' \\\n\tEXTRA_STUFF'
-for directory in directory_l:
-    if not directory == 'utils':
-       directory_object = string.replace(directory, '/', '') + '_object'
-       makefile += ' \\\n\t' + directory_object.upper()
-makefile += '\n\t$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \\\n'
-makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) \\\n'
-makefile += '\t$(PDLIB) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB)\n\n'
 
 #-------------------------------------------------------------------------------
 # target clean
