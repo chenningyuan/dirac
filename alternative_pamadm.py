@@ -264,6 +264,7 @@ for directory in directory_l:
     f = open(directory + '/Makefile', 'w')
     f.write('MODS=' + flags + '\n' + s)
     f.close()
+    print 'generated ' + directory + '/Makefile'
 
 #-------------------------------------------------------------------------------
 # collect objects
@@ -276,7 +277,6 @@ blacklist.append('abacus/herpar.o')
 blacklist.append('gp/graphic.o')
 blacklist.append('relccsd/ccints_nomemget.o')
 blacklist.append('relccsd/ccdriv_nomemget.o')
-blacklist.append('relccsd/ccsort_lowmem.o')
 blacklist.append('relccsd/quit.o')
 blacklist.append('lucita/doubledir.o')
 blacklist.append('lucita/unused.o')
@@ -427,3 +427,10 @@ for directory in directory_l:
 f = open('Makefile', 'w')
 f.write(makefile)
 f.close()
+
+print 'generated Makefile'
+
+print '\nrun:'
+print '  make depend'
+print 'followed by:'
+print '  make'
