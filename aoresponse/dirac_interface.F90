@@ -52,7 +52,7 @@ contains
 
 !   D = 0.0d0*D
     call genden(D%elements, C%elements, 1, 0)
-!   D = 2.0d0*D
+    D = 2.0d0*D
 
   end subroutine get_zo_ao_dmat
 

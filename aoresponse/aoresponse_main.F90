@@ -203,88 +203,62 @@ contains
 
   end subroutine test_matrix_operations
 
+
+
+
+
+
+
   subroutine aoresponse_driver()
 
 #include "dcbbas.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    integer(kind_i4), allocatable   :: op_index(:)
-    real(kind_dp),    allocatable   :: freq(:)
-    real(kind_dp),    allocatable   :: zo_ao_dmat(:, :, :)
-    real(kind_dp),    allocatable   :: perturbed_ao_dmat(:, :, :, :, :, :)
-    real(kind_dp),    allocatable   :: ao_pmat(:, :, :, :)
-    real(kind_dp),    allocatable   :: mo_coef(:, :, :)
+    type(matrix)               :: A, C, D, D1H, D1A
+    real(kind_dp), allocatable :: freq(:)
+    integer(kind_i4)           :: nr_freq = 1
 
-    integer(kind_i4)                :: nr_op, nr_freq, iop, ifreq
-!!!!!!!!!!!!!!!!!!
-    integer(kind_i4)                :: i, j
-!!!!!!!!!!!!!!!!!!
-    real(kind_dp)                   :: ddot, value
+    call mat_init(C, ntbas(0), ntbas(0))
+    call get_mo_coef(C)
 
-    nr_op   = 1
-    nr_freq = 1
+    call alloc(freq, nr_freq)
+    freq = 0.0d0
 
-    call alloc(op_index,          nr_op)
-    call alloc(freq,              nr_freq)
-    call alloc(zo_ao_dmat,        ntbas(0), ntbas(0), nz)
-    call alloc(perturbed_ao_dmat, ntbas(0), ntbas(0), nz, nr_freq, 2, nr_op)
-    call alloc(ao_pmat,           ntbas(0), ntbas(0), nz, nr_op)
-    call alloc(mo_coef,           ntbas(0), ntbas(0), nz)
+!!!!!!!!!!
+    freq(1) = 0.02d0
+!!!!!!!!!!
 
-    op_index          = 0
-    freq              = 0.0d0
-    zo_ao_dmat        = 0.0d0
-    perturbed_ao_dmat = 0.0d0
-    ao_pmat           = 0.0d0
-    mo_coef           = 0.0d0
+    A   = 1.0d-100*C
+    D   = 1.0d-100*C
+    D1H = 1.0d-100*C
+    D1A = 1.0d-100*C
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call get_zo_ao_dmat(C, D)
+    call get_ao_pmat('ZDIPLEN', A)
+    call solve_perturbed_ao_dmat(find_op_index('ZDIPLEN'), freq, C, D1H, D1A)
 
+    write(*, *) 'A**D   = ', A**D
+    write(*, *) 'A**D1H = ', A**D1H
+    write(*, *) 'A**D1A = ', A**D1A
 
+    write(*, *) 'compare: -4.425145305036 a.u. at frequency 0.00000000 a.u.'
+    write(*, *) 'compare: -4.428990503827 a.u. at frequency 0.02000000 a.u.'
 
-!   write(*, *) 'index ex: ', e_field%component(1)%op_index
-!   write(*, *) 'index ey: ', e_field%component(2)%op_index
-!   write(*, *) 'index ez: ', e_field%component(3)%op_index
-    op_index(1) = 5
-    freq(1) = 0.0d0
-!   freq(2) = 0.2d0
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    A   = 0
+    D   = 0
+    D1H = 0
+    D1A = 0
 
-    static = .false.
-    if (nr_freq == 1 .and. freq(1) == 0.0d0) then
-      static = .true.
-    end if
-
-!   call get_mo_coef(mo_coef)
-!   call get_zo_ao_dmat(zo_ao_dmat, mo_coef)
-
-    do iop = 1, nr_op
-!     call get_ao_pmat(op_index(iop), ao_pmat(:, :, :, iop))
-      call solve_perturbed_ao_dmat(op_index(iop), freq, perturbed_ao_dmat(:, :, :, :, :, iop))
-    end do
-
-    do iop = 1, nr_op
-
-      value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, zo_ao_dmat, 1)
-      write(*, *) 'd(0)*p = ', value
-
-      do ifreq = 1, nr_freq
-
-        value = ddot(ntbas(0)*ntbas(0)*nz, ao_pmat(:, :, :, iop), 1, perturbed_ao_dmat(:, :, :, ifreq, 1, iop), 1)
-        write(*, *) 'freq = ', freq(ifreq), '    d(1)*p = ', value
-
-      end do
-    end do
-
-    call dealloc(op_index)
+    call mat_free(C)
     call dealloc(freq)
-    call dealloc(zo_ao_dmat)
-    call dealloc(perturbed_ao_dmat)
-    call dealloc(ao_pmat)
-    call dealloc(mo_coef)
 
   end subroutine aoresponse_driver
+
+
+
+
+
 
 
 
@@ -365,13 +339,10 @@ contains
 
 
 
-
-
-
-  subroutine solve_perturbed_ao_dmat(op_index, freq, perturbed_ao_dmat)
-    integer(kind_i4), intent(in)  :: op_index
-    real(kind_dp),    intent(in)  :: freq(:)
-    real(kind_dp),    intent(out) :: perturbed_ao_dmat(:, :, :, :, :)
+  subroutine solve_perturbed_ao_dmat(op_index, freq, C, D1H, D1A)
+    integer(kind_i4), intent(in)    :: op_index
+    real(kind_dp),    intent(in)    :: freq(:)
+    type(matrix),     intent(inout) :: C, D1H, D1A
 
 #include "dcbxpr.h"
 #include "dcbxrs.h"
@@ -379,6 +350,7 @@ contains
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+
 
     integer(kind_i4), allocatable :: ibtyp(:)
     integer(kind_i4), allocatable :: ibtyp_pointer_c(:)
@@ -403,7 +375,7 @@ contains
     real(kind_dp),    allocatable :: response_vector_pna(:, :, :)
 
     real(kind_dp),    allocatable :: temp_ao_dmat(:, :, :, :)
-    real(kind_dp),    allocatable :: mo_coef(:, :, :)
+!   real(kind_dp),    allocatable :: mo_coef(:, :, :)
 
     real(kind_dp),    allocatable :: work(:)
     integer(kind_i4)              :: kfree, lfree
@@ -420,6 +392,11 @@ contains
     skip_pp = .false.
     skip_pn = .false.
 
+
+    static = .false.
+    if (nr_freq == 1 .and. freq(1) == 0.0d0) then
+      static = .true.
+    end if
 
 !   set common block
 !   ================
@@ -702,36 +679,40 @@ contains
       ifckop(i) = 1
     end do
 
-    call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
-    call alloc(mo_coef,      ntbas(0), ntbas(0), nz)
+!   call alloc(mo_coef,      ntbas(0), ntbas(0), nz)
 
-    perturbed_ao_dmat = 0.0d0
-    mo_coef           = 0.0d0
+!   perturbed_ao_dmat = 0.0d0
+!   mo_coef           = 0.0d0
 
 !   call get_mo_coef(mo_coef)
+
+
+
+!   kfree = 1
+!   lfree = 200*ntbas(0)*ntbas(0) ! no idea how much is needed
+!   call alloc(work, lfree)
+
+
+
+    call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
 
     do i = 1, ntsim
       ihrmop(i) = 1
     end do
 
     temp_ao_dmat = 0.0d0
-
-!   kfree = 1
-!   lfree = 200*ntbas(0)*ntbas(0) ! no idea how much is needed
-!   call alloc(work, lfree)
-
     call dmolitx(temp_ao_dmat,        &
                  response_vector_pph, &
                  response_vector_pnh, &
-                 mo_coef,             &
+                 C%elements,          &
                  dummy_dp,            &
                  dummy_dp,            &
                  ihrmop,              &
                  nr_dmat,             &
                  work, kfree, lfree)
 
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, perturbed_ao_dmat(:, :, :, 1, 1), 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1H%elements, 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1H%elements, 1)
 
     if (.not. static) then
 
@@ -740,26 +721,22 @@ contains
       end do
 
       temp_ao_dmat = 0.0d0
-
       call dmolitx(temp_ao_dmat,        &
                    response_vector_ppa, &
                    response_vector_pna, &
-                   mo_coef,             &
+                   C%elements,          &
                    dummy_dp,            &
                    dummy_dp,            &
                    ihrmop,              &
                    nr_dmat,             &
                    work, kfree, lfree)
 
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, perturbed_ao_dmat(:, :, :, 1, 2), 1)
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, perturbed_ao_dmat(:, :, :, 1, 2), 1)
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1A%elements, 1)
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1A%elements, 1)
 
     end if
 
-    call dscal(ntbas(0)*ntbas(0)*nz*nr_freq*2, 2.0d0, perturbed_ao_dmat, 1)
-
     call dealloc(temp_ao_dmat)
-    call dealloc(mo_coef)
 
     call dealloc(isymop)
     call dealloc(ihrmop)
