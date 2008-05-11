@@ -162,14 +162,15 @@ C
 C     The remaining space is
 C how to do it without memget()?
 C
-      call get_free_mwords (freemem)
+c     call get_free_mwords (freemem)
+      call alloc_maxsize(freemem,(nv4*1024*8),10,1)
 c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
-      NVF = ((freemem*1024)-4) / (2 * RCW ) 
+      NVF = (freemem-4) / (2 * RCW ) 
 
 c     NVF = (LFREE-4) / (2 * RCW )
       write(*,*) 'debug : nvf1=',nvf
       write(*,*) 'debug : nvt1=',nvt
-      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
+      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem/1024)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
