@@ -361,13 +361,12 @@ for i in range(len(c_object_l)):
 
 #-------------------------------------------------------------------------------
 
-makefile += 'SLAVE_OBJECTS = abacus/herpar.o\n\n'
 makefile += 'PDLIB = -Lpdpack -lpdlib\n\n'
 makefile += 'TOTAL_F_OBJECTS = $(F77_OBJECTS) $(F90_OBJECTS)\n\n'
 makefile += 'F_CPPS = $(TOTAL_F_OBJECTS:.o=.i)\n\n'
 
 makefile += 'dirac.x: ALL_F90MODS'
-makefile += ' \\\n\tSLAVE_OBJECT' # workaround, make slave also for seq build
+makefile += ' \\\n\tEXTRA_STUFF'
 for directory in directory_l:
     if not directory == 'utils':
        directory_object = string.replace(directory, '/', '') + '_object'
@@ -382,13 +381,13 @@ makefile += 'ftnchek: pre\n'
 makefile += '\tftnchek $(CHEKFLAGS) $(F_CPPS) > dirac.ftnchek\n\n'
 
 makefile += 'dirmpi.x: ALL_F90MODS'
-makefile += ' \\\n\tSLAVE_OBJECT'
+makefile += ' \\\n\tEXTRA_STUFF'
 for directory in directory_l:
     if not directory == 'utils':
        directory_object = string.replace(directory, '/', '') + '_object'
        makefile += ' \\\n\t' + directory_object.upper()
 makefile += '\n\t$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \\\n'
-makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) $(SLAVE_OBJECTS) \\\n'
+makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) \\\n'
 makefile += '\t$(PDLIB) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB)\n\n'
 
 #-------------------------------------------------------------------------------
@@ -423,8 +422,9 @@ for directory in directory_l:
     makefile += directory_object.upper() + ':\n'
     makefile += '\tcd ' + directory + '; $(MAKE) all\n\n'
 
-makefile += 'SLAVE_OBJECT:\n'
-makefile += '\tcd abacus; $(MAKE) slave\n\n'
+makefile += 'EXTRA_STUFF:\n'
+makefile += '\tcd gp && $(MAKE) mxm && cd .. ;\n'
+makefile += '\tcd abacus && $(MAKE) slave && cd .. ;\n'
 
 #-------------------------------------------------------------------------------
 # target depend
