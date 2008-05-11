@@ -246,7 +246,7 @@ if options.large:
 #-------------------------------------------------------------------------------
 # collect directories
 
-directory_l = ['dirac', 'prp', 'abacus', 'amfi', 'gp', 'main', 'relccsd', 'moltra', 'dirrci', 'lucita', 'utils']
+directory_l = ['dirac', 'prp', 'pdpack', 'abacus', 'amfi', 'gp', 'main', 'relccsd', 'moltra', 'dirrci', 'lucita', 'utils']
 for dirac_module in dirac_module_d:
     if dirac_module_d[dirac_module].activated:
        for directory in dirac_module_d[dirac_module].directories:
@@ -271,9 +271,17 @@ for directory in directory_l:
 
 blacklist = []
 
+blacklist.append('pdpack/arhpack.o')
+blacklist.append('pdpack/gpblas.o')
+blacklist.append('pdpack/linextra.o')
+blacklist.append('pdpack/gp_dlapack.o')
+blacklist.append('pdpack/eispack.o')
+blacklist.append('pdpack/dge.o')
+blacklist.append('pdpack/dsp.o')
+blacklist.append('pdpack/printpkg.o')
+blacklist.append('pdpack/gp_zlapack.o')
 blacklist.append('prp/oldrvc.o')
 blacklist.append('abacus/hercen.o')
-blacklist.append('abacus/herpar.o')
 blacklist.append('gp/graphic.o')
 blacklist.append('relccsd/ccints_nomemget.o')
 blacklist.append('relccsd/ccdriv_nomemget.o')
@@ -353,11 +361,13 @@ for i in range(len(c_object_l)):
 
 #-------------------------------------------------------------------------------
 
+makefile += 'SLAVE_OBJECTS = abacus/herpar.o\n\n'
 makefile += 'PDLIB = -Lpdpack -lpdlib\n\n'
 makefile += 'TOTAL_F_OBJECTS = $(F77_OBJECTS) $(F90_OBJECTS)\n\n'
 makefile += 'F_CPPS = $(TOTAL_F_OBJECTS:.o=.i)\n\n'
 
 makefile += 'dirac.x: ALL_F90MODS'
+makefile += ' \\\n\tSLAVE_OBJECT' # workaround, make slave also for seq build
 for directory in directory_l:
     if not directory == 'utils':
        directory_object = string.replace(directory, '/', '') + '_object'
@@ -372,12 +382,13 @@ makefile += 'ftnchek: pre\n'
 makefile += '\tftnchek $(CHEKFLAGS) $(F_CPPS) > dirac.ftnchek\n\n'
 
 makefile += 'dirmpi.x: ALL_F90MODS'
+makefile += ' \\\n\tSLAVE_OBJECT'
 for directory in directory_l:
     if not directory == 'utils':
        directory_object = string.replace(directory, '/', '') + '_object'
        makefile += ' \\\n\t' + directory_object.upper()
 makefile += '\n\t$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \\\n'
-makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) \\\n'
+makefile += '\t$(F77_OBJECTS) $(F90_OBJECTS) $(C_OBJECTS) $(SLAVE_OBJECTS) \\\n'
 makefile += '\t$(PDLIB) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB)\n\n'
 
 #-------------------------------------------------------------------------------
@@ -411,6 +422,9 @@ for directory in directory_l:
     directory_object = string.replace(directory, '/', '') + '_object'
     makefile += directory_object.upper() + ':\n'
     makefile += '\tcd ' + directory + '; $(MAKE) all\n\n'
+
+makefile += 'SLAVE_OBJECT:\n'
+makefile += '\tcd abacus; $(MAKE) slave\n\n'
 
 #-------------------------------------------------------------------------------
 # target depend
