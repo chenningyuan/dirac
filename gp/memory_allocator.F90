@@ -68,7 +68,7 @@
 
          interface initData
             module procedure initData_real_1d
-            module procedure initData_real_1di8
+!           module procedure initData_real_1di8
             module procedure initData_real_2d
             module procedure initData_real_3d
             module procedure initData_real_4d
