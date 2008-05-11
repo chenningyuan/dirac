@@ -384,7 +384,7 @@ C&&&& OPTROT - do optical rotation
             GO TO 100
   133    CONTINUE 
 #ifdef MOD_AORESPONSE
-            call aoresponse_input(work, lwork)
+            call aoresponse_input()
             test_aoresponse = .true.
 #endif /* MOD_AORESPONSE */
             GO TO 100

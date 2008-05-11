@@ -11,8 +11,6 @@ module aoresponse_main_m
 
   implicit none
 
-#include "priunit.h"
-
 ! public test_propint
 ! public test_matrix_operations
 ! public aoresponse_driver
@@ -627,12 +625,12 @@ contains
                                        eigvec)
       end if
 
-      if (debug_me) then
-        call header('response_vector_pph',-1)
-        call prbvec(lupri, response_vector_pph, nr_freq, length_pp)
-        call header('response_vector_ppa',-1)
-        call prbvec(lupri, response_vector_ppa, nr_freq, length_pp)
-      end if
+!     if (debug_me) then
+!       call header('response_vector_pph',-1)
+!       call prbvec(lupri, response_vector_pph, nr_freq, length_pp)
+!       call header('response_vector_ppa',-1)
+!       call prbvec(lupri, response_vector_ppa, nr_freq, length_pp)
+!     end if
 
     end if
 
@@ -664,12 +662,12 @@ contains
                                        eigvec)
       end if
 
-      if (debug_me) then
-        call header('response_vector_pnh',-1)
-        call prbvec(lupri, response_vector_pnh, nr_freq, length_pn)
-        call header('response_vector_pna',-1)
-        call prbvec(lupri, response_vector_pna, nr_freq, length_pn)
-      end if
+!     if (debug_me) then
+!       call header('response_vector_pnh',-1)
+!       call prbvec(lupri, response_vector_pnh, nr_freq, length_pn)
+!       call header('response_vector_pna',-1)
+!       call prbvec(lupri, response_vector_pna, nr_freq, length_pn)
+!     end if
 
     end if
 
