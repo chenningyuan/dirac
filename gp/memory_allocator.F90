@@ -36,7 +36,7 @@
 
          interface alloc
             module procedure alloc_real_1d
-            module procedure alloc_real_1di8
+!            module procedure alloc_real_1di8
             module procedure alloc_real_2d
             module procedure alloc_real_3d
             module procedure alloc_real_4d
@@ -475,32 +475,32 @@
                endif
             end subroutine alloc_real_6d
 
-            subroutine alloc_real_1di8(data,size,id)
-               integer(kind=8)                       :: size
-               integer                               :: status
-               character(len=*), optional            :: id
-               character(len=charArrayLength)        :: local_id
-               real(kind=kreal), allocatable, target :: data(:)
+!           subroutine alloc_real_1di8(data,size,id)
+!              integer(kind=8)                       :: size
+!              integer                               :: status
+!              character(len=*), optional            :: id
+!              character(len=charArrayLength)        :: local_id
+!              real(kind=kreal), allocatable, target :: data(:)
 
-               if (present(id)) then
-                  write (local_id,'(a)') id
-               else
-                  write (local_id,'(a)') 'None'
-               endif
+!              if (present(id)) then
+!                 write (local_id,'(a)') id
+!              else
+!                 write (local_id,'(a)') 'None'
+!              endif
 
-               if (.not.allocated(data)) then
-                  allocate(data(size),stat=status)
+!              if (.not.allocated(data)) then
+!                 allocate(data(size),stat=status)
 
-                  if ( status.ne.0 ) then
-                     call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
-                  else
-                     call initData(data,size)
-!                    call registerAllocation(data,size)
-                  endif
-               else
-                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
-               endif
-            end subroutine alloc_real_1di8
+!                 if ( status.ne.0 ) then
+!                    call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
+!                 else
+!                    call initData(data,size)
+!!                    call registerAllocation(data,size)
+!                  endif
+!               else
+!                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+!               endif
+!            end subroutine alloc_real_1di8
 
             subroutine alloc_int(data,size,id)
                integer                        :: size, status
