@@ -192,7 +192,7 @@ contains
     real(kind_dp),    allocatable :: eigvec(:)
     real(kind_dp),    allocatable :: convergence(:)
 
-    real(kind_dp),    allocatable :: prop_gradient_c(:)
+!   real(kind_dp),    allocatable :: prop_gradient_c(:)
 
     real(kind_dp),    allocatable :: response_vector_pph(:, :, :)
     real(kind_dp),    allocatable :: response_vector_ppa(:, :, :)
@@ -205,7 +205,7 @@ contains
 
     real(kind_dp)                 :: dummy_dp
     logical                       :: skip_pp, skip_pn, do_pp, do_pn
-    logical                       :: debug_me = .true.
+    logical                       :: debug_me = .false.
     character(72)                 :: orbital_string(3,2)
 
     integer(kind_i4)              :: i, ifsym, nr_freq, nr_dmat
@@ -281,13 +281,9 @@ contains
 
     nzconfq = 0
 
-    call alloc(prop_gradient_c,  nzconfq)
-
-    prop_gradient_c  = 0.0d0
 
 
-    call xrsctl(prop_gradient_c,  &
-!   call xrsctl(0.0d0,  &
+    call xrsctl(dummy_dp,         &
                 prop_gradient_pp, &
                 prop_gradient_pn, &
                 ibtyp,            &
@@ -299,9 +295,6 @@ contains
                 eigvec,           &
                 work, kfree, lfree)
 
-    call dealloc(prop_gradient_c)
-!   call dealloc(prop_gradient_pp)
-!   call dealloc(prop_gradient_pn)
     call dealloc(convergence)
     call dealloc(eigval)
 
@@ -390,17 +383,11 @@ contains
 !   construct perturbed ao density matrices
 !   =======================================
 
-    nesim = 0
-    npsim = 0
+    ncsim = 0
+    nesim = nr_freq
+    npsim = nr_freq
 
-!   if (do_pp) then
-      nesim = nr_freq
-!   end if
-!   if (do_pn) then
-      npsim = nr_freq
-!   end if
-
-    ntsim = nesim + npsim
+    ntsim = ncsim + nesim + npsim
 
     call alloc(isymop, ntsim)
     call alloc(ihrmop, ntsim)
@@ -410,17 +397,6 @@ contains
       isymop(i) = jsymop
       ifckop(i) = 1
     end do
-
-!   call alloc(mo_coef,      ntbas(0), ntbas(0), nz)
-
-!   perturbed_ao_dmat = 0.0d0
-!   mo_coef           = 0.0d0
-
-!   call get_mo_coef(mo_coef)
-
-
-
-
 
     call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
 
@@ -475,9 +451,6 @@ contains
     call dealloc(ifckop)
 
     call dealloc(temp_ao_dmat)
-
-    call dealloc(response_vector_ppa)
-    call dealloc(response_vector_pna)
 
   end subroutine solve_perturbed_ao_dmat
 
