@@ -27,8 +27,8 @@
 
 void get_memory_address_(void *variable, long int *address);
 void get_memory_info_(char *fstring, int *flength);
-void get_free_mwords_(size_t *freemw);
-void get_maximum_mwords_(size_t *maxmw);
+void get_free_mwords_(size_t *freemw, size_t *verbose);
+void get_maximum_mwords_(size_t *maxmw, size_t *verbose);
 
 /* variable: is the real 
    address_string: is a character string with the memory address of variable
@@ -82,7 +82,7 @@ void get_memory_info_(char *fstring, int *flength)
 
 
 
-void get_free_mwords_(size_t *freemw)
+void get_free_mwords_(size_t *freemw, size_t *verbose)
 {
    unsigned long total_bytes = 1, total_kbytes = 0;
    size_t i, len;
@@ -99,9 +99,14 @@ void get_free_mwords_(size_t *freemw)
    }
    *freemw = (size_t)(total_kbytes/(1024*8)); 
 
-   printf ("Debug: getFreeMwords() found %d (%ld,%ld) mWords avaiable\n",*freemw,*freemw,total_kbytes);
-   catfile_();
-   showlimits_();
+   if (*verbose == 1)
+      printf ("Debug: getFreeMwords() found %d (%ld,%ld) mWords avaiable\n",*freemw,*freemw,total_kbytes);
+   else if (*verbose == 2)
+   {
+      printf ("Debug: getFreeMwords() found %d (%ld,%ld) mWords avaiable\n",*freemw,*freemw,total_kbytes);
+      catfile_();
+      showlimits_();
+   }
 
 #else
    *freemw = (size_t)(total_kbytes);
@@ -111,7 +116,7 @@ void get_free_mwords_(size_t *freemw)
 #endif /* LINUX_IFACE_MEMORY */
 }
 
-void get_maximum_mwords_(size_t *maxmw)
+void get_maximum_mwords_(size_t *maxmw, size_t *verbose)
 {
    unsigned long total_bytes = 1, total_kbytes = 0;
    size_t i, len;
@@ -128,9 +133,14 @@ void get_maximum_mwords_(size_t *maxmw)
    }
    *maxmw = (size_t)(total_kbytes/(1024*8));
 
-   printf ("Debug: get_maximum_mwords() found %d (%ld,%ld) mWords avaiable\n",*maxmw,*maxmw,total_kbytes);
-   catfile_();
-   showlimits_();
+   if (*verbose == 1)
+      printf ("Debug: get_maximum_mwords() found %d (%ld,%ld) mWords avaiable\n",*maxmw,*maxmw,total_kbytes);
+   else if (*verbose == 2)
+   {
+      printf ("Debug: get_maximum_mwords() found %d (%ld,%ld) mWords avaiable\n",*maxmw,*maxmw,total_kbytes);
+      catfile_();
+      showlimits_();
+   }
 
 #else
    *maxmw = (size_t)(total_kbytes);

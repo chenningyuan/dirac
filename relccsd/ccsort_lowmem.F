@@ -162,7 +162,7 @@ C
 C     The remaining space is
 C how to do it without memget()?
 C
-c     call get_free_mwords (freemem)
+c     call get_free_mwords (freemem,1)
       call alloc_maxsize(freemem,(nv4*1024*8),10,1)
 c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
       NVF = (freemem-4) / (2 * RCW ) 

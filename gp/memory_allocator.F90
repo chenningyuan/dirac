@@ -119,14 +119,12 @@
                character(len=charArrayLength) :: kbytesAvailable
                character(len=1)               :: dummy
 
-
                isFatal = .True.
-               ignoreErrorlocal = .False.
 
-               if (present(ignoreError)) then
-                  ignoreErrorLocal = .False.
+               if (present(ignoreError)) then 
+                  ignoreErrorLocal = ignoreError
                else
-                  ignoreErrorLocal = .True.
+                  ignoreErrorLocal = .False.
                endif
 
                if (present(size)) then 
@@ -144,13 +142,11 @@
                if (present(var_id)) then
                   if (var_id.ne.'None') then
                      write (*,*) ' '
-                     write (*,*) ' *** Warning: for identifier '//var_id
-                     write (*,*) ' '
+                     write (*,*) ' *** Warning: at allocation for identifier '//var_id(1:42)
+!                    write (*,*) ' '
                   endif
                endif
  
-!              ignoreErrorlocal = .False.
-                             
                InfoMessage  = 'Unknown error!'
                ErrorMessage = InfoMessage
                trace_result = 'unknown (stack trace info unavailable)'
@@ -180,12 +176,12 @@
                         'but memory available is '//kbytesAvailable(1:24)
 
 !                    call catfile()
-                     ErrorMessage = 'Memory allocation failure at '//trace_result
+                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
 
 
                   case (deallocateFailure)
-                     InfoMessage  = 'Memory deallocation failed at '//trace_result//' !'
+                     InfoMessage  = 'Memory deallocation failed at '//trace_result(1:42)//' !'
                      ErrorMessage = 'deallocation failed!'
                      isFatal = .False.
    
@@ -193,23 +189,23 @@
 
                if (isFatal) then
                   if (ignoreErrorLocal) then
-                     write (*,*) ' '
-                     write (*,*) 'Non-fatal error at '//trace_result//'. The program will continue.'
-                     write (*,*) ' '
+!                    write (*,*) ' '
+                     write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
+!                    write (*,*) ' '
                   else
-                     write (*,*) ' '
+!                    write (*,*) ' '
                      write (*,*) InfoMessage
-                     write (*,*) ' '
+!                    write (*,*) ' '
                      call quit(ErrorMessage)
                   endif
                else
-                  write (*,*) ' '
-                  write (*,*) 'Warning! non-fatal error at '//trace_result
+!                 write (*,*) ' '
+                  write (*,*) 'Warning! non-fatal error at '//trace_result(1:42)
                   write (*,*) ' '
                   write (*,*) InfoMessage
                   write (*,*) ' '
                   write (*,*) 'The program will continue...'
-                  write (*,*) ' '
+!                 write (*,*) ' '
                endif
                
             end subroutine allocErrorHandler
@@ -830,12 +826,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
       subroutine alloc_maxsize_k8(maxsize,minimal,nstep,direction)
-         integer :: step, minimal, mykind, direction,i,nstep,maximum, status,maxsize
+         integer :: step, minimal, mykind, direction,i,nstep,maximum, status,maxsize,verbose
          real(kind=8), allocatable :: data(:)
 
          maxsize = minimal
+         verbose = 1
 
-         call get_maximum_mwords(maximum)
+         call get_maximum_mwords(maximum,verbose)
 
          if (maximum.gt.minimal) then
 
