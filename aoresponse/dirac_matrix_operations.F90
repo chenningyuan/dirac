@@ -23,7 +23,10 @@ module dirac_matrix_operations_m
     integer(kind_i4)       :: ncol
     integer                :: nz
     real(kind_dp), pointer :: elements(:)
-    integer                :: ih
+    integer                :: ih_sym
+    integer                :: tr_sym
+    integer                :: pg_sym
+    integer                :: fermi_pointer
   end type matrix
 
   public matrix
@@ -161,8 +164,11 @@ contains
       call quit('a undefined in mat_print(a)')
     end if
 
-    write(*, *) 'matrix ', label
-    write(*, *) 'ih = ', a%ih
+    write(*, *) 'matrix        = ', label
+    write(*, *) 'ih_sym        = ', a%ih_sym       
+    write(*, *) 'tr_sym        = ', a%tr_sym       
+    write(*, *) 'pg_sym        = ', a%pg_sym       
+    write(*, *) 'fermi_pointer = ', a%fermi_pointer
 
     if (associated(a%elements)) then
       call prqmat(a%elements,   &
@@ -193,10 +199,13 @@ contains
 
     if (baddress(a) /= baddress(b)) call delref(a)
 
-    a%nrow = b%nrow
-    a%ncol = b%ncol
-    a%nz   = b%nz
-    a%ih   = b%ih
+    a%nrow          = b%nrow
+    a%ncol          = b%ncol
+    a%nz            = b%nz
+    a%ih_sym        = b%ih_sym
+    a%tr_sym        = b%tr_sym
+    a%pg_sym        = b%pg_sym
+    a%fermi_pointer = b%fermi_pointer
 
     a%elements => b%elements
 
@@ -242,10 +251,13 @@ contains
       call quit('a undefined in b = r*a')
     end if
 
-    b%nrow = a%nrow
-    b%ncol = a%ncol
-    b%nz   = a%nz
-    b%ih   = a%ih
+    b%nrow          = a%nrow
+    b%ncol          = a%ncol
+    b%nz            = a%nz
+    b%ih_sym        = a%ih_sym
+    b%tr_sym        = a%tr_sym
+    b%pg_sym        = a%pg_sym
+    b%fermi_pointer = a%fermi_pointer
 
     nullify(b%elements)
 

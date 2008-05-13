@@ -29,9 +29,12 @@ contains
 
     real(kind_dp), allocatable :: prop_gradient_pp(:)
     real(kind_dp), allocatable :: prop_gradient_pn(:)
+    integer         , allocatable :: orbital_rotation_vector_pp(:, :)
+    integer         , allocatable :: orbital_rotation_vector_pn(:, :)
 
     real(kind_dp), allocatable :: work(:)
     integer(kind_i4)           :: kfree, lfree
+    integer(kind_i4)           :: length_pp, length_pn
 
     call mat_init(C, ntbas(0), ntbas(0))
     call get_mo_coef(C)
@@ -58,17 +61,32 @@ contains
     call alloc(work, lfree)
 !!!!!!!!!!
 
-!!!!!!!!!!
-    nzxopeq = 560
-    nzxoppq = 660
-    call alloc(prop_gradient_pp, nzxopeq)
-    call alloc(prop_gradient_pn, nzxoppq)
-    prop_gradient_pp = 0.0d0
-    prop_gradient_pn = 0.0d0
-!!!!!!!!!!
 
-    call get_prop_gradient('ZDIPLEN', prop_gradient_pp, prop_gradient_pn, work, kfree, lfree)
-    call solve_perturbed_ao_dmat('ZDIPLEN', prop_gradient_pp, prop_gradient_pn, freq, C, D1H, D1A, work, kfree, lfree)
+
+    call figure_out_length_of_response_vector(length_pp, length_pn)
+
+    call alloc(prop_gradient_pp, length_pp*nz)
+    call alloc(prop_gradient_pn, length_pn*nz)
+
+    allocate(orbital_rotation_vector_pp(2, length_pp))
+    allocate(orbital_rotation_vector_pn(2, length_pn))
+
+    call set_orbital_rotation_vector(orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                                     length_pp, length_pn)
+
+    call prop_gradient_aomo(find_op_index('ZDIPLEN'), A, C,                         &
+                            orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                            prop_gradient_pp, prop_gradient_pn,                     &
+                            work, kfree, lfree)
+
+
+!   call get_prop_gradient('ZDIPLEN', prop_gradient_pp, prop_gradient_pn, work, kfree, lfree)
+    call solve_perturbed_ao_dmat('ZDIPLEN', &
+                                 prop_gradient_pp, prop_gradient_pn, &
+                                 orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                                 freq, C, D1H, D1A, work, kfree, lfree)
+    deallocate(orbital_rotation_vector_pp)
+    deallocate(orbital_rotation_vector_pn)
 !   call quit('over and out')
 
     call dealloc(work)
@@ -92,30 +110,229 @@ contains
 
   end subroutine aoresponse_driver
 
-  subroutine get_prop_gradient(op_name, prop_gradient_pp, prop_gradient_pn, work, kfree, lfree)
+  subroutine set_orbital_rotation_vector(orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                                         length_pp, length_pn)
 
-    character(*),     intent(in)    :: op_name
-    real(kind_dp),    intent(inout) :: prop_gradient_pp(:)
-    real(kind_dp),    intent(inout) :: prop_gradient_pn(:)
+    integer         , intent(out) :: orbital_rotation_vector_pp(2, length_pp)
+    integer         , intent(out) :: orbital_rotation_vector_pn(2, length_pn)
+    integer(kind_i4), intent(in)  :: length_pp
+    integer(kind_i4), intent(in)  :: length_pn
+
+#include "dcborb.h"
+#include "dgroup.h"
+
+    integer(kind_i4)              :: counter_pp
+    integer(kind_i4)              :: counter_pn
+
+    integer(kind_i4)              :: pg_nr,    egi_nr,    egs_nr
+    integer(kind_i4)              :: pu_nr,    eui_nr,    eus_nr
+    integer(kind_i4)              :: pg_start, egi_start, egs_start
+    integer(kind_i4)              :: pu_start, eui_start, eus_start
+    integer(kind_i4)              :: i, a
+
+    logical                       :: debug_me = .false.
+
+    pg_nr  = npsh(1)
+    pu_nr  = npsh(2)
+    egi_nr = nish(1)
+    eui_nr = nish(2)
+    egs_nr = nesh(1) - nish(1)
+    eus_nr = nesh(2) - nish(2)
+
+    pg_start  = 1
+    egi_start = pg_start  + pg_nr
+    egs_start = egi_start + egi_nr
+
+    pu_start  = pg_nr     + pu_nr  + egi_nr + 1
+    eui_start = pu_start  + pu_nr
+    eus_start = eui_start + eui_nr
+
+    counter_pp = 0
+    counter_pn = 0
+
+    if (nfsym == 2) then
+
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = eus_start, eus_start + eus_nr - 1
+          counter_pp = counter_pp + 1
+          orbital_rotation_vector_pp(1, counter_pp) = i
+          orbital_rotation_vector_pp(2, counter_pp) = a
+        end do
+      end do
+      do i = eui_start, eui_start + eui_nr - 1
+        do a = egs_start, egs_start + egs_nr - 1
+          counter_pp = counter_pp + 1
+          orbital_rotation_vector_pp(1, counter_pp) = i
+          orbital_rotation_vector_pp(2, counter_pp) = a
+        end do
+      end do
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = pu_start, pu_start + pu_nr - 1
+          counter_pn = counter_pn + 1
+          orbital_rotation_vector_pn(1, counter_pn) = i
+          orbital_rotation_vector_pn(2, counter_pn) = a
+        end do
+      end do
+      do i = eui_start, eui_start + eui_nr - 1
+        do a = pg_start, pg_start + pg_nr - 1
+          counter_pn = counter_pn + 1
+          orbital_rotation_vector_pn(1, counter_pn) = i
+          orbital_rotation_vector_pn(2, counter_pn) = a
+        end do
+      end do
+
+    else
+
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = egs_start, egs_start + egs_nr - 1
+          counter_pp = counter_pp + 1
+          orbital_rotation_vector_pp(1, counter_pp) = i
+          orbital_rotation_vector_pp(2, counter_pp) = a
+        end do
+      end do
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = pg_start, pg_start + pg_nr - 1
+          counter_pn = counter_pn + 1
+          orbital_rotation_vector_pn(1, counter_pn) = i
+          orbital_rotation_vector_pn(2, counter_pn) = a
+        end do
+      end do
+
+    end if
+
+    if (debug_me) then
+      call header('orbital_rotation_vector_pp', -1)
+      do i = 1, size(orbital_rotation_vector_pp)/2
+        write(*, *) i, orbital_rotation_vector_pp(1, i), '->', orbital_rotation_vector_pp(2, i)
+      end do
+      call header('orbital_rotation_vector_pn', -1)
+      do i = 1, size(orbital_rotation_vector_pn)/2
+        write(*, *) i, orbital_rotation_vector_pn(1, i), '->', orbital_rotation_vector_pn(2, i)
+      end do
+    end if
+
+  end subroutine set_orbital_rotation_vector
+
+  subroutine figure_out_length_of_response_vector(length_pp, length_pn)
+
+    integer(kind_i4), intent(out) :: length_pp, length_pn
+
+#include "dcborb.h"
+#include "dgroup.h"
+
+    integer(kind_i4)              :: pg_nr,    egi_nr,    egs_nr
+    integer(kind_i4)              :: pu_nr,    eui_nr,    eus_nr
+    integer(kind_i4)              :: pg_start, egi_start, egs_start
+    integer(kind_i4)              :: pu_start, eui_start, eus_start
+    integer(kind_i4)              :: i, a
+
+    pg_nr  = npsh(1)
+    pu_nr  = npsh(2)
+    egi_nr = nish(1)
+    eui_nr = nish(2)
+    egs_nr = nesh(1) - nish(1)
+    eus_nr = nesh(2) - nish(2)
+
+    pg_start  = 1
+    egi_start = pg_start  + pg_nr
+    egs_start = egi_start + egi_nr
+
+    pu_start  = pg_nr     + pu_nr  + egi_nr + 1
+    eui_start = pu_start  + pu_nr
+    eus_start = eui_start + eui_nr
+
+    length_pp = 0
+    length_pn = 0
+
+    if (nfsym == 2) then
+
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = eus_start, eus_start + eus_nr - 1
+          length_pp = length_pp + 1
+        end do
+      end do
+      do i = eui_start, eui_start + eui_nr - 1
+        do a = egs_start, egs_start + egs_nr - 1
+          length_pp = length_pp + 1
+        end do
+      end do
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = pu_start, pu_start + pu_nr - 1
+          length_pn = length_pn + 1
+        end do
+      end do
+      do i = eui_start, eui_start + eui_nr - 1
+        do a = pg_start, pg_start + pg_nr - 1
+          length_pn = length_pn + 1
+        end do
+      end do
+
+    else
+
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = egs_start, egs_start + egs_nr - 1
+          length_pp = length_pp + 1
+        end do
+      end do
+      do i = egi_start, egi_start + egi_nr - 1
+        do a = pg_start, pg_start + pg_nr - 1
+          length_pn = length_pn + 1
+        end do
+      end do
+
+    end if
+
+  end subroutine figure_out_length_of_response_vector
+
+
+
+
+
+
+
+
+
+
+
+
+  subroutine prop_gradient_aomo(op_index, A, C,                                         &
+                                orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                                prop_gradient_pp, prop_gradient_pn,                     &
+                                work, kfree, lfree)
+
+    integer(kind_i4), intent(in)    :: op_index
+    type(matrix),     intent(in)    :: A, C
+    integer         , intent(in) :: orbital_rotation_vector_pp(:, :)
+    integer         , intent(in) :: orbital_rotation_vector_pn(:, :)
+    real(kind_dp),    intent(out) :: prop_gradient_pp(:)
+    real(kind_dp),    intent(out) :: prop_gradient_pn(:)
     real(kind_dp),    intent(inout) :: work(:)
     integer(kind_i4), intent(inout) :: kfree, lfree
 
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 
-    integer(kind_i4)                :: op_index, ifsym
+    type(matrix)                    :: M
+    integer(kind_i4)                :: ifsym
     real(kind_dp)                   :: dummy_dp
     logical                         :: skip_pp, skip_pn
-    logical                         :: debug_me = .false.
+    logical                         :: debug_me = .true.
     character(72)                   :: orbital_string(3,2)
+    integer(kind_i4)              :: length_pp, length_pn, ih
 
-    op_index = find_op_index(op_name)
+
+    real(kind_dp), allocatable :: internal_work(:)
+    integer(kind_i4)           :: lwork
+
+
     jsymop   = iprpsym(op_index)
     jtimop   = iprptim(op_index)
     jopsy    = jbtof(jsymop - 1, 1)
 
-    call setdcbidx()
+!   call setdcbidx()
 
     do ifsym = 1, nfsym
       orbital_string(1, ifsym) = ' '
@@ -131,40 +348,52 @@ contains
                  skip_pn,        &
                  work, kfree, lfree)
 
-    call xrspar(orbital_string, &
-                skip_pp,        &
-                skip_pn,        &
-                work, kfree, lfree, 0)
+!   call xrspar(orbital_string, &
+!               skip_pp,        &
+!               skip_pn,        &
+!               work, kfree, lfree, 0)
+    length_pp = size(prop_gradient_pp)/nz
+    length_pn = size(prop_gradient_pn)/nz
 
-    nzconf = 0
+    lwork = 400*ntbas(0)*ntbas(0) ! no idea how much is needed
+    call alloc(internal_work, lwork)
+    M = 1.0d-100*A
 
-    call pamgrd(op_index,         &
-                dummy_dp,         &
-                prop_gradient_pp, &
-                prop_gradient_pn, &
-                jopsy,            &
-                work(kzconf),     &
-                work(kzxope),     &
-                work(kzxopp),     &
-                nzconf,           &
-                nzxope,           &
-                nzxopp,           &
-                work, kfree, lfree, 0)
+
+    ih = 1
+    call qrfaomo(M%elements, A%elements, jsymop, jtimop, jopsy, 0, C%elements, internal_work, lwork)
+!   call mat_print(M)
+    call prporb(prop_gradient_pp, orbital_rotation_vector_pp, length_pp, M%elements, norbt, dummy_dp, nz, ih, 0)
+!   call prporb(prop_gradient_pn, orbital_rotation_vector_pn, length_pn, M%elements, norbt, dummy_dp, nz, ih, 0)
+
+    call dealloc(internal_work)
 
     if (debug_me) then
       call header('prop_gradient_pp', -1)
-      call print_q_vector(prop_gradient_pp, nzxope)
+      call print_q_vector(prop_gradient_pp, length_pp)
       call header('prop_gradient_pn', -1)
-      call print_q_vector(prop_gradient_pn, nzxopp)
+      call print_q_vector(prop_gradient_pn, length_pn)
     end if
 
-  end subroutine get_prop_gradient
+    nzxope = length_pp
+    nzxopp = length_pn
+    nzxopeq = length_pp*nz
+    nzxoppq = length_pn*nz
 
-  subroutine solve_perturbed_ao_dmat(op_name, prop_gradient_pp, prop_gradient_pn, freq, C, D1H, D1A, work, kfree, lfree)
+  end subroutine prop_gradient_aomo
+
+
+
+
+  subroutine solve_perturbed_ao_dmat(op_name, prop_gradient_pp, prop_gradient_pn, &
+                                orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
+                                     freq, C, D1H, D1A, work, kfree, lfree)
 
     character(*),     intent(in)    :: op_name
     real(kind_dp),    intent(in)    :: prop_gradient_pp(:)
     real(kind_dp),    intent(in)    :: prop_gradient_pn(:)
+    integer         , intent(in) :: orbital_rotation_vector_pp(:, :)
+    integer         , intent(in) :: orbital_rotation_vector_pn(:, :)
     real(kind_dp),    intent(in)    :: freq(:)
     type(matrix),     intent(inout) :: C, D1H, D1A
     real(kind_dp),    intent(inout) :: work(:)
@@ -205,12 +434,14 @@ contains
 
     real(kind_dp)                 :: dummy_dp
     logical                       :: skip_pp, skip_pn, do_pp, do_pn
-    logical                       :: debug_me = .false.
+    logical                       :: debug_me = .true.
     character(72)                 :: orbital_string(3,2)
 
-    integer(kind_i4)              :: i, ifsym, nr_freq, nr_dmat
+    integer(kind_i4)              :: i, j, counter
+    integer(kind_i4)              :: ifsym, nr_freq, nr_dmat
     integer(kind_i4)              :: length_pp, length_pn
     integer(kind_i4)              :: ill_int, isl_int, iss_int, igt_int
+
 
     static = .false.
     if (nr_freq == 1 .and. freq(1) == 0.0d0) then
@@ -264,6 +495,33 @@ contains
 !               work, kfree, lfree, 0)
 
 
+!
+      NZCONF   = 0
+      NZCONFQ  = 0
+!
+!===TODO end
+      NZXOPEQ  = NZXOPE *NZ
+      NZXOPPQ  = NZXOPP *NZ
+      NZXOPT   = NZXOPE + NZXOPP
+      NZXOPTQ  = NZXOPT *NZ
+!
+!     Total number of parameters
+!     ==========================
+!
+      NZVAR    = NZCONF + NZXOPT
+      NZVARQ   = NZCONFQ + NZXOPTQ
+
+      write(*, *) ' NZXOPEQ     :',    NZXOPEQ  
+      write(*, *) ' NZXOPPQ     :',    NZXOPPQ  
+      write(*, *) ' NZXOPT      :',    NZXOPT   
+      write(*, *) ' NZXOPTQ     :',    NZXOPTQ  
+
+
+ 
+
+
+
+
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
@@ -283,6 +541,58 @@ contains
 
 
 
+    length_pp = size(prop_gradient_pp)/nz
+    length_pn = size(prop_gradient_pn)/nz
+
+
+
+
+
+!   here i have to do some dirty cheating
+!   this is because xrsctl deep inside uses 
+!   work(kzxope) and work(kzxopp)
+!   to get the orbital_rotation_vector 
+!   from today's perspective this was perhaps 
+!   not a good choice but we have to live with it
+
+!     call bloody_work_array(orbital_rotation_vector_pp, &
+!                                  orbital_rotation_vector_pn, &
+!                                  length_pp, &
+!                                  length_pn, &
+!                                  work(kfree), lfree)
+!     call query_bloody_work_array(work)
+!     call quit('out')
+!   write(*, *) 'blub1', kzxope, kzxopp
+!   
+    call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree) 
+    call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree) 
+
+    call fill_work(length_pp,                  &
+                   length_pn,                  &
+                   orbital_rotation_vector_pp, &
+                   orbital_rotation_vector_pn, &
+                   work(kzxope),               &
+                   work(kzxopp))
+
+
+!   write(*, *) 'blub2', kzxope, kzxopp
+!   counter = 0
+!   do i = 1, length_pp
+!     write(*, *) 'blub*', orbital_rotation_vector_pp(1, i)
+!     work(kzxope + counter) = orbital_rotation_vector_pp(1, i)
+!     counter = counter + 1
+!     work(kzxope + counter) = orbital_rotation_vector_pp(2, i)
+!     counter = counter + 1
+!   end do
+
+!   counter = 0
+!   do i = 1, length_pn
+!     work(kzxopp + counter) = orbital_rotation_vector_pn(1, i)
+!     counter = counter + 1
+!     work(kzxopp + counter) = orbital_rotation_vector_pn(2, i)
+!     counter = counter + 1
+!   end do
+
     call xrsctl(dummy_dp,         &
                 prop_gradient_pp, &
                 prop_gradient_pn, &
@@ -294,6 +604,10 @@ contains
                 eigval,           &
                 eigvec,           &
                 work, kfree, lfree)
+    write(*, *) 'hier 14'
+
+!   call memrel('aoresponse', work, 1, kzxopp, kfree, lfree) 
+!   call memrel('aoresponse', work, 1, kzxope, kfree, lfree) 
 
     call dealloc(convergence)
     call dealloc(eigval)
@@ -304,8 +618,6 @@ contains
 
 
 
-    length_pp = size(prop_gradient_pp)/nz
-    length_pn = size(prop_gradient_pn)/nz
 
     call alloc(response_vector_pph, length_pp, nz, nr_freq)
     response_vector_pph = 0.0
@@ -456,10 +768,33 @@ contains
 
 
 
+! subroutine fill_work(length_pp,                  &
+!                      length_pn,                  &
+!                      orbital_rotation_vector_pp, &
+!                      orbital_rotation_vector_pn, &
+!                      jxop_pp,                    &
+!                      jxop_pn)
 
+!   integer(kind_i4), intent(in)    :: length_pp
+!   integer(kind_i4), intent(in)    :: length_pn
+!   integer(kind_i4), intent(in)    :: orbital_rotation_vector_pp(2, length_pp)
+!   integer(kind_i4), intent(in)    :: orbital_rotation_vector_pn(2, length_pn)
+!   integer(kind_i4), intent(inout) :: jxop_pp(2, length_pp)
+!   integer(kind_i4), intent(inout) :: jxop_pn(2, length_pn)
 
+!   integer(kind_i4)                :: i
 
+!   do i = 1, length_pp
+!     jxop_pp(1, i) = orbital_rotation_vector_pp(1, i)
+!     jxop_pp(2, i) = orbital_rotation_vector_pp(2, i)
+!   end do
 
+!   do i = 1, length_pn
+!     jxop_pn(1, i) = orbital_rotation_vector_pn(1, i)
+!     jxop_pn(2, i) = orbital_rotation_vector_pn(2, i)
+!   end do
+! 
+! end subroutine fill_work
 
 
 
@@ -534,7 +869,32 @@ contains
 
   end subroutine construct_response_vector
 
+
+
+
+
+
+
+  subroutine print_vector(vector, vector_dimension)
+
+    real(kind_dp),    intent(in) :: vector(:)
+    integer(kind_i4), intent(in) :: vector_dimension
+
+#include "dgroup.h"
+
+    call prqmat(vector,           &
+                vector_dimension, &
+                1,                &
+                vector_dimension, &
+                1,                &
+                1,                &
+                ipqtoq(1, 0),     &
+                6)
+
+  end subroutine print_vector
+
   subroutine print_q_vector(vector, vector_dimension)
+
     real(kind_dp),    intent(in) :: vector(:)
     integer(kind_i4), intent(in) :: vector_dimension
 
@@ -550,6 +910,13 @@ contains
                 6)
 
   end subroutine print_q_vector
+
+
+
+
+
+
+
 
 
   subroutine test_propint()

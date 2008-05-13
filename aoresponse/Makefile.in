@@ -1,7 +1,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = 
+F77_OBJS = helper.o
 
 F90_OBJS = aoresponse_input.o \
            dirac_matrix_operations.o \

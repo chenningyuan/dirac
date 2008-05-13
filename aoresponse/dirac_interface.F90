@@ -70,6 +70,7 @@ contains
     logical,       allocatable :: first(:)
     real(kind_dp), allocatable :: work(:)
 
+    integer(kind_i4)           :: op_index
     integer(kind_i4)           :: kfree, lfree
     logical                    :: file_exists, is_square
     real(kind_dp)              :: dummy_dp
@@ -111,15 +112,21 @@ contains
 
     if (.not. isdef(A)) call mat_init(A, ntbas(0), ntbas(0))
 
-    call prpex2(find_op_index(op_name), &
-                dummy_dp,               &
-                .false.,                &
-                idimension,             &
-                ptri,                   &
-                A%elements,             &
-                op1int,                 &
-                first,                  &
+    op_index = find_op_index(op_name)
+
+    call prpex2(op_index,   &
+                dummy_dp,   &
+                .false.,    &
+                idimension, &
+                ptri,       &
+                A%elements, &
+                op1int,     &
+                first,      &
                 work, kfree, lfree, 0)
+
+    A%pg_sym        = iprpsym(op_index)
+    A%tr_sym        = iprptim(op_index)
+    A%fermi_pointer = jbtof(A%pg_sym - 1, 1)
 
     close(file_unit, &
           status = 'keep')
