@@ -10,6 +10,7 @@ module dirac_interface_m
 contains
 
   subroutine get_mo_coef(C)
+
     type(matrix), intent(inout) :: C
 
 #include "dcborb.h"
@@ -127,6 +128,9 @@ contains
     A%pg_sym        = iprpsym(op_index)
     A%tr_sym        = iprptim(op_index)
     A%fermi_pointer = jbtof(A%pg_sym - 1, 1)
+!!!!!!!!!!!
+    A%ih_sym        = 1
+!!!!!!!!!!!
 
     close(file_unit, &
           status = 'keep')
