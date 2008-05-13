@@ -127,7 +127,7 @@ CONTAINS
     
    
     select case(key)
-    case('gridpoints'); str='width="3"'
+    case('gridpoints'); str='width="4"'
     case('grad_rho'); str='width="3"'
     case('hes_rho'); str='width="6"'
     case default; str=''
@@ -140,7 +140,7 @@ CONTAINS
     SELECT CASE(key)
     CASE('gridpoints')
        DO i=1,size(points)
-          WRITE(fileid,tab('4e24.16')) points(i)%x
+          WRITE(fileid,tab('4e24.16')) points(i)%x, points(i)%weight
        END DO
     CASE('weight')
        DO i=1,size(points)
@@ -199,7 +199,7 @@ CONTAINS
     indent=indent+3
     
     CALL XML_SECTION(fileid, points, 'gridpoints')
-    CALL XML_SECTION(fileid, points, 'weight')
+!    CALL XML_SECTION(fileid, points, 'weight')
     CALL XML_SECTION(fileid, points, 'rho')
     CALL XML_SECTION(fileid, points, 'vc')
     CALL XML_SECTION(fileid, points, 'grad_rho')
