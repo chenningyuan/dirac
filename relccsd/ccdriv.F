@@ -684,13 +684,13 @@ C
       MXCORR1 = 0
 
       if (lowmem) then
-         call CCSETI_LM (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
+         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
       else
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
       endif
 
-      IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
       CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
@@ -721,7 +721,8 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-         if (.not.lowmem) CALL QUIT("INCREASE MWORD")
+c        if (.not.lowmem) CALL QUIT("INCREASE MWORD")
+         CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
@@ -750,7 +751,7 @@ C
       CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) THEN
          if (lowmem) then
-            call CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+            call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
          else
             CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
@@ -1728,13 +1729,6 @@ C
       ENDDO
 C
       IF (FOCKSP) THEN
-
-!        IF (REPORT.AND.DOIH) THEN
-CMI      IF (REPORT) THEN
-!         WRITE(IW,'(2X,A)')    
-!    &    'Orbitals in Pi space mentioned with (1), otherwise (0)'    
-!          write(IW,*) 'EHMIN,EPMIN:',ER_IH(1,1),ER_IH(1,2)
-!          write(IW,*) 'EHMAX,EPMAX:',ER_IH(2,1),ER_IH(2,2)
           ! ... initialization
           DO IREP = 1, NREP
             NAOPI(IREP) = 0
@@ -1767,30 +1761,17 @@ C           Always fill this array, used in intermediate Hamiltonian formalism
 
             IF (IPIORB(I).EQ.1) THEN
 
-!            write(IW,'(2X,A,2I3,A,F15.6)')
-!    &     'IPIORB(I)=1 in Pi (occ.,virt.) for EPS(',I,IREP,')=',EPS(I)
-
              IF ( EPS(I).GE.ER_IH(1,1).AND.EPS(I).LE.ER_IH(2,1) ) THEN
                IF ( NAOPI(IREP).LT.NAO(IREP) ) THEN
                  NAOPI(IREP) = NAOPI(IREP) + 1
-!              write(IW,'(2X,A,I3,A,I3)')
-!    &         'increasing NAOPI(',IREP,')=',NAOPI(IREP)
                ELSE
-!              write(IW,*) 'SYMTAB: occ Pi out of bound for IREP=',IREP,
-!    &          ' NAO(IREP)=',NAO(IREP),
-!    &          ' NAOPI(IREP)= ',NAOPI(IREP)
                ENDIF
              ENDIF
 
              IF ( EPS(I).GE.ER_IH(1,2).AND.EPS(I).LE.ER_IH(2,2) ) THEN
                IF (NAVPI(IREP) .LT. NAV(IREP) ) THEN
                  NAVPI(IREP) = NAVPI(IREP) + 1
-!              write(IW,'(2X,A,I3,A,I3)')
-!    &         'increasing NAOVI(',IREP,')=',NAVPI(IREP)
                ELSE
-!            write(IW,*) 'SYMTAB: virt Pi out of bounds for IREP=',IREP,
-!    &          ' NAV(IREP)=',NAV(IREP),
-!    &          ' NAVPI(IREP)= ',NAVPI(IREP)
                ENDIF
              ENDIF
            ENDIF
@@ -1842,9 +1823,7 @@ CMI         ENDIF
 
 !        ENDDO
 
-CMI         ... print out if Pi 
         IF (REPORT.AND.DOIH) THEN
-           !  WRITE(IW,'(/2X,A,I2)') '...configuration with IH'
 
          IF (NREP.GT.8) THEN
 CMI ..... write only active irreps
@@ -3086,8 +3065,6 @@ C     Solve Fock space equation sector by sector
 C
       DO ICURFSS = 1, 6
       IF (FSSECT(ICURFSS).NE.0) THEN
-CMI     ISECT = IFSS(ICURFSS)
-CMI     WRITE (IW,1009) ISECT
         WRITE (IW,1009) IFSS(ICURFSS)
         WRITE(IW,'(2X,A,I3)')
      &  '...maximum number of iterations for this sector:',
@@ -3098,8 +3075,6 @@ CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
 CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS),RCW))
         ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
         ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
-CMI   ... instead of MAXIT put sector specific MAXITxy
-C       CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
      &             CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),

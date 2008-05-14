@@ -37,7 +37,7 @@ C
 C  $Id$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+      SUBROUTINE CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
       IMPLICIT INTEGER (A-Z)
@@ -141,10 +141,6 @@ C
 
       total_mem_new = total_mem_new / 8
 
-      MXCORR = MAX(MXCORR,total_mem_new)
-c     write(*,*) 
-c    & 'debug : total_mem_new after initial allocs =',
-c    &                 total_mem_new,mxcorr
 Caspg, replacing memget
 C
 C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
@@ -165,12 +161,14 @@ C
 c     call get_free_mwords (freemem,1)
       call alloc_maxsize(freemem,(nv4*1024*8),10,1)
 c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
-      NVF = (freemem-4) / (2 * RCW ) 
-
 c     NVF = (LFREE-4) / (2 * RCW )
+      NVF = (freemem-4) / (2 * RCW) 
+C aspg, 20080514
+C hack to split memory on a node per mpi process . to change soon 
+      NVF = NVF/16
       write(*,*) 'debug : nvf1=',nvf
       write(*,*) 'debug : nvt1=',nvt
-      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem/1024)
+      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -216,14 +214,6 @@ C     the different classes, one at a time
       endif
 
       total_mem_new = total_mem_new + 2*(NVTMIN*RCW)
-
-C     write (*,*) 'debug: nfoo',nfoo,'nfvo',nfvo,'nfvv',nfvv 
-C     write (*,*) 'debug: nvt',nvt,'nvtmin',nvtmin
-
-      MXCORR = MAX(MXCORR,total_mem_new)
-
-c     if (mytid.eq.0) write(*,*) 'debug : total_mem_new after nvtmin =',
-c    &                            total_mem_new,mxcorr
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,*) ''
@@ -236,7 +226,7 @@ C
          WRITE (IW,*) '      increasing the number of passes for VOVV'
          WRITE (IW,*) '      and VVVV'
          WRITE (IW,*) ''
-         WRITE (IW,1001) "reading and sorting integrals",MXCORR
+         WRITE (IW,1001) "reading and sorting integrals",total_mem_new
          WRITE (IW,1001) "integral sorting buffers only",(2*NVTMIN*RCW)
          WRITE (IW,*) ''
          RETURN
