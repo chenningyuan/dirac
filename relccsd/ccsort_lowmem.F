@@ -467,13 +467,13 @@ C     then the vovv, symmetric and antisymmetric parts
     5 ICOUNT = 0
       call integral_pass(interface,'VOVV',ints,intsa,nvt,nv5par,14,5,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
-     &                             cbuf,ibuf,mreader,fnode,fnam)
+     &                             cbuf,ibuf,mreader,fnode)
 C
 C     then the vovv, symmetric and antisymmetric parts
     6 ICOUNT = 0
       call integral_pass(interface,'VVVV',ints,intsa,nvt,nv6par,16,6,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
-     &                             cbuf,ibuf,mreader,fnode,fnam)
+     &                             cbuf,ibuf,mreader,fnode)
 
 C
   500 CLOSE(MDINT)
