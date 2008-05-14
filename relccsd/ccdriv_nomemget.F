@@ -684,13 +684,13 @@ C
       MXCORR1 = 0
 
       if (lowmem) then
-         call CCSETI_LM (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
+         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
       else
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
       endif
 
-      IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
       CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
@@ -721,11 +721,7 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-C aspg: comment out this for now, because MAXCOR in the dynamic
-C       setup should either be disregarded (and we allocate until)
-C       we fail OR by querying the operating system for the amount
-C       of free memory it has.
-        if (.not.lowmem) CALL QUIT("INCREASE MWORD")
+         CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
@@ -754,7 +750,7 @@ C
       CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) THEN
          if (lowmem) then
-            call CCSETI_LM (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+            call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
          else
             CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
