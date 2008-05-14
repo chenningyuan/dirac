@@ -567,7 +567,7 @@ contains
     integer(kind_i4)              :: length_pp, length_pn
     integer(kind_i4)              :: i, nr_freq, nr_dmat
     integer(kind_i4)              :: ill_int, isl_int, iss_int, igt_int
-    logical                       :: debug_me = .true.
+    logical                       :: debug_me = .false.
     real(kind_dp)                 :: dummy_dp
     type(matrix)                  :: M
 
@@ -683,7 +683,6 @@ contains
     jsymop    = RHS%pg_sym
     jtimop    = RHS%tr_sym
     jopsy     = RHS%fermi_pointer
-    write(*, *) 'blub', jsymop, jtimop, jopsy
     nfreq     = nr_freq
     nexsim    = nr_freq
     nexstv    = nr_freq
@@ -868,7 +867,7 @@ contains
       do i = 1, ntsim
         ihrmop(i) = -1
       end do
-     
+
       temp_ao_dmat = 0.0d0
       call dmolitx(temp_ao_dmat,        &
                    response_vector_ppa, &
@@ -879,10 +878,10 @@ contains
                    ihrmop,              &
                    nr_dmat,             &
                    work, kfree, lfree)
-     
+
       call dealloc(response_vector_ppa)
       call dealloc(response_vector_pna)
-      
+
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1A%elements, 1)
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1A%elements, 1)
 
