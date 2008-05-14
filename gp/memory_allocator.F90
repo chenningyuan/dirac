@@ -825,45 +825,47 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-      subroutine alloc_maxsize_k8(maxsize,minimal,nstep,direction)
-         integer :: step, minimal, mykind, direction,i,nstep,maximum, status,maxsize,verbose
+      subroutine alloc_maxsize_k8(maxsize,minimum)
+         integer :: step, i, nstep, maximum, status
+         integer :: maxsize, verbose, minimum, factor
          real(kind=8), allocatable :: data(:)
 
-         maxsize = minimal
          verbose = 1
+         factor  = 4096
 
          call get_maximum_mwords(maximum,verbose)
 
-         if (maximum.gt.minimal) then
+         maximum = maximum*1024*1024
 
-            step = (2*maximum - minimal)/nstep
+         if (mod(maximum,factor).ne.0) then
+            maximum = maximum+mod(maximum,factor) 
+         endif
 
-            if (direction.eq.1) then            ! from minimal to maximal
-               do i=minimal,(2*maximum),step
-                  allocate(data(i*1024*1024*8),stat=status)
-                  if (status.eq.0) then
-                     call initData(data,(i*1024*1024*8))
-                     write (*,*) 'allocation ok for',i,'mwords'
-                     maxsize = i
-                     deallocate(data)
-                  else
-                     write (*,*) 'allocation failed for',i,'mwords'
-                  endif 
-               enddo
-            else
-               do i=maximum,minimal,-step
-                  allocate(data(i*1024*1024*8),stat=status)
-                  if (status.eq.0) then
-                     call initData(data,(i*1024*1024*8))
-                     write (*,*) 'allocation ok for',i,'mwords'
-                     maxsize = i
-                     deallocate(data)
-                  else
-                     write (*,*) 'allocation failed for',i,'mwords'
-                  endif 
-               enddo
-            endif
-          endif
+         if (mod(minimum,factor).ne.0) then
+            minimum = minimum+mod(minimum,factor) 
+         endif
+
+         if (minimum.gt.0) nstep = maximum / minimum
+
+         if (maximum.gt.minimum) then
+
+            write (*,*) 'minimal 8-byte words required   :',minimum
+            write (*,*) 'number of steps attepmted       :',nstep
+            write (*,*) 'maximum 8-byte words start      :',maximum
+
+            do i=1,nstep
+               allocate(data(maximum),stat=status)
+               if (status.eq.0) then
+                  call initData(data,maximum)
+                  write (*,*) 'at try',i,': allocation ok for ',maximum,'8-byte words'
+                  maxsize = maximum 
+                  deallocate(data)
+                  return
+               else
+                  maximum = maximum - maximum/(nstep-i+1) 
+               endif
+            enddo
+         endif
 
        end subroutine alloc_maxsize_k8
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
