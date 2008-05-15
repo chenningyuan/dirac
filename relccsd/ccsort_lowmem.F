@@ -94,7 +94,7 @@ Caspg, replacing memget
      &                                     a_ints(:),   a_intsa(:)
 C
       integer:: total_mem_new = 0
-      integer:: verbose = 1, freemem = 0
+      integer:: verbose = 0, freemem = 0
 C
 Caspg, replacing memget
 C
@@ -155,22 +155,10 @@ C
       NVT = MAX(NVT,JOOOO(2))
       NVT = MAX(NVT,JVOOO(2))
 C
-C     The remaining space is
-C how to do it without memget()?
-C
-c     call get_free_mwords (freemem,1)
-c     call alloc_maxsize(freemem,(nv4*1024*8),10,1)
-c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
-c     NVF = (LFREE-4) / (2 * RCW )
-c     freemem = 2*NV4
+C     now we get what is the maximum allocatable dimension
       call alloc_maxsize(freemem,nv4,verbose)
-      NVF = freemem / (2 * RCW * 1024) 
-C aspg, 20080514
-C hack to split memory on a node per mpi process . to change soon 
-c     NVF = NVF/16
-c     write(*,*) 'debug : nvf1=',nvf
-c     write(*,*) 'debug : nvt1=',nvt
-c     write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
+C     and rescale the result so that two buffers (ints, intsa can be allocated
+      NVF = freemem / (2 * RCW * 2) 
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -181,25 +169,21 @@ C
       IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
       ELSE
-c         NBUF = NVF / MINBUF + mod(NVF / MINBUF)
          NBUF = NVF / MINBUF 
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
-c     write(*,*) 'debug : nvt2=',nvt
 C
 C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,NV4)
-c     write(*,*) 'debug : nvtminA=',nvtmin
       NVTMIN = MAX(NVTMIN,JOOOO(2))
-c     write(*,*) 'debug : nvtminB=',nvtmin
       NVTMIN = MAX(NVTMIN,JVOOO(2))
-c     write(*,*) 'debug : nvtminC=',nvtmin
       NVTMIN = NVTMIN + MINBUF 
-c     write(*,*) 'debug : nvtminD=',nvtmin
+
+C  we now adjust the buffer size to be a multiple of the buffer size
       if (MOD(NVTMIN,MINBUF).NE.0) then
          IEXTRA = MOD(NVTMIN,MINBUF)
          NVTMIN = NVTMIN+IEXTRA
@@ -218,19 +202,20 @@ C     the different classes, one at a time
       total_mem_new = total_mem_new + 2*(NVTMIN*RCW)
 C
       IF (ICALC.EQ.1) THEN
-         WRITE (IW,*) ''
+         WRITE (IW,*) ' '
          WRITE (IW,*) 'Note: Low(er)-memory strategy active for RELCCSD'
          WRITE (IW,*) ''
-         WRITE (IW,*) '      This means that the size of the VOVO '
-         WRITE (IW,*) '      integral class will be used as a measure'
-         WRITE (IW,*) '      of the amount of space for the buffers'
-         WRITE (IW,*) '      in the integral sorting, at the expense of'
-         WRITE (IW,*) '      increasing the number of passes for VOVV'
-         WRITE (IW,*) '      and VVVV'
-         WRITE (IW,*) ''
+         WRITE (IW,*) '      Now the integral sorting step will use'
+         WRITE (IW,*) '      information about the amount of memory'
+         WRITE (IW,*) '      available on this system and try seting'
+         WRITE (IW,*) '      the amount of buffering space accordingly.'
+         WRITE (IW,*) '      Due to that the number of passes for the'
+         WRITE (IW,*) '      different integral classes may increase,'
+         WRITE (IW,*) '      and therefore higher I/O loads are likely.'
+         WRITE (IW,*) ' '
          WRITE (IW,1001) "reading and sorting integrals",total_mem_new
          WRITE (IW,1001) "integral sorting buffers only",(2*NVTMIN*RCW)
-         WRITE (IW,*) ''
+         WRITE (IW,*) ' '
          RETURN
       ENDIF
 C

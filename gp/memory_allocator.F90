@@ -32,7 +32,8 @@
                   
          implicit none
          private
-         public alloc, dealloc, allocp, deallocp, initData, allocator_init, alloc_maxsize
+         public alloc, dealloc, allocp, deallocp, initData, alloc_maxsize
+         public allocator_init, allocator_setmax
 
          interface alloc
             module procedure alloc_real_1d
@@ -96,6 +97,8 @@
          integer, parameter :: printAllToStdout = 1, printAllocCaller = 2, &
                                printPrettyTrace = 3, prinRawTrace     = 4
          
+         integer :: max_mem = -1, curr_mem = 0 
+
          contains
 
 !
@@ -823,6 +826,18 @@
 !         call trackInitGroup('main')
       end subroutine allocator_init
 
+      subroutine allocator_setmax(maxmemsize)
+         integer :: maxmemsize
+
+         if (maxmemsize.lt.0) then ! there are no limits
+            max_mem = huge(maxmemsize)
+            maxmemsize = max_mem
+         else
+            max_mem = maxmemsize
+         endif
+         
+      end subroutine allocator_setmax
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
       subroutine alloc_maxsize_k8(maxsize,minsize,verbose)
@@ -835,7 +850,7 @@
          call get_maximum_mwords(maximum,verbose)
 
          minimum = minsize 
-         maximum = maximum*1024*1024
+         maximum = min(max_mem,maximum*1024*1024)
 
          if (mod(maximum,factor).ne.0) then
             maximum = maximum+mod(maximum,factor) 

@@ -59,6 +59,7 @@ usage ()
    echo '     -mw mem                : Set memory (in megawords) for master'
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the slave nodes'
+   echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
    echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
    echo '     -clean                 : Clean work area before calculation'
@@ -615,6 +616,9 @@ set_dirac_environment()
    if [ -n "$NODE_MEMORY" ]; then
       DIRNOD=$NODE_MEMORY; export DIRNOD
    fi
+   if [ -n "$MAX_MEMORY" ]; then
+      DIRMAX=$MAX_MEMORY; export DIRMAX
+   fi
 #  Next line is for IBM only but will not hurt other systems
    XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
 
@@ -651,6 +655,7 @@ initialize()
 
    MEMORY=
    NODE_MEMORY=
+   MAX_MEMORY=
 
    RUN='out'
 
@@ -745,6 +750,10 @@ while [ -n "$1" ]; do
       -nw|-nodememory)
          shift
          let NODE_MEMORY=$1*1000000
+         ;;
+      -aw)
+         shift
+         let MAX_MEMORY=$1*1000000
          ;;
       -clean*|-rmscr)
          RMSCR=1

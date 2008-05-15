@@ -45,7 +45,7 @@ program dirprg
 #include "mpif.h"
 #endif
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, iparcal, status, length, ios, idummy, ierr
+  integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
 #ifdef VAR_MPI 
   call mpixinit()
 #else
@@ -60,15 +60,23 @@ program dirprg
 
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
+     maxsize = get_environment_integer('DIRMAX',maxsize)
   else
      memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
+     maxsize = get_environment_integer('DIRMAX',maxsize)
   endif
 
 #ifdef VAR_MPI
   call mpi_barrier(mpi_comm_world,ierr)
+  call allocator_init()
+  call allocator_setmax(maxsize)
   call sync_nodes(memsize,0)
+  call sync_nodes(maxsize,2)
 #else
+  call allocator_init()
+  call allocator_setmax(maxsize)
   print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+  print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
