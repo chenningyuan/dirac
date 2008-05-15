@@ -94,7 +94,7 @@ Caspg, replacing memget
      &                                     a_ints(:),   a_intsa(:)
 C
       integer:: total_mem_new = 0
-      integer:: freemem = 0
+      integer:: verbose = 1, freemem = 0
 C
 Caspg, replacing memget
 C
@@ -159,16 +159,18 @@ C     The remaining space is
 C how to do it without memget()?
 C
 c     call get_free_mwords (freemem,1)
-      call alloc_maxsize(freemem,(nv4*1024*8),10,1)
+c     call alloc_maxsize(freemem,(nv4*1024*8),10,1)
 c     write(*,*) 'debug : freemem =',freemem,((freemem)*(1024)/(2*RCW))
 c     NVF = (LFREE-4) / (2 * RCW )
-      NVF = (freemem-4) / (2 * RCW) 
+c     freemem = 2*NV4
+      call alloc_maxsize(freemem,nv4,verbose)
+      NVF = freemem / (2 * RCW * 1024) 
 C aspg, 20080514
 C hack to split memory on a node per mpi process . to change soon 
-      NVF = NVF/16
-      write(*,*) 'debug : nvf1=',nvf
-      write(*,*) 'debug : nvt1=',nvt
-      write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
+c     NVF = NVF/16
+c     write(*,*) 'debug : nvf1=',nvf
+c     write(*,*) 'debug : nvt1=',nvt
+c     write(*,*) 'debug : freemem(mw,kw)=',freemem,(freemem*1024)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -184,20 +186,20 @@ c         NBUF = NVF / MINBUF + mod(NVF / MINBUF)
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
-      write(*,*) 'debug : nvt2=',nvt
+c     write(*,*) 'debug : nvt2=',nvt
 C
 C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,NV4)
-      write(*,*) 'debug : nvtminA=',nvtmin
+c     write(*,*) 'debug : nvtminA=',nvtmin
       NVTMIN = MAX(NVTMIN,JOOOO(2))
-      write(*,*) 'debug : nvtminB=',nvtmin
+c     write(*,*) 'debug : nvtminB=',nvtmin
       NVTMIN = MAX(NVTMIN,JVOOO(2))
-      write(*,*) 'debug : nvtminC=',nvtmin
+c     write(*,*) 'debug : nvtminC=',nvtmin
       NVTMIN = NVTMIN + MINBUF 
-      write(*,*) 'debug : nvtminD=',nvtmin
+c     write(*,*) 'debug : nvtminD=',nvtmin
       if (MOD(NVTMIN,MINBUF).NE.0) then
          IEXTRA = MOD(NVTMIN,MINBUF)
          NVTMIN = NVTMIN+IEXTRA

@@ -825,12 +825,11 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-      subroutine alloc_maxsize_k8(maxsize,minsize)
+      subroutine alloc_maxsize_k8(maxsize,minsize,verbose)
          integer :: step, i, nstep, maximum, status, minsize
          integer :: maxsize, verbose, minimum, factor
          real(kind=8), allocatable :: data(:)
 
-         verbose = 1
          factor  = 4096
 
          call get_maximum_mwords(maximum,verbose)
@@ -850,15 +849,17 @@
 
          if (maximum.ge.minimum) then
 
-            write (*,*) 'minimal 8-byte words required   :',minimum
-            write (*,*) 'number of steps attepmted       :',nstep
-            write (*,*) 'maximum 8-byte words start      :',maximum
+            if (verbose.gt.0) then
+               write (*,*) 'minimal 8-byte words required   :',minimum
+               write (*,*) 'number of steps attepmted       :',nstep
+               write (*,*) 'maximum 8-byte words start      :',maximum
+            endif
 
             do i=1,nstep
                allocate(data(maximum),stat=status)
                if (status.eq.0) then
                   call initData(data,maximum)
-                  write (*,*) 'at try',i,': allocation ok for ',maximum,'8-byte words'
+                  if (verbose.gt.0) write (*,*) 'at try',i,': allocation ok for ',maximum,'8-byte words'
                   maxsize = maximum 
                   deallocate(data)
                   return
