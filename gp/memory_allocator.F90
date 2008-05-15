@@ -825,8 +825,8 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
-      subroutine alloc_maxsize_k8(maxsize,minimum)
-         integer :: step, i, nstep, maximum, status
+      subroutine alloc_maxsize_k8(maxsize,minsize)
+         integer :: step, i, nstep, maximum, status, minsize
          integer :: maxsize, verbose, minimum, factor
          real(kind=8), allocatable :: data(:)
 
@@ -835,6 +835,7 @@
 
          call get_maximum_mwords(maximum,verbose)
 
+         minimum = minsize 
          maximum = maximum*1024*1024
 
          if (mod(maximum,factor).ne.0) then
@@ -847,7 +848,7 @@
 
          if (minimum.gt.0) nstep = maximum / minimum
 
-         if (maximum.gt.minimum) then
+         if (maximum.ge.minimum) then
 
             write (*,*) 'minimal 8-byte words required   :',minimum
             write (*,*) 'number of steps attepmted       :',nstep
@@ -865,6 +866,8 @@
                   maximum = maximum - maximum/(nstep-i+1) 
                endif
             enddo
+         else
+            call quit('Minimum space required unavaiable. Exiting.')
          endif
 
        end subroutine alloc_maxsize_k8
