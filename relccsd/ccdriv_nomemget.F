@@ -2573,6 +2573,7 @@ C
      &                             a_BUF3(:)
 
       integer(kind=8)           :: total_mem_new
+      integer :: freemem, verbose = 1
 C
 C---------------Executable code--------------------------------------
 C
@@ -2655,12 +2656,18 @@ C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
-      NBUF3 = (LFREE - 4) / RCW
+      call alloc_maxsize(freemem,100,verbose)
+      NBUF3 = ((freemem/2)*2) / RCW
 C
 C     Allocate now also this remaining work array
 C
       if (alloc_me) then
+         write (*,*) 'allocating buf3 in ccfopr'
          CALL alloc( a_BUF3  , NBUF3*RCW             )
+         KFREE = 1
+         call alloc_maxsize(freemem,100,verbose)
+         LFREE = (freemem/2)*2
+         write (*,*) 'debug, lfree in ccfopr',lfree,freemem
       endif
 
          total_mem_new = total_mem_new + NBUF3*RCW
@@ -2670,6 +2677,7 @@ C
          WRITE (IW,1001) "Gradient calculation",KFREE
          KFREE = KFRSAV
          LFREE = LFRSAV
+         write (*,*) 'blabla',kfree,lfree
          RETURN
       ENDIF
 C
@@ -2755,7 +2763,8 @@ C         Slaves will only help in the integral calculation.
 C
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
-             IF (ICALC.EQ.2) CALL DIRNOD2(CC(KFRSAV),LFRSAV)
+             IF (ICALC.EQ.2) CALL DIRNOD2(a_BUF3,NBUF3)
+C (CC(KFRSAV),LFRSAV)
              RETURN
           ENDIF
 #endif
@@ -2764,6 +2773,7 @@ C
 C        Solve relativistic MP2 lambda equations
 C
           WRITE (IW,1008) 
+         write (*,*) 'foo 1'
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 
 CMI      CALL MEMCHK('mp2g 0.2',CC,1)
@@ -2771,6 +2781,7 @@ C
 C        Get amplitude part of density matrix
 C
           WRITE (IW,1008) 
+         write (*,*) 'foo 2'
          CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
@@ -2786,9 +2797,11 @@ C
 C        Solve Z-vector equations 
 C
 c aspg, problems with memory start here, because it uses kfree and lfree inside
-          WRITE (IW,1008) 
-         CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
-     &                NBUF3, a_XMO , a_DMO)
+         WRITE (IW,1008) 
+         write (*,*) 'foo 3'
+         IF (.NOT.NOZG)
+     &       CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
+     &                   NBUF3, a_XMO , a_DMO)
 
 CMI      ... here it fails in the Levy-Leblond mode....
 !        CALL MEMCHK('mp2g 1.1.1',CC,T2)
@@ -2806,10 +2819,12 @@ C
 C        Create upper triangle of density matrix
 C
           WRITE (IW,1008) 
+         write (*,*) 'foo 4'
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C
 C        Write density matrix to file for later processing
 C
+         write (*,*) 'foo 5'
          CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
 C
 C        Generate natural orbitals, if desired
@@ -2822,6 +2837,7 @@ C
           KFREE1=1
           LFREE1=NBUF3*RCW
 C
+         write (*,*) 'foo 6'
           CALL MP2_NATORB( a_DMO ,IPRINT_NO,NOZG, a_BUF3,KFREE1,KFREE1)
          END IF
 C
@@ -2872,6 +2888,7 @@ c     CALL MEMREL('CCFOPR',CC,1,KFRSAV,KFREE,LFREE)
           call dealloc(a_BUF2)
           call dealloc(a_BUF3)
       endif
+         write (*,*) 'foo 7'
 
          write (*,*) ' '
          write (*,*) 'debug, final memory usage in ccfopr : ',
