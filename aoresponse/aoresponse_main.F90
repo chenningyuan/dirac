@@ -20,11 +20,12 @@ contains
 
 #include "dcbbas.h"
 
-    type(matrix)               :: A, C, D, D1H, D1A
+    type(matrix)               :: P, C, D, D1H, D1A, D1HP
 
     real(kind_dp), allocatable :: freq(:)
     integer(kind_i4)           :: nr_freq = 1
 
+!   more than needed
     call mat_init(C, ntbas(0), ntbas(0))
     call get_mo_coef(C)
 
@@ -33,35 +34,115 @@ contains
 
 !!!!!!!!!!
     freq(1) = 0.02d0
-!   freq(1) = 0.00d0
+    freq(1) = 0.00d0
 !!!!!!!!!!
 
-    A   = 1.0d-100*C
-    D   = 1.0d-100*C
-    D1H = 1.0d-100*C
-    D1A = 1.0d-100*C
+    P    = 1.0d-100*C
+    D    = 1.0d-100*C
+    D1H  = 1.0d-100*C
+    D1A  = 1.0d-100*C
 
     call get_zo_ao_dmat(C, D)
-    call get_ao_pmat('ZDIPLEN', A)
+    call get_ao_pmat('ZDIPLEN', P)
 
-    call response_solver(freq, A, C, D1H, D1A)
+    call response_solver(freq, P, C, D1H, D1A)
 
-    write(*, *) 'A**D   = ', A**D
-    write(*, *) 'A**D1H = ', A**D1H
-    write(*, *) 'A**D1A = ', A**D1A
+    write(*, *) 'P**D   = ', P**D
+    write(*, *) 'P**D1H = ', P**D1H
+    write(*, *) 'P**D1A = ', P**D1A
 
     write(*, *) 'compare: -4.828661928957 at 0.00'
     write(*, *) 'compare: -4.833040214626 at 0.02'
 
-    A   = 0
-    D   = 0
-    D1H = 0
-    D1A = 0
+
+    P    = 0
+    D    = 0
+    D1H  = 0
+    D1A  = 0
+    D1HP = 0
 
     call mat_free(C)
     call dealloc(freq)
 
   end subroutine aoresponse_driver
+
+
+
+
+  subroutine mo_to_sym_ao(C, M, A)
+
+    real(kind_dp), intent(inout) :: C(:), M(:), A(:)
+
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+
+    real(kind_dp), allocatable   :: work(:)
+    integer(kind_i4)             :: kfree, lfree
+    integer(kind_i4)             :: i, iz, im, ioff
+
+!!!!!!!!!!
+    integer(kind_i4)             :: ih, irep, j
+    real(kind_dp)                :: blub
+    kfree = 1
+    lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
+    call alloc(work, lfree)
+!!!!!!!!!!
+
+    do i = 1, nfsym
+      call qtrans('MOAO', 'S', 0.0d0,  &
+                  nfbas(i, 0),         &             
+                  nfbas(i, 0),         &             
+                  norb(i),             &         
+                  norb(i),             &                                            
+                  A(1 + i2basx(i, i)), &                          
+                  ntbas(0),            &          
+                  ntbas(0),            &          
+                  1,                   &   
+                  ipqtoq(1, 0),        &                   
+                  M(1 + i2orbx(i, i)), &                          
+                  norbt,               &       
+                  norbt,               &       
+                  1,                   &   
+                  ipqtoq(1, 0),        &                   
+                  C(1 + icmoq(i)),     &                      
+                  nfbas(i, 0),         &             
+                  norb(i),             &         
+                  nz,                  &    
+                  ipqtoq(1, 0),        &                   
+                  C(1 + icmoq(i)),     &                      
+                  nfbas(i, 0),         &             
+                  norb(i),             &         
+                  nz,                  &    
+                  ipqtoq(1, 0),        &
+                  work(kfree), lfree, 0)
+    end do
+
+
+
+!   ih = 1
+!   irep = 0
+!   do iz = 1, nz
+!     im   = ihqmat(ipqtoq(iz, irep), ih)
+!     ioff = ntbas(0)*ntbas(0)*(iz - 1)
+
+!     if (im == 1) then
+!       call fulmat('S', ntbas(0), ntbas(0), A(1 + ioff))
+!     else if (im == 2) then
+    call dscal(ntbas(0)*ntbas(0)*3, 0.0d0, A(1 + ntbas(0)*ntbas(0)), 1)
+!       call fulmat('A', ntbas(0), ntbas(0), A)
+!     end if
+!   end do
+
+    call dealloc(work)
+
+  end subroutine mo_to_sym_ao
+
+
+
+
+
+
 
   subroutine set_orbital_rotation_vector(orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
                                          length_pp, length_pn)
@@ -166,7 +247,7 @@ contains
 
   end subroutine set_orbital_rotation_vector
 
-  subroutine figure_out_length_of_response_vector(length_pp, length_pn)
+  subroutine get_length(length_pp, length_pn)
 
     integer(kind_i4), intent(out) :: length_pp, length_pn
 
@@ -235,7 +316,7 @@ contains
 
     end if
 
-  end subroutine figure_out_length_of_response_vector
+  end subroutine get_length
 
   subroutine construct_response_vector(vector_type,     &
                                        ih,              &
@@ -344,38 +425,45 @@ contains
   subroutine test_propint()
 
 #include "dcbbas.h"
-#include "dgroup.h"
+#include "dcborb.h"
 
-    type(matrix):: C, D, F, S,ff(3)
-    real*8:: ef(3)
-    integer:: noi(0),i,j,k
-    character*4:: nop(0)
+    type(matrix)  :: C, S, D, F, Df(3), Ff(3)
+    real(kind_dp) :: w, Ef(3), Eff(3,3)
 
-!    write(*, *) 'blub', find_op_index('xdiplen')
-!    write(*, *) 'blub', find_op_index('xdiplen')
-!    write(*, *) 'blub', find_op_index('ydiplen')
-!    write(*, *) 'blub', find_op_index('zdiplen')
-
-    call mat_init(S, ntbas(0), ntbas(0))
+    call mat_init(C, ntbas(0), norbt)
     call mat_init(D, ntbas(0), ntbas(0))
-    call mat_init(C, ntbas(0), ntbas(0))
-    call mat_init(F, ntbas(0), ntbas(0))
 
     call get_mo_coef(C)
     call get_zo_ao_dmat(C, D)
 
+    S = 1.0d-100*D
+    F = 1.0d-100*D
 
-    ff(1)=0*s; ff(2)=0*s; ff(3)=0*s
-    call propfock((/'EL'/),(/D/),ff)
-    ff(1)=0; ff(2)=0; ff(3)=0
-    ef=0; call propenergy((/'EL'/),(/D/),ef)
-    print '("dipole moment -ef"/3f18.13/)',-ef
+!!!!!!!!!!
+    Ff(1)=0*S; Ff(2)=0*S; Ff(3)=0*S
+    call PropFock((/'EL'/),(/D/),Ff)
+    Ff(1)=0; Ff(2)=0; Ff(3)=0
+    Ef=0; call PropEnergy((/'EL'/),(/D/),Ef)
+    print '("Dipole moment -Ef"/3f18.13/)',-Ef
     print*
+!!!!!!!!!!
 
-    call mat_free(s)
+!!!!!!!!!!
+    call PertDensF((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/w/))
+    Eff=0; call PropEnergy((/'EL'/),(/D,Df/),Eff)
+    print '("Polarizability -Eff w="f6.3/3(3f18.13/))',w,-Eff
+!!!!!!!!!!
+
+    Df(1) = 0
+    Df(2) = 0
+    Df(3) = 0
+    Ff(1) = 0
+    Ff(2) = 0
+    Ff(3) = 0
+    S     = 0
+
     call mat_free(C)
-    call mat_free(d)
-    call mat_free(f)
+    call mat_free(D)
 
   end subroutine test_propint
 
@@ -567,7 +655,7 @@ contains
     integer(kind_i4)              :: length_pp, length_pn
     integer(kind_i4)              :: i, nr_freq, nr_dmat
     integer(kind_i4)              :: ill_int, isl_int, iss_int, igt_int
-    logical                       :: debug_me = .false.
+    logical                       :: debug_me = .true.
     real(kind_dp)                 :: dummy_dp
     type(matrix)                  :: M
 
@@ -577,7 +665,7 @@ contains
     call alloc(work, lfree)
 !!!!!!!!!!
 
-    call figure_out_length_of_response_vector(length_pp, length_pn)
+    call get_length(length_pp, length_pn)
 
     nzconf  = 0
     nzconfq = 0
@@ -861,6 +949,12 @@ contains
 
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1H%elements, 1)
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1H%elements, 1)
+
+    D1H%pg_sym        = RHS%pg_sym
+    D1H%tr_sym        = RHS%tr_sym
+    D1H%fermi_pointer = RHS%fermi_pointer
+!   D1H%ih_sym        =    
+!!!!!!!!! do freq
 
     if (.not. static) then
 
