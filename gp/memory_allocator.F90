@@ -97,7 +97,7 @@
          integer, parameter :: printAllToStdout = 1, printAllocCaller = 2, &
                                printPrettyTrace = 3, prinRawTrace     = 4
          
-         integer :: max_mem = -1, curr_mem = 0 
+         integer :: max_mem = -1, curr_mem = 0
 
          contains
 
@@ -829,8 +829,8 @@
       subroutine allocator_setmax(maxmemsize)
          integer :: maxmemsize
 
-         if (maxmemsize.lt.0) then ! there are no limits
-            max_mem = huge(maxmemsize)
+         if (maxmemsize.lt.0) then ! there are no limits so we use a large integer
+            max_mem = huge(maxmemsize)/32
             maxmemsize = max_mem
          else
             max_mem = maxmemsize
@@ -845,20 +845,34 @@
          integer :: maxsize, verbose, minimum, factor
          real(kind=8), allocatable :: data(:)
 
-         factor  = 4096
+         factor  = 4096 
 
          call get_maximum_mwords(maximum,verbose)
 
          minimum = minsize 
-         maximum = min(max_mem,maximum*1024*1024)
 
+         if      ( (max_mem.gt.0).and.(maximum.gt.0) ) then  ! if  we have set max_mem, we use it as a guess for
+            maximum = min(max_mem,maximum*1024*1024)         ! the maximum or have as the ceiling for allocation
+         else if ( (max_mem.le.0).and.(maximum.gt.0) ) then     
+            maximum = maximum*1024*1024                      ! if max_mem is not set but maximum is, we use the latter
+         else if ( (max_mem.gt.0).and.(maximum.le.0) ) then     
+            maximum = max_mem                                ! if max_mem is set and maximum not, we use the former
+         else 
+            maximum = huge(maximum)/32                       ! if both max_mem and maximum are not valid, we use a large integer
+         endif
+
+
+!        write (*,*) 'debug, maximum(a):',maximum
          if (mod(maximum,factor).ne.0) then
             maximum = maximum+mod(maximum,factor) 
          endif
+!        write (*,*) 'debug, maximum(b):',maximum
 
+!        write (*,*) 'debug, minimum(a):',minimum
          if (mod(minimum,factor).ne.0) then
             minimum = minimum+mod(minimum,factor) 
          endif
+!        write (*,*) 'debug, minimum(b):',minimum
 
          if (minimum.gt.0) nstep = maximum / minimum
 
