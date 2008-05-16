@@ -1093,7 +1093,7 @@ C
      &               'Input error for .OPEN SHELL under *DHFCAL')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
-                  READ (TEXT,'(I20)') IELEC
+                  READ (TEXT,*) DELEC
 C
                   IPERIOD= INDEX(LINE,',')
                   IF (IPERIOD .GT. 0) THEN
@@ -1121,6 +1121,7 @@ C
      &                         'a positive even number')
                   END IF
 c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
+                  IELEC = DELEC
                   IF (IELEC .LT. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                      WRITE(LUPRI,'(A,I3,A,I3)')
      &                  'ERROR: Number of electrons (',IELEC,
@@ -1130,7 +1131,7 @@ c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
-                  DF(IOPEN) = SDPRE(IELEC)/SDPRE(IAC1+IAC2)
+                  DF(IOPEN) = DELEC/SDPRE(IAC1+IAC2)
                END DO
                INIOCC = .FALSE.
                GO TO 100
@@ -1409,7 +1410,7 @@ C
                DALPHA(1) = D2
 C
                NELECT_DHF = NELECT_DHF - 1
-               NAELEC_DHF = 1
+               NAELEC_DHF = D1
                NASHT_DHF = 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
@@ -5816,7 +5817,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (D2=2.0D00)
+      PARAMETER (D2=2.0D00,D0=0.0D0)
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -5831,6 +5832,13 @@ C
      &          NISH_DHF(I),' orbitals in Fermion irrep ',I
          END DO
       ELSE
+         DTEMP = D0
+         DO IFRP = 1,NFSYM
+            DO IOPEN = 1,NOPEN
+               DTEMP          = DTEMP +
+     &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
+            END DO
+         END DO
          IF(AOC) THEN
            WRITE(LUPRI,'(A/)')
      &  ' * Open shell SCF calculation using Average-of-Configuration'
@@ -5854,12 +5862,12 @@ C
             IF (NFSYM .EQ. 1) THEN
                WRITE(LUPRI,1011)
      &            IOPEN,
-     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN)),
      &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
             ELSE
                WRITE(LUPRI,1012)
      &            IOPEN,
-     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN)),
      &            NACSH(1,IOPEN),NACSH(2,IOPEN),
      &            DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
             END IF
@@ -5867,10 +5875,10 @@ C
          WRITE(LUPRI,1020)
          IF (NFSYM .EQ. 1) THEN
             WRITE(LUPRI,1031)
-     &         NELECT_DHF+NAELEC_DHF,NISH_DHF(1)+NASH_DHF(1)
+     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1)
          ELSE
             WRITE(LUPRI,1032)
-     &         NELECT_DHF+NAELEC_DHF,NISH_DHF(1)+NASH_DHF(1),
+     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1),
      &         NISH_DHF(2)+NASH_DHF(2)
          END IF
          WRITE(LUPRI,'(/,3X,A,/)')
@@ -5878,13 +5886,13 @@ C
      &      'coupling coefficients.'
       END IF
       RETURN
- 1001 FORMAT(3X,'Closed shell',12X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1002 FORMAT(3X,'Closed shell',12X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
- 1011 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1012 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1001 FORMAT(3X,'Closed shell',9X,I4,10X,I4,6X,'N/A ',3(3X,F6.4))
+ 1002 FORMAT(3X,'Closed shell',9X,I4,10X,I4,5X,I4,1X,3(3X,F6.4))
+ 1011 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,6X,'N/A ',3(3X,F6.4))
+ 1012 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,5X,I4,1X,3(3X,F6.4))
  1020 FORMAT(3X,76('-'))
- 1031 FORMAT(3X,'Total',19X,I4,7X,I4)
- 1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
+ 1031 FORMAT(3X,'Total',17X,F6.2,7X,I4)
+ 1032 FORMAT(3X,'Total',17X,F6.2,7X,I4,5X,I4)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rho1in */
