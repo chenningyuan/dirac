@@ -4110,152 +4110,6 @@ C
 C
       RETURN
       END
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck PRJOUT */
-      SUBROUTINE PRJOUT(VECS,VREF,THRLDP,THRMAX,SMAT,VBUF,IVECS,
-     &                  NVDIM,NVECS,NVREF,NDEL,IPRINT)
-C*****************************************************************************
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
-      PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
-C
-#include "dgroup.h"
-      DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
-     &          VBUF(NVDIM,NZ),SMAT(NVDIM,NVDIM),IVECS(NVECS)
-      DIMENSION P(4)
-C
-      THRMAX = D0
-      NDEL   = 0
-      N2VECS = NVDIM*NVECS
-      N2VREF = NVDIM*NVREF
-      IROUND = 0
-      ITURN  = 0
- 10   CONTINUE
-      ITURN  = ITURN + 1
-C
-C     First project out fragment vectors
-C     ===================================
-C
-      DO IREF = 1,NVREF
-        CALL QGEMM(NVDIM,1,NVDIM,D1,
-     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
-     &         'N','N',IPQTOQ(1,0),VREF(1,IREF,1),NVDIM,NVREF,NZ,
-     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
-        IF(IPRINT.GE.2) THEN
-          CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
-     &           'N',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1)
-          VNRM=SQRT(VNRM)
-          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Fragment vector no.',IREF,' Norm: ',VNRM
-        ENDIF
-        DO 100 IVEC = 1,NVECS
-          IF(IVECS(IVEC).LT.0) GOTO 100
-C
-C         Form -<VREF|IVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form |VECS> = |VECS> -|VREF><VREF|VECS>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VREF(1,IREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 100    CONTINUE
-      ENDDO
-C
-C     Next commence internal orthogonalization
-C     =========================================
-C
-      DO 200 IVEC = 1,NVECS
-        IF(IVECS(IVEC).LT.0) GOTO 200
-        CALL QGEMM(NVDIM,1,NVDIM,D1,
-     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
-     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
-     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
-C
-C       Check size of norm
-C       ==================
-C
-        CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-        VNRM=SQRT(VNRM)
-        THRMAX=MAX(THRMAX,VNRM)
-        IF(VNRM.LT.THRLDP) THEN
-          IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
-          ENDIF
-          IVECS(IVEC) = -1
-          NDEL = NDEL + 1
-          GOTO 200
-        ELSE
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Vector no.',IVEC,' Norm: ',VNRM
-          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
-          IF(VNRM.LT.T1MIN) THEN
-            VNRM = D1/VNRM
-            DO IZ = 1,NZ
-              CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-            ENDDO
-            CALL QGEMM(NVDIM,1,NVDIM,D1,
-     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
-     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
-     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
-            CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          END IF
-          VNRM = D1 / VNRM
-          DO IZ = 1,NZ
-            CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-          ENDDO
-        ENDIF
-        CALL QGEMM(NVDIM,1,NVDIM,D1,
-     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
-     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
-     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
-        DO 300 JVEC = (IVEC+1),NVECS
-          IF(IVECS(JVEC).LT.0) GOTO 300
-C
-C         Form -<IVEC|JVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,JVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form JVEC = JVEC -IVEC<IVEC|JVEC>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 300    CONTINUE
- 200  CONTINUE
-C
-C     Check whether a new round of orthonormalization is
-C     necessary
-C     ==================================================
-C
-         IF (ITURN.EQ.1) THEN
-           GO TO 10
-         ENDIF
-C
-      RETURN
-C
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PRJORT */
       SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,IREF,NREF,
@@ -4334,6 +4188,10 @@ C
 C     Next commence internal orthogonalization
 C     =========================================
 C
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(A)')
+     &      '* MO-vectors after projecting out reference vectors:'
+      ENDIF
       DO 200 IVEC = 1,NVECS
 CTROND: This is a bit dangerous; should be fixed !
         IF(IBVEC(IVEC).LT.-100) GOTO 200
@@ -4346,9 +4204,6 @@ C
      &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
         VNRM=SQRT(VNRM)
 
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5,3X,A,I5)')
-     &      'Pector no.',IVEC,' Norm: ',VNRM,
-     &      ' Bsym: ',IBVEC(IVEC)
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
           IF(IPRINT.GE.1) THEN
@@ -4361,7 +4216,7 @@ C         Store information about irrep and neg/pos solution
           NDEL = NDEL + 1
           GOTO 200
         ELSE
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5,3X,A,I5)')
+          IF(IPRINT.GE.2) WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
      &      'Vector no.',IVEC,' Norm: ',VNRM,
      &      'Bsym:',IBVEC(IVEC)
           IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
@@ -6273,21 +6128,19 @@ C       Do projection
         IEFF        = I2TMT(IFRP)+1
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-        IF(NDEL.GT.0) THEN
-          IF(NFRO(IFRP).GT.0) THEN
-            IF(NDEL.LT.NFRO(IFRP)) THEN
-              WRITE(LUPRI,'(2X,A,I6,A)') 
-     &        'is smaller than number of frozen orbitals',
-     &        NFRO(IFRP),'!'
-              WRITE(LUPRI,'(2X,A)')
-     &        'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
-     &        'to see the norms of the remaining vectors.',
-     &        'Based on this, you may set the projection threshold'
-              WRITE(LUPRI,'(2X,A,E12.4)')
-     &        'PRJTHR lower. Current value is ',PRJTHR
-              CALL QUIT
-     &        ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
-            ENDIF
+        IF(NFRO(IFRP).GT.0) THEN
+          IF(NDEL.LT.NFRO(IFRP)) THEN
+            WRITE(LUPRI,'(2X,A,I6,A)') 
+     &      'is smaller than number of frozen orbitals',
+     &      NFRO(IFRP),'!'
+            WRITE(LUPRI,'(2X,A)')
+     &      'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
+     &      'to see the norms of the remaining vectors.',
+     &      'Based on this, you may set the projection threshold'
+            WRITE(LUPRI,'(2X,A,E12.4)')
+     &      'PRJTHR lower. Current value is ',PRJTHR
+            CALL QUIT
+     &      ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
           ENDIF
 C         Backtransform to SO-basis
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
