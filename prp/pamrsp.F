@@ -716,7 +716,7 @@ C        ==============================================
 C   
          IF(INTFLG.NE.INTBUF) THEN
            N2RED = NZRED*NREDM
-           CALL DZERO(REDGP,NZRED)
+           IF(LINEQ) CALL DZERO(REDGP,NZRED)
            CALL DZERO(REDE,N2RED)
            CALL DZERO(REDS,N2RED)
            NERED = 0
