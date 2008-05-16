@@ -827,8 +827,12 @@ C
       BSS = BSS_SAVE
       TWOCOMP = TWOCOMP_SAVE
 
-      ISIZE = NFBAS(1,0)*NFBAS(1,1)*NZ
-      IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NFBAS(2,1)*NZ
+      ISIZE = 0
+      DO IFRP = 1,NFSYM
+C.......................[    L+S    ]*[     L     ]
+        ISIZE = ISIZE + NFBAS(IFRP,0)*NFBAS(IFRP,1)
+      ENDDO
+      ISIZE = ISIZE*NZ
 C  ... allocate array for the picture change transformation matrix
       CALL MEMGET('REAL',KPCTM,ISIZE,WORK,KFREE,LFREE)
 C     ... array for the picture change transformed operator
@@ -1817,7 +1821,7 @@ C
 C           If MAKEPCTRA = .false., do not perform the picture change tranf.,
 C           only take the LL block of a four-component property 
 C           operator (this is not rigorous, but shows how important is
-C           the picture change transfgormation of property operator)
+C           the picture change transformation of property operator)
 C
 C  Called from: 
 C ==============
