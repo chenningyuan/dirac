@@ -698,7 +698,7 @@ C
 C
       MXCORR1 = 0
       CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
-      IF (DOFOPR) MXCORR = MAX(MXCORR,MXCORR1)
+c     IF (DOFOPR) MXCORR = MAX(MXCORR,MXCORR1)
 C
       MXCORR1 = 0
       CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
@@ -2006,9 +2006,6 @@ C
       ENDIF
 
       MXCORR = MAX(MXCORR,total_mem_new)
-      write(*,*) 
-     & 'debug : total_mem_new after initial allocs =',
-     &                 total_mem_new,mxcorr
 Caspg, replacing memget
 C
 C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
@@ -2573,7 +2570,7 @@ C
      &                             a_BUF3(:)
 
       integer(kind=8)           :: total_mem_new
-      integer :: freemem, verbose = 1
+      integer :: freemem, verbose = 0
 C
 C---------------Executable code--------------------------------------
 C
@@ -2592,9 +2589,9 @@ C
       IF (ICALC.LE.0) RETURN
 C
 C     Allocate space for the calculation of the gradient
-C     We alloc_meate everything, regardless whether the old
-C     module is active or not, because it takes only little
-C     memory.
+C
+C     here we allocate the variables common to both schemes
+C     the specific ones are allocated as needed
 C
       if (ALLOC_ME) then
          CALL alloc( a_FOO   , NFOO*RCW         )
@@ -2606,24 +2603,13 @@ C
          CALL alloc( a_S2    , NDIMT2*RCW       )
          CALL alloc( a_DOO   , NFOO*RCW         )
          CALL alloc( a_DVV   , NFVV*RCW         )
-         CALL alloc( a_XOO   , NFOO*RCW         )
-         CALL alloc( a_XVV   , NFVV*RCW         )
          CALL alloc( a_DVO   , NDIMX*RCW        )
          CALL alloc( a_DOV   , NDIMX*RCW        )
-         CALL alloc( a_D2VO  , NDIMX*RCW        )
-         CALL alloc( a_D2OV  , NDIMX*RCW        )
-         CALL alloc( a_XVO   , NDIMX*RCW        )
-         CALL alloc( a_XOV   , NDIMX*RCW        )
-         CALL alloc( a_EVO   , NEOPER*NDIMX*RCW )
-         CALL alloc( a_EOV   , NEOPER*NDIMX*RCW )
-         CALL alloc( a_EOO   , NFOO*RCW         )
-         CALL alloc( a_EVV   , NFVV*RCW         )
-         CALL alloc( a_DG    , NDIMX*RCW        )
          CALL alloc( a_DMO   , NORBT*NORBT*NZ   )
          CALL alloc( a_XMO   , NORBT*NORBT*NZ   )
       endif
 
-         total_mem_new = total_mem_new 
+      total_mem_new = total_mem_new 
      &                 + RCW*(4*(NFOO+NFVV)+NDIMX*(7+2*(NEOPER))+NFVO) 
      &                 + RCW*(2*(NDIMT1+NDIMT2))
      &                 + 2*NORBT*NORBT*NZ
@@ -2640,50 +2626,18 @@ C
       MAXDIM = MXDIMGR
 
       if (alloc_me) then
-         CALL alloc( a_CCC   , MAXDIM                )
-         CALL alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) )
-         CALL alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) )
          CALL alloc( a_BUF1  , NBUF1*RCW             )
-         CALL alloc( a_CBUF  , 2*NSP*NSP             )
          CALL alloc( a_BUF2  , NBUF2*RCW             )
       endif
 
-         total_mem_new = total_mem_new 
+      total_mem_new = total_mem_new 
      &                 + MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)) 
      &                 + RCW*(NBUF1+NBUF2) + 2*NSP*NSP
 
 C
-C     Calculate size of the 3rd work array that is passed on to the
-C     response module as work, we make it as large as possible.
-C
-      call alloc_maxsize(freemem,100,verbose)
-      NBUF3 = ((freemem/2)*2) / RCW
-C
-C     Allocate now also this remaining work array
-C
-      if (alloc_me) then
-         write (*,*) 'allocating buf3 in ccfopr'
-         CALL alloc( a_BUF3  , NBUF3*RCW             )
-         KFREE = 1
-         call alloc_maxsize(freemem,100,verbose)
-         LFREE = (freemem/2)*2
-         write (*,*) 'debug, lfree in ccfopr',lfree,freemem
-      endif
-
-         total_mem_new = total_mem_new + NBUF3*RCW
-C
-      IF (DOMP2G.OR.DOMP2GOLD) MXCORR = KFREE
-      IF (ICALC.EQ.1) THEN
-         WRITE (IW,1001) "Gradient calculation",KFREE
-         KFREE = KFRSAV
-         LFREE = LFRSAV
-         write (*,*) 'blabla',kfree,lfree
-         RETURN
-      ENDIF
-C
 C     Read the Fock matrix from file
 C
-      CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+      if (icalc.ge.2) CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
 C
 C     Set equation type for use in MP2EQN
 C
@@ -2698,6 +2652,59 @@ C     AO based module that gives full relaxation and the exact result.
 C
       IF (DOMP2GOLD) THEN
 C
+C allocating stuff specific for this option
+C
+      if (ALLOC_ME) then
+         CALL alloc( a_XOO   , NFOO*RCW         )
+         CALL alloc( a_XVV   , NFVV*RCW         )
+         CALL alloc( a_D2VO  , NDIMX*RCW        )
+         CALL alloc( a_D2OV  , NDIMX*RCW        )
+         CALL alloc( a_XVO   , NDIMX*RCW        )
+         CALL alloc( a_XOV   , NDIMX*RCW        )
+         CALL alloc( a_EVO   , NEOPER*NDIMX*RCW )
+         CALL alloc( a_EOV   , NEOPER*NDIMX*RCW )
+         CALL alloc( a_EOO   , NFOO*RCW         )
+         CALL alloc( a_EVV   , NFVV*RCW         )
+         CALL alloc( a_DG    , NDIMX*RCW        )
+
+         CALL alloc( a_CCC   , MAXDIM                )
+         CALL alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) )
+         CALL alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) )
+         CALL alloc( a_CBUF  , 2*NSP*NSP             )
+      endif
+
+      total_mem_new = total_mem_new
+     &                 + MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2))
+     &                 + RCW*(NBUF1+NBUF2) + 2*NSP*NSP
+
+
+C
+C     Calculate size of the 3rd work array that is passed on to the
+C     response module as work, we make it as large as possible.
+C
+      call alloc_maxsize(freemem,min(NBUF1,NBUF2),verbose)
+      NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
+C
+C     Allocate now also this remaining work array
+C
+      if (alloc_me) then
+         CALL alloc( a_BUF3  , NBUF3*RCW             )
+c        call alloc_maxsize(freemem,100,verbose)     
+C
+C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
+C
+         KFREE = 1
+         LFREE = (freemem/2)*2
+      endif
+
+      total_mem_new = total_mem_new + NBUF3*RCW
+C
+      MXCORR = total_mem_new
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient Calculation",total_mem_new
+         RETURN
+      ENDIF
+
          WRITE (IW,1007) MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
 C
 C        Start with SCF (reference determinant) expectation values
@@ -2750,6 +2757,23 @@ C
      &                  EPHASE,CEXPA)
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
+      if (alloc_me) then
+          call dealloc(a_XOO)
+          call dealloc(a_XVV)
+          call dealloc(a_D2VO)
+          call dealloc(a_D2OV)
+          call dealloc(a_XVO)
+          call dealloc(a_XOV)
+          call dealloc(a_EVO)
+          call dealloc(a_EOV)
+          call dealloc(a_EOO)
+          call dealloc(a_EVV)
+          call dealloc(a_DG)
+          call dealloc(a_CCC)
+          call dealloc(a_BB1)
+          call dealloc(a_BB2)
+          call dealloc(a_CBUF)
+      endif
 C
       ENDIF ! End of MO code
 C
@@ -2757,74 +2781,72 @@ C     New AO implementation
 C
       IF (DOMP2G) THEN
 C
+C
+C     Calculate size of the 3rd work array that is passed on to the
+C     response module as work, we make it as large as possible.
+C
+      call alloc_maxsize(freemem,min(NBUF1,NBUF2),verbose)
+      NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
+C
+C     Allocate now also this remaining work array
+C
+      if (alloc_me) then
+         CALL alloc( a_BUF3  , NBUF3*RCW             )
+c        call alloc_maxsize(freemem,100,verbose)     
+C
+C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
+C
+         KFREE = 1
+         LFREE = (freemem/2)*2
+      endif
+
+      total_mem_new = total_mem_new + NBUF3*RCW
+C
+      MXCORR = total_mem_new
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient Calculation",total_mem_new
+         RETURN
+      ENDIF
+
           WRITE (IW,1008) 
 C
 C         Slaves will only help in the integral calculation.
 C
+C         this means that, for the time being, we can deallocate everything? 
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
              IF (ICALC.EQ.2) CALL DIRNOD2(a_BUF3,NBUF3)
-C (CC(KFRSAV),LFRSAV)
              RETURN
           ENDIF
 #endif
-CMI      CALL MEMCHK('mp2g 0.1',CC,1)
 C
 C        Solve relativistic MP2 lambda equations
 C
-          WRITE (IW,1008) 
-         write (*,*) 'foo 1'
+         WRITE (IW,1008) 
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 
-CMI      CALL MEMCHK('mp2g 0.2',CC,1)
 C
 C        Get amplitude part of density matrix
 C
-          WRITE (IW,1008) 
-         write (*,*) 'foo 2'
+         WRITE (IW,1008) 
          CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
-
-!        CALL MEMCHK('mp2g 0.3',CC,1)
-!        CALL MEMCHK('mp2g 0.3.1',CC,T2)
-!        CALL MEMCHK('mp2g 0.3.2',CC,BUF1)
-!        CALL MEMCHK('mp2g 0.3.3',CC,BUF2)
-!        CALL MEMCHK('mp2g 0.3.4',CC,BUF3)
-!        CALL MEMCHK('mp2g 0.3.5',CC,XMO)
-!        CALL MEMCHK('mp2g 0.3.6',CC,DMO)
-
+C
 C        Solve Z-vector equations 
 C
-c aspg, problems with memory start here, because it uses kfree and lfree inside
          WRITE (IW,1008) 
-         write (*,*) 'foo 3'
          IF (.NOT.NOZG)
      &       CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
-
-CMI      ... here it fails in the Levy-Leblond mode....
-!        CALL MEMCHK('mp2g 1.1.1',CC,T2)
-!        CALL MEMCHK('mp2g 1.1.2',CC,BUF1)
-!        CALL MEMCHK('mp2g 1.1.2',CC,BUF2)
-!        CALL MEMCHK('mp2g 1.1.3',CC,BUF3)
-!        CALL MEMCHK('mp2g 1.1.4',CC,XMO)
-!        CALL MEMCHK('mp2g 1.1.5',CC,DMO)
-
-!        CALL MEMCHK('mp2g 1.1',CC,1)
-
-CMI       call quit('here in relccsd finished')
-
 C
 C        Create upper triangle of density matrix
 C
-          WRITE (IW,1008) 
-         write (*,*) 'foo 4'
+         WRITE (IW,1008) 
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C
 C        Write density matrix to file for later processing
 C
-         write (*,*) 'foo 5'
          CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
 C
 C        Generate natural orbitals, if desired
@@ -2837,8 +2859,7 @@ C
           KFREE1=1
           LFREE1=NBUF3*RCW
 C
-         write (*,*) 'foo 6'
-          CALL MP2_NATORB( a_DMO ,IPRINT_NO,NOZG, a_BUF3,KFREE1,KFREE1)
+            CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,KFREE1)
          END IF
 C
 c        CALL MEMCHK('mp2g 2.1',CC,1)
@@ -2854,46 +2875,24 @@ C
 #endif
       ENDIF
 C
-c     CALL MEMREL('CCFOPR',CC,1,KFRSAV,KFREE,LFREE)
       if (alloc_me) then
-          call dealloc(a_FOO)
-          call dealloc(a_FVO)
-          call dealloc(a_FVV)
-          call dealloc(a_T1)
-          call dealloc(a_T2)
-          call dealloc(a_S1)
-          call dealloc(a_S2)
-          call dealloc(a_DOO)
-          call dealloc(a_DVV)
-          call dealloc(a_XOO)
-          call dealloc(a_XVV)
-          call dealloc(a_DVO)
-          call dealloc(a_DOV)
-          call dealloc(a_D2VO)
-          call dealloc(a_D2OV)
-          call dealloc(a_XVO)
-          call dealloc(a_XOV)
-          call dealloc(a_EVO)
-          call dealloc(a_EOV)
-          call dealloc(a_EOO)
-          call dealloc(a_EVV)
-          call dealloc(a_DG)
-          call dealloc(a_DMO)
-          call dealloc(a_XMO)
-          call dealloc(a_CCC)
-          call dealloc(a_BB1)
-          call dealloc(a_BB2)
-          call dealloc(a_BUF1)
-          call dealloc(a_CBUF)
-          call dealloc(a_BUF2)
-          call dealloc(a_BUF3)
+         CALL dealloc( a_FOO)
+         CALL dealloc( a_FVO)
+         CALL dealloc( a_FVV)
+         CALL dealloc( a_T1 )
+         CALL dealloc( a_T2 )
+         CALL dealloc( a_S1 )
+         CALL dealloc( a_S2 )
+         CALL dealloc( a_DOO)
+         CALL dealloc( a_DVV)
+         CALL dealloc( a_DVO)
+         CALL dealloc( a_DOV)
+         CALL dealloc( a_DMO)
+         CALL dealloc( a_XMO)
+         call dealloc(a_BUF1)
+         call dealloc(a_BUF2)
+         call dealloc(a_BUF3)
       endif
-         write (*,*) 'foo 7'
-
-         write (*,*) ' '
-         write (*,*) 'debug, final memory usage in ccfopr : ',
-     &                total_mem_new,(total_mem_new*8/1024)
-         write (*,*) ' '
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -3440,11 +3439,6 @@ C
          call dealloc( a_BUF2 )
          call dealloc( a_BUF3 )
       endif
-
-         write (*,*) ' '
-         write (*,*) 'debug, final memory usage in ccfspc (int,kb): ',
-     &                total_mem_new,(total_mem_new*8/1024)
-         write (*,*) ' '
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
