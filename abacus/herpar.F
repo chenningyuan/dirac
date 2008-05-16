@@ -182,6 +182,7 @@ C
 C
 C     Determine total number of tasks - MTOTTK.
       CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -216,18 +217,10 @@ C
       ELSE IF (ITYPE .EQ. 9) THEN
          NREQUI = NDMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-CMI(TEC) NUMSUS = 9
-CMI(TEC) NREQUI = 3*NNBASX + NUMSUS
          NREQUI = 3*NDMAT*N2BASX     
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
-C
-C     Initialize DINTSKP
-C
-CMI ... Thomas deactivated it  ;|
-CMI   CALL DZERO(DINTSKP,LDINTSKP)
-C
 C
       IF (LFREE .LT. NREQUI) THEN
          WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
@@ -727,7 +720,6 @@ C------------------------------------------------
 C     Instruct nodes to return the final results.
 C------------------------------------------------
 C
-
       NTEST = -1
       DO 400 I = 1,NODES
 C
@@ -805,6 +797,7 @@ C
 C
          NWHO = ISTAT(MPI_SOURCE)
 C         write(6,*)'NWHO is',NWHO,mytid
+
 C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
              CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,
@@ -1927,24 +1920,6 @@ C
 #if defined (VAR_MPI)
       DIMENSION RBUF(2)
 #endif
-C
-C-------------------------------
-C     Put all results in RESMAT.
-C-------------------------------
-C
-CMI TEC entry....deactivated code
-C     IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-C        DO 100 J = 0, 2
-C           LPOS = J*N2BASX + 1
-C           MPOS = J*NNBASX + 1
-CTROND            CALL DCOPY(NNBASX,FMAT(LPOS),1,RESMAT(MPOS),1)
-C100     CONTINUE
-C        IF (ITYPE .EQ. -5) THEN
-C           NPOS = 3*NNBASX + 1
-CTROND            CALL DCOPY(NUMSUS,SUS2EL,1,RESMAT(NPOS),1)
-C        END IF
-C     END IF
-C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
