@@ -76,7 +76,8 @@ program dirprg
   call allocator_init()
   call allocator_setmax(maxsize)
   print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
-  print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
+  print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',  &
+         maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
