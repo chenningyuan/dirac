@@ -701,6 +701,11 @@ C
 C
 #if defined (VAR_MPI2)
 C
+C
+C     close parallel files that are not needed anymore...
+C
+      CALL SETUNITS_PAR_CLOSE_1
+C
       IF( IAM_NOT_INV .eq. 0 ) GOTO 505
 C
       LBLK = -1
@@ -710,22 +715,19 @@ C
 C     NOTE: only C-vectors will be saved.
 C
       CALL REWINO(LUC)
-      CALL REWINO(LUSC41)
       DO JROOT = 1, NROOT
+        CALL REWINO(LUSC41)
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
      &                            MPI_COMM_WORLD,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
+        IF(MYPROC.EQ.MASTER) THEN
+           CALL REWINO(LUSC41)
+           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
+        END IF
       END DO
-      IF(MYPROC.EQ.MASTER) THEN
-        CALL REWINO(LUSC41)
-        CALL REWINO(LUC)
-        DO JROOT = 1, NROOT
-          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
-        ENDDO
-        CALL REWINO(LUC)
-      END IF
+      CALL REWINO(LUC)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
         IF(MYPROC.EQ.MASTER) THEN
@@ -739,6 +741,7 @@ C
       NPTESTVAR = 00
 C
  505    CONTINUE
+      close(unit=LUSC41,status='DELETE')
 *
 #endif
 C
@@ -916,7 +919,6 @@ C     -----------------------
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
-      close(unit=LUSC41,status='DELETE')
 C
       END
 ***********************************************************************
@@ -1559,7 +1561,7 @@ C
 C
 C     close MPI-I/O files and free groups
 C
-      CALL SETUNITS_PAR_CLOSE
+      CALL SETUNITS_PAR_CLOSE_2
       CALL GROUP_DESTRUCTOR(ICOMM,MYNEW_COMM)
 #endif
 C

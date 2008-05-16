@@ -1985,23 +1985,32 @@ C
 C     ... open
 C
       CALL MPI_FILE_OPEN(MYNEW_COMM,PDIA(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,IDIA,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,IDIA,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU1(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU1,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU1,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU2(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU2,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU2,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU3(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU3,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU3,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU4(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU4,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU4,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU5(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU5,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU5,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU6(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU6,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU6,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLU7(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILU7,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILU7,IERR)
       CALL MPI_FILE_OPEN(MYNEW_COMM,PLUC(1:PFILELENGTH),
-     &     MPI_MODE_CREATE + MPI_MODE_RDWR,MPI_INFO_NULL,ILUC,IERR)
+     &     MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE,
+     &     MPI_INFO_NULL,ILUC,IERR)
 C
 C     ... set fileview
 C
@@ -2031,7 +2040,7 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SETUNITS_PAR_CLOSE
+      SUBROUTINE SETUNITS_PAR_CLOSE_1
 C
 C     OUTPUT
 C     ======
@@ -2051,7 +2060,6 @@ C
 C     ... close
 C
       CALL MPI_FILE_CLOSE(IDIA,IERR)
-      CALL MPI_FILE_CLOSE(ILU1,IERR)
       CALL MPI_FILE_CLOSE(ILU2,IERR)
       CALL MPI_FILE_CLOSE(ILU3,IERR)
       CALL MPI_FILE_CLOSE(ILU4,IERR)
@@ -2059,6 +2067,34 @@ C
       CALL MPI_FILE_CLOSE(ILU6,IERR)
       CALL MPI_FILE_CLOSE(ILU7,IERR)
       CALL MPI_FILE_CLOSE(ILUC,IERR)
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
+* parallelization by Stefan Knecht                                    *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE SETUNITS_PAR_CLOSE_2
+C
+C     OUTPUT
+C     ======
+C
+C     close files
+C     files handles stored on common block LUCIPAR are set to MPI_NULL
+C
+C     Last revision:     S. Knecht       - March  2008
+C
+************************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+C
+C     ... close
+C
+      CALL MPI_FILE_CLOSE(ILU1,IERR)
 C
       END
 ***********************************************************************
