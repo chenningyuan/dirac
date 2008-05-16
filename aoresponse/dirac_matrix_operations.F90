@@ -21,7 +21,7 @@ module dirac_matrix_operations_m
   type matrix
     integer(kind_i4)       :: nrow = -1 ! operations on uninitialized matrices will fail
     integer(kind_i4)       :: ncol
-    integer                :: nz
+    integer                :: nz   =  4
     real(kind_dp), pointer :: elements(:)
     integer                :: ih_sym
     integer                :: tr_sym
@@ -132,7 +132,6 @@ contains
 
     a%nrow = nrow
     a%ncol = ncol
-    a%nz   = 4
 
     call alloc(a%elements, a%nrow*a%ncol*a%nz)
 
@@ -339,10 +338,12 @@ contains
   end function i4_times_matrix
 
   function matrix_times_matrix(a, b) result(c)
-    type(matrix),  intent(in) :: a, b
-    type(matrix)              :: c
 
-    integer(kind_i4)          :: i, k, l, m, n
+    type(matrix), intent(in) :: a, b
+    type(matrix)             :: c
+
+
+    integer(kind_i4)         :: i, k, l, m, n
 
     call delabove(i)
 
@@ -364,10 +365,14 @@ contains
     c%nz   = a%nz
 
     if (associated(a%elements) .and. associated(b%elements)) then
+
       call alloc(c%elements, c%nrow*c%ncol*c%nz)
 
-      c%elements = reshape(matmul(reshape(a%elements(1:a%nrow*a%ncol), (/a%nrow, a%ncol/)), &
-                   reshape(b%elements(1:b%nrow*b%ncol), (/b%nrow, b%ncol/))), (/c%nrow*c%ncol/))
+      call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
+                'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
+                'N', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
+                 0.0d0,   ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
+
     end if
 
     call insref(c)

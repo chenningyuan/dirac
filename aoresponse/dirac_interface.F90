@@ -20,58 +20,26 @@ contains
 
     type(matrix), intent(inout) :: S
 
-!#include "dgroup.h"
 #include "dcbbas.h"
-!#include "dcbgen.h"
-!#include "dcbxpr.h"
-
-!   real(kind_dp), allocatable :: ptri(:)
-!   real(kind_dp), allocatable :: op1int(:)
-!   logical,       allocatable :: first(:)
 
     real(kind_dp), allocatable :: work(:)
-    integer(kind_i4)           :: kfree, lfree
+    integer(kind_i4)           :: kfree, lfree, kwork, lwork
 
-!   integer(kind_i4)           :: op_index
-!   logical                    :: file_exists, is_square
-!   real(kind_dp)              :: dummy_dp
-!   integer(kind_i4)           :: file_unit, dummy_i4, idimension
+    kfree = 1
 
-!   is_square = .false.
-!   if (iprptim(find_op_index(op_name)) == 0) then
-!     is_square = .true.
-!   end if
-
-!   if (is_square) then
-!     idimension = n2bbasx
-!   else
-!     idimension = nnbbasx
-!   end if
-
-!   call alloc(ptri,   nz*idimension)
-!   call alloc(op1int, idimension)
-!   allocate(first(nz))
+#include "memint.h"
 
     if (.not. isdef(S)) call mat_init(S, ntbas(0), ntbas(0))
 
-    kfree = 1
-    lfree = nnbbasx
+    lfree = nnbbasx + n2bbasx
+    lfree = lfree*2 !fixme: factor 2 shouldn't be needed
     call alloc(work, lfree)
 
-    call gtovlx(S%elements, 1.0d0, work(kfree), lfree)
+    call gtovlt(S%elements, 1.0d0, work, lfree)
 
     call dealloc(work)
 
   end subroutine get_ao_smat
-
-
-
-
-
-
-
-
-
 
   subroutine get_mo_coef(C)
 

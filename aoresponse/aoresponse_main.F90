@@ -20,32 +20,28 @@ contains
 
 #include "dcbbas.h"
 
-    type(matrix)               :: P, C, D, D1H, D1A, D1HP
+    type(matrix)               :: P, C, D, D1H, D1A, S, DSD
 
     real(kind_dp), allocatable :: freq(:)
     integer(kind_i4)           :: nr_freq = 1
 
-!   more than needed
-    call mat_init(C, ntbas(0), ntbas(0))
     call get_mo_coef(C)
 
     call alloc(freq, nr_freq)
     freq = 0.0d0
 
 !!!!!!!!!!
-    freq(1) = 0.02d0
     freq(1) = 0.00d0
+    freq(1) = 0.02d0
 !!!!!!!!!!
-
-    P    = 1.0d-100*C
-    D    = 1.0d-100*C
-    D1H  = 1.0d-100*C
-    D1A  = 1.0d-100*C
 
     call get_zo_ao_dmat(C, D)
     call get_ao_pmat('ZDIPLEN', P)
 
-    call response_solver(freq, P, C, D1H, D1A)
+    D1H  = 1.0d-100*D
+    D1A  = 1.0d-100*D
+
+!   call response_solver(freq, P, C, D1H, D1A)
 
     write(*, *) 'P**D   = ', P**D
     write(*, *) 'P**D1H = ', P**D1H
@@ -54,14 +50,23 @@ contains
     write(*, *) 'compare: -4.828661928957 at 0.00'
     write(*, *) 'compare: -4.833040214626 at 0.02'
 
+    call get_ao_smat(S)
 
-    P    = 0
-    D    = 0
+    write(*, *) 'S**D   = ', S**D
+
+    D = D/2.0d0
+    DSD = D*S*D
+    call mat_print(DSD)
+    DSD = DSD - D
+    call mat_print(DSD)
+
     D1H  = 0
     D1A  = 0
-    D1HP = 0
 
     call mat_free(C)
+    call mat_free(S)
+    call mat_free(D)
+    call mat_free(P)
     call dealloc(freq)
 
   end subroutine aoresponse_driver
