@@ -3251,9 +3251,13 @@ C
 C     Ask for the memory requirements of the modules
 C
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
-      MXCORR = MAX(MXCORR,MXCORR1)
+      if (lowmem) then
+         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
+      else
+         CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
+     &                NSP,IREPSP,IREPSPI)
+      endif
+      if (.not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 C
 C     Set restart on sorted integrals to false
 C
