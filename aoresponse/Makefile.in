@@ -8,6 +8,7 @@ F90_OBJS = aoresponse_input.o \
            dirac_interface.o \
            propint.o \
            pertdens.o \
+           proptest.o \
            aoresponse_main.o
 
 F90_MODS = aoresponse_input_m.mod \
@@ -15,6 +16,7 @@ F90_MODS = aoresponse_input_m.mod \
            dirac_interface_m.mod \
            propint.mod \
            pertdens.mod \
+           proptest.mod \
            aoresponse_main_m.mod
 
 F77_CPPS = $(F77_OBJS:.o=.i)

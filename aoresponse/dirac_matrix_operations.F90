@@ -19,15 +19,15 @@ module dirac_matrix_operations_m
 #include "dgroup.h"
 
   type matrix
-    integer(kind_i4)       :: nrow = -1 ! operations on uninitialized matrices will fail
+    integer(kind_i4)       :: nrow          = -1 ! operations on uninitialized matrices will fail
     integer(kind_i4)       :: ncol
-    integer                :: nz = 4
+    integer                :: nz            = 4
+    integer                :: ih_sym        = 1
+    integer                :: tr_sym        = 1
+    integer                :: pg_sym        = 1
+    integer                :: fermi_pointer = 1
+    integer                :: dag           = 0
     real(kind_dp), pointer :: elements(:)
-    integer                :: ih_sym
-    integer                :: tr_sym
-    integer                :: pg_sym
-    integer                :: fermi_pointer
-    integer                :: dag = 0
   end type matrix
 
   public matrix
@@ -44,6 +44,7 @@ module dirac_matrix_operations_m
   public mat_print
   public trab
   public trps
+  public dag
   public norm
   public iszero
   public isdef
