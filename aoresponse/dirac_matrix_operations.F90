@@ -21,12 +21,13 @@ module dirac_matrix_operations_m
   type matrix
     integer(kind_i4)       :: nrow = -1 ! operations on uninitialized matrices will fail
     integer(kind_i4)       :: ncol
-    integer                :: nz   =  4
+    integer                :: nz = 4
     real(kind_dp), pointer :: elements(:)
     integer                :: ih_sym
     integer                :: tr_sym
     integer                :: pg_sym
     integer                :: fermi_pointer
+    integer                :: dag = 0
   end type matrix
 
   public matrix
@@ -90,7 +91,11 @@ module dirac_matrix_operations_m
   end interface
 
   interface trps
-    module procedure trpsmat
+    module procedure dag_matrix
+  end interface
+
+  interface dag
+    module procedure dag_matrix
   end interface
 
   interface iszero
@@ -342,7 +347,6 @@ contains
     type(matrix), intent(in) :: a, b
     type(matrix)             :: c
 
-
     integer(kind_i4)         :: i, k, l, m, n
 
     call delabove(i)
@@ -357,7 +361,7 @@ contains
       call quit('incompatible shapes in c = a*b')
     end if
     if (a%nz /= b%nz) then
-      call quit('different shapes in c = a*b')
+      call quit('incompatible shapes in c = a*b')
     end if
 
     c%nrow = a%nrow
@@ -368,10 +372,17 @@ contains
 
       call alloc(c%elements, c%nrow*c%ncol*c%nz)
 
-      call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
-                'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
-                'N', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
-                 0.0d0,   ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
+      if (a%dag == 0 .and. b%dag == 0) then
+        call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
+                   'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
+                   'N', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
+                   0.0d0,    ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
+      else if (a%dag == 1 .and. b%dag == 0) then
+        call qgemm(a%nrow, a%ncol, b%ncol, 1.0d0,  &
+                   'H', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
+                   'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
+                   0.0d0,    ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
+      end if
 
     end if
 
@@ -662,17 +673,57 @@ contains
         r = sum(transpose(reshape(a%elements,(/a%nrow,a%ncol/)))*reshape(b%elements,(/b%nrow,b%ncol/)))
     end function
 
-    function trpsmat(a) result(b)
-        type(matrix),intent(in):: a; type(matrix):: b
-        integer:: i; call delabove(i)
-        if (a%nrow==-1) stop 'matrix trps(a) : a undefined'
-        b%nrow=a%ncol; b%ncol=a%nrow
-        if (associated(a%elements)) then
-            allocate(b%elements(b%nrow*b%ncol))
-            b%elements = reshape(transpose(reshape(a%elements,(/a%nrow,a%ncol/))),(/b%nrow*b%ncol/))
-        endif
-        call insref(b)
-    end function
+
+
+  subroutine transpose_block(factor, block, nrow, ncol, tblock)
+
+    real(kind_dp),    intent(in)    :: factor
+    real(kind_dp),    intent(in)    :: block(nrow*ncol)
+    integer(kind_i4), intent(in)    :: nrow
+    integer(kind_i4), intent(in)    :: ncol
+    real(kind_dp),    intent(inout) :: tblock(nrow*ncol)
+
+    tblock = reshape(transpose(reshape(block, (/nrow, ncol/))), (/nrow*ncol/))
+
+    call dscal(nrow*ncol, factor, tblock, 1)
+
+  end subroutine transpose_block
+
+  function dag_matrix(a) result(b)
+
+    type(matrix), intent(in) :: a
+    type(matrix)             :: b
+
+    integer(kind_i4)         :: i
+
+    call delabove(i)
+
+    if (a%nrow == -1) then
+      call quit('a undefined in a^\dag')
+    end if
+
+    b%ncol          = a%nrow
+    b%nrow          = a%ncol
+    b%nz            = a%nz
+    b%ih_sym        = a%ih_sym
+    b%tr_sym        = a%tr_sym
+    b%pg_sym        = a%pg_sym
+    b%fermi_pointer = a%fermi_pointer
+
+    if (associated(a%elements)) then
+      call alloc(b%elements, b%nrow*b%ncol*b%nz)
+
+      call transpose_block( 1.0d0, a%elements(0*a%nrow*a%ncol + 1), a%nrow, a%ncol, b%elements(0*a%nrow*a%ncol + 1))
+      call transpose_block(-1.0d0, a%elements(1*a%nrow*a%ncol + 1), a%nrow, a%ncol, b%elements(1*a%nrow*a%ncol + 1))
+      call transpose_block(-1.0d0, a%elements(2*a%nrow*a%ncol + 1), a%nrow, a%ncol, b%elements(2*a%nrow*a%ncol + 1))
+      call transpose_block(-1.0d0, a%elements(3*a%nrow*a%ncol + 1), a%nrow, a%ncol, b%elements(3*a%nrow*a%ncol + 1))
+    endif
+
+    call insref(b)
+
+  end function dag_matrix
+
+
 
     function matrix_is_zero(a) result(z)
         type(matrix),intent(in):: a; logical:: z

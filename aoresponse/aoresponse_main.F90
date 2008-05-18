@@ -19,11 +19,22 @@ contains
   subroutine aoresponse_driver()
 
 #include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 
-    type(matrix)               :: P, C, D, D1H, D1A, S, DSD
+    type(matrix)               :: P
+    type(matrix)               :: C
+    type(matrix)               :: D, D_mo
+    type(matrix)               :: D1H, D1A
+    type(matrix)               :: S
+    type(matrix)               :: DSD
+    type(matrix)               :: F, F_mo
 
     real(kind_dp), allocatable :: freq(:)
     integer(kind_i4)           :: nr_freq = 1
+
+    integer(kind_i4)           :: i, j, offset
+    real(kind_dp)              :: blub
 
     call get_mo_coef(C)
 
@@ -41,6 +52,7 @@ contains
     D1H  = 1.0d-100*D
     D1A  = 1.0d-100*D
 
+
 !   call response_solver(freq, P, C, D1H, D1A)
 
     write(*, *) 'P**D   = ', P**D
@@ -55,10 +67,45 @@ contains
     write(*, *) 'S**D   = ', S**D
 
     D = D/2.0d0
-    DSD = D*S*D
-    call mat_print(DSD)
-    DSD = DSD - D
-    call mat_print(DSD)
+!   DSD = D*S*D
+!   call mat_print(DSD)
+!   DSD = DSD - D
+!   call mat_print(DSD)
+
+    write(*, *) 'hier 1'
+    call get_mo_fmat(F_mo)
+    write(*, *) 'hier 2'
+
+    D_mo = 1.0d-100*D
+!   call mat_init(D_mo, norbt, norbt)
+!   D_mo%elements = 0.0d0
+
+    do i = 1, nfsym
+      if(nish(i) > 0) then
+        do j = 1, nish(i)
+          offset = (norb(1)*(i-1) + npsh(i))*D_mo%nrow
+          offset = offset + norb(1)*(i-1) + npsh(i)
+          offset = offset + (j-1)*D_mo%nrow + j - 1
+
+          D_mo%elements(1 + offset) = 1.0d0
+        end do
+      end if
+    end do
+
+    F = 1.0d-100*D
+
+!   F = C*D_mo*trps(C)
+
+!   call mat_print(D)
+!   call mat_print(F)
+
+!   F = C*F_mo*trps(C)
+    F = F_mo
+
+    write(*, *) 'F**D   = ', F**D
+    blub = F**D
+    blub = blub/109.97950141304912d0
+    write(*, *) 'compare:', blub
 
     D1H  = 0
     D1A  = 0
@@ -123,8 +170,6 @@ contains
                   work(kfree), lfree, 0)
     end do
 
-
-
 !   ih = 1
 !   irep = 0
 !   do iz = 1, nz
@@ -134,7 +179,7 @@ contains
 !     if (im == 1) then
 !       call fulmat('S', ntbas(0), ntbas(0), A(1 + ioff))
 !     else if (im == 2) then
-    call dscal(ntbas(0)*ntbas(0)*3, 0.0d0, A(1 + ntbas(0)*ntbas(0)), 1)
+!   call dscal(ntbas(0)*ntbas(0)*3, 0.0d0, A(1 + ntbas(0)*ntbas(0)), 1)
 !       call fulmat('A', ntbas(0), ntbas(0), A)
 !     end if
 !   end do
@@ -472,150 +517,6 @@ contains
 
   end subroutine test_propint
 
-  subroutine test_matrix_operations()
-
-    type(matrix)     :: d22, d23, d32, d33
-    type(matrix)     :: a, b, c, d, e
-    type(matrix)     :: m, n
-    real(kind_dp)    :: accept = 1.0d-5
-    real(kind_dp)    :: r, s
-
-    call mat_init(d22, 2, 2)
-    call mat_init(d23, 2, 3)
-    call mat_init(d32, 3, 2)
-    call mat_init(d33, 3, 3)
-
-    d22%elements = 1.0d0
-    d23%elements = 1.0d0
-    d32%elements = 1.0d0
-    d33%elements = 1.0d0
-
-    a = 1.0d0*d22
-    b = 0.5d0*d22
-    c = 0.5d0*d23
-    d = 0.5001d0*d23
-    e = 0.500000001d0*d23
-
-    call compare_matrices(a, b, accept, 'testing compare_matrices, should fail due to values')
-    call compare_matrices(a, c, accept, 'testing compare_matrices, should fail due to shapes')
-    call compare_matrices(b, c, accept, 'testing compare_matrices, should fail due to shapes')
-    call compare_matrices(c, d, accept, 'testing compare_matrices, should fail due to values')
-    call compare_matrices(c, e, accept, 'testing compare_matrices')
-
-    a = 0
-    b = 0
-    c = 0
-    d = 0
-    e = 0
-
-    m = 1.0d0*d23
-    n = 1.0d0*d32
-
-    m%elements = 0.0d0
-    n%elements = 0.0d0
-
-    m%elements( 1) =  1.0d0
-    m%elements( 2) =  2.0d0
-    m%elements( 3) =  3.0d0
-    m%elements( 4) =  4.0d0
-    m%elements( 5) =  5.0d0
-    m%elements( 6) =  6.0d0
-    m%elements( 7) =  7.0d0
-    m%elements( 8) =  8.0d0
-    m%elements( 9) =  9.0d0
-    m%elements(10) = 10.0d0
-    m%elements(11) = 11.0d0
-    m%elements(12) = 12.0d0
-    m%elements(13) = 13.0d0
-    m%elements(14) = 14.0d0
-    m%elements(15) = 15.0d0
-    m%elements(16) = 16.0d0
-    m%elements(17) = 17.0d0
-    m%elements(18) = 18.0d0
-    m%elements(19) = 19.0d0
-    m%elements(20) = 20.0d0
-    m%elements(21) = 21.0d0
-    m%elements(22) = 22.0d0
-    m%elements(23) = 23.0d0
-    m%elements(24) = 24.0d0
-
-    n%elements( 1) =  1.0d0
-    n%elements( 2) =  2.0d0
-    n%elements( 3) =  3.0d0
-    n%elements( 4) =  4.0d0
-    n%elements( 5) =  5.0d0
-    n%elements( 6) =  6.0d0
-    n%elements( 7) =  7.0d0
-    n%elements( 8) =  8.0d0
-    n%elements( 9) =  9.0d0
-    n%elements(10) = 10.0d0
-    n%elements(11) = 11.0d0
-    n%elements(12) = 12.0d0
-    n%elements(13) = 13.0d0
-    n%elements(14) = 14.0d0
-    n%elements(15) = 15.0d0
-    n%elements(16) = 16.0d0
-    n%elements(17) = 17.0d0
-    n%elements(18) = 18.0d0
-    n%elements(19) = 19.0d0
-    n%elements(20) = 20.0d0
-    n%elements(21) = 21.0d0
-    n%elements(22) = 22.0d0
-    n%elements(23) = 23.0d0
-    n%elements(24) = 24.0d0
-
-    a = 1.0d0*m
-    b = 1.0d0*n
-
-    c = 2.0d0*a
-    d = a + a + a + (-a)
-    e = 4.0d0*a - a - a
-
-    call compare_matrices(c, d, accept, 'testing matrix plus/minus')
-    call compare_matrices(d, e, accept, 'testing matrix plus/minus')
-    call compare_matrices(a, e, accept, 'testing matrix plus/minus, should fail due to values')
-
-    r = a**a
-
-    call compare_dp(r, 4900.0d0, accept, 'checking matrix ddot')
-
-    r = b**b
-    s = norm(a)*norm(b)
-
-    call compare_dp(r, s, accept, 'checking matrix_norm')
-
-    c = a/0.5d0
-    d = a/2 + a/2 + a
-
-    call compare_matrices(c, d, accept, 'testing matrix/r and matrix/i')
-
-
-
-
-
-
-
-
-
-
-
-
-    a = 0
-    b = 0
-    c = 0
-    d = 0
-    e = 0
-
-    m = 0
-    n = 0
-
-    call mat_free(d22)
-    call mat_free(d23)
-    call mat_free(d32)
-    call mat_free(d33)
-
-  end subroutine test_matrix_operations
-
   subroutine response_solver(freq, RHS, C, D1H, D1A)
 
     real(kind_dp),    intent(in)    :: freq(:)
@@ -795,13 +696,6 @@ contains
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
 
-!   here i have to do some dirty cheating
-!   this is because xrsctl deep inside uses
-!   work(kzxope) and work(kzxopp)
-!   to get the orbital_rotation_vector
-!   from today's perspective this was perhaps
-!   not a good choice but we have to live with it
-
     call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
     call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
 
@@ -812,6 +706,7 @@ contains
                    work(kzxope),               &
                    work(kzxopp))
 !   if you release kzxope and kzxopp now you enter a world of pain
+!   it is unfortunately used in several places later
 
     deallocate(orbital_rotation_vector_pp)
     deallocate(orbital_rotation_vector_pn)

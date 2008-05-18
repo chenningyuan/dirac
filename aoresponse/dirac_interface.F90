@@ -8,6 +8,7 @@ module dirac_interface_m
   implicit none
 
   public get_mo_coef
+  public get_mo_fmat
   public get_zo_ao_dmat
   public get_ao_pmat
   public get_ao_smat
@@ -15,6 +16,64 @@ module dirac_interface_m
   private
 
 contains
+
+  subroutine get_mo_fmat(F)
+
+    type(matrix), intent(inout) :: F
+
+#include "dcbbas.h"
+
+    type(matrix)                :: F1, F2
+
+    integer, parameter          :: file_unit = 70
+    logical                     :: file_exists
+
+    file_exists = .false.
+    inquire(file = 'DFFCK1', exist = file_exists)
+    if (.not. file_exists) then
+      call quit('error in get_mo_fmat: file DFFCK1 not found')
+    end if
+
+    file_exists = .false.
+    inquire(file = 'DFFCK2', exist = file_exists)
+    if (.not. file_exists) then
+      call quit('error in get_mo_fmat: file DFFCK2 not found')
+    end if
+
+    if (.not. isdef(F)) call mat_init(F, ntbas(0), ntbas(0))
+
+    F1 = 1.0d-100*F
+    F2 = 1.0d-100*F
+
+    open(file_unit,       &
+         file = 'DFFCK1', &
+         status = 'old',  &
+         form = 'unformatted')
+
+    rewind file_unit
+
+    call reafck(file_unit, F1%elements, .true., 1)
+
+    close(file_unit, status = 'keep')
+
+    open(file_unit,       &
+         file = 'DFFCK2', &
+         status = 'old',  &
+         form = 'unformatted')
+
+    rewind file_unit
+
+    call reafck(file_unit, F2%elements, .true., 1)
+
+    close(file_unit, status = 'keep')
+
+!   F = 2.0d0*F1 + 0.25d0*F2
+    F = 2.0d0*F1 + F2
+
+    F1 = 0
+    F2 = 0
+
+  end subroutine get_mo_fmat
 
   subroutine get_ao_smat(S)
 
@@ -70,7 +129,8 @@ contains
 
     call alloc(eigenvalues, norbt)
 
-    if (.not. isdef(C)) call mat_init(C, ntbas(0), norbt)
+!   if (.not. isdef(C)) call mat_init(C, ntbas(0), norbt)
+    if (.not. isdef(C)) call mat_init(C, ntbas(0), ntbas(0))
 
     call reacmo(file_unit,   &            
                 'DFCOEF',    &           
@@ -85,8 +145,7 @@ contains
 
     call dealloc(eigenvalues)
 
-    close(file_unit, &
-          status = 'keep')
+    close(file_unit, status = 'keep')
 
   end subroutine get_mo_coef
 
