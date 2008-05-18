@@ -101,7 +101,17 @@ C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
-c     write (*,*) 'alloc me? ',alloc_me
+C
+C  Read integrals & make fock matrices
+C
+      SRTALL = .TRUE.
+C
+C  MP2 calculations need less integrals
+C  MP: DHF-ADC also needs all integral classes !
+C  MP: The eqns variable hereby turns on full sorting in this case.
+C
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
 C  Allocate core for integral sorting step
 C
@@ -150,15 +160,21 @@ C     a critical shortage of memory so far.
 C
 C     The maximum necessary size is
 C
-      NVT = MAX(NV5,NV6)
-      NVT = MAX(NVT,NV4)
-      NVT = MAX(NVT,JOOOO(2))
-      NVT = MAX(NVT,JVOOO(2))
+      if (srtall) then
+         NVT = MAX(NV5,NV6)
+         NVT = MAX(NVT,NV4)
+         NVT = MAX(NVT,JOOOO(2))
+         NVT = MAX(NVT,JVOOO(2))
 C
 C     now we get what is the maximum allocatable dimension
-      call alloc_maxsize(freemem,nv4,verbose)
+         call alloc_maxsize(freemem,nv4,verbose)
 C     and rescale the result so that two buffers (ints, intsa can be allocated
-      NVF = freemem / (2 * RCW * 2) 
+          NVF = freemem / (2 * RCW * 2) 
+      else
+         NVT = NV4
+         NVF = NVT
+      endif
+
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -218,17 +234,6 @@ C
          WRITE (IW,*) ' '
          RETURN
       ENDIF
-C
-C  Read integrals & make fock matrices
-C
-      SRTALL = .TRUE.
-C
-C  MP2 calculations need less integrals
-C  MP: DHF-ADC also needs all integral classes !
-C  MP: The eqns variable hereby turns on full sorting in this case.
-C
-      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
-      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
       CALL RDINTS_LM(IPRNT,NSP,a_INDEX,a_KR,a_INDK,a_INDL,a_CBUF,a_IBUF,
      &               NVTMIN,a_BUF1,a_BUF2,IREPSP,IREPSPI,EPS,
