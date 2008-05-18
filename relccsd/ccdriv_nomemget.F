@@ -721,7 +721,7 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-         CALL QUIT("INCREASE MWORD")
+c        CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
@@ -2172,6 +2172,8 @@ c
      &                             a_TAU3(:)
 c
       integer(kind=8) :: total_mem_new
+      integer:: verbose = 0, freemem = 0
+
 C aspg, hand-added
       total_mem_new = 0
 C
@@ -2232,7 +2234,10 @@ C        integrals, start by making it as large as possible.
 C
 !        NBUF3 = (LFREE - 4) / RCW
 ! nbuf3 will be set to the largest possible signed 32-bit int div rcw...
-         NBUF3 = 2147483647 
+         call alloc_maxsize(freemem,nv4,verbose)
+C     and rescale the result so that two buffers (ints, intsa can be
+C     allocated
+         NBUF3 = freemem / (2 * RCW)
 C
 C        Calculate maximum size necessary for the VOVV and VVVV buffers
 C
@@ -2255,7 +2260,7 @@ C
          if (alloc_me) then
             call alloc(a_BUF3,NBUF3*RCW, id="buf3" )
          endif
-         total_mem_new = total_mem_new + (NBUF3*RCW)
+         total_mem_new = freemem - (total_mem_new + (NBUF3*RCW))
 
          IF (DOCCSD) THEN
             MXCORR = MAX(MXCORR,total_mem_new)
@@ -2461,26 +2466,27 @@ C
          IMSTAT(6) = 3
          CALL CCDUMP
    30    CONTINUE
+
+         if (alloc_me) then
+            CALL dealloc(a_T2S  , id="t2s")
+            CALL dealloc(a_T2T  , id="t2t")
+            CALL dealloc(a_VOOO , id="vooo")
+            CALL dealloc(a_VVOO , id="vvoo")
+            CALL dealloc(a_VVVO , id="vvvo")
+            CALL dealloc(a_BUF1 , id="buf1")
+            CALL dealloc(a_BUF2 , id="buf2")
+            CALL dealloc(a_BUF3 , id="buf3")
+            CALL dealloc(a_TAU3 , id="tau3")
+         endif
       ENDIF
 C
       if (alloc_me) then
-         CALL dealloc(a_FVO )
-         CALL dealloc(a_FOO )
-         CALL dealloc(a_FVV )
-         CALL dealloc(a_T1  )
-         CALL dealloc(a_T2  )
-         CALL dealloc(a_S1  )
-
-         CALL dealloc(a_VOOO ) 
-         CALL dealloc(a_T2S  ) 
-         CALL dealloc(a_T2T  ) 
-         CALL dealloc(a_VVOO ) 
-C
-         CALL dealloc(a_VVVO ) 
-         CALL dealloc(a_BUF1 ) 
-         CALL dealloc(a_BUF2 ) 
-         CALL dealloc(a_BUF3 ) 
-         CALL dealloc(a_TAU3 ) 
+         CALL dealloc(a_FVO , id="fvo")
+         CALL dealloc(a_FOO , id="fvo")
+         CALL dealloc(a_FVV , id="fvo")
+         CALL dealloc(a_T1  , id="fvo")
+         CALL dealloc(a_T2  , id="fvo")
+         CALL dealloc(a_S1  , id="s1")
       endif
 
 
@@ -2875,6 +2881,7 @@ C
 #endif
       ENDIF
 C
+      write (*,*) 'before dealloc in fopr'
       if (alloc_me) then
          CALL dealloc( a_FOO)
          CALL dealloc( a_FVO)
