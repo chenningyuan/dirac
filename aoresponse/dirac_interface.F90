@@ -18,9 +18,10 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
-    integer(kind_i4)            :: i, j, offset
+    integer            :: i, j, offset
 
     if (.not. isdef(D_mo)) call mat_init(D_mo, norbt, norbt)
+    D_mo%elements = 0.0d0
 
     do i = 1, nfsym
       if(nish(i) > 0) then
@@ -60,51 +61,62 @@ contains
     call reafck(file_unit, F2%elements, .true., 1)
     close(file_unit, status = 'keep')
 
-    F = 2.0d0*F1 + F2
+    F = 2.0d0*F1 + 2.0d0*F2
 
-    F1 = 0
-    F2 = 0
+!   F1 = 0
+!   F2 = 0
 
   end subroutine get_F
 
   subroutine get_G(D, G)
 
-    type(matrix), intent(in)      :: D
+    type(matrix), intent(in)   :: D
     type(matrix), intent(inout)   :: G
 
 #include "dcbbas.h"
 #include "dcbdhf.h"
 
     real(kind_dp),    allocatable :: work(:)
-    integer(kind_i4)              :: kfree, lfree
+    integer              :: kfree, lfree
 
-    integer(kind_i4)              :: npos_nr
-    integer(kind_i4), allocatable :: npos(:)
+    integer              :: npos_nr
+    integer, allocatable :: npos(:)
 
     call stex_get_npos(npos_nr)
 
-    call alloc(npos, npos_nr)
+    allocate(npos(npos_nr))
 
+!   write(*, *) 'isdef(D)', isdef(D), iszero(D), D%nrow, associated(D%elements)
+!   write(*, *) 'isdef(G)', isdef(G), iszero(G), G%nrow, associated(G%elements)
+
+    G = D
+!   write(*, *) 'isdef(D)', isdef(D), iszero(D), D%nrow, associated(D%elements)
+!   write(*, *) 'isdef(G)', isdef(G), iszero(G), G%nrow, associated(G%elements)
+
+!   G = G
 !   if (.not. isdef(G)) call mat_init(G, ntbas(0), ntbas(0))
-    G = 1.0d-100*D
+!   call mat_init(G, ntbas(0), ntbas(0))
+!   G%elements = 0.0d0
 
     kfree = 1
     lfree = n2bbasxq*20
-    call alloc(work, lfree)
+    allocate(work(lfree))
 
-    call twofck(G%pg_sym,   &
-                G%ih_sym,   &
-                1,          &
-                G%elements, &
-                D%elements, &
-                1,          &
-                npos,       &
-                intflg,     &
-                0,          &
-                work(kfree), lfree)
+!   call twofck(G%pg_sym,   &
+!               G%ih_sym,   &
+!               1,          &
+!               G%elements, &
+!               D%elements, &
+!               1,          &
+!               npos,       &
+!               intflg,     &
+!               0,          &
+!               work(kfree), lfree)
 
-    call dealloc(npos)
-    call dealloc(work)
+    deallocate(work)
+!   G = 4.0d0*G
+
+    deallocate(npos)
 
   end subroutine get_G
 
@@ -118,13 +130,15 @@ contains
     real(kind_dp), allocatable :: eigenvalues(:)
     integer, parameter         :: file_unit = 66
     real(kind_dp)              :: dummy_dp
-    integer(kind_i4)           :: dummy_i4
+    integer           :: dummy_i4
 
     if (.not. isdef(C)) call mat_init(C, ntbas(0), norbt)
+    C%elements = 0.0d0
 
-    call alloc(eigenvalues, norbt)
+    allocate(eigenvalues(norbt))
 
     call opnfil(file_unit, 'DFCOEF', 'OLD', 'get_C')
+
 
     call reacmo(file_unit,   &
                 'DFCOEF',    &
@@ -139,7 +153,7 @@ contains
 
     close(file_unit, status = 'keep')
 
-    call dealloc(eigenvalues)
+    deallocate(eigenvalues)
 
   end subroutine get_C
 
@@ -150,22 +164,23 @@ contains
 #include "dcbbas.h"
 
     real(kind_dp), allocatable   :: work(:)
-    integer(kind_i4)             :: kfree, lfree, kwork, lwork
+    integer             :: kfree, lfree, kwork, lwork
 
     kfree = 1
 
 #include "memint.h"
 
     if (.not. isdef(S)) call mat_init(S, ntbas(0), ntbas(0))
+    S%elements = 0.0d0
 
     lfree = nnbbasx + n2bbasx
 !fixme: factor 2 shouldn't be needed
     lfree = lfree*2
-    call alloc(work, lfree)
+    allocate(work(lfree))
 
     call gtovlt(S%elements, 1.0d0, work, lfree)
 
-    call dealloc(work)
+    deallocate(work)
 
     S = 2.0d0*S
 
@@ -186,12 +201,12 @@ contains
     logical,       allocatable :: first(:)
 
     real(kind_dp), allocatable :: work(:)
-    integer(kind_i4)           :: kfree, lfree
+    integer           :: kfree, lfree
 
-    integer(kind_i4)           :: op_index
+    integer           :: op_index
     logical                    :: file_exists, is_square
     real(kind_dp)              :: dummy_dp
-    integer(kind_i4)           :: file_unit, dummy_i4, idimension
+    integer           :: file_unit, dummy_i4, idimension
 
     is_square = .false.
     if (iprptim(find_op_index(op_name)) == 0) then
@@ -204,19 +219,20 @@ contains
       idimension = nnbbasx
     end if
 
-    call alloc(ptri,   nz*idimension)
-    call alloc(op1int, idimension)
+    allocate(ptri(nz*idimension))
+    allocate(op1int(idimension))
     allocate(first(nz))
 
     kfree = 1
     lfree = 2*nz*n2bbasx
-    call alloc(work, lfree)
+    allocate(work(lfree))
 
     file_unit = lu1int
 
     call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
 
     if (.not. isdef(P)) call mat_init(P, ntbas(0), ntbas(0))
+    P%elements = 0.0d0
 
     op_index = find_op_index(op_name)
 
@@ -235,34 +251,36 @@ contains
     P%fermi_pointer = jbtof(P%pg_sym - 1, 1)
     P%ih_sym        = P%tr_sym
 
+    P = 2.0d0*P
+
     close(file_unit, status = 'keep')
 
-    call dealloc(ptri)
-    call dealloc(op1int)
+    deallocate(ptri)
+    deallocate(op1int)
     deallocate(first)
-    call dealloc(work)
+    deallocate(work)
 
   end subroutine get_P
 
   subroutine set_orbital_rotation_vector(orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
                                          length_pp, length_pn)
 
-    integer         , intent(out) :: orbital_rotation_vector_pp(2, length_pp)
-    integer         , intent(out) :: orbital_rotation_vector_pn(2, length_pn)
-    integer(kind_i4), intent(in)  :: length_pp
-    integer(kind_i4), intent(in)  :: length_pn
+    integer, intent(in)  :: length_pp
+    integer, intent(in)  :: length_pn
+    integer, intent(out) :: orbital_rotation_vector_pp(2, length_pp)
+    integer, intent(out) :: orbital_rotation_vector_pn(2, length_pn)
 
 #include "dcborb.h"
 #include "dgroup.h"
 
-    integer(kind_i4)              :: counter_pp
-    integer(kind_i4)              :: counter_pn
+    integer              :: counter_pp
+    integer              :: counter_pn
 
-    integer(kind_i4)              :: pg_nr,    egi_nr,    egs_nr
-    integer(kind_i4)              :: pu_nr,    eui_nr,    eus_nr
-    integer(kind_i4)              :: pg_start, egi_start, egs_start
-    integer(kind_i4)              :: pu_start, eui_start, eus_start
-    integer(kind_i4)              :: i, a
+    integer              :: pg_nr,    egi_nr,    egs_nr
+    integer              :: pu_nr,    eui_nr,    eus_nr
+    integer              :: pg_start, egi_start, egs_start
+    integer              :: pu_start, eui_start, eus_start
+    integer              :: i, a
 
     logical                       :: debug_me = .false.
 
@@ -349,16 +367,16 @@ contains
 
   subroutine get_length(length_pp, length_pn)
 
-    integer(kind_i4), intent(out) :: length_pp, length_pn
+    integer, intent(out) :: length_pp, length_pn
 
 #include "dcborb.h"
 #include "dgroup.h"
 
-    integer(kind_i4)              :: pg_nr,    egi_nr,    egs_nr
-    integer(kind_i4)              :: pu_nr,    eui_nr,    eus_nr
-    integer(kind_i4)              :: pg_start, egi_start, egs_start
-    integer(kind_i4)              :: pu_start, eui_start, eus_start
-    integer(kind_i4)              :: i, a
+    integer              :: pg_nr,    egi_nr,    egs_nr
+    integer              :: pu_nr,    eui_nr,    eus_nr
+    integer              :: pg_start, egi_start, egs_start
+    integer              :: pu_start, eui_start, eus_start
+    integer              :: i, a
 
     pg_nr  = npsh(1)
     pu_nr  = npsh(2)
@@ -430,14 +448,14 @@ contains
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    integer(kind_i4), allocatable   :: ibtyp(:)
-    integer(kind_i4), allocatable   :: ibtyp_pointer_c(:)
-    integer(kind_i4), allocatable   :: ibtyp_pointer_pp(:)
-    integer(kind_i4), allocatable   :: ibtyp_pointer_pn(:)
+    integer, allocatable   :: ibtyp(:)
+    integer, allocatable   :: ibtyp_pointer_c(:)
+    integer, allocatable   :: ibtyp_pointer_pp(:)
+    integer, allocatable   :: ibtyp_pointer_pn(:)
                                     
-    integer(kind_i4), allocatable   :: isymop(:)
-    integer(kind_i4), allocatable   :: ihrmop(:)
-    integer(kind_i4), allocatable   :: ifckop(:)
+    integer, allocatable   :: isymop(:)
+    integer, allocatable   :: ihrmop(:)
+    integer, allocatable   :: ifckop(:)
                                     
     real(kind_dp),    allocatable   :: eigval(:)
     real(kind_dp),    allocatable   :: eigvec(:)
@@ -451,17 +469,17 @@ contains
     real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
                                     
     real(kind_dp),    allocatable   :: work(:)
-    integer(kind_i4)                :: kfree, lfree
+    integer                :: kfree, lfree
                                     
     real(kind_dp),    allocatable   :: prop_gradient_pp(:)
     real(kind_dp),    allocatable   :: prop_gradient_pn(:)
                                     
-    integer(kind_i4), allocatable   :: orbital_rotation_vector_pp(:, :)
-    integer(kind_i4), allocatable   :: orbital_rotation_vector_pn(:, :)
+    integer, allocatable   :: orbital_rotation_vector_pp(:)
+    integer, allocatable   :: orbital_rotation_vector_pn(:)
                                     
-    integer(kind_i4)                :: length_pp, length_pn
-    integer(kind_i4)                :: i, nr_freq, nr_dmat
-    integer(kind_i4)                :: ill_int, isl_int, iss_int, igt_int
+    integer                :: length_pp, length_pn
+    integer                :: i, nr_freq, nr_dmat
+    integer                :: ill_int, isl_int, iss_int, igt_int
     logical                         :: debug_me = .false.
     real(kind_dp)                   :: dummy_dp
     type(matrix)                    :: M, C
@@ -469,7 +487,7 @@ contains
 !!!!!!!!!!
     kfree = 1
     lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
-    call alloc(work, lfree)
+    allocate(work(lfree))
 !!!!!!!!!!
 
     call get_length(length_pp, length_pn)
@@ -485,11 +503,11 @@ contains
     nzvar   = nzxopt
     nzvarq  = nzxoptq
 
-    call alloc(prop_gradient_pp, length_pp*nz)
-    call alloc(prop_gradient_pn, length_pn*nz)
+    allocate(prop_gradient_pp(length_pp*nz))
+    allocate(prop_gradient_pn(length_pn*nz))
 
-    allocate(orbital_rotation_vector_pp(2, length_pp))
-    allocate(orbital_rotation_vector_pn(2, length_pn))
+    allocate(orbital_rotation_vector_pp(2*length_pp))
+    allocate(orbital_rotation_vector_pn(2*length_pn))
 
     call set_orbital_rotation_vector(orbital_rotation_vector_pp, orbital_rotation_vector_pn, &
                                      length_pp, length_pn)
@@ -528,7 +546,7 @@ contains
                 M%ih_sym,                   &
                 0)
 
-    M = 0
+!   M = 0
 
     call dscal(length_pp, -1.0d0, prop_gradient_pp, 1)
     call dscal(length_pn, -1.0d0, prop_gradient_pn, 1)
@@ -589,13 +607,13 @@ contains
     npred     = 0
     nzred     = ncred + nered + npred
 
-    call alloc(ibtyp,            2*nredm)
-    call alloc(ibtyp_pointer_c,  nredm)
-    call alloc(ibtyp_pointer_pp, nredm)
-    call alloc(ibtyp_pointer_pn, nredm)
-    call alloc(convergence,      nr_freq)
-    call alloc(eigval,           nr_freq)
-    call alloc(eigvec,           nredm*nr_freq)
+    allocate(ibtyp(2*nredm))
+    allocate(ibtyp_pointer_c(nredm))
+    allocate(ibtyp_pointer_pp(nredm))
+    allocate(ibtyp_pointer_pn(nredm))
+    allocate(convergence(nr_freq))
+    allocate(eigval(nr_freq))
+    allocate(eigvec(nredm*nr_freq))
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
 
@@ -630,16 +648,16 @@ contains
                 eigvec,           &
                 work, kfree, lfree)
 
-    call dealloc(convergence)
-    call dealloc(eigval)
+    deallocate(convergence)
+    deallocate(eigval)
 
-    call dealloc(ibtyp_pointer_c)
+    deallocate(ibtyp_pointer_c)
 
 
 !   construct response vector
 !   =========================
 
-    call alloc(response_vector_pph, length_pp, nz, nr_freq)
+    allocate(response_vector_pph(length_pp, nz, nr_freq))
     response_vector_pph = 0.0
 
     call construct_response_vector('pp',                &
@@ -653,7 +671,7 @@ contains
 
     if (.not. static) then
 
-      call alloc(response_vector_ppa, length_pp, nz, nr_freq)
+      allocate(response_vector_ppa(length_pp, nz, nr_freq))
       response_vector_ppa = 0.0
 
       call construct_response_vector('pp',                &
@@ -667,7 +685,7 @@ contains
 
     end if
 
-    call alloc(response_vector_pnh, length_pn, nz, nr_freq)
+    allocate(response_vector_pnh(length_pn, nz, nr_freq))
     response_vector_pnh = 0.0
 
     call construct_response_vector('pn',                &
@@ -681,7 +699,7 @@ contains
 
     if (.not. static) then
 
-      call alloc(response_vector_pna, length_pn, nz, nr_freq)
+      allocate(response_vector_pna(length_pn, nz, nr_freq))
       response_vector_pna = 0.0
 
       call construct_response_vector('pn',                &
@@ -706,10 +724,10 @@ contains
       call prbvec(6, response_vector_pna, nr_freq, length_pn)
     end if
 
-    call dealloc(ibtyp)
-    call dealloc(ibtyp_pointer_pp)
-    call dealloc(ibtyp_pointer_pn)
-    call dealloc(eigvec)
+    deallocate(ibtyp)
+    deallocate(ibtyp_pointer_pp)
+    deallocate(ibtyp_pointer_pn)
+    deallocate(eigvec)
 
 
 !   construct perturbed ao density matrices
@@ -721,16 +739,16 @@ contains
 
     ntsim = ncsim + nesim + npsim
 
-    call alloc(isymop, ntsim)
-    call alloc(ihrmop, ntsim)
-    call alloc(ifckop, ntsim)
+    allocate(isymop(ntsim))
+    allocate(ihrmop(ntsim))
+    allocate(ifckop(ntsim))
 
     do i = 1, ntsim
       isymop(i) = jsymop
       ifckop(i) = 1
     end do
 
-    call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
+    allocate(temp_ao_dmat(ntbas(0), ntbas(0), nz, ntsim))
 
     if (.not. isdef(D1)) call mat_init(D1, ntbas(0), ntbas(0))
 
@@ -749,8 +767,8 @@ contains
                  nr_dmat,             &
                  work, kfree, lfree)
 
-    call dealloc(response_vector_pph)
-    call dealloc(response_vector_pnh)
+    deallocate(response_vector_pph)
+    deallocate(response_vector_pnh)
 
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elements, 1)
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elements, 1)
@@ -778,8 +796,8 @@ contains
                    nr_dmat,             &
                    work, kfree, lfree)
 
-      call dealloc(response_vector_ppa)
-      call dealloc(response_vector_pna)
+      deallocate(response_vector_ppa)
+      deallocate(response_vector_pna)
 
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elements, 1)
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 2.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elements, 1)
@@ -790,13 +808,13 @@ contains
     call memrel('aoresponse', work, 1, kzxopp, kfree, lfree)
     call memrel('aoresponse', work, 1, kzxope, kfree, lfree)
 
-    call dealloc(isymop)
-    call dealloc(ihrmop)
-    call dealloc(ifckop)
+    deallocate(isymop)
+    deallocate(ihrmop)
+    deallocate(ifckop)
 
-    call dealloc(temp_ao_dmat)
+    deallocate(temp_ao_dmat)
 
-    call dealloc(work)
+    deallocate(work)
 
   end subroutine response_solver
 
@@ -809,36 +827,36 @@ contains
                                        ibtyp_pointer,   &
                                        eigvec)
     character(*),     intent(in)    :: vector_type
-    integer(kind_i4), intent(in)    :: ih
+    integer, intent(in)    :: ih
     real(kind_dp),    intent(inout) :: response_vector(:, :, :)
-    integer(kind_i4), intent(in)    :: length
-    integer(kind_i4), intent(in)    :: nr_freq
-    integer(kind_i4), intent(in)    :: ibtyp(2, *)
-    integer(kind_i4), intent(in)    :: ibtyp_pointer(*)
+    integer, intent(in)    :: length
+    integer, intent(in)    :: nr_freq
+    integer, intent(in)    :: ibtyp(2, *)
+    integer, intent(in)    :: ibtyp_pointer(*)
     real(kind_dp),    intent(in)    :: eigvec(*)
 
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    integer(kind_i4), allocatable   :: ivecs(:)
+    integer, allocatable   :: ivecs(:)
     real(kind_dp),    allocatable   :: buffer(:)
 
     character(6)                    :: file_name
-    integer(kind_i4)                :: file_unit, nbtyp
+    integer                :: file_unit, nbtyp
 
-    call alloc(ivecs, nr_freq)
+    allocate(ivecs(nr_freq))
 
     select case (vector_type)
       case ('pp')
         nbtyp     = 1
         file_unit = luboe
         file_name = 'PAMBOE'
-        call alloc(buffer, nzxopeq)
+        allocate(buffer(nzxopeq))
       case ('pn')
         nbtyp     = 2
         file_unit = lubop
         file_name = 'PAMBOP'
-        call alloc(buffer, nzxoppq)
+        allocate(buffer(nzxoppq))
       case default
         call quit('error in construct_response_vector, unknown vector type')
     end select
@@ -863,15 +881,15 @@ contains
     close(file_unit, &
           status = 'keep')
 
-    call dealloc(ivecs)
-    call dealloc(buffer)
+    deallocate(ivecs)
+    deallocate(buffer)
 
   end subroutine construct_response_vector
 
   subroutine print_vector(vector, vector_dimension)
 
     real(kind_dp),    intent(in) :: vector(:)
-    integer(kind_i4), intent(in) :: vector_dimension
+    integer, intent(in) :: vector_dimension
 
 #include "dgroup.h"
 
@@ -889,7 +907,7 @@ contains
   subroutine print_q_vector(vector, vector_dimension)
 
     real(kind_dp),    intent(in) :: vector(:)
-    integer(kind_i4), intent(in) :: vector_dimension
+    integer, intent(in) :: vector_dimension
 
 #include "dgroup.h"
 

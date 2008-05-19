@@ -294,6 +294,7 @@ C
 #ifdef MOD_AORESPONSE
       if (test_aoresponse) then
         call aoresponse_driver()
+!       call test_matrix_stat()
       end if
 #endif /* MOD_AORESPONSE */
 

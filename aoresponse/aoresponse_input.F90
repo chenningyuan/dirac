@@ -6,7 +6,7 @@ module aoresponse_input_m
   implicit none
 
   type perturbation_op_t
-    integer(kind_i4) :: sym, tr_sym, nr_components, typ
+    integer :: sym, tr_sym, nr_components, typ
     real(kind_dp)    :: prefactors(2)
     character(8)     :: op_name, labels(2)
   end type perturbation_op_t
@@ -19,7 +19,7 @@ contains
 
   function find_op_index(op_name) result(op_index)
     character(*), intent(in) :: op_name
-    integer(kind_i4)         :: op_index, i
+    integer         :: op_index, i
 
     op_index = -1
 
@@ -39,27 +39,28 @@ contains
                     typ, nr_components, &
                     prefactors,         &
                     labels)
-    character(*),     intent(in)  :: op_name
-    integer(kind_i4), intent(in)  :: typ, nr_components
+    character(7),     intent(in)  :: op_name
+    integer,          intent(in)  :: typ, nr_components
     real(kind_dp),    intent(in)  :: prefactors(nr_components)
-    character(*),     intent(in)  :: labels(nr_components)
+    character(8),     intent(in)  :: labels(nr_components)
 
-    integer(kind_i4)              :: indxpr, isyxpr, itrxpr, i
+    integer                       :: indxpr, isyxpr, itrxpr, i
 
     real(kind_dp),    allocatable :: work(:)
-    integer(kind_i4)              :: lwork
+    integer                       :: lwork
 
     lwork = 200000 !fixme
-    call alloc(work, lwork)
+    allocate(work(lwork))
 
-    call xprind(op_name,                &
+    write(*, *) 'typ = ', typ
+    call xprind(op_name//'         ',   &
                 typ, nr_components,     &
                 prefactors,             &
                 labels,                 &
                 indxpr, isyxpr, itrxpr, &
                 work, lwork, 0)
 
-    call dealloc(work)
+    deallocate(work)
 
     perturbation_op(indxpr)%sym           = isyxpr
     perturbation_op(indxpr)%tr_sym        = itrxpr
@@ -76,7 +77,7 @@ contains
 
   subroutine aoresponse_input()
 
-    integer(kind_i4) :: i
+    integer :: i
 
     do i = 1, max_nr_op
       perturbation_op(i)%op_name = ''
