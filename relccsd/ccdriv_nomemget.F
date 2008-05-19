@@ -2019,7 +2019,7 @@ C
 C
 C     The remaining space is
       call alloc_maxsize(freemem,nv4,verbose)
-      NVF = freemem / (2 * RCW * 4)
+      NVF = freemem / (2 * RCW)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -2187,7 +2187,6 @@ C
          CALL alloc( a_T2 , NDIMT2*RCW , id="t2" )
          CALL alloc( a_S1 , NDIMT1*RCW , id="s1" )
          CALL alloc( a_S2 , NDIMT2*RCW , id="s2" )
-
       endif
       total_mem_new = (RCW*(NFVO+NFOO+NFVV+2*(NDIMT1+NDIMT2)))
 C
@@ -2226,10 +2225,8 @@ C        integrals, start by making it as large as possible.
 C
 !        NBUF3 = (LFREE - 4) / RCW
 ! nbuf3 will be set to the largest possible signed 32-bit int div rcw...
-         call alloc_maxsize(freemem,nv4,verbose)
-C     and rescale the result so that two buffers (ints, intsa can be
-C     allocated
-         NBUF3 = freemem / (2 * RCW)
+         call alloc_maxsize(freemem,nv1,verbose)
+         NBUF3 = freemem / RCW
 C
 C        Calculate maximum size necessary for the VOVV and VVVV buffers
 C
@@ -2252,7 +2249,7 @@ C
          if (alloc_me) then
             call alloc(a_BUF3,NBUF3*RCW, id="buf3" )
          endif
-         total_mem_new = freemem - (total_mem_new + (NBUF3*RCW))
+         total_mem_new = total_mem_new + (NBUF3*RCW)
 
          IF (DOCCSD) THEN
             MXCORR = MAX(MXCORR,total_mem_new)
@@ -2282,7 +2279,7 @@ C
       IF (DOCCSDT) MXCORR = MAX(MXCORR,TOP)
 C
 c
-      total_mem_new = total_mem_new + TOP
+      if (doccsdt) total_mem_new = total_mem_new + TOP
 c
       IF (ICALC.EQ.1) THEN
          KFREE = KFRSAV
@@ -2305,6 +2302,7 @@ C
             GOTO 10
          ENDIF
 C
+C if we are only doing
          CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        This is a restart point: save the amplitudes and update status.
@@ -2399,15 +2397,15 @@ C
             call dealloc(a_BUF3)
          endif
 
-            total_mem_new = total_mem_new
-     &                    - RCW*(NDIMT2+NV1+NV4+NFOO+NFVV)
-     &                    - RCW*(NFVO+NFOO+NFVV+NBUF1+NBUF2+NBUF3)
-     &                    - (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
+         total_mem_new = total_mem_new
+     &                 - RCW*(NDIMT2+NV1+NV4+NFOO+NFVV)
+     &                 - RCW*(NFVO+NFOO+NFVV+NBUF1+NBUF2+NBUF3)
+     &                 - (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
 
-            write (*,*) ' '
-            write (*,*) 'debug, intermediate memory usage in ccener : ',
-     &                total_mem_new,(total_mem_new*8/1024)
-            write (*,*) ' '
+         write (*,*) ' '
+         write (*,*) 'debug, intermediate memory usage in ccener : ',
+     &             total_mem_new,(total_mem_new*8/1024)
+         write (*,*) ' '
             
          if (alloc_me) then
             CALL alloc( a_VOOO , NV2*RCW            , id="vooo" )
@@ -2425,14 +2423,14 @@ C
             CALL alloc( a_TAU3 , NDIMT2*RCW         , id="tau3" )
 
          endif
-            total_mem_new = total_mem_new
+         total_mem_new = total_mem_new
      &                 + (RCW*(NV2+ 3*IVVVTMX + 2*NDIMT2 + NVOVV))
      &                 + (RCW*(IVVOOT(NREP+1) + LOVVOT(NREP+1))) 
 
-            write (*,*) ' '
-            write (*,*) 'debug, last step memory usage in ccener : ',
+         write (*,*) ' '
+         write (*,*) 'debug, last step memory usage in ccener : ',
      &                total_mem_new,(total_mem_new*8/1024)
-            write (*,*) ' '
+         write (*,*) ' '
 
 C
 C        Check if CCSD amplitudes are available
@@ -2480,8 +2478,6 @@ C
          CALL dealloc(a_T2  , id="fvo")
          CALL dealloc(a_S1  , id="s1")
       endif
-
-
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -2680,14 +2676,13 @@ C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
-      call alloc_maxsize(freemem,min(NBUF1,NBUF2),verbose)
+      call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
       NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
 C
 C     Allocate now also this remaining work array
 C
       if (alloc_me) then
          CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
-c        call alloc_maxsize(freemem,100,verbose)     
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C
@@ -2784,14 +2779,13 @@ C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
-      call alloc_maxsize(freemem,min(NBUF1,NBUF2),verbose)
+      call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
       NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
 C
 C     Allocate now also this remaining work array
 C
       if (alloc_me) then
          CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
-c        call alloc_maxsize(freemem,100,verbose)     
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C

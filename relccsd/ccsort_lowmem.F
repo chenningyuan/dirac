@@ -169,7 +169,7 @@ C
 C     now we get what is the maximum allocatable dimension
          call alloc_maxsize(freemem,nv4,verbose)
 C     and rescale the result so that two buffers (ints, intsa can be allocated
-          NVF = freemem / (2 * RCW * 2) 
+          NVF = freemem / (2 * RCW) 
       else
          NVT = NV4
          NVF = NVT
