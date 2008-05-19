@@ -13,7 +13,8 @@
      &                               MY_TRED_PTR, MY_RCCTOS_PTR,
      &                               MY_IAPROC_PTR, MY_TTOL_PTR,
      &                               MY_CHECK_F_PTR, MY_XT_PTR,
-     &                               MY_VEC1_PTR, MY_VEC2_PTR
+     &                               MY_VEC1_PTR, MY_VEC2_PTR,
+     &                               MY_BWEIGHT_PTR
 #endif
 !
       COMMON/MPI_MEMPOINTER1/  MY_T_SCR_PTR
@@ -25,6 +26,8 @@
       COMMON/MPI_MEMPOINTER7/  MY_XT_PTR
       COMMON/MPI_MEMPOINTER8/  MY_VEC1_PTR
       COMMON/MPI_MEMPOINTER9/  MY_VEC2_PTR
+      COMMON/MPI_MEMPOINTER10/ MY_BWEIGHT_PTR
+      COMMON/MPI_MEMPOINTER11/ MY_BPROC_PTR
 !
 !             MPI memory window handler 
 !     ======================================
@@ -42,9 +45,11 @@
       INTEGER(KIND=MPI_OFFSET_KIND) MY_CHECK_F_LEN
       INTEGER(KIND=MPI_OFFSET_KIND) MY_XT_BUFF_LEN
       INTEGER(KIND=MPI_OFFSET_KIND) MY_VEC1_BUFF_LEN, MY_VEC2_BUFF_LEN
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_BWEIGHT_LEN, MY_BPROC_LEN
 !
       COMMON/IBUFF_LENGTH/ LEN_T_BUFF, LEN_T_D_BUFF, MY_TTPL_LEN,
      &                     MY_TTOL_LEN, MY_CHECK_F_LEN, MY_XT_BUFF_LEN,
-     &                     MY_VEC1_BUFF_LEN, MY_VEC2_BUFF_LEN
+     &                     MY_VEC1_BUFF_LEN, MY_VEC2_BUFF_LEN, 
+     &                     MY_BWEIGHT_LEN, MY_BPROC_LEN
 !
 #endif

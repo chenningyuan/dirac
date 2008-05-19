@@ -79,10 +79,12 @@ C
       COMMON/LUCI_REAL/ RNORM_FAC, TRUNC_FAC, mem_cp_time, xreadtimebi,
      &                  xcomputesi
 !     logical block
-      LOGICAL CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA
+      LOGICAL CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA, 
+     &        SPLIT_IJKL
 !
       COMMON/LUCI_LOG/
-     &        CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA
+     &        CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA,
+     &        SPLIT_IJKL
 !     character block
       CHARACTER*9 NIIJKL_ROD
       COMMON/LUCI_CHAR/ NIIJKL_ROD
