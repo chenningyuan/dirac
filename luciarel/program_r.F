@@ -218,13 +218,11 @@ C
       CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
      &                   KNODELIST,KBLOCKLIST,KRCCTOS,
      &                   NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                   IBAT_MS2,1,0,IDUMMY,IRC,IT_TTPL)
+     &                   IBAT_MS2,1,0,IDUMMY,IRC,IT_TTPL,
+     &                   IGROUPLIST)
 C
 #if defined (VAR_MPI2)
 C     
-
-C
-C
 C     INFO about T block distribution on IT_TTPL
 C     ==> if (shared memory route active) then
 C            allocate T buff, (read (ij|kl) in), open T window

@@ -50,7 +50,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL,NDIM,RCCTOS,
-     &                               IT_TTPL)
+     &                               IT_TTPL,IGROUPLIST)
 C
 C     Driver routine for non-vanishing TTSS-block distribution among 
 C     all processors.  
@@ -64,6 +64,13 @@ C
 C     writing to (reading from) info file BLOCK_INFO_MPI.0 added.
 C
 C     S. Knecht                     - February 19 2008
+C
+C     new TTSS block distribution routine added - purpose:
+C
+C     fill up all node groups first with each block in a row 
+C     --> try to get as even as possible afterwards.
+C
+C     S. Knecht                     - May 07 2008
 C
 C**********************************************************************
 #include "implicit.h"
@@ -80,11 +87,14 @@ C**********************************************************************
 #include "ctcc.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
-      DIMENSION IT_TTPL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) I_BWEIGHT, I_BPROC
+      DIMENSION IT_TTPL(*), IGROUPLIST(*)
       POINTER (MY_TCTR_PTR,   IT_CTONE(IDUMMY_BUFF_SZ))
       POINTER (MY_TRED_PTR,   IT_CTALL(IDUMMY_BUFF_SZ))
       POINTER (MY_RCCTOS_PTR, IRCCTOS_2(IDUMMY_BUFF_SZ))
       POINTER (MY_IAPROC_PTR, I_APROC(IDUMMY_BUFF_SZ))
+      POINTER (MY_BWEIGHT_PTR,I_BWEIGHT(IDUMMY_BUFF_SZ))
+      POINTER (MY_BPROC_PTR,  I_BPROC(IDUMMY_BUFF_SZ))
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TCTR_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TRED_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_RCCTOS_LEN
@@ -271,13 +281,22 @@ C     initialize also RCCTOS
       CALL ISETVC(RCCTOS,NNULL,NDIM)
       CALL I_DO_RCCTOS(IBLOCKL,RCCTOS,NUM_BLOCKS,1)
 C
-      CALL MEMMAR(KCWEIGHTF,  I_NZERO_LEN,   'ADDL  ',1,'ICWGHT')
-      CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS,    'ADDL  ',1,'IM_BLK')
-      CALL MEMMAR(KICCTOS,    I_NZERO_LEN**2,'ADDL  ',1,'ICCTOS')
+      ICOMM_SIZE_TMP = ICOMM_SIZE
 C
-      CALL ISETVC(WORK(KICCTOS),NNULL,I_NZERO_LEN**2)
-      CALL ISETVC(WORK(KAM_BLK_ACT),NNULL,NUM_BLOCKS)
-      CALL ISETVC(WORK(KCWEIGHTF),NNULL,I_NZERO_LEN)
+      CALL MPI_BCAST(ICOMM_SIZE_TMP,1,my_MPI_INTEGER,N_MASTER,
+     &               MYNEW_COMM,IERR)
+C
+      CALL MEMMAR(KCWEIGHTF  ,I_NZERO_LEN       ,'ADDL  ',1,'ICWGHT')
+      CALL MEMMAR(KACT_NUM   ,I_NZERO_LEN       ,'ADDL  ',1,'IACTNM')
+      CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS        ,'ADDL  ',1,'IM_BLK')
+      CALL MEMMAR(KICCTOS    ,I_NZERO_LEN**2    ,'ADDL  ',1,'ICCTOS')
+      CALL MEMMAR(KGROUPCHECK,NMPROC*ICOMM_SIZE_TMP,'ADDL  ',1,'ICCTOS')
+C
+      CALL IZERO(WORK(KICCTOS)    ,I_NZERO_LEN**2)
+      CALL IZERO(WORK(KAM_BLK_ACT),NUM_BLOCKS)
+      CALL IZERO(WORK(KCWEIGHTF)  ,I_NZERO_LEN)
+      CALL IZERO(WORK(KACT_NUM)  , I_NZERO_LEN)
+      CALL IZERO(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE)
 C
       CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACT),IBLOCKL,NDIM)
 C
@@ -288,7 +307,60 @@ C
       CALL FIND_IMAT_SC_REL(RCCTOS,WORK(KICCTOS),WORK(KCWEIGHTF),
      &                      WORK(KAM_BLK_ACT),NDIM)
 C
-      CALL BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF))
+      IF( SPLIT_IJKL )THEN
+C
+        MY_BWEIGHT_LEN = I_NZERO_LEN
+        CALL MPIXMEM_ALLOC( MY_BWEIGHT_PTR, 3, MY_BWEIGHT_LEN,
+     &                      MPI_INFO_NULL, .FALSE.)
+        MY_BPROC_LEN   = NMPROC
+        CALL MPIXMEM_ALLOC( MY_BPROC_PTR, 3, MY_BPROC_LEN,
+     &                      MPI_INFO_NULL, .FALSE.)
+C
+        CALL IZERO8(I_BWEIGHT,MY_BWEIGHT_LEN)
+        CALL IZERO8(I_BPROC  ,MY_BPROC_LEN)
+C
+C       alternative block distribution
+C
+C       gather on each node-master
+C
+        CALL MPI_ALLGATHER(IGROUPLIST,NMPROC,my_MPI_INTEGER,
+     &                     WORK(KGROUPCHECK),NMPROC,my_MPI_INTEGER,
+     &                     ICOMM,IERR)
+C
+C
+        CALL MPI_BCAST(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP,
+     &                 my_MPI_INTEGER,N_MASTER,MYNEW_COMM,IERR)
+C
+        WRITE(LUWRT,*) ' WORK(KGROUPCHECK) from process',MYPROC
+C
+        CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
+     &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
+C
+C       order group array
+C
+        CALL ORDER_ARRAY(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
+C
+        WRITE(LUWRT,*) ' WORK(KGROUPCHECK) after reordering',MYPROC
+C
+        CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
+     &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
+C
+C
+        CALL BLOCK_DISTR_2(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF),
+     &                     WORK(KGROUPCHECK),I_BWEIGHT,I_BPROC,
+     &                     IACT_NUM,ICOMM_SIZE_TMP)
+C       release memory
+        CALL MPIXMEM_FREE(I_BWEIGHT)
+        CALL MPIXMEM_FREE(I_BPROC)
+        CALL Abend2('stefan forced me to stop')
+C
+      ELSE ! split_ijkl
+C
+C       default block distribution
+C
+        CALL BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF))
+C
+      END IF
 C
 C     reset RCCTOS
 C
@@ -349,6 +421,31 @@ C
       END IF
 C
  50   CONTINUE
+C
+      IF( SPLIT_IJKL )THEN
+C
+C       find required T-blocks
+C
+        MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
+        CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
+     &                      MPI_INFO_NULL, .FALSE.)
+        CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
+C       --> use connection vector RCCTOS and NPARBLOCK to produce
+C           output on IT_CTONE
+C
+C         2. check for T-connections
+C
+          CALL FIND_IMAT_SC_REL(RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,NDIM)
+C
+C         save connections
+C
+          CALL ICOPY(IT_CTONE,IT_TTPL,NSPOBEX_TP*IRC_SAVE)
+C
+C         release scratch memory
+          CALL MPIXMEM_FREE(IT_CTONE)
+C
+      END IF
+C
       IF( SHARED_M ) THEN
         IF( IT_SHL .ge. 0 )THEN
 C
@@ -382,7 +479,7 @@ C         initialize for a second time
           CALL I_DO_RCCTOS(IBLOCKL,IRCCTOS_2,NUM_BLOCKS,1)
           CHECK_TC = .TRUE.
 C
-C         2. check for T-connections
+C         3. check for T-connections
 C
           CALL FIND_IMAT_SC_REL(IRCCTOS_2,DUMMY,IT_CTONE,DUMMY,NDIM)
 C
@@ -499,7 +596,6 @@ C
 C
 C     Block distribution routine for non-vanishing TTSS-block - initial 
 C     version.
-C     TT-blocking has not been taken into account --> BLOCK_DISTR_2?
 C
 C     Written by  S. Knecht         - April 30 2007
 C
@@ -715,7 +811,7 @@ C
 4000    CONTINUE
 C      now we should have found a proc and a block --> put both together !
 C
-C      calculation of block MXNUMB by proc IAMGPROC -1 (M excl.)
+C      calculation of block MXNUMB by proc IAMGPROC - 1
        IF( NPTEST .gt. 10 ) THEN
          WRITE(LUWRT,*) 'calculation of block MXNUMB by proc',
      &                   MXNUMB,IAMGPROC-1
@@ -743,6 +839,264 @@ C
            WRITE(LUWRT,*) 'Since I do not know how to proceed, 
      &                     I will stop!'
              Call Abend2('NE BLOCK_DISTR_1: Block not distributed')
+          END IF
+        END DO
+        WRITE(LUWRT,*)' '
+        WRITE(LUWRT,'(20X,A)')'================================'
+        WRITE(LUWRT,'(20X,A)')' Summation of even distribution '
+        WRITE(LUWRT,'(20X,A)')'================================'
+        WRITE(LUWRT,*)' '
+        DO ISTI = 1, NTEMPP
+          ITLTND = 0
+          ITLBND = 0
+          I_AM_ACTIVE = 0
+          DO IBLK = 1, NDIM
+            IILENGTH = IBLOCKL(IBLK)
+            IF( IILENGTH .gt. 0 )THEN
+              I_AM_ACTIVE = I_AM_ACTIVE + IONE
+              IF( NPARBLOCK(IBLK) .eq. ISTI -1 ) THEN
+C
+                 IIWEIGHTBLK = ICWEIGHTF( I_AM_ACTIVE )
+C
+                 ITLTND = ITLTND + ( IILENGTH * IIWEIGHTBLK )
+                 ITLBND = ITLBND + 1
+              END IF
+            END IF
+          END DO
+        WRITE(LUWRT,'(2X,A,1X,I4,1X,A,1X,I6,1X,A,1X,I18)')
+     &'CPU',ISTI-1,' computes',ITLBND,'blocks with a total weight of',
+     &   ITLTND
+        END DO
+      END IF
+8888  CONTINUE
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE BLOCK_DISTR_2(NDIM,IBLOCKL,NPARBLOCK,ICWEIGHTF,
+     &                         IALLGRPLST,I_BWEIGHT,I_BPROC,
+     &                         IACT_NUM,ICOMM_SZ_TMP)
+C
+C     Block distribution routine for non-vanishing TTSS-block.
+C
+C     purpose: 
+C
+C     'total weight'/#procs = 'averaged weight'
+C
+C     start with process group 1 and assign as many blocks as possible
+C     then continue with next group...
+C
+C     Finally, assign all blocks that are left
+C
+C     Written by  S. Knecht         - April 30 2007
+C
+C**********************************************************************
+#include "implicit.h"
+#include "parluci.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+C
+C     -----
+C     INPUT
+C     -----
+C
+C     NDIM:                     total number of c-blocks
+C     IBLOCKL(NDIM):            total length of each block
+C     ICWEIGHTF(active blocks): total 'weight factors' for each block
+C     IACT_NUM(active blocks):  corresponding block number in total list
+C     IALLGRPLST(NMPROC*ICOMM_SIZE_TMP) : 
+C                               list of all node groups and their CPU tags
+C
+C     ------
+C     OUTPUT
+C     ------
+C
+C     NPARBLOCK(NDIM): list of blocks containing the corresponding assigned
+C     node
+C
+      INTEGER ICOUNTABLK, NPTEST
+      DIMENSION ICWEIGHTF(*), IACT_NUM(*)
+      DIMENSION NPARBLOCK(NDIM), IBLOCKL(NDIM), IALLGRPLST(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) I_BWEIGHT(*), I_BPROC(*)
+C     -------
+C     SCRATCH
+C     -------
+      INTEGER IMINUS2
+      INTEGER*8 ITLTND, MXSIZE, ICURR_PLOAD, ICURR_BLOAD
+      INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN, IMIN_CNT, IMIN_CNT_TMP
+      INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
+C
+      NPTEST       = MAX(NPTEST_VAR,0)
+      IMINUS2      = 0
+      IIWEIGHTBLK  = 0
+      IILENGTH     = 0
+      ITLTND       = 0
+      ICOUNTABLK   = 0
+      MXSIZE       = 0
+      IRUN         = 0
+      ITOTBLCKL    = 0
+      ILEN         = 0
+      IONE         = 1
+      I_AM_ACTIVE  = 0
+      IPRODLEN     = 0
+      IILENGTH_MAX = 0
+*     print some information
+      NPTEST = 1
+C     end of initialization
+      DO ICBL = 1, NDIM
+C
+        IILENGTH = IBLOCKL(ICBL)
+C
+        IF( IILENGTH .gt. 0 )THEN
+C
+          I_AM_ACTIVE              = I_AM_ACTIVE + IONE
+C
+          IIWEIGHTBLK              = ICWEIGHTF(I_AM_ACTIVE)
+          ILEN                     = IILENGTH * IIWEIGHTBLK
+          I_BWEIGHT( I_AM_ACTIVE ) = ILEN
+          IILENGTH_MAX             = MAX(IILENGTH_MAX,IILENGTH)
+          MXSIZE                   = MAX(MXSIZE,ILEN)
+          NPARBLOCK( ICBL )        = -1
+          IACT_NUM( I_AM_ACTIVE )  = ICBL
+          ITOTBLCKL                = ITOTBLCKL + ILEN
+        END IF
+*       ^ IILENGTH > 0
+      END DO
+C
+C     debug print      
+C
+csk#if def(MOD_DEBUG)
+      WRITE(LUWRT,*) '  *********** BLOCK WEIGHTs ************'
+      CALL IWRTMAMN8(I_BWEIGHT,1,I_AM_ACTIVE,1,I_AM_ACTIVE,LUWRT)
+csk#endif
+C
+      ICOUNTABLK = I_AM_ACTIVE
+*
+      IMINNP = NMPROC
+      NTEMPP = IMINNP
+C     store on common block
+      ICOUNTABLK_C = ICOUNTABLK
+C
+      IAM_NOT_INV = 0
+      IF( ICOUNTABLK .lt. NMPROC ) THEN
+        IMINNP = MIN( ICOUNTABLK,IMINNP )
+        IF( NPTEST .ge. 0 ) THEN
+          IF( MYPROC .EQ. 0 ) THEN
+            WRITE(LUWRT,*) 'subroutine BLOCK_DISTR_2 speaking!'
+            WRITE(LUWRT,*) 'number of active blocks lower than number
+     & of procs ==> restricted use of ',IMINNP,'procs'
+          END IF
+        END IF
+        NTEMPP = IMINNP
+        DO JJ = 1, NTEMPP
+          IF( MYPROC .eq. IALLGRPLST(JJ) ) IAM_NOT_INV = 1 
+        END DO
+        IF( IAM_NOT_INV .eq. 0 ) THEN 
+          IMINUS2 = - 2
+          CALL ISETVC(NPARBLOCK,IMINUS2,NDIM)
+          GOTO 8888
+        END IF
+      END IF
+      IAM_NOT_INV  = 1
+C
+      IPRODLEN = ITOTBLCKL/NTEMPP
+C
+      IF(NPTEST.GE.0) THEN
+         WRITE(LUWRT,'(A,I19)')
+     &'  total number of processes to distribute on :',NMPROC
+         WRITE(LUWRT,'(A,I19)')
+     &'  total number of blocks                     :',NDIM
+         WRITE(LUWRT,'(A,I19)') 
+     &'  total number of active TTSS blocks         :',ICOUNTABLK
+         WRITE(LUWRT,'(A,I19)')
+     &'  size of largest TTSS block                 :',IILENGTH_MAX 
+         WRITE(LUWRT,'(A,I19)')
+     &'  overall weighted active block length       :',ITOTBLCKL
+         WRITE(LUWRT,'(A,I19)')
+     &'  Maximum weighted block size                :',MXSIZE
+         WRITE(LUWRT,'(A,I19)')
+     &'  aiming at an block weight per process of   :',IPRODLEN
+      END IF
+C
+C     starting the treausure quest for the ?optimal? block distribution
+C
+C     start with MASTER (and its group of processes)
+C
+      ICURR_PR    = 0
+      ICURR_PLOAD = 0
+      ICURR_BLOAD = 0
+      ICURR_PTAG  = 0
+C
+      DO 300 II = 1, ICOUNTABLK
+         ICURR_BLOAD = I_BWEIGHT(II)
+         WRITE(LUWRT,*) ' ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD',
+     &                    ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD
+         IF( ICURR_PTAG .lt. NTEMPP )THEN
+           IF( ICURR_PLOAD + ICURR_BLOAD .le. IPRODLEN)THEN
+               ICURR_PLOAD       = ICURR_PLOAD + ICURR_BLOAD
+               NPARBLOCK(IACT_NUM(II))   = ICURR_PR
+               WRITE(LUWRT,*) ' assigning block II to ICURR_PR',
+     &                          II,ICURR_PR
+           ELSE
+C              write processor load to array
+               I_BPROC(ICURR_PR+1) = ICURR_PLOAD
+C              next processor
+               ICURR_PTAG  = ICURR_PTAG + 1
+               IF( ICURR_PTAG .lt. NTEMPP ) THEN
+                 ICURR_PR                  = IALLGRPLST(ICURR_PTAG+1)
+                 ICURR_PLOAD               = ICURR_BLOAD
+                 NPARBLOCK(IACT_NUM(II))   = ICURR_PR
+                 WRITE(LUWRT,*) ' 3. assigning block II to ICURR_PR',
+     &                          II,ICURR_PR
+               ELSE
+C                end of all temporary available CPU's;
+C                assign current block to CPU with lowest count
+                 IMIN_CNT_TMP = 0
+                 IMIN_CNT     = ICURR_PLOAD
+                 DO JJ = 1, NTEMPP
+                   IMIN_CNT_TMP = I_BPROC(JJ)
+                   IF( IMIN_CNT_TMP .lt. IMIN_CNT ) ICURR_PR = JJ -1
+                 END DO
+C
+                 I_BPROC(ICURR_PR+1) = I_BPROC(ICURR_PR+1)+ICURR_BLOAD
+                 NPARBLOCK(IACT_NUM(II))   = ICURR_PR
+                 ICURR_PLOAD = I_BPROC(ICURR_PR+1)
+                 WRITE(LUWRT,*) ' 2. assigning block II to ICURR_PR',
+     &                          II,ICURR_PR
+               END IF
+           END IF
+         ELSE
+C
+C          find CPU with lowest count - start with MASTER
+C
+           ICURR_PR     = 0
+           IMIN_CNT_TMP = 0
+           IMIN_CNT     = I_BPROC(ICURR_PR+1)
+           DO JJ = 1, NTEMPP
+              IMIN_CNT_TMP = I_BPROC(JJ)
+              IF( IMIN_CNT_TMP .lt. IMIN_CNT ) ICURR_PR = JJ -1
+           END DO
+C
+           I_BPROC(ICURR_PR+1)       = I_BPROC(ICURR_PR+1)+ICURR_BLOAD
+           NPARBLOCK(IACT_NUM(II))   = ICURR_PR
+           WRITE(LUWRT,*) ' 4. assigning block II to ICURR_PR',
+     &                      II,ICURR_PR
+C
+         END IF
+ 300     CONTINUE
+C
+      IF(NPTEST.GE.0) THEN
+        DO II = 1, NDIM
+         IF( NPARBLOCK(II) .eq. -1 ) THEN
+           WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
+           WRITE(LUWRT,*) 'Since I do not know how to proceed, 
+     &                     I will stop!'
+             Call Abend2('NE BLOCK_DISTR_2: Block not distributed')
           END IF
         END DO
         WRITE(LUWRT,*)' '
@@ -3078,6 +3432,7 @@ C     batches of sigma
 C     scratch
       INTEGER IONE, INT_IOFF1, INT_IOFF2
       INTEGER INT_IOFF1_C, INT_IOFF2_C
+      LOGICAL CHECK_TSPLIT
 C
       IONE = 1
       INT_IOFF1 = 0
@@ -3102,7 +3457,13 @@ C
       IRILP = 1
       IF( CHECK_TC ) IRILP = IRC_SAVE
 *
+*     NOTE: IF( SPLIT_IJKL .and. NDIM_B .eq. - 1 ) T-connection run 
+*
+      CHECK_TSPLIT = .FALSE.
+      IF ( SPLIT_IJKL .and. NDIM_B .eq. -1 ) CHECK_TSPLIT = .TRUE.
+*
 *     loop over vectors of sigma and C : MK2 space
+*
       DO IRIS = 1,IRILP,1
 *
         INT_IOFF1  = 0
@@ -3147,9 +3508,15 @@ C
 *
             LS = 0
 *
-            DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
-              IF( ISCLFAC( ISBLK ) .eq. 1 ) ICOMPUTE = 1
-            END DO
+            IF( CHECK_TSPLIT ) THEN
+              DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
+                IF( IAM_BLK_ACT( ISBLK ) .eq. MYPROC ) ICOMPUTE = 1
+              END DO
+            ELSE 
+              DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
+                IF( ISCLFAC( ISBLK ) .eq. 1 ) ICOMPUTE = 1
+              END DO
+            END IF
 *
 CSK            WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
 *
@@ -3191,7 +3558,8 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
      &                                1,IASTP,IBSTP,IRIS,IRIC,
      &                                INT_IOFF1_C,ISCLFAC,
      &                                ICCTOS,ICWEIGHTF,INT_IOFF1,
-     &                                NUM_SBLK,IAM_BLK_ACT)
+     &                                NUM_SBLK,IAM_BLK_ACT,
+     &                                CHECK_TSPLIT)
                 end if
 *               ^ End if Kramers restriction
 *               keep track of correct offset
@@ -3226,7 +3594,8 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
       SUBROUTINE FIND_IMAT_DRV2(NBLOCK,IBLOCK,IBOFF,ISIGDEN,IASTP_SCR,
      &                          IBSTP_SCR,IRIS,IRIC,
      &                          INT_IOFF1_C,ISCLFAC,ICCTOS,ICWEIGHTF,
-     &                          INT_IOFF1,NUM_SBLK,IAM_BLK_ACT)
+     &                          INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,
+     &                          CHECK_TSPLIT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -3261,6 +3630,7 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
       COMMON/HIDSCRR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
 #include "cintfo.inc"
 #include "parluci.h"
+      LOGICAL CHECK_TSPLIT
 *
       IASTP = IASTP_SCR
       IBSTP = IBSTP_SCR
@@ -3373,7 +3743,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
      &     WORK(KLISMDST),
      &     INT_IOFF1_C,ISCLFAC,ICCTOS,ICWEIGHTF,
-     &     INT_IOFF1,NUM_SBLK,IAM_BLK_ACT)
+     &     INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,CHECK_TSPLIT)
 
 *
 *. Eliminate local memory
@@ -3398,7 +3768,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &           ISPOBEX_AC,
      &           TOCC1,TOCC2,TOCC3,TOCC4,
      &           ISMDST,INT_IOFF1_C,ISCLFAC,ICCTOS,
-     &           ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT)
+     &           ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,CHECK_TSPLIT)
 *
 *
 * =====
@@ -3447,6 +3817,7 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *. T-coefficients
       dimension ITSPOBEX_TP(4*NGAS,*)
       INTEGER ISPOBEX_AC(*)
+      LOGICAL CHECK_TSPLIT
 *
       ONEM = -1.0D0
       IZERO = 0
@@ -3517,15 +3888,27 @@ CSK               WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
             IS_OFF_BLK = 0
             IS_OFF_BLK = NUM_SBLK + 1
 CSK            WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
-            DO JJBLK = ISBLK, ISBLK + NSBLK - 1
-CSK                WRITE(LUWRT,*) 'Checking for sigma block',
-CSK     &                          IS_OFF_BLK+JJBLK-1
-                IF( ISCLFAC( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
-                  ICOMPUTE_S = 1
-CSK                  WRITE(LUWRT,*) ' active s block found',
-CSK     &                             IS_OFF_BLK+JJBLK-1
-                END IF
-            END DO
+            IF( CHECK_TSPLIT ) THEN
+              DO JJBLK = ISBLK, ISBLK + NSBLK - 1
+CSK                  WRITE(LUWRT,*) 'Checking for sigma block',
+CSK     &                            IS_OFF_BLK+JJBLK-1
+                  IF( IAM_BLK_ACT( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
+                    ICOMPUTE_S = 1
+CSK                    WRITE(LUWRT,*) ' active s block found',
+CSK     &                               IS_OFF_BLK+JJBLK-1
+                  END IF
+              END DO
+            ELSE 
+              DO JJBLK = ISBLK, ISBLK + NSBLK - 1
+CSK                  WRITE(LUWRT,*) 'Checking for sigma block',
+CSK     &                            IS_OFF_BLK+JJBLK-1
+                  IF( ISCLFAC( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
+                    ICOMPUTE_S = 1
+CSK                    WRITE(LUWRT,*) ' active s block found',
+CSK     &                               IS_OFF_BLK+JJBLK-1
+                  END IF
+              END DO
+            END IF
             IF( ICOMPUTE_S .eq. 0 ) GOTO 9999
 *
             IATP = ISBLOCK(1,ISBLK)
@@ -3578,7 +3961,8 @@ C
      &                MAXK,TOCC1,TOCC2,TOCC3,TOCC4,
      &                ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
      &                ISMDST,INT_IOFF1_C+ICBLK-1,IS_OFF_BLK+ISBLK-1,
-     &                ISCLFAC,ISCLFAC,ICCTOS,ICWEIGHTF,IAM_BLK_ACT)
+     &                ISCLFAC,ISCLFAC,ICCTOS,ICWEIGHTF,IAM_BLK_ACT,
+     &                CHECK_TSPLIT)
                END IF
 *              ^ End if connection 
  8000       CONTINUE
@@ -3610,7 +3994,7 @@ C
      &           MAXLB,ICA_STR,ICB_STR,IAA_STR,IAB_STR,
      &           ITDIAG,ITABTRNSP,IC_RESTRICT,IS_RESTRICT,
      &           ISMDST,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S,
-     &           ICCTOS,ICWEIGHTF,IAM_BLK_ACT)
+     &           ICCTOS,ICWEIGHTF,IAM_BLK_ACT,CHECK_TSPLIT)
 *
 * IX_RESTRICT = 1: BLocks in X are restricted to those with IASM.GE.IBSM
 * IX_RESTRICT =-1: BLocks in X are restricted to those with IASM.LT.IBSM
@@ -3664,6 +4048,7 @@ C
 *
       COMMON/KKKDUMMY/LEN_C2,LEN_S2
       COMMON/CMXCJ/MXCJ
+      LOGICAL CHECK_TSPLIT
 *
       ISKIP = 0
       IPLAC_S = 0
@@ -3847,7 +4232,7 @@ CSK     &                   I_BLK_C_SCR
      &     THEN
 *
 csk             WRITE(LUWRT,*) '  GREAT, THIS IS AN ALLOWED CONNECTION'
-             IF( CHECK_TC) THEN 
+             IF( CHECK_TC .or. CHECK_TSPLIT ) THEN 
 csk               WRITE(LUWRT,*) ' this is T-block type ',IXTP
                IFOUND_T_BLOCK_ACT = 1
                GOTO 111

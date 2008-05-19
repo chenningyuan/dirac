@@ -5735,7 +5735,8 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
      &                         KNODELIST,KBLOCKLIST,KRCCTOS,
      &                         NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
-     &                         I_USE_PC,NPARBLOCK,IRC,IT_TTPL)
+     &                         I_USE_PC,NPARBLOCK,IRC,IT_TTPL,
+     &                         IGROUPLIST)
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -6013,9 +6014,9 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
       CALL INI_BLOCKL(WORK(KBLOCKLIST),NBLOCK,WORK(KPCIBT))
 *
 #if defined (VAR_MPI2)
-*
       CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                         NBLOCK,WORK(KRCCTOS),IT_TTPL)
+     &                         NBLOCK,WORK(KRCCTOS),IT_TTPL,
+     &                         IGROUPLIST)
 #endif
       END
 ***********************************************************************

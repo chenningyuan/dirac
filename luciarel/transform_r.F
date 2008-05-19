@@ -1886,6 +1886,8 @@ C
             ELSE
               IF( MYNEW_ID .ne. N_MASTER ) ALLOC_INT = .FALSE.
             END IF
+          ELSE
+            IF( SPLIT_IJKL ) ALLOC_INT = .FALSE.
           END IF
 C
         ELSE
@@ -2615,30 +2617,41 @@ C
               IF( CIRUN .eq. 'CIINII') THEN 
 #if defined (VAR_MPI2)
 C
-                IF( IT_SHL .lt. 0 )THEN
-                  WRITE(LUWRT,'(A)') ' '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') 
-     &            '  Reading from integral file IJKL_REOD'
-                  WRITE(LUWRT,'(A)')
-     &            '   file type: standard (ij|kl) format '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') ' '
+                IF( SPLIT_IJKL )THEN
+                    WRITE(LUWRT,'(A)') ' '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') 
+     &              '  Reading from integral file IJKL_REOD'
+                    WRITE(LUWRT,'(A)')
+     &              '   file type: blocked (ij|kl) format  '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') ' '
                 ELSE
-C
-                  WRITE(LUWRT,'(A)') ' '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') 
-     &            '  Reading from integral file IJKL_REOD'
-                  WRITE(LUWRT,'(A)')
-     &            '   file type: (ij|kl)-sharing format  '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') ' '
-C
+                  IF( IT_SHL .lt. 0 )THEN
+                    WRITE(LUWRT,'(A)') ' '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') 
+     &              '  Reading from integral file IJKL_REOD'
+                    WRITE(LUWRT,'(A)')
+     &              '   file type: standard (ij|kl) format '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') ' '
+                  ELSE
+                    WRITE(LUWRT,'(A)') ' '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') 
+     &              '  Reading from integral file IJKL_REOD'
+                    WRITE(LUWRT,'(A)')
+     &              '   file type: (ij|kl)-sharing format  '
+                    WRITE(LUWRT,'(A)') 
+     &              '  ===================================='
+                    WRITE(LUWRT,'(A)') ' '
+                  END IF
                 END IF
 #endif
 C
@@ -2692,12 +2705,14 @@ C           ^ REORD_IJKL
 C
             IF( CIRUN .eq. 'CIINII' )THEN
 C
-              IF( IT_SHL .ge. 0 )THEN
+              IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
                 WRITE(LUWRT,*) ' Running in MPI-shared memory mode     '
-                WRITE(LUWRT,*) ' needs usage of integral file          '
-                WRITE(LUWRT,*) ' IJKL_REOD. Programm will abort        '
-                WRITE(LUWRT,*) ' now. Restart job with option .IJKLRO !'
-                CALL Abend2('.SHMEMO option requires option .IJKLRO ')
+                WRITE(LUWRT,*) ' or making use of revised integral     '
+                WRITE(LUWRT,*) ' allocation (.IJKLSP) requires         '
+                WRITE(LUWRT,*) ' the integral file IJKL_REOD.          '
+                WRITE(LUWRT,*) ' Programm will abort now.              '
+                WRITE(LUWRT,*) ' Restart job with option .IJKLRO !     '
+                CALL Abend2('option .IJKLRO required. ')
               END IF
 C
               CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')

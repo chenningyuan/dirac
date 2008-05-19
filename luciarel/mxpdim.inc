@@ -25,7 +25,7 @@
       parameter (MXROOT = 30  )
 !     MXPSTT == max. number of symmetry type-types
 #if defined (LARGE_MOLECULES)
-      PARAMETER (MXPSTT = 20000)
+      PARAMETER (MXPSTT = 80000)
 #else
       PARAMETER (MXPSTT = 8000 )
 #endif
