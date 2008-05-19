@@ -1955,15 +1955,13 @@ Caspg, replacing memget
      &                              a_fvo(:),    a_v1a(:),
      &                              a_v3(:),     a_vta(:),
      &                              a_v4(:),     a_v4a(:)
-      integer  ::  total_mem_new
+      integer ::  total_mem_new = 0
+      integer :: verbose = 0, freemem = 0
 C
-      total_mem_new = 0
-Caspg, replacing memget
 C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
-      write (*,*) 'alloc me? ',alloc_me
 C
 C  Allocate core for integral sorting step
 C
@@ -2006,7 +2004,6 @@ C
       ENDIF
 
       MXCORR = MAX(MXCORR,total_mem_new)
-Caspg, replacing memget
 C
 C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
 C     parts of the above arrays are not needed anymore and could be used
@@ -2021,11 +2018,8 @@ C
       NVT = MAX(NVT,JVOOO(2))
 C
 C     The remaining space is
-C how to do it without memget()?
-C
-c     NVF = (LFREE-4) / (2 * RCW )
-c     write(*,*) 'debug : nvf =',nvf
-c     write(*,*) 'debug : nvt =',nvt
+      call alloc_maxsize(freemem,nv4,verbose)
+      NVF = freemem / (2 * RCW * 4)
 C
 C  Determine number of available buffers with respect to free memory
 C  Records are defined for integers, calculate how many real or
@@ -2033,12 +2027,12 @@ C  complex words we can store on these in MINBUF
 C  -----------------------------------------------------------------
 C
       MINBUF = NWORDS_ON_RECORD / (RCW * IRW)
-c     IF (NVT.LT.NVF) THEN
+      IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
-c     ELSE
-c        NBUF = NVF / MINBUF
-c     ENDIF
-c     IF (NBUF.LT.1) NBUF = 1
+      ELSE
+         NBUF = NVF / MINBUF
+      ENDIF
+      IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
 C
 C     We must be able to store at least a NV4 size array, check that.
@@ -2057,8 +2051,6 @@ C
       endif
       total_mem_new = total_mem_new + (4*NVTMIN*RCW)
       MXCORR = MAX(MXCORR,total_mem_new)
-      if (mytid.eq.0) write(*,*) 'debug : total_mem_new after nvtmin =',
-     &                            total_mem_new,mxcorr
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
@@ -2600,19 +2592,19 @@ C     here we allocate the variables common to both schemes
 C     the specific ones are allocated as needed
 C
       if (ALLOC_ME) then
-         CALL alloc( a_FOO   , NFOO*RCW         )
-         CALL alloc( a_FVO   , NFVO*RCW         )
-         CALL alloc( a_FVV   , NFVV*RCW         )
-         CALL alloc( a_T1    , NDIMT1*RCW       )
-         CALL alloc( a_T2    , NDIMT2*RCW       )
-         CALL alloc( a_S1    , NDIMT1*RCW       )
-         CALL alloc( a_S2    , NDIMT2*RCW       )
-         CALL alloc( a_DOO   , NFOO*RCW         )
-         CALL alloc( a_DVV   , NFVV*RCW         )
-         CALL alloc( a_DVO   , NDIMX*RCW        )
-         CALL alloc( a_DOV   , NDIMX*RCW        )
-         CALL alloc( a_DMO   , NORBT*NORBT*NZ   )
-         CALL alloc( a_XMO   , NORBT*NORBT*NZ   )
+         CALL alloc( a_FOO   , NFOO*RCW         , id="foo" )
+         CALL alloc( a_FVO   , NFVO*RCW         , id="fvo" )
+         CALL alloc( a_FVV   , NFVV*RCW         , id="fvv" )
+         CALL alloc( a_T1    , NDIMT1*RCW       , id="t1" )
+         CALL alloc( a_T2    , NDIMT2*RCW       , id="t2" )
+         CALL alloc( a_S1    , NDIMT1*RCW       , id="s1" )
+         CALL alloc( a_S2    , NDIMT2*RCW       , id="s2" )
+         CALL alloc( a_DOO   , NFOO*RCW         , id="doo" )
+         CALL alloc( a_DVV   , NFVV*RCW         , id="dvv" )
+         CALL alloc( a_DVO   , NDIMX*RCW        , id="dvo" )
+         CALL alloc( a_DOV   , NDIMX*RCW        , id="dov" )
+         CALL alloc( a_DMO   , NORBT*NORBT*NZ   , id="dmo" )
+         CALL alloc( a_XMO   , NORBT*NORBT*NZ   , id="xmo" )
       endif
 
       total_mem_new = total_mem_new 
@@ -2632,8 +2624,8 @@ C
       MAXDIM = MXDIMGR
 
       if (alloc_me) then
-         CALL alloc( a_BUF1  , NBUF1*RCW             )
-         CALL alloc( a_BUF2  , NBUF2*RCW             )
+         CALL alloc( a_BUF1  , NBUF1*RCW             , id="buf2" )
+         CALL alloc( a_BUF2  , NBUF2*RCW             , id="buf1" )
       endif
 
       total_mem_new = total_mem_new 
@@ -2661,22 +2653,22 @@ C
 C allocating stuff specific for this option
 C
       if (ALLOC_ME) then
-         CALL alloc( a_XOO   , NFOO*RCW         )
-         CALL alloc( a_XVV   , NFVV*RCW         )
-         CALL alloc( a_D2VO  , NDIMX*RCW        )
-         CALL alloc( a_D2OV  , NDIMX*RCW        )
-         CALL alloc( a_XVO   , NDIMX*RCW        )
-         CALL alloc( a_XOV   , NDIMX*RCW        )
-         CALL alloc( a_EVO   , NEOPER*NDIMX*RCW )
-         CALL alloc( a_EOV   , NEOPER*NDIMX*RCW )
-         CALL alloc( a_EOO   , NFOO*RCW         )
-         CALL alloc( a_EVV   , NFVV*RCW         )
-         CALL alloc( a_DG    , NDIMX*RCW        )
+         CALL alloc( a_XOO   , NFOO*RCW         , id="xoo" )
+         CALL alloc( a_XVV   , NFVV*RCW         , id="xvv" )
+         CALL alloc( a_D2VO  , NDIMX*RCW        , id="d2vo" )
+         CALL alloc( a_D2OV  , NDIMX*RCW        , id="d2ov" )
+         CALL alloc( a_XVO   , NDIMX*RCW        , id="xvo" )
+         CALL alloc( a_XOV   , NDIMX*RCW        , id="xov" )
+         CALL alloc( a_EVO   , NEOPER*NDIMX*RCW , id="evo" )
+         CALL alloc( a_EOV   , NEOPER*NDIMX*RCW , id="eov" )
+         CALL alloc( a_EOO   , NFOO*RCW         , id="eoo" )
+         CALL alloc( a_EVV   , NFVV*RCW         , id="evv" )
+         CALL alloc( a_DG    , NDIMX*RCW        , id="dg" )
 
-         CALL alloc( a_CCC   , MAXDIM                )
-         CALL alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) )
-         CALL alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) )
-         CALL alloc( a_CBUF  , 2*NSP*NSP             )
+         CALL alloc( a_CCC   , MAXDIM                , id="ccc" )
+         CALL alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
+         CALL alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
+         CALL alloc( a_CBUF  , 2*NSP*NSP             , id="cbuf" )
       endif
 
       total_mem_new = total_mem_new
@@ -2694,7 +2686,7 @@ C
 C     Allocate now also this remaining work array
 C
       if (alloc_me) then
-         CALL alloc( a_BUF3  , NBUF3*RCW             )
+         CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 c        call alloc_maxsize(freemem,100,verbose)     
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
@@ -2779,6 +2771,7 @@ C
           call dealloc(a_BB1)
           call dealloc(a_BB2)
           call dealloc(a_CBUF)
+          call dealloc(a_BUF3)
       endif
 C
       ENDIF ! End of MO code
@@ -2797,7 +2790,7 @@ C
 C     Allocate now also this remaining work array
 C
       if (alloc_me) then
-         CALL alloc( a_BUF3  , NBUF3*RCW             )
+         CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 c        call alloc_maxsize(freemem,100,verbose)     
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
@@ -2879,9 +2872,9 @@ C
      &                     MPI_COMM_WORLD,IERR)
          ENDDO
 #endif
+         if (alloc_me) call dealloc(a_BUF3)
       ENDIF
 C
-      write (*,*) 'before dealloc in fopr'
       if (alloc_me) then
          CALL dealloc( a_FOO)
          CALL dealloc( a_FVO)
@@ -2898,7 +2891,6 @@ C
          CALL dealloc( a_XMO)
          call dealloc(a_BUF1)
          call dealloc(a_BUF2)
-         call dealloc(a_BUF3)
       endif
 C
       RETURN
@@ -3793,18 +3785,35 @@ C
 C
 C     Write energies
 C
-      WRITE (IW,1003) 
-      WRITE (IW,1070) ESCF
-      WRITE (IW,1072) EMP2
-      WRITE (IW,1073) ECCSD
-      WRITE (IW,1074) ET1
-      WRITE (IW,1075) ET2
-      WRITE (IW,1076) ET3
-      WRITE (IW,1080) ESCF+EMP2
-      WRITE (IW,1081) ESCF+ECCSD
-      WRITE (IW,1082) ESCF+ECCSD+ET1
-      WRITE (IW,1083) ESCF+ECCSD+ET1+ET2
-      WRITE (IW,1084) ESCF+ECCSD+ET1+ET3
+      if (domp2.or.doccsd) then
+         WRITE (IW,1003) 
+         WRITE (IW,1070) ESCF
+         if (domp2) 
+     &      WRITE (IW,1072) EMP2
+         if (doccsd) then
+            WRITE (IW,1073) ECCSD
+            if (doccsdt) then
+               WRITE (IW,1074) ET1
+               WRITE (IW,1075) ET2
+               WRITE (IW,1076) ET3
+            endif
+         endif
+   
+         if (domp2)
+     &      WRITE (IW,1080) ESCF+EMP2
+      
+         if (doccsd) then
+            WRITE (IW,1081) ESCF+ECCSD
+            if (doccsdt) then
+               WRITE (IW,1082) ESCF+ECCSD+ET1
+               WRITE (IW,1083) ESCF+ECCSD+ET1+ET2
+               WRITE (IW,1084) ESCF+ECCSD+ET1+ET3
+            endif
+         endif
+      else
+         WRITE (IW,1004)
+         if (.not.dofspc) WRITE (IW,1005) 
+      endif
 C
       WRITE (IW,1000) ('-',I=1,80)
 C
@@ -3812,6 +3821,8 @@ C
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (/' Status of the calculations')
  1003 FORMAT (/' Overview of calculated energies')
+ 1004 FORMAT (/' No energies were calculated.')
+ 1005 FORMAT (/' Check your input!')
  1021 FORMAT (' Integral sort # 1 :',T40,A30)
  1022 FORMAT (' Integral sort # 2 :',T40,A30)
  1023 FORMAT (' Fock matrix build :',T40,A30)

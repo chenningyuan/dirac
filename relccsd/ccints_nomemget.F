@@ -310,8 +310,6 @@ C
       NPASS = (NV5PAR-1) / NVT + 1
       NSEC5 = 1
       N5L = 0
-      write (*,*) 'debug: nv5par,nvt,npass,nsec5,n5l',
-     &             NV5PAR,NVT,NPASS,NSEC5,N5L
       WRITE (IW,1005) NPASS,'VOVV'
       CALL FLSHFO (IW)
 C
