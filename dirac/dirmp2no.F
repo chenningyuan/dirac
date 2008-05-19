@@ -202,21 +202,21 @@ C
       WRITE(LUPRI,'(A)') ' MP2NOGEN: MP2 natural orbitals'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I3)') ' * General print level:',IPRMP2NO
-      WRITE(LUPRI,'(A)') ' * Vectors defining the DHF potential:'
-      NTOT = 0
+      WRITE(LUPRI,'(A)') ' * allowed active spinors in MP2-NO run:'
       DO I = 1,NFSYM
-        NVEC = 0
-        CALL  NUMLST(VECMP2NO(I),IDUMMY,NFBAS(I,0),
-     &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)')
-     &       '- No orbitals in fermion ircop ',FREP(I)
-        ELSE
-          NTOT = NTOT + NVEC
-          WRITE(LUPRI,'(4X,A,A3,A,A72)')
-     &    '- Orbitals in fermion ircop ',FREP(I),' :',VECMP2NO(I)
-        ENDIF
+        WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &  '- spinors in fermion ircop ',FREP(I),' :',VECMP2NO(I)
       ENDDO
+      WRITE(LUPRI,'(A)') ' * allowed range of NO spinors in 
+     & correlation run:'
+      DO I = 1,NFSYM
+        WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &  '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)
+      ENDDO
+      WRITE(LUPRI,'(A,I3)') ' * Integral transformation scheme: ',
+     &                          IAOMOSCHEME
+      WRITE(LUPRI,'(A,I3)') ' * Maximum number of virtual spinors: ',
+     &                          IMAXVSP    
       IF(ILLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No LL contributions'
       IF(ISLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SL contributions'
       IF(ISSINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SS contributions'
@@ -250,6 +250,7 @@ C
 C
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dgroup.h"
 C
 #include "dcbfir.h"
 #include "dcbgen.h"
@@ -334,6 +335,8 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &               WORK,KFREE,LFREE)
       ENDIF
+      WRITE(LUPRI,*) ' Stefan forced me to stop in MP2NOGE1'
+      CALL Abend2('Stefan forced me to stop in MP2NOGE1')
 #ifdef mp2no_fock
       IF(IONMVO) THEN
 C
@@ -419,6 +422,23 @@ Chj     CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
       END DO
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     pick out 'active' NO spinors : FIXME: call to NUMLS4 not ready
+C
+csk   NTOT = 0
+csk   DO I = 1,NFSYM
+csk     NVEC = 0
+csk     CALL  NUMLS4(VECNOSEL(I),IDUMMY,NFBAS(I,0),
+csk  &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+csk     IF(NVEC.EQ.0) THEN
+csk       WRITE(LUPRI,'(4X,A,A3)')
+csk  &       '- No spinors in fermion ircop ',FREP(I)
+csk     ELSE
+csk       NTOT = NTOT + NVEC
+csk       WRITE(LUPRI,'(4X,A,A3,A,A72)')
+csk  &    '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)
+csk     ENDIF
+csk   ENDDO
 C
       CALL QEXIT('MP2NOGEN')
       RETURN
