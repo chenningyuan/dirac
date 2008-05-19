@@ -408,7 +408,7 @@ C     ***************************
 C     *** I n i t i a l i z e ***
 C     ***************************
 C
-#if MOD_KRMC
+#ifdef MOD_KRMC
       IF ( FKRMC ) CALL GETTIM(CPUTOT1,CPUWALL1)
 #endif
 C
