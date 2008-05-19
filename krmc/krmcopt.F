@@ -2586,8 +2586,11 @@ C
                  WRITE(LUPRI,'(/A)')
      &                '  (ROPTST)  Starting CI calculation ' //
      &                '  from MC orbitals! '
-               IF (LBIT(IWRT,1)) 
-     &           CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+               IF (LBIT(IWRT,1)) THEN 
+                   CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+                   WRITE(LUPRI,'(/A)') 
+     &                '  Orbitals saved as NEWORB on KRMCSCF'
+               END IF
                  RCI_MCORB = .TRUE.
                  GOTO 1100
                ENDIF 

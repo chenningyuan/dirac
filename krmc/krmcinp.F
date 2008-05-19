@@ -828,13 +828,15 @@ C                    Added CI keyword WRTFCK. Stefan Knecht
 C                    October 2007
 C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
 C                    20.11.2007
+C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
+C                    20.11.2007
 C                    
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 23)
+      PARAMETER (NTABLE = 24)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -848,7 +850,7 @@ C
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
      &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN','.RDFOCK',
-     &            '.WRTFCK','.SHMEMO','.IJKLRO'/
+     &            '.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -891,6 +893,7 @@ C
       CWRTFO_MAT  = .FALSE.
       CSHMEMO     = .FALSE.
       CINT_REORD  = .FALSE.
+      CINT_SPLIT  = .FALSE.
       COMPFAC     = 0.01D00
 C
 C
@@ -911,7 +914,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20,21,22,23), I
+     &                     11,12,13,14,15,16,17,18,19,20,21,22,23,24), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1101,9 +1104,14 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
 #endif
                GO TO 100
    23          CONTINUE
-C&&& .SHMEMO: do GAS-scheme specific integral reordering resp. use
+C&&& .IJKLRO: do GAS-scheme specific integral reordering resp. use
 C             reordered integrals  
                CINT_REORD = .TRUE.
+               GO TO 100
+   24          CONTINUE
+C&&& .IJKLSP: integral TT block allocation based on TTSS block
+C             distribution scheme
+               CINT_SPLIT = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1258,6 +1266,10 @@ C     no shared memory mode for non MPI-2 executables
       IF( CINT_REORD )THEN
         WRITE(LUPRI,'(A)') 
      &     ' * Using GAS-scheme specific integral file       '
+      END IF
+      IF( CINT_SPLIT )THEN
+        WRITE(LUPRI,'(A)') 
+     &     ' * Using revised integral allocation scheme      '
       END IF
 C
   400 RETURN

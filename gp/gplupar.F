@@ -9938,6 +9938,39 @@ C
       END DO
 C
       END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE ORDER_ARRAY(IMAT,NDIM)
+C
+C     Written by  S. Knecht         - May 29 2007
+C
+C**********************************************************************
+C
+C     order array with numbers .le. 0 first, .lt. 0 after            
+C
+C     Last revision:     S. Knecht       - May  2008
+C
+************************************************************************
+      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+      DIMENSION IMAT(NDIM)
+      INTEGER ICHECK_POS, ICHECK_PRO
+      ICHECK_POS = 0
+      ICHECK_PRO = 0
+C
+        DO JJ = 1, NDIM
+           ICHECK_PRO = IMAT(JJ)
+           IF( ICHECK_PRO .ne. - 1) THEN
+             ICHECK_POS = ICHECK_POS + 1
+             IMAT(JJ) = -1
+             IMAT(ICHECK_POS) = ICHECK_PRO
+           END IF
+        END DO
+C
+      END
 #else
 ***********************************************************************
 *                                                                     *

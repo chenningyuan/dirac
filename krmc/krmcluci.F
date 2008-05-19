@@ -485,6 +485,17 @@ C
         REORD_IJKL = .TRUE.
       END IF
 C
+C
+C 105: using revised integral allocation scheme                
+C
+      SPLIT_IJKL = .FALSE.
+      IS_SPLIT_IJKL = 0
+      CALL LUCI_TRAVA(CIRUN,'SPIJKL',IS_SPLIT_IJKL,DUMMY,I_COMM_W_ND)
+C
+      IF( IS_SPLIT_IJKL .gt. 0 ) THEN
+        SPLIT_IJKL = .TRUE.
+      END IF
+C
 C     That's it, dude !!
 C
 C     ... except we are running a parallel calculation
@@ -1573,7 +1584,24 @@ C
         END IF
         GOTO 100
       END IF
-CSKC
+C
+C     enable revised integral allocation
+C
+      IF (CTLSTR .EQ. 'SPIJKL') THEN
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(CINT_SPLIT,1,MPI_LOGICAL,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+#endif
+        IF( CINT_SPLIT ) THEN
+          IVAR(1) =   1
+        ELSE
+          IVAR(1) = - 1
+        END IF
+        GOTO 100
+      END IF
+C    
 C
       WRITE(LUPRI,'(1X,2A)')
      &   '*** ERROR in LUCI_TRAVA *** Illegal keyword : ',CTLSTR
@@ -1927,7 +1955,7 @@ C       construct new communication groups
         CALL GROUP_CONSTRUCTOR_REL(WORK(KGROUPLIST),WORK(KPROCLIST),
      &                             WORK(KPROCLIST2))
 C
-C       NPTESTVAR = 20
+        NPTESTVAR = 00
         IF( NPTESTVAR .ge. 20 ) THEN
           WRITE(LUWRT,*) 'this is my old and new rank ',myproc, MYNEW_ID
           WRITE(LUWRT,*) 'this is my "shared memory" rank ', MYNEW_ID_SM
