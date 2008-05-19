@@ -127,6 +127,7 @@ def main():
         print usage
         return    
     for arg in sys.argv[1:]:
+        arg = arg.strip()
         if arg.find('-D') == 0:
             arg = arg[2:]
             target = defined
@@ -139,7 +140,7 @@ def main():
                 if '=' in arg:
                     print 'Error: Giving a macro a value (%s) is not supported. Quitting!' % arg
                     return -1
-            target = filenames
+        target = filenames
     for fn in filenames:
         f = FriendlyFile(fn,'r')
         fout = open(fn+'.cppp~','w')
