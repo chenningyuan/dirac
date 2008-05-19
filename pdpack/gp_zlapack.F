@@ -6507,7 +6507,7 @@
 *     End of ZGGHRD
 *
       END
-
+#if !defined (VAR_MKL)
       SUBROUTINE ZROT( N, CX, INCX, CY, INCY, C, S )
 *
 *  -- LAPACK auxiliary routine (version 2.0) --
@@ -6600,7 +6600,7 @@
    30 CONTINUE
       RETURN
       END
-
+#endif
       SUBROUTINE ZUNM2R( SIDE, TRANS, M, N, K, A, LDA, TAU, C, LDC,
      $                   WORK, INFO )
 *
@@ -16278,6 +16278,7 @@ c
 *
       END
 
+#if !defined (VAR_MKL)
       SUBROUTINE ZDROT( N, CX, INCX, CY, INCY, C, S )
 *
 *     .. Scalar Arguments ..
@@ -16374,6 +16375,7 @@ c
    30 CONTINUE
       RETURN
       END
+#endif
       SUBROUTINE ZGETRF( M, N, A, LDA, IPIV, INFO )
 *
 *  -- LAPACK routine (version 3.1) --
@@ -18492,6 +18494,7 @@ c
 *     End of ZLARGV
 *
       END
+#if !defined (VAR_MKL)
       SUBROUTINE ZLARTV( N, X, INCX, Y, INCY, C, S, INCC )
 *
 *  -- LAPACK auxiliary routine (version 3.1) --
@@ -18570,6 +18573,7 @@ c
 *     End of ZLARTV
 *
       END
+#endif
       SUBROUTINE ZTRTI2( UPLO, DIAG, N, A, LDA, INFO )
 *
 *  -- LAPACK routine (version 3.1) --
