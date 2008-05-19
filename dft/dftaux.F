@@ -121,13 +121,17 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !         GGA
 
+#if defined (MOD_CDFT)
           if(allow_nonhermitian) then
             call get_gr_nh(.true.,gr_b,irepop,gao,gao1,
      &                     dtrmat(1,1,1,im),buf)
           else
+#endif
             call getgrho(gr_b,irepop,gao,gao1,
      &                   dtrmat(1,1,1,im),buf)
+#if defined (MOD_CDFT)
           endif
+#endif
 
           worth_it = max(
      &                   dabs(r_b),
