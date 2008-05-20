@@ -1185,58 +1185,6 @@ C  /* Deck writt */
       RETURN
 C
       END
-C  /* Deck search */
-      SUBROUTINE SEARCH(A,LU,LUERR)
-C
-C Revision
-C  26-May-1985 hjaaj (error return if LUERR .lt. 0 on input,
-C                     otherwise stop on error as previously)
-C
-#include "implicit.h"
-      DIMENSION B(4)
-      DATA C/8H********/
-    1 READ(LU,END=3,ERR=6)B
-      IF (B(1).NE.C) GO TO 1
-      IF (B(4).NE.A) GO TO 1
-      IF (LUERR.LT.0) LUERR = 0
-      RETURN
-C
-    3 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
-         BACKSPACE LU
-#endif
-         LUERR = -1
-         RETURN
-      ELSE
-         WRITE(LUERR,4)A,LU
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR (SEARCH) MOLECULE label not found on file')
-      END IF
-    4 FORMAT(/' *** ERROR (SEARCH), MOLECULE label ',A8,
-     *        ' not found on unit',I4)
-C
-    6 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-         CLOSE(LU,ERR=8)
-    8    CONTINUE
-#endif
-         LUERR = -2
-         RETURN
-      ELSE
-         WRITE (LUERR,7) LU,A
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR (SEARCH) error reading file')
-      END IF
-    7 FORMAT(/' *** ERROR (SEARCH), error reading unit',I4,
-     *       /T22,'when searching for label ',A8)
-      END
 C  /* Deck mollab */
       SUBROUTINE MOLLAB(A,LU,LUERR)
 C
