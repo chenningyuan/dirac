@@ -7187,12 +7187,12 @@ C     ADJUST FOR XYZ FILES
       INQUIRE(file='MOLECULE.MOL',exist=ex)
       IF (.NOT.(ex)) THEN
         INQUIRE(file='MOLECULE.XYZ', exist=ex)
-        IF (ex) WRITE(LUPRI,*) 'ERROR: abaopt.F PNCMOL not adjust for 
-     &       XYZ files.'
+        IF (ex) WRITE(LUPRI,*)
+     &       'ERROR: abaopt.F PNCMOL not adjusted for XYZ files.'
         CALL QUIT('ERROR: abaopt.F(PNCMOL): MOLECULE FILE NOT FOUND.')
       END IF
 
-
+      IF (LUMOL.EQ.0) LUMOL = -1
       CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUMOL)
