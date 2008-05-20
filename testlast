@@ -7,8 +7,15 @@
 # Written by Luuk Visscher - May 15 2002
 #
 # Set defaults
-pampath=`pwd`
-dirac=`pwd`/dirac.x
+testlastpath=`pwd`
+# --------------------------------------
+# Use pam and dirac.x defined in $testdir/runtest.
+pampath=' '
+diracexe=' '
+# You can override this by uncommeting the next two lines and modify them appropriately.
+#pampath="--pampath=`pwd`"
+#diracexe="--dirac=`pwd`/dirac.x"
+# --------------------------------------
 testdir=`pwd`/test
 RUNTYPE="undefined"
 cvs="no"
@@ -201,7 +208,7 @@ backup $cvslog
 backup $runlog
 backup $txtlog
 backup $htmlog
-cd ${pampath};
+cd ${testlastpath};
 #
 if [ "${cvs}" = "yes" ]; then
   echo ' Starting CVS Update ... ' ;
@@ -243,7 +250,7 @@ cat <<EOF >job_testlast.sh
 #
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --runtype="$RUNTYPE" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
