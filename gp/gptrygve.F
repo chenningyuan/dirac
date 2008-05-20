@@ -40,37 +40,43 @@ C  /* Deck header */
       CHARACTER HEAD*(*)
 #include "priunit.h"
 C
-      LENGTH = LEN(HEAD)
+      LHEAD = LNBLNK(HEAD)
       IF (IN .GE. 0) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = (72 - LENGTH)/2 + 1
+         INDENT = MAX(1,(80 - LHEAD)/2 + 1)
       END IF
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-      WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), ('-',I=1,LENGTH)
+      WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
       RETURN
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
-      CHARACTER TEXT*6
 #include "priunit.h"
+      CHARACTER TEXT*(*), OUT_TEXT*50
 C
-      IF (TEXT .EQ. 'START ') THEN
-         TIMSTR = SECOND()
+      IF (TEXT(1:6) .EQ. 'START ') THEN
+         CALL GETTIM(TIMSTR,DUMMY)
       ELSE
-#if !defined (SYS_T3D)
-         TIMEND = SECOND()
-#else
-         TIMEND = SECOND() + 1.0D0
+         CALL GETTIM(TIMEND,DUMMY)
+#if defined (SYS_T3D)
+         TIMEND = TIMEND + 1.0D0
 #endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
-         WRITE (LUPRI,'()')
-         CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
-         WRITE (LUPRI,'()')
-         CALL FLSHFO(LUPRI)
+         IF (TIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            WRITE (LUPRI,'()')
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 17 + LTEXT + 3
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            WRITE (LUPRI,'()')
+            CALL FLSHFO(LUPRI)
+         END IF
       END IF
       RETURN
       END
@@ -152,6 +158,7 @@ C  /* Deck timpri */
 C 980826-hjaaj: initialize TREST for next abacus call
          TREST = 0.0D0
       END IF
+      IF (TIMALL .EQ. 0.0D0) RETURN
       ITIME = NINT(HUN*TIME/TIMALL)
       IF (ITIME .GT. 0 .AND. INT(TIME) .GT. 0) THEN
          MINUTE = INT(TIME)/60
@@ -167,10 +174,11 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
-      CHARACTER HEAD*(*), A
 #include "priunit.h"
+      CHARACTER HEAD*(*), A*(*)
 C
-      LENGTH = LEN(HEAD)
+      LHEAD  = LNBLNK(HEAD)
+      LENGTH = LHEAD
       IF (IN .EQ. 200) THEN
          LENGTH = LENGTH + 2
       ELSE IF (IN .GE. 100) THEN
@@ -181,26 +189,27 @@ C
       IF (IN .GE. 0 .AND. IN .LT. 100) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = MAX(1,(72 - LENGTH)/2 + 1)
+         INDENT = MAX(1,(80 - LENGTH)/2 + 1)
       END IF
       IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//,120A)')
+         WRITE (LUPRI, '(//150A)')
      *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
-         WRITE (LUPRI,'(120A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
-         WRITE (LUPRI, '(120A)')
+         WRITE (LUPRI, '(150A)')
+     &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
+         WRITE (LUPRI, '(150A)')
      *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
       ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT),
-     *      (A,I=1,MARG-1), ' ', HEAD, ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),
+     *      (A,I=1,MARG-1), ' ', HEAD(1:LHEAD), ' ', (A,I=1,MARG-1)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       END IF
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
@@ -210,15 +219,16 @@ C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
 #include "priunit.h"
-      LNG = LEN(HEAD) + 2
-      IND = (72 - LNG)/2 + 1
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '! ', HEAD, ' !'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-C     WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '| ', HEAD, ' |'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
-      WRITE (LUPRI, '()')
+      LHEAD  = LNBLNK(HEAD)
+      LNG    = LHEAD + 2
+      IND = MAX(1,(80 - LNG)/2 + 1)
+      WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '! ', HEAD(1:LHEAD), ' !'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
+      WRITE (LUPRI,'()')
       RETURN
       END
 C  /* Deck stopit */
@@ -228,7 +238,7 @@ C  /* Deck stopit */
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
-      IF ((LEN(PLACE) .GT. 1) .OR. (PLACE .NE. ' ')) THEN
+      IF (LNBLNK(PLACE) .GT. 0) THEN
          WRITE (LUPRI,'(/2A)') ' Location: ',PLACE
       END IF
       JNT1  = ABS(INT1)
@@ -744,9 +754,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "chrnos.h"
-      CHARACTER*80 FILENM, STATUF, ACCESF, FORMF
+      CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
-      INTEGER FILELN, STATLN, ACCELN, FORMLN
+      INTEGER       FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
       DATA FIRST /.TRUE./
@@ -761,10 +771,10 @@ C
 C
 C     We first deal with the unit number
 C
-      FILELN = LEN(FILEIN)
-      STATLN = LEN(STATIN)
-      ACCELN = LEN(ACCEIN)
-      FORMLN = LEN(FORMIN)
+      FILELN = LNBLNK(FILEIN)
+      STATLN = LNBLNK(STATIN)
+      ACCELN = LNBLNK(ACCEIN)
+      FORMLN = LNBLNK(FORMIN)
       FILENM(1:FILELN) = FILEIN(1:FILELN)
       STATUF(1:STATLN) = STATIN(1:STATLN)
       ACCESF(1:ACCELN) = ACCEIN(1:ACCELN)
@@ -796,19 +806,19 @@ C
 C     We've got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
-         IF (FILELN .EQ. 1) THEN
-            FILELN = 6
-            FILENM(1:6) = 'UNIT'//CHRNOS(LUNIT/10)//
+         IF (FILELN .EQ. 0) THEN
+            FILELN = 13
+            FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
      &                    CHRNOS(MOD(LUNIT,10))
          END IF
-         IF (STATLN .EQ. 1) THEN
+         IF (STATLN .LE. 1) THEN
             STATLN = 7
             STATUF(1:7) = 'UNKNOWN'
          END IF
          CALL OPENDX(LUNIT,FILENM(1:FILELN),NELEM,STATUF(1:STATLN),
      &               OLDDX)
       ELSE
-         IF (STATLN .EQ. 1) THEN
+         IF (STATLN .LE. 1) THEN
             STATLN = 7
             STATUF(1:7) = 'UNKNOWN'
          END IF
@@ -816,11 +826,11 @@ C
 C
 C     This better be a file with a name, and it better exist
 C
-            IF (FILELN .EQ. 1) GOTO 9005
+            IF (FILELN .EQ. 0) GOTO 9005
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS,
      &              ERR=9006)
             IF (.NOT. FEXST) GOTO 9007
-            IF (FORMLN .EQ. 1) THEN
+            IF (FORMLN .EQ. 0) THEN
                FORMLN = 9
                FORMF(1:FORMLN)='FORMATTED'
             END IF
@@ -830,12 +840,12 @@ C
          ELSE
             IF (STATUF(1:3) .EQ. 'NEW' .AND. IUNTAB(LUNIT) .NE. 0)
      &           GOTO 9006
-            IF (FILELN .EQ. 1) THEN
-               FILELN = 6
-               FILENM(1:6) = 'UNIT'//CHRNOS(LUNIT/10)//
+            IF (FILELN .EQ. 0) THEN
+               FILELN = 13
+               FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
      &                               CHRNOS(MOD(LUNIT,10))
             END IF
-            IF (FORMLN .EQ. 1) THEN
+            IF (FORMLN .EQ. 0) THEN
                FORMLN = 11
                FORMF(1:11)='UNFORMATTED'
             END IF
@@ -863,8 +873,7 @@ C
      &     'THE SOURCE CODE'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) NO MORE FILE NUMBERS')
+      GOTO 9100
 C
  9002 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -875,8 +884,7 @@ C
       WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
+      GOTO 9100
 C
  9003 CONTINUE
       WRITE (6,'(//A/A)')
@@ -886,16 +894,18 @@ C
       WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY '//
-     &          'IN USE')
+      GOTO 9100
 C
  9004 CONTINUE
+#ifdef GFORTRAN
+C
+      call perror(' GPOPEN calling perror:')
+#endif
+C
       WRITE (6,'(//A,I3/A,I7)')
      &     ' *** ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',
      &     LUNIT, ' *** ERROR CODE RETURNED ',IOS
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) UPON OPENING A FILE')
+      GOTO 9100
 C
  9005 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -904,9 +914,7 @@ C
      &     ' *** ENTRY INDICATE THAT IT DOES NOT EXIST'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
-     &          'FILE AS OLD')
+      GOTO 9100
 C
  9006 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -915,9 +923,7 @@ C
      &     ' *** ENTRY INDICATE THAT IT ALREADY EXISTS'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
-     &          'FILE AS NEW')
+      GOTO 9100
 C
  9007 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -926,9 +932,21 @@ C
      &     ' *** DOES NOT EXIST'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
+      GOTO 9100
+ 9100 CONTINUE
+      write(6,'(/A/A)') 'Parameters specified to GPOPEN:',
+     &                  '==============================='
+      write(6,*) 'File unit ',LUNIT
+      write(6,*) 'File name ',FILEIN,' -> ',FILENM(1:FILELN)
+      write(6,*) 'Status    ',STATIN,' -> ',STATUF(1:STATLN)
+      write(6,*) 'Access    ',ACCEIN,' -> ',ACCESF(1:ACCELN)
+      write(6,*) 'Format    ',FORMIN,' -> ',FORMF(1:FORMLN)
+      write(6,*) 'NELEM     ',NELEM
+      write(6,*) 'OLDDX     ',OLDDX
+      inquire(unit=lunit,name=filenm)
+      write(6,*) 'File name from inquire for this file unit: ',FILENM
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
-     &          'FILE AS OLD')
+      CALL QUIT('*** (GPOPEN) ERROR TRYING TO OPEN A FILE')
 C
 C end of GPOPEN
 C
