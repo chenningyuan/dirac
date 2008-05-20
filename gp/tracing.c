@@ -13,14 +13,24 @@
 
 #if (SYS_FLAVOR == LINUX)
 #define GNU_TRACEBACK
+/* 
+#else
+#elif (SYS_FLAVOR == DARWIN) || (SYS_FLAVOR == FREEBSD)
+#define BSD_TRACEBACK
+*/
 #endif
 
 #if defined (GNU_TRACEBACK)
 #include <execinfo.h>
 #endif
 
+#if defined (BSD_TRACEBACK)
+#include "execinfo.h"
+#endif
+
 #define MAXSIZE_SYMBOL (300)
 #define MAXDEPTH_TRACE  (30)
+
 
 enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
 enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
@@ -58,7 +68,7 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 
 /* only support to linux for now. for other systems the traceback is yet to be implemented
    mac osx 10.5 should have the same interface */
-#if defined (GNU_TRACEBACK)
+#if defined (GNU_TRACEBACK) || defined (BSD_TRACEBACK)
 /* calls to gnu libc routines */
    size    = backtrace (array, MAXDEPTH_TRACE);
    strings = backtrace_symbols (array, size);
@@ -88,6 +98,7 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
       }
 
       free (strings);
+
    }
 }
 
@@ -125,6 +136,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
    
    failure_point = 2;
    j = (size - failure_point - 2);
+
    retrieve_symbol(symbolName,symbol_name,strings[failure_point]);
    printf ("\n Traceback from this point (%s): %zd frames.\n\n",symbol_name,j);
    j--;
@@ -188,9 +200,15 @@ void retrieve_symbol(enum retrieveSymbolKinds kind, char *result, char *backtrac
   symbol_name_end   = -1;
   k = 0;
 
-  for ( j = 0 ; ; j++)
+  for ( j = 0 ; j < MAXSIZE_SYMBOL ; j++)
      {
         element = *(backtrace_string+j);
+
+        if ( element == '#'  )
+        {
+           result[k] = '\0';
+           break;
+        }
 
         if ( element == '\0' )
         {
@@ -199,11 +217,13 @@ void retrieve_symbol(enum retrieveSymbolKinds kind, char *result, char *backtrac
         }
 
         if ( ((element == '(')&&(kind == symbolName))    ||
+             ((element == '<')&&(kind == symbolName))    ||
              ((element == '[')&&(kind == symbolRetAddr))  )
         {
            symbol_name_start = j+1;
         }
         else if ( ((element == ')')&&(kind == symbolName))   ||
+                  ((element == '>')&&(kind == symbolName))   ||
                   ((element == ']')&&(kind == symbolRetAddr)) )
         {
            symbol_name_end   = j-1;
