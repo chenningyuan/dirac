@@ -25,7 +25,11 @@ clean :
 ##  compile Fortran90 module source files and make symbolic links
 ## of resulting *.mod files into common linked directory modules
 ##
-mod: $(F90_MODS)
+mod:
+	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
+	$(MAKE) module_files
+
+module_files: $(F90_MODS)
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 

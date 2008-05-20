@@ -38,7 +38,11 @@ clean :
 #mod : $(F90_MODS) ;\
 #$(foreach module_file, $(F90_MODS), ln -sf $(PWD)/$(module_file)  modules/. ;)
 ##ln -sf $(PWD)/*.mod ../modules/. 
-mod : $(F90_MODS)
+mod:
+	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
+	$(MAKE) module_files
+
+module_files: $(F90_MODS)
 
 FLAGS=$(DEPEND_FLAGS) $(MODS) $(OPTFLAGS)
 

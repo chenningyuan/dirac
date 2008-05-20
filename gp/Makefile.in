@@ -14,7 +14,7 @@ F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 
 F90_OBJS = vector_functions.o osutils.o kinds.o memory_tracker.o memory_allocator.o
 
-F90_MODS = vector_fun.mod    os_utils.mod memory_tracker.mod memory_allocator.mod \
+F90_MODS = vector_fun.mod os_utils.mod memory_tracker.mod memory_allocator.mod \
            kinds_m.mod
 
 C_OBJS = gpc.o tracing.o tracker_util.o
@@ -36,7 +36,7 @@ setcomp:
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \
 	   echo "#define WHERE_COMPILED \"${HOST}\"" >> compinfo.h ; \
-           echo "#define FCOMP \"${F77} ${OPTFLAGS}\"" >> compinfo.h ; \
+           echo "#define FCOMP \"${F90} ${OPTFLAGS}\"" >> compinfo.h ; \
            echo "#define CCOMP \"${CC} ${C_OPTFLAGS}\"" >> compinfo.h ; \
 	)
 
@@ -45,7 +45,11 @@ mxm:	$(MXM_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
-mod: $(F90_MODS)
+mod:
+	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
+	$(MAKE) module_files
+
+module_files: $(F90_MODS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -57,8 +61,8 @@ dirmpi.x:
 depend: setcomp
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
+f90dep:
+	../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F)
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

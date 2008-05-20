@@ -36,7 +36,11 @@ dirmpi.x:
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
-mod: $(F90_MODS)
+mod:
+	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
+	$(MAKE) module_files
+
+module_files: $(F90_MODS)
 
 depend:
 	../utils/f90dep.pl $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend 

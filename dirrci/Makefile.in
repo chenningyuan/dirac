@@ -25,7 +25,11 @@ all:	$(F77_OBJS) $(F90_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
-mod: $(F90_MODS)
+mod:
+	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
+	$(MAKE) module_files
+
+module_files: $(F90_MODS)
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
