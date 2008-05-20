@@ -58,8 +58,8 @@ usage='Usage: '$0'\n'\
 '\tDo not prompt user\n'\
 '--system=SYSTEM-ID\n'\
 '\tSet system to SYSTEM-id\n'\
-'--f77=F77\n'\
-'\tSet fortran compiler to F77\n'\
+'--f90=F90\n'\
+'\tSet fortran compiler to F90\n'\
 '--cc=CC\n'\
 '\tSet C compiler to CC\n'\
 '--parallel[=(yes|no)]\n'\
@@ -183,13 +183,13 @@ while [ $# != 0 ]; do
          fi
          CC="$val"
          ;;
-      "f77" )
+      "f90" )
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
                   'without an argument'
             exit 1
          fi
-         F77="$val"
+         F90="$val"
          ;;
       *)
          echo  'Unknown option: '$opt''
@@ -307,19 +307,19 @@ case $machine in
 
    sparc-sun|m68k-sun)  
       liblist="$liblist sunperf"
-      complist='f77 f90';;
+      complist='f90 f77 ';;
 
    *-hp)
       liblist="$liblist libveclib"
-      complist='f77 fort77 f90';;
+      complist='f90 f77 fort77';;
 
    alpha-dec|mips-dec|vax-dec|alphaev6-dec)
       liblist="$liblist libdxml"
-      complist='f77 f90';;
+      complist='f90 f77';;
 
    *-cray)
 #     liblist=$liblist
-      complist='cf77 f77 cf90 f90';;
+      complist='cf90 f90 cf77 f77';;
 
    t3e-cray)
 #     liblist=$liblist
@@ -636,9 +636,9 @@ echo
 echo 'COMPILER'
 echo
 $echo "\nChecking for Fortran compiler ...\c"
-if [ ! -z "$F77" ]; then
-   complist=$F77
-   F77=
+if [ ! -z "$F90" ]; then
+   complist=$F90
+   F90=
 fi
 
 #if [ "$mesp" = "mpi" -a "$machine" = "*-ibm" ]; then
@@ -648,20 +648,20 @@ fi
 #    for ac_dir in $PATH; do
 #        test -z "$ac_dir" && ac_dir=.
 #        if test -f $ac_dir/$ac_word; then
-#            ac_cv_prog_F77=$ac_word
+#            ac_cv_prog_F90=$ac_word
 #            break
 #        fi
 #    done
 #    IFS="$ac_save_ifs"
-#    test -z5D "$ac_cv_prog_F77" && ac_cv_prog_F77=""
-#    F77="$ac_cv_prog_F77"
-#    if test -n "$F77"; then
+#    test -z5D "$ac_cv_prog_F90" && ac_cv_prog_F90=""
+#    F90="$ac_cv_prog_F90"
+#    if test -n "$F90"; then
 #        echo
-#        $echo "Fortran compiler: $F77"
+#        $echo "Fortran compiler: $F90"
 #        break
 #    fi
 #fi
-if test -z "$F77"; then
+if test -z "$F90"; then
 for comp in $complist; do
     set dummy $comp; ac_word=$2
     $echo " $comp\c"
@@ -669,21 +669,21 @@ for comp in $complist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
         if test -f $ac_dir/$ac_word; then
-            ac_cv_prog_F77=$ac_word
+            ac_cv_prog_F90=$ac_word
             break
         fi
     done
     IFS="$ac_save_ifs"
-    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
-    F77="$ac_cv_prog_F77"
-    if test -n "$F77"; then
+    test -z "$ac_cv_prog_F90" && ac_cv_prog_F90=""
+    F90="$ac_cv_prog_F90"
+    if test -n "$F90"; then
         echo
-        $echo "Fortran compiler: $F77"
+        $echo "Fortran compiler: $F90"
         break
     fi
 done
 fi
-if test -z "$F77"; then
+if test -z "$F90"; then
     $echo "\n   No Fortran compiler found on this computer"
     echo  "   Cannot proceed without a Fortran compiler in path"
     exit
@@ -779,7 +779,7 @@ if [ ! -z "$LIB" ]; then
    rm -f gnyf.F
    echo '      PROGRAM GNYF' >  gnyf.F
    echo '      END         ' >> gnyf.F
-   $F77 gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
+   $F90 gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
    rm -f gnyf.F gnyf.x gnyf.o
 fi
 extlist='.so .a'
@@ -1299,9 +1299,9 @@ case $machine in
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-      case "$F77" in
+      case "$F90" in
       openmpif*|mpif*)
-         if "$F77" -show > /dev/null; then
+         if "$F90" -show > /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1309,34 +1309,34 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
-         if "$F77" $mpishowopt | grep -q ifc; then
-            F77real=ifc
-         elif "$F77" $mpishowopt | grep -q ifort; then
-            F77real=ifort
-         elif "$F77" $mpishowopt | grep -q gfortran; then
-            F77real=gfortran
-         elif "$F77" $mpishowopt | grep -q pathf90; then
-            F77real=pathf90
-         elif "$F77" $mpishowopt | grep -q pgf90; then
-            F77real=pgf90
-         elif "$F77" $mpishowopt | grep -q pgf77; then
-            F77real=pgf77
-         elif "$F77" $mpishowopt | grep -q g95; then
-            F77real=g95
-         elif "$F77" $mpishowopt | grep -q g77; then
-            F77real=g77
+         if "$F90" $mpishowopt | grep -q ifc; then
+            F90real=ifc
+         elif "$F90" $mpishowopt | grep -q ifort; then
+            F90real=ifort
+         elif "$F90" $mpishowopt | grep -q gfortran; then
+            F90real=gfortran
+         elif "$F90" $mpishowopt | grep -q pathf90; then
+            F90real=pathf90
+         elif "$F90" $mpishowopt | grep -q pgf90; then
+            F90real=pgf90
+         elif "$F90" $mpishowopt | grep -q pgf77; then
+            F90real=pgf77
+         elif "$F90" $mpishowopt | grep -q g95; then
+            F90real=g95
+         elif "$F90" $mpishowopt | grep -q g77; then
+            F90real=g77
          else 
-            F77real=$F77
+            F90real=$F90
          fi
-         echo "Compiler in $F77 found to be $F77real ..."
+         echo "Compiler in $F90 found to be $F90real ..."
          ;;
       *)
-         F77real=$F77
+         F90real=$F90
          ;;
       esac   
 
 
-      case "$F77real" in
+      case "$F90real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -fno-second-underscore"
 	 mod="-fmod=$MODULE_DIR"
@@ -1480,9 +1480,9 @@ case $machine in
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-      case "$F77" in
+      case "$F90" in
       mpif*)
-         if "$F77" -show > /dev/null; then
+         if "$F90" -show > /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1490,34 +1490,34 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
-         if "$F77" $mpishowopt | grep -q ifc; then
-            F77real=ifc
-         elif "$F77" $mpishowopt | grep -q ifort; then
-            F77real=ifort
-         elif "$F77" $mpishowopt | grep -q gfortran; then
-            F77real=gfortran
-         elif "$F77" $mpishowopt | grep -q pathf90; then
-            F77real=pathf90
-         elif "$F77" $mpishowopt | grep -q pgf90; then
-            F77real=pgf90
-         elif "$F77" $mpishowopt | grep -q pgf77; then
-            F77real=pgf77
-         elif "$F77" $mpishowopt | grep -q g95; then
-            F77real=g95
-         elif "$F77" $mpishowopt | grep -q g77; then
-            F77real=g77
+         if "$F90" $mpishowopt | grep -q ifc; then
+            F90real=ifc
+         elif "$F90" $mpishowopt | grep -q ifort; then
+            F90real=ifort
+         elif "$F90" $mpishowopt | grep -q gfortran; then
+            F90real=gfortran
+         elif "$F90" $mpishowopt | grep -q pathf90; then
+            F90real=pathf90
+         elif "$F90" $mpishowopt | grep -q pgf90; then
+            F90real=pgf90
+         elif "$F90" $mpishowopt | grep -q pgf77; then
+            F90real=pgf77
+         elif "$F90" $mpishowopt | grep -q g95; then
+            F90real=g95
+         elif "$F90" $mpishowopt | grep -q g77; then
+            F90real=g77
          else 
-            F77real=mpif77
+            F90real=mpif77
          fi
-         echo "Compiler in $F77 found to be $F77real ..."
+         echo "Compiler in $F90 found to be $F90real ..."
          ;;
       *)
-         F77real=$F77
+         F90real=$F90
          ;;
       esac   
 
 
-      case "$F77real" in
+      case "$F90real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -i8"
 	 mod="-fmod=$MODULE_DIR"
@@ -1663,9 +1663,9 @@ case $machine in
 # sure we use the correct flags
 #
       
-case "$F77" in
+case "$F90" in
       mpif*)
-         if "$F77" -show 2>&1 /dev/null; then
+         if "$F90" -show 2>&1 /dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1673,30 +1673,30 @@ case "$F77" in
             mpishowopt="-showme" 
          fi
 
-         if "$F77" $mpishowopt | grep -q ifc; then
-            F77real=ifc
-         elif "$F77" $mpishowopt | grep -q ifort; then
-            F77real=ifort
-         elif "$F77" $mpishowopt | grep -q gfortran; then
-            F77real=gfortran
-         elif "$F77" $mpishowopt | grep -q pathf90; then
-            F77real=pathf90
-         elif "$F77" $mpishowopt | grep -q pgf90; then
-            F77real=pgf90
-         elif "$F77" $mpishowopt | grep -q pgf77; then
-            F77real=pgf77
-         elif "$F77" $mpishowopt | grep -q g77; then
-            F77real=g77
+         if "$F90" $mpishowopt | grep -q ifc; then
+            F90real=ifc
+         elif "$F90" $mpishowopt | grep -q ifort; then
+            F90real=ifort
+         elif "$F90" $mpishowopt | grep -q gfortran; then
+            F90real=gfortran
+         elif "$F90" $mpishowopt | grep -q pathf90; then
+            F90real=pathf90
+         elif "$F90" $mpishowopt | grep -q pgf90; then
+            F90real=pgf90
+         elif "$F90" $mpishowopt | grep -q pgf77; then
+            F90real=pgf77
+         elif "$F90" $mpishowopt | grep -q g77; then
+            F90real=g77
          else 
-            F77real=mpif77
+            F90real=mpif77
          fi
-         echo "Compiler in $F77 found to be $F77real ..."
+         echo "Compiler in $F90 found to be $F90real ..."
          ;;
       *)
-         F77real=$F77
+         F90real=$F90
          ;;
       esac
-      case "$F77real" in
+      case "$F90real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -i8"
 	 mod="-fmod=$MODULE_DIR"
@@ -1822,7 +1822,7 @@ case "$F77" in
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
-      case "$F77" in
+      case "$F90" in
       g95)
          opt='-O3 -ffast-math -Wno=155'
 	 c_opt='-O3'
@@ -1853,18 +1853,18 @@ esac
 #  Add VAR_G77 is compiler is g77
 #  and add INSTALL_WRKMEM to the ccp-flags.
 #
-if [ "$F77" = "g77" ]; then
+if [ "$F90" = "g77" ]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
-if [ "$F77" = "mpif77" ]; then
+if [ "$F90" = "mpif77" ]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
 #
 # Replace spaces with commas if compiler is xlf.
 #
-if [ "$F77" = "xlf" ]; then
+if [ "$F90" = "xlf" ]; then
    cpp="-WF,`echo $cpp | tr ' ' ','`"
 fi
 
@@ -1929,7 +1929,7 @@ fi
 # Add the modifications that concern the module preprocessor statements
 #
 #
-case $F77 in
+case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      cpp="$cpp,\$(MODS)"
@@ -1954,7 +1954,7 @@ INCLUDE_DIR = $inc -I$MODULE_DIR
 DEPEND_FLAGS= $depend_flags 
 CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
-F77         = $F77
+F90         = $F90
 CC          = $CC
 RM          = rm
 AR          = ar
@@ -2024,23 +2024,23 @@ cat <<EOF>> Makefile.config
 .SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
 
 .F.o:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .F.g:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F
 .F.i:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F > \$*.i
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F > \$*.i
 .F90.o:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -c \$*.F90
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -c \$*.F90
 .F90.g:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -c \$*.F90
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -c \$*.F90
 .F90.i:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
 .f90.o:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTFLAGS) -cpp -c \$*.f90
 .f90.g:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
 .f90.i:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 .c.i:
@@ -2052,7 +2052,7 @@ EOF
 #
 cat <<EOF>> Makefile.config
 .F.a:
-$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
+$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 $tab\$(AR) \$(ARFLAGS) \$@ \$*.o
 $tab@ rm -f \$*.o
 EOF

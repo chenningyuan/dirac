@@ -901,7 +901,7 @@ F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
 	 $AUXOBJ \\
 	\$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
@@ -919,7 +919,7 @@ EOF
 cat <<EOF>> Makefile
 dirmpi.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(OBJSLAVE) \\
 	$AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
@@ -932,13 +932,13 @@ EOF
 cat <<EOF>> Makefile
 relccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB)
 
 mpiccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
@@ -964,7 +964,7 @@ cat <<EOF>> Makefile
 
 dirrci.x: GP_OBJ PD_OBJ \\
 	CI_OBJ
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirrci.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/dirrci.x \\
 	\$(DIRRCI_MAIN) \$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB)
 
@@ -977,31 +977,31 @@ EOF
 cat <<EOF>> Makefile
 
 utils	: GP_OBJ PD_OBJ UTIL_OBJ 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \\
 	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/mx2fit.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/mx2fit.x \\
 	utils/mx2fit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/labread.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/labread.x \\
 	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/rspread.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/rspread.x \\
 	utils/rspread.o 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
+	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
 	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
       # ... testing program for the quaternion jacobi diagonalization 
-	\$(F77) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
+	\$(F90) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/qjaco.x \\
 	utils/qjaco.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
-	\$(F77) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
+	\$(F90) \$(OPTFLAGS) \$(LDFLAGS) -o \$(INSTALLDIR)/vibcal.x \\
 	utils/vibcal.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
       # ...  testing program for the new  DIRAC memory allocator
-	\$(F77)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
+	\$(F90)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
 ta    : GP_OBJ PD_OBJ UTIL_OBJ 
       # ...  testing program for the new  DIRAC memory allocator
-	\$(F77)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
+	\$(F90)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
 EOF
@@ -1026,14 +1026,14 @@ EOF
 #     .... cleaning of individual modules
 ###
 if [ -n "$KRMCMOD" ]; then
-   echo '	cd krmc      ; $(MAKE) clean' >> Makefile
-   echo '	cd luciarel  ; $(MAKE) clean' >> Makefile
+   echo '	cd krmc     ; $(MAKE) clean' >> Makefile
+   echo '	cd luciarel ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$DFTMOD" ]; then
    echo '	cd dft      ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$FMMMOD" ]; then
-   echo '	cd fmm ; $(MAKE) clean' >> Makefile
+   echo '	cd fmm      ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$DNFMOD" ]; then
    echo '	cd densfit  ; $(MAKE) clean' >> Makefile
@@ -1045,10 +1045,10 @@ if [ -n "$ESRMOD" ]; then
    echo '	cd prp/esr  ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$XPPMOD" ]; then
-   echo '	cd prp/xpp   ; $(MAKE) clean' >> Makefile
+   echo '	cd prp/xpp  ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$EMBMOD" ]; then
-   echo '	cd embedding  ; $(MAKE) clean' >> Makefile
+   echo '	cd embedding; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$ADCMOD" ]; then
    echo '	cd reladc   ; $(MAKE) clean' >> Makefile
@@ -1057,24 +1057,24 @@ if [ -n "$ECPMOD" ]; then
    echo '	cd argosecp ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$CDFTMOD" ]; then
-   echo '	cd cdft  ; $(MAKE) clean' >> Makefile
+   echo '	cd cdft     ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$VISUALMOD" ]; then
-   echo '	cd visual  ; $(MAKE) clean' >> Makefile
+   echo '	cd visual   ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$AORESPONSEMOD" ]; then
-   echo '	cd aoresponse  ; $(MAKE) clean' >> Makefile
+   echo '	cd aoresponse ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$CAPMOD" ]; then
-   echo '	cd cap  ; $(MAKE) clean' >> Makefile
+   echo '	cd cap      ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$HSCCMOD" ]; then
-   echo '	cd hsmrcc  ; $(MAKE) clean' >> Makefile
+   echo '	cd hsmrcc   ; $(MAKE) clean' >> Makefile
    echo '	cd hsmrcc/second_quant ; $(MAKE) clean' >> Makefile
 fi
 # cleaning of *.o files
 if [ -n "$OOFMOD" ]; then
-   echo '	cd oof  ; $(MAKE) clean' >> Makefile
+   echo '	cd oof      ; $(MAKE) clean' >> Makefile
 fi
 ### also take care of cleaning of Fortran90/95 modules (ie of "*.mod" files)
 if [ -n "$MODULES" ]; then
@@ -1098,42 +1098,47 @@ EOF
 #      upon OOF modules.
 #
 #########################################################
-echo "       " >> Makefile
+echo " " >> Makefile
 if [ -n "$MODULES" ]; then
   echo '#--------------------------- # ' >> Makefile
   echo '#   Fortran90/95 modules     # ' >> Makefile
   echo '#--------------------------- # ' >> Makefile
-  echo 'mod  :             ;\' >> Makefile
-  echo '     cd  abacus     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
-  echo '     cd  gp         &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '# Note: gp/ modules must be done first when "make -j" ' >> Makefile
+  echo '#       because other directories use (some of) these ' >> Makefile
+  echo 'mod  : gpmod' >> Makefile
+  echo '	cd  abacus     &&   $(MAKE) mod' >> Makefile
   if [ -n "$VISUALMOD" ]; then
-  echo '     cd  visual     &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '	cd  visual     &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$AORESPONSEMOD" ]; then
-  echo '     cd  aoresponse &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '	cd  aoresponse &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$EMBMOD" ]; then
-  echo '     cd  embedding  &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '	cd  embedding  &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
-  echo '     cd  oof        &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '	cd  oof        &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$CAPMOD" ]; then
-  echo '     cd  cap        &&   $(MAKE) mod  &&  cd .. ;\' >> Makefile
+  echo '	cd  cap        &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$HSCCMOD" ]; then
-  echo '     cd  hsmrcc     &&   $(MAKE) mod  &&  cd .. ' >> Makefile
+  echo '	cd  hsmrcc     &&   $(MAKE) mod' >> Makefile
   fi
+  echo ' ' >> Makefile
+  echo 'gpmod  :' >> Makefile
+  echo '	cd  gp         &&   $(MAKE) mod' >> Makefile
+  echo ' ' >> Makefile
 #
 #
-  echo '#                                                    ' >> Makefile
-  echo '#   make all modules - recursive use of Makefile     ' >> Makefile
-  echo '#                                                    ' >> Makefile
-  echo '                                                     ' >> Makefile
-  echo 'ALL_F90MODS:  ;\'          >> Makefile
-  echo '        $(MAKE) mod'       >> Makefile
+  echo '#' >> Makefile
+  echo '#   make all modules - recursive use of Makefile' >> Makefile
+  echo '#' >> Makefile
+  echo ' ' >> Makefile
+  echo 'ALL_F90MODS:'          >> Makefile
+  echo '	$(MAKE) mod'   >> Makefile
 fi
-echo "       " >> Makefile
+echo ' ' >> Makefile
 #
 #
 #
@@ -1401,7 +1406,7 @@ EOF
 done
 for ff in $TEMPOOF; do
    cat <<EOF>> Makefile
-	cd $ff; \$(MAKE) f90dep
+	cd $ff; \$(MAKE) depend
 EOF
 done
 echo
