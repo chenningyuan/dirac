@@ -100,6 +100,8 @@ while [ $# != 0 ]; do
          valomitted=yes
          ;;
       *)
+         $echo "Invalid argument: ${arg}"
+         $echo "NOTE: $0 does not accept any arguments!"
          $echo $usage
          exit 
    esac
@@ -189,7 +191,9 @@ else
       ;;
    esac
 fi
+
 #
+
 cvslog=cvs_log;
 makelog=make_log;
 runlog=${run}_run.log;
@@ -208,6 +212,9 @@ backup $cvslog
 backup $runlog
 backup $txtlog
 backup $htmlog
+
+# >>-*-*-*-*> do cvs update and make if $cvs is yes
+
 cd ${testlastpath};
 #
 if [ "${cvs}" = "yes" ]; then
@@ -242,7 +249,9 @@ if [ "${cvs}" = "yes" ]; then
     exit 1 ;\
   }
 fi
-#
+
+# >>-*-*-*-*> Create job script "job_testlast.sh"
+
 cat <<EOF >job_testlast.sh
 #!/bin/bash
 #
@@ -269,27 +278,31 @@ else
     cat logs/$runlog
 fi
 EOF
+
+# >>-*-*-*-*> Run job script interactively or batch, depending on $queue
+
 if [ "${queue}" = "none" ]; then
-# The tests are default run interactively on the same machine as the cvs and make command is run.
-echo ' Starting test calculations interactively ... '
-chmod u+x job_testlast.sh
-./job_testlast.sh
+  # The tests are default run interactively on the same machine as the cvs and make command is run.
+  echo ' Starting test calculations interactively ... '
+  chmod u+x job_testlast.sh
+  ./job_testlast.sh
 else
-echo " Submitting test calculations to queue $queue ... "
-echo " When they are done please check the results in the directory ${testdir}/logs. "
-#
-# This is a script that works with the pbs (qsub) batch environment
-#
-#qsub -j oe -o $errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
-#
-# Other queue systems used in Amsterdam. Add you own as new comment line if you like
-#
-#tc: tcsub wrapper from tctools module
-chmod a+x job_testlast.sh; tcsub -a generic -n 1 -q $queue -p mpich job_testlast.sh $time
-#oldtc: qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
-#das:  /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
-#solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
-#teras: bsub <job_testlast.sh
+  echo " Submitting test calculations to queue $queue ... "
+  echo " When they are done please check the results in the directory ${testdir}/logs. "
+  #
+  # This is a script that works with the pbs (qsub) batch environment
+  #
+  # qsub -j oe -o $errfile -l walltime=$time,nodes=$nodes -q ${queue} -V job_testlast.sh
+  #
+  # Other queue systems used in Amsterdam. Add you own as new comment line if you like
+  #
+  #tc: tcsub wrapper from tctools module
+   chmod a+x job_testlast.sh; tcsub -a generic -n 1 -q $queue -p mpich job_testlast.sh $time
+  #oldtc: qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
+  #das:  /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+  #solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
+  #teras: bsub <job_testlast.sh
 fi
+
 #rm job_testlast.sh
 #
