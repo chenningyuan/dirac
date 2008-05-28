@@ -20,7 +20,9 @@ F77_OBJS = her1ave.o    her1car.o    her1drv.o    her1int.o\
 
 F90_OBJS = herrdn.o     hermodules.o
 
-F90_MODS = modules/conversion.mod  modules/file.mod  modules/readfile.mod
+F90_MODS = conversion.mod \
+           file.mod \
+           readfile.mod
  
 SLAVE_OBJS = herpar.o
 
