@@ -29,8 +29,6 @@
       module memory_allocator
 
          use memory_tracker
-
-#if defined GFORTRAN && GFORTRAN>=420
                   
          implicit none
          private
@@ -907,7 +905,6 @@
 !
 ! end of memory allocator module definition
 !
-#endif /* GFORTRAN >= 420 */
       end module memory_allocator
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
