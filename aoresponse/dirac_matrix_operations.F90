@@ -599,9 +599,9 @@ contains
                 ndat,maxdat,nref,maxref
         i = maxval(idx(1:nref))
         if (nref==0.or.ndat==0) return
-        print '("ref="<nref>i13/"dat="<i>i13/"idx="<nref>i2"  cnt="<i>i2/)', &
-                (loc(ref(j)%m),j=1,nref),(loc(dat(j)%d),j=1,i), &
-                idx(1:nref),cnt(1:i)
+!       print '("ref="<nref>i13/"dat="<i>i13/"idx="<nref>i2"  cnt="<i>i2/)', &
+!               (loc(ref(j)%m),j=1,nref),(loc(dat(j)%d),j=1,i), &
+!               idx(1:nref),cnt(1:i)
         call delabove(i)
     end subroutine
 

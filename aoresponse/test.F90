@@ -12,21 +12,6 @@ module aoresponse_test_m
 
 contains
 
-  function coordinate(i) result(c)
-    integer, intent(in) :: i
-    character(1)        :: c
-
-    select case (i)
-      case (1)
-        c = 'x'
-      case (2)
-        c = 'y'
-      case (3)
-        c = 'z'
-    end select
-
-  end function coordinate
-
   subroutine nr_electrons(S, D, F)
 
     type(matrix), intent(inout) :: S, D, F
@@ -79,7 +64,7 @@ contains
     call propenergy((/'EL'/), (/D/), e_i)
 
     do i = 1, 3
-      print '("@ -< "a1" > = " f16.10)', coordinate(i), -e_i(i)
+      print '("@ -< "a1" > = " f16.10)', fc(i), -e_i(i)
     end do
 
   end subroutine mu
@@ -107,7 +92,7 @@ contains
 
       do j = 1, 3
         ij = i + 3*(j-1)
-        print '("@" a10 a2 f20.10)', coordinate(i), coordinate(j), -e_ij(ij)
+        print '("@" a10 a2 f20.10)', fc(i), fc(j), -e_ij(ij)
       end do
     end do
 
@@ -171,7 +156,7 @@ contains
     real(kind_dp)               :: e_ijkl(3, 3, 3, 3)
     integer                     :: i, j, k, l
 
-    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small) call quit('gamma: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
