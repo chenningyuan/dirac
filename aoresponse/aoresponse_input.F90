@@ -93,8 +93,8 @@ contains
     call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
 
     aoresponse_skip_pp   = .false.
-    aoresponse_skip_pn   = .true.
-    aoresponse_threshold = 1.0d-5
+    aoresponse_skip_pn   = .false.
+    aoresponse_threshold = 1.0d-9
 
   end subroutine aoresponse_input
 
