@@ -6,20 +6,26 @@ module aoresponse_input_m
   implicit none
 
   type perturbation_op_t
-    integer :: sym, tr_sym, nr_components, typ
+    integer          :: pg_sym, tr_sym, nr_components, typ
     real(kind_dp)    :: prefactors(2)
     character(8)     :: op_name, labels(2)
   end type perturbation_op_t
 
-  integer, parameter :: max_nr_op = 137
+  integer, parameter            :: max_nr_op = 137
 
   type(perturbation_op_t), save :: perturbation_op(max_nr_op)
+
+  logical,                 save :: aoresponse_skip_pp
+  logical,                 save :: aoresponse_skip_pn
+
+  real(kind_dp),           save :: aoresponse_threshold
 
 contains
 
   function find_op_index(op_name) result(op_index)
+
     character(*), intent(in) :: op_name
-    integer         :: op_index, i
+    integer                  :: op_index, i
 
     op_index = -1
 
@@ -39,20 +45,19 @@ contains
                     typ, nr_components, &
                     prefactors,         &
                     labels)
-    character(7),     intent(in)  :: op_name
-    integer,          intent(in)  :: typ, nr_components
-    real(kind_dp),    intent(in)  :: prefactors(nr_components)
-    character(8),     intent(in)  :: labels(nr_components)
 
-    integer                       :: indxpr, isyxpr, itrxpr, i
+    character(7),  intent(in)  :: op_name
+    integer,       intent(in)  :: typ, nr_components
+    real(kind_dp), intent(in)  :: prefactors(nr_components)
+    character(8),  intent(in)  :: labels(nr_components)
+!   ----------------------------------------------------------------------------
+    integer                    :: indxpr, isyxpr, itrxpr, i
+    real(kind_dp), allocatable :: work(:)
+    integer                    :: lwork
 
-    real(kind_dp),    allocatable :: work(:)
-    integer                       :: lwork
+    lwork = 200000
+    call alloc(work, lwork)
 
-    lwork = 200000 !fixme
-    allocate(work(lwork))
-
-    write(*, *) 'typ = ', typ
     call xprind(op_name//'         ',   &
                 typ, nr_components,     &
                 prefactors,             &
@@ -60,9 +65,9 @@ contains
                 indxpr, isyxpr, itrxpr, &
                 work, lwork, 0)
 
-    deallocate(work)
+    call dealloc(work)
 
-    perturbation_op(indxpr)%sym           = isyxpr
+    perturbation_op(indxpr)%pg_sym        = isyxpr
     perturbation_op(indxpr)%tr_sym        = itrxpr
     perturbation_op(indxpr)%nr_components = nr_components
     perturbation_op(indxpr)%typ           = typ
@@ -86,6 +91,10 @@ contains
     call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
     call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
     call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
+
+    aoresponse_skip_pp   = .false.
+    aoresponse_skip_pn   = .false.
+    aoresponse_threshold = 1.0d-9
 
   end subroutine aoresponse_input
 

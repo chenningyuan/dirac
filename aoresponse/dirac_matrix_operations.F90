@@ -26,7 +26,6 @@ module dirac_matrix_operations_m
     integer                :: tr_sym            = 1
     integer                :: pg_sym            = 1
     integer                :: fermi_pointer     = 1
-    integer                :: dag               = 0
     real(kind_dp), pointer :: elements(:)
     logical                :: is_density_matrix = .false.
   end type matrix
@@ -49,10 +48,7 @@ module dirac_matrix_operations_m
   public norm
   public iszero
   public isdef
-  public compare_dp
-  public compare_dp_arrays
-  public compare_matrices
-  public matrix_stat
+  public matrixstats
 
   private
 
@@ -72,19 +68,23 @@ module dirac_matrix_operations_m
 
   interface operator(*)
     module procedure dp_times_matrix
-    module procedure i4_times_matrix
+!   module procedure i4_times_matrix
     module procedure i_times_matrix
     module procedure matrix_times_matrix
   end interface
 
   interface operator(/)
     module procedure divide_matrix_by_dp
-    module procedure divide_matrix_by_i4
+!   module procedure divide_matrix_by_i4
     module procedure divide_matrix_by_i
   end interface
 
   interface operator(**)
     module procedure matrix_dot_matrix
+  end interface
+
+  interface matrixstats
+    module procedure matrix_stat
   end interface
 
   interface norm
@@ -152,18 +152,6 @@ contains
 
   end subroutine mat_init
 
-  subroutine mat_free(a)
-
-    type(matrix), intent(inout) :: a
-
-    if (.not. associated(a%elements)) then
-      call quit('memory previously released')
-    end if
-
-    deallocate(a%elements)
-    nullify(a%elements)
-
-  end subroutine mat_free
 
 
 
@@ -203,6 +191,8 @@ contains
 
   end subroutine mat_print
 
+
+
   subroutine matrix_eq_matrix(a, b)
     type(matrix), intent(inout) :: a
     type(matrix), intent(in)    :: b
@@ -215,7 +205,7 @@ contains
       call quit('b undefined in a = b')
     end if
 
-    if (baddress(a) /= baddress(b)) call delref(a)
+    if(.not. associated(a%elements,b%elements)) call delref(A)
 
     a%nrow          = b%nrow
     a%ncol          = b%ncol
@@ -255,6 +245,31 @@ contains
     a%ncol = j
 
   end subroutine matrix_eq_zero
+
+  subroutine mat_free(a)
+    type(matrix),     intent(inout) :: a
+
+    integer                :: i, j
+
+    call delabove(i)
+
+    if (a%nrow == -1) then
+      call quit('a undefined in a = 0')
+    end if
+!   if (zero /= 0) then
+!     call quit('z must be zero in a = z')
+!   end if
+
+    i = a%nrow
+    j = a%ncol
+
+    call delref(a)
+
+    a%nrow = i
+    a%ncol = j
+
+  end subroutine mat_free
+
 
   function dp_times_matrix(r, a) result(b)
     real(kind_dp), intent(in) :: r
@@ -395,17 +410,10 @@ contains
 
       allocate(c%elements(c%nrow*c%ncol*c%nz))
 
-      if (a%dag == 0 .and. b%dag == 0) then
         call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
                    'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
                    'N', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
                    0.0d0,    ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
-      else if (a%dag == 1 .and. b%dag == 0) then
-        call qgemm(a%nrow, a%ncol, b%ncol, 1.0d0,  &
-                   'H', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
-                   'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
-                   0.0d0,    ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
-      end if
 
     end if
 
@@ -439,12 +447,13 @@ contains
 
     r = sum(a%elements*b%elements)
 
-    if (a%is_density_matrix) then
-      r = r*2.0d0
-    end if
-    if (b%is_density_matrix) then
-      r = r*2.0d0
-    end if
+!   if (a%is_density_matrix) then
+!     r = r*2.0d0
+!   end if
+!   if (b%is_density_matrix) then
+!     r = r*2.0d0
+!   end if
+    r = r*2.0d0
 
   end function matrix_dot_matrix
 
@@ -462,14 +471,22 @@ contains
 
   end function matrix_norm
 
-  function divide_matrix_by_dp(a, r) result(b)
-    type(matrix),  intent(in) :: a
-    real(kind_dp), intent(in) :: r
-    type(matrix)              :: b
+! function divide_matrix_by_dp(a, r) result(b)
+!   type(matrix),  intent(in) :: a
+!   real(kind_dp), intent(in) :: r
+!   type(matrix)              :: b
 
-    b = (1.0d0/r)*a
+!   b = (1.0d0/r)*a
 
-  end function divide_matrix_by_dp
+! end function divide_matrix_by_dp
+
+    function divide_matrix_by_dp(A,r) result(B)
+        type(Matrix),intent(in):: A
+        real*8,intent(in):: r; type(Matrix):: B
+        B = (1d0/r)*A
+    end function
+
+
 
   function divide_matrix_by_i(a, i) result(b)
     type(matrix),     intent(in) :: a
@@ -488,81 +505,6 @@ contains
     b = (1.0d0/i)*a
 
   end function divide_matrix_by_i4
-
-  function compare_dp_arrays(a, b, accept) result(ok)
-    real(kind_dp), intent(in)    :: a(:), b(:)
-    real(kind_dp), intent(in)    :: accept
-    logical                      :: ok
-
-    integer           :: i
-
-    if (size(a) /= size(b)) then
-      ok = .false.
-    else
-      ok = .true.
-
-      do i = 1, size(a)
-        if (abs(a(i) - b(i)) > accept) then
-          ok = .false.
-        end if
-      end do
-    end if
-
-  end function compare_dp_arrays
-
-  subroutine compare_matrices(a, b, accept, label)
-    type(matrix),  intent(in)           :: a, b
-    real(kind_dp), intent(in)           :: accept
-    character(*),  intent(in), optional :: label
-
-#include "priunit.h"
-
-    logical                             :: shape_ok, values_ok
-
-    shape_ok  = .true.
-
-    if (a%nrow /= b%nrow) then
-      shape_ok = .false.
-    end if
-    if (a%ncol /= b%ncol) then
-      shape_ok = .false.
-    end if
-    if (a%nz /= b%nz) then
-      shape_ok = .false.
-    end if
-
-    if (.not. shape_ok) then
-      write(*, *) 'matrix shapes not ok -- (', label, ')'
-    else
-      values_ok = compare_dp_arrays(a%elements, b%elements, accept)
-      if (.not. values_ok) then
-        write(*, *) 'matrix values not ok -- (', label, ')'
-      end if
-    end if
-
-    if (shape_ok .and. values_ok) then
-        write(*, *) '                  ok -- (', label, ')'
-    end if
-
-  end subroutine compare_matrices
-
-  subroutine compare_dp(r, s, accept, label)
-    real(kind_dp), intent(in)           :: r, s, accept
-    character(*),  intent(in), optional :: label
-
-#include "priunit.h"
-
-    if (abs(r - s) > accept) then
-      write(*, *) 'scalar check  not ok -- (', label, ')'
-    else
-      write(*, *) '                  ok -- (', label, ')'
-    end if
-
-  end subroutine compare_dp
-
-
-
-
 
 
 
@@ -630,25 +572,9 @@ contains
 
     function TrMatMulMat(A,B) result(r)
         type(Matrix),intent(in):: A,B; real*8:: r
-        if (A%nrow==-1) stop 'Matrix trab(A,B) : A undefined'
-        if (B%nrow==-1) stop 'Matrix trab(A,B) : B undefined'
-        if (A%nrow/=B%ncol) stop 'Matrix trab(A,B) : not compatible shapes'
-        if (A%ncol/=B%nrow) stop 'Matrix trab(A,B) : not compatible shapes'
-        r = 0d0
-        if (.not.(associated(A%elements).and.associated(B%elements))) return
-        r = r + 2*sum(transpose(reshape(A%elements(0*a%nrow*a%ncol + 1:1*a%nrow*a%ncol),(/A%nrow,A%ncol/))) &
-                               *reshape(B%elements(0*a%nrow*a%ncol + 1:1*a%nrow*a%ncol),(/B%nrow,B%ncol/)))
-        r = r + 2*sum(transpose(reshape(A%elements(1*a%nrow*a%ncol + 1:2*a%nrow*a%ncol),(/A%nrow,A%ncol/))) &
-                               *reshape(B%elements(1*a%nrow*a%ncol + 1:2*a%nrow*a%ncol),(/B%nrow,B%ncol/)))
-        r = r + 2*sum(transpose(reshape(A%elements(2*a%nrow*a%ncol + 1:3*a%nrow*a%ncol),(/A%nrow,A%ncol/))) &
-                               *reshape(B%elements(2*a%nrow*a%ncol + 1:3*a%nrow*a%ncol),(/B%nrow,B%ncol/)))
-        r = r + 2*sum(transpose(reshape(A%elements(3*a%nrow*a%ncol + 1:4*a%nrow*a%ncol),(/A%nrow,A%ncol/))) &
-                               *reshape(B%elements(3*a%nrow*a%ncol + 1:4*a%nrow*a%ncol),(/B%nrow,B%ncol/)))
+        r = dag(A)**B
 
     end function
-
-
-
 
     function matrix_is_zero(a) result(z)
         type(matrix),intent(in):: a; logical:: z
@@ -665,36 +591,52 @@ contains
 
 
 
-  subroutine matrix_stat(label)
+    subroutine matrix_stat(label)
+        character(*), intent(in), optional :: label
+        integer:: i,j
+        write(*, *) label
+        print '("ndat="i2" maxdat="i2" nref="i2" maxref="i2)', &
+                ndat,maxdat,nref,maxref
+        i = maxval(idx(1:nref))
+        if (nref==0.or.ndat==0) return
+        print '("ref="<nref>i13/"dat="<i>i13/"idx="<nref>i2"  cnt="<i>i2/)', &
+                (loc(ref(j)%m),j=1,nref),(loc(dat(j)%d),j=1,i), &
+                idx(1:nref),cnt(1:i)
+        call delabove(i)
+    end subroutine
 
-    character(*), intent(in), optional :: label
+! subroutine matrix_stat(label)
 
-    integer :: i, j
+!   character(*), intent(in), optional :: label
 
-    write(*, *)
-    write(*, *) 'label          : ', label
-    write(*, *) 'ndat        : ', ndat 
-    write(*, *) 'maxdat       : ', maxdat
-    write(*, *) 'nref         : ', nref
-    write(*, *) 'maxref        : ', maxref
+!   integer :: i, j
 
-    if (nref == 0 .or. ndat == 0) return
+!   write(*, *)
+!   write(*, *) 'label  : ', label
+!   write(*, *) 'ndat   : ', ndat
+!   write(*, *) 'maxdat : ', maxdat
+!   write(*, *) 'nref   : ', nref
+!   write(*, *) 'maxref : ', maxref
 
-    i = maxval(idx(1:nref))
+!   if (nref == 0 .or. ndat == 0) return
 
-    write(*, *) '      ref         ref_p   data_index'
-    do j = 1, nref
-      write(*, '(I10,I14,I13)') j, loc(ref(j)%m), idx(j)
-    end do
+!   i = maxval(idx(1:nref))
 
-    write(*, *) '     data        data_p      idx'
-    do j = 1, i
-      write(*, '(I10,I14,I13)') j, loc(dat(j)%d), idx(j)
-    end do
+!   write(*, *) '      ref       pointer          idx'
+!   do j = 1, nref
+!     write(*, '(I10,I14,I13)') j, loc(ref(j)%m), idx(j)
+!   end do
 
-    call delabove(i)
+!   write(*, *) '     data       pointer          cnt'
+!   do j = 1, i
+!     write(*, '(I10,I14,I13)') j, loc(dat(j)%d), cnt(j)
+!   end do
 
-  end subroutine matrix_stat
+!   call delabove(i)
+
+! end subroutine matrix_stat
+
+
 
 
     subroutine allocif()
@@ -732,12 +674,17 @@ contains
 
 
     subroutine delabove(k)
-        integer:: k,i,j
+        integer:: k,i,j, loc_k
         call allocif()
+!       loc_k = loc(k)
+!       write(*, *) 'loc_k', loc_k
         do i=nref,1,-1
             if ((loc(ref(i)%m)-loc(k))*stkdir<0) exit
             j = idx(i)
             cnt(j) = cnt(j)-1
+!if (cnt(j)/=0) print '("delabove delete ref "i13" -> "i13)',loc(ref(i)%m),loc(dat(j)%d)
+!if (cnt(j)==0) print '("delabove delete ref "i13" -> "i13" og deallok dat "i13)',&
+!loc(ref(i)%m),loc(dat(j)%d),loc(dat(j)%d)
             if (cnt(j)==0) then
                 deallocate(dat(j)%d)
                 ndat = ndat-1
@@ -760,6 +707,7 @@ contains
         same = .false.; if (found) same = associated(dat(k)%d,A%elements)
         !if A is recorded, but now is zero or A%elements is on the stack, remove the previous record
         if (found.and.zero) then
+!print '("insref    delete ref "i13" -> "i13)',loc(ref(j)%m),loc(dat(idx(j))%d)
              ref(j:nref-1) = ref(j+1:nref)
              idx(j:nref-1) = idx(j+1:nref)
              nref = nref-1
@@ -767,6 +715,7 @@ contains
         !if A was recorded as referring to some other data, remove that
         if (found.and..not.same) then
             cnt(k) = cnt(k)-1
+!if (cnt(k)==0) print '("insref   deallok dat "i13)',loc(dat(k)%d)
             if (cnt(k)==0) deallocate(dat(k)%d)
             if (cnt(k)==0) ndat = ndat-1
         endif
@@ -786,6 +735,7 @@ contains
         endif
         !insert A
         if (.not.zero) then
+!print '("insref   record ref "i13" -> "i13)',loc(A),loc(A%elements)
             ref(j)%m => A
             idx(j) = k
             dat(k)%d => A%elements
@@ -811,6 +761,7 @@ contains
             do i=maxdat,0,-1
                 if (cnt(i)==0) cycle
                 if (associated(A%elements,dat(i)%d)) exit
+!if (i==1) print '("delref   deallok dat "i13)',loc(A%elements)
                 if (i==1) deallocate(A%elements)
             enddo
         endif
@@ -820,6 +771,9 @@ contains
             idx(j:nref-1) = idx(j+1:nref)
             nref = nref-1
             cnt(k) = cnt(k)-1
+!if (cnt(k)/=0) print '("delref   delete ref "i13" -> "i13)',loc(A),loc(dat(k)%d)
+!if (cnt(k)==0) print '("delref   delete ref "i13" -> "i13" og deallok dat "i13)', &
+!loc(A),loc(dat(k)%d),loc(dat(k)%d)
             if (cnt(k)==0) then
                 deallocate(dat(k)%d)
                 ndat = ndat-1
@@ -827,5 +781,6 @@ contains
         endif
         A%nrow=-1; nullify(A%elements)
     end subroutine
+
 
 end module dirac_matrix_operations_m

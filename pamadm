@@ -818,8 +818,9 @@ aoresponse/dirac_matrix_operations.o \\
 aoresponse/dirac_interface.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
-aoresponse/proptest.o \\
+aoresponse/test.o \\
 aoresponse/helper.o \\
+aoresponse/aoresponse_xc.o \\
 aoresponse/aoresponse_main.o
 EOF
 fi

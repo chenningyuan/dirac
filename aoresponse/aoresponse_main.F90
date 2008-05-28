@@ -1,68 +1,15 @@
 module aoresponse_main_m
 
   use kinds_m
-! use memory_allocator
+  use memory_allocator
   use dirac_matrix_operations_m
   use dirac_interface_m
-  use propint
-  use pertdens
-  use proptest
-! use aoresponse_input_m
+  use aoresponse_test_m
+  use aoresponse_xc_m
 
   implicit none
 
-! public something
-
-! private
-
 contains
-
-  subroutine test_matrix_stat()
-
-    type(matrix) :: A, B, C
-
-                            call matrix_stat('entering subroutine   ')
-    call mat_init(A, 5, 5); call matrix_stat('call mat_init(A, 5, 5)')
-    A = A                 ; call matrix_stat('A = A                 ')
-    B = 2.0d0*A           ; call matrix_stat('B = 2.0d0*A           ')
-    C = A + B             ; call matrix_stat('C = A + B             ')
-    C = C/2.0d0           ; call matrix_stat('C = C/2.0d0           ')
-
-    call test_matrix_stat_sub()
-    call test_matrix_stat_sub()
-    call test_matrix_stat_sub()
-
-    call mat_free(A)      ; call matrix_stat('call mat_free(A)      ')
-    B = 0                 ; call matrix_stat('B = 0                 ')
-    C = 0                 ; call matrix_stat('C = 0                 ')
-                            call matrix_stat('leaving subroutine    ')
-
-  end subroutine test_matrix_stat
-
-  subroutine test_matrix_stat_sub()
-
-    type(matrix) :: A, B, C
-
-                            call matrix_stat('entering subroutine   ')
-    call mat_init(A, 5, 5); call matrix_stat('call mat_init(A, 5, 5)')
-    A = A                 ; call matrix_stat('A = A                 ')
-    B = 2.0d0*A           ; call matrix_stat('B = 2.0d0*A           ')
-    C = A + B             ; call matrix_stat('C = A + B             ')
-    C = C/2.0d0           ; call matrix_stat('C = C/2.0d0           ')
-
-
-    call mat_free(A)      ; call matrix_stat('call mat_free(A)      ')
-    B = 0                 ; call matrix_stat('B = 0                 ')
-    C = 0                 ; call matrix_stat('C = 0                 ')
-                            call matrix_stat('leaving subroutine    ')
-
-  end subroutine test_matrix_stat_sub
-
-
-
-
-
-
 
   subroutine aoresponse_driver()
 
@@ -70,58 +17,121 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
-    type(matrix)               :: S
-    type(matrix)               :: C
-    type(matrix)               :: D_mo
-    type(matrix)               :: D
-    type(matrix)               :: F
-
+    type(matrix)               :: S, C, D_mo, D, F
     real(kind_dp), allocatable :: freq(:)
-    integer           :: nr_freq = 1
+    integer                    :: nr_freq = 4
 
-    allocate(freq(nr_freq))
+    call alloc(freq, nr_freq)
     freq = 0.0d0
 
-!!!!!!!!!!
-    freq(1) = 0.00d0
-    freq(1) = 0.02d0
-!!!!!!!!!!
-
-    write(*, *) 'first follows'
-!   call matrixstats()
     call get_S(S)
-    write(*, *) 'second follows'
-!   call matrixstats()
 
     call get_C(C)
-!   call matrixstats()
-    call get_D_mo(D_mo)
-!   call matrixstats()
 
-    D = C*D_mo*dag(C)
-    D_mo = 0
-!   call matrixstats()
+    call mat_init(D, ntbas(0), ntbas(0))
+    D%elements = 0.0d0
+
+    call genden(D%elements, C%elements, 1, 0)
+
     C    = 0
-!   call matrixstats()
+
+!   call get_D_mo(D_mo)
+!   D = C*D_mo*dag(C)
+!   D_mo = 0
 
     D = D/2.0d0
     D%is_density_matrix = .true.
 
-
     call get_F(F)
 
-    call dipmom(S, D, F)
-!   call polari(S, D, F, freq(1))
+    call nr_electrons(S, D, F)
+    call energy(S, D, F)
+    call mu(S, D, F)
 
-    write(*, *) 'compare: -4.828661928957 at 0.00'
-    write(*, *) 'compare: -4.833040214626 at 0.02'
+!   freq(1) = 0.00d0
+!   call alpha(S, D, F, freq(1))
+
+!   freq(1) = 0.02d0
+!   call alpha(S, D, F, freq(1))
+
+!   freq(1) = 0.07d0
+!   call alpha(S, D, F, freq(1))
+
+
+
+
+
+
+
+
+    freq(1) = -0.07d0
+    freq(2) =  0.07d0
+    call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+    freq(1) = -0.14d0
+    freq(2) =  0.07d0
+    call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+    freq(1) = -0.21d0
+    freq(2) =  0.14d0
+    call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+
+!   freq(3) =  0.00d0
+!   freq    =  0.00d0
+
+!   call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
 
     S    = 0
     D    = 0
     F    = 0
 
-    deallocate(freq)
+    call dealloc(freq)
 
   end subroutine aoresponse_driver
+
+  subroutine test_matrix_stat()
+
+    type(matrix) :: A, B, C
+
+                            call matrixstats('entering subroutine   ')
+
+    call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
+    A = A                 ; call matrixstats('A = A                 ')
+    B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
+    C = A + B             ; call matrixstats('C = A + B             ')
+    C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
+
+    call test_matrix_stat_sub()
+    call test_matrix_stat_sub()
+    call test_matrix_stat_sub()
+
+    A = 0                 ; call matrixstats('A = 0                 ')
+    B = 0                 ; call matrixstats('B = 0                 ')
+    C = 0                 ; call matrixstats('C = 0                 ')
+
+                            call matrixstats('leaving subroutine    ')
+
+  end subroutine test_matrix_stat
+
+  subroutine test_matrix_stat_sub()
+
+    type(matrix) :: A, B, C
+
+                            call matrixstats('entering subroutine   ')
+
+    call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
+    A = A                 ; call matrixstats('A = A                 ')
+    B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
+    C = A + B             ; call matrixstats('C = A + B             ')
+    C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
+
+    A = 0                 ; call matrixstats('A = 0                 ')
+    B = 0                 ; call matrixstats('B = 0                 ')
+    C = 0                 ; call matrixstats('C = 0                 ')
+
+                            call matrixstats('leaving subroutine    ')
+
+  end subroutine test_matrix_stat_sub
 
 end module aoresponse_main_m
