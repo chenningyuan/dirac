@@ -7,6 +7,9 @@ module aoresponse_test_m
 
     implicit none
 
+    character(1)  :: fc(3) = (/'x', 'y', 'z'/)
+    real(kind_dp) :: small = 1.0d-10
+
 contains
 
   function coordinate(i) result(c)
@@ -114,15 +117,13 @@ contains
 
     type(matrix), intent(inout) :: S, D, F
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3), D_j(3), D_ij(3*3)
-    type(matrix)                :: F_i(3), F_j(3), F_ij(3*3)
+    type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3)
+    type(matrix)                :: F_i(3), F_j(3), F_ij(3, 3)
     real(kind_dp)               :: w(3)
-    real(kind_dp)               :: e_ijk(3*3*3)
-    integer                     :: i, j, ij, k, ijk
+    real(kind_dp)               :: e_ijk(3, 3, 3)
+    integer                     :: i, j, k
 
-    type(matrix)                :: M
-
-    if (abs(sum(w)) > 1.0d-15) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -131,23 +132,10 @@ contains
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
 
-!   do i = 1, 3
-!     call mat_print(D_i(i))
-!     M = dag(D_j(i))
-!     call mat_print(M)
-!   end do
-!   call quit('over and out')
-
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
-
-!   write(*, *) 'blub after pertdensfock'
-!   call mat_print(D_ij(3))
-!   M = dag(D_ij(7))
-!   call mat_print(M)
 
     e_ijk = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
-
 
     print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
 
@@ -159,19 +147,89 @@ contains
       F_j(i) = 0
 
       do j = 1, 3
-        ij = i + 3*(j-1)
 
-        D_ij(ij) = 0
-        F_ij(ij) = 0
+        D_ij(i, j) = 0
+        F_ij(i, j) = 0
 
         do k = 1, 3
-          ijk = i + 3*(j-1) + 9*(k-1)
-          print '("@" a10 a2 a2 f18.10)', coordinate(i), coordinate(j), coordinate(k), -e_ijk(ijk)
+          if (abs(e_ijk(i, j, k)) > small) then
+            print '("@" a10 a2 a2 f18.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
+          end if
         end do
       end do
     end do
 
   end subroutine beta
+
+  subroutine gamma(S, D, F, w)
+
+    type(matrix), intent(inout) :: S, D, F
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
+    type(matrix)                :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
+    real(kind_dp)               :: w(4)
+    real(kind_dp)               :: e_ijkl(3, 3, 3, 3)
+    integer                     :: i, j, k, l
+
+    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_k/), (/F, F_i, F_k/), D_ik, F_ik, w=(/w(1), w(3)/))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_j, D_k/), (/F, F_j, F_k/), D_jk, F_jk, w=w(2:3))
+
+    call pertdensfock((/'EL', 'EL', 'EL'/), S, (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk/), &
+                                               (/F, F_i, F_j, F_k, F_ij, F_ik, F_jk/), &
+                                               D_ijk, F_ijk, w=w(1:3))
+
+    e_ijkl = 0.0d0
+    call propenergy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
+
+    print '("@ gamma (w = "4f7.3")")', w(1), w(2), w(3), w(4)
+
+    do i = 1, 3
+
+      D_i(i) = 0
+      D_j(i) = 0
+      D_k(i) = 0
+      F_i(i) = 0
+      F_j(i) = 0
+      F_k(i) = 0
+
+      do j = 1, 3
+
+        D_ij(i, j) = 0
+        D_ik(i, j) = 0
+        D_jk(i, j) = 0
+        F_ij(i, j) = 0
+        F_ik(i, j) = 0
+        F_jk(i, j) = 0
+
+        do k = 1, 3
+
+          D_ijk(i, j, k) = 0
+          F_ijk(i, j, k) = 0
+
+          do l = 1, 3
+            if (abs(e_ijkl(i, j, k, l)) > small) then
+              print '("@" a10 a2 a2 a2 f16.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
+            end if
+          end do
+        end do
+      end do
+    end do
+
+  end subroutine gamma
+
+
+
 
 
 
@@ -238,28 +296,5 @@ subroutine beta_debug(S,D,F,w)
     print*
 end subroutine
 
-
-subroutine gamma(S,D,F,w)
-    type(Matrix):: S,D,Df(3),De(3),Dg(3),Dfe(3*3),Dfg(3*3),Deg(3*3),Dfeg(3*3*3)
-    type(Matrix)::   F,Ff(3),Fe(3),Fg(3),Ffe(3*3),Ffg(3*3),Feg(3*3),Ffeg(3*3*3)
-    real*8:: w(4),Effff(3*3*3*3); integer:: i,j,k
-    S=S; D=D; F=F !track them
-    if (abs(sum(w))>1d-15) call QUIT('PropTest/Hy2Polari: sum(w) should be zero!')
-    call PertDensFock((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
-    call PertDensFock((/'EL'/),S,(/D/),(/F/),De,Fe,w=w(2:2))
-    call PertDensFock((/'EL'/),S,(/D/),(/F/),Dg,Fg,w=w(3:3))
-    call PertDensFock((/'EL','EL'/),S,(/D,Df,De/),(/F,Ff,Fe/),Dfe,Ffe,w=w(1:2))
-    call PertDensFock((/'EL','EL'/),S,(/D,Df,Dg/),(/F,Ff,Fg/),Dfg,Ffg,w=(/w(1),w(3)/))
-    call PertDensFock((/'EL','EL'/),S,(/D,De,Dg/),(/F,Fe,Fg/),Deg,Feg,w=w(2:3))
-    call PertDensFock((/'EL','EL','EL'/),S,(/D,Df,De,Dg,Dfe,Dfg,Deg/) &
-                 ,(/F,Ff,Fe,Fg,Ffe,Ffg,Feg/),Dfeg,Ffeg,w=w(1:3))
-    Effff=0; call PropEnergy((/'EL'/),(/D,Df,De,Dg,Dfe,Dfg,Deg,Dfeg/) &
-                            ,Effff,b=(/3,3,3/))
-    print '("Second hyperpolarizability -Effff w="4f6.3/27(3f18.13/))',w,-Effff
-    do i=1,3; Df(i)=0; De(i)=0; Dg(i)=0; Ff(i)=0; Fe(i)=0; Fg(i)=0; enddo
-    do i=1,3*3; Dfe(i)=0; Dfg(i)=0; Deg(i)=0; Ffe(i)=0; Ffg(i)=0; Feg(i)=0; enddo
-    do i=1,3*3*3; Dfeg(i)=0; Ffeg(i)=0; enddo
-    print*
-end subroutine
 
 end module aoresponse_test_m
