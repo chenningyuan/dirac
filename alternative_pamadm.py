@@ -271,6 +271,8 @@ for directory in directory_l:
 
 blacklist = []
 
+blacklist.append('gp/execinfo.o')
+blacklist.append('gp/stacktraverse.o')
 blacklist.append('pdpack/arhpack.o')
 blacklist.append('pdpack/gpblas.o')
 blacklist.append('pdpack/linextra.o')
