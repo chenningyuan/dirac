@@ -45,7 +45,7 @@ contains
     call get_F(F)
 
     if (test_nr_electrons) then
-      call nr_electrons(S, D, F)
+      call nr_electrons(S, D)
     end if
 
     if (test_energy) then

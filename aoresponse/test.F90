@@ -12,13 +12,12 @@ module aoresponse_test_m
 
 contains
 
-  subroutine nr_electrons(S, D, F)
+  subroutine nr_electrons(S, D)
 
-    type(matrix), intent(inout) :: S, D, F
+    type(matrix), intent(inout) :: S, D
 
     S = 1.0d0*S
     D = 1.0d0*D
-    F = 1.0d0*F
 
     write(*, *) 'electron count from S**D:', S**D
 
