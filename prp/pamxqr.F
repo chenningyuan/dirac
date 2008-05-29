@@ -2446,7 +2446,10 @@ C
       CALL MEMGET('REAL',KF3MO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF2MO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF1MO,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMO,N2ORBXQ,WORK,KFREE,LFREE)
+
+!     radovan: this is because GETFCK assumes the dimension N2BBASXQ
+!     CALL MEMGET('REAL',KFMO,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Read in the Fock matrix in MO basis from file, and transform the 
 C     modified Fock matrices constructed above from AO to MO basis
