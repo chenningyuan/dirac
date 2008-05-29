@@ -1476,8 +1476,13 @@ C      ... to secure that no spin-orbit terms appear
          IF (.NOT.SPINFR.AND.IPA.EQ.0) CALL QUIT(
      & 'You forgot to specify .SPINFR in the Hamiltonian input!')
          DK2SO1 = .FALSE.
-         IF (SPINFR.AND.IPA.GT.0) CALL QUIT(
-     & 'Wrong .SPINFR in the Hamiltonian input with the AMFI on!')
+         IF (SPINFR.AND.IPA.GT.0) THEN 
+          WRITE(LUPRI,'(/,2x,a)') 'EXTR_BSS_INFO: Wrong .SPINFR in the'
+     &    //' Hamiltonian input with the AMFI ... discard it !'
+          CALL QUIT(
+     &    'Wrong .SPINFR in the Hamiltonian input with the AMFI on!')
+         ENDIF
+
          IF (.NOT.SPINFR.AND.IPA.GT.0) THEN
           SPINFR=.TRUE.
           ELIM_SF=.TRUE.

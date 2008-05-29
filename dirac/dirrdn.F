@@ -4536,12 +4536,13 @@ CMI     IF (IBSS.GT.999) THEN
      &     '     2) B. A. Hess, C. M. Marian, U. Wahlgren,'//
      &     ' and O. Gropen',
      &     '        Chem. Phys. Lett. 251, 365 (1996)',
-     &     '   Adding :',
-     &     '     Mean-field spin-same orbit'
+     &     '     Adding :',
+     &     '       some AMFI contribution'//
+     &     ' (see output from EXTR_BSS_INFO below)'  
 CMI       IF (GAUNT) THEN
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
-     &     '     Mean-field spin-other orbit'
+     &     '     N.B: Gaunt key is on '
           ENDIF
           IF (IMFCH.NE.0) THEN
             WRITE(LUPRI,'(1X,A,I4)')
