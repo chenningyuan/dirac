@@ -20,13 +20,13 @@ contains
     type(matrix)               :: S, C, D_mo, D, F
     real(kind_dp), allocatable :: freq(:)
     integer                    :: nr_freq = 4
-    logical                    :: test_alpha = .false.
-    logical                    :: test_beta  = .false.
-    logical                    :: test_gamma = .true.
 
-
-
-
+    logical :: test_nr_electrons = .true.
+    logical :: test_energy       = .true.
+    logical :: test_mu           = .true.
+    logical :: test_alpha        = .false.
+    logical :: test_beta         = .false.
+    logical :: test_gamma        = .true.
 
     call alloc(freq, nr_freq)
     freq = 0.0d0
@@ -34,48 +34,45 @@ contains
     call get_S(S)
 
     call get_C(C)
+    call get_D_mo(D_mo)
 
-    call mat_init(D, ntbas(0), ntbas(0))
-    D%elements = 0.0d0
-
-    call genden(D%elements, C%elements, 1, 0)
-
-    C    = 0
-
-!   call get_D_mo(D_mo)
-!   D = C*D_mo*dag(C)
-!   D_mo = 0
-
+    D = C*D_mo*dag(C)
     D = D/2.0d0
-    D%is_density_matrix = .true.
+
+    D_mo = 0
+    C    = 0
 
     call get_F(F)
 
-    call nr_electrons(S, D, F)
-    call energy(S, D, F)
-    call mu(S, D, F)
+    if (test_nr_electrons) then
+      call nr_electrons(S, D, F)
+    end if
 
-!   freq(1) = 0.00d0
-    call alpha(S, D, F, freq(1))
+    if (test_energy) then
+      call energy(S, D, F)
+    end if
 
-!   freq(1) = 0.02d0
-!   call alpha(S, D, F, freq(1))
-
-!   freq(1) = 0.07d0
-!   call alpha(S, D, F, freq(1))
+    if (test_mu) then
+      call mu(S, D, F)
+    end if
 
     if (test_alpha) then
+      freq(1) =  0.00d0
+      call alpha(S, D, F, (/freq(1), -freq(1)/))
+
+      freq(1) = -0.07d0
+      call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if
 
     if (test_beta) then
       freq(1) = -0.07d0
       freq(2) =  0.07d0
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-  
+
       freq(1) = -0.14d0
       freq(2) =  0.07d0
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-  
+
       freq(1) = -0.21d0
       freq(2) =  0.14d0
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))

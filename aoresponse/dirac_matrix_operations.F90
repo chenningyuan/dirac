@@ -21,7 +21,6 @@ module dirac_matrix_operations_m
   type matrix
     integer       :: nrow              = -1 ! operations on uninitialized matrices will fail
     integer       :: ncol              
-    integer                :: nz                = 4
     integer                :: ih_sym            = 1
     integer                :: tr_sym            = 1
     integer                :: pg_sym            = 1
@@ -68,15 +67,11 @@ module dirac_matrix_operations_m
 
   interface operator(*)
     module procedure dp_times_matrix
-!   module procedure i4_times_matrix
-    module procedure i_times_matrix
     module procedure matrix_times_matrix
   end interface
 
   interface operator(/)
     module procedure divide_matrix_by_dp
-!   module procedure divide_matrix_by_i4
-    module procedure divide_matrix_by_i
   end interface
 
   interface operator(**)
@@ -148,7 +143,7 @@ contains
     a%ncol = ncol
 
     nullify(a%elements)
-    allocate(a%elements(a%nrow*a%ncol*a%nz))
+    allocate(a%elements(a%nrow*a%ncol*nz))
 
   end subroutine mat_init
 
@@ -177,13 +172,13 @@ contains
     write(*, *) 'fermi_pointer = ', a%fermi_pointer
 
     if (associated(a%elements)) then
-      call prqmat(a%elements,   &
-                  a%nrow,       &
-                  a%ncol,       &
-                  a%nrow,       &
-                  a%ncol,       &
-                  a%nz,         &
-                  ipqtoq(1, 0), &
+      call prqmat(a%elements,            &
+                  a%nrow,                &
+                  a%ncol,                &
+                  a%nrow,                &
+                  a%ncol,                &
+                  nz,                    &
+                  ipqtoq(1, a%pg_sym-1), &
                   lupri)
     else
       write(*, *) 'all elements zero'
@@ -209,7 +204,6 @@ contains
 
     a%nrow          = b%nrow
     a%ncol          = b%ncol
-    a%nz            = b%nz
     a%ih_sym        = b%ih_sym
     a%tr_sym        = b%tr_sym
     a%pg_sym        = b%pg_sym
@@ -221,11 +215,32 @@ contains
 
   end subroutine matrix_eq_matrix
 
+  subroutine mat_free(a)
+    type(matrix),     intent(inout) :: a
+
+    integer                :: i, j, k
+
+    call delabove(i)
+
+    if (a%nrow == -1) then
+      call quit('a undefined in a = 0')
+    end if
+
+    i = a%nrow
+    j = a%ncol
+
+    call delref(a)
+
+    a%nrow = i
+    a%ncol = j
+
+  end subroutine mat_free
+
   subroutine matrix_eq_zero(a, zero)
     type(matrix),     intent(inout) :: a
     integer,          intent(in)    :: zero
 
-    integer                :: i, j
+    integer                :: i, j, k
 
     call delabove(i)
 
@@ -246,31 +261,6 @@ contains
 
   end subroutine matrix_eq_zero
 
-  subroutine mat_free(a)
-    type(matrix),     intent(inout) :: a
-
-    integer                :: i, j
-
-    call delabove(i)
-
-    if (a%nrow == -1) then
-      call quit('a undefined in a = 0')
-    end if
-!   if (zero /= 0) then
-!     call quit('z must be zero in a = z')
-!   end if
-
-    i = a%nrow
-    j = a%ncol
-
-    call delref(a)
-
-    a%nrow = i
-    a%ncol = j
-
-  end subroutine mat_free
-
-
   function dp_times_matrix(r, a) result(b)
     real(kind_dp), intent(in) :: r
     type(matrix),  intent(in) :: a
@@ -286,7 +276,6 @@ contains
 
     b%nrow          = a%nrow
     b%ncol          = a%ncol
-    b%nz            = a%nz
     b%ih_sym        = a%ih_sym
     b%tr_sym        = a%tr_sym
     b%pg_sym        = a%pg_sym
@@ -295,7 +284,7 @@ contains
     nullify(b%elements)
 
     if (r /= 0 .and. associated(a%elements)) then
-      allocate(b%elements(b%nrow*b%ncol*b%nz))
+      allocate(b%elements(b%nrow*b%ncol*nz))
       b%elements = r*a%elements
     end if
 
@@ -323,18 +312,18 @@ contains
     if (a%ncol /= b%ncol) then
       call quit('different shapes in c = a+b')
     end if
-    if (a%nz /= b%nz) then
-      call quit('different shapes in c = a+b')
-    end if
 
-    c%nrow = a%nrow
-    c%ncol = a%ncol
-    c%nz   = a%nz
+    c%nrow          = b%nrow
+    c%ncol          = b%ncol
+    c%ih_sym        = b%ih_sym
+    c%tr_sym        = b%tr_sym
+    c%pg_sym        = b%pg_sym
+    c%fermi_pointer = b%fermi_pointer
 
     nullify(c%elements)
 
     if (associated(a%elements) .and. associated(b%elements)) then
-      allocate(c%elements(c%nrow*c%ncol*c%nz))
+      allocate(c%elements(c%nrow*c%ncol*nz))
       c%elements = a%elements + b%elements
     else if (associated(a%elements)) then
       c%elements => a%elements
@@ -362,23 +351,6 @@ contains
 
   end function matrix_negative
 
-  function i_times_matrix(i, a) result(b)
-    integer,          intent(in) :: i
-    type(matrix),     intent(in) :: a
-    type(matrix)                 :: b
-
-    b = (-1.0d0*i)*a
-
-  end function i_times_matrix
-
-  function i4_times_matrix(i, a) result(b)
-    integer, intent(in) :: i
-    type(matrix),     intent(in) :: a
-    type(matrix)                 :: b
-
-    b = (-1.0d0*i)*a
-
-  end function i4_times_matrix
 
   function matrix_times_matrix(a, b) result(c)
 
@@ -386,6 +358,7 @@ contains
     type(matrix)             :: c
 
     integer         :: i, k, l, m, n
+    integer         :: iq(4)
 
     call delabove(i)
 
@@ -398,22 +371,23 @@ contains
     if (a%ncol /= b%nrow) then
       call quit('incompatible shapes in c = a*b')
     end if
-    if (a%nz /= b%nz) then
-      call quit('incompatible shapes in c = a*b')
-    end if
 
     c%nrow = a%nrow
     c%ncol = b%ncol
-    c%nz   = a%nz
+    c%pg_sym = 1 + ieor(a%pg_sym-1, b%pg_sym-1)
 
     if (associated(a%elements) .and. associated(b%elements)) then
 
-      allocate(c%elements(c%nrow*c%ncol*c%nz))
+      allocate(c%elements(c%nrow*c%ncol*nz))
 
-        call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
-                   'N', 'N', ipqtoq(1, 0), a%elements, a%nrow, a%ncol, a%nz, &
-                   'N', 'N', ipqtoq(1, 0), b%elements, b%nrow, b%ncol, b%nz, &
-                   0.0d0,    ipqtoq(1, 0), c%elements, c%nrow, c%ncol, c%nz)
+      call iqpack(ipqtoq(1, a%pg_sym-1), nz, &
+                  ipqtoq(1, b%pg_sym-1), nz, &
+                  iq                   , nz)
+
+      call qgemm(a%nrow, b%ncol, a%ncol, 1.0d0,  &
+                 'N', 'N', ipqtoq(1, a%pg_sym-1), a%elements, a%nrow, a%ncol, nz, &
+                 'N', 'N', ipqtoq(1, b%pg_sym-1), b%elements, b%nrow, b%ncol, nz, &
+                 0.0d0,    iq                   , c%elements, c%nrow, c%ncol, nz)
 
     end if
 
@@ -437,23 +411,12 @@ contains
     if (a%ncol /= b%ncol) then
       call quit('different shapes in r = a**b')
     end if
-    if (a%nz /= b%nz) then
-      call quit('different shapes in r = a**b')
-    end if
 
     r = 0.0d0
 
     if (.not.(associated(a%elements) .and. associated(b%elements))) return
 
-    r = sum(a%elements*b%elements)
-
-!   if (a%is_density_matrix) then
-!     r = r*2.0d0
-!   end if
-!   if (b%is_density_matrix) then
-!     r = r*2.0d0
-!   end if
-    r = r*2.0d0
+    if (ieor(a%pg_sym-1, b%pg_sym-1) == 0) r = 2.0d0*sum(a%elements*b%elements)
 
   end function matrix_dot_matrix
 
@@ -471,41 +434,14 @@ contains
 
   end function matrix_norm
 
-! function divide_matrix_by_dp(a, r) result(b)
-!   type(matrix),  intent(in) :: a
-!   real(kind_dp), intent(in) :: r
-!   type(matrix)              :: b
-
-!   b = (1.0d0/r)*a
-
-! end function divide_matrix_by_dp
 
     function divide_matrix_by_dp(A,r) result(B)
         type(Matrix),intent(in):: A
         real*8,intent(in):: r; type(Matrix):: B
+
+
         B = (1d0/r)*A
     end function
-
-
-
-  function divide_matrix_by_i(a, i) result(b)
-    type(matrix),     intent(in) :: a
-    integer,          intent(in) :: i
-    type(matrix)                 :: b
-
-    b = (1.0d0/i)*a
-
-  end function divide_matrix_by_i
-
-  function divide_matrix_by_i4(a, i) result(b)
-    type(matrix),     intent(in) :: a
-    integer, intent(in) :: i
-    type(matrix)                 :: b
-
-    b = (1.0d0/i)*a
-
-  end function divide_matrix_by_i4
-
 
 
 
@@ -538,6 +474,8 @@ contains
     type(matrix)             :: b
 
     integer         :: i
+    integer         :: iz
+    real(kind_dp)         :: factor
 
     call delabove(i)
 
@@ -547,23 +485,25 @@ contains
 
     b%ncol          = a%nrow
     b%nrow          = a%ncol
-    b%nz            = a%nz
     b%ih_sym        = a%ih_sym
     b%tr_sym        = a%tr_sym
     b%pg_sym        = a%pg_sym
     b%fermi_pointer = a%fermi_pointer
 
     if (associated(a%elements)) then
-      allocate(b%elements(b%nrow*b%ncol*b%nz))
+      allocate(b%elements(b%nrow*b%ncol*nz))
 
-      call transpose_block( 1.0d0, a%elements(0*a%nrow*a%ncol + 1:1*a%nrow*a%ncol), a%nrow, a%ncol, &
-                                   b%elements(0*a%nrow*a%ncol + 1:1*a%nrow*a%ncol))
-      call transpose_block(-1.0d0, a%elements(1*a%nrow*a%ncol + 1:2*a%nrow*a%ncol), a%nrow, a%ncol, &
-                                   b%elements(1*a%nrow*a%ncol + 1:2*a%nrow*a%ncol))
-      call transpose_block(-1.0d0, a%elements(2*a%nrow*a%ncol + 1:3*a%nrow*a%ncol), a%nrow, a%ncol, &
-                                   b%elements(2*a%nrow*a%ncol + 1:3*a%nrow*a%ncol))
-      call transpose_block(-1.0d0, a%elements(3*a%nrow*a%ncol + 1:4*a%nrow*a%ncol), a%nrow, a%ncol, &
-                                   b%elements(3*a%nrow*a%ncol + 1:4*a%nrow*a%ncol))
+      do iz = 1, nz
+        if (ipqtoq(iz, a%pg_sym-1) > 1) then
+          factor = -1.0
+        else
+          factor =  1.0
+        end if
+
+        call transpose_block(factor, a%elements((iz-1)*a%nrow*a%ncol + 1:iz*a%nrow*a%ncol), a%nrow, a%ncol, &
+                                     b%elements((iz-1)*b%nrow*b%ncol + 1:iz*b%nrow*b%ncol))
+
+      end do
     endif
 
     call insref(b)

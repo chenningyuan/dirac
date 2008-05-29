@@ -186,16 +186,11 @@ contains
     character(*),  intent(in)    :: op_name
     type(matrix),  intent(inout) :: P
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: ptri(:)
-    real(kind_dp), allocatable   :: op1int(:)
-    logical,       allocatable   :: first(:)
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree
-    integer                      :: op_index
-    logical                      :: file_exists
+    real(kind_dp), allocatable   :: ptri(:), op1int(:), work(:)
+    logical,       allocatable   :: first(:), lexpst(:)
+    integer                      :: kfree, lfree, op_index, file_unit, idimension
     real(kind_dp)                :: dummy_dp
-    integer                      :: file_unit, idimension
-    logical                      :: debug_me = .false.
+    logical                      :: file_exists, debug_me = .false.
 
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -212,9 +207,12 @@ contains
     call alloc(ptri, nz*idimension)
     call alloc(op1int, idimension)
     allocate(first(nz))
+    allocate(lexpst(nfsym))
+
+    lexpst = .false.
 
     kfree = 1
-    lfree = 2*nz*n2bbasx
+    lfree = nz*n2bbasx*2
     call alloc(work, lfree)
 
     file_unit = lu1int
@@ -229,31 +227,30 @@ contains
     P%fermi_pointer = jbtof(P%pg_sym - 1, 1)
     P%ih_sym        = P%tr_sym
 
-    if (P%pg_sym == 1) then
-      call prpex2(op_index,   &
-                  dummy_dp,   &
-                  .false.,    &
-                  idimension, &
-                  ptri,       &
-                  P%elements, &
-                  op1int,     &
-                  first,      &
-                  work, kfree, lfree, 0)
-    end if
+    call prpex2(op_index,   &
+                dummy_dp,   &
+                lexpst,     &
+                idimension, &
+                ptri,       &
+                P%elements, &
+                op1int,     &
+                first,      &
+                work, kfree, lfree, 0)
+
+    close(file_unit, status = 'keep')
+    call dealloc(work)
+
+    P = 2.0d0*P
 
     if (debug_me) then
       call header('P in AO basis', -1)
       call mat_print(P)
     end if
 
-    P = 2.0d0*P
-
-    close(file_unit, status = 'keep')
-
     call dealloc(ptri)
     call dealloc(op1int)
     deallocate(first)
-    call dealloc(work)
+    deallocate(lexpst)
 
   end subroutine get_P
 
@@ -426,8 +423,6 @@ contains
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-
-
     if (.not. aoresponse_skip_pp) do_pp = .true.
     if (.not. aoresponse_skip_pn) do_pn = .true.
 
@@ -469,7 +464,7 @@ contains
     end if
 
     call get_C(C)
-!   RHS_mo = dag(C)*RHS*C
+!   RHS_mo = dag(C)*C
 
     call mat_init(RHS_mo, norbt, norbt)
     RHS_mo%elements = 0.0d0
@@ -478,6 +473,9 @@ contains
     lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
     call alloc(work, lfree)
 !!!!!!!!!!
+
+    write(*, *) 'blub rhs', RHS%pg_sym, RHS%tr_sym, RHS%fermi_pointer
+
     call qrfaomo(RHS_mo%elements,   &
                  RHS%elements,      &
                  RHS%pg_sym,        &
@@ -493,6 +491,7 @@ contains
       call header('RHS in MO basis', -1)
       call mat_print(RHS_mo)
     end if
+!   call quit('over and out')
 
     if (do_pp) then
 
@@ -781,7 +780,7 @@ contains
       do i = 1, ntsim
         ihrmop(i) = -1
       end do
-      
+
       temp_ao_dmat = 0.0d0
       call dmolitx(temp_ao_dmat,        &
                    response_vector_ppa, &
@@ -792,7 +791,7 @@ contains
                    ihrmop,              &
                    nr_dmat,             &
                    work, kfree, lfree)
-      
+
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elements, 1)
       call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elements, 1)
 
@@ -888,7 +887,7 @@ contains
                 ibtyp_pointer,   &
                 ivecs,           &
                 buffer)
-    
+
 !   call dscal(length*nz, -0.5d0, response_vector, 1)
     call dscal(length*nz,  0.5d0, response_vector, 1)
 
