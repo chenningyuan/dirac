@@ -69,21 +69,23 @@ contains
 
   end subroutine mu
 
+
   subroutine alpha(S, D, F, w)
 
     type(matrix), intent(inout) :: S, D, F
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3), F_i(3)
-    real(kind_dp)               :: w
-    real(kind_dp)               :: e_ij(3*3)
-    integer                     :: i, j, ij
+    type(matrix)                :: D_i(3)
+    type(matrix)                :: F_i(3)
+    real(kind_dp)               :: w(2)
+    real(kind_dp)               :: e_ij(3, 3)
+    integer                     :: i, j
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=(/w/))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(2:2))
 
     e_ij = 0.0d0
     call propenergy((/'EL'/), (/D, D_i/), e_ij)
 
-    print '("@ alpha (w = "2f7.3")")', w, -w
+    print '("@ alpha (w = "2f7.3")")', w(1), w(2)
 
     do i = 1, 3
 
@@ -91,8 +93,9 @@ contains
       F_i(i) = 0
 
       do j = 1, 3
-        ij = i + 3*(j-1)
-        print '("@" a10 a2 f20.10)', fc(i), fc(j), -e_ij(ij)
+        if (abs(e_ij(i, j)) > small) then
+          print '("@" a10 a2 f20.10)', fc(i), fc(j), -e_ij(i, j)
+        end if
       end do
     end do
 
