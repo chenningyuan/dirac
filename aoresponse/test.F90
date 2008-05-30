@@ -1,6 +1,6 @@
 module aoresponse_test_m
 
-    use dirac_matrix_operations_m
+    use matrix_mod
     use aoresponse_xc_m
     use propint
     use pertdens

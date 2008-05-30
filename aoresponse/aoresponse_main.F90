@@ -2,7 +2,7 @@ module aoresponse_main_m
 
   use kinds_m
   use memory_allocator
-  use dirac_matrix_operations_m
+  use matrix_mod
   use dirac_interface_m
   use aoresponse_test_m
   use aoresponse_xc_m
@@ -24,9 +24,9 @@ contains
     logical :: test_nr_electrons = .true.
     logical :: test_energy       = .true.
     logical :: test_mu           = .true.
-    logical :: test_alpha        = .false.
-    logical :: test_beta         = .false.
-    logical :: test_gamma        = .true.
+    logical :: test_alpha        = .true.
+    logical :: test_beta         = .true.
+    logical :: test_gamma        = .false.
 
     call alloc(freq, nr_freq)
     freq = 0.0d0
@@ -60,8 +60,8 @@ contains
       freq(1) =  0.00d0
       call alpha(S, D, F, (/freq(1), -freq(1)/))
 
-      freq(1) = -0.07d0
-      call alpha(S, D, F, (/freq(1), -freq(1)/))
+!     freq(1) = -0.07d0
+!     call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if
 
     if (test_beta) then
@@ -85,9 +85,9 @@ contains
       call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
     end if
 
-    S    = 0
-    D    = 0
-    F    = 0
+    S = 0
+    D = 0
+    F = 0
 
     call dealloc(freq)
 

@@ -2,7 +2,8 @@ module dirac_interface_m
 
   use kinds_m
   use memory_allocator
-  use dirac_matrix_operations_m
+  use matrix_oper
+  use matrix_mod
   use aoresponse_input_m
 
   implicit none
@@ -26,8 +27,8 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
-    if (.not. isdef(D_mo)) call mat_init(D_mo, norbt, norbt)
-    D_mo%elements = 0.0d0
+    if (.not. D_mo%is_defined) call mat_init(D_mo, norbt, norbt)
+    D_mo%elms = 0.0d0
 
     do i = 1, nfsym
       if(nish(i) > 0) then
@@ -37,7 +38,7 @@ contains
           offset = offset + norb(1)*(i-1) + npsh(i)
           offset = offset + (j-1)*D_mo%nrow + j - 1
 
-          D_mo%elements(1 + offset) = 1.0d0
+          D_mo%elms(1 + offset) = 1.0d0
 
         end do
       end if
@@ -54,17 +55,17 @@ contains
 
 #include "dcbbas.h"
 
-    if (.not. isdef(F)) call mat_init(F, ntbas(0), ntbas(0))
+    if (.not. F%is_defined) call mat_init(F, ntbas(0), ntbas(0))
 
     F1 = 1.0d-100*F
     F2 = 1.0d-100*F
 
     call opnfil(file_unit, 'DFFCK1', 'OLD', 'get_F')
-    call reafck(file_unit, F1%elements, .true., 1)
+    call reafck(file_unit, F1%elms, .true., 1)
     close(file_unit, status = 'keep')
 
     call opnfil(file_unit, 'DFFCK2', 'OLD', 'get_F')
-    call reafck(file_unit, F2%elements, .true., 1)
+    call reafck(file_unit, F2%elms, .true., 1)
     close(file_unit, status = 'keep')
 
     F = 2.0d0*F1 + 2.0d0*F2
@@ -87,9 +88,9 @@ contains
 #include "dcbbas.h"
 #include "dcbdhf.h"
 
-    if (.not. isdef(G)) call mat_init(G, ntbas(0), ntbas(0))
+    if (.not. G%is_defined) call mat_init(G, ntbas(0), ntbas(0))
     G = 1.0d0*D ! inherit symmetry information
-    G%elements = 0.0d0
+    G%elms = 0.0d0
 
     kfree = 1
     lfree = n2bbasxq*20
@@ -102,8 +103,8 @@ contains
 !               G%ih_sym,   &
                 0,          &
                 1,          &
-                G%elements, &
-                D%elements, &
+                G%elms, &
+                D%elms, &
                 1,          &
                 npos,       &
                 intflg,     &
@@ -129,8 +130,8 @@ contains
 #include "dcborb.h"
 #include "dcbbas.h"
 
-    if (.not. isdef(C)) call mat_init(C, ntbas(0), norbt)
-    C%elements = 0.0d0
+    if (.not. C%is_defined) call mat_init(C, ntbas(0), norbt)
+    C%elms = 0.0d0
 
     call alloc(eigenvalues, norbt)
 
@@ -138,7 +139,7 @@ contains
 
     call reacmo(file_unit,   &
                 'DFCOEF',    &
-                C%elements,  &
+                C%elms,  &
                 eigenvalues, &
                 dummy_i,     &
                 dummy_dp,    &
@@ -166,14 +167,14 @@ contains
 
 #include "memint.h"
 
-    if (.not. isdef(S)) call mat_init(S, ntbas(0), ntbas(0))
-    S%elements = 0.0d0
+    if (.not. S%is_defined) call mat_init(S, ntbas(0), ntbas(0))
+    S%elms = 0.0d0
 
     lfree = nnbbasx + n2bbasx
     lfree = lfree*2
     call alloc(work, lfree)
 
-    call gtovlt(S%elements, 1.0d0, work, lfree)
+    call gtovlt(S%elms, 1.0d0, work, lfree)
 
     call dealloc(work)
 
@@ -219,8 +220,8 @@ contains
 
     call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
 
-    if (.not. isdef(P)) call mat_init(P, ntbas(0), ntbas(0))
-    P%elements = 0.0d0
+    if (.not. P%is_defined) call mat_init(P, ntbas(0), ntbas(0))
+    P%elms = 0.0d0
 
     P%pg_sym        = iprpsym(op_index)
     P%tr_sym        = iprptim(op_index)
@@ -232,7 +233,7 @@ contains
                 lexpst,     &
                 idimension, &
                 ptri,       &
-                P%elements, &
+                P%elms, &
                 op1int,     &
                 first,      &
                 work, kfree, lfree, 0)
@@ -467,22 +468,20 @@ contains
 !   RHS_mo = dag(C)*C
 
     call mat_init(RHS_mo, norbt, norbt)
-    RHS_mo%elements = 0.0d0
+    RHS_mo%elms = 0.0d0
 !!!!!!!!!!
     kfree = 1
     lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
     call alloc(work, lfree)
 !!!!!!!!!!
 
-    write(*, *) 'blub rhs', RHS%pg_sym, RHS%tr_sym, RHS%fermi_pointer
-
-    call qrfaomo(RHS_mo%elements,   &
-                 RHS%elements,      &
+    call qrfaomo(RHS_mo%elms,   &
+                 RHS%elms,      &
                  RHS%pg_sym,        &
                  RHS%tr_sym,        &
                  RHS%fermi_pointer, &
                  0,                 &
-                 C%elements,        &
+                 C%elms,        &
                  work(kfree), lfree)
 
     call dealloc(work)
@@ -501,7 +500,7 @@ contains
       call prporb(prop_gradient_pp,           &
                   orbital_rotation_vector_pp, &
                   length_pp,                  &
-                  RHS_mo%elements,            &
+                  RHS_mo%elms,            &
                   norbt,                      &
                   dummy_dp,                   &
                   nz,                         &
@@ -525,7 +524,7 @@ contains
       call prporb(prop_gradient_pn,           &
                   orbital_rotation_vector_pn, &
                   length_pn,                  &
-                  RHS_mo%elements,            &
+                  RHS_mo%elms,            &
                   norbt,                      &
                   dummy_dp,                   &
                   nz,                         &
@@ -754,8 +753,8 @@ contains
 
     call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
 
-    if (.not. isdef(D1)) call mat_init(D1, ntbas(0), ntbas(0))
-    D1%elements = 0.0d0
+    if (.not. D1%is_defined) call mat_init(D1, ntbas(0), ntbas(0))
+    D1%elms = 0.0d0
 
     do i = 1, ntsim
       ihrmop(i) = 1
@@ -765,15 +764,15 @@ contains
     call dmolitx(temp_ao_dmat,        &
                  response_vector_pph, &
                  response_vector_pnh, &
-                 C%elements,          &
+                 C%elms,          &
                  dummy_dp,            &
                  dummy_dp,            &
                  ihrmop,              &
                  nr_dmat,             &
                  work, kfree, lfree)
 
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elements, 1)
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elements, 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
 
     if (.not. static) then
 
@@ -785,15 +784,15 @@ contains
       call dmolitx(temp_ao_dmat,        &
                    response_vector_ppa, &
                    response_vector_pna, &
-                   C%elements,          &
+                   C%elms,          &
                    dummy_dp,            &
                    dummy_dp,            &
                    ihrmop,              &
                    nr_dmat,             &
                    work, kfree, lfree)
 
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elements, 1)
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elements, 1)
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
+      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
 
     end if
 

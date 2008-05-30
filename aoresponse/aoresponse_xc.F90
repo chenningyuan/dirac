@@ -2,7 +2,8 @@ module aoresponse_xc_m
 
   use kinds_m
   use memory_allocator
-  use dirac_matrix_operations_m
+  use matrix_oper
+  use matrix_mod
 
   implicit none
 
@@ -328,7 +329,7 @@ contains
         offset = (iz-1)*ntbas(0)*ntbas(0)
 
         call general_density_block(density%vector(ixyz),                                  &
-                                   M%elements(1+offset),                                  &
+                                   M%elms(1+offset),                                  &
                                    get_density,                                           &
                                    ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
                                    gao_slice_left,                                        &
@@ -339,7 +340,7 @@ contains
                                    density%factor_lx)
 
         call general_density_block(density%vector(ixyz),                                  &
-                                   M%elements(1+offset),                                  &
+                                   M%elms(1+offset),                                  &
                                    get_density,                                           &
                                    ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
                                    gao_slice_left,                                        &
@@ -354,7 +355,7 @@ contains
     else
 
         call general_density_block(density%scalar,                                        &
-                                   M%elements(1+offset),                                  &
+                                   M%elms(1+offset),                                  &
                                    get_density,                                           &
                                    M%pg_sym - 1,                                          &
                                    gao_slice_left,                                        &
@@ -365,7 +366,7 @@ contains
                                    density%factor_lx)
 
         call general_density_block(density%scalar,                                        &
-                                   M%elements(1+offset),                                  &
+                                   M%elms(1+offset),                                  &
                                    get_density,                                           &
                                    M%pg_sym - 1,                                          &
                                    gao_slice_left,                                        &
@@ -397,7 +398,7 @@ contains
     lfree = 10000000
     call alloc(work, lfree)
 
-    call dftgrd(D%elements, work(kfree), lfree, 1)
+    call dftgrd(D%elms, work(kfree), lfree, 1)
 
     call dealloc(work)
 
