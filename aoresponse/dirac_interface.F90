@@ -245,7 +245,7 @@ contains
 
     if (debug_me) then
       call header('P in AO basis', -1)
-      call mat_print(P)
+      call print(P)
     end if
 
     call dealloc(ptri)
@@ -461,7 +461,7 @@ contains
 
     if (debug_me) then
       call header('RHS in AO basis', -1)
-      call mat_print(RHS)
+      call print(RHS)
     end if
 
     call get_C(C)
@@ -488,7 +488,7 @@ contains
 
     if (debug_me) then
       call header('RHS in MO basis', -1)
-      call mat_print(RHS_mo)
+      call print(RHS_mo)
     end if
 !   call quit('over and out')
 
