@@ -420,8 +420,8 @@ contains
     integer                         :: ill_int, isl_int, iss_int, igt_int
 
     logical                         :: debug_me = .false.
-    logical                         :: do_pp
-    logical                         :: do_pn
+    logical                         :: do_pp    = .false.
+    logical                         :: do_pn    = .false.
 
     real(kind_dp)                   :: dummy_dp
     integer                         :: dummy_i
@@ -442,6 +442,23 @@ contains
                                      length_pn,                  &
                                      orbital_rotation_vector_pp, &
                                      orbital_rotation_vector_pn)
+
+    nzconf  = 0
+    nzxope  = 0
+    nzxopp  = 0
+
+    if (do_pp) nzxope = length_pp
+    if (do_pn) nzxopp = length_pn
+
+    nzxopt  = nzxope + nzxopp
+
+    nzconfq = nzconf*nz
+    nzxopeq = nzxope*nz
+    nzxoppq = nzxopp*nz
+    nzxoptq = nzxopt*nz
+
+    nzvar   = nzxopt
+    nzvarq  = nzxoptq
 
     call alloc(orbital_rotation_vector_pp, 2*length_pp)
     call alloc(orbital_rotation_vector_pn, 2*length_pn)
@@ -586,23 +603,6 @@ contains
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
-    nzconf  = 0
-    nzxope  = 0
-    nzxopp  = 0
-
-    if (do_pp) nzxope = length_pp
-    if (do_pn) nzxopp = length_pn
-
-    nzxopt  = nzxope + nzxopp
-
-    nzconfq = nzconf*nz
-    nzxopeq = nzxope*nz
-    nzxoppq = nzxopp*nz
-    nzxoptq = nzxopt*nz
-
-    nzvar   = nzxopt
-    nzvarq  = nzxoptq
-
     call alloc(ibtyp,            2*nredm)
     call alloc(ibtyp_pointer_pp, nredm)
     call alloc(ibtyp_pointer_pn, nredm)
@@ -611,10 +611,6 @@ contains
     call alloc(eigvec,           nredm*nr_freq)
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
-
-    write(*, *) 'nzxope = ', nzxope
-    write(*, *) 'nzxopp = ', nzxopp
-    write(*, *) 'nzconf = ', nzconf
 
     call xrsctl(dummy_dp,         &
                 prop_gradient_pp, &
