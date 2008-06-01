@@ -6,10 +6,10 @@ module aoresponse_input_m
   implicit none
 
   type perturbation_op_t
-    integer          :: pg_sym, tr_sym, nr_components, typ
-    real(kind_dp)    :: prefactors(2)
-    character(8)     :: op_name, labels(2)
-  end type perturbation_op_t
+    integer       :: pg_sym, tr_sym, nr_components, typ
+    real(kind_dp) :: prefactors(2)
+    character(8)  :: op_name, labels(2)
+  end type
 
   integer, parameter            :: max_nr_op = 137
 
@@ -39,7 +39,7 @@ contains
       call quit('find_op_index: index not found')
     end if
 
-  end function find_op_index
+  end function
 
   subroutine add_op(op_name,            &
                     typ, nr_components, &
@@ -78,7 +78,7 @@ contains
       perturbation_op(indxpr)%labels(i)     = labels(i)
     end do
 
-  end subroutine add_op
+  end subroutine
 
   subroutine aoresponse_input()
 
@@ -93,9 +93,9 @@ contains
     call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
 
     aoresponse_skip_pp   = .false.
-    aoresponse_skip_pn   = .false.
+    aoresponse_skip_pn   = .true.
     aoresponse_threshold = 1.0d-9
 
-  end subroutine aoresponse_input
+  end subroutine
 
-end module aoresponse_input_m
+end module

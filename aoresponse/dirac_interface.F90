@@ -44,7 +44,7 @@ contains
       end if
     end do
 
-  end subroutine get_D_mo
+  end subroutine
 
   subroutine get_F(F)
 
@@ -73,42 +73,45 @@ contains
     F1 = 0
     F2 = 0
 
-  end subroutine get_F
+  end subroutine
 
   subroutine get_G(D, G)
 
     type(matrix),  intent(in)    :: D
     type(matrix),  intent(inout) :: G
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree
     integer                      :: npos_nr
     integer,       allocatable   :: npos(:)
+
+    real(kind_dp), allocatable   :: work(:)
+    integer                      :: kfree, lfree, freemem, verbose = 0
 
 #include "dcbbas.h"
 #include "dcbdhf.h"
 
     if (.not. G%is_defined) call mat_init(G, ntbas(0), ntbas(0))
-    G = 1.0d0*D ! inherit symmetry information
+    G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
-
-    kfree = 1
-    lfree = n2bbasxq*20
-    call alloc(work, lfree)
 
     call stex_get_npos(npos_nr)
     call alloc(npos, npos_nr)
 
-    call twofck(G%pg_sym,   &
-!               G%ih_sym,   &
-                0,          &
-                1,          &
-                G%elms, &
-                D%elms, &
-                1,          &
-                npos,       &
-                intflg,     &
-                0,          &
+!   call alloc_maxsize(freemem, 1, verbose)
+!   lfree = (freemem/2)*2
+    lfree = n2bbasxq*20
+    call alloc(work, lfree)
+    kfree = 1
+
+    call twofck(G%pg_sym, &
+!               G%ih_sym, &
+                0,        &
+                1,        &
+                G%elms,   &
+                D%elms,   &
+                1,        &
+                npos,     &
+                intflg,   &
+                0,        &
                 work(kfree), lfree)
 
     call dealloc(work)
@@ -116,7 +119,7 @@ contains
 
     G = 4.0d0*G
 
-  end subroutine get_G
+  end subroutine
 
   subroutine get_C(C)
 
@@ -139,7 +142,7 @@ contains
 
     call reacmo(file_unit,   &
                 'DFCOEF',    &
-                C%elms,  &
+                C%elms,      &
                 eigenvalues, &
                 dummy_i,     &
                 dummy_dp,    &
@@ -152,7 +155,7 @@ contains
 
     call dealloc(eigenvalues)
 
-  end subroutine get_C
+  end subroutine
 
   subroutine get_S(S)
 
@@ -171,8 +174,7 @@ contains
     if (.not. S%is_defined) call mat_init(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-    lfree = nnbbasx + n2bbasx
-    lfree = lfree*2
+    lfree = 2*((nnbbasx + n2bbasx)*2)/2
     call alloc(work, lfree)
 
     call gtovlt(S%elms, ssmtrc, work, lfree)
@@ -181,18 +183,21 @@ contains
 
     S = 2.0d0*S
 
-  end subroutine get_S
+  end subroutine
 
   subroutine get_P(op_name, P)
 
     character(*),  intent(in)    :: op_name
     type(matrix),  intent(inout) :: P
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: ptri(:), op1int(:), work(:)
+    real(kind_dp), allocatable   :: ptri(:), op1int(:)
     logical,       allocatable   :: first(:), lexpst(:)
-    integer                      :: kfree, lfree, op_index, file_unit, idimension
+    integer                      :: op_index, file_unit, idimension
     real(kind_dp)                :: dummy_dp
     logical                      :: file_exists, debug_me = .false.
+
+    real(kind_dp), allocatable   :: work(:)
+    integer                      :: kfree, lfree, freemem, verbose = 0
 
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -213,10 +218,6 @@ contains
 
     lexpst = .false.
 
-    kfree = 1
-    lfree = nz*n2bbasx*2
-    call alloc(work, lfree)
-
     file_unit = lu1int
 
     call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
@@ -229,25 +230,30 @@ contains
     P%fermi_pointer = jbtof(P%pg_sym - 1, 1)
     P%ih_sym        = P%tr_sym
 
+!   call alloc_maxsize(freemem, 1, verbose)
+!   lfree = (freemem/2)*2
+    lfree = n2bbasxq*2
+    call alloc(work, lfree)
+    kfree = 1
+
     call prpex2(op_index,   &
                 dummy_dp,   &
                 .false.,    &
                 lexpst,     &
                 idimension, &
                 ptri,       &
-                P%elms, &
+                P%elms,     &
                 op1int,     &
                 first,      &
                 work, kfree, lfree, 0)
 
-    close(file_unit, status = 'keep')
     call dealloc(work)
+    close(file_unit, status = 'keep')
 
     P = 2.0d0*P
 
     if (debug_me) then
-      call header('P in AO basis', -1)
-      call print(P)
+      call print(P, 'P in AO basis')
     end if
 
     call dealloc(ptri)
@@ -255,7 +261,7 @@ contains
     deallocate(first)
     deallocate(lexpst)
 
-  end subroutine get_P
+  end subroutine
 
   subroutine set_orbital_rotation_vector(set,                        &
                                          length_pp,                  &
@@ -370,7 +376,7 @@ contains
       end do
     end if
 
-  end subroutine set_orbital_rotation_vector
+  end subroutine
 
   subroutine response_solver(freq, RHS, D1)
 
@@ -401,7 +407,7 @@ contains
     real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
 
     real(kind_dp),    allocatable   :: work(:)
-    integer                         :: kfree, lfree
+    integer                         :: kfree, lfree, freemem, verbose = 0
 
     real(kind_dp),    allocatable   :: prop_gradient_pp(:)
     real(kind_dp),    allocatable   :: prop_gradient_pn(:)
@@ -437,23 +443,6 @@ contains
                                      orbital_rotation_vector_pp, &
                                      orbital_rotation_vector_pn)
 
-    nzconf  = 0
-    nzxope  = 0
-    nzxopp  = 0
-
-    if (do_pp) nzxope = length_pp
-    if (do_pn) nzxopp = length_pn
-
-    nzxopt  = nzxope + nzxopp
-
-    nzconfq = nzconf*nz
-    nzxopeq = nzxope*nz
-    nzxoppq = nzxopp*nz
-    nzxoptq = nzxopt*nz
-
-    nzvar   = nzxopt
-    nzvarq  = nzxoptq
-
     call alloc(orbital_rotation_vector_pp, 2*length_pp)
     call alloc(orbital_rotation_vector_pn, 2*length_pn)
 
@@ -463,38 +452,13 @@ contains
                                      orbital_rotation_vector_pp, &
                                      orbital_rotation_vector_pn)
 
-    if (debug_me) then
-      call header('RHS in AO basis', -1)
-      call print(RHS)
-    end if
-
     call get_C(C)
-!   RHS_mo = dag(C)*C
-
-    call mat_init(RHS_mo, norbt, norbt)
-    RHS_mo%elms = 0.0d0
-!!!!!!!!!!
-    kfree = 1
-    lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
-    call alloc(work, lfree)
-!!!!!!!!!!
-
-    call qrfaomo(RHS_mo%elms,   &
-                 RHS%elms,      &
-                 RHS%pg_sym,        &
-                 RHS%tr_sym,        &
-                 RHS%fermi_pointer, &
-                 0,                 &
-                 C%elms,        &
-                 work(kfree), lfree)
-
-    call dealloc(work)
+    RHS_mo = dag(C)*RHS*C
 
     if (debug_me) then
-      call header('RHS in MO basis', -1)
-      call print(RHS_mo)
+      call print(RHS,    'RHS in AO basis')
+      call print(RHS_mo, 'RHS in MO basis')
     end if
-!   call quit('over and out')
 
     if (do_pp) then
 
@@ -504,7 +468,7 @@ contains
       call prporb(prop_gradient_pp,           &
                   orbital_rotation_vector_pp, &
                   length_pp,                  &
-                  RHS_mo%elms,            &
+                  RHS_mo%elms,                &
                   norbt,                      &
                   dummy_dp,                   &
                   nz,                         &
@@ -528,7 +492,7 @@ contains
       call prporb(prop_gradient_pn,           &
                   orbital_rotation_vector_pn, &
                   length_pn,                  &
-                  RHS_mo%elms,            &
+                  RHS_mo%elms,                &
                   norbt,                      &
                   dummy_dp,                   &
                   nz,                         &
@@ -546,11 +510,11 @@ contains
 
     RHS_mo = 0
 
-!!!!!!!!!!
-    kfree = 1
-    lfree = 100*ntbas(0)*ntbas(0) ! no idea how much is needed
+    call alloc_maxsize(freemem, 1, verbose)
+    lfree = (freemem/2)*2
+!   lfree = n2bbasxq*20
     call alloc(work, lfree)
-!!!!!!!!!!
+    kfree = 1
 
     call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
     call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
@@ -573,13 +537,8 @@ contains
 !   parameters
 !   ==========
 
-!   write(*, *) 'blub nr_freq', nr_freq
-!   write(*, *) 'blub freq(1)', freq(1)
     static = .false.
-!   if (nr_freq == 1 .and. freq(1) == 0.0d0) then
-!     static = .true.
-!   end if
-    if (abs(freq(1)) < 1.0d-9) then
+    if (abs(freq(1)) < 1.0d-6) then
       static = .true.
     end if
 
@@ -627,6 +586,23 @@ contains
 !   solve response equation in the reduced space spanned by the trial vectors
 !   =========================================================================
 
+    nzconf  = 0
+    nzxope  = 0
+    nzxopp  = 0
+
+    if (do_pp) nzxope = length_pp
+    if (do_pn) nzxopp = length_pn
+
+    nzxopt  = nzxope + nzxopp
+
+    nzconfq = nzconf*nz
+    nzxopeq = nzxope*nz
+    nzxoppq = nzxopp*nz
+    nzxoptq = nzxopt*nz
+
+    nzvar   = nzxopt
+    nzvarq  = nzxoptq
+
     call alloc(ibtyp,            2*nredm)
     call alloc(ibtyp_pointer_pp, nredm)
     call alloc(ibtyp_pointer_pn, nredm)
@@ -635,6 +611,10 @@ contains
     call alloc(eigvec,           nredm*nr_freq)
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
+
+    write(*, *) 'nzxope = ', nzxope
+    write(*, *) 'nzxopp = ', nzxopp
+    write(*, *) 'nzconf = ', nzconf
 
     call xrsctl(dummy_dp,         &
                 prop_gradient_pp, &
@@ -757,8 +737,9 @@ contains
 
     call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
 
-    if (.not. D1%is_defined) call mat_init(D1, ntbas(0), ntbas(0))
+    D1      = RHS
     D1%elms = 0.0d0
+    if (.not. static) D1%ih_sym = 0
 
     do i = 1, ntsim
       ihrmop(i) = 1
@@ -800,17 +781,8 @@ contains
 
     end if
 
-    D1%pg_sym        = RHS%pg_sym
-    D1%tr_sym        = RHS%tr_sym
-    D1%fermi_pointer = RHS%fermi_pointer
-
-    D1%ih_sym = D1%tr_sym
-    if (.not. static) D1%ih_sym = 0
-
     D1 = D1/2.0d0
-!   D1%is_density_matrix = .true.
-
-    C = 0
+    C  = 0
 
 !   don't release this earlier
     call memrel('aoresponse', work, 1, kzxopp, kfree, lfree)
@@ -829,7 +801,7 @@ contains
 
     call dealloc(work)
 
-  end subroutine response_solver
+  end subroutine
 
   subroutine construct_response_vector(vector_type,     &
                                        ih,              &
@@ -891,7 +863,6 @@ contains
                 ivecs,           &
                 buffer)
 
-!   call dscal(length*nz, -0.5d0, response_vector, 1)
     call dscal(length*nz,  0.5d0, response_vector, 1)
 
     close(file_unit, status = 'keep')
@@ -899,7 +870,7 @@ contains
     call dealloc(ivecs)
     call dealloc(buffer)
 
-  end subroutine construct_response_vector
+  end subroutine
 
   subroutine print_vector(vector, vector_dimension)
 
@@ -917,7 +888,7 @@ contains
                 ipqtoq(1, 0),     &
                 6)
 
-  end subroutine print_vector
+  end subroutine
 
   subroutine print_q_vector(vector, vector_dimension)
 
@@ -935,6 +906,6 @@ contains
                 ipqtoq(1, 0),     &
                 6)
 
-  end subroutine print_q_vector
+  end subroutine
 
-end module dirac_interface_m
+end module

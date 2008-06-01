@@ -25,7 +25,7 @@ contains
     logical :: test_energy       = .true.
     logical :: test_mu           = .true.
     logical :: test_alpha        = .true.
-    logical :: test_beta         = .false.
+    logical :: test_beta         = .true.
     logical :: test_gamma        = .false.
 
     call get_S(S)
