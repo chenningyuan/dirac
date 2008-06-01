@@ -25,11 +25,8 @@ contains
     logical :: test_energy       = .true.
     logical :: test_mu           = .true.
     logical :: test_alpha        = .true.
-    logical :: test_beta         = .true.
+    logical :: test_beta         = .false.
     logical :: test_gamma        = .false.
-
-    call alloc(freq, nr_freq)
-    freq = 0.0d0
 
     call get_S(S)
 
@@ -49,19 +46,22 @@ contains
     end if
 
     if (test_energy) then
-      call energy(S, D, F)
+      call energy(D, F)
     end if
 
     if (test_mu) then
       call mu(S, D, F)
     end if
 
+    call alloc(freq, nr_freq)
+    freq = 0.0d0
+
     if (test_alpha) then
       freq(1) =  0.00d0
       call alpha(S, D, F, (/freq(1), -freq(1)/))
 
-!     freq(1) = -0.07d0
-!     call alpha(S, D, F, (/freq(1), -freq(1)/))
+      freq(1) = -0.07d0
+      call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if
 
     if (test_beta) then

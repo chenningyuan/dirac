@@ -23,19 +23,18 @@ contains
 
   end subroutine nr_electrons
 
-  subroutine energy(S, D, F)
+  subroutine energy(D, F)
 
-    type(matrix), intent(inout) :: S, D, F
+    type(matrix), intent(inout) :: D, F
 !   ----------------------------------------------------------------------------
     type(matrix)                :: G(1)
     real(kind_dp)               :: xc_energy
     character(4)                :: nop(0)
 
-    S = 1.0d0*S
     D = 1.0d0*D
     F = 1.0d0*F
 
-    G(1) = 1.0d-100*S
+    G(1) = 1.0d-100*D
 
     call propfock(nop, (/D, D/), G)
     write(*, *) 'electronic energy from F**D - 0.5d0*G(1)**D:', F**D - 0.5d0*G(1)**D

@@ -162,6 +162,7 @@ contains
     integer                      :: kfree, lfree, kwork, lwork
 
 #include "dcbbas.h"
+#include "dcbham.h"
 
     kfree = 1
 
@@ -174,7 +175,7 @@ contains
     lfree = lfree*2
     call alloc(work, lfree)
 
-    call gtovlt(S%elms, 1.0d0, work, lfree)
+    call gtovlt(S%elms, ssmtrc, work, lfree)
 
     call dealloc(work)
 
@@ -420,12 +421,14 @@ contains
 
 #include "dcbbas.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
 
     if (.not. aoresponse_skip_pp) do_pp = .true.
     if (.not. aoresponse_skip_pn) do_pn = .true.
+    if (levyle)                   do_pn = .false.
 
     call set_orbital_rotation_vector(.false.,                    &
                                      length_pp,                  &
