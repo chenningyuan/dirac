@@ -325,7 +325,7 @@ C         write(lupri,*) 'PRPEX1...I,INDXPR',I,INDXPR
 
 C.........generate property matrix in SA-AO-basis into PMAT ...
 CMI ... extended parameter list by the OP1INT array for square matrixes
-          CALL PRPEX2(INDXPR,EXPVAL(I),LEXPST(1,I),IDIMENS,
+          CALL PRPEX2(INDXPR,EXPVAL(I),.true.,LEXPST(1,I),IDIMENS,
      &                WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
      &                WORK,KFREE,LFREE,IPREXP)
 
@@ -410,7 +410,7 @@ C
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
 C.........generate property matrix in SO-basis
-            CALL PRPEX2(INDXPR,EXPBUF,LEXPST(1,I),IDIMENS,
+            CALL PRPEX2(INDXPR,EXPBUF,.true.,LEXPST(1,I),IDIMENS,
      &                  WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
      &                  WORK,KFREE,LFREE,IPREXP)
 
@@ -485,14 +485,18 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
-      SUBROUTINE PRPEX2(INDXPR,EXPVAL,LEXPST,IDIMENS,
+      SUBROUTINE PRPEX2(INDXPR,EXPVAL,ONLY_TS,LEXPST,IDIMENS,
      &                  PTRI,PMAT,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
-C     For totally symmetric operators return property matrix;
-C     for other symmetries return .FALSE. in
-C         LEXPST(1) - molecular point group symmetry
-C     or  LEXPST(2) - time reversal symmetry
+C     if ONLY_TS = .true.
+C        for totally symmetric operators return property matrix
+C        for other symmetries return .FALSE. in
+C            LEXPST(1) - molecular point group symmetry
+C        or  LEXPST(2) - time reversal symmetry
+C
+C     if ONLY_TS = .false.
+C        return property matrix anyway (i need it in aoresponse --radovan)
 C
 C     On output: PMAT - the complete propery matrix in SA-AO basis !
 C
@@ -516,7 +520,8 @@ C#include "dcbdhf.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 C
-      LOGICAL FIRST(NZ),LEXPST(2)
+!     radovan:                    ONLY_TS: allow only totally symmetric
+      LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
 C     DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
       DIMENSION PTRI(IDIMENS,NZ),PMAT(N2BBASX,NZ),
      &          OP1INT(IDIMENS),WORK(*)
@@ -552,7 +557,7 @@ CMI ... control output...
 C
 C     If not totally symmetric, return with zero value
 C
-      IF (LEXPST(1).AND.(.NOT.PRJANA)) GOTO 90 
+      IF (ONLY_TS .AND. LEXPST(1).AND.(.NOT.PRJANA)) GOTO 90 
 
 C
 C     Totally symmetric operator ==> proceed
