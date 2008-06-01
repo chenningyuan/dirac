@@ -231,6 +231,7 @@ contains
 
     call prpex2(op_index,   &
                 dummy_dp,   &
+                .false.,    &
                 lexpst,     &
                 idimension, &
                 ptri,       &
