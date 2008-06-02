@@ -24,8 +24,8 @@ contains
     logical :: test_nr_electrons = .true.
     logical :: test_energy       = .true.
     logical :: test_mu           = .true.
-    logical :: test_alpha        = .true.
-    logical :: test_beta         = .true.
+    logical :: test_alpha        = .false.
+    logical :: test_beta         = .false.
     logical :: test_gamma        = .true.
 
     call get_S(S)
@@ -81,7 +81,13 @@ contains
       freq(1) = -0.08855851799036d0
       freq(2) =  0.08855851799036d0
       freq(3) = -0.08855851799036d0
-      call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(1, 2, 1, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(1, 1, 2, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3, 1, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
     end if
 
     S = 0

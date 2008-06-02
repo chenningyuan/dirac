@@ -21,7 +21,7 @@ contains
 
     write(*, *) 'electron count from S**D:', S**D
 
-  end subroutine nr_electrons
+  end subroutine
 
   subroutine energy(D, F)
 
@@ -45,7 +45,7 @@ contains
 !   call xc_contribution(0, (/D/), (/F/), xc_energy)
     write(*, *) 'xc energy:', xc_energy
 
-  end subroutine energy
+  end subroutine
 
   subroutine mu(S, D, F)
 
@@ -65,16 +65,15 @@ contains
       print '("@ -< "a1" > = " f16.10)', fc(i), -e_i(i)
     end do
 
-  end subroutine mu
-
+  end subroutine
 
   subroutine alpha(S, D, F, w)
 
     type(matrix), intent(inout) :: S, D, F
+    real(kind_dp)               :: w(2)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3)
     type(matrix)                :: F_i(3)
-    real(kind_dp)               :: w(2)
     real(kind_dp)               :: e_ij(3, 3)
     integer                     :: i, j
 
@@ -97,15 +96,15 @@ contains
       end do
     end do
 
-  end subroutine alpha
+  end subroutine
 
   subroutine beta(S, D, F, w)
 
     type(matrix), intent(inout) :: S, D, F
+    real(kind_dp)               :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3)
     type(matrix)                :: F_i(3), F_j(3), F_ij(3, 3)
-    real(kind_dp)               :: w(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
@@ -145,17 +144,18 @@ contains
       end do
     end do
 
-  end subroutine beta
+  end subroutine
 
-  subroutine gamma(S, D, F, w)
+  subroutine gamma_element(ui, uj, uk, ul, S, D, F, w)
 
-    type(matrix), intent(inout) :: S, D, F
+    integer,       intent(in)    :: ui, uj, uk, ul
+    type(matrix),  intent(inout) :: S, D, F
+    real(kind_dp), intent(in)    :: w(4)
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
-    type(matrix)                :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
-    real(kind_dp)               :: w(4)
-    real(kind_dp)               :: e_ijkl(3, 3, 3, 3)
-    integer                     :: i, j, k, l
+    type(matrix)                 :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
+    type(matrix)                 :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
+    real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
+    integer                      :: i, j, k, l
 
     if (abs(sum(w)) > small) call quit('gamma: frequencies do not sum up to zero')
 
@@ -163,22 +163,67 @@ contains
     D = 1.0d0*D
     F = 1.0d0*F
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+    do i = 1, 3
 
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_k/), (/F, F_i, F_k/), D_ik, F_ik, w=(/w(1), w(3)/))
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_j, D_k/), (/F, F_j, F_k/), D_jk, F_jk, w=w(2:3))
+      D_i(i) = 1.0d-100*D
+      D_j(i) = 1.0d-100*D
+      D_k(i) = 1.0d-100*D
+      F_i(i) = 1.0d-100*D
+      F_j(i) = 1.0d-100*D
+      F_k(i) = 1.0d-100*D
 
-    call pertdensfock((/'EL', 'EL', 'EL'/), S, (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk/), &
-                                               (/F, F_i, F_j, F_k, F_ij, F_ik, F_jk/), &
-                                               D_ijk, F_ijk, w=w(1:3))
+      do j = 1, 3
+
+        D_ij(i, j) = 1.0d-100*D
+        D_ik(i, j) = 1.0d-100*D
+        D_jk(i, j) = 1.0d-100*D
+        F_ij(i, j) = 1.0d-100*D
+        F_ik(i, j) = 1.0d-100*D
+        F_jk(i, j) = 1.0d-100*D
+
+        do k = 1, 3
+
+          D_ijk(i, j, k) = 1.0d-100*D
+          F_ijk(i, j, k) = 1.0d-100*D
+
+        end do
+      end do
+    end do
+
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i(ui), F_i(ui), w=w(1:1), c=(/ui/))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j(uj), F_j(uj), w=w(2:2), c=(/uj/))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k(uk), F_k(uk), w=w(3:3), c=(/uk/))
+
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_j(uj)/), &
+                                         (/D, F_i(ui), F_j(uj)/), &
+                                           D_ij(ui, uj),          &
+                                           F_ij(ui, uj),          &
+                                           w=(/w(1), w(2)/),      &
+                                           c=(/ui, uj/))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_k(uk)/), &
+                                         (/D, F_i(ui), F_k(uk)/), &
+                                           D_ik(ui, uk),          &
+                                           F_ik(ui, uk),          &
+                                           w=(/w(1), w(3)/),      &
+                                           c=(/ui, uk/))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_j(uj), D_k(uk)/), &
+                                         (/D, F_j(uj), F_k(uk)/), &
+                                           D_jk(uj, uk),          &
+                                           F_jk(uj, uk),          &
+                                           w=(/w(2), w(3)/),      &
+                                           c=(/uj, uk/))
+
+    call pertdensfock((/'EL', 'EL', 'EL'/), S, (/D, D_i(ui), D_j(uj), D_k(uk), D_ij(ui, uj), D_ik(ui, uk), D_jk(uj, uk)/), &
+                                               (/F, F_i(ui), F_j(uj), F_k(uk), F_ij(ui, uj), F_ik(ui, uk), F_jk(uj, uk)/), &
+                                                 D_ijk(ui, uj, uk),                                                        &
+                                                 F_ijk(ui, uj, uk),                                                        &
+                                                 w=(/w(1), w(2), w(3)/),                                                   &
+                                                 c=(/ui, uj, uk/))
 
     e_ijkl = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
 
-    print '("@ gamma (w = "4f7.3")")', w(1), w(2), w(3), w(4)
+    print '("@ gamma (w = "4f8.4")")', w(1), w(2), w(3), w(4)
 
     do i = 1, 3
 
@@ -212,7 +257,74 @@ contains
       end do
     end do
 
-  end subroutine gamma
+  end subroutine
+
+  subroutine gamma(S, D, F, w)
+
+    type(matrix),  intent(inout) :: S, D, F
+    real(kind_dp), intent(in)    :: w(4)
+!   ----------------------------------------------------------------------------
+    type(matrix)                 :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
+    type(matrix)                 :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
+    real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
+    integer                      :: i, j, k, l
+
+    if (abs(sum(w)) > small) call quit('gamma: frequencies do not sum up to zero')
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_k/), (/F, F_i, F_k/), D_ik, F_ik, w=(/w(1), w(3)/))
+    call pertdensfock((/'EL', 'EL'/), S, (/D, D_j, D_k/), (/F, F_j, F_k/), D_jk, F_jk, w=w(2:3))
+
+    call pertdensfock((/'EL', 'EL', 'EL'/), S, (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk/), &
+                                               (/F, F_i, F_j, F_k, F_ij, F_ik, F_jk/), &
+                                               D_ijk, F_ijk, w=w(1:3))
+
+    e_ijkl = 0.0d0
+    call propenergy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
+
+    print '("@ gamma (w = "4f8.4")")', w(1), w(2), w(3), w(4)
+
+    do i = 1, 3
+
+      D_i(i) = 0
+      D_j(i) = 0
+      D_k(i) = 0
+      F_i(i) = 0
+      F_j(i) = 0
+      F_k(i) = 0
+
+      do j = 1, 3
+
+        D_ij(i, j) = 0
+        D_ik(i, j) = 0
+        D_jk(i, j) = 0
+        F_ij(i, j) = 0
+        F_ik(i, j) = 0
+        F_jk(i, j) = 0
+
+        do k = 1, 3
+
+          D_ijk(i, j, k) = 0
+          F_ijk(i, j, k) = 0
+
+          do l = 1, 3
+            if (abs(e_ijkl(i, j, k, l)) > small) then
+              print '("@" a10 a2 a2 a2 f16.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
+            end if
+          end do
+        end do
+      end do
+    end do
+
+  end subroutine
 
 
 
@@ -283,4 +395,4 @@ subroutine beta_debug(S,D,F,w)
 end subroutine
 
 
-end module aoresponse_test_m
+end module
