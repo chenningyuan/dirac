@@ -94,7 +94,7 @@ contains
 
     aoresponse_skip_pp   = .false.
     aoresponse_skip_pn   = .true.
-    aoresponse_threshold = 1.0d-9
+    aoresponse_threshold = 1.0d-5
 
   end subroutine
 

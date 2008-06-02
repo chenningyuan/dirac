@@ -26,7 +26,7 @@ contains
     logical :: test_mu           = .true.
     logical :: test_alpha        = .true.
     logical :: test_beta         = .true.
-    logical :: test_gamma        = .false.
+    logical :: test_gamma        = .true.
 
     call get_S(S)
 
@@ -56,32 +56,31 @@ contains
     call alloc(freq, nr_freq)
     freq = 0.0d0
 
-    if (test_alpha) then
-      freq(1) =  0.00d0
-      call alpha(S, D, F, (/freq(1), -freq(1)/))
+!   0.08855851799036d0 = 514.5 nm
 
-      freq(1) = -0.07d0
+    if (test_alpha) then
+      freq(1) = -0.08855851799036d0
       call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if
 
     if (test_beta) then
-      freq(1) = -0.07d0
-      freq(2) =  0.07d0
+!     freq(1) = -0.07d0
+!     freq(2) =  0.07d0
+!     call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+      freq(1) = -0.177117036d0
+      freq(2) =  0.08855851799036d0
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
 
-      freq(1) = -0.14d0
-      freq(2) =  0.07d0
-      call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-      freq(1) = -0.21d0
-      freq(2) =  0.14d0
-      call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+!     freq(1) = -0.21d0
+!     freq(2) =  0.14d0
+!     call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
     end if
 
     if (test_gamma) then
-      freq(1) = -0.14d0
-      freq(2) =  0.07d0
-      freq(3) =  0.07d0
+      freq(1) = -0.08855851799036d0
+      freq(2) =  0.08855851799036d0
+      freq(3) = -0.08855851799036d0
       call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
     end if
 
