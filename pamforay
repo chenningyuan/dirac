@@ -1,0 +1,782 @@
+#!/bin/sh
+#
+# VERSION : $Revision: 1.263 $
+# DATE    : $Date: 2008/05/11 15:17:31 $
+# FILE    : pamadm
+#
+#
+#   Master script for administrator of DIRAC
+#   Written by Trond Saue Oct 1 1997
+#   Polish by Thomas Enevoldsen Oct 2 1997
+#   Additional polish and new features by J .Thyssen 1998
+#   Changed to ksh. jth Aug 24 1998 
+#
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# USAGE
+#
+#
+usage()
+{
+   echo 'Usage: pamadm [flags] tarfile'
+   echo '   Flags:'
+   echo '     -adm             : Include ALL modules (administrator)'
+   echo '     -dft             : Include DFT module'
+   echo '     -eri             : Include ERI integral routines'
+   echo '     -densfit         : Include density fitting module'
+   echo '     -largemolecules  : Increases commom blocks to handle more atoms and basis sets'
+   echo '     -fmm             : Include fast multipole method'
+   echo '     -esr             : Include ESR property module'
+   echo '     -xpp             : Include PP excitation energy and STEX modules'
+   echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
+   echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
+   echo '     -cdft            : Include SDFT/CDFT module'
+   echo '     -visual          : Include visualization module'
+   echo '     -aoresponse      : Include AO response module'
+   echo '     -cap             : Include CAP module'
+   echo '     -hscc            : Include interface for the (external) HSMRCC code'
+   echo '     -oof             : Include object oriented modularity of Fotran 90/95'
+   echo '     -adc             : Include ADC electron propagator module'
+   echo '     -ecp             : Include ARGOS ECP module'
+   echo '     tarfile=make     : only generate new Makefile'
+   echo '     tarfile=export   : Make DIRAC.new.tar.gz'
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SETUP ALL VARIABLES
+#
+#
+setup()
+{
+#
+#  Administrator needs everything.....
+#
+   echo
+   echo "*** Active modules:"
+   echo
+   echo_style=sysv
+   unset noclobber
+   EXPORTTAR=1
+   if [ -n "$PAMADM" ]; then
+      MODULES=1
+      ERIMOD=1
+      DNFMOD=1
+      ESRMOD=1
+      XPPMOD=1
+      DFTMOD=1
+      KRMCMOD=1
+      CDFTMOD=1
+      VISUALMOD=1
+      F90MODS=ALL_F90MODS
+# MI  - needs to be fixed for gfortran !!!
+#      EMBMOD=1
+#      ADCMOD=1
+#      ECPMOD=1
+      echo " - DIRAC administrator ..."
+   fi
+   #
+   #  DFT
+   #
+   if [ -n "$DFTMOD" ]; then
+      DFTFLG='-DMOD_DFT'
+      DFTOBJ='$(DFTOBJS) $(DFTOBJS_C)'
+      DFTMAK=DFT_OBJ
+      DFTTAR=1
+      echo " - DFT module (DFT)"
+   fi
+   #
+   #  ESR
+   #
+   if [ -n "$ESRMOD" ]; then
+      ESRFLG='-DMOD_ESR'
+      ESROBJ='$(ESROBJS)'
+      ESRMAK=ESR_OBJ
+      ESRTAR=1
+      echo " - ESR property module (ESR)"
+   fi
+   #
+   #  XPP and STEX
+   #
+   if [ -n "$XPPMOD" ]; then
+      XPPFLG='-DMOD_XPP -DMOD_STEX'
+      XPPOBJ='$(XPPOBJS)'
+      XPPMAK=XPP_OBJ
+      XPPTAR=1
+      echo " - Excitation energy module (XPP and STEX)"
+   fi
+   #
+   #  KRMC and LUCIAREL
+   #
+   if [ -n "$KRMCMOD" ]; then
+      KRMCFLG='-DMOD_KRMC'
+      KRMCOBJ='$(KRMC_FOBJS) $(KRMC_COBJS)'
+      KRMCMAK=KRMC_OBJ
+      LUCIARELOBJ='$(LUCIARELOBJS)'
+      LUCIARELMAK=LUCIAREL_OBJ
+      KRMCTAR=1
+      echo " - KR-MCSCF and LUCIAREL modules (KRMC)"
+   fi
+   #
+   #  Increase common block sizes to handle more centers and basis sets
+   #
+   if [ -n "$LARGEMOL" ]; then
+      LRGMOLFLG='-DLARGE_MOLECULES'
+      echo " - Increasing common block sizes to handle larger systems"
+   fi
+   #
+   #  ERI two-electron integral module
+   #
+   if [ -n "$ERIMOD" ]; then
+      ERIFLG='-DMOD_ERI'
+      ERIOBJ='$(ERIOBJS)'
+      ERIMAK=ERI_OBJ
+      ERITAR=1
+      echo " - ERI two-electron integral module"
+   fi
+   #
+   #  DNF density fitting module
+   #
+   if [ -n "$DNFMOD" ]; then
+      if [ -n "$ERIMOD" ]; then
+         ERIFLG='-DMOD_ERI'
+         ERIOBJ='$(ERIOBJS)'
+         ERIMAK=ERI_OBJ
+         ERITAR=1
+         echo " - ERI two-electron integral module"
+      else
+         echo "density fitting module not included - depends on ERI module "
+      fi
+      DNFFLG='-DMOD_DNF'
+      DNFOBJ='$(DNFOBJS)'
+      DNFMAK=DNF_OBJ
+      DNFTAR=1
+      echo " - DNF density fitting module"
+   fi
+   #
+   #  FMM  module
+   #
+   if [ -n "$FMMMOD" ]; then
+      FMMFLG='-DMOD_FMM'
+      FMMOBJ='$(FMMOBJS)'
+      FMMMAK=FMM_OBJ
+      FMMTAR=1
+      echo " - Fast Multipole Method (fmm) module"
+   fi
+   #
+   #  ab initio/DFT embedding module
+   #
+   if [ -n "$EMBMOD" ]; then
+      if [ -n "$DFTMOD" ]; then
+         EMBFLG='-DMOD_EMB'
+         EMBOBJ='$(EMBOBJS)'
+         EMBMAK=EMB_OBJ
+         EMBTAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
+      else
+         echo "ab initio/DFT embedding module not included - depends on DFT module "
+      fi
+   fi
+   #
+   #  ADC electron propagator module
+   #
+   if [ -n "$ADCMOD" ]; then
+      ADCFLG='-DMOD_ADC'
+      ADCOBJ='$(ADCOBJS)'
+      ADCMAK=ADC_OBJ
+      ADCTAR=1
+      echo " - ADC electron propagator module"
+   fi
+   #
+   #  ECP module
+   #
+   if [ -n "$ECPMOD" ]; then
+      ECPFLG='-DMOD_ECP'
+      ECPOBJ='$(ECPOBJS) $(ECPOBJS_C)'
+      ECPMAK=ECP_OBJ
+      ECPTAR=1
+      echo " - ECP argos module"
+   fi
+   #
+   #  SDFT/CDFT module
+   #
+   if [ -n "$CDFTMOD" ]; then
+      if [ -n "$DFTMOD" ]; then
+         CDFTFLG='-DMOD_CDFT'
+         CDFTOBJ='$(CDFTOBJS)'
+         CDFTMAK=CDFT_OBJ
+         CDFTTAR=1
+         echo " - SDFT/CDFT module"
+      else
+         echo "SDFT/CDFT module not included - depends on DFT module "
+      fi
+   fi
+   #
+   #  visualization module
+   #
+   if [ -n "$VISUALMOD" ]; then
+      VISUALFLG='-DMOD_VISUAL'
+      VISUALOBJ='$(VISUALOBJS)'
+      VISUALMAK=VISUAL_OBJ
+      VISUALTAR=1
+      F90MODS=ALL_F90MODS
+      echo " - visualization module"
+   fi
+   #
+   #  AO response module
+   #
+   if [ -n "$AORESPONSEMOD" ]; then
+      AORESPONSEFLG='-DMOD_AORESPONSE'
+      AORESPONSEOBJ='$(AORESPONSEOBJS)'
+      AORESPONSEMAK=AORESPONSE_OBJ
+      AORESPONSETAR=1
+      F90MODS=ALL_F90MODS
+      echo " - AO response module"
+   fi
+   #
+   #         CAP module
+   #
+   if [ -n "$CAPMOD" ]; then
+         CAPFLG='-DMOD_CAP'
+         CAPOBJ='$(CAPOBJS)'
+         CAPMAK=CAP_OBJ
+         CAPTAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - CAP module"
+  # else
+      #  echo "CAP module is not included "
+      #  echo 
+    fi
+   #
+   #   HSMRCC Dirac-interface module
+   #
+   if [ -n "$HSCCMOD" ]; then
+         HSCCFLG='-DMOD_HSCC'
+         HSCCOBJ='$(HSCCOBJS)'
+         HSCCMAK=HSCC_OBJ
+         HSCCTAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - HSMRCC interface module"
+  # else
+      #  echo "HSMRCC interface module is not included "
+      #  echo 
+    fi
+   #
+   # Object oriented fortran90/95 mocularity module
+   #
+   if [ -n "$OOFMOD" ]; then
+         OOF_FLG='-DMOD_OOF'
+         OOF_OBJ='$(OOF_OBJS)'
+         OOF_MAK=OOF_OBJ
+         OOF_TAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - OOF module"
+      else
+       #  echo "OOF module not included"
+       echo 
+   fi
+############################################################################
+#
+#           Add print-out on active Fotran90/95 modularity model
+#
+############################################################################
+  if [ -n "$MODULES" ]; then
+     echo
+     echo " * Fortran90/95 modules mode is active "
+  fi
+#  exit
+   #
+   # Defining the tarfile that is used for export
+   #
+   if [ "$TARFIL" = "make" ]; then
+      GENTAR=
+   fi
+   if [ "$TARFIL" = "export" ]; then
+      szCurrDir=`pwd`
+      szCurrDir=${szCurrDir##*/}
+      TARFIL=$szCurrDir.tar
+   fi
+   echo
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# BACKUP OLD FILES
+#
+#
+backup()
+{
+   if [ -n "$GENTAR" ]; then
+      echo "*** Backing up old files ..." 
+      echo
+      if [  ! -d backup ]; then
+         mkdir backup
+      fi
+#     Take three backup copies of the derived files and the tarfile. This should be sufficient.
+      for i in $TARFIL.gz configure export Makefile ; do
+          if [ -f "${i}" ]; then
+              cd backup
+              if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
+              if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
+              if [ -f ../"${i}" ]; then cp -f ../"${i}" "${i}.0" ; fi
+              cd ..
+          fi
+      done
+      echo
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# RESTORE AND MAKE TAR
+#
+#
+restore()
+{
+   make_export
+   if [ -n "$GENTAR" ]; then
+      #
+      # Make tar-file
+      #
+      echo "*** Making tar-file ..."
+      echo
+      ./export
+      #
+#     In case that a file is missing or has zero length : restore the old file.
+      for i in $TARFIL.gz configure export Makefile ; do
+          if [ ! -s "${i}" ]; then
+              echo "Warning : Restoring old file ${i} ..." 
+              cd backup
+              if [ -f "${i}.0" ]; then mv -f "${i}.0" ../"${i}" ; fi
+              if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.0"; fi
+              if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.1"; fi
+              cd ..
+          fi
+      done
+      echo
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAKE EXPORT SHELL SCRIPT
+#
+#
+make_export()
+{
+   echo "*** Making ./export"
+   echo
+   #
+   # Basis files
+   #
+   cat <<EOF> ./export
+#!/bin/sh
+   szCurrDir=\`pwd\`
+   szCurrDir=\${szCurrDir##*/}
+   cd ..
+   echo " - adding files to tar-achive..."
+   echo
+# First add the files that are at the main level or are special.
+   tar cvf \$szCurrDir.tar \\
+     \$szCurrDir/README \\
+     \$szCurrDir/configure \\
+     \$szCurrDir/config.sub \\
+     \$szCurrDir/config.guess \\
+     \$szCurrDir/config.status \\
+     \$szCurrDir/C90lib.cld \\
+     \$szCurrDir/crilib.cld \\
+     \$szCurrDir/pam.in \\
+     \$szCurrDir/pam.1 \\
+     \$szCurrDir/pamq \\
+     \$szCurrDir/Makefile \\
+     \$szCurrDir/doc/doc.html \\
+     \$szCurrDir/include/*.h \\
+     \$szCurrDir/main/*.h \\
+     \$szCurrDir/main/*.head \\
+     \$szCurrDir/main/*.struct \\
+     \$szCurrDir/test \\
+     \$szCurrDir/testlast \\
+     \$szCurrDir/basis \\
+     \$szCurrDir/basis_dalton \\
+     \$szCurrDir/utils 2> export.log
+echo $dirs
+# Now add the standard files from each active directory (module).
+   for module in $dirs; do
+      MDir=\$szCurrDir/\$module
+      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.F90 \$Mdir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
+   done
+EOF
+   #
+   # Active modules
+   #
+   if [ "$DFTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$DNFTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$FMMTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/fmm/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$EMBTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ADCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/reladc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ECPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/argosecp/{*.F,*.F90,*.f90,*.h,*.c,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$CDFTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$VISUALTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/visual/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$AORESPONSETAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/aoresponse/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$CAPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$HSCCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/hsmrcc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ERITAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ESRTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$XPPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$KRMCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/krmc/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
+   if [ "$OOF_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
+# A DIRAC administrator should have everything
+   if [ "$PAMADM" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/pamadm \$szCurrDir/WHATSNEW 2>> export.log
+EOF
+   fi
+   if [ "$EXPORTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/export 2>> export.log
+EOF
+   fi
+   cat <<EOF>> ./export
+      echo " - gzip'ing archive..."
+      echo
+      gzip -9v \$szCurrDir.tar
+      mv \$szCurrDir.tar.gz \$szCurrDir/\$szCurrDir.tar.gz
+EOF
+   chmod +x ./export
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAKE MAKEFILE
+#
+#
+make_makefile()
+{
+if [ -n "$IBMMOD" ]; then 
+  echo $MODS
+fi
+MODS=$MODS
+}
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Determine the active modules (directories)
+#
+#
+#
+which_modules()
+{
+#  
+#
+if [ -n "$IBMMOD" ]; then
+# I assume that DFTFLG is always activated...
+   MODS="$DFTFLG"
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
+      do 
+      MODS="$MODS,$mod"
+      done
+else
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
+fi
+dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
+
+cat <<EOF > utils/foray_0.1/dirac/active.info
+#
+# information on active modules
+#
+modules_active = " $MODS"
+
+# initialization
+add_ecp     = False 
+add_eri     = False
+add_dnf     = False
+add_fmm     = False
+add_dft     = False
+add_cdft    = False
+add_krmc    = False
+add_emb     = False
+add_esr     = False
+add_xpp     = False
+add_oof     = False
+add_adc     = False
+add_hsmrcc  = False
+add_visual  = False
+add_aoresp  = False
+add_cap     = False
+add_lucis   = True
+
+
+#
+# overrides for the different modules
+#
+EOF
+
+if [ -n "$ERIFLG" ]; then
+   dirs="$dirs eri"
+   echo "add_eri = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$DNFFLG" ]; then
+   dirs="$dirs densfit"
+   echo "add_dnf = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$FMMFLG" ]; then
+   dirs="$dirs fmm"
+   echo "add_fmm = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$DFTFLG" ]; then
+   dirs="$dirs dft"
+   echo "add_dft = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$EMBFLG" ]; then
+   dirs="$dirs embedding"
+   echo "add_emb = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$ADCFLG" ]; then
+   dirs="$dirs reladc"
+   echo "add_adc = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$ECPFLG" ]; then
+   dirs="$dirs argosecp"
+   echo "add_argosecp = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$CDFTFLG" ]; then
+   dirs="$dirs cdft"
+   echo "add_cdft = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$VISUALFLG" ]; then
+   dirs="$dirs visual"
+   echo "add_visual = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$AORESPONSEFLG" ]; then
+   dirs="$dirs aoresponse"
+   echo "add_aoresp = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$CAPFLG" ]; then
+   dirs="$dirs cap"
+   echo "add_cap = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$HSCCFLG" ]; then
+   dirs="$dirs hsmrcc"
+   dirs="$dirs hsmrcc/second_quant"
+   echo "add_hsmrcc = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$OOF_FLG" ]; then
+   dirs="$dirs oof"
+   echo "add_oof = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$KRMCFLG" ]; then
+   dirs="$dirs krmc luciarel"
+   echo "add_krmc = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$ESRFLG" ]; then
+   dirs="$dirs prp/esr"
+   echo "add_esr = True" >> utils/foray_0.1/dirac/active.info
+fi
+if [ -n "$XPPFLG" ]; then
+   dirs="$dirs prp/xpp"
+   echo "add_xpp = True" >> utils/foray_0.1/dirac/active.info
+fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAIN SCRIPT
+#
+#
+#
+# Parse arguments
+#
+if [ -z "$1" ]; then
+   usage
+   exit 1
+fi
+####
+GENTAR=1
+while [ -n "$1" ]; do
+   case "$1" in
+      -adm|-ad|-a)
+         PAMADM=1
+         ;;
+      -dft)
+         DFTMOD=1
+         ;;
+      -esr|-es)
+         ESRMOD=1
+         ;;
+      -xpp|-xp)
+         XPPMOD=1
+         ;;
+      -fmm|-fm)
+         ERIMOD=1
+         DNFMOD=1
+         FMMMOD=1
+	 MODULES=1
+         ;;
+      -densfit|-dnf)
+         DNFMOD=1
+         ERIMOD=1
+         ;;
+      -largemolecules|-lm|-l)
+         LARGEMOL=1
+         ;;
+      -eri|-er|-e)
+         ERIMOD=1
+         ;;
+      -krmc|-krm|-kr|-k)
+         KRMCMOD=1
+         ;;
+      -emb|-embedding)
+         EMBMOD=1
+	 MODULES=1
+         ;;
+      -adc)
+         ADCMOD=1
+         ;;
+      -ecp)
+         ECPMOD=1
+         ;;
+      -cdft)
+         CDFTMOD=1
+         ;;
+      -visual)
+         VISUALMOD=1
+	 MODULES=1
+         ;;
+      -aoresponse)
+         AORESPONSEMOD=1
+	 MODULES=1
+         ;;
+      -cap)
+         CAPMOD=1
+         OOFMOD=1
+	 MODULES=1
+         ;;
+      -hscc)
+         HSCCMOD=1
+         OOFMOD=1
+	 MODULES=1
+         ;;
+      -oof)
+         OOFMOD=1
+	 MODULES=1
+         ;;
+      -ibm)
+         IBMMOD=1
+         echo "activating IBM mods..."
+         ;;
+      -*)
+         echo "Option \"$1\" not recognized."
+         usage
+         exit 1
+         ;;
+      *)
+         TARFIL=$1
+         ;;
+   esac
+   shift
+done
+unset noclobber
+#
+# Setup variables
+#
+setup
+#
+# Backup old files
+#
+backup
+#
+# Find the active modules
+#
+which_modules
+#
+# Make the makefiles
+#
+make_makefile
+#
+# Make distribution and restore old files
+#
+restore
+#
+exit 0

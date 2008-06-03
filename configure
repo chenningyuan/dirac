@@ -1309,6 +1309,8 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
+         my_mpi_include_path=`$F90 $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+
          if "$F90" $mpishowopt | grep -q ifc; then
             F90real=ifc
          elif "$F90" $mpishowopt | grep -q ifort; then
@@ -1388,11 +1390,13 @@ case $machine in
 	 mod="-module $MODULE_DIR"
          ;;
       pathf90)
-         ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+         ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
          ccp="$ccp -DVAR_EKO"
 	 mod="-module $MODULE_DIR"
          ;;
       esac
+
+      cpp="$cpp -I$my_mpi_include_path"
 
       case "$CC" in
       openmpicc| mpicc)
@@ -1490,6 +1494,8 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
+         my_mpi_include_path=`$F90 $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+
          if "$F90" $mpishowopt | grep -q ifc; then
             F90real=ifc
          elif "$F90" $mpishowopt | grep -q ifort; then
@@ -1569,11 +1575,13 @@ case $machine in
          ;;
       pathf90)
 	   opt="-i8"
-         ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+         ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
          ccp="$ccp -DVAR_EKO"
 	 mod="-module $MODULE_DIR"
          ;;
       esac
+
+      cpp="$cpp -I$my_mpi_include_path"
 
       case "$CC" in
       mpicc)
@@ -1929,14 +1937,64 @@ fi
 # Add the modifications that concern the module preprocessor statements
 #
 #
+
 case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      cpp="$cpp,\$(MODS)"
+     cpp2=`echo $cpp | sed -e 's/$(MODS)//' `
      ;;
    *)
      cpp="$cpp \${MODS}"
+     cpp2=`echo $cpp | sed -e 's/${MODS}//' `
 esac
+cpp3=`echo $cpp2 | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
+ccp3=`echo $ccp | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
+
+##################################################
+#  create options to buildinfo
+#################################################
+cat <<EOF > flags.info
+
+config_options = {}
+
+config_options['arch']          = "$guess"
+config_options['memory']        = "$memsiz"
+config_options['include_flags'] = "-I$FORAY_PROJECT_ROOT/include -I/usr/include -I/usr/local/include -I./ -I../ -I../include -I./include"
+config_options['cpp_flags']     = "$cpp3"+modules_active+"-D'INSTALL_WRKMEM="+config_options['memory']+"'"
+config_options['ccp_flags']     = "$ccp3"
+config_options['f77comp']       = "$F90"
+config_options['f90comp']       = "$F90"
+config_options['linker']        = "$F90"
+config_options['ccomp']         = "$CC "
+config_options['rm_flags']      = "''"
+config_options['mod_flag']      = "-I"
+config_options['arch_command']  = "ar crv"
+config_options['unarch_command']= "ar xv"
+config_options['ranlib_command']= "ranlib"
+config_options['archive_flags'] = "$arflag"
+config_options['linker_flags']  = "$ldflag"
+config_options['f77flags']      = "-c $opt"
+config_options['f90flags']      = "-c $opt $f90_extraflags"
+config_options['c_flags']       = "-c $c_opt"
+config_options['c_includes']    = config_options['include_flags'] 
+config_options['libs']          = "$LIB"
+config_options['prepro_flags']  = "-E -traditional-cpp -x c"
+config_options['def']           = "$def"
+
+config_options['who_compiled']  = "#define WHO_COMPILED \"${LOGNAME}\""
+config_options['where_compiled']= "#define WHERE_COMPILED \"${HOST}\""
+config_options['fortran_opts']  = "#define FCOMP \""+config_options['f90comp']+" "+"$opt"+"\""
+config_options['c_opts']        = "#define CCOMP \""+config_options['ccomp']+" "+"$c_opt"+"\""
+
+compinfo_string = config_options['who_compiled']+"\n"+config_options['where_compiled']+"\n"+config_options['fortran_opts']+"\n"+config_options['c_opts']
+#print compinfo_string
+
+EOF
+
+cat utils/foray_0.1/dirac/{head,active}.info flags.info utils/foray_0.1/dirac/{prepro,target,builds}.info > buildinfo 
+ln -sf utils/foray_0.1/foray makedirac
+
 ##################################################
 #  Make Makefile.config
 #################################################

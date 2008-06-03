@@ -1,0 +1,68 @@
+#
+###############################################################################
+#
+# Build configurations
+#
+
+if config_options['def'] == "dirac.x":
+    dirac_mode = 'serial'
+else:
+    dirac_mode = 'parallel'
+
+defaultconfig = \
+{
+    'name' : 'default',
+    'buildsubdir' : 'default',
+    'compileroptions' : {
+        'archivecommand'    :    config_options['arch_command'],        
+        'unarchivecommand'  :  config_options['unarch_command'],        
+        'ranlibcommand'     :  config_options['ranlib_command'],        
+        'f77compiler'       :         config_options['f77comp'],        
+        'f90compiler'       :         config_options['f90comp'],        
+        'f77flags'          :        config_options['f77flags'],        
+        'f90flags'          :        config_options['f90flags'],        
+        'modpathoption'     :        config_options['mod_flag'],        
+        'ccompiler'         :           config_options['ccomp'],        
+        'cflags'            :         config_options['c_flags'] + " " + config_options['c_includes'] + " " + config_options['ccp_flags'],
+        'link'              :          config_options['linker'],       
+        'linkflags'         :    config_options['linker_flags'],      
+        'prioritylibs'      :            config_options['libs'],        
+        'otherlibs'         : '',
+        'compilegroupflags' : {
+            'default'       : "",
+            'safe'          : '-O0 -g'
+        }
+    } 
+}
+
+diracconfig = \
+{
+    'name'                  : dirac_mode,
+    'inherits'              : 'default',
+    'buildsubdir'           : dirac_mode,
+    'installdir'            : '$FORAY_PROJECT_ROOT/bin'+dirac_mode,
+}
+
+debugconfig = \
+{
+    'name'                  : 'debug',
+    'inherits'              : 'default',
+    'buildsubdir'           : 'debug',
+    'installdir'            : '$FORAY_PROJECT_ROOT/bin.debug',
+}
+
+configs = [defaultconfig, debugconfig,diracconfig]
+
+
+# Combine everything in buildinfo dictionary   
+buildinfo = \
+{
+    'builddir'      : '$FORAY_PROJECT_ROOT/build',
+    'fortranfiles'  : fortranfiles,
+    'targets'       : targets,
+    'defaultconfig' : 'debug',
+    'configs'       : configs
+}
+#
+###############################################################################
+#
