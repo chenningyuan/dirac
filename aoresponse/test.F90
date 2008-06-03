@@ -182,7 +182,7 @@ contains
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j(uj), F_j(uj), w=w(2:2), c=(/uj/))
 
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_j(uj)/), &
-                                         (/D, F_i(ui), F_j(uj)/), &
+                                         (/F, F_i(ui), F_j(uj)/), &
                                            D_ij(ui, uj),          &
                                            F_ij(ui, uj),          &
                                            w=(/w(1), w(2)/),      &
@@ -265,19 +265,19 @@ contains
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k(uk), F_k(uk), w=w(3:3), c=(/uk/))
 
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_j(uj)/), &
-                                         (/D, F_i(ui), F_j(uj)/), &
+                                         (/F, F_i(ui), F_j(uj)/), &
                                            D_ij(ui, uj),          &
                                            F_ij(ui, uj),          &
                                            w=(/w(1), w(2)/),      &
                                            c=(/ui, uj/))
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_k(uk)/), &
-                                         (/D, F_i(ui), F_k(uk)/), &
+                                         (/F, F_i(ui), F_k(uk)/), &
                                            D_ik(ui, uk),          &
                                            F_ik(ui, uk),          &
                                            w=(/w(1), w(3)/),      &
                                            c=(/ui, uk/))
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_j(uj), D_k(uk)/), &
-                                         (/D, F_j(uj), F_k(uk)/), &
+                                         (/F, F_j(uj), F_k(uk)/), &
                                            D_jk(uj, uk),          &
                                            F_jk(uj, uk),          &
                                            w=(/w(2), w(3)/),      &
