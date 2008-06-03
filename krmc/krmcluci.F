@@ -2060,7 +2060,7 @@ C           not in use for SIGDEN_ROUTE == SIGDEN
 C
           RUN_SHMEM_T = .FALSE.
 C
-          IF( IT_SHL .ge. 0 ) THEN 
+          IF( IT_SHL .ge. 0 .or. SPLIT_IJKL ) THEN
             RUN_SHMEM_T = .TRUE.
             IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
           END IF
@@ -2997,6 +2997,9 @@ c     END IF
 C
 C     Do symmetrizations.
 C     FIXME: write me  ??
+C
+csk   WRITE(LUPRI,*) ' THIS IS MY RHO1'
+csk   CALL WRTMATMN(RHO1,1,L1,1,L1,LUPRI)
 C
       CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
 C
