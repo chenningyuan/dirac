@@ -1449,7 +1449,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       SUBROUTINE GNSIDE_REL(ISD,IRIS,IRIC,ICA,ICB,IAA,IAB,
      &           IAOC,IBOC,JAOC,JBOC,
      &           NIA,NIB,NJA,NJB,
-     &           TB,T_SCR_CC,IXTP,
+     &           TB,T_BUFF,T_SCR_CC,IXTP,
      &           SB,CB,ISSM,ICSM,
      &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &           TBSUB,CJRES,SIRES,MAXLB,
@@ -1522,6 +1522,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 #include "cgas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
+#include "krmc_shmem.h"
 *     
 *.Input
       DIMENSION CB(*)
@@ -1533,7 +1534,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 #endif
 *.Input or Output
       DIMENSION SB(*)
-      dimension TB(*)
+      dimension TB(*), T_BUFF(*)
 *.Local Scratch
       INTEGER KAOC(MXPNGAS),KBOC(MXPNGAS)
       INTEGER NIKAINTM(MXPOBS,MXPLCCOP),NIKBINTM(MXPOBS,MXPLCCOP)
@@ -1577,7 +1578,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
       NTESTL = 0000 
       NTEST = MAX(NTESTL,max(IPRS,IPRD))
-csk      NTEST = 500
+csk   NTEST = 100
 *
       ISKIP = 0
 #if defined (VAR_MPI2)
@@ -1990,11 +1991,12 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              IF(ISD.EQ.1) THEN
                if ((IRIS.eq.1.and.IRIC.eq.2).or.
      &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( IT_SHL .lt. 0 )then
-                   ITOFF = ITOFF + LEN_T_VEC
+                 if( SPLIT_IJKL )then
+                   ITOFF = ITOFF + LEN_T_BUFF
                  end if
                end if
-               CALL TCC_SUBBLK(TB(ITOFF),T_SCR_CC(ITOFF),TBSUB,1,
+               CALL TCC_SUBBLK(TB(ITOFF),T_BUFF(ITOFF),T_SCR_CC(ITOFF),
+     &                         TBSUB,1,
      &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
      &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
      &                         ITRNSP,IDIAG,NTEST)
@@ -2093,14 +2095,15 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
 C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
                if ((IRIS.eq.1.and.IRIC.eq.2).or.
      &             (IRIS.eq.2.and.IRIC.eq.1)) then
-                 if( IT_SHL .lt. 0 )then
-                   ITOFF = ITOFF + LEN_T_VEC
+                 if( SPLIT_IJKL )then
+                   ITOFF = ITOFF + LEN_T_BUFF
                  end if
                end if
-               CALL TCC_SUBBLK(TB(ITOFF),T_SCR_CC(ITOFF),TBSUB,2,
-     &                  LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
-     &                  LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
-     &                  ITRNSP,IDIAG,NTEST)
+               CALL TCC_SUBBLK(TB(ITOFF),T_BUFF(ITOFF),T_SCR_CC(ITOFF),
+     &                         TBSUB,2,
+     &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
+     &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
+     &                         ITRNSP,IDIAG,NTEST)
              END IF
             END IF
 *           ^ End if all maps are nonvanishings
@@ -4015,7 +4018,7 @@ CSK - this may cause problems      LSCR1 = MAX(L0BLOCK,L2BLOCK)
 *
 *     dynamic allocation for scratch T block
 *     --> use in "shared memory" MPI runs, MPI info available
-*     if IS_DUMMY > 0 and info im[lemented
+*     if IS_DUMMY > 0 and info implemented
 *
       IF( IT_SHL .ge. 0 ) THEN
 *
@@ -4199,9 +4202,7 @@ C
      &     IPRSIG,IPRDEN,LUC,WORK(KCJRES),WORK(KSIRES),
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     ISSM,ICSM,ISIGDEN,NCBATCH,T,T_BUFF,
-     &     IDIAG,IRIS,IRIC,
-     &     NSPOBEX_TP,WORK(KLSOBEX),
-     &     WORK(KLSPOBEX_AC),
+     &     IDIAG,IRIS,IRIC,WORK(KLSOBEX),WORK(KLSPOBEX_AC),
      &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
      &     WORK(KI1G),WORK(KXI1G), WORK(KI2G),WORK(KXI2G),
      &     WORK(KI3G),WORK(KXI3G), WORK(KI4G),WORK(KXI4G),
@@ -4246,9 +4247,7 @@ C
      &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
      &           ISSM,ICSM,ISIGDEN,NCBATCH,
      &           T,T_BUFF,
-     &           IDIAG,IRIS,IRIC,
-     &           NSPOBEX_TP,ITSPOBEX_TP,
-     &           ISPOBEX_AC,
+     &           IDIAG,IRIS,IRIC,ITSPOBEX_TP,ISPOBEX_AC,
      &           ITOCC1,ITOCC2,ITOCC3,ITOCC4,
      &           I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,XI4G,
      &           I1GE,XI1GE,I2GE,XI2GE,I3GE,XI3GE,I4GE,XI4GE,
@@ -4329,6 +4328,7 @@ C     general input
 #include "cstate.inc"
 #include "strbas.inc"
 #include "integrals_off.inc"
+#include "ctcc.inc"
 C     memory window
 #include "krmc_shmem.h"
 C     specific input
@@ -4356,7 +4356,7 @@ C
 
       dimension ITSPOBEX_TP(4*NGAS,*)
       INTEGER ISPOBEX_AC(*), ICPL
-      INTEGER*8 ITB
+      INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD
 C
       CALL QENTER('SIGD4')
 C
@@ -4509,13 +4509,35 @@ C
 C
 C           loop over spinorbital-excitation types 
 C
+            ITB_BUFF = 1
+C
             DO 8000 ITTP = 1, NSPOBEX_TP
 C
-csk            WRITE(LUWRT,*) ' Check connections for TT block',ITTP
               ICA_OFF = 1
               ICB_OFF = 1 +  NGAS
               IAA_OFF = 1 +2*NGAS
               IAB_OFF = 1 +3*NGAS
+C
+#if defined (VAR_MPI2)
+              IF( SPLIT_IJKL ) THEN
+C               determine T type for use in T list
+                IXXTTP = ITTP
+                IF( (IRIS .eq. 1 .and. IRIC .eq. 2)
+     &             .or. ( IRIS .eq. 2 .and. IRIC .eq. 1) ) THEN
+                     IXXTTP = ITTP + NSPOBEX_TP
+                END IF
+C               active T block? (complex case included)
+                ID_GET = IT_TTPL( IXXTTP )
+csk             WRITE(LUWRT,*) ' type IXXTTP and ID_GET',IXXTTP,ID_GET
+                IF( ID_GET .le. 0 ) THEN
+                  ITB_BUFF_ADD = 0
+                  GOTO 8000
+                ELSE
+C                 length of T block to compute T_BUFF offset
+                  ITB_BUFF_ADD = NELM_CC(ITTP,NSPOBEX_TP,LEN_T_BUFF_NZ)
+                END IF
+              END IF
+#endif
 C
 C             check connections 
 C
@@ -4526,12 +4548,17 @@ C
      &                    ITSPOBEX_TP(ICB_OFF,ITTP), 
      &                    ITSPOBEX_TP(IAB_OFF,ITTP),
      &                    NGAS,ICON)
-C
+csk           WRITE(LUWRT,*) ' type ITTP and ICON',ITTP,ICON
               IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
 C
 C                offset for T array
 C
                  ITB = IBTSOSO_TP(ITTP)
+C
+                 IF( (IRIS .eq. 1 .and. IRIC .eq. 2)
+     &                .or. ( IRIS .eq. 2 .and. IRIC .eq. 1) ) THEN
+                      ITB = ITB + LEN_T_VEC
+                 END IF
 C
 C                ISIGDEN ==1
 C
@@ -4681,7 +4708,7 @@ C
      &                  NELFSPGP(1,IRATP),NELFSPGP(1,IRBTP),
      &                  NSSOA_S(1,IATP),NSSOB_S(1,IBTP),
      &                  NSSOA_C(1,JATP),NSSOB_C(1,JBTP),
-     &                  T(ITB),T_SCR_CC,ITTP,
+     &                  T(ITB),T_BUFF(ITB_BUFF),T_SCR_CC,ITTP,
      &                  SB(ISOFF),CB(ICOFF),ISSM,ICSM,
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  XINT,CJRES,SIRES,MAXK,
@@ -4727,6 +4754,10 @@ C                  ^ ISIGDEN
 C                ^ IT_SHL
                END IF
 C              ^ end if connection 
+#if defined (VAR_MPI2)
+            ITB_BUFF = ITB_BUFF + ITB_BUFF_ADD
+#endif
+C
  8000       CONTINUE
 C           ^  end of loop over spinorbital-excitation types 
             NTEST = 000
@@ -4796,7 +4827,7 @@ C
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TCC_SUBBLK(TCC,T_SCR_CC,TCC_SUB,IWAY,
+      SUBROUTINE TCC_SUBBLK(TCC,TCC_BUFF,T_SCR_CC,TCC_SUB,IWAY,
      &                      NCA,NCA_SUB,ICA_B,NCB,NCB_SUB,ICB_B,
      &                      NAA,NAA_SUB,IAA_B,NAB,NAB_SUB,IAB_B,
      &                      IAB_TRNSP,IDIAG,IPRNT)
@@ -4816,11 +4847,14 @@ C
 *                use of T_SCR_CC in MPI "shared memory" mode added
 *                --> treated in same way as TCC_SUB
 *
+* Stefan Knecht, May  2008 
+*                use of TCC_BUFF in split mode added
+*
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "parluci.h"
 *. Input and output
-      DIMENSION TCC(NCA*NCB*NAA*NAB), T_SCR_CC(*)
+      DIMENSION TCC(NCA*NCB*NAA*NAB), TCC_BUFF(*), T_SCR_CC(*)
       DIMENSION TCC_SUB(NCA_SUB,NCB_SUB,NAA_SUB,NAB_SUB)
 *
       NTESTL = 000
@@ -4837,6 +4871,9 @@ csk      NTEST = 500
         IF( SHARED_M )THEN
           WRITE(LUWRT,*) ' T_SCR_CC input BLOCK'
           CALL WRTMATMN(T_SCR_CC,NCA*NCB,NAA*NAB,NCA*NCB,NAA*NAB,LUWRT)
+        ELSE IF(SPLIT_IJKL)THEN
+          WRITE(LUWRT,*) ' TCC_BUFF input BLOCK'
+          CALL WRTMATMN(TCC_BUFF,NCA*NCB,NAA*NAB,NCA*NCB,NAA*NAB,LUWRT)
         ELSE
           WRITE(LUWRT,*) ' TCC input BLOCK'
           CALL WRTMATMN(TCC,NCA*NCB,NAA*NAB,NCA*NCB,NAA*NAB,LUWRT)
@@ -4862,7 +4899,14 @@ csk               WRITE(LUWRT,*) ' IADR_FULL 1 is',IADR_FULL
                    T_SCR_CC(IADR_FULL) = T_SCR_CC(IADR_FULL) + 
      &                                   TCC_SUB(ICA,ICB,IAA,IAB)
                  END IF
-               ELSE
+               ELSE IF( SPLIT_IJKL )THEN
+                 IF(IWAY.EQ.1) THEN
+                   TCC_SUB(ICA,ICB,IAA,IAB) =  TCC_BUFF(IADR_FULL)
+                 ELSE
+                   TCC_BUFF(IADR_FULL) = TCC_BUFF(IADR_FULL) + 
+     &                                   TCC_SUB(ICA,ICB,IAA,IAB)
+                 END IF
+               ELSE 
                  IF(IWAY.EQ.1) THEN
                    TCC_SUB(ICA,ICB,IAA,IAB) =  TCC(IADR_FULL)
                  ELSE
@@ -4870,7 +4914,7 @@ csk               WRITE(LUWRT,*) ' IADR_FULL 1 is',IADR_FULL
      &                              TCC_SUB(ICA,ICB,IAA,IAB)
                  END IF
                END IF
-C              ^ "shared memory" mode
+C              ^ "shared memory" / split mode
              END DO
            END DO
          END DO
@@ -4892,6 +4936,13 @@ C?       WRITE(6,*) ' ICA, ICB, IAA, IAB =', ICA,ICB,IAA,IAB
              T_SCR_CC(IADR_FULL)  =  T_SCR_CC(IADR_FULL) + 
      &                               TCC_SUB(ICA,ICB,IAA,IAB)
            END IF
+         ELSE IF (SPLIT_IJKL) THEN
+           IF(IWAY.EQ.1) THEN
+             TCC_SUB(ICA,ICB,IAA,IAB) =  TCC_BUFF(IADR_FULL)
+           ELSE
+             TCC_BUFF(IADR_FULL)  =  TCC_BUFF(IADR_FULL) + 
+     &                               TCC_SUB(ICA,ICB,IAA,IAB)
+           END IF
          ELSE
            IF(IWAY.EQ.1) THEN
              TCC_SUB(ICA,ICB,IAA,IAB) =  TCC(IADR_FULL)
@@ -4900,7 +4951,7 @@ C?       WRITE(6,*) ' ICA, ICB, IAA, IAB =', ICA,ICB,IAA,IAB
      &                          TCC_SUB(ICA,ICB,IAA,IAB)
            END IF
          END IF
-C        ^ "shared memory" mode
+C        ^ "shared memory" / split mode
        END DO
        END DO
        END DO
@@ -4934,6 +4985,13 @@ csk               WRITE(LUWRT,*) ' IADR_FULL 3 is',IADR_FULL
              T_SCR_CC(IADR_FULL)  =  T_SCR_CC(IADR_FULL) + 
      &                               TCC_SUB(ICA,ICB,IAA,IAB)
            END IF
+         ELSE IF (SPLIT_IJKL) THEN
+           IF(IWAY.EQ.1) THEN
+             TCC_SUB(ICA,ICB,IAA,IAB) =  TCC_BUFF(IADR_FULL)
+           ELSE IF(ILOW.EQ.1) THEN
+             TCC_BUFF(IADR_FULL)  =  TCC_BUFF(IADR_FULL) + 
+     &                               TCC_SUB(ICA,ICB,IAA,IAB)
+           END IF
          ELSE
            IF(IWAY.EQ.1) THEN
              TCC_SUB(ICA,ICB,IAA,IAB) =  TCC(IADR_FULL)
@@ -4942,7 +5000,7 @@ csk               WRITE(LUWRT,*) ' IADR_FULL 3 is',IADR_FULL
      &                          TCC_SUB(ICA,ICB,IAA,IAB)
            END IF
          END IF
-C        ^ "shared memory" mode
+C        ^ "shared memory" / split mode
        END DO
        END DO
        END DO
@@ -4956,8 +5014,6 @@ C        ^ "shared memory" mode
         CALL WRTMATMN(TCC_SUB,NCAB_SUB,NAAB_SUB,NCAB_SUB,NAAB_SUB,LUWRT)
       END IF
 *  
-C     CALL RMEMCHK
-*
       END
 ***********************************************************************
 *                                                                     *

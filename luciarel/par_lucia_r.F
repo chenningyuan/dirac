@@ -290,13 +290,13 @@ C
       CALL MEMMAR(KACT_NUM   ,I_NZERO_LEN       ,'ADDL  ',1,'IACTNM')
       CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS        ,'ADDL  ',1,'IM_BLK')
       CALL MEMMAR(KICCTOS    ,I_NZERO_LEN**2    ,'ADDL  ',1,'ICCTOS')
-      CALL MEMMAR(KGROUPCHECK,NMPROC*ICOMM_SIZE_TMP,'ADDL  ',1,'ICCTOS')
+      CALL MEMMAR(KGROUPCHECK,NMPROC*ICOMM_SIZE_TMP,'ADDL  ',1,'IGPCHK')
 C
       CALL IZERO(WORK(KICCTOS)    ,I_NZERO_LEN**2)
       CALL IZERO(WORK(KAM_BLK_ACT),NUM_BLOCKS)
       CALL IZERO(WORK(KCWEIGHTF)  ,I_NZERO_LEN)
       CALL IZERO(WORK(KACT_NUM)  , I_NZERO_LEN)
-      CALL IZERO(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE)
+      CALL IZERO(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
 C
       CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACT),IBLOCKL,NDIM)
 C
@@ -309,7 +309,36 @@ C
 C
       IF( SPLIT_IJKL )THEN
 C
+C       alternative block distribution
+C
+C       gather on each node-master
+C
+        IF( MYNEW_ID .eq. N_MASTER )THEN
+C
+          CALL MPI_ALLGATHER(IGROUPLIST,NMPROC,my_MPI_INTEGER,
+     &                       WORK(KGROUPCHECK),NMPROC,my_MPI_INTEGER,
+     &                       ICOMM,IERR)
+        END IF
+C
+        CALL MPI_BCAST(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP,
+     &                 my_MPI_INTEGER,N_MASTER,MYNEW_COMM,IERR)
+C
+csk     WRITE(LUWRT,*) ' WORK(KGROUPCHECK) from process',MYPROC
+csk     CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
+csk  &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
+C
+C       order group array
+C
+        CALL ORDER_ARRAY(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
+C
+csk     WRITE(LUWRT,*) ' WORK(KGROUPCHECK) after reordering',MYPROC
+csk     CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
+csk  &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
+C
+C
         MY_BWEIGHT_LEN = I_NZERO_LEN
+csk     WRITE(LUWRT,*) ' MY_BWEIGHT_LEN, I_NZERO_LEN',
+csk  &                   MY_BWEIGHT_LEN, I_NZERO_LEN
         CALL MPIXMEM_ALLOC( MY_BWEIGHT_PTR, 3, MY_BWEIGHT_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         MY_BPROC_LEN   = NMPROC
@@ -318,41 +347,15 @@ C
 C
         CALL IZERO8(I_BWEIGHT,MY_BWEIGHT_LEN)
         CALL IZERO8(I_BPROC  ,MY_BPROC_LEN)
-C
-C       alternative block distribution
-C
-C       gather on each node-master
-C
-        CALL MPI_ALLGATHER(IGROUPLIST,NMPROC,my_MPI_INTEGER,
-     &                     WORK(KGROUPCHECK),NMPROC,my_MPI_INTEGER,
-     &                     ICOMM,IERR)
-C
-C
-        CALL MPI_BCAST(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP,
-     &                 my_MPI_INTEGER,N_MASTER,MYNEW_COMM,IERR)
-C
-        WRITE(LUWRT,*) ' WORK(KGROUPCHECK) from process',MYPROC
-C
-        CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
-     &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
-C
-C       order group array
-C
-        CALL ORDER_ARRAY(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
-C
-        WRITE(LUWRT,*) ' WORK(KGROUPCHECK) after reordering',MYPROC
-C
-        CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
-     &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
-C
+csk     WRITE(LUWRT,*) '  *********** BLOCK WEIGHTs (start) ***********'
+csk     CALL IWRTMAMN8(I_BWEIGHT,1,I_NZERO_LEN,1,I_NZERO_LEN,LUWRT)
 C
         CALL BLOCK_DISTR_2(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF),
      &                     WORK(KGROUPCHECK),I_BWEIGHT,I_BPROC,
-     &                     IACT_NUM,ICOMM_SIZE_TMP)
+     &                     WORK(KACT_NUM),ICOMM_SIZE_TMP)
 C       release memory
         CALL MPIXMEM_FREE(I_BWEIGHT)
         CALL MPIXMEM_FREE(I_BPROC)
-        CALL Abend2('stefan forced me to stop')
 C
       ELSE ! split_ijkl
 C
@@ -429,18 +432,29 @@ C
         MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
         CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
      &                      MPI_INFO_NULL, .FALSE.)
+C
         CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
+        CALL IZERO(IT_TTPL , NSPOBEX_TP * IRC_SAVE )
 C       --> use connection vector RCCTOS and NPARBLOCK to produce
 C           output on IT_CTONE
 C
 C         2. check for T-connections
 C
-          CALL FIND_IMAT_SC_REL(RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,NDIM)
+          CALL FIND_IMAT_SC_REL(RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,-1)
 C
 C         save connections
 C
-          CALL ICOPY(IT_CTONE,IT_TTPL,NSPOBEX_TP*IRC_SAVE)
+          LEN_COPY = NSPOBEX_TP*IRC_SAVE
+          CALL ICOPY(LEN_COPY,IT_CTONE,1,IT_TTPL,1)
 C
+csk       WRITE(LUWRT,*) ' IT_CTONE'
+csk       CALL IWRTMAMN(IT_CTONE,1,NSPOBEX_TP*IRC_SAVE,1,
+csk  &                  NSPOBEX_TP*IRC_SAVE,LUWRT)
+csk       WRITE(LUWRT,*) ' IT_TTPL'
+csk       CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC_SAVE,1,
+csk  &                  NSPOBEX_TP*IRC_SAVE,LUWRT)
+C
+csk       CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
 C         release scratch memory
           CALL MPIXMEM_FREE(IT_CTONE)
 C
@@ -959,6 +973,8 @@ C
           IIWEIGHTBLK              = ICWEIGHTF(I_AM_ACTIVE)
           ILEN                     = IILENGTH * IIWEIGHTBLK
           I_BWEIGHT( I_AM_ACTIVE ) = ILEN
+csk       WRITE(LUWRT,*) ' ILEN, I_AM_ACTIVE, I_BWEIGHT(...)',
+csk  &                     ILEN, I_AM_ACTIVE, I_BWEIGHT(I_AM_ACTIVE)
           IILENGTH_MAX             = MAX(IILENGTH_MAX,IILENGTH)
           MXSIZE                   = MAX(MXSIZE,ILEN)
           NPARBLOCK( ICBL )        = -1
@@ -970,10 +986,13 @@ C
 C
 C     debug print      
 C
-csk#if def(MOD_DEBUG)
+#if defined (MOD_DEBUG)
+      WRITE(LUWRT,*) '  I_AM_ACTIVE is ',I_AM_ACTIVE
       WRITE(LUWRT,*) '  *********** BLOCK WEIGHTs ************'
       CALL IWRTMAMN8(I_BWEIGHT,1,I_AM_ACTIVE,1,I_AM_ACTIVE,LUWRT)
-csk#endif
+      WRITE(LUWRT,*) ' ICOMM_SZ_TMP, ICOMM_SZ_TMP*NMPROC', 
+     &                 ICOMM_SZ_TMP, ICOMM_SZ_TMP*NMPROC
+#endif
 C
       ICOUNTABLK = I_AM_ACTIVE
 *
@@ -1034,25 +1053,26 @@ C
 C
       DO 300 II = 1, ICOUNTABLK
          ICURR_BLOAD = I_BWEIGHT(II)
-         WRITE(LUWRT,*) ' ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD',
-     &                    ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD
+csk      WRITE(LUWRT,*) ' ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD',
+csk  &                    ICURR_PTAG,ICURR_PLOAD,ICURR_PR,ICURR_BLOAD
          IF( ICURR_PTAG .lt. NTEMPP )THEN
            IF( ICURR_PLOAD + ICURR_BLOAD .le. IPRODLEN)THEN
                ICURR_PLOAD       = ICURR_PLOAD + ICURR_BLOAD
                NPARBLOCK(IACT_NUM(II))   = ICURR_PR
-               WRITE(LUWRT,*) ' assigning block II to ICURR_PR',
-     &                          II,ICURR_PR
+csk            WRITE(LUWRT,*) ' assigning block II to ICURR_PR',
+csk  &                          II,ICURR_PR
            ELSE
 C              write processor load to array
                I_BPROC(ICURR_PR+1) = ICURR_PLOAD
 C              next processor
                ICURR_PTAG  = ICURR_PTAG + 1
                IF( ICURR_PTAG .lt. NTEMPP ) THEN
+csk              WRITE(LUWRT,*) ' 3. ICURR_PTAG+1',ICURR_PTAG+1
                  ICURR_PR                  = IALLGRPLST(ICURR_PTAG+1)
                  ICURR_PLOAD               = ICURR_BLOAD
                  NPARBLOCK(IACT_NUM(II))   = ICURR_PR
-                 WRITE(LUWRT,*) ' 3. assigning block II to ICURR_PR',
-     &                          II,ICURR_PR
+csk              WRITE(LUWRT,*) ' 3. assigning block II to ICURR_PR',
+csk  &                          II,ICURR_PR
                ELSE
 C                end of all temporary available CPU's;
 C                assign current block to CPU with lowest count
@@ -1066,8 +1086,8 @@ C
                  I_BPROC(ICURR_PR+1) = I_BPROC(ICURR_PR+1)+ICURR_BLOAD
                  NPARBLOCK(IACT_NUM(II))   = ICURR_PR
                  ICURR_PLOAD = I_BPROC(ICURR_PR+1)
-                 WRITE(LUWRT,*) ' 2. assigning block II to ICURR_PR',
-     &                          II,ICURR_PR
+csk              WRITE(LUWRT,*) ' 2. assigning block II to ICURR_PR',
+csk  &                          II,ICURR_PR
                END IF
            END IF
          ELSE
@@ -1084,8 +1104,8 @@ C
 C
            I_BPROC(ICURR_PR+1)       = I_BPROC(ICURR_PR+1)+ICURR_BLOAD
            NPARBLOCK(IACT_NUM(II))   = ICURR_PR
-           WRITE(LUWRT,*) ' 4. assigning block II to ICURR_PR',
-     &                      II,ICURR_PR
+csk        WRITE(LUWRT,*) ' 4. assigning block II to ICURR_PR',
+csk  &                      II,ICURR_PR
 C
          END IF
  300     CONTINUE
@@ -1784,7 +1804,7 @@ C
 #include "ctcc.inc"
 #include "parluci.h"
 *
-      dimension DENS(NALLINT), DENS_SCR(*)
+      dimension DENS(*), DENS_SCR(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
       INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF
 *
@@ -1893,21 +1913,18 @@ csk          write(LUWRT,*) ' NINT_TP =',NINT_TP
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COLLECT_DENS_MAT2(DENS_SCR,DENS,ISF,ISHARE)
+      SUBROUTINE COLLECT_DENS_MAT_SPLIT(DENS_SCR,DENS,IT_TTPL,ISF)
 C
-C     Written by  S. Knecht         - October 1 2007
+C     Written by  S. Knecht         - May 28 2008
 C
 C**********************************************************************
 C
-C     collect density matrix elements from all CPUs to:
-C
-C                                           ISHARE = 0: MASTER  
-C                                           ISHARE = 1: MASTER + NODES 
+C     collect density matrix elements
 C
 C     density matrix DENS for current eigenvector is in SIGDEN ordering
 C     output: updated DENS
 C
-C     Last revision:     S. Knecht       - October  2007
+C     Last revision:     S. Knecht       - May 2008
 C
 ************************************************************************
 #include "implicit.h"
@@ -1920,18 +1937,20 @@ C
 #include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
+#include "krmc_shmem.h"
 *
-      dimension DENS(*), DENS_SCR(*)
+      dimension DENS(*), DENS_SCR(*), IT_TTPL(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
-      INTEGER*8 NINT_TOT, NINT_TP_I8,IRIOFF
+      INTEGER*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD
 *
-      ISHCOLOR   = 0
-      ISHKEY     = 0
-      NINT_TP_I8 = 0
+      ISHCOLOR     = 0
+      ISHKEY       = 0
+      ITB_BUFF_ADD = 0
+      ID_GET       = - 1
 *
       NINT_TOT = N1ELINT + N2ELINT
-csk      WRITE(LUWRT,*) ' NINT_TOT, N1ELINT, N2ELINT',
-csk     &                 NINT_TOT, N1ELINT, N2ELINT
+csk   WRITE(LUWRT,*) ' NINT_TOT, N1ELINT, N2ELINT',
+csk  &                 NINT_TOT, N1ELINT, N2ELINT
 *     check for quaternion algebra
       if (ISF.eq.1) then
         IRILP = 1
@@ -1941,19 +1960,18 @@ csk     &                 NINT_TOT, N1ELINT, N2ELINT
 *
 *     loop over real and imag part of density matrix elements
 *
+*
       do IRI = 1,IRILP,1
-        IRUN = 1
-        IRIOFF = 0
+        ITB_BUFF = 1
         do JRI = 1,IRI-1,1
-          IRIOFF = IRIOFF + NINT_TOT
+          ITB_BUFF = ITB_BUFF + LEN_T_BUFF
         end do
+csk     write(LUWRT,*) '  ITB_BUFF, LEN_T_BUFF',ITB_BUFF, LEN_T_BUFF
         IF( NPTESTVAR .GE. 10 )THEN
         write(LUWRT,*) '  '
         write(LUWRT,*) '  '
         write(LUWRT,'(2X,A)') 
      &            'updating one- and two-particle densities '
-        write(LUWRT,*) '  '
-        write(LUWRT,'(2X,A,1X,I3)')' parallel update level ', ISHARE
         write(LUWRT,*) '  '
         if (IRI.eq.1) write(LUWRT,*) ' Real density elements     : '
         if (IRI.eq.2) write(LUWRT,*) ' Imaginary density elements: '
@@ -1963,68 +1981,51 @@ csk     &                 NINT_TOT, N1ELINT, N2ELINT
 *       loop over excitation types
 *
         do IXTP = 1,NSPOBEX_TP,1
-csk          write(LUWRT,*) '  '
-csk          write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
-csk          write(LUWRT,*)        ' -------------------------'
-csk          write(LUWRT,*) '  '
-             NINT_TP_I8 = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
-             XNINT_TP_I8 = REAL(NINT_TP_I8)
-             NINT_TP = IGIVE_I_B(XNINT_TP_I8)
+csk        write(LUWRT,*) '  '
+csk        write(LUWRT,'(A,I4)') ' Excitation type ... ',IXTP
+csk        write(LUWRT,*)        ' -------------------------'
+csk        write(LUWRT,*) '  '
+           IXXTTP = (( IRI - 1 ) * NSPOBEX_TP) + IXTP
+C          active T block? (complex case included)
+           ID_GET = IT_TTPL( IXXTTP )
+csk        WRITE(6,*) ' type IXXTTP and ID_GET',IXXTTP,ID_GET,MYPROC
+           IF( ID_GET .le. 0 ) THEN
+             ITB_BUFF_ADD = 0
+             NINT_TP      = 0
+             ISHCOLOR     = 6
+           ELSE
+C            length of T block to compute T_BUFF offset
+             ITB_BUFF_ADD = NELM_CC(IXTP,NSPOBEX_TP,NINT_TOT)
+             XNINT_TP_I8  = REAL(ITB_BUFF_ADD)
+             NINT_TP      = IGIVE_I_B(XNINT_TP_I8)
+             XXX = 0.0D0
+             XXX = DDOT(NINT_TP,DENS(ITB_BUFF),1,DENS(ITB_BUFF),1)
+             ISHCOLOR     = 7
+             IF( XXX .eq. 0.0D0 ) THEN 
+                ISHCOLOR        = 6
+                NINT_TP         = 0
+                IT_TTPL(IXXTTP) = - 1
+             END IF
+           END IF
 *
-csk           write(6,*) ' COLLECT_DENS_MAT2: NINT_TP_I8 =',NINT_TP_I8
-csk           write(6,*) ' COLLECT_DENS_MAT2: NINT_TP    =',NINT_TP
-csk           write(6,*) ' COLLECT_DENS_MAT2: IRUN       =',IRUN
-csk           write(6,*) ' COLLECT_DENS_MAT2: IRIOFF     =',IRIOFF
-csk           write(6,*) ' COLLECT_DENS_MAT2: IXTP       =',IXTP  
+           CALL DZERO(DENS_SCR,NINT_TP)
 *
-          CALL DZERO(DENS_SCR,NINT_TP)
+           ISHKEY = MYPROC
+*          new communicator for REDUCE on MASTER
+           CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
+     &                         ISHCOMM,IERR)
 *
+*          "global" update  
 *
-          IF( ISHARE .eq. 0 )THEN          
+           CALL REDVEC_REL(DENS(ITB_BUFF),DENS_SCR,NINT_TP,2,
+     &                     MPI_SUM,ISHCOMM, - 1 )
+           CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(ITB_BUFF),1)
 *
-            XXX = 0.0D0
-            XXX = DDOT(NINT_TP,DENS(IRIOFF+IRUN),1,DENS(IRIOFF+IRUN),1)
+  100      CONTINUE
+           CALL MPI_COMM_FREE(ISHCOMM,IERR)
 *
-            IF( MYPROC .eq. MASTER )THEN
-              ISHCOLOR = 7
-            ELSE
-              IF( XXX .eq. 0.0D0 ) ISHCOLOR = 6
-              IF( XXX .ne. 0.0D0 ) ISHCOLOR = 7
-            END IF
-*           key value: MASTER will be MASTER again
-            ISHKEY = MYPROC
-*           new communicator for REDUCE on MASTER
-            CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,ISHCOLOR,ISHKEY,
-     &                          ISHCOMM,IERR)
-*
-            IF( ISHCOLOR .eq. 6 ) GOTO 100
-*
-          END IF
-*
-*         start update 
-          IF( ISHARE .eq. 0 )THEN
-*           sum up partial density matrix elements on MASTER
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
-     &                      MPI_SUM,ISHCOMM,MASTER)
-*
-*           copy back updated matrix elements
-            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
-*
-          ELSE IF( ISHARE .eq. 1 )THEN
-*           sum up partial density matrix elements on ALL CPUs
-            CALL REDVEC_REL(DENS(IRIOFF+IRUN),DENS_SCR,NINT_TP,2,
-     &                      MPI_SUM,MPI_COMM_WORLD, - 1 )
-*
-*           copy back updated matrix elements
-            CALL DCOPY(NINT_TP,DENS_SCR,1,DENS(IRIOFF+IRUN),1)
-          END IF
-*         ^ update either MASTER or all CPUs
-  100     CONTINUE
-*
-          IF( ISHARE .eq. 0 ) CALL MPI_COMM_FREE(ISHCOMM,IERR)
-*
-*         keep track of correct offset
-          IRUN = IRUN + NINT_TP
+*          keep track of correct DENS offset
+           ITB_BUFF = ITB_BUFF + ITB_BUFF_ADD
         end do
 *       ^ loop over excitation types
       end do
@@ -2624,6 +2625,45 @@ C
         END IF
         WRITE(LUWRT,*) '  '
       END IF
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE FIND_SENDER(ID_LIST,ID_LIST_ALL,NDIM)
+*
+*  Find density block sender == lowest processor tag 
+*
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION ID_LIST(*), ID_LIST_ALL(*)
+C
+      DO IMULT = 1, IRC_SAVE
+         JMULT = (IMULT-1)*NDIM
+        DO IXTP = 1, NDIM
+          NLOW = 0
+ 100      CONTINUE
+          NLOW = NLOW + 1
+          IF(ID_LIST_ALL(((NLOW-1)*NDIM*IRC_SAVE)+IXTP+JMULT).gt.0)THEN
+            ID_LIST(IXTP+JMULT) = NLOW - 1
+            GOTO 200
+          ELSE
+            IF(NLOW .le. NMPROC-1) THEN 
+               GOTO 100
+            ELSE
+               ID_LIST(IXTP+JMULT) = -1
+               GOTO 200
+            END IF
+          END IF
+ 200      CONTINUE
+        END DO
+      END DO
 C
       END
 ***********************************************************************
@@ -3376,8 +3416,6 @@ C     (*_MS2 arrays are in CSTATE )
 C
       ISIGDEN = 1
 C
-CSK      WRITE(LUWRT,*) ' I enter FIND_IMAT_DRV1'
-C      
       CALL FIND_IMAT_DRV1(NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                    WORK(KLSI1BT),WORK(KLSIBT),ISIGDEN,
      &                    ISCALFAC,ICCTOS,ICWEIGHTF,NDIM,
@@ -3460,7 +3498,11 @@ C
 *     NOTE: IF( SPLIT_IJKL .and. NDIM_B .eq. - 1 ) T-connection run 
 *
       CHECK_TSPLIT = .FALSE.
-      IF ( SPLIT_IJKL .and. NDIM_B .eq. -1 ) CHECK_TSPLIT = .TRUE.
+      IF ( SPLIT_IJKL .and. NDIM_B .eq. -1 ) THEN 
+           CHECK_TSPLIT = .TRUE.
+           IRILP = IRC_SAVE
+      END IF
+csk   WRITE(LUWRT,*) ' CHECK_TSPLIT is ', CHECK_TSPLIT
 *
 *     loop over vectors of sigma and C : MK2 space
 *
@@ -3518,7 +3560,7 @@ C
               END DO
             END IF
 *
-CSK            WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
+csk         WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
 *
             IF( ICOMPUTE .eq. 0 ) THEN
               GOTO 60
@@ -3863,10 +3905,10 @@ CSK     & JCBATCH, NJBLOCK, NCTT_BLK, I1C
           IC_OFF_BLK = INT_IOFF1_C
           IST_C_BLK_CT = IC_OFF_BLK
           DO JBLK = ICBLK, ICBLK + NCBLK - 1
-CSK            WRITE(LUWRT,*) ' Checking for c block',IC_OFF_BLK+JBLK-1
+csk         WRITE(LUWRT,*) ' Checking for c block',IC_OFF_BLK+JBLK-1
             IF( ISCLFAC(IC_OFF_BLK+JBLK-1) .gt. 0 ) THEN
               ICOMPUTE_C = 1
-CSK               WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
+csk            WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
             END IF
           END DO
 *
@@ -3887,15 +3929,16 @@ CSK               WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
             NSBLK = NSMST
             IS_OFF_BLK = 0
             IS_OFF_BLK = NUM_SBLK + 1
-CSK            WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
+csk         WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
             IF( CHECK_TSPLIT ) THEN
               DO JJBLK = ISBLK, ISBLK + NSBLK - 1
-CSK                  WRITE(LUWRT,*) 'Checking for sigma block',
-CSK     &                            IS_OFF_BLK+JJBLK-1
-                  IF( IAM_BLK_ACT( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
+csk               WRITE(LUWRT,*) 'Checking for sigma block',
+csk  &                            IS_OFF_BLK+JJBLK-1
+                  IF( IAM_BLK_ACT( JJBLK + IS_OFF_BLK-1 ).eq. 
+     &                MYPROC ) THEN
                     ICOMPUTE_S = 1
-CSK                    WRITE(LUWRT,*) ' active s block found',
-CSK     &                               IS_OFF_BLK+JJBLK-1
+csk                 WRITE(LUWRT,*) ' active s block found',
+csk  &                               IS_OFF_BLK+JJBLK-1
                   END IF
               END DO
             ELSE 
@@ -3920,7 +3963,6 @@ CSK     &      ISBLK,IATP,IBTP,ISOFF
             ILATP = IATP + IOCTPA - 1
             ILBTP = IBTP + IOCTPB - 1
 *. Connections ?
-CSK            WRITE(LUWRT,*) ' Check connections for TT blocks',NSPOBEX_TP
             DO 8000 ITTP = 1, NSPOBEX_TP
 *
               ICA_OFF = 1
@@ -4279,7 +4321,8 @@ C
            IRIMULTIP = 2
          END IF
         IOFF_XTYPE = NSPOBEX_TP * ( IRIMULTIP - 1 ) + IXTP
-csk        WRITE(LUWRT,*) '  putting IXTP to IOFF_XTYPE', IXTP, IOFF_XTYPE
+csk     WRITE(LUWRT,*) ' IXTP to IOFF_XTYPE, NSPOBEX_TP, IRIMULTIP',
+csk  &                    IXTP, IOFF_XTYPE, NSPOBEX_TP, IRIMULTIP
         ICWEIGHTF( IOFF_XTYPE ) = ICWEIGHTF( IOFF_XTYPE ) + 1
       END IF
 C
@@ -8631,33 +8674,63 @@ csk   WRITE(LUWRT,*) ' IOFF_SCR, IS_BYTE8, NINT_8, NDIM, N1_INT',
 csk  &                 IOFF_SCR, IS_BYTE8, NINT_8, NDIM, N1_INT
 csk   WRITE(LUWRT,*) ' showing IT_TTPL with IRC_SAVE',IRC_SAVE
 csk   CALL IWRTMAMN(IT_TTPL,1,NDIM*IRC_SAVE,1,NDIM*IRC_SAVE,LUWRT)
-      DO IMULT = 1, IRC_SAVE
-        DO IJKL = 1, NDIM
+      IF( SPLIT_IJKL )THEN
+        DO IMULT = 1, IRC_SAVE
+          DO IJKL = 1, NDIM
 C
-          ISLEN_TBL = NELM_CC(IJKL,NDIM,NINT_8)
-csk     WRITE(LUWRT,*) ' ISLEN_TBL',ISLEN_TBL
+            ISLEN_TBL = NELM_CC(IJKL,NDIM,NINT_8)
+csk       WRITE(LUWRT,*) ' ISLEN_TBL',ISLEN_TBL
 C
-          ITYPE = IJKL + NDIM * ( IMULT - 1)
-          IF( IT_TTPL( ITYPE ) .eq. MYNEW_ID_SM )THEN
+            ITYPE = IJKL + NDIM * ( IMULT - 1)
+            IF( IT_TTPL( ITYPE ) .gt. 0 )THEN
 #if defined (INT_STAR8)
-            IREAD_BYTE = IS_BYTE8 * ISLEN_TBL
+              IREAD_BYTE = IS_BYTE8 * ISLEN_TBL
 #else
-            XLENTIT      = REAL(ISLEN_TBL)
-            ISLEN_TBL_I4 = IGIVE_I_B(XLENTIT) 
-            IREAD_BYTE   = ISIZE_dp * ISLEN_TBL_I4
+              XLENTIT      = REAL(ISLEN_TBL)
+              ISLEN_TBL_I4 = IGIVE_I_B(XLENTIT) 
+              IREAD_BYTE   = ISIZE_dp * ISLEN_TBL_I4
 #endif
-csk       WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
-csk  &                                      IOFF_SCR,   IREAD_BYTE
-csk       WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
-            CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
-     &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-            IOFF_T_B = IOFF_T_B + ISLEN_TBL
-          ENDIF
-          INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
-          IOFF_SCR   = IOFF_SCR + INUM_BYTE
+csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
+csk  &                                        IOFF_SCR,   IREAD_BYTE
+csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
+              CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
+     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+              IOFF_T_B = IOFF_T_B + ISLEN_TBL
+            ENDIF
+            INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
+            IOFF_SCR   = IOFF_SCR + INUM_BYTE
 C
+          END DO
         END DO
-      END DO
+      ELSE
+        DO IMULT = 1, IRC_SAVE
+          DO IJKL = 1, NDIM
+C
+            ISLEN_TBL = NELM_CC(IJKL,NDIM,NINT_8)
+csk       WRITE(LUWRT,*) ' ISLEN_TBL',ISLEN_TBL
+C
+            ITYPE = IJKL + NDIM * ( IMULT - 1)
+            IF( IT_TTPL( ITYPE ) .eq. MYNEW_ID_SM )THEN
+#if defined (INT_STAR8)
+              IREAD_BYTE = IS_BYTE8 * ISLEN_TBL
+#else
+              XLENTIT      = REAL(ISLEN_TBL)
+              ISLEN_TBL_I4 = IGIVE_I_B(XLENTIT) 
+              IREAD_BYTE   = ISIZE_dp * ISLEN_TBL_I4
+#endif
+csk         WRITE(LUWRT,*) ' reading at IOFF_SCR: # elements (byte):',
+csk  &                                        IOFF_SCR,   IREAD_BYTE
+csk         WRITE(LUWRT,*) ' memory offset: IOFF_T_B',IOFF_T_B
+              CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFF_SCR,T_BUFF(IOFF_T_B),
+     &                              IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+              IOFF_T_B = IOFF_T_B + ISLEN_TBL
+            ENDIF
+            INUM_BYTE  = IS_BYTE8 * ISLEN_TBL
+            IOFF_SCR   = IOFF_SCR + INUM_BYTE
+C
+          END DO
+        END DO
+      END IF
 C
       END
 ***********************************************************************

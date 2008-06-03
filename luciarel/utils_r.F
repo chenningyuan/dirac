@@ -400,7 +400,7 @@ C
 C     set total number of integrals
 C
       NINT_TOTAL = N1INT + N2ELINT
-      NINT_TOTAL = NINT_TOTAL * IMULT
+      NINT_TOTAL = NINT_TOTAL
 csk   WRITE(LUWRT,*) ' NINT_TOTAL, N1INT, N2ELINT:', 
 csk  &                 NINT_TOTAL, N1INT, N2ELINT
 csk   WRITE(LUWRT,*) ' IDIM, IMULT:', 
@@ -408,16 +408,29 @@ csk  &                 IDIM, IMULT
 csk   CALL IWRTMAMN(IT_TTPL,1,IDIM*IMULT,1,
 csk  &              IDIM*IMULT,LUWRT)
 C
-      DO JMULT = 1, IMULT
-        DO IBLK = 1, IDIM
-          IF( IT_TTPL( IBLK + ( IDIM * (JMULT - 1 ) ) ) 
-     &        .eq. MYNEW_ID_SM )THEN
-            IILENGTH    = NELM_CC(IBLK,IDIM,NINT_TOTAL)
-csk         WRITE(LUWRT,*) ' IILENGTH:', IILENGTH
-            J_COUNT_LEN = J_COUNT_LEN + IILENGTH
-          END IF
+      IF( IT_SHL .ge. 0 )THEN
+        DO JMULT = 1, IMULT
+          DO IBLK = 1, IDIM
+            IF( IT_TTPL( IBLK + ( IDIM * (JMULT - 1 ) ) ) 
+     &          .eq. MYNEW_ID_SM )THEN
+              IILENGTH    = NELM_CC(IBLK,IDIM,NINT_TOTAL)
+csk           WRITE(LUWRT,*) ' IILENGTH:', IILENGTH
+              J_COUNT_LEN = J_COUNT_LEN + IILENGTH
+            END IF
+          END DO
         END DO
-      END DO
+      ELSE IF( SPLIT_IJKL )THEN
+        DO JMULT = 1, IMULT
+          DO IBLK = 1, IDIM
+            IF( IT_TTPL( IBLK + ( IDIM * (JMULT - 1 ) ) ) 
+     &          .gt. 0 )THEN
+              IILENGTH    = NELM_CC(IBLK,IDIM,NINT_TOTAL)
+csk           WRITE(LUWRT,*) ' IILENGTH:', IILENGTH
+              J_COUNT_LEN = J_COUNT_LEN + IILENGTH
+            END IF
+          END DO
+        END DO
+      END IF
 C
       IGET_MY_T_LEN = J_COUNT_LEN
 csk   WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
@@ -761,7 +774,7 @@ C
      & '  =========================================='
       WRITE(LUWRT,'(A)')
      & '  Storing sorted integrals on file IJKL_REOD'
-      IF( IT_SHL .eq. - 2 ) THEN
+      IF( IT_SHL .eq. - 2 .or. SPLIT_IJKL ) THEN
         WRITE(LUWRT,'(A)')
      & '     file type  : (ij|kl)-sharing format    '
       ELSE
@@ -828,7 +841,7 @@ C
       I_START     = 0
       I_END       = 0
       I_OUT       = 0
-      IF( IT_SHL .eq. - 2 )THEN
+      IF( IT_SHL .eq. - 2 .or. SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
         IDISP    = 0
         IOFFSET  = 0
@@ -960,7 +973,7 @@ C
       I_OUT    = 0
 csk   WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
 csk  &                 IDIM_TYP, N1_INT, N2ELINT
-      IF( IT_SHL .ge. 0 )THEN
+      IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
 C
         IDISP    = 0
@@ -1011,9 +1024,9 @@ csk  &                   IDIM_TYP, N1_INT
 csk     CALL IWRTMAMN(IT_TTPL,1,IDIM_TYP,1,IDIM_TYP,LUWRT)
         CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,IDIM_TYP,N1_INT,
      &                       IOFFSET_T)
-csk        WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
-csk                                                  MY_T_LEN
-csk        CALL WRTMATMN(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+csk     WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
+csk  &                                            MY_T_LEN
+csk     CALL WRTMATMN(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
 C
 C       T diagonal in GASDIAT_REL ordered format
 C
@@ -1031,9 +1044,9 @@ csk        WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
         CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
      &                        IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
 C
-csk        WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
-csk                                                  MY_T_LEN_D
-csk        CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
+csk     WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
+csk  &                                            MY_T_LEN_D
+csk     CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
 C
         CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
 C

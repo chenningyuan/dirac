@@ -122,7 +122,6 @@ C
 C     pointer has to be defined in calling routine as 
 C     POINTER (MY_T_PTR, T_BUFF(IDUMMY_BUFF_SZ))
 C
-C     LEN_T_BUFF stored on /IBUFF_LENGTH/   (krmc_shmem.h)
 C     MY_T_PTR   stored on /MPI_MEMPOINTER/ (krmc_shmem.h)
 C     
 C     Last revision:

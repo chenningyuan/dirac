@@ -630,12 +630,18 @@ C
             WRITE(LUWRT,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
           END DO
 C
-        IF(ITSOK.EQ.0) 
-     &     Call Abend2( ' Error observed by  memory manager ' )
+          IF(ITSOK.EQ.0) THEN
+            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
+     &                                                         IDENT 
+            Call Abend2( ' Error observed by  memory manager ' )
+          ENDIF
         END IF
 C
-      IF(ISTOP.NE.0) call Abend2
-     &               ( ' Error observed by  memory manager ' )
+      IF(ISTOP.NE.0) THEN
+        WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
+     &                                                     IDENT 
+        call Abend2( ' Error observed by  memory manager ' )
+      END IF
       RETURN
       END
 ***********************************************************************
@@ -975,11 +981,17 @@ C
             WRITE(LUWRT,'(3X,A6,10X,I20)') MARKC(JMARK),IMARK(JMARK)
           END DO
 C
-        IF(ITSOK.EQ.0) 
-     &     Call Abend2( ' Error observed by  memory manager ' )
+          IF(ITSOK.EQ.0) THEN
+            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
+     &                                                         IDENT 
+            Call Abend2( ' Error observed by  memory manager ' )
+          END IF
         END IF
 C
-      IF(ISTOP.NE.0) call Abend2
-     &               ( ' Error observed by  memory manager ' )
+      IF(ISTOP.NE.0) THEN       
+            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
+     &                                                         IDENT 
+            Call Abend2( ' Error observed by  memory manager ' )
+      END IF
       RETURN
       END

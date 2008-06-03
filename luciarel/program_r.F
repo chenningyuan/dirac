@@ -112,6 +112,7 @@ C     memory pointer for C2 vector block
       POINTER (MY_XT_PTR  , XT_BUFF(IDUMMY_BUFF_SZ))
       POINTER (MY_VEC1_PTR, VEC1_BUFF(IDUMMY_BUFF_SZ))
       POINTER (MY_VEC2_PTR, VEC2_BUFF(IDUMMY_BUFF_SZ))
+      POINTER (MY_DL_PTR  , IT_DLIST_TMP(IDUMMY_BUFF_SZ))
 #endif
 C
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
@@ -120,7 +121,7 @@ C
       NTEST = MAX(NTESTL,IPRNT)
 C     set some variables ...
       MIN2  = - 2
-      IZERO =   0
+      NZERO =   0
       IIONE =   1
 C
       IF(NTEST.GE.3) THEN
@@ -197,15 +198,15 @@ C
       IF (IPRNT.GE.5) WRITE(LUWRT,*) '  NVAR in GASCI ', NVAR
 C
 #if defined (VAR_MPI2)
-      IF( IT_SHL .ge. 0 )THEN
+      IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 C
 C       allocate T-block list
 C
         MY_TTPL_LEN = NSPOBEX_TP * IRC
-csk     write(luwrt,*) ' MY_TTPL_LEN', MY_TTPL_LEN
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
-        MY_TTOL_LEN = NSPOBEX_TP * IRC
+        MY_TTOL_LEN = NMPROC
+        IF( IT_SHL .ge. 0 ) MY_TTOL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTOL_PTR, 3, MY_TTOL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         CALL IMINO8(IT_TTOL,MY_TTOL_LEN)
@@ -229,13 +230,17 @@ C            allocate T buff, (read (ij|kl) in), open T window
 C         end if
 C     <==
 C
-      IF( IT_SHL .ge. 0 )THEN
+      IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 C
 C       calculate length of T_BUFF
 C
-        LEN_T_BUFF   = IGET_MY_T_LEN(IT_TTPL,NSPOBEX_TP,
+        MY_T_LEN     = IGET_MY_T_LEN(IT_TTPL,NSPOBEX_TP,
      &                               N1ELINT,IRC)
-        MY_T_LEN     = LEN_T_BUFF
+        LEN_T_BUFF   = MY_T_LEN
+        IF( SPLIT_IJKL ) THEN
+C         real part of T array
+          LEN_T_BUFF = MY_T_LEN/IRC
+        END IF
         LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
         MY_T_LEN_D   = LEN_T_D_BUFF
 csk     write(luwrt,*) ' LEN_T_BUFF, MY_T_LEN, MY_T_LEN_D',
@@ -256,24 +261,27 @@ C
         CALL DZERO8(T_BUFF,MY_T_LEN)
         CALL DZERO8(T_BUFF_D,MY_T_LEN_D)
 C
-C       update LBLOCK
+        IF( SPLIT_IJKL ) THEN
+          CALL MPI_GATHER(MY_T_LEN,1,MPI_INTEGER8,IT_TTOL,1,
+     &                    MPI_INTEGER8,MASTER,MPI_COMM_WORLD,IERR)
+        END IF
 C
-csk     CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
-csk  &                     KNODELIST,KBLOCKLIST,KRCCTOS,
-csk  &                     NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-csk  &                     IBAT_MS2,2,0,IDUMMY,IRC,IT_TTPL)
-C
-        WRITE(LUWRT,*) ' '
-        WRITE(LUWRT,'(A)') '  +++++++++++++++++++++++++++ '
-        WRITE(LUWRT,'(A)') '  revised integral allocation '
-        WRITE(LUWRT,'(A)') '  +++++++++++++++++++++++++++ '
-        WRITE(LUWRT,*) ' '
-        WRITE(LUWRT,'(A,1X,I15)')
-     &    '  diagonal T elements       :', MY_T_LEN_D
-        WRITE(LUWRT,'(A,1X,I15)')
-     &    '  process unique T elements :', MY_T_LEN
-        WRITE(LUWRT,*) ' '
+        write(LUWRT,*) ' '
+        WRITE(LUWRT,'(2X,A)')
+     & '=============================================================='
+        WRITE(LUWRT,'(2X,A)')
+     & '==>  allocation of process unique T (integral) elements    <=='
+        write(LUWRT,*) ' '
+        DO II = 1, NMPROC
+        WRITE(LUWRT,'(2X,A,1X,I4,1X,A,I12,1X,A)')
+     & 'process',II-1,'allocates for ',IT_TTOL(II),'elements          '
+        END DO
+      
+        WRITE(LUWRT,'(2X,A)')
+     & '=============================================================='
+        write(LUWRT,*) ' '
 
+        IF(SPLIT_IJKL) CALL MPIXMEM_FREE( IT_TTOL )
 C
 C       read in all (active) blocked integrals (T blocks)
 C       ==> integrals required for diagonal H on T_BUFF_D
@@ -288,15 +296,18 @@ C
 csk     CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
 csk     CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
 C
-C       open memory window (collective call for communicator
-C       group MY_NEWCOMM_SM)
+        IF( IT_SHL .ge. 0 )THEN
 C
-        CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
+C         open memory window (collective call for communicator
+C         group MY_NEWCOMM_SM)
 C
-        CALL CALC_WIN_OFFSET(IT_TTPL,IT_TTOL,NSPOBEX_TP,IRC)
+          CALL GET_T_WIN( T_BUFF, MYNEW_COMM_SM, MY_T_LEN )
+C
+          CALL CALC_WIN_OFFSET(IT_TTPL,IT_TTOL,NSPOBEX_TP,IRC)
 C
 csk        WRITE(LUWRT,*) ' printing offset array IT_TTOL'
 csk        CALL IWRTMAMN8(IT_TTOL,1,MY_TTOL_LEN,1,MY_TTOL_LEN,LUWRT)
+        END IF
 C
 C       transfer IS_LENGHT_TT to common block LUCIPAR_I8
 C       == max. T block length
@@ -349,9 +360,9 @@ C       allocate file arrays
         CALL MEMMAR(KILU2LIST,IALL_LU2,'ADDS  ',1,'LU2LST')
         CALL MEMMAR(KILUCLIST,IALL_LUC,'ADDS  ',1,'LUCLST')
 C       initialize ...
-        CALL ISETVC(WORK(KILU1LIST),IZERO,IALL_LU1)
-        CALL ISETVC(WORK(KILU2LIST),IZERO,IALL_LU2)
-        CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
+        CALL IZERO(WORK(KILU1LIST),IALL_LU1)
+        CALL IZERO(WORK(KILU2LIST),IALL_LU2)
+        CALL IZERO(WORK(KILUCLIST),IALL_LUC)
 C
         IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMAD' .or. 
      &      CIRUN .eq. 'DIAG  ') THEN 
@@ -379,9 +390,9 @@ C           allocate ...
             CALL MEMMAR(KILU4LIST,IALL_LU4,'ADDS  ',1,'LU4LST')
             CALL MEMMAR(KILU5LIST,IALL_LU5,'ADDS  ',1,'LU5LST')
 C           initialize ...
-            CALL ISETVC(WORK(KILU3LIST),IZERO,IALL_LU3)
-            CALL ISETVC(WORK(KILU4LIST),IZERO,IALL_LU4)
-            CALL ISETVC(WORK(KILU5LIST),IZERO,IALL_LU5)
+            CALL IZERO(WORK(KILU3LIST),IALL_LU3)
+            CALL IZERO(WORK(KILU4LIST),IALL_LU4)
+            CALL IZERO(WORK(KILU5LIST),IALL_LU5)
 C
           END IF
 C         ^ CIRUN == CIINII
@@ -463,7 +474,7 @@ c
 C
  55   CONTINUE
 C
-      NPTEST_VAR = 0
+      NPTEST_VAR = 00
       IF( NPTEST_VAR .ge. 10 ) THEN
       IRECO = IRC_SAVE
       ITEST_OFF = 0
@@ -575,13 +586,13 @@ C            (*_MS2 arrays are in CSTATE )
      &                            KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
      &                            NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
      &                            IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
-     &                            IZERO,IIONE,WORK(KNODELIST))
+     &                            NZERO,IIONE,WORK(KNODELIST))
 C
 C           set offset for sigma-file
             JVEC_SF = 0
 C
 C           erase old LUCLIST
-            CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
+            CALL IZERO(WORK(KILUCLIST),IALL_LUC)
 C
             IF( IRC .eq. 1 ) THEN
 C             real quaternion double group
@@ -590,7 +601,7 @@ C             real quaternion double group
      &                            WORK(KLVI1BT),WORK(KLVIBT),
      &                            MY_LU1_OFF,MY_LUC_OFF,
      &                            WORK(KILU1LIST),WORK(KILUCLIST),
-     &                            WORK(KBLOCKLIST),IZERO)
+     &                            WORK(KBLOCKLIST),NZERO)
             ELSE
 C             complex quaternion double group
               CALL COPVCD_PP_CC_B_C(ILU1,ILUC,WORK(KVEC1),NBATCH_LD,
@@ -598,7 +609,7 @@ C             complex quaternion double group
      &                              WORK(KLVI1BT),WORK(KLVIBT),
      &                              MY_LU1_OFF,MY_LUC_OFF,
      &                              WORK(KILU1LIST),WORK(KILUCLIST),
-     &                              WORK(KBLOCKLIST),IZERO)
+     &                              WORK(KBLOCKLIST),NZERO)
             END IF
 C
 #endif
@@ -977,26 +988,22 @@ C
 C
 C         erase T amplitudes from sigma calculation
 C
-          IF( IT_SHL .ge. 0 )THEN
+          IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
             call DZERO8(T_BUFF,MY_T_LEN)
           ELSE
             call DZERO8(WORK(KT_CC),NALLINT)
           END IF
 C
-CSK    WRITE(LUWRT,*) ' start: MY T (BUFF) array'
-CSK    IF( IT_SHL .ge. 0 )THEN
-CSK      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
-CSK    ELSE
-CSK      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
-CSK    END IF
-C
-         if (CIRUN.eq.'DENS1 ') then
-            call rmemchk
-         end if
+csk    WRITE(LUWRT,*) ' start: MY T (BUFF) array'
+csk    IF( SPLIT_IJKL )THEN
+csk      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+csk    ELSE
+csk      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+csk    END IF
 C
 #if defined (VAR_MPI2)
 C         erase old LUCLIST
-          CALL ISETVC(WORK(KILUCLIST),IZERO,IALL_LUC)
+          CALL IZERO(WORK(KILUCLIST),IALL_LUC)
 C         copy right-hand vector to scratch file
           IF( IRC .eq. 1 ) THEN
 C           real quaternion double group
@@ -1068,7 +1075,7 @@ C
               WRITE(LUWRT,*) ' '
 C
               call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
-              call isetvc8(WORK(KINDEX),IZERO,NTERMS*4)
+              call IZERO8(WORK(KINDEX),NTERMS*4)
 C
             ELSE
               WRITE(LUWRT,*) ' Allocating 4-index array of length',
@@ -1076,7 +1083,7 @@ C
               WRITE(LUWRT,*) ' '
 C
               call memmar_i8(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-              call isetvc8(WORK(KINDEX),IZERO,NALLINT*4)
+              call IZERO8(WORK(KINDEX),NALLINT*4)
 C
             END IF
 C
@@ -1088,43 +1095,51 @@ C         ^ MASTER !!!
 C
 #if defined (VAR_MPI2)
 C
-CSK    WRITE(LUWRT,*) ' MY T (BUFF) array'
-CSK    IF( IT_SHL .ge. 0 )THEN
-CSK      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
-CSK    ELSE
-CSK      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
-CSK    END IF
+csk    WRITE(LUWRT,*) ' MY T (BUFF) array'
+csk    IF( SPLIT_IJKL )THEN
+csk      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+csk    ELSE
+csk      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+csk    END IF
           ISHARE_DENSM = 0
+C
+C         FIXME: control ISHARE_DENSM from the outside
 C
 C         case 1: only MASTER will get all density matrix elements
 C             --> ISHARE_DENSM = 0
 C         case 2: density matrix elements on all CPUs
 C             --> ISHARE_DENSM = 1
 C
-          IF( ISHARE_DENSM .eq. 1 ) THEN
-            WRITE(LUWRT,*) ' WARNING: summation of density matrix '
-            WRITE(LUWRT,*) ' elements on ALL CPUs may cause ' 
-            WRITE(LUWRT,*) ' MPI memory problems !!! '
-            WRITE(LUWRT,*) ' (depending on your MPI implementation)'
-          END IF
-C
           IF( IT_SHL .lt. 0 )THEN
 C
-            IF( NOOCCN_DENS_RUN ) THEN
-              L_MAX_DENS_BLK = 0
-              L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC) 
+            L_MAX_DENS_BLK = 0
+            L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC)
 C
+            IF( NOOCCN_DENS_RUN .or. SPLIT_IJKL )THEN
               CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
      &                       1,'KDMBLK')
               CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
-C
-              CALL COLLECT_DENS_MAT2(WORK(KMAX_DENS_BLK),WORK(KT_CC),
-     &                               IRC,ISHARE_DENSM)
-            ELSE
-              CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),IRC,ISHARE_DENSM)
             END IF
 C
-          ELSE
+            IF( NOOCCN_DENS_RUN ) THEN
+              IF( SPLIT_IJKL ) THEN
+                CALL COLLECT_DENS_MAT_SPLIT(WORK(KMAX_DENS_BLK),T_BUFF,
+     &                                      IT_TTPL,IRC)
+              ELSE 
+              CALL COLLECT_DENS_MAT(WORK(KMAX_DENS_BLK),WORK(KT_CC),
+     &                               IRC,ISHARE_DENSM)
+              END IF
+            ELSE
+              IF( SPLIT_IJKL ) THEN
+                CALL COLLECT_DENS_MAT_SPLIT(F2,T_BUFF,IT_TTPL,IRC)
+              ELSE
+
+                CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),IRC,ISHARE_DENSM)
+              END IF
+            END IF
+C           ^ NO run?
+C         MPI one-sided based T split
+          ELSE 
 C
 C           make sure each CPU gets here before starting T block 
 C           collection
@@ -1154,7 +1169,8 @@ C
           IPRDEN = 00
 C
           IF (IPRDEN .ge. 10 ) THEN
-            IF( MYPROC .eq. MASTER .and. IT_SHL .lt. 0 ) THEN
+            IF( MYPROC .eq. MASTER .and. ( IT_SHL .lt. 0 
+     &          .and. .NOT. SPLIT_IJKL) ) THEN
               write(LUWRT,*) '======================================='
               write(LUWRT,'(A,I4)') ' Density matrix for root ',
      &                                JROOT_SCR
@@ -1171,7 +1187,39 @@ C
 C         parallel MCSCF: use all CPU's to transfer the density 
 C         matrices...
 C
-          IF( MYPROC .ne. MASTER ) GOTO 919
+          IF( SPLIT_IJKL )THEN
+C
+C           collect information about density T blocks and their 
+C           "contributors". Choose process with the lowest tag 
+C           (MYPROC) as sender for the master (receiver). 
+C           IT_TTPL --> gather --> sort --> write back on IT_TTPL
+C           previous information on IT_TTPL is lost!
+C
+C           NOTE: --> parallel MCSCF: receiver may be all processes 
+C           or a subgroup depending on the MCSCF integral distribution.  
+C           That is, why we already use MPI_ALLGATHER!
+C
+            MY_DL_TMP_LEN = NSPOBEX_TP*NMPROC*IRC_SAVE
+C
+            CALL MPIXMEM_ALLOC(MY_DL_PTR,2,MY_DL_TMP_LEN,
+     &                         MPI_INFO_NULL,.FALSE.)
+            CALL IZERO(IT_DLIST_TMP,NSPOBEX_TP*NMPROC*IRC_SAVE)
+            CALL MPI_ALLGATHER(IT_TTPL,NSPOBEX_TP*IRC_SAVE,
+     &                         my_MPI_INTEGER,IT_DLIST_TMP,
+     &                         NSPOBEX_TP*IRC_SAVE,my_MPI_INTEGER,
+     &                         MPI_COMM_WORLD,IERR)
+C
+            CALL FIND_SENDER(IT_TTPL,IT_DLIST_TMP,NSPOBEX_TP)
+C
+csk         WRITE(LUWRT,*) ' AFTER SENDER matching IT_TTPL'
+csk         CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC,1,
+csk  &                    NSPOBEX_TP*IRC,LUWRT)
+C
+C           release scratch memory
+            CALL MPIXMEM_FREE(IT_DLIST_TMP)
+          ELSE
+            IF( MYPROC .ne. MASTER ) GOTO 919
+          END IF
 #endif
 C
 C         transfer density matrices to KRMC format
@@ -1199,33 +1247,48 @@ csk     &                       WORK(KINDEX),
 csk     &                       WORK(KLABEXTP),WORK(KLIHIND),
 csk     &                       WORK(KSIGNNHX),WORK(KLOP_REO),
 csk     &                       WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+              CALL Abend2( ' IMPLEMENT ME! ' )
             END IF
 #endif
-C         no T distribution
+C         T split / no T distribution
           ELSE
             IF( NOOCCN_DENS_RUN )THEN
-C
-              call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
-     &                          WORK(KLABEXTP),WORK(KLIHIND),
-     &                          WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                          WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
-C
+              IF( SPLIT_IJKL )THEN
+#if defined (VAR_MPI2)
+                call trnsfdens_no_split(F1,T_BUFF,WORK(KMAX_DENS_BLK),
+     &                            IT_TTPL,WORK(KINDEX),WORK(KLABEXTP),
+     &                            WORK(KLIHIND),
+     &                            WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                            WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+#endif
+              ELSE
+                call trnsfdens_no(F1,WORK(KT_CC),WORK(KINDEX),
+     &                            WORK(KLABEXTP),WORK(KLIHIND),
+     &                            WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                            WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+              END IF
             ELSE
-C
               CALL DZERO(F2,LF2_ZERO)
-C
-              call trnsfdens(F1,F2,WORK(KT_CC),
-     &                      WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                      WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                      WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+              IF( SPLIT_IJKL )THEN
+#if defined (VAR_MPI2)
+                call trnsfdens_split(F1,F2,T_BUFF,WORK(KMAX_DENS_BLK),
+     &                        IT_TTPL,
+     &                        WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                        WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+#endif
+              ELSE
+                call trnsfdens(F1,F2,WORK(KT_CC),
+     &                        WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                        WORK(KSIGNNHX),WORK(KLOP_REO),
+     &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+              END IF
             END IF
           END IF
 C
-C
-C
-C         WRITE(LUWRT,*) ' MY updated densities'
-C         WRITE(LUWRT,*) '           F1        '
-C         CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
+csk       WRITE(LUWRT,*) ' MY updated densities'
+csk       WRITE(LUWRT,*) '           F1        '
+csk       CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
 C         IF (.NOT. NOOCCN_DENS_RUN )THEN
 C           WRITE(LUWRT,*) '           F2        '
 C           CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
@@ -1234,7 +1297,7 @@ C
 C
 #if defined (VAR_MPI2)  
 C
-C        all slaves are waiting for the master which is transferring the
+C        all slaves are waiting for the master who is transferring the
 C        densities...
 C
  919     CONTINUE
@@ -1258,17 +1321,19 @@ C     ^ CIRUN cases for MCSCF calls.
 C
 C
 #if defined (VAR_MPI2)
-      IF( IT_SHL .ge. 0) THEN
-C
-C       de-allocate T-block list
-C
+      IF( IT_SHL .ge. 0 ) THEN
 C
 C       de-allocate T array and destroy T memory window
 C
-        CALL MPIXMEM_FREE( IT_TTPL )
-        CALL REL_MEM_T_WIN( T_BUFF )
-        CALL MPIXMEM_FREE( T_BUFF_D )
-C
+        CALL MPIXMEM_FREE(IT_TTPL)
+        CALL MPIXMEM_FREE(IT_TTOL)
+        CALL MPIXMEM_FREE(T_BUFF_D)
+        CALL REL_MEM_T_WIN(T_BUFF)
+      END IF
+      IF (SPLIT_IJKL ) THEN
+        CALL MPIXMEM_FREE(IT_TTPL)
+        CALL MPIXMEM_FREE(T_BUFF)
+        CALL MPIXMEM_FREE(T_BUFF_D)
       END IF
 C
 C     reset partitioning of CI vector to 'sequential' fashion
@@ -1283,9 +1348,9 @@ C
       write(LUWRT,'(A25,A6)') '  I have completed task  ',CIRUN
       write(LUWRT,*) ' Returning to KRMC.'
       write(LUWRT,*) 
-C
+C     release memory
       call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI ')
-      RETURN
+C
       END
 ***********************************************************************
 *                                                                     *

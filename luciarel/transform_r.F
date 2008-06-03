@@ -2617,41 +2617,33 @@ C
               IF( CIRUN .eq. 'CIINII') THEN 
 #if defined (VAR_MPI2)
 C
-                IF( SPLIT_IJKL )THEN
-                    WRITE(LUWRT,'(A)') ' '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') 
-     &              '  Reading from integral file IJKL_REOD'
-                    WRITE(LUWRT,'(A)')
-     &              '   file type: blocked (ij|kl) format  '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') ' '
-                ELSE
-                  IF( IT_SHL .lt. 0 )THEN
-                    WRITE(LUWRT,'(A)') ' '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') 
-     &              '  Reading from integral file IJKL_REOD'
-                    WRITE(LUWRT,'(A)')
-     &              '   file type: standard (ij|kl) format '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') ' '
+                IF( IT_SHL .lt. 0 )THEN
+                  WRITE(LUWRT,'(A)') ' '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') 
+     &            '  Reading from integral file IJKL_REOD'
+                  IF( SPLIT_IJKL ) THEN
+                  WRITE(LUWRT,'(A)')
+     &            '   file type: (ij|kl)-sharing format  '
                   ELSE
-                    WRITE(LUWRT,'(A)') ' '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') 
-     &              '  Reading from integral file IJKL_REOD'
-                    WRITE(LUWRT,'(A)')
-     &              '   file type: (ij|kl)-sharing format  '
-                    WRITE(LUWRT,'(A)') 
-     &              '  ===================================='
-                    WRITE(LUWRT,'(A)') ' '
+                  WRITE(LUWRT,'(A)')
+     &            '   file type: standard (ij|kl) format '
                   END IF
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') ' '
+                ELSE IF( IT_SHL .ge. 0 ) THEN
+                  WRITE(LUWRT,'(A)') ' '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') 
+     &            '  Reading from integral file IJKL_REOD'
+                  WRITE(LUWRT,'(A)')
+     &            '   file type: (ij|kl)-sharing format  '
+                  WRITE(LUWRT,'(A)') 
+     &            '  ===================================='
+                  WRITE(LUWRT,'(A)') ' '
                 END IF
 #endif
 C

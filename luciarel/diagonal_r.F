@@ -440,7 +440,7 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
       call memmar(KLRJKA,MXNSTR, 'ADDL  ',2,'KLRJKA')
 *
       if (IRECO.eq.1) then
-        if( IT_SHL .ge. 0)then
+        if( IT_SHL .ge. 0 .or. SPLIT_IJKL )then
 C
           IOFF_T_D = 1
 C
