@@ -45,9 +45,15 @@ moltra_code   = newtarget('moltra', ['moltra'] )
 moltra_code['compilegroups']['safe'] = ['']
 moltra_code['dependson'] = ['integrals','general']
 
-prp_code      = newtarget('prp', ['prp/xqr','prp/xpp','prp/esr','prp'])
+prp_dirs = ['prp/xqr','prp/xpp','prp/esr','prp']
+if add_aoresp:
+   prp_dirs = prp_dirs + ['aoresponse']
+
+prp_code      = newtarget('prp', prp_dirs)
 prp_code['compilegroups']['safe'] = [''] 
 prp_code['dependson'] = ['integrals','general'] 
+if add_aoresp:
+	prp_code['dependson'] = prp_code['dependson'] + ['dft']
 prp_code['skipfiles'] = ['oldrvc.F', 'mp2lag_a.F'] 
 
 
