@@ -1992,7 +1992,13 @@ compinfo_string = config_options['who_compiled']+"\n"+config_options['where_comp
 
 EOF
 
-cat utils/foray_0.1/dirac/{head,active}.info flags.info utils/foray_0.1/dirac/{prepro,target,builds}.info > buildinfo 
+cat utils/foray_0.1/dirac/head.info \
+    utils/foray_0.1/dirac/active.info \
+    flags.info \
+    utils/foray_0.1/dirac/prepro.info \
+    utils/foray_0.1/dirac/target.info \
+    utils/foray_0.1/dirac/builds.info > buildinfo
+
 ln -sf utils/foray_0.1/foray makedirac
 
 ##################################################
