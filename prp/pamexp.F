@@ -160,33 +160,19 @@ C     Generate density matrix
 C     =======================
 C
       IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-         INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-         IF(.NOT.FILEX) GOTO 1000
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
+        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+        IF(.NOT.FILEX) GOTO 1000
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
      &               WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-CMI      ... prepare density matrixes for exp.value evaluation
-C ====================================================================
-CMI      IF (.NOT. ORBANA) THEN
-CMI         ... closed-shell part
-            CALL GENDEN(DMAT,CMO,1,IPREXP)
-            DO IOPEN = 1, NOPEN
-             IF (.NOT. ORBANA) THEN
-CMI        ... accumulate all densities into DMAT
-               CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPREXP)
-             ELSE
-CMI        ... keep closed- and open-shell densties separated
-
-C              CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPREXP)
-             CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),D0,D1,CMO,IOPEN,IPREXP)
-C              CALL ACTDEN(DMAT(1+N2BBASXQ),D0,DF(IOPEN),CMO,IOPEN,IPREXP)
-C              CALL ACTDEN(DMAT(1+N2BBASXQ),0.50D0,D0,CMO,IOPEN,IPREXP)
-CM             CALL ACTDEN(DMAT(1+N2BBASXQ),D1,D0,CMO,IOPEN,IPREXP)
-C              CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
-             ENDIF
-            END DO
-C        END IF
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IF (.NOT. ORBANA) THEN
+C.........accumulate all density into one matrix
+          FILEX = AOC
+          AOC = .FALSE.
+          CALL DENMAT(DMAT,CMO,IPREXP)
+          AOC = FILEX
+        END IF
       ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CC  ') THEN
 C
          IF (WF.EQ.'CC  ') 
@@ -306,13 +292,8 @@ C
         CALL PRSYMB(LUPRI,'-',76,0)
 
         DO I = 1,NEXPP
-
           INDXPR = LEXPP(I)
-
           IS_SQUARE = (IPRPTIM(INDXPR).EQ.0)
-
-C         write(lupri,*) 'PRPEX1...I,INDXPR',I,INDXPR
-
           IF (IS_SQUARE) THEN
             IDIMENS = N2BBASX
             CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
@@ -322,7 +303,6 @@ C         write(lupri,*) 'PRPEX1...I,INDXPR',I,INDXPR
             CALL MEMGET('REAL',KPTRI  ,NZ*IDIMENS,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KOP1INT,   IDIMENS,WORK,KFREE,LFREE)
           ENDIF
-
 C.........generate property matrix in SA-AO-basis into PMAT ...
 CMI ... extended parameter list by the OP1INT array for square matrixes
           CALL PRPEX2(INDXPR,EXPVAL(I),.true.,LEXPST(1,I),IDIMENS,
@@ -332,8 +312,7 @@ CMI ... extended parameter list by the OP1INT array for square matrixes
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 
 C.............calculate expectation value
-          CALL PRPEX3(EXPVAL(I),INDXPR,
-     &        DMAT,PMAT,FIRST,ORBANA,
+          CALL PRPEX3(EXPVAL(I),INDXPR,DMAT,PMAT,FIRST,
      &        WORK,KFREE,LFREE,IPREXP)
  30       CONTINUE
 
@@ -420,8 +399,7 @@ C.........generate property matrix in SO-basis
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
 C.............calculate expectation value
-              CALL PRPEX3(EXPBUF,INDXPR,
-     &          DMAT,PMAT,FIRST,ORBANA,
+              CALL PRPEX3(EXPBUF,INDXPR,DMAT,PMAT,FIRST,
      &          WORK,KFREE,LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
               EXPBUF = EXPBUF*DF(IOPEN)
@@ -608,13 +586,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
-      SUBROUTINE PRPEX3(EXPVAL,INDXPR,
-     &           DMAT,PMAT,FIRST,ORBFLG,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPEX3(EXPVAL,INDXPR,DMAT,PMAT,FIRST,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
-C
-C     On input: ORBFLG ... it's ORBANA
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
@@ -635,8 +611,8 @@ C
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
-      LOGICAL FIRST(NZ),LEXPST(2),ORBFLG
-      DIMENSION DMAT(N2BBASX,NZ,*),WORK(*),
+      LOGICAL FIRST(NZ),LEXPST(2)
+      DIMENSION DMAT(N2BBASX,NZ),WORK(*),
      &          PMAT(N2BBASX,NZ)
 
       CALL QENTER('PRPEX3')
@@ -658,47 +634,20 @@ C     integrals (ensured by logical FIRST(1..NZ) )
 C========================================================================
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-         IF ( ORBFLG) THEN
-           DO IOPEN = 0,NOPEN
-              EXPVAL = EXPVAL + DF(IOPEN)
-     &          *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
-            IF (IPRINT.GE.5) THEN
-             WRITE(LUPRI,*)
-     &       ' == PRPEX3: acummulated EXPVAL after IZ=',IZ,
-     &       '/',NZ,' IOPEN=',IOPEN,'/',NOPEN,' DF(iopen)=',
-     &       DF(IOPEN),' exp.val=',2*EXPVAL
-            ENDIF
-           END DO
-         ELSE
-CMI          ... summary calculation
-           EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT(1,IZ),1)
-           IF (IPRINT.GE.5) THEN
-             write(lupri,*)
-             WRITE(LUPRI,*)
-     &       ' == PRPEX3: acummulated EXPVAL (ORBANA=.false.)'//
+        EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ),1,PMAT(1,IZ),1)
+        IF (IPRINT.GE.5) THEN
+          WRITE(lupri,*)
+          WRITE(LUPRI,*)
+     &       ' == PRPEX3: accumulated EXPVAL (ORBANA=.false.)'//
      &       ' after IZ=',IZ,
      &       '/',NZ,' exp.val=',2*EXPVAL
-           ENDIF
-         END IF
-CMI ... test ouput - print the PMAT and DMAT matrixes
-         IF (IPRINT.GE.5) THEN
-           WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
-           CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
-
-           DO IOPEN=0,NOPEN
-           WRITE(LUPRI,'(/2X,A,I1,A,I1,A,I1,A,I1)')
-     &     'PRPEX3: DMAT of IZ=',IZ,'/',NZ,' IOPEN=',
-     &     IOPEN,'/',NOPEN
-           CALL OUTPUT(DMAT(1,IZ,IOPEN+1),1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
-           ENDDO
-           write(lupri,*)
-           WRITE(LUPRI,*)
-     &' == PRPEX3: total acummulated EXPVAL after IZ=',IZ,'/',NZ,
-     &    ' exp.val=',2*EXPVAL
-           CALL FLSHFO(LUPRI)
-         ENDIF
+          WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
+          CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+     &              NTBAS(0),NTBAS(0),1,LUPRI)
+          WRITE(LUPRI,'(/2X,A,I1)') 'PRPEX3: DMAT of IZ=',IZ
+          CALL OUTPUT(DMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+     &              NTBAS(0),NTBAS(0),1,LUPRI)
+        ENDIF
       ENDIF
       ENDDO
       EXPVAL = EXPVAL + EXPVAL
