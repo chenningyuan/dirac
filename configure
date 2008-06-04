@@ -1988,7 +1988,11 @@ config_options['fortran_opts']  = "#define FCOMP \""+config_options['f90comp']+"
 config_options['c_opts']        = "#define CCOMP \""+config_options['ccomp']+" "+"$c_opt"+"\""
 
 compinfo_string = config_options['who_compiled']+"\n"+config_options['where_compiled']+"\n"+config_options['fortran_opts']+"\n"+config_options['c_opts']
-#print compinfo_string
+
+
+compinfo = open('gp/compinfo.h','w')
+compinfo.write(compinfo_string)
+compinfo.close()
 
 EOF
 

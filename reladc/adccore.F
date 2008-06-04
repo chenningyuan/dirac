@@ -38,9 +38,9 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "../relccsd/ccpar.inc"
-#include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+#include "ccpar.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -127,14 +127,14 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
-#include "../relccsd/inpt.inc"
-#include "../relccsd/eqns.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "eqns.inc"
 #include "adcinpt.inc"
-#include "../relccsd/symm.inc"
-#include "../relccsd/complex.inc"
-#include "../relccsd/ccpar.inc"
-#include "../relccsd/waio.h"
+#include "symm.inc"
+#include "complex.inc"
+#include "ccpar.inc"
+#include "waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -165,21 +165,6 @@ C
 C
 C---------------Executable code--------------------------------------
 
-c   debug
-c     print*
-c     print*
-c     print*,'*********************************************'
-c     print*,'*** parameters given to ADCMAIN            ***'
-c     print*
-c     print*,'maxcore:',maxcore
-c     print*,'intfce:',intfce
-c     print*,'ca:',ca
-c     print*,'iunin:',iunin
-c     print*,'iunut:',iunut
-c     print*,'*********************************************'
-c     print*
-c   debug end
-     
 C
 C     Set the input and output units and a control string
 C
@@ -270,19 +255,44 @@ C
       WRITE (IW,1000) MAXCOR / (128 * 1024)
 C
 C     Set up symmetry tables and parallel distribution arrays
+C     Symtab is required for the pure diagonlization also.
+C     Therefore we check for ADCLEVEL=0 after the symtab call.
+C     The pure diagonalization is coupled to the symmetry information
+C     coming from the DIRAC main program because the eigenvectors are
+C     analyzed in terms of configurations and orbital energies. This
+C     information has to be made available to the diagonalizer
 C     -------------------------------------------------------
 C
 C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
 C
+C     check for pure diagonalization request.
+C     transfer all available memory to the diag routines.
+C
+      IF(ADCLEVEL.EQ.0) THEN
+        CALL DIAGWRAPPER(CC,MAXCOR)
+        RETURN
+      ENDIF
+C
+C  determine number of electrons and print general information
+C
       NELECT = 0
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
 C
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
-     &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
+      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,
+     &                ADCDEBUG,TIMING,INTERFACE
+c------ corresponding format
+1004  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Number of virtual spinors :",T40,I5
+     &        /" Complex arithmetic mode :",T44,L1
+     &        /" Do integral sorting     :",T44,L1
+     &        /" ADC debug level         :",T44,I1
+     &        /" Timing information      :",T44,L1
+     &        /" Interface used       :",T40,A10//)
+c------ corresponding format end
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -293,17 +303,12 @@ C
       LFREE = MAXCOR
 C 
       MXCORR1 = 0
-      write(iw,*) 'kfree,lfree before CCSETI:',kfree,lfree
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &             NSP,IREPSP,IREPSPI)
-      write(iw,*) 'kfree,lfree after CCSETI:',kfree,lfree
       WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
       MXCORR = MAX0(MXCORR,MXCORR1)
       MXCORR1 = 0
-      write(iw,*) 'kfree,lfree before CCADCX:',kfree,lfree
-      write(iw,*) 'entering CCADCX first time* * * * ** * *'
       CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-      write(iw,*) 'kfree,lfree after CCADCX:',kfree,lfree
       WRITE(IW,*) 'Memory requirements of CCADCX:',MXCORR1
       MXCORR = MAX0(MXCORR,MXCORR1)
 C
@@ -343,11 +348,8 @@ c     LFREE = MXCORR
       LFREE = MAXCOR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
-      print*,'entering CCSETI second time'
-      write(iw,*) 'kfree,lfree before CCSETI:',kfree,lfree
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
-      write(iw,*) 'kfree,lfree after CCSETI:',kfree,lfree
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1
@@ -362,10 +364,7 @@ C
       KFREE = 1
       LFREE = MAXCOR
 
-      print*,'entering CCADCX second time'
-      write(iw,*) 'kfree,lfree before CCADCX:',kfree,lfree
       CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
-      write(iw,*) 'kfree,lfree after CCADCX:',kfree,lfree
       CALL FLSHFO (IW)
 C
 C
@@ -416,17 +415,6 @@ C
      &        T50,I10," 8-byte words"//" Allocate ",I5," Megawords")
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
-1004  FORMAT (//" Number of electrons :",T40,I5
-     &        /" Number of virtual spinors :",T40,I5
-     &        /" Complex arithmetic mode :",T44,L1
-     &        /" Do integral sorting     :",T44,L1
-     &        /" Do energy calculation   :",T44,L1
-     &        /" Do gradient calculation :",T44,L1
-     &        /" Do response calculation :",T44,L1
-     &        /" Debug information       :",T44,L1
-     &        /" Timing information      :",T44,L1
-     &        /" Print level          :",T40,I5
-     &        /" Interface used       :",T40,A10//)
 1005  FORMAT (" Size of I/O buffers :",T50,I10," kB")
 1006  FORMAT (" Too much memory specified, maximum is",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
@@ -467,12 +455,12 @@ C---------- Calling variables -----------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "adcinpt.inc"
+#include  "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,XREPS,
-     &                 NHOLST,READQKL,DOCONST,VCONV,DIAGTYPE,
+      NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,ADCDEBUG,
+     $                 XREPS,NHOLST,READQKL,DOCONST,VCONV,DIAGTYPE,
      &                 INTERFACE
       NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XEVLLIM,XTHRVEC
 c
@@ -493,6 +481,7 @@ c
       ADCPRINTNM(6)='Bpq-values'
       ADCPRINTNM(7)='SIGMA-matrix'
       ADCPRINTNM(8)=' '
+      ADCDEBUG = 0
       DO IX=1,32
         XREPS(IX)=0
         NHOLST(IX)=0
@@ -523,7 +512,7 @@ c
 c
 c  check consistencies
 c
-      IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
+      IF( (ADCLEVEL.LT.0).OR.(ADCLEVEL.GT.3))
      &  CALL QUIT('Illegal ADC level in namelist RELADC')
 
       IF(DIAGTYPE.NE.'EXTN') THEN
@@ -601,11 +590,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "adcinpt.inc"
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include  "files.inc"
+#include  "adcinpt.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -613,19 +602,19 @@ C
       INTEGER KFRSAV,LFRSAV,IDUMMY(2)
       REAL*8 RDUMMY(2)
       COMPLEX*16 CDUMMY(2)
-      CHARACTER*6 FILEN1,FILEN2,FILEN3,FILEN4
-      CHARACTER*6 FILEN5,FILEN6,FILEN7,FILEN8
-      CHARACTER*6 FILEN9,FILENA
-      CHARACTER*9 FILE1, FILE2, FILE3, FILE4
-      CHARACTER*9 FILE5, FILE6, FILE7, FILE8
-      CHARACTER*9 FILE9, FILEA
-      PARAMETER(FILEN1='      ',FILEN2='ADCCNF',
-     &          FILEN3='ADCINF',FILEN4='ADCDIA',
-     &          FILEN5='ADCMPK',FILEN6='DAVSOL',
-     &          FILEN7='DAVRST',FILEN8='VVACBD',
-     &          FILEN9='QKLVAL',FILENA='      ')
-      CHARACTER*8 CALTYP(3)
-      DATA CALTYP/'ADC(2)','ADC(2x)','ADC(3)'/
+
+      CHARACTER*6 FILEN2,FILEN3,FILEN4,FILEN5
+      PARAMETER(FILEN2='ADCCNF',FILEN3='ADCINF',
+     &          FILEN4='ADCDIA',FILEN5='ADCMPK')
+      CHARACTER*6 FILEN9
+      PARAMETER(FILEN9='QKLVAL')
+
+      CHARACTER*9 FILE2, FILE3, FILE4, FILE5
+      CHARACTER*9 FILE9
+      CHARACTER*15 CALTYP(0:3)
+
+      DATA CALTYP/'Direct diagonal','ADC(2) strict  ',
+     &            'ADC(2) extended','ADC(3)         '/
       INTEGER IRPLOOP,NBUFS,IBUFPOS
       REAL*8 ASYM,LANTHR,EVLLIM,THRVEC
       INTEGER SYMMITER
@@ -1034,12 +1023,16 @@ C----------------------------------------------------------------------
 C
       CALL MEMCHK('ADC-memcheck after alloc',CC,KFRSAV)
 C
-      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,VCONV,NSP
+      WRITE(IW,*) '***********'
+      WRITE(IW,*) '*********** ADC parameters:'
+      WRITE(IW,*) '***********'
+      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,VCONV,READQKL,NSP
 c --------  corresponding format
  165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
      &         " Title: ",T50,A30/
      &         " Add constant diagrams (in ADC-3): ",T50,L1/
      &         " up to a convergence of ",T50,E15.8/
+     &         " Read in constant diagrams (in ADC-3): ",T50,L1/
      &         " Number of spinors:",T50,I5)
 c --------  corresponding format end
 C
@@ -1049,7 +1042,6 @@ C
       WRITE(IW,*) 'Selected diagonalization procedure:',DIAGTYPE
       WRITE(IW,*) 'Largest h/h block:',MXNO,' x',MXNO
       WRITE(IW,*) 'Largest occurring ADC matrix:',LADCM,' x',LADCM
-      WRITE(IW,*)
       WRITE(IW,*) 'Memory requirements (MB) for the VOVV ints:',
      &  IVOVVT(NREP+1)*8*RCW/(1024*1024)
       WRITE(IW,*) 'Memory requirements (MB) for the VVVV ints:',
@@ -1149,9 +1141,15 @@ c
             WRITE(IW,*) 'No information about Kramers skipping'
           ENDIF
         ELSE IF(NZ.eq.2) THEN
-          SYMMITER = 2
-          WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
-          WRITE(IW,*) 'Only one Kramers partner calculated!'
+          IF(SPFR.eqv..FALSE.) THEN
+            SYMMITER = 2
+            WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
+            WRITE(IW,*) 'Only one Kramers partner calculated!'
+          ELSE
+            SYMMITER = 1
+            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+            WRITE(IW,*) 'No information about Kramers skipping'
+          ENDIF
         ELSE IF(NZ.eq.4) THEN
           SYMMITER = 1
           WRITE(IW,*) 'Quaternionic fermionic group. No Kramers pairs.'
@@ -1247,10 +1245,7 @@ C
      &                CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF9A),
      &                EPS,KREP)
 
-          print*,'uaffpa memchk:'
           CALL MEMCHK('ADC',CC,KFRSAV)
-          print*,'uaffpa memchk done'
-
 C
           CALL UIONHO(CC(BUFY1),
      &                CC(BUF1A),CC(BUF1B),CC(BUF1C),
@@ -1620,12 +1615,6 @@ C ---- immediately and the requested type of diagonalizer -----
 C ---- is addressed.                                      -----
 C -------------------------------------------------------------
 
-        WRITE(IW,*) '*************************'
-        WRITE(IW,*) '*** ADC matrix construction'
-        WRITE(IW,*) '*** finished in this symmetry'
-        WRITE(IW,*) '*** Memory pointers KFREE,LFREE,KFRDYN:',
-     &    KFREE,LFREE,KFRDYN
-
         IF(DIAGTYPE.eq.'FULL') THEN
 c
 c-------------------------- START FULL DIAGONALIZATION -------
@@ -1851,6 +1840,14 @@ c
           CALL MEMOPT('REAL',WRK_BX,N,CC,KFREE,LFREE,ALLOC)
 
           IF(CARITH) THEN
+c debug
+          write(iw,*) ' zblana parameters:'
+          write(iw,*) ' KREP,niter,np,neigenv,no(krep)',
+     &         KREP,niter,np,neigenv,no(krep)
+          write(iw,*) ' itapadc+6,lanthr,EVLLIM',
+     &         itapadc+6,lanthr,EVLLIM
+          pause
+c end debug
             CALL ZBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
@@ -2014,7 +2011,7 @@ C
      & 'VVLT   ','BUFVVVV','BUFVOV ','BUFVOW ','LANCZOS','       ',
      & 'P      ','T      ','ADCDIAG'/
 
-      INCLUDE "../relccsd/files.inc"
+#include  "files.inc"
 
       IF(IC.EQ.0) THEN
         WRITE(IW,*)
@@ -2062,10 +2059,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2204,16 +2201,15 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       real*8 ddot,getimag
       complex*16 zdotc
-      integer*4 ifer
 C
 C---------------Executable Code --------------------------------------
 C
@@ -2295,8 +2291,7 @@ C
       CALL RDVOVV(VOVV2)
       CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO,JJVV,JJVO,
      &            VOVV2,VOVV1)
-      IFER=JVVVO(NREP+1)
-      write(*,*) '** chksum (c) SRT26:',zdotc(ifer,vovv1,1,vovv1,1)
+c     write(*,*) '** chksum (c) SRT26:',zdotc(JVVVO(NREP+1),vovv1,1,vovv1,1)
 C
 C  here again special contraction, with 'T' in XGEMM
 C
@@ -2365,10 +2360,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2503,10 +2498,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2646,9 +2641,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2844,9 +2839,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3025,9 +3020,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3260,9 +3255,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3461,10 +3456,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3634,10 +3629,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3787,10 +3782,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3861,10 +3856,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3951,10 +3946,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4156,10 +4151,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4301,10 +4296,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4497,8 +4492,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/param.inc"
+#include  "files.inc"
+#include  "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4597,7 +4592,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4658,10 +4653,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4730,7 +4725,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4768,10 +4763,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4847,10 +4842,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "complex.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5103,10 +5098,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include  "symm.inc"
+#include  "param.inc"
+#include  "files.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 
@@ -5177,10 +5172,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5324,10 +5319,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "complex.inc"
+#include  "param.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5483,7 +5478,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
+#include  "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5612,8 +5607,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5746,7 +5741,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
+#include  "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5886,8 +5881,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6014,8 +6009,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "complex.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6077,8 +6072,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include  "symm.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6174,8 +6169,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include  "symm.inc"
+#include  "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6251,7 +6246,7 @@ c  therefore we have to stretch the offset by a factor of RCW !
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
+#include  "complex.inc"
 C
 C---------------Executable code--------------------------------------
 C
@@ -6340,7 +6335,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include  "files.inc"
       REAL*8 SUM
 C
 C---------------Executable code--------------------------------------
@@ -6377,7 +6372,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6421,8 +6416,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/symm.inc"
+#include  "complex.inc"
+#include  "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6466,7 +6461,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6509,7 +6504,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
+#include  "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6562,10 +6557,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include  "param.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6642,9 +6637,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6726,9 +6721,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6830,10 +6825,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6929,10 +6924,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7021,9 +7016,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7093,9 +7088,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7160,8 +7155,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7240,8 +7235,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/symm.inc"
+#include "files.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7378,7 +7373,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7419,7 +7414,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7467,7 +7462,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7503,7 +7498,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7540,7 +7535,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7574,7 +7569,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7612,10 +7607,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7716,7 +7711,7 @@ c
       IMPLICIT INTEGER(A-Z)
       CHARACTER*60 A
 
-      include "../relccsd/files.inc"
+#include "files.inc"
       character*60 b,bt
 
       lim=60

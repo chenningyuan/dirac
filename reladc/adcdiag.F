@@ -5,6 +5,435 @@ C      ****  Diagonalization Routines for the RELADC package  ****
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIAGWRAPPER(CC,MAXCOR)
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER MAXCOR
+      REAL*8 CC(MAXCOR)
+
+#include "adcinpt.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+C
+C---------------Description--------------------------------------------
+C
+C  Top level control routine if diagonalizers are accessed directly
+C  This routine provides the loop structure and then transfers control
+C  to the diagonalization controller.
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*6 FILEN2,FILEN3,FILEN4,FILEN5
+      CHARACTER*9 FILE2, FILE3, FILE4, FILE5
+      PARAMETER(FILEN2='ADCCNF',FILEN3='ADCINF',
+     &          FILEN4='ADCDIA',FILEN5='ADCMPK')
+      LOGICAL LT,LTA
+
+C
+C---------------Executable code--------------------------------------
+C
+      CALL PST('Entering diagonalization routines+')
+      KFREE = 1
+      LFREE = MAXCOR
+c
+c  loop over user-requested symmetries
+c
+      DO 900 IRPLOOP=1,NREP
+        IF(XREPS(IRPLOOP).EQ.0) GOTO 900
+        KREP=XREPS(IRPLOOP)
+c
+c  generate corresponding disk file names and open the files
+c
+
+        WRITE(IW,*) 'Treating requested symmetry',KREP
+        WRITE(IW,*)
+
+        IF(KREP.GT.9) THEN
+          WRITE(FILE2,'(A6,A1,I2)') FILEN2,'.',KREP
+          WRITE(FILE3,'(A6,A1,I2)') FILEN3,'.',KREP
+          WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP
+          WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP
+        ELSE
+          WRITE(FILE2,'(A6,A2,I1)') FILEN2,'.0',KREP
+          WRITE(FILE3,'(A6,A2,I1)') FILEN3,'.0',KREP
+          WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP
+          WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP
+        ENDIF
+
+        WRITE(IW,*) 'ADC configuration information file: ',FILE2
+        WRITE(IW,*) 'ADC matrix label information file: ',FILE3
+        WRITE(IW,*) 'ADC diagonal elements file: ',FILE4
+        WRITE(IW,*) 'Packed ADC matrix file: ',FILE5
+c
+c try to open all the requested files
+c
+        INQUIRE (FILE=FILE2,EXIST=LT)
+        LTA=LT
+        INQUIRE (FILE=FILE3,EXIST=LT)
+        LTA=LTA.AND.LT
+        INQUIRE (FILE=FILE4,EXIST=LT)
+        LTA=LTA.AND.LT
+        INQUIRE (FILE=FILE5,EXIST=LT)
+        LTA=LTA.AND.LT
+        IF(LTA.EQV..FALSE.) THEN
+          WRITE(IW,*) 'Some file in symm.',KREP,' could not be found.'
+          WRITE(IW,*) 'Treating next symmetry.'
+          GOTO 900
+        ENDIF
+
+        IRECL = 78
+        OPEN(ITAPADC+2,FILE=FILE2,ACCESS='DIRECT',RECL=IRECL,
+     &       STATUS='UNKNOWN')
+        OPEN(ITAPADC+3,FILE=FILE3,FORM='FORMATTED',
+     &       STATUS='UNKNOWN')
+        OPEN(ITAPADC+4,FILE=FILE4,FORM='UNFORMATTED',
+     &       STATUS='UNKNOWN')
+        OPEN(ITAPADC+5,FILE=FILE5,FORM='UNFORMATTED',
+     &       STATUS='UNKNOWN')
+
+        WRITE(IW,*) 'Opening files successful.'
+c
+c  now all required files for diagonalization are open. We set some
+c  parameters and enter the DIAGEXEC
+c
+        LADC = NVOOT(KREP) + NO(KREP)
+        WRITE(IW,*) 'Hole space of ADC matrix in irrep: ',
+     &                 KREP,' : ',NO(KREP)
+        WRITE(IW,*) 'Dimension of ADC matrix in irrep: ',KREP,' : ',LADC
+
+        WRITE(IW,*) 'Checking matrix compatibility'
+        READ(ITAP3,'(2I4,A4,I10,I2,I10)')
+     &           ICOM_KREP,ICOM_NOCC,ICOM_REPNA,
+     &           ICOM_LADC,ICOM_ITYPE,ICOM_INTBUF
+
+
+        CALL DIAGEXEC(CC,KFREE,LFREE,.TRUE.,KREP,LADC,CARITH,RCW,IW,
+     &   IRPLOOP,NO(KREP),ITAPADC)
+
+        CLOSE(ITAPADC+2)
+        CLOSE(ITAPADC+3)
+        CLOSE(ITAPADC+4)
+        CLOSE(ITAPADC+5)
+
+ 900  CONTINUE
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIAGEXEC(CC,KFREE,LFREE,ALLOC,KREP,LADC,CARITH,RCW,IW,
+     & IRPLOOP,NOCC,ITAPBASE)
+
+      IMPLICIT INTEGER (A-Z)
+
+      REAL*8 CC(*)
+      INTEGER KFREE,LFREE,ALLOC,KREP,LADC,RCW,IW,IRPLOOP,NOCC,ITAPBASE
+      LOGICAL CARITH
+C
+C---------------Description--------------------------------------------
+C
+C  This routine now allocates corresponding work space for the
+C  individual diagonalizers and executes them.
+C
+C  When entering the routine the required files are open and can be
+C  accessed via the ITAPBASE. This is provided by the caller. Files are
+C  opened only once at a central place.
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 LANTHR,EVLLIM,THRVEC
+      LOGICAL LFLAG
+      REAL*8 RDUMMY
+      COMPLEX*16 CDUMMY
+      INTEGER ITAP2,ITAP3,ITAP4,ITAP5,ITAP6
+
+#include "adcinpt.inc"
+
+C
+C---------------Executable code--------------------------------------
+C
+      INTBUF = 8192
+      KFRSAV = KFREE
+      KFRDYN = KFREE
+
+      ITAP2 = ITAPBASE+2
+      ITAP3 = ITAPBASE+3
+      ITAP4 = ITAPBASE+4
+      ITAP5 = ITAPBASE+5
+      ITAP6 = ITAPBASE+6
+c
+c   --- FULL
+c
+      IF(DIAGTYPE.eq.'FULL') THEN
+          IF(CARITH.EQV..FALSE.) THEN
+
+            CALL PST('Entering (real) FULL diagonalization+')
+
+            N=LADC*LADC
+            CALL MEMOPT('REAL',WRK_AZZ,N,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('REAL',WRK_EVL,LADC,CC,KFREE,LFREE,ALLOC)
+            LWORK=3*LADC
+            CALL MEMOPT('REAL',WRK_RWORK,LWORK,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('INTE',WRK_IOI,INTBUF,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('INTE',WRK_IOJ,INTBUF,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('REAL',WRK_BUF,INTBUF*RCW,CC,KFREE,LFREE,ALLOC)
+
+            CALL FULLDIAR(ITAP4,ITAP5,INTBUF,LADC,
+     &                    CC(WRK_AZZ),CC(WRK_EVL),
+     &                    CC(WRK_RWORK),LWORK,
+     &                    CC(WRK_IOI),CC(WRK_IOJ),CC(WRK_BUF))
+c
+c  analyze eigenvectors
+c
+c           CALL VECANALYZE(IW,CC(ICRA),LADC,KREP, xxx xxx
+c    &                      CC(WRK_EVL),CC(WRK_AZZ))
+c
+c  release memory required for real diagonalization
+c
+            CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+
+          ELSE
+
+            CALL PST('Entering (complex) FULL diagonalization+')
+
+            N=LADC*LADC*RCW
+            CALL MEMOPT('REAL',WRK_AZZ,N,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('REAL',WRK_EVL,LADC,CC,KFREE,LFREE,ALLOC)
+            N=(LADC+1)*LADC*RCW
+            CALL MEMOPT('REAL',WRK_CWORK,N,CC,KFREE,LFREE,ALLOC)
+            LWORK=3*LADC
+            CALL MEMOPT('REAL',WRK_RWORK,LWORK,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('INTE',WRK_IOI,INTBUF,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('INTE',WRK_IOJ,INTBUF,CC,KFREE,LFREE,ALLOC)
+            CALL MEMOPT('REAL',WRK_BUF,INTBUF*RCW,CC,KFREE,LFREE,ALLOC)
+
+            CALL FULLDIAC(ITAP4,ITAP5,INTBUF,LADC,
+     &                    CC(WRK_AZZ),CC(WRK_EVL),
+     &                    CC(WRK_CWORK),CC(WRK_RWORK),LWORK,
+     &                    CC(WRK_IOI),CC(WRK_IOJ),CC(WRK_BUF))
+c
+c  release memory required for complex diagonalization
+c
+            CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+
+          ENDIF
+c
+c   --- LANC
+c
+
+        ELSE IF(DIAGTYPE.eq.'LANC') THEN
+c--------------------------------------------------------------------
+c
+c
+c transfer Lanczos parameters for the main array to the
+c variables for the current run in symmetry KREP.
+c The general input was read in during the initialization step.
+c
+
+          NITER  = XNITER(IRPLOOP)
+          IF(XNP(IRPLOOP).EQ.0) THEN
+            NP = NOCC
+            WRITE(IW,*) 'defaulting NP to',NP
+          ELSE
+            NP = XNP(IRPLOOP)
+          ENDIF
+          NEIGENV = XNEIGENV(IRPLOOP)
+          LANTHR  = 0.0d0
+          EVLLIM  = XEVLLIM(IRPLOOP)
+          THRVEC  = XTHRVEC(IRPLOOP)
+
+
+          WRITE(IW,*) '+++ Lanczos-input parameters in this run:'
+          WRITE(IW,*) '+++ NITER,NP,NEIGENV,EVLLIM,THRVEC:',
+     &                NITER,NP,NEIGENV,EVLLIM,THRVEC
+C
+C  allocate required work space for band Lanczos iterations
+C  real/complex case are accounted for by the RCW variable
+C  wrk_diag is always real since we have a hermitian matrix
+C  disk buffers are already allocated.
+C
+          N=2*NP+1
+          CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC)
+          N=(2*NP+1)*LADC*RCW
+          CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC)
+          N=(NP+1)*NITER*RCW
+          CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC)
+          N=LADC*RCW
+          CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC)
+          N=INTBUF*RCW
+          CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC)
+          N=INTBUF
+          CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC)
+
+C
+C  enter real resp. complex Band Lanczos iterations
+C  for symmetric resp. Hermitian matrices
+C  In the first run: no eigenvectors because no eigenvalues are
+C  available
+C
+          LFLAG = .FALSE.
+
+          IF(CARITH.EQV..TRUE.) THEN
+
+            CALL PST('Entering (complex) LANCZOS diagonalization+')
+
+            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                    CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
+     &                    CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+     &                    INTBUF,ITAP4, ITAP5, ITAP6)
+
+            CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
+
+          ELSE
+
+            CALL PST('Entering (real) LANCZOS diagonalization+')
+
+            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                    CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
+     &                    CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+     &                    INTBUF,ITAP4, ITAP5, ITAP6)
+
+            CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
+
+          ENDIF
+
+C
+C  from here the Lanczos matrix T is available. we acquire work
+C  space for the LAPACK Band-diagonalizer.
+C
+          N=NITER
+          CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC)
+          N=NITER*NITER*RCW
+          CALL MEMOPT('REAL',WRK_ZEV,N,CC,KFREE,LFREE,ALLOC)
+          N=4*NITER*RCW
+          CALL MEMOPT('REAL',WRK_WORK1,N,CC,KFREE,LFREE,ALLOC)
+          N=6*NITER
+          CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC)
+
+          IF(CARITH) THEN
+             CALL ZBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+     &                  CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
+             CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
+          ELSE
+             CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+     &                  CC(WRK_ZEV),CC(WRK_RWORK1))
+             CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
+          ENDIF
+c
+c remove spurious/multiple eigenvalues and
+c analyze eigenvectors of band matrix
+c if eigenvectors desired perform inverse iteration for the
+c purged spectrum.
+c
+          N=2*NP*NITER*RCW
+          CALL MEMOPT('REAL',WRK_Z,N,CC,KFREE,LFREE,ALLOC)
+          N=NITER
+          CALL MEMOPT('INTE',WRK_IND,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('INTE',WRK_MLT,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('INTE',WRK_LSP,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('INTE',WRK_IPI,N,CC,KFREE,LFREE,ALLOC)
+          N=NITER*(2*NP+1)*RCW
+          CALL MEMOPT('REAL',WRK_A,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',WRK_A1,N,CC,KFREE,LFREE,ALLOC)
+          N=NITER*RCW
+          CALL MEMOPT('REAL',WRK_B,N,CC,KFREE,LFREE,ALLOC)
+          CALL MEMOPT('REAL',WRK_BX,N,CC,KFREE,LFREE,ALLOC)
+
+          IF(CARITH) THEN
+            CALL ZBLANA(KREP,niter,np,neigenv,nocc,
+     &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
+     &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
+     &           cc(wrk_ipi),itap6,lanthr,EVLLIM)
+          ELSE
+            CALL RBLANA(KREP,niter,np,neigenv,nocc,
+     &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
+     &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
+     &           cc(wrk_ipi),itap6,lanthr,EVLLIM)
+          ENDIF
+c
+c check if user wants to calculate eigenvectors of full ADC matrix
+c NGT is the actual number of nonspurious/unique eigenvalues.
+c *** important: the corresponding intensities and corrections for
+c the multiple eigenvalues are accounted for in the short eigenvector
+c array z. This array has to be transferred to the eigenvector
+c calculation.
+C The corresponding indices sit in the array IND2 which has to be
+C transferred to the eigenvector routine.
+c
+c
+          IF(NEIGENV.GT.0) THEN
+
+            N=LADC*NEIGENV*RCW
+            CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC)
+c
+c  next redo Lanczos now with the FULL eigenvectors of T and create
+c  the LONG eigenvectors for the TOTAL ADC matrix
+c
+            LFLAG = .TRUE.
+
+            IF(CARITH) THEN
+              CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                      CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                      CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                      CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                      CC(WRK_EVL),LFLAG, INTBUF,
+     &                      ITAP4, ITAP5, ITAP6)
+            ELSE
+              CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+     &                      CC(WRK_P), CC(WRK_T), CC(WRK_R),
+     &                      CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+     &                      CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+     &                      CC(WRK_EVL),LFLAG, INTBUF,
+     &                      ITAP4, ITAP5, ITAP6)
+            ENDIF
+          ENDIF
+c
+c  analyze vectors   !!!!!!!!  ****C H E CK *****
+c
+          IF(NEIGENV.GT.0) THEN
+            IF(CARITH) THEN
+              CALL ZVECANALYZE(ITAP6,ITAP6+1,FILE2,KREP,LADC,
+     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
+            ELSE
+              CALL RVECANALYZE(ITAP6,ITAP6+1,FILE2,KREP,LADC,
+     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
+            ENDIF
+          ENDIF
+
+ 899      CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+
+        ELSE IF(DIAGTYPE.eq.'DAVI') THEN
+c
+c --- DAVI
+c
+          write(iw,*)  ' *** ATT ***'
+          write(iw,*)  ' *** ATT ***'
+          write(iw,*)  ' *** ATT ***'
+          write(iw,*)  ' Internal Davidson not available!'
+          write(iw,*)  ' Calculating next symmetry.'
+
+        ELSE IF(DIAGTYPE.eq.'EXTN') THEN
+c
+c  we do not diagonalize, user wants external routine
+c
+          RETURN
+
+        ELSE
+
+          WRITE(IW,*) ' *** Unknown diagonalize command ',DIAGTYPE
+          CALL QUIT('Diagtype undefined')
+c
+        ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAR(LUN_DIA,LUN_OFF,INTBUF,LADC,A,EVL,WORK,LWORK,
      &                   IOI,IOJ,BUF)
 C
@@ -107,9 +536,9 @@ C  started.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -171,16 +600,16 @@ C
         WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
       ENDDO
 
-      WRITE(IW,*) 'Corresponding eigenvectors (first 100 entries)'
-      do iev=1,min(20,ladc)
-        WRITE(IW,*) iev,EVL(iev)
-        WRITE(IW,*) '----------------------'
-        do i=1,min(100,ladc)
-          write(iw,*) i,a(i,iev)
-        enddo
-        write(iw,*)
-        write(iw,*)
-      enddo
+c     WRITE(IW,*) 'Corresponding eigenvectors (first 100 entries)'
+c     do iev=1,min(20,ladc)
+c       WRITE(IW,*) iev,EVL(iev)
+c       WRITE(IW,*) '----------------------'
+c       do i=1,min(100,ladc)
+c         write(iw,*) i,a(i,iev)
+c       enddo
+c       write(iw,*)
+c       write(iw,*)
+c     enddo
  
       RETURN
 
@@ -215,8 +644,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "symm.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -347,8 +776,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/symm.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "symm.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -489,8 +918,8 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -721,8 +1150,8 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -733,12 +1162,12 @@ C---------------Executable code--------------------------------------
 C
       WRITE(EVECFN,'(A5,I1)') 'EVEC.',IRREP
 
-      WRITE(IW,*)
-      WRITE(IW,*) '*************************************'
-      WRITE(IW,*) '*** executing Hermitian Band-Lanczos '
-      WRITE(IW,*) '*** in symmetry ',IRREP
-      WRITE(IW,*) '*************************************'
-      WRITE(IW,*)
+c     WRITE(IW,*)
+c     WRITE(IW,*) '*************************************'
+c     WRITE(IW,*) '*** executing Hermitian Band-Lanczos '
+c     WRITE(IW,*) '*** in symmetry ',IRREP
+c     WRITE(IW,*) '*************************************'
+c     WRITE(IW,*)
       WRITE(IW,*) ' Matrix dimension:',LADC
       WRITE(IW,*) ' Band width:      ',NP
       WRITE(IW,*) ' Number of iterations:',NITER
@@ -971,7 +1400,7 @@ c
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C--------------- Local variables ----------------------------------
 C     
@@ -1278,7 +1707,7 @@ c
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C--------------- Local variables ----------------------------------
 C     
@@ -1630,7 +2059,7 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1649,7 +2078,7 @@ C---------------Executable code--------------------------------------
 C
 
 
-      CALL PST('Processing the spectrum+')
+      CALL PST('Processing the real spectrum (real)+')
       WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
       WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
 
@@ -2024,7 +2453,7 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2043,7 +2472,7 @@ C---------------Executable code--------------------------------------
 C
 
 
-      CALL PST('Processing the spectrum+')
+      CALL PST('Processing the spectrum (complex)+')
       WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
       WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
 c
@@ -2156,13 +2585,13 @@ C.....REMOVE SPURIOUS AND MULTIPLE EIGENVALUES.
  49      continue
  48   CONTINUE
 
-      write (6,'(/,A)') '  Information on purging:'
+      write (IW,'(/,A)') '  Information on purging:'
       PRINT 905, JND, N, int(100.0d0*dble(jnd)/dble(n))
  905  FORMAT(4x,'There are',I5,' relevant residues out of',I5, 
      $     '   (',I3,'%)')
-      write(6,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
+      write(IW,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
      $     'N_multiple = ', NMU
-      write(6,*) 'Threshold for vector printing:',WTHR
+      write(IW,*) 'Threshold for vector printing:',WTHR
 C
 C
 C.....TRANSFORM THE EIGENVECTORS(FIRST NP ROWS) TO OBTAIN THE RESIDUES.
@@ -2201,6 +2630,7 @@ c
       else
         write(evalfn,'(a6,i1)') 'SPEC.0',irrep
       endif
+
       open(iounit,file=evalfn,form='FORMATTED',status='UNKNOWN')
       
       cntev=0
@@ -2423,7 +2853,7 @@ C    numerical recipes routines the original matrix T is DESTROYED !!!
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2489,7 +2919,7 @@ C
 
       INTEGER N,NP,LDAB
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
-      REAL*8 RWORK(6*N),EVL(N)
+      DOUBLE PRECISION RWORK(6*N),EVL(N)
       
 C
 C---------------Description--------------------------------------------
@@ -2502,14 +2932,14 @@ C  The Lanczos matrix T from the caller comes in the AB array.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
       INTEGER INFO,LDZ
-      CHARACTER*1 JOBZ,UPLO
+      CHARACTER JOBZ,UPLO
       COMPLEX*16 Y
-      REAL*8 AUEV
+      DOUBLE PRECISION AUEV
 
 C
 C---------------Executable code--------------------------------------
@@ -2530,11 +2960,27 @@ C
       WRITE(IW,*) 'Parameters for complex band diagonalizer'
       WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
 
-      CALL ZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
+c     write(iw,*) 'filling the transfer arrays and performing memchk...'
+c     do i=1,n
+c       evl(i)=123.456d0
+c       rwork(6*i) = 321.123d0
+c       work(4*i)=(12.0d0,12.0d0)
+c       do j=1,n
+c         z(i,j)=(3.3d0,3.3d0)
+c       enddo
+c       do j=1,ldab
+c         ab(j,i)=(7.0d0,7.0d0)
+c       enddo
+c     enddo
+c     write(iw,*) 'filling finished ...'
+c     return
+
+      WRITE(IW,*) 'Calling Alternative ZHBEV...'
+      CALL ALZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           WORK, RWORK, INFO)
-      WRITE(IW,*) 'Code from ZHBEV:',INFO
+      WRITE(IW,*) 'Code from ALZHBEV:',INFO
       IF(INFO.NE.0) THEN
-        CALL QUIT('Error in ZHBEV')
+        CALL QUIT('Error in ALZHBEV')
       ENDIF
 
       WRITE(IW,*)
@@ -2611,8 +3057,8 @@ C  are necessarily real.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2679,8 +3125,8 @@ C  This has to be taken into account.
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/files.inc"
-      INCLUDE "../relccsd/complex.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2728,3 +3174,208 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ALZHBEV( JOBZ, UPLO, N, KD, AB, LDAB, W, Z, LDZ, WORK,
+     $                    RWORK, INFO )
+*
+*  -- LAPACK driver routine (version 2.0) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     September 30, 1994
+*
+*     .. Scalar Arguments ..
+      CHARACTER          JOBZ, UPLO
+      INTEGER            INFO, KD, LDAB, LDZ, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   RWORK( * ), W( * )
+      COMPLEX*16         AB( LDAB, * ), WORK( * ), Z( LDZ, * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  ZHBEV computes all the eigenvalues and, optionally, eigenvectors of
+*  a complex Hermitian band matrix A.
+*
+*  Arguments
+*  =========
+*
+*  JOBZ    (input) CHARACTER*1
+*          = 'N':  Compute eigenvalues only;
+*          = 'V':  Compute eigenvalues and eigenvectors.
+*
+*  UPLO    (input) CHARACTER*1
+*          = 'U':  Upper triangle of A is stored;
+*          = 'L':  Lower triangle of A is stored.
+*
+*  N       (input) INTEGER
+*          The order of the matrix A.  N >= 0.
+*
+*  KD      (input) INTEGER
+*          The number of superdiagonals of the matrix A if UPLO = 'U',
+*          or the number of subdiagonals if UPLO = 'L'.  KD >= 0.
+*
+*  AB      (input/output) COMPLEX*16 array, dimension (LDAB, N)
+*          On entry, the upper or lower triangle of the Hermitian band
+*          matrix A, stored in the first KD+1 rows of the array.  The
+*          j-th column of A is stored in the j-th column of the array AB
+*          as follows:
+*          if UPLO = 'U', AB(kd+1+i-j,j) = A(i,j) for max(1,j-kd)<=i<=j;
+*          if UPLO = 'L', AB(1+i-j,j)    = A(i,j) for j<=i<=min(n,j+kd).
+*
+*          On exit, AB is overwritten by values generated during the
+*          reduction to tridiagonal form.  If UPLO = 'U', the first
+*          superdiagonal and the diagonal of the tridiagonal matrix T
+*          are returned in rows KD and KD+1 of AB, and if UPLO = 'L',
+*          the diagonal and first subdiagonal of T are returned in the
+*          first two rows of AB.
+*
+*  LDAB    (input) INTEGER
+*          The leading dimension of the array AB.  LDAB >= KD + 1.
+*
+*  W       (output) DOUBLE PRECISION array, dimension (N)
+*          If INFO = 0, the eigenvalues in ascending order.
+*
+*  Z       (output) COMPLEX*16 array, dimension (LDZ, N)
+*          If JOBZ = 'V', then if INFO = 0, Z contains the orthonormal
+*          eigenvectors of the matrix A, with the i-th column of Z
+*          holding the eigenvector associated with W(i).
+*          If JOBZ = 'N', then Z is not referenced.
+*
+*  LDZ     (input) INTEGER
+*          The leading dimension of the array Z.  LDZ >= 1, and if
+*          JOBZ = 'V', LDZ >= max(1,N).
+*
+*  WORK    (workspace) COMPLEX*16 array, dimension (N)
+*
+*  RWORK   (workspace) DOUBLE PRECISION array, dimension (max(1,3*N-2))
+*
+*  INFO    (output) INTEGER
+*          = 0:  successful exit.
+*          < 0:  if INFO = -i, the i-th argument had an illegal value.
+*          > 0:  if INFO = i, the algorithm failed to converge; i
+*                off-diagonal elements of an intermediate tridiagonal
+*                form did not converge to zero.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ZERO, ONE
+      PARAMETER          ( ZERO = 0.0D0, ONE = 1.0D0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            LOWER, WANTZ
+      INTEGER            IINFO, IMAX, INDE, INDRWK, ISCALE
+      DOUBLE PRECISION   ANRM, BIGNUM, EPS, RMAX, RMIN, SAFMIN, SIGMA,
+     $                   SMLNUM
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      DOUBLE PRECISION   DLAMCH, ZLANHB
+      EXTERNAL           LSAME, DLAMCH, ZLANHB
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DSCAL, DSTERF, XERBLA, ZHBTRD, ZLASCL, ZSTEQR
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          SQRT
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      WANTZ = LSAME( JOBZ, 'V' )
+      LOWER = LSAME( UPLO, 'L' )
+*
+      INFO = 0
+      IF( .NOT.( WANTZ .OR. LSAME( JOBZ, 'N' ) ) ) THEN
+         INFO = -1
+      ELSE IF( .NOT.( LOWER .OR. LSAME( UPLO, 'U' ) ) ) THEN
+         INFO = -2
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KD.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDAB.LT.KD+1 ) THEN
+         INFO = -6
+      ELSE IF( LDZ.LT.1 .OR. ( WANTZ .AND. LDZ.LT.N ) ) THEN
+         INFO = -9
+      END IF
+*
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'ZHBEV ', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+      IF( N.EQ.1 ) THEN
+         W( 1 ) = AB( 1, 1 )
+         IF( WANTZ )
+     $      Z( 1, 1 ) = ONE
+         RETURN
+      END IF
+*
+*     Get machine constants.
+*
+      SAFMIN = DLAMCH( 'Safe minimum' )
+      EPS = DLAMCH( 'Precision' )
+      SMLNUM = SAFMIN / EPS
+      BIGNUM = ONE / SMLNUM
+      RMIN = SQRT( SMLNUM )
+      RMAX = SQRT( BIGNUM )
+*
+*     Scale matrix to allowable range, if necessary.
+*
+      ANRM = ZLANHB( 'M', UPLO, N, KD, AB, LDAB, RWORK )
+      ISCALE = 0
+      IF( ANRM.GT.ZERO .AND. ANRM.LT.RMIN ) THEN
+         ISCALE = 1
+         SIGMA = RMIN / ANRM
+      ELSE IF( ANRM.GT.RMAX ) THEN
+         ISCALE = 1
+         SIGMA = RMAX / ANRM
+      END IF
+      IF( ISCALE.EQ.1 ) THEN
+         IF( LOWER ) THEN
+            CALL ZLASCL( 'B', KD, KD, ONE, SIGMA, N, N, AB, LDAB, INFO )
+         ELSE
+            CALL ZLASCL( 'Q', KD, KD, ONE, SIGMA, N, N, AB, LDAB, INFO )
+         END IF
+      END IF
+*
+*     Call ZHBTRD to reduce Hermitian band matrix to tridiagonal form.
+*
+      INDE = 1
+      CALL ZHBTRD( JOBZ, UPLO, N, KD, AB, LDAB, W, RWORK( INDE ), Z,
+     $             LDZ, WORK, IINFO )
+*
+*     For eigenvalues only, call DSTERF.  For eigenvectors, call ZSTEQR.
+*
+      IF( .NOT.WANTZ ) THEN
+         CALL DSTERF( N, W, RWORK( INDE ), INFO )
+      ELSE
+         INDRWK = INDE + N
+         CALL ZSTEQR( JOBZ, N, W, RWORK( INDE ), Z, LDZ,
+     $                RWORK( INDRWK ), INFO )
+      END IF
+*
+*     If matrix was scaled, then rescale eigenvalues appropriately.
+*
+      IF( ISCALE.EQ.1 ) THEN
+         IF( INFO.EQ.0 ) THEN
+            IMAX = N
+         ELSE
+            IMAX = INFO - 1
+         END IF
+         CALL DSCAL( IMAX, ONE / SIGMA, W, 1 )
+      END IF
+*
+      RETURN
+*
+*     End of ZHBEV
+*
+      END

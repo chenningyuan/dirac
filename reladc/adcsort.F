@@ -17,8 +17,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -70,9 +70,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -129,8 +129,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -193,9 +193,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -284,9 +284,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -383,9 +383,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
-      INCLUDE "../relccsd/files.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -475,8 +475,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "../relccsd/complex.inc"
-      INCLUDE "../relccsd/param.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C

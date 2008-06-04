@@ -12,9 +12,9 @@ C-----For the ADC module
 
 C-----For the LANCZOS diagonalizer 
       COMMON/LANCZI/XNITER,XNP,XNEIGENV
-      INTEGER XNITER(8),XNP(8),XNEIGENV(8)
+      INTEGER XNITER(32),XNP(32),XNEIGENV(32)
       COMMON/LANCZR/XTHRESH,XTHRVEC
-      REAL*8 XTHRESH(8),XTHRVEC(8)
+      REAL*8 XTHRESH(32),XTHRVEC(32), XEVLLIM(32)
 C -- if no LANC diagonalization is chosen these values
 C -- are filled with zeros and are never accessed anyway
 
