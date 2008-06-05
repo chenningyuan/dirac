@@ -1957,7 +1957,9 @@ case $F90 in
      cpp="$cpp \${MODS}"
      cpp2=`echo $cpp | sed -e 's/${MODS}//' `
 esac
-cpp3=`echo $cpp2 | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
+echo $cpp2
+cpp3=`echo $cpp2 | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" | sed -s "s/-I//"`
+echo $cpp3
 ccp3=`echo $ccp | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
 
 ##################################################
@@ -1971,7 +1973,7 @@ config_options['source_root']   = "$SRC_DIR"
 config_options['arch']          = "$guess"
 config_options['memory']        = "$memsiz"
 config_options['include_flags'] = "-I"+config_options['source_root']+"/include -I/usr/include -I/usr/local/include -I./ -I../ -I../include -I./include"
-config_options['cpp_flags']     = "$cpp3"+modules_active+"-D'INSTALL_WRKMEM="+config_options['memory']+"'"
+config_options['cpp_flags']     = "$cpp3"+modules_active+"-D'INSTALL_WRKMEM="+config_options['memory']+"'"   
 config_options['ccp_flags']     = "$ccp3"
 config_options['f77comp']       = "$F90"
 config_options['f90comp']       = "$F90"
