@@ -54,15 +54,10 @@ C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-
-#ifdef MOD_AORESPONSE
-      use aoresponse_input_m
-#endif /* MOD_AORESPONSE */
-
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 9, NTABLE = 36)
+      PARAMETER (NDIR = 10, NTABLE = 36)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -78,7 +73,7 @@ C
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
-     &             '*STEX  '/
+     &             '*STEX  ','*AORESP'/
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
@@ -87,7 +82,7 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.AORESP','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -383,10 +378,6 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
-#ifdef MOD_AORESPONSE
-            call aoresponse_input()
-            test_aoresponse = .true.
-#endif /* MOD_AORESPONSE */
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX
@@ -459,7 +450,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9), I
+               GO TO (1,2,3,4,5,6,7,8,9,10), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -510,7 +501,14 @@ C     *STEX
          CALL QUIT('*STEX not included in this version')
 #endif
          GO TO 200
-C
+   10 CONTINUE
+#ifdef MOD_AORESPONSE
+         test_aoresponse = .true.
+         call aoresponse_input(word)
+#else
+         CALL QUIT('*AORESPONSE not included in this version')
+#endif /* MOD_AORESPONSE */
+         GO TO 200
     1 CONTINUE
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input

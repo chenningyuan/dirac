@@ -566,7 +566,7 @@ contains
     tknorm    = .false.
     diaghe    = .true.
     iprxrs    = 0
-    thcxrs    = aoresponse_threshold
+    thcxrs    = aoresponse_threshold_response
     resfac    = 1.0d3
     maxitr    = 30
     nredm     = 400

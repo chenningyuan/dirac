@@ -4,6 +4,7 @@ module aoresponse_main_m
   use memory_allocator
   use matrix_mod
   use dirac_interface_m
+  use aoresponse_input_m
   use aoresponse_test_m
   use aoresponse_xc_m
 
@@ -17,16 +18,13 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
-    type(matrix)               :: S, C, D_mo, D, F
-    real(kind_dp), allocatable :: freq(:)
-    integer                    :: nr_freq = 4
+    type(matrix)  :: S, C, D_mo, D, F
+    real(kind_dp) :: freq(4)
 
-    logical :: test_nr_electrons = .true.
-    logical :: test_energy       = .true.
-    logical :: test_mu           = .true.
-    logical :: test_alpha        = .false.
-    logical :: test_beta         = .false.
-    logical :: test_gamma        = .true.
+    freq(1) = aoresponse_freq(1)
+    freq(2) = aoresponse_freq(2)
+    freq(3) = aoresponse_freq(3)
+    freq(4) = aoresponse_freq(4)
 
     call get_S(S)
 
@@ -41,60 +39,41 @@ contains
 
     call get_F(F)
 
-    if (test_nr_electrons) then
+!   if (test_nr_electrons) then
       call nr_electrons(S, D)
-    end if
+!   end if
 
-    if (test_energy) then
+!   if (test_energy) then
       call energy(D, F)
-    end if
+!   end if
 
-    if (test_mu) then
+!   if (test_mu) then
       call mu(S, D, F)
-    end if
-
-    call alloc(freq, nr_freq)
-    freq = 0.0d0
+!   end if
 
 !   0.08855851799036d0 = 514.5 nm
 
-    if (test_alpha) then
-      freq(1) = -0.08855851799036d0
+    if (aoresponse_alpha) then
       call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if
 
-    if (test_beta) then
-!     freq(1) = -0.07d0
-!     freq(2) =  0.07d0
-!     call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-      freq(1) = -0.177117036d0
-      freq(2) =  0.08855851799036d0
+    if (aoresponse_beta) then
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-!     freq(1) = -0.21d0
-!     freq(2) =  0.14d0
-!     call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
     end if
 
-    if (test_gamma) then
-      freq(1) = -0.08855851799036d0
-      freq(2) =  0.08855851799036d0
-      freq(3) = -0.08855851799036d0
-!     call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(1, 2, 1, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(1, 1, 2, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3, 1, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+    if (aoresponse_gamma) then
+      call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(1, 2, 1, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(1, 1, 2, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(3, 1, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+!     call gamma_element(3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
     end if
 
     S = 0
     D = 0
     F = 0
-
-    call dealloc(freq)
 
   end subroutine aoresponse_driver
 

@@ -18,7 +18,13 @@ module aoresponse_input_m
   logical,                 save :: aoresponse_skip_pp
   logical,                 save :: aoresponse_skip_pn
 
-  real(kind_dp),           save :: aoresponse_threshold
+  real(kind_dp),           save :: aoresponse_threshold_response
+  real(kind_dp),           save :: aoresponse_threshold_rhs
+  real(kind_dp),           save :: aoresponse_freq(4)
+
+  logical,                 save :: aoresponse_alpha
+  logical,                 save :: aoresponse_beta
+  logical,                 save :: aoresponse_gamma
 
 contains
 
@@ -77,24 +83,6 @@ contains
       perturbation_op(indxpr)%prefactors(i) = prefactors(i)
       perturbation_op(indxpr)%labels(i)     = labels(i)
     end do
-
-  end subroutine
-
-  subroutine aoresponse_input()
-
-    integer :: i
-
-    do i = 1, max_nr_op
-      perturbation_op(i)%op_name = ''
-    end do
-
-    call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
-    call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
-    call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
-
-    aoresponse_skip_pp   = .false.
-    aoresponse_skip_pn   = .true.
-    aoresponse_threshold = 1.0d-5
 
   end subroutine
 

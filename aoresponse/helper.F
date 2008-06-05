@@ -131,3 +131,213 @@
       end if
 
       end
+
+      subroutine aoresponse_input(word)
+
+      use aoresponse_input_m
+
+      implicit none
+
+#include "priunit.h"
+
+      integer, parameter :: ntable = 60
+      integer            :: i
+      character(1)       :: prompt
+      character(7)       :: word, word_save
+      character(7)       :: table(ntable)
+
+!                   1         2         3         4
+      data table /'.SKIPEE','.SKIPEP','.THRESH','.ALPHA ',
+!                   5         6         7         8
+     &            '.BETA  ','.GAMMA ','.FREQ  ','.xxxxxx',
+!                   9        10        11        12
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  13        14        15        16
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  17        18        19        20
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  21        22        23        24
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  25        26        27        28
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  29        30        31        32
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  33        34        35        36
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  37        38        39        40
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  41        42        43        44
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  45        46        47        48
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  49        50        51        52
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  53        54        55        56
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+!                  57        58        59        60
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
+
+
+!     init
+!     ====
+
+      do i = 1, max_nr_op
+        perturbation_op(i)%op_name = ''
+      end do
+
+      call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
+      call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
+      call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
+
+      aoresponse_skip_pp            = .false.
+      aoresponse_skip_pn            = .false.
+
+      aoresponse_threshold_response = 1.0d-5
+      aoresponse_threshold_rhs      = 1.0d-3
+      aoresponse_freq               = 0.0d0
+
+      aoresponse_alpha              = .false.
+      aoresponse_beta               = .false.
+      aoresponse_gamma              = .false.
+
+
+!     process input
+!     =============
+
+      if (word .eq. '*AORESP') then
+        word_save = word
+  100   continue
+        read(lucmd, '(a7)') word
+        prompt = word(1:1)
+        if (prompt .eq. '!' .or. prompt .eq. '#') then
+          go to 100
+        else if (prompt .eq. '.') then
+          do 200 i = 1, ntable
+            if (table(i) .eq. word) then
+            go to ( 1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+     &             11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+     &             21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+     &             31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+     &             41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+     &             51, 52, 53, 54, 55, 56, 57, 58, 59, 60), i
+            end if
+  200     continue
+          if (word .eq. '.OPTION') then
+            call prtab(ntable,
+     &                 table,
+     &                 word_save//' input keywords',
+     &                 lupri)
+            go to 100
+          end if
+          write(lupri, '(/,3a,/)') ' keyword "',
+     &                             word,
+     &                             '" not recognized in *AORESPONSE'
+          call prtab(ntable,
+     &               table,
+     &               word_save//' input keywords',
+     &               lupri)
+          call quit('illegal keyword in *AORESPONSE')
+
+    1     continue
+          aoresponse_skip_pp = .true.
+          go to 100
+
+    2     continue
+          aoresponse_skip_pn = .true.
+          go to 100
+
+    3     continue
+          read(lucmd, *) aoresponse_threshold_response,
+     &                   aoresponse_threshold_rhs
+          go to 100
+
+    4     continue
+          aoresponse_alpha = .true.
+          go to 100
+
+    5     continue
+          aoresponse_beta = .true.
+          go to 100
+
+    6     continue
+          aoresponse_gamma = .true.
+          go to 100
+
+    7     continue
+          read(lucmd, *) aoresponse_freq(1),
+     &                   aoresponse_freq(2),
+     &                   aoresponse_freq(3),
+     &                   aoresponse_freq(4)
+          go to 100
+
+    8     continue
+    9     continue
+   10     continue
+   11     continue
+   12     continue
+   13     continue
+   14     continue
+   15     continue
+   16     continue
+   17     continue
+   18     continue
+   19     continue
+   20     continue
+   21     continue
+   22     continue
+   23     continue
+   24     continue
+   25     continue
+   26     continue
+   27     continue
+   28     continue
+   29     continue
+   30     continue
+   31     continue
+   32     continue
+   33     continue
+   34     continue
+   35     continue
+   36     continue
+   37     continue
+   38     continue
+   39     continue
+   40     continue
+   41     continue
+   42     continue
+   43     continue
+   44     continue
+   45     continue
+   46     continue
+   47     continue
+   48     continue
+   49     continue
+   50     continue
+   51     continue
+   52     continue
+   53     continue
+   54     continue
+   55     continue
+   56     continue
+   57     continue
+   58     continue
+   59     continue
+   60     continue
+          go to 100
+
+        else if (prompt .eq. '*') then
+          go to 300
+        else
+          write(lupri, '(/,3a,/)') ' keyword "',
+     &                             word,
+     &                             '" not recognized in *AORESPONSE'
+          call prtab(ntable,
+     &               table,
+     &               word_save//' input keywords',
+     &               lupri)
+          call quit('illegal keyword in *AORESPONSE')
+        end if
+      end if
+  300 continue
+
+      end
