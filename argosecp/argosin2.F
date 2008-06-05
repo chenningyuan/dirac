@@ -3,7 +3,7 @@ c     **************************************************************
       subroutine readcoor (i, nont, mline, nmline, namnar) 
 c     **************************************************************
 #include "argosparm.h"
-      integer   nont(mxatom), i
+      integer   nont(mxatom)
       character namnar(mxatom,mxatom)*4
       do j = 1, nont(i)
          read (mline(nmline),'(a4)') namnar(i,j)
@@ -105,7 +105,6 @@ c     ******************************************************************
 c     read explicit basis set
 #include "argosparm.h"
 #include "argosbas.h"
-      integer j,k,l
       do j = 1, iqm(i)                            !j for
          do k = 1, jco(i,j)                       !k for
 c           pass (i,j,k)th block
@@ -348,7 +347,6 @@ c     *******************************************************
 #include "argosparm.h"
 #include "argosecp.h"
 #include "argosatm.h"
-      integer   nontyp
 c
 c     for SO-index
 c
@@ -452,7 +450,7 @@ c     ********************************************************
 #include "argosecp.h"
 #include "argosatm.h"
       parameter (mxeline=100)
-      integer   lufile6, nontyp, ecpidtmp, 
+      integer   ecpidtmp, 
      &          ecpidn, ncore, ncoretmp, bdstart, bdend, bdcolon,
      &          epend
       character eline(mxeline)*90, basdir*300,
@@ -736,7 +734,7 @@ c     *****************************************************
 #include "argosatm.h"
 #include "mxcent.h"
 #include "nuclei.h"
-      integer   lgen(3,3), nirep, ngenl, ltrans(3,8),
+      integer   lgen(3,3), nirep, ltrans(3,8),
      &          iclat, natm, iopl, icentar, j2, j3, lth
       real*8    distsq, nclose, sqdif 
 c        

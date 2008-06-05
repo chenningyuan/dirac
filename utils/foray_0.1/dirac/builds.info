@@ -19,8 +19,8 @@ defaultconfig = \
         'ranlibcommand'     :  config_options['ranlib_command'],        
         'f77compiler'       :         config_options['f77comp'],        
         'f90compiler'       :         config_options['f90comp'],        
-        'f77flags'          :        config_options['f77flags'],        
-        'f90flags'          :        config_options['f90flags'],        
+        'f77flags'          :        config_options['f77flags'] + " " + config_options['include_flags'] + " " + config_options['cpp_flags'],        
+        'f90flags'          :        config_options['f90flags'] + " " + config_options['include_flags'] + " " + config_options['cpp_flags'],        
         'modpathoption'     :        config_options['mod_flag'],        
         'ccompiler'         :           config_options['ccomp'],        
         'cflags'            :         config_options['c_flags'] + " " + config_options['c_includes'] + " " + config_options['ccp_flags'],
@@ -40,7 +40,7 @@ diracconfig = \
     'name'                  : dirac_mode,
     'inherits'              : 'default',
     'buildsubdir'           : dirac_mode,
-    'installdir'            : '$FORAY_PROJECT_ROOT/bin'+dirac_mode,
+    'installdir'            : config_options['source_root']+'/dirac.x',
 }
 
 debugconfig = \
@@ -48,7 +48,7 @@ debugconfig = \
     'name'                  : 'debug',
     'inherits'              : 'default',
     'buildsubdir'           : 'debug',
-    'installdir'            : '$FORAY_PROJECT_ROOT/bin.debug',
+    'installdir'            : config_options['source_root']+'/dirac.x',
 }
 
 configs = [defaultconfig, debugconfig,diracconfig]
@@ -57,10 +57,10 @@ configs = [defaultconfig, debugconfig,diracconfig]
 # Combine everything in buildinfo dictionary   
 buildinfo = \
 {
-    'builddir'      : '$FORAY_PROJECT_ROOT/build',
+    'builddir'      : config_options['source_root']+'/build',
     'fortranfiles'  : fortranfiles,
     'targets'       : targets,
-    'defaultconfig' : 'debug',
+    'defaultconfig' : dirac_mode,
     'configs'       : configs
 }
 #

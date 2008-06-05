@@ -1,3 +1,4 @@
+#if defined (OLFDCK3DRV)
       SUBROUTINE OLDFCK3DRV(FMAT,DMAT,NDMT,WORK,LWORK)
 C
 C   Calculates the nonclassical coulomb contribution to the
@@ -89,6 +90,7 @@ c wake up slaves.
 
       RETURN
       END
+#endif /* OLDFCK3DRV */
 
       SUBROUTINE HRFCK3(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  SAO,CCFBT,INDXBT,WORK,LWORK)

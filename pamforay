@@ -568,6 +568,7 @@ modules_active = " $MODS"
 
 # initialization
 add_ecp     = False 
+add_argosecp= False
 add_eri     = False
 add_dnf     = False
 add_fmm     = False

@@ -9,9 +9,9 @@ def preprocessedfilename(infile):
     base, ext = os.path.splitext(infile)
     
     if ext == '.F':        
-        outfile = base + '.f'
+        outfile = base + '.F'
     elif ext == '.F90':
-        outfile = base + '.f90'
+        outfile = base + '.F90'
     else:
         outfile = infile
 
@@ -44,8 +44,15 @@ def preprocess(srcPath, outDir):
     else:
        cpp_flags = fortran_cpp
 
-    command = "gcc -P -w "+config_options['prepro_flags']+" "+cpp_flags+' "%s" > "%s"' 
-#   print "executing: "+(command % (srcPath, outPath)) 
+## in case we need to use a different preprocessor, we should go back and enable something 
+## like what's below
+#    command = "gcc -P -w "+config_options['prepro_flags']+" "+cpp_flags+' "%s" > "%s"' 
+##   print "executing: "+(command % (srcPath, outPath)) 
+#    retval = subprocess.call(command % (srcPath, outPath), shell=True)
+
+# for the time being we use a simple preprocessing...
+
+    command = "cp "+' "%s"   "%s"'
     retval = subprocess.call(command % (srcPath, outPath), shell=True)
 
     return (0 == retval)

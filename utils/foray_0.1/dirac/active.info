@@ -1,10 +1,11 @@
 #
 # information on active modules
 #
-modules_active = " -DMOD_ERI -DMOD_DNF  -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX  -DMOD_CDFT -DMOD_VISUAL     "
+modules_active = " -DMOD_ERI -DMOD_DNF  -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX  -DMOD_CDFT -DMOD_VISUAL -DMOD_AORESPONSE    "
 
 # initialization
 add_ecp     = False 
+add_argosecp= False
 add_eri     = False
 add_dnf     = False
 add_fmm     = False
@@ -29,8 +30,11 @@ add_lucis   = True
 add_eri = True
 add_dnf = True
 add_dft = True
+add_adc = True
+add_argosecp = True
 add_cdft = True
 add_visual = True
+add_aoresp = True
 add_krmc = True
 add_esr = True
 add_xpp = True
