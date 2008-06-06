@@ -575,7 +575,8 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
-gp/kinds.o          gp/vector_functions.o    \\
+gp/kinds.o          gp/vector_functions.o   \\
+gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o   \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -647,7 +648,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o      gp/vector_functions.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
-
+gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o  \\
 EOF
 #
 #  Object-files for ESR-module
@@ -1085,6 +1086,7 @@ fi
 
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
+	cd gp/xml   ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
 	\$(RM) -f *~
 EOF
@@ -1107,7 +1109,9 @@ if [ -n "$MODULES" ]; then
   echo '#--------------------------- # ' >> Makefile
   echo '# Note: gp/ modules must be done first when "make -j" ' >> Makefile
   echo '#       because other directories use (some of) these ' >> Makefile
-  echo 'mod  : gpmod' >> Makefile
+  echo 'mod :                 ;\' >> Makefile
+  echo '	cd  gp         &&   $(MAKE) mod' >> Makefile
+  echo '	cd  gp/xml     &&   $(MAKE) mod' >> Makefile
   echo '	cd  abacus     &&   $(MAKE) mod' >> Makefile
   if [ -n "$VISUALMOD" ]; then
   echo '	cd  visual     &&   $(MAKE) mod' >> Makefile
@@ -1127,9 +1131,6 @@ if [ -n "$MODULES" ]; then
   if [ -n "$HSCCMOD" ]; then
   echo '	cd  hsmrcc     &&   $(MAKE) mod' >> Makefile
   fi
-  echo ' ' >> Makefile
-  echo 'gpmod  :' >> Makefile
-  echo '	cd  gp         &&   $(MAKE) mod' >> Makefile
   echo ' ' >> Makefile
 #
 #
@@ -1309,6 +1310,7 @@ AMFI_OBJ :
 
 GP_OBJ :
 	cd gp ; \$(MAKE) all
+	cd gp/xml ; \$(MAKE) all
 
 MXM_OBJ :
 	cd gp ; \$(MAKE) mxm
@@ -1337,7 +1339,7 @@ EOF
 TEMP="dirac prp pdpack main relccsd moltra dirrci lucita"
 
 # ... directories with F90 modules 
-TEMPOOF="abacus gp utils"
+TEMPOOF="abacus gp gp/xml utils"
 
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
@@ -1408,7 +1410,7 @@ EOF
 done
 for ff in $TEMPOOF; do
    cat <<EOF>> Makefile
-	cd $ff; \$(MAKE) depend
+	cd $ff; \$(MAKE) f90dep
 EOF
 done
 echo
@@ -1449,7 +1451,7 @@ if [ -n "$IBMMOD" ]; then
 else
 MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
 fi
-dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
+dirs="dirac prp abacus amfi gp gp/xml pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
