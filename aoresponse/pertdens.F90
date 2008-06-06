@@ -2,6 +2,7 @@ module PertDens
 
     use matrix_mod
 #ifdef PRG_DIRAC
+    use aoresponse_input_m
     use dirac_interface_m
 #endif /* PRG_DIRAC */
     use PropInt
@@ -165,14 +166,14 @@ contains
         T = 1.0d-100*RHS(1)
 
         R = (RHS(1) - dag(RHS(1)))/2.0d0
-        if (R**R > 1.0d-3) then
+        if (R**R > aoresponse_threshold_rhs) then
           R%tr_sym = 1
           call response_solver(ww, R, T)
           D = D + T
         end if
 
         R = (RHS(1) + dag(RHS(1)))/2.0d0
-        if (R**R > 1.0d-3) then
+        if (R**R > aoresponse_threshold_rhs) then
           R%tr_sym = -1
           call response_solver(ww, R, T)
           D = D + T
