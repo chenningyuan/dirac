@@ -264,10 +264,10 @@
           go to 100
 
     7     continue
-          read(lucmd, *) aoresponse_freq(1),
-     &                   aoresponse_freq(2),
-     &                   aoresponse_freq(3),
-     &                   aoresponse_freq(4)
+          read(lucmd, *) aoresponse_freq(1)
+          read(lucmd, *) aoresponse_freq(2)
+          read(lucmd, *) aoresponse_freq(3)
+          read(lucmd, *) aoresponse_freq(4)
           go to 100
 
     8     continue
