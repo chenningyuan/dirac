@@ -41,7 +41,6 @@ C
 C
 C  /* Deck oneprm */
       MODULE VC_GRID
-      USE GRID_FILE, ONLY: grid_data
 
       PRIVATE
       PUBLIC EMB_VC
@@ -67,7 +66,7 @@ C
 
       CONTAINS
 
-      SUBROUTINE EMB_VC(DMAT,gridpoints,IPRINT,WORK,LWORK)
+      SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
 C     Interface for the user. Calles LOOP_PRIM
 C     calls VC_PRIM.
 C     Needed to make contact with F77.
@@ -79,7 +78,7 @@ C     JHS DMAT is in MO basis. Transformations needed.
 #include "ccom.h"
 
 C     PASSED variables
-      TYPE(grid_data),POINTER :: gridpoints(:)
+      real(kind=8),POINTER :: points(:,:),vc(:)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(*)
       REAL(KIND=8) :: WORK(*)
@@ -95,12 +94,12 @@ C     JHS MAKE LATER OPTIONAL
 
 C     JHS Transform Density matrix to AO basis.
 
-      CALL LOOP_PRIM(DMAT,gridpoints,WORK,LWORK,
+      CALL LOOP_PRIM(DMAT,points,vc,WORK,LWORK,
      &     IPRINT,TOLOG,TOLS)
 
       END SUBROUTINE
 
-      SUBROUTINE LOOP_PRIM(DMAT,gridpoints,WORK,LWORK,IPRINT,TOLOG,
+      SUBROUTINE LOOP_PRIM(DMAT,points,vc,WORK,LWORK,IPRINT,TOLOG,
      &                  TOLS)
 C     Driver routine that loops over the primitive orbitals and
 C     calls VC_PRIM.
@@ -121,7 +120,7 @@ C     calls VC_PRIM.
 #include "dgroup.h"
 
 C     PASSED variables
-      TYPE(grid_data),POINTER :: gridpoints(:)
+      real(kind=8),POINTER :: points(:,:),vc(:)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
       REAL(KIND=8) :: WORK(*)
@@ -271,7 +270,7 @@ C
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
 
-         ALLOCATE(ADER(KCKTA,KCKTB,SIZE(gridpoints)))
+         ALLOCATE(ADER(KCKTA,KCKTB,SIZE(points,2)))
 C     Contains ader for one gridpoint in SO basis.
 
 
@@ -300,9 +299,10 @@ C         Direct passing is not possible as CORA,CORB are used inside her1odc.F
             CORBZ=CORBZ*SIGNBZ
  
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS CORB',CORBX,CORBY,CORBZ
-
-            CALL VC_SHELL(ADER,TOLOG,TOLS,gridpoints,IPRINT,WORK,LWORK)
-
+            
+            CALL VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,
+     &      LWORK)
+            
 C     JHS Transform to SO basis?
 
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS ADER(VC_SHELL)',ADER
@@ -321,13 +321,14 @@ C     Contract ADER with density matrix, indices in ADER are swapped.
                  WRITE(LUPRI,*) ISHELA,ISHELB,KCKTA,KCKTB,IDENA,
      &           IDENB_TMP,NZ,SPHRA,SPHRB            
             END IF
-       DO ipoint=1,SIZE(gridpoints)               
+
+       DO ipoint=1,SIZE(vc)               
 C     Contract with the right symmetry part of the density matrix.
 C     This is given by INDFA and INDFB
 
 
 C     No contraction over the non-real quaternionic part. Use index matrices of quaternions
-               gridpoints(ipoint)%vc=gridpoints(ipoint)%vc+SUM(
+               vc(ipoint)=vc(ipoint)+SUM(
      &              DMAT(idena+1:idena+KCKTA,idenb+1:idenb+KCKTB,1)*
      &              ADER(1:KCKTA,1:KCKTB,ipoint))
 
@@ -349,12 +350,13 @@ C     JHS Transform back to the original B coordinate.
       END DO
       
 
-      DO ipoint=1,SIZE(gridpoints)
+      DO ipoint=1,SIZE(vc)
         vc_tmp=0.0
         DO j=1,MXCENT          
-          vc_tmp=vc_tmp-CHARGE(j)/(NORM(CORD(:,j)-gridpoints(ipoint)%x))
+          vc_tmp=vc_tmp-CHARGE(j)/(NORM(CORD(:,j)-
+     &          points(1:3,ipoint)))
         END DO
-        gridpoints(ipoint)%vc=gridpoints(ipoint)%vc-vc_tmp
+        vc(ipoint)=vc(ipoint)-vc_tmp
       END DO
 
       END SUBROUTINE
@@ -362,7 +364,8 @@ C     JHS Transform back to the original B coordinate.
 
 
 
-      SUBROUTINE VC_SHELL(ADER,TOLOG,TOLS,gridpoints,IPRINT,WORK,LWORK)
+      SUBROUTINE VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,
+     &     LWORK)
 C     Calculates the contribution for one primitive orbital set.
       USE VECTOR_FUN, ONLY: NORM
       IMPLICIT NONE
@@ -378,8 +381,8 @@ C     Calculates the contribution for one primitive orbital set.
 #endif
 C     PASSED variables
       INTEGER :: IPRINT
-      TYPE(grid_data) :: gridpoints(:)
-      REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(gridpoints))
+      real(kind=8),pointer :: points(:,:)
+      REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(points,2))
       REAL(KIND=8) :: WORK(*)
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       INTEGER :: LWORK
@@ -485,9 +488,9 @@ C           **********************************************
 C
 C           Nuclear attraction integrals
 C
-            DO ipoint=1,SIZE(gridpoints)
-              DIFCP(:) = gridpoints(ipoint)%x(:) - CORP(:)
-              CALL VC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
+            DO ipoint=1,SIZE(points,2)
+              DIFCP(:) = points(1:3,ipoint) - CORP(:)
+              CALL VNUC(AHGTF,JMAX,EXPP,DIFCP,FACTOR,IPRINT)
 C
 C           **********************************************
 C           ***** Calculation of Cartesian integrals *****
@@ -512,7 +515,7 @@ C  /* Deck hernai */
 
 
 
-      SUBROUTINE VC(AHGTF,JMAX,PVAL,CP,FACINT,IPRINT)
+      SUBROUTINE VNUC(AHGTF,JMAX,PVAL,CP,FACINT,IPRINT)
       USE VECTOR_FUN, ONLY: NORM
       IMPLICIT NONE
 C

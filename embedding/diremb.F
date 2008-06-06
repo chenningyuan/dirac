@@ -48,6 +48,7 @@ C      IMPLICIT NONE
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47
       INTEGER,SAVE :: print_fde=0
       CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',GRIDOUT_NAME=''
+      CHARACTER(LEN=60),SAVE :: out_level='HF'
       
       CONTAINS
 
@@ -61,8 +62,8 @@ C      IMPLICIT NONE
 #include "dftcom.h"
 #include "ccom.h"
 #include "inforb.h"
-      INTEGER :: p,q,npoints
-      TYPE(GRID_DATA),POINTER :: points(:)
+      INTEGER :: p,q
+      real(kind=8),POINTER :: points(:,:),vc(:)
       REAL(KIND=8) :: work(lwork)
       REAL(KIND=8),ALLOCATABLE :: GAO(:),BUF(:),NCNT(:)
 
@@ -115,8 +116,8 @@ C      IMPLICIT NONE
 !     reading the actual grid, along with the embedding potential at each point
       rewind lufdepot
 
-      CALL READ_GRID(lufdepot,points,npoints)
-
+      CALL READ_GRID(lufdepot,points,vc)
+    
 C      if (debug) then
 C         call header ('1-electron matrix, before fde update',-1)
 C         call PRINTDMAT(1,ndimension,fdemat)
@@ -134,6 +135,15 @@ C      endif
       call setupsos(0,.false.,idum1,idum2)
 #endif
 
+      do i=1,size(points,2)
+         write(lupri,*) 'jhs,weights', points(4,i)*vc(i)
+      end do
+
+      if (debug) then
+         call header ('1-electron matrix, after FDE update',-1)
+         call printdmat(1,ndimension,fdemat)
+      endif
+
 C     Initialize variables.
       gao=0
       NCNT=0
@@ -142,12 +152,12 @@ C     Initialize variables.
       iprint = 0
       irepop = 0
 
-      if (debug) write (lutesting,'(I10)') npoints
+      if (debug) write (lutesting,'(I10)') size(points)
 
-      do i = 1, npoints              ! begin numerical integration
+      do i = 1, size(points,2)       ! begin numerical integration
 
          if (debug)                                 ! dump of grid points 
-     &   write (lutesting,*) points(i)%x,points(i)%vc
+     &   write (lutesting,*) points(:,i)
 
 
 #if defined (PRG_DIRAC)
@@ -155,9 +165,9 @@ C     Initialize variables.
 !       routines from dft
          call getsos(gao,dummy,dummy,dummy,
      &               ncnt,
-     &               points(i)%x(1),
-     &               points(i)%x(2),
-     &               points(i)%x(3),BUF,
+     &               points(1,i),
+     &               points(2,i),
+     &               points(3,i),BUF,
      &               work,lwork,ndimension,0,.false.,iprfde)
 
 !        only the upper triangular part of the one electron embedding 
@@ -173,7 +183,7 @@ C     Initialize variables.
              else
                gamma_pq      = gao(p)*gao(q)
              endif
-             ep_pq_update  = points(i)%vc*gamma_pq
+             ep_pq_update  = points(4,i)*vc(i)*gamma_pq
 
 !            in dirac, we can work with the full matrix
              fdemat(p,q) = fdemat(p,q) + ep_pq_update 
@@ -190,9 +200,9 @@ C     Initialize variables.
 ation of getsos for our case. if there was
 !       no symmetry, getaos could have been used directly... 
          call getsos_fde(gao,ncnt,
-     &               points(i)%x(1),
-     &               points(i)%x(2),
-     &               points(i)%x(3),
+     &               points(1,i),
+     &               points(2,i),
+     &               points(3,i),
      &               work,lwork,
      &               ndimension,dfthri,iprdfe)
 
@@ -218,7 +228,7 @@ ation of getsos for our case. if there was
 
                    gamma_pq      = gao(ibas_offt+p)
      &                           * work(ibas_offt+q)
-                   ep_pq_update  = points(i)%vc*gamma_pq
+                   ep_pq_update  = points(4,i)*vc(i)*gamma_pq
 
 !              we do the indexing for packed array storage [ij=i+j(j-1)/2] (see
 !              e.g the lapack documentation), but taking care of the offsetting
@@ -251,6 +261,7 @@ ation of getsos for our case. if there was
       DEALLOCATE(BUF)
       DEALLOCATE(GAO)
       
+      DEALLOCATE(vc)
       DEALLOCATE(points)
       
       if (debug) close(lutesting)
@@ -309,6 +320,16 @@ C     JHS TMP hack for the case there is no embedding potential
               write (*,*) 'reading potential filename' 
               READ(LUCMD,*) print_fde 
               write (*,*) 'print level is ',iprfde
+            CASE ('.LEVEL')
+              READ(LUCMD,'(A30)') out_level
+              select case(out_level)
+              case('HF','MP2')
+                 WRITE(LUPRI,*) 'Outputted density will be taken from: '
+     &                ,trim(out_level)
+              case default
+                 WRITE(LUPRI,*) 'Input for outputted density not a &
+     &  x  valid calculation, HF will be used instead. Given:',out_level
+              end select
             CASE ('.GRIDOU')
 ! WRITE TO THIS GRIDFILE
               READ(LUCMD,'(A30)') GRIDOUT_NAME
@@ -340,7 +361,7 @@ C     JHS TMP hack for the case there is no embedding potential
      &     ' Frozen Density Embedding Calculation Setup'
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
-        write(LUPRI,'(A,A60)') ' * FDE Potential read from file: ',FDEPOT
+       write(LUPRI,'(A,A60)') ' * FDE Potential read from file: ',FDEPOT
         write (lupri,*) ' '
       END IF
 
@@ -387,6 +408,8 @@ C     Simple timing function
 
       SUBROUTINE FDE_GRIDOUT(WORK,LWORK)
       USE VC_GRID
+      use xml_parser
+      use conversion
 C      IMPLICIT NONE
 
 #include "priunit.h"
@@ -404,11 +427,14 @@ C     Passed variables
       REAL(KIND=8) :: WORK(*)
       INTEGER :: LWORK
 
+      type(tag),pointer :: xml_tag
+
 C     Local variables
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
       REAL(KIND=8) :: CMO(NTBAS(0),NTBAS(0),4)
-      TYPE(grid_data),POINTER :: points(:) 
-      INTEGER :: npoints, i
+      REAL(kind=8),pointer :: points(:,:),rho(:,:),grad_rho(:,:)
+      REAL(kind=8),pointer :: hes_rho(:,:),vc(:)
+      INTEGER ::i,ierr
       INTEGER(KIND=8) :: NDIMENSION
 C     JHS THROW AWAY IN THE END?
       INTEGER :: NDER=0, DOLND=0
@@ -453,22 +479,32 @@ C
 C     For the case of the SCF density:
 C     Get CMO from file.
       CMO(:,:,:)=0.0
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1,LWORK)
-      if (print_fde>20) then
-         WRITE(LUPRI,*) 'CMO', CMO
-         WRITE(LUPRI,*) 'DMAT OLD', DMAT
-      end if
 
+      select case(out_level)
+      case('MP2')
+         call GET_CC_DENSITY(out_level,'AO',DMAT,ierr)
+         if (.not.(ierr==0)) then
+            write(lupri,*) 'Error in reading density matrix'
+            call quit('error readin density matrix')
+         end if
+      case default
+!     HF density used
+         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1,
+     &        LWORK)
+         if (print_fde>20) then
+            WRITE(LUPRI,*) 'CMO', CMO
+            WRITE(LUPRI,*) 'DMAT OLD', DMAT
+         end if
 C     SCF construct density matrix
-      CALL DENMAT(DMAT,CMO,print_fde)
-
+         CALL DENMAT(DMAT,CMO,print_fde)
 C     Correct DMAT for occupationnumbers
-
+         DMAT(:,:,:)=2*DMAT(:,:,:)
 
 C     TMP scaling
-      DMAT(:,:,:)=2*DMAT(:,:,:)
-
+      end select
+      
+      write(lupri,*) 'Finished reading CMO',trim(GRIDOUT_NAME)
 
 C     GET an id for LUGRIDOUT.
       LUGRIDOUT=OPEN_FILE(GRIDOUT_NAME)
@@ -479,25 +515,30 @@ C     GET an id for LUGRIDOUT.
      &     CALL QUIT('FILE FOR GRIDOUT DOES NOT EXISTS. FILE: '
      &     //GRIDOUT_NAME)
 
-      CALL READ_GRID(LUGRIDOUT,points,npoints)
+      WRITE(LUPRI,*) 'Reading grid.'
+      CALL READ_GRID(LUGRIDOUT,points)
       CLOSE(LUGRIDOUT)
       WRITE(LUPRI,*) 'Grid read from file.'
 
+      write(lupri,*) 'Number of gridpoints:', size(points,2)
+
+      ALLOCATE(rho(1,size(points,2)))
+      ALLOCATE(grad_rho(3,size(points,2)))
+      ALLOCATE(hes_rho(6,size(points,2)))
+      ALLOCATE(vc(size(points,2)))
       
 
       WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
-      DO i=1,size(points)
+      DO i=1,size(points,2)
 C     JHS Get the values of the basisfunctions in every gridpoint
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
-     &              points(i)%x(1),points(i)%x(2),points(i)%x(3),
+     &              points(1,i),points(2,i),points(3,i),
      &              BUF,WORK,LWORK,NDIMENSION,2,DOLND,print_fde)
 C     JHS calculate the SCF density and it's derivatives. 
-        CALL GETRHO(points(i)%rho,0,GAO,DMAT,BUF)
-        CALL GETGRHO(points(i)%grad_rho,0,GAO,GAO1,DMAT,BUF)
-        CALL GETLRHO(
-     &       points(i)%hes_rho(1),points(i)%hes_rho(2),
-     &       points(i)%hes_rho(3),points(i)%hes_rho(4),
-     &       points(i)%hes_rho(5),points(i)%hes_rho(6),
+        CALL GETRHO(rho(1,i),0,GAO,DMAT,BUF)
+        CALL GETGRHO(grad_rho(3,i),0,GAO,GAO1,DMAT,BUF)
+        CALL GETLRHO(hes_rho(1,i),hes_rho(2,i),hes_rho(3,i),
+     &       hes_rho(4,i),hes_rho(5,i),hes_rho(6,i),
      &       GAO,GAO1,GAO2,DMAT,BUF)
 C     JHS Calculate the coulomb potential.
       END DO
@@ -511,12 +552,64 @@ C     JHS Calculate the coulomb potential.
       WRITE(LUPRI,*) 
      &    'Calculating the coulomb potential and its derivatives.'
 C      FLUSH(LUPRI)
-      CALL EMB_VC(DMAT,points,print_fde, WORK,LWORK)
+      CALL EMB_VC(DMAT,points,vc,print_fde, WORK,LWORK)
+
 
       WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
-      CALL WRITE_XML(GRIDOUT_NAME,points)
+
+      xml_tag=>xml_open(GRIDOUT_NAME)
+        write(lupri,*) 'tst'
+        xml_tag=>tag_open(xml_tag,'grid')
+          call attribute(xml_tag,'size',inttochar(size(points,2)))
+          xml_tag=>tag_open(xml_tag,'dataset','gridpoints')
+            call attribute(xml_tag,'size',inttochar(size(points,2)))
+            call attribute(xml_tag,'width',inttochar(size(points,1)))
+            call add_xml_data(xml_tag,points)
+          xml_tag=>tag_close(xml_tag)
+
+          xml_tag=>tag_open(xml_tag,'dataset','density')
+            call attribute(xml_tag,'size',inttochar(size(points,2)))
+            call attribute(xml_tag,'width',inttochar(size(rho,1)))
+            call add_xml_data(xml_tag,rho)
+          xml_tag=>tag_close(xml_tag)
+
+          xml_tag=>tag_open(xml_tag,'dataset','gradient')
+            call attribute(xml_tag,'size',inttochar(size(points,2)))
+            call attribute(xml_tag,'width',inttochar(size(grad_rho,1)))
+            call add_xml_data(xml_tag,grad_rho)
+          xml_tag=>tag_close(xml_tag)
+
+          xml_tag=>tag_open(xml_tag,'dataset','hessian')
+            call attribute(xml_tag,'size',inttochar(size(points,2)))
+            call attribute(xml_tag,'width',inttochar(size(hes_rho,1)))
+            call add_xml_data(xml_tag,hes_rho)
+          xml_tag=>tag_close(xml_tag)
+
+          xml_tag=>tag_open(xml_tag,'dataset','vc')
+            call attribute(xml_tag,'size',inttochar(size(points,2)))
+            call attribute(xml_tag,'width',inttochar(1))
+            call add_xml_data(xml_tag,vc)
+          xml_tag=>tag_close(xml_tag)
+        xml_tag=>tag_close(xml_tag)
+
+        write(*,*) 'WRITING:'       
+        call xml_write(GRIDOUT_NAME)
+        write(*,*) 'CLOSING:'
+      xml_tag=>xml_close(GRIDOUT_NAME)
+      write(*,*) 'CLOSED!'
       
-      DEALLOCATE(points)
+!      IF (associated(points)) DEALLOCATE(points)
+      write(*,*) 'deallocated points'
+!      IF (associated(rho)) DEALLOCATE(rho)
+      write(*,*) 'deallocated rho'
+!      IF (associated(grad_rho)) DEALLOCATE(grad_rho)
+      write(*,*) 'deallocated grad_rho'
+!      IF (associated(hes_rho)) DEALLOCATE(hes_rho)
+      write(*,*) 'deallocated hes_rho'
+!      IF (associated(vc)) DEALLOCATE(vc)
+      write(*,*) 'deallocated vc'
+      write(*,*) 'deallocated'
+
       CALL TIME()
 
       END SUBROUTINE
