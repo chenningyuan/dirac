@@ -139,10 +139,10 @@ C      endif
          write(lupri,*) 'jhs,weights', points(4,i)*vc(i)
       end do
 
-      if (debug) then
-         call header ('1-electron matrix, after FDE update',-1)
-         call printdmat(1,ndimension,fdemat)
-      endif
+! jhs tmp     if (debug) then
+!         call header ('1-electron matrix, after FDE update',-1)
+!         call printdmat(1,ndimension,fdemat)
+!      endif
 
 C     Initialize variables.
       gao=0
@@ -248,10 +248,10 @@ ation of getsos for our case. if there was
 #endif /* DIRAC vs DALTON, matrix update over the grid */
       enddo ! loop over points
 
-      if (debug) then
-         call header ('1-electron matrix, after FDE update',-1)
-         call printdmat(1,ndimension,fdemat)
-      endif
+! jhs tmp     if (debug) then
+!         call header ('1-electron matrix, after FDE update',-1)
+!         call printdmat(1,ndimension,fdemat)
+!      endif
 
 #if defined (PRG_DIRAC)
 ! wonder why this crashes with dalton...
