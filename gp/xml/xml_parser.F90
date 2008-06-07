@@ -92,7 +92,8 @@ contains
 
 
   subroutine add_real_data(cur_tag,real_data)
-    type(tag),pointer,intent(out) :: cur_tag
+    !type(tag),pointer,intent(out) :: cur_tag
+    type(tag),pointer :: cur_tag
     real(kind=real_kind),intent(in) :: real_data(:,:)
 
     allocate(cur_tag%real_data(size(real_data,1),size(real_data,2)))
@@ -101,7 +102,8 @@ contains
   end subroutine
 
   subroutine add_real_vector_data(cur_tag,real_data)
-    type(tag),pointer,intent(out) :: cur_tag
+    !type(tag),pointer,intent(out) :: cur_tag
+    type(tag),pointer :: cur_tag
     real(kind=real_kind),intent(in) :: real_data(:)
     allocate(cur_tag%real_data(1,size(real_data)))
     cur_tag%real_data(1,:)=real_data
@@ -109,13 +111,15 @@ contains
   end subroutine
 
   subroutine add_char_data(cur_tag,char_data)
-    type(tag),pointer,intent(out) :: cur_tag
+    !type(tag),pointer,intent(out) :: cur_tag
+    type(tag),pointer :: cur_tag
     character(len=*),intent(in) :: char_data
     call add_data(cur_tag,char_data)
   end subroutine
 
   subroutine add_char_data_vector(cur_tag,char_data)
-    type(tag),pointer,intent(out) :: cur_tag
+    !type(tag),pointer,intent(out) :: cur_tag
+    type(tag),pointer :: cur_tag
     character(len=*),intent(in) :: char_data(:)
     integer :: i
     do i=1,size(char_data)
@@ -126,7 +130,8 @@ contains
 
   subroutine get_real_data(tmp_data,cur_tag)
     type(tag),intent(in) :: cur_tag
-    real(kind=8),pointer,intent(out) :: tmp_data(:,:)
+   ! real(kind=8),pointer,intent(out) :: tmp_data(:,:)
+    real(kind=8),pointer :: tmp_data(:,:)
 
     tmp_data=>null()
     if (associated(cur_tag%real_data)) tmp_data=>cur_tag%real_data       
@@ -143,7 +148,8 @@ contains
 
   subroutine get_char_data(tmp_data,cur_tag) 
     type(tag),intent(in) :: cur_tag
-    character(len=data_len),pointer,intent(out) :: tmp_data(:)
+    !character(len=data_len),pointer,intent(out) :: tmp_data(:)
+    character(len=data_len),pointer :: tmp_data(:)
     tmp_data=>null()
     if (associated(cur_tag%data)) tmp_data=>cur_tag%data 
   end subroutine

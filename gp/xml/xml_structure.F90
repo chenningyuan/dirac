@@ -196,7 +196,8 @@ contains
   recursive function del_children(node) result(tmp_node)
 ! Removes a node and all it's children.
 ! Note pointers to the node are ill defined.
-    type(tag),pointer,intent(inout) :: node
+   ! type(tag),pointer,intent(inout) :: node
+    type(tag),pointer :: node
     type(tag),pointer   :: tmp_node
     integer :: i
     
