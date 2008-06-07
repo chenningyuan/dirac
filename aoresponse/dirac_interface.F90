@@ -555,9 +555,9 @@ contains
 !   ==========
 
     static = .false.
-    if (abs(freq(1)) < 1.0d-6) then
-      static = .true.
-    end if
+!   if (abs(freq(1)) < 1.0d-6) then
+!     static = .true.
+!   end if
 
     lineq     = .true.
     fkrmc     = .false.
