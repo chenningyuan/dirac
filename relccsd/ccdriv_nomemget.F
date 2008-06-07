@@ -559,6 +559,7 @@ C
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
+      integer :: verbose = 0
 C
 C---------------Executable code--------------------------------------
 C
@@ -598,7 +599,7 @@ C
 C     Memory and I/O setup section
 C     ----------------------------
 C
-      MAXCOR = MAXCORE
+      call alloc_maxsize(maxcor,maxcore,verbose)
       MXCORR = 0
 C
 C     Read symmetry information
@@ -698,7 +699,7 @@ C
 C
       MXCORR1 = 0
       CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
-c     IF (DOFOPR) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOFOPR) MXCORR = MAX(MXCORR,MXCORR1)
 C
       MXCORR1 = 0
       CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
@@ -721,7 +722,7 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-c        CALL QUIT("INCREASE MWORD")
+         CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
@@ -1944,17 +1945,18 @@ C
       LOGICAL ALLOC_ME,SRTALL
       INTEGER*8 NVT
 Caspg, replacing memget
-      integer,       allocatable :: a_kr(:),     a_index(:), 
+      integer,       allocatable, target :: a_kr(:),     
      &                              a_indk(:),   a_indl(:), 
-     &                              a_ibuf(:)
-      real (kind=8), allocatable :: a_cbuf(:),   a_buf1(:), 
+     &                              a_ibuf(:),   a_index(:)
+      real (kind=8), allocatable, target :: a_cbuf(:),   
+     &                              a_buf1(:), 
      &                              a_buf2(:),   a_foo(:), 
      &                              a_fvv(:),    a_v1(:), 
      &                              a_v2(:),     a_v2a(:), 
      &                              a_v3a(:),    a_vt(:), 
      &                              a_fvo(:),    a_v1a(:),
-     &                              a_v3(:),     a_vta(:),
-     &                              a_v4(:),     a_v4a(:)
+     &                              a_v3(:),     a_vta(:)
+      real (kind=8), pointer ::     a_v4(:),     a_v4a(:)
       integer ::  total_mem_new = 0
       integer :: verbose = 0, freemem = 0
 C
@@ -1965,43 +1967,46 @@ C
 C
 C  Allocate core for integral sorting step
 C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
-
       if (alloc_me) then
-      call alloc(a_kr,2*NSP+2, id="kr")
-      IF (EQNS.EQ.'FOCKSP') THEN
-         CALL alloc(a_INDEX,NSP*NSP*16, id="index")
-      ELSE
-         CALL alloc(a_INDEX,NSP*NSP*4, id="index")
-      ENDIF
-      CALL alloc(a_INDK,NSP*NSP    , id="indk")
-      CALL alloc(a_INDL,NSP*NSP    , id="indl")
-      CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
-      IF (EQNS.EQ.'FOCKSP') THEN
-         CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")
-      ELSE
-         CALL alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )
-      ENDIF
-      CALL alloc(a_BUF1,NSP*NSP, id="buf1" )
-      CALL alloc(a_BUF2,NSP*NSP, id="buf2" )
-      CALL alloc(a_FOO,NFOO*RCW, id="foo" )
-      CALL alloc(a_FVO,NFVO*RCW, id="fvo" )
-      CALL alloc(a_FVV,NFVV*RCW, id="fvv" )
-      CALL alloc(a_V1 ,NV1*RCW , id="v1" )
-      CALL alloc(a_V1A,NV1*RCW , id="v1a" )
-      CALL alloc(a_V2 ,NV2*RCW , id="v2" )
-      CALL alloc(a_V2A,NV2*RCW , id="v2a" )
-      CALL alloc(a_V3 ,NV3*RCW , id="v3" )
-      CALL alloc(a_V3A,NV3*RCW , id="v3a" )
+         call alloc(a_kr,2*NSP+2, id="kr")
+         IF (EQNS.EQ.'FOCKSP') THEN
+            CALL alloc(a_INDEX,NSP*NSP*16, id="index")
+         ELSE
+            CALL alloc(a_INDEX,NSP*NSP*4, id="index")
+         ENDIF
+         CALL alloc(a_INDK,NSP*NSP    , id="indk")
+         CALL alloc(a_INDL,NSP*NSP    , id="indl")
+         CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
+         IF (EQNS.EQ.'FOCKSP') THEN
+            CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")
+         ELSE
+            CALL alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )
+         ENDIF
+         CALL alloc(a_BUF1,  NSP*NSP , id="buf1" )
+         CALL alloc(a_BUF2,  NSP*NSP , id="buf2" )
+         CALL alloc(a_FOO,   NFOO*RCW, id="foo"  )
+         CALL alloc(a_FVO,   NFVO*RCW, id="fvo"  )
+         CALL alloc(a_FVV,   NFVV*RCW, id="fvv"  )
+         CALL alloc(a_V1 ,   NV1*RCW , id="v1"   )
+         CALL alloc(a_V1A,   NV1*RCW , id="v1a"  )
+         CALL alloc(a_V2 ,   NV2*RCW , id="v2"   )
+         CALL alloc(a_V2A,   NV2*RCW , id="v2a"  )
+         CALL alloc(a_V3 ,   NV3*RCW , id="v3"   )
+         CALL alloc(a_V3A,   NV3*RCW , id="v3a"  )
       endif ! if alloc_me true
-      total_mem_new = (2*NSP+2) + (NSP*NSP*(1+1+RCW+1+1)) 
-     &              + (RCW*(NFOO+NFVO+NFVV+(2*(NV1+NV2+NV3))))
-      IF (EQNS.EQ.'FOCKSP') THEN
-         total_mem_new = total_mem_new + (NSP*NSP*(16+(7*256)))
-      ELSE
-         total_mem_new = total_mem_new + (NSP*NSP*(4+(7*16)))
-      ENDIF
+
+      total_mem_new = (2*NSP+2)+(2*NSP*NSP)
+      if (eqns.eq.'FOCKSP') then
+         tota_mem_new = total_mem_new + (NSP*NSP*(16+(7*256))) 
+      else
+         tota_mem_new = total_mem_new + (NSP*NSP*(4+(7*16))) 
+      endif
+      total_mem_new = total_mem_new * (kind(integer))
+      
+      total_mem_new = total_mem_new + (NSP*NSP*2) 
+     &              + (RCW*(NSP*NSP+(NFOO+NFVO+NFVV)+2*(NV1+NV2+NV3)))
+      total_mem_new = (total_mem_new * 8)/8
+      
 
       MXCORR = MAX(MXCORR,total_mem_new)
 C
@@ -2046,10 +2051,10 @@ C
       if (alloc_me) then
          CALL alloc(a_VT ,NVTMIN*RCW, id="vt" )
          CALL alloc(a_VTA,NVTMIN*RCW, id="vta" )
-         CALL alloc(a_V4 ,NVTMIN*RCW, id="v4" )
-         CALL alloc(a_V4A,NVTMIN*RCW, id="v4a" )
+         a_V4  => a_VT
+         a_V4A => a_VTA
       endif
-      total_mem_new = total_mem_new + (4*NVTMIN*RCW)
+      total_mem_new = total_mem_new + (2*NVTMIN*RCW)
       MXCORR = MAX(MXCORR,total_mem_new)
 C
       IF (ICALC.EQ.1) THEN
@@ -2150,16 +2155,17 @@ C
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C aspg, hand-added
-      real(kind=8), allocatable :: a_FVO(:), a_FOO(:),  a_FVV(:),
-     &                             a_T1(:),  a_T2(:), 
-     &                             a_S1(:),  a_S2(:)
+      real(kind=8), allocatable, target :: a_FVO(:), a_FOO(:),  
+     &                                     a_FVV(:),
+     &                                     a_T1(:),  a_T2(:), 
+     &                                     a_S1(:),  a_S2(:)
 c
-      real(kind=8), allocatable :: a_AZ(:),  a_H(:),    a_HO(:),
+      real(kind=8), allocatable, target :: a_AZ(:),  a_H(:),  a_HO(:),
      &                             a_HV(:),  a_HOV(:),  a_GOO(:),
      &                             a_GVV(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
-      real(kind=8), allocatable :: a_VOOO(:),a_T2S(:),  a_T2T(:),
+      real(kind=8), allocatable, target :: a_VOOO(:),a_T2S(:), a_T2T(:),
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
      &                             a_TAU3(:)
 c
@@ -2176,9 +2182,6 @@ C
 C
 C Allocate space for the calculation of the amplitudes
 C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
-
       if (alloc_me) then
          CALL alloc( a_FVO, NFVO*RCW   , id="fvo" )
          CALL alloc( a_FOO, NFOO*RCW   , id="foo" )
@@ -2215,16 +2218,14 @@ C
             call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
          endif
 
-            total_mem_new = total_mem_new 
-     &            + (RCW*(NV1+NV4+NFOO+NFVV+NFVO+NFOO+NFVV+NBUF1+NBUF2))
-     &            + (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
+         total_mem_new = total_mem_new 
+     &          + (RCW*(NV1+NV4+NFOO+NFVV+NFVO+NFOO+NFVV+NBUF1+NBUF2))
+     &          + (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
 C
 C        Calculate size of the 3rd work array
 C        The last array is used to buffer in the <VV||VV> and <VO||VV>
 C        integrals, start by making it as large as possible.
 C
-!        NBUF3 = (LFREE - 4) / RCW
-! nbuf3 will be set to the largest possible signed 32-bit int div rcw...
          call alloc_maxsize(freemem,nv1,verbose)
          NBUF3 = freemem / RCW
 C
@@ -2257,7 +2258,6 @@ C
 C
       ENDIF
 C
-c     IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",KFREE
       IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",
      &                                total_mem_new
 C
@@ -2402,11 +2402,6 @@ C
      &                 - RCW*(NFVO+NFOO+NFVV+NBUF1+NBUF2+NBUF3)
      &                 - (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
 
-         write (*,*) ' '
-         write (*,*) 'debug, intermediate memory usage in ccener : ',
-     &             total_mem_new,(total_mem_new*8/1024)
-         write (*,*) ' '
-            
          if (alloc_me) then
             CALL alloc( a_VOOO , NV2*RCW            , id="vooo" )
             CALL alloc( a_T2S  , IVVOOT(NREP+1)*RCW , id="t2s" )
@@ -2426,11 +2421,6 @@ C
          total_mem_new = total_mem_new
      &                 + (RCW*(NV2+ 3*IVVVTMX + 2*NDIMT2 + NVOVV))
      &                 + (RCW*(IVVOOT(NREP+1) + LOVVOT(NREP+1))) 
-
-         write (*,*) ' '
-         write (*,*) 'debug, last step memory usage in ccener : ',
-     &                total_mem_new,(total_mem_new*8/1024)
-         write (*,*) ' '
 
 C
 C        Check if CCSD amplitudes are available
@@ -2551,7 +2541,7 @@ C
       LOGICAL ALLOC_ME
 C
 C
-      real(kind=8), allocatable :: a_FOO(:),  a_FVO(:),  a_FVV(:), 
+      real(kind=8), allocatable, target :: a_FOO(:), a_FVO(:), a_FVV(:),
      &                             a_T1(:),  a_T2(:),   a_S1(:),
      &                             a_S2(:),  a_DOO(:),  a_DVV(:),
      &                             a_XOO(:), a_XVV(:),  a_DVO(:),
@@ -2569,9 +2559,6 @@ C
 C---------------Executable code--------------------------------------
 C
       total_mem_new = 0
-C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'
@@ -2607,7 +2594,6 @@ C
      &                 + RCW*(4*(NFOO+NFVV)+NDIMX*(7+2*(NEOPER))+NFVO) 
      &                 + RCW*(2*(NDIMT1+NDIMT2))
      &                 + 2*NORBT*NORBT*NZ
-
 
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
@@ -2677,7 +2663,7 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
-      NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
+      NBUF3 = freemem / RCW   
 C
 C     Allocate now also this remaining work array
 C
@@ -2687,7 +2673,7 @@ C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C
          KFREE = 1
-         LFREE = (freemem/2)*2
+         LFREE = NBUF3 *RCW
       endif
 
       total_mem_new = total_mem_new + NBUF3*RCW
@@ -2780,7 +2766,7 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
-      NBUF3 = ((freemem/2)*2) / RCW              ! division and multiplcation by two to make it multiple of two...
+      NBUF3 = freemem / RCW  
 C
 C     Allocate now also this remaining work array
 C
@@ -2790,7 +2776,7 @@ C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C
          KFREE = 1
-         LFREE = (freemem/2)*2
+         LFREE = NBUF3*RCW 
       endif
 
       total_mem_new = total_mem_new + NBUF3*RCW
@@ -2852,7 +2838,7 @@ C
           KFREE1=1
           LFREE1=NBUF3*RCW
 C
-            CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,KFREE1)
+            CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
          END IF
 C
 c        CALL MEMCHK('mp2g 2.1',CC,1)
@@ -3181,24 +3167,22 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC_ME,FOCKSP,REPORT
-CMI   INTEGER IFSS(6)
       CHARACTER*2 IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
-c aspg: right now allocation doesnt support 2-dim objects, so later we
-c should come back to this
-c     REAL*8, ALLOCATABLE :: a_HEFF(:,:), a_EIGENVALUES(:,:),
-c    &                                    a_EIGENVECTORS(:,:)
 c
-      real(kind=8), allocatable :: a_FVO (:), a_FOO (:), a_FVV (:), 
+      real(kind=8), allocatable, target :: a_FVO (:), a_FOO (:), 
+     &                             a_FVV (:), 
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
      &                             a_GOO (:), a_GVV (:), a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:),
-     &                             a_HEFF(:), a_EIGENVALUES(:),
-     &                             a_EIGENVECTORS(:)
+     &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
+     &                             a_EIGENVECTORS(:,:)
+      integer(kind=8) :: total_mem_new
+      integer :: freemem = 0
 
 C
 C---------------Executable code--------------------------------------
@@ -3239,9 +3223,11 @@ C
       MXCORR1 = 0
       if (lowmem) then
          call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
+         write (*,*) 'lowmem on'
       else
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
+         write (*,*) 'lowmem off'
       endif
       if (.not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 C
@@ -3280,18 +3266,20 @@ C
          call alloc( a_BUF2,NBUF2*RCW   )
       endif
 
-         total_mem_new = total_mem_new
-     &                 + RCW*(2*(NFVO+NDIMT1+NDIMT2)+3*(NFOO+NFVV))
-     &                 + RCW*(NV1+NV4+NBUF1+NBUF2) 
-     &                 + 2*((MAXDIM+1)*(MAXDIM+2))
+      total_mem_new = total_mem_new
+     &              + RCW*(2*(NFVO+NDIMT1+NDIMT2)+3*(NFOO+NFVV))
+     &              + RCW*(NV1+NV4+NBUF1+NBUF2) 
+     &              + 2*((MAXDIM+1)*(MAXDIM+2))
 
 C
 C     Calculate size of the 3rd work array
 C     The last array is used to buffer in the <VV||VV> and <VO||VV>
 C     integrals, start by making it as large as possible.
 C
-! aspg, how to replace this line with something that inquires the OS about memory?
-!      NBUF3 = (LFREE - 4) / RCW
+C     The remaining space is
+      call alloc_maxsize(freemem,nbuf1,verbose)
+      NBUF3 = freemem / RCW
+
 C
 C     Calculate maximum size necessary for the VOVV and VVVV buffers
 C
@@ -3303,13 +3291,11 @@ C
       ENDDO
 C
       NVIRP = MAX(NV5IRP,NV6IRP)
-!     NBUF3 = MIN(NVIRP,NBUF3)
+      NBUF3 = MIN(NVIRP,NBUF3)
 C
 C     Check the minimum size for the general use of this array
 C
-!     NBUF3 = MAX(NBUF1,NBUF3)
-!aspg, 
-      NBUF3 = MAX(NBUF1,NVIRP)
+      NBUF3 = MAX(NBUF1,NBUF3)
 C
 C     Allocate the work array
 C
@@ -3319,7 +3305,6 @@ C
          total_mem_new = total_mem_new + NBUF3*RCW
       
 C
-!     MXCORR = MAX(MXCORR,KFREE)
       MXCORR = MAX(MXCORR,total_mem_new)
 C
       IF (ICALC.LE.1) THEN
@@ -3372,20 +3357,11 @@ C
      &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
-C aspg: i think the following lines 
-c
-c       ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
-c       ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
-c       ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
-c
-C are replaceable by
-C
-        call alloc (a_HEFF, (RCW * IFS_HE2(NREP+1,ICURFSS)) )
-C                                                   below we add one because
-C                                                   the original allocation 
-C                                                   starts at offset zero...
-        call alloc (a_eigenvalues, (RCW *(IFS_HE(NREP+1,ICURFSS)+1)))
-        call alloc (a_eigenvectors,(RCW * IFS_HE2(NREP+1,ICURFSS))  )
+        call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff" )
+        call alloc (a_eigenvalues,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
+     &              id="eigenvalues" )
+        call alloc (a_eigenvectors, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
+     &              id="eigenvalues" )
 C
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
@@ -3400,11 +3376,6 @@ C       Print the Fock space eigenvalues, compute transition moments
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 C       Dealloc_meate space for the effective Hamiltonian
-c
-c       DEALLOCATE (HEFF)
-c       DEALLOCATE (EIGENVALUES)
-c       DEALLOCATE (EIGENVECTORS)
-c
         call dealloc (a_HEFF)
         call dealloc (a_EIGENVALUES)
         call dealloc (a_EIGENVECTORS)
@@ -3412,8 +3383,6 @@ C
       ENDIF
       ENDDO
 C
-!     CALL MEMREL('CCFSPC',CC,1,KFRSAV,KFREE,LFREE)
-
       if (alloc_me) then
          call dealloc( a_FVO  )
          call dealloc( a_FOO  )

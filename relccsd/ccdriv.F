@@ -721,7 +721,6 @@ C node. ===> if any subroutine would need more core memory we quit.
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
          CALL FLSHFO (IW)
-c        if (.not.lowmem) CALL QUIT("INCREASE MWORD")
          CALL QUIT("INCREASE MWORD")
       ENDIF
 C
