@@ -1343,6 +1343,8 @@ C            (0, 1, 2, or 9), where 9 is full(infinite).
 C
 C     Pick up the x,y,z variables from IBSS = xyz
 C
+C     Note: in the case of one-step method xyz must be set up for infinite order !
+C
 C On input: IBSS, SPINFR, IPRINT, ....
 C
 C On output: IPZ - order of Hamiltonian
@@ -1391,7 +1393,7 @@ C     ... do extract a,x,y,z digits of the entering IBSS=axyz value
      & '* After the Dirac-Fock procedure continue'//
      & ' in the TWO-COMPONENT (infinite order) MODE !'
        IF (USEDF) THEN
-         WRITE(LUPRI,'(/2X,A/)')
+         WRITE(LUPRI,'(/,2X,A/)')
      & '...transforming the converged four-component'//
      & ' DIRAC-FOCK operator !'
        ENDIF
@@ -1425,16 +1427,27 @@ C      write(lupri,'(5X,A)') '...first (DKH1) !'
        CALL QUIT('MAKE_BSS: EXTR_BSS_INFO: Wrong value of'//
      &           ' IZ (should be 0,1,2,9) !')
       ENDIF
+
+C  ... check if for some finite-order we have the free-particle basis transformation
+      IF (IPZ.NE.9.AND.NOFPB) THEN
+        WRITE(LUPRI,'(/,2X,A,A,I3)')
+     &  'Wrong BSS input: One-step method and NOT the infinite order !',
+     &   ' IPZ=',IPZ
+        CALL FLSHFO(LUPRI)
+        CALL QUIT('Wrong BSS input: One-step method and NOT'
+     &  //' the infinite order !')
+      ENDIF
+      
 C      ... treat the NOFPB & BLOCKD
       IF (IPZ.EQ.9) THEN
        IF (NOFPB) THEN
         WRITE(LUPRI,'(2X,A)')
-     &  '* Only the RKB basis ! No preliminary free-'//
-     &  'particle basis transformation according to Barysz !'
+     &  '* Only the RKB basis (one-step method). No preliminary free-'//
+     &  'particle basis transformation according to Barysz.'
        ELSE
         WRITE(LUPRI,'(2X,A)')
      & '* Applied the preliminary free-particle ("k") basis'//
-     & ' transformation. '
+     & ' transformation (two-step method). '
        ENDIF
 C      ... by default do not use pure numerical block-diagonalizating approach
 C       this is still TODO ...
