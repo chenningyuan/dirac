@@ -447,8 +447,12 @@ CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
 
-      write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
-      write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
+CMI printout
+      IF (DOIH) THEN
+       write(IW,'(/,A)') '...Energy limits for IH' 
+       write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
+       write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
+      ENDIF
 C
 C     XIH energy shift sign definition.
 C     Array with as first dimension 1e/2e shift

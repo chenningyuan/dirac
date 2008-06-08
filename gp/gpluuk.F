@@ -651,6 +651,9 @@ C    &    EV(2,INDX(I)),NEW
       ENDIF
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
+CMI ... print out conversion factors (from codata.h)
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
 C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
 C     call FLSHFO(LUPRI)
@@ -671,6 +674,7 @@ CMI   EWF=EV(INDX(1))
 C     write(LUPRI,*) 'in FS_ANALYSIS1...7'
 C     call FLSHFO(LUPRI)
 C
+
       DO 140 I=1,N_TOTAL
 CMI     E=EV(INDX(I))
         E=EV(1,INDX(I))
@@ -716,7 +720,7 @@ C     call FLSHFO(LUPRI)
 
       ENDDO
 
-      write(LUPRI,*) 'PRT_EV done.'
+!      write(LUPRI,*) 'PRT_EV done.'
       call FLSHFO(LUPRI)
 
 
