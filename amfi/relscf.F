@@ -1,5 +1,4 @@
 C
-C
 C Authorship of this program should be dicussed before
 C distributing it within the DIRAC package (MI,jan 2005);
 C see email from Timo (Atomares SCF).
@@ -8,7 +7,8 @@ C NOTE: The previous  value of NDIMPQ was 500000.
 C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
 C This increase is needed for larger atoms (Rn for example).
 C
-CMI/June 08 ... array allocations are from DIRAC (WORK-style)
+CMI/June 08 ... array allocations are from DIRAC (WORK-style), no longer
+C              big static allocation.
 C
 C
 C
