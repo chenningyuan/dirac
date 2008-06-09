@@ -9362,10 +9362,13 @@ C  /* Deck amfi_relscf_inp */
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
-C               Input reading for AMFI/RELSCF.
+C         Input reading for AMFI/RELSCF parts.
 C
 C    Called from HAMINP.
 C
+C
+C   Written by Miro ILIAS, Prievidza, 2008
+C   Last modifications: 
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -9399,7 +9402,7 @@ C
 C     CALL TITLER('AMFI/RELSCF input reading','*',127)
 
 C
-C        *** Initialize default values ***
+C        *** Initialize the default values ***
 C
         IPR_AMFI = 0
       IPR_RELSCF = 0

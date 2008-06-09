@@ -8,6 +8,10 @@ C NOTE: The previous  value of NDIMPQ was 500000.
 C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
 C This increase is needed for larger atoms (Rn for example).
 C
+CMI/June 08 ... array allocations from DIRAC (WORK-style)
+C
+C
+C
 
 C***** NAME ADDMA
       SUBROUTINE ADDMA(N,S,OVE)
@@ -83,6 +87,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
+C Called from INT_AT_SCF
+C
 C     CHANGE FOLLOWING TWO VALUES TO INCREASE DIMENSIONS OF PROGRAM
 C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
@@ -99,9 +105,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       MXBAS=MXB
       MXOCC=MXO
 C     if (relscf_verbose) WRITE (LUPRI,991) MXBAS,MXOCC
-      if (IPR_RELSCF.GE.2) WRITE (LUPRI,991) MXBAS,MXOCC
-991   FORMAT(/' MAXIMAL NUMBER OF BASIS FUNCTIONS   =',I10/,
-     *        ' MAXIMAL NUMBER OF OCCUPIED ORBITALS =',I10/)
+      IF (IPR_RELSCF.GE.2) THEN
+        WRITE (LUPRI,991) MXBAS,MXOCC
+991     FORMAT(/' MAXIMAL NUMBER OF BASIS FUNCTIONS   =',I10/,
+     *          ' MAXIMAL NUMBER OF OCCUPIED ORBITALS =',I10/)
+      ENDIF
 C
 C     10000 CALCULATIONS IN ONE CHUNK SHOULD BE ENOUGH ...
 C
@@ -548,6 +556,7 @@ C
 c     relscf_verbose = .false.
 C
       IF (ICORE.EQ.0) GOTO 4
+
       L=IABS(ICORE)-K
       IF (KSK.GT.L) KSK=L
       IF (L .GE. 0) GOTO 1
@@ -569,6 +578,7 @@ C
       IF (ICORE.GT.0) GOTO 3
       L=MSK-KSK
       IC=(L+1023)/1024
+
 CMI   if (relscf_verbose) WRITE (LUPRI,101) L,IC
       IF (IPR_RELSCF.GE.2) THEN
           WRITE (LUPRI,101) L,IC
@@ -591,7 +601,7 @@ CMI   if (relscf_verbose) WRITE (LUPRI,102) MSK,IC,KSK,L
       ENDIF
 
 CMI   STOP
-      CALL QUIT('some error output')
+      CALL QUIT('CHECK: error output, ICORE=0')
       END
 
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)
@@ -2112,18 +2122,22 @@ C
 CMI        return
 
 CMI   if (relscf_verbose) write(6,"(a,i3,1x,f26.12)")
-      IF (IPR_RELSCF.GE.2) then
+CMI   IF (IPR_RELSCF.GE.2) then
+      IF (IPR_RELSCF.GE.0) then
         write(LUPRI,"(a,i3,1x,f26.12)")
      & ' total energy iteration', nitscf,energ
       ENDIF
 
 CMI  ... check this print...
-      IF (IPRINT.GT.1) THEN
-      CALL PREN(KPARM,
+CMI   IF (IPRINT.GT.1) THEN
+      IF (IPR_RELSCF.GE.22) THEN
+       WRITE(LUPRI,'(2x,a)') '...extra printout in advance:'
+       CALL PREN(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
       ENDIF
+
       IF (NCONV.EQ.0) GOTO30
 C
 C     NOW WE ARE CONVERGED. ANY ADDITIONAL OPERATORS?
@@ -2133,7 +2147,8 @@ C
       IF (JPARM.LT.3 .AND. KPARM.NE.IPARM(JPARM+1)) THEN
 
 CMI   if (relscf_verbose) then
-      if (IPR_RELSCF.GE.2) then
+CMI   if (IPR_RELSCF.GE.2) then
+      if (IPR_RELSCF.GE.0) then
          IF (KPARM.EQ.0) WRITE (LUPRI,*)
      &          ' ### NON-RELATIVISTIC APPROX. ###'
          IF (KPARM.EQ.1) WRITE (LUPRI,*)
@@ -2149,11 +2164,11 @@ CMI   if (relscf_verbose) then
 
       CALL MEMCHK('HFMAIN after PREN',WORK,1)
 
-
       ELSE
 
 CMI   if (relscf_verbose) then
-      if (IPR_RELSCF.GE.2) then
+CMI   if (IPR_RELSCF.GE.2) then
+      if (IPR_RELSCF.GE.0) then
          IF (KPARM.EQ.0) WRITE (LUPRI,*)
      &   ' ### NON-RELATIVISTIC RESULT  ###'
          IF (KPARM.EQ.1) WRITE (6,*) 
@@ -2169,6 +2184,7 @@ CMI   if (relscf_verbose) then
       IPR=0
       ENDIF
       ENDIF
+
       IF (JPARM.EQ.3) GOTO 25
       IF (KPARM.EQ.IPARM(JPARM+1)) GOTO 25
       JPARM=JPARM+1
@@ -2179,8 +2195,10 @@ CMI   if (relscf_verbose) then
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
-      if (relscf_verbose) write(6,*) ' total energy', energ
+CMI   if (relscf_verbose) write(6,*) ' total energy', energ
+      if (IPR_RELSCF.GE.2) write(LUPRI,*) ' total energy', energ
       GOTO 1006
+
    25 CALL ENERGYX
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
@@ -2225,7 +2243,7 @@ C
      *    P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *        CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *        C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
-          if (relscf_verbose) write (6,*) 'after eigea 55'
+CMI       if (relscf_verbose) write (6,*) 'after eigea 55'
            GO TO 70
    60     IF (NOSHIC.LE.0) GO TO 55
    65     CALL EIGEA(FO,
@@ -2416,8 +2434,11 @@ C
       DE3=ESAV(3)-ENERG
       DE2=ESAV(2)-ENERG
       NRUN=1
-      if (relscf_verbose) WRITE(LUPRI,180)
+
+CMI   if (relscf_verbose) WRITE(LUPRI,180)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,180)
   180 FORMAT(6X,'OPTIMIZED ONE DIMENSION')
+
       ZUMER=DE2*(DZ3**2)-DE3*(DZ2**2)
       ZUMER=ZUMER/(2.D0*(DE2*DZ3-DE3*DZ2))+TERM
       ZETA(NBVAR1)=ZUMER
@@ -2651,10 +2672,10 @@ C
       logical *4 EX
       DATA OPER /'NON-REL ','SQR     ','EV      '/
 
-!  ... gfortran gives warning /mi      
 CMI   DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /4H    /
-      DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /4H    /
-C     DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /    /
+      DATA NBLANK /'    '/,BSTATE/'  '/
+CMI  ... gfortran gives warning, I don't know how to fix this ...
+CMI   DATA IBLANK /4H    /
 
       DATA NCOUNT /0/
 
@@ -2734,8 +2755,12 @@ C
       DO I=1,24
         AJMN(I)=0.0D0
       END DO
+
+CMI   write(LUPRI,*) 'IBLANK=',IBLANK
       DO I=1,NDIMR
-        IORCN(I)=IBLANK
+CMI     IORCN(I)=IBLANK
+        IORCN(I)=0
+CMI     write(LUPRI,*) 'I,IORCN(I)',I,IORCN(I)
       END DO
 C
       DO I=1,NDIMC
@@ -2773,15 +2798,26 @@ C
       READ(LUTOSCF,*) (NOOC(I),I=1,4)
       READ(LUTOSCF,*) IREL
 
+      IF (IPR_RELSCF.GE.2) THEN
+        WRITE(LUPRI,'(2X,A)') 'INPUT_AT34: read data from TOSCF file'
+        WRITE(LUPRI,'(2X,A,F12.6)') 'charge=',charge
+        WRITE(LUPRI,'(2X,A,4I3)')   'NBAS:',(NBAS(I),I=1,4) 
+        WRITE(LUPRI,'(2X,A,4I3)')   'NCSH:',(NCSH(I),I=1,4) 
+        WRITE(LUPRI,'(2X,A,4I3)')   'NOOC:',(NOOC(I),I=1,4) 
+        WRITE(LUPRI,'(2X,A,4I3)')   'parameter IREL=',IREL
+      ENDIF
+
       if (IREL.eq.0) then
-      Iparm(1)=0
-      Iparm(2)=0
-      Iparm(3)=0
+        Iparm(1)=0
+        Iparm(2)=0
+        Iparm(3)=0
       else
-      Iparm(1)=0
-      Iparm(2)=2
-      Iparm(3)=2
+        Iparm(1)=0
+        Iparm(2)=2
+        Iparm(3)=2
       endif
+
+CMI  ... reading s,p,d,f exponents from the AMFI prepared file...      
       nexp=NBAS(1)+NBAS(2)+NBAS(3)+NBAS(4)
 CMI   read(5,*)(ZETA(I),I=1,nexp)
       READ(LUTOSCF,*)(ZETA(I),I=1,nexp)
@@ -2877,19 +2913,27 @@ CMI   else
       WRITE(LUPRI,106) RMNED,RMXED
   106 FORMAT(6X,'RELATIVE MINIMUM ENERGY DIFFERENCE  =', E10.3,
      *8X,'RELATIVE MAXIMUM ENERGY DIFFERENCE=', E10.3)
-      WRITE(LUPRI,115) (NBAS(I),I=1,NSYM)
-  115 FORMAT ('0',5X,'SYMMETRY SPECIES',11X,'S',5X,'P',5X,'D',5X,'F'/6X,
-     1'NUMBER OF BASIS FUNCTIONS=',4(I3,4X))
-      WRITE(LUPRI,120) (NCSH(I),I=1,NSYM)
+      ENDIF
+
+      IF (IPR_RELSCF.GE.0) THEN
+
+        WRITE(LUPRI,115) (NBAS(I),I=1,NSYM)
+  115   FORMAT (6X,'SYMMETRY SPECIES',12X,'S',6X,'P',5X,'D',5X,'F'/6X,
+     &          'NUMBER OF BASIS FUNCTIONS=',4(I3,4X))
+
+        WRITE(LUPRI,120) (NCSH(I),I=1,NSYM)
 C 120 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I1,5X))
-  120 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I2,5X))
-      WRITE(LUPRI,125 )(NOOC(I) ,I=1,NSYM)
+  120   FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I3,5X))
+        WRITE(LUPRI,125 )(NOOC(I) ,I=1,NSYM)
 C 125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I1,5X))
-  125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I2,5X))
-      WRITE(LUPRI,135)
-  135 FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/ )
-      WRITE(LUPRI,140) (AJMN(I),I=1,24)
-      endif
+  125   FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I3,5X))
+      ENDIF
+
+      IF (IPR_RELSCF.GE.2) THEN
+       WRITE(LUPRI,135)
+  135  FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/ )
+       WRITE(LUPRI,140) (AJMN(I),I=1,24)
+      ENDIF 
 
       DO i=1,24
            ajmn(i)=0.5*ajmn(i)
@@ -3030,7 +3074,8 @@ CMI      if (EX.and.relscf_verbose)
          if (EX) rewind(istartunit)
          DO L=1,4
            IF(NBAS(L).EQ.0) GO TO 665
-           if (relscf_verbose) WRITE(LUPRI,*) ' SYMMETRY',L
+CMI        if (relscf_verbose) WRITE(LUPRI,*) ' SYMMETRY',L
+           if (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' SYMMETRY',L
            NTT=0
            IF(NOOC(L).GT.0) NTT=1
            NTTC=NCSH(L)+NTT
@@ -3039,7 +3084,8 @@ CMI      if (EX.and.relscf_verbose)
            READ(istartunit,*) (CREAD(II),II=1,NBAS(L)*NTTC)
            endif
            DO I=1,NTTC
-             if (relscf_verbose) WRITE(LUPRI,*) ' VECTOR',I
+CMI          if (relscf_verbose) WRITE(LUPRI,*) ' VECTOR',I
+             if (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' VECTOR',I
              IBEG=IEND+1
              IEND=IBEG+NBAS(L)-1
              if (EX) then
@@ -3055,7 +3101,8 @@ C    &         IBEG,I,NBAS(L),NTTC, IBEG+I*NBAS(L)/NTTC-1,
 C    &         ' max:',LDIMC
               C(IBEG+I*NBAS(L)/NTTC-1)=1d0
              endif
-             if (relscf_verbose) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
+CMI          if (relscf_verbose) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
+             if (IPR_RELSCF.GE.2) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
              IEND=IEND+MXBF-NBAS(L)
            END DO
  665       CONTINUE
@@ -3064,7 +3111,8 @@ C    &         ' max:',LDIMC
       ENDIF
 C
  1005 IF (NVAR.EQ.0) GO TO 209
-      if (relscf_verbose)
+CMI   if (relscf_verbose)
+      if (IPR_RELSCF.GE.2)
      &   WRITE (6,216) (NBVAR(I),ZETA(NBVAR(I)),ZETINC(I),I=1,NVAR)
   216 FORMAT ('0',5X,'EXPONENT VARIATION DATA (EXPONENT INDICES,
      *EXPONENTS, INCREMENTS)',
@@ -3073,19 +3121,23 @@ C
       IF(C(I).NE.0.0D0) GO TO 9
     6 CONTINUE
       GO TO 214
-    9 if (relscf_verbose) WRITE(LUPRI,210)
+CMI 9 if (relscf_verbose) WRITE(LUPRI,210)
+    9 if (IPR_RELSCF.GE.2) WRITE(LUPRI,210)
   210 FORMAT ('0',5X,'INPUT TRIAL VECTORS'/)
       KMIN=0
       KMAX=NBASM*(NSHT-1)+NBAS(NSYM)
       DO I=1,NBASM
         KMIN=KMIN+1
-        if (relscf_verbose) WRITE (6,240) (C(K),K=KMIN,KMAX,NBASM)
+CMI     if (relscf_verbose) WRITE (6,240) (C(K),K=KMIN,KMAX,NBASM)
+        if (IPR_RELSCF.GE.2) WRITE (6,240) (C(K),K=KMIN,KMAX,NBASM)
       END DO
   240 FORMAT(10(2X,F9.6))
   214 IF (NORBIT.EQ.0) GO TO 2000
-      if (relscf_verbose) WRITE (6,250)
+CMI   if (relscf_verbose) WRITE (6,250)
+      if (IPR_RELSCF.GE.2) WRITE (6,250)
   250 FORMAT ('0',5X,'NUMERICAL WAVE FUNCTIONS (POINT, INCREMENTS)'/)
-      if (relscf_verbose) WRITE (6,260) (NSIZE(I),RADINC(I),I=1,NBLOCK)
+CMI   if (relscf_verbose) WRITE (6,260) (NSIZE(I),RADINC(I),I=1,NBLOCK)
+      if (IPR_RELSCF.GE.2) WRITE (6,260) (NSIZE(I),RADINC(I),I=1,NBLOCK)
   260 FORMAT (' ',6X,I5,4X,F9.6)
 C
  2000 NOR=NSHT
@@ -3108,7 +3160,10 @@ CMI  * end
 C
 C     WRITE OUT PARAMETERS OF CURRENT RUN
 C
-995   if (relscf_verbose) WRITE (LUPRI,996) MXBF,NBF,NOR,LPQ,LQM,GJ0,GK0
+CMI995   if (relscf_verbose) WRITE (LUPRI,996) MXBF,NBF,NOR,LPQ,LQM,GJ0,GK0
+995   if (IPR_RELSCF.GE.2) THEN
+         WRITE (LUPRI,996) MXBF,NBF,NOR,LPQ,LQM,GJ0,GK0
+      endif
 996   FORMAT(/' MXBF (LARGEST NO OF FCT. PER SYMM.) =',I10/,
      *        ' NBF  (NUMBER OF BASIS FUNCTIONS)    =',I10/,
      *        ' NOR  (NUMBER OF OCCUPIED ORBITALS)  =',I10/,
@@ -3116,7 +3171,8 @@ C
      *        ' LQM (MATRIX SIZE 2)                 =',I10/,
      *        ' GJ0                                 =',F20.10/,
      *        ' GK0                                 =',F20.10/)
-      if (relscf_verbose) WRITE (LUPRI,997) MX100,TRLO,TRHI
+CMI   if (relscf_verbose) WRITE (LUPRI,997) MX100,TRLO,TRHI
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,997) MX100,TRLO,TRHI
 997   FORMAT(/' MX100                               =',I10/,
      *        ' LOW  EXPONENT THRESHOLDS            =',4(1X,D14.4)/,
      *        ' HIGH EXPONENT THRESHOLDS            =',4(1X,D14.4))
@@ -3125,7 +3181,8 @@ C
       END DO
       I=4
 993   I=I-1
-      if (relscf_verbose) 
+CMI   if (relscf_verbose) 
+      if (IPR_RELSCF.GE.2) 
      &   WRITE (LUPRI,992) (IPARM(J),OPER(IPARM(J)+1),J=1,I)
 992   FORMAT(' FOLLOWING OPERATOR(S) WERE SPECIFIED BY IPARM:'/,
      *3(3X,I3,'=',A8))
@@ -3688,12 +3745,10 @@ C     ORBITALS (CLOSED PLUS OPEN)
 C     TO INCREASE DIMENSIONS CHANGE STATEMENTS ENCLOSED BY
 C     C##DIM ... C##
 C
-C  Instead of separated program  called as subroutine from  AMFI
-C  getAOs2
+C------------------------------------------------------------------------------
+C  Instead of beeing separated program called from AMFI routine getAOs2.
 C
-C
-C
-C
+C  Saue, Ilias : connected to DIRAC array WORK (a lot of memory saving)
 C
 CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
@@ -4105,21 +4160,25 @@ C
 C
   121 IF (NALARM.EQ.0) GO TO 4
       IF (NPRINT.NE.0) GO TO 5
-      if (relscf_verbose) WRITE (6,15) (S(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE (6,15) (S(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,15) (S(I),I=1,N1T)
       GO TO 106
 
     4 IF (NPRINT.EQ.0) GO TO 106
 
-    5 if (relscf_verbose) WRITE (6,10) (S(I),I=1,N1T)
+CMI 5 if (relscf_verbose) WRITE (6,10) (S(I),I=1,N1T)
+    5 if (IPR_RELSCF.GE.2) WRITE (LUPRI,10) (S(I),I=1,N1T)
    10 FORMAT ('1'//,5X,'MATRICES AND SUPERMATRICES OF INTEGRALS BETWEEN
      1BASIS FUNCTIONS'//,6X,'S MATRIX'//(6X,10F12.6))
    15 FORMAT('1'//,5X,'S MATRIX'//(6X,10F12.6))
    25 FORMAT(6X,10F12.6)
 
-      if (relscf_verbose) WRITE(6,30)    (U(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,30)    (U(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,30) (U(I),I=1,N1T)
    30 FORMAT ('0',5X,'U MATRIX'/(6X,10F12.6))
 
-      if (relscf_verbose) WRITE(6,35)    (T(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,35)    (T(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,35)    (T(I),I=1,N1T)
    35 FORMAT ('0',5X,'T MATRIX'/(6X,10F12.6))
 C
       IBLK=1
@@ -4136,44 +4195,64 @@ C
           IBLK=IBLK+1
           IPQ=0
           IF(IBLK.EQ.IBM)GOTO 31
-          if (relscf_verbose) WRITE (6,40) IBLK,(P(LIE),LIE=1,NDIMPQ)
+CMI       if (relscf_verbose) WRITE (6,40) IBLK,(P(LIE),LIE=1,NDIMPQ)
+          if (IPR_RELSCF.GE.2) THEN
+            WRITE (LUPRI,40) IBLK,(P(LIE),LIE=1,NDIMPQ)
    40     FORMAT('1',5X,'P SUPERMATRIX BLOCK ',I4//(6X,10F12.6))
-          if (relscf_verbose) WRITE (6,45) IBLK,(Q(LIE),LIE=1,NDIMPQ)
+          endif
+CMI       if (relscf_verbose) WRITE (6,45) IBLK,(Q(LIE),LIE=1,NDIMPQ)
+          if (IPR_RELSCF.GE.2) then
+            WRITE (LUPRI,45) IBLK,(Q(LIE),LIE=1,NDIMPQ)
    45     FORMAT('1',5X,'Q SUPERMATRIX BLOCK ',I4//(6X,10F12.6))
+          endif
  31       IPQ=IPQ+1
         END DO
       END DO
-   33 if (relscf_verbose) WRITE(6,40)IBLK,(P(I),I=1,IPQ)
-      if (relscf_verbose) WRITE(6,45)IBLK,(Q(I),I=1,IPQ)
+CMI33 if (relscf_verbose) WRITE(6,40)IBLK,(P(I),I=1,IPQ)
+   33 if (IPR_RELSCF.GE.2) WRITE(LUPRI,40)IBLK,(P(I),I=1,IPQ)
+CMI   if (relscf_verbose) WRITE(6,45)IBLK,(Q(I),I=1,IPQ)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,45)IBLK,(Q(I),I=1,IPQ)
       IF(NDIMPQ.NE.NDIMPQPAR) REWIND IDATA
 C
-      if (relscf_verbose) WRITE(6,60)    (S(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,60) (S(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,60) (S(I),I=1,N1T)
    60 FORMAT ('1'//,5X,'FINAL MATRICES'//5X,'S MATRIX'/(6X,10F12.6))
       DO I=1,N1T
         U(I)=-ZN*U(I)+T(I)
       END DO
-      if (relscf_verbose) WRITE(6,65)    (U(I),I=1,N1T)
+
+CMI   if (relscf_verbose) WRITE(6,65)    (U(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,65) (U(I),I=1,N1T)
    65 FORMAT ('0',5X,'H MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,70)    (PCAP(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,70)    (PCAP(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,70) (PCAP(I),I=1,N1T)
    70 FORMAT ('0',5X,'P MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,75)    (QCAP(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,75)    (QCAP(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,75) (QCAP(I),I=1,N1T)
    75 FORMAT ('0',5X,'Q MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,80)    (FC(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,80)    (FC(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,80)    (FC(I),I=1,N1T)
    80 FORMAT ('0',5X,'CLOSED SHELL F MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,90)    (FO(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,90)    (FO(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,90)  (FO(I),I=1,N1T)
    90 FORMAT ('0',5X,'OPEN SHELL F MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,95)    (DT(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,95)    (DT(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,95)    (DT(I),I=1,N1T)
    95 FORMAT ('0',5X,'TOTAL DENSITY MATRIX'/(6X,10F12.6))
-      if (relscf_verbose) WRITE(6,105)   (DOS(I),I=1,N1T)
+CMI   if (relscf_verbose) WRITE(6,105)   (DOS(I),I=1,N1T)
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,105)   (DOS(I),I=1,N1T)
   105 FORMAT ('0',5X,'OPEN SHELL DENSITY MATRIX'/(6X,10F12.6))
 C
-  106 if (relscf_verbose) WRITE (6,110) (NAME(I),I=1,12)
+CMI106 if (relscf_verbose) WRITE (6,110) (NAME(I),I=1,12)
+  106 if (IPR_RELSCF.GE.2) WRITE(LUPRI,110) (NAME(I),I=1,12)
   110 FORMAT ('1',//,5X,'FINAL RESULTS'//5X,12A4)
-      if (relscf_verbose) WRITE (6,13)
+CMI   if (relscf_verbose) WRITE (6,13)
+      if (IPR_RELSCF.GE.2) WRITE (LUPRI,13)
    13 FORMAT ('0',5X,19HTYPE GAUSS ORBITALS)
    14 IF (NSVD.EQ.1) GO TO 500
 
-      if (relscf_verbose) WRITE (6,504)
+CMI   if (relscf_verbose) WRITE (6,504)
+      if (IPR_RELSCF.GE.2) WRITE (6,504)
   504 FORMAT('0',5X,'SINGLE VECTOR DIAGONALIZATION')
       GO TO 506
 
@@ -4519,20 +4598,22 @@ C
 CMI   if (relscf_verbose) PRINT 424, UPR,DOWNR,SUM,WIG,WIGNER
       if (IPR_RELSCF.GE.2) THEN
          WRITE(LUPRI,424) UPR,DOWNR,SUM,WIG,WIGNER
+         WRITE(LUPRI,*) 
       ENDIF
-  424 FORMAT('0SPIN UP   DENSITY =',F12.6,
+  424 FORMAT(' SPIN UP   DENSITY =',F12.6,
      */,' SPIN DOWN DENSITY =',F12.6,
      */,' TOTAL     DENSITY =',F12.6,
-     */,'0WIGNER CORRECTION =',F12.6,5X,F12.6)
+     */,' WIGNER CORRECTION =',F12.6,5X,F12.6)
 C
 CMI   IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER
+
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION FUNCTION PHI(M,N)
 #include <implicit.h>
 #include "relscf_crelop.h"
-
       IF (MOD(N,2).EQ.1.OR.MOD(M,2).EQ.1) GOTO 10
       PHI=2.D0*GA(M+1)*GA(N+1)/GA(M+N+2)
       RETURN
@@ -4548,8 +4629,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     PRINT INTERMEDIATE ITERATION RESULTS
-C
-C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
@@ -4568,24 +4647,26 @@ c     logical relscf_verbose
 c     relscf_verbose = .false.
 C
 CMI   IF (NITSCF.EQ.1.and.relscf_verbose) THEN
-      IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
+CMI   IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
+      IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.0) THEN
          IF (IPARAM.EQ.0) THEN
             WRITE (LUPRI,200)
-200   FORMAT(' --- NON-RELATIVISTIC RESULT ---')
+200         FORMAT(' --- NON-RELATIVISTIC RESULT ---')
          ENDIF
          IF (IPARAM.EQ.1) THEN
             WRITE (LUPRI,201)
-201   FORMAT(' --- SQR MATRIX RESULT ---')
+201         FORMAT(' --- SQR MATRIX RESULT ---')
          ENDIF
          IF (IPARAM.EQ.3) THEN
             WRITE (LUPRI,203)
-203   FORMAT(' --- EXTERNAL FIELD NO-PAIR RESULT ---')
+203         FORMAT(' --- EXTERNAL FIELD NO-PAIR RESULT ---')
          ENDIF
          WRITE (LUPRI,100)
-  100  FORMAT(8X,'IT',18X,'TOTAL',14X,'POTENTIAL',16X,'KINETIC',
-     * 7X,'VIRIAL RELATION')
+  100    FORMAT(8X,'IT',18X,'TOTAL',14X,'POTENTIAL',16X,'KINETIC',
+     &          7X,'VIRIAL RELATION')
          RETURN
       ENDIF
+
       POT=0.D0
       POTN=0.D0
       CIN=0.D0
@@ -4609,7 +4690,8 @@ C
       VIR=POT/CIN
 C
 CMI   if (relscf_verbose) WRITE (6,65) NITSCF,ENERG,POT,CIN,VIR
-      if (IPR_RELSCF.GE.2) THEN
+CMI   if (IPR_RELSCF.GE.2) THEN
+      if (IPR_RELSCF.GE.0) THEN
 CMI      WRITE (LUPRI,65) NITSCF,ENERG,POT,CIN,VIR
          WRITE (LUPRI,'(5X,I5,4(3X,D20.10))') NITSCF,ENERG,POT,CIN,VIR
 CMI65 FORMAT(5X,I5,4(3X,D20.10))
@@ -4618,145 +4700,11 @@ CMI65 FORMAT(5X,I5,4(3X,D20.10))
       RETURN
       END
 
-      SUBROUTINE PRMAT(IUOUT,R,N,M,HEAD)
-#include <implicit.h>
-#include <priunit.h>
-      REAL*8 R
-      CHARACTER*8 HEAD
-      DIMENSION R(2)
-C     SUBROUTINE PRINTS MATRIX R,WHICH IS SUPPOSED
-C     TO HAVE DIMENSION N,M  WHEN M IS NONZERO AND
-C     ((N+1)*N)/2 WHEN M IS ZERO
-      WRITE(IUOUT,1001) HEAD
-      NKPB=5
-      IF(M)10,10,80
-C
-   10 CONTINUE
-      IBL=N/NKPB
-      IR=N-IBL*NKPB
-      J1=1
-      K1S=1
-      KD=0
-      IF(IBL.EQ.0) GO TO 50
-      J2=NKPB
-      DO I=1,IBL
-        WRITE(IUOUT,1002)(J,J=J1,J2)
-        K1=K1S
-        K2=K1
-        KK=0
-        DO J=J1,J2
-          WRITE(IUOUT,1003)J,(R(K),K=K1,K2)
-          KK=KK+1
-          K1=K1+KD+KK
-          K2=K1+KK
-        END DO
-        J1=J1+NKPB
-        IF(J1.GT.N) RETURN
-        J2=J2+NKPB
-        K2=K1-1
-        K1=K2+1
-        K2=K1+(NKPB-1)
-        K1S=K2+1
-        KK=KD+NKPB
-        DO J=J1,N
-          WRITE(IUOUT,1003)J,(R(K),K=K1,K2)
-          KK=KK+1
-          K1=K1+KK
-          K2=K2+KK
-        END DO
-        KD=KD+NKPB
-      END DO
-   50 IF(IR.EQ.0) GO TO 70
-      K1=K1S
-      J2=J1+IR-1
-      KK=0
-      K2=K1
-      WRITE(IUOUT,1002)(J,J=J1,J2)
-      WRITE(IUOUT,1003)
-      DO J=J1,J2
-        WRITE(IUOUT,1003)J,(R(K),K=K1,K2)
-        KK=KK+1
-        K1=K1+KD+KK
-        K2=K1+KK
-      END DO
-   70 RETURN
-   80 IBL=M/NKPB
-      IR=M-IBL*NKPB
-      I2=0
-      K2=0
-      IF(IBL.EQ.0) GO TO 100
-      DO I=1,IBL
-        I1=(I-1)*N*NKPB+1
-        I2=I1+(NKPB-1)*N
-        K1=K2+1
-        K2=K1+(NKPB-1)
-        WRITE(IUOUT,1002)(K,K=K1,K2)
-        DO J=1,N
-          WRITE(IUOUT,1003)J,(R(IJ),IJ=I1,I2,N)
-          I1=I1+1
-          I2=I1+(NKPB-1)*N
-        END DO
-      END DO
-  100 IF(IR.EQ.0) GO TO 120
-      I1=IBL*N*NKPB+1
-      I2=I1+(IR-1)*N
-      K1=K2+1
-      K2=M
-      WRITE(IUOUT,1002)(K,K=K1,K2)
-      WRITE(IUOUT,1003)
-      DO J=1,N
-        WRITE(IUOUT,1003)J,(R(IJ),IJ=I1,I2,N)
-        I1=I1+1
-        I2=I1+(IR-1)*N
-      END DO
-  120 WRITE(IUOUT,1003)
-      RETURN
- 1001 FORMAT(' MATRIX PRINTED:',2X,A8)
- 1002 FORMAT(' ',5(17X,I4,3X),/)
- 1003 FORMAT(' ',I4,5D24.15)
-      END
-
-      SUBROUTINE PRVECX(C,TEXT)
-#include <implicit.h>
-#include <priunit.h>
-#include "relscf_dim.h"
-#include "relscf_v10.h"
-
-      DIMENSION C(MXBF,1)
-      CHARACTER*8 TEXT
-      COMMON /CLOCKX/ CPU,CLK
-
-#include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
-
-CMI   if (relscf_verbose) WRITE (6,*) TEXT
-      IF (IPR_RELSCF.GE.2) THEN
-         WRITE (LUPRI,*) TEXT
-      ENDIF
-
-      NSTEP2=0
-      DO I=1,NSYM
-        NBAS1=NBAS(I)
-        NSH=NCSH(I)+NOSH(I)
-        DO J=1,NSH
-          J1=J+NSTEP2
-CMI       if (relscf_verbose) WRITE (6,980) I,J,(C(M,J1),M=1,NBAS1)
-          if (IPR_RELSCF.GE.2) THEN
-            WRITE (LUPRI,980) I,J,(C(M,J1),M=1,NBAS1)
-          ENDIF
-        END DO
-  980   FORMAT(1X,2I5,8D12.4,(/,11X,8D12.4))
-        NSTEP2=NSTEP2+NSH
-      END DO
-      RETURN
-      END
-
-C *** PVP V 1.0 - 19.1.84 - BERND HESS
-C *** PVP V 1.1 -  5.6.86 - BERND HESS
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION FUNCTION
      *PVP(CHARGE,AL,BE,L1,M1,N1,L2,M2,N2)
+C *** PVP V 1.0 - 19.1.84 - BERND HESS
+C *** PVP V 1.1 -  5.6.86 - BERND HESS
 #include <implicit.h>
 #include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
@@ -4792,6 +4740,8 @@ C
       PVP=SUM
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION FUNCTION RCPG(XVAL,ODD,EVEN)
       REAL*8 XVAL,ODD,EVEN
 C

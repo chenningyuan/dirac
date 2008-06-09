@@ -1908,8 +1908,10 @@ CBS   PREPARE INPUT FOR SCF-CODE
 
 CMI    .... write out important info....
 CMI   if (amfi3_verbose) then
-      if (IPR_AMFI.GE.2) then
-         write(lupri,*) '****   Written to the file TOSCF ****'
+CMI   if (IPR_AMFI.GE.2) then
+      if (IPR_AMFI.GE.0) then
+         write(lupri,*)
+     &   '****   Written to the file TOSCF for "relscf" ****'
          write(lupri,*) '       charge: ',charge
          write(lupri,*) '      nprimit: ',(nprimit(i),i=0,Lmax_occ)  
          write(lupri,*) '   closed sh.: ',(closedshells(i),i=0,Lmax_occ)
@@ -1951,7 +1953,7 @@ cbs   read the MO coefficients
 CMI ======================================================
 CMI   if (amfi3_verbose) then
       if (IPR_AMFI.GE.2) then
-         write(LUPRI,*) 'orbitals to be read from fort.7' 
+         write(LUPRI,*) 'AMFI: atomic orbitals to be read from fort.7' 
          write(LUPRI,*) 'lhigh = ',lhigh   
       endif
 
@@ -1982,9 +1984,9 @@ CMI            if (amfi3_verbose)
       enddo   
 
       close(7)
-      
 CMI   if (amfi3_verbose) write(LUPRI,*) '-- orbitals read from fort.7' 
-      if (IPR_AMFI.GE.2) write(LUPRI,*) '-- orbitals read from fort.7' 
+      if (IPR_AMFI.GE.2) write(LUPRI,*)
+     &  '-- orbitals read from fort.7, closed'
 
       do lrun=0,lhigh
       if (noccorb(lrun).gt.0) then
@@ -2416,9 +2418,10 @@ c     amfi3_verbose = .false.
       endif
 
 CMI   if (amfi3_verbose) then
-      if (IPR_AMFI.GE.1) then
+CMI   if (IPR_AMFI.GE.1) then
+      if (IPR_AMFI.GE.0) then
 CMI      write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
-         write(LUPRI,*) ' charge of the atom:',IACH
+         write(LUPRI,*) ' charge of the calculated atom:',IACH
          write(LUPRI,*) ' Mean-field summation for # of electrons:',
      &                    icharge-IACH
          write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)

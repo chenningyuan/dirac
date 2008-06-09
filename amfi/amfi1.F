@@ -33,11 +33,13 @@ c     amfi1_verbose = .false.
       Nofprim='NUMBER OF PRIMITIVE FUNCTIONS:' 
       Nofcont=' NUMBER OF CONTRACTED FUNCTIONS:' 
       addtext='ADDITIONAL FUNCTIONS in IRS:'
+
 CBS   write(LUPRI,*)                                                      
 CMI   if (amfi1_verbose) 
       IF (IPR_AMFI.GE.0) THEN 
         CALL HEADER('ATOMIC NO-PAIR SO-MF CODE starts',-1)
       ENDIF
+
 CBS   write(LUPRI,*)                                                      
       bonn=.false.
       aimp=.false.
@@ -62,17 +64,21 @@ CMI    write(lupri,*) 'Exp_finite,EXP_FIN=',Exp_finite,EXP_FIN
 CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
       endif 
 CMI   if (amfi1_verbose) then
-      if (IPR_AMFI.GE.2) then
+CMI   if (IPR_AMFI.GE.2) then
+      if (IPR_AMFI.GE.0) then
          if (BREIT) then
             write(LUPRI,*) 'Breit-Pauli-Approximation'
          else
             write(LUPRI,*) 'Douglas-Kroll type operators '
          endif 
+      endif
+
+      if (IPR_AMFI.GE.2) then
          if (ifinite.eq.0) then 
             write(LUPRI,*) 'Point-nucleus '
          else
             write(LUPRI,*) 'Finite Nucleus' 
-            write(LUPRI,*) '   nuclear exponent=',Exp_finite
+            write(LUPRI,*) '....nuclear exponent=',Exp_finite
          endif  
          write(LUPRI,*) stars
          write(LUPRI,*) 'write out one-electron integrals in '//
@@ -80,6 +86,7 @@ CMI   if (amfi1_verbose) then
          write(LUPRI,*) stars                               
          write(LUPRI,*) stars                                         
          write(LUPRI,*) 'Symmetry is D2H'
+
          if (AIMP) then 
             write(LUPRI,*) 'CORE removed for use with AIMP' 
          endif
@@ -105,6 +112,7 @@ CMI   if (amfi1_verbose) then
       nmbMperIRL(iredrun,Lrun)=0 
       enddo 
       enddo 
+
       do Lrun=0,Lhigh 
 CMI   if (amfi1_verbose) write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
        IF (IPR_AMFI.GE.2) write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
@@ -119,14 +127,14 @@ cbs   check maximum numbers
             write(LUPRI,*) 'To many primitives for L=',Lrun,
      *           ' increase MxprimL in para.h or reduce ',
      *           'the number of primitives to at least ',MxprimL
-            CALL QUIT('Too many primitive functions in AMFI')            
+            CALL QUIT('Too many primitive functions in AMFI')    
          endif   
          if (ncontrac(Lrun).gt.MxcontL) then 
             write(LUPRI,*) 'To many contracted fncts for L=',Lrun,
      *           ' increase MxcontL in para.h or ',
      *           'reduce the number of contracted functions',
      *           'to at most ',MxcontL
-            CALL QUIT('Too many contracted functions in AMFI')            
+            CALL QUIT('Too many contracted functions in AMFI')        
          endif   
          if (ncontrac(Lrun).gt.nprimit(Lrun)) then 
             write(LUPRI,*) 'You have more contracted than ',

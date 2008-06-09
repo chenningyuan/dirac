@@ -1259,7 +1259,7 @@ C  /* Deck prpmao */
      &              OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C     PURPOSE: Get 2c/4c SA-AO matrix of one-electron integrals
+C     PURPOSE: Get 2c/4c SA-AO matrix of one-electron operator
 C     corresponding to property INDXPR of COMMON block XCBPRP
 C
 C     On input:  
@@ -1345,6 +1345,7 @@ C     =============================
 
 C ========================================================================================
 C    ... in this case read picture change transformed property integrals from BSSMAT file
+C      which are there under the name  'P2C_'//NUMSTR 
 C ========================================================================================
       IF (TWOCOMP.AND.BSS) THEN
 
@@ -1359,14 +1360,15 @@ C ==============================================================================
          CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
       ENDIF
 
+CMI ... the label will contain the INDXPR operator index in the string form !
        CALL NUM2STR(INDXPR,NUMSTR)
        PRPLABEL = 'P2C_'//NUMSTR
 
        CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
      &             PMAT,N2BBASXQ,LUBSS,IPRINT2)
 
-       IF (IPRINT2.GE.4) THEN  
-        write(lupri,*)   
+       IF (IPRINT2.GE.3) THEN  
+        write(lupri,'(2x,A,A,A)')   
      & 'PRPMSAO: 2comp. property record ',PRPLABEL,
      & ' was read from BSSMAT file.'      
        ENDIF
@@ -1374,21 +1376,21 @@ C ==============================================================================
        CALL LSET(NZ,.FALSE.,FIRST)
 
       ELSE
+CMI    -----  get the full four-component operator -------
 
         CALL LSET(NZ,.TRUE.,FIRST)
 
 C     ... do resort PTRI to the boson sorted basis
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
-
 !radovan: work is not used inside prpmao
+CMI ???  if so, fix of this PRPMAO call is needed....
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
      &                WORK(KFREE),LFREE,IPRINT2)   
 
           CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
-
 !radovan: work is not used inside prpmao
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
      &                       WORK(KFREE),LFREE,IPRINT2)   
@@ -1397,7 +1399,7 @@ C     ... do resort PTRI to the boson sorted basis
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ENDIF
 
-C ====================================================================
+CMI   ----  Do the picture change transformation -----                    
         IF (BSS) THEN
          IPRINT1 = MAX(IPRHAM,IPRPRP)
 C     ... decide if the picture change transformation is needed
@@ -1419,7 +1421,6 @@ C     ... array for the 2-component picture change transformed operator
 
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTO,KFREE,LFREE)
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTM,KFREE,LFREE)
-
 CMI       ... this is needed for the picture change transformed operator
           CALL LSET(NZ,.FALSE.,FIRST)
          ENDIF
