@@ -7748,9 +7748,9 @@ C  /* Deck prop2bss */
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE: Run the list of four-component property operators 
-C             in DCBPRP and do the picture change
-C             transformation of most of them. Do not transform
-C             certain operators (overlap, connection matrixes...)
+C             in the DCBPRP block and do the picture change
+C             transformation of selected. Do not transform
+C             certain operators (like overlap, connection matrixes...)
 C
 C             However, all operators of the list are written into BSSMAT in LL-blocks,
 C             either picture change transformed or not. Some of them in LL form 
@@ -7758,7 +7758,7 @@ C            (like kinetic energy, beta matrix) are useless (MI/Nov 07).
 C             TODO: select operators which do not have to be picked up in LL block.
 C
 C    Called from: MAKE_H2C 
-C      (if TWOCOMPBSS is true, ie when true two-comp. mode with IOTC Hamiltonian is on)
+C      (if TWOCOMPBSS is true, ie in true two-comp. mode when IOTC Hamiltonian is on)
 C
 C    On input:  
 C              VMAT - empty field (N2BBASXQ) to be utilized inside
@@ -7810,7 +7810,7 @@ C     ... allocate for LL-only operator
 C     ... run over all operators in the list
       DO I = 1, NPRPS
 
-C       ... get info if this operator is picture change transformed
+C       ... get info if this operator has to be picture change transformed
         CALL DECIDEPCTR(IS_PCTRA,PRPNAM(I),IPRINT)
 
         IREP = IPRPSYM(I) - 1
@@ -7822,7 +7822,7 @@ C       ... get info if this operator is picture change transformed
      &      'Operator has to be picture change transformed.'
           ELSE
             WRITE(LUPRI,'(2X,A)')
-     &      'Operator has NOT to be picture change transformed.'
+     &      'Operator need NOT to be picture change transformed.'
           ENDIF
         ENDIF
 
@@ -7842,9 +7842,9 @@ C
         CALL MEMGET('REAL',KONEIN ,   IDIMENS,WORK,KFREE,LFREE)
         CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 
-C       ... get operator either in full four-component form, 
-C       .... or picture change transformed one
-C       ...   (occupying in fact only  LL block of his four-comp.matrix)
+C       ... get the operator either in the full four-component form, 
+C       .... or already in  the picture change transformed shape
+C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
         IF (IS_SQUARE) THEN
           CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,VMAT,
@@ -7876,10 +7876,10 @@ caspg
         endif
 
         IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(/2X,A)')
-     &    'PROP2BSS: 2comp. operator '//
+          WRITE(LUPRI,'(/2X,A,I3,A)')
+     &    'PROP2BSS: 2comp. operator (indxpr=',INDXPR,') '//
      &    PRPLABEL//'->'//PRPNAM(I)//
-     &    ' was written to the BSSMAT file in LL block .'
+     &    ' was written to the BSSMAT file in LL block.'
           IF (IS_PCTRA) THEN
             WRITE(LUPRI,'(2X,A)')
      &      '...operator was picture change transformed'
