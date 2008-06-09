@@ -8,7 +8,7 @@ C NOTE: The previous  value of NDIMPQ was 500000.
 C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
 C This increase is needed for larger atoms (Rn for example).
 C
-CMI/June 08 ... array allocations from DIRAC (WORK-style)
+CMI/June 08 ... array allocations are from DIRAC (WORK-style)
 C
 C
 C
