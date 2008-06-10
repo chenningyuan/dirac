@@ -113,9 +113,9 @@ C***********************************************************************
 C
 C
 
-#if defined (MOD_VISUAL)
+#ifdef MOD_VISUAL
       IF(DO_VISUAL) CALL VISUAL(WORK,LWORK)
-#endif
+#endif /* MOD_VISUAL */
 
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CALL ANALYZE_PROPERTY_GRAD(WORK,LWORK)
