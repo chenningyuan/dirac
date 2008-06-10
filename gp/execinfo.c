@@ -92,8 +92,12 @@ backtrace_symbols(void *const *buffer, size_t size)
     if (rval == NULL)
         return NULL;
 
+/*
     (char **)cp = &(rval[size]);
-//  cp = &(rval[size]); 
+*/
+/*
+    cp = &(rval[size]); 
+*/
 
     for (i = 0; i < size; i++) {
         if (dladdr(buffer[i], &info) != 0) {
@@ -112,7 +116,9 @@ backtrace_symbols(void *const *buffer, size_t size)
                    5 +                      /* "> at " */
                    strlen(info.dli_fname) + /* "filename" */
                    1;                       /* "\0" */
-//          rval = realloc_safe(rval, clen + alen);
+/*
+            rval = realloc_safe(rval, clen + alen);
+*/
             cp = malloc(alen*sizeof(char *));
             if (cp == NULL)
                 return NULL;

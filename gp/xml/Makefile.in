@@ -9,7 +9,7 @@ include ../../Makefile.config
 
 F77_OBJS = 
 
-F90_OBJS = xml_file.o xml_structure.o xml_parser.o
+F90_OBJS = xml_file.o   xml_structure.o   xml_parser.o
 
 F90_MODS = xml_file.mod xml_structure.mod xml_parser.mod
 

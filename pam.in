@@ -190,6 +190,18 @@ setup_command()
           fi
         fi
 
+      elif [ "${MPIRUN##*/*/}" = 'openmpirun' ]; then
+        DIRAC_CMD="$DIRAC_CMD -n $MPI_NPROC"
+#       Include machinefile
+        if [ -n "$MACH_FILE" ]; then
+          if [ -r "$MACH_FILE" ]; then
+            DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
+          else
+            echo "ERROR: Machinefile $MACH_FILE cannot be read"
+            exit 1
+          fi
+        fi
+
       fi
    else
 #  Sequential run:

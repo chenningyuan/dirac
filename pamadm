@@ -31,6 +31,7 @@ usage()
    echo '     -fmm             : Include fast multipole method'
    echo '     -esr             : Include ESR property module'
    echo '     -xpp             : Include PP excitation energy and STEX modules'
+   echo '     -xml             : Include XML input/output module'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -cdft            : Include SDFT/CDFT module'
@@ -182,6 +183,17 @@ setup()
       else
          echo "ab initio/DFT embedding module not included - depends on DFT module "
       fi
+   fi
+   #
+   #  ab initio/DFT embedding module
+   #
+   if [ -n "$XMLMOD" ]; then
+      EMBFLG='-DMOD_XML'
+      EMBOBJ='$(XMLOBJS)'
+      EMBMAK=XML_OBJ
+      EMBTAR=1
+      F90MODS=ALL_F90MODS
+      echo " - XML input/output module (with Fortran90/95 modules)"
    fi
    #
    #  ADC electron propagator module
@@ -436,6 +448,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/fmm/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$XMLTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/gp/xml/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$EMBTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -536,8 +553,8 @@ if [ -n "$IBMMOD" ]; then
   echo $MODS
 fi
    echo "*** Making general Makefile"
-   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $AORESPONSEOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK"
+   AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $AORESPONSEOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ $XMLOBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK $XMLOBJ"
    #
    # Write current Makefile
    #
@@ -577,7 +594,6 @@ gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
 gp/execinfo.o       gp/stacktraverse.o \\
 gp/kinds.o          gp/vector_functions.o   \\
-gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o   \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
@@ -650,7 +666,6 @@ gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o      gp/vector_functions.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
 gp/execinfo.o       gp/stacktraverse.o \\
-gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o  \\
 EOF
 #
 #  Object-files for ESR-module
@@ -788,6 +803,15 @@ embedding/grid_file.o  embedding/emb1int.o   embedding/diremb.o
 
 EOF
 fi
+
+if [ -n "$XMLMOD" ]; then
+cat <<EOF>> Makefile
+XMLOBJS = \\
+gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o  
+
+EOF
+fi
+
 #
 #  Object-files for SDFT/CDFT module
 #
@@ -898,7 +922,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \\
-	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(EMBOBJS) \$(ADCOBJS) \$(ECPOBJS)\\
+	\$(DFTOBJS) \$(DNFOBJS) \$(FMMOBJS) \$(XMLOBJS) \$(EMBOBJS) \$(ADCOBJS) \$(ECPOBJS)\\
         \$(CDFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS) \\
         \$(OOF_OBJS) \$(CAPOBJS) \$(HSCCOBJS) \$(VISUALOBJS) \$(AORESPONSEOBJS)
 
@@ -1052,6 +1076,9 @@ fi
 if [ -n "$XPPMOD" ]; then
    echo '	cd prp/xpp  ; $(MAKE) clean' >> Makefile
 fi
+if [ -n "$XMLMOD" ]; then
+   echo '	cd gp/xml   ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$EMBMOD" ]; then
    echo '	cd embedding; $(MAKE) clean' >> Makefile
 fi
@@ -1088,7 +1115,6 @@ fi
 
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
-	cd gp/xml   ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
 	\$(RM) -f *~
 EOF
@@ -1113,7 +1139,6 @@ if [ -n "$MODULES" ]; then
   echo '#       because other directories use (some of) these ' >> Makefile
   echo 'mod :                 ;\' >> Makefile
   echo '	cd  gp         &&   $(MAKE) mod' >> Makefile
-  echo '	cd  gp/xml     &&   $(MAKE) mod' >> Makefile
   echo '	cd  abacus     &&   $(MAKE) mod' >> Makefile
   if [ -n "$VISUALMOD" ]; then
   echo '	cd  visual     &&   $(MAKE) mod' >> Makefile
@@ -1123,6 +1148,9 @@ if [ -n "$MODULES" ]; then
   fi
   if [ -n "$EMBMOD" ]; then
   echo '	cd  embedding  &&   $(MAKE) mod' >> Makefile
+  fi
+  if [ -n "$XMLMOD" ]; then
+  echo '	cd  gp/xml     &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
   echo '	cd  oof        &&   $(MAKE) mod' >> Makefile
@@ -1232,6 +1260,13 @@ DNF_OBJ :
 	cd densfit; \$(MAKE) all
 EOF
 fi
+if [ -n "$XMLMOD" ]; then
+cat <<EOF>> Makefile
+
+XML_OBJ :
+	cd gp/xml; \$(MAKE) all
+EOF
+fi
 if [ -n "$EMBMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -1312,7 +1347,6 @@ AMFI_OBJ :
 
 GP_OBJ :
 	cd gp ; \$(MAKE) all
-	cd gp/xml ; \$(MAKE) all
 
 MXM_OBJ :
 	cd gp ; \$(MAKE) mxm
@@ -1341,7 +1375,7 @@ EOF
 TEMP="dirac prp pdpack main relccsd moltra dirrci lucita"
 
 # ... directories with F90 modules 
-TEMPOOF="abacus gp gp/xml utils"
+TEMPOOF="abacus gp utils"
 
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
@@ -1366,6 +1400,9 @@ if [ -n "$KRMCMOD" ]; then
 fi
 if [ -n "$EMBMOD" ]; then
    TEMPOOF="$TEMPOOF embedding"
+fi
+if [ -n "$XMLMOD" ]; then
+   TEMPOOF="$TEMPOOF gp/xml"
 fi
 if [ -n "$ADCMOD" ]; then
    TEMP="$TEMP reladc"
@@ -1446,14 +1483,14 @@ which_modules()
 if [ -n "$IBMMOD" ]; then
 # I assume that DFTFLG is always activated...
    MODS="$DFTFLG"
-   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG
       do 
       MODS="$MODS,$mod"
       done
 else
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG"
 fi
-dirs="dirac prp abacus amfi gp gp/xml pdpack main relccsd moltra dirrci lucita utils argosecp"
+dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
@@ -1465,6 +1502,9 @@ if [ -n "$FMMFLG" ]; then
 fi
 if [ -n "$DFTFLG" ]; then
    dirs="$dirs dft"
+fi
+if [ -n "$XMLFLG" ]; then
+   dirs="$dirs gp/xml"
 fi
 if [ -n "$EMBFLG" ]; then
    dirs="$dirs embedding"
@@ -1502,6 +1542,9 @@ if [ -n "$ESRFLG" ]; then
 fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
+fi
+if [ -n "$XMLFLG" ]; then
+   dirs="$dirs gp/xml"
 fi
 ##
 ##  take care of F90/95 modules - this is for the cleaning !
@@ -1541,6 +1584,10 @@ while [ -n "$1" ]; do
          ;;
       -xpp|-xp)
          XPPMOD=1
+         ;;
+      -xml)
+         XMLMOD=1
+         MODULES=1
          ;;
       -fmm|-fm)
          ERIMOD=1
