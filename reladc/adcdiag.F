@@ -2474,8 +2474,8 @@ C
 
 
       CALL PST('Processing the spectrum (complex)+')
-      WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
-      WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
+      WRITE(IW,*) 'Upper limit for printing eigenvalues on screen',ELIM
+      WRITE(IW,*) 'Threshold pole strength for eigenvectors:',WTHR
 c
 c  copy the first and last NP components of the long eigenvectors
 c  to Z in order to apply dieters code easily.
