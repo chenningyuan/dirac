@@ -101,7 +101,6 @@ notify_user()
       fi
    fi
    mail $TO <<EOF
-   cat <<EOF
 
 Your job has has returned with exit status: $EXIT
 
