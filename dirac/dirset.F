@@ -125,14 +125,7 @@ C
 C     DO4C2C=T : after 4c SCF perform IOTC transformation
 C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
 C
-CMI ... in this case do not run 2-component calculations in GMOTRA/MAKE_H2C
-CTROND      IF (BSS.AND.DO4C2C.AND..NOT.DO2C4C) BSS=.FALSE.
       CALL GMOTRA(WORK,LWORK)
-C
-C     Use supersymmetry for linear molecules
-C     ======================================
-C
-CTROND      IF (LINEAR) CALL GLINSM(WORK,LWORK)
 C
 C     Write orbital output to DFTMAT
 C     ==============================
@@ -1770,13 +1763,11 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-      WRITE(6,*) 'Enter ORBDAT'
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
       NBRP = 4/NZ
       READ(LUTMAT)
       READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
-C     WRITE(6,*) 'G..',NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
      &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
@@ -1784,12 +1775,6 @@ C     WRITE(6,*) 'G..',NZT,URKBAL,SUB_BL,I2COFK
      &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
      &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
-C       WRITE(6,*) 'F..',NORB(IFRP),(NFORB(IFRP,J),J=0,2),
-C    &        ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
-C    &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
-C    &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
-C    &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
-C    &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
       ENDDO
       IF(SUB_BL) THEN
         DO IFRP = 1,NFSYM
@@ -1797,9 +1782,6 @@ C    &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
           WRITE(LUTMAT) 
      &     NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
-C         WRITE(6,*) 
-C    &     'H..',NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
-C    &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
       CLOSE(LUTMAT,STATUS='KEEP')      

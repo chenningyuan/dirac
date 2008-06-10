@@ -171,7 +171,6 @@ C=============================================================
         CALL GMOTRA(WORK(KFREE),LFREE)
 CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
         CALL SETDC2(0)
-CTROND        IF (LINEAR) CALL GLINSM(WORK(KFREE),LFREE) 
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
@@ -264,7 +263,6 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         BSS= .TRUE.
         START2C = .FALSE.
         CALL GMOTRA(WORK(KFREE),LFREE)
-CTROND        IF (LINEAR) CALL GLINSM(WORK(KFREE),LFREE) 
 
 CMI      ... DO NOT continue in SCF iterations !!!
          IF (.NOT.CONT2C) THEN
@@ -3726,17 +3724,7 @@ C
 C
 C       Do an approximate identification of the spinors by their
 C       boson character for use in the CI.
-CMI<<<<<<< dirscf.F
-C
-CCMI    IF (.NOT.SPINFR .AND. .NOT.LEVYLE .AND. .NOT.SUB_BL) THEN
-CMI     IF (.NOT.SPINFR .AND. .NOT.LEVYLE .AND. .NOT.SUB_BL
-CMI  & .OR.DO2C4C) THEN
-CMI=======
-Ctsaue Oct 5 2005:
-C      De-activated this for frozen orbitals since NBORB can not be
-C      trusted
         IF (.NOT.SPINFR .AND. .NOT.SUB_BL .AND. NFROT.EQ.0) THEN
-CMI >>>>>>> 1.137
            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
            CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
            CALL APPBOS (I,NTMO(I),WORK(KINDX),
