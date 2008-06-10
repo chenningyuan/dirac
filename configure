@@ -502,7 +502,7 @@ done
 # If there is found more than one compiler let the user pick it.
 declare -i counter=0
 for comp in $comp_found; do
-  counter+=1
+  counter=counter+1
 done
 
 case $counter in 
@@ -522,7 +522,7 @@ case $counter in
     echo " The following compilers were detected on your system:"
     counter=0
     for comp in $comp_found; do
-      counter+=1
+      counter=counter+1
       $echo "$counter) $comp \t\c"
     done
     $echo "0) Exit."      
