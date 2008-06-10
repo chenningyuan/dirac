@@ -46,12 +46,14 @@ fi
 shortusage ()
 {
    echo
-   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo 'Usage: '$0' [Flags] [ARCHIVE.tgz] mol[.mol] menu[.inp]'
    echo '   For information about flags enter "'$0'" without any options.'
 }
 usage ()
 {
-   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo 'Usage: '$0' [Flags] [ARCHIVE.tgz] mol[.mol] menu[.inp]'
+   echo ' Run Dirac with the given molecule and input file. If a .tgz archive'
+   echo ' is given the calculation can restart from the contents of this file.'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
@@ -77,8 +79,6 @@ usage ()
    echo '     -notify                : Notify when finished to user starting job'
    echo '     -user e-mail           : Notify when finished using specified e-mail address'
    echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
-   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
-   echo '                              (path must be included if executable is not in input directory)'
    echo '     -help                  : More help on pam than this'
 }
 #
@@ -208,16 +208,7 @@ setup_command()
       DIRAC_CMD=
    fi
    #
-   # Execute Dirac with ssrun ?
-   #
-   if [ -n "$SSRUN" ]; then
-      DIRAC_CMD="$DIRAC_CMD ssrun -$SSRUN"
-      mkdir $LOC/speedshop.$$
-      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
-      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
-   fi
-   #
-   # Debug (will ignore any MPIRUN and SSRUN)
+   # Debug (will ignore any MPIRUN)
    #
    if [ -n "$DEBUG" ]; then
       if [ -n "$DIRAC_CMD" ]; then
@@ -690,7 +681,6 @@ initialize()
    MPIARG=
 
    NICE=
-   SSRUN=
 
    NOTIFY=
    NOTIFY_USER=
@@ -806,10 +796,6 @@ while [ -n "$1" ]; do
          ;;
       -nice)
          NICE=1
-         ;;
-      -ssrun)
-         shift
-         SSRUN=$1
          ;;
       -notify)
          NOTIFY=1
