@@ -3928,7 +3928,9 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
+#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+#endif
       ELSE
 C
 C         Conventional atomic orbitals
@@ -4689,12 +4691,12 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
-
+#ifdef MOD_LONDON
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
        CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
-
+#endif
       ELSE ! Conventional AO
 
 C      ... XAVECTOR
@@ -5410,8 +5412,10 @@ C=============================================================================
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
 
+#ifdef MOD_LONDON
 C     ... evaluate expectation value terms
       IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
+#endif
 
       KFRSAV = KFREE
       CALL TITLER('MAGNETIZABILITIES','*',124)
@@ -6082,6 +6086,7 @@ C        ... DMATLO contains extracted 'diamagnetic' term (NSNL)
          ENDIF
       END IF
 
+#ifdef MOD_LONDON
 C ------------------------------------------------------
 C  Get the London orbital contributions to the exp.value
 C  ... these are RNST terms
@@ -6137,7 +6142,7 @@ C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
 CTROND         CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
       END IF
-
+#endif /* MOD_LONDON */
 C
 C     *** Extract shieldings ***
 C
@@ -8004,7 +8009,9 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
+#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
+#endif
       ELSE
 C
 C     Conventional atomic orbitals

@@ -9142,6 +9142,7 @@ C      .... charges per nucleis
 
        CALL MEMCHK('before AMFI2',WORK,1)
 
+#ifdef MOD_AMFI
        CVAL_AMFI = CVAL
 
        CALL AMFIIN(WORK(KBUF2),NB,WORK(KIPTYPAO),WORK(KHINLM),
@@ -9149,7 +9150,7 @@ C      .... charges per nucleis
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
      &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
-
+#endif
       CALL MEMCHK('before S->C',WORK,1)
 
       IF (IPRINT.GE.4) THEN
@@ -9368,19 +9369,18 @@ C
       RETURN
       END
 
+#ifdef MOD_AMFI
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfi_relscf_inp */
       SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C   Input reading for AMFI/RELSCF parts.
 C
-C         Input reading for AMFI/RELSCF parts.
-C
-C    Called from HAMINP.
-C
+C   Called from HAMINP.
 C
 C   Written by Miro ILIAS, Prievidza, 2008
-C   Last modifications: 
+C   Last modifications: MI, Odense, June 2008
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -9394,7 +9394,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
-      DATA TABLE /'.PRNT_A','.PRNT_S','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
@@ -9418,6 +9418,9 @@ C        *** Initialize the default values ***
 C
         IPR_AMFI = 0
       IPR_RELSCF = 0
+
+!    ... maximum number of iterations
+      MXXTRP_INP     = 50
 C 
 C
 C     Process input for AMFI/RELSCF
@@ -9453,15 +9456,16 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in AMFI_RELSCF_INP.')
  1             CONTINUE
-C&&& INPQD: read the PW number 'theta'
+C&&&  ... print variable for AMFI
                READ(LUCMD,*) IPR_AMFI
                GO TO 100
  2             CONTINUE
-C&&& INPCAP: read integration parameters
+C&&&  ... print variable for RELSCF
                  READ(LUCMD,*) IPR_RELSCF
                GO TO 100
  3             CONTINUE
-C&&& 
+C&&&  ... read maximum number of iterations for RELSCF
+                 READ(LUCMD,*) MXXTRP_INP
                  GO TO 100
  4               CONTINUE
 C&&& 
@@ -9504,7 +9508,12 @@ C
       WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
       WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
 C
+      WRITE(LUPRI,'(1X,A,I5)')
+     &  '*RELSCF maximum number of iterations:',MXXTRP_INP
+
+C
   999 CONTINUE
 C
       RETURN
       END
+#endif /* MOD_AMFI */

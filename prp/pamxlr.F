@@ -197,6 +197,7 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
 
+#ifdef MOD_LONDON
 C   ... When London atomic orbitals are in use...
       IF (LONDON) THEN
 C   ... allocate memmory for MO coefficients and boson irreps info
@@ -212,6 +213,7 @@ C   ... calculate reorthonormalization contribution
         IF (.NOT.NOONEI)
      &     CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
       ENDIF
+#endif /* MOD_LONDON */
 C
 C     Memory allocation
 C     =================

@@ -40,6 +40,8 @@ usage()
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
    echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
+   echo '     -amfi            : Include the AMFI functionality into DIRAC'
+   echo '     -london          : Include London orbitals functionality for magnetic properties'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     -adc             : Include ADC electron propagator module'
    echo '     -ecp             : Include ARGOS ECP module'
@@ -75,6 +77,9 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
+      IHFSCCMOD=1
+      AMFIMOD=1
+      LONDONMOD=1
       IHFSCCMOD=1
       ADCMOD=1
       F90MODS=ALL_F90MODS
@@ -268,7 +273,7 @@ setup()
       #  echo 
     fi
    #
-   #   HSMRCC Dirac-interface module
+   #   IHFSCCSD functionality
    #
    if [ -n "$IHFSCCMOD" ]; then
          IHFSCCFLG='-DMOD_IHFSCC'
@@ -277,6 +282,21 @@ setup()
       #  echo "HSMRCC interface module is not included "
       #  echo 
     fi
+
+   #
+   #  AMFI functionality
+   #
+   if [ -n "$AMFIMOD" ]; then
+         AMFIFLG='-DMOD_AMFI'
+         echo " - AMFI functionality enabled"
+   fi
+   #
+   # London orbitals 
+   #
+   if [ -n "$LONDONMOD" ]; then
+         LONDONFLG='-DMOD_LONDON'
+         echo " - London orbitals enabled"
+   fi
    #
    #   HSMRCC Dirac-interface module
    #
@@ -1495,14 +1515,15 @@ which_modules()
 if [ -n "$IBMMOD" ]; then
 # I assume that DFTFLG is always activated...
    MODS="$DFTFLG"
-   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
       do 
       MODS="$MODS,$mod"
       done
 else
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG"
 fi
-dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
+#dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
+dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
@@ -1538,6 +1559,9 @@ if [ -n "$AORESPONSEFLG" ]; then
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
+fi
+if [ -n "$AMFIFLG" ]; then
+   dirs="$dirs amfi"
 fi
 if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc"
@@ -1616,6 +1640,12 @@ while [ -n "$1" ]; do
          ;;
       -ihfscc)
          IHFSCCMOD=1
+         ;;
+      -amfi)
+         AMFIMOD=1
+         ;;
+      -london)
+         LONDONMOD=1
          ;;
       -eri|-er|-e)
          ERIMOD=1

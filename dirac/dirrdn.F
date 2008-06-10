@@ -3838,8 +3838,11 @@ C     ... default L&S components... needs discussion about relation to DO2C4C/DO
 CMI   ... no specifications for individual AMFI center
       ALLAMFA = .TRUE.
 CMI     ... default initialization 
+#ifdef MOD_AMFI
       NOAMFI = .FALSE.
-
+#else
+      NOAMFI = .TRUE.
+#endif
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
@@ -4137,10 +4140,12 @@ C      as they need to be modified within BSS transformations
              ENDIF
             GO TO 100
   127     CONTINUE
+#ifdef MOD_AMFI 
 C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
 C     for mean-field summations of each atom in the system
 C          ... read integer number
              READ(LUCMD,*) IMFCH
+#endif
             GO TO 100
   128     CONTINUE
 C&&&&   Solve R-equation 1
@@ -4182,10 +4187,12 @@ C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
             GO TO 100
   136     CONTINUE
+#ifdef MOD_AMFI
 C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
             ALLAMFA = .FALSE.
             READ(LUCMD,*) NAMFA
             READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
+#endif
             GO TO 100
   137     CONTINUE
 C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
@@ -4274,7 +4281,9 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              GO TO 100
   149     CONTINUE
 C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
+#ifdef MOD_AMFI
              NOAMFI = .TRUE.
+#endif
              GO TO 100
   150     CONTINUE
 C&&& XXXX
@@ -4539,25 +4548,31 @@ CMI ... no AMFI
          WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution in the '  
      &   //'2-component mode !'
         ENDIF
-CMI     IF (IBSS.GT.999) THEN
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
+#ifdef MOD_AMFI
           WRITE(LUPRI,'(A)')
      &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
      &     '   interaction provided by the AMFI code. ',
      &     '   References: ',
      &     '     1) B. Schimmelpfennig, program AMFI, ',
      &     '        Stockholm University, Sweden',
-     &     '     2) B. A. Hess, C. M. Marian, U. Wahlgren,'//
+     &     '     2) B. A. Hess, C. M. Marian, U. Wahlgren'//
      &     ' and O. Gropen',
      &     '        Chem. Phys. Lett. 251, 365 (1996)',
+     &     '     3)  M Ilias, V Kello, L Visscher'//
+     &     ' and B Schimmelpfennig',
+     &     '        J. Chem. Phys. Vol. 115 (2001) p.9667.',
      &     '     Adding :',
      &     '       some AMFI contribution'//
      &     ' (see output from EXTR_BSS_INFO below)'  
+#endif
 CMI       IF (GAUNT) THEN
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
      &     '     N.B: Gaunt key is on '
           ENDIF
+
+#ifdef MOD_AMFI
           IF (IMFCH.NE.0) THEN
             WRITE(LUPRI,'(1X,A,I4)')
      &     ' * AMFI mean-field summations on individual atoms'//
@@ -4617,6 +4632,7 @@ C           ... check on identical nucleus numbers ....
             ENDDO
           ENDIF
           ENDIF
+#endif /* MOD_AMFI */
 
 CMI       ... take care of AMFI CSC test transformation, if specified through the entering IBSS number
           IF (IBSS.GT.999.AND.IBSS.LE.1999) THEN
@@ -5166,10 +5182,12 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 #endif
         GO TO 200
     6 CONTINUE
+#ifdef MOD_AMFI
 CMI  ... reading input routine for AMFI+RELSCF
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ENDIF
+#endif
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -5192,9 +5210,11 @@ CJuly2003
 #ifdef MOD_EMB
       IF (DO_FDE) CALL FDEINP(WORD,.TRUE.)
 #endif
+#ifdef MOD_AMFI
       IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
          CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
+#endif
 C
  500  CONTINUE
 C

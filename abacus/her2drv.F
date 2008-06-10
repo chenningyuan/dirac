@@ -764,8 +764,8 @@ C      Eg. GRADNN is not defined in DIRAC
       END IF
 C
 C     Print Fock matrices
-CMI ... IPRINT is fixed
-      IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.3) THEN
+      IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.8) THEN
+CMI      write(LUPRI,*) 'IPRINT=',IPRINT
          CALL HEADER('Fock matrix in TWOINT',-1)
          DO 700 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1

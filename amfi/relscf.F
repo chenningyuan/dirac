@@ -1,3 +1,4 @@
+#ifdef MOD_AMFI
 C
 C Authorship of this program should be dicussed before
 C distributing it within the DIRAC package (MI,jan 2005);
@@ -33,7 +34,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C     ONE CONFIGURATION
+C According to  the entering NALARM print-out various convergence
+C statuses (nonconvergence, divergence etc...) 
+C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
@@ -49,39 +52,66 @@ C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
 C
       NALAR1=NALARM-1
       GO TO (20,35,50,65,75,85,95),NALAR1
+
    20 WRITE(LUPRI,25)
-   25 FORMAT('0',5X,'DIAGONALIZATION DIVERGENCE')
+   25 FORMAT(/,5X,'DIAGONALIZATION DIVERGENCE')
       WRITE (LUPRI,30) THRE(N0),N0,DGATH
    30 FORMAT(6X, 'THRESHOLD',E9.2,1X,'FOR VECTOR',I2,1X,'GREATER THAN DG
      1ATH', E9.2)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit - DIAGONALIZATION DIVERGENCE')
       GO TO 105
+
+
    35 WRITE(LUPRI,40)
-   40 FORMAT('0',5X,'SELF CONSISTENCE DIVERGENCE')
+   40 FORMAT(/,5X,'SELF CONSISTENCE DIVERGENCE')
       WRITE(LUPRI,45) THRSCF,SCFAT
    45 FORMAT(6X,'SCF THRESHOLD',E9.2,1X,'GREATER THAN SCFAT', E9.2)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit - SELF CONSISTENCE DIVERGENCE')
       GO TO 105
+
+CMI .... too many iterations ...
    50 WRITE(LUPRI,55)
-   55 FORMAT('0',5X,'TOO MANY SCF ITERATIONS')
+   55 FORMAT(/,5X,'TOO MANY SCF ITERATIONS!')
       WRITE(LUPRI,60) NITSCF,MXXTRP
-   60 FORMAT(6X,'ITERATIONS NUMBER',I2,1X,'EQUAL MXXTRP',I2)
+   60 FORMAT(6X,'ITERATIONS NUMBER=',I2,1X,'EQUAL MXXTRP=',I2)
+      WRITE(LUPRI,'(2X,A)')
+     &    'Change relscf atom occupation, or the basis set !'
+CMI  ... rather error exit !
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit - TOO MANY SCF ITERATIONS! !')
       GO TO 105
+
    65 WRITE(LUPRI,70) RED,RMNED
-   70 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,
+   70 FORMAT(/,6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,
      *'SMALLER THAN RMNED', E9.2)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit on RELATIVE ENERGY DIFFERENCE')
       GO TO 105
+
    75 WRITE(LUPRI,80) RED,RMXED
    80 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,
      *'GREATER THAN RMXED',E9.2)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit on RELATIVE ENERGY DIFFERENCE 2')
       GO TO 105
+
    85 CONTINUE
       WRITE (LUPRI,90) ZETA(NBVAR1),NBVAR1,EXPMN
-   90 FORMAT(6X,'EXPONENT ZETA',F9.5,1X,'FOR ORBITAL',I2,1X, 'SMALLER TH
-     1AN EXPMN', F9.5)
+   90 FORMAT(/,6X,'EXPONENT ZETA',F9.5,1X,'FOR ORBITAL',I2,1X,
+     &  'SMALLER THAN EXPMN', F9.5)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit on EXPONENT ZETA')
       GO TO 105
+
    95 CONTINUE
       WRITE (LUPRI,100) NBVAR1,IIII,ZETDIF,DMNXP
-  100 FORMAT(6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,1X,'AND',
+  100 FORMAT(/,6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,1X,'AND',
      *I2,2X,'ZEDIF',F9.5,1X,'SMALLER THAN DMNXP',F9.5)
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('relscf error exit on EXPONENT REDUNDANCY FOR ORBITALS')
+
   105 RETURN
       END
 
@@ -89,13 +119,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AT3(WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C   Internal Atomic SCF Code producing scalar relativistic atomic
+C   orbitals for the AMFI mean-field summation.
 C
-C Called from INT_AT_SCF
+C   Called from INT_AT_SCF (from AMFI). It is using the DIRAC memory manager throughout.
 C
-C     CHANGE FOLLOWING TWO VALUES TO INCREASE DIMENSIONS OF PROGRAM
+C   CHANGE FOLLOWING TWO VALUES TO INCREASE DIMENSIONS OF PROGRAM:
+C
 C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
-C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
@@ -105,9 +137,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION WORK(LWORK)
 #include "amfi_if.h"
 #include "memint.h"
+
       MXBAS=MXB
       MXOCC=MXO
-C     if (relscf_verbose) WRITE (LUPRI,991) MXBAS,MXOCC
+
       IF (IPR_RELSCF.GE.2) THEN
         WRITE (LUPRI,991) MXBAS,MXOCC
 991     FORMAT(/' MAXIMAL NUMBER OF BASIS FUNCTIONS   =',I10/,
@@ -137,7 +170,6 @@ CMI   CALL MEMGET('REAL',KC     ,LDIMC  ,WORK,KFREE,LFREE)
      &           WORK(KIORCN),WORK(KCREAD),WORK(KFREE),LFREE)
 
       CALL MEMCHK('after  INPUT_AT34',WORK,1)
-
 
       CALL MEMREL('AT3',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -324,6 +356,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Contains many memory allocations (MEMGET) for the HFMAIN subroutine.
 C
+C   Called from INPUT_AT34.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
@@ -572,6 +605,7 @@ C
      *       ' *** HAVE ',I10,' IBM+ WORDS'/,
      *       ' *** NEED ',I10,' K WORDS MORE'/,
      *       ' ***')
+      CALL FLSHFO(LUPRI)
       CALL QUIT('relscf/CHECK: error 99....')
 C
 C     PRINTOUT,ENDE ODER RETURN?
@@ -658,7 +692,6 @@ C
 C
 C     ONE CONFIGURATION
 C
-C MI - what is C;  what are its dimensions  ?
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
@@ -747,10 +780,12 @@ c     relscf_verbose = .false.
       I2(2,IDER)=I2(2,IDER)-1
       L1=IS1(IDER)+1
       GOTO (10,11,12,13),L1
-101   if (relscf_verbose) WRITE (6,100) IDER,IS1,IS2,AL,BE
+CMI101   if (relscf_verbose) WRITE (6,100) IDER,IS1,IS2,AL,BE
+101   if (IPR_RELSCF.GE.2) WRITE (6,100) IDER,IS1,IS2,AL,BE
 100   FORMAT(' ILLEGAL ANGULAR MOMENTUM (DER)'/,
-     \       ' IDER,IS1,IS2,AL,BE PRINTED'/,1X,7I5,3X,2D20.8)
-      STOP
+     &       ' IDER,IS1,IS2,AL,BE PRINTED'/,1X,7I5,3X,2D20.8)
+CMI   STOP
+      CALL QUIT('relscf error output !')
 10    F(1)=-2.D0*AL
       J1=1
       GOTO 19
@@ -2638,10 +2673,16 @@ CMI      ....   for array 'w', upper bound of dimension 1 exceeded
       CALL CHECK(0,0,0)
       END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INPUT_AT34(C,CTRAN,PQN,ZETA,ZETINC,ITRAN,NROW,NBVAR,
      &                 IORCN,CREAD,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C   Set up various parameters for relscf.
+C
+C   Called from AT3
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <implicit.h>
 #include <priunit.h>
 #include "scfarr.h"
@@ -2697,7 +2738,11 @@ C
       END DO
       NDIAG=10
       NXTRP=10
-      MXXTRP=80
+
+CMI  ... maximum number of iteration ...
+CMI   MXXTRP=80
+      MXXTRP=MXXTRP_INP
+
       DGATH=1.D-4
       SCFAT=1.D-3
       EXPMN=1.1D-3
@@ -2718,6 +2763,7 @@ C
       TRHI(2)=1.D+6
       TRHI(3)=1.D+5
       TRHI(4)=1.D+4
+
       MX100=100
       NVAR=0
       MXVAR=0
@@ -2870,17 +2916,7 @@ C
       NCOVAR=0
       ZN=CHARGE
 C
-CMI   if (.not.relscf_verbose) then
-CMI      write (lupri,*)
-CMI      write (lupri,*)  
-CMI  &   '         for additional output, please switch on '//
-CMI  &         'verbose output level'
-CMI      write (lupri,*)  
-CMI  &   '         from within the AMFI control options.'
-CMI      write (lupri,*)
-CMI   else 
-
-      IF (IPR_RELSCF.GE.2) THEN
+      IF (IPR_RELSCF.GE.1) THEN
 
       WRITE(LUPRI,80) (NAME(I),I=1,12)
    80 FORMAT ('1',4X,'ATOMIC HARTREE-FOCK PROGRAM '/5X,
@@ -2898,21 +2934,28 @@ CMI   else
       IF(NSVD.EQ.1)WRITE(LUPRI,505)
   504 FORMAT('0',5X,'SINGLE VECTOR DIAGONALIZATION')
   505 FORMAT ('0',5X,'JACOBI DIAGONALIZATION')
+
   121 FORMAT('0',5X,'CUT OFF PARAMETERS =',F10.6,3X,F10.6)
+
       WRITE(LUPRI,85) ZN
    85 FORMAT('0',5X,'CHARGE =',F10.6)
+
       WRITE(LUPRI,90) BIAS,DGATH
    90 FORMAT('0',5X,'DIAGONALIZATION SCF THRESHOLD BIAS  =', E10.3,8X,
      1'DIAGONALIZATION DIVERGENCE =',7X,E10.3)
+      
       WRITE(LUPRI,95) NXTRP,SCFAT
    95 FORMAT(6X,'NUMBER OF SCF ITERATIONS            =',I3,16X,
      *'SCF DIVERGENCE             =',7X,E10.3)
+
       WRITE(LUPRI,100) NDIAG,EXPMN
   100 FORMAT(6X,'NUMBER OF DIAGONALIZATION ITERATIONS=',I3,16X,
      *'MINIMUM EXPONENT           =',7X,E10.3)
+
       WRITE(LUPRI,105) MXXTRP,DMNXP
   105 FORMAT(6X,'MAXIMUM NUMBER OF ITERATIONS        =',I3,16X,
      *'MINIMUM EXPONENT DIFFERENCE=',7X,E10.3)
+
       WRITE(LUPRI,106) RMNED,RMXED
   106 FORMAT(6X,'RELATIVE MINIMUM ENERGY DIFFERENCE  =', E10.3,
      *8X,'RELATIVE MAXIMUM ENERGY DIFFERENCE=', E10.3)
@@ -2921,15 +2964,13 @@ CMI   else
       IF (IPR_RELSCF.GE.0) THEN
 
         WRITE(LUPRI,115) (NBAS(I),I=1,NSYM)
-  115   FORMAT (6X,'SYMMETRY SPECIES',12X,'S',6X,'P',5X,'D',5X,'F'/6X,
-     &          'NUMBER OF BASIS FUNCTIONS=',4(I3,4X))
+  115   FORMAT (6X,'SYMMETRY SPECIES',12X,'S',7X,'P',7X,'D',7X,'F'/6X,
+     &          'NUMBER OF BASIS FUNCTIONS:',4(I3,5X))
 
         WRITE(LUPRI,120) (NCSH(I),I=1,NSYM)
-C 120 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I1,5X))
-  120   FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I3,5X))
+  120   FORMAT(6X,'NUMBER OF CLOSED SHELLS  :',10(I3,5X))
         WRITE(LUPRI,125 )(NOOC(I) ,I=1,NSYM)
-C 125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I1,5X))
-  125   FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I3,5X))
+  125   FORMAT(6X,'OPEN SHELL OCCUPATION    :',10(I3,5X),/)
       ENDIF
 
       IF (IPR_RELSCF.GE.2) THEN
@@ -3191,12 +3232,15 @@ CMI   if (relscf_verbose)
      *3(3X,I3,'=',A8))
       IF (NBF.GT.MXBAS) GOTO 999
       IF (NOR.GT.MXOCC) GOTO 999
+
       IF (NOR*MXBF*NSYM.GT.LDIMC) THEN
-      if (relscf_verbose) WRITE (LUPRI,970) LDIMC
-970   FORMAT(' #### DIMENSION OVERFLOW: ARRAY C #####'/,
+CMI   if (relscf_verbose) WRITE (LUPRI,970) LDIMC
+       WRITE (LUPRI,970) LDIMC
+970    FORMAT(' #### DIMENSION OVERFLOW: ARRAY C #####'/,
      *' NOR*MXBF*NSYM > ',I6/)
+        CALL FLSHFO(LUPRI)
 CMI   STOP 'DIMENSION OVERFLOW ARRAY C'
-       CALL QUIT( 'DIMENSION OVERFLOW ARRAY C')
+       CALL QUIT( 'DIMENSION OVERFLOW FOR ARRAY C !!!')
       ENDIF
 C
 C     INPUTS CALLS AT3DIM, WHICH PASSES ARRAY ADDRESSES TO
@@ -3769,6 +3813,7 @@ c     logical relscf_verbose
 C     if (IPR_RELSCF.GE.2) WRITE (LUPRI,100)
 C100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)
       IF (IPR_RELSCF.GE.0) THEN
+        CALL FLSHFO(LUPRI)
         CALL HEADER('*** PROGRAM AT34 - ALLIANT - @V ***',-1)
       ENDIF
 
@@ -4279,22 +4324,18 @@ CMI   if (relscf_verbose) WRITE(6,130) (NBAS(I),I=1,NSYM)
 
 CMI   if (relscf_verbose) WRITE(6,135) (NCSH(I),I=1,NSYM)
       if (IPR_RELSCF.GE.2) WRITE(LUPRI,135) (NCSH(I),I=1,NSYM)
-C 135 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',I1,3(5X,I1))
   135 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',I2,3(5X,I2))
       DO I=1,NSYM
         NOOC(I)=OCCUP(I)+0.01D0
       END DO
 
-CM    if (relscf_verbose) WRITE(6,140) (NOOC (I),I=1,NSYM)
       if (IPR_RELSCF.GE.2) WRITE(LUPRI,140) (NOOC (I),I=1,NSYM)
-  140 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(1X,I1,4X))
+  140 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(1X,I1,4X),/)
 
-CMI   if (relscf_verbose) WRITE(6,150)
       if (IPR_RELSCF.GE.2) WRITE(LUPRI,150)
   150 FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/)
       fact=2.
 
-CMI   if (relscf_verbose) WRITE(6,151) (fact*AJMN(I),I=1,24)
       if (IPR_RELSCF.GE.2) WRITE(LUPRI,151) (fact*AJMN(I),I=1,24)
   151 FORMAT(5D21.8)
 
@@ -5640,6 +5681,7 @@ C.......................................................................
                         if(ipq.gt.ndimpq) then
                            WRITE(LUPRI,*)
      &                          'relscf/TEIG: ipq, ndimpq:',ipq, ndimpq
+                           CALL FLSHFO(LUPRI)
                            CALL QUIT(
      & 'relscf/TEIG: ipq too large ! enlarge ndimpq!')
                         endif
@@ -5712,10 +5754,11 @@ c     relscf_verbose = .false.
                AJMN(ICOUNT+KOUNT) = DFLOAT(IANUM(K))/IADEN(K)
 
                    END DO
-          IF(I.NE.IM.AND.IM.GT.1) THEN
-                if (relscf_verbose) WRITE(6,*) ' IN SETABJ I IM', I,IM
-
-              ENDIF
+          IF (I.NE.IM.AND.IM.GT.1) THEN
+!               if (relscf_verbose) WRITE(6,*) ' IN SETABJ I IM', I,IM
+                if (IPR_RELSCF.GE.2)
+     &            WRITE(LUPRI,*) ' IN SETABJ I IM', I,IM
+          ENDIF
    30     ICOUNT = ICOUNT + IM
           IF(I.NE.IM) JCOUNT = JCOUNT + IM - 1
         END DO
@@ -5736,4 +5779,4 @@ CMI   if (relscf_verbose) WRITE(6,200) (2*AJMN(I),I=1,24)
   140 FORMAT(5D21.8)
       RETURN
       END
-
+#endif /*  MOD_AMFI  */

@@ -168,8 +168,10 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
                DOEPRN = .FALSE.
                GO TO 100
    10          CONTINUE
+#ifdef MOD_LONDON
 C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
+#endif
                GO TO 100
    11          CONTINUE
 C&&&& USECM: use center of mass as a default gauge origin
@@ -346,6 +348,7 @@ C   .... defined conventional atomic orbitals (AO), not London AO
       RETURN
       END
 
+#ifdef MOD_LONDON
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETCON */
       SUBROUTINE GETCON(W,CONMAT,DMAT,ORTO,WORK,
@@ -526,7 +529,9 @@ C ... release the memmory...
       CALL QEXIT('GETCON')
       RETURN
       END
+#endif
 
+#ifdef MOD_LONDON
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TWOLON */
       SUBROUTINE TWOLON(CMO,IBEIG,WORK,LWORK)
@@ -1444,6 +1449,7 @@ C     .... release the whole block used in this subroutine
       CALL QEXIT('ONELON')
       RETURN
       END
+#endif /*  MOD_LONDO  */
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getmdm */
@@ -2128,7 +2134,7 @@ C
       RETURN
       END
 
-C
+#ifdef MOD_LONDON
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck EXPVSUSLO  */
       SUBROUTINE EXPVSUSLO(WORK,LWORK)
@@ -3553,6 +3559,7 @@ CMI  &'GETDHB: The total MO matrix in not symmetric!')
       CALL QEXIT('GETDHB')
       RETURN
       END
+#endif /* MOD_LONDON */
 
       INTEGER FUNCTION ICONVXYZ(C)
 C******************************************************

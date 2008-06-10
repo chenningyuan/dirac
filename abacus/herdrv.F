@@ -90,7 +90,7 @@ C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI',
-     &             '*AMFIIN'/
+     &             '*XXXXXX'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -138,7 +138,6 @@ C
 C     Initialize defaults for density fitting
       CALL DFIINI
 #endif
-      CALL AMFIINI
 
 C#ifdef MOD_ERI
       RUNERI = .FALSE.
@@ -1027,7 +1026,6 @@ C&&& JENGINE: Read input for density fitting
       GO TO 201
 #endif
     9    CONTINUE
-         CALL AMFIINP(WORD)
       GO TO 201
 C
     1 CONTINUE

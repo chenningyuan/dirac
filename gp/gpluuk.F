@@ -561,6 +561,9 @@ CMI ... own printout
       ENDIF
       ENDIF
 C
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+
       IF (IRCW.EQ.1) THEN
         WRITE (LUPRI,1005)
       ELSE IF (IRCW.EQ.2) THEN
@@ -651,9 +654,10 @@ C    &    EV(2,INDX(I)),NEW
       ENDIF
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
+
 CMI ... print out conversion factors (from codata.h)
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+CMI   WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+CMI  & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
 C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
 C     call FLSHFO(LUPRI)
@@ -837,6 +841,11 @@ C     Sort them from low to high
 C
       CALL INDEXX(N_TOTAL,EV,INDX)
 C
+CMI ... print out conversion factors (from codata.h)
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+
+
       WRITE (LUPRI,1005)
       ILEVEL=0
       EW=0.0D0

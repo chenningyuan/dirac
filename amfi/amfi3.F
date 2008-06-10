@@ -1,3 +1,5 @@
+#ifdef MOD_AMFI
+
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
@@ -2423,9 +2425,9 @@ CMI   if (amfi3_verbose) then
 CMI   if (IPR_AMFI.GE.1) then
       if (IPR_AMFI.GE.0) then
 CMI      write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
-         write(LUPRI,*) ' charge on the calculated atom:',IACH
-         write(LUPRI,*) ' Mean-field summation for # of electrons:',
-     &                    icharge-IACH
+         write(LUPRI,'(2x,a,i3)') 'charge on the calculated atom:',IACH
+         write(LUPRI,'(2x,a,i4)') 
+     &    'Mean-field summation for electrons #:',icharge-IACH
          write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
       endif
 
@@ -2441,6 +2443,7 @@ CMI      iopen(irun)=iopocc(irun,icharge)
       end do
       return
       end
+
       double precision function  getCG(
      *j1,     ! integer  2*j1
      *j2,     ! integer  2*j2
@@ -2656,4 +2659,4 @@ C
    80 CONTINUE
       RETURN
       END
-
+#endif /* MOD_AMFI */

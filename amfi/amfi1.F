@@ -1,3 +1,4 @@
+#ifdef MOD_AMFI
 
       subroutine readbas(Lhigh,makemean,bonn,breit,
      *symmetry,AIMP,ncont4,numballcart,IN,ifinite,
@@ -34,9 +35,8 @@ c     amfi1_verbose = .false.
       Nofcont=' NUMBER OF CONTRACTED FUNCTIONS:' 
       addtext='ADDITIONAL FUNCTIONS in IRS:'
 
-CBS   write(LUPRI,*)                                                      
-CMI   if (amfi1_verbose) 
       IF (IPR_AMFI.GE.0) THEN 
+        CALL FLSHFO(LUPRI)
         CALL HEADER('ATOMIC NO-PAIR SO-MF CODE starts',-1)
       ENDIF
 
@@ -61,15 +61,14 @@ CMI    write(lupri,*) 'Exp_finite,EXP_FIN=',Exp_finite,EXP_FIN
       numbofsym=8    
 
       if (BONN) then
-CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
+       write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
       endif 
-CMI   if (amfi1_verbose) then
-CMI   if (IPR_AMFI.GE.2) then
+
       if (IPR_AMFI.GE.0) then
          if (BREIT) then
-            write(LUPRI,*) 'Breit-Pauli-Approximation'
+            write(LUPRI,*) '  Breit-Pauli-Approximation'
          else
-            write(LUPRI,*) 'Douglas-Kroll type operators '
+            write(LUPRI,*) '  Douglas-Kroll type operators '
          endif 
       endif
 
@@ -77,7 +76,7 @@ CMI   if (IPR_AMFI.GE.2) then
          if (ifinite.eq.0) then 
             write(LUPRI,*) 'Point-nucleus '
          else
-            write(LUPRI,*) 'Finite Nucleus' 
+            write(LUPRI,*) 'Finite Nucleus - NOT implemented !!!' 
             write(LUPRI,*) '....nuclear exponent=',Exp_finite
          endif  
          write(LUPRI,*) stars
@@ -99,7 +98,6 @@ CMI ... reading in
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
 
-CMI   if (amfi1_verbose) then 
       if (IPR_AMFI.GE.2) then 
          write(LUPRI,*) 
      &     ' Functions will go up to an L-value of : ',Lhigh
@@ -2165,3 +2163,5 @@ c     enddo
 *----------------------------------------------------------------------*
 200   Return
       End 
+
+#endif /* MOD_AMFI */
