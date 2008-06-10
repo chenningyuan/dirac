@@ -250,27 +250,27 @@ C                                      asymptotic part is LBalpha
                  GOTO 100
 
  15              CONTINUE
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
                  CALL SET_LBIT(LBIT_CDFT,1)
 #else
                  CALL QUIT('missing CDFT routines')
-#endif
+#endif /* MOD_CDFT */
                  GOTO 100
 
  16              CONTINUE
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
                  CALL SET_LBIT(LBIT_CDFT,2)
 #else
                  CALL QUIT('missing CDFT routines')
-#endif
+#endif /* MOD_CDFT */
                  GOTO 100
 
  17              CONTINUE
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
                  CALL SET_LBIT(LBIT_CDFT,3)
 #else
                  CALL QUIT('missing CDFT routines')
-#endif
+#endif /* MOD_CDFT */
                  GOTO 100
 
  18              CONTINUE

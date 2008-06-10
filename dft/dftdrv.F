@@ -129,15 +129,15 @@ C     Initial expectation value of two-electron matrix
       IF(DOLR) THEN
         IF(NR_GENERAL .GT. 0)
      &           CALL QUIT('DFT LR: general density matrix or matrices')
-#if !defined (MOD_CDFT)
+#ifndef MOD_CDFT
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
-#endif
+#endif /* MOD_CDFT */
       ENDIF
 
-#if !defined (MOD_CDFT)
+#ifndef MOD_CDFT
       IF(DOQR .AND. (NR_GENERAL .GT. 0) .AND. DFTISGGA())
      &          CALL QUIT('GGA QR not implemented for general matrices')
-#endif
+#endif /* MOD_CDFT */
 
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
 C
@@ -262,11 +262,11 @@ C    &              KFREE,LFREE)
 
       IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
         CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
         IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
           CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
         ENDIF
-#endif
+#endif /* MOD_CDFT */
       ENDIF
 
 #if defined (MOD_DNF)
@@ -703,12 +703,12 @@ C
 C       AOs
 C       ===
 C
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
 !     GAO1 are needed for VRG
       IF(LBIT(LBIT_CDFT,2)) THEN
         IF(NDER .LT. 1) NDER = 1
       ENDIF
-#endif
+#endif /* MOD_CDFT */
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
@@ -733,12 +733,12 @@ C
 C       Gradient of density
 C       ===================
 C
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
 !     gradient is needed for VRG
       IF(LBIT(LBIT_CDFT,2)) THEN
         DOGRHO = .TRUE.
       ENDIF
-#endif
+#endif /* MOD_CDFT */
         IF (DOGRHO) THEN
 #if defined (MOD_DNF)
           IF (DF_FITVXC) THEN  ! 
@@ -903,7 +903,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                rho,rhogrd,rhg,wght,dogga,buf)
 #endif
 
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
 !         spin magnetization contribution
           if(lbit(lbit_cdft,1)) then
             call sdft_lr(dtrmat,excmat,nxcmat,
@@ -917,12 +917,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                  isymop,ihrmop,gao,gao1,
      &                  rho,rhogrd,rhg,wght,dogga,buf)
           endif
-#endif
+#endif /* MOD_CDFT */
         endif
 
 !       quadratic response
         if(doqr) then
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
           call sdft_qr(dogga,
      &                 lbit(lbit_cdft,1),
      &                 dtrmat,excmat,
@@ -953,7 +953,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
           call dft_qr(dtrmat,excmat,
      &                isymop,ihrmop,gao,gao1,
      &                rho,rhogrd,rhg,wght,dogga,buf)
-#endif
+#endif /* MOD_CDFT */
         endif
 
   300 CONTINUE !end of loop over grid points
@@ -1843,11 +1843,11 @@ C     Transfer dftcom
       CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C
 
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
 !     transfer parameters for spin/current density response
       CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#endif
+#endif /* MOD_CDFT */
 
 !     broadcast thresholds
       CALL MPI_BCAST(DFTHR0,1,
@@ -1981,11 +1981,11 @@ C     Receive some dftcom variables
       DFTASC = LSEND(6)
 C
 
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
 !     receive parameters for spin/current density response
       CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#endif
+#endif /* MOD_CDFT */
 
 !     broadcast thresholds
       CALL MPI_BCAST(DFTHR0,1,
