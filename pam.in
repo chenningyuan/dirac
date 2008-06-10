@@ -235,40 +235,7 @@ setup_command()
    #
    # Finally append executable
    #
-   DIRAC_CMD="$DIRAC_CMD ./$DIRAC"
-   #
-   # Delete $WRK/$DIRAC if the executable is older than the
-   # executable in $BIN_DIR. This is useful when you've compiled
-   # a new executable, but didn't delete your scratch directory
-   # in the previous calculation.
-   #
-
-   if [ -f $WRK/$DIRAC ]; then
-      if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
-         echo "Old $WRK/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
-         rm $WRK/$DIRAC
-      fi
-   fi
-
-   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
-
-   if [ ! -f $WRK/$DIRAC ]; then
-      if [ -x $BIN_DIR/$DIRAC ]; then
-         cp $BIN_DIR/$DIRAC . || \
-            ( \
-               echo "   Error copying $BIN_DIR/$DIRAC" ; \
-               EXIT=1 ;\
-               exitfunc \
-            )
-         echo "ok"
-      else
-         echo "not found"
-         EXIT=1
-         exitfunc
-      fi
-   else
-      echo "was already there"
-   fi
+   DIRAC_CMD="$DIRAC_CMD $BIN_DIR/$DIRAC"
 }
 #
 #
