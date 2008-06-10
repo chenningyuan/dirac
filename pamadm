@@ -39,6 +39,7 @@ usage()
    echo '     -aoresponse      : Include AO response module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
+   echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     -adc             : Include ADC electron propagator module'
    echo '     -ecp             : Include ARGOS ECP module'
@@ -74,6 +75,7 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
+      IHFSCCMOD=1
       ADCMOD=1
       F90MODS=ALL_F90MODS
 # MI  - needs to be fixed for gfortran !!!
@@ -263,6 +265,16 @@ setup()
          echo " - CAP module"
   # else
       #  echo "CAP module is not included "
+      #  echo 
+    fi
+   #
+   #   HSMRCC Dirac-interface module
+   #
+   if [ -n "$IHFSCCMOD" ]; then
+         IHFSCCFLG='-DMOD_IHFSCC'
+         echo " - IHFSCC code enabled"
+  # else
+      #  echo "HSMRCC interface module is not included "
       #  echo 
     fi
    #
@@ -1483,12 +1495,12 @@ which_modules()
 if [ -n "$IBMMOD" ]; then
 # I assume that DFTFLG is always activated...
    MODS="$DFTFLG"
-   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG
+   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG
       do 
       MODS="$MODS,$mod"
       done
 else
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG"
+MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG"
 fi
 dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
@@ -1601,6 +1613,9 @@ while [ -n "$1" ]; do
          ;;
       -largemolecules|-lm|-l)
          LARGEMOL=1
+         ;;
+      -ihfscc)
+         IHFSCCMOD=1
          ;;
       -eri|-er|-e)
          ERIMOD=1
