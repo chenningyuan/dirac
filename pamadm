@@ -73,10 +73,10 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
+      ADCMOD=1
       F90MODS=ALL_F90MODS
 # MI  - needs to be fixed for gfortran !!!
 #      EMBMOD=1
-#      ADCMOD=1
 #      ECPMOD=1
       echo " - DIRAC administrator ..."
    fi
