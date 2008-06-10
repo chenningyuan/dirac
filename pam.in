@@ -522,6 +522,13 @@ save_files()
 #
 copy_files()
 {
+   # Have to extract the archive _before_ copying .inp/.mol,
+   # since the archive also contains these files.
+    if [[ -n "$RESTART_ARCHIVE" ]]; then
+	echo "Extracting files from $RESTART_ARCHIVE"
+	tar xzvf "$LOC/$RESTART_ARCHIVE"
+    fi
+
    #
    # COPY MOLECULE AND MENU FILE
    #
@@ -697,9 +704,10 @@ initialize()
    BASDIR="$LOC/:$BASDIR"
 
 # Files to include in the .tgz archive file.
-   ARCHIVE_FILES="MOLECULE.$EXT DIRAC.INP DFCOEF *.cube AOPROPER DFTMAT BSSMAT"
+   ARCHIVE_FILES="MOLECULE.MOL MOLECULE.XYZ DIRAC.INP DFCOEF *.cube AOPROPER DFTMAT BSSMAT"
    DO_ARCHIVE=yes
 
+   RESTART_ARCHIVE=
 }
 #
 #
@@ -838,6 +846,9 @@ while [ -n "$1" ]; do
          EXIT=2
          exitfunc
          ;;
+      *.tgz|*.tar.gz)
+         RESTART_ARCHIVE="$1"
+	 ;;
       *)
 #        The last parameters should always be the input file(s)
 #        Process the geometry file first, can be either a
