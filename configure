@@ -487,12 +487,20 @@ for comp in $comp_list; do
   IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
 
   if test -f $comp; then 
-    comp_found="$comp_found $comp"
+    if [ -z "$comp_found" ]; then 
+      comp_found="$comp"
+    else
+      comp_found="$comp_found $comp"
+    fi
   fi
   for ac_dir in $PATH; do
     test -z "$ac_dir" && $comp=.
     if [ -f $ac_dir/$comp ]; then
-      comp_found="$comp_found $comp"
+      if [ -z "$comp_found" ]; then 
+        comp_found="$comp"
+      else
+        comp_found="$comp_found $comp"
+      fi
       break
     fi
   done
@@ -500,9 +508,9 @@ for comp in $comp_list; do
 done
 
 # If there is found more than one compiler let the user pick it.
-declare -i counter=0
+counter=0
 for comp in $comp_found; do
-  counter=counter+1
+  counter=`expr $counter + 1`
 done
 
 case $counter in 
@@ -522,28 +530,26 @@ case $counter in
     echo " The following compilers were detected on your system:"
     counter=0
     for comp in $comp_found; do
-      counter=counter+1
+      counter=`expr $counter + 1`
       $echo "$counter) $comp \t\c"
     done
     $echo "0) Exit."      
 
-    declare -i comp_index=-1
+    comp_index=-1
     echo "Which one you you want to use?"
     read comp_index
-
-    if (( $comp_index<0 || $comp_index>$counter )); then
+    if [ $comp_index -le 0 -o $comp_index -ge $counter ]; then
       echo "Not a valid compiler number: $comp_index"
       exit
-    elif (( $comp_index==0 )); then
+    elif [ $comp_index -eq 0 ]; then
       echo 'jhs Userinput here?'
       exit
     fi  
 
     counter=0 
     for comp in $comp_found; do
-      counter+=1
-
-      if (( $counter==$comp_index )); then
+      counter=`expr $counter + 1`
+      if [ $counter -eq $comp_index ]; then
         comp_found=$comp
         break
       fi
@@ -587,6 +593,7 @@ openmpif*|mpif*)
    echo "Compiler in $F90 found to be $F90real ..."
    ;;
 *)
+echo Setting F90real $F90
    F90real=$F90
    ;;
 esac   
@@ -904,7 +911,6 @@ echo
 
 
 set_compile_flags(){
-echo "cpp_f90: $cpp_f90"
 case $machine in
 #
 #  HEWLETT - PACKARD
@@ -1254,7 +1260,6 @@ case $machine in
 # sure we use the correct flags
 #
       find_real_f90
-
       case "$F90real" in
       g95)
          opt="-O3 -ffast-math -Wno=155 -i8"
@@ -1270,7 +1275,7 @@ case $machine in
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
          echo 
          ;;
-       gfortran)
+      gfortran)
          gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
          echo "gfortran version $gfver prc=$prc"
          cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
@@ -1727,8 +1732,8 @@ SOURCEDIR   = `pwd`
 WRKMEM      = $memsiz
 INCLUDE_DIR = $inc -I$MODULE_DIR
 DEPEND_FLAGS= $depend_flags 
-CPP_F90   = $cpp_f90
-CPP_CC   = $cpp_cc
+CPP_F90     = $cpp_f90
+CPP_CC      = $cpp_cc
 F90         = $F90
 CC          = $CC
 RM          = rm
