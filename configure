@@ -38,8 +38,7 @@ initialize ()  {
 quick=0
 SRC_DIR=`pwd`
 dirlist="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
-debug='dbx gdb'
-
+debug='dbx'
 #
 # Does 'echo' understand escapes?
 #
@@ -1116,7 +1115,7 @@ case $machine in
          def='dirmpi.x'
          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
-
+      debug='gdb'
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
@@ -1237,7 +1236,7 @@ case $machine in
          def='dirmpi.x'
          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
-
+      debug='gdb'
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
@@ -1357,10 +1356,10 @@ case $machine in
          def='dirmpi.x'
          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
-
-       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-          cpp_f90="$cpp_f90 -DVAR_MKL"
-       fi
+      debug='gdb'
+      if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
+         cpp_f90="$cpp_f90 -DVAR_MKL"
+      fi
 #
 # Ask user whether the large file option can be set
 #
@@ -1484,6 +1483,7 @@ case $machine in
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
+      debug='gdb'
       case "$F90" in
       g95)
          opt='-O3 -ffast-math -Wno=155'
