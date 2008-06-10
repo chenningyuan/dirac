@@ -5806,6 +5806,15 @@ C
 C
 C     Checks related to Gaunt
 C
+      
+      IF (GAUNT.AND.(DOTRA.OR.DODFT)) THEN
+       WRITE (LUPRI,*) " Gaunt only available for Hartree-Fock"
+       CALL QUIT ('Gaunt beyond Hartree-Fock not implemented')
+      END IF
+
+      IF (GAUNT.AND.LONDON)
+     & CALL QUIT ('London orbitals are not implemented for GAUNT')
+ 
       IF (GAUNT.AND.SOFOCK) THEN
          WRITE (LUPRI,'(/2A)')
      &   'Gaunt only implemented for AO Fock builder',
@@ -5813,9 +5822,7 @@ C
          SOFOCK = .FALSE.
       ENDIF
 C
-      IF (GAUNT.AND.LONDON)
-     & CALL QUIT ('London orbitals are not implemented for GAUNT')
-      
+C
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
       END
