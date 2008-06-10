@@ -575,6 +575,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpbast.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o gp/osutils.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
+gp/execinfo.o       gp/stacktraverse.o \\
 gp/kinds.o          gp/vector_functions.o   \\
 gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o   \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
@@ -648,6 +649,7 @@ gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o \\
 gp/gplupar.o        gp/global_file.o    gp/mpi2macro.o      gp/vector_functions.o \\
 gp/tracing.o        gp/tracker_util.o   gp/memory_tracker.o gp/memory_allocator.o \\
+gp/execinfo.o       gp/stacktraverse.o \\
 gp/xml/xml_file.o   gp/xml/xml_structure.o gp/xml/xml_parser.o  \\
 EOF
 #

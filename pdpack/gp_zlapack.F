@@ -1,3 +1,4 @@
+#ifdef NO_LAPACK
       SUBROUTINE ZHEEV( JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, RWORK,
      $                  INFO )
 *
@@ -12759,6 +12760,7 @@
 *     End of ZGESVD
 *
       END
+#endif /* NO_LAPACK */
  
 
 C
@@ -13013,6 +13015,7 @@ c
       return
       end
 
+#ifdef NO_LAPACK
       SUBROUTINE ZBDSQR( UPLO, N, NCVT, NRU, NCC, D, E, VT, LDVT, U,
      $                   LDU, C, LDC, RWORK, INFO )
 *
@@ -18721,3 +18724,4 @@ c
 *
       END
 
+#endif /* NO_LAPACK */

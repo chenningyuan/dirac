@@ -36,6 +36,6 @@
 #define DARWIN  (4)
 #define UNKNOWN (-1)
 
-#if ! defined SYS_FLAVOR
+#ifndef SYS_FLAVOR
 #define SYS_FLAVOR UNKNOWN 
 #endif

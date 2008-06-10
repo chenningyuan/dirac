@@ -1309,7 +1309,6 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
-         my_mpi_include_path=`$F90 $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
 
          if "$F90" $mpishowopt | grep -q ifc; then
             F90real=ifc
@@ -1396,8 +1395,6 @@ case $machine in
          ;;
       esac
 
-      cpp="$cpp -I$my_mpi_include_path"
-
       case "$CC" in
       openmpicc| mpicc)
          if $CC -show 2>&1 /dev/null; then
@@ -1446,7 +1443,7 @@ case $machine in
          c_opt=$opt 
          ;;
      esac
-      inc="-I$INCLUDE_DIR";;
+     inc="-I$INCLUDE_DIR";;
 #
 #   Linux on 64 bit machines
 #
@@ -1494,7 +1491,6 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
-         my_mpi_include_path=`$F90 $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
 
          if "$F90" $mpishowopt | grep -q ifc; then
             F90real=ifc
@@ -1580,8 +1576,6 @@ case $machine in
 	 mod="-module $MODULE_DIR"
          ;;
       esac
-
-      cpp="$cpp -I$my_mpi_include_path"
 
       case "$CC" in
       mpicc)
