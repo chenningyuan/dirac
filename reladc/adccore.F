@@ -1727,7 +1727,6 @@ c
             NP = XNP(IRPLOOP)
           ENDIF
           NEIGENV = XNEIGENV(IRPLOOP)
-          LANTHR  = 0.0d0
           EVLLIM  = XEVLLIM(IRPLOOP)
           THRVEC  = XTHRVEC(IRPLOOP)
 
@@ -1840,25 +1839,17 @@ c
           CALL MEMOPT('REAL',WRK_BX,N,CC,KFREE,LFREE,ALLOC)
 
           IF(CARITH) THEN
-c debug
-c         write(iw,*) ' zblana parameters:'
-c         write(iw,*) ' KREP,niter,np,neigenv,no(krep)',
-c    &         KREP,niter,np,neigenv,no(krep)
-c         write(iw,*) ' itapadc+6,lanthr,EVLLIM',
-c    &         itapadc+6,lanthr,EVLLIM
-c         pause
-c end debug
             CALL ZBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itapadc+6,lanthr,EVLLIM)
+     &           cc(wrk_ipi),itapadc+6,THRVEC,EVLLIM)
           ELSE
             CALL RBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itapadc+6,lanthr,EVLLIM)
+     &           cc(wrk_ipi),itapadc+6,THRVEC,EVLLIM)
           ENDIF
 c
 c check if user wants to calculate eigenvectors of full ADC matrix

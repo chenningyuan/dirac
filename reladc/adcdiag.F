@@ -142,7 +142,7 @@ C  opened only once at a central place.
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 LANTHR,EVLLIM,THRVEC
+      REAL*8 EVLLIM,THRVEC
       LOGICAL LFLAG
       REAL*8 RDUMMY
       COMPLEX*16 CDUMMY
@@ -239,7 +239,6 @@ c
             NP = XNP(IRPLOOP)
           ENDIF
           NEIGENV = XNEIGENV(IRPLOOP)
-          LANTHR  = 0.0d0
           EVLLIM  = XEVLLIM(IRPLOOP)
           THRVEC  = XTHRVEC(IRPLOOP)
 
@@ -349,13 +348,13 @@ c
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itap6,lanthr,EVLLIM)
+     &           cc(wrk_ipi),itap6,THRVEC,EVLLIM)
           ELSE
             CALL RBLANA(KREP,niter,np,neigenv,nocc,
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itap6,lanthr,EVLLIM)
+     &           cc(wrk_ipi),itap6,THRVEC,EVLLIM)
           ENDIF
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
@@ -1163,12 +1162,6 @@ C---------------Executable code--------------------------------------
 C
       WRITE(EVECFN,'(A5,I1)') 'EVEC.',IRREP
 
-c     WRITE(IW,*)
-c     WRITE(IW,*) '*************************************'
-c     WRITE(IW,*) '*** executing Hermitian Band-Lanczos '
-c     WRITE(IW,*) '*** in symmetry ',IRREP
-c     WRITE(IW,*) '*************************************'
-c     WRITE(IW,*)
       WRITE(IW,*) ' Matrix dimension:',LADC
       WRITE(IW,*) ' Band width:      ',NP
       WRITE(IW,*) ' Number of iterations:',NITER
