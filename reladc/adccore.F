@@ -1841,12 +1841,12 @@ c
 
           IF(CARITH) THEN
 c debug
-          write(iw,*) ' zblana parameters:'
-          write(iw,*) ' KREP,niter,np,neigenv,no(krep)',
-     &         KREP,niter,np,neigenv,no(krep)
-          write(iw,*) ' itapadc+6,lanthr,EVLLIM',
-     &         itapadc+6,lanthr,EVLLIM
-          pause
+c         write(iw,*) ' zblana parameters:'
+c         write(iw,*) ' KREP,niter,np,neigenv,no(krep)',
+c    &         KREP,niter,np,neigenv,no(krep)
+c         write(iw,*) ' itapadc+6,lanthr,EVLLIM',
+c    &         itapadc+6,lanthr,EVLLIM
+c         pause
 c end debug
             CALL ZBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
