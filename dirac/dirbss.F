@@ -8370,9 +8370,12 @@ C        .... NOTE: The minimal charge MUST NOT be zero !
         ENDDO
 
         IF (ISUMCH.LE.ABS(IMFCHA)) THEN
-          WRITE(LUPRI,*) 'Total sum of nucl.charges:',ISUMCH,
-     &  ' IMFCHA is',IMFCHA,
-     &  ' WARNING, charge too high!'
+         CALL FLSHFO(LUPRI)
+         WRITE(LUPRI,'(2X,A,I4,A,I4,A)') 
+     &   'Total sum of nucl.charges:',ISUMCH,
+     &   ' while given IMFCHA is',IMFCHA,
+     &   ' => WARNING, charge too high!'
+         CALL FLSHFO(LUPRI)
         ENDIF
 
 C     .... find out the individual charges on atoms
@@ -8395,6 +8398,7 @@ C           write(lupri,*) I,' -',CHPNUC(I)
           ENDDO
           write(lupri,*) '     Sum of all charges (real):',CHSUM
           write(lupri,*) 'Total charge of the system is :',IMFCHA
+          CALL FLSHFO(LUPRI)
           IF (NINT(CHSUM).NE.IMFCHA) CALL 
      &      QUIT('AMFIIN: error in partial charges !')
       ENDIF
@@ -8440,12 +8444,14 @@ C     ... find out degeneracy of that nuclei IATOM with charge ICHARGE
        ENDIF 
  
        IACHNUC=NINT(CHPNUC(INDXMINCH))
-       if (dirbss_verbose) then
+
+       if (IPRINT.GE.2) then
           write(lupri,*) 'The AMFI unique nuclei Z=',ICHARGE,
      &                 ' index=',INDXMINCH,
      &                 ' is degenerate: ',NICHARGE
           write(lupri,*) ' partial charge is (real):',CHPNUC(INDXMINCH)
           write(lupri,*) ' partial charge is (round int):',IACHNUC
+          CALL FLSHFO(LUPRI)
        endif
 
 C      ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
@@ -8465,6 +8471,7 @@ C       use IANUCS(1-NUCDEP)
         WRITE(LUPRI,'(/2X,A,$)')
      &  '    *** AMFIIN: corresponding DIRAC nuclei :'
         WRITE(LUPRI,*) (IANUCS(I),I=1,NICHARGE)
+        CALL FLSHFO(LUPRI)
 
 C ... now find out if all these (AMFI) nuclei are to be skipped...
        NOAMFC = .FALSE.
@@ -8522,7 +8529,7 @@ C      ... find out the correct index of nuclear exponent
         IF (IATOM1.EQ.0) THEN
          CALL QUIT('AMFIIN: IATOM1 not found')
         ELSE
-         if (dirbss_verbose) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
+         if (IPRINT.GE.3) write(lupri,*) ' indx=',IATOM1,' CHARGE=',
      &        CHARGE(IATOM1),ICHARGE,
      &   ' nucl. exponent:',GNUEXP(IATOM1)
          EXPNUCL = GNUEXP(IATOM1)
@@ -8559,18 +8566,18 @@ C  ... allocate memmory for this AMFI center
 
       CALL MEMCHK('after AMFI 2',WORK,1)
 
-      if (dirbss_verbose) WRITE(LUPRI,'(/,2X,A)')
+      if (IPRINT.GE.3) WRITE(LUPRI,'(/,2X,A)')
      & 'AMFI order of (centre specific) basis function: '
       DO I = 1, numballcart
         READ(LUMNFPRP) IPTA(I),INDXLMA(I)
-        if (dirbss_verbose)
+        if (IPRINT.GE.3)
      &    write(lupri,*) ' amfi fu no:',I,' type(indx)',LABINT(IPTA(I)),
      &                '(',INDXLMA(I),')'
       ENDDO
 
       READ(LUMNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
 
-      if (dirbss_verbose) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
+      if (IPRINT.GE.3) write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
      &     (ncontrac(I),I=0,Lhigh)
       iscontr=0
       DO I=0,Lhigh
@@ -8630,7 +8637,7 @@ C   ... write out mapping function correspondance....
        ENDDO
        ENDDO
 
-      if (dirbss_verbose) write(lupri,*)
+C     if (dirbss_verbose) write(lupri,*)
       READ(LUMNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
       READ(LUMNFPRP) ya
       READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
@@ -8652,8 +8659,13 @@ C ************************************************************************
       IYPOS=IQPOS(3)
       IZPOS=IQPOS(2)
 
-      if (dirbss_verbose) write(lupri,*)
-     &  'AMFIIN: quaternions x,y,z:',IQPOS(4),IQPOS(3),IQPOS(2)
+CMI   if (dirbss_verbose) write(lupri,*)
+      IF (IPRINT.GE.3) THEN 
+        WRITE(LUPRI,'(2X,A,3I2)')
+     &  'AMFIIN: quaternions x,y,z - IQPOS(4-2):',
+     &   IQPOS(4),IQPOS(3),IQPOS(2)
+      ENDIF
+
       IF (IXPOS.EQ.IYPOS.OR.IXPOS.EQ.IZPOS.OR.IYPOS.EQ.IZPOS.OR.
      & (IXPOS+IYPOS+IZPOS).NE.9) THEN
         CALL QUIT('AMFIIN: Wrong x,y,z quaternions !')
@@ -8813,8 +8825,8 @@ C  ==================================================
       ENDDO
       ENDDO
       ENDIF
-        if (dirbss_verbose) 
-     &     write(lupri,*) '*******************************************'
+      if (IPRINT.GE.3) 
+     &   write(lupri,*) '*******************************************'
       ENDDO ! of IANUC....
 
 C     ... when you have integrals, compare them..

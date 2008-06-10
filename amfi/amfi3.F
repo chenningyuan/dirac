@@ -2091,7 +2091,9 @@ cbs
       character*32 txt  
 #include "amfi_if.h"
 c     logical amfi3_verbose
-      data txt/'SO-integrals are calculated for '/
+CMI   data txt/'SO-integrals are calculated for '/
+      data txt/'    ...electronic occupation of '/
+
       dimension iclosed(0:LMAX),iopen(0:LMAX)
       data (occtxt(i),i=0,ichargemax) /
      *'dummy atom (no integrals)     ',  ! 0
@@ -2421,7 +2423,7 @@ CMI   if (amfi3_verbose) then
 CMI   if (IPR_AMFI.GE.1) then
       if (IPR_AMFI.GE.0) then
 CMI      write(LUPRI,'(A32,A30)') txt,occtxt(icharge)
-         write(LUPRI,*) ' charge of the calculated atom:',IACH
+         write(LUPRI,*) ' charge on the calculated atom:',IACH
          write(LUPRI,*) ' Mean-field summation for # of electrons:',
      &                    icharge-IACH
          write(LUPRI,'(A32,A30)') txt,occtxt(icharge-IACH)
