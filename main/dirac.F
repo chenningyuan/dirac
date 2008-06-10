@@ -366,6 +366,12 @@ C
       IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA(WORK,LWORK)
 C
 C***********************************************************************
+C***** R E L A D C  M O D U L E ****************************************
+C***********************************************************************
+C
+      IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
+C
+C***********************************************************************
 C***** C O S C I        stand-alone version of RESOVE    ***************
 C*****                  some routines in krmc are merged ***************
 C*****                  to get efficiency and make it    ***************
