@@ -1,4 +1,4 @@
-#if ! defined (MOD_DNF)
+#ifndef MOD_DNF
 #define MOD_DNF
 #endif
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, GAB, GABFIT, CFIT, 
@@ -23,15 +23,15 @@
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 #include "clsfmm.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 C
 #include "dummy.h"
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
 C
@@ -64,7 +64,7 @@ c       the treshold is 1E-7). For up to at least 10 000 atoms these
 c       tresholds should be fine if the molecules have the same (or smaller) 
 c       geometrically distributed atomic density.
 c        THRSH = 10D0**(-IFTHRS-6)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF (DOFIT) THEN
 CCaspg
 CC old definition:
@@ -90,7 +90,7 @@ CCaspg
 #else
           THRSH = 10D0**(-IFTHRS-6)
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         ENDIF
 #endif
       END IF
@@ -117,7 +117,7 @@ CAREFUL
 
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) THEN
         NCLFCK3 = .TRUE.
         THRCLS  = THRNCL
@@ -125,7 +125,7 @@ CAREFUL
 #endif
         NCLFCK3 = .FALSE.
         THRCLS  = 0.0d0
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       END IF
 #endif
 
@@ -141,7 +141,7 @@ c     effect on timings. Hardcoded to zero and reset afterwards.
 
       FACCLS=ERFCIV(THRCLS)
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       CALL SETBFCFMM( BRFREE ) 
 #endif
 
@@ -188,7 +188,7 @@ C      whether we have ab (flag=true) or cd (flag=false) batches. /ErikT
 
 c      CALL TIMER('FCKINI',TIMSTR,TIMEND)
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF ( ( .NOT. OLDMOM ) .AND. DOFMM ) THEN 
         CALL SETMM_OR_JFF(DMAT,NDMAT,CFIT,WORK(KIODBCLS),
      &             WORK(KIODBTCH),WORK(KRODBTCH),WORK(KFREE),LFREE,
@@ -206,14 +206,14 @@ c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
 
       DO NPARFTUV_KSTARTODCLS = 1, NPARFTUV_NPAR
        IF ( CHCKNAI ) THEN
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF (DOFIT) THEN
          WRITE(LUPRI,*) 'CHCKNAI not yet implemented for densfit'
          CALL QUIT('CHCKNAI not yet implemented for densfit')
         ENDIF
 #endif /* MOD_DNF */
         IELECTR = 1
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF (RHSFIT) THEN
           CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
      &         KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
@@ -227,7 +227,7 @@ c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
      &         WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
      &         KFREE,LFREE,IELECTR,WORK,LWORK,
      &         NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         ENDIF
 #endif /* MOD_DNF */
        END IF
@@ -235,7 +235,7 @@ c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
        IELECTR = 2
 
        NPFTUVSTR = NPARFTUV_KSTARTODCLS
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
        IF (DOFIT.AND.RHSFIT) NPFTUVSTR = NPFTUVSTR + NODCLSNORM
        IF (RHSFIT) THEN
          CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
@@ -250,11 +250,11 @@ c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
      &        WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
      &        KFREE,LFREE,IELECTR,WORK,LWORK,
      &        NPFTUVSTR,NPARFTUV_NSTEPODCLS,IPRFCK3)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
        ENDIF
 #endif /* MOD_DNF */
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        if (dopbc .and. pbcactive) then
 C        PBC comment: See PBC comment above for context.
 C         Here we call SETODBTCH with the last argument set to true,
@@ -370,7 +370,7 @@ c       CALL TIMER('FCKGFC',TIMSTR,TIMEND)
 
       CALL FLSHFO(LUPRI)
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       CALL SETBFCFMM( .FALSE. ) 
 #endif
 
@@ -469,10 +469,10 @@ C     ============================
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "cbifck3.h"
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 #include "clsfmm.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 #ifdef PRG_DIRAC
@@ -485,7 +485,7 @@ C aspg, 2006-06-27 making ftnchek happy
 C
 #include "erithr.h"
 C
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
       LOGICAL AUX, SCREENCS, ACTIVE
@@ -509,7 +509,7 @@ C     For the special case of parallel code run in serial NODTOT=-1
       NOFF  = 0
 #endif
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 c      DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) .AND. .NOT. OLD_DF
       DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) 
      &             .AND. (.NOT. NOSCRE) .AND. .NOT. (RHSFIT.AND.LHSFIT)
@@ -555,7 +555,7 @@ C
       KFTUV2   = KCOORPQ + MAXPRF * 3
       KLAST    = KFTUV2  + MAXFCLSPRF * MAXODNHK**3
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
 C        R tensors referring to different replicas of dummy overlap
 C        centers in the near-field should be added up first, and then
@@ -583,7 +583,7 @@ C        in PBCDRV.F and not here.
          nf_siz2 = 0
          nf_siz3 = 0
          khrint1_aux = KHRINT1
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       end if
 #endif /* MOD_PBC */
 
@@ -598,7 +598,7 @@ C        in PBCDRV.F and not here.
       IABCLSSTART = 1
       IABCLSEND = NODCLSNORM
       AUX = .FALSE.
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DOFIT.AND.LHSFIT) THEN
         IABCLSSTART = NODCLSNORM + 1
         IABCLSEND   = NODCLSNORM + NODCLSAUX
@@ -620,7 +620,7 @@ c     DO IABCLS = IABCLSSTART, IABCLSEND
        NHKABR = NHKTAB + NREL 
        NTUVAB = NHKABR*(NHKABR+1)*(NHKABR+2)/6
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        if (dopbc .and. pbcactive) then
 C         We are ultimately interested in
 C         J_{ab}^{0l} = \sum_{mj} \sum_{cd} (ab|cd) D_{cd}^{0j}.
@@ -644,7 +644,7 @@ C         the translation vector l to get the PBC case right.
           tvec2(3) = 0.0          
           CALL GETR12( NSYMOPR, NSYMOPS, ICENTA, ICENTB, 1,
      &                 tvec1, tvec2 )
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        end if
 #endif /* MOD_PBC */
 
@@ -655,7 +655,7 @@ C         the translation vector l to get the PBC case right.
 
 c       IF (.TRUE.) THEN
        ACTIVE = ACTVAOBTCH(IAOBA).AND.ACTVAOBTCH(IAOBB)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
        IF ((.NOT.DOBOX) .OR. ACTIVE) THEN
 #endif
 
@@ -704,7 +704,7 @@ c       find largest exponent of the ab distribution
 
         IFCLSSTART = 1
         IFCLSEND   = NFTUVCLS
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF (RHSFIT) IFCLSSTART = NODCLSNORM + 1
         IF (LHSFIT .AND. .NOT. RHSFIT) IFCLSEND = NODCLSNORM
 #endif /* MOD_DNF */
@@ -800,7 +800,7 @@ C          END IF
 
           IF ( NPRF .GT. 0 ) THEN 
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
           if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
              call dzero(WORK(khrint1_sum), MAXPRF * NTUV)
           end if
@@ -810,7 +810,7 @@ C          END IF
           do my = -nf_siz2, nf_siz2  ! PBC near-field loop (dim. 2)
           do mz = -nf_siz3, nf_siz3  ! PBC near-field loop (dim. 3)
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
           if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
 C            See above for context.
 C            Construct near-field translation vector, put it in
@@ -860,7 +860,7 @@ c           IF(NPRF.GT.0)
            END IF
           END IF          
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C         Code for Gaussian damped integrals; over the operator
 C         exp(-a*r12*r12)/r12 instead of 1/r12.
           IF (DF_GAUDMP.AND.(LHSFIT .AND. .NOT. RHSFIT)) THEN
@@ -910,11 +910,11 @@ C         Code for regular integrals (over the operator 1/r12)
             CALL ERITUV(WORK(KHRINT1),WORK(KRJ000),
      &           WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
      &           WORK(KLAST),LWRK,IPRINT)
-#if defined (MOD_DNF) 
+#ifdef MOD_DNF
           ENDIF
 #endif /* MOD_DNF */
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
           if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
 C            Now we have the R tensor for the current near-field
 C            translation. Add it to the total R tensor.
@@ -1001,7 +1001,7 @@ C         =======================================
 
          END DO
         END DO
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
        ENDIF  !Active batches
 #endif
        END DO !AB-batches
@@ -1030,7 +1030,7 @@ C
 #include "priunit.h"
 #include "pi.h"
 C
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
 C
@@ -1058,7 +1058,7 @@ C
        DATAP(5,I) = ( COORA(2)*EXPA + COORB(2)*EXPB ) * EXPPI
        DATAP(6,I) = ( COORA(3)*EXPA + COORB(3)*EXPB ) * EXPPI
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        if (dopbc .and. pbcactive) then
 C        We now have the position P of the ab overlap and the
 C        position Q of the cd overlap. However, we want the
@@ -1111,10 +1111,10 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
 C
@@ -1133,7 +1133,7 @@ C
        PY    = DATAP(5,IPRFAB)
        PZ    = DATAP(6,IPRFAB)
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
 C         See comments in GETFCK31 (file FCK3DRV.F) and
 C         PBC_JOP_REALMAT (file PBCDRV.F) for context.
@@ -1187,14 +1187,14 @@ c       FACINT(I)= FACPI*EXPQI/SQRT(EXPP+EXPQ)
        IPQ0(1) = 0
        IPQ0(2) = 0
        IPQ0(3) = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       ELSEIF ( (DOFIT.AND.LHSFIT) ) THEN 
        IPQXYZ  = 0
        IPQ0(1) = 0
        IPQ0(2) = 0
        IPQ0(3) = 0
 #endif /* MOD_DNF */
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       else if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
        IPQXYZ  = 0
        IPQ0(1) = 0
@@ -1359,7 +1359,7 @@ C
         IPQ0(1) = 0
         IPQ0(2) = 0
         IPQ0(3) = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
         IPQXYZ  = 0
         IPQ0(1) = 0
@@ -1470,7 +1470,7 @@ C
         IPQ0(1) = 0
         IPQ0(2) = 0
         IPQ0(3) = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
         IPQXYZ  = 0
         IPQ0(1) = 0
@@ -2000,7 +2000,7 @@ C
          IAOA = INDXBTCH(KNDX - 1 + ICTFA, MODA)
          
          IOFFSET = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
          IF (DOFIT.AND.LHSFIT) THEN
            IOFFSET = NBASE
            IAOA = 1
@@ -2014,7 +2014,7 @@ C  FMATSP(ISPA,ISPB) separately outside
 C 
 
 C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
         if (dopbc .and. pbcactive) then
          DO ISPA=1, KHKTA
           DO ISPB=1, KHKTB
@@ -2043,14 +2043,14 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
      &           FMAT(IAOA+ISPA-1,IAOB+ISPB-1) 
      &         + FMATSP(ISPA,ISPB) 
      &         * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
              IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
 #endif /* MOD_DNF  */
                FMAT(IAOB+ISPB-1,IAOA+ISPA-1) = 
      &              FMAT(IAOB+ISPB-1,IAOA+ISPA-1) 
      &              + FMATSP(ISPA,ISPB) 
      &              * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
              ENDIF
 #endif /* MOD_DNF  */
            END DO
@@ -2316,7 +2316,7 @@ C
           IAOA = INDXBTCH(KNDX - 1 + ICTFA,1)
           
           IOFFSET = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
           IF (DOFIT.AND.LHSFIT) THEN
             IOFFSET = NBASE
             IAOA = 1
@@ -2330,7 +2330,7 @@ C  FMATSP(ISPA,ISPB,IPRFAB) separately outside
 C 
 
 C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
          if (dopbc .and. pbcactive) then
           DO ISPA=1, KHKTA
            DO ISPB=1, KHKTB
@@ -2359,14 +2359,14 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
      &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
      &          + FMATSP(ISPA,ISPB,IPRFAB) 
      &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
               IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
 #endif /* MOD_DNF  */
                 FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) = 
      &               FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) 
      &               + FMATSP(ISPA,ISPB,IPRFAB) 
      &               * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
               ENDIF
 #endif /* MOD_DNF  */
             END DO
@@ -2438,7 +2438,7 @@ C
       THRCOD    = THRFCK3_DEFAULT 
       THRSPEXP  = THRFCK3_DEFAULT 
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       CALL SETBFCFMM( BRFREE ) 
 #endif
 
@@ -2579,7 +2579,7 @@ C
       RETURN
       END
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 C
 C  Sets the BFCFMM logical variable from cbieri common block 
 C  for the use in ERIGAM subroutine 
@@ -2687,14 +2687,14 @@ c     for given orbital exponent and
 c     /* deck dmatdim */
       SUBROUTINE DMATDIM
 #include "implicit.h"
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 #include "aovec.h"
 #include "maxorb.h"
 #include "fck3aob.h"
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DOFIT.AND.(RHSFIT.OR.LHSFIT)) THEN
         IF (RHSFIT.AND.LHSFIT) THEN
           NDIMA = 1
@@ -2719,7 +2719,7 @@ c     /* deck dmatdim */
         NDIMB = NBASE
         NDIMC = NBASE
         NDIMD = NBASE
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       END IF
 #endif /*MOD_DNF */
 
@@ -2752,7 +2752,7 @@ c     Picks the largest exponent of the ab-distribution
 #include "nuclei.h"
 #include "densfit.h"
 C
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif /* MOD_PBC */
 C
@@ -2778,7 +2778,7 @@ C      BZ = CORZBT(IB)
       DY = CORD(2,ICNTD)
       DZ = CORD(3,ICNTD)
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       if (dopbc .and. pbcactive) then
 C        Here PX,PY,PZ refer to the ab overlap distributions, while
 C        CX,CY,CZ,DX,DY,DZ refer to the c and d orbitals.

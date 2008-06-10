@@ -383,10 +383,10 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 #include "dgroup.h"
@@ -555,10 +555,10 @@ C
 C
         TDXC = SECOND()
         TDF2 = TDXC - TDF2
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C       Construct Kohn-Sham contribution
 C       ================================
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF(DFTADD.AND..NOT.DF_FITVXC) THEN
 #else /* mod_dnf */ 
         IF(DFTADD) THEN
@@ -1074,7 +1074,7 @@ C
 CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
 c     call header ('1-electron matrix, before call to FDE',-1)
 c     call printdmat(1,7,fock)
       if (do_fde) then
@@ -1181,7 +1181,7 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-C#if defined (MOD_DFT)
+C#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dftac.h"
 C#endif
@@ -1198,7 +1198,7 @@ C#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DF_FITVXC) THEN
          IF (DODSCF) THEN
             using_diffdens = .true.
@@ -1230,7 +1230,7 @@ C
 C
 C
       DO 10 ITER = 2,MAXITR
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C        asymptotic correction
 C                GRAC                    SAOP
@@ -1350,10 +1350,10 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C        Construct Kohn-Sham contribution
 C        ================================
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
          IF(DFTADD.AND..NOT.DF_FITVXC) THEN
 #else
          IF(DFTADD) THEN
@@ -1553,11 +1553,11 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dfterg.h"
 #include "dftcom.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
       LOGICAL LVCON

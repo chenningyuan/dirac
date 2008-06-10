@@ -1407,7 +1407,7 @@ C
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
 C
@@ -1430,7 +1430,7 @@ C
          IS = IBCVC(NCRED+I)
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C        for ALDA turn off exchange
          IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
 #endif
@@ -1446,7 +1446,7 @@ C
            IS = IBEVC(NERED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C        for ALDA turn off exchange
          IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
 #endif
@@ -1465,7 +1465,7 @@ C
            IS = IBPVC(NPRED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C        for ALDA turn off exchange
          IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
 #endif
@@ -3547,10 +3547,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 C
@@ -3596,17 +3596,17 @@ C
 C     Calculate AO Fock matrices
 C     --------------------------
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       DODFLR = .TRUE.
 #endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C     Construct Kohn-Sham contribution
 C     ================================
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF(DFTADD.AND..NOT.DF_FITVXC) THEN
 #else
       IF(DFTADD) THEN

@@ -2317,7 +2317,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
 C
@@ -2393,7 +2393,7 @@ c     whether DFT is used or not, but also depending on whether we use
 c     pure or hybrid functionals?
 c
 c
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C     Construct Kohn-Sham contribution
 C     ================================
@@ -2951,7 +2951,7 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 cjohhe changed 0 to 1 to get anything at all out of DFT static QR
 !     IF(DFTADD) THEN
 !     IHRMOP(1) = 1

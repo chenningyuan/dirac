@@ -364,7 +364,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
       LOGICAL TOBE
@@ -417,7 +417,7 @@ C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,
      &            FAO,FMO,NOSIM*NFOCKMAT,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C     Construct Kohn-Sham contribution
 C     ================================

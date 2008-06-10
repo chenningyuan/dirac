@@ -415,7 +415,7 @@ C      IMPLICIT NONE
 #include "priunit.h"
 #include "dcbbas.h"
 #include "maxaqn.h"
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 #include "onecom.h"
@@ -451,7 +451,7 @@ C     JHS THROW AWAY IN THE END?
       CALL TIME()
 
       NDIMENSION=NTBAS(0)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF(DF_FITVXC) NDIMENSION=MAX(NTBAS(0), NBASISAUX)
 #endif
 
@@ -622,7 +622,7 @@ C      FLUSH(LUPRI)
 ! in case we use dalton 2.0 or dirac without enabling ERI
 ! we include printdmat.
 !
-#if !defined (MOD_ERI)
+#ifndef MOD_ERI
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* PRINTDMAT */
 C aspg

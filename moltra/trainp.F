@@ -753,7 +753,7 @@ C
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 300
   313 CONTINUE
-#if defined (MOD_HSCC)
+#ifdef MOD_HSCC
 !     IF (DOHSCC) THEN
         CALL HSCCINP(WORD,.false.)
 !     ENDIF
@@ -769,7 +769,7 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
-#if defined (MOD_HSCC)
+#ifdef MOD_HSCC
 !     IF (DOHSCC) THEN
 !       CALL HSCCINP(WORD,.true.)
 !     ENDIF

@@ -267,7 +267,7 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 #include "cbieri.h"
 #endif /* MOD_ERI */
 #include "dcbind.h"
@@ -275,14 +275,14 @@ C
 #include "hrunit.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       IF(.NOT.RUNERI) THEN
 #endif /* MOD_ERI */
         LUSUPM = 17
         LUDASP = 24
         LUSOL  = 49
         CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       ENDIF
 #endif /* MOD_ERI */
 C
@@ -3244,24 +3244,16 @@ C
      &                         LWORK)
       CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &          IFCKOP,IPRINT)
-#if defined (MOD_ERI)
-#if defined (MOD_DNF)
+#ifdef MOD_ERI
+#ifdef MOD_DNF
       IF (DOFIT) THEN
-#if defined (DEBUG_DIRAC_FCKBUILD_DF)
-      IF(IPRINT.GE.0) THEN
-        DO I = 1,NFMAT
-          write (6,*) 'debug: dmat before lin_df_coulomb'
-          CALL PRINTDMAT(I,NTBAS(0),DSO(1,1,I))
-        ENDDO
-      ENDIF
-#endif /* DEBUG_DIRAC_FCKBUILD_DF */
         CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &            IPRINT,WORK(KLAST),LWRK)
       ELSE
 #endif /* MOD_DNF */
         CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &                   IPRINT,WORK(KLAST),LWRK)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       ENDIF
 #endif /* MOD_DNF */
       CALL DSCAL(NDIM,DP5,DSO,1)
@@ -3276,7 +3268,7 @@ C     Make sure to switch back DOCART....
 C
       RETURN
       END
-#if defined (MOD_ERI) 
+#ifdef MOD_ERI
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FCK_Coulomb */
       SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
@@ -3389,7 +3381,7 @@ C
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
       DIM = N2BBASX*NZC1*NFMAT
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       IF (DOLINK .AND. DOFCK3) THEN
 C
 C       Jengine Coulomb contribution, regular or density-fitted
@@ -3482,7 +3474,7 @@ C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       ENDIF
 #endif /* MOD_ERI */
       RETURN
@@ -3809,7 +3801,7 @@ C
 C we are using the eri/fck3 fock matrix builder, if
 C eri has been enabled
 C
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
            KFCKTP = KFREE
@@ -3867,7 +3859,7 @@ C
      &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 Caspg
 C
 C   2006-07-27
@@ -4550,7 +4542,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 C
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 #include "cbieri.h"
 #endif
 #include "cbihr2.h"
@@ -4563,7 +4555,7 @@ C
       DATA CINT/'LL','SL','SS'/
 #include "memint.h"
 C
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       IF(RUNERI) THEN
 C.......Allocate:
 C       CCFBT - normalized contraction coefficients
@@ -4605,7 +4597,7 @@ C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           THRS = THRBUF 
         ENDIF
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       ENDIF
 #endif
 C

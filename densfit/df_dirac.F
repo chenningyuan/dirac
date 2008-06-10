@@ -303,7 +303,7 @@ c      DO I = 1, NDMT
 c        USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
 c      END DO
 c      
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) THEN
         KCLERI = NCLERI
         NCLERI = .TRUE.
@@ -335,7 +335,7 @@ Caspg     IF (DOFMM) CALL QUIT('FMM requested but not enabled')
         END IF
       END DO
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) NCLERI = KCLERI
 #endif
 

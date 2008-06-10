@@ -1,4 +1,4 @@
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       SUBROUTINE SETMM_OR_JFF(DMAT,NDMAT,DAUX,IODBCLS,IODBTCH,RODBTCH,
      &                 WORK,LWORK,IPRINT1,taskstr,DJFARFIELD)
 #include "implicit.h"
@@ -10,16 +10,16 @@
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 #include "cbifmm.h" 
 #endif
 #include "nuclei.h"
 #include "inforb.h"
 C
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
       DIMENSION DMAT(*),DAUX(*),IODBCLS(5,*),IODBTCH(2,*),RODBTCH(7,*),
@@ -62,7 +62,7 @@ C                  at 0. /ErikT
       if (taskstr .eq. 'FMM') then
 C        get order of expansion from FMM common block
          LMAX_GEN = LMAX
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       else if ((taskstr .eq. 'PBCINDEXOVL') .or.
      &         (taskstr .eq. 'PBCDUMMYOVL') .or.
      &         (taskstr .eq. 'PBCNUCLMMOM')) then
@@ -181,12 +181,12 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 #include "cbifmm.h"
 #endif
 C
 #include "nuclei.h"
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 #include "pbc.h"
 #endif
 #include "maxmom.h"
@@ -206,7 +206,7 @@ C     parameter only for readability / ErikT & Filip
       integer sph_off, car_off
       logical reset_flag
 C
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 C     declare a logical external function:
       logical pbc_3dims_active
 #endif
@@ -255,7 +255,7 @@ C
       NMOMNT = 0 
       NDISTR = 0
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
       if (taskstr .eq. 'PBCNUCLMMOM') then
 C        Here we add the nuclear moments to the total moments.
 C        It is assumed that the electronic moments have already been
@@ -412,7 +412,7 @@ C        option
           tvec2(1) = 0.0
           tvec2(2) = 0.0
           tvec2(3) = 0.0
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        else if (taskstr .eq. 'PBCINDEXOVL') then
 C         The overlap is between an orbital in cell 0 and
 C         an orbital in cell l, but we will later move the overlap
@@ -476,7 +476,7 @@ C        WRITE(LUPRI,*) 'data:',NPRF12, NCTF12
         if (taskstr .eq. 'FMM') then
 C          get order of expansion from FMM common block
            JMAXE = LMAX
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
         else if ((taskstr .eq. 'PBCINDEXOVL') .or.
      &          (taskstr .eq. 'PBCDUMMYOVL')) then
 C          get order of expansion from PBC common block
@@ -523,7 +523,7 @@ C            Save in file that will be read by the FMM code
      &                 WORK(KINDDSTR),IAOB1,IAOB2,J1,J2, JMAX1,
      &                 JMAX2,JMAXE,NCTF1,NCTF2,ICOMP1,ICOMP2,
      &                 IBTCH, NDISTR,NMOM,LUINTM,IPRINT1)
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
           else if (taskstr .eq. 'PBCINDEXOVL') then
 C            Instead of storing the moments q^{abl} of the index overlaps,
 C            we add their contribution
@@ -637,7 +637,7 @@ C     Loop over Cartesian total "ang. mom."
 #include "maxorb.h"
 #include "fck3aob.h"
 #include "fck3odb.h"
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 #include "cbifmm.h"
 #endif
 #include "pi.h"
@@ -699,7 +699,7 @@ C
      &               EXPPI,RODP(IX), COORC(IX)*EXPA , COORD(IX)*EXPB
              END IF
           END DO
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
        else if (taskstr .eq. 'PBCINDEXOVL') then
 C         move the index overlap center into cell 0
           DO IX = 1, 3
@@ -1068,7 +1068,7 @@ C            Add to the cell's moments
       RETURN
       END 
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 C     This subroutine is based on PRINTMM, with modifications to
 C     adapt it to the needs of the PBC code. / ErikT
       SUBROUTINE pbc_add_to_JFF(SMMSC,
@@ -1211,7 +1211,7 @@ C            The minus sign accounts for the electronic charge.
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 #include "densfit.h"
 #endif
 

@@ -11,7 +11,7 @@ C need to be compiled, available here.
 #define USE_PARALLEL_ERI_DUMMY
 #endif
 
-#if defined (USE_PARALLEL_ERI_DUMMY)
+#ifdef USE_PARALLEL_ERI_DUMMY
 C aspg, 2006-06-19
 C for the time being put a dummy call to the parallel routines 
 C
@@ -67,18 +67,18 @@ c     CALL MPIXBCAST(MAXJ,1,'INTEGER',MASTER)
       CALL MPIXBCAST(TABFJW,121*(MAXJ+7),'DOUBLE',MASTER)
       CALL MPIXBCAST(WVAL,MAXJ+1,'DOUBLE',MASTER)
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
 C     FMM initializations
       CALL MPIXBCAST(DOFMM,1,'LOGICA',MASTER)
 #endif
 
-#if defined (MOD_PBC)
+#ifdef MOD_PBC
 C     PBC initializations
       CALL MPIXBCAST(DOPBC,1,'LOGICA',MASTER)
       CALL MPIXBCAST(PBCACTIVE,1,'LOGICA',MASTER)
 #endif
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C     DF initializations
       CALL MPIXBCAST(OLD_DF,1,'LOGICA',MASTER)
       CALL MPIXBCAST(NOSCRE,1,'LOGICA',MASTER)

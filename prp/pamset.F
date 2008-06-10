@@ -541,7 +541,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
@@ -638,7 +638,7 @@ C          Hermitian operator
 
         IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C     Construct Kohn-Sham contribution
 C     ================================

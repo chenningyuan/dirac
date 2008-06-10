@@ -99,7 +99,7 @@ C***********************************************************************
 C*****  P L O T  I N T E G R A T I O N                   ***************
 C*****  W E I G H T S   I N   O N E   D I M E N S I O N  ***************
 C***********************************************************************
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
       IF(DO1WT) CALL GT1WT(WORK,LWORK)
 #endif
 C

@@ -2472,7 +2472,7 @@ C
 C     Solve reduced general problem in subspace
 C     =========================================
 C
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
         CALL EIGRED(NFREQ,NZRED,NREDM,REDE,REDS,EVALR,EVECR,
      &          IERR,IPRXRS,WORK,KFREE,LFREE)
         IF (IPRXRS .GE. 1) THEN

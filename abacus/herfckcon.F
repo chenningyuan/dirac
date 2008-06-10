@@ -35,7 +35,7 @@ C
 #include "single.h"
 #endif
 C
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 C  /* Deck fckcon */
       SUBROUTINE FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
      &        NINT,NIND,NBUF,IX,IY1,FAC)
@@ -247,7 +247,7 @@ C
 C
       END
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C  /* Deck df_fckcon */
       SUBROUTINE DF_FCKCON(FMAT,DMAT,DF_FMAT,DF_DMAT,NDMAT,I,AOINT,IND,
      &                     NINT,NIND,NBUF,IX,IY1,FAC,MODE)

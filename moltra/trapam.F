@@ -458,7 +458,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 
-#if defined (MOD_HSCC)
+#ifdef MOD_HSCC
       CALL HSCC_STUFF(WORK,LWORK)
 #endif
 

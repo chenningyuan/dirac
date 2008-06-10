@@ -1,4 +1,5 @@
-#if defined (MOD_DNF) && ! defined (MOD_LINEARS)
+#ifdef MOD_DNF
+#ifndef MOD_LINEARS
 * Routines for inversion
 * From Jeppe - late november 03
       SUBROUTINE INVERT_BY_DIAG2(A,B,SCR,VEC,NDIM)
@@ -78,5 +79,6 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
       RETURN
       END 
 #endif /* ! MOD_LINEARS */
+#endif /* MOD_DNF */
 
 

@@ -550,7 +550,7 @@ c
       HFXATT = BETA
       END
 C /* Deck dft_df_lr */
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       SUBROUTINE fit_DFT_LR(pCFIT,pVXCint,NXCMAT,ISYMOP,IHRMOP,
      &                      GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
      &                      nskipped)

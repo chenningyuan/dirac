@@ -244,7 +244,7 @@ C                                      asymptotic part is LBalpha
      &                               + 64
                  DFTHAM     = .TRUE.
                  ALDAON     = .TRUE.
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
                  CALL DOALDA(.TRUE.)
 #endif
                  GOTO 100

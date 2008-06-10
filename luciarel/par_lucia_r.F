@@ -986,7 +986,7 @@ csk  &                     ILEN, I_AM_ACTIVE, I_BWEIGHT(I_AM_ACTIVE)
 C
 C     debug print      
 C
-#if defined (MOD_DEBUG)
+#ifdef MOD_DEBUG
       WRITE(LUWRT,*) '  I_AM_ACTIVE is ',I_AM_ACTIVE
       WRITE(LUWRT,*) '  *********** BLOCK WEIGHTs ************'
       CALL IWRTMAMN8(I_BWEIGHT,1,I_AM_ACTIVE,1,I_AM_ACTIVE,LUWRT)

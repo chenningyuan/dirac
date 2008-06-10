@@ -326,7 +326,7 @@ C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
             CALL DEF_TPA(WORK,LWORK,DOTPA)
 #else
             CALL QUIT('TPA not included in this version')
@@ -361,7 +361,7 @@ C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
             CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
             CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
 #else
@@ -470,7 +470,7 @@ C
         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
         CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
 #else
         CALL QUIT('*EXCITA not included in this version')
@@ -484,7 +484,7 @@ CMI ... changed for LAO-based magnetic properties
         CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
-#if defined (MOD_ESR)
+#ifdef MOD_ESR
         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
 #else
         CALL QUIT('*ESR    not included in this version')
@@ -514,7 +514,7 @@ C     *STEX
 CMI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
       CALL GRDINP(WORD,.TRUE.)
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 CMI ... no quadratic response whin BSS yet
@@ -525,7 +525,7 @@ C    &'No quadratic response with BSS Hamitonian yet.'
 C       DOXQR=.FALSE.
       ENDIF 
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
-#if defined (MOD_ESR)
+#ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 C===========================================================================

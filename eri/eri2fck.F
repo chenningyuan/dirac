@@ -602,13 +602,13 @@ Caspg
          ELSE
             FAC = D4
          END IF
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
          IF (IFIT_DMAT.EQ.0) THEN
 #endif
 C...........Ordinary Fock matrix with exact density
             CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
      &                  IY,FAC)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
           ELSE
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.

@@ -331,7 +331,7 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-#if defined (MOD_ECP)
+#ifdef MOD_ECP
 C&&&& ECP: do ECP calculation, non-relativistic
             ECPCALC = .TRUE.
             TWOCOMP = .TRUE.
@@ -412,7 +412,7 @@ C
         ISSDIR = 0
         IGTDIR = 0
       ENDIF
-#if defined (MOD_ECP)
+#ifdef MOD_ECP
       IF (ECPCALC)
      &  WRITE(LUPRI,'(1X,A)') 
      &   '  employing effective-core-potentials (ECP)'
@@ -2914,7 +2914,7 @@ C
         CALL DENSIN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
         CALL WT1IN(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
@@ -2939,7 +2939,7 @@ C
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
       IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
       IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
@@ -3707,7 +3707,7 @@ C     Last revision: May 27 1998 - tsaue and kmi
 C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
       USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
 #endif
 #include "implicit.h"
@@ -3732,11 +3732,11 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 Cdirac#include "functionals.h"
 #endif
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 #include "cbieri.h"
 #endif
 C
@@ -3805,7 +3805,7 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
       DO_FDE  = .FALSE.
 #endif
       INTV1C  = 0
@@ -3854,7 +3854,7 @@ C ... get integral flags in advance
 CMI ... this routine is beeing called after HAMINP, in PAMINP
 CMI   CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C
 C     Initialize from DFTCOM
 C     ----------------------
@@ -4019,13 +4019,13 @@ C             projection scheme
 C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
              DFTHAM = .TRUE.
              ALDAON = .TRUE.
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
              CALL DOALDA(.TRUE.)
 #endif
              GOTO 100
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
                READ(LUCMD,'(A80)') LINE
                IF (.NOT. SETFUN) THEN
 C              ... hjaaj: DFTINPUT accumulates def. of functional
@@ -4033,7 +4033,7 @@ C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                   CALL DFTINPUT(LINE, INPERR)
 
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 C aspg, 20070909
 c if the calculation is performed with non-hybrid functionals,
 C and j-engine is set, we force dolink to true even if it was
@@ -4222,7 +4222,7 @@ C&&& POSVAC: Use positronic vacuum polarisation
              GO TO 100
   142     CONTINUE
 C&&& FDE: Frozen density embedding switch 
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
 C             DO_FDE = .TRUE.
              CALL FDEINI()
 #endif
@@ -4680,11 +4680,11 @@ CMI ...  CAP processing
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
 
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
       IF(DFTHAM) THEN
          CALL DFTREPORT()
 
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 C aspg, 20070909
          IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
             WRITE (LUPRI,*) ' '
@@ -5140,7 +5140,7 @@ C
         CALL SOLVIN(WORD,WORK,LWORK)
         GO TO 200
     3 CONTINUE
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
         CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
 #else
 C       hjaaj 3jun2003: dirac.x went into an infinite loop here
@@ -5161,7 +5161,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
         GO TO 200
 #endif
     5 CONTINUE
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
         CALL FDEINP(WORD,.FALSE.)
 #endif
         GO TO 200
@@ -5178,7 +5178,7 @@ CMI  ... reading input routine for AMFI+RELSCF
 C
     1 CONTINUE
 C
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 Chjaaj: we need to be sure DFT is initialized (and SET reset for geom.opt.)
 CJuly2003
       CALL DFTINP(WORD,.TRUE.,WORK,LWORK)
@@ -5287,7 +5287,7 @@ CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
 c
-#if defined (MOD_ECP)
+#ifdef MOD_ECP
         IF (ECPCALC) THEN
 c     
 c     Spin-orbit integrals for ECP centres ...
@@ -6166,7 +6166,7 @@ C
       RETURN
 C
       END
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wt1in */
       SUBROUTINE WT1IN(WORD,RESET,WORK,LWORK)

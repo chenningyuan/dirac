@@ -89,7 +89,7 @@ C
       DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C aspg+rbast 2006-10-10
 C prepare for accumulating integrals... 
       IF (DF_FITVXC) THEN ! 
@@ -105,7 +105,7 @@ Caspg+rbast
 #endif
 C
 C     Initial expectation value of two-electron matrix
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DOERG.AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOERG) THEN
@@ -144,7 +144,7 @@ C
 C     Scale density matrices
 C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C aspg, how wil this symmetrization work with density fitting? 
 C up to now the code is skipped for df_fitvxc since we pass
 C 'dummy' in the place of dtrmat...
@@ -218,7 +218,7 @@ C
 C
 C     Integrate
         NDIMENSION = NTBAS(0)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 Caspg, the mult by two here is still not quite understandable...
         IF (DF_FITVXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)
 #endif
@@ -269,7 +269,7 @@ C    &              KFREE,LFREE)
 #endif /* MOD_CDFT */
       ENDIF
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOLR.OR.DOQR) THEN
@@ -291,7 +291,7 @@ C     Rescale density matrices
 C
       CALL DSCAL(N2BBASX,DP5,DMAT,1)
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOLR.OR.DOQR) THEN
@@ -301,14 +301,14 @@ C
 C
 C     Calculate final expectation value of two-electron matrix;
 C     the Kohn-Sham contribution can then be subtracted 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DOERG.AND..NOT.DF_FITVXC) THEN
 #else
       IF (DOERG) THEN
 #endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DF_FITVXC) THEN
          CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
       ENDIF
@@ -623,7 +623,7 @@ C
 C
       
       NDIMENSION = NBAST
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       ELCTRB = 0.0D0
       nskipped = 0
 C aspg+rbast 2006-09-21
@@ -717,13 +717,13 @@ C
 C       Density
 C       =======
 C
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF (DF_FITVXC) THEN  ! 
           RHO = DDOT(NBASISAUX,GAO,1,WORK(KCFIT),1)
         ELSE
 #endif
           CALL GETRHO(RHO,0,GAO,DMAT,BUF)
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         ENDIF
 #endif
 Caspg+rbast, 2006-09-21
@@ -740,7 +740,7 @@ C
       ENDIF
 #endif /* MOD_CDFT */
         IF (DOGRHO) THEN
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
           IF (DF_FITVXC) THEN  ! 
              DO IXYZ = 1,3
               IOFF = NBASISAUX * (IXYZ - 1) + 1
@@ -754,7 +754,7 @@ c    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
           ELSE
 #endif
             CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
           ENDIF
 #endif
           RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
@@ -829,7 +829,7 @@ C       =====================================================
 C
         IF (DOERG) THEN
            IREPOP = 0
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
 !          WRITE(lupri,*) 'DOGGA3', DOGGA
@@ -852,7 +852,7 @@ C conventional code...
              ELSE
                 CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
              END IF
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
            endif ! df_fitvxc
 #endif
         END IF ! DOERG
@@ -874,7 +874,7 @@ CTROND          CALL DFTMAG
 
 
 !       Hessian transformation via density fitting
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
         IF(DOLR) THEN
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
@@ -896,7 +896,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 !       linear response
         if(dolr) then
-#if !defined (MOD_DNF)
+#ifndef MOD_DNF
           call dft_lr(dtrmat,excmat,nxcmat,
      &                isymop,ihrmop,.false.,
      &                gao,gao1,
@@ -962,7 +962,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 Caspg+rbast, 2006-09-21
 c commented code below is still in use! debugging response with dfvxc
 C
@@ -2099,7 +2099,7 @@ C
       END
 #endif
 
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C /* deck fit_DOEXC */
       SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1,
      &                     VXC_integrals,NDIM)

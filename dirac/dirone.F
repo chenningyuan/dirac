@@ -376,7 +376,7 @@ C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
 
-#if defined (MOD_ECP)
+#ifdef MOD_ECP
 c
 C      *********************************************
 C      **                                         **

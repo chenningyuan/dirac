@@ -74,7 +74,7 @@ C
 #include "gnrinf.h"
 #endif
 #include "cbiher.h"
-C#if defined (MOD_ERI)
+C#ifdef MOD_ERI
 #include "cbieri.h"
 C#endif
 #include "cbihr1.h"
@@ -84,7 +84,7 @@ C#endif
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
-C#if defined (MOD_DNF)
+C#ifdef MOD_DNF
 #include "densfit.h"
 C#endif
 C
@@ -134,13 +134,13 @@ C
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C     Initialize defaults for density fitting
       CALL DFIINI
 #endif
       CALL AMFIINI
 
-C#if defined (MOD_ERI)
+C#ifdef MOD_ERI
       RUNERI = .FALSE.
       DOLINK = .FALSE.
       DOFCK3 = .FALSE.
@@ -258,7 +258,7 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
          CALL ER2INI
 #endif
          WORD = '*END OF'
@@ -655,28 +655,30 @@ C&&& MAGCOR - print magnetic coordinates
             GO TO 100
  179     CONTINUE
 C&&& JENGIN - activate J-engine
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
             DOFCK3=.TRUE.
 #endif
             GO TO 100
  180     CONTINUE
 C&&& RUNERI - activates ERI code
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
             RUNERI=.TRUE.
 #endif
             GO TO 100
  181     CONTINUE
-#if defined (MOD_ERI) 
+#ifdef MOD_ERI
 CC&&&& DOLINK - activates the fast exchange code
             DOLINK = .TRUE. 
             GO TO 100
 #endif 
  182     CONTINUE
-#if defined (MOD_ERI) && defined (MOD_DNF)
+#ifdef MOD_ERI
+#ifdef MOD_DNF
 CC&&&& DENSFIT: Density fitting (Not yet implemented)
             DOFIT = .TRUE.
             DOFCK3 = .TRUE.
             GO TO 100
+#endif
 #endif
  183     CONTINUE
 
@@ -691,7 +693,7 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       IF (RUNERI) THEN
          WRITE (LUPRI,'(3X,A)')
      &     ' Integrals are calculated using ERI '//
@@ -705,7 +707,7 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
          WRITE (LUPRI,'(3X,A)')
      &     'LinK scheme for exchange'
       ENDIF
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
       IF (DOFIT) THEN
          WRITE (LUPRI,'(3X,A)')
      &     'Density-fitted Coulomb contribution'
@@ -968,7 +970,7 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       CALL ER2INI
 #endif
  201  PROMPT = WORD(1:1)
@@ -1007,19 +1009,19 @@ C
       CALL QUIT('No ERI 2-el. integrals in parallel code')
 #else
     6   CONTINUE
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
         CALL ER2INP(WORD)
 #endif
       GO TO 201
 #endif
     7    CONTINUE
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 C&&& JENGINE: Read input for J-engine for Coulom contribution
         CALL FCK3INP(WORD)
       GO TO 201
 #endif
     8    CONTINUE
-#if defined (MOD_DNF)
+#ifdef MOD_DNF
 C&&& JENGINE: Read input for density fitting 
         CALL DFIINP(WORD)
       GO TO 201
@@ -2293,13 +2295,13 @@ C     ********************************
 C     ***** New integral program *****
 C     ********************************
 C
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
       IF (RUNERI) THEN
 #endif
 #if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
          IF (IPRDEF .GT. 0) CALL TITLER('Output from ER2INT','*',126)
 C
 C        ********************************************

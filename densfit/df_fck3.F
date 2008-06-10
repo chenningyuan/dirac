@@ -517,7 +517,7 @@ C
 C
       CALL QENTER('FITFCK3')
 c      
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) THEN
         KCLERI = NCLERI
         NCLERI = .TRUE.
@@ -559,7 +559,7 @@ C         IF (DOFMM) CALL QUIT('FMM requested but not enabled')
         END IF
       END DO
 
-#if defined (MOD_FMM)
+#ifdef MOD_FMM
       IF (DOFMM) NCLERI = KCLERI
 #endif
 
@@ -1586,7 +1586,7 @@ C
 #include "iteration.h"
 #include "densfit.h"
       IF (DOFIT) THEN
-#if defined (MOD_LINEARS)
+#ifdef MOD_LINEARS
         CALL di_SAVE_CONV_FIT_DENS(NFITDIM,ITER_SCF)
 #else
         write (*,*) 'a replacement of di_save_conv_fit ',

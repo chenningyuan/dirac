@@ -412,7 +412,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #endif
@@ -1238,7 +1238,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #endif
@@ -1907,7 +1907,7 @@ C
 #else
 #include "energy.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dftbuf.h"
@@ -1923,7 +1923,7 @@ C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
       IF(ITYPE.EQ.7) THEN
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)

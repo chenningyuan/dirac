@@ -141,7 +141,7 @@ C***********************************************************************
       use aoresponse_main_m
 #endif /* MOD_AORESPONSE */
 
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
       USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
 #endif
@@ -195,7 +195,7 @@ C***********************************************************************
 C*****  E S R   P R O P E R T I E S      *******************************
 C***********************************************************************
 C
-#if defined (MOD_ESR)
+#ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
          CALL ESR_INIT(WF,IPRESR,NCIESR,WORK,KFREE,LFREE)
@@ -211,7 +211,7 @@ C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
       IF (DOXPP) THEN
          IF (WF. EQ. 'DHF') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KFREE,LFREE)
@@ -248,7 +248,7 @@ C
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
-#if defined (MOD_XPP)
+#ifdef MOD_XPP
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
 #endif
@@ -285,7 +285,7 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-#if defined (MOD_EMB)
+#ifdef MOD_EMB
       IF (DO_GRID_OUT) THEN
          CALL FDE_GRIDOUT(WORK,LFREE)
       END IF
