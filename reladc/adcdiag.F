@@ -19,6 +19,7 @@ C
 C---------------Description--------------------------------------------
 C
 C  Top level control routine if diagonalizers are accessed directly
+C  via ADCLEVEL=0
 C  This routine provides the loop structure and then transfers control
 C  to the diagonalization controller.
 C
