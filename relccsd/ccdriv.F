@@ -187,6 +187,7 @@ C
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
 CMI   ... add sector selectives MAXITxy's
+#ifdef MOD_IHFSCC
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
@@ -194,6 +195,12 @@ CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
+#else
+      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
+     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
+     &                 MAXIT,MAXDIM,NTOL,TSHOLD,
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
+#endif /* MOD_IHFSCC */
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -216,7 +223,9 @@ C
       DOFOPR  = .FALSE.
       DOSOPR  = .FALSE.
       DOFSPC  = .FALSE.
+#ifdef MOD_IHFSCC
       DOIH  = .FALSE.
+#endif
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
@@ -409,6 +418,7 @@ C
          FSSECT(3) = 1
          FSSECT(6) = 1
       ENDIF
+#ifdef MOD_IHFSCC
 C
 C     General input for IH procedure
 C
@@ -447,12 +457,8 @@ CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
 
-CMI printout
-      IF (DOIH) THEN
-       write(IW,'(/,A)') '...Energy limits for IH' 
-       write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
-       write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
-      ENDIF
+      write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
+      write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
 C
 C     XIH energy shift sign definition.
 C     Array with as first dimension 1e/2e shift
@@ -473,6 +479,7 @@ C     Input for the sorting routine.
 C     We can add a finite field here, if desired
 C     This assumes that PRTRA is called as well !
 C
+#endif /* MOD_IHFSCC */
       LOWMEM  = .FALSE.
       USEOE   = .TRUE.
       NORECMP = .FALSE.
@@ -944,8 +951,10 @@ C
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
+#ifdef MOD_IHFSCC
       !MI: for the IH-FSCC method in linear symmetry
       INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
+#endif
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
 
@@ -1750,11 +1759,14 @@ C
             ENDIF
 !           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
+#ifdef MOD_IHFSCC
 C           Always fill this array, used in intermediate Hamiltonian formalism
             IF (I.GT.MAXSPIM)
      &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
 !        ... 0/1 - intermediate Ham. space
+#endif /* MOD_IHFSCC */
             IPIORB(I)=0
+#ifdef MOD_IHFSCC
             DO J = 1, 2
                IF(EPS(I).LE.ER_IH(2,J).AND.   ! EPS(I) <= EHMAX,EPMAX
      &            EPS(I).GE.ER_IH(1,J)) THEN  ! EPS(I) >= EHMIN,EPMIN
@@ -1778,55 +1790,11 @@ C           Always fill this array, used in intermediate Hamiltonian formalism
                ENDIF
              ENDIF
            ENDIF
+#endif /* MOD_IHFSCC */
        ENDDO
 
-
-CMI   ... based on Ephraim advice
-C     II = 0 
-!     DO IRP = 1, NREP
-!      NAVPI(IRP) = 0
-!      NAOPI(IRP) = 0
-!      IOI(0)=0
-!      IOI(1)=NIO(IRP)+IOI(0)
-!      IOI(2)=NAO(IRP)+IOI(1)
-!      IOI(3)=NAV(IRP)+IOI(2)
-!      DO ico=1,3
-!      DO I = IOI(ico-1)+1, IOI(ico)
-!        II = II + 1
-!        write(IW,'(2X,A,I3,A,I3,A,I3,A,F15.6)')
-!    &  'IPIORB(',II,')=',IPIORB(II),' EPS(',II,')=',EPS(II)
-
-!        ISECTP=0
-!        IF (DOIH.AND.ICO.EQ.3) THEN
-!            ISECTP=1
-!            IF (IPIORB(II).EQ.1) THEN
-!              NAVPI(IRP) = NAVPI(IRP) + 1
-!              write(IW,'(2X,A,I3,A,F15.6)')
-!    &         'increasing NAVPI, EPS(',II,')=',EPS(II)
-!            ENDIF
-!        ENDIF
-!        IF (DOIH.AND.ICO.EQ.2) THEN
-!            ISECTP=1
-!            IF (IPIORB(II).EQ.1) THEN
-!              NAOPI(IRP) = NAOPI(IRP) + 1
-!              write(IW,'(2X,A,I3,A,F15.6)')
-!    &         'increasing NAOPI, EPS(',II,')=',EPS(II)
-!            ENDIF
-!        ENDIF
-!       ENDDO
-!       ENDDO
-!      ENDDO
-
-            !IF (REPORT.AND.DOIH) THEN
-CMI        IF (REPORT) THEN
-CMI              write(IW,'(A,I3,A,I3,A,I2,A,I3,AF15.7,A,I3,A)')
-CMI  &        'ISP',ISP,' I',I,' IREP:',IREP,' II:',II,
-CMI  &        '...',EPS(I), '  (',IPIORB(I),')'
-CMI         ENDIF
-
-!        ENDDO
-
-        IF (REPORT.AND.DOIH) THEN
+#ifdef MOD_IHFSCC
+       IF (REPORT.AND.DOIH) THEN
 
          IF (NREP.GT.8) THEN
 CMI ..... write only active irreps
@@ -1863,6 +1831,7 @@ CMI ..... write only active irreps
          ENDIF
 
        ENDIF
+#endif /* MOD_IHFSCC */
 
       ENDIF
 C
@@ -1871,10 +1840,11 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
+#ifdef MOD_IHFSCC
  1005 FORMAT (
      &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
      &       //T40,8(1X,A4))
-      RETURN 
+#endif
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -2933,6 +2903,7 @@ C
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
      
+#ifdef MOD_IHFSCC
 CMI ... more print out
       IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
         WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
@@ -2944,6 +2915,7 @@ CMI ... more print out
      &  'Energy range for the virtual Pi space is:  <',
      &  ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF
+#endif /* MOD_IHFSCC */
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
@@ -3074,8 +3046,6 @@ C
      &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
         ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
-CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)))
-CMI     ALLOCATE (EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS),RCW))
         ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
         ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
