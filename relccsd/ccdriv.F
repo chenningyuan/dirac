@@ -3542,6 +3542,33 @@ C---- Keep OLD (MOLFDIR) format here for compatibility
           ENDDO
    11  CONTINUE
        READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+
+c debug, ATT ! these informations are convenient to be printed out
+c for debugging purposes. Deactivated in the release.
+c      WRITE(IW,*)
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*) '**  MRCONEE CONTROL VARIABLES  *****'
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*)
+c      WRITE(IW,*) 'NSP:',NSP
+c      WRITE(IW,*) 'BREIT:',BREIT
+c      WRITE(IW,*) 'ECORE:',ecore
+c      WRITE(IW,*) 'NFSYM:',NFSYM
+c      WRITE(IW,*) 'NZ:',NZ
+c      WRITE(IW,*) 'SPFR:',SPFR
+c      WRITE(IW,*) 'NORBT:',NORBT
+c      WRITE(IW,*) 'NSYMRP:',NSYMRP
+c      WRITE(IW,*) 'REPNT:',REPNT
+c      WRITE(IW,*) 'NELEC:',NELEC
+c      WRITE(IW,*) 'NREP:',NREP
+c      WRITE(IW,*) 'REPNA:',REPNA
+c      WRITE(IW,*)
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*) '**  END CONTROL OUTPUT  ************'
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*)
+c debug end
+
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
        READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),
