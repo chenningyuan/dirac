@@ -30,6 +30,8 @@ C
       PARAMETER(FILEN2='ADCCNF',FILEN3='ADCINF',
      &          FILEN4='ADCDIA',FILEN5='ADCMPK')
       LOGICAL LT,LTA
+      INTEGER ICOM_KREP,ICOM_NOCC,ICOM_LADC,ICOM_ITYPE,ICOM_INTBUF
+      CHARACTER*4 ICOM_REPNA
 
 C
 C---------------Executable code--------------------------------------
@@ -103,11 +105,23 @@ c
      &                 KREP,' : ',NO(KREP)
         WRITE(IW,*) 'Dimension of ADC matrix in irrep: ',KREP,' : ',LADC
 
-        WRITE(IW,*) 'Checking matrix compatibility'
-        READ(ITAP3,'(2I4,A4,I10,I2,I10)')
+        WRITE(IW,*) 'Checking matrix compatibility from ADCINF file'
+        READ(ITAPADC+3,'(2I4,A4,I10,I2,I10)')
      &           ICOM_KREP,ICOM_NOCC,ICOM_REPNA,
      &           ICOM_LADC,ICOM_ITYPE,ICOM_INTBUF
-
+        WRITE(IW,*) ICOM_KREP,ICOM_NOCC,ICOM_REPNA,
+     &              ICOM_LADC,ICOM_ITYPE,ICOM_INTBUF
+        IF(ICOM_KREP.NE.KREP)
+     &    CALL QUIT('Incompatible symmetry label of ADC-matrix.')
+        IF(ICOM_NOCC.NE.NO(KREP))
+     &    CALL QUIT('Incompatible number of hole states in ADC-matrix.')
+        IF(ICOM_LADC.NE.LADC)
+     &    CALL QUIT('Incompatible ADC-matrix dimension.')
+        IF(ICOM_ITYPE.EQ.0.AND.CARITH.EQV..TRUE.)
+     &    CALL QUIT('Real/complex mismatch')
+        IF(ICOM_ITYPE.EQ.1.AND.CARITH.EQV..FALSE.)
+     &    CALL QUIT('Real/complex mismatch')
+        WRITE(IW,*) 'Intbuf variable:',ICOM_INTBUF
 
         CALL DIAGEXEC(CC,KFREE,LFREE,.TRUE.,KREP,LADC,CARITH,RCW,IW,
      &   IRPLOOP,NO(KREP),ITAPADC)
