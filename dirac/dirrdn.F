@@ -2092,7 +2092,7 @@ C
       L1ORBM  = .FALSE.
       L2ORBM  = .FALSE.
       PHCOEF  = .FALSE.
-      DOADC   = .TRUE.
+      DOADC   = .FALSE.
 
 C
 C *** Initialize /CBIREO/ in dcbreo.h
