@@ -2072,7 +2072,7 @@ C
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
-     &             '.PHCOEF','.MP2 NO','xXXXXXX','xXXXXXX'/
+     &             '.PHCOEF','.MP2 NO','.RELADC','xXXXXXX'/
 C
       NJOBS = 0
 C
@@ -2092,6 +2092,7 @@ C
       L1ORBM  = .FALSE.
       L2ORBM  = .FALSE.
       PHCOEF  = .FALSE.
+      DOADC   = .TRUE.
 
 C
 C *** Initialize /CBIREO/ in dcbreo.h
@@ -2247,6 +2248,10 @@ C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             DOMP2NO = .TRUE.
             GO TO 100
  115     CONTINUE
+C&&&& RELADC: Calculate one-particle propagator with ADC
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOADC   = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
  116     CONTINUE
             GO TO 100
@@ -2296,6 +2301,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
+      IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
 C
 C     Orbital manipulations
 C
@@ -2428,6 +2434,14 @@ C
       IF(DOCIM) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL CIMINP(WORK,LWORK)
+         CLOSE(LUCMD)
+      ENDIF
+C
+C     Input of reladc module
+C
+      IF(DOADC) THEN
+         OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)
       ENDIF
 C
