@@ -121,17 +121,17 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !         GGA
 
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
           if(allow_nonhermitian) then
             call get_gr_nh(.true.,gr_b,irepop,gao,gao1,
      &                     dtrmat(1,1,1,im),buf)
           else
-#endif
+#endif /* MOD_CDFT */
             call getgrho(gr_b,irepop,gao,gao1,
      &                   dtrmat(1,1,1,im),buf)
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
           endif
-#endif
+#endif /* MOD_CDFT */
 
           worth_it = max(
      &                   dabs(r_b),
@@ -337,7 +337,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &               gao,gao1,
      &               dtrmat(1,1,1,1),buf)
       else
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
         CALL GET_GR_NH(.TRUE.,
      &                 grdrho_b,
      &                 irepbop,
@@ -348,14 +348,14 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #else
         call quit('DFT-QR general case not implemented!')
-#endif
+#endif /* MOD_CDFT */
       endif
       if(ihrmop(2) .eq. 1) then
         call getgrho(grdrho_c,irepcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,2),buf)
       else
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
         CALL GET_GR_NH(.TRUE.,
      &                 grdrho_c,
      &                 irepcop,
@@ -366,14 +366,14 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #else
         call quit('DFT-QR general case not implemented!')
-#endif
+#endif /* MOD_CDFT */
       endif
       if(ihrmop(3) .eq. 1) then
         call getgrho(grdrho_bc,irepbcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,3),buf)
       else
-#if defined (MOD_CDFT)
+#ifdef MOD_CDFT
         CALL GET_GR_NH(.TRUE.,
      &                 grdrho_bc,
      &                 irepbcop,
@@ -384,7 +384,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #else
         call quit('DFT-QR general case not implemented!')
-#endif
+#endif /* MOD_CDFT */
       endif
 !
 !     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
