@@ -2067,7 +2067,7 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-include "files.inc"
+#include "files.inc"
 #include "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
