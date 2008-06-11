@@ -2067,7 +2067,8 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+include "files.inc"
+#include "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2290,6 +2291,17 @@ c
       ENDDO
 
       close(iounit)
+c
+c  if ADCDEBUG=1 we print the eigenvalues as a special table for the
+c  DIRAC test suite reladc
+c
+      IF(ADCDEBUG.EQ.1) THEN
+        WRITE(IW,'(A9)') 'oooADCooo)'
+        DO J = 1, MAX0(JND,20) 
+          WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
+        ENDDO
+        WRITE(IW,'(A9)') 'oooADCooo)'
+      ENDIF
 
       WRITE(IW,*)
       WRITE(IW,*)
@@ -2462,6 +2474,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
+#include "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2687,7 +2700,17 @@ c
 
       WRITE(IW,*)
       WRITE(IW,*)
-         
+c
+c  if ADCDEBUG=1 we print the eigenvalues as a special table for the
+c  DIRAC test suite reladc
+c
+      IF(ADCDEBUG.EQ.1) THEN
+        WRITE(IW,'(A9)') 'oooADCooo)'
+        DO J = 1, MAX0(JND,20) 
+          WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
+        ENDDO
+        WRITE(IW,'(A9)') 'oooADCooo)'
+      ENDIF
 C
 C.....PRINT MEAN RESIDUES (X), EIGENVALUES (W), ERROR-EST.(Y) AND MULT.
 C----------------------------------------------------------------
