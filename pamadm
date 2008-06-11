@@ -1526,7 +1526,7 @@ else
           MODS="$MODS $mod"
         else
           MODS="$mod"
-        endif
+        fi
       done
 fi
 #dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
