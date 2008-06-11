@@ -1520,7 +1520,14 @@ if [ -n "$IBMMOD" ]; then
       MODS="$MODS,$mod"
       done
 else
-MODS="$ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG"
+   for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
+      do
+        if [ -n "$MODS" ]; then 
+          MODS="$MODS $mod"
+        else
+          MODS="$mod"
+        endif
+      done
 fi
 #dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
