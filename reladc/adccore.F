@@ -468,7 +468,7 @@ c  set some input default values and read ADC input
 c  from file DIRAC.INP
 c
       OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
-      ADCTITLE='No title given'
+      ADCTITLE = 'No title given'
       ADCLEVEL = 1
       DO IX=1,8
         ADCPRINT(IX)=0

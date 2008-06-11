@@ -2297,7 +2297,7 @@ c  DIRAC test suite reladc
 c
       IF(ADCDEBUG.EQ.1) THEN
         WRITE(IW,'(A9)') 'oooADCooo)'
-        DO J = 1, MAX0(JND,20) 
+        DO J = 1, MIN0(JND,20) 
           WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
         ENDDO
         WRITE(IW,'(A9)') 'oooADCooo)'
@@ -2706,7 +2706,7 @@ c  DIRAC test suite reladc
 c
       IF(ADCDEBUG.EQ.1) THEN
         WRITE(IW,'(A9)') 'oooADCooo)'
-        DO J = 1, MAX0(JND,20) 
+        DO J = 1, MIN0(JND,20) 
           WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
         ENDDO
         WRITE(IW,'(A9)') 'oooADCooo)'
