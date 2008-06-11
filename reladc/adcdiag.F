@@ -2300,7 +2300,6 @@ c
         DO J = 1, MIN0(JND,20) 
           WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
         ENDDO
-        WRITE(IW,'(A9)') 'oooADCooo)'
       ENDIF
 
       WRITE(IW,*)
@@ -2709,7 +2708,6 @@ c
         DO J = 1, MIN0(JND,20) 
           WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
         ENDDO
-        WRITE(IW,'(A9)') 'oooADCooo)'
       ENDIF
 C
 C.....PRINT MEAN RESIDUES (X), EIGENVALUES (W), ERROR-EST.(Y) AND MULT.
