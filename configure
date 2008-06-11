@@ -1653,7 +1653,7 @@ case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
+     cpp_f90="`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
      ;;
