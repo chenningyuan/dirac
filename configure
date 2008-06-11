@@ -39,6 +39,7 @@ quick=0
 SRC_DIR=`pwd`
 dirlist="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
+IBMMOD=0
 #
 # Does 'echo' understand escapes?
 #
@@ -1585,12 +1586,6 @@ arflag=
 
 set_compile_flags
 
-#
-# Replace spaces with commas if compiler is xlf.
-#
-if [ "$F90" = "xlf" ]; then
-   cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
-fi
 
 
 # given that all unix clones like linux, *bsd and mac osx have no
@@ -1657,6 +1652,8 @@ fi
 case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
+     IBMMOD=1
+     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
      ;;
@@ -1728,7 +1725,18 @@ ARCH        = $guess
 INSTALLDIR  = $INSTALL_DIR
 # Location of the source files
 SOURCEDIR   = `pwd`
-
+EOF
+if [ -n $IBMMOD ]; then
+cat <<EOF >> Makefile.config
+SEP         =,
+EOF
+else
+cat <<EOF >> Makefile.config
+NULLSTRING :=
+SEP        := \$(NULLSTRING) #end of line 
+EOF
+fi
+cat <<EOF >> Makefile.config
 WRKMEM      = $memsiz
 INCLUDE_DIR = $inc -I$MODULE_DIR
 DEPEND_FLAGS= $depend_flags 

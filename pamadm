@@ -581,9 +581,6 @@ EOF
 #
 make_makefile()
 {
-if [ -n "$IBMMOD" ]; then 
-  echo $MODS
-fi
    echo "*** Making general Makefile"
    AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $AORESPONSEOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ $XMLOBJ"
    AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK $XMLOBJ"
@@ -1512,23 +1509,14 @@ which_modules()
 {
 #  
 #
-if [ -n "$IBMMOD" ]; then
-# I assume that DFTFLG is always activated...
-   MODS="$DFTFLG"
-   for mod in $DNFFLG $ERIFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
-      do 
-      MODS="$MODS,$mod"
-      done
-else
-   for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
-      do
-        if [ -n "$MODS" ]; then 
-          MODS="$MODS $mod"
-        else
-          MODS="$mod"
-        fi
-      done
-fi
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
+do
+  if [ -n "$MODS" ]; then 
+    MODS="$MODS\$(SEP)$mod"
+  else
+    MODS="$mod"
+  fi
+done
 #dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
@@ -1694,10 +1682,6 @@ while [ -n "$1" ]; do
       -oof)
          OOFMOD=1
 	 MODULES=1
-         ;;
-      -ibm)
-         IBMMOD=1
-         echo "activating IBM mods..."
          ;;
       -*)
          echo "Option \"$1\" not recognized."
