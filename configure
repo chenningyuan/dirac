@@ -676,7 +676,7 @@ if [ ! -z "$LIB" ]; then
    rm -f gnyf.F gnyf.x gnyf.o
 fi
 extlist='.so .a'
-echo test $LIB and $liblist
+#echo test $LIB and $liblist
 if [ -z "$LIB" ]; then
 #  if [ $locate_ok == 0 ]; then
 #  elif [ -n "$liblist" ]; then
