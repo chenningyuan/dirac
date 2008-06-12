@@ -73,6 +73,7 @@ usage ()
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
+   echo '     -full-restart          : All files from ARCHIVE are unpacked, not just DFCOEF.'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
@@ -486,7 +487,12 @@ copy_files()
    # since the archive also contains these files.
     if [[ -n "$RESTART_ARCHIVE" ]]; then
 	echo "Extracting files from $RESTART_ARCHIVE"
-	gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv
+	# By default only restart from DFCOEF
+	if [[ -n "$RESTART_ONLY" ]]; then
+	    gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv $RESTART_ONLY
+	else
+	    gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv
+	fi
     fi
 
    #
@@ -668,6 +674,7 @@ initialize()
    DO_ARCHIVE=yes
 
    RESTART_ARCHIVE=
+   RESTART_ONLY=DFCOEF
 }
 #
 #
@@ -721,6 +728,10 @@ while [ -n "$1" ]; do
          ;;
       -noarch)
          DO_ARCHIVE=
+         ;;
+      -full-restart)
+         # Unpack everything from a given archive file, not only DFCOEF
+         RESTART_ONLY=   
          ;;
       -mw|-memory)
          shift
