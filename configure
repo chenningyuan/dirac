@@ -26,8 +26,16 @@
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+#
+# TODO
+# Add an additional: save_flags= -O0 in makefile.config
+#
 # Large molecule flag -> out (takes lot of memory)?
 # 
+# Check whether libraries are 32 or 64 bit?
+#
+# Tear apart and modularize the compiler flags.
+#
 
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -39,7 +47,7 @@ quick=0
 SRC_DIR=`pwd`
 dirlist="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
-IBMMOD=0
+
 #
 # Does 'echo' understand escapes?
 #
@@ -127,37 +135,7 @@ $echo "Operating system\t: $os"
 #
 
 case $machine in
-   *-ibm | powerpc64-unknown-linux* | ppc64* )
-      echo ;;
-
-   mips*-sgi) 
-      echo ;;
-
-   i[3-6]86-*)
-      echo ;;
-
-    x86_64-*)
-      echo ;;
-
-   ia64-unknown-linux)
-      echo ;;
-
-   *apple*)
-      echo ;;
-
-   sparc-sun|m68k-sun)  
-      echo ;;
-
-   *-hp)
-      echo ;;
-
-   alpha-dec|mips-dec|vax-dec|alphaev6-dec)
-      echo ;;
-
-   *-cray)
-      echo ;;
-
-   t3e-cray)
+   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | x86_64-* | ia64-unknown-linux | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|vax-dec|alphaev6-dec | *-cray | t3e-cray)
       echo ;;
 
    *)
@@ -426,10 +404,10 @@ to_find='Fortran'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90"
 else
-  comp_list='ifort ifc g95 g90 gfortran pgf90 f90 f90 xlf_r xlf efc cf90'
+  comp_list='ifort ifc g95 g90 gfortran pgf90 f90 f90 xlf_r xlf efc cf90 pathf90'
 fi
 # jhs tmp hack for testing
-#comp_list="$comp_list gfortran-4.2"
+# comp_list="$comp_list gfortran-4.2"
 user_comp=$F90
 find_compiler
 F90=$comp_found
@@ -538,6 +516,11 @@ case $counter in
     comp_index=-1
     echo "Which one you you want to use?"
     read comp_index
+    echo $comp_index
+    if [ -z $comp_index ]; then
+      echo "Choose at least one of the above $to_find compilers!"
+      exit
+    fi
     if [ $comp_index -le 0 -o $comp_index -ge $counter ]; then
       echo "Not a valid compiler number: $comp_index"
       exit
@@ -595,6 +578,11 @@ openmpif*|mpif*)
 *)
 echo Setting F90real $F90
    F90real=$F90
+# jhs hack for gfortran-4.2
+#    case $F90 in 
+#    gfortran*)
+#      F90real="gfortran"
+#    esac
    ;;
 esac   
 }
@@ -910,26 +898,138 @@ echo
 }
 
 
+get_cpp_flags(){
+
+  if [ "$mesp" = "dummy" ]; then
+    cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    def='dirac.x'
+  else
+    cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    def='dirmpi.x'
+    mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+  fi
+
+  set_bit_arch
+}
+
+
+
+set_bit_arch(){
+# Special flags for 64 bit machines
+  if [ "$bit_set" = "64" ]; then
+    echo "Bitset: $bit_set"
+    cpp_f90="-DINT_STAR8 $cpp_f90"
+    cpp_cc="-DINT_STAR8 $cpp_cc"
+    case "$F90real" in
+      g95|pgf90|ifc|ifort|pathf90)
+         opt="$opt -i8" ;;
+      gfortran)
+         opt="$opt -fdefault-integer-8" ;;
+    esac
+  fi
+}
+
+
+
+get_f90_flags(){
+  case "$F90real" in
+    g95)
+      opt="-O3 -ffast-math -Wno=155"
+      mod="-fmod=$MODULE_DIR"
+      ;;
+    gfortran)
+      gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+      echo "gfortran version $gfver prc=$prc"
+      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
+      case $prc in
+      i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                march="-march=$prc -malign-double";;
+      x86_64) march="-march=x86-64";;
+      *) march="";;
+      esac
+      c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+      opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+      mod="-J$MODULE_DIR"
+      ;;
+    pgf90)
+      opt="-fastsse"
+      cpp_cc="$cpp_cc -DVAR_PGCC"
+      mod="-module $MODULE_DIR" 
+      ;;
+    ifc)
+# jhs throw ifc out?
+      opt="-O3 -ip -w"
+      cpp_cc="$cpp_cc -DVAR_IFC"
+      ldflag="-O3 -ip"
+      mod="-module $MODULE_DIR"
+# ifc is old, so print a warning
+      echo
+      echo WARNING: 
+      echo   You are using an old version of the Intel Compilers
+      echo   If you experience problems, please update to the most recent version
+      echo  
+      ;;
+    ifort)
+      opt="-O3 -ip -w -assume byterecl"
+      cpp_cc="$cpp_cc -DVAR_IFC"
+      mod="-module $MODULE_DIR"
+      ;;
+
+    pathf90)
+       ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+       cpp_cc="$cpp_cc -DVAR_EKO"
+       mod="-module $MODULE_DIR"
+       ;;
+  esac
+
+}
+
+get_cc_flags(){
+  case "$CCreal" in
+  gcc|cc)
+    c_opt="-O3 -ffast-math"
+    ;;
+  mpicc)
+    c_opt="-O3 -ffast-math"
+    echo
+    echo WARNING:
+    echo   Could not determine which compiler mpicc is using, assuming it is gcc
+    echo 
+    ;;
+  pgcc)
+    c_opt="-fastsse"
+    ;; 
+  icc)
+    c_opt="-O3 -ip -w"
+    ;;
+  pathcc)
+    c_opt=$opt 
+    ;;
+  esac
+
+
+}
+
 set_compile_flags(){
+bit_set="32"
+echo
+
+inc="-I$INCLUDE_DIR"
+find_real_f90
+get_f90_flags
+
 case $machine in
 #
 #  HEWLETT - PACKARD
 #
     *-hp) 
-       if [ "$mesp" = "dummy" ]; then
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          cpp_cc="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          def='dirac.x'
-       else
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          cpp_cc="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-       fi
+       sys_name="HPUX"
+       get_cpp_flags
        arflag='rv'
        c_opt='+DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
        opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
-       inc="-I$INCLUDE_DIR"
        LIB="-llapack +U77 +DA2.0W -lm $LIB"
        if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp_f90="$cpp_f90 -DVAR_LIBVECLIB"
@@ -939,22 +1039,13 @@ case $machine in
 #   ALPHA
 #
     alpha-dec|mips-dec|vax-dec|alphaev6-dec)
-       if [ "$mesp" = "dummy" ]; then
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          cpp_cc="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          def='dirac.x'
-       else
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          cpp_cc="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	  def='dirmpi.x'
-          parlib="$parlib -lfmpi -lrt -pthread"
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-       fi
-       opt='-fast'
-       inc="-I$INCLUDE_DIR"
+       sys_name="DEC"
+       get_cpp_flags
+
        if [ ! -z "echo $LIB | grep 'dxml'" ]; then
           cpp_f90="$cpp_f90 -DVAR_DXML"
        fi
+       opt='-fast'
        ;;
 #
 #   CRAY T3E
@@ -972,45 +1063,30 @@ case $machine in
        fi
 #       opt="-Oaggress,scalar3"
        opt="-dp -F -O3,unroll2,msgs,negmsgs -R nb -Wl,-Dstreams=on"
-       inc="-I$INCLUDE_DIR"
        LIB="crilib.cld $LIB"
        ;;
 #
 #   CRAY
 #
     *-cray)
-       if [ "$mesp" = "dummy" ]; then
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          cpp_cc="-DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          def='dirac.x'
-       else
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          cpp_cc="-DSYS_CRAY -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-          def='dirmpi.x'
-       fi
+       sys_name="CRAY"
+       bit_set="64"
+       get_cpp_flags
+
        opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
        c_opt="-i 64 -a stack -dp"
-       inc="-I$INCLUDE_DIR"
        LIB="C90lib.cld $LIB"
        ;;
 #
 #  SUN
 #
    sparc-sun|m68k-sun)  
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	 def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
+      sys_name="SUN"
+      cpp_f90="$cpp -DVAR_MFDS" 
+      get_cpp_flags
       opt='-fast # updated 28.Aug.04'
       c_opt='-fast # updated 28.Aug.04'
-      inc="-I$INCLUDE_DIR" ;;
+      ;;
 #
 #   IBM
 #
@@ -1028,7 +1104,7 @@ case $machine in
 	       def='dirmpi.x'
                mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
-            inc="-I$INCLUDE_DIR";;
+	    ;;
          gnu* )
             if [ "$mesp" = "dummy" ]; then
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1042,7 +1118,7 @@ case $machine in
                c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
             c_inc="-I$INCLUDE_DIR"
-            inc="-WF,-I$INCLUDE_DIR";;
+            inc="-WF,$inc";;
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1056,7 +1132,7 @@ case $machine in
                c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
             c_inc="-I$INCLUDE_DIR"
-            inc="-WF,-I$INCLUDE_DIR";;
+            inc="-WF,$inc";;
          esac
 
 
@@ -1081,45 +1157,28 @@ case $machine in
 
 	 mod="-qmoddir=$MODULE_DIR"
          f90_extraflags="-qfree=f90"
-
-
          ;;
 #
 #  IRIX
 #
    mips*-sgi)
+      sys_name="IRIX"
+      get_cpp_flags
       opt='-O2 -G 0 -woff 2290'
       c_opt='-O2 -G 0'
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	 def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
-      inc="-I$INCLUDE_DIR";;
+      ;;
 #
 #   Linux on 32 bit machines
 #
    i[3-6]86-*)
-      echo 
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
-      debug='gdb'
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+      sys_name="LINUX"
+      get_cpp_flags
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
+
+      debug="gdb"
 #
 # Ask user whether the large file option can be set
 #
@@ -1138,109 +1197,33 @@ case $machine in
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-      find_real_f90
-
       case "$F90real" in
       g95)
-         opt="-O3 -ffast-math -Wno=155 -fno-second-underscore"
-	 mod="-fmod=$MODULE_DIR"
-         ;;
-      g77|f77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
-         ;;
-      mpif77|openmpif77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpif77 is using, assuming it is g77
-         echo 
-         ;;
-       gfortran)
-         gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-         echo "gfortran version $gfver prc=$prc"
-         cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
-         case $prc in
-           i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
-                     march="-march=$prc -malign-double";;
-           *) march="";;
-         esac
-         c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-         opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
-	 mod="-J$MODULE_DIR"
-         ;;
-      pgf90|pgf77)
-         opt="-fastsse"
-         cpp_cc="$cpp_cc -DVAR_PGCC"
-	 mod="-module $MODULE_DIR" 
-         ;;
-      ifc)
-         opt="-O3 -ip -w"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag="-O3 -ip"
-	 mod="-module $MODULE_DIR"
-# ifc is old, so print a warning
-         echo
-         echo WARNING: 
-         echo   You are using an old version of the Intel Compilers
-         echo   If you experience problems, please update to the most recent version
-         echo  
-         ;;
+         opt="$opt -fno-second-underscore" ;;
       ifort)
-         opt="-O3 -ip -w -assume byterecl"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag="-nofor_main"
-	 mod="-module $MODULE_DIR"
-         ;;
-      pathf90)
-         ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
-         cpp_cc="$cpp_cc -DVAR_EKO"
-	 mod="-module $MODULE_DIR"
-         ;;
+         ldflag="-nofor_main" ;;
       esac
 
       find_real_cc
 
-      case "$CCreal" in
-      gcc|cc)
-         c_opt="-O3 -ffast-math"
-         ;;
-      mpicc|openmpicc)
-         c_opt="-O3 -ffast-math"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpicc is using, assuming it is gcc
-         echo 
-         ;;
-      pgcc)
-         c_opt="-fastsse"
-         ;; 
-      icc)
-         c_opt="-O3 -ip -w"
-         ;;
-      pathcc)
-         c_opt=$opt 
-         ;;
-     esac
+      get_cc_flags
+
      inc="-I$INCLUDE_DIR";;
 #
 #   Linux on 64 bit machines
 #
    x86_64-*)
-      echo 
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DINT_STAR8 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc=" -DINT_STAR8 -DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DINT_STAR8 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DINT_STAR8 -DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
-      debug='gdb'
+      sys_name="LINUX"
+      bit_set="64"
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+
+      get_cpp_flags
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
+
+
+      debug="gdb"
 #
 # Ask user whether the large file option can be set
 #
@@ -1259,108 +1242,38 @@ case $machine in
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-      find_real_f90
       case "$F90real" in
-      g95)
-         opt="-O3 -ffast-math -Wno=155 -i8"
-	 mod="-fmod=$MODULE_DIR"
-         ;;
-      g77|f77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
-         ;;
-      mpif77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpif77 is using, assuming it is g77
-         echo 
-         ;;
-      gfortran)
-         gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-         echo "gfortran version $gfver prc=$prc"
-         cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
-         case $prc in
-           x86_64) march="-march=x86-64";;
-           *) march="";;
-         esac
-         c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-         opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fdefault-integer-8"
-	 mod="-J$MODULE_DIR"
-         ;;
-      pgf90|pgf77)
-         opt="-fastsse -i8"
-         cpp_cc="$cpp_cc -DVAR_PGCC"
-	 mod="-module $MODULE_DIR" 
-         ;;
-      ifc)
-         opt="-O3 -ip -w -i8"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag="-O3 -ip"
-	 mod="-module $MODULE_DIR"
-# ifc is old, so print a warning
-         echo
-         echo WARNING: 
-         echo   You are using an old version of the Intel Compilers
-         echo   If you experience problems, please update to the most recent version
-         echo  
-         ;;
       ifort)
-         opt="-O3 -ip -w -assume byterecl -i8"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag="-nofor_main"
-	 mod="-module $MODULE_DIR"
-         ;;
-      pathf90)
-	   opt="-i8"
-         ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
-         cpp_cc="$cpp_cc -DVAR_EKO"
-	 mod="-module $MODULE_DIR"
-         ;;
+         ldflag="-nofor_main" ;;
       esac
 
       find_real_cc
 
-      case "$CCreal" in
-      gcc|cc)
-         c_opt="-O3 -ffast-math"
-         ;;
-      mpicc)
-         c_opt="-O3 -ffast-math"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpicc is using, assuming it is gcc
-         echo 
-         ;;
-      pgcc)
-         c_opt="-fastsse"
-         ;; 
-      icc)
-         c_opt="-O3 -ip -w"
-         ;;
-      pathcc)
-         c_opt=$opt 
-         ;;
-     esac
-      inc="-I$INCLUDE_DIR";;
+      get_cc_flags
+      ;;
 #
 #   Linux on 64 bit Itanium
 #
    ia64-unknown-linux)
-      echo
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DINT_STAR8 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc="-DINT_STAR8 -DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DINT_STAR8 -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DINT_STAR8 -DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
-      debug='gdb'
+      sys_name="LINUX"
+      bit_set="64"
+      
+# jhs uncomment hack if it gives problems
+#     case "$F90real" in
+#     pgf90|pathf90)
+#       bit_set="32"
+#       cpp_f90="$cpp_f90 -DINT_STAR8"
+#     esac
+
+
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+      get_cpp_flags
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-         cpp_f90="$cpp_f90 -DVAR_MKL"
+        cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
+
+      debug="gdb"
+
 #
 # Ask user whether the large file option can be set
 #
@@ -1381,123 +1294,34 @@ case $machine in
 # sure we use the correct flags
 #
       
-      find_real_f90
-
       case "$F90real" in
-      g95)
-         opt="-O3 -ffast-math -Wno=155 -i8"
-	 mod="-fmod=$MODULE_DIR"
-         ;;
-      g77|f77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
-         ;;
-      mpif77)
-         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fdefault-integer-8"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpif77 is using, assuming it is g77
-         echo 
-         ;;
-      pgf90|pgf77)
-         opt="-fastsse"
-         cpp_cc="$cpp_cc -DVAR_PGCC"
-	 mod="-module $MODULE_DIR" 
-        ;;
-      gfortran)
-         gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-         echo "gfortran version $gfver prc=$prc"
-         cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
-         case $prc in
-           i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
-                     march="-march=$prc -malign-double";;
-           x86_64) march="-march=x86-64";;
-           *) march="";;
-         esac
-         c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-         opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -fdefault-integer-8"
-	 mod="-J$MODULE_DIR"
-         ;;
-      ifc)
-         opt="-O3 -ip -w -i8"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag="-O3 -ip"
-	 mod="-module $MODULE_DIR"
-# ifc is old, so print a warning
-         echo
-         echo WARNING: 
-         echo   You are using an old version of the Intel Compilers
-         echo   If you experience problems, please update to the most recent version
-         echo  
-         ;;
-      ifort)
-         opt="-O3 -ip -w  -assume byterecl -i8"
-         cpp_cc="$cpp_cc -DVAR_IFC"
-         ldflag=""
-	 mod="-module $MODULE_DIR"
-         ;;
       pathf90)
-         ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium -i8"
-         cpp_cc="$cpp_cc -DVAR_EKO"
-	 mod="-module $MODULE_DIR"
-         ;;
+# jhs no opt="-i8"?
+         ldflag=i"$ldflag -i8" ;;
       esac
 
       find_real_cc
 
-      case "$CCreal" in
-      gcc|cc)
-         c_opt="-O3 -ffast-math"
-         ;;
-      mpicc)
-         c_opt="-O3 -ffast-math"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpicc is using, assuming it is gcc
-         echo 
-         ;;
-      pgcc)
-         c_opt="-fastsse"
-         ;; 
-      icc)
-         c_opt="-O3 -ip -w"
-         ;;
-      pathcc)
-         c_opt=$opt 
-         ;;
-     esac
+      get_cc_flags
 
-      inc="-I$INCLUDE_DIR"
    ;;
 
 #
 #   Darwin
 #
    *apple*)
-      echo 
-      if [ "$mesp" = "dummy" ]; then
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         cpp_cc="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         cpp_cc="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	  def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
-      fi
-      debug='gdb'
+      sys_name="DARWIN"
+      get_cpp_flags
+      cpp_f90="-DVAR_MFDS $cpp_f90"
+
+      debug="gdb"
+
+      F90real="$F90"
+      get_f90_flags
+
       case "$F90" in
       g95)
-         opt='-O3 -ffast-math -Wno=155'
 	 c_opt='-O3'
-	 mod="-fmod=$MODULE_DIR"
-         ;;
-      g77)
-         opt='-O2 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
-         c_opt='-O2'
-# the following line is needed for g77 on the Mac to force linking with
-# Apple's libgcc and not the g77 version.
-# Otherwise there are undefined symbols restFP and saveFP
-         LIB="-L/usr/lib -lgcc $LIB"
          ;;
       xlf)
          opt='-O2 -qextname'
@@ -1506,11 +1330,7 @@ case $machine in
 	 f90_extraflags=-qfree=f90
          ;;
       esac
-      inc="-I$INCLUDE_DIR";;
-   
-   *)
-      echo "$machine is not recognized : check configure file"
-      exit 1
+
 esac
 }
 
@@ -1586,6 +1406,12 @@ arflag=
 
 set_compile_flags
 
+#
+# Replace spaces with commas if compiler is xlf.
+#
+if [ "$F90" = "xlf" ]; then
+   cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
+fi
 
 
 # given that all unix clones like linux, *bsd and mac osx have no
@@ -1647,8 +1473,6 @@ fi
 case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
-     IBMMOD=1
-     cpp_f90="`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
      ;;
