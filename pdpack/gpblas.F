@@ -47,7 +47,7 @@ C When referring to these routines or BLAS please check the page
 C http://www.netlib.org/blas/faq.html#1.2 for the original references.
 C
 C Make sure to use this only when nothing else is available. 
-#if defined (NO_BLAS)
+#if defined (USE_DIRAC_BLAS)
       subroutine caxpy(n,ca,cx,incx,cy,incy)
 c
 c     constant times a vector plus a vector.
