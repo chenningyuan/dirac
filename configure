@@ -579,7 +579,6 @@ openmpif*|mpif*)
    echo "Compiler in $F90 found to be $F90real ..."
    ;;
 *)
-echo Setting F90real $F90
    F90real=$F90
 # jhs hack for gfortran-4.2
 #    case $F90 in 
