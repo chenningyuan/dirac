@@ -1621,7 +1621,14 @@ esac
 # 
 #  Make Makefile.config
 #
+#  To avoid problems with make depend, substitute all , with spaces
+#
 ##############################################################################
+if [ "$mesp" != "dummy" ]; then 
+   depend_flags=`echo $cpp $inc | sed -e 's/,/\ /g'`
+else
+   depend_flags=`echo $cpp $inc $parinc | sed -e 's/,/\ /g'`
+fi
 #
 #  Check for special C-directives
 #
@@ -1727,6 +1734,7 @@ fi
 cat <<EOF >> Makefile.config
 WRKMEM      = $memsiz
 INCLUDE_DIR = $inc\$(SEP)-I$MODULE_DIR
+DEPEND_FLAGS= $depend_flags 
 CPP_F90     = $cpp_f90
 CPP_CC      = $cpp_cc
 F90         = $F90
