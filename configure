@@ -32,10 +32,17 @@
 #
 # Large molecule flag -> out (takes lot of memory)?
 # 
-# Check whether libraries are 32 or 64 bit?
-#
 # Tear apart and modularize the compiler flags.
 #
+# LIBRARY REWRITE:
+#   search standard directories and environmental variables (contains: LIBRARY_PATH)
+#   show user the directories/ask for a library_path?
+#   if no library is found ask the user for a library_path?
+#
+# Check whether libraries are 32 or 64 bit?
+#
+#
+
 
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -513,7 +520,6 @@ case $counter in
     comp_index=-1
     echo "Which one you you want to use?"
     read comp_index
-    echo $comp_index
     if [ -z $comp_index ]; then
       echo "Choose at least one of the above $to_find compilers!"
       exit
@@ -575,7 +581,6 @@ openmpif*|mpif*)
 *)
 echo Setting F90real $F90
    F90real=$F90
-   echo "new freal: $F90real"
 # jhs hack for gfortran-4.2
 #    case $F90 in 
 #    gfortran*)
@@ -917,7 +922,6 @@ get_cpp_flags(){
 set_bit_arch(){
 # Special flags for 64 bit machines
   if [ "$bit_set" = "64" ]; then
-    echo "Bitset: $bit_set"
     cpp_f90="-DINT_STAR8 $cpp_f90"
     cpp_cc="-DINT_STAR8 $cpp_cc"
     case "$F90real" in
