@@ -12,9 +12,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 CC(MAXCOR)
 
 #include "adcinpt.inc"
-#include "symm.inc"
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Description--------------------------------------------
 C
@@ -550,9 +550,9 @@ C  started.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
-#include "param.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -658,8 +658,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -790,8 +790,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -932,8 +932,8 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1164,8 +1164,8 @@ C  matrix of purged eigenvectors from ZMAT.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1408,7 +1408,7 @@ c
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C--------------- Local variables ----------------------------------
 C     
@@ -1715,7 +1715,7 @@ c
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C--------------- Local variables ----------------------------------
 C     
@@ -2067,7 +2067,7 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 #include "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2472,7 +2472,7 @@ c  numbering. Numbering according to threshold will have gaps.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 #include "adcinpt.inc"
 C
 C---------------Local variables--------------------------------------
@@ -2882,7 +2882,7 @@ C    numerical recipes routines the original matrix T is DESTROYED !!!
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2961,7 +2961,7 @@ C  The Lanczos matrix T from the caller comes in the AB array.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3086,8 +3086,8 @@ C  are necessarily real.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3154,8 +3154,8 @@ C  This has to be taken into account.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

@@ -38,9 +38,9 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "ccpar.inc"
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/ccpar.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -127,14 +127,14 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "inpt.inc"
-#include "eqns.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/inpt.inc"
+#include "../relccsd/eqns.inc"
 #include "adcinpt.inc"
-#include "symm.inc"
-#include "complex.inc"
-#include "ccpar.inc"
-#include "waio.h"
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/ccpar.inc"
+#include "../relccsd/waio.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -590,11 +590,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "files.inc"
+#include  "../relccsd/files.inc"
 #include  "adcinpt.inc"
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2002,7 +2002,7 @@ C
      & 'VVLT   ','BUFVVVV','BUFVOV ','BUFVOW ','LANCZOS','       ',
      & 'P      ','T      ','ADCDIAG'/
 
-#include  "files.inc"
+#include  "../relccsd/files.inc"
 
       IF(IC.EQ.0) THEN
         WRITE(IW,*)
@@ -2050,10 +2050,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2192,9 +2192,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2351,10 +2351,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2489,10 +2489,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2632,9 +2632,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2830,9 +2830,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3011,9 +3011,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3246,9 +3246,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3447,10 +3447,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3620,10 +3620,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3773,10 +3773,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3847,10 +3847,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3937,10 +3937,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4142,10 +4142,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4287,10 +4287,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4483,8 +4483,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "files.inc"
-#include  "param.inc"
+#include  "../relccsd/files.inc"
+#include  "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4583,7 +4583,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "files.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4644,10 +4644,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4716,7 +4716,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4754,10 +4754,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -4833,10 +4833,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5089,10 +5089,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "param.inc"
-#include  "files.inc"
-#include  "complex.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 
@@ -5163,10 +5163,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5310,10 +5310,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
-#include  "param.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/param.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5469,7 +5469,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
+#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5598,8 +5598,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5732,7 +5732,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
+#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -5872,8 +5872,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6000,8 +6000,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
-#include  "files.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6063,8 +6063,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "complex.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6160,8 +6160,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "symm.inc"
-#include  "files.inc"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6237,7 +6237,7 @@ c  therefore we have to stretch the offset by a factor of RCW !
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Executable code--------------------------------------
 C
@@ -6326,7 +6326,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-#include  "files.inc"
+#include  "../relccsd/files.inc"
       REAL*8 SUM
 C
 C---------------Executable code--------------------------------------
@@ -6363,7 +6363,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6407,8 +6407,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
-#include  "symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6452,7 +6452,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6495,7 +6495,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "complex.inc"
+#include  "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6548,10 +6548,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include  "param.inc"
-#include "symm.inc"
-#include "files.inc"
-#include "complex.inc"
+#include  "../relccsd/param.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6628,9 +6628,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "symm.inc"
-#include "files.inc"
+#include "../relccsd/param.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6712,9 +6712,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
-#include "param.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6816,10 +6816,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
-#include "files.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -6915,10 +6915,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "complex.inc"
-#include "param.inc"
-#include "files.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7007,9 +7007,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7079,9 +7079,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "files.inc"
-#include "complex.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7146,8 +7146,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "symm.inc"
-#include "complex.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7226,8 +7226,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "symm.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7364,7 +7364,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7405,7 +7405,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7453,7 +7453,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7489,7 +7489,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7526,7 +7526,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7560,7 +7560,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
+#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7598,10 +7598,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "param.inc"
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -7702,7 +7702,7 @@ c
       IMPLICIT INTEGER(A-Z)
       CHARACTER*60 A
 
-#include "files.inc"
+#include "../relccsd/files.inc"
       character*60 b,bt
 
       lim=60
