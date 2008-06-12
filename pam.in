@@ -821,7 +821,7 @@ while [ -n "$1" ]; do
            EXT='mol'
          fi
 #        Capitalize the extension
-         EXTOUT=`echo $EXT | tr [a-z] [A-Z]`
+         EXTOUT=`echo $EXT | tr a-z A-Z`
          shift 
          if [ -z "$1" ]; then
             echo "ERROR: No Dirac menu file given"
