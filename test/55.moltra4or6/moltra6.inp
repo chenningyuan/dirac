@@ -1,0 +1,27 @@
+!
+! This test does a 4 index using schene 6 and calls RELCCSD with only MP2 to check correctness
+! The test is primarily made to time scheme 4 vs. scheme 6 on parallel machines.
+!
+**DIRAC
+.TITLE
+Generic closed shell molecule. Restricted kinetic balance.
+.WAVE FUNCTION
+**HAMILTONIAN
+.LVCORR
+**WAVE FUNCTIONS
+.DHF
+.RELCCSD
+*DHFCAL
+.EVCCNV
+1.0E-6
+**MOLTRA
+.SCHEME
+6
+.THROUT
+1.E-12
+*END OF
+
+ &RELCCSD TIMING=T, INTERFACE='DIRAC6',
+          DOSORT=T, DOENER=T, DOFOPR=F, DOSOPR=F &END
+ &CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F &END
+
