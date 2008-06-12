@@ -1726,7 +1726,7 @@ INSTALLDIR  = $INSTALL_DIR
 # Location of the source files
 SOURCEDIR   = `pwd`
 EOF
-if [ -n $IBMMOD ]; then
+if [ $IBMMOD -eq 1 ]; then
 cat <<EOF >> Makefile.config
 SEP         =,
 EOF
