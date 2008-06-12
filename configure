@@ -47,7 +47,7 @@ quick=0
 SRC_DIR=`pwd`
 dirlist="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
-
+IBMMOD=0
 #
 # Does 'echo' understand escapes?
 #
@@ -275,8 +275,6 @@ if [ "$par" = "yes" ]; then
             ;;
       esac
    fi
-
-
    pardir=dirlist
    incdir='/usr/include /usr/local/include /local/include'
 #
@@ -389,7 +387,6 @@ echo
 
 compiler_fortran
 compiler_c
-
 
 }
 
@@ -902,14 +899,14 @@ echo
 get_cpp_flags(){
 
   if [ "$mesp" = "dummy" ]; then
-    cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     def='dirac.x'
   else
-    cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     def='dirmpi.x'
-    mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+#    mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
   fi
 
   set_bit_arch
@@ -1017,7 +1014,7 @@ set_compile_flags(){
 bit_set="32"
 echo
 
-inc="-I$INCLUDE_DIR"
+inc="-I$INCLUDE_DIR -I$MODULE_DIR"
 find_real_f90
 get_f90_flags
 
@@ -1059,7 +1056,7 @@ case $machine in
        else
           cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
           cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+#          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
 #       opt="-Oaggress,scalar3"
@@ -1103,7 +1100,7 @@ case $machine in
                cpp_f90="$cpp_f90 -w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-               mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+#               mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
 	    ;;
          gnu* )
@@ -1115,11 +1112,11 @@ case $machine in
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
-               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+#               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+#               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
-            c_inc="-I$INCLUDE_DIR"
-            inc="-WF,$inc";;
+#            c_inc="-I$INCLUDE_DIR"
+#            inc="-WF,$inc";;
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1129,11 +1126,11 @@ case $machine in
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
-               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+#               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+#               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
-            c_inc="-I$INCLUDE_DIR"
-            inc="-WF,$inc";;
+#            c_inc="-I$INCLUDE_DIR"
+#            inc="-WF,$inc";;
          esac
 
 
@@ -1407,14 +1404,6 @@ arflag=
 
 set_compile_flags
 
-#
-# Replace spaces with commas if compiler is xlf.
-#
-if [ "$F90" = "xlf" ]; then
-   cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
-fi
-
-
 # given that all unix clones like linux, *bsd and mac osx have no
 # specific preprocessor directives, what comes below allows one
 # to fine-tune functionality. for instance, in the code under gp/
@@ -1459,9 +1448,9 @@ fi
 #
 #  Check for special C-directives
 #
-if [ "$c_inc" = "" ]; then
-   c_inc="\$(INCLUDE_DIR)"
-fi
+#if [ "$c_inc" = "" ]; then
+#   c_inc="\$(INCLUDE_DIR)"
+#fi
 if [ "$c_opt" = "" ]; then
    c_opt="\$(OPTFLAGS)"
 fi
@@ -1474,6 +1463,8 @@ fi
 case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
+     IBMMOD=1
+     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
      ;;
@@ -1558,8 +1549,8 @@ SEP          := \$(NULLSTRING) #end of line
 EOF
 fi
 cat <<EOF >> Makefile.config
-INCLUDE_DIR   = $inc\$(SEP)-I$MODULE_DIR
-C_INCLUDE_DIR = $c_inc
+INCLUDE_DIR   = $inc
+C_INCLUDE_DIR = $inc
 DEPEND_FLAGS  = $depend_flags 
 CPP_F90       = $cpp_f90
 CPP_CC        = $cpp_cc
@@ -1603,6 +1594,9 @@ if [ "$c_mpi_inc" = "" ]; then
 fi
 #if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
 if [ "$mesp" = "mpi" ]; then
+   if [ -n "$parinc" ]; then
+      inc=$inc $parinc
+   fi
    if [ ! -z "$parlibp" ]; then
       parlibp=-L$parlibp
    fi
@@ -1613,8 +1607,8 @@ if [ "$mesp" = "mpi" ]; then
 MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
-INCLUDE_DIR     = $mpi_inc\$(SEP)-I$MODULE_DIR
-C_INCLUDE_DIR   = $c_mpi_inc
+INCLUDE_DIR     = $inc
+C_INCLUDE_DIR   = $inc
 #
 EOF
 fi
