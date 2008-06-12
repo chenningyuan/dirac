@@ -347,6 +347,7 @@ remove_work_dir()
 #
 #  Now delete work directory on primary machine if requested
 #
+   echo
    echo "Contents of work directory $WRK on master node $master"
    cd ..
    ls -l $WRK
@@ -467,7 +468,8 @@ save_files()
              FILES="$FILES $f"
          fi
        done
-       tar cv $FILES | gzip > "$LOC/${MENU}_$MOL.tgz"
+       echo "   Creating archive file ${MENU}_$MOL.tgz"
+       tar c $FILES | gzip > "$LOC/${MENU}_$MOL.tgz"
    fi
 }
 #
