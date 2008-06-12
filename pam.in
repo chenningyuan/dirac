@@ -484,7 +484,7 @@ copy_files()
    # since the archive also contains these files.
     if [[ -n "$RESTART_ARCHIVE" ]]; then
 	echo "Extracting files from $RESTART_ARCHIVE"
-	tar xzvf "$LOC/$RESTART_ARCHIVE"
+	gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv
     fi
 
    #
@@ -562,7 +562,8 @@ save_old_output()
    #
 #   if [ -a $OUTPUT_FILE ]; then
    if [ -f $OUTPUT_FILE ]; then
-      backup -v $OUTPUT_FILE
+	echo "   Backing up old output files"
+      backup $OUTPUT_FILE
 #      $echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
 #      mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
 #         ( \
