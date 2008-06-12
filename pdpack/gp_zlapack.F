@@ -1,5 +1,8 @@
 !
-! lapack complex (single and double precision) routines, taken from the netlib site on 20080612
+! lapack complex16 routines, taken from the netlib site on 20080612
+!
+!         http://www.netlib.org/lapack/complex16/
+!
 !
 ! $Id$
 !
