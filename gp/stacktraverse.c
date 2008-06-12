@@ -1,5 +1,6 @@
 #include "system_flavor.h"
 
+#ifdef SYS_LINUX
 #if (SYS_FLAVOR == LINUX)
 
 /* use the libexec from linux... */
@@ -293,3 +294,4 @@ getframeaddr(int level)
 }
 
 #endif /* SYS_FLAVOR */
+#endif

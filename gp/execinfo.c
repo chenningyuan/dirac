@@ -1,5 +1,6 @@
 #include "system_flavor.h"
 
+#ifdef SYS_LINUX
 #if (SYS_FLAVOR == LINUX)
 /* use native gnu support for traceback */
 
@@ -181,4 +182,5 @@ backtrace_symbols_fd(void *const *buffer, int size, int fd)
         write(fd, buf, len - 1);
     }
 }
+#endif
 #endif
