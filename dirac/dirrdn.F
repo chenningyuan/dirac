@@ -3792,7 +3792,9 @@ C
       DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       DFTHAM  = .FALSE.
+#ifdef MOD_DFT
       ALDAON  = .FALSE.
+#endif
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
@@ -4021,7 +4023,9 @@ C             projection scheme
   116      CONTINUE
 C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
              DFTHAM = .TRUE.
+#ifdef MOD_DFT
              ALDAON = .TRUE.
+#endif
 #ifdef MOD_DFT
              CALL DOALDA(.TRUE.)
 #endif

@@ -742,11 +742,13 @@ C
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
+#ifdef MOD_DFT
           IF(DFTADD) THEN
           CPUTID = SECTID(TDXC)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
+#endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)

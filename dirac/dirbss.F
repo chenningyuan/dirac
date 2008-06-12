@@ -8546,9 +8546,11 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
+#ifdef MOD_AMFI
        CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
      &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
+#endif 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 

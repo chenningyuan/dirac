@@ -1306,9 +1306,11 @@ C
       CALL MEMGET ('REAL',KIDUMY,NAUX*NAUX*2+NAUX,WORK,KFREE,LFREE)
 
       CALL DCOPY(NAUX*NAUX,ALBE,1,WORK(KALBEI),1)
+#ifdef MOD_DNF
       CALL INVERT_BY_DIAG2(WORK(KALBEI), WORK(KIDUMY),
      &                     WORK(KIDUMY+NAUX*NAUX),
      &                     WORK(KIDUMY+2*NAUX*NAUX),NAUX)
+#endif
 
       IF (IPRINT.GT.30) THEN
         CALL HEADER('(alpha|beta)',-1)
