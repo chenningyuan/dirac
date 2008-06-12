@@ -948,8 +948,8 @@ get_f90_flags(){
       x86_64) march="-march=x86-64";;
       *) march="";;
       esac
-      c_opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
-      opt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize"
+      c_opt="-O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
+      opt="-O3 -ffast-math -funroll-loops -ftree-vectorize $march"
       mod="-J$MODULE_DIR"
       ;;
     pgf90)
