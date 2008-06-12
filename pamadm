@@ -1517,7 +1517,6 @@ do
     MODS="$mod"
   fi
 done
-#dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
