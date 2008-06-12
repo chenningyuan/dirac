@@ -1580,7 +1580,7 @@ else
     paropibm=
 fi
 
-INCLUDE_DIR=\$\(SOURCEDIR\)\/include
+#INCLUDE_DIR=\$\(SOURCEDIR\)\/include
 MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 
@@ -1621,17 +1621,7 @@ esac
 # 
 #  Make Makefile.config
 #
-#  To avoid problems with make depend, substitute all , with spaces
-#
 ##############################################################################
-if [ "$mesp" != "dummy" ]; then 
-   depend_flags=`echo $cpp_f90 $inc | sed -e 's/,/\ /g'`
-else
-   depend_flags=`echo $cpp_f90 $inc $parinc | sed -e 's/,/\ /g'`
-fi
-##### 
-#   depend_flags="$depend_flags -module $MODULE_DIR"
-#####
 #
 #  Check for special C-directives
 #
@@ -1647,8 +1637,6 @@ fi
 #
 # Add the modifications that concern the module preprocessor statements
 #
-#
-
 case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
@@ -1738,8 +1726,7 @@ EOF
 fi
 cat <<EOF >> Makefile.config
 WRKMEM      = $memsiz
-INCLUDE_DIR = $inc -I$MODULE_DIR
-DEPEND_FLAGS= $depend_flags 
+INCLUDE_DIR = $inc\$(SEP)-I$MODULE_DIR
 CPP_F90     = $cpp_f90
 CPP_CC      = $cpp_cc
 F90         = $F90
