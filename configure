@@ -1717,51 +1717,50 @@ ARCH        = $guess
 #
 #
 # Location of the binaries
-INSTALLDIR  = $INSTALL_DIR
+INSTALLDIR    = $INSTALL_DIR
 # Location of the source files
-SOURCEDIR   = `pwd`
+SOURCEDIR     = `pwd`
 EOF
 if [ $IBMMOD -eq 1 ]; then
 cat <<EOF >> Makefile.config
-SEP         =,
+SEP           =,
 EOF
 else
 cat <<EOF >> Makefile.config
-NULLSTRING :=
-SEP        := \$(NULLSTRING) #end of line 
+NULLSTRING   :=
+SEP          := \$(NULLSTRING) #end of line 
 EOF
 fi
 cat <<EOF >> Makefile.config
-WRKMEM      = $memsiz
-INCLUDE_DIR = $inc\$(SEP)-I$MODULE_DIR
-DEPEND_FLAGS= $depend_flags 
-CPP_F90     = $cpp_f90
-CPP_CC      = $cpp_cc
-F90         = $F90
-CC          = $CC
-RM          = rm
-AR          = ar
+WRKMEM        = $memsiz
+INCLUDE_DIR   = $inc\$(SEP)-I$MODULE_DIR
+C_INCLUDE_DIR = $c_inc
+DEPEND_FLAGS  = $depend_flags 
+CPP_F90       = $cpp_f90
+CPP_CC        = $cpp_cc
+F90           = $F90
+CC            = $CC
+RM            = rm
+AR            = ar
 EOF
 if [ -n "$arflag" ]; then
 cat <<EOF >> Makefile.config
-ARFLAGS     = $arflag
+ARFLAGS       = $arflag
 EOF
 fi
 cat <<EOF >> Makefile.config
-OPTFLAGS    = $opt $mod
-OPTGFLAGS   = -g $opt $mod 
-OPTIFLAGS   = -E
-C_OPTFLAGS  = $c_opt
-F90_OPTFLAGS = $opt $mod $f90_extraflags
-LDFLAGS     = $ldflag
-CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
+OPTFLAGS      = $opt $mod
+OPTGFLAGS     = -g $opt $mod 
+OPTIFLAGS     = -E
+C_OPTFLAGS    = $c_opt
+F90_OPTFLAGS  = $opt $mod $f90_extraflags
+LDFLAGS       = $ldflag
+CHEKFLAGS     = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
  -noargumants -arguments=number \\
  -usage=var-unitialized
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
-#INCLUDE_DIR = $inc
-C_INCLUDE_DIR = $c_inc
-LIB_LIST    = $LIB
+LIB_LIST      = $LIB
 #
 default : $def
 EOF
