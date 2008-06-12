@@ -42,7 +42,8 @@ have no way of knowing which are meaningful and which are not. YOU need to
 do this by making the correct filter !
 
 ** Adding a new test, how I (LV) usually do this  **
-1. Use cp -r to copy an existing test that has the right structure to the
+1. Copy (but do not use cp -r, as it copies also .svn files !) 
+an existing test that has the right structure to the
 next available test number. Make sure to choose a sensible name to follow the .
 So : do not use 31.luuksfavoritetest, but 31.symmetry_recognition to signal
 that we are testing the symmetry recognition procedure.
