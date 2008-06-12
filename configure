@@ -1580,7 +1580,7 @@ else
     paropibm=
 fi
 
-#INCLUDE_DIR=\$\(SOURCEDIR\)\/include
+INCLUDE_DIR=\$\(SOURCEDIR\)\/include
 MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 
@@ -1720,6 +1720,7 @@ ARCH        = $guess
 INSTALLDIR    = $INSTALL_DIR
 # Location of the source files
 SOURCEDIR     = `pwd`
+WRKMEM        = $memsiz
 EOF
 if [ $IBMMOD -eq 1 ]; then
 cat <<EOF >> Makefile.config
@@ -1732,7 +1733,6 @@ SEP          := \$(NULLSTRING) #end of line
 EOF
 fi
 cat <<EOF >> Makefile.config
-WRKMEM        = $memsiz
 INCLUDE_DIR   = $inc\$(SEP)-I$MODULE_DIR
 C_INCLUDE_DIR = $c_inc
 DEPEND_FLAGS  = $depend_flags 
