@@ -941,7 +941,6 @@ get_f90_flags(){
       ;;
     gfortran)
       gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-      echo "gfortran version $gfver prc=$prc"
       cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
       i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
@@ -1053,11 +1052,11 @@ case $machine in
 #
     t3e-cray) 
        if [ "$mesp" = "dummy" ]; then
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST"
+          cpp_f90="-DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST"
           cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
-          cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
+          cpp_f90="-DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
           cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           def='dirmpi.x'
        fi
@@ -1082,8 +1081,8 @@ case $machine in
 #
    sparc-sun|m68k-sun)  
       sys_name="SUN"
-      cpp_f90="$cpp -DVAR_MFDS" 
       get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS" 
       opt='-fast # updated 28.Aug.04'
       c_opt='-fast # updated 28.Aug.04'
       ;;
@@ -1095,33 +1094,33 @@ case $machine in
       case $os in
          aix2*) 
             if [ "$mesp" = "dummy" ]; then
-               cpp_f90="$cpp_f90 -w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
+               cpp_f90="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
                cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}'"
                def='dirac.x'
             else
-               cpp_f90="$cpp_f90 -w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+               cpp_f90="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
             fi
 	    ;;
          gnu* )
             if [ "$mesp" = "dummy" ]; then
-               cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
+               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
                cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
                def='dirac.x'
             else
-               cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
+               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
             fi
             ;;
          *)
             if [ "$mesp" = "dummy" ]; then
-               cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
+               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
                cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
                def='dirac.x'
             else
-               cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
+               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
             fi
@@ -1164,9 +1163,9 @@ case $machine in
 #   Linux on 32 bit machines
 #
    i[3-6]86-*)
-      cpp_f90="$cpp_f90 -DVAR_MFDS"
       sys_name="LINUX"
       get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
@@ -1207,9 +1206,8 @@ case $machine in
    x86_64-*)
       sys_name="LINUX"
       bit_set="64"
-      cpp_f90="$cpp_f90 -DVAR_MFDS"
-
       get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
          cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
@@ -1256,10 +1254,8 @@ case $machine in
 #       bit_set="32"
 #       cpp_f90="$cpp_f90 -DINT_STAR8"
 #     esac
-
-
-      cpp_f90="$cpp_f90 -DVAR_MFDS"
       get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
         cpp_f90="$cpp_f90 -DVAR_MKL"
       fi
@@ -1305,7 +1301,6 @@ case $machine in
       sys_name="DARWIN"
       get_cpp_flags
       cpp_f90="-DVAR_MFDS $cpp_f90"
-
       debug="gdb"
 
       F90real="$F90"
@@ -1458,7 +1453,7 @@ case $F90 in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
+#     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
      ;;
