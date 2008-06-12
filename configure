@@ -1116,7 +1116,8 @@ case $machine in
 #               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
 #            c_inc="-I$INCLUDE_DIR"
-#            inc="-WF,$inc";;
+#            inc="-WF,$inc"
+            ;;
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1130,7 +1131,8 @@ case $machine in
 #               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
 #            c_inc="-I$INCLUDE_DIR"
-#            inc="-WF,$inc";;
+#            inc="-WF,$inc"
+            ;;
          esac
 
 
