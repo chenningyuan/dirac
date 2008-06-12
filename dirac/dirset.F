@@ -1629,7 +1629,7 @@ C
       ENDIF
       IF(GOFAST) THEN
         WRITE(LUPRI,'(A)') 
-     &  '* WARNING: GOTEST found the following files:',
+     &  '* GOTEST found the following files:',
      &  '    - DFTMAT: transformation matrices',
      &  '    - AOPROPER: one-electron integrals'
         IF(BSS) WRITE(LUPRI,'(A)')
@@ -1713,7 +1713,7 @@ C.......Look for a formatted file with same information
       ENDIF
  20   CONTINUE
       IF(GOFAST) THEN
-        WRITE(LUPRI,'(A)') '*** WARNING: Restart successful !'
+        WRITE(LUPRI,'(A)') '*** Restart successful !'
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
           WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
