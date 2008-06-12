@@ -910,7 +910,6 @@ get_cpp_flags(){
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     def='dirmpi.x'
-#    mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
   fi
 
   set_bit_arch
@@ -1017,7 +1016,8 @@ set_compile_flags(){
 bit_set="32"
 echo
 
-inc="-I$INCLUDE_DIR -I$MODULE_DIR"
+f90_inc="-I$INCLUDE_DIR -I$MODULE_DIR"
+cc_inc="-I$INCLUDE_DIR"
 find_real_f90
 get_f90_flags
 
@@ -1059,7 +1059,6 @@ case $machine in
        else
           cpp_f90="$cpp_f90 -DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
           cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-#          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
 #       opt="-Oaggress,scalar3"
@@ -1103,7 +1102,6 @@ case $machine in
                cpp_f90="$cpp_f90 -w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-#               mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
 	    ;;
          gnu* )
@@ -1115,11 +1113,7 @@ case $machine in
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-#               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
-#               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
-#            c_inc="-I$INCLUDE_DIR"
-#            inc="-WF,$inc"
             ;;
          *)
             if [ "$mesp" = "dummy" ]; then
@@ -1130,11 +1124,7 @@ case $machine in
                cpp_f90="$cpp_f90 -WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	       def='dirmpi.x'
-#               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
-#               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
-#            c_inc="-I$INCLUDE_DIR"
-#            inc="-WF,$inc"
             ;;
          esac
 
@@ -1210,8 +1200,7 @@ case $machine in
       find_real_cc
 
       get_cc_flags
-
-     inc="-I$INCLUDE_DIR";;
+      ;;
 #
 #   Linux on 64 bit machines
 #
@@ -1446,9 +1435,9 @@ esac
 #
 ##############################################################################
 if [ "$mesp" != "dummy" ]; then 
-   depend_flags=`echo $cpp_f90 $inc | sed -e 's/,/\ /g'`
+   depend_flags=`echo $cpp_f90 $f90_inc | sed -e 's/,/\ /g'`
 else
-   depend_flags=`echo $cpp_f90 $inc $parinc | sed -e 's/,/\ /g'`
+   depend_flags=`echo $cpp_f90 $f90_inc $parinc | sed -e 's/,/\ /g'`
 fi
 #
 #  Check for special C-directives
@@ -1553,9 +1542,14 @@ NULLSTRING   :=
 SEP          := \$(NULLSTRING) #end of line 
 EOF
 fi
+if [ "$mesp" = "mpi" ]; then
+   if [ -n "$parinc" ]; then
+      f90_inc=$f90_inc $parinc
+   fi
+fi
 cat <<EOF >> Makefile.config
-INCLUDE_DIR   = $inc
-C_INCLUDE_DIR = $inc
+F_INCLUDE_DIR = $f90_inc
+C_INCLUDE_DIR = $cc_inc
 DEPEND_FLAGS  = $depend_flags 
 CPP_F90       = $cpp_f90
 CPP_CC        = $cpp_cc
@@ -1589,19 +1583,7 @@ EOF
 #
 # Insert necessary additional features for parallel calculations
 #
-
-#jth: parlib=-mpi 
-#
-#  Check for special C-directives
-#
-if [ "$c_mpi_inc" = "" ]; then
-   c_mpi_inc="\$(INCLUDE_DIR)"
-fi
-#if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
 if [ "$mesp" = "mpi" ]; then
-   if [ -n "$parinc" ]; then
-      inc=$inc $parinc
-   fi
    if [ ! -z "$parlibp" ]; then
       parlibp=-L$parlibp
    fi
@@ -1612,8 +1594,6 @@ if [ "$mesp" = "mpi" ]; then
 MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
-INCLUDE_DIR     = $inc
-C_INCLUDE_DIR   = $inc
 #
 EOF
 fi
@@ -1630,23 +1610,23 @@ cat <<EOF>> Makefile.config
 .SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
 
 .F.o:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
 .F.g:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(OPTGFLAGS) -c \$*.F
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTGFLAGS) -c \$*.F
 .F.i:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$*.F > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$*.F > \$*.i
 .F90.o:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -c \$*.F90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -c \$*.F90
 .F90.g:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -c \$*.F90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -c \$*.F90
 .F90.i:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
 .f90.o:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -cpp -c \$*.f90
 .f90.g:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
 .f90.i:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_OPTFLAGS) -c \$*.c
 .c.i:
@@ -1658,7 +1638,7 @@ EOF
 #
 cat <<EOF>> Makefile.config
 .F.a:
-$tab\$(F90) \$(INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
 $tab\$(AR) \$(ARFLAGS) \$@ \$*.o
 $tab@ rm -f \$*.o
 EOF
