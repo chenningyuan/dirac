@@ -73,7 +73,8 @@ usage ()
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
-   echo '     -full-restart          : All files from ARCHIVE are unpacked, not just DFCOEF.'
+   echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
+   echo '                              This allows you to omit the molecule and input files.'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
@@ -469,8 +470,15 @@ save_files()
              FILES="$FILES $f"
          fi
        done
-       echo "   Creating archive file ${MENU}_$MOL.tgz"
-       tar c $FILES | gzip > "$LOC/${MENU}_$MOL.tgz"
+       if [[ -n "$MENU" && -n "$MOL" ]]; then
+	   ARCHNAME=${MENU}_$MOL.tgz
+       else
+	   #This overwrites the old archive in case of a full restart without .mol/.inp
+	   #We might consider a different ARCHNAME
+	   ARCHNAME=$RESTART_ARCHIVE 
+       fi
+       echo "   Creating archive file $ARCHNAME"
+       tar c $FILES | gzip > "$LOC/$ARCHNAME"
    fi
 }
 #
@@ -495,40 +503,76 @@ copy_files()
 	fi
     fi
 
+# Check if we got .mol or .inp from the archive
+   if [[ -r MOLECULE.MOL || -r MOLECULE.XYZ ]]; then
+       HAS_MOL=yes
+   else
+       HAS_MOL=
+   fi
+   if [[ -r DIRAC.INP ]]; then
+       HAS_INP=yes
+   else
+       HAS_MOL=
+   fi
+
    #
    # COPY MOLECULE AND MENU FILE
    #
-   $echo "   Copying $LOC/$MOL.$EXT to working directory : \c"
-   if [ -f $LOC/$MOL.$EXT ]; then
-      cp $LOC/$MOL.$EXT MOLECULE.$EXTOUT || \
-         ( \
-            echo "   Error copying $LOC/$MOL.$EXT" ; \
-            EXIT=1 ; \
-            exitfunc \
-         )
-      echo "ok"
-      if [ "$EXTOUT" = .MOL ]; then
-	ln -s MOLECULE$EXTOUT MOLECULE.INP
-      fi
+   if [[ -n $MOL ]]; then
+       $echo "   Copying $LOC/$MOL.$EXT to working directory : \c"
+       if [ -f $LOC/$MOL.$EXT ]; then
+	   cp $LOC/$MOL.$EXT MOLECULE.$EXTOUT || \
+	       ( \
+	       echo "   Error copying $LOC/$MOL.$EXT" ; \
+	       EXIT=1 ; \
+	       exitfunc \
+	       )
+	   echo "ok"
+	   if [ "$EXTOUT" = .MOL ]; then
+	       ln -s MOLECULE$EXTOUT MOLECULE.INP
+	   fi
+       else
+	   echo "not found"
+	   EXIT=1
+	   exitfunc
+       fi
    else
-      echo "not found"
-      EXIT=1
-      exitfunc
+       if [[ -z $HAS_MOL ]]; then
+	   echo
+	   echo "ERROR: Molecule file not specified on command line."
+	   shortusage
+	   EXIT=1
+	   exitfunc   
+       else
+	   echo "   No molecule file specified, using file from archive."
+       fi
    fi
-   $echo "   Copying $LOC/$MENU.inp to working directory : \c"
-#   if [ -a $LOC/$MENU.inp ]; then
-   if [ -f $LOC/$MENU.inp ]; then
-      cp $LOC/$MENU.inp DIRAC.INP || \
-         ( \
-            echo "   Error copying $LOC/$MENU.inp" ; \
-            EXIT=1 ; \
-            exitfunc \
-         )
-      echo "ok"
+
+   if [[ -n "$MENU" ]]; then
+       $echo "   Copying $LOC/$MENU.inp to working directory : \c"
+       if [ -f $LOC/$MENU.inp ]; then
+	   cp $LOC/$MENU.inp DIRAC.INP || \
+	       ( \
+	       echo "   Error copying $LOC/$MENU.inp" ; \
+	       EXIT=1 ; \
+	       exitfunc \
+	       )
+	   echo "ok"
+       else
+	   echo "not found"
+	   EXIT=1
+	   exitfunc
+       fi
    else
-      echo "not found"
-      EXIT=1
-      exitfunc
+       if [[ -z $HAS_INP ]]; then
+	   echo
+	   echo "ERROR: Input file not specified on command line."
+	   shortusage
+	   EXIT=1
+	   exitfunc   
+       else
+	   echo "   No input file specified, using file from archive."
+       fi
    fi
    #
    # COPY REQUESTED FILES TO WORKING DIRECTORY
@@ -813,7 +857,7 @@ while [ -n "$1" ]; do
          EXIT=2
          exitfunc
          ;;
-      *.tgz|*.tar.gz)
+      *.tgz)
          RESTART_ARCHIVE="$1"
 	 ;;
       *)
@@ -836,25 +880,12 @@ while [ -n "$1" ]; do
 #        Capitalize the extension
          EXTOUT=`echo $EXT | tr a-z A-Z`
          shift 
-         if [ -z "$1" ]; then
-            echo "ERROR: No Dirac menu file given"
-            shortusage
-            EXIT=1
-            exitfunc
-         fi
          MENU=${1%\.inp}
          ;;
    esac
    shift
 done
-#
-if [ -z "$MOL" ]; then
-   echo "ERROR: molecule and Dirac menu files not specified"
-   shortusage
-   EXIT=1
-   exitfunc
-fi
-#
+
 EXIT=0
 set_work_dir  # set and go to work directory
 set_dirac_environment
