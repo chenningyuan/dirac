@@ -171,6 +171,10 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
 #ifdef MOD_LONDON
 C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
+#else
+               WRITE(LUPRI,'(1X,A)') '* This version of DIRAC does not'
+     & //' support London atomic orbitals !'
+     
 #endif
                GO TO 100
    11          CONTINUE
@@ -529,7 +533,7 @@ C ... release the memmory...
       CALL QEXIT('GETCON')
       RETURN
       END
-#endif
+#endif /* MOD_LONDON  */
 
 #ifdef MOD_LONDON
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
