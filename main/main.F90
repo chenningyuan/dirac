@@ -84,6 +84,7 @@ program dirprg
      call printtitle
      call printlogo
      call printsubtitle
+     call flush(lupri)
      call sysinf(iparcal)
      call flush(lupri)
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)

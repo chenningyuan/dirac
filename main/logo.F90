@@ -102,7 +102,7 @@ print *, '*    Timo Fleig               University of Duesseldorf         German
 print *, '*    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *'
 print *, '*    Trygve Helgaker          University of Oslo                Norway       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
-print *, '*    Miroslav Ilias           Previdza University               Slowakia     *'
+print *, '*    Miroslav Ilias           University of Zilina              Slovakia     *'
 print *, '*    Christoph Jacob          ETH Zuerich                       Switzerland  *'
 print *, '*    Stefan Knecht            University of Duesseldorf         Germany      *'
 print *, '*    Patrick Norman           Linkoeping University             Sweden       *'
