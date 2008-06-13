@@ -1492,7 +1492,8 @@ EOF
 else
 cat <<EOF >> Makefile.config
 NULLSTRING   :=
-SEP          := \$(NULLSTRING) #end of line 
+#SEP          := \$(NULLSTRING) #end of line 
+SEP          := " " # mi: separation ...
 EOF
 fi
 if [ "$mesp" = "mpi" ]; then
