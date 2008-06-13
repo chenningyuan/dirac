@@ -142,7 +142,7 @@ $echo "Operating system\t: $os"
 #
 
 case $machine in
-   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | x86_64-* | ia64-unknown-linux | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|vax-dec|alphaev6-dec | *-cray | t3e-cray)
+   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | x86_64-* | ia64-unknown-linux | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|alphaev6-dec | *-cray )
       echo ;;
 
    *)
@@ -254,11 +254,6 @@ if [ "$par" = "yes" ]; then
             parlib='no'
             parinc='yes'
             mpirun='poe'
-            ;;
-         t3e-cray)
-            parlib='no'
-            parinc='no'
-            mpirun='mpirun'
             ;;
          *-hp)
             parlib='no'
@@ -410,8 +405,6 @@ if [ "$mesp" = "mpi" ]; then
 else
   comp_list='ifort ifc g95 g90 gfortran pgf90 f90 f90 xlf_r xlf efc cf90 pathf90'
 fi
-# jhs tmp hack for testing
-# comp_list="$comp_list gfortran-4.2"
 user_comp=$F90
 find_compiler
 F90=$comp_found
@@ -580,11 +573,6 @@ openmpif*|mpif*)
    ;;
 *)
    F90real=$F90
-# jhs hack for gfortran-4.2
-#    case $F90 in 
-#    gfortran*)
-#      F90real="gfortran"
-#    esac
    ;;
 esac   
 }
@@ -957,19 +945,6 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR" 
       ;;
-    ifc)
-# jhs throw ifc out?
-      opt="-O3 -ip -w"
-      cpp_cc="$cpp_cc -DVAR_IFC"
-      ldflag="-O3 -ip"
-      mod="-module $MODULE_DIR"
-# ifc is old, so print a warning
-      echo
-      echo WARNING: 
-      echo   You are using an old version of the Intel Compilers
-      echo   If you experience problems, please update to the most recent version
-      echo  
-      ;;
     ifort)
       opt="-O3 -ip -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
@@ -1046,23 +1021,6 @@ case $machine in
           cpp_f90="$cpp_f90 -DVAR_DXML"
        fi
        opt='-fast'
-       ;;
-#
-#   CRAY T3E
-#
-    t3e-cray) 
-       if [ "$mesp" = "dummy" ]; then
-          cpp_f90="-DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST"
-          cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          def='dirac.x'
-       else
-          cpp_f90="-DPRG_DIRAC -DSYS_T3D -DINT_STAR8 -DVAR_NONAMELIST $parop"
-          cpp_cc="-DSYS_T3D -DINT_STAR8 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          def='dirmpi.x'
-       fi
-#       opt="-Oaggress,scalar3"
-       opt="-dp -F -O3,unroll2,msgs,negmsgs -R nb -Wl,-Dstreams=on"
-       LIB="crilib.cld $LIB"
        ;;
 #
 #   CRAY
@@ -1310,11 +1268,11 @@ case $machine in
       g95)
 	 c_opt='-O3'
          ;;
-      xlf)
+      xlf|xlf_r)
          opt='-O2 -qextname'
          c_opt='-O2 -qcpluscmt'
 	 mod="-qmoddir=$MODULE_DIR"
-	 f90_extraflags=-qfree=f90
+	 f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
          ;;
       esac
 
