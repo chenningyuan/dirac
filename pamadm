@@ -660,7 +660,7 @@ gp/gpc.o
 
 OBJSLAVE = abacus/herpar.o
 
-PDLIB = -Lpdpack -lpdlib
+PDLIB = pdpack/dlamch.o -Lpdpack -lpdlib
 
 #
 # RELCCSD_OBJS and RELCCSD_MAIN are for stand-alone relccsd.x and mpiccsd.x
