@@ -4,7 +4,7 @@
 #if (SYS_FLAVOR == LINUX)
 /* use native gnu support for traceback */
 
-#else
+#elif (SYS_FLAVOR != UNKNOWN)
 
 /* 
    if this is not a linux system, we use the implementation below (from freebsd). 
