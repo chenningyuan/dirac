@@ -1493,7 +1493,8 @@ else
 cat <<EOF >> Makefile.config
 NULLSTRING   :=
 #SEP          := \$(NULLSTRING) #end of line 
-SEP          := " " # mi: separation ...
+#SEP          := " "  # ? will this work ?
+SEP          := ' '  #  perhaps this will work on all platforms ?
 EOF
 fi
 if [ "$mesp" = "mpi" ]; then
