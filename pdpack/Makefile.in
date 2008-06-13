@@ -15,17 +15,17 @@ F_OBJS = libpdlib.a(arhpack.o) libpdlib.a(dge.o) libpdlib.a(dsp.o)\
          libpdlib.a(linextra.o) libpdlib.a(printpkg.o)\
          libpdlib.a(gpblas.o) libpdlib.a(eispack.o) \
          libpdlib.a(gp_zlapack.o) libpdlib.a(gp_dlapack.o) \
-         libpdlib.a(gp_linpack.o) libpdlib.a(gp_auxl.o) \
+         libpdlib.a(gp_zlinpack.o) libpdlib.a(gp_auxlapack.o) \
 
 F77_SRC = arhpack.F dge.F dsp.F linextra.F printpkg.F \
           gpblas.F  eispack.F gp_zlapack.F gp_dlapack.F \
-          gp_linpack.F gp_auxl.F dlamch.F
+          gp_zlinpack.F gp_auxlapack.F dlamch.F
 
 F77_CPPS = $(F77_SRC:.F=.i)
 
 F90_MODS =
 
-all :	libpdlib.a
+all :	dlamch.o libpdlib.a
 
 pre:	$(F77_CPPS)
 
