@@ -96,7 +96,7 @@ parse_table(const char *func, const char *str,
       int len = strlen(keywords[i]);
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
-        if(sscanf(str+len+1,"%g", &weights[i]) != 1) {
+        if(sscanf(str+len+1,"%lf", &weights[i]) != 1) {
           fun_printf("%s: %s not followed by the weight: ",
                      func, keywords[i]);
           res = 0;
