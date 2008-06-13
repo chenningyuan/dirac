@@ -494,7 +494,7 @@ copy_files()
    # Have to extract the archive _before_ copying .inp/.mol,
    # since the archive also contains these files.
     if [[ -n "$RESTART_ARCHIVE" ]]; then
-	echo "Extracting files from $RESTART_ARCHIVE"
+	echo "   Extracting files from $RESTART_ARCHIVE"
 	# By default only restart from DFCOEF
 	if [[ -n "$RESTART_ONLY" ]]; then
 	    gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv $RESTART_ONLY
