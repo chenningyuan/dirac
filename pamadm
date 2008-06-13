@@ -295,7 +295,7 @@ setup()
    #
    if [ -n "$LONDONMOD" ]; then
          LONDONFLG='-DMOD_LONDON'
-         echo " - London orbitals enabled"
+         echo " - London atomic orbitals enabled"
    fi
    #
    #   HSMRCC Dirac-interface module
