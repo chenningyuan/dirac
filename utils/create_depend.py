@@ -5,7 +5,7 @@
 # based on f90dep.pl  written by Pawel Salek
 #          mkdep90.py written by Jonas Juselius
 #
-# Patrick Norman and Radovan Bast (2008-06-11)
+# Patrick Norman and Radovan Bast (Odense 2008-06-11)
 
 import sys
 import string
@@ -62,7 +62,6 @@ for file in file_l:
         m = include.search(line)
         if m:
            inc = string.lower(m.group(1))
-
            file.add_include(inc)
            file.include[inc] = inc_d[inc]
 
@@ -78,14 +77,23 @@ for file in file_l:
     for use in file.use:
         for file_lookup in file_l:
             for key in file_lookup.module.keys():
-                if  key == use:
-                    file.use[use] = file_lookup.file_name
+                if key == use:
+                   file.use[use] = file_lookup.file_name
 
 for file in file_l:
-    bare_file_name = file.file_name[:string.rindex(file.file_name, '.')]
+    without_suffix = file.file_name[:string.rindex(file.file_name, '.')]
+    without_suffix_without_path = string.split(without_suffix, '/')[-1]
 
+    for key in file.module.keys():
+        print key + '.mod: ' + without_suffix_without_path + '.o'
+
+for file in file_l:
+    without_suffix = file.file_name[:string.rindex(file.file_name, '.')]
+    without_suffix_without_path = string.split(without_suffix, '/')[-1]
+
+    print without_suffix_without_path + '.o: $(SOURCEDIR)' + string.replace(file.file_name, os.getcwd(), '')
     for key in file.use.keys():
-        print bare_file_name + '.o: ' + os.getcwd() + '/modules/' + key + '.mod'
+        print without_suffix_without_path + '.o: $(SOURCEDIR)/modules/' + key + '.mod'
 
     for key in file.include.keys():
-        print bare_file_name + '.o: ' + file.include[key]
+        print without_suffix_without_path + '.o: $(SOURCEDIR)' + string.replace(file.include[key], os.getcwd(), '')
