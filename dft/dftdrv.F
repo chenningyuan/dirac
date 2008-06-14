@@ -672,23 +672,6 @@ C aspg+rb, 2007-01-19
 Caspg+rbast, 2006-09-21
 #endif /* MOD_DNF */
 
-!     IF(LBIT(LBIT_DFTAC,8)) THEN !debug or plot something
-
-!       IHOWMANY = 1000
-
-!       NPOINT = 0
-!       DO IDEBUG = 1,IHOWMANY+1
-
-!         NPOINT = NPOINT + 1
-
-!         CORX(IDEBUG)   = D0
-!         CORY(IDEBUG)   = D0
-!         CORZ(IDEBUG)   = (IDEBUG-1)*(10.0D0/IHOWMANY)
-
-!         WEIGHT(IDEBUG) = D1
-
-!       ENDDO
-!     ENDIF
 
 
       DO 300 IPNT = 1, NPOINT
@@ -704,10 +687,10 @@ C       AOs
 C       ===
 C
 #ifdef MOD_CDFT
-!     GAO1 are needed for VRG
-      IF(LBIT(LBIT_CDFT,2)) THEN
-        IF(NDER .LT. 1) NDER = 1
-      ENDIF
+!       GAO1 are needed for VRG
+        IF(LBIT(LBIT_CDFT,2)) THEN
+          IF(NDER .LT. 1) NDER = 1
+        ENDIF
 #endif /* MOD_CDFT */
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
@@ -958,7 +941,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
   300 CONTINUE !end of loop over grid points
 
-!     IF(LBIT(LBIT_DFTAC,8)) CALL QUIT('debug or plot something')
 
 
 
