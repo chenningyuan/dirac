@@ -673,6 +673,7 @@ if [ -z "$LIB" ]; then
 #
   for testlib in $liblist; do
      for ext in $extlist; do
+echo Test.. $dirlist
        for testdir in $dirlist; do
          if test -f $testdir/$testlib$ext; then
             echo "Library found  $testdir/$testlib$ext"
@@ -1493,9 +1494,7 @@ EOF
 else
 cat <<EOF >> Makefile.config
 NULLSTRING   :=
-#SEP          := \$(NULLSTRING) #end of line 
-#SEP          := " "  # ? will this work ?
-SEP          := ' '  #  perhaps this will work on all platforms ?
+SEP          := \$(NULLSTRING) #end of line 
 EOF
 fi
 if [ "$mesp" = "mpi" ]; then
