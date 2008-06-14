@@ -399,15 +399,16 @@ compiler_fortran(){
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
+echo Test $F90_COMP
 to_find='Fortran'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90"
 else
   comp_list='ifort ifc g95 g90 gfortran pgf90 f90 f90 xlf_r xlf efc cf90 pathf90'
 fi
-user_comp=$F90
+user_comp=$F90_COMP
 find_compiler
-F90=$comp_found
+F90_COMP=$comp_found
 
 }
 
@@ -425,9 +426,9 @@ if [ "$mesp" = "mpi" ]; then
 else
   comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 fi
-user_comp=$CC
+user_comp=$CC_COMP
 find_compiler
-CC=$comp_found
+CC_COMP=$comp_found
 
 }
 
@@ -544,64 +545,64 @@ find_real_f90(){
 #
 # Find the underlying compiler for fortran mpi compilers
 #
-case "$F90" in
+case "$F90_COMP" in
 openmpif*|mpif*)
-   if "$F90" -show > /dev/null; then
+   if "$F90_COMP" -show > /dev/null; then
       # MPICH
       mpishowopt="-show"
    else
       # LAM MPI
       mpishowopt="-showme" 
    fi
-    my_mpi_include_path=`$F90 $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
-    if "$F90" $mpishowopt | grep -q ifc; then
+    my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+    if "$F90_COMP" $mpishowopt | grep -q ifc; then
       F90real=ifc
-   elif "$F90" $mpishowopt | grep -q ifort; then
+   elif "$F90_COMP" $mpishowopt | grep -q ifort; then
       F90real=ifort
-   elif "$F90" $mpishowopt | grep -q gfortran; then
+   elif "$F90_COMP" $mpishowopt | grep -q gfortran; then
       F90real=gfortran
-   elif "$F90" $mpishowopt | grep -q pathf90; then
+   elif "$F90_COMP" $mpishowopt | grep -q pathf90; then
       F90real=pathf90
-   elif "$F90" $mpishowopt | grep -q pgf90; then
+   elif "$F90_COMP" $mpishowopt | grep -q pgf90; then
       F90real=pgf90
-   elif "$F90" $mpishowopt | grep -q g95; then
+   elif "$F90_COMP" $mpishowopt | grep -q g95; then
       F90real=g95
    else 
-      F90real=$F90
+      F90real=$F90_COMP
    fi
-   echo "Compiler in $F90 found to be $F90real ..."
+   echo "Compiler in $F90_COMP found to be $F90real ..."
    ;;
 *)
-   F90real=$F90
+   F90real=$F90_COMP
    ;;
 esac   
 }
 
 find_real_cc(){
-case "$CC" in
+case "$CC_COMP" in
 openmpicc| mpicc)
-   if $CC -show 2>&1 /dev/null; then
+   if $CC_COMP -show 2>&1 /dev/null; then
       # MPICH
       mpishowopt="-show"
    else
       # LAM MPI
       mpishowopt="-showme" 
    fi
-    if $CC $mpishowopt | grep -q icc; then
+    if $CC_COMP $mpishowopt | grep -q icc; then
       CCreal=icc
-   elif $CC $mpishowopt | grep -q pathcc; then
+   elif $CC_COMP $mpishowopt | grep -q pathcc; then
       CCreal=pathcc
-   elif $CC $mpishowopt | grep -q pgcc; then
+   elif $CC_COMP $mpishowopt | grep -q pgcc; then
       CCreal=pgcc
-   elif $CC $mpishowopt | grep -q gcc; then
+   elif $CC_COMP $mpishowopt | grep -q gcc; then
       CCreal=gcc
    else 
-      CCreal=$CC
+      CCreal=$CC_COMP
    fi
-   echo "Compiler in $CC found to be $CCreal ..."
+   echo "Compiler in $CC_COMP found to be $CCreal ..."
    ;;
 *)
-  CCreal=$CC
+  CCreal=$CC_COMP
   ;;
 esac   
 }
@@ -660,7 +661,7 @@ if [ ! -z "$LIB" ]; then
    rm -f gnyf.F
    echo '      PROGRAM GNYF' >  gnyf.F
    echo '      END         ' >> gnyf.F
-   $F90 gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
+   $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
    rm -f gnyf.F gnyf.x gnyf.o
 fi
 extlist='.so .a'
@@ -1261,10 +1262,10 @@ case $machine in
       cpp_f90="-DVAR_MFDS $cpp_f90"
       debug="gdb"
 
-      F90real="$F90"
+      F90real="$F90_COMP"
       get_f90_flags
 
-      case "$F90" in
+      case "$F90_COMP" in
       g95)
 	 c_opt='-O3'
          ;;
@@ -1407,7 +1408,7 @@ fi
 #
 # Add the modifications that concern the module preprocessor statements
 #
-case $F90 in
+case $F90_COMP in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
@@ -1434,10 +1435,10 @@ config_options['memory']        = "$memsiz"
 config_options['include_flags'] = "-I$FORAY_PROJECT_ROOT/include -I/usr/include -I/usr/local/include -I./ -I../ -I../include -I./include"
 config_options['cpp_flags']     = "$cpp3"+modules_active+"-D'INSTALL_WRKMEM="+config_options['memory']+"'"
 config_options['ccp_flags']     = "$ccp3"
-config_options['f77comp']       = "$F90"
-config_options['f90comp']       = "$F90"
-config_options['linker']        = "$F90"
-config_options['ccomp']         = "$CC "
+config_options['f77comp']       = "$F90_COMP"
+config_options['f90comp']       = "$F90_COMP"
+config_options['linker']        = "$F90_COMP"
+config_options['ccomp']         = "$CC_COMP "
 config_options['rm_flags']      = "''"
 config_options['mod_flag']      = "-I"
 config_options['arch_command']  = "ar crv"
@@ -1508,8 +1509,8 @@ C_INCLUDE_DIR = $cc_inc
 DEPEND_FLAGS  = $depend_flags 
 CPP_F90       = $cpp_f90
 CPP_CC        = $cpp_cc
-F90           = $F90
-CC            = $CC
+F90           = $F90_COMP
+CC            = $CC_COMP
 RM            = rm
 AR            = ar
 EOF
