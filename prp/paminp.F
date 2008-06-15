@@ -1178,7 +1178,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
-      CALL QENTER('XPRIND')
+!     CALL QENTER('XPRIND')
       INDXPR = -1
 
       IF (IPRINT.GE.18) THEN
@@ -1231,7 +1231,7 @@ C       ... i.e. FOCKMAT
         ISYXPR = IPRPSYM(INDXPR)
         ITRXPR = IPRPTIM(INDXPR)
       ENDIF
-      CALL QEXIT('XPRIND')
+!     CALL QEXIT('XPRIND')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
