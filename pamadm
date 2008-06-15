@@ -192,13 +192,13 @@ setup()
       fi
    fi
    #
-   #  ab initio/DFT embedding module
+   #  XML
    #
    if [ -n "$XMLMOD" ]; then
-      EMBFLG='-DMOD_XML'
-      EMBOBJ='$(XMLOBJS)'
-      EMBMAK=XML_OBJ
-      EMBTAR=1
+      XMLFLG='-DMOD_XML'
+      XMLOBJ='$(XMLOBJS)'
+      XMLMAK=XML_OBJ
+      XMLTAR=1
       F90MODS=ALL_F90MODS
       echo " - XML input/output module (with Fortran90/95 modules)"
    fi
@@ -1572,9 +1572,6 @@ if [ -n "$ESRFLG" ]; then
 fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
-fi
-if [ -n "$XMLFLG" ]; then
-   dirs="$dirs gp/xml"
 fi
 ##
 ##  take care of F90/95 modules - this is for the cleaning !
