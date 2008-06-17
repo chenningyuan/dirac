@@ -62,7 +62,7 @@ contains
     call propenergy((/'EL'/), (/D/), e_i)
 
     do i = 1, 3
-      print '("@ -< "a1" > = " f16.10)', fc(i), -e_i(i)
+      print '("@ -< "a1" > = " f26.10)', fc(i), -e_i(i)
     end do
 
   end subroutine
@@ -91,7 +91,7 @@ contains
 
       do j = 1, 3
         if (abs(e_ij(i, j)) > small) then
-          print '("@" a10 a2 f20.10)', fc(i), fc(j), -e_ij(i, j)
+          print '("@" a10 a2 f26.10)', fc(i), fc(j), -e_ij(i, j)
         end if
       end do
     end do
@@ -206,7 +206,7 @@ contains
         do k = 1, 3
 
           if (abs(e_ijk(i, j, k)) > small) then
-            print '("@ beta  (w = "3f8.4")" a10 a2 a2    f16.10)', w(1), w(2), w(3),       fc(i), fc(j), fc(k),        -e_ijk(i, j, k)
+            print '("@ beta  (w = "3f8.4")" a10 a2 a2    f26.10)', w(1), w(2), w(3),       fc(i), fc(j), fc(k),        -e_ijk(i, j, k)
           end if
         end do
       end do
@@ -367,7 +367,7 @@ contains
 
           do l = 1, 3
             if (abs(e_ijkl(i, j, k, l)) > small) then
-              print '("@ gamma (w = "4f8.4")" a10 a2 a2 a2 f16.10)', w(1),  &
+              print '("@ gamma (w = "4f8.4")" a10 a2 a2 a2 f26.10)', w(1),  &
                                                                      w(2),  &
                                                                      w(3),  &
                                                                      w(4),  &
@@ -442,7 +442,7 @@ contains
 
           do l = 1, 3
             if (abs(e_ijkl(i, j, k, l)) > small) then
-              print '("@" a10 a2 a2 a2 f16.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
+              print '("@" a10 a2 a2 a2 f26.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
             end if
           end do
         end do
