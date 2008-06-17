@@ -113,7 +113,7 @@ print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden
 print *, '*    Jetze Sikkema            VU University Amsterdam           Netherlands  *'
 print *, '*                                                                            *'
 print *, '*    For the complete list of contributors to the DIRAC code see our         *'
-print *, '*    website http:dirac.chem.sdu.dk                                          *'
+print *, '*    website http://dirac.chem.sdu.dk                                        *'
 print *, '*                                                                            *'
 print *, '*    This is an experimental code. The authors accept no responsibility      *'
 print *, '*    for the performance of the code or for the correctness of the results.  *'
