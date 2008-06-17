@@ -192,8 +192,8 @@
       aoresponse_skip_pp            = .false.
       aoresponse_skip_pn            = .false.
 
-      aoresponse_threshold_response = 1.0d-5
-      aoresponse_threshold_rhs      = 1.0d-3
+      aoresponse_threshold_response = 1.0d-8
+      aoresponse_threshold_rhs      = 1.0d-8
       aoresponse_freq               = 0.0d0
 
       aoresponse_alpha              = .false.
