@@ -435,7 +435,7 @@ contains
 
     if (.not. aoresponse_skip_pp) do_pp = .true.
     if (.not. aoresponse_skip_pn) do_pn = .true.
-    if (levyle)                   do_pn = .false.
+    if (levyle .or. bss)          do_pn = .false.
 
     call set_orbital_rotation_vector(.false.,                    &
                                      length_pp,                  &
@@ -652,18 +652,14 @@ contains
                                      ibtyp_pointer_pp,    &
                                      eigvec)
 
-      if (.not. static) then
-
-        call construct_response_vector('pp',                &
-                                       -1,                  &
-                                       response_vector_ppa, &
-                                       length_pp,           &
-                                       nr_freq,             &
-                                       ibtyp,               &
-                                       ibtyp_pointer_pp,    &
-                                       eigvec)
-
-      end if
+      call construct_response_vector('pp',                &
+                                     -1,                  &
+                                     response_vector_ppa, &
+                                     length_pp,           &
+                                     nr_freq,             &
+                                     ibtyp,               &
+                                     ibtyp_pointer_pp,    &
+                                     eigvec)
 
       if (debug_me) then
         call header('response_vector_pph', -1)
@@ -685,18 +681,14 @@ contains
                                      ibtyp_pointer_pn,    &
                                      eigvec)
 
-      if (.not. static) then
-
-        call construct_response_vector('pn',                &
-                                       -1,                  &
-                                       response_vector_pna, &
-                                       length_pn,           &
-                                       nr_freq,             &
-                                       ibtyp,               &
-                                       ibtyp_pointer_pn,    &
-                                       eigvec)
-
-      end if
+      call construct_response_vector('pn',                &
+                                     -1,                  &
+                                     response_vector_pna, &
+                                     length_pn,           &
+                                     nr_freq,             &
+                                     ibtyp,               &
+                                     ibtyp_pointer_pn,    &
+                                     eigvec)
 
       if (debug_me) then
         call header('response_vector_pnh', -1)
@@ -755,27 +747,23 @@ contains
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
     call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
 
-    if (.not. static) then
+    do i = 1, ntsim
+      ihrmop(i) = -1
+    end do
 
-      do i = 1, ntsim
-        ihrmop(i) = -1
-      end do
+    temp_ao_dmat = 0.0d0
+    call dmolitx(temp_ao_dmat,        &
+                 response_vector_ppa, &
+                 response_vector_pna, &
+                 C%elms,          &
+                 dummy_dp,            &
+                 dummy_dp,            &
+                 ihrmop,              &
+                 nr_dmat,             &
+                 work, kfree, lfree)
 
-      temp_ao_dmat = 0.0d0
-      call dmolitx(temp_ao_dmat,        &
-                   response_vector_ppa, &
-                   response_vector_pna, &
-                   C%elms,          &
-                   dummy_dp,            &
-                   dummy_dp,            &
-                   ihrmop,              &
-                   nr_dmat,             &
-                   work, kfree, lfree)
-
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
-      call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
-
-    end if
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
+    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
 
     D1 = D1/2.0d0
     C  = 0
