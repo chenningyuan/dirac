@@ -51,7 +51,8 @@ CONTAINS
 
     REWIND(file)
     write(lupri,*) 'rewind'
-    READ(file,'(i)') npoints
+    !READ(file,'(i)') npoints
+    READ(file,*) npoints
     
     write(lupri,*) 'npoints',npoints
     ALLOCATE(points(4,1:npoints))
