@@ -23,24 +23,15 @@
 # Guess machine automatic by Joern Thyssen Nov 11 1997
 # Remember last config by Joern Thyssen - Jan 28 1998
 # INTEGER*8 as default on 64-bit machines by Stefan Knecht - Jul 15 2007
+# Rewritten to modular form Trond Saue, Jetze Sikkema - June 2008
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
 #
 # TODO
 # Add an additional: save_flags= -O0 in makefile.config
 #
 # Large molecule flag -> out (takes lot of memory)?
 # 
-# Tear apart and modularize the compiler flags.
-#
-# LIBRARY REWRITE:
-#   search standard directories and environmental variables (contains: LIBRARY_PATH)
-#   show user the directories/ask for a library_path?
-#   if no library is found ask the user for a library_path?
-#
-# Check whether libraries are 32 or 64 bit?
-#
 #
 
 
@@ -52,7 +43,7 @@ initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0
 SRC_DIR=`pwd`
-dirlist="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
+dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
 IBMMOD=0
 #
@@ -91,6 +82,7 @@ usage ()  {
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
 }
+
 guess_system ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -142,9 +134,10 @@ $echo "Operating system\t: $os"
 #
 
 case $machine in
-   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | x86_64-* | ia64-unknown-linux | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|alphaev6-dec | *-cray )
-      echo ;;
-
+   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|alphaev6-dec ) 
+     bit_set="32";;
+   x86_64-* | ia64-unknown-linux | *-cray )
+     bit_set="64";;
    *)
       echo "System $guess is currently .NOT. supported"
       echo "First try to update config.guess and config.sub "
@@ -159,9 +152,15 @@ case $machine in
 
 esac
 
+#
+#  Modify for SGI that may have both 32 and 64 bit architectures
+#
+if [ "$machine" = "mips64-sgi" ]; then
+   dir_list="/usr/lib64 $dir_list"
+elif [ "$machine" = "mips-sgi" ]; then
+   dir_list="/usr/lib64 /usr/lib32 $dir_list"
+fi
 echo
-
-# Question for 32/64 bit libraries?
 
 }
 parallel_stuff ()  {
@@ -174,62 +173,58 @@ echo
 echo 'PARALLEL'
 echo
 if [ -z "${par}" ]; then
-   ok=
-   while [ -z "$ok" ]; do
-      ok=1
-      if [ $quick = 0 ]; then
-         $echo 'Do you want to install the program'\
-         'in a parallel version? (y/N) \c'
-         read par
-      else
-         par=no
-      fi
-      case "$par" in
-      "yes" | "y" | "Y" )
-         par="yes"
-         $echo 'Do you have a MPI-2 version installed (Y/n) \c'
-         read mpi2version
-         case "$mpi2version" in
-         "no" | "n" | "N" )
-            mpi2version="no"
-            ;;
-         *)
-            mpi2version="yes"
-            ;;
-         esac
-         if [ "$mpi2version" = "no" ]; then
-           echo  "Attention: the following DIRAC modules will NOT work         "
-           echo  "           without MPI-2 support:                            "
-           echo  "                                  - LUCITA                   "
-           echo  "                                  - LUCIAREL                 "
-           echo  "                                  - KR-MCSCF using LUCIAREL  "
-           echo  "                                  - MOLTRA (scheme 6)        "
-         fi
-#
-         $echo 'Will your nodes use local disks? (y/N) \c'
-         read localdisks
-         case "$localdisks" in
-         "yes" | "y" | "Y" )
-            localdisks="yes"
-            ;;
-         *)
-            localdisks="no"
-            ;;
-         esac
-         ;;
-      "no" | "n" | "" )
-         par="no"
-         ;;
-      *)
-         ok=
-         ;;
-      esac
-   done
+  if [ $quick = 0 ]; then
+    $echo 'Do you want to install the program'\
+    'in a parallel version? (y/N) \c'
+    read par
+  else
+    par=no
+  fi
+  case "$par" in
+  "yes" | "y" | "Y" )
+    par="yes" ;;
+  "no" | "n" | "" )
+    par="no" ;;
+  *)
+    parallel_stuff ;;
+  esac
 fi
+
 echo 'Parallel version: '${par}''
 
 if [ "$par" = "yes" ]; then
-   echo ' - with local disks for each node: '${localdisks}''
+  $echo 'Do you have a MPI-2 version installed (Y/n) \c'
+  read mpi2version
+  case "$mpi2version" in
+  "no" | "n" | "N" )
+    mpi2version="no"
+    ;;
+  *)
+    mpi2version="yes"
+    ;;
+  esac
+  if [ "$mpi2version" = "no" ]; then
+    echo  "Attention: the following DIRAC modules will NOT work         "
+    echo  "           without MPI-2 support:                            "
+    echo  "                                  - LUCITA                   "
+    echo  "                                  - LUCIAREL                 "
+    echo  "                                  - KR-MCSCF using LUCIAREL  "
+    echo  "                                  - MOLTRA (scheme 6)        "
+  fi
+
+  $echo 'Will your nodes use local disks? (y/N) \c'
+  read localdisks
+  case "$localdisks" in
+  "yes" | "y" | "Y" )
+    localdisks="yes"
+    ;;
+  *)
+    localdisks="no"
+    ;;
+  esac
+
+  echo ' - with local disks for each node: '${localdisks}''
+
 #
 #  Parallel architectures are difficult, better warn the user
 #
@@ -276,18 +271,14 @@ if [ "$par" = "yes" ]; then
             mpirun='mpirun'
             ;;
       esac
+
    fi
-   pardir=dirlist
+   pardir=dir_list
    incdir='/usr/include /usr/local/include /local/include'
 #
-#  Modify for SGI that may have both 32 and 64 bit architectures
 #  Modify for RS6000K where mpi.h is placed in some obscure directory
 #
-   if [ "$machine" = "mips64-sgi" ]; then
-      pardir="$dirlist /usr/lib64"
-   elif [ "$machine" = "mips-sgi" ]; then
-      pardir="$dirlist /usr/lib64 /usr/lib32"
-   elif [ "$machine" = "*-ibm" ]; then
+   if [ "$machine" = "*-ibm" ]; then
       incdir="$incdir /usr/lpp/ppe.poe/include"
    fi
 #
@@ -377,6 +368,7 @@ else
 fi
 echo
 }
+
 find_compilers () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -390,6 +382,7 @@ echo
 compiler_fortran
 compiler_c
 
+echo
 }
 
 compiler_fortran(){
@@ -399,12 +392,11 @@ compiler_fortran(){
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
-echo Test $F90_COMP
 to_find='Fortran'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90"
 else
-  comp_list='ifort ifc g95 g90 gfortran pgf90 f90 f90 xlf_r xlf efc cf90 pathf90'
+  comp_list='ifort ifc g95 g90 gfortran pgf90 f90 xlf_r xlf efc cf90 pathf90'
 fi
 user_comp=$F90_COMP
 find_compiler
@@ -503,7 +495,7 @@ case $counter in
   1 ) 
     echo " The following $to_find compiler was detected on your system: $comp_found" ;;
   * )
-    echo " The following compilers were detected on your system:"
+    echo " The following compilers were detected on your system: "
     counter=0
     for comp in $comp_found; do
       counter=`expr $counter + 1`
@@ -512,19 +504,19 @@ case $counter in
     $echo "0) Exit."      
 
     comp_index=-1
-    echo "Which one you you want to use?"
+    $echo "Which one you you want to use? (Default: 1) \c"
     read comp_index
     if [ -z $comp_index ]; then
-      echo "Choose at least one of the above $to_find compilers!"
-      exit
+      comp_index=1
     fi
-    if [ $comp_index -le 0 -o $comp_index -ge $counter ]; then
+    if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
       echo "Not a valid compiler number: $comp_index"
       exit
     elif [ $comp_index -eq 0 ]; then
-      echo 'jhs Userinput here?'
+      echo "use: configure --help to see how you can specify your own compiler."
+# jhs userinput instead of exit?    echo 'jhs Userinput here?'
       exit
-    fi  
+    fi
 
     counter=0 
     for comp in $comp_found; do
@@ -607,6 +599,199 @@ openmpicc| mpicc)
 esac   
 }
 
+
+
+search_math_libs(){
+# Searches for mathematical libraries in the directories of dirlist
+  echo "Searching for the mathematical libraries... "
+  echo
+
+  lib_names=""
+  lib_dir=""
+
+  for test_lib in $lib_list; do
+    for test_dir in $math_dirs; do
+      for ext in $ext_list; do
+        if test -f $test_dir/$test_lib$ext; then
+	  lib_names="$lib_names $test_dir/$test_lib"
+	  break
+        fi
+      done
+    done
+  done
+}
+
+
+setup_math_lib(){
+  case "$1" in
+    libesslp2) LIB="$1 -L$2 -lesslp2";;
+    libessl) LIB="$1 -L$2 -lessl";;
+#For later use we note that we found an optimized blas library
+    libblas) LIB="$1 -L$2 -lblas" ;;
+#For Atlas you need to link with lf77blas as well
+    libatlas) LIB="$1 -L$2 -llapack -lcblas -lf77blas -latlas";;
+    libdxml) LIB="$1 -L$2 -ldxml";;
+    libcomplib.sgimath) LIB="$1 -L$2 -lcomplib.sgimath";;
+    libveclib) LIB="$1 -L$2 -lveclib";;
+    libmath) LIB="$1 -L$2 -lmath -lm -nx";;
+    libmkl) LIB="$1 -L$2 -lguide -lpthread -lmkl"
+            optblas=$2;;
+    libmkl_ipf) LIB="$1 -L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
+                      optblas=$2;;
+    libmkl_itp) LIB="$1 -L$2 -lguide -lpthread -lmkl_itp"
+                      optblas=$2;;
+  esac
+  
+  test_lib_arch $2
+  if [ 0 -eq $? ]; then
+    echo "System is $bit_set-bit, but the mathematical libraries are probably not." 
+    echo "Libraries: $2/$1"
+    $echo " Do you still want to use these libraries (y/N)?"
+    read use_blas    
+    case "$use_blas" in   
+      "yes" | "y" | "Y" ) ;;
+      *)
+        get_math_lib ;;
+    esac
+  fi
+}
+
+
+
+get_math_lib(){
+# Try different versions and see how fast they are.
+
+# 1. Get a list of directories
+#    Test for every directory whether a library exists.
+
+# 2. Get list of libraries.
+#    Grep for the mathematical library names. 
+#    Split the found libs into a directory path, and a name.
+
+search_math_libs
+
+
+# If there is found more than one compiler let the user pick it.
+
+if [ ! -z $libnames ]; then
+  echo "The following libraries were detected on your system:"
+else
+  echo "No optimized mathematical libraries were detected on your system:"
+fi
+
+counter=1
+for tmp_library in $lib_names; do
+  counter=`expr $counter + 1`
+  $echo "$counter) $tmp_library"
+done
+$echo "1) Specify a library path. \t\c" 
+echo "0) No libraries (SLOW)."
+echo 
+lib_index=-1
+
+$echo "Which library you you want to use? \c"
+if [ $counter -gt 1 ]; then
+  $echo "(Default: 2) \c"
+else
+  $echo "(Default: 0) \c"
+fi
+read lib_index
+
+if [ -z $lib_index ]; then
+  if [ $counter -gt 1 ]; then
+    lib_index=2
+  else
+    lib_index=0
+  fi
+fi
+
+if [ $lib_index -lt 0 -o $lib_index -gt $counter ]; then
+  echo "Not a valid compiler number: $lib_index"
+  get_math_lib
+elif [ $lib_index -eq 0 ]; then
+  $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? (y/N) \c'
+  read defblas
+  case "$defblas" in   
+    "yes" | "y" | "Y" )
+
+    $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
+       ;;
+  esac
+
+  cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK"
+   
+elif [ $lib_index -eq 1 ]; then
+  $echo "Enter a directory to search: \c"
+  read math_dirs
+  $echo "Also search it's subdirectories? (y/N) \c" 
+  read rec_search
+
+  echo  
+  echo "Building a list of subdirectories of: $math_dirs ... "
+  if [ ! -z $math_dirs ]; then
+    case $rec_search in
+    "yes" | "y" | "Y" )
+      math_dirs=`find $math_dirs -type d -print`;;
+    esac
+  fi
+
+  get_math_lib
+else
+  counter=1
+  for tmp_library in $lib_names; do
+    counter=`expr $counter + 1`
+    if [ $counter -eq $lib_index ]; then
+      lib_name=$tmp_library
+      break
+    fi
+  done
+  for tmp_library in $lib_list; do
+    if [ -z `echo $lib_name | grep $tmp_library` ]; then
+# FIXME nicer way to extract the library path and name?
+      dir_len=`expr length "$lib_name"`
+      lib_len=`expr length "$tmp_library"`
+      lib_len=`expr $lib_len - 1`
+      dir_len=`expr $dir_len - $lib_len + 1`
+      lib=`expr substr $lib_name $dir_len $lib_len`
+      dir_len=`expr $dir_len - 2`
+      dir=`expr substr $lib_name 1 $dir_len`
+
+      setup_math_lib $lib $dir
+      break
+    fi
+  done 
+fi
+
+}
+
+test_lib_arch() {
+#
+# Check whether the libraries are 32/64 bit
+#
+
+if [ $bit_set -eq 32 ]; then
+  if [ -z `echo $1 |  grep "64"`]; then 
+    return 1
+  else 
+    return 0
+  fi
+fi
+
+if [ $bit_set -eq 64 ]; then
+  if [ -n `echo $1 |  grep "64"` ]; then 
+    return 1 
+  else
+    return 0
+  fi
+fi
+
+}
+
+nolib () {
+   echo  Sorry, $LIB is not a legal library any more.
+   LIB=
+}
+
 find_mathlib ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -619,93 +804,44 @@ echo
 echo 'Use of an optimized BLAS implementation is very important,'
 echo 'especially for the performance of MOLTRA and RELCCSD.'
 echo
-lquick=$quick
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
 # libraries
-liblist="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml"
+ext_list='.so .a'
+lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml"
+LIB=""
 
-   libguess=`./config.status LIB_LIST`
-   if [ ! -z "$libguess" ]; then
-      ls -l Makefile.config
-      echo This old Makefile.config file uses $libguess
-      $echo 'Do you want to use that again ? (Y/n) \c'
-      read defblas
-      case "$defblas" in   
-      "No" | "n" | "N" )
-       ;;
-      *)
-       LIB=$libguess
-       lquick=1
-       ;;
-   esac
-   fi
+math_dirs=$dir_list
 
-#
-#  Modify for SGI that may have both 32 and 64 bit architectures
-#
-if [ "$machine" = "mips64-sgi" ]; then
-   dirlist="/usr/lib64 $dirlist"
-elif [ "$machine" = "mips-sgi" ]; then
-   dirlist="/usr/lib64 /usr/lib32 $dirlist"
+libguess=`./config.status LIB_LIST`
+if [ ! -z "$libguess" ]; then
+  ls -l Makefile.config
+  echo This old Makefile.config file uses $libguess
+  $echo 'Do you want to use that again ? (Y/n) \c'
+  read defblas
+  case "$defblas" in   
+  "No" | "n" | "N" ) ;;
+  *)
+    LIB=$libguess
+    ;;
+  esac
+
+  rm -f gnyf.F
+  echo '      PROGRAM GNYF' >  gnyf.F
+  echo '      END         ' >> gnyf.F
+  $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
+  rm -f gnyf.F gnyf.x gnyf.o
+  echo
+
 fi
 
-nolib () 
-{
-   echo  Sorry, $LIB is not a legal library any more.
-   LIB=
-}
-
-if [ ! -z "$LIB" ]; then
-   rm -f gnyf.F
-   echo '      PROGRAM GNYF' >  gnyf.F
-   echo '      END         ' >> gnyf.F
-   $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
-   rm -f gnyf.F gnyf.x gnyf.o
-fi
-extlist='.so .a'
-#echo test $LIB and $liblist
+#echo test $LIB and $lib_list
 if [ -z "$LIB" ]; then
-#  if [ $locate_ok == 0 ]; then
-#  elif [ -n "$liblist" ]; then
-  if [ -n "$liblist" ]; then
-#
-  for testlib in $liblist; do
-     for ext in $extlist; do
-echo Test.. $dirlist
-       for testdir in $dirlist; do
-         if test -f $testdir/$testlib$ext; then
-            echo "Library found  $testdir/$testlib$ext"
-            case $testlib in
-               libesslp2) LIB="$LIB -L$testdir -lesslp2";;
-               libessl) LIB="$LIB -L$testdir -lessl";;
-#For later use we note that we found an optimized blas library
-               libblas) LIB="$LIB -L$testdir -lblas" ;;
-#For Atlas you need to link with lf77blas as well
-               libatlas) LIB="$LIB -L$testdir -llapack -lcblas -lf77blas -latlas";;
-               libdxml) LIB="$LIB -L$testdir -ldxml";;
-               libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
-               libveclib) LIB="$LIB -L$testdir -lveclib";;
-               libmath) LIB="$LIB -L$testdir -lmath -lm -nx";;
-               libmkl) LIB="$LIB -L$testdir -lguide -lpthread -lmkl"
-                       optblas=$testdir;;
-               libmkl_ipf) LIB="$LIB -L$testdir -lmkl_lapack -lmkl_ipf -lguide -ldl "
-                       optblas=$testdir;;
-               libmkl_itp) LIB="$LIB -L$testdir -lguide -lpthread -lmkl_itp"
-                       optblas=$testdir;;
-            esac
-            test -n "$LIB" && break
-         fi
-      done
-      test -n "$LIB" && break
-    done
-    test -n "$LIB" && break
-  done
-  fi
+  get_math_lib
 fi
 
-if [ -z "$LIB" -a -n "$liblist" ]; then
+if [ -z "$LIB" -a -n "$lib_list" ]; then
     echo 'Mathematical libraries: none found'
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
@@ -714,30 +850,6 @@ fi
 # Check whether we found an optimized BLAS, if not ask user what to do
 #
 
-if [ -z "$LIB" ] ; then
-   $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? (y/N) \c'
-   read defblas
-   case "$defblas" in   
-   "yes" | "y" | "Y" )
-       cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK"
-       ;;
-    *)
-       $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
-       ;;
-   esac
-else
-   if [ $lquick = 0 ]; then
-     $echo "We propose to use the implementation give above. Is this OK ? (Y/n) \c"
-     read defblas
-   else
-     defblas=
-   fi
-   case "$defblas" in
-   "no" | "n" | "N" )
-       $echo 'Please inspect and correct LIB_LIST in Makefile.config manually \c'
-       ;;
-   esac
-fi
 echo
 }
 set_memsize ()  {
@@ -892,17 +1004,30 @@ echo
 
 get_cpp_flags(){
 
-  if [ "$mesp" = "dummy" ]; then
-    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    def='dirac.x'
-  else
+  if [ "$mesp" = "mpi" ]; then
+    parop='-DVAR_MPI'
+    if [ "$localdisks" = "yes" ]; then
+       parop='$parop -DSYS_LOCALDISKS'
+    fi
+    if [ "$mpi2version" = "yes" ]; then
+       parop="$parop -DVAR_MPI2"
+    fi
+
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     def='dirmpi.x'
+  else
+    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    def='dirac.x'
+  fi
+  if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
+    cpp_f90="$cpp_f90 -DVAR_MKL"
   fi
 
+
   set_bit_arch
+
 }
 
 
@@ -953,6 +1078,10 @@ get_f90_flags(){
       mod="-module $MODULE_DIR"
       ;;
 
+    xlf)
+      mod="-qmoddir=$MODULE_DIR"
+      f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
+      ;;
     pathf90)
        ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
        cpp_cc="$cpp_cc -DVAR_EKO"
@@ -985,11 +1114,36 @@ get_cc_flags(){
     ;;
   esac
 
-
+# jhs some strange fortran dependent options:
+  case "$F90real" in
+  xlf)
+    c_opt='-O2 -qcpluscmt'
+    ;;
+  esac
 }
 
+get_largefiles(){
+#
+# Ask user whether the large file option can be set
+#
+  case $machine in
+    i[3-6]86-* | x86_64-* | ia64-unknown-linux) 
+      if [ $quick = 0 ]; then
+        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
+        read largefiles
+      else
+        largefiles=Y
+      fi
+      case "$largefiles" in
+      "yes" | "y" | "Y"|"" )
+        cpp_cc="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE $cpp_cc"
+      ;;
+      esac ;;
+    esac
+}
+
+
 set_compile_flags(){
-bit_set="32"
 echo
 
 f90_inc="-I$INCLUDE_DIR -I$MODULE_DIR"
@@ -1029,7 +1183,6 @@ case $machine in
 #
     *-cray)
        sys_name="CRAY"
-       bit_set="64"
        get_cpp_flags
 
        opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
@@ -1050,41 +1203,25 @@ case $machine in
 #   IBM
 #
    *-ibm | powerpc64-unknown-linux* | ppc64* ) 
-      echo $os
       case $os in
-         aix2*) 
-            if [ "$mesp" = "dummy" ]; then
-               cpp_f90="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
-               cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}'"
-               def='dirac.x'
-            else
-               cpp_f90="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-               cpp_cc="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	       def='dirmpi.x'
-            fi
-	    ;;
-         gnu* )
-            if [ "$mesp" = "dummy" ]; then
-               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
-               cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-               def='dirac.x'
-            else
-               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_LINUX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
-               cpp_cc="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	       def='dirmpi.x'
-            fi
-            ;;
+        aix2*) 
+          sys_name="AIX"
+	  get_cpp_flags
+	  cpp_f90="-w -P -DSYS_AIX23 $cpp_f90"
+	  cpp_cc="-DSYS_AIX23 $cpp_cc" ;;
+	gnu*)
+          sys_name="LINUX"
+	  get_cpp_flags
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperate.	
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'` 
+          ;;
          *)
-            if [ "$mesp" = "dummy" ]; then
-               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
-               cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-               def='dirac.x'
-            else
-               cpp_f90="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
-               cpp_cc="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	       def='dirmpi.x'
-            fi
-            ;;
+          sys_name="AIX"
+	  get_cpp_flags
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperated.	  
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`  ;;
          esac
 
 
@@ -1126,25 +1263,8 @@ case $machine in
       sys_name="LINUX"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-         cpp_f90="$cpp_f90 -DVAR_MKL"
-      fi
-
       debug="gdb"
-#
-# Ask user whether the large file option can be set
-#
-      if [ $quick = 0 ]; then
-        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
-        read largefiles
-      else
-        largefiles=Y
-      fi
-      case "$largefiles" in
-      "yes" | "y" | "Y"|"" )
-         cpp_cc="$cpp_cc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
-         ;;
-      esac
+
 #
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
@@ -1165,29 +1285,9 @@ case $machine in
 #
    x86_64-*)
       sys_name="LINUX"
-      bit_set="64"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-         cpp_f90="$cpp_f90 -DVAR_MKL"
-      fi
-
-
       debug="gdb"
-#
-# Ask user whether the large file option can be set
-#
-      if [ $quick = 0 ]; then
-        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
-        read largefiles
-      else
-        largefiles=Y
-      fi
-      case "$largefiles" in
-      "yes" | "y" | "Y"|"" )
-         cpp_cc="$cpp_cc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
-         ;;
-      esac
 #
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
@@ -1206,7 +1306,6 @@ case $machine in
 #
    ia64-unknown-linux)
       sys_name="LINUX"
-      bit_set="64"
       
 # jhs uncomment hack if it gives problems
 #     case "$F90real" in
@@ -1216,26 +1315,7 @@ case $machine in
 #     esac
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-        cpp_f90="$cpp_f90 -DVAR_MKL"
-      fi
-
       debug="gdb"
-
-#
-# Ask user whether the large file option can be set
-#
-      if [ $quick = 0 ]; then
-        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
-        read largefiles
-      else
-        largefiles=Y
-      fi
-      case "$largefiles" in
-      "yes" | "y" | "Y" |"")
-          cpp_cc="$cpp_cc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
-          ;;
-      esac
 
 #
 # If we are using mpif77/mpif90/mpicc check which compiler it uses to make
@@ -1249,7 +1329,6 @@ case $machine in
       esac
 
       find_real_cc
-
       get_cc_flags
 
    ;;
@@ -1265,18 +1344,7 @@ case $machine in
 
       F90real="$F90_COMP"
       get_f90_flags
-
-      case "$F90_COMP" in
-      g95)
-	 c_opt='-O3'
-         ;;
-      xlf|xlf_r)
-         opt='-O2 -qextname'
-         c_opt='-O2 -qcpluscmt'
-	 mod="-qmoddir=$MODULE_DIR"
-	 f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
-         ;;
-      esac
+      get_cc_flags
 
 esac
 }
@@ -1326,32 +1394,12 @@ fi
 #
 # Parallel preprocessor directive need to be set
 #
-if [ "$mesp" = "mpi" ]; then
-    parop='-DVAR_MPI'
-    if [ "$localdisks" = "yes" ]; then
-       parop='-DVAR_MPI -DSYS_LOCALDISKS'
-       paropibm=',-DVAR_MPI,-DSYS_LOCALDISKS'
-    else
-       parop='-DVAR_MPI'
-       paropibm=',-DVAR_MPI'
-    fi
-    if [ "$mpi2version" = "yes" ]; then
-       parop="$parop -DVAR_MPI2"
-       paropibm=",$paropibm,-DVAR_MPI2"
-    else
-       parop="$parop"
-       paropibm="$paropibm"
-    fi
-else
-    parop=
-    paropibm=
-fi
-
 INCLUDE_DIR=\$\(SOURCEDIR\)\/include
 MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 
 set_compile_flags
+get_largefiles
 
 # given that all unix clones like linux, *bsd and mac osx have no
 # specific preprocessor directives, what comes below allows one
@@ -1413,9 +1461,10 @@ case $F90_COMP in
    xlf*|mpfort|mpxlf_r) 
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-#     cpp_f90="-WF,`echo $cpp_f90 | tr ' ' ','`"
      cpp_f90="$cpp_f90,\$(MODS)"
+     echo "CPP_F90: $cpp_f90"
      cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
+     echo "CPP_F902: $cpp_f902"
      ;;
    *)
      cpp_f90="$cpp_f90 \${MODS}"
@@ -1758,7 +1807,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         dirlist="$val $dirlist"
+         dir_list="$val $dir_list"
          ;;
       "mathematical_libraries" | "math_lib" )
          if [ "${valomitted}" = "yes" ]; then
