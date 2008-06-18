@@ -24,6 +24,7 @@ module aoresponse_input_m
 
   logical,                 save :: aoresponse_alpha
   logical,                 save :: aoresponse_beta
+  logical,                 save :: aoresponse_beta_2np1
   logical,                 save :: aoresponse_gamma
 
 contains

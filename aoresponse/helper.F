@@ -149,7 +149,7 @@
 !                   1         2         3         4
       data table /'.SKIPEE','.SKIPEP','.THRESH','.ALPHA ',
 !                   5         6         7         8
-     &            '.BETA  ','.GAMMA ','.FREQ  ','.xxxxxx',
+     &            '.BETA  ','.GAMMA ','.FREQ  ','.BETA2N',
 !                   9        10        11        12
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  13        14        15        16
@@ -198,6 +198,7 @@
 
       aoresponse_alpha              = .false.
       aoresponse_beta               = .false.
+      aoresponse_beta_2np1          = .false.
       aoresponse_gamma              = .false.
 
 
@@ -271,6 +272,9 @@
           go to 100
 
     8     continue
+          aoresponse_beta_2np1 = .true.
+          go to 100
+
     9     continue
    10     continue
    11     continue

@@ -62,6 +62,10 @@ contains
       call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
     end if
 
+    if (aoresponse_beta_2np1) then
+      call beta_2np1(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+    end if
+
     if (aoresponse_gamma) then
       call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
 !     call gamma_element(1, 2, 1, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))

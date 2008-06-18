@@ -138,7 +138,90 @@ contains
 
         do k = 1, 3
           if (abs(e_ijk(i, j, k)) > small) then
-            print '("@" a10 a2 a2 f18.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
+            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
+          end if
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine beta_2np1(S, D, F, w)
+
+    type(matrix), intent(inout) :: S, D, F
+    real(kind_dp)               :: w(3)
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: A
+    type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
+    type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
+    real(kind_dp)               :: e_ijk(3, 3, 3)
+    integer                     :: i, j, k
+    character(4)                :: nop(0)
+
+    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+
+!   this is the DFT contribution E^3(D_i, D_j) D_k 
+!   zeros filled in for 2nd and 3rd order D
+    e_ijk = 0.0d0
+!   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
+
+!   Lagrange contribution -X_k (FDS -SDF) e_j
+    do k = 1, 3
+      X_k(k) = D_k(k)*S*D - D*S*D_k(k)
+    end do
+       
+    do i = 1, 3
+      do j = 1, 3
+
+        A = (F_j(j)*D_i(i) + F_i(i)*D_j(j))*S - S*(D_i(i)*F_j(j) + D_j(j)*F_i(i))
+
+        do k = 1, 3
+          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(X_k(k), A)
+        end do
+       
+        A = 0
+
+      end do
+    end do
+
+!   Lagrange contribution -L_k (DSD - D) e_j
+    do k = 1, 3
+      L_k(k) = F_k(k)*D*S + S*D*F_k(k) - F_k(k)
+    end do
+
+    do i = 1, 3
+      do j = 1, 3
+
+        A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
+
+        do k = 1, 3
+          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(L_k(k), A)
+        end do
+       
+        A = 0
+
+      end do
+    end do
+
+    print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
+
+    do i = 1, 3
+
+      D_i(i) = 0; D_j(i) = 0; D_k(i) = 0; X_k(i) = 0
+      F_i(i) = 0; F_j(i) = 0; F_k(i) = 0; L_k(i) = 0
+
+      do j = 1, 3
+        do k = 1, 3
+          if (abs(e_ijk(i, j, k)) > small) then
+            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
           end if
         end do
       end do
@@ -513,7 +596,7 @@ subroutine beta_debug(S,D,F,w)
     end do
 
     Efff=0; call PropEnergy((/'EL'/),(/D,Df,De,Dfe/),Efff,b=(/3,3/))
-    print '("First hyperpolarizability -Efff w="3f6.3/9(3f18.13/))',w,-Efff
+    print '("First hyperpolarizability -Efff w="3f6.3/9(3f26.13/))',w,-Efff
     do i=1,3; Df(i)=0; De(i)=0; Ff(i)=0; Fe(i)=0; enddo
     do i=1,3*3; Dfe(i)=0; Ffe(i)=0; enddo
     print*

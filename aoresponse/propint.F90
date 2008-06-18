@@ -173,9 +173,48 @@ contains
                     enddo
                 enddo
                 A(1) = 0
-            elseif (m>2) then
-                stop 'PropEnergy: m>2 not implemented at the moment'
-            endif
+       !elseif (m>2) then
+        elseif (m==3) then
+            call mat_init(A(1),nbas,nbas)
+
+            !E2(Da) Dbc (should be zero-testing here)
+            do i=1,b(1)
+                call di_GET_GbDs(D(1+i),A(1))
+          !     ....add DFT contribution to E2(Da) to A(1)
+                do k=0,b(3)-1; do j=0,b(2)-1
+                    kk=1+b(1)+b(2)+b(3)+b(1)*b(2)+b(1)*b(3)+j+b(2)*k+1
+                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(kk))
+            enddo; enddo; enddo
+
+            !E2(Db) Dac (should be zero-testing here)
+            do j=0,b(2)-1; jj=1+b(1)+j+1
+                call di_GET_GbDs(D(jj),A(1))
+          !     ....add DFT contribution to E2(Db) to A(1)
+                do k=0,b(3)-1; do i=1,b(1)
+                    ii=1+b(1)+b(2)+b(3)+b(1)*b(2)+i+b(1)*k
+                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(ii))
+            enddo; enddo; enddo
+
+            !E2(Dc) Dab (should be zero-testing here)
+            do k=0,b(3)-1; kk=1+b(1)+b(2)+k+1
+                call di_GET_GbDs(D(kk),A(1))
+          !     ....add DFT contribution to E2(Dc) to A(1)
+                do j=0,b(2)-1; do i=1,b(1)
+                    ii=1+b(1)+b(2)+b(3)+i+b(1)*j
+                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(ii))
+            enddo; enddo; enddo
+
+            !E3(Da,Db) Dc (should be zero-testing here)
+            do j=0,b(2)-1; do i=1,b(1); ii=1+i; jj=1+b(1)+j+1
+      ! ....put DFT contribution to E3(Da,Db), Da=D(ii), Db=D(jj) in A(1)
+                do k=0,b(3)-1; kk=1+b(1)+b(2)+k+1
+                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(kk))
+            enddo; enddo; enddo
+
+            A(1) = 0
+        elseif (m>3) then
+                stop 'PropEnergy: m>3 not implemented at the moment'
+        endif 
         elseif (n==1.and.p(1)=='EL') then
             do j=0,c(2)-c(1); jj=c(1)+j
                 A(1) = oneint(xyz(jj)//'DIPLEN ')
