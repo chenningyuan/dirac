@@ -289,7 +289,13 @@ contains
         do k = 1, 3
 
           if (abs(e_ijk(i, j, k)) > small) then
-            print '("@ beta  (w = "3f8.4")" a10 a2 a2    f26.10)', w(1), w(2), w(3),       fc(i), fc(j), fc(k),        -e_ijk(i, j, k)
+            print '("@ beta  (w = "3f8.4")" a10 a2 a2    f26.10)', w(1),  &
+                                                                   w(2),  &
+                                                                   w(3),  &
+                                                                   fc(i), &
+                                                                   fc(j), &
+                                                                   fc(k), &
+                                                                  -e_ijk(i, j, k)
           end if
         end do
       end do
