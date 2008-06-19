@@ -1168,6 +1168,9 @@ if [ -n "$MODULES" ]; then
   echo '#       because other directories use (some of) these ' >> Makefile
   echo 'mod :                 ;\' >> Makefile
   echo '	cd  gp         &&   $(MAKE) mod' >> Makefile
+  if [ -n "$XMLMOD" ]; then
+  echo '	cd  gp/xml     &&   $(MAKE) mod' >> Makefile
+  fi
   echo '	cd  abacus     &&   $(MAKE) mod' >> Makefile
   if [ -n "$VISUALMOD" ]; then
   echo '	cd  visual     &&   $(MAKE) mod' >> Makefile
@@ -1177,9 +1180,6 @@ if [ -n "$MODULES" ]; then
   fi
   if [ -n "$EMBMOD" ]; then
   echo '	cd  embedding  &&   $(MAKE) mod' >> Makefile
-  fi
-  if [ -n "$XMLMOD" ]; then
-  echo '	cd  gp/xml     &&   $(MAKE) mod' >> Makefile
   fi
   if [ -n "$OOFMOD" ]; then
   echo '	cd  oof        &&   $(MAKE) mod' >> Makefile
