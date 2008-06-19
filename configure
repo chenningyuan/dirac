@@ -1004,9 +1004,9 @@ echo
 get_cpp_flags(){
 
   if [ "$mesp" = "mpi" ]; then
-    parop='-DVAR_MPI'
+    parop="-DVAR_MPI"
     if [ "$localdisks" = "yes" ]; then
-       parop='$parop -DSYS_LOCALDISKS'
+       parop="$parop -DSYS_LOCALDISKS"
     fi
     if [ "$mpi2version" = "yes" ]; then
        parop="$parop -DVAR_MPI2"
@@ -1014,11 +1014,11 @@ get_cpp_flags(){
 
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-    def='dirmpi.x'
+    def="dirmpi.x"
   else
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    def='dirac.x'
+    def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
     cpp_f90="$cpp_f90 -DVAR_MKL"
