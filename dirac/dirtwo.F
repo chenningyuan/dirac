@@ -45,6 +45,7 @@ C  /* Deck twofck */
 C*****************************************************************************
 C
 C     Driver for the construction of the two-electron Fock matrix in SO-basis
+C     
 C
 C     Written by T.Saue - January 1995
 C     tsaue - Sep 3 1996    Extended to include parameter NFMAT, number of
