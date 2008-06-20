@@ -191,26 +191,7 @@ if [ -z "${par}" ]; then
 fi
 
 echo 'Parallel version: '${par}''
-
 if [ "$par" = "yes" ]; then
-  $echo 'Do you have a MPI-2 version installed (Y/n) \c'
-  read mpi2version
-  case "$mpi2version" in
-  "no" | "n" | "N" )
-    mpi2version="no"
-    ;;
-  *)
-    mpi2version="yes"
-    ;;
-  esac
-  if [ "$mpi2version" = "no" ]; then
-    echo  "Attention: the following DIRAC modules will NOT work         "
-    echo  "           without MPI-2 support:                            "
-    echo  "                                  - LUCITA                   "
-    echo  "                                  - LUCIAREL                 "
-    echo  "                                  - KR-MCSCF using LUCIAREL  "
-    echo  "                                  - MOLTRA (scheme 6)        "
-  fi
 
   $echo 'Will your nodes use local disks? (y/N) \c'
   read localdisks
@@ -367,8 +348,37 @@ else
    rcp=rcp
 fi
 echo
+
+mpi2check
 }
 
+mpi2check () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  Check if MPI-2 is installed
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+if [ "$mesp" = "mpi" ]; then
+  $echo 'Do you have a MPI-2 version installed (Y/n) \c'
+  read mpi2version
+  case "$mpi2version" in
+  "no" | "n" | "N" )
+    mpi2version="no"
+    ;;
+  *)
+    mpi2version="yes"
+    ;;
+  esac
+  if [ "$mpi2version" = "no" ]; then
+    echo  "Attention: the following DIRAC modules will NOT work         "
+    echo  "           without MPI-2 support:                            "
+    echo  "                                  - LUCITA                   "
+    echo  "                                  - LUCIAREL                 "
+    echo  "                                  - KR-MCSCF using LUCIAREL  "
+    echo  "                                  - MOLTRA (scheme 6)        "
+  fi
+fi
+}
 find_compilers () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
