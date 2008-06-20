@@ -359,6 +359,7 @@ mpi2check () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 if [ "$mesp" = "mpi" ]; then
   $echo 'Checking if a MPI-2 version is installed ...'
+  mpi2version="yes"
   case $F90_COMP in
      xlf*|mpfort|mpxlf_r) 
      comptst="$F90_COMP -WF,-DSYS_$sys_name"
@@ -382,9 +383,14 @@ if [ "$mesp" = "mpi" ]; then
     echo
   else
     echo ok
-    cpp_f90="$cpp_f90 -DVAR_MPI2"
     cpp_cc="$cpp_cc -DVAR_MPI2"
-
+    case $F90_COMP in
+       xlf*|mpfort|mpxlf_r) 
+       cpp_f90="$cpp_f90 -WF,-DVAR_MPI2"
+       ;;
+       *)
+       cpp_f90="$cpp_f90 -DVAR_MPI2"
+    esac
   fi
 fi
 }
