@@ -1471,9 +1471,6 @@ case $F90_COMP in
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
      cpp_f90="$cpp_f90,\$(MODS)"
-     echo "CPP_F90: $cpp_f90"
-     cpp_f902=`echo $cpp_f90 | sed -e 's/$(MODS)//' `
-     echo "CPP_F902: $cpp_f902"
      ;;
    *)
      cpp_f90="$cpp_f90 \${MODS}"
