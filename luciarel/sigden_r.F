@@ -1571,6 +1571,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       DIMENSION CJRES(*),SIRES(*)
 *
       COMMON/KKKDUMMY/LEN_C2,LEN_S2
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
       COMMON/CMXCJ/MXCJ
       INTEGER*8 ITOFF
 *
@@ -2032,17 +2033,31 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              LKAB = NKA_B*NKB_B
              LCAB = NCA_B*NCB_B 
              LAAB = NAA_B*NAB_B
-*
              FACTORC = 0.0D0
              FACTORAB = 1.0D0*SIGNXXX
-*
+C            statistics
+             XNCALL = XNCALL + 1
+             T_INI = Second()
+C
 #if defined (VAR_MPI2)
              xxxsitime = MPI_WTIME()
 #endif
              IF(ISD.EQ.1) THEN
-               CALL MATML7(SIRES,CJRES,TBSUB,
-     &         LKAB,LCAB,LKAB,LAAB,LCAB,LAAB,FACTORC,FACTORAB,2)
-*
+C
+C              call DGEMM - statistics
+               XLCROW = XLCROW + LKAB
+               XLCCOL = XLCCOL + LCAB
+               XLCROWCOL = XLCROWCOL + LKAB*LCAB
+               XNFLOP = XNFLOP + 2*LKAB*LCAB*LAAB
+C              input
+               LDA = MAX(1,LKAB)
+               LDB = MAX(1,LCAB)
+C              output
+               LDC = MAX(1,LKAB)
+C
+               CALL DGEMM('N','T',LKAB,LCAB,LAAB,FACTORAB,CJRES,LDA,
+     &                    TBSUB,LDB,FACTORC,SIRES,LDC)
+C
                IF(NTEST.GE.1000) THEN
                  write(LUWRT,*)
                  write(LUWRT,*) ' Excitation type ',IXTP
@@ -2052,9 +2067,21 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
                  write(LUWRT,*)
                END IF
              ELSE
-               FACTORC = 0.0D0
-               CALL MATML7(TBSUB,SIRES,CJRES,
-     &         LCAB,LAAB,LKAB,LCAB,LKAB,LAAB,FACTORC,FACTORAB,1) 
+C
+C              call DGEMM - statistics
+               XLCROW = XLCROW + LCAB
+               XLCCOL = XLCCOL + LAAB
+               XLCROWCOL = XLCROWCOL + LCAB*LAAB
+               XNFLOP = XNFLOP + 2*LCAB*LAAB*LKAB
+C              input
+               LDA = MAX(1,LKAB)
+               LDB = MAX(1,LKAB)
+C              output
+               LDC = MAX(1,LCAB)
+C
+               CALL DGEMM('T','N',LCAB,LAAB,LKAB,FACTORAB,SIRES,LDA,
+     &                    CJRES,LDB,FACTORC,TBSUB,LDC)
+C
                IF(NTEST.GE.100) THEN
                  write(LUWRT,*)
                  write(LUWRT,*) '========================'
@@ -2067,6 +2094,10 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
                  write(LUWRT,*)
                END IF
              END IF
+*
+             T_END = Second()
+             TMULT = TMULT + T_END - T_INI
+*
 #if defined (VAR_MPI2)
              xcomputesi = xcomputesi - xxxsitime + MPI_WTIME()
 #endif
