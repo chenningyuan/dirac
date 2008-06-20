@@ -349,7 +349,6 @@ else
 fi
 echo
 
-mpi2check
 }
 
 mpi2check () {
@@ -359,23 +358,26 @@ mpi2check () {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 if [ "$mesp" = "mpi" ]; then
-  $echo 'Do you have a MPI-2 version installed (Y/n) \c'
-  read mpi2version
-  case "$mpi2version" in
-  "no" | "n" | "N" )
-    mpi2version="no"
-    ;;
-  *)
-    mpi2version="yes"
-    ;;
-  esac
+  $echo 'Checking if a MPI-2 version is installed ...'
+  echo $F90_COMP -DSYS_$sys_name ./test/MPI2_test.F
+  echo 
+  mpi2version="yes"
+  $F90_COMP -DSYS_$sys_name test/MPI2_test.F || mpi2version="no"
+  echo 
   if [ "$mpi2version" = "no" ]; then
+    echo  "No MPI-2 support found ...                                   "
     echo  "Attention: the following DIRAC modules will NOT work         "
     echo  "           without MPI-2 support:                            "
     echo  "                                  - LUCITA                   "
     echo  "                                  - LUCIAREL                 "
     echo  "                                  - KR-MCSCF using LUCIAREL  "
     echo  "                                  - MOLTRA (scheme 6)        "
+    echo
+  else
+    echo ok
+    cpp_f90="$cpp_f90 -DVAR_MPI2"
+    cpp_cc="$cpp_cc -DVAR_MPI2"
+
   fi
 fi
 }
@@ -1018,9 +1020,6 @@ get_cpp_flags(){
     if [ "$localdisks" = "yes" ]; then
        parop="$parop -DSYS_LOCALDISKS"
     fi
-    if [ "$mpi2version" = "yes" ]; then
-       parop="$parop -DVAR_MPI2"
-    fi
 
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
@@ -1408,6 +1407,7 @@ MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 
 set_compile_flags
+mpi2check
 get_largefiles
 
 # given that all unix clones like linux, *bsd and mac osx have no
