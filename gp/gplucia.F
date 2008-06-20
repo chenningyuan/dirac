@@ -3790,6 +3790,86 @@ C
       DIMENSION C(NCROW,NCCOL)
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
+      NTEST = 00
+      IF ( NTEST .NE. 0 ) THEN
+      WRITE(6,*)
+      WRITE(6,*) ' A, B and C MATRIX FROM MATML7 ' 
+      WRITE(6,*)
+      CALL WRTMAT(A,NAROW,NACOL,NAROW,NACOL)
+      CALL WRTMAT(B,NBROW,NBCOL,NBROW,NBCOL)
+      CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
+      WRITE(6,*)      ' NCROW NCCOL NAROW NACOL NBROW NBCOL ' 
+      WRITE(6,'(6I6)')  NCROW,NCCOL,NAROW,NACOL,NBROW,NBCOL
+      WRITE(6,*) ' ITRNSP : ', ITRNSP
+      END IF
+*. Statistics
+      XNCALL = XNCALL + 1
+      XLCROW = XLCROW + NCROW
+      XLCCOL = XLCCOL + NCCOL
+      XLCROWCOL = XLCROWCOL + NCROW*NCCOL
+      T_INI = Second()
+*
+      IF(ITRNSP.EQ.1) THEN
+        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NAROW
+      ELSE
+        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NACOL
+      END IF
+C
+C     do matrix-matrix multiplication using DGEMM
+C
+C     input
+      LDA = MAX(1,NAROW)
+      LDB = MAX(1,NBROW)
+C     output
+      LDC = MAX(1,NCROW)
+      IF(ITRNSP.EQ.0) THEN
+        CALL DGEMM('N','N',NAROW,NBCOL,NACOL,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      ELSE IF (ITRNSP.EQ.1) THEN
+        CALL DGEMM('T','N',NACOL,NBCOL,NAROW,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      ELSE IF(ITRNSP.EQ.2) THEN
+        CALL DGEMM('N','T',NAROW,NBROW,NACOL,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      END IF
+C
+      IF ( NTEST .NE. 0 ) THEN
+      WRITE(6,*)
+      WRITE(6,*) ' C MATRIX FROM MATML7 ' 
+      WRITE(6,*)
+      CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
+      END IF
+C
+      T_END = Second()
+      TMULT = TMULT + T_END - T_INI 
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE MATML7_SAVE(C,A,B,NCROW,NCCOL,NAROW,NACOL,
+     &                       NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
+C
+C MULTIPLY A AND B TO GIVE C
+C
+C     C =  FACTORC*C + FACTORAB* A * B             FOR ITRNSP = 0
+C
+C     C =  FACTORC*C + FACTORAB* A(TRANSPOSED) * B FOR ITRNSP = 1
+C
+C     C =  FACTORC*C + FACTORAB* A * B(TRANSPOSED) FOR ITRNSP = 2
+C
+C... JEPPE OLSEN,
+C
+*. Notice : If the summation index has dimension zero nothing
+*           is performed
+      IMPLICIT REAL*8           (A-H,O-Z)
+      DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
+      DIMENSION C(NCROW,NCCOL)
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+*
 c     CALL QENTER('MATML')
 *
       NTEST = 00
@@ -3823,9 +3903,7 @@ c     CALL QENTER('MATML')
         IZERO = 0
       END IF
 
-      IESSL = 1
-      ICONVEX = 0
-      IF ((ICONVEX.EQ.1 .OR.IESSL.EQ.1).AND. IZERO.EQ.0 ) THEN
+      IF (IZERO.EQ.0 ) THEN
 *. DGEMM from CONVEX/ESSL  lib
         LDA = MAX(1,NAROW)
         LDB = MAX(1,NBROW)
