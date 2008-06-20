@@ -1035,7 +1035,7 @@ C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
    15          CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
                   IF (IGTINT.EQ.1) THEN
-                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+                     READ(LUCMD,ERR=1000) ILLINT,ISLINT,ISSINT,IGTINT
                   ELSE
                      READ(LUCMD,*) ILLINT,ISLINT,ISSINT
                   END IF
@@ -1958,7 +1958,11 @@ C
 C
   999 CONTINUE
       RETURN
-C
+CMI ... error message 
+ 1000 WRITE(LUPRI,'(/,2X,A)') 'Error in SCF INTFLG reading !'
+     &//'4 parameters needed for Gaunt term !'
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('DHFINP: Error in INTFLG reading for GAUNT=true!')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck idnnuc */
