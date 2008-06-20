@@ -359,10 +359,17 @@ mpi2check () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 if [ "$mesp" = "mpi" ]; then
   $echo 'Checking if a MPI-2 version is installed ...'
-  echo $F90_COMP -DSYS_$sys_name ./test/MPI2_test.F
+  case $F90_COMP in
+     xlf*|mpfort|mpxlf_r) 
+     comptst="$F90_COMP -WF,-DSYS_$sys_name"
+     ;;
+   *)
+     comptst="$F90_COMP -DSYS_$sys_name"
+  esac
+  echo $comptst ./test/MPI2_test.F
   echo 
   mpi2version="yes"
-  $F90_COMP -DSYS_$sys_name test/MPI2_test.F || mpi2version="no"
+  $comptst ./test/MPI2_test.F || mpi2version="no"
   echo 
   if [ "$mpi2version" = "no" ]; then
     echo  "No MPI-2 support found ...                                   "
