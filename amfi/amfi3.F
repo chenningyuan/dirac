@@ -1909,15 +1909,17 @@ CBS   PREPARE INPUT FOR SCF-CODE
       write(17,'(4I3)') (openshells(i),i=0,Lmax_occ)
 
 CMI    .... write out important info....
-CMI   if (amfi3_verbose) then
-CMI   if (IPR_AMFI.GE.2) then
       if (IPR_AMFI.GE.0) then
-         write(lupri,*)
-     &   '****   Written to the file TOSCF for "relscf" ****'
-         write(lupri,*) '       charge: ',charge
-         write(lupri,*) '      nprimit: ',(nprimit(i),i=0,Lmax_occ)  
-         write(lupri,*) '   closed sh.: ',(closedshells(i),i=0,Lmax_occ)
-         write(lupri,*) '     open sh.: ',(openshells(i),i=0,Lmax_occ)
+         write(lupri,'(1X,A)')
+     &   '****  Written to the file TOSCF for "relscf" ****'
+         write(lupri,'(1X,F6.3)')
+     &   '       charge: ',charge
+         write(lupri,'(A,4I3)')
+     &   '      nprimit: ',(nprimit(i),i=0,Lmax_occ)  
+         write(lupri,'(A,4I3)')
+     &   '   closed sh.: ',(closedshells(i),i=0,Lmax_occ)
+         write(lupri,'(A,4I3)')
+     &   '     open sh.: ',(openshells(i),i=0,Lmax_occ)
       endif
 
 CMI   if(breit) then
