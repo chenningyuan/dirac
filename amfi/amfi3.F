@@ -1912,7 +1912,7 @@ CMI    .... write out important info....
       if (IPR_AMFI.GE.0) then
          write(lupri,'(1X,A)')
      &   '****  Written to the file TOSCF for "relscf" ****'
-         write(lupri,'(1X,F6.3)')
+         write(lupri,'(1X,A,F6.3)')
      &   '       charge: ',charge
          write(lupri,'(A,4I3)')
      &   '      nprimit: ',(nprimit(i),i=0,Lmax_occ)  
