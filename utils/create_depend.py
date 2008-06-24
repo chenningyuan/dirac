@@ -35,6 +35,8 @@ class file_c:
       def add_use(self, u):
           self.use[u] = ''
 
+#-------------------------------------------------------------------------------
+
 cpp_prefix = 'cpp -w -traditional-cpp -Iinclude '
 for i in range(len(sys.argv)):
     if i > 0:
@@ -91,9 +93,11 @@ for file in file_l:
     without_suffix = file.file_name[:string.rindex(file.file_name, '.')]
     without_suffix_without_path = string.split(without_suffix, '/')[-1]
 
-    print without_suffix_without_path + '.o: $(SOURCEDIR)' + string.replace(file.file_name, os.getcwd(), '')
     for key in file.use.keys():
-        print without_suffix_without_path + '.o: $(SOURCEDIR)/modules/' + key + '.mod'
+        # if a file uses a module that is provided by exactly this file
+        # then don't write this dependency
+        if file.file_name != file.use[key]:
+           print without_suffix_without_path + '.o: $(SOURCEDIR)/modules/' + key + '.mod'
 
     for key in file.include.keys():
         print without_suffix_without_path + '.o: $(SOURCEDIR)' + string.replace(file.include[key], os.getcwd(), '')

@@ -1,43 +1,37 @@
-MODS=
-#
-# VERSION : $Revision: 1.17 $
-# DATE    : $Date: 2008/04/17 14:10:49 $
-# FILE    : utils/Makefile.in
-#
-
 include ../../Makefile.config
 
-F77_OBJS = 
+F77_OBJS =
 
-F90_OBJS = xml_file.o   xml_structure.o   xml_parser.o
+F90_OBJS = xml_file.o \
+           xml_structure.o \
+           xml_parser.o
 
-F90_MODS = xml_file.mod xml_structure.mod xml_parser.mod
+F90_MODS = xml_file.mod \
+           xml_structure.mod \
+           xml_parser.mod
+
+C_OBJS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:    $(F77_OBJS) $(F90_OBJS)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
+
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd ..; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd ..; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+include ../../Makefile.depend
 
-mod: $(F90_MODS)
-
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-
-f90dep: ;\
-       ../../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
-
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.

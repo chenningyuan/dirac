@@ -1,50 +1,50 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
-#
-
 include ../Makefile.config
 
-F77_OBJS = ciinfo_r.o  density_r.o  diagonal_r.o  diagonalize_r.o  fock_r.o  interface_r.o  \
-           io_r.o  memory_r.o  program_r.o  sigden_r.o  sigma_r.o  strings_r.o  transform_r.o  \
-           utils_r.o  vecmat_r.o  par_lucia_r.o  par_solver_r.o  par_lushmem_r.o
+F77_OBJS = ciinfo_r.o \
+           density_r.o \
+           diagonal_r.o \
+           diagonalize_r.o \
+           fock_r.o \
+           interface_r.o \
+           io_r.o \
+           memory_r.o \
+           program_r.o \
+           sigden_r.o \
+           sigma_r.o \
+           strings_r.o \
+           transform_r.o \
+           utils_r.o \
+           vecmat_r.o \
+           par_lucia_r.o \
+           par_solver_r.o \
+           par_lushmem_r.o
 
 F90_OBJS =
 
 F90_MODS =
 
+C_OBJS =
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
+
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-all:	$(F77_OBJS) $(F90_OBJS)
-
-clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
-
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
-
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
+include ../Makefile.depend
 

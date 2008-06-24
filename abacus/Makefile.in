@@ -1,9 +1,3 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : abacus/Makefile.in
-#
-
 include ../Makefile.config
 
 F77_OBJS = her1ave.o    her1car.o    her1drv.o    her1int.o\
@@ -23,7 +17,7 @@ F90_OBJS = herrdn.o     hermodules.o
 F90_MODS = conversion.mod \
            file.mod \
            readfile.mod
- 
+
 SLAVE_OBJS = herpar.o
 
 F77_CPPS = $(F77_OBJS:.o=.i) $(SLAVE_OBJS:.o=.i)
@@ -41,29 +35,13 @@ clean :
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
         $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-##
-##  compile Fortran90 module source files and make symbolic links
-## of resulting *.mod files into common linked directory modules
-##
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(SLAVE_OBJS:.o=.F)
-
-f90dep: ;\
-	echo $(SOURCEDIR);\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
-
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include ../Makefile.depend
 

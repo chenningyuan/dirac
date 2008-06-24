@@ -1,57 +1,56 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : Makefile.in
-#
-
 include ../Makefile.config
 
-F77_OBJS =  argos1.o  argos2.o   argos3.o  argos4.o  argos5.o  argos6.o  \
-            colib1.o  colib2.o  colib3.o  colib4.o  colib5.o  colib6.o \
-            colib7.o  colib8.o  colib9.o \
-            cnvrt.o  \
-            argosin1.o   argosin2.o 
+F77_OBJS = argos1.o \
+           argos2.o \
+           argos3.o \
+           argos4.o \
+           argos5.o \
+           argos6.o \
+           colib1.o \
+           colib2.o \
+           colib3.o \
+           colib4.o \
+           colib5.o \
+           colib6.o \
+           colib7.o \
+           colib8.o \
+           colib9.o \
+           cnvrt.o \
+           argosin1.o \
+           argosin2.o
 
 F90_OBJS =
 
 F90_MODS =
 
-C_OBJS =  falloc.o fdate.o flushstdout.o fwtime.o hostnm.o runsec.o tsystem.o
+C_OBJS = falloc.o \
+           fdate.o \
+           flushstdout.o \
+           fwtime.o \
+           hostnm.o \
+           runsec.o \
+           tsystem.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(C_OBJS)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
-clean : 
-	$(RM) -f *.o *~ *.lst *.i
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+include ../Makefile.depend
 
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-falloc.o: extsymbols.h
-fdate.o: extsymbols.h
-flushstdout.o: extsymbols.h
-fwtime.o: extsymbols.h
-hostnm.o: extsymbols.h

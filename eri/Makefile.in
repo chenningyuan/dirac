@@ -1,51 +1,61 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
-#
-
 include ../Makefile.config
 
-F77_OBJS = fck3aob.o fck3drv.o fck3ftuv.o fck3mom.o fck3odb.o \
-fck3mpi.o eri2ftuv.o fck3int.o fck3box.o eri2aob.o erisph.o \
-eri2ave.o eri2car1.o eri2car2.o eri2cft.o eri2dis.o eri2fck3.o \
-eri2drv.o eri2fck.o eri2her.o eri2odb.o eri2out.o eri2pro.o \
-eri2sph.o eri2sym.o eri2vec.o eri2r12.o eri2csi.o eri2exc.o
-#eri2par.o eriprg.o 
+F77_OBJS = fck3aob.o \
+           fck3drv.o \
+           fck3ftuv.o \
+           fck3mom.o \
+           fck3odb.o \
+           fck3mpi.o \
+           eri2ftuv.o \
+           fck3int.o \
+           fck3box.o \
+           eri2aob.o \
+           erisph.o \
+           eri2ave.o \
+           eri2car1.o \
+           eri2car2.o \
+           eri2cft.o \
+           eri2dis.o \
+           eri2fck3.o \
+           eri2drv.o \
+           eri2fck.o \
+           eri2her.o \
+           eri2odb.o \
+           eri2out.o \
+           eri2pro.o \
+           eri2sph.o \
+           eri2sym.o \
+           eri2vec.o \
+           eri2r12.o \
+           eri2csi.o \
+           eri2exc.o
 
 F90_OBJS =
 
 F90_MODS =
 
+C_OBJS =
+
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(F90_OBJS)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
-clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+include ../Makefile.depend
 
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.

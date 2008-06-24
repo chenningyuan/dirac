@@ -1,52 +1,35 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : Makefile.in
-#
-
 include ../Makefile.config
 
-F77_OBJS = dircap.o prepcap.o
+F77_OBJS = dircap.o \
+           prepcap.o
 
-F90_OBJS = prepcap90.o capnew.o
+F90_OBJS = prepcap90.o \
+           capnew.o
 
-F90_MODS = cap.mod 
+F90_MODS = cap.mod
+
+C_OBJS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F90_MODS) $(F77_OBJS) $(F90_OBJS)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
-clean :
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
-        $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-##
-##  compile Fortran90 module source files and make symbolic links
-## of resulting *.mod files into common linked directory modules
-##
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include ../Makefile.depend
 

@@ -636,7 +636,7 @@ relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
 relccsd/waio.o \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
-lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  \\
+lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/lucita_diagonalize.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
 lucita/vecmat.o  lucita/par_lucia.o  \\
@@ -875,7 +875,7 @@ aoresponse/matrix_mod.o \\
 aoresponse/dirac_interface.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
-aoresponse/test.o \\
+aoresponse/aoresponse_test.o \\
 aoresponse/helper.o \\
 aoresponse/aoresponse_xc.o \\
 aoresponse/aoresponse_main.o
@@ -1391,77 +1391,6 @@ UTIL_OBJ:
 	cd utils ; \$(MAKE) all
 
 EOF
-########################################################################
-### 								     ###
-###                   Add makedepend targets                         ###
-### 								     ###
-###   NOTE: TEMP and TEMPOOF must be exclusive as some directories   ###
-### contain Fortran90 modules and others not			     ###
-###								     ###
-########################################################################
-
-#TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
-TEMP="dirac prp pdpack main relccsd moltra dirrci lucita"
-
-# ... directories with F90 modules 
-TEMPOOF="abacus gp utils"
-
-if [ -n "$ESRMOD" ]; then
-   TEMP="$TEMP prp/esr"
-fi
-if [ -n "$DFTMOD" ]; then
-   TEMP="$TEMP dft"
-fi
-if [ -n "$XPPMOD" ]; then
-   TEMP="$TEMP prp/xpp"
-fi
-if [ -n "$FMMMOD" ]; then
-   TEMP="$TEMP fmm"
-fi
-if [ -n "$DNFMOD" ]; then
-   TEMP="$TEMP densfit"
-fi
-if [ -n "$ERIMOD" ]; then
-   TEMP="$TEMP eri"
-fi
-if [ -n "$KRMCMOD" ]; then
-   TEMP="$TEMP krmc luciarel"
-fi
-if [ -n "$EMBMOD" ]; then
-   TEMPOOF="$TEMPOOF embedding"
-fi
-if [ -n "$XMLMOD" ]; then
-   TEMPOOF="$TEMPOOF gp/xml"
-fi
-if [ -n "$ADCMOD" ]; then
-   TEMP="$TEMP reladc"
-fi
-if [ -n "$ECPMOD" ]; then
-   TEMP="$TEMP argosecp"
-fi
-if [ -n "$CDFTMOD" ]; then
-   TEMP="$TEMP cdft"
-fi
-if [ -n "$VISUALMOD" ]; then
-   TEMP="$TEMP visual"
-   TEMPOOF="$TEMPOOF visual"
-fi
-if [ -n "$AORESPONSEMOD" ]; then
-   TEMP="$TEMP aoresponse"
-fi
-if [ -n "$CAPMOD" ]; then
-#   TEMP="$TEMP cap"
-   TEMPOOF="$TEMPOOF cap"
-fi
-if [ -n "$HSCCMOD" ]; then
-#   TEMP="$TEMP hsmrcc"
-   TEMPOOF="$TEMPOOF hsmrcc"
-   TEMPOOF="$TEMPOOF hsmrcc/second_quant"
-fi
-if [ -n "$OOFMOD" ]; then
-#   TEMP="$TEMP oof"
-   TEMPOOF="$TEMPOOF oof"
-fi
 
 #################################################
 ######## take care of all dependencies  #########
@@ -1469,18 +1398,12 @@ fi
 
 cat <<EOF>> Makefile
 
-depend:
+Makefile.depend:
+	touch Makefile.depend
+
+depend: Makefile.depend
+	./utils/create_depend.py \$(CPP_F90) > Makefile.depend
 EOF
-for ff in $TEMP; do
-   cat <<EOF>> Makefile
-	cd $ff; touch Makefile.depend; \$(MAKE) depend
-EOF
-done
-for ff in $TEMPOOF; do
-   cat <<EOF>> Makefile
-	cd $ff; \$(MAKE) f90dep
-EOF
-done
 echo
 
 ################################################

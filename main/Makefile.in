@@ -1,42 +1,35 @@
 include ../Makefile.config
 
-C_OBJS = 
-
 F77_OBJS = dirac.o
 
-F90_OBJS = main.o mpi_framework.o logo.o
+F90_OBJS = main.o \
+           mpi_framework.o \
+           logo.o
 
-F90_MODS = 
+F90_MODS =
+
+C_OBJS =
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre: $(F77_CPPS)
+pre:       $(F77_CPPS)
 
-ftnchek: pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F77_OBJS) $(F90_OBJS) $(C_OBJS)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
 clean:
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
-
-dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+dirmpi.x:
+	   cd .. ; $(MAKE) dirmpi.x
 
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include ../Makefile.depend
 

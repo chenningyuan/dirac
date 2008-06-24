@@ -1,48 +1,37 @@
 include ../Makefile.config
 
-F77_OBJS = 
+F77_OBJS =
 
-#F90_OBJS = embedding.o emb_settings.o emb_frozen_orbitals.o
-##F90_OBJS = embd.o emb_set.o emb_froz_orb.o
-F90_OBJS = grid_file.o emb1int.o diremb.o
+F90_OBJS = grid_file.o \
+           emb1int.o \
+           diremb.o
 
-#F90_MODS = emb_settings.mod  emb_frozen_orbitals.mod  embedding.mod
-F90_MODS = grid_file.mod vc_grid.mod fde_mod.mod
+F90_MODS = grid_file.mod \
+           vc_grid.mod \
+           fde_mod.mod
 
-F_CPPS = $(F77_OBJS:.o=.i)
+C_OBJS =
 
-pre:	$(F77_CPPS)
+F77_CPPS = $(F77_OBJS:.o=.i)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
+pre:       $(F77_CPPS)
 
-all:	$(F77_OBJS) $(F90_OBJS) $(F90_MODS)
+ftnchek:   pre
+	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-clean : 
-	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
-        $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
+all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
-#
-##  compile Fortran90 module source files and make symbolic links
-## of resulting *.mod files into common linked directory modules
-##
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
+clean:
+	   $(RM) -f *.o *~ *.f *.f90 *.lst *.i *.mod  ;\
+	   $(foreach module_file, $(F90_MODS), $(RM) -f modules/$(module_file) ;)
 
-module_files: $(F90_MODS)
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
- 
-# DO NOT DELETE
+include ../Makefile.depend
 

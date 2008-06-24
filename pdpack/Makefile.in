@@ -1,10 +1,3 @@
-#
-# VERSION : $Revision$
-# DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
-#
-
 include ../Makefile.config
 
 #
@@ -37,24 +30,13 @@ libpdlib.a: $(F_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.a
 
-mod:
-	$(MAKE) f90dep  # create list of which file to compile to get the .mod files
-	$(MAKE) module_files
-
-module_files: $(F90_MODS)
-
+mod:       $(F90_MODS)
 
 dirac.x:
-	cd .. ; $(MAKE) dirac.x
+	   cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-	cd .. ; $(MAKE) dirmpi.x
+	   cd .. ; $(MAKE) dirmpi.x
 
-depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F77_SRC) 
-
-f90dep: ;\
-       ../utils/sfmakedepend.pl -I $(SOURCEDIR)/include -M $(SOURCEDIR)/modules $(F90_OBJS:.o=.F90) $(F90_OBJS:.o=.F) $(F77_OBJS:.o=.F)
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include ../Makefile.depend
 
