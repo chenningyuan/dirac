@@ -7,6 +7,8 @@
 #
 # Patrick Norman and Radovan Bast (Odense 2008-06-11)
 
+debug_level = 0
+
 import sys
 import string
 import re
@@ -74,6 +76,25 @@ for file in file_l:
         m = module.match(line)
         if m:
            file.add_module(string.lower(m.group(1)))
+
+#-------------------------------------------------------------------------------
+
+if debug_level > 0:
+
+   f = open('Makefile.depend_debug', 'w')
+
+   for file in file_l:
+       f.write('file: ' + file.file_name + '\n')
+       for key in file.module.keys():
+           f.write('file.module: ' + key + '\n')
+       for key in file.include.keys():
+           f.write('file.include: ' + key + '\n')
+       for key in file.use.keys():
+           f.write('file.use: ' + key + '\n')
+
+   f.close()
+
+#-------------------------------------------------------------------------------
 
 for file in file_l:
     for use in file.use:
