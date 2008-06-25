@@ -1035,7 +1035,8 @@ C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
    15          CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
                   IF (IGTINT.EQ.1) THEN
-                     READ(LUCMD,ERR=1000) ILLINT,ISLINT,ISSINT,IGTINT
+!                    ... if gaunt=true 
+                     READ(LUCMD,*,ERR=1000) ILLINT,ISLINT,ISSINT,IGTINT
                   ELSE
                      READ(LUCMD,*) ILLINT,ISLINT,ISSINT
                   END IF
