@@ -648,21 +648,21 @@ search_math_libs(){
 
 setup_math_lib(){
   case "$1" in
-    libesslp2) LIB="$1 -L$2 -lesslp2";;
-    libessl) LIB="$1 -L$2 -lessl";;
+    libesslp2) LIB="-L$2 -lesslp2";;
+    libessl) LIB="-L$2 -lessl";;
 #For later use we note that we found an optimized blas library
-    libblas) LIB="$1 -L$2 -lblas" ;;
+    libblas) LIB="-L$2 -lblas" ;;
 #For Atlas you need to link with lf77blas as well
-    libatlas) LIB="$1 -L$2 -llapack -lcblas -lf77blas -latlas";;
-    libdxml) LIB="$1 -L$2 -ldxml";;
-    libcomplib.sgimath) LIB="$1 -L$2 -lcomplib.sgimath";;
-    libveclib) LIB="$1 -L$2 -lveclib";;
-    libmath) LIB="$1 -L$2 -lmath -lm -nx";;
-    libmkl) LIB="$1 -L$2 -lguide -lpthread -lmkl"
+    libatlas) LIB="-L$2 -llapack -lcblas -lf77blas -latlas";;
+    libdxml) LIB="-L$2 -ldxml";;
+    libcomplib.sgimath) LIB="-L$2 -lcomplib.sgimath";;
+    libveclib) LIB="-L$2 -lveclib";;
+    libmath) LIB="-L$2 -lmath -lm -nx";;
+    libmkl) LIB="-L$2 -lmkl_lapack -lguide -lpthread -lmkl"
             optblas=$2;;
-    libmkl_ipf) LIB="$1 -L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
+    libmkl_ipf) LIB="-L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
                       optblas=$2;;
-    libmkl_itp) LIB="$1 -L$2 -lguide -lpthread -lmkl_itp"
+    libmkl_itp) LIB="-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
   esac
   
@@ -737,12 +737,12 @@ elif [ $lib_index -eq 0 ]; then
   read defblas
   case "$defblas" in   
     "yes" | "y" | "Y" )
-
-    $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
+      cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK" ;;
+    *)
+      $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
        ;;
   esac
 
-  cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK"
    
 elif [ $lib_index -eq 1 ]; then
   $echo "Enter a directory to search: \c"
