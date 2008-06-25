@@ -75,8 +75,7 @@ contains
         end if
       end do
 
-      if (is_there) then
-      else
+      if (.not. is_there) then
         p_a(k) = j
         k = k + 1
       end if
