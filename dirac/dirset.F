@@ -1660,7 +1660,8 @@ C.......read records containing orbital information
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
      &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
-     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
           I2TMT(IFRP) = N2TMT
           N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
           I2TMOT(IFRP) = N2TMOTQ
@@ -1693,7 +1694,8 @@ C.......Look for a formatted file with same information
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
      &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
-     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
             I2TMT(IFRP) = N2TMT
             N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
             I2TMOT(IFRP) = N2TMOTQ
@@ -1774,7 +1776,8 @@ C
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
      &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
-     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN)
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
       ENDDO
       IF(SUB_BL) THEN
         DO IFRP = 1,NFSYM
