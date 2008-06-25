@@ -6,11 +6,13 @@ F77_OBJS = dmat.o \
 
 F90_OBJS = vector_algebra.o \
            even_grid.o \
-           scf_density.o
+           scf_density.o \
+           softness.o \
 
 F90_MODS = vector_algebra_m.mod \
            even_grid_class.mod \
-           scf_density_class.mod
+           scf_density_class.mod \
+           softness_m.mod
 
 C_OBJS =
 
