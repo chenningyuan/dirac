@@ -42,7 +42,10 @@ class file_c:
 cpp_prefix = 'cpp -w -traditional-cpp -Iinclude '
 for i in range(len(sys.argv)):
     if i > 0:
-       cpp_prefix += sys.argv[i]
+       if debug_level > 1:
+          cpp_prefix += ''
+       else:
+          cpp_prefix += sys.argv[i]
 cpp_prefix += ' '
 
 file_l = []
