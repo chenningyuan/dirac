@@ -45,8 +45,8 @@ for i in range(len(sys.argv)):
        if debug_level > 1:
           cpp_prefix += ''
        else:
-          cpp_prefix += sys.argv[i]
-cpp_prefix += ' '
+          cpp_prefix += sys.argv[i] + ' '
+cpp_prefix = string.replace(cpp_prefix, ',', ' ') + ' '
 
 file_l = []
 inc_d  = {}
