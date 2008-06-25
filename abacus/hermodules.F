@@ -1584,58 +1584,56 @@
         NOORBTS=.TRUE.
         NOFITFS=.TRUE.
 
-        IF (.NOT.(associated(baspointer))) THEN
-          EXIT
-        ELSE
-          basindex=basindex+1
-          NONT(basindex)=count_atoms(firstatom,baspointer%name)
-          BASREF(1,basindex,1) = ' Reference not found in input'
-          BASREF(2:10,basindex,1:3) = ' Not initialized'
+        IF (.NOT.(associated(baspointer))) EXIT
+        basindex=basindex+1
+        NONT(basindex)=count_atoms(firstatom,baspointer%name)
+        BASREF(1,basindex,1) = ' Reference not found in input'
+        BASREF(2:10,basindex,1:3) = ' Not initialized'
 
 !     JHS060707 TMP We could introduce some additional error checks?
-          SELECT CASE (baspointer%type)
-          CASE ('INTGRL','EXPLICIT')
-            IBSFLAG=1
-            IQM(basindex,1)=SIZE(baspointer%jco)
-            DO i=1,IQM(basindex,1)
-              JCO(i,basindex,1)=baspointer%jco(i)
-!MI           write(lupri,*) 'JCO(i,basindex,1)=',JCO(i,basindex,1)
-!MI           call flshfo(lupri)
-            END DO           
-            BASNAM=baspointer%file
-            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+        SELECT CASE (baspointer%type)
+        CASE ('INTGRL','EXPLICIT')
+          IBSFLAG=1
+          IQM(basindex,1)=SIZE(baspointer%jco)
+          DO i=1,IQM(basindex,1)
+            JCO(i,basindex,1)=baspointer%jco(i)
+!MI         write(lupri,*) 'JCO(i,basindex,1)=',JCO(i,basindex,1)
+!MI         call flshfo(lupri)
+          END DO           
+          BASNAM=baspointer%file
+          KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
 !     POSITION the input file.
-            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),            &
-     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
-            CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),       &
-     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                     &
-     &           SEG(IBLOCK(1),1),                                      &
-     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),           &
-     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),              &
-     &           NBLOCK,KAOVEC,KPRIM)
-            NBLCK(basindex,1) = NBLOCK
-            BASREF(1,basindex,1) =                                      &
-     &            "Basis set typed explicitly in input file "
-          CASE ('MOLFBAS')
-            IBSFLAG=2
-            BASNAM = baspointer%file
-            KLAST = 1 + (1+KPRIM)*KPRIM
-            IF (KLAST.GT.LWORK)                                         &
-     &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-            DIRCON(1) = .TRUE.
-            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                   &
-     &           baspointer%file,BASREF(1,1,1))
-          CASE ('BASIS')
-            IBSFLAG=3
-            BASNAM = baspointer%file
-            KAOVEC = KBLOCK + 1 - IBLOCK(1)
+          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
+     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+          CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),         &
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
+     &         SEG(IBLOCK(1),1),                                        &
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+     &         NBLOCK,KAOVEC,KPRIM)
+          NBLCK(basindex,1) = NBLOCK
+          BASREF(1,basindex,1) =                                        &
+     &          "Basis set typed explicitly in input file "
+        CASE ('MOLFBAS')
+          IBSFLAG=2
+          BASNAM = baspointer%file
+          KLAST = 1 + (1+KPRIM)*KPRIM
+          IF (KLAST.GT.LWORK)                                           &
+     &      CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+          DIRCON(1) = .TRUE.
+          CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &
+     &         IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &         NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &         baspointer%file,BASREF(1,1,1))
+        CASE ('BASIS')
+          IBSFLAG=3
+          BASNAM = baspointer%file
+          KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
-            NBLOCK=basindex+1
-            mol=>find_atom(mol,baspointer%name)
-            CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),              &
+          NBLOCK=basindex+1
+          mol=>find_atom(mol,baspointer%name)
+          CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),                &
      &             NUC(IBLOCK(1),1),                                    &
      &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &
      &             ALPHA(1,IBLOCK(1),1),                                &
@@ -1643,69 +1641,69 @@
      &             NBLOCK,ISGEN(IBLOCK(1)),                             &
      &             KAOVEC,KPRIM,mol%charge,                             &
      &             1,DSM,BASREF(1,basindex,1))                         
-            NBLCK(basindex,1) = NBLOCK
-          CASE ('WELLTEMP','EVENTEMP','GEOM')
-            IBSFLAG=4
-            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
-     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
-            CALL GENFAMEXP(infile,0)
-            i=SIZE(baspointer%fam)-1            
-            FAMPAR(1:i)=baspointer%fam(1:i)
-            NFAMEXP(1)=TRANSFER(baspointer%fam(i+1),int8)
-            KAOVEC = KBLOCK + 1 - IBLOCK(1)
-            CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),       &
-     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                     &
-     &           SEG(IBLOCK(1),1),                                      &
-     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),           &
-     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),              &
-     &           NBLOCK,KAOVEC,KPRIM)
-            NBLCK(basindex,1) = NBLOCK
-            BASREF(1,basindex,1) =                                      &
-     &   "Well-tempered basis set typed explicitly in input file "
-          CASE ('FAMILY','DUALFAMILY')
-            IBSFLAG=4
-            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),            &
-     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
-            IF (baspointer%type=='FAMILY') i=1
-            IF (baspointer%type=='DUALFAMILY') i=2
-            CALL GENFAMEXP(infile,i)
-            NFAMEXP(1:i)=TRANSFER(baspointer%fam(1:i),int8)
-            KAOVEC = KBLOCK + 1 - IBLOCK(1)
-            CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),       &
-     &           NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                     &
-     &           SEG(IBLOCK(1),1),                                      &
-     &           ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),           &
-     &           CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),              &
-     &           NBLOCK,KAOVEC,KPRIM)
-            NBLCK(basindex,1) = NBLOCK
-            BASREF(1,basindex,1) =                                      &
-     &   "Well-tempered basis set typed explicitly in input file "
-          CASE DEFAULT
-            WRITE(lupri,*) 'BASISSET specification not implemented'
-            CALL QUIT('ERROR: READING BASISSET')
-          END SELECT
+          NBLCK(basindex,1) = NBLOCK
+        CASE ('WELLTEMP','EVENTEMP','GEOM')
+          IBSFLAG=4
+          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+          CALL GENFAMEXP(infile,0)
+          i=SIZE(baspointer%fam)-1            
+          FAMPAR(1:i)=baspointer%fam(1:i)
+          NFAMEXP(1)=TRANSFER(baspointer%fam(i+1),int8)
+          KAOVEC = KBLOCK + 1 - IBLOCK(1)
+          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
+     &         SEG(IBLOCK(1),1),                                        &
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+     &         NBLOCK,KAOVEC,KPRIM)
+          NBLCK(basindex,1) = NBLOCK
+          BASREF(1,basindex,1) =                                        &
+     & "Well-tempered basis set typed explicitly in input file "
+        CASE ('FAMILY','DUALFAMILY')
+          IBSFLAG=4
+          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
+     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+          IF (baspointer%type=='FAMILY') i=1
+          IF (baspointer%type=='DUALFAMILY') i=2
+          CALL GENFAMEXP(infile,i)
+          NFAMEXP(1:i)=TRANSFER(baspointer%fam(1:i),int8)
+          KAOVEC = KBLOCK + 1 - IBLOCK(1)
+          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
+     &         SEG(IBLOCK(1),1),                                        &
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+     &         NBLOCK,KAOVEC,KPRIM)
+          NBLCK(basindex,1) = NBLOCK
+          BASREF(1,basindex,1) =                                        &
+     & "Well-tempered basis set typed explicitly in input file "
+        CASE DEFAULT
+          WRITE(lupri,*) 'BASISSET specification not implemented'
+          CALL QUIT('ERROR: READING BASISSET')
+        END SELECT
 
 !     PRINT BASISSET
-          NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
-          IF (IQM(basindex,1).GT.0) THEN
-            WRITE(lupri,'(3X,A)') 'Large component set:'
-            WRITE(lupri,'(6X,A,I5,A,12I5)')                             &
-     &      'Max.ang.quantum no.:',(IQM(basindex,1)-1),                 & 
-     &      '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
-            NHTYP  =   MAX(NHTYP,IQM(basindex,1))
-          ENDIF
+        NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
+        IF (IQM(basindex,1).GT.0) THEN
+          WRITE(lupri,'(3X,A)') 'Large component set:'
+          WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
+     &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
+     &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
+          NHTYP  =   MAX(NHTYP,IQM(basindex,1))
+        ENDIF
 
-          DO i = 1, NBLCK(basindex,1)
-             IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))            &
-     &            CNTBAS = .TRUE.
-          END DO
-          IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
-             DIRCON(1) = .TRUE.
-          END IF
+        DO i = 1, NBLCK(basindex,1)
+           IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &
+     &          CNTBAS = .TRUE.
+        END DO
+        IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
+           DIRCON(1) = .TRUE.
+        END IF
           
-          
+        IF(.NOT.TWOCOMP) THEN
           IF (ASSOCIATED(baspointer%next)) THEN
-            IF (baspointer%next%name==baspointer%name)                  &
+            IF (baspointer%next%name==baspointer%name)                    &
      &            baspointer=>baspointer%next
 !     JHS060707 Move to small component.
 !               TMP We can extend it to include a search for the small component
@@ -1715,13 +1713,13 @@
             WRITE(lupri,*) 'Small component not specified.'
             WRITE(lupri,*) 'Assuming kinetic balance.'
             IBSFLAG=4
-            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                   &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                   &
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
      &           INPTST,CNTBAS)
             BASREF(1,basindex,2) = ' Derived from large component'
 
-          ELSE IF (baspointer%comp=='INTGRL'.OR.                        &
+          ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN
             IBSFLAG=1
             IQM(basindex,2)=SIZE(baspointer%jco)
@@ -1731,45 +1729,45 @@
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
-            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),            &
+            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
      &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp) 
-            CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),       &
-     &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                     &
-     &           SEG(IBLOCK(2),2),                                      &
-     &           ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),           &
-     &           CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),              &
+            CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),         &
+     &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                       &
+     &           SEG(IBLOCK(2),2),                                        &
+     &           ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),             &
+     &           CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),                &
      &           NBLOCK,KAOVEC,KPRIM)
             NBLCK(basindex,2) = NBLOCK
-            BASREF(1,basindex,2) =                                      &
+            BASREF(1,basindex,2) =                                        &
      &            "Basis set typed explicitly in input file "
           ELSE IF (baspointer%type(1:7)=='MOLFBAS') THEN
             IBSFLAG=2
             BASNAM=baspointer%file
             KLAST = 1 + (1+KPRIM)*KPRIM
-            IF (KLAST.GT.LWORK)                                         &
+            IF (KLAST.GT.LWORK)                                           &
      &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
             DIRCON(1) = .TRUE.
-            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                   &
+            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  & 
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
      &           baspointer%file,BASREF(1,1,1))                       
 
           ELSE IF (.NOT.(baspointer%type(1:6)=='KINBAL')) THEN
             IBSFLAG=4
-            CALL KINBAL(basindex,                                       &
-     &           IBLOCK(1),IBLOCK(2),                                   &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                   &
+            CALL KINBAL(basindex,                                         &
+     &           IBLOCK(1),IBLOCK(2),                                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
      &           INPTST,CNTBAS)
             BASREF(1,basindex,2) = ' Derived from large component'
-          END IF          
+          END IF   
 
           NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
 
           IF (IQM(basindex,2).GT.0) THEN
             WRITE(lupri,'(3X,A)') 'Small component set:'
-            WRITE(lupri,'(6X,A,I5,A,12I5)')                             &
-     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),               &
+            WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
+     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
      &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
           ENDIF
 
@@ -1778,8 +1776,8 @@
           IF (IQM(basindex,2).GT.0) THEN
             IF(INPTST) THEN
                WRITE(lupri,'(3X,A)') 'Small component set:'
-               WRITE(lupri,'(6X,A,I5,A,12I5)')                          &
-     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),         &
+               WRITE(lupri,'(6X,A,I5,A,12I5)')                            &
+     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),           &
      &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
             ENDIF
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
@@ -1787,27 +1785,28 @@
           ENDIF
           
           DO i = 1, NBLCK(basindex,2)
-            IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0))             &
-     &            CNTBAS = .TRUE.
+            IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0))               &
+     &             CNTBAS = .TRUE.
           END DO
           IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
 
-
-          IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
-          NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
-          
-          DO i=3,4
-!     JHS060707 TMP Include also the reading of fitsets.
-            IBSFLAG=2
-            IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
-            
-          END DO
-          prevname=baspointer%name
-          DO WHILE (associated(baspointer))
-            IF (.NOT.(baspointer%name==prevname)) EXIT
-            baspointer=>baspointer%next
-          END DO
         END IF
+
+        IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
+        NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
+          
+        DO i=3,4
+!     JHS060707 TMP Include also the reading of fitsets.
+          IBSFLAG=2
+          IBLOCK(i)=IBLOCK(i)+NBLCK(basindex,i)
+            
+        END DO
+        prevname=baspointer%name
+        DO WHILE (associated(baspointer))
+          IF (.NOT.(baspointer%name==prevname)) EXIT
+          baspointer=>baspointer%next
+        END DO
+        
       END DO
 
       LINEAR = .FALSE.
