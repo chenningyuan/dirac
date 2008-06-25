@@ -1,4 +1,3 @@
-
 !     !!! NEW MODULE FOR CONVERTING BETWEEN TYPES !!!
 !     OTHER SOLLUTIONS (C++) ARE MORE THAN WELCOME
 !     JHS, 11-04-2007
@@ -239,11 +238,12 @@
           LOGICAL, INTENT(IN), OPTIONAL :: skip
 
           LOGICAL                       :: quoted=.FALSE.
-          LOGICAL                       :: lskip=.FALSE.
+          LOGICAL                       :: lskip
           INTEGER :: iprev, ios, i
           CHARACTER(LEN=linewidth) :: str
           
-          if (present(skip)) lskip = skip
+          if (present(skip)) then; lskip = skip;
+          else; lskip=.false.; endif
           var=' '; iprev=index
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
@@ -396,11 +396,12 @@
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
-          LOGICAL                       :: lskip=.FALSE.
+          LOGICAL                       :: lskip
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
-          
-          if (present(skip)) lskip = skip
+
+          if (present(skip)) then; lskip = skip;
+          else; lskip=.false.; endif
           var=0; iprev=index; idot=0
 
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
@@ -472,10 +473,13 @@
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
-          LOGICAL                       :: lskip=.FALSE.
+          LOGICAL                       :: lskip
           INTEGER :: iprev, ios, idot=0,i
           CHARACTER(LEN=linewidth) :: str
-          if (present(skip)) lskip = skip
+
+          if (present(skip)) then; lskip = skip;
+          else; lskip=.false.; endif
+
           var=0.0; iprev=index; idot=0
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -547,11 +551,13 @@
           INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
           LOGICAL, INTENT(IN), OPTIONAL :: skip
           
-          LOGICAL                       :: lskip=.FALSE.
+          LOGICAL                       :: lskip
           INTEGER :: iprev, ios,i
           CHARACTER(LEN=linewidth) :: str
           
-          if (present(skip)) lskip = skip
+          if (present(skip)) then; lskip = skip;
+          else; lskip=.false.; endif
+
           var=0; iprev=index
           READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
 
@@ -765,13 +771,14 @@
 #include "cbirea.h"
           TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
-          TYPE(atom), POINTER                :: mol=>NULL()
+          TYPE(atom), POINTER                :: mol
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
           INTEGER                            :: i,index
  
           CALL QENTER('READ_ATOMS')
-          
+
+          mol=>null()
           IF (.NOT.(PARHER).AND.IPREAD>1)                               &
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
 
@@ -1053,9 +1060,9 @@
 !                         - 'LARGE BASIS'
 !     (Implemented also for the rest)
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
-          TYPE(atom), POINTER                :: mol=>NULL()
+          TYPE(atom), POINTER                :: mol
           TYPE(atom)                         :: tmpmol
-          TYPE(basistype),POINTER            :: bas=>NULL()
+          TYPE(basistype),POINTER            :: bas
           TYPE(basistype)                    :: tmpbas
 
 !     FOR UNIT CONVERSION
@@ -1078,6 +1085,8 @@
 !     initialization for security
           REWIND(filenum)
 
+          mol=>null()
+          bas=>null()
           index=1
           section=' '
 
