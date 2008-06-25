@@ -58,16 +58,26 @@ for path, dirs, files in os.walk(os.getcwd()):
         if fnmatch.fnmatch(file, '*.h'):
            inc_d[file] = path + '/' + file
 
+if debug_level > 0:
+   f = open('Makefile.depend_debug', 'w')
+
 for file in file_l:
 
     (dummy, stdout, stderr) = os.popen3(cpp_prefix + file.file_name)
     for line in stdout.readlines():
+
+        if debug_level > 1:
+           f.write('line: ' + line)
 
         m = include.search(line)
         if m:
            inc = string.lower(m.group(1))
            file.add_include(inc)
            file.include[inc] = inc_d[inc]
+
+           if debug_level > 1:
+              f.write('m.group(1): ' + m.group(1) + '\n')
+              f.write('inc+inc_d[inc]: ' + inc + ' ' + inc_d[inc] + '\n')
 
         m = use.match(line)
         if m:
@@ -77,12 +87,11 @@ for file in file_l:
         if m:
            file.add_module(string.lower(m.group(1)))
 
-#-------------------------------------------------------------------------------
+    if debug_level > 1:
+       f.close()
+       sys.exit()
 
 if debug_level > 0:
-
-   f = open('Makefile.depend_debug', 'w')
-
    for file in file_l:
        f.write('file: ' + file.file_name + '\n')
        for key in file.module.keys():
@@ -91,10 +100,7 @@ if debug_level > 0:
            f.write('file.include: ' + key + '\n')
        for key in file.use.keys():
            f.write('file.use: ' + key + '\n')
-
    f.close()
-
-#-------------------------------------------------------------------------------
 
 for file in file_l:
     for use in file.use:
