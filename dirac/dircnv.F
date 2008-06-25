@@ -470,7 +470,7 @@ C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 20
-            IF(IPRSCF.GE.2) THEN
+            IF(IPRSCF.GE.3) THEN
 C             Transform Fock matrix to current orthonormal MO-basis      
               CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
      &                NTMO(I),NTMO(I),
