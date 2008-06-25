@@ -419,7 +419,8 @@ compiler_fortran(){
 # all supported fortran compilers
 to_find='Fortran'
 if [ "$mesp" = "mpi" ]; then
-  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90"
+# mi: added mpif77 since it might handle F90/95 (when built up from ifort for instance)
+  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77"
 else
   comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 f90 xlf_r xlf efc cf90 pathf90'
 fi
