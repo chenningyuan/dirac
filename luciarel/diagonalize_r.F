@@ -69,8 +69,8 @@ C
       DIMENSION PEIGVC(*), SCR1(*), SCR2(*)
       DIMENSION IBLOCKL(*), NPARBLOCK(*) 
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
-#if defined (VAR_MPI2)
 #include "infpar.h"
+#if defined (VAR_MPI2)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
