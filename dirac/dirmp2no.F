@@ -99,6 +99,7 @@ C
 C     Initialize /CBIMP2NO/
 C     =====================
 C
+      DEF_EN   = .TRUE.
       IPRMP2NO = 0
       ILLINT = IBTAND(INTGEN,1)
       ISLINT = IBTAND(INTGEN/2,1)
@@ -146,6 +147,7 @@ C
     1          CONTINUE
 C&&&& ACTIVE: Spinors to be included in the MP2 calculation
                   READ(LUCMD,'(A72)') (VECMP2NO(I),I=1,NFSYM)
+                  DEF_EN = .FALSE.
                GO TO 100
     2          CONTINUE
 C&&&& PRINT: General print level
@@ -257,11 +259,30 @@ C
 #include "dcbmp2no.h"
 #include "blocks.h"
 C
-      LOGICAL SAVEFLAGS(4)
+      LOGICAL SAVEFLAGS(4), TOBE
       DIMENSION WORK(*)
 C
 #include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
+C
+        WRITE(LUPRI,'(//A/A/A/)')
+     &'     * The following modules will be invoked:    ',
+     &'       - MOLTRA (integral transformation)        ',
+     &'       - RELCCSD-MP2 to obtain MP2 density matrix'
+C
+C     run RELCCSD to get MP2dens
+C
+      RUN_CCMOD   = .TRUE.
+      SKIP_MP2DEN = .FALSE.
+      SKIP_ITRAFO = .FALSE.
+      MP2NO_FILE  = 'MP2_NATORB'
+C
+C     test for availabilty of integral/MP2 nat.orb file
+C
+      INQUIRE(FILE='MP2_NATORB',EXIST=TOBE)
+      IF (TOBE) SKIP_MP2DEN = .TRUE.
+      INQUIRE(FILE='MDCINT',EXIST=TOBE)
+      IF (TOBE) SKIP_ITRAFO = .TRUE.
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -282,6 +303,8 @@ C
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MP2NOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      RUN_CCMOD  = .FALSE.
 C
       IF (PARCAL) call SetTaskDistribFlags(saveflags)
       END
@@ -305,14 +328,24 @@ C
 #include "dgroup.h"
 #include "dcbmp2no.h"
 #include "dcbham.h"
-      LOGICAL TOBE
+#include "infpar.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+      LOGICAL FND,FNDLAB, TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
       DIMENSION IC(2),IE(2),ID(2)
-      CHARACTER CTMP*1
-      CALL QENTER('MP2NOGEN')
+      CHARACTER CTMP*1, LABEL*8
 #include "memint.h"
+      CALL QENTER('MP2NOGE1')
+C
+      KFRSAV=KFREE
 C
 C     Initialization
+C
+      IMO_NAT     = NORBT*NESHT*NZ
+      IOCC_NAT    = NESHT
+      LUNATORB = 98
 C
       LUBUF = 22
 C     full Fock matrix
@@ -335,93 +368,138 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &               WORK,KFREE,LFREE)
       ENDIF
-      WRITE(LUPRI,*) ' Stefan forced me to stop in MP2NOGE1'
-      CALL Abend2('Stefan forced me to stop in MP2NOGE1')
-#ifdef mp2no_fock
-      IF(IONMVO) THEN
 C
-C       Generate MP2NOs by the Bauschlicher method (ionic Fock)
+C     Generate MP2NOs 
 C
-        CALL DENMP2NO(DMAT,CMO,FOCK,WORK(KFREE),LFREE)
-        CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,NPOS,
-     &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
-        INQUIRE(FILE='DFFCK1',EXIST=TOBE)
-        IF(TOBE) THEN
-          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MP2NOGE1')
-          CALL REAFCK(LUBUF,DMAT,.TRUE.,1)
-          CLOSE(LUBUF,STATUS='KEEP')
-        ELSE
-          CALL ONEFCK(DMAT,IPRINT,WORK(KFREE),LFREE)
-        ENDIF
-        CALL DAXPY(N2BBASXQ,D1,DMAT,1,FOCK,1)
-      ENDIF
-#endif
+      IF( .NOT. SKIP_MP2DEN ) CALL DENMP2NO(WORK(KFREE),LFREE)
 C
-C       First transform to virtual MO - basis;
-C       this liberates FOCK. Transformed matrix in DMAT
+C     transf. matrix and NO occ. numbers on disk 
 C
-      ND = 1
-      DO I = 1,NFSYM
-      IF (NSSH(I).GT.0 ) THEN
-        IC(I) = ICMOQ(I)+NFBAS(I,0)*(NOCC(I)+NPSH(I))+1
-        IE(I) = IORB(I) + NOCC(I) + NPSH(I) + 1
-        ID(I) = ND
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &           NSSH(I),NSSH(I),
-     &           FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &           DMAT(ID(I)),NSSH(I),NSSH(I),NZ,IPQTOQ(1,0),
-     &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRMP2NO)
-        IF (IPRMP2NO.GE.10 ) THEN
-          WRITE(CTMP,'(I1)') I
-          CALL HEADER('MP2NO: Fock matrix in virtual MO-basis'//
-     &                 ', corep '//CTMP,-1)
-          CALL PRQMAT(DMAT(ID(I)),NSSH(I),NSSH(I),
-     &                NSSH(I),NSSH(I),NZ,IPQTOQ(1,0),LUPRI)
-        END IF
-        ND = ND + NSSH(I)*NFBAS(I,0)*NZ
-      ENDIF
-      ENDDO
+C     read section 
+C     ------------
+C
+      IF( MYTID .eq. MPARID )THEN
+C
+C       memory allocation
+C       -----------------
+        CALL MEMGET('REAL',KCMO_NAT ,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KOCC_NAT ,NESHT,WORK,KFREE,LFREE)
+C
+C       initialize
+C       ----------
+        CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
+        CALL DZERO(WORK(KOCC_NAT),NESHT)
+C
+C       read occ. numbers and transf. matrix
+C       ------------------------------------
+        CALL OPNFIL(LUNATORB,MP2NO_FILE,'OLD','MP2_NATORB')
+        LABEL = 'NATOCCNB'
+        FND =  FNDLAB(LABEL,LUNATORB)
+        CALL READT(LUNATORB,NESHT,WORK(KOCC_NAT))
+        LABEL = 'NATOCC_M'
+        FND =  FNDLAB(LABEL,LUNATORB)
+        CALL READT(LUNATORB,NORBT*NESHT*NZ,WORK(KCMO_NAT))
+        CLOSE(Unit=LUNATORB,Status='KEEP')
+C
+C       print section 
+C       -------------
+        WRITE(LUPRI,'(//A/A/A)')
+     &'   ************************************************************',
+     &'   *************** MP2 natural orbital occupancies ************',
+     &'   ************************************************************'
+C
+        IOFF2 = 1
+C
+        DO I = 1, NFSYM
+           NOCCI = NESH(I)
+           IF (NOCCI .EQ. 0) THEN
+              WRITE(LUPRI,9001) I
+           ELSE
+              OCCSUM = DSUM(NOCCI,WORK(KOCC_NAT+IOFF2-1),1)
+              WRITE(LUPRI,9002) I,(WORK(KOCC_NAT+IOFF2-2+J),J=1,NESH(I))
+              WRITE(LUPRI,9003) OCCSUM
+           END IF
+           IOFF2 = IOFF2 + NESH(I)
+        END DO
+C
+      END IF
+CSK   CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,NPOS,
+CSK  &            INTMVO,IPRMVO,WORK(KFREE),LFREE)
+CSK   INQUIRE(FILE='DFFCK1',EXIST=TOBE)
+CSK   IF(TOBE) THEN
+CSK     CALL OPNFIL(LUBUF,'DFFCK1','OLD','MP2NOGE1')
+CSK     CALL REAFCK(LUBUF,DMAT,.TRUE.,1)
+CSK     CLOSE(LUBUF,STATUS='KEEP')
+CSK   ELSE
+CSK     CALL ONEFCK(DMAT,IPRINT,WORK(KFREE),LFREE)
+CSK   ENDIF
+CSK   CALL DAXPY(N2BBASXQ,D1,DMAT,1,FOCK,1)
+C
+C     First transform to virtual MO - basis;
+C     this liberates FOCK. Transformed matrix in DMAT
+C
+CSK   ND = 1
+CSK   DO I = 1,NFSYM
+CSK   IF (NSSH(I).GT.0 ) THEN
+CSK     IC(I) = ICMOQ(I)+NFBAS(I,0)*(NOCC(I)+NPSH(I))+1
+CSK     IE(I) = IORB(I) + NOCC(I) + NPSH(I) + 1
+CSK     ID(I) = ND
+CSK     CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+CSK  &           NSSH(I),NSSH(I),
+CSK  &           FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+CSK  &           DMAT(ID(I)),NSSH(I),NSSH(I),NZ,IPQTOQ(1,0),
+CSK  &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+CSK  &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+CSK  &           WORK(KFREE),LFREE,IPRMP2NO)
+CSK     IF (IPRMP2NO.GE.10 ) THEN
+CSK       WRITE(CTMP,'(I1)') I
+CSK       CALL HEADER('MP2NO: Fock matrix in virtual MO-basis'//
+CSK  &                 ', corep '//CTMP,-1)
+CSK       CALL PRQMAT(DMAT(ID(I)),NSSH(I),NSSH(I),
+CSK  &                NSSH(I),NSSH(I),NZ,IPQTOQ(1,0),LUPRI)
+CSK     END IF
+CSK     ND = ND + NSSH(I)*NFBAS(I,0)*NZ
+CSK   ENDIF
+CSK   ENDDO
 C
 C     Diagonalize matrix and backtransform vectors
 C
-      DO I = 1,NFSYM
-      IF (NSSH(I).GT.0 ) THEN
-        CALL QDIAG(NZ,NSSH(I),DMAT(ID(I)),NSSH(I),NSSH(I),
-     &             EIG(IE(I)),1,FOCK(ID(I)),NSSH(I),
-     &             NSSH(I),WORK(KFREE),LFREE,IERR)
-        CALL BCKTR1(DMAT(ID(I)),NFBAS(I,0),NSSH(I),
-     &              FOCK(ID(I)),NSSH(I),NSSH(I),
-     &              NSSH(I),NZ,NSSH(I),1,NFBAS(I,0),
-     &              CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,
-     &              IPRMP2NO)
-        IF(IPRMP2NO.GE.2) THEN
-          WRITE(LUPRI,'(A,A3)')
-     &     '* MP2 natural orbital occupancies of ircop ',FREP(I)
-          WRITE(LUPRI,'(5F15.8)') (EIG(IE(I)+J),J=0,(NSSH(I)-1))
-        ENDIF
+CSK   DO I = 1,NFSYM
+CSK   IF (NSSH(I).GT.0 ) THEN
+CSK     CALL QDIAG(NZ,NSSH(I),DMAT(ID(I)),NSSH(I),NSSH(I),
+CSK  &             EIG(IE(I)),1,FOCK(ID(I)),NSSH(I),
+CSK  &             NSSH(I),WORK(KFREE),LFREE,IERR)
+CSK     CALL BCKTR1(DMAT(ID(I)),NFBAS(I,0),NSSH(I),
+CSK  &              FOCK(ID(I)),NSSH(I),NSSH(I),
+CSK  &              NSSH(I),NZ,NSSH(I),1,NFBAS(I,0),
+CSK  &              CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,
+CSK  &              IPRMP2NO)
+CSK     IF(IPRMP2NO.GE.2) THEN
+CSK       WRITE(LUPRI,'(A,A3)')
+CSK  &     '* MP2 natural orbital occupancies of ircop ',FREP(I)
+CSK       WRITE(LUPRI,'(5F15.8)') (EIG(IE(I)+J),J=0,(NSSH(I)-1))
+CSK   ENDIF
 C
-C       Insert new coefficients
+C     Insert new coefficients
 C
-        NDIM = NSSH(I)*NFBAS(I,0)
-        ICC = IC(I)
-        IDD = ID(I)
-        DO IZ = 1,NZ
-          CALL DCOPY(NDIM,DMAT(IDD),1,CMO(ICC),1)
-          ICC = ICC + NCMO(I)
-          IDD = IDD + NFBAS(I,0)*NSSH(I)
-        ENDDO
+CSK   NDIM = NSSH(I)*NFBAS(I,0)
+CSK   ICC = IC(I)
+CSK   IDD = ID(I)
+CSK   DO IZ = 1,NZ
+CSK     CALL DCOPY(NDIM,DMAT(IDD),1,CMO(ICC),1)
+CSK     ICC = ICC + NCMO(I)
+CSK     IDD = IDD + NFBAS(I,0)*NSSH(I)
+CSK   ENDDO
 C
 C       Insert dummy eigenvalues...
 C       FIXME: natural orbital occupations ? or if MP2-FOCK, then
 C       orbital eigenvalues /hjaaj 7-mar-08
 C
 Chj     CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
-      END IF
-      END DO
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
+CSK   END IF
+CSK   END DO
+CSK   CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+CSK   CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     pick out 'active' NO spinors : FIXME: call to NUMLS4 not ready
 C
@@ -440,93 +518,471 @@ csk  &    '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)
 csk     ENDIF
 csk   ENDDO
 C
-      CALL QEXIT('MP2NOGEN')
-      RETURN
+C     memory deallocation
+C     -------------------
+      CALL MEMREL('MP2NOGE1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('MP2NOGE1')
+C
+ 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
+ 9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
+     &            I3,//,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck denmp2no */
-      SUBROUTINE DENMP2NO(DMAT,CMO,BUF,WORK,LWORK)
+      SUBROUTINE DENMP2NO(WORK,LWORK)
 C***********************************************************************
 C
 C     Generate density matrix for chosen MP2NO vectors
 C
+C     1-/2-e integral transformation part based on routine PAMTRA
+C
+C     call RELCCSD-MP2 to obtain MP2 density matrix
+C
+C     written by S. Knecht - June 2008, Odense
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION DMAT(*),CMO(*),BUF(*),WORK(*)
-      DIMENSION NR(2),IR(2,2),KVEC(2,2),NVEC(2,0:2)
-      DIMENSION ICMV(2)
+#include "../moltra/dcbtra.h"
+#include "../moltra/dcbtr3.h"
+C
+#include "maxorb.h"
+#include "dcbgen.h"
+      CHARACTER*24 DAYTID
+      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
+      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
+     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
+     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+C
 #include "memint.h"
       KFRSAV = KFREE
 C
-C     Set up index arrays for coefficients contributing
-C     =================================================
+C     skip integral transformation if MDCINT/MRCONEE are present
+C     ----------------------------------------------------------
+      IF( SKIP_ITRAFO ) GOTO 20
+C
+C     set default values
+C
+      TRA_ANTIS = .FALSE.
+      TRA_MSOUT = .TRUE.
+      NO2IND    = .FALSE.
+      NO4IND    = .FALSE.
+      NOPAIR    = .TRUE.
+      PRPTRA    = .FALSE.
+      RCORBS    = .FALSE.
+      NOMDCINT  = .FALSE.
+      MDCSCAT   = .FALSE.
+      THROUT    = 1.0D-14
+      SCRTRA    = 1.0D-14
+      IPAR4BS   = -1
+      ITRA_INTFLG = INTGEN
+      ITRA_INTFL4 = ITRA_INTFLG
+      ITRA_INTFL2 = ITRA_INTFLG
+      ISTRAT      = IAOMOSCHEME
+      IPRTRA      = IPRMP2NO
+C 
+      DO I = 1,NFSYM
+        WRITE(TRA_CORSTR(I),'(A)') 'not specified'
+        TRA_INDSTR(I)      = VECMP2NO(I)
+        DO J = 1,2
+          TRA2_INDSTR(J,I) = VECMP2NO(I)
+        ENDDO
+        DO J = 1,4
+          TRA4_INDSTR(J,I) = VECMP2NO(I)
+        ENDDO
+      ENDDO
+C
+      CALL GETTIM(CPU1,WALL1)
+      CALL TRAHI(IPRTRA,3)
+C
+C     Define number of double quaternionic classes
+C
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C
+C     Set up index arrays for active orbitals
+C     =======================================
+C
+      IF(NOPAIR) THEN
+        DO I = 1,NFSYM
+          NR(I)   = NESH(I)
+          IR(1,I) = 1
+          IR(2,I) = NESH(I)
+        ENDDO
+      ELSE
+        DO I = 1,NFSYM
+          NR(I)   =  NORB(I)
+          IR(1,I) = -NPSH(I)
+          IR(2,I) =  NESH(I)
+        ENDDO
+      ENDIF
+C
+C     NSTR(I): Number of Spinors to be Transformed for index I
+C
+      DO I = 1,4
+        NSTRT(I) = 0
+        DO IFRP = 1,NFSYM
+          CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
+          NSTR(IFRP,0,I) = - 1
+          CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
+     &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
+     &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
+          NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
+          CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
+          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+     &                WORK,KFREE,LFREE)
+        ENDDO
+      ENDDO
+C
+      KFRSAV = KFREE
+C
+C     Print section
+C     =============
+C
+      WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
+     &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
+      ENDDO
+C
+C     Calculate dimensions of coefficient arrays
+C     The coefficients are stored as 4 arrays of two matrices each
+C     They may share the same memory if the transformation ranges
+C     are identical
+C
+C     NDMOQR : 1st dimension row/column dimension of coefficient array
+C              2nd dimension fermion irrep
+C              3rd dimension transformation index
+C
+C     ICMOQR : Index to start of representation in the coefficient array
+C
+      DO I = 1, 4
+         NQT(I) = 0
+         ICMOQR(1,I) = 1
+         DO IFRP = 1, NFSYM
+            NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
+            NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
+            NQ(IFRP,I) = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
+            NQT(I) = NQT(I) + NQ(IFRP,I)
+            IF (IFRP.LT.NFSYM)
+     &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
+         ENDDO
+      ENDDO
+C
+C     Allocate the memory for the coefficients, check their relations
+C
+      K = 2
+      IF (NFSYM.EQ.1) K=1
+      DO I = 1, 4
+C
+         DO J = I, 1, -1
+            IF (TRASAM(WORK(KVEC(1,I)),WORK(KVEC(K,I)),
+     &                 WORK(KVEC(1,J)),WORK(KVEC(K,J)),
+     &          NSTR(1,0,I),NSTR(1,0,J))) ISAME(I) = J
+         ENDDO
+C
+         IF (ISAME(I).EQ.I) THEN
+            IF (I.NE.1)CALL Abend2('MP2DEN: All ranges should be equal')
+            CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
+         ELSE
+            KQ(1,I) = KQ(1,ISAME(I))
+         ENDIF
+         KQ(2,I) = KQ(1,I) + NQ(1,I)
+C
+      ENDDO
+C
+C     Selected eigenvalues
+C
+      DO I = 1,4
+        NDIM = 0
+        DO IFRP = 1, NFSYM
+          NDIM = NDIM + NSTR(IFRP,0,I)
+        ENDDO
+        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        KE(2,I) = KE(1,I) + NSTR(1,0,I)
+      ENDDO
+C
+C     Allocate memory for the integer array with information about the
+C     spinors.
+C
+      DO I = 1, 4
+       DO IFRP = 1, NFSYM
+        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+       ENDDO
+      ENDDO
+C
+C     Get all coefficients
+C
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)')
+     &   'MP2DEN ERROR: MO coefficient file not present'
+         CALL Abend2('MP2DEN: No MO coefficient file !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+         CLOSE(LUCOEF,STATUS='KEEP')
+      END IF
+C
+C     Select the set that we need
+C
+      DO I = 1, 4
+        DO IFRP = 1, NFSYM
+          IF(NSTR(IFRP,0,I).GT.0) THEN
+             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+     &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
+     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                   NFBAS(IFRP,0),NORB(IFRP))
+             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+     &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+     &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
+     &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          ENDIF
+        ENDDO
+      ENDDO
+C
+C     Throw away the complete set, keep only the selected sets
+C
+      CALL MEMREL('MP2DEN.2',WORK,KFRSAV,KCMO,KFREE,LFREE)
+C
+C     If necessary recanonize (virtual) orbitals
+C     Assuming that all sets are equal, we use the first index !!!
+C     ============================================================
+C
+      IF (RCORBS) THEN
+C        Overdimension KCMO because it is used as Focksize scratch space
+         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
+     &               KIBE(1,1),NDMOQR(1,1,1),ICMOQR(1,1),
+     &               WORK(KCMO))
+         CALL MEMREL('MP2DEN.3',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      ENDIF
+C
+C     Set up index arrays for core orbitals
+C     =====================================
 C
       IC   = 1
       DO I = 1,NFSYM
         NR(I)   = NESH(I)
-        IR(1,I) = 0
+        IR(1,I) = 1
         IR(2,I) = NESH(I)
       ENDDO
+C
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
-        NVEC(IFRP,0) = 1
-        CALL  NUMLST(VECMP2NO(IFRP),WORK(KVEC(IFRP,1)),
-     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               IFRP,NVEC(IFRP,0),WORK(KFREE),LFREE)
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),IFRP,
-     &              NVEC(IFRP,2),NVEC(IFRP,1))
-        NVEC(IFRP,0) = NVEC(IFRP,1) + NVEC(IFRP,2)
-        CALL MEMREL('DENMP2NO',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(IFRP,1),NVEC(IFRP,0),
-     &              WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KVEC(IFRP,5),NR(IFRP),WORK,KFREE,LFREE)
+         NSPC(IFRP,0) = - 1
+C
+C        If the user did not specify the core index range explictly we
+C        take the occupied orbitals that do not belong to the active
+C        set.
+C
+         IF (INDEX(TRA_CORSTR(IFRP),'not specified').NE.0) THEN
+            CALL NUMCOR (NOCC(IFRP),NSTR(IFRP,1,1),WORK(KVEC(IFRP,1)),
+     &                   NSPC(IFRP,1),WORK(KVEC(IFRP,5)))
+            NSPC(IFRP,2) = 0
+         ELSE
+            CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
+     &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
+     &                  NSPC(IFRP,2),NSPC(IFRP,1))
+         ENDIF
+         NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+         CALL MEMREL('MP2DEN.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
+         CALL MEMGET('INTE',KVEC(IFRP,5),NSPC(IFRP,0),
+     &               WORK,KFREE,LFREE)
+         NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
+         NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
+      ENDDO
+C####################################################
+C
+C     number of active occupied
+C
+      NAOCCT=0
+      DO IFRP = 1, NFSYM
+         NAOCC(IFRP) = NOCC(IFRP) - NSPC(IFRP,0)
+         NAOCCT = NAOCCT + NAOCC(IFRP)
+      ENDDO
+C        
+C     number of inactive occupied
+C    
+      NIOCCT=0
+      DO IFRP = 1, NFSYM
+         NIOCC(IFRP) = NOCC(IFRP) - NAOCC(IFRP)
+         NIOCCT = NIOCCT + NIOCC(IFRP)
+      ENDDO
+C
+C     number of active virtuals
+C     
+      NAVIRT=0
+      DO IFRP = 1, NFSYM
+         NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
+         NAVIRT = NAVIRT + NAVIR(IFRP)
+      ENDDO
+C
+C     if selection criterion is set check for max. virt. 
+C
+      IF( DEF_EN )THEN
+        IF( NAVIRT .gt. IMAXVSP ) THEN
+          WRITE(LUPRI,*)' NOTE: number of active virt.:',NAVIRT
+          WRITE(LUPRI,*)' maximum number of act. virt.:',IMAXVSP
+          WRITE(LUPRI,*)' you may reconsider your choice of 
+     & active space'
+        END IF
+      END IF
+C     
+C     number of inactive virtuals
+C 
+      NIVIRT=0
+      DO IFRP = 1, NFSYM 
+         NIVIR(IFRP) = NORB(IFRP) - NOCC(IFRP) - NPSH(IFRP) -NAVIR(IFRP)
+         NIVIRT = NIVIRT + NIVIR(IFRP)
+      ENDDO
+C####################################################
+C
+C     Print section
+C     =============
+C
+      WRITE(LUPRI,'(/A)')
+     &     '* Core orbital ranges for 2-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,5)),0,0,0,NSPC)
       ENDDO
 C
 C     Calculate dimensions of the coefficient array
 C
-      NCMV = 0
-      DO IFRP = 1,NFSYM
-        ICMV(IFRP) = NCMV
-        NCMV       = NCMV + NFBAS(IFRP,0)*NVEC(IFRP,0)*NZ
+C     ICMOQC : Index to start of representation in the coefficient array
+C
+      NQT(1) = 0
+      ICMOQC(1,1) = 1
+      DO IFRP = 1, NFSYM
+         NQ(IFRP,1) = NFBAS(IFRP,0)*NSPC(IFRP,0)*NZ
+         NQT(1) = NQT(1) + NQ(IFRP,1)
+         IF (IFRP.LT.NFSYM) ICMOQC(IFRP+1,1) = ICMOQC(IFRP,1)+NQ(IFRP,1)
       ENDDO
+C
+C     Allocate the memory for the coefficients
+C
+      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
+      KQC(2) = KQC(1) + NQ(1,1)
+C
+C     Get all coefficients
+C
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+         CALL QUIT('PAMTRA: No MO coefficient file !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+      ENDIF
 C
 C     Select the set that we need
 C
       DO IFRP = 1, NFSYM
-         CALL SELCFS (CMO(ICMOQ(IFRP)+1),IFRP,BUF(ICMV(IFRP)+1),
-     &                NVEC(IFRP,0),
-     &                WORK(KVEC(IFRP,1)),NVEC(IFRP,2),NVEC(IFRP,1),
+         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
+     &                NSPC(IFRP,0),WORK(KVEC(IFRP,5)),
+     &                NSPC(IFRP,2),NSPC(IFRP,1),
      &                NFBAS(IFRP,0),NORB(IFRP))
       ENDDO
 C
-C     Get the density matrix
+C     Throw away the complete set, keep only the selected sets
 C
-CTROND
-      CALL DZERO(DMAT,N2BBASXQ)
-      DO 10 I = 1,NFSYM
-        IF(NVEC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
-     &              BUF(ICMV(I)+1),NFBAS(I,0),NVEC(I,0),
-     &              1,NVEC(I,0),NFBAS(I,0))
-   10 CONTINUE
+      CALL MEMREL('MP2DEN.5',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
-C     Print section
+      CALL FLSHFO(LUPRI)
 C
-      IF(IPRMP2NO.GE.4) THEN
-        CALL TITLER('Output from DENMP2NO','*',103)
-        DO 20 I = 1,NFSYM
-        IF(NVEC(I,0).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
-          CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-   20   CONTINUE
-      ENDIF
-      RETURN
+      IF (.NOT.NO2IND)
+     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+C
+      CALL FLSHFO(LUPRI)
+C
+C     Call driver for 4-index transformation
+C     --------------------------------------
+C
+      IF (.NOT.NO4IND)
+     &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
+     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
+     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+C
+C      Print timing information
+C
+      CALL GETTIM(CPU2,WALL2)
+      WALL   = WALL2 - WALL1
+C
+      IMINS  = INT(WALL)/60
+      IHOURS = IMINS/60
+      IMINS  = IMINS - 60*IHOURS
+      ISECS  = NINT(WALL) - 3600*IHOURS - 60*IMINS
+      WRITE(LUPRI,'(//A,I5.2,A,I2.2,A,I2.2)')
+     &      ' Total wall time used for transformation :',
+     &      IHOURS,':',IMINS,':',ISECS
+C
+      CPU    = CPU2 - CPU1
+      IMINS  = INT(CPU)/60
+      IHOURS = IMINS/60
+      IMINS  = IMINS - 60*IHOURS
+      ISECS  = NINT(CPU) - 3600*IHOURS - 60*IMINS
+      WRITE(LUPRI,'(A,I5.2,A,I2.2,A,I2.2)')
+     &      ' Total CPU  time used for transformation :',
+     &      IHOURS,':',IMINS,':',ISECS
+C
+      WRITE(LUPRI,'(/A,F20.6)')
+      CALL GTINFO(DAYTID)
+      WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+C
+      CALL FLSHFO(LUPRI)
+C
+ 20   CONTINUE
+C
+C     Transformation finished - start MP2 density run
+C     -----------------------------------------------
+C
+C     prepare and write RELCCSD MP2-NO input
+C
+      LMP2_DEN_INP = 99
+      MP2NOFN      = 'MP2_NO.INP.0'
+      MP2NOFN_L    = 12
+      INFO_STRING(1) =
+     &'&RELCCSD TIMING=T, DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END'
+      INFO_STRING(2) =
+     &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
+      INFO_STRING(3) =
+     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T  &END                    '
+
+      OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
+     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      REWIND(LMP2_DEN_INP)
+      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1) 
+      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
+      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
+C
+      CALL PAMCCM(WORK(KFREE),LFREE)
+C
+      CLOSE(LMP2_DEN_INP,STATUS='KEEP')
+C
       END

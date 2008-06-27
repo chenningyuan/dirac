@@ -658,6 +658,7 @@ C           orbital common block is set (this info is currently needed
 C           to correctly process the orbital energy list), this is
 C           why we check for I_DCBORB_SET as well.
 C
+C
             IP = - 666
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
          ELSE
@@ -971,6 +972,7 @@ C     large enough gap from the next lower/higher energies
 C
    1  EMIN = 1.E16
       EMAX = - 1.E16
+CSK   WRITE(LUPRI,*) ' IRNGE1, IRNGE2',IRNGE1, IRNGE2
 C
 C     Set start and end of search region
 C
