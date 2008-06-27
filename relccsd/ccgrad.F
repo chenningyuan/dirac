@@ -670,6 +670,11 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbmp2no.h"
+#include "infpar.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
 C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
       LOGICAL NOZG
@@ -678,26 +683,15 @@ C
 C
       KFRSAV=KFREE
 C
-      WRITE(LUPRI,'(//A/A/A)')
-     &' **************************************************************',
-     &' *************** MP2 natural orbital calculation **************',
-     &' **************************************************************'
-C      
-      IMO_NAT  = 0
-      IOCC_NAT = 0
-C
-      IMO_NAT  = NORBT*NESHT*NZ
-      IOCC_NAT = NESHT
-C
 C     memory allocation
 C     -----------------
-      CALL MEMGET('REAL',KCMO_NAT ,IMO_NAT ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCC_NAT ,IOCC_NAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO_NAT,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCC_NAT,NESHT,WORK,KFREE,LFREE)
 C
 C     initialize
 C
-      CALL DZERO(WORK(KCMO_NAT), IMO_NAT)
-      CALL DZERO(WORK(KOCC_NAT),IOCC_NAT)
+      CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
+      CALL DZERO(WORK(KOCC_NAT),NESHT)
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -708,17 +702,18 @@ C     ----------------------
       CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
      &                    WORK,KFREE,LFREE,NOPRNT)
 C
-C     save nat. orb. occ. num. and transform. matrix to file KRMC_NATORB
+C     save nat. orb. occ. num. and transform. matrix to file MP2_NATORB
 C     ------------------------------------------------------------------
-      LUNATORB = 89
-      OPEN(Unit=LUNATORB,File="KRMC_NATORB",Status='UNKNOWN',
-     &     Form='UNFORMATTED')
-      WRITE(LUNATORB)(WORK(KOCC_NAT-1+J), J=1,IOCC_NAT)
-      WRITE(LUNATORB)(WORK(KCMO_NAT-1+J), J=1,IMO_NAT )
-      CLOSE(Unit=LUNATORB,Status='KEEP')
-C
-CSK   CALL WRTKRMC(WORK(KCMO_NAT),NORBT,NZ,INAT_FILE)
-CSK   CALL WRTKRMC(WORK(KCMO_NAT),NORBT,NZ,INAT_FILE)
+      IF( MYTID .eq. MPARID )THEN
+        CALL OPNFIL(LUNATORB,MP2NO_FILE,'NEW','MP2_NATORB')
+        LABEL = 'NATOCCNB'
+        CALL NEWLAB(LABEL,LUNATORB,LUPRI)
+        CALL WRITT(LUNATORB,NESHT,WORK(KOCC_NAT))
+        LABEL = 'NATOCC_M'
+        CALL NEWLAB(LABEL,LUNATORB,LUPRI)
+        CALL WRITT(LUNATORB,NORBT*NESHT*NZ,WORK(KCMO_NAT))
+        CLOSE(Unit=LUNATORB,Status='KEEP')
+      END IF
 C
 C     memory deallocation
 C     -------------------
@@ -810,17 +805,19 @@ C     MP2 - nat. orb. occ. num.
 C
       IOFF2 = 1
 C
-      DO I = 1, NFSYM
-         NOCCI = NESH(I)
-         IF (NOCCI .EQ. 0) THEN
-            WRITE(LUPRI,9001) I
-         ELSE
-            OCCSUM = DSUM(NOCCI,OCC_NAT(IOFF2),1)
-            WRITE(LUPRI,9002) I, (OCC_NAT(IOFF2-1+J),J=1,NESH(I))
-            WRITE(LUPRI,9003) OCCSUM
-         END IF
-         IOFF2 = IOFF2 + NESH(I)
-      END DO
+      IF ( NOPRNT .ge. 3 ) THEN
+        DO I = 1, NFSYM
+           NOCCI = NESH(I)
+           IF (NOCCI .EQ. 0) THEN
+              WRITE(LUPRI,9001) I
+           ELSE
+              OCCSUM = DSUM(NOCCI,OCC_NAT(IOFF2),1)
+              WRITE(LUPRI,9002) I, (OCC_NAT(IOFF2-1+J),J=1,NESH(I))
+              WRITE(LUPRI,9003) OCCSUM
+           END IF
+           IOFF2 = IOFF2 + NESH(I)
+        END DO
+      END IF
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -1016,7 +1013,7 @@ C
       CHARACTER*8 LABEL
 C---------------Executable code--------------------------------------
  
-      WRITE (LUPRI,*) " Storing the ",WF," density matrix on file"
+      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
       LABEL = WF//'DENS'
 
 C     Write the correlated density to file

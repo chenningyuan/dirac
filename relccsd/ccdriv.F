@@ -167,6 +167,7 @@ C
 #include "symm.inc"
 #include "mxcent.h"
 #include "dcbprp.h"
+#include "dcbmp2no.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -209,6 +210,13 @@ CMI   ... add sector selectives MAXITxy's
 C
 C---------------Executable code--------------------------------------
 C
+C     if running MP2-NO module use special input
+C
+      IF( MP2_DENRUN )THEN
+        IN_SAVE = IN
+        IN      = LMP2_DEN_INP
+      END IF
+C
 C     Read number of occupied spinors from input
 C
       REWIND (IN)
@@ -229,6 +237,12 @@ C
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
+C
+C     check for active MP2-NO module using RELCCSD-MP2
+C
+      IF( MYPROC .eq. MASTER )THEN
+      END IF
+C
       READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
@@ -510,6 +524,10 @@ C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
 C
+      IF( MP2_DENRUN )THEN
+        IN = IN_SAVE
+      END IF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -543,6 +561,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #include "waio.h"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 CSK#include "infpar.h"
 #include "mpif.h"
@@ -575,6 +594,9 @@ C---------------Executable code--------------------------------------
 C
 C     Set the input and output units
 C
+#if defined (CC_ALONE)
+      MP2_DENRUN = .FALSE.
+#endif
       INTERFACE = INTFCE
       CARITH = CA
       IN = IUNIN
@@ -2335,6 +2357,7 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2508,8 +2531,6 @@ C
       IF (DOMP2G) THEN
 C
           WRITE (IW,1008) 
-          IF( DONATORB ) WRITE (IW,'(/A)') 
-     &    ' --> asking for MP2 natural orbital and occupation numbers!'
 C
 C         Slaves will only help in the integral calculation.
 C
@@ -2574,11 +2595,10 @@ C
 C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
-          IPRINT_NO = 1
           KFREE1=1
           LFREE1=NBUF3*RCW
 C
-          CALL MP2_NATORB(CC(DMO),IPRINT_NO,NOZG,CC(BUF3),KFREE1,LFREE1)
+          CALL MP2_NATORB(CC(DMO),IPRMP2NO,NOZG,CC(BUF3),KFREE1,LFREE1)
          END IF
 C
          CALL MEMCHK('mp2g 2.1',CC,1)

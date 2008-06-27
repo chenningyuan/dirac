@@ -52,6 +52,9 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+C              minor modifications for use of RELCCSD-MP2 for 
+C              MP2-NO generation module. S. Knecht - June 2008
+C
 C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
@@ -61,6 +64,8 @@ C
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbpsi.h"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
@@ -76,7 +81,6 @@ C
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
-
 C
 C---------------Executable code--------------------------------------
 C
@@ -85,6 +89,10 @@ C
       IN = LUCMD
       IW = LUPRI
       INTFCE = 'DIRAC     '
+      MP2_DENRUN = .FALSE.
+      IF( DOMP2NO )THEN
+        IF( RUN_CCMOD ) MP2_DENRUN = .TRUE.
+      END IF
       CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
 CMI   ... if CAP is on, switch to complex algebra
       IF (CAP) CA = .TRUE.
@@ -109,6 +117,22 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+C
+C     if MP2-NO is enabled, tell the slaves about the correct interface
+C
+      IF( MP2_DENRUN )THEN
+        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
+        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C
@@ -199,6 +223,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
+#include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -208,7 +233,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
 #include "ccpar.inc"
 #include "files.inc"
-      CHARACTER*10 INTFCE
+      CHARACTER*10 INTFCE, MP2NOF
       LOGICAL CA,CCEND
 C
       DIMENSION CC(MAXCOR)
@@ -228,12 +253,26 @@ C     Add the master node
 #endif
 
       INTFCE = 'DIRAC     '
+      MP2_DENRUN = .FALSE.
 C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+      IF( MP2_DENRUN )THEN
+        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+        IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
+        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C
@@ -242,24 +281,45 @@ C     shared file systems. Otherwise all the output gets mingled in one
 C     file
 C
       CCBASF="RELCCSD.OUT"
+      MP2NOF="MP2_NO.INP"
       
 #if defined (VAR_MPI)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (CCFILN,'(A11,A1,I1)') CCBASF,'.',MYPROC
-         LCCFIL=13
+         WRITE (MP2NOFN,'(A10,A1,I1)') MP2NOF,'.',MYPROC
+         LCCFIL    = 13
+         MP2NOFN_L = 12
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (CCFILN,'(A11,A1,I2)') CCBASF,'.',MYPROC
-         LCCFIL=14
+         WRITE (MP2NOFN,'(A10,A1,I2)') MP2NOF,'.',MYPROC
+         LCCFIL    = 14
+         MP2NOFN_L = 13
       ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (CCFILN,'(A11,A1,I3)') CCBASF,'.',MYPROC
-         LCCFIL=15
+         WRITE (MP2NOFN,'(A10,A1,I3)') MP2NOF,'.',MYPROC
+         LCCFIL    = 15
+         MP2NOFN_L = 14
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND CCNOD.F MODULE")
       ENDIF
 #else
-      CCFILN=CCBASF
-      LCCFIL=11
+      CCFILN    = CCBASF
+      LCCFIL    = 11
+      MP2NOFN   = MP2NOF
+      MP2NOFN_L = 10
 #endif
+C
+C     write RELCCSD MP2-NO input
+C
+      IF( MP2_DENRUN )THEN
+        LMP2_DEN_INP = 99
+        OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
+     &       FORM='FORMATTED',ACCESS='SEQUENTIAL')
+        REWIND(LMP2_DEN_INP)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3)
+      END IF
 C
 C     open the local input file and the node specific output file.
 C     The associated file handle MSLVOUT is transferred to CCMAIN.
@@ -271,6 +331,9 @@ C
       CALL CCMAIN(CC,MAXCOR,LUCMD,MSLVOUT,CA,INTFCE)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
+      IF( MP2_DENRUN )THEN
+        CLOSE (LMP2_DEN_INP,STATUS='KEEP')
+      END IF
 C
 C     The slave is finished, wait for the master
 C
