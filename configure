@@ -1076,7 +1076,7 @@ get_f90_flags(){
       opt="-O3 -ffast-math -Wno=155"
       mod="-fmod=$MODULE_DIR"
       ;;
-    gfortran-*)
+    gfortran*)
       gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
       cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
