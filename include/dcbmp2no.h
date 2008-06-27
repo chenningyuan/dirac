@@ -9,10 +9,13 @@
       PARAMETER (JMAXVSP = 200)
 !     dimension of transform. matrix : IMO_NAT
 !
-      LOGICAL DEF_EN, RUN_CCMOD, MP2_DENRUN
-      COMMON/CBLMP2NO/DEF_EN, RUN_CCMOD, MP2_DENRUN
+      LOGICAL         DEF_EN,RUN_CCMOD,MP2_DENRUN,SKIP_MP2DEN,          &
+     &                SKIP_ITRAFO
+      COMMON/CBLMP2NO/DEF_EN,RUN_CCMOD,MP2_DENRUN,SKIP_MP2DEN,          &
+     &                SKIP_ITRAFO
       COMMON/CBIMP2NO/IPRMP2NO,INTMP2NO,IF2MP2NO,IMAXVSP,IAOMOSCHEME,   &
-     &                LMP2_DEN_INP,MP2NOFN_L,IMO_NAT,IOCC_NAT
+     &                LMP2_DEN_INP,MP2NOFN_L,IMO_NAT,IOCC_NAT,          &
+     &                LUNATORB
       COMMON/CBCMP2NO/VECMP2NO(2),VECNOSEL(2),MP2NOFN,INFO_STRING(3),   &
      &                MP2NO_FILE
 
