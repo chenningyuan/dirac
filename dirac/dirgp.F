@@ -933,7 +933,6 @@ C
 C     Input: 
 C           IP = 0: Only IP as OUTPUT
 C           IP > 0: Give also list
-C           IP < 0: Exit after printing the criteria 
 C
 C     Output:
 C           IP : number of elements in the list A.
@@ -972,7 +971,7 @@ C     large enough gap from the next lower/higher energies
 C
    1  EMIN = 1.E16
       EMAX = - 1.E16
-CSK   WRITE(LUPRI,*) ' IRNGE1, IRNGE2',IRNGE1, IRNGE2
+      WRITE(LUPRI,*) ' IRNGE1, IRNGE2',IRNGE1, IRNGE2
 C
 C     Set start and end of search region
 C
@@ -1048,7 +1047,7 @@ C  /* Deck numls4 */
       SUBROUTINE NUMLS4(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
 C*****************************************************************************
 C
-C     Gives the list of NOs that fulfill the energy selection 
+C     Gives the list of NOs that fulfill the NO occupancy selection 
 C     criteria to use in subsequent correlation calculation
 C
 C     Input: 
@@ -1081,19 +1080,19 @@ C
       NA = LEN(A)
       MA = INDEX(A(1:NA),'NO-occ') + 6
 C     
-      READ (A(MA:NA),*,END=900,ERR=900) OLOW,OHIGH,OGAP
+      READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP
 C
       IF (IP.EQ.-666) THEN
          IP = 0
          RETURN
       ENDIF
 C
-      WRITE (LUPRI,1000) OLOW,OHIGH,OGAP*100
+      WRITE (LUPRI,1000) OHIGH,OLOW,OGAP*100
 C
 C     Check that the specified OLOW and OHIGH are separated by a 
 C     large enough gap from the next lower/higher energies
 C
-   1  OMIN = 1.0D-14
+   1  OMIN = -1.0D-01
       OMAX = 2.0D0
 C
 C     Set start and end of search region
@@ -1162,12 +1161,31 @@ C
       WRITE(LUPRI,'(//A)')
      &' NUMLS4: Error reading selection criteria, the string is ',
      &  A(1:NA)
-      CALL QUIT('NUMLS4: Error in Input')
- 1000 FORMAT (5X,'Occupation selection of active natural orbitals :',
-     & F10.2,' < occ. < ',F8.2,' with a relative gap of ',F8.4,'%')
+      CALL Abend2('NUMLS4: Error in Input')
+ 1000 FORMAT (/3X,'Occ. sel. of active natural orbitals :',
+     & F10.6,' < occ. < ',F10.6,' with a relative gap of ',F6.2,'%')
  1001 FORMAT (/' Changed ',A7,' occupation for active NO range to ',
      & F10.4,' because of near-degeneracies.')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck NOSELPRI */
+      SUBROUTINE NOSELPRI(NINDEX,I,NUMTOT)
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION NINDEX(*)
+C
+      WRITE(LUPRI,*)' '
+      WRITE(LUPRI,'(3X,A,A3)')'* Fermion ircop ',FREP(I)
+      WRITE(LUPRI,'(3X,A,I4/)')'* active natural spinors:',NUMTOT
+      WRITE(LUPRI,1000) (NINDEX(K),K=1,NUMTOT)
+C
+ 1000 FORMAT (3X,8I5)
+C
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readnm */
       SUBROUTINE READNM(I,NUM,A)

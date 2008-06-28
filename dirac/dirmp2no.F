@@ -112,7 +112,7 @@ C     initialize string of active NO orbitals for subsequent correlation
 C     step
       DO I = 1,NFSYM
         VECMP2NO(I) = 'energy -10.0 20.0 0.2 '
-        VECNOSEL(I) = 'NO-occ 1.99 0.001 0.1 '
+        VECNOSEL(I) = 'NO-occ 1.99999999 0.0001 0.1 '
       ENDDO
       IMAXVSP     = JMAXVSP
       IAOMOSCHEME = 4
@@ -334,7 +334,8 @@ C
 #endif
       LOGICAL FND,FNDLAB, TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
-      DIMENSION IC(2),IE(2),ID(2)
+      DIMENSION IC(2),IE(2),ID(2), KVEC(2)
+      INTEGER NR(2)
       CHARACTER CTMP*1, LABEL*8
 #include "memint.h"
       CALL QENTER('MP2NOGE1')
@@ -501,22 +502,33 @@ CSK   END DO
 CSK   CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
 CSK   CLOSE(LUCOEF,STATUS='KEEP')
 C
-C     pick out 'active' NO spinors : FIXME: call to NUMLS4 not ready
+C     pick out 'active' NO spinors according to 
+C     list in VECNOSEL
 C
-csk   NTOT = 0
-csk   DO I = 1,NFSYM
-csk     NVEC = 0
-csk     CALL  NUMLS4(VECNOSEL(I),IDUMMY,NFBAS(I,0),
-csk  &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-csk     IF(NVEC.EQ.0) THEN
-csk       WRITE(LUPRI,'(4X,A,A3)')
-csk  &       '- No spinors in fermion ircop ',FREP(I)
-csk     ELSE
-csk       NTOT = NTOT + NVEC
-csk       WRITE(LUPRI,'(4X,A,A3,A,A72)')
-csk  &    '- spinors in fermion ircop ',FREP(I),' :',VECNOSEL(I)
-csk     ENDIF
-csk   ENDDO
+      WRITE(LUPRI,'(//A/A/A)')
+     &'   ************************************************************',
+     &'   *************** selection of active NO spinors *************',
+     &'   ************************************************************'
+      NTOT  = 0
+      IOFF2 = 1
+      DO I = 1,NFSYM
+        NR(I) = 1
+        CALL MEMGET('INTE',KVEC(I),NESH(I),WORK,KFREE,LFREE)
+        CALL NUMLS4(VECNOSEL(I),WORK(KVEC(I)),NESH(I),NR(I),
+     &              NESH(I),NR(I),WORK(KOCC_NAT+IOFF2-1))
+        IF( NR(I) .eq. 0 ) THEN
+          WRITE(LUPRI,'(3X,A,I3)')
+     &    '- No active spinors in fermion ircop ',I
+        ELSE
+          NTOT = NTOT + NR(I)
+          CALL NOSELPRI(WORK(KVEC(I)),I,NR(I))
+        ENDIF
+        IOFF2 = IOFF2 + NESH(I)
+      ENDDO
+C
+C     FIXME: - automatic 'active space selection for GAS-CI?'
+C            - proper implementation of .FOCKNO option
+C
 C
 C     memory deallocation
 C     -------------------
