@@ -737,6 +737,17 @@ C
          CALL LUCINOD_REL(WORK,LWORK)
 #else
             CALL QUIT(
+     &  'KRMC-LUCIAREL module not included in this version')
+
+#endif
+      ELSE IF (ITASK .EQ. 7) THEN
+#ifdef MOD_KRMC
+C
+C        start KR-MCSCF calculation.
+C
+         CALL KRMCNOD(WORK,LWORK)
+#else
+            CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
 #endif
@@ -850,6 +861,17 @@ C
 C        start KRMC-LUCIAREL calculation.
 C
          CALL LUCINOD_REL(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+#endif
+      ELSE IF (ITASK .EQ. 7) THEN
+#ifdef MOD_KRMC
+C
+C        start KR-MCSCF calculation.
+C
+         CALL KRMCNOD(WORK,LWORK)
 #else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
