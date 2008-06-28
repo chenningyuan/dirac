@@ -5351,3 +5351,28 @@ C
       CALL QEXIT('SVLDE2')
       RETURN
       END
+#if defined (VAR_MPI2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KRMCNOD(WORK,LWORK)
+C
+C     KR-MCSCF driver routine for the slaves
+C
+C     Last revision: S. Knecht           - June  2008, Odense
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      IMPLICIT REAL*8(A-H,O-Z)
+C
+#include "infpar.h"
+#include "mpif.h"
+#include "parkrmc.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION WORK(LWORK)
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "memint.h"
+C
+      KFRSAV = KFREE
+      END
+#endif
