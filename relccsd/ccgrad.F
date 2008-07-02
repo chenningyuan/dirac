@@ -679,6 +679,10 @@ C
       DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
       LOGICAL NOZG
 C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 LABEL
+C
       CALL QENTER('MP2_NATORB')
 C
       KFRSAV=KFREE
