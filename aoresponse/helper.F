@@ -146,12 +146,13 @@
       character(7)       :: word, word_save
       character(7)       :: table(ntable)
 
+
 !                   1         2         3         4
       data table /'.SKIPEE','.SKIPEP','.THRESH','.ALPHA ',
 !                   5         6         7         8
      &            '.BETA  ','.GAMMA ','.FREQ  ','.BETA2N',
 !                   9        10        11        12
-     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+     &            '.DC-SHG','.THG   ','.IDRI  ','.DC-KER',
 !                  13        14        15        16
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  17        18        19        20
@@ -200,6 +201,11 @@
       aoresponse_beta               = .false.
       aoresponse_beta_2np1          = .false.
       aoresponse_gamma              = .false.
+
+      aoresponse_dc_shg             = .false.
+      aoresponse_thg                = .false.
+      aoresponse_idri               = .false.
+      aoresponse_dc_kerr            = .false.
 
 
 !     process input
@@ -276,9 +282,21 @@
           go to 100
 
     9     continue
+          aoresponse_dc_shg  = .true.
+          go to 100
+
    10     continue
+          aoresponse_thg = .true.
+          go to 100
+
    11     continue
+          aoresponse_idri = .true.
+          go to 100
+
    12     continue
+          aoresponse_dc_kerr = .true.
+          go to 100
+
    13     continue
    14     continue
    15     continue

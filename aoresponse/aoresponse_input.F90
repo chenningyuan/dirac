@@ -27,6 +27,11 @@ module aoresponse_input_m
   logical,                 save :: aoresponse_beta_2np1
   logical,                 save :: aoresponse_gamma
 
+  logical,                 save :: aoresponse_dc_shg
+  logical,                 save :: aoresponse_thg
+  logical,                 save :: aoresponse_idri
+  logical,                 save :: aoresponse_dc_kerr
+
 contains
 
   function find_op_index(op_name) result(op_index)
