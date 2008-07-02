@@ -21,6 +21,7 @@ module aoresponse_input_m
   real(kind_dp),           save :: aoresponse_threshold_response
   real(kind_dp),           save :: aoresponse_threshold_rhs
   real(kind_dp),           save :: aoresponse_freq(4)
+  real(kind_dp),           save :: aoresponse_freq_process
 
   logical,                 save :: aoresponse_alpha
   logical,                 save :: aoresponse_beta

@@ -21,6 +21,7 @@ contains
 
     type(matrix)  :: S, C, D_mo, D, F
     real(kind_dp) :: freq(4)
+    real(kind_dp) :: add_to
 
     freq(1) = aoresponse_freq(1)
     freq(2) = aoresponse_freq(2)
@@ -74,6 +75,105 @@ contains
 !     call gamma_element(1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
 !     call gamma_element(1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
 !     call gamma_element(3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+    end if
+
+    if (aoresponse_dc_kerr) then
+
+      add_to = 0.0d0
+
+      freq(1) = -aoresponse_freq_process
+      freq(2) =  aoresponse_freq_process
+      freq(3) =  0.0d0
+      freq(4) =  0.0d0
+
+      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(8.0d0, add_to, 1, 3, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(2.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(2.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+
+      add_to = add_to/15.0d0
+
+      print '("@ averaged gamma dc Kerr (w = "4f7.3"):" f26.10)', freq(1), &
+                                                                  freq(2), &
+                                                                  freq(3), &
+                                                                  freq(4), &
+                                                                  add_to
+
+    end if
+
+    if (aoresponse_dc_shg) then
+
+      add_to = 0.0d0
+
+      freq(1) = -aoresponse_freq_process*2.0d0
+      freq(2) =  aoresponse_freq_process
+      freq(3) =  aoresponse_freq_process
+      freq(4) =  0.0d0
+
+      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(2.0d0, add_to, 1, 3, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(2.0d0, add_to, 3, 1, 1, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(4.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(4.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+
+      add_to = add_to/15.0d0
+
+      print '("@ averaged gamma dc SHG (w = "4f7.3"):" f26.10)', freq(1), &
+                                                                 freq(2), &
+                                                                 freq(3), &
+                                                                 freq(4), &
+                                                                 add_to
+
+    end if
+
+    if (aoresponse_thg) then
+
+      add_to = 0.0d0
+
+      freq(1) = -aoresponse_freq_process*3.0d0
+      freq(2) =  aoresponse_freq_process
+      freq(3) =  aoresponse_freq_process
+      freq(4) =  aoresponse_freq_process
+
+      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(6.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(6.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+
+      add_to = add_to/15.0d0
+
+      print '("@ averaged gamma THG (w = "4f7.3"):" f26.10)', freq(1), &
+                                                              freq(2), &
+                                                              freq(3), &
+                                                              freq(4), &
+                                                              add_to
+
+    end if
+
+    if (aoresponse_idri) then
+
+      add_to = 0.0d0
+
+      freq(1) = -aoresponse_freq_process
+      freq(2) =  aoresponse_freq_process
+      freq(3) = -aoresponse_freq_process
+      freq(4) =  aoresponse_freq_process
+
+      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(8.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(4.0d0, add_to, 1, 3, 1, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+
+      add_to = add_to/15.0d0
+
+      print '("@ averaged gamma IDRI (w = "4f7.3"):" f26.10)', freq(1), &
+                                                               freq(2), &
+                                                               freq(3), &
+                                                               freq(4), &
+                                                               add_to
+
     end if
 
     S = 0

@@ -303,8 +303,10 @@ contains
 
   end subroutine
 
-  subroutine gamma_element(ui, uj, uk, ul, S, D, F, w)
+  subroutine gamma_element(scale_by, add_to, ui, uj, uk, ul, S, D, F, w)
 
+    real(kind_dp), intent(in)    :: scale_by
+    real(kind_dp), intent(inout) :: add_to
     integer,       intent(in)    :: ui, uj, uk, ul
     type(matrix),  intent(inout) :: S, D, F
     real(kind_dp), intent(in)    :: w(4)
@@ -465,6 +467,7 @@ contains
                                                                      fc(k), &
                                                                      fc(l), &
                                                                     -e_ijkl(i, j, k, l)
+              add_to = add_to - scale_by*e_ijkl(i, j, k, l)
             end if
           end do
         end do

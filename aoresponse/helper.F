@@ -154,7 +154,7 @@
 !                   9        10        11        12
      &            '.DC-SHG','.THG   ','.IDRI  ','.DC-KER',
 !                  13        14        15        16
-     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+     &            '.FREQ_P','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  17        18        19        20
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  21        22        23        24
@@ -196,6 +196,7 @@
       aoresponse_threshold_response = 1.0d-8
       aoresponse_threshold_rhs      = 1.0d-8
       aoresponse_freq               = 0.0d0
+      aoresponse_freq_process       = 0.0d0
 
       aoresponse_alpha              = .false.
       aoresponse_beta               = .false.
@@ -298,6 +299,9 @@
           go to 100
 
    13     continue
+          read(lucmd, *) aoresponse_freq_process
+          go to 100
+
    14     continue
    15     continue
    16     continue
