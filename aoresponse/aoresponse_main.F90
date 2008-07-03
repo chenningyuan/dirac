@@ -176,6 +176,25 @@ contains
 
     end if
 
+    if (aoresponse_gamma_static) then
+
+      add_to = 0.0d0
+      freq   = 0.0d0
+
+      call gamma_element( 8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element(12.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+      call gamma_element( 3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
+
+      add_to = add_to/15.0d0
+
+      print '("@ averaged static gamma (w = "4f7.3"):" f26.10)', freq(1), &
+                                                                 freq(2), &
+                                                                 freq(3), &
+                                                                 freq(4), &
+                                                                 add_to
+
+    end if
+
     S = 0
     D = 0
     F = 0
