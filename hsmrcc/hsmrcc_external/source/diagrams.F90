@@ -1,7 +1,9 @@
+!---------------------------------------------------------------------
+!
 !  this subroutine produces TNEW from TOLD
 !  by calculating direct, heff and renormalization
 !  diagrams of HSMRCC.
-
+!
 !  Notes
 !  -----
 !
@@ -13,7 +15,11 @@
 !  needs to be copied because TOLD is
 !  overwritten with TOLD(tvac) in
 !  renormalization routines.
-
+!
+!
+!  Called from "source/hsmrcc.F90", from within the iteration cycle
+!
+!---------------------------------------------------------------------
 subroutine Diagrams
 
    use Parameters
@@ -26,6 +32,7 @@ subroutine Diagrams
    use TimingMod
    implicit none
    integer :: vac
+
    ! ... Interface for External Subroutines ...
    interface
       subroutine EnDenom(T,TSize,vac)
@@ -49,7 +56,7 @@ subroutine Diagrams
       end subroutine Compensate
    end interface
 
-   call QEnter('Diagrams')
+ !  call QEnter('Diagrams')
    ! ... Diagram calculation for each vaccum ...
 
    if (get_iprint() >= 7) then
@@ -87,7 +94,7 @@ subroutine Diagrams
 
    enddo
 
-   call QExit('Diagrams')
+ !  call QExit('Diagrams')
    return
 
 end subroutine Diagrams

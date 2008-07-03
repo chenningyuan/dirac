@@ -20,7 +20,7 @@ subroutine HSMRCC
    double precision, pointer :: VINT(:)
    integer, pointer :: VIND(:)
 
-   call QEnter('HSMRCC')
+  ! call QEnter('HSMRCC')
 
    ! ... Basic Initialization of HSMR Run ...
 
@@ -109,7 +109,7 @@ subroutine HSMRCC
 
    call EndHSMR
 
-   call QExit('HSMRCC')
+  ! call QExit('HSMRCC')
    return
 
 contains

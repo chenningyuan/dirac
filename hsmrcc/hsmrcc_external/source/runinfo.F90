@@ -125,6 +125,7 @@ write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
 ! TODO: splitt for GAMESS / DIRAC
 if (OPTION(DIRACp)) then
  write(UOUT,'(/,2x,a)') 'DIRAC information...'
+ ! ...
 else
   write(UOUT,9041) TotEn, NucEn, TrfTol
   9041 format('******************',/,  &
@@ -201,7 +202,6 @@ endif
 9064 format(1x)
 
    write(UOUT,9071)
-
 9071 format('Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out',/)
 
    return

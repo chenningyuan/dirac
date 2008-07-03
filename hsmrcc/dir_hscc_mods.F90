@@ -5,11 +5,10 @@ module Dirac_HSMRCC
 !  contains all data from DIRAC for the standalone HSMRCC code 
 !
 !----------------------------------------------------------------------------------
-integer (kind=2), parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
-integer (kind=4) ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
+integer, parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
+integer ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 
-!integer(kind=4), private :: iprint_hscc = 0
-integer(kind=4), public :: iprint_hscc = 0
+integer, public :: iprint_hscc = 0
 
 contains
 
@@ -25,7 +24,7 @@ subroutine prepare_dirac_HSMRCC_file
 #include "priunit.h"
 character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
  
-call QEnter('prepare_dirac_HSMRCC_file')
+!call QEnter('prepare_dirac_HSMRCC_file')
 
 if (iprint_hscc >= 5) then
    call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
@@ -46,7 +45,7 @@ close(ludh,status="keep")
 
 !call Quit('prepare_dirac_HSMRCC_file')
 
-call QExit('prepare_dirac_HSMRCC_file')
+!call QExit('prepare_dirac_HSMRCC_file')
 end subroutine prepare_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC
@@ -146,7 +145,7 @@ subroutine print_mrconee_data
 #include "implicit.h"
 #include "priunit.h"
 
-Call QEnter('print_mrconee_data')
+!Call QEnter('print_mrconee_data')
 
 if (.not.mrconee_read) then
   Write(LUPRI,*) 'MRCONEE file was not read...'
@@ -197,7 +196,7 @@ DO J=1,2*NREP
 ENDDO
 ENDDO
 
-Call QExit('print_mrconee_data')
+!Call QExit('print_mrconee_data')
 
 end subroutine print_mrconee_data
 

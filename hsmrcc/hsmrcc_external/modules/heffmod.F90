@@ -693,7 +693,6 @@ subroutine DiagHEFF
    double precision :: dtmp
    double precision :: ddot
 
-   call QEnter('DiagHEFF')
 
    ! ... Construct HEFF with proper sign  ...
 
@@ -749,8 +748,6 @@ subroutine DiagHEFF
       deallocate(tmpv)
 
    enddo
-
-   call QExit('DiagHEFF')
 
    return
 
