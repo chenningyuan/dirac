@@ -122,8 +122,7 @@ subroutine InitIOMod
 
    if (Init) then
       write(UOUT,*) 'Error Initializing IOMod'
-      call flush(UOUT)
-     ! call abort
+      call flushout
       call Quit('InitIOMod:  Error Initializing IOMod !')
    endif
    Init = .TRUE.
@@ -185,9 +184,9 @@ subroutine ReadNZIntRecs
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'ReadNZIntRecs: IOMod not initialized'
+      call flushout
+      call quit('ReadNZIntRecs: IOMod not initialized!')
    endif
 
    rewind(UVINF)
@@ -226,9 +225,9 @@ subroutine InitBlockIO
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'InitBlockIO: IOMod not initialized'
+      call flushout
+      call quit('InitBlockIO: IOMod not initialized')
    endif
 
    ! ... Setup Data for Block IO   ...
@@ -284,9 +283,9 @@ subroutine AllocIntBufs
    integer :: IntBufSize
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'AllocIntBufs: IOMod not initialized'
+      call flushout
+      call quit('AllocIntBufs : IOMod not initialized!')
    endif
 
    ! ... Determine IntBufSize ...
@@ -317,9 +316,9 @@ subroutine DeAllocIntBufs
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'DeAllocIntBufs: IOMod not initialized'
+      call flushout
+      call quit('DeAllocIntBufs: IOMod not initialized!')
    endif
 
    nullify(IndBuf)
@@ -345,8 +344,8 @@ function NumBlock_VPPPP()
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
       write(UOUT,*) 'Integral Buffer too small for VPPPP'
-      call flush(UOUT)
-      call abort
+      call flushout
+      call quit('NumBlock_VPPPP: Integral Buffer too small for VPPPP !')
    endif
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
@@ -363,8 +362,21 @@ function NumBlock_VPPPP()
          NZInt = NZInt + NZIntRec(IntRec)
          IntRec = IntRec + 1
       enddo
-      !if (NZInt == 0) stop 'Error NZInt=0'
-      if (NZInt == 0) call Quit('NumBlock_VPPPP: Error NZInt=0, pos 1')
+      if (NZInt == 0) then 
+      ! ... more debug info...
+        if ( IntRec > NumRec(VPPPP) ) then
+          write(UOUT,*) 'IntRec=',IntRec,' NumRec(VPPPP)=',NumRec(VPPPP)
+          write(UOUT,*) 'exit due to IntRec > NumRec(VPPPP) !'
+        endif
+        if ( (NZInt + NZIntRec(IntRec)) > (BufSize-NRead) ) then
+          write(UOUT,*) 'exit due to  (NZInt + NZIntRec(IntRec)) > (BufSize-NRead) !'
+          write(UOUT,*) ' (NZInt + NZIntRec(IntRec)):',NZInt + NZIntRec(IntRec)
+          write(UOUT,*) ' (BufSize-NRead)=',(BufSize-NRead) 
+        endif
+       ! write(UOUT,*) 'NBlk=',NBlk
+       ! write(UOUT,*) 'NZIntRec(IntRec)=',NZIntRec(IntRec)
+        call Quit('NumBlock_VPPPP: Error NZInt=0 !')
+      endif
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -389,10 +401,11 @@ function NumBlock_VPH2P()
    BufSize = MIN(SIZE(BufIntgrl),SIZE(BufIndex))
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
-      write(UOUT,*) 'Integral Buffer too small for VPH2P'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'NumBlock_VPH2P: Integral Buffer too small for VPH2P'
+      call flushout
+      call quit('NumBlock_VPH2P: Integral Buffer too small for VPH2P!')
    endif
+
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
 
@@ -411,8 +424,9 @@ function NumBlock_VPH2P()
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      !if (NZInt == 0) stop 'Error NZInt=0'
-      if (NZInt == 0) call Quit('NumBlock_VPH2P: Error NZInt=0')
+      if (NZInt == 0) then
+        call Quit('NumBlock_VPH2P: Error NZInt=0')
+      endif
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -437,9 +451,9 @@ function NumBlock_VPHPP()
    BufSize = MIN(SIZE(BufIntgrl),SIZE(BufIndex))
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
-      write(UOUT,*) 'Integral Buffer too small for VPHPP'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'NumBlock_VPHPP: Integral Buffer too small for VPHPP'
+      call flushout
+      call quit('NumBlock_VPHPP: Integral Buffer too small for VPHPP')
    endif
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
@@ -459,8 +473,9 @@ function NumBlock_VPHPP()
          NZInt = NZInt + ni
          IntRec = IntRec + 1
       enddo
-      !if (NZInt == 0) stop 'Error NZInt=0'
-      if (NZInt == 0) call Quit('NumBlock_VPHPP: Error NZInt=0')
+      if (NZInt == 0) then 
+        call Quit('NumBlock_VPHPP: Error NZInt=0')
+      endif
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
       if (NRead == NZVINTBUFSIZE) NRead = 0
@@ -486,9 +501,9 @@ subroutine SetupBlkRead_VPPPP
    BufSize = MIN(SIZE(BufIntgrl),SIZE(BufIndex))
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
-      write(UOUT,*) 'Integral Buffer too small for VPPPP'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'SetupBlkRead_VPPPP: Integral Buffer too small for VPPPP'
+      call flushout
+      call quit('SetupBlkRead_VPPPP: Integral Buffer too small for VPPPP')
    endif
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
@@ -508,8 +523,9 @@ subroutine SetupBlkRead_VPPPP
          NZInt = NZInt + NZIntRec(IntRec)
          IntRec = IntRec + 1
       enddo
-      !if ( NZInt == 0 ) stop 'Error NZInt=0'
-      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPPPP: Error NZInt=0')
+      if ( NZInt == 0 ) then
+         call Quit('SetupBlkRead_VPPPP: Error NZInt=0')
+      endif
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
@@ -542,9 +558,9 @@ subroutine SetupBlkRead_VPH2P
    BufSize = MIN(SIZE(BufIntgrl),SIZE(BufIndex))
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
-      write(UOUT,*) 'Integral Buffer too small for VPH2P'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'SetupBlkRead_VPH2P: Integral Buffer too small for VPH2P'
+      call flushout
+      call quit('SetupBlkRead_VPH2P: Integral Buffer too small for VPH2P')
    endif
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
@@ -568,7 +584,9 @@ subroutine SetupBlkRead_VPH2P
          IntRec = IntRec + 1
       enddo
       !if ( NZInt == 0 ) stop 'Error NZInt=0'
-      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPH2P: Error NZInt=0')
+      if ( NZInt == 0 ) then 
+        call Quit('SetupBlkRead_VPH2P: Error NZInt=0')
+      endif
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
@@ -601,9 +619,9 @@ subroutine SetupBlkRead_VPHPP
    BufSize = MIN(SIZE(BufIntgrl),SIZE(BufIndex))
    MaxBufRec  = MIN(BufSize/NZVINTBUFSIZE,NumFileRec) 
    if ( MaxBufRec < 1 ) then
-      write(UOUT,*) 'Integral Buffer too small for VPHPP'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'SetupBlkRead_VPHPP:Integral Buffer too small for VPHPP'
+      call flushout
+      call quit('SetupBlkRead_VPHPP:Integral Buffer too small for VPHPP')
    endif
    ! BufSize is reset to effective buffer size
    BufSize = MaxBufRec*NZVINTBUFSIZE
@@ -653,9 +671,9 @@ subroutine EndIOMod
    ! ... Initilization Check ...
 
    if (.not.Init) then
-      write(UOUT,*) 'EndIOMod called Without Initilization'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'EndIOMod: EndIOMod called Without Initilization'
+      call flushout
+      call quit('EndIOMod: EndIOMod called Without Initilization')
    endif
    Init = .FALSE.
 
@@ -726,9 +744,9 @@ subroutine ReadFileFull(FileName)
       case (VHHHP)
          NZIntRec => NZIntRec_VHHHP
       case default
-         write(UOUT,*) 'Unable to Read Full File'
-         call flush(UOUT)
-         call abort
+         write(UOUT,*) 'ReadFileFull: Unable to Read Full File'
+         call flushout
+         call quit('ReadFileFull: Unable to Read Full File')
    end select
 
    StRec = StartRec(FileName)
@@ -806,9 +824,9 @@ subroutine ReadFileBlock(FileName,Block,St,En)
          St = BlkSt_VPHPP(Block)
          En = BlkEn_VPHPP(Block)
       case default
-         write(UOUT,*) 'Unable to Perform Bolck IO'
-         call flush(UOUT)
-         call abort
+         write(UOUT,*) 'ReadFileBlock: Unable to Perform Block IO'
+         call flushout
+         call quit('ReadFileBlock: Unable to Perform Block IO!')
    end select
 
    return
@@ -821,9 +839,9 @@ subroutine OpenIntFiles
    character(len=10) :: stat
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'OpenIntFiles: IOMod not initialized'
+      call flushout
+      call quit('OpenIntFiles: IOMod not initialized')
    endif
 
    stat = 'OLD'
@@ -844,13 +862,14 @@ subroutine OpenOtherFiles
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'OpenOtherFiles: IOMod not initialized'
+      call flushout
+      call quit('OpenOtherFiles: IOMod not initialized')
    endif
 
    open(UHEFF,file=FileHEFF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    open(UCOEF,file=FileCOEF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
+! .. direct access files
    open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
    open(UTOLD,file=FileTOLD,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
    open(UTAMP,file=FileTAMP,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
@@ -864,9 +883,9 @@ subroutine CloseIntFiles
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'CloseIntFiles: IOMod not initialized'
+      call flushout
+      call quit('CloseIntFiles: IOMod not initialized')
    endif
 
    close(UVINT)
@@ -885,9 +904,9 @@ subroutine CloseOtherFiles
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'IOMod not initialized'
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) 'CloseOtherFiles: IOMod not initialized'
+      call flushout
+      call quit('CloseOtherFiles: IOMod not initialized')
    endif
 
    close(UTAMP)

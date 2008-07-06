@@ -4,7 +4,7 @@ subroutine InitHSMRBase
 !
 !  ... Basic Initialization of HSMR Run ...
 !
-! Called from "source/hsmrcc.F90"/HSMRCC
+!      Called from "source/hsmrcc.F90"/HSMRCC
 !
 !---------------------------------------------------------
 

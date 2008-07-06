@@ -35,10 +35,11 @@ subroutine InitVacMod
 !
 !                     Initialize vacuum module
 !
+!  called from source/inihsbase.F90 InitHSMRBase
+!
 !---------------------------------------------------------------------------
    implicit none
 
-   call QEnter('InitVacMod')
 
    if (get_iprint() >= 7) then
     write(UOUT,'(/,2x,a,i4)')  &
@@ -47,9 +48,7 @@ subroutine InitVacMod
 
    if (Init) then
      write(UOUT,'(/,2x,a)') 'InitVacMod: VacMod already initialized !'
-     !call flush(UOUT)
      call flushout
-     !call abort
      call Quit('InitVacMod: VacMod already initialized !')
    endif
    Init = .TRUE.
@@ -67,7 +66,6 @@ subroutine InitVacMod
 
    call GenVac
 
-   call QExit('InitVacMod')
    return
 
 end subroutine InitVacMod
@@ -108,12 +106,9 @@ function IsHole(i,vac)
    integer, intent(in) :: i, vac
    logical :: IsHole
 
-   call QEnter('IsHole')
-
    IsHole = (i<=NCMO)
    if (.not.IsHole) IsHole = BTEST(VacString(vac),(i-NCMO))
 
-   call QExit('IsHole')
    return
 
 end function IsHole
@@ -162,12 +157,11 @@ function HoleNum(i,vac)
    integer :: HoleNum
    integer :: j, k
 
-   call QEnter('HoleNum')
-
    !if (.not.IsActHole(i,vac)) stop 'HoleNum : index not act hole'
    if (.not.IsActHole(i,vac)) then
      write(UOUT,*) 'HoleNum error ! i=',i,'  vac=',vac, &
      ' IsActHole(i,vac):',IsActHole(i,vac)
+     call flushout
      call Quit('HoleNum : index not active hole !')
    endif
 
@@ -177,7 +171,6 @@ function HoleNum(i,vac)
    enddo
    HoleNum = k
 
-   call QExit('HoleNum')
    return
 
 end function HoleNum
@@ -189,16 +182,21 @@ function PtclNum(a,vac)
    integer :: PtclNum
    integer :: b, c
 
-   call QEnter('PtclNum')
 
-   if (.not.IsActPtcl(a,vac)) stop 'PtclNum : index not act ptcl'
+  ! if (.not.IsActPtcl(a,vac)) stop 'PtclNum : index not act ptcl'
+   if (.not.IsActPtcl(a,vac)) then
+     write(UOUT,*) 'PctlNum error ! a=',a,'  vac=',vac, &
+     ' and IsActPtcl(a,vac):',IsActPtcl(a,vac)
+     call flushout
+     call quit('PtclNum : index not act ptcl')
+   endif
+
    c = 0
    do b = 1, a
       if (IsActPtcl(b,vac)) c = c + 1
    enddo
    PtclNum = c
 
-   call QExit('PtclNum')
    return
 
 end function PtclNum
@@ -251,10 +249,15 @@ function ExcVaccum2(i,j,a,b,vac)
    integer, intent(in) :: i, j, a, b, vac
    integer :: ExcVaccum2, ij, ab, exc
 
-   if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
-   if (.not.IsActHole(j,vac)) stop 'ExcVaccum : j not act hole'
-   if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
-   if (.not.IsActPtcl(b,vac)) stop 'ExcVaccum : b not act ptcl'
+  ! if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
+   if (.not.IsActHole(i,vac)) call quit('ExcVaccum2 : i not act hole')
+  ! if (.not.IsActHole(j,vac)) stop 'ExcVaccum : j not act hole'
+   if (.not.IsActHole(j,vac)) call quit('ExcVaccum2 : j not act hole')
+  ! if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
+   if (.not.IsActPtcl(a,vac)) call quit('ExcVaccum2 : a not act ptcl')
+  ! if (.not.IsActPtcl(b,vac)) stop 'ExcVaccum : b not act ptcl'
+   if (.not.IsActPtcl(b,vac)) call quit('ExcVaccum2 : b not act ptcl')
+
    ij = MAXMIN(HoleNum(i,vac),HoleNum(j,vac))
    ab = MAXMIN(PtclNum(a,vac),PtclNum(b,vac))
    exc = (ij-1)*((NPTCL*(NPTCL-1))/2) + ab + NHOLE*NPTCL + 1
@@ -270,8 +273,12 @@ function Exct1(i,a,vac)
    integer, intent(in) :: i, a, vac
    integer :: Exct1
 
-   if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
-   if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
+  ! if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
+   if (.not.IsActHole(i,vac)) call quit('Exct1 : i not act hole')
+
+  ! if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
+   if (.not.IsActPtcl(a,vac)) call quit('Exct1 : a not act ptcl')
+
    Exct1 = (HoleNum(i,vac)-1)*NPTCL + PtclNum(a,vac) + 1
 
    return
@@ -284,10 +291,15 @@ function Exct2(i,j,a,b,vac)
    integer, intent(in) :: i, j, a, b, vac
    integer :: Exct2, ij, ab
 
-   if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
-   if (.not.IsActHole(j,vac)) stop 'ExcVaccum : j not act hole'
-   if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
-   if (.not.IsActPtcl(b,vac)) stop 'ExcVaccum : b not act ptcl'
+  ! if (.not.IsActHole(i,vac)) stop 'ExcVaccum : i not act hole'
+   if (.not.IsActHole(i,vac)) call quit('Exct2 : i not act hole')
+  ! if (.not.IsActHole(j,vac)) stop 'ExcVaccum : j not act hole'
+   if (.not.IsActHole(j,vac)) call quit('Exct2 : j not act hole')
+  !if (.not.IsActPtcl(a,vac)) stop 'ExcVaccum : a not act ptcl'
+   if (.not.IsActPtcl(a,vac)) call quit('Exct2 : a not act ptcl')
+  !if (.not.IsActPtcl(b,vac)) stop 'ExcVaccum : b not act ptcl'
+   if (.not.IsActPtcl(b,vac)) call quit('Exct2 : b not act ptcl')
+
    ij = MAXMIN(HoleNum(i,vac),HoleNum(j,vac))
    ab = MAXMIN(PtclNum(a,vac),PtclNum(b,vac))
    Exct2 = (ij-1)*((NPTCL*(NPTCL-1))/2) + ab + NHOLE*NPTCL + 1
@@ -331,9 +343,7 @@ subroutine GenVac
       else
          write(UOUT,*) "Incorrect Occupation in OccRef array...see array OccRef"
          write(UOUT,*) '* OccRef: ',OccRef
-         !call flush(UOUT)
          call flushout
-         !call abort
          call Quit('GenVac: Incorrect Occupation in OccRef array !')
       endif
    enddo
@@ -354,7 +364,7 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,a+NHOLE)
       VacString(vac) = CurrVac
       if (get_iprint() >= 10) then
-        write(UOUT,*) 'i,a:',i,a,' VacString(',vac,')=',VacString(vac)
+        write(UOUT,'(2x,a,2i4,a,i3,a,i4)') 'i,a:',i,a,' VacString(',vac,')=',VacString(vac)
       endif
    enddo
    enddo
@@ -373,7 +383,7 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,b+NHOLE)
       VacString(vac) = CurrVac
       if (get_iprint() >= 10) then
-        write(UOUT,*) 'i,j,a,b:',i,j,a,b,' VacString(',vac,')=',VacString(vac)
+        write(UOUT,'(2x,a,4i4,a,i3,a,i4)') 'i,j,a,b:',i,j,a,b,' VacString(',vac,')=',VacString(vac)
       endif
    enddo
    enddo
@@ -434,7 +444,9 @@ subroutine GenVac
    enddo
    enddo
 
-   ! Higher Excitations not yet implemented
+   ! -------------------------------------------------------
+   !       Higher Excitations not yet implemented
+   ! -------------------------------------------------------
 
    ! Generation of vaccum table to be used
    ! in renormalization diagrams.
@@ -556,7 +568,10 @@ subroutine GenVac
          enddo
       enddo
 
-      ! higher excitations not yet implemented
+      ! -------------------------------------------
+      !    higher excitations not yet implemented
+      ! -------------------------------------------
+
 
    enddo
 
@@ -652,9 +667,7 @@ subroutine GenVac
       write(UOUT,'(/,2x,a)')  &
       "nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
       write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
-      !call flush(UOUT)
       call flushout
-      !call abort
       call Quit('GenVac: something wrong in finding symmetry blocks !')
    endif
 
@@ -735,9 +748,7 @@ subroutine GenVac
      write(UOUT,'(/,2x,a)')   &
      'isym_block <> NSYM_BLOCK; something wrong in creating sym_blocks !'
      write(UOUT,*) 'isym_block=',isym_block,' NSYM_BLOCK=',NSYM_BLOCK
-      !call flush(UOUT)
      call flushout
-      !call abort
      call Quit('GenVac')
    endif
 
