@@ -8,13 +8,14 @@
 !  DCBHAM:  Hamiltonian used for generation of wavefunction
 !
 !     IPRHAM     - Print level
-!     IPOVERLAP  - Pointer to overlap in DCBXPR
-!     IPBETAMT   - Pointer to beta matrix in DCBXPR
-!     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
-!     IPKINERG   - Pointer to kinetic energy in DCBXPR
-!     IPSOPP     - Pointer to ECP spin-orbit matrix, SOPP DCBXPR
-!     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
-!     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
+!     IPOVERLAP  - Pointer to the overlap in DCBXPR
+!     IPBETAMT   - Pointer to the beta matrix in DCBXPR
+!     IPMOLFLD   - Pointer to the nuclear attraction in DCBXPR
+!     IPKINERG   - Pointer to the kinetic energy in DCBXPR
+!     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
+!     IPANGMOM   - Pointer to the z-component of angular momentum in DCBXPR
+!     IPSPNMOM   - Pointer to the z-component of spin in DCBXPR
+!
 !     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
 !     IPR1OP     - Pointer to DCBXPR for additional operators
@@ -27,7 +28,8 @@
 !     LEVYLE     - Levy-Leblond Hamiltonian
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
-!     SSMTRC_SAVE
+!     SSMTRC_SAVE- Scaling factor for SS overlap matrix, temporary variable
+!
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
@@ -46,7 +48,7 @@
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
-!     IMFCH      - charge for the mean-field summation in the AMFI
+!     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
 !     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
 !                  (only for infinite order Tronds approach), if .false., we do the preliminary
 !                  transformation to the free-particle basis or to the Vext-particle ON basis
@@ -80,6 +82,8 @@
 !
 !     NOAMFI      - do not include AMFI contributions at all
 !
+!     QDOTS      - use quantum dots harmonic potential instead of the electron-nuclei attraction potential
+!
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -110,7 +114,7 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI
+     &        DKH1, DKH2, NOAMFI, QDOTS
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
@@ -124,7 +128,7 @@
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
-     &                DKH1, DKH2, NOAMFI
+     &                DKH1, DKH2, NOAMFI, QDOTS
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 

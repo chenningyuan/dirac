@@ -3765,7 +3765,7 @@ C
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
-     &            '.NOAMFI','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.NOAMFI','.QDOTS ','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3850,6 +3850,8 @@ CMI     ... default initialization
 #else
       NOAMFI = .TRUE.
 #endif
+CMI   ... default value - no artificial atom
+      QDOTS = .FALSE.
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
@@ -4295,7 +4297,10 @@ C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
 #endif
              GO TO 100
   150     CONTINUE
-C&&& XXXX
+C&&& QDOTS: activate artificial atom (quantum dots)
+#ifdef MOD_QDOTS 
+             QDOTS = .TRUE.
+#endif
              GO TO 100
   151     CONTINUE
 C&&& XXXX
@@ -4303,6 +4308,13 @@ C&&& XXXX
   152     CONTINUE
 C&&& XXXX
              GO TO 100
+  153     CONTINUE
+C&&& XXXX
+             GO TO 100
+  154     CONTINUE
+C&&& XXXX
+             GO TO 100
+  155     CONTINUE
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -4575,7 +4587,6 @@ CMI ... no AMFI
      &     '       some AMFI contribution'//
      &     ' (see output from EXTR_BSS_INFO below)'  
 #endif
-CMI       IF (GAUNT) THEN
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
      &     '     N.B: Gaunt key is on '
@@ -4696,6 +4707,12 @@ CMI ...  CAP processing
         WRITE(LUPRI,'(1X,A)')
      &  '* Activated calculation of the Complex'//
      &  ' Absorption Potential (CAP) integrals '
+      ENDIF
+
+CMI    ... quantum dots
+      IF (QDOTS) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     &  '* Activated calculations of artificial system (quantum dots).'
       ENDIF
 
       IF(SPINFR) THEN

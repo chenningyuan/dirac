@@ -48,8 +48,10 @@ C
 C     This routine is called from:  PAMPSI (main/dirac.F)
 C
 C     Written by T.Saue November 1994
-C     Last revision : Sep 11 1995 - tsaue
+C
+C     Last revisions: Sep 11 1995 - tsaue
 C                     2005/6 MI to make BSS2DC/DC2BSS available
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -783,7 +785,7 @@ C  /* Deck dfsolv */
      &                  DOLEV,WORK,LWORK)
 C*****************************************************************************
 C
-C     Solve Dirac-Fock eigenvalue equation
+C     Solve the (Dirac)-Hartree-Fock eigenvalue equation
 C
 C     On input:
 C    ===========
@@ -802,7 +804,8 @@ C     Callef from: PREDHF
 C                  SCFCY1
 C
 C     Written by T.Saue Mar 09 1995
-C     Last revision: Mar 09 1995
+C
+C     Last revisions: Mar 09 1995
 C                    Nov. 2005 - MI
 C
 C*****************************************************************************
@@ -1048,6 +1051,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfscf */
       SUBROUTINE DHFSCF(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
 C*****************************************************************************
+C
+C
+C    Solve Hartree-Fock.
+C
+C
+C   Called from PSIDHF
 C
 C*****************************************************************************
 #ifdef MOD_EMB

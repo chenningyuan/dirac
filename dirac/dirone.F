@@ -130,13 +130,16 @@ C
 C     Driver for the generation of one-electron integrals
 C     to be placed on the file AOPROPER.
 C
+C     On input:  WORD     ... 
+C                COMB     ... integral characteritics
+C                IORDER   ...
+C
 C     Called from ONEGEN.
 C
 C     Written by Trond Saue - May 1996
+C     Last revisions:  May 19 1996
+C         MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
-C     Last revision May 19 1996
-C
-C  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -184,6 +187,7 @@ C
          TRIANG = .TRUE.
          MTFORM = 'TRIANG'
       END IF
+
 C     ... calling of ../abacus/her1pro.F
       CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
@@ -279,6 +283,8 @@ C  /* Deck nucatt */
 C*****************************************************************************
 C
 C     Generate nuclear attraction integrals
+C
+C     Called from: ONEGEN
 C
 C     Written by T.Saue May 1995
 C     Last revision May 19 1996 - tsaue
@@ -720,7 +726,7 @@ C
 C     Generates  lower triangular/square  matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
 C
-C     On input:  LU1INT  - 
+C     On input:  LU1INT  - lu of integral file
 C                IOP - index of the property
 C                IDIMENS - dimension of array (either triangular or square)
 C                FIRST - array, must be set to true
@@ -898,7 +904,7 @@ C
           CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
           IF(IPRINT.GE.8) THEN
             WRITE(LUPRI,'(/A,D13.6)')
-     &    '* Scaled integrals with factor=',PFAC
+     &    '* scaled integrals with the factor=',PFAC
            IF (SQUARE) THEN
             CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
      &              NTBAS(0),NTBAS(0),1,LUPRI)

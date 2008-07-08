@@ -39,6 +39,7 @@ usage()
    echo '     -aoresponse      : Include AO response module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code'
+   echo '     -qdots           : Include Quantum Dots functionality (artificial atom)'
    echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
    echo '     -amfi            : Include the AMFI functionality into DIRAC'
    echo '     -london          : Include London orbitals functionality for magnetic properties'
@@ -259,7 +260,7 @@ setup()
       echo " - AO response module"
    fi
    #
-   #         CAP module
+   #      CAP module
    #
    if [ -n "$CAPMOD" ]; then
          CAPFLG='-DMOD_CAP'
@@ -307,10 +308,18 @@ setup()
          HSCCTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - HSMRCC interface module"
-  # else
-      #  echo "HSMRCC interface module is not included "
-      #  echo 
-    fi
+   fi
+   #
+   #  Dirac Quantum Dots modification
+   #
+   if [ -n "$QDOTSMOD" ]; then
+         QDOTSFLG='-DMOD_QDOTS'
+        # QDOTSOBJ='$(QDOTSBJS)'
+        # QDOTSMAK=QDOTS_OBJ
+        # QDOTSTAR=1
+	 F90MODS=ALL_F90MODS
+         echo " - Quantum Dots (artificial atom) enabled"
+   fi
    #
    # Object oriented fortran90/95 mocularity module
    #
@@ -583,7 +592,7 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    AUXOBJ="$ESROBJ $DFTOBJ $DNFOBJ $FMMOBJ $EMBOBJ $ADCOBJ $ECPOBJ $CDFTOBJ $VISUALOBJ $AORESPONSEOBJ $CAPOBJ $HSCCOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ $OOF_OBJ $XMLOBJ"
-   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK $XMLOBJ"
+   AUXMAK="$ESRMAK $DFTMAK $DNFMAK $FMMOBJ $EMBMAK $ADCMAK $ECPMAK $CDFTMAK $VISUALMAK $AORESPONSEMAK $CAPMAK $HSCCMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK $OOF_MAK $XMLMAK"
    #
    # Write current Makefile
    #
@@ -1016,7 +1025,7 @@ EOF
 fi
 
 #
-# Stand-alone DIRRCI
+#   Stand-alone DIRRCI program
 #
 cat <<EOF>> Makefile
 
@@ -1058,7 +1067,7 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
 ta    : GP_OBJ PD_OBJ UTIL_OBJ 
-      # ...  testing program for the new  DIRAC memory allocator
+      # ... own tag for the testing program for the new DIRAC memory allocator
 	\$(F90)  \$(OPTFLAGS)  \$(LDFLAGS) -o \$(INSTALLDIR)/test_alloc.x \\
 	utils/test_allocator.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
@@ -1147,7 +1156,7 @@ cat <<EOF>> Makefile
 	cd pdpack   ; \$(MAKE) clean
 	\$(RM) -f *~
 EOF
-#########################################################
+#################################################################
 #
 #      Take care of Fortran90/95 modules
 #  ===========================================
@@ -1156,9 +1165,13 @@ EOF
 #       based on which module files are to be genereated first.
 #
 #      For instance, CAP & HSMRCC functionalities depend 
-#      upon OOF modules.
+#      on OOF modules.
 #
-#########################################################
+# MI/July08: there is no need to do compilation first through the
+#       'make mod' since we have the advanced 'utils/create_depend.py' 
+#        dependencies generator.
+#
+#################################################################
 echo " " >> Makefile
 if [ -n "$MODULES" ]; then
   echo '#--------------------------- # ' >> Makefile
@@ -1432,7 +1445,7 @@ which_modules()
 {
 #  
 #
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
 do
   if [ -n "$MODS" ]; then 
     MODS="$MODS\$(SEP)$mod"
@@ -1595,6 +1608,11 @@ while [ -n "$1" ]; do
          ;;
       -hscc)
          HSCCMOD=1
+         OOFMOD=1
+	 MODULES=1
+         ;;
+      -qdots)
+         QDOTSMOD=1
          OOFMOD=1
 	 MODULES=1
          ;;
