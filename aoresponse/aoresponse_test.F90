@@ -74,7 +74,7 @@ contains
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3)
     type(matrix)                :: F_i(3)
-    real(kind_dp)               :: e_ij(3, 3)
+    real(kind_dp)               :: e_ij(3, 3), avg
     integer                     :: i, j
 
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(2:2))
@@ -95,6 +95,15 @@ contains
         end if
       end do
     end do
+
+    avg = 0.0d0
+    do i = 1, 3
+      avg = avg - e_ij(i, i)/3.0d0
+    end do
+
+    print '("@ averaged alpha (w = "2f7.3"):" f26.10)', w(1), &
+                                                        w(2), &
+                                                        avg
 
   end subroutine
 
@@ -168,7 +177,7 @@ contains
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
 
-!   this is the DFT contribution E^3(D_i, D_j) D_k 
+!   this is the DFT contribution E^3(D_i, D_j) D_k
 !   zeros filled in for 2nd and 3rd order D
     e_ijk = 0.0d0
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
@@ -177,7 +186,7 @@ contains
     do k = 1, 3
       X_k(k) = D_k(k)*S*D - D*S*D_k(k)
     end do
-       
+
     do i = 1, 3
       do j = 1, 3
 
@@ -186,7 +195,7 @@ contains
         do k = 1, 3
           e_ijk(i, j, k) = e_ijk(i, j, k) - trab(X_k(k), A)
         end do
-       
+
         A = 0
 
       end do
@@ -205,7 +214,7 @@ contains
         do k = 1, 3
           e_ijk(i, j, k) = e_ijk(i, j, k) - trab(L_k(k), A)
         end do
-       
+
         A = 0
 
       end do
@@ -229,8 +238,10 @@ contains
 
   end subroutine
 
-  subroutine beta_element(ui, uj, uk, S, D, F, w)
+  subroutine beta_element(scale_by, add_to, ui, uj, uk, S, D, F, w)
 
+    real(kind_dp), intent(in)    :: scale_by
+    real(kind_dp), intent(inout) :: add_to
     integer,       intent(in)    :: ui, uj, uk
     type(matrix),  intent(inout) :: S, D, F
     real(kind_dp), intent(in)    :: w(3)
@@ -248,10 +259,8 @@ contains
 
     do i = 1, 3
 
-      D_i(i) = 1.0d-100*D
-      D_j(i) = 1.0d-100*D
-      F_i(i) = 1.0d-100*D
-      F_j(i) = 1.0d-100*D
+      D_i(i) = 1.0d-100*D; D_j(i) = 1.0d-100*D
+      F_i(i) = 1.0d-100*D; F_j(i) = 1.0d-100*D
 
       do j = 1, 3
 
@@ -261,25 +270,50 @@ contains
       end do
     end do
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i(ui), F_i(ui), w=w(1:1), c=(/ui/))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j(uj), F_j(uj), w=w(2:2), c=(/uj/))
+    call pertdensfock((/'EL'/),   &
+                        S,        &
+                      (/D/),      &
+                      (/F/),      &
+                        D_i(ui),  &
+                        F_i(ui),  &
+                        w=w(1:1), &
+                        c=(/ui/))
 
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i(ui), D_j(uj)/), &
-                                         (/F, F_i(ui), F_j(uj)/), &
-                                           D_ij(ui, uj),          &
-                                           F_ij(ui, uj),          &
-                                           w=(/w(1), w(2)/),      &
-                                           c=(/ui, uj/))
+    call pertdensfock((/'EL'/),   &
+                        S,        &
+                      (/D/),      &
+                      (/F/),      &
+                        D_j(uj),  &
+                        F_j(uj),  &
+                        w=w(2:2), &
+                        c=(/uj/))
 
-    e_ijk  = 0.0d0
-    call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk,  b=(/3, 3/))
+    call pertdensfock((/'EL', 'EL'/),     &
+                        S,                &
+                      (/D,                &
+                        D_i(ui),          &
+                        D_j(uj)/),        &
+                      (/F,                &
+                        F_i(ui),          &
+                        F_j(uj)/),        &
+                        D_ij(ui, uj),     &
+                        F_ij(ui, uj),     &
+                        w=(/w(1), w(2)/), &
+                        c=(/ui, uj/))
+
+    e_ijk = 0.0d0
+    call propenergy((/'EL'/), &
+                    (/D,      &
+                      D_i,    &
+                      D_j,    &
+                      D_ij/), &
+                      e_ijk,  &
+                      b=(/3, 3/))
 
     do i = 1, 3
 
-      D_i(i) = 0
-      D_j(i) = 0
-      F_i(i) = 0
-      F_j(i) = 0
+      D_i(i) = 0; D_j(i) = 0
+      F_i(i) = 0; F_j(i) = 0
 
       do j = 1, 3
 
@@ -289,13 +323,14 @@ contains
         do k = 1, 3
 
           if (abs(e_ijk(i, j, k)) > small) then
-            print '("@ beta  (w = "3f8.4")" a10 a2 a2    f26.10)', w(1),  &
-                                                                   w(2),  &
-                                                                   w(3),  &
-                                                                   fc(i), &
-                                                                   fc(j), &
-                                                                   fc(k), &
-                                                                  -e_ijk(i, j, k)
+            print '("@ beta (w = "3f8.4")" a10 a2 a2 f26.10)', w(1),  &
+                                                               w(2),  &
+                                                               w(3),  &
+                                                               fc(i), &
+                                                               fc(j), &
+                                                               fc(k), &
+                                                              -e_ijk(i, j, k)
+            add_to = add_to - scale_by*e_ijk(i, j, k)
           end if
         end do
       end do

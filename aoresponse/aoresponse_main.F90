@@ -69,12 +69,6 @@ contains
 
     if (aoresponse_gamma) then
       call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(1, 2, 1, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(1, 1, 2, 2, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(3, 1, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-!     call gamma_element(3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
     end if
 
     if (aoresponse_dc_kerr) then
@@ -173,6 +167,23 @@ contains
                                                                freq(3), &
                                                                freq(4), &
                                                                add_to
+
+    end if
+
+    if (aoresponse_beta_static) then
+
+      add_to = 0.0d0
+      freq   = 0.0d0
+
+      call beta_element(2.0d0, add_to, 1, 1, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+      call beta_element(1.0d0, add_to, 3, 3, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+      add_to = 3.0d0*add_to/5.0d0
+
+      print '("@ averaged static beta (w = "3f7.3"):" f26.10)', freq(1), &
+                                                                freq(2), &
+                                                                freq(3), &
+                                                                add_to
 
     end if
 

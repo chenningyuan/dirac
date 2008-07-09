@@ -154,7 +154,7 @@
 !                   9        10        11        12
      &            '.DC-SHG','.THG   ','.IDRI  ','.DC-KER',
 !                  13        14        15        16
-     &            '.FREQ_P','.GAMMA0','.xxxxxx','.xxxxxx',
+     &            '.FREQ_P','.0GAMMA','.0BETA ','.xxxxxx',
 !                  17        18        19        20
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  21        22        23        24
@@ -200,6 +200,7 @@
 
       aoresponse_alpha              = .false.
       aoresponse_beta               = .false.
+      aoresponse_beta_static        = .false.
       aoresponse_beta_2np1          = .false.
       aoresponse_gamma              = .false.
 
@@ -308,6 +309,9 @@
           go to 100
 
    15     continue
+          aoresponse_beta_static = .true.
+          go to 100
+
    16     continue
    17     continue
    18     continue
