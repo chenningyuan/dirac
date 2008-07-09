@@ -321,8 +321,10 @@ CSK          CALL WRTMATMN(DIAG,1,IDET,1,IDET,LUWRT)
           IDIA_OFFSET = IDIA_OFFSET + IDET
 CSK          END IF
 #endif
-          CALL ITODS(IDET,1,-1,LUDIA)
-          CALL TODSC(DIAG,IDET,-1,LUDIA)
+          IF( .NOT. NO_CDIAF )THEN
+            CALL ITODS(IDET,1,-1,LUDIA)
+            CALL TODSC(DIAG,IDET,-1,LUDIA)
+          END IF
           IDET = 0
         END IF
 2425    CONTINUE

@@ -631,7 +631,7 @@ C     obtain 2e integrals needed for diagonal
 C
 C     write out to disk
 C
-#if defined(VAR_MPI2)
+#if defined (VAR_MPI2)
 C
       IOFFSET     = 0
       IWRITE_BYTE = 0 
@@ -643,6 +643,9 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
+csk   WRITE(LUWRT,*)' writing WORK(KLH1DA): offset + bytes',
+csk  &                IOFFSET, IWRITE_BYTE
+csk   CALL WRTMAT(WORK(KLH1DA),1,NTOOB,1,NTOOB)
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DA),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
@@ -654,6 +657,9 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
+csk   WRITE(LUWRT,*)' writing WORK(KLH1DB): offset + bytes',
+csk  &                IOFFSET, IWRITE_BYTE
+csk   CALL WRTMAT(WORK(KLH1DB),1,NTOOB,1,NTOOB)
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLH1DB),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
@@ -665,6 +671,9 @@ C
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
+csk   WRITE(LUWRT,*)' writing WORK(KLJ): offset + bytes',
+csk  &                IOFFSET, IWRITE_BYTE
+csk   CALL WRTMAT(WORK(KLJ),1,NTOOB**2,1,NTOOB**2)
       CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,WORK(KLJ),
      &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
@@ -820,22 +829,26 @@ C***********************************************************************
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL, IOFF_ADD
 #if defined (INT_STAR8)
-      INTEGER(KIND=MPI_OFFSET_KIND)  IWRITE_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_BYTE
 #else
       INTEGER IWRITE_BYTE
 #endif
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_IJKL
 #endif
 #include "mxpdim.inc"
 #include "parluci.h"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 #include "typesz_mpi2.h"
-      DIMENSION T_BUFF(*), T(NALLINT), MDIASV(*)
+      DIMENSION T_BUFF(*), T(*), MDIASV(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_OUT
 C
       NINT_TOT = N1ELINT + N2ELINT
+      IWRITE_ELM4 = 0
+      IOFF_ADD    = 0
       IS_BYTE8    = 0
       IWRITE_BYTE = 0
       I_START     = 0
@@ -872,29 +885,74 @@ C
 C
 C       T in SIGDEN ordered format
 C
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IS_BYTE8    = ISIZE_dp
-#if defined (INT_STAR8)
-        IWRITE_BYTE = NALLINT * IS_BYTE8
-#else
-        XLENALL = REAL(NALLINT)
-        NALLINT_I4 = IGIVE_I_B(XLENALL)
-        IWRITE_BYTE = NALLINT_I4 * ISIZE_dp
-#endif
 csk     WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
-csk     WRITE(LUWRT,*) ' # elements in bytes = ',IWRITE_BYTE
-csk     CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
-        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk     WRITE(LUWRT,*) ' write-out at ',IOFFSET
-csk     WRITE(LUWRT,*) ' write-out to ',IIJKL_ROD
+csk     WRITE(LUWRT,*) ' # elements in bytes/records = ',
+csk  &                   IWRITE_BYTE, NALLINT
+csk     WRITE(LUWRT,*) ' writing T 100 elements starting at 1 000 000'
+csk     IOFF_T_WRITE = 100 000 0
+csk     CALL WRTMATMN8(T(IOFF_T_WRITE),1,100,1,100,LUWRT)
+C       CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
+C
+C       new offset - starting point for T
+C
+        IOFFSET     = IOFFSET + IWRITE_BYTE
+C
+C       check for total number of elements - do not write more than 
+C       1.0*10⁸ elements at each cycle
+C
+        IWRITE_MAX  = 100 000 000
+        ILOOP_WRITE = 1
+        IMOD_WRITE  = 0
+        IT_TOFFW    = 1
+        IS_BYTE8    = ISIZE_dp
+        IWRITE_ELM  = NALLINT
+C       more integrals than max per cycle
+        IF( NALLINT .gt. IWRITE_MAX )THEN
+          ILOOP_WRITE = NALLINT / IWRITE_MAX
+          IMOD_WRITE  = MOD( NALLINT, IWRITE_MAX )
+          IWRITE_ELM  = IWRITE_MAX
+        END IF
+#if defined (INT_STAR8)
+        IWRITE_BYTE = IWRITE_ELM * IS_BYTE8
+#else
+        XLENALL = REAL(IWRITE_ELM)
+        IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+        IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
+#endif
+C       bytes to add in each cycle
+        IOFF_ADD      = IWRITE_ELM * IS_BYTE8
+C
+        DO IJ = 1, ILOOP_WRITE
+           CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C          new offsets
+           IT_TOFFW    = IT_TOFFW + IWRITE_ELM
+           IOFFSET     = IOFFSET  + IOFF_ADD
+        ENDDO
+C
+C       ... remaining elements
+C
+        IF( IMOD_WRITE .gt. 0) THEN
+C          bytes to add in remaining step
+           IOFF_ADD      = IMOD_WRITE * IS_BYTE8
+#if defined (INT_STAR8)
+           IWRITE_BYTE   = IMOD_WRITE * IS_BYTE8
+#else
+           XLENALL = REAL(IMOD_WRITE)
+           IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+           IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
+#endif
+           CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+           IOFFSET     = IOFFSET  + IOFF_ADD
+        END IF
 C
 C       T diagonal in GASDIAT_REL ordered format
 C
         IOFF_T_IJKL = 0
-        IOFF_T_IJKL = IOFFSET + IWRITE_BYTE
-csk        WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
-csk     &                   IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
+        IOFF_T_IJKL = IOFFSET
+csk     WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
+csk  &                   IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
 C
         CALL WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
      &                    INTSPACE,IPRNT,IOFF_T_IJKL)
@@ -912,8 +970,6 @@ C
 C       write all information that is needed
 C
         WRITE(IIJKL_ROD) NALLINT,NDIAINT,N1DIAINT,N2DIAINT
-csk      CALL IWRTMAMN8(IPOSDIA,1,NDIAMINT,1,NDIAMINT,LUWRT)
-csk      CALL IWRTMAMN(MDIASV,1,4*NDIAMINT,1,4*NDIAMINT,LUWRT)
         WRITE(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
         WRITE(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
 C       ... integrals
@@ -1015,7 +1071,7 @@ C       T in SIGDEN ordered format
 C
         IOFFSET     = IOFFSET + IREAD_BYTE
         IOFFSET_T   = IOFFSET
-csk        WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
+C       WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
 C
 C       read-in integrals to T_BUFF according to type list IT_TTPL
 C
@@ -1026,7 +1082,8 @@ csk     CALL IWRTMAMN(IT_TTPL,1,IDIM_TYP,1,IDIM_TYP,LUWRT)
      &                       IOFFSET_T)
 csk     WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
 csk  &                                            MY_T_LEN
-csk     CALL WRTMATMN(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+csk     WRITE(LUWRT,*) ' printing first 100 elements'
+csk     CALL WRTMATMN(T_BUFF,1,100,1,100,LUWRT)
 C
 C       T diagonal in GASDIAT_REL ordered format
 C
@@ -1039,14 +1096,15 @@ C
         MY_T_LEN_D_I4 = IGIVE_I_B(XLENTD)
         IREAD_BYTE    = MY_T_LEN_D_I4 * ISIZE_dp
 #endif
-csk        WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
-csk        WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
+csk     WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
+csk     WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
         CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
      &                        IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
 C
 csk     WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
 csk  &                                            MY_T_LEN_D
-csk     CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
+csk     WRITE(LUWRT,*) ' printing first 100 elements'
+csk     CALL WRTMATMN8(T_BUFF_D,1,100,1,100,LUWRT)
 C
         CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
 C

@@ -1874,7 +1874,8 @@ C    &             ' at ',ICOUNT_I8
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):
-                            write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
+                            IF(.NOT. NO_INDIF )
+     &                         write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
