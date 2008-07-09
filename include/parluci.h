@@ -80,11 +80,11 @@ C
      &                  xcomputesi
 !     logical block
       LOGICAL CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA, 
-     &        SPLIT_IJKL
+     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF
 !
       COMMON/LUCI_LOG/
      &        CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA,
-     &        SPLIT_IJKL
+     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF
 !     character block
       CHARACTER*9 NIIJKL_ROD
       COMMON/LUCI_CHAR/ NIIJKL_ROD
