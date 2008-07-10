@@ -45,7 +45,13 @@ quick=0
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
+
+# default - no IMB mode
 IBMMOD=0
+
+# default print level
+IPRINT=0
+
 #
 # Does 'echo' understand escapes?
 #
@@ -81,6 +87,7 @@ usage ()  {
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
+   echo '   --i=PRINT-LEVEL              : Set the print level for the script to PRINT-LEVEL (default 0)'
 }
 
 guess_system ()  {
@@ -113,6 +120,10 @@ if [ -z "${guess}" ]; then
 fi
 
 guess=`./config.sub $guess 2>/dev/null` 
+
+if [ $IPRINT -ge "5" ];  then 
+ echo 'guess_system found guess=' $guess
+fi
 
 $echo "Configuring $guess..."
 flavor=$guess
@@ -162,7 +173,13 @@ elif [ "$machine" = "mips-sgi" ]; then
 fi
 echo
 
+if [ $IPRINT -ge "5" ];  then 
+  echo 'guess_system: variable dir_list=' $dir_list
+fi
+
 }
+
+
 parallel_stuff ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -428,6 +445,18 @@ user_comp=$F90_COMP
 find_compiler
 F90_COMP=$comp_found
 
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_fortran: found F90 compiler ' $F90_COMP
+fi
+
+# take care of the 64 bit architecture !
+F90real=$F90_COMP # set_bit_arch() needs this variavle
+set_bit_arch
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_fortran: after calling set_bit_arch we have opt='$opt
+fi
+
 }
 
 compiler_c(){
@@ -447,6 +476,10 @@ fi
 user_comp=$CC_COMP
 find_compiler
 CC_COMP=$comp_found
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_c: got CC_COMP='$comp_found
+fi
 
 }
 
@@ -913,6 +946,7 @@ fi
 $echo 'Default memory size :' `expr $memsiz / 1000000` 'million 8byte words'
 echo
 }
+
 set_installdir ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -958,10 +992,11 @@ fi
 $echo 'Install directory for executable and script: '$INSTALL_DIR
 echo
 }
+
 set_scratchdir ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# SET SCRATCHDIR
+#    SET SCRATCHDIR
 # Determine default scratch disk space for calculations
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1047,11 +1082,9 @@ get_cpp_flags(){
     cpp_f90="$cpp_f90 -DVAR_MKL"
   fi
 
-
   set_bit_arch
 
 }
-
 
 
 set_bit_arch(){
@@ -1059,21 +1092,29 @@ set_bit_arch(){
   if [ "$bit_set" = "64" ]; then
     cpp_f90="-DINT_STAR8 $cpp_f90"
     cpp_cc="-DINT_STAR8 $cpp_cc"
+# provide specific compiler with the appropriate integer flag
     case "$F90real" in
       g95|pgf90|ifc|ifort|pathf90)
-         opt="$opt -i8" ;;
-      gfortran-*)
-         opt="$opt -fdefault-integer-8" ;;
+         opt="$opt -i8" 
+         safe="$safe -i8" ;;
+#   ... take care of gfortran, gfortran-4.2, gfortran-4.3 etc...
+      gfortran-*|gfortran)
+         opt="$opt -fdefault-integer-8"
+         safe="$safe -fdefault-integer-8" ;;
     esac
   fi
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'set_bit_arch: set opt='$opt
+fi
+
 }
-
-
 
 get_f90_flags(){
   case "$F90real" in
     g95)
-      opt="-O3 -ffast-math -Wno=155"
+      opt="-g -O3 -ffast-math -Wno=155"
+      safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       ;;
     gfortran*)
@@ -1085,63 +1126,83 @@ get_f90_flags(){
       x86_64) march="-march=x86-64";;
       *) march="";;
       esac
-      c_opt="-O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
-      opt="-O3 -ffast-math -funroll-loops -ftree-vectorize $march"
+      c_opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
+      opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize $march"
+      safe="-g $march"
       mod="-J$MODULE_DIR"
       ;;
     pgf90)
-      opt="-fastsse"
+      opt="-g -fastsse"
+      safe="-g"
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR" 
       ;;
     ifort)
-      opt="-O3 -ip -w -assume byterecl"
+      opt="-g -O3 -ip -w -assume byterecl"
+      safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       ;;
 
     xlf)
       mod="-qmoddir=$MODULE_DIR"
+     # .... extra flags for *.F90 files ! 
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       ;;
     pathf90)
-       ldflag="-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
        cpp_cc="$cpp_cc -DVAR_EKO"
        mod="-module $MODULE_DIR"
        ;;
   esac
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'get_f90_flags: got opt='$opt
+fi
 
 }
 
 get_cc_flags(){
   case "$CCreal" in
   gcc|cc)
-    c_opt="-O3 -ffast-math"
+    c_opt="-g -O3 -ffast-math"
+    c_safe="-g"
     ;;
   mpicc)
-    c_opt="-O3 -ffast-math"
+    c_opt="-g -O3 -ffast-math"
+    c_safe="-g"
     echo
     echo WARNING:
     echo   Could not determine which compiler mpicc is using, assuming it is gcc
     echo 
     ;;
   pgcc)
-    c_opt="-fastsse"
+    c_opt="-g -fastsse"
+    c_safe="-g"
     ;; 
   icc)
-    c_opt="-O3 -ip -w"
+    c_opt="-g -O3 -ip -w"
+    c_safe="-g -w"
     ;;
   pathcc)
     c_opt=$opt 
+    c_safe=$safe 
     ;;
   esac
 
 # jhs some strange fortran dependent options:
   case "$F90real" in
   xlf)
-    c_opt='-O2 -qcpluscmt'
+    c_opt='-g -O2 -qcpluscmt'
+    c_safe='-g -qcpluscmt'
     ;;
   esac
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'get_cc_flags: got c_opt='$c_opt
+ echo 'get_cc_flags: got c_safe='$c_safe
+fi
+
 }
 
 get_largefiles(){
@@ -1181,8 +1242,10 @@ case $machine in
        sys_name="HPUX"
        get_cpp_flags
        arflag='rv'
-       c_opt='+DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
-       opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+       c_opt='-g +DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
+       c_safe='+DA2.0W -g -AC99'
+       opt='-g +DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+       safe='+DA2.0W  +U77 -g'
        LIB="-llapack +U77 +DA2.0W -lm $LIB"
        if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp_f90="$cpp_f90 -DVAR_LIBVECLIB"
@@ -1198,7 +1261,8 @@ case $machine in
        if [ ! -z "echo $LIB | grep 'dxml'" ]; then
           cpp_f90="$cpp_f90 -DVAR_DXML"
        fi
-       opt='-fast'
+       opt='-g -fast'
+       safe='-g'
        ;;
 #
 #   CRAY
@@ -1207,8 +1271,10 @@ case $machine in
        sys_name="CRAY"
        get_cpp_flags
 
-       opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
-       c_opt="-i 64 -a stack -dp"
+       opt="-g -Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
+       safe="-Wf\"-i 64 -a stack -Wp\"-F\"-g\""
+       c_opt="-g -i 64 -a stack -dp"
+       c_safe="-i 64 -a stack -g"
        LIB="C90lib.cld $LIB"
        ;;
 #
@@ -1218,8 +1284,10 @@ case $machine in
       sys_name="SUN"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS" 
-      opt='-fast # updated 28.Aug.04'
-      c_opt='-fast # updated 28.Aug.04'
+      opt='-g -fast # updated 28.Aug.04'
+      safe='-g'
+      c_opt='-g -fast # updated 28.Aug.04'
+      c_safe='-g'
       ;;
 #
 #   IBM
@@ -1253,14 +1321,18 @@ case $machine in
 
       case $os in
          gnu* )
-            opt='-O3 -qstrict -qextname -q64'
-   	    c_opt='-O3 -qstrict -q64'
+            opt='-g -O3 -qstrict -qextname -q64'
+            safe='-g -qextname -q64'
+   	    c_opt='-g -O3 -qstrict -q64'
+   	    c_safe='-g -q64'
             ldflag='-q64 '
             arflag='rv'
             ;;
          *)
-            opt='-O3 -qstrict -qextname -q64'
-   	    c_opt='-O3 -qstrict -qcpluscmt -q64'
+            opt='-g -O3 -qstrict -qextname -q64'
+            safe='-g -qextname -q64'
+   	    c_opt='-g -O3 -qstrict -qcpluscmt -q64'
+   	    c_safe='-g -qcpluscmt -q64'
             ldflag='-q64 -bmaxdata:0x8000000000'
             arflag='-X64 rv'
             ;;
@@ -1275,8 +1347,10 @@ case $machine in
    mips*-sgi)
       sys_name="IRIX"
       get_cpp_flags
-      opt='-O2 -G 0 -woff 2290'
-      c_opt='-O2 -G 0'
+      opt='-g -O2 -G 0 -woff 2290'
+      safe='-g -G 0 -woff 2290'
+      c_opt='-g -O2 -G 0'
+      c_safe='-g -G 0'
       ;;
 #
 #   Linux on 32 bit machines
@@ -1293,7 +1367,8 @@ case $machine in
 #
       case "$F90real" in
       g95)
-         opt="$opt -fno-second-underscore" ;;
+         opt="$opt -fno-second-underscore"
+         safe="$safe -fno-second-underscore" ;;
       ifort)
          ldflag="-nofor_main" ;;
       esac
@@ -1369,11 +1444,16 @@ case $machine in
       get_cc_flags
 
 esac
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'set_compile_flags...'
+fi
+
+
 }
 
 make_makefile_configure ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
 #
 # We are beginning to see the end of the installation requirements
 # We will now dump machine specific things to Makefile.config
@@ -1473,9 +1553,11 @@ fi
 #fi
 if [ "$c_opt" = "" ]; then
    c_opt="\$(OPTFLAGS)"
+   c_safe="\$(SAFEFLAGS)"
 fi
 if [ "$ldflag" = "" ]; then
    ldflag="\$(OPTFLAGS)"
+# mi: linking can be with optimization 
 fi
 #
 # Add the modifications that concern the module preprocessor statements
@@ -1517,8 +1599,11 @@ config_options['ranlib_command']= "ranlib"
 config_options['archive_flags'] = "$arflag"
 config_options['linker_flags']  = "$ldflag"
 config_options['f77flags']      = "-c $opt"
+config_options['f77safeflags']      = "-c $safe"
 config_options['f90flags']      = "-c $opt $f90_extraflags"
+config_options['f90safeflags']      = "-c $safe $f90_extraflags"
 config_options['c_flags']       = "-c $c_opt"
+config_options['c_safeflags']       = "-c $c_safe"
 config_options['c_includes']    = config_options['include_flags'] 
 config_options['libs']          = "$LIB"
 config_options['prepro_flags']  = "-E -traditional-cpp -x c"
@@ -1527,7 +1612,9 @@ config_options['def']           = "$def"
 config_options['who_compiled']  = "#define WHO_COMPILED \"${LOGNAME}\""
 config_options['where_compiled']= "#define WHERE_COMPILED \"${HOST}\""
 config_options['fortran_opts']  = "#define FCOMP \""+config_options['f90comp']+" "+"$opt"+"\""
+config_options['fortran_safeopts']  = "#define FCOMP \""+config_options['f90comp']+" "+"$safe"+"\""
 config_options['c_opts']        = "#define CCOMP \""+config_options['ccomp']+" "+"$c_opt"+"\""
+config_options['c_safeopts']    = "#define CCOMP \""+config_options['ccomp']+" "+"$c_safe"+"\""
 
 compinfo_string = config_options['who_compiled']+"\n"+config_options['where_compiled']+"\n"+config_options['fortran_opts']+"\n"+config_options['c_opts']
 #print compinfo_string
@@ -1587,18 +1674,37 @@ cat <<EOF >> Makefile.config
 ARFLAGS       = $arflag
 EOF
 fi
+##########################################################################
+#
+#     put the flags into Makefile.config, where you can edit them
+#
+##########################################################################
 cat <<EOF >> Makefile.config
+# ... fortran compiler flags with the full optimization
 OPTFLAGS      = $opt $mod
-OPTGFLAGS     = -g $opt $mod 
-OPTIFLAGS     = -E
+# ... fortran compiler flags with no optimization
+SAFEFLAGS      = $safe $mod
+OPTIFLAGS      = -E
+# ... C-compiler flags with the full optimization
 C_OPTFLAGS    = $c_opt
+# ... C-compiler flags with no optimization
+C_SAFEFLAGS    = $c_safe
+# ... fortran compiler flags with the full optimization - for *.F90 files
 F90_OPTFLAGS  = $opt $mod $f90_extraflags
+# ... fortran compiler flags with no optimization - for *.F90 files
+F90_SAFEFLAGS  = $safe $mod $f90_extraflags
+# ... flags for linking 
 LDFLAGS       = $ldflag
+# ... flags for ftnchek
 CHEKFLAGS     = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
  -noargumants -arguments=number \\
  -usage=var-unitialized
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
+
+#
+# ... libraries - check them according to your server equipment !
+#
 LIB_LIST      = $LIB
 #
 default : $def
@@ -1629,30 +1735,33 @@ tab=`$echo "\t"`
 cat <<EOF>> Makefile.config
 #
 # Suffix rules
-# The first line deletes all implicit rules.
+# The first line deletes all implicit rules.a
+#
 .SUFFIXES : 
 .SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
 
 .F.o:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
 .F.g:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTGFLAGS) -c \$*.F
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(SAFEFLAGS) -c \$*.F
 .F.i:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$*.F > \$*.i
 .F90.o:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -c \$*.F90
 .F90.g:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -c \$*.F90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEOPTGFLAGS) -c \$*.F90
 .F90.i:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
 .f90.o:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -cpp -c \$*.f90
 .f90.g:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTGFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEOPTGFLAGS) -cpp -c \$*.f90
 .f90.i:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_OPTFLAGS) -c \$*.c
+.c.g:
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_SAFEFLAGS) -c \$*.c
 .c.i:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(OPTIFLAGS) \$*.c > \$*.i
 EOF
@@ -1676,11 +1785,12 @@ $tab ranlib \$@
 EOF
 esac
 }
+
 make_pam_runtest ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# Make pam and runtest shell script
-# bash is preferred - otherwise use sh
+#     Make pam and runtest shell script
+#   bash is preferred - otherwise use sh
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 $echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
@@ -1729,7 +1839,14 @@ cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
 chmod a+rx $SRC_DIR/test/runtest
 echo "ok"
 echo
+
+if [ $IPRINT -ge "5" ]; then
+  echo 'make_pam_runtest: done'
+fi
+
 }
+
+
 final_words () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -1753,6 +1870,7 @@ echo "   make depend (only necessary if you have changed any source files)"
 echo "   make"
 echo "Then Dirac should be ready to run..."
 }
+
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # MAIN SCRIPT
@@ -1769,7 +1887,7 @@ echo '   Type --help for more options'
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Parse arguments
+#                        Parse arguments
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 while [ $# != 0 ]; do
@@ -1885,6 +2003,9 @@ while [ $# != 0 ]; do
          fi
          F90="$val"
          ;;
+      "i"  )
+         IPRINT=$val
+         ;;
       *)
          echo  'Unknown option: '$opt''
          usage
@@ -1892,6 +2013,12 @@ while [ $# != 0 ]; do
          ;;
    esac
 done
+
+#echo 'IPRINT='$IPRINT
+if [ $IPRINT -gt "0" ];  then 
+  echo 'configure print level set to '$IPRINT
+#  exit -3
+fi
 
 guess_system
 parallel_stuff
@@ -1903,3 +2030,4 @@ set_scratchdir
 make_makefile_configure
 make_pam_runtest
 final_words
+

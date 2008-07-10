@@ -33,11 +33,9 @@ dirac.x:
 dirmpi.x:
 	   cd .. ; $(MAKE) dirmpi.x
 
-### mi: needs  to be defined in a general way !!!
-#SAFEFLAGS = -O2 -w
-#SAFEFLAGS = -O2 -w -i8
-## ... gfortran 64bit
-SAFEFLAGS = -O2 -g -fdefault-integer-8
+### 
+###    ...   SAFEFLAGS are defined in Makefile.config  ...
+### 
 amfi.o:
 	$(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(SAFEFLAGS) -c $*.F 
 
