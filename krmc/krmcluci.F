@@ -496,6 +496,27 @@ C
         SPLIT_IJKL = .TRUE.
       END IF
 C
+C 106: do not write file INDICES.x
+C
+      NO_INDIF = .TRUE.
+      IS_INDIF = 0
+      CALL LUCI_TRAVA(CIRUN,'INDFIL',IS_INDIF,DUMMY,I_COMM_W_ND)
+C
+      IF( IS_INDIF .gt. 0 ) THEN
+        NO_INDIF = .FALSE.
+      END IF
+C
+C 107: do not write file CIDIA_REL.x
+C
+      NO_CDIAF = .TRUE.
+      IS_CDIAF = 0
+      CALL LUCI_TRAVA(CIRUN,'DIAFIL',IS_CDIAF,DUMMY,I_COMM_W_ND)
+C
+C
+      IF( IS_CDIAF .gt. 0 ) THEN
+        NO_CDIAF = .FALSE.
+      END IF
+C
 C     That's it, dude !!
 C
 C     ... except we are running a parallel calculation
@@ -1599,6 +1620,43 @@ C
         ELSE
           IVAR(1) = - 1
         END IF
+        GOTO 100
+      END IF
+C
+C     do not write file INDICES.x
+C
+      IF (CTLSTR .EQ. 'INDFIL') THEN
+C
+        IF( MYPROC .eq. MASTER )THEN
+           IVAR(1) = - 1
+           IF( NATOLCR ) IVAR(1) = 1
+           IF( MOPT_MXMACRO .ge. 0 ) IVAR(1) = 1
+        END IF
+C
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(IVAR(1),1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+#endif
+        GOTO 100
+      END IF
+C
+C     do not write file CIDIA_REL.x
+C
+      IF (CTLSTR .EQ. 'DIAFIL') THEN
+C
+        IVAR(1) = - 1
+        IF( MYPROC .eq. MASTER )THEN
+          IF( MOPT_MXMACRO .ge. 0 ) IVAR(1) = 1
+        END IF
+#if defined (VAR_MPI)
+        IF( I_COMM_W_ND .eq. 1 )
+     &    CALL MPI_BCAST(IVAR(1),1,my_MPI_INTEGER,MASTER,
+     &                   MPI_COMM_WORLD,IERR)
+C       ... sequential run
+#else
+        IVAR(1) = 1
+#endif
         GOTO 100
       END IF
 C    
