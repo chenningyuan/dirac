@@ -1719,7 +1719,7 @@ C
 C     Print
 C
       IF (IPRXQR.GE.10) THEN
-         IF (FREQ.LT.D0) WRITE(LUPRI,'(/A,A12,I5,2(/A)))') 
+         IF (FREQ.LT.D0) WRITE(LUPRI,'(/A,A12,I5,2(/A))') 
      &     ' HYPINIT: Note that response vector (label/time-symmetry):',
      &     LAB,ITIM,
      &     ' has negative frequency, so solution vector is swapped and',
