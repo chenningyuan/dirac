@@ -81,7 +81,8 @@ usage ()  {
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90'
    echo '   --cc=CC                      : Set C compiler to CC'
-   echo '   --parallel[=(yes|no)]        : Parallel version of Dirac'
+   echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
+   echo '   --safeflags(safe)[=(yes|no)] : Use only safe flags (no optimization) for the compilation of Dirac'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
    echo '   --math_lib=MATH-LIB          : Choose the mathematical library MATH-LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
@@ -368,6 +369,38 @@ echo
 
 }
 
+safeflags_stuff() {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#        Take care of safe flags (ie no optimization)
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo  'SAFE FLAGS (no optimization/quick compilation)'
+echo
+# ...
+if [ -z "${safe_inp}" ]; then
+  if [ $quick = 0 ]; then
+    $echo 'Do you want to compile the program'\
+    ' with safe flags only (ie no optimization) ? (y/N) \c'
+    read safe_inp
+  else
+    safe_inp=no
+  fi
+  case "$safe_inp" in
+  "yes" | "y" | "Y" )
+    safe_inp="yes" ;;
+  "no" | "n" | "" )
+    safe_inp="no" ;;
+  *)
+   safeflags_stuff ;;
+  esac
+fi
+
+echo 'Safe flags for fortran/C compilers :'${safe_inp}''
+
+}
+
 mpi2check () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -410,6 +443,12 @@ if [ "$mesp" = "mpi" ]; then
     esac
   fi
 fi
+
+if [ $IPRINT -ge "7" ];  then 
+ echo '... after mpi stuff' 
+fi
+
+
 }
 find_compilers () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1676,21 +1715,47 @@ EOF
 fi
 ##########################################################################
 #
-#     put the flags into Makefile.config, where you can edit them
+#  dump compiler flags into Makefile.config, where you can edit them
 #
 ##########################################################################
+
+if [ $IPRINT -ge "5" ];  then 
+ echo
+ echo 'before dumping stuff into Makefile.config...safe_inp=' $safe_inp
+fi
+
+# determine whether to flush into Makefile.config safe or optimized flags
+if [ "$safe_inp" = "yes" ]; then
+# ... employ flags with no optimization
+  use_flags=$safe
+  use_c_flags=$c_safe
+else 
+# ... employ flags with optimization
+  use_flags=$opt
+  use_c_flags=$c_opt
+fi
+
+if [ $IPRINT -ge "3" ];  then 
+ echo '       Makefile.config...use_flags:' $use_flags
+ echo 'into Makefile.config...use_c_flags:' $use_c_flags
+fi
+
+
 cat <<EOF >> Makefile.config
 # ... fortran compiler flags with the full optimization
-OPTFLAGS      = $opt $mod
+#OPTFLAGS      = $opt $mod
+OPTFLAGS      = $use_flags $mod
 # ... fortran compiler flags with no optimization
 SAFEFLAGS      = $safe $mod
 OPTIFLAGS      = -E
 # ... C-compiler flags with the full optimization
-C_OPTFLAGS    = $c_opt
+#C_OPTFLAGS    = $c_opt
+C_OPTFLAGS    = $use_c_flags
 # ... C-compiler flags with no optimization
 C_SAFEFLAGS    = $c_safe
 # ... fortran compiler flags with the full optimization - for *.F90 files
-F90_OPTFLAGS  = $opt $mod $f90_extraflags
+#F90_OPTFLAGS  = $opt $mod $f90_extraflags
+F90_OPTFLAGS  = $use_flags $mod $f90_extraflags
 # ... fortran compiler flags with no optimization - for *.F90 files
 F90_SAFEFLAGS  = $safe $mod $f90_extraflags
 # ... flags for linking 
@@ -1939,6 +2004,19 @@ while [ $# != 0 ]; do
             ;;
          esac
          ;;
+      "safeflags" | "safe")
+         case "$val" in
+         "no" | "yes" )
+            safe_inp="$val"
+            ;;
+         *)
+            echo 'Syntax error: Value "'${val}'" is not allowed to option' \
+                 '"-'${optname}'"'
+            echo 'Legal values: [yes,no]'
+            exit 1
+            ;;
+         esac
+         ;;
       "libdir" )
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
@@ -2022,6 +2100,7 @@ fi
 
 guess_system
 parallel_stuff
+safeflags_stuff
 find_compilers
 find_mathlib
 set_memsize
