@@ -1810,19 +1810,19 @@ $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
 .F.g:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(SAFEFLAGS) -c \$*.F
 .F.i:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$*.F > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$(SAFEFLAGS) \$*.F > \$*.i
 .F90.o:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -c \$*.F90
 .F90.g:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEOPTGFLAGS) -c \$*.F90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEFLAGS) -c \$*.F90
 .F90.i:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) \$*.F90 > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS)  \$(F90_SAFEFLAGS) \$*.F90 > \$*.i
 .f90.o:
 $tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -cpp -c \$*.f90
 .f90.g:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEOPTGFLAGS) -cpp -c \$*.f90
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEFLAGS) -cpp -c \$*.f90
 .f90.i:
-$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS) -cpp \$*.f90 > \$*.i
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS)  \$(F90_SAFEFLAGS) -cpp \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_OPTFLAGS) -c \$*.c
 .c.g:
