@@ -60,6 +60,8 @@ for path, dirs, files in os.walk(os.getcwd()):
            file_l.append(file_c(path + '/' + file))
         if fnmatch.fnmatch(file, '*.h'):
            inc_d[file] = path + '/' + file
+        if fnmatch.fnmatch(file, '*.inc'):
+           inc_d[file] = path + '/' + file
 
 if debug_level > 0:
    f = open('Makefile.depend_debug', 'w')
@@ -84,8 +86,14 @@ for file in file_l:
               f.write('m.group(1): ' + m.group(1) + '\n')
               f.write('inc+inc_d[inc]: ' + inc + ' ' + inc_d[inc] + '\n')
 
-#       this here should pick up *.h files that are not in the include directory
+#       this should pick up *.h files that are not under include/
         if (pwd in line) and ('.h" ' in line):
+           inc = string.split(string.split(line, '/')[-1], '"')[0]
+           file.add_include(inc)
+           file.include[inc] = inc_d[inc]
+
+#       this should pick up *.inc files
+        if (pwd in line) and ('.inc" ' in line):
            inc = string.split(string.split(line, '/')[-1], '"')[0]
            file.add_include(inc)
            file.include[inc] = inc_d[inc]
