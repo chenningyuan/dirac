@@ -64,6 +64,8 @@ for path, dirs, files in os.walk(os.getcwd()):
 if debug_level > 0:
    f = open('Makefile.depend_debug', 'w')
 
+pwd = os.getcwd()
+
 for file in file_l:
 
     (dummy, stdout, stderr) = os.popen3(cpp_prefix + file.file_name)
@@ -81,6 +83,12 @@ for file in file_l:
            if debug_level > 1:
               f.write('m.group(1): ' + m.group(1) + '\n')
               f.write('inc+inc_d[inc]: ' + inc + ' ' + inc_d[inc] + '\n')
+
+#       this here should pick up *.h files that are not in the include directory
+        if (pwd in line) and ('.h" ' in line):
+           inc = string.split(string.split(line, '/')[-1], '"')[0]
+           file.add_include(inc)
+           file.include[inc] = inc_d[inc]
 
         m = use.match(line)
         if m:
