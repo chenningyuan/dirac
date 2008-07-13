@@ -45,14 +45,14 @@ for i in range(len(sys.argv)):
 file_l = []
 inc_d  = {}
 
-for path, dir, files in os.walk(os.getcwd()):
+pwd = os.getcwd()
+
+for path, dir, files in os.walk(pwd):
     for file in files:
         if fnmatch.fnmatch(file, '*.F') or fnmatch.fnmatch(file, '*.F90'):
            file_l.append(file_c(path, file))
         if fnmatch.fnmatch(file, '*.h') or fnmatch.fnmatch(file, '*.inc'):
            inc_d[(path, file)] = path + '/' + file
-
-pwd = os.getcwd()
 
 for file in file_l:
     (dummy, stdout, stderr) = os.popen3(cpp_prefix + file.path + '/' + file.file_name)
