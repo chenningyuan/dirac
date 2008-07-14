@@ -40,6 +40,7 @@ class file_c:
 # directories that are to be excluded
 exclude_directory_l = []
 exclude_directory_l.append('hsmrcc_external')
+exclude_directory_l.append('second_quant')
 
 #-------------------------------------------------------------------------------
 
