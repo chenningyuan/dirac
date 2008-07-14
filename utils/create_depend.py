@@ -37,6 +37,12 @@ class file_c:
 
 #-------------------------------------------------------------------------------
 
+# directories that are to be excluded
+exclude_directory_l = []
+exclude_directory_l.append('hsmrcc_external')
+
+#-------------------------------------------------------------------------------
+
 cpp_prefix = 'cpp -w -traditional-cpp -Iinclude '
 for i in range(len(sys.argv)):
     if i > 0:
@@ -48,11 +54,18 @@ inc_d  = {}
 pwd = os.getcwd()
 
 for path, dir, files in os.walk(pwd):
-    for file in files:
-        if fnmatch.fnmatch(file, '*.F') or fnmatch.fnmatch(file, '*.F90'):
-           file_l.append(file_c(path, file))
-        if fnmatch.fnmatch(file, '*.h') or fnmatch.fnmatch(file, '*.inc'):
-           inc_d[(path, file)] = path + '/' + file
+
+    parse_this_path = 1
+    for exclude_directory in exclude_directory_l:
+        if exclude_directory in path:
+           parse_this_path = 0
+
+    if parse_this_path:
+       for file in files:
+           if fnmatch.fnmatch(file, '*.F') or fnmatch.fnmatch(file, '*.F90'):
+              file_l.append(file_c(path, file))
+           if fnmatch.fnmatch(file, '*.h') or fnmatch.fnmatch(file, '*.inc'):
+              inc_d[(path, file)] = path + '/' + file
 
 for file in file_l:
     (dummy, stdout, stderr) = os.popen3(cpp_prefix + file.path + '/' + file.file_name)
