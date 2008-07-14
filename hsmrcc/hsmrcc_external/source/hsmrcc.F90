@@ -3,8 +3,8 @@ subroutine HSMRCC
 !---------------------------------------------------------------------------
 !
 !
-!  This subroutine is called from main
-! program written in C after calling all SetHSMR routines.
+!   This subroutine is called from main
+!   program written in C after calling all SetHSMR routines.
 !
 !
 !---------------------------------------------------------------------------
@@ -20,12 +20,10 @@ subroutine HSMRCC
    double precision, pointer :: VINT(:)
    integer, pointer :: VIND(:)
 
-  ! call QEnter('HSMRCC')
-
    ! ... Basic Initialization of HSMR Run ...
 
    if (get_iprint() > 5 ) then
-     call HEADER('Output HSMRCC',-1)
+     call HEADER('Output from HSMRCC',-1)
    endif
 
    call InitHSMRBase
@@ -34,14 +32,15 @@ subroutine HSMRCC
 
    if (OPTION(GENINT)) then
 
-     ! ... integrals driver (modules/intgenmod.f90)
+      ! ... integrals driver (modules/intgenmod.f90)
       call DrvIntGen
 
+      ! ... update bunch of data on the file (modules/vinfmod.F90)
       call UpdateVINF
 
+      ! ... leave if no further continuation of HSCC
       if (OPTION(NOHSMR)) then
          call EndHSMR
-         call QExit('HSMRCC')
          return
       endif
 
@@ -51,7 +50,6 @@ subroutine HSMRCC
    ! ... iterations have to be performed  ...
 
    ! ... Initialize for HSMRCC Iterations ...
-
    call InitHSMRIter
 
    ! ... print-out info on the current run
@@ -106,17 +104,15 @@ subroutine HSMRCC
    enddo
 
    ! ... End of HSMRCC iterations ...
-
    call EndHSMR
 
-  ! call QExit('HSMRCC')
    return
 
 contains
 
 subroutine ExchIJ(I,J)
 !
-! Very simple subroutine - Exchange indexes
+!  Very simple subroutine - exchange indexes I,J
 !
    implicit none
    integer, intent(inout) :: I, J
@@ -127,8 +123,6 @@ subroutine ExchIJ(I,J)
    J = K
 
    return
-
 end subroutine ExchIJ
 
 end subroutine HSMRCC
-

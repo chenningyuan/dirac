@@ -232,25 +232,19 @@ subroutine SIB_V2HPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: I, J, A, B
    integer :: RecNum, BufInd
 
-   Call QEnter('SIB_V2HPP')
-
    ! For contributing to V2HPP, first index
    ! pair should be hole-hole type and second
    ! index pair should be particle-paricle type.
    !
    ! <P,Q||R,S> = <I,J||A,B>
 
-   !if ( P  > NHMO ) return
-   if ( P  > NHMO ) Goto 124
+   if ( P  > NHMO ) return
 
-   !if ( Q  > NHMO ) return
-   if ( Q  > NHMO ) Goto 124
+   if ( Q  > NHMO ) return
 
-   !if ( R <= NCMO ) return
-   if ( R <= NCMO ) Goto 124
+   if ( R <= NCMO ) return
 
-   !if ( S <= NCMO ) return
-   if ( S <= NCMO ) Goto 124
+   if ( S <= NCMO ) return
 
    I = P
    J = Q
@@ -258,11 +252,9 @@ subroutine SIB_V2HPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    B = S - NCMO
 
    RecNum = (I-1)*NHMO + J
-   !if ( RecNum < StRec ) return
-   if ( RecNum < StRec ) Goto 124
+   if ( RecNum < StRec ) return
 
-   !if ( RecNum > EnRec ) return
-   if ( RecNum > EnRec ) Goto 124
+   if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
@@ -272,9 +264,6 @@ subroutine SIB_V2HPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
 
    BufInd = (RecNum - StRec)*RecLen + MAXMIN(A,B)
    GenIntBuf(BufInd) = IntVal
-
- 124 Continue
-   Call QExit('SIB_V2HPP')
 
    return
 
@@ -290,25 +279,19 @@ subroutine SIB_V2PHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: A, B, I, J
    integer :: RecNum, BufInd
 
-   Call QEnter('SIB_V2PHH')
-
    ! For contributing to V2PHH, first index
    ! pair should be particle-particle type and second
    ! index pair should be hole-hole type.
    !
    ! <P,Q||R,S> = <A,B||I,J>
 
-   !if ( P <= NCMO ) return
-   if ( P <= NCMO ) Goto 125
+   if ( P <= NCMO ) return
 
-   !if ( Q <= NCMO ) return
-   if ( Q <= NCMO ) Goto 125
+   if ( Q <= NCMO ) return
 
-   !if ( R  > NHMO ) return
-   if ( R  > NHMO ) Goto 125
+   if ( R  > NHMO ) return
 
-   !if ( S  > NHMO ) return
-   if ( S  > NHMO ) Goto 125
+   if ( S  > NHMO ) return
 
    A = P - NCMO
    B = Q - NCMO
@@ -316,11 +299,9 @@ subroutine SIB_V2PHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    J = S
 
    RecNum = (A-1)*NPMO + B
-   !if ( RecNum < StRec ) return
-   if ( RecNum < StRec ) Goto 125
+   if ( RecNum < StRec ) return
 
-   !if ( RecNum > EnRec ) return
-   if ( RecNum > EnRec ) Goto 125
+   if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
@@ -331,8 +312,6 @@ subroutine SIB_V2PHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    BufInd = (RecNum - StRec)*RecLen + MAXMIN(I,J)
    GenIntBuf(BufInd) = IntVal
 
- 125 Continue
-   Call QExit('SIB_V2PHH')
    return
 
 end subroutine SIB_V2PHH
@@ -347,24 +326,19 @@ subroutine SIB_VHHHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: I, J, K, L
    integer :: RecNum, BufInd
 
-   Call QEnter('SIB_VHHHH')
 
    ! For contributing to VHHHH, all
    ! indices should be hole type.
    !
    ! <P,Q||R,S> = <I,J||K,L>
 
-   !if ( P > NHMO ) return
-   if ( P > NHMO ) Goto 126
+   if ( P > NHMO ) return
 
-   !if ( Q > NHMO ) return
-   if ( Q > NHMO ) Goto 126
+   if ( Q > NHMO ) return
 
-   !if ( R > NHMO ) return
-   if ( R > NHMO ) Goto 126
+   if ( R > NHMO ) return
 
-   !if ( S > NHMO ) return
-   if ( S > NHMO ) Goto 126
+   if ( S > NHMO ) return
 
    I = P
    J = Q
@@ -372,11 +346,9 @@ subroutine SIB_VHHHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    L = S
 
    RecNum = MAXMIN(I,J)
-   !if ( RecNum < StRec ) return
-   if ( RecNum < StRec ) Goto 126
 
-   !if ( RecNum > EnRec ) return
-   if ( RecNum > EnRec ) Goto 126
+   if ( RecNum < StRec ) return
+   if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
@@ -388,8 +360,6 @@ subroutine SIB_VHHHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    BufInd = (RecNum - StRec)*RecLen + MAXMIN(K,L)
    GenIntBuf(BufInd) = IntVal
 
- 126 Continue
-   Call QExit('SIB_VHHHH')
    
    return
 
@@ -405,7 +375,6 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: I, J, A, B
    integer :: RecNum, BufInd
 
-   Call QEnter('SIB_VHHPP')
 
    ! For contributing to VHHPP, first index
    ! pair should be hole-hole type and second
@@ -413,17 +382,13 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    !
    ! <P,Q||R,S> = <I,J||A,B>
 
-   !if ( P  > NHMO ) return
-   if ( P  > NHMO ) Goto 127
+   if ( P  > NHMO ) return
 
-   !if ( Q  > NHMO ) return
-   if ( Q  > NHMO ) Goto 127
+   if ( Q  > NHMO ) return
 
-   !if ( R <= NCMO ) return
-   if ( R <= NCMO ) Goto 127
+   if ( R <= NCMO ) return
 
-   !if ( S <= NCMO ) return
-   if ( S <= NCMO ) Goto 127
+   if ( S <= NCMO ) return
 
    I = P
    J = Q
@@ -431,11 +396,9 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    B = S - NCMO
 
    RecNum = MaxMin(I,J)
-   !if ( RecNum < StRec ) return
-   if ( RecNum < StRec ) Goto 127
+   if ( RecNum < StRec ) return
 
-   !if ( RecNum > EnRec ) return
-   if ( RecNum > EnRec ) Goto 127
+   if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
@@ -447,8 +410,6 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    BufInd = (RecNum - StRec)*RecLen + MAXMIN(A,B)
    GenIntBuf(BufInd) = IntVal
 
- 127 Continue
-   Call QExit('SIB_VHHPP')
    return
 
 end subroutine SIB_VHHPP
@@ -463,24 +424,19 @@ subroutine SIB_VPPPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: A, B, C, D
    integer :: RecNum, BufInd
 
-   Call QEnter('SIB_VPPPP')
 
    ! For contributing to VPPPP, all
    ! indices should be particle type.
    !
    ! <P,Q||R,S> = <A,B||C,D>
 
-   !if ( P <= NCMO ) return
-   if ( P <= NCMO ) Goto 128
+   if ( P <= NCMO ) return
 
-   !if ( Q <= NCMO ) return
-   if ( Q <= NCMO ) Goto 128
+   if ( Q <= NCMO ) return
 
-   !if ( R <= NCMO ) return
-   if ( R <= NCMO ) Goto 128
+   if ( R <= NCMO ) return
 
-   !if ( S <= NCMO ) return
-   if ( S <= NCMO ) Goto 128
+   if ( S <= NCMO ) return
 
    A = P - NCMO
    B = Q - NCMO
@@ -488,11 +444,9 @@ subroutine SIB_VPPPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    D = S - NCMO
 
    RecNum = MaxMin(A,B)
-   !if ( RecNum < StRec ) return
-   if ( RecNum < StRec ) Goto 128
+   if ( RecNum < StRec ) return
 
-   !if ( RecNum > EnRec ) return
-   if ( RecNum > EnRec ) Goto 128
+   if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
@@ -503,9 +457,6 @@ subroutine SIB_VPPPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
 
    BufInd = (RecNum - StRec)*RecLen + MAXMIN(C,D)
    GenIntBuf(BufInd) = IntVal
-
-  128 Continue
-   Call QExit('SIB_VPPPP')
 
    return
 

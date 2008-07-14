@@ -21,7 +21,6 @@ subroutine OpenVINF
 !
 !------------------------------------------------------------------------------
    implicit none
-   call QEnter('OpenVINF')
 
    if (get_iprint() >=7) then
      write(UOUT,'(/,2x,a,a80)')   & 
@@ -37,7 +36,6 @@ subroutine OpenVINF
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    endif
 
-   call QExit('OpenVINF')
    return
 
 end subroutine OpenVINF
@@ -51,7 +49,13 @@ subroutine CloseVINF
 
 end subroutine CloseVINF
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine UpdateVINF
+!---------------------------------------------------------------------------------
+!
+! ... called from HSMRCC (source/hsmrcc.F90) before iterations cycle starts
+!
+!---------------------------------------------------------------------------------
 
    implicit none
 
@@ -91,17 +95,25 @@ subroutine UpdateVINF
    ! ...............................................................................................
 
    rewind(UVINF)
+
    write(UVINF) NCMO, NHOLE, NPTCL, NEMO 
+
    write(UVINF) OPTION
+
    write(UVINF) MAXITER, CONVTOL
+
    write(UVINF) CUTOFF
+
    write(UVINF) point_group, naxis, norder, numirrep, irrep_product, &
                 totally_symmetric_irrep, irrep_label
    write(UVINF) CoreShiftVal, VirtShiftVal
    write(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
+
    write(UVINF) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, &
                 OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
+
    write(UVINF) NumRec, RecLen
+
    write(UVINF) StartRec(V2H2P), EndngRec(V2H2P), TotNZInt(V2H2P), NZIntRec_V2H2P
    write(UVINF) StartRec(VPPPP), EndngRec(VPPPP), TotNZInt(VPPPP), NZIntRec_VPPPP
    write(UVINF) StartRec(VHHHH), EndngRec(VHHHH), TotNZInt(VHHHH), NZIntRec_VHHHH
@@ -113,9 +125,44 @@ subroutine UpdateVINF
    write(UVINF) StartRec(VPHPP), EndngRec(VPHPP), TotNZInt(VPHPP), NZIntRec_VPHPP
    write(UVINF) StartRec(V2HHP), EndngRec(V2HHP), TotNZInt(V2HHP), NZIntRec_V2HHP
    write(UVINF) StartRec(VHHHP), EndngRec(VHHHP), TotNZInt(VHHHP), NZIntRec_VHHHP
+
    write(UVINF) StartRec(FHH)  , EndngRec(FHH)  , TotNZInt(FHH) 
    write(UVINF) StartRec(FHP)  , EndngRec(FHP)  , TotNZInt(FHP)
    write(UVINF) StartRec(FPP)  , EndngRec(FPP)  , TotNZInt(FPP)
+
+   if (get_iprint() >= 10) then
+     call Header('Output from UpdateVINF',-1)
+     write(UOUT,'(/,2x,a)') 'UpdateVINF output - data set saved into <FileVINF>'
+     write(UOUT,*) 'OPTION:',OPTION
+     write(UOUT,*) 'MAXITER, CONVTOL:',MAXITER, CONVTOL
+     write(UOUT,*) 'CUTOFF=',CUTOFF
+     write(UOUT,*) 'point_group=',point_group,' naxis=',naxis
+     write(UOUT,*) 
+     write(UOUT,*) 'NAO=',NAO
+     write(UOUT,*) 'NSO=',NSO
+     write(UOUT,*) 'NFRZV=',NFRZV
+     write(UOUT,*) 
+     write(UOUT,*) 'TotEn=',TotEn
+     write(UOUT,*) 'NucEn=',NucEn
+     write(UOUT,*) 'IUNIQ=',IUNIQ
+     write(UOUT,*) 'LABELSIZE=',LABELSIZE
+     write(UOUT,*) 'NINTMX=',NINTMX
+     write(UOUT,*) 
+     write(UOUT,*) 'NumRec=',NumRec
+     write(UOUT,*) 'RecLen=',RecLen
+     write(UOUT,*) 
+     write(UOUT,*) 'StartRec(FHH)=',StartRec(FHH)
+     write(UOUT,*) 'EndngRec(FHH)=',EndngRec(FHH)
+     write(UOUT,*) 'TotNZInt(FHH)=',TotNZInt(FHH)
+     write(UOUT,*) 
+     write(UOUT,*) 'StartRec(FHP)=',StartRec(FHP)
+     write(UOUT,*) 'EndngRec(FHP)=',EndngRec(FHP)
+     write(UOUT,*) 'TotNZInt(FHP)=',TotNZInt(FHP)
+     write(UOUT,*) 
+     write(UOUT,*) 'StartRec(FPP)=',StartRec(FPP)
+     write(UOUT,*) 'EndngRec(FPP)=',EndngRec(FPP)
+     write(UOUT,*) 'TotNZInt(FPP)=',TotNZInt(FPP)
+   endif
 
    return
 

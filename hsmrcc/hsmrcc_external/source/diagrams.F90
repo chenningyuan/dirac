@@ -56,7 +56,6 @@ subroutine Diagrams
       end subroutine Compensate
    end interface
 
- !  call QEnter('Diagrams')
    ! ... Diagram calculation for each vaccum ...
 
    if (get_iprint() >= 7) then

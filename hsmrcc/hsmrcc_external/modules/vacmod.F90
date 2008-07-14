@@ -33,9 +33,9 @@ contains
 subroutine InitVacMod
 !---------------------------------------------------------------------------
 !
-!                     Initialize vacuum module
+!                  Initialize vacuum module
 !
-!  called from source/inihsbase.F90 InitHSMRBase
+!     called from source/inihsbase.F90 - routine InitHSMRBase
 !
 !---------------------------------------------------------------------------
    implicit none
@@ -43,7 +43,7 @@ subroutine InitVacMod
 
    if (get_iprint() >= 7) then
     write(UOUT,'(/,2x,a,i4)')  &
-    '...Output from InitVacMod...parameter for allocations NSTATE=',NSTATE
+    '...output from InitVacMod - parameter for allocations,  NSTATE=',NSTATE
    endif
 
    if (Init) then
@@ -53,7 +53,7 @@ subroutine InitVacMod
    endif
    Init = .TRUE.
 
-! MI: TODO - add allocation checks   
+!   ... MI: TODO - add allocation checks   
 
    if (.not.allocated(VacString))   allocate(VacString(NSTATE))
    if (.not.allocated(VacTable))    allocate(VacTable(NSTATE,NSTATE))
@@ -203,7 +203,8 @@ end function PtclNum
 
 function VacNum(tvac)
 !
-!
+!  returns the index of vacuum string for which 
+! the string is equal with the entering value
 !
    implicit none
    integer, intent(in) :: tvac
@@ -325,8 +326,6 @@ subroutine GenVac
    integer :: nvac, ivac, nvac_sum
    integer :: isym_block
 
-   call QEnter('GenVac')
-
 !-----------------------------------------------------------------------------------
 !
 !  RefVac = 2**(NHOLE+1) - 2
@@ -341,7 +340,7 @@ subroutine GenVac
       if (OccRef(NCMO+i).eq.1) then
          RefVac = IBSET(RefVac,i)
       else
-         write(UOUT,*) "Incorrect Occupation in OccRef array...see array OccRef"
+         write(UOUT,*) 'GenVac: incorrect occupation in OccRef array...see array OccRef'
          write(UOUT,*) '* OccRef: ',OccRef
          call flushout
          call Quit('GenVac: Incorrect Occupation in OccRef array !')
@@ -364,7 +363,8 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,a+NHOLE)
       VacString(vac) = CurrVac
       if (get_iprint() >= 10) then
-        write(UOUT,'(2x,a,2i4,a,i3,a,i4)') 'i,a:',i,a,' VacString(',vac,')=',VacString(vac)
+        write(UOUT,'(2x,a,2i5,a,i5,a,i8)')   & 
+        'Genvac - single ext; i,a:',i,a,' VacString(',vac,')=',VacString(vac)
       endif
    enddo
    enddo
@@ -382,8 +382,9 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,a+NHOLE)
       CurrVac = IBSET(CurrVac,b+NHOLE)
       VacString(vac) = CurrVac
-      if (get_iprint() >= 10) then
-        write(UOUT,'(2x,a,4i4,a,i3,a,i4)') 'i,j,a,b:',i,j,a,b,' VacString(',vac,')=',VacString(vac)
+      if ( get_iprint() >= 10 ) then
+       write(UOUT,'(2x,a,4i5,a,i5,a,i8)')   & 
+       'GenVac - double excit.; i,j,a,b:',i,j,a,b,' VacString(',vac,')=',VacString(vac)
       endif
    enddo
    enddo
@@ -407,6 +408,10 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,b+NHOLE)
       CurrVac = IBSET(CurrVac,c+NHOLE)
       VacString(vac) = CurrVac
+      if ( get_iprint() >= 10 ) then
+        write(UOUT,'(2x,a,6i5,a,i5,a,i8)')   & 
+        'GenVac - triple excit.; i,j,k,a,b,c:',i,j,k,a,b,c,' VacString(',vac,')=',VacString(vac)
+      endif
    enddo
    enddo
    enddo
@@ -435,6 +440,10 @@ subroutine GenVac
       CurrVac = IBSET(CurrVac,c+NHOLE)
       CurrVac = IBSET(CurrVac,d+NHOLE)
       VacString(vac) = CurrVac
+      if ( get_iprint() >= 10 ) then
+       write(UOUT,'(2x,a,8i5,a,i5,a,i8)')   & 
+       'GenVac - quadruple excit.; i,j,k,l,a,b,c,d:',i,j,k,l,a,b,c,d,' VacString(',vac,')=',VacString(vac)
+      endif
    enddo
    enddo
    enddo
@@ -572,11 +581,11 @@ subroutine GenVac
       !    higher excitations not yet implemented
       ! -------------------------------------------
 
-
    enddo
 
    ! vaccum table generation is complete
-
+   ! ------------------------------------------------------
+   !
    ! For each vacuum, create the following
    !
    !    OccVac => Occupancy
@@ -637,7 +646,7 @@ subroutine GenVac
          if (nvac.ne.0) isym_block = isym_block + 1
          if (nvac.ne.0) nvac_sum = nvac_sum + nvac
 
-      enddo
+      enddo ! of irp = 1, numirrep
 
       if (ims2.eq.0) cycle
 
@@ -657,18 +666,19 @@ subroutine GenVac
          if (nvac.ne.0) isym_block = isym_block + 1
          if (nvac.ne.0) nvac_sum = nvac_sum + nvac
 
-      enddo
+      enddo  ! of irp = 1, numirrep
 
-   enddo
+   enddo ! of ims2 = 0, ms2max
 
    NSYM_BLOCK = isym_block
 
+   ! ... error catching
    if (nvac_sum.ne.NSTATE) then
-      write(UOUT,'(/,2x,a)')  &
-      "nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
-      write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
-      call flushout
-      call Quit('GenVac: something wrong in finding symmetry blocks !')
+     write(UOUT,'(/,2x,a)')  &
+     "nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
+     write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
+     call flushout
+     call Quit('GenVac: something wrong in finding symmetry blocks !')
    endif
 
    ! ... allocate symblock_array and fill its elements
@@ -702,6 +712,7 @@ subroutine GenVac
                   symblock_array(isym_block)%occp(:,ivac) = OccVac(:,vac)
                endif
             enddo
+
             ! s2mat evaluation done here
             call hmatrix(nvac,NVMO,NVMOSQ,nvac,            &
                          symblock_array(isym_block)%s2mat, &
@@ -709,7 +720,7 @@ subroutine GenVac
                          s2_1, s2_2)
          endif
 
-      enddo
+      enddo ! of irp = 1, numirrep
 
       if (ims2.eq.0) cycle
 
@@ -740,19 +751,18 @@ subroutine GenVac
             ! s2mat evaluation done here
          endif
 
-      enddo
+      enddo ! of irp = 1, numirrep
 
-   enddo
+   enddo ! of ims2 = 0, ms2max
 
    if (isym_block /= NSYM_BLOCK) then
      write(UOUT,'(/,2x,a)')   &
-     'isym_block <> NSYM_BLOCK; something wrong in creating sym_blocks !'
+     'GenVac: isym_block <> NSYM_BLOCK; something wrong in creating sym_blocks !'
      write(UOUT,*) 'isym_block=',isym_block,' NSYM_BLOCK=',NSYM_BLOCK
      call flushout
      call Quit('GenVac')
    endif
 
-   call QExit('GenVac')
    return
 
 end subroutine GenVac

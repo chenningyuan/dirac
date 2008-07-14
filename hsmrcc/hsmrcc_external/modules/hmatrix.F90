@@ -1,3 +1,5 @@
+!-------------------------------------------------------------------------------------------------
+!
 !     This routine calculates matrix elements of one and two body operator
 !
 !     H = H1 + V2
@@ -44,6 +46,11 @@
 !        routine is not a part of gtci and can be used elsewhere without
 !        any problems.
 !
+!
+!  mi: Called from modules/vacmod.F90 - subr. GenVac
+!
+!
+!-------------------------------------------------------------------------------------------------
       subroutine hmatrix           &
                  (                 &
                     nstate_in,     &
@@ -93,7 +100,8 @@
       integer ist, ien, ist1, ien1, ist2, ien2
       integer s, is
       integer sgn, sgn1, sgn2
-      logical dbg
+
+!      logical dbg
 
 !     statement function
 
@@ -103,14 +111,14 @@
 
 !     set dbg flag
 
-      dbg = .false.
+!      dbg = .false.
 
 !     print banner
 
-      if (dbg) then
+!     if (dbg) then
+      if ( get_iprint() >= 6 ) then
          write(UOUT,9000)
       endif
-
  9000 format(/,&
              "********************************************",/, &
              "Program to Calculate Full Hamiltonian Matrix",/, &
@@ -126,10 +134,12 @@
       do istate = 1, nstate_in
          do i = 1, nspinorb
             if ((occstate(i,istate).ne.0).and.(occstate(i,istate).ne.1)) then
-                write(UOUT,*) "invalid entry in occstate array"
-                call flush(UOUT)
-                call abort
-                return
+                write(UOUT,*) "hmatrix: invalid entry in occstate array"
+                !call flush(UOUT)
+                call flushout
+               ! call abort
+                call quit('hmatrix: invalid entry in occstate array')
+               ! return
              endif
             occcore(i) = min(occcore(i),occstate(i,istate))
          enddo
@@ -242,10 +252,12 @@
 
 !           it should not get here
 
-            write(UOUT,*) "norbdiff has to be even"
-            call flush(UOUT)
-            call abort
-            return
+            write(UOUT,*) "hmatrix: norbdiff has to be even"
+            !call flush(UOUT)
+            call flushout
+            !call abort
+            call quit('hmatrix: norbdiff has to be even!')
+            !return
 
 !           left and right are same
 !
@@ -269,9 +281,11 @@
                do i = 1, nspinorb
                   write(UOUT,fmt='(3(i5,1x))') i, occstate(i,ileft), occstate(i,iright)
                enddo
-               call flush(UOUT)
-               call abort
-               return
+               !call flush(UOUT)
+               call flushout
+               !call abort
+               call quit('hmatrix: state list more than once !')
+               !return
             endif
 
 !           calculate matrix element
@@ -306,14 +320,16 @@
 
  400        continue
 
-            if (dbg) then
+          ! if (dbg) then
                if (k.eq.i) then
-                  write(UOUT,*) "occupancy error"
-                  call flush(UOUT)
-                  call abort
-                  return
+                  write(UOUT,*) "hmatrix: occupancy error"
+                  !call flush(UOUT)
+                  call flushout
+                  !call abort
+                  call quit('hmatrix: occupancy error!')
+                  !return
                endif
-            endif
+         !   endif
 
 !           now we have k /= i . relaitive order of
 !           k and i determines how sign is calculated.
@@ -323,10 +339,12 @@
 
 !           should not get here
 
-            write(UOUT,*) "occupancy error"
-            call flush(UOUT)
-            call abort
-            return
+            write(UOUT,*) "hmatrix: occupancy error"
+           ! call flush(UOUT)
+            call flushout
+            !call abort
+            call quit('hmatrix: occupancy error')
+            !return
 
 !           k < i
 !
@@ -397,20 +415,25 @@
 
  500        continue
 
-            if (dbg) then
+           ! if (dbg) then
+             if (get_iprint() > 5) then
                if ((i.le.j).or.(k.le.l)) then
-                  write(UOUT,*) "(i,j) or (k,l) not ordered"
-                  call flush(UOUT)
-                  call abort
-                  return
+                  write(UOUT,*) "hmatrix: (i,j) or (k,l) not ordered"
+                  !call flush(UOUT)
+                  call flushout
+                  !call abort
+                  call quit('hmatrix: (i,j) or (k,l) not ordered')
+                  !return
                endif
                if ((i.eq.k).or.(i.eq.l).or.(j.eq.k).or.(j.eq.l)) then
-                  write(UOUT,*) "occupancy error"
-                  call flush(UOUT)
-                  call abort
-                  return
+                  write(UOUT,*) "hmatrix: occupancy error"
+                 ! call flush(UOUT)
+                  call flushout
+                  !call abort
+                  call quit('hmatrix: occupancy error !')
+                  !return
                endif
-            endif
+             endif
 
             ij = MXMN(i,j)
             kl = MXMN(k,l)
@@ -427,9 +450,11 @@
             
 !           should not get here
 
-            write(UOUT,*) "Something wrong when norbdiff = 4"
-            call flush(UOUT)
-            call abort
+            write(UOUT,*) "hmatrix: Something wrong when norbdiff = 4"
+           ! call flush(UOUT)
+            call flushout
+           ! call abort
+            call quit('hmatrix: Something wrong when norbdiff = 4 !')
             return
 
 !           j < i < l < k
@@ -550,16 +575,17 @@
 
  700        continue
 
-            if (dbg) then
-               write(UOUT,8990) norbdiff,ileft, iright, hmat(ileft,iright)
+            !if (dbg) then
+            if ( get_iprint() >= 3 ) then
+              write(UOUT,8990) norbdiff,ileft, iright, hmat(ileft,iright)
             endif
 
          enddo
-
       enddo
 
  8990 format(I3,"< ",I8," | H | ",I8," > = ",F25.18)
 
       return
+      end subroutine hmatrix
 
-      end
+
