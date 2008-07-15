@@ -1329,7 +1329,7 @@ C&&&& in direct SCF
                   READ (LUCMD,*) ICDIFF,IEDIFF
                GO TO 100
     8          CONTINUE
-C&&&& Screening threshold in direct construction of Fock matrices
+C&&&& SCREEN: Screening threshold in direct construction of Fock matrices
                   READ (LUCMD,*) SCRFCK
                   USRSCR = .TRUE.
                GO TO 100
