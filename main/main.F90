@@ -67,17 +67,22 @@ program dirprg
   endif
 
 #ifdef VAR_MPI
-  call mpi_barrier(mpi_comm_world,ierr)
-  call allocator_init()
-  call allocator_setmax(maxsize)
-  call sync_nodes(memsize,0)
-  call sync_nodes(maxsize,2)
+  if (parcal) then
+    call mpi_barrier(mpi_comm_world,ierr)
+    call allocator_init()
+    call allocator_setmax(maxsize)
+    call sync_nodes(memsize,0)
+    call sync_nodes(maxsize,2)
+  else
 #else
-  call allocator_init()
-  call allocator_setmax(maxsize)
-  print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
-  print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',  &
+    call allocator_init()
+    call allocator_setmax(maxsize)
+    print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',  &
          maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
+#endif
+#ifdef VAR_MPI
+  endif
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
@@ -100,7 +105,9 @@ program dirprg
      print '(a)', '*****************************************************'
   endif
 #ifdef VAR_MPI
-  call sync_nodes(idummy,1)
+  if (parcal) then
+    call sync_nodes(idummy,1)
+  endif
 #endif
   if (mytid == 0) then
      call stopwatch(0,mytid)
@@ -109,6 +116,6 @@ program dirprg
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
-  call mpixfinalize()
+  if (parcal) call mpixfinalize()
 #endif
 end program dirprg
