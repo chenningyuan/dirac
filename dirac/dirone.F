@@ -2237,11 +2237,7 @@ C       ----------------------------------------
 C
 C aspg, timing
         CALL TIMER('START ',TIMSTR,TIMEND)
-CTROND
-        WRITE(0,*) 'Enter MAKE_H2C'
         CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
-CTROND
-        WRITE(0,*) 'Exit MAKE_H2C'
         CALL TIMER('mk_h2c',TIMSTR,TIMEND)
 C aspg, timing
 CMI    ... transformation matrix is the Large-electronic part of
