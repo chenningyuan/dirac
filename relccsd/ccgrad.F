@@ -706,17 +706,24 @@ C     ----------------------
       CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
      &                    WORK,KFREE,LFREE,NOPRNT)
 C
-C     save nat. orb. occ. num. and transform. matrix to file MP2_NATORB
-C     ------------------------------------------------------------------
+C     save nat. orb. occ. num. and transform. matrix to file 
+C     ------------------------------------------------------
       IF( MYTID .eq. MPARID )THEN
-        CALL OPNFIL(LUNATORB,MP2NO_FILE,'NEW','MP2_NATORB')
-        LABEL = 'NATOCCNB'
-        CALL NEWLAB(LABEL,LUNATORB,LUPRI)
-        CALL WRITT(LUNATORB,NESHT,WORK(KOCC_NAT))
-        LABEL = 'NATOCC_M'
-        CALL NEWLAB(LABEL,LUNATORB,LUPRI)
-        CALL WRITT(LUNATORB,NORBT*NESHT*NZ,WORK(KCMO_NAT))
-        CLOSE(Unit=LUNATORB,Status='KEEP')
+C
+C       ... KRMCOLD file
+C
+C       sk + hjaaj: we use KRMCOLD and not KRMCSCF for the MP2 nat.orb.
+C       coefficients, because the KRMC module starts by deleting the
+C       KRMCSCF file !!! (And it uses CMO from KRMCOLD as first priority
+C       for starting orbitals.)
+C
+        CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
+        CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
+C
+        CALL WRTKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
+        CALL WRTKRMC(LUKRMC,'MP2NATOC',WORK(KOCC_NAT),NESHT)
+        CLOSE(LUKRMC,STATUS='KEEP')
+C
       END IF
 C
 C     memory deallocation
@@ -768,12 +775,12 @@ C
 C
         IF(DOJACO) THEN
            CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
-     &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF2,IOFF2,1),
+     &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF1,IOFF2,1),
      &                 WORK(KFREE),LFREE)
         ELSE
            CALL QDIAG(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
      &                OCC_NAT(IOFF2),1,
-     &                CMO_NAT(IOFF2,IOFF2,1),NORBT,NESH(IFSYM),
+     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),
      &                WORK(KFREE),LFREE,IERR)
 CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
 CSK        CALL HEADER(
@@ -784,7 +791,7 @@ C          reorder eigenvalues and eigenvectors: descending order ==>
 C          IORDER = - 1
            IORDER = - 1
            CALL QORDER3(NESH(IFSYM),OCC_NAT(IOFF2),
-     &                  CMO_NAT(IOFF2,IOFF2,1),
+     &                  CMO_NAT(IOFF1,IOFF2,1),
      &                  NORBT,NESH(IFSYM),NESH(IFSYM),NZ,IORDER)
         ENDIF
         IOFF2 = IOFF2 + NESH(IFSYM)
@@ -795,10 +802,11 @@ C
       IOFF2 = 1
       IF ( NOPRNT .ge. 5 ) THEN
          DO IFSYM = 1, NFSYM
+           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
            CALL HEADER(
      &     'MP2_NATORB_GEN: Eigenvectors :',-1)
            WRITE(LUPRI,*) ' fermionic irrep', IFSYM
-           CALL PRQMAT(CMO_NAT(IOFF2,IOFF2,1),
+           CALL PRQMAT(CMO_NAT(IOFF1,IOFF2,1),
      &                 NORBT,NESH(IFSYM),NORBT,NESH(IFSYM),
      &                 NZ,IPQTOQ(1,0),LUPRI)
            IOFF2 = IOFF2 + NESH(IFSYM)

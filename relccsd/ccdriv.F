@@ -238,11 +238,6 @@ C
       TIMING = .FALSE.
       MWORD = 0
 C
-C     check for active MP2-NO module using RELCCSD-MP2
-C
-      IF( MYPROC .eq. MASTER )THEN
-      END IF
-C
       READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
