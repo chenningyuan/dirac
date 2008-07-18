@@ -255,6 +255,7 @@ C
             JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
           ENDDO
           CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
+        TEST = .FALSE.
         ELSE
           READ (IUNIT,END=30,ERR=40) CMO
         ENDIF

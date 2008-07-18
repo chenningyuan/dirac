@@ -151,8 +151,9 @@ C  LABELS: NLAB
 #include "dcborb.h"
 #include "dcbpop.h"
 #include "dgroup.h"
+#include "dcbmp2no.h"
 C
-      LOGICAL TOBE,TOBEK
+      LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('MULPOP')
@@ -160,12 +161,46 @@ C
 C
       CALL TITLER('Mulliken population analysis','*',122)
 C
-      KRMC_FLG = 0
+      IF( MP2NATPOP )THEN
+C       set-up analysis string
+        DO I = 1, NFSYM
+          VECPOP_SAVE(I) = VECPOP(I)
+          NOCCI = NACTMP2NO(I)
+          IF( SELPOPNAT .eq. 'all' ) NOCCI = NESH(I)
+          IF (NOCCI .eq. 0) THEN
+             VECPOP(I) = '   '
+          ELSE IF( NOCCI .eq. 1 )THEN
+             WRITE(VECPOP(I),'(I4)') 1
+          ELSE
+             WRITE(VECPOP(I),'(I4,A2,I4)') 1,'..',NOCCI
+          END IF
+        END DO
+C       save possible user input (for default Mull. pop) and set
+C       MP2-NO default values
+        IPRPOP_M = IPRPOP
+        ILABDF_M = ILABDF
+        DONETP_M = DONETP
+        ADDSML_M = ADDSML
+        ORBDEF_M = ORBDEF
+        LABDEF_M = LABDEF
+C
+        IPRPOP   = IPRMP2NO
+        ILABDF   = 2
+        DONETP   = .FALSE.
+        ADDSML   = .TRUE.
+        ORBDEF   = .TRUE.
+        LABDEF   = .FALSE.
+C
+      END IF
 C
 C     Check if coefficients are on file
 C
 #ifdef MOD_KRMC
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      IF( MP2NATPOP ) THEN
+         INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
+      ELSE
+         INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      END IF
 #else
       TOBEK=.FALSE.
 #endif /* MOD_KRMC */
@@ -176,23 +211,41 @@ C     Memory allocation
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
+      CALL DZERO(WORK(KCMO),N2BBASXQ)
+C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
 #ifdef MOD_KRMC
       IF (TOBEK) THEN
-         KRMC_FLG = 1
-         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
-         JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-         IF (JRDMO .EQ. 0) THEN
-            WRITE(LUPRI,'(/A)')
-     &           ' (MULPOP)  Orbitals read from' //
-     &           ' label NEWORB on file KRMCSCF'
+         IF( MP2NATPOP )THEN
+           CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MULPOP')
+           KRMC_FLG = 2
+           CALL MEMGET('REAL',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
+C          ... initialize
+           CALL DZERO(WORK(KEIG_NAT),NESHT)
+C          ... read from file
+           CALL READMP2NAT(WORK(KCMO),WORK(KEIG),WORK(KEIG_NAT))
+           WRITE(LUPRI,'(/A)')
+     &           ' (MULPOP)  Orbitals and occupancies read from' //
+     &           ' label NEWNATOB/MP2NATOC on file KRMCOLD'
+C
+           CLOSE(LUKRMC,STATUS='KEEP')
+         ELSE
+           CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
+           KRMC_FLG = 1
+           JRDMO = -1
+           CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+           IF (JRDMO .EQ. 0) THEN
+              WRITE(LUPRI,'(/A)')
+     &             ' (MULPOP)  Orbitals read from' //
+     &             ' label NEWORB on file KRMCSCF'
+           END IF
          END IF
          CLOSE (LUKRMC)
       ELSE
 #endif /* MOD_KRMC */
+         KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
@@ -222,7 +275,18 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
-C
+C     restore user input for Mull. pop. ana.
+      IF (MP2NATPOP )THEN
+        IPRPOP   = IPRPOP_M
+        ILABDF   = ILABDF_M
+        DONETP   = DONETP_M
+        ADDSML   = ADDSML_M
+        ORBDEF   = ORBDEF_M
+        LABDEF   = LABDEF_M
+        DO I = 1, NFSYM
+          VECPOP(I) = VECPOP_SAVE(I)
+        END DO
+      END IF
       CALL QEXIT('MULPOP')
       RETURN
  1000 CONTINUE
@@ -445,7 +509,7 @@ C                                        account)
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
+      PARAMETER(D0 = 0.0D0,D2 = 2.0D0,DHALF = 0.5D0)
 #include "dummy.h"
 #include "maxorb.h"
 C Used from COMMON blocks:
@@ -479,46 +543,56 @@ C
 C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVECS + NEVECS
+
       CALL DZERO(OCC,NVEC)
       DO I = 1,NVEC
 c
 c       Find fractional occupation for each requested orbital string
 c
+        IF (KRMC_FLG.EQ.0) THEN
         NVORB =  NISH(IFRP)
         DO IOPEN=1,NOPEN
 c     ... open shell
-           NVORB =  NVORB + NACSH(IFRP,IOPEN)
-           IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
-              OCC(I) = DF(IOPEN)
-              GO TO 100
-           ENDIF
+          NVORB =  NVORB + NACSH(IFRP,IOPEN)
+          IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
+            OCC(I) = DF(IOPEN)
+            GO TO 100
+          ENDIF
         END DO
         IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
 c     ... closed shell
-           OCC(I) = DF(0)
+          OCC(I) = DF(0)
         ENDIF
 100     CONTINUE
+        ELSE IF(KRMC_FLG.EQ.2) THEN
+C       ... MP2-NOs
+           OCC(I) = EIG(NPSH(IFRP)+JVEC(I))
+        END IF
 c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           IF (KRMC_FLG.EQ.1) THEN
              WRITE(LUPRI,'(/A,I3)')
-     &       '* Electronic eigenvalue nr.',JVEC(I)
+     &       '* Electronic eigenvalue no.',JVEC(I)
+          ELSE IF (KRMC_FLG.EQ.2) THEN
+             WRITE(LUPRI,'(/A,I3,A,F12.8)')
+     &       '* Electronic eigenvalue no.',JVEC(I),
+     &       '     Occupation :',OCC(I)
           ELSE
              WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     &          '* Electronic eigenvalue nr.',JVEC(I),': ',
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          EIG(II),'       (Occupation : f = ',OCC(I),')'
           END IF
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          IF (KRMC_FLG.EQ.1) THEN
+          IF (KRMC_FLG.GT.0) THEN
              WRITE(LUPRI,'(/A,I3)')
-     &       '* Positronic eigenvalue nr.',II
+     &       '* Positronic eigenvalue no.',II
           ELSE
              WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     &          '* Positronic eigenvalue nr.',II,': ',
+     &          '* Positronic eigenvalue no.',II,': ',
      &          EIG(II),'       (Occupation : f = ',OCC(I),')'
           END IF
         END IF
@@ -539,7 +613,14 @@ C
 C       Multiply fractional occupation on population.
 C       =============================================
 C
-        FACTOR  = D2*OCC(I)
+        IF(KRMC_FLG.EQ.0) THEN
+           FACTOR  = D2*OCC(I)
+C       ... MP2-NOs
+        ELSE IF(KRMC_FLG.EQ.2) THEN
+           FACTOR = OCC(I)
+        ELSE
+           GO TO 1001
+        END IF
         CALL DAXPY(NPOPLAB,FACTOR,POPG(1,1),1,PGTOT(1,IFRP),1)
         CALL DAXPY(NPOPLAB,FACTOR,POPG(1,2),1,PGTOT(1,IFRP),1)
 C
@@ -556,6 +637,7 @@ C
           CALL DAXPY(N2LAB,D2,PMAT(1,1,1),1,PNTOT(1,1,IFRP),1)
           CALL DAXPY(N2LAB,D2,PMAT(1,1,2),1,PNTOT(1,1,IFRP),1)
         ENDIF
+ 1001   CONTINUE
       ENDDO
 C
 C     Write out total populations
@@ -580,6 +662,8 @@ C
         CALL WRPOPN(PNTOT(1,1,IFRP),PGTOT(1,IFRP),
      &              POPLAB,NPOPLAB,IEFF,'total')
       ENDIF
+
+ 9999 CONTINUE
       CALL MEMREL('MULPO2.POPMAT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('MULPO2')

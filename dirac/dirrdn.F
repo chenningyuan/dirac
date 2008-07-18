@@ -2980,6 +2980,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dcbmp2no.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
@@ -3005,11 +3006,13 @@ C
 C     Initialize /CBIPOP/
 C     ===================
 C
-      IPRPOP    = 0
-      DONETP  = .FALSE.
-      ADDSML  = .TRUE.
-      ORBDEF  = .TRUE.
-      ILABDF  = 2
+      IPRPOP   = 0
+      ILABDF   = 2
+      DONETP   = .FALSE.
+      ADDSML   = .TRUE.
+      ORBDEF   = .TRUE.
+CSK   ... only if MP2-NO orbitals are available - set in MP2NOGE1
+      MP2NATPOP = .FALSE.
 C
 C     Process input from CBIPOP
 C     =========================
