@@ -24,9 +24,12 @@
      &        IDXU2G(MAXASH), IDXE2G(MAXORB), IDXG2E(MAXORB),           &
      &        IDXP2G(MAXORB), IDXG2P(MAXORB), IDXI2G(MAXORB),           &
      &        IDXG2I(MAXORB), IDXV2G(MAXORB), IDXG2V(MAXORB),           &
+     &        IDXG2F(MAXORB), IDXF2G(MAXORB), IDXS2G(MAXORB),           &
+     &        IDXG2S(MAXORB),                                           &
      &        IDXT2G(MAXORB, 4), NIDXT(4), IIDX1(2), NIDX1(2), IIDX2(2),&
      &        NIDX2(2), IIDX3(2), NIDX3(2), IIDX4(2), NIDX4(2)
-      COMMON /DCBIDX/ IFSMO, IOBTYP, IDXG2U, IDXU2G, IDXE2G, IDXG2E,    &
+      COMMON /DCBIDX/ IFSMO,  IOBTYP, IDXG2U, IDXU2G, IDXE2G, IDXG2E,   &
      &                IDXP2G, IDXG2P, IDXI2G, IDXG2I, IDXV2G, IDXG2V,   &
+     &                IDXG2F, IDXF2G, IDXS2G, IDXG2S,                   &
      &                IDXT2G, NIDXT, IIDX1, NIDX1, IIDX2, NIDX2, IIDX3, &
      &                NIDX3, IIDX4, NIDX4

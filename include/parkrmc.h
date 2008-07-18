@@ -9,15 +9,23 @@
 !     ======================================================
 !
 !
-      PARAMETER (IKRMCPARF = 7)
+      PARAMETER (IKRMCPARF = 8)
 !
-!     COMMON/KRMCPARICB/ 
+!     integer block         
+!     -------------
+      COMMON/KRMCPARICB/NUMCPU,LMCPRI
+!
 !     double precision block
+!     ----------------------
 !     DOUBLE PRECISION  
 !     COMMON/KRMCPARRCB/ 
+!
 !     logical block
-!     LOGICAL 
-!     COMMON/KRMCPARLCB/
+!     -------------
+      LOGICAL PARMCSCF
+      COMMON/KRMCPARLCB/PARMCSCF
+!
 !     character block
+!     ---------------
 !     CHARACTER 
 !     COMMON/KRMCPARCCB/ 
