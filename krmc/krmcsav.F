@@ -144,10 +144,13 @@ C     Rotate to Fock type and/or natural orbitals.
 C
       CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KEIG),NORBT)
-      IF (.FALSE.) THEN
-C      IF (IKRMCCNO .GE. -1) THEN
+      IF (IKRMCCNO .GE. -1) THEN
+CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
 C
+C          July 2208 sk+hjaaj : fix for FOCKON only
+C                               still TODO: implement RTRACI + 
+C                                           fix TRTOCO/TRTONO branch
 C
          IF (NATONL) THEN
             CNOLBL = 'ONLYNO'

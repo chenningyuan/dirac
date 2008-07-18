@@ -3009,14 +3009,8 @@ C     Initialize density matrices to zero
 C
       LF2_ZERO = L2
 C
-C
-      IF( NATOLCR ) THEN
+      IF( .NOT. NATOLCR ) THEN
 C       
-C       CI vector resides on LUCVECT_REL(.0)
-C       --> vector copy in GASCI_REL
-C
-      ELSE
-C
 C       Write current CI vector(s) to file
         IO_DENS_IN = 1
         IF (IO_DENS_IN.EQ.1) THEN

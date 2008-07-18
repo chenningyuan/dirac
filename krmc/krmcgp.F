@@ -1516,7 +1516,7 @@ C
          CALL QUIT('*** ERROR in ROTORB *** Unknown control character')
       END IF
 C
-C     Calculate CMO(new) = CMO(old) U
+C     Calculate CMO(new) = CMO(old) * U
 C
       DO I = 1, NFSYM
          NBASI = NFBAS(I,0)
@@ -1533,5 +1533,87 @@ C
       CALL MEMREL('ROTORB',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('ROTORB')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck diagc */
+      SUBROUTINE DIAGC(C,AM,EIG,EIGVEC,NDIM,WORK,LWORK)
+C***********************************************************************
+C
+C     diagonalize square matrix AM, return eigenvectors and eigenvalues.
+C
+C     C controls which type of matrix is diagonalized - dimension NDIM2
+C
+C     Written by S. Knecht - July 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "mx2orb.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+C
+      CHARACTER C*1
+      DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
+      DIMENSION WORK(*)
+C
+#include "memint.h"
+C
+      CALL QENTER('DIAGC')
+C
+      IOFF2 = 1
+C
+      DO IFSYM = 1, NFSYM
+C
+        IF (C .EQ. 'E') THEN
+           NDIM2 = NESH(IFSYM)
+        ELSE IF (C .EQ. 'P') THEN
+           NDIM2 = NPSH(IFSYM)
+        ELSE IF (C .EQ. 'I') THEN
+           NDIM2 = NISH(IFSYM)
+        ELSE IF (C .EQ. 'A') THEN
+           NDIM2 = NASH(IFSYM)
+        ELSE IF (C .EQ. 'V') THEN
+           NDIM2 = NVSH(IFSYM)
+        ELSE
+           WRITE(LUPRI,'(2A)')
+     &          '*** ERROR in DIAGC *** Unknown control character: ',C
+           CALL Abend2('* ERROR in DIAGC * Unknown control character')
+        END IF
+C
+C       diagonalize AM
+C
+C
+        IF( NZ .eq. 1 ) THEN
+C          ... calculate eigenvalues and eigenvectors
+           IJOB   = 1
+C          ... ascending order
+           IORDER = 1
+           IPACK  = 0
+           CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
+     &                 EIG(IOFF2),IJOB,IORDER,IPACK,
+     &                 EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
+        ELSE
+C          ... calculate eigenvalues and eigenvectors
+           MATZ = 1
+           CALL QDIAG(NZ,NDIM2,AM(IOFF2,IOFF2,1),NDIM,NDIM,
+     &                EIG(IOFF2),MATZ,EIGVEC(IOFF2,IOFF2,1),NDIM,NDIM2,
+     &                WORK(KFREE),LFREE,IERR)
+           IF( IERR .ne. 0 ) THEN
+                  WRITE(LUPRI,'(/,1X,4A,I4)')
+     &                 '*** ERROR in DIAGC ***: ',
+     &                 '*** ERROR for control parameter: ',C,
+     &                 'QDIAG failed with error code ',IERR
+                  CALL Abend2('*** ERROR in DIAGC: block diag ***')
+           END IF
+        ENDIF
+C       ... new offset
+        IOFF2 = IOFF2 + NDIM2
+      ENDDO
+C
+      CALL QEXIT('DIAGC')
       RETURN
       END

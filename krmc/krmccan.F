@@ -199,6 +199,9 @@ C
                OCCSUM = DSUM(NOCCI,OCCNO(IOCCI+1),1)
                WRITE(LUPRI,9002) I, (OCCNO(IOCCI+J),J=1,NOCCI)
                WRITE(LUPRI,9003) OCCSUM
+
+               CALL ORDER3(WORK(KFREE),OCCNO(IOCCI+1),NOCCI,NOCCI,0,-1)
+               WRITE(LUPRI,9004) I, (OCCNO(IOCCI+J),J=1,NOCCI)
             END IF
          END DO
       END IF
@@ -207,6 +210,8 @@ C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
  9003 FORMAT(/'   Sum =',T15,F14.9)
+ 9004 FORMAT(/'   Symmetry',I3,' -- REORDERED OCCUPATION --',
+     &            //,(5F14.9))
 C
       IF ( IPRINT .GE. 5 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
@@ -305,6 +310,8 @@ C
 C     Written by J. Thyssen - Mar 4 2000
 C     Last revision :
 C
+C                S. Knecht  - Jul 16 2008
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -330,14 +337,13 @@ C
       CALL QENTER('KRMCCNO')
       KFRSAV = KFREE
 C
-C
       IF (KEYCNO .EQ. 'ONLYNO' .OR. KEYCNO .EQ. 'NATORB') THEN
          IF (.NOT. RTRACI) THEN
-            IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,2A)')
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,2A)')
      &           '(KRMCCNO) No transformation.'
             GOTO 2000
          END IF
-         IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,2A)')
+         IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,2A)')
      &        '(KRMCCNO) Transformation of active ',
      &        'orbitals to natural orbitals.'
          TRTOFD = .FALSE.
@@ -346,15 +352,15 @@ C
       ELSE IF (KEYCNO .EQ. 'ONLYFD' .OR. KEYCNO .EQ. 'ONLYFC' .OR.
      &         KEYCNO .EQ. 'ONLYCO' .OR. KEYCNO .EQ. 'CANORB') THEN
          IF (.NOT. RTRACI) THEN
-            IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,3A)')
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,3A)')
      &           '(KRMCCNO) Transformation of ',
-     &           'inactive/virtual/positronic ',
+     &           'positronic/inactive/virtual ',
      &           'orbitals to Fock type orbitals.'
             TRTOFD = .TRUE.
             TRTOCO = .FALSE.
             TRTONO = .FALSE.
          ELSE
-            IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,2A)')
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,2A)')
      &           '(KRMCCNO) Transformation of all ',
      &           'orbitals to Fock type orbitals.'
             TRTOFD = .TRUE.
@@ -363,18 +369,18 @@ C
          END IF
       ELSE
          IF (.NOT. RTRACI) THEN
-            IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,3A)')
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,3A)')
      &           '(KRMCCNO) Transformation of ',
-     &           'inactive/virtual/positronic ',
+     &           'positronic/inactive/virtual ',
      &           'orbitals to Fock type orbitals.'
             TRTOFD = .TRUE.
             TRTOCO = .FALSE.
             TRTONO = .FALSE.
          ELSE
-            IF (IPROPT .GE. 4) WRITE(LUPRI,'(/1X,4A)')
+            IF (IPROPT .GE. 0) WRITE(LUPRI,'(/1X,4A)')
      &           '(KRMCCNO) Transformation of active ',
      &           'orbitals to natural orbitals and ',
-     &           'inactive/virtual/positronic orbitals ',
+     &           'positronic/inactive/virtual orbitals',
      &           'to Fock type orbitals.'
             TRTOFD = .TRUE.
             TRTOCO = .FALSE.
@@ -387,8 +393,8 @@ C     ***************************************
 C     *** Transform to Fock type orbitals ***
 C     ***************************************
 C
-C     Calculate one-electron density matrix
-C     -------------------------------------
+C     1. Calculate one-electron density matrix
+C     ----------------------------------------
 C
 C     Needed for natural orbitals or FV.
 C
@@ -396,11 +402,17 @@ C
       IF (NASHT .GE. 1) THEN
          CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
       END IF
+csk   WRITE(LUPRI,*) ' WORK(KDV) from RMAKDV'
+csk   CALL WRTMATMN(WORK(KDV),1,N2ASHXQ,1,N2ASHXQ,LUPRI)
 C
       IF ( .NOT. (TRTOFD .OR. TRTOCO) ) GOTO 1000
 C
       CALL MEMGET('REAL',KEIGVC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
+C     ... initialize
+      CALL DZERO(WORK(KEIGVC),N2ORBXQ)
+      CALL DZERO(WORK(KFD),   N2ORBXQ)
+C
       IF (NASHT .GT. 0) THEN
          LFV = N2ORBXQ
       ELSE
@@ -409,8 +421,8 @@ C
       CALL MEMGET('REAL',KFV,LFV,WORK,KFREE,LFREE)
 C
 C
-C     Calculate Fock matrices
-C     -----------------------
+C     2. Calculate Fock matrices
+C     --------------------------
 C
       KFC = KFD
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
@@ -419,6 +431,7 @@ C     CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK,LWORK)
 C
 C     Calculate FD
 C
+      IPROPT = 0
       IF (NASHT .GT. 0) CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFD),1)
 C
       IF (TRTOCO) THEN
@@ -434,95 +447,180 @@ C
             GO TO 1000
          END IF
       END IF
-      CALL QUIT('KRMCCNO: TRTOFD not implemented correctly yet')
+C
+CSK   CALL QUIT('KRMCCNO: TRTOFD not implemented correctly yet')
 C     hjaaj Feb 2004 TODO: because QDIAG sorts eigenvalues code
 C     must be modified to only call QDIAG with a block at a time
 C     (p-p block, i-i block, s-s block) instead of zeroing inter-shell
 C     couplings and active-active block.
 C
-C     Zero inter-shell coupling-blocks.
-C     ---------------------------------
+CSK   DONE!
 C
-C     e-p and p-e:
-C
-      DO I = 1, NFSYM
-         J1MO(I) = IORB(I) + NPSH(I) + 1
-         N1MO(I) = NESH(I)
-         J2MO(I) = IORB(I) + 1
-         N2MO(I) = NPSH(I)
-      END DO
-C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-C
-C     i-{u,a}, {u,a}-i:
-C
-      DO I = 1, NFSYM
-         J1MO(I) = IORB(I) + NPSH(I) + NISH(I) + 1
-         N1MO(I) = NASH(I) + NSSH(I)
-         J2MO(I) = IORB(I) + NPSH(I) + 1
-         N2MO(I) = NISH(I)
-      END DO
-C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-C
-C     u-a, a-u:
-C
-      DO I = 1, NFSYM
-         J1MO(I) = IORB(I) + NPSH(I) + NOCC(I) + 1
-         N1MO(I) = NSSH(I)
-         J2MO(I) = IORB(I) + NPSH(I) + NISH(I) + 1
-         N2MO(I) = NASH(I)
-      END DO
-C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
-     &     NZ,NFSYM,1)
-C
-      IF (NASHT .GT. 0) THEN
-C        Zero active-active block, this one is treated below in
-C        RTRACI section /fix feb 2004 hjaaj
-C        hjaaj: QUESTION / TODO? can we be sure
-C               RSJACO/QDIAG returns a unit matrix as eigenvectors
-C               for a zero matrix ???
-         CALL BLKZERO(J2MO,N2MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
-     &        NZ,NFSYM,1)
+      IF (IPROPT .GE. 5) THEN
+         DO I = 1, NFSYM
+            WRITE(LUPRI,*) 'RKRMCCNO: FOCK matrix for symmetry',I
+            CALL PRQMAT(WORK(KFD+I2ORBX(I,I)),NORB(I),NORB(I),
+     &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         ENDDO
       END IF
 C
+C     3. Diagonalize Fock matrix 
+C     --------------------------
 C
-C     Diagonalize FD
-C     --------------
+C     3.1 p-p block
+C     -------------
+C
+      IF ( NPSHT .gt. 0 ) THEN
+C
+C        ... allocate for p-p block diagonalization of Fock-matrix
+         CALL MEMGET('REAL',KFDP,   N2PSHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGVCP,N2PSHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGP,  NPSHT    ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KFDP),   N2PSHX*NZ)
+         CALL DZERO(WORK(KEIGVCP),N2PSHX*NZ)
+         CALL DZERO(WORK(KEIGP),  NPSHT)
+C
+C        extract p-p part of WORK(KFD)
+C
+         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,NPSHT,
+     &               IDXP2G,NZ)
+C
+C        diagonalize
+C
+         CALL DIAGC('P',WORK(KFDP),WORK(KEIGP),WORK(KEIGVCP),
+     &              NPSHT,WORK(KFREE),LFREE)
+C
+C        insert new p-p matrix block into complete transformation matrix
+C
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
+     &               NPSHT,NPSHT,IDXP2G,NZ)
+C
+         CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
+      END IF
+C
+C     3.2 i-i block
+C     -------------
+C
+      IF ( NISHT .gt. 0 ) THEN
+C
+C        ... allocate for i-i block diagonalization of Fock-matrix
+         CALL MEMGET('REAL',KFDI,   N2ISHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGVCI,N2ISHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGI,  NISHT    ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KFDI),   N2ISHX*NZ)
+         CALL DZERO(WORK(KEIGVCI),N2ISHX*NZ)
+         CALL DZERO(WORK(KEIGI),  NISHT)
+C
+C        extract i-i part of WORK(KFD)
+C
+         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,NISHT,
+     &               IDXI2G,NZ)
+C
+C        diagonalize
+C
+         CALL DIAGC('I',WORK(KFDI),WORK(KEIGI),WORK(KEIGVCI),
+     &              NISHT,WORK(KFREE),LFREE)
+C
+C        insert new i-i matrix block into complete transformation matrix
+C
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
+     &               NISHT,NISHT,IDXI2G,NZ)
+C
+         CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
+      END IF
+C
+C     3.3 'active' s-s block
+C     -------------
+C
+      IF ( NVSHT .gt. 0 ) THEN
+C
+C        ... allocate for s-s block diagonalization of Fock-matrix
+         CALL MEMGET('REAL',KFDS,   N2VSHXQ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGVCS,N2VSHXQ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGS,  NVSHT  ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KFDS),   N2VSHXQ)
+         CALL DZERO(WORK(KEIGVCS),N2VSHXQ)
+         CALL DZERO(WORK(KEIGS),  NVSHT  )
+C
+C        extract s-s part of WORK(KFD)
+C
+         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDS),NVSHT,
+     &               NVSHT,IDXS2G,NZ)
 C
 C
-      IF (NZ .EQ. 1) THEN
-         IJOB = 1
-         IORDER = 0
-         IPACK = 0
-         CALL RSJACO(NORBT,NORBT,NORBT,WORK(KFD),EIG,
-     &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
-      ELSE
-         MATZ = 1
-         CALL QDIAG(NZ,NORBT,WORK(KFD),NORBT,NORBT,
-     &        EIG,MATZ,WORK(KEIGVC),NORBT,NORBT,
-     &        WORK(KFREE),LFREE,IERR)
-         IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/,1X,2A,I4)')
-     &           '*** ERROR in RGETNO ***: ',
-     &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in RGETNO ***')
-         END IF
+csk      WRITE(LUPRI,*) ' MY NEW WORK(KFDS)'
+csk      CALL WRTMATMN(WORK(KFDS),1,N2VSHXQ,1,N2VSHXQ,LUPRI)
+C
+C        diagonalize
+C
+         CALL DIAGC('V',WORK(KFDS),WORK(KEIGS),WORK(KEIGVCS),
+     &              NVSHT,WORK(KFREE),LFREE)
+C
+csk      WRITE(LUPRI,*) ' s-s block: eigenvalues'
+csk      CALL OUTPUT(WORK(KEIGS),1,NVSHT,1,1,NVSHT,1,1,LUPRI)
+csk      WRITE(LUPRI,*) ' s-s block: eigenvectors'
+csk      CALL WRTMATMN(WORK(KEIGVCS),NVSHT,NVSHT,NVSHT,NVSHT,LUPRI)
+C
+C        insert new s-s matrix block into transformation matrix
+C
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCS),
+     &               NVSHT,NVSHT,IDXS2G,NZ)
+C
+csk      WRITE(LUPRI,*) ' s-s block: new KEIGVC'
+csk      CALL WRTMATMN(WORK(KEIGVC),NORBT,NORBT,NORBT,NORBT,LUPRI)
+C
+C
+         CALL MEMREL('RKRMCCNO.after s-s',WORK,1,KFDS,KFREE,LFREE)
+      END IF
+C
+C     3.4 frozen s-s block
+C     -------------
+C
+      IF( NFRSHT .gt. 0 )THEN
+C        ... allocate
+         CALL MEMGET('REAL',KEIGVCF,N2FRSHXQ,WORK,KFREE,LFREE)
+C
+C        ... initialize and make unit matrix
+C
+         CALL DUNIT2(WORK(KEIGVCF),NFRSHT,NFRSHT,NFRSHT,NZ)
+C
+C        insert f-f matrix block into complete transformation matrix
+C
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCF),
+     &               NFRSHT,NFRSHT,IDXF2G,NZ)
+C
+csk      WRITE(LUPRI,*) ' f-f block: new KEIGVC'
+csk      CALL WRTMATMN(WORK(KEIGVC),NORBT,NORBT,NORBT,NORBT,LUPRI)
+C
+         CALL MEMREL('RKRMCCNO.after f-f',WORK,1,KEIGVCF,KFREE,LFREE)
+      END IF
+C
+C     3.5 unit matrix for a-a block
+C     -----------------------------
+C
+      IF (NASHT .GT. 0) THEN
+C        ... allocate
+         CALL MEMGET('REAL',KEIGVCA,N2ASHXQ,WORK,KFREE,LFREE)
+C
+C        ... initialize and make unit matrix
+C
+         CALL DUNIT2(WORK(KEIGVCA),NASHT,NASHT,NASHT,NZ)
+C
+C        insert a-a matrix block into complete transformation matrix
+C
+         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
+     &               NASHT,NASHT,IDXU2G,NZ)
+C
+         CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF
 C
       CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
-C     Transform orbitals
-C     ------------------
+C     4. Transform orbitals
+C     ---------------------
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
@@ -533,6 +631,17 @@ C        CMO(new) = CMO(old) * EIGVC
 C
          NBASI = NFBAS(I,0)
          NORBI = NORB(I)
+C
+         IF( IPROPT .ge. 2 )THEN
+           WRITE(LUPRI,'(1X,A,I3)')
+     &     'RKRMCCNO: Coefficients for symmetry before transformation',I
+           CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
+     &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
+           WRITE(LUPRI,'(1X,A,I3)')
+     &     'RKRMCCNO: transformation matrix for symmetry',I
+           CALL PRQMAT(WORK(KEIGVC+I2ORBX(I,I)),NORBI,NORBI,
+     &          NORBI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
 C
 C        Transform all orbitals
 C
@@ -550,6 +659,22 @@ C
          CALL DCOPY(NBASI*NASH(I),WORK(KCMO+ICMOA),1,
      &        CMO(1+ICMOA),1)
 C
+         IF( NFRSH(I) .gt. 0 )THEN
+C
+C          Copy back frozen orbitals
+C
+           ICMOF = ICMOQ(I) + 
+     &             (NPSH(I)+NISH(I)+NASH(I)+NVSH(I)) * NBASI
+           CALL DCOPY(NBASI*NFRSH(I),WORK(KCMO+ICMOF),1,
+     &          CMO(1+ICMOF),1)
+         END IF
+C
+         IF( IPROPT .ge. 2 )THEN
+           WRITE(LUPRI,'(1X,A,I3)')
+     &     'RKRMCCNO: Coefficients for symmetry after transformation',I
+           CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
+     &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
       END DO
 C
 C     Deallocate everything but the density matrix.
@@ -558,16 +683,15 @@ C
 C
  1000 CONTINUE
 C
+      IF (.NOT. (TRTONO .OR. TRTOCO) .OR. NZCONF.EQ.0) GOTO 2000
 C
 C     **********************************************************
 C     *** Transform to natural or canonical active  orbitals ***
 C     **********************************************************
 C
-      IF (.NOT. (TRTONO .OR. TRTOCO) .OR. NZCONF.EQ.0) GOTO 2000
 C
-C
-      call quit('*** ERROR in KRMCCNO ***' //
-     &     'TRTOCO/TRTONO not implemeted yet!')
+      CALL Abend2('*** ERROR in KRMCCNO ***' //
+     &            'TRTOCO/TRTONO not implemeted yet!')
 C
 C
       CALL MEMGET('REAL',KEIG,NASHT,WORK,KFREE,LFREE)
@@ -595,6 +719,7 @@ C        (WORK(KDV) is either active part of FD or DV).
 C
          call quit('*** ERROR in KRMCCNO *** ' //
      &        'NO not implemented for CAS yet')
+C
 C        hjaaj TODO: at least NORBT must be NASHT in RSJACO/QDIAG calls
 C        check for other errors ... /feb 2004
          IF (NZ .EQ. 1) THEN
@@ -663,6 +788,9 @@ C     Diagonalize FD and return transformation matrix U.
 C     C controls which part of FD we diagonalize.
 C
 C     Written by J. Thyssen - Mon Mar 19 16:37:10 "MET 2001
+C
+C     SK - July 2008  FIXME: this routine should not work if NFSYM > 1.
+C                            Is this true???
 C
 C***********************************************************************
 #include "implicit.h"

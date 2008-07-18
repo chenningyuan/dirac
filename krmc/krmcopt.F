@@ -1830,6 +1830,9 @@ C     ***************************************************
 C
       CALL IZERO(NOROT,NORBT)
 C
+      NFRSHT = 0
+      NVSHT  = 0
+C
       WRITE(LUPRI,'(/A)') ' (RSETWOP) Orbital classes:'
       DO I = 1,NFSYM
          WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
@@ -1867,6 +1870,8 @@ C
          NVEC = 1
          CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
+         NFRSH(I) = 0
+         
          IF (NVEC .GT. 0) THEN
             LNOROT = .TRUE.
             WRITE(LUPRI,'(5X,A,A50)')
@@ -1875,8 +1880,81 @@ C
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
             END DO
+            NFRSH(I) = NVEC
          END IF
+C
+         NVSH(I) = NSSH(I) - NFRSH(I)
+C
+         NFRSHT = NFRSHT + NFRSH(I)
+         NVSHT  = NVSHT  + NVSH(I)
       END DO
+C     ... 'active' secondary orbitals
+      N2VSHX   = NVSHT   * NVSHT
+      N2VSHXQ  = N2VSHX  * NZ
+C     ... frozen secondary orbitals
+      N2FRSHX  = NFRSHT  * NFRSHT
+      N2FRSHXQ = N2FRSHX * NZ
+      IF ( NVSHT .gt. 0 )THEN
+C        ... mapping for 'active' and frozen secondary orbitals
+         IORBIX = 0
+         IFRSHI = 0
+         IORBFX = 0
+         IVSHII = 0
+         DO IFSYM = 1, NFSYM
+            DO I = 1, NPSH(IFSYM) 
+               IORBIX = IORBIX + 1
+               IDXG2F(IORBIX) = -1
+               IDXF2G(IORBIX) = -1
+               IDXS2G(IORBIX) = -1
+               IDXG2S(IORBIX) = -1
+            END DO
+            DO I = 1, NISH(IFSYM)
+               IORBIX = IORBIX + 1
+               IDXG2F(IORBIX) = -1
+               IDXF2G(IORBIX) = -1
+               IDXS2G(IORBIX) = -1
+               IDXG2S(IORBIX) = -1
+            END DO
+            DO I = 1, NASH(IFSYM)
+               IORBIX = IORBIX + 1
+               IDXG2F(IORBIX) = -1
+               IDXF2G(IORBIX) = -1
+               IDXS2G(IORBIX) = -1
+               IDXG2S(IORBIX) = -1
+            END DO
+            DO I = 1, NVSH(IFSYM)
+               IORBIX = IORBIX + 1
+               IVSHII = IVSHII + 1
+C
+               IDXG2F(IORBIX) = -1
+               IDXG2S(IORBIX) = IVSHII
+C
+               IDXF2G(IORBIX) = -1
+               IDXS2G(IVSHII) = IORBIX
+            END DO
+            DO I = 1, NFRSH(IFSYM)
+               IORBIX = IORBIX + 1
+               IFRSHI = IFRSHI + 1
+               IDXG2F(IORBIX) = IFRSHI
+               IDXG2S(IORBIX) = -1
+C
+               IDXF2G(IFRSHI) = IORBIX
+            END DO
+         END DO
+         IF (IPROPT .ge. 4) THEN
+            WRITE(LUPRI,'(1X,A)')
+     &           '(RSETWOP) F and IDXS2G'
+            DO I = 1, NVSHT
+              WRITE(LUPRI,'(8X,I6,I11)') I, IDXS2G(I)
+            END DO
+            WRITE(LUPRI,'(1X,A)')
+     &           '(RSETWOP) F and IDXF2G'
+            DO I = 1, NFRSHT
+              WRITE(LUPRI,'(8X,I6,I11)') I, IDXF2G(I)
+            END DO
+         END IF
+      END IF
+C
       CALL FLSHFO(LUPRI)
 C
 C     Always totally symmetric rotations (=> JOPSY = 1)
@@ -2393,11 +2471,19 @@ C     Retrieve MO coefficients from file
 C
 C     Input:
 C
+C        IOPT = 1: read from label NEWORB
+C        IOPT = 2: read from label OLDORB
+C        IOPT = 3: read from label NEWNATOB
+C
 C     Output:
 C        CMO     - MO coefficients
 C
 C     Written by J. Thyssen - Nov 3 1998
 C     Last revision :
+C
+C                S. Knecht  - Jul 7 2008
+C
+C                read from label NEWNATOB (MP2, later also MCSCF...)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2420,7 +2506,7 @@ C
       ELSE
          NOSTOP = .FALSE.
       END IF
-      IF (IOPT .LT. 1 .OR. IOPT .GT. 2) THEN
+      IF (IOPT .LT. 1 .OR. IOPT .GT. 3) THEN
           WRITE(LUPRI,'(/A,I10)')
      &       ' rREADMO: ERROR: Unknown option ',IOPT
           CALL QUIT('rREADMO: ERROR: Unknown option.')
@@ -2428,14 +2514,16 @@ C
       GOTO (100,100), IOPT
   100 CONTINUE
 C
-C     Read orbitals from label 'NEWORB'
+C     Read orbitals from label 'xxxxXXXX'
 C
       REWIND(LUNIT)
       IERR = -1
       IF ( IOPT .EQ. 1 ) THEN
          LABEL = 'NEWORB  '
-      ELSE
+      ELSE IF( IOPT .EQ. 2 )THEN
          LABEL = 'OLDORB  '
+      ELSE
+         LABEL = 'NEWNATOB'
       END IF
 C
       CALL MOLLAB(LABEL,LUNIT,IERR)
@@ -2464,14 +2552,19 @@ C
 C     End:
 C
  1000 CONTINUE
+      IPROPT_SAVE = IPROPT
+csk   IPROPT      = 10
       IF (IPROPT .GE. 10) THEN
          CALL HEADER('Output from rREADMO:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
+            WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1 
+            WRITE(LUPRI,*) ' NFBAS(I,0), NORB(I)',NFBAS(I,0),NORB(I)
             CALL PRQMAT(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
+      IPROPT = IPROPT_SAVE
  1010 CONTINUE
       CALL QEXIT('RREADMO')
       RETURN
@@ -2489,7 +2582,11 @@ C     Output: None
 C
 C
 C     Written by J. Thyssen - Nov 17 1998
+C
 C     Last revision :
+C                S. Knecht  - Jul 07 2008  start plain CI calculation 
+C                             from MCSCF/MP2 natural orbitals 
+C                             (RCI_MCORB = .TRUE.)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2511,9 +2608,9 @@ C
       DIMENSION CREF(*), CMO(*)
       LOGICAL VERBOSE
 C
-      LOGICAL LBIT, RCI_MCORB
+      LOGICAL LBIT, RCI_MCORB, RTRACI, NATOLCR_SAVE
       CHARACTER SZTRA(2,4)*80
-CSK only for test      IPRINT = 5
+      CHARACTER CNOLBL*6
 C
       CALL QENTER('ROPTST')
       KFRSAV = KFREE
@@ -2541,12 +2638,11 @@ C
 C     IROST controls the orbital start guess:
 C     ---------------------------------------
 C
-C     bit 1 of IROST: read NEWORB on KRMCSCF
-C     bit 2 of IROST: read OLDORB on KRMCSCF
-C     bit 3 of IROST: read DFCOEF from DHF program
-C     bit 4 of IROST: start on H1DIAG
-C
-csk      IPROPT = 10
+C     bit 1 of IROST: read NEWNATOB on KRMCOLD
+C     bit 2 of IROST: read NEWORB   on KRMCOLD
+C     bit 3 of IROST: read OLDORB   on KRMCOLD
+C     bit 4 of IROST: read DFCOEF from DHF program
+C     bit 5 of IROST: start         on H1DIAG
 C
       IF (IPROPT .GE. 2) THEN
          WRITE(LUPRI,'(4(/A,I4))')
@@ -2563,9 +2659,34 @@ C     *******************************
 C
       IF (IROST .EQ. 0) GOTO 1100
 C
-C     (1.1) Read from label NEWORB on KRMCOLD
+C     (1.1) Read MP2 natural orbitals from label NEWNATOB on file
+C           KRMCOLD
 C
       IF (LBIT(IROST,1)) THEN
+         IF ( LUKRM5 .GT. 0 ) THEN
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,3,LUKRM5)
+            IF (JRDMO .EQ. 0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  WRITE(LUPRI,'(/A)')
+     &                 ' (ROPTST)  Start orbitals read from' //
+     &                 ' label NEWNATOB on file KRMCOLD'
+               END IF
+C
+               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+                 WRITE(LUPRI,'(/A)')
+     &                '  (ROPTST)  Starting CI calculation ' //
+     &                '  from MC orbitals! '
+                 RCI_MCORB = .TRUE.
+               ENDIF 
+               GO TO 1000
+            END IF
+         END IF
+      END IF
+C
+C     (1.2) Read from label NEWORB on KRMCOLD 
+C
+      IF (LBIT(IROST,2)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
@@ -2575,33 +2696,48 @@ C
      &                 ' (ROPTST)  Start orbitals read from' //
      &                 ' label NEWORB on file KRMCOLD'
                END IF
+               IF ( GENFOCK )THEN
+                  REWIND(LUKRM5)
+                  IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
+                     IF (MOPT_MXMACRO .ge. 0 ) THEN
+                        CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
+csk                     WRITE(LUPRI,'(/A)')
+csk  &                  ' start vector read-in'
+csk                     CALL WRTMATMN(CREF,1,NZCONFQ,1,NZCONFQ,LUPRI)
+                     END IF
+                  END IF
+C                 ... generate LUCIAREL block/structure information
+                  CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
+                  CNOLBL  = 'ONLYFD'
+                  RTRACI  = .FALSE.
+C                 ... if CI Nat. Orb. module shall be used later
+                  NATOLCR_SAVE = NATOLCR
+                  NATOLCR = .FALSE.
+                  CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
+                  CALL DZERO(WORK(KEIG),NORBT)
+C                 ... transformation to Fock-type orbitals
+                  CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPRINT,WORK(KEIG),
+     &                         WORK,KFREE,LFREE)
+                  NATOLCR = NATOLCR_SAVE
 C
-C              SK - 22-04-08: start plain CI calculation from MCSCF 
-C                             orbitals
-C
-C              FIXME: re-write start guess code for orbital and vector 
-C                     reading more human readable. SK- 22-04-08
+                  CALL MEMREL('after FOCK-type',WORK,1,KFRSAV,
+     &                         KFREE,LFREE)
+               END IF
 C
                IF( MOPT_MXMACRO .EQ. - 1 ) THEN
                  WRITE(LUPRI,'(/A)')
      &                '  (ROPTST)  Starting CI calculation ' //
      &                '  from MC orbitals! '
-               IF (LBIT(IWRT,1)) THEN 
-                   CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-                   WRITE(LUPRI,'(/A)') 
-     &                '  Orbitals saved as NEWORB on KRMCSCF'
-               END IF
                  RCI_MCORB = .TRUE.
-                 GOTO 1100
-               ENDIF 
+               ENDIF
                GO TO 1000
             END IF
          END IF
       END IF
 C
-C     (1.2) Read from label OLDORB on KRMCOLD
+C     (1.3) Read from label OLDORB on KRMCOLD
 C
-      IF (LBIT(IROST,2)) THEN
+      IF (LBIT(IROST,3)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
@@ -2616,10 +2752,10 @@ C
          END IF
       END IF
 C
-C     (1.3) From previous DHF calculation.
+C     (1.4) From previous DHF calculation.
 C           Read orbitals from DFCOEF
 C
-      IF (LBIT(IROST,3)) THEN
+      IF (LBIT(IROST,4)) THEN
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
@@ -2635,10 +2771,10 @@ C
          END IF
       END IF
 C
-C     (1.4) From a usual DHF start guess, i.e. bare nucleus guess.
+C     (1.5) From a usual DHF start guess, i.e. bare nucleus guess.
 C           FIXME: to be implemented
 C
-      IF (LBIT(IROST,4)) THEN
+      IF (LBIT(IROST,5)) THEN
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
@@ -2658,7 +2794,7 @@ C
      &     'Failed to generate orbital start guess; ',
      &     'value of IROST is ',IROST
       CALL QUIT('*** ERROR in ROPTST *** No orbital start guess')
-CC
+C
  1000 CONTINUE
 C
 C
@@ -2672,7 +2808,11 @@ C
          END DO
       END IF
 C
-      IF (LBIT(IWRT,1)) CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+      IF (LBIT(IWRT,1)) THEN 
+         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+         WRITE(LUPRI,'(/A)') 
+     &   '  Orbitals saved as NEWORB on KRMCSCF'
+      END IF
 C
  1100 CONTINUE
       CALL FLSHFO(LUPRI)
@@ -2680,6 +2820,14 @@ C
 C     *****************************
 C     *** (2) Conf. start guess ***
 C     *****************************
+C
+C
+C     TEST: SK - will be adopted sooner or later ...
+C
+      IF( GENFOCK ) THEN
+        IF (LBIT(IWRT,2)) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+        GOTO 2100
+      END IF
 C
 C
 C
@@ -3001,6 +3149,7 @@ C
 C
 CTF   Natural orbital generation currently works only
 CTF   for 1 vector with LUCIAREL. FIXME.
+CSK   DONE!
 C
          WRITE(LUPRI,'(//A/A/A)') 
      &'  *************************************************************',
@@ -3025,6 +3174,9 @@ C
 C
          END DO
 C
+C        set back - otherwise LUCI_DENS call may fail
+C
+         NATOLCR = .FALSE.
 C
       ELSE IF( OPT_CIPROGRAM .EQ. 'GOSCI' )THEN
 C
@@ -5351,6 +5503,67 @@ C
       CALL QEXIT('SVLDE2')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KRMC_WAKN
+C
+C     Call the slaves if we run in parallel for KR-MCSCF
+C
+C     adaption of the corresp. RELCCSD routine written by Luuk Visscher
+C     KR-MCSCF adaption: S. Knecht
+C
+C     Last revision: S. Knecht           - June 2008, Odense
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcbgen.h"
+#include "parkrmc.h"
+C
+C     ITASK = 7 for parallel KR-MCSCF
+C
+      IF (PARCAL) CALL DIRAC_PARCTL( 7 )
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KRMC_RELN
+C
+C     Release the slaves if we run in parallel for KR-MCSCF
+C
+C     adaption of the corresp. RELCCSD routine written by Luuk Visscher
+C     KR-MCSCF adaption: S. Knecht
+C
+C     Last revision: S. Knecht           - June 2008, Odense
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "dcbgen.h"
+#include "infpar.h"
+#include "parkrmc.h"
+C
+      IF (.NOT.PARCAL) RETURN
+C
+C     Find the slaves and release them
+
+      NTEST = -1
+#if defined (VAR_MPI)
+      DO I = 1,NUMNOD
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,25,
+     &                  MPI_COMM_WORLD,IREQ,IERR)
+         CALL MPI_WAIT(IREQ,ISTAT,IERR)
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,35,
+     &                  MPI_COMM_WORLD,IERR)
+      ENDDO
+#endif
+
+C
+C     Let the slaves sleep (if relevant for this operating system)
+C
+      CALL DIRAC_PARCTL( 0 )
+C
+      END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRMCNOD(WORK,LWORK)
@@ -5371,8 +5584,65 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
+      CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
 #include "memint.h"
 C
       KFRSAV = KFREE
+C     Add the master node, NUMNOD = number of slaves
+      NUMCPU = NUMNOD + 1
+C     run parallel MCSCF
+      PARMCSCF = .TRUE.
+C
+*
+*     create a node-unique filename as output file. Important on
+*     shared file systems. Otherwise all the output gets mingled in one
+*     file. You don't really want to do this.
+*
+      KRMC_NODEF="KRMC_NODE.OUT"
+*
+      IF (MYTID .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (KRMC_NODEFN,'(A13,A1,I1)') KRMC_NODEF,'.',MYTID
+         IFILELNG=15
+      ELSE IF (MYTID .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (KRMC_NODEFN,'(A13,A1,I2)') KRMC_NODEF,'.',MYTID
+         IFILELNG=16
+      ELSE IF (MYTID .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (KRMC_NODEFN,'(A13,A1,I3)') KRMC_NODEF,'.',MYTID
+         IFILELNG=17
+      ELSE
+         CALL Abend2("NUMCPU.GT.1000! EXTEND KRMCNOD MODULE")
+      ENDIF
+*
+*     open the local input file and the node specific output file.
+*     Every access to the local stdout handle then automatically writes
+*     to the corresponding output file.
+*
+*
+      OPEN(IKRMCPARF,FILE = KRMC_NODEFN(1:IFILELNG))
+C
+C     transfer file handle to common block
+C
+      LMCPRI = IKRMCPARF
+C
+C
+C     LUCIAREL run is finished for the slaves ...
+C
+      CLOSE (IKRMCPARF,STATUS='KEEP')
+C
+C     .. wait for the master
+C
+      LUEND = .FALSE.
+C
+      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,25,
+     &              MPI_COMM_WORLD,IREQ,IERR)
+
+    1    CONTINUE
+         CALL SLEEP(1)
+         CALL MPI_IPROBE(MPARID,35,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
+         IF (.NOT.LUEND) GOTO 1
+
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,35,
+     &               MPI_COMM_WORLD,ISTAT,IERR)
+C
       END
 #endif
