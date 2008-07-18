@@ -1175,6 +1175,7 @@ C
               write(LUWRT,'(A,I4)') ' Density matrix for root ',
      &                                JROOT_SCR
               write(LUWRT,*) '======================================='
+C
               call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
      &                     WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
      &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC)
@@ -1268,7 +1269,9 @@ C         T split / no T distribution
      &                            WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
               END IF
             ELSE
-              CALL DZERO(F2,LF2_ZERO)
+C             ... two-particle density matrix
+              IF( IDEN12 .eq. 2 ) CALL DZERO(F2,LF2_ZERO)
+C
               IF( SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
                 call trnsfdens_split(F1,F2,T_BUFF,WORK(KMAX_DENS_BLK),
@@ -1278,10 +1281,16 @@ C         T split / no T distribution
      &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
 #endif
               ELSE
+csk             IF( IDEN12 .eq. 1 ) THEN
+csk               write(LUWRT,*) ' '
+csk               write(LUWRT,*) '    this is my INDEX array        '
+csk               write(LUWRT,*) ' '
+csk               CALL IWRTMAMN8(WORK(KINDEX),1,NTERMS,1,NTERMS,LUWRT)
+csk             END IF
                 call trnsfdens(F1,F2,WORK(KT_CC),
      &                        WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
      &                        WORK(KSIGNNHX),WORK(KLOP_REO),
-     &                        WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
+     &                        WORK(KSIOPREO),IRC,NTOOB2,IDEN12,IPRDEN)
               END IF
             END IF
           END IF

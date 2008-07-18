@@ -9304,10 +9304,13 @@ Cjan      end do
 *                  Timo Fleig, November 2006
 *                - revised for proper NO-occupation number runs
 *                  Stefan Knecht, October 2007
+*                - CINC_NCT0 controls NCT = 0 option
+*                  one-particle density run may fail otherwise
+*                  Stefan Knecht, July 2008
 *--------------------------------------------------------------------*
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
-     &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
+     &                     SIGN_OPREO,ISF,NASHTL,IDEN_TYPE,IPRNT)
 *
 *  Input:  DENS
 *  Output: F1,F2
@@ -9338,8 +9341,16 @@ Cjan      end do
      &          IREOKF(MXPORB)
       integer*8 NINT_TOT, NINT_TP_I8, IRIOFF
       integer   NINT_TP
+      LOGICAL   CINC_NCT0
 *
       NTESTL = 00
+*
+      CINC_NCT0 = .TRUE.
+      IF ( IDEN_TYPE .eq. 1 ) THEN
+         CINC_NCT0 = .FALSE.
+         NTESTL = 00
+      END IF
+*      
       NTEST = max(IPRNT,NTESTL)
 *
       NINT_TOT = N1ELINT + N2ELINT
@@ -9436,10 +9447,11 @@ Cjan      end do
           XNINT_TP_I8 = REAL(NINT_TP_I8)
           NINT_TP_X = IGIVE_I_B(XNINT_TP_I8)
           NINT_TP = NINT_TP_X
-csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
+csk       write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
           do INT = 1,NINT_TP,1
 *
-* Determine type of density element
+*           determine type of density element
+*
             NCT = 0
             do IC=1,4,1
               if (INDEX(IC,IRUN).ne.0) then
@@ -9450,7 +9462,7 @@ csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
                 INDEX_L(IC) = INDEX(IC,IRUN) * IUBFAC
               end if
             end do
-csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
+csk         write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
 *
             if (NCT.eq.2) then
               I = IREOKF(INDEX_L(ICSAVE(1))  
@@ -9548,7 +9560,7 @@ csk            write(luwrt,*) 'NCT is',NCT,'for IRUN',IRUN
 *
               end if
 *             ^ Non-redundant density type (see get_hx_rela)
-            else if( NCT.eq. 0 .and. NOOCCN_DENS_RUN )then
+            else if( (NCT.eq. 0) .and. .NOT. CINC_NCT0 )then
 csk               write(LUWRT,*) ' what to do with 4 zero inidces???'
 csk               write(LUWRT,*) ' continuing ...'
             else 
@@ -10741,8 +10753,8 @@ csk          write(LUWRT,*) ' NINT_TP is for IRUN',NINT_TP,IRUN
               IND_R(4) = INDEX(4,IRUN) - (LABEL(4,IXTP) - 1)/2 * NASHT
             else
 *  One-particle density element. No modification.
-csk              write(LUWRT,*) ' One-particle density element for IRUN',
-csk     &                         IRUN
+              write(LUWRT,*) ' One-particle density element for IRUN',
+     &                         IRUN
               IND_R(1) = INDEX(1,IRUN)
               IND_R(2) = INDEX(2,IRUN)
               IND_R(3) = INDEX(3,IRUN)
