@@ -1795,7 +1795,7 @@ C***********************************************************************
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
       IF (N.GT.LR .OR. N.GT.LC) THEN
-        CALL QUIT('Inconsisten N,LR,LC in DUNIT2 call')
+        CALL QUIT('Inconsistent N,LR,LC in DUNIT2 call')
       ENDIF
       DO IZ = 1,NZ
         DO J = 1,N
