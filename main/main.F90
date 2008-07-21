@@ -116,6 +116,9 @@ program dirprg
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
-  if (parcal) call mpixfinalize()
+! if (parcal) call mpixfinalize()
+!             SK - 21-07-2008 Since we have called mpixinit explicitly, a call to
+!             mpixfinalize is mandatory.
+              call mpixfinalize()
 #endif
 end program dirprg
