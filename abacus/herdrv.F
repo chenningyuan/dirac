@@ -1393,9 +1393,11 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
      &    '* Separate density screening of Coulomb integral batches'
                 IF(IEDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
      &    '* Separate density screening of exchange integral batches'
+                CALL FLSHFO(LUPRI)
               ELSE
                  WRITE(LUPRI,'(4X,A)') 
-     &           '---> WARNING : Screening turned off !'
+     &           '---> WARNING : Integral screening turned off !'
+                 CALL FLSHFO(LUPRI)
               ENDIF
             ENDIF
             IF(RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN

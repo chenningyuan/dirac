@@ -1477,9 +1477,13 @@ C  /* Deck derlon */
       SUBROUTINE DERLON(COEF12,COOR12,COOR1,NUC1,NUC2,NUC12,MXUC12,
      &                  JMAX1,JMAX2,MAX1,MAX2,I120X,I120Y,I120Z,MAXDIF,
      &                  IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+CMI Note: problems with pgf90 7.3-2 when optimization is on
 C
 C     tuh Sep 4 92
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1585,9 +1589,16 @@ C  /* Deck excsgn */
       SUBROUTINE EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,MXUCCD,
      &                  ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,SPNORB,ISYMT,
      &                  IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C     tuh March 92
+CMI Note: COEFCD is changing dimensions inside ! Before call it's declared as COEFCD(*)
 C
+C    Called from:  GABDR2 
+C                  SYMLOP
+C
+C    tuh March 92
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1596,7 +1607,7 @@ C
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P
       LOGICAL DOCOMP(3), SPNORB, LONDON
-      DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
+      DIMENSION COEFCD(MXUCCD,0:(JMAXC+JMAXD),0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
 #include "symmet.h"
 #include "chrnos.h"
@@ -1608,6 +1619,11 @@ C
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
 C
+      IF (IPRINT .GE. 20) THEN
+        WRITE(LUPRI,'(/,2X,A)') '... EXCSGN at start'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
       IF (ISYMT .EQ. 0) THEN
          SGNOLD(1) = D1
          SGNOLD(2) = D1
@@ -1726,6 +1742,7 @@ C
   900          CONTINUE
   800       CONTINUE
   700    CONTINUE
+         CALL FLSHFO(LUPRI)
       END IF
       RETURN
  1000 FORMAT (/,1X,A4,'(',I1,',',I1,';',I1,')',/)

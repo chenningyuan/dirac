@@ -1689,6 +1689,8 @@ C  /* Deck symlop */
      &          GABRAO(NSYMBL,NSYMBL,0:7),DMRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,*),IREPDM(*),
      &          INDX(2,*),INDXAB(*)
+CMI ... added missing declarations (as in GABDR2)
+      DIMENSION COEFAB(*),COEFCD(*)
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -1887,9 +1889,20 @@ C
 C              If necessary change sign of expansion coefficients
 C              ==================================================
 C
+
+               IF (IPRINT .GT. 15) THEN
+                 WRITE(LUPRI,'(/,2X,A)') 'SYMLOP: EXCSGN start '
+                 CALL FLSHFO(LUPRI)
+               ENDIF
+
                CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                     MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
      &                     SPNORB,ISYMT,IPRINT)
+
+               IF (IPRINT .GT. 15) THEN
+                 WRITE(LUPRI,'(/,2X,A)') 'SYMLOP: EXCSGN end '
+                 CALL FLSHFO(LUPRI)
+               ENDIF
 C
 C              Check whether this integral gives zero contribution
 C              ===================================================
@@ -2836,26 +2849,33 @@ C
 C        WRITE (LUPRI,'(A,(T11,10I5))') ' NSTRSH',(NSTRSH(I),I=1,MAXSHL)
          WRITE (LUPRI,'(A,(T11,10I5))') ' IORBSB',(IORBSB(I),I=0,NTOT)
          WRITE (LUPRI,'(A,(T11,10I5))') ' NCNTSH',(NCNTSH(I),I=1,MAXSHL)
+         CALL FLSHFO(LUPRI)
          DO 2000 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'JSTRSH (gen. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,1),J=1,NORBSH(I))
             WRITE (LUPRI,'(A,I5)')'JSTRSH (seg. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,2),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2000    CONTINUE
          DO 2001 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'NPRIMS (gen. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,1),J=1,NORBSH(I))
             WRITE (LUPRI,'(A,I5)')'NPRIMS (seg. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,2),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2001    CONTINUE
          DO 2002 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'CENTSH for ISHELL =',I
             WRITE (LUPRI,'(3F20.10)')
      *             CENTSH(I,1),CENTSH(I,2),CENTSH(I,3)
+            CALL FLSHFO(LUPRI)
  2002    CONTINUE
          DO 2003 I = 1, MAXSHL
-            WRITE (LUPRI,'(A,I5)')'IORBSH for ISHELL =',I
+            WRITE (LUPRI,'(A,I5,A,I5,A,I5)')
+     &            'IORBSH for ISHELL =',I,'/',MAXSHL,
+     &            ' and for NORBSH(ISHELL)=',NORBSH(I)
             WRITE (LUPRI,'(15I5)')(IORBSH(I,J),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2003    CONTINUE
       END IF
       RETURN
@@ -3637,7 +3657,13 @@ C
 C  /* Deck cprlop */
       SUBROUTINE CPRLOP(IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,SQ12EL,
      &                  IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C
+C
+C     Called from GABDR2
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3660,6 +3686,7 @@ C
           WRITE (LUPRI,'(2X,A, L5)')'SQ12EL    ',SQ12EL
           WRITE (LUPRI,'(2X,A, I5)')'NOABCD    ',NOABCD
           WRITE (LUPRI,'(2X,A, I5)')'NOPREP    ',NOPREP
+          CALL FLSHFO(LUPRI)
         END IF
       END IF
       DO 100 IREPX = 1, NOPREP
@@ -3777,6 +3804,12 @@ C
   400    CONTINUE
       END IF
   100 CONTINUE
+C
+      IF (IPRINT .GT. 10) THEN
+        WRITE(LUPRI,'(2X,A)') '...reached end of CPRLOP'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+C
       RETURN
       END
 C  /* Deck twoper */

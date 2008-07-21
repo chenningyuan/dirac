@@ -653,7 +653,7 @@ C
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
 C
-      CALL QENTER('GABDR2')
+CMI   CALL QENTER('GABDR2')
 #include "memint.h"
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR2','*',103)
 C
@@ -737,6 +737,12 @@ C
          IF (PERTUR .OR. LONDON .OR. SPNORB)
      &       CALL DZERO(SOINT,NSOINT)
       END IF
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') '...  GABDR2: big cycle start...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
       IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
@@ -760,6 +766,7 @@ c is programmed (normally one-center is skipped because
 c the total contribution is zero).  /jan.98-hjaaj,jth
          CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
      &            .AND. MAXDER .EQ. 0
+
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),
      &             WORK(KFREE),LFREE,
      &             JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
@@ -769,6 +776,13 @@ c the total contribution is zero).  /jan.98-hjaaj,jth
      &             AACDX,AACDY,AACDZ,IAB0X,IAB0Y,IAB0Z,CAEQCB,.TRUE.,
      &             .TRUE.,BIGVEC,UNDIFF,LONDON,SPNORB,12,THRESH,
      &             MAXDER,IPRINT)
+
+         IF (IPRINT .GT. 15) THEN
+             WRITE(LUPRI,'(2X,A)') 'GABDR2: first ODCOEF end'
+             CALL FLSHFO(LUPRI)
+         ENDIF
+
+
          NSYMS = 0
          DO 200 ISYMS = 0, MAXOPR
          IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
@@ -799,6 +813,13 @@ C
      &                 CORDY0,CORDZ0,ABCCX,ABCCY,ABCCZ,ICD0X,ICD0Y,
      &                 ICD0Z,.FALSE.,.TRUE.,.TRUE.,BIGVEC,UNDIFF,
      &                 LONDON,SPNORB,34,THRESH,MAXDER,IPRINT)
+
+           IF (IPRINT .GT. 15) THEN
+             WRITE(LUPRI,'(2X,A)') 'GABDR2: second ODCOEF end'
+             CALL FLSHFO(LUPRI)
+           ENDIF
+
+
             IF (NOCONT) THEN
               NCCINT = NUCAB *NUCCD *KHKTAB*KHKTCD
             ELSE
@@ -833,9 +854,20 @@ C
 C             If necessary change sign of expansion coefficients
 C             ==================================================
 C
+              IF (IPRINT .GT. 15) THEN
+               WRITE(LUPRI,'(/,2X,A)') 'GABDR2: EXCSGN start '
+               CALL FLSHFO(LUPRI)
+              ENDIF
+C
               CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                    MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
      &                    SPNORB,ISYMT,IPRINT)
+
+              IF (IPRINT .GT. 15) THEN
+               WRITE(LUPRI,'(/,2X,A)') 'GABDR2: EXCSGN end '
+               CALL FLSHFO(LUPRI)
+              ENDIF
+C
 C
 C             Check whether this integral gives zero contribution
 C             ===================================================
@@ -977,6 +1009,11 @@ C
   200    CONTINUE
       END IF
   100 CONTINUE
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') '...  GABDR2: big cycle end...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
 C
 C     ********************************
 C     ***** Process SO integrals *****
@@ -1008,7 +1045,13 @@ C
             CALL QUIT('London not yet implemented !')
          END IF
       ENDIF
-      CALL QEXIT('GABDR2')
+CMI   CALL QEXIT('GABDR2')
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') 'GABDR2 routine end...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
       RETURN
 C
       END
