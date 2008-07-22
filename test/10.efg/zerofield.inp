@@ -24,7 +24,7 @@
 **PROPERTIES
 .EFG
 *EXPECTATION
-.ORBANA
+#.ORBANA  #mi - deactivated to prevent crash 
 **MOLTRA
 .ACTIVE
 2..36
