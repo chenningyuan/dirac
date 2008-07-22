@@ -2372,17 +2372,18 @@ C   reorthonormalization term, {T(2), H(0)},
 C   (where {T(2),H(0)} = {T(2),F(0)}) for the magnetic susceptibility 
 C   with London atomic orbitals.
 C   In the Levy-Leblond case this is identical
-C   with the DALTON counterpart.
+C   with the nonrelativistic DALTON counterpart.
 C
 C   Definition:
 C -------------
 C   The exact form (Ruud et al, JCP...) is -1/2{S(2),H(0)} 
 C   (for both connections beacuse the S(2) operator is unique)
 C
-C On input:  CMO - MO coefficients, IBEIG - boson irreps info
+C   On input:  CMO - MO coefficients, IBEIG - boson irreps info
+C
+C   Called from: EXPVSUSLO (prp/pammag.F)
 C
 C   Written by Miro Ilias,  jun 2003,  Prievidza.
-C
 C   Last revisions:
 C
 C*****************************************************************************
@@ -2421,7 +2422,6 @@ C   Get the Fock matrix in MO basis
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 
-
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 
@@ -2433,8 +2433,10 @@ C  ... array for T(2)_comp connection matrixes in MO basis
 
       IPRINT = IPRPRP
       EPMIX = DOEPRN 
-      IF (IPRINT.GE.5)  WRITE(LUPRI,'(3X,A,L2 )')
-     & "HORDRNT: The EPMIX is set to:", EPMIX
+      IF (IPRINT.GE.5)  THEN
+        WRITE(LUPRI,'(/,3X,A,L2 )')
+     & "HORDRNT: The EPMIX variable is set to:", EPMIX
+      ENDIF
 
 C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
       DOPCTRA_SAVE=DOPCT
@@ -2464,15 +2466,15 @@ C ... Call TTRA
          CALL HEADER(
      &'HORDRNT: Transformed Fock matrix, {T(2),F(0)}',-1)
          WRITE(LUPRI,'(2X,A,I1)')
-     & '*** tensor component: ',ICOMP
+     & '*** tensor component(1-6): ',ICOMP
          CALL PRQMAT(WORK(KTFMAT),NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
         ENDIF
 
-C------------------------------------------------------
+C----------------------------------------------------------------
 C  Calculate the expectation value for the higher order
 C reorthonormalization term, SUSFS(3,3).
-C------------------------------------------------------
+C----------------------------------------------------------------
        EXPVAL = D0
        DO IFS = 1, NFSYM
        IF (NOCC(IFS).GT.0) THEN
@@ -2485,11 +2487,11 @@ C------------------------------------------------------
        ENDDO
        EXPVAL = EXPVAL*D2
 
-C ... control print
+C       ... control print-out ...
        IF (IPRINT.GE.5) THEN
-         WRITE(LUPRI,'(/2X,A,I2,1X,D15.9)')
-     & 'HORDRNT: Contribution to the highest order reorthonorm. term'
-     &//' -exp.value {S(2),H(0)} of component ',ICOMP,EXPVAL
+        WRITE(LUPRI,'(/2X,A,I2,1X,A,D15.9)')
+     &  'HORDRNT: Contribution to the highest order reorthonorm. term'
+     &  //' -exp.value {S(2),H(0)} of component ',ICOMP,' is:',EXPVAL
        ENDIF
 
        IF (ICOMP.EQ.1) THEN
@@ -2514,16 +2516,15 @@ C ... control print
       ENDDO ! of XX,XY,XZ,YY,YZ,ZZ .....
       DOPCT=DOPCTRA_SAVE
 
-C     .... release the whole block used in this subroutine
+C     .... release the whole memory block used in this subroutine
       CALL MEMREL('HORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
 
+C     ... close the AOPROPER file
       CLOSE(LU1INT,STATUS = 'KEEP')
 
-C     CALL QUIT('Exit from HIORDRNT')
       CALL QEXIT('HORDRNT')
       RETURN
       END
-
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lordrrnt  */
@@ -3009,7 +3010,8 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-      PARAMETER(DMI2 = -0.5D0, DM1 = -1.0D0, D2 = 2.0D0, D1 = 1.0D0)
+      PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
+     &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -3325,7 +3327,7 @@ C Define d2S/dBXX,XY,...
 C Specify latter PFAC(1)!!!
        IPTYP  = 1
        NPCOMP = 1
-       PFAC(1) = -DI2 ! For term -1/2 {S(2),H(0)}
+       PFAC(1) = DMI2 ! For the  "-1/2 {S(2),H(0)}" term
        LABELC='dS/dB2'
        ILABELC =6 
        PNAME     = LABELC(1:ILABELC)//'XX'
