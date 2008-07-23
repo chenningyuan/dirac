@@ -547,7 +547,7 @@ C
       GOTO 13
 12    N=N+1
 13    H=(2.D0*(DFLOAT(N)+X)*G
-     #   -(DFLOAT(N)-1.D0+C/DFLOAT(N))*F)/(DFLOAT(N)+1)
+     &   -(DFLOAT(N)-1.D0+C/DFLOAT(N))*F)/(DFLOAT(N)+1)
       F=G
       G=H
       IF (H*DFLOAT(N).LT.E) GOTO 12
