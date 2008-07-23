@@ -2665,6 +2665,8 @@ C       IREP - irrep
 C       IC   - L(1),S(2) component
 C       
 C
+CMI:  IPRINT is IPRHAM (from GMOTRA)
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2710,9 +2712,11 @@ C
 C     Initial print section
 C     =====================
 C
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A,A3,2X,A1)') 
-     &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
+      IF(IPRINT.GE.4) THEN
+        WRITE(LUPRI,'(/,2X,A,A3,2X,A1)') 
+     &  '*** RKBCA1: Transformation matrix for ',REP(IREP),COMP(IC)
+        WRITE(LUPRI,*) 'JA1=',JA1,' JA2=',JA2
+        CALL FLSHFO(LUPRI) 
       ENDIF
 C
 C     Loop over shells
@@ -2749,7 +2753,14 @@ C       ----------------------------------------
           IOFF = 0
         ENDIF
         LL  = NHKT(JA)
-C
+
+        IF(IPRINT.GE.8) THEN
+          write(LUPRI,*) 'JA, NHKT(JA)=',JA, NHKT(JA)
+          write(LUPRI,*) 'LL=',LL
+          CALL FLSHFO(LUPRI) 
+        ENDIF
+
+C   
 C       New L-value; extract relevant transformation matrix
 C       ---------------------------------------------------
         IF(LL.NE.ILL) THEN
@@ -2761,7 +2772,21 @@ C       ---------------------------------------------------
 C.........these factors assure the correct normalized linear
 C.........combination of L and (L-2) for the modified solid harmonic
           L = LL - 1
-          FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
+
+          ARGSQRT = (D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1)
+
+          IF (IPRINT.GE.8) THEN
+           write(lupri,*) 'L,SDPRE(L)=',L,SDPRE(L)
+           write(lupri,*) 'ARGSQRT=',ARGSQRT
+           CALL FLSHFO(LUPRI) 
+          ENDIF
+
+CMI       FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
+          IF (ARGSQRT.GT.D0) THEN
+            FACL   = D1/SQRT(ARGSQRT)
+          ELSE
+            FACL   = D0
+          ENDIF
           FACLM2 = -D2*(D2*SDPRE(L)-D1)*FACL
         ENDIF
 C
