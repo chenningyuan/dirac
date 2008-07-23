@@ -478,7 +478,7 @@ if [ "$mesp" = "mpi" ]; then
 # mi: added mpif77 since it might handle F90/95 (when built up from ifort for instance)
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77"
 else
-  comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 f90 xlf_r xlf efc cf90 pathf90'
+  comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
 fi
 user_comp=$F90_COMP
 find_compiler
@@ -655,6 +655,8 @@ openmpif*|mpif*)
       F90real=pathf90
    elif "$F90_COMP" $mpishowopt | grep -q pgf90; then
       F90real=pgf90
+   elif "$F90_COMP" $mpishowopt | grep -q lfc; then
+      F90real=lfc
    elif "$F90_COMP" $mpishowopt | grep -q g95; then
       F90real=g95
    else 
@@ -1133,18 +1135,28 @@ set_bit_arch(){
     cpp_cc="-DINT_STAR8 $cpp_cc"
 # provide specific compiler with the appropriate integer flag
     case "$F90real" in
+#
+#
+#
       g95|pgf90|ifc|ifort|pathf90)
          opt="$opt -i8" 
          safe="$safe -i8" ;;
+#
 #   ... take care of gfortran, gfortran-4.2, gfortran-4.3 etc...
       gfortran-*|gfortran)
          opt="$opt -fdefault-integer-8"
          safe="$safe -fdefault-integer-8" ;;
+#
+#   .... take care of Lahey fortran
+      lfc)
+         opt="$opt --long"
+         safe="$safe --long" ;;
     esac
   fi
 
 if [ $IPRINT -ge "5" ];  then
  echo 'set_bit_arch: set opt='$opt
+ echo 'set_bit_arch: set safe='$safe
 fi
 
 }
@@ -1176,13 +1188,18 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR" 
       ;;
+    lfc)
+      opt="-g --fast"
+      safe="-g"
+      cpp_cc="$cpp_cc"
+      mod="-M $MODULE_DIR" 
+      ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       ;;
-
     xlf)
       mod="-qmoddir=$MODULE_DIR"
      # .... extra flags for *.F90 files ! 
