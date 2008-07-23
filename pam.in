@@ -216,8 +216,10 @@ setup_command()
       if [ -n "$DIRAC_CMD" ]; then
          echo "WARNING. DEBUG requested, thus these options ignored: $DIRAC_CMD"
       fi
-      if [ "$DEBUGGER" = "gdb" ]; then
-        DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
+# mi: various debuggers have various invoking flags, take care of it
+      if [ "$DEBUGGER" = "gdb" -o "$DEBUGGER" = "idb" ]; then
+       # DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
+        DIRAC_CMD="$DEBUGGER -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/moltra -directory=$SRC_DIR/relccsd "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "

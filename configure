@@ -1887,6 +1887,8 @@ LOCALDISKS=$localdisks
 RCP=$rcp
 RSH=$rsh
 #
+# ... debugger - supported gdb, idb, dbx ....
+#
 DEBUGGER=$debug
 #
 CLEANUP=
