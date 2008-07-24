@@ -10,7 +10,8 @@ integer(kind=4), private :: iprint_vect=0
 type Vect
 !private ! I had to release he private statement due to easy access to pointers !!!
 ! contains position on the PW (WORK) array 
-  integer (kind=4) :: kstart 
+!  integer (kind=4) :: kstart 
+  integer  :: kstart 
 !   the total size on the array
  ! integer (kind=8) :: array_size = 0
   integer :: array_size = 0
@@ -131,7 +132,9 @@ subroutine set_vect_iprint(iprint)
 !==============================================================
 #include "priunit.h"
 #include "iratdef.h"
-integer (kind=8/IRAT), intent(in) :: iprint
+!integer (kind=8/IRAT), intent(in) :: iprint
+integer, intent(in) :: iprint
+
 CALL QENTER('set_vect_iprint')
  !write(LUPRI,*) 'set_vect_iprint: iprint=',iprint
  iprint_vect = iprint
@@ -444,7 +447,8 @@ use GeneralPointers
 #include "priunit.h"
 character(*), intent(in) :: char_type
 !integer(kind=8/IRAT),intent(in) :: isize
-integer(kind=8/IRAT) :: isize
+!integer(kind=8/IRAT) :: isize
+integer :: isize
 !integer(kind=8),intent(in) :: isize
 integer,intent(in) :: isize_in
 character(*), optional, intent(in) :: text
@@ -573,8 +577,11 @@ use Memory
 character(*), intent(in) :: char_type
 !integer(kind=8/IRAT),intent(in) :: isize1,isize2
 integer,intent(in) :: isize1,isize2
-integer(kind=8/IRAT) :: isize
+
+!integer(kind=8/IRAT) :: isize
+integer :: isize
 !integer(kind=8),intent(in) :: isize
+
 character(*), optional, intent(in) :: text
 type(Array2Dim) :: self
 call QENTER('Make2DimArray')
@@ -628,8 +635,11 @@ use Memory
 character(*), intent(in) :: char_type
 !integer(kind=8/IRAT),intent(in) :: isize1,isize2
 integer,intent(in) :: isize1,isize2,isize3
-integer(kind=8/IRAT) :: isize
+
+!integer(kind=8/IRAT) :: isize
+integer :: isize
 !integer(kind=8),intent(in) :: isize
+
 character(*), optional, intent(in) :: text
 type(Array3Dim) :: self
 call QENTER('Make3DimArray')

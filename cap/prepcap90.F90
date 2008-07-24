@@ -321,7 +321,8 @@ use Vectors
 #include "mxcent.h"
 #include "nuclei.h"
 type(Vect), intent(inout) :: icapbfo, iobf1_2
-integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
+!integer(kind=4) :: KIOBF1,KIOBF2,KILC1,KILC2
+integer :: KIOBF1,KIOBF2,KILC1,KILC2
 
   CALL QENTER('CAP_DIRAC_AO')
 

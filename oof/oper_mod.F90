@@ -25,7 +25,8 @@
 !
 !
 !---------------------------------------------------------------------------
-  integer (kind=4), intent(in) :: oper_indx
+ ! integer (kind=4), intent(in) :: oper_indx
+  integer , intent(in) :: oper_indx
   logical (kind=1) :: is
  call QENTER('Operators:operator_on_dirac_list')
 
@@ -43,7 +44,8 @@
 !---------------------------------------------------------------------------
  type(DirOper), intent(inout):: self
  integer, intent(in) :: oper_indx_temp
- integer (kind=4)  :: oper_indx
+ !integer (kind=4)  :: oper_indx
+ integer :: oper_indx
  logical (kind=1) :: is
 
  call QENTER('Operators:add_operator')
@@ -98,8 +100,10 @@ integer, intent(in) :: INDXPR
 !integer,intent(in),optional :: nz_in
 
 logical :: is_square
-integer(kind=4) :: KPTRI, KONEIN, KFIRST
-integer(kind=4) :: IKFREE, ILFREE,IKSTART
+!integer(kind=4) :: KPTRI, KONEIN, KFIRST
+integer :: KPTRI, KONEIN, KFIRST
+!integer(kind=4) :: IKFREE, ILFREE,IKSTART
+integer :: IKFREE, ILFREE,IKSTART
 
  call QENTER('get_prop_saao')
 

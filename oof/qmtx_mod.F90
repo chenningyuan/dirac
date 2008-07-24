@@ -16,7 +16,8 @@ use mystring
 #include "iratdef.h"
 
 ! common printing parameter in the module 
-integer(kind=4), private :: iprint_qmtx=0
+!integer(kind=4), private :: iprint_qmtx=0
+integer, private :: iprint_qmtx=0
 
 ! own data type for IREP value
 type, public :: irp
@@ -55,7 +56,8 @@ private
 !       ...  IREP and NZ
 !  integer (kind=4) :: irep,nz
   integer (kind=8/IRAT) :: irep,nz
-  integer (kind=4) :: kstart ! contains position on the PW (WORK) array !
+ ! integer (kind=4) :: kstart ! contains position on the PW (WORK) array !
+  integer  :: kstart ! contains position on the PW (WORK) array !
 ! ... offsets for symmetry distinguished matrixes
   integer (kind=8) :: ioff_pk = 0
   integer (kind=8), dimension(2,2) :: ioff_upk = 0
@@ -232,7 +234,8 @@ subroutine set_iprqmtx(iprint)
 !            set up print variable
 !=================================================
 #include "priunit.h"
-integer (kind=8/IRAT), intent(in) :: iprint
+!integer (kind=8/IRAT), intent(in) :: iprint
+integer, intent(in) :: iprint
 CALL QENTER('QMatrixes: set_iprqmt')
 iprint_qmtx = iprint
 if (iprint_qmtx >= 6) then
@@ -264,7 +267,8 @@ function set_irp (irep_in) result (irep_out)
 #include "priunit.h"
 type(irp) :: irep_out
 !integer (kind=4), intent(in) :: irep_in
-integer (kind=8/IRAT), intent(in) :: irep_in
+!integer (kind=8/IRAT), intent(in) :: irep_in
+integer, intent(in) :: irep_in
 CALL QENTER('QMatrixes: set_irp')
 if (.NOT.(irep_in .ge. 0 .and. irep_in .le. 8)) then
  write(lupri,*) 'QMatrixes: set_irp, entering irep_in=',irep_in
@@ -283,7 +287,8 @@ function set_nz (nz_in) result (nz_out)
 !-----------------------------------------------
 #include "priunit.h"
 type(nzp) :: nz_out
-integer (kind=8/IRAT), intent(in) :: nz_in
+!integer (kind=8/IRAT), intent(in) :: nz_in
+integer, intent(in) :: nz_in
 CALL QENTER('QMatrixes: set_nz')
   if (.NOT.(nz_in .eq. 1 .or. nz_in .eq. 2  .or. nz_in .eq. 4)) then
     write(lupri,*) 'QMatrixes: set_nz, entering nz_in=',nz_in
@@ -303,8 +308,10 @@ function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
 !-------------------------------------------------------------------------
 #include "priunit.h"
 type(qmtx_pck) :: qmtx_pck_out
-integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
-integer (kind=8/IRAT), intent(in), optional :: nr2in,nc2in
+!integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
+integer,  intent(in) :: nr1in,nc1in
+!integer (kind=8/IRAT), intent(in), optional :: nr2in,nc2in
+integer, intent(in), optional :: nr2in,nc2in
 CALL QENTER('QMatrixes: set_qmtx_pck')
 ! set dimensions of fermion irep 1
 qmtx_pck_out%nr1 = nr1in; qmtx_pck_out%nc1 = nc1in 
@@ -329,8 +336,10 @@ function set_qmtx_unpck (n1in,n2in) result(qmtx_unpck_out)
 !==============================================================================
 #include "priunit.h"
 type(qmtx_unpck) :: qmtx_unpck_out
-integer (kind=8/IRAT), intent(in) :: n1in
-integer (kind=8/IRAT), intent(in), optional :: n2in
+!integer (kind=8/IRAT), intent(in) :: n1in
+integer, intent(in) :: n1in
+!integer (kind=8/IRAT), intent(in), optional :: n2in
+integer, intent(in), optional :: n2in
 CALL QENTER('QMatrixes: set_qmtx_unpck')
 qmtx_unpck_out%n1 = n1in
 ! check entering dimensions !
@@ -505,7 +514,8 @@ type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 character(*), optional, intent(in) :: text
 !integer (kind=8) :: isize
-integer (kind=8/IRAT) :: isize
+!integer (kind=8/IRAT) :: isize
+integer  :: isize
 integer(kind=4) :: good_alloc
 CALL QENTER('QMatrixes: MakeQMtxPck')
 
@@ -644,7 +654,8 @@ type(nzp), optional, intent(in) ::  nz_in
 type(qmtx_unpck),  intent(in) :: qm_upk_in
 character(*), optional, intent(in) :: text
 !integer (kind=8) :: isize
-integer (kind=8/IRAT) :: isize
+!integer (kind=8/IRAT) :: isize
+integer :: isize
 logical, save :: was_called = .false.
 CALL QENTER('QMatrixes: MakeQMtxUnPck')
 
