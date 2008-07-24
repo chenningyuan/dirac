@@ -2786,6 +2786,10 @@ CMI       FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
             FACL   = D1/SQRT(ARGSQRT)
           ELSE
             FACL   = D0
+            IF (IPRINT.GE.2) THEN
+             WRITE(LUPRI,'(2X,A,D12.6)') 'RKBCA1: warning, ARGSQRT=',
+     &       ARGSQRT
+            ENDIF
           ENDIF
           FACLM2 = -D2*(D2*SDPRE(L)-D1)*FACL
         ENDIF
