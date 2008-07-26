@@ -568,7 +568,7 @@ contains
     iprxrs    = 0
     thcxrs    = aoresponse_threshold_response
     resfac    = 1.0d3
-    maxitr    = 30
+    maxitr    = 150
     nredm     = 400
     n2redm    = nredm*nredm
     loffty    = 0
