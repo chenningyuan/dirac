@@ -76,7 +76,7 @@ C  /* Deck membkd */
       DATA LUWMEM,LUEMEM /6,6/
       END
 C  /* Deck memget */
-      SUBROUTINE MEMGET(TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
+      SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 C
 C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
@@ -88,7 +88,7 @@ C
 C     Memory allocation
 C
 #include "implicit.h"
-      CHARACTER*(*) TYPE
+      CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
 C
 #include "iratdef.h"
@@ -104,26 +104,26 @@ C
       DATA          MEMID(1) /1234567890/
 C
 Chj1  CALL QENTER('MEMGET  ')
-      IF (TYPE(1:4) .EQ. 'REAL') THEN
+      IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/IRAT2 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
          CALL QENTER('MEMGET  ')
          WRITE (LUWMEM,'(/2A)')
-     *      ' MEMGET ERROR, illegal type :',TYPE
+     *      ' MEMGET ERROR, illegal type :',DATA_TYPE
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,'(/2A)')
-     *         ' MEMGET ERROR, illegal type :',TYPE
+     *         ' MEMGET ERROR, illegal type :',DATA_TYPE
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMGET ERROR, illegal type')
@@ -413,7 +413,7 @@ C     end of MEMCHK
 C
       END
 C  /* Deck memopt */
-      SUBROUTINE MEMOPT(TYPE,KBASE,LENGTH,WORK,KFREE,LFREE,ALLOC)
+      SUBROUTINE MEMOPT(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE,ALLOC)
 C
 C     Almost indentical to MEMGET. Luuk Visscher 21-10-1997.
 C     Updated to optimized version. J. Thyssen Aug 25 1998
@@ -421,7 +421,7 @@ C
 C     Memory allocation
 C
 #include "implicit.h"
-      CHARACTER*(*) TYPE
+      CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
@@ -437,26 +437,26 @@ C
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
 C
-      IF (TYPE(1:4) .EQ. 'REAL') THEN
+      IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/IRAT2 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
          CALL QENTER('MEMOPT  ')
          WRITE (LUWMEM,'(/2A)')
-     *      ' MEMOPT ERROR, illegal type :',TYPE
+     *      ' MEMOPT ERROR, illegal type :',DATA_TYPE
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,'(/2A)')
-     *         ' MEMOPT ERROR, illegal type :',TYPE
+     *         ' MEMOPT ERROR, illegal type :',DATA_TYPE
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMOPT ERROR, illegal type')
