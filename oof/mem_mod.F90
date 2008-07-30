@@ -1,17 +1,23 @@
+!----------------------------------------------------------------------------------
 !
-! Module contains basic variables of the DIRAC memmory array
 !
+!  Module for handling the DIRAC memory.
+!
+!  Contains basic variables and methods to operate upon WORK array.
+!
+!
+!----------------------------------------------------------------------------------
 MODULE Memory
 
-!integer :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
-integer, private :: KWORK, KFREE, LFREE, LWORK ! basic variables of memmory handling
+integer, private :: KWORK, KFREE, LFREE, LWORK ! basic variables for memmory handling
 
 ! print level
 integer, private :: iprmem  = 0
 
-! pointer to the working array; public status is needed !
-real (kind=8),  pointer :: PW(:) 
-!real (kind=8), private,  pointer :: PW(:) ! points to the big WORK array
+!------------------------------------------------------------------------------
+! ... private status 
+real (kind=8), private,  pointer :: PW(:) ! points to the big WORK array
+!------------------------------------------------------------------------------
 
 ! logical variable on if memory is sticked or not
 logical (kind=1), private :: is_mem_sticked = .false.
@@ -31,17 +37,15 @@ subroutine mymemget( datatype, kbase, length )
 !
 !************************************************************************
 #include "priunit.h"
-#include "iratdef.h"
 character*(*), intent(in) :: datatype
-!integer(kind=4), intent(inout) :: kbase
 integer, intent(inout) :: kbase
-!integer(kind=8/IRAT), intent(inout) :: kbase
-!integer, intent(inout) :: kbase
-!integer (kind=8), intent(in) :: length
-!integer (kind=8/IRAT), intent(in) :: length
 integer, intent(in) :: length
 integer :: kbase_temp ! needs to fit into internal MEM_stuff 
-call QENTER('mymemget')
+
+ if (iprmem > 25 ) then
+   write(LUPRI,'(/,2x,a)') 'mymemget: Before MEMGET:'
+   CALL print_mem_param()
+ endif
 
  CALL MEMCHK('mymemget',PW,1) 
   
@@ -51,42 +55,55 @@ call QENTER('mymemget')
 
  kbase = kbase_temp
 
+ if (iprmem > 25 ) then
+   write(LUPRI,'(/,2x,a)') 'mymemget: After MEMGET:'
+   CALL print_mem_param()
+ endif
+
  CALL MEMCHK('mymemget',PW,1) 
 
-call QEXIT('mymemget')
 end subroutine mymemget
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine mymemrel (datatype, kfirst,krel)
 !************************************************************************
 !
-!  Public procedure to replace common MEMREL subroutine to hide 
-! KFREE,LFREE variables
+!    Public procedure to replace common MEMREL subroutine to hide 
+! KFREE,LFREE variables.
 !
 !************************************************************************
 #include "priunit.h"
 character*(*), intent(in) :: datatype
-!integer(kind=4), intent (inout) :: kfirst,krel
 integer, intent (inout) :: kfirst,krel
 integer :: kfirst_temp, krel_temp
 
-call QENTER('mymemrel')
+ if (iprmem > 25 ) then
+   write(LUPRI,'(/,2x,a)') 'mymemrel: Before MEMREL:'
+   CALL print_mem_param()
+ endif
+
  ! this substitution is needed due to old DIRAC memory stuff
  kfirst_temp = kfirst; krel_temp  = krel
+
  call MEMREL(datatype,PW,kfirst_temp,krel_temp,KFREE,LFREE)
+
  kfirst = kfirst_temp;  krel  =  krel_temp
-call QEXIT('mymemrel')
+
+ if (iprmem > 25 ) then
+   write(LUPRI,'(/,2x,a)') 'mymemrel: After MEMREL:'
+   CALL print_mem_param()
+ endif
+
 end subroutine mymemrel
  
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_mem_param 
 !************************************************************************
 !
-!        print out the DIRAC memory parameters
+!         print out the DIRAC memory parametersa
 !
 !************************************************************************
 #include "priunit.h"
-CALL QENTER('print_mem_param')
 write(LUPRI,*) '*********************************************************************'
 write(LUPRI,'(3(A,I12,/),A,I12)')                &
    '  Actual memory parameters:   KWORK=',KWORK, &
@@ -95,11 +112,13 @@ write(LUPRI,'(3(A,I12,/),A,I12)')                &
    '                              LWORK=',LWORK 
 if (associated(PW)) then
    !write(LUPRI,'(A)') '----> Pointer PW is associated with the WORK array.'
+
    if (size(PW) /= LWORK) then
      write(LUPRI,'(2x,a,2i9)')  &
-     ' size(PW), LWORK:',size(PW),LWORK
+    ' size(PW) vs LWORK:',size(PW),LWORK
      call quit('print_mem_param: LWORK .ne. size(PW) !')
    endif
+
    CALL MEMCHK('print_mem_param',PW,1)
   ! CALL MEMCHK('print_mem_param',PW(KFREE),LFREE) 
    write(LUPRI,'(A)') '----> Pointer PW is associated with the WORK array, memory checked.'
@@ -107,21 +126,26 @@ else
    write(LUPRI,'(A)') '----> Pointer PW is NOT associated with the WORK array.'
 endif
 write(LUPRI,*) '*********************************************************************'
-CALL QEXIT('print_mem_param')
+call FLSHFO(LUPRI)
 end subroutine print_mem_param
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_iprmem(i)
 !------------------------------------------------------------------------
 !
-!                  set up the module printing parameter
-!
+!     set up the private module printing parameter
+!  
+! Written by:  Miro ILIAS, Tel Aviv 2007,2008  
+!  
 !------------------------------------------------------------------------
+#include "priunit.h"
 integer, intent(in) :: i
-call QENTER('set_iprmem')
 if (i<0) call QUIT('set_iprmem: print level must be greater than 0 !')
 iprmem = i
-call QEXIT('set_iprmem')
+if (iprmem >= 8) then
+  write(LUPRI,'(/,2x,a,i4,/)')  & 
+  '**** memory set_iprmem: iprmem set to ',iprmem
+endif
 end subroutine set_iprmem
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -130,41 +154,44 @@ SUBROUTINE StickMemory(WORK,LWORK_IN)
 !
 ! Stick into the WORK array as the primary source of the memory
 !
-!                     On input: WORK(LWORK_IN)
+!                On input: WORK(LWORK_IN)
+!
+! Note: we use LWORK_IN because LWORK is the private parameter of the module.
 !
 !------------------------------------------------------------------------
 #include "priunit.h"
-#include "iratdef.h"
-!integer*4, intent(in) :: LWORK_IN
-!integer(kind=8/IRAT), intent(in) :: LWORK_IN
 integer, intent(in) :: LWORK_IN
 real*8, intent(in), target :: WORK(LWORK_IN)
-CALL QENTER('StickMemory')
 if (iprmem > 10) then
   call HEADER('Output from StickMemory',-1)
 endif
 
 if (associated(PW)) then
   if (iprmem > 10) then
-    write(LUPRI,*) 'PW is already associated - Exit !'
+    write(LUPRI,*) 'StickMemory: PW is already associated - Error Exit !'
+    call FLSHFO(LUPRI)
   endif
-  CALL QUIT('PW is already associated !')
+  CALL QUIT('StickMemory: PW is already associated !')
 else
   if (iprmem > 10) then
-    write(LUPRI,*) 'PW is not associated'
+    write(LUPRI,*) 'StickMemory: PW is not associated'
+    call FLSHFO(LUPRI)
   endif
 endif
 ! ..................................................
 PW => WORK ! PW points now to the big WORK array ... 
 ! ..................................................
 is_mem_sticked = .true. ! update logical variable
+
 LWORK = LWORK_IN ! actualize module variable
+
 if (size(PW) /= LWORK_IN) then
- if (iprmem > 10) then
+! if (iprmem > 10) then
    write(LUPRI,*) ' size(PW)=',size(PW), &
                   ' while entering LWORK=',LWORK_IN
    write(LUPRI,*) 'somme error in array sticking !'
- endif
+   call FLSHFO(LUPRI)
+! endif
  CALL QUIT('StickMemory: error in length !')
 endif
 
@@ -176,37 +203,181 @@ CALL MEMCHK('StickMemory',PW,1)
 
 if (iprmem > 10 ) then
   CALL print_mem_param()
-  write(LUPRI,*) 'StickMemory: PW sticked into WORK, memmory checked !'
+  write(LUPRI,'(/,2x,a,/)') & 
+  '*** StickMemory: PW sticked into WORK, memmory checked ***'
+  call FLSHFO(LUPRI)
 endif
-CALL QEXIT('StickMemory')
 END SUBROUTINE StickMemory
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION  AccessWork(ipos,end_pos) result(pw_out)
+!--------------------------------------------------------------
+!
+! returns pointer to the chunk of array starting from WORK(ipos)
+!
+!   Function used as parameter for subroutine/function 
+! instead of direct PW(i)
+!
+!--------------------------------------------------------------
+#include "priunit.h"
+integer, intent(in) :: ipos
+integer, intent(in), optional :: end_pos
+integer :: this_end_pos
+real*8, pointer, dimension(:) :: pw_out 
+
+if (.not.present(end_pos)) then 
+   this_end_pos = -1
+else
+   this_end_pos = end_pos
+endif
+
+! ... check ipos ...  
+if ( CheckArrayPos(ipos=ipos,end_pos=this_end_pos) ) then
+  pw_out => PW(ipos:)
+else
+  write(LUPRI,'(2x,a)')  'AccessWork error !'
+  call print_mem_param
+  call quit('AccessWork: wrong array ! Error exit')
+endif
+
+END FUNCTION  AccessWork
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION  AccessWorkElem(ipos) result(pwi_out)
+!--------------------------------------------------------------
+!
+! returns pointer of the element WORK(ipos)
+!
+! returning pointer enables change of WORK(ipos) elem
+!
+! Used as parameter for subroutine/function instead of direct PW(i)
+!
+!--------------------------------------------------------------
+#include "priunit.h"
+integer, intent(in) :: ipos
+real*8, pointer :: pwi_out 
+
+! ... check ipos ...  
+if ( CheckArrayPos(ipos) ) then
+  pwi_out => PW(ipos)
+else
+  write(LUPRI,'(/,2x,a)') 'AccessWorkElem: error ! '
+  call print_mem_param
+  call quit('AccessWorkElem: bad array !')
+endif
+
+END FUNCTION  AccessWorkElem
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION GetWorkElem(ipos) result(WorkElem)
+!--------------------------------------------------------------
+!
+!  returns element from the big Work array
+!  
+!--------------------------------------------------------------
+#include "priunit.h"
+integer, intent(in) :: ipos
+real*8 :: WorkElem
+
+if ( CheckArrayPos(ipos) ) then
+
+ WorkElem = PW(ipos)
+
+else
+ call print_mem_param
+ call quit('GetWorkElem: wrong array or pos !')
+endif
+
+END FUNCTION GetWorkElem
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+SUBROUTINE  PutWorkElem(ipos,WorkElem)
+!--------------------------------------------------------------
+!
+! put real*8 element into WORK(ipos) 
+!
+!--------------------------------------------------------------
+#include "priunit.h"
+integer, intent(in) :: ipos
+real*8, intent(in) :: WorkElem
+
+if ( CheckArrayPos(ipos) ) then
+
+ PW(ipos) = WorkElem
+
+else
+   call print_mem_param
+   call quit('PutWorkElem: error !')
+endif
+
+
+END SUBROUTINE  PutWorkElem
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+FUNCTION  CheckArrayPos(ipos, end_pos) result(is_good)
+!--------------------------------------------------------------------
+!
+! Checks array WORK (through poiner PW) and position on it "ipos"
+!
+!--------------------------------------------------------------------
+#include "priunit.h"
+integer, intent(in) :: ipos
+integer, intent(in), optional :: end_pos
+logical :: is_good
+
+ if (ipos <= LFREE .and. ipos >= 1 .and. associated(PW) .and. is_mem_sticked ) then
+
+   if (size(PW) /= LWORK) then
+     write(LUPRI,'(2x,a,2i9)')  &
+     'CheckArrayPos:  size(PW) vs LWORK:',size(PW),LWORK
+     call FLSHFO(LUPRI)
+     call quit('CheckArrayPos: LWORK .ne. size(PW) !')
+   endif
+
+   if (present(end_pos)) then
+     if (end_pos > LFREE) then
+       write(LUPRI,*) 'CheckArrayPos: LFREE, end_pos=',LFREE, end_pos
+       call FLSHFO(LUPRI)
+       call quit('CheckArrayPos: end_pos > LFREE !')
+     endif
+   endif
+
+   ! check the memory ...
+   CALL MEMCHK('CheckArrayPos',PW,1)
+
+   is_good = .true.
+ else
+   is_good = .false.
+ endif
+
+END FUNCTION  CheckArrayPos
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE UnStickMemory
 !--------------------------------------------------------------
 !
-! release the PW pointer sticked into WORK array
+!      release the PW pointer sticked into WORK array
 !
 !--------------------------------------------------------------
 #include "priunit.h"
-integer(kind=4), parameter :: print_default = 10
-CALL QENTER('UnStickMemory')
+integer, parameter :: print_default = 10
 if (associated(PW)) then
   if ( iprmem > print_default ) then
-    write(LUPRI,*) 'Entering PW is already associated'
+    write(LUPRI,*) 'The PW pointer is already associated, all right'
   endif
 else
-  if ( iprmem > print_default ) then
-    write(LUPRI,*) 'Entering PW is NOT associated !'
-  endif
+   write(LUPRI,'(/,2x,a,/)') 'UnStickMemory Error: The PW pointer is NOT associated !'
+   call quit('UnStickMemory Error: The PW pointer is NOT associated !')
 endif
+!  ...
 nullify(PW);
 is_mem_sticked = .false. ! update logical variable
 !  ... 
 if ( iprmem > print_default ) then
-  write(LUPRI,'(A)') 'PW pointer was deassociated!'
+  write(LUPRI,'(/,A)') 'UnStickMemory: PW pointer was deassociated!'
+  call FLSHFO(LUPRI)
 endif
-CALL QEXIT('UnStickMemory')
 END SUBROUTINE UnStickMemory
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -219,9 +390,7 @@ FUNCTION IsMemorySticked() result(is_sticked)
 !------------------------------------------------------------------------
 #include "priunit.h"
 logical(kind=1) :: is_sticked
-CALL QENTER('IsMemorySticked')
  is_sticked = is_mem_sticked
-CALL QEXIT('IsMemorySticked')
 END FUNCTION IsMemorySticked
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -230,14 +399,12 @@ FUNCTION get_kfree() result(kfree_out)
 ! returns the (private) KFREE value
 !------------------------------------------------------------------------
 #include "priunit.h"
-!integer :: kfree_out
-integer(kind=4) :: kfree_out
-CALL QENTER('get_kfree')
+integer :: kfree_out
  kfree_out = KFREE
  if (iprmem >= 15) then
-  write(LUPRI,*) 'get_kfree: KFREE=',KFREE,'kfree_out=',kfree_out
+  write(LUPRI,*) 'get_kfree: KFREE=',KFREE,'= returning kfree_out:',kfree_out
+  call FLSHFO(LUPRI)
  endif
-CALL QEXIT('get_kfree')
 END FUNCTION get_kfree
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -248,33 +415,29 @@ FUNCTION get_lfree() result(lfree_out)
 !
 !------------------------------------------------------------------------
 #include "priunit.h"
-!integer :: lfree_out
-integer(kind=4) :: lfree_out
-CALL QENTER('get_lfree')
+integer :: lfree_out
  lfree_out = LFREE
  if (iprmem >= 15) then
   write(LUPRI,'(2x,a,i8,a,i8)')  &
   'Memory/get_lfree: LFREE:',LFREE,' = lfree_out:',lfree_out
+  call FLSHFO(LUPRI)
  endif
-CALL QEXIT('get_lfree')
 END FUNCTION get_lfree
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION get_lwork() result(lwork_out)
 !------------------------------------------------------------------------
 !
-! return the (module protected) LWORK value
+!         returns the (module protected) LWORK value
 !
 !------------------------------------------------------------------------
 #include "priunit.h"
-!integer :: lwork_out
-integer (kind=4) :: lwork_out
-CALL QENTER('get_lwork')
+integer :: lwork_out
  lwork_out = LWORK
  if (iprmem >= 15) then
   write(LUPRI,*) 'get_lwork: LWORK=',LWORK,'lwork_out=',lwork_out
+  call FLSHFO(LUPRI)
  endif
-CALL QEXIT('get_lwork')
 END FUNCTION get_lwork
 
 END MODULE Memory

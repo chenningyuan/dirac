@@ -1,6 +1,33 @@
+!------------------------------------------------------------------
 !
 !    Tests of Object oriented Fortran90/95 features in DIRAC
 !
+!------------------------------------------------------------------
+
+
+SUBROUTINE TEST_OO_MEMORY(WORK,LWORK)
+
+ use Memory
+
+#include "implicit.h"
+#include "priunit.h"
+
+ double precision, intent(inout) :: work(lwork) !
+
+call set_iprmem(20) 
+call StickMemory(WORK,LWORK)  ! take in WORK(LWORK) array ...
+
+call print_mem_param
+
+call UnStickMemory
+
+
+!call quit('in TEST_OO_MEMORY')
+
+END SUBROUTINE TEST_OO_MEMORY
+
+
+
   SUBROUTINE TEST_OOF(work,llwork)
  ! SUBROUTINE TEST_OOF
 
@@ -26,7 +53,8 @@ call qenter('TEST_OOF')
 
  !!!  CALL TEST_MEMGET_CHAR(work,llwork)
 
-domtx = .false.
+!domtx = .false.
+domtx = .true.
 
 if (domtx) then
 
@@ -40,14 +68,19 @@ call set_iprmem(100)
 ! call print_mem_param
 
 write(LUPRI,*) 'test_oof: smat called ... '
-smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
-call QMtxInfo(smat)
+!smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
+smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0)) )
+call QMtxInfo(smat,  print_qmtx = .false.)
 write(LUPRI,*) 'test_oof: after smat called ... '
+
 !pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
-pmat = MakeQMtx(  set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0))  )
-call QMtxInfo(pmat)
+!pmat = MakeQMtx(  set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0))  )
+!pmat = MakeQMtx(  set_qmtx_unpck(NFBAS(1,0))  )
+!call QMtxInfo(pmat, print_qmtx = .false.)
+
 write(LUPRI,*) 'test_oof: after pmat called ... '
- call DeAllocQMtx(pmat)
+
+! call DeAllocQMtx(pmat)
  call DeAllocQMtx(smat)
 
  call test_oof1
@@ -98,16 +131,17 @@ call QMtxInfo(pmat)
 !  Handle the one-electron Fock matrix, VMAT - on entry
 !
 SUBROUTINE HANDLE_MATRIXES(VMAT1,TMAT1,WORK,LLWORK)
+!
 ! VMAT - Fock SAAO matrix, TMAT - symm.packed transf. matrix
 !
 ! use Memory
   use QMatrixes
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
- integer*4, intent(in) :: llwork
+! integer*4, intent(in) :: llwork
+ integer, intent(in) :: llwork
  double precision, intent(inout) :: work(llwork) 
  double precision, intent(in) ::  vmat1(*),tmat1(*)
 ! type(QMtx) :: tmat
@@ -162,7 +196,6 @@ use memory
 real*8 WORK(LWORK)
 logical SPHRA
 
-call QENTER('test_oof_basis_fu')
 
 call StickMemory(WORK,LWORK)
  
@@ -262,7 +295,6 @@ call StickMemory(WORK,LWORK)
 
   call UnstickMemory
 
-call QEXIT('test_oof_basis_fu')
 end subroutine test_oof_basis_fu
 
 
@@ -275,7 +307,6 @@ end subroutine test_oof_basis_fu
 #include "implicit.h"
 #include "priunit.h"
   DIMENSION WORK(LWORK)
-  CALL QENTER('TEST_MEMGET_CHAR')
 
   CALL HEADER( 'in TEST_MEMGET_CHAR routine',-1)
 
@@ -292,7 +323,6 @@ end subroutine test_oof_basis_fu
   CALL MEMREL('TEST_MEMGET_CHAR',WORK,KWORK,KCHAR1,KFREE,LFREE)
 
 ! CALL QUIT('TEST_MEMGET_CHAR')
-  CALL QEXIT('TEST_MEMGET_CHAR')
   END SUBROUTINE TEST_MEMGET_CHAR
 
 SUBROUTINE TEST_CHAR_ARR(N1_1,N1_2,ARR1,N2_1,N2_2,N2_3,ARR2)
@@ -307,7 +337,6 @@ CHARACTER*3 ARR1(N1_2)
 !CHARACTER*4 ARR2(5,10)
 CHARACTER*4 ARR2(N2_2,N2_3)
 
-CALL QENTER('TEST_CHAR_ARR')
 
 DO I=1,N1_2
   ARR1(I) = 'abcdefghi'
@@ -317,8 +346,6 @@ DO I=1,N1_2
     write(LUPRI,*) I,J,ARR2(I,J)
   ENDDO
 ENDDO
-
-  CALL TEST_CHAR2(ARR2,N2_2,N2_3)
 
 CALL QEXIT('TEST_CHAR_ARR')
 RETURN

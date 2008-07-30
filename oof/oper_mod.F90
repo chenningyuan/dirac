@@ -161,12 +161,15 @@ integer :: IKFREE, ILFREE,IKSTART
 
      IF (IS_SQUARE) THEN
 ! call 'old' F77 routines
-       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
+      ! CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
+       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,AccessWork(get_qmtx_kstart(propmat)),AccessWork(KONEIN),AccessWork(KFIRST), &
                   ! PW(get_KFREE()), get_LFREE, IPRINT )
-                    PW(get_KFREE()), ILFREE, IPRINT )
+                   ! PW(get_KFREE()), ILFREE, IPRINT )
+                    AccessWork(get_KFREE()), ILFREE, IPRINT )
      ELSE
-       CALL PRPMSAO(INDXPR,IDIMENS,PW(KPTRI),PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
-                    PW(get_KFREE()), ILFREE, IPRINT )
+      ! CALL PRPMSAO(INDXPR,IDIMENS,PW(KPTRI),PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
+       CALL PRPMSAO(INDXPR,IDIMENS,AccessWork(KPTRI),AccessWork(get_qmtx_kstart(propmat)),AccessWork(KONEIN),AccessWork(KFIRST), &
+                    AccessWork(get_KFREE()), ILFREE, IPRINT )
                 !   PW(get_KFREE()), get_LFREE, IPRINT )
      ENDIF
 

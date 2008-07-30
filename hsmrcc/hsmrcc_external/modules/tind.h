@@ -1,8 +1,8 @@
 function TIND(ij)
-!----------------------------------------------------------------------
+!--------------------------------------------------------------------------------------
 ! ... inline integer function inserted in various places of the code
-! ... depends on 'outside' variables NPMOSQ, NSING
-!----------------------------------------------------------------------
+! ... depends on 'outside' variables NPMOSQ, NSING stored in module Parameters
+!--------------------------------------------------------------------------------------
 
    integer, intent(in) :: ij
    integer :: TIND

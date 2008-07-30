@@ -1,6 +1,14 @@
-subroutine genHSMRpars
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine GenHSMRpars
+!-----------------------------------------------------------------------
+!
+!   Generate set of parameters for HSMRCC run.
+!
+!   called from InitHSMRBase (source/inihsbase.F90)
+!
+!-----------------------------------------------------------------------
 
-   use Parameters
+   use Parameters ! most of parameters are stored here ...
    use OrbMod
    use IOModule
    implicit none
@@ -32,9 +40,9 @@ subroutine genHSMRpars
    enddo
 
    if ((NMAINORB+NINTMORB).ne.NVMO) then
-      write(UOUT,*) "unaccounted orbitals.. errors somewhere"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "GenHSMRpars: unaccounted orbitals.. errors somewhere"
+      call flushout
+      call quit('GenHSMRpars: unaccounted orbitals.. errors somewhere')
    endif
 
    NINTMORB_CORE = 0
@@ -45,15 +53,15 @@ subroutine genHSMRpars
    enddo
 
    if ((NINTMORB_CORE+NINTMORB_VIRT).ne.NINTMORB) then
-      write(UOUT,*) "something wrong with intemediate orbital space"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "GenHSMRpars: something wrong with intemediate orbital space"
+      call flushout
+      call quit('GenHSMRpars: something wrong with intemediate orbital space')
    endif
 
    if (NHOLE.LT.NINTMORB_CORE) then
-      write(UOUT,*) "invalid number of active electrons"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "GenHSMRpars: invalid number of active electrons"
+      call flushout
+      call quit('GenHSMRpars: invalid number of active electrons')
    endif
 
    NSTATE = N_CHOOSE_R(NVMO,NHOLE)
@@ -61,5 +69,23 @@ subroutine genHSMRpars
    NSTATE_INTM = NSTATE - NSTATE_MAIN
 
    MAXEXC = MIN(NHOLE,NPTCL)
+
+   ! ... control print-out
+   if ( get_iprint() >= 10 ) then
+     call HEADER('Output from GenHSMRpars',-1)
+     
+     write(UOUT,'(2x,a,i7)') 'NSTATE=',NSTATE
+     write(UOUT,'(2x,a,i7)') 'NSTATE_MAIN=',NSTATE_MAIN
+     write(UOUT,'(2x,a,i7)') 'NSTATE_INTM=',NSTATE_INTM
+     write(UOUT,'(2x,a,i7)') 'NAX_EXC=',MAXEXC
+
+     write(UOUT,'(2x,a,i7)') 'NMAINORB=',NMAINORB
+     write(UOUT,'(2x,a,i7)') 'NINTMORB=',NINTMORB
+
+     write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE =',NINTMORB_CORE
+     write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT =',NINTMORB_VIRT
+
+   endif
+
 
 end subroutine GenHSMRpars

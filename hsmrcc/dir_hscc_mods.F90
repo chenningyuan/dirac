@@ -24,8 +24,6 @@ subroutine prepare_dirac_HSMRCC_file
 #include "priunit.h"
 character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
  
-!call QEnter('prepare_dirac_HSMRCC_file')
-
 if (iprint_hscc >= 5) then
    call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
 endif
@@ -45,7 +43,6 @@ close(ludh,status="keep")
 
 !call Quit('prepare_dirac_HSMRCC_file')
 
-!call QExit('prepare_dirac_HSMRCC_file')
 end subroutine prepare_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC
@@ -103,7 +100,6 @@ subroutine read_mrconee
 
 logical :: is_mrc
 
- Call QEnter('read_mrconee')
 
  inquire(FILE='MRCONEE',EXIST=is_mrc)
 
@@ -126,7 +122,6 @@ logical :: is_mrc
 
   CLOSE (MRCONEE,STATUS='KEEP')
 
-  Call QExit('read_mrconee')
   return
 
   10 WRITE (LUPRI,*) "Missing information on MRCONEE, I assume"//  & 
@@ -139,13 +134,11 @@ end subroutine read_mrconee
 subroutine print_mrconee_data
 !----------------------------------------------------------------------------------
 !
-!        Print read data from the MRCONEE file if these were read 
+!       Print read data from the MRCONEE file if these were read 
 !
 !----------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-
-!Call QEnter('print_mrconee_data')
 
 if (.not.mrconee_read) then
   Write(LUPRI,*) 'MRCONEE file was not read...'
@@ -155,48 +148,47 @@ endif
 
 Call Header('MRCONEE print-out',-1)
 
-write(LUPRI,*)  ' NSP=',NSP
-write(LUPRI,*)  ' BREIT=',BREIT
-write(LUPRI,*)  ' ECORE=',ECORE
-write(LUPRI,*)  ' NFSYM=',NFSYM
-write(LUPRI,*)  ' NZ=',NZ
-write(LUPRI,*)  ' SPFR=',SPFR
-write(LUPRI,*)  ' NORBT=',NORBT
+write(LUPRI,'(2x,a,i3)')     ' NSP=',NSP
+write(LUPRI,'(2x,a,l)')      ' is BREIT correction=',BREIT
+write(LUPRI,'(2x,a,f12.6)')  ' ECORE=',ECORE
+write(LUPRI,'(2x,a,i3)')     ' NFSYM=',NFSYM
+write(LUPRI,'(2x,a,i3)')     ' NZ=',NZ
+write(LUPRI,'(2x,a,l)')      ' is spin-free, SPFR=',SPFR
+write(LUPRI,'(2x,a,i3)')     ' NORBT=',NORBT
 
-write(LUPRI,*)  ' NSYMRP=',NSYMRP
+write(LUPRI,'(/,2x,a,i2)')  ' NSYMRP=',NSYMRP
 
-write(LUPRI,*)  '** REPNT(1-NSYMRP) **'
+write(LUPRI,'(2x,a)')  '** REPNT(1-NSYMRP) **'
 DO IRP = 1, NSYMRP
-  write(LUPRI,*) 'IRP=',IRP,' REPNT(IRP)=',REPNT(IRP)
+  write(LUPRI,'(2x,a,i2,a,a)') 'IRP=',IRP,' REPNT(IRP)=',REPNT(IRP)
 ENDDO
 
-write(LUPRI,*)  '** NELEC(1-NSYMRP) **'
+write(LUPRI,'(/,2x,a)')  '** NELEC(1-NSYMRP) **'
 DO IRP = 1, NSYMRP
-  write(LUPRI,*) 'IRP=',IRP,' NELEC(IRP)=',NELEC(IRP)
+  write(LUPRI,'(2x,a,i3,a,i3)') 'IRP=',IRP,' NELEC(IRP)=',NELEC(IRP)
 ENDDO
 
-write(LUPRI,*)  'reducible representations, NREP=',NREP
-write(LUPRI,*)  '** REPNA: **'
+write(LUPRI,'(/,2x,a,i3)')  'reducible representations, 2*NREP=',2*NREP
+write(LUPRI,'(2x,a)')  '** REPNA: **'
 DO IRP = 1, 2*NREP
-  write(LUPRI,*) 'IRP=',IRP,' REPNA(IRP)=',REPNA(IRP)
+  write(LUPRI,'(2x,a,i2,a,a)') 'IRP=',IRP,' REPNA(IRP)=',REPNA(IRP)
 ENDDO
 
-write (LUPRI,*) '*** EPS1, IREPSP:'
+write (LUPRI,'(/,2x,a)') '*** EPS1, IREPSP:'
 DO ISP = 1, NSP
-  write (LUPRI,*) 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+  write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
                    IREPSP(ISP),IREPSP(NSP+ISP), &
                   ' EPS1(ISP)=',EPS1(ISP)
 ENDDO
 
-write (LUPRI,*) '*** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
-write (LUPRI,*) ' NREP, 2*NREP:',NREP,(2*NREP)
+write (LUPRI,'(/,2x,a)') '*** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
+write (LUPRI,'(2x,a,2i3)') ' NREP, 2*NREP:',NREP,(2*NREP)
+
 DO I=1,2*NREP
 DO J=1,2*NREP
   write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
 ENDDO
 ENDDO
-
-!Call QExit('print_mrconee_data')
 
 end subroutine print_mrconee_data
 
@@ -218,8 +210,6 @@ type(Array2Dim) :: cbuf_vect
 logical :: is_mdc , check_mem = .false.
 
 integer :: RCW
-
-Call QEnter('read_mdcint')
 
 Call Header('MDCINT control print-out',-1)
 
@@ -363,8 +353,10 @@ endif
 
  do i=1,NONZR
    if (.NOT.is_complex) then
-     write(LUPRI,*) 'k,l, real int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
-     write(LUPRI,*) 'I,J,K,L:',KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
+     write(LUPRI,'(2x,a,2i5,f18.12)') 'k,l, real integral:',  & 
+           indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+     write(LUPRI,'(2x,a,4i4)') 'I,J,K,L:',  & 
+           KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
     ! CALL FLSHFO(LUPRI)
    else
      write(LUPRI,*) 'k,l,cmplx int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),  &
@@ -372,6 +364,7 @@ endif
     ! CALL FLSHFO(LUPRI)
    endif
 
+ ! ... unique ,KU indexes
    write(LUPRI,'(2x,a,4i5)') 'unrestricted, unique(>0) indexes, I,J,K,L:',  &
      KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
    CALL FLSHFO(LUPRI)
@@ -424,7 +417,7 @@ endif
  write(LUPRI,*) 'indk_vect released ...'; CALL FLSHFO(LUPRI)
 
  write(LUPRI,*) 'leavig "read_mdcint"...bye bye'; CALL FLSHFO(LUPRI)
- Call QExit('read_mdcint')
+
  return
 
 !     ... reading file error outputs ...

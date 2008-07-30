@@ -24,7 +24,6 @@ and one formatted file with symmetry information:
     Know-how on hsmrcc stuff
 ==================================== 
 
-
  source/hsmrmain.c - main C code accepting parameters; 
 
 -----------------------------------------------------------------------

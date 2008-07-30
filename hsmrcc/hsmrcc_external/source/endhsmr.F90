@@ -1,10 +1,10 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine EndHSMR
 !---------------------------------------------------------------
 !
-! Ending procedure od HSMRCC
+!   Ending procedure of HSMRCC
 !
-!
-! Called from HSMRCC
+!   Called from HSMRCC
 !
 !---------------------------------------------------------------
    use Parameters
@@ -24,7 +24,6 @@ subroutine EndHSMR
    integer :: i, a, j, b, ij, ab, ix, ti, ia
    character*7 :: flag_valid
 
-   call QEnter('EndHSMR')
    ! ... For Integral Generation only runs
 
    if (OPTION(NOHSMR)) then
@@ -34,7 +33,6 @@ subroutine EndHSMR
       call EndVacMod
       call EndIOMod
       call CloseVINF
-      call QExit('EndHSMR')
       return
    endif
 
@@ -47,9 +45,11 @@ subroutine EndHSMR
    ! ... Printout Final T-Amplitudes
 
    do vac = 1, NSTATE
+
       read(UTAMP,rec=vac) TNEW
       ia = 0
       write(90,*) "Vaccum # ",vac
+
       do i = 1, NHMO
       do a = 1, NPMO
          ia = ia + 1
@@ -71,14 +71,18 @@ subroutine EndHSMR
          do b = 1, (a-1)
             ab = ab + 1
             flag_valid = " VALID "
+
             if (.not.IsHole(i,vac)) flag_valid = "INVALID"
             if (.not.IsHole(j,vac)) flag_valid = "INVALID"
             if (.not.IsPtcl(a,vac)) flag_valid = "INVALID"
             if (.not.IsPtcl(b,vac)) flag_valid = "INVALID"
+
             if (IsActHole(i-NCMO,vac).and.IsActHole(j-NCMO,vac)   &
                 .and.IsActPtcl(a,vac).and.IsActPtcl(b,vac)) flag_valid = "INVALID"
+
             write(90,20) i, j, a, b, ti+ab, "DOUBLES", flag_valid, TNEW(ti+ab)
          20 format(1x,4(i3,1x),i10,1x,A7,1x,A7,1x,F14.9)
+
          enddo
          enddo
       enddo
@@ -103,11 +107,9 @@ subroutine EndHSMR
 
    ! ... Write Ending Information before closing Output ...
 
-   write(UOUT,*)
-   write(UOUT,*) '--End of HSMR Run--'
-   close(UOUT)
+   write(UOUT,'(/,4x,a,/)') '--End of HSMR Run--'
+   close(UOUT) ! mi: is it necessary ?
 
-   call QExit('EndHSMR')
    return
 
 contains

@@ -2,7 +2,7 @@
 module Parameters
 !------------------------------------------------------------------------------
 !
-!              important data parameters for the HSMRCC run
+!             important data parameters for the HSMRCC run
 !
 !------------------------------------------------------------------------------
 
@@ -135,17 +135,16 @@ module Parameters
      logical :: is = .false.
    ! ... flag for boson/fermion symmetry
      logical :: spinfree = .true.  
+   ! ... flag for complex algebra (when complex relativ.group used)
+     logical :: is_complex = .false.  
    end type dirac
  
-  ! private :: dirac
-
    contains
 
    subroutine set_iprint (ipr)
    ! ... set the IPRINT variable
     integer, intent(in) :: ipr
     integer, parameter :: ipr_max = 100
-    call QEnter('set_iprint')
     if (ipr < 0 .or. ipr > ipr_max) then
      write(UOUT,*) 'set_iprint: entering iprint = ',ipr
      write(UOUT,*) 'set_iprint: wrong entering variable ! must be <0,100>'
@@ -153,7 +152,6 @@ module Parameters
     else 
       IPRINT = ipr
     endif
-    call QExit('set_iprint')
    end subroutine set_iprint
 
    function get_iprint() result(ipr)
@@ -163,8 +161,8 @@ module Parameters
    end function get_iprint
 
    subroutine flushout
-   ! ... short version for flushing out the buffer
-    call flush(UOUT)
+   ! ... short version for flushing out the buffer 
+     call flush(UOUT)
    end subroutine flushout
 
 end module Parameters

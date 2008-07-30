@@ -169,7 +169,9 @@ call QENTER('GetUnpckOvlpMtx')
  ILFREE =  get_lfree() ! must be due to integre conversion !!!
 
 ! call lower level routine
- call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), ILFREE )
+ !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), ILFREE )
+ call GTOVLX( AccessWork(get_qmtx_kstart(smat)), SSMTRC, AccessWork(get_kfree()), ILFREE )
+
  !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
  !call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )
 
@@ -249,11 +251,12 @@ DIMENSION WORK(LWORK)
      IF (CAPOVLP) THEN
          write(LUPRI,*) 'calling DOSAJEEV..1'; CALL  FLSHFO(LUPRI)
         ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-         CALL DOSAJEEV(PW(get_kfree()), ILFREE)
+         CALL DOSAJEEV(AccessWork(get_kfree()), ILFREE)
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
        ILFREE=get_lfree()
         ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
-         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+        ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+         CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
          CALL CAP_OVLP_COMP
          call quit('CAP_STUFF: only integral comparison !')
      ELSE
@@ -262,13 +265,15 @@ DIMENSION WORK(LWORK)
          CAPOVLP=.TRUE.
         ! CALL DOSAJEEV(PW(get_kfree()),get_lfree())
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
-         CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+        ! CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+         CALL DOSAJEEV(AccessWork(get_kfree()),ILFREE)
         ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 0.1'
          CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
         ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 1'
           
          !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
-         CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+         CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
          CALL CAP_OVLP_COMP
        ENDIF
         CAPOVLP=.FALSE.
@@ -277,10 +282,12 @@ DIMENSION WORK(LWORK)
          !  write(LUPRI,*) 'calling DOSAJEEV..2'
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 2=',ILFREE
           !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-          CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+         ! CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+          CALL DOSAJEEV(AccessWork(get_kfree()),ILFREE)
           CALL CAP_DIRAC_AO(icabfo,iobf1_2)
           !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree()) 
-          CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE) 
+         ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE) 
+          CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE) 
           CALL CAP_DIPVEL_COMP
           call QUIT('CAP_STUFF: comparison')
         ENDIF
@@ -288,11 +295,13 @@ DIMENSION WORK(LWORK)
          ! write(LUPRI,*) 'calling DOSAJEEV..3'
           ILFREE=get_lfree(); write(LUPRI,*) '.....ILFREE 4=',ILFREE
         !CALL DOSAJEEV(PW(get_kfree()),get_lfree())
-        CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+        !CALL DOSAJEEV(PW(get_kfree()),ILFREE)
+        CALL DOSAJEEV(AccessWork(get_kfree()),ILFREE)
         CALL CAP_DIRAC_AO(icabfo,iobf1_2) 
        ! write(LUPRI,*) 'CAP_STUFF: CAP_DIRAC_AO done 2'
         !CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),get_lfree())
-        CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+       ! CALL CAPADAPT(PW(get_vect_kstart(icabfo)),PW(get_vect_kstart(iobf1_2)),PW(get_kfree()),ILFREE)
+        CALL CAPADAPT(AccessWork(get_vect_kstart(icabfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(get_kfree()),ILFREE)
         CAPDIPVEL = CAPDIPVEL_SAVE
      ENDIF
 
@@ -333,13 +342,20 @@ integer :: KIOBF1,KIOBF2,KILC1,KILC2
  call mymemget('INTE',KILC1,NUCDEP)
  call mymemget('INTE',KILC2,NUCDEP)
 
- CALL IZERO(PW(KIOBF1),3*NBASIS)
- CALL IZERO(PW(KIOBF2),3*NBASIS)
- CALL IZERO(PW(KILC1),NUCDEP)
- CALL IZERO(PW(KILC2),NUCDEP)
+! CALL IZERO(PW(KIOBF1),3*NBASIS)
+ CALL IZERO(AccessWork(KIOBF1),3*NBASIS)
+ !CALL IZERO(PW(KIOBF2),3*NBASIS)
+ CALL IZERO(AccessWork(KIOBF2),3*NBASIS)
+! CALL IZERO(PW(KILC1),NUCDEP)
+ CALL IZERO(AccessWork(KILC1),NUCDEP)
+! CALL IZERO(PW(KILC2),NUCDEP)
+ CALL IZERO(AccessWork(KILC2),NUCDEP)
 
- CALL GET_DIR_CAP_AO_MATCH(PW(get_vect_kstart(icapbfo)),PW(get_vect_kstart(iobf1_2)),PW(KIOBF1), &
-           PW(KIOBF2),PW(KILC1),PW(KILC2))
+! CALL GET_DIR_CAP_AO_MATCH(PW(get_vect_kstart(icapbfo)),PW(get_vect_kstart(iobf1_2)),PW(KIOBF1), &
+!           PW(KIOBF2),PW(KILC1),PW(KILC2))
+
+ CALL GET_DIR_CAP_AO_MATCH( AccessWork(get_vect_kstart(icapbfo)),AccessWork(get_vect_kstart(iobf1_2)),AccessWork(KIOBF1), &
+           AccessWork(KIOBF2),AccessWork(KILC1),AccessWork(KILC2) )
 
  call mymemrel('CAP_DIRAC_AO',KILC2,KILC2)
  call mymemrel('CAP_DIRAC_AO',KILC1,KILC1)

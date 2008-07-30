@@ -27,8 +27,6 @@ subroutine InitHSMRBase
    integer :: fseek, ierrno
    external :: fseek
 
-   call QEnter('InitHSMRBase')
-
    if ( get_iprint() > 5 ) then
      call HEADER('Output from InitHSMRBase',-1)
    endif
@@ -55,9 +53,7 @@ subroutine InitHSMRBase
          ierrno = fseek(UOUT,0,2)
          if (ierrno/=0) then
            write(UOUT,*) 'InitHSMRBase: fseek error on UOUT'
-          ! call flush(UOUT)
            call flushout
-           !call abort
            call Quit('InitHSMRBase: fseek error on UOUT!')
          endif
       endif
@@ -99,13 +95,11 @@ subroutine InitHSMRBase
    endif
 
    ! ... Initialize gamess module, GMSMod ...
-
    call InitGMSMod
 
    if ((.not.OPTION(RESTART)).and.(.not.OPTION(INTTOL))) CUTOFF  = TrfTol
 
    ! ... Generate HSMRCC Parameters ...
-
    call GenHSMRpars
 
    ! ... Initialize IOModule   ...
@@ -123,7 +117,6 @@ subroutine InitHSMRBase
    ! ... Open Integral Files ...
    call OpenIntFiles
 
-   call QExit('InitHSMRBase')
    return
 
 end subroutine InitHSMRBase

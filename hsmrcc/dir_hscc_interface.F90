@@ -19,16 +19,20 @@ use io_moltra
 real*8, intent(in) :: WORK(LWORK)
 logical :: check_point = .false.
 !logical :: check_point = .true.
-integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
+!integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
+integer :: ipos1,ipos2,ipos3,ipos4
 
 !logical :: check_MOints = .false.
 logical :: check_MOints = .true.
 
-Call QEnter('HSCC_STUFF')
+! ... first run test_oof features
+if (iprint_hscc >= 10) then
+  call TEST_OOF(WORK,LWORK)
+  call TEST_OO_MEMORY(WORK,LWORK)
+endif
 
 if (.not.DOHSCC) then
  write(LUPRI,'(2x,a)') 'DOHSCC=.false., no HSCC data preparation'
- Call QExit('HSCC_STUFF')
  return
 endif
 
@@ -39,7 +43,8 @@ call print_HSMRCC_Dirac_info
 
 call StickMemory(WORK,LWORK)
 
-if (check_MOints) then
+!if (check_MOints) then
+if (check_MOints.and.iprint_hscc >= 10) then
  call read_mrconee; call print_mrconee_data
  call read_mdcint ! read MDCINT file
 endif
@@ -48,7 +53,6 @@ call prepare_dirac_HSMRCC_file
 
 call UnstickMemory
 
-Call QExit('HSCC_STUFF')
 end subroutine HSCC_STUFF
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -60,7 +64,7 @@ subroutine HSCCINP(WORD,reset)
 ! 
 ! Called from TRAINP if DOHSCC=.true., i.e. at the beginning
 !
-! Written by Miro ILIAS, Tel Aviv 2007, Prievidza, 2007, 2008
+! Written by Miro ILIAS, Tel Aviv, Prievidza 2007, 2008
 !
 !-----------------------------------------------------------------------------
 
@@ -78,8 +82,6 @@ CHARACTER(len=7) :: WORD, KEYWORD=''
 ! ... nice F90 version 
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
 character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
-
- Call QENTER('HSCCINP')
 
  if (set) then
   if (reset) set = .false.
@@ -167,7 +169,6 @@ EndDo
 
  print *,' returning from HSCCINP ...'
 
- Call QEXIT('HSCCINP')
  Return
 
 910  CONTINUE

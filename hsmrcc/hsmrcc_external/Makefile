@@ -90,7 +90,7 @@ CCLIBS  =
 
 ifeq ($(FC),pgf90)
 ### Portland group
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -Mnomain -pg
        # FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg -Mnomain -Mbounds 
   # ... -pg flags causing pgdbg error stop !!!
        # FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg -Mnomain
@@ -100,12 +100,12 @@ ifeq ($(FC),gfortran)
 ## gfortran/gcc
        # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
        # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) -fno-range-check
-        FFLAGS  = -I$(moddir) $(OPTFLAGS) -fno-range-check
+        FFLAGS  = -I$(moddir) $(OPTFLAGS) -fno-range-check -pg
 endif
 
 ifeq ($(FC),ifort)
 ### Intel Fortran 
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
 endif
 
 # ... others combinations...

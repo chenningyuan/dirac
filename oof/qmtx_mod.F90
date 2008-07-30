@@ -1,7 +1,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !
-!     This module contains tools for working with quaternion matrixes
+!       This module contains tools for working with quaternion matrixes
 !
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -16,7 +16,6 @@ use mystring
 #include "iratdef.h"
 
 ! common printing parameter in the module 
-!integer(kind=4), private :: iprint_qmtx=0
 integer, private :: iprint_qmtx=0
 
 ! own data type for IREP value
@@ -44,34 +43,51 @@ private
  integer (kind=8/IRAT) :: n1,n2
 end type
 
+!----------------------------------------------------------------------------------------------
 !
-! universal structure for the quaternion matrix, either symmetry packed, symmetry unpacked
+!   general data type for the quaternion matrix, either symmetry packed, symmetry unpacked
 ! or simple unsymmetric
 !
+!----------------------------------------------------------------------------------------------
 type QMtx
 private
+
+
 ! symm.distingiushed dimensions (1:NFSYM)
 !  integer (kind=4), dimension(2)  :: nr, nc
   integer (kind=8/IRAT), dimension(2)  :: nr, nc
 !       ...  IREP and NZ
 !  integer (kind=4) :: irep,nz
+
+
   integer (kind=8/IRAT) :: irep,nz
  ! integer (kind=4) :: kstart ! contains position on the PW (WORK) array !
+
   integer  :: kstart ! contains position on the PW (WORK) array !
+
 ! ... offsets for symmetry distinguished matrixes
   integer (kind=8) :: ioff_pk = 0
+
   integer (kind=8), dimension(2,2) :: ioff_upk = 0
+
 !  the total size on the array
-  integer (kind=8) :: array_size = 0
+
+!  integer (kind=8) :: array_size = 0
+  integer :: array_size = 0
+
   logical ::  simple_mtx=.false.
+
   logical ::  symm_packed=.false.
+
 ! ...important flag to check if matrix is allocated !
   logical ::  is_alloc = .false.
+
 ! matrix may be real or integer
   logical ::  is_real = .true.
+
 ! short text attached to the matrix
-  !character (len=30) :: qmtx_text 
   type(string), dimension(1) :: qmtx_text 
+
 ! ... pointers
   real(kind=8), dimension(:,:,:), pointer :: p_rA3D1 => NULL(), p_rA3D2 => NULL()
   !integer,      dimension(:,:,:), pointer :: p_iA3D => NULL()
@@ -189,9 +205,7 @@ subroutine set_isalloc(qmat)
 !
 !-----------------------------------------------------------------------
 type(QMtx), intent(inout) :: qmat
-call QENTER('set_isalloc')
  qmat%is_alloc = .true.
-call QEXIT('set_isalloc')
 end subroutine set_isalloc
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -216,16 +230,14 @@ function get_qmtx_kstart(qmat) result (kstart_out)
 !----------------------------------------------------------------------
 #include "priunit.h"
 type(QMtx), intent(in) :: qmat
-integer(kind=4) :: kstart_out ! returning integer*4 !!!
-!integer :: kstart_out
-call QENTER('get_qmtx_kstart')
+!integer(kind=4) :: kstart_out ! returning integer*4 !!!
+integer :: kstart_out ! returning integer*4 !!!
   if (.not.qmat%is_alloc) then
     call QUIT('get_qmtx_kstart: can not return "kstart" position' & 
                 //'when memory for matrix is NOT allocated !')
   else
     kstart_out =  ( qmat%kstart )
   endif
-call QEXIT('get_qmtx_kstart')
 end function get_qmtx_kstart
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -234,15 +246,12 @@ subroutine set_iprqmtx(iprint)
 !            set up print variable
 !=================================================
 #include "priunit.h"
-!integer (kind=8/IRAT), intent(in) :: iprint
 integer, intent(in) :: iprint
-CALL QENTER('QMatrixes: set_iprqmt')
 iprint_qmtx = iprint
 if (iprint_qmtx >= 6) then
   write(LUPRI,'(2x,a,i4)')   &  
   'QMatrixes/set_iprqmt - print level "iprint_qmtx" set to',iprint_qmtx
 endif
-CALL QEXIT('QMatrixes: set_iprqmt')
 end subroutine set_iprqmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -252,11 +261,8 @@ function get_iprint_qmtx() result(iprint)
 !           get the (protected) printing variable
 !
 !----------------------------------------------------------------
-!integer (kind=8/IRAT) :: iprint
-integer (kind=4) :: iprint
-CALL QENTER('QMatrixes: get_iprqmtx')
+integer  :: iprint
  iprint = iprint_qmtx
-CALL QEXIT('QMatrixes: get_iprqmtx')
 end function get_iprint_qmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -266,16 +272,12 @@ function set_irp (irep_in) result (irep_out)
 !================================================================
 #include "priunit.h"
 type(irp) :: irep_out
-!integer (kind=4), intent(in) :: irep_in
-!integer (kind=8/IRAT), intent(in) :: irep_in
 integer, intent(in) :: irep_in
-CALL QENTER('QMatrixes: set_irp')
 if (.NOT.(irep_in .ge. 0 .and. irep_in .le. 8)) then
  write(lupri,*) 'QMatrixes: set_irp, entering irep_in=',irep_in
  call quit('QMatrixes: set_irp - wrong value of irep !!!')
 endif
 irep_out%irep = irep_in
-CALL QEXIT('QMatrixes: set_irp')
 end function set_irp
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -289,14 +291,12 @@ function set_nz (nz_in) result (nz_out)
 type(nzp) :: nz_out
 !integer (kind=8/IRAT), intent(in) :: nz_in
 integer, intent(in) :: nz_in
-CALL QENTER('QMatrixes: set_nz')
   if (.NOT.(nz_in .eq. 1 .or. nz_in .eq. 2  .or. nz_in .eq. 4)) then
     write(lupri,*) 'QMatrixes: set_nz, entering nz_in=',nz_in
     call quit('QMatrixes: set_nz - wrong value of nz_in (no 1/2/4) !!!')
   endif
   ! nz_out%nz = nz_in
   nz_out = nzp(nz_in)
-CALL QEXIT('QMatrixes: set_nz')
 end function set_nz
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -308,11 +308,8 @@ function set_qmtx_pck (nr1in,nc1in,nr2in,nc2in) result(qmtx_pck_out)
 !-------------------------------------------------------------------------
 #include "priunit.h"
 type(qmtx_pck) :: qmtx_pck_out
-!integer (kind=8/IRAT), intent(in) :: nr1in,nc1in
-integer,  intent(in) :: nr1in,nc1in
-!integer (kind=8/IRAT), intent(in), optional :: nr2in,nc2in
+integer,  intent(in) :: nr1in, nc1in
 integer, intent(in), optional :: nr2in,nc2in
-CALL QENTER('QMatrixes: set_qmtx_pck')
 ! set dimensions of fermion irep 1
 qmtx_pck_out%nr1 = nr1in; qmtx_pck_out%nc1 = nc1in 
 ! check entering dimensions !
@@ -324,7 +321,6 @@ else
    qmtx_pck_out%nr2 = 0
    qmtx_pck_out%nc2 = 0
 endif
-CALL QEXIT('QMatrixes: set_qmtx_pck')
 end function set_qmtx_pck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -340,7 +336,6 @@ type(qmtx_unpck) :: qmtx_unpck_out
 integer, intent(in) :: n1in
 !integer (kind=8/IRAT), intent(in), optional :: n2in
 integer, intent(in), optional :: n2in
-CALL QENTER('QMatrixes: set_qmtx_unpck')
 qmtx_unpck_out%n1 = n1in
 ! check entering dimensions !
 if (present(n2in)) then
@@ -348,7 +343,6 @@ if (present(n2in)) then
 else
    qmtx_unpck_out%n2 = 0
 endif
-CALL QEXIT('QMatrixes: set_qmtx_unpck')
 end function set_qmtx_unpck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -364,7 +358,6 @@ SUBROUTINE AddTextQMtx(qm,text)
 #include "priunit.h"
 type(QMtx),intent(inout) :: qm
 character(*), intent(in), optional :: text
-call QENTER('QMatrixes: AddTextQMtx')
 
 if (len(text).ge.1) then
 ! if there is some string, attach it, otherwise do nothing
@@ -375,14 +368,12 @@ if (len(text).ge.1) then
     call make_string(qm%qmtx_text,text)
   endif
 else
-! if no string is attached, cancel o
+! if no string is attached, cancel string ...
     call cancel_string(qm%qmtx_text)
     call set_no_string(qm%qmtx_text)
 endif
 
-call QEXIT('QMatrixes: AddTextQMtx')
 END SUBROUTINE 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 SUBROUTINE set_qmtx_nz(qm,nz_in)
 !-------------------------------------------------------------------------
@@ -391,14 +382,13 @@ SUBROUTINE set_qmtx_nz(qm,nz_in)
 !
 !-------------------------------------------------------------------------
 type(QMtx),intent(inout) :: qm
-integer(kind=8/IRAT),intent(in) :: nz_in
-CALL QENTER('set_qmtx_nz')
+!integer(kind=8/IRAT),intent(in) :: nz_in
+integer,intent(in) :: nz_in
    qm%nz = nz_in
-CALL QEXIT('set_qmtx_nz')
 END SUBROUTINE set_qmtx_nz
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-SUBROUTINE QMtxInfo(qm)
+SUBROUTINE QMtxInfo(qm, print_qmtx)
 !=========================================================================
 !
 !    print info (basic variables etc) of the quaternion matrix,
@@ -409,10 +399,13 @@ use Memory
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(in) :: qm
-integer(kind=4) :: ifsym, ntr, ntc
-integer (kind=8) :: ioff
+logical, optional, intent(in) :: print_qmtx
+logical :: doprint = .true.
+!integer(kind=4) :: ifsym, ntr, ntc
+integer :: ifsym, ntr, ntc
+!integer (kind=8) :: ioff
+integer :: ioff
 !real (kind=8), pointer, dimension(:) :: my_work_p
-CALL QENTER('QMtxInfo')
 
 CALL HEADER('Output from QMtxInfo',-1)
 
@@ -430,6 +423,8 @@ endif
 write(LUPRI,'(4x,a,i1,1x,a,i1)') 'IREP=',qm%irep,'NZ=',qm%nz
 call FLSHFO(LUPRI)
 
+if (present(print_qmtx)) doprint = print_qmtx
+
 !
 ! ... print out only when the matrix is allocated
 !
@@ -440,6 +435,7 @@ write(LUPRI,'(2x,a,i5,a,i5)') 'start position on the big array:',qm%kstart,   &
 call FLSHFO(LUPRI)
 
 if (.not.qm%simple_mtx.and.qm%symm_packed) then
+
  write(LUPRI,'(2x,a)') 'fermion symmetry packed matrix '
  !ioff = 1
  ioff = qm%kstart
@@ -453,14 +449,20 @@ if (.not.qm%simple_mtx.and.qm%symm_packed) then
      if (.not.associated(qm%p_rA3D1)) then
         call QUIT('QMtxInfo: qm%p_rA3D1 pointer is NOT associated !')
      endif
-     CALL PRQMAT(qm%p_rA3D1,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
+     
+     if (doprint) then
+      CALL PRQMAT(qm%p_rA3D1,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
                    IPQTOQ(1,qm%irep),LUPRI )
+     endif
+
    else if (ifsym == 2) then
      if (.not.associated(qm%p_rA3D2)) then
         call QUIT('QMtxInfo: qm%p_rA3D2 pointer is NOT associated !')
      endif
-     CALL PRQMAT(qm%p_rA3D2,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
+     if (doprint) then
+       CALL PRQMAT(qm%p_rA3D2,qm%nr(ifsym),qm%nc(ifsym),qm%nr(ifsym),qm%nc(ifsym),qm%nz,  &
                    IPQTOQ(1,qm%irep),LUPRI )
+     endif
    else
      call QUIT('QMtxInfo: ifsym <> 1 or 2 !')
    endif
@@ -481,7 +483,10 @@ else if (.not.qm%simple_mtx.and..not.qm%symm_packed) then
    ntc = ( qm%nc(1) + qm%nc(2) )
    if (ntr .ne. ntc) call QUIT('QMtxInfo: no square matrix !')
    !CALL PRQMAT(PW(qm%kstart),ntr,ntc,ntr,ntc,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
-   CALL PRQMAT(qm%p_rA3D1(1,1,1),ntr,ntc,ntr,ntc,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
+
+   if (doprint) then
+     CALL PRQMAT(qm%p_rA3D1(1,1,1),ntr,ntc,ntr,ntc,qm%nz,IPQTOQ(1,qm%irep),LUPRI) 
+   endif
 else if (qm%simple_mtx) then
 ! ... print out of a trivial quaternion matrix
    write(LUPRI,*) 'trivial quaternion matrix'
@@ -489,20 +494,22 @@ else if (qm%simple_mtx) then
 else
    call quit('QMtxInfo: blind "if" branch ')
 endif
+
   write(LUPRI,'(2x,a)')  &
   'no matrix print out - this matrix is not allocated'
+  write(LUPRI,*) 'qm%simple_mtx=',qm%simple_mtx,' qm%symm_packed=',qm%symm_packed
+
 endif
 
  call FLSHFO(LUPRI)
 
-CALL QEXIT('QMtxInfo')
 END SUBROUTINE QMtxInfo
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION MakeQMtxPck(qm_pk_in, irp_in, nz_in, text) result(qm)
 !-------------------------------------------------------------------
 !
-!   basic constructor for the symmetry packed quaternion matrix
+!    basic constructor for the symmetry packed quaternion matrix
 !
 !-------------------------------------------------------------------
 use Memory
@@ -513,11 +520,7 @@ type(qmtx_pck), intent(in) :: qm_pk_in
 type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 character(*), optional, intent(in) :: text
-!integer (kind=8) :: isize
-!integer (kind=8/IRAT) :: isize
 integer  :: isize
-integer(kind=4) :: good_alloc
-CALL QENTER('QMatrixes: MakeQMtxPck')
 
 if (present(irp_in)) then
   qm%irep = irp_in%irep
@@ -547,19 +550,22 @@ if (NFSYM == 2) then
 else 
   qm%ioff_pk = 0
 endif
+
 qm%simple_mtx  = .false.
 qm%symm_packed = .true.
-!  array size of the symmetry packed matrix
+
+! ... array size of the symmetry packed matrix
 isize = qm%nr(1)*qm%nc(1)*qm%nz + qm%nr(2)*qm%nc(2)*qm%nz
-! store the size
+! save the size
 qm%array_size = isize
 
 ! allocate array for the matrix
 CALL mymemget('REAL',qm%kstart,isize)
+
 qm%is_real  = .true.
 qm%is_alloc = .true. ! array is allocated
 
-! ... assign pointer
+! ... assign the pointer
 qm%p_rA3D1 => NULL(); qm%p_rA3D2 => NULL()
 call AssignQmtxPointer(qm)
 
@@ -567,14 +573,13 @@ call AssignQmtxPointer(qm)
 ! call print_mem_param()
 !endif
 
-CALL QEXIT('QMatrixes: MakeQMtxPck')
 END FUNCTION MakeQMtxPck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AssignQmtxPointer(qm)
 !----------------------------------------------------------------------
 !
-!            Assign pointers for quanternion matrix
+!           Assign pointers for a quaternion matrix
 !
 !----------------------------------------------------------------------
 use Memory
@@ -582,9 +587,10 @@ use GeneralPointers
 #include "priunit.h"
 #include "dgroup.h"
 type(QMtx),intent(inout) :: qm
-integer(kind=4) :: ifsym, ntr, ntc
-integer (kind=8) :: ioff ! assumed bigg number 
-call QENTER('QMatrixes: AssignQmtxPointer')
+!integer(kind=4) :: ifsym, ntr, ntc
+integer :: ifsym, ntr, ntc
+!integer (kind=8) :: ioff ! assumed bigg number 
+integer :: ioff ! assumed bigg number 
 
 if (.not.qm%is_alloc) then
   call QUIT('AssignQmtxPointer: matrix(array) NOT allocated !')
@@ -602,7 +608,10 @@ if (qm%is_real) then
       call print_qmtx_attrib(qm)
       call QUIT('AssignQMtxArrayPointer: unpacked matrix is NOT square !')
     endif
-    call AssignQMtx3D_real(PW(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
+
+   ! call AssignQMtx3D_real(PW(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
+    call AssignQMtx3D_real(AccessWork(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
+
     qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
     if (.not.associated(qm%p_rA3D1)) then
       call QUIT('AssignQMtxArrayPointer: p_rA3D1 not associated !')
@@ -612,7 +621,8 @@ if (qm%is_real) then
 
    ioff = qm%kstart ! offset
    do ifsym = 1, NFSYM
-     call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
+    ! call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
+     call AssignQMtx3D_real(AccessWork(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
      if (ifsym == 1) then
        qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
      else if (ifsym == 2) then
@@ -628,8 +638,6 @@ if (qm%is_real) then
 else
   call QUIT('QMatrixes: AssignQmtxPointer - only real quaternion matrixes !')
 endif
-
-call QEXIT('QMatrixes: AssignQmtxPointer')
 
 end subroutine AssignQmtxPointer
 
@@ -657,7 +665,6 @@ character(*), optional, intent(in) :: text
 !integer (kind=8/IRAT) :: isize
 integer :: isize
 logical, save :: was_called = .false.
-CALL QENTER('QMatrixes: MakeQMtxUnPck')
 
 if (present(irp_in)) then
   qm%irep = irp_in%irep
@@ -712,7 +719,6 @@ qm%is_real  = .true.
 qm%p_rA3D1 => NULL(); qm%p_rA3D2 => NULL()
 call AssignQmtxPointer(qm)
 
-CALL QEXIT('QMatrixes: MakeQMtxUnPck')
 END FUNCTION MakeQMtxUnPck
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -725,7 +731,6 @@ SUBROUTINE DeAllocQMtx(qm)
 use Memory
 #include "priunit.h"
 type(QMtx) :: qm
-call QENTER('QMatrixes: DeAllocQMtx')
 
 !call MEMREL('QMatrixes: DestroyQMtx',PW,qm%kstart,qm%kstart,KFREE,LFREE)
 call mymemrel('QMatrixes: DestroyQMtx',qm%kstart,qm%kstart)
@@ -733,7 +738,6 @@ qm%is_alloc = .false.
 qm%array_size = 0
 call cancel_string(qm%qmtx_text) ! cancel the string text
 ! shall I zero all attribites ?
-call QEXIT('QMatrixes: DeAllocQMtx')
 END SUBROUTINE DeAllocQMtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -748,7 +752,6 @@ type(QMtx), intent(in) :: amat,bmat
 real(kind=8) :: diff
 logical(kind=1) :: compatible
 integer(kind=4) :: i
-call QENTER('getdiff_qmtx')
 ! check matrix compatibilities
 compatible = compatible_2qmtx(amat,bmat)
 
@@ -760,12 +763,12 @@ endif
 
 diff = 0.D0
 do i=0,amat%array_size -1
- diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
+! diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
+ diff = abs(GetWorkElem(amat%kstart+i) - GetWorkElem(bmat%kstart+i)) + diff
 enddo
 ! using size of the allocated array - depends on NZ !
 diff = diff / dfloat(amat%array_size)
 
-call QEXIT('getdiff_qmtx')
 end function getdiff_qmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -781,7 +784,6 @@ real(kind=8) :: diff
 logical(kind=1) :: compatible
 integer(kind=8) :: size_min
 integer(kind=4) :: i
-call QENTER('getdiff_part_qmtx')
 ! check matrix compatibilities
 compatible = compatible_2qmtx_part(amat,bmat)
 
@@ -795,11 +797,11 @@ size_min = min(amat%array_size,bmat%array_size)
 
 diff = 0.D0
 do i=0, size_min -1
- diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
+ !diff = abs(PW(amat%kstart+i) - PW(bmat%kstart+i)) + diff
+ diff = abs( GetWorkElem(amat%kstart+i) - GetWorkElem(bmat%kstart+i)) + diff
 enddo
 diff = diff / dfloat(amat%array_size)
 
-call QEXIT('getdiff_part_qmtx')
 end function getdiff_part_qmtx
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -817,7 +819,7 @@ use Memory
 type(QMtx), intent(inout) :: amat
 type(QMtx), intent(in) :: bmat
 real(kind=8),intent(in),optional :: fac_a,fac_b
-real(kind=8) :: temp
+real(kind=8) :: temp, temp1
 logical(kind=1) :: compatible
 integer(kind=4) :: i
 call QENTER('substract_qmtx')
@@ -836,22 +838,31 @@ endif
 if (present(fac_a).and.present(fac_b)) then
 
 do i=0,amat%array_size -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+ !temp = PW(amat%kstart+i)
+ temp = GetWorkElem(amat%kstart+i)
+! PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+ temp1  =  fac_a*temp - fac_b*GetWorkElem(bmat%kstart+i)
+ call PutWorkElem(amat%kstart+i,temp1) 
 enddo
 
 else if (present(fac_a).and..not.present(fac_b)) then
 
 do i = 0, amat%array_size -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+! temp = PW(amat%kstart+i)
+ temp = AccessWorkElem(amat%kstart+i)
+! PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+ temp1  =  fac_a*temp - AccessWorkElem(bmat%kstart+i)
+ call PutWorkElem(amat%kstart+i,temp1) 
 enddo
 
 else if (.not.present(fac_a).and..not.present(fac_b)) then
 
 do i=0,amat%array_size -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+ !temp = PW(amat%kstart+i)
+ temp = GetWorkElem(amat%kstart+i)
+! PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+ !GetWorkElem(amat%kstart+i)  =  temp - GetWorkElem(bmat%kstart+i)
+ call PutWorkElem( amat%kstart+i, temp - GetWorkElem(bmat%kstart+i) )
 enddo
 
 else
@@ -898,22 +909,28 @@ size_min = min(amat%array_size,bmat%array_size)
 if (present(fac_a).and.present(fac_b)) then
 
 do i=0,size_min -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+ !temp = PW(amat%kstart+i)
+ temp = GetWorkElem(amat%kstart+i)
+ !PW(amat%kstart+i)  =  fac_a*temp - fac_b*PW(bmat%kstart+i)
+ call PutWorkElem( amat%kstart+i,   fac_a*temp - fac_b*GetWorkElem(bmat%kstart+i) )
 enddo
 
 else if (present(fac_a).and..not.present(fac_b)) then
 
 do i = 0, size_min -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+ !temp = PW(amat%kstart+i)
+ temp = GetWorkElem(amat%kstart+i)
+ !PW(amat%kstart+i)  =  fac_a*temp - PW(bmat%kstart+i)
+ call PutWorkElem (amat%kstart+i,  fac_a*temp - GetWorkElem(bmat%kstart+i) )
 enddo
 
 else if (.not.present(fac_a).and..not.present(fac_b)) then
 
 do i=0,size_min -1
- temp = PW(amat%kstart+i)
- PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+ !temp = PW(amat%kstart+i)
+ temp = GetWorkElem(amat%kstart+i)
+ !PW(amat%kstart+i)  =  temp - PW(bmat%kstart+i)
+ call PutWorkElem (amat%kstart+i, temp -  GetWorkElem(bmat%kstart+i) )
 enddo
 
 else
@@ -967,11 +984,12 @@ use GeneralPointers
 #include "priunit.h"
 integer(kind=4), intent(in) :: iprint,n1,n2,nz
 real(kind=8), target :: QMtx(n1,n2,nz)
-call QENTER('QMatrixes: AssignQMtx3D_real')
+!call QENTER('QMatrixes: AssignQMtx3D_real')
 p3_real8 => QMtx
 if (iprint >= 10) then
   write(LUPRI,*) 'AssignQMtx3Dreal: real 3dim pointer to the matrix was assigned.'
+  call FLSHFO(LUPRI)
 endif
-call QEXIT('QMatrixes: AssignQMtx3D_real')
+!call QEXIT('QMatrixes: AssignQMtx3D_real')
 end subroutine AssignQMtx3D_real
 

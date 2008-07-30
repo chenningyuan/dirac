@@ -26,7 +26,6 @@ subroutine make_string(self, text)
  type(string), dimension(:), intent(inout) :: self
  character(*), intent(in) :: text
  integer(kind=4) :: i, alloc_stat
- call QENTER('make_string')
 
  if (.not.self(1)%is_alloc) then
    allocate( self(1)%strp(len(text)), stat = alloc_stat )
@@ -61,7 +60,6 @@ subroutine make_string(self, text)
   ! endif
  endif
 
- call QEXIT('make_string')
  end subroutine make_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -76,7 +74,6 @@ subroutine make_string(self, text)
  !type(string), intent(inout) :: self
 ! must be kind=4 otherwise generates error !
  integer(kind=4) :: dealloc_stat
- call QENTER('mystring:cancel_string')
 
  if ( self(1)%is_alloc) then
  !    write(LUPRI,*) 'mystring:cancel_string entering string: ',self(1)%strp
@@ -92,24 +89,21 @@ subroutine make_string(self, text)
      self(1)%is_alloc=.false.
      self(1)%str_length = 0
  endif
- call QEXIT('mystring:cancel_string')
  end subroutine cancel_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_string(self)
 !----------------------------------------------------------------------------
 !
-!       print out the string
+!       print out the string (LUPRI channel)
 !
 !----------------------------------------------------------------------------
 #include "priunit.h"
 type(string), dimension(:), intent(in) :: self
-call QENTER('print_string')
   if (self(1)%is_alloc) then
     write(LUPRI,*) (self(1)%strp)
   endif
   call FLSHFO(LUPRI)
-call QEXIT('print_string')
 end subroutine print_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -121,9 +115,7 @@ end subroutine print_string
 !----------------------------------------------------------------------------
    type(string), dimension(:), intent(in) :: self
    logical (kind=1) :: is
-   call QENTER('is_string')
      is = self(1)%is_alloc
-   call QEXIT('is_string')
  end function is_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -152,7 +144,7 @@ end function Xget_string
 function get_string(self) result(str_out)
 !-------------------------------------------------------------------
 !
-!                    should return the string
+!             should return the string
 !
 !-------------------------------------------------------------------
   type(string), dimension(:), intent(in) :: self
@@ -165,7 +157,6 @@ function get_string(self) result(str_out)
 
   integer(kind=4) :: i
 
-  call QENTER('get_string')
 
   !if ( allocated(str_out(1)) ) then
   !if ( associated(str_out(1)) ) then
@@ -185,7 +176,6 @@ function get_string(self) result(str_out)
     str_out=''
   endif
 
-  call QEXIT('get_string')
 end function get_string
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -200,7 +190,6 @@ subroutine copy_strings(source,dest)
 !type(string), dimension(:), intent(inout) :: source, dest
 !type(string), dimension(1), intent(inout) :: source, dest
 type(string), dimension(1), intent(inout) :: source, dest
-call QEnter('copy_strings')
 
 if (.not.source(1)%is_alloc) then
    call Quit('copy_strings: "source" is NOT allocated !')
@@ -223,7 +212,6 @@ do i = 1, dest(1)%str_length
  dest(1)%strp(i) = source(1)%strp(i)
 enddo
 
-call QExit('copy_strings')
 end subroutine copy_strings
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -234,10 +222,8 @@ subroutine set_no_string(self)
 !
 !------------------------------------------------------------------------
 type(string), dimension(:), intent(inout) :: self
-call QENTER('mystring/set_no_string')
      self(1)%is_alloc = .FALSE.
      self(1)%str_length = 0
-call QEXIT('mystring/set_no_string')
 end subroutine set_no_string
 
 end module mystring
