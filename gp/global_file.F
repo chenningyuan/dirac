@@ -61,7 +61,6 @@ C
      +   MPI_MODE_WRONLY + MPI_MODE_CREATE + MPI_MODE_EXCL,
      +   GF_INFO, GF_HANDLE, IERR
      +)
-
       CALL MPI_INFO_FREE(GF_INFO, IERR)
 
       DO K = 0, NUMNOD
@@ -96,7 +95,6 @@ C
       CALL MPI_INFO_SET(GF_INFO, "ind_rd_buffer_size", "16777216", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_cb_read", "disable", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_ds_read", "enable", IERR)
-      GF_INFO = MPI_INFO_NULL
 
       CALL MPI_FILE_OPEN(
      +   MPI_COMM_WORLD, GF_NAME,
@@ -285,7 +283,7 @@ C     in two parts (the first part performs an implicit cast).
 
       INCLUDE "mpif.h"
 #include "global_file.h"
-      INTEGER STATUS(MPI_STATUS_SIZE)
+      INTEGER*4 STATUS(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
       INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
@@ -299,7 +297,10 @@ C     in two parts (the first part performs an implicit cast).
       CALL MPI_FILE_READ_AT(
      +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,MPI_PACKED,
      +  STATUS,IERR)
+CSK   ... zero NUMREAD, otherwise it may fail
+      NUMREAD = 0
       CALL MPI_GET_COUNT(STATUS,MPI_PACKED,NUMREAD,IERR)
+      WRITE(6,*) ' GLOBAL_FILE_GET... NUMREAD',NUMREAD
       IF (NUMREAD .NE. GF_RECLEN) THEN
          PRINT *, 'ERROR: GLOBAL_FILE_GET_RECORD: NUMREAD = ', NUMREAD
          CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
@@ -391,7 +392,7 @@ C           Pick out the integrals that we need.
       CALL MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable", IERR)
 
       CALL MPI_FILE_OPEN(
-     +   MPI_COMM_WORLD, LF_NAME,
+     +   MPI_COMM_SELF, LF_NAME,
      +   MPI_MODE_WRONLY + MPI_MODE_CREATE,
      +   GF_INFO, LF_HANDLE, IERR
      +)
@@ -426,7 +427,7 @@ C           Pick out the integrals that we need.
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
-      INTEGER STATUS(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
 
@@ -441,8 +442,10 @@ C           Pick out the integrals that we need.
 
             CALL MPI_FILE_READ(
      +        GF_HANDLE,GF_RECBUF,GF_RECLEN,MPI_PACKED,
-     +        STATUS,IERR)
-            CALL MPI_GET_COUNT(STATUS,MPI_PACKED,NUMREAD,IERR)
+     +        ISTAT,IERR)
+CSK         ... zero NUMREAD, otherwise it may fail
+            NUMREAD = 0
+            CALL MPI_GET_COUNT(ISTAT,MPI_PACKED,NUMREAD,IERR)
             IF (NUMREAD .NE. GF_RECLEN) THEN
                PRINT *, 'ERROR: SELECT_LOCAL_FROM_GLOBAL: NUMREAD = ',
      +         NUMREAD
