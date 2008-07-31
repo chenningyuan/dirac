@@ -420,7 +420,7 @@ if [ "$mesp" = "mpi" ]; then
   echo $comptst ./test/MPI2_test.F
   echo 
   mpi2version="yes"
-  $comptst ./test/MPI2_test.F || mpi2version="no"
+  $comptst ./test/MPI2_test.F 2>/dev/null || mpi2version="no"
   echo 
   if [ "$mpi2version" = "no" ]; then
     echo  "No MPI-2 support found ...                                   "
@@ -431,8 +431,14 @@ if [ "$mesp" = "mpi" ]; then
     echo  "                                  - KR-MCSCF using LUCIAREL  "
     echo  "                                  - MOLTRA (scheme 6)        "
     echo
-  else
-    echo ok
+    $echo "Configure without MPI-2 support? (Y/n)"
+    read mpi2version
+    if [ $mpi2version = "n" ]; then
+	mpi2version=yes
+	echo "You will have to manually add MPI2 paths to Makefile.config"
+    fi;
+  fi
+  if [ "$mpi2version" = "yes" ]; then
     cpp_cc="$cpp_cc -DVAR_MPI2"
     case $F90_COMP in
        xlf*|mpfort|mpxlf_r) 
@@ -474,11 +480,10 @@ compiler_fortran(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
 to_find='Fortran'
+comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
+# Prefer "parallel" compilers if mpi
 if [ "$mesp" = "mpi" ]; then
-# mi: added mpif77 since it might handle F90/95 (when built up from ifort for instance)
-  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77"
-else
-  comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
+  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77 $comp_list"
 fi
 user_comp=$F90_COMP
 find_compiler
@@ -507,10 +512,9 @@ compiler_c(){
 
 # All supported C compilers
 to_find='C'
+comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
-  comp_list="mpcc_r mpcc openmpicc mpicc" 
-else
-  comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
+  comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
 fi
 user_comp=$CC_COMP
 find_compiler
@@ -786,7 +790,7 @@ elif [ $lib_index -eq 0 ]; then
     "yes" | "y" | "Y" )
       cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK" ;;
     *)
-      $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
+      echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
        ;;
   esac
 
@@ -2062,7 +2066,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         CC="$val"
+         CC_COMP="$val"
          ;;
       "f90" )
          if [ "${valomitted}" = "yes" ]; then
