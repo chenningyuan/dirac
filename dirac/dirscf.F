@@ -3070,7 +3070,7 @@ C
      &              NSSH(I),NZ,NSSH(I),1,NFBAS(I,0),
      &              CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,
      &              IPRMVO)
-        IF(IPRMVO.GE.2) THEN
+        IF(IPRMVO.GE.0) THEN
           WRITE(LUPRI,'(A,A3)')
      &     '* Virtual eigenvalues of ircop ',FREP(I)
           WRITE(LUPRI,'(5F15.8)') (EIG(IE(I)+J),J=0,(NSSH(I)-1))
