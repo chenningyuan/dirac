@@ -5610,7 +5610,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.VECMVO','.PRINT ','.INTFLG','.F2CONT',
-     &            '.ADDREP','.IONMVO','.POTMVO','.XXXXXX'/
+     &            '.ADDREP','.IONMVO','.POTMVO','.WEIGHT'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -5636,6 +5636,10 @@ C
       IGTINT = IBTAND(INTGEN/8,1)
       IFCMVO = 1
       IFEMVO = 1
+C     If MVOWEIGHT < 1 the Fock operator will be constructed from 
+C     a weighted sum of the inactive density (with weight MVOWEIGHT - 1),
+C     and the density of the orbitals given by VECMVO.
+      MVOWEIGHT = 1.0D0 
       ADDREP = .FALSE.
       IONMVO = .TRUE.
       DO I = 1,NFSYM
@@ -5707,6 +5711,12 @@ C&&& POTMVO: Generate MVOS from Hartree-Fock potential
                   IONMVO = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&& WEIGHT: Give weight of the VECMVO density, the rest is inactive density
+               READ(LUCMD,*) MVOWEIGHT
+               IF (MVOWEIGHT.GT.1.OR.MVOWEIGHT.LT.0) THEN 
+                  WRITE(LUPRI,*) 'WARNING: MVO weight not in [0,1],',
+     &                 MVOWEIGHT
+               ENDIF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
