@@ -535,43 +535,15 @@ find_compiler ()  {
 $echo "\nChecking for $to_find compilers ...\c"
 comp_found=""
 
-if [ ! -z "$user_comp" ]; then
-  echo 'get this working!' 
-  tmp_list=comp_list
-  comp_list=user_comp
-  user_comp=''
-  find_compiler
-  if [ -z "$compiler_found"]; then
-    exit
-  fi
-  echo "Compiler specified by the user not found... Checking for the standard compilers."
+if [ -z "$user_comp" ]; then
+    for comp in $comp_list; do
+	if which "$comp" 2> /dev/null; then 
+	    comp_found="$comp_found $comp"
+	fi
+    done
+else
+    comp_found="$user_comp"
 fi
-
-
-
-for comp in $comp_list; do
-  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-
-  if test -f $comp; then 
-    if [ -z "$comp_found" ]; then 
-      comp_found="$comp"
-    else
-      comp_found="$comp_found $comp"
-    fi
-  fi
-  for ac_dir in $PATH; do
-    test -z "$ac_dir" && $comp=.
-    if [ -f $ac_dir/$comp ]; then
-      if [ -z "$comp_found" ]; then 
-        comp_found="$comp"
-      else
-        comp_found="$comp_found $comp"
-      fi
-      break
-    fi
-  done
-  IFS="$ac_save_ifs" 
-done
 
 # If there is found more than one compiler let the user pick it.
 counter=0
@@ -591,7 +563,7 @@ case $counter in
     esac  
     exit ;;
   1 ) 
-    echo " The following $to_find compiler was detected on your system: $comp_found" ;;
+    echo " The following $to_find compiler will be used: $comp_found" ;;
   * )
     echo " The following compilers were detected on your system: "
     counter=0
@@ -784,7 +756,7 @@ for tmp_library in $lib_names; do
   $echo "$counter) $tmp_library"
 done
 $echo "1) Specify a library path. \t\c" 
-echo "0) No libraries (SLOW)."
+echo "0) Built in libraries (SLOW) or manual configuration."
 echo 
 lib_index=-1
 
@@ -2098,7 +2070,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         F90="$val"
+         F90_COMP="$val"
          ;;
       "i"  )
          IPRINT=$val
