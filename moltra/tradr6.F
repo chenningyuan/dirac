@@ -95,7 +95,11 @@ C***********************************************************************
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
-      REAL*8 GABRAO(*),DRIJ(*)
+      REAL*8 GABRAO(*),DRIJ(*) 
+#if defined (VAR_MPI)
+      REAL*8 XINTSTAT(8)
+      INTEGER ILEN_STAT
+#endif
 C
       CALL QENTER('TRDR6T')
       KFRSAV = KFREE
@@ -151,6 +155,7 @@ C
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
+CSK_debug     WRITE(LUPRI,*) 'calling FIRST_HALFTR_PARALLEL: MYTID',MYTID
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
      &                     GABRAO,DRIJ,
@@ -210,7 +215,11 @@ C     Note : it would be more logical to have the call to MPI_REDUCE inside
 C     ST4SCR, but this would create a conflict with the other transformation schemes.
 C
 #if defined (VAR_MPI)
-      CALL MPI_REDUCE(DINTSKP,DINTSKP,8,MPI_DOUBLE_PRECISION,
+CSK   ... safe implementation
+      ILEN_STAT = 8
+      CALL DZERO(XINTSTAT,ILEN_STAT)
+      CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
+      CALL MPI_REDUCE(XINTSTAT,DINTSKP,ILEN_STAT,MPI_REAL8,
      &                MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
 #endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
