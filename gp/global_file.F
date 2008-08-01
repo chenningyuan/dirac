@@ -427,6 +427,9 @@ C           Pick out the integrals that we need.
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
+#if !defined (INT_STAR8)
+      INTEGER ISTAT
+#endif
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
