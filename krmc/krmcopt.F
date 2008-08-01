@@ -5585,6 +5585,7 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
+      LOGICAL KRMCEND
 #include "memint.h"
 C
       KFRSAV = KFREE
@@ -5631,15 +5632,16 @@ C
 C
 C     .. wait for the master
 C
-      LUEND = .FALSE.
+      KRMCEND = .FALSE.
 C
       CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,25,
      &              MPI_COMM_WORLD,IREQ,IERR)
 
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(MPARID,35,MPI_COMM_WORLD,LUEND,ISTAT,IERR)
-         IF (.NOT.LUEND) GOTO 1
+         CALL MPI_IPROBE(MPARID,35,MPI_COMM_WORLD,KRMCEND,
+     &                   ISTAT,IERR)
+         IF (.NOT.KRMCEND) GOTO 1
 
       CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,35,
      &               MPI_COMM_WORLD,ISTAT,IERR)
