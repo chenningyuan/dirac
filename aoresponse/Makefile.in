@@ -45,5 +45,11 @@ dirac.x:
 dirmpi.x:
 	   cd .. ; $(MAKE) dirmpi.x
 
+matrix_mod.o:
+	$(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(F90_SAFEFLAGS) -c $*.F90
+
+matrix_oper.o:
+	$(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(F90_SAFEFLAGS) -c $*.F90
+
 include ../Makefile.depend
 
