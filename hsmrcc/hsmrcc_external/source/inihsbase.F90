@@ -37,27 +37,27 @@ subroutine InitHSMRBase
 
    ! ... Setting up the output stream ...
 
-   if (OPTION(TTYRUN)) then
-      UOUT = 6 ! ... terminal output ...
-   else
-      close(6)
-      close(5)
-      close(0)
-      open(UOUT,file=FileHSMR) ! ... output to the file ...
-      if ( get_iprint() >= 15 ) then
-          write(UOUT,'(2x,a,i3)') 'InitHSMRBase: UOUT variable set to ',UOUT
-          write(UOUT,'(2x,a,a)')  &
-          'InitHSMRBase: UOUT assigned file is ',FileHSMR
-      endif
-      if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
-         ierrno = fseek(UOUT,0,2)
-         if (ierrno/=0) then
-           write(UOUT,*) 'InitHSMRBase: fseek error on UOUT'
-           call flushout
-           call Quit('InitHSMRBase: fseek error on UOUT!')
-         endif
-      endif
-   endif
+!  if (OPTION(TTYRUN)) then
+!     UOUT = 6 ! ... terminal output ...
+!  else
+!     close(6)
+!     close(5)
+!     close(0)
+!     open(UOUT,file=FileHSMR) ! ... output to the file ...
+!     if ( get_iprint() >= 15 ) then
+!         write(UOUT,'(2x,a,i3)') 'InitHSMRBase: UOUT variable set to ',UOUT
+!         write(UOUT,'(2x,a,a)')  &
+!         'InitHSMRBase: UOUT assigned file is ',FileHSMR
+!     endif
+!     if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
+!        ierrno = fseek(UOUT,0,2)
+!        if (ierrno/=0) then
+!          write(UOUT,*) 'InitHSMRBase: fseek error on UOUT'
+!          call flushout
+!          call Quit('InitHSMRBase: fseek error on UOUT!')
+!        endif
+!     endif
+!  endif
 
    ! ... Opening FileVINF file ...
 
@@ -120,3 +120,43 @@ subroutine InitHSMRBase
    return
 
 end subroutine InitHSMRBase
+
+
+subroutine set_output_stream()
+! ... sets the output stream ...
+
+!use Parameters
+!use Options
+use IOModule
+
+   integer :: fseek, ierrno
+   external :: fseek
+
+   if (OPTION(TTYRUN)) then
+      UOUT = 6 ! ... terminal output ...
+      if ( get_iprint() >= 6 ) then
+        write(UOUT,'(/,2x,a,i3,$)') 'set_output_stream: UOUT=',UOUT
+        write(UOUT,'(2x,a,i3)')   'print level is ',get_iprint()
+      endif
+   else
+   ! ... output to the files...
+      close(6)
+      close(5)
+      close(0)
+      open(UOUT,file=FileHSMR) ! ... output to the file ...
+      if ( get_iprint() >= 6 ) then
+          write(UOUT,'(2x,a,i3)') ': UOUT variable set to ',UOUT
+          write(UOUT,'(2x,a,a)')  &
+          ': UOUT assigned file is ',FileHSMR
+      endif
+      if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
+         ierrno = fseek(UOUT,0,2)
+         if (ierrno/=0) then
+           write(UOUT,*) ': fseek error on UOUT'
+           call flushout
+           call Quit(': fseek error on UOUT!')
+         endif
+      endif
+   endif
+
+end subroutine set_output_stream

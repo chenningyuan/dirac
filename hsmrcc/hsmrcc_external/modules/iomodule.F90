@@ -116,8 +116,6 @@ subroutine InitIOMod
 
  implicit none
 
- call QEnter('InitIOMod')
-
    ! ... Initialization Check ...
 
    if (Init) then
@@ -172,8 +170,6 @@ subroutine InitIOMod
    if (.not.allocated(NZIntRec_VPHPP)) allocate(NZIntRec_VPHPP(NumRec(VPHPP)))
    if (.not.allocated(NZIntRec_V2HHP)) allocate(NZIntRec_V2HHP(NumRec(V2HHP)))
    if (.not.allocated(NZIntRec_VHHHP)) allocate(NZIntRec_VHHHP(NumRec(VHHHP)))
-
-   call QExit('InitIOMod')
 
    return
 
@@ -244,6 +240,7 @@ subroutine InitBlockIO
    NumBlock(V2HHP) = 1
    NumBlock(VHHHP) = 1
    NumBlock(FHH)   = 1
+   ! ... block reading procedure ...
    NumBlock(VPPPP) = NumBlock_VPPPP()
    NumBlock(VPH2P) = NumBlock_VPH2P()
    NumBlock(VPHPP) = NumBlock_VPHPP()
@@ -278,7 +275,11 @@ subroutine InitBlockIO
 end subroutine InitBlockIO
 
 subroutine AllocIntBufs
-
+!-------------------------------------------------------------------
+!
+!                Allocate integrals/indexes buffers
+!
+!-------------------------------------------------------------------
    implicit none
    integer :: IntBufSize
 
@@ -304,8 +305,21 @@ subroutine AllocIntBufs
 
    Nullify(IndBuf)
    Nullify(IntBuf)
-   if (.not.allocated(BufIndex))  allocate(BufIndex(IntBufSize))
-   if (.not.allocated(BufIntgrl)) allocate(BufIntgrl(IntBufSize))
+   if (.not.allocated(BufIndex)) then
+      allocate(BufIndex(IntBufSize))
+      if (get_iprint() >= 12) then
+        write(UOUT,'(/,2x,a,i8)')  & 
+        'AllocIntBufs: indexes (integer) BufIndex allocated, size=',IntBufSize
+      endif
+   endif
+
+   if (.not.allocated(BufIntgrl)) then 
+      allocate(BufIntgrl(IntBufSize))
+      if (get_iprint() >= 12) then
+        write(UOUT,'(2x,a,i8)')  & 
+        'AllocIntBufs: integrals (double) BufIntgrl allocated, size=',IntBufSize
+      endif
+   endif
 
    return
 
@@ -474,7 +488,7 @@ function NumBlock_VPHPP()
          IntRec = IntRec + 1
       enddo
       if (NZInt == 0) then 
-        call Quit('NumBlock_VPHPP: Error NZInt=0')
+        call quit('NumBlock_VPHPP: Error NZInt=0')
       endif
       NunRead = BufSize - NRead - NZInt
       NRead = NZVINTBUFSIZE - MOD(NunRead,NZVINTBUFSIZE)
@@ -524,7 +538,7 @@ subroutine SetupBlkRead_VPPPP
          IntRec = IntRec + 1
       enddo
       if ( NZInt == 0 ) then
-         call Quit('SetupBlkRead_VPPPP: Error NZInt=0')
+         call quit('SetupBlkRead_VPPPP: Error NZInt=0')
       endif
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
@@ -585,7 +599,7 @@ subroutine SetupBlkRead_VPH2P
       enddo
       !if ( NZInt == 0 ) stop 'Error NZInt=0'
       if ( NZInt == 0 ) then 
-        call Quit('SetupBlkRead_VPH2P: Error NZInt=0')
+        call quit('SetupBlkRead_VPH2P: Error NZInt=0')
       endif
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
@@ -645,7 +659,7 @@ subroutine SetupBlkRead_VPHPP
          IntRec = IntRec + 1
       enddo
       !if ( NZInt == 0 ) stop 'Error NZInt=0'
-      if ( NZInt == 0 ) call Quit('SetupBlkRead_VPHPP: Error NZInt=0')
+      if ( NZInt == 0 ) call quit('SetupBlkRead_VPHPP: Error NZInt=0')
       EnRec = IntRec - 1
       NBRec = (NRead+NZInt)/NZVINTBUFSIZE
       if (NBRec*NZVINTBUFSIZE/=(NRead+NZInt)) NBRec = NBRec + 1
@@ -677,7 +691,7 @@ subroutine EndIOMod
    endif
    Init = .FALSE.
 
-   ! ... deallocate only they are allocated ...
+   ! ... deallocate only if they are allocated ...
    ! ... when NOHSMR the following entities ...
    ! ... are not allocated                  ...
 
@@ -744,9 +758,9 @@ subroutine ReadFileFull(FileName)
       case (VHHHP)
          NZIntRec => NZIntRec_VHHHP
       case default
-         write(UOUT,*) 'ReadFileFull: Unable to Read Full File'
+         write(UOUT,*) 'ReadFileFull: Unable to Read Full File, wrong case'
          call flushout
-         call quit('ReadFileFull: Unable to Read Full File')
+         call quit('ReadFileFull: Unable to Read Full File, wrong case !')
    end select
 
    StRec = StartRec(FileName)
@@ -766,10 +780,13 @@ subroutine ReadFileFull(FileName)
 end subroutine ReadFileFull
 
 subroutine ReadFileBlock(FileName,Block,St,En)
+!---------------------------------------------------------------------------------
 !
+!  read block of integrals & indexes from files UVINT, UVIND  
 !
+! reads VPPPP, VPH2P, VPHPP types of integrals (large - thus block reading necessary)
 !
-!
+!----------------------------------------------------------------------------------
    implicit none
    integer, intent(in)  :: FileName, Block
    integer, intent(out) :: St, En
@@ -827,9 +844,9 @@ subroutine ReadFileBlock(FileName,Block,St,En)
          St = BlkSt_VPHPP(Block)
          En = BlkEn_VPHPP(Block)
       case default
-         write(UOUT,*) 'ReadFileBlock: Unable to Perform Block IO'
+         write(UOUT,*) 'ReadFileBlock: Unable to Perform Block IO, wrong case'
          call flushout
-         call quit('ReadFileBlock: Unable to Perform Block IO!')
+         call quit('ReadFileBlock: Unable to Perform Block IO, wrong case !')
    end select
 
    return

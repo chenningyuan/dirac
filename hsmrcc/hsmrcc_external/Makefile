@@ -209,7 +209,7 @@ $(executable) : $(objects)
 	@$(FC) -o $@ $(ARCH) $(LKFLAGS) $(FFLAGS) $(addprefix $(objdir)/,$(objects)) \
                      $(dirac_objs) $(FCLIBS) $(CCLIBS)
 	@echo "  is done."
-	@echo "The independent executable file ==> " $(cs)$(@F)$(ce) " <== was generated."
+	@echo "The independent HSMRCC executable file ==> " $(cs)$(@F)$(ce) " <== was generated."
 
 ##################
 ###  cleaning  ###
@@ -282,13 +282,13 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 # pattern rules for compilation
 
 %.o : %.F90
-	@printf "Compiling F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
+	@printf "Compiling HSMRCC F90 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(FC) $(ARCH) $(FFLAGS) "-c -o" $(ce)
 	@$(FC) $(ARCH) $(FFLAGS) -c -o $(objdir)/$@ $<
 	@printf "%s\n" " ...Done."
 
 %.o : %.c
-	@printf "Compiling C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
+	@printf "Compiling HSMRCC C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
 	@echo -n "using" $(cs) $(CCo) $(CFLAGS) "-c -o" $(ce)
 	@$(CCo) $(CFLAGS) -c -o $(objdir)/$@ $<
 	@printf "%s\n" " ...Done."

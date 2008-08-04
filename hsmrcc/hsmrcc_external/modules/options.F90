@@ -2,9 +2,10 @@
 module Options
 !--------------------------------------------------------------------
 !
-!          Module with options stored in logical arrays
+!        Module with options stored in logical arrays
 !
-! ... note: source/hsmrmain.c contains similar parametes, but these do not overlap
+! ... note: source/hsmrmain.c contains parametes with almost all identical names, 
+!     but these do not overlap
 !
 !--------------------------------------------------------------------
 
@@ -27,9 +28,10 @@ module Options
    integer, parameter :: NOAPND   = 16
    integer, parameter :: RDGUESS  = 17
    integer, parameter :: DIRACp   = 18  ! ... can not be "DIRAC"
+   integer, parameter :: GMSCHK   = 19  
 
-   ! ... total number of integer options ...
-   integer, parameter :: NUMOPTS  = 18
+   ! ... total number of integer options - has to be updated...
+   integer, parameter :: NUMOPTS  = 19
 
 !    logical arrays ... 
    logical :: OPTION(NUMOPTS) = .FALSE.
@@ -46,8 +48,6 @@ module Options
 !--------------------------------------------------------------------------
  use Parameters
 
- call QEnter('print_Options')
-
  call Header('*** Printing out OPTIONs ***',-1)
 
 ! write(UOUT,'(/,2x,a)') 'print_Options ....'
@@ -57,11 +57,9 @@ module Options
  write(*,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
  write(*,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
  write(*,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
+ write(*,*) ' OPTION  [GMSCHK]   =',OPTION(GMSCHK)
  write(*,*) '  UOUT=',UOUT
 
- !call Quit('print_Options')
-
- call QExit('print_Options')
  end subroutine print_Options
 
 end module Options

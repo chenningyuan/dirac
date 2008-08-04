@@ -11,7 +11,7 @@
 extern void sethsmrflags_(int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
                           int *,int *,int *,int *,int *,
-                          int *,int *,int *           );
+                          int *,int *,int *,int *     );
 extern void sethsmrpars_(int *,int *,int *,int *);
 extern void sethsmrshiftpars_(double *,double *,double *,double *);
 extern void sethsmrfiles_(char *,char *,int,int);
@@ -27,7 +27,7 @@ extern void sethsmr_iprint_(int *);
 
 extern void qenter_c_(char *, int *);
 
-#define SHORTARGS "hgpvsryaTqfo:C:V:A:B:t:c:m:i:d"
+#define SHORTARGS "hgpvsryaTqfoG:C:V:A:B:t:c:m:i:d"
 
 #define HELP       0
 #define GENINT     1
@@ -58,11 +58,14 @@ extern void qenter_c_(char *, int *);
 #define FULL      26
 #define NOAPND    27
 #define RDGUESS   28
+
 #define IPR       29   /*  parameter for general print-out  */
 
 #define DIRAC     30   /* flag for own DIRAC input  */
 
-#define NOPTS     31
+#define GMSCHK    31   /* flag for checking Gamess integral files */
+
+#define NOPTS     32   /* always update when you add new flag  */
 
 int opts[NOPTS]={0}; /* initialize to zero */
 
@@ -100,6 +103,7 @@ struct option longopts[] =
     {"read-guess",     no_argument,       &opts[RDGUESS],  1   },
     {"ipr",            required_argument, &opts[IPR],      1   },
     {"DIRAC-input",    no_argument,       &opts[DIRAC],    1   },
+    {"GMS-fi check",   no_argument,       &opts[GMSCHK],   1   },
     { 0,                   0,                 0,           0   }
 };
 
@@ -129,7 +133,7 @@ void usage(prog)
     printf("NOTE : Choosing help option disables further processing of other options.\n");
     printf("*************************************************************************\n");
     printf("\n");
-    printf("Program usage: %s [-hvsryTqfagp] [-oCVABmci args ] [--options] input-file \n",prog);
+    printf("Program usage: %s [-hvsryTidqfagpG] [-oCVABmci args ] [--options] input-file \n",prog);
     printf("\n");
 }
 
@@ -152,6 +156,7 @@ void help()
  "|     --no-append        Do not append in case of restart run.      |",
  "|     --read-guess       Read Initial Guess for T-amplitudes.       |",
  "|  -i --ipr=[IPRINT]     Read control print-out variable.           |",
+ "|  -G                    Check GAMESS integrals files               |",
  "|                                                                   |",
  "|   DIRAC read-in :                                                 |",
  "| *****************                                                 |",
@@ -381,6 +386,10 @@ int main (argc, argv)
             opts[TTYRUN] = 1;
             break;
 
+         case 'G':
+            opts[GMSCHK] = 1;
+            break;
+
          case 'd':
             opts[DIRAC] = 1;
             break;
@@ -498,11 +507,14 @@ int main (argc, argv)
    }
 
    if (c == BAD_OPTION) return (-1);
+
    if (opts[HELP]) { usage(argv[0]); help(); return (0);}
 
    /*  Don't care about gamess-like input file if this is DIRAC based run  */
    if (optind == argc && !opts[DIRAC] ) {
-      printf("%s: Error in hsmrmain.c: input file not specified\n",argv[0]); return (-1); }
+      printf("\n ... error in input:  optind, argc %d  %d \n", optind, argc);
+      printf("%s: Error in hsmrmain.c: input file not specified\n",argv[0]); 
+   return (-1); }
 
    if (optind < argc) {
       if (strlen(argv[optind]) == 0) {
@@ -766,7 +778,8 @@ int main (argc, argv)
                  &opts[REPTIME], &opts[QUAD]    , &opts[TAMP]    ,
                  &opts[NOHSMR] , &opts[MAXIT]   , &opts[INTTOL]  ,
                  &opts[CONVTOL], &opts[SHFTCORE], &opts[SHFTVIRT],
-                 &opts[NOAPND] , &opts[RDGUESS] , &opts[DIRAC]   );
+                 &opts[NOAPND] , &opts[RDGUESS] , &opts[DIRAC]   ,
+                 &opts[GMSCHK] );
 
    sethsmrpars_(&ncmo,&nhole,&nptcl,&nemo);
    sethsmrshiftpars_(&scval,&svval,&saval,&beeta);
@@ -796,7 +809,7 @@ int main (argc, argv)
    }
    else { /* run the program as the backgroung job */
       if ((pid = fork()) == -1) {printf("%s: Error: Unable to fork child process.\n",argv[0]); return (-1);}
-      if (pid==0) {hsmrcc_(); exit(0);}
+      if (pid==0) { hsmrcc_(); exit(0);}
       if (pid!=0) {
          printf("%s: Submitting Background Job with PID = %d\n",argv[0],pid);
          fclose(stdin);

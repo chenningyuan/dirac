@@ -3,11 +3,12 @@ subroutine HSMRCC
 !---------------------------------------------------------------------------
 !
 !
-!   This subroutine is called from main
+!    This subroutine is called from main
 !   program written in C after calling all SetHSMR routines.
 !
 !
 !---------------------------------------------------------------------------
+   use Parameters
    use IOModule
    use Options
    use Shift
@@ -20,10 +21,18 @@ subroutine HSMRCC
    double precision, pointer :: VINT(:)
    integer, pointer :: VIND(:)
 
-   ! ... Basic Initialization of HSMR Run ...
-
    if (get_iprint() > 5 ) then
      call HEADER('Output from HSMRCC',-1)
+   endif
+
+   ! ... Basic Initialization of HSMR Run ...
+   call set_output_stream()
+
+   ! ... check of GAMESS integrals
+   if ( OPTION(GMSCHK) ) then
+     write(UOUT,*) 'only check of GAMES integr'
+     call check_gms_integrals
+     return
    endif
 
    call InitHSMRBase

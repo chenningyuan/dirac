@@ -4,6 +4,8 @@ module GMSMod
 !
 !           Necessary stuff read from Gamess integral files
 !
+! reads data from Gamess files
+!
 !------------------------------------------------------------------------
    use Parameters
    use Options
@@ -35,8 +37,6 @@ subroutine InitGMSMod
    double precision :: d1, d2, d3
    logical :: errflag
    integer NXX, IXX
-
-   call QEnter('InitGMSMod')
 
    ! ... Obtain information for Variables of GMSMod       ...
    ! ... There are two ways to obtain this info           ...
@@ -298,7 +298,6 @@ subroutine InitGMSMod
    write(UOUT,'(a)')  &
    '-----------------------------------------------------------------------------'
 
-   call QExit('InitGMSMod')
    return
 
 end subroutine InitGMSMod

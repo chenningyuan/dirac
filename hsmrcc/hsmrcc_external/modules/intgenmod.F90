@@ -15,19 +15,24 @@ module IntGenMod
       module procedure IntFileGen_OneBody
       module procedure IntFileGen_TwoBody
    end interface IntFileGen
+  ! ... this specification is needed for showing out internal routines 
    public :: DrvIntGen
+   public :: check_gms_integrals
 
 contains
 
 subroutine DrvIntGen
+!--------------------------------------------------------------------------------
+!
+!          called from 'main' HSMRCC routine (source/hsmrcc.F90)
+!
+!--------------------------------------------------------------------------------
 
    use TimingMod
    implicit none
    integer :: StVRec
    integer :: GenIntBufSize
    integer :: i
-
-   call QEnter('DrvIntGen')
 
    ! ... Progress Report on Integral Generation ...
 
@@ -56,7 +61,7 @@ subroutine DrvIntGen
      'DrvIntGen: buffer for integrals allocated, size=',GenIntBufSize
    endif
 
-   ! ... Open Gamess FileMR2EINT file ...
+   ! ... Open Gamess integral FileMR2EINT file ...
 
    open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    rewind(UMR2EINT)
@@ -103,7 +108,7 @@ subroutine DrvIntGen
    ! ... Two-Body integrals ...
 
    call StartTiming
-   StVRec = 1
+   StVRec = 1 ! ... starting position of integral record...
    call IntFileGen(TimeTaken(:,V2H2P),RecLen(V2H2P),NumRec(V2H2P),StVRec,          &
                    StartRec(V2H2P),EndngRec(V2H2P),TotNZInt(V2H2P),NZIntRec_V2H2P, &
                    SIB_V2H2P,ResRecHP,RecNumHP,RecNumHP,                           &
@@ -149,6 +154,10 @@ subroutine DrvIntGen
                    SIB_VHHHP,ResRecMM,RecNumMM,RecNumHP,                           &
                    SetQRangeMM,SetRRangeHP,SetSRangeHP,PackRSHP)
 
+   if ( get_iprint() >= 7) then
+     write(UOUT,'(2x,a)') 'DrvIntGen: all two-el.integrals done'
+   endif
+
    ! ... One-Body integrals ...
 
    call IntFileGen(TimeTaken(:,FHH),UFHH,RecLen(FHH),NumRec(FHH),  &
@@ -160,6 +169,10 @@ subroutine DrvIntGen
    call IntFileGen(TimeTaken(:,FPP),UFPP,RecLen(FPP),NumRec(FPP),  &
                    StartRec(FPP),EndngRec(FPP),TotNZInt(FPP),      &
                    SIB_FPP,RecNum2P)
+
+   if ( get_iprint() >= 7) then
+     write(UOUT,'(2x,a)') 'DrvIntGen: one-el.integrals done'
+   endif
 
    ! ... Integral Generation Done ...
 
@@ -174,8 +187,6 @@ subroutine DrvIntGen
    deallocate(GenIntBuf) ! ... deallocate big buffer memory ...
 
    close(UMR2EINT)
-
-   call QExit('DrvIntGen')
 
    return
 
@@ -473,7 +484,7 @@ subroutine SIB_VPHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
 
    ! For contributing to V2H2P, first index
    ! pair should be hole-hole type and second
-   ! index pair should be particle-paricle type.
+   ! index pair should be particle-particle type.
    !
    ! <P,Q||R,S> = <A,J||I,B>
 
@@ -881,7 +892,8 @@ function RecNumMM(P,Q)
    integer, intent(in) :: P, Q
    integer :: RecNumMM
 
-   if (P==Q) stop 'Error in RecNumMM'
+   !if (P==Q) stop 'Error in RecNumMM'
+   if (P==Q) call quit('P ==Q => Error in RecNumMM!')
    RecNumMM = MAXMIN(P,Q)
 
    return
@@ -942,7 +954,6 @@ subroutine SetQRangeMM(P,SP,SQ,EP,EQ,QL,QH)
    integer, intent(in)  :: P, SP, SQ, EP, EQ
    integer, intent(out) :: QL, QH
 
-   call QEnter('SetQRangeMM')
 
    QL = 1
    QH = (P-1)
@@ -955,8 +966,6 @@ subroutine SetQRangeMM(P,SP,SQ,EP,EQ,QL,QH)
 
    if (P==SP) QL = SQ
    if (P==EP) QH = EQ
-
-   call QExit('SetQRangeMM')
 
    return
 
@@ -1066,7 +1075,8 @@ subroutine SetSRangeMM(R,SL,SH)
 
    SL = 1
    SH = (R-1)
-   if (SH<SL) stop 'Error in SetSRangeMM'
+   !if (SH<SL) stop 'Error in SetSRangeMM'
+   if (SH<SL) call quit('SH<SL => Error in SetSRangeMM!')
 
    return
 
@@ -1091,7 +1101,8 @@ function PackRSMM(R,S)
    integer, intent(in) :: R, S
    integer :: PackRSMM
 
-   if (R==S) stop 'Error in PackRSMM'
+ !  if (R==S) stop 'Error in PackRSMM'
+   if (R==S) call quit('R==S => Error in PackRSMM')
    PackRSMM = MAXMIN(R,S)
 
    return
@@ -1124,7 +1135,6 @@ subroutine check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,from_where)
 integer :: P, Q, R, S
 integer :: LABELSIZE, LABEL, NPACK
 character(len=*) :: from_where
-call QEnter('check_PQRS')
 
 if (P==0 .or. Q==0 .or. R==0 .or. S==0) then
  write(UOUT,'(/,2x,a)') '*** check_PQRS error catch ***'
@@ -1139,13 +1149,43 @@ if (P==0 .or. Q==0 .or. R==0 .or. S==0) then
  call Quit('check_PQRS: wrong indexes P,Q,R,S !')
 endif
 
-call QExit('check_PQRS')
 end subroutine check_PQRS
+
+
+subroutine  written_int_ind(NxtRec)
+!
+! prints out what was written into HSMRCC integral file
+!
+integer, intent(in) :: NxtRec ! # of record
+integer :: i
+
+if (get_iprint() < 20) return ! returns due to print level
+
+write(UOUT,'(/,2x,i4,a)') NxtRec,'.  block written:'
+!do i = 1, NZVINTBUFSIZE
+! write(UOUT,'(2x,i,a,f16.8,a,i8)') i,' integral:', NZVIntBuf(i),' packed index:',NZVPkIBuf(i) 
+!enddo
+
+end subroutine  written_int_ind
 
 subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                               StartRec,EndngRec,TotNZInt,NZIntRec,         &
                               SetIntBuf,ResolvRec,RecordNumPQ,RecordNumRS, &
                               SetQRange,SetRRange,SetSRange,PackRS)
+!--------------------------------------------------------------------------------------------------------
+!
+!  routine is repeatedly reading Gamess integral file  FileMR2EINT (TRIM(IFile)//'.F296'; lu=UMR2EINT)
+!
+! and prepares 2-electron integral files for the HSMRCC run :
+!
+!       FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
+!
+! - these are to be mimic by DIRAC !
+!  
+!   
+!  Called from: DrvIntGen ("intgenmod.F90")  
+!
+!---------------------------------------------------------------------------------------------------------
 
    implicit none
    ! ... Dummy Argument Variables ...
@@ -1214,14 +1254,21 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    real :: dtim, dtime, tarray(2)
    external :: dtime
 
-   call QEnter('IntFileGen_TwoBody')
+   if (get_iprint() >= 5) then
+       call header('Output from IntFileGen_TwoBody',-1)
+       write(UOUT,'(2x,a,i7)') '...StVRec=',StVRec
+       write(UOUT,'(2x,a,i7)') '...StartRec=',StartRec
+       write(UOUT,'(2x,a,i7)') '...EndngRec=',EndngRec
+   endif
 
    dtim = dtime(tarray)
+
    ! Calculate number of records that fit
    ! into the buffer.
    BufSize = SIZE(GenIntBuf)
    if ( BufSize < RecLen ) then
-      stop 'Buffer must be big enough to contain a record'
+      !stop 'Buffer must be big enough to contain a record'
+      call quit('IntFileGen_TwoBody: Buffer must be big enough to contain a record')
    endif
    NumRecBuf = BufSize/RecLen
    NumBlocks = NumRec/NumRecBuf
@@ -1351,42 +1398,67 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
          if (NumIntRec <= 0) exit
       enddo
 
-      ! Now the buffer is completely
-      ! constructed. Collect non-zero
+      !---------------------------------------------------------
+      ! Now the buffer (GenIntBuf) is completely
+      ! constructed. Collect NON-ZERO
       ! integrals and their packing
       ! indices into buffer and write
       ! to the disk.
+      !---------------------------------------------------------
 
       call ResolvRec(StRec,StP,StQ)
       call ResolvRec(EnRec,EnP,EnQ)
+
       do P = StP, EnP
          call SetQRange(P,StP,StQ,EnP,EnQ,QLow,QHig)
          do Q = QLow, QHig
             PQ = RecordNumPQ(P,Q)
             NZIntRec(PQ) = 0
+
             call SetRRange(RLow,RHig)
             do R = RLow, RHig
                call SetSRange(R,SLow,SHig)
                do S = SLow, SHig
                   RS = RecordNumRS(R,S)
                   PQRS = (PQ - StRec)*RecLen + RS
+                  !  ... write if integral is larger than threshold ...
                   if ( DABS(GenIntBuf(PQRS)) > CUTOFF ) then
                      NZVIntBufInd = NZVIntBufInd + 1
+                     ! ... increment counter of nonzero, PQ-based integrals
                      NZIntRec(PQ) = NZIntRec(PQ) + 1
+
+                     ! ... write block of integrals 
+                     ! ... if number of integrals is larger than the parameter
                      if ( NZVIntBufInd > NZVINTBUFSIZE ) then
+                        ! ...  write buffer with integrals 
                         write(UVINT,rec=NxtRec) NZVIntBuf
+                        ! ...  write buffer with indexes 
                         write(UVIND,rec=NxtRec) NZVPkIBuf
-                        NxtRec = NxtRec + 1
-                        NZVIntBufInd = 1
-                        NZVPkIBuf = 0
-                        NZVIntBuf = DBLE(0)
+
+                        !call written_int_ind(NxtRec,P,Q,R,S)
+
+                        NxtRec = NxtRec + 1 ! shift to the next rectord
+                        NZVIntBufInd = 1    ! reinitialize # of integrals per buffer 
+                        NZVPkIBuf = 0       ! zero buffer with packed indexes
+                        NZVIntBuf = DBLE(0) ! zero buffer with integrals
                      endif
+                   ! ... add nonzero integral into integral-buffer
                      NZVIntBuf(NZVIntBufInd) = GenIntBuf(PQRS)
+                   ! ... add packed (R,S)-indexes into index-buffer
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
+
+                     if (get_iprint() >= 16) then
+                       write(UOUT,'(2x,a,4i3,a,f16.10,a,i8,a,i8)')   &
+                       'P,Q,R,S:',P,Q,R,S, & 
+                       ' integr:',NZVIntBuf(NZVIntBufInd),' pck indx:', NZVPkIBuf(NZVIntBufInd), &  
+                       ' PQRS=',PQRS
+                      endif
+
                   endif
                enddo
             enddo
-            TotNZInt = TotNZInt + NZIntRec(PQ)
+            ! ... increase counter of nonzero integrals of PQ index
+            TotNZInt = TotNZInt + NZIntRec(PQ) 
          enddo
       enddo
    enddo
@@ -1402,7 +1474,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray
 
-   call QExit('IntFileGen_TwoBody')
+   if (get_iprint() >=8) then
+     write(UOUT,'(2x,a)') 'IntFileGen_TwoBody over...'
+     write(UOUT,'(2x,a,i8)') '...# of nonzero integrals :',TotNZInt
+     write(UOUT,'(2x,a,i8)') '...set StVRec= ',StVRec
+   endif
+
    return
 
 end subroutine IntFileGen_TwoBody
@@ -1443,8 +1520,6 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    external :: dtime
    ! ... Automatic Array ...
    double precision :: IntF(NumRec*(RecLen/NVMO))
-
-   call QEnter('IntFileGen_OneBody')
 
    dtim = dtime(tarray)
    BufSize = SIZE(GenIntBuf)
@@ -1569,7 +1644,6 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray
 
-   call QExit('IntFileGen_OneBody')
    return
 
 end subroutine IntFileGen_OneBody
@@ -1579,6 +1653,9 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 !--------------------------------------------------------------
 !
 !    Driver for reading Gamess integral files
+!
+!    On input: IS - lu of gamess integral file
+!
 !
 ! Called from : IntFileGen_OneBody
 !               IntFileGen_TwoBody
@@ -1591,8 +1668,6 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
    INTEGER IX(*)
    INTEGER MAX2, MAX2_DIM
 
-   Call QEnter('PREAD')
-
    IF (LABSIZ.EQ.1) THEN
       IF(NWDVAR.EQ.2) MAX2 = NINTMX
       IF(NWDVAR.EQ.1) MAX2 = (NINTMX+1)/2
@@ -1600,7 +1675,9 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
       IF(NWDVAR.EQ.2) MAX2 = NINTMX*2
       IF(NWDVAR.EQ.1) MAX2 = NINTMX
    ELSE
-      WRITE(6,*) 'PREAD: CONFUSION WITH -LABSIZ-'
+      WRITE(UOUT,*) 'PREAD: CONFUSION WITH -LABSIZ- !'
+      WRITE(UOUT,*) 'PREAD: LABSIZ =',LABSIZ
+      call quit('PREAD: CONFUSION WITH -LABSIZ- !')
    END IF
 
 #if defined (ARCH32BIT)
@@ -1626,7 +1703,6 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 
    CALL PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
-   Call QExit('PREAD')
    RETURN
 
 END SUBROUTINE PREAD
@@ -1656,8 +1732,6 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
    INTEGER IX(MAX2_DIM) ! ... this is general I hope /MI,16.2.2008...
 
-   Call QEnter('PRD')
-
 ! ... for 64bit/LABELSIZE=2 error:
 !  PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
    READ(IS) NX,IX,XX
@@ -1670,11 +1744,147 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
      call flushout
    endif
 
-   Call QExit('PRD')
    RETURN
-
  1200  Call Quit('PRD: Gamess unformatted/sequential file reading error exit !')
-
 END SUBROUTINE PRD
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine  check_gms_integrals
+!--------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------
+   integer NXX
+   integer NPACKIC, NPACK, LABEL
+   integer :: ASBufInd, NZVIntBufInd
+   integer :: P, Q, R, S
+   integer :: NumIntRec, EnPkInd
+   integer  ::   IUNIQ, LABELSIZE, NINTMX
+   double precision :: ASInt
+
+   double precision, allocatable :: XXPREAD(:)
+   integer, allocatable :: IXPREAD(:)
+
+
+ call Header('output from check_gms_integrals',-1)
+ write(UOUT,*) 'check_gms_integrals...'
+
+
+ open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+
+ if ( get_iprint() >= 7) then
+   write(UOUT,'(/2x,a,a/)')  &
+   '... gamess integral file open and rewinded, FileMR2EINT=',FileMR2EINT
+ endif
+
+! Rewind MR2EINT file and
+! Read first three records - see "modules/gmsmod.F90"
+
+  rewind(UMR2EINT)
+  read(UMR2EINT)
+  read(UMR2EINT)
+  read(UMR2EINT)  IUNIQ, LABELSIZE, NINTMX
+
+  write(UOUT,'(2x,a,i3,a,i3,a,i3)') 'IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE
+  write(UOUT,'(2x,a,i8)') ' NINTMX=',NINTMX
+
+  if (.not.allocated(XXPREAD)) allocate(XXPREAD(NINTMX))
+  if (.not.allocated(IXPREAD)) allocate(IXPREAD(NINTMX))
+
+      NPACKIC = 0
+      do
+        ! ... INTSFP set in Parameters
+         call PREAD(LABELSIZE,INTSFP,UMR2EINT,XXPREAD,IXPREAD,NXX,NINTMX)
+         NumIntRec = NXX
+     
+         write(UOUT,'(2x,a,i8)') 'PREAD done, NumIntRec=',NumIntRec
+           
+         IF (LABELSIZE.EQ.2) THEN
+            do ASBufInd = 1, IABS(NumIntRec)
+
+               NPACK = NPACKIC + ASBufInd
+               ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(2*NPACK-1)
+               P = ISHFT( LABEL, -16 )
+               Q = IAND(  LABEL, 65535 )
+               LABEL = IXPREAD(2*NPACK)
+               R = ISHFT( LABEL, -16 )
+               S = IAND(  LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, aa ')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#else
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -48 )
+               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               S = IAND( LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#endif
+            enddo
+         ELSE IF (LABELSIZE.EQ.1) THEN
+            do ASBufInd = 1, IABS(NumIntRec)
+               NPACK = NPACKIC + ASBufInd
+               ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -24 )
+               Q = IAND( ISHFT( LABEL, -16 ), 255 )
+               R = IAND( ISHFT( LABEL,  -8 ), 255 )
+               S = IAND(        LABEL,        255 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ba')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#else
+               IF ( MOD(NPACK,2) .EQ. 0 ) THEN
+                  LABEL = IXPREAD(NPACK/2)
+                  P = IAND( ISHFT( LABEL, -24 ), 255 )
+                  Q = IAND( ISHFT( LABEL, -16 ), 255 )
+                  R = IAND( ISHFT( LABEL,  -8 ), 255 )
+                  S = IAND( LABEL, 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bb')
+                  call print_gms_int_ind(P,Q,R,S,ASInt)
+               ELSE
+                  LABEL = IXPREAD((NPACK/2)+1)
+                  P = ISHFT( LABEL, -56 )
+                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
+                  call print_gms_int_ind(P,Q,R,S,ASInt)
+               ENDIF
+#endif
+            enddo
+         ENDIF
+         if (get_iprint() >= 18) then
+            write(UOUT,'(2x,a,i8)')   &
+            ': read NumIntRec=',NumIntRec
+            if (NumIntRec <= 0) write(UOUT,'(2x,a)') &
+            '...negative, going to exit cycle of reading Gamess file !'
+            call flushout
+         endif
+         if (NumIntRec <= 0) exit
+      enddo
+
+     ! ... deallocate stuff ...
+     if (.not.allocated(XXPREAD)) deallocate(XXPREAD)
+     if (.not.allocated(IXPREAD)) deallocate(IXPREAD)
+
+end subroutine check_gms_integrals
+
+subroutine print_gms_int_ind(P,Q,R,S,ASInt)
+integer, intent(in) :: P,Q,R,S
+real*8, intent(in) :: ASInt
+
+if (get_iprint() >= 20) then
+  write(UOUT,'(2x,a,2i4,a,2i4,a,f18.12)') '<',P,Q,'||',R,S,'>=',ASInt
+endif
+
+end subroutine print_gms_int_ind
 
 end module IntGenMod
