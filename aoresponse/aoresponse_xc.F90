@@ -47,13 +47,17 @@ contains
     type(dft_grid_t)        :: grid
     type(density_t)         :: n_density(100)
     type(gao_data_t)        :: gao_data
-    integer                 :: ipoint
+    integer                 :: i, ipoint
     real(kind_dp)           :: integral
     real(kind_dp)           :: vxc(100)
     real(kind_dp)           :: worth_it
     real(kind_dp)           :: dftenergy
 
 #include "../dft/functionals.h"
+
+    do i = 1, size(D)
+      D(i) = 4.0d0*D(i)
+    end do
 
     call get_grid(D(1), grid)
 
@@ -75,12 +79,12 @@ contains
                         grid%z(ipoint))
 
       call get_or_put_density(n_density(1), D(1), .true., gao_data)
-!     if (n_density(1)%scalar > 1.0d-9) then
+      if (n_density(1)%scalar > 1.0d-9) then
 
 !       vxc = 0.0d0
 
         if (order == 0) then
-          xc_energy = xc_energy + dftenergy(4.0d0*n_density(1)%scalar, 0.0d0)*grid%w(ipoint)
+          xc_energy = xc_energy + dftenergy(n_density(1)%scalar, 0.0d0)*grid%w(ipoint)
         end if
 
         if (order == 1) then
@@ -139,9 +143,12 @@ contains
 
 !         end if
         end if
-!     end if
+      end if
     end do
-!   call quit('over and out')
+
+    do i = 1, size(D)
+      D(i) = 0.25d0*D(i)
+    end do
 
     call del_gao_data(gao_data)
 
