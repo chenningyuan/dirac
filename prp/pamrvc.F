@@ -3619,6 +3619,23 @@ C       Generate standard density matrix
         IOPTS = 4
         CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,ISYMOP,IHRMOP,IOPTS,
      &              WORK(KFREE),LFREE,IPRXRS)
+
+!-------------------------------------------------------------------------------
+!       radovan: please don't remove this part
+!                i use it for testing AO response development code
+!       if (.not. Du%is_defined) call mat_init(Du, ntbas(0), ntbas(0))
+!       Du%elms = 0.0d0
+!       Dp      = 1.0d-100*Du
+!       Fp      = 1.0d-100*Du
+!       call daxpy(ntbas(0)*ntbas(0)*nz, 
+!    &             2.0d0, work(kbuf), 1, Du%elms, 1)
+!       call daxpy(ntbas(0)*ntbas(0)*nz, 
+!    &             2.0d0, fmo,        1, Dp%elms, 1)
+!       call xc_contribution(2, (/Du, Dp/), (/Fp/), blub)
+!       call daxpy(ntbas(0)*ntbas(0)*nz, 
+!    &             1.0d0, Fp%elms,    1, FAO, 1)
+!-------------------------------------------------------------------------------
+
         CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
       ENDIF
 #endif
