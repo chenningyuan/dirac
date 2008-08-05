@@ -1,6 +1,5 @@
 module aoresponse_main_m
 
-! pointless comment
   use kinds_m
   use memory_allocator
   use matrix_mod
@@ -41,19 +40,9 @@ contains
 
     call get_F(F)
 
-!   if (test_nr_electrons) then
-      call nr_electrons(S, D)
-!   end if
-
-!   if (test_energy) then
-      call energy(D, F)
-!   end if
-
-!   if (test_mu) then
-      call mu(S, D, F)
-!   end if
-
-!   0.08855851799036d0 = 514.5 nm
+    call nr_electrons(S, D)
+    call energy(D, F)
+    call mu(S, D, F)
 
     if (aoresponse_alpha) then
       call alpha(S, D, F, (/freq(1), -freq(1)/))
