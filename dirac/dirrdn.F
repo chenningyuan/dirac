@@ -1675,8 +1675,10 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
          I2 = ISUM(NSUBBL,NISH_BOS,1)
          IF (I1 .NE. I2) THEN
             NERR = NERR + 1
-            WRITE(LUPRI,'(/A,I3,A/)')
+            WRITE(LUPRI,'(/A,I3,A)')
      &      'INPUT ERROR! This shell should have',I1,' orbitals!'
+            WRITE(LUPRI,'(2X,A,I3,A/)') 
+     &      '...while is actually has  ',I2,' orbitals - fix it!'       
          END IF
          IF (NOPEN.GT.0) THEN
             WRITE(LUPRI,'(A)') '   - active shell(s):'
