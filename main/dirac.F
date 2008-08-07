@@ -745,7 +745,7 @@ C
 C
 C        start KR-MCSCF calculation.
 C
-         CALL KRMCNOD(WORK,LWORK)
+         CALL KRMC_NODE_DRIVER(WORK,LWORK)
 #else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
@@ -871,7 +871,7 @@ C
 C
 C        start KR-MCSCF calculation.
 C
-         CALL KRMCNOD(WORK,LWORK)
+         CALL KRMC_NODE_DRIVER(WORK,LWORK)
 #else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
