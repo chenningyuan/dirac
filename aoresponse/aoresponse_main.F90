@@ -18,7 +18,7 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
-    type(matrix)  :: S, C, D_mo, D, F
+    type(matrix)  :: S, C_i, D, F
     real(kind_dp) :: freq(4)
     real(kind_dp) :: add_to
 
@@ -29,14 +29,11 @@ contains
 
     call get_S(S)
 
-    call get_C(C)
-    call get_D_mo(D_mo)
+    call get_i_or_s_C(C_i, 'i')
 
-    D = C*D_mo*dag(C)
-    D = D/2.0d0
-
-    D_mo = 0
-    C    = 0
+    D   = C_i*dag(C_i)
+    D   = D/2.0d0
+    C_i = 0
 
     call get_F(F)
 
@@ -199,7 +196,7 @@ contains
     D = 0
     F = 0
 
-  end subroutine aoresponse_driver
+  end subroutine
 
   subroutine test_matrix_stat()
 
@@ -223,7 +220,7 @@ contains
 
                             call matrixstats('leaving subroutine    ')
 
-  end subroutine test_matrix_stat
+  end subroutine
 
   subroutine test_matrix_stat_sub()
 
@@ -243,6 +240,6 @@ contains
 
                             call matrixstats('leaving subroutine    ')
 
-  end subroutine test_matrix_stat_sub
+  end subroutine
 
-end module aoresponse_main_m
+end module

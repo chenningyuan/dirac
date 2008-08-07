@@ -1,9 +1,64 @@
+      subroutine scatter_vector(length,
+     &                          orbital_rotation_vector,
+     &                          h,
+     &                          response_vector,
+     &                          matrix,
+     &                          pg_sym)
+
+      implicit none
+
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+
+      integer          length
+      integer          orbital_rotation_vector
+      double precision h
+      double precision response_vector
+      double precision matrix
+      integer          pg_sym
+
+      integer          x, i, s, iz
+      double precision f
+
+      dimension        orbital_rotation_vector(2, length)
+      dimension        response_vector(length, nz)
+      dimension        matrix(norbt, norbt, nz)
+
+
+
+      do x = 1, length
+
+        i = orbital_rotation_vector(1, x)
+        s = orbital_rotation_vector(2, x)
+
+        do iz = 1, nz
+
+          if (ipqtoq(iz, pg_sym-1) > 1) then
+            f = -1.0
+          else
+            f =  1.0
+          end if
+
+!                row
+!                ¦
+!                ¦  column
+!                ¦  ¦
+          matrix(s, i, iz) = matrix(s, i, iz)
+     &                     +     response_vector(x, iz)
+          matrix(i, s, iz) = matrix(i, s, iz)
+     &                     - f*h*response_vector(x, iz)
+        end do
+      end do
+
+      end
+
       subroutine fill_work(do_pp,
      &                     do_pn,
      &                     length_pp,
      &                     length_pn,
-     &                     iorbital_rotation_vector_pp,
-     &                     iorbital_rotation_vector_pn,
+     &                     orbital_rotation_vector_pp,
+     &                     orbital_rotation_vector_pn,
      &                     jxop_pp,
      &                     jxop_pn)
 
@@ -13,13 +68,13 @@
       logical   do_pn
       integer   length_pp
       integer   length_pn
-      integer   iorbital_rotation_vector_pp
-      integer   iorbital_rotation_vector_pn
+      integer   orbital_rotation_vector_pp
+      integer   orbital_rotation_vector_pn
       integer   jxop_pp
       integer   jxop_pn
 
-      dimension iorbital_rotation_vector_pp(2, *)
-      dimension iorbital_rotation_vector_pn(2, *)
+      dimension orbital_rotation_vector_pp(2, *)
+      dimension orbital_rotation_vector_pn(2, *)
       dimension jxop_pp(2, *)
       dimension jxop_pn(2, *)
 
@@ -27,15 +82,15 @@
 
       if (do_pp) then
         do i = 1, length_pp
-          jxop_pp(1, i) = iorbital_rotation_vector_pp(1, i)
-          jxop_pp(2, i) = iorbital_rotation_vector_pp(2, i)
+          jxop_pp(1, i) = orbital_rotation_vector_pp(1, i)
+          jxop_pp(2, i) = orbital_rotation_vector_pp(2, i)
         end do
       end if
 
       if (do_pn) then
         do i = 1, length_pn
-          jxop_pn(1, i) = iorbital_rotation_vector_pn(1, i)
-          jxop_pn(2, i) = iorbital_rotation_vector_pn(2, i)
+          jxop_pn(1, i) = orbital_rotation_vector_pn(1, i)
+          jxop_pn(2, i) = orbital_rotation_vector_pn(2, i)
         end do
       end if
 

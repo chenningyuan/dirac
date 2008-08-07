@@ -18,34 +18,6 @@ module dirac_interface_m
 
 contains
 
-  subroutine get_D_mo(D_mo)
-
-    type(matrix), intent(inout) :: D_mo
-!   ----------------------------------------------------------------------------
-    integer                     :: i, j, offset
-
-#include "dcborb.h"
-#include "dgroup.h"
-
-    if (.not. D_mo%is_defined) call mat_init(D_mo, norbt, norbt)
-    D_mo%elms = 0.0d0
-
-    do i = 1, nfsym
-      if(nish(i) > 0) then
-        do j = 1, nish(i)
-
-          offset = (norb(1)*(i-1) + npsh(i))*D_mo%nrow
-          offset = offset + norb(1)*(i-1) + npsh(i)
-          offset = offset + (j-1)*D_mo%nrow + j - 1
-
-          D_mo%elms(1 + offset) = 1.0d0
-
-        end do
-      end if
-    end do
-
-  end subroutine
-
   subroutine get_F(F)
 
     type(matrix), intent(inout) :: F
@@ -154,6 +126,99 @@ contains
     close(file_unit, status = 'keep')
 
     call dealloc(eigenvalues)
+
+  end subroutine
+
+  subroutine get_i_or_s_C(C, kind)
+
+    type(matrix), intent(inout) :: C
+    character,    intent(in)    :: kind
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: T
+    integer                     :: pgs_nr,    egi_nr,    egs_nr
+    integer                     :: pus_nr,    eui_nr,    eus_nr
+    integer                     :: pgs_start, egi_start, egs_start
+    integer                     :: pus_start, eui_start, eus_start
+    integer                     :: i, s, iz
+    logical                     :: debug_me = .false.
+
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+
+    pgs_nr = npsh(1)
+    pus_nr = npsh(2)
+    egi_nr = nish(1)
+    eui_nr = nish(2)
+    egs_nr = nssh(1)
+    eus_nr = nssh(2)
+
+    pgs_start = 1
+    egi_start = pgs_start + pgs_nr
+    egs_start = egi_start + egi_nr
+
+    pus_start = pgs_nr    + pus_nr + egi_nr + 1
+    eui_start = pus_start + pus_nr
+    eus_start = eui_start + eui_nr
+
+    call get_C(C)
+
+    if (nfsym == 2) then
+
+      select case (kind)
+
+        case ('i')
+          do iz = 1, nz
+            do s = pgs_start, pgs_start + pgs_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+            do s = egs_start, egs_start + egs_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+            do s = pus_start, pus_start + pus_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+            do s = eus_start, eus_start + eus_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+          end do
+
+        case ('s')
+          do iz = 1, nz
+            do i = egi_start, egi_start + egi_nr - 1
+              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+            do i = eui_start, eui_start + eui_nr - 1
+              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+          end do
+
+      end select
+
+    else
+
+      select case (kind)
+
+        case ('i')
+          do iz = 1, nz
+            do s = pgs_start, pgs_start + pgs_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+            do s = egs_start, egs_start + egs_nr - 1
+              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+          end do
+
+        case ('s')
+          do iz = 1, nz
+            do i = egi_start, egi_start + egi_nr - 1
+              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
+            end do
+          end do
+
+      end select
+
+    end if
 
   end subroutine
 
@@ -269,35 +334,35 @@ contains
                                          orbital_rotation_vector_pp, &
                                          orbital_rotation_vector_pn)
 
-    logical, intent(in)     :: set
-    integer, intent(inout)  :: length_pp
-    integer, intent(inout)  :: length_pn
-    integer, intent(out)    :: orbital_rotation_vector_pp(2, length_pp)
-    integer, intent(out)    :: orbital_rotation_vector_pn(2, length_pn)
-!   ----------------------------------------------------------------------------
-    integer                 :: pg_nr,    egi_nr,    egs_nr
-    integer                 :: pu_nr,    eui_nr,    eus_nr
-    integer                 :: pg_start, egi_start, egs_start
-    integer                 :: pu_start, eui_start, eus_start
-    integer                 :: i, a
-    logical                 :: debug_me = .false.
+    logical, intent(in)    :: set
+    integer, intent(inout) :: length_pp
+    integer, intent(inout) :: length_pn
+    integer, intent(out)   :: orbital_rotation_vector_pp(2, length_pp)
+    integer, intent(out)   :: orbital_rotation_vector_pn(2, length_pn)
+!   ---------------------------------------------------------------------------
+    integer                :: pgs_nr,    egi_nr,    egs_nr
+    integer                :: pus_nr,    eui_nr,    eus_nr
+    integer                :: pgs_start, egi_start, egs_start
+    integer                :: pus_start, eui_start, eus_start
+    integer                :: i, s
+    logical                :: debug_me = .false.
 
 #include "dcborb.h"
 #include "dgroup.h"
 
-    pg_nr  = npsh(1)
-    pu_nr  = npsh(2)
+    pgs_nr = npsh(1)
+    pus_nr = npsh(2)
     egi_nr = nish(1)
     eui_nr = nish(2)
-    egs_nr = nesh(1) - nish(1)
-    eus_nr = nesh(2) - nish(2)
+    egs_nr = nssh(1)
+    eus_nr = nssh(2)
 
-    pg_start  = 1
-    egi_start = pg_start  + pg_nr
+    pgs_start = 1
+    egi_start = pgs_start + pgs_nr
     egs_start = egi_start + egi_nr
 
-    pu_start  = pg_nr     + pu_nr  + egi_nr + 1
-    eui_start = pu_start  + pu_nr
+    pus_start = pgs_nr    + pus_nr + egi_nr + 1
+    eui_start = pus_start + pus_nr
     eus_start = eui_start + eui_nr
 
     length_pp = 0
@@ -306,38 +371,35 @@ contains
     if (nfsym == 2) then
 
       do i = egi_start, egi_start + egi_nr - 1
-        do a = eus_start, eus_start + eus_nr - 1
+        do s = eus_start, eus_start + eus_nr - 1
           length_pp = length_pp + 1
           if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = a
+            orbital_rotation_vector_pp(2, length_pp) = s
+          end if
+        end do
+        do s = pus_start, pus_start + pus_nr - 1
+          length_pn = length_pn + 1
+          if (set) then
+            orbital_rotation_vector_pn(1, length_pn) = i
+            orbital_rotation_vector_pn(2, length_pn) = s
           end if
         end do
       end do
+
       do i = eui_start, eui_start + eui_nr - 1
-        do a = egs_start, egs_start + egs_nr - 1
+        do s = egs_start, egs_start + egs_nr - 1
           length_pp = length_pp + 1
           if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = a
+            orbital_rotation_vector_pp(2, length_pp) = s
           end if
         end do
-      end do
-      do i = egi_start, egi_start + egi_nr - 1
-        do a = pu_start, pu_start + pu_nr - 1
+        do s = pgs_start, pgs_start + pgs_nr - 1
           length_pn = length_pn + 1
           if (set) then
             orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = a
-          end if
-        end do
-      end do
-      do i = eui_start, eui_start + eui_nr - 1
-        do a = pg_start, pg_start + pg_nr - 1
-          length_pn = length_pn + 1
-          if (set) then
-            orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = a
+            orbital_rotation_vector_pn(2, length_pn) = s
           end if
         end do
       end do
@@ -345,20 +407,18 @@ contains
     else
 
       do i = egi_start, egi_start + egi_nr - 1
-        do a = egs_start, egs_start + egs_nr - 1
+        do s = egs_start, egs_start + egs_nr - 1
           length_pp = length_pp + 1
           if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = a
+            orbital_rotation_vector_pp(2, length_pp) = s
           end if
         end do
-      end do
-      do i = egi_start, egi_start + egi_nr - 1
-        do a = pg_start, pg_start + pg_nr - 1
+        do s = pgs_start, pgs_start + pgs_nr - 1
           length_pn = length_pn + 1
           if (set) then
             orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = a
+            orbital_rotation_vector_pn(2, length_pn) = s
           end if
         end do
       end do
@@ -378,53 +438,48 @@ contains
 
   end subroutine
 
-  subroutine response_solver(freq, RHS, D1)
+  subroutine response_solver(freq, RHS, Dp)
 
-    real(kind_dp),    intent(in)    :: freq(:)
-    type(matrix),     intent(inout) :: RHS
-    type(matrix),     intent(inout) :: D1
-!   ----------------------------------------------------------------------------
+    real(kind_dp), intent(in)    :: freq(:)
+    type(matrix),  intent(inout) :: RHS
+    type(matrix),  intent(inout) :: Dp
+!   -------------------------------------------------------------------------
+    type(matrix)                 :: RHS_mo, C, Ci, Cs, Wp
 
-    type(matrix)                    :: RHS_mo, C
+    integer,       allocatable   :: ibtyp(:)
+    integer,       allocatable   :: ibtyp_pointer_pp(:)
+    integer,       allocatable   :: ibtyp_pointer_pn(:)
 
-    integer,          allocatable   :: ibtyp(:)
-    integer,          allocatable   :: ibtyp_pointer_pp(:)
-    integer,          allocatable   :: ibtyp_pointer_pn(:)
+    real(kind_dp), allocatable   :: eigval(:)
+    real(kind_dp), allocatable   :: eigvec(:)
+    real(kind_dp), allocatable   :: convergence(:)
 
-    integer,          allocatable   :: isymop(:)
-    integer,          allocatable   :: ihrmop(:)
-    integer,          allocatable   :: ifckop(:)
+    real(kind_dp), allocatable   :: response_vector_pph(:, :, :)
+    real(kind_dp), allocatable   :: response_vector_ppa(:, :, :)
+    real(kind_dp), allocatable   :: response_vector_pnh(:, :, :)
+    real(kind_dp), allocatable   :: response_vector_pna(:, :, :)
 
-    real(kind_dp),    allocatable   :: eigval(:)
-    real(kind_dp),    allocatable   :: eigvec(:)
-    real(kind_dp),    allocatable   :: convergence(:)
+    real(kind_dp), allocatable   :: work(:)
+    integer                      :: kfree, lfree, freemem, verbose = 0
 
-    real(kind_dp),    allocatable   :: response_vector_pph(:, :, :)
-    real(kind_dp),    allocatable   :: response_vector_ppa(:, :, :)
-    real(kind_dp),    allocatable   :: response_vector_pnh(:, :, :)
-    real(kind_dp),    allocatable   :: response_vector_pna(:, :, :)
+    real(kind_dp), allocatable   :: prop_gradient_pp(:)
+    real(kind_dp), allocatable   :: prop_gradient_pn(:)
 
-    real(kind_dp),    allocatable   :: temp_ao_dmat(:, :, :, :)
+    integer,       allocatable   :: orbital_rotation_vector_pp(:)
+    integer,       allocatable   :: orbital_rotation_vector_pn(:)
 
-    real(kind_dp),    allocatable   :: work(:)
-    integer                         :: kfree, lfree, freemem, verbose = 0
+    integer                      :: length_pp
+    integer                      :: length_pn
 
-    real(kind_dp),    allocatable   :: prop_gradient_pp(:)
-    real(kind_dp),    allocatable   :: prop_gradient_pn(:)
+    integer                      :: nr_freq
+    integer                      :: ill_int, isl_int, iss_int, igt_int
 
-    integer,          allocatable   :: orbital_rotation_vector_pp(:)
-    integer,          allocatable   :: orbital_rotation_vector_pn(:)
+    logical                      :: debug_me = .false.
+    logical                      :: do_pp    = .false.
+    logical                      :: do_pn    = .false.
 
-    integer                         :: length_pp, length_pn
-    integer                         :: i, nr_freq, nr_dmat
-    integer                         :: ill_int, isl_int, iss_int, igt_int
-
-    logical                         :: debug_me = .false.
-    logical                         :: do_pp    = .false.
-    logical                         :: do_pn    = .false.
-
-    real(kind_dp)                   :: dummy_dp
-    integer                         :: dummy_i
+    real(kind_dp)                :: dummy_dp
+    integer                      :: dummy_i
 
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -471,6 +526,7 @@ contains
 
     call get_C(C)
     RHS_mo = dag(C)*RHS*C
+    C      = 0
 
     if (debug_me) then
       call print(RHS,    'RHS in AO basis')
@@ -525,6 +581,7 @@ contains
 
     end if
 
+    Wp     = 1.0d-100*RHS_mo
     RHS_mo = 0
 
 !   call alloc_maxsize(freemem, 1, verbose)
@@ -544,20 +601,12 @@ contains
                    orbital_rotation_vector_pn, &
                    work(kzxope),               &
                    work(kzxopp))
-!   if you release kzxope and kzxopp now you enter a world of pain
-!   it is unfortunately used in several places later
-
-    if (do_pp) call dealloc(orbital_rotation_vector_pp)
-    if (do_pn) call dealloc(orbital_rotation_vector_pn)
 
 
 !   parameters
 !   ==========
 
-    static = .false.
-!   if (abs(freq(1)) < 1.0d-6) then
-!     static = .true.
-!   end if
+    static    = .false.
 
     lineq     = .true.
     fkrmc     = .false.
@@ -626,22 +675,19 @@ contains
 
     call dealloc(convergence)
     call dealloc(eigval)
+    call dealloc(work)
 
 
 !   construct response vector
 !   =========================
 
-    call alloc(response_vector_pph, length_pp, nz, nr_freq)
-    call alloc(response_vector_ppa, length_pp, nz, nr_freq)
-    call alloc(response_vector_pnh, length_pn, nz, nr_freq)
-    call alloc(response_vector_pna, length_pn, nz, nr_freq)
-
-    response_vector_pph = 0.0d0
-    response_vector_ppa = 0.0d0
-    response_vector_pnh = 0.0d0
-    response_vector_pna = 0.0d0
-
     if (do_pp) then
+
+      call alloc(response_vector_pph, length_pp, nz, nr_freq)
+      call alloc(response_vector_ppa, length_pp, nz, nr_freq)
+
+      response_vector_pph = 0.0d0
+      response_vector_ppa = 0.0d0
 
       call construct_response_vector('pp',                &
                                      1,                   &
@@ -671,6 +717,12 @@ contains
     end if
 
     if (do_pn) then
+
+      call alloc(response_vector_pnh, length_pn, nz, nr_freq)
+      call alloc(response_vector_pna, length_pn, nz, nr_freq)
+
+      response_vector_pnh = 0.0d0
+      response_vector_pna = 0.0d0
 
       call construct_response_vector('pn',                &
                                      1,                   &
@@ -705,85 +757,57 @@ contains
     call dealloc(eigvec)
 
 
-!   construct perturbed ao density matrix
-!   =====================================
+!   construct perturbed AO density matrix Dp
+!   ========================================
 
-    ncsim = 0
-    nesim = nr_freq
-    npsim = nr_freq
+    call get_i_or_s_C(Ci, 'i')
+    call get_i_or_s_C(Cs, 's')
 
-    ntsim = ncsim + nesim + npsim
+    Wp%elms = 0.0d0
 
-    call alloc(isymop, ntsim)
-    call alloc(ihrmop, ntsim)
-    call alloc(ifckop, ntsim)
+    if (do_pp) then
 
-    do i = 1, ntsim
-      isymop(i) = jsymop
-      ifckop(i) = 1
-    end do
+      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%pg_sym)
+      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%pg_sym)
 
-    call alloc(temp_ao_dmat, ntbas(0), ntbas(0), nz, ntsim)
+      call dealloc(orbital_rotation_vector_pp)
 
-    D1      = RHS
-    D1%elms = 0.0d0
-    if (.not. static) D1%ih_sym = 0
+      call dealloc(response_vector_pph)
+      call dealloc(response_vector_ppa)
 
-    do i = 1, ntsim
-      ihrmop(i) = 1
-    end do
+    end if
 
-    temp_ao_dmat = 0.0d0
-    call dmolitx(temp_ao_dmat,        &
-                 response_vector_pph, &
-                 response_vector_pnh, &
-                 C%elms,          &
-                 dummy_dp,            &
-                 dummy_dp,            &
-                 ihrmop,              &
-                 nr_dmat,             &
-                 work, kfree, lfree)
+    if (do_pn) then
 
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%pg_sym)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%pg_sym)
 
-    do i = 1, ntsim
-      ihrmop(i) = -1
-    end do
+      call dealloc(orbital_rotation_vector_pn)
 
-    temp_ao_dmat = 0.0d0
-    call dmolitx(temp_ao_dmat,        &
-                 response_vector_ppa, &
-                 response_vector_pna, &
-                 C%elms,          &
-                 dummy_dp,            &
-                 dummy_dp,            &
-                 ihrmop,              &
-                 nr_dmat,             &
-                 work, kfree, lfree)
+      call dealloc(response_vector_pnh)
+      call dealloc(response_vector_pna)
 
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1),           1, D1%elms, 1)
-    call daxpy(ntbas(0)*ntbas(0)*nz*nr_freq, 1.0d0, temp_ao_dmat(:, :, :, 1 + nr_freq), 1, D1%elms, 1)
+    end if
 
-    D1 = D1/2.0d0
-    C  = 0
+    Dp      = RHS
+    Dp%elms = 0.0d0
+    if (.not. static) Dp%ih_sym = 0
 
-!   don't release this earlier
-    call memrel('aoresponse', work, 1, kzxopp, kfree, lfree)
-    call memrel('aoresponse', work, 1, kzxope, kfree, lfree)
+    Dp = 0.5d0*(Ci*Wp*dag(Cs) - Cs*Wp*dag(Ci))
 
-    call dealloc(response_vector_pph)
-    call dealloc(response_vector_pnh)
-    call dealloc(response_vector_ppa)
-    call dealloc(response_vector_pna)
+    if (debug_me) then
+      call print(Wp, 'blub Wp')
+      call print(Dp, 'blub Dp')
+      call print(Ci, 'blub Ci')
+      call print(Cs, 'blub Cs')
+    end if
 
-    call dealloc(isymop)
-    call dealloc(ihrmop)
-    call dealloc(ifckop)
+!   call get_S(S)
+!   Wp = 0.5d0*(dag(Ci)*S*Dp*S*Cs - dag(Cs)*S*Dp*S*Ci)
 
-    call dealloc(temp_ao_dmat)
-
-    call dealloc(work)
+    Ci = 0
+    Cs = 0
+    Wp = 0
 
   end subroutine
 

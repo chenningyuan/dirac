@@ -174,69 +174,6 @@ contains
 
   end subroutine
 
-  function blubmatrix_times_matrix_backend(A, B) result(C)
-
-    type(matrix), intent(in) :: A, B
-    type(matrix)             :: C
-    integer                  :: iq(4)
-
-    if (A%ncol /= B%nrow) call quit('incompatible shapes in C = A*B')
-
-    C%nrow       = A%nrow
-    C%ncol       = B%ncol
-    C%pg_sym     = 1 + ieor(A%pg_sym-1, B%pg_sym-1)
-    C%is_defined = .true.
-
-    if (associated(A%elms) .and. associated(B%elms)) then
-
-      allocate(C%elms(C%nrow*C%ncol*nz))
-
-      call iqpack(ipqtoq(1, A%pg_sym-1), nz, &
-                  ipqtoq(1, B%pg_sym-1), nz, &
-                  iq                   , nz)
-
-      call qgemm(A%nrow, B%ncol, A%ncol, 1.0d0,  &
-                 'N', 'N', ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
-                 'N', 'N', ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
-                 0.0d0,    iq                   , C%elms, C%nrow, C%ncol, nz)
-
-    end if
-
-  end function
-
-  function blubdag_matrix_backend(A) result(B)
-
-    type(matrix), intent(in) :: A
-    type(matrix)             :: B
-    real(kind_dp)            :: factor
-    integer                  :: iz
-
-    B%ncol          = A%nrow
-    B%nrow          = A%ncol
-    B%ih_sym        = A%ih_sym
-    B%tr_sym        = A%tr_sym
-    B%pg_sym        = A%pg_sym
-    B%fermi_pointer = A%fermi_pointer
-    B%is_defined    = .true.
-
-    if (associated(A%elms)) then
-      allocate(B%elms(B%nrow*B%ncol*nz))
-
-      do iz = 1, nz
-        if (ipqtoq(iz, A%pg_sym-1) > 1) then
-          factor = -1.0
-        else
-          factor =  1.0
-        end if
-
-        call transpose_block(factor, A%elms((iz-1)*A%nrow*A%ncol + 1:iz*A%nrow*A%ncol), A%nrow, A%ncol, &
-                                     B%elms((iz-1)*B%nrow*B%ncol + 1:iz*B%nrow*B%ncol))
-
-      end do
-    endif
-
-  end function
-
   subroutine dag_matrix_backend(A, B)
 
     type(matrix)  :: A
