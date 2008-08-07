@@ -1430,93 +1430,11 @@ C
          END IF
   100 CONTINUE
       CALL MEMREL('RFCKMAT',WORK,KWORK,KWORK,KFREE,LFREE)
-
-#ifdef MCSCF_ORBENE
-! NOTE JANUARY 2005 TF+HJAAJ:
-!   BEFORE REACTIVATING THIS, THE QDIAG CALL SHOULD BE
-!   CHANGED TO CALLS FOR BLOCKDIAGONALIZATION OF EACH
-!   OCCUPATION CLASS. THE CURRENT CODE WILL MIX INACTIVE
-!   AND ACTIVE as well as ACTIVE AND VIRTUALS.
-!   Also consider if this should not rather be calculated
-!   in krmccan.F .........
-!
 C
-C  Diagonalize complete Fock matrix FT:
-C
-C  Total Fock matrix FC + FV:
-C
-      CALL MEMGET('REAL',KFT,N2ORBXQ,WORK,KFREE,LFREE)
-      DO ISM = 1,N2ORBXQ
-        WORK(KFT+ISM-1) = FC(ISM) + FV(ISM)
-      END DO
-C
-C  Eigenvalues (orbital energies) and save electronic part:
-C
-      CALL MEMGET('REAL',KEIGHL,NORBT,WORK,KFREE,LFREE)
-      CALL QDIAG(NZ,NORBT,WORK(KFT),NORBT,NORBT,
-     &           WORK(KEIGHL),0,DUMMY,NORBT,NORBT,
-     &           WORK(KFREE),LFREE,IERR)
-      IF (IERR.NE.0) CALL QUIT('Erroneous completion of QDIAG for FT.')
-C
-C     Reorder from
-C     particle - space - symmetry to
-C     symmetry - particle - space ordering
-C     and store in ORBENE
-C
-C     Define offsets and lengths ...
-      NACCORB = 0
-      NINTSP = NGAS + 2
-      DO IPAR = 1,2,1
-        DO IINTSP = 1,NINTSP,1
-          DO IFS = 1,NFSYM,1
-            IF (IINTSP.EQ.1) THEN
-              NNORB = NKRMCISH(IFS)
-            ELSE IF (IINTSP.EQ.NINTSP) THEN
-              NNORB = NSSH(IFS)
-            ELSE
-              IGS = IINTSP - 1
-              NNORB = NKRMCGSH(IFS,IGS)
-            END IF
-            IOPSST(IFS,IINTSP,IPAR) = NACCORB
-            NOPSST(IFS,IINTSP,IPAR) = NNORB
-            NACCORB = NACCORB + NNORB
-          END DO
-        END DO
-      END DO
-C
-C     ... and reorder
-      IRN = 0
-C     Loop over symmetries
-      DO IFS = 1,NFSYM,1
-C       Loop over particle type
-        DO IPAR = 1,2,1
-C         Loop over internal spaces
-          DO IINTSP = 1,NINTSP,1
-C           Loop over orbital block
-            DO IORBRN = 1,NOPSST(IFS,IINTSP,IPAR),1
-             IRN = IRN + 1
-             ORBENE(IRN) = WORK(KEIGHL+IOPSST(IFS,IINTSP,IPAR)+IORBRN-1)
-            END DO
-          END DO
-        END DO
-      END DO
-C
-      IF (IPROPT.GE.3) THEN
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) 'Orbital energies after FC + FV diagonalization'
-        DO IPR = 1,NORBT,1
-          WRITE(LUPRI,'(A8,I3,A4,1F10.3)') 
-     &          ' OrbEn (',IPR,') = ',ORBENE(IPR)
-        END DO
-      END IF
-#endif   /* MCSCF_ORBENE */
-C
-c      call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
-c      call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
-c      call getmat('FVMO',FV,10,.TRUE.,WORK(KFREE),LFREE)
-c      call prqmat(fv,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
-C
-C
+c     call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
+c     call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
+c     call getmat('FVMO',FV,10,.TRUE.,WORK(KFREE),LFREE)
+c     call prqmat(fv,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
 C
       CALL RTKTIME(.FALSE.,12)
       CALL QEXIT('RFCKMAT')
@@ -1830,7 +1748,7 @@ C     ***************************************************
 C
       CALL IZERO(NOROT,NORBT)
 C
-      NFRSHT = 0
+      NDSHT = 0
       NVSHT  = 0
 C
       WRITE(LUPRI,'(/A)') ' (RSETWOP) Orbital classes:'
@@ -1867,10 +1785,18 @@ C
          WRITE(LUPRI,'(5X,A,A50)')
      &      'Secondary orbitals  : ',OPT_INDSTR(3,I)
 C
+C        ***************************************************
+C        Special handling of deleted secondary orbitals here.
+C        (Information about such deleted orbitals were not
+C         available before now, therefore NDSH*, NVSH* and
+C         the associated IDX* arrays could not be made in
+C         the SETDCBIDX routines.) SK+HJAaJ Aug 08
+C        ***************************************************
+C
          NVEC = 1
          CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
-         NFRSH(I) = 0
+         NDSH(I) = 0
          
          IF (NVEC .GT. 0) THEN
             LNOROT = .TRUE.
@@ -1880,79 +1806,81 @@ C
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
             END DO
-            NFRSH(I) = NVEC
+            NDSH(I) = NVEC
          END IF
 C
-         NVSH(I) = NSSH(I) - NFRSH(I)
+         NVSH(I) = NSSH(I) - NDSH(I)
 C
-         NFRSHT = NFRSHT + NFRSH(I)
-         NVSHT  = NVSHT  + NVSH(I)
+         NDSHT = NDSHT + NDSH(I)
+         NVSHT = NVSHT + NVSH(I)
       END DO
 C     ... 'active' secondary orbitals
       N2VSHX   = NVSHT   * NVSHT
       N2VSHXQ  = N2VSHX  * NZ
-C     ... frozen secondary orbitals
-      N2FRSHX  = NFRSHT  * NFRSHT
-      N2FRSHXQ = N2FRSHX * NZ
-      IF ( NVSHT .gt. 0 )THEN
-C        ... mapping for 'active' and frozen secondary orbitals
-         IORBIX = 0
-         IFRSHI = 0
-         IORBFX = 0
-         IVSHII = 0
-         DO IFSYM = 1, NFSYM
-            DO I = 1, NPSH(IFSYM) 
-               IORBIX = IORBIX + 1
-               IDXG2F(IORBIX) = -1
-               IDXF2G(IORBIX) = -1
-               IDXS2G(IORBIX) = -1
-               IDXG2S(IORBIX) = -1
-            END DO
-            DO I = 1, NISH(IFSYM)
-               IORBIX = IORBIX + 1
-               IDXG2F(IORBIX) = -1
-               IDXF2G(IORBIX) = -1
-               IDXS2G(IORBIX) = -1
-               IDXG2S(IORBIX) = -1
-            END DO
-            DO I = 1, NASH(IFSYM)
-               IORBIX = IORBIX + 1
-               IDXG2F(IORBIX) = -1
-               IDXF2G(IORBIX) = -1
-               IDXS2G(IORBIX) = -1
-               IDXG2S(IORBIX) = -1
-            END DO
-            DO I = 1, NVSH(IFSYM)
-               IORBIX = IORBIX + 1
-               IVSHII = IVSHII + 1
-C
-               IDXG2F(IORBIX) = -1
-               IDXG2S(IORBIX) = IVSHII
-C
-               IDXF2G(IORBIX) = -1
-               IDXS2G(IVSHII) = IORBIX
-            END DO
-            DO I = 1, NFRSH(IFSYM)
-               IORBIX = IORBIX + 1
-               IFRSHI = IFRSHI + 1
-               IDXG2F(IORBIX) = IFRSHI
-               IDXG2S(IORBIX) = -1
-C
-               IDXF2G(IFRSHI) = IORBIX
-            END DO
+C     ... deleted secondary orbitals
+      N2DSHX  = NDSHT  * NDSHT
+      N2DSHXQ = N2DSHX * NZ
+C     ... mapping for 'active' and deleted secondary orbitals
+C     IDXG2D - general to deleted
+C        D2G - deleted to general
+C        V2G - secondary to general
+C        G2V - general to secondary
+      IORBIX = 0
+      IDSHI  = 0
+      IORBDX = 0
+      IVSHII = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NPSH(IFSYM) 
+            IORBIX = IORBIX + 1
+            IDXG2D(IORBIX) = -1
+            IDXD2G(IORBIX) = -1
+            IDXV2G(IORBIX) = -1
+            IDXG2V(IORBIX) = -1
          END DO
-         IF (IPROPT .ge. 4) THEN
-            WRITE(LUPRI,'(1X,A)')
-     &           '(RSETWOP) F and IDXS2G'
-            DO I = 1, NVSHT
-              WRITE(LUPRI,'(8X,I6,I11)') I, IDXS2G(I)
-            END DO
-            WRITE(LUPRI,'(1X,A)')
-     &           '(RSETWOP) F and IDXF2G'
-            DO I = 1, NFRSHT
-              WRITE(LUPRI,'(8X,I6,I11)') I, IDXF2G(I)
-            END DO
-         END IF
+         DO I = 1, NISH(IFSYM)
+            IORBIX = IORBIX + 1
+            IDXG2D(IORBIX) = -1
+            IDXD2G(IORBIX) = -1
+            IDXV2G(IORBIX) = -1
+            IDXG2V(IORBIX) = -1
+         END DO
+         DO I = 1, NASH(IFSYM)
+            IORBIX = IORBIX + 1
+            IDXG2D(IORBIX) = -1
+            IDXD2G(IORBIX) = -1
+            IDXV2G(IORBIX) = -1
+            IDXG2V(IORBIX) = -1
+         END DO
+         DO I = 1, NVSH(IFSYM)
+            IORBIX = IORBIX + 1
+            IVSHII = IVSHII + 1
+C
+            IDXG2D(IORBIX) = -1
+            IDXG2V(IORBIX) = IVSHII
+C
+            IDXD2G(IORBIX) = -1
+            IDXV2G(IVSHII) = IORBIX
+         END DO
+         DO I = 1, NDSH(IFSYM)
+            IORBIX = IORBIX + 1
+            IDSHI  = IDSHI  + 1
+            IDXG2D(IORBIX) = IDSHI
+            IDXG2V(IORBIX) = -1
+C
+            IDXD2G(IDSHI)  = IORBIX
+         END DO
+      END DO
+      IF (IPROPT .ge. 4 .AND. NDSHT .gt. 0) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSETWOP) V and IDXV2G'
+         DO I = 1, NVSHT
+           WRITE(LUPRI,'(8X,I6,I11)') I, IDXV2G(I)
+         END DO
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSETWOP) D and IDXD2G'
+         DO I = 1, NDSHT
+           WRITE(LUPRI,'(8X,I6,I11)') I, IDXD2G(I)
+         END DO
       END IF
 C
       CALL FLSHFO(LUPRI)
@@ -3147,9 +3075,9 @@ C
 C
       IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
 C
-CTF   Natural orbital generation currently works only
-CTF   for 1 vector with LUCIAREL. FIXME.
-CSK   DONE!
+CTF   PROBLEM: Natural orbital generation currently works only
+CTF   for 1 vector with LUCIAREL. 
+CSK   FIXED! July 2008
 C
          WRITE(LUPRI,'(//A/A/A)') 
      &'  *************************************************************',
@@ -5187,19 +5115,19 @@ C
       CALL DCOPY(N2ORBXQ,FC,1,WORK(KFD),1)
       CALL DAXPY(N2ORBXQ,D1,FV,1,WORK(KFD),1)
 C
-      CALL CANORB('I',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
+      CALL SVL_CANORB('I',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
 C
       CALL ROTFC('I',WORK(KU),FC,WORK(KFREE),LFREE)
       CALL ROTFC('I',WORK(KU),FV,WORK(KFREE),LFREE)
       CALL ROTFQ('I',WORK(KU),FQ,WORK(KFREE),LFREE)
       CALL ROTORB('I',WORK(KU),CMO,WORK(KFREE),LFREE)
 C
-      CALL CANORB('V',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
+      CALL SVL_CANORB('S',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
 C
-      CALL ROTFC('V',WORK(KU),FC,WORK(KFREE),LFREE)
-      CALL ROTFC('V',WORK(KU),FV,WORK(KFREE),LFREE)
-      CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
-      CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
+      CALL ROTFC('S',WORK(KU),FC,WORK(KFREE),LFREE)
+      CALL ROTFC('S',WORK(KU),FV,WORK(KFREE),LFREE)
+      CALL ROTFQ('S',WORK(KU),FQ,WORK(KFREE),LFREE)
+      CALL ROTORB('S',WORK(KU),CMO,WORK(KFREE),LFREE)
 C
 C     write(lupri,*) 'SVLDEG fq after trans'
 C     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
@@ -5256,10 +5184,10 @@ C
      &        GOEE,WORK(KBEE),JXOPE,NXOPE,
      &        WORK(KU),NOROTC,WORK(KFREE),LFREE)
 C
-         CALL ROTFC('V',WORK(KU),FC,WORK(KFREE),LFREE)
-         CALL ROTFC('V',WORK(KU),FV,WORK(KFREE),LFREE)
-         CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
-         CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
+         CALL ROTFC('S',WORK(KU),FC,WORK(KFREE),LFREE)
+         CALL ROTFC('S',WORK(KU),FV,WORK(KFREE),LFREE)
+         CALL ROTFQ('S',WORK(KU),FQ,WORK(KFREE),LFREE)
+         CALL ROTORB('S',WORK(KU),CMO,WORK(KFREE),LFREE)
 C
       END IF
       IF (NXOPP .GT. 0) THEN
@@ -5422,7 +5350,7 @@ C
                ELSE
                   KK = IDXG2U(K) + NISHT
                END IF
-               LL = IDXG2V(L)
+               LL = IDXG2S(L)
 C
                IF (DOGRAD) THEN
                   DO IZ = 1, NZ
@@ -5483,7 +5411,7 @@ C
       IF (C .EQ. 'E') THEN
          DO I = 1, NSSHT
             IF ( ABS(WORK(KEIG+I-1)) .LE. THRZER) THEN
-               II = IDXV2G(I)
+               II = IDXS2G(I)
                write(LUPRI,*) 'removing virtual ',I,II
                NOROT(II) = 1
             END IF
@@ -5504,7 +5432,109 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMC_WAKN
+C/* Deck svl_canorb */
+      SUBROUTINE SVL_CANORB(C,FD,U,WORK,LWORK)
+C***********************************************************************
+C
+C     Diagonalize the full FD Fock matrix (*not* symmetry packed!)
+C     and return the transformation matrix U.
+C     The character "C" controls which part of FD we diagonalize.
+C
+C     Written by J. Thyssen - Mar 2001
+C
+C     This routine is used by SVLDEG.
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+C
+#include "consts.h"
+C
+#include "mx2orb.h"
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      CHARACTER C*1
+      DIMENSION FD(NORBT,NORBT,NZ), U(*), WORK(*)
+C
+#include "memint.h"
+C
+      CALL QENTER('SVL_CANORB')
+C
+C
+      IF (C .EQ. 'E') THEN
+         CALL MEMGET('REAL',KFD,NESHT*NESHT*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFD),NESHT*NESHT*NZ)
+         CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NESHT,NESHT,IDXE2G,NZ)
+         NDIM = NESHT
+      ELSE IF (C .EQ. 'P') THEN
+         CALL MEMGET('REAL',KFD,NPSHT*NPSHT*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFD),NPSHT*NPSHT*NZ)
+         CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NPSHT,NPSHT,IDXP2G,NZ)
+         NDIM = NPSHT
+      ELSE IF (C .EQ. 'I') THEN
+         CALL MEMGET('REAL',KFD,NISHT*NISHT*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFD),NISHT*NISHT*NZ)
+         CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NISHT,NISHT,IDXI2G,NZ)
+         NDIM = NISHT
+      ELSE IF (C .EQ. 'A') THEN
+         CALL MEMGET('REAL',KFD,NASHT*NASHT*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFD),NASHT*NASHT*NZ)
+         CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NASHT,NASHT,IDXU2G,NZ)
+         NDIM = NASHT
+      ELSE IF (C .EQ. 'S') THEN
+         CALL MEMGET('REAL',KFD,NSSHT*NSSHT*NZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFD),NSSHT*NSSHT*NZ)
+         CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NSSHT,NSSHT,IDXS2G,NZ)
+         NDIM = NSSHT
+      ELSE
+         WRITE(LUPRI,'(2A)')
+     &        '*** ERROR in MATGAT *** Unknown control character: ',C
+         CALL QUIT('*** ERROR in MATGAT *** Unknown control character')
+      END IF
+C
+C
+C     Diagonalize matrix
+C     ------------------
+C
+      CALL MEMGET('REAL',KEIG,NDIM,WORK,KFREE,LFREE)
+C
+      IF (NZ .EQ. 1) THEN
+         IJOB = 1
+         IORDER = 0
+         IPACK = 0
+         CALL RSJACO(NDIM,NDIM,NDIM,WORK(KFD),WORK(KEIG),
+     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+      ELSE
+         MATZ = 1
+         CALL QDIAG(NZ,NDIM,WORK(KFD),NDIM,NDIM,
+     &        WORK(KEIG),MATZ,U,NDIM,NDIM,
+     &        WORK(KFREE),LFREE,IERR)
+         IF (IERR .NE. 0) THEN
+            WRITE(LUPRI,'(/,1X,2A,I4)')
+     &           '*** ERROR in SVL_CANORB ***: ',
+     &           'QDIAG failed with error code ',IERR
+            CALL QUIT('*** ERROR in SVL_CANORB ***')
+         END IF
+      END IF
+C
+C     write(6,*) 'eigenvalues'
+C     CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,6)
+C
+c     write(6,*) 'eigenvectors'
+c     CALL PRQMAT(U,NDIM,NDIM,NDIM,NDIM,NZ,IPQTOQ(1,0),LUPRI)
+C
+      CALL MEMREL('SVL_CANORB',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('SVL_CANORB')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KRMC_WAKE_NODES
 C
 C     Call the slaves if we run in parallel for KR-MCSCF
 C
@@ -5524,7 +5554,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMC_RELN
+      SUBROUTINE KRMC_RELEASE_NODES
 C
 C     Release the slaves if we run in parallel for KR-MCSCF
 C
@@ -5566,7 +5596,7 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMCNOD(WORK,LWORK)
+      SUBROUTINE KRMC_NODE_DRIVER(WORK,LWORK)
 C
 C     KR-MCSCF driver routine for the slaves
 C
@@ -5611,7 +5641,7 @@ C
          WRITE (KRMC_NODEFN,'(A13,A1,I3)') KRMC_NODEF,'.',MYTID
          IFILELNG=17
       ELSE
-         CALL Abend2("NUMCPU.GT.1000! EXTEND KRMCNOD MODULE")
+         CALL Abend2("NUMCPU.GT.1000! EXTEND KRMC_NODE_DRIVER MODULE")
       ENDIF
 *
 *     open the local input file and the node specific output file.
