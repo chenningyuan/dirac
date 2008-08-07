@@ -1313,6 +1313,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
       dimension ISTR_CA(*),ISTR_CB(*),ISTR_AA(*),ISTR_AB(*)
       INTEGER*8 ICOUNT_I8
+      LOGICAL NOINT_FILE
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
@@ -1321,6 +1322,8 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Constants
       IZERO = 0
       ZERO = 0.D0
+      NOINT_FILE = .FALSE.
+C     NOINT_FILE = .TRUE.
 *
 * Double group type
       if (NZ.eq.1) then
@@ -1874,7 +1877,7 @@ C    &             ' at ',ICOUNT_I8
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):
-                            IF(.NOT. NO_INDIF )
+                            IF(.NOT. NOINT_FILE )
      &                         write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
@@ -4729,6 +4732,7 @@ c       call getinm_sigden()
           IRIOFF2 = (2*ITOTDIM)**4
         end if
 *
+C
         call getind_sigden(YINT,INDEX,IRI,ITOTDIM,
      &                     WORK(KNUMINT),WORK(KKR),WORK(KINDK),
      &                     WORK(KINDL),WORK(KINVREO),WORK(KIOFF12),
@@ -5434,7 +5438,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
       NTEST = 0000
 *
-      CALL RMEMCHK
 *
 *. : Pointers for symmetry blocks of integrals
 *
@@ -5455,22 +5458,6 @@ C
 C
       I_AM_TIMO_WORLD = 0
       if (INTIMP.eq.8) I_AM_TIMO_WORLD = 1
-CTF
-*  We read integrals in routine DIST_2EINTS coming up.
-*  There, the individual environment flags are relevant.
-CTF
-      I_DO_2EINTS = 1
-      IF(I_DO_2EINTS .EQ. 1 ) THEN
-*. Skip 1-electron integrals
-c       CALL REWINO(LU2INT)
-c       DO INT1 = 1, NINT1
-c         READ(LU2INT,'(E22.15)') XDUMMY
-c       END DO
-*. 2-electron integrals
-c       READ(LU2INT,'(E22.15)') (WORK(KINT2-1+INT2),INT2=1,NINT2)
-      END IF
-c     WRITE(6,*) ' Integrals read in '
-c     CALL WRTMAT(WORK(KINT2),NINT2,1,NINT2,1)
 *
       IF (I_AM_TIMO_WORLD.EQ.0.AND.
      &       INTIMP.EQ.1.AND.NOINT.EQ.0) THEN
@@ -5555,45 +5542,6 @@ CTF
      &               that have been read:         ',NTOTINT
       END IF
 *
-CTF
-*
-C     write(6,*) ' Memory check   INTIM 2 '
-*. integrals (ij!kk) -(ik!kj)
-C       ZIJPNT(IJPNT,IJSM,IGEJ,NOBSM,IOBSM,LOBSM,ISTOB,NTOTOB)
-*... Here I am
-CTF      CALL ZIJPNT(WORK(KPNIJ),1,1,NSMOB,IBSO,NTOOBS,IREOST,NTOOB)
-C?    write(6,*) ' Home from ZIJPNT '
-C    IJKK(XIJKK,IGEJ,IJPNT,NIJ,IJSM,NOBSM,LOBSM,IOBSM,NTOTOB)
-CTF      IF(NOINT.EQ.0)
-CTF     &CALL IJKK(WORK(KIJKK),1,WORK(KPNIJ),1,NSMOB,NTOOBS,
-CTF     &          IBSO,IREOST,NTOOB)
-CTF      WRITE(6,*) ' Memcheck after IJKK '
-CTF      CALL RMEMCHK
-C?    write(6,*) ' home from IJKK '
-*. Change one-electron integrals to inactive fock matrix
-CTF      IF(NOINT.EQ.0) CALL FI(WORK(KINT1),ECC)
-CTF      ECORE = ECORE + ECC
-CTF      WRITE(6,*) ' Updated core energy ',ECORE
-CTF      CALL RMEMCHK
-*
-C?    WRITE(6,*) ' IDMPIN ', IDMPIN
-CTF      IF (IDMPIN.EQ.1 ) THEN
-CTF        WRITE(6,*)
-CTF     &   ' Integrals written formatted (E22.15) on unit 90'
-CTF        LU90 =
-CTF        REWIND LU90
-*.1 : One-electron integrals
-CTF        WRITE(LU90,'(E22.15)')
-CTF     &   (WORK(KINT1-1+INT1),INT1=1,NINT1)
-*.2 : Two-electron integrals
-CTF        WRITE(LU90,'(E22.15)')
-CTF     &   (WORK(KINT2-1+INT2),INT2=1,NINT2)
-*.3. Core energy
-CTF        WRITE(LU90,'(E22.15)')ECORE
-*.4  Rewind to empty buffer
-CTF        REWIND LU90
-
-C!    stop ' Jeppe forced my to stop in INTIM '
       RETURN
       END
 ***********************************************************************
