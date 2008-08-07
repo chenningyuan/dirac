@@ -49,6 +49,9 @@ for i in range(len(sys.argv)):
     if i > 0:
        cpp_prefix += sys.argv[i] + ' '
 
+cpp_prefix = string.replace(cpp_prefix, ',', ' ')
+cpp_prefix = string.replace(cpp_prefix, '-WF', ' ')
+
 file_l = []
 inc_d  = {}
 
