@@ -864,7 +864,7 @@ C
             IDXG2P(IORBI) = IPSHI
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
          END DO
          DO I = 1, NISH(IFSYM)
@@ -879,7 +879,7 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = IISHI
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
             IDXE2G(IESHI) = IORBI
             IDXI2G(IISHI) = IORBI
@@ -897,7 +897,7 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = IASHI
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
             IDXU2G(IASHI) = IORBI
             IDXE2G(IESHI) = IORBI
@@ -915,10 +915,10 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = ISSHI
+            IDXG2S(IORBI) = ISSHI
 C
             IDXE2G(IESHI) = IORBI
-            IDXV2G(ISSHI) = IORBI
+            IDXS2G(ISSHI) = IORBI
          END DO
       END DO
 C
