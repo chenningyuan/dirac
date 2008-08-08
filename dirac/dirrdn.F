@@ -5882,8 +5882,16 @@ C
      &   ' ---> switched to AOFOCK'
          SOFOCK = .FALSE.
       ENDIF
-C
-C
+
+!     check whether both .URKBAL and .SPINFREE are set and exit if true
+!     =================================================================
+
+      if (spinfr .and. urkbal) then
+        write(lupri,*) '.URKBAL and .SPINFREE cannot be used together'
+        call quit ('.URKBAL and .SPINFREE cannot be used together')
+      end if
+
+
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
       END
