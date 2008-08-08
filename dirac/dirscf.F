@@ -1012,7 +1012,7 @@ C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
-      IF (IPRSCF.GE.3) THEN
+      IF (IPRSCF.GE.2) THEN
          IF (IPRSCF.GE.7) THEN
            write(lupri,*) 'DFSOLV: Eigenvalues'
            DO I=1,NFSYM
