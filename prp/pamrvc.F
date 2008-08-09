@@ -3631,7 +3631,7 @@ C       Generate standard density matrix
 !    &             2.0d0, work(kbuf), 1, Du%elms, 1)
 !       call daxpy(ntbas(0)*ntbas(0)*nz, 
 !    &             2.0d0, fmo,        1, Dp%elms, 1)
-!       call xc_contribution(2, (/Du, Dp/), (/Fp/))
+!       call xc_contribution(2, Du, (/Dp/), (/Fp/))
 !       call daxpy(ntbas(0)*ntbas(0)*nz, 
 !    &             1.0d0, Fp%elms,    1, FAO, 1)
 !-------------------------------------------------------------------------------
