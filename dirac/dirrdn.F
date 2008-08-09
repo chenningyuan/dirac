@@ -2063,7 +2063,7 @@ C***********************************************************************
       PARAMETER (NDIR = 12, NTABLE = 16)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7,CTEMP*72
+     &          WORD1*7,CTEMP*90
       DIMENSION WORK(LWORK)
 C
 #include "dcbgen.h"
@@ -2183,7 +2183,7 @@ C
             IREORD(1) = 0
             IREORD(2) = 0
             DO I = 1,NFSYM
-              READ(LUCMD,'(A72)') CTEMP
+              READ(LUCMD,'(A90)') CTEMP
               IREORD(I) = -1
               CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
      &                    I,IREORD(I),WORK,LWORK)
@@ -5576,9 +5576,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION IMOORD(MXREORD)
-      CHARACTER STRING*72
+      CHARACTER STRING*90
 
-      string(72:72) = char(0)
+      string(90:90) = char(0)
+!     ... call C-routine
+        write(LUPRI,*) 'got string:',STRING
       call creadreorder(string,ireord,imoord,mxreord)
       RETURN
       END

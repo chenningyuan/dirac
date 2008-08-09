@@ -2267,8 +2267,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
       SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,WORK,LWORK)
 C**********************************************************************
+C
 C     PURPOSE:
-C        Reorder orbitals
+C        Reorder orbitals (either in pre-SCF or post-SCF stage)
 C
 C        Written by J. Thyssen Nov 1997
 C
@@ -2295,8 +2296,8 @@ C
      &         'for fermion ircop',I
             WRITE(LUPRI,'(3X,A)')
      &         '* Electron eigenvalues and boson classification ...'
-            WRITE(LUPRI,'(3X,F15.8,I5)')
-     &         (EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
+            WRITE(LUPRI,'(3X,I5,1X,F19.8,I5)')
+     &         (J,EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
@@ -2352,6 +2353,7 @@ C  /* Deck reor1 */
      &                 NBASI,NORBI,NZ,IORDER,NORDER,
      &                 NPOSITRON,NELECTRON)
 C**********************************************************************
+C
 C     PURPOSE:
 C        Reorder orbitals
 C
@@ -2373,6 +2375,8 @@ C
          IORB_S = IORDER(I)+NPOSITRON
          IORB_D = I+NPOSITRON
          IF (IORB_D .GT. NELECTRON+NPOSITRON) THEN
+            WRITE(LUPRI,*) 'IORB_D=',IORB_D
+            WRITE(LUPRI,*) 'NELECTRON+NPOSITRON=',NELECTRON+NPOSITRON
             CALL QUIT('REOR1 reordering to non-existent orbital')
          ELSE
             ICHK_S = ICHK_S + IORB_S
@@ -2400,8 +2404,16 @@ C     not catch it,
 C     but that is quite unlikely) /hjaaj May 2002
 C
       IF (ICHK_S .NE. ICHK_D) THEN
-         CALL QUIT('REOR1: destination orbs. .ne. source orbitals')
-      END IF
+CMI     ... more control print-out necessary
+         WRITE(LUPRI,'(/,2x,a,i5)') 'NPOSITRON=',NPOSITRON
+         WRITE(LUPRI,'(2x,a,i5,a,i5,/)')
+     &     'ICHK_S=',ICHK_S,' ICHK_D=',ICHK_D
+         DO I=1,NORDER
+           WRITE(LUPRI,'(2x,a,i4,a,i4,a,i4)')
+     &     'IORDER(',I,'/',NORDER,')=',IORDER(I)
+         ENDDO
+         CALL QUIT('REOR1: destination orbs. .ne. source orbitals!')
+      ENDIF
 C
       CALL QEXIT('REOR1')
       RETURN

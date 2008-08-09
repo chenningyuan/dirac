@@ -710,13 +710,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (MAXLB = 72)
+      PARAMETER (MAXLB = 90)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
       DIMENSION ITMPAR(IRNGE1:IRNGE2),ILIST(NLIST)
 
-CMI   CALL QENTER('NUMLS1')
 C
 C     Initialize
 C
@@ -889,7 +888,6 @@ C
       ENDIF
       IP = ICNT
 C
-CMI   CALL QEXIT('NUMLS1')
       RETURN
 
  900  CONTINUE
@@ -905,8 +903,11 @@ CMI   CALL QEXIT('NUMLS1')
       CALL QUIT('NUMLS1: Wrong Character in Input')
  920  CONTINUE
       WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
-     &     'Out of Range in NUMLS1. Range:',IRNGE1,IRNGE2,
-     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+     &     'Out of Range in NUMLS1. Supported range:',IRNGE1,IRNGE2,
+     &     'Entering string: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      WRITE(LUPRI,'(2X,A,/)')  
+     & '...upper value of this range is defined by parameter'
+      CALL FLSHFO(LUPRI) 
       CALL QUIT('NUMLS1: Out of Range!')
  930  CONTINUE
       WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
