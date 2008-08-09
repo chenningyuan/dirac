@@ -177,7 +177,6 @@ contains
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
-    real(kind_dp)               :: blub
     integer                     :: i, j, k
     character(4)                :: nop(0)
 
@@ -214,7 +213,7 @@ contains
     XC_c  = 1.0d-100*D_c
     XC_bc = 1.0d-100*D_bc
 
-    call xc_contribution(3, (/D, D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/), blub)
+    call xc_contribution(3, D, (/D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/))
 
     XC_b_mo = dag(C)*XC_b*C
     XC_c_mo = dag(C)*XC_c*C
@@ -227,10 +226,10 @@ contains
 
     XC = XC_b_1c + XC_c_1b + 2.0d0*XC_bc
 
-    write(*,*) 'blub XC contribution b     = ', -(D_a**XC_b_1c)
-    write(*,*) 'blub XC contribution c     = ', -(D_a**XC_c_1b)
-    write(*,*) 'blub XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
-    write(*,*) 'blub XC contribution total = ', -(D_a**XC)
+    write(*,*) 'XC contribution b     = ', -(D_a**XC_b_1c)
+    write(*,*) 'XC contribution c     = ', -(D_a**XC_c_1b)
+    write(*,*) 'XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
+    write(*,*) 'XC contribution total = ', -(D_a**XC)
 !#endif
 
 

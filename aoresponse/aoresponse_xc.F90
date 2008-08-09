@@ -38,38 +38,43 @@ module aoresponse_xc_m
 
 contains
 
-  subroutine xc_contribution(order, D, F, xc_energy)
+  subroutine xc_contribution(order, D_0, D, XC)
 
-    integer                 :: order
-    type(matrix)            :: D(:), F(:)
-    real(kind_dp), optional :: xc_energy
+    integer          :: order
+    type(matrix)     :: D_0, D(:), XC(:)
 !   ----------------------------------------------------------------------------
-    type(dft_grid_t)        :: grid
-    type(density_t)         :: n_density(100)
-    type(gao_data_t)        :: gao_data
-    integer                 :: i, ipoint
-    real(kind_dp)           :: integral
-    real(kind_dp)           :: vxc(100)
-    real(kind_dp)           :: worth_it
-    real(kind_dp)           :: dftenergy
+    type(dft_grid_t) :: grid
+
+    type(density_t)  :: n_0
+    type(density_t)  :: n(100)
+    type(density_t)  :: n_xc(100)
+
+    type(gao_data_t) :: gao_data
+    integer          :: i, ipoint
+    real(kind_dp)    :: vxc(100)
+    real(kind_dp)    :: worth_it
+    real(kind_dp)    :: dftenergy
+    real(kind_dp)    :: small = 1.0d-9
 
 #include "../dft/functionals.h"
+
+    D_0 = 4.0d0*D_0
 
     do i = 1, size(D)
       D(i) = 4.0d0*D(i)
     end do
 
-    call get_grid(D(1), grid)
+    call get_grid(D_0, grid)
+    call init_density(n_0, '1')
+
+    do i = 1, size(D)
+      call init_density(n(i),    '1')
+      call init_density(n_xc(i), '1')
+    end do
 
     call init_gao_data(gao_data, 0)
 
-    call init_density(n_density(1), '1')
-    call init_density(n_density(2), '1')
-    call init_density(n_density(3), '1')
-    call init_density(n_density(4), '1')
-    call init_density(n_density(5), '1')
-
-    xc_energy = 0.0d0
+!   xc_energy = 0.0d0
 
     do ipoint = 1, grid%nr_points
 
@@ -78,74 +83,66 @@ contains
                         grid%y(ipoint), &
                         grid%z(ipoint))
 
-      call get_or_put_density(n_density(1), D(1), .true., gao_data)
-      if (n_density(1)%scalar > 1.0d-9) then
+      call get_or_put_density(n_0, D_0, .true., gao_data)
+
+      if (n_0%scalar > 1.0d-9) then
 
 !       vxc = 0.0d0
 
-        if (order == 0) then
-          xc_energy = xc_energy + dftenergy(n_density(1)%scalar, 0.0d0)*grid%w(ipoint)
-        end if
+!       if (order == 0) then
+!         xc_energy = xc_energy + dftenergy(n_density(1)%scalar, 0.0d0)*grid%w(ipoint)
+!       end if
 
-        if (order == 1) then
+!       if (order == 1) then
 
-          call dftpot0(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
+!         call dftpot0(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
 
-          n_density(1)%scalar = vxc(fr0)
-          call get_or_put_density(n_density(1), F(1), .false., gao_data)
+!         n_density(1)%scalar = vxc(fr0)
+!         call get_or_put_density(n_density(1), XC(1), .false., gao_data)
 
-        end if
+!       end if
 
-        if (order == 2) then
+!       if (order == 2) then
 
-          call get_or_put_density(n_density(2), D(2), .true., gao_data)
-          if(dabs(n_density(2)%scalar) > 1.0d-9) then
+!         call get_or_put_density(n_density(2), D(2), .true., gao_data)
+!         if(dabs(n_density(2)%scalar) > 1.0d-9) then
 
-            call dftpot1(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
+!           call dftpot1(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
 
-            n_density(2)%scalar = vxc(frr)*n_density(2)%scalar
-            call get_or_put_density(n_density(2), F(1), .false., gao_data)
+!           n_density(2)%scalar = vxc(frr)*n_density(2)%scalar
+!           call get_or_put_density(n_density(2), XC(1), .false., gao_data)
 
-          end if
-        end if
+!         end if
+!       end if
 
         if (order == 3) then
 
-          call dftpot2(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
+          call dftpot2(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
 
-          call get_or_put_density(n_density(2), D(2), .true., gao_data)
-          call get_or_put_density(n_density(3), D(3), .true., gao_data)
-          call get_or_put_density(n_density(4), D(4), .true., gao_data)
+          do i = 1, size(D)
+            call get_or_put_density(n(i), D(i), .true., gao_data)
 
-!         worth_it = max(
-!    &                   dabs(vxc_vector(0,3,ibc,1)),
-!    &                   dabs(vxc_vector(1,3,ibc,1)),
-!    &                   dabs(vxc_vector(2,3,ibc,1)),
-!    &                   dabs(vxc_vector(3,3,ibc,1))
-!    &                  )
+            n_xc(i)%scalar = 0.0d0
+            if (abs(n(i)%scalar) > small) then
+              n_xc(i)%scalar = vxc(frr)*n(i)%scalar
+            end if
+          end do
 
-!         worth_it = max()
+          if (max(abs(n(1)%scalar), abs(n(2)%scalar)) > small) then
+            n_xc(3)%scalar = n_xc(3)%scalar + vxc(frrr)*n(1)%scalar*n(2)%scalar
+          end if
 
+          do i = 1, size(D)
+            if (abs(n_xc(i)%scalar) > small) then
+              call get_or_put_density(n_xc(i), XC(i), .false., gao_data)
+            end if
+          end do
 
-!         if(dabs(n_density(2)%scalar) > 1.0d-9) then
-
-            n_density(5)%scalar = vxc(frr)*n_density(2)%scalar
-            call get_or_put_density(n_density(5), F(1), .false., gao_data)
-
-            n_density(5)%scalar = vxc(frr)*n_density(3)%scalar
-            call get_or_put_density(n_density(5), F(2), .false., gao_data)
-
-            n_density(5)%scalar = vxc(frr)*n_density(4)%scalar
-            call get_or_put_density(n_density(5), F(3), .false., gao_data)
-
-!           n_density(5)%scalar = 2.0d0*vxc(frrr)*n_density(2)%scalar*n_density(3)%scalar
-            n_density(5)%scalar =       vxc(frrr)*n_density(2)%scalar*n_density(3)%scalar
-            call get_or_put_density(n_density(5), F(3), .false., gao_data)
-
-!         end if
         end if
       end if
     end do
+
+    D_0 = 0.25d0*D_0
 
     do i = 1, size(D)
       D(i) = 0.25d0*D(i)
@@ -337,7 +334,7 @@ contains
         offset = (iz-1)*ntbas(0)*ntbas(0)
 
         call general_density_block(density%vector(ixyz),                                  &
-                                   M%elms(1+offset),                                  &
+                                   M%elms(1+offset),                                      &
                                    get_density,                                           &
                                    ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
                                    gao_slice_left,                                        &
@@ -348,7 +345,7 @@ contains
                                    density%factor_lx)
 
         call general_density_block(density%vector(ixyz),                                  &
-                                   M%elms(1+offset),                                  &
+                                   M%elms(1+offset),                                      &
                                    get_density,                                           &
                                    ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
                                    gao_slice_left,                                        &
@@ -363,7 +360,7 @@ contains
     else
 
         call general_density_block(density%scalar,                                        &
-                                   M%elms(1+offset),                                  &
+                                   M%elms(1+offset),                                      &
                                    get_density,                                           &
                                    M%pg_sym - 1,                                          &
                                    gao_slice_left,                                        &
@@ -374,7 +371,7 @@ contains
                                    density%factor_lx)
 
         call general_density_block(density%scalar,                                        &
-                                   M%elms(1+offset),                                  &
+                                   M%elms(1+offset),                                      &
                                    get_density,                                           &
                                    M%pg_sym - 1,                                          &
                                    gao_slice_left,                                        &
