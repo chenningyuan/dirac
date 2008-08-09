@@ -2,6 +2,7 @@ module aoresponse_test_m
 
     use matrix_mod
     use aoresponse_xc_m
+    use dirac_interface_m
     use propint
     use pertdens
 
@@ -161,9 +162,11 @@ contains
     real(kind_dp)               :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: A
+    type(matrix)                :: XC, XC_mo, C, Wc, Ci, Cs, XC_mo_index, XC_index
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
+    real(kind_dp)               :: blub
     integer                     :: i, j, k
     character(4)                :: nop(0)
 
@@ -181,6 +184,37 @@ contains
 !   zeros filled in for 2nd and 3rd order D
     e_ijk = 0.0d0
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
+
+#ifdef debug_me
+    call print(D_i(3), 'blub D_i(3)')
+
+    XC = 1.0d-100*D
+    call xc_contribution(2, (/D, D_i(3)/), (/XC/), blub)
+    XC = 2.0d0*XC
+
+    call print(XC, 'blub XC')
+
+    call get_C(C)
+    XC_mo = dag(C)*XC*C
+!   C      = 0
+
+    call print(XC_mo, 'blub XC_mo')
+
+    call get_i_or_s_C(Ci, 'i')
+    call get_i_or_s_C(Cs, 's')
+
+    Wc = 0.5d0*(dag(Ci)*S*D_k(3)*S*Cs - dag(Cs)*S*D_k(3)*S*Ci)
+    call print(Wc, 'blub Wc')
+
+    XC_mo_index = Wc*XC_mo - XC_mo*Wc
+    call print(XC_mo_index, 'blub XC_mo_index')
+
+    XC_index = S*C*XC_mo_index*dag(C)*S
+    write(*,*) 'blub', 0.25d0*(D_k(3)**XC_index)
+#endif
+
+
+
 
 !   Lagrange contribution -X_k (FDS -SDF) e_j
     do k = 1, 3
