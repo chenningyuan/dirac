@@ -216,21 +216,21 @@ contains
 
     call xc_contribution(3, (/D, D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/), blub)
 
-    XC_b  = 2.0d0*XC_b
-    XC_c  = 2.0d0*XC_c
-    XC_bc = 2.0d0*XC_bc
-
-    XC_b_mo  = dag(C)*XC_b*C
-    XC_c_mo  = dag(C)*XC_c*C
+    XC_b_mo = dag(C)*XC_b*C
+    XC_c_mo = dag(C)*XC_c*C
 
     XC_b_mo_1c = W_c*XC_b_mo - XC_b_mo*W_c
     XC_c_mo_1b = W_b*XC_c_mo - XC_c_mo*W_b
 
-    XC_b_1c = S*C*XC_b_mo_1c*dag(C)*S
-    XC_c_1b = S*C*XC_c_mo_1b*dag(C)*S
+    XC_b_1c = 0.5d0*(S*C*XC_b_mo_1c*dag(C)*S)
+    XC_c_1b = 0.5d0*(S*C*XC_c_mo_1b*dag(C)*S)
 
-    XC = 0.25d0*XC_b_1c + 0.25d0*XC_c_1b + XC_bc
-    write(*,*) 'blub XC contribution = ', -(D_a**XC)
+    XC = XC_b_1c + XC_c_1b + 2.0d0*XC_bc
+
+    write(*,*) 'blub XC contribution b     = ', -(D_a**XC_b_1c)
+    write(*,*) 'blub XC contribution c     = ', -(D_a**XC_c_1b)
+    write(*,*) 'blub XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
+    write(*,*) 'blub XC contribution total = ', -(D_a**XC)
 !#endif
 
 
