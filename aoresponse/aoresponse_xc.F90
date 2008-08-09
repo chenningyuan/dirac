@@ -13,7 +13,7 @@ module aoresponse_xc_m
     real(kind_dp), allocatable :: y(:)
     real(kind_dp), allocatable :: z(:)
     real(kind_dp), allocatable :: w(:)
-  end type dft_grid_t
+  end type
 
   type gao_data_t
     integer                    :: max_derivative
@@ -22,19 +22,19 @@ module aoresponse_xc_m
     real(kind_dp), allocatable :: gao1(:)
     real(kind_dp), allocatable :: gao2(:)
     real(kind_dp), allocatable :: buffer(:)
-  end type gao_data_t
+  end type
 
   type density_t
-    real(kind_dp)     :: scalar
-    logical           :: is_vector
-    real(kind_dp)     :: vector(1:3)
-    integer           :: tr_sym
-    integer           :: transforms_as
-    logical           :: diagonal
-    logical           :: times_minus_im
-    real(kind_dp)     :: factor_lx
-    real(kind_dp)     :: factor_xs
-  end type density_t
+    real(kind_dp) :: scalar
+    logical       :: is_vector
+    real(kind_dp) :: vector(3)
+    integer       :: tr_sym
+    integer       :: transforms_as
+    logical       :: diagonal
+    logical       :: times_minus_im
+    real(kind_dp) :: factor_lx
+    real(kind_dp) :: factor_xs
+  end type
 
 contains
 
@@ -150,7 +150,7 @@ contains
 
     call del_gao_data(gao_data)
 
-  end subroutine xc_contribution
+  end subroutine
 
   subroutine init_density(self, kind)
 
@@ -209,12 +209,12 @@ contains
       case ('a')
         self%factor_lx = -cval
         self%factor_xs = -cval
-      case ('ibaa')
+      case ('iba')
         self%factor_lx = -cval
         self%factor_xs =  cval
     end select
 
-  end subroutine init_density
+  end subroutine
 
   subroutine init_gao_data(self, max_derivative)
 
@@ -236,7 +236,7 @@ contains
       call alloc(self%gao2, 6*ntbas(0))
     end if
 
-  end subroutine init_gao_data
+  end subroutine
 
   subroutine del_gao_data(self)
 
@@ -253,7 +253,7 @@ contains
       call dealloc(self%gao2)
     end if
 
-  end subroutine del_gao_data
+  end subroutine
 
   subroutine get_gao_data(self, x, y, z)
 
@@ -282,7 +282,7 @@ contains
                 self%max_derivative, &
                 .false., 0)
 
-  end subroutine get_gao_data
+  end subroutine
 
   subroutine get_or_put_density(density, M, get_density, gao_data)
 
@@ -306,10 +306,8 @@ contains
 #include "symmet.h"
 
     if (get_density) then
-      density%scalar    = 0.0d0
-      density%vector(1) = 0.0d0
-      density%vector(2) = 0.0d0
-      density%vector(3) = 0.0d0
+      density%scalar = 0.0d0
+      density%vector = 0.0d0
     end if
 
     if (density%diagonal) then
@@ -383,7 +381,7 @@ contains
 
     end if
 
-  end subroutine get_or_put_density
+  end subroutine
 
   subroutine get_grid(D, grid)
 
@@ -463,6 +461,6 @@ contains
     rewind file_unit
 !   close(file_unit, status = 'keep')
 
-  end subroutine get_grid
+  end subroutine
 
-end module aoresponse_xc_m
+end module

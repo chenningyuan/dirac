@@ -796,14 +796,11 @@ contains
     Dp = 0.5d0*(Ci*Wp*dag(Cs) - Cs*Wp*dag(Ci))
 
     if (debug_me) then
-      call print(Wp, 'blub Wp')
-      call print(Dp, 'blub Dp')
-      call print(Ci, 'blub Ci')
-      call print(Cs, 'blub Cs')
+      call print(Wp, 'Wp')
+      call print(Dp, 'Dp')
+      call print(Ci, 'Ci')
+      call print(Cs, 'Cs')
     end if
-
-!   call get_S(S)
-!   Wp = 0.5d0*(dag(Ci)*S*Dp*S*Cs - dag(Cs)*S*Dp*S*Ci)
 
     Ci = 0
     Cs = 0
