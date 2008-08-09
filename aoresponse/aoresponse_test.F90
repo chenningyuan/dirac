@@ -162,7 +162,17 @@ contains
     real(kind_dp)               :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: A
-    type(matrix)                :: XC, XC_mo, C, Wc, Ci, Cs, XC_mo_index, XC_index
+
+    type(matrix)                :: C, Ci, Cs
+
+    type(matrix)                :: W_b, W_c
+
+    type(matrix)                :: D_a, D_b, D_c, D_bc
+
+    type(matrix)                :: XC_b,  XC_b_mo,  XC_b_mo_1c,   XC_b_1c
+    type(matrix)                :: XC_c,  XC_c_mo,  XC_c_mo_1b,   XC_c_1b
+    type(matrix)                :: XC_bc
+
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
@@ -185,38 +195,46 @@ contains
     e_ijk = 0.0d0
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
 
-#ifdef debug_me
-    call print(D_i(3), 'blub D_i(3)')
-
-    XC = 1.0d-100*D
-    call xc_contribution(2, (/D, D_i(3)/), (/XC/), blub)
-    XC = 2.0d0*XC
-
-    call print(XC, 'blub XC')
-
+!#ifdef debug_me
     call get_C(C)
-    XC_mo = dag(C)*XC*C
-!   C      = 0
-
-    call print(XC_mo, 'blub XC_mo')
-
     call get_i_or_s_C(Ci, 'i')
     call get_i_or_s_C(Cs, 's')
 
-    Wc = 0.5d0*(dag(Ci)*S*D_k(3)*S*Cs - dag(Cs)*S*D_k(3)*S*Ci)
-    call print(Wc, 'blub Wc')
+    D_a = 1.0d0*D_i(3)
+    D_b = 1.0d0*D_j(3)
+    D_c = 1.0d0*D_k(3)
 
-    XC_mo_index = Wc*XC_mo - XC_mo*Wc
-    call print(XC_mo_index, 'blub XC_mo_index')
+    W_b = 0.5d0*(dag(Ci)*S*D_b*S*Cs - dag(Cs)*S*D_b*S*Ci)
+    W_c = 0.5d0*(dag(Ci)*S*D_c*S*Cs - dag(Cs)*S*D_c*S*Ci)
 
-    XC_index = S*C*XC_mo_index*dag(C)*S
-    write(*,*) 'blub', 0.25d0*(D_k(3)**XC_index)
-#endif
+    D_bc = 0.5d0*(Ci*W_b*W_c*dag(Ci) + Ci*W_c*W_b*dag(Ci) - Cs*W_c*W_b*dag(Cs) - Cs*W_b*W_c*dag(Cs))
+
+    XC_b  = 1.0d-100*D_b
+    XC_c  = 1.0d-100*D_c
+    XC_bc = 1.0d-100*D_bc
+
+    call xc_contribution(3, (/D, D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/), blub)
+
+    XC_b  = 2.0d0*XC_b
+    XC_c  = 2.0d0*XC_c
+    XC_bc = 2.0d0*XC_bc
+
+    XC_b_mo  = dag(C)*XC_b*C
+    XC_c_mo  = dag(C)*XC_c*C
+
+    XC_b_mo_1c = W_c*XC_b_mo - XC_b_mo*W_c
+    XC_c_mo_1b = W_b*XC_c_mo - XC_c_mo*W_b
+
+    XC_b_1c = S*C*XC_b_mo_1c*dag(C)*S
+    XC_c_1b = S*C*XC_c_mo_1b*dag(C)*S
+
+    write(*,*) 'blub XC contribution = ', -0.25d0*(D_a**XC_b_1c) - 0.25d0*(D_a**XC_c_1b) - (D_a**XC_bc)
+!#endif
 
 
 
 
-!   Lagrange contribution -X_k (FDS -SDF) e_j
+!   Lagrange contribution -X_k (FDS - SDF) e_j
     do k = 1, 3
       X_k(k) = D_k(k)*S*D - D*S*D_k(k)
     end do

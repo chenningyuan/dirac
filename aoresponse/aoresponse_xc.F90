@@ -138,7 +138,8 @@ contains
             n_density(5)%scalar = vxc(frr)*n_density(4)%scalar
             call get_or_put_density(n_density(5), F(3), .false., gao_data)
 
-            n_density(5)%scalar = 2.0d0*vxc(frrr)*n_density(2)%scalar*n_density(3)%scalar
+!           n_density(5)%scalar = 2.0d0*vxc(frrr)*n_density(2)%scalar*n_density(3)%scalar
+            n_density(5)%scalar =       vxc(frrr)*n_density(2)%scalar*n_density(3)%scalar
             call get_or_put_density(n_density(5), F(3), .false., gao_data)
 
 !         end if
