@@ -172,6 +172,7 @@ contains
     type(matrix)                :: XC_b,  XC_b_mo,  XC_b_mo_1c,   XC_b_1c
     type(matrix)                :: XC_c,  XC_c_mo,  XC_c_mo_1b,   XC_c_1b
     type(matrix)                :: XC_bc
+    type(matrix)                :: XC
 
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
@@ -228,7 +229,8 @@ contains
     XC_b_1c = S*C*XC_b_mo_1c*dag(C)*S
     XC_c_1b = S*C*XC_c_mo_1b*dag(C)*S
 
-    write(*,*) 'blub XC contribution = ', -0.25d0*(D_a**XC_b_1c) - 0.25d0*(D_a**XC_c_1b) - (D_a**XC_bc)
+    XC = 0.25d0*XC_b_1c + 0.25d0*XC_c_1b + XC_bc
+    write(*,*) 'blub XC contribution = ', -(D_a**XC)
 !#endif
 
 
