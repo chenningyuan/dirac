@@ -87,58 +87,58 @@ contains
 
       if (n_0%scalar > 1.0d-9) then
 
-!       vxc = 0.0d0
+!       xc_energy = xc_energy + dftenergy(n_0%scalar, 0.0d0)*grid%w(ipoint)
 
-!       if (order == 0) then
-!         xc_energy = xc_energy + dftenergy(n_density(1)%scalar, 0.0d0)*grid%w(ipoint)
-!       end if
 
-!       if (order == 1) then
+!       evaluate perturbed densities
+!       ============================
 
-!         call dftpot0(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
+        do i = 1, size(D)
+          call get_or_put_density(n(i), D(i), .true., gao_data)
+        end do
 
-!         n_density(1)%scalar = vxc(fr0)
-!         call get_or_put_density(n_density(1), XC(1), .false., gao_data)
 
-!       end if
+!       evaluate prefactors
+!       ===================
 
-!       if (order == 2) then
+        vxc = 0.0d0
 
-!         call get_or_put_density(n_density(2), D(2), .true., gao_data)
-!         if(dabs(n_density(2)%scalar) > 1.0d-9) then
+        select case (order)
 
-!           call dftpot1(vxc, grid%w(ipoint), n_density(1)%scalar, 0.0d0)
+!         energy
+          case (1)
+            call dftpot0(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
+            n_xc(1)%scalar = vxc(fr0)
 
-!           n_density(2)%scalar = vxc(frr)*n_density(2)%scalar
-!           call get_or_put_density(n_density(2), XC(1), .false., gao_data)
+!         linear response
+          case (2)
+            call dftpot1(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
+            n_xc(1)%scalar = vxc(frr)*n(1)%scalar
 
-!         end if
-!       end if
-
-        if (order == 3) then
-
-          call dftpot2(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
-
-          do i = 1, size(D)
-            call get_or_put_density(n(i), D(i), .true., gao_data)
-
-            n_xc(i)%scalar = 0.0d0
-            if (abs(n(i)%scalar) > small) then
+!         quadratic response
+          case (3)
+            call dftpot2(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
+            do i = 1, size(D)
               n_xc(i)%scalar = vxc(frr)*n(i)%scalar
-            end if
-          end do
-
-          if (max(abs(n(1)%scalar), abs(n(2)%scalar)) > small) then
+            end do
             n_xc(3)%scalar = n_xc(3)%scalar + vxc(frrr)*n(1)%scalar*n(2)%scalar
+
+!         cubic response
+!         case (4)
+!         ...
+
+        end select
+
+
+!       fill matrices
+!       =============
+
+        do i = 1, size(D)
+          if (abs(n_xc(i)%scalar) > small) then
+            call get_or_put_density(n_xc(i), XC(i), .false., gao_data)
           end if
+        end do
 
-          do i = 1, size(D)
-            if (abs(n_xc(i)%scalar) > small) then
-              call get_or_put_density(n_xc(i), XC(i), .false., gao_data)
-            end if
-          end do
-
-        end if
       end if
     end do
 
