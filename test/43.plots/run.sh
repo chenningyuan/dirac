@@ -1,5 +1,7 @@
 #!/bin/sh
 
+./create_files.py
+
 MOL=co; export MOL
 
 for file in response*inp; do
