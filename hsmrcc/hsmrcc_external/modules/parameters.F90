@@ -1,10 +1,5 @@
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!> important data parameters for the HSMRCC run
 module Parameters
-!------------------------------------------------------------------------------
-!
-!             important data parameters for the HSMRCC run
-!
-!------------------------------------------------------------------------------
 
    implicit none
 
@@ -23,9 +18,11 @@ module Parameters
 !     select 32/64-bit code by the preprocessor statement
 !----------------------------------------------------------------------------
 #if defined (ARCH32BIT)
+    !> ...32 bit architecture on
    integer, parameter :: INTSFP = 2 
 #else
-   integer, parameter :: INTSFP = 1
+    !> ... 64-bit architecture on
+   integer, parameter :: INTSFP = 1 
 #endif
 
    ! number of logical files and subroutines
@@ -33,7 +30,8 @@ module Parameters
    integer, parameter :: NVFIL  = 14
    integer, parameter :: NSUBR  = 17
 
-   integer, parameter :: V2H2P  = 01
+    !> V2H2P label index ...
+   integer, parameter :: V2H2P  = 01 
    integer, parameter :: VPPPP  = 02
    integer, parameter :: VHHHH  = 03
    integer, parameter :: VHHPP  = 04
@@ -71,7 +69,9 @@ module Parameters
 
    ! some double precision parameters
 
+     !> zero number
    double precision, parameter :: zero = 0.0d00
+
    double precision, parameter :: one  = 1.0d00
    double precision, parameter :: half = 0.5d00
 
@@ -95,7 +95,9 @@ module Parameters
    integer :: NHOLE
    integer :: NPTCL
    integer :: NEMO
-   integer :: NELE
+
+ !> number of active electrons ...
+   integer :: NELE 
 
    integer :: NVMO
    integer :: NHMO
@@ -121,28 +123,27 @@ module Parameters
    integer :: NSTATE_MAIN
    integer :: NSTATE_INTM
 
-   ! ... control print-out parameter (introduced by MI)
+   !> ... control print-out parameter (introduced by MI)
    integer, private :: IPRINT = 0
 
    ! ... print-out channel - moved here from the module "IOmodule"
    integer :: UOUT  = 51
 
-   ! ------------------------------
-   ! ... DIRAC input parameters ...
-   ! ------------------------------
+   !> ... DIRAC mode parameters ...
    type dirac 
-   ! ... flag for the DIRAC input 
+   !> ... logical flag for the DIRAC mode
      logical :: is = .false.
-   ! ... flag for boson/fermion symmetry
+   !> ... is boson/fermion symmetry
      logical :: spinfree = .true.  
-   ! ... flag for complex algebra (when complex relativ.group used)
+   !> ... is complex algebra (i.e. when complex relativ.group used)
      logical :: is_complex = .false.  
    end type dirac
  
    contains
 
+   !> ... set the IPRINT variable
    subroutine set_iprint (ipr)
-   ! ... set the IPRINT variable
+   !>  entering general printing variable (between 0-100, veryfied inside)
     integer, intent(in) :: ipr
     integer, parameter :: ipr_max = 100
     if (ipr < 0 .or. ipr > ipr_max) then
@@ -154,14 +155,14 @@ module Parameters
     endif
    end subroutine set_iprint
 
+   !> ... returns the protected IPRINT variable
    function get_iprint() result(ipr)
-   ! ... returns the IPRINT variable
      integer :: ipr
      ipr = IPRINT
    end function get_iprint
 
+   !> ... short version for flushing out the buffer 
    subroutine flushout
-   ! ... short version for flushing out the buffer 
      call flush(UOUT)
    end subroutine flushout
 
