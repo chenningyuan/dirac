@@ -25,7 +25,7 @@ subroutine OpenVINF
    if (get_iprint() >=7) then
      write(UOUT,'(/,2x,a,a80)')   & 
      'OpenVINF:  going to open the Gamess input file FileVINF=',FileVINF
-     write(UOUT,*) ' UVINF=',UVINF,' FileVINF=',FileVINF
+     write(UOUT,'(2x,a,i3,a,a)') ' UVINF=',UVINF,' FileVINF=',FileVINF
      write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
    endif
 

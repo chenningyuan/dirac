@@ -2,12 +2,11 @@
 subroutine InitHSMRBase
 !---------------------------------------------------------
 !
-!  ... Basic Initialization of HSMR Run ...
+!     ... initialization for the HSMRCC run ...
 !
-!      Called from "source/hsmrcc.F90"/HSMRCC
+!    Called from "source/hsmrcc.F90"/HSMRCC
 !
 !---------------------------------------------------------
-
    use Parameters
    use Options
    use IOModule
@@ -35,30 +34,6 @@ subroutine InitHSMRBase
 
    call StartTiming
 
-   ! ... Setting up the output stream ...
-
-!  if (OPTION(TTYRUN)) then
-!     UOUT = 6 ! ... terminal output ...
-!  else
-!     close(6)
-!     close(5)
-!     close(0)
-!     open(UOUT,file=FileHSMR) ! ... output to the file ...
-!     if ( get_iprint() >= 15 ) then
-!         write(UOUT,'(2x,a,i3)') 'InitHSMRBase: UOUT variable set to ',UOUT
-!         write(UOUT,'(2x,a,a)')  &
-!         'InitHSMRBase: UOUT assigned file is ',FileHSMR
-!     endif
-!     if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
-!        ierrno = fseek(UOUT,0,2)
-!        if (ierrno/=0) then
-!          write(UOUT,*) 'InitHSMRBase: fseek error on UOUT'
-!          call flushout
-!          call Quit('InitHSMRBase: fseek error on UOUT!')
-!        endif
-!     endif
-!  endif
-
    ! ... Opening FileVINF file ...
 
    call OpenVINF
@@ -67,6 +42,7 @@ subroutine InitHSMRBase
    ! ... In case of fresh run, read it from gamess files   ...
 
    if (.not.OPTION(GENINT)) then
+
       rewind(UVINF)
       read(UVINF) SvNCMO, SvNHOLE, SvNPTCL, SvNEMO
 !
@@ -95,7 +71,9 @@ subroutine InitHSMRBase
    endif
 
    ! ... Initialize gamess module, GMSMod ...
-   call InitGMSMod
+   if (.not.OPTION(DIRACp)) then
+       call InitGMSMod
+   endif
 
    if ((.not.OPTION(RESTART)).and.(.not.OPTION(INTTOL))) CUTOFF  = TrfTol
 
@@ -123,10 +101,10 @@ end subroutine InitHSMRBase
 
 
 subroutine set_output_stream()
+!
 ! ... sets the output stream ...
-
-!use Parameters
-!use Options
+!    called from source/hsmrcc.F90 HSMRCC
+!
 use IOModule
 
    integer :: fseek, ierrno
@@ -145,9 +123,9 @@ use IOModule
       close(0)
       open(UOUT,file=FileHSMR) ! ... output to the file ...
       if ( get_iprint() >= 6 ) then
-          write(UOUT,'(2x,a,i3)') ': UOUT variable set to ',UOUT
-          write(UOUT,'(2x,a,a)')  &
-          ': UOUT assigned file is ',FileHSMR
+         write(UOUT,'(2x,a,i3)') ': UOUT variable set to ',UOUT
+         write(UOUT,'(2x,a,a)')  &
+         ': UOUT assigned file is ',FileHSMR
       endif
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
          ierrno = fseek(UOUT,0,2)

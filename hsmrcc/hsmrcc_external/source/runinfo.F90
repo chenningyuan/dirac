@@ -4,7 +4,7 @@ subroutine PrintRunInfo
 !
 !                  print basic run info ...
 !
-!        Called from source/hsmrcc.F90/HSMRCC routine
+!     Called from source/hsmrcc.F90/HSMRCC routine
 !
 !----------------------------------------------------------------
    use Parameters
@@ -44,8 +44,17 @@ subroutine PrintRunInfo
             '|           Tel Aviv, 69978                                     |',/, &
             '|           ISRAEL                                              |',/, &
             '|                                                               |',/, &
+            '|                      AND                                      |',/, &
+            '|                                                               |',/, &
+            '|           Miroslav ILIAS                                      |',/, &
+            '|           School of Chemistry, Tel Aviv University,Israel     |',/, &
+            '|           University of Zilina, Prievidza, Slovakia           |',/, &
+            '|                                                               |',/, &
+            '|                                                               |',/, &
             '|    Note : This version is ported for opteron machines at      |',/, &
             '|           University of Waterloo and Tel Aviv University.     |',/, &
+            '|    MI   :  works on any platform                              |',/, &
+            '|                                                               |',/, &
             '|                                                               |',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
             '|                INFORMATION ON CURRENT RUN                     |',/, &

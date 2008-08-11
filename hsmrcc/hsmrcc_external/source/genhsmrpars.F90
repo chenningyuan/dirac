@@ -2,18 +2,32 @@
 subroutine GenHSMRpars
 !-----------------------------------------------------------------------
 !
-!   Generate set of parameters for HSMRCC run.
+!   Generate set of parameters for the HSMRCC run.
 !
 !   called from InitHSMRBase (source/inihsbase.F90)
+!
+!   NOTE: NCMO, NVMO ... data must be ready
 !
 !-----------------------------------------------------------------------
 
    use Parameters ! most of parameters are stored here ...
    use OrbMod
    use IOModule
+   use Options
    implicit none
    integer i
    integer N_CHOOSE_R
+
+   if ( get_iprint() >= 10 ) then
+     call HEADER('Output from GenHSMRpars',-1)
+     if (OPTION(DIRACp)) write(UOUT,'(10x,a)') 'DIRAC mode is ON!'
+     write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
+     write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
+     write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
+     write(UOUT,'(2x,a,i4)') ' NEMO=',NEMO
+     write(UOUT,'(2x,a,i4)') 'NPTCL=',NPTCL
+     call flushout
+   endif
 
    NHMO = NCMO + NVMO
    NPMO = NEMO + NVMO
@@ -29,11 +43,13 @@ subroutine GenHSMRpars
    NDBLE  = NHMOSQ*NPMOSQ
    NTSIZE = NSING + NDBLE
 
+!  ... main space, Pm
    NMAINORB = 0
    do i = 1, NVMO
-      if (IsMainOrb(i)) NMAINORB = NMAINORB + 1
+     if (IsMainOrb(i)) NMAINORB = NMAINORB + 1
    enddo
 
+!  ... intermediate space, Pi
    NINTMORB = 0
    do i = 1, NVMO
       if (IsIntmOrb(i)) NINTMORB = NINTMORB + 1
@@ -72,20 +88,17 @@ subroutine GenHSMRpars
 
    ! ... control print-out
    if ( get_iprint() >= 10 ) then
-     call HEADER('Output from GenHSMRpars',-1)
-     
-     write(UOUT,'(2x,a,i7)') 'NSTATE=',NSTATE
-     write(UOUT,'(2x,a,i7)') 'NSTATE_MAIN=',NSTATE_MAIN
-     write(UOUT,'(2x,a,i7)') 'NSTATE_INTM=',NSTATE_INTM
-     write(UOUT,'(2x,a,i7)') 'NAX_EXC=',MAXEXC
+     write(UOUT,'(/,8x,a)') 'GenGSMRpars: calculated parameters:'
+     write(UOUT,'(2x,a,i7)') '       NSTATE=',NSTATE
+     write(UOUT,'(2x,a,i7)') '  NSTATE_MAIN=',NSTATE_MAIN
+     write(UOUT,'(2x,a,i7)') '  NSTATE_INTM=',NSTATE_INTM
+     write(UOUT,'(2x,a,i7)') '       NAXEXC=',MAXEXC
 
-     write(UOUT,'(2x,a,i7)') 'NMAINORB=',NMAINORB
-     write(UOUT,'(2x,a,i7)') 'NINTMORB=',NINTMORB
+     write(UOUT,'(2x,a,i7)') '     NMAINORB=',NMAINORB
+     write(UOUT,'(2x,a,i7)') '     NINTMORB=',NINTMORB
 
-     write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE =',NINTMORB_CORE
-     write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT =',NINTMORB_VIRT
-
+     write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE=',NINTMORB_CORE
+     write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT=',NINTMORB_VIRT
    endif
-
 
 end subroutine GenHSMRpars

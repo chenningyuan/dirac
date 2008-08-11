@@ -26,16 +26,16 @@ contains
 subroutine InitGMSMod
 !---------------------------------------------------------------------------
 !
-! Initialize Gamess stuff.
+! Initialize Gamess stuff 
 !
-! Called source/inihsbase.F90/InitHSMRBase
+! Called source/inihsbase.F90 - InitHSMRBase if not in the DIRAC mode
 !
 !---------------------------------------------------------------------------
 
    implicit none
    integer j1, j2, j3, j4, j5, j6, j7, j8, j9
    double precision :: d1, d2, d3
-   logical :: errflag
+   logical :: errflag, existMR1,existMR2
    integer NXX, IXX
 
    ! ... Obtain information for Variables of GMSMod       ...
@@ -72,6 +72,13 @@ subroutine InitGMSMod
         write(UOUT,*) ' Going to open FileMR2EINT=',FileMR2EINT
       endif
 
+      inquire(file=FileMR1EINT, exist=existMR1)
+      inquire(file=FileMR2EINT, exist=existMR2)
+
+      if (.not.(existMR1.or.existMR2)) then
+        call quit('Gamess integral file(s) not exist...')
+      endif
+
       open(UMR1EINT,file=FileMR1EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
       open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
 
@@ -98,9 +105,7 @@ subroutine InitGMSMod
          write(UOUT,*) 'Invalid Data in File UMR1EINT'
          write(UOUT,*) "file = ",FileMR1EINT
          write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
-         !call flush(UOUT)
          call flushout
-         !call abort
          call Quit('Invalid Data in File UMR1EINT')
       endif
 
@@ -138,7 +143,7 @@ subroutine InitGMSMod
       NPTCL_GMS = j9
 
 !
-!           Set up from gamess
+!          Set up from gamess
 !
       if (NCMO .eq.-1) NCMO = NCMO_GMS
       if (NEMO .eq.-1) NEMO = NEMO_GMS
@@ -184,9 +189,7 @@ subroutine InitGMSMod
           ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
            (NINTMX.LE.0)) then
          write(UOUT,*) 'Invalid Data in File UMR2EINT'
-         !call flush(UOUT)
          call flushout
-         !call abort
          call Quit('Invalid Data in File UMR2EINT')
       endif
 
@@ -306,16 +309,16 @@ end subroutine InitGMSMod
 subroutine EndGMSMod
 !--------------------------------------------------------------------
 !
-! Deallocate all allocated arrays.
+!   Deallocate all allocated arrays.
 !
-! Called from :
+! Called from : sr. EndHSMR - source/endhsmr.F90
 !
 ! TODO: include status checking of deallocations
+!
 !--------------------------------------------------------------------
 
    implicit none
 
-   call QEnter('EndGMSMod')
 
    if (allocated(SpinOfOrb))     deallocate(SpinOfOrb)
    if (allocated(SpinOfActvOrb)) deallocate(SpinOfOrb)
@@ -332,7 +335,6 @@ subroutine EndGMSMod
    if (allocated(XXPREAD)) deallocate(XXPREAD)
    if (allocated(IXPREAD)) deallocate(IXPREAD)
 
-   call QExit('EndGMSMod')
 
    return
 

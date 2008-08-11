@@ -784,8 +784,8 @@ int main (argc, argv)
    sethsmrpars_(&ncmo,&nhole,&nptcl,&nemo);
    sethsmrshiftpars_(&scval,&svval,&saval,&beeta);
    sethsmrconvtol_(&convtol);
-   sethsmrinttol_(&inttol);
-   sethsmrmaxit_(&maxit);
+   sethsmrinttol_(&inttol); /* */
+   sethsmrmaxit_(&maxit); /* max.number of iterations */
 
    if ( !opts[DIRAC] ) { /* Gamess files */
      if (outfile==NULL) {
@@ -795,9 +795,11 @@ int main (argc, argv)
        sethsmrfiles_(inpfile,outfile,strlen(inpfile),strlen(outfile));
      }
    }
-   else /* when the HSMRCC run is based solely upon the DIRAC program  */
+   else /* the HSMRCC run is based solely upon the DIRAC program  */
      {
-       sethsmrfiles_(inpfile,outfile,0,0);
+       // sethsmrfiles_(inpfile,outfile,0,0);
+        inpfile = "dirac_with_HSCC";
+        sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
      }
 
    /* Invoke HSMRCC Driver program */

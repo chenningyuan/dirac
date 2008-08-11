@@ -156,8 +156,6 @@ subroutine SetHSMRfiles(IFile,OFile)
 
    if (OPTION(DIRACp)) then
      Write(*,'(2x,a)') 'SetHSMRfiles: SetHSMRfiles: DIRAC is on!'
-     !Write(*,*) 'UOUT=',UOUT
-    ! Write(UOUT,*) '2. UOUT=',UOUT ! does NOT work...
    endif
 
    if (get_iprint() >= 5) then
@@ -170,7 +168,7 @@ subroutine SetHSMRfiles(IFile,OFile)
    endif
 
    if (OPTION(DIRACp)) then
-     Write(*,'(2x,a)') 'SetHSMRfiles: DIRAC is on!'
+     Write(*,'(2x,a)') 'SetHSMRfiles: DIRAC mod is on!'
      !Call Quit('SetHSMRfiles xx: DIRAC is on!')
    endif
 
@@ -178,9 +176,9 @@ subroutine SetHSMRfiles(IFile,OFile)
 
    FileHSMR = REPEAT(' ',LEN(FileHSMR))
    ilen = LEN_TRIM(IFile)
+
    if (ilen == 0) then
       Write(*,*) 'Input File of Zero Length'
-      Write(UOUT,*) 'Input File of Zero Length'
       call Quit('SetHSMRfiles: Input File of Zero Length !')
    endif
 
@@ -222,28 +220,35 @@ if (.not. OPTION(DIRACp)) then
    olen = LEN_TRIM(OFile)
    if (olen == 0) then
       FileHSMR = TRIM(IFile)//'.HSMR'
+      if (get_iprint() >= 6) then
+          write(*,'(/,2x,a,a)') 'HSMRCC output file is ',FileHSMR
+      endif
    else
       if (TRIM(OFile)==REPEAT(' ',olen)) then
          Write(*,*) 'blank Output File'
-         Write(UOUT,'(2x,a)') 'SetHSMRfiles: blank Output File'
+         Write(*,'(2x,a)') 'SetHSMRfiles: blank Output File'
          call Quit('SetHSMRfiles: blank Output File')
       endif
       FileHSMR = TRIM(OFile)
    endif
 
+else ! ie DIRAC is on
+ continue
 endif
 
+
+! ... some output ...
  if (get_iprint() >= 8) then
-    write(UOUT,'(/,2x,a,a)') 'HSMRCC output file is ',FileHSMR
-    write(UOUT,'(2x,a,a)') 'FileVINT=',FileVINT
-    write(UOUT,'(2x,a,a)') 'FileVIND=',FileVIND
-    write(UOUT,'(2x,a,a)') 'FileFHH=',FileFHH
-    write(UOUT,'(2x,a,a)') 'FileFHP=',FileFHP
-    write(UOUT,'(2x,a,a)') 'FileFPP=',FileFPP
-    write(UOUT,'(2x,a,a)') 'FileTAMP=',FileTAMP
-    write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
-    write(UOUT,'(2x,a,a)') 'FileTNEW=',FileTNEW
-    write(UOUT,'(2x,a,a)') 'FileTOLD=',FileTOLD
+    write(*,'(/,2x,a)') '*** SetHSMRfiles: HSMRCC working files '
+    write(*,'(2x,a,a)') 'FileVINT=',FileVINT
+    write(*,'(2x,a,a)') 'FileVIND=',FileVIND
+    write(*,'(2x,a,a)') 'FileFHH=',FileFHH
+    write(*,'(2x,a,a)') 'FileFHP=',FileFHP
+    write(*,'(2x,a,a)') 'FileFPP=',FileFPP
+    write(*,'(2x,a,a)') 'FileTAMP=',FileTAMP
+    write(*,'(2x,a,a)') 'FileTOLD=',FileTOLD
+    write(*,'(2x,a,a)') 'FileTNEW=',FileTNEW
+    write(*,'(2x,a,a)') 'FileTOLD=',FileTOLD
  endif
 
  return
