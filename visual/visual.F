@@ -1159,7 +1159,7 @@ C=======================================================================
       DIMENSION STRING(*)
 
       DO IFSYM = 1,NFSYM
-        CALL DFILL(STRING(1+NESH(1)*(IFSYM-1)),D0,NESH(IFSYM))
+        CALL DCOPY(NESH(IFSYM),D0,0,STRING(1+NESH(1)*(IFSYM-1)),1)
         IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
 
           IF(ORBITAL_STRING(IFSYM)(4:5) .EQ. '..') THEN
@@ -1195,7 +1195,7 @@ C=======================================================================
           ENDDO
 
         ELSE
-          CALL DFILL(STRING(1+NESH(1)*(IFSYM-1)),D1,NISH(IFSYM))
+          CALL DCOPY(NISH(IFSYM),D1,0,STRING(1+NESH(1)*(IFSYM-1)),1)
         ENDIF
       ENDDO
 
