@@ -38,19 +38,67 @@ module aoresponse_xc_m
 
 contains
 
-  subroutine xc_contribution(order, D_0, D, XC)
+  subroutine xc_contribution(e, order, D_0, D_1, F_1, F_2)
 
+    real(kind_dp)    :: e(*)
     integer          :: order
-    type(matrix)     :: D_0, D(:), XC(:)
+    type(matrix)     :: D_0, D_1(:), F_1(:), F_2(:)
 !   ----------------------------------------------------------------------------
     type(dft_grid_t) :: grid
+    type(gao_data_t) :: gao_data
+    integer          :: i, j, k, ij, ijk
 
+    D_0 = 4.0d0*D_0
+
+    do i = 1, size(D_1)
+      D_1(i) = 4.0d0*D_1(i)
+    end do
+    do i = 1, size(F_2)
+      F_2(i) = 1.0d-100*D_0
+    end do
+
+    call get_grid(D_0, grid)
+
+    call init_gao_data(gao_data, 0)
+
+    call xc_contribution_backend(order, D_0, D_1, F_1, F_2, grid, gao_data)
+
+!   do i = 1, 3
+!     do j = 1, 3
+!       ij = i + (j-1)*3
+!       do k = 1, 3
+!         ijk = ij + (k-1)*9
+
+!         e(ijk) = e(ijk) - F_2(ij)**D_1(k)
+
+!         F_2(ij) = 0
+!       end do
+!     end do
+!   end do
+    e(27) = e(27) + 0.5d0*(F_2(1)**D_1(3))
+
+    D_0 = 0.25d0*D_0
+
+    do i = 1, size(D_1)
+      D_1(i) = 0.25d0*D_1(i)
+    end do
+
+    call del_gao_data(gao_data)
+
+  end subroutine
+
+  subroutine xc_contribution_backend(order, D_0, D_1, F_1, F_2, grid, gao_data)
+
+    integer          :: order
+    type(matrix)     :: D_0, D_1(:), F_1(:), F_2(:)
+    type(dft_grid_t) :: grid
+    type(gao_data_t) :: gao_data
+!   ----------------------------------------------------------------------------
     type(density_t)  :: n_0
     type(density_t)  :: n(100)
     type(density_t)  :: n_xc(100)
-
-    type(gao_data_t) :: gao_data
-    integer          :: i, ipoint
+    type(density_t)  :: n_xc_2(100)
+    integer          :: i, j, ipoint
     real(kind_dp)    :: vxc(100)
     real(kind_dp)    :: worth_it
     real(kind_dp)    :: dftenergy
@@ -58,23 +106,16 @@ contains
 
 #include "../dft/functionals.h"
 
-    D_0 = 4.0d0*D_0
-
-    do i = 1, size(D)
-      D(i) = 4.0d0*D(i)
-    end do
-
-    call get_grid(D_0, grid)
     call init_density(n_0, '1')
 
-    do i = 1, size(D)
+    do i = 1, size(D_1)
       call init_density(n(i),    '1')
       call init_density(n_xc(i), '1')
     end do
 
-    call init_gao_data(gao_data, 0)
-
-!   xc_energy = 0.0d0
+    do i = 1, size(F_2)
+      call init_density(n_xc_2(i), '1')
+    end do
 
     do ipoint = 1, grid%nr_points
 
@@ -87,14 +128,14 @@ contains
 
       if (n_0%scalar > 1.0d-9) then
 
-!       xc_energy = xc_energy + dftenergy(n_0%scalar, 0.0d0)*grid%w(ipoint)
+!       e(1) = e(1) + dftenergy(n_0%scalar, 0.0d0)*grid%w(ipoint)
 
 
 !       evaluate perturbed densities
 !       ============================
 
-        do i = 1, size(D)
-          call get_or_put_density(n(i), D(i), .true., gao_data)
+        do i = 1, size(D_1)
+          call get_or_put_density(n(i), D_1(i), .true., gao_data)
         end do
 
 
@@ -106,9 +147,9 @@ contains
         select case (order)
 
 !         energy
-          case (1)
+          case (0)
             call dftpot0(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
-            n_xc(1)%scalar = vxc(fr0)
+            n_xc(1)%scalar = vxc(fr0)*n(1)%scalar
 
 !         linear response
           case (2)
@@ -118,37 +159,50 @@ contains
 !         quadratic response
           case (3)
             call dftpot2(vxc, grid%w(ipoint), n_0%scalar, 0.0d0)
-            do i = 1, size(D)
-              n_xc(i)%scalar = vxc(frr)*n(i)%scalar
+            do i = 1, size(D_1)
+              n_xc(i)%scalar = 2.0d0*vxc(frr)*n(i)%scalar
             end do
-            n_xc(3)%scalar = n_xc(3)%scalar + vxc(frrr)*n(1)%scalar*n(2)%scalar
+!           n_xc_2(7)%scalar = 2.0d0*vxc(frrr)*n(1)%scalar*n(1)%scalar
+!           n_xc_2(8)%scalar = 2.0d0*vxc(frrr)*n(1)%scalar*n(2)%scalar
+!           n_xc_2(9)%scalar = 2.0d0*vxc(frrr)*n(1)%scalar*n(3)%scalar
+!           n_xc_2(4)%scalar = 2.0d0*vxc(frrr)*n(2)%scalar*n(1)%scalar
+!           n_xc_2(5)%scalar = 2.0d0*vxc(frrr)*n(2)%scalar*n(2)%scalar
+!           n_xc_2(6)%scalar = 2.0d0*vxc(frrr)*n(2)%scalar*n(3)%scalar
+!           n_xc_2(1)%scalar = 2.0d0*vxc(frrr)*n(3)%scalar*n(1)%scalar
+!           n_xc_2(2)%scalar = 2.0d0*vxc(frrr)*n(3)%scalar*n(2)%scalar
+            n_xc_2(1)%scalar =       vxc(frrr)*n(3)%scalar*n(3)%scalar
+
+        end select
+
+
+
+
+!           do j = 0, 2
+!             n_xc(1+j)%scalar = n_xc(1+j)%scalar + vxc(frrr)*n_xc(4+j)%scalar*n_xc(7+j)%scalar
+!           end do
 
 !         cubic response
 !         case (4)
 !         ...
 
-        end select
 
 
 !       fill matrices
 !       =============
 
-        do i = 1, size(D)
+        do i = 1, size(F_1)
           if (abs(n_xc(i)%scalar) > small) then
-            call get_or_put_density(n_xc(i), XC(i), .false., gao_data)
+            call get_or_put_density(n_xc(i), F_1(i), .false., gao_data)
           end if
         end do
+!       do i = 1, size(F_2)
+!         if (abs(n_xc_2(i)%scalar) > small) then
+            call get_or_put_density(n_xc_2(1), F_2(1), .false., gao_data)
+!         end if
+!       end do
 
       end if
     end do
-
-    D_0 = 0.25d0*D_0
-
-    do i = 1, size(D)
-      D(i) = 0.25d0*D(i)
-    end do
-
-    call del_gao_data(gao_data)
 
   end subroutine
 

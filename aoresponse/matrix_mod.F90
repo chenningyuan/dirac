@@ -363,8 +363,8 @@ contains
     real*8                   :: r
     integer                  :: i
 
-    if (.not. A%is_defined) call quit('r = A**B: A undefined')
-    if (.not. B%is_defined) call quit('r = A**B: B undefined')
+    if (.not. A%is_defined) call quit('r = dag(A)**B: A undefined')
+    if (.not. B%is_defined) call quit('r = dag(A)**B: B undefined')
 
     r = dag(A)**B
 

@@ -167,12 +167,7 @@ contains
 
     type(matrix)                :: W_b, W_c
 
-    type(matrix)                :: D_a, D_b, D_c, D_bc
-
-    type(matrix)                :: XC_b,  XC_b_mo,  XC_b_mo_1c,   XC_b_1c
-    type(matrix)                :: XC_c,  XC_c_mo,  XC_c_mo_1b,   XC_c_1b
-    type(matrix)                :: XC_bc
-    type(matrix)                :: XC
+    type(matrix)                :: F_ij(3, 3)
 
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
@@ -190,12 +185,11 @@ contains
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
 
-!   this is the DFT contribution E^3(D_i, D_j) D_k
-!   zeros filled in for 2nd and 3rd order D
-    e_ijk = 0.0d0
-!   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
+#ifdef debug_me
+!   radovan: please don't remove this
+!            this "MO way" of doing the XC contribution
+!            is useful for debugging the AO-based approach
 
-!#ifdef debug_me
     call get_C(C)
     call get_i_or_s_C(Ci, 'i')
     call get_i_or_s_C(Cs, 's')
@@ -230,10 +224,14 @@ contains
     write(*,*) 'XC contribution c     = ', -(D_a**XC_c_1b)
     write(*,*) 'XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
     write(*,*) 'XC contribution total = ', -(D_a**XC)
-!#endif
+#endif
 
+!   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
 
-
+    e_ijk = 0.0d0
+#ifdef debug_me
+    call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/), (/F_ij/))
+#endif
 
 !   Lagrange contribution -X_k (FDS - SDF) e_j
     do k = 1, 3
