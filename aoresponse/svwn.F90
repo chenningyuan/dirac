@@ -18,14 +18,19 @@ contains
   function slater_recursive(order, n, w) result(v)
 
 !          closed-shell arbitrary-order Slater functional derivative
+!          ============
 !
 !          w \frac{d^i}{dn^i} F(n) = slater_recursive(i, n, w)
 !
 !          note that for this functional:
+!
 !          \frac{d^2}{dn^2} F(n, s) = F_nn    = F_ss
 !          \frac{d^3}{dn^3} F(n, s) = F_nnn   = F_nss
 !          \frac{d^4}{dn^4} F(n, s) = F_nnnn  = F_nnss = F_ssss
 !          \frac{d^5}{dn^5} F(n, s) = F_nnnnn = ...
+!          ...
+!
+!          all derivatives with unpair number of "s" are zero
 
     integer,       intent(in) :: order
     real(kind_dp), intent(in) :: n, w
