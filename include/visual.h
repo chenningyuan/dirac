@@ -32,7 +32,7 @@ C
      &                IQ_XVECTOR(MAX_NR_XVECTORS),                      &
      &                IREP_XVECTOR(MAX_NR_XVECTORS),                    &
      &                IWHICH_XVECTOR(MAX_NR_XVECTORS),                  &
-     &                IOPTION_XVECTOR(MAX_NR_XVECTORS)
+     &                IOPTION_XVECTOR(MAX_NR_XVECTORS),IPRVIS
       COMMON /CBVISR/ ADD_3D, COMMON_FACTOR,                            &
      &                XYZ_LIST(MAX_NR_POINTS_IN_LIST,3),                &
      &                ORIGIN_2D(3), GAUGE_ORIGIN(3),                    &

@@ -35,35 +35,9 @@ C=======================================================================
 
       CALL MEMGET('REAL',KDMAT_MO,N2ORBXQ,WORK,KFREE,LFREE)
 
-      CALL DZERO(WORK(KDMAT_MO),N2ORBXQ)
-      K = 0
-      DO I = 1,NFSYM
-        IF(NISH(I) .GT. 0) THEN
-          DO J = 1,NESH(I)
-            K = K + 1
-            JOFF = (NORB(1)*(I-1) + NPSH(I))*NORBT
-            JOFF = JOFF + NORB(1)*(I-1) + NPSH(I)
-            JOFF = JOFF + (J-1)*NORBT + J - 1
-
-            WORK(KDMAT_MO+JOFF) = STRING(J+NESH(1)*(I-1))
-          ENDDO
-        ENDIF
-      ENDDO
-
-!     CALL DZERO(DMAT_AO,N2BBASXQ)
-!     DO I = 1,NFSYM
-!       CALL QTRANS('MOAO','S',D0,
-!    &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-!    &              DMAT_AO(1+I2BASX(I,I)),
-!    &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-!    &              WORK(KDMAT_MO+I2ORBX(I,I)),
-!    &              NORBT,NORBT,1,IPQTOQ(1,0),
-!    &              CMO(1+ICMOQ(I)),
-!    &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-!    &              CMO(1+ICMOQ(I)),
-!    &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-!    &              WORK(KFREE),LFREE,0)
-!     ENDDO
+!     get MO density matrix
+     
+      CALL MODENS(WORK(KDMAT_MO),STRING,IPRVIS)
 
       JSYMOP = 1
       IREPOP = 0
@@ -83,8 +57,6 @@ C=======================================================================
           CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
         ENDDO
       ENDIF
-
-!     CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
 
 !     release memory
 
@@ -209,7 +181,8 @@ C=======================================================================
       INQUIRE(FILE = XVECTOR_FILE(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'solution vector file not found'
+        WRITE(LUPRI,'(A,A6,A)') 'solution vector file ',
+     &    XVECTOR_FILE(IXVECTOR),' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17

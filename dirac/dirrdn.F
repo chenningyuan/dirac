@@ -2872,6 +2872,8 @@ C
      &     '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
      &     '* Projection onto another solution '
+      IF(DO_VISUAL) WRITE(LUPRI,'(1X,A)')
+     &     '* Visualization'
       IF(DO3RHO) WRITE(LUPRI,'(1X,A)')
      &    '* Write out density for visualization (Gaussian cube format)'
       IF(DO1RHO) WRITE(LUPRI,'(1X,A)')

@@ -29,7 +29,7 @@ C=======================================================================
 !                   1         2         3         4
       DATA TABLE /'.LIST  ','.2D    ','.3D    ','.QUANTI',
 !                   5         6         7         8
-     &            '.XXXXXX','.XXXXXX','.ORBSTR','.INTEGR',
+     &            '.PRINT ','.XXXXXX','.ORBSTR','.INTEGR',
 !                   9        10        11        12
      &            '.3DADD ','.CUBE  ','.COMMON','.XXXXXX',
 !                  13        14        15        16
@@ -97,6 +97,7 @@ C=======================================================================
       ENDDO
 
       NR_XVECTORS = 0
+      IPRVIS = 0
 
       ORIENTATION(1) = 'xy'
       ORIENTATION(2) = 'xz'
@@ -162,6 +163,7 @@ C=======================================================================
           GOTO 100
 
     5     CONTINUE
+          READ(LUCMD,*) IPRVIS
     6     CONTINUE
           GOTO 100
 
@@ -266,7 +268,10 @@ C=======================================================================
         ENDIF
       ENDIF
   300 CONTINUE
-
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'VISUALIZATION module:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A,I3)') '* Print level: ',IPRVIS
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -311,7 +316,7 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
 !     CALL MEMGET('REAL',KSMAT     ,N2BBASX,
 !    &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING   ,NESH(1) + NESH(2),
+      CALL MEMGET('REAL',KSTRING   ,NESHT,
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO      ,NTBAS(0),
      &            WORK,KFREE,LFREE)

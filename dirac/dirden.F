@@ -788,3 +788,37 @@ C
       CALL FLSHFO(LUPRI)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck modens */
+      SUBROUTINE MODENS(DMO,OCC,IPRINT)
+C***********************************************************************
+C
+C     Construct density matrix in MO-basis (first version)
+C
+C     Written by Trond Saue Aug 11 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION DMAT(NORBT,NORBT,NZ),OCC(NESHT)
+      CALL DZERO(DMAT,N2ORBXQ)
+      IOFF = 0
+      JOFF = 0
+      DO IFRP = 1,NFSYM
+        IOFF = IOFF + NPSH(IFRP)
+        IF(NISH(IFRP) .GT. 0) THEN
+          DO J = 1,NESH(IFRP)
+            DMAT(IOFF+J,IOFF+J,1) = OCC(JOFF+J)
+          ENDDO
+        ENDIF
+        IOFF = IOFF + NESH(IFRP)
+        JOFF = JOFF + NESH(IFRP)
+      ENDDO
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') '* MO density matrix:'
+        CALL OUTPUT(DMAT,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+      ENDIF
+      RETURN
+      END
