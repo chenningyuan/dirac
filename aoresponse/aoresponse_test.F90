@@ -190,40 +190,40 @@ contains
 !            this "MO way" of doing the XC contribution
 !            is useful for debugging the AO-based approach
 
-    call get_C(C)
-    call get_i_or_s_C(Ci, 'i')
-    call get_i_or_s_C(Cs, 's')
+!   call get_C(C)
+!   call get_i_or_s_C(Ci, 'i')
+!   call get_i_or_s_C(Cs, 's')
 
-    D_a = 1.0d0*D_i(3)
-    D_b = 1.0d0*D_j(3)
-    D_c = 1.0d0*D_k(3)
+!   D_a = 1.0d0*D_i(3)
+!   D_b = 1.0d0*D_j(3)
+!   D_c = 1.0d0*D_k(3)
 
-    W_b = 0.5d0*(dag(Ci)*S*D_b*S*Cs - dag(Cs)*S*D_b*S*Ci)
-    W_c = 0.5d0*(dag(Ci)*S*D_c*S*Cs - dag(Cs)*S*D_c*S*Ci)
+!   W_b = 0.5d0*(dag(Ci)*S*D_b*S*Cs - dag(Cs)*S*D_b*S*Ci)
+!   W_c = 0.5d0*(dag(Ci)*S*D_c*S*Cs - dag(Cs)*S*D_c*S*Ci)
 
-    D_bc = 0.5d0*(Ci*W_b*W_c*dag(Ci) + Ci*W_c*W_b*dag(Ci) - Cs*W_c*W_b*dag(Cs) - Cs*W_b*W_c*dag(Cs))
+!   D_bc = 0.5d0*(Ci*W_b*W_c*dag(Ci) + Ci*W_c*W_b*dag(Ci) - Cs*W_c*W_b*dag(Cs) - Cs*W_b*W_c*dag(Cs))
 
-    XC_b  = 1.0d-100*D_b
-    XC_c  = 1.0d-100*D_c
-    XC_bc = 1.0d-100*D_bc
+!   XC_b  = 1.0d-100*D_b
+!   XC_c  = 1.0d-100*D_c
+!   XC_bc = 1.0d-100*D_bc
 
-    call xc_contribution(3, D, (/D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/))
+!   call xc_contribution(3, D, (/D_b, D_c, D_bc/), (/XC_b, XC_c, XC_bc/))
 
-    XC_b_mo = dag(C)*XC_b*C
-    XC_c_mo = dag(C)*XC_c*C
+!   XC_b_mo = dag(C)*XC_b*C
+!   XC_c_mo = dag(C)*XC_c*C
 
-    XC_b_mo_1c = W_c*XC_b_mo - XC_b_mo*W_c
-    XC_c_mo_1b = W_b*XC_c_mo - XC_c_mo*W_b
+!   XC_b_mo_1c = W_c*XC_b_mo - XC_b_mo*W_c
+!   XC_c_mo_1b = W_b*XC_c_mo - XC_c_mo*W_b
 
-    XC_b_1c = 0.5d0*(S*C*XC_b_mo_1c*dag(C)*S)
-    XC_c_1b = 0.5d0*(S*C*XC_c_mo_1b*dag(C)*S)
+!   XC_b_1c = 0.5d0*(S*C*XC_b_mo_1c*dag(C)*S)
+!   XC_c_1b = 0.5d0*(S*C*XC_c_mo_1b*dag(C)*S)
 
-    XC = XC_b_1c + XC_c_1b + 2.0d0*XC_bc
+!   XC = XC_b_1c + XC_c_1b + 2.0d0*XC_bc
 
-    write(*,*) 'XC contribution b     = ', -(D_a**XC_b_1c)
-    write(*,*) 'XC contribution c     = ', -(D_a**XC_c_1b)
-    write(*,*) 'XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
-    write(*,*) 'XC contribution total = ', -(D_a**XC)
+!   write(*,*) 'XC contribution b     = ', -(D_a**XC_b_1c)
+!   write(*,*) 'XC contribution c     = ', -(D_a**XC_c_1b)
+!   write(*,*) 'XC contribution bc    = ', -2.0d0*(D_a**XC_bc)
+!   write(*,*) 'XC contribution total = ', -(D_a**XC)
 #endif
 
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))

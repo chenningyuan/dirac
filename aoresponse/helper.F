@@ -25,8 +25,6 @@
       dimension        response_vector(length, nz)
       dimension        matrix(norbt, norbt, nz)
 
-
-
       do x = 1, length
 
         i = orbital_rotation_vector(1, x)
@@ -200,7 +198,6 @@
       character(1)       :: prompt
       character(7)       :: word, word_save
       character(7)       :: table(ntable)
-
 
 !                   1         2         3         4
       data table /'.SKIPEE','.SKIPEP','.THRESH','.ALPHA ',
