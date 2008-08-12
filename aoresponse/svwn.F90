@@ -17,17 +17,15 @@ contains
 
   function slater_recursive(order, n, w) result(v)
 
-!          closed-shell arbitrary-order slater functional derivative
+!          closed-shell arbitrary-order Slater functional derivative
 !
-!          w*exc_n(n)    = slater_recursive(1, n, w)
-!          w*exc_nn(n)   = slater_recursive(2, n, w)
-!          w*exc_nnn(n)  = slater_recursive(3, n, w)
-!          w*exc_nnnn(n) = ...
+!          w \frac{d^i}{dn^i} F(n) = slater_recursive(i, n, w)
 !
-!          note that for this functional: exc_nn    = exc_ss
-!                                         exc_nnn   = exc_nss
-!                                         exc_nnnn  = exc_nnss = exc_ssss
-!                                         exc_nnnnn = ...
+!          note that for this functional:
+!          \frac{d^2}{dn^2} F(n, s) = F_nn    = F_ss
+!          \frac{d^3}{dn^3} F(n, s) = F_nnn   = F_nss
+!          \frac{d^4}{dn^4} F(n, s) = F_nnnn  = F_nnss = F_ssss
+!          \frac{d^5}{dn^5} F(n, s) = F_nnnnn = ...
 
     integer,       intent(in) :: order
     real(kind_dp), intent(in) :: n, w
