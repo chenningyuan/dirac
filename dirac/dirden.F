@@ -790,7 +790,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck modens */
-      SUBROUTINE MODENS(DMO,OCC,IPRINT)
+      SUBROUTINE MODENS(DMAT,OCC,IPRINT)
 C***********************************************************************
 C
 C     Construct density matrix in MO-basis (first version)
