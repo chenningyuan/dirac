@@ -113,8 +113,9 @@ contains
     type(matrix), intent(inout) :: S, D, F
     real(kind_dp)               :: w(3)
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3)
+    type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3), D_k(3), F_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_ij(3, 3)
+    type(matrix)                :: X_i(3), X_j(3), X_ij(3, 3), A, L_k(3), Y_k(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
@@ -126,10 +127,45 @@ contains
 
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
     call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(2:2))
+
+    e_ijk = 0.0d0
+
+    
+
+    do k = 1, 3
+      X_i(k) = 1.0d-100*F
+      X_j(k) = 1.0d-100*F
+    end do
+    call xc_contribution(e_ijk, 3, D, (/D_i, D_j/), (/X_i, X_j/), (/F_ij/))
+!   Lagrange contribution -Y_k (FDS - SDF) e_j
+    do k = 1, 3
+      Y_k(k) = D_k(k)*S*D - D*S*D_k(k)
+    end do
+
+    do i = 1, 3
+      do j = 1, 3
+
+        A = (X_j(j)*D_i(i) + X_i(i)*D_j(j))*S - S*(D_i(i)*X_j(j) + D_j(j)*X_i(i))
+
+        do k = 1, 3
+          e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*trab(Y_k(k), A)
+        end do
+
+        A = 0
+
+      end do
+    end do
+
+    do k = 1, 3
+      F_i(k) = F_i(k) + X_i(k)
+      F_j(k) = F_j(k) + X_j(k)
+    end do
+
+
 
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-    e_ijk = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
 
     print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
@@ -229,9 +265,9 @@ contains
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
 
     e_ijk = 0.0d0
-#ifdef debug_me
+!#ifdef debug_me
     call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/), (/F_ij/))
-#endif
+!#endif
 
 !   Lagrange contribution -X_k (FDS - SDF) e_j
     do k = 1, 3
