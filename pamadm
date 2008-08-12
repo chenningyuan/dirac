@@ -887,6 +887,7 @@ aoresponse/matrix_mod.o \\
 aoresponse/dirac_interface.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
+aoresponse/svwn.o \\
 aoresponse/aoresponse_test.o \\
 aoresponse/helper.o \\
 aoresponse/aoresponse_xc.o \\

@@ -8,6 +8,7 @@ F90_OBJS = aoresponse_input.o \
            dirac_interface.o \
            propint.o \
            pertdens.o \
+           svwn.o \
            aoresponse_xc.o \
            aoresponse_test.o \
            aoresponse_main.o
@@ -18,6 +19,7 @@ F90_MODS = aoresponse_input_m.mod \
            dirac_interface_m.mod \
            propint.mod \
            pertdens.mod \
+           svwn_m.mod \
            aoresponse_xc_m.mod \
            aoresponse_test_m.mod \
            aoresponse_main_m.mod
