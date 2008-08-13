@@ -139,17 +139,35 @@ contains
     end do
     call xc_contribution(e_ijk, 3, D, (/D_i, D_j/), (/X_i, X_j/), (/F_ij/))
 !   Lagrange contribution -Y_k (FDS - SDF) e_j
+!   do k = 1, 3
+!     Y_k(k) = D_k(k)*S*D - D*S*D_k(k)
+!   end do
+
+!   do i = 1, 3
+!     do j = 1, 3
+
+!       A = (X_j(j)*D_i(i) + X_i(i)*D_j(j))*S - S*(D_i(i)*X_j(j) + D_j(j)*X_i(i))
+
+!       do k = 1, 3
+!         e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*trab(Y_k(k), A)
+!       end do
+
+!       A = 0
+
+!     end do
+!   end do
+!   Lagrange contribution -L_k (DSD - D) e_j
     do k = 1, 3
-      Y_k(k) = D_k(k)*S*D - D*S*D_k(k)
+      Y_k(k) = X_i(k)*D*S + S*D*X_i(k) - X_i(k)
     end do
 
     do i = 1, 3
       do j = 1, 3
 
-        A = (X_j(j)*D_i(i) + X_i(i)*D_j(j))*S - S*(D_i(i)*X_j(j) + D_j(j)*X_i(i))
+        A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
 
         do k = 1, 3
-          e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*trab(Y_k(k), A)
+          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(Y_k(k), A)
         end do
 
         A = 0
@@ -199,14 +217,11 @@ contains
 !   ----------------------------------------------------------------------------
     type(matrix)                :: A
 
-    type(matrix)                :: C, Ci, Cs
-
-    type(matrix)                :: W_b, W_c
-
     type(matrix)                :: F_ij(3, 3)
 
     type(matrix)                :: D_i(3), D_j(3), D_k(3), X_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3), L_k(3)
+    type(matrix)                :: XC_i(3), XC_j(3), XC_k(3)
     real(kind_dp)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
     character(4)                :: nop(0)
@@ -265,9 +280,19 @@ contains
 !   call propenergy(nop, (/D, D_i, D_j, D_k, (0.0d0*D, i=1,3*3+3*3+3*3+3*3*3)/), e_ijk, b=(/3, 3, 3/))
 
     e_ijk = 0.0d0
+    do i = 1, 3
+      XC_i(i) = 1.0d-100*F_i(i)
+      XC_j(i) = 1.0d-100*F_j(i)
+      XC_k(i) = 1.0d-100*F_k(i)
+    end do
 !#ifdef debug_me
-    call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/), (/F_ij/))
+    call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/XC_i, XC_j, XC_k/), (/F_ij/))
 !#endif
+    do i = 1, 3
+      F_i(i) = XC_i(i) + F_i(i)
+      F_j(i) = XC_j(i) + F_j(i)
+      F_k(i) = XC_k(i) + F_k(i)
+    end do
 
 !   Lagrange contribution -X_k (FDS - SDF) e_j
     do k = 1, 3
@@ -279,7 +304,9 @@ contains
 
         A = (F_j(j)*D_i(i) + F_i(i)*D_j(j))*S - S*(D_i(i)*F_j(j) + D_j(j)*F_i(i))
 
+          write(*,*) 'blub------'
         do k = 1, 3
+          write(*,*) 'blub', k, X_k(k)%pg_sym,A%pg_sym
           e_ijk(i, j, k) = e_ijk(i, j, k) - trab(X_k(k), A)
         end do
 
@@ -298,7 +325,9 @@ contains
 
         A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
 
+          write(*,*) 'blub------'
         do k = 1, 3
+          write(*,*) 'blub', k, L_k(k)%pg_sym,A%pg_sym
           e_ijk(i, j, k) = e_ijk(i, j, k) - trab(L_k(k), A)
         end do
 
