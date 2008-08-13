@@ -31,6 +31,7 @@ contains
 !          ...
 !
 !          all derivatives with unpair number of "s" are zero
+!          (which is true for all LDA-type functionals at closed-shell reference)
 
     integer,       intent(in) :: order
     real(kind_dp), intent(in) :: n, w
@@ -47,15 +48,13 @@ contains
 
       if (order > 1) then
         do i = 2, order
-
            p = p*e
            e = e - 1.0d0
-
         end do
       end if
 
       f = p*g*na**e
-      v = w*f/2.0d0**(order-1)
+      v = w*f/(2.0d0**(order-1))
     else
       v = 0.0d0
     end if

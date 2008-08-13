@@ -37,14 +37,18 @@ module aoresponse_xc_m
     real(kind_dp) :: factor_xs
   end type
 
+  real(kind_dp), parameter :: n_0_threshold             = 1.0d-14
+  real(kind_dp), parameter :: xc_contribution_threshold = 1.0d-14
+
 contains
 
-  subroutine xc_contribution(e, order, D_0, D, F, F_2)
+  subroutine xc_contribution(e, order, D_0, D, F)
 
     real(kind_dp)    :: e(*)
     integer          :: order
-    type(matrix)     :: D_0, D(:), F(:), F_2(:)
+    type(matrix)     :: D_0, D(:), F(:)
 !   ----------------------------------------------------------------------------
+    type(matrix)     :: M(9) !fixme later, hardcoded for 2n+1 QR
     type(dft_grid_t) :: grid
     type(gao_data_t) :: gao_data
     integer          :: i, j, k, ij, ijk, iz, iq
@@ -52,15 +56,13 @@ contains
 #include "dgroup.h"
 
 
+!   scale matrices
+!   ==============
 
     D_0 = 4.0d0*D_0
-
     do i = 1, size(D)
       D(i) = 4.0d0*D(i)
     end do
-    do i = 1, size(F_2)
-      F_2(i) = 1.0d-100*D(1)
-    end do
 
 
 !   half-phase
@@ -78,59 +80,80 @@ contains
         end do
       end do
     end if
+
+
+!   allocate "mix" matrices
+!   =======================
+
+    if (order == 3) then
+      do i = 1, 3
+        do j = 1, 3
+          ij = i + (j-1)*3
+          M(ij) = 1.0d-100*D_0
+          M(ij)%pg_sym = 1 + ieor(D(i)%pg_sym - 1, D(j+3)%pg_sym - 1)
+        end do
+      end do
+    end if
+
+
+!   integrate
+!   =========
 
     call get_grid(D_0, grid)
-
     call init_gao_data(gao_data, 0)
-    do i = 1, 3
-      do j = 1, 3
-        ij = i + (j-1)*3
-        F_2(ij)%pg_sym = 1 + ieor(D(i)%pg_sym-1, D(j)%pg_sym-1)
-      end do
-    end do
+    call xc_contribution_backend(order, D_0, D, F, M, grid, gao_data)
+    call del_gao_data(gao_data)
 
-    call xc_contribution_backend(order, D_0, D, F, F_2, grid, gao_data)
 
-    do i = 1, 3
-      do j = 1, 3
-        ij = i + (j-1)*3
-        do k = 1, 3
-          ijk = ij + (k-1)*9
-!         e(ijk) = e(ijk) + 0.5d0*(F_2(ij)**D(6+k))
-        end do
-        F_2(ij) = 0
-      end do
-    end do
+!   get contribution from "mix" matrices and deallocate them
+!   ========================================================
 
-!   half-phase
-!   ==========
+    if (order == 3) then
+      do i = 1, 3
+        do j = 1, 3
+          ij = i + (j-1)*3
+          do k = 1, 3
+            ijk = ij + (k-1)*9
 
-    if (nz < 4) then
-      do iz = 1, nz
-        do i = 1, size(D)
-          iq = ipqtoq(iz, D(i)%pg_sym - 1)
-          call q2bphase('D', iq, 1, D(i)%elms((iz-1)*D(i)%nrow*D(i)%ncol + 1))
-        end do
-        do i = 1, size(F)
-          iq = ipqtoq(iz, F(i)%pg_sym - 1)
-          call q2bphase('F', iq, 1, F(i)%elms((iz-1)*F(i)%nrow*F(i)%ncol + 1))
+            e(ijk) = e(ijk) + 0.5d0*(M(ij)**D(k+6))
+          end do
+          M(ij) = 0
         end do
       end do
     end if
-    D_0 = 0.25d0*D_0
 
+
+!   scale matrices
+!   ==============
+
+    D_0 = 0.25d0*D_0
     do i = 1, size(D)
       D(i) = 0.25d0*D(i)
     end do
 
-    call del_gao_data(gao_data)
+
+!   half-phase
+!   ==========
+
+    if (nz < 4) then
+      do iz = 1, nz
+        do i = 1, size(D)
+          iq = ipqtoq(iz, D(i)%pg_sym - 1)
+          call q2bphase('D', iq, 1, D(i)%elms((iz-1)*D(i)%nrow*D(i)%ncol + 1))
+        end do
+        do i = 1, size(F)
+          iq = ipqtoq(iz, F(i)%pg_sym - 1)
+          call q2bphase('F', iq, 1, F(i)%elms((iz-1)*F(i)%nrow*F(i)%ncol + 1))
+        end do
+      end do
+    end if
 
   end subroutine
 
-  subroutine xc_contribution_backend(order, D_0, D, F, F_2, grid, gao_data)
+  subroutine xc_contribution_backend(order, D_0, D, F, M, grid, gao_data)
 
     integer          :: order
-    type(matrix)     :: D_0, D(:), F(:), F_2(:)
+    type(matrix)     :: D_0, D(:), F(:), M(:)
     type(dft_grid_t) :: grid
     type(gao_data_t) :: gao_data
 !   ----------------------------------------------------------------------------
@@ -142,7 +165,6 @@ contains
     real(kind_dp)    :: derivative
     real(kind_dp)    :: worth_it
     real(kind_dp)    :: dftenergy
-    real(kind_dp)    :: small = 1.0d-9
 
     call init_density(n_0, '1')
 
@@ -151,7 +173,7 @@ contains
       call init_density(n_xc(i), '1')
     end do
 
-    do i = 1, size(F_2)
+    do i = 1, size(M)
       call init_density(n_xc_2(i), '1')
     end do
 
@@ -164,7 +186,7 @@ contains
 
       call get_or_put_density(n_0, D_0, .true., gao_data)
 
-      if (n_0%scalar > 1.0d-9) then
+      if (n_0%scalar > n_0_threshold) then
 
 !       e(1) = e(1) + dftenergy(n_0%scalar, 0.0d0)*grid%w(ipoint)
 
@@ -185,15 +207,15 @@ contains
 
         if (order > 2) then
           derivative       = slater_recursive(order, n_0%scalar, grid%w(ipoint))
-          n_xc_2(1)%scalar = derivative*n(1)%scalar*n(1)%scalar
-          n_xc_2(2)%scalar = derivative*n(1)%scalar*n(2)%scalar
-          n_xc_2(3)%scalar = derivative*n(1)%scalar*n(3)%scalar
-          n_xc_2(4)%scalar = derivative*n(2)%scalar*n(1)%scalar
-          n_xc_2(5)%scalar = derivative*n(2)%scalar*n(2)%scalar
-          n_xc_2(6)%scalar = derivative*n(2)%scalar*n(3)%scalar
-          n_xc_2(7)%scalar = derivative*n(3)%scalar*n(1)%scalar
-          n_xc_2(8)%scalar = derivative*n(3)%scalar*n(2)%scalar
-          n_xc_2(9)%scalar = derivative*n(3)%scalar*n(3)%scalar
+          n_xc_2(1)%scalar = derivative*n(1)%scalar*n(4)%scalar
+          n_xc_2(2)%scalar = derivative*n(1)%scalar*n(5)%scalar
+          n_xc_2(3)%scalar = derivative*n(1)%scalar*n(6)%scalar
+          n_xc_2(4)%scalar = derivative*n(2)%scalar*n(4)%scalar
+          n_xc_2(5)%scalar = derivative*n(2)%scalar*n(5)%scalar
+          n_xc_2(6)%scalar = derivative*n(2)%scalar*n(6)%scalar
+          n_xc_2(7)%scalar = derivative*n(3)%scalar*n(4)%scalar
+          n_xc_2(8)%scalar = derivative*n(3)%scalar*n(5)%scalar
+          n_xc_2(9)%scalar = derivative*n(3)%scalar*n(6)%scalar
 
           derivative       = slater_recursive(order-1, n_0%scalar, grid%w(ipoint))
           do i = 1, size(D)
@@ -206,16 +228,15 @@ contains
 !       =============
 
         do i = 1, size(F)
-          if (abs(n_xc(i)%scalar) > small) then
+          if (abs(n_xc(i)%scalar) > xc_contribution_threshold) then
             call get_or_put_density(n_xc(i), F(i), .false., gao_data)
           end if
         end do
-        do i = 1, size(F_2)
-          if (abs(n_xc_2(i)%scalar) > small) then
-            call get_or_put_density(n_xc_2(i), F_2(i), .false., gao_data)
+        do i = 1, size(M)
+          if (abs(n_xc_2(i)%scalar) > xc_contribution_threshold) then
+            call get_or_put_density(n_xc_2(i), M(i), .false., gao_data)
           end if
         end do
-
       end if
     end do
 
