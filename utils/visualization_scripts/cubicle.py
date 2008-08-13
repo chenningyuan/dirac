@@ -2,10 +2,10 @@
 #
 # utility to add/subtract cube files (radovan bast - 31 aug 2007)
 #
-# examples: ./cubicle.py -1 cube1 -f 0.5 -2 cube2 > new_cube
+# examples: ./add_subtract_3d.py -1 cube1 -f 0.5 -2 cube2 > new_cube
 #           here new_cube = cube1 + 0.5*cube2
 #
-#           ./cubicle.py -1 cube1 -f "-1.0" -2 cube2 > new_cube
+#           ./add_subtract_3d.py -1 cube1 -f "-1.0" -2 cube2 > new_cube
 #           with a negative factor f it is possible to subtract cube files
 #
 # it assumes that the cube files have same dimensions, nr. of atoms, and so on
