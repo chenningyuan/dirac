@@ -1884,6 +1884,8 @@ C
 C     Determine center of mass from information in common blocks
 C     K.Ruud, june-94
 C
+C     radovan: AMASS is not used !?
+C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1899,8 +1901,8 @@ C
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               NATTYP(JATOM + 1) = NINT(CHARGE(IATOM))
-               IF (NATTYP(JATOM + 1) .NE. 0) THEN
+               IF (NINT(CHARGE(IATOM)) .NE. 0) THEN
+                  NATTYP(JATOM + 1) = NINT(CHARGE(IATOM))
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
      &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
