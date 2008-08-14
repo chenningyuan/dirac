@@ -14,9 +14,14 @@ module GMSMod
    use OrbMod
    implicit none
    integer :: NAO, NSO, NFRZV
+
+  ! integer :: NVMO ! mi: added - in Parameters
    double precision :: TotEn, NucEn, TrfTol
+
    integer :: NTMO_GMS, NCMO_GMS, NVMO_GMS, NEMO_GMS, NHOLE_GMS, NPTCL_GMS
+
    integer :: IUNIQ, LABELSIZE, NINTMX
+
    double precision, allocatable :: XXPREAD(:)
    integer, allocatable :: IXPREAD(:)
 
@@ -26,17 +31,13 @@ contains
 subroutine InitGMSMod
 !---------------------------------------------------------------------------
 !
-! Initialize Gamess stuff 
+!  Initialize Gamess stuff 
 !
-! Called source/inihsbase.F90 - InitHSMRBase if not in the DIRAC mode
+! Called from InitHSMRBase (source/inihsbase.F90) - if not in the DIRAC mode
 !
 !---------------------------------------------------------------------------
 
    implicit none
-   integer j1, j2, j3, j4, j5, j6, j7, j8, j9
-   double precision :: d1, d2, d3
-   logical :: errflag, existMR1,existMR2
-   integer NXX, IXX
 
    ! ... Obtain information for Variables of GMSMod       ...
    ! ... There are two ways to obtain this info           ...
@@ -48,11 +49,242 @@ subroutine InitGMSMod
      Call Header('Output from InitGMSMod routine',-1)
    endif
 
-   if (OPTION(GENINT)) then
+   if (.not.OPTION(DIRACp)) then
+     ! ... read GMS based files
+     call InitReadGMS
+   else
+     call  InitReadDIRAC
+   endif
 
+
+!  ... final print-out of what has been read
+   if (get_iprint() >=8) then
+    write(UOUT,'(/,2x,a,/)') '=====  InitGMSMod: obtained variables ====='
+    write(UOUT,'(8x,a,i4)')     '   NAO=',NAO
+    write(UOUT,'(8x,a,i4)')     '   NSO=',NSO
+    write(UOUT,'(8x,a,i4)')     '  NCMO=',NCMO
+    write(UOUT,'(8x,a,i4)')     '  NEMO=',NEMO
+    write(UOUT,'(8x,a,i4)')     ' NHOLE=',NHOLE
+    write(UOUT,'(8x,a,i4)')     ' NPTCL=',NPTCL
+    write(UOUT,'(8x,a,f18.13)') ' TotEn=',TotEn
+    write(UOUT,'(8x,a,f18.13)') ' NucEn=',NucEn
+    write(UOUT,'(8x,a,f18.13)') 'TrfTol=',TrfTol
+   endif
+
+   return
+end subroutine InitGMSMod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine EndGMSMod
+!--------------------------------------------------------------------
+!
+! Deallocate all allocated arrays.
+!
+! Called from : sr. EndHSMR - source/endhsmr.F90
+!
+! TODO: include status checking of deallocations
+!
+!--------------------------------------------------------------------
+   implicit none
+
+   if (allocated(SpinOfOrb))     deallocate(SpinOfOrb)
+   if (allocated(SpinOfActvOrb)) deallocate(SpinOfOrb)
+   if (allocated(OccGMSRef))     deallocate(OccGMSRef)
+   if (allocated(OccRef))        deallocate(OccRef)
+   if (allocated(IrrepOrb ))     deallocate(IrrepOrb )
+   if (allocated(IrpLabOrb ))    deallocate(IrpLabOrb)
+   if (allocated(OrbType))       deallocate(OrbType)
+   if (allocated(OrbSpace))      deallocate(OrbSpace)
+   if (allocated(OrbEnergy))     deallocate(OrbEnergy)
+   if (allocated(OrbCoeff))      deallocate(OrbCoeff)
+   if (allocated(HCoreMatrix))   deallocate(HCoreMatrix)
+
+   if (allocated(XXPREAD)) deallocate(XXPREAD)
+   if (allocated(IXPREAD)) deallocate(IXPREAD)
+
+   if (get_iprint() >=8) then
+      write(UOUT,'(/,2x,a)') 'EndGMSMod: data deallocated'
+   endif
+
+   return
+
+end subroutine EndGMSMod
+
+
+!> allocate 1-electron data
+subroutine alloc_bunch
+  implicit none
+
+!  ... needs NSO, NVMO, NAO
+
+  if (get_iprint() >=7) then
+   write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
+   write(UOUT,'(2x,a,3i4)') 'used variables - NSO,NVMO,NAO:', NSO,NVMO,NAO
+   call flushout
+  endif
+
+  if (NSO <=0 .or. NVMO <=0 .or. NAO <=0) then
+    call quit('alloc_bunch: wrong sizef for allocation !')
+  endif
+
+      if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
+      if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
+      if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
+      if (.not.allocated(OccRef))        allocate(OccRef(NSO))
+      if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
+      if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
+      if (.not.allocated(OrbType))       allocate(OrbType(NSO))
+      if (.not.allocated(OrbSpace))      allocate(OrbSpace(NSO))
+      if (.not.allocated(OrbEnergy))     allocate(OrbEnergy(NSO))
+      if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
+      if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
+
+  if (get_iprint() >=7) then
+    write(UOUT,'(2x,a,/)') 'alloc_bunch: SpinOfOrb, SpinOfActvOrb and other data allocated...'
+    call flushout
+  endif
+
+end subroutine alloc_bunch
+
+
+!>  read GMS stuff
+subroutine InitReadGMS
+
+   implicit none
+   integer NXX, IXX
+
+   if (OPTION(GENINT)) then
+     call InitReadMREINT
+   else
+     call InitReadVINF
+   endif
+
+   ! ... allocate gamess integral buffers
+
+   ! ... set up size for gamess integral labels
+   NXX = NINTMX
+   IF (LABELSIZE.EQ.1) THEN
+      IF(INTSFP.EQ.2) IXX = NXX
+      IF(INTSFP.EQ.1) IXX = (NXX+1)/2
+   ELSE IF (LABELSIZE.EQ.2) THEN
+      IF(INTSFP.EQ.2) IXX = NXX*2
+      IF(INTSFP.EQ.1) IXX = NXX
+   ENDIF
+
+   ! ... double precision array for Gamess integrals ...
+   if (.not.allocated(XXPREAD)) allocate(XXPREAD(NXX))
+
+   ! ... integer array for Gamess integral labels ...
+   if (.not.allocated(IXPREAD)) allocate(IXPREAD(IXX))
+
+   !             ... control print-out ... 
+   write(UOUT,'(/,a,/,a,i2,a,i2,/,2(a,i7))')    &
+   '----------------------------------------------------------------------------',    &
+   'InitReadGMS: read LABELSIZE=',LABELSIZE,'; set INTSFP (parameters.F90) ',INTSFP,   & 
+   '...read NXX=',NXX,' and set IXX=',IXX
+#if defined (ARCH32BIT) 
+   write(UOUT,'(a)') '...we are on the 32-bit architecture '
+#else
+   write(UOUT,'(a)') '...we are on the 64-bit architecture '
+#endif
+   write(UOUT,'(a)')  &
+   '-----------------------------------------------------------------------------'
+
+end subroutine  InitReadGMS
+
+!> read DIRAC file with data
+subroutine InitReadDIRAC
+
+
+ call quit('..in InitReadDIRAC')
+
+end subroutine  InitReadDIRAC
+
+
+!> read existing VINF file (when restarting)
+subroutine InitReadVINF
+
+implicit none
+
+      if (get_iprint() >=7) then
+       write(UOUT,*) 'InitReadVINF: going to read FileVINF file...'
+      endif
+
+      !******************************************************
+      ! ... Read the information from FileVINF ...
+      ! ... This has been already opened       ...
+      !******************************************************
+
+      rewind(UVINF)
+
+      read(UVINF)
+      read(UVINF)
+      read(UVINF)
+      read(UVINF)
+
+      read(UVINF) point_group, naxis, norder, numirrep, irrep_product, &
+                  totally_symmetric_irrep, irrep_label
+      read(UVINF)
+
+      read(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
+
+      ! ... Check for Validity of Data ...
+
+      if ((NAO <= 0).or.(NSO <= 0).or.(NFRZV < 0).or.(NSO > 2*(NAO - NFRZV)))then
+         write(UOUT,*) 'Invalid Data in File UVINF'
+         call flushout
+         call quit(': Invalid Data in File UVINF !')
+      endif
+
+      if (((IUNIQ.NE.0).and.(IUNIQ.NE.1)).or.              &
+          ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
+           (NINTMX.LE.0)) then
+         write(UOUT,*) ' IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
+         write(UOUT,*) 'Invalid Data in File UVINF, 2! '
+         call flushout
+         call Quit(': Invalid Data in File UVINF 2 !')
+      endif
+
+      if (NTMO /= NSO) then
+         write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
+         write(UOUT,*) 'Current NTMO is not valid for integral file'
+         call flushout
+         call Quit(': Current NTMO is not valid for integral file')
+      endif
+
+      ! ... Allocate for next read ...
+      call alloc_bunch
+
+      ! ... Read Orbital Energies and MO Coeffeints ...
+
+      read(UVINF) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, &
+                  OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
+
+      SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
+
+      OccRef = OccGMSRef
+
+      ! ... Set other variables in GMSMod
+
+end subroutine InitReadVINF
+
+
+!> read data from GAMESS integral files 
+subroutine InitReadMREINT
+
+   implicit none
+
+   integer j1, j2, j3, j4, j5, j6, j7, j8, j9
+   double precision :: d1, d2, d3
+   logical :: errflag, existMR1,existMR2
+  ! integer NXX, IXX
+
+      ! ...****************************************************************...
       ! ... Open & Read Information Present in FileMR1EINT and FileMR2EINT ...
+      ! ...****************************************************************...
       ! ...                                                                ...
       ! ... FileMR1EINT contains following information                     ...
+      ! ... ---------------------------------------------------------------...
       ! ... Record #1 : NAO, NSO, NFRZV, TotEn, NucEn, TrfTol,             ...
       ! ...             NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL               ...
       ! ... Record #2 : SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb          ...
@@ -60,21 +292,24 @@ subroutine InitGMSMod
       ! ... Record #3 : HCoreMatrix (1-e integrals)                        ...
       ! ...                                                                ...
       ! ... FileMR2EINT contains following information                     ...
+      ! ... ---------------------------------------------------------------...
       ! ... Record #1 : NAO, NSO, NFRZV, TotEn, NucEn, TrfTol,             ...
       ! ...             NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL               ...
       ! ... Record #2 : SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb          ...
       ! ...             OrbType, OrbSpace, OrbEnergy, OrbCoeff             ...
       ! ... Record #3 : IUNIQ, LABELSIZE, NINTMX                           ...
       ! ... Record #4 onwards anti-symmetric 2-e integrals                 ...
+      ! ...                                                                ...
 
-      if (get_iprint() >=8) then
-        write(UOUT,*) ' Going to open FileMR1EINT=',FileMR1EINT
-        write(UOUT,*) ' Going to open FileMR2EINT=',FileMR2EINT
+      if (get_iprint() >=7) then
+       write(UOUT,*) 'InitReadMRINT: going to read GAMESS integral files...'
+        write(UOUT,'(2x,a,a)') ' Going to open FileMR1EINT=',FileMR1EINT
+        write(UOUT,'(2x,a,a)') ' Going to open FileMR2EINT=',FileMR2EINT
       endif
 
+      ! ... check the presence ...
       inquire(file=FileMR1EINT, exist=existMR1)
       inquire(file=FileMR2EINT, exist=existMR2)
-
       if (.not.(existMR1.or.existMR2)) then
         call quit('Gamess integral file(s) not exist...')
       endif
@@ -83,7 +318,7 @@ subroutine InitGMSMod
       open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
 
       if (get_iprint() >=8) then
-        write(UOUT,*) 'files FileMR1EINT, FileMR2EINT are open'
+        write(UOUT,*) 'InitGMSMod: files FileMR1EINT, FileMR2EINT are open'
       endif
 
       rewind(UMR1EINT)
@@ -122,8 +357,9 @@ subroutine InitGMSMod
       if (errflag) then
          write(UOUT,*) 'Invalid Data in File UMR1EINT'
          write(UOUT,*) "file = ",FileMR1EINT
-         call flush(UOUT)
-         call abort
+         write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
+         call flushout
+         call quit('errflag....Invalid Data in File UMR1EINT')
       endif
 
       ! ... set the variables in module ...
@@ -154,19 +390,9 @@ subroutine InitGMSMod
 
       ! ... Allocate for next read ...
 
-      if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
-      if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
-      if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
-      if (.not.allocated(OccRef))        allocate(OccRef(NSO))
-      if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
-      if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
-      if (.not.allocated(OrbType))       allocate(OrbType(NSO))
-      if (.not.allocated(OrbSpace))      allocate(OrbSpace(NSO))
-      if (.not.allocated(OrbEnergy))     allocate(OrbEnergy(NSO))
-      if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
-      if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
+      call alloc_bunch
 
-      ! ... Read Second Record ...
+      ! ... Read next Record ...
 
       read(UMR1EINT)
       read(UMR2EINT) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb,   &
@@ -190,7 +416,7 @@ subroutine InitGMSMod
            (NINTMX.LE.0)) then
          write(UOUT,*) 'Invalid Data in File UMR2EINT'
          call flushout
-         call Quit('Invalid Data in File UMR2EINT')
+         call quit('Invalid Data in File UMR2EINT')
       endif
 
       ! ... close files ...
@@ -200,144 +426,6 @@ subroutine InitGMSMod
       ! read gamess symmetry info ...
       call read_gamess_syminf
 
-   else
-
-      ! ... Read the information from FileVINF ...
-      ! ... This has been already opened       ...
-
-      rewind(UVINF)
-
-      read(UVINF)
-      read(UVINF)
-      read(UVINF)
-      read(UVINF)
-
-      read(UVINF) point_group, naxis, norder, numirrep, irrep_product, &
-                  totally_symmetric_irrep, irrep_label
-      read(UVINF)
-
-      read(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
-
-      ! ... Check for Validity of Data ...
-
-      if ((NAO <= 0).or.(NSO <= 0).or.(NFRZV < 0).or.(NSO > 2*(NAO - NFRZV)))then
-         write(UOUT,*) 'Invalid Data in File UVINF'
-         !call flush(UOUT)
-         call flushout
-         !call abort
-         call Quit('InitGMSMod: Invalid Data in File UVINF !')
-      endif
-
-      if (((IUNIQ.NE.0).and.(IUNIQ.NE.1)).or.              &
-          ((LABELSIZE.NE.1).AND.(LABELSIZE.NE.2)).or.      &
-           (NINTMX.LE.0)) then
-         write(UOUT,*) ' IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
-         write(UOUT,*) 'Invalid Data in File UVINF, 2! '
-         !call flush(UOUT)
-         call flushout
-         !call abort
-         call Quit('InitGMSMod: Invalid Data in File UVINF 2 !')
-      endif
-
-      if (NTMO /= NSO) then
-         write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
-         write(UOUT,*) 'Current NTMO is not valid for integral file'
-         call flush(UOUT)
-         !call abort
-         call Quit('InitGMSMod: Current NTMO is not valid for integral file')
-      endif
-
-      ! ... Allocate for next read ...
-
-      if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
-      if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
-      if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
-      if (.not.allocated(OccRef))        allocate(OccRef(NSO))
-      if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
-      if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
-      if (.not.allocated(OrbType))       allocate(OrbType(NSO))
-      if (.not.allocated(OrbSpace))      allocate(OrbSpace(NSO))
-      if (.not.allocated(OrbEnergy))     allocate(OrbEnergy(NSO))
-      if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
-      if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
-
-      ! ... Read Orbital Energies and MO Coeffeints ...
-
-      read(UVINF) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, &
-                  OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
-      SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
-      OccRef = OccGMSRef
-      ! ... Set other variables in GMSMod
-   endif
-
-   ! ... allocate gamess integral buffers
-
-   ! ... set up size for gamess integral labels
-   NXX = NINTMX
-   IF (LABELSIZE.EQ.1) THEN
-      IF(INTSFP.EQ.2) IXX = NXX
-      IF(INTSFP.EQ.1) IXX = (NXX+1)/2
-   ELSE IF (LABELSIZE.EQ.2) THEN
-      IF(INTSFP.EQ.2) IXX = NXX*2
-      IF(INTSFP.EQ.1) IXX = NXX
-   ENDIF
-
-   ! ... double precision array for Gamess integrals ...
-   if (.not.allocated(XXPREAD)) allocate(XXPREAD(NXX))
-
-   ! ... integer array for Gamess integral labels ...
-   if (.not.allocated(IXPREAD)) allocate(IXPREAD(IXX))
-
-   !             ... control print-out ... 
-   write(UOUT,'(/,a,/,a,i2,a,i2,/,2(a,i7))')    &
-   '----------------------------------------------------------------------------',    &
-   'InitGMSMod: read LABELSIZE=',LABELSIZE,'; set INTSFP (parameters.F90) ',INTSFP,   & 
-   '...read NXX=',NXX,' and set IXX=',IXX
-#if defined (ARCH32BIT) 
-   write(UOUT,'(a)') '...we are on the 32-bit architecture '
-#else
-   write(UOUT,'(a)') '...we are on the 64-bit architecture '
-#endif
-   write(UOUT,'(a)')  &
-   '-----------------------------------------------------------------------------'
-
-   return
-
-end subroutine InitGMSMod
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine EndGMSMod
-!--------------------------------------------------------------------
-!
-!   Deallocate all allocated arrays.
-!
-! Called from : sr. EndHSMR - source/endhsmr.F90
-!
-! TODO: include status checking of deallocations
-!
-!--------------------------------------------------------------------
-
-   implicit none
-
-
-   if (allocated(SpinOfOrb))     deallocate(SpinOfOrb)
-   if (allocated(SpinOfActvOrb)) deallocate(SpinOfOrb)
-   if (allocated(OccGMSRef))     deallocate(OccGMSRef)
-   if (allocated(OccRef))        deallocate(OccRef)
-   if (allocated(IrrepOrb ))     deallocate(IrrepOrb )
-   if (allocated(IrpLabOrb ))    deallocate(IrpLabOrb)
-   if (allocated(OrbType))       deallocate(OrbType)
-   if (allocated(OrbSpace))      deallocate(OrbSpace)
-   if (allocated(OrbEnergy))     deallocate(OrbEnergy)
-   if (allocated(OrbCoeff))      deallocate(OrbCoeff)
-   if (allocated(HCoreMatrix))   deallocate(HCoreMatrix)
-
-   if (allocated(XXPREAD)) deallocate(XXPREAD)
-   if (allocated(IXPREAD)) deallocate(IXPREAD)
-
-
-   return
-
-end subroutine EndGMSMod
+end subroutine InitReadMREINT
 
 end module GMSMod

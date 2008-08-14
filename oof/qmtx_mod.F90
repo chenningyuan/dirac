@@ -51,11 +51,12 @@ end type
 !----------------------------------------------------------------------------------------------
 type QMtx
 private
-
+!public
 
 ! symm.distingiushed dimensions (1:NFSYM)
 !  integer (kind=4), dimension(2)  :: nr, nc
-  integer (kind=8/IRAT), dimension(2)  :: nr, nc
+ ! integer (kind=8/IRAT), dimension(2)  :: nr, nc
+  integer, dimension(2)  :: nr, nc
 !       ...  IREP and NZ
 !  integer (kind=4) :: irep,nz
 
@@ -591,6 +592,7 @@ type(QMtx),intent(inout) :: qm
 integer :: ifsym, ntr, ntc
 !integer (kind=8) :: ioff ! assumed bigg number 
 integer :: ioff ! assumed bigg number 
+real*8, dimension(:), pointer :: temp
 
 if (.not.qm%is_alloc) then
   call QUIT('AssignQmtxPointer: matrix(array) NOT allocated !')
@@ -610,9 +612,13 @@ if (qm%is_real) then
     endif
 
    ! call AssignQMtx3D_real(PW(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
-    call AssignQMtx3D_real(AccessWork(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
+    temp => AccessWork(qm%kstart)
+   ! call AssignQMtx3D_real(AccessWork(qm%kstart),iprint_qmtx,ntr,ntc,qm%nz)
+    call AssignQMtx3D_real(temp,iprint_qmtx,ntr,ntc,qm%nz)
 
     qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
+ !   qm%p_rA3D1 => Access3Dpointer(qm%kstart)
+
     if (.not.associated(qm%p_rA3D1)) then
       call QUIT('AssignQMtxArrayPointer: p_rA3D1 not associated !')
     endif
@@ -622,7 +628,10 @@ if (qm%is_real) then
    ioff = qm%kstart ! offset
    do ifsym = 1, NFSYM
     ! call AssignQMtx3D_real(PW(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
-     call AssignQMtx3D_real(AccessWork(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
+  ! ...does not work !!! needed another method to reach pointer !
+    temp => AccessWork(qm%kstart)
+   ! call AssignQMtx3D_real(AccessWork(ioff), iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
+    call AssignQMtx3D_real( temp, iprint_qmtx, qm%nr(ifsym), qm%nc(ifsym), qm%nz )
      if (ifsym == 1) then
        qm%p_rA3D1 => p3_real8;  p3_real8=> NULL()
      else if (ifsym == 2) then
@@ -974,22 +983,58 @@ end subroutine print_qmtx_attrib
 END MODULE QMatrixes
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine XXXAssignQMtx3D_real(w,iprint,n1,n2,nz)
+!---------------------------------------------------------------------
+!
+! Assign general pointer to the 3-dim. array - quaternion matrix
+!
+!---------------------------------------------------------------------
+!use GeneralPointers
+#include "priunit.h"
+!integer(kind=4), intent(in) :: iprint,n1,n2,nz
+integer, intent(in) :: iprint, n1, n2, nz
+!real(kind=8), target :: QMtx(n1,n2,nz)
+!real(kind=8), intent(inout) :: w(:)
+!real(kind=8), target, dimension(:), intent(inout) :: w
+real(kind=8), dimension(:), pointer :: w
+
+write(LUPRI,*) 'in AssignQMtx3Dreal...'
+call FLSHFO(LUPRI)
+
+!call AssignQMtx3D_real1(w,n1,n2,nz)
+
+write(LUPRI,*) 'in AssignQMtx3Dreal 2...'
+call FLSHFO(LUPRI)
+
+end subroutine XXXAssignQMtx3D_real
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AssignQMtx3D_real(QMtx,iprint,n1,n2,nz)
 !---------------------------------------------------------------------
 !
-! Assign pointer to the 3-dim. array - quaternion matrix
+! Assign general pointer to the 3-dim. array - quaternion matrix
 !
 !---------------------------------------------------------------------
 use GeneralPointers
 #include "priunit.h"
-integer(kind=4), intent(in) :: iprint,n1,n2,nz
+!integer(kind=4), intent(in) :: iprint,n1,n2,nz
+integer, intent(in) :: iprint,n1,n2,nz
 real(kind=8), target :: QMtx(n1,n2,nz)
-!call QENTER('QMatrixes: AssignQMtx3D_real')
+
+write(LUPRI,*) 'in AssignQMtx3Dreal1...'
+call FLSHFO(LUPRI)
+
 p3_real8 => QMtx
 if (iprint >= 10) then
-  write(LUPRI,*) 'AssignQMtx3Dreal: real 3dim pointer to the matrix was assigned.'
+  write(LUPRI,*) 'AssignQMtx3Dreal:1 real 3dim pointer to the matrix was assigned.'
   call FLSHFO(LUPRI)
 endif
-!call QEXIT('QMatrixes: AssignQMtx3D_real')
+
+write(LUPRI,*) 'in AssignQMtx3Dreal1 2...'
+call FLSHFO(LUPRI)
+
 end subroutine AssignQMtx3D_real
+
+
 

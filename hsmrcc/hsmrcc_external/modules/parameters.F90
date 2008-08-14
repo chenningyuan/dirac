@@ -161,9 +161,9 @@ module Parameters
      ipr = IPRINT
    end function get_iprint
 
-   !> ... short version for flushing out the buffer 
+   !> ... short version of flushing out the buffer 
    subroutine flushout
-     call flush(UOUT)
+      call flush(UOUT)
    end subroutine flushout
 
 end module Parameters

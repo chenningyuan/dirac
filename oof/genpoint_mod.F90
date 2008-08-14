@@ -1,10 +1,5 @@
-!
-!
 !  Module with various types of pointers 
-! serveing for passing addresses
-!
-!
-
+! serving for passing addresses
 MODULE GeneralPointers
 
 real(kind=8), dimension(:), pointer :: p_real8

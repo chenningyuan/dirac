@@ -15,24 +15,30 @@ contains
 subroutine OpenVINF
 !------------------------------------------------------------------------------
 !
-!    Open GAMESS file  
+!      Open HSMRCC file carrying information on the run 
 !
-!    called from InitHSMRBase
+!         called from InitHSMRBase (source/inihsbase.F90)
 !
 !------------------------------------------------------------------------------
    implicit none
 
    if (get_iprint() >=7) then
      write(UOUT,'(/,2x,a,a80)')   & 
-     'OpenVINF:  going to open the Gamess input file FileVINF=',FileVINF
-     write(UOUT,'(2x,a,i3,a,a)') ' UVINF=',UVINF,' FileVINF=',FileVINF
+     'OpenVINF:  going to open the UNFORMATTED file FileVINF=',FileVINF
+     write(UOUT,'(2x,a,i3,a,a)') 'where lu UVINF=',UVINF,'and file name, FileVINF=',FileVINF
      write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
+     if (OPTION(GENINT)) then
+       write(UOUT,*) 'opening as UNKNOWN'
+     else
+       write(UOUT,*) 'opening as OLD - exist !!!'
+     endif
    endif
 
    if (OPTION(GENINT)) then
 !     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    else
+      ! ... restarting HSCC 
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    endif
 
@@ -54,6 +60,7 @@ subroutine UpdateVINF
 !---------------------------------------------------------------------------------
 !
 ! ... called from HSMRCC (source/hsmrcc.F90) before iterations cycle starts
+! ... plus from others (source/endhsmr.F90)
 !
 !---------------------------------------------------------------------------------
 
@@ -136,6 +143,7 @@ subroutine UpdateVINF
      write(UOUT,*) 'OPTION:',OPTION
      write(UOUT,*) 'MAXITER, CONVTOL:',MAXITER, CONVTOL
      write(UOUT,*) 'CUTOFF=',CUTOFF
+     write(UOUT,*) 
      write(UOUT,*) 'point_group=',point_group,' naxis=',naxis
      write(UOUT,*) 
      write(UOUT,*) 'NAO=',NAO

@@ -34,8 +34,7 @@ subroutine InitHSMRBase
 
    call StartTiming
 
-   ! ... Opening FileVINF file ...
-
+   ! ... Open FileVINF file ...
    call OpenVINF
 
    ! ... Read Options from FileVINF unless it is fresh run ...
@@ -71,9 +70,7 @@ subroutine InitHSMRBase
    endif
 
    ! ... Initialize gamess module, GMSMod ...
-   if (.not.OPTION(DIRACp)) then
-       call InitGMSMod
-   endif
+   call InitGMSMod
 
    if ((.not.OPTION(RESTART)).and.(.not.OPTION(INTTOL))) CUTOFF  = TrfTol
 

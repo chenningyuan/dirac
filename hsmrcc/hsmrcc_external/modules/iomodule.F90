@@ -854,7 +854,12 @@ subroutine ReadFileBlock(FileName,Block,St,En)
 end subroutine ReadFileBlock
 
 subroutine OpenIntFiles
-
+!
+!
+! called from InitHSMRBase
+!
+!
+!
    implicit none
    character(len=10) :: stat
 
@@ -873,8 +878,11 @@ subroutine OpenIntFiles
    open(UFHP ,file=FileFHP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=4*2*NHMO*NPMO)
    open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=4*2*NPMO*NPMO)
 
-   return
+   if (get_iprint() >= 8) then
+    write(UOUT,*) 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open.'
+   endif
 
+   return
 end subroutine OpenIntFiles
 
 subroutine OpenOtherFiles

@@ -225,6 +225,8 @@ integer, intent(in), optional :: end_pos
 integer :: this_end_pos
 real*8, pointer, dimension(:) :: pw_out 
 
+ write(LUPRI,*) 'in AccessWork...'
+
 if (.not.present(end_pos)) then 
    this_end_pos = -1
 else
@@ -240,7 +242,17 @@ else
   call quit('AccessWork: wrong array ! Error exit')
 endif
 
+ write(LUPRI,*) 'in AccessWork...end'
+call FLSHFO(LUPRI)
+
 END FUNCTION  AccessWork
+
+FUNCTION Access3Dpointer(ipos) result(p3re)
+#include "priunit.h"
+integer, intent(in) :: ipos
+real(kind=8),  dimension(:,:,:), pointer :: p3re
+END FUNCTION Access3Dpointer
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION  AccessWorkElem(ipos) result(pwi_out)

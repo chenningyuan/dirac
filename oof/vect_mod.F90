@@ -457,7 +457,8 @@ integer,intent(in) :: isize_in
 character(*), optional, intent(in) :: text
 type(Vect) :: self
 logical :: is_pointer
-call QENTER('MakeVector')
+real*8, dimension(:), pointer :: temp
+
 
 isize = isize_in
 
@@ -492,7 +493,9 @@ if (char_type(1:4) .EQ. 'REAL') then
   self%is_real  = .true.
   self%is_logi  = .false.
  ! call  AssignVect1D_real(PW(self%kstart), isize, iprint_vect )
-  call  AssignVect1D_real(AccessWork(self%kstart), isize, iprint_vect )
+  temp => AccessWork(self%kstart)
+ ! call  AssignVect1D_real(AccessWork(self%kstart), isize, iprint_vect )
+  call  AssignVect1D_real(temp, isize, iprint_vect )
   self%p_rA1D => p_real8; p_real8 => NULL()
 else if (char_type(1:4) .EQ. 'INTE') then
   CALL mymemget('INTE',self%kstart,isize)
@@ -503,7 +506,9 @@ else if (char_type(1:4) .EQ. 'INTE') then
   self%is_real  = .false.
   self%is_logi  = .false.
   !call  AssignVect1D_inte(PW(self%kstart), isize, iprint_vect )
-  call  AssignVect1D_inte(AccessWork(self%kstart), isize, iprint_vect )
+  temp => AccessWork(self%kstart)
+ ! call  AssignVect1D_inte(AccessWork(self%kstart), isize, iprint_vect )
+  call  AssignVect1D_inte(temp, isize, iprint_vect )
   self%p_iA1D => p_inte; p_inte => NULL()
 else if (char_type(1:4) .EQ. 'LOGI') then
   self%is_real  = .false.
@@ -557,7 +562,6 @@ if (iprint_vect >= 10 ) then
  CALL FLSHFO(LUPRI)
 endif
 
-call QEXIT('MakeVector')
 end function MakeVector
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -684,6 +688,8 @@ use Memory
 use GeneralPointers
 #include "priunit.h"
 type(Array2Dim),intent(inout) :: self
+real*8, dimension(:), pointer :: temp
+
 
 if (.not.self%Vect2D%is_alloc) then
   call print_2Darray_attrib(self) ! ... control printout
@@ -692,14 +698,18 @@ endif
 
 if (self%Vect2D%is_real .AND. .not.self%Vect2D%is_logi) then
    ! call AssignVect2D_real(PW(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
-    call AssignVect2D_real(AccessWork(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
+    temp => AccessWork(self%Vect2D%kstart)
+    !call AssignVect2D_real(AccessWork(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
+    call AssignVect2D_real(temp, iprint_vect, self%dimens1, self%dimens2 )
     self%p_rA2D => p2_real8;  p2_real8=> NULL()
     if (.not.associated(self%p_rA2D)) then
       call QUIT('Assign2DimArrayPointer: self%p_rA2D  not associated !')
     endif
 else if (.not.self%Vect2D%is_real .AND. .not.self%Vect2D%is_logi) then
    ! call AssignVect2D_inte(PW(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
-    call AssignVect2D_inte(AccessWork(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
+    temp => AccessWork(self%Vect2D%kstart)
+    !call AssignVect2D_inte(AccessWork(self%Vect2D%kstart), iprint_vect, self%dimens1, self%dimens2 )
+    call AssignVect2D_inte( temp, iprint_vect, self%dimens1, self%dimens2 )
     self%p_iA2D => p2_inte;  p2_inte => NULL()
     if (.not.associated(self%p_iA2D)) then
       call QUIT('Assign2DimArrayPointer: self%p_iA2D  not associated !')
@@ -723,6 +733,7 @@ use Memory
 use GeneralPointers
 #include "priunit.h"
 type(Array3Dim),intent(inout) :: self
+real*8, dimension(:), pointer :: temp
 
 if (.not.self%Vect3D%is_alloc) then
   call print_3Darray_attrib(self) ! ... control printout
@@ -731,7 +742,9 @@ endif
 
 if (self%Vect3D%is_real .AND. .not.self%Vect3D%is_logi) then
    ! call AssignVect3D_real(PW(self%Vect3D%kstart), iprint_vect, & 
-    call AssignVect3D_real(AccessWork(self%Vect3D%kstart), iprint_vect, & 
+     temp => AccessWork(self%Vect3D%kstart)
+   ! call AssignVect3D_real(AccessWork(self%Vect3D%kstart), iprint_vect, & 
+    call AssignVect3D_real( temp, iprint_vect, & 
                        self%dimens1, self%dimens2, self%dimens3 )
     self%p_rA3D => p3_real8;  p3_real8=> NULL()
     if (.not.associated(self%p_rA3D)) then
@@ -739,7 +752,8 @@ if (self%Vect3D%is_real .AND. .not.self%Vect3D%is_logi) then
     endif
 else if (.not.self%Vect3D%is_real .AND. .not.self%Vect3D%is_logi) then
    ! call AssignVect3D_inte(PW(self%Vect3D%kstart), iprint_vect, &
-    call AssignVect3D_inte(AccessWork(self%Vect3D%kstart), iprint_vect, &
+     temp => AccessWork(self%Vect3D%kstart)
+    call AssignVect3D_inte(temp, iprint_vect, &
                        self%dimens1, self%dimens2, self%dimens3 )
     self%p_iA3D => p3_inte;  p3_inte => NULL()
     if (.not.associated(self%p_iA3D)) then

@@ -25,7 +25,7 @@ subroutine HSMRCC
      call HEADER('Output from HSMRCC',-1)
    endif
 
-   ! ... Basic Initialization of HSMR Run ...
+   ! ... output stream (=UOUT)
    call set_output_stream()
 
    ! ... check of GAMESS integrals
@@ -35,6 +35,7 @@ subroutine HSMRCC
      return
    endif
 
+   ! ... serie of initializations ...
    call InitHSMRBase
 
    ! ... Generation of Integrals ...
