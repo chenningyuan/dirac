@@ -1051,7 +1051,7 @@ C
 C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      INTEGER*8 K8BASE
+      INTEGER*8 K_OFFSET, K8BASE_LUCITA
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1073,24 +1073,25 @@ C     Static memory, initialization and allocation
 C
 C     Compute offset from WRK to WORK
 C
-#if defined (INT_STAR8)
-      CALL COMPOFF(WRK(100),WRK(1),K8BASE)
-      call flshfo(luout)
-      if (k8base .ne. 100) then
-        write (luout,*)
-     & 'lucita/pamlu error in compoff call, kbase',kbase
-        call quit('lucita/pamlu: problem in compoff call')
-      end if
-      CALL COMPOFF(WRK,WORK,K8BASE)
-      kbase = k8base
-#else
-      k8base = 0
-      CALL COMPOFF(WRK,WORK,KBASE)
-#endif
+      CALL COMPOFF(WRK,WORK,K_OFFSET)
+      KBASE_LUCITA = K_OFFSET
+      ! HJAaJ Aug 2008:
+      ! MEMMAN in LUCITA is using default integer type
+      ! while K_OFFSET is always INTEGER*8.
+      ! Therefore we use implicit conversion to KBASE_LUCITA.
+      ! Now we test if KBASE_LUCITA is OK:
+      K8BASE_LUCITA = KBASE_LUCITA
+      IF (K8BASE_LUCITA .NE. K_OFFSET) THEN
+         WRITE (LUOUT,'(/A/A,2I20//A)')
+     &   'FATAL ERROR in LUCITA: offset is too big for i*4',
+     &   'K_OFFSET and KBASE_LUCITA:',K_OFFSET, KBASE_LUCITA,
+     &   '(See code in lucita/program.F)'
+         CALL QUIT('FATAL ERROR in LUCITA: offset is too big for i*4')
+      END IF
 C
       MXPWRD = LWRK
       KADD = MXPWRD
-      CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
 C
