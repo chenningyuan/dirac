@@ -448,7 +448,7 @@ CMI    ...   - either symmetric or antisymmetric
       N2PMOX = NPMOT*NPMOT
 
       IF (IPRINT .GE. 6) THEN
-        CALL HEADER('Output frol PRPMAT',-1)
+        CALL HEADER('Output from PRPMAT',-1)
         IF (TRIANGUL) THEN
          WRITE(LUPRI,'(4X,A)')
      & 'PRPMAT: Handling TRIANGULAR matrix of'//
@@ -522,22 +522,29 @@ C
      &          PRPAO(N2BBASX,NZ),
      &          PTRI(IDIMENS,NZ),
      &          OP1INT(IDIMENS),WORK(*)
-      DIMENSION IPMO(2), I2PMOX(2,2)
+      DIMENSION J2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
 C
-C     Set up index information for PRPMO(N2PMOX,NZ)
+C     Set up index information for
+C     PRPMO(N2PMOX,NZ) [equivalent to "PRPMO(NPMOT,NPMOT,NZ)"]
+C     such that PRPMO(J2PMOX(1,1),NZ) gives "PRPMO(g1,g1,NZ)"
+C               PRPMO(J2PMOX(2,1),NZ) gives "PRPMO(u1,g1,NZ)"
+C               PRPMO(J2PMOX(1,2),NZ) gives "PRPMO(g1,u1,NZ)"
+C               PRPMO(J2PMOX(2,2),NZ) gives "PRPMO(u1,u1,NZ)"
+C     where g1 is index of first gerade orbital (always g1 = 1)
+C       and u1 is index of first ungerade orbital (u1 = g1 + NPMO(1)).
 C
-      IPMO(1) = 0
-      IPMO(2) = NPMO(1)
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
-      IOFF = 0
+      JOFF = 1
       DO J = 1,NFSYM
+        IJOFF = JOFF
         DO I = 1,NFSYM
-          I2PMOX(I,J) = IOFF + IPMO(I)
+          J2PMOX(I,J) = IJOFF
+          IJOFF = IJOFF + NPMO(I)
         END DO
-        IOFF = IOFF + NPMO(J)*NPMOT
+        JOFF = JOFF + NPMO(J)*NPMOT
       END DO
 C
 C     Extract symmetry information - ISYM, IREP, ITIM
@@ -608,7 +615,7 @@ C
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           PRPMO(I2PMOX(I1,I2)+1,1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
+     &           PRPMO(J2PMOX(I1,I2),1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
      &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           IBEIG(IORB(I1)+1),
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
@@ -620,7 +627,7 @@ C
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           PRPMO(I2PMOX(I1,I2)+1,1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
+     &           PRPMO(J2PMOX(I1,I2),1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
      &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
@@ -638,7 +645,7 @@ C
           CALL HEADER('PRPMA1: Symm.blocked MO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
-          CALL PRQMAT(PRPMO(I2PMOX(I1,I2)+1,1),NPMO(I1),NPMO(I2),
+          CALL PRQMAT(PRPMO(J2PMOX(I1,I2),1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
          ENDIF

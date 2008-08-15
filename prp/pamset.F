@@ -1127,7 +1127,7 @@ C     IGAS point from active orbital to which GAS space it belongs.
 C
       II = 0
       DO ISYM = 1, NFSYM
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             DO J = 1, NGSH(ISYM,I)
                II = II + 1
                IGAS(II) = I
@@ -1147,7 +1147,7 @@ C
 C
 C     Determine whether a GAS space is a CAS space:
 C
-      DO I = 1, NGAS
+      DO I = 1, NGAS_DC
 C
 C        Number of orbitals in this GAS shell
 C
@@ -1159,9 +1159,9 @@ C
 C        Minimum number of electrons in this GAS space:
 C
          MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I)) 
-         IF (I.EQ.NGAS.AND.NGAS.GT.1) THEN
+         IF (I.EQ.NGAS_DC.AND.NGAS_DC.GT.1) THEN
            MINCAS = NAELEC - NGSP(2,I-1)
-         ELSE IF (I.EQ.NGAS.AND.NGAS.EQ.1) then
+         ELSE IF (I.EQ.NGAS_DC.AND.NGAS_DC.EQ.1) then
            MINCAS = NAELEC
          END IF
 c        print*,'GAS ',I,' MINCAS,MAXCAS ',MINCAS,MAXCAS
@@ -1177,7 +1177,7 @@ C        than MAXCAS:
 C
          IF ( (NGSP(1,I) .LE. MINCAS .AND.
      &        (NGSP(2,I) - NGSP(1,I)) .GE. MAXCAS) .OR.
-     &        I .EQ. NGAS ) THEN
+     &        I .EQ. NGAS_DC ) THEN
             GASCAS(I) = .TRUE.
          ELSE
             GASCAS(I) = .FALSE.
@@ -1186,7 +1186,7 @@ C
       IF (IPRINT .GE. 10) THEN
          WRITE(LUPRI,'(1X,A)')
      &        'GAS space is a CAS space?'
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             WRITE(LUPRI,'(5X,A,I3,A,L1)')
      &           'GAS space ',I,' : ',GASCAS(I)
          END DO

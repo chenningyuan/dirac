@@ -3088,7 +3088,7 @@ C
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
      &         '** E2ODIA: Diagonal Hessian and metric (e-e):'
-            WRITE(LUPRI,'(2I5,1P,2D20.10))')
+            WRITE(LUPRI,'(2I5,1P,2D20.10)')
      &         (JXOPE(1,I),JXOPE(2,I),HEDIAG(I),SEDIAG(I), I = 1,NZXOPE)
          ENDIF
       ENDIF
@@ -3109,7 +3109,7 @@ C           approximated with -2mc^2
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
      &         '** E2ODIA: Diagonal Hessian and metric (e-p):'
-            WRITE(LUPRI,'(2I5,1P,2D20.10))')
+            WRITE(LUPRI,'(2I5,1P,2D20.10)')
      &         (JXOPP(1,I),JXOPP(2,I),HPDIAG(I),SPDIAG(I), I = 1,NZXOPP)
          ENDIF
       ENDIF
