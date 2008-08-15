@@ -8168,10 +8168,10 @@ C**********************************************************************
 
       CHARACTER*6 CIRUN
 C
-C     introduce CIRUN and JKRRTYPE for NODES
+C     introduce CIRUN and JKRRUNTYPE for NODES
 C
       CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(JKRRTYPE,1,my_MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(JKRRUNTYPE,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
 C
       IF( MYPROC .ne. MASTER )THEN
