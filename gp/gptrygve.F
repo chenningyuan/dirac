@@ -182,7 +182,8 @@ C
       IF (IN .EQ. 200) THEN
          LENGTH = LENGTH + 2
       ELSE IF (IN .GE. 100) THEN
-         MARG = IN - 100
+         MARG = (80 - LENGTH)/2 - 1
+         MARG = MIN(MARG, IN - 100)
          IF (MARG .GT. 0) MARG = MARG + 1
          LENGTH = LENGTH + 2*MARG
       END IF

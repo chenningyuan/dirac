@@ -1099,7 +1099,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qnorm */
-      SUBROUTINE QNORM(S,VC,NBASI,NORBI,NZ,IP,IRETUR,SCR1,SCR2)
+      SUBROUTINE QNORM(S,VC,NBASI,NORBI,NZ,IPQTOQ,IRETUR,SCR1,SCR2)
 C***********************************************************************
 C
 C     Gram-Schmidt orthogonalize coefficients.
@@ -1110,6 +1110,8 @@ C     Output:
 C
 C     Written by J. Thyssen - Jan 23 2001
 C
+C     Last revision: HJAaJ - Aug 2008 
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1118,11 +1120,8 @@ C
 #include "consts.h"
       PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
 C
-      DIMENSION S(NBASI,NBASI)
-      DIMENSION VC(NBASI,NORBI,NZ)
-      DIMENSION IP(*)
-      DIMENSION SCR1(NBASI,NZ)
-      DIMENSION SCR2(NORBI)
+      DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)
+      DIMENSION IPQTOQ(*), SCR1(NBASI,NZ), SCR2(NORBI)
 C
       DO 20 I = 1, NORBI
          ITURN = 0
@@ -1132,9 +1131,9 @@ C
 C        Calculate S * VC(I)
 C
          CALL QGEMM(NBASI,1,NBASI,D1,
-     &        'N','N',IP,S,NBASI,NBASI,1,
-     &        'N','N',IP,VC(1,I,1),NBASI,NORBI,NZ,
-     &        D0,IP,SCR1,NBASI,1,NZ)
+     &        'N','N',IPQTOQ,S,NBASI,NBASI,1,
+     &        'N','N',IPQTOQ,VC(1,I,1),NBASI,NORBI,NZ,
+     &             D0,IPQTOQ,SCR1,NBASI,1,NZ)
 C
          TNORM = D0
          DO IZ = 1, NZ
@@ -1142,7 +1141,7 @@ C
          END DO
 C        write(lupri,*) 'tnorm = ',tnorm
          IF (TNORM .LT. THRZER) THEN
-            IRETUR = -1
+            IRETUR = -I
             RETURN
          END IF
 C
@@ -1151,14 +1150,8 @@ C
          TNORM = D1 / SQRT(TNORM)
          DO IZ = 1, NZ
             CALL DSCAL(NBASI,TNORM,VC(1,I,IZ),1)
+            CALL DSCAL(NBASI,TNORM,SCR1(1,IZ),1)
          END DO
-C
-C        Calculate S * VC(I)
-C
-         CALL QGEMM(NBASI,1,NBASI,D1,
-     &        'N','N',IP,S,NBASI,NBASI,1,
-     &        'N','N',IP,VC(1,I,1),NBASI,NORBI,NZ,
-     &        D0,IP,SCR1,NBASI,1,NZ)
 C
          TNORM = D0
          DO IZ = 1, NZ
@@ -1170,7 +1163,7 @@ C
          DO J = 1, I - 1
             T = D0
             DO IZ = 1, NZ
-               T = T +  DDOT(NBASI,VC(1,J,IZ),1,SCR1(1,IZ),1)
+               T = T + DDOT(NBASI,VC(1,J,IZ),1,SCR1(1,IZ),1)
             END DO
             TNORM = TNORM - T * T
             SCR2(J) = -T
@@ -1178,7 +1171,7 @@ C
 C
          IF (TNORM .LT. THRZER) THEN
 C           ... zero vector after orthogonalization
-            IRETUR = -1
+            IRETUR = -I * 1 000 000
             RETURN
          END IF
 C
@@ -1195,9 +1188,9 @@ C
 C        SCR1 = \sum_{k=1,i} SCR2(k) * VC(*,k)
 C
          CALL QGEMM(NBASI,1,I,D1,
-     &        'N','N',IP,VC,NBASI,NORBI,NZ,
-     &        'N','N',IP,SCR2,NORBI,1,1,
-     &        D0,IP,SCR1,NBASI,1,NZ)
+     &        'N','N',IPQTOQ,VC,NBASI,NORBI,NZ,
+     &        'N','N',IPQTOQ,SCR2,NORBI,1,1,
+     &             D0,IPQTOQ,SCR1,NBASI,1,NZ)
 C
          DO IZ = 1, NZ
             CALL DCOPY(NBASI,SCR1(1,IZ),1,VC(1,I,IZ),1)

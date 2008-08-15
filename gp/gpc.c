@@ -177,26 +177,34 @@ void sysinf_(int *parcal)
    free(un);
 }
 
-#if defined (IA64) || defined (INT_STAR8)
-void compoff_(double *wrk,double *work, long *kbase) {
-  *kbase = (long) (wrk-work+1);
+#define quit        quit_
+    /* NOTE: if this does not link with the FORTRAN subroutine QUIT,
+     * then try quit without the underscore */
+extern void quit(const char* str, int len);
+
+void compoff_(double *wrk, double *work, long *k_offset) {
+  *k_offset = (long) (wrk-work+1);
+/* Aug 2008: compoff_ shall always return k_offset as a FORTRAN INTEGER*8
+ * so that we don't get nonsense if address difference is bigger than 31
+ * bit. /HJAaJ
+ *
+*/
+  if ( sizeof(long) != 8 )
+  {
+    printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
+    printf( "compoff: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
+    printf( "k_offset=%d\n", *k_offset );
+    printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long), sizeof(short int));
+    quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
+    exit(1);
+  }
 /*
  *printf( "compoff: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
- *printf( "kbase=%d\n", *kbase );
+ *printf( "k_offset=%d\n", *k_offset );
  *printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long),
  *sizeof(short int));
 */
 }
-#else
-void compoff_(double *wrk,double *work, int *kbase) {
-  *kbase = (int) (wrk-work+1);
-/*
-  printf( "compoff in gpc.c: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
-  printf( "kbase=%d\n", *kbase );
-  printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long), sizeof(short int));
-*/  
-}
-#endif
 
 void distribute_env(const char* name, int mytid)
 {
