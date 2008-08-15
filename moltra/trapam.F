@@ -3623,7 +3623,7 @@ C
          GOTO 9999
       END IF
       IND = 1
-      NGAS = NOPEN
+      NGAS_DC = NOPEN
       NSYMRP = 2*NFSYM
       DO IOPEN = 1,NOPEN
         ITEMP = 0
