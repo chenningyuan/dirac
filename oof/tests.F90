@@ -49,7 +49,6 @@ END SUBROUTINE TEST_OO_MEMORY
 ! integer*4, intent(in) :: llwork
  type(QMtx) :: smat,pmat
  logical :: domtx
-call qenter('TEST_OOF')
 
  !!!  CALL TEST_MEMGET_CHAR(work,llwork)
 
@@ -69,8 +68,9 @@ call set_iprmem(100)
 
 write(LUPRI,*) 'test_oof: smat called ... '
 !smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0),NFBAS(2,0),NFBAS(2,0)) )
-smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0)) )
-call QMtxInfo(smat,  print_qmtx = .false.)
+smat = MakeQMtx( set_qmtx_pck(NFBAS(1,0),NFBAS(1,0)), text='testing smat' )
+!call QMtxInfo(smat,  print_qmtx = .false.)
+call QMtxInfo(smat)
 write(LUPRI,*) 'test_oof: after smat called ... '
 
 !pmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(0),set_nz(1))
@@ -105,8 +105,6 @@ write(LUPRI,*) 'test_oof: after pmat called ... '
 !  call UnStickArray
 
  endif
-
- call qexit('TEST_OOF')
 
 ! call quit('TEST_OOF')   
 

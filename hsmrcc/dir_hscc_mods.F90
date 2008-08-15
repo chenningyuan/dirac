@@ -207,7 +207,7 @@ subroutine read_mdcint
 type(Vect) :: indk_vect, indl_vect
 type(Array2Dim) :: cbuf_vect
 
-logical :: is_mdc , check_mem = .false.
+logical :: is_mdc , check_mem, print_int 
 
 integer :: RCW
 
@@ -298,6 +298,7 @@ cbuf_vect = Make2DimArray('REAL', RCW, ilenght, 'MDCINT two-electron integrals')
  call print_mem_param
 
 !check_mem = .true.
+check_mem = .false.
 if (check_mem) then
 call set_vect_iprint(15)
 Call ZeroObject(indk_vect)
@@ -314,6 +315,8 @@ endif
 !Call ZeroObject(indk_vect)
 !Call ZeroObject(indl_vect)
 !Call ZeroObject(cbuf_vect)
+
+ print_int = .false.
 
   MOINT = 0
 
@@ -351,6 +354,8 @@ endif
     write(LUPRI,'(2x,a,i6)') ' actual number of read integrals:',MOINT
     CALL FLSHFO(LUPRI)
 
+if (print_int) then
+
  do i=1,NONZR
    if (.NOT.is_complex) then
      write(LUPRI,'(2x,a,2i5,f18.12)') 'k,l, real integral:',  & 
@@ -370,6 +375,8 @@ endif
    CALL FLSHFO(LUPRI)
 
  enddo
+
+endif
    
     IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN

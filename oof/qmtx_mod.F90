@@ -217,9 +217,7 @@ subroutine unset_isalloc(qmat)
 !
 !-----------------------------------------------------------------------
 type(QMtx), intent(inout) :: qmat
-call QENTER('unset_isalloc')
  qmat%is_alloc = .false.
-call QEXIT('unset_isalloc')
 end subroutine unset_isalloc
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -522,6 +520,7 @@ type(irp), optional, intent(in) ::  irp_in
 type(nzp), optional, intent(in) ::  nz_in
 character(*), optional, intent(in) :: text
 integer  :: isize
+real*8, dimension(:), pointer :: temp
 
 if (present(irp_in)) then
   qm%irep = irp_in%irep
@@ -562,6 +561,9 @@ qm%array_size = isize
 
 ! allocate array for the matrix
 CALL mymemget('REAL',qm%kstart,isize)
+
+temp => AccessWork(qm%kstart,isize) 
+CALL DZERO(temp,isize)
 
 qm%is_real  = .true.
 qm%is_alloc = .true. ! array is allocated
@@ -959,7 +961,7 @@ subroutine print_qmtx_attrib(amat)
 !-------------------------------------------------------------------
 #include "priunit.h"
 type(QMtx), intent(in) :: amat
-call QENTER('QMatrixes: print_qmtx_attrib')
+
  write(LUPRI,'(/2x,a)')  & 
  '---------- Basic attributes of the QMtx matrix data type -----------'
  write(LUPRI,'(a,l1,$)') 'is_alloc:',amat%is_alloc
@@ -978,36 +980,9 @@ call QENTER('QMatrixes: print_qmtx_attrib')
   write(LUPRI,'(2x,a,$)') '...attached text:'
   call print_string(amat%qmtx_text)
  endif
-call QEXIT('QMatrixes: print_qmtx_attrib')
+
 end subroutine print_qmtx_attrib
 END MODULE QMatrixes
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine XXXAssignQMtx3D_real(w,iprint,n1,n2,nz)
-!---------------------------------------------------------------------
-!
-! Assign general pointer to the 3-dim. array - quaternion matrix
-!
-!---------------------------------------------------------------------
-!use GeneralPointers
-#include "priunit.h"
-!integer(kind=4), intent(in) :: iprint,n1,n2,nz
-integer, intent(in) :: iprint, n1, n2, nz
-!real(kind=8), target :: QMtx(n1,n2,nz)
-!real(kind=8), intent(inout) :: w(:)
-!real(kind=8), target, dimension(:), intent(inout) :: w
-real(kind=8), dimension(:), pointer :: w
-
-write(LUPRI,*) 'in AssignQMtx3Dreal...'
-call FLSHFO(LUPRI)
-
-!call AssignQMtx3D_real1(w,n1,n2,nz)
-
-write(LUPRI,*) 'in AssignQMtx3Dreal 2...'
-call FLSHFO(LUPRI)
-
-end subroutine XXXAssignQMtx3D_real
-
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AssignQMtx3D_real(QMtx,iprint,n1,n2,nz)
@@ -1022,8 +997,8 @@ use GeneralPointers
 integer, intent(in) :: iprint,n1,n2,nz
 real(kind=8), target :: QMtx(n1,n2,nz)
 
-write(LUPRI,*) 'in AssignQMtx3Dreal1...'
-call FLSHFO(LUPRI)
+!write(LUPRI,*) 'in AssignQMtx3Dreal1...'
+!call FLSHFO(LUPRI)
 
 p3_real8 => QMtx
 if (iprint >= 10) then
@@ -1031,8 +1006,8 @@ if (iprint >= 10) then
   call FLSHFO(LUPRI)
 endif
 
-write(LUPRI,*) 'in AssignQMtx3Dreal1 2...'
-call FLSHFO(LUPRI)
+!write(LUPRI,*) 'in AssignQMtx3Dreal1 2...'
+!call FLSHFO(LUPRI)
 
 end subroutine AssignQMtx3D_real
 

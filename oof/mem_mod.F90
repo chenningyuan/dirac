@@ -4,7 +4,7 @@
 !  Module for handling the DIRAC memory.
 !
 !  Contains basic variables and methods to operate upon WORK array.
-!
+!  Encapsulates MEMGER/MEMREL/MEMCHK F77 routines.
 !
 !----------------------------------------------------------------------------------
 MODULE Memory
@@ -29,7 +29,7 @@ subroutine mymemget( datatype, kbase, length )
 !************************************************************************
 !
 !  public procedure to replace the common MEMGET procedure
-! with hidding of private variables KFREE,LFREE
+!  by hidding private variables KFREE,LFREE
 !
 ! Parameters:  datatype : 'REAL','INTE','LOGI'
 !              kbase    : starting position on superarray
@@ -51,6 +51,7 @@ integer :: kbase_temp ! needs to fit into internal MEM_stuff
   
  kbase_temp = kbase
 
+ ! ... call own memory allocation routine 
  CALL MEMGET(datatype,kbase_temp,length,PW,KFREE,LFREE)
 
  kbase = kbase_temp
@@ -68,7 +69,7 @@ end subroutine mymemget
 subroutine mymemrel (datatype, kfirst,krel)
 !************************************************************************
 !
-!    Public procedure to replace common MEMREL subroutine to hide 
+!   Public procedure to replace common MEMREL subroutine; hides 
 ! KFREE,LFREE variables.
 !
 !************************************************************************
@@ -225,7 +226,7 @@ integer, intent(in), optional :: end_pos
 integer :: this_end_pos
 real*8, pointer, dimension(:) :: pw_out 
 
- write(LUPRI,*) 'in AccessWork...'
+! write(LUPRI,*) 'in AccessWork...'
 
 if (.not.present(end_pos)) then 
    this_end_pos = -1
@@ -242,17 +243,10 @@ else
   call quit('AccessWork: wrong array ! Error exit')
 endif
 
- write(LUPRI,*) 'in AccessWork...end'
-call FLSHFO(LUPRI)
+!write(LUPRI,*) 'in AccessWork...end'
+!call FLSHFO(LUPRI)
 
 END FUNCTION  AccessWork
-
-FUNCTION Access3Dpointer(ipos) result(p3re)
-#include "priunit.h"
-integer, intent(in) :: ipos
-real(kind=8),  dimension(:,:,:), pointer :: p3re
-END FUNCTION Access3Dpointer
-
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 FUNCTION  AccessWorkElem(ipos) result(pwi_out)
@@ -430,9 +424,9 @@ FUNCTION get_lfree() result(lfree_out)
 integer :: lfree_out
  lfree_out = LFREE
  if (iprmem >= 15) then
-  write(LUPRI,'(2x,a,i8,a,i8)')  &
-  'Memory/get_lfree: LFREE:',LFREE,' = lfree_out:',lfree_out
-  call FLSHFO(LUPRI)
+   write(LUPRI,'(2x,a,i8,a,i8)')  &
+   'Memory/get_lfree: LFREE:',LFREE,' = lfree_out:',lfree_out
+   call FLSHFO(LUPRI)
  endif
 END FUNCTION get_lfree
 
