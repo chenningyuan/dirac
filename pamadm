@@ -733,7 +733,8 @@ cat <<EOF>> Makefile
 KRMC_FOBJS = \\
 krmc/krmc_gradient.o krmc/krmcgosci.o krmc/krmcopt.o krmc/krmcout.o \\
 krmc/krmctra.o krmc/krmcvec.o krmc/krmcsav.o krmc/krmccan.o \\
-krmc/krmcinp.o krmc/krmcmlf.o krmc/krmcgp.o krmc/krmcluci.o
+krmc/krmcinp.o krmc/krmcmlf.o krmc/krmcgp.o krmc/krmcluci.o \\
+krmc/krci_ctl.o
 
 KRMC_COBJS = krmc/gendet.o
 
