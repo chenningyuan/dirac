@@ -703,15 +703,15 @@ C
       IPRTRA = IPRINT - 2
 C TODO debug : extra print because no integrals for Levy-Leblond
 C              /hjaaj aug 2002
-      print*,'+++++++++++++++++++++++++++++++++++++'
-      print*,'+++++++++++++++++++++++++++++++++++++'
-      print*,'+++++++++++++++++++++++++++++++++++++'
-      print*,' RESET PRINT FLAG FOR PAMTR TO NORMAL'
-      print*,'  Levy-Leblond integrals need debug.'
-      print*,'  T.F.                              '
-      print*,'+++++++++++++++++++++++++++++++++++++'
-      print*,'+++++++++++++++++++++++++++++++++++++'
-      print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,' RESET PRINT FLAG FOR PAMTR TO NORMAL'
+C     print*,'  Levy-Leblond integrals need debug.'
+C     print*,'  T.F.                              '
+C     print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,'+++++++++++++++++++++++++++++++++++++'
+C     print*,'+++++++++++++++++++++++++++++++++++++'
 CHJ   IPRTRA = 3 ! hj 18-jun-2004 DEBUG FIXME TODO
 CTF   IPRTRA = 4
       ISTRAT = 4

@@ -49,8 +49,6 @@ C     Written by J. Thyssen - Oct 26 1998
 C     Last revision:
 C         Max. no. of active orbitals only for GOSCI
 C                T. Fleig   - May 24, 2002
-C         added keyword CIONLY 
-C                Stefan Knecht - July 04, 2007
 C
 C***********************************************************************
 #include "implicit.h"
@@ -85,12 +83,12 @@ C
 C
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
-     &            '.NEO AL','.STATE ','.XXXXXX','.MAX BA','.MAKE C',
+     &            '.NEO AL','.STATE ','.DELETE','.MAX BA','.MAKE C',
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
      &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.CI SYM','.SYMMET',
-     &            '.RELSYM','.CIONLY'/
+     &            '.RELSYM','.MEMFAC'/
       DATA SET/.FALSE./
 C
 C
@@ -138,12 +136,12 @@ C
       IKRMC_ITRINT(2) = 0
       IKRMC_ISTATE    = 1
       IKRMC_SYMMETRY  = 1
+      IKRMC_MEMFAC    = 9
       NKRMCGAS        = 0
       NKRMC_MK2REF    = 0
       NKRMC_MK2DEL    = 0
       NKRMC_MINMK2    = 0
       NKRMC_MAXMK2    = 0
-      ICIONLY         = 0
 C
 C     Initialize /CBRKRMC/
 C     ===================
@@ -174,6 +172,8 @@ C
       KRMC_CIPROGRAM = 'GOSCI'
       KRMC_FRZSTR(1) = ' '
       KRMC_FRZSTR(2) = ' '
+      KRMC_DELSTR(1) = ' '
+      KRMC_DELSTR(2) = ' '
 C
 C     Process input for KRMCS
 C     ========================
@@ -234,6 +234,10 @@ C&&& .STATE : which state to converge to
                READ(LUCMD,*) IKRMC_ISTATE
                GO TO 100
     8          CONTINUE
+C&&& DELETE ORBITALS:
+                  DO I = 1, NFSYM
+                     READ(LUCMD,'(A72)') KRMC_DELSTR(I)
+                  END DO
                GO TO 100
     9          CONTINUE
 C&&& .MAX BACKSTEPS : max. number of backsteps
@@ -304,7 +308,7 @@ C&&& GASSH: GAS setup
                   READ(LUCMD,*) NKRMCGAS
                   IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
                      CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &                         'illegal value of NGAS')
+     &                         'illegal value of NKRMCGAS')
                   END IF
                   DO I = 1, NKRMCGAS
                      READ(LUCMD,*) (NKRMCGSH(J,I),J=1,NFSYM)
@@ -334,6 +338,12 @@ C&&& MK2DELTA: 2 * DELTA M_K
                GO TO 100
  25            CONTINUE
 C&&& FREEZE ORBITALS:
+                  WRITE(LUPRI,'(A)') ' *** ERROR in KRMCINP ***'//
+     &            ' FREEZE option is not working yet! '//
+     &            ' You have to be patient.'
+C                 SK - Aug 2008
+               CALL QUIT(
+     &         '*** ERROR in KRMCINP: FREEZE option not working yet***')
                   DO I = 1, NFSYM
                      READ(LUCMD,'(A72)') KRMC_FRZSTR(I)
                   END DO
@@ -382,8 +392,18 @@ C              including spin in symmetry
                IKWSET(18) = 2
                GO TO 100
  32            CONTINUE
-C&&&  CIONLY: runnning only initial CI calculation
-               ICIONLY = 1
+C&&& .MEMFAC: multiplier for subtracted scratch memory in
+C             luciarel/ciinfo_r.F - Z_BLKFO_REL
+               READ(LUCMD,*) IKRMC_MEMFAC
+               IF( IKRMC_MEMFAC .LE. 0 ) THEN
+                  WRITE(LUPRI,'(//3A,I6)')
+     &                  '*** ERROR in KRMCINP *** ',
+     &                  ' Illegal multiplier for ',
+     &                  ' subtracting scratch memory: ',
+     &                   IKRMC_MEMFAC
+                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'Illegal memory multiplier')
+               END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -395,15 +415,6 @@ C&&&  CIONLY: runnning only initial CI calculation
             END IF
       END IF
   300 CONTINUE
-C
-C     Check if running only initial CI calculation
-C     --------------------------------------------
-C
-      IF( ICIONLY .EQ. 1 ) THEN
-        MKRMC_MXMACRO = - 1
-        MKRMC_MXMICRO =   0
-      END IF
-C
 C
       IF (.NOT.DOKRMC) GO TO 9999
 C
@@ -581,10 +592,6 @@ C
       END IF
 C
 C
-      IF( ICIONLY .EQ. 1 ) THEN
-        WRITE(LUPRI,'(A)')
-     &   ' * Running only initial CI calculation'
-      END IF
       WRITE(LUPRI,'(A,I4)')
      &   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
       WRITE(LUPRI,'(A,I4)')
@@ -641,11 +648,30 @@ C
      &        ('   - symmetry ',I,' : ',KRMC_FRZSTR(I),I=1,NFSYM)
       END IF
 C
+C
+C     Deleted orbitals:
+C     -----------------
+C
+      NVECT = 0
+      DO I = 1, NFSYM
+         NVEC = 0
+         CALL NUMLST(KRMC_DELSTR(I),IDUMMY,NFBAS(I,0),
+     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+         NVECT = NVECT + NVEC
+      END DO
+      IF (NVECT .GT. 0) THEN
+         WRITE(LUPRI,'(A)') ' * Deleted orbitals: '
+         WRITE(LUPRI,'(A,I1,2A)')
+     &        ('   - symmetry ',I,' : ',KRMC_DELSTR(I),I=1,NFSYM)
+      END IF
+      IF( IKRMC_MEMFAC .ne. 9 ) WRITE (LUPRI, '(A,I3)' )
+     &     ' * Multiplier for memory guess: ',IKRMC_MEMFAC
+C
  9999 CONTINUE
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck roptinp */
+C  /* Deck rstpinp */
       SUBROUTINE RSTPINP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
 C
@@ -809,27 +835,11 @@ C  /* Deck roptinp */
       SUBROUTINE ROPTINP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
 C
-C     Various optimization input.
+C     MCSCF optimization control input section.
 C
 C     Written by J. Thyssen - Dec 29 2000
-C     Last revision: 17.05.2002
-C                    Added CI keyword CIROOT. Timo Fleig
-C                    05.01.2005
-C                    Added CI keyword ANALYZ. Timo Fleig
-C                    Added CI keyword PARINT. Stefan Knecht
-C                    29.06.2007
-C                    Added CI keyword MEMFAC. Stefan Knecht
-C                    04.07.2007
 C                    Added CI keyword NOOCCN. Stefan Knecht
 C                    October 2007
-C                    Added CI keyword RDFOCK. Stefan Knecht
-C                    October 2007
-C                    Added CI keyword WRTFCK. Stefan Knecht
-C                    October 2007
-C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
-C                    20.11.2007
-C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
-C                    20.11.2007
 C                    New start guess code 1531. Read MP2 natural 
 C                    orbitals from KRMCOLD as default. Stefan Knecht
 C                    07.07.2008
@@ -838,6 +848,13 @@ C                    and vector to generate Fock-type orbitals for
 C                    positronic/inactive/secondary space. Stefan Knecht
 C                    17.07.2008
 C                    
+C
+C     Major revision by S. Knecht: 08.08.2008
+C
+C                    All CI-related keywords have been moved to a new 
+C                    input section *KRCICALC. 
+C                    Purpose: disentanglement of MCSCF/CI optimization
+C                    input.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -855,9 +872,9 @@ C
       SAVE SET
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
-     &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
-     &            '.KTRLVL','.PARINT','.MEMFAC','.NOOCCN','.RDFOCK',
-     &            '.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP','.GENFOC'/
+     &            '.NO PFQ','.NO FQX','.ANALYZ','-------','.MXCIVE',
+     &            '.KTRLVL','.PARINT','-------','.NOOCCN','.RDFOCK',
+     &            '.WRTFCK','-------','-------','-------','.GENFOC'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -877,11 +894,9 @@ C     --------------
 C
       MAXCIT      =    4
       MXCIV       =    0
-C     IOPTST      = 1515
       IOPTST      = 1531
       KTRLVL      =    3
       IKRMCCNO    =  - 3
-      NCIROOT     =    1
       IANACI      =    0
       IRESTRK     =    0
 #if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
@@ -889,20 +904,15 @@ C     IOPTST      = 1515
 #else
       IDOPARIO    =    0
 #endif
-      IMEMFAC     =    9
-      ISHMEM_TYPE =  - 1
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
       NATONL      = .FALSE.
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
+      GENFOCK     = .FALSE.
       NATOLCR     = .FALSE.
       CRDFO_MAT   = .FALSE.
       CWRTFO_MAT  = .FALSE.
-      CSHMEMO     = .FALSE.
-      CINT_REORD  = .FALSE.
-      CINT_SPLIT  = .FALSE.
-      GENFOCK     = .FALSE.
       COMPFAC     = 0.01D00
 C
 C
@@ -932,15 +942,15 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ROPTINP.'
+     *            '" not recognized on deck *OPTIMIZE.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in OPTIMIZE.')
+               CALL QUIT('Illegal keyword on deck *OPTIMIZE.')
     1          CONTINUE
 C&&& .MAX CI ITER...: maximum number of initial CI iterations.
                   READ(LUCMD,*) MAXCIT
                GO TO 100
     2          CONTINUE
-C&&& .IOPTST: restart/start guess flag
+C&&& .IOPTST: start guess flag
 C             (FIXME: make this human readable)
                    READ(LUCMD,*) IOPTST
                GO TO 100
@@ -993,9 +1003,6 @@ C&&& .ANALYZ: Analyze LUCIAREL CI vector(s)
                   IANACI = 1
                GO TO 100
    14          CONTINUE
-C&&& .CIROOT: Number of CI roots to be optimized
-C             Program stops after start guess if > 1
-                  READ(LUCMD,*) NCIROOT
                GO TO 100
    15          CONTINUE
 C&&& .MXCIVE: Number of CI vectors allowed for subspace
@@ -1003,14 +1010,14 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
                GO TO 100
    16          CONTINUE
 C&&& .KTRLVL: default integral transformation level.
-                  READ(LUCMD,*) KTRLVL
-                  IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 5) THEN
-                     WRITE(LUPRI,'(//2A,I10)')
-     &                    '*** ERROR in ROPTINP *** ',
-     &                    'Illegal transformation level: ',KTRLVL
-                     CALL QUIT('*** ERROR in ROPTINP *** ' //
-     &                    'Illegal transformation level')
-                  END IF
+               READ(LUCMD,*) KTRLVL
+               IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 5) THEN
+                  WRITE(LUPRI,'(//2A,I10)')
+     &                '*** ERROR in ROPTINP *** ',
+     &                'Illegal transformation level: ',KTRLVL
+                  CALL QUIT('*** ERROR in ROPTINP *** ' //
+     &                 'Illegal transformation level')
+               END IF
                GO TO 100
    17          CONTINUE
 C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
@@ -1021,7 +1028,7 @@ C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
                   IDOPARIO = ABS(IDOPARIO)
 #if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                   IF( IDOPARIO .ne. IDOPARIO_SAVE )THEN
-C                   we do not want to broadcast integrals if not 
+C                   we do not want to broadcast integrals if not
 C                   necessary! - SK- 20-03-2008
                     IDOPARIO = IDOPARIO_SAVE
                   END IF
@@ -1030,7 +1037,7 @@ C                   necessary! - SK- 20-03-2008
                   IF( IDOPARIO .ne. 0 ) THEN
                     WRITE(LUPRI,'(//3A,I6)')
      &                    '*** ERROR in ROPTINP *** ',
-     &                    ' No slaves in sequential run, no integral 
+     &                    ' No slaves in sequential run, no integral
      &                      handling needed: ',
      &                     IDOPARIO
                     IDOPARIO = 0
@@ -1039,7 +1046,7 @@ C                   necessary! - SK- 20-03-2008
                   IF( IDOPARIO .gt. 1 ) THEN
                    WRITE(LUPRI,'(//3A,I6)')
      &                    '*** ERROR in ROPTINP *** ',
-     &                    'Illegal integral handling option for 
+     &                    'Illegal integral handling option for
      &                     slaves in parallel run: ',
      &                     IDOPARIO
                    IDOPARIO = 0
@@ -1047,81 +1054,24 @@ C                   necessary! - SK- 20-03-2008
 #endif
                GO TO 100
    18          CONTINUE
-C&&& .MEMFAC: multiplier for subtracted scratch memory in
-C             luciarel/ciinfo_r.F - Z_BLKFO_REL
-                  READ(LUCMD,*) IMEMFAC 
-                  IF( IMEMFAC .LE. 0 ) THEN
-                    WRITE(LUPRI,'(//3A,I6)')
-     &                    '*** ERROR in ROPTINP *** ',
-     &                    ' Illegal multiplier for ',
-     &                    ' subtracting scratch memory: ',
-     &                     IMEMFAC
-                    CALL QUIT('*** ERROR in ROPTINP *** ' //
-     &                    'Illegal memory multiplier')
-                  END IF
-                  GO TO 100
+               GO TO 100
    19          CONTINUE
-C&&& .NOOCCN: calculate natural orbitals occupation numbers with
-C             LUCIAREL
-               NATOLCR = .TRUE.
+C&&& .NOOCCN: calculate natural orbitals occupation numbers (with LUCIAREL)
+               NATOLCR      = .TRUE.
                GO TO 100
    20          CONTINUE
-C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts 
+C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts
                CRDFO_MAT = .TRUE.
                GO TO 100
    21          CONTINUE
-C&&& .WRTFCK: write fock matrix in CI start guess module 
+C&&& .WRTFCK: write fock matrix in CI start guess module
                CWRTFO_MAT = .TRUE.
                GO TO 100
    22          CONTINUE
-C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
-               CSHMEMO = .TRUE.
-               READ(LUCMD,*) ISHMEM_TYPE
-#if !defined (VAR_MPI2)
-                  IF( CSHMEMO ) THEN
-                    WRITE(LUPRI,'(//3A)')
-     &                    '*** ERROR in ROPTINP *** ',
-     &                    ' shared memory calculations in sequential',
-     &                    ' mode are not permitted '
-                    CALL QUIT('*** ERROR in ROPTINP *** ' //
-     &                    ' sequential run but MPI routines requested')
-                  END IF
-#else
-                  IF( ISHMEM_TYPE .gt. 6 ) THEN
-                   WRITE(LUPRI,'(//A)')
-     &                ' *** ERROR in ROPTINP *** '  
-                   WRITE(LUPRI,'(//A)')
-     &                ' unknown shared memory run-level! '  
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 0: no shared memory in use'
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 1: sharing node-wise (ij|kl)'
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 2: sharing node-wise |C> '
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 3: sharing node-wise (ij|kl) + |C>'
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 4: sharing global (ij|kl) + node-wise |C>'
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 5: sharing global |C> + node-wise (ij|kl)'
-                   WRITE(LUPRI,'(A)')
-     &                ' LEVEL 6: sharing global (ij|kl) + |C> '
-                   WRITE(LUPRI,'(//A,I3)')
-     &                ' you asked for LEVEL ',ISHMEM_TYPE
-                    CALL QUIT('*** ERROR in ROPTINP *** ' //
-     &                    ' unknown shared memory run-level')
-                  END IF
-#endif
                GO TO 100
    23          CONTINUE
-C&&& .IJKLRO: do GAS-scheme specific integral reordering resp. use
-C             reordered integrals  
-               CINT_REORD = .TRUE.
                GO TO 100
    24          CONTINUE
-C&&& .IJKLSP: integral TT block allocation based on TTSS block
-C             distribution scheme
-               CINT_SPLIT = .TRUE.
                GO TO 100
    25          CONTINUE
 C&&& .GENFOC: generate Fock-type orbitals as start orbitals for CI 
@@ -1133,9 +1083,9 @@ C             MCSCF wavefunction.
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
-     *            '" not recognized in STEP CONTROL.'
+     *            '" not recognized in *OPTIMIZE.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in STEP CONTROL.')
+               CALL QUIT('Illegal prompt in *OPTIMIZE.')
             END IF
       END IF
   300 CONTINUE
@@ -1154,7 +1104,7 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' ROPTINP: Set-up for wave function optimization'
+     &   ' ROPTINP: Set-up for MCSCF wave function optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       IF (MAXCIT .GE. 0) THEN
@@ -1180,16 +1130,20 @@ C
      &     ' * Analyzing CI vectors in terms of coefficients '
       END IF
 C
-      IF (NCIROOT.GT.1) THEN
-         WRITE(LUPRI,'(A,I3)')
-     &        ' * Number of CI roots optimized: ',NCIROOT
-         IF (MAXCIT.EQ.-1) THEN
-            CALL QUIT(' COMHAM option always treats ALL roots. ')
-         END IF
-      END IF
-C
       IF (MXCIV.GT.0) WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum subspace dimension set to ',MXCIV
+C
+      IF( IDOPARIO .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &     ' * Integrals also for slaves assumed to be in place'
+        WRITE(LUPRI,'(A)')
+     &     '   No integral broadcast from MASTER to slaves.'
+      ELSE
+#if defined (VAR_MPI)
+        WRITE(LUPRI,'(A)')
+     &     ' * Integrals on slave nodes provided by the MASTER'
+#endif
+      END IF
 C
       WRITE(LUPRI,'(A,I4)')
      &     ' * Start guess code : ',IOPTST
@@ -1199,8 +1153,6 @@ C
 C
       IF ( OPT_NOFQX ) WRITE (LUPRI, '(A)' )
      &     ' * FQX and FQT approximate with DV * FV.'
-      IF( IMEMFAC .NE. 9 ) WRITE (LUPRI, '(A,I3)' )
-     &     ' * Multiplier for memory guess: ',IMEMFAC
 C
 C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------
@@ -1232,6 +1184,10 @@ C
          WRITE(LUPRI,'(A)') ' * No transformation of orbitals'//
      &                      ' to Fock-type or natural orbitals.'
       END IF
+C     ... only natural orbitals occupation numbers
+      IF( NATOLCR )THEN
+        WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
+      END IF
 C
       IF (COMPROT) WRITE(LUPRI,'(A/A,1P,D12.2,A)')
      &     ' * Compress orbital rotations during optimization',
@@ -1240,20 +1196,767 @@ C
       WRITE(LUPRI,'(A,I3)')
      &     ' * Default integral transformation level  :',KTRLVL
       
-      IF( IDOPARIO .eq. 1 )THEN
-      WRITE(LUPRI,'(A)')
-     &     ' * Integrals also for slaves assumed to be in place'
-      WRITE(LUPRI,'(A)')
-     &     '   No integral broadcast from MASTER to slaves.'
+      IF( GENFOCK )THEN
+        WRITE(LUPRI,'(A)') 
+     &     ' * Generate Fock-type positronic/inactive/virtual '//
+     &     '   starting orbitals'
       END IF
-      IF( NATOLCR )THEN
-        WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
+C
+  400 RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rci_inp */
+      SUBROUTINE RCI_INP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     CI optimization control input section.
+C
+C     Written by S. Knecht and Hans Joergen Aa. Jensen
+C     Last revision: 08.08.2008
+C
+C                    'old statements':
+C
+C                    Added CI keyword CIROOT. Timo Fleig
+C                    05.01.2005
+C                    Added CI keyword ANALYZ. Timo Fleig
+C                    Added CI keyword PARINT. Stefan Knecht
+C                    29.06.2007
+C                    Added CI keyword MEMFAC. Stefan Knecht
+C                    04.07.2007
+C                    Added CI keyword RDFOCK. Stefan Knecht
+C                    October 2007
+C                    Added CI keyword WRTFCK. Stefan Knecht
+C                    October 2007
+C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht
+C                    20.11.2007
+C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
+C                    20.11.2007
+C                    
+C     Major revision by S. Knecht: Aug 2008
+C
+C                    All CI-related keywords have been moved to this new 
+C                    input section *KRCICALC. 
+C                    Purpose: disentanglement of MCSCF/CI optimization
+C                    input and start-up --> "modularize"
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+      PARAMETER (NTABLE = 40)
+      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
+C
+      LOGICAL SET, NEWDEF, RESET, LBIT
+      CHARACTER*4 REPNA(64)
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
+      DIMENSION WORK(LWORK), MULTB_TMP(64,64)
+      INTEGER IKWSET(NTABLE)
+C
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbkrci.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+C
+      SAVE SET
+      DATA TABLE /'.MAX CI','.OPERAT','.RSTRCI','.ANALYZ','.CIROOT',
+     &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
+     &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
+     &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
+     &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
+     &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
+     &            '.CASSCF','.SYMMET','-------','.RELSYM','-------',
+     &            '-------','-------','-------','-------','-------'/
+      DATA SET/.FALSE./
+C
+#include "ibtfun.h"
+#include "sdpre.h"
+#include "memint.h"
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+      CALL IZERO(IKWSET,NTABLE)
+C
+C     Initialize /CBLKRCI/
+C     ===================
+C
+      KRCI_UCIBOS     = .FALSE.
+      KRCI_MKCNST     = .FALSE.
+      CRDFO_MAT_KRCI  = .FALSE.
+      CWRTFO_MAT_KRCI = .FALSE.
+      CSHMEMO_KRCI    = .FALSE.
+      CINT_REORD_KRCI = .FALSE.
+      CINT_SPLIT_KRCI = .FALSE.
+      NATOLCR_KRCI    = .FALSE.
+C
+C     Initialize /CBIKRCI/
+C     ===================
+C
+      IPRKRCI   = IPRGEN
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
+      IKRCI_INTBUF    = 0
+      IKRCI_INTFLG    = 0
+      IKRCI_ITRINT(1) = 0
+      IKRCI_ITRINT(2) = 0
+      IKRCI_SYMMETRY  = 1
+      NKRCIGAS        = 0
+      NKRCI_MK2REF    = 0
+      NKRCI_MK2DEL    = 0
+      NKRCI_MINMK2    = 0
+      NKRCI_MAXMK2    = 0
+C
+C     Initialize /CBRKRCI/
+C     ===================
+C
+      DKRCI_CNVINT(1) = DUMMY
+      DKRCI_CNVINT(2) = DUMMY
+      DKRCI_THRPCI = 1.0D-3
+C
+C     Initialize /DCOKRCI/
+C     ===================
+C
+      DO I = 1,2
+         NKRCIISH(I) = 0
+         NKRCIASH(I) = 0
+         NKRCISSH(I) = 0
+         NKRCIPSH(I) = 0
+         NKRCIFRO(I) = 0
+         DO J = 1, MXMCGAS
+            NKRCIGSH(I,J) = 0
+            NKRCIGSP(I,J) = 0
+         END DO
+      END DO
+      NKRCIAELEC = -1
+C
+C     Initialize /DCCKRCI/
+C     ===================
+C
+      KRCI_CIPROGRAM = 'GOSCI'
+C
+C     Initialize /DCICKRCI/
+C     ===================
+C
+      MAXCIT_KRCI   =    4
+      MXCIV_KRCI    =    0
+      NCIROOT_KRCI  =    1
+      IANACI_KRCI   =    0
+      KTRLVL_KRCI   =    3
+      IRESTRK_KRCI  =    0
+      IKRCI_MEMFAC  =    9
+#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
+      IDOPARIO_KRCI =    1
+#else
+      IDOPARIO_KRCI =    0
+#endif
+C     ... in "krciprop.h"
+      NPROP_KRCI  =    0
+      DOPROP_KRCI = .FALSE.
+C     ... in dcbopt.h
+      ISHMEM_TYPE =  - 1
+C
+C
+C     Process input for *KRCICALC
+C     ===========================
+C
+      NEWDEF = (WORD .EQ. '*KRCICA')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31,32,33,34,35,36,37,38,39,40)
+     &                     , I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in KRCICA.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in KRCICA.')
+    1          CONTINUE
+C&&& .MAX CI ITER...: maximum number of initial CI iterations.
+                  READ(LUCMD,*) MAXCIT_KRCI
+               GO TO 100
+    2          CONTINUE
+C&&& .OPERATOR: define one-electron operator to use in 
+C               CI property calculation
+                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
+     &                        WORK,LWORK,IPROPPRINT)
+                  CALL OP1IND('KRCIPR',LUCIINDTRP,LPROP_KRCI,
+     &                        NPROP_KRCI,INDXPR,MXLUCIPRP)
+                  DOPROP_KRCI = .TRUE.
+               GO TO 100
+    3          CONTINUE
+C&&& .RSTRCI: Restart CI from vector on file (1) or not (0)
+                  READ(LUCMD,*) IRESTRK_KRCI
+               GO TO 100
+    4          CONTINUE
+C&&& .ANALYZ: Analyze LUCIAREL CI vector(s)
+                  IANACI_KRCI = 1
+               GO TO 100
+    5          CONTINUE
+C&&& .CIROOT: Number of CI roots to be optimized
+                  READ(LUCMD,*) NCIROOT_KRCI
+               GO TO 100
+    6          CONTINUE
+C&&& .MXCIVE: Number of CI vectors allowed for subspace
+                  READ(LUCMD,*) MXCIV_KRCI
+               GO TO 100
+    7          CONTINUE
+C&&& .KTRLVL: default integral transformation level.
+               READ(LUCMD,*) KTRLVL_KRCI
+               IF (KTRLVL_KRCI .LE. -2 .OR. KTRLVL_KRCI .GT. 5) THEN
+                  WRITE(LUPRI,'(//2A,I10)')
+     &                '*** ERROR in RCI_INP *** ',
+     &                'Illegal transformation level: ',KTRLVL_KRCI
+                  CALL QUIT('*** ERROR in RCI_INP *** ' //
+     &                 'Illegal transformation level')
+               END IF
+    8          CONTINUE
+C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
+#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
+               IDOPARIO_SAVE = IDOPARIO_KRCI
+#endif
+               READ(LUCMD,*) IDOPARIO_KRCI
+               IDOPARIO_KRCI = ABS(IDOPARIO_KRCI)
+#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
+               IF( IDOPARIO_KRCI .ne. IDOPARIO_SAVE )THEN
+C                 we do not want to broadcast integrals if not 
+C                 necessary! - SK- 20-03-2008
+                  IDOPARIO_KRCI = IDOPARIO_SAVE
+               END IF
+#endif
+#if !defined (VAR_MPI)
+               IF( IDOPARIO_KRCI .ne. 0 ) THEN
+                  WRITE(LUPRI,'(//3A,I6)')
+     &                  '*** ERROR in RCI_INP *** ',
+     &                  ' No slaves in sequential run, no integral 
+     &                    handling needed: ',
+     &                   IDOPARIO_KRCI
+                  IDOPARIO_KRCI = 0
+               END IF
+#else
+               IF( IDOPARIO_KRCI .gt. 1 ) THEN
+                  WRITE(LUPRI,'(//3A,I6)')
+     &                  '*** ERROR in RCI_INP *** ',
+     &                  'Illegal integral handling option for 
+     &                   slaves in parallel run: ',
+     &                   IDOPARIO_KRCI
+                  IDOPARIO_KRCI = 0
+                END IF
+#endif
+               GO TO 100
+    9          CONTINUE
+C&&& .MEMFAC: multiplier for subtracted scratch memory in
+C             luciarel/ciinfo_r.F - Z_BLKFO_REL
+               READ(LUCMD,*) IKRCI_MEMFAC
+               IF( IKRCI_MEMFAC .LE. 0 ) THEN
+                  WRITE(LUPRI,'(//3A,I6)')
+     &                  '*** ERROR in RCI_INP *** ',
+     &                  ' Illegal multiplier for ',
+     &                  ' subtracting scratch memory: ',
+     &                   IKRCI_MEMFAC
+                  CALL QUIT('*** ERROR in RCI_INP *** ' //
+     &                 'Illegal memory multiplier')
+               END IF
+               GO TO 100
+   10          CONTINUE
+C&&& .NOOCCN: calculate natural orbitals occupation numbers with
+C             LUCIAREL
+                  NATOLCR_KRCI = .TRUE.
+               GO TO 100
+   11          CONTINUE
+C&&& .RDFOCK: read fock matrix from file useful for LUCIAREL restarts 
+                  CRDFO_MAT_KRCI = .TRUE.
+               GO TO 100
+   12          CONTINUE
+C&&& .WRTFCK: write fock matrix in CI start guess module 
+                  CWRTFO_MAT_KRCI = .TRUE.
+               GO TO 100
+   13          CONTINUE
+C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
+                  CSHMEMO_KRCI = .TRUE.
+                  READ(LUCMD,*) ISHMEM_TYPE
+#if !defined (VAR_MPI2)
+               IF( CSHMEMO_KRCI ) THEN
+                  WRITE(LUPRI,'(//3A)')
+     &                  '*** ERROR in RCI_INP *** ',
+     &                  ' shared memory calculations in sequential',
+     &                  ' mode are not permitted '
+                  CALL QUIT('*** ERROR in RCI_INP *** ' //
+     &                  ' sequential run but MPI routines requested')
+               END IF
+#else
+               IF( ISHMEM_TYPE .gt. 6 ) THEN
+                  WRITE(LUPRI,'(//A)')
+     &               ' *** ERROR in RCI_INP *** '  
+                  WRITE(LUPRI,'(//A)')
+     &               ' unknown shared memory run-level! '  
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 0: no shared memory in use'
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 1: sharing node-wise (ij|kl)'
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 2: sharing node-wise |C> '
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 3: sharing node-wise (ij|kl) + |C>'
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 4: sharing global (ij|kl) + node-wise |C>'
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 5: sharing global |C> + node-wise (ij|kl)'
+                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 6: sharing global (ij|kl) + |C> '
+                  WRITE(LUPRI,'(//A,I3)')
+     &               ' you asked for LEVEL ',ISHMEM_TYPE
+                  CALL QUIT('*** ERROR in RCI_INP *** ' //
+     &                  ' unknown shared memory run-level')
+               END IF
+#endif
+               GO TO 100
+   14          CONTINUE
+C&&& .IJKLRO: do GAS-scheme specific integral reordering resp. use
+C             reordered integrals  
+                  CINT_REORD_KRCI = .TRUE.
+               GO TO 100
+   15          CONTINUE
+C&&& .IJKLSP: integral TT block allocation based on TTSS block
+C             distribution scheme
+                  CINT_SPLIT_KRCI = .TRUE.
+               GO TO 100
+   16          CONTINUE
+C&&& PRINT : General print level in KRCI-module
+                  READ(LUCMD,*) IPRKRCI
+               GO TO 100
+   17          CONTINUE
+C&&& .MAKE COFFEE:
+               WRITE(LUPRI,'(2A)')
+     &             ' *** Nice try: Ask your local coffee machine ***',
+     &             ' *** how to prepare coffee...'
+               GO TO 100
+   18          CONTINUE
+C&&& CNVINT: Convergence thresholds for adding SL- and SS-integrals
+                  READ(LUCMD,*) DKRCI_CNVINT(1),DKRCI_CNVINT(2)
+               GO TO 100
+   19          CONTINUE
+C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
+                  READ(LUCMD,*) IKRCI_ITRINT(1),IKRCI_ITRINT(2)
+               GO TO 100
+   20          CONTINUE
+C&&& INTFLG: Specify what two-itegrals should be included in this run
+                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               GO TO 100
+   21          CONTINUE
+C&&& THRPCI: threshold for printing CI vector
+                  READ(LUCMD,*) KRCI_THRPCI
+               GO TO 100
+   22          CONTINUE
+C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
+               IF (IKWSET(22) .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
+               READ(LUCMD,*) IKRCI_SYMMETRY
+               KRCI_UCIBOS = .TRUE.
+               IKWSET(22) = 2
+               GO TO 100
+   23          CONTINUE
+C&&& MIN MK2: minimum value of 2 * MK
+               READ(LUCMD,*) NKRCI_MINMK2
+               IKWSET(23) = 1
+               GO TO 100
+   24          CONTINUE
+C&&& MAX MK2: maximum value of 2 * MK
+               READ(LUCMD,*) NKRCI_MAXMK2
+               IKWSET(24) = 1
+               GO TO 100
+   25          CONTINUE
+C&&& GASSH: GAS setup
+                  IF (NKRCIGAS .GT. 0) THEN
+                     CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                 'You cannot specify both .GASSH and .CASSCF')
+                  END IF
+                  READ(LUCMD,*) NKRCIGAS
+                  IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+                     CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                         'illegal value of NKRCIGAS')
+                  END IF
+                  DO I = 1, NKRCIGAS
+                     READ(LUCMD,*) (NKRCIGSH(J,I),J=1,NFSYM)
+                  END DO
+               GO TO 100
+   26          CONTINUE
+C&&& GASSPC: GAS space constraints
+                  IF (NKRCIGAS .EQ. 0) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in KRCICALC ***'
+     &                  //' .GASSH must be specified before .GASSP!'
+                     CALL QUIT('*** ERROR in KRCICALC ***')
+                  END IF
+                  DO I = 1, NKRCIGAS
+                     READ(LUCMD,*) (NKRCIGSP(J,I),J=1,2)
+                  END DO
+                  IF (NKRCIAELEC.LT.0) NKRCIAELEC = NKRCIGSP(2,NKRCIGAS)
+               GO TO 100
+   27          CONTINUE
+C&&& MK2REFERENCE: 2 * M_K reference
+                  READ(LUCMD,*) NKRCI_MK2REF
+                  IKWSET(27) = 1
+               GO TO 100
+   28          CONTINUE
+C&&& MK2DELTA: 2 * DELTA M_K
+                  READ(LUCMD,*) NKRCI_MK2DEL
+                  IKWSET(28) = 1
+               GO TO 100
+   29          CONTINUE
+C&&&  CI PROGRAM: which CI program to use
+                  READ(LUCMD,'(A)') KRCI_CIPROGRAM
+               GO TO 100
+   30          CONTINUE
+C&&&  INACTIVE ORBITALS
+                  READ(LUCMD,*) (NKRCIISH(I),I=1,NFSYM)
+               GO TO 100
+   31          CONTINUE
+C&&&  CASSCF -- this defines a CAS space
+               IF (NKRCIGAS .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                 'You cannot specify both .GASSH and .CASSCF')
+               END IF
+                  READ(LUCMD,*) NKRCIAELEC
+                  READ(LUCMD,*) (NKRCIASH(I),I=1,NFSYM)
+                  NKRCIGAS = 1
+                  NKRCIGSP(1,NKRCIGAS) = NKRCIAELEC
+                  NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC 
+               GO TO 100
+   32          CONTINUE
+C&&&  SYMMETRY: symmetry of the wave function
+               IF (IKWSET(22) .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
+               READ(LUCMD,*) IKRCI_SYMMETRY
+               IKWSET(22) = 1
+               GO TO 100
+   33          CONTINUE
+               GO TO 100
+   34          CONTINUE
+C&&&  RELSYM: use relativistic double group symmetry of the wave function
+C              including spin in symmetry
+               IF (IKWSET(22) .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
+               READ(LUCMD,*) IKRCI_SYMMETRY
+               KRCI_UCIBOS = .FALSE.
+               IKWSET(22) = 2
+               GO TO 100
+   35          CONTINUE
+               GO TO 100
+   36          CONTINUE
+               GO TO 100
+   37          CONTINUE
+               GO TO 100
+   38          CONTINUE
+               GO TO 100
+   39          CONTINUE
+               GO TO 100
+   40          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in KRCICALC.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in KRCICALC.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+      IF (.NOT. NEWDEF) GOTO 400
+C
+C
+      IF(DOLVC) ISSINT = 0
+      IF (LEVYLE) THEN
+        ISLINT = 0
+        ISSINT = 0
+      ENDIF
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+      ENDIF
+      IKRCI_INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
+      IF(DKRCI_CNVINT(1).LT.DUMMY) IKRCI_ITRINT(1) = 1
+      IF(DKRCI_CNVINT(2).LT.DUMMY) IKRCI_ITRINT(2) = 1
+C
+      IF (NKRCIGAS .GT. 0) THEN
+         NKRCIASHT = 0
+         DO J = 1, NFSYM
+            NKRCIASH(J) = 0
+            DO I = 1, NKRCIGAS
+               NKRCIASH(J) = NKRCIASH(J) + NKRCIGSH(J,I)
+            END DO
+            NKRCIASHT = NKRCIASHT + NKRCIASH(J)
+         END DO
+      END IF
+C
+C
+C     Check that the number of orbitals is less than MAXASH
+C     -----------------------------------------------------
+C
+C
+      NTEST = 0
+      DO J = 1, NFSYM
+         NTEST = NTEST + NKRCIASH(J)
+      END DO
+      IF (NTEST .GT. MAXASH) THEN
+        WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &       ' *** ERROR in KRCICALC *** Too many active orbitals: ',
+     &       NTEST, ' -- max is ',MAXASH
+        CALL QUIT('*** ERROR in KRCICALC *** Too many active orbitals!')
+      END IF
+C
+C     Use boson symmetry for CI expansion for the spin-free and
+C     the Levy-Leblond Hamiltonian, if KRCI_UCIBOS not set in input.
+C
+      IF (IKWSET(22).LE.1 .AND. (SPINFR)) THEN
+         KRCI_UCIBOS = .TRUE.
+      END IF
+c     krci_ucibos = .false.
+C
+C
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)')
+     &   ' KRCICALC: General set-up for KR-CI calculation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Inactive orbitals     : ',(NKRCIISH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Active orbitals       : ',(NKRCIASH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * Active electrons      : ',NKRCIAELEC
+      IF (NKRCIGAS .GT. 0) THEN
+         WRITE(LUPRI,'(A,I3,A)')
+     &        ' * GAS space setup for ',NKRCIGAS,' GAS space(s) : '
+         DO I = 1, NKRCIGAS
+            WRITE(LUPRI,'(A,I3,A,2I4)')
+     &           '   - GAS space ',I,'       : ',
+     &           (NKRCIGSH(J,I),J=1,NFSYM)
+            WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &      '    (constraints: min/max active electrons after space : ',
+     &           NKRCIGSP(1,I),'/',NKRCIGSP(2,I),')'
+         END DO
+         IF (NKRCIGSP(2,NKRCIGAS) .NE. NKRCIAELEC)
+     &        CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &        'Inconsistency between .GASSP and .CASSCF')
+      END IF
+      WRITE(LUPRI,'(2A)')
+     &     ' * CI program used       : ',KRCI_CIPROGRAM
+C
+C     Symmetry of the wave function:
+C     ------------------------------
+C
+C
+C     MK constraints in the CI expansion.
+C
+      IF (IKWSET(23) .EQ. 1 .AND. IKWSET(24) .EQ. 1) THEN
+C
+C        MINMK2/MAXMK2 explicitly set
+C
+      ELSE
+         IF (IKWSET(27) .EQ. 1 .AND. IKWSET(28) .EQ. 1) THEN
+C
+C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
+C
+            KRCI_MKCNST = .TRUE.
+            NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
+            NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
+C
+         ELSE
+C
+C           Assign default values for MINMK2/MAXMK2
+C
+            NKRCI_MAXMK2 = 2*MIN(NKRCIAELEC,NKRCIASHT) - NKRCIAELEC
+            NKRCI_MINMK2 = NKRCIAELEC-2*MIN(NKRCIAELEC,NKRCIASHT)
+            NKRCI_MK2REF = 0
+            NKRCI_MK2DEL = NKRCI_MAXMK2
+         END IF
+      END IF
+C
+C     Boson symmetry in the CI expansion
+C
+      IF ((SPINFR).AND.KRCI_UCIBOS) THEN
+         NREP = NBSYM
+         WRITE(LUPRI,'(A)')
+     &     ' * Boson spatial spinor symmetry used in CI expansion.'
+         WRITE(LUPRI,'(2A)')
+     &     ' * Spatial symmetry (boson) of wave function : ',
+     &     REP ( IKRCI_SYMMETRY - 1 )
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of 2 * MS :',
+     &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
+      ELSE IF (.NOT.(SPINFR).AND.KRCI_UCIBOS) THEN
+         NREP = NBSYM
+         WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
+     &     ' symmetry (as non-rel) used in CI expansion.'
+         WRITE(LUPRI,'(2A)')
+     &    ' * Approximate spatial symmetry (boson) of wave function : ',
+     &     REP ( IKRCI_SYMMETRY - 1 )
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of approximate 2 * MS :',
+     &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
+      ELSE
+         IF (SPINFR) THEN
+            CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+         ELSE
+            CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+         ENDIF
+         IF ( MOD ( NKRCIAELEC, 2 ) .EQ. 0 ) THEN
+            IRRP = NREP + IKRCI_SYMMETRY
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (boson) of wave function: ',
+     &        REPNA(IRRP)
+         ELSE
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (fermion) of wave function: ',
+     &        REPNA(IKRCI_SYMMETRY)
+         END IF
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of 2 * MK :',
+     &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
+      END IF
+C
+      IF (KRCI_CIPROGRAM .eq. 'LUCIAREL' ) THEN
+         WRITE(LUPRI,'(A,I4)')
+     &' * Using symmetry nomenclature for LUCIAREL. '
+         WRITE(LUPRI,'(A,I4)')
+     &'      Boson and Fermion irreps of complex (sub)groups  '
+      ELSE
+         IF (IKRCI_SYMMETRY .GT. NREP) THEN
+            WRITE(LUPRI,'(/A//A,2I3)')
+     &         ' INPUT ERROR, requested .SYMMETRY is non-existent!',
+     &         ' symmetry, max value of symmetry = ', 
+     &           IKRCI_SYMMETRY, NREP
+            CALL QUIT('INPUT ERROR for *KRCICALC .SYMMETRY')
+         END IF
+      END IF
+C
+      WRITE(LUPRI,'(A)')
+     +    ' * Contributions from 2-electron integrals to Fock matrix:'
+      IF(LBIT(IKRCI_INTDEF,1)) THEN
+        WRITE(LUPRI,'(A)') '   LL-integrals.'
+      ENDIF
+      IF(LBIT(IKRCI_INTDEF,2)) THEN
+        IF(DKRCI_CNVINT(1).LT.DUMMY) THEN
+          WRITE(LUPRI,'(A,E8.1)')
+     &    '   SL-integrals  below KR-CI convergence ',DKRCI_CNVINT(1)
+        ELSE
+          WRITE(LUPRI,'(A,I4)')
+     &    '   SL-integrals from iteration ',IKRCI_ITRINT(1)
+        ENDIF
+      ENDIF
+      IF(LBIT(IKRCI_INTDEF,3)) THEN
+        IF(DKRCI_CNVINT(2).LT.DUMMY) THEN
+          WRITE(LUPRI,'(A,E8.1)')
+     &    '   SS-integrals below KR-CI convergence ',DKRCI_CNVINT(2)
+        ELSE
+          WRITE(LUPRI,'(A,I4)')
+     &    '   SS-integrals from iteration ',IKRCI_ITRINT(2)
+        ENDIF
+      ENDIF
+      WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRCI
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)')
+     &   ' Control parameters for KR-CI optimization'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+      IF (NCIROOT_KRCI.GT.1) THEN
+         WRITE(LUPRI,'(A,I3)')
+     &        ' * Number of CI roots to be optimized: ',NCIROOT_KRCI
+         IF (MAXCIT_KRCI.EQ.-1) THEN
+            CALL QUIT(' COMHAM option always treats ALL roots. ')
+         END IF
+      END IF
+C
+      IF (MAXCIT_KRCI .GE. 0) THEN
+         WRITE(LUPRI,'(A,I3)')
+     &     ' * Maximum number of CI iterations: ',MAXCIT_KRCI
+      ELSE
+         WRITE(LUPRI,'(A)')
+     &     ' * Full CI '
+      END IF
+C
+      IF (IRESTRK_KRCI.EQ.1) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * Restarting CI from C vector on LUCIAREL file '
+      END IF
+C
+      IF (IANACI.EQ.1) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * Analyzing CI vectors in terms of coefficients '
+      END IF
+C
+      IF (MXCIV_KRCI .gt.0 ) WRITE(LUPRI,'(A,I3)')
+     &     ' * Maximum subspace dimension set to ',MXCIV_KRCI
+C
+      IF( IKRCI_MEMFAC .ne. 9 ) WRITE (LUPRI, '(A,I3)' )
+     &     ' * Multiplier for memory guess: ',IKRCI_MEMFAC
+      
+      IF( IDOPARIO_KRCI .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &     ' * Integrals also for slaves assumed to be in place'
+        WRITE(LUPRI,'(A)')
+     &     '   No integral broadcast from MASTER to slaves.'
+      ELSE
+#if defined (VAR_MPI)
+        WRITE(LUPRI,'(A)') 
+     &     ' * Integrals on slave nodes provided by the MASTER'
+#endif
       END IF
 C     no shared memory mode for non MPI-2 executables 
 #if !defined (VAR_MPI2)
-      IF( CSHMEMO ) CSHMEMO = .FALSE.
+      IF( CSHMEMO_KRCI ) CSHMEMO_KRCI = .FALSE.
 #endif
-      IF( CSHMEMO )THEN
+      IF( CSHMEMO_KRCI )THEN
         WRITE(LUPRI,'(A)') 
      &     ' * Running in parallel MPI-2 "shared memory" mode'
         IF( ISHMEM_TYPE .eq. 0) THEN
@@ -1279,18 +1982,27 @@ C     no shared memory mode for non MPI-2 executables
      &     ' --> chosen level 6: sharing global (ij|kl) + |C> vector  '
         END IF
       END IF
-      IF( CINT_REORD )THEN
+      IF( CINT_REORD_KRCI )THEN
         WRITE(LUPRI,'(A)') 
-     &     ' * Using GAS-scheme specific integral file       '
+     &     ' * GAS-scheme specific integral file  in use '
       END IF
-      IF( CINT_SPLIT )THEN
+      IF( CINT_SPLIT_KRCI )THEN
         WRITE(LUPRI,'(A)') 
-     &     ' * Using revised integral allocation scheme      '
+     &     ' * Revised integral allocation scheme '
       END IF
-      IF( GENFOCK )THEN
-        WRITE(LUPRI,'(A)') 
-     &     ' * Generate Fock-type positronic/inactive/virtual orbitals'
+C     ... only natural orbitals occupation numbers
+      IF( NATOLCR_KRCI )THEN
+        WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
       END IF
+      IF( DOPROP_KRCI ) THEN
+        WRITE(LUPRI,'(A//)')
+     &     ' * Property calculation for the following'// 
+     &     ' one-electron operators: '
+        DO I = 1, NPROP_KRCI
+          INDXPR = LPROP_KRCI(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
 C
   400 RETURN
       END

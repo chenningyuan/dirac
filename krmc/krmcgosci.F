@@ -290,13 +290,13 @@ C
 C     Setup GAS stuff
 C     ---------------
 C
-      IF (NGAS .GT. 0) THEN
+      IF (NGAS_DC .GT. 0) THEN
 C
          CALL IZERO(MSKGAS,MXMCGAS)
 C
          L = 1
          DO I = 1, NFSYM
-            DO J = 1, NGAS
+            DO J = 1, NGAS_DC
                DO K = 1, NGSH(I,J)
                   MSKGAS(J) = IBTOR(MSKGAS(J),L)
                   L = L * 2
@@ -305,17 +305,17 @@ C
          END DO
 C
 #ifdef MOD_DEBUG
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             write(lupri,*) 'gas bit mask before: ',i,mskgas(i)
          END DO
 #endif
 C
-         DO I = 2, NGAS
+         DO I = 2, NGAS_DC
             MSKGAS(I) = MSKGAS(I-1) + MSKGAS(I)
          END DO
 C
 #ifdef MOD_DEBUG
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             write(lupri,*) 'gas bit mask after: ',i,mskgas(i)
          END DO
 #endif
@@ -474,9 +474,9 @@ C
 #include "ibtfun.h"
 C
       GOSCI_GASOK = .TRUE.
-      IF (NGAS .EQ. 0) RETURN
+      IF (NGAS_DC .EQ. 0) RETURN
 C
-      DO IGAS = 1, NGAS
+      DO IGAS = 1, NGAS_DC
          IGA = IBTAND(MSKGAS(IGAS),IA)
          IGB = IBTAND(MSKGAS(IGAS),IB)
          CALL FNBITS(NA,IGA,IBTAB)
@@ -2520,7 +2520,7 @@ C     electrons in gas spaces.
 C
       J = 1
       NGTOT = 0
-      DO I = 1, NGAS
+      DO I = 1, NGAS_DC
 C
          NGTOT = NGTOT + NGSHT(I)
          NGSPC(J) = MAX(0,NGSP(1,I) - NGTOT)
@@ -2529,7 +2529,7 @@ C        write(lupri,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
          J = J + 2
       END DO
 C
-      CALL CGENDET(IEL,NASHT,NSTR,ISTR,NGAS,MSKGAS,NGSPC,MAXDET)
+      CALL CGENDET(IEL,NASHT,NSTR,ISTR,NGAS_DC,MSKGAS,NGSPC,MAXDET)
 C
       RETURN
       END

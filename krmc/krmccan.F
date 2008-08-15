@@ -763,15 +763,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck RPROP */
-      SUBROUTINE RPROP(WORK,LWORK)
+      SUBROUTINE RPROP_KRCI(WORK,LWORK)
 C***********************************************************************
 C
 C     1. calculate property matrix for list of (symmetric) one-electron
-C        operators.
+C        (or later also two-electron) operators.
 C
 C     2. calculate final properties, e.g., transition dipole moments. 
 C
-C     Written by S. Knecht - Mon Jul 28 2008
+C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
 #include "implicit.h"
@@ -786,9 +786,23 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbopt.h"
+#include "krciprop.h"
 C
       DIMENSION WORK(*)
 C
 #include "memint.h"
-C     
+C
+C     introduce property task
+C
+      CALL TITLER('KR-CI property calculation ','*',199)
+C
+      WRITE(LUPRI,9000)
+ 9000 FORMAT(
+     &     3X,'This is output from the DIRAC KR-CI property module',/,
+     &     //,
+     &     3X,'Written by: ',/,
+     &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
+     &     1X,79('*'))
+C
+C
       END
