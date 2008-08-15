@@ -372,7 +372,7 @@ C
       IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
 C
 C***********************************************************************
-C***** C O S C I        stand-alone version of RESOVE    ***************
+C***** C O S C I        stand-alone version of RESOLVE   ***************
 C*****                  some routines in krmc are merged ***************
 C*****                  to get efficiency and make it    ***************
 C*****                  possible to calculate density
@@ -390,24 +390,31 @@ C           ... and recalculate DCBORB.
 CMI  ... this routine is not defined !
 CMI      CALL SY_COSCI(WORK,LWORK)
       END IF
-
-C
-C
-#if defined (UNDEF)
 C
 C***********************************************************************
 C***** C I *************************************************************
 C***********************************************************************
 C
-      IF(DOCI.AND.DOPSI) THEN
+      IF(DOKRCI.AND.DOPSI) THEN
 C
-C        *************************************************
-C        *** Call PSICI for CI wave function *************
-C        *************************************************
+C        Transfer KR-CI info to common block DCBORB
+C        and recalculate DCBORB.
 C
-         CALL PSICI(WORK,LWORK)
+C        ... reset dcbopt.h
+         CALL OPTINI
+         CALL TKRCIORB
+         CALL SETDC2(0)
+C
+         CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
       END IF
-#endif
+C
+C***********************************************************************
+C***** C C *************************************************************
+C***********************************************************************
+C
+!     IF(DOKRCC.AND.DOPSI) THEN
+!        CALL KRCC_CALC('KR-CC',WFCONV,WORK,LWORK)
+!     END IF
 C
       CALL QEXIT('PAMPSI')
       RETURN
@@ -457,14 +464,14 @@ C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GOSCI) /July 2002 hjaaj
 C
       NAELEC = NAELEC_DHF
-      NGAS   = NOPEN
+      NGAS_DC= NOPEN
       MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
       MINMK2 = NAELEC-2*MIN(NAELEC,NASHT)
       MK2REF = 0
       MK2DEL = MAXMK2
 
       CALL IZERO(NGSHT,MXMCGAS)
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          DO I = 1,NFSYM
             NGSH(I,J) = NACSH(I,J)
             NGSHT(J)  = NGSHT(J) + NGSH(I,J)
@@ -475,7 +482,7 @@ C     initialize min and max accumlated no. of electrons
 C     in each gas space
 C
       XELEC = D0
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          XELEC = XELEC + D2*DF(J)*NGSHT(J)
          NGSP(1,J) = NINT(XELEC)
          NGSP(2,J) = NINT(XELEC)
@@ -493,6 +500,7 @@ C
       MOPT_MXMACRO   = MXMACRO
       MOPT_MAXBCK    = MAXBCK
       IOPT_ISTATE    = 1
+      JKRRUNTYPE     = 0
 C
 C     Set common block DCROPT
 C
@@ -518,6 +526,9 @@ C
       OPT_CIPROGRAM  = 'noone HF'
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = ' '
+      END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = ' '
       END DO
 C
 C
@@ -549,7 +560,7 @@ C
       CALL QENTER('TKRMCORB')
 C
 C
-      NGAS   = NKRMCGAS
+      NGAS_DC= NKRMCGAS
       MK2REF = NKRMC_MK2REF
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
@@ -558,7 +569,7 @@ C
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
-         DO J = 1, NGAS
+         DO J = 1, NGAS_DC
             NGSH(I,J) = NKRMCGSH(I,J)
             NGSHT(J) = NGSHT(J) + NGSH(I,J)
          END DO
@@ -570,7 +581,7 @@ c         NPSH(I) = NKRMCPSH(I)
       END DO
       NAELEC = NKRMCAELEC
 C     min and max electrons in each gas space:
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          NGSP(1,J) = NKRMCGSP(1,J)
          NGSP(2,J) = NKRMCGSP(2,J)
       END DO
@@ -589,6 +600,8 @@ C
       MOPT_MAXBCK    = MKRMC_MAXBCK
       IOPT_ISTATE    = IKRMC_ISTATE
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
+      IMEMFAC        = IKRMC_MEMFAC
+      JKRRUNTYPE     = 1
 C
 C     Set common block DCROPT
 C
@@ -615,11 +628,141 @@ C
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = KRMC_FRZSTR(I)
       END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = KRMC_DELSTR(I)
+      END DO
 C
+C     Set "constant" CI internal variables 
+C
+      NCIROOT     =    1
+      ISHMEM_TYPE =  - 1
+      CSHMEMO     = .FALSE.
+      CINT_REORD  = .FALSE.
+      CINT_SPLIT  = .FALSE.
 C
       CALL QEXIT('TKRMCORB')
-      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck tkrciorb */
+      SUBROUTINE TKRCIORB
+C***********************************************************************
 C
+C     Transfer information from common block DCOCI to 
+C     common block DCBORB and set common block DCxOPT
+C
+C     Based on TKRMCORB.
+C
+C     Written by S. Knecht - Aug 2008
+C     Last revision: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbkrci.h"
+#include "dcbopt.h"
+#include "dcbgosci.h"
+C
+      CALL QENTER('TKRCIORB')
+C
+C
+      NGAS_DC= NKRCIGAS
+      MK2REF = NKRCI_MK2REF
+      MK2DEL = NKRCI_MK2DEL
+      MINMK2 = NKRCI_MINMK2
+      MAXMK2 = NKRCI_MAXMK2
+C     ... do not change MXMCGAS to MXCIGAS; not necessary...
+      CALL IZERO(NGSHT,MXMCGAS)
+      DO I = 1,NFSYM
+         NISH(I) = NKRCIISH(I)
+         NASH(I) = NKRCIASH(I)
+         DO J = 1, NGAS_DC
+            NGSH(I,J) = NKRCIGSH(I,J)
+            NGSHT(J) = NGSHT(J) + NGSH(I,J)
+         END DO
+         NOCC(I) = NISH(I) + NASH(I)
+         NSSH(I) = NKRCISSH(I)
+         NFRO(I) = NKRCIFRO(I)
+      END DO
+      NAELEC = NKRCIAELEC
+C     min and max electrons in each gas space:
+      DO J = 1, NGAS_DC
+         NGSP(1,J) = NKRCIGSP(1,J)
+         NGSP(2,J) = NKRCIGSP(2,J)
+      END DO
+C
+C
+C     Set common block DCIOPT
+C
+      IPROPT = IPRKRCI
+      IOPT_ITRINT(1) = IKRCI_ITRINT(1)
+      IOPT_ITRINT(2) = IKRCI_ITRINT(2)
+      IOPT_INTDEF    = IKRCI_INTDEF
+      IOPT_INTFLG    = IKRCI_INTFLG
+      IOPT_INTBUF    = IKRCI_INTBUF
+      MOPT_MXMICRO   =  0
+      MOPT_MXMACRO   = -1
+      MOPT_MAXBCK    =  0
+      IOPT_ISTATE    =  1
+      IOPT_SYMMETRY  = IKRCI_SYMMETRY
+      IMEMFAC        = IKRCI_MEMFAC
+      JKRRUNTYPE     = 2
+C
+C     Set common block DCROPT
+C
+      OPT_CNVINT(1)  = DKRCI_CNVINT(1)
+      OPT_CNVINT(2)  = DKRCI_CNVINT(2)
+      OPT_THRGRD     = 1.0D99
+      THRPCI         = DKRCI_THRPCI
+C
+C     Set common block DCLOPT
+C
+      OPT_SKIPEE     = .FALSE.
+      OPT_SKIPEP     = .FALSE.
+      OPT_NOCI       = .FALSE.
+      OPT_UCIBOS     = KRCI_UCIBOS
+      OPT_MKCNST     = KRCI_MKCNST
+C
+      DO I = 1, NOPTFLAGS
+         FLAG(I) = .FALSE.
+      END DO
+C
+C     Set common block DCCOPT
+C
+      OPT_CIPROGRAM  = KRCI_CIPROGRAM
+      DO I = 1, NFSYM
+         OPT_FRZSTR(I) = ' '
+      END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = ' '
+      END DO
+C
+      MAXCIT      = MAXCIT_KRCI
+      KTRLVL      = KTRLVL_KRCI
+      IANACI      = IANACI_KRCI
+      NCIROOT     = NCIROOT_KRCI
+      MXCIV       = MXCIV_KRCI
+      IRESTRK     = IRESTRK_KRCI
+      IDOPARIO    = IDOPARIO_KRCI
+      IOPTST      = 1531
+      IKRMCCNO    =  - 3
+      OPT_NOPFQ   = .FALSE.
+      OPT_NOFQX   = .FALSE.
+      NATONL      = .FALSE.
+      FOCKON      = .FALSE.
+      COMPROT     = .FALSE.
+      GENFOCK     = .FALSE.
+      NATOLCR     = NATOLCR_KRCI
+      CRDFO_MAT   = CRDFO_MAT_KRCI
+      CWRTFO_MAT  = CWRTFO_MAT_KRCI
+      CSHMEMO     = CSHMEMO_KRCI
+      CINT_REORD  = CINT_REORD_KRCI
+      CINT_SPLIT  = CINT_SPLIT_KRCI
+      COMPFAC     = 0.01D00
+C
+      CALL QEXIT('TKRCIORB')
       END
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
