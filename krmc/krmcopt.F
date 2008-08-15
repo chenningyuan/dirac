@@ -116,7 +116,8 @@ C
      & '* PSIOPT-QCDHF: deleting DFDENS file with old density matrix'
             CLOSE(LUBUF,STATUS='DELETE')
          END IF
-      ELSE IF (NGAS .EQ. 1) THEN
+C
+      ELSE IF (NGAS_DC .EQ. 1) THEN
          MCTYPE = JCAS
       ELSE
          MCTYPE = JGAS
@@ -1794,14 +1795,26 @@ C         the SETDCBIDX routines.) SK+HJAaJ Aug 08
 C        ***************************************************
 C
          NVEC = 1
-         CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
+         CALL NUMLST(OPT_DELSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
          NDSH(I) = 0
-         
+C
+C        changed to OPT_DELSTR which is more natural and also 
+C        in accordance with SIRIUS-DALTON code - SK Aug 2008
+C
+C        we still want to freeze but doubly occupied core 
+C        orbitals...
+C        FIXME: IMPLEMENT ME - SK Aug 2008
+C
+csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
+csk  &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
+
          IF (NVEC .GT. 0) THEN
             LNOROT = .TRUE.
-            WRITE(LUPRI,'(5X,A,A50)')
-     &           'Frozen orbitals     : ',OPT_FRZSTR(I)
+csk         WRITE(LUPRI,'(A,A50)')
+csk  &           '     Frozen orbitals      : ',OPT_FRZSTR(I)
+            WRITE(LUPRI,'(A,A50)')
+     &           '     Deleted orbitals     : ',OPT_DELSTR(I)
             DO J = 1, NVEC
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
@@ -1888,7 +1901,7 @@ C
 C     Always totally symmetric rotations (=> JOPSY = 1)
 C
       JOPSY = 1
-      GASWF = NGAS.GT.1
+      GASWF = NGAS_DC.GT.1
       CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
      &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
      &     WORK,KFREE,LFREE, IPROPT)
@@ -1996,7 +2009,7 @@ C
      &     NFSYM,
      &     (NISH(I),I=1,NFSYM),
      &     (NASH(I),I=1,NFSYM),
-     &     ((NGSH(I,J),I=1,NFSYM),J=1,NGAS),
+     &     ((NGSH(I,J),I=1,NFSYM),J=1,NGAS_DC),
      &     (NOCC(I),I=1,NFSYM),
      &     (NSSH(I),I=1,NFSYM),
      &     (NFRO(I),I=1,NFSYM),
@@ -2181,6 +2194,8 @@ C        FCAC    - Inactive Fock matrix with active-active indices
 C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision :
+C                S. Knecht  - Aug 2008 
+C                simplified to use of MATGAT.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2190,6 +2205,9 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
+#include "maxash.h"
+#include "dcbidx.h"
 C
       DIMENSION FC(*),FCAC(*)
 C
@@ -2207,16 +2225,10 @@ C
       END IF
 C
       CALL DZERO(FCAC,N2ASHXQ)
-      IOFF = 1
-      DO 100 IFSYM = 1,NFSYM
-         IF (NASH(IFSYM) .EQ. 0) GOTO 100
 C
-         ISTART = IORB(IFSYM) + NPSH(IFSYM)+NISH(IFSYM)+1
-         IEND   = ISTART-1+NASH(IFSYM)
-         CALL RGETA1(FC,NORBT, FCAC,NASHT,
-     &               ISTART,IEND,IASH(IFSYM),NZ)
+C     extract a-a part of FC
 C
-  100 CONTINUE
+      CALL MATGAT(FC,NORBT,NORBT,FCAC,NASHT,NASHT,IDXU2G,NZ)
 C
 C     Print FCAC
 C
@@ -2226,47 +2238,6 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
  9999 CALL QEXIT('RGETAC')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgeta1 */
-      SUBROUTINE RGETA1(FC,NORBT,FCAC,NASHT,ISTART,IEND,IASH,NZ)
-C***********************************************************************
-C
-C     Extract block with active-active orbital indices out of FC
-C
-C     Input:
-C        FC      - Inactive Fock matrix for a given symmetry
-C
-C     Output:
-C        FCAC    - Inactive Fock matrix with active-active indices
-C                  for a given symmetry
-C
-C     Written by J. Thyssen - Oct 29 1998
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-C
-      DIMENSION FCAC(NASHT,NASHT,NZ),FC(NORBT,NORBT,NZ)
-C
-      CALL QENTER('RGETA1')
-C
-      DO IZ = 1,NZ
-         K = IASH
-         DO I = ISTART,IEND
-            K = K + 1
-            L = IASH
-            DO J = ISTART,IEND
-               L = L + 1
-               FCAC(K,L,IZ) = FC(I,J,IZ)
-            END DO
-         END DO
-      END DO
-C
-      CALL QEXIT('RGETA1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2538,7 +2509,7 @@ C
 C
       LOGICAL LBIT, RCI_MCORB, RTRACI, NATOLCR_SAVE
       CHARACTER SZTRA(2,4)*80
-      CHARACTER CNOLBL*6
+      CHARACTER CNOLBL*6, KRM5_NAME*800
 C
       CALL QENTER('ROPTST')
       KFRSAV = KFREE
@@ -2566,9 +2537,9 @@ C
 C     IROST controls the orbital start guess:
 C     ---------------------------------------
 C
-C     bit 1 of IROST: read NEWNATOB on KRMCOLD
-C     bit 2 of IROST: read NEWORB   on KRMCOLD
-C     bit 3 of IROST: read OLDORB   on KRMCOLD
+C     bit 1 of IROST: read NEWNATOB on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 2 of IROST: read NEWORB   on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 3 of IROST: read OLDORB   on LUKRM5 (KRMCSCF or KRMCOLD)
 C     bit 4 of IROST: read DFCOEF from DHF program
 C     bit 5 of IROST: start         on H1DIAG
 C
@@ -2580,6 +2551,21 @@ C
      &        '           Write CMO & CREF (IWRT)      =',IWRT
       END IF
 C
+C     For KRMCSCF, LUKRM5 will be KRMCOLD from an old MCSCF calculation,
+C         if available.
+C     For KRCI, LUKR5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
+C         from an old MCSCF calculation, if either is available.
+C     (Aug 08, SK+HJAaJ)
+C
+      
+      IF ( LUKRM5 .GT. 0 ) THEN
+         INQUIRE( UNIT=LUKRM5, NAME=KRM5_NAME )
+         LKRM5_NAME = 0
+         LKRM5_NAME = LEN_TRIM(KRM5_NAME)
+      ELSE
+         KRM5_NAME  = '(file does not exist)'
+         LKRM5_NAME = 21
+      END IF
 C
 C     *******************************
 C     *** (1) Orbital start guess ***
@@ -2587,8 +2573,7 @@ C     *******************************
 C
       IF (IROST .EQ. 0) GOTO 1100
 C
-C     (1.1) Read MP2 natural orbitals from label NEWNATOB on file
-C           KRMCOLD
+C     (1.1) Read MP2 natural orbitals from label NEWNATOB on KRM5_NAME
 C
       IF (LBIT(IROST,1)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
@@ -2596,15 +2581,16 @@ C
             CALL RREADMO(CMO,JRDMO,3,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
                IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/A)')
+                  WRITE(LUPRI,'(/2A)')
      &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label NEWNATOB on file KRMCOLD'
+     &                 ' label NEWNATOB on file ',
+     &                   KRM5_NAME(1:LKRM5_NAME)
                END IF
 C
                IF( MOPT_MXMACRO .EQ. - 1 ) THEN
                  WRITE(LUPRI,'(/A)')
-     &                '  (ROPTST)  Starting CI calculation ' //
-     &                '  from MC orbitals! '
+     &                ' (ROPTST)  Starting CI calculation' //
+     &                ' from MC orbitals! '
                  RCI_MCORB = .TRUE.
                ENDIF 
                GO TO 1000
@@ -2612,7 +2598,7 @@ C
          END IF
       END IF
 C
-C     (1.2) Read from label NEWORB on KRMCOLD 
+C     (1.2) Read from label NEWORB on KRM5_NAME
 C
       IF (LBIT(IROST,2)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
@@ -2620,18 +2606,15 @@ C
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
                IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/A)')
+                  WRITE(LUPRI,'(/2A)')
      &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label NEWORB on file KRMCOLD'
+     &                 ' label NEWORB on file ',KRM5_NAME(1:LKRM5_NAME)
                END IF
                IF ( GENFOCK )THEN
                   REWIND(LUKRM5)
                   IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
                      IF (MOPT_MXMACRO .ge. 0 ) THEN
                         CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
-csk                     WRITE(LUPRI,'(/A)')
-csk  &                  ' start vector read-in'
-csk                     CALL WRTMATMN(CREF,1,NZCONFQ,1,NZCONFQ,LUPRI)
                      END IF
                   END IF
 C                 ... generate LUCIAREL block/structure information
@@ -2654,8 +2637,8 @@ C
 C
                IF( MOPT_MXMACRO .EQ. - 1 ) THEN
                  WRITE(LUPRI,'(/A)')
-     &                '  (ROPTST)  Starting CI calculation ' //
-     &                '  from MC orbitals! '
+     &                ' (ROPTST)  Starting CI calculation' //
+     &                ' from MC orbitals! '
                  RCI_MCORB = .TRUE.
                ENDIF
                GO TO 1000
@@ -2663,7 +2646,7 @@ C
          END IF
       END IF
 C
-C     (1.3) Read from label OLDORB on KRMCOLD
+C     (1.3) Read from label OLDORB on KRM5_NAME
 C
       IF (LBIT(IROST,3)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
@@ -2671,9 +2654,9 @@ C
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
                IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/A)')
+                  WRITE(LUPRI,'(/2A)')
      &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label OLDORB on file KRMCOLD'
+     &                 ' label OLDORB on file ',KRM5_NAME(1:LKRM5_NAME)
                END IF
                GO TO 1000
             END IF
@@ -2725,6 +2708,10 @@ C
 C
  1000 CONTINUE
 C
+C     Make sure start guess orbitals are orthonormal !!!
+C
+      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+C
 C
 C     Write coefficients back to file as label NEWORB
 C
@@ -2770,7 +2757,7 @@ C
 C
          IF( RCI_MCORB ) GOTO 1250
 C
-C        (2.1) Read CREF from KRMCOLD
+C        (2.1) Read CREF from KRM5_NAME
 C              or restart plain LUCIAREL from CI vector
 C
          IF (LBIT(IRCIST,1)) THEN
@@ -2780,16 +2767,17 @@ C
                   IF (MOPT_MXMACRO.GT.0) THEN
                      CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
                      IF (IPRINT .GE. 0) THEN
-                        WRITE(LUPRI,'(/A)')
+                        WRITE(LUPRI,'(/2A)')
      &                       ' (ROPTST)  CI start vector read from' //
-     &                       ' label CREF on file KRMCOLD'
+     &                       ' label CREF on file',
+     &                         KRM5_NAME(1:LKRM5_NAME)
                      END IF
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
 C
                     IF (MOPT_MXMACRO.GT.0) THEN
 C
-C                     RESTART from KRMCOLD in MCSCF run
+C                     RESTART from KRM5_NAME in MCSCF run
 C                     Generate restart and vector blocking information
 C                     for LUCIAREL CI vectors:
 C
@@ -2807,7 +2795,7 @@ C
                       IF( (NATOLCR .or. IANACI .eq. 1) .and. MAXCIT .le.
      &                     0 )THEN
 C
-C                       RESTART from KRMCOLD in MCSCF run
+C                       RESTART from KRM5_NAME in MCSCF run
 C                       Generate restart and vector blocking information
 C                       for LUCIAREL CI vectors:
 C
@@ -2817,9 +2805,10 @@ C
                         CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
                         CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
                         IF (IPRINT .GE. 0) THEN
-                           WRITE(LUPRI,'(/A)')
+                           WRITE(LUPRI,'(/2A)')
      &                         ' (ROPTST)  CI start vector read from' //
-     &                         ' label CREF on file KRMCOLD'
+     &                         ' label CREF on file ',
+     &                           KRM5_NAME(1:LKRM5_NAME)
                         END IF
                       END IF
                       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
@@ -2834,7 +2823,7 @@ C
             END IF
          END IF
 C
-C        (2.2) Read CREFOLD from KRMCOLD
+C        (2.2) Read CREFOLD from KRM5_NAME
 C
          IF (LBIT(IRCIST,2)) THEN
             IF ( LUKRM5 .GT. 0 ) THEN
@@ -2842,9 +2831,10 @@ C
                   REWIND(LUKRM5)
                   CALL REAKRMC(LUKRM5,'CREFOLD ',CREF,NZCONFQ)
                   IF (IPRINT .GE. 0) THEN
-                     WRITE(LUPRI,'(/A)')
+                     WRITE(LUPRI,'(/2A)')
      $                    ' (ROPTST)  CI start vector read from' //
-     $                    ' label CREFOLD on file KRMCOLD'
+     $                    ' label CREFOLD on file ',
+     &                      KRM5_NAME(1:LKRM5_NAME)
                   END IF
                   GO TO 2000
                END IF
@@ -2880,7 +2870,7 @@ C
                INQUIRE ( FILE = '4INDINFO', EXIST = EX )
                IF ( .NOT. EX ) THEN
                  IF (KTRLVL.EQ.5)
-     &             WRITE(LUPRI,*) 'CALL RTRACTL for trafo only !'
+     &           WRITE(LUPRI,*) 'CALL RTRACTL for transformation only !'
                  CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
                END IF
             ELSE
@@ -2895,13 +2885,24 @@ C
 C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
-                  WRITE(LUPRI,'(/A,I5,A)')
-     &                 ' (ROPTST)  CI start vector generated from',
-     &                 MAXCIT,' CI iterations.'
+                  IF( JKRRUNTYPE .gt. 1)THEN
+                     WRITE(LUPRI,'(/A,I5,A)')
+     &                    ' (ROPTST)  KR-CI calculation ended after',
+     &                    MAXCIT,' CI iterations.'
+                  ELSE
+                     WRITE(LUPRI,'(/A,I5,A)')
+     &                    ' (ROPTST)  CI start vector generated from',
+     &                    MAXCIT,' CI iterations.'
+                  END IF
                ELSE
-                  WRITE(LUPRI,'(/A)')
-     &                 ' (ROPTST)  CI start vector generated from'//
-     &                 ' diag. of full CI matrix.'
+                  IF( JKRRUNTYPE .gt. 1)THEN
+                     WRITE(LUPRI,'(/A)')
+     &                    ' (ROPTST)  Full-CI calculation succeeded.'
+                  ELSE
+                     WRITE(LUPRI,'(/A)')
+     &                    ' (ROPTST)  CI start vector generated from'//
+     &                    ' diag. of full CI matrix.'
+                  END IF
                END IF
             END IF
             GO TO 2000
@@ -2926,13 +2927,7 @@ C
 C
 C        Write CREF to file.
 C
-         IF(OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. MOPT_MXMACRO .LT.0 )THEN
-            GOTO 2100
-         END IF
          IF (IPRINT .GE. 30) THEN
-C sk    04-jul-07: writing CI start vector will be errorneous for     
-C       LUCIAREL and MAX MACRO < 0.
-C       TODO: implement proper LUCIAREL interface for large-scale KR-MCSCF
             MZ = MIN(NZ,2)
             WRITE(LUPRI,'(/A)') ' (ROPTST)  CI start vector:'
             CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
@@ -2940,6 +2935,7 @@ C       TODO: implement proper LUCIAREL interface for large-scale KR-MCSCF
          IF (LBIT(IWRT,2)) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
 C
       END IF
+C     ... check for MCTYPE .ne. SCF
 C
  2100 CONTINUE
 C
@@ -3656,7 +3652,13 @@ CJTH     IF (NORB(I) .GT. 0) THEN
 C
 C     Reorthonomalize coefficients:
 C
-c     CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+C     inside RGMCMO: order from positron,electron to
+C                    electron,positron in CMO changed
+C                    for the Gram-Schmidt orthonormalization,
+C                    because we want to start with the
+C                    occupied orbitals
+C
+      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
 C
 C     Write new coefficients
 C
@@ -4458,11 +4460,11 @@ C
 #include "dcbopt.h"
 C
       IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
-         CALL TITLER('QC-DHF wave function optimization','*',110)
+         CALL TITLER('QC-DHF wave function optimization','*',199)
       ELSE IF (MCTYPE .EQ. JCAS) THEN
-         CALL TITLER('KR-CASSCF wave function optimization','*',110)
+         CALL TITLER('KR-CAS MCSCF wave function','*',199)
       ELSE IF (MCTYPE .EQ. JGAS) THEN
-         CALL TITLER('KR-GASSCF wave function optimization','*',110)
+         CALL TITLER('KR-GAS MCSCF wave function','*',199)
       ELSE
          WRITE(LUPRI,'(A,I3)')
      &        ' *** ERROR in KRMCHI *** Unknown MCTYPE : ',MCTYPE
@@ -4470,47 +4472,47 @@ C
       END IF
 C
       WRITE(LUPRI,9000)
- 9000 FORMAT(/1X,78('*'),//,
+ 9000 FORMAT(
      &     3X,'This is output from DIRAC KR-MCSCF',/,
      &     3X,' - a relativistic four-component second order ',
      &     'restricted-step ',/,
      &     6X,'MCSCF wave function optimization program.',
      &     ///,
      &     3X,'General structure: ',/,
-     &     3X,'Joern Thyssen and Hans Joergen Aa. Jensen ',//,
+     &     3X,'  Joern Thyssen and Hans Joergen Aa. Jensen ',//,
      &     3X,'Linear equation and eigenvalue solver: ',/,
-     &     3X,'Hans Joergen Aa. Jensen, Trond Saue, ',
+     &     3X,'  Hans Joergen Aa. Jensen, Trond Saue, ',
      &     'and Joern Thyssen',//,
      &     3X,'Integral transformation: ',/,
-     &     3X,'Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
+     &     3X,'  Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
      &     3X,'KRMC-GOSCI CI code: ',/,
-     &     3X,'Joern Thyssen and Hans Joergen Aa. Jensen',//,
+     &     3X,'  Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,
-     &     3X,'Timo Fleig and Jeppe Olsen',//,
+     &     3X,'  Timo Fleig and Jeppe Olsen',//,
      &     3X,'Parallel LUCIAREL CI code: ',/,
-     &     3X,'Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig',/,
-     &     ////,
+     &     3X,'  Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig',
+     &     ///,
      &     3X,'``Aha!''''                             ',
-     &     '- Fysiska poem, Linkoepings Universitet',///,
-     &     1X,78('*'),/)
+     &     '- Fysiska poem, Linkoepings Universitet',/,
+     &     1X,79('*'))
 *
       WRITE(LUPRI,9110)
  9110 FORMAT(/' This module is published in:',//,
-     &     4X,'KRMC THEORY:    H J Aa Jensen, K G Dyall, T Saue,',/,
-     &     4X,'                and K Faegri Jr.',/,
-     &     7X,'                J Chem Phys 104,11 (1995) 4083',/,
-     &     4X,'KRMC-GOSCI:     J Thyssen, T Fleig, and H J Aa Jensen',/,
-     &     7X,'                J Chem Phys 129,1 (2008), in press.',/,
+     &     4X,'KRMC THEORY:    H J Aa Jensen, K G Dyall, T Saue,',
+     &           ' and K Faegri Jr.',/,
+     &    20X,'   J Chem Phys 104 (1995) 4083',/,
+     &     4X,'KRMC IMPLEMENTATION:',/,
+     &     4X,'                J Thyssen, T Fleig, and H J Aa Jensen',/,
+     &    20X,'   J Chem Phys 129 (2008) 034109',/,
      &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
-     &     7X,'                J Chem Phys, 119,6 (2003) 2963',/,
-     &     4X,'KRMC-LUCIAREL:  T Fleig, H J Aa Jensen, J Olsen,',/,
-     &     4X,'                and L Visscher',/,
-     &     7X,'                J Chem Phys, 124,10 (2006) 104106',/,
+     &    20X,'   J Chem Phys, 119 (2003) 2963',/,
+     &     4X,'KRMC-LUCIAREL:  T Fleig, H J Aa Jensen, J Olsen,',
+     &        ' and L Visscher',/,
+     &    20X,'   J Chem Phys, 124 (2006) 104106',/,
      &     4X,'PARALLEL KRMC-LUCIAREL:',/,
      &     4X,'                S. Knecht, H J Aa Jensen, and T Fleig',/,
-     &     7X,'                manuscript in preparation.',
-     &     ///,
-     &     1X,78('*'),//)
+     &    20X,'   manuscript in preparation (2008).',//,
+     &     1X,79('*'),//)
 C
       RETURN
       END
