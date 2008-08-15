@@ -1716,11 +1716,11 @@ C
       CHARACTER*72 TITLEC(3)
 C
 C     TITLE
-      IF( JKRRTYPE .eq. 1) THEN
+      IF( JKRRUNTYPE .eq. 1) THEN
          TITLEC(1) = ' --------------------------- '
          TITLEC(2) = '    Relativistic MCSCF run   '
          TITLEC(3) = ' --------------------------- '
-      ELSE IF( JKRRTYPE .eq. 2 )THEN
+      ELSE IF( JKRRUNTYPE .eq. 2 )THEN
          TITLEC(1) = ' --------------------------- '
          TITLEC(2) = '    Relativistic KR-CI run   '
          TITLEC(3) = ' --------------------------- '
