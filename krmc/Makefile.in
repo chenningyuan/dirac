@@ -11,6 +11,7 @@ F77_OBJS = krmcopt.o \
            krmcinp.o \
            krmcmlf.o \
            krmcluci.o \
+	     krci_ctl.o \
            krmcgp.o
 
 F90_OBJS =
