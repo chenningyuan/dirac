@@ -40,6 +40,11 @@
 !     IDENSLR_STATE  - natural orbital occupation numbers for state xxx
 !     ISHMEM_TYPE    - type of MPI-2 based shared memory level
 !
+!     JKRRTYPE       - determines KR run type:
+!                                             0: second-order SCF
+!                                             1: second-order MCSCF
+!                                             2: KR-CI
+!
 !     Parameters for MCTYPE:
 !
       INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
@@ -56,7 +61,7 @@
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
      &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
-     &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ
+     &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -68,7 +73,7 @@
      &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
-     &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ
+     &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
@@ -100,8 +105,9 @@
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP
       CHARACTER*8 OPT_CIPROGRAM
-      CHARACTER*72 OPT_FRZSTR(2)
-      COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR
+      CHARACTER*72 OPT_FRZSTR(2), OPT_DELSTR(2)
+      COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR,&
+     &                OPT_DELSTR
 
       INTEGER KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
       COMMON /DCMOPT/ KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP

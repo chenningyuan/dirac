@@ -4,6 +4,10 @@
 ! FILE    : dcborb.h
 !
 !*** Dimensions for MO-basis ***
+!
+!     SK - Aug 2008: renamed NGAS to NGAS_DC (Dirac Common) to avoid 
+!                    conflicts with LUCI* modules.
+!
 !     Length of common block : keep up to date !!
 #include "mxmcgas.h"
       INTEGER NDCBORB
@@ -13,7 +17,7 @@
      &        NBORB(4, 2, 0:2), NFORB(2, 0:2), NTORB(0:2), N2ORBTQ,     &
      &        N2ORBXQ, NISH(2), N2ISH(2), NISHT, N2ISHT, N2ISHX,        &
      &        NASH(2), N2ASH(2), NASHT, N2ASHT, N2ASHX, N2ASHTQ,        &
-     &        N2ASHXQ, NNASHX, NGSH(2, MXMCGAS), NGSP(2, MXMCGAS), NGAS,&
+     &        N2ASHXQ, NNASHX, NGSH(2, MXMCGAS),NGSP(2,MXMCGAS),NGAS_DC,&
      &        NGSHT(MXMCGAS), NOCC(2), N2OCC(2), NOCCT, N2OCCT, N2OCCX, &
      &        NSSH(2), N2SSH(2), NSSHT, N2SSHT, N2SSHX, NESH(2),        &
      &        N2ESH(2), NESHT, N2ESHT, N2ESHX, NPSH(2), N2PSH(2), NPSHT,&
@@ -32,7 +36,7 @@
      &                NBORB, NFORB, NTORB, N2ORBTQ, N2ORBXQ, NISH,      &
      &                N2ISH, NISHT, N2ISHT, N2ISHX, NASH, N2ASH, NASHT, &
      &                N2ASHT, N2ASHX, N2ASHTQ, N2ASHXQ, NNASHX, NGSH,   &
-     &                NGSP, NGAS, NGSHT, NOCC, N2OCC, NOCCT, N2OCCT,    &
+     &                NGSP, NGAS_DC, NGSHT, NOCC, N2OCC, NOCCT, N2OCCT, &
      &                N2OCCX, NSSH, N2SSH, NSSHT, N2SSHT, N2SSHX, NESH, &
      &                N2ESH, NESHT, N2ESHT, N2ESHX, NPSH, N2PSH, NPSHT, &
      &                N2PSHT, N2PSHX, NFRO, NFROT, NELEC, NAELEC,       &
