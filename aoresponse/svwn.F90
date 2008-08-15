@@ -103,31 +103,37 @@ contains
 
     n = na + nb
 
-    para(1)  = -0.1049800d0
-    para(2)  =  0.0621814d0
-    para(3)  =  3.72744d0
-    para(4)  = 12.9352d0
+    para(1)   = -0.1049800d0
+    para(2)   =  0.0621814d0
+    para(3)   =  3.72744d0
+    para(4)   = 12.9352d0
+              
+    ferro(1)  = -0.3250000d0
+    ferro(2)  =  0.0310907d0
+    ferro(3)  =  7.06042d0
+    ferro(4)  = 18.0578d0
+              
+    inter(1)  = -0.0047584d0
+    inter(2)  = -0.0337737d0
+    inter(3)  =  1.13107d0
+    inter(4)  = 13.0045d0
+              
+    v_para    = vwn_energy_sub(n, para)
+    v         = v_para
 
-    ferro(1) = -0.3250000d0
-    ferro(2) =  0.0310907d0
-    ferro(3) =  7.06042d0
-    ferro(4) = 18.0578d0
+    if ((na - nb) > small) then
+      v_ferro = vwn_energy_sub(n, ferro)
+      v_inter = vwn_energy_sub(n, inter)
+    
+      z       = (na - nb)/n
+      z4      = z**4.0d0
+      fz      = 1.92366105093154d0*((1.0d0 + z)**(4.0d0/3.0d0) + (1.0d0 - z)**(4.0d0/3.0d0) - 2.0d0)
+      d       = fz*((v_ferro - v_para)*z4 + v_inter*(1.0d0 - z4)*0.584822305543806d0)
 
-    inter(1) = -0.0047584d0
-    inter(2) = -0.0337737d0
-    inter(3) =  1.13107d0
-    inter(4) = 13.0045d0
+      v       = v + d
+    end if
 
-    v_para   = vwn_energy_sub(n, para)
-    v_ferro  = vwn_energy_sub(n, ferro)
-    v_inter  = vwn_energy_sub(n, inter)
-
-    z        = (na - nb)/n
-    z4       = z**4.0d0
-    fz       = 1.92366105093154d0*((1.0d0 + z)**(4.0d0/3.0d0) + (1.0d0 - z)**(4.0d0/3.0d0) - 2.0d0)
-    d        = fz*((v_ferro - v_para)*z4 + v_inter*(1.0d0 - z4)*0.584822305543806d0)
-
-    v        = w*n*(v_para + d)
+    v         = w*n*v
 
   end function
 
