@@ -2614,7 +2614,7 @@ C
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
 C
             IF( REORD_IJKL ) THEN 
-              IF( CIRUN .eq. 'CIINII') THEN 
+              IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 #if defined (VAR_MPI2)
 C
                 IF( IT_SHL .lt. 0 )THEN
@@ -2695,7 +2695,7 @@ C             ^ CIRUN ???
             END IF
 C           ^ REORD_IJKL
 C
-            IF( CIRUN .eq. 'CIINII' )THEN
+            IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' )THEN
 C
               IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
                 WRITE(LUWRT,*) ' Running in MPI-shared memory mode     '
@@ -2754,7 +2754,7 @@ C
      &                              WORK(KLABEXTP),CIRUN,NTEST)
 C
             END IF
-C           ^ CIRUN eq CIINII?
+C           ^ CIRUN eq CIINII .or. CIRUN .eq. 'KR-CI '?
           end if
 C         ^ SIGDEN_ROUTE ?
         end if

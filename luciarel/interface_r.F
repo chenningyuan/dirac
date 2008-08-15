@@ -4590,8 +4590,6 @@ C?          WRITE(6,*) ' GETINT_DBG_S 16 '
 *
 #include "mxpdim.inc"
 *./CRUN/ : INTIMP used
-C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,NP1,NP2,NQ,INCORE,MXCIV,ICISTR,
-C    &            NOCSF,IDIAG
 #include "crun.inc"
 *./ORBINP/  : NOBPTS used
 *.Memory
@@ -9329,7 +9327,7 @@ Cjan      end do
       IADDKF = 1
       do IFSM = 1,NFSYM
         do IUBT = 1,2
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
           end do
@@ -9340,7 +9338,7 @@ Cjan      end do
         do IUBT = 1,2
           if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
-          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS_DC,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -9348,7 +9346,7 @@ Cjan      end do
       II = 1
       do IUBT = 1,2
         do IFSM = 1,NFSYM
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1
@@ -9613,7 +9611,7 @@ csk               write(LUWRT,*) ' continuing ...'
       IADDKF = 1
       do IFSM = 1,NFSYM
         do IUBT = 1,2
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
           end do
@@ -9624,7 +9622,7 @@ csk               write(LUWRT,*) ' continuing ...'
         do IUBT = 1,2
           if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
-          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS_DC,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -9632,7 +9630,7 @@ csk               write(LUWRT,*) ' continuing ...'
       II = 1
       do IUBT = 1,2
         do IFSM = 1,NFSYM
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1
@@ -9854,7 +9852,7 @@ csk               write(LUWRT,*) ' continuing ...'
       IADDKF = 1
       do IFSM = 1,NFSYM
         do IUBT = 1,2
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
           end do
@@ -9865,7 +9863,7 @@ csk               write(LUWRT,*) ' continuing ...'
         do IUBT = 1,2
           if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
-          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS_DC,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -9873,7 +9871,7 @@ csk               write(LUWRT,*) ' continuing ...'
       II = 1
       do IUBT = 1,2
         do IFSM = 1,NFSYM
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1
@@ -10114,7 +10112,7 @@ csk               write(LUWRT,*) ' continuing ...'
       IADDKF = 1
       do IFSM = 1,NFSYM
         do IUBT = 1,2
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
           end do
@@ -10125,7 +10123,7 @@ csk               write(LUWRT,*) ' continuing ...'
         do IUBT = 1,2
           if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
-          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS_DC,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -10133,7 +10131,7 @@ csk               write(LUWRT,*) ' continuing ...'
       II = 1
       do IUBT = 1,2
         do IFSM = 1,NFSYM
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1
@@ -10384,7 +10382,7 @@ csk               write(LUWRT,*) ' continuing ...'
       IADDKF = 1
       do IFSM = 1,NFSYM
         do IUBT = 1,2
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             IOFFKF(IFSM,KGAS,IUBT) = IADDKF
             IADDKF = IADDKF + NGSH(IFSM,KGAS)
           end do
@@ -10395,7 +10393,7 @@ csk               write(LUWRT,*) ' continuing ...'
         do IUBT = 1,2
           if (IUBT.eq.1) write(LUWRT,*) ' IOFFKF for unbarred.'
           if (IUBT.eq.2) write(LUWRT,*) ' IOFFKF for   barred.'
-          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS,2,MXPNGAS,LUWRT)
+          call iwrtmamn(IOFFKF(1,1,IUBT),NFSYM,NGAS_DC,2,MXPNGAS,LUWRT)
         end do
       end if
 *
@@ -10403,7 +10401,7 @@ csk               write(LUWRT,*) ' continuing ...'
       II = 1
       do IUBT = 1,2
         do IFSM = 1,NFSYM
-          do KGAS = 1,NGAS
+          do KGAS = 1,NGAS_DC
             do IRN = 1,NGSH(IFSM,KGAS)
               IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
               II = II + 1

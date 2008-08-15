@@ -153,7 +153,7 @@ C?       WRITE(6,*) ' Variational  solver '
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(LUWRT,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
          WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRT,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Raise MXCIV_CI to be at least 2 * Nroot '
          WRITE(LUWRT,*) ' Enforced stop on MICDV4 '
          STOP 20
        END IF
@@ -854,7 +854,7 @@ CSK      end if
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
          WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRT,*) ' Increase MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Increase MXCIV_CI to be at least 2 * Nroot '
          Call Abend1(' Enforced stop in CMICDV ')
        END IF
 *

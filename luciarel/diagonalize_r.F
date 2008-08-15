@@ -913,7 +913,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
          WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRT,*) ' Increase MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Increase MXCIV_CI to be at least 2 * Nroot '
          Call Abend1(' Enforced stop in CMICDV ')
        END IF
 *
@@ -1797,7 +1797,7 @@ c      IPRT = 6000
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(6,*) ' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
          WRITE(6,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(6,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(6,*) ' Raise MXCIV_CI to be at least 2 * Nroot '
          WRITE(6,*) ' Enforced stop on MICDV6 '
          Call Abend1( 20 )
        END IF
@@ -2707,7 +2707,7 @@ C?       WRITE(6,*) ' Variational  solver '
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(LUWRT,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
          WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRT,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Raise MXCIV_CI to be at least 2 * Nroot '
          WRITE(LUWRT,*) ' Enforced stop on MICDV4 '
          STOP 20
        END IF

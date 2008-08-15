@@ -325,6 +325,7 @@ C
 #if defined (VAR_MPI2)
 C
       IF ( CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'CIINII' .or.
+     &     CIRUN .eq. 'KR-CI ' .or.
      &     CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' .or. 
      &     CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ' ) THEN
 C
@@ -342,17 +343,17 @@ C
      &                         WORK(KNODELIST),1)
 C
         CALL CALC_OFF_MPI_FILE('ILU1  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                         WORK(KNODELIST),MXCIV+NROOT)
+     &                         WORK(KNODELIST),MXCIV_CI+NROOT)
 C
         CALL CALC_OFF_MPI_FILE('ILU2  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                         WORK(KNODELIST),MXCIV+NROOT)
+     &                         WORK(KNODELIST),MXCIV_CI+NROOT)
 C
 C       initialize general offset for ILUC
         MY_LUC_OFF = 0
 C
 C       length for allocation of file arrays
-        IALL_LU1 = ( MXCIV + NROOT ) * MY_ACT_BLK2
-        IALL_LU2 = ( MXCIV + NROOT ) * MY_ACT_BLK2
+        IALL_LU1 = ( MXCIV_CI + NROOT ) * MY_ACT_BLK2
+        IALL_LU2 = ( MXCIV_CI + NROOT ) * MY_ACT_BLK2
         IALL_LUC = NUM_BLOCKS2
 C
 C       allocate file arrays
@@ -365,12 +366,12 @@ C       initialize ...
         CALL IZERO(WORK(KILUCLIST),IALL_LUC)
 C
         IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMAD' .or. 
-     &      CIRUN .eq. 'DIAG  ') THEN 
+     &      CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'KR-CI ' ) THEN 
 C
           CALL CALC_OFF_MPI_FILE('LUDIA ',IGROUPLIST,WORK(KBLOCKLIST),
      &                           WORK(KNODELIST),1)
 C
-          IF( CIRUN .eq. 'CIINII' ) THEN
+          IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 C
             CALL CALC_OFF_MPI_FILE('ILU3  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                             WORK(KNODELIST),NROOT)
@@ -395,9 +396,9 @@ C           initialize ...
             CALL IZERO(WORK(KILU5LIST),IALL_LU5)
 C
           END IF
-C         ^ CIRUN == CIINII
+C         ^ CIRUN == CIINII or KR-CI
         END IF            
-C       ^ CIRUN == CIINII .or. CIRUN == SIGMAD .or. CIRUN == DIAG
+C       ^ CIRUN == CIINII .or. SIGMAD .or. DIAG .or. KR-CI
       END IF
 C     ^ CIRUN == DIAG .or. CIRUN == CIINII .or. CIRUN == SIGMA ...
 #endif
@@ -421,6 +422,7 @@ C     CI diagonal - if required
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       if (CIRUN.eq.'DIAG  '.or.CIRUN.eq.'CIINII'.or.
+     &    CIRUN.eq.'KR-CI '.or.
      &    CIRUN.eq.'SIGMA '.or.CIRUN.eq.'SIGMAD') then
 *
         if (CIRUN.ne.'SIGMA ') then
@@ -684,7 +686,7 @@ CSK   work with INTEGER*8
 C
       CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
-     &     NVAR,NBLK,NROOT,MXCIV,MAXIT,MXROOT,
+     &     NVAR,NBLK,NROOT,MXCIV_CI,MAXIT,MXROOT,
      &     LUCIVI,IPRNT,WORK(KSBEVC),
      &     NPRDET,WORK(KSBIDT),
      &     MXP1,MXP2,MXQ,
@@ -1353,10 +1355,7 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,0,0,IDUMMY)
 C
 #endif
-      write(LUWRT,*) 
-      write(LUWRT,'(A25,A6)') '  I have completed task  ',CIRUN
-      write(LUWRT,*) ' Returning to KRMC.'
-      write(LUWRT,*) 
+      write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
 C     release memory
       call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI ')
 C
@@ -1448,11 +1447,11 @@ C      CALL SLASK
 C
 C     Compute offset from WRK to WORK
 C
-      CALL COMPOFF(WRK,WORK,KBASE)
+      CALL COMPOFF(WRK,WORK,K_OFFSET)
 C
       MXPWRD = LWRK
       KADD = MXPWRD
-      call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 #endif
 C FIXME !!!
@@ -1494,9 +1493,9 @@ C FIXME !!!
       CALL INTDIM_REL(IPRTRA)
 *. Static memory, initialization and allocation
 #ifdef LUCIAREL_STANDALONE
-      KBASE = 1
+      K_OFFSET = 1
       KADD = MXPWRD
-      call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 #endif
 *. Allocate work space, general
       CALL ALLOC_REL
@@ -1524,7 +1523,7 @@ C FIXME !!!
         end if
         ISYM_T = 1
         NO_TTWO = 0
-        call set_hop_dbg(IHTYPE,NO_TTWO,IPRHAM)
+        call set_hop_dbg(IHTYPE,NO_TTWO,IPRHAM_CI)
       END IF
 *. Symmetry of reference
       IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
@@ -2526,7 +2525,7 @@ Ctimo Added MOLECULE SWEDEN information
 *=========================================================
          IF(CARD(2:6).EQ.'MXCIV') THEN
             ISETKW(33) = 1
-            READ(LUIN,*) MXCIV
+            READ(LUIN,*) MXCIV_CI
             GOTO 999
          END IF
 * =============================
@@ -3353,7 +3352,7 @@ CTF
 *
          IF(CARD(2:7).EQ.'MK2REF') THEN
             ISETKW(84) = 1
-            READ(LUIN,*) MK2REF
+            READ(LUIN,*) MK2REF_CI
             GOTO 999
          END IF
 *
@@ -3363,7 +3362,7 @@ CTF
 *
          IF(CARD(2:7).EQ.'MK2DEL') THEN
             ISETKW(85) = 1
-            READ(LUIN,*) MK2DEL
+            READ(LUIN,*) MK2DEL_CI
             GOTO 999
          END IF
 *
@@ -3480,7 +3479,7 @@ CTF
            goto 999
          end if
 *
-            read(LUIN,*) IPRHAM
+            read(LUIN,*) IPRHAM_CI
 * ======================================================================
 * 98 : IPRHAM: Print flag for Hamiltonian definition
 * ======================================================================
@@ -3756,7 +3755,7 @@ C     END IF
 * 16 : Two times spin projection
 *UNUSED (only if not double group CI and not relativistic CI)
       IF(ISETKW(16).EQ.0) THEN
-        MS2 = MK2REF
+        MS2 = MK2REF_CI
         ISETKW(16) = 2
       END IF
 *
@@ -3993,13 +3992,13 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
 *
       IF(ISETKW(33).EQ.0) THEN
 * default is 3 vectors per root
-         MXCIV = 3 * NROOT
+         MXCIV_CI = 3 * NROOT
          ISETKW(33) = 2
       END IF
-      IF(ISETKW(33).EQ.1.AND.MXCIV .LT.2*NROOT) THEN
+      IF(ISETKW(33).EQ.1.AND.MXCIV_CI .LT.2*NROOT) THEN
          WRITE(LUOUT,*)
      &    '   The number of vectors is increased to 2*NROOT = ',2*NROOT
-         MXCIV = 2 * NROOT
+         MXCIV_CI = 2 * NROOT
       END IF
 *
 * 34 : CI storage mode
@@ -4516,13 +4515,13 @@ C       IDENSI = 1
 *
       IF(ISETKW(84).EQ.0) THEN
          IF(IDBGCI.EQ.0.OR.IRELACI.EQ.0) THEN
-           MK2REF = 0
+           MK2REF_CI = 0
            ISETKW(84) = 2
          ELSE
-           WRITE(6,*) ' Keyword MK2REF not defined '
+           WRITE(6,*) ' Keyword MK2REF_CI not defined '
            WRITE(6,*) ' This is required for double group CI'
            WRITE(6,*) ' and/or relativistic CI '
-           WRITE(6,*) ' Please add MK2REF and return '
+           WRITE(6,*) ' Please add MK2REF_CI and return '
            ISETKW(84) = -1
            NERROR = NERROR + 1
          END IF
@@ -4532,13 +4531,13 @@ C       IDENSI = 1
 *
       IF(ISETKW(85).EQ.0) THEN
          IF(IDBGCI.EQ.0.OR.IRELACI.EQ.0) THEN
-           MK2REF = 0
+           MK2DEL_CI = 0
            ISETKW(85) = 2
          ELSE
-           WRITE(6,*) ' Keyword MK2DEL not defined '
+           WRITE(6,*) ' Keyword MK2DEL_CI not defined '
            WRITE(6,*) ' This is required for double group CI'
            WRITE(6,*) ' and/or relativistic CI '
-           WRITE(6,*) ' Please add MK2DEL and return '
+           WRITE(6,*) ' Please add MK2DEL_CI and return '
            ISETKW(85) = -1
            NERROR = NERROR + 1
          END IF
@@ -4609,7 +4608,7 @@ C       IDENSI = 1
 * 95 : print flag for wave function information
 *
       IF(ISETKW(95).EQ.0) THEN
-         IPRHAM = 0
+         IPRHAM_CI = 0
          ISETKW(95) = 2
       END IF
 *
@@ -4625,7 +4624,7 @@ C       IDENSI = 1
 * 98 : print flag for hamiltonian information
 *
       IF(ISETKW(98).EQ.0) THEN
-         IPRHAM = 0
+         IPRHAM_CI = 0
          ISETKW(98) = 2
       END IF
 *
@@ -4867,10 +4866,10 @@ c       WRITE(LUOUT,'(A,I2)')
 c    &    '     Spin multiplicity ....  ', MULTS
       ELSE
         WRITE(LUOUT,'(A,I2)')
-     &    '     2*reference value of MK ', MK2REF
+     &    '     2*reference value of MK ', MK2REF_CI
         WRITE(LUOUT,'(A,I2,A,I2)')
      &    '     Allowed interval of MK2 ',
-     &          MK2REF-MK2DEL,' to ', MK2REF+MK2DEL
+     &          MK2REF_CI-MK2DEL_CI,' to ', MK2REF_CI+MK2DEL_CI
         WRITE(6,*)
       END IF
 *.Number of active electrons
@@ -5323,7 +5322,7 @@ c    &    '     Spin multiplicity ....  ', MULTS
      &  '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
       WRITE(LUOUT,'(A,I2)')
-     &  '        Allowed Dimension of CI subspace',MXCIV
+     &  '        Allowed Dimension of CI subspace',MXCIV_CI
 *
       WRITE(LUOUT,'(A,E11.5)')
      &  '        Convergence threshold for energy',THRES_E

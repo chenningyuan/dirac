@@ -5918,6 +5918,12 @@ C
         write(MSLVOUT_REL,*) '   Determining configurational start 
      & guess'
         write(MSLVOUT_REL,*)
+      else if (CIRUN.eq.'KR-CI ') then
+        write(MSLVOUT_REL,*)
+        write(MSLVOUT_REL,*) ' KR-CI  flag call '
+        write(MSLVOUT_REL,*) ' ------           '
+        write(MSLVOUT_REL,*) '   Running large-scale KR-CI calculation'
+        write(MSLVOUT_REL,*)
       else if (CIRUN.eq.'RSTRMC') then
         write(MSLVOUT_REL,*)
         write(MSLVOUT_REL,*) ' RSTRMC flag call '
@@ -8162,19 +8168,13 @@ C**********************************************************************
 
       CHARACTER*6 CIRUN
 C
-C     introduce CIRUN for NODES
+C     introduce CIRUN and JKRRTYPE for NODES
 C
       CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JKRRTYPE,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
 C
-      IIOMOD_REL = 0
-C
-      IF( MYPROC .eq. MASTER )THEN
-C
-        IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'IJKLRO' ) THEN
-          IIOMOD_REL = IDOPARIO
-        END IF
-C
-      ELSE 
+      IF( MYPROC .ne. MASTER )THEN
         CALL LUCI_TASK_NODES(CIRUN)
       END IF
 C
@@ -8187,7 +8187,7 @@ C
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
-      ELSE IF( CIRUN .eq. 'CIINII') THEN
+      ELSE IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 C
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
@@ -8199,9 +8199,9 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-C       determine INTEGRAL handling
-        CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+csk     determine INTEGRAL handling
+csk     CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
+csk  &                 MPI_COMM_WORLD,IERR)
 C
       ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
 C
@@ -8241,9 +8241,9 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-C       determine INTEGRAL handling
-        CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+csk     determine INTEGRAL handling
+csk     CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
+csk  &                 MPI_COMM_WORLD,IERR)
       END IF
 C
 C       all needed for proper read-in of integrals...?

@@ -246,16 +246,17 @@ CTEMP     ISM2(3,5) = 1
         write(6,*) '   DETTYP speaking  '
         write(6,*) ' -------------------------------- '
         write(6,*)
-        write(6,'(A17,I4,I4)') 'MK2REF,MK2DEL are',MK2REF,MK2DEL
+        write(6,'(A17,I4,I4)') 'MK2REF_CI,MK2DEL_CI are',
+     &                          MK2REF_CI,MK2DEL_CI
       end if
 *
       IF(IDBGCI.EQ.0.AND.IRELACI.EQ.0) THEN
 *. Single MS2 space
         NMS2VAL = 1
-        MS2VAL(1) = MK2REF
+        MS2VAL(1) = MK2REF_CI
       ELSE
 *. Potentially several MS2/MK2 values
-        MK2MAX = MK2REF + MK2DEL
+        MK2MAX = MK2REF_CI + MK2DEL_CI
 *. MK2MAX gives highest MK2 value for possibly coupled strings (?)
         if (MK2MAX.gt.NACTEL) then
           MK2MAX = NACTEL
@@ -264,7 +265,7 @@ CTEMP     ISM2(3,5) = 1
           call evenodd(IEVODN,NACTEL)
           if (IEVODN.eq.1.and.IEVODMX.eq.2) MK2MAX = MK2MAX - 1
         end if
-        MK2MIN = MK2REF - MK2DEL
+        MK2MIN = MK2REF_CI - MK2DEL_CI
         IF(MK2MIN.LT.-NACTEL) MK2MIN = -NACTEL
 * Pairing ? Ensure symmetry between +MK and - MK spaces
         IPAIR = 1
@@ -2099,26 +2100,9 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *
       LCSBLK = IMAXLBLKSZ
 *      
+      write(LUWRT,*) '  Set LCSBLK to ',LCSBLK
 *
-*
-      IF( MYPROC .eq. MASTER ) THEN
-*
-         write(LUWRT,*) '  Set LCSBLK to ',LCSBLK
-*
-Cold?        write(6,*) '  Set LCSBLK to ',LCSBLK
-Cold?        write(6,*) '  FIXME: Max. resolution space possible. '
-Cold?        write(6,*) '         Savings in large calculations.  '
-*
-      ELSE
-*
-        write(LUWRT,*) '  Set LCSBLK to ',LCSBLK
-Cold?        write(MSLVOUT_REL,*) '  Set LCSBLK to ',LCSBLK
-Cold?        write(MSLVOUT_REL,*) '  FIXME: Max. resolution space possible. '
-Cold?        write(MSLVOUT_REL,*) '         Savings in large calculations.  '
-*
-      END IF
-*
-* Check for minimum size of resolution matrices:
+*     Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
         write(LUWRT,*) ' WARNING: Resetting LCSBLK to: ',MXSB
         LCSBLK = MXSB
