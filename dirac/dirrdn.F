@@ -2060,7 +2060,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 12, NTABLE = 16)
+      PARAMETER (NDIR = 12, NTABLE = 20)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2075,11 +2075,12 @@ C
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
-     &             '*OPTIMI','*MP2 NO','XXXXXXX','XXXXXXX'/
+     &             '*OPTIMI','*MP2 NO','*KRCICA','XXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
-     &             '.PHCOEF','.MP2 NO','.RELADC','xXXXXXX'/
+     &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
+     &             '.KR CC ','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
       NJOBS = 0
 C
@@ -2100,7 +2101,9 @@ C
       L2ORBM  = .FALSE.
       PHCOEF  = .FALSE.
       DOADC   = .FALSE.
-
+      DOKRCI  = .FALSE.
+      DOKRCC  = .FALSE.
+      CBKRINI = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2140,7 +2143,8 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
-     &                109,110,111,112,113,114,115,116),I
+     &                109,110,111,112,113,114,115,116,
+     &                117,118,119,120),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2253,14 +2257,29 @@ C&&&& PHCOEF: Phase adjustment of coefficients
  114     CONTINUE
 C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             DOMP2NO = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
  115     CONTINUE
-C&&&& RELADC: Calculate one-particle propagator with ADC
+C&&&& RELADC: Calculate one-particle electron propagator with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
  116     CONTINUE
+C&&&& KR CI :  perform (large-scale) KR-CI calculation 
+            DOKRCI  = .TRUE.
+            NJOBS = NJOBS + 1
+            GO TO 100
+ 117     CONTINUE
+C&&&& KR CC : perform (large-scale) KR-CC calculation
+CSK         DOKRCC  = .TRUE.
+CSK         NJOBS = NJOBS + 1
+            GO TO 100
+ 118     CONTINUE
+            GO TO 100
+ 119     CONTINUE
+            GO TO 100
+ 120     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2309,6 +2328,8 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
+      IF(DOKRCI)
+     &   WRITE(LUPRI,'(A)') ' * Kramers restricted CI calculation'
 C
 C     Orbital manipulations
 C
@@ -2393,16 +2414,23 @@ C
         CALL RSTPINP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
+C     '*OPTIMI' - control KRMCSCF optimization
     9 CONTINUE
 #ifdef MOD_KRMC
         CALL ROPTINP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
+C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
         CALL MP2NOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
+C     '*KRCICALC' - Kramers Restricted CI CALCulation
    11 CONTINUE
+#ifdef MOD_KRMC
+        CALL RCI_INP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
+C
    12 CONTINUE
         GO TO 200
 C
@@ -2425,6 +2453,7 @@ C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
       CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
+      CALL RCI_INP(WORD,.TRUE.,WORK,LWORK)
 #endif
 C
 C     Input of relccsd module
@@ -6673,7 +6702,7 @@ C***********************************************************************
       LOGICAL PRINT_LIST,PRINT_ALL,FILL_LIST
       CHARACTER*80 LINE
       CHARACTER*7 KEYWORD_LIST(*)
-      INTEGER NUMBER_OF_KEYWORDS
+      INTEGER NUMBER_OF_KEYWORDS, LEN_LINE
 C
 C     Scan menu file
 C     ==============
@@ -6682,38 +6711,37 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
-  100 READ (LUCMD,'(A80)',END=120,ERR=110) LINE
+  100 READ (LUCMD,'(A)',END=120,ERR=110) LINE
+      LEN_LINE = LNBLNK(LINE)
 C
 C     Search for regular DIRAC input
 C
       IF (DOUBLE_STAR .AND. LINE(1:2) .EQ. '**') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(3:9)
-        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE IF (SINGLE_STAR .AND. LINE(1:1) .EQ. '*') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE IF (DOT. AND. LINE(1:1) .EQ. '.') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-        IF (PRINT_LIST) WRITE (LUPRI,*) LINE
+        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE
-        IF (PRINT_ALL) WRITE (LUPRI,*) LINE
+        IF (PRINT_ALL) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ENDIF
-
-CMI  ... this is needed to solve the 'segmentation fault' problem on PC Linux GNU/g77
-      LINE="\n"
 C
-C     Search for namelist input (first remove trailing blanks)
+C     Search for namelist input (first remove initial blanks)
 C
-      CALL BLANKR (132,LINE)
+      CALL BLANKR (80,LINE)
+      LEN_LINE = LNBLNK(LINE)
 
       IF (NAME_LIST .AND. (LINE(1:1).EQ.'&' .OR. LINE(1:1).EQ.'$')) THEN
        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-       IF (PRINT_LIST.AND..NOT.PRINT_ALL) 
-     &    WRITE (LUPRI,*) LINE
+       IF (PRINT_LIST.AND..NOT.PRINT_ALL)
+     &    WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       END IF
 C
       GO TO 100
