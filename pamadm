@@ -78,6 +78,7 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
+      AORESPONSEMOD=1
       IHFSCCMOD=1
       AMFIMOD=1
       LONDONMOD=1
