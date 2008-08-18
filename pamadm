@@ -78,7 +78,7 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
-      AORESPONSEMOD=1
+#     AORESPONSEMOD=1
       IHFSCCMOD=1
       AMFIMOD=1
       LONDONMOD=1
@@ -890,6 +890,9 @@ aoresponse/dirac_interface.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
 aoresponse/svwn.o \\
+aoresponse/vwn.o \\
+aoresponse/vwn_derv.o \\
+aoresponse/test_derv.o \\
 aoresponse/aoresponse_test.o \\
 aoresponse/helper.o \\
 aoresponse/aoresponse_xc.o \\

@@ -1,7 +1,7 @@
 module aoresponse_xc_m
 
   use kinds_m
-  use svwn_m
+  use slater_m
   use memory_allocator
   use matrix_oper
   use matrix_mod
@@ -202,11 +202,11 @@ contains
 !       evaluate prefactors
 !       ===================
 
-        derivative     = slater_recursive(order, n_0%scalar, grid%w(ipoint))
+        derivative     = slater_derv(order, n_0%scalar, grid%w(ipoint))
         n_xc(1)%scalar = 2.0d0*derivative*n(1)%scalar
 
         if (order > 2) then
-          derivative       = slater_recursive(order, n_0%scalar, grid%w(ipoint))
+          derivative       = slater_derv(order, n_0%scalar, grid%w(ipoint))
           n_xc_2(1)%scalar = derivative*n(1)%scalar*n(4)%scalar
           n_xc_2(2)%scalar = derivative*n(1)%scalar*n(5)%scalar
           n_xc_2(3)%scalar = derivative*n(1)%scalar*n(6)%scalar
@@ -217,7 +217,7 @@ contains
           n_xc_2(8)%scalar = derivative*n(3)%scalar*n(5)%scalar
           n_xc_2(9)%scalar = derivative*n(3)%scalar*n(6)%scalar
 
-          derivative       = slater_recursive(order-1, n_0%scalar, grid%w(ipoint))
+          derivative       = slater_derv(order-1, n_0%scalar, grid%w(ipoint))
           do i = 1, size(D)
             n_xc(i)%scalar = 2.0d0*derivative*n(i)%scalar
           end do
