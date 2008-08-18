@@ -8,7 +8,7 @@ F90_OBJS = aoresponse_input.o \
            dirac_interface.o \
            propint.o \
            pertdens.o \
-           svwn.o \
+           slater.o \
            vwn.o \
            vwn_derv.o \
            test_derv.o \
