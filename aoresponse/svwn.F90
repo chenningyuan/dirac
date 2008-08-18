@@ -62,6 +62,28 @@ contains
 
   end function
 
+  function vwn_energy_sub_expanded(n, p) result(v)
+
+    real(kind_dp), intent(in) :: n
+    real(kind_dp), intent(in) :: p(4)
+    real(kind_dp)             :: v
+!   ----------------------------------------------------------------------------
+    real(kind_dp)             :: a, b, c, s, x, y, z
+
+    a = p(3)*p(1)/(p(1)*p(1) + p(1)*p(3) + p(4)) - 1.0d0
+    b = 2.0d0*(p(3)*p(1)/(p(1)*p(1) + p(1)*p(3) + p(4)) - 1.0d0) + 2.0d0
+    c = 2.0d0*p(3)*(1.0d0/sqrt(4.0d0*p(4) - p(3)*p(3)) - p(1)/((p(1)*p(1) + p(1)*p(3) + p(4))*sqrt(4.0d0*p(4) - p(3)*p(3))/(p(3) + 2.0d0*p(1))))
+
+    s = (3.0d0/(4.0d0*pi))**(1.0d0/6.0d0)/sqrt(n**(1.0d0/3.0d0))
+
+    x = s*s + p(3)*s+p(4)
+    y = s - p(1)
+    z = sqrt(4.0d0*p(4) - p(3)*p(3))/(2.0d0*s + p(3))
+
+    v = 0.5d0*p(2)*(2.0d0*log(s) + a*log(x) - b*log(y) + c*atan(z))
+
+  end function
+
   function vwn_energy_sub(n, p) result(v)
 
     real(kind_dp), intent(in) :: n
@@ -84,7 +106,7 @@ contains
     s = r/sqrt(n**(1.0d0/3.0d0))
     t = 2.0d0*s + p(3)
     u = f/t
-    z = s*s + p(3)*s+p(4)
+    z = s*s + p(3)*s + p(4)
 
     e = 2.0d0*log(s) + c*log(z) - d*log(s - p(1)) + i*atan(u)
     v = 0.5d0*p(2)*e
@@ -119,9 +141,10 @@ contains
     inter(4)  = 13.0045d0
               
     v_para    = vwn_energy_sub(n, para)
+!   v_para    = vwn_energy_sub_expanded(n, para)
     v         = v_para
 
-    if ((na - nb) > small) then
+    if (abs(na - nb) > small) then
       v_ferro = vwn_energy_sub(n, ferro)
       v_inter = vwn_energy_sub(n, inter)
     
