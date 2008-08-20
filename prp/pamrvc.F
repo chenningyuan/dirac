@@ -1919,15 +1919,19 @@ C       B(+)-vec contains current X(-) solution vectors
 C       B(-)-vec contains current X(+) solution vectors
 C
 C     Output:
-C       B(+)-vec contains T(+) = -W*S[2]X(-)
-C       B(-)-vec contains T(+) = -W*S[2]X(+)
+C       For REAL frequencies:
+C         B(+)-vec contains T(+) = -W*S[2]X(-)
+C         B(-)-vec contains T(+) = -W*S[2]X(+)
+C       For IMAGINARY frequencies:     
+C         B(+)-vec contains T(+) = +W*S[2]X(-)
+C         B(-)-vec contains T(+) = -W*S[2]X(+)
 C
 C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1943,6 +1947,8 @@ C
       NBPVC = MIN(NZXOPP,1)
       NBCVC = MIN(NZCONF,1)
 C
+      FFAC = D1
+      IF(IMFREQ) FFAC = DM1
       DO I = 1,MFREQ
         FAC = -EVALR(I)
         IF(FAC.NE.D0) THEN
@@ -1971,12 +1977,12 @@ C
           IF(NZXOPE.GT.0) THEN
             CALL DCOPY(NZXOPEQ,BEBUF,1,BEMVC(1,I),1)
             CALL DSCAL(NZXOPEQ,FAC,BEMVC(1,I),1)
-            CALL DSCAL(NZXOPEQ,FAC,BEPVC(1,I),1)
+            CALL DSCAL(NZXOPEQ,FFAC*FAC,BEPVC(1,I),1)
           ENDIF
           IF(NZXOPP.GT.0) THEN
             CALL DCOPY(NZXOPPQ,BPBUF,1,BPMVC(1,I),1)
             CALL DSCAL(NZXOPPQ,FAC,BPMVC(1,I),1)
-            CALL DSCAL(NZXOPPQ,FAC,BPPVC(1,I),1)
+            CALL DSCAL(NZXOPPQ,FFAC*FAC,BPPVC(1,I),1)
           ENDIF
           IF(NZCONF.GT.0) THEN
             CALL DCOPY(NZCONFQ,BCBUF,1,BCMVC(1,I),1)
@@ -3020,6 +3026,8 @@ C
 C
       CALL QENTER('XBVGEN')
       TEST = DIAGHE.AND.(.NOT.USEXVC)
+      FFAC = D1
+      IF(IMFREQ) FFAC = D1
       IF (JBTYP .EQ. JBCNDX) THEN
 CHJ-jun2004      prepare for NZ.eq.4 (with MZ)
          MZ = MIN(2,NZ)
@@ -3140,7 +3148,8 @@ C              No X(-) - vector
                IF(TEST) THEN
 C
 C                 hj-nov99
-C                 Preconditioning: multiply with minus the elements of
+C                 Preconditioning: 
+C                 For REAL frequencies multiply with minus the elements of
 C
 C                 / hdiag  -freq \ -1      / hdiag*fac   freq*fac \
 C                 |                |     = |                        |
@@ -3149,15 +3158,24 @@ C
 C                 where fac = (hdiag**2 - freq**2)**(-1)
 C                 for the res(ip), res(im) pair
 C
+C                 For IMAGINARY frequencies multiply with minus the elements of
+C
+C                 / hdiag  +freq \ -1      / hdiag*fac  -freq*fac \
+C                 |                |     = |                        |
+C                 \ -freq  hdiag /         \ +freq*fac  hdiag*fac /
+C
+C                 where fac = (hdiag**2 + freq**2)**(-1)
+C                 for the res(ip), res(im) pair
                   FREQ2 = FREQ**2
+C                 Both res(ip) and res(im) present:
                   IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
                      BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
                      BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
                      DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
-                           FAC = D1/(FREQ2-HDIAG(IVAR)**2)
+                           FAC = D1/(FREQ2-FFAC*HDIAG(IVAR)**2)
                            BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
-     &                          + FREQ * FAC * BVEC(IVAR,IZ,IM)
+     &                          + FFAC * FREQ * FAC * BVEC(IVAR,IZ,IM)
                            BM = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IM)
      &                          + FREQ * FAC * BVEC(IVAR,IZ,IP)
                            BVEC(IVAR,IZ,IP) = BP
@@ -3169,11 +3187,12 @@ C
 C                    retain norm for numerical stability !
                      CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
                      CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
+C...              Only res(ip) present
                   ELSEIF(IVECS(IP).EQ.1) THEN
                      BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
                      DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
-                           FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
+                           FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
                            BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
 C                          hj:    Here bvec(ivar,iz,im) should be negligible
                         ENDDO
@@ -3181,11 +3200,12 @@ C                          hj:    Here bvec(ivar,iz,im) should be negligible
                      BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
 C                    retain norm for numerical stability !
                      CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+C...              Only res(im) present
                   ELSEIF(IVECS(IM).EQ.1) THEN
                      BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
                      DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
-                           FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
+                           FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
                            BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
 C                          hj:    Here bvec(ivar,iz,ip) should be negligible
                         ENDDO

@@ -795,6 +795,7 @@ C     **************************************************
 C     *** Transfer information from XCBXPP to WRKXRS ***
 C     **************************************************
 C
+      CALL SETRSP
       LINEQ     = .FALSE.
 C     ... solve eigenvalue equation!
       FKRMC     = .FALSE.
@@ -820,7 +821,6 @@ C     special variables only for linear equations (LINEQ true):
       NFREQ     = 0
       STERNH    = .FALSE.
       STATIC    = .FALSE.
-      UNCOUP    = .FALSE.
       TRIPLET   = XPP_TRIPLET
 C
 C     Indicate from vectors are read...

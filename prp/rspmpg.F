@@ -82,6 +82,7 @@ C
 C     Initialize /XCBLR/
 C     ==================
 C
+      CALL SETRSP
       IPRXLR    = 0            !general printlevel
       THCLR     = 1.d-7         !maximum norm of solutionerror vector
       THRCOM    = 1.0d-6         !threshold for compression
@@ -114,7 +115,6 @@ C
       TRIAB     = .FALSE.       !force triangularity
       XLR_XVCFIL    = 'NORXVC'
       XSTERN    = .FALSE.
-      UNCOUP    = .FALSE.
 C
 C     Make sure common block dcbidx is set
 C

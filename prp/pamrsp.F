@@ -107,7 +107,7 @@ C     Files:
 C
 C        LUBCI   - direct access file of C-type trial vectors
 C        LUBOE   - direct access file of E-type trial vectors
-C        LUBOP   - direct access file of B-tpye trial vectors
+C        LUBOP   - direct access file of B-type trial vectors
 C
 C        LUSCI   - direct access file of C-part of sigma vectors
 C        LUSOE   - direct access file of E-part of sigma vectors
@@ -1670,8 +1670,6 @@ C
          END IF
       END IF
 C
-CTROND      CALL EXTRMT(1,REDE,IBTYP,IBCVC,IBEVC,IBPVC,
-CTROND     &            BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,WORK(KB1))
       CALL MEMREL('EXTRE2',WORK,1,KB1,KFREE,LFREE)
 C
 C     Print section
@@ -1894,7 +1892,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0,DM1=-1.0D0)
 C
 #include "dcbxrs.h"
 C
@@ -1902,6 +1900,8 @@ C
      &          BCVEC(NZCONFQ,*),BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
      &          SCVEC(NZCONFQ,*),SEVEC(NZXOPEQ,*),SPVEC(NZXOPPQ,*),
      &          BVBUF(*),REDMAT(NREDM,NREDM)
+      FFAC = D1
+      IF(IMFREQ) FFAC = DM1
 C
 C     C-type trial vectors
 C     ====================
@@ -1926,7 +1926,7 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BVBUF,1,SEVEC(1,JN),1)
-            REDMAT(I,J) = REA  
+            REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
           ENDIF
         ENDDO          
@@ -1943,7 +1943,7 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BEVEC(1,IN),1,SEVEC(1,JN),1)
-            REDMAT(I,J) = REA  
+            REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
           ENDIF
         ENDDO
@@ -1965,7 +1965,7 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BVBUF,1,SPVEC(1,JN),1)
-            REDMAT(I,J) = REA  
+            REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
           ENDIF
         ENDDO          
@@ -1982,7 +1982,7 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BPVEC(1,IN),1,SPVEC(1,JN),1)
-            REDMAT(I,J) = REA  
+            REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
           ENDIF
         ENDDO
@@ -2541,7 +2541,7 @@ C
 C
 C     Solve linear system
 C
-      CALL DSPSLI(N,1,WORK(KAN),X,WORK(KA2),INFO,DET,INERT)
+      CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KAN),INFO)
 C
 C     Print section
 C
@@ -3340,6 +3340,8 @@ C
 C
       CALL QENTER('XRSST2')
 C
+      FFAC = D1
+      IF(IMFREQ) FFAC = DM1    
       NBDIM = NVAR*NZ
       IF (NBTYP.EQ.JBENDX) THEN
          ITYP    = IPEP
@@ -3466,7 +3468,7 @@ C               tsaue:         retain norm for numerical stability !
                 FREQ2 = FREQ**2
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = GP(IVAR,IZ)/(FREQ2-HDIAG(IVAR)**2)
+                    FAC = GP(IVAR,IZ)/(FREQ2-FFAC*HDIAG(IVAR)**2)
                     BVEC(IVAR,IZ,IP) = HDIAG(IVAR)*FAC
                     BVEC(IVAR,IZ,IM) = FREQ*FAC
                   ENDDO
@@ -3504,7 +3506,7 @@ C           Assume it is a `+' type trial vector
      &         BVTYP(ITYP),' read.'
 C
         ELSE
-C         start wit GP vectors as start vectors
+C         start with GP vectors as start vectors
           IF(STATIC) THEN
             CALL DCOPY(NBDIM,GP,1,BVEC(1,1,1),1)
             IBTYP(1,IBOFF+1) = NBTYP
@@ -3894,4 +3896,21 @@ C
 C
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck setrsp */
+      SUBROUTINE SETRSP
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Set a default values for a number of variables of the response 
+C     module such that they need to modified only in modules where they
+C     are used.
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbxrs.h"
+      UNCOUP = .FALSE.
+      IMFREQ = .FALSE.
+      RETURN
+      END

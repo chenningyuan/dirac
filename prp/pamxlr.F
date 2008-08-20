@@ -364,7 +364,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -388,7 +388,8 @@ C
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
-     &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP'/
+     &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
+     &            '.IMAGIN','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -446,6 +447,7 @@ C        as the default for LevyLe/BSS
       TRIAB      = .FALSE.
       XLR_XVCFIL = 'NORXVC'
       XLR_UNCOUP = .FALSE.
+      XLR_IMFREQ = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
       NOSPIA     = .FALSE.
@@ -480,7 +482,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,31,32), I
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31,32,33,34,35,36), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -657,7 +660,17 @@ C&&&& NOSPIB: Eliminate all spin-dependene of property operator B
                GO TO 100
  32            CONTINUE
 C&&&& UNCOUP: Uncoupled Hartree-Fock
-                  XLR_UNCOUP = .TRUE.
+                 XLR_UNCOUP = .TRUE.
+               GO TO 100
+ 33            CONTINUE
+C&&& IMAGINARY: Purely imaginary frequencies
+                 XLR_IMFREQ = .TRUE.
+               GO TO 100
+ 34            CONTINUE
+               GO TO 100
+ 35            CONTINUE
+               GO TO 100
+ 36            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -860,9 +873,15 @@ C     Frequencies
 C     ===========
 C
 C     CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)')
+      IF(XLR_IMFREQ) THEN
+        WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
-     &   'frequencies:'
+     &   'IMAGINARY frequencies:'
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &' * Linear response functions evaluated at the following '//
+     &   'REAL frequencies:'
+      ENDIF
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
@@ -997,6 +1016,7 @@ C     **************************************************
 C     *** Transfer information from XCBXLR to WRKXRS ***
 C     **************************************************
 C
+      CALL SETRSP
       LINEQ     = .TRUE.
       FKRMC     = .FALSE.
       LSVCFG(1) = XLR_LSFG(1)
@@ -1014,6 +1034,7 @@ C
       LOFFTY    = 0
       STATIC    = (NFREQ.EQ.1.AND.BFREQ(1).EQ.D0)
       UNCOUP    = XLR_UNCOUP
+      IMFREQ    = XLR_IMFREQ
       TRIPLET   = XLR_TRIPLET
       CNVINT(1) = CNVXLR(1)
       CNVINT(2) = CNVXLR(2)

@@ -3427,6 +3427,8 @@ C
       DIMENSION IOPTTB(-1:2)
       CHARACTER CIPROGRAM*8
 C
+      CALL SETRSP      
+C
 C     Characters...
 C
       XRS_CIPROGRAM = CIPROGRAM
@@ -3436,7 +3438,6 @@ C
       RSREST = OPTRST
       STATIC = .TRUE.
       LINEQ  = .TRUE.
-      UNCOUP = .FALSE.
       TKNORM = OPTNRM
       DIAGHE = OPTDIH
       LSVCFG(1) = .TRUE.

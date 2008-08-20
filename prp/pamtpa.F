@@ -368,6 +368,7 @@ C
 C     Initiate variables in dcbxrs.h
 C     ==============================
 C
+      CALL SETRSP
       LSVCFG(1) = .TRUE.
       LSVCFG(2) = .TRUE.
       CNVINT(1) = CNVXQR(1)
@@ -388,7 +389,6 @@ C
       INTDEF = INTXQR
       STERNH = XSTERN
       STATIC = .FALSE.
-      UNCOUP = .FALSE.
 C
 C     Get the maximum length of the response vectors
 C     ==============================================
