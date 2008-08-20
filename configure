@@ -580,7 +580,7 @@ case $counter in
     comp_index=-1
     $echo "Which one you you want to use? (Default: 1) \c"
     read comp_index
-    if [ -z $comp_index ]; then
+    if [ -z "$comp_index" ]; then
       comp_index=1
     fi
     if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
@@ -677,7 +677,9 @@ esac
 
 
 search_math_libs(){
+#
 # Searches for mathematical libraries in the directories of dirlist
+#
   echo "Searching for the mathematical libraries... "
   echo
 
@@ -694,6 +696,11 @@ search_math_libs(){
       done
     done
   done
+
+if [ $IPRINT -ge "8" ];  then
+ echo 'search_math_libs: set lib_names='$lib_names
+fi
+
 }
 
 
@@ -732,7 +739,6 @@ setup_math_lib(){
 }
 
 
-
 get_math_lib(){
 # Try different versions and see how fast they are.
 
@@ -745,10 +751,13 @@ get_math_lib(){
 
 search_math_libs
 
-
 # If there is found more than one compiler let the user pick it.
 
-if [ ! -z $libnames ]; then
+if [ $IPRINT -ge "5" ];  then
+ echo 'get_math_lib:  lib_names='$lib_names
+fi
+
+if [ ! -z "$lib_names" ]; then
   echo "The following libraries were detected on your system:"
 else
   echo "No optimized mathematical libraries were detected on your system:"
@@ -772,7 +781,7 @@ else
 fi
 read lib_index
 
-if [ -z $lib_index ]; then
+if [ -z "$lib_index" ]; then
   if [ $counter -gt 1 ]; then
     lib_index=2
   else
@@ -803,7 +812,7 @@ elif [ $lib_index -eq 1 ]; then
 
   echo  
   echo "Building a list of subdirectories of: $math_dirs ... "
-  if [ ! -z $math_dirs ]; then
+  if [ ! -z "$math_dirs" ]; then
     case $rec_search in
     "yes" | "y" | "Y" )
       math_dirs=`find $math_dirs -type d -print`;;
@@ -974,40 +983,127 @@ set_installdir ()  {
 echo 
 echo 'INSTALL DIRECTORY'
 echo
+
+if [ $IPRINT -ge "7" ];  then
+   echo 'set_installdir: variable INSTALL_DIR='$INSTALL_DIR
+   echo 'set_installdir: variable quick='$quick
+fi
+
+# if varible empty, 
 if [ -z "$INSTALL_DIR" ]; then
-   INSTALL_DIR=
-   while [ -z "$INSTALL_DIR" ]
-   do
-      curr=`./config.status INSTALLDIR`
-      if [ -z "$curr" ]; then
-         curr=`pwd`
-      fi
-      if [ ! -d "$curr" ]; then
-         curr=`pwd`
-      fi
-      if [ $quick = 0 ]; then
-         $echo 'Directory for installation of' \
-         'binaries and scripts (default: '$curr'): \c'
-         read INSTALL_DIR
-      else
-         INSTALL_DIR=
-      fi
-      if [ -z "$INSTALL_DIR" ]; then
-         INSTALL_DIR=$curr
-      fi
-      if [ ! -d "$INSTALL_DIR" ]; then
-         echo "ERROR: $INSTALL_DIR does not exist"
-         INSTALL_DIR=
-      fi
-   done
+     set_install_directory
 else
+   # verify entered (as parameter) instalation directory
    if [ ! -d "$INSTALL_DIR" ]; then
-      echo "ERROR: $INSTALL_DIR does not exist"
-      exit 1
+     echo "ERROR: $INSTALL_DIR (entered as paramater) does not exist "
+     # exit 1
+     set_install_directory
    fi
 fi
-$echo 'Install directory for executable and script: '$INSTALL_DIR
+
+# ... finally print-out the veryfied installation directory
+$echo 'Install directory for DIRAC executable and script: '$INSTALL_DIR
 echo
+}
+
+set_install_directory () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#      Determines the proper installation directory
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+   # first null the variable
+   INSTALL_DIR=
+
+   # repeat until directory found - test on empty 
+   while [ -z "$INSTALL_DIR" ]
+   do
+      # ... find out the variable which is in the Makefile.config file (if there is any)
+      curr=`./config.status INSTALLDIR`
+
+      if [ ! -z "$curr" -a -d "$curr" ]; then
+
+         $echo 'Found (in Makefile.config) proper directory for installation of' \
+         'DIRAC binaries and scripts:\c'
+	 $echo $curr
+	 $echo 'Do you want me to use it ? (y/N) \c'
+
+	 default_answer="n" 
+         get_answer
+
+	 if [ "$answer" = "n" ] ; then
+            curr=`pwd`
+	    $echo 'Do you want me to use current directory '$curr' ? (Y/n) \c'
+	    default_answer="y" 
+            get_answer
+	    if [ "$answer" = "n" ] ; then
+	       $echo "Well, your choice, now type the directory:\c"
+               read INSTALL_DIR
+	    else
+               INSTALL_DIR=$curr
+	    fi
+	 else
+            INSTALL_DIR=$curr
+         fi
+      else
+         # use the current directory 
+         curr=`pwd`
+         INSTALL_DIR=$curr
+         $echo '...using current directory for installation: '$curr' '
+      fi
+
+      # verify ... if the directory does not exist use the current directory
+      #if [ ! -d "$curr" ]; then
+      #   echo $curr ' : directory does not exist ! Using current directory.'
+      #   curr=`pwd`
+      # fi
+
+     # if [ -z "$INSTALL_DIR" ]; then
+     #    INSTALL_DIR=$curr
+     # fi
+
+      # verify install directory
+      if [ ! -d "$INSTALL_DIR" ]; then
+         echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again !"
+         INSTALL_DIR=
+      fi
+
+   done
+}
+
+get_answer() {
+#--------------------------------------------------------
+#
+#  procedure to get the answer - yes or no
+#
+#  uses the default variable "default_answer"
+#
+#--------------------------------------------------------
+answer=
+while [ "$answer" != "y" -a "$answer" != "n" ]
+do
+     read answer
+
+     if [ $IPRINT -ge "12" ];  then
+        echo 'get_answer: read variable answer='$answer
+        echo 'get_answer: while variable default_answer='$default_answer
+     fi
+
+     # if answer empty and default_answer set
+     if [ -z "$answer" -a "$default_answer" = "y" ]; then
+        answer="y"
+     fi
+     if [ -z "$answer" -a "$default_answer" = "n" ]; then
+        answer="n"
+     fi
+
+     # if "answer" not found, complain of it ... 
+     if [ "$answer" != "y" -a "$answer" != "n" ]; then
+       $echo '     please type the proper answer - yes(y) or no(n) \c'
+     fi
+#    ...
+done
 }
 
 set_scratchdir ()  {
@@ -1477,9 +1573,9 @@ case $machine in
 
 esac
 
-if [ $IPRINT -ge "5" ];  then
- echo 'set_compile_flags...'
-fi
+#if [ $IPRINT -ge "5" ];  then
+# echo 'set_compile_flags...'
+#fi
 
 
 }
@@ -1497,7 +1593,7 @@ echo
 if [ -f Makefile.config ]; then
    echo 'Makefile.config exists. I will take a backup as Makefile.config.orig'
    if [ -f Makefile.config.orig -a ! -w Makefile.config.orig ]; then
-      echo 'Makefile.config.orig is write-protetcted.'
+      echo 'Makefile.config.orig is write-protected.'
       answer=
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
