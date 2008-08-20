@@ -28,12 +28,12 @@
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # TODO
-# Add an additional: save_flags= -O0 in makefile.config
+# Add an additional: save_flags= -O0 in makefile.config - this is done (miro)
 #
 # Large molecule flag -> out (takes lot of memory)?
 # 
+# Still place for further improvements,  modularisation etc
 #
-
 
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -46,7 +46,7 @@ SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
 
-# default - no IMB mode
+# default - no IBM mode
 IBMMOD=0
 
 # default print level
@@ -88,7 +88,7 @@ usage ()  {
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
-   echo '   --i=PRINT-LEVEL              : Set the print level for the script to PRINT-LEVEL (default 0)'
+   echo '   --i=PRINT-LEVEL              : Set the print (verbose) level for the script to PRINT-LEVEL (default 0)'
 }
 
 guess_system ()  {
@@ -475,7 +475,7 @@ echo
 compiler_fortran(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Sets up the fortran compiler
+#            Sets up the fortran compiler
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
@@ -535,8 +535,9 @@ find_compiler ()  {
 #   to_find determines the kind of compiler to be found
 #           (for messages to the user)
 #   Here we return comp_set
+#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-$echo "\nChecking for $to_find compilers ...\c"
+$echo "\nChecking for $to_find compilers:"
 comp_found=""
 
 if [ -z "$user_comp" ]; then
@@ -569,7 +570,7 @@ case $counter in
   1 ) 
     echo " The following $to_find compiler will be used: $comp_found" ;;
   * )
-    echo " The following compilers were detected on your system: "
+    $echo "\n These following $to_find compilers were detected on your system:"
     counter=0
     for comp in $comp_found; do
       counter=`expr $counter + 1`
@@ -675,7 +676,6 @@ esac
 }
 
 
-
 search_math_libs(){
 #
 # Searches for mathematical libraries in the directories of dirlist
@@ -698,18 +698,27 @@ search_math_libs(){
   done
 
 if [ $IPRINT -ge "8" ];  then
- echo 'search_math_libs: set lib_names='$lib_names
+ echo 'search_math_libs: accumulated lib_names='$lib_names
 fi
 
 }
 
 
 setup_math_lib(){
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'setup_math_lib: entering param lib, 1='$1
+    echo 'setup_math_lib: entering param dir, 2='$2
+  fi
+
   case "$1" in
     libesslp2) LIB="-L$2 -lesslp2";;
     libessl) LIB="-L$2 -lessl";;
 #For later use we note that we found an optimized blas library
-    libblas) LIB="-L$2 -lblas" ;;
+  #  libblas) LIB="-L$2 -lblas" ;;
+    libblas) LIB="-L$2 -lblas -llapack" ;;
+#   ...  both blas and lapack
+#    libblas_liblapack) LIB="-L$2 -lblas -llapack" ;;
 #For Atlas you need to link with lf77blas as well
     libatlas) LIB="-L$2 -llapack -lcblas -lf77blas -latlas";;
     libdxml) LIB="-L$2 -ldxml";;
@@ -723,6 +732,10 @@ setup_math_lib(){
     libmkl_itp) LIB="-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
   esac
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'setup_math_lib: setup variable LIB='$LIB
+  fi
   
   test_lib_arch $2
   if [ 0 -eq $? ]; then
@@ -737,7 +750,6 @@ setup_math_lib(){
     esac
   fi
 }
-
 
 get_math_lib(){
 # Try different versions and see how fast they are.
@@ -754,7 +766,7 @@ search_math_libs
 # If there is found more than one compiler let the user pick it.
 
 if [ $IPRINT -ge "5" ];  then
- echo 'get_math_lib:  lib_names='$lib_names
+ echo 'get_math_lib: lib_names='$lib_names
 fi
 
 if [ ! -z "$lib_names" ]; then
@@ -768,8 +780,16 @@ for tmp_library in $lib_names; do
   counter=`expr $counter + 1`
   $echo "$counter) $tmp_library"
 done
+#
+if [ ! -z "$both_blas_lapack" ]; then
+  counter=`expr $counter + 1`
+  $echo "$counter) both lapack and blas"
+fi
+#
 $echo "1) Specify a library path. \t\c" 
+#
 echo "0) Built in libraries (SLOW) or manual configuration."
+
 echo 
 lib_index=-1
 
@@ -803,7 +823,6 @@ elif [ $lib_index -eq 0 ]; then
        ;;
   esac
 
-   
 elif [ $lib_index -eq 1 ]; then
   $echo "Enter a directory to search: \c"
   read math_dirs
@@ -893,10 +912,13 @@ echo
 #
 # libraries
 ext_list='.so .a'
-lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml"
+lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml liblapack"
 LIB=""
 
 math_dirs=$dir_list
+
+# variable telling that there are both lapack and blas libraries
+both_blas_lapack=
 
 libguess=`./config.status LIB_LIST`
 if [ ! -z "$libguess" ]; then
@@ -996,7 +1018,7 @@ else
    # verify entered (as parameter) instalation directory
    if [ ! -d "$INSTALL_DIR" ]; then
      echo "ERROR: $INSTALL_DIR (entered as paramater) does not exist "
-     # exit 1
+     # no exit, rather repeat searching for the directory
      set_install_directory
    fi
 fi
@@ -1073,13 +1095,13 @@ set_install_directory () {
 }
 
 get_answer() {
-#--------------------------------------------------------
+#----------------------------------------------------------------
 #
-#  procedure to get the answer - yes or no
+#  usefull procedure to get (typed) the answer - yes or no
 #
 #  uses the default variable "default_answer"
 #
-#--------------------------------------------------------
+#----------------------------------------------------------------
 answer=
 while [ "$answer" != "y" -a "$answer" != "n" ]
 do
@@ -1109,19 +1131,52 @@ done
 set_scratchdir ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#    SET SCRATCHDIR
-# Determine default scratch disk space for calculations
+#                   SET SCRATCHDIR
+#
+#   Determine the default scratch disk space for calculations
+#
+#   The "worksp" variable could come in within argument list 
+#
+#   Likewise it can be extracted from the "Makefile.config" file
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo 
 echo 'SCRATCH DIRECTORY'
 echo
+
 if [ -z "$worksp" ]; then
-   worksp=
+      get_worksp
+else
+   if [ ! -d $worksp ]; then
+      echo 'Scratch directory '$worksp' you typed does not exist!'
+      get_worksp
+   fi
+fi
+#
+echo 'Scratch directory: '$worksp'/$USER'
+echo
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+get_worksp ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#      get the 'worksp' variable 
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
    scr_quick=$quick
    while [ -z "$worksp" ]
    do
-      if [ -d '/work' ]; then
+      # extract from Makefile.config
+      scratchguess=`./config.status SCRATCHDIR`
+      if [ $IPRINT -ge "5" ];  then 
+         echo 'get_worksp: extracted scratchguess='$scratchguess
+      fi
+
+      if [ ! -z "$scratchguess" -a -d "$scratchguess" ]; then
+         worksp=$scratchguess
+      elif [ -d '/work' ]; then
          worksp='/work'
       elif [ -d '/scratch' ]; then
          worksp='/scratch'
@@ -1135,6 +1190,7 @@ if [ -z "$worksp" ]; then
          worksp=
          scr_quick=0
       fi
+
       if [ $scr_quick = 0 ]; then
          $echo 'Default scratch space in script (default: '$worksp'): \c'
          read answer
@@ -1144,6 +1200,7 @@ if [ -z "$worksp" ]; then
       if [ ! -z "$answer" ]; then
          worksp=$answer
       fi
+      # verify the work-directory, and/or confirm
       if [ ! -d $worksp ]; then
          echo 'Scratch directory '$worksp' does not exist!'
          if [ $quick = 0 ]; then
@@ -1163,15 +1220,7 @@ if [ -z "$worksp" ]; then
             done
          fi
       fi
-   done
-else
-   if [ ! -d $worksp ]; then
-      echo 'Scratch directory '$worksp' does not exist!'
-      exit 1
-   fi
-fi
-echo 'Scratch directory: '$worksp'/$USER'
-echo
+   done # end of case
 }
 
 
@@ -1769,6 +1818,9 @@ ARCH        = $guess
 INSTALLDIR    = $INSTALL_DIR
 # Location of the source files
 SOURCEDIR     = `pwd`
+# Location of the scratch (or working) directory
+SCRATCHDIR    = $worksp
+# default memory
 WRKMEM        = $memsiz
 EOF
 if [ $IBMMOD -eq 1 ]; then
