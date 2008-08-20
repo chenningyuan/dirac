@@ -933,12 +933,19 @@ if [ ! -z "$libguess" ]; then
     ;;
   esac
 
-  rm -f gnyf.F
+  /bin/rm -f gnyf.F
   echo '      PROGRAM GNYF' >  gnyf.F
   echo '      END         ' >> gnyf.F
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'find_mathlib: checking confirmed library LIB='$LIB
+    $F90_COMP gnyf.F -o gnyf.x $LIB
+  fi
+
   $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
-  rm -f gnyf.F gnyf.x gnyf.o
+  /bin/rm -f gnyf.F gnyf.x gnyf.o
   echo
+
 
 fi
 
