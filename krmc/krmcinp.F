@@ -1437,7 +1437,7 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
                GO TO 100
     7          CONTINUE
 C&&& .KTRLVL: default integral transformation level.
-               READ(LUCMD,*) KTRLVL_KRCI
+                 READ(LUCMD,*) KTRLVL_KRCI
                IF (KTRLVL_KRCI .LE. -2 .OR. KTRLVL_KRCI .GT. 5) THEN
                   WRITE(LUPRI,'(//2A,I10)')
      &                '*** ERROR in RCI_INP *** ',
@@ -1445,6 +1445,7 @@ C&&& .KTRLVL: default integral transformation level.
                   CALL QUIT('*** ERROR in RCI_INP *** ' //
      &                 'Illegal transformation level')
                END IF
+               GO TO 100
     8          CONTINUE
 C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
 #if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
