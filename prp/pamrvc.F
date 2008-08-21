@@ -3030,204 +3030,178 @@ C
       IF(IMFREQ) FFAC = D1
       IF (JBTYP .EQ. JBCNDX) THEN
 CHJ-jun2004      prepare for NZ.eq.4 (with MZ)
-         MZ = MIN(2,NZ)
+        MZ = MIN(2,NZ)
       ELSE
          MZ = NZ
       END IF
       NVARQ = NVAR*MZ
-chj   IF(LINEQ) THEN
-chj   .. this ought to work for PP also ... (13.dec.2000)
 C
-C        L I N E A R   R E S P O N S E   F U N C T I O N S
-C        =================================================
-C
-         IF(USEXVC) THEN
-C           New integral class added;
-C           start from present solution vector
-            CALL XRSXV1(IPX,JBTYP,BVEC,EVECR,MFREQ,
-     &           IBTYP,IBVEC,IVECS,BBUF)
-            DO IP = 1,MFREQ
-               IBTYP(1,IBOFF+IP) = JBTYP
-               IBTYP(2,IBOFF+IP) = IPX
-               IBVEC(NBPREV +IP) = IBOFF + IP
-               IF(IVECS(IP).GT.0) IVECS(IP) = 1
-            ENDDO
-            IF(.NOT.STATIC) THEN
-               CALL XRSXV1(IMX,JBTYP,BVEC(1,1,(MFREQ+1)),EVECR,MFREQ,
-     &              IBTYP,IBVEC,IVECS(MFREQ+1),BBUF)
-               DO IP = 1,MFREQ
-                  IM = IP + MFREQ
-                  FREQ = EVALR(IP)
-                  IBTYP(1,IBOFF+IM) = JBTYP
-                  IBTYP(2,IBOFF+IM) = IMX
-                  IBVEC(NBPREV +IM) = IBOFF + IM
-                  IF(FREQ.EQ.D0) THEN
-                     IVECS(IM) = 0
-                  ELSE
-                     IF(IVECS(IM).GT.0) IVECS(IM) = 1
-                  ENDIF
-               ENDDO
-            ENDIF
-            GOTO 10
-         ENDIF
-C
-C        If .not. USEXVC:
-C
-         DO IP = 1,MFREQ
+      IF(USEXVC) THEN
+C       New integral class added;
+C       start from present solution vector
+        CALL XRSXV1(IPX,JBTYP,BVEC,EVECR,MFREQ,
+     &        IBTYP,IBVEC,IVECS,BBUF)
+        DO IP = 1,MFREQ
+          IBTYP(1,IBOFF+IP) = JBTYP
+          IBTYP(2,IBOFF+IP) = IPX
+          IBVEC(NBPREV +IP) = IBOFF + IP
+          IF(IVECS(IP).GT.0) IVECS(IP) = 1
+        ENDDO
+        IF(.NOT.STATIC) THEN
+          CALL XRSXV1(IMX,JBTYP,BVEC(1,1,(MFREQ+1)),EVECR,MFREQ,
+     &           IBTYP,IBVEC,IVECS(MFREQ+1),BBUF)
+          DO IP = 1,MFREQ
             IM = IP + MFREQ
             FREQ = EVALR(IP)
+            IBTYP(1,IBOFF+IM) = JBTYP
+            IBTYP(2,IBOFF+IM) = IMX
+            IBVEC(NBPREV +IM) = IBOFF + IM
+            IF(FREQ.EQ.D0) THEN
+               IVECS(IM) = 0
+            ELSE
+              IF(IVECS(IM).GT.0) IVECS(IM) = 1
+            ENDIF
+          ENDDO
+        ENDIF
+        GOTO 10
+      ENDIF
 C
-C           For KR-MCSCF optimizations FREQ can be !=0, since it
-C           contains the level shift.
+C     If .not. USEXVC:
 C
-            IF(FREQ.EQ.D0 .OR. FKRMC) THEN
-C              X(+) - vector
-               IBTYP(1,IBOFF+IP) = JBTYP
-               IBTYP(2,IBOFF+IP) = IPX
-               IBVEC(NBPREV +IP) = IBOFF + IP
-               IF(TEST.AND.IVECS(IP).EQ.1) THEN
-                  BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-                  IF (JBTYP .EQ. JBCNDX) THEN
-                     IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
-                     THRBVEC = ABS(BVEC(IVAR,1,IP))/1.0D1
-CHJ                  THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
-CHJ                  THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
+      DO IP = 1,MFREQ
+        IM = IP + MFREQ
+        FREQ = EVALR(IP)
+C
+C       For KR-MCSCF optimizations FREQ can be !=0, since it
+C       contains the level shift.
+C
+        IF(FREQ.EQ.D0 .OR. FKRMC) THEN
+C         X(+) - vector
+          IBTYP(1,IBOFF+IP) = JBTYP
+          IBTYP(2,IBOFF+IP) = IPX
+          IBVEC(NBPREV +IP) = IBOFF + IP
+          IF(TEST.AND.IVECS(IP).EQ.1) THEN
+            BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
+            IF (JBTYP .EQ. JBCNDX) THEN
+              IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
+              THRBVEC = ABS(BVEC(IVAR,1,IP))/1.0D1
+CHJ           THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
+CHJ           THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
 CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
-                  ELSE
-                     THRBVEC = THRZER
-                  END IF
-                  DO IZ = 1,MZ
-                     DO IVAR = 1,NVAR
-C
-C                       For MCSCF optimizations FREQ (EVALR) is the
-C                       level shift. For LR it's zero.
-C
-c#ifdef NODALTONCMP
-                        IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
-                           IF ( ABS(HDIAG(IVAR)-FREQ) .GT. DLIM) THEN
-                              BVEC(IVAR,IZ,IP) =
-     &                            -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ)
-                           ELSE
-                              BVEC(IVAR,IZ,IP) =
-     &                            -BVEC(IVAR,IZ,IP)
-                           END IF
-                        ELSE
-                           BVEC(IVAR,IZ,IP) = D0
-                        END IF
-c$$$#else
-c$$$                        IF ( ABS(HDIAG(IVAR)) .NE. D0) THEN
-c$$$                           BVEC(IVAR,IZ,IP) =
-c$$$     &                          -BVEC(IVAR,IZ,IP)
-c$$$     &                          /HDIAG(IVAR)
-c$$$                        ELSE
-c$$$                           BVEC(IVAR,IZ,IP) =
-c$$$     &                          -BVEC(IVAR,IZ,IP)
-c$$$                        END IF
-c$$$#endif
-                     ENDDO
-                  ENDDO
-                  BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-C                 retain norm for numerical stability !
-                  CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-               ENDIF
-C              No X(-) - vector
-               IF(.NOT.STATIC) THEN
-                  IBTYP(1,IBOFF+IM) = JBTYP
-                  IBTYP(2,IBOFF+IM) = IMX
-                  IBVEC(NBPREV+IM)  = IBOFF + IM
-                  IVECS(IM)          = 0
-               ENDIF
             ELSE
-               IBTYP(1,IBOFF+IP)     = JBTYP
-               IBTYP(2,IBOFF+IP)     = IPX
-               IBVEC(NBPREV+IP)      = IBOFF + IP
-               IBTYP(1,IBOFF+IM)     = JBTYP
-               IBTYP(2,IBOFF+IM)     = IMX
-               IBVEC(NBPREV+IM)      = IBOFF + IM
-               IF(TEST) THEN
+              THRBVEC = THRZER
+            END IF
+            DO IZ = 1,MZ
+              DO IVAR = 1,NVAR
 C
-C                 hj-nov99
-C                 Preconditioning: 
-C                 For REAL frequencies multiply with minus the elements of
+C             For MCSCF optimizations FREQ (EVALR) is the
+C             level shift. For LR it's zero.
 C
-C                 / hdiag  -freq \ -1      / hdiag*fac   freq*fac \
-C                 |                |     = |                        |
-C                 \ -freq  hdiag /         \  freq*fac  hdiag*fac /
+                IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
+                  IF ( ABS(HDIAG(IVAR)-FREQ) .GT. DLIM) THEN
+                       BVEC(IVAR,IZ,IP) =
+     &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ)
+                  ELSE
+                    BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
+                  END IF
+                ELSE
+                  BVEC(IVAR,IZ,IP) = D0
+                END IF
+              ENDDO
+            ENDDO
+            BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+C           retain norm for numerical stability !
+            CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+          ENDIF
+C         No X(-) - vector
+          IF(.NOT.STATIC) THEN
+            IBTYP(1,IBOFF+IM) = JBTYP
+            IBTYP(2,IBOFF+IM) = IMX
+            IBVEC(NBPREV+IM)  = IBOFF + IM
+            IVECS(IM)          = 0
+          ENDIF
+        ELSE
+          IBTYP(1,IBOFF+IP)     = JBTYP
+          IBTYP(2,IBOFF+IP)     = IPX
+          IBVEC(NBPREV+IP)      = IBOFF + IP
+          IBTYP(1,IBOFF+IM)     = JBTYP
+          IBTYP(2,IBOFF+IM)     = IMX
+          IBVEC(NBPREV+IM)      = IBOFF + IM
+          IF(TEST) THEN
 C
-C                 where fac = (hdiag**2 - freq**2)**(-1)
-C                 for the res(ip), res(im) pair
+C           hj-nov99
+C           Preconditioning: 
+C           For REAL frequencies multiply with minus the elements of
 C
-C                 For IMAGINARY frequencies multiply with minus the elements of
+C           / hdiag  -freq \ -1      / hdiag*fac   freq*fac \
+C           |                |     = |                        |
+C           \ -freq  hdiag /         \  freq*fac  hdiag*fac /
 C
-C                 / hdiag  +freq \ -1      / hdiag*fac  -freq*fac \
-C                 |                |     = |                        |
-C                 \ -freq  hdiag /         \ +freq*fac  hdiag*fac /
+C           where fac = (hdiag**2 - freq**2)**(-1)
+C           for the res(ip), res(im) pair
 C
-C                 where fac = (hdiag**2 + freq**2)**(-1)
-C                 for the res(ip), res(im) pair
-                  FREQ2 = FREQ**2
-C                 Both res(ip) and res(im) present:
-                  IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
-                     BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-                     BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-                     DO IZ = 1,MZ
-                        DO IVAR = 1,NVAR
-                           FAC = D1/(FREQ2-FFAC*HDIAG(IVAR)**2)
-                           BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
-     &                          + FFAC * FREQ * FAC * BVEC(IVAR,IZ,IM)
-                           BM = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IM)
-     &                          + FREQ * FAC * BVEC(IVAR,IZ,IP)
-                           BVEC(IVAR,IZ,IP) = BP
-                           BVEC(IVAR,IZ,IM) = BM
-                        ENDDO
-                     ENDDO
-                     BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-                     BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
-C                    retain norm for numerical stability !
-                     CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-                     CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
-C...              Only res(ip) present
-                  ELSEIF(IVECS(IP).EQ.1) THEN
-                     BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-                     DO IZ = 1,MZ
-                        DO IVAR = 1,NVAR
-                           FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
-                           BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
-C                          hj:    Here bvec(ivar,iz,im) should be negligible
-                        ENDDO
-                     ENDDO
-                     BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-C                    retain norm for numerical stability !
-                     CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-C...              Only res(im) present
-                  ELSEIF(IVECS(IM).EQ.1) THEN
-                     BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-                     DO IZ = 1,MZ
-                        DO IVAR = 1,NVAR
-                           FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
-                           BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
-C                          hj:    Here bvec(ivar,iz,ip) should be negligible
-                        ENDDO
-                        BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
-C                       retain norm for numerical stability !
-                        CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
-                     ENDDO
-                  ENDIF
-               ENDIF
+C           For IMAGINARY frequencies multiply with minus the elements of
+C
+C           / hdiag  +freq \ -1      / hdiag*fac  -freq*fac \
+C           |                |     = |                        |
+C           \ -freq  hdiag /         \ +freq*fac  hdiag*fac /
+C
+C           where fac = (hdiag**2 + freq**2)**(-1)
+C           for the res(ip), res(im) pair
+            FREQ2 = FREQ**2
+C           Both res(ip) and res(im) present:
+            IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
+              BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
+              BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
+              DO IZ = 1,MZ
+                DO IVAR = 1,NVAR
+                  FAC = D1/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                  BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
+     &               + FFAC * FREQ * FAC * BVEC(IVAR,IZ,IM)
+                  BM = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IM)
+     &               + FREQ * FAC * BVEC(IVAR,IZ,IP)
+                  BVEC(IVAR,IZ,IP) = BP
+                  BVEC(IVAR,IZ,IM) = BM
+                ENDDO
+              ENDDO
+              BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+              BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
+C             retain norm for numerical stability !
+              CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+              CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
+C...        Only res(ip) present
+            ELSEIF(IVECS(IP).EQ.1) THEN
+              BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
+              DO IZ = 1,MZ
+                DO IVAR = 1,NVAR
+                  FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                  BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
+C                 hj:    Here bvec(ivar,iz,im) should be negligible
+                ENDDO
+              ENDDO
+              BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+C             retain norm for numerical stability !
+              CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+C...        Only res(im) present
+            ELSEIF(IVECS(IM).EQ.1) THEN
+              BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
+              DO IZ = 1,MZ
+                DO IVAR = 1,NVAR
+                  FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                  BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
+C                 hj:    Here bvec(ivar,iz,ip) should be negligible
+                ENDDO
+                BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
+C               retain norm for numerical stability !
+                CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
+              ENDDO
             ENDIF
-         ENDDO
+          ENDIF
+        ENDIF
+      ENDDO
 C
- 10      CONTINUE
-chj   ELSE
-C
-C     E X C I T A T I O N  E N E R G I E S etc.
-C     ========================================
-C
-chj      CALL QUIT(
-chj  &    ' Eigenvalue equation (PP) not implemented yet in XBVGEN.')
-chj   END IF
-C
+ 10   CONTINUE
       CALL QEXIT('XBVGEN')
       RETURN
       END
