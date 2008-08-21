@@ -1035,17 +1035,18 @@ C COPY VECTOR ON FILE LUIN TO FILE LUOUT
 C
 C
 C LBLK DEFINES STRUCTURE OF FILE
+C   LBLK .gt. 0 : LBL (length of next record) is equal to LBLK
+C        .le. 0 : LBL (length of next record) is read from LUIN
 *
-* Structure of output file is inherited by output file,
+* Structure of output file (LUOUT) is inherited from input file (LUIN):
 * if input file is packed, so is output file
 *
 *
-C Type of file LUOUT is inherited from LUIN
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
-        CALL REWINE( LUIN ,LBLK)
+        CALL REWINE( LUIN  ,LBLK)
         CALL REWINE( LUOUT ,LBLK)
       END IF
 C
@@ -2248,7 +2249,7 @@ C
       SUBROUTINE FRMDSC2(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED,
      &                   NO_ZEROING)
 C
-C     TRANSFER ARRAY FROM DISC FILE IFILE
+C     Transfer vector from disk file IFILE to array ARRAY
 C
 *. Version allowing zero and packed blocks 
 *
@@ -2260,7 +2261,7 @@ C
       DIMENSION ARRAY(*)
 *
       DIMENSION ISCR(2)
-      PARAMETER(LPBLK=50000)
+      PARAMETER(LPBLK=50 000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
 
