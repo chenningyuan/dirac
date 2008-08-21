@@ -999,7 +999,6 @@ C        and metric.
 C
       IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                       WORK,KFREE,LFREE)
-
 C
 C
 C
@@ -3408,6 +3407,7 @@ C
      &           '*** WARNING: No restart vectors found !'
           ENDIF
         ENDIF
+
         IF(DIAGHE) THEN
           GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
@@ -3485,7 +3485,7 @@ C               tsaue:         retain norm for numerical stability !
               END IF
             ENDIF
           ENDDO          
-        ELSE IF (IXRSTB(NBTYP) .GE. 0) THEN
+        ELSE IF (IXRSTB(NBTYP) .GT. 0) THEN
 C
 C         Restart on IXRSTB trial vectors read from trial vector file
 C         (this is a useful interface; e.g., let the MCSCF program
@@ -3910,6 +3910,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbxrs.h"
+      FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       RETURN

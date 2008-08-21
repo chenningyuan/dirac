@@ -1018,7 +1018,6 @@ C     **************************************************
 C
       CALL SETRSP
       LINEQ     = .TRUE.
-      FKRMC     = .FALSE.
       LSVCFG(1) = XLR_LSFG(1)
       LSVCFG(2) = XLR_LSFG(2)
       TKNORM    = XLRNRM
