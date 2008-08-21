@@ -1926,6 +1926,7 @@ C       IBEIG - corresponding boson info
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2333,8 +2334,8 @@ C
      &         'for fermion ircop',I
             WRITE(LUPRI,'(3X,A)')
      &         '* Electron eigenvalues and boson classification ...'
-            WRITE(LUPRI,'(3X,F15.8,I5)')
-     &         (EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
+            WRITE(LUPRI,'(3X,I5,1X,F15.8,I5)')
+     &         (J,EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
