@@ -160,7 +160,6 @@ def run_numerov(potential_coef,
                     i_right = i
                     done    = 1
 
-             property_times_psi = property*psi
              expectation_value = dot(psi, property*psi)
              psi_squared_save[nr_nodes-1] = 4.0*psi**2.0
 
