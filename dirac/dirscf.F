@@ -1989,7 +1989,7 @@ C       Memory allocation
      &              WORK(KRSEL),WORK(KISEL),
      &              NTMO(I),NOCCMF(I),NESHMF(I),WORK(KFREE),LFREE)
 C     Memory deallocation
-      CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
       ENDDO
       CALL QEXIT('SMOSE1')
@@ -2035,15 +2035,16 @@ C
      &          RCSEL(KNESH),ICSEL(KNESH,2),
      &          WORK(LWORK)
 C
-C     Form product CFU * SMO
+C     Form product CFU * SMO = SBUF
 C
       CALL QGEMM(NESHMF(IFRP),NOCCMF(IFRP),NTMO(IFRP),D1,
      &       'H','N',IPQTOQ(1,0),CFU(1,NPSH(IFRP)+1,1),
      &                NTMO(IFRP),NTMO(IFRP),NZ,
      &       'N','N',IPQTOQ(1,0),SMO,NTMO(IFRP),NOCCMF(IFRP),NZ,
      &       D0,IPQTOQ(1,0),SBUF,NESHMF(IFRP),NOCCMF(IFRP),NZ)
+
       IF(IPRSCF.GE.10) THEN
-        CALL HEADER('SMOSE1: SBUF-matrix',-1)
+        CALL HEADER('SMOSE2: SBUF-matrix',-1)
         CALL PRQMAT(SBUF,NESHMF(IFRP),NOCCMF(IFRP),NESHMF(IFRP),
      &              NOCCMF(IFRP),NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
