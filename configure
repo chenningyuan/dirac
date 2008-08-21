@@ -382,7 +382,7 @@ echo
 if [ -z "${safe_inp}" ]; then
   if [ $quick = 0 ]; then
     $echo 'Do you want to compile the program'\
-    ' with safe flags only (ie no optimization) ? (y/N) \c'
+    'with safe flags only (ie no optimization) ? (y/N) \c'
     read safe_inp
   else
     safe_inp=no
@@ -1054,7 +1054,7 @@ set_install_directory () {
       if [ ! -z "$curr" -a -d "$curr" ]; then
 
          $echo 'Found (in Makefile.config) proper directory for installation of' \
-         'DIRAC binaries and scripts:\c'
+         'binaries and scripts:'
 	 $echo $curr
 	 $echo 'Do you want me to use it ? (y/N) \c'
 
@@ -1120,7 +1120,7 @@ answered=
 while [ -z "$answered" ]
 do
      read this_answer
-
+#   
      if [ $IPRINT -ge "12" ];  then
         echo 'get_answer: read variable this_answer='$this_answer
         echo 'get_answer: while variable default_answer='$default_answer
@@ -1136,18 +1136,23 @@ do
 	answered="good"
      fi
 
-     case "$this_answer" in
-     "yes" | "y" | "Y"  )
-       answered="good"
-       answer="y"      ;;
-     "no"  | "n" | "N"  )
-       answered="good"
-       answer="n"      ;;
-     *)   
-      answered=
-      $echo '  please type the proper answer - yes/y/Y or no/n/N \c' ;;
-     esac
+     if [ -z $answered ]; then
+        case "$this_answer" in
+         "yes" | "y" | "Y"  )
+           answered="good"
+           answer="y"      ;;
+         "no"  | "n" | "N"  )
+           answered="good"
+           answer="n"      ;;
+         *)   
+           answered=
+           $echo '  please type the proper answer - yes/y/Y or no/n/N \c'
+        ;;
+        esac
+     fi
 #    
+#     this_answer=
+#
 done
 
  if [ $IPRINT -ge "12" ];  then
