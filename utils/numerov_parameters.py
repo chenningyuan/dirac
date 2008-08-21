@@ -30,13 +30,13 @@ potential_l.append([ 0.05,-0.61103110894e+03])
 potential_l.append([ 0.10,-0.61102641160e+03])
 potential_l.append([ 0.25,-0.61100326033e+03])
 
-potential_harmonic_l = []
-#                              q     potential(q)
-potential_harmonic_l.append([-0.02,-0.61103259217e+03])
-potential_harmonic_l.append([-0.01,-0.61103285334e+03])
-potential_harmonic_l.append([ 0.00,-0.61103293760e+03])
-potential_harmonic_l.append([ 0.01,-0.61103285720e+03])
-potential_harmonic_l.append([ 0.02,-0.61103262365e+03])
+potential_h_l = []
+#                       q     potential(q)
+potential_h_l.append([-0.02,-0.61103259217e+03])
+potential_h_l.append([-0.01,-0.61103285334e+03])
+potential_h_l.append([ 0.00,-0.61103293760e+03])
+potential_h_l.append([ 0.01,-0.61103285720e+03])
+potential_h_l.append([ 0.02,-0.61103262365e+03])
 
 property_l = []
 #                    q     property(q)

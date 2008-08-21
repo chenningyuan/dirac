@@ -4,9 +4,9 @@
 #
 # this script will calculate the vibrational levels (and wavefunctions)
 # corresponding to a normal mode
-# numericaly using the Numerov-Cooley algorithm
+# numerically using the Numerov-Cooley algorithm
 #
-# last modification: 25/03/2008 (radovan bast)
+# last modification: 2008-08-21 (radovan.bast@chem.uit.no)
 #
 # you give:        potential at several points along the normal mode
 #                  property values at several points along the normal mode
@@ -55,41 +55,20 @@
 #
 #-------------------------------------------------------------------------------
 
-import sys, string, math, Numeric, Ngl
-from pylab import *
+import sys
+import string
+import time
+
+from pylab              import *
+from Numeric            import *
 from numerov_parameters import *
-#from plot_numerov import *
+
+ts = time.clock()
 
 #-------------------------------------------------------------------------------
 
-def shift_minimum_to_zero(l):
-
-    minimum = l[0]
-    for i in range(len(l)):
-        if l[i] < minimum:
-           minimum = l[i]
-
-    for i in range(len(l)):
-        l[i] = l[i] - minimum
-
-    return l
-
-#-------------------------------------------------------------------------------
-
-def normalize(psi):
-
-    norm = 0.0
-    for i in range(len(psi)):
-        norm = norm + psi[i]*psi[i]
-    for i in range(len(psi)):
-        psi[i] = psi[i]/sqrt(norm)
-
-    return psi
-
-#-------------------------------------------------------------------------------
-
-def run_numerov(potential_coefficients,
-                property_coefficients,
+def run_numerov(potential_coef,
+                property_coef,
                 reduced_mass,
                 nr_steps,
                 q_min,
@@ -114,25 +93,22 @@ def run_numerov(potential_coefficients,
       + '%33s' % 'within'
     print s
 
-    nr_points = nr_steps + 1
-    step      = (q_max - q_min)/nr_steps
+    n     = nr_steps + 1
+    step  = (q_max - q_min)/nr_steps
+    step2 = step**2.0
 
-    q                      = zeros(nr_points, Float)
-    potential              = zeros(nr_points, Float)
-    property               = zeros(nr_points, Float)
-    g                      = zeros(nr_points, Float)
-    psi                    = zeros(nr_points, Float)
-    psi_squared_save       = zeros([nr_solutions, nr_points], Float)
+    q                      = zeros(n, Float)
+    potential              = zeros(n, Float)
+    property               = zeros(n, Float)
+    g                      = zeros(n, Float)
+    psi                    = zeros(n, Float)
+    psi_squared_save       = zeros([nr_solutions, n], Float)
     energy_save            = zeros(nr_solutions, Float)
 
-    for i in range(nr_points):
-        q[i] = q_min + i*step
-        for j in range(len(potential_coefficients)):
-            k = len(potential_coefficients) - j - 1
-            potential[i] = potential[i] + (q[i]**j)*potential_coefficients[k]
-        for j in range(len(property_coefficients)):
-            k = len(property_coefficients) - j - 1
-            property[i] = property[i] + (q[i]**j)*property_coefficients[k]
+    for i in range(n):
+        q[i]         = q_min + i*step
+        potential[i] = polyval(potential_coef, q[i])
+        property[i]  = polyval(property_coef,  q[i])
 
     energy_guess  = 1e-4
     energy_step   = 1e-4
@@ -143,28 +119,30 @@ def run_numerov(potential_coefficients,
 
     while nr_nodes_last < nr_solutions:
 
+          g = reduced_mass*1822.888479031408*2.0*(potential - energy_guess)
+
           psi[0]   = 0.0
           psi[1]   = 1.0e-6
-          for i in range(nr_points):
-              g[i] = reduced_mass*1822.888479031408*(2.0*potential[i] - 2.0*energy_guess)
-              if i > 1:
-                 psi[i] = 2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step*step*5.0/6.0 + g[i-2]*psi[i-2]*step*step/12.0
-                 psi[i] = psi[i]/(1.0 - g[i]*step*step/12.0)
 
-          psi = normalize(psi)
+          for i in range(n):
+              if i > 1:
+                 psi[i] = (2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step2*5.0/6.0 + g[i-2]*psi[i-2]*step2/12.0)/(1.0 - g[i]*step2/12.0)
+
+          psi = psi/sqrt(dot(psi, psi))
 
           nr_nodes = 0
-          i_save   = nr_points
-          for i in range(nr_points):
-              if (psi[i]/psi[i-1]) < 0.0:
-                 nr_nodes = nr_nodes + 1
-                 i_save = i
+          i_save   = n
+          for i in range(n):
+              if psi[i-1] != 0.0:
+                 if (psi[i]/psi[i-1]) < 0.0:
+                    nr_nodes = nr_nodes + 1
+                    i_save = i
 
-          for i in range(nr_points):
+          for i in range(n):
               if i > i_save:
                  psi[i] = 0.0
 
-          psi = normalize(psi)
+          psi = psi/sqrt(dot(psi, psi))
 
           if (abs(energy_step) < energy_precision) and (nr_nodes > nr_nodes_last):
 
@@ -172,22 +150,22 @@ def run_numerov(potential_coefficients,
              done = 0
              for i in range(len(psi)):
                  norm = norm + psi[i]*psi[i]
-                 if (norm > 0.999) and not done:
-                    i_right = i
-                    done    = 1
-
-             norm = 0.0
-             done = 0
-             for i in range(nr_points-1, -1, -1):
-                 norm = norm + psi[i]*psi[i]
-                 if (norm > 0.999) and not done:
+                 if (norm > 0.001) and not done:
                     i_left = i
                     done   = 1
 
-             expectation_value = 0.0
-             for i in range(nr_points):
-                 expectation_value = expectation_value + property[i]*psi[i]*psi[i]
-                 psi_squared_save[nr_nodes-1][i] = psi[i]*psi[i]*4.0
+             norm = 0.0
+             done = 0
+             for i in range(n-1, -1, -1):
+                 norm = norm + psi[i]*psi[i]
+                 if (norm > 0.001) and not done:
+                    i_right = i
+                    done    = 1
+
+             property_times_psi = property*psi
+             expectation_value = dot(psi, property*psi)
+             psi_squared_save[nr_nodes-1] = 4.0*psi**2.0
+
              energy_save[nr_nodes-1] = energy_guess
 
              if nr_nodes == 1:
@@ -224,31 +202,27 @@ def run_numerov(potential_coefficients,
 
 #-------------------------------------------------------------------------------
 
-potential_x_l = []
-potential_y_l = []
-for potential in potential_l:
-    potential_x_l.append(potential[0]/0.529177249)
-    potential_y_l.append(potential[1])
+potential_x   = array(potential_l)[:, 0]
+potential_y   = array(potential_l)[:, 1]
 
-shift_minimum_to_zero(potential_y_l)
-potential_coefficients = polyfit(potential_x_l, potential_y_l, degree_potential)
+potential_h_x = array(potential_h_l)[:, 0]
+potential_h_y = array(potential_h_l)[:, 1]
 
-potential_harmonic_x_l = []
-potential_harmonic_y_l = []
-for potential_harmonic in potential_harmonic_l:
-    potential_harmonic_x_l.append(potential_harmonic[0]/0.529177249)
-    potential_harmonic_y_l.append(potential_harmonic[1])
+property_x    = array(property_l)[:, 0]
+property_y    = array(property_l)[:, 1]
 
-shift_minimum_to_zero(potential_harmonic_y_l)
-potential_harmonic_coefficients = polyfit(potential_harmonic_x_l, potential_harmonic_y_l, 2)
+bohr2angstrom = 0.529177249
 
-property_x_l = []
-property_y_l = []
-for property in property_l:
-    property_x_l.append(property[0]/0.529177249)
-    property_y_l.append(property[1])
+potential_x   = potential_x/bohr2angstrom
+potential_h_x = potential_h_x/bohr2angstrom
+property_x    = property_x/bohr2angstrom
 
-property_coefficients = polyfit(property_x_l, property_y_l, degree_property)
+potential_y   -= min(potential_y)
+potential_h_y -= min(potential_h_y)
+
+potential_coef   = polyfit(potential_x,   potential_y,   degree_potential)
+potential_h_coef = polyfit(potential_h_x, potential_h_y, 2)
+property_coef    = polyfit(property_x,    property_y,    degree_property)
 
 #-------------------------------------------------------------------------------
 
@@ -267,8 +241,8 @@ print 'anharmonic'
 print '=========='
 print
 
-q, psi_squared_save, energy_save = run_numerov(potential_coefficients,
-                                               property_coefficients,
+q, psi_squared_save, energy_save = run_numerov(potential_coef,
+                                               property_coef,
                                                reduced_mass,
                                                nr_steps,
                                                q_min,
@@ -278,10 +252,10 @@ q, psi_squared_save, energy_save = run_numerov(potential_coefficients,
 
 #plot_numerov(potential_x_l,
 #             potential_y_l,
-#             potential_coefficients,
+#             potential_coef,
 #             property_x_l,
 #             property_y_l,
-#             property_coefficients,
+#             property_coef,
 #             q,
 #             psi_squared_save,
 #             energy_save,
@@ -295,11 +269,15 @@ print 'harmonic'
 print '========'
 print
 
-run_numerov(potential_harmonic_coefficients,
-            property_coefficients,
+run_numerov(potential_h_coef,
+            property_coef,
             reduced_mass,
             nr_steps,
             q_min,
             q_max,
             energy_precision,
             nr_solutions)
+
+te = time.clock()
+print
+print 'time = %8.2f' % (te -ts)
