@@ -32,7 +32,7 @@
 #
 # Large molecule flag -> out (takes lot of memory)?
 # 
-# Still place for further improvements,  modularisation etc
+# miro: Still place for further improvements,  modularisation etc 
 #
 
 initialize ()  {
@@ -1102,37 +1102,57 @@ set_install_directory () {
 }
 
 get_answer() {
-#----------------------------------------------------------------
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #  usefull procedure to get (typed) the answer - yes or no
 #
-#  uses the default variable "default_answer"
+#  uses the variable "default_answer" which has to be "y" or "n" or empty
 #
-#----------------------------------------------------------------
+#  exports the "answer" variable cotaining "y" or "n"
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# "global" variable
 answer=
-while [ "$answer" != "y" -a "$answer" != "n" ]
+# ... local variable
+this_answer=
+# ... to check whether the answer was proper
+answered=
+while [ -z "$answered" ]
 do
-     read answer
+     read this_answer
 
      if [ $IPRINT -ge "12" ];  then
-        echo 'get_answer: read variable answer='$answer
+        echo 'get_answer: read variable this_answer='$this_answer
         echo 'get_answer: while variable default_answer='$default_answer
      fi
 
      # if answer empty and default_answer set
-     if [ -z "$answer" -a "$default_answer" = "y" ]; then
+     if [ -z "$this_answer" -a "$default_answer" = "y" ]; then
         answer="y"
+	answered="good"
      fi
-     if [ -z "$answer" -a "$default_answer" = "n" ]; then
+     if [ -z "$this_answer" -a "$default_answer" = "n" ]; then
         answer="n"
+	answered="good"
      fi
 
-     # if "answer" not found, complain of it ... 
-     if [ "$answer" != "y" -a "$answer" != "n" ]; then
-       $echo '     please type the proper answer - yes(y) or no(n) \c'
-     fi
-#    ...
+     case "$this_answer" in
+     "yes" | "y" | "Y"  )
+       answered="good"
+       answer="y"      ;;
+     "no"  | "n" | "N"  )
+       answered="good"
+       answer="n"      ;;
+     *)   
+      answered=
+      $echo '  please type the proper answer - yes/y/Y or no/n/N \c' ;;
+     esac
+#    
 done
+
+ if [ $IPRINT -ge "12" ];  then
+     echo 'get_answer: ASSIGNED variable answer='$answer
+  fi
 }
 
 set_scratchdir ()  {
