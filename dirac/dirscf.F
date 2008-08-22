@@ -1935,14 +1935,13 @@ C Used from COMMON blocks:
 C  DHFCAL: NSMOTQ
 C
 #include "dcbdhf.h"
-      CALL QENTER('SMOSEL')
 #include "memint.h"
-C     Memory allocation
+C     Memory allocation - NSMOTQ initialized in SMOGEN
       CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
+
       CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSEL.SMOSE1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('SMOSEL')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1954,6 +1953,8 @@ C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
+C                      Aug 2007 MI: extended for all electronic shells
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1975,12 +1976,12 @@ C
       CLOSE(LUSMOS,STATUS='KEEP')
 C
       DO I = 1,NFSYM
-      IF(NOCCMF(I).NE.0) THEN
+      IF(NESHMF(I).NE.0) THEN
 C       Memory allocation
         CALL MEMGET('REAL',KEBUF,NESHMF(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBEB,NESHMF(I),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCBUF,NESHMF(I)*NTMO(I)*NZ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KSBUF,NESHMF(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KSBUF,NESHMF(I)*NESHMF(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSEL,NESHMF(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
@@ -2009,6 +2010,8 @@ C
 C     Written by T.Saue Nov 11 1995
 C     Major revisions: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C                      May 2002 hjaaj: EIG and IBEIG added
+C                      Aug 2007 MI: extended for all electronic shells
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2028,36 +2031,38 @@ C
       CHARACTER FSYM*1
       DIMENSION EIG(KNORB),IBEIG(KNORB),
      &          CFU(KNORB,KNORB,NZ),
-     &          SMO(KNORB,KNOCC,NZ),
-     &          SBUF(KNESH,KNOCC,NZ),
+     &          SMO(KNORB,KNESH,NZ),
+     &          SBUF(KNESH,KNESH,NZ),
      &          EBUF(KNESH),IBEBUF(KNESH),
      &          CBUF(KNORB,KNESH,NZ),
      &          RCSEL(KNESH),ICSEL(KNESH,2),
      &          WORK(LWORK)
 C
-C     Form product CFU * SMO = SBUF
+C            Form product :
+C            --------------
+C    CFU(KNESH,KNORB)^+ * SMO(KNORB,KNESH) =   SBUF(KNESH,KNESH)
 C
-      CALL QGEMM(NESHMF(IFRP),NOCCMF(IFRP),NTMO(IFRP),D1,
+      CALL QGEMM(NESHMF(IFRP),NESHMF(IFRP),NTMO(IFRP),D1,
      &       'H','N',IPQTOQ(1,0),CFU(1,NPSH(IFRP)+1,1),
      &                NTMO(IFRP),NTMO(IFRP),NZ,
-     &       'N','N',IPQTOQ(1,0),SMO,NTMO(IFRP),NOCCMF(IFRP),NZ,
-     &       D0,IPQTOQ(1,0),SBUF,NESHMF(IFRP),NOCCMF(IFRP),NZ)
+     &       'N','N',IPQTOQ(1,0),SMO,NTMO(IFRP),NESHMF(IFRP),NZ,
+     &       D0,IPQTOQ(1,0),SBUF,NESHMF(IFRP),NESHMF(IFRP),NZ)
 
       IF(IPRSCF.GE.10) THEN
         CALL HEADER('SMOSE2: SBUF-matrix',-1)
-        CALL PRQMAT(SBUF,NESHMF(IFRP),NOCCMF(IFRP),NESHMF(IFRP),
-     &              NOCCMF(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(SBUF,NESHMF(IFRP),NESHMF(IFRP),NESHMF(IFRP),
+     &              NESHMF(IFRP),NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C
 C     Form squared overlaps
 C
-      DO J = 1,NOCCMF(IFRP)
+      DO J = 1,NESHMF(IFRP)
         DO I = 1,NESHMF(IFRP)
           SBUF(I,J,1) = SBUF(I,J,1)*SBUF(I,J,1)
         ENDDO
       ENDDO
       DO IZ = 2,NZ
-        DO J = 1,NOCCMF(IFRP)
+        DO J = 1,NESHMF(IFRP)
           DO I = 1,NESHMF(IFRP)
             SBUF(I,J,1) = SBUF(I,J,1) + SBUF(I,J,IZ)*SBUF(I,J,IZ)
           ENDDO
@@ -2065,8 +2070,8 @@ C
       ENDDO
       IF(IPRSCF.GE.6) THEN
         CALL HEADER('SMOSE1: Squared-matrix',-1)
-        CALL PRQMAT(SBUF,NESHMF(IFRP),NOCCMF(IFRP),NESHMF(IFRP),
-     &              NOCCMF(IFRP),1,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(SBUF,NESHMF(IFRP),NESHMF(IFRP),NESHMF(IFRP),
+     &              NESHMF(IFRP),1,IPQTOQ(1,0),LUPRI)
       ENDIF
 C
 C     Perform selection
@@ -2078,15 +2083,16 @@ C
       CALL DCOPY(KNESH,EIG(NPSH(IFRP)+1),1,EBUF,1)
       CALL ICOPY(KNESH,IBEIG(NPSH(IFRP)+1),1,IBEBUF,1)
       CALL ICOPY(2*KNESH,0,0,ICSEL,1)
+
       ISELM = 0
-      DO J = 1,NOCCMF(IFRP)
+      DO J = 1, NESHMF(IFRP)
         ISEL = IDAMAX(NESHMF(IFRP),SBUF(1,J,1),1)
         ICSEL(J,1) = ISEL
         ICSEL(ISEL,2) = J
         RCSEL(J) = SBUF(ISEL,J,1)
         ISELM = MAX(ISELM,ISEL)
 C       Zero out the selected overlap
-        CALL DCOPY(NOCC(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
+        CALL DCOPY(NESHMF(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
 C       Copy buffer into vector
         JJ = NPSH(IFRP) + J
         DO IZ = 1,NZ
@@ -2097,55 +2103,21 @@ C       Copy eigenvalue and (approx.) boson symmetry to new place:
         IBEIG(JJ) = IBEBUF(ISEL)
       ENDDO
 C
-C     Copy in missing vectors among the unoccupied orbitals
-C
-      IF(ISELM.GT.NOCCMF(IFRP)) THEN
-        JSTR = NOCCMF(IFRP)+1
-        DO 10 J = JSTR,ISELM
-        IF (ICSEL(J,2) .NE. 0) THEN
-C       ... i.e. MO-coefficient J has been copied to the occupied
-C       position ICSEL(J,2)
-          DO ISEL = 1,NOCCMF(IFRP)
-          IF (ICSEL(ISEL,2) .EQ. 0) THEN
-C         ... i.e. has not been selected to the occupied block
-            ICSEL(J,1) = ISEL
-            ICSEL(ISEL,2) = J
-            RCSEL(J) = 0.0D0
-C           Copy buffer into vector
-            JJ = NPSH(IFRP) + J
-            DO IZ = 1,NZ
-              CALL DCOPY(NTMO(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
-            ENDDO
-C           Copy eigenvalue and (approx.) boson symmetry to new place:
-            EIG(JJ) = EBUF(ISEL)
-            IBEIG(JJ) = IBEBUF(ISEL)
-            GOTO 10
-          END IF
-          ENDDO
-        END IF
- 10     CONTINUE
-      END IF
-C
 C     Print section
 C
       WRITE(FSYM,'(I1)') IFRP
-      CALL HEADER('SMOSEL: Reordered vectors in fermion ircop '
+      CALL HEADER(
+     & 'SMOSEL: Reordered (electronic) vectors in fermion ircop '
      &            //FSYM,-1)
       NVEC = 0
-      DO J = 1,NOCCMF(IFRP)
+      DO J = 1,NESHMF(IFRP)
       IF(ICSEL(J,1).NE.J) THEN
         NVEC = NVEC + 1
         WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J,1),' --> ',J,
-     &                                    ' OVERLAP ',RCSEL(J)
+     &                                    ' OVERLAP:',RCSEL(J)
       ENDIF
       ENDDO
-      DO J = NOCCMF(IFRP)+1,ISELM
-      IF(ICSEL(J,1).NE.0) THEN
-        NVEC = NVEC + 1
-        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J,1),' --> ',J,
-     &                                    ' OVERLAP ',RCSEL(J)
-      ENDIF
-      ENDDO
+C
       IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering.'
       IF(IPRSCF.GE.3) THEN
         WRITE(LUPRI,'(/A)') '  I  ICSEL(I,1)  ICSEL(I,2)    RCSEL(I)'
@@ -3965,8 +3937,6 @@ C
             NBO = NORB_SUB(ISUB,IFRP,IC)
             IF(NBO.GT.0) THEN
               CALL ICOPY(NBO,ID,0,IBOS(IX),1)
-C           write(lupri,*)'IX=',IX, 
-C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
               IX = IX + NBO
             ENDIF
           ENDDO
@@ -3978,8 +3948,6 @@ C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
             NBO = NORB_SUB(ISUB,IFRP,IC)
             IF(NBO.GT.0) THEN
               CALL ICOPY(NBO,ID,0,IBOS(IX),1)
-C           write(lupri,*)'IX=',IX, 
-C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
               IX = IX + NBO
             ENDIF
           ENDDO
@@ -3993,7 +3961,6 @@ C    &       ' IBOS(J),J=IX,IX+NBO:',(IBOS(J),J=IX,IX+NBO-1)
      & ' pos.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
        write(lupri,*) 'boson irreps of each MO (from pos. to el.):',
      &                (IBOS(J),J=1,NORB(IFRP))
-C     call quit('ibos')
       ENDIF
 
       RETURN
@@ -4319,10 +4286,11 @@ C/* Deck Smogen */
       SUBROUTINE SMOGEN(CMO,SCMO)
 C***********************************************************************
 C
-C     Dump occupied coefficients in orthonormal basis to file
+C     Dump (occupied) coefficients in orthonormal basis to the file DFSMOS
 C     to be used for overlap selection.
 C
 C     Written by T. Saue July 10 2006
+C     Last changes: M.Ilias, Aug.2008 - update for all electronic shells
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4338,14 +4306,15 @@ C
         ISMOQ(IFRP) = NSMOTQ
         ISOFF = ISMOQ(IFRP) + 1
         ICOFF = I2TMOT(IFRP) + NPSH(IFRP)*NTMO(IFRP) + 1
-        NSDIM = NOCC(IFRP)*NTMO(IFRP)
+        NSDIM = NESHMF(IFRP)*NTMO(IFRP)
         NCDIM = NTMO(IFRP)*NTMO(IFRP)
         DO IZ = 1,NZ
           CALL DCOPY(NSDIM,CMO(ICOFF),1,SCMO(ISOFF),1)
           ISOFF = ISOFF + NSDIM
           ICOFF = ICOFF + NCDIM
         ENDDO
-        NSMOTQ = NSMOTQ + NOCC(IFRP)*NTMO(IFRP)*NZ
+!       ... NSMOTQ to be stored into "dcbdhf.h"
+        NSMOTQ = NSMOTQ + NESHMF(IFRP)*NTMO(IFRP)*NZ
       ENDDO
 C
 C     Write to file
@@ -4355,6 +4324,10 @@ C
       CALL WRITT(LUSMOS,NSMOTQ,SCMO)
       CLOSE(LUSMOS,STATUS='KEEP')
 C
+      IF (IPRSCF.GE.5) THEN
+        WRITE(LUPRI,'(2X,A)') 'SMOGEN: cofficients dumped into DFSMOS'
+      ENDIF
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
