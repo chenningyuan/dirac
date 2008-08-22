@@ -4074,8 +4074,8 @@ C***********************************************************************
 C
 C     This routine performs unitary transformations indicated by TYP:
 C
-C       TYP = AOMO : AO-to-MO-transformation  FMO = (C+)FAOC
-C       TYP = MOAO : MO-to-AO-transformation  FAO = CFMO(C+)
+C       TYP = AOMO : AO-to-MO-transformation  FMO = (C+)FAOC + FADD*FMO
+C       TYP = MOAO : MO-to-AO-transformation  FAO = CFMO(C+) + FADD*FAO
 C
 C     FADD gives the possibility of adding the results
 C
