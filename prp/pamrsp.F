@@ -3440,21 +3440,12 @@ C
 C              IF ( FREQ.LT.0.01D0*HDTMP ) THEN
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-c#ifdef NODALTONCMP
                     IF ( ABS(HDIAG(IVAR)) .GT. DLIM ) THEN
                          BVEC(IVAR,IZ,IP) =
      &                          -GP(IVAR,IZ)/HDIAG(IVAR)
                     ELSE
                          BVEC(IVAR,IZ,IP) = - GP(IVAR,IZ)
                     END IF
-c$$$#else
-c$$$                IF ( ABS(HDIAG(IVAR)) .NE. D0 ) THEN
-c$$$                     BVEC(IVAR,IZ,IP) =
-c$$$     &                    -GP(IVAR,IZ)/HDIAG(IVAR)
-c$$$                ELSE
-c$$$                     BVEC(IVAR,IZ,IP) = - GP(IVAR,IZ)
-c$$$                END IF
-c$$$#endif
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
