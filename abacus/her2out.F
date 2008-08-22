@@ -478,30 +478,34 @@ C
       DOC = DOSCRN.AND.LBIT(ICEFLG,1)
       DOE = DOSCRN.AND.LBIT(ICEFLG,2)
       DNSMAX   = D0
-      DO I = 1,NDMAT 
+      IF(DOSCRN) THEN
+        DO I = 1,NDMAT 
 C Largest Coulomb contribution
-        DNSBUF(1,I) = MAX(DMRSO(ISHELA,ISHELB,I),
-     &                    DMRSO(ISHELB,ISHELA,I),
-     &                    DMRSO(ISHELC,ISHELD,I),
-     &                    DMRSO(ISHELD,ISHELC,I))
+          DNSBUF(1,I) = MAX(DMRSO(ISHELA,ISHELB,I),
+     &                      DMRSO(ISHELB,ISHELA,I),
+     &                      DMRSO(ISHELC,ISHELD,I),
+     &                      DMRSO(ISHELD,ISHELC,I))
 C Largest exchange contribution
-        DNSBUF(2,I) = MAX(DMRSO(ISHELC,ISHELA,I),
-     &                    DMRSO(ISHELA,ISHELC,I),
-     &                    DMRSO(ISHELC,ISHELB,I),
-     &                    DMRSO(ISHELB,ISHELC,I),
-     &                    DMRSO(ISHELD,ISHELA,I),
-     &                    DMRSO(ISHELA,ISHELD,I),
-     &                    DMRSO(ISHELB,ISHELD,I),
-     &                    DMRSO(ISHELD,ISHELB,I))
-        DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
-      ENDDO
-      NSOINT = NINTS*NOABCD
-      IF(DNSMAX.EQ.D0) THEN
-        DINTSKP(1,2) = DINTSKP(1,2) + NSOINT
-        DINTSKP(2,2) = DINTSKP(2,2) + NSOINT
-        RETURN
+          DNSBUF(2,I) = MAX(DMRSO(ISHELC,ISHELA,I),
+     &                      DMRSO(ISHELA,ISHELC,I),
+     &                      DMRSO(ISHELC,ISHELB,I),
+     &                      DMRSO(ISHELB,ISHELC,I),
+     &                      DMRSO(ISHELD,ISHELA,I),
+     &                      DMRSO(ISHELA,ISHELD,I),
+     &                      DMRSO(ISHELB,ISHELD,I),
+     &                      DMRSO(ISHELD,ISHELB,I))
+          DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
+        ENDDO
+        NSOINT = NINTS*NOABCD
+        IF(DNSMAX.EQ.D0) THEN
+          DINTSKP(1,2) = DINTSKP(1,2) + NSOINT
+          DINTSKP(2,2) = DINTSKP(2,2) + NSOINT
+          RETURN
+        ENDIF
+        FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
+      ELSE
+        FCKTOL = 1.00D-15
       ENDIF
-      FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       DO I = 1, NINTS
         NBUF   = 0
