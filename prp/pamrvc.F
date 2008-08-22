@@ -3027,7 +3027,7 @@ C
       CALL QENTER('XBVGEN')
       TEST = DIAGHE.AND.(.NOT.USEXVC)
       FFAC = D1
-      IF(IMFREQ) FFAC = D1
+      IF(IMFREQ) FFAC = DM1
       IF (JBTYP .EQ. JBCNDX) THEN
 CHJ-jun2004      prepare for NZ.eq.4 (with MZ)
         MZ = MIN(2,NZ)
