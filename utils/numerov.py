@@ -128,8 +128,6 @@ def run_numerov(potential_coef,
               if i > 1:
                  psi[i] = (2.0*psi[i-1] - psi[i-2] + g[i-1]*psi[i-1]*step2*5.0/6.0 + g[i-2]*psi[i-2]*step2/12.0)/(1.0 - g[i]*step2/12.0)
 
-          psi = psi/sqrt(dot(psi, psi))
-
           nr_nodes = 0
           i_save   = n
           for i in range(n):
