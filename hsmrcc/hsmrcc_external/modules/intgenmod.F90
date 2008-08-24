@@ -1255,10 +1255,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    external :: dtime
 
    if (get_iprint() >= 5) then
-       call header('Output from IntFileGen_TwoBody',-1)
-       write(UOUT,'(2x,a,i7)') '...StVRec=',StVRec
-       write(UOUT,'(2x,a,i7)') '...StartRec=',StartRec
-       write(UOUT,'(2x,a,i7)') '...EndngRec=',EndngRec
+      call header('Output from IntFileGen_TwoBody',-1)
+      write(UOUT,'(2x,3(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,'...EndngRec=',EndngRec
    endif
 
    dtim = dtime(tarray)
@@ -1447,7 +1445,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                    ! ... add packed (R,S)-indexes into index-buffer
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
-                     if (get_iprint() >= 16) then
+                     if (get_iprint() >= 46) then
                        write(UOUT,'(2x,a,4i3,a,f16.10,a,i8,a,i8)')   &
                        'P,Q,R,S:',P,Q,R,S, & 
                        ' integr:',NZVIntBuf(NZVIntBufInd),' pck indx:', NZVPkIBuf(NZVIntBufInd), &  
@@ -1476,8 +1474,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
    if (get_iprint() >=8) then
      write(UOUT,'(2x,a)') 'IntFileGen_TwoBody over...'
-     write(UOUT,'(2x,a,i8)') '...# of nonzero integrals :',TotNZInt
-     write(UOUT,'(2x,a,i8)') '...set StVRec= ',StVRec
+     write(UOUT,'(2x,2(a,i8))') '...# of nonzero integrals :',TotNZInt, '...set StVRec= ',StVRec
    endif
 
    return

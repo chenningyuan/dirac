@@ -195,6 +195,29 @@ end subroutine  InitReadGMS
 !> read DIRAC file with data
 subroutine InitReadDIRAC
 
+character :: dirac_file='Dirac_HSMRCC'
+real*8    :: ENSCF_DIR
+integer   :: ludir = 18, iprint_dirac, NELEC_DIR
+logical   :: is_file, dir_spfr
+
+inquire(file=dirac_file, exist=is_file)
+if (.not.is_file) then
+  call quit('InitReadDIRAC: no dirac input file !...')
+endif
+
+open(ludir,file=dirac_file,form='unformatted',status='old', access='sequential')
+read(ludir) iprint_dirac, NELEC_DIR
+
+read(ludir) dir_spfr
+
+read(ludir) ENSCF_DIR
+
+write(UOUT,*) 'read iprint_dirac=',iprint_dirac
+write(UOUT,*) 'NELEC_DIR=',NELEC_DIR
+write(UOUT,*) 'dir_spfrdir_spfr=',dir_spfr
+write(UOUT,*) 'ENSCF_DIR=',ENSCF_DIR
+
+close(ludir) 
 
  call quit('..in InitReadDIRAC')
 
@@ -283,6 +306,7 @@ subroutine InitReadMREINT
       ! ... Open & Read Information Present in FileMR1EINT and FileMR2EINT ...
       ! ...****************************************************************...
       ! ...                                                                ...
+      ! ...                                                                ...
       ! ... FileMR1EINT contains following information                     ...
       ! ... ---------------------------------------------------------------...
       ! ... Record #1 : NAO, NSO, NFRZV, TotEn, NucEn, TrfTol,             ...
@@ -290,6 +314,7 @@ subroutine InitReadMREINT
       ! ... Record #2 : SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb          ...
       ! ...             OrbType, OrbSpace, OrbEnergy, OrbCoeff             ...
       ! ... Record #3 : HCoreMatrix (1-e integrals)                        ...
+      ! ...                                                                ...
       ! ...                                                                ...
       ! ... FileMR2EINT contains following information                     ...
       ! ... ---------------------------------------------------------------...
@@ -341,7 +366,7 @@ subroutine InitReadMREINT
          write(UOUT,*) "file = ",FileMR1EINT
          write(UOUT,*) j1, j2, j3, j4, j5, j6, j7, j8, j9
          call flushout
-         call Quit('Invalid Data in File UMR1EINT')
+         call quit('Invalid Data in File UMR1EINT')
       endif
 
       read(UMR2EINT) j1, j2, j3, d1, d2, d3, j4, j5, j6, j7, j8, j9

@@ -43,11 +43,10 @@ call print_HSMRCC_Dirac_info
 
 call StickMemory(WORK,LWORK)
 
-!if (check_MOints) then
-if (check_MOints.and.iprint_hscc >= 10) then
+!if (check_MOints.and.iprint_hscc >= 10) then
  call read_mrconee; call print_mrconee_data
  call read_mdcint ! read MDCINT file
-endif
+!endif
 
 call prepare_dirac_HSMRCC_file
 
@@ -86,7 +85,6 @@ character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XX
  if (set) then
   if (reset) set = .false.
   write(lupri,*) 'HSCCINP was called .... leaving at the beginning ... '
-  Call QEXIT('HSCCINP')
   Return
  endif
  if (reset) then

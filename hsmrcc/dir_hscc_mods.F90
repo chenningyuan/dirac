@@ -1,63 +1,13 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-module Dirac_HSMRCC
-!----------------------------------------------------------------------------------
-!
-!  contains all data from DIRAC for the standalone HSMRCC code 
-!
-!----------------------------------------------------------------------------------
-integer, parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
-integer ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
-
-integer, public :: iprint_hscc = 0
-
-contains
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine prepare_dirac_HSMRCC_file
-!----------------------------------------------------------------------------------
-!
-!    prepare file with DIRAC symmetry..etc info for the subsequent
-!  standalone HSMRCC program
-!
-!----------------------------------------------------------------------------------
-#include "implicit.h"
-#include "priunit.h"
-character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
- 
-if (iprint_hscc >= 5) then
-   call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
-endif
-
-!open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
-open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
-
-write(ludh,*) '.PRINT LEVEL'
-write(ludh,*) iprint_hscc
-write(ludh,*) '.other stuff...'
-
-if (iprint_hscc >= 5) then
- write(LUPRI,'(2x,a,a)') '...open file for HSMRCC dirac input:',dirac_file
-endif
-
-close(ludh,status="keep")
-
-!call Quit('prepare_dirac_HSMRCC_file')
-
-end subroutine prepare_dirac_HSMRCC_file
-
-end module Dirac_HSMRCC
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module io_moltra
 !----------------------------------------------------------------------------------
 !
-!    contains variables and 'member' routines for reading 
+!        contains variables and 'member' routines for reading 
 !  moltra integral files MRCONEE & MDCINT
 !
 !----------------------------------------------------------------------------------
 
 ! ... file numbers ... 
-!integer (kind=4) :: MDINT=20, MRCONEE=21
 integer :: MDINT=20, MRCONEE=21
 
 CHARACTER*10 DATEX,TIMEX*8
@@ -87,7 +37,7 @@ CHARACTER*10 NEXTFIL
 
 logical :: is_complex, mrconee_read = .false.
 
- contains
+contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_mrconee
@@ -100,27 +50,26 @@ subroutine read_mrconee
 
 logical :: is_mrc
 
-
  inquire(FILE='MRCONEE',EXIST=is_mrc)
-
  if (.not.is_mrc) call QUIT('mrconee file not present !')
 
   OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED',status = 'old')
 
   READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,NFSYM,NZ,SPFR,NORBT
 
-  READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)  & 
-                      ,(NELEC(IRP),IRP=1,NSYMRP)
+  READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),  & 
+                               (NELEC(IRP),IRP=1,NSYMRP)
 
   READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+
   READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 
 ! ... IREPSP is to be used as 2-dimensional array, read it like that
   READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),EPS1(ISP),ISP=1,NSP)
 
-  mrconee_read = .true.
 
   CLOSE (MRCONEE,STATUS='KEEP')
+  mrconee_read = .true.
 
   return
 
@@ -207,7 +156,7 @@ subroutine read_mdcint
 type(Vect) :: indk_vect, indl_vect
 type(Array2Dim) :: cbuf_vect
 
-logical :: is_mdc , check_mem, print_int 
+logical :: is_mdc, check_mem, print_int 
 
 integer :: RCW
 
@@ -246,7 +195,7 @@ endif
 if (NKR /= NORBT .and. 2*NKR /= NORBT) then
  write(LUPRI,*) 'NKR=',NKR,' NORBT=',NORBT
  write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
- call Quit('MRCONEE and MDCINT are incompatible !')
+! call Quit('MRCONEE and MDCINT are incompatible !')
 endif
 
  write(LUPRI,*) 'Info from MDCINT file'
@@ -258,17 +207,17 @@ endif
 !  write(LUPRI,'(2x,a,i3,a,i3,a,i3)') 'i=',i,' kr(-i)=',KR(-i),' kr(i)=',KR(i)
 !enddo
 
-   write(LUPRI,*) 'NKR is ',NKR
-   write(LUPRI,*) 'KR array, KR(+I),KR(-I), I=1,NKR :'
-   do I=1,NKR
+  write(LUPRI,'(2x,a,i3)') 'NKR is ',NKR
+  write(LUPRI,'(/,2x,a)') 'KR array, KR(+I),KR(-I), I=1,NKR :'
+  do I=1,NKR
      write(LUPRI,'(2I8)') KR(I),KR(-I)
-   enddo
+  enddo
 !
 ! ... read the rest ... integrals and indexes  ...
 ! ... allocate memmory for integrals/indexes   ...
 
 ! ... determine whether entering 2-electron integrals are real or complex 
-is_complex = .NOT.SPFR .AND. (NZ == 2 .or. NZ ==4)
+is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
 
 if (is_complex) then
   RCW = 2
@@ -370,7 +319,7 @@ if (print_int) then
    endif
 
  ! ... unique ,KU indexes
-   write(LUPRI,'(2x,a,4i5)') 'unrestricted, unique(>0) indexes, I,J,K,L:',  &
+   write(LUPRI,'(2x,a,4i5)') 'kramers unrestricted, unique(>0) indexes, I,J,K,L:',  &
      KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
    CALL FLSHFO(LUPRI)
 
@@ -407,7 +356,7 @@ endif
  ' all integrals from the MDCINT file read ...closing the file'
  CALL FLSHFO(LUPRI)
 
- CLOSE (MDINT,STATUS='KEEP')
+ CLOSE(MDINT,STATUS='KEEP')
 
  write(LUPRI,*)  &
  ' ... going to deallocate objects in LIFO order ... '
@@ -443,3 +392,72 @@ endif
 end subroutine read_mdcint
 
 end module io_moltra
+
+
+module Dirac_HSMRCC
+!----------------------------------------------------------------------------------
+!
+!    handles all necessary data from DIRAC for the standalone HSMRCC code 
+!
+!----------------------------------------------------------------------------------
+integer, parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
+integer ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
+
+integer :: NFRZV, NACT
+
+real(kind=8) :: TotEn, NucEn, TrfTol
+
+integer, public :: iprint_hscc = 0
+
+contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_dirac_HSMRCC_file
+!----------------------------------------------------------------------------------
+!
+! prepare file with DIRAC data (orbitals, symmetry, number of electrons..etc) for the 
+! standalone HSMRCC run
+!
+!----------------------------------------------------------------------------------
+use io_moltra
+#include "implicit.h"
+#include "priunit.h"
+!character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
+!character(len=*) :: dirac_file='Dirac_HSMRCC'
+character :: dirac_file='Dirac_HSMRCC'
+ 
+if (iprint_hscc >= 5) then
+   call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
+endif
+
+nelec_tot = 0
+do irp=1,NSYMRP
+nelec_tot = nelec_tot +  NELEC(irp)
+enddo
+write(LUPRI,*) 'nelec_tot=',nelec_tot
+
+!open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
+!open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
+open(ludh,file=dirac_file,form='unformatted',status='unknown', access='sequential') 
+
+! 1.record 
+write(ludh) iprint_hscc, nelec_tot
+
+! 2.record 
+write(ludh) SPFR
+
+! 3.record 
+write(ludh) ECORE
+
+close(ludh,status="keep")
+
+if (iprint_hscc >= 5) then
+  write(LUPRI,'(/,2x,a,a)') '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
+endif
+
+!call Quit('prepare_dirac_HSMRCC_file')
+
+end subroutine prepare_dirac_HSMRCC_file
+
+end module Dirac_HSMRCC
+

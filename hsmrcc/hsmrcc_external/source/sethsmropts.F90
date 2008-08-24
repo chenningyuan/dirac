@@ -97,9 +97,16 @@ end subroutine SetHSMRflags
 subroutine SetHSMRpars(ValNCMO,ValNHOLE,ValNPTCL,ValNEMO)
 !------------------------------------------------------------------------
 !
-!             set few parameters for the code
+!    set constants for the code :
+!
+!                     NCMO
+!                     NHOLE
+!                     NPCTL
+!                     NEMO
 !
 ! TODO: Check their values ...
+!
+!  Called as the last F90 routine from the main C-program "hsmrmain.c".
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -159,11 +166,8 @@ subroutine SetHSMRfiles(IFile,OFile)
    endif
 
    if (get_iprint() >= 5) then
-    !write(UOUT,'(/,2x,a)') '>>> SetHSMRfiles called form hsmrmain.c !'
     write(*,'(/,2x,a)') '>>> SetHSMRfiles called form hsmrmain.c !'
-   ! write(UOUT,'(2x,a,a)') 'SetHSMRfiles: IFile=',IFile
     write(*,'(2x,a,a)') 'SetHSMRfiles: IFile=',IFile
-   ! write(UOUT,'(2x,a,a)') 'SetHSMRfiles: OFile=',OFile
     write(*,'(2x,a,a)') 'SetHSMRfiles: OFile=',OFile
    endif
 
