@@ -706,7 +706,7 @@ C
       MOPT_MXMACRO   = -1
       MOPT_MAXBCK    =  0
       IOPT_ISTATE    =  1
-      IOPT_SYMMETRY  = IKRCI_SYMMETRY
+      IOPT_SYMMETRY  = -1
       IMEMFAC        = IKRCI_MEMFAC
       JKRRUNTYPE     = 2
 C
@@ -742,7 +742,7 @@ C
       MAXCIT      = MAXCIT_KRCI
       KTRLVL      = KTRLVL_KRCI
       IANACI      = IANACI_KRCI
-      NCIROOT     = NCIROOT_KRCI
+      NCIROOT     = -1
       MXCIV       = MXCIV_KRCI
       IRESTRK     = IRESTRK_KRCI
       IDOPARIO    = IDOPARIO_KRCI
