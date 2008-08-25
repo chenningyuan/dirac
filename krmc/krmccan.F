@@ -957,7 +957,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck KRCISPQUAN */
-      SUBROUTINE KRCISPQUAN(VPROP,LVPROP,WORK,LWORK)
+C     SUBROUTINE KRCISPQUAN(VPROP,LVPROP,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
@@ -970,55 +970,55 @@ C
 C     Last revision :
 C
 C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
+Cinclude "implicit.h"
+Cinclude "priunit.h"
 C
-#include "dcborb.h"
-#include "dcbopt.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "krciprop.h"
-#include "dcbxpr.h"
-      REAL*8 OSCL
-      DIMENSION VPROP(LVPROP), WORK(*), OSCL(3)
+Cinclude "dcborb.h"
+Cinclude "dcbopt.h"
+Cinclude "dcbgen.h"
+Cinclude "dcbbas.h"
+Cinclude "dgroup.h"
+Cinclude "krciprop.h"
+Cinclude "dcbxpr.h"
+C     REAL*8 OSCL
+C     DIMENSION VPROP(LVPROP), WORK(*), OSCL(3)
 C
-#include "memint.h"
+Cinclude "memint.h"
 C
-      CALL QENTER('KRCISPQUAN')
+C     CALL QENTER('KRCISPQUAN')
 C
-      IF( DOOSCILLST )THEN
+C     IF( DOOSCILLST )THEN
 C
 C       read final energies from file
 C
 C       calculate and print oscillator strength 
 C
-        WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
-     &       ' <f_l>/3    f_lx     f_ly     f_lz '
-        WRITE(LUPRI,*) '-------------------------------------'/
-     $       /'---------------------------------------'
-        DERG = REFERG - GSERG
+C       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
+C    &       ' <f_l>/3    f_lx     f_ly     f_lz '
+C       WRITE(LUPRI,*) '-------------------------------------'/
+C    $       /'---------------------------------------'
+C       DERG = REFERG - GSERG
 C       Check sum rule for oscillator strength
-        SUML = 0.0D0
-        DO IVEC=1,NVEC
+C       SUML = 0.0D0
+C       DO IVEC=1,NVEC
 c         transition moments
-          DO IPRP=1,3
+C         DO IPRP=1,3
 c           Length gauge
-            XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-     &           PRPGRAD(1,1,1,IPRP))
-            OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
-          ENDDO
-          WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
-     &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
-     &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
-     &         OSCL(1),OSCL(2),OSCL(3)
-          SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
-        ENDDO
-        WRITE(LUPRI,*) '-------------------------------------'/
-     $       /'---------------------------------------'
-        WRITE(LUPRI,'(1A,1F10.6)')
-     $     '   Sum of oscillator strength : ',SUML
-      END IF
+C           XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
+C    &           PRPGRAD(1,1,1,IPRP))
+C           OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
+C         ENDDO
+C         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+C    &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
+C    &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
+C    &         OSCL(1),OSCL(2),OSCL(3)
+C         SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+C       ENDDO
+C       WRITE(LUPRI,*) '-------------------------------------'/
+C    $       /'---------------------------------------'
+C       WRITE(LUPRI,'(1A,1F10.6)')
+C    $     '   Sum of oscillator strength : ',SUML
+C     END IF
 C
-      CALL QEXIT('KRCISPQUAN')
-      END
+C     CALL QEXIT('KRCISPQUAN')
+C     END
