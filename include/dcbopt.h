@@ -40,7 +40,7 @@
 !     IDENSLR_STATE  - natural orbital occupation numbers for state xxx
 !     ISHMEM_TYPE    - type of MPI-2 based shared memory level
 !
-!     JKRRTYPE       - determines KR run type:
+!     JKRRUNTYPE     - determines KR run type:
 !                                             0: second-order SCF
 !                                             1: second-order MCSCF
 !                                             2: KR-CI

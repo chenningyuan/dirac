@@ -12,14 +12,18 @@
 !     NPROP_KRCI:  total number of one-electron operators
 !     LPROP_KRCI:  pointer list to general common block list 
 !                  of one-electron operators
+!     NPROP_ROOTS_KRCI: 
+!                  total number of states (roots) in property 
+!                  calculation
 !     IPROPPRINT:  print level
 !
 !     ================================================================
 !
       PARAMETER(MXPROP_KRCI=60)
       PARAMETER(IPROPPRINT=0)
-	INTEGER NPROP_KRCI, LPROP_KRCI
-	COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI)
-	
-      LOGICAL DOPROP_KRCI
-	COMMON/LUCILPRP/ DOPROP_KRCI
+!
+	INTEGER NPROP_KRCI, LPROP_KRCI, NPROP_ROOTS_KRCI
+	COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI), NPROP_ROOTS_KRCI
+!	
+      LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST
+	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST
