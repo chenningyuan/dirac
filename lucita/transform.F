@@ -197,8 +197,8 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       DIMENSION IBLOCK(8,NBLOCK)
       DIMENSION IBLTP(*)
 *
-      CALL REWINO(LUCIN)
-      CALL REWINO(LUCOUT)
+      CALL REWINE(LUCIN,-1)
+      CALL REWINE(LUCOUT,-1)
 *
       T2 = T**2
       DO JBLOCK = 1, NBLOCK
@@ -642,13 +642,13 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
       LBLK = -1
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
 *. Make sure LUDIA corresponds to original def
       LUDIA = 20
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       DO JROOT = 1, NROOT
 *. One-electron density for root JROOT
-        CALL REWINO(LUSC1)
+        CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
         CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
         CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
@@ -673,7 +673,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
      &                LUSC1,ICISTR)
       END DO
 *     ^ End of loop over roots
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       IF(NTEST.GE.100) THEN
         DO JROOT = 1, NROOT
           CALL WRTVCD(WORK(KVEC1),LUDIA,0,LBLK)
@@ -783,7 +783,7 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
       WRITE(6,*) ' Norm of transformed vector', CNORM
 C?    WRITE(6,*) ' Transformed vector'
 C?    CALL WRTVCD(VEC1,LUSC1,1,LBLK)
-      CALL REWINO(LUSC1)
+      CALL REWINE(LUSC1,-1)
 C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
       CALL COPVCD(LUSC1,LUCOUT,VEC1,0,LBLK)
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')

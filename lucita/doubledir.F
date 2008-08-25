@@ -551,14 +551,14 @@ C     WRITE(6,*) ' DIRDIR1 : NTBLOCKS = ', NTBLOCKS
        WRITE(6,*)
 *
        IF(IC1DSC.EQ.1) THEN
-         CALL REWINO(LU1)
+         CALL REWINE(LU1,-1)
        END IF
 *
 *. Start by studying whether |0> is an eigenfunction for H(apr).
 *  This has some bearings upon how to evaluate (H0-E0)**-1
 *. Calculate H(apr)|0> - <0!H(apr)!0> |0>
-      CALL REWINO(LUC)
-      CALL REWINO(LUSCR)
+      CALL REWINE(LUC,-1)
+      CALL REWINE(LUSCR,-1)
       ICSPC = ISPC0
       ISSPC = ISPC0
 *. H(apr) |0>
@@ -689,7 +689,7 @@ C              EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
         WRITE(6,*) '  Hylleraas second order energy  '
         WRITE(6,*) ' ==============================='
         WRITE(6,*)
-        CALL REWINO(LUSCR)
+        CALL REWINE(LUSCR,-1)
         H011 = 0.0D0
 *. Only one-electron part in sigma
         I12 = 1
@@ -731,7 +731,7 @@ C              EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
 C              EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
           CALL EXTRROW2(WORK(KLSIBT),8,IROFF,8,
      &                  NRBLOCK,WORK(KLISCR))
-          CALL REWINO(LUSCR2)
+          CALL REWINE(LUSCR2,-1)
           CALL TODSCNP(WORK(KLB),NRBLOCK,WORK(KLISCR),-1,LUSCR2)
           CALL ITODS(-1,1,-1,LUSCR2)
 C         CALL ITODS(LREC(IREC),1,LBLK,LU)
@@ -751,14 +751,14 @@ C                SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
 C    &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END)
 *. Add to previous obtained contributions to left batch of H apr !1>
             IF(IRBATCH.NE.1) THEN
-              CALL REWINO(LUSCR)
+              CALL REWINE(LUSCR,-1)
               CALL FRMDSC(WORK(KLB),NLELMNT,-1,LUSCR,IMZERO,IAMPACK)
               ONE = 1.0D0
               CALL VECSUM(WORK(KSB),WORK(KSB),WORK(KLB),ONE,ONE,
      &                    NLELMNT)
             END IF
 *. And transfer to disc to save for future generations
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL TODSC(WORK(KSB),NLELMNT,-1,LUSCR)
 C           CALL SBATCH_FROM_CBATCH(NLBLOCK,ILOFF,NRBLOCK,IROFF,
 C    &                              WORK(KLSIBT),
@@ -795,7 +795,7 @@ C           CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
      &        (LU1,NLBLOCK,ILOFF,WORK(KLSIBT),NTBLOCKS,WORK(KLB),1)
           END IF
 *. Obtain saved sigma block
-          CALL REWINO(LUSCR)
+          CALL REWINE(LUSCR,-1)
           CALL FRMDSC(WORK(KSB),NLELMNT,-1,LUSCR,IMZERO,IAMPACK)
           H011 = H011 + INPROD(WORK(KLB),WORK(KSB),NLELMNT)
         END DO
@@ -896,7 +896,7 @@ C     END IF
 *
         HAPR01T = 0.0D0
         S11T = 0.0D0
-        CALL REWINO(LU1)
+        CALL REWINE(LU1,-1)
         DO IBATCH = 1, NSBATCH
           IF(NTEST.GE.20) THEN
             WRITE(6,*) ' Information about sigma BATCH ', IBATCH
@@ -940,7 +940,7 @@ C     END IF
 *
 *. and <1|H0|1>
 *. Loop over batches of <1| and |1>
-        CALL REWINO(LUSCR)
+        CALL REWINE(LUSCR,-1)
         H11 = 0.0D0
         H011 = 0.0D0
         IF(IC1DSC.EQ.0) THEN
@@ -989,7 +989,7 @@ C         IRMAX = NSBATCH
 C                EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
             CALL EXTRROW2(WORK(KLSIBT),8,IROFF,8,
      &                    NRBLOCK,WORK(KLISCR))
-            CALL REWINO(LUSCR2)
+            CALL REWINE(LUSCR2,-1)
             CALL TODSCNP(WORK(KLB),NRBLOCK,WORK(KLISCR),-1,LUSCR2)
             CALL ITODS(-1,1,-1,LUSCR2)
 *
@@ -1006,7 +1006,7 @@ C                EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
      &                  LUSCR2,IRESTR,0,1,IRBATCH,IRBATCH)
 *. Add to previous obtained contributions to left batch of H !1>
             IF(IRBATCH.NE.1) THEN
-              CALL REWINO(LUSCR)
+              CALL REWINE(LUSCR,-1)
               CALL FRMDSC(WORK(KLB),NLELMNT,-1,LUSCR,IMZERO,IAMPACK)
               ONE = 1.0D0
               CALL VECSUM(WORK(KSB),WORK(KSB),WORK(KLB),ONE,ONE,
@@ -1018,7 +1018,7 @@ C                EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
               CALL SCALVE(WORK(KSB),TWO,NLELMNT)
             END IF
 *. And transfer to disc to save for future generations
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL TODSCP(WORK(KSB),NLELMNT,-1,LUSCR)
           END DO
 *         ^ End of loop over right batches
@@ -1058,7 +1058,7 @@ C                EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
      &         WORK(KLSIBT),ILOFF,JPERT,0,0)
           H011 = H011 + INPROD(WORK(KLB),WORK(KSB),NLELMNT)
 *. <1|H|1>
-          CALL REWINO(LUSCR)
+          CALL REWINE(LUSCR,-1)
           CALL FRMDSC(WORK(KSB),NLELMNT,-1,LUSCR,IMZERO,IAMPACK)
 *. Update H11
           H11 = H11 + INPROD(WORK(KLB),WORK(KSB),NLELMNT)
@@ -1164,7 +1164,7 @@ C       H011 = H011 + ECORE*S11T
           WRITE(6,*) ' E4 =-<2|H0-E0|2> - E2<1|1> '
         END IF
 *. Loop over batches of second order correction
-        CALL REWINO(LUSCR)
+        CALL REWINE(LUSCR,-1)
         H022 = 0.0D0
         V12 = 0.0D0
         S22U = 0.0D0
@@ -1196,7 +1196,7 @@ C         HAPR01TX = 0.0D0
           S22U = S22U + INPROD(WORK(KSB),WORK(KSB),NELMNT2)
           S02T = S02T + SOUT
 *. Well now we have the second order correction in SB , save it !
-          CALL REWINO(LUSCR)
+          CALL REWINE(LUSCR,-1)
           CALL TODSC(WORK(KSB),NELMNT2,-1,LUSCR)
 *. The term <2|H0-E0|2>
 * (H0-E0)|2>
@@ -1236,7 +1236,7 @@ C    &                     ISM,ISPC,ECORE,I12)
 *. First order correction is now in WORK(KLB)
 *. save on LUSCR after second order batch
 *. Position
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL FRMDSC(WORK(KCB),NELMNT2,-1,LUSCR,IMZERO,IAMPACK)
 *
             CALL TODSC(WORK(KLB),NELMNT1,-1,LUSCR)
@@ -1254,7 +1254,7 @@ C    &                     ISM,ISPC,ECORE,I12)
      &                                 WORK(KLB),WORK(KCB),IREST)
 *. Result is in in KCB
 *. read second order batch into KSB
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL FRMDSC(WORK(KSB),NELMNT2,-1,LUSCR,IMZERO,IAMPACK)
 *
             V12 = V12 + INPROD(WORK(KSB),WORK(KCB),NELMNT2)
@@ -1732,7 +1732,7 @@ C       IUTSPC = I1SPC
            CALL SETVEC(SB,ZERO,N2ELMNT)
          ELSE
 *. retrieve previous contributions to (V-E1) |1>
-           CALL REWINO(LUSCR)
+           CALL REWINE(LUSCR,-1)
            CALL FRMDSC(SB,N2ELMNT,-1,LUSCR,IMZERO,IAMPACK)
          END IF
          CALL COPVEC(CB,XB,LL1BLOCK)
@@ -1746,7 +1746,7 @@ C?       WRITE(6,*) ' GET_SEC : Home form SBATCH2 '
          CALL GFLUSH(6)
 *. SB contains now previous contributions to (V-E1) |1>
 *. and H |1(batch)>, save it !
-         CALL REWINO(LUSCR)
+         CALL REWINE(LUSCR,-1)
          CALL TODSC(SB,N2ELMNT,-1,LUSCR)
 *
 *
@@ -1787,7 +1787,7 @@ C    &            NBLOCKIO,IBLCOKIO,VECIO )
      &                NSMST,NOCTPA,NOCTPB,NSASO,NSBSO,IDC)
         END IF
 *. SB contains now sum(i1batch = 1, n1batch) (V-E1)|1(ibatch)>, save it
-         CALL REWINO(LUSCR)
+         CALL REWINE(LUSCR,-1)
          CALL TODSC(SB,N2ELMNT,-1,LUSCR)
       END DO
 *. It was actually (E1-V)|1> we were interested in so

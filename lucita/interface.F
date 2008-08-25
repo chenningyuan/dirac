@@ -1215,7 +1215,7 @@ C        .. we do not accept user input of less than 100 000 !
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
-      CALL REWINO(LUINT)
+      CALL REWINE(LUINT,-1)
 *.1 : One-electron integrals
       WRITE(LUINT,'(E22.15)')
      &     (WORK(KINT1-1+INT1),INT1=1,NINT1)
@@ -1346,7 +1346,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 * Jeppe Olsen, Feb. 98
 *
       WRITE(6,*)  ' GET_CMOAO_LUCIA, LUH = ', LUH
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. skip Number of orbital symmetries
       READ(LUH,*)
 *. skip Number of MO's per symmetry
@@ -1710,7 +1710,7 @@ C     DATA XYZ/'X','Y','Z'/
         LABELX = LABEL
       END IF
 *
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. Skip Number of orbital symmetries
       READ (LUH,*) NSMOB
 *. Skip Number of MO's per symmetry
@@ -1982,7 +1982,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *     Load the core Hamiltonian matrix                                 *
 *----------------------------------------------------------------------*
       iDisk=iToc(2)
-      Call DaFile(LuOne,2,H,RtoI*NorbTT,iDisk)
 *----------------------------------------------------------------------*
 *     Terminate procedure                                              *
 *----------------------------------------------------------------------*
@@ -2799,7 +2798,7 @@ C?    WRITE(6,*) ' NORBT, NCMOT = ', NORBT,NCMOT
       INTEGER NMOS_ENV(*),NAOS_ENV(*)
 *
       LUH = 91
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *.
       READ(LUH,*) NSMOB
 *.
@@ -3178,9 +3177,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 iijj=iijj-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -3210,9 +3207,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 ijij=ijij-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -4292,7 +4287,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
                 Else
                    Nintrc = nIJKL -(Nrec-1)*Ltr2Rec
                 End if
-                Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
                 Ioff = Ioff + Nintrc
    50        Continue
 *
@@ -4662,11 +4656,9 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
 *----------------------------------------------------------------------*
       LuTr2=LuTwo
       lTr2Rec=lBlk
-      Call DaName(luTr2,'TRAINT')
 *----------------------------------------------------------------------*
 *     Load the table of disk adresses                                  *
 *----------------------------------------------------------------------*
-      Call DaFile(LuTr2,2,iDAdr,mxBatch,iDisk)
 *----------------------------------------------------------------------*
 *     Generate the symmetry block to batch number translation table    *
 *----------------------------------------------------------------------*

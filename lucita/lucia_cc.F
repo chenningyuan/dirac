@@ -448,7 +448,7 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 * (LU is not active)
         END IF
 *. Dump to LU_CCAMP
-        CALL REWINO(LU_CCAMP)
+        CALL REWINE(LU_CCAMP,-1)
         DO I = 1, N_CC_AMP
           WRITE(LU_CCAMP,'(E25.15)') CC_AMP(I)
         END DO
@@ -2081,7 +2081,7 @@ C       WRITE(6,*) ' Playing around in INI_CC_AMP'
 *
       ELSE IF(IFORM.EQ.2) THEN
         WRITE(6,*) ' Reading in CC amplitudes from ', LU_CCAMP
-        CALL REWINO(LU_CCAMP)
+        CALL REWINE(LU_CCAMP,-1)
         DO I = 1, N_CC_AMP
           READ(LU_CCAMP,*) CC(I)
         END DO

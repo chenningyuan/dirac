@@ -2234,7 +2234,7 @@ C
 C
 *=====================================================
 #else
-      IF(LUHC.GT.0) CALL REWINO(LUHC)
+      IF(LUHC.GT.0) CALL REWINE(LUHC,-1)
 C
 C     get scaling factor - 0.0D0 or 1.0D0
 C
@@ -5244,7 +5244,7 @@ CTF   dimension SOMEH(MXTSOB*MXTSOB)
      &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
 C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
       IF(LUCBLK.GT.0) THEN
-        CALL REWINO(LUCBLK)
+        CALL REWINE(LUCBLK,-1)
       END IF
 *
 *     info for this internal space

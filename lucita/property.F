@@ -300,7 +300,7 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
       LSCR = NTOOB ** 2
       CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'DUMPSC')
 *
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. Number of orbital symmetries
       WRITE(LUH,*) NSMOB
 *. Number of MO's per symmetry
@@ -735,7 +735,7 @@ C     WRITE(6,*)  ' LUN and LURF ',LUN,LURF
 *. following. Construct these guys and store on LU5
 *
 *
-      CALL REWINO(LU5)
+      CALL REWINE(LU5,-1)
 *
 * V !0> as first vector on LU5
 *
@@ -767,20 +767,20 @@ C?    WRITE(6,*) ' IWSM = ', IWSM
       CALL BVEC(W,IWSM,LURF,LU4,VEC1,VEC2)
       IF(IWSM.NE.1) THEN
        W00 = 0.0D0
-       CALL REWINO(LU4)
+       CALL REWINE(LU4,-1)
        CALL COPVCDP(LU4,LU5,VEC1,0,LBLK)
       ELSE
        W00 = INPRDD(VEC1,VEC2,LU4,LURF,1,LBLK)
 C?     WRITE(6,*) ' W00 = ', W00
        ONE = 1.0D0
        FACTOR = -W00
-       CALL REWINO(LU4)
-       CALL REWINO(LURF)
+       CALL REWINE(LU4,-1)
+       CALL REWINE(LURF,-1)
        CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU4,LURF,LU5,0,LBLK)
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' The two vectors on LU5 '
-        CALL REWINO(LU5)
+        CALL REWINE(LU5,-1)
         DO IVEC = 1, 2
            WRITE(6,*) ' Vector ', IVEC
            CALL WRTVCD(VEC1,LU5,0,LBLK)
@@ -820,7 +820,7 @@ C?     WRITE(6,*) ' W00 = ', W00
 * =========================================================================
 * 1 : construct (Vw-Vw00)!N-1,M,LW-1>,(Vw-Vw00)!N-1,M,LW+1>,(W-W00)!N,M-1,LW> ( and save on LU4)
 * =========================================================================
-          CALL REWINO(LU4)
+          CALL REWINE(LU4,-1)
 *. Components !N-1,M,LW-1>, !N-1,M,LW+1> corresponds to allowed freq.
           IF(N.GE.1.AND.(ABS(LW-1).LE.N-1)) THEN
             IMIN = 1
@@ -891,11 +891,11 @@ C           IF(V00.NE.0.0D0 .AND. N+M .NE. 1) THEN
             IF(V00.NE.0.0D0 ) THEN
               ONE = 1.0D0
               FACTOR = -V00
-              CALL REWINO(LU7)
-              CALL REWINO(LU6)
+              CALL REWINE(LU7,-1)
+              CALL REWINE(LU6,-1)
               CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU7,LU6,LU4,0,LBLK)
             ELSE
-              CALL REWINO(LU7)
+              CALL REWINE(LU7,-1)
               CALL COPVCDP(LU7,LU4,VEC1,0,LBLK)
             END IF
           END IF
@@ -922,7 +922,7 @@ C           IF(V00.NE.0.0D0 .AND. N+M .NE. 1) THEN
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU6,LU6,1,LBLK)
 C?          write(6,*) ' norm of input vector to BVEC ',RHSNORM
             I12 = 1
-            CALL REWINO(LU7)
+            CALL REWINE(LU7,-1)
             CALL BVEC(W,IWSM,LU6,LU7,VEC1,VEC2)
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU7,LU7,1,LBLK)
 C?          WRITE(6,*) ' Norm of RHS after BVEC ', RHSNORM
@@ -936,12 +936,12 @@ C           IF(W00.NE.0.0D0 .AND. N+M .NE. 1) THEN
             IF(W00.NE.0.0D0 ) THEN
               ONE = 1.0D0
               FACTOR = -W00
-              CALL REWINO(LU7)
-              CALL REWINO(LU6)
+              CALL REWINE(LU7,-1)
+              CALL REWINE(LU6,-1)
               CALL VECSMDP(VEC1,VEC2,ONE,FACTOR,LU7,LU6,LU4,0,LBLK)
             ELSE
 C?            write(6,*) ' route 1 '
-              CALL REWINO(LU7)
+              CALL REWINE(LU7,-1)
               CALL COPVCDP(LU7,LU4,VEC1,0,LBLK)
             END IF
             RHSNORM = INPRDD(VEC1,VEC2,LU7,LU7,1,LBLK)
@@ -1019,8 +1019,8 @@ CW                ELSE
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,LUOUTEFF,
      &            LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1074,8 +1074,8 @@ CW                ELSE
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,
      &                 LUOUTEFF,LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1132,8 +1132,8 @@ CW                  COEF = 2.0D0*COEF
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
-                  CALL REWINO(LU6)
-                  CALL REWINO(LU7)
+                  CALL REWINE(LU6,-1)
+                  CALL REWINE(LU7,-1)
                   CALL VECSMDP(VEC1,VEC2,ONE,COEF,LU6,
      &                 LUOUTEFF,LU7,0,LBLK)
                   CALL COPVCDP(LU7,LU6,VEC1,1,LBLK)
@@ -1179,7 +1179,7 @@ C?        WRITE(6,*) ' Norm of RHS ', RHSNORM
             CALL WRTVCD(VEC1,LU6,1,LBLK)
           END IF
 *.save in LU1 and solve linear eq .
-          CALL REWINO(LU1)
+          CALL REWINE(LU1,-1)
           CALL COPVCDP(LU6,LU1,VEC1,1,LBLK)
 *. Should !0> be printed out in each micro
           IF(ICSM.EQ.IRFSM) THEN
@@ -1203,7 +1203,7 @@ C?        WRITE(6,*) ' LUPROJ and SHIFT', LUPROJ,SHIFT
 *. Add to our collection of correction vectors
           CALL GET_NMLW(VEC1,N,M,LW,
      &         MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
-          CALL REWINO(LU2)
+          CALL REWINE(LU2,-1)
           CALL COPVCDP(LU2,LUN,VEC1,0,LBLK)
 *. Test overlap with reference
           IF(ICSM.EQ.IRFSM) THEN
@@ -1213,11 +1213,11 @@ C?   &      IORD,OVLAP
           END IF
 *. Obtain the V[1]t D(n,m,lw) arrays
 *
-          CALL REWINO(LU5)
+          CALL REWINE(LU5,-1)
 *
 C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
           IF(MNSM.EQ.IVRFSM) THEN
-            CALL REWINO(LU2)
+            CALL REWINE(LU2,-1)
             VW1D(N,M,LW) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
           ELSE
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
@@ -1227,7 +1227,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
      &    write(6,*) '  VW1D(N,M,LW) =  ', VW1D(N,M,LW)
 *
           IF(MNSM.EQ.IWRFSM) THEN
-            CALL REWINO(LU2)
+            CALL REWINE(LU2,-1)
             V01D(N,M,LW) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
           ELSE
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
@@ -1331,7 +1331,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
 *. Position at start of D(LDR,LSR,LWR)
                     CALL GET_NMLW(VEC1,LDR,LSR, LWR,
      &                   MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
-                    CALL REWINO(LU7)
+                    CALL REWINE(LU7,-1)
                     CONT = INPRDD(VEC1,VEC2,LUOUTEFF,LU7,0,LBLK)
 *
                     IF(NTEST.GE.3) THEN
@@ -1951,18 +1951,18 @@ C               END IF
 * =========================================================================
 *
 *. Sij(i,j) = <i!j>
-      CALL REWINO(LUN)
+      CALL REWINE(LUN,-1)
       DO I = 1, N
 *. LUN is positioned at end of vector I-1, copy vector I to LUSC1
-        CALL REWINO(LUSC1)
+        CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUN,LUSC1,WORK(KLVEC1),0,LBLK)
         WRITE(6,*) ' Memcheck I '
         CALL LMEMCHK
 *
-        CALL REWINO(LUN)
+        CALL REWINE(LUN,-1)
         DO J = 1, I
           IJ = I*(I-1)/2 + j
-          CALL REWINO(LUSC1)
+          CALL REWINE(LUSC1,-1)
           WORK(KLSIJ-1+IJ) =
      &    INPRDD (WORK(KLVEC1),WORK(KLVEC2),LUSC1,LUN,0,LBLK)
         END DO

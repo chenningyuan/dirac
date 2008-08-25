@@ -507,7 +507,7 @@ C
       END IF
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = 0.0D0
-        IF(ICISTR.GE.2) CALL REWINO(LUDIA)
+        IF(ICISTR.GE.2) CALL REWINE(LUDIA,-1)
         I12 = 2
         SHIFT = ECORE_ORIG-ECORE
 C       construct H diagonal
@@ -515,7 +515,7 @@ C       construct H diagonal
      &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),
      &               WORK(KBLCKPD))
         IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
-          CALL REWINO(LUDIA)
+          CALL REWINE(LUDIA,-1)
           CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(LUWRTOUT,*) ' Diagonal constructed  '
@@ -695,9 +695,9 @@ CTF
         NROOT = 1
       end if
 C
-C     rewine C-vector file
+C     rewind C-vector file
 C
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
 C
 #if defined (VAR_MPI2)
 C
@@ -714,20 +714,20 @@ C     copy c-vectors from nodes and master back to the master
 C
 C     NOTE: only C-vectors will be saved.
 C
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
       DO JROOT = 1, NROOT
-        CALL REWINO(LUSC41)
+        CALL REWINE(LUSC41,-1)
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KBLCKPD),NUM_BLOCKS2,
      &                            WORK(KBLCKIF),
      &                            MPI_COMM_WORLD,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC_SAVE)
         IF(MYPROC.EQ.MASTER) THEN
-           CALL REWINO(LUSC41)
+           CALL REWINE(LUSC41,-1)
            CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,LBLK)
         END IF
       END DO
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
         IF(MYPROC.EQ.MASTER) THEN
@@ -737,7 +737,7 @@ C
           END DO
         END IF
       END IF
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
       NPTESTVAR = 00
 C
  505    CONTINUE
@@ -791,7 +791,7 @@ C
      &                LUC,ICISTR)
         ELSE
           IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
-             CALL REWINO(LUSC1)
+             CALL REWINE(LUSC1,-1)
              CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
              CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
           END IF
@@ -800,13 +800,13 @@ C
 C
           IF (NROOT.GT.1) THEN
             if (IPRNCIV.ge.1) then
-              CALL REWINO(LUSC1)
+              CALL REWINE(LUSC1,-1)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                    LUSC1,ICISTR)
             end if
           ELSE
             if (IPRNCIV.ge.1) then
-              CALL REWINO(LUC)
+              CALL REWINE(LUC,-1)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                    LUC,ICISTR)
             end if
@@ -861,12 +861,12 @@ C
          IF( IPRDEN .gt. 0 )IPRDEN = 0 
          IF(IH0ROOT.NE.NROOT) THEN
 *          position vectors
-           CALL REWINO(LUC)
+           CALL REWINE(LUC,-1)
            DO JROOT = 1, IH0ROOT
              IF(ICISTR.EQ.1) THEN
                CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
              ELSE
-               CALL REWINO(LUSC1)
+               CALL REWINE(LUSC1,-1)
                CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
              END IF
            END DO
@@ -875,7 +875,7 @@ C
              CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
      &                   WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)
            ELSE
-             CALL REWINO(LUSC1)
+             CALL REWINE(LUSC1,-1)
              CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
              CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
      &                   WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
@@ -1265,8 +1265,8 @@ C
         END IF
         CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
 C
-        CALL REWINO(LUC)
-        CALL REWINO(LUSC39)
+        CALL REWINE(LUC,-1)
+        CALL REWINE(LUSC39,-1)
         IF(MYPROC.EQ.MASTER)THEN
           DO JROOT = 1, NROOT
             CALL COPVCD(LUC,LUSC39,WORK(KVEC1),0,LBLK)
@@ -1351,8 +1351,8 @@ C         Obtain restart vectors for Lambda calculations from LUSC39
           END IF
           CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
 C         Copy vectors from LUSC39 to LUC
-          CALL REWINO(LUC)
-          CALL REWINO(LUSC39)
+          CALL REWINE(LUC,-1)
+          CALL REWINE(LUSC39,-1)
           IF(MYPROC.EQ.MASTER) THEN
             DO JROOT = 1, NROOT
               CALL COPVCD(LUSC39,LUC,WORK(KVEC1),0,LBLK)

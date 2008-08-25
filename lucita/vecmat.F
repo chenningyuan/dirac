@@ -327,8 +327,8 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
 *. and now : Let another subroutine complete the taks
 *
-      CALL REWINO(LUIN)
-      CALL REWINO(LUUT)
+      CALL REWINE(LUIN,-1)
+      CALL REWINE(LUUT,-1)
 *
 *. Print for testing initial vectors out
 *
@@ -344,7 +344,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
             CALL WRTVCD(WORK(KLBLI),LUIN,0,-1)
           END IF
         END DO
-        CALL REWINO(LUIN)
+        CALL REWINE(LUIN,-1)
       END IF
 *
       DO IROOT = 1, NROOT
@@ -353,20 +353,20 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
           LLUIN = LUIN
         ELSE
           IF(ICISTR.EQ.1) THEN
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL FRMDSC(WORK(KLBLI),NCOMBI,-1,LUIN,IMZERO,IAMPACK)
             CALL  TODSC(WORK(KLBLI),NCOMBI,-1,LUSCR)
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           ELSE
 *. With the elegance of an elephant
-            CALL REWINO(LUSCR)
-            CALL REWINO(LUIN)
+            CALL REWINE(LUSCR,-1)
+            CALL REWINE(LUIN,-1)
             DO JROOT = 1, IROOT
-              CALL REWINO(LUSCR)
+              CALL REWINE(LUSCR,-1)
               CALL COPVCD(LUIN,LUSCR,WORK(KLBLI),0,-1)
             END DO
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           END IF
         END IF
@@ -394,8 +394,8 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
       IF(ICOPY.NE.0) THEN
 *. Copy expanded vectors to LUIN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUUT)
+        CALL REWINE(LUIN,-1)
+        CALL REWINE(LUUT,-1)
         DO IROOT = 1, NROOT
           IF(ICISTR.EQ.1) THEN
             CALL FRMDSC(WORK(KLBLU),NCOMBU,-1,LUUT,IMZERO,IAMPACK)
@@ -409,7 +409,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output  vectors in EXPCIV '
 *
-        CALL REWINO(LUUT)
+        CALL REWINE(LUUT,-1)
         DO IROOT = 1, NROOT
         WRITE(6,*) ' Root number ', IROOT
 *
@@ -517,7 +517,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
            CALL NXTBLK(IATPIN,IBTPIN,IASMIN,NOCTPA,NOCTPB,NSMST,
      &                 IBLTPIN,IDC,NONEWIN,IABIN,ITTSS_ORD)
            IF(NONEWIN.NE.0) THEN
-             CALL REWINO(LUIN)
+             CALL REWINE(LUIN,-1)
 *. Changed for new ordering
              IATPIN = 1
              IBTPIN = 1
@@ -707,7 +707,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 **. Info on block structure of space
 *
 *
-      IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
+      IF( ICISTR .NE. 1 ) CALL REWINE(LUC,-1)
 *. Number of terms to be printed
 C?    WRITE(6,*) ' GASANA : IPRNCIV = ', IPRNCIV
       IF (IPRNCIV.EQ.0) THEN
@@ -823,7 +823,7 @@ C     WRITE(6,*) 'C(1) = ',C(1)
       IF(THRES .LT. 0.0D0 ) THRES = ABS(THRES)
       CNORM = 0.0D0
 2001  CONTINUE
-      IF( ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF( ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       IIDET = 0
       ILOOP = ILOOP + 1
       IF ( ILOOP  .EQ. 1 ) THEN
@@ -944,7 +944,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
 *
       IDET = 0
-      IF(ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF(ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       CALL ISETVC(NCPMT,0    ,10*NOCCLS)
       CALL SETVEC(WCPMT,0.0D0,10*NOCCLS)
       DO JBLOCK = 1, NBLOCK
@@ -1233,12 +1233,12 @@ CM    IREW = 1
       END IF
 *
       LUOUTEFF = LUCORR
-      IF(IREW.NE.0) CALL REWINO(LUOUT)
+      IF(IREW.NE.0) CALL REWINE(LUOUT,-1)
 *
       IF(N.EQ.0.AND.M.EQ.0) THEN
 *. You asked for the reference vector and that will be
         LUOUTEFF = LUREF
-        CALL REWINO(LUREF)
+        CALL REWINE(LUREF,-1)
         IVEC = 1
         IF(IREAD.NE.0 )  THEN
           CALL COPVCDP(LUREF,LUOUT,VEC,1,LBLK)
@@ -1246,7 +1246,7 @@ CM    IREW = 1
       ELSE
 *. A real correction vector
 *. Position to start of requested vector
-        CALL REWINO(LUCORR)
+        CALL REWINE(LUCORR,-1)
         IVEC = 0
         DO NP = 0, N
           IF(NP.EQ.N) THEN
@@ -2347,7 +2347,7 @@ C    &           LUDIA)
          CALL TODSC(VEC1,NDIM,-1,LU)
       ELSE
 *. Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM)
+        CALL REWINE(LUFORM,-1)
         IBOT = 1
 *. Loop over records
  1000   CONTINUE

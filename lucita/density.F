@@ -886,7 +886,7 @@ C     WRITE(6,*) ' Leaving DENSI '
         END IF
       END IF
 * Loop over batches over L blocks
-      IF(LUL.NE.0) CALL REWINO(LUL)
+      IF(LUL.NE.0) CALL REWINE(LUL,-1)
       DO 10001 IBATCHL = 1, NBATCHL
 *. Obtain L blocks
         NBLKL = LBATL(IBATCHL)
@@ -909,7 +909,7 @@ C     WRITE(6,*) ' Leaving DENSI '
      &                PSL,LUL,C2,NSMST,ISCALE,SCLFAC_L(IL))
         END DO
 *. Loop over batches  of R vector
-        IF(LUR.NE.0) CALL REWINO(LUR)
+        IF(LUR.NE.0) CALL REWINE(LUR,-1)
         DO 9001 IBATCHR = 1, NBATCHR
 *. Read R blocks into core
         NBLKR = LBATR(IBATCHR)
@@ -2425,7 +2425,7 @@ CTOBE   IF(L.LE.NMINL) THEN
              CALL COPVCD(LU0,LUSC1,VEC1,1,LBLK)
           ELSE
              CALL SKPVCD(LUN,L-1,VEC1,1,LBLK)
-             CALL REWINO(LUSC1)
+             CALL REWINE(LUSC1,-1)
              CALL COPVCD(LUN,LUSC1,VEC1,0,LBLK)
           END IF
 *
@@ -2433,7 +2433,7 @@ CTOBE   IF(L.LE.NMINL) THEN
              CALL COPVCD(LU0,LUSC2,VEC1,1,LBLK)
           ELSE
              CALL SKPVCD(LUN,NMINL-1,VEC1,1,LBLK)
-             CALL REWINO(LUSC2)
+             CALL REWINE(LUSC2,-1)
              CALL COPVCD(LUN,LUSC2,VEC1,0,LBLK)
           END IF
 C?      write(6,*) ' next pair of vectors loaded '
@@ -2859,7 +2859,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       WRITE(6,*) ' LUL LUR = ',LUL,LUR
       WRITE(6,*) ' LUSC1 LUSC2 ',LUSC1,LUSC2
-      CALL REWINO(LUL)
+      CALL REWINE(LUL,-1)
       LENRHO1 = NTOOB ** 2
       ITRADEN = 0
       DO IL = 1, NL
@@ -2867,17 +2867,17 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
           LULEFF = LUL
         ELSE
           LULEFF = LUSC1
-          CALL REWINO(LULEFF)
+          CALL REWINE(LULEFF,-1)
           CALL COPVCD(LUL,LULEFF,WORK(KLL),0,LBLK)
         END IF
-        CALL REWINO(LUR)
+        CALL REWINE(LUR,-1)
         DO IR = 1, NR
           ITRADEN = ITRADEN + 1
           IF(IR.EQ.1) THEN
             LUREFF = LUR
           ELSE
             LUREFF = LUSC2
-            CALL REWINO(LUREFF)
+            CALL REWINE(LUREFF,-1)
             CALL COPVCD(LUR,LUREFF,WORK(KLL),0,LBLK)
           END IF
 *
