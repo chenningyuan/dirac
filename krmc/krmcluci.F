@@ -267,27 +267,29 @@ C     Internal subspaces
       CALL LCISPC_REL(LCSBLK,IPRCIX)
 C
 ******************************************
-      if (CIRUN.eq.'RSTRMC') then
-        ISPC = 1
-        CALL Z_BLKFO_REL(IDC,NMS2VAL,ISPC,IREFSM,KPCLBT,KPCLEBT,
-     &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
-     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,2,0,
-     &                   IDUMMY)
-        CALL QEXIT('LUCIAR')
-        RETURN
-      end if
-******************************************
       if (IMEMCK.gt.0) then
         write(LUWRT,*) ' Memory map after STRINF_GAS_REL'
         IDUM = 0
         call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
       end if
 C
+      if (CIRUN.eq.'NDET  ') GO TO 9999
+******************************************
+      if (CIRUN.eq.'RSTRMC') then
+        ISPC = 1
+        CALL Z_BLKFO_REL(IDC,NMS2VAL,ISPC,IREFSM,KPCLBT,KPCLEBT,
+     &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
+     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,2,0,
+     &                   IDUMMY)
+        GO TO 9999
+      end if
 *******************************************
-      if (CIRUN.ne.'NDET  ') then
+C     OK, we want to do something, not just calculate number of
+C     determinants.
 *******************************************
 C
-C       setting up groups of processors (stored in /LUCIPARREL/)
+C     Prepare for parallelization:
+C     setting up groups of processors (stored in /LUCIPARREL/)
 C
         CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
@@ -399,10 +401,14 @@ C
         NFLGRPS_REL = 0
 #endif
 C
+C       Finished with preparation for parallelization.
+C
+*******************************************************
 C       Allocate work space, general
 C 
         CALL ALLOC_REL
 C
+*******************************************************
 C       IDGSTYP determines the integral classes and corresponding operator
 C       classes depending on the double group in use.
 C
@@ -435,7 +441,7 @@ C           Dirac-Coulomb case.
               IHTYPE = 5
             else
               write(LUWRT,*) 'Unallowed value of IDGSTYP : ',IDGSTYP
-              stop 'Quitting.'
+              call abend2('Quitting.')
             end if
           else
             write(LUWRT,*) 'Setting of ISO1,ISO2 not allowed.'
@@ -453,14 +459,13 @@ C            ... no two-electron excitations
         end if
 C       ^ end if SIGDEN_ROUTE
 C
-C       symmetry of reference
+C       symmetry of reference (PNTGRP < 5 means single group symmetry)
 C
         IF(PNTGRP.GT.1.and.PNTGRP.lt.5)
      &             CALL MLSM_REL(IREFSM,IREFPA,IREFSM,'CI',1)
         IF(NOINT.EQ.1) THEN
           WRITE(LUWRT,*) ' End of calculation without integrals'
-          CALL QEXIT('LUCIAR')
-          RETURN
+          GO TO 9999
         END IF
 C
         do INATIT=1,NATITER,1
@@ -579,8 +584,8 @@ C. Modify the operator
                 LBLOCK = MXSOOB
               END IF
               call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-              CALL REWINO(LUC)
-              CALL REWINO(LUSC39)
+              IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
+              CALL REWINE(LUSC39,-1)
               DO JROOT = 1, NROOT
                 CALL COPVCD_REL(LUSC39,LUC,WORK(KVEC1),0,LBLK)
               END DO
@@ -669,7 +674,7 @@ C
 C
 #if defined (VAR_MPI2)
 C
-C       free groups
+C       free all MPI-2 groups
 C
         CALL SETUNITS_PAR_CLOSE_REL
         CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,MYNEW_COMM_SM,ICOMM,
@@ -678,11 +683,9 @@ C
 #endif
 C
 *******************************************
-      end if
-*     ^ End if CIRUN.ne.'NDET  '
 *******************************************
 *
-      CALL QEXIT('LUCIAR')
+ 9999 CALL QEXIT('LUCIAR')
 #ifdef LUCIAREL_STANDALONE
       Call Abend2( ' I am home from  the loops ' )
 #endif
@@ -702,88 +705,54 @@ C***********************************************************************
 C
       character*6 CIRUN
 *
-      NTEST = 0
+      NTEST = 1
 *
-      if (NTEST.ge.1) then
+      if (NTEST.gt.1) then
         write(LUPRI,*)
         write(LUPRI,*) ' ////////////////////////////////// '
-        write(LUPRI,*) ' //                              // '
-        write(LUPRI,*) ' //                              // '
-        write(LUPRI,*) ' //  KR-MCSCF calling LUCIAREL   // '
-        write(LUPRI,*) ' //                              // '
-        write(LUPRI,*) ' //                              // '
-        write(LUPRI,*) ' ////////////////////////////////// '
+        write(LUPRI,*) ' //'
+      end if
+      if (NTEST.gt.0) then
+        write(LUPRI,*) ' //  LUCIAREL called'
+        write(LUPRI,*) ' //  CIRUN = ',CIRUN
       end if
 *
+      if (NTEST.gt.0) then
       if (CIRUN.eq.'NDET  ') then
         write(LUPRI,*)
-        write(LUPRI,*) ' NDET   flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) ' The number of CI dets will be computed.'
-        write(LUPRI,*)
+     &  ' //  The number of CI determinants will be computed'
       else if (CIRUN.eq.'CIINII') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' CIINII flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Determining configurational start guess'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Determining configurational start guess'
       else if (CIRUN.eq.'KR-CI ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' KR-CI  flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Running large-scale CI calculation'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Running large-scale CI calculation'
       else if (CIRUN.eq.'RSTRMC') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' RSTRMC flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Determining info for restart of MCSCF.'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Determining info for restart of MCSCF.'
       else if (CIRUN.eq.'SIGMA ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' SIGMA  flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Computing a sigma vector.'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Computing a sigma vector.'
       else if (CIRUN.eq.'SIGMAD') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' SIGMAD flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Computing a sigma vector.'
-        write(LUPRI,*) '     Saving H diagonal also.'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Computing a sigma vector.'
+        write(LUPRI,*) ' //      Saving H diagonal also.'
       else if (CIRUN.eq.'DENS1 ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' DENS1  flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Computing only 1-particle density matrices.'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Computing only 1-particle density matrices'
       else if (CIRUN.eq.'DENS2 ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' DENS2  flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Computing 1- and 2-particle dens. matrices.'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Computing 1- and 2-particle dens. matrices'
       else if (CIRUN.eq.'ANALYZ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' ANALYZ flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Analyzing the current CI vector(s).'
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Analyzing the current CI vector(s).'
       else if (CIRUN.eq.'IJKLRO') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' IJKLRO flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Reordering all (ij|kl) according to GAS     '
-        write(LUPRI,*) '   scheme. Saving to file IJKL_REOD.           '
-        write(LUPRI,*)
+        write(LUPRI,*) ' //  Reordering all (ij|kl) according to GAS'
+        write(LUPRI,*) ' //    scheme. Saving to file IJKL_REOD.'
       else if (CIRUN.eq.'DIAG  ') then
-        write(LUPRI,*)
-        write(LUPRI,*) ' DIAG   flag call '
-        write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Computing CI diagonal.'
+        write(LUPRI,*) ' //  Computing CI diagonal.'
+      end if
+      end if
+
+      if (NTEST.gt.1) then
+        write(LUPRI,*) ' //'
+        write(LUPRI,*) ' ////////////////////////////////// '
+      end if
+
+      if (CIRUN.eq.'DIAG  ') then
         call quit('NOT IMPLEMENTED YET!')
-        write(LUPRI,*)
       end if
 *
       return
@@ -866,7 +835,8 @@ C
 C
 C        run large-scale KR-CI calculation
 C
-         CALL LUCI_KRCI(CMO,WORK,LWORK)
+         IF( MAXCIT .gt. 0 ) CALL LUCI_KRCI(CMO,WORK,LWORK)
+C
       ELSE
          WRITE(LUPRI,'(A,I18)') ' *** ERROR in LUCI_RCIST ***'//
      &   ' wrong KR-run type in LUCI_RCIST !',JKRRUNTYPE
@@ -1469,6 +1439,7 @@ C     Read sigma vector on file to SB array.
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         CALL MEMREL('LUCI_SIG 2',WORK,1,KRSCR,KFREE,LFREE)
       END IF
+C     ... only MASTER should do it
       CALL REWINE(LUC,-1)
       IO_C_VEC_OUT = 1
       IF (IO_C_VEC_OUT .eq. 1 ) THEN
@@ -1650,25 +1621,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     CIRUN = 'PROP1 ' : compute one-particle properties using 
-C                        1e-property integrals residing on TPROP
+C                        1e-property integrals residing on file 
+C                        KRMC_FOCK
 C
-C     INPUT:           
-C           CREFR            : Right CI vector (expected to reside on
-C                              file LUCVECT_REL.0)
-C       general also for transition densities
+C     Written by S. Knecht - Aug 2008
 C
-C     Written by S. Knecht                 - Jul 22 2008
-C     Last revision : KR_LUCI_IO calls     - Dec 04 2001    T. Fleig
-C                     CREF added           - Mar 17 2002    T. Fleig
-C                     Only R1 possible     - Feb 01 2005    T. Fleig
-C                     Only one common call 
-C                     to KRMC_LUCI since
-C                     RHO1,RHO2 are always
-C                     allocated.           - Jun 29 2007    S. Knecht
-C                     implementation of 
-C                     multi-root
-C                     natural orbital 
-C                     occupation numbers   - Sep 28 2007    S. Knecht
+C     Last revision : 
 C
 C***********************************************************************
 #include "implicit.h"

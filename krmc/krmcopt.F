@@ -3098,9 +3098,10 @@ C
 C
          END DO
 C
-C        set back - otherwise LUCI_DENS call may fail
+C        set back if KR-MCSCF - otherwise LUCI_DENS call may fail
+C        do NOT set back for KR-CI - we might do more than one symmetry
 C
-         NATOLCR = .FALSE.
+         IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
       ELSE IF( OPT_CIPROGRAM .EQ. 'GOSCI' )THEN
 C

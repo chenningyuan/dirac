@@ -763,13 +763,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck RPROP */
-      SUBROUTINE RPROP_KRCI(WORK,LWORK)
+      SUBROUTINE KRCI_PROP(CMO,WORK,LWORK)
 C***********************************************************************
 C
-C     1. calculate property matrix for list of (symmetric) one-electron
-C        (or later also two-electron) operators.
+C     1. calculate property MO representation for list of (symmetric) 
+C        one-electron (and later also two-electron) operators.
 C
-C     2. calculate final properties, e.g., transition dipole moments. 
+C     2. calculate properties , e.g., transition dipole moments. 
+C
+C     3. obtain final quantities , e.g., oscillator strength f. 
 C
 C     Written by S. Knecht - Aug 2008
 C
@@ -787,8 +789,9 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "krciprop.h"
+#include "dcbkrci.h"
 C
-      DIMENSION WORK(*)
+      DIMENSION CMO(*), WORK(*)
 C
 #include "memint.h"
 C
@@ -804,5 +807,218 @@ C
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     1X,79('*'))
 C
+      WRITE (LUPRI,'(/A/A)')
+     &   '  Symmetry   # of electronic states',
+     &   '  ________   ______________________'
+C               1              4
+      NPROP_ROOTS_KRCI = 0
+      DO I = 1, NKRCI_MAX_SYM
+         NPROP_ROOTS_KRCI = NPROP_ROOTS_KRCI + NKRCI_CIROOTS(I)
+         WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+      END DO
+         WRITE(LUPRI,'(A/A,I15)')
+     &   '  _________________________________',
+     &   '  Total', NPROP_ROOTS_KRCI
 C
+C     ***************************************************
+C     *** Memory allocation *****************************
+C     ***************************************************
+C
+      LXPRPKRCI = NPROP_ROOTS_KRCI**2*NZ*NPROP_KRCI
+      CALL MEMGET('REAL',KXPRPKRCI,LXPRPKRCI,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPRPCORE, NPROP_KRCI,WORK,KFREE,LFREE)
+C
+C     ... initialize
+      CALL DZERO(WORK(KXPRPKRCI),LXPRPKRCI)
+      CALL DZERO(WORK(KPRPCORE),NPROP_KRCI)
+C
+C     ***************************************************
+C     *** operator(s) in MO representation **************
+C     ***************************************************
+C
+C     active-active part saved on file KRMC_FOCK
+C
+      CALL KRCIPRPMO(CMO,WORK(KPRPCORE),WORK(KFREE),LFREE)
+C
+C     ***************************************************
+C     *** calculate properties **************************
+C     ***************************************************
+C
+C     CALL KRCIGETPRP
+C
+C     ***************************************************
+C     *** get spectroscopic quantities ******************
+C     ***************************************************
+C
+C     CALL KRCISPQUAN(WORK(KXPRPKRCI),LXPRPKRCI,WORK(KFREE),LFREE)
+C
+      CALL MEMREL('RPROP_KRCI',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck KRCIPRPMO */
+      SUBROUTINE KRCIPRPMO(CMO,PRPCOREE,WORK,LWORK)
+C***********************************************************************
+C
+C     Transform property integrals to MO basis.
+C     Integrals are saved on file KRMC_FOCK.
+C
+C     Input:
+C        CMO     - orbital coefficients.
+C
+C     Written by S. Knecht - Aug 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C write-protection for DUMMY.
+#include "dummy.h"
+#include "consts.h"
+#include "maxorb.h"
+C
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "krciprop.h"
+#include "dcbxpr.h"
+      DIMENSION CMO(*), PRPCOREE(*), WORK(*)
+      CHARACTER*8 FILELAB
+      LOGICAL LOPEN
+C
+#include "memint.h"
+C
+      CALL QENTER('KRCIPRPMO')
+C
+      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
+      IF (.NOT. LOPEN) THEN
+         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &        FILE='AOPROPER')
+      ENDIF
+C
+C     ***************************************************
+C     *** Get property matrices *************************
+C     ***************************************************
+C
+      DO I = 1, NPROP_KRCI
+C
+         INDXPR  = LPROP_KRCI(I)
+         ISYM    = IPRPSYM(INDXPR)
+         IOPSY   = JBTOF(ISYM-1,1)
+         FILELAB = PRPNAM(INDXPR)(1:8)
+C
+         CALL MEMGET('REAL',KRPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KRPRPMO),N2ORBXQ)
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),CMO,
+     &               DUMMY,ICMOQ,NORB,WORK,KFREE,LFREE,IPROPT)
+C
+C        print full property matrix
+C
+         IF( IPROPT .ge. 5 ) THEN
+            WRITE(LUPRI,'(/2A)')'   KRCIPRPMO: MO matrix of property: ',
+     &                              FILELAB
+            CALL PRQMAT(WORK(KRPRPMO),NORBT,NORBT,NORBT,
+     &                  NORBT,NZ,IPQTOQ(1,ISYM-1),LUPRI )
+         ENDIF
+C
+C        calculate PRPCORE(I) = 2.0D0 * SUM_(all inactive) P_ii
+C
+         IF( NISHT .gt. 0)THEN
+            TEMP_PCORE  = SUM_DIAG_ELM(WORK(KRPRPMO),NORBT,NORBT)
+            PRPCOREE(I) = D2 * TEMP_PCORE
+         ELSE
+            PRPCOREE(I) = D0
+         END IF
+         IF (IPROPT .GE. 0)
+     &      WRITE(LUPRI,9000) FILELAB,PRPCOREE(I)
+ 9000 FORMAT(/' (KRCIPRPMO): ',A,' property core value: ',F25.15)
+C
+C        get active-active part
+C
+         CALL MEMGET('REAL',KRPRPMOAC,   N2ASHXQ,WORK,KFREE,LFREE)
+CSK      CALL MEMGET('REAL',KRPRPMOACM,4*N2ASHXQ,WORK,KFREE,LFREE)
+CSK      CALL DZERO(WORK(KRPRPMOACM),  4*N2ASHXQ)
+CSK      do not transform to MOLFDIR format here...
+         CALL RGETAC(WORK(KRPRPMO),WORK(KRPRPMOAC),IPROPT)
+C
+C        save on file KRMC_FOCK
+C
+         IRWR = 0
+         CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KRPRPMOAC),N2ASHXQ,IRWR)
+         CALL MEMREL('KRCIPRPMO',WORK,KWORK,KWORK,KFREE,LFREE)
+      END DO
+C
+      CLOSE(LU1INT,STATUS = 'KEEP')
+      CALL QEXIT('KRCIPRPMO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck KRCISPQUAN */
+      SUBROUTINE KRCISPQUAN(VPROP,LVPROP,WORK,LWORK)
+C***********************************************************************
+C
+C     Calculate requested spectroscopic quantities.
+C
+C     Input:
+C        property matrix VPROP
+C
+C     Written by S. Knecht - Aug 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "krciprop.h"
+#include "dcbxpr.h"
+      REAL*8 OSCL
+      DIMENSION VPROP(LVPROP), WORK(*), OSCL(3)
+C
+#include "memint.h"
+C
+      CALL QENTER('KRCISPQUAN')
+C
+      IF( DOOSCILLST )THEN
+C
+C       read final energies from file
+C
+C       calculate and print oscillator strength 
+C
+        WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
+     &       ' <f_l>/3    f_lx     f_ly     f_lz '
+        WRITE(LUPRI,*) '-------------------------------------'/
+     $       /'---------------------------------------'
+        DERG = REFERG - GSERG
+C       Check sum rule for oscillator strength
+        SUML = 0.0D0
+        DO IVEC=1,NVEC
+c         transition moments
+          DO IPRP=1,3
+c           Length gauge
+            XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
+     &           PRPGRAD(1,1,1,IPRP))
+            OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
+          ENDDO
+          WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+     &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
+     &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
+     &         OSCL(1),OSCL(2),OSCL(3)
+          SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+        ENDDO
+        WRITE(LUPRI,*) '-------------------------------------'/
+     $       /'---------------------------------------'
+        WRITE(LUPRI,'(1A,1F10.6)')
+     $     '   Sum of oscillator strength : ',SUML
+      END IF
+C
+      CALL QEXIT('KRCISPQUAN')
       END

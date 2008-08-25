@@ -2765,6 +2765,64 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         IMAT(IADR) = IVALUE
       END IF
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Function SUM_DIAG_ELM */
+      REAL*8 FUNCTION SUM_DIAG_ELM(C,AMAT,NRA,NCA)
+C***********************************************************************
+C
+C     Sum diagonal elements of matrix AMAT elements. 
+C
+C     Character 'C' controls which part of the matrix is summed up.
+C
+C     Written by S. Knecht - Aug 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "mx2orb.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+      PARAMETER (  D0 = 0.0D0 )
+      CHARACTER C*1
+      DIMENSION AMAT(NRA,NCA,*)
+C
+      SUMDIAG = D0
+      DO IFSYM = 1, NFSYM
+C
+        IF (C .EQ. 'E') THEN
+           NDIM2 = NESH(IFSYM)
+           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+        ELSE IF (C .EQ. 'P') THEN
+           NDIM2 = NPSH(IFSYM)
+           IOFF1 = IORB(IFSYM) + 1
+        ELSE IF (C .EQ. 'I') THEN
+           NDIM2 = NISH(IFSYM)
+           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+        ELSE IF (C .EQ. 'A') THEN
+           NDIM2 = NASH(IFSYM)
+           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM) + 1
+        ELSE IF (C .EQ. 'V') THEN
+           NDIM2 = NVSH(IFSYM)
+           IOFF1 = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+NASH(IFSYM)+1
+        ELSE
+           WRITE(LUPRI,'(2A)')
+     &    '*** ERROR in SUM_DIAG_ELM *** Unknown control character: ',C
+          CALL Abend2('* ERROR in SUM_DIAG_ELM * Unknown control 
+     &                   character')
+        END IF
+C
+        INUM_S = 0
+        DO I = 1, NDIM2
+           SUMDIAG = SUMDIAG + AMAT(IOFF1+INUM_S,IOFF1+INUM_S,1)
+           INUM_S = INUM_S + 1
+        END DO
+      END DO
+      SUM_DIAG_ELM = SUMDIAG
+      RETURN
+      END
 C=========================================================================
 C end of file krmcgp.F
 C=========================================================================
