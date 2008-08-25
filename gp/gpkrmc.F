@@ -203,6 +203,57 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck KRCI_PRPFILE */
+      SUBROUTINE KRCI_PRPFILE(LUNIT,LABEL,VECTOR,ISIZE,IRWRT)
+C***********************************************************************
+C
+C     Read/write VECTOR from/to LUNIT under label LABEL.
+C
+C     IRWRT controls reading/writing:
+C                                     0: read vector
+C                                     1: write vector
+C
+C     Input:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C      
+C
+C     Output:
+C
+C        VECTOR  - vector of size ISIZE (if not input)   
+C
+C     Based on WRTKRMC.
+C
+C     Written by S. Knecht - Aug 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION VECTOR(ISIZE)
+      CHARACTER LABEL*8
+C
+      IF( IRWRT .eq. 0 )THEN
+C
+C       Write label at end or - if already existing - after SODLABEL
+C
+        CALL LABKRMC(LUNIT,LABEL)
+C
+C       Write vector
+C
+        CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+        CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+        REWIND LUNIT
+      ELSE
+C       ... read from file
+        REWIND LUNIT
+        CALL MOLLAB(LABEL,LUNIT,LUPRI)
+        CALL READT(LUNIT,ISIZE,VECTOR)
+      END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck iwrtkrmc */
       SUBROUTINE IWRTKRMC(LUNIT,LABEL,IVECTOR,ISIZE)
 C***********************************************************************

@@ -1207,7 +1207,6 @@ C
          LUNIT = IUN
          IF (LUNIT .GT. 99) GOTO 9001
       END IF
-      CALL DANAME(LUNIT,NAME)
       RETURN
 C     
 C error branch
