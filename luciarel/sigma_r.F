@@ -2743,8 +2743,8 @@ C    &              ETHRES,CTHRES,EROOT(100),NMS2VAL,MS2VAL(100)
       END IF
 *
       LBLK = -1
-      CALL REWINO(LLUC)
-      CALL REWINO(LLUHC)
+      CALL REWINE(LLUC,-1)
+      CALL REWINE(LLUHC,-1)
 *
 *. Loop over vectors of sigma and C : MK2 space + Real/Imag
       DO IRIS = 1, 2
@@ -2772,7 +2772,7 @@ C    &              ETHRES,CTHRES,EROOT(100),NMS2VAL,MS2VAL(100)
             ZERO = 0.0D0
             CALL SETVEC(SB,ZERO,LS)
 *
-            CALL REWINO(LLUC)
+            CALL REWINE(LLUC,-1)
             DO IRIC = 1, 2
               IF(IRIC.EQ.2) THEN
 *. Skiup EOV mark between real and imaginary part
@@ -2790,7 +2790,7 @@ C    &              ETHRES,CTHRES,EROOT(100),NMS2VAL,MS2VAL(100)
                 IACTP = IST_FOR_DT(1,IMK2_C)
                 IBCTP = IST_FOR_DT(2,IMK2_C)
 *. Copy blocks with given MK2_C to LUSC37
-                CALL REWINO(LUSC37)
+                CALL REWINE(LUSC37,-1)
                 NBL_C = NBLK_MS2(IMK2_C)
                 CALL COPNBLKD(LLUC,LUSC37,CB,NBL_C,0,LBLK)
 C                    COPNBLKD(LUIN,LUOUT,SEGMNT,NBLOCK,IREW,LBLK)
@@ -4851,7 +4851,7 @@ CTF
      &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
 C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
       IF(LUCBLK.GT.0) THEN
-        CALL REWINO(LUCBLK)
+        CALL REWINE(LUCBLK,-1)
       END IF
 *
 * Info for this internal space

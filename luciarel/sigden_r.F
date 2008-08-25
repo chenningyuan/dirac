@@ -590,7 +590,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 * IHTYPE = 4 : Include all terms for relativisitic Hamiltonian
 *              in a basis of relativistic spinors
 *
-* LABEL : 1  for unbarred (alpha)
+* LABEL :  1 for unbarred (alpha)
 *         -1 for barred   (beta)
 *         and refers to integral (not operator!) indexing !!
 *
@@ -645,8 +645,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 *. Delta MK = 0 terms
 *
-* operator:
-* a+i alpha a j alpha
+* Operator: a+i alpha a j alpha
+*           where i belongs to IGAS and j belongs to JGAS
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
@@ -684,8 +684,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
         END DO
       END DO
 *
-* operator:
-* a+i beta a j beta
+* operator: a+i beta a j beta
+*           where i belongs to IGAS and j belongs to JGAS
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
@@ -975,8 +975,8 @@ C     ... skip next set of two-electron terms
 *
       IF (IHTYPE.GT.2) THEN
 *
-* operator:
-* a+i alpha  j beta
+* operator: a+i alpha  j beta
+*           where i belongs to IGAS and j belongs to JGAS
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
@@ -1012,8 +1012,8 @@ C     ... skip next set of two-electron terms
           END DO
         END DO
 *
-* operator:
-* a+i beta a j alpha 
+* operator: a+i beta a j alpha 
+*           where i belongs to IGAS and j belongs to JGAS
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
@@ -1474,7 +1474,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 * All symmetryblocks of C and Sigma are treated 
 *
 * ITDIAG = 1 => Diagonal T-block 
-*               Only symmetryblocks with 
+*               Only symmetry blocks with 
 *                  (ICASM,IAASM).GE.(ICBSM,IABSM)
 *               are included, and blocks with 
 *                  (ICASM,IAASM) = (ICBSM,IABSM)
@@ -2975,7 +2975,7 @@ C     INTEGER JGRP(MXPNGAS)
 *
 *
 *     IHTYPE = 1 : Include only Delta MK = 0 terms
-*     IHTYPE = 2 : Include Delta Mk = 0 for two-electron part
+*     IHTYPE = 2 : Include Delta MK = 0 for two-electron part
 *                  and complete one-electron part
 *     IHTYPE = 3 : Include all terms for general relativistic Hamiltonian
 *
@@ -3036,7 +3036,7 @@ C     KLSPOBEX_AC : Is this spinorbital excitation active
 C
       call memmar(KLSPOBEX_AC,NSPOBEX_TP,'ADDS  ',1,'SPOBAC')
 C
-C     aLl spinorbital excitations are initially active
+C     all spinorbital excitations are initially active
 C
       IONE     = 1
       IZERO_I8 = 0
@@ -3262,7 +3262,7 @@ C
       end if
 *
       NTEST = 000
-      IF(NTEST.GE.100) THEN 
+      IF(NTEST.GE.50) THEN 
         write(LUWRT,*)
         write(LUWRT,*)
         write(LUWRT,*) '++++++++++++++++++++++++++++++++++++++'
@@ -3272,7 +3272,6 @@ C
         write(LUWRT,*) '++++++++++++++++++++++++++++++++++++++'
         WRITE(LUWRT,*) '          ICSM, ISSM = ', ICSM, ISSM
       END IF
-      NTEST = 000
 *
 *     file LUSC37 is not needed in a MPI run
 *
@@ -3307,9 +3306,10 @@ C
 * LUCIAREL is a relativistic CI program. 
 *          However, for quaternion real groups, we use real
 *          algebra.
-      IRILP = 2
       if (NZ.eq.1) then
         IRILP = 1
+      else
+        IRILP = 2
       end if
 *
 *=====================================================
@@ -3373,8 +3373,8 @@ C
         end if
       end if
 *
-      CALL REWINO(LLUC)
-      CALL REWINO(LLUHC)
+      CALL REWINE(LLUC,-1)
+      CALL REWINE(LLUHC,-1)
 *
 #endif /* if def VAR_MPI2 */
 *=====================================================
@@ -3510,7 +3510,7 @@ CSK     &    ICOMPUTE,JBATABS
             end if
 *
 #if !defined (VAR_MPI2)
-            call rewino(LLUC)
+            call REWINE(LLUC,-1)
 #endif
             DO IRIC = 1,IRILP,1
             if (NTEST.ge.50) then
@@ -3546,6 +3546,18 @@ CSK     &    ICOMPUTE,JBATABS
                   write(LUWRT,*) ' MK2_C LOOP , MK2_C = ',MK2_C
                   write(LUWRT,*) '- - - - - - - - - - - -'
                 end if
+                MK2_DIFF = ABS(MK2_C - MK2_S)
+                max_MK2_DIFF = 4
+                IF( NTEST .ge. 50 )THEN
+                  IF (MK2_DIFF .gt. max_MK2_DIFF) THEN
+                    write(LUWRT,*) 'MK2 skip, MK2_DIFF =',MK2_DIFF
+                  END IF
+                END IF
+*               ... for any two-electron operator.
+*                   For one-electron operators max_MK2_DIFF = 1 or 0
+*                   (or zero, if NZ .lt. 4 and operator is not j- or
+*                   k-imaginary) /HJAAJ Aug 2008. TODO TODO to define
+*                   max_MK2_DIFF
 *
 * Kramers symmetry restriction
                 if (IKRA_SYM.eq.1.and.MK2_C.lt.0) then
@@ -3567,11 +3579,16 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET FOR C-VECTOR FILE',
 CSK     &                             IOFF_SCR1_C, INT_IOFF1_C
 *
 #else
+                  IF (MK2_DIFF .LE. max_MK2_DIFF) THEN
 *. Copy blocks with given MK2_C to LUSC37
-                  CALL REWINO(LUSC37)
-                  CALL COPNBLKD(LLUC,LUSC37,C,NBL_C,0,LBLK)
+                    CALL REWINE(LUSC37,-1)
+                    CALL COPNBLKD(LLUC,LUSC37,C,NBL_C,0,LBLK)
 *. End of vector mark
-                  CALL ITODS(-1,1,-1,LUSC37)
+                    CALL ITODS(-1,1,-1,LUSC37)
+                  ELSE
+*. Skip blocks with given MK2_C
+                    CALL COPNBLKD(LLUC,-1,C,NBL_C,0,LBLK)
+                  END IF
 #endif /* if def VAR_MPI2 */
 *
 * Analyze T before doing the job
@@ -3583,7 +3600,8 @@ C                   call ana_gencc(T,ISYM_T)
 C                   stop
 C                 end if
 *
-                  call sigden_rel2(C,HC,JBATABS,NBATCH_MK2,
+                  IF (MK2_DIFF .LE. max_MK2_DIFF)
+     &            call sigden_rel2(C,HC,JBATABS,NBATCH_MK2,
      &                             LBATS,LEBATS,I1BATS,IBATS,
      &                             LUSC37,LLUHC,T,T_BUFF,
      &                             ISIGDEN,WORK(KVEC3),IASTP,IBSTP,
@@ -3615,7 +3633,6 @@ C                 end if
 *
  60       CONTINUE
             if (ISIGDEN.eq.1) then
-              NTEST = 000
               if (NTEST.ge.100) then
                  WRITE(LUWRT,*)
                  WRITE(LUWRT,*) ' **********************************'
@@ -3626,7 +3643,6 @@ C                 end if
                  WRITE(LUWRT,*)
                  CALL WRTMATMN(HC,1,LS,1,LS,LUWRT)
               end if
-              NTEST = 000
               KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
 #if defined (VAR_MPI2)
               starttimer = MPI_WTIME()
@@ -4662,23 +4678,23 @@ C
 #if defined (VAR_MPI2)
 C
 C                    check for active blocks
-CSK                     WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
-CSK     &                                IC_OFF_BLK+JBLK-1
-CSK                     WRITE(LUWRT,*) ' IOFF_SCR_C is', IOFF_SCR_C
-CSK                     WRITE(LUWRT,*) ' JLEN is for IST_C_BLK_CT + JBLK', 
-CSK     &                                JLEN, IST_C_BLK_CT + JBLK - 1
+                     WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
+     &                                IC_OFF_BLK+JBLK-1
+                     WRITE(LUWRT,*) ' IOFF_SCR_C is', IOFF_SCR_C
+                     WRITE(LUWRT,*) ' JLEN is for IST_C_BLK_CT + JBLK', 
+     &                                JLEN, IST_C_BLK_CT + JBLK - 1
 C
                      IF(ISCLFAC_GROUP(IC_OFF_BLK+JBLK-1).eq.0) GOTO 8888
-CSK                     WRITE(LUWRT,*) ' Read-in for JBLK',JBLK,
-CSK     &                                IC_OFF_BLK+JBLK-1
+                     WRITE(LUWRT,*) ' Read-in for JBLK',JBLK,
+     &                                IC_OFF_BLK+JBLK-1
 C
 C                    new offset in MPI-2 parallel file
 C
                      IOFF_SCR_C_EXPL = IOFF_SAVE + IOFF_SCR_C 
-CSK                     WRITE(LUWRT,*) ' Read-in at file offset',
-CSK     &                                IOFF_SCR_C_EXPL
-CSK                     WRITE(LUWRT,*) ' memory offset',
-CSK     &                                JOFF
+                     WRITE(LUWRT,*) ' Read-in at file offset',
+     &                                IOFF_SCR_C_EXPL
+                     WRITE(LUWRT,*) ' memory offset',
+     &                                JOFF
 C
 C                    read block in core
 C

@@ -490,7 +490,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 *
       LBLK = -1
       IBOFF = 0
-      call rewino(LUSCR)
+      call REWINE(LUSCR,-1)
       call itods(-1,1,-1,LUSCR)
 *
 * Type of alpha and beta strings
@@ -513,7 +513,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
             IBOFF = IBOFF + NBLK_MS2(IMK2_R-1)
           end if
 *
-          call rewino(LUSCR)
+          call REWINE(LUSCR,-1)
           NBL_C = NBLK_MS2(IMK2_R)
           CALL COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
           CALL ITODS(-1,1,-1,LUSCR)
@@ -561,7 +561,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 **. Info on block structure of space
 *
 *
-CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
+CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
 *. Number of terms to be printed
           IF (NTEST.GE.100) THEN
             THRES = 0.0D0
@@ -693,7 +693,7 @@ CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
       IF(THRES .LT. 0.0D0 ) THRES = ABS(THRES)
       CNORM = 0.0D0
  2001 CONTINUE
-      IF( ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF( ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       IIDET = 0
       ILOOP = ILOOP + 1
       IF ( ILOOP  .EQ. 1 ) THEN
@@ -759,7 +759,7 @@ CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
             CALL IFRMDS(IDET,1,-1,LUC)
             CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
             if (NTEST.ge.10) then
-              write(6,'(A,I8)') ' Number of elements readin ',IDET
+              write(6,'(A,I8)') ' Number of elements read in ',IDET
             end if
             if (NTEST.ge.1000) then
               write(6,*)
@@ -790,25 +790,19 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                      IIDET = IIDET + 1
                      IF( ITRM .LE. MAXTRM ) THEN
                         CNORM = CNORM + C(IDET) ** 2
-                        WRITE(6,'(A)')
-                        WRITE(6,'(A)')
-     &                       '                 =================== '
-                        WRITE(6,*)
-*
-                        WRITE(6,'(A,I8,A,E14.8)')
+                        WRITE(6,'(A,I8,A,E14.8/A)')
      &                   '  Coefficient of combination ',IDET,' is ',
-     &                       C(IDET)
-                        WRITE(6,'(A)')
-     &                   '  Corresponding alpha - and beta string '
+     &                       C(IDET),
+     &                   '  Corresponding alpha- and beta-strings'
                         IF(IUSLAB.EQ.0) THEN
-                           WRITE(6,'(4X,10I4)')
+                           WRITE(6,'("alpha",20I4)')
      &                          (IASTR(IEL,IA),IEL = 1, NAEL )
-                           WRITE(6,'(4X,10I4)')
+                           WRITE(6,'(" beta",20I4)')
      &                          (IBSTR(IEL,IB),IEL = 1, NBEL )
                         ELSE
-                           WRITE(6,'(4X,10(1X,A6))')
+                           WRITE(6,'("alpha",10(1X,A6))')
      &                      (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
-                           WRITE(6,'(4X,10(1X,A6))')
+                           WRITE(6,'(" beta",10(1X,A6))')
      &                      (IOBLAB(IBSTR(IEL,IB)),IEL = 1, NBEL )
                         END IF
                      END IF
@@ -831,7 +825,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
 *
       IDET = 0
-      IF(ICISTR .GE. 2 ) CALL REWINO(LUC)
+      IF(ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
       CALL ISETVC(NCPMT,0    ,10*NOCCLS)
       CALL SETVEC(WCPMT,0.0D0,10*NOCCLS)
       DO JBLOCK = 1, NBL_C
@@ -1742,12 +1736,7 @@ C     &                    ISPINFREE)
       END DO
 *
       IF( MYPROC .eq. MASTER ) THEN
-        write(6,*) ' '
-        write(6,'(A,I10)')
-     &   '   The largest block of two-electron integrals is',LMAXE2LST
-      ELSE
-        write(7,*) ' '
-        write(7,'(A,I10)')
+        write(6,'(/A,I10)')
      &   '   The largest block of two-electron integrals is',LMAXE2LST
       END IF
 *
@@ -2793,7 +2782,7 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              MXBTP = NOCTPB
            END IF
            LTSSA = NSSOA(IASM,IATP)
-           XLTSSA = FLOAT(LTSSA)
+           XLTSSA = LTSSA
            DO 100 IBTP = 1, MXBTP
 *
              IF(NTEST.GE.10) THEN
@@ -3812,7 +3801,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *
       IB = 1
       IA = 1
-      ISM = 1
+      IASM = 1
       IFRST = 1
       NBATCH = IOFFBTC-1
       IBLOCK = IOFFBLK-1
@@ -3828,35 +3817,35 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
       IFRST = 1
 *. Loop over blocks in batch
  1000 CONTINUE
-*. Next block : Order is currently : IB, IA, ISM  (leftmost inner loop )
+*. Next block : Order is currently : IB, IA, IASM  (leftmost inner loop )
       IF(IFRST.EQ.0) THEN
-        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+        call nxt_tts(ITTSS_ORD,IA,IB,IASM,IFINI,NOCTPA,NOCTPB,NSMST)
       END IF
       IFRST = 0
       IF(IFINI.EQ.1) GOTO 2002
 *. Should this block be included
-      IF(IBLTP(ISM).EQ.0) GOTO 1000
-      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IBLTP(IASM).EQ.0) GOTO 1000
+      IF(IBLTP(IASM).EQ.2.AND.IA.LT.IB) GOTO 1000
       IF(IOCOC(IA,IB).EQ.0) GOTO 1000
-C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
+C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(IASM)
 *. can this block be included
-      IBSM = ISMOST(ISM)
-      NSTA = NSSOA(ISM,IA)
+      IBSM = ISMOST(IASM)
+      NSTA = NSSOA(IASM,IA)
       NSTB = NSSOB(IBSM,IB)
       LBLOCK= NSTA*NSTB
-      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+      IF(IBLTP(IASM).EQ.1.OR.(IBLTP(IASM).EQ.2.AND.IA.NE.IB)) THEN
         LBLOCKP = NSTA*NSTB
-      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+      ELSE IF (IBLTP(IASM) .EQ. 2.AND.IA.EQ.IB) THEN
         LBLOCKP = NSTA*(NSTA+1)/2
       END IF
-C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
       IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
         NBLOCK = NBLOCK + 1
         IBLOCK = IBLOCK + 1
         LBATCH(NBATCH) = LBATCH(NBATCH)+1
         IBATCH(1,IBLOCK) = IA
         IBATCH(2,IBLOCK) = IB
-        IBATCH(3,IBLOCK) = ISM
+        IBATCH(3,IBLOCK) = IASM
         IBATCH(4,IBLOCK) = IBSM
         IBATCH(5,IBLOCK) = LENGTH+1
         IBATCH(6,IBLOCK) = LENGTHP+1

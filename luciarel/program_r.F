@@ -266,20 +266,17 @@ C
      &                    MPI_INTEGER8,MASTER,MPI_COMM_WORLD,IERR)
         END IF
 C
-        write(LUWRT,*) ' '
-        WRITE(LUWRT,'(2X,A)')
+        WRITE(LUWRT,'(/2X,A)')
      & '=============================================================='
-        WRITE(LUWRT,'(2X,A)')
+        WRITE(LUWRT,'(2X,A/)')
      & '==>  allocation of process unique T (integral) elements    <=='
-        write(LUWRT,*) ' '
         DO II = 1, NMPROC
         WRITE(LUWRT,'(2X,A,1X,I4,1X,A,I12,1X,A)')
      & 'process',II-1,'allocates for ',IT_TTOL(II),'elements          '
         END DO
       
-        WRITE(LUWRT,'(2X,A)')
+        WRITE(LUWRT,'(2X,A/)')
      & '=============================================================='
-        write(LUWRT,*) ' '
 
         IF(SPLIT_IJKL) CALL MPIXMEM_FREE( IT_TTOL )
 C
@@ -442,7 +439,7 @@ C
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
         ECOREP = ECORE
 C
-        IF(ICISTR.GE.2) CALL REWINO(LUDIA)
+        IF(ICISTR.GE.2) CALL REWINE(LUDIA,-1)
         IRECO = 1
         CALL GASDIAT_REL(WORK(KVEC1),LUDIA,ECOREP,ICISTR,IHAM12,
      &               WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
@@ -536,9 +533,8 @@ C
 C
       IF( INICI .lt. 0 )THEN
         if ( CIRUN.eq.'SIGMAD'.or.CIRUN.eq.'SIGMA ') GOTO 88 
-          WRITE(LUWRT,'(2X,A)') 
-     &    ' restart file LUCVECT_REL.0 will be copied to'//
-     &    ' MPI-readable format ...'
+          WRITE(LUWRT,'(/A,A)') '  MPI restart file will be'//
+     &    ' prepared from C-vector file: KRCI_CVECS.',SYMFLABEL
 C
          IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
 C
@@ -547,7 +543,8 @@ C
      &                         WORK(KNODELIST),WORK(KBLOCKLIST),
      &                         NBLOCK,NROOT,IRC)
 C
-        WRITE(LUWRT,'(2X,A)') ' restart file is now in place! '
+        WRITE(LUWRT,'(A/)') '  file conversion from standard I/O'//
+     &                      ' to MPI-IO finished.'
 C
       END IF
  88   CONTINUE
@@ -638,7 +635,7 @@ C
 C
             IF( IAM_NOT_INV .eq. 0 ) GOTO 405
 C
-            IF( MYPROC .eq. MASTER )  CALL REWINO(LUHC)
+            IF( MYPROC .eq. MASTER )  CALL REWINE(LUHC,-1)
 C
             LBLK = -1
 C
@@ -713,16 +710,14 @@ C
 C
       IF( IAM_NOT_INV .eq. 0 ) GOTO 505
 C
-      CALL REWINO(LUC)
-C
       LBLK = -1
 C     copy c-vectors from nodes and master back to the master
 C     purpose: master does the ana-stuff
 C
 C     NOTE: only C-vectors will be saved.
 C
-      CALL REWINO(LUC)
-      CALL REWINO(LUSC41)
+      IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
+      CALL REWINE(LUSC41,-1)
       DO JROOT = 1, NROOT
         CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
      &                            WORK(KNODELIST),NUM_BLOCKS,
@@ -731,12 +726,12 @@ C
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC)
       END DO
       IF(MYPROC.EQ.MASTER) THEN
-        CALL REWINO(LUSC41)
-        CALL REWINO(LUC)
+        CALL REWINE(LUSC41,-1)
+        CALL REWINE(LUC,-1)
         DO JROOT = 1, NROOT
           CALL copvcdc(LUSC41,LUC,WORK(KVEC1),0,IRC,LBLK)
         ENDDO
-        CALL REWINO(LUC)
+        CALL REWINE(LUC,-1)
       END IF
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
@@ -769,7 +764,7 @@ C
 C
 #endif
       LBLK = -1
-      call rewino(LUC) 
+      call REWINE(LUC,-1)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
         IF(MYPROC.EQ.MASTER) THEN
@@ -780,13 +775,12 @@ C
         END IF
       END IF
       NPTESTVAR = 00
-      call rewino(LUC)
+      call REWINE(LUC,-1)
       do JROOT=1,NROOT,1
-        call rewino(LUSC61)
+        call REWINE(LUSC61,-1)
         call copvcdc(LUC,LUSC61,WORK(KVEC2),0,IRC,LBLK)
-        call rewino(LUSC61)
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,'(A,I3)')
+        call REWINE(LUSC61,-1)
+        WRITE(LUWRT,'(/A,I3)')
      &  ' ***************************************************'
         WRITE(LUWRT,'(A,I3)')
      &  ' Analysis of Optimized Wave Function for ROOT = ',JROOT
@@ -797,7 +791,7 @@ C
      &                  WORK(KPCBLTP),LUSC61,LUSC37,
      &                  ICISTR,IRC)
       end do
-      call rewino(LUC) 
+      call REWINE(LUC,-1) 
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
         IF(MYPROC.EQ.MASTER) THEN
@@ -1651,8 +1645,8 @@ CTF           CALL SCLH2(XLAMBDA)
               LBLOCK = MXSOOB
             END IF
             call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
-            CALL REWINO(LUC)
-            CALL REWINO(LUSC39)
+            CALL REWINE(LUC,-1)
+            CALL REWINE(LUSC39,-1)
             DO JROOT = 1, NROOT
 C             CALL COPVCD_REL(LUIN,LUOUT,SEGMNT,IREW,LBLK)
               CALL COPVCD_REL(LUSC39,LUC,WORK(KVEC1),0,LBLK)

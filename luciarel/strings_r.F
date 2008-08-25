@@ -2573,7 +2573,7 @@ C?        call memchk
 ***********************************************************************
       SUBROUTINE GXFSTR(ILA,ILB,IRA,IRB,ICA,IAA,ICB,IAB,NGAS,ICON)
 *
-* Left type defined by ILA, ILB
+* Left  type defined by ILA, ILB
 * Right type defined by IRA, IRB
 * 
 * Excitation operator defined by ICA, IAA, ICB,IAB
@@ -3936,7 +3936,7 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *. Local scratch
       DIMENSION IOCTYP(MXPNGAS)
 *
-      CALL QENTER('STRTY')
+      CALL QENTER('STRTYP_REL')
       NTESTL = 000
       NTEST = MAX(IPRNT,NTESTL)
 *. As input NCISPC GAS spaces IGSOCCX are given.
@@ -4394,7 +4394,7 @@ C     END IF
         CALL IWRTMA(NOCTYP,1,NSTTYP,1,NSTTYP)
       END IF
 *
-      CALL QEXIT('STRTY')
+      CALL QEXIT('STRTYP_REL')
 *
       RETURN
       END

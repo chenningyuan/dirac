@@ -39,7 +39,9 @@ C
 ***********************************************************************
       SUBROUTINE COPNBLKD(LUIN,LUOUT,SEGMNT,NBLOCK,IREW,LBLK)
 *
-* Copy Nblocks from FILE LUIN to file LUOUT
+* If (LUOUT .gt. 0) Copy Nblocks from FILE LUIN to file LUOUT
+*
+* If (LUOUT .le. 0) Skip Nblocks on FILE LUIN
 *
 *
 * Type of file LUOUT is inherited from LUIN
@@ -56,19 +58,16 @@ C
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
-        CALL REWINE( LUIN ,LBLK)
-        CALL REWINE( LUOUT ,LBLK)
+        REWIND  LUIN
+        if (LUOUT .gt. 0) REWIND  LUOUT
       END IF
 
       DO IIBLK = 1, NBLOCK
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
+        ELSE
           READ(LUIN) LBL
-          WRITE(LUOUT) LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-          IF(LBL.GE.0) CALL ITODS (LBL,1,-1,LUOUT)
+          if (LUOUT .gt. 0 .AND. LBL .ge. 0) WRITE(LUOUT) LBL
         END IF
         IF( LBL .GE. 0 ) THEN
           IF(LBLK .GE.0 ) THEN
@@ -76,11 +75,15 @@ C
           ELSE
             KBLK = -1
           END IF
-          CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IAMPACK.EQ.0) THEN
-            CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+          IF (LUOUT .gt. 0) THEN
+            CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
+            IF(IAMPACK.EQ.0) THEN
+              CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+            ELSE
+              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+            END IF
           ELSE
-            CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+            CALL SKPRCD2(LBL,-1,LUIN)
           END IF
         END IF
         IF(LBL.EQ.-1) THEN
@@ -249,6 +252,7 @@ C
 #endif
 #include "parluci.h"
 #include "files_r.inc"
+#include "cstate.inc"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL
 *
@@ -315,26 +319,36 @@ C
      &     Form='UNFORMATTED')
 *. CI vector
       LUC =   61
-      LUC_MPIN ="LUCVECT_REL"
-#if defined (VAR_MPI2)
-      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUC_MPI,'(A11,A1,I1)') LUC_MPIN,'.',MYPROC
-         LUC_MPIL=13
-      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUC_MPI,'(A11,A1,I2)') LUC_MPIN,'.',MYPROC
-         LUC_MPIL=14
-      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUC_MPI,'(A11,A1,I3)') LUC_MPIN,'.',MYPROC
-         LUC_MPIL=15
-      ELSE
-        CALL QUIT("NMPROC.GT.1000! DISKUN_REL: That is too much for me")
-      ENDIF
-#else
-      NLUC_MPI=LUC_MPIN
-      LUC_MPIL=11
-#endif
-      Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
-     &     Form='UNFORMATTED')
+      LUC_MPIN ="KRCI_CVECS"
+      LUC_MPIL=12
+      IF( IREFSM .eq. 1)THEN
+         SYMFLABEL = 'a'
+      ELSE IF( IREFSM .eq. 2 )THEN
+         SYMFLABEL = 'b'
+      ELSE IF( IREFSM .eq. 3 )THEN
+         SYMFLABEL = 'c'
+      ELSE IF( IREFSM .eq. 4 )THEN
+         SYMFLABEL = 'd'
+      ELSE IF( IREFSM .eq. 5 )THEN
+         SYMFLABEL = 'e'
+      ELSE IF( IREFSM .eq. 6 )THEN
+         SYMFLABEL = 'f'
+      ELSE IF( IREFSM .eq. 7 )THEN
+         SYMFLABEL = 'g'
+      ELSE IF( IREFSM .eq. 8 )THEN
+         SYMFLABEL = 'h'
+      ELSE 
+        WRITE(6,*) '  *** Error in DISKUN_REL *** assignment of'//
+     &              ' symmetry label to KRCI_CVECS file failed'   
+        CALL QUIT("*** Error in DISKUN_REL *** assignment of 
+     &            symmetry label to KRCI_CVECS file failed ")
+      END IF
+      IF( MYPROC .eq. MASTER )THEN 
+C
+         WRITE (NLUC_MPI,'(A10,A1,A1)') LUC_MPIN,'.',SYMFLABEL
+         Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
+     &        Form='UNFORMATTED')
+      END IF
 *. Sigma vector file
       LUHC =  62
       LUHC_MPIN ="HCFILE_REL"
@@ -625,7 +639,7 @@ C
 #include "parluci.h"
 *
       CLOSE(UNIT=LUDIA,STATUS='KEEP')
-      CLOSE(UNIT=LUC,STATUS='KEEP')
+      IF( MYPROC .eq. MASTER ) CLOSE(UNIT=LUC,STATUS='KEEP')
       CLOSE(UNIT=LUHC,STATUS='KEEP')
       CLOSE(UNIT=LUSC1,STATUS='KEEP')
       CLOSE(UNIT=LUSC2,STATUS='KEEP')

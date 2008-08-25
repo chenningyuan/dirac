@@ -263,7 +263,7 @@ C
 *  LUSC61: logical unit left  (S vector, identical)
 *
       LBLK = -1
-      CALL REWINO(LUSC61)
+      CALL REWINE(LUSC61,-1)
 *. Loop over vectors of sigma and C : MK2 space + Real/Imag
       DO IRIL = 1,2,1
         if (NTEST.ge.50) write(6,*) 'left r/i is  ',IRIL
@@ -314,7 +314,7 @@ C
             end do
 *           ^ End of loop over S-blocks in batch
 *
-            call REWINO(LUSC62)
+            call REWINE(LUSC62,-1)
             do IRIR = 1,2,1
               if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
               if (IRIR.EQ.2) then
@@ -327,7 +327,7 @@ C
                 IBCTP = IST_FOR_DT(2,IMK2_R)
 *. Copy blocks with given MK2 to LUSC37
 *  Explicit selection and access done in dblocks (analogy to sblocks)
-                CALL REWINO(LUSC37)
+                CALL REWINE(LUSC37,-1)
                 NBL_C = NBLK_MS2(IMK2_R)
                 CALL COPNBLKD(LUSC62,LUSC37,CB,NBL_C,0,LBLK)
 C                    COPNBLKD(LUIN,LUOUT,SEGMNT,NBLOCK,IREW,LBLK)
@@ -529,8 +529,8 @@ c       I = 2
      &       status='UNKNOWN',form='FORMATTED')
         open(unit=LUMOUTI,file=NLUMOUTI_MPI(1:LUMOUTRI_MPIL),
      &       status='UNKNOWN',form='FORMATTED')
-        call rewino(LUMOUTR)
-        call rewino(LUMOUTI)
+        call rewine(LUMOUTR,-1)
+        call rewine(LUMOUTI,-1)
         ISUM = 0
         ISTORE = 0
         do ISYM=1,NIRR_PN,1

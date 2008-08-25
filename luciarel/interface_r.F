@@ -3687,9 +3687,7 @@ C?            print '(7i6)',ijkl,ij,kl,i,j,k,l
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,2*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LU2INT,2,Scr,KBUFF*NLONGER,IAD13)
                 ijkl=ijkl-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -3843,9 +3841,7 @@ C?              print '(7i6)',ijkl,ij,kl,i,j,k,l
                 Else
                   iDisk=iDAdr(iBatch)
                   Do iSkip=1,iRec
-                    Call DaFile(LU2INT,0,Scr,2*lTr2Rec,iDisk)
                   End Do
-                  Call DaFile(LU2INT,2,Scr,KBUFF*NLONGER,IAD13)
                   ijkl=ijkl-iRec*lTr2Rec
                   iRecOld=iRec
                 End If
@@ -4899,14 +4895,12 @@ C. Interface to LUCAS integrals
 *     open the transformed one-electron integral file                  *
 *----------------------------------------------------------------------*
       LuX = LuOne
-      Call DaName(LuX,'TRAONE')
 *----------------------------------------------------------------------*
 *     Set up the scatter/gather list and read table of contents        *
 *----------------------------------------------------------------------*
       iDisk=0
       Call GSList(IOLIST,8,iToc,64,ECORE,RtoI,nSym,1,
      &            nBas,8,nOrb,8,nFro,8,nDel,8,Name,2*4*mxOrb/ItoB)
-      Call DaFile(LuX,4,IOList,iDum,iDisk)
 *----------------------------------------------------------------------*
 *     Terminate procedure                                              *
 *----------------------------------------------------------------------*
@@ -5635,7 +5629,6 @@ CTF
                 Else
                    Nintrc = nIJKL -(Nrec-1)*Ltr2Rec
                 End if
-                Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
                 Ioff = Ioff + Nintrc
    50        Continue
 *
@@ -6432,9 +6425,7 @@ C?    write(6,*) 'ILEN is    ',ILEN
 *
           Inquire (File=FNIPH,exist=okay)
           If ( okay ) Then
-            Call DaName(LUIPH,FNIPH)
             IAD16 = 0
-            Call DaFile(LUIPH,2,IPAD,16,IAD16)
 *
 C           CALL GSLIST(IOLIST,23,NACTEL_M,1,ISPIN,1,NSYM,1,LSYM,1,
 C    &             NFRO_M,MXNSPIR,NISH_M,MXNSPIR,NASH_M,MXNSPIR,
@@ -6452,11 +6443,8 @@ C    &             x40,n40,x41,n41,x42,n42,x43,n43,x44,n44,
 C    &             x45,n45,x46,n46,x47,n47,x48,n48,x49,n49)
 *
             IAD16 = IPAD(1)
-            call dafile(LUIPH,4,IOLIST,102,IAD16)
 *
             IAD16 = IPAD(2)
-            call dafile(LUIPH,2,CMOAO(1),RTOI*ILEN,IAD16)
-            call daclos(LUIPH,FNIPH)
 *
             if (NTEST.ge.1) then
               write(6,*) 'Checking read coeffs from JOBIPH:'
@@ -6883,7 +6871,6 @@ C?    write(6,*) 'ILEN is    ',ILEN
 * ('O' stands for the type 'octane')
       if (ARCHI.ne.'SGO') then
          IADD2 = 0
-         call dafile(LU2,2,IAD2(1),3,IADD2)
          if (NTEST.ge.3) then
             write(6,*) 'IADD2 is    ',IADD2
             write(6,*) 'Checking address vector IAD2:'
@@ -6899,7 +6886,6 @@ C?    write(6,*) 'ILEN is    ',ILEN
          end do
 *
 * Read sf integrals from file ...
-         call dafile(LU2,2,AOTRISM(1),2*ILEN,IADD2)
 *
 * Write ints to plain file for SGI run ...
          rewind LUSGI1
@@ -7350,7 +7336,6 @@ CTF               ISPQR = IPGMULT(ISPQ,ISR)
       IAD13 = 0
       LUSGITE = LUPRP
       if (ARCHI.eq.'RS6') then
-         call dafile(LU2INT,2,SWEINT(1),2*IGLSUM,IAD13)
 *
 *  Write for SGI read
          if (IPRINT.ge.2) then

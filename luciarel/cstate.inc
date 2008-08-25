@@ -4,4 +4,5 @@
      &              ETHRES,CTHRES,EROOT(100),NMS2VAL,MS2VAL(100),
      &              NBLK_MS2(100),NBAT_MS2(100),IBLK_MS2(100),
      &              IBAT_MS2(100)
+      CHARACTER*1 SYMLABEL
       

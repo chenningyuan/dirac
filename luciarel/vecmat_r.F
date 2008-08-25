@@ -139,8 +139,8 @@ C
 *
 *. and now : Let another subroutine complete the taks
 *
-      CALL REWINO(LUIN)
-      CALL REWINO(LUUT)
+      CALL REWINE(LUIN,-1)
+      CALL REWINE(LUUT,-1)
 *
 *. Print for testing initial vectors out
 *
@@ -157,7 +157,7 @@ C?      ELSE
 C?        CALL WRTVCD(WORK(KLBLI),LUIN,0,-1)
 C?      END IF
 C?    END DO
-C?    CALL REWINO(LUIN)
+C?    CALL REWINE(LUIN,-1)
 *
       write(6,*) ' ICISTR = ', ICISTR
       DO IROOT = 1, NROOT
@@ -166,23 +166,23 @@ C?    CALL REWINO(LUIN)
           LLUIN = LUIN
         ELSE
           IF(ICISTR.EQ.1) THEN
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             CALL FRMDSC(WORK(KLBLI),NCOMBI,-1,LUIN,IMZERO,IAMPACK)
             CALL  TODSC(WORK(KLBLI),NCOMBI,-1,LUSCR)
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           ELSE
 *. With the elegance of an elephant
-            CALL REWINO(LUSCR)
-            CALL REWINO(LUIN)
+            CALL REWINE(LUSCR,-1)
+            CALL REWINE(LUIN,-1)
             DO JROOT = 1, IROOT
-              CALL REWINO(LUSCR)
+              CALL REWINE(LUSCR,-1)
               CALL COPVCD_REL(LUIN,LUSCR,WORK(KLBLI),0,-1)
             END DO
-            CALL REWINO(LUSCR)
+            CALL REWINE(LUSCR,-1)
 C?          write(6,*) ' Vector copied to LUSCR '
 C?          CALL WRTVCD(WORK(KLBLI),LUSCR,1,-1)
-C?          CALL REWINO(LUSCR)
+C?          CALL REWINE(LUSCR,-1)
             LLUIN = LUSCR
           END IF
         END IF
@@ -201,8 +201,8 @@ C?          CALL REWINO(LUSCR)
 *
       IF(ICOPY.NE.0) THEN
 *. Copy expanded vectors to LUIN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUUT)
+        CALL REWINE(LUIN,-1)
+        CALL REWINE(LUUT,-1)
         DO IROOT = 1, NROOT
           IF(ICISTR.EQ.1) THEN
             CALL FRMDSC(WORK(KLBLU),NCOMBU,-1,LUUT,IMZERO,IAMPACK)
@@ -217,7 +217,7 @@ C?    WRITE(6,*) ' OUtput  vectors in EXPCIV '
 C?    WRITE(6,*) ' OUtput  vectors in EXPCIV '
 C?    WRITE(6,*) ' OUtput  vectors in EXPCIV '
 *
-C?    CALL REWINO(LUUT)
+C?    CALL REWINE(LUUT,-1)
 C?    DO IROOT = 1, NROOT
 C?    WRITE(6,*) ' Root number ', IROOT
 *
@@ -326,7 +326,7 @@ C           CALL TODSC(VECUT,NELMNT,-1,LUUT)
            CALL NXTBLK(IATPIN,IBTPIN,IASMIN,NOCTPA,NOCTPB,NSMST,
      &                 IBLTPIN,IDC,NONEWIN,IABIN,ITTSS_ORD)
            IF(NONEWIN.NE.0) THEN
-             CALL REWINO(LUIN)
+             CALL REWINE(LUIN,-1)
              IATPIN = 1
              IBTPIN = 0
              IASMIN = 1
@@ -1640,7 +1640,7 @@ C        Write the vector without markers in one block
          CALL TODSC(VEC1,NDIM,-1,LU)
       ELSE
 C       Write the vector with the block format of file LUFORM
-        CALL REWINO(LUFORM)
+        CALL REWINE(LUFORM,-1)
         IBOT = 1
 C       Loop over records
  1000   CONTINUE
