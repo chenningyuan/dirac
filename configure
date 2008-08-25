@@ -41,7 +41,7 @@ initialize ()  {
 #   Initialize script
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-quick=0
+quick=0 # otherwise 1 if "-quick" parameter in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
@@ -77,7 +77,7 @@ usage ()  {
    echo 'Usage: '$0' [Flags]'
    echo ' Flags:'
    echo '   --help                       : Print this'
-   echo '   --quick                      : Do not prompt user'
+   echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90'
    echo '   --cc=CC                      : Set C compiler to CC'
@@ -1175,16 +1175,16 @@ echo 'SCRATCH DIRECTORY'
 echo
 
 if [ -z "$worksp" ]; then
-      get_worksp
+       get_worksp
 else
-   if [ ! -d $worksp ]; then
-      echo 'Scratch directory '$worksp' you typed does not exist!'
-      get_worksp
+   if [ ! -d $worksp -a $quick=0]; then
+       echo 'Scratch directory '$worksp' you does not exist! Repeat !'
+       get_worksp
    fi
 fi
 #
-echo 'Scratch directory: '$worksp'/$USER'
-echo
+$echo 'Scratch directory: '$worksp'/$USER'
+$echo
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1196,16 +1196,18 @@ get_worksp ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
    scr_quick=$quick
+
    while [ -z "$worksp" ]
    do
+
       # first extract from Makefile.config
       scratchguess=`./config.status SCRATCHDIR`
       if [ $IPRINT -ge "5" ];  then 
-         echo 'get_worksp: extracted scratchguess='$scratchguess
+         echo 'get_worksp: from Makefile.config extracted scratchguess='$scratchguess
       fi
 
-      if [ ! -z "$scratchguess" -a -d "$scratchguess" ]; then
-         worksp=$scratchguess
+      if [ ! -z "$scratchguess" ]; then
+         worksp=$scratchguess # just assign, do not verify yet...
       elif [ -d '/work' ]; then
          worksp='/work'
       elif [ -d '/scratch' ]; then
@@ -1216,14 +1218,26 @@ get_worksp ()  {
          worksp='/temp'
       elif [ -d '/tmp' ]; then
          worksp='/tmp'
+      elif [ -d '/var/tmp' ]; then
+         worksp='/tmp'
       else
          worksp=
-         scr_quick=0
+         scr_quick=0 # nothing assigned, switch to PROMPT mode
       fi
 
-      if [ $scr_quick = 0 ]; then
-         $echo 'Default scratch space in script: ' $worksp
-         $echo 'Press ENTER, if you agree with that, or type a new directory for the scratch: \c'
+      if [ $scr_quick = 0 ]; then # in the prompt mode
+
+         if [ ! -z "$worksp" ]; then
+           if [ ! -z "$scratchguess" ]; then
+             $echo 'Found scratch space in the old Makefile.config: ' $worksp
+           else
+             $echo 'Found scratch space among the system directories: ' $worksp
+           fi
+           $echo 'Press ENTER, if you agree, or type a new directory for the scratch: \c'
+         else
+           $echo 'No default directory found - type a new directory for the scratch: \c'
+         fi
+
          read answer
       else
          answer=
@@ -1231,9 +1245,10 @@ get_worksp ()  {
       if [ ! -z "$answer" ]; then
          worksp=$answer
       fi
+
       # verify the work-directory, and/or confirm
       if [ ! -d $worksp ]; then
-         echo 'Scratch directory '$worksp' does not exist!'
+         echo 'WARNING: Scratch directory '$worksp' does not exist!'
          if [ $quick = 0 ]; then
             ok=
             while [ -z "$ok" ]; do
@@ -1249,6 +1264,12 @@ get_worksp ()  {
                   ;;
                esac
             done
+         else
+         # ... no prompt mode - check if worksp is empty...
+            if [ -z $worksp ]; then
+               worksp="ASSIGN ME"
+               $echo "...you need to fix the scratch directory in Makefile.config..." 
+            fi
          fi
       fi
    done # end of case
