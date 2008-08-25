@@ -1018,29 +1018,34 @@ if [ $IPRINT -ge "7" ];  then
    echo 'set_installdir: variable quick='$quick
 fi
 
-# if varible empty, 
+# if the variable empty, 
 if [ -z "$INSTALL_DIR" ]; then
      set_install_directory
 else
    # verify entered (as parameter) instalation directory
    if [ ! -d "$INSTALL_DIR" ]; then
-     echo "ERROR: $INSTALL_DIR (entered as paramater) does not exist "
+     $echo "ERROR: $INSTALL_DIR (you typed as the paramater) does not exist \n "
      # no exit, rather repeat searching for the directory
      set_install_directory
    fi
 fi
 
-# ... finally print-out the veryfied installation directory
-$echo 'Install directory for DIRAC executable and script: '$INSTALL_DIR
+#-------------------------------------------------------------------
+#     ... finally print-out the veryfied installation directory
+#-------------------------------------------------------------------
+$echo 'Install directory for DIRAC executable and script: '
+$echo $INSTALL_DIR
 echo
 }
 
 set_install_directory () {
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#      Determines the proper installation directory
+#                     Determines the proper installation directory
 #
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#  always called when INSTALL_DIR(might come in as the parameter) is not functional
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
    # first null the variable
    INSTALL_DIR=
@@ -1051,6 +1056,7 @@ set_install_directory () {
       # ... find out the variable which is in the Makefile.config file (if there is any)
       curr=`./config.status INSTALLDIR`
 
+      # ... if $curr not empty AND is valid directory 
       if [ ! -z "$curr" -a -d "$curr" ]; then
 
          $echo 'Found (in Makefile.config) proper directory for installation of' \
@@ -1076,26 +1082,18 @@ set_install_directory () {
             INSTALL_DIR=$curr
          fi
       else
-         # use the current directory 
+      # when the previously used directory "$curr" is no longer valid 
          curr=`pwd`
          INSTALL_DIR=$curr
-         $echo '...using current directory for installation: '$curr' '
+         $echo '...using the current directory (pwd) for the DIRAC installation:'
+         $echo $curr
       fi
-
-      # verify ... if the directory does not exist use the current directory
-      #if [ ! -d "$curr" ]; then
-      #   echo $curr ' : directory does not exist ! Using current directory.'
-      #   curr=`pwd`
-      # fi
-
-     # if [ -z "$INSTALL_DIR" ]; then
-     #    INSTALL_DIR=$curr
-     # fi
 
       # verify install directory
       if [ ! -d "$INSTALL_DIR" ]; then
          echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again !"
          INSTALL_DIR=
+         # ... continues within the "while" cycle
       fi
 
    done
@@ -1200,7 +1198,7 @@ get_worksp ()  {
    scr_quick=$quick
    while [ -z "$worksp" ]
    do
-      # extract from Makefile.config
+      # first extract from Makefile.config
       scratchguess=`./config.status SCRATCHDIR`
       if [ $IPRINT -ge "5" ];  then 
          echo 'get_worksp: extracted scratchguess='$scratchguess
@@ -1224,7 +1222,8 @@ get_worksp ()  {
       fi
 
       if [ $scr_quick = 0 ]; then
-         $echo 'Default scratch space in script (default: '$worksp'): \c'
+         $echo 'Default scratch space in script: ' $worksp
+         $echo 'Press ENTER, if you agree with that, or type a new directory for the scratch: \c'
          read answer
       else
          answer=
@@ -1256,6 +1255,7 @@ get_worksp ()  {
 }
 
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 get_cpp_flags(){
 
   if [ "$mesp" = "mpi" ]; then
@@ -1281,6 +1281,7 @@ get_cpp_flags(){
 }
 
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 set_bit_arch(){
 # Special flags for 64 bit machines
   if [ "$bit_set" = "64" ]; then
