@@ -973,7 +973,6 @@ C     large enough gap from the next lower/higher energies
 C
    1  EMIN = 1.E16
       EMAX = - 1.E16
-      WRITE(LUPRI,*) ' IRNGE1, IRNGE2',IRNGE1, IRNGE2
 C
 C     Set start and end of search region
 C
@@ -982,6 +981,7 @@ C
       ELSEIF (IRNGE1.GT.0) THEN
          ISTART = IRNGE1
       ELSE
+         WRITE(LUPRI,*) ' IRNGE1:',IRNGE1
          CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
@@ -990,6 +990,7 @@ C
       ELSEIF (IRNGE2.GT.0) THEN
          IEND = IRNGE2
       ELSE
+         WRITE(LUPRI,*) 'IRNGE2:',IRNGE2
          CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
