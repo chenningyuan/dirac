@@ -889,6 +889,7 @@ aoresponse/matrix_mod.o \\
 aoresponse/dirac_interface.o \\
 aoresponse/grid.o \\
 aoresponse/density.o \\
+aoresponse/aoresponse_visual.o \\
 aoresponse/propint.o \\
 aoresponse/pertdens.o \\
 aoresponse/slater.o \\
