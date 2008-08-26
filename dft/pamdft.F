@@ -66,7 +66,7 @@ C
 #include "functionals.h"
 C
       SAVE SET
-      DATA TABLE /'.XXXXXX','.FROMVX','.RYOGRI','.RADINT',
+      DATA TABLE /'.XXXXXX','.FROMVX','.IMPORT','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
@@ -105,7 +105,7 @@ C          geometry in a geometry optimization) /hjaaj
       NOPRUN = .FALSE.
       ANGMIN = 15
       ATSIZE = .FALSE.
-      RYOGRID = .FALSE.
+      import_grid = .FALSE.
       ZIPGRID = .FALSE.
 C
 C
@@ -161,7 +161,7 @@ C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
                  DFTPOT = .TRUE.
                  GO TO 100
  3               CONTINUE
-                 RYOGRID = .TRUE.
+                 import_grid = .TRUE.
                  READ(LUCMD,'(A30)') GRIDFILE
                  GO TO 100
  4               CONTINUE

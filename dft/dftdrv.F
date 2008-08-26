@@ -425,7 +425,7 @@ C
 
   100 CONTINUE
 
-      IF(RYOGRID) THEN
+      IF(import_grid) THEN
         READ(LUQUAD,*) NPOINT
       ELSE
         READ(LUQUAD) NPOINT
@@ -438,8 +438,8 @@ C
          CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
 
-         IF(RYOGRID) THEN
-           CALL RYO_GRID(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
+         IF(import_grid) THEN
+           CALL import_dft_grid(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
      &                   LUQUAD,NPOINT)
          ELSE
            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),

@@ -120,7 +120,7 @@ C     Open unit LUQUAD
 C     ================
 C
       LUQUAD = 44
-      IF(RYOGRID) THEN
+      IF(import_grid) THEN
         OPEN(LUQUAD,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
@@ -134,7 +134,7 @@ C
      &       FILE   = 'DIRAC.QUAD')
       ENDIF
       REWIND LUQUAD
-      IF(RYOGRID) GOTO 999
+      IF(import_grid) GOTO 999
 
 C
 C     Calculate abscissas and weights
@@ -568,32 +568,28 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* RYO_GRID */
-      SUBROUTINE RYO_GRID(X,Y,Z,W,LUNIT,NR_POINTS)
-C=======================================================================
-C     read your own grid from file
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                           last revision: february 2007
-C=======================================================================
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine import_dft_grid(x, y, z, w, lunit, nr_points)
+!=======================================================================
+!     import dft grid from file
+!-----------------------------------------------------------------------
+!                                              radovan bast
+!                                              last revision: 2008-08-26
+!=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      dimension x(nr_points),
+     &          y(nr_points),
+     &          z(nr_points),
+     &          w(nr_points)
 
-      DIMENSION X(NR_POINTS),
-     &          Y(NR_POINTS),
-     &          Z(NR_POINTS),
-     &          W(NR_POINTS)
+      do i = 1,nr_points
+        read(lunit,*) x(i), y(i), z(i), w(i)
+      enddo
 
-      DO I = 1,NR_POINTS
-        READ(LUNIT,*) X(I), Y(I), Z(I), W(I)
-      ENDDO
-
-      RETURN
-      END
+      end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck nleb */                                                     C
