@@ -57,7 +57,7 @@ C
      &                   IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC, 
      &                   IIJKL_ROD
 #if defined (VAR_MPI)
-      INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
+      INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, FILE_INFO_OBJ
       INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,
      &          MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF,
      &          MY_LU6_OFF, MY_LU7_OFF, MY_LUC_OFF
@@ -66,7 +66,8 @@ C
      &                    MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF,
      &                    MY_LU5_OFF, MY_LU6_OFF, MY_LU7_OFF, 
      &                    MY_LUC_OFF,
-     &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL
+     &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL,
+     &                    FILE_INFO_OBJ
 #endif
 !     integer*8 block
       INTEGER*8           LEN_ALL_INT, IS_LENGTH_TT, NINT_TOTAL,
