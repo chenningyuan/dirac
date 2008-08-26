@@ -676,15 +676,25 @@ esac
 }
 
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 search_math_libs(){
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# Searches for mathematical libraries in the directories of dirlist
 #
+#   Searches for mathematical libraries in the directories of dirlist
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   echo "Searching for the mathematical libraries... "
-  echo
-
+  echo 
   lib_names=""
   lib_dir=""
+
+if [ $IPRINT -ge "8" ]; then
+ echo 'search_math_libs:   lib_list=' $lib_list
+ echo 'search_math_libs:  math_dirs=' $math_dirs
+ echo 'search_math_libs:   ext_list=' $ext_list
+fi
 
   for test_lib in $lib_list; do
     for test_dir in $math_dirs; do
@@ -765,8 +775,8 @@ search_math_libs
 
 # If there is found more than one compiler let the user pick it.
 
-if [ $IPRINT -ge "5" ];  then
- echo 'get_math_lib: lib_names='$lib_names
+if [ $IPRINT -ge "7" ];  then
+ $echo '\n get_math_lib: lib_names='$lib_names
 fi
 
 if [ ! -z "$lib_names" ]; then
@@ -781,10 +791,10 @@ for tmp_library in $lib_names; do
   $echo "$counter) $tmp_library"
 done
 #
-if [ ! -z "$both_blas_lapack" ]; then
-  counter=`expr $counter + 1`
-  $echo "$counter) both lapack and blas"
-fi
+#if [ ! -z "$both_blas_lapack" ]; then
+#  counter=`expr $counter + 1`
+#  $echo "$counter) both lapack and blas"
+#fi
 #
 $echo "1) Specify a library path. \t\c" 
 #
@@ -895,30 +905,36 @@ nolib () {
    LIB=
 }
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 find_mathlib ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Find mathematical libraries
+#         Find mathematical libraries present at the system
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
 echo 'MATHEMATICAL LIBRARIES'
 echo
-echo 'Use of an optimized BLAS implementation is very important,'
+echo 'Use of an optimized BLAS implementation (or its substitute) is very important,'
 echo 'especially for the performance of MOLTRA and RELCCSD.'
 echo
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
 # libraries
+#
 ext_list='.so .a'
 lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml liblapack"
 LIB=""
 
 math_dirs=$dir_list
 
+if [ $IPRINT -ge "5" ];  then
+  echo 'find_math_lib: setup math_dirs='$math_dirs
+fi
+
 # variable telling that there are both lapack and blas libraries
-both_blas_lapack=
+#both_blas_lapack=
 
 libguess=`./config.status LIB_LIST`
 if [ ! -z "$libguess" ]; then
@@ -946,7 +962,6 @@ if [ ! -z "$libguess" ]; then
   /bin/rm -f gnyf.F gnyf.x gnyf.o
   echo
 
-
 fi
 
 #echo test $LIB and $lib_list
@@ -965,6 +980,8 @@ fi
 
 echo
 }
+
+
 set_memsize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
