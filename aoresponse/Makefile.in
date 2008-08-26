@@ -24,7 +24,7 @@ F90_MODS = aoresponse_input_m.mod \
            matrix_mod.mod \
            dirac_interface_m.mod \
            grid_m.mod \
-           density_m.mod \
+           scf_density_m.mod \
            aoresponse_visual_m.mod \
            propint.mod \
            pertdens.mod \

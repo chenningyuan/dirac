@@ -1,4 +1,4 @@
-module density_m
+module scf_density_m
 
   use kinds_m
   use memory_allocator

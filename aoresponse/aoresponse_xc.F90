@@ -2,7 +2,7 @@ module aoresponse_xc_m
 
   use kinds_m
   use slater_m
-  use density_m
+  use scf_density_m
   use grid_m
   use memory_allocator
   use matrix_oper
