@@ -859,9 +859,23 @@ C
         IDISP    = 0
         IOFFSET  = 0
 C
+#if defined (VAR_PFS)
+C
+C       provide useful I/O performance information on IBMs GPFS
+C
+        CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+        CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                    "true",IERR)
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,FILE_INFO_OBJ,
+     &                         IIJKL_ROD,IERR)
+C
+        CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+#else
         CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
      &       MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
      &                         IIJKL_ROD,IERR)
+#endif
 C
         CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
      &                         "native",MPI_INFO_NULL,IERR)
@@ -1035,10 +1049,26 @@ C
         IDISP    = 0
         IOFFSET  = 0
 C
+#if defined (VAR_PFS)
+C
+C       provide useful information on IBMs GPFS to enhance 
+C       I/O performance
+C
+        CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+        CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                    "true",IERR)
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                     MPI_MODE_RDONLY,FILE_INFO_OBJ,
+     &                     IIJKL_ROD,IERR)
+C
+        CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+#else
+
         CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
      &                     MPI_MODE_RDONLY,MPI_INFO_NULL,
      &                     IIJKL_ROD,IERR)
 C
+#endif
         CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
      &                         "native",MPI_INFO_NULL,IERR)
 C
