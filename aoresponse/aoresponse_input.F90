@@ -35,6 +35,9 @@ module aoresponse_input_m
   logical,                 save :: aoresponse_idri
   logical,                 save :: aoresponse_dc_kerr
 
+  logical,                 save :: aoresponse_integrate
+  logical,                 save :: aoresponse_visual
+
 contains
 
   function find_op_index(op_name) result(op_index)

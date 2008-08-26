@@ -6,6 +6,8 @@ F90_OBJS = aoresponse_input.o \
            matrix_oper.o \
            matrix_mod.o \
            dirac_interface.o \
+           grid.o \
+           density.o \
            propint.o \
            pertdens.o \
            slater.o \
@@ -20,6 +22,8 @@ F90_MODS = aoresponse_input_m.mod \
            matrix_oper.mod \
            matrix_mod.mod \
            dirac_interface_m.mod \
+           grid_m.mod \
+           density_m.mod \
            propint.mod \
            pertdens.mod \
            slater_m.mod \

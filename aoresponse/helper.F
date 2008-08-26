@@ -206,9 +206,9 @@
 !                   9        10        11        12
      &            '.DC-SHG','.THG   ','.IDRI  ','.DC-KER',
 !                  13        14        15        16
-     &            '.FREQ_P','.0GAMMA','.0BETA ','.xxxxxx',
+     &            '.FREQ_P','.0GAMMA','.0BETA ','.INTEGR',
 !                  17        18        19        20
-     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
+     &            '.VISUAL','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  21        22        23        24
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  25        26        27        28
@@ -262,6 +262,8 @@
       aoresponse_idri               = .false.
       aoresponse_dc_kerr            = .false.
 
+      aoresponse_integrate          = .false.
+      aoresponse_visual             = .false.
 
 !     process input
 !     =============
@@ -365,7 +367,13 @@
           go to 100
 
    16     continue
+          aoresponse_integrate = .true.
+          go to 100
+
    17     continue
+          aoresponse_visual = .true.
+          go to 100
+
    18     continue
    19     continue
    20     continue
