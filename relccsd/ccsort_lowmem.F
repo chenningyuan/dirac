@@ -220,7 +220,7 @@ C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,*) ' '
          WRITE (IW,*) 'Note: Low(er)-memory strategy active for RELCCSD'
-         WRITE (IW,*) ''
+         WRITE (IW,*) ' '
          WRITE (IW,*) '      Now the integral sorting step will use'
          WRITE (IW,*) '      information about the amount of memory'
          WRITE (IW,*) '      available on this system and try seting'
