@@ -134,7 +134,17 @@ C
      &       FILE   = 'DIRAC.QUAD')
       ENDIF
       REWIND LUQUAD
-      IF(import_grid) GOTO 999
+
+      if (import_grid) go to 999
+
+      if (export_grid) then
+        OPEN(LUQUAD+1,
+     &       FORM   = 'FORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   =  GRIDFILE)
+        rewind luquad+1
+      end if
 
 C
 C     Calculate abscissas and weights
@@ -487,6 +497,10 @@ C        Write to file LUQUAD
 C        ====================
 C
          CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NTHIS)
+         if (export_grid) then
+           call export_dft_grid(x8, y8, z8, wt8, luquad+1, nthis)
+         end if
+
          NTOTAL = NTOTAL + NTHIS
          NALL = NALL + NTHAT
          NATOM = NATOM + NDEG
@@ -498,6 +512,9 @@ C
 
       NLAST = -1
       CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NLAST)
+      if (export_grid) then
+        call export_dft_grid(x8, y8, z8, wt8, luquad+1, nlast)
+      end if
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
      &     ' Number of grid points in quadrature:',NTOTAL,
@@ -569,9 +586,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine import_dft_grid(x, y, z, w, lunit, nr_points)
+      subroutine export_dft_grid(x, y, z, w, lunit, nr_points)
 !=======================================================================
-!     import dft grid from file
+!     export dft grid
 !-----------------------------------------------------------------------
 !                                              radovan bast
 !                                              last revision: 2008-08-26
@@ -585,8 +602,34 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          z(nr_points),
      &          w(nr_points)
 
-      do i = 1,nr_points
-        read(lunit,*) x(i), y(i), z(i), w(i)
+      write(lunit, *) nr_points
+
+      if (nr_points .gt. 0) then
+        do i = 1, nr_points
+          write(lunit, '(4d20.12)') x(i), y(i), z(i), w(i)
+        enddo
+      end if
+
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine import_dft_grid(x, y, z, w, lunit, nr_points)
+!=======================================================================
+!     import dft grid
+!-----------------------------------------------------------------------
+!                                              radovan bast
+!                                              last revision: 2008-08-26
+!=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      dimension x(nr_points),
+     &          y(nr_points),
+     &          z(nr_points),
+     &          w(nr_points)
+
+      do i = 1, nr_points
+        read(lunit, *) x(i), y(i), z(i), w(i)
       enddo
 
       end

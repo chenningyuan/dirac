@@ -66,7 +66,7 @@ C
 #include "functionals.h"
 C
       SAVE SET
-      DATA TABLE /'.XXXXXX','.FROMVX','.IMPORT','.RADINT',
+      DATA TABLE /'.EXPORT','.FROMVX','.IMPORT','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
@@ -105,7 +105,8 @@ C          geometry in a geometry optimization) /hjaaj
       NOPRUN = .FALSE.
       ANGMIN = 15
       ATSIZE = .FALSE.
-      import_grid = .FALSE.
+      import_grid = .false.
+      export_grid = .false.
       ZIPGRID = .FALSE.
 C
 C
@@ -153,17 +154,24 @@ C
      *            '" not recognized in DFTINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in DFTINP.')
- 1             CONTINUE
-               CALL QUIT('Functional selection moved to **HAMILT')
-               GO TO 100
+
+!              export grid
+ 1             continue
+               export_grid = .true.
+               read(lucmd,'(A30)') gridfile
+               go to 100
+
  2             CONTINUE
 C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
                  DFTPOT = .TRUE.
                  GO TO 100
- 3               CONTINUE
-                 import_grid = .TRUE.
-                 READ(LUCMD,'(A30)') GRIDFILE
-                 GO TO 100
+
+!              import grid
+ 3             continue
+               import_grid = .true.
+               read(lucmd,'(A30)') gridfile
+               go to 100
+
  4               CONTINUE
 C&&& RADINT: Give relative precision of the radial integration
                  READ(LUCMD,*) RADINT
