@@ -7,7 +7,7 @@ F90_OBJS = aoresponse_input.o \
            matrix_mod.o \
            dirac_interface.o \
            grid.o \
-           density.o \
+           density_m.o \
            aoresponse_visual.o \
            propint.o \
            pertdens.o \
