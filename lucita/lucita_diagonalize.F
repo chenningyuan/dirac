@@ -3448,7 +3448,7 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
          CALL REWINE(LU6,-1)
          CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
 *. Projected matrix
-         CALL REWINE(LU2)
+         CALL REWINE(LU2,-1)
            DO JVEC = 1, IVEC
               CALL REWINE(LU5,-1)
               IJ = IVEC*(IVEC-1)/2 + JVEC
