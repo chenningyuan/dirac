@@ -372,18 +372,18 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
   ELSE IF( ITASK .eq. 2 )THEN
     CALL MPI_GET_PROCESSOR_NAME(HOST,LHOST,IERR)
     IF( MYTID .eq. MPARID ) THEN
-       print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST), &
-             ') will attempt to use at most ',IVARIABLE,' words (',IVARIABLE/2**17,&
-             ' MB) of memory in dynamic allocations'
+!       print '(a,a,a,i0,a,i0,a)', 'DIRAC master    (',HOST(1:LHOST), &
+!             ') will attempt to use at most ',IVARIABLE,' words (',IVARIABLE/2**17,&
+!             ' MB) of memory in dynamic allocations'
     ENDIF
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
     DO IJ = 1, (NUMNOD - 1)
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
        IF( MYTID .eq. IJ )  THEN
-          print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') will attempt to use at most ',IVARIABLE,' words (', &
-          IVARIABLE/2**17,' MB) of memory in dynamic allocations'
+!          print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &
+!          '(',HOST(1:LHOST),') will attempt to use at most ',IVARIABLE,' words (', &
+!          IVARIABLE/2**17,' MB) of memory in dynamic allocations'
        ENDIF
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
