@@ -16,7 +16,7 @@ module matrix_oper
     integer                :: fermi_pointer = 1
     real(kind_dp), pointer :: elms(:)
     logical                :: is_defined    = .false.
-  end type matrix
+  end type
 
 contains
 
