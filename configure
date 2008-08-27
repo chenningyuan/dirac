@@ -1901,18 +1901,15 @@ fi
 
 cat <<EOF >> Makefile.config
 # ... fortran compiler flags with the full optimization
-#OPTFLAGS      = $opt $mod
 OPTFLAGS      = $use_flags $mod
 # ... fortran compiler flags with no optimization
 SAFEFLAGS      = $safe $mod
 OPTIFLAGS      = -E
 # ... C-compiler flags with the full optimization
-#C_OPTFLAGS    = $c_opt
 C_OPTFLAGS    = $use_c_flags
 # ... C-compiler flags with no optimization
 C_SAFEFLAGS    = $c_safe
 # ... fortran compiler flags with the full optimization - for *.F90 files
-#F90_OPTFLAGS  = $opt $mod $f90_extraflags
 F90_OPTFLAGS  = $use_flags $mod $f90_extraflags
 # ... fortran compiler flags with no optimization - for *.F90 files
 F90_SAFEFLAGS  = $safe $mod $f90_extraflags
@@ -2245,11 +2242,7 @@ fi
 
 guess_system
 parallel_stuff
-
-# ulfek: I commented out the call to safeflags_stuff, because it implies to the user
-# that the other options are not safe to use (which they are).
 safeflags_stuff
-
 find_compilers
 find_mathlib
 set_memsize
