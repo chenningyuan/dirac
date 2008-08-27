@@ -2541,6 +2541,9 @@ C
 C     Solve linear system
 C
       CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KAN),INFO)
+!radovan
+!     CALL DSPSLI(N,1,WORK(KAN),X,WORK(KA2),INFO,DET,INERT)
+!radovan
 C
 C     Print section
 C
