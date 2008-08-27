@@ -702,10 +702,30 @@ C
             WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (boson) of wave function: ',
      &        REPNA(IRRP)
+            IF (NKRCI_MAX_SYM .GT. NREP) THEN
+               WRITE(LUPRI,'(/A//A,2I5)')
+     &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
+     &         ' is non-existent!',
+     &         ' Symmetry, max value of symmetry = ', 
+     &           NKRCI_MAX_SYM, NREP
+               CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
+            END IF
+C
          ELSE
             WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (fermion) of wave function: ',
      &        REPNA(IKRCI_SYMMETRY)
+C
+C           FIXME: check proper abort criterion
+C
+CSK         IF ( NKRCI_MAX_SYM .GT. NREP) THEN
+CSK            WRITE(LUPRI,'(/A//A,2I5)')
+CSK  &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
+CSK  &         ' is non-existent!',
+CSK  &         ' Symmetry, max value of symmetry = ', 
+CSK  &           NKRCI_MAX_SYM, NREP
+CSK            CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
+CSK         END IF
          END IF
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     ' * Allowed interval of 2 * MK :',
@@ -721,13 +741,6 @@ C
       WRITE(LUPRI,'(/A/20I5)')
      &     ' * Number of CI roots to be optimized in each symmetry:',
      &     (NKRCI_CIROOTS(I), I = 1,NKRCI_MAX_SYM)
-C
-      IF (NKRCI_MAX_SYM .GT. NREP) THEN
-         WRITE(LUPRI,'(/A//A,2I5)')
-     &  ' INPUT ERROR, requested symmetry in .CIROOTS is non-existent!',
-     &  ' Symmetry, max value of symmetry = ', NKRCI_MAX_SYM, NREP
-         CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
-      END IF
 C
       WRITE(LUPRI,'(/A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
