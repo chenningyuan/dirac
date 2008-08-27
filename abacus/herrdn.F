@@ -520,6 +520,7 @@ C     JHS The following variables come from a commonblock and are thus kept in F
 #include "gnrinf.h"
       LOGICAL LINEAR
 #endif
+#include "memint.h"
       ZMAT = .FALSE.
 C
 C***********************************************************************
@@ -663,7 +664,15 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(BASREF(10,MXCENT,MXBSETS))
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
+#if defined (SYS_AIX) || defined (SYS_IBM)
+C     ... avoid crash on IBM systems where allocatable 
+C     memory is handled quite strict. SK - Aug 08
+      LCPRIMU = KPRIM*KPRIM*KBLOCK*KSETS
+      CALL MEMGET('REAL',KCPRIMU,LCPRIMU,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KCPRIMU),LCPRIMU)
+#else
       ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
+#endif
 
 CMI  ... with gfortran the allocated space is 'spoiled' with debris
 CMI      and must be cleaned before (in F90 syntax)
@@ -677,7 +686,11 @@ C     ************************************************
 C
       CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
+#if defined (SYS_AIX) || defined (SYS_IBM) 
+     &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),ISGEN,
+#else
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
+#endif
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
 C
 C     *************************************************
@@ -704,7 +717,12 @@ C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
+#if defined (SYS_AIX) || defined (SYS_IBM) 
+     &            SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,KANG,KSETS,
+     &            KBLOCK,KPRIM,
+#else
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
+#endif
      &            DOOWN,blk)
 C
 C     *************************************************
@@ -712,12 +730,22 @@ C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
+#if defined (SYS_AIX) || defined (SYS_IBM)
+     &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,
+     &            KANG,KSETS,
+#else
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
+#endif
      &            KBLOCK,KPRIM,HERMIT,blk)
 C
       IF (ALLOCATED(ALPHA)) DEALLOCATE(ALPHA)
       IF (ALLOCATED(CPRIM)) DEALLOCATE(CPRIM)
+#if defined (SYS_AIX) || defined (SYS_IBM)
+C     ... release memory
+      CALL MEMREL('READ_MOL',WORK,KWORK,KWORK,KFREE,LFREE)
+#else
       IF (ALLOCATED(CPRIMU)) DEALLOCATE(CPRIMU)
+#endif
 
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of input to READIN',0)
