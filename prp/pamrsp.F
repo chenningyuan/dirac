@@ -1927,6 +1927,8 @@ C
             REA = D4*DDOT(NZXOPEQ,BVBUF,1,SEVEC(1,JN),1)
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
+CTROND
+            WRITE(6,*) 'old',I,J,REA       
           ENDIF
         ENDDO          
       ENDDO
@@ -1944,6 +1946,8 @@ C
             REA = D4*DDOT(NZXOPEQ,BEVEC(1,IN),1,SEVEC(1,JN),1)
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
+CTROND
+            WRITE(6,*) 'new',I,J,REA       
           ENDIF
         ENDDO
       ENDDO
@@ -2508,6 +2512,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
+#include "dcbxrs.h"
 C
       DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(N),
      &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
@@ -2518,11 +2523,9 @@ C
 C     Memory allocation
 C
       N2A = LDA*N
-      NNA = (N*(N+1))/2
       CALL MEMGET('REAL',KA2,N2A,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAN,NNA,WORK,KFREE,LFREE)
 C
-C     Form matrix [AE - W*AS] in row-packed lower triangle form
+C     Form matrix [AE - W*AS] 
 C
       CALL DCOPY(N2A,AE,1,WORK(KA2),1)
       IF (W.NE.D0) THEN
@@ -2532,44 +2535,47 @@ C
         WRITE(LUPRI,'(A)') 'LINRED: Reduced E[2] - WS[2] matrix'
         CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
       ENDIF
-      CALL DAMATR(N,WORK(KA2),LDA,WORK(KAN))
 C
 C     Place G in buffer X
 C
       CALL DCOPY(N,G,1,X,1)
+      IF(IMFREQ) THEN
+        CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
+        CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KPVT),INFO)
+      ELSE
+        NNA = (N*(N+1))/2
+        CALL MEMGET('REAL',KAN,NNA,WORK,KFREE,LFREE)
+        CALL DAMATR(N,WORK(KA2),LDA,WORK(KAN))
+        CALL DSPSLI(N,1,WORK(KAN),X,WORK(KA2),INFO,DET,INERT)
+C
+C       Print section
+C
+        IPAR = INERT(2) - NPVEC
+        IF(IPRINT.GE.3.OR.IPAR.GT.0) THEN
+          WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
+          WRITE(LUPRI,'(5X,A,I5)')
+     &      '* Number of positive eigenvalues:',INERT(1),
+     &      '* Number of zero     eigenvalues:',INERT(3),
+     &      '* Number of negative eigenvalues:',INERT(2)
+          IF(IPAR.GT.0) THEN
+            WRITE(LUPRI,'(A,A)')
+     &      '*** WARNING - Possible instability detected ',
+     &      'in reduced system !'
+          ENDIF
+        ENDIF
+      ENDIF
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,F12.5,A)') 
+     &      'LINRED: Solution vector at frequency:',W,' a.u.'
+        CALL PRIRVC(X,N,IBTYP)
+      ENDIF
 C
 C     Solve linear system
 C
-      CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KAN),INFO)
+
 !radovan
-!     CALL DSPSLI(N,1,WORK(KAN),X,WORK(KA2),INFO,DET,INERT)
+!     
 !radovan
-C
-C     Print section
-C
-Chj-nov99: test for neg. in IPAR gives print as soon as
-C    e-p rotations are included, thus not really
-C    a warning (to test for negative elements in
-C    electronic part, we should use INERT(2) - NBPVEC )
-C     IPAR = INERT(2) + INERT(3)
-      IPAR = INERT(2) - NPVEC
-      IF(IPRINT.GE.3.OR.IPAR.GT.0) THEN
-        IF(IPRINT.GE.3) THEN
-          WRITE(LUPRI,'(A,F12.5,A)') 
-     &      'LINRED: Solution vector at frequency:',W,' a.u.'
-          CALL PRIRVC(X,N,IBTYP)
-        ENDIF
-        WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-        WRITE(LUPRI,'(5X,A,I5)')
-     &    '* Number of positive eigenvalues:',INERT(1),
-     &    '* Number of zero     eigenvalues:',INERT(3),
-     &    '* Number of negative eigenvalues:',INERT(2)
-        IF(IPAR.GT.0) THEN
-          WRITE(LUPRI,'(A,A)')
-     &    '*** WARNING - Possible instability detected ',
-     &    'in reduced system !'
-        ENDIF
-      ENDIF
 C
       CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('LINRED')
