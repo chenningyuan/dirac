@@ -41,7 +41,8 @@ initialize ()  {
 #   Initialize script
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-quick=0 # otherwise 1 if "-quick" parameter in the list
+quick=0 # otherwise 1 if "--quick" parameter is in the list
+noopt=0 # otherwise 1 of "--noopt" parameter is in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
@@ -78,11 +79,11 @@ usage ()  {
    echo ' Flags:'
    echo '   --help                       : Print this'
    echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
+   echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90'
    echo '   --cc=CC                      : Set C compiler to CC'
    echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
-   echo '   --safeflags(safe)[=(yes|no)] : Use only safe flags (no optimization) for the compilation of Dirac'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
    echo '   --math_lib=MATH-LIB          : Choose the mathematical library MATH-LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
@@ -366,33 +367,19 @@ fi
 safeflags_stuff() {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#        Take care of safe flags (ie no optimization)
+#       Take care of safe flags (ie no optimization) if set up in the
+#  'configure' argument list
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-echo
-echo  'SAFE FLAGS (no optimization/quick compilation)'
-echo
-# ...
-if [ -z "${safe_inp}" ]; then
-  if [ $quick = 0 ]; then
-    $echo 'Do you want to compile the program'\
-    'with safe flags only (ie no optimization) ? (y/N) \c'
-    read safe_inp
-  else
-    safe_inp=no
-  fi
-  case "$safe_inp" in
-  "yes" | "y" | "Y" )
-    safe_inp="yes" ;;
-  "no" | "n" | "" )
-    safe_inp="no" ;;
-  *)
-   safeflags_stuff ;;
-  esac
+if [ $noopt=1 ]; then
+  echo
+  echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
+  echo
+else 
+  echo
+  echo  'COMPILERS FLAGS set with the optimization.'
+  echo
 fi
-
-echo 'Safe flags for fortran/C compilers :'${safe_inp}''
-
 }
 
 mpi2check () {
@@ -1893,16 +1880,16 @@ fi
 
 if [ $IPRINT -ge "5" ];  then 
  echo
- echo 'before dumping stuff into Makefile.config...safe_inp=' $safe_inp
+ echo 'before dumping stuff into Makefile.config...noopt='$noopt
 fi
 
 # determine whether to flush into Makefile.config safe or optimized flags
-if [ "$safe_inp" = "yes" ]; then
+if [ $noopt = 1 ]; then
 # ... employ flags with no optimization
   use_flags=$safe
   use_c_flags=$c_safe
 else 
-# ... employ flags with optimization
+# ... employ flags with the optimization
   use_flags=$opt
   use_c_flags=$c_opt
 fi
@@ -1911,7 +1898,6 @@ if [ $IPRINT -ge "3" ];  then
  echo '       Makefile.config...use_flags:' $use_flags
  echo 'into Makefile.config...use_c_flags:' $use_c_flags
 fi
-
 
 cat <<EOF >> Makefile.config
 # ... fortran compiler flags with the full optimization
@@ -2175,18 +2161,8 @@ while [ $# != 0 ]; do
             ;;
          esac
          ;;
-      "safeflags" | "safe")
-         case "$val" in
-         "no" | "yes" )
-            safe_inp="$val"
-            ;;
-         *)
-            echo 'Syntax error: Value "'${val}'" is not allowed to option' \
-                 '"-'${optname}'"'
-            echo 'Legal values: [yes,no]'
-            exit 1
-            ;;
-         esac
+      "noopt")
+	 noopt=1
          ;;
       "libdir" )
          if [ "${valomitted}" = "yes" ]; then
@@ -2269,9 +2245,11 @@ fi
 
 guess_system
 parallel_stuff
+
 # ulfek: I commented out the call to safeflags_stuff, because it implies to the user
 # that the other options are not safe to use (which they are).
-# safeflags_stuff
+safeflags_stuff
+
 find_compilers
 find_mathlib
 set_memsize
