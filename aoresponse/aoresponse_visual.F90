@@ -54,7 +54,7 @@ contains
     real(kind_dp)                  :: r(3), s
     integer                        :: ip, ic, id, ix, ia, iz, iq
     integer                        :: k, l, m
-    integer,           parameter   :: ncube = 10
+    integer,           parameter   :: ncube = 80
     integer                        :: file_unit = 113
 
 #include "dgroup.h"

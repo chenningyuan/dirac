@@ -232,9 +232,9 @@ contains
 
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-#ifdef debug_me
-    call aoresponse_visual_driver(D, (/D_ij(2, 2)/))
-#endif
+!#ifdef debug_me
+    call aoresponse_visual_driver((/D, D_i, D_ij/))
+!#endif
 
     e_ijk = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
