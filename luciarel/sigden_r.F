@@ -3261,7 +3261,6 @@ C
         call quit('*** ERROR in SIGDEN_REL ***')
       end if
 *
-      NTEST = 000
       IF(NTEST.GE.50) THEN 
         write(LUWRT,*)
         write(LUWRT,*)
@@ -4676,25 +4675,25 @@ C
                      JLEN = ICBLOCK(7,JBLK)
 C
 #if defined (VAR_MPI2)
+CSK                  WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
+CSK  &                                IC_OFF_BLK+JBLK-1
+CSK                  WRITE(LUWRT,*) ' IOFF_SCR_C is', IOFF_SCR_C
+CSK                  WRITE(LUWRT,*) ' JLEN is for IST_C_BLK_CT + JBLK', 
+CSK  &                                JLEN, IST_C_BLK_CT + JBLK - 1
 C
 C                    check for active blocks
-                     WRITE(LUWRT,*) ' checking for IC_OFF_BLK+JBLK-1',
-     &                                IC_OFF_BLK+JBLK-1
-                     WRITE(LUWRT,*) ' IOFF_SCR_C is', IOFF_SCR_C
-                     WRITE(LUWRT,*) ' JLEN is for IST_C_BLK_CT + JBLK', 
-     &                                JLEN, IST_C_BLK_CT + JBLK - 1
 C
                      IF(ISCLFAC_GROUP(IC_OFF_BLK+JBLK-1).eq.0) GOTO 8888
-                     WRITE(LUWRT,*) ' Read-in for JBLK',JBLK,
-     &                                IC_OFF_BLK+JBLK-1
+CSK                  WRITE(LUWRT,*) ' Read-in for JBLK',JBLK,
+CSK  &                                IC_OFF_BLK+JBLK-1
 C
 C                    new offset in MPI-2 parallel file
 C
                      IOFF_SCR_C_EXPL = IOFF_SAVE + IOFF_SCR_C 
-                     WRITE(LUWRT,*) ' Read-in at file offset',
-     &                                IOFF_SCR_C_EXPL
-                     WRITE(LUWRT,*) ' memory offset',
-     &                                JOFF
+CSK                  WRITE(LUWRT,*) ' Read-in at file offset',
+CSK  &                                IOFF_SCR_C_EXPL
+CSK                  WRITE(LUWRT,*) ' memory offset',
+CSK  &                                JOFF
 C
 C                    read block in core
 C

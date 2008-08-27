@@ -795,14 +795,14 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &                       C(IDET),
      &                   '  Corresponding alpha- and beta-strings'
                         IF(IUSLAB.EQ.0) THEN
-                           WRITE(6,'("alpha",20I4)')
+                           WRITE(6,'("  alpha",20I4)')
      &                          (IASTR(IEL,IA),IEL = 1, NAEL )
-                           WRITE(6,'(" beta",20I4)')
+                           WRITE(6,'("   beta",20I4)')
      &                          (IBSTR(IEL,IB),IEL = 1, NBEL )
                         ELSE
-                           WRITE(6,'("alpha",10(1X,A6))')
+                           WRITE(6,'("  alpha",10(1X,A6))')
      &                      (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
-                           WRITE(6,'(" beta",10(1X,A6))')
+                           WRITE(6,'("   beta",10(1X,A6))')
      &                      (IOBLAB(IBSTR(IEL,IB)),IEL = 1, NBEL )
                         END IF
                      END IF
