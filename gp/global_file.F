@@ -52,9 +52,14 @@ C
       INTEGER I, J, K
 
       CALL MPI_INFO_CREATE(GF_INFO, IERR)
+#if defined (SYS_AIX) || defined (SYS_IBM)
+C     ... IBMs GPFS specific file hint - SK Aug 2008
+      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+#else
       CALL MPI_INFO_SET(GF_INFO, "direct_write", "true", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable", IERR)
+#endif
 
       CALL MPI_FILE_OPEN(
      +   MPI_COMM_WORLD, GF_NAME,
@@ -92,9 +97,14 @@ C
       NMBUFF = N_BUFFER * NMPROC
 
       CALL MPI_INFO_CREATE(GF_INFO, IERR)
+#if defined (SYS_AIX) || defined (SYS_IBM)
+C     ... IBMs GPFS specific file hint - SK Aug 2008
+      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+#else
       CALL MPI_INFO_SET(GF_INFO, "ind_rd_buffer_size", "16777216", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_cb_read", "disable", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_ds_read", "enable", IERR)
+#endif
 
       CALL MPI_FILE_OPEN(
      +   MPI_COMM_WORLD, GF_NAME,
@@ -387,9 +397,14 @@ C           Pick out the integrals that we need.
       WRITE (LF_NAME,'(a,i5.5)') 'local', MYTID
 
       CALL MPI_INFO_CREATE(GF_INFO, IERR)
+#if defined (SYS_AIX) || defined (SYS_IBM)
+C     ... IBMs GPFS specific file hint - SK Aug 2008
+      CALL MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true",IERR)
+#else
       CALL MPI_INFO_SET(GF_INFO, "direct_write", "true", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_cb_write", "disable", IERR)
       CALL MPI_INFO_SET(GF_INFO, "romio_ds_write", "disable", IERR)
+#endif
 
       CALL MPI_FILE_OPEN(
      +   MPI_COMM_SELF, LF_NAME,
