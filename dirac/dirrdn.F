@@ -4776,7 +4776,7 @@ C aspg, 20070909
          ENDIF 
 #endif /* MOD_ERI */
 
-         IF (IGTINT) THEN
+         IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN
                WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
      &              'scaled as HF exchange according to the selected'
