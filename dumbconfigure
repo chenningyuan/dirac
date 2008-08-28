@@ -13,6 +13,14 @@ INCFLAGS= # Include directories for mpi
 BUILTIN_BLAS= # Search for external blas later on if not defined.
 BUILTIN_LAPACK= #the same for lapack
 SKIP_TESTS= # skip test builds
+# Set by scripts below
+NRBITS= # 32 or 64
+CPPFLAGS=-Iinclude # Cppflags common to both C and Fortran
+FPPFLAGS=-Iinclude # pp flags for Fortran
+FFLAGS=
+FFLAGS_SAFE=
+CFLAGS=
+CFLAGS_SAFE=
 
 print_usage_and_exit()
 {
@@ -157,6 +165,108 @@ EOF
     fi
 }
 
+# if $1 matches any of $2 .. echo the first matching token
+match_keyword()
+{
+    nn="$1"
+    shift
+    while [ -n "$1" ]; do
+	if echo "$nn" | grep -q "$1"; then
+	    echo "$1"
+	    break
+	fi
+	shift
+    done
+}
+
+set_fflags()
+{
+    COMPLIST="mpif openmpif ifc ifort gfortran pathf90 pgf90 lfc g95 xlf"
+    comp=`match_keyword "$FCOMP" $COMPPLIST`
+    echo comp:$comp
+    if [ "$comp" = mpif -o "$comp" = openmpif ]; then
+	show=`$FCOMP -show 2> /dev/null || $FCOMP -showme 2> /dev/null`
+	echo here
+	comp=`match_keyword "$show" $COMPLIST`
+    fi
+    if [ -z "$comp" ]; then
+	echo "Warning: could not determine Fortran compiler type, assuming gfortran"
+	comp=gfortran
+    fi
+    echo "I think fc=$comp"
+    case $comp in
+	g95)
+	    FFLAGS="-g -O3 -ffast-math -Wno=155"
+	    FFLAGS_SAFE="-g -Wno=155"
+	    FPPFLAGS="-fmod=modules"
+	    ;;
+	gfortran)
+	    FFLAGS="-g -O3 -ffast-math -funroll-loops -ftree-vectorize -Jmodules"
+	    FFLAGS_SAFE="-g -Jmodules"
+	    FPPFLAGS="-DVAR_G77 -DGFORTRAN -Jmodules"
+	    ;;
+	pgf90)
+	    FFLAGS="-g -fastsse"
+	    FFLAGS_SAFE="-g"
+	    FPPFLAGS="-module modules -DVAR_PGCC"
+	    ;;
+	lfc)
+	    FFLAGS="-g --fast"
+	    FFLAGS_SAFE="-g"
+	    FPPFLAGS=" -Mmodules"
+	    ;;
+	ifort)
+	    FFLAGS="-g -O3 -ip -w -assume byterecl"
+	    FFLAGS_SAFE="-g -w -assume byterecl"
+	    FPPFLAGS="-DVAR_IFC -module modules"
+	    ;;
+	xlf)
+	    FPPFLAGS="-qmoddir=modules"
+# see what to do about this
+#	    f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
+	    ;;
+	pathf90)
+	    FPPFLAGS="-DVAR_EKO -module modules"
+	    ;;
+	*) echo "Unknown compiler???(bite me)"; exit 1;;
+    esac
+}
+
+set_cflags()
+{
+    COMPLIST="icc gcc pgcc pathcc cc ecc xlc_r xlc xlc"
+    comp=`match_keyword "$CCOMP" $COMPPLIST`
+    if [ "$comp" = mpicc -o "$comp" = openmpicc ]; then
+	show=`$CCOMP -show 2> /dev/null || $CCOMP -showme 2> /dev/null`
+	comp=`match_keyword "$show" $COMPLIST`
+    fi
+    if [ -z "$comp" ]; then
+	echo "Warning: could not determine C compiler type, assuming gcc"
+	comp=gcc
+    fi
+    echo "I think cc=$comp"
+
+}
+
+set_nrbits()
+{
+    case $SYSTEM in
+	*-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|alphaev6-dec)
+NRBITS=32;;
+x86_64-* | ia64-unknown-linux | *-cray )
+NRBITS=64;;
+*) echo "WARNING: Cannot determine if you have a 32 or 64 bit machine, will assume 32 bits";
+NRBITS=32;;
+esac
+}
+
+setup_compiler_options()
+{
+    set_nrbits
+    set_fflags
+    set_cflags
+}
+
 parse_args "$@"
 echo "Configuring Dirac for $SYSTEM"
     echo " Dirac will use ${WORKMEM}MB of memory (change with --mem)"
@@ -169,8 +279,10 @@ else
 fi
 test -n "$BUILTIN_BLAS" && echo " Built-in (slow) BLAS library will be used"
 test -n "$BUILTIN_LAPACK" && echo " Built-in (slow) LAPACK library will be used"
+# setup_compiler_options
+echo " Fortran compiler options: $FCOMP $FFLAGS $CPPFLAGS $INCFLAGS $LIBS"
+echo " C compiler options:       $CCOMP $CFLAGS $CPPFLAGS $INCFLAGS $LIBS"
 test -z "$SKIP_TESTS" && test_libs
 echo "Makefile.config created, now compile Dirac by running"
 echo " make depend"
 echo " make"
-
