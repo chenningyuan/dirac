@@ -401,6 +401,15 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
 C&&& .IJKLRO: do GAS-scheme specific integral reordering resp. use
 C             reordered integrals  
                   CINT_REORD_KRCI = .TRUE.
+C             ... this requires the use of MPI-2 I/O handling
+#if !defined (VAR_MPI2)
+                  WRITE(LUPRI,*) '  *** ERROR in KRCICALC *** '//
+     &                           ' Keyword .IJKLRO only valid in'//
+     &                           ' parallel calculations'
+                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+     &                      'Keyword .IJKLRO only valid in
+     &                       parallel calculations')
+#endif
                GO TO 100
    15          CONTINUE
 C&&& .IJKLSP: integral TT block allocation based on TTSS block

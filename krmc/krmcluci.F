@@ -488,9 +488,12 @@ C
           RUN_SHMEM_T = .FALSE.
 C
           IF( IT_SHL .ge. 0 .or. SPLIT_IJKL ) THEN
+C           ... read-in comes later in GASCI_REL
             RUN_SHMEM_T = .TRUE.
-            IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
           END IF
+          IF( REORD_IJKL ) RUN_SHMEM_T = .TRUE.
+C         ... reorder always at this point: RUN_SHMEM_T = .FALSE.
+          IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           if (CIRUN.ne.'ANALYZ') then
