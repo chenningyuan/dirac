@@ -5,34 +5,34 @@ F77_OBJS = helper.o
 F90_OBJS = aoresponse_input.o \
            matrix_oper.o \
            matrix_mod.o \
-           dirac_interface.o \
            grid.o \
            scf_density.o \
            aoresponse_visual.o \
-           propint.o \
-           pertdens.o \
            slater.o \
+           aoresponse_xc.o \
+           dirac_interface.o \
+           propint.mod \
+           pertdens.mod \
            vwn.o \
            vwn_derv.o \
            test_derv.o \
-           aoresponse_xc.o \
            aoresponse_test.o \
            aoresponse_main.o
 
 F90_MODS = aoresponse_input_m.mod \
            matrix_oper.mod \
            matrix_mod.mod \
-           dirac_interface_m.mod \
            grid_m.mod \
            scf_density_m.mod \
            aoresponse_visual_m.mod \
+           slater_m.mod \
+           aoresponse_xc_m.mod \
+           dirac_interface_m.mod \
            propint.mod \
            pertdens.mod \
-           slater_m.mod \
            vwn_m.mod \
            vwn_derv_m.mod \
            test_derv_m.mod \
-           aoresponse_xc_m.mod \
            aoresponse_test_m.mod \
            aoresponse_main_m.mod
 
