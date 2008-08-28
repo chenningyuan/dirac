@@ -42,7 +42,7 @@ initialize ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0 # otherwise 1 if "--quick" parameter is in the list
-noopt=0 # otherwise 1 of "--noopt" parameter is in the list
+nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 debug='dbx'
@@ -371,7 +371,7 @@ safeflags_stuff() {
 #  'configure' argument list
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-if [ $noopt=1 ]; then
+if [ $nooptim = 1 ]; then
   echo
   echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
   echo
@@ -1880,11 +1880,11 @@ fi
 
 if [ $IPRINT -ge "5" ];  then 
  echo
- echo 'before dumping stuff into Makefile.config...noopt='$noopt
+ echo 'before dumping stuff into Makefile.config...nooptim='$nooptim
 fi
 
 # determine whether to flush into Makefile.config safe or optimized flags
-if [ $noopt = 1 ]; then
+if [ $nooptim = 1 ]; then
 # ... employ flags with no optimization
   use_flags=$safe
   use_c_flags=$c_safe
@@ -2159,7 +2159,7 @@ while [ $# != 0 ]; do
          esac
          ;;
       "noopt")
-	 noopt=1
+	 nooptim=1
          ;;
       "libdir" )
          if [ "${valomitted}" = "yes" ]; then
