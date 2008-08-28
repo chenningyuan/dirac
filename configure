@@ -534,15 +534,10 @@ case $counter in
   0 ) $echo "\n   No $to_find compiler found on this computer"
     echo  "   Cannot proceed without a Fortran compiler in path"
     echo  "   Please check your path! "
-    case $to_find in
-      "Fortran" ) 
-        echo  "   (If your compiler is in your path, use the --f90= option of configure) ";;
-      "C" )
-        echo  "   (If your compiler is in your path, use the --cc= option of configure) ";;
-    esac  
+    echo  " Specify a compiler manually: "
     exit ;;
-  1 ) 
-    echo " The following $to_find compiler will be used: $comp_found" ;;
+#  1 ) 
+#    echo " The following $to_find compiler will be used: $comp_found" ;;
   * )
     $echo "\n These following $to_find compilers were detected on your system:"
     counter=0
@@ -550,35 +545,38 @@ case $counter in
       counter=`expr $counter + 1`
       $echo "$counter) $comp \t\c"
     done
-    $echo "0) Exit."      
-
-    comp_index=-1
-    $echo "Which one you you want to use? (Default: 1) \c"
-    read comp_index
-    if [ -z "$comp_index" ]; then
-      comp_index=1
-    fi
-    if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
-      echo "Not a valid compiler number: $comp_index"
-      exit
-    elif [ $comp_index -eq 0 ]; then
-      echo "use: configure --help to see how you can specify your own compiler."
+    $echo "0) Specify compiler manually."      
+  ;;
+esac
+   
+comp_index=-1
+$echo "Which one you you want to use? (Default: 1) \c"
+read comp_index
+if [ -z "$comp_index" ]; then
+    comp_index=1
+fi
+if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
+    echo "Not a valid compiler number: $comp_index"
+    exit
+elif [ $comp_index -eq 0 ]; then
+    echo ""
+    echo "Note that compilerflags may not be set correctly."
+    echo "Check Makefile.config afterwards."
+    echo ""
+    echo "Enter you compiler:"
+    read comp_foud
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
-      exit
-    fi
-
+else
     counter=0 
     for comp in $comp_found; do
-      counter=`expr $counter + 1`
-      if [ $counter -eq $comp_index ]; then
-        comp_found=$comp
-        break
-      fi
+	counter=`expr $counter + 1`
+	if [ $counter -eq $comp_index ]; then
+	    comp_found=$comp
+	    break
+	fi
     done 
+fi
 
-    ;;
-
-esac
 echo "Compiler for $to_find: $comp_found"
 }
 
