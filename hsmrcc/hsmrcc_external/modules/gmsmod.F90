@@ -2,9 +2,7 @@
 module GMSMod
 !------------------------------------------------------------------------
 !
-!           Necessary stuff read from Gamess integral files
-!
-! reads data from Gamess files
+!         Necessary stuff read from Gamess/DIRAC (integral) files
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -15,7 +13,7 @@ module GMSMod
    implicit none
    integer :: NAO, NSO, NFRZV
 
-  ! integer :: NVMO ! mi: added - in Parameters
+  ! integer :: NVMO !  it's in Parameters
    double precision :: TotEn, NucEn, TrfTol
 
    integer :: NTMO_GMS, NCMO_GMS, NVMO_GMS, NEMO_GMS, NHOLE_GMS, NPTCL_GMS
@@ -56,10 +54,15 @@ subroutine InitGMSMod
      call  InitReadDIRAC
    endif
 
-
 !  ... final print-out of what has been read
    if (get_iprint() >=8) then
-    write(UOUT,'(/,2x,a,/)') '=====  InitGMSMod: obtained variables ====='
+
+    if (OPTION(DIRACp)) then
+      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from DIRAC ====='
+    else
+      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from GAMESS ====='
+    endif
+!   -----
     write(UOUT,'(8x,a,i4)')     '   NAO=',NAO
     write(UOUT,'(8x,a,i4)')     '   NSO=',NSO
     write(UOUT,'(8x,a,i4)')     '  NCMO=',NCMO
@@ -112,15 +115,17 @@ end subroutine EndGMSMod
 
 
 !> allocate 1-electron data
+!> called from InitReadVINF, InitReadMREINT ....
+!>&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine alloc_bunch
   implicit none
 
 !  ... needs NSO, NVMO, NAO
 
   if (get_iprint() >=7) then
-   write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
-   write(UOUT,'(2x,a,3i4)') 'used variables - NSO,NVMO,NAO:', NSO,NVMO,NAO
-   call flushout
+    write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
+    write(UOUT,'(2x,a,3i4)') 'used variables - NSO,NVMO,NAO:', NSO,NVMO,NAO
+    call flushout
   endif
 
   if (NSO <=0 .or. NVMO <=0 .or. NAO <=0) then
@@ -197,7 +202,7 @@ subroutine InitReadDIRAC
 
 character :: dirac_file='Dirac_HSMRCC'
 real*8    :: ENSCF_DIR
-integer   :: ludir = 18, iprint_dirac, NELEC_DIR
+integer   :: ludir = 18, iprint_dirac, NELEC_DIR, NSP, NORBT, NCORE_DIR, NACT_DIR
 logical   :: is_file, dir_spfr
 
 inquire(file=dirac_file, exist=is_file)
@@ -206,20 +211,50 @@ if (.not.is_file) then
 endif
 
 open(ludir,file=dirac_file,form='unformatted',status='old', access='sequential')
-read(ludir) iprint_dirac, NELEC_DIR
+
+read(ludir) iprint_dirac
+
+read(ludir) NELEC_DIR
 
 read(ludir) dir_spfr
 
 read(ludir) ENSCF_DIR
 
+read(ludir) NSP
+read(ludir) NORBT
+read(ludir) NCORE_DIR
+read(ludir) NACT_DIR
+
 write(UOUT,*) 'read iprint_dirac=',iprint_dirac
 write(UOUT,*) 'NELEC_DIR=',NELEC_DIR
 write(UOUT,*) 'dir_spfrdir_spfr=',dir_spfr
 write(UOUT,*) 'ENSCF_DIR=',ENSCF_DIR
+write(UOUT,*) 'NSP=',NSP
+write(UOUT,*) 'NORBT=',NORBT
+write(UOUT,*) 'NCORE_DIR=',NCORE_DIR
+write(UOUT,*) 'NACT_DIR=',NACT_DIR
 
 close(ludir) 
 
- call quit('..in InitReadDIRAC')
+! ... assign DIRAC HSCC variables ...
+NAO = NORBT
+NEMO = NAO
+
+! ... active space - double excitations
+NPTCL = 2
+NHOLE = 2
+
+!NACT = NACT_DIR
+NCMO = NCORE_DIR
+write(UOUT,*) 'assigned NCMO=',NCMO
+
+NSO = NSP
+TotEn = ENSCF_DIR
+
+! ...  prepare variable  ...
+  NVMO = NHOLE + NPTCL
+
+  call alloc_bunch
 
 end subroutine  InitReadDIRAC
 
@@ -230,7 +265,7 @@ subroutine InitReadVINF
 implicit none
 
       if (get_iprint() >=7) then
-       write(UOUT,*) 'InitReadVINF: going to read FileVINF file...'
+        write(UOUT,*) 'InitReadVINF: going to read FileVINF file...'
       endif
 
       !******************************************************
@@ -265,14 +300,14 @@ implicit none
          write(UOUT,*) ' IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE,' NINTMX=',NINTMX
          write(UOUT,*) 'Invalid Data in File UVINF, 2! '
          call flushout
-         call Quit(': Invalid Data in File UVINF 2 !')
+         call quit(': Invalid Data in File UVINF 2 !')
       endif
 
       if (NTMO /= NSO) then
          write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
          write(UOUT,*) 'Current NTMO is not valid for integral file'
          call flushout
-         call Quit(': Current NTMO is not valid for integral file')
+         call quit('InitReadVINF: Current NTMO is not valid for integral file')
       endif
 
       ! ... Allocate for next read ...
@@ -284,12 +319,40 @@ implicit none
                   OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
 
       SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
-
       OccRef = OccGMSRef
 
-      ! ... Set other variables in GMSMod
+      if (get_iprint() >=7) then
+          call print_gms_data
+      endif
 
 end subroutine InitReadVINF
+
+!> print allocated data read from GAMESS/DIRAC files
+subroutine print_gms_data
+!
+!  SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
+!
+integer :: i
+
+write(UOUT,'(/,a)') 'Output: i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy'
+
+do i=1,NSO
+ !write(UOUT,'(i3,a,i4,a,i3,a,i3,a,i3,a,i4,a,i4,f16.8)')   & 
+ write(UOUT,1298) i,  & 
+           SpinOfOrb(i),  & 
+           OccGMSRef(i),  & 
+           IrrepOrb(i),   & 
+           IrpLabOrb(i),  &
+           OrbType(i),    &
+           OrbSpace(i),   &
+           OrbEnergy(i)
+enddo
+
+1298 format (i3,1x,'Spn=',i3,1x,'Occ=',i3,1x,'Irp=',i4,1x,   & 
+! 'IrpLab=',i12,1x,'Type=',i3,1x,'Space=',i3,1x,'OrbEnergy=',f12.6)
+ 'IrpLab=',a4,1x,'Type=',i3,1x,'Space=',i3,1x,'OrbEn=',f12.6)
+
+end subroutine print_gms_data
 
 
 !> read data from GAMESS integral files 
@@ -404,7 +467,7 @@ subroutine InitReadMREINT
       NPTCL_GMS = j9
 
 !
-!          Set up from gamess
+!      ...  Set up from gamess
 !
       if (NCMO .eq.-1) NCMO = NCMO_GMS
       if (NEMO .eq.-1) NEMO = NEMO_GMS
@@ -447,6 +510,10 @@ subroutine InitReadMREINT
       ! ... close files ...
       close(UMR1EINT) 
       close(UMR2EINT)
+
+      if (get_iprint() >=7) then
+        call print_gms_data
+      endif
 
       ! read gamess symmetry info ...
       call read_gamess_syminf

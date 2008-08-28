@@ -2,7 +2,6 @@
 !     of choosing r objects from n numbered objects
 !     without regard to the order of choice.
 !
-!
 !     direct calculation using factorials runs into
 !     integer overflow problems. so use pascal triangle
 !     with recursion formula (n,r) = (n-1,r) + (n-1,r-1)
@@ -17,7 +16,13 @@
       lerr = .false.
       if ((n.lt.0).or.(r.lt.0)) lerr = .true.
       if (n.lt.r) lerr = .true.
-      if (lerr) stop "invalid parameters to n_choose_r"
+
+   ! if (lerr) stop "invalid parameters to n_choose_r"
+      if (lerr) then
+        write(*,*) 'n=',n,' r=',r     
+        call quit("invalid parameters to n_choose_r")
+      endif
+
       n_choose_r = n_choose_r_internal(n,min(r,n-r))
 
       return

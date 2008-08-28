@@ -80,7 +80,8 @@ CHARACTER(len=7) :: WORD, KEYWORD=''
 
 ! ... nice F90 version 
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
-character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
+!character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
+character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NACT  ','.NCORE ','.XXXXXX','.XXXXXX' /)
 
  if (set) then
   if (reset) set = .false.
@@ -131,11 +132,12 @@ Do
      Select Case (WORD)
       Case ('.OPTION')
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
-      Case ('.NELEC')
-        READ(LUCMD,*) NELE
-        write(LUPRI,*) ' read NELE=',NELE
+      Case ('.NCORE')
+        READ(LUCMD,*) NCMO
+        write(LUPRI,*) ' read NCMO=',NCMO
       Case ('.NACT')
         READ(LUCMD,*) NACT
+        write(LUPRI,*) ' read NACT=',NACT
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
         write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc

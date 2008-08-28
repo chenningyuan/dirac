@@ -23,8 +23,9 @@ function IsMainOrb(i)
 
    if ((i.le.0).or.(i.gt.NVMO)) then
       write(UOUT,*) "Invalid value for IsMainOrb"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "i,NVMO:",i,NVMO
+      call flushout
+      call quit('Invalid value for IsMainOrb')
    endif
 
    IsMainOrb = OrbSpace(i+NCMO).eq.PM_SPACE
@@ -41,8 +42,9 @@ function IsIntmOrb(i)
 
    if ((i.le.0).or.(i.gt.NVMO)) then
       write(UOUT,*) "Invalid value for IsIntmOrb"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "i,NVMO:",i,NVMO
+      call flushout
+      call quit('Invalid value for IsIntmOrbInvalid value for IsIntmOrb')
    endif
 
    IsIntmOrb = OrbSpace(i+NCMO).eq.PI_SPACE
@@ -59,8 +61,9 @@ function IsIntmCore(i)
 
    if ((i.le.0).or.(i.gt.NVMO)) then
       write(UOUT,*) "Invalid value for IsIntmCore"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "i,NVMO:",i,NVMO
+      call flushout
+      call quit('Invalid value for IsIntmCore')
    endif
 
    IsIntmCore = IsIntmOrb(i)
@@ -71,22 +74,21 @@ function IsIntmCore(i)
 end function IsIntmCore
 
 function IsIntmVirt(i)
-
    implicit none
    integer i
    logical IsIntmVirt
 
    if ((i.le.0).or.(i.gt.NVMO)) then
-      write(UOUT,*) "Invalid value for IsIntmVirt"
-      call flush(UOUT)
-      call abort
+      write(UOUT,*) "Invalid value for IsIntmVirt:"
+      write(UOUT,*) "i,NVMO:",i,NVMO
+      call flushout
+      call quit('Invalid value for IsIntmVirt')
    endif
 
    IsIntmVirt = IsIntmOrb(i)
    if (IsIntmVirt) IsIntmVirt = OccRef(i+NCMO).eq.0
 
    return
-
 end function IsIntmVirt
 
 end module OrbMod

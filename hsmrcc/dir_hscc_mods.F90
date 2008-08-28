@@ -89,15 +89,16 @@ subroutine print_mrconee_data
 #include "implicit.h"
 #include "priunit.h"
 
+logical :: print_mt = .false.
+
 if (.not.mrconee_read) then
   Write(LUPRI,*) 'MRCONEE file was not read...'
-  Call QExit('print_mrconee_data')
   Return
 endif
 
 Call Header('MRCONEE print-out',-1)
 
-write(LUPRI,'(2x,a,i3)')     ' NSP=',NSP
+write(LUPRI,'(2x,a,i3)')     'Total # of KU spinors, NSP=',NSP
 write(LUPRI,'(2x,a,l)')      ' is BREIT correction=',BREIT
 write(LUPRI,'(2x,a,f12.6)')  ' ECORE=',ECORE
 write(LUPRI,'(2x,a,i3)')     ' NFSYM=',NFSYM
@@ -117,27 +118,30 @@ DO IRP = 1, NSYMRP
   write(LUPRI,'(2x,a,i3,a,i3)') 'IRP=',IRP,' NELEC(IRP)=',NELEC(IRP)
 ENDDO
 
-write(LUPRI,'(/,2x,a,i3)')  'reducible representations, 2*NREP=',2*NREP
+write(LUPRI,'(/,2x,a,i3)')  'reducible representations, up to 2*NREP=',2*NREP
 write(LUPRI,'(2x,a)')  '** REPNA: **'
 DO IRP = 1, 2*NREP
-  write(LUPRI,'(2x,a,i2,a,a)') 'IRP=',IRP,' REPNA(IRP)=',REPNA(IRP)
+ ! write(LUPRI,'(2x,a,i2,a,a)') 'IRP=',IRP,' REPNA(IRP)=',REPNA(IRP)
+  write(LUPRI,'(2x,a,i2,a,i2,a,a)') ' REPNA(',IRP,'/',2*NREP,')=',REPNA(IRP)
 ENDDO
 
 write (LUPRI,'(/,2x,a)') '*** EPS1, IREPSP:'
 DO ISP = 1, NSP
-  write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-                   IREPSP(ISP),IREPSP(NSP+ISP), &
-                  ' EPS1(ISP)=',EPS1(ISP)
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+         IREPSP(ISP),IREPSP(NSP+ISP), &
+         ' EPS1(ISP)=',EPS1(ISP)
 ENDDO
 
 write (LUPRI,'(/,2x,a)') '*** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
 write (LUPRI,'(2x,a,2i3)') ' NREP, 2*NREP:',NREP,(2*NREP)
 
-DO I=1,2*NREP
-DO J=1,2*NREP
-  write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
-ENDDO
-ENDDO
+if (print_mt) then
+  DO I=1,2*NREP
+  DO J=1,2*NREP
+    write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
+  ENDDO
+  ENDDO
+endif
 
 end subroutine print_mrconee_data
 
@@ -156,7 +160,7 @@ subroutine read_mdcint
 type(Vect) :: indk_vect, indl_vect
 type(Array2Dim) :: cbuf_vect
 
-logical :: is_mdc, check_mem, print_int 
+logical :: is_mdc, check_mem, print_int, print_batch_info 
 
 integer :: RCW
 
@@ -266,6 +270,7 @@ endif
 !Call ZeroObject(cbuf_vect)
 
  print_int = .false.
+ print_batch_info = .false.
 
   MOINT = 0
 
@@ -299,9 +304,11 @@ endif
   ! call print_vect_attrib(indk_vect)
   ! call print_vect_attrib(indl_vect)
 
+  if (print_batch_info) then
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)') ' actual number of read integrals:',MOINT
     CALL FLSHFO(LUPRI)
+  endif
 
 if (print_int) then
 
@@ -427,12 +434,12 @@ use io_moltra
 character :: dirac_file='Dirac_HSMRCC'
  
 if (iprint_hscc >= 5) then
-   call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
+  call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
 endif
 
 nelec_tot = 0
 do irp=1,NSYMRP
-nelec_tot = nelec_tot +  NELEC(irp)
+  nelec_tot = nelec_tot + NELEC(irp)
 enddo
 write(LUPRI,*) 'nelec_tot=',nelec_tot
 
@@ -440,16 +447,29 @@ write(LUPRI,*) 'nelec_tot=',nelec_tot
 !open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
 open(ludh,file=dirac_file,form='unformatted',status='unknown', access='sequential') 
 
-! 1.record 
-write(ludh) iprint_hscc, nelec_tot
+write(ludh) iprint_hscc
 
-! 2.record 
+write(ludh) nelec_tot
+
 write(ludh) SPFR
 
-! 3.record 
 write(ludh) ECORE
 
+write(ludh) NSP
+
+write(ludh) NORBT
+
+write(ludh) NCMO
+
+write(ludh) NACT
+
 close(ludh,status="keep")
+
+write(LUPRI,*) 'saved NELEC_TOT=',nelec_tot
+write(LUPRI,*) 'saved NCORE=',NCORE
+write(LUPRI,*) 'saved NACT=',NACT
+write(LUPRI,*) 'saved NORBT=',NACT
+write(LUPRI,*) 'saved NSP=',NSP
 
 if (iprint_hscc >= 5) then
   write(LUPRI,'(/,2x,a,a)') '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file

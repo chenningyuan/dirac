@@ -48,6 +48,8 @@ subroutine GenHSMRpars
    do i = 1, NVMO
      if (IsMainOrb(i)) NMAINORB = NMAINORB + 1
    enddo
+   if (NMAINORB==0) call quit('GenHSMRpars: NMAINORB .eq. 0 !')
+
 
 !  ... intermediate space, Pi
    NINTMORB = 0
