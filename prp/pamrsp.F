@@ -2569,14 +2569,7 @@ C
      &      'LINRED: Solution vector at frequency:',W,' a.u.'
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
-C
-C     Solve linear system
-C
 
-!radovan
-!     
-!radovan
-C
       CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('LINRED')
       RETURN
