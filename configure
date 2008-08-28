@@ -1572,8 +1572,6 @@ case $machine in
       g95)
          opt="$opt -fno-second-underscore"
          safe="$safe -fno-second-underscore" ;;
-      ifort)
-         ldflag="-nofor_main" ;;
       esac
 
       find_real_cc
@@ -1594,7 +1592,7 @@ case $machine in
 #
       case "$F90real" in
       ifort)
-         ldflag="-nofor_main" ;;
+	      ;;
       esac
 
       find_real_cc
