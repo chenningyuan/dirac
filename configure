@@ -1242,7 +1242,7 @@ get_cpp_flags(){
 
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-    def="dirmpi.x"
+    def="dirac.x"
   else
     cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
