@@ -444,7 +444,7 @@ C          DINTSKP(2,I,2) - number of integrals skipped, y direction
 C          DINTSKP(2,I,3) - number of integrals skipped, z direction
 C
       DOSCRN = .FALSE.
-      LSCALE_GAUNT = .FALSE.
+      LSCALE_GAUNT = LSCALE_DFT_GAUNT
       IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
          IF (DIRFCK.OR.SOFOCK) THEN
             CALL DZERO(DINTSKP,8)
