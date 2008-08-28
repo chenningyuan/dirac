@@ -1928,7 +1928,7 @@ C
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
 CTROND
-            WRITE(6,*) 'old',I,J,REA       
+!           WRITE(6,*) 'old',I,J,REA       
           ENDIF
         ENDDO          
       ENDDO
@@ -1947,7 +1947,7 @@ C
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
 CTROND
-            WRITE(6,*) 'new',I,J,REA       
+!           WRITE(6,*) 'new',I,J,REA       
           ENDIF
         ENDDO
       ENDDO
