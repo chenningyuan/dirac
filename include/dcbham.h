@@ -84,6 +84,9 @@
 !
 !     QDOTS      - use quantum dots harmonic potential instead of the electron-nuclei attraction potential
 !
+!     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
+!                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
+!                  included in DFT calculations.
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -114,7 +117,7 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI, QDOTS
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT
 
 ! keep and actualize here number of elements in the DCLHAM common block
 ! MI: in there not an automatic way how to keep this variable actual ?
@@ -128,7 +131,7 @@
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
-     &                DKH1, DKH2, NOAMFI, QDOTS
+     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 

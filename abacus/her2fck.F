@@ -470,10 +470,18 @@ C............Coulomb multiplication factors
 C............Gaunt multiplication factors
              IF (IZ.EQ.1) THEN
                 DIRFAC = D0
-                EXCFAC = DM3*DMP25*HFXFAC
+                IF (LSCALE_GAUNT) THEN
+                   EXCFAC = DM3*DMP25*HFXFAC
+                ELSE
+                   EXCFAC = DM3*DMP25
+                ENDIF
              ELSE
                 DIRFAC = DM1
-                EXCFAC = DMP25*HFXFAC
+                IF (LSCALE_GAUNT) THEN
+                   EXCFAC = DMP25*HFXFAC
+                ELSE
+                   EXCFAC = DMP25
+                ENDIF
              ENDIF
           ENDIF
 C

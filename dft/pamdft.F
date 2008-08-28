@@ -70,7 +70,7 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
-     &            '.COLLIN','.XXXXXX','.ZIPGRI','.XXXXXX'/
+     &            '.COLLIN','.GAUNTS','.ZIPGRI','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -280,8 +280,9 @@ C                                      asymptotic part is LBalpha
                  CALL QUIT('missing CDFT routines')
 #endif /* MOD_CDFT */
                  GOTO 100
-
+C     .GAUNTSCALE
  18              CONTINUE
+                 LSCALE_DFT_GAUNT=.TRUE.
                  GOTO 100
 
  19              CONTINUE

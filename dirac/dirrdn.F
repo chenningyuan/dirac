@@ -3888,6 +3888,8 @@ CMI     ... default initialization
 #endif
 CMI   ... default value - no artificial atom
       QDOTS = .FALSE.
+Culfek: Do not scale gaunt integrals with exchange scale factor by default.
+      LSCALE_DFT_GAUNT = .FALSE.
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
@@ -4773,6 +4775,18 @@ C aspg, 20070909
             WRITE (LUPRI,*) ' '
          ENDIF 
 #endif /* MOD_ERI */
+
+         IF (IGTINT) THEN
+            IF (LSCALE_DFT_GAUNT) THEN
+               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
+     &              'scaled as HF exchange according to the selected'
+               WRITE (LUPRI,*) ' DFT functional. '
+            ELSE
+               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
+     &              'included to 100% independently of the selected'
+               WRITE (LUPRI,*) ' DFT functional. '
+            ENDIF
+         ENDIF
 
       ENDIF
 #endif
