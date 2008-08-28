@@ -375,10 +375,6 @@ if [ $nooptim = 1 ]; then
   echo
   echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
   echo
-else 
-  echo
-  echo  'COMPILERS FLAGS set with the optimization.'
-  echo
 fi
 }
 
