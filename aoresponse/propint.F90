@@ -2,9 +2,14 @@ module PropInt
 !routines for property contractions and matrices
 
 #ifndef PRG_DIRAC
-    use TypeMatrix
+#endif /* PRG_DIRAC */
+
+#ifndef PRG_DIRAC
+    use matrix_autop
+    use dal_interface,only: di_GET_GbDs,di_read_operator_int,di_get_sigma_xc_cont,di_get_T_xc_cont &
+                     ,di_get_MagDeriv_FxD_DFT,di_get_MagDeriv_GxD_DFT &
+                     ,di_get_geomDeriv_molgrad_DFT,di_get_geomDeriv_FxD_DFT,di_get_geomDeriv_GxD_DFT
     use matrix_operations,only: mat_init,mat_to_full,mat_set_from_full
-    use dal_interface,only: di_GET_GbDs
 #else
     use matrix_mod
     use dirac_interface_m
@@ -27,15 +32,22 @@ module PropInt
 
     !starting with two fields
     logical,parameter:: T=.true.,F=.false.
-    type(prt):: tab(2) = (/ &                            !rk im ba ln qu
-        prt('EL'  ,'Electric field'                      , 3, F, F, T, F), &
-        prt('MAGO','Magnetic field w/o London orbitals'  , 3, T, F, F, T)/)
+    type(prt):: tab(6) = &                                 !rk im ba ln qu
+        (/prt('EL'  ,'Electric field'                      , 3, F, F, T, F) &
+         ,prt('MAGO','Magnetic field w/o. London orbitals' , 3, T, F, F, T) &
+         ,prt('MAG' ,'Magnetic field with London orbitals' , 3, T, T, F, F) &
+         ,prt('ELGR','Electric field gradient'             , 6, F, F, T, F) &
+         ,prt('VEL' ,'Velocity'                            , 3, T, F, T, F) &
+         ,prt('GEO' ,'Nuclear coordinates'                 , 0, F, T, F, F)/) !0=uninitialized
 
     integer:: nbas=0,natom=0 !unitialized
-    integer,parameter:: lwork=6000000 !totally wrong, should be dynamic
 
     character*1,parameter:: xyz(3) = (/'X','Y','Z'/), &
             c09(0:9) = (/'0','1','2','3','4','5','6','7','8','9'/)
+
+#ifndef PRG_DIRAC
+    logical,external:: do_dft
+#endif /* PRG_DIRAC */
 
 contains
 
@@ -44,7 +56,7 @@ contains
     !Front for 'erg' below, filling in optionals, checking sizes, and making permutations
     !NB: The result of the contraction is ADDED to 'e' - remember to zero before first call
         character(*),intent(in):: p(:) !p(n) perturbation lables
-        type(Matrix),intent(in):: D(:) !density matrix expansion to contract integrals with
+        type(matrix),intent(in):: D(:) !density matrix expansion to contract integrals with
         real*8,intent(inout):: e(*) !result is added to 'e'. (*) to permit re-ranking
                                     !size(e) is not checked
         integer,intent(in),optional:: &
@@ -75,8 +87,8 @@ contains
     !front for 'fck' below, checking dimensions and taking care permutations (not yet, actually)
     !Note that the result of the contraction is ADDED to F, ie. remeber to zero F before calling
         character(*),intent(in):: p(:) !p(n) perturbation lables
-        type(Matrix),intent(in):: D(:) !density matrix expansion to contract integrals with
-        type(Matrix):: F(*) !result is added to F. (*) to permit re-ranking, so size not checked
+        type(matrix),intent(in):: D(:) !density matrix expansion to contract integrals with
+        type(matrix):: F(*) !result is added to F. (*) to permit re-ranking, so size not checked
         integer,intent(in),optional:: &
                  c(:), & !c(n) component indices, or c(n+n) components ranges of each p
                  b(:), & !b(m) ranks of D(:) expansion: size(D)=product(b+1)
@@ -84,12 +96,12 @@ contains
         integer:: n,m,nf,op(size(p)),cc(2*size(p)),i
         logical:: zfck; n=size(p)
         call PropCheck('PropFock',D(1),n,p, c=c,nd=size(D),b=b,o=o &
-                      ,op=op,cc=cc,m=m,ne=nf,zerg=zfck)
+                      ,op=op,cc=cc,m=m,ne=nf,zfck=zfck)
         if (zfck) return !the result is zero
         call subr() !since bb(m) and oe(ne) and FF(ne)
     contains
         subroutine subr()
-            integer:: bb(m),of(nf); type(Matrix):: FF(nf)
+            integer:: bb(m),of(nf); type(matrix):: FF(nf)
             call PropOrder(n,op,cc,m,size(D),nf, bb,of, b=b,o=o)
             !order F into FF, call core function fck, then reorder back into F
             do i=1,nf; FF(of(i)) = F(i); F(i)=0; enddo
@@ -104,8 +116,8 @@ contains
     !front for 'ovl' below, checking dimensions. Argument S0 is for context only
     !S will on exit contain the array of perturbed overlap matrices (which may all be zero (0*S0))
         character(*),intent(in):: p(:) !p(n) perturbation lables
-        type(Matrix),intent(in):: S0 !overlap matrix, for context (shape, basis set etc.)
-        type(Matrix):: S(*) !resulting perturbed overlap matrices.
+        type(matrix),intent(in):: S0 !overlap matrix, for context (shape, basis set etc.)
+        type(matrix):: S(*) !resulting perturbed overlap matrices.
                             !intent(inout) is dropped to permit re-ranking: (/S(:,:)/)
         integer,intent(in),optional:: &
                  c(:) !c(n) component indices, or c(n+n) components ranges of each p
@@ -114,16 +126,16 @@ contains
         real*8:: ww(size(p)+1); logical:: zovl; n=size(p)
         !process and check arguments
         call PropCheck('PropOverlap',S0,n,p, c=c,w=w, op=op,cc=cc,ww=ww,ne=ns,zovl=zovl)
-        do i=1,ns; S(i) = 0.0d0*S0; enddo
+        do i=1,ns; S(i) = 0d0*S0; enddo
         if (zovl) return !the result is zero
         call subr() !since bb(m) and oe(ne) and FF(ne)
     contains
         subroutine subr()
-            integer:: os(ns); type(Matrix):: SS(ns)
+            integer:: os(ns); type(matrix):: SS(ns)
             call PropOrder(n,op,cc,0,0,ns, cc(1:0),os)
             !call core function ovl, then reorder back into S
             call ovl(n,(/(p(op(i)),i=1,n)/),(/(cc(op(i)),i=1,n),(cc(n+op(i)),i=1,n)/) &
-                    ,(/(ww(op(i)),i=1,n),w(n+1)/),S0,SS)
+                    ,(/(ww(op(i)),i=1,n),ww(n+1)/),S0,SS)
             do i=1,ns; S(i) = SS(os(i)); SS(os(i))=0; enddo
         end subroutine
     end subroutine
@@ -134,8 +146,8 @@ contains
         character(*):: p(:) !p(n) perturbation lables
         integer:: n,c(:) !c(n*2) component range for each p
         integer:: m,b(:) !b(m) ranks of D and DFD
-        type(Matrix):: S0,D(product(b)) !S0 uneperturbed overlap and D(product(b)) perturbed density matrices
-        type(Matrix):: DFD(product(b)) !energy-weighted density matrices
+        type(matrix):: S0,D(product(b)) !S0 uneperturbed overlap and D(product(b)) perturbed density matrices
+        type(matrix):: DFD(product(b)) !energy-weighted density matrices
         real*8,intent(inout):: e(product(b)*product(c(size(p)+1:)-c(:size(p)))) !result is added to e
         real*8,optional:: w(:) !frequencies w(n+1)
         integer:: i,j,k,ip(size(p))
@@ -152,11 +164,11 @@ contains
 
 
     subroutine erg(n,m,p,c,D,b,e)
-        integer:: n,m,c(2*n),b(m); character(*):: p(n) !perturbation lables
-        type(Matrix):: D(product(b+1)) !density matrix expansion to contract over
+        integer:: n,m,c(n+n),b(m); character(*):: p(n) !perturbation lables
+        type(matrix):: D(product(b+1)) !density matrix expansion to contract over
         real*8,intent(out):: e(product(b)*product(c(n+1:n+n)-c(1:n)+1)) !result
-        integer:: i,j,k,ii,jj,kk,pb,pb1
-        type(Matrix):: A(3); real*8:: r(3*3*natom)
+        integer:: i,j,k,l,ii,jj,kk,ll,i1,j1,k1,l1,pb,pb1
+        type(matrix):: A(6); real*8:: r(3*natom*3) !maximum scratch needed
         pb = product(b); pb1 = product(b+1)
         if (n==0) then
             if (m==0) stop 'PropEnergy: unperturbed energy requested'
@@ -166,74 +178,40 @@ contains
                 stop 'PropEnergy: unperturbed Fock matrix needed'
             if (m==2) then !stopping at m=2, for now
                 call mat_init(A(1),nbas,nbas)
+                if (do_dft()) call mat_init(A(2),nbas,nbas)
                 do j=0,b(2)-1
                     call di_GET_GbDs(D(1+b(1)+1+j),A(1))
+                    if (do_dft()) then
+                        call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
+!                       call di_get_sigma_xc_cont(D(1+b(1)+1+j),D(1),D(1),A(2))
+!                       A(1) = A(1) + A(2)
+                    endif
                     do i=1,b(1)
                         e(i+b(1)*j) = trab(A(1),D(1+i)) !factor 2 hidden in trab
                     enddo
-                enddo
-                A(1) = 0
-       !elseif (m>2) then
-        elseif (m==3) then
-            call mat_init(A(1),nbas,nbas)
-
-            !E2(Da) Dbc (should be zero-testing here)
-            do i=1,b(1)
-                call di_GET_GbDs(D(1+i),A(1))
-          !     ....add DFT contribution to E2(Da) to A(1)
-                do k=0,b(3)-1; do j=0,b(2)-1
-                    kk=1+b(1)+b(2)+b(3)+b(1)*b(2)+b(1)*b(3)+j+b(2)*k+1
-                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(kk))
-            enddo; enddo; enddo
-
-            !E2(Db) Dac (should be zero-testing here)
-            do j=0,b(2)-1; jj=1+b(1)+j+1
-                call di_GET_GbDs(D(jj),A(1))
-          !     ....add DFT contribution to E2(Db) to A(1)
-                do k=0,b(3)-1; do i=1,b(1)
-                    ii=1+b(1)+b(2)+b(3)+b(1)*b(2)+i+b(1)*k
-                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(ii))
-            enddo; enddo; enddo
-
-            !E2(Dc) Dab (should be zero-testing here)
-            do k=0,b(3)-1; kk=1+b(1)+b(2)+k+1
-                call di_GET_GbDs(D(kk),A(1))
-          !     ....add DFT contribution to E2(Dc) to A(1)
-                do j=0,b(2)-1; do i=1,b(1)
-                    ii=1+b(1)+b(2)+b(3)+i+b(1)*j
-                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(ii))
-            enddo; enddo; enddo
-
-            !E3(Da,Db) Dc (should be zero-testing here)
-            do j=0,b(2)-1; do i=1,b(1); ii=1+i; jj=1+b(1)+j+1
-      ! ....put DFT contribution to E3(Da,Db), Da=D(ii), Db=D(jj) in A(1)
-                do k=0,b(3)-1; kk=1+b(1)+b(2)+k+1
-                    e(i+b(1)*j+b(1)*b(2)*k) = e(i+b(1)*j+b(1)*b(2)*k) + trab(A(1),D(kk))
-            enddo; enddo; enddo
-
-            A(1) = 0
-        elseif (m>3) then
-                stop 'PropEnergy: m>3 not implemented at the moment'
-        endif 
+                enddo; A(1)=0; if (do_dft()) A(2)=0
+            elseif (m>2) then
+                call quit('PropEnergy: m>2 not implemented at the moment')
+            endif
         elseif (n==1.and.p(1)=='EL') then
+#ifndef PRG_DIRAC
+            if (m==0) call DIPNUC_ifc(natom,r(1:3),(/(0d0,i=1,9*natom)/))
+            if (m==0) e(1:c(2)-c(1)+1) = e(1:c(2)-c(1)+1) - r(c(1):c(2)) !sign change
+#else
+            !fixme
+#endif /* PRG_DIRAC */
             do j=0,c(2)-c(1); jj=c(1)+j
                 A(1) = oneint(xyz(jj)//'DIPLEN ')
                 do i=1,pb; ii=pb1-pb+i
                     e(i+pb*j) = e(i+pb*j) + A(1)**D(ii) !factor 2 hidden in **
-                enddo
+                enddo; A(1)=0
             enddo
-#ifndef PRG_DIRAC
-            if (m==0) call DIPNUC_ifc(natom,r(1:3),(/(0d0,i=1,9*natom)/))
-#else
-            !fixme
-#endif /* PRG_DIRAC */
-            if (m==0) e(1:c(2)-c(1)+1) = e(1:c(2)-c(1)+1) - r(c(1):c(2))
         elseif (n==1.and.p(1)=='MAGO') then
             do j=0,c(2)-c(1); jj=c(1)+j
                 A(1) = oneint(xyz(jj)//'ANGMOM ')
                 do i=1,pb; ii=pb1-pb+i
                     e(i+pb*j) = trab(A(1),D(ii))/2 !half, factor 2 hidden in trab
-                enddo
+                enddo; A(1)=0
             enddo
         elseif (n==2.and.all(p==(/'MAGO','MAGO'/))) then
             do k=0,c(4)-c(2); kk=c(2)+k
@@ -241,20 +219,261 @@ contains
                     A(1) = oneint(xyz(min(jj,kk))//xyz(max(jj,kk))//'SUSCGO')
                     do i=1,pb; ii=pb1-pb+i
                         e(i+pb*j+pb*3*k) = trab(A(1),D(ii)) !factor 2 hidden in trab
-                    enddo
+                    enddo; A(1)=0
                 enddo
             enddo
+        elseif (n==1.and.p(1)=='MAG'.and.m/=0) then !no m==0 because because MAG imag
+            !one-electron integral contribution
+            do k=0,c(2)-c(1); kk=c(1)+k
+                A(1) = oneint('dh/dB'//xyz(kk)//'  ')
+                do i=1,pb; ii=pb1-pb+i
+                    e(i+pb*k) = e(i+pb*k) + trab(A(1),D(ii))
+                enddo; A(1)=0
+            enddo
+            !two electron integral contributions
+            if (.not.all((/(iszero(D(i)),i=pb1-pb+1,pb1)/))) then
+                call twofck('M',D(1:1),A(1:3))
+                if (do_dft()) then
+#ifndef PRG_DIRAC
+                    do i=1,3; call mat_init(A(3+i),nbas,nbas); enddo
+                    call di_get_MagDeriv_FxD_DFT(A(4:6),D(1))
+                    do i=1,3; A(i) = A(i) + A(3+i); A(3+i)=0; enddo
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                endif
+                do i=1,pb; ii=pb1-pb+i
+                    do k=0,c(2)-c(1); kk=c(1)+k
+                        e(i+pb*k) = e(i+pb*k) + trab(A(kk),D(ii))
+                    enddo
+                enddo; A(1)=0; A(2)=0; A(3)=0
+            endif
+            if (m==1) then
+                !nothing more
+            elseif (m==2) then
+                do i=1,b(1); if (iszero(D(1+i))) cycle
+                    call twofck('M',D(1+i:1+i),A(1:3))
+                    if (do_dft()) then
+#ifndef PRG_DIRAC
+                        do k=1,3; call mat_init(A(3+k),nbas,nbas); enddo
+                        call di_get_MagDeriv_GxD_DFT(D(1),D(1+i),A(4:6))
+                        do k=1,3; A(k) = A(k) + A(3+k); A(3+k)=0; enddo
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                    endif
+                    do j=0,b(2)-1; jj=1+b(1)+1+j
+                        do k=0,c(2)-c(1); kk=c(1)+k
+                            e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + trab(A(kk),D(jj))
+                    enddo; enddo; A(1)=0; A(2)=0; A(3)=0
+                enddo
+            else
+                call quit('PropEnergy: MAG, m>2 not implemented yet!')
+            endif
+        elseif (n==1.and.p(1)=='ELGR') then
+#ifndef PRG_DIRAC
+            if (m==0) call QDRNUC_ifc(r(1:6))
+            if (m==0) e(1:c(2)-c(1)+1) = e(1:c(2)-c(1)+1) - r(c(1):c(2)) !sign change
+#else
+            !fixme
+#endif /* PRG_DIRAC */
+            do k=0,c(2)-c(1); kk=c(1)+k
+                k1=kk-1; if (kk>1) k1=k1+2; if (kk>3) k1=k1+1
+                A(1) = oneint(xyz(1+mod(k1,3))//xyz(1+k1/3)//'THETA ')
+                do i=1,pb; ii=pb1-pb+i
+                    e(i+pb*k) = e(i+pb*k) + trab(A(1),D(ii))
+                enddo; A(1)=0
+            enddo
+        elseif (n==1.and.p(1)=='GEO') then
+            if (m==0) then !nuclear repulsion contribution
+#ifndef PRG_DIRAC
+                call GRADNN_ifc(natom,r(1:3*natom))
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+                    e(i) = e(i) + r(ii); enddo
+            endif
+            !one-electron integral contribution
+            do k=0,c(2)-c(1); kk=c(1)+k
+                A(1) = oneint('1DHAM'//c09(kk/100)//c09(mod(kk,100)/10)//c09(mod(kk,10)))
+                do i=1,pb; ii=pb1-pb+i
+                    e(i+pb*k) = e(i+pb*k) + trab(A(1),D(ii))
+                enddo; A(1)=0
+            enddo
+            !two-electron integral contribution
+            do i=1,pb; ii=pb1-pb+i
+                call twoctr('G',D(1),D(ii),r(1:3*natom))
+                r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
+                if (m==0) r(1:3*natom) = r(1:3*natom)/2 !another half for molgra
+                if (do_dft()) then
+#ifndef PRG_DIRAC
+                    if (m==0) call di_get_geomDeriv_molgrad_DFT(r(3*natom+1:3*natom*2),natom,D(1))
+                    if (m/=0) call di_get_geomDeriv_FxD_DFT(r(3*natom+1:3*natom*2),natom,D(1),D(ii))
+                    r(1:3*natom) = r(1:3*natom) + r(3*natom+1:3*natom*2)
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                endif
+                do k=0,c(2)-c(1); kk=c(1)+k
+                    e(i+pb*k) = e(i+pb*k) + r(kk)
+            enddo; enddo
+            if (m==0.or.m==1) then !nothing more
+            elseif (m==2) then !integrals over products of first order densities
+                do j=0,b(2)-1; do i=1,b(1); jj=1+b(1)+1+j
+                    call twoctr('G',D(1+i),D(jj),r(1:3*natom))
+                    r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
+                    if (do_dft()) then
+#ifndef PRG_DIRAC
+                        call di_get_geomDeriv_GxD_DFT(r(3*natom+1:3*natom*2),natom,D(1),D(1+i),D(jj))
+                        r(1:3*natom) = r(1:3*natom) + r(3*natom+1:3*natom*2)
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                    endif
+                    do k=0,c(2)-c(1); kk=c(1)+k
+                        e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk) !factor 8 here
+                enddo; enddo; enddo
+            else
+                call quit('PropEnergy: GEO, m>2 not implemented')
+            endif
+            if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
+        elseif (n==1.and.p(1)=='VEL') then
+            do j=0,c(2)-c(1); jj=c(1)+j
+                A(1) = oneint(xyz(jj)//'DIPVEL ')
+                do i=1,pb; ii=pb1-pb+i
+                    e(i+pb*j) = e(i+pb*j) + trab(A(1),D(ii)) !factor 2 hidden in **
+                enddo; A(1)=0
+            enddo
+        elseif (n==2.and.all(p==(/'EL','MAG'/)).and.m/=0) then !no m==0 because MAG imag
+            do l=0,c(4)-c(2); ll=c(2)+l
+                do k=0,c(3)-c(1); kk=c(1)+k
+                    A(1) = oneint(xyz(kk)//'-CM1 '//xyz(ll)//' ')
+                    kk=k+l*(c(3)-c(1)+1)
+                    do i=1,pb; ii=pb1-pb+i
+                        e(i+pb*kk) = e(i+pb*kk) + trab(A(1),D(ii))
+            enddo; A(1)=0; enddo; enddo
+        elseif (n==2.and.all(p==(/'MAG','MAG'/))) then
+            !one-electron integral contribution
+            do l=0,c(4)-c(2); ll=c(2)+l
+                do k=0,c(3)-c(1); kk=c(1)+k
+                    A(1) = oneint(xyz(min(kk,ll))//xyz(max(kk,ll))//'dh/dB2')
+                    kk=k+l*(c(3)-c(1)+1)
+                    do i=1,pb; ii=pb1-pb+i
+                        e(i+pb*kk) = e(i+pb*kk) + trab(A(1),D(ii))
+                    enddo; A(1)=0
+            enddo; enddo
+            if (m==0.or..not.all((/(iszero(D(i)),i=pb1-pb+1,pb1)/))) then
+                call twofck('MM',D(1:1),A(1:6))
+                do i=1,pb; ii=pb1-pb+i
+                    do l=0,c(4)-c(2); ll=c(2)+l
+                        do k=0,c(3)-c(1); kk=c(1)+k
+                            kk = min(kk,ll)+max(kk,ll)*(max(kk,ll)-1)/2
+                            k1 = k+(c(3)-c(1)+1)*l
+                            e(i+pb*k1) = e(i+pb*k1) + trab(A(kk),D(ii))/merge(2,1,m==0)
+                enddo; enddo; enddo
+                do i=1,6; A(i)=0; enddo
+            endif
+            if (m==0.or.m==1) then
+                !nothing more
+            elseif (m==2) then
+                do i=1,b(1); if (iszero(D(1+i))) cycle
+                    call twofck('MM',D(1+i:1+i),A(1:6))
+                    do j=0,b(2)-1; jj=1+b(1)+1+j
+                        do l=0,c(4)-c(2); ll=c(2)+l
+                            do k=0,c(3)-c(1); kk=c(1)+k
+                                kk = min(kk,ll)+max(kk,ll)*(max(kk,ll)-1)/2
+                                k1 = k+(c(4)-c(2)+1)*l
+                                e(i+b(1)*j+pb*k1) = e(i+b(1)*j+pb*k1) + trab(A(kk),D(jj))
+                    enddo; enddo; enddo
+                    do k=1,6; A(k)=0; enddo
+                enddo
+            else
+                call quit('PropEnergy: MAG-MAG, m>2 not implemented yet!')
+            endif
+        elseif (n==2.and.all(p==(/'EL','GEO'/))) then
+            if (m==0) then !nuclear repulsion contribution
+#ifndef PRG_DIRAC
+                call DIPNUC_ifc(natom,(/0d0,0d0,0d0/),r(1:3*3*natom))
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                do j=0,c(4)-c(2); jj=c(2)+j
+                    do i=1,c(3)-c(1)+1; ii=c(1)+i-1
+                        i1 = i+(c(3)-c(1)+1)*j
+                        e(i1) = e(i1) - r(ii+3*(jj-1))
+                enddo; enddo
+            endif
+            !one-electron integral contribution
+            do k=0,c(4)-c(2); kk=c(2)+k
+                do j=0,c(3)-c(1); jj=c(1)+j
+                    A(1) = oneint(c09(kk/10)//c09(mod(kk,10))//' DPG '//xyz(jj))
+!ajt                    A(1) = oneint(c09(kk/100)//c09(mod(kk,100)/10) &
+!ajt                                //c09(mod(kk,10))//'DPG '//xyz(jj))
+                    do i=1,pb; ii=pb1-pb+i
+                        i1 = i+pb*(j+(c(3)-c(1)+1)*k)
+                        e(i1) = e(i1) - trab(A(1),D(ii)) !factor -1
+                    enddo; A(1)=0
+            enddo; enddo
+        elseif (n==2.and.all(p==(/'MAGO','GEO'/)).and.m/=0) then
+            do k=0,c(4)-c(2); kk=c(2)+k
+                do j=0,c(3)-c(1); jj=c(1)+j
+                    A(1) = oneint(c09(kk/100)//c09(mod(kk,100)/10) &
+                                  //c09(mod(kk,10))//'AMDR'//xyz(jj))
+                    do i=1,pb; ii=pb1-pb+i
+                        i1 = i+pb*(j+(c(3)-c(1)+1)*k)
+                        e(i1) = e(i1) + trab(A(1),D(ii))/2 !factor 1/2
+                    enddo; A(1)=0
+            enddo; enddo
+        elseif (n==2.and.all(p==(/'ELGR','GEO'/))) then
+            if (m==0) then !nuclear repulsion
+                call quit('PropEnergy: ELGR,GEO - nucrep conrib not implemented')
+            endif
+            !one-electron integral contribution
+            do k=0,c(4)-c(2); kk=c(2)+k
+                do j=0,c(3)-c(1); jj=c(1)+j
+                    j1=jj-1; if (jj>1) j1=j1+2; if (jj>3) j1=j1+1
+                    A(1) = oneint(c09(kk/10)//c09(mod(kk,10))//'QDG ' &
+                                //xyz(1+mod(j1,3))//xyz(1+j1/3))
+!ajt                    call oneint(c09(jj/100)//c09(mod(jj,100)/10)//c09(mod(jj,10))// &
+!ajt                                'QDG'//xyz(1+(ii-1)/3)//xyz(1+mod(ii-1,3)),A(1))
+                    do i=1,pb; ii=pb1-pb+i
+                        i1 = i+pb*(j+(c(3)-c(1)+1)*k)
+                        e(i1) = e(i1) - 3/2d0*trab(A(1),D(ii)) !factor -3/2
+                    enddo; A(1)=0
+                enddo
+                if (c(1)==1.and.c(3)==6) then !remove trace
+                    do i=1,pb
+                        i1 = i+pb*(c(3)-c(1)+1)*k
+                        r(1) = e(i1+pb*0)+e(i1+pb*2)+e(i1+pb*5) !trace
+                        e(i1+pb*0) = e(i1+pb*0) - r(1)/3
+                        e(i1+pb*2) = e(i1+pb*2) - r(1)/3
+                        e(i1+pb*5) = e(i1+pb*5) - r(1)/3
+                    enddo
+                endif
+            enddo
+        elseif (n==3.and.all(p==(/'EL','MAG','MAG'/)).and.(m==0.or.m==1)) then
+            do l=0,c(6)-c(3); ll=c(3)+l
+                do k=0,c(5)-c(2); kk=c(2)+k
+                    do j=0,c(4)-c(1); jj=c(1)+j
+                        A(1) = oneint(xyz(jj)//'-CM2'//xyz(min(kk,ll))//xyz(max(kk,ll))//' ')
+                        jj = j+(c(4)-c(1)+1)*(k+(c(5)-c(2)+1)*l)
+                        do i=1,pb; ii=pb1-pb+i
+                            e(i+pb*jj) = e(i+pb*jj) + trab(A(1),D(ii))
+            enddo; A(1)=0; enddo; enddo; enddo
         else
             print *,'PropEnergy: no integrals for these perturbations: ', &
-                    (p(i)//' ',i=1,n); stop
+                    (p(i)//' ',i=1,n)
+            call quit('PropEnergy: no such integrals')
         endif
     end subroutine
 
+
     subroutine fck(n,m,p,c,D,b,F)
         integer:: n,m,c(n+n),b(m); character(*):: p(n) !perturbation lables
-        type(Matrix):: D(product(b+1)) !density matrix expansion to contract over
-        type(Matrix),intent(inout):: F(product(b)*product(c(n+1:n+n)-c(1:n)+1)) !result
-        integer:: i,j,k,ii,jj,kk,pb,pb1; type(Matrix):: A(9)
+        type(matrix):: D(product(b+1)) !density matrix expansion to contract over
+        type(matrix),intent(inout):: F(product(b)*product(c(n+1:n+n)-c(1:n)+1)) !result
+        integer:: i,j,k,ii,jj,kk,i1,pb,pb1; type(Matrix):: A(9)
         pb = product(b); pb1 = product(b+1)
         if (n==0) then
             if (m==0) stop 'PropFock: unperturbed Fock matrix requested'
@@ -264,28 +483,107 @@ contains
                 call di_GET_GbDs(D(ii),A(1))
                 if (iszero(F(i))) F(i)=tiny(1d0)*D(1) !to get it allocated
                 F(i) = F(i) + A(1)
+                if (do_dft()) then !DFT contribution
+                    call xc_contribution(2, D(1), (/D(ii)/), (/F(i)/))
+!                   call di_get_sigma_xc_cont(D(ii),D(1),D(1),A(1))
+!                   F(i) = F(i) + A(1)
+                endif
             enddo
+            if (do_dft().and.m==1) then
+                !nothing more
+            elseif (do_dft().and.m==2) then
+                do j=0,b(2)-1; jj=1+b(1)+1+j
+                    if (iszero(D(jj))) cycle
+                    do i=1,b(1); ii=1+i
+                        if (iszero(D(ii))) cycle
+                        A(1) = tiny(1d0)*A(1)
+                        A(1)%pg_sym = 1 + ieor(D(ii)%pg_sym - 1, D(jj)%pg_sym - 1)
+                        call xc_contribution(3, D(1), (/D(ii), D(jj)/), A(1:1))
+!                       call di_get_T_xc_cont(D(1),D(ii),D(jj),A(1))
+                        F(i+b(1)*j) = F(i+b(1)*j) + A(1)
+                    enddo
+                enddo
+            elseif (do_dft()) then
+                call quit('PropFock: DFT m==3 not omplemented')
+            endif
             A(1) = 0
         elseif (n==1.and.p(1)=='EL') then !only m==0
             do i=1,c(2)-c(1)+1; ii=c(1)+i-1
                 A(1) = oneint(xyz(ii)//'DIPLEN ')
                 F(i) = F(i) + A(1)
-            enddo
-        elseif (n==1.and.p(1)=='MAGO') then !only m==0
+            enddo; A(1)=0
+        elseif (n==1.and.p(1)=='MAGO'.and.m==0) then !only m==0
             do i=1,c(2)-c(1)+1; ii=c(1)+i-1
                 A(1) = oneint(xyz(ii)//'ANGMOM ')
-                F(i) = F(i) + A(1)/2.0d0 !
+                F(i) = F(i) + (1/2d0)*A(1) !factor here
+            enddo; A(1)=0
+        elseif (n==1.and.p(1)=='MAG') then
+            if (m==0) then
+                do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+                    A(1) = oneint('dh/dB'//xyz(ii)//'  ')
+                    F(i) = F(i) + A(1)
+                enddo; A(1)=0
+            endif
+            do i=1,pb; ii=pb1-pb+i
+                if (iszero(D(ii))) cycle
+                call twofck('M',D(ii:ii),A(1:3))
+                do k=0,c(2)-c(1); kk=c(1)+k
+                    F(i+pb*k) = F(i+pb*k) + A(kk)
+                enddo
+                if (do_dft()) then
+#ifndef PRG_DIRAC
+                    if (m==0) call di_get_MagDeriv_FxD_DFT(A(1:3),D(1))
+                    if (m/=0) call di_get_MagDeriv_GxD_DFT(D(1),D(ii),A(1:3))
+                    do k=0,c(2)-c(1); kk=c(1)+k
+                        F(i+pb*k) = F(i+pb*k) + A(kk)
+                    enddo
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+                endif; do k=1,3; A(k)=0; enddo
             enddo
+        elseif (n==1.and.p(1)=='ELGR'.and.m==0) then !only m==0
+            do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+                i1=ii-1; if (ii>1) i1=i1+2; if (ii>3) i1=i1+1
+                A(1) = oneint(xyz(1+mod(i1,3))//xyz(1+i1/3)//'THETA ')
+                F(i) = F(i) + A(1)
+            enddo; A(1)=0
+        elseif (n==1.and.p(1)=='GEO') then
+            if (m==0) then
+                do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+                    A(1) = oneint('1DHAM'//c09(ii/100)//c09(mod(ii,100)/10)//c09(mod(ii,10)))
+                    F(i) = F(i) + A(1)
+                enddo; A(1)=0
+            endif
+            do i=1,pb; ii=pb1-pb+i
+                if (iszero(D(ii))) cycle
+                do k=0,c(2)-c(1); kk=c(1)+k
+                    if (k==0.or.mod(kk-1,3)==0) &
+                        call twofck('G',D(ii:ii),A(1:3), a=1+(kk-1)/3)
+                    F(i+pb*k) = F(i+pb*k) + A(1+mod(kk-1,3))
+                enddo
+                if (do_dft()) call quit('PropFock: GEO with DFT not implemented')
+                do k=1,3; A(k)=0; enddo
+            enddo
+        elseif (n==2.and.all(p==(/'EL','MAG'/)).and.m==0) then
+            do j=0,c(4)-c(2); jj=c(2)+j; 
+                do i=1,c(3)-c(1)+1; ii=c(1)+i-1; kk=i+(c(3)-c(1)+1)*j
+                    A(1) = oneint(xyz(ii)//'-CM1 '//xyz(jj)//' ')
+                    F(kk) = F(kk) + A(1); A(1)=0
+            enddo; enddo
         elseif (n==2.and.all(p==(/'MAGO','MAGO'/))) then !only m==0
             do j=0,c(4)-c(2); jj=c(2)+j
-                do i=1,c(3)-c(1)+1; ii=c(1)+i-1
+                do i=1,c(3)-c(1)+1; ii=c(1)+i-1; kk=i+(c(3)-c(1)+1)*j
                     A(1) = oneint(xyz(min(ii,jj))//xyz(max(ii,jj))//'SUSCGO')
-                    F(i+3*j) = F(i+3*j) + A(1)
+                    F(kk) = F(kk) + A(1); A(1)=0
                 enddo
             enddo
+        elseif (n==2.and.all(p==(/'MAG','MAG'/))) then
+!            call twofck('MM',D(1),(/(D(1),i=1,9)/))
         else
             print *,'PropFock: no integrals for these perturbations:', &
-                    (' '//p(i),i=1,n); stop
+                    (' '//p(i),i=1,n)
+            call quit('PropFock: no such integrals')
         endif
 !        do i=1,9; if (isdef(A(i))) call mat_free(A(i)); enddo
     end subroutine
@@ -293,39 +591,58 @@ contains
 
     subroutine ovl(n,p,c,w,S0,S)
     !frequency generalized perturbed overlap matrices
-        integer:: n,c(n*2)
+        integer:: n,c(n+n)
         character(*):: p(n) !perturbation lables
         real*8:: w(n+1) !frequencies
-        type(Matrix):: S0 !unperturbed overlap matrix, for context
-        type(Matrix),intent(inout):: S(product(c(n+1:2*n)-c(1:n))) !result
+        type(matrix):: S0 !unperturbed overlap matrix, for context
+        type(matrix),intent(inout):: S(product(c(n+1:n+n)-c(1:n)+1)) !result
         integer:: i,j,k,ii,jj,kk
         if (n==0) then
             stop 'PropOverlap: unperturbed overlap matrix requested'
+        elseif (n==1.and.p(1)=='MAG') then
+            do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+                if (w(1)==0.and.w(2)==1) then
+                    S(i) = oneint('dS/dB'//xyz(ii)//'  '); cycle; endif
+                S(i) = (w(2)-w(1))*oneint('d<S|/dB'//xyz(ii)//'  ') &
+                     + (w(2)+w(1))*oneint('d|S>/dB'//xyz(ii)//'  ')
+            enddo
+        elseif (n==1.and.p(1)=='GEO') then
+            if (.not.all(w==(/0d0,1d0/))) &
+                call quit('PropInt.PropOverlap: unexpected w')
+            do i=0,c(2)-c(1); ii=c(1)+i
+                S(1+i) = -oneint('1DOVL'//c09(ii/100)//c09(mod(ii,100)/10) &
+                                //c09(mod(ii,10))) !notice minus sign
+            enddo
+        elseif (n==2.and.p(1)=='MAG'.and.p(2)=='MAG') then
+            if (.not.all(w==(/0d0,0d0,1d0/))) &
+                call quit('PropInt.PropOverlap: unexpected w')
+            do j=0,c(4)-c(2); jj=c(2)+j
+                do i=1,c(3)-c(1)+1; ii=c(1)+i-1
+                    S(i+(c(3)-c(1)+1)*j) = oneint('dS/dB2'//xyz(min(ii,jj))//xyz(max(ii,jj)))
+            enddo; enddo
         else
             print *,'PropOverlap: no integrals for these perturbations:', &
-                    (' '//p(i),i=1,n); stop
+                    (' '//p(i),i=1,n); call quit('')
         endif
     end subroutine
 
 
-    subroutine init(D0)
-        type(Matrix):: D0; integer:: NATOMS_ifc
-        if (D0%nrow==nbas) return !stub
-        nbas = D0%nrow
+    subroutine init(SD)
+        type(matrix):: SD; integer:: NATOMS_ifc
+        if (SD%nrow==nbas) return !stub
+        nbas = SD%nrow
 #ifndef PRG_DIRAC
         natom = NATOMS_ifc()
 #else
         natom = 137 ! fixme
 #endif /* PRG_DIRAC */
-!no GEO yet        tab(idx('GEO'))%rank = 3*natom
+        tab(idx('GEO'))%rank = 3*natom
         !AllPrt(idx('NS'))%rank = depends on which isotopes
     end subroutine
 
+
     function oneint(l) result(A)
-#ifndef PRG_DIRAC
-        use dal_interface
-#endif /* PRG_DIRAC */
-        character*8:: l; type(Matrix):: A
+        character*8:: l; type(matrix):: A
         if (nbas==0) stop 'PropInt, oneint: nbas not initialized'
         if (.not. A%is_defined) call mat_init(A,nbas,nbas)
 #ifndef PRG_DIRAC
@@ -336,20 +653,21 @@ contains
 #endif /* PRG_DIRAC */
     end function
 
+
     subroutine twomatr(o,a,D,F)
     !o=1,a=0 -> three magnetic
     !o=2,a=0 -> six magnetic
     !o=1,a=1..natom -> three geometric
         integer:: o,a; type(Matrix):: D; type(Matrix),intent(inout):: F(3**o)
-        integer:: lw,i,j,k; real*8:: Df(nbas**2),Ff(nbas**2,3*o),w(lwork)
+        integer:: lw,i,j,k; real*8:: Df(nbas**2),Ff(nbas**2,3*o),w(600000)
         if (nbas==0) stop 'twomatr: nbas not initialized'
 #ifndef PRG_DIRAC
-        call mat_to_full(D,1d0,Df); lw = lwork
+        call mat_to_full(D,1d0,Df); lw = 600000
         call GRCONT(w,lw,Ff,nbas**2*3*o,a/=0,a==0,o,a,.false.,.true.,Df,1)
 #else
         call quit('error in twomatr')
 #endif /* PRG_DIRAC */
-        do i=1,3**o; if (.not.F(i)%is_defined) call mat_init(F(i),nbas,nbas); enddo
+        do i=1,3**o; if (.not. F(i)%is_defined) call mat_init(F(i),nbas,nbas); enddo
         do i=1,3**o
             j = i
             if (o==2) then
@@ -364,23 +682,87 @@ contains
         enddo
     end subroutine
 
-    subroutine twocont(gm,D,DD,e)
+
+    subroutine twofck(what,D,F, a,b)
+    !what='G' : 3 geometry-derivative Fock matrices; atom a
+    !what='M' : 3 magnetic-derivative Fock matrices
+    !what='GG': 9 2nd geom.-derivative Fock matrices; atoms a,b
+    !what='MM': 9 2nd magn.-derivative Fock matrices
+        character(*):: what; type(matrix):: D(:),F(:)
+        integer,optional:: a,b; integer:: i,j,k,nd,nf,n2,lw
+        real*8,allocatable:: wrk(:)
+        nd=size(D); nf=size(F); n2=nbas**2
+        if     (what=='M' .and.nf==3*nd) then
+            lw = 50*n2+10000*nbas
+        elseif (what=='G' .and.nf==3*nd) then
+            if (.not.present(a)) &
+                call quit("PropInt.twofck: Geometry Fock requires atom 'a' specified")
+            lw = 50*n2+10000*nbas
+        elseif (what=='MM'.and.nf==6*nd) then
+            lw = 50*n2+10000*nbas
+        elseif (what=='GG'.and.nf==3*3*nd) then
+            if (.not.present(a).or..not.present(b)) &
+                call quit("PropInt.twock: 2nd ord. geom Fock reqires atoms 'a','b' specified")
+            lw = (nd+2*nf+50)*n2+10000*nbas
+        else
+            call quit('PropInt.twofck: wrong size(F) for what='//what)
+        endif
+        allocate(wrk(lw))
+        do i=1,nd; wrk(1+n2*(i-1):n2*i) = D(i)%elms; enddo
+        !ajt Redundant: wrk(nbas**2+1:nbas**2*(nf+1)) = 0
+#ifndef PRG_DIRAC
+        call GRCONT(wrk(1+n2*(nd+nf):lw),lw-n2*(nd+nf),wrk(1+n2*nd:n2*(nd+nf)) &
+                   ,n2*nf,what(1:1)=='G',what(1:1)=='M',len(what),0 &
+                   ,.false.,.true.,wrk(1:n2*nd),nd)
+#else
+call quit('error in propint')
+#endif /* PRG_DIRAC */
+!        call GRCONT(wrk(nbas**2*(nf+1)+1:),size(wrk)-nbas**2*(nf+1) &
+!                   ,wrk(nbas**2+1:nbas**2*(size(F)+1)),nbas**2*nf &
+!                   ,what(1:1)=='G',what(1:1)=='M',len(what),0 &
+!                   ,.false.,.true.,wrk(1:nbas**2),1)
+        do i=1,nf
+            if (.not. F(i)%is_defined) call mat_init(F(i),nbas,nbas)
+            if (iszero(F(i))) call mat_init(F(i),nbas,nbas)
+            F(i)%elms = wrk(1+n2*(nd+i-1):n2*(nd+i))
+        enddo
+        deallocate(wrk)
+    end subroutine
+
+
+    subroutine twoctr(what,D,DD,e)
     !gm=T -> 3*NATOMS geometriske
     !gm=F -> tre magnetiske
-        logical:: gm; type(Matrix):: D,DD
-        real*8,intent(out):: e(3*merge(natom,1,gm))
-        integer:: lw
-        real*8:: A(nbas,nbas,2),w(lwork)
-        if (nbas==0) stop 'twocont: nbas not initialized'
+        character(*):: what; type(matrix):: D,DD
+        real*8,intent(inout):: e(:)
+        real*8,allocatable:: wrk(:)
+        if (nbas==0) stop 'PropInt.twoctr: nbas not initialized'
 #ifndef PRG_DIRAC
-        call mat_to_full(D ,1d0,A(:,:,1))
-        call mat_to_full(DD,1d0,A(:,:,2))
-        lw=lwork; e=0
-        call GRCONT(w,lw,e,size(e),gm,.not.gm,1,0,.true.,.false.,A,2)
+        !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
+        if (what=='MM'.or.what=='MM') &
+            call quit("PropInt.twoctr: 'M' or 'MM' not yet implemented")
+        if     (what=='G' .and.size(e)==3*natom) then
+            allocate(wrk(10000*nbas+50*nbas**2))
+        elseif (what=='M' .and.size(e)==3) then
+            allocate(wrk(10000*nbas+50*nbas**2))
+        elseif (what=='GG'.and.size(e)==3*3*natom**2) then
+            allocate(wrk(10000*nbas+50*nbas**2))
+        elseif (what=='MM'.and.size(e)==3*3) then
+            allocate(wrk(10000*nbas+50*nbas**2))
+        else
+            call quit('PropInt.twoctr: wrong size(e) for what='//what)
+        endif
+        wrk(        1:  nbas**2) = D%elms !call mat_to_full(D ,1d0,A(:,:,1))
+        wrk(nbas**2+1:2*nbas**2) = DD%elms !call mat_to_full(DD,1d0,A(:,:,2))
+        e=0; call GRCONT(wrk(2*nbas**2+1:),(size(wrk)-2*nbas**2),e,size(e) &
+                        ,what(1:1)=='G',what(1:1)=='M',len(what),0 &
+                        ,.true.,.false.,wrk(1:2*nbas**2),2)
+        deallocate(wrk)
 #else
-        call quit('error in twocont')
+        call quit('error in twoctr')
 #endif /* PRG_DIRAC */
     end subroutine
+
 
     function idx(p)
         character(*):: p; integer:: idx
@@ -390,10 +772,12 @@ contains
         print *,'Perturbation not found: '//p; stop
     end function
 
+
     function PropImag(p)
         character(*):: p; logical:: PropImag
         PropImag = tab(idx(p))%imag
     end function
+
 
     function PropRank(p)
         character(*):: p; integer:: PropRank
@@ -401,35 +785,38 @@ contains
         if (PropRank==0) stop 'PropRank: rank not initialized'
     end function
 
-    subroutine PropCheck(who,D0,n,p, c,w,nd,b,o, op,cc,ww,m,ne,zerg,zovl,imag)
+
+    subroutine PropCheck(who,D0,n,p, c,w,nd,b,o, op,cc,ww,m,ne,zerg,zfck,zovl,imag)
     !Process, p,c,w,nd,b finding the order p(op(k)) which sorts p by idx,
     !fill in from c the component ranges cc(1:n+n), and the frequencies ww(1:n+1).
     !Determine m from nd and b
         integer,intent(in):: n
         character(*),intent(in):: who,p(n)
-        type(Matrix),intent(in):: D0 !(or S0) for reference
+        type(matrix),intent(in):: D0 !(or S0) for reference
         integer,intent(in),optional:: c(:),nd,b(:),o(:)
         real*8,intent(in),optional:: w(:)
         integer,intent(out),optional:: op(n),cc(n+n),m,ne
         real*8,intent(out),optional:: ww(n+1)
-        logical,intent(out),optional:: zerg,zovl,imag
-        integer:: ip(n),i,j,k
+        logical,intent(out),optional:: zerg,zfck,zovl,imag
+        integer:: ip(n),i,j,k; logical:: one,zer
         call init(D0)
         ip = (/(idx(p(i)),i=1,n)/)
-        !find zerg, zovl and imag
-        if (present(zerg)) then
-            j = count((/(tab(ip(i))%lin ,i=1,n)/))
-            k = count((/(tab(ip(i))%quad,i=1,n)/))
-            zerg = (j>1.or.k>2.or.j==1.and.k>=1)
-            if (j==0.and.k==2) then
-                j=0; do i=1,n; if (tab(i)%quad) then
-                    if (j/=0) zerg = (ip(i)/=ip(j))
-                j=i; endif; enddo
-            endif
+        !find out if the perturbed integrals are zero,
+        !and if it's a one-electron operator
+        j = count((/(tab(ip(i))%lin ,i=1,n)/))
+        k = count((/(tab(ip(i))%quad,i=1,n)/))
+        one = (j>0.or.k>0)
+        zer = (j>1.or.k>2.or.j==1.and.k>=1)
+        if (j==0.and.k==2) then
+            j=0; do i=1,n; if (tab(i)%quad) then
+                if (j/=0) zer = (ip(i)/=ip(j))
+            j=i; endif; enddo
         endif
+        if (present(zerg)) zerg = zer
+        if (present(zfck)) zfck = zer
         !check whether the perturbed overlap integrals are zero
         if (present(zovl)) &
-            zovl = (count((/(tab(ip(i))%bas,i=1,n)/))==n)
+            zovl = any((/(.not.tab(ip(i))%bas,i=1,n)/))
         !the integrals are imaginary when
         if (present(imag)) & 
             imag = (mod(count((/(tab(ip(i))%imag,i=1,n)/)),2)==1)
@@ -484,9 +871,12 @@ contains
                 if (any((/((o(i)==o(j),i=j+1,m),j=1,m-1)/))) &
                     call QUIT(who//': repeated element in o')
             endif
+            !knowing m, Fock contributions may be zero
+            if (one.and.present(zfck).and.m>0) zfck = .true.
         elseif (present(b).or.present(o)) then
             call QUIT(who//': if b or o present, so must nd and m be')
         endif
+        !is the energy contribution
     end subroutine
 
 
@@ -513,7 +903,7 @@ contains
                 kk(k(3),:) = k
             enddo
         endif
-        !construct oe from dimensions kk(:,1) and 'pitch'es kk(:,2)
+        !construct oe from dimensions kk(:,1) and pitches kk(:,2)
         oe(1) = 1; j = 1
         do i=1,m+n
             oe(j+1:j*kk(i,1)) = (/(oe(1:j)+l*kk(i,2),l=1,kk(i,1)-1)/)

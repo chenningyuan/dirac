@@ -2,7 +2,6 @@ module PertDens
 
     use matrix_mod
 #ifdef PRG_DIRAC
-    use aoresponse_input_m
     use dirac_interface_m
 #endif /* PRG_DIRAC */
     use PropInt
@@ -36,7 +35,16 @@ contains
             if (n==1.or.n==2.and.all(p=='MAGO')) &
                 call PropFock(p,D(1:1),F,c=c)
             !highest order contribution
+            call PropFock(p(1:0),D,F,b=b)
+        elseif (n==1) then
+            call PropFock(p,(/D(1)/),F)
             call PropFock(p(1:0),(/D(1),D(pb1-pb+1:pb1)/),F)
+        elseif (n==2) then
+            call PropFock(p,(/D(1)/),F)
+            call PropFock(p(2:2),(/D(1),D(1+1:1+b(1))/),F)
+            call PropFock(p(1:1),(/D(1),D(1+b(1)+1:1+b(1)+b(2))/),F,o=(/2/))
+            call PropFock(p(1:0),(/D(1),D(1+1:1+b(1)),D(1+b(1)+1:1+b(1)+b(2)) &
+                         ,D(pb1-pb+1:pb1)/),F,b=(/b(1),b(2)/)) !only works for HF (now also DFT)
         else !ajt: this needs to be done, at some point
             call QUIT('PertFock: General case not implemented')
         endif
@@ -52,8 +60,8 @@ contains
         integer,intent(in),optional:: c(:) !range within each p, c(2*n) (lower,upper indices)
         real*8,intent(in),optional:: w(:) !signed frequencies of each p
         integer:: n,cc(2*size(p)),b(size(p)),op(size(p)),ne
-        integer:: i,j,k,i0,j0,k0,ij,ik,jk,ij0,ik0,jk0,ijk,ijk0
-        real*8:: ww(size(p)+1); n=size(p)
+        integer:: i,j,k,i0,j0,k0,ij,ik,jk,ij0,ik0,jk0,ijk,ijk0,ji,jj
+        real*8:: ww(size(p)+1); type(Matrix):: Sp(3),Tp(3); n=size(p)
         call PropCheck('PertSCFeq',S0,n,p, c=c,w=w, op=op,cc=cc,ww=ww,ne=ne); ww(n+1)=0
         if (any(op/=(/(i,i=1,n)/))) call QUIT('PertSCFeq: General case not implemented')
         b = cc(n+1:n+n)-cc(1:n)+1
@@ -61,6 +69,7 @@ contains
             'PertSCFeq: size(D)/=product(b+1) wrong number of density matrices'
         if (size(F)/=product(b+1)) stop &
             'PertSCFeq: size(F)/=product(b+1) wrong number of Fock matrices'
+        !ajt fixme: This should be written optimized an for general orders
         if (n==1.and.all(p=='EL'.or.p=='MAGO')) then
             do i=1,b(1)
                 DSD(i) = D(1+i)*S0*D(1)+D(1)*S0*D(1+i)-D(1+i)
@@ -88,6 +97,40 @@ contains
                        - S0*(D(1)*F(ijk)+D(i)*F(jk)+D(j)*F(ik)+D(k)*F(ij) &
                           +  D(ij)*F(k)+D(ik)*F(j)+D(jk)*F(i)+D(ijk)*(F(1)-sum(ww/2)*S0))
             enddo; enddo; enddo
+        elseif (n==1) then
+            do i=1,b(1)
+                call PropOverlap(p,S0,Sp,c=(/cc(1)+i-1/))
+                call PropOverlap(p,S0,Tp,c=(/cc(1)+i-1/),w=(/ww(1)/2,0d0/))
+                DSD(i) = D(1)*Sp(1)*D(1) + D(1+i)*S0*D(1)+D(1)*S0*D(1+i)-D(1+i)
+                FDS(i) = (F(1+i)-Tp(1))*D(1)*S0 - S0*D(1)*(F(1+i)+Tp(1)) &
+                       + (F(1)+(ww(1)/2)*S0)*(D(1+i)*S0+D(1)*Sp(1)) &
+                       - (Sp(1)*D(1)+S0*D(1+i))*(F(1)-(ww(1)/2)*S0); Sp(1)=0; Tp(1)=0
+            enddo
+        elseif (n==2) then
+            do j=0,b(2)-1; do i=1,b(1); jj=1+b(1)+j+1; ij=i+b(1)*j; ji=1+b(1)+b(2)+ij
+                call PropOverlap(p(1:1),S0,Sp(1),c=(/cc(1)+i-1/))
+                call PropOverlap(p(1:1),S0,Tp(1),c=(/cc(1)+i-1/),w=(/ww(1)/2,0d0/))
+                call PropOverlap(p(2:2),S0,Sp(2),c=(/cc(2)+j/))
+                call PropOverlap(p(2:2),S0,Tp(2),c=(/cc(2)+j/),w=(/ww(2)/2,0d0/))
+                call PropOverlap(p(1:2),S0,Sp(3),c=(/cc(1)+i-1,cc(2)+j/))
+                call PropOverlap(p(1:2),S0,Tp(3),c=(/cc(1)+i-1,cc(2)+j/),w=(/ww(1)/2,ww(2)/2,0d0/))
+                DSD(ij) = D(1)*Sp(3)*D(1)+D(1+i)*Sp(2)*D(1)+D(1)*Sp(2)*D(1+i) &
+                        + (D(1+i)*S0+D(1)*Sp(1))*D(jj)+D(jj)*(S0*D(1+i)+Sp(1)*D(1))
+                if (.not.iszero(D(ji))) DSD(ij) = DSD(ij)+D(ji)*S0*D(1)+D(1)*S0*D(ji)-D(ji)
+                FDS(ij) = (F(ji)+Tp(3)+(ww(1)+ww(2))/2*Sp(3))*D(1)*S0+F(1)*(D(1)*Sp(3)) &
+                        - S0*D(1)*(F(ji)+Tp(3)-(ww(1)+ww(2))/2*Sp(3))-(Sp(3)*D(1))*F(1) &
+                        + (F(jj)+Tp(2)+ww(2)/2*Sp(2))*(D(1+i)*S0+D(1)*Sp(1)) &
+                        - (S0*D(1+i)+Sp(1)*D(1))*(F(jj)+Tp(2)-ww(2)/2*Sp(2)) &
+                        + (F(1+i)+Tp(1)+ww(1)/2*Sp(1))*D(jj)*S0-S0*D(jj)*(F(1+i)+Tp(1)-ww(1)/2*Sp(1))
+                if (.not.iszero(D(ji))) FDS(ij) = FDS(ij) + (F(1)+(ww(1)+ww(2))/2*S0)*D(ji)*S0 &
+                                                          - S0*D(ji)*(F(1)-(ww(1)+ww(2))/2*S0)
+                if (.not.iszero(Sp(2))) FDS(ij) = FDS(ij) &
+                        + ((F(1+i)+Tp(1)+ww(1)/2*Sp(1))*D(1)+(F(1)+ww(1)*S0)*D(1+i))*Sp(2) &
+                        - Sp(2)*(D(1)*(F(1+i)+Tp(1)-ww(1)/2*Sp(1))+D(1+i)*(F(1)-ww(1)*S0))
+                if (.not.iszero(Sp(1))) FDS(ij) = FDS(ij) &
+                        + (F(1)+ww(2)*S0)*D(jj)*Sp(1)-Sp(1)*D(jj)*(F(1)-ww(2)*S0)
+                do k=1,3; Sp(i)=0; Tp(i)=0; enddo
+            enddo; enddo
         else
             stop 'PertSCFeq: General case not implemented yet'
         endif
@@ -118,13 +161,14 @@ contains
     contains
         subroutine subr() !called once pb, size of DSD and FDS is known
             type(Matrix):: DSD(pb),FDS(pb)
-            if (all(p=='EL'.or.p=='MAGO')) then
-                do i=1,pb; DD(i)=0.0d0*S0; FF(i)=0.0d0*S0; enddo
-                call PertSCFeq(p,S0,(/D,DD(1:pb)/),(/F,FF(1:pb)/),DSD,FDS,c=c,w=w)
+            do i=1,pb; DD(i)=0d0*S0; FF(i)=0d0*S0; enddo
+            if (all(p=='EL'.or.p=='MAGO').or.n==1.or.n==2) then
+                call PertSCFeq(p,S0,(/D,DD(1:pb)/),(/F,FF(1:pb)/),DSD,FDS,c=c,w=ww(1:n))
                 call PertFock(p,(/D,DD(1:pb)/),FF(1:pb),c=c)
                 do i=1,pb
-                    call SolveSCFeq(sum(w),S0,D(1),F(1),DSD(i),FDS(i),DD(i),FF(i))
+                    call SolveSCFeq(sum(ww(1:n)),S0,D(1),F(1),DSD(i),FDS(i),DD(i),FF(i))
                 enddo
+print* !newline after prints from SolveScfEq
             else
                 stop 'PertDensFock: General case not not implemented yet'
             endif
@@ -151,17 +195,17 @@ contains
 #endif /* PRG_DIRAC */
         first = .false.
         DS = D0*S0
-        D = DSD - DSD*trps(DS) - DS*DSD
-        RHS(1) = FDS*DS - trps(DS)*FDS + F; FDS=0
+        D = DSD - DSD*dag(DS) - DS*DSD
+        RHS(1) = FDS*DS - dag(DS)*FDS + F; FDS=0
         call PropFock(NOP,(/D0,D/),RHS)
-        RHS(1) = RHS(1)*DS - trps(DS)*RHS(1)
+        RHS(1) = RHS(1)*DS - dag(DS)*RHS(1)
         ww(1) = w; SOL(1)=DSD; DSD=0
         if (iszero(SOL(1))) SOL(1) = 1d-32*S0 !trick to get it allocated
 #ifndef PRG_DIRAC
         call rsp_solver2(D0,S0,F0,.true.,1,RHS,ww,SOL)
         DSD=SOL(1); RHS(1)=0; SOL(1)=0
-        DSD = DSD*trps(DS) - DS*DSD; DS=0
-        D = D + (-2)*DSD; DSD=0 !notice the -2
+        DSD = DSD*dag(DS) - DS*DSD; DS=0
+        D = D + (-2.0d0)*DSD; DSD=0 !notice the -2
 #else
         T = 1.0d-100*RHS(1)
 
@@ -185,6 +229,5 @@ contains
         RHS(1)=F; F=0
         call PropFock(NOP,(/D0,D/),RHS); F=RHS(1); RHS(1)=0
     end subroutine
-
 
 end module PertDens

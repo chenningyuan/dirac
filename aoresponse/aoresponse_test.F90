@@ -328,9 +328,9 @@ contains
 
     e_ijk = 0.0d0
 
-    if (aoresponse_test_xc) then
-      call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/))
-    end if
+!   if (aoresponse_test_xc) then
+!     call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/))
+!   end if
 
     do k = 1, 3
       Y_k(k) = D_k(k)*S*D - D*S*D_k(k)

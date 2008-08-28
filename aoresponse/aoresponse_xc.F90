@@ -15,13 +15,14 @@ module aoresponse_xc_m
 
 contains
 
-  subroutine xc_contribution(e, order, D_0, D, F)
+! subroutine xc_contribution(e, order, D_0, D, F)
+  subroutine xc_contribution(order, D_0, D, F)
 
-    real(kind_dp)    :: e(*)
+!   real(kind_dp)    :: e(*)
     integer          :: order
     type(matrix)     :: D_0, D(:), F(:)
 !   ----------------------------------------------------------------------------
-    type(matrix)     :: M(9) !fixme later, hardcoded for 2n+1 QR
+!   type(matrix)     :: M(9) !fixme later, hardcoded for 2n+1 QR
     type(grid_t)     :: grid
     type(gao_data_t) :: gao_data
     integer          :: i, j, k, ij, ijk, iz, iq
@@ -58,15 +59,15 @@ contains
 !   allocate "mix" matrices
 !   =======================
 
-    if (order == 3) then
-      do i = 1, 3
-        do j = 1, 3
-          ij = i + (j-1)*3
-          M(ij) = 1.0d-100*D_0
-          M(ij)%pg_sym = 1 + ieor(D(i)%pg_sym - 1, D(j+3)%pg_sym - 1)
-        end do
-      end do
-    end if
+!   if (order == 3) then
+!     do i = 1, 3
+!       do j = 1, 3
+!         ij = i + (j-1)*3
+!         M(ij) = 1.0d-100*D_0
+!         M(ij)%pg_sym = 1 + ieor(D(i)%pg_sym - 1, D(j+3)%pg_sym - 1)
+!       end do
+!     end do
+!   end if
 
 
 !   integrate
@@ -75,7 +76,7 @@ contains
     call init_dft_grid(D_0, grid)
     call init_gao_data(gao_data, 0)
 
-    call xc_contribution_backend(order, D_0, D, F, M, grid, gao_data)
+    call xc_contribution_backend(order, D_0, D, F, grid, gao_data)
 
     call del_grid(grid)
     call del_gao_data(gao_data)
@@ -84,19 +85,19 @@ contains
 !   get contribution from "mix" matrices and deallocate them
 !   ========================================================
 
-    if (order == 3) then
-      do i = 1, 3
-        do j = 1, 3
-          ij = i + (j-1)*3
-          do k = 1, 3
-            ijk = ij + (k-1)*9
+!   if (order == 3) then
+!     do i = 1, 3
+!       do j = 1, 3
+!         ij = i + (j-1)*3
+!         do k = 1, 3
+!           ijk = ij + (k-1)*9
 
-            e(ijk) = e(ijk) + 0.5d0*(M(ij)**D(k+6))
-          end do
-          M(ij) = 0
-        end do
-      end do
-    end if
+!           e(ijk) = e(ijk) + 0.5d0*(M(ij)**D(k+6))
+!         end do
+!         M(ij) = 0
+!       end do
+!     end do
+!   end if
 
 
 !   scale matrices
@@ -126,10 +127,10 @@ contains
 
   end subroutine
 
-  subroutine xc_contribution_backend(order, D_0, D, F, M, grid, gao_data)
+  subroutine xc_contribution_backend(order, D_0, D, F, grid, gao_data)
   
     integer          :: order
-    type(matrix)     :: D_0, D(:), F(:), M(:)
+    type(matrix)     :: D_0, D(:), F(:)
     type(grid_t)     :: grid 
     type(gao_data_t) :: gao_data
 !   ----------------------------------------------------------------------------
@@ -149,9 +150,9 @@ contains
       call init_density(n_xc(i), '1')
     end do 
     
-    do i = 1, size(M)
-      call init_density(n_xc_2(i), '1')
-    end do 
+!   do i = 1, size(M)
+!     call init_density(n_xc_2(i), '1')
+!   end do 
     
     do ipoint = 1, grid%nr_points
 
@@ -179,25 +180,16 @@ contains
 !       ===================
 
         derivative     = slater_derv(order, n_0%scalar, grid%w(ipoint))
-        n_xc(1)%scalar = 2.0d0*derivative*n(1)%scalar
 
-        if (order > 2) then
-          derivative       = slater_derv(order, n_0%scalar, grid%w(ipoint))
-          n_xc_2(1)%scalar = derivative*n(1)%scalar*n(4)%scalar
-          n_xc_2(2)%scalar = derivative*n(1)%scalar*n(5)%scalar
-          n_xc_2(3)%scalar = derivative*n(1)%scalar*n(6)%scalar
-          n_xc_2(4)%scalar = derivative*n(2)%scalar*n(4)%scalar
-          n_xc_2(5)%scalar = derivative*n(2)%scalar*n(5)%scalar
-          n_xc_2(6)%scalar = derivative*n(2)%scalar*n(6)%scalar
-          n_xc_2(7)%scalar = derivative*n(3)%scalar*n(4)%scalar
-          n_xc_2(8)%scalar = derivative*n(3)%scalar*n(5)%scalar
-          n_xc_2(9)%scalar = derivative*n(3)%scalar*n(6)%scalar
+        select case (order)
 
-          derivative       = slater_derv(order-1, n_0%scalar, grid%w(ipoint))
-          do i = 1, size(D)
-            n_xc(i)%scalar = 2.0d0*derivative*n(i)%scalar
-          end do
-        end if
+          case (2)
+            n_xc(1)%scalar = 2.0d0*derivative*n(1)%scalar
+
+          case (3)
+            n_xc(1)%scalar = 2.0d0*derivative*n(1)%scalar*n(2)%scalar
+
+        end select
 
 
 !       fill matrices
@@ -208,11 +200,11 @@ contains
             call get_or_put_density(n_xc(i), F(i), .false., gao_data)
           end if
         end do
-        do i = 1, size(M)
-          if (abs(n_xc_2(i)%scalar) > xc_contribution_threshold) then
-            call get_or_put_density(n_xc_2(i), M(i), .false., gao_data)
-          end if
-        end do
+!       do i = 1, size(M)
+!         if (abs(n_xc_2(i)%scalar) > xc_contribution_threshold) then
+!           call get_or_put_density(n_xc_2(i), M(i), .false., gao_data)
+!         end if
+!       end do
       end if
     end do
 

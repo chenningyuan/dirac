@@ -5,6 +5,7 @@ module dirac_interface_m
   use matrix_oper
   use matrix_mod
   use aoresponse_input_m
+  use aoresponse_xc_m
 
   implicit none
 
@@ -17,6 +18,16 @@ module dirac_interface_m
   end interface
 
 contains
+
+  function do_dft() result(l)
+
+#include "dftcom.h"
+
+    logical :: l
+
+    l = dftadd
+
+  end function
 
   subroutine get_F(F)
 
