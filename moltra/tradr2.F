@@ -158,7 +158,7 @@ C
          CALL DZERO(WORK(KTIM),NTIM)
          KDRIJ = KFREE
          CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &        KINDX,WORK(KGAB),KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Divide index transformation in tasks with different batches
 C     of spinors. First find number of tasks.
@@ -2642,7 +2642,7 @@ C
       TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &     KINDX,KGAB,KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
+     &     KINDX,WORK(KGAB),KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Task set-up
 C        Set up tasks with different batches of spinors if requested.
@@ -2984,11 +2984,11 @@ C
 C
 C     Get screening matrices
 C
-      IF (SCRTRA .GT. 0) THEN
+      IF (SCRTRA .GT. D0) THEN
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
