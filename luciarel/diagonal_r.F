@@ -352,7 +352,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
       SUBROUTINE GASDIAT_REL(DIAG,LUDIA,ECORE,ICISTR,IHAM12,
      &           IBLTP,NBLOCK,IBLKFO,KPICI1,INTSPACE,T_BUFF,T_BUFF_D,
      &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
-     &           NPARBLOCK)
+     &           NPARBLOCK,CPIC_PASS_D)
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -393,6 +393,7 @@ c       CALL WRTMAT(DIAG(1),ITDET,1,ITDET,1)
 #endif
 #include "parluci.h"
 *
+      LOGICAL CPIC_PASS_D
       DIMENSION IBLTP(*), T_BUFF_D(*)
       DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
 #if defined (VAR_MPI2)
@@ -442,7 +443,7 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
       call memmar(KLRJKA,MXNSTR, 'ADDL  ',2,'KLRJKA')
 *
       if (IRECO.eq.1) then
-        if( IT_SHL .ge. 0 .or. SPLIT_IJKL )then
+        if( CPIC_PASS_D )then
 C
           IOFF_T_D = 1
 C

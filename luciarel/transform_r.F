@@ -1972,7 +1972,8 @@ C       CIRUN == IJKLRO
         END IF
 C
         IF( ALLOC_INT ) THEN
-          write(LUWRT,*) ' Allocating for ',NALLINT,' integrals.'
+          write(LUWRT,'(/A,I16,A)') 
+     &         '  Allocating for ',NALLINT,' integrals.'
           CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
           CALL DZERO8(WORK(KT_CC),NALLINT)
         ELSE
@@ -1995,8 +1996,8 @@ C
           call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
           CALL IZERO(IPOSDIA,NDIAMINT)
           CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
-          write(LUWRT,*) ' Allocating for ',NDIAMINT,
-     &' diagonal integrals.'
+          write(LUWRT,'(A,I16,A/)') 
+     &         '  Allocating for ',NDIAMINT,' diagonal integrals.'
         ELSE
           call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')
           CALL IZERO(IPOSDIA,NDIAMINT)
@@ -2613,38 +2614,16 @@ C
             call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
 C
-            IF( REORD_IJKL ) THEN 
+            IF( REORD_IJKL ) THEN
               IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 #if defined (VAR_MPI2)
 C
-                IF( IT_SHL .lt. 0 )THEN
-                  WRITE(LUWRT,'(A)') ' '
-                  WRITE(LUWRT,'(A)') 
+                  WRITE(LUWRT,'(/A)') 
      &            '  ===================================='
                   WRITE(LUWRT,'(A)') 
      &            '  Reading from integral file IJKL_REOD'
-                  IF( SPLIT_IJKL ) THEN
-                  WRITE(LUWRT,'(A)')
-     &            '   file type: (ij|kl)-sharing format  '
-                  ELSE
-                  WRITE(LUWRT,'(A)')
-     &            '   file type: standard (ij|kl) format '
-                  END IF
-                  WRITE(LUWRT,'(A)') 
+                  WRITE(LUWRT,'(A/)') 
      &            '  ===================================='
-                  WRITE(LUWRT,'(A)') ' '
-                ELSE IF( IT_SHL .ge. 0 ) THEN
-                  WRITE(LUWRT,'(A)') ' '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') 
-     &            '  Reading from integral file IJKL_REOD'
-                  WRITE(LUWRT,'(A)')
-     &            '   file type: (ij|kl)-sharing format  '
-                  WRITE(LUWRT,'(A)') 
-     &            '  ===================================='
-                  WRITE(LUWRT,'(A)') ' '
-                END IF
 #endif
 C
                 CALL READ_IJKL_GAS(WORK(KT_CC),T_BUFF,T_BUFF_D, 

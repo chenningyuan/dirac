@@ -94,6 +94,7 @@ C
       COMMON/CECORER/ECORE
       DIMENSION F1(*), F2(*), IPROCLIST(*), IGROUPLIST(*)
       INTEGER*8 L_MAX_DENS_BLK
+      LOGICAL CPIC_PASS_D
 C     memory pointer for TT-block distribution among CPU's
 C     memory pointer for TT-block offsets
 C     memory pointer for T coefficients
@@ -123,6 +124,8 @@ C     set some variables ...
       MIN2  = - 2
       NZERO =   0
       IIONE =   1
+C     controls whether the T_DIAG part is stored on T_BUFF_D or not
+      CPIC_PASS_D = .FALSE.
 C
       IF(NTEST.GE.3) THEN
         WRITE(LUWRT,*)
@@ -288,6 +291,7 @@ C           FIXME: 11-02-08 SK: definition of IBU2D?
           call picasso(INTSPACE,ISO1,IPRNT, .TRUE. ,
      &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
      &                 T_BUFF_D,IT_TTPL,IBOSYM,CIRUN,.FALSE.)
+          CPIC_PASS_D = .TRUE.
         END IF
 C
 csk     CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
@@ -312,6 +316,22 @@ C
         IS_LENGTH_TT = 0
         IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
 C
+      END IF
+C     ... read-in reordered integrals for the old-school way.
+      IF( .NOT. CPIC_PASS_D .and. REORD_IJKL ) THEN
+C
+         LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
+         MY_T_LEN_D   = LEN_T_D_BUFF
+         CALL GET_MEM_T_D(0)
+C
+         CALL DZERO8(T_BUFF,MY_T_LEN)
+C
+         IF (CIRUN .ne. 'ANALYZ' ) THEN
+           call picasso(INTSPACE,ISO1,IPRNT, .TRUE. ,
+     &                  NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
+     &                  T_BUFF_D,IT_TTPL,IBOSYM,CIRUN,.FALSE.)
+           CPIC_PASS_D = .TRUE.
+         END IF
       END IF
 #endif
 C
@@ -445,7 +465,8 @@ C
      &               WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
      &               KPICI1,INTSPACE,T_BUFF,T_BUFF_D,IDENSI,
      &               NIRREP,ISPINFREE,
-     &               ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
+     &               ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST),
+     &               CPIC_PASS_D)
 C       end of real part
         CALL ITODS(-1,1,-1,LUDIA)
         IF (IRC.EQ.2) THEN
@@ -455,7 +476,8 @@ C         diagonal once again- for the imaginary part
      &                 WORK(KPCBLTP),NBLOCK,WORK(KPCIBT),
      &                 KPICI1,INTSPACE,T_BUFF,T_BUFF_D,IDENSI,
      &                 NIRREP,ISPINFREE,
-     &                 ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST))
+     &                 ENVIRO,SIGDEN_ROUTE,IRECO,WORK(KNODELIST),
+     &                 CPIC_PASS_D)
 C       end of imaginary  part
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
@@ -1332,14 +1354,12 @@ C       de-allocate T array and destroy T memory window
 C
         CALL MPIXMEM_FREE(IT_TTPL)
         CALL MPIXMEM_FREE(IT_TTOL)
-        CALL MPIXMEM_FREE(T_BUFF_D)
         CALL REL_MEM_T_WIN(T_BUFF)
-      END IF
-      IF (SPLIT_IJKL ) THEN
+      ELSE IF (SPLIT_IJKL ) THEN
         CALL MPIXMEM_FREE(IT_TTPL)
         CALL MPIXMEM_FREE(T_BUFF)
-        CALL MPIXMEM_FREE(T_BUFF_D)
       END IF
+      IF( CPIC_PASS_D ) CALL MPIXMEM_FREE(T_BUFF_D)
 C
 C     reset partitioning of CI vector to 'sequential' fashion
 C     (*_MS2 arrays are in CSTATE )

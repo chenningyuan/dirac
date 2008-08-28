@@ -778,21 +778,12 @@ C
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
      &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
 C
-      WRITE(LUWRT,'(A)') ' '
-      WRITE(LUWRT,'(A)')
+      WRITE(LUWRT,'(/A)')
      & '  =========================================='
       WRITE(LUWRT,'(A)')
      & '  Storing sorted integrals on file IJKL_REOD'
-      IF( IT_SHL .eq. - 2 .or. SPLIT_IJKL ) THEN
-        WRITE(LUWRT,'(A)')
-     & '     file type  : (ij|kl)-sharing format    '
-      ELSE
-        WRITE(LUWRT,'(A)')
-     & '     file type  : standard (ij|kl) format   '
-      ENDIF
-      WRITE(LUWRT,'(A)')
+      WRITE(LUWRT,'(A/)')
      & '  =========================================='
-      WRITE(LUWRT,'(A)') ' ' 
 
 C
       CALL IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
@@ -854,145 +845,125 @@ C
       I_START     = 0
       I_END       = 0
       I_OUT       = 0
-      IF( IT_SHL .eq. - 2 .or. SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
-        IDISP    = 0
-        IOFFSET  = 0
+      IDISP    = 0
+      IOFFSET  = 0
 C
 #if defined (VAR_PFS)
 C
-C       provide useful I/O performance information on IBMs GPFS
+C     provide useful I/O performance information on IBMs GPFS
 C
-        CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
-        CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
-     &                    "true",IERR)
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,FILE_INFO_OBJ,
-     &                         IIJKL_ROD,IERR)
+      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true",IERR)
+      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &     MPI_MODE_CREATE + MPI_MODE_WRONLY,FILE_INFO_OBJ,
+     &                       IIJKL_ROD,IERR)
 C
-        CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
 #else
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
-     &                         IIJKL_ROD,IERR)
+      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &     MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
+     &                       IIJKL_ROD,IERR)
 #endif
 C
-        CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
-     &                         "native",MPI_INFO_NULL,IERR)
+      CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
+     &                       "native",MPI_INFO_NULL,IERR)
 C
-        IOFFSET     = 0 
-        IWRITE_BYTE = ISIZE_int8
-        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NALLINT,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IWRITE_BYTE = ISIZE_my_int
-        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IWRITE_BYTE = ISIZE_my_int
-        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IWRITE_BYTE = ISIZE_my_int
-        CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      IOFFSET     = 0 
+      IWRITE_BYTE = ISIZE_int8
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NALLINT,
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IWRITE_BYTE = ISIZE_my_int
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,NDIAINT,
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IWRITE_BYTE = ISIZE_my_int
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+      IOFFSET     = IOFFSET + IWRITE_BYTE
+      IWRITE_BYTE = ISIZE_my_int
+      CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                       IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
 C
-C       T in SIGDEN ordered format
+C     T in SIGDEN ordered format
 C
-csk     WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
-csk     WRITE(LUWRT,*) ' # elements in bytes/records = ',
-csk  &                   IWRITE_BYTE, NALLINT
-csk     WRITE(LUWRT,*) ' writing T 100 elements starting at 1 000 000'
-csk     IOFF_T_WRITE = 100 000 0
-csk     CALL WRTMATMN8(T(IOFF_T_WRITE),1,100,1,100,LUWRT)
-C       CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
+csk   WRITE(LUWRT,*) ' writing T array with # elements = ',NALLINT
+csk   WRITE(LUWRT,*) ' # elements in bytes/records = ',
+csk  &                 IWRITE_BYTE, NALLINT
+csk   WRITE(LUWRT,*) ' writing T 100 elements starting at 1 000 000'
+csk   IOFF_T_WRITE = 100 000 0
+csk   CALL WRTMATMN8(T(IOFF_T_WRITE),1,100,1,100,LUWRT)
+C     CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
 C
-C       new offset - starting point for T
+C     new offset - starting point for T
 C
-        IOFFSET     = IOFFSET + IWRITE_BYTE
+      IOFFSET     = IOFFSET + IWRITE_BYTE
 C
-C       check for total number of elements - do not write more than 
-C       1.0*10⁸ elements at each cycle
+C     check for total number of elements - do not write more than 
+C     1.0*10⁸ elements at each cycle
 C
-        IWRITE_MAX  = 100 000 000
-        ILOOP_WRITE = 1
-        IMOD_WRITE  = 0
-        IT_TOFFW    = 1
-        IS_BYTE8    = ISIZE_dp
-        IWRITE_ELM  = NALLINT
-C       more integrals than max per cycle
-        IF( NALLINT .gt. IWRITE_MAX )THEN
-          ILOOP_WRITE = NALLINT / IWRITE_MAX
-          IMOD_WRITE  = MOD( NALLINT, IWRITE_MAX )
-          IWRITE_ELM  = IWRITE_MAX
-        END IF
-#if defined (INT_STAR8)
-        IWRITE_BYTE = IWRITE_ELM * IS_BYTE8
-#else
-        XLENALL = REAL(IWRITE_ELM)
-        IWRITE_ELM4 = IGIVE_I_B(XLENALL)
-        IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
-#endif
-C       bytes to add in each cycle
-        IOFF_ADD      = IWRITE_ELM * IS_BYTE8
-C
-        DO IJ = 1, ILOOP_WRITE
-           CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-C          new offsets
-           IT_TOFFW    = IT_TOFFW + IWRITE_ELM
-           IOFFSET     = IOFFSET  + IOFF_ADD
-        ENDDO
-C
-C       ... remaining elements
-C
-        IF( IMOD_WRITE .gt. 0) THEN
-C          bytes to add in remaining step
-           IOFF_ADD      = IMOD_WRITE * IS_BYTE8
-#if defined (INT_STAR8)
-           IWRITE_BYTE   = IMOD_WRITE * IS_BYTE8
-#else
-           XLENALL = REAL(IMOD_WRITE)
-           IWRITE_ELM4 = IGIVE_I_B(XLENALL)
-           IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
-#endif
-           CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
-     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-           IOFFSET     = IOFFSET  + IOFF_ADD
-        END IF
-C
-C       T diagonal in GASDIAT_REL ordered format
-C
-        IOFF_T_IJKL = 0
-        IOFF_T_IJKL = IOFFSET
-csk     WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
-csk  &                   IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
-C
-        CALL WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
-     &                    INTSPACE,IPRNT,IOFF_T_IJKL)
-C
-        CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
-C
-#endif
-      ELSE
-C
-C       open integral file
-C
-        OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &       Status='UNKNOWN',Form='UNFORMATTED')
-C
-C       write all information that is needed
-C
-        WRITE(IIJKL_ROD) NALLINT,NDIAINT,N1DIAINT,N2DIAINT
-        WRITE(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
-        WRITE(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
-C       ... integrals
-        WRITE(IIJKL_ROD) (T(I_OUT), I_OUT = 1, NALLINT)
-C
-C       close
-C
-        CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
+      IWRITE_MAX  = 100 000 000
+      ILOOP_WRITE = 1
+      IMOD_WRITE  = 0
+      IT_TOFFW    = 1
+      IS_BYTE8    = ISIZE_dp
+      IWRITE_ELM  = NALLINT
+C     more integrals than max per cycle
+      IF( NALLINT .gt. IWRITE_MAX )THEN
+        ILOOP_WRITE = NALLINT / IWRITE_MAX
+        IMOD_WRITE  = MOD( NALLINT, IWRITE_MAX )
+        IWRITE_ELM  = IWRITE_MAX
       END IF
+#if defined (INT_STAR8)
+      IWRITE_BYTE = IWRITE_ELM * IS_BYTE8
+#else
+      XLENALL = REAL(IWRITE_ELM)
+      IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+      IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
+#endif
+C     bytes to add in each cycle
+      IOFF_ADD      = IWRITE_ELM * IS_BYTE8
+C
+      DO IJ = 1, ILOOP_WRITE
+         CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                          IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+C        new offsets
+         IT_TOFFW    = IT_TOFFW + IWRITE_ELM
+         IOFFSET     = IOFFSET  + IOFF_ADD
+      ENDDO
+C
+C     ... remaining elements
+C
+      IF( IMOD_WRITE .gt. 0) THEN
+C        bytes to add in remaining step
+         IOFF_ADD      = IMOD_WRITE * IS_BYTE8
+#if defined (INT_STAR8)
+          IWRITE_BYTE   = IMOD_WRITE * IS_BYTE8
+#else
+          XLENALL = REAL(IMOD_WRITE)
+          IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+          IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
+#endif
+          CALL MPI_FILE_WRITE_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                           IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+          IOFFSET     = IOFFSET  + IOFF_ADD
+      END IF
+C
+C     T diagonal in GASDIAT_REL ordered format
+C
+      IOFF_T_IJKL = 0
+      IOFF_T_IJKL = IOFFSET
+csk   WRITE(LUWRT,*) ' IOFFSET, IWRITE_BYTE, IOFF_T_IJKL',
+csk  &                 IOFFSET, IWRITE_BYTE, IOFF_T_IJKL
+C
+      CALL WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
+     &                  INTSPACE,IPRNT,IOFF_T_IJKL)
+C
+      CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+C
+#endif
 C
       END
 ***********************************************************************
@@ -1019,8 +990,9 @@ C***********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IOFFSET_T
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
+      INTEGER(KIND=MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
 #if defined (INT_STAR8)
       INTEGER(KIND=MPI_OFFSET_KIND)  IREAD_BYTE
 #else
@@ -1038,266 +1010,166 @@ C***********************************************************************
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_IN
 C
       NINT_TOT = N1_INT + N2ELINT
+      IWRITE_ELM4 = 0
+      IOFF_ADD    = 0
       I_START  = 0
       I_END    = 0
       I_OUT    = 0
-csk   WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
-csk  &                 IDIM_TYP, N1_INT, N2ELINT
-      IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
 C
-        IDISP    = 0
-        IOFFSET  = 0
+      IDISP    = 0
+      IOFFSET  = 0
 C
 #if defined (VAR_PFS)
 C
-C       provide useful information on IBMs GPFS to enhance 
-C       I/O performance
+C     provide useful information on IBMs GPFS to enhance 
+C     I/O performance
 C
-        CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
-        CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
-     &                    "true",IERR)
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &                     MPI_MODE_RDONLY,FILE_INFO_OBJ,
-     &                     IIJKL_ROD,IERR)
+      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io",
+     &                  "true",IERR)
+      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                   MPI_MODE_RDONLY,FILE_INFO_OBJ,
+     &                   IIJKL_ROD,IERR)
 C
-        CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
+      CALL MPI_INFO_FREE(FILE_INFO_OBJ, IERR)
 #else
 
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &                     MPI_MODE_RDONLY,MPI_INFO_NULL,
-     &                     IIJKL_ROD,IERR)
+      CALL MPI_FILE_OPEN(MPI_COMM_SELF,NIIJKL_ROD(1:IIJKL_ROD_LL),
+     &                   MPI_MODE_RDONLY,MPI_INFO_NULL,
+     &                   IIJKL_ROD,IERR)
 C
 #endif
-        CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
-     &                         "native",MPI_INFO_NULL,IERR)
+      CALL MPI_FILE_SET_VIEW(IIJKL_ROD,IDISP,MPI_BYTE,MPI_BYTE,
+     &                       "native",MPI_INFO_NULL,IERR)
 C
-        IOFFSET     = 0
-        IREAD_BYTE  = ISIZE_int8
-        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NALLINT,
+      IOFFSET     = 0
+      IREAD_BYTE  = ISIZE_int8
+      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NALLINT,
+     &                     IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk      WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk      WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
+      IOFFSET     = IOFFSET + IREAD_BYTE
+      IREAD_BYTE  = ISIZE_my_int
+      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NDIAINT,
      &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
-csk        WRITE(LUWRT,*) ' read-in result: NALLINT ',NALLINT
-        IOFFSET     = IOFFSET + IREAD_BYTE
-        IREAD_BYTE  = ISIZE_my_int
-        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,NDIAINT,
-     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
-csk        WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
-        IOFFSET     = IOFFSET + IREAD_BYTE
-        IREAD_BYTE  = ISIZE_my_int
-        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
-     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
-csk        WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
-        IOFFSET     = IOFFSET + IREAD_BYTE
-        IREAD_BYTE  = ISIZE_my_int
-        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
-     &                         IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' read-in at ',IOFFSET
-csk        WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
+csk      WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk      WRITE(LUWRT,*) ' read-in result: NDIAINT ',NDIAINT
+      IOFFSET     = IOFFSET + IREAD_BYTE
+      IREAD_BYTE  = ISIZE_my_int
+      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N1DIAINT,
+     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk      WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk      WRITE(LUWRT,*) ' read-in result: N1DIAINT',N1DIAINT
+      IOFFSET     = IOFFSET + IREAD_BYTE
+      IREAD_BYTE  = ISIZE_my_int
+      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,N2DIAINT,
+     &                       IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+csk      WRITE(LUWRT,*) ' read-in at ',IOFFSET
+csk      WRITE(LUWRT,*) ' read-in result: N2DIAINT',N2DIAINT
 C
-C       T in SIGDEN ordered format
+C     T in SIGDEN ordered format
 C
-        IOFFSET     = IOFFSET + IREAD_BYTE
-        IOFFSET_T   = IOFFSET
-C       WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
+      IOFFSET     = IOFFSET + IREAD_BYTE
+      IOFFSET_T   = IOFFSET
+C     WRITE(LUWRT,*) ' (T_BUFF) read-in at ',IOFFSET
 C
-C       read-in integrals to T_BUFF according to type list IT_TTPL
+C     read-in integrals to T_BUFF according to type list IT_TTPL
 C
-csk     WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
-csk  &                   IDIM_TYP, N1_INT
-csk     CALL IWRTMAMN(IT_TTPL,1,IDIM_TYP,1,IDIM_TYP,LUWRT)
-        CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,IDIM_TYP,N1_INT,
-     &                       IOFFSET_T)
-csk     WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
-csk  &                                            MY_T_LEN
-csk     WRITE(LUWRT,*) ' printing first 100 elements'
-csk     CALL WRTMATMN(T_BUFF,1,100,1,100,LUWRT)
-C
-C       T diagonal in GASDIAT_REL ordered format
-C
-        IS_BYTE8    = ISIZE_dp
-        IOFFSET     = IOFFSET_T  + ( NALLINT * IS_BYTE8 )
-#if defined (INT_STAR8)
-        IREAD_BYTE  = MY_T_LEN_D * IS_BYTE8
-#else
-        XLENTD        = REAL(MY_T_LEN_D)
-        MY_T_LEN_D_I4 = IGIVE_I_B(XLENTD)
-        IREAD_BYTE    = MY_T_LEN_D_I4 * ISIZE_dp
-#endif
-csk     WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
-csk     WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
-        CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
-     &                        IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-C
-csk     WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
-csk  &                                            MY_T_LEN_D
-csk     WRITE(LUWRT,*) ' printing first 100 elements'
-csk     CALL WRTMATMN8(T_BUFF_D,1,100,1,100,LUWRT)
-C
-        CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
-C
-#endif
+csk   WRITE(LUWRT,*) ' calling READ_INT_TTYPES: NSP...,N1...',
+csk  &                 IDIM_TYP, N1_INT
+csk   CALL IWRTMAMN(IT_TTPL,1,IDIM_TYP,1,IDIM_TYP,LUWRT)
+C     ... shared memory modus for integrals / reduced integral list
+C         modus
+      IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
+         CALL READ_INT_TTYPES(T_BUFF,IT_TTPL,IDIM_TYP,N1_INT,
+     &                        IOFFSET_T)
       ELSE
+C     ... old-school way of integral handling
 C
-C       open integral file
+C       check for total number of elements - do not read more than 
+C       1.0*10⁸ elements at each cycle
 C
-        OPEN(Unit=IIJKL_ROD,File=NIIJKL_ROD(1:IIJKL_ROD_LL),
-     &       Status='OLD',Form='UNFORMATTED')
+        IREAD_MAX  = 100 000 000
+        ILOOP_READ = 1
+        IMOD_READ  = 0
+        IT_TOFFW   = 1
+        IS_BYTE8   = ISIZE_dp
+        IREAD_ELM = NALLINT
+C       more integrals than max per cycle
+        IF( NALLINT .gt. IREAD_MAX )THEN
+          ILOOP_READ = NALLINT / IREAD_MAX
+          IMOD_READ  = MOD( NALLINT, IREAD_MAX )
+          IREAD_ELM  = IREAD_MAX
+        END IF
+#if defined (INT_STAR8)
+        IREAD_BYTE = IREAD_ELM * IS_BYTE8
+#else
+        XLENALL    = REAL(IREAD_ELM)
+        IREAD_ELM4 = IGIVE_I_B(XLENALL)
+        IREAD_BYTE = IREAD_ELM4 * ISIZE_dp
+#endif
+C       bytes to add in each cycle
+        IOFF_ADD      = IREAD_ELM * IS_BYTE8
 C
-        REWIND(IIJKL_ROD)
+        DO IJ = 1, ILOOP_READ
+           CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+C          new offsets
+           IT_TOFFW    = IT_TOFFW + IREAD_ELM
+           IOFFSET     = IOFFSET  + IOFF_ADD
+        ENDDO
 C
-C       read all integrals in
+C       ... remaining elements
 C
-        READ(IIJKL_ROD) NALLINT,NDIAINT,N1DIAINT,N2DIAINT
-csk      WRITE(LUWRT,*) ' NALLINT ',NALLINT
-csk      WRITE(LUWRT,*) ' NDIAMINT',NDIAMINT
-        READ(IIJKL_ROD) (IPOSDIA(I),I=1,  NDIAMINT)
-        READ(IIJKL_ROD) (MDIASV(I) ,I=1,4*NDIAMINT)
-csk      CALL IWRTMAMN8(IPOSDIA,1,NDIAMINT,1,NDIAMINT,LUWRT)
-csk      CALL IWRTMAMN(MDIASV,1,4*NDIAMINT,1,4*NDIAMINT,LUWRT)
-C
-        READ(IIJKL_ROD) (T(I_IN), I_IN = 1, NALLINT)
-C
-C       close
-C
-        CLOSE(UNIT=IIJKL_ROD,STATUS='KEEP')
-C
+        IF( IMOD_READ .gt. 0) THEN
+C         bytes to add in remaining step
+          IOFF_ADD   = IMOD_READ * IS_BYTE8
+#if defined (INT_STAR8)
+          IREAD_BYTE = IMOD_READ * IS_BYTE8
+#else
+          XLENALL    = REAL(IMOD_READ)
+          IREAD_ELM4 = IGIVE_I_B(XLENALL)
+          IREAD_BYTE = IREAD_ELM4 * ISIZE_dp
+#endif
+          CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T(IT_TOFFW),
+     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+          IOFFSET     = IOFFSET  + IOFF_ADD
+        END IF
+      
       END IF
+csk   WRITE(LUWRT,*) ' printing T_BUFF with # elements =',
+csk  &                                          MY_T_LEN
+csk   WRITE(LUWRT,*) ' printing first 100 elements'
+csk   CALL WRTMATMN(T_BUFF,1,100,1,100,LUWRT)
+C
+C     T diagonal in GASDIAT_REL ordered format
+C
+      IS_BYTE8    = ISIZE_dp
+      IOFFSET     = IOFFSET_T  + ( NALLINT * IS_BYTE8 )
+#if defined (INT_STAR8)
+      IREAD_BYTE  = MY_T_LEN_D * IS_BYTE8
+#else
+      XLENTD        = REAL(MY_T_LEN_D)
+      MY_T_LEN_D_I4 = IGIVE_I_B(XLENTD)
+      IREAD_BYTE    = MY_T_LEN_D_I4 * ISIZE_dp
+#endif
+csk   WRITE(LUWRT,*) ' read-in T_BUFF_D at',IOFFSET
+csk   WRITE(LUWRT,*) ' read-in T_BUFF_D # bytes',IREAD_BYTE
+      CALL MPI_FILE_READ_AT(IIJKL_ROD,IOFFSET,T_BUFF_D,
+     &                      IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+C
+csk   WRITE(LUWRT,*) ' printing T_BUFF_D with # elements =',
+csk  &                                          MY_T_LEN_D
+csk   WRITE(LUWRT,*) ' printing first 100 elements'
+csk   CALL WRTMATMN8(T_BUFF_D,1,100,1,100,LUWRT)
+C
+      CALL MPI_FILE_CLOSE(IIJKL_ROD,IERR)
+C
+#endif
 C
       END
 #if defined (VAR_MPI2)
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE GET_IJKL_UPDATE( T, T_BUFF, MDIASV, NDIAMINT,
-     &                            UPD_GROUP1, UPD_GROUP2, UPD_GROUP3, 
-     &                            UPD_GROUP4 )
-C**********************************************************************
-C
-C     perform (ij|kl) update according to logical flags UPD_GROUPX
-C
-C     NOTE: (ij|kl) sorting is GAS-specific
-C
-C     Written by S. Knecht - Jan 14 2008
-C     Last revision :
-C
-C
-C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "mpif.h"
-#include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#include "mxpdim.inc"
-#include "parluci.h"
-#include "ctcc.inc"
-#include "integrals_off.inc"
-      DIMENSION T_BUFF(*), T(NALLINT), MDIASV(*)
-      LOGICAL UPD_GROUP1, UPD_GROUP2, UPD_GROUP3, UPD_GROUP4
-C
-      IF( UPD_GROUP1 ) THEN
-C
-C       NODE-MASTER(s) --> slaves
-C
-        CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-        CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-        CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-        CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-        CALL MPI_BCAST(MDIASV,4*NDIAMINT,my_MPI_INTEGER,N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-        CALL MPI_BCAST(IPOSDIA,NDIAMINT,MPI_INTEGER8,N_MASTER_SM,
-     &                 MYNEW_COMM_SM,IERR)
-C
-      ELSE IF( UPD_GROUP2 ) THEN
-C
-C       MASTER --> NODE-MASTER(s) + slaves 
-C
-        CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(MDIASV,4*NDIAMINT,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IPOSDIA,NDIAMINT,MPI_INTEGER8, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-C       MASTER --> NODE-MASTER(s) broadcast of all (ij|kl)
-C
-C
-C       divide ...
-C
-        IXINT_COLOR = 1
-C
-        IF( MYNEW_ID_SM .eq. N_MASTER_SM ) IXINT_COLOR = 4
-C
-        IXINT_KEY   = MYPROC
-C
-C       split MPI_COMM_WORLD into N_MASTER_SM and slaves
-C       MASTER is always included...
-C
-        CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,IXINT_COLOR,
-     &                      IXINT_KEY,IXINT_COMM,IERR)
-C
-        IF( IXINT_COLOR .eq. 1 ) GOTO 200
-C
-C       communicate integrals
-C
-        CALL MPI_BCAST(T_BUFF,NALLINT,MPI_REAL8,
-     &                 MASTER,IXINT_COMM,IERR)
- 200              CONTINUE
-C
-C       reunite
-C
-        CALL MPI_COMM_FREE(IXINT_COMM,IERR)
-C
-      ELSE IF( UPD_GROUP3 ) THEN
-C
-C       MASTER --> all slaves
-C
-        CALL MPI_BCAST(NALLINT, 1,  MPI_INTEGER8, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NDIAINT, 1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(N1DIAINT,1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(N2DIAINT,1,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(MDIASV,4*NDIAMINT,my_MPI_INTEGER, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IPOSDIA,NDIAMINT,MPI_INTEGER8, MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-C       communicate integrals
-C
-        CALL MPI_BCAST(T,NALLINT,MPI_REAL8,MASTER,MPI_COMM_WORLD,IERR)
-         
-C
-      ELSE IF( UPD_GROUP4 ) THEN
-C
-        GOTO 500
-      ELSE
-        WRITE(LUWRT,*) ' GET_IJKL_UPDATE: ERROR! WHO SHOULD GET AN
-     & UPDATE? '
-        CALL Abend2( 'error in GET_IJKL_UPDATE! Check logical flags! ')
-      ENDIF
-C
-C     finally ...
-C
- 500  CONTINUE
-C
-      END
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
