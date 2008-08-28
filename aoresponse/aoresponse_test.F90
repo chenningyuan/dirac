@@ -232,9 +232,9 @@ contains
 
     call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-!#ifdef debug_me
-    call aoresponse_visual_driver((/D, D_i, D_ij/))
-!#endif
+    if (aoresponse_visual .or. aoresponse_integrate) then
+      call aoresponse_visual_driver((/D, D_i, D_ij/))
+    end if
 
     e_ijk = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
@@ -327,9 +327,10 @@ contains
 #endif
 
     e_ijk = 0.0d0
-#ifdef debug_me
-    call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/))
-#endif
+
+    if (aoresponse_test_xc) then
+      call xc_contribution(e_ijk, 3, D, (/D_i, D_j, D_k/), (/F_i, F_j, F_k/))
+    end if
 
     do k = 1, 3
       Y_k(k) = D_k(k)*S*D - D*S*D_k(k)

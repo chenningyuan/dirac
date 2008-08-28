@@ -37,6 +37,7 @@ module aoresponse_input_m
 
   logical,                 save :: aoresponse_integrate
   logical,                 save :: aoresponse_visual
+  logical,                 save :: aoresponse_test_xc
 
 contains
 
