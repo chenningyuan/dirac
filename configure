@@ -85,7 +85,7 @@ usage ()  {
    echo '   --cc=CC                      : Set C compiler to CC'
    echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
-   echo '   --math_lib=MATH-LIB          : Choose the mathematical library MATH-LIB'
+   echo '   --math_lib=MATH_LIB          : Choose the mathematical library MATH_LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
@@ -98,36 +98,20 @@ guess_system ()  {
 #  GUESS SYSTEM
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-echo
-echo 'SYSTEM'
-echo
-if [ -z "${guess}" ]; then
+if [ -z "$guess" ]; then
    guess=`./config.guess`
    if [ "$guess" = "" ]; then
       guess=`./config.status ARCH`
    fi
-   if [ $quick = 0 ]; then
-       if echo "$guess" | grep -q x86_64; then
-	   echo "Note: For 32 bit code generation use "`echo "$guess"|sed s/x86_64/i686/`
-       fi
-      $echo "System [$guess]: \c"
-      read answer
-   else
-      answer=
-   fi
-
-   if [ "$answer" != "" ]; then
-      guess=$answer
-   fi
 fi
 
-guess=`./config.sub $guess 2>/dev/null` 
+guess=`./config.sub $guess 2>/dev/null`
 
-if [ $IPRINT -ge "5" ];  then 
- echo 'guess_system found guess=' $guess
+echo
+$echo "Configuring for $guess (can be changed with --system)"
+if echo "$guess" | grep -q x86_64; then
+    echo "Note: For 32 bit code generation use --system="`echo "$guess"|sed s/x86_64/i686/`
 fi
-
-$echo "Configuring $guess..."
 flavor=$guess
 machine=`echo $guess | sed 's/-[^-]*$//'`
 if [ "$machine" != "$guess" ]; then 
