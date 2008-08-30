@@ -9,14 +9,14 @@
 pam [-mw "mem"] [-nw "mem"] [-basdir "directory"] [-run "name"]
 [-wrkdir "directory"] [-clean] [-keepwrk]
 [-copy "file1 file2 ..."] [-get "file1 file2"] [-incmo] [-outcmo] [-infck] [-outfck]
-[-mpi "n"] [-mpiarg "string"] [-machinefile "file"] 
+[-mpi "n"] [-mpiarg "string"] [-machinefile "file"]
 [-nice] [-notify] [-user "user"] [-dirac "cmd"] [-debug] [-help]
 mol[.mol] menu[.inp]
 
 .SH DESCRIPTION
 .B pam
 is the job control script to Dirac. It copies files to scratch work area directory,
-starts 
+starts
 .B
 DIRAC,
 and moves files back, etc.
@@ -25,8 +25,8 @@ and moves files back, etc.
 .B -mw "mem"
 Set working memory (in megawords) for master. The size of the working memory
 can also be specified through the environment variable
-.B DIRWRK. 
-If this is not set, the default memory size specified in 
+.B DIRWRK.
+If this is not set, the default memory size specified in
 .B configure
 is used.
 .TP 5
@@ -59,7 +59,7 @@ is specified more than once, all files specified will be copied.
 Get file 'file' from work area.
 .B
 -get
-is incremental, just as 
+is incremental, just as
 .B
 -copy
 .TP 5
@@ -80,9 +80,9 @@ Get file 'DFFCK2' from work area. This is an alias for
 .B -get DFFCK2
 .TP 5
 .B -mpi "n"
-Execute parallel version of 
+Execute parallel version of
 .B Dirac
-with n nodes using MPI (default is sequential run, i.e. n = 1) 
+with n nodes using MPI (default is sequential run, i.e. n = 1)
 .TP 5
 .B -mpiarg "string"
 Any other arguments to be MPI in parallel runs.
@@ -94,10 +94,10 @@ Specify file with list of machines to be used in MPI parallel runs.
 Set working memory (in megawords) for slave nodes in parallel runs.
 The size of the working memory
 can also be specified through the environment variable
-.B DIRNOD. 
-If neither 
+.B DIRNOD.
+If neither
 .B -nw
-nor 
+nor
 .B DIRNOD
 are set, then the memory size from
 .B -mw
