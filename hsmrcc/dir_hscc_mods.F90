@@ -235,20 +235,20 @@ ilenght = NKR*NKR !
 
  write(LUPRI,*) 'calculated array size, ilenght=',ilenght
 
- call print_mem_param
+! call print_mem_param
 
 indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
 
- call print_mem_param
+! call print_mem_param
 
 indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 
- call print_mem_param
+! call print_mem_param
 
 ! ... note: "ccdriv.F":1923 is using RCW !!!
 cbuf_vect = Make2DimArray('REAL', RCW, ilenght, 'MDCINT two-electron integrals')
 
- call print_mem_param
+! call print_mem_param
 
 !check_mem = .true.
 check_mem = .false.
@@ -287,9 +287,11 @@ endif
 
   else
 
+!   write(LUPRI,*) 'going to read indk_vect%p_iA1D/indl_vect%p_iA1D/cbuf_vect%p_rA2D ...'
+
    READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
    ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      & 
-   ( cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
+   (                      cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
 
   endif
 
@@ -426,22 +428,82 @@ subroutine prepare_dirac_HSMRCC_file
 ! standalone HSMRCC run
 !
 !----------------------------------------------------------------------------------
+use Memory
+use Vectors
 use io_moltra
 #include "implicit.h"
 #include "priunit.h"
 !character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
 !character(len=*) :: dirac_file='Dirac_HSMRCC'
-character :: dirac_file='Dirac_HSMRCC'
+!character :: dirac_file='Dirac_HSMRCC'
+character(len=12) :: dirac_file='Dirac_HSMRCC'
+
+type(Vect) :: SpinOfOrb,OccGMSRef,IrrepOrb,IrpLabOrb,OrbType,OrbSpace,OrbEnergy
  
 if (iprint_hscc >= 5) then
   call Header('Output from "prepare_dirac_HSMRCC_file"',-1)
 endif
+
+! ... check if memory block is present
+if (.not.IsMemorySticked() ) then
+ write(LUPRI,*) 'memory array not present !' 
+ call Quit(': memory array not present !  ')
+else
+ write(LUPRI,*) ' memory sticked !' 
+endif
+
+SpinOfOrb = MakeVector('INTE',NSP,'GAMESS-like SpinOfOrb')
+OccGMSRef = MakeVector('INTE',NSP,'GAMESS-like OccGMSRef')
+IrrepOrb = MakeVector('INTE',NSP,'GAMESS-like IrrepOrb')
+OrbType = MakeVector('INTE',NSP,'GAMESS-like OrbType')
+OrbSpace = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
+
+OrbEnergy = MakeVector('REAL',NSP,'GAMESS-like OrbEnergy')
 
 nelec_tot = 0
 do irp=1,NSYMRP
   nelec_tot = nelec_tot + NELEC(irp)
 enddo
 write(LUPRI,*) 'nelec_tot=',nelec_tot
+
+! fill orb.en.
+ii = 1
+do i=1, NSP/2
+! write(LUPRI,*) 'EPS1(',i,')=',EPS1(i),EPS1(i+NSP/2)
+ OrbEnergy%p_rA1D(ii)   = EPS1(i) 
+ OrbEnergy%p_rA1D(ii+1) = EPS1(i+NSP/2)
+ SpinOfOrb%p_iA1D(ii)   = +1
+ SpinOfOrb%p_iA1D(ii+1) = -1
+! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
+ ii = ii + 2
+enddo
+
+do i=1,NSP
+ if (i<=nelec_tot) then
+  OccGMSRef%p_iA1D(i) = 1
+ else
+  OccGMSRef%p_iA1D(i) = 0
+ endif
+!
+ if (i<=NCMO) then
+  OrbType%p_iA1D(i) = -1
+  OrbSpace%p_iA1D(i) = -1
+ else if (i>NCMO .and. i<=NCMO+NACT) then
+  OrbType%p_iA1D(i) = 0
+  OrbSpace%p_iA1D(i) = 1
+ else if (i>NCMO+NACT) then
+  OrbType%p_iA1D(i) = 1
+  OrbSpace%p_iA1D(i) = -1
+ else
+  call quit('dead branch !')
+ endif
+!
+ if (iprint_hscc >= 5) then
+   write(LUPRI,876) i,SpinOfOrb%p_iA1D(i),OccGMSRef%p_iA1D(i),OrbType%p_iA1D(i),OrbSpace%p_iA1D(i),OrbEnergy%p_rA1D(i)
+   876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x,'orb.en=',f12.7)
+ endif
+enddo
+
 
 !open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
 !open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
@@ -463,6 +525,18 @@ write(ludh) NCMO
 
 write(ludh) NACT
 
+!write(ludh) ( SpinOfOrb%p_iA1D(i), i=1, NSP )
+write(ludh) ( SpinOfOrb%p_iA1D(1:NSP) )
+
+write(ludh) ( OccGMSRef%p_iA1D(1:NSP) )
+
+write(ludh) ( OrbType%p_iA1D(1:NSP) )
+
+write(ludh) ( OrbSpace%p_iA1D(1:NSP) )
+
+!write(ludh) ( OrbEnergy%p_rA1D(i), i=1, NSP )
+write(ludh) ( OrbEnergy%p_rA1D(1:NSP) )
+
 close(ludh,status="keep")
 
 write(LUPRI,*) 'saved NELEC_TOT=',nelec_tot
@@ -475,8 +549,14 @@ if (iprint_hscc >= 5) then
   write(LUPRI,'(/,2x,a,a)') '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
 endif
 
-!call Quit('prepare_dirac_HSMRCC_file')
+call DeAllocObject(OrbEnergy)
+call DeAllocObject(OrbSpace)
+call DeAllocObject(OrbType)
+call DeAllocObject(IrrepOrb)
+call DeAllocObject(OccGMSRef)
+call DeAllocObject(SpinOfOrb)
 
+!call Quit('prepare_dirac_HSMRCC_file')
 end subroutine prepare_dirac_HSMRCC_file
 
 end module Dirac_HSMRCC

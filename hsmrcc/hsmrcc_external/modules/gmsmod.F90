@@ -333,24 +333,31 @@ subroutine print_gms_data
 !  SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
 !
 integer :: i
+logical :: print_hcore_mtx = .false.
 
-write(UOUT,'(/,a)') 'Output: i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy'
+write(UOUT,'(/,2x,a,/,2x,a)') 'Data arrays(i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy)', &
+ '------------------------------------------------------------------------------------------------------------'
 
 do i=1,NSO
- !write(UOUT,'(i3,a,i4,a,i3,a,i3,a,i3,a,i4,a,i4,f16.8)')   & 
- write(UOUT,1298) i,  & 
+
+   write(UOUT,1298)   i,  & 
            SpinOfOrb(i),  & 
            OccGMSRef(i),  & 
-           IrrepOrb(i),   & 
+            IrrepOrb(i),  & 
            IrpLabOrb(i),  &
-           OrbType(i),    &
-           OrbSpace(i),   &
+             OrbType(i),  &
+            OrbSpace(i),  &
            OrbEnergy(i)
 enddo
 
-1298 format (i3,1x,'Spn=',i3,1x,'Occ=',i3,1x,'Irp=',i4,1x,   & 
-! 'IrpLab=',i12,1x,'Type=',i3,1x,'Space=',i3,1x,'OrbEnergy=',f12.6)
- 'IrpLab=',a4,1x,'Type=',i3,1x,'Space=',i3,1x,'OrbEn=',f12.6)
+  1298 format (i3,1x,'Spin=',i2,1x,'Occ=',i1,1x,'Irp=',i1,1x,      & 
+      'IrpLab=',a3,'Type=',i2,1x,'Space=',i2,1x,'OrbEn=',f12.6)
+
+if (print_hcore_mtx) then
+! ... print HCoreMatrix
+  write(UOUT,'(/,2x,a)') '*** HCoreMatrix ***'
+  call prqmat(HCoreMatrix,NSO,NSO,NSO,NSO,1,1,UOUT)
+endif
 
 end subroutine print_gms_data
 
@@ -491,6 +498,7 @@ subroutine InitReadMREINT
       ! ... Read Third Record ...
 
       read(UMR1EINT) HCoreMatrix
+
       read(UMR2EINT) IUNIQ, LABELSIZE, NINTMX
 
       if ( get_iprint() >=8 ) then
