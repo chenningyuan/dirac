@@ -367,8 +367,8 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
      &                  '*** ERROR in KRCI_INP *** ',
      &                  ' shared memory calculations in sequential',
      &                  ' mode are not permitted '
-                  CALL QUIT('*** ERROR in KRCI_INP *** ' //
-     &                  ' sequential run but MPI routines requested')
+                  CSHMEMO_KRCI = .FALSE.
+                  WRITE(LUPRI,'(/A)') '  User input will be ignored.'
                END IF
 #else
                IF( ISHMEM_TYPE .gt. 6 ) THEN
@@ -406,9 +406,8 @@ C             ... this requires the use of MPI-2 I/O handling
                   WRITE(LUPRI,*) '  *** ERROR in KRCICALC *** '//
      &                           ' Keyword .IJKLRO only valid in'//
      &                           ' parallel calculations'
-                  CALL QUIT('*** ERROR in KRCICALC *** ' //
-     &                      'Keyword .IJKLRO only valid in
-     &                       parallel calculations')
+                  WRITE(LUPRI,'(/A)') '  User input will be ignored.'
+                  CINT_REORD_KRCI = .FALSE.
 #endif
                GO TO 100
    15          CONTINUE
