@@ -103,6 +103,14 @@ ifeq ($(FC),gfortran)
         FFLAGS  = -I$(moddir) $(OPTFLAGS) -fno-range-check -pg
 endif
 
+ifeq ($(FC),gfortran-4.3)
+## gfortran/gcc
+       # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS)
+       # FFLAGS  = -I$(moddir)  -J$(moddir) $(OPTFLAGS) -fno-range-check
+        FFLAGS  = -I$(moddir) $(OPTFLAGS) -fno-range-check -pg
+endif
+
+
 ifeq ($(FC),ifort)
 ### Intel Fortran 
         FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
@@ -174,7 +182,10 @@ c89objs := getopt.o hsmrmain.o
 #### DIRAC imports ####
 ####               ####
 #######################
-dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o   ../../gp/tracing.o
+dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o  \
+                ../../gp/tracing.o ../../gp/gpsaue.o ../../gp/mempkg.o \
+               ../../gp/gpjeppe.o ../../pdpack/libpdlib.a   \
+               ../../abacus/hergp.o
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 
