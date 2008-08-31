@@ -454,9 +454,9 @@ endif
 
 SpinOfOrb = MakeVector('INTE',NSP,'GAMESS-like SpinOfOrb')
 OccGMSRef = MakeVector('INTE',NSP,'GAMESS-like OccGMSRef')
-IrrepOrb = MakeVector('INTE',NSP,'GAMESS-like IrrepOrb')
-OrbType = MakeVector('INTE',NSP,'GAMESS-like OrbType')
-OrbSpace = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
+IrrepOrb  = MakeVector('INTE',NSP,'GAMESS-like IrrepOrb')
+OrbType   = MakeVector('INTE',NSP,'GAMESS-like OrbType')
+OrbSpace  = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
 
 OrbEnergy = MakeVector('REAL',NSP,'GAMESS-like OrbEnergy')
 

@@ -54,8 +54,8 @@ subroutine InitGMSMod
      call  InitReadDIRAC
    endif
 
-!  ... final print-out of what has been read
-   if (get_iprint() >=8) then
+!  ... final print-out of what has been read inside - simple variables & arrays
+   if (get_iprint() >=7) then
 
     if (OPTION(DIRACp)) then
       write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from DIRAC ====='
@@ -72,6 +72,9 @@ subroutine InitGMSMod
     write(UOUT,'(8x,a,f18.13)') ' TotEn=',TotEn
     write(UOUT,'(8x,a,f18.13)') ' NucEn=',NucEn
     write(UOUT,'(8x,a,f18.13)') 'TrfTol=',TrfTol
+
+    call print_gms_data
+
    endif
 
    return
@@ -120,7 +123,7 @@ end subroutine EndGMSMod
 subroutine alloc_bunch
   implicit none
 
-!  ... needs NSO, NVMO, NAO
+!  ... needs: NSO, NVMO, NAO
 
   if (get_iprint() >=7) then
     write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
@@ -129,20 +132,23 @@ subroutine alloc_bunch
   endif
 
   if (NSO <=0 .or. NVMO <=0 .or. NAO <=0) then
+    write(UOUT,'(2x,a,3i4)')  & 
+    'alloc_bunch: used variables - NSO,NVMO,NAO:',NSO,NVMO,NAO
+    call flushout
     call quit('alloc_bunch: wrong sizef for allocation !')
   endif
 
-      if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
-      if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
-      if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
-      if (.not.allocated(OccRef))        allocate(OccRef(NSO))
-      if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
-      if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
-      if (.not.allocated(OrbType))       allocate(OrbType(NSO))
-      if (.not.allocated(OrbSpace))      allocate(OrbSpace(NSO))
-      if (.not.allocated(OrbEnergy))     allocate(OrbEnergy(NSO))
-      if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
-      if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
+  if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
+  if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
+  if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
+  if (.not.allocated(OccRef))        allocate(OccRef(NSO))
+  if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
+  if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
+  if (.not.allocated(OrbType))       allocate(OrbType(NSO))
+  if (.not.allocated(OrbSpace))      allocate(OrbSpace(NSO))
+  if (.not.allocated(OrbEnergy))     allocate(OrbEnergy(NSO))
+  if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
+  if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
 
   if (get_iprint() >=7) then
     write(UOUT,'(2x,a,/)') 'alloc_bunch: SpinOfOrb, SpinOfActvOrb and other data allocated...'
@@ -200,13 +206,14 @@ end subroutine  InitReadGMS
 !> read DIRAC file with data
 subroutine InitReadDIRAC
 
-character :: dirac_file='Dirac_HSMRCC'
+character*12 :: dirac_file='Dirac_HSMRCC'
 real*8    :: ENSCF_DIR
 integer   :: ludir = 18, iprint_dirac, NELEC_DIR, NSP, NORBT, NCORE_DIR, NACT_DIR
 logical   :: is_file, dir_spfr
 
 inquire(file=dirac_file, exist=is_file)
 if (.not.is_file) then
+  write(UOUT,*) 'InitReadDIRAC: problem with file "dirac_file"=',dirac_file
   call quit('InitReadDIRAC: no dirac input file !...')
 endif
 
@@ -234,8 +241,6 @@ write(UOUT,*) 'NORBT=',NORBT
 write(UOUT,*) 'NCORE_DIR=',NCORE_DIR
 write(UOUT,*) 'NACT_DIR=',NACT_DIR
 
-close(ludir) 
-
 ! ... assign DIRAC HSCC variables ...
 NAO = NORBT
 NEMO = NAO
@@ -254,7 +259,25 @@ TotEn = ENSCF_DIR
 ! ...  prepare variable  ...
   NVMO = NHOLE + NPTCL
 
-  call alloc_bunch
+ call alloc_bunch
+
+! ... read arrays ...
+
+ read(ludir) SpinOfOrb
+
+ read(ludir) OccGMSRef
+
+ read(ludir) OrbType
+
+ read(ludir) OrbSpace
+
+ read(ludir) OrbEnergy
+
+close(ludir) 
+
+!       ... update ...
+      SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
+      OccRef = OccGMSRef
 
 end subroutine  InitReadDIRAC
 
@@ -492,6 +515,7 @@ subroutine InitReadMREINT
       read(UMR1EINT)
       read(UMR2EINT) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb,   &
                      OrbType, OrbSpace, OrbEnergy, OrbCoeff
+
       SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
       OccRef = OccGMSRef
 

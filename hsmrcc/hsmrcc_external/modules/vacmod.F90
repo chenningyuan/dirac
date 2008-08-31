@@ -42,8 +42,9 @@ subroutine InitVacMod
 
 
    if (get_iprint() >= 7) then
-    write(UOUT,'(/,2x,a,i4)')  &
-    '...output from InitVacMod - parameter for allocations,  NSTATE=',NSTATE
+    call header('Output from "InitVacMod & GenVac"',-1)
+    write(UOUT,'(2x,a,i4)')  &
+    '...output from InitVacMod - parameter for allocations, NSTATE=',NSTATE
    endif
 
    if (Init) then
@@ -74,8 +75,6 @@ subroutine EndVacMod
 
    implicit none
 
-   call QEnter('EndVacMod')
-
    if (.not.Init) then
       write(UOUT,*) 'EndVacMod: VacMod not initialized !'
       !call flush(UOUT)
@@ -95,7 +94,6 @@ subroutine EndVacMod
    if (allocated(RevOrderVac)) deallocate(RevOrderVac)
    if (allocated(IsMainVac))   deallocate(IsMainVac)
 
-   call QExit('EndVacMod')
    return
 
 end subroutine EndVacMod
@@ -326,13 +324,18 @@ subroutine GenVac
    integer :: nvac, ivac, nvac_sum
    integer :: isym_block
 
-!-----------------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------
 !
 !  RefVac = 2**(NHOLE+1) - 2
 !
-!  RefVac is read from OccRef (which at the moment is read from gamess OccGMSRef)
+!  RefVac is read from OccRef (which at the moment is read from gamess/dirac OccGMSRef)
 !
-!-----------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------------
+
+   if (get_iprint() >= 10) then
+      write(UOUT,'(2x,a,i4,2x,a,i4)') 'GenVac..NCMO=',NCMO,'NVMO=',NVMO
+      write(UOUT,'(2x,a,i4,a,/,20(1x,i2))') '-- OccRef(1-',NSO,'):',(OccRef(i),i=1,NSO)
+   endif
 
    RefVac = 0
    do i = 1, NVMO
@@ -346,6 +349,10 @@ subroutine GenVac
          call Quit('GenVac: Incorrect Occupation in OccRef array !')
       endif
    enddo
+
+   if (get_iprint() >= 10) then
+      write(UOUT,'(2x,a,i4)') 'GenVac...set (by using NCMO,NVMO,OccRef) RefVac=',RefVac
+   endif
 
    ! Generating other vaccums
    ! and storing them.
@@ -362,10 +369,12 @@ subroutine GenVac
       CurrVac = IBCLR(CurrVac,i)
       CurrVac = IBSET(CurrVac,a+NHOLE)
       VacString(vac) = CurrVac
+
       if (get_iprint() >= 10) then
         write(UOUT,'(2x,a,2i5,a,i5,a,i8)')   & 
         'Genvac - single ext; i,a:',i,a,' VacString(',vac,')=',VacString(vac)
       endif
+
    enddo
    enddo
 
@@ -625,6 +634,16 @@ subroutine GenVac
    ! also setup OrderVac and RevOrderVac arrays which
    ! help in reordering vacua according to symmetry blocks
 
+   if ( get_iprint() >= 10 ) then
+    write(UOUT,*) 'ms2max=',ms2max
+    write(UOUT,*) 'numirrep=',numirrep
+
+    do i=1,NSTATE
+      write(UOUT,*) 'IrpVac(',i,')=',IrpVac(i),' Ms2Vac(',i,')=',Ms2Vac(i)
+    enddo
+
+   endif
+
    isym_block = 0
    nvac_sum = 0
    ovac = 0
@@ -675,10 +694,10 @@ subroutine GenVac
    ! ... error catching
    if (nvac_sum.ne.NSTATE) then
      write(UOUT,'(/,2x,a)')  &
-     "nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
+     "GenVac: nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
      write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
      call flushout
-     call Quit('GenVac: something wrong in finding symmetry blocks !')
+     call quit('GenVac: something wrong in finding symmetry blocks !')
    endif
 
    ! ... allocate symblock_array and fill its elements
