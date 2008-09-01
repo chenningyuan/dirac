@@ -279,6 +279,10 @@ close(ludir)
       SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
       OccRef = OccGMSRef
 
+
+! ... symmetry stuff ... will it be sufficient ?
+ !   numirrep = 4
+
 end subroutine  InitReadDIRAC
 
 

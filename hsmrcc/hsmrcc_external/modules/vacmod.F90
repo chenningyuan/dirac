@@ -314,7 +314,9 @@ end function Exct2
 !------------------------------------------------------------------------------
 
 subroutine GenVac
-
+!
+!    called from InitVacMod
+!
    implicit none
    integer :: i, j, k, l, a, b, c, d
    integer :: vac, tvac, exc
@@ -600,6 +602,7 @@ subroutine GenVac
    !    OccVac => Occupancy
    !    IrpVac => Irrep
    !    Ms2Vac => 2*M_s (excess number of alpha orbitals)
+   !
 
    ms2max = 0
 
@@ -613,6 +616,8 @@ subroutine GenVac
             iocc = 1
             irp = irrep_product(irp,IrrepOrb(i+NCMO))
             ms2 = ms2 + SpinOfOrb(i+NCMO)
+            !if (get_iprint() >= 10) then
+            !endif
          else
             iocc = 0
          endif
@@ -635,13 +640,12 @@ subroutine GenVac
    ! help in reordering vacua according to symmetry blocks
 
    if ( get_iprint() >= 10 ) then
-    write(UOUT,*) 'ms2max=',ms2max
-    write(UOUT,*) 'numirrep=',numirrep
-
-    do i=1,NSTATE
-      write(UOUT,*) 'IrpVac(',i,')=',IrpVac(i),' Ms2Vac(',i,')=',Ms2Vac(i)
-    enddo
-
+     write(UOUT,'(/,4x,a,i3,1x,a,i3)') 'ms2max=',ms2max,'numirrep=',numirrep
+     do i=1,NSTATE
+       write(UOUT,'(a,i2,a,i2,1x,a,i2,a,i2,1x,a,i2,a,i2)')    & 
+       'IrpVac(',i,')=',IrpVac(i),'Ms2Vac(',i,')=',Ms2Vac(i), &
+       'IsMainVac(',i,')=',IsMainVac(vac)
+     enddo
    endif
 
    isym_block = 0
@@ -691,11 +695,20 @@ subroutine GenVac
 
    NSYM_BLOCK = isym_block
 
+   if ( get_iprint() >= 10 ) then
+     write(UOUT,*) 
+     do i=1,NSTATE
+       write(UOUT,'(2x,a,i3,a,i3,2x,a,i3)')   & 
+         'OrderVac(',i,')=',OrderVac(i),      & 
+         'RevOrderVac[OrderVac(i)]=',RevOrderVac(OrderVac(i))
+     enddo
+   endif
+
    ! ... error catching
    if (nvac_sum.ne.NSTATE) then
-     write(UOUT,'(/,2x,a)')  &
+     write(UOUT,'(//,2x,a)')  &
      "GenVac: nvac_sum <> NSTATE; something wrong in finding symmetry blocks !"
-     write(UOUT,*) 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
+     write(UOUT,'(2x,a,i4,1x,a,i4,/)') 'nvac_sum=',nvac_sum,' NSTATE=',NSTATE
      call flushout
      call quit('GenVac: something wrong in finding symmetry blocks !')
    endif

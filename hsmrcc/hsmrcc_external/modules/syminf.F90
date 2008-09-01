@@ -99,8 +99,6 @@ contains
       integer :: ierr=0 ! MI: important initialization for gfrortran 
                         ! which does not assign automatically zeroes 
 
-      call QEnter('read_gamess_syminf')
-
       if (get_iprint() >= 5) then
        call Header('Output from "read_gamess_syminf"',-1)
       endif
@@ -147,10 +145,8 @@ contains
       if (ptgrp.eq." ") then
          write(UOUT,*)   &
          'read_gamess_syminf: unable to read point group information from syminf'
-         !call flush(UOUT)
          call flushout
-         !call abort
-         call Quit('unable to read point group information from syminf')
+         call quit('unable to read point group information from syminf')
       endif
 
       if (get_iprint() >= 5) then
@@ -163,10 +159,8 @@ contains
          write(UOUT,*) "read_gamess_syminf: error output :" 
          write(UOUT,*) "ptgrp=",ptgrp," ierr=",ierr
          write(UOUT,*) "trouble in setting up this point group !"
-        ! call flush(UOUT)
          call flushout
-        !call abort
-         call Quit('read_gamess_syminf: trouble in setting up this point group !')
+         call quit('read_gamess_syminf: trouble in setting up this point group !')
       endif
 
 !     read type of group
@@ -175,9 +169,7 @@ contains
       read(USYMINF,*) iabelian
       if (iabelian.ne.0) then
          write(UOUT,*) "syminf file contains non-abelian group!"
-         !call flush(UOUT)
          call flushout
-         !call abort
          call Quit('syminf file contains non-abelian group!')
       endif
 
@@ -191,10 +183,8 @@ contains
       read(USYMINF,*) nir
       if (nir.ne.numirrep) then
          write(UOUT,*) "syminf file contains invalid numirrep"
-         !call flush(UOUT)
          call flushout
-         !call abort
-         call Quit('syminf file contains invalid numirrep')
+         call quit('syminf file contains invalid numirrep')
       endif
 
       if (get_iprint() >= 5) then
@@ -207,10 +197,8 @@ contains
       read(USYMINF,*) irptype
       if (irptype.ne.0) then
          write(UOUT,*) "syminf file contains a group with complex irreps"
-         !call flush(UOUT)
          call flushout
-         !call abort
-         call Quit('syminf file contains a group with complex irreps')
+         call quit('syminf file contains a group with complex irreps')
       endif
 
       if (get_iprint() >= 5) then
@@ -224,9 +212,7 @@ contains
       if (iavail.ne.1) then
          write(UOUT,*)  &
          "syminf file contains a group whose irrep labels are not available !"
-         !call flush(UOUT)
          call flushout
-         !call abort
          call Quit('syminf file contains a group whose irrep labels are not available !')
       endif
 
@@ -273,9 +259,7 @@ contains
 
          if ((irx.ne.ir).or.(jrx.ne.jr).or.(nrx.ne.1 )) then
             write(UOUT,*) "Error reading irrep multiplication table from syminf file "
-            !call flush(UOUT)
             call flushout
-            !call abort
             call Quit('Error reading irrep multiplication table from syminf file')
          endif
 
@@ -284,9 +268,7 @@ contains
          if (krxx(irrep_product(ir,jr)).ne.1) then
             write(UOUT,*) "irrep product table in syminf file does"
             write(UOUT,*) "not match the irrep table of the program"
-            !call flush(UOUT)
             call flushout
-            !call abort
             call Quit('irrep product table in syminf file does' &
                     //' not match the irrep table of the program')
          endif
@@ -303,7 +285,6 @@ contains
         call print_irrep_tables
       endif
 
-      call QExit('read_gamess_syminf')
       return
 
       end subroutine read_gamess_syminf
@@ -318,14 +299,14 @@ contains
 !     the order of irreps, irrep labels and irrep multiplication table
 !     are the same as used in standard symmetry routines in gamess
 !
+!     called from "read_gamess_syminf"
+!
 !-----------------------------------------------------------------------
 
       implicit none
       character*(*) group
       integer ierr
       integer ir, jr
-
-      Call QEnter('setup_irrep_tables')
 
       numirrep = 0
       irrep_product = 0
@@ -495,7 +476,6 @@ contains
       enddo
       enddo
 
-      Call QExit('setup_irrep_tables')
       return
 
       end subroutine setup_irrep_tables
