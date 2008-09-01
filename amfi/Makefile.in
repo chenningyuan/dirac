@@ -19,6 +19,10 @@ pre:       $(F77_CPPS)
 ftnchek:   pre
 	   ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
+# amfi.F needs safe flags
+amfi.o: amfi.F
+	$(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(SAFEFLAGS) -c amfi.F
+
 all:       $(F90_MODS) $(F90_OBJS) $(F77_OBJS) $(C_OBJS)
 
 clean:
