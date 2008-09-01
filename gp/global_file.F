@@ -384,7 +384,6 @@ C           Pick out the integrals that we need.
 
       ENDDO
 
-C  20 CONTINUE 
       RETURN
       END
 
