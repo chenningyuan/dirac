@@ -35,6 +35,17 @@
 # miro: Still place for further improvements,  modularisation etc
 #
 
+# General purpose functions
+
+append () {
+# Adds two strings without adding whitespaces
+  if [ -z "$1" ]; then
+    eval "$1=\"\$$1 $2\""
+  else
+    eval "$1=\"\$$1 $2\""
+  fi
+}
+
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -1240,16 +1251,16 @@ get_cpp_flags(){
        parop="$parop -DSYS_LOCALDISKS"
     fi
 
-    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     def="dirmpi.x"
   else
-    cpp_f90="-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    cpp_cc="-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-    cpp_f90="$cpp_f90 -DVAR_MKL"
+    append cpp_f90 "-DVAR_MKL"
   fi
 
   set_bit_arch
