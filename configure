@@ -779,7 +779,7 @@ elif [ $lib_index -eq 0 ]; then
   read defblas
   case "$defblas" in
     "yes" | "y" | "Y" )
-      cpp_f90="$cpp_f90 -DNO_BLAS -DNO_LAPACK" ;;
+      cpp_f90="$cpp_f90 -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK" ;;
     *)
       echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
        ;;
