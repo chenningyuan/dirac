@@ -999,7 +999,7 @@ dirmpi.x: $F90MODS MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_O
 	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(OBJSLAVE) \\
 	$AUXOBJ \\
-	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
+	\$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
 
 EOF
@@ -1011,13 +1011,13 @@ relccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ
 	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
-	\$(LIB_LIST) \$(PDLIB)
+	\$(PDLIB) \$(LIB_LIST)
 
 mpiccsd.x: GP_OBJ PD_OBJ \\
 	CCM_OBJ
 	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
-	\$(LIB_LIST) \$(PDLIB) \\
+	\$(PDLIB) \$(LIB_LIST) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
 EOF
 
@@ -1043,7 +1043,7 @@ dirrci.x: GP_OBJ PD_OBJ \\
 	CI_OBJ
 	\$(F90) \$(LDFLAGS) -o \$(INSTALLDIR)/dirrci.x \\
 	\$(DIRRCI_MAIN) \$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
-	\$(LIB_LIST) \$(PDLIB)
+	\$(PDLIB) \$(LIB_LIST)
 
 EOF
 ##############################################################################
