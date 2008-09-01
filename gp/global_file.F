@@ -342,6 +342,8 @@ C
 
          THIS_REC = GF_BREC(IBUF,MYTID,SOURCE_NODE)
 
+         IF (THIS_REC .EQ. 0) GOTO 20
+
    10    CALL LOCAL_FILE_GET_RECORD(SOURCE_NODE,THIS_REC)
 
             POSITION = 0
@@ -381,6 +383,7 @@ C           Pick out the integrals that we need.
 
       ENDDO
 
+   20 CONTINUE 
       RETURN
       END
 
