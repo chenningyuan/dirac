@@ -380,10 +380,11 @@ C           Pick out the integrals that we need.
             THIS_REC = PREV_REC
 
          IF (THIS_REC .NE. 0) GOTO 10
+   20    CONTINUE 
 
       ENDDO
 
-   20 CONTINUE 
+C  20 CONTINUE 
       RETURN
       END
 
