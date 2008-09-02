@@ -465,9 +465,11 @@ if [ "$mesp" = "mpi" ]; then
 fi
 find_compiler "Fortran" $F90_COMP
 F90_COMP=$comp_found
+F90_COMP_PWD=`which $F90_COMP`
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_fortran: found F90 compiler ' $F90_COMP
+ echo 'compiler_fortran: F90 compiler with full path '$F90_COMP_PWD
 fi
 
 # take care of the 64 bit architecture !
@@ -483,7 +485,7 @@ fi
 compiler_c(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Sets up the c compiler
+#   Sets up the C compiler
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -494,9 +496,11 @@ if [ "$mesp" = "mpi" ]; then
 fi
 find_compiler "C" $CC_COMP
 CC_COMP=$comp_found
+CC_COMP_PWD=`which $CC_COMP`
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_c: got CC_COMP='$comp_found
+ echo 'compiler_c :C-compiler with full path: '$CC_COMP_PWD 
 fi
 
 }
@@ -1847,8 +1851,10 @@ C_INCLUDE_DIR = $cc_inc
 DEPEND_FLAGS  = $depend_flags 
 CPP_F90       = $cpp_f90
 CPP_CC        = $cpp_cc
-F90           = $F90_COMP
-CC            = $CC_COMP
+##F90           = $F90_COMP
+F90           = $F90_COMP_PWD
+##CC            = $CC_COMP
+CC            = $CC_COMP_PWD
 RM            = rm
 AR            = ar
 EOF
