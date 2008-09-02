@@ -35,7 +35,11 @@
 # miro: Still place for further improvements,  modularisation etc
 #
 
-# General purpose functions
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   General purpose functions
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 append () {
 # Adds two strings without adding whitespaces
@@ -45,6 +49,7 @@ append () {
     eval "$1=\"\$$1 $2\""
   fi
 }
+
 
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -75,7 +80,7 @@ else
 fi
 #
 # Is 'locate' installed?
-which locate > /dev/null; locate_ok=$?
+#which locate > /dev/null; locate_ok=$?
 #
 }
 
@@ -448,14 +453,12 @@ compiler_fortran(){
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
-to_find='Fortran'
 comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
 # Prefer "parallel" compilers if mpi
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77 $comp_list"
 fi
-user_comp=$F90_COMP
-find_compiler
+find_compiler "Fortran" $F90_COMP
 F90_COMP=$comp_found
 
 if [ $IPRINT -ge "5" ];  then
@@ -480,13 +483,11 @@ compiler_c(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 # All supported C compilers
-to_find='C'
 comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
 fi
-user_comp=$CC_COMP
-find_compiler
+find_compiler "C" $CC_COMP
 CC_COMP=$comp_found
 
 if [ $IPRINT -ge "5" ];  then
@@ -499,25 +500,56 @@ find_compiler ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #   Finds compilers from a list 
-#   comp_list contains the compilers
-#   user_comp contains (possibly) a compiler specified by the user
-#   to_find determines the kind of compiler to be found
-#           (for messages to the user)
+#   Argument $1 : The name of the compiler to be found
+#                (for messages to the user)
+#   Argument $2 : User preferred compiler
+#   comp_list   : Contains the compilers
 #   Here we return comp_set
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-$echo "\nChecking for $to_find compilers:"
+$echo "\nChecking for $1 compilers:"
 comp_found=""
+comp_pwd=""
 
-if [ -z "$user_comp" ]; then
-    for comp in $comp_list; do
-	if which "$comp" 2> /dev/null; then 
-	    comp_found="$comp_found $comp"
-	fi
-    done
-else
-    comp_found="$user_comp"
+search_dirs=${PATH//:/ }
+# Which doesn't work on mac!
+if [ ! -z "$2" ]; then
+  echo 'JHS Do some more test on this part!' 
+  tmp_list=$comp_list
+  comp_list=$2
+  find_compiler $1
+  if [ -z "$compiler_found"]; then
+    exit
+  fi
+  echo "Compiler specified by the user not found... Checking for the standard compilers."
 fi
+for comp in $comp_list; do
+  if [ -f $comp ]; then
+    append comp_found "$comp" 
+    append comp_pwd "$comp"
+  fi
+  for cur_dir in $search_dirs; do
+    if [ -f $cur_dir/$comp ]; then
+      append comp_found "$comp"
+      append comp_pwd "$cur_dir"
+    fi
+  done
+done
+
+
+
+#
+#
+#if [ -z "$user_comp" ]; then
+#    for comp in $comp_list; do
+#	if which "$comp" 2> /dev/null; then 
+#	    comp_found="$comp_found $comp"
+#	fi
+#    done
+#else
+#    comp_found="$user_comp"
+#fi
+
 
 # If there is found more than one compiler let the user pick it.
 counter=0
@@ -526,15 +558,13 @@ for comp in $comp_found; do
 done
 
 case $counter in 
-  0 ) $echo "\n   No $to_find compiler found on this computer"
+  0 ) $echo "\n   No $1 compiler found on this computer"
     echo  "   Cannot proceed without a Fortran compiler in path"
     echo  "   Please check your path! "
     echo  " Specify a compiler manually: "
     exit ;;
-#  1 ) 
-#    echo " The following $to_find compiler will be used: $comp_found" ;;
   * )
-    $echo "\n These following $to_find compilers were detected on your system:"
+    $echo "\n These following $1 compilers were detected on your system:"
     counter=0
     for comp in $comp_found; do
       counter=`expr $counter + 1`
@@ -572,7 +602,7 @@ else
     done 
 fi
 
-echo "Compiler for $to_find: $comp_found"
+echo "Compiler for $1: $comp_found"
 }
 
 find_real_f90(){
@@ -588,8 +618,8 @@ openmpif*|mpif*)
       # LAM MPI
       mpishowopt="-showme" 
    fi
-    my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
-    if "$F90_COMP" $mpishowopt | grep -q ifc; then
+   my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+   if "$F90_COMP" $mpishowopt | grep -q ifc; then
       F90real=ifc
    elif "$F90_COMP" $mpishowopt | grep -q ifort; then
       F90real=ifort
