@@ -43,11 +43,14 @@
 
 append () {
 # Adds two strings without adding whitespaces
+# At's need an addition \\
+
   if [ -z "$1" ]; then
-    eval "$1=\"\$$1 $2\""
+    eval "$1=\"$2\""
   else
     eval "$1=\"\$$1 $2\""
   fi
+
 }
 
 
@@ -1281,12 +1284,12 @@ get_cpp_flags(){
        parop="$parop -DSYS_LOCALDISKS"
     fi
 
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}' $parop"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}' $parop"
     def="dirmpi.x"
   else
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}'"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}'"
     def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
