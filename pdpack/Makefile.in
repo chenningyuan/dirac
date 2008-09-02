@@ -19,8 +19,8 @@ F77_CPPS = $(F77_SRC:.F=.i)
 F90_MODS =
 
 # dlamch need safe flags
-dlamch.o: dlamch.F  ;\
-        $(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(SAFEFLAGS) -c dlamch.F
+dlamch.o: dlamch.F
+	$(F90) $(F_INCLUDE_DIR) $(CPP_F90) $(SAFEFLAGS) -c dlamch.F
 
 all :	dlamch.o libpdlib.a
 
@@ -31,7 +31,7 @@ ftnchek:pre
 
 libpdlib.a: $(F_OBJS)
 
-clean : 
+clean :
 	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.a
 
 mod:       $(F90_MODS)
