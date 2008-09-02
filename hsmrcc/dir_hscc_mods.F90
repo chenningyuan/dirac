@@ -452,11 +452,12 @@ else
  write(LUPRI,*) ' memory sticked !' 
 endif
 
-SpinOfOrb = MakeVector('INTE',NSP,'GAMESS-like SpinOfOrb')
-OccGMSRef = MakeVector('INTE',NSP,'GAMESS-like OccGMSRef')
-IrrepOrb  = MakeVector('INTE',NSP,'GAMESS-like IrrepOrb')
-OrbType   = MakeVector('INTE',NSP,'GAMESS-like OrbType')
-OrbSpace  = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
+SpinOfOrb  = MakeVector('INTE',NSP,'GAMESS-like SpinOfOrb')
+OccGMSRef  = MakeVector('INTE',NSP,'GAMESS-like OccGMSRef')
+IrrepOrb   = MakeVector('INTE',NSP,'GAMESS-like IrrepOrb')
+IrpLabOrb  = MakeVector('INTE',NSP,'GAMESS-like IrpLabOrb')
+OrbType    = MakeVector('INTE',NSP,'GAMESS-like OrbType')
+OrbSpace   = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
 
 OrbEnergy = MakeVector('REAL',NSP,'GAMESS-like OrbEnergy')
 
@@ -464,6 +465,7 @@ nelec_tot = 0
 do irp=1,NSYMRP
   nelec_tot = nelec_tot + NELEC(irp)
 enddo
+
 write(LUPRI,*) 'nelec_tot=',nelec_tot
 
 ! fill orb.en.
@@ -497,6 +499,12 @@ do i=1,NSP
  else
   call quit('dead branch !')
  endif
+
+
+! ... fill irreps now ...
+
+
+
 !
  if (iprint_hscc >= 5) then
    write(LUPRI,876) i,SpinOfOrb%p_iA1D(i),OccGMSRef%p_iA1D(i),OrbType%p_iA1D(i),OrbSpace%p_iA1D(i),OrbEnergy%p_rA1D(i)
@@ -552,6 +560,7 @@ endif
 call DeAllocObject(OrbEnergy)
 call DeAllocObject(OrbSpace)
 call DeAllocObject(OrbType)
+call DeAllocObject(IrpLabOrb)
 call DeAllocObject(IrrepOrb)
 call DeAllocObject(OccGMSRef)
 call DeAllocObject(SpinOfOrb)

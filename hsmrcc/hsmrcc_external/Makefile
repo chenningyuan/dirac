@@ -113,7 +113,8 @@ endif
 
 ifeq ($(FC),ifort)
 ### Intel Fortran 
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
+      #  FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
+        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg  -nofor-main
 endif
 
 # ... others combinations...
