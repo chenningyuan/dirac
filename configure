@@ -515,6 +515,7 @@ find_compiler ()  {
 $echo "\nChecking for $1 compilers:"
 comp_found=""
 comp_pwd=""
+comp_pwd_found=""
 
 search_dirs=${PATH//:/ }
 # Which doesn't work on mac!
@@ -532,15 +533,21 @@ for comp in $comp_list; do
   if [ -f $comp ]; then
     append comp_found "$comp" 
     append comp_pwd "$comp"
+    append comp_pwd_found "$comp"
   fi
   for cur_dir in $search_dirs; do
     if [ -f $cur_dir/$comp ]; then
       append comp_found "$comp"
       append comp_pwd "$cur_dir"
+      append comp_pwd_found "$cur_dir/$comp"
+
+      if [ $IPRINT -ge "8" ]; then
+         $echo 'find_compiler> directory/compiler found: '$cur_dir/$comp
+         $echo 'find_compiler> actual comp_pwd_found='$comp_pwd_found
+      fi
     fi
   done
 done
-
 
 
 #
@@ -571,9 +578,9 @@ case $counter in
   * )
     $echo "\n These following $1 compilers were detected on your system:"
     counter=0
-    for comp in $comp_found; do
+    for comp in $comp_pwd_found; do
       counter=`expr $counter + 1`
-      $echo "$counter) $comp \t\c"
+      $echo "$counter) $comp "
     done
     $echo "0) Specify compiler manually."      
   ;;
@@ -590,15 +597,25 @@ if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
     exit
 elif [ $comp_index -eq 0 ]; then
     echo ""
-    echo "Note that compilerflags may not be set correctly."
-    echo "Check Makefile.config afterwards."
+    echo "Note that compiler flags may not be set correctly."
+    echo "Check Makefile.config afterwards !"
     echo ""
-    echo "Enter you compiler:"
-    read comp_foud
+    $echo "Enter you compiler:\c"
+    read comp_found
+  #miro: verify entered compiler
+    comp_found_verify=`which $comp_found`
+    if [ ! -z "$comp_found_verify" ]; then
+      $echo 'Compiler with its full path is: '$comp_found_verify
+    else
+      $echo "\n Entered '$comp_found' can not be found on your system using which command !\n"
+      $echo "Therefore error exit !"
+      exit
+    fi
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
     counter=0 
-    for comp in $comp_found; do
+   # for comp in $comp_found; do
+    for comp in $comp_pwd_found; do
 	counter=`expr $counter + 1`
 	if [ $counter -eq $comp_index ]; then
 	    comp_found=$comp
@@ -607,7 +624,7 @@ else
     done 
 fi
 
-echo "Compiler for $1: $comp_found"
+$echo "\nCompiler for $1: $comp_found"
 }
 
 find_real_f90(){
