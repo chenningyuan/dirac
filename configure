@@ -614,8 +614,8 @@ elif [ $comp_index -eq 0 ]; then
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
     counter=0 
-   # for comp in $comp_found; do
-    for comp in $comp_pwd_found; do
+    for comp in $comp_found; do
+   # for comp in $comp_pwd_found; do
 	counter=`expr $counter + 1`
 	if [ $counter -eq $comp_index ]; then
 	    comp_found=$comp
