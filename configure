@@ -45,10 +45,12 @@ append () {
 # Adds two strings without adding whitespaces
 # At's need an addition \\
 
+# Add extra escape character to $ in order that these are not executed.
+  tmp=${2//$/\\$}
   if [ -z "$1" ]; then
-    eval "$1=\"$2\""
+    eval "$1=\"$tmp\""
   else
-    eval "$1=\"\$$1 $2\""
+    eval "$1=\"\$$1 $tmp\""
   fi
 
 }
@@ -1284,12 +1286,12 @@ get_cpp_flags(){
        parop="$parop -DSYS_LOCALDISKS"
     fi
 
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}' $parop"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}' $parop"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
     def="dirmpi.x"
   else
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}'"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\\\${WRKMEM}'"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
     def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
