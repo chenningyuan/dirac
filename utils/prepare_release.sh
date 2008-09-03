@@ -38,6 +38,12 @@ rm utils/numerov_parameters.py
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
 
+# Delete directories under /test that should not be shipped
+# we also need something fot the test scripts ...
+echo "Deleting directories under /test"
+rm -rf test/43.plots              
+rm -rf test/46.sdft_linear_response
+rm -rf test/56.aoresponse          
 
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
