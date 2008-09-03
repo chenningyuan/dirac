@@ -403,19 +403,27 @@ if [ "$mesp" = "mpi" ]; then
   mpi2version="yes"
   $comptst ./test/MPI2_test.F 2>/dev/null || mpi2version="no"
   if [ "$mpi2version" = "no" ]; then
-    echo  "No MPI-2 support found ...                                   "
-    echo  "Attention: the following DIRAC modules will NOT work         "
-    echo  "           without MPI-2 support:                            "
-    echo  "                                  - LUCITA                   "
-    echo  "                                  - LUCIAREL                 "
-    echo  "                                  - KR-MCSCF using LUCIAREL  "
-    echo  "                                  - MOLTRA (scheme 6)        "
-    echo
-    $echo "Configure without MPI-2 support? (Y/n)"
+    echo  " "
+    echo  " "
+    echo  "Hmm. Failed to find support for MPI-2 in your installation.  "
+    echo  " "
+    echo  "If you think this is incorrect, in the following question    "
+    echo  "press 'y' to configure with MPI-2 support, and add manually  "
+    echo  "any missing paths to your MPI-2 installation."
+    echo  " "
+    echo  "Please note that the functionality from the following DIRAC "
+    echo  "modules will NOT be available without MPI-2 support: "
+    echo  " "
+    echo  "    - LUCITA                   "
+    echo  "    - LUCIAREL                 "
+    echo  "    - KR-MCSCF using LUCIAREL  "
+    echo  "    - MOLTRA with parallel I/O (helpful for global/shared scratch spaces)"
+    echo  " "
+    $echo "Configure with MPI-2 support anyway? (y/N)"
     read mpi2version
-    if [ "$mpi2version" = "n" ]; then
+    if [ "$mpi2version" = "y" ]; then
 	mpi2version=yes
-	echo "You will have to manually add MPI2 paths to Makefile.config"
+	echo "Remember to add MPI2 paths to Makefile.config if necessary"
     fi;
   fi
   if [ "$mpi2version" = "yes" ]; then
