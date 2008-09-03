@@ -36,6 +36,7 @@ rm pamforay Programmers_manual.txt alternative_pamadm.py dumbconfigure TODO
 rm utils/numerov.py
 rm utils/numerov_parameters.py
 rm -rf utils/foray_0.1
+rm -rf utils/visualization_scripts
 
 
 # Delete .svn files if there are any (should not be with svn export)
