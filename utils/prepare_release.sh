@@ -35,6 +35,22 @@ rm utils/cppp.py utils/prepare_release.sh
 rm pamforay Programmers_manual.txt alternative_pamadm.py dumbconfigure TODO
 rm utils/numerov.py
 rm utils/numerov_parameters.py
+rm utils/add_copyright.py
+rm utils/basis_set.py
+rm utils/codegen_maxima.py
+rm utils/codegen_mupac.py
+rm utils/ihfscc_input_helper.py
+rm utils/make_targetbuilds.py
+rm utils/periodic_table.py
+rm utils/prepare_dyall_basis.sh
+rm utils/prepare_dyall_dblock_basis.sh
+rm utils/prepare_dyall_fblock_basis.sh
+rm utils/prepare_dyall_pblock_basis.sh
+rm utils/prepare_dyall_sblock_basis.sh
+rm utils/reformat_includes.py
+rm utils/remove_copyright.py
+rm utils/remove_module.sh
+
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
 
@@ -44,6 +60,8 @@ echo "Deleting directories under /test"
 rm -rf test/43.plots              
 rm -rf test/46.sdft_linear_response
 rm -rf test/56.aoresponse          
+rm -rf test/45.densfit
+rm -rf test/47.fde.prop
 
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
