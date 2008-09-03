@@ -460,7 +460,9 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-      ISTRAT = 4
+Caspg, default in MOLTA is scheme 6 now... if problems are encountered, 
+C      should be reverted to scheme 4
+      ISTRAT = 6
       ITRA_INTFLG = INTGEN
       IGTINT = IBTAND(INTGEN/8,1)
       ITRA_INTFL2 = -8
@@ -966,12 +968,6 @@ C
      &    '* Size of batches for strategy 4 determined dynamically.'
         END IF
       END IF
-C
-C     Batch size of strategy 4.
-C
-      WRITE(LUPRI,'(1X,A,I4)')
-     &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
-C
   999 CONTINUE
       RETURN
  1010 CONTINUE

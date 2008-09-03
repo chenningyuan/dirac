@@ -88,7 +88,11 @@ C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI
-      INTFCE = 'DIRAC     '
+C aspg 20080903
+C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+c     INTFCE = 'DIRAC     '
+      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
       MP2_DENRUN = .FALSE.
       IF( DOMP2NO )THEN
         IF( RUN_CCMOD ) MP2_DENRUN = .TRUE.
@@ -126,7 +130,7 @@ C
       IF( MP2_DENRUN )THEN
         CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-        IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
+        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
         CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
@@ -252,7 +256,11 @@ C     Add the master node
       NMPROC = 1
 #endif
 
-      INTFCE = 'DIRAC     '
+C aspg 20080903
+C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+c     INTFCE = 'DIRAC     '
+      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
       MP2_DENRUN = .FALSE.
 C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
@@ -266,7 +274,7 @@ C
       IF( MP2_DENRUN )THEN
         CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-        IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
+        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
         CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,

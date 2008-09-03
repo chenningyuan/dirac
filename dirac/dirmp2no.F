@@ -58,6 +58,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dcbtra.h"
 #include "dcbmp2no.h"
 C
       LOGICAL SET, NEWDEF, RESET,LBIT
@@ -67,7 +68,7 @@ C
 C  .MAXVIRT - maximum number of virtuals in MP2
 C             if energy criterium gives more then max energy will be
 C             reduced
-C  .SCHEME  - transformation scheme used for MOLTRA (default 4)
+C  .SCHEME  - transformation scheme used for MOLTRA (default taken from moltra)
 C  .SELECT  - select min NO for active orbitals afterwards (relccsd,
 C             lucita, kr-mcscf, luciarel, ...)
 C             Default: e.g. "NO-occ 1.99 0.001 0.1" in analogy with the
@@ -119,7 +120,8 @@ C     step
         VECNOSEL(I) = 'NO-occ 1.99999999 0.0001 0.1 '
       ENDDO
       IMAXVSP     = JMAXVSP
-      IAOMOSCHEME = 4
+Caspg, default changed from scheme 4 to scheme 6
+      IAOMOSCHEME = 6 
       
 C
 C     Process input from CBIMP2NO

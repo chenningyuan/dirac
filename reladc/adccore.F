@@ -56,7 +56,10 @@ C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI
-      INTFCE = 'DIRAC     '
+C aspg 20080903
+C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+c     INTFCE = 'DIRAC     '
+      INTFCE = 'DIRAC6    '
       CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
 #if defined (VAR_MPI)
       MASTER = MPARID
