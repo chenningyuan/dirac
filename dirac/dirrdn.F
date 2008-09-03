@@ -3789,19 +3789,33 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','XXXXXXX','XXXXXXX'/
+
+!                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
+!                    5         6         7         8
      &            '.LVCORR','.LVNEW ','.SOLVEN','.FREEPJ',
+!                    9        10        11        12
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
+!                   13        14        15        16
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
+!                   17        18        19        20
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
+!                   21        22        23        24
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
+!                   25        26        27        28
      &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
+!                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
+!                   33        34        35        36
      &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
+!                   37        38        39        40
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
+!                   41        42        43        44
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
+!                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
-     &            '.NOAMFI','.QDOTS ','.XXXXXX','.XXXXXX'/
+!                   49        50        51        52
+     &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  '/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4247,6 +4261,8 @@ C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
 C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
 CMI  it's BSS_RKB+AMFI; later fix this options when interacting
 CMI  with other flags...
+!radovan: note that .X2C points to here
+!         so be careful when changing "137"
              IOTC = .TRUE.
              BSS = .TRUE.
              NOPRTR = .TRUE.
@@ -4285,6 +4301,8 @@ C             DO_FDE = .TRUE.
              GO TO 100
   143     CONTINUE
 C&&& IOTC4: do IOTC in 4c-mode
+!radovan: note that .X2C4 points to here
+!         so be careful when changing "143"
              BSS = .TRUE.
              NOPRTR = .TRUE.
              IBSS = 2999
@@ -4340,19 +4358,15 @@ C&&& QDOTS: activate artificial atom (quantum dots)
              QDOTS = .TRUE.
 #endif
              GO TO 100
-  151     CONTINUE
-C&&& XXXX
-             GO TO 100
-  152     CONTINUE
-C&&& XXXX
-             GO TO 100
-  153     CONTINUE
-C&&& XXXX
-             GO TO 100
-  154     CONTINUE
-C&&& XXXX
-             GO TO 100
-  155     CONTINUE
+
+!         .X2C is alias for .IOTC
+  151     continue
+          go to 137
+
+!         .X2C4 is alias for .IOTC4
+  152     continue
+          go to 143
+
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
