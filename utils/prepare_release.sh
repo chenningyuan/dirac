@@ -33,6 +33,8 @@ utils/cppp.py -UMOD_KRMC -UMOD_DNF `find . -name '*.F' -o -name '*.f90' -o -name
 echo "Deleting files"
 rm utils/cppp.py utils/prepare_release.sh
 rm pamforay Programmers_manual.txt alternative_pamadm.py dumbconfigure TODO
+rm utils/numerov.py
+rm utils/numerov_parameters.py
 rm -rf utils/foray_0.1
 
 
