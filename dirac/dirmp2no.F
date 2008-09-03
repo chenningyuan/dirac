@@ -58,7 +58,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbtra.h"
+#include "../moltra/dcbtra.h"
 #include "dcbmp2no.h"
 C
       LOGICAL SET, NEWDEF, RESET,LBIT
