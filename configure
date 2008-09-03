@@ -1013,7 +1013,7 @@ echo
 if [ -z "$memdef" ]; then
    memdef=`./config.status WRKMEM`
    if [ -z "$memdef" ]; then
-      memdef=10000000
+      memdef=64000000
    fi
    echo 'DIRAC uses approximately 6.4 MB for static allocations.'
    echo 'How many MB to use as default for scratch memory ?'
