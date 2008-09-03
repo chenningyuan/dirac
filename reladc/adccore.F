@@ -72,28 +72,33 @@ C     Add the master node
       NMPROC = 1
 #endif
 C
+C     FIXME: SK - Aug 08: write parallel slave initialization 
+C                         and slave release routines. 
+C                         Is RELADC in general working in parallel?
+C                         Markus, what do you say?
+C
 C     Summon the slaves, who are waiting in the general menu routine.
 C
-      CALL CCMSTI
+CSK   CALL ADCMSTI
 C
 C     Tell them the correct arithmetic (NZ is not initialized on the
 C     slaves
 C     if you do not run HF !)
 C
-#if defined (VAR_MPI)
-      IF (NMPROC .GT. 1) THEN
-         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-      END IF
-#endif
+CSK#if defined (VAR_MPI)
+CSK   IF (NMPROC .GT. 1) THEN
+CSK      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+CSK   END IF
+CSK#endif
 C
-C     Enter the generic CCMAIN routine (master becomes now primus inter
+C     Enter the generic ADCMAIN routine (master becomes now primus inter
 C     pares)
 C
       CALL ADCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
 C
 C     Return the slaves to the general menu routine.
 C
-      CALL CCMSTE
+CSK   CALL ADCMSTE
 C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
