@@ -839,7 +839,7 @@ C conventional code...
            endif ! df_fitvxc
 #endif
         END IF ! DOERG
-C aspg+rbast, 2006-09-21
+
 C
 C       Exchange-correlation contribution to molecular gradient
 C       =======================================================
@@ -856,8 +856,8 @@ CTROND          CALL DFTMAG
         ENDIF
 
 
-!       Hessian transformation via density fitting
 #ifdef MOD_DNF
+!       Hessian transformation via density fitting
         IF(DOLR) THEN
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then

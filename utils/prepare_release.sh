@@ -27,7 +27,7 @@ cd ../Dirac08
 
 # First delete code that should not be released.
 echo "Removing functionality from source files"
-utils/cppp.py -UMOD_KRMC -UMOD_DNF `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
+utils/cppp.py -UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
 
 # Then delete files that should not be shipped
 echo "Deleting files"
