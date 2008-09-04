@@ -2870,10 +2870,17 @@ C&&&& LOCALIZE : Molecular orbital localization
             GO TO 100
   108    CONTINUE
             GO TO 100
-  109    CONTINUE
-            DO_VISUAL = .TRUE.
-            NJOBS = NJOBS +1
-            GO TO 100
+
+!        .VISUAL
+  109    continue
+#ifdef MOD_VISUAL
+         do_visual = .true.
+         njobs = njobs + 1
+#else
+         call quit('.VISUAL not available in this version')
+#endif /* MOD_VISUAL */
+         go to 100
+
   110    CONTINUE
             GO TO 100
   111    CONTINUE
@@ -2959,11 +2966,16 @@ C
     8 CONTINUE
         CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
-    9 CONTINUE
+
+!      *VISUAL
+    9  continue
 #ifdef MOD_VISUAL
-        CALL VISUAL_INPUT(WORD,.FALSE.,WORK,LWORK)
+       call visual_input(word, .false., work, lwork)
+#else
+       call quit('*VISUAL not available in this version')
 #endif /* MOD_VISUAL */
-        GO TO 200
+       go to 200
+
    10 CONTINUE
         GO TO 200
    11 CONTINUE
