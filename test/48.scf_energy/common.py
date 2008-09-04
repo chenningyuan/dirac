@@ -29,8 +29,8 @@ d_hamiltonian = {}
 d_hamiltonian['dc'       ] = 'LVCORR'
 d_hamiltonian['dc_urkbal'] = 'LVCORR\n.URKBAL'
 d_hamiltonian['dc_sof'   ] = 'LVCORR\n.SPINFREE'
-d_hamiltonian['iotc2'    ] = 'IOTC'
-d_hamiltonian['iotc4'    ] = 'IOTC4'
+#d_hamiltonian['iotc2'    ] = 'IOTC'
+#d_hamiltonian['iotc4'    ] = 'IOTC4'
 d_hamiltonian['nr2'      ] = 'NONREL'
 
 #-------------------------------------------------------------------------------
