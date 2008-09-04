@@ -840,20 +840,20 @@ C conventional code...
 #endif
         END IF ! DOERG
 
-C
-C       Exchange-correlation contribution to molecular gradient
-C       =======================================================
-C
-        IF(DOGRD) THEN
-CTROND           CALL DFTFRC
-        ENDIF
-C
-C       London contributions to Kohn-Sham matrix 
-C       ========================================
-C
-        IF (DOLND) THEN
-CTROND          CALL DFTMAG         
-        ENDIF
+!
+!       Exchange-correlation contribution to molecular gradient
+!       =======================================================
+!
+!       IF(DOGRD) THEN
+!TROND           CALL DFTFRC
+!       ENDIF
+!
+!       London contributions to Kohn-Sham matrix 
+!       ========================================
+!
+!       IF (DOLND) THEN
+!TROND          CALL DFTMAG         
+!       ENDIF
 
 
 #ifdef MOD_DNF
