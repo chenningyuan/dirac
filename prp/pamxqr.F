@@ -137,16 +137,7 @@ C
       XQRDIH = .TRUE.
       XQR_ALLCMB = .FALSE.
       XQR_SKIPEE = .FALSE.
-CMI   ... moved after input processing ...
-C     IF (LEVYLE.OR.BSS) THEN
-C        INTXQR = ILLINT
-C        XQR_SKIPEP = .TRUE.
-C     ELSE IF (FREEPJ .OR. VEXTPJ) THEN
-C     No positron orbitals ("no-pair")
-C        XQR_SKIPEP = .TRUE.
-C     ELSE
-C        XQR_SKIPEP = .FALSE.
-C     END IF
+      XQR_SKIPEP = .FALSE.
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
          XQR_INDSTR(2,I) = ' '
@@ -373,8 +364,10 @@ C        INTXQR = ILLINT
       ELSE IF (FREEPJ .OR. VEXTPJ) THEN
 C     No positron orbitals ("no-pair")
          XQR_SKIPEP = .TRUE.
-      ELSE
-         XQR_SKIPEP = .FALSE.
+!
+!     radovan: the ELSE below ignores the .SKIPEP keyword!!!
+!     ELSE
+!        XQR_SKIPEP = .FALSE.
       END IF
 
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
