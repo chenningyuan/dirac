@@ -63,12 +63,14 @@ rm -rf test/56.aoresponse
 rm -rf test/45.densfit
 rm -rf test/47.fde.prop
 
+rm TODO
+
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
 rm -rf `find . -name '.svn'`
 
 # run pamadm with the correct flags
-# 
+#
 echo "Running pamadm -dft -xpp export"
 ./pamadm -dft -xpp export > /dev/null
 if [[ -r Dirac08.tar.gz ]]; then
