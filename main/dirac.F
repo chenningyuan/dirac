@@ -56,7 +56,9 @@ C
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
-      NUMNOD = INUMNOD - 1
+C     NUMNOD = INUMNOD - 1
+C     SK - Sep 08: subtraction has already been done in mpixinit.
+      NUMNOD = INUMNOD
       MYTID  = IMYTID
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
