@@ -115,7 +115,7 @@ C     Add diplen and dipvel to DCBPRP
       NSTXOP = 0
       DO I=1,STEX_NR_OP
          CALL XPRIND(PNAME(I),1,1,1.0D0,PNAME(I),INDXPR,STEX_OP_SYM(I),
-     &        STEX_OP_TIM(I),WORK,LWORK,7)
+     &        STEX_OP_TIM(I),WORK,LWORK,0)
          CALL OP1IND('STXDOP',IND1OP,STEX_OP_IND,NSTXOP,INDXPR
      $        ,STEX_NR_OP)
       END DO
@@ -271,9 +271,9 @@ C     See if a separate reference state will be used.
          WRITE(LUPRI,*) 'for STEX calculation'
 C     Move groundstate DFCOEF to DFCOEF.GS
 C     ulfek: bug here on some systems
-         ISYS1 = CSYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = CSYSTEM('mv DFCOEF.ION DFCOEF')
-         PRINT *,'Debug: mv return codes',ISYS1,ISYS2
+         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
+         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
+c         PRINT *,'Debug: mv return codes',ISYS1,ISYS2
          STEX_COFACTOR = .TRUE.
       ELSE
          WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
@@ -303,7 +303,7 @@ C     Read reference orbitals and eigenvalues
 
 C     Set up cutoff and indices
       STEX_NVIR(2) = 0
-      print *,'cutoff',STEX_CUTOFF
+      print *,'Virtual cutoff',STEX_CUTOFF,' Hartree'
       DO ISYM=1,NFSYM
          JEIG = KEIG + IORB(ISYM) + NPSH(ISYM) + NISH(ISYM) - 1
          I = 1
@@ -1190,11 +1190,12 @@ C
      &     IDOMCHANH(50),IDOMCHANV(50), HOLEWEIGHT(STEX_NHOLES)
 #include "memint.h"
       CALL QENTER('STEX_ANALYZE')
+      WRITE(LUPRI,'(1A)') 'Excitation energies and oscillator strengths'
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
-     &     ' <f_l>/3   <f_v>/3     f_lx     f_ly  '//
-     &     '   f_lz     f_vx     f_vy     f_vz'
-      WRITE(LUPRI,*) '-------------------------------------'/
-     $     /'---------------------------------------'
+     &     ' <f_l>/3   <f_v>/3     f_lx      f_ly  '//
+     &     '    f_lz      f_vx      f_vy      f_vz'
+      WRITE(LUPRI,*) '------------------------------------------------'/
+     $     /'----------------------------------------------------'
       DERG = REFERG - GSERG
 C     Check sum rule for oscillator strengths
       SUML = 0.0D0
@@ -1226,7 +1227,7 @@ C     Velocity gauge
      $     ,SUML ,SUMV
 
       WRITE (LUPRI,'(//A)')
-     &   ' Dominant excitation channels for each state'
+     &   ' Dominant excitation channels for each state [hole -> virtual (weight)]'
       DO IVEC=1,NVEC
 C     Find the dominant channels
          NDOMCHAN = 0
