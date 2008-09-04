@@ -42,19 +42,15 @@
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 append () {
-# Adds two strings without adding whitespaces
-# At's need an addition \\
-
-# Add extra escape character to $ in order that these are not executed.
-  tmp=${2//$/\\$}
+# Append $2 to the variable with the name $1
+# TODO: Should also escape single quotes in input
   if [ -z "$1" ]; then
-    eval "$1=\"$tmp\""
+    eval "$1='$2'"
   else
-    eval "$1=\"\$$1 $tmp\""
+    eval "headval=\$$1"
+    eval "$1='$headval $2'"
   fi
-
 }
-
 
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -376,7 +372,7 @@ safeflags_stuff() {
 #  'configure' argument list
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-if [ $nooptim = 1 ]; then
+if [ "$nooptim" = 1 ]; then
   echo
   echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
   echo
@@ -529,7 +525,7 @@ comp_found=""
 comp_pwd=""
 comp_pwd_found=""
 
-search_dirs=${PATH//:/ }
+search_dirs=`echo "$PATH" | tr : ' '` #${PATH//:/ }
 # Which doesn't work on mac!
 if [ ! -z "$2" ]; then
   echo 'JHS Do some more test on this part!' 
@@ -1049,9 +1045,9 @@ if [ -z "$memdef" ]; then
       memdef=64000000
    fi
    echo 'DIRAC uses approximately 6.4 MB for static allocations.'
-   echo 'How many MB to use as default for scratch memory ?'
+   echo 'How many MB RAM to use as default?'
    echo ' -we do not recommend going below 64 MB'
-   echo ' -note that scratch memory can be changed' \
+   echo ' -note that memory use can be changed' \
         'through the shell variable DIRWRK'
    if [ $quick = 0 ]; then
       $echo "Memory size (in MB, default: `expr $memdef '*' 8 /  1048576` MB) \c"
@@ -1067,7 +1063,6 @@ if [ -z "$memdef" ]; then
 else
    memsiz=$memdef
 fi
-$echo 'Default memory size :' `expr $memsiz / 1000000` 'million 8byte words'
 }
 
 set_installdir ()  {
@@ -1348,12 +1343,12 @@ get_cpp_flags(){
        parop="$parop -DSYS_LOCALDISKS"
     fi
 
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
     def="dirmpi.x"
   else
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
-    append cpp_cc "-DSYS_$sys_name -D'INSTALL_WRKMEM=\${WRKMEM}'"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
     def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
@@ -1844,12 +1839,8 @@ case $F90_COMP in
      cpp_f90="$cpp_f90,\$(MODS)"
      ;;
    *)
-     cpp_f90="$cpp_f90 \${MODS}"
-     cpp2=`echo $cpp_f90 | sed -e 's/${MODS}//' `
+     cpp_f90="$cpp_f90 \$(MODS)"
 esac
-cpp3=`echo $cpp2 | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
-ccp3=`echo $cpp_cc | sed -e 's/INSTALL_WRKMEM//g' | sed -e 's/=${WRKMEM}//' | sed -e "s/-D''//" `
-
 
 ##################################################
 #  Make Makefile.config
