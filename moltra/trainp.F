@@ -462,7 +462,7 @@ C
       IPRTRA  = 0
 Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
 C      if problems are encountered, should be reverted to scheme 4
-      if (DOLUCT.eq..TRUE.) then
+      if (DOLUCT) then
          ISTRAT = 4
       else
          ISTRAT = 6

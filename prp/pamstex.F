@@ -1227,7 +1227,8 @@ C     Velocity gauge
      $     ,SUML ,SUMV
 
       WRITE (LUPRI,'(//A)')
-     &   ' Dominant excitation channels for each state [hole -> virtual (weight)]'
+     &   ' Dominant excitation channels for each state '//
+     &   '[hole -> virtual (weight)]'
       DO IVEC=1,NVEC
 C     Find the dominant channels
          NDOMCHAN = 0
