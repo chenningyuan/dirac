@@ -13,3 +13,4 @@ mv DFCOEF DFCOEF.ION
 mv DFCOEF.GS DFCOEF
 export MENU=stex
 ../run.sh -incmo -copy DFCOEF.ION
+rm DFCOEF.ION DFCOEF
