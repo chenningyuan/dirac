@@ -46,6 +46,7 @@ program dirprg
 #endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
+  integer :: iscr_mem
 #ifdef VAR_MPI 
   call mpixinit()
 #else
@@ -62,7 +63,20 @@ program dirprg
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      maxsize = get_environment_integer('DIRMAX',maxsize)
   else
-     memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
+!    memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
+!    SK - Sep 08: DIRNOD is passed to slaves in mpixinit and 
+!                 stored on common block GNCPAM (dcbgen.h)
+     if( CDIRNOD(1:LENDND) .eq. ' ' )then
+       memsize = INSTALL_WRKMEM
+     else
+       read (CDIRNOD(1:LENDND),*,iostat=ios) iscr_mem
+       if(ios/=0)then
+         print *,'Warning: Cannot parse environment variable DIRNOD'
+         print *,'         Will use the default value:',INSTALL_WRKMEM
+       else
+         memsize = iscr_mem
+       endif
+     endif
      maxsize = get_environment_integer('DIRMAX',maxsize)
   endif
 
