@@ -480,61 +480,6 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       end if
       end
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dolrg */
-      SUBROUTINE DOLRG(VT,IREPOP,EXCMAT,GAO,GAO1)
-C***********************************************************************
-C
-C     Construct Kohn-Sham matrix
-C
-C     Written by T.Saue and T.Helgaker and P.Salek
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
-C
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),GAO1(NBAST,3),EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),GAO1(NTBAS(0),3),EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-      DIMENSION VT(0:3)
-C
-#include "ibtfun.h"
-C
-      DO 10 IRP1 = 0,NBSYM-1
-        DO 20 IRP2 = 0,NBSYM-1
-          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
-          DO 30 IC = 1,MC
-            NB1 = NBBAS(IRP1,IC)
-            NB2 = NBBAS(IRP2,IC)
-            JB1 = IBBAS(IRP1,IC)
-            JB2 = IBBAS(IRP2,IC)
-            DO J = 1, NB2
-               G0 = GAO(JB2+J)
-               GX = GAO1(JB2+J,1)
-               GY = GAO1(JB2+J,2)
-               GZ = GAO1(JB2+J,3)
-               DO I = 1, NB1
-                  A0 = G0*GAO(JB1+I)
-                  AX = GX*GAO(JB1+I) + G0*GAO1(JB1+I,1)
-                  AY = GY*GAO(JB1+I) + G0*GAO1(JB1+I,2)
-                  AZ = GZ*GAO(JB1+I) + G0*GAO1(JB1+I,3)
-                  EXCMAT(JB1+I,JB2+J) = EXCMAT(JB1+I,JB2+J)
-     &                 + VT(0)*A0 + VT(1)*AX
-     &                 + VT(2)*AY + VT(3)*AZ
-              END DO
-            ENDDO
-   30     CONTINUE
-   20   CONTINUE
-   10 CONTINUE
-C
-      END
 c
       SUBROUTINE FORTWRT(str, slength)
 #include "priunit.h"
