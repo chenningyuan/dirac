@@ -500,16 +500,17 @@ do i=1,NSP
   call quit('dead branch !')
  endif
 
-
-! ... fill irreps now ...
-
-
-
-!
  if (iprint_hscc >= 5) then
    write(LUPRI,876) i,SpinOfOrb%p_iA1D(i),OccGMSRef%p_iA1D(i),OrbType%p_iA1D(i),OrbSpace%p_iA1D(i),OrbEnergy%p_rA1D(i)
    876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x,'orb.en=',f12.7)
  endif
+
+enddo
+
+! ... fill irreps now ...
+write(LUPRI,'(/,2x,a)') 'going to fill irreps ...'
+do i=1, NSP
+   write(LUPRI,*) i,REPNA(IREPSP(i+NSP)),EPS1(i) 
 enddo
 
 
