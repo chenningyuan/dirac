@@ -460,9 +460,14 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-Caspg, default in MOLTA is scheme 6 now... if problems are encountered, 
-C      should be reverted to scheme 4
-      ISTRAT = 6
+Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
+C      if problems are encountered, should be reverted to scheme 4
+      if (DOLUCT.eq..TRUE.) then
+         ISTRAT = 4
+      else
+         ISTRAT = 6
+      endif
+
       ITRA_INTFLG = INTGEN
       IGTINT = IBTAND(INTGEN/8,1)
       ITRA_INTFL2 = -8
