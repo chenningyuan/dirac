@@ -66,7 +66,7 @@ quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
-debug='dbx'
+#debug='dbx'
 
 # default - no IBM mode
 IBMMOD=0
@@ -148,7 +148,7 @@ $echo "Operating system\t: $os"
 #  always libatlas first and libblas last.
 #  In the middle machine specific optimized libraries are included.
 #  Also make search lists for fortran and C compilers.
-#  Define default debugger and C compiler.
+#  Define default C compiler.
 #
 
 case $machine in
@@ -704,6 +704,39 @@ openmpicc| mpicc)
   CCreal=$CC_COMP
   ;;
 esac   
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+find_debugger(){
+###############################################################
+#
+#   search for debugger and put "the best" into pam
+#
+###############################################################
+
+debug=''
+
+if [ $IPRINT -ge "8" ]; then
+   echo "find_debugger...looking for debuggers"
+fi
+
+### looking priority: idb, pgdbg, dbx, gdb ....
+if [ ! -z `which idb` ]; then
+    debug="idb"
+elif [ ! -z `which pgdbg` ]; then 
+    debug="pgdbg"
+elif [ ! -z `which dbx` ]; then 
+    debug="dbx"
+elif [ ! -z `which gdb` ]; then 
+    debug="gdb"
+fi
+
+if [ -z "$debug" ]; then
+   $echo "\nDebugger not set ! Add it into pam manually"
+else
+   $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
+fi
+
 }
 
 
@@ -1615,7 +1648,6 @@ case $machine in
       sys_name="LINUX"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      debug="gdb"
 
 #
 # If we are using mpif77/mpicc check which compiler it uses to make
@@ -1638,7 +1670,6 @@ case $machine in
       sys_name="LINUX"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      debug="gdb"
 #
 # If we are using mpif77/mpicc check which compiler it uses to make
 # sure we use the correct flags
@@ -1666,7 +1697,6 @@ case $machine in
 #     esac
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-      debug="gdb"
 
 #
 # If we are using mpif77/mpif90/mpicc check which compiler it uses to make
@@ -1691,7 +1721,6 @@ case $machine in
       sys_name="DARWIN"
       get_cpp_flags
       cpp_f90="-DVAR_MFDS $cpp_f90"
-      debug="gdb"
 
       F90real="$F90_COMP"
       get_f90_flags
@@ -2041,7 +2070,7 @@ LOCALDISKS=$localdisks
 RCP=$rcp
 RSH=$rsh
 #
-# ... debugger - supported gdb, idb, dbx ....
+# debugger - check it of your machine installation
 #
 DEBUGGER=$debug
 #
@@ -2243,6 +2272,7 @@ guess_system
 parallel_stuff
 safeflags_stuff
 find_compilers
+find_debugger
 find_mathlib
 set_memsize
 set_installdir
