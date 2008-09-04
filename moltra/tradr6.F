@@ -571,7 +571,8 @@ CMI   ... catch mpi-like error
         WRITE(LUPRI,'(/,2x,a,i8,1x,a,i12)') 
      &  'Error NMPROC=',NMPROC,'NUMNOD=',NUMNOD
         CALL FLSHFO(LUPRI)
-        CALL QUIT('DEFINE_SORT: mpi-like error exit, NMPROC is zero !')
+C        CALL QUIT('DEFINE_SORT: mpi-like error exit, NMPROC is zero !')
+         NMPROC=1
       ENDIF
       L_ON_NODE = NSTR2T / NMPROC
       L_REMAIN = MOD(NSTR2T,NMPROC)
