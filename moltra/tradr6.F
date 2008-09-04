@@ -566,6 +566,13 @@ C     Distribute the spinors over the nodes, we will also employ the master (nod
 C     in the second halftransformation, so add one to NUMNOD
 C
       NMPROC = NUMNOD + 1
+CMI   ... catch mpi-like error
+      IF (NMPROC.EQ.0) THEn
+        WRITE(LUPRI,'(/,2x,a,i8,1x,a,i12)') 
+     &  'Error NMPROC=',NMPROC,'NUMNOD=',NUMNOD
+        CALL FLSHFO(LUPRI)
+        CALL QUIT('DEFINE_SORT: mpi-like error exit, NMPROC is zero !')
+      ENDIF
       L_ON_NODE = NSTR2T / NMPROC
       L_REMAIN = MOD(NSTR2T,NMPROC)
       NODE = -1
