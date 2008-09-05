@@ -30768,5 +30768,6 @@ c       code for both increments equal to 1
 *
       END
 #else
+      SUBROUTINE dummy_dirac_blas
       END
 #endif
