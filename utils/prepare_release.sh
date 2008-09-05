@@ -25,9 +25,13 @@ tar c . | (cd ../Dirac08; tar x)
 
 cd ../Dirac08
 
+#
 # First delete code that should not be released.
-echo "Removing functionality from source files"
-utils/cppp.py -UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
+#
+delfunc="-UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON"
+
+echo "Removing functionalities from source files"
+utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
 
 # Then delete files that should not be shipped
 echo "Deleting files"
@@ -50,18 +54,34 @@ rm utils/prepare_dyall_sblock_basis.sh
 rm utils/reformat_includes.py
 rm utils/remove_copyright.py
 rm utils/remove_module.sh
+rm utils/remove_module.sh
+
+rm utils/qjaco.F
 
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
 
 # Delete directories under /test that should not be shipped
-# we also need something fot the test scripts ...
+# we also need something for the test scripts ...
 echo "Deleting directories under /test"
 rm -rf test/43.plots
 rm -rf test/46.sdft_linear_response
 rm -rf test/56.aoresponse
 rm -rf test/45.densfit
 rm -rf test/47.fde.prop
+
+echo "Deleting HSCC directories"
+rm -rf hsmrcc
+
+echo "Deleting CAP directory"
+rm -rf cap
+
+echo "Deleting OOF directory"
+rm -rf oof
+
+# miro : do not delete, we have preprocessor flags for it!
+#echo "Deleting AMFI directory"
+#rm -rf amfi
 
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
@@ -70,7 +90,7 @@ rm -rf `find . -name '.svn'`
 # run pamadm with the correct flags
 #
 echo "Running pamadm -dft -xpp export"
-./pamadm -dft -xpp -eri -amfi -adc export > /dev/null
+./pamadm -dft -xpp -eri  -adc export > /dev/null
 if [[ -r Dirac08.tar.gz ]]; then
     echo "Created ../Dirac08/Dirac08.tar.gz"
 else
