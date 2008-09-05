@@ -2046,8 +2046,7 @@ C
 C       calculate average of trace
 C       ==========================
 C
-        POLTRACE = TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3)
-        POLAVG = POLTRACE/D3
+        average = (tmpmat(1, 1) + tmpmat(2, 2) + tmpmat(3, 3))/3.0d0
 C
 C
 C       printout a.u.
@@ -2061,24 +2060,31 @@ C
      &              'zz', TMPMAT(3,3), 'a.u.', CNVTEXT(3)
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A5)') '@  ',
-     &              'average', POLAVG, 'a.u.'
+     &              'average', average, 'a.u.'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
-C
-C
-C       calculate anisotropy
-C       ====================
-C
-        POLTRACESQ = TMPMAT(1,1)**D2+TMPMAT(2,2)**D2+TMPMAT(3,3)**D2
-        POLSQTRACE = POLTRACE**D2
-        POLANISO = DSQRT(ABS((D1/D2)*(D3*POLTRACESQ-POLSQTRACE)))
+
+
+!       calculate anisotropy
+!       ====================
+
+        anisotropy_squared = 0.0d0
+        do i = 1, 3
+          do j = 1, 3
+            anisotropy_squared = anisotropy_squared
+     &                         + (3.0d0/2.0d0)*tmpmat(i, j)*tmpmat(i, j)
+     &                         - (1.0d0/2.0d0)*tmpmat(i, i)*tmpmat(j, j)
+          end do
+        end do
+
+        anisotropy = anisotropy_squared**0.5d0
 C
 C
 C       print anisotropy
 C       ================
 C
         WRITE(LUPRI,'(A3,A11,F9.3,A10)') '@  ',
-     &              'anisotropy', POLANISO, 'a.u.'
+     &              'anisotropy', anisotropy, 'a.u.'
         WRITE(LUPRI,'(A)') '@'
 C
 C
@@ -2095,21 +2101,21 @@ C
 C       convert average of trace
 C       ========================
 C
-        POLAVG = POLAVG*DFAC
+        average = average*DFAC
 C
 C
 C       printout SI
 C       ===========
 C
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'xx', TMPMAT(1,1), '1.0E30/m**3'
+     &              'xx', TMPMAT(1,1), 'angstrom**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'yy', TMPMAT(2,2), '1.0E30/m**3'
+     &              'yy', TMPMAT(2,2), 'angstrom**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'zz', TMPMAT(3,3), '1.0E30/m**3'
+     &              'zz', TMPMAT(3,3), 'angstrom**3'
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
-     &              'average', POLAVG, '1.0E30/m**3'
+     &              'average', average, 'angstrom**3'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
 C
