@@ -1,0 +1,2230 @@
+#!/bin/sh
+#
+# FILE    : configure
+#
+# Shell script for configuring Makefile.config-ue needed to build
+# the DIRAC relativistic molecular code, the pam and runtest script.
+# The shell script is a heavily modified version of the script used for DALTON
+#
+# It tries to determine what platform we are on (although allowing builds
+# for other platforms, as needed for crosscompiling), as well as detect any
+# interesting mathematical libraries on the present computer.
+#
+#
+# Known problems: The parallelization installation is rudimentary
+#                 The checks for compilers and libraries hopefully works
+#
+# Written by K.Ruud, Dec-1 1996
+# Revised 970401 hjaaj
+# Linux support added 970414 by Konrad Hinsen.
+# HP revisions 970505-ekd/Konrad Hinsen. Combined by kr 080597
+# Adapted for DIRAC 970910 - tsaue
+# Polish by Thomas Enevoldsen Oct 2 1997
+# Guess machine automatic by Joern Thyssen Nov 11 1997
+# Remember last config by Joern Thyssen - Jan 28 1998
+# INTEGER*8 as default on 64-bit machines by Stefan Knecht - Jul 15 2007
+# Rewritten to modular form Trond Saue, Jetze Sikkema - June 2008
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# TODO
+# Add an additional: save_flags= -O0 in makefile.config - this is done (miro)
+#
+# Large molecule flag -> out (takes lot of memory)?
+#
+# miro: Still place for further improvements,  modularisation etc
+#
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   General purpose functions
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+append () {
+# Append $2 to the variable with the name $1
+# TODO: Should also escape single quotes in input
+  if [ -z "$1" ]; then
+    eval "$1='$2'"
+  else
+    eval "headval=\$$1"
+    eval "$1='$headval $2'"
+  fi
+}
+
+initialize ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Initialize script
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+quick=0 # otherwise 1 if "--quick" parameter is in the list
+nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
+SRC_DIR=`pwd`
+dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
+#debug='dbx'
+
+# default - no IBM mode
+IBMMOD=0
+
+# default print level
+IPRINT=0
+
+#
+# Does 'echo' understand escapes?
+#
+echo_style=sysv
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+# Is 'locate' installed?
+#which locate > /dev/null; locate_ok=$?
+#
+}
+
+
+usage ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Give usage of script
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+   echo 'Usage: '$0' [Flags]'
+   echo ' Flags:'
+   echo '   --help                       : Print this'
+   echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config-ue!)'
+   echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
+   echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
+   echo '   --f90=F90                    : Set fortran compiler to F90'
+   echo '   --cc=CC                      : Set C compiler to CC'
+   echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
+   echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
+   echo '   --math_lib=MATH_LIB          : Choose the mathematical library MATH_LIB'
+   echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
+   echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
+   echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
+   echo '   --i=PRINT-LEVEL              : Set the print (verbose) level for the script to PRINT-LEVEL (default 0)'
+}
+
+guess_system ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  GUESS SYSTEM
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+if [ -z "$guess" ]; then
+   guess=`./config.guess`
+   if [ "$guess" = "" ]; then
+      guess=`./config.status ARCH`
+   fi
+fi
+
+guess=`./config.sub $guess 2>/dev/null`
+
+echo
+$echo "Configuring for $guess (can be changed with --system)"
+if echo "$guess" | grep -q x86_64; then
+    echo "Note: For 32 bit code generation use --system="`echo "$guess"|sed s/x86_64/i686/`
+fi
+flavor=$guess
+machine=`echo $guess | sed 's/-[^-]*$//'`
+if [ "$machine" != "$guess" ]; then 
+   os=`echo $guess | sed 's/.*-//'`
+else 
+   os=
+fi
+
+$echo "Machine\t\t\t: $machine"
+$echo "Operating system\t: $os"
+#
+#  Set search list for libraries,
+#  always libatlas first and libblas last.
+#  In the middle machine specific optimized libraries are included.
+#  Also make search lists for fortran and C compilers.
+#  Define default C compiler.
+#
+
+case $machine in
+   *-ibm | powerpc64-unknown-linux* | ppc64*| mips*-sgi | i[3-6]86-* | *apple* | sparc-sun| m68k-sun | *-hp | alpha-dec|mips-dec|alphaev6-dec ) 
+     bit_set="32";;
+   x86_64-* | ia64-unknown-linux | *-cray )
+     bit_set="64";;
+   *)
+      echo "System $guess is currently .NOT. supported"
+      echo "First try to update config.guess and config.sub "
+      echo "  check libtools at http://www.gnu.org"
+      echo "Then please report to dirac-admin@chem.sdu.dk"
+      echo "Also include the command: "
+      $echo "\t\`uname -m\` , \`uname -r\` , \`uname -s\` and \`uname -v\` "
+      $echo "\tYou may also recommend compilerflags," 
+      $echo "\tpreferred fortran compiler and mathematical libraries" \
+            "available."
+      exit 1
+
+esac
+
+#
+#  Modify for SGI that may have both 32 and 64 bit architectures
+#
+if [ "$machine" = "mips64-sgi" ]; then
+   dir_list="/usr/lib64 $dir_list"
+elif [ "$machine" = "mips-sgi" ]; then
+   dir_list="/usr/lib64 /usr/lib32 $dir_list"
+fi
+
+if [ $IPRINT -ge "5" ];  then 
+    echo
+    echo 'guess_system: variable dir_list=' $dir_list
+fi
+
+}
+
+
+parallel_stuff ()  {
+echo
+echo 'PARALLEL'
+echo
+if [ -z "${par}" ]; then
+  if [ $quick = 0 ]; then
+    $echo 'Do you want to install the program'\
+    'in a parallel version? (y/N) \c'
+    read par
+  else
+    par=no
+  fi
+  case "$par" in
+  "yes" | "y" | "Y" )
+    par="yes" ;;
+  "no" | "n" | "" )
+    par="no" ;;
+  *)
+    parallel_stuff ;;
+  esac
+fi
+
+echo 'Parallel version: '${par}''
+if [ "$par" = "yes" ]; then
+
+  $echo 'Will your nodes use local disks? (y/N) \c'
+  read localdisks
+  case "$localdisks" in
+  "yes" | "y" | "Y" )
+    localdisks="yes"
+    ;;
+  *)
+    localdisks="no"
+    ;;
+  esac
+
+  echo ' - with local disks for each node: '${localdisks}''
+
+#
+#  Parallel architectures are difficult, better warn the user
+#
+   echo
+   echo  "Makefiles for parallel architecture are difficult to guess"
+   $echo "Please always compare the generated Makefile.config-ue with" \
+         "local documentation.\n"
+
+#
+#  Determine message passing protocol to be used
+#
+   if [ -z "${mesp}" ]; then
+      mesp="mpi"
+   fi
+   echo 'Parallel message passing: '$mesp
+#
+#  Check whether we have a parallel compiler available
+#
+   if [ "$mesp" = "mpi" ]; then
+      case $machine in
+         *-ibm | powerpc64-unknown-linux* | ppc64* )
+            parlib='no'
+            parinc='yes'
+            mpirun='poe'
+            ;;
+         *-hp)
+            parlib='no'
+            parinc='yes'
+            mpirun='mpirun'
+            ;;
+         *-dec)
+            parlib='yes'
+            parinc='yes'
+            mpirun='dmpirun'
+            ;;
+         i[3-6]86-* | x86_64-* | ia64-unknown-linux)
+            parlib='yes'
+            parinc='yes'
+            mpirun='mpirun'
+            ;;
+         *)
+            parlib='yes'
+            parinc='yes'
+            mpirun='mpirun'
+            ;;
+      esac
+
+   fi
+   pardir=dir_list
+   incdir='/usr/include /usr/local/include /local/include'
+#
+#  Modify for RS6000K where mpi.h is placed in some obscure directory
+#
+   if [ "$machine" = "*-ibm" ]; then
+      incdir="$incdir /usr/lpp/ppe.poe/include"
+   fi
+#
+   parlibp=
+#
+#  MPI settings, first we do the mpi-library
+#
+   if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
+      parlib=
+      tmplib='libmpi.a libmpi.so'
+      for testdir in $pardir; do
+         for testlib in $tmplib; do
+            if test -f $testdir/$testlib; then
+               parlib='-lmpi'
+               parlibp=$testdir
+               break
+            fi
+         done
+         test -n "$parlib" && break
+      done
+      if [ -z "$parlib" ]; then
+         echo 'Parallel library: none'
+      else
+         echo "Parallel library: $parlib ($parlibp)"
+      fi
+   fi
+   if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
+#
+#     Now we try to find an include directory
+#
+      parinc=
+      incfile='mpif.h'
+      for testdir in $incdir; do
+         if test -f $testdir/$incfile; then
+            parinc=-I$testdir
+            break
+         fi
+      done
+      if [ -z "$parinc" ]; then
+         echo 'Parallel include: none'
+      else
+         echo 'Parallel include:'$parinc
+      fi
+      fi
+      if [ "$parlib" = "no" ]; then
+           parlib=
+   fi
+#
+#  Ask for machine file
+#
+   if [ $quick = 0 ]; then
+      $echo 'Specify default machinefile for MPI runs: (filename) (default: $PBS_NODEFILE): \c'
+      read mach_file
+      if [ -z "$mach_file" ]; then
+         mach_file='$PBS_NODEFILE'
+      fi
+   else
+      mach_file=
+   fi
+#
+#  With local disks set remote copy/shell:
+#
+   rsh=rsh
+   rcp=rcp
+   if [ "$localdisks" = "yes" ]; then
+     if [ $quick = 0 ]; then
+       $echo 'Remote shell/copy for passing files to local disks (rsh/ssh) (default: rsh): \c'
+       read rsh
+       case "$rsh" in
+	 "ssh")
+            rsh=ssh
+            rcp=scp
+            echo 'Note that ssh/scp requires use of ssh-keygen without password !'
+	    ;;
+	 *)
+            rsh=rsh
+            rcp=rcp
+	    ;;
+       esac
+     fi
+   fi
+else
+   mesp='dummy'
+   mach_file=
+   rsh=rsh
+   rcp=rcp
+fi
+
+}
+
+safeflags_stuff() {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#       Take care of safe flags (ie no optimization) if set up in the
+#  'configure' argument list
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+if [ "$nooptim" = 1 ]; then
+  echo
+  echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
+  echo
+fi
+}
+
+mpi2check () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  Check if MPI-2 is installed
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+if [ "$mesp" = "mpi" ]; then
+  mpi2version="yes"
+  case $F90_COMP in
+     xlf*|mpfort|mpxlf_r)
+     comptst="$F90_COMP -WF,-DSYS_$sys_name"
+     ;;
+   *)
+     comptst="$F90_COMP -DSYS_$sys_name"
+  esac
+  echo "Checking if a MPI-2 version is installed:"
+  echo "$comptst ./test/MPI2_test.F"
+  mpi2version="yes"
+  $comptst ./test/MPI2_test.F 2>/dev/null || mpi2version="no"
+  if [ "$mpi2version" = "no" ]; then
+    echo  " "
+    echo  " "
+    echo  "Hmm. Failed to find support for MPI-2 in your installation.  "
+    echo  " "
+    echo  "If you think this is incorrect, in the following question    "
+    echo  "press 'y' to configure with MPI-2 support, and add manually  "
+    echo  "any missing paths to your MPI-2 installation."
+    echo  " "
+    echo  "Please note that the functionality from the following DIRAC "
+    echo  "modules will NOT be available without MPI-2 support: "
+    echo  " "
+    echo  "    - LUCITA                   "
+    echo  "    - LUCIAREL                 "
+    echo  "    - KR-MCSCF using LUCIAREL  "
+    echo  "    - MOLTRA with parallel I/O (helpful for global/shared scratch spaces)"
+    echo  " "
+    $echo "Configure with MPI-2 support anyway? (y/N)"
+    read mpi2version
+    if [ "$mpi2version" = "y" ]; then
+	mpi2version=yes
+	echo "Remember to add MPI2 paths to Makefile.config-ue if necessary"
+    fi;
+  fi
+  if [ "$mpi2version" = "yes" ]; then
+    cpp_cc="$cpp_cc -DVAR_MPI2"
+    case $F90_COMP in
+       xlf*|mpfort|mpxlf_r) 
+       cpp_f90="$cpp_f90 -WF,-DVAR_MPI2"
+       ;;
+       *)
+       cpp_f90="$cpp_f90 -DVAR_MPI2"
+    esac
+  fi
+fi
+
+if [ $IPRINT -ge "7" ];  then 
+ echo '... after mpi stuff' 
+fi
+
+
+}
+find_compilers () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Find compilers
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'COMPILER'
+echo
+
+compiler_fortran
+compiler_c
+
+}
+
+compiler_fortran(){
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#            Sets up the fortran compiler
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# all supported fortran compilers
+comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
+# Prefer "parallel" compilers if mpi
+if [ "$mesp" = "mpi" ]; then
+  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77 $comp_list"
+fi
+find_compiler "Fortran" $F90_COMP
+F90_COMP=$comp_found
+F90_COMP_PWD=`which $F90_COMP`
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_fortran: found F90 compiler ' $F90_COMP
+ echo 'compiler_fortran: F90 compiler with full path '$F90_COMP_PWD
+fi
+
+# take care of the 64 bit architecture !
+F90real=$F90_COMP # set_bit_arch() needs this variavle
+set_bit_arch
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_fortran: after calling set_bit_arch we have opt='$opt
+fi
+
+}
+
+compiler_c(){
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Sets up the C compiler
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+# All supported C compilers
+comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
+if [ "$mesp" = "mpi" ]; then
+  comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
+fi
+find_compiler "C" $CC_COMP
+CC_COMP=$comp_found
+CC_COMP_PWD=`which $CC_COMP`
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'compiler_c: got CC_COMP='$comp_found
+ echo 'compiler_c :C-compiler with full path: '$CC_COMP_PWD 
+fi
+
+}
+
+find_compiler ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Finds compilers from a list 
+#   Argument $1 : The name of the compiler to be found
+#                (for messages to the user)
+#   Argument $2 : User preferred compiler
+#   comp_list   : Contains the compilers
+#   Here we return comp_set
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+$echo "\nChecking for $1 compilers:"
+comp_found=""
+comp_pwd=""
+comp_pwd_found=""
+
+search_dirs=`echo "$PATH" | tr : ' '` #${PATH//:/ }
+# Which doesn't work on mac!
+if [ ! -z "$2" ]; then
+  echo 'JHS Do some more test on this part!' 
+  tmp_list=$comp_list
+  comp_list=$2
+  find_compiler $1
+  if [ -z "$compiler_found"]; then
+    exit
+  fi
+  echo "Compiler specified by the user not found... Checking for the standard compilers."
+fi
+for comp in $comp_list; do
+  if [ -f $comp ]; then
+    append comp_found "$comp" 
+    append comp_pwd "$comp"
+    append comp_pwd_found "$comp"
+  fi
+  for cur_dir in $search_dirs; do
+    if [ -f $cur_dir/$comp ]; then
+      append comp_found "$comp"
+      append comp_pwd "$cur_dir"
+      append comp_pwd_found "$cur_dir/$comp"
+
+      if [ $IPRINT -ge "8" ]; then
+         $echo 'find_compiler> directory/compiler found: '$cur_dir/$comp
+         $echo 'find_compiler> actual comp_pwd_found='$comp_pwd_found
+      fi
+    fi
+  done
+done
+
+
+#
+#
+#if [ -z "$user_comp" ]; then
+#    for comp in $comp_list; do
+#	if which "$comp" 2> /dev/null; then 
+#	    comp_found="$comp_found $comp"
+#	fi
+#    done
+#else
+#    comp_found="$user_comp"
+#fi
+
+
+# If there is found more than one compiler let the user pick it.
+counter=0
+for comp in $comp_found; do
+  counter=`expr $counter + 1`
+done
+
+case $counter in 
+  0 ) $echo "\n   No $1 compiler found on this computer"
+    echo  "   Cannot proceed without a Fortran compiler in path"
+    echo  "   Please check your path! "
+    echo  " Specify a compiler manually: "
+    exit ;;
+  * )
+    $echo "\n These following $1 compilers were detected on your system:"
+    counter=0
+    for comp in $comp_pwd_found; do
+      counter=`expr $counter + 1`
+      $echo "$counter) $comp "
+    done
+    $echo "0) Specify compiler manually."      
+  ;;
+esac
+   
+comp_index=-1
+$echo "Which one you you want to use? (Default: 1) \c"
+read comp_index
+if [ -z "$comp_index" ]; then
+    comp_index=1
+fi
+if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
+    echo "Not a valid compiler number: $comp_index"
+    exit
+elif [ $comp_index -eq 0 ]; then
+    echo ""
+    echo "Note that compiler flags may not be set correctly."
+    echo "Check Makefile.config-ue afterwards !"
+    echo ""
+    $echo "Enter you compiler:\c"
+    read comp_found
+  #miro: verify entered compiler
+    comp_found_verify=`which $comp_found`
+    if [ ! -z "$comp_found_verify" ]; then
+      $echo 'Compiler with its full path is: '$comp_found_verify
+    else
+      $echo "\n Entered '$comp_found' can not be found on your system using which command !\n"
+      $echo "Therefore error exit !"
+      exit
+    fi
+# jhs userinput instead of exit?    echo 'jhs Userinput here?'
+else
+    counter=0 
+    for comp in $comp_found; do
+   # for comp in $comp_pwd_found; do
+	counter=`expr $counter + 1`
+	if [ $counter -eq $comp_index ]; then
+	    comp_found=$comp
+	    break
+	fi
+    done 
+fi
+
+$echo "\nCompiler for $1: $comp_found"
+}
+
+find_real_f90(){
+#
+# Find the underlying compiler for fortran mpi compilers
+#
+case "$F90_COMP" in
+openmpif*|mpif*)
+   if "$F90_COMP" -show > /dev/null; then
+      # MPICH
+      mpishowopt="-show"
+   else
+      # LAM MPI
+      mpishowopt="-showme" 
+   fi
+   my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+   if "$F90_COMP" $mpishowopt | grep -q ifc; then
+      F90real=ifc
+   elif "$F90_COMP" $mpishowopt | grep -q ifort; then
+      F90real=ifort
+   elif "$F90_COMP" $mpishowopt | grep -q gfortran; then
+      F90real=gfortran
+   elif "$F90_COMP" $mpishowopt | grep -q pathf90; then
+      F90real=pathf90
+   elif "$F90_COMP" $mpishowopt | grep -q pgf90; then
+      F90real=pgf90
+   elif "$F90_COMP" $mpishowopt | grep -q lfc; then
+      F90real=lfc
+   elif "$F90_COMP" $mpishowopt | grep -q g95; then
+      F90real=g95
+   else 
+      F90real=$F90_COMP
+   fi
+   echo "Compiler in $F90_COMP found to be $F90real ..."
+   ;;
+*)
+   F90real=$F90_COMP;;
+esac   
+}
+
+find_real_cc(){
+case "$CC_COMP" in
+openmpicc| mpicc)
+   if $CC_COMP -show 2>&1 /dev/null; then
+      # MPICH
+      mpishowopt="-show"
+   else
+      # LAM MPI
+      mpishowopt="-showme" 
+   fi
+    if $CC_COMP $mpishowopt | grep -q icc; then
+      CCreal=icc
+   elif $CC_COMP $mpishowopt | grep -q pathcc; then
+      CCreal=pathcc
+   elif $CC_COMP $mpishowopt | grep -q pgcc; then
+      CCreal=pgcc
+   elif $CC_COMP $mpishowopt | grep -q gcc; then
+      CCreal=gcc
+   else 
+      CCreal=$CC_COMP
+   fi
+   echo "Compiler in $CC_COMP found to be $CCreal ..."
+   ;;
+*)
+  CCreal=$CC_COMP
+  ;;
+esac   
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+find_debugger(){
+###############################################################
+#
+#   search for debugger and put "the best" into pam
+#
+###############################################################
+
+debug=''
+
+if [ $IPRINT -ge "8" ]; then
+   echo "find_debugger...looking for debuggers"
+fi
+
+### looking priority: idb, pgdbg, dbx, gdb ....
+if [ ! -z `which idb` ]; then
+    debug="idb"
+elif [ ! -z `which pgdbg` ]; then 
+    debug="pgdbg"
+elif [ ! -z `which dbx` ]; then 
+    debug="dbx"
+elif [ ! -z `which gdb` ]; then 
+    debug="gdb"
+fi
+
+if [ -z "$debug" ]; then
+   $echo "\nDebugger not set ! Add it into pam manually"
+else
+   $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
+fi
+
+}
+
+
+search_math_libs(){
+#
+# Searches for mathematical libraries in the directories of dirlist
+#
+  echo "Searching for the mathematical libraries... "
+  echo
+
+  lib_names=""
+  lib_dir=""
+
+  if [ $IPRINT -ge "8" ]; then
+      echo 'search_math_libs:   lib_list=' $lib_list
+      echo 'search_math_libs:  math_dirs=' $math_dirs
+      echo 'search_math_libs:   ext_list=' $ext_list
+  fi
+
+  for test_lib in $lib_list; do
+    for test_dir in $math_dirs; do
+      for ext in $ext_list; do
+        if test -f $test_dir/$test_lib$ext; then
+	  lib_names="$lib_names $test_dir/$test_lib"
+	  break
+        fi
+      done
+    done
+  done
+
+if [ $IPRINT -ge "8" ];  then
+ echo 'search_math_libs: accumulated lib_names='$lib_names
+fi
+
+}
+
+
+setup_math_lib(){
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'setup_math_lib: entering param lib, 1='$1
+    echo 'setup_math_lib: entering param dir, 2='$2
+  fi
+
+  case "$1" in
+    libesslp2) LIB="-L$2 -lesslp2";;
+    libessl) LIB="-L$2 -lessl";;
+#For later use we note that we found an optimized blas library
+  #  libblas) LIB="-L$2 -lblas" ;;
+    libblas) LIB="-L$2 -lblas -llapack" ;;
+#   ...  both blas and lapack
+#    libblas_liblapack) LIB="-L$2 -lblas -llapack" ;;
+#For Atlas you need to link with lf77blas as well
+    libatlas) LIB="-L$2 -llapack -lcblas -lf77blas -latlas";;
+    libdxml) LIB="-L$2 -ldxml";;
+    libcomplib.sgimath) LIB="-L$2 -lcomplib.sgimath";;
+    libveclib) LIB="-L$2 -lveclib";;
+    libmath) LIB="-L$2 -lmath -lm -nx";;
+    libmkl) LIB="-L$2 -lmkl_lapack -lguide -lpthread -lmkl"
+            optblas=$2;;
+    libmkl_ipf) LIB="-L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
+                      optblas=$2;;
+    libmkl_itp) LIB="-L$2 -lguide -lpthread -lmkl_itp"
+                      optblas=$2;;
+  esac
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'setup_math_lib: setup variable LIB='$LIB
+  fi
+  
+  test_lib_arch $2
+  if [ 0 -eq $? ]; then
+    echo "System is $bit_set-bit, but the mathematical libraries are probably not." 
+    echo "Libraries: $2/$1"
+    $echo " Do you still want to use these libraries (y/N)?"
+    read use_blas
+    case "$use_blas" in
+      "yes" | "y" | "Y" ) ;;
+      *)
+        get_math_lib ;;
+    esac
+  fi
+}
+
+get_math_lib(){
+# Try different versions and see how fast they are.
+
+# 1. Get a list of directories
+#    Test for every directory whether a library exists.
+
+# 2. Get list of libraries.
+#    Grep for the mathematical library names.
+#    Split the found libs into a directory path, and a name.
+
+search_math_libs
+
+# If there is found more than one compiler let the user pick it.
+
+if [ $IPRINT -ge "5" ];  then
+ echo '\n get_math_lib: lib_names='$lib_names
+fi
+
+if [ ! -z "$lib_names" ]; then
+  echo "The following libraries were detected on your system:"
+else
+  echo "No optimized mathematical libraries were detected on your system:"
+fi
+
+counter=1
+for tmp_library in $lib_names; do
+  counter=`expr $counter + 1`
+  $echo "$counter) $tmp_library"
+done
+#
+#if [ ! -z "$both_blas_lapack" ]; then
+#  counter=`expr $counter + 1`
+#  $echo "$counter) both lapack and blas"
+#fi
+#
+$echo "1) Specify a library path. \t\c"
+#
+echo "0) Built in libraries (SLOW) or manual configuration."
+
+echo
+lib_index=-1
+
+$echo "Which library you you want to use? \c"
+if [ $counter -gt 1 ]; then
+  $echo "(Default: 2) \c"
+else
+  $echo "(Default: 0) \c"
+fi
+read lib_index
+
+if [ -z "$lib_index" ]; then
+  if [ $counter -gt 1 ]; then
+    lib_index=2
+  else
+    lib_index=0
+  fi
+fi
+
+if [ $lib_index -lt 0 -o $lib_index -gt $counter ]; then
+  echo "Not a valid compiler number: $lib_index"
+  get_math_lib
+elif [ $lib_index -eq 0 ]; then
+  $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? (y/N) \c'
+  read defblas
+  case "$defblas" in
+    "yes" | "y" | "Y" )
+      cpp_f90="$cpp_f90 -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK" ;;
+    *)
+      echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config-ue manually \c'
+       ;;
+  esac
+
+elif [ $lib_index -eq 1 ]; then
+  $echo "Enter a directory to search: \c"
+  read math_dirs
+  $echo "Also search it's subdirectories? (y/N) \c"
+  read rec_search
+
+  echo
+  echo "Building a list of subdirectories of: $math_dirs ... "
+  if [ ! -z "$math_dirs" ]; then
+    case $rec_search in
+    "yes" | "y" | "Y" )
+      math_dirs=`find $math_dirs -type d -print`;;
+    esac
+  fi
+
+  get_math_lib
+else
+  counter=1
+  for tmp_library in $lib_names; do
+    counter=`expr $counter + 1`
+    if [ $counter -eq $lib_index ]; then
+      lib_name=$tmp_library
+      break
+    fi
+  done
+  for tmp_library in $lib_list; do
+    if [ -z `echo $lib_name | grep $tmp_library` ]; then
+# FIXME nicer way to extract the library path and name?
+      dir_len=`expr length "$lib_name"`
+      lib_len=`expr length "$tmp_library"`
+      lib_len=`expr $lib_len - 1`
+      dir_len=`expr $dir_len - $lib_len + 1`
+      lib=`expr substr $lib_name $dir_len $lib_len`
+      dir_len=`expr $dir_len - 2`
+      dir=`expr substr $lib_name 1 $dir_len`
+
+      setup_math_lib $lib $dir
+      break
+    fi
+  done
+fi
+
+}
+
+test_lib_arch() {
+#
+# Check whether the libraries are 32/64 bit
+#
+
+if [ $bit_set -eq 32 ]; then
+  if [ -z `echo $1 |  grep "64"`]; then
+    return 1
+  else
+    return 0
+  fi
+fi
+
+if [ $bit_set -eq 64 ]; then
+  if [ -n `echo $1 |  grep "64"` ]; then
+    return 1
+  else
+    return 0
+  fi
+fi
+
+}
+
+nolib () {
+   echo  Sorry, linking test program to $LIB failed.
+   LIB=
+}
+
+find_mathlib ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Find mathematical libraries
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'MATHEMATICAL LIBRARIES'
+echo
+echo 'Use of an optimized BLAS implementation is very important,'
+echo 'especially for the performance of MOLTRA and RELCCSD.'
+echo
+#
+#  Check if use LIB_LIST from old Makefile.config-ue
+#
+# libraries
+ext_list='.so .a'
+lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml liblapack"
+LIB=""
+
+math_dirs=$dir_list
+
+if [ $IPRINT -ge "5" ];  then
+    echo 'find_math_lib: setup math_dirs='$math_dirs
+fi
+
+# variable telling that there are both lapack and blas libraries
+# both_blas_lapack=
+
+libguess=`./config.status LIB_LIST`
+if [ ! -z "$libguess" ]; then
+  ls -l Makefile.config-ue
+  echo This old Makefile.config-ue file uses $libguess
+  $echo 'Do you want to use that again ? (Y/n) \c'
+  read defblas
+  case "$defblas" in
+  "No" | "n" | "N" ) ;;
+  *)
+    LIB=$libguess
+    ;;
+  esac
+
+  /bin/rm -f gnyf.F
+  echo '      PROGRAM GNYF' >  gnyf.F
+  echo '      END         ' >> gnyf.F
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'find_mathlib: checking confirmed library LIB='$LIB
+    $F90_COMP gnyf.F -o gnyf.x $LIB
+  fi
+
+  $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
+  /bin/rm -f gnyf.F gnyf.x gnyf.o
+  echo
+
+
+fi
+
+if [ -z "$LIB" ]; then
+  get_math_lib
+fi
+
+if [ -z "$LIB" -a -n "$lib_list" ]; then
+    echo 'Mathematical libraries: none found'
+elif [ -n "$LIB" ]; then
+    echo 'Mathematical libraries: '$LIB
+fi
+
+}
+set_memsize ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# Determine memory size
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'MEMORY SIZE'
+echo
+if [ -z "$memdef" ]; then
+   memdef=`./config.status WRKMEM`
+   if [ -z "$memdef" ]; then
+      memdef=64000000
+   fi
+   echo 'DIRAC uses approximately 6.4 MB for static allocations.'
+   echo 'How many MB RAM to use as default?'
+   echo ' -we do not recommend going below 64 MB'
+   echo ' -note that memory use can be changed' \
+        'through the shell variable DIRWRK'
+   if [ $quick = 0 ]; then
+      $echo "Memory size (in MB, default: `expr $memdef '*' 8 /  1048576` MB) \c"
+      read memsiz
+   else
+      memsiz=
+   fi
+   if [ -z "$memsiz" ]; then
+      memsiz=$memdef
+   else
+      memsiz=`expr $memsiz '*' 1048576 / 8`
+   fi
+else
+   memsiz=$memdef
+fi
+}
+
+set_installdir ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   set installdir
+#   Determine location for executable and run script
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'INSTALL DIRECTORY'
+echo
+
+if [ $IPRINT -ge "7" ];  then
+   echo 'set_installdir: variable INSTALL_DIR='$INSTALL_DIR
+   echo 'set_installdir: variable quick='$quick
+fi
+
+if [ -z "$INSTALL_DIR" ]; then
+     set_install_directory
+else
+   # verify entered (as parameter) installation directory
+   if [ ! -d "$INSTALL_DIR" ]; then
+     $echo "ERROR: $INSTALL_DIR (you typed as the paramater) does not exist \n "
+     # no exit, rather repeat searching for the directory
+     set_install_directory
+   fi
+fi
+
+#-------------------------------------------------------------------
+#     ... finally print-out the veryfied installation directory
+#-------------------------------------------------------------------
+$echo 'Install directory for DIRAC executable and script: '
+$echo $INSTALL_DIR
+}
+
+set_install_directory () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#                     Determines the proper installation directory
+#
+#  always called when INSTALL_DIR(might come in as the parameter) is
+#  not functional
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+   # first null the variable
+   INSTALL_DIR=
+
+   # repeat until directory found - test on empty
+   while [ -z "$INSTALL_DIR" ]
+   do
+      # ... find out the variable which is in the Makefile.config-ue file (if there is any)
+      curr=`./config.status INSTALLDIR`
+      if [ "$curr" = "$PWD" ]; then
+	  curr=
+      fi
+      # ... if $curr not empty AND is valid directory
+      if [ ! -z "$curr" -a -d "$curr" ]; then
+
+         $echo 'Found (in Makefile.config-ue) proper directory for installation of' \
+         'binaries and scripts:'
+	 $echo $curr
+	 $echo 'Do you want me to use it ? (Y/n) \c'
+
+	 default_answer="y"
+         get_answer
+
+	 if [ "$answer" = "n" ] ; then
+            curr=`pwd`
+	    $echo 'Do you want me to use current directory '$curr' ? (Y/n) \c'
+	    default_answer="y"
+            get_answer
+	    if [ "$answer" = "n" ] ; then
+	       $echo "Well, your choice, now type the directory:\c"
+               read INSTALL_DIR
+	    else
+               INSTALL_DIR=$curr
+	    fi
+	 else
+            INSTALL_DIR=$curr
+         fi
+      else
+      # when the previously used directory "$curr" is no longer valid
+         curr=`pwd`
+         INSTALL_DIR=$curr
+         $echo '...using the current directory (pwd) for DIRAC installation:'
+         $echo $curr
+      fi
+
+      # verify install directory
+      if [ ! -d "$INSTALL_DIR" ]; then
+         echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again !"
+         INSTALL_DIR=
+         # ... continues within the "while" cycle
+      fi
+
+   done
+}
+
+get_answer() {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  usefull procedure to get (typed) the answer - yes or no
+#
+#  uses the variable "default_answer" which has to be "y" or "n" or empty
+#
+#  exports the "answer" variable cotaining "y" or "n"
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# "global" variable
+answer=
+# ... local variable
+this_answer=
+# ... to check whether the answer was proper
+answered=
+while [ -z "$answered" ]
+do
+     read this_answer
+
+     if [ $IPRINT -ge "12" ];  then
+        echo 'get_answer: read variable this_answer='$this_answer
+        echo 'get_answer: while variable default_answer='$default_answer
+     fi
+
+     # if answer empty and default_answer set
+     if [ -z "$this_answer" -a "$default_answer" = "y" ]; then
+        answer="y"
+	answered="good"
+     fi
+     if [ -z "$this_answer" -a "$default_answer" = "n" ]; then
+        answer="n"
+	answered="good"
+     fi
+
+     if [ -z $answered ]; then
+        case "$this_answer" in
+         "yes" | "y" | "Y"  )
+           answered="good"
+           answer="y"      ;;
+         "no"  | "n" | "N"  )
+           answered="good"
+           answer="n"      ;;
+         *)
+           answered=
+           $echo '  please type the proper answer - yes/y/Y or no/n/N \c'
+        ;;
+        esac
+     fi
+done
+
+ if [ $IPRINT -ge "12" ];  then
+     echo 'get_answer: ASSIGNED variable answer='$answer
+  fi
+}
+
+set_scratchdir ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#                   SET SCRATCHDIR
+#
+#   Determine the default scratch disk space for calculations
+#
+#   The "worksp" variable could come in within argument list
+#
+#   Likewise it can be extracted from the "Makefile.config" file
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'SCRATCH DIRECTORY'
+echo
+
+if [ -z "$worksp" ]; then
+       get_worksp
+else
+   if [ ! -d $worksp -a $quick=0]; then
+       echo 'Scratch directory '$worksp' you does not exist! Repeat !'
+       get_worksp
+   fi
+fi
+
+$echo 'Scratch directory: '$worksp'/$USER'
+}
+
+
+get_worksp ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#      get the 'worksp' variable
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+   scr_quick=$quick
+
+   while [ -z "$worksp" ]
+   do
+
+      # first extract from Makefile.config-ue
+      scratchguess=`./config.status SCRATCHDIR`
+      if [ $IPRINT -ge "5" ];  then
+         echo 'get_worksp: from Makefile.config-ue extracted scratchguess='$scratchguess
+      fi
+
+      if [ ! -z "$scratchguess" ]; then
+         worksp=$scratchguess # just assign, do not verify yet...
+      elif [ -d '/work' ]; then
+         worksp='/work'
+      elif [ -d '/scratch' ]; then
+         worksp='/scratch'
+      elif [ -d '/scr' ]; then
+         worksp='/scr'
+      elif [ -d '/temp' ]; then
+         worksp='/temp'
+      elif [ -d '/tmp' ]; then
+         worksp='/tmp'
+      elif [ -d '/var/tmp' ]; then
+         worksp='/var/tmp'
+      else
+         worksp=
+         scr_quick=0 # nothing assigned, switch to PROMPT mode
+      fi
+
+      if [ $scr_quick = 0 ]; then # in the prompt mode
+
+         if [ ! -z "$worksp" ]; then
+           if [ ! -z "$scratchguess" ]; then
+             $echo 'Found scratch space in the old Makefile.config-ue: ' $worksp
+           else
+             $echo 'Found scratch space among the system directories: ' $worksp
+           fi
+           $echo 'Press ENTER to use this path, or type a new directory for the scratch: \c'
+         else
+           $echo 'No default directory found - type a new directory for the scratch: \c'
+         fi
+
+         read answer
+      else
+         answer=
+      fi
+      if [ ! -z "$answer" ]; then
+         worksp=$answer
+      fi
+
+      # verify the work-directory, and/or confirm
+      if [ ! -d $worksp ]; then
+         echo 'WARNING: Scratch directory '$worksp' does not exist!'
+         if [ $quick = 0 ]; then
+            ok=
+            while [ -z "$ok" ]; do
+               $echo "- Are you sure that you want $worksp ? (Y/n) \c"
+               read answer
+               case "$answer" in
+               "y" | "Y" | "yes" | "")
+                  ok=xxx
+                  ;;
+               "n" | "N" | "no")
+                  worksp=
+                  ok=xxx
+                  ;;
+               esac
+            done
+         else
+         # ... no prompt mode - check if worksp is empty...
+            if [ -z $worksp ]; then
+               worksp="ASSIGN ME"
+               $echo "...you need to fix the scratch directory in Makefile.config-ue..."
+            fi
+         fi
+      fi
+   done
+}
+
+get_cpp_flags(){
+
+  if [ "$mesp" = "mpi" ]; then
+    parop="-DVAR_MPI"
+    if [ "$localdisks" = "yes" ]; then
+       parop="$parop -DSYS_LOCALDISKS"
+    fi
+
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
+    def="dirmpi.x"
+  else
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
+    def="dirac.x"
+  fi
+  if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
+    append cpp_f90 "-DVAR_MKL"
+  fi
+
+  set_bit_arch
+}
+
+set_bit_arch(){
+# Special flags for 64 bit machines
+  if [ "$bit_set" = "64" ]; then
+    cpp_f90="-DINT_STAR8 $cpp_f90"
+    cpp_cc="-DINT_STAR8 $cpp_cc"
+# provide specific compiler with the appropriate integer flag
+    case "$F90real" in
+#
+      g95|pgf90|ifc|ifort|pathf90)
+         opt="$opt -i8"
+         safe="$safe -i8" ;;
+#
+#   ... take care of gfortran, gfortran-4.2, gfortran-4.3 etc...
+      gfortran-*|gfortran)
+         opt="$opt -fdefault-integer-8"
+         safe="$safe -fdefault-integer-8" ;;
+#
+#   .... take care of Lahey fortran
+      lfc)
+         opt="$opt --long"
+         safe="$safe --long" ;;
+    esac
+  fi
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'set_bit_arch: set opt='$opt
+ echo 'set_bit_arch: set safe='$safe
+fi
+
+}
+
+get_f90_flags(){
+  case "$F90real" in
+    g95)
+      opt="-g -O3 -ffast-math -Wno=155"
+      safe="-g -Wno=155"
+      mod="-fmod=$MODULE_DIR"
+      ;;
+    gfortran*)
+      gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
+      case $prc in
+      i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                march="-march=$prc -malign-double";;
+      x86_64) march="-march=x86-64";;
+      *) march="";;
+      esac
+      c_opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
+      opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize $march"
+      safe="-g $march"
+      mod="-J$MODULE_DIR"
+      ;;
+    pgf90)
+      opt="-g -fastsse"
+      safe="-g"
+      cpp_cc="$cpp_cc -DVAR_PGCC"
+      mod="-module $MODULE_DIR"
+      ;;
+    lfc)
+      opt="-g --fast"
+      safe="-g"
+      cpp_cc="$cpp_cc"
+      mod="-M $MODULE_DIR"
+      ;;
+    ifort)
+      opt="-g -O3 -ip -w -assume byterecl"
+      safe="-g -w -assume byterecl"
+      cpp_cc="$cpp_cc -DVAR_IFC"
+      mod="-module $MODULE_DIR"
+      ;;
+    xlf)
+      mod="-qmoddir=$MODULE_DIR"
+     # .... extra flags for *.F90 files !
+      f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
+      ;;
+    pathf90)
+       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+       cpp_cc="$cpp_cc -DVAR_EKO"
+       mod="-module $MODULE_DIR"
+       ;;
+  esac
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'get_f90_flags: got opt='$opt
+fi
+
+}
+
+get_cc_flags(){
+  case "$CCreal" in
+  gcc|cc)
+    c_opt="-g -O3 -ffast-math"
+    c_safe="-g"
+    ;;
+  mpicc)
+    c_opt="-g -O3 -ffast-math"
+    c_safe="-g"
+    echo
+    echo WARNING:
+    echo   Could not determine which compiler mpicc is using, assuming it is gcc
+    echo
+    ;;
+  pgcc)
+    c_opt="-g -fastsse"
+    c_safe="-g"
+    ;;
+  icc)
+    c_opt="-g -O3 -ip -w"
+    c_safe="-g -w"
+    ;;
+  pathcc)
+    c_opt=$opt
+    c_safe=$safe
+    ;;
+  esac
+
+# jhs some strange fortran dependent options:
+  case "$F90real" in
+  xlf)
+    c_opt='-g -O2 -qcpluscmt'
+    c_safe='-g -qcpluscmt'
+    ;;
+  esac
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'get_cc_flags: got c_opt='$c_opt
+ echo 'get_cc_flags: got c_safe='$c_safe
+fi
+
+}
+
+get_largefiles(){
+#
+# Ask user whether the large file option can be set
+#
+  case $machine in
+    i[3-6]86-* | x86_64-* | ia64-unknown-linux)
+      if [ $quick = 0 ]; then
+        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
+        read largefiles
+      else
+        largefiles=Y
+      fi
+      case "$largefiles" in
+      "yes" | "y" | "Y"|"" )
+        cpp_cc="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE $cpp_cc"
+      ;;
+      esac ;;
+    esac
+}
+
+
+set_compile_flags(){
+echo
+
+f90_inc="-I$INCLUDE_DIR -I$MODULE_DIR"
+cc_inc="-I$INCLUDE_DIR"
+find_real_f90
+get_f90_flags
+
+case $machine in
+#
+#  HEWLETT - PACKARD
+#
+    *-hp)
+       sys_name="HPUX"
+       get_cpp_flags
+       arflag='rv'
+       c_opt='-g +DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
+       c_safe='+DA2.0W -g -AC99'
+       opt='-g +DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+       safe='+DA2.0W  +U77 -g'
+       LIB="-llapack +U77 +DA2.0W -lm $LIB"
+       if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
+          cpp_f90="$cpp_f90 -DVAR_LIBVECLIB"
+       fi
+       ;;
+#
+#   ALPHA
+#
+    alpha-dec|mips-dec|vax-dec|alphaev6-dec)
+       sys_name="DEC"
+       get_cpp_flags
+
+       if [ ! -z "echo $LIB | grep 'dxml'" ]; then
+          cpp_f90="$cpp_f90 -DVAR_DXML"
+       fi
+       opt='-g -fast'
+       safe='-g'
+       ;;
+#
+#   CRAY
+#
+    *-cray)
+       sys_name="CRAY"
+       get_cpp_flags
+
+       opt="-g -Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
+       safe="-Wf\"-i 64 -a stack -Wp\"-F\"-g\""
+       c_opt="-g -i 64 -a stack -dp"
+       c_safe="-i 64 -a stack -g"
+       LIB="C90lib.cld $LIB"
+       ;;
+#
+#  SUN
+#
+   sparc-sun|m68k-sun)
+      sys_name="SUN"
+      get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+      opt='-g -fast # updated 28.Aug.04'
+      safe='-g'
+      c_opt='-g -fast # updated 28.Aug.04'
+      c_safe='-g'
+      ;;
+#
+#   IBM
+#
+   *-ibm | powerpc64-unknown-linux* | ppc64* )
+      case $os in
+        aix2*)
+          sys_name="AIX"
+	  get_cpp_flags
+	  cpp_f90="-w -P -DSYS_AIX23 $cpp_f90"
+	  cpp_cc="-DSYS_AIX23 $cpp_cc" ;;
+	gnu*)
+          sys_name="LINUX"
+	  get_cpp_flags
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperated.
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
+          ;;
+         *)
+          sys_name="AIX"
+	  get_cpp_flags
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperated.
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`  ;;
+         esac
+
+
+         if [ "$localdisks" = "no" ]; then
+            cpp_f90="$cpp_f90,-DVAR_PFS"
+         fi
+
+      case $os in
+         gnu* )
+            opt='-g -O3 -qstrict -qextname -q64'
+            safe='-g -qextname -q64'
+   	    c_opt='-g -O3 -qstrict -q64'
+   	    c_safe='-g -q64'
+            ldflag='-q64 '
+            arflag='rv'
+            ;;
+         *)
+            opt='-g -O3 -qstrict -qextname -q64'
+            safe='-g -qextname -q64'
+   	    c_opt='-g -O3 -qstrict -qcpluscmt -q64'
+   	    c_safe='-g -qcpluscmt -q64'
+            ldflag='-q64 -bmaxdata:0x8000000000'
+            arflag='-X64 rv'
+            ;;
+         esac
+
+	 mod="-qmoddir=$MODULE_DIR"
+         f90_extraflags="-qfree=f90"
+         ;;
+#
+#  IRIX
+#
+   mips*-sgi)
+      sys_name="IRIX"
+      get_cpp_flags
+      opt='-g -O2 -G 0 -woff 2290'
+      safe='-g -G 0 -woff 2290'
+      c_opt='-g -O2 -G 0'
+      c_safe='-g -G 0'
+      ;;
+#
+#   Linux on 32 bit machines
+#
+   i[3-6]86-*)
+      sys_name="LINUX"
+      get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+
+#
+# If we are using mpif77/mpicc check which compiler it uses to make
+# sure we use the correct flags
+#
+      case "$F90real" in
+      g95)
+         opt="$opt -fno-second-underscore"
+         safe="$safe -fno-second-underscore" ;;
+      esac
+
+      find_real_cc
+
+      get_cc_flags
+      ;;
+#
+#   Linux on 64 bit machines
+#
+   x86_64-*)
+      sys_name="LINUX"
+      get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+#
+# If we are using mpif77/mpicc check which compiler it uses to make
+# sure we use the correct flags
+#
+      case "$F90real" in
+      ifort)
+	      ;;
+      esac
+
+      find_real_cc
+
+      get_cc_flags
+      ;;
+#
+#   Linux on 64 bit Itanium
+#
+   ia64-unknown-linux)
+      sys_name="LINUX"
+
+# jhs uncomment hack if it gives problems
+#     case "$F90real" in
+#     pgf90|pathf90)
+#       bit_set="32"
+#       cpp_f90="$cpp_f90 -DINT_STAR8"
+#     esac
+      get_cpp_flags
+      cpp_f90="$cpp_f90 -DVAR_MFDS"
+
+#
+# If we are using mpif77/mpif90/mpicc check which compiler it uses to make
+# sure we use the correct flags
+#
+
+      case "$F90real" in
+      pathf90)
+# jhs no opt="-i8"?
+         ldflag=i"$ldflag -i8" ;;
+      esac
+
+      find_real_cc
+      get_cc_flags
+
+   ;;
+
+#
+#   Darwin
+#
+   *apple*)
+      sys_name="DARWIN"
+      get_cpp_flags
+      cpp_f90="-DVAR_MFDS $cpp_f90"
+
+      F90real="$F90_COMP"
+      get_f90_flags
+      get_cc_flags
+
+esac
+
+}
+
+make_makefile_configure ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# We are beginning to see the end of the installation requirements
+# We will now dump machine specific things to Makefile.config-ue
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo 'MAKING MAKEFILE.CONFIG'
+echo
+if [ -f Makefile.config-ue ]; then
+   echo 'Makefile.config exists. I will take a backup as Makefile.config-ue.orig'
+   if [ -f Makefile.config-ue.orig  ]; then
+      echo 'Makefile.config.orig already exists.'
+      answer=
+      while [ "$answer" != "y" -a "$answer" != "n" ]
+      do
+         if [ $quick = 0 ]; then
+            $echo 'Do you want me to overwrite' \
+            'Makefile.config.orig anyway? (Y/n) \c'
+            read answer
+         else
+            answer=
+         fi
+         if [ -z "$answer" ]; then
+            answer="y"
+         fi
+      done
+      if [ "$answer" = "n" ];  then
+         echo 'I do not take a backup of Makefile.config-ue.' \
+              'This file will be overwritten'
+      else
+	  mv Makefile.config-ue Makefile.config.orig
+      fi
+   else
+      mv Makefile.config-ue Makefile.config.orig
+   fi
+fi
+#
+# Parallel preprocessor directive need to be set
+#
+INCLUDE_DIR=\$\(SOURCEDIR\)\/include
+MODULE_DIR=\$\(SOURCEDIR\)\/modules
+arflag=
+
+set_compile_flags
+mpi2check
+get_largefiles
+
+# given that all unix clones like linux, *bsd and mac osx have no
+# specific preprocessor directives, what comes below allows one
+# to fine-tune functionality. for instance, in the code under gp/
+# to get traceback and memory information one needs to differentiate
+# the os. also, if the gnu loader is used, the -E flag has to be
+# passed on to allow the symbols to be generated
+
+case $flavor in
+   *linux*)
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=LINUX -I."
+      ldflag="$ldflag -Wl,-E"
+   ;;
+   *darwin*)
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=DARWIN -I."
+   ;;
+   *freebsd*)
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=FREEBSD -I."
+      ldflag="$ldflag -Wl,-E"
+   ;;
+   *netbsd*|*openbsd)
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=OPENBSD -I."
+      ldflag="$ldflag -Wl,-E"
+   ;;
+   *)
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=UNKNOWN -I."
+   ;;
+esac
+
+
+###############################################################################
+#
+#  Make Makefile.config-ue
+#
+#  To avoid problems with make depend, substitute all , with spaces
+#
+##############################################################################
+if [ "$mesp" != "dummy" ]; then
+   depend_flags=`echo $cpp_f90 $f90_inc | sed -e 's/,/\ /g'`
+else
+   depend_flags=`echo $cpp_f90 $f90_inc $parinc | sed -e 's/,/\ /g'`
+fi
+#
+#  Check for special C-directives
+#
+#if [ "$c_inc" = "" ]; then
+#   c_inc="\$(INCLUDE_DIR)"
+#fi
+if [ "$c_opt" = "" ]; then
+   c_opt="\$(OPTFLAGS)"
+   c_safe="\$(SAFEFLAGS)"
+fi
+if [ "$ldflag" = "" ]; then
+   ldflag="\$(OPTFLAGS)"
+# mi: linking can be with optimization
+fi
+#
+# Add the modifications that concern the module preprocessor statements
+#
+case $F90_COMP in
+   xlf*|mpfort|mpxlf_r)
+# IBM's xlf should be comma delimited, the others take spaces
+     IBMMOD=1
+     cpp_f90="$cpp_f90,\$(MODS)"
+     ;;
+   *)
+     cpp_f90="$cpp_f90 \$(MODS)"
+esac
+
+##################################################
+#  Make Makefile.config-ue
+#################################################
+
+#first define the preprocessing flags for the active modules
+if [ $IBMMOD -eq 1 ]; then
+cat <<EOF >  Makefile.config-ue
+SEP           =,
+EOF
+else
+cat <<EOF >  Makefile.config-ue
+NULLSTRING   :=
+SEP          := \$(NULLSTRING) #end of line 
+EOF
+cat <<EOF >> Makefile.config-ue
+include Makefile.moddef
+EOF
+
+# then define things like architecture etc 
+
+cat <<EOF >> Makefile.config-ue
+TARGET=$def
+ARCH=$guess
+
+# Location of the binaries
+INSTALLDIR=$INSTALL_DIR
+
+# Location of the source files
+SOURCEDIR=`pwd`
+
+# Location of the scratch (or working) directory
+SCRATCHDIR=$worksp
+
+# default memory
+WRKMEM=$memsiz
+EOF
+
+fi
+if [ "$mesp" = "mpi" ]; then
+   if [ -n "$parinc" ]; then
+      f90_inc=$f90_inc $parinc
+   fi
+fi
+cat <<EOF >> Makefile.config-ue
+
+# preprocessing
+DEPFPP=cpp -traditional-cpp $depend_flags 
+DEPCPP=cpp $depend_flags 
+
+# fortran and C compilers
+FC=$F90_COMP_PWD
+CC=$CC_COMP_PWD
+
+# loader
+LD=$(FC)
+
+# other useful stuff
+RM=rm
+AR=ar
+EOF
+if [ -n "$arflag" ]; then
+cat <<EOF >> Makefile.config-ue
+ARFLAGS=$arflag
+EOF
+fi
+##########################################################################
+#
+#  dump compiler flags into Makefile.config-ue, where you can edit them
+#
+##########################################################################
+
+# determine whether to flush into Makefile.config-ue safe or optimized flags
+if [ $nooptim = 1 ]; then
+# ... employ flags with no optimization
+  use_flags=$safe
+  use_c_flags=$c_safe
+else 
+# ... employ flags with the optimization
+  use_flags=$opt
+  use_c_flags=$c_opt
+fi
+
+cat <<EOF >> Makefile.config-ue
+# flags for ftnchek
+CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
+ -noargumants -arguments=number \\
+ -usage=var-unitialized
+# -usage=var-unitialized:arg-const-modified:arg-alias
+# -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
+
+# compiler flags, standard
+FFLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
+CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
+
+# compiler flags, safe
+FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
+CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
+
+# loader flags
+LDFLAGS=$ldflag
+
+#
+# ... libraries - check them according to your server equipment !
+#
+LIBS      = $LIB
+
+# loader flags
+LDFLAGS=$ldflag $(LIBS)
+#
+EOF
+
+#
+# Insert necessary additional features for parallel calculations
+#
+if [ "$mesp" = "mpi" ]; then
+   if [ ! -z "$parlibp" ]; then
+      parlibp=-L$parlibp
+   fi
+    cat <<EOF >> Makefile.config-ue
+#
+# Parallel initialization
+#
+MPI_INCLUDE_DIR=$parinc
+MPI_LIB_PATH=$parlibp
+MPI_LIB=$parlib
+#
+EOF
+fi
+#
+# On apple and dec machines we need to run ranlib when creating an archive
+#
+case $machine in
+   *apple* | alpha-dec|mips-dec|vax-dec|alphaev6-dec )
+cat <<EOF>> Makefile.config-ue
+$tab ranlib \$@
+EOF
+esac
+}
+
+make_pam_runtest ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#     Make pam and runtest shell script
+#   bash is preferred - otherwise use sh
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+$echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
+if [ -f /bin/bash ]; then
+   echo "found /bin/bash"
+   echo '#!/bin/bash' > $INSTALL_DIR/pam
+   echo '#!/bin/bash' > $SRC_DIR/test/runtest
+elif [ -f /bin/ksh ]; then
+   echo "found /bin/ksh"
+   echo '#!/bin/ksh' > $INSTALL_DIR/pam
+   echo '#!/bin/ksh' > $SRC_DIR/test/runtest
+else
+   echo ""
+   echo "Neither ksh nor bash seems to be installed -> using sh."
+   echo '#!/bin/sh' > $INSTALL_DIR/pam
+   echo '#!/bin/sh' > $SRC_DIR/test/runtest
+fi
+$echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
+cat <<EOF>> $INSTALL_DIR/pam
+#
+SCR_DEFAULT=$worksp
+BIN_DIR=$INSTALL_DIR
+SRC_DIR=$SRC_DIR
+BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
+MPIRUN=$mpirun
+MACH_FILE=$mach_file
+LOCALDISKS=$localdisks
+# Passing files to local disks:
+RCP=$rcp
+RSH=$rsh
+#
+# debugger - check it of your machine installation
+#
+DEBUGGER=$debug
+#
+CLEANUP=
+EOF
+cat ./pam.in >> $INSTALL_DIR/pam
+chmod a+rx $INSTALL_DIR/pam
+echo "ok"
+echo
+$echo 'Preparing runtest shell script  : \c'
+cat <<EOF>> $SRC_DIR/test/runtest
+#
+BIN_DIR=$INSTALL_DIR
+EOF
+cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
+chmod a+rx $SRC_DIR/test/runtest
+echo "ok"
+
+if [ $IPRINT -ge "5" ]; then
+  echo 'make_pam_runtest: done'
+fi
+
+}
+
+
+final_words () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   Final instructions to user
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo
+echo "Before you run make, please check the Makefile.config-ue and "
+echo "pam files and edit them if you wish."
+echo
+echo "Please make sure that the mathematical libraries used have been "
+echo "compiled with the same compiler you are using now, otherwise it "
+echo "might be neccasary to link to additional runtime libraries "
+echo
+echo "Please check 'Known issues and problems' at"
+echo "   http://dirac.chem.sdu.dk/"
+echo "to see hints or/and problems concerning your platform."
+echo
+echo "Then run "
+echo "   make depend"
+echo "   make"
+echo "Then Dirac should be ready to run..."
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# MAIN SCRIPT
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+initialize
+opt=
+echo
+echo '   Configuring the DIRAC Makefile.config-ue + pam and runtest scripts'
+echo
+echo '   Run configure with the --help argument for more options'
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#                        Parse arguments
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+while [ $# != 0 ]; do
+   arg="$1"; shift
+   echo "Argument: $arg"
+   case "${arg}" in
+      -*=*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\([^=]*\)=.*$:\1:'`
+         val=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*[^=]*=\(.*\)$:\1:'`
+         valomitted=no
+         ;;
+      -*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\(.*\)$:\1:'`
+         val="yes"
+         valomitted=yes
+         ;;
+      *)
+         usage
+         exit
+   esac
+   optname="${opt}"
+   opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
+   case "${opt}" in
+      "help")
+        usage
+         exit
+         ;;
+      "quick")
+         quick=1
+         ;;
+      "system")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         guess="$val"
+         ;;
+      "parallel" | "par")
+         case "$val" in
+         "no" | "yes" )
+            par="$val"
+            ;;
+         *)
+            echo 'Syntax error: Value "'${val}'" is not allowed to option' \
+                 '"-'${optname}'"'
+            echo 'Legal values: [yes,no]'
+            exit 1
+            ;;
+         esac
+         ;;
+      "noopt")
+	 nooptim=1
+         ;;
+      "libdir" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         dir_list="$val $dir_list"
+         ;;
+      "mathematical_libraries" | "math_lib" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         userlib="$val"
+         ;;
+      "memory_size" | "memory" | "mem" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         memdef="$val"
+         ;;
+      "install_dir" | "inst_dir" | "install" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         INSTALL_DIR="$val"
+         ;;
+      "scratch_directory" | "scr_dir" | "scratch_dir" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         worksp="$val"
+         ;;
+      "queuing_system" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         queuesys="$val"
+         ;;
+      "cc" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         CC_COMP="$val"
+         ;;
+      "f90" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         F90_COMP="$val"
+         ;;
+      "i"  )
+         IPRINT=$val
+         ;;
+      *)
+         echo  'Unknown option: '$opt''
+         usage
+         exit 1
+         ;;
+   esac
+done
+
+if [ $IPRINT -gt "0" ];  then
+  echo 'configure print level set to '$IPRINT
+fi
+
+guess_system
+parallel_stuff
+safeflags_stuff
+find_compilers
+find_debugger
+find_mathlib
+set_memsize
+set_installdir
+set_scratchdir
+make_makefile_configure
+make_pam_runtest
+final_words
+
