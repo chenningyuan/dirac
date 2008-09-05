@@ -36,7 +36,7 @@ utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o 
 # Then delete files that should not be shipped
 echo "Deleting files"
 rm utils/cppp.py utils/prepare_release.sh
-rm pamforay Programmers_manual.txt alternative_pamadm.py dumbconfigure TODO
+rm pamforay Programmers_manual.txt dumbconfigure TODO
 rm utils/numerov.py
 rm utils/numerov_parameters.py
 rm utils/add_copyright.py
