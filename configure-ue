@@ -426,7 +426,7 @@ if [ "$mesp" = "mpi" ]; then
     cpp_cc="$cpp_cc -DVAR_MPI2"
     case $F90_COMP in
        xlf*|mpfort|mpxlf_r) 
-       cpp_f90="$cpp_f90 -WF,-DVAR_MPI2"
+       cpp_f90="$cpp_f90,-DVAR_MPI2"
        ;;
        *)
        cpp_f90="$cpp_f90 -DVAR_MPI2"
@@ -1586,21 +1586,21 @@ case $machine in
 	gnu*)
           sys_name="LINUX"
 	  get_cpp_flags
-	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+	  cpp_f90="-DVAR_MFDS $cpp_f90"
           # fortran flags are comma seperated.
-          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
+#         cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
           ;;
          *)
           sys_name="AIX"
 	  get_cpp_flags
-	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+	  cpp_f90="-DVAR_MFDS $cpp_f90"
           # fortran flags are comma seperated.
-          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`  ;;
+#         cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`  ;;
          esac
 
 
          if [ "$localdisks" = "no" ]; then
-            cpp_f90="$cpp_f90,-DVAR_PFS"
+            cpp_f90="$cpp_f90 -DVAR_PFS"
          fi
 
       case $os in
@@ -1833,7 +1833,8 @@ case $F90_COMP in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90="$cpp_f90,\$(MODS)"
+     cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
+     cpp_f90="-WF,$cpp_f90,\$(MODS)"
      ;;
    *)
      cpp_f90="$cpp_f90 \$(MODS)"
@@ -1853,6 +1854,8 @@ cat <<EOF >  Makefile.config-ue
 NULLSTRING   :=
 SEP          := \$(NULLSTRING) #end of line 
 EOF
+fi
+
 cat <<EOF >> Makefile.config-ue
 include Makefile.moddef
 EOF
@@ -1864,7 +1867,7 @@ cat <<EOF >> Makefile.config-ue
 WRKMEM=$memsiz
 EOF
 
-fi
+
 if [ "$mesp" = "mpi" ]; then
    if [ -n "$parinc" ]; then
       f90_inc=$f90_inc $parinc
@@ -1873,11 +1876,12 @@ fi
 cat <<EOF >> Makefile.config-ue
 
 # preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags 
-DEPCPP=cpp $depend_flags 
+DEPFPP=cpp -traditional-cpp $depend_flags $parinc
+DEPCPP=cpp $cpp_cc $parinc 
 
 # fortran and C compilers
 FC=$F90_COMP_PWD
+F90=\$(FC)
 CC=$CC_COMP_PWD
 
 # linker
@@ -1903,22 +1907,21 @@ fi
 
 cat <<EOF >> Makefile.config-ue
 # compiler flags, standard
-FFLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
+FFLAGS=$cpp_f90 $f90_inc $use_flags $mod
+F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
 CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
 
 # compiler flags, safe
-FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
+FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod 
+F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
-
-# linker flags
-LDFLAGS=$ldflag
 
 #
 # ... libraries - check them according to your server equipment !
 #
 LIBS      = $LIB
 
-# loader flags
+# linker flags
 LDFLAGS=$ldflag \$(LIBS)
 #
 EOF
