@@ -1783,22 +1783,22 @@ get_largefiles
 
 case $flavor in
    *linux*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=LINUX -I."
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=LINUX"
       ldflag="$ldflag -Wl,-E"
    ;;
    *darwin*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=DARWIN -I."
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=DARWIN"
    ;;
    *freebsd*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=FREEBSD -I."
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=FREEBSD"
       ldflag="$ldflag -Wl,-E"
    ;;
    *netbsd*|*openbsd)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=OPENBSD -I."
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=OPENBSD"
       ldflag="$ldflag -Wl,-E"
    ;;
    *)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=UNKNOWN -I."
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=UNKNOWN"
    ;;
 esac
 
