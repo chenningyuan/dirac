@@ -43,12 +43,12 @@ Makefile.obj: safebuild dontbuild
 # safe .F90 files
 	@for f in `grep '\.F90' safebuild`; do \
 	echo  "$${f%%.F90}.o: $$f" >> $@;  \
-	echo '	$$(FC) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .f90 files
 	@for f in `grep '\.f90' safebuild`; do \
 	echo "$${f%%.f90}.o: $$f" >> $@;  \
-	echo '	$$(FC) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 
 Makefile.dep: Makefile.obj
@@ -88,8 +88,8 @@ ftnchek:
 .F.o:
 	$(FC) $(FFLAGS) -c -o $*.o $*.F
 .F90.o:
-	$(FC) $(FFLAGS) -c -o $*.o $*.F90
+	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
 .f90.o:
-	$(FC) $(FFLAGS) -c -o $*.o $*.f90
+	$(F90) $(F90FLAGS) -c -o $*.o $*.f90
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
