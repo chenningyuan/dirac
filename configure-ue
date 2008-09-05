@@ -1766,8 +1766,8 @@ fi
 #
 # Parallel preprocessor directive need to be set
 #
-INCLUDE_DIR=\$\(SOURCEDIR\)\/include
-MODULE_DIR=\$\(SOURCEDIR\)\/modules
+INCLUDE_DIR=include
+MODULE_DIR=modules
 arflag=
 
 set_compile_flags
@@ -1818,9 +1818,6 @@ fi
 #
 #  Check for special C-directives
 #
-#if [ "$c_inc" = "" ]; then
-#   c_inc="\$(INCLUDE_DIR)"
-#fi
 if [ "$c_opt" = "" ]; then
    c_opt="\$(OPTFLAGS)"
    c_safe="\$(SAFEFLAGS)"
@@ -1863,19 +1860,7 @@ EOF
 # then define things like architecture etc 
 
 cat <<EOF >> Makefile.config-ue
-TARGET=$def
-ARCH=$guess
-
-# Location of the binaries
-INSTALLDIR=$INSTALL_DIR
-
-# Location of the source files
-SOURCEDIR=`pwd`
-
-# Location of the scratch (or working) directory
-SCRATCHDIR=$worksp
-
-# default memory
+# default memory (in 8 byte words)
 WRKMEM=$memsiz
 EOF
 
@@ -1895,18 +1880,10 @@ DEPCPP=cpp $depend_flags
 FC=$F90_COMP_PWD
 CC=$CC_COMP_PWD
 
-# loader
-LD=$(FC)
+# linker
+LD=\$(FC)
+EOF
 
-# other useful stuff
-RM=rm
-AR=ar
-EOF
-if [ -n "$arflag" ]; then
-cat <<EOF >> Makefile.config-ue
-ARFLAGS=$arflag
-EOF
-fi
 ##########################################################################
 #
 #  dump compiler flags into Makefile.config-ue, where you can edit them
@@ -1925,13 +1902,6 @@ else
 fi
 
 cat <<EOF >> Makefile.config-ue
-# flags for ftnchek
-CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
- -noargumants -arguments=number \\
- -usage=var-unitialized
-# -usage=var-unitialized:arg-const-modified:arg-alias
-# -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
-
 # compiler flags, standard
 FFLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
 CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
@@ -1940,7 +1910,7 @@ CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
 FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
 
-# loader flags
+# linker flags
 LDFLAGS=$ldflag
 
 #
@@ -1949,7 +1919,7 @@ LDFLAGS=$ldflag
 LIBS      = $LIB
 
 # loader flags
-LDFLAGS=$ldflag $(LIBS)
+LDFLAGS=$ldflag \$(LIBS)
 #
 EOF
 
