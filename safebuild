@@ -1,0 +1,4 @@
+Files listed here will be compiles with "safe" compiler options
+pdpack/dlamch.F
+amfi/amfi.F
+amfi/amfi1.F
