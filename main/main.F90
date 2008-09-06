@@ -49,14 +49,15 @@ program dirprg
   integer :: iscr_mem
 #ifdef VAR_MPI 
   call mpixinit()
+  call stopwatch(1,numnod+1)
 #else
   parcal  = .false.
   iparcal = 0
   mytid   = 0
   mparid  = 0
   numnod  = 0
-#endif
   call stopwatch(1,numnod)
+#endif
   if (parcal) iparcal = 1
 
   if (mytid == 0) then

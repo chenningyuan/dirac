@@ -353,7 +353,8 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
     ENDIF
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
-    DO IJ = 1, (NUMNOD - 1)
+!   DO IJ = 1, (NUMNOD - 1)
+    DO IJ = 1, (NUMNOD    )
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
        IF( MYTID .eq. IJ )  THEN
           print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &
@@ -382,7 +383,8 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
     ENDIF
     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
-    DO IJ = 1, (NUMNOD - 1)
+!   DO IJ = 1, (NUMNOD - 1)
+    DO IJ = 1, (NUMNOD    )
        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
        IF( MYTID .eq. IJ )  THEN
 !          print '(a,i4,1x,a,a,a,i0,a,i0,a)', 'DIRAC node ',mytid, &

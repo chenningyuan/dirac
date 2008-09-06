@@ -800,7 +800,9 @@ C     Transfer variables to common blocks
 C
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
-      NUMNOD = INUMNOD - 1
+C     NUMNOD = INUMNOD - 1
+C     SK - Sep 08: subtraction has already been done in mpixinit.
+      NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
 C
