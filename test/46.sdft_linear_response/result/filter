@@ -1,9 +1,0 @@
-$ERROR 0.0001
-From:                Linear response excitations; final output
-To:                  Analysis of response solution vectors
-
-$ERROR 0.0001
-Nlines 10:Linear response; final output
-
-$ERROR 0.0001
-Nlines 10:Quadratic Response Functions
