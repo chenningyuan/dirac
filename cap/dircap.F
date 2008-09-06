@@ -1558,7 +1558,7 @@ C#include "capint.h"
       COMPLEX *16 VCAPy,VADDy
       COMPLEX *16 VCAPXT_D1C,VCAPXTy_D1C
       EXTERNAL V0,V1,V2,FF
-      EXTERNAL V0D,V0Dm,V1D
+      EXTERNAL V0D,V1D
 CMI   ... declaration must be for gfortran
       double complex v0,v1,v2,V1D,FF,V0D
       
