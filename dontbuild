@@ -2,7 +2,7 @@ Files matching the regexps in this file will not be compiled
 #oof/.*
 utils/.*
 aoresponse/.*
-visual/.*
+#visual/.*
 #hsmrcc/.*
 hsmrcc/hsmrcc_external/.*
 hsmrcc/second_quant/.*
