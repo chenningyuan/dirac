@@ -607,6 +607,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
+#include "inpt.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "results.inc"
@@ -655,14 +656,9 @@ C        Even electron case : boson irreps
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
 
-C     write(IW,*) 'in FS_ANALYSIS1 after all PRT_EV...'
-C     call FLSHFO(IW)
-
 C     Detailed print-out including oscillator strengths
-      CALL FS_ANALYSIS (ICURFSS,EPS,IPR,IFS_HE(NREP+1,ICURFSS),
+      CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
-CMI  &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
-C
       DEALLOCATE (INDX_ALL)
       DEALLOCATE (IRPS_ALL)
 
@@ -2215,7 +2211,6 @@ C---------------Calling variables--------------------------------------
 C
 #include "complex.inc"
       REAL*8 TRES, EPS(*), E_OFF
-CMI   REAL*8 EV_ALL(NDT_TOT),H(*)
       REAL*8 EV_ALL(RCW,NDT_TOT),H(*)
       REAL*8 INTENSITY(NDT_TOT),TRANS_DIPOLE(3,NDT_TOT)
       INTEGER ICURFSS, IPR
@@ -2224,22 +2219,15 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "files.inc"
-C#include "complex.inc"
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
-CMI   PARAMETER (NDIMH=600)
-CMI   PARAMETER (NDIMH=900)
-CMI   PARAMETER (NDIMH=2000)
       PARAMETER (NDIMH=5000)
       INTEGER I_EIGENVALUE , J_EIGENVALUE, I_COEFF
       CHARACTER*50 LABEL(NDIMH)
 C---------------Executable code--------------------------------------
  
-C     write(IW,*) 'now in FS_ANALYSIS...1'
-C     call FLSHFO(IW)
-
 C     Initialize and gets label for the excited state coefficiens
       IF (IPR.LE.0) THEN
          TRES = 0.1
@@ -2253,18 +2241,9 @@ C     Initialize and gets label for the excited state coefficiens
       I_COEFF = 0
       IJ = 0
 
-C      write(IW,*) 'in FS_ANALYSIS...1.1'
-C      call FLSHFO(IW)
-
       CALL GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 
-C      write(IW,*) 'in FS_ANALYSIS...2'
-C      call FLSHFO(IW)
-
       WRITE (IW,1000) TRES
-
-C      write(IW,*) 'in FS_ANALYSIS...3'
-C      call FLSHFO(IW)
 
       DO IRP=1,NREP
  
