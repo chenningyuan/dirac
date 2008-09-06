@@ -2,26 +2,19 @@
 .WAVE FUNCTION
 .PROPERTIES
 **HAMILTONIAN
-.LEVY-LEBLOND
+.X2C
 .DFT
  B3LYP
 *DFT
-#.IMPORT
-#dalton_grid
 .RADINT
  1.0D-10
 .ANGINT
  35
-.ZIPGRID
-XY
+.ZIPGRID !be careful
+XY       !with this kw when you change the molecule
 **INTEGRALS
 .NUCMOD
  1
-*TWOINT
-#.SCREEN
-#1.0D-16
-*READIN
-.UNCONTRACT
 **WAVE FUNCTION
 .DHF
 *DHFCAL
@@ -49,5 +42,5 @@ XY
 .B FREQ
  2
  0.00
- 0.06
+ 0.27
 *END OF
