@@ -22,7 +22,7 @@ module grid_m
     integer                    :: nr_points
     real(kind_dp)              :: initial_xyz(3)
     real(kind_dp)              :: step_vector(3, 3)
-    real(kind_dp)              :: add_space = 4.0d0
+    real(kind_dp)              :: add_space = 6.0d0
   end type
 
 contains
