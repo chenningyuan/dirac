@@ -84,6 +84,10 @@ contains
     e_ij = 0.0d0
     call propenergy((/'EL'/), (/D, D_i/), e_ij)
 
+    if (aoresponse_visual .or. aoresponse_integrate) then
+      call aoresponse_visual_driver((/D, D_i/))
+    end if
+
     print '("@ alpha (w = "2f7.3")")', w(1), w(2)
 
     do i = 1, 3
