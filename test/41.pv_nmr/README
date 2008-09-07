@@ -1,6 +1,6 @@
 ! This test calculates the parity-violation contribution to NMR shielding and
 ! indirect spin-spin coupling in the H2O2 molecule using Dirac-Coulomb (dc)
-! and L\'evy-Leblond (ll).
+! and L\'evy-Leblond (nr).
 !
 ! Please note that the basis-set is far from being appropriate, just for demonstration.
 !
