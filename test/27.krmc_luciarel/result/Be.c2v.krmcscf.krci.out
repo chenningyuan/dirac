@@ -1,5 +1,4 @@
 DIRAC serial allocating 125000000 words (953 MB) of memory
-DIRAC serial will attempt to use at most 288230376151711743 words (953 MB) of memory in dynamic allocations
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -135,12 +134,12 @@ DIRAC serial will attempt to use at most 288230376151711743 words (953 MB) of me
  Operating system  : Linux 2.6.16.21-0.13-smp
  Machine           : x86_64
  Run               : Sequential
- Last compilation  : 17:04:31 Aug 15 2008 (by stefan@fe4)
+ Last compilation  : 16:10:17 Sep  7 2008 (by stefan@fe4)
  FORTRAN compiler  : ifort -g -O3 -ip -w -assume byterecl -i8 -module /people/disk2/stefan/prog/dirac/parallel/check_in_test/trunk/modules 
  C compiler        : icc -g -O3 -ip -w 
 
  
-     Data and time (Linux)  : Fri Aug 15 17:15:01 2008
+     Data and time (Linux)  : Sun Sep  7 16:17:08 2008
      Host name              : s42p02                                  
 
 
@@ -154,13 +153,11 @@ DIRAC serial will attempt to use at most 288230376151711743 words (953 MB) of me
  Testing KRMC and KR-CI for Be in Pierloot basis
 .ANALYZE
 .WAVE FUNCTION
-#################################
 **ANALYZE
 .PRIVEC
 *PRIVEC
 .VECPRI
 1..5
-#################################
 **WAVE FUNCTION
 .DHF
 .KRMCSCF
@@ -194,7 +191,6 @@ LUCIAREL
  1
 *OPTIMI
 .ANALYZ
-#################################
 *KRCICALC
 .CI PROGRAM
 LUCIAREL
@@ -211,13 +207,10 @@ LUCIAREL
  0
 .MK2DEL
  4
-.SYMMETRY
- 1
-#########
+.CIROOTS
+ 1 1
 .MAX CI
  16
-.CIROOT
- 1
 .MXCIVE
  4
 .NOOCCN
@@ -642,6 +635,10 @@ Point group: C2v
  * Allowed interval of 2 * MK :  -4 to   4
  * Using symmetry nomenclature for LUCIAREL. 
       Boson and Fermion irreps of complex (sub)groups  
+
+ * Number of CI roots to be optimized in each symmetry:
+    1
+
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
    SL-integrals from iteration    0
@@ -650,7 +647,7 @@ Point group: C2v
 ===========================================================================
  Control parameters for KR-CI optimization
 ===========================================================================
- * Maximum number of CI iterations:  16
+ * Maximum number of CI iterations for each symmetry:  16
  * Analyzing CI vectors in terms of coefficients 
  * Maximum subspace dimension set to   4
  * Calculation of nat. orb. occ. numbers
@@ -720,122 +717,122 @@ Total no. of orbitals      (NORB):    74
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   1 ##########   Sun Sep  7 16:17:08 2008
 
-It.   1    -9.149803289747      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Aug 15
+It.   1    -9.149803289747      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Sun Sep  7
 
-########## START ITERATION NO.   2##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   2##########   Sun Sep  7 16:17:08 2008
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   42.07%   29.81%    5.29%    0.04%   0.00000000s
-SOfock:SL  1.00D-12   53.32%   18.75%    3.36%   12.16%   0.01999998s
+SOfock:LL  1.00D-12   42.07%   29.81%    5.29%    0.04%   0.00999999s
+SOfock:SL  1.00D-12   53.32%   18.75%    3.36%   12.16%   0.00999999s
 SOfock:SS  1.00D-12   61.66%   13.78%    5.25%   10.31%   0.04000002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.08000004s
+>>> Total CPU-time : 0.10000002s
 
-########## END ITERATION NO.   2 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   2 ##########   Sun Sep  7 16:17:08 2008
 
-It.   2    -14.52805209380      5.38D+00  4.34D+00  5.55D-01               0.08000004s   LL SL SS       Fri Aug 15
+It.   2    -14.52805209380      5.38D+00  4.34D+00  5.55D-01               0.10000002s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   3##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   3##########   Sun Sep  7 16:17:08 2008
 
     3 *** Differential density matrix. DCOVLP     = 0.8081
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   40.18%   31.69%    5.35%    0.00%   0.00999999s
-SOfock:SL  1.00D-12   52.37%   21.18%    4.37%   11.95%   0.00999999s
+SOfock:LL  1.00D-12   40.18%   31.69%    5.35%    0.00%   0.00000000s
+SOfock:SL  1.00D-12   52.37%   21.18%    4.37%   11.95%   0.01999998s
 SOfock:SS  1.00D-12   61.66%   16.35%    5.07%   10.46%   0.04000002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.06999999s
+>>> Total CPU-time : 0.06000000s
 
-########## END ITERATION NO.   3 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   3 ##########   Sun Sep  7 16:17:08 2008
 
-It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06999999s   LL SL SS       Fri Aug 15
+It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06000000s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   4##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   4##########   Sun Sep  7 16:17:08 2008
 
     4 *** Differential density matrix. DCOVLP     = 0.9939
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   45.76%   25.72%    4.19%    4.50%   0.00000000s
-SOfock:SL  1.00D-12   54.64%   21.98%    4.58%   11.13%   0.00999999s
-SOfock:SS  1.00D-12   61.66%   20.91%    4.76%   10.50%   0.04000002s
+SOfock:SL  1.00D-12   54.64%   21.98%    4.58%   11.13%   0.02000004s
+SOfock:SS  1.00D-12   61.66%   20.91%    4.76%   10.50%   0.03999996s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.06999999s
+>>> Total CPU-time : 0.06000000s
 
-########## END ITERATION NO.   4 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   4 ##########   Sun Sep  7 16:17:08 2008
 
-It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06999999s   LL SL SS       Fri Aug 15
+It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000000s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   5##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   5##########   Sun Sep  7 16:17:08 2008
 
     5 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   58.29%   17.38%    7.35%    5.41%   0.00000000s
-SOfock:SL  1.00D-12   58.82%   19.86%    6.03%   10.02%   0.01999998s
-SOfock:SS  1.00D-12   61.66%   23.36%    4.62%   10.53%   0.02999997s
->>> Total wall time: 0.00000000s
+SOfock:LL  1.00D-12   58.29%   17.38%    7.35%    5.41%   0.00999999s
+SOfock:SL  1.00D-12   58.82%   19.86%    6.03%   10.02%   0.00999999s
+SOfock:SS  1.00D-12   61.66%   23.36%    4.62%   10.53%   0.03999996s
+>>> Total wall time: 1.00000000s
 >>> Total CPU-time : 0.05999994s
 
-########## END ITERATION NO.   5 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   5 ##########   Sun Sep  7 16:17:08 2008
 
-It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Fri Aug 15
+It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   6##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   6##########   Sun Sep  7 16:17:09 2008
 
     6 *** Differential density matrix. DCOVLP     = 0.9996
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   61.13%   14.17%    6.83%    5.28%   0.00000000s
-SOfock:SL  1.00D-12   58.84%   21.61%    4.91%    9.99%   0.01999998s
-SOfock:SS  1.00D-12   61.66%   26.63%    4.41%   10.60%   0.03000009s
+SOfock:SL  1.00D-12   58.84%   21.61%    4.91%    9.99%   0.02000010s
+SOfock:SS  1.00D-12   61.66%   26.63%    4.41%   10.60%   0.03999996s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.06000006s
 
-########## END ITERATION NO.   6 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   6 ##########   Sun Sep  7 16:17:09 2008
 
-It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.06000006s   LL SL SS       Fri Aug 15
+It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.06000006s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   7##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   7##########   Sun Sep  7 16:17:09 2008
 
     7 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   58.29%   18.06%    3.09%    2.33%   0.00000000s
-SOfock:SL  1.00D-12   55.38%   26.57%    3.65%   10.54%   0.01999998s
-SOfock:SS  1.00D-12   61.66%   31.33%    3.92%   11.40%   0.03000009s
+SOfock:LL  1.00D-12   58.29%   18.06%    3.09%    2.33%   0.00999999s
+SOfock:SL  1.00D-12   55.38%   26.57%    3.65%   10.54%   0.00999999s
+SOfock:SS  1.00D-12   61.66%   31.33%    3.92%   11.40%   0.04000008s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05000007s
+>>> Total CPU-time : 0.06000006s
 
-########## END ITERATION NO.   7 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   7 ##########   Sun Sep  7 16:17:09 2008
 
-It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Fri Aug 15
+It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.06000006s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   8##########   Fri Aug 15 17:15:01 2008
+########## START ITERATION NO.   8##########   Sun Sep  7 16:17:09 2008
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   61.13%   15.85%    5.07%    4.11%   0.00999999s
 SOfock:SL  1.00D-12   55.67%   28.12%    3.83%   10.28%   0.00999999s
 SOfock:SS  1.00D-12   61.66%   33.24%    3.61%   12.26%   0.03999996s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.06999993s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.05999994s
 
-########## END ITERATION NO.   8 ##########   Fri Aug 15 17:15:01 2008
+########## END ITERATION NO.   8 ##########   Sun Sep  7 16:17:09 2008
 
-It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06999993s   LL SL SS       Fri Aug 15
+It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.05999994s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   9##########   Fri Aug 15 17:15:02 2008
+########## START ITERATION NO.   9##########   Sun Sep  7 16:17:09 2008
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   55.54%   25.30%    2.27%    2.71%   0.00000000s
-SOfock:SL  1.00D-12   57.71%   31.11%    1.79%   11.28%   0.01999998s
+SOfock:LL  1.00D-12   55.54%   25.30%    2.27%    2.71%   0.00999999s
+SOfock:SL  1.00D-12   57.71%   31.11%    1.79%   11.28%   0.00999999s
 SOfock:SS  1.00D-12   73.01%   26.16%    0.32%   15.99%   0.02999997s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04999995s
+>>> Total CPU-time : 0.05999994s
 
-########## END ITERATION NO.   9 ##########   Fri Aug 15 17:15:02 2008
+########## END ITERATION NO.   9 ##########   Sun Sep  7 16:17:09 2008
 
-It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.04999995s   LL SL SS       Fri Aug 15
+It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.05999994s   LL SL SS       Sun Sep  7
 
 
                                    SCF - CYCLE
@@ -851,15 +848,15 @@ It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.049
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -9.149803289747      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Aug 15
-It.   2    -14.52805209380      5.38D+00  4.34D+00  5.55D-01               0.08000004s   LL SL SS       Fri Aug 15
-It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06999999s   LL SL SS       Fri Aug 15
-It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06999999s   LL SL SS       Fri Aug 15
-It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Fri Aug 15
-It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.06000006s   LL SL SS       Fri Aug 15
-It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Fri Aug 15
-It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06999993s   LL SL SS       Fri Aug 15
-It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.04999995s   LL SL SS       Fri Aug 15
+It.   1    -9.149803289747      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Sun Sep  7
+It.   2    -14.52805209380      5.38D+00  4.34D+00  5.55D-01               0.10000002s   LL SL SS       Sun Sep  7
+It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06000000s   LL SL SS       Sun Sep  7
+It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000000s   LL SL SS       Sun Sep  7
+It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Sun Sep  7
+It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.06000006s   LL SL SS       Sun Sep  7
+It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.06000006s   LL SL SS       Sun Sep  7
+It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.05999994s   LL SL SS       Sun Sep  7
+It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.05999994s   LL SL SS       Sun Sep  7
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
@@ -1038,11 +1035,9 @@ It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.049
  *******************************************************************************
 
 
- 
-  NDET   flag call 
-  ------           
-  The number of CI dets will be computed.
- 
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
  
  ******************
  *  Title of run  *
@@ -1155,7 +1150,7 @@ It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.049
       Chosen  print level for transformation info   =   0
       Chosen  print level for sigma vector info     =   0
  
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
 
@@ -1204,15 +1199,13 @@ It.   9    -14.57523072490      4.09D-14 -2.55D-08  3.14D-09   DIIS   7    0.049
  Time in  Computing+transform. i       0.140 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:00 (   00:00:00)
-            Transformation ended Fri Aug 15 17:15:02 2008
- 
-  CIINII flag call 
-  ------           
-    Determining configurational start guess
- 
+            Transformation ended Sun Sep  7 16:17:09 2008
+  //  LUCIAREL called
+  //  CIRUN = CIINII
+  //  Determining configurational start guess
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   75.43%    4.54%    5.90%    6.24%   0.00000000s
-SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
+SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.01999998s
    Core energy :     -13.6134634899
  
  ******************
@@ -1329,13 +1322,15 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
       Chosen  print level for transformation info   =   0
       Chosen  print level for sigma vector info     =   0
  
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
@@ -1367,21 +1362,21 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
               ::::::::::::::::::::::::   
                 Entering MICDV4 (rel)    
               ::::::::::::::::::::::::   
- 
- Info from iteration      1
- _______________________
+
+ Info from iteration     1
+___________________________
  Iter RNORM EIGAPR          1   .6285783593127E-01        -14.5752308111
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.00000000s( 0.00000000s)
- 
- Info from iteration      2
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.00999999s( 0.00000000s)
+
+ Info from iteration     2
+___________________________
  Iter RNORM EIGAPR          2   .9479909217514E-05        -14.5846265088
  Dimension of projected matrix:                     3
- >>>  CPU (WALL) TIME IN ITERATION:  0.00000000s( 0.00000000s)
- 
- Info from iteration      3
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.00999999s( 0.00000000s)
+
+ Info from iteration     3
+___________________________
  Iter RNORM EIGAPR          3   .4038690026157E-11        -14.5846265091
  >>>  CPU (WALL) TIME IN ITERATION:  0.00000000s( 0.00000000s)
  
@@ -1394,11 +1389,9 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
 
   I have completed task  CIINII
 
- 
-  ANALYZ flag call 
-  ------           
-    Analyzing the current CI vector(s).
- 
+  //  LUCIAREL called
+  //  CIRUN = ANALYZ
+  //  Analyzing the current CI vector(s).
  
  ******************
  *  Title of run  *
@@ -1514,7 +1507,7 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
       Chosen  print level for transformation info   =   0
       Chosen  print level for sigma vector info     =   0
  
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
@@ -1530,7 +1523,7 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
    allocate resolution vector of length:                       18
    ==============================================================
   
- 
+
  ***************************************************
  Analysis of Optimized Wave Function for ROOT =   1
  ***************************************************
@@ -1542,13 +1535,10 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-
-                 =================== 
- 
   Coefficient of combination        1 is 0.98901234E+00
-  Corresponding alpha - and beta string 
-       1
-       1
+  Corresponding alpha- and beta-strings
+  alpha   1
+   beta   1
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -1558,27 +1548,18 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
   Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
   =========================================================
 
-
-                 =================== 
- 
   Coefficient of combination        1 is -.85362380E-01
-  Corresponding alpha - and beta string 
-       2
-       2
-
-                 =================== 
- 
+  Corresponding alpha- and beta-strings
+  alpha   2
+   beta   2
   Coefficient of combination        5 is -.85345927E-01
-  Corresponding alpha - and beta string 
-       3
-       3
-
-                 =================== 
- 
+  Corresponding alpha- and beta-strings
+  alpha   3
+   beta   3
   Coefficient of combination        9 is -.85345927E-01
-  Corresponding alpha - and beta string 
-       4
-       4
+  Corresponding alpha- and beta-strings
+  alpha   4
+   beta   4
 
   Printout of coefficients in interval  0.2000E-01 to 0.3162E-01
   =========================================================
@@ -1770,8 +1751,8 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   5 of  10 after      0. seconds and      1. CPU-seconds
-   - Beginning task   6 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
@@ -1781,19 +1762,17 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND fi       0.050 seconds
+ Time in  Initializing MS4IND fi       0.040 seconds
  Time in  Computing+transform. i       1.700 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:04 2008
+            Transformation ended Sun Sep  7 16:17:11 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
- 
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
  ******************
  *  Title of run  *
@@ -1908,13 +1887,15 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
       Chosen  print level for transformation info   =   0
       Chosen  print level for sigma vector info     =   0
  
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -1942,25 +1923,25 @@ SOfock:SL  1.00D-12   66.47%    9.55%    6.61%    8.61%   0.00999999s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   23.54%   10.78%   16.76%   27.51%   0.00000000s
-SOfock:SL  1.00D-12   27.45%   14.49%   14.85%   31.00%   0.03000021s
+SOfock:LL  1.00D-12   23.54%   10.78%   16.76%   27.51%   0.00999999s
+SOfock:SL  1.00D-12   27.45%   14.49%   14.85%   31.00%   0.01999998s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2008,24 +1989,24 @@ SOfock:SL  1.00D-12   27.45%   14.49%   14.85%   31.00%   0.03000021s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.77D-06
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 7.75D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Aug 15 17:15:04 2008
+########## START MICROITERATION NO.   1 ##########   Sun Sep  7 16:17:11 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  3.77D-06   40.37%   28.46%   10.37%   25.14%   0.00000000s
-SOfock:SL  3.77D-06   70.96%   19.43%    3.86%   21.29%   0.01000023s
+SOfock:SL  3.77D-06   70.96%   19.43%    3.86%   21.29%   0.00999999s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2053,21 +2034,21 @@ SOfock:SL  3.77D-06   70.96%   19.43%    3.86%   21.29%   0.01000023s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
     -0.01757812  2.92E-03  7.21E-02  5.59E-03  6.65E-05  7.19E-02
 
-########## START MICROITERATION NO.   2 ##########   Fri Aug 15 17:15:04 2008
+########## START MICROITERATION NO.   2 ##########   Sun Sep  7 16:17:11 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2095,21 +2076,21 @@ SOfock:SL  3.77D-06   70.96%   19.43%    3.86%   21.29%   0.01000023s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.77D-06   40.37%   23.22%    7.64%   17.42%   0.01000023s
-SOfock:SL  3.77D-06   51.86%   36.96%    1.48%   21.91%   0.00999975s
+SOfock:LL  3.77D-06   40.37%   23.22%    7.64%   17.42%   0.00000000s
+SOfock:SL  3.77D-06   51.86%   36.96%    1.48%   21.91%   0.01999998s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2147,24 +2128,24 @@ SOfock:SL  3.77D-06   51.86%   36.96%    1.48%   21.91%   0.00999975s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
     -0.04062500  7.30E-03  8.79E-03  8.78E-03  1.18E-04  5.02E-04
 
-########## START MICROITERATION NO.   3 ##########   Fri Aug 15 17:15:04 2008
+########## START MICROITERATION NO.   3 ##########   Sun Sep  7 16:17:11 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  3.77D-06   17.95%   39.91%   11.37%   24.14%   0.00000000s
-SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.03000021s
+SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.02999973s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2211,15 +2192,15 @@ SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.03000021s
 
             Freq.(au)   Total norm    E+ norm   P+ norm   C+ norm 
 ==================================================================
-* It.  1   0.38000011s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  1   0.39999986s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
            -0.041406 :   7.21D-02 |   5.59D-03  6.65D-05  7.19D-02
 ==================================================================
-* It.  2   0.06999969s  (LL SL    )     [  0]     [  0]     [  1]
+* It.  2   0.06000042s  (LL SL    )     [  0]     [  0]     [  1]
 ------------------------------------------------------------------
            -0.041406 :   8.80D-03 |   8.78D-03  1.18D-04  5.02D-04
 ==================================================================
-* It.  3   0.39000034s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  3   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
            -0.041406 :   1.25D-03 |   1.22D-03  1.22D-04  2.27D-04
 ==================================================================
@@ -2228,7 +2209,7 @@ SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.03000021s
 
  -> Gram-Schmidt orthonormalizing MO coefficients.
 
->>> CPU (WALL) TIME FOR MACRO IT.  1 :  2.66999984s ( 2.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  1 :  2.65999985s ( 3.00000000s)
 
 
  <<< MACRO ITERATION  2 >>>
@@ -2240,42 +2221,42 @@ SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.03000021s
  (RTRACTL1) Starting 4-index integral transformation.
  - Integral class 1 : (LL|??)
    - Beginning task   1 of   4 after      0. seconds and      0. CPU-seconds
-   - Beginning task   2 of   4 after      1. seconds and      0. CPU-seconds
-   - Beginning task   3 of   4 after      1. seconds and      0. CPU-seconds
-   - Beginning task   4 of   4 after      1. seconds and      0. CPU-seconds
+   - Beginning task   2 of   4 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task   5 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   6 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   7 of  10 after      0. seconds and      1. CPU-seconds
    - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   9 of  10 after      2. seconds and      1. CPU-seconds
-   - Beginning task  10 of  10 after      2. seconds and      1. CPU-seconds
- - Starting symmetrization after           2.00 seconds
- - Finished symmetrization after           2.00 seconds
+   - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task  10 of  10 after      1. seconds and      1. CPU-seconds
+ - Starting symmetrization after           1.00 seconds
+ - Finished symmetrization after           1.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND fi       0.050 seconds
  Time in  Computing+transform. i       1.710 seconds
 
- (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:06 2008
+ (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:01)
+            Transformation ended Sun Sep  7 16:17:13 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2304,24 +2285,24 @@ SOfock:SL  3.77D-06   37.15%   49.67%    6.27%   22.21%   0.03000021s
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    6.21%   13.11%   23.94%   0.00000000s
-SOfock:SL  1.00D-12    0.28%   14.78%   14.02%   30.58%   0.02999973s
+SOfock:SL  1.00D-12    0.28%   14.78%   14.02%   30.58%   0.03999996s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2372,24 +2353,24 @@ SOfock:SL  1.00D-12    0.28%   14.78%   14.02%   30.58%   0.02999973s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.65D-05
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 7.75D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Aug 15 17:15:06 2008
+########## START MICROITERATION NO.   1 ##########   Sun Sep  7 16:17:13 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.65D-05   37.98%   32.36%   10.22%   24.36%   0.01000023s
-SOfock:SL  1.65D-05   67.06%   23.47%    4.29%   22.82%   0.00999975s
+SOfock:LL  1.65D-05   37.98%   32.36%   10.22%   24.36%   0.00000000s
+SOfock:SL  1.65D-05   67.06%   23.47%    4.29%   22.82%   0.01999998s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2417,21 +2398,21 @@ SOfock:SL  1.65D-05   67.06%   23.47%    4.29%   22.82%   0.00999975s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  5.10E-03  3.14E-02  1.53E-02  1.60E-04  2.74E-02
 
-########## START MICROITERATION NO.   2 ##########   Fri Aug 15 17:15:07 2008
+########## START MICROITERATION NO.   2 ##########   Sun Sep  7 16:17:14 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2461,19 +2442,19 @@ SOfock:SL  1.65D-05   67.06%   23.47%    4.29%   22.82%   0.00999975s
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.65D-05   40.37%   29.14%    6.82%   16.66%   0.00000000s
 SOfock:SL  1.65D-05   65.50%   25.01%    0.53%   21.18%   0.01999998s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2505,24 +2486,24 @@ SOfock:SL  1.65D-05   65.50%   25.01%    0.53%   21.18%   0.01999998s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
     -0.00078125  5.10E-03  1.59E-02  1.59E-02  2.01E-04  4.86E-04
 
-########## START MICROITERATION NO.   3 ##########   Fri Aug 15 17:15:07 2008
+########## START MICROITERATION NO.   3 ##########   Sun Sep  7 16:17:14 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.65D-05   17.95%   43.53%   10.72%   22.92%   0.01000023s
+SOfock:LL  1.65D-05   17.95%   43.53%   10.72%   22.92%   0.00999975s
 SOfock:SL  1.65D-05   49.48%   37.79%    6.38%   24.73%   0.01999998s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2563,15 +2544,15 @@ SOfock:SL  1.65D-05   49.48%   37.79%    6.38%   24.73%   0.01999998s
 
             Freq.(au)   Total norm    E+ norm   P+ norm   C+ norm 
 ==================================================================
-* It.  1   0.40000010s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  1   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
            -0.001563 :   3.14D-02 |   1.53D-02  1.60D-04  2.74D-02
 ==================================================================
-* It.  2   0.03999996s  (LL SL    )     [  0]     [  0]     [  1]
+* It.  2   0.05000019s  (LL SL    )     [  0]     [  0]     [  1]
 ------------------------------------------------------------------
            -0.001563 :   1.59D-02 |   1.59D-02  2.01D-04  4.86D-04
 ==================================================================
-* It.  3   0.38999987s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  3   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
            -0.001563 :   4.04D-03 |   3.98D-03  1.89D-04  6.97D-04
 ==================================================================
@@ -2580,7 +2561,7 @@ SOfock:SL  1.65D-05   49.48%   37.79%    6.38%   24.73%   0.01999998s
 
  -> Gram-Schmidt orthonormalizing MO coefficients.
 
->>> CPU (WALL) TIME FOR MACRO IT.  2 :  2.68000031s ( 3.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  2 :  2.67999983s ( 2.00000000s)
 
 
  <<< MACRO ITERATION  3 >>>
@@ -2594,40 +2575,40 @@ SOfock:SL  1.65D-05   49.48%   37.79%    6.38%   24.73%   0.01999998s
    - Beginning task   1 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   2 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
-   - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   4 after      1. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
    - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task  10 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task  10 of  10 after      2. seconds and      1. CPU-seconds
  - Starting symmetrization after           2.00 seconds
  - Finished symmetrization after           2.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND fi       0.050 seconds
- Time in  Computing+transform. i       1.710 seconds
+ Time in  Computing+transform. i       1.720 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:09 2008
+            Transformation ended Sun Sep  7 16:17:16 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2655,25 +2636,25 @@ SOfock:SL  1.65D-05   49.48%   37.79%    6.38%   24.73%   0.01999998s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.89%   11.71%   22.97%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    5.89%   11.71%   22.97%   0.01000023s
 SOfock:SL  1.00D-12    0.00%   14.07%   11.50%   28.48%   0.02999973s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2724,21 +2705,21 @@ SOfock:SL  1.00D-12    0.00%   14.07%   11.50%   28.48%   0.02999973s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.01D-05
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 7.75D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Aug 15 17:15:09 2008
+########## START MICROITERATION NO.   1 ##########   Sun Sep  7 16:17:16 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2766,21 +2747,21 @@ SOfock:SL  1.00D-12    0.00%   14.07%   11.50%   28.48%   0.02999973s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.01D-05   28.06%   35.50%    9.70%   22.77%   0.01000023s
-SOfock:SL  1.01D-05   42.74%   45.56%    4.59%   25.17%   0.02000046s
+SOfock:LL  1.01D-05   28.06%   35.50%    9.70%   22.77%   0.00000000s
+SOfock:SL  1.01D-05   42.74%   45.56%    4.59%   25.17%   0.01999950s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2802,19 +2783,19 @@ SOfock:SL  1.01D-05   42.74%   45.56%    4.59%   25.17%   0.02000046s
 
   I have completed task  SIGMA 
 
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2846,24 +2827,24 @@ SOfock:SL  1.01D-05   42.74%   45.56%    4.59%   25.17%   0.02000046s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  3.04E-03  7.04E-03  7.03E-03  1.37E-04  2.18E-04
 
-########## START MICROITERATION NO.   2 ##########   Fri Aug 15 17:15:09 2008
+########## START MICROITERATION NO.   2 ##########   Sun Sep  7 16:17:17 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.01D-05   17.95%   36.06%   12.13%   26.35%   0.00999928s
-SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.02000046s
+SOfock:LL  1.01D-05   17.95%   36.06%   12.13%   26.35%   0.01000023s
+SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.01999950s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2908,7 +2889,7 @@ SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.02000046s
 ------------------------------------------------------------------
             0.000000 :   7.03D-03 |   7.03D-03  1.37D-04  2.18D-04
 ==================================================================
-* It.  2   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  2   0.40000057s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
             0.000000 :   8.78D-04 |   8.57D-04  1.36D-04  1.31D-04
 ==================================================================
@@ -2917,7 +2898,7 @@ SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.02000046s
 
  -> Gram-Schmidt orthonormalizing MO coefficients.
 
->>> CPU (WALL) TIME FOR MACRO IT.  3 :  2.65000010s ( 3.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  3 :  2.66000080s ( 3.00000000s)
 
 
  <<< MACRO ITERATION  4 >>>
@@ -2933,8 +2914,8 @@ SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.02000046s
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   5 of  10 after      0. seconds and      1. CPU-seconds
-   - Beginning task   6 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
@@ -2945,26 +2926,26 @@ SOfock:SL  1.01D-05   36.14%   48.90%    6.72%   24.10%   0.02000046s
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND fi       0.050 seconds
- Time in  Computing+transform. i       1.700 seconds
+ Time in  Computing+transform. i       1.720 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:12 2008
+            Transformation ended Sun Sep  7 16:17:19 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -2997,20 +2978,20 @@ SOfock:SL  1.00D-12    0.00%   14.15%   13.91%   30.11%   0.02999973s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3061,21 +3042,21 @@ SOfock:SL  1.00D-12    0.00%   14.15%   13.91%   30.11%   0.02999973s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.10D-07
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 7.75D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Aug 15 17:15:12 2008
+########## START MICROITERATION NO.   1 ##########   Sun Sep  7 16:17:19 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3103,21 +3084,21 @@ SOfock:SL  1.00D-12    0.00%   14.15%   13.91%   30.11%   0.02999973s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.10D-07   17.95%   27.66%   10.04%   20.80%   0.00000000s
+SOfock:LL  2.10D-07   17.95%   27.66%   10.04%   20.80%   0.00999928s
 SOfock:SL  2.10D-07   22.23%   48.97%    7.64%   21.75%   0.03000069s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3139,19 +3120,19 @@ SOfock:SL  2.10D-07   22.23%   48.97%    7.64%   21.75%   0.03000069s
 
   I have completed task  SIGMA 
 
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3183,24 +3164,24 @@ SOfock:SL  2.10D-07   22.23%   48.97%    7.64%   21.75%   0.03000069s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  1.63E-04  1.04E-03  1.02E-03  1.32E-04  1.14E-04
 
-########## START MICROITERATION NO.   2 ##########   Fri Aug 15 17:15:12 2008
+########## START MICROITERATION NO.   2 ##########   Sun Sep  7 16:17:19 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.10D-07    0.00%   31.49%    9.38%   23.90%   0.01000023s
-SOfock:SL  2.10D-07    4.38%   58.50%    6.96%   20.87%   0.02999973s
+SOfock:LL  2.10D-07    0.00%   31.49%    9.38%   23.90%   0.00000000s
+SOfock:SL  2.10D-07    4.38%   58.50%    6.96%   20.87%   0.03000069s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3232,24 +3213,24 @@ SOfock:SL  2.10D-07    4.38%   58.50%    6.96%   20.87%   0.02999973s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  1.63E-04  3.13E-04  2.58E-04  1.32E-04  1.18E-04
 
-########## START MICROITERATION NO.   3 ##########   Fri Aug 15 17:15:12 2008
+########## START MICROITERATION NO.   3 ##########   Sun Sep  7 16:17:20 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.10D-07    9.57%   27.38%    9.12%   22.56%   0.00000000s
-SOfock:SL  2.10D-07    6.14%   57.14%    7.01%   20.45%   0.03000069s
+SOfock:SL  2.10D-07    6.14%   57.14%    7.01%   20.45%   0.02999973s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3281,24 +3262,24 @@ SOfock:SL  2.10D-07    6.14%   57.14%    7.01%   20.45%   0.03000069s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  1.63E-04  1.79E-04  1.63E-05  1.32E-04  1.20E-04
 
-########## START MICROITERATION NO.   4 ##########   Fri Aug 15 17:15:13 2008
+########## START MICROITERATION NO.   4 ##########   Sun Sep  7 16:17:20 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  2.10D-07   40.37%   30.31%   10.85%   23.86%   0.00000000s
-SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.03000069s
+SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.02999973s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3345,19 +3326,19 @@ SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.03000069s
 
             Freq.(au)   Total norm    E+ norm   P+ norm   C+ norm 
 ==================================================================
-* It.  1   0.42000103s  (LL SL    )     [  1]     [  0]     [  1]
+* It.  1   0.41999912s  (LL SL    )     [  1]     [  0]     [  1]
 ------------------------------------------------------------------
             0.000000 :   1.03D-03 |   1.02D-03  1.32D-04  1.14D-04
 ==================================================================
-* It.  2   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  2   0.40000057s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
             0.000000 :   3.13D-04 |   2.58D-04  1.32D-04  1.18D-04
 ==================================================================
-* It.  3   0.42000008s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  3   0.40999985s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
             0.000000 :   1.79D-04 |   1.63D-05  1.32D-04  1.20D-04
 ==================================================================
-* It.  4   0.39999962s  (LL SL    )     [  0]     [  1]     [  0]
+* It.  4   0.40999889s  (LL SL    )     [  0]     [  1]     [  0]
 ------------------------------------------------------------------
             0.000000 :   1.21D-04 |   1.63D-05  5.06D-09  1.20D-04
 ==================================================================
@@ -3366,7 +3347,7 @@ SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.03000069s
 
  -> Gram-Schmidt orthonormalizing MO coefficients.
 
->>> CPU (WALL) TIME FOR MACRO IT.  4 :  3.46999931s ( 3.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  4 :  3.47999859s ( 3.00000000s)
 
 
  <<< MACRO ITERATION  5 >>>
@@ -3380,40 +3361,40 @@ SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.03000069s
    - Beginning task   1 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   2 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
-   - Beginning task   4 of   4 after      1. seconds and      0. CPU-seconds
+   - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task   5 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   6 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   7 of  10 after      0. seconds and      1. CPU-seconds
+   - Beginning task   8 of  10 after      0. seconds and      1. CPU-seconds
    - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task  10 of  10 after      2. seconds and      1. CPU-seconds
- - Starting symmetrization after           2.00 seconds
- - Finished symmetrization after           2.00 seconds
+   - Beginning task  10 of  10 after      1. seconds and      1. CPU-seconds
+ - Starting symmetrization after           1.00 seconds
+ - Finished symmetrization after           1.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND fi       0.050 seconds
- Time in  Computing+transform. i       1.700 seconds
+ Time in  Computing+transform. i       1.730 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:15 2008
+            Transformation ended Sun Sep  7 16:17:22 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3441,25 +3422,25 @@ SOfock:SL  2.10D-07   17.11%   43.83%   14.19%   21.21%   0.03000069s
   I have completed task  DENS2 
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    6.98%   13.24%   25.13%   0.00999928s
-SOfock:SL  1.00D-12    0.28%   15.21%   14.43%   31.15%   0.03000069s
+SOfock:LL  1.00D-12    0.00%    6.98%   13.24%   25.13%   0.00000000s
+SOfock:SL  1.00D-12    0.28%   15.21%   14.43%   31.15%   0.03999996s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3510,21 +3491,21 @@ SOfock:SL  1.00D-12    0.28%   15.21%   14.43%   31.15%   0.03000069s
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  6.33D-09
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 7.75D+02
 
-########## START MICROITERATION NO.   1 ##########   Fri Aug 15 17:15:15 2008
+########## START MICROITERATION NO.   1 ##########   Sun Sep  7 16:17:22 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3554,19 +3535,19 @@ SOfock:SL  1.00D-12    0.28%   15.21%   14.43%   31.15%   0.03000069s
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  6.33D-09   17.95%   23.80%    7.40%   14.06%   0.01000023s
 SOfock:SL  6.33D-09   30.25%   31.60%    6.59%   16.08%   0.01999950s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3594,24 +3575,24 @@ SOfock:SL  6.33D-09   30.25%   31.60%    6.59%   16.08%   0.01999950s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  4.90E-06  7.29E-05  6.71E-05  1.48E-06  2.84E-05
 
-########## START MICROITERATION NO.   2 ##########   Fri Aug 15 17:15:15 2008
+########## START MICROITERATION NO.   2 ##########   Sun Sep  7 16:17:22 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  6.33D-09    0.00%   17.37%   12.02%   24.15%   0.01000023s
-SOfock:SL  6.33D-09    4.22%   32.56%   11.74%   28.10%   0.02999973s
+SOfock:LL  6.33D-09    0.00%   17.37%   12.02%   24.15%   0.00000000s
+SOfock:SL  6.33D-09    4.22%   32.56%   11.74%   28.10%   0.03000069s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3643,21 +3624,21 @@ SOfock:SL  6.33D-09    4.22%   32.56%   11.74%   28.10%   0.02999973s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  4.90E-06  2.85E-05  1.29E-05  1.49E-06  2.54E-05
 
-########## START MICROITERATION NO.   3 ##########   Fri Aug 15 17:15:16 2008
+########## START MICROITERATION NO.   3 ##########   Sun Sep  7 16:17:23 2008
 
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3687,19 +3668,19 @@ SOfock:SL  6.33D-09    4.22%   32.56%   11.74%   28.10%   0.02999973s
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  6.33D-09   17.95%   23.89%    7.35%   14.05%   0.00000000s
 SOfock:SL  6.33D-09   29.04%   32.92%    6.57%   16.05%   0.02999973s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3731,24 +3712,24 @@ SOfock:SL  6.33D-09   29.04%   32.92%    6.57%   16.05%   0.02999973s
   Frequency      Threshold Total     E+ part   P+ part   C+ part 
      0.00000000  4.90E-06  1.59E-05  1.57E-05  1.48E-06  2.18E-06
 
-########## START MICROITERATION NO.   4 ##########   Fri Aug 15 17:15:16 2008
+########## START MICROITERATION NO.   4 ##########   Sun Sep  7 16:17:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  6.33D-09    0.00%   16.46%   12.10%   24.37%   0.00000000s
-SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
+SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03000069s
+  //  LUCIAREL called
+  //  CIRUN = SIGMA 
+  //  Computing a sigma vector.
  
-  SIGMA  flag call 
-  ------           
-    Computing a sigma vector.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3789,7 +3770,7 @@ SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
 
             Freq.(au)   Total norm    E+ norm   P+ norm   C+ norm 
 ==================================================================
-* It.  1   0.06000042s  (LL SL    )     [  0]     [  0]     [  1]
+* It.  1   0.06999969s  (LL SL    )     [  0]     [  0]     [  1]
 ------------------------------------------------------------------
             0.000000 :   7.29D-05 |   6.71D-05  1.48D-06  2.84D-05
 ==================================================================
@@ -3797,11 +3778,11 @@ SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
 ------------------------------------------------------------------
             0.000000 :   2.85D-05 |   1.29D-05  1.49D-06  2.54D-05
 ==================================================================
-* It.  3   0.07000065s  (LL SL    )     [  0]     [  0]     [  1]
+* It.  3   0.06000042s  (LL SL    )     [  0]     [  0]     [  1]
 ------------------------------------------------------------------
             0.000000 :   1.59D-05 |   1.57D-05  1.48D-06  2.18D-06
 ==================================================================
-* It.  4   0.39999962s  (LL SL    )     [  1]     [  0]     [  0]
+* It.  4   0.40999985s  (LL SL    )     [  1]     [  0]     [  0]
 ------------------------------------------------------------------
             0.000000 :   4.03D-06 |   3.53D-06  1.48D-06  1.25D-06
 ==================================================================
@@ -3810,7 +3791,7 @@ SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
 
  -> Gram-Schmidt orthonormalizing MO coefficients.
 
->>> CPU (WALL) TIME FOR MACRO IT.  5 :  2.78999996s ( 3.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  5 :  2.79000092s ( 3.00000000s)
 
 
  <<< MACRO ITERATION  6 >>>
@@ -3824,40 +3805,40 @@ SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
    - Beginning task   1 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   2 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
-   - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   4 after      1. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
    - Beginning task   5 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   6 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   7 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   8 of  10 after      1. seconds and      1. CPU-seconds
    - Beginning task   9 of  10 after      1. seconds and      1. CPU-seconds
-   - Beginning task  10 of  10 after      1. seconds and      1. CPU-seconds
+   - Beginning task  10 of  10 after      2. seconds and      1. CPU-seconds
  - Starting symmetrization after           2.00 seconds
  - Finished symmetrization after           2.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND fi       0.050 seconds
- Time in  Computing+transform. i       1.710 seconds
+ Time in  Computing+transform. i       1.720 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended Fri Aug 15 17:15:18 2008
+            Transformation ended Sun Sep  7 16:17:25 2008
 
  (RGRAD) Calculating gradient.
  RGRAD calling ...
+  //  LUCIAREL called
+  //  CIRUN = DENS2 
+  //  Computing 1- and 2-particle dens. matrices
  
-  DENS2  flag call 
-  ------           
-    Computing 1- and 2-particle dens. matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3886,24 +3867,24 @@ SOfock:SL  6.33D-09    0.28%   32.84%   11.51%   27.76%   0.03999996s
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    9.57%   12.23%   10.51%   21.52%   0.01000023s
-SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
+SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.02999878s
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
+  //  LUCIAREL called
+  //  CIRUN = SIGMAD
+  //  Computing a sigma vector.
+  //      Saving H diagonal also.
  
-  SIGMAD flag call 
-  ------           
-    Computing a sigma vector.
-      Saving H diagonal also.
- 
- 
-  
+
    The largest block of two-electron integrals is       256
    Set LCSBLK to              100000000
  
   Number of excitation types                     64
-  Allocating for                    688  integrals.
-  Allocating for                    100  diagonal integrals.
+
+  Allocating for              688 integrals.
+  Allocating for              100 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -3948,9 +3929,9 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
  (DIRSTP): Energy difference;
  actual, predicted, and ratio:    -8.20374D-08   -8.20235D-08    1.000170
 
->>> CPU (WALL) TIME FOR MACRO IT.  6 :  1.83000183s ( 2.00000000s)
+>>> CPU (WALL) TIME FOR MACRO IT.  6 :  1.84000015s ( 2.00000000s)
 
->>> TOTAL CPU (WALL) TIME IN KR-MCSCF: 16.27000141s(16.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-MCSCF: 16.30000019s(16.00000000s)
 
 
                     Optimization statistics for Dirac KR-MCSCF
@@ -3958,7 +3939,7 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
 
  
-     Data and time (Linux)  : Fri Aug 15 17:15:18 2008
+     Data and time (Linux)  : Sun Sep  7 16:17:25 2008
      Host name              : s42p02                                  
 
 
@@ -3984,12 +3965,12 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
   ITER ITMIC NZRED                      TIMMAC    TIMITR    TIMMIC
 ---------------------------------------------------------------------
-    1     3     3 (  1 C;  2 E;  0 P)      2.67      1.75      0.84
-    2     3     3 (  1 C;  2 E;  0 P)      2.68      1.76      0.84
-    3     2     3 (  1 C;  2 E;  0 P)      2.65      1.76      0.81
-    4     4     5 (  1 C;  3 E;  1 P)      3.47      1.75      1.65
-    5     4     4 (  2 C;  2 E;  0 P)      2.79      1.75      0.95
-    6     0     0 (  0 C;  0 E;  0 P)      1.83      1.76      0.00
+    1     3     3 (  1 C;  2 E;  0 P)      2.66      1.74      0.86
+    2     3     3 (  1 C;  2 E;  0 P)      2.68      1.76      0.85
+    3     2     3 (  1 C;  2 E;  0 P)      2.66      1.77      0.82
+    4     4     5 (  1 C;  3 E;  1 P)      3.48      1.77      1.64
+    5     4     4 (  2 C;  2 E;  0 P)      2.79      1.78      0.95
+    6     0     0 (  0 C;  0 E;  0 P)      1.84      1.77      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -4037,24 +4018,24 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
  Subroutine           Description             CPU time    Wall time
 
- ROPTST               Start guess                0.18        0.00
-   RCIST              CI start guess             0.04        0.00
- RTRACTL              MO 4-index transforma     10.67       12.00
- RGRAD                Gradient                   0.42        0.00
-   RMAKDM             Density matrices           0.06        0.00
-   RFCKMAT            FV and FC                  0.25        0.00
-   RGETH2             FQ and H2AC                0.05        0.00
-   RCIGRAD            CI Gradient                0.05        0.00
- XRSSVC               Sigma vectors              5.04        4.00
-   XRSSEP             OC, CO, and OO svc         4.98        4.00
+ ROPTST               Start guess                0.19        0.00
+   RCIST              CI start guess             0.05        0.00
+ RTRACTL              MO 4-index transforma     10.73       11.00
+ RGRAD                Gradient                   0.39        0.00
+   RMAKDM             Density matrices           0.03        0.00
+   RFCKMAT            FV and FC                  0.23        0.00
+   RGETH2             FQ and H2AC                0.09        0.00
+   RCIGRAD            CI Gradient                0.04        0.00
+ XRSSVC               Sigma vectors              5.11        5.00
+   XRSSEP             OC, CO, and OO svc         5.07        5.00
      XRSTDM           DVT and PVT                0.03        0.00
-     GMOLITX          FCX, FVX, and FVT          0.50        0.00
-     FMOLI            One index transform        0.00        0.00
-     RGETH2TX         FQX, FQT, and H2ACX        4.36        4.00
-       RTR1H1         one index transforms       0.09        0.00
+     GMOLITX          FCX, FVX, and FVT          0.49        0.00
+     FMOLI            One index transform        0.03        0.00
+     RGETH2TX         FQX, FQT, and H2ACX        4.40        5.00
+       RTR1H1         one index transforms       0.04        0.00
      RSIGOC, RSIGOO   OC and OO sigma vecto      0.00        0.00
-     RSIGCO           CO sigma vectors           0.09        0.00
-   XRSSCI             CC sigma vectors           0.06        0.00
+     RSIGCO           CO sigma vectors           0.12        0.00
+   XRSSCI             CC sigma vectors           0.04        0.00
 
 
                      Final results from Dirac KR-MCSCF module
@@ -4062,7 +4043,7 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
 
  
-     Data and time (Linux)  : Fri Aug 15 17:15:18 2008
+     Data and time (Linux)  : Sun Sep  7 16:17:25 2008
      Host name              : s42p02                                  
 
 
@@ -4223,13 +4204,18 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
  *******************************************************************************
 
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    1
+&&& Number of CI roots for this symmetry       1
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
  
-  NDET   flag call 
-  ------           
-  The number of CI dets will be computed.
- 
- 
-  
+
    The largest block of two-electron integrals is     20736
    Set LCSBLK to              100000000
 
@@ -4267,24 +4253,24 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND fi       0.010 seconds
+ Time in  Initializing MS4IND fi       0.020 seconds
  Time in  Computing+transform. i       0.700 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
-            Transformation ended Fri Aug 15 17:15:19 2008
+            Transformation ended Sun Sep  7 16:17:26 2008
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
  
-  KR-CI  flag call 
-  ------           
-    Running large-scale CI calculation
- 
- 
-  
+
    The largest block of two-electron integrals is     20736
    Set LCSBLK to              100000000
  
   Number of excitation types                     84
-  Allocating for                  59184  integrals.
-  Allocating for                    876  diagonal integrals.
+
+  Allocating for            59184 integrals.
+  Allocating for              876 diagonal integrals.
+
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
@@ -4316,47 +4302,47 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
               ::::::::::::::::::::::::   
                 Entering MICDV4 (rel)    
               ::::::::::::::::::::::::   
- 
- Info from iteration      1
- _______________________
+
+ Info from iteration     1
+___________________________
  Iter RNORM EIGAPR          1   .1405443481343E+00        -14.5746004413
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.03000069s( 0.00000000s)
- 
- Info from iteration      2
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.01999855s( 0.00000000s)
+
+ Info from iteration     2
+___________________________
  Iter RNORM EIGAPR          2   .2528627926509E-01        -14.6179150379
  Dimension of projected matrix:                     3
- >>>  CPU (WALL) TIME IN ITERATION:  0.04999924s( 0.00000000s)
- 
- Info from iteration      3
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.06000137s( 0.00000000s)
+
+ Info from iteration     3
+___________________________
  Iter RNORM EIGAPR          3   .3308419860533E-02        -14.6184347272
  Dimension of projected matrix:                     4
- >>>  CPU (WALL) TIME IN ITERATION:  0.07999992s( 0.00000000s)
- 
- Info from iteration      4
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.06999969s( 0.00000000s)
+
+ Info from iteration     4
+___________________________
  Iter RNORM EIGAPR          4   .3146459749276E-03        -14.6184395149
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.04000092s( 0.00000000s)
- 
- Info from iteration      5
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.04999924s( 0.00000000s)
+
+ Info from iteration     5
+___________________________
  Iter RNORM EIGAPR          5   .3936801977320E-04        -14.6184395699
  Dimension of projected matrix:                     3
  >>>  CPU (WALL) TIME IN ITERATION:  0.05999947s( 0.00000000s)
- 
- Info from iteration      6
- _______________________
+
+ Info from iteration     6
+___________________________
  Iter RNORM EIGAPR          6   .5563674103469E-05        -14.6184395713
  Dimension of projected matrix:                     4
  >>>  CPU (WALL) TIME IN ITERATION:  0.07999992s( 0.00000000s)
- 
- Info from iteration      7
- _______________________
+
+ Info from iteration     7
+___________________________
  Iter RNORM EIGAPR          7   .4285079330082E-06        -14.6184395713
- >>>  CPU (WALL) TIME IN ITERATION:  0.01000023s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.00000000s( 0.00000000s)
  
  *++++++++++++++++++++++++++++++++++++++++++++*
  
@@ -4374,19 +4360,19 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
   *************************************************************
   ************* Natural orbital occupation numbers ************
   *************************************************************
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
  
-  DENS1  flag call 
-  ------           
-    Computing only 1-particle density matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is     20736
    Set LCSBLK to              100000000
  
   Number of excitation types                     16
-  Allocating for                    288  integrals.
-  Allocating for                    876  diagonal integrals.
+
+  Allocating for              288 integrals.
+  Allocating for              876 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -4440,14 +4426,17 @@ SOfock:SL  1.00D-12    4.62%   20.58%   13.36%   27.58%   0.03000069s
 
  (ROPTST)  KR-CI calculation ended after   16 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  1.20999908s( 1.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  1.21999931s( 1.00000000s)
+
+
+
 
  
-     Data and time (Linux)  : Fri Aug 15 17:15:19 2008
+     Data and time (Linux)  : Sun Sep  7 16:17:26 2008
      Host name              : s42p02                                  
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 14, stime: 3, minflt: 266524, majflt: 0, nvcsw: 10, nivcsw: 25
+>>>> Node 0, utime: 14, stime: 3, minflt: 266544, majflt: 0, nvcsw: 10, nivcsw: 57
 >>>> Total WALL time used in DIRAC: 19s

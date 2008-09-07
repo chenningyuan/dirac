@@ -1,5 +1,4 @@
 DIRAC serial allocating 125000000 words (953 MB) of memory
-DIRAC serial will attempt to use at most 288230376151711743 words (953 MB) of memory in dynamic allocations
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -135,12 +134,12 @@ DIRAC serial will attempt to use at most 288230376151711743 words (953 MB) of me
  Operating system  : Linux 2.6.16.21-0.13-smp
  Machine           : x86_64
  Run               : Sequential
- Last compilation  : 17:04:31 Aug 15 2008 (by stefan@fe4)
+ Last compilation  : 16:10:17 Sep  7 2008 (by stefan@fe4)
  FORTRAN compiler  : ifort -g -O3 -ip -w -assume byterecl -i8 -module /people/disk2/stefan/prog/dirac/parallel/check_in_test/trunk/modules 
  C compiler        : icc -g -O3 -ip -w 
 
  
-     Data and time (Linux)  : Fri Aug 15 19:42:45 2008
+     Data and time (Linux)  : Sun Sep  7 16:13:18 2008
      Host name              : s42p02                                  
 
 
@@ -176,12 +175,10 @@ LUCIAREL
  0
 .MK2DEL
  4
-.SYMMETRY
- 1
+.CIROOTS
+ 1  1
 .MAX CI
  16
-.CIROOT
- 1
 .MXCIVE
  4
 .NOOCCN
@@ -611,6 +608,10 @@ Point group: D2h
  * Allowed interval of 2 * MK :  -4 to   4
  * Using symmetry nomenclature for LUCIAREL. 
       Boson and Fermion irreps of complex (sub)groups  
+
+ * Number of CI roots to be optimized in each symmetry:
+    1
+
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
    SL-integrals from iteration    0
@@ -619,7 +620,7 @@ Point group: D2h
 ===========================================================================
  Control parameters for KR-CI optimization
 ===========================================================================
- * Maximum number of CI iterations:  16
+ * Maximum number of CI iterations for each symmetry:  16
  * Maximum subspace dimension set to   4
  * Calculation of nat. orb. occ. numbers
 
@@ -681,54 +682,54 @@ Total no. of orbitals      (NORB):    50      24      74
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   1 ##########   Sun Sep  7 16:13:18 2008
 
-It.   1    -9.149803290050      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Aug 15
+It.   1    -9.149803290050      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Sun Sep  7
 
-########## START ITERATION NO.   2##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   2##########   Sun Sep  7 16:13:18 2008
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   68.18%    9.42%    5.99%    6.90%   0.00000000s
 SOfock:SL  1.00D-12   61.15%   11.73%    5.20%    9.96%   0.02000004s
-SOfock:SS  1.00D-12   59.21%   14.66%    3.81%   10.86%   0.02999997s
+SOfock:SS  1.00D-12   59.21%   14.66%    3.81%   10.86%   0.04000002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.07999998s
+>>> Total CPU-time : 0.09000003s
 
-########## END ITERATION NO.   2 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   2 ##########   Sun Sep  7 16:13:18 2008
 
-It.   2    -14.52805209381      5.38D+00  4.34D+00  5.55D-01               0.07999998s   LL SL SS       Fri Aug 15
+It.   2    -14.52805209381      5.38D+00  4.34D+00  5.55D-01               0.09000003s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   3##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   3##########   Sun Sep  7 16:13:18 2008
 
     3 *** Differential density matrix. DCOVLP     = 0.8081
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   68.18%    9.55%    5.34%    6.94%   0.01000005s
-SOfock:SL  1.00D-12   61.01%   12.91%    5.02%    9.98%   0.00999999s
+SOfock:LL  1.00D-12   68.18%    9.55%    5.34%    6.94%   0.00000000s
+SOfock:SL  1.00D-12   61.01%   12.91%    5.02%    9.98%   0.01999998s
 SOfock:SS  1.00D-12   59.21%   17.39%    3.68%   10.99%   0.03999996s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.06000000s
+>>> Total CPU-time : 0.05999994s
 
-########## END ITERATION NO.   3 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   3 ##########   Sun Sep  7 16:13:18 2008
 
-It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06000000s   LL SL SS       Fri Aug 15
+It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.05999994s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   4##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   4##########   Sun Sep  7 16:13:18 2008
 
     4 *** Differential density matrix. DCOVLP     = 0.9939
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   68.18%    9.80%    4.17%    5.89%   0.00999999s
+SOfock:LL  1.00D-12   68.18%    9.80%    4.17%    5.89%   0.00000000s
 SOfock:SL  1.00D-12   61.01%   15.38%    3.68%   10.14%   0.00999999s
 SOfock:SS  1.00D-12   59.21%   22.25%    3.47%   10.98%   0.04000008s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.06000006s
 
-########## END ITERATION NO.   4 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   4 ##########   Sun Sep  7 16:13:18 2008
 
-It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000006s   LL SL SS       Fri Aug 15
+It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000006s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   5##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   5##########   Sun Sep  7 16:13:18 2008
 
     5 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -738,11 +739,11 @@ SOfock:SS  1.00D-12   59.21%   24.85%    3.37%   10.99%   0.03999996s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.05999994s
 
-########## END ITERATION NO.   5 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   5 ##########   Sun Sep  7 16:13:18 2008
 
-It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Fri Aug 15
+It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   6##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   6##########   Sun Sep  7 16:13:18 2008
 
     6 *** Differential density matrix. DCOVLP     = 0.9996
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -750,53 +751,53 @@ SOfock:LL  1.00D-12   58.71%   18.42%    2.51%    5.44%   0.00000000s
 SOfock:SL  1.00D-12   57.53%   21.63%    2.80%   10.49%   0.01999998s
 SOfock:SS  1.00D-12   59.21%   28.34%    3.26%   11.02%   0.02999997s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05999994s
+>>> Total CPU-time : 0.04999995s
 
-########## END ITERATION NO.   6 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   6 ##########   Sun Sep  7 16:13:18 2008
 
-It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.05999994s   LL SL SS       Fri Aug 15
+It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.04999995s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   7##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   7##########   Sun Sep  7 16:13:18 2008
 
     7 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   68.18%   11.15%    1.97%    6.19%   0.00000000s
-SOfock:SL  1.00D-12   61.01%   21.05%    2.81%    9.60%   0.02000010s
-SOfock:SS  1.00D-12   59.21%   33.34%    3.23%   11.77%   0.02999997s
+SOfock:SL  1.00D-12   61.01%   21.05%    2.81%    9.60%   0.01000011s
+SOfock:SS  1.00D-12   59.21%   33.34%    3.23%   11.77%   0.03999996s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.05000007s
 
-########## END ITERATION NO.   7 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   7 ##########   Sun Sep  7 16:13:18 2008
 
-It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Fri Aug 15
+It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   8##########   Fri Aug 15 19:42:45 2008
+########## START ITERATION NO.   8##########   Sun Sep  7 16:13:18 2008
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   58.71%   20.01%    2.04%    5.74%   0.00000000s
+SOfock:LL  1.00D-12   58.71%   20.01%    2.04%    5.74%   0.00999999s
 SOfock:SL  1.00D-12   57.53%   25.78%    2.09%   10.35%   0.00999999s
 SOfock:SS  1.00D-12   59.21%   35.37%    3.17%   12.63%   0.04000008s
->>> Total wall time: 1.00000000s
+>>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.06000006s
 
-########## END ITERATION NO.   8 ##########   Fri Aug 15 19:42:45 2008
+########## END ITERATION NO.   8 ##########   Sun Sep  7 16:13:18 2008
 
-It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06000006s   LL SL SS       Fri Aug 15
+It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06000006s   LL SL SS       Sun Sep  7
 
-########## START ITERATION NO.   9##########   Fri Aug 15 19:42:46 2008
+########## START ITERATION NO.   9##########   Sun Sep  7 16:13:18 2008
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   58.71%   22.94%    1.23%    6.41%   0.00999999s
-SOfock:SL  1.00D-12   60.69%   27.98%    1.36%   10.70%   0.00999999s
+SOfock:LL  1.00D-12   58.71%   22.94%    1.23%    6.41%   0.00000000s
+SOfock:SL  1.00D-12   60.69%   27.98%    1.36%   10.70%   0.01999998s
 SOfock:SS  1.00D-12   68.80%   30.24%    0.32%   17.47%   0.02999997s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.05999994s
+>>> Total CPU-time : 0.04999995s
 
-########## END ITERATION NO.   9 ##########   Fri Aug 15 19:42:46 2008
+########## END ITERATION NO.   9 ##########   Sun Sep  7 16:13:18 2008
 
-It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.05999994s   LL SL SS       Fri Aug 15
+It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.04999995s   LL SL SS       Sun Sep  7
 
 
                                    SCF - CYCLE
@@ -812,20 +813,20 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -9.149803290050      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Aug 15
-It.   2    -14.52805209381      5.38D+00  4.34D+00  5.55D-01               0.07999998s   LL SL SS       Fri Aug 15
-It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.06000000s   LL SL SS       Fri Aug 15
-It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000006s   LL SL SS       Fri Aug 15
-It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Fri Aug 15
-It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.05999994s   LL SL SS       Fri Aug 15
-It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Fri Aug 15
-It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06000006s   LL SL SS       Fri Aug 15
-It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.05999994s   LL SL SS       Fri Aug 15
+It.   1    -9.149803290050      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Sun Sep  7
+It.   2    -14.52805209381      5.38D+00  4.34D+00  5.55D-01               0.09000003s   LL SL SS       Sun Sep  7
+It.   3    -14.57391189783      4.59D-02 -3.08D-01  4.68D-02   DIIS   2    0.05999994s   LL SL SS       Sun Sep  7
+It.   4    -14.57518357334      1.27D-03 -2.92D-02  7.32D-03   DIIS   3    0.06000006s   LL SL SS       Sun Sep  7
+It.   5    -14.57523033401      4.68D-05 -5.40D-03  6.27D-04   DIIS   4    0.05999994s   LL SL SS       Sun Sep  7
+It.   6    -14.57523072086      3.87D-07 -4.93D-04  4.56D-05   DIIS   5    0.04999995s   LL SL SS       Sun Sep  7
+It.   7    -14.57523072476      3.90D-09 -2.86D-05  8.48D-06   DIIS   6    0.05000007s   LL SL SS       Sun Sep  7
+It.   8    -14.57523072490      1.41D-10 -3.59D-06  1.91D-07   DIIS   7    0.06000006s   LL SL SS       Sun Sep  7
+It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.04999995s   LL SL SS       Sun Sep  7
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL SS     :    0.12500000s
+      LL SL SS     :    0.00000000s
 
 
                                    TOTAL ENERGY
@@ -902,19 +903,24 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
 
  *******************************************************************************
 
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.    1
+&&& Number of CI roots for this symmetry       1
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
  
-  NDET   flag call 
-  ------           
-  The number of CI dets will be computed.
- 
- 
-  
+
    The largest block of two-electron integrals is    141121
    Set LCSBLK to              100000000
 
  (RSETCI) Number of determinants:       8206 (dimension       8206)
 
- CPU (Wall) time for generation of determinants:  0.00000000s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.00999999s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -937,35 +943,34 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   5 of  10 after      0. seconds and      0. CPU-seconds
-   - Beginning task   6 of  10 after      0. seconds and      0. CPU-seconds
-   - Beginning task   7 of  10 after      0. seconds and      0. CPU-seconds
-   - Beginning task   8 of  10 after      0. seconds and      0. CPU-seconds
-   - Beginning task   9 of  10 after      0. seconds and      0. CPU-seconds
-   - Beginning task  10 of  10 after      0. seconds and      0. CPU-seconds
- - Starting symmetrization after           0.00 seconds
- - Finished symmetrization after           0.00 seconds
+   - Beginning task   5 of  10 after      1. seconds and      0. CPU-seconds
+   - Beginning task   6 of  10 after      1. seconds and      0. CPU-seconds
+   - Beginning task   7 of  10 after      1. seconds and      0. CPU-seconds
+   - Beginning task   8 of  10 after      1. seconds and      0. CPU-seconds
+   - Beginning task   9 of  10 after      1. seconds and      0. CPU-seconds
+   - Beginning task  10 of  10 after      1. seconds and      0. CPU-seconds
+ - Starting symmetrization after           1.00 seconds
+ - Finished symmetrization after           1.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND fi       0.010 seconds
- Time in  Computing+transform. i       0.760 seconds
+ Time in  Computing+transform. i       0.770 seconds
 
- (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:00)
-            Transformation ended Fri Aug 15 19:42:46 2008
+ (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
+            Transformation ended Sun Sep  7 16:13:19 2008
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
  
-  KR-CI  flag call 
-  ------           
-    Running large-scale CI calculation
- 
- 
-  
+
    The largest block of two-electron integrals is    141121
    Set LCSBLK to              100000000
  
   Number of excitation types                    342
-  Allocating for                 411176  integrals.
-  Allocating for                   3197  diagonal integrals.
+
+  Allocating for           411176 integrals.
+  Allocating for             3197 diagonal integrals.
+
  
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
@@ -998,65 +1003,65 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
               ::::::::::::::::::::::::   
                 Entering MICDV4 (rel)    
               ::::::::::::::::::::::::   
- 
- Info from iteration      1
- _______________________
+
+ Info from iteration     1
+___________________________
  Iter RNORM EIGAPR          1   .1754279919249E+00        -14.5752307249
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.32999992s( 0.00000000s)
- 
- Info from iteration      2
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.31999993s( 1.00000000s)
+
+ Info from iteration     2
+___________________________
  Iter RNORM EIGAPR          2   .5120977185435E-01        -14.6163564548
  Dimension of projected matrix:                     3
- >>>  CPU (WALL) TIME IN ITERATION:  0.60999966s( 1.00000000s)
- 
- Info from iteration      3
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.59000015s( 0.00000000s)
+
+ Info from iteration     3
+___________________________
  Iter RNORM EIGAPR          3   .9422011894742E-02        -14.6190292412
  Dimension of projected matrix:                     4
- >>>  CPU (WALL) TIME IN ITERATION:  0.68000031s( 0.00000000s)
- 
- Info from iteration      4
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.67000008s( 1.00000000s)
+
+ Info from iteration     4
+___________________________
  Iter RNORM EIGAPR          4   .2057500347775E-02        -14.6190946716
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.59999943s( 1.00000000s)
- 
- Info from iteration      5
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.57999992s( 1.00000000s)
+
+ Info from iteration     5
+___________________________
  Iter RNORM EIGAPR          5   .6158447348414E-03        -14.6190984800
  Dimension of projected matrix:                     3
- >>>  CPU (WALL) TIME IN ITERATION:  0.63000011s( 0.00000000s)
- 
- Info from iteration      6
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.61999989s( 0.00000000s)
+
+ Info from iteration     6
+___________________________
  Iter RNORM EIGAPR          6   .1902451907380E-03        -14.6190990418
  Dimension of projected matrix:                     4
- >>>  CPU (WALL) TIME IN ITERATION:  0.70000029s( 1.00000000s)
- 
- Info from iteration      7
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.68000031s( 1.00000000s)
+
+ Info from iteration     7
+___________________________
  Iter RNORM EIGAPR          7   .4344285954943E-04        -14.6190990769
  Dimension of projected matrix:                     2
- >>>  CPU (WALL) TIME IN ITERATION:  0.59999990s( 1.00000000s)
- 
- Info from iteration      8
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.57999945s( 0.00000000s)
+
+ Info from iteration     8
+___________________________
  Iter RNORM EIGAPR          8   .1013232901418E-04        -14.6190990787
  Dimension of projected matrix:                     3
- >>>  CPU (WALL) TIME IN ITERATION:  0.63000011s( 0.00000000s)
- 
- Info from iteration      9
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.60000038s( 1.00000000s)
+
+ Info from iteration     9
+___________________________
  Iter RNORM EIGAPR          9   .3133244766831E-05        -14.6190990788
  Dimension of projected matrix:                     4
- >>>  CPU (WALL) TIME IN ITERATION:  0.68999958s( 1.00000000s)
- 
- Info from iteration     10
- _______________________
+ >>>  CPU (WALL) TIME IN ITERATION:  0.69999933s( 1.00000000s)
+
+ Info from iteration    10
+___________________________
  Iter RNORM EIGAPR         10   .1003253931450E-05        -14.6190990788
- >>>  CPU (WALL) TIME IN ITERATION:  0.03000069s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.01000023s( 0.00000000s)
  
  *++++++++++++++++++++++++++++++++++++++++++++*
  
@@ -1074,19 +1079,19 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
   *************************************************************
   ************* Natural orbital occupation numbers ************
   *************************************************************
+  //  LUCIAREL called
+  //  CIRUN = DENS1 
+  //  Computing only 1-particle density matrices
  
-  DENS1  flag call 
-  ------           
-    Computing only 1-particle density matrices.
- 
- 
-  
+
    The largest block of two-electron integrals is    141121
    Set LCSBLK to              100000000
  
   Number of excitation types                     36
-  Allocating for                    578  integrals.
-  Allocating for                   3197  diagonal integrals.
+
+  Allocating for              578 integrals.
+  Allocating for             3197 diagonal integrals.
+
  
   NOTICE from DIST_INTS_SIGDEN: 
     Running in real algebra. 
@@ -1152,14 +1157,17 @@ It.   9    -14.57523072490     -3.55D-15 -2.55D-08  3.15D-09   DIIS   7    0.059
 
  (ROPTST)  KR-CI calculation ended after   16 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  7.58000016s( 7.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  7.38999987s( 8.00000000s)
+
+
+
 
  
-     Data and time (Linux)  : Fri Aug 15 19:42:53 2008
+     Data and time (Linux)  : Sun Sep  7 16:13:26 2008
      Host name              : s42p02                                  
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 7, stime: 1, minflt: 249886, majflt: 0, nvcsw: 10, nivcsw: 22
+>>>> Node 0, utime: 7, stime: 1, minflt: 249911, majflt: 0, nvcsw: 10, nivcsw: 23
 >>>> Total WALL time used in DIRAC: 9s
