@@ -173,6 +173,7 @@ void sysinf_(int *parcal)
 
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
+   printf(" Changeset         : %s \n", VERSION);
    fflush(stdout);
    free(un);
 }
