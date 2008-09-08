@@ -15,14 +15,17 @@ dft/fun-tester.c
 relccsd/ccunix.c
 relccsd/ccdriv_nomemget.F
 relccsd/ccints_nomemget.F
+reladc/.*
 test/.*
 fmm/.*
 gp/xml/.*
 abacus/hercen.F
 gp/graphic.F
+eri/.*
 eri/eri2par.F
 eri/eriprg.F
 densfit/denfit_noddy.F
+densfit/.*
 prp/oldrvc.F
 relccsd/quit.F
 relccsd/ccmain.F
@@ -30,3 +33,5 @@ dirrci/cimain.F
 embedding/.*
 lucita/unused.F
 krmv/.*
+amfi/.*
+prp/xpp/.*
