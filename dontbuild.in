@@ -5,6 +5,7 @@ oof/.*
 utils/.*
 aoresponse/.*
 visual/.*
+cdft/.*
 hsmrcc/.*
 hsmrcc/hsmrcc_external/.*
 hsmrcc/second_quant/.*
