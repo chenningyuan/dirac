@@ -35,23 +35,6 @@
 # miro: Still place for further improvements,  modularisation etc
 #
 
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#   General purpose functions
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-append () {
-# Append $2 to the variable with the name $1
-# TODO: Should also escape single quotes in input
-  if [ -z "$1" ]; then
-    eval "$1='$2'"
-  else
-    eval "headval=\$$1"
-    eval "$1='$headval $2'"
-  fi
-}
-
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -62,7 +45,6 @@ quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
-#debug='dbx'
 
 # default - no IBM mode
 IBMMOD=0
@@ -83,6 +65,124 @@ fi
 # Is 'locate' installed?
 #which locate > /dev/null; locate_ok=$?
 #
+}
+
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#   General purpose functions (MAINLY LAYOUT)
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+append () {
+# Append $2 to the variable with the name $1
+# TODO: Should also escape single quotes in input
+  if [ -z "$1" ]; then
+    eval "$1='$2'"
+  else
+    eval "headval=\$$1"
+    eval "$1='$headval $2'"
+  fi
+}
+
+next_item () {
+# Splits a list into item and the remainder
+eval "tmp_2=\$$2"
+# Strip leading blank
+local size=`expr length "$tmp_2"`
+local tmp_2=`expr substr "$tmp_2" 2 $size`
+local index=`expr index "$tmp_2" ' '`
+if [ "$index" -eq 0 ]; then
+  local tmp_1=$tmp_2
+else
+  index=`expr $index - 1`
+  local tmp_1=`expr substr "$tmp_2" 1 $index`
+  index=`expr $index + 1`
+  if [ $index -lt 1 ]; then 
+    index=1
+  fi  
+  size=`expr length "$tmp_2"` 
+  tmp_2=`expr substr "$tmp_2" $index $size` 
+fi
+eval "$1=\"$tmp_1\""
+eval "$2=\"$tmp_2\""
+}
+
+str_len () {
+# Determines the length of the longest string in a list
+  local max_len=0
+  for item in $1; do
+    item_len=`expr length $item`
+    if [  "$item_len" -gt "$max_len" ]; then
+      max_len=`expr $item_len + 0`
+    fi
+  done
+  return $max_len
+}
+
+list_len () {
+# returs the length of a list
+  local counter=0
+  for item in $1; do
+    counter=`expr $counter + 1`
+  done
+  return $counter
+}
+
+blank () {
+# Adds $1 blanks to a line.
+  local counter=0
+  local tmp=""
+  while [ "$counter" -lt "$1" ]; do
+    counter=`expr $counter + 1`
+    tmp="$tmp "
+  done
+# Adds all blanks at the same time for performance
+# Is there a way to surpress immediate refresh of the terminal window?
+#   One solution is to build a complete string of every line
+#   and print it only to screen when it's completely finished.
+  $echo -n "$tmp"
+}
+
+
+print_list() {
+# Prints two formatted lists including numbers etc.
+# Number of blanks between the columns
+  col_sep=4
+# Make local copies of the lists
+  local list_1="$1"
+  local list_2="$2"
+# Get the widths of both columns
+  str_len "$list_1"
+  local size_1=$?
+  size_1=`expr $size_1 + $col_sep`
+  
+# Set the first index of the list
+  if [ -z $3 ]; then
+    local counter=1
+  else
+    local counter=$3 #`expr $3 + 0`
+  fi
+
+# The actual printing...
+# Here we have the possibility to make the layout terminalsize dependend
+# The system variable $COLUMNS needs to be queried to do this.
+  for item in $list_1; do
+    if [ "$counter" -lt 10 ]; then 
+      $echo -n "$counter)  $item"
+    else
+      $echo -n "$counter) $item"
+    fi
+# Add blanks till we are aligned at the second column
+    index=`expr length "$item"`
+    index=`expr $size_1 - $index`
+    blank $index
+# Get the corresponding item in the second list
+    next_item tmpstr list_2
+# Print the item in the second list
+    $echo "($tmpstr)"
+    counter=`expr $counter + 1`
+  done
 }
 
 
@@ -372,7 +472,7 @@ safeflags_stuff() {
 #  'configure' argument list
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-if [ "$nooptim" = 1 ]; then
+if [ $nooptim = 1 ]; then
   echo
   echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
   echo
@@ -469,11 +569,10 @@ if [ "$mesp" = "mpi" ]; then
 fi
 find_compiler "Fortran" $F90_COMP
 F90_COMP=$comp_found
-F90_COMP_PWD=`which $F90_COMP`
+F90_PATH=$comp_pwd
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_fortran: found F90 compiler ' $F90_COMP
- echo 'compiler_fortran: F90 compiler with full path '$F90_COMP_PWD
 fi
 
 # take care of the 64 bit architecture !
@@ -489,7 +588,7 @@ fi
 compiler_c(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Sets up the C compiler
+#   Sets up the c compiler
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -500,11 +599,10 @@ if [ "$mesp" = "mpi" ]; then
 fi
 find_compiler "C" $CC_COMP
 CC_COMP=$comp_found
-CC_COMP_PWD=`which $CC_COMP`
+CC_PATH=$comp_pwd
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_c: got CC_COMP='$comp_found
- echo 'compiler_c :C-compiler with full path: '$CC_COMP_PWD 
 fi
 
 }
@@ -523,36 +621,27 @@ find_compiler ()  {
 $echo "\nChecking for $1 compilers:"
 comp_found=""
 comp_pwd=""
-comp_pwd_found=""
 
-search_dirs=`echo "$PATH" | tr : ' '` #${PATH//:/ }
+search_dirs=`echo "$PATH"|sed 's/:/ /g'`
+# BASH: search_dirs=${PATH//:/ }
 # Which doesn't work on mac!
 if [ ! -z "$2" ]; then
-  echo 'JHS Do some more test on this part!' 
+  $echo 'JHS Do some more test on this part!' 
   tmp_list=$comp_list
   comp_list=$2
   find_compiler $1
   if [ -z "$compiler_found"]; then
     exit
   fi
-  echo "Compiler specified by the user not found... Checking for the standard compilers."
+  $echo "Compiler specified by the user not found... Checking for the standard compilers."
 fi
+#comp_pwd=""
 for comp in $comp_list; do
-  if [ -f $comp ]; then
-    append comp_found "$comp" 
-    append comp_pwd "$comp"
-    append comp_pwd_found "$comp"
-  fi
+# Only search in $PATH
   for cur_dir in $search_dirs; do
     if [ -f $cur_dir/$comp ]; then
       append comp_found "$comp"
-      append comp_pwd "$cur_dir"
-      append comp_pwd_found "$cur_dir/$comp"
-
-      if [ $IPRINT -ge "8" ]; then
-         $echo 'find_compiler> directory/compiler found: '$cur_dir/$comp
-         $echo 'find_compiler> actual comp_pwd_found='$comp_pwd_found
-      fi
+      comp_pwd="$comp_pwd $cur_dir"
     fi
   done
 done
@@ -584,13 +673,10 @@ case $counter in
     echo  " Specify a compiler manually: "
     exit ;;
   * )
-    $echo "\n These following $1 compilers were detected on your system:"
-    counter=0
-    for comp in $comp_pwd_found; do
-      counter=`expr $counter + 1`
-      $echo "$counter) $comp "
-    done
-    $echo "0) Specify compiler manually."      
+    $echo "\nThe following $1 compilers were detected on your system: \n"
+    print_list "$comp_found" "$comp_pwd"
+    $echo "0)  Specify compiler manually."      
+    $echo ""
   ;;
 esac
    
@@ -609,30 +695,27 @@ elif [ $comp_index -eq 0 ]; then
     echo "Check Makefile.config afterwards !"
     echo ""
     $echo "Enter you compiler:\c"
-    read comp_found
-  #miro: verify entered compiler
-    comp_found_verify=`which $comp_found`
-    if [ ! -z "$comp_found_verify" ]; then
-      $echo 'Compiler with its full path is: '$comp_found_verify
-    else
-      $echo "\n Entered '$comp_found' can not be found on your system using which command !\n"
-      $echo "Therefore error exit !"
-      exit
-    fi
+    read comp_foud
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
     counter=0 
     for comp in $comp_found; do
-   # for comp in $comp_pwd_found; do
 	counter=`expr $counter + 1`
+        next_item tmp comp_pwd
 	if [ $counter -eq $comp_index ]; then
 	    comp_found=$comp
+            comp_pwd=$tmp
 	    break
 	fi
     done 
 fi
 
-$echo "\nCompiler for $1: $comp_found"
+if [ ! -z "$comp_pwd" ]; then
+  if [ "$comp_pwd" != "/" ]; then
+    comp_pwd="$comp_pwd/"
+  fi
+fi 
+echo "Compiler for $1: $comp_found"
 }
 
 find_real_f90(){
@@ -702,29 +785,44 @@ openmpicc| mpicc)
 esac   
 }
 
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
 find_debugger(){
 ###############################################################
 #
 #   search for debugger and put "the best" into pam
 #
 ###############################################################
-
-debug=''
+ 
 
 if [ $IPRINT -ge "8" ]; then
    echo "find_debugger...looking for debuggers"
 fi
 
-### looking priority: idb, pgdbg, dbx, gdb ....
-if [ ! -z `which idb` ]; then
-    debug="idb"
-elif [ ! -z `which pgdbg` ]; then 
-    debug="pgdbg"
-elif [ ! -z `which dbx` ]; then 
-    debug="dbx"
-elif [ ! -z `which gdb` ]; then 
-    debug="gdb"
+debug='dbx'
+which_debug=''
+# jhs Tmpfix for non-unix sytems
+if [ -f "/usr/bin/which" ]; then
+  ### looking priority: idb, pgdbg, dbx, gdb ....
+  if [ ! -z `which idb 2>/dev/null` ]; then
+    which_debug="idb"
+  elif [ ! -z `which pgdbg 2>/dev/null` ]; then 
+    which_debug="pgdbg"
+  elif [ ! -z `which dbx 2>/dev/null` ]; then 
+    which_debug="dbx"
+  elif [ ! -z `which gdb 2>/dev/null` ]; then 
+    which_debug="gdb"
+  fi
+fi
+
+if [ -z $which_debug ]; then
+  case $machine in
+     i[3-6]86-*|x86_64-*|ia64-unknown-linux|*apple*)
+        debug="gdb"
+     ;;
+  esac
+else
+  debug=$which_debug
 fi
 
 if [ -z "$debug" ]; then
@@ -733,8 +831,8 @@ else
    $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
 fi
 
-}
 
+}
 
 search_math_libs(){
 #
@@ -743,8 +841,8 @@ search_math_libs(){
   echo "Searching for the mathematical libraries... "
   echo
 
-  lib_names=""
-  lib_dir=""
+  lib_names="dirac_blas dirac_lapack"
+  lib_dirs=" SLOW SLOW"
 
   if [ $IPRINT -ge "8" ]; then
       echo 'search_math_libs:   lib_list=' $lib_list
@@ -756,7 +854,8 @@ search_math_libs(){
     for test_dir in $math_dirs; do
       for ext in $ext_list; do
         if test -f $test_dir/$test_lib$ext; then
-	  lib_names="$lib_names $test_dir/$test_lib"
+	  append lib_names $test_lib
+          append lib_dirs $test_dir
 	  break
         fi
       done
@@ -778,24 +877,25 @@ setup_math_lib(){
   fi
 
   case "$1" in
-    libesslp2) LIB="-L$2 -lesslp2";;
-    libessl) LIB="-L$2 -lessl";;
+    libesslp2) append LIB "-L$2 -lesslp2";;
+    libessl) append LIB "-L$2 -lessl";;
 #For later use we note that we found an optimized blas library
-  #  libblas) LIB="-L$2 -lblas" ;;
-    libblas) LIB="-L$2 -lblas -llapack" ;;
+  #  libblas) append LIB "-L$2 -lblas" ;;
+    libblas) append LIB "-L$2 -lblas" ;;
+    liblapack) append LIB "-L$2 -llapack" ;;
 #   ...  both blas and lapack
-#    libblas_liblapack) LIB="-L$2 -lblas -llapack" ;;
+#    libblas_liblapack) append LIB "-L$2 -lblas -llapack" ;;
 #For Atlas you need to link with lf77blas as well
-    libatlas) LIB="-L$2 -llapack -lcblas -lf77blas -latlas";;
-    libdxml) LIB="-L$2 -ldxml";;
-    libcomplib.sgimath) LIB="-L$2 -lcomplib.sgimath";;
-    libveclib) LIB="-L$2 -lveclib";;
-    libmath) LIB="-L$2 -lmath -lm -nx";;
-    libmkl) LIB="-L$2 -lmkl_lapack -lguide -lpthread -lmkl"
+    libatlas) append LIB "-L$2 -llapack -lcblas -lf77blas -latlas";;
+    libdxml) append LIB "-L$2 -ldxml";;
+    libcomplib.sgimath) append LIB "-L$2 -lcomplib.sgimath";;
+    libveclib) append LIB "-L$2 -lveclib";;
+    libmath) append LIB "-L$2 -lmath -lm -nx";;
+    libmkl) append LIB "-L$2 -lmkl_lapack -lguide -lpthread -lmkl"
             optblas=$2;;
-    libmkl_ipf) LIB="-L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
+    libmkl_ipf) append LIB "-L$2 -lmkl_lapack -lmkl_ipf -lguide -ldl "
                       optblas=$2;;
-    libmkl_itp) LIB="-L$2 -lguide -lpthread -lmkl_itp"
+    libmkl_itp) append LIB "-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
   esac
 
@@ -812,6 +912,9 @@ setup_math_lib(){
     case "$use_blas" in
       "yes" | "y" | "Y" ) ;;
       *)
+        $echo "Please specify the libraries again."
+        lib_names=""
+        lib_dirs=""
         get_math_lib ;;
     esac
   fi
@@ -827,9 +930,15 @@ get_math_lib(){
 #    Grep for the mathematical library names.
 #    Split the found libs into a directory path, and a name.
 
+# Initialize global variables
+LIB=""
+
 search_math_libs
+list_len "$lib_names"
+max_lib=$?
 
 # If there is found more than one compiler let the user pick it.
+
 
 if [ $IPRINT -ge "5" ];  then
  echo '\n get_math_lib: lib_names='$lib_names
@@ -841,96 +950,98 @@ else
   echo "No optimized mathematical libraries were detected on your system:"
 fi
 
-counter=1
-for tmp_library in $lib_names; do
-  counter=`expr $counter + 1`
-  $echo "$counter) $tmp_library"
-done
+# 0 and 1 are reserved for respectively manual configuration and searchig.
+print_list "$lib_names" "$lib_dirs" 2
+max_lib=`expr $max_lib + 2`
+
 #
 #if [ ! -z "$both_blas_lapack" ]; then
 #  counter=`expr $counter + 1`
 #  $echo "$counter) both lapack and blas"
 #fi
 #
-$echo "1) Specify a library path. \t\c"
+$echo "1)  Specify a library path to search. \t\c"
 #
-echo "0) Built in libraries (SLOW) or manual configuration."
+$echo "0) Configure libraries manually."
+$echo
 
-echo
 lib_index=-1
 
 $echo "Which library you you want to use? \c"
-if [ $counter -gt 1 ]; then
-  $echo "(Default: 2) \c"
+if [ $max_lib -gt 4 ]; then
+  $echo "(More than one allowed. Default: 4 5) \c" 
+elif [ $max_lib -gt 3 ]; then
+  $echo "(More than one allowed. Default: 4) \c"
 else
-  $echo "(Default: 0) \c"
+  $echo "(More than one allowed. Default: 0) \c"
 fi
 read lib_index
+$echo ""
 
+lib_index="$lib_index"
 if [ -z "$lib_index" ]; then
-  if [ $counter -gt 1 ]; then
-    lib_index=2
+  if [ $max_lib -gt 4 ]; then
+    lib_index=" 4 5"
+  elif [ $max_lib -gt 3 ]; then
+    lib_index=" 4"
   else
-    lib_index=0
+    lib_index=" 0"
   fi
 fi
+# Transform possible seperators to spaces
+  lib_index=`echo "$lib_index" | sed 's/,/ /g'`
+# etc
+#
+for index in $lib_index; do 
+  if [ $index -lt 0 -o $index -gt $max_lib ]; then
+    echo "Not a valid compiler number: $index"
+    get_math_lib
+  elif [ $index -eq 0 ]; then
+    $echo "No libraries are included at this moment."
+    $echo "To add the libraries yourself edit Makefile.config manually!"
+    break
+  elif [ $index -eq 1 ]; then
+    $echo "Enter a directory to search: \c"
+    read math_dirs
+    $echo "Also search it's subdirectories? (y/N) \c"
+    read rec_search
 
-if [ $lib_index -lt 0 -o $lib_index -gt $counter ]; then
-  echo "Not a valid compiler number: $lib_index"
-  get_math_lib
-elif [ $lib_index -eq 0 ]; then
-  $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? (y/N) \c'
-  read defblas
-  case "$defblas" in
-    "yes" | "y" | "Y" )
-      cpp_f90="$cpp_f90 -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK" ;;
-    *)
-      echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
-       ;;
-  esac
+    echo
+    echo "Building a list of subdirectories of: $math_dirs ... "
+    if [ ! -z "$math_dirs" ]; then
+      case $rec_search in
+      "yes" | "y" | "Y" )
+        math_dirs=`find $math_dirs -type d -print`;;
+      esac
+    fi
+    get_math_lib
+  elif [ $index -eq 2 ]; then
+    $echo "Default BLAS used."
+    append cpp_f90 "-DUSE_DIRAC_BLAS"
+  elif [ $index -eq 3 ]; then
+    $echo "Default LAPACK used."
+    append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
+  elif [ ! -z $index ]; then
 
-elif [ $lib_index -eq 1 ]; then
-  $echo "Enter a directory to search: \c"
-  read math_dirs
-  $echo "Also search it's subdirectories? (y/N) \c"
-  read rec_search
-
-  echo
-  echo "Building a list of subdirectories of: $math_dirs ... "
-  if [ ! -z "$math_dirs" ]; then
-    case $rec_search in
-    "yes" | "y" | "Y" )
-      math_dirs=`find $math_dirs -type d -print`;;
-    esac
+    counter=1
+    for tmp_library in $lib_names; do
+      counter=`expr $counter + 1`
+      if [ $counter -eq $index ]; then
+        lib_name=$tmp_library
+        break
+      fi
+    done
+    counter=1
+    for tmp_dir in $lib_dirs; do
+      counter=`expr $counter + 1`
+      if [ $counter -eq $index ]; then
+        lib_dir=$tmp_dir
+        break
+      fi
+    done
+    setup_math_lib $lib_name $lib_dir
   fi
-
-  get_math_lib
-else
-  counter=1
-  for tmp_library in $lib_names; do
-    counter=`expr $counter + 1`
-    if [ $counter -eq $lib_index ]; then
-      lib_name=$tmp_library
-      break
-    fi
-  done
-  for tmp_library in $lib_list; do
-    if [ -z `echo $lib_name | grep $tmp_library` ]; then
-# FIXME nicer way to extract the library path and name?
-      dir_len=`expr length "$lib_name"`
-      lib_len=`expr length "$tmp_library"`
-      lib_len=`expr $lib_len - 1`
-      dir_len=`expr $dir_len - $lib_len + 1`
-      lib=`expr substr $lib_name $dir_len $lib_len`
-      dir_len=`expr $dir_len - 2`
-      dir=`expr substr $lib_name 1 $dir_len`
-
-      setup_math_lib $lib $dir
-      break
-    fi
-  done
-fi
-
+done
 }
 
 test_lib_arch() {
@@ -967,12 +1078,22 @@ find_mathlib ()  {
 #   Find mathematical libraries
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-echo
-echo 'MATHEMATICAL LIBRARIES'
-echo
-echo 'Use of an optimized BLAS implementation is very important,'
-echo 'especially for the performance of MOLTRA and RELCCSD.'
-echo
+$echo
+$echo 'MATHEMATICAL LIBRARIES'
+$echo
+$echo 'The use of optimized BLAS and LAPACK routines implementation'
+$echo 'is very important, especially for the performance of MOLTRA and RELCCSD.'
+$echo
+$echo 'You need to specify a BLAS AND a LAPACK routine.'
+$echo 'There are blas and lapack implementations shipped with dirac.'
+$echo 'However they are VERY SLOW compared to specially designed libraries.'
+$echo "" 
+$echo "You can get all the libraries you want by typing their "
+$echo "numbers from the list below seperated by space."
+$echo "I.e. typing:"
+$echo "Which library you you want to use? (More than one allowed. Default: 0) 2 3(enter)"
+$echo "Configures dirac for the default libraries."
+$echo 
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
@@ -1028,8 +1149,8 @@ if [ -z "$LIB" -a -n "$lib_list" ]; then
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
-
 }
+
 set_memsize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -1343,12 +1464,12 @@ get_cpp_flags(){
        parop="$parop -DSYS_LOCALDISKS"
     fi
 
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
-    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM) $parop"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM} $parop"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM} $parop"
     def="dirmpi.x"
   else
-    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
-    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\$(WRKMEM)"
+    append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM}"
+    append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM}"
     def="dirac.x"
   fi
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
@@ -1398,7 +1519,8 @@ get_f90_flags(){
       ;;
     gfortran*)
       gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
+      cpp_f90="$cpp_f90 -DGFORTRAN=$gfver"
+#      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
       i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                 march="-march=$prc -malign-double";;
@@ -1842,6 +1964,7 @@ case $F90_COMP in
      cpp_f90="$cpp_f90 \$(MODS)"
 esac
 
+
 ##################################################
 #  Make Makefile.config
 #################################################
@@ -1879,10 +2002,8 @@ C_INCLUDE_DIR = $cc_inc
 DEPEND_FLAGS  = $depend_flags 
 CPP_F90       = $cpp_f90
 CPP_CC        = $cpp_cc
-##F90           = $F90_COMP
-F90           = $F90_COMP_PWD
-##CC            = $CC_COMP
-CC            = $CC_COMP_PWD
+F90           = $F90_PATH$F90_COMP
+CC            = $CC_PATH$CC_COMP
 RM            = rm
 AR            = ar
 EOF
