@@ -687,7 +687,7 @@ fi
 if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
    rmline dontbuild "krmc/\.\*"
-   rmline dontbuild "lucialrel/\.\*"
+   rmline dontbuild "luciarel/\.\*"
 fi
 if [ -n "$ESRFLG" ]; then
    dirs="$dirs prp/esr"

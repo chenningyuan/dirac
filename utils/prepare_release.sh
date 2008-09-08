@@ -85,6 +85,21 @@ rm -rf oof
 echo "Deleting old .svn files"
 rm -rf `find . -name '.svn'`
 
+#
+# Figure out the dependencies that will be shipped.
+# This requires that you have configured the local Dirac
+# correctly.
+#
+if [ -r Makefile.config ]; then
+    echo "Creating dependencies for release version"
+    echo "I will assume you have configured Dirac ok"
+    make depend > /dev/null
+else
+    echo "Cannot find Makefile.config"
+    echo "  - Dirac08.tar.gz will NOT include dependencies"
+fi
+
+
 # run pamadm with the correct flags
 #
 echo "Running pamadm -dft -xpp -eri -adc export"
