@@ -398,6 +398,7 @@ C***** C I *************************************************************
 C***********************************************************************
 C
       IF(DOKRCI.AND.DOPSI) THEN
+#ifdef MOD_KRMC
 C
 C        Transfer KR-CI info to common block DCBORB
 C        and recalculate DCBORB.
@@ -408,6 +409,10 @@ C        ... reset dcbopt.h
          CALL SETDC2(0)
 C
          CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
+#else
+            CALL QUIT(
+     &  ' KR-CI module not included in this version')
+#endif
       END IF
 C
 C***********************************************************************
