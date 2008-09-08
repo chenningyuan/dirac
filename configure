@@ -1996,17 +1996,24 @@ if [ "$mesp" = "mpi" ]; then
 fi
 cat <<EOF >> Makefile.config
 
-# preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags $parinc
-DEPCPP=cpp $cpp_cc $parinc $depend_flags
-
 # fortran and C compilers
 FC=$F90_COMP
 F90=\$(FC)
 CC=$CC_COMP
 
+#
+# ... libraries - check them according to your server equipment !
+#
+LIBS      = $LIB
+
+# preprocessing
+DEPFPP=cpp -traditional-cpp $depend_flags $parinc
+DEPCPP=cpp $cpp_cc $parinc $depend_flags
+
 # linker
 LD=\$(FC)
+LDFLAGS=$ldflag \$(LIBS)
+
 EOF
 
 ##########################################################################
@@ -2037,14 +2044,7 @@ FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod
 F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
 
-#
-# ... libraries - check them according to your server equipment !
-#
-LIBS      = $LIB
 
-# linker flags
-LDFLAGS=$ldflag \$(LIBS)
-#
 EOF
 
 #
@@ -2157,7 +2157,6 @@ echo "   http://dirac.chem.sdu.dk/"
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
-echo "   make depend"
 echo "   make"
 echo "Then Dirac should be ready to run..."
 }
