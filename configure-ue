@@ -1998,12 +1998,12 @@ cat <<EOF >> Makefile.config
 
 # preprocessing
 DEPFPP=cpp -traditional-cpp $depend_flags $parinc
-DEPCPP=cpp $cpp_cc $parinc 
+DEPCPP=cpp $cpp_cc $parinc $depend_flags
 
 # fortran and C compilers
-FC=$F90_COMP_PWD
+FC=$F90_COMP
 F90=\$(FC)
-CC=$CC_COMP_PWD
+CC=$CC_COMP
 
 # linker
 LD=\$(FC)
