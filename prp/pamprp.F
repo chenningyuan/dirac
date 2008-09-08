@@ -4129,6 +4129,106 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_OSCILL */
+      SUBROUTINE DEF_OSCILL(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for oscillator strength calculations
+C
+C     Written by S. Knecht Sep 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+C
+      CHARACTER PNAME(3)*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+C
+C     define operator type, factor, name and label
+C
+      NPCOMP = 1
+      PFAC(1)  = D1
+      PFAC(2)  = D1
+      PFAC(3)  = D1
+C     three components of dipole length integrals
+      PNAME(1)  = 'X dipole length'
+      PNAME(2)  = 'Y dipole length'
+      PNAME(3)  = 'Z dipole length'
+      DO II  = 1, 3
+        IOP(II) = 1
+      END DO
+      PLABEL(1) = 'XDIPLEN'
+      PLABEL(2) = 'YDIPLEN'
+      PLABEL(3) = 'ZDIPLEN'
+      DO II = 1, 3
+         CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
+     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
+     &               NPROP_KRCI,INDXPR,MXLUCIPRP)
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_OMEGAQUANT */
+      SUBROUTINE DEF_OMEGAQUANT(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for determination of omega quantum numbers
+C
+C     Written by S. Knecht Sep 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+C
+      CHARACTER PNAME(2)*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2),IOP(2)
+C
+C     define operator type, factor, name and label
+C
+      NPCOMP = 1
+      PFAC(1)  = DP5
+      PFAC(2)  = D1
+C     three components of dipole length integrals
+      PNAME(1) = 'z-spin'
+      PNAME(2) = 'z-angular mom'
+      IOP(1)   = 12
+      IOP(2)   = 1
+      PLABEL(1) = 'OVERLAP'
+      PLABEL(2) = 'ZANGMOM'
+      DO II = 1, 2
+         CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
+     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
+     &               NPROP_KRCI,INDXPR,MXLUCIPRP)
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
       SUBROUTINE DEFINE_PVC_SHIELD(WORK,LWORK)
 C=======================================================================
