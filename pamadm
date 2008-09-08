@@ -657,12 +657,14 @@ if [ -n "$CDFTFLG" ]; then
 fi
 if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
+   rmline dontbuild "visual/\.\*"
 fi
 if [ -n "$AORESPONSEFLG" ]; then
    dirs="$dirs aoresponse"
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
+   rmline dontbuild "cap/\.\*"
 fi
 if [ -n "$AMFIFLG" ]; then
    dirs="$dirs amfi"
@@ -671,9 +673,11 @@ fi
 if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc"
    dirs="$dirs hsmrcc/second_quant"
+   rmline dontbuild "hsmrcc/\.\*"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
+   rmline dontbuild "oof/\.\*"
 fi
 if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
