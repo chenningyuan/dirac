@@ -2007,8 +2007,8 @@ CC=$CC_COMP
 LIBS      = $LIB
 
 # preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags $parinc
-DEPCPP=cpp $cpp_cc $parinc $depend_flags
+DEPFPP=cpp -traditional-cpp $depend_flags $parinc \$(MODS)
+DEPCPP=cpp $cpp_cc $parinc $depend_flags \$(MODS)
 
 # linker
 LD=\$(FC)

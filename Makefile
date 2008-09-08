@@ -12,11 +12,11 @@ $(TARGET):
 
 depend:
 	@echo Forcing a rebuild of Makefile.obj and Makefile.dep
-	rm Makefile.obj
-	rm Makefile.dep
+	@rm Makefile.obj
+	@rm Makefile.dep
 # Make empty old files that can be included but will trigger a remake
-	touch -t 198001010000 Makefile.obj
-	touch -t 198001010000 Makefile.dep
+	@touch -t 198001010000 Makefile.obj
+	@touch -t 198001010000 Makefile.dep
 	$(MAKE) Makefile.dep
 
 
