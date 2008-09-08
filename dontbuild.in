@@ -1,14 +1,15 @@
 Files matching the regexps in this file will not be compiled
 This list starts out in dontbuild.in and is then modified by pamadm.
-#oof/.*
+This file should therefore list _everything_ that is not for release.
+oof/.*
 utils/.*
 aoresponse/.*
-#visual/.*
-#hsmrcc/.*
+visual/.*
+hsmrcc/.*
 hsmrcc/hsmrcc_external/.*
 hsmrcc/second_quant/.*
 argosecp/.*
-#cap/.*
+cap/.*
 dft/fun-pw92.c
 dft/fun-tester.c
 relccsd/ccunix.c
@@ -28,3 +29,4 @@ relccsd/ccmain.F
 dirrci/cimain.F
 embedding/.*
 lucita/unused.F
+krmv/.*
