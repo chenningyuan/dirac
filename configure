@@ -2001,9 +2001,10 @@ FC=$F90_COMP
 F90=\$(FC)
 CC=$CC_COMP
 
-#
-# ... libraries - check them according to your server equipment !
-#
+# Libraries - check them according to your server equipment !
+# You may need blas and lapack (if not using the builting) and
+# mpi (if parallel). For mpi you also need the correct -I flag
+# in FFLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
 
 # preprocessing
