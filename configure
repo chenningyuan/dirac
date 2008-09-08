@@ -87,10 +87,11 @@ append () {
 
 next_item () {
 # Splits a list into item and the remainder
+local tmp_2=xxx
 eval "tmp_2=\$$2"
 # Strip leading blank
 local size=`expr length "$tmp_2"`
-local tmp_2=`expr substr "$tmp_2" 2 $size`
+tmp_2=`expr substr "$tmp_2" 2 $size`
 local index=`expr index "$tmp_2" ' '`
 if [ "$index" -eq 0 ]; then
   local tmp_1=$tmp_2
