@@ -843,7 +843,7 @@ search_math_libs(){
   echo
 
   lib_names="dirac_blas dirac_lapack"
-  lib_dirs=" SLOW SLOW"
+  lib_dirs=" builtin builtin"
 
   if [ $IPRINT -ge "8" ]; then
       echo 'search_math_libs:   lib_list=' $lib_list
@@ -967,7 +967,8 @@ $echo "0) Configure libraries manually."
 $echo
 
 lib_index=-1
-
+$echo "Dirac is shipped with slow reference BLAS and LAPACK libraries,"
+$echo "but we strongly recommend you to link to more optimized versions."
 $echo "Which library you you want to use? \c"
 if [ $max_lib -gt 4 ]; then
   $echo "(More than one allowed. Default: 4 5) \c" 
