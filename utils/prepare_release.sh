@@ -53,8 +53,6 @@ rm utils/prepare_dyall_pblock_basis.sh
 rm utils/prepare_dyall_sblock_basis.sh
 rm utils/reformat_includes.py
 rm utils/remove_copyright.py
-rm utils/remove_module.sh
-rm utils/remove_module.sh
 
 rm utils/qjaco.F
 
@@ -89,8 +87,8 @@ rm -rf `find . -name '.svn'`
 
 # run pamadm with the correct flags
 #
-echo "Running pamadm -dft -xpp export"
-./pamadm -dft -xpp -eri  -adc export > /dev/null
+echo "Running pamadm -dft -xpp -eri -adc export"
+./pamadm -dft -xpp -eri -adc export > /dev/null
 if [[ -r Dirac08.tar.gz ]]; then
     echo "Created ../Dirac08/Dirac08.tar.gz"
 else

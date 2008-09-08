@@ -465,6 +465,7 @@ make_export()
      \$szCurrDir/main/*.h \\
      \$szCurrDir/main/*.head \\
      \$szCurrDir/main/*.struct \\
+     \$szCurrDir/modules/README \\
      \$szCurrDir/test \\
      \$szCurrDir/testlast \\
      \$szCurrDir/basis \\
@@ -640,6 +641,7 @@ if [ -n "$DFTFLG" ]; then
 fi
 if [ -n "$XMLFLG" ]; then
    dirs="$dirs gp/xml"
+   rmline dontbuild "gp/xml/\.\*"
 fi
 if [ -n "$EMBFLG" ]; then
    dirs="$dirs embedding"
@@ -651,9 +653,11 @@ if [ -n "$ADCFLG" ]; then
 fi
 if [ -n "$ECPFLG" ]; then
    dirs="$dirs argosecp"
+   rmline dontbuild "argosecp/\.\*"
 fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
+   rmline dontbuild "reladc/\.\*"
 fi
 if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
@@ -661,6 +665,7 @@ if [ -n "$VISUALFLG" ]; then
 fi
 if [ -n "$AORESPONSEFLG" ]; then
    dirs="$dirs aoresponse"
+   rmline dontbuild "aoresponse/\.\*"
 fi
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
@@ -681,9 +686,12 @@ if [ -n "$OOF_FLG" ]; then
 fi
 if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
+   rmline dontbuild "krmc/\.\*"
+   rmline dontbuild "lucialrel/\.\*"
 fi
 if [ -n "$ESRFLG" ]; then
    dirs="$dirs prp/esr"
+   rmline dontbuild "prp/esr/\.\*"
 fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"

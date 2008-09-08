@@ -32,6 +32,8 @@ relccsd/ccmain.F
 dirrci/cimain.F
 embedding/.*
 lucita/unused.F
+luciarel/.*
 krmc/.*
 amfi/.*
 prp/xpp/.*
+prp/esr/.*
