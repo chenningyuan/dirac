@@ -3,7 +3,7 @@
 # listed in safebuild will be built with "safe" flags.
 # This files might require GNU make
 
-include Makefile.config-ue
+include Makefile.config
 
 TARGET=dirac.x
 SOURCE_DIRS=.
@@ -65,6 +65,7 @@ gp/compinfo.h:
 	@echo "#define WHERE_COMPILED \"${HOST}\"" >> $@
 	@echo "#define FCOMP \"${FC} ${FFLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
+	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
 gp/gpc.o: gp/compinfo.h
 
