@@ -527,7 +527,7 @@ if [ "$mesp" = "mpi" ]; then
     cpp_cc="$cpp_cc -DVAR_MPI2"
     case $F90_COMP in
        xlf*|mpfort|mpxlf_r) 
-       cpp_f90="$cpp_f90,-DVAR_MPI2"
+       cpp_f90="$cpp_f90 -WF,-DVAR_MPI2"
        ;;
        *)
        cpp_f90="$cpp_f90 -DVAR_MPI2"
@@ -1052,7 +1052,7 @@ test_lib_arch() {
 #
 
 if [ $bit_set -eq 32 ]; then
-  if [ -z `echo $1 |  grep "64"` ]; then
+  if [ -z `echo $1 |  grep "64"`]; then
     return 1
   else
     return 0
@@ -1710,17 +1710,21 @@ case $machine in
 	gnu*)
           sys_name="LINUX"
 	  get_cpp_flags
-	  cpp_f90="-DVAR_MFDS $cpp_f90"
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperated.
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
           ;;
          *)
           sys_name="AIX"
 	  get_cpp_flags
-	  cpp_f90="-DVAR_MFDS $cpp_f90"
+	  cpp_f90="-WF -DVAR_MFDS $cpp_f90"
+          # fortran flags are comma seperated.
+          cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`  ;;
          esac
 
 
          if [ "$localdisks" = "no" ]; then
-            cpp_f90="$cpp_f90 -DVAR_PFS"
+            cpp_f90="$cpp_f90,-DVAR_PFS"
          fi
 
       case $os in
@@ -1845,7 +1849,6 @@ esac
 
 }
 
-
 make_makefile_configure ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -1887,8 +1890,8 @@ fi
 #
 # Parallel preprocessor directive need to be set
 #
-INCLUDE_DIR=include
-MODULE_DIR=modules
+INCLUDE_DIR=\$\(SOURCEDIR\)\/include
+MODULE_DIR=\$\(SOURCEDIR\)\/modules
 arflag=
 
 set_compile_flags
@@ -1904,22 +1907,22 @@ get_largefiles
 
 case $flavor in
    *linux*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=LINUX"
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=LINUX -I."
       ldflag="$ldflag -Wl,-E"
    ;;
    *darwin*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=DARWIN"
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=DARWIN -I."
    ;;
    *freebsd*)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=FREEBSD"
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=FREEBSD -I."
       ldflag="$ldflag -Wl,-E"
    ;;
    *netbsd*|*openbsd)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=OPENBSD"
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=OPENBSD -I."
       ldflag="$ldflag -Wl,-E"
    ;;
    *)
-      cpp_cc="$cpp_cc -DSYS_FLAVOR=UNKNOWN"
+      cpp_cc="$cpp_cc -DSYS_FLAVOR=UNKNOWN -I."
    ;;
 esac
 
@@ -1939,6 +1942,9 @@ fi
 #
 #  Check for special C-directives
 #
+#if [ "$c_inc" = "" ]; then
+#   c_inc="\$(INCLUDE_DIR)"
+#fi
 if [ "$c_opt" = "" ]; then
    c_opt="\$(OPTFLAGS)"
    c_safe="\$(SAFEFLAGS)"
@@ -1954,66 +1960,70 @@ case $F90_COMP in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
-     cpp_f90="-WF,$cpp_f90,\$(MODS)"
+     cpp_f90="$cpp_f90,\$(MODS)"
      ;;
    *)
      cpp_f90="$cpp_f90 \$(MODS)"
 esac
 
+
 ##################################################
 #  Make Makefile.config
 #################################################
-
-#first define the preprocessing flags for the active modules
+cat <<EOF > Makefile.config
+ARCH        = $guess
+#
+#
+# Location of the binaries
+INSTALLDIR    = $INSTALL_DIR
+# Location of the source files
+SOURCEDIR     = `pwd`
+# Location of the scratch (or working) directory
+SCRATCHDIR    = $worksp
+# default memory
+WRKMEM        = $memsiz
+EOF
 if [ $IBMMOD -eq 1 ]; then
-cat <<EOF >  Makefile.config
+cat <<EOF >> Makefile.config
 SEP           =,
 EOF
 else
-cat <<EOF >  Makefile.config
+cat <<EOF >> Makefile.config
 NULLSTRING   :=
 SEP          := \$(NULLSTRING) #end of line 
 EOF
 fi
-
-cat <<EOF >> Makefile.config
-include Makefile.moddef
-EOF
-
-# then define things like architecture etc 
-
-cat <<EOF >> Makefile.config
-# default memory (in 8 byte words)
-WRKMEM=$memsiz
-EOF
-
-
 if [ "$mesp" = "mpi" ]; then
    if [ -n "$parinc" ]; then
       f90_inc=$f90_inc $parinc
    fi
 fi
 cat <<EOF >> Makefile.config
-
-# preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags $parinc
-DEPCPP=cpp $cpp_cc $parinc $depend_flags
-
-# fortran and C compilers
-FC=$F90_COMP
-F90=\$(FC)
-CC=$CC_COMP
-
-# linker
-LD=\$(FC)
+F_INCLUDE_DIR = $f90_inc
+C_INCLUDE_DIR = $cc_inc
+DEPEND_FLAGS  = $depend_flags 
+CPP_F90       = $cpp_f90
+CPP_CC        = $cpp_cc
+F90           = $F90_PATH$F90_COMP
+CC            = $CC_PATH$CC_COMP
+RM            = rm
+AR            = ar
 EOF
-
+if [ -n "$arflag" ]; then
+cat <<EOF >> Makefile.config
+ARFLAGS       = $arflag
+EOF
+fi
 ##########################################################################
 #
 #  dump compiler flags into Makefile.config, where you can edit them
 #
 ##########################################################################
+
+if [ $IPRINT -ge "5" ];  then 
+ echo
+ echo 'before dumping stuff into Makefile.config...nooptim='$nooptim
+fi
 
 # determine whether to flush into Makefile.config safe or optimized flags
 if [ $nooptim = 1 ]; then
@@ -2026,25 +2036,40 @@ else
   use_c_flags=$c_opt
 fi
 
-cat <<EOF >> Makefile.config
-# compiler flags, standard
-FFLAGS=$cpp_f90 $f90_inc $use_flags $mod
-F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
-CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
+if [ $IPRINT -ge "3" ];  then 
+ echo '       Makefile.config...use_flags:' $use_flags
+ echo 'into Makefile.config...use_c_flags:' $use_c_flags
+fi
 
-# compiler flags, safe
-FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod 
-F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
-CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
+cat <<EOF >> Makefile.config
+# ... fortran compiler flags with the full optimization
+OPTFLAGS      = $use_flags $mod
+# ... fortran compiler flags with no optimization
+SAFEFLAGS      = $safe $mod
+OPTIFLAGS      = -E
+# ... C-compiler flags with the full optimization
+C_OPTFLAGS    = $use_c_flags
+# ... C-compiler flags with no optimization
+C_SAFEFLAGS    = $c_safe
+# ... fortran compiler flags with the full optimization - for *.F90 files
+F90_OPTFLAGS  = $use_flags $mod $f90_extraflags
+# ... fortran compiler flags with no optimization - for *.F90 files
+F90_SAFEFLAGS  = $safe $mod $f90_extraflags
+# ... flags for linking 
+LDFLAGS       = $ldflag
+# ... flags for ftnchek
+CHEKFLAGS     = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
+ -noargumants -arguments=number \\
+ -usage=var-unitialized
+# -usage=var-unitialized:arg-const-modified:arg-alias
+# -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 
 #
 # ... libraries - check them according to your server equipment !
 #
-LIBS      = $LIB
-
-# linker flags
-LDFLAGS=$ldflag \$(LIBS)
+LIB_LIST      = $LIB
 #
+default : $def
 EOF
 
 #
@@ -2058,12 +2083,60 @@ if [ "$mesp" = "mpi" ]; then
 #
 # Parallel initialization
 #
-MPI_INCLUDE_DIR=$parinc
-MPI_LIB_PATH=$parlibp
-MPI_LIB=$parlib
+MPI_INCLUDE_DIR = $parinc
+MPI_LIB_PATH    = $parlibp
+MPI_LIB         = $parlib
 #
 EOF
 fi
+#
+# Include the rule for building the object files
+#
+tab=`$echo "\t"`
+
+cat <<EOF>> Makefile.config
+#
+# Suffix rules
+# The first line deletes all implicit rules.a
+#
+.SUFFIXES : 
+.SUFFIXES : .F .F90 .f90 .c .o .a .g .i 
+
+.F.o:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
+.F.g:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(SAFEFLAGS) -c \$*.F
+.F.i:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTIFLAGS) \$(SAFEFLAGS) \$*.F > \$*.i
+.F90.o:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -c \$*.F90
+.F90.g:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEFLAGS) -c \$*.F90
+.F90.i:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS)  \$(F90_SAFEFLAGS) \$*.F90 > \$*.i
+.f90.o:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTFLAGS) -cpp -c \$*.f90
+.f90.g:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_SAFEFLAGS) -cpp -c \$*.f90
+.f90.i:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(F90_OPTIFLAGS)  \$(F90_SAFEFLAGS) -cpp \$*.f90 > \$*.i
+.c.o:
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_OPTFLAGS) -c \$*.c
+.c.g:
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(C_SAFEFLAGS) -c \$*.c
+.c.i:
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CPP_CC) \$(OPTIFLAGS) \$*.c > \$*.i
+EOF
+
+#
+# Suffix rule for archive files
+#
+cat <<EOF>> Makefile.config
+.F.a:
+$tab\$(F90) \$(F_INCLUDE_DIR) \$(CPP_F90) \$(OPTFLAGS) -c \$*.F
+$tab\$(AR) \$(ARFLAGS) \$@ \$*.o
+$tab@ rm -f \$*.o
+EOF
 #
 # On apple and dec machines we need to run ranlib when creating an archive
 #
@@ -2074,7 +2147,6 @@ $tab ranlib \$@
 EOF
 esac
 }
-
 
 make_pam_runtest ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
