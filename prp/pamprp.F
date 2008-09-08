@@ -4214,7 +4214,7 @@ C
       NPCOMP = 1
       PFAC(1)  = DP5
       PFAC(2)  = D1
-C     three components of dipole length integrals
+C     define s_z and l_z as j_z = s_z + l_z
       PNAME(1) = 'z-spin'
       PNAME(2) = 'z-angular mom'
       IOP(1)   = 12
