@@ -1,0 +1,11 @@
+! tests DFT linear/quadratic response
+! integration grid is very coarse
+! (remove the keywords .RADINT and .ANGINT in production calculations)
+!
+! also remove
+! .ZIPGRID
+! XY
+! since this keyword will enforce a specific symmetry for the grid
+! even if you change the molecule or orientation
+!
+! these keywords are placed here only to speed up the test
