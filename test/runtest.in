@@ -25,7 +25,7 @@ medium_test="$short_test $medium_partest 27.krmc_luciarel"
 # 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
 medium_partest="$short_partest $medium_partest"
 
-long_partest="24.lucita_large 26.krmc_gosci 34.rhonuc 41.pv_nmr"
+long_partest="24.lucita_large 26.krmc_gosci 34.rhonuc 41.pv_nmr 46.dft_response"
 long_test="$medium_test $long_partest"
 long_partest="$medium_partest $long_partest"
 

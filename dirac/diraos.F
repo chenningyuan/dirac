@@ -807,60 +807,96 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_CURRENT_SUB */
-      SUBROUTINE GET_CURRENT_SUB(CURRENT,
-     &                           F,IC1,IC2,
-     &                           GAOL,
-     &                           GAOR,
-     &                           IREPOP,DMAT,BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                            last revision: october 2006
-C=======================================================================
+      subroutine get_gradient_nh_sub(component,
+     &                               gaol,
+     &                               gaor,
+     &                               irepop,
+     &                               dmat,
+     &                               buf)
+C***********************************************************************
+C
+C     quick adaptation of GETRH1 for the release ... (radovan)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION gaol(NBAST),gaor(NBAST),DMAT(NBAST,NBAST),BUF(*)
+#else
+      DIMENSION gaol(NTBAS(0)),gaor(NTBAS(0)),
+     &          DMAT(NTBAS(0),NTBAS(0)),BUF(*)
+#endif
+C
+#include "ibtfun.h"
+C      
+      do ic = 1, mc
+      DO 10 IRP1 = 0,NBSYM-1
+        NB1 = NBBAS(IRP1,IC)
+        IF(NB1.EQ.0) GOTO 10
+        JB1 = IBBAS(IRP1,IC)+1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        NB2 = NBBAS(IRP2,IC)
+        IF(NB2.EQ.0) GOTO 10
+        JB2 = IBBAS(IRP2,IC)+1
+        CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &             DMAT(JB1,JB2),NTBAS(0),gaor(JB2),1,D0,BUF,1)
+        component = component + DDOT(NBBAS(IRP1,IC),gaol(JB1),1,BUF,1)
+   10 CONTINUE
+      end do
+C
+      END
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine get_gradient_nh(gradient,
+     &                           irepop,
+     &                           gao,
+     &                           gao1,
+     &                           dmat,
+     &                           buf)
+c=======================================================================
+c                                                           radovan bast
+c                                               last revision: july 2007
+c=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+      dimension gradient(3),
+     &          gao(*),
+     &          gao1(*),
+     &          dmat(*),
+     &          buf(*)
 
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dgroup.h"
 #include "dcbbas.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAOL(NBAST),
-     &          GAOR(NBAST),
-     &          DMAT(NBAST,NBAST)
+      equivalence (nbast, ntbas(0))
+      joff = nbast
 #else
-      DIMENSION GAOL(NTBAS(0)),
-     &          GAOR(NTBAS(0)),
-     &          DMAT(NTBAS(0),NTBAS(0))
+      joff = ntbas(0)
 #endif
-      DIMENSION BUF(*)
 
-#include "ibtfun.h"
+      call dzero(gradient, 3)
 
-      DO IREP1 = 0,NBSYM-1
+      do ixyz = 1,3
 
-        N1 = NBBAS(IREP1,IC1)
-        IF(N1 .GT. 0) THEN
+        call get_gradient_nh_sub(gradient(ixyz),
+     &                           gao,
+     &                           gao1(1+joff*(ixyz-1)),
+     &                           irepop,
+     &                           dmat,
+     &                           buf)
+        call get_gradient_nh_sub(gradient(ixyz),
+     &                           gao1(1+joff*(ixyz-1)),
+     &                           gao,
+     &                           irepop,
+     &                           dmat,
+     &                           buf)
+      enddo
 
-          I1 = IBBAS(IREP1,IC1)+1
-          IREP2 = IBTXOR(IREP1,IREPOP)
-          N2 = NBBAS(IREP2,IC2)
-          IF(N2 .GT. 0) THEN
-
-            I2 = IBBAS(IREP2,IC2)+1
-            CALL DGEMV('N',NBBAS(IREP1,IC1),NBBAS(IREP2,IC2),D1,
-     &                 DMAT(I1,I2),NTBAS(0),GAOR(I2),1,D0,BUF,1)
-            CURRENT = CURRENT+F*DDOT(NBBAS(IREP1,IC1),GAOL(I1),1,BUF,1)
-          ENDIF
-        ENDIF
-      ENDDO
-
-      RETURN
-      END
+      end

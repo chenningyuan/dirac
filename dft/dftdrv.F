@@ -134,11 +134,6 @@ C     Initial expectation value of two-electron matrix
 #endif /* MOD_CDFT */
       ENDIF
 
-#ifndef MOD_CDFT
-      IF(DOQR .AND. (NR_GENERAL .GT. 0) .AND. DFTISGGA())
-     &          CALL QUIT('GGA QR not implemented for general matrices')
-#endif /* MOD_CDFT */
-
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
 C
 C     Scale density matrices

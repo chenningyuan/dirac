@@ -263,25 +263,13 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     =======================
 !
 !     Modified density w.r.t. B
-!!    if(ihrmop(1).eq.1) then
-         call getrho(rho_B,irepbop,gao,dtrmat(1,1,1,1),buf)
-!!    else
-!!       call quit('DFT-QR general case not implemented!')
-!!    end if
+      call getrho(rho_B,irepbop,gao,dtrmat(1,1,1,1),buf)
 !
 !     Modified density w.r.t. C
-!!    if(ihrmop(2).eq.1) then
-         call getrho(rho_C,irepcop,gao,dtrmat(1,1,1,2),buf)
-!!    else
-!!       call quit('DFT-QR general case not implemented!')
-!!    end if
+      call getrho(rho_C,irepcop,gao,dtrmat(1,1,1,2),buf)
 !
 !     Two times modified density w.r.t. B and C
-!!    if(ihrmop(3).eq.1) then
-         call getrho(rho_BC,irepbcop,gao,dtrmat(1,1,1,3),buf)
-!!    else
-!!       call quit('DFT-QR general case not implemented!')
-!!    end if
+      call getrho(rho_BC,irepbcop,gao,dtrmat(1,1,1,3),buf)
 !
 !       ***************
 !       ***** LDA *****
@@ -337,54 +325,36 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &               gao,gao1,
      &               dtrmat(1,1,1,1),buf)
       else
-#ifdef MOD_CDFT
-        CALL GET_GR_NH(.TRUE.,
-     &                 grdrho_b,
-     &                 irepbop,
-     &                 GAO,
-     &                 GAO1,
-     &                 DTRMAT(1,1,1,1),
-     &                 BUF)
-
-#else
-        call quit('DFT-QR general case not implemented!')
-#endif /* MOD_CDFT */
+        call get_gradient_nh(grdrho_b,
+     &                       irepbop,
+     &                       gao,
+     &                       gao1,
+     &                       dtrmat(1,1,1,1),
+     &                       buf)
       endif
       if(ihrmop(2) .eq. 1) then
         call getgrho(grdrho_c,irepcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,2),buf)
       else
-#ifdef MOD_CDFT
-        CALL GET_GR_NH(.TRUE.,
-     &                 grdrho_c,
-     &                 irepcop,
-     &                 GAO,
-     &                 GAO1,
-     &                 DTRMAT(1,1,1,2),
-     &                 BUF)
-
-#else
-        call quit('DFT-QR general case not implemented!')
-#endif /* MOD_CDFT */
+        call get_gradient_nh(grdrho_c,
+     &                       irepcop,
+     &                       gao,
+     &                       gao1,
+     &                       dtrmat(1,1,1,2),
+     &                       buf)
       endif
       if(ihrmop(3) .eq. 1) then
         call getgrho(grdrho_bc,irepbcop,
      &               gao,gao1,
      &               dtrmat(1,1,1,3),buf)
       else
-#ifdef MOD_CDFT
-        CALL GET_GR_NH(.TRUE.,
-     &                 grdrho_bc,
-     &                 irepbcop,
-     &                 GAO,
-     &                 GAO1,
-     &                 DTRMAT(1,1,1,3),
-     &                 BUF)
-
-#else
-        call quit('DFT-QR general case not implemented!')
-#endif /* MOD_CDFT */
+        call get_gradient_nh(grdrho_bc,
+     &                       irepbcop,
+     &                       gao,
+     &                       gao1,
+     &                       dtrmat(1,1,1,3),
+     &                       buf)
       endif
 !
 !     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
