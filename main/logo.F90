@@ -82,7 +82,7 @@ print *, '*                     Program for Atomic and Molecular                
 print *, '*          Direct Iterative Relativistic Allelectron Calculations            *'
 print *, '*         =======================================================            *'
 print *, '*                                                                            *'
-print *, '*                        VERSION 08.xx   ??????    2008                      *'
+print *, '*                        VERSION 08.00  19 September 2008                    *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
 print *, '*                                                                            *'
