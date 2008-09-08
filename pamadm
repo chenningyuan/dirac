@@ -614,6 +614,13 @@ do
   fi
 done
 cp dontbuild.in dontbuild
+if [ ! -r "Makefile.dep" ]; then
+    touch -t 198001010000 Makefile.dep
+fi
+if [ ! -r "Makefile.obj" ]; then
+    touch -t 198001010000 Makefile.obj
+fi
+
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
 if [ -n "$ERIFLG" ]; then
     dirs="$dirs eri"
