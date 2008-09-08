@@ -1052,7 +1052,7 @@ test_lib_arch() {
 #
 
 if [ $bit_set -eq 32 ]; then
-  if [ -z `echo $1 |  grep "64"`]; then
+  if [ -z `echo $1 |  grep "64"` ]; then
     return 1
   else
     return 0
