@@ -36,7 +36,7 @@ Makefile.obj: safebuild dontbuild
 	echo '	$$(FC) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .c files
-	@for f in `grep '\.c' safebuild`; do \
+#	@for f in `grep '\.c' safebuild`; do \
 	echo "$${f%%.c}.o: $$f" >> $@;  \
 	echo '	$$(CC) $$(CFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
@@ -46,7 +46,7 @@ Makefile.obj: safebuild dontbuild
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .f90 files
-	@for f in `grep '\.f90' safebuild`; do \
+#	@for f in `grep '\.f90' safebuild`; do \
 	echo "$${f%%.f90}.o: $$f" >> $@;  \
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
