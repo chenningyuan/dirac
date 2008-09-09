@@ -917,6 +917,8 @@ C
       PARAMETER (MAXBSFIL=5,KNG=MXAQN,KBLK=500,KPRM=30)
 C
       INTEGER IQMT
+      integer :: nblck1(maxbsfil)
+      integer :: start_nuc,start_nrc,end_nuc,end_nrc
       DIMENSION JCOT(KNG,MAXBSFIL)
       DIMENSION IBLKAGNMOM(KBLK)
       DIMENSION NUCT(KBLK)
@@ -1241,27 +1243,29 @@ C
 C
 C we make sure we don't have any junk on the temporary variables 
 C
-                  CALL IZERO(JCOT,KNG*NFILES)
-                  CALL IZERO(NUCT,KBLK)
-                  CALL IZERO(NRCT,KBLK)
+                  JCOT(1:KNG,NFILES)=0
+                  NUCT(1:KBLK)=0
+                  NRCT(1:KBLK)=0
+                  NBLCK1(:)=0
 C
                   BASREF(1,I,1) =
      &            "Basis set read from multiple files"
 C
-                  DO 463 M=1,NFILES
+                  DO M=1,NFILES
                      BASNAM = BSFIL(M)
                      KAOVEC  = KBLOCK + 1 - IBLOCK1 
 C
                      BASREF(3*(M-1)+2,I,1) = " " 
                      BASREF(3*(M-1)+3,I,1) = " ref. in file "//BSFIL(M) 
-
+                     
+C Note that the Variables with T have dimension KPRM instead of KPRIM!
                      CALL BASLIB(IQMT,JCOT(1,M),
      &                   NUCT(IBLOCK1),
      &                   NRCT(IBLOCK1),SEGT(IBLOCK1),
      &                   ALPHAT(1,IBLOCK1),
      &                   CPRIMT(1,1,IBLOCK1),
      &                   CPRIMUT(1,1,IBLOCK1),
-     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRIM,Q,1,DSM,
+     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRM,Q,1,DSM,
      &                   BASREFT(1,I,M))
 
                      BASREF(3*(M-1)+4,I,1) = BASREFT(1,I,M)
@@ -1272,59 +1276,59 @@ C temp storage
 C 
                      IDBLK = IBLOCK1
                      IDANG = 1
-                     DO 464 IRR=1,IQMT
-                        DO 465 IRS=1,JCOT(IRR,M)
+                     DO IRR=1,IQMT
+                        DO IRS=1,JCOT(IRR,M)
                            IBLKAGNMOM(IDBLK) = IDANG
                            IDBLK = IDBLK + 1
-  465                   CONTINUE 
+                        END DO
                         IDANG = IDANG + 1
-  464                CONTINUE 
+                     END DO
 C
                      IF ( IQMT .GT. MAXIQM ) THEN
                         MAXIQM = IQMT
                      ENDIF
+                     NBLCK1(M)=NBLOCK
                      IBLOCK1 = IBLOCK1 + NBLOCK
-  463             CONTINUE
+                  END DO
 C
 C after reading all files, we reorder the data wrt orbital angular 
 C momentum. in this reordering variable kt is the "final" index of a given block
 C
                   IQM(I,1) = MAXIQM
                   KT = IBLOCK(1)
-                  DO 466 IQ=1,MAXIQM
-                  DO 467 IR=1,IBLOCK1 - 1
+                  DO IQ=1,MAXIQM
+                    DO IR=1,IBLOCK1 - 1
 C
 C in filling up the permanent storage with data, care should be taken to skip 
 C zero-sized blocks that arise when we have only parts of a basis
 C set in one file, as when the polarization functions are in one file and
 C the scf set is in another...
 C
-                       IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
-                         IF ( NUCT(IR) .GT. 0 ) THEN
+                      IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
+                        IF ( NUCT(IR) .GT. 0 ) THEN
+                 
+                          start_nuc=nuc(kt,1)+1
+                          end_nuc=nuc(kt,1)+nuct(ir)
+                          start_nrc=nrc(kt,1)+1
+                          end_nrc=nrc(kt,1)+nrct(ir)
 CMI           ... filling up !!! the JCO must be INITIALIZED before !!! 
-                              JCO(IQ,I,1)= JCO(IQ,I,1)+ 1
-                              NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
-                              NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
-                              SEG(KT,1)  = SEGT(IR)
-                              ISGEN(KT)  = ISGENT(IR)
+              ALPHA(start_nuc:end_nuc,KT,1)
+     &                         = ALPHAT(1:NUCT(IR),IR)
+              CPRIM(start_nuc:end_nuc,start_nrc:end_nrc,KT,1)
+     &                         = CPRIMT(1:NUCT(IR),1:NRCT(IR),IR)    
+              CPRIMU(start_nuc:end_nuc,start_nrc:end_nrc,KT,1)
+     &                         = CPRIMUT(1:NUCT(IR),1:NRCT(IR),IR)    
 
-CMI                       write(LUPRI,*) 'JCO(JCO(IQ,I,1)=',JCO(IQ,I,1)
-CMI                       write(LUPRI,*) 'NUC(KT,1)=',NUC(KT,1)
-CMI                       write(LUPRI,*) 'NRC(KT,1)=',NRC(KT,1)
-CMI                       write(LUPRI,*) 'SEG(KT,1)=',SEG(KT,1)
-CMI                       write(LUPRI,*) 'ISGEN(KT)=',ISGEN(KT)
-
-                              DO 468 IX=1, NUCT(IR)
-                                 ALPHA(IX,KT,1)      =  ALPHAT(IX,IR)
-                                 DO 468 JX=1, NRCT(IR) 
-                                  CPRIM(IX,JX,KT,1) =  CPRIMT(IX,JX,IR)
-                                  CPRIMU(IX,JX,KT,1)= CPRIMUT(IX,JX,IR)
-  468                         CONTINUE
-                              KT = KT + 1
-                           ENDIF 
-                        ENDIF
-  467                CONTINUE
-  466             CONTINUE
+                          JCO(IQ,I,1)= JCO(IQ,I,1)+ 1
+                          NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
+                          NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
+                          SEG(KT,1)  = SEGT(IR)
+                          ISGEN(KT)  = ISGENT(IR)
+                          KT = KT + 1
+                        ENDIF 
+                      ENDIF
+                    END DO
+                  END DO
 C
 C finally, we update nblck(i,1) with the total number of non-zero sized
 C blocks read, subtracting one only because on the loops above kt was 
