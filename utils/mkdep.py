@@ -28,7 +28,7 @@ def scan_file(path,cppcmd):
 
 def objpath(srcpath):
     return srcpath[:srcpath.rfind(".")]+".o"
-        
+
 filedat = {}
 
 for f in sys.stdin.readlines():

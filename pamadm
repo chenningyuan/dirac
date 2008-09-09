@@ -838,10 +838,6 @@ backup
 #
 which_modules
 #
-# Make the makefiles
-#
-####make_makefile
-#
 # Make distribution and restore old files
 #
 restore

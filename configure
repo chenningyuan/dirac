@@ -1973,21 +1973,16 @@ EOF
 else
 cat <<EOF >  Makefile.config
 NULLSTRING   :=
-SEP          := \$(NULLSTRING) #end of line 
+SEP          := \$(NULLSTRING) #end of line
 EOF
 fi
 
 cat <<EOF >> Makefile.config
 include Makefile.moddef
-EOF
-
-# then define things like architecture etc 
-
-cat <<EOF >> Makefile.config
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
+INSTALL_DIR=$INSTALL_DIR
 EOF
-
 
 if [ "$mesp" = "mpi" ]; then
    if [ -n "$parinc" ]; then
@@ -2002,7 +1997,7 @@ F90=\$(FC)
 CC=$CC_COMP
 
 # Libraries - check them according to your server equipment !
-# You may need blas and lapack (if not using the builting) and
+# You may need blas and lapack (if not using the builtin) and
 # mpi (if parallel). For mpi you also need the correct -I flag
 # in FFLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
@@ -2028,7 +2023,7 @@ if [ $nooptim = 1 ]; then
 # ... employ flags with no optimization
   use_flags=$safe
   use_c_flags=$c_safe
-else 
+else
 # ... employ flags with the optimization
   use_flags=$opt
   use_c_flags=$c_opt
@@ -2037,11 +2032,11 @@ fi
 cat <<EOF >> Makefile.config
 # compiler flags, standard
 FFLAGS=$cpp_f90 $f90_inc $use_flags $mod
-F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags 
+F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags
 CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
 
 # compiler flags, safe
-FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod 
+FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod
 F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
 

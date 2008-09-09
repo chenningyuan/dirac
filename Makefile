@@ -5,7 +5,7 @@
 
 include Makefile.config
 
-TARGET=dirac.x
+TARGET=$(INSTALL_DIR)/dirac.x
 SOURCE_DIRS=.
 
 $(TARGET):
