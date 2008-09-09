@@ -31,23 +31,23 @@ Makefile.obj: safebuild dontbuild
 	| egrep -v -f dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@
 	@echo >> $@
 # safe .F files
-	@for f in `grep '\.F' safebuild`; do \
-	echo "$${f%%.F}.o: $$f" >> $@;  \
+	@for f in `grep '\.F$$' safebuild`; do \
+	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(FC) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .c files
-	@for f in `grep '\.c' safebuild`; do \
-	echo "$${f%%.c}.o: $$f" >> $@;  \
+	@for f in `grep '\.c$$' safebuild`; do \
+	echo "`echo $$f | sed 's/.c$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(CC) $$(CFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .F90 files
-	@for f in `grep '\.F90' safebuild`; do \
-	echo  "$${f%%.F90}.o: $$f" >> $@;  \
+	@for f in `grep '\.F90$$' safebuild`; do \
+	echo  "`echo $$f | sed 's/.F90$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .f90 files
-	@for f in `grep '\.f90' safebuild`; do \
-	echo "$${f%%.f90}.o: $$f" >> $@;  \
+	@for f in `grep '\.f90$$' safebuild`; do \
+	echo "`echo $$f | sed 's/.f90$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 
