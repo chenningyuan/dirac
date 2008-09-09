@@ -26,7 +26,7 @@ depend:
 Makefile.obj: safebuild dontbuild
 	@echo "Collecting source files for build into Makefile.obj"
 	@echo "#Automatically generated file, do not edit" > $@
-	@echo "OBJ=\" >> $@
+	@echo "OBJ=\\" >> $@
 	@find $(SOURCE_DIRS) -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
 	| egrep -v -f dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@
 	@echo >> $@
