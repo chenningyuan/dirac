@@ -2398,8 +2398,6 @@ C
         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
         call dzero(work(kxc), 3*n2bbasxq)
 
-        irepop = jsymop - 1
-
         call dftexc(work(kdmat),
      &              work(kd1ao),
      &              work(kxc),
