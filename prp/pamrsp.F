@@ -884,9 +884,35 @@ C
       KFIRST = KFIRST + NZCONFQ*NCSIM
 C
       KFRBUF = KFREE
-      CALL MEMGET('INTE',KEVEC,NESIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KPVEC,NPSIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCVEC,NCSIM,WORK,KFREE,LFREE)
+C     ... set proper dimension for integer arrays. default. SK - Sep 08
+      LEVEC  = NESIM 
+      LPVEC  = NPSIM    
+      LCVEC  = NCSIM    
+#ifdef MOD_KRMC
+C     ... SK - Sep 08: if XRSST is called as part from the MCSCF
+C     optimization procedure we need to allocate at least 2* NxSIM where 
+C     x = E (e-e), P (e-p) or C (CI gradient). 
+C     In subroutine XRSST2 the corresponding integer array is accessed 
+C     by 
+C     IVEC(IP) = x
+C     IVEC(IM) = x
+C     where IP = NFREQ + IM.
+C
+C     FIXME: does this also apply to other cases with STATIC = .TRUE.? 
+C     Do we need a "#ifdef MOD_KRMC" statement?
+C     SK - Sep 08
+C
+      LEVEC  = NESIM * 2
+      LPVEC  = NPSIM * 2
+      LCVEC  = NCSIM * 2
+#endif
+      CALL MEMGET('INTE',KEVEC,LEVEC,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KPVEC,LPVEC,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCVEC,LCVEC,WORK,KFREE,LFREE)
+C     ... initialize
+      CALL IZERO(WORK(KEVEC),LEVEC)
+      CALL IZERO(WORK(KPVEC),LPVEC)
+      CALL IZERO(WORK(KCVEC),LCVEC)
 C
 C     If requested, allocate space for diagonal elements of Hessian 
 C     (approximate)
