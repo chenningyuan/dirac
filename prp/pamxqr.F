@@ -2375,35 +2375,53 @@ C
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
      &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
-c
-cjohhe     
-c     In accordance with linear response, this is where the fock matrix
-c     is to be changed in order to include the exchange-correlation
-c     part when DFT is used.  The main question is how this is achieved.
-c     How should the already included exchange part be handled?  Do
-c     we need to modify the above call to TWOFCK depending on not only
-c     whether DFT is used or not, but also depending on whether we use
-c     pure or hybrid functionals?
-c
-c
+
+
 #ifdef MOD_DFT
-C
-C     Construct Kohn-Sham contribution
-C     ================================
-C
-      IF(DFTADD) THEN
-c        IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
-cC       Generate standard density matrix
-        IREPOP = JSYMOP-1
-        CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL GENDEN(WORK(KDMAT),CMO,1,IPRXQR)
-        IOPTS = 8
-        CALL DFTEXC(WORK(KDMAT),WORK(KD1AO),WORK(KF1AO),3,ISYMOP,IHRMOP,
-     &              IOPTS,WORK(KFREE),LFREE,IPRXQR)
-        CALL MEMREL('E3DRV.dft',WORK,1,KDMAT,KFREE,LFREE)
-      END IF
+
+
+!     construct XC contribution
+!     =========================
+
+      if (dftadd) then
+
+!       get unperturbed density matrix
+        call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
+        call genden(work(kdmat), cmo, 1, iprxqr)
+
+!       radovan:
+!       this is necessary iff
+!       (hybrid functional .and. gradient dependence .and. nonzero frequency)
+!       otherwise the symmetrization inside dftexc messes up the KS matrix
+!       we could check here whether we have this situation and not allocate
+!       otherwise but now we just play it safe and simply allocate it
+        call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
+        call dzero(work(kxc), 3*n2bbasxq)
+
+        irepop = jsymop - 1
+
+        call dftexc(work(kdmat),
+     &              work(kd1ao),
+     &              work(kxc),
+     &              3,
+     &              isymop,
+     &              ihrmop,
+     &              8,
+     &              work(kfree),
+     &              lfree,
+     &              iprxqr)
+
+!       add the (symmetrized) XC contribution on top of work(kf1ao)
+        call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)
+
+!       deallocate
+        call memrel('e3drv.dft', work, 1, kxc,   kfree, lfree)
+        call memrel('e3drv.dft', work, 1, kdmat, kfree, lfree)
+
+      end if
 #endif
-C
+
+
 C     Scale all Fock matrices with a factor 4 to agree with
 C     convention used in TWOFCK as of Aug 2004.
 C
