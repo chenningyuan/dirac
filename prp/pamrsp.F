@@ -896,7 +896,16 @@ C     In subroutine XRSST2 the corresponding integer array is accessed
 C     by 
 C     IVEC(IP) = x
 C     IVEC(IM) = x
-C     where IP = NFREQ + IM.
+C     where IP = NFREQ + IM and IM = 1, NFREQ
+C
+C     example for bad access to IVEC which caused the crash for GOSCI 
+C     (and in principle also for LUCIAREL):
+C
+C     NESIM = 1 ==> LEVEC = 1 --> DIMENSION IVEC(1)
+C     NFREQ = 1 ==> IM = 1, IP = 2 
+C
+C     allowed access:       IVEC(IM) = ...
+C     resulting bad access: IVEC(IP) = ...
 C
 C     FIXME: does this also apply to other cases with STATIC = .TRUE.? 
 C     Do we need a "#ifdef MOD_KRMC" statement?
