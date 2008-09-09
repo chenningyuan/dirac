@@ -31,21 +31,17 @@ ce = [m
 ###########################################
 
 ##### include variables from DIRAC Makefile.config !!!  #####
+
 include ../../Makefile.config
+### must be link of Makefile.moddef in this directory !
 
 ###########################################
 #
-#  DIRAC F90 compiler
+#  DIRAC F90/CC compilers
 #
 ###########################################
-FC      =  $(F90)
-
-###########################################
-#
-#  DIRAC C compiler
-#
-###########################################
-CCo      = $(CC)
+#FC      =  $(F90)
+#CCo      = $(CC)
 
 #################################################################################
 #
@@ -114,7 +110,7 @@ endif
 ifeq ($(FC),ifort)
 ### Intel Fortran 
       #  FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg  -nofor-main
+       FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg  -nofor-main
 endif
 
 # ... others combinations...
@@ -195,7 +191,7 @@ objects := $(modobjs) $(f90objs) $(c89objs)
 ###############################################
 
 ### to fix main dependence form the ../../Makefile.config file
-dirac.x : $(executable)
+#dirac.x : $(executable)
 
 executable = hsmrcc.exe
 
@@ -301,7 +297,7 @@ genhsmrpars.o : parameters.o iomodule.o orbmod.o
 
 %.o : %.c
 	@printf "Compiling HSMRCC C89 File ==> %s %s %s \t %s" $(cs) $@ $(ce) "....."
-	@echo -n "using" $(cs) $(CCo) $(CFLAGS) "-c -o" $(ce)
-	@$(CCo) $(CFLAGS) -c -o $(objdir)/$@ $<
+	@echo -n "using" $(cs) $(CC) $(CFLAGS) "-c -o" $(ce)
+	@$(CC) $(CFLAGS) -c -o $(objdir)/$@ $<
 	@printf "%s\n" " ...Done."
 
