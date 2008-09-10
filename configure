@@ -2011,7 +2011,7 @@ CC=$CC_COMP
 # Libraries - check them according to your server equipment !
 # You may need blas and lapack (if not using the builtin) and
 # mpi (if parallel). For mpi you also need the correct -I flag
-# in FFLAGS, CFLAGS and F90FLAGS (and their safe versions).
+# in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
 
 # preprocessing
@@ -2043,12 +2043,12 @@ fi
 
 cat <<EOF >> Makefile.config
 # compiler flags, standard
-FFLAGS=$cpp_f90 $f90_inc $use_flags $mod
+F77FLAGS=$cpp_f90 $f90_inc $use_flags $mod
 F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags
 CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
 
 # compiler flags, safe
-FFLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod
+F77FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod
 F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
 

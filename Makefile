@@ -34,7 +34,7 @@ Makefile.obj: safebuild dontbuild
 # safe .F files
 	@for f in `grep '\.F$$' safebuild`; do \
 	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(F77) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	echo '	$$(F77) $$(F77FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .c files
 	@for f in `grep '\.c$$' safebuild`; do \
@@ -67,7 +67,7 @@ Makefile.dep: Makefile.obj Makefile.moddef
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
 	@echo "#define WHERE_COMPILED \"${HOST}\"" >> $@
-	@echo "#define FCOMP \"${F77} ${FFLAGS}\"" >> $@
+	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
@@ -91,7 +91,7 @@ ftnchek:
 .SUFFIXES : .F .F90 .f90 .c .o
 
 .F.o:
-	$(F77) $(FFLAGS) -c -o $*.o $*.F
+	$(F77) $(F77FLAGS) -c -o $*.o $*.F
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
 .f90.o:
