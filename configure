@@ -2020,7 +2020,7 @@ DEPCPP=cpp $cpp_cc $parinc $depend_flags \$(MODS)
 
 # linker
 LD=\$(F90)
-LDFLAGS=$ldflag \$(LIBS)
+LDFLAGS=$ldflag 
 
 EOF
 
