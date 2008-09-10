@@ -65,7 +65,28 @@ fi
 # Is 'locate' installed?
 #which locate > /dev/null; locate_ok=$?
 #
+
+# For layout
+a=`expr length "a" 2>/dev/null`
+a="a"
+b=`echo ${#a} 2>/dev/null`
+if [ "$a" == "1" ]; then
+  # sh with expr
+  get_length="\'expr length \"\$2\"\'"
+elif [ "$b" == "1" ]; then
+  get_length="\${#2}"
+else
+  # Fix column width at 25 characters 
+  get_length="echo \"25\""
+fi
+#
+col_spacing=4
+col_sep=","
+row_sep=";"
+
 }
+
+
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -85,48 +106,49 @@ append () {
   fi
 }
 
-next_item () {
-# Splits a list into item and the remainder
-local tmp_2=xxx
-eval "tmp_2=\$$2"
-# Strip leading blank
-local size=`expr length "$tmp_2"`
-tmp_2=`expr substr "$tmp_2" 2 $size`
-local index=`expr index "$tmp_2" ' '`
-if [ "$index" -eq 0 ]; then
-  local tmp_1=$tmp_2
-else
-  index=`expr $index - 1`
-  local tmp_1=`expr substr "$tmp_2" 1 $index`
-  index=`expr $index + 1`
-  if [ $index -lt 1 ]; then 
-    index=1
-  fi  
-  size=`expr length "$tmp_2"` 
-  tmp_2=`expr substr "$tmp_2" $index $size` 
-fi
-eval "$1=\"$tmp_1\""
-eval "$2=\"$tmp_2\""
+length () {
+  local len=
+  eval "len=$get_length"
+  eval "$1='$len'"
 }
 
 str_len () {
 # Determines the length of the longest string in a list
   local max_len=0
-  for item in $1; do
-    item_len=`expr length $item`
+  local item=
+  local var_name=
+  local list=
+  local OLD_IFS=$IFS
+
+  IFS=$row_sep
+  if [ -z $2 ]; then
+    var_name="1"
+  else
+    var_name=$2
+  fi
+
+  for list in $1; do
+    IFS=$col_sep
+    set -- $list
+    eval "item=\$$var_name"
+    length item_len "$item"
     if [  "$item_len" -gt "$max_len" ]; then
-      max_len=`expr $item_len + 0`
+      max_len=$item_len
     fi
   done
+  IFS=$OLD_IFS
   return $max_len
 }
 
 list_len () {
 # returs the length of a list
   local counter=0
+  local OLD_IFS=$IFS
+  IFS=$row_sep
   for item in $1; do
     counter=`expr $counter + 1`
   done
+  IFS=$OLD_IFS
   return $counter
 }
 
@@ -142,48 +164,78 @@ blank () {
 # Is there a way to surpress immediate refresh of the terminal window?
 #   One solution is to build a complete string of every line
 #   and print it only to screen when it's completely finished.
-  $echo -n "$tmp"
+  $echo "$tmp\c"
 }
 
+get_item (){
+  local OLD_IFS=$IFS
+  local item=
+  local list=
+
+  if [ -z $4 ]; then
+    local counter=1
+  else 
+    local counter=$4
+  fi
+  
+  eval "$2=\"\""
+  IFS=$row_sep
+  for list in $1; do
+    if [ $counter -eq $3 ]; then
+      IFS=$col_sep
+      for item in $list; do
+        eval "$2=\"\$$2 $item\""
+      done
+      break
+    fi
+    counter=`expr $counter + 1`
+  done
+  IFS=$OLD_IFS
+}
 
 print_list() {
-# Prints two formatted lists including numbers etc.
-# Number of blanks between the columns
-  col_sep=4
+# Prints an array delimited by $row_sep and $col_sep.
 # Make local copies of the lists
-  local list_1="$1"
-  local list_2="$2"
+  local list="$1"
+  local OLD_IFS=$IFS
+
 # Get the widths of both columns
-  str_len "$list_1"
-  local size_1=$?
-  size_1=`expr $size_1 + $col_sep`
+  str_len "$list" 1
+  local size=$?
+  size=`expr $size + $col_spacing`
   
 # Set the first index of the list
-  if [ -z $3 ]; then
+  if [ -z $2 ]; then
     local counter=1
   else
-    local counter=$3 #`expr $3 + 0`
+    local counter=$2
   fi
 
 # The actual printing...
 # Here we have the possibility to make the layout terminalsize dependend
 # The system variable $COLUMNS needs to be queried to do this.
-  for item in $list_1; do
+  IFS=$row_sep
+  for item in $list; do
+    IFS=$col_sep
+    set -- $item
+    IFS=$OLD_IFS
+    tmp=`echo $1 | sed "/^ /d"`
     if [ "$counter" -lt 10 ]; then 
-      $echo -n "$counter)  $item"
+      $echo "$counter)  $tmp\c"
     else
-      $echo -n "$counter) $item"
+      $echo "$counter) $tmp\c"
     fi
+    length index "$1"
+    index=`expr $size - $index`
 # Add blanks till we are aligned at the second column
-    index=`expr length "$item"`
-    index=`expr $size_1 - $index`
     blank $index
 # Get the corresponding item in the second list
-    next_item tmpstr list_2
 # Print the item in the second list
-    $echo "($tmpstr)"
+    tmp=`echo $2 | sed "/^ /d"`
+    $echo "($tmp)"
     counter=`expr $counter + 1`
   done
+  IFS=$OLD_IFS
 }
 
 
@@ -627,7 +679,8 @@ find_compiler ()  {
 #   Here we return comp_set
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-$echo "\nChecking for $1 compilers:"
+local to_find=$1
+#$echo "\nChecking for $to_find compilers:"
 comp_found=""
 comp_pwd=""
 
@@ -636,58 +689,40 @@ search_dirs=`echo "$PATH"|sed 's/:/ /g'`
 # Which doesn't work on mac!
 if [ ! -z "$2" ]; then
   $echo 'JHS Do some more test on this part!' 
-  tmp_list=$comp_list
+  local tmp_list=$comp_list
   comp_list=$2
-  find_compiler $1
-  if [ -z "$compiler_found"]; then
+  find_compiler $to_find
+  if [ ! -z "$compiler_found"]; then
     exit
   fi
   $echo "Compiler specified by the user not found... Checking for the standard compilers."
+  comp_list=$tmp_list
 fi
 #comp_pwd=""
 for comp in $comp_list; do
 # Only search in $PATH
   for cur_dir in $search_dirs; do
     if [ -f $cur_dir/$comp ]; then
-      append comp_found "$comp"
-      comp_pwd="$comp_pwd $cur_dir"
+      comp_found="$comp_found $comp$col_sep $cur_dir$row_sep"
     fi
   done
 done
 
-
-#
-#
-#if [ -z "$user_comp" ]; then
-#    for comp in $comp_list; do
-#	if which "$comp" 2> /dev/null; then 
-#	    comp_found="$comp_found $comp"
-#	fi
-#    done
-#else
-#    comp_found="$user_comp"
-#fi
-
-
-# If there is found more than one compiler let the user pick it.
-counter=0
-for comp in $comp_found; do
-  counter=`expr $counter + 1`
-done
-
-case $counter in 
-  0 ) $echo "\n   No $1 compiler found on this computer"
-    echo  "   Cannot proceed without a Fortran compiler in path"
-    echo  "   Please check your path! "
-    echo  " Specify a compiler manually: "
-    exit ;;
-  * )
-    $echo "\nThe following $1 compilers were detected on your system: \n"
-    print_list "$comp_found" "$comp_pwd"
-    $echo "0)  Specify compiler manually."      
-    $echo ""
-  ;;
-esac
+if [ -z "$comp_found" ]; then
+  $echo "\n   No $to_find compiler found on this computer"
+  echo  "   Cannot proceed without a Fortran compiler in path"
+  echo  "   Please check your path! "
+  echo  " Specify a compiler manually: "
+  exit 
+else
+  $echo "\nThe following $to_find compilers were detected on your system: \n"
+  print_list "$comp_found"
+  $echo "0)  Specify compiler manually."      
+  $echo ""
+fi
+ 
+list_len "$comp_found"
+counter=$?
    
 comp_index=-1
 $echo "Which one you you want to use? (Default: 1) \c"
@@ -707,16 +742,10 @@ elif [ $comp_index -eq 0 ]; then
     read comp_foud
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
-    counter=0 
-    for comp in $comp_found; do
-	counter=`expr $counter + 1`
-        next_item tmp comp_pwd
-	if [ $counter -eq $comp_index ]; then
-	    comp_found=$comp
-            comp_pwd=$tmp
-	    break
-	fi
-    done 
+  get_item "$comp_found" comp_found $comp_index 1
+  set -- $comp_found
+  comp_found=$1
+  comp_pwd=$2
 fi
 
 if [ ! -z "$comp_pwd" ]; then
@@ -724,7 +753,7 @@ if [ ! -z "$comp_pwd" ]; then
     comp_pwd="$comp_pwd/"
   fi
 fi 
-echo "Compiler for $1: $comp_found"
+echo "Compiler for $to_find: $comp_found"
 }
 
 find_real_f90(){
@@ -811,7 +840,9 @@ fi
 debug='dbx'
 which_debug=''
 # jhs Tmpfix for non-unix sytems
-if [ -f "/usr/bin/which" ]; then
+
+a=`which which 2>&1`
+if [ -z "$a" ]; then
   ### looking priority: idb, pgdbg, dbx, gdb ....
   if [ ! -z `which idb 2>/dev/null` ]; then
     which_debug="idb"
@@ -847,11 +878,9 @@ search_math_libs(){
 #
 # Searches for mathematical libraries in the directories of dirlist
 #
-  echo "Searching for the mathematical libraries... "
-  echo
 
-  lib_names="dirac_blas dirac_lapack"
-  lib_dirs=" builtin builtin"
+  libs=" dirac blas$col_sep builtin$row_sep"
+  libs="$libs dirac lapack$col_sep builtin$row_sep"
 
   if [ $IPRINT -ge "8" ]; then
       echo 'search_math_libs:   lib_list=' $lib_list
@@ -863,8 +892,7 @@ search_math_libs(){
     for test_dir in $math_dirs; do
       for ext in $ext_list; do
         if test -f $test_dir/$test_lib$ext; then
-	  append lib_names $test_lib
-          append lib_dirs $test_dir
+	  libs="$libs $test_lib$col_sep $test_dir$row_sep"
 	  break
         fi
       done
@@ -872,7 +900,7 @@ search_math_libs(){
   done
 
 if [ $IPRINT -ge "8" ];  then
- echo 'search_math_libs: accumulated lib_names='$lib_names
+ echo 'search_math_libs: accumulated lib_names='$libs
 fi
 
 }
@@ -943,7 +971,7 @@ get_math_lib(){
 LIB=""
 
 search_math_libs
-list_len "$lib_names"
+list_len "$libs"
 max_lib=$?
 
 # If there is found more than one compiler let the user pick it.
@@ -953,15 +981,16 @@ if [ $IPRINT -ge "5" ];  then
  echo '\n get_math_lib: lib_names='$lib_names
 fi
 
-if [ ! -z "$lib_names" ]; then
+if [ ! -z "$libs" ]; then
   echo "The following libraries were detected on your system:"
 else
   echo "No optimized mathematical libraries were detected on your system:"
 fi
+echo ""
 
 # 0 and 1 are reserved for respectively manual configuration and searchig.
-print_list "$lib_names" "$lib_dirs" 2
-max_lib=`expr $max_lib + 2`
+print_list "$libs" 2
+max_lib=`expr $max_lib + 1`
 
 #
 #if [ ! -z "$both_blas_lapack" ]; then
@@ -971,12 +1000,14 @@ max_lib=`expr $max_lib + 2`
 #
 $echo "1)  Specify a library path to search. \t\c"
 #
-$echo "0) Configure libraries manually."
+$echo "0)  Configure libraries manually."
 $echo
 
 lib_index=-1
-$echo "Dirac is shipped with slow reference BLAS and LAPACK libraries,"
-$echo "but we strongly recommend you to link to more optimized versions."
+$echo 'You need to specify a BLAS AND a LAPACK routine.'
+$echo 'There are blas and lapack implementations shipped with dirac.'
+$echo 'However they are VERY SLOW compared to optimized libraries.'
+$echo "" 
 $echo "Which library you you want to use? \c"
 if [ $max_lib -gt 4 ]; then
   $echo "(More than one allowed. Default: 4 5) \c" 
@@ -1032,24 +1063,9 @@ for index in $lib_index; do
     $echo "Default LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
-
-    counter=1
-    for tmp_library in $lib_names; do
-      counter=`expr $counter + 1`
-      if [ $counter -eq $index ]; then
-        lib_name=$tmp_library
-        break
-      fi
-    done
-    counter=1
-    for tmp_dir in $lib_dirs; do
-      counter=`expr $counter + 1`
-      if [ $counter -eq $index ]; then
-        lib_dir=$tmp_dir
-        break
-      fi
-    done
-    setup_math_lib $lib_name $lib_dir
+    get_item "$libs" lib_name $index 2
+    set -- $lib_name
+    setup_math_lib $1 $2
   fi
 done
 }
@@ -1094,16 +1110,12 @@ $echo
 $echo 'The use of optimized BLAS and LAPACK routines implementation'
 $echo 'is very important, especially for the performance of MOLTRA and RELCCSD.'
 $echo
-$echo 'You need to specify a BLAS AND a LAPACK routine.'
-$echo 'There are blas and lapack implementations shipped with dirac.'
-$echo 'However they are VERY SLOW compared to specially designed libraries.'
-$echo "" 
-$echo "You can get all the libraries you want by typing their "
-$echo "numbers from the list below seperated by space."
-$echo "I.e. typing:"
-$echo "Which library you you want to use? (More than one allowed. Default: 0) 2 3(enter)"
-$echo "Configures dirac for the default libraries."
-$echo 
+#$echo "You can get all the libraries you want by typing their "
+#$echo "numbers from the list below seperated by space."
+#$echo "I.e. typing:"
+#$echo "Which library you you want to use? (More than one allowed. Default: 0) 2 3(enter)"
+#$echo "Configures dirac for the default libraries."
+#$echo 
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
@@ -2004,9 +2016,9 @@ fi
 cat <<EOF >> Makefile.config
 
 # fortran and C compilers
-F77=$F90_COMP
-F90=$F90_COMP
-CC=$CC_COMP
+F77=$F90_PATH$F90_COMP
+F90=$F90_PATH$F90_COMP
+CC=$CC_PATH$CC_COMP
 
 # Libraries - check them according to your server equipment !
 # You may need blas and lapack (if not using the builtin) and
