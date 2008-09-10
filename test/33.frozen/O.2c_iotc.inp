@@ -5,7 +5,8 @@ Oxygen atom
 .ANALYZE
 **HAMILTONIAN
 #.LVCORR
-.IOTC
+#.IOTC
+.X2C
 .CMPEIG
 .PRINT
 2
