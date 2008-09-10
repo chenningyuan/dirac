@@ -9315,13 +9315,15 @@ C
 C
 C     Transform matrix
 C
-      CALL SPH_IOT2(HCAR,NTBAS(1),HSPH,NSPHTOT,IP,WORK,KFREE,LFREE)
+      CALL SPH_IOT2(HCAR,NTBAS(1),HSPH,NSPHTOT,IP,
+     &              IPRINT,WORK,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Sph_iotc2 */
-      SUBROUTINE SPH_IOT2(HCAR,NCAR,HSPH,NSPH,IP,WORK,KFREE,LFREE)
+      SUBROUTINE SPH_IOT2(HCAR,NCAR,HSPH,NSPH,IP,
+     &                    IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Pointer IP:
@@ -9329,6 +9331,7 @@ C       IP(1,ISYM) - offset for spherical transformation matrix
 C       IP(2,ISYM) - number of spherical components for ISYM
 C       IP(3,ISYM) - pointer ICAR
 C       IP(4,ISYM) - pointer ISPH
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
