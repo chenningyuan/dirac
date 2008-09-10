@@ -287,7 +287,11 @@ C JHS 17 apr 2008
 C
 #ifdef MOD_EMB
       IF (DO_GRID_OUT) THEN
+#ifdef MOD_XML
          CALL FDE_GRIDOUT(WORK,LFREE)
+#else
+         call quit("FDE density export unsupported in this version.")
+#endif
       END IF
 #endif
 

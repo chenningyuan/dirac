@@ -406,6 +406,7 @@ C     Simple timing function
 
       END SUBROUTINE
 
+#ifdef MOD_XML
       SUBROUTINE FDE_GRIDOUT(WORK,LWORK)
       USE VC_GRID
       use xml_parser
@@ -613,6 +614,7 @@ C      FLUSH(LUPRI)
       CALL TIME()
 
       END SUBROUTINE
+#endif
 
 
 !
