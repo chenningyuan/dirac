@@ -86,6 +86,9 @@ rm -rf visual
 echo "Deleting cdft directory"
 rm -rf cdft
 
+echo "Deleting aoresponse directory"
+rm -rf aoresponse
+
 # miro : do not delete, we have preprocessor flags for it!
 #echo "Deleting AMFI directory"
 #rm -rf amfi
