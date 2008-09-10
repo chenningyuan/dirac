@@ -673,6 +673,9 @@ set_dirac_environment()
 initialize()
 {
    LOC=`pwd`
+#  radovan: this does not work on our cluster, `pwd` returns $HOME
+#  i have to use:
+#  LOC=$PBS_O_WORKDIR
 
    EXIT=0
 
