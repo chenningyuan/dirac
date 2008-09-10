@@ -74,6 +74,7 @@ if [ "$a" == "1" ]; then
   # sh with expr
   get_length="\'expr length \"\$2\"\'"
 elif [ "$b" == "1" ]; then
+  # Mac
   get_length="\${#2}"
 else
   # Fix column width at 25 characters 
@@ -146,7 +147,7 @@ list_len () {
   local OLD_IFS=$IFS
   IFS=$row_sep
   for item in $1; do
-    counter=`expr $counter + 1`
+    let "counter=$counter + 1"
   done
   IFS=$OLD_IFS
   return $counter
@@ -157,7 +158,7 @@ blank () {
   local counter=0
   local tmp=""
   while [ "$counter" -lt "$1" ]; do
-    counter=`expr $counter + 1`
+    let "counter=$counter+1"
     tmp="$tmp "
   done
 # Adds all blanks at the same time for performance
@@ -188,7 +189,7 @@ get_item (){
       done
       break
     fi
-    counter=`expr $counter + 1`
+    let "counter=$counter+1"
   done
   IFS=$OLD_IFS
 }
@@ -202,7 +203,7 @@ print_list() {
 # Get the widths of both columns
   str_len "$list" 1
   local size=$?
-  size=`expr $size + $col_spacing`
+  let "size=$size+$col_spacing"
   
 # Set the first index of the list
   if [ -z $2 ]; then
@@ -226,16 +227,54 @@ print_list() {
       $echo "$counter) $tmp\c"
     fi
     length index "$1"
-    index=`expr $size - $index`
+    let "index=$size - $index"
 # Add blanks till we are aligned at the second column
     blank $index
 # Get the corresponding item in the second list
 # Print the item in the second list
     tmp=`echo $2 | sed "/^ /d"`
     $echo "($tmp)"
-    counter=`expr $counter + 1`
+    let "counter=$counter + 1"
   done
   IFS=$OLD_IFS
+}
+
+
+search_libs() {
+#
+# Searches for libraries in the directories of dirlist
+#
+
+  local tmp_libs=
+  eval "tmp_libs=\"\$$1\""
+  
+  if [ $IPRINT -ge "8" ]; then
+      echo 'search_libs:  dir_list=' $2
+      echo 'search_libs:  lib_list=' $3
+      echo 'search_libs:  ext_list=' $4
+  fi
+  
+  if [ -z "$4" ]; then
+    local ext_list=".a .so"
+  else
+    local ext_list="$4"
+  fi
+
+  for test_lib in $3; do
+    for test_dir in $2; do
+      for ext in $ext_list; do
+        if test -f $test_dir/$test_lib$ext; then
+	  tmp_libs="$tmp_libs $test_lib$col_sep $test_dir$row_sep"
+	  break
+        fi
+      done
+    done
+  done
+  eval "$1=\"$tmp_libs\""
+if [ $IPRINT -ge "8" ];  then
+ echo 'search_libs: accumulated lib_names='$tmp_libs
+fi
+
 }
 
 
@@ -436,18 +475,15 @@ if [ "$par" = "yes" ]; then
 #  MPI settings, first we do the mpi-library
 #
    if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
-      parlib=
-      tmplib='libmpi.a libmpi.so'
-      for testdir in $pardir; do
-         for testlib in $tmplib; do
-            if test -f $testdir/$testlib; then
-               parlib='-lmpi'
-               parlibp=$testdir
-               break
-            fi
-         done
-         test -n "$parlib" && break
-      done
+      search_libs parlib "$pardir" "libmpi"
+# Temporarily get the first item of the list
+# Until we have a better search algoritm
+      get_item $parlib parlib 1
+      if [ -n "$parlib" ]; then
+	set -- $parlib
+        parlibp=$2
+        parlib='-lmpi'
+      fi
       if [ -z "$parlib" ]; then
          echo 'Parallel library: none'
       else
@@ -874,37 +910,18 @@ fi
 
 }
 
-search_math_libs(){
-#
-# Searches for mathematical libraries in the directories of dirlist
-#
-
-  libs=" dirac blas$col_sep builtin$row_sep"
-  libs="$libs dirac lapack$col_sep builtin$row_sep"
-
-  if [ $IPRINT -ge "8" ]; then
-      echo 'search_math_libs:   lib_list=' $lib_list
-      echo 'search_math_libs:  math_dirs=' $math_dirs
-      echo 'search_math_libs:   ext_list=' $ext_list
-  fi
-
-  for test_lib in $lib_list; do
-    for test_dir in $math_dirs; do
-      for ext in $ext_list; do
-        if test -f $test_dir/$test_lib$ext; then
-	  libs="$libs $test_lib$col_sep $test_dir$row_sep"
-	  break
-        fi
-      done
-    done
-  done
-
-if [ $IPRINT -ge "8" ];  then
- echo 'search_math_libs: accumulated lib_names='$libs
+find_mpi_path () {
+local is_mpi=`echo $F90_COMP | sed '/*mpi*/p'`
+if [ !-z $is_mpi ]; then
+# Ok, compiler handels the mpi libraries
+  return 0
 fi
 
-}
 
+
+
+
+}
 
 setup_math_lib(){
 
@@ -970,7 +987,10 @@ get_math_lib(){
 # Initialize global variables
 LIB=""
 
-search_math_libs
+libs=" dirac blas$col_sep builtin$row_sep"
+libs="$libs dirac lapack$col_sep builtin$row_sep"
+
+search_libs libs "$math_dirs" "$lib_list"
 list_len "$libs"
 max_lib=$?
 
@@ -990,16 +1010,9 @@ echo ""
 
 # 0 and 1 are reserved for respectively manual configuration and searchig.
 print_list "$libs" 2
-max_lib=`expr $max_lib + 1`
+let "max_lib=$max_lib + 1"
 
-#
-#if [ ! -z "$both_blas_lapack" ]; then
-#  counter=`expr $counter + 1`
-#  $echo "$counter) both lapack and blas"
-#fi
-#
 $echo "1)  Specify a library path to search. \t\c"
-#
 $echo "0)  Configure libraries manually."
 $echo
 
@@ -1123,7 +1136,6 @@ $echo
 ext_list='.so .a'
 lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml liblapack"
 LIB=""
-
 math_dirs=$dir_list
 
 if [ $IPRINT -ge "5" ];  then
@@ -1193,7 +1205,8 @@ if [ -z "$memdef" ]; then
    echo ' -note that memory use can be changed' \
         'through the shell variable DIRWRK'
    if [ $quick = 0 ]; then
-      $echo "Memory size (in MB, default: `expr $memdef '*' 8 /  1048576` MB) \c"
+      let "tmp=$memdef * 8/1048576"
+      $echo "Memory size (in MB, default: $tmp MB) \c"
       read memsiz
    else
       memsiz=
@@ -1201,7 +1214,7 @@ if [ -z "$memdef" ]; then
    if [ -z "$memsiz" ]; then
       memsiz=$memdef
    else
-      memsiz=`expr $memsiz '*' 1048576 / 8`
+      let "memsiz=$memsiz * 1048576 / 8"
    fi
 else
    memsiz=$memdef
