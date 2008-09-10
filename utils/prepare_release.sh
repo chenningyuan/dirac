@@ -63,7 +63,6 @@ rm -rf utils/visualization_scripts
 # we also need something for the test scripts ...
 echo "Deleting directories under /test"
 rm -rf test/43.plots
-rm -rf test/46.sdft_linear_response
 rm -rf test/56.aoresponse
 rm -rf test/45.densfit
 rm -rf test/47.fde.prop
