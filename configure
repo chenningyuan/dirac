@@ -495,6 +495,14 @@ if [ "$mesp" = "mpi" ]; then
    *)
      comptst="$F90_COMP -DSYS_$sys_name"
   esac
+# gfortran needs -fcray-pointer flag for POINTER statements in
+# MPI2_test.F
+  case $F90real in
+    gfortran)
+    $comptst="$comptst -fcray-pointer"
+    ;;
+  esac
+
   echo "Checking if a MPI-2 version is installed:"
   echo "$comptst ./test/MPI2_test.F"
   mpi2version="yes"
@@ -695,7 +703,7 @@ elif [ $comp_index -eq 0 ]; then
     echo "Note that compiler flags may not be set correctly."
     echo "Check Makefile.config afterwards !"
     echo ""
-    $echo "Enter you compiler:\c"
+    $echo "Enter your compiler:\c"
     read comp_foud
 # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
@@ -1531,6 +1539,10 @@ get_f90_flags(){
       esac
       c_opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
       opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize $march"
+#     gfortran needs flag -fcray-pointer if MPI-2 is enabled.
+      if [ "$mpi2version" = "yes" ]; then
+        $opt="$opt -fcray-pointer"
+      fi
       safe="-g $march"
       mod="-J$MODULE_DIR"
       ;;
