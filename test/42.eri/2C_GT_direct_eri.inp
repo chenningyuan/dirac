@@ -4,7 +4,8 @@ H2O2 molecule, integral calculations with ERI in pure two-component mode, SOO in
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
-.IOTC
+#.IOTC
+.X2C
 .GAUNT
 **INTEGRALS
 .RUNERI
