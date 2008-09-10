@@ -77,7 +77,7 @@ include Makefile.obj
 include Makefile.dep
 
 $(TARGET): $(OBJ)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(LD) $(LDFLAGS) -o $@ $(OBJ)
 
 clean:
 	rm `find . -name '*.o' -o -name '*.mod' -o -name '*~'`
