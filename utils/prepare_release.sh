@@ -80,6 +80,12 @@ rm -rf oof
 echo "Deleting AMFI directory"
 rm -rf amfi
 
+echo "Deleting visual directory"
+rm -rf visual
+
+echo "Deleting cdft directory"
+rm -rf cdft
+
 # miro : do not delete, we have preprocessor flags for it!
 #echo "Deleting AMFI directory"
 #rm -rf amfi
