@@ -66,6 +66,7 @@ rm -rf test/43.plots
 rm -rf test/56.aoresponse
 rm -rf test/45.densfit
 rm -rf test/47.fde.prop
+rm -rf test/38.london.magn_prop
 
 echo "Deleting HSCC directories"
 rm -rf hsmrcc
