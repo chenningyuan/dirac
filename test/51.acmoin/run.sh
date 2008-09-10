@@ -24,7 +24,8 @@ ln -sf cf.H DFHAT3
 # Run calculation for Nitrogen in linear symmetry
 #
 MOL=N_lin;
-MENU=N_lin;
+#MENU=N_lin;
+MENU=N_lin.noamfi;
 export MOL;
 export MENU;
 ../run.sh -get DFACMO
@@ -34,7 +35,8 @@ ln -s cf.C DFCAT
 # Export coefficients to Cs symmetry
 #
 MOL=N_Cs;
-MENU=N_Cs;
+#MENU=N_Cs;
+MENU=N_Cs.noamfi;
 export MOL;
 export MENU;
 ../run.sh -copy DFACMO -outcmo 
@@ -45,7 +47,8 @@ ln -sf cf.N DFNNNN
 # Run calculation for Ammonia
 #
 MOL=NH3;
-MENU=NH3;
+#MENU=NH3;
+MENU=NH3.noamfi;
 export MOL;
 export MENU;
 ../run.sh -copy DFNNNN -copy DFHAT1 -copy DFHAT2 -copy DFHAT3
