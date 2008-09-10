@@ -5407,7 +5407,7 @@ C
       ENDIF
 
       IF (NMLINE .GT. NMLN_LASTREAD)
-     $     READ (LUINFO,'(A)',END=11,ERR=11) MLINE(NMLINE)
+     $     READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &        ' READIN ERROR: Too many lines in input -,',
@@ -5432,7 +5432,7 @@ C     JHS Remove the next line?
         WRITE(LUPRI,*) 'Line=', NMLINE
       END IF
       
-
+   12 CONTINUE
       RETURN
       END
 C  /* Deck wronel */
