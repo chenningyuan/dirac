@@ -15,9 +15,9 @@ MENU=bss.fsccsd_IH;
 export MENU;
 ../run.sh
 #############
-echo "BSS+MFSSO Hamiltonian, IH FSCCSD"
-MENU=bss+mfsso.fsccsd_IH;
-export MENU;
-../run.sh
+#echo "BSS+MFSSO Hamiltonian, IH FSCCSD"
+#MENU=bss+mfsso.fsccsd_IH;
+#export MENU;
+#../run.sh
 #############
 

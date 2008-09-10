@@ -25,12 +25,12 @@ export MENU;
 rm DFCOEF
 ###############################
 ###############################
-echo "Zero field...BSS+MFSSO "
-MENU=bss+mfsso.zerofield;
-FILTER=filter_zerofield;
-export MENU;
-export FILTER;
-../run.sh -utcmo
+#echo "Zero field...BSS+MFSSO "
+#MENU=bss+mfsso.zerofield;
+#FILTER=filter_zerofield;
+#export MENU;
+#export FILTER;
+#../run.sh -utcmo
 ###############################
 echo "Zero field...BSS "
 MENU=bss.zerofield;
@@ -50,8 +50,4 @@ export MENU;
 ../run.sh -incmo
 ###############################
 rm DFCOEF
-
-
-
-
 
