@@ -175,27 +175,24 @@ C-----------------------------------------------------------------------
 #include "dftcom.h"
 #include "dftac.h"
 C
-      LOGICAL LBIT, FIRST_TIME_HERE
+      LOGICAL LBIT
       DIMENSION EIGENVALUES(*)
-C
-C
-C     get the homo eigenvalue
-C     =======================
-C
-      IF(.NOT. LBIT(LBIT_DFTAC,2)) THEN !GRAC is not active
-        HOMO_EIGENVALUE = D0
-        FIRST_TIME_HERE = .TRUE.
-        DO I = 1,NFSYM
-          IF(NISH(I) .GT. 0) THEN
-            DO J = 1,NISH(I)
-              E = EIGENVALUES(J+(I-1)*NORB(1)+NPSH(I))
-              IF(FIRST_TIME_HERE) HOMO_EIGENVALUE = E
-              FIRST_TIME_HERE = .FALSE.
-              IF(E .GT. HOMO_EIGENVALUE) HOMO_EIGENVALUE = E
-            ENDDO
-          ENDIF
-        ENDDO
-      ENDIF
+
+
+!     get the homo eigenvalue
+!     =======================
+
+      if (.not. lbit(lbit_dftac, 2)) then !grac is not active
+        homo_eigenvalue = -1.0d20
+        do i = 1, nfsym
+          if(nish(i) .gt. 0) then
+            do j = 1, nish(i)
+              e = eigenvalues((i-1)*norb(1) + npsh(i) + j)
+              if(e .gt. homo_eigenvalue) homo_eigenvalue = e
+            end do
+          end if
+        end do
+      end if
 C
 C
 C     turn asymptotic correction on ?
@@ -305,6 +302,20 @@ C
       IF(.NOT.FILE_IS_OPENED) THEN
         CLOSE(LUSAOP,STATUS = 'KEEP')
       ENDIF
+
+
+!     get the homo eigenvalue
+!     =======================
+
+      homo_eigenvalue = -1.0d20
+      do i = 1, nfsym
+        if(nish(i) .gt. 0) then
+          do j = 1, nish(i)
+            e = work(keig + j - 1 + (i-1)*norb(1) + npsh(i))
+            if(e .gt. homo_eigenvalue) homo_eigenvalue = e
+          end do
+        end if
+      end do
 C
 C
 C     calculate energy differences
