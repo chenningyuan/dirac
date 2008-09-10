@@ -77,6 +77,9 @@ rm -rf cap
 echo "Deleting OOF directory"
 rm -rf oof
 
+echo "Deleting AMFI directory"
+rm -rf amfi
+
 # miro : do not delete, we have preprocessor flags for it!
 #echo "Deleting AMFI directory"
 #rm -rf amfi
