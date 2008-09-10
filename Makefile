@@ -15,10 +15,11 @@ depend:
 	@rm Makefile.obj
 	@rm Makefile.dep
 # Make empty old files that can be included but will trigger a remake
+# This is needed because some make versions stop if an include file is
+# not found.
 	@touch -t 198001010000 Makefile.obj
 	@touch -t 198001010000 Makefile.dep
 	$(MAKE) Makefile.dep
-
 
 # Make a list of objects to build, and exceptions for files that need
 # different compilation options ("safe" flags)
@@ -33,7 +34,7 @@ Makefile.obj: safebuild dontbuild
 # safe .F files
 	@for f in `grep '\.F$$' safebuild`; do \
 	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(FC) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	echo '	$$(F77) $$(FFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
 	done
 # safe .c files
 	@for f in `grep '\.c$$' safebuild`; do \
@@ -66,7 +67,7 @@ Makefile.dep: Makefile.obj Makefile.moddef
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
 	@echo "#define WHERE_COMPILED \"${HOST}\"" >> $@
-	@echo "#define FCOMP \"${FC} ${FFLAGS}\"" >> $@
+	@echo "#define FCOMP \"${F77} ${FFLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
@@ -90,7 +91,7 @@ ftnchek:
 .SUFFIXES : .F .F90 .f90 .c .o
 
 .F.o:
-	$(FC) $(FFLAGS) -c -o $*.o $*.F
+	$(F77) $(FFLAGS) -c -o $*.o $*.F
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
 .f90.o:

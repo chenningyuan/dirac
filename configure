@@ -2004,8 +2004,8 @@ fi
 cat <<EOF >> Makefile.config
 
 # fortran and C compilers
-FC=$F90_COMP
-F90=\$(FC)
+F77=$F90_COMP
+F90=$F90_COMP
 CC=$CC_COMP
 
 # Libraries - check them according to your server equipment !
@@ -2019,7 +2019,7 @@ DEPFPP=cpp -traditional-cpp $depend_flags $parinc \$(MODS)
 DEPCPP=cpp $cpp_cc $parinc $depend_flags \$(MODS)
 
 # linker
-LD=\$(FC)
+LD=\$(F90)
 LDFLAGS=$ldflag \$(LIBS)
 
 EOF
