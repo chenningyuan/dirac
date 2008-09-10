@@ -68,17 +68,17 @@ fi
 
 # For layout
 a=`expr length "a" 2>/dev/null`
-a="a"
-b=`echo ${#a} 2>/dev/null`
+b="a"
+c=`echo ${#b} 2>/dev/null`
 if [ "$a" == "1" ]; then
   # sh with expr
-  get_length="\'expr length \"\$2\"\'"
-elif [ "$b" == "1" ]; then
+  get_length="\`expr length \"\$2\"\`"
+elif [ "$c" == "1" ]; then
   # Mac
   get_length="\${#2}"
 else
-  # Fix column width at 25 characters 
-  get_length="echo \"25\""
+  # We just take the column spacing.
+  get_length=0
 fi
 #
 col_spacing=4
@@ -169,6 +169,13 @@ blank () {
 }
 
 get_item (){
+# gets an item from a list
+# Arguments 1. The list
+#           2. Variable in which the arguments are space delimited put.
+#           3. The index to be found
+#           4. (Optional) the index of the first item.
+
+
   local OLD_IFS=$IFS
   local item=
   local list=
@@ -196,6 +203,8 @@ get_item (){
 
 print_list() {
 # Prints an array delimited by $row_sep and $col_sep.
+# Arguments: 1. The list
+#            2. (Optional) starting index.
 # Make local copies of the lists
   local list="$1"
   local OLD_IFS=$IFS
@@ -206,7 +215,7 @@ print_list() {
   let "size=$size+$col_spacing"
   
 # Set the first index of the list
-  if [ -z $2 ]; then
+  if [ -z "$2" ]; then
     local counter=1
   else
     local counter=$2
@@ -243,8 +252,11 @@ print_list() {
 search_libs() {
 #
 # Searches for libraries in the directories of dirlist
+# Arguments: 1. variable to store found libraries in. 
+#            2. List of directories to search in.
+#            3. List of library names.
+#            4. (Optional) list of extensions
 #
-
   local tmp_libs=
   eval "tmp_libs=\"\$$1\""
   
@@ -461,56 +473,8 @@ if [ "$par" = "yes" ]; then
       esac
 
    fi
-   pardir=dir_list
-   incdir='/usr/include /usr/local/include /local/include'
 #
-#  Modify for RS6000K where mpi.h is placed in some obscure directory
-#
-   if [ "$machine" = "*-ibm" ]; then
-      incdir="$incdir /usr/lpp/ppe.poe/include"
-   fi
-#
-   parlibp=
-#
-#  MPI settings, first we do the mpi-library
-#
-   if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
-      search_libs parlib "$pardir" "libmpi"
-# Temporarily get the first item of the list
-# Until we have a better search algoritm
-      get_item $parlib parlib 1
-      if [ -n "$parlib" ]; then
-	set -- $parlib
-        parlibp=$2
-        parlib='-lmpi'
-      fi
-      if [ -z "$parlib" ]; then
-         echo 'Parallel library: none'
-      else
-         echo "Parallel library: $parlib ($parlibp)"
-      fi
-   fi
-   if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
-#
-#     Now we try to find an include directory
-#
-      parinc=
-      incfile='mpif.h'
-      for testdir in $incdir; do
-         if test -f $testdir/$incfile; then
-            parinc=-I$testdir
-            break
-         fi
-      done
-      if [ -z "$parinc" ]; then
-         echo 'Parallel include: none'
-      else
-         echo 'Parallel include:'$parinc
-      fi
-      fi
-      if [ "$parlib" = "no" ]; then
-           parlib=
-   fi
+# MPI questions after we fixed the compiler
 #
 #  Ask for machine file
 #
@@ -906,17 +870,70 @@ if [ -z "$debug" ]; then
 else
    $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
 fi
-
+echo
 
 }
 
 find_mpi_path () {
-local is_mpi=`echo $F90_COMP | sed '/*mpi*/p'`
-if [ !-z $is_mpi ]; then
+#local is_mpi=`echo $F90_COMP | sed '/*mpi*/p'`
+#if [ -n "$is_mpi" ]; then
+#  echo "Found a mpi compiler. No further searching for mpi libraries."
 # Ok, compiler handels the mpi libraries
-  return 0
-fi
+#  return 0
+#fi
 
+   pardir=dir_list
+   incdir='/usr/include /usr/local/include /local/include'
+#
+#  Modify for RS6000K where mpi.h is placed in some obscure directory
+#
+   if [ "$machine" = "*-ibm" ]; then
+      incdir="$incdir /usr/lpp/ppe.poe/include"
+   fi
+#
+   parlibp=
+#
+#  MPI settings, first we do the mpi-library
+#
+   if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
+      parlib=""
+      search_libs parlib "$pardir" "libmpi"
+# Temporarily get the first item of the list
+# Until we have a better search algoritm
+      get_item "$parlib" parlib 1
+      if [ -n "$parlib" ]; then
+	set -- $parlib
+        parlibp=$2
+        parlib='-lmpi'
+      fi
+      if [ -z "$parlib" ]; then
+         echo 'Parallel library: none'
+      else
+         echo "Parallel library: $parlib ($parlibp)"
+      fi
+   fi
+   if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
+#
+#     Now we try to find an include directory
+#
+      parinc=
+      incfile='mpif.h'
+      for testdir in $incdir; do
+         if test -f $testdir/$incfile; then
+            parinc=-I$testdir
+            break
+         fi
+      done
+      if [ -z "$parinc" ]; then
+         echo 'Parallel include: none'
+      else
+         echo 'Parallel include:'$parinc
+      fi
+      fi
+      if [ "$parlib" = "no" ]; then
+           parlib=
+   fi
+#
 
 
 
@@ -2347,6 +2364,9 @@ parallel_stuff
 safeflags_stuff
 find_compilers
 find_debugger
+if [ "$mesp"=="mpi" ]; then
+  find_mpi_path
+fi
 find_mathlib
 set_memsize
 set_installdir
