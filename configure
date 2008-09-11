@@ -627,10 +627,7 @@ if [ "$mesp" = "mpi" ]; then
   if [ "$mpi2version" = "yes" ]; then
     echo "=> MPI-2 is available."
     cpp_cc="$cpp_cc -DVAR_MPI2"
-    case $F90_COMP_NAME in
-       xlf*|mpfort|mpxlf_r) cpp_f90="$cpp_f90,-DVAR_MPI2" ;;
-       *) cpp_f90="$cpp_f90 -DVAR_MPI2" ;;
-    esac
+    cpp_f90="$cpp_f90 -DVAR_MPI2"
   fi
 fi
 
