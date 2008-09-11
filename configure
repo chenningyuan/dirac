@@ -2,6 +2,10 @@
 #
 # FILE    : configure
 #
+# NOTE: THIS SCRIPT IS MORE THAN 2000 LINES. 
+#       FIRST A LOT OF SCRIPT FUNCTIONS ARE DEFINED.
+#       THE ACTUAL SCRIPT IS AT THE BOTTOM, SEARCH FOR "MAIN SCRIPT" TO FIND IT.
+#
 # Shell script for configuring Makefile.config needed to build
 # the DIRAC relativistic molecular code, the pam and runtest script.
 # The shell script is a heavily modified version of the script used for DALTON
@@ -222,8 +226,8 @@ print_list() {
   fi
 
 # The actual printing...
-# Here we have the possibility to make the layout terminalsize dependend
-# The system variable $COLUMNS needs to be queried to do this.
+# (Here we have the possibility to make the layout terminalsize dependent.
+#  The system variable $COLUMNS needs to be queried to do this.)
   IFS=$row_sep
   for item in $list; do
     IFS=$col_sep
@@ -341,8 +345,8 @@ else
    os=
 fi
 
-$echo "Machine\t\t\t: $machine"
-$echo "Operating system\t: $os"
+$echo "=> Machine             : $machine"
+$echo "=> Operating system    : $os"
 #
 #  Set search list for libraries,
 #  always libatlas first and libblas last.
@@ -394,7 +398,7 @@ echo
 if [ -z "${par}" ]; then
   if [ $quick = 0 ]; then
     $echo 'Do you want to install the program'\
-    'in a parallel version? (y/N) \c'
+    'in a parallel version, using MPI? (y/N) \c'
     read par
   else
     par=no
@@ -409,7 +413,7 @@ if [ -z "${par}" ]; then
   esac
 fi
 
-echo 'Parallel version: '${par}''
+echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
 
   $echo 'Will your nodes use local disks? (y/N) \c'
@@ -423,15 +427,14 @@ if [ "$par" = "yes" ]; then
     ;;
   esac
 
-  echo ' - with local disks for each node: '${localdisks}''
+  echo '=> - with local disks for each node: '${localdisks}''
 
 #
 #  Parallel architectures are difficult, better warn the user
 #
    echo
-   echo  "Makefiles for parallel architecture are difficult to guess"
-   $echo "Please always compare the generated Makefile.config with" \
-         "local documentation.\n"
+   echo "Makefiles for parallel architecture are difficult to guess"
+   echo "Please always compare the generated Makefile.config with local documentation."
 
 #
 #  Determine message passing protocol to be used
@@ -439,7 +442,7 @@ if [ "$par" = "yes" ]; then
    if [ -z "${mesp}" ]; then
       mesp="mpi"
    fi
-   echo 'Parallel message passing: '$mesp
+   echo '=> Parallel message passing: '$mesp
 #
 #  Check whether we have a parallel compiler available
 #
@@ -540,27 +543,21 @@ mpi2check () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 if [ "$mesp" = "mpi" ]; then
   mpi2version="yes"
-  case $F90_COMP in
-     xlf*|mpfort|mpxlf_r)
-     comptst="$F90_COMP -WF,-DSYS_$sys_name"
-     ;;
-   *)
-     comptst="$F90_COMP -DSYS_$sys_name"
+  case $F90_COMP_NAME in
+    xlf*|mpfort|mpxlf_r) comptst="$F90_COMP -WF,-DSYS_$sys_name" ;;
+    *) comptst="$F90_COMP -DSYS_$sys_name" ;;
   esac
-# gfortran needs -fcray-pointer flag for POINTER statements in
-# MPI2_test.F
+# gfortran needs -fcray-pointer flag for POINTER statements in MPI2_test.F
   case $F90real in
-    gfortran)
-    $comptst="$comptst -fcray-pointer"
-    ;;
+    gfortran) comptst="$comptst -fcray-pointer" ;;
   esac
 
-  echo "Checking if a MPI-2 version is installed:"
-  echo "$comptst ./test/MPI2_test.F"
+ $echo "\nChecking if a MPI-2 version is installed:"
+  echo "   $comptst ./test/MPI2_test.F"
   mpi2version="yes"
   $comptst ./test/MPI2_test.F 2>/dev/null || mpi2version="no"
+  rm -f a.out
   if [ "$mpi2version" = "no" ]; then
-    echo  " "
     echo  " "
     echo  "Hmm. Failed to find support for MPI-2 in your installation.  "
     echo  " "
@@ -576,31 +573,29 @@ if [ "$mesp" = "mpi" ]; then
     echo  "    - KR-MCSCF using LUCIAREL  "
     echo  "    - MOLTRA with parallel I/O (helpful for global/shared scratch spaces)"
     echo  " "
-    $echo "Configure with MPI-2 support anyway? (y/N)"
+    $echo "Configure with MPI-2 support anyway? (y/N) \c"
     read mpi2version
     if [ "$mpi2version" = "y" ]; then
 	mpi2version=yes
-	echo "Remember to add MPI2 paths to Makefile.config if necessary"
+	echo "OK. Remember to add MPI2 paths to Makefile.config if necessary !!!"
     fi;
   fi
   if [ "$mpi2version" = "yes" ]; then
+    echo "=> MPI-2 is available."
     cpp_cc="$cpp_cc -DVAR_MPI2"
-    case $F90_COMP in
-       xlf*|mpfort|mpxlf_r) 
-       cpp_f90="$cpp_f90,-DVAR_MPI2"
-       ;;
-       *)
-       cpp_f90="$cpp_f90 -DVAR_MPI2"
+    case $F90_COMP_NAME in
+       xlf*|mpfort|mpxlf_r) cpp_f90="$cpp_f90,-DVAR_MPI2" ;;
+       *) cpp_f90="$cpp_f90 -DVAR_MPI2" ;;
     esac
   fi
 fi
 
 if [ $IPRINT -ge "7" ];  then 
- echo '... after mpi stuff' 
+  echo '... after mpi stuff' 
 fi
 
+} # END mpi2check ()
 
-}
 find_compilers () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -628,16 +623,16 @@ comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xl
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77 $comp_list"
 fi
-find_compiler "Fortran" $F90_COMP
-F90_COMP=$comp_found
-F90_PATH=$comp_pwd
+find_compiler "Fortran" $F90_COMP_NAME
+F90_COMP_NAME=$comp_found
+F90_COMP=${comp_pwd}${comp_found}
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_fortran: found F90 compiler ' $F90_COMP
 fi
 
 # take care of the 64 bit architecture !
-F90real=$F90_COMP # set_bit_arch() needs this variavle
+F90real=$F90_COMP # set_bit_arch() needs this variable
 set_bit_arch
 
 if [ $IPRINT -ge "5" ];  then
@@ -708,45 +703,56 @@ for comp in $comp_list; do
   done
 done
 
+while_test=
+while [ -z "$while_test" ]
+do
+
 if [ -z "$comp_found" ]; then
   $echo "\n   No $to_find compiler found on this computer"
   echo  "   Cannot proceed without a Fortran compiler in path"
   echo  "   Please check your path! "
   echo  " Specify a compiler manually: "
-  exit 
+#  exit 
+  counter=0
+  comp_index=0
 else
   $echo "\nThe following $to_find compilers were detected on your system: \n"
-  print_list "$comp_found"
   $echo "0)  Specify compiler manually."      
+  print_list "$comp_found"
   $echo ""
-fi
  
-list_len "$comp_found"
-counter=$?
+  list_len "$comp_found"
+  counter=$?
    
-comp_index=-1
-$echo "Which one you you want to use? (Default: 1) \c"
-read comp_index
-if [ -z "$comp_index" ]; then
+  comp_index=-1
+  $echo "Which one do you want to use? (Default: 1) \c"
+  read comp_index
+  if [ -z "$comp_index" ]; then
     comp_index=1
+  fi
 fi
+
 if [ $comp_index -lt 0 -o $comp_index -gt $counter ]; then
     echo "Not a valid compiler number: $comp_index"
-    exit
+    #exit -- hjaaj: ask again instead.
 elif [ $comp_index -eq 0 ]; then
     echo ""
     echo "Note that compiler flags may not be set correctly."
     echo "Check Makefile.config afterwards !"
     echo ""
     $echo "Enter your compiler:\c"
-    read comp_foud
-# jhs userinput instead of exit?    echo 'jhs Userinput here?'
+    read comp_found
+    while_test="OK"
+    # jhs userinput instead of exit?    echo 'jhs Userinput here?'
 else
-  get_item "$comp_found" comp_found $comp_index 1
-  set -- $comp_found
-  comp_found=$1
-  comp_pwd=$2
+    get_item "$comp_found" comp_found $comp_index 1
+    set -- $comp_found
+    comp_found=$1
+    comp_pwd=$2
+    while_test="OK"
 fi
+
+done
 
 if [ ! -z "$comp_pwd" ]; then
   if [ "$comp_pwd" != "/" ]; then
@@ -760,7 +766,7 @@ find_real_f90(){
 #
 # Find the underlying compiler for fortran mpi compilers
 #
-case "$F90_COMP" in
+case "$F90_COMP_NAME" in
 openmpif*|mpif*)
    if "$F90_COMP" -show > /dev/null; then
       # MPICH
@@ -790,7 +796,7 @@ openmpif*|mpif*)
    echo "Compiler in $F90_COMP found to be $F90real ..."
    ;;
 *)
-   F90real=$F90_COMP;;
+   F90real=$F90_COMP_NAME;;
 esac   
 }
 
@@ -874,6 +880,7 @@ echo
 
 }
 
+
 find_mpi_path () {
 #local is_mpi=`echo $F90_COMP | sed '/*mpi*/p'`
 #if [ -n "$is_mpi" ]; then
@@ -907,9 +914,9 @@ find_mpi_path () {
         parlib='-lmpi'
       fi
       if [ -z "$parlib" ]; then
-         echo 'Parallel library: none'
+         echo '=> Parallel library: none'
       else
-         echo "Parallel library: $parlib ($parlibp)"
+         echo "=> Parallel library: $parlib ($parlibp)"
       fi
    fi
    if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
@@ -925,20 +932,16 @@ find_mpi_path () {
          fi
       done
       if [ -z "$parinc" ]; then
-         echo 'Parallel include: none'
+         echo '=> Parallel include: none'
       else
-         echo 'Parallel include:'$parinc
+         echo '=> Parallel include:'$parinc
       fi
       fi
       if [ "$parlib" = "no" ]; then
            parlib=
    fi
 #
-
-
-
-
-}
+}  # end of "find_mpi_path ()"
 
 setup_math_lib(){
 
@@ -1025,11 +1028,12 @@ else
 fi
 echo ""
 
-# 0 and 1 are reserved for respectively manual configuration and searchig.
+# 0 and 1 are reserved for respectively manual configuration and searching.
 print_list "$libs" 2
 let "max_lib=$max_lib + 1"
 
-$echo "1)  Specify a library path to search. \t\c"
+$echo "1)  Specify a library path to search."
+#
 $echo "0)  Configure libraries manually."
 $echo
 
@@ -1038,7 +1042,7 @@ $echo 'You need to specify a BLAS AND a LAPACK routine.'
 $echo 'There are blas and lapack implementations shipped with dirac.'
 $echo 'However they are VERY SLOW compared to optimized libraries.'
 $echo "" 
-$echo "Which library you you want to use? \c"
+$echo "Which libraries do you want to use? \c"
 if [ $max_lib -gt 4 ]; then
   $echo "(More than one allowed. Default: 4 5) \c" 
 elif [ $max_lib -gt 3 ]; then
@@ -1143,7 +1147,7 @@ $echo
 #$echo "You can get all the libraries you want by typing their "
 #$echo "numbers from the list below seperated by space."
 #$echo "I.e. typing:"
-#$echo "Which library you you want to use? (More than one allowed. Default: 0) 2 3(enter)"
+#$echo "Which library do you want to use? (More than one allowed. Default: 0) 2 3(enter)"
 #$echo "Configures dirac for the default libraries."
 #$echo 
 #
@@ -1674,7 +1678,7 @@ get_largefiles(){
   case $machine in
     i[3-6]86-* | x86_64-* | ia64-unknown-linux)
       if [ $quick = 0 ]; then
-        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
+        $echo '\nCan your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
         read largefiles
       else
         largefiles=Y
@@ -1827,13 +1831,12 @@ case $machine in
       sys_name="LINUX"
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
-
 #
-# If we are using mpif77/mpicc check which compiler it uses to make
+# In case we are using mpif*/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
       case "$F90real" in
-      g95)
+        g95)
          opt="$opt -fno-second-underscore"
          safe="$safe -fno-second-underscore" ;;
       esac
@@ -1850,12 +1853,13 @@ case $machine in
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
 #
-# If we are using mpif77/mpicc check which compiler it uses to make
+# In case we are using mpif*/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
       case "$F90real" in
-      ifort)
-	      ;;
+        g95)
+         opt="$opt -fno-second-underscore"
+         safe="$safe -fno-second-underscore" ;;
       esac
 
       find_real_cc
@@ -1901,13 +1905,13 @@ case $machine in
       get_cpp_flags
       cpp_f90="-DVAR_MFDS $cpp_f90"
 
-      F90real="$F90_COMP"
+      F90real="$F90_COMP_NAME"
       get_f90_flags
       get_cc_flags
 
 esac
 
-}
+} # END set_compile_flags()
 
 xlfify()
 {
@@ -1918,8 +1922,7 @@ xlfify()
     fi
 }
 
-
-make_makefile_configure ()  {
+make_Makefile.config ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # We are beginning to see the end of the installation requirements
@@ -2023,7 +2026,7 @@ fi
 #
 # Add the modifications that concern the module preprocessor statements
 #
-case $F90_COMP in
+case $F90_COMP_NAME in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
@@ -2133,7 +2136,7 @@ MPI_LIB=$parlib
 #
 EOF
 fi
-}
+} # END make_Makefile.config ()
 
 
 make_pam_runtest ()  {
@@ -2195,7 +2198,7 @@ if [ $IPRINT -ge "5" ]; then
   echo 'make_pam_runtest: done'
 fi
 
-}
+} # END make_pam_runtest ()
 
 
 final_words () {
@@ -2210,7 +2213,7 @@ echo "pam files and edit them if you wish."
 echo
 echo "Please make sure that the mathematical libraries used have been "
 echo "compiled with the same compiler you are using now, otherwise it "
-echo "might be neccasary to link to additional runtime libraries "
+echo "might be neccasary to link to additional runtime libraries."
 echo
 echo "Please check 'Known issues and problems' at"
 echo "   http://dirac.chem.sdu.dk/"
@@ -2218,9 +2221,13 @@ echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
 echo "   make"
-echo "Then Dirac should be ready to run..."
+echo "and then Dirac should be ready to run..."
 }
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# THIS FINISHED THE DEFINITIONS OF FUNCTIONS
+#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # MAIN SCRIPT
@@ -2352,7 +2359,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         F90_COMP="$val"
+         F90_COMP_NAME="$val"
          ;;
       "i"  )
          IPRINT=$val
@@ -2381,7 +2388,8 @@ find_mathlib
 set_memsize
 set_installdir
 set_scratchdir
-make_makefile_configure
+make_Makefile.config
 make_pam_runtest
 final_words
 
+# --- END OF FILE configure --- for configuring compilation of the DIRAC program ---
