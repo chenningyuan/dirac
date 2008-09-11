@@ -53,11 +53,10 @@ rm utils/prepare_dyall_pblock_basis.sh
 rm utils/prepare_dyall_sblock_basis.sh
 rm utils/reformat_includes.py
 rm utils/remove_copyright.py
-
 rm utils/qjaco.F
-
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
+rm -rf notes
 
 # delete tests that are not shipped
 # and adapt runtest.in
