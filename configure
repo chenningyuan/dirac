@@ -1901,7 +1901,21 @@ esac
 
 xlfify()
 {
-    echo "$@" | sed 's/-D/-WF,-D/g'
+    if [ -n "$IBMMOD" ]; then
+	echo "$@" | sed 's/-D/-WF,-D/g'
+    else
+	echo "$@"
+    fi
+}
+
+getmods()
+{
+    if [ -r Makefile.moddef ]; then
+	egrep '^MODS=' Makefile.moddef | cut -c 6-
+    else
+	echo "Error, cannot find Makefile.moddef, quitting"
+	exit 1
+    fi
 }
 
 make_makefile_configure ()  {
@@ -2012,11 +2026,12 @@ case $F90_COMP in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
-     cpp_f90="-WF,$cpp_f90,\$(MODS)"
+# ulfek: check if this is ok
+#     cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
+#     cpp_f90="-WF,$cpp_f90,\$(MODS)"
      ;;
    *)
-     cpp_f90="$cpp_f90 \$(MODS)"
+     cpp_f90="$cpp_f90 `getmods`"
 esac
 
 ##################################################
@@ -2051,12 +2066,12 @@ CC=$CC_PATH$CC_COMP
 LIBS      = $LIB
 
 # preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags $parinc \$(MODS)
-DEPCPP=cpp $cpp_cc $parinc $depend_flags \$(MODS)
+DEPFPP=cpp -traditional-cpp $depend_flags $parinc `getmods`
+DEPCPP=cpp $cpp_cc $parinc $depend_flags `getmods`
 
 # linker
 LD=\$(F90)
-LDFLAGS=$ldflag 
+LDFLAGS=$ldflag
 
 EOF
 
@@ -2079,13 +2094,13 @@ fi
 
 cat <<EOF >> Makefile.config
 # compiler flags, standard
-F77FLAGS=$cpp_f90 $f90_inc $use_flags $mod
-F90FLAGS=$cpp_f90 $f90_inc $use_flags $mod $f90_extraflags
+F77FLAGS=`xlfify $cpp_f90 $f90_inc $use_flags $mod`
+F90FLAGS=`xlfify $cpp_f90 $f90_inc $use_flags $mod $f90_extraflags`
 CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
 
 # compiler flags, safe
-F77FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod
-F90FLAGS_SAFE=$cpp_f90 $f90_inc $safe $mod $f90_extraflags
+F77FLAGS_SAFE=`xlfify $cpp_f90 $f90_inc $safe $mod`
+F90FLAGS_SAFE=`xlfify $cpp_f90 $f90_inc $safe $mod $f90_extraflags`
 CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
 
 
