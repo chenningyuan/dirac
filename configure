@@ -2114,15 +2114,6 @@ MPI_LIB=$parlib
 #
 EOF
 fi
-#
-# On apple and dec machines we need to run ranlib when creating an archive
-#
-case $machine in
-   *apple* | alpha-dec|mips-dec|vax-dec|alphaev6-dec )
-cat <<EOF>> Makefile.config
-$tab ranlib \$@
-EOF
-esac
 }
 
 
