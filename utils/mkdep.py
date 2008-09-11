@@ -5,7 +5,7 @@ cppcmd = ' '.join(sys.argv[1:])
 
 use_re     = re.compile('\s*use\s+(\w+)',                    re.I)
 module_re  = re.compile('\s*module(?!\s+procedure)\s+(\w+)', re.I)
-include_re = re.compile('^# 1 \"([^"]*)\" 1',             re.I)
+include_re = re.compile('^#( |line )1 \"([^<"]*)\"',             re.I)
 
 def scan_file(path,cppcmd):
     cpp = os.popen(cppcmd+' '+path)
@@ -23,7 +23,7 @@ def scan_file(path,cppcmd):
             else:
                 m = include_re.match(line)
                 if m:
-                    includes.add(m.group(1))
+                    includes.add(m.group(2))
     return (includes,use_mod,gen_mod)
 
 def objpath(srcpath):
