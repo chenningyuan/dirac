@@ -2145,12 +2145,8 @@ make_pam_runtest ()  {
 #   bash is preferred - otherwise use sh
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-$echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
-if [ -f /bin/bash ]; then
-   echo "found /bin/bash"
-   echo '#!/bin/bash' > $INSTALL_DIR/pam
-   echo '#!/bin/bash' > $SRC_DIR/test/runtest
-fi
+echo '#!/bin/bash' > $INSTALL_DIR/pam
+echo '#!/bin/bash' > $SRC_DIR/test/runtest
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
 #
