@@ -1691,7 +1691,7 @@ get_largefiles(){
 set_compile_flags(){
 echo
 
-f90_inc="-I$INCLUDE_DIR -I$MODULE_DIR"
+f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 find_real_f90
 get_f90_flags
