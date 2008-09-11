@@ -1899,6 +1899,10 @@ esac
 
 }
 
+xlfify()
+{
+    echo "$@" | sed 's/-D/-WF,-D/g'
+}
 
 make_makefile_configure ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2020,16 +2024,6 @@ esac
 #################################################
 
 #first define the preprocessing flags for the active modules
-if [ $IBMMOD -eq 1 ]; then
-cat <<EOF >  Makefile.config
-SEP           =,
-EOF
-else
-cat <<EOF >  Makefile.config
-NULLSTRING   :=
-SEP          := \$(NULLSTRING) #end of line
-EOF
-fi
 
 cat <<EOF >> Makefile.config
 include Makefile.moddef
