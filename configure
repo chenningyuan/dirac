@@ -1693,8 +1693,10 @@ getmods()
     if [ -r Makefile.moddef ]; then
 	egrep '^MODS=' Makefile.moddef | cut -c 6-
     else
-	echo "Error, cannot find Makefile.moddef, quitting"
-	exit 1
+	echo "Error, cannot find Makefile.moddef." >&2
+	echo "Run pamadm to correct this problem. Quitting." >&2
+	# Suicide is painless, it brings on many changes
+	kill $$
     fi
 }
 

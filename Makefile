@@ -82,7 +82,7 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 
 clean:
-	rm `find . -name '*.o' -o -name '*.mod' -o -name '*~'`
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~'`
 
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
