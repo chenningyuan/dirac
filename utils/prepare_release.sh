@@ -59,39 +59,30 @@ rm utils/qjaco.F
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
 
-# Delete directories under /test that should not be shipped
-# we also need something for the test scripts ...
-echo "Deleting directories under /test"
-rm -rf test/43.plots
-rm -rf test/56.aoresponse
-rm -rf test/45.densfit
-rm -rf test/47.fde.prop
-rm -rf test/38.london.magn_prop
+# delete tests that are not shipped
+# and adapt runtest.in
+echo "Deleting test directories that are not shipped"
+for test in 43.plots \
+            56.aoresponse \
+            45.densfit \
+            47.fde.prop \
+            38.london.magn_prop; do
 
-echo "Deleting HSCC directories"
-rm -rf hsmrcc
+    rm -rf test/$test
+    sed "s/$test//g" test/runtest.in > delete_me; mv delete_me test/runtest.in
+done
 
-echo "Deleting CAP directory"
-rm -rf cap
+for directory in hsmrcc \
+                 cap \
+                 oof \
+                 amfi \
+                 visual \
+                 cdft \
+                 amfi; do
 
-echo "Deleting OOF directory"
-rm -rf oof
-
-echo "Deleting AMFI directory"
-rm -rf amfi
-
-echo "Deleting visual directory"
-rm -rf visual
-
-echo "Deleting cdft directory"
-rm -rf cdft
-
-echo "Deleting aoresponse directory"
-rm -rf aoresponse
-
-# miro : do not delete, we have preprocessor flags for it!
-#echo "Deleting AMFI directory"
-#rm -rf amfi
+    echo "Deleting directory $directory"
+    rm -rf $directory
+done
 
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
