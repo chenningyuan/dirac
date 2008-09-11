@@ -28,29 +28,31 @@ Makefile.obj: safebuild dontbuild
 	@echo "Collecting source files for build into Makefile.obj"
 	@echo "#Automatically generated file, do not edit" > $@
 	@echo "OBJ=\\" >> $@
-	@find $(SOURCE_DIRS) -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
-	| egrep -v -f dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@
+	@(find $(SOURCE_DIRS) -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
+	| egrep -v -f dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@)
 	@echo >> $@
 # safe .F files
-	@for f in `grep '\.F$$' safebuild`; do \
+# The true command is needed on certain systems (AIX on Jump) where the
+# exit code of the whole for statement is the same as that of grep.
+	@(for f in `grep '\.F$$' safebuild; true`; do \
 	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(F77) $$(F77FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done
+	done)
 # safe .c files
-	@for f in `grep '\.c$$' safebuild`; do \
+	@(for f in `grep '\.c$$' safebuild; true`; do \
 	echo "`echo $$f | sed 's/.c$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(CC) $$(CFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done
+	done)
 # safe .F90 files
-	@for f in `grep '\.F90$$' safebuild`; do \
+	@(for f in `grep '\.F90$$' safebuild; true`; do \
 	echo  "`echo $$f | sed 's/.F90$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done
+	done)
 # safe .f90 files
-	@for f in `grep '\.f90$$' safebuild`; do \
+	@(for f in `grep '\.f90$$' safebuild; true`; do \
 	echo "`echo $$f | sed 's/.f90$$/.o/'`: $$f" >> $@;  \
 	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done
+	done)
 
 Makefile.dep: Makefile.obj Makefile.moddef
 	@echo "Collecting dependencies into Makefile.dep"
