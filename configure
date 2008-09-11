@@ -1531,7 +1531,7 @@ get_cpp_flags(){
   if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
     append cpp_f90 "-DVAR_MKL"
   fi
-
+ 
   set_bit_arch
 }
 
@@ -1922,6 +1922,11 @@ xlfify()
     fi
 }
 
+cpp_is_gcc()
+{
+     (echo xxx | cpp --version 2>&1 )| grep 'Free Software Foundation' > /dev/null
+}
+
 make_Makefile.config ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -2030,9 +2035,6 @@ case $F90_COMP_NAME in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-# ulfek: check if this is ok
-#     cpp_f90=`echo $cpp_f90 | sed 's/ /,/g'`
-#     cpp_f90="-WF,$cpp_f90,\$(MODS)"
      ;;
    *)
      cpp_f90="$cpp_f90 `getmods`"
@@ -2057,13 +2059,13 @@ if [ "$mesp" = "mpi" ]; then
    fi
 fi
 
-if [ "$IBMMOD" = 0 ]; then
+CPP=cpp
+# Find out how to preprocess fortran
+if cpp_is_gcc; then
     FPP="cpp -traditional"
 else
     FPP="cpp"
 fi
-
-CPP=cpp
 
 cat <<EOF >> Makefile.config
 
