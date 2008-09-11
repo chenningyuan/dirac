@@ -1687,6 +1687,15 @@ get_largefiles(){
     esac
 }
 
+getmods()
+{
+    if [ -r Makefile.moddef ]; then
+	egrep '^MODS=' Makefile.moddef | cut -c 6-
+    else
+	echo "Error, cannot find Makefile.moddef, quitting"
+	exit 1
+    fi
+}
 
 set_compile_flags(){
 echo
@@ -1695,6 +1704,7 @@ f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 find_real_f90
 get_f90_flags
+cpp_cc=`getmods`
 
 case $machine in
 #
@@ -1901,22 +1911,13 @@ esac
 
 xlfify()
 {
-    if [ -n "$IBMMOD" ]; then
+    if [ "$IBMMOD" = 1 ]; then
 	echo "$@" | sed 's/-D/-WF,-D/g'
     else
 	echo "$@"
     fi
 }
 
-getmods()
-{
-    if [ -r Makefile.moddef ]; then
-	egrep '^MODS=' Makefile.moddef | cut -c 6-
-    else
-	echo "Error, cannot find Makefile.moddef, quitting"
-	exit 1
-    fi
-}
 
 make_makefile_configure ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2052,6 +2053,15 @@ if [ "$mesp" = "mpi" ]; then
       f90_inc=$f90_inc $parinc
    fi
 fi
+
+if [ "$IBMMOD" = 0 ]; then
+    FPP="cpp -traditional"
+else
+    FPP="cpp"
+fi
+
+CPP=cpp
+
 cat <<EOF >> Makefile.config
 
 # fortran and C compilers
@@ -2066,8 +2076,8 @@ CC=$CC_PATH$CC_COMP
 LIBS      = $LIB
 
 # preprocessing
-DEPFPP=cpp -traditional-cpp $depend_flags $parinc `getmods`
-DEPCPP=cpp $cpp_cc $parinc $depend_flags `getmods`
+DEPFPP=$FPP $cpp_f90 $depend_flags $parinc
+DEPCPP=$CPP $cpp_cc $parinc $depend_flags
 
 # linker
 LD=\$(F90)
@@ -2094,14 +2104,14 @@ fi
 
 cat <<EOF >> Makefile.config
 # compiler flags, standard
-F77FLAGS=`xlfify $cpp_f90 $f90_inc $use_flags $mod`
-F90FLAGS=`xlfify $cpp_f90 $f90_inc $use_flags $mod $f90_extraflags`
-CFLAGS=$cpp_cc  $cc_inc  $use_c_flags
+F77FLAGS=`xlfify $use_flags $f90_inc $mod $cpp_f90`
+F90FLAGS=`xlfify $use_flags $f90_inc $mod $f90_extraflags $cpp_f90`
+CFLAGS=$use_c_flags $cc_inc $cpp_cc
 
 # compiler flags, safe
-F77FLAGS_SAFE=`xlfify $cpp_f90 $f90_inc $safe $mod`
-F90FLAGS_SAFE=`xlfify $cpp_f90 $f90_inc $safe $mod $f90_extraflags`
-CFLAGS_SAFE=$cpp_cc  $cc_inc  $c_safe
+F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
+F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
+CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
 
 
 EOF
