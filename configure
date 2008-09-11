@@ -113,7 +113,7 @@ str_len () {
     IFS=$col_sep
     set -- $list
     eval "item=\$$var_name"
-    if [  ${#item} -gt $max_len ]; then
+    if [ ${#item} -gt $max_len ]; then
       max_len=${#item}
     fi
   done
@@ -2150,15 +2150,6 @@ if [ -f /bin/bash ]; then
    echo "found /bin/bash"
    echo '#!/bin/bash' > $INSTALL_DIR/pam
    echo '#!/bin/bash' > $SRC_DIR/test/runtest
-elif [ -f /bin/ksh ]; then
-   echo "found /bin/ksh"
-   echo '#!/bin/ksh' > $INSTALL_DIR/pam
-   echo '#!/bin/ksh' > $SRC_DIR/test/runtest
-else
-   echo ""
-   echo "Neither ksh nor bash seems to be installed -> using sh."
-   echo '#!/bin/sh' > $INSTALL_DIR/pam
-   echo '#!/bin/sh' > $SRC_DIR/test/runtest
 fi
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
