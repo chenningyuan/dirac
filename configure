@@ -2361,6 +2361,7 @@ if [ $IPRINT -gt "0" ];  then
   echo 'configure print level set to '$IPRINT
 fi
 
+getmods > /dev/null # Make sure that pamadm was run before configure
 guess_system
 parallel_stuff
 safeflags_stuff
