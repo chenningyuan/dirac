@@ -4,3 +4,4 @@ amfi/amfi.F
 amfi/amfi1.F
 aoresponse/matrix_oper.F90
 aoresponse/matrix_mod.F90
+abacus/hermodules.F
