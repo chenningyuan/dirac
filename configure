@@ -895,6 +895,10 @@ $echo "DETECTION OF MPI LIBRARIES.\n"
 case $F90_COMP in
   *mpi*) 
     echo "Found a mpi compiler. No further searching for mpi libraries."
+# temporary fix for wrong "yes" in Makefile.config when a MPI-wrapper is
+# used. SK - 14 Sep 08
+    parinc=""
+    parlib=""
     return 0;;
 esac
 
