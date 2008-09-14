@@ -437,7 +437,7 @@ C
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
      &          DMRAO(NSYMBL,NSYMBL,*),GABRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(MAXSHL,MAXSHL,*), DSEND(2), ISEND(2)
-      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6)
+      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6), PRIMUPD_NODES
 C
 C--------------------------------------
 C     Calculate number of Fock matrices
@@ -529,6 +529,7 @@ C
  110  CONTINUE
 C
 #if defined (VAR_MPI)
+      PRIMUPD_NODES = .FALSE.
       IF (NEWGEO) THEN
          CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,
      &       MPI_COMM_WORLD,IERR)
@@ -546,6 +547,7 @@ C
          CALL MPI_BCAST(MAXPRI,1,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .FALSE.
+         PRIMUPD_NODES = .TRUE.
       ELSE
          NFINIS = 0
          CALL MPI_BCAST(NFINIS,1,my_MPI_INTEGER,MPARID,
@@ -576,6 +578,15 @@ C     Send parint.h
 C........note that with icommsize COMMON blocks must be sent as integers...
       CALL MPI_BCAST(I1_PARINT,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     ... otherwise xyz reader fails in parallel mode
+C
+      IF( PRIMUPD_NODES )THEN
+#if defined (VAR_MPI)
+        CALL GET_PRIMITF()
+#endif
+      END IF
+C
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
       
@@ -1388,8 +1399,18 @@ C
 C     
 
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
-
 CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
+C
+C     ... xyz input reader fails/gives wrong results from now on 
+C         in parallel if there is no update 
+C         for primitives. Does it change because of reordered geoemtry?
+C         FIXME: check enabling reordered geoemtry instead of broadcast of 
+C         primit.h. - SK 14 Sep 08
+      IF( NEWGEO )THEN
+#if defined (VAR_MPI)
+        CALL GET_PRIMITF()
+#endif
+      END IF
 C
 C     Set common-block BLOCKS
 C
@@ -1473,6 +1494,29 @@ C
 C
       RETURN
       END
+#if defined(VAR_MPI)
+      SUBROUTINE GET_PRIMITF()
+#include "implicit.h"
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "primit.h"
+#include "infpar.h"
+C........primit.h
+         CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICCF,MXPRIM*MXCONT,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRX,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRY,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRZ,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      END
+#endif
 C  /* Deck parlop */
       SUBROUTINE PARLOP(WORK,LWORK,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &     EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
