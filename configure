@@ -804,6 +804,10 @@ openmpif*|mpif*)
    fi
    echo "Compiler in $F90_COMP found to be $F90real ..."
    ;;
+mpxlf|mpxlf_r)
+   F90real=xlf
+   echo "Compiler in $F90_COMP found to be $F90real ..."
+   ;;
 *)
    F90real=$F90_COMP_NAME;;
 esac   
@@ -903,7 +907,7 @@ case $F90_COMP in
 esac
 #  IBMs compiler wrapper
 case $F90_COMP_NAME in
-    mpfort|mpxlf_r)   
+    mpfort|mpxlf_r)
     echo "Found a mpi compiler. No further searching for mpi libraries."
 # temporary fix for wrong "yes" in Makefile.config when a MPI-wrapper is
 # used. SK - 14 Sep 08
@@ -1620,6 +1624,7 @@ get_f90_flags(){
       ;;
     xlf)
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
+     # echo " module flags set for xlf: $mod"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       ;;
@@ -1820,7 +1825,9 @@ case $machine in
             ;;
          esac
 
-	 mod="-qmoddir=$MODULE_DIR"
+         if [ "$mod" = "" ]; then
+	    mod="-qmoddir=$MODULE_DIR"
+         fi
          f90_extraflags="-qfree=f90"
          ;;
 #
@@ -2135,7 +2142,14 @@ EOF
 # Insert necessary additional features for parallel calculations
 #
 if [ "$mesp" = "mpi" ]; then
-   if [ "$parlib_pwd" = "" || "$parinc" = "" || "$parlib" = "" ]; then
+      write_mpi_ini=""
+   if [ "$parlib_pwd" != "" ]; then
+      write_mpi_ini="yes"
+   fi
+   if [ "$parinc" != "" ]; then
+      write_mpi_ini="yes"
+   fi
+   if [ "$write_mpi_ini" = "yes" ]; then
       cat <<EOF >> Makefile.config
 #
 # Parallel initialization
