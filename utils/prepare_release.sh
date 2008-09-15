@@ -78,7 +78,7 @@ for directory in hsmrcc \
                  cap \
                  oof \
                  amfi \
-                 argos \
+                 argosecp \
                  visual \
                  cdft \
                  krmc \
