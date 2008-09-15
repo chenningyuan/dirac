@@ -82,6 +82,7 @@ for directory in hsmrcc \
                  cdft \
                  krmc \
                  luciarel \
+                 aoresponse \
                  amfi; do
 
     echo "Deleting directory $directory"
