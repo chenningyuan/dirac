@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
