@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* general.c:
    (c) Pawel Salek, pawsa@theochem.kth.se, 2001-08-02

@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 /* Partially automatically generated PZ81 functional.
    Reference: J.P. Perdew and A. Zunger, Phys. Rev. B, 23, 5048 (1981).
    Implemented and tested by: Pawel Salek.

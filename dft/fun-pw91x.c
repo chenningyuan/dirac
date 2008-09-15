@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 /* Automatically generated functional code: pw91x
    Maxima input:
     >> PI:    3.14159265358979312;

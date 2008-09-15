@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 /* fun-lb94.c:
    implementation of Exchange-correlation potential with correct 
    asymptotic behavior by R. van Leeuwen and E. J. Baerends:

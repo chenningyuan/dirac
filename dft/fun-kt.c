@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-kt.c:
    implementation of KT functional and its derivatives.

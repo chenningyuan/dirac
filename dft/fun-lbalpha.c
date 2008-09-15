@@ -1,4 +1,8 @@
 /*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
+/*
  *
  * LBalpha
  *
