@@ -64,6 +64,9 @@ echo "Deleting test directories that are not shipped"
 for test in 43.plots \
             56.aoresponse \
             45.densfit \
+            26.krmc_gosci \
+            27.krmc_luciarel \
+            28.luciarel_medium \
             47.fde.prop \
             38.london.magn_prop; do
 
