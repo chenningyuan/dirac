@@ -1,5 +1,6 @@
 #ifdef MOD_STEX
 C
+!dirac_copyright_start
 C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -32,6 +33,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
+!dirac_copyright_end
 C
 C
 C

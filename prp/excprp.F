@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C***********************************************************************
 C
 C     Driver routine for computing matrix norm.

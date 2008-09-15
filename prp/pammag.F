@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C
 C "For Zion's sake will I not hold my peace, and for Jerusalem's sake I will not rest,
 C  until her righteousness go forth as brightness, and her salvation as a lamp that burneth."
