@@ -901,6 +901,16 @@ case $F90_COMP in
     parlib=""
     return 0;;
 esac
+#  IBMs compiler wrapper
+case $F90_COMP_NAME in
+    mpfort|mpxlf_r)   
+    echo "Found a mpi compiler. No further searching for mpi libraries."
+# temporary fix for wrong "yes" in Makefile.config when a MPI-wrapper is
+# used. SK - 14 Sep 08
+    parinc=""
+    parlib=""
+    return 0;;
+esac
 
 pardir=$dir_list
 incdir='/usr/include /usr/local/include /local/include'
@@ -2125,18 +2135,31 @@ EOF
 # Insert necessary additional features for parallel calculations
 #
 if [ "$mesp" = "mpi" ]; then
-   if [ ! -z "$parlib_pwd" ]; then
-      parlib_pwd=-L$parlib_pwd
-   fi
-    cat <<EOF >> Makefile.config
+   if [ "$parlib_pwd" = "" || "$parinc" = "" || "$parlib" = "" ]; then
+      cat <<EOF >> Makefile.config
 #
 # Parallel initialization
 #
-MPI_INCLUDE_DIR=$parinc
-MPI_LIB_PATH=$parlib_pwd
-MPI_LIB=$parlib
-#
 EOF
+   fi
+   if [ ! -z "$parlib_pwd" ]; then
+      parlib_pwd=-L$parlib_pwd
+   fi
+   if [ "$parinc" != "" ]; then
+      cat <<EOF >> Makefile.config
+MPI_INCLUDE_DIR=$parinc
+EOF
+   fi 
+   if [ "$parlib_pwd" != "" ]; then
+      cat <<EOF >> Makefile.config
+MPI_LIB_PATH=$parlib_pwd
+EOF
+   fi 
+   if [ "$parlib" != "" ]; then
+      cat <<EOF >> Makefile.config
+MPI_LIB=$parlib
+EOF
+   fi 
 fi
 } # END make_Makefile.config ()
 
