@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 module xml_parser
   use xml_structure
   implicit none

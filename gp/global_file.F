@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C
 C aspg: at this point (2007-05-08) i have not yet setup a way yo 
 C       automatically enable VAR_PFS in the make system, so if

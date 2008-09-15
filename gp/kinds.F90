@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 !
 !      here we can collect variable type definitions
 !      i'm not so sure about the decimals and exponent ranges so please edit

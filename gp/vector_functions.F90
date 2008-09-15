@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 ! Contains a module for elementairy vector operations.
 ! 
 ! JHS, 17-04-2008

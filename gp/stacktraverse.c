@@ -1,3 +1,7 @@
+/*
+!dirac_copyright_start
+!dirac_copyright_end
+*/
 #include "system_flavor.h"
 
 #ifdef SYS_LINUX

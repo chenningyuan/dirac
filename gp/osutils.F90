@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 ! This module contains functions to communicate with the operating system.
 ! ulfek march 2008
 module os_utils

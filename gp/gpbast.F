@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
       SUBROUTINE SET_LBIT(LBIT_INTEGER,IDIGIT)
 #include "implicit.h"
       LOGICAL LBIT
