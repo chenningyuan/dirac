@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 !     !!! NEW MODULE FOR CONVERTING BETWEEN TYPES !!!
 !     OTHER SOLLUTIONS (C++) ARE MORE THAN WELCOME
 !     JHS, 11-04-2007

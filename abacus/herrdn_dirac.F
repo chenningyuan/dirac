@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C
 C FILE : herrdn_dirac.F
 C
