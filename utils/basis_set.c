@@ -1,4 +1,5 @@
 /*
+!dirac_copyright_start
        Copyright (c) 2004 by the authors of Dirac (see below).
        All Rights Reserved.
 
@@ -31,6 +32,7 @@
 
        For information on how to get a licence see:
           http://dirac.chem.sdu.dk
+!dirac_copyright_end
 */
 /*
  *  Program to read and write relativistic basis sets
