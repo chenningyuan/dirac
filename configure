@@ -33,11 +33,11 @@
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # TODO
-# Add an additional: save_flags= -O0 in makefile.config - this is done (miro)
-#
 # Large molecule flag -> out (takes lot of memory)?
 #
 # miro: Still place for further improvements,  modularisation etc
+#
+# Clean code
 #
 
 initialize ()  {
@@ -66,9 +66,6 @@ if [ "	" = "`echo '\t'`" ]; then
 else
    echo="echo -e"
 fi
-#
-# Is 'locate' installed?
-#which locate > /dev/null; locate_ok=$?
 #
 # Layout
 col_spacing=4
@@ -122,14 +119,15 @@ str_len () {
 }
 
 list_len () {
-# returs the length of a list
+# returns the length of a list
   local counter=0
   local OLD_IFS=$IFS
   if [ -z $2 ]; then
-    IFS=$row_sep
+    local counter=0
   else
-    IFS=$2
+    local counter=$2
   fi
+  IFS=$row_sep
   for item in $1; do
     let "counter=$counter + 1"
   done
@@ -185,6 +183,64 @@ get_item (){
   IFS=$OLD_IFS
 }
 
+remove_item() {
+# 1. List
+# 2. Item
+
+local list_name="$1"
+local old_list=
+eval "old_list=\"\$$1\""
+local new_list=
+local del_list="$2"
+local OLD_IFS="$IFS"
+
+IFS="$row_sep"
+for item in $old_list; do 
+  keep_item=1
+  IFS="$row_sep"
+  for rm_item in $del_list; do
+    IFS="$col_sep"
+    set -- $rm_item
+    item_1=${item%%$col_sep*}
+    item_2=${item#$item_1*$col_sep}
+    item_2=${item_2%%$col_sep*}
+    if [ "$item_1" = "$1" -a "$item_2" = "$2" ]; then 
+      keep_item=0
+    fi
+  done
+  if [ $keep_item -eq 1 ]; then
+    new_list="$new_list $item$row_sep"
+  fi
+done
+eval "$list_name=\"$new_list\""
+IFS="$OLD_IFS"
+}
+
+add_item() {
+# 1. List
+# 2. Item
+# 3. Indices
+local old_list=
+eval "old_list=\"\$$1\""
+
+local new_list="$old_list"
+list_len "$old_list" 
+local counter=$?
+local add_default=
+eval "add_default=\"\$$3\""
+local OLD_IFS="$IFS"
+
+IFS="$row_sep"
+for item in $2; do
+  let "counter=$counter+1"
+  new_list="$new_list $item$row_sep"
+  add_default="$add_default $counter"
+done
+eval "$1=\"$new_list\""
+IFS="$OLD_IFS"
+eval "$3=\"$add_default\""
+}
+
 print_list() {
 # Prints an array delimited by $row_sep and $col_sep.
 # Arguments: 1. The list
@@ -196,11 +252,15 @@ print_list() {
 # Get the widths of both columns
   str_len "$list" 1
   local size=$?
+  str_len "$list" 2
+  local size_2=$?
+
   let "size=$size+$col_spacing"
+  let "size_2=$size_2+$col_spacing"
   
 # Set the first index of the list
   if [ -z "$2" ]; then
-    local counter=1
+    local counter=0
   else
     local counter=$2
   fi
@@ -210,6 +270,7 @@ print_list() {
 #  The system variable $COLUMNS needs to be queried to do this.)
   IFS=$row_sep
   for item in $list; do
+    let "counter=$counter + 1"
     IFS=$col_sep
     set -- $item
     IFS=$OLD_IFS
@@ -219,6 +280,7 @@ print_list() {
     else
       $echo "$counter) $tmp\c"
     fi
+
     index=${#1}
     let "index=$size - $index"
 # Add blanks till we are aligned at the second column
@@ -226,12 +288,19 @@ print_list() {
 # Get the corresponding item in the second list
 # Print the item in the second list
     tmp=${2:1}
-    $echo "($tmp)"
-    let "counter=$counter + 1"
+    $echo "($tmp)\c"
+
+    if [ -n "$3" ]; then
+      index=${#2}
+      let "index=$size_2 - $index"
+      blank $index
+      tmp=${3:1}
+      $echo "--> $tmp <--\c"
+    fi
+    $echo ""
   done
   IFS=$OLD_IFS
 }
-
 
 search_libs() {
 #
@@ -286,11 +355,12 @@ question () {
   local OLD_IFS=$IFS
   list_len "$4" 
   local start_n=$?
-  local default=
+  let "start_n=$start_n-1"
+  local default=""
   local answer=
 
   if [ -n "$3" ]; then 
-    $echo "\nThe following $2 were detected on your system: \n"
+    $echo "The following $2 were detected on your system: \n"
   else
     $echo "\nNo $2 were detected on your system: \n"
   fi
@@ -298,9 +368,9 @@ question () {
   IFS=$row_sep
   local index=$start_n
   for item in $4; do
-    let "index=$index - 1"
     IFS=" "
     $echo "$index) $item\t\c"
+    let "index=$index - 1"
   done
   $echo "\n"
   if [ -n "$7" ]; then 
@@ -311,12 +381,23 @@ question () {
   list_len "$3"
   let "max_item=$?+$start_n"
   for item in $5; do
-    if [ 0 -lt $item -a $item -lt $max_item ]; then
+    let "item=$item+$start_n"
+    if [ 0 -le $item -a $item -le $max_item ]; then
       default="$default $item"
     fi
   done
   if [ -z "$default" ]; then
-    default=0
+    if [ -n "$6" ]; then
+      local tmp_n
+      let "tmp_n=$start_n+1"
+      default=" $tmp_n"
+      let "tmp_n=$tmp_n+1"
+      default="$default $tmp_n"
+    else 
+      local tmp_n
+      let "tmp_n=$start_n+1"
+      default=" $tmp_n"
+    fi
   fi
   if [ -n "$6" ]; then
     $echo "(More than one possible. Default:$default)\t\c"
@@ -328,15 +409,14 @@ question () {
     answer="$default"
   fi
   for item in $answer; do
-    if [ 0 -gt $item -a $item -gt $max_item ]; then
+    if [ 0 -gt $item -o $item -gt $max_item ]; then
       $echo "$item is not a valid choice for $2. Please pick another."
-      question "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8"
+      question "$1" "$2" "$3" "$4" "$5" "$6" "$7"
     fi
   done
   eval "$1=\"$answer\""
   IFS=$OLD_IFS
 }
-
 
 usage ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -431,7 +511,7 @@ if [ $IPRINT -ge "5" ];  then
     echo
     echo 'guess_system: variable dir_list=' $dir_list
 fi
-
+echo
 }
 
 
@@ -562,7 +642,7 @@ else
    rsh=rsh
    rcp=rcp
 fi
-
+echo
 }
 
 safeflags_stuff() {
@@ -636,6 +716,110 @@ if [ $IPRINT -ge "7" ];  then
 fi
 } # END mpi2check ()
 
+
+find_mpi_path () {
+$echo "\nDETECTION OF MPI LIBRARIES.\n"
+case $F90_COMP in
+  *mpi*) 
+    echo "Found a mpi compiler. No further searching for mpi libraries."
+    return 0;;
+esac
+
+pardir=$dir_list
+incdir='/usr/include /usr/local/include /local/include'
+#  Modify for RS6000K where mpi.h is placed in some obscure directory
+if [ "$machine" = "*-ibm" ]; then
+  incdir="$incdir /usr/lpp/ppe.poe/include"
+fi
+parlib_pwd=
+#
+#  MPI settings, first we do the mpi-library
+#
+if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
+  parlib=""
+  search_libs parlib "$pardir" "libmpi libmpich" ".a .so .so.0" 
+  if [ -n "$parlib" ]; then
+    question lib_index "mpi_libraries" "$parlib" " Specify the root of the mpi directory. $row_sep Configure libraries manually."
+
+    if [ $lib_index -eq 0 ]; then
+      $echo "No mpi libraries are included at this moment."
+      $echo "To add the libraries yourself edit Makefile.config manually!"
+      return 0
+    elif [ $lib_index -eq 1 ]; then
+      $echo ""
+    elif [ -n $lib_index ]; then
+      get_item "$parlib" parlib $lib_index 2
+      set -- $parlib
+      parlib_pwd=$2
+      parlib='-lmpi'
+    fi
+  fi
+ 
+# jhs could be changed in a while loop in case of typo's
+  if [ -z "$parlib" ]; then
+    echo "Please enter the directory containing your mpi libraries:"
+    read mpi_lib
+    search_libs parlib "$mpi_lib $mpi_lib/lib" "libmpi libmpich" ".a .so .so.0" 
+    if [ -n "$parlib" ]; then
+      get_item "$parlib" parlib 1
+      set -- $parlib
+      parlib=-lmpi
+      parlib_pwd=$2
+    else 
+      $echo "Not a valid mpi library found. Please edit Makefile.config manually!"
+      parlib=""
+      parlib_pwd=""
+    fi
+  fi
+  if [ -z "$parlib" ]; then
+    echo 'Parallel library: none'
+  else
+    echo "Parallel library: $parlib ($parlib_pwd)"
+  fi
+  echo
+fi
+if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
+#
+#     Now we try to find an include directory
+#
+  parinc=""
+  if [ -n "$parlib" ]; then
+    tmp_dir=${parlib_pwd%/*}
+    if [ -f $tmp_dir/include/mpif.h ]; then
+      echo "Included mpif.h file: $tmp_dir/mpif.h"
+      parinc="-I$tmp_dir/include/mpif.h"
+    fi
+    tmp_dir=${tmp_dir%/*}
+    if [ -f $tmp_dir/include/mpif.h ]; then
+      echo "Included mpif.h file: $tmp_dir/mpif.h"
+      parinc="-I$tmp_dir/include/mpif.h"
+    fi
+    if [ -z "$parinc" ]; then
+      echo "Please enter the directory containing your mpi include file (mpif.h):"
+      read parinc
+      if [ -f "$parinc/mpif.h" ]; then
+        parinc="-I$parinc/mpif.h"
+      else
+        parinc=""
+      fi
+    fi
+  fi
+
+  if [ -z "$parinc" ]; then
+    echo "Include file 'mpif.h' not found. Please edit Makefile.config manually!."
+    echo 'Parallel include: none'
+  else
+    echo 'Parallel include:'$parinc
+  fi
+fi
+if [ "$parlib" = "no" ]; then
+  parlib=
+fi
+#
+echo ""
+}  # end of "find_mpi_path ()"
+
+
 find_compilers () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -686,13 +870,27 @@ if [ "$mesp" = "mpi" ]; then
   comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
 fi
 find_compiler "C" $CC_COMP
-CC_COMP=$comp_found
-CC_PATH=$comp_pwd
+CC_COMP_NAME=$comp_found
+CC_COMP=${comp_pwd}${comp_found}
 
 if [ $IPRINT -ge "5" ];  then
  echo 'compiler_c: got CC_COMP='$comp_found
 fi
 
+}
+
+old_compiler () {
+case "$2" in
+  "Fortran")
+    old_comp=`./config.status "F90"` ;;
+  "C")
+    old_comp=`./config.status "CC"` ;;
+esac
+old_pwd=${old_comp%/*}
+old_comp=${old_comp##*/}
+if [ -n "$old_comp" ]; then 
+  eval "$1=\" $old_comp$col_sep $old_pwd$col_sep Previous installation$row_sep\"" 
+fi
 }
 
 find_compiler ()  {
@@ -707,10 +905,12 @@ find_compiler ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 local to_find=$1
-#$echo "\nChecking for $to_find compilers:"
+local default=
 comp_found=""
 comp_pwd=""
 
+
+old_compiler old_comp "$to_find"
 search_dirs=`echo "$PATH"|sed 's/:/ /g'`
 # BASH: search_dirs=${PATH//:/ }
 # Which doesn't work on mac!
@@ -738,6 +938,11 @@ for comp in $comp_list; do
   done
 done
 
+if [ -n "$old_comp" ]; then
+  remove_item comp_found "$old_comp"
+  add_item comp_found "$old_comp" default
+fi
+
 if [ -z "$comp_found" ]; then
   $echo "\n   No $to_find compiler found on this computer"
   echo  "   Cannot proceed without a Fortran compiler in path"
@@ -746,7 +951,7 @@ if [ -z "$comp_found" ]; then
 #  exit 
 fi
 
-question comp_index "$to_find compilers" "$comp_found" " Specify compiler manually" 1
+question comp_index "$to_find compilers" "$comp_found" " Specify compiler manually" "$default"
 
 if [ $comp_index -eq 0 ]; then
     echo ""
@@ -768,7 +973,7 @@ if [ ! -z "$comp_pwd" ]; then
     comp_pwd="$comp_pwd/"
   fi
 fi 
-echo "Compiler for $to_find: $comp_found"
+echo "Compiler for $to_find: $comp_found\n"
 }
 
 find_real_f90(){
@@ -814,7 +1019,7 @@ esac
 }
 
 find_real_cc(){
-case "$CC_COMP" in
+case "$CC_COMP_NAME" in
 openmpicc| mpicc)
    if $CC_COMP -show 2>&1 /dev/null; then
       # MPICH
@@ -823,23 +1028,24 @@ openmpicc| mpicc)
       # LAM MPI
       mpishowopt="-showme" 
    fi
-    if $CC_COMP $mpishowopt | grep -q icc; then
+    if $CC_COMP_NAME $mpishowopt | grep -q icc; then
       CCreal=icc
-   elif $CC_COMP $mpishowopt | grep -q pathcc; then
+   elif $CC_COMP_NAME $mpishowopt | grep -q pathcc; then
       CCreal=pathcc
-   elif $CC_COMP $mpishowopt | grep -q pgcc; then
+   elif $CC_COMP_NAME $mpishowopt | grep -q pgcc; then
       CCreal=pgcc
-   elif $CC_COMP $mpishowopt | grep -q gcc; then
+   elif $CC_COMP_NAME $mpishowopt | grep -q gcc; then
       CCreal=gcc
    else 
-      CCreal=$CC_COMP
+      CCreal=$CC_COMP_NAME
    fi
-   echo "Compiler in $CC_COMP found to be $CCreal ..."
+   echo "Compiler in $CC_COMP_NAME found to be $CCreal ..."
    ;;
 *)
-  CCreal=$CC_COMP
+  CCreal=$CC_COMP_NAME
   ;;
 esac   
+echo
 }
 
 
@@ -892,117 +1098,6 @@ fi
 echo
 
 }
-
-
-find_mpi_path () {
-$echo "DETECTION OF MPI LIBRARIES.\n"
-case $F90_COMP in
-  *mpi*) 
-    echo "Found a mpi compiler. No further searching for mpi libraries."
-# temporary fix for wrong "yes" in Makefile.config when a MPI-wrapper is
-# used. SK - 14 Sep 08
-    parinc=""
-    parlib=""
-    return 0;;
-esac
-#  IBMs compiler wrapper
-case $F90_COMP_NAME in
-    mpfort|mpxlf_r)
-    echo "Found a mpi compiler. No further searching for mpi libraries."
-# temporary fix for wrong "yes" in Makefile.config when a MPI-wrapper is
-# used. SK - 14 Sep 08
-    parinc=""
-    parlib=""
-    return 0;;
-esac
-
-pardir=$dir_list
-incdir='/usr/include /usr/local/include /local/include'
-#
-#  Modify for RS6000K where mpi.h is placed in some obscure directory
-#
-if [ "$machine" = "*-ibm" ]; then
-  incdir="$incdir /usr/lpp/ppe.poe/include"
-fi
-#
-parlib_pwd=
-#
-#  MPI settings, first we do the mpi-library
-#
-if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
-  parlib=""
-  search_libs parlib "$pardir" "libmpi libmpich" ".a .so .so.0" 
-  if [ -n "$parlib" ]; then
-    question lib_index "mpi_libraries" "$parlib" " Specify the root of the mpi directory. $row_sep Configure libraries manually." 2
-
-    if [ $lib_index -eq 0 ]; then
-      $echo "No mpi libraries are included at this moment."
-      $echo "To add the libraries yourself edit Makefile.config manually!"
-      return 0
-    elif [ $lib_index -eq 1 ]; then
-      $echo ""
-    elif [ -n $lib_index ]; then
-      get_item "$parlib" parlib $lib_index 2
-      set -- $parlib
-      parlib_pwd=$2
-      parlib='-lmpi'
-    fi
-  fi
- 
-  if [ -z $parlib ]; then
-    echo "Please enter the directory containing your mpi libraries:"
-    read mpi_lib
-    search_libs parlib "$mpi_lib $mpi_lib/lib" "libmpi libmpich" ".a .so .so.0" 
-    if [ -n "$parlib" ]; then
-      get_item "$parlib" parlib 1
-      set -- $parlib
-      parlib=-lmpi
-      parlib_pwd=$2
-    else 
-      parlib=""
-      parlib_pwd=""
-    fi
-  fi
-  if [ -z "$parlib" ]; then
-    echo 'Parallel library: none'
-  else
-    echo "Parallel library: $parlib ($parlib_pwd)"
-  fi
-fi
-if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
-#
-#     Now we try to find an include directory
-#
-  parinc=""
-  if [ -n $parlib_pwd ]; then
-    tmp_dir=${parlib_pwd%/*}
-    if [ -f $tmp_dir/include/mpif.h ]; then
-      echo "Included mpif.h file: $tmp_dir/mpif.h"
-      parinc="-I$tmp_dir/include/mpif.h"
-    fi
-    tmp_dir=${tmp_dir%/*}
-    if [ -f $tmp_dir/include/mpif.h ]; then
-      echo "Included mpif.h file: $tmp_dir/mpif.h"
-      parinc="-I$tmp_dir/include/mpif.h"
-    fi
-  fi
-
-  if [ -z "$parinc" ]; then
-    echo "Please enter the directory containing your mpi include file (mpif.h):"
-    read parinc
-    parinc="-I$parinc/mpif.h"
-  fi
-  if [ -z "$parinc" ]; then
-    echo 'Parallel include: none'
-  else
-    echo 'Parallel include:'$parinc
-  fi
-fi
-if [ "$parlib" = "no" ]; then
-  parlib=
-fi
-#
-}  # end of "find_mpi_path ()"
 
 setup_math_lib(){
 
@@ -1071,10 +1166,16 @@ LIB=""
 libs=" dirac blas$col_sep builtin$row_sep"
 libs="$libs dirac lapack$col_sep builtin$row_sep"
 
+old_lib lib_guess
 search_libs libs "$math_dirs" "$lib_list"
 list_len "$libs"
 max_lib=$?
 
+default=""
+if [ -n "$lib_guess" ]; then
+  remove_item libs "$lib_guess"
+  add_item libs "$lib_guess" default
+fi
 # If there is found more than one compiler let the user pick it.
 
 
@@ -1082,7 +1183,7 @@ if [ $IPRINT -ge "5" ];  then
  echo '\n get_math_lib: lib_names='$lib_names
 fi
 
-question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libaries manually." "4 5" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
+question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libaries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
 
 for index in $lib_index; do 
   if [ $index -eq 0 ]; then
@@ -1146,6 +1247,44 @@ nolib () {
    LIB=
 }
 
+old_lib () {
+# Gets old libraries from Makefile.confi
+return_libs=""
+old_libs=`./config.status "LIBS"`
+#throw away junk and front junk
+if [ -z "$old_libs" ]; then return 0; fi
+old_libs=${old_libs#*-L}
+old_libs="$old_libs -L"
+
+while [ -n "$old_libs" ]; do
+  tmp_libs=${old_libs%%-L*}
+  tmp_libs=${tmp_libs## }
+  tmp_libs=${tmp_libs%% }
+  old_libs=${old_libs#*-L}
+
+  lib_pwd=${tmp_libs%% *}
+  tmp_libs=${tmp_libs#$lib_pwd }
+
+# Undo setup_math_lib routine
+  case "$tmp_libs" in
+    "-lesslp2") lib_name="libesslp2" ;;
+    "-lessl") lib_name="liblessl" ;;
+    "-lblas") lib_name="libblas" ;;
+    "-llapack") lib_name="liblapack" ;;
+    "-llapack -lcblas -lf77blas -latlas") lib_name="libatlas" ;;
+    "-ldxml") lib_name="libdxml";;
+    "-lcomplib.sgimath") lib_name="libcomplib.sgimath" ;;
+    "-lveclib") lib_name="libveclib" ;;
+    "-lmath -lm -nx") lib_name="libmath";;
+    "-lmkl_lapack -lguide -lpthread -lmkl") lib_name="libmkl";;
+    "-lmkl_lapack -lmkl_ipf -lguide -ldl") lib_name="libmkl_ipf";;
+    "-lguide -lpthread -lmkl_itp") lib_name="libmkl_itp" ;;
+  esac
+  return_libs="$return_libs $lib_name$col_sep $lib_pwd$col_sep Previous installation$row_sep"
+done
+eval "$1=\"$return_libs\""
+}
+
 find_mathlib ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -1180,32 +1319,6 @@ fi
 # variable telling that there are both lapack and blas libraries
 # both_blas_lapack=
 
-libguess=`./config.status LIB_LIST`
-if [ ! -z "$libguess" ]; then
-  ls -l Makefile.config
-  echo This old Makefile.config file uses $libguess
-  $echo 'Do you want to use that again ? (Y/n) \c'
-  read defblas
-  case "$defblas" in
-  "No" | "n" | "N" ) ;;
-  *)
-    LIB=$libguess
-    ;;
-  esac
-
-  /bin/rm -f gnyf.F
-  echo '      PROGRAM GNYF' >  gnyf.F
-  echo '      END         ' >> gnyf.F
-
-  if [ $IPRINT -ge "5" ];  then
-    echo 'find_mathlib: checking confirmed library LIB='$LIB
-    $F90_COMP gnyf.F -o gnyf.x $LIB
-  fi
-
-  $F90_COMP gnyf.F -o gnyf.x $LIB 2> /dev/null || nolib
-  /bin/rm -f gnyf.F gnyf.x gnyf.o
-  echo
-fi
 
 if [ -z "$LIB" ]; then
   get_math_lib
@@ -1216,6 +1329,7 @@ if [ -z "$LIB" -a -n "$lib_list" ]; then
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
+echo
 }
 
 set_memsize ()  {
@@ -1285,7 +1399,7 @@ fi
 #     ... finally print-out the veryfied installation directory
 #-------------------------------------------------------------------
 $echo 'Install directory for DIRAC executable and script: '
-$echo $INSTALL_DIR
+$echo "$INSTALL_DIR\n"
 }
 
 set_install_directory () {
@@ -1350,6 +1464,7 @@ set_install_directory () {
       fi
 
    done
+echo
 }
 
 get_answer() {
@@ -2089,7 +2204,7 @@ cat <<EOF >> Makefile.config
 # fortran and C compilers
 F77=$F90_COMP
 F90=$F90_COMP
-CC=$CC_COMP
+CC =$CC_COMP
 
 # Libraries - check them according to your server equipment !
 # You may need blas and lapack (if not using the builtin) and
@@ -2377,7 +2492,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         CC_COMP="$val"
+         CC_COMP_NAME="$val"
          ;;
       "f90" )
          if [ "${valomitted}" = "yes" ]; then
