@@ -28,7 +28,7 @@ cd ../Dirac08
 #
 # First delete code that should not be released.
 #
-delfunc="-UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON"
+delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON"
 
 echo "Removing functionalities from source files"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
@@ -78,6 +78,7 @@ for directory in hsmrcc \
                  cap \
                  oof \
                  amfi \
+                 argos \
                  visual \
                  cdft \
                  krmc \
