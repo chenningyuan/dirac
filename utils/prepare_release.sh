@@ -79,6 +79,7 @@ for directory in hsmrcc \
                  oof \
                  amfi \
                  argosecp \
+                 arducca \
                  visual \
                  cdft \
                  krmc \
