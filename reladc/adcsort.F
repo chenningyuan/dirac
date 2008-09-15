@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1C1N (NREP,NPAIR1,NPAIR2,BUF1,BUF2)
 C

@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C      ****  D H F - A D C   M O D U L E  ****
