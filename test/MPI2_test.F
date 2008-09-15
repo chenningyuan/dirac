@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
       program MPI2_TEST
       implicit real*8 (A-H,O-Z)
       include 'mpif.h'
