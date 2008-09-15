@@ -46,6 +46,8 @@ rm utils/codegen_mupac.py
 rm utils/ihfscc_input_helper.py
 rm utils/make_targetbuilds.py
 rm utils/periodic_table.py
+rm relccsd/ccints_nomemget.F
+rm relccsd/ccdriv_nomemget.F
 rm utils/prepare_dyall_basis.sh
 rm utils/prepare_dyall_dblock_basis.sh
 rm utils/prepare_dyall_fblock_basis.sh
