@@ -16,7 +16,8 @@
 
 #-----------------------------------------------
 # control chars for bold display
-# cs : startbold ce : endbold
+#  cs : startbold 
+#  ce : endbold
 #-----------------------------------------------
 
 cs = [1m 
@@ -35,12 +36,30 @@ ce = [m
 include ../../Makefile.config
 ### must be link of Makefile.moddef in this directory !
 
+
+##########################################################################
+#
+#
+#  Directories for modules, Fortran90/C source files and object files.
+#
+#
+###########################################################################
+
+# ... directory with module source files and module files  ...
+moddir = modules
+
+# ... directory with source files  ...
+srcdir = source
+
+# ... directory with objects ...
+objdir = objects
+
 ###########################################
 #
 #  DIRAC F90/CC compilers
 #
 ###########################################
-#FC      =  $(F90)
+FC      =  $(F90)
 #CCo      = $(CC)
 
 #################################################################################
@@ -61,7 +80,8 @@ ARCH =
 ###  NOTE: in Makefile.config $(LIB_LIST) the -llapack must be before -lblas
 ###
 #################################################################################
-FCLIBS  = $(LIB_LIST) 
+FCLIBS = $(LIBS)
+ 
 #FCLIBS  = -lacml
 #FCLIBS  = -lblas -llapack
 #FCLIBS  = $(LIB_LIST)  -lblas
@@ -82,7 +102,9 @@ CCLIBS  =
 ##########################################################
 
 # guessed default, if no compiler in the list ....
-        FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) 
+#        FFLAGS  =   -module $(moddir) $(F90FLAGS) 
+        FFLAGS  =   -I$(moddir) $(F90FLAGS) -nofor-main -pg
+
 
 ifeq ($(FC),pgf90)
 ### Portland group
@@ -108,10 +130,13 @@ endif
 
 
 ifeq ($(FC),ifort)
+#ifeq ($(FC),/opt/intel/fce/10.1.015/bin/ifort)
 ### Intel Fortran 
       #  FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg
-       FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg  -nofor-main
+      # FFLAGS  =  -I$(moddir) -module $(moddir) $(OPTFLAGS) -pg  -nofor-main
+       FFLAGS  =  -I$(moddir) -module $(moddir)  $(F90FLAGS_SAFE) -pg -nofor-main
 endif
+
 
 # ... others combinations...
 #FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -fast
@@ -123,28 +148,12 @@ endif
 #CFLAGS  = -I$(moddir) -fdefault-integer-8 
 
 # ... C-compiler flags
-CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
+#CFLAGS  = -I$(moddir) $(C_OPTFLAGS)
+CFLAGS  = -I$(moddir) $(CFLAGS_SAFE)
 
 # These are options for generating a debuggable code
 #FFLAGS  = -Mdclchk -i8 -i8storage -I$(moddir) -module $(moddir) -g -C
 #CFLAGS  = -I$(moddir) -i8 -i8storage -g
-
-##########################################################################
-#
-#
-#  Directories for modules, Fortran90/C source files and object files.
-#
-#
-###########################################################################
-
-# ... directory with module source files and module files  ...
-moddir = modules
-
-# ... directory with source files  ...
-srcdir = source
-
-# ... directory with objects ...
-objdir = objects
 
 # specifying location of
 # Fortran Source Files
