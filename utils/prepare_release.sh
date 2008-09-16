@@ -61,6 +61,8 @@ rm utils/qjaco.F
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
 rm -rf notes
+# Delete reference files that can be fetched from the Dirac website
+rm basis/reference_unedited/*[^sh]
 
 # delete tests that are not shipped
 # and adapt runtest.in
