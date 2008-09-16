@@ -11,79 +11,71 @@ class FriendlyFile:
         l = self.f.readline()
         if len(l) > 0:
             self.line_nr += 1
-        # sys.stderr.write('Read line %i: %s\n' % (self.line_nr,l))
         return l
     def locstring(self):
         return "%s:%i" % (self.path,self.line_nr)
-    
 
+
+re_ifany = re.compile('^\s*#\s*if')
 re_ifdef = re.compile('^\s*#\s*ifdef\s+(\w*)')
 re_ifndef = re.compile('^\s*#\s*ifndef\s+(\w*)')
+re_if = re.compile('^\s*#\s*if\s+(\S*)')
 re_else = re.compile('^\s*#\s*else')
 re_endif = re.compile('^#\s*endif')
-re_if = re.compile('^\s*#\s*if\s+(\S*)')
 re_elif = re.compile('^\s*#\s*elif\s+(\S*)')
+re_else_or_endif = re.compile('^\s*#\s*e[lsnd][lsnd]')
+re_eof = re.compile('\b')
 
 defined = []
 undefined = []
 
-
-def process_chunk(infile, dst, do_echo = 1, cond_active = 0):
+def skip_until(infile, expr):
+    """Skip lines until expr matches, return the matching line"""
     line = infile.readline()
-    while len(line) > 0:
-        # Warn in case of unsupported lines
-        # TODO: Must match whole token instead of string.find()
-#         if re_if.match(line) or re_elif.match(line):
-#             found = 0
-#             for n in defined:
-#                 if line.find(n) > -1:
-#                     found = 1
-#                     break
-#             for n in undefined:
-#                 if line.find(n) > -1:
-#                     found = 1
-#                     break
-#             if found:
-#                 sys.stderr.write("Warning at %s\n" % infile.locstring())
-#                 sys.stderr.write("The line '%s' seem to contain one of your active symbols. This is not supported.\n" % line.strip())  
-        # Actual work
+    while line != '' and not expr.match(line):
+        if re_ifany.match(line):
+            skip_until(infile,re_endif)
+        line = infile.readline()
+    return line
 
-        if re_ifdef.match(line):
+def process_chunk(infile, dst, until_expr = re_eof):
+    """Read (recursively) a chunk assumed to start just below a #ifdef or
+    similar. Return at the matching #endif or #else, but do not print that
+    line, just return it."""
+    line = infile.readline()
+    while line != '':
+        if until_expr.match(line):
+            return line
+        elif re_ifdef.match(line):
             m = re_ifdef.match(line)
             name = m.group(1)
             if name in defined:
-                process_chunk(infile,dst,do_echo, cond_active = 1)
+                line = process_chunk(infile,dst,re_else_or_endif)
+                if re_else.match(line):
+                    skip_until(infile,re_endif)
             elif name in undefined:
-                process_chunk(infile,dst,do_echo = 0, cond_active = 1)
+                line = skip_until(infile,re_else_or_endif)
+                if re_else.match(line):
+                    process_chunk(infile,dst,re_endif)
             else:
-                if do_echo: dst.write(line)
-                process_chunk(infile,dst,do_echo, cond_active = 0)
+                dst.write(line)
         elif re_ifndef.match(line):
             m = re_ifndef.match(line)
             name = m.group(1)
             if name in undefined:
-                process_chunk(infile,dst,do_echo, cond_active = 1)
+                line = process_chunk(infile,dst,re_else_or_endif)
+                if re_else.match(line):
+                    skip_until(infile,re_endif)
             elif name in defined:
-                process_chunk(infile,dst,do_echo = 0, cond_active = 1)
+                line = skip_until(infile,re_else_or_endif)
+                if re_else.match(line):
+                    process_chunk(infile,dst,re_endif)
             else:
-                if do_echo: dst.write(line)
-                process_chunk(infile,dst,do_echo, cond_active = 0)
-        elif re_if.match(line):
-            if do_echo: dst.write(line)
-            process_chunk(infile,dst,do_echo, cond_active = 0)
-        elif re_else.match(line):
-            if cond_active:
-                do_echo = 1 - do_echo
-            elif do_echo:
                 dst.write(line)
-        elif re_endif.match(line):
-            if (not cond_active) and do_echo:
-                dst.write(line)
-            return
-        elif do_echo:
+        else:
             dst.write(line)
-                      
         line = infile.readline()
+    return line
 
 usage = """Usage: cppp [-DMACRO ..] [-UMACRO ...] FILE [FILE ..]
 For each FILE perform a partial C preprocessing of #ifdef and #ifndef
@@ -127,7 +119,7 @@ def main():
     target = filenames
     if len(sys.argv) == 1:
         print usage
-        return    
+        return
     for arg in sys.argv[1:]:
         arg = arg.strip()
         if arg.find('-D') == 0:
