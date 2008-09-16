@@ -996,7 +996,7 @@ if [ ! -z "$comp_pwd" ]; then
     comp_pwd="$comp_pwd/"
   fi
 fi 
-echo "Compiler for $to_find: $comp_found\n"
+$echo "Compiler for $to_find: $comp_found\n"
 }
 
 find_real_f90(){
