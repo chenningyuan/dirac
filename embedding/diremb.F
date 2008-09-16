@@ -135,21 +135,11 @@ C      endif
       call setupsos(0,.false.,idum1,idum2)
 #endif
 
-      do i=1,size(points,2)
-         write(lupri,*) 'jhs,weights', points(4,i)*vc(i)
-      end do
-
-! jhs tmp     if (debug) then
-!         call header ('1-electron matrix, after FDE update',-1)
-!         call printdmat(1,ndimension,fdemat)
-!      endif
-
 C     Initialize variables.
       gao=0
       NCNT=0
       BUF=0
       nder   = 0
-      iprint = 0
       irepop = 0
 
       if (debug) write (lutesting,'(I10)') size(points)
@@ -168,7 +158,7 @@ C     Initialize variables.
      &               points(1,i),
      &               points(2,i),
      &               points(3,i),BUF,
-     &               work,lwork,ndimension,0,.false.,iprfde)
+     &               work,lwork,ndimension,0,.false.,print_fde)
 
 !        only the upper triangular part of the one electron embedding 
 !        potential matrix is calculated. 
@@ -293,6 +283,7 @@ C
       iunit = LUPRI
 #endif
 
+      print_fde=0
       ICHANG = 0
       IF (WORD(1:7)=='*FDE   ') THEN
         WORD1 = WORD
@@ -319,7 +310,7 @@ C     JHS TMP hack for the case there is no embedding potential
 ! set printlevel 
               write (*,*) 'reading potential filename' 
               READ(LUCMD,*) print_fde 
-              write (*,*) 'print level is ',iprfde
+              write (*,*) 'print level is ',print_fde
             CASE ('.LEVEL')
               READ(LUCMD,'(A30)') out_level
               select case(out_level)
@@ -428,7 +419,7 @@ C     Passed variables
       REAL(KIND=8) :: WORK(*)
       INTEGER :: LWORK
 
-      type(tag),pointer :: xml_tag
+      type(xml_tag),pointer :: tag
 
 C     Local variables
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
@@ -447,7 +438,7 @@ C     JHS THROW AWAY IN THE END?
       REAL(KIND=8)::gexp=0.0,ncentc=1.0,factor=1.0
       
       CALL TITLER('Output of density to XML file','*',118)
-      WRITE(LUPRI,*) 'Name of the outputfile:', GRIDOUT_NAME,LWORK
+      WRITE(LUPRI,*) 'Name of the outputfile:', trim(GRIDOUT_NAME)
 
       CALL TIME()
 
@@ -473,8 +464,6 @@ C     Initialize the matrices to zero.
       DMAT=0.0
 
 
-
-
 C     JHS Construct the density matrix.
 C     
 C     For the case of the SCF density:
@@ -483,6 +472,7 @@ C     Get CMO from file.
 
       select case(out_level)
       case('MP2')
+         write(lupri,*) 'Reading CC_DENSITY'
          call GET_CC_DENSITY(out_level,'AO',DMAT,ierr)
          if (.not.(ierr==0)) then
             write(lupri,*) 'Error in reading density matrix'
@@ -490,6 +480,7 @@ C     Get CMO from file.
          end if
       case default
 !     HF density used
+         write(lupri,*) 'Reading DFCOEF'
          CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
          CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1,
      &        LWORK)
@@ -504,8 +495,6 @@ C     Correct DMAT for occupationnumbers
 
 C     TMP scaling
       end select
-      
-      write(lupri,*) 'Finished reading CMO',trim(GRIDOUT_NAME)
 
 C     GET an id for LUGRIDOUT.
       LUGRIDOUT=OPEN_FILE(GRIDOUT_NAME)
@@ -558,45 +547,45 @@ C      FLUSH(LUPRI)
 
       WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
 
-      xml_tag=>xml_open(GRIDOUT_NAME)
+      tag=>xml_open(GRIDOUT_NAME)
         write(lupri,*) 'tst'
-        xml_tag=>tag_open(xml_tag,'grid')
-          call attribute(xml_tag,'size',inttochar(size(points,2)))
-          xml_tag=>tag_open(xml_tag,'dataset','gridpoints')
-            call attribute(xml_tag,'size',inttochar(size(points,2)))
-            call attribute(xml_tag,'width',inttochar(size(points,1)))
-            call add_xml_data(xml_tag,points)
-          xml_tag=>tag_close(xml_tag)
+        tag=>xml_tag_open(tag,'grid')
+          call xml_attribute(tag,'size',inttochar(size(points,2)))
+          tag=>xml_tag_open(tag,'dataset','gridpoints')
+            call xml_attribute(tag,'size',inttochar(size(points,2)))
+            call xml_attribute(tag,'width',inttochar(size(points,1)))
+            call xml_add_data(tag,points)
+          tag=>xml_tag_close(tag)
 
-          xml_tag=>tag_open(xml_tag,'dataset','density')
-            call attribute(xml_tag,'size',inttochar(size(points,2)))
-            call attribute(xml_tag,'width',inttochar(size(rho,1)))
-            call add_xml_data(xml_tag,rho)
-          xml_tag=>tag_close(xml_tag)
+          tag=>xml_tag_open(tag,'dataset','density')
+            call xml_attribute(tag,'size',inttochar(size(points,2)))
+            call xml_attribute(tag,'width',inttochar(size(rho,1)))
+            call xml_add_data(tag,rho)
+          tag=>xml_tag_close(tag)
 
-          xml_tag=>tag_open(xml_tag,'dataset','gradient')
-            call attribute(xml_tag,'size',inttochar(size(points,2)))
-            call attribute(xml_tag,'width',inttochar(size(grad_rho,1)))
-            call add_xml_data(xml_tag,grad_rho)
-          xml_tag=>tag_close(xml_tag)
+          tag=>xml_tag_open(tag,'dataset','gradient')
+            call xml_attribute(tag,'size',inttochar(size(points,2)))
+            call xml_attribute(tag,'width',inttochar(size(grad_rho,1)))
+            call xml_add_data(tag,grad_rho)
+          tag=>xml_tag_close(tag)
 
-          xml_tag=>tag_open(xml_tag,'dataset','hessian')
-            call attribute(xml_tag,'size',inttochar(size(points,2)))
-            call attribute(xml_tag,'width',inttochar(size(hes_rho,1)))
-            call add_xml_data(xml_tag,hes_rho)
-          xml_tag=>tag_close(xml_tag)
+          tag=>xml_tag_open(tag,'dataset','hessian')
+            call xml_attribute(tag,'size',inttochar(size(points,2)))
+            call xml_attribute(tag,'width',inttochar(size(hes_rho,1)))
+            call xml_add_data(tag,hes_rho)
+          tag=>xml_tag_close(tag)
 
-          xml_tag=>tag_open(xml_tag,'dataset','vc')
-            call attribute(xml_tag,'size',inttochar(size(points,2)))
-            call attribute(xml_tag,'width',inttochar(1))
-            call add_xml_data(xml_tag,vc)
-          xml_tag=>tag_close(xml_tag)
-        xml_tag=>tag_close(xml_tag)
+          tag=>xml_tag_open(tag,'dataset','vc')
+            call xml_attribute(tag,'size',inttochar(size(points,2)))
+            call xml_attribute(tag,'width',inttochar(1))
+            call xml_add_data(tag,vc)
+          tag=>xml_tag_close(tag)
+        tag=>xml_tag_close(tag)
 
         write(*,*) 'WRITING:'       
         call xml_write(GRIDOUT_NAME)
         write(*,*) 'CLOSING:'
-      xml_tag=>xml_close(GRIDOUT_NAME)
+      tag=>xml_close(GRIDOUT_NAME)
       write(*,*) 'CLOSED!'
       
 !      IF (associated(points)) DEALLOCATE(points)
@@ -615,7 +604,6 @@ C      FLUSH(LUPRI)
 
       END SUBROUTINE
 #endif
-
 
 !
 ! auxiliary routines
