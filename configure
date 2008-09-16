@@ -862,7 +862,7 @@ fi
 compiler_c(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   Sets up the c compiler
+#   Set up the c compiler
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -876,20 +876,42 @@ CC_COMP_NAME=$comp_found
 CC_COMP=${comp_pwd}${comp_found}
 
 if [ $IPRINT -ge "5" ];  then
- echo 'compiler_c: got CC_COMP='$comp_found
+  echo ''
+  echo 'compiler_c: comp_found='$comp_found
+  echo 'compiler_c:   comp_pwd='$comp_pwd
+  echo 'compiler_c: got CC_COMP='$CC_COMP
 fi
 
 }
 
 old_compiler () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#     Find out compiler in old Makefile.config (ie previous installation)
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 case "$2" in
   "Fortran")
     old_comp=`./config.status "F90"` ;;
   "C")
     old_comp=`./config.status "CC"` ;;
 esac
+
+if [ $IPRINT -ge "7" ];  then
+  echo ' '
+  echo 'old_compiler: for '$2' got old_comp='$old_comp
+fi
+
+# miro: this assumes compiler with the full path !
 old_pwd=${old_comp%/*}
 old_comp=${old_comp##*/}
+
+if [ $IPRINT -ge "7" ];  then
+  echo 'old_compiler: set old_comp='$old_comp
+  echo 'old_compiler: set  old_pwd='$old_pwd
+fi
+
+
 if [ -n "$old_comp" ]; then 
   eval "$1=\" $old_comp$col_sep $old_pwd$col_sep Previous installation$row_sep\"" 
 fi
@@ -1051,17 +1073,16 @@ echo
 }
 
 
-
 find_debugger(){
 ###############################################################
 #
 #   search for debugger and put "the best" into pam
 #
 ###############################################################
- 
 
 if [ $IPRINT -ge "8" ]; then
-   echo "find_debugger...looking for debuggers"
+   echo ''
+   echo 'find_debugger...looking for debuggers'
 fi
 
 debug='dbx'
@@ -1069,7 +1090,17 @@ which_debug=''
 # jhs Tmpfix for non-unix sytems
 
 a=`which which 2>&1`
-if [ -z "$a" ]; then
+if [ $IPRINT -ge "8" ]; then
+  echo 'find_debugger: variable a='$a
+fi
+
+
+if [ ! -z "$a" ]; then
+
+  if [ $IPRINT -ge "8" ]; then
+    echo 'find_debugger - priority look for present debuggers'
+  fi
+
   ### looking priority: idb, pgdbg, dbx, gdb ....
   if [ ! -z `which idb 2>/dev/null` ]; then
     which_debug="idb"
@@ -1080,6 +1111,10 @@ if [ -z "$a" ]; then
   elif [ ! -z `which gdb 2>/dev/null` ]; then 
     which_debug="gdb"
   fi
+fi
+
+if [ $IPRINT -ge "8" ]; then
+  echo 'find_debugger: which_debug='$which_debug
 fi
 
 if [ -z $which_debug ]; then
@@ -1567,7 +1602,7 @@ get_worksp ()  {
    do
 
       # first extract from Makefile.config
-      scratchguess=`./config.status SCRATCHDIR`
+      scratchguess=`./config.status SCRATCH_DIR`
       if [ $IPRINT -ge "5" ];  then
          echo 'get_worksp: from Makefile.config extracted scratchguess='$scratchguess
       fi
@@ -2185,6 +2220,9 @@ include Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
 INSTALL_DIR=$INSTALL_DIR
+
+# scratch directory (the same as in pam script)
+SCRATCH_DIR=$worksp
 EOF
 
 if [ "$mesp" = "mpi" ]; then
@@ -2203,7 +2241,7 @@ fi
 
 cat <<EOF >> Makefile.config
 
-# fortran and C compilers
+# Fortran and C compilers
 F77=$F90_COMP
 F90=$F90_COMP
 CC =$CC_COMP
@@ -2318,7 +2356,7 @@ LOCALDISKS=$localdisks
 RCP=$rcp
 RSH=$rsh
 #
-# debugger - check it of your machine installation
+# debugger - check it on your machine installation
 #
 DEBUGGER=$debug
 #
