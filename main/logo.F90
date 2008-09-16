@@ -96,7 +96,7 @@ print *, '*    with new contributions to DIRAC08 from:                          
 print *, '*                                                                            *'
 print *, '*    Radovan Bast             University of Tromsoe             Norway       *'
 print *, '*    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *'
-print *, '*    Kenneth G. Dyall         Schrödinger, Inc., Portland       USA          *'
+print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *'
 print *, '*    Ulf Ekstrom              VU University Amsterdam           Netherlands  *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel       *'
 print *, '*    Timo Fleig               University of Duesseldorf         Germany      *'
