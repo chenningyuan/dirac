@@ -720,8 +720,10 @@ fi
 find_mpi_path () {
 $echo "\nDETECTION OF MPI LIBRARIES.\n"
 case $F90_COMP in
-  *mpi*) 
+  *mp*) 
     echo "Found a mpi compiler. No further searching for mpi libraries."
+    parlib=""
+    parinc=""
     return 0;;
 esac
 
