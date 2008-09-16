@@ -1738,7 +1738,8 @@ get_f90_flags(){
       mod="-fmod=$MODULE_DIR"
       ;;
     gfortran*)
-      gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+#      gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+      gfver=`$F90real -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
       cpp_f90="$cpp_f90 -DGFORTRAN=$gfver"
 #      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
