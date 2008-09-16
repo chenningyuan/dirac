@@ -1,5 +1,3 @@
-!dirac_copyright_start
-!dirac_copyright_end
 module xml_structure
   implicit none
   private
