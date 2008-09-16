@@ -104,7 +104,7 @@ print *, '*    Andre S. P. Gomes        VU University Amsterdam           Nether
 print *, '*    Trygve U. Helgaker       University of Oslo                Norway       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
 print *, '*    Miroslav Ilias           University of Zilina              Slovakia     *'
-print *, '*    Christoph R. Jacob       ETH Zuerich                       Switzerland  *'
+print *, '*    Christoph R. Jacob       ETH Zurich                        Switzerland  *'
 print *, '*    Stefan Knecht            University of Duesseldorf         Germany      *'
 print *, '*    Patrick Norman           Linkoeping University             Sweden       *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark      *'
