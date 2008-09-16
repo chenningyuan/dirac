@@ -129,7 +129,7 @@ print *, '*                                                                     
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,           *'
 print *, '*    Release DIRAC08 (2008),                                                 *'
 print *, '*    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *'
-print *, '*    with contributions from R. Bast, S. Dubillard, K. G. Dyall,             *'
+print *, '*    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *'
 print *, '*    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *'
 print *, '*    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *'
