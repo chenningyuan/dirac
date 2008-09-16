@@ -952,7 +952,6 @@ if [ ! -z "$2" ]; then
   fi
 fi
 
-#comp_pwd=""
 for comp in $comp_list; do
 # Only search in $PATH
   for cur_dir in $search_dirs; do
@@ -1146,13 +1145,8 @@ setup_math_lib(){
   case "$1" in
     libesslp2) append LIB "-L$2 -lesslp2";;
     libessl) append LIB "-L$2 -lessl";;
-#For later use we note that we found an optimized blas library
-  #  libblas) append LIB "-L$2 -lblas" ;;
     libblas) append LIB "-L$2 -lblas" ;;
     liblapack) append LIB "-L$2 -llapack" ;;
-#   ...  both blas and lapack
-#    libblas_liblapack) append LIB "-L$2 -lblas -llapack" ;;
-#For Atlas you need to link with lf77blas as well
     libatlas) append LIB "-L$2 -llapack -lcblas -lf77blas -latlas";;
     libdxml) append LIB "-L$2 -ldxml";;
     libcomplib.sgimath) append LIB "-L$2 -lcomplib.sgimath";;
@@ -1334,12 +1328,6 @@ $echo
 $echo 'The use of optimized BLAS and LAPACK routines implementation'
 $echo 'is very important, especially for the performance of MOLTRA and RELCCSD.'
 $echo
-#$echo "You can get all the libraries you want by typing their "
-#$echo "numbers from the list below seperated by space."
-#$echo "I.e. typing:"
-#$echo "Which library do you want to use? (More than one allowed. Default: 0) 2 3(enter)"
-#$echo "Configures dirac for the default libraries."
-#$echo 
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
@@ -1738,10 +1726,8 @@ get_f90_flags(){
       mod="-fmod=$MODULE_DIR"
       ;;
     gfortran*)
-#      gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
       gfver=`$F90real -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
       cpp_f90="$cpp_f90 -DGFORTRAN=$gfver"
-#      cpp_f90="-DVAR_G77 $cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
       i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                 march="-march=$prc -malign-double";;
@@ -1777,7 +1763,6 @@ get_f90_flags(){
       ;;
     xlf)
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
-     # echo " module flags set for xlf: $mod"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       ;;
@@ -2042,12 +2027,6 @@ case $machine in
    ia64-unknown-linux)
       sys_name="LINUX"
 
-# jhs uncomment hack if it gives problems
-#     case "$F90real" in
-#     pgf90|pathf90)
-#       bit_set="32"
-#       cpp_f90="$cpp_f90 -DINT_STAR8"
-#     esac
       get_cpp_flags
       cpp_f90="$cpp_f90 -DVAR_MFDS"
 
@@ -2058,7 +2037,6 @@ case $machine in
 
       case "$F90real" in
       pathf90)
-# jhs no opt="-i8"?
          ldflag=i"$ldflag -i8" ;;
       esac
 
@@ -2575,4 +2553,3 @@ make_Makefile.config
 make_pam_runtest
 final_words
 
-# --- END OF FILE configure --- for configuring compilation of the DIRAC program ---
