@@ -43,10 +43,5 @@ Efficiency:
 - Full symmetry handling for linear molecules (otherwise up to D2h)
 - Parallelization using MPI library calls (MPI should be preinstalled)
 
-Registered users who would like to try out the DIRAC08 release can download
-this version from our website http://dirac.chem.sdu.dk/doc/download.shtml. The official
-+release is planned for June 2008, and we would be grateful for feedback (in particular
-+concerning the installation, as we don't have access to all types of hardware) that we
-+can use to improve this version.
-Small error corrections for the manual can also directly be given on the wiki manual page
-http://dirac.chem.sdu.dk/wiki  that will supersede the conventional manual in the future.
+Dirac is freely available to the academic community, and can be obtained
+from http://dirac.chem.sdu.dk/.
