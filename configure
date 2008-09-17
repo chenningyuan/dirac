@@ -1761,7 +1761,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       ;;
-    xlf)
+    xlf|xlf_r)
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
