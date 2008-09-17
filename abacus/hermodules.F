@@ -660,7 +660,7 @@
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
           REAL(KIND=8)            :: charge=0.0
           REAL(KIND=8)            :: nucexp=0.0
-          TYPE(atom), POINTER     :: next=>NULL()
+          TYPE(atom), POINTER     :: next
         END TYPE atom
         TYPE(atom), POINTER :: firstatom
 
@@ -673,7 +673,7 @@
 !         The following can be assigned for explicitely given basissets or Family type.
           INTEGER, POINTER           :: JCO(:)
           REAL, POINTER              :: FAM(:)
-          TYPE(basistype), POINTER   :: next=>NULL()
+          TYPE(basistype), POINTER   :: next
         END TYPE basistype
         TYPE(basistype), POINTER :: firstbas
 
@@ -693,14 +693,14 @@
           TYPE(atom), POINTER :: prevmol,fatom,mol
           CHARACTER(LEN=*), INTENT(IN)     :: name
           REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
-          
+
           ALLOCATE(mol)
           mol%name=name
           IF (PRESENT(x)) mol%x=x
 
-          mol%next=>NULL()          
+          mol%next=>NULL()
           IF (associated(prevmol)) THEN
-            prevmol%next=>mol 
+            prevmol%next=>mol
           ELSE
             fatom=>mol
           END IF
@@ -722,11 +722,13 @@
             bas%next=>NULL()
           END IF
           IF (associated(prevbas)) THEN
-            prevbas%next=>bas 
+            prevbas%next=>bas
           ELSE
             fbas=>bas
           END IF
           prevbas=>bas
+          bas%jco=>NULL()
+          bas%fam=>NULL()
         END SUBROUTINE ADD_BASIS
 
         SUBROUTINE ADD_JCO(bas,JCO)
@@ -764,11 +766,11 @@
             bas%fam=FAM
           CASE('GEOM')
             ALLOCATE(FAM(5))
-            CALL READ_VAR(filenum,linelen,FAM(i),index)
-            CALL READ_VAR(filenum,linelen,FAM(i),index)
+            CALL READ_VAR(filenum,linelen,FAM(1),index)
+            CALL READ_VAR(filenum,linelen,FAM(2),index)
             FAM(3)=D0
             FAM(4)=D0
-            CALL READ_VAR(filenum,linelen,FAM(i),index)
+            CALL READ_VAR(filenum,linelen,FAM(5),index)
 
             bas%fam=FAM
           CASE('FAMILY')
@@ -896,18 +898,7 @@
               mol=>mol%next
             END DO
           END IF
-        END FUNCTION count_atoms    
-
-        INTEGER FUNCTION find_char(key, chararray)
-!     JHS050707 Returns the first index of key in chararray, or else len(chararray)+1
-          CHARACTER(LEN=*), INTENT(IN) :: key
-          CHARACTER(LEN=*), INTENT(IN) :: chararray(:)
-        
-          DO i=1,len(chararray)
-            IF (chararray(i)==key) find_char=i
-            EXIT
-          END DO
-        END FUNCTION find_char
+        END FUNCTION count_atoms
 
         SUBROUTINE SORT_ATOMS(fatom,fbas,lupri)
 !     JHS050707 Sorts the atomlist in the same order as the basissets 
@@ -1936,7 +1927,7 @@
             IF (associated(bas)) THEN
               WRITE(lupri,'(a,t9,a,a,a)')                               &
      &          TRIM(bas%name),bas%comp,bas%type,bas%file
-              IF(associated(bas%jco).OR.associated(bas%fam))            &
+              IF(associated(bas%jco).AND.associated(bas%fam))            &
      &           WRITE(lupri,*) 'Exponents:', bas%jco, bas%fam
               bas=>bas%next
 
@@ -1957,6 +1948,7 @@
           INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
+          IF (.NOT.associated(firstatom)) RETURN
           mol=>firstatom
           DO
             IF (associated(mol%next)) THEN
@@ -1979,6 +1971,7 @@
           INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
+          IF (.NOT.associated(firstbas)) RETURN
           bas=>firstbas
           DO
             IF (associated(bas%next)) THEN
