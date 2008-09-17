@@ -27,7 +27,7 @@ Methods available:
 - Møller-Plesset Perturbation Theory
 
 Hamiltionians available:
--  4c Dirac-Coulomb (includes all spin-orbit coupling and  scalar relativistic effects)
+-  4c Dirac-Coulomb (includes scalar relativistic effects and spin-own orbit coupling)
 -  4c Dirac-Coulomb-Gaunt (includes also spin-other-orbit coupling) (only HF)
 -  4c spinfree Dirac-Coulomb (scalar relativistic effects only)
 -  4c Levy-Leblond (nonrelativistic)
