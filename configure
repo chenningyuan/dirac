@@ -1367,17 +1367,32 @@ echo
 echo 'MEMORY SIZE'
 echo
 if [ -z "$memdef" ]; then
+   #  ... extract from Makefile.config
    memdef=`./config.status WRKMEM`
+
+   if [ $IPRINT -ge "8" ]; then
+    echo 'set_memsize: from Makefile.config extracted memdef='$memdef
+   fi
+
    if [ -z "$memdef" ]; then
       memdef=64000000
    fi
+
+   if [ $IPRINT -ge "8" ]; then
+    echo 'set_memsize:  assigned memdef='$memdef
+   fi
+
    echo 'DIRAC uses approximately 6.4 MB for static allocations.'
    echo 'How many MB RAM to use as default?'
    echo ' -we do not recommend going below 64 MB'
    echo ' -note that memory use can be changed' \
         'through the shell variable DIRWRK'
+
    if [ $quick = 0 ]; then
       let "tmp=$memdef * 8/1048576"
+     # let "memdef8=$memdef*8"
+     # let "tmp=$memdef*8/1048576"
+     # let "tmp=$memdef8/1048576"
       $echo "Memory size (in MB, default: $tmp MB) \c"
       read memsiz
    else
