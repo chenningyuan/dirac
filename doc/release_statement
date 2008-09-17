@@ -35,7 +35,7 @@ Hamiltionians available:
 
 Molecular properties:
 - Up to quadratic response properties at the Hartree-Fock and DFT level
-- First order properties with DFT and MP2
+- First order properties with MP2
 - Core excitation energies in the static exchange approximation.
 - Ionization energies at the ADC(3) level of theory.
 
