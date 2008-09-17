@@ -61,6 +61,8 @@ rm utils/copyright_c
 rm utils/qjaco.F
 rm -rf utils/foray_0.1
 rm -rf utils/visualization_scripts
+rm -rf utils/diracinput
+rm -rf utils/fortran
 rm -rf notes
 # Delete reference files that can be fetched from the Dirac website
 rm basis/reference_unedited/*[^sh]
