@@ -100,6 +100,10 @@ for directory in hsmrcc \
     rm -rf $directory
 done
 
+# Delete junk
+echo "Deleting *~ *.o"
+rm -f `find . -name '*~' -o -name '*.o'`
+
 # Delete .svn files if there are any (should not be with svn export)
 echo "Deleting old .svn files"
 rm -rf `find . -name '.svn'`
