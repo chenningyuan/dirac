@@ -13,13 +13,13 @@ After running "configure":
 1) Before you run make, please check the "Makefile.config" and
    "pam" files (created by "configure"). Compiler options are
    set in this file, based on our best knowledge of this 
-   architecture in september 2008 and may be outdated by
+   architecture in September 2008 and may be outdated by
    the time that you install the program.
 
 2) In Makefile.config:
-   please make sure that the mathematical libraries used have been
+   Please make sure that the mathematical libraries used have been
    compiled with the same compiler you are using now, otherwise it
-   might be necessary to link to additional runtime libraries
+   might be necessary to link to additional run-time libraries.
     
 3) Please check 'Known issues and problems' at
    "http://dirac.chem.sdu.dk"
@@ -28,7 +28,7 @@ After running "configure":
 4) Then run "make" and
    DIRAC08 should be ready to run...
 
-5) If you are using a queing system, you may want to check
+5) If you are using a queuing system, you may want to check
    the "pamq" script as well.
 
 If you have checked 'Known issues and problems' and
