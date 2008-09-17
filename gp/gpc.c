@@ -48,6 +48,13 @@
 #include "compinfo.h"
 
 
+#ifndef  NO_C99
+#include <stdint.h>
+typedef int64_t int_star_8_t;
+#else
+typedef long int_star_8_t; /* This should be long long on many machines. */
+#endif
+
 
 /*
  * Take string of tokens and return new ordering
@@ -171,19 +178,19 @@ void sysinf_(int *parcal)
      * then try quit without the underscore */
 extern void quit(const char* str, int len);
 
-void compoff_(double *wrk, double *work, long *k_offset) {
-  *k_offset = (long) (wrk-work+1);
+void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
+  *k_offset = wrk-work+1;
 /* Aug 2008: compoff_ shall always return k_offset as a FORTRAN INTEGER*8
  * so that we don't get nonsense if address difference is bigger than 31
  * bit. /HJAaJ
  *
 */
-  if ( sizeof(long) != 8 )
+  if ( sizeof(*k_offset) != 8 )
   {
     printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
-    printf( "compoff: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
+    printf( "compoff: wrk=%p work=%p diff=%d\n", wrk, work, wrk-work+1);
     printf( "k_offset=%d\n", *k_offset );
-    printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long), sizeof(short int));
+    printf( "int %d long %d short int %d int_star_8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(int_star_8_t));
     quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
     exit(1);
   }
