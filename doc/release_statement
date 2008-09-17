@@ -1,0 +1,53 @@
+It is a pleasure to announce that a beta version of DIRAC08, the new release of
+
+      "Dirac, a relativistic ab initio electronic structure program"
+
+is now ready for download.
+
+Some of the additional features of DIRAC08-beta relative to the DIRAC04 release are
+
+- A one-step exact two-component Hamiltonian (X2C)
+- Possibility to include the Gaunt interaction in HF calculations
+- Implementation of several new density functionals
+- Linear response DFT
+- Addition of the latest Dyall basis sets and
+  more non-relativistic basis sets to the basis library
+- Visualization of orbitals
+- Analysis by means of fragment orbitals
+- New parallelization of the MOLTRA module with reduced I/O
+- Parallelization of the LUCITA CI module
+
+
+Some of the most important regular features are listed below.
+
+Methods available:
+- Hartree-Fock
+- Density Functional Theory
+- Coupled Cluster
+- Configuration Interaction
+- Møller-Plesset Perturbation Theory
+
+Hamiltionians available:
+-  4c Dirac-Coulomb (includes all spin-orbit coupling and  scalar relativistic effects)
+-  4c Dirac-Coulomb-Gaunt (includes also spin-other-orbit coupling) (only HF)
+-  4c spinfree Dirac-Coulomb (scalar relativistic effects only)
+-  4c Levy-Leblond (nonrelativistic)
+-  2c X2C, the one-step exact two-component Hamiltonian
+-  2c BSS, the two-step exact two-component Hamiltonian (= DKH(infinity,0))
+
+Molecular properties:
+- Up to quadratic response properties at the Hartree-Fock level of theory
+- First order properties with DFT and MP2
+
+
+Efficiency:
+- Full symmetry handling for linear molecules (otherwise up to D2h)
+- Parallelization using MPI library calls (MPI should be preinstalled)
+
+Registered users who would like to try out the DIRAC08-beta release can download
+this version from our website http://dirac.chem.sdu.dk/doc/download.shtml. The official
++release is planned for June 2008, and we would be grateful for feedback (in particular
++concerning the installation, as we don't have access to all types of hardware) that we
++can use to improve this version.
+Small error corrections for the manual can also directly be given on the wiki manual page
+http://dirac.chem.sdu.dk/wiki  that will supercede the conventional manual in the future.
