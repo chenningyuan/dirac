@@ -1390,9 +1390,6 @@ if [ -z "$memdef" ]; then
 
    if [ $quick = 0 ]; then
       let "tmp=$memdef * 8/1048576"
-     # let "memdef8=$memdef*8"
-     # let "tmp=$memdef*8/1048576"
-     # let "tmp=$memdef8/1048576"
       $echo "Memory size (in MB, default: $tmp MB) \c"
       read memsiz
    else
