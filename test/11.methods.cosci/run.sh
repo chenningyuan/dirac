@@ -42,16 +42,18 @@ MENU=O.bss_sfB.scf_ci;
 export MENU;
 ../run.sh -utcmo
 ###############################
-#echo "BSS+MFSSO Hamiltonian at post-SCF"
-#MENU=O.bss+mfsso.postscf.ci;
-#export MENU;
-#../run.sh -incmo
-#rm DFCOEF
+#REMOVE_BEGIN
+echo "BSS+MFSSO Hamiltonian at post-SCF"
+MENU=O.bss+mfsso.postscf.ci;
+export MENU;
+../run.sh -incmo
+rm DFCOEF
 ###############################
-#echo "Two-component BSS+MFSSO Hamiltonian "
-#MENU=O.bss+mfsso.scf_ci;
-#export MENU;
-#../run.sh 
+echo "Two-component BSS+MFSSO Hamiltonian "
+MENU=O.bss+mfsso.scf_ci;
+export MENU;
+../run.sh 
+#REMOVE_END
 ###############################
 echo "Two-component BSS Hamiltonian "
 MENU=O.bss.scf_ci;

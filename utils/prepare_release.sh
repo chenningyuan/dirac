@@ -84,6 +84,25 @@ for test in 43.plots \
     sed "s/$test//g" test/runtest.in > delete_me; mv delete_me test/runtest.in
 done
 
+echo "Removing certain functionalities from tests"
+for this_test in  19.fockspace \
+              6.cosci.energy  \
+             10.efg  \
+             11.methods.cosci  \
+             36.mp2_properties  \
+              2.nmrspinspin  \
+              5.cisd.energy  \
+              33.frozen  \
+	       ; do
+
+    sed '/REMOVE_BEGIN/,/REMOVE_END/'d test/$this_test/run.sh > test/$this_test/run.sh_red 
+    mv test/$this_test/run.sh_red  test/$this_test/run.sh
+
+done
+
+
+
+
 for directory in hsmrcc \
                  cap \
                  oof \

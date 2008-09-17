@@ -12,8 +12,10 @@ MENU=mp2_gradient;
 export MENU;
 ../run.sh
 ###############################
-#echo "MP2 first order properties...BSS+MFSSO Hamiltonian"
-#MENU=bss+mfsso.mp2_gradient;
-#export MENU;
-#../run.sh
+#REMOVE_BEGIN
+echo "MP2 first order properties...BSS+MFSSO Hamiltonian"
+MENU=bss+mfsso.mp2_gradient;
+export MENU;
+../run.sh
+#END_BEGIN
 ###############################
