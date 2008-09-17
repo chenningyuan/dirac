@@ -1299,7 +1299,7 @@ while [ -n "$old_libs" ]; do
 # Undo setup_math_lib routine
   case "$tmp_libs" in
     "-lesslp2") lib_name="libesslp2" ;;
-    "-lessl") lib_name="liblessl" ;;
+    "-lessl") lib_name="libessl" ;;
     "-lblas") lib_name="libblas" ;;
     "-llapack") lib_name="liblapack" ;;
     "-llapack -lcblas -lf77blas -latlas") lib_name="libatlas" ;;
