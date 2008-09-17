@@ -316,7 +316,10 @@ C ::: We update the coordinates of the input file :::
             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                            'Isotope=', NINT(QMASS)
 #endif
+CMI       ... fix for gfortran-4.3  - otherwise IPREAD get bad value...
+            IPREAD_SAVE=IPREAD
             MLINE(NC) = TMPLN
+            IPREAD=IPREAD_SAVE
  400     CONTINUE
 C ::: Finally the number of atoms are updated. :::
          I = 1
