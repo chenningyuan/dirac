@@ -77,7 +77,8 @@ for test in 43.plots \
             27.krmc_luciarel \
             28.luciarel_medium \
             47.fde.prop \
-            38.london.magn_prop; do
+            38.london.magn_prop\
+            44.jengine; do
 
     rm -rf test/$test
     sed "s/$test//g" test/runtest.in > delete_me; mv delete_me test/runtest.in
@@ -95,7 +96,6 @@ for directory in hsmrcc \
                  luciarel \
                  aoresponse \
                  amfi; do
-
     echo "Deleting directory $directory"
     rm -rf $directory
 done
@@ -111,7 +111,7 @@ rm -rf `find . -name '.svn'`
 #
 if [ -r Makefile.config ]; then
     echo "Creating dependencies for release version"
-    echo "I will assume you have configured Dirac ok"
+    echo "I will assume you have configured Dirac (Makefile.config)"
     make depend > /dev/null
 else
     echo "Cannot find Makefile.config"
