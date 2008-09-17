@@ -1823,7 +1823,8 @@
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,CLASS)
+         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,
+     &               CLASS,.false.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 !

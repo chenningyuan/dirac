@@ -44,7 +44,7 @@ SYMADD: Completely new module to determine molecular symmetry, find the
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,
-     &                                                KASYM,CLASS)
+     &                  KASYM,CLASS,internal_file)
 C*****************************************************************************
 C
 C     This module determines molecular symmetry automatically
@@ -63,6 +63,7 @@ C*****************************************************************************
 #include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER*1 KASYM(3,3), CLASS*15
+      LOGICAL :: internal_file
       IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
       ZERTOL = 1.0D-12
       MAXAXS = 50
@@ -84,13 +85,14 @@ CSK   only MASTER needs to print the information
       LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
       CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
-     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK(KLAST),LWRK)
+     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,
+     &            internal_file,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
-     &                         CLASS,VRML,WORK,LWORK)
+     &                         CLASS,VRML,internal_file,WORK,LWORK)
 #include "implicit.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -124,6 +126,7 @@ Caspg
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
          LOGICAL VRML
+         LOGICAL :: internal_file
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
@@ -242,19 +245,22 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Aangstroem mark, it's removed.    :::
-         TMPLN = MLINE(NMLAU)
-         WRITE(TMPLN(10:10), '(I1)') NSYMOP
-         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
-         IF( MYTID .eq. MPARID ) THEN
-           IF (NSYMOP .EQ. 0) THEN
-              WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
-           ELSE IF (NSYMOP .EQ. 1) THEN
-              WRITE(LUPRI, '(/1X,2A)') 'The following element was '
-     &                                             // 'found:   ',SYMM
-           ELSE
-              WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
-     &                                             //  'found:   ',SYMM
-           END IF
+         if (internal_file) then
+           TMPLN = MLINE(NMLAU)
+           WRITE(TMPLN(10:10), '(I1)') NSYMOP
+           WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+           IF( MYTID .eq. MPARID ) THEN
+             IF (NSYMOP .EQ. 0) THEN
+               WRITE(LUPRI, '(/1X,A)') 'No symmetry elements '
+     &                                // 'were found.'
+             ELSE IF (NSYMOP .EQ. 1) THEN
+                WRITE(LUPRI, '(/1X,2A)') 'The following element was '
+     &                                // 'found:   ',SYMM
+             ELSE
+                WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
+     &                               //  'found:   ',SYMM
+             END IF
+           end if
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
@@ -305,37 +311,35 @@ C ::: Then the different elements are counted, and arrays updated. :::
 #endif
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
-         DO 400 I = 1, NUCIND
-            NC = NCLINE(I)
-            TMPLN = MLINE(NC)
-            WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
-            WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
-            WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
+         if (internal_file) then
+           DO 400 I = 1, NUCIND
+             NC = NCLINE(I)
+             TMPLN = MLINE(NC)
+             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
+             WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
+             WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
 #ifndef PRG_DIRAC
-            QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
-            IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
-     &                            'Isotope=', NINT(QMASS)
+             QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
+     &                             'Isotope=', NINT(QMASS)
 #endif
 CMI       ... fix for gfortran-4.3  - otherwise IPREAD get bad value...
-            IPREAD_SAVE=IPREAD
-            MLINE(NC) = TMPLN
-            IPREAD=IPREAD_SAVE
- 400     CONTINUE
+             MLINE(NC) = TMPLN
+ 400       CONTINUE
 C ::: Finally the number of atoms are updated. :::
-         I = 1
-         J = NINT(ATMARR(4,I))
-         DO 500 K = 1, NONTYP
-            NC = NCLINE(I) - 1
-            TMPLN = MLINE(NC)
-            WRITE(TMPLN(12:15),'(I4)') NONT(K)
-            MLINE(NC) = TMPLN
- 510        CONTINUE
-            IF (J .EQ. NINT(ATMARR(4,I))) THEN
-               I = I + 1
-               GOTO 510
-            END IF
-            J = NINT(ATMARR(4,I))
- 500     CONTINUE
+           I = 1
+           J = NINT(ATMARR(4,I))
+           DO K = 1, NONTYP
+              NC = NCLINE(I) - 1
+              TMPLN = MLINE(NC)
+              WRITE(TMPLN(12:15),'(I4)') NONT(K)
+              MLINE(NC) = TMPLN
+              do while(j==nint(atmarr(4,i)))
+                i=i+1
+              end do
+              J = NINT(ATMARR(4,I))
+           end do
+         end if
 C        IF (SOLVNT .OR. DORLM) THEN
 C           NUCIND = NUCIND + 1
 C           NCNTCV = NUCIND
@@ -2103,6 +2107,7 @@ C ::: All symmetry dependant atoms are removed. :::
  615           CONTINUE
                I = I + 1
             ELSE
+               if (internal_file) then
                NC = NCLINE(NINT(EXTARR(5,J)))
                DO 620 K = NC, NMLINE - 1
                   MLINE(K) = MLINE(K+1)
@@ -2112,6 +2117,7 @@ C ::: All symmetry dependant atoms are removed. :::
      &           NCLINE(NINT(EXTARR(5,K)))=NCLINE(NINT(EXTARR(5,K)))-1
  640           CONTINUE
                NMLINE = NMLINE - 1
+               end if
             END IF
  600     CONTINUE
          ATMARR(1,0) = 1.0D0*(I - 1)
