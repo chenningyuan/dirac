@@ -21,7 +21,7 @@ short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.
 short_test="$short_partest"
 
 medium_partest="2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
-medium_test="$short_test $medium_partest 27.krmc_luciarel"
+medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
 # 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
 medium_partest="$short_partest $medium_partest"
 
