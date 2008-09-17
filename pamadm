@@ -452,7 +452,6 @@ make_export()
      \$szCurrDir/C90lib.cld \\
      \$szCurrDir/crilib.cld \\
      \$szCurrDir/pam.in \\
-     \$szCurrDir/pam.1 \\
      \$szCurrDir/pamq \\
      \$szCurrDir/Makefile \\
      \$szCurrDir/Makefile.obj \\
@@ -461,6 +460,8 @@ make_export()
      \$szCurrDir/dontbuild \\
      \$szCurrDir/safebuild \\
      \$szCurrDir/doc/doc.html \\
+     \$szCurrDir/doc/pam.1 \\
+     \$szCurrDir/doc/Makefile.config.example \\
      \$szCurrDir/include/*.h \\
      \$szCurrDir/main/*.h \\
      \$szCurrDir/main/*.head \\
