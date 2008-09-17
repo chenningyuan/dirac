@@ -576,7 +576,6 @@ EOF
    fi
    if [ "$EXPORTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/export 2>> export.log
 EOF
    fi
    cat <<EOF >> ./export
