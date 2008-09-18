@@ -87,6 +87,10 @@ clean:
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
+# Main target here is utils, which buils all utilities and
+# puts them in $(INSTALL_DIR)
+include utils/Makefile.utils
+
 # Implicit rules
 
 .SUFFIXES :
