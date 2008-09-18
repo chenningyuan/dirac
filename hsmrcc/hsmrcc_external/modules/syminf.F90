@@ -457,11 +457,12 @@ contains
       endif
 
       if (numirrep.eq.0) then
-         !print *,' group=',group
-         write(UOUT,*) ' group=',group
-         ierr = 1
-         Call QExit('setup_irrep_tables')
-         return
+        write(UOUT,*) 'setup_irrep_tables:  group=',group
+        write(UOUT,*) 'setup_irrep_tables:  numirrep=',numirrep
+        write(UOUT,*) 'setup_irrep_tables:  error exit !'
+        call flushout
+        ierr = 1
+        return
       endif
 
 !     specify totally symmetric irrep
@@ -489,7 +490,6 @@ contains
 !----------------------------------------------------------------------
       implicit none
       integer ir, jr
-      call QEnter('print_irrep_tables')
 
       write(UOUT,9001) point_group
       write(UOUT,9002) (irrep_label(ir),ir=1,numirrep)
@@ -504,10 +504,8 @@ contains
       enddo
       write(UOUT,*)
   
-      !call flush(UOUT)
       call flushout
 
-      call QExit('print_irrep_tables')
       return
 
  9001 format("---------------------------------------",3(1H-),/,    &

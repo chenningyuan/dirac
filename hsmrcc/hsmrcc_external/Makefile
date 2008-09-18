@@ -101,10 +101,11 @@ CCLIBS  =
 #
 ##########################################################
 
+## NOTE: $(FC) contains also fullpath ! therefore you have to adjust to specific compiler
+
 # guessed default, if no compiler in the list ....
 #        FFLAGS  =   -module $(moddir) $(F90FLAGS) 
         FFLAGS  =   -I$(moddir) $(F90FLAGS) -nofor-main -pg
-
 
 ifeq ($(FC),pgf90)
 ### Portland group

@@ -594,6 +594,22 @@ subroutine GenVac
 
    enddo
 
+   if ( get_iprint() >= 10 ) then
+     write(UOUT,'(/,2x,a,i5)') 'GenVac: totally_symmetric_irrep=',totally_symmetric_irrep
+     write(UOUT,*) '**** irrep_product table ****:'
+     write(UOUT,*) irrep_product
+     write(UOUT,*) 
+   endif
+
+   if ( totally_symmetric_irrep /= 1 .or. numirrep == 0) then
+     write(UOUT,'(/,2x,a,i5)') 'GenVac: totally_symmetric_irrep=',totally_symmetric_irrep
+     write(UOUT,*) '**** irrep_product table ****:'
+     write(UOUT,*) irrep_product
+     write(UOUT,*) 
+     call flushout
+     call quit('GenVac: symmetry data NOT ready !')
+   endif
+
    ! vaccum table generation is complete
    ! ------------------------------------------------------
    !

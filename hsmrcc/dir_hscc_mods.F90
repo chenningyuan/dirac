@@ -308,7 +308,7 @@ endif
 
   if (print_batch_info) then
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
-    write(LUPRI,'(2x,a,i6)') ' actual number of read integrals:',MOINT
+    write(LUPRI,'(2x,a,i6)') ' actual number of read integrals :',MOINT
     CALL FLSHFO(LUPRI)
   endif
 
@@ -320,11 +320,9 @@ if (print_int) then
            indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
      write(LUPRI,'(2x,a,4i4)') 'I,J,K,L:',  & 
            KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
-    ! CALL FLSHFO(LUPRI)
    else
      write(LUPRI,*) 'k,l,cmplx int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),  &
                      cbuf_vect%p_rA2D(1,i), cbuf_vect%p_rA2D(2,i)
-    ! CALL FLSHFO(LUPRI)
    endif
 
  ! ... unique ,KU indexes
@@ -343,7 +341,7 @@ endif
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
             OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
-            write(LUPRI,*) 'HSCC: proceeding to the next file MDCINT.'
+            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next file ',FILE
             GOTO 1
          ENDIF
          !GOTO 1
@@ -437,6 +435,7 @@ use io_moltra
 !character(len=*) :: dirac_file='Dirac_HSMRCC'
 !character :: dirac_file='Dirac_HSMRCC'
 character(len=12) :: dirac_file='Dirac_HSMRCC'
+character(len=4) :: repna_temp_a, repna_temp_b
 
 type(Vect) :: SpinOfOrb,OccGMSRef,IrrepOrb,IrpLabOrb,OrbType,OrbSpace,OrbEnergy
  
@@ -468,17 +467,61 @@ enddo
 
 write(LUPRI,*) 'nelec_tot=',nelec_tot
 
+
+
+! ... fill irreps now ...
+write(LUPRI,'(/,2x,a,i4,a)') 'Irreps (1-',NSP,' )'
+do i=1, NSP
+  write(LUPRI,'(2x,i3,a,i2,a,a4,a,f12.7)')   &  
+  i,': irrep no ',IREPSP(i+NSP),'- irrep label:',REPNA(IREPSP(i+NSP)),' orb.energy:',EPS1(i) 
+enddo
+write(LUPRI,*)
+
+! once again...
+do i=1, NSP/2
+ write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
+enddo
+write(LUPRI,*)
+
 ! fill orb.en.
 ii = 1
 do i=1, NSP/2
+
 ! write(LUPRI,*) 'EPS1(',i,')=',EPS1(i),EPS1(i+NSP/2)
  OrbEnergy%p_rA1D(ii)   = EPS1(i) 
  OrbEnergy%p_rA1D(ii+1) = EPS1(i+NSP/2)
+ 
+ repna_temp_a = REPNA(IREPSP(i+NSP))
+ repna_temp_b = REPNA(IREPSP(i+NSP/2+NSP))
+
+ !write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
+ write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i, repna_temp_a, repna_temp_b
+
+ IrrepOrb%p_iA1D(ii)    = IREPSP(i+NSP)
+ !write(repna_temp,FMT='(I4)') IrpLabOrb%p_iA1D(ii)
+ !write(repna_temp,'(I4)') IrpLabOrb%p_iA1D(ii)
+! write(repna_temp_a,'(i4)') IrpLabOrb%p_iA1D(ii)
+ !write(repna_temp_a,'(i4)') IrpLabOrb%p_iA1D(ii)
+   read(repna_temp_a,'(a4)') IrpLabOrb%p_iA1D(ii)
+
+
+ IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP/2+NSP)
+! write(repna_temp_b,FMT='(I4)') IrpLabOrb%p_iA1D(ii+1)
+! write(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
+ read(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
+
  SpinOfOrb%p_iA1D(ii)   = +1
  SpinOfOrb%p_iA1D(ii+1) = -1
 ! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
- ii = ii + 2
+
+
+   ii = ii + 2
+
 enddo
+
+! extract symmetry labels
+!do i=1,NSP
+!enddo
 
 do i=1,NSP
  if (i<=nelec_tot) then
@@ -501,18 +544,15 @@ do i=1,NSP
  endif
 
  if (iprint_hscc >= 5) then
-   write(LUPRI,876) i,SpinOfOrb%p_iA1D(i),OccGMSRef%p_iA1D(i),OrbType%p_iA1D(i),OrbSpace%p_iA1D(i),OrbEnergy%p_rA1D(i)
-   876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x,'orb.en=',f12.7)
+   write(LUPRI,876) i,SpinOfOrb%p_iA1D(i),OccGMSRef%p_iA1D(i),  & 
+                    OrbType%p_iA1D(i),OrbSpace%p_iA1D(i),       & 
+                    IrrepOrb%p_iA1D(i),IrpLabOrb%p_iA1D(i),OrbEnergy%p_rA1D(i)
+
+   876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x, &
+                   'irp=',i2,1x,' irplab=',a4,1x,'orb.en=',f12.7)
  endif
 
 enddo
-
-! ... fill irreps now ...
-write(LUPRI,'(/,2x,a)') 'going to fill irreps ...'
-do i=1, NSP
-   write(LUPRI,*) i,REPNA(IREPSP(i+NSP)),EPS1(i) 
-enddo
-
 
 !open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
 !open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
@@ -548,6 +588,7 @@ write(ludh) ( OrbEnergy%p_rA1D(1:NSP) )
 
 close(ludh,status="keep")
 
+write(LUPRI,*) 
 write(LUPRI,*) 'saved NELEC_TOT=',nelec_tot
 write(LUPRI,*) 'saved NCORE=',NCORE
 write(LUPRI,*) 'saved NACT=',NACT
