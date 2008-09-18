@@ -97,6 +97,7 @@ for this_test in  19.fockspace \
 
     sed '/REMOVE_BEGIN/,/REMOVE_END/'d test/$this_test/run.sh > test/$this_test/run.sh_red 
     mv test/$this_test/run.sh_red  test/$this_test/run.sh
+    chmod u+x test/$this_test/run.sh
 
 done
 
