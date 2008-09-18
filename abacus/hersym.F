@@ -230,7 +230,7 @@ CCCC#endif
                CALL PRNARR(TEXT, MAXMIR, DMRPLN)
             END IF
          END IF
-         CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
+         CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,internal_file)
          IF (IPREAD .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres            '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
@@ -1956,7 +1956,8 @@ C     &                          (NINT(ARR(6,IATNO2)) .EQ. 0))
          RETURN
       END
 C  /* Deck reduce */
-      SUBROUTINE REDUCE(MXM, ATMARR, EXTARR, TMPARR, SYMELM)
+      SUBROUTINE REDUCE(MXM, ATMARR, EXTARR, TMPARR, SYMELM,
+     &                  internal_file)
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                             ::
 C ::       Removes symmetry-dependent atoms      ::
@@ -1970,6 +1971,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*9
+         LOGICAL :: internal_file
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
          N = NINT(ATMARR(1,0))
          EXTARR(1,0) = 1.0D0*N
