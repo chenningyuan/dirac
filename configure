@@ -1867,8 +1867,6 @@ getmods()
 }
 
 set_compile_flags(){
-echo
-
 f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 find_real_f90
@@ -1899,7 +1897,7 @@ case $machine in
        sys_name="DEC"
        get_cpp_flags
 
-       if [ ! -z "echo $LIB | grep 'dxml'" ]; then
+       if [ ! -z "`echo $LIB | grep 'dxml'`" ]; then
           cpp_f90="$cpp_f90 -DVAR_DXML"
        fi
        opt='-g -fast'
