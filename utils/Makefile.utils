@@ -1,11 +1,6 @@
 #
 # This file gets included from the main makefile, and
 # make has to be run from the top level directory.
-#
-# If it is not called from the top level directory,
-# for example, if it is invoked from the utils/ directory,
-# use 'make -C ../. utils'
-#
 
 utils: $(INSTALL_DIR)/labread.x \
        $(INSTALL_DIR)/twofit.x
@@ -14,7 +9,10 @@ utils: $(INSTALL_DIR)/labread.x \
 $(INSTALL_DIR)/labread.x: utils/labread.o
 	$(LD) -o $@ utils/labread.o
 
-$(INSTALL_DIR)/twofit.x: utils/twofit.o
+$(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
+                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
+                    pdpack/dsp.o gp/tracing.o
 	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
