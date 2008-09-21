@@ -3267,7 +3267,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowgen */
-      SUBROUTINE LOWGEN(SMAT,NS,VMAT,NV,LDM,STOL,IPRINT,
+      SUBROUTINE LOWGEN(SMAT,NS,VMAT,NV,LDM,SSTOL,IPRINT,
      &                  EIG,WORK,LWORK)
 C*****************************************************************************
 C
@@ -3286,6 +3286,7 @@ C                    Febr2006 - MI
 C
 C*****************************************************************************
 #include "implicit.h"
+#include "dcbgen.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
@@ -3302,10 +3303,17 @@ C
 C
 C     Diagonalize overlap matrix
 C
-      CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+      IF (LOWJACO) THEN
+         CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+      ELSE
+         CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK,IERR)
+         IF (IERR.NE.0) THEN
+            CALL QUIT('Diagonalization of overlap matrix failed')
+         ENDIF
+      ENDIF
       NV = 0
       DO I = 1,NS
-        IF(EIG(I).LE.STOL) GOTO 10
+        IF(EIG(I).LE.SSTOL) GOTO 10
         NV  = NV + 1
         FAC = D1/SQRT(EIG(I))
         CALL DSCAL(NS,FAC,VMAT(1,I),1)

@@ -106,7 +106,9 @@ CMI   ... instead of calling OP1INI in HAMINP, call it after
 C
 C     Give estimate of memory needed for two-electron integrals
 C
-      CALL TWOMEM(WORK,LWORK)
+      IF (.NOT.SKIP2E) THEN
+         CALL TWOMEM(WORK,LWORK)
+      ENDIF
 C
 C
 C     Wave function input
@@ -200,7 +202,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.XXXXXX','.XXXXXX',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.SKIP2E','.LOWJAC','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -210,6 +212,8 @@ C
       TWOCOMP  = .FALSE.
       TWOCOMPBSS = .FALSE.
       ECPCALC  = .FALSE.
+      SKIP2E = .FALSE.
+      LOWJACO = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
@@ -344,8 +348,10 @@ C&&&& FAMILY: Family basis (Not yet implemented)
             FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
+            SKIP2E = .TRUE.
             GO TO 100
   118    CONTINUE
+            LOWJACO = .TRUE.
             GO TO 100
   119    CONTINUE
             GO TO 100
