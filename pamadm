@@ -348,7 +348,7 @@ setup()
    #
    # Defining the tarfile that is used for export
    #
-   if [ "$TARFIL" = "make" ]; then
+   if [ "$TARFIL" = "make" -o -z "$TARFIL" ]; then
       GENTAR=
    fi
    if [ "$TARFIL" = "export" ]; then
