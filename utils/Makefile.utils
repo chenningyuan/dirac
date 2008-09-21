@@ -7,19 +7,16 @@
 # use 'make -C ../. utils'
 #
 
-utils: $(INSTALL_DIR)/bin/labread.x \
-       $(INSTALL_DIR)/bin/twofit.x 
-##  TODO:   $(INSTALL_DIR)/bin/twofit.x ,  $(INSTALL_DIR)/bin/rspread.x ...
+utils: $(INSTALL_DIR)/labread.x \
+       $(INSTALL_DIR)/twofit.x
+##  TODO:   $(INSTALL_DIR)/twofit.x ,  $(INSTALL_DIR)/rspread.x ...
 
-$(INSTALL_DIR)/bin/labread.x: utils/labread.o
+$(INSTALL_DIR)/labread.x: utils/labread.o
 	$(LD) -o $@ utils/labread.o
 
-$(INSTALL_DIR)/bin/twofit.x: utils/twofit.o 
+$(INSTALL_DIR)/twofit.x: utils/twofit.o
 	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o gp/memory_allocator.o gp/memory_tracker.o  \
-                    gp/memory_allocator.o utils/test_allocator.o gp/tracing.o \
-                    gp/tracker_util.o $(LIBS)
-                    
+                    pdpack/dsp.o gp/tracing.o $(LIBS)
 
