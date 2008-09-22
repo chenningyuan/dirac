@@ -185,7 +185,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       j--;
    }
    printf("\n");
-
+   *((int *)0) = 1;
 }
 
 
