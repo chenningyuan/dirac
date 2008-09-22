@@ -362,3 +362,11 @@ double* malloc_(int cnt)
   return malloc(cnt);
 }
 #endif /* VAR_IFC */
+
+/* Try to cause a segmentation fault, to enable debuggers to
+   trap this and inspect the program.
+*/
+void crash_(void)
+{
+  *(int *)0 = 0;
+}

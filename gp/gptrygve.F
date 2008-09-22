@@ -301,6 +301,8 @@ C 3 = pretty print traceback to stdout...
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
+      CALL FLSHFO(LUPRI)
+      CALL CRASH()
       STOP 1000
       END
 C  /* Deck opendx */
