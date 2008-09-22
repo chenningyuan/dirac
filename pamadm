@@ -153,15 +153,6 @@ setup()
    #  DNF density fitting module
    #
    if [ -n "$DNFMOD" ]; then
-      if [ -n "$ERIMOD" ]; then
-         ERIFLG='-DMOD_ERI'
-         ERIOBJ='$(ERIOBJS)'
-         ERIMAK=ERI_OBJ
-         ERITAR=1
-         echo " - ERI two-electron integral module"
-      else
-         echo "density fitting module not included - depends on ERI module "
-      fi
       DNFFLG='-DMOD_DNF'
       DNFOBJ='$(DNFOBJS)'
       DNFMAK=DNF_OBJ
