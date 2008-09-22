@@ -127,6 +127,9 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
       free (strings);
 
    }
+   fflush(stdout);
+   fflush(stderr);
+   *((int *)0) = 1; /* Try to cause a segfault */
 }
 
 
@@ -185,7 +188,6 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       j--;
    }
    printf("\n");
-   *((int *)0) = 1;
 }
 
 
