@@ -302,7 +302,8 @@ C 3 = pretty print traceback to stdout...
       CALL PVMFEXIT(INFO)
 #endif
       CALL FLSHFO(LUPRI)
-      CALL CRASH()
+CMI  ... ifort/gcc does not know this routine...
+CMI      CALL CRASH()
       STOP 1000
       END
 C  /* Deck opendx */
