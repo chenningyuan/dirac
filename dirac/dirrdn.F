@@ -4622,8 +4622,6 @@ C         .... two-step method of Barysz
         ENDIF
 
 C       ... take care of AMFI contribution
-
-CMI ... no AMFI
         IF (BSS.AND.NOAMFI) THEN
          WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution in the '  
      &   //'2-component mode !'
@@ -4731,9 +4729,6 @@ CMI ... this is on TODO list
      & ' perform BSS transformation of Dirac-Fock operator'//
      & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
 
-        IF(CMPEIG) WRITE(LUPRI,'(1X,A)')
-     & '* Comparing eigenvalues of 2c and 4c Hamiltonians.'
-
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE IF (TWOCOMP.AND..NOT.BSS.AND..NOT.ECPCALC) THEN
@@ -4745,6 +4740,7 @@ CMI ... this is on TODO list
 
       IF(ICHANG.GT.0) WRITE(LUPRI,'(A)')
      &    '   with the following modifications:'
+
       IF(VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
         IF(MIXVAC) THEN
@@ -4863,6 +4859,11 @@ C
  9001 FORMAT(1X,A)
  9002 FORMAT(3X,A,I5)
 
+      IF(BSS.AND.CMPEIG) THEN
+        WRITE(LUPRI,'(1X,A)')
+     & '* Comparing eigenvalues between parent 4c and derived 2c'// 
+     & ' one-electron Hamiltonians.'
+      ENDIF
 
 C ============ Output for the basis set ===============
       WRITE(LUPRI,'(A)') ' * Basis set:'
