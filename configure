@@ -2193,6 +2193,7 @@ case $F90_COMP_NAME in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
+     cpp_f90="$cpp_f90 `getmods`"
      ;;
    *)
      cpp_f90="$cpp_f90 `getmods`"
