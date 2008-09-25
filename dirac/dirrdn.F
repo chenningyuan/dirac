@@ -213,8 +213,7 @@ C
       TWOCOMPBSS = .FALSE.
       ECPCALC  = .FALSE.
       SKIP2E = .FALSE.
-C     UE: Temporarily reactivate LOWJACO due to a sorting bug.
-      LOWJACO = .TRUE.
+      LOWJACO = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C

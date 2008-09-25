@@ -516,6 +516,7 @@ C
       IF((NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
+
 C     Use the fast DSYEVR for real case
       IF (NZ.EQ.1) THEN
             DDUM = 0.0D0
@@ -549,9 +550,12 @@ c     first let lapack estimate memory use
      &           M,EIG,VEC,LRV,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
      &           WORK(KLIWORK),LILWORK,IERR)
          ENDIF
+C     DSYEVR does not guarantee a sorting order, but I have never seen it
+C     do anything other than ascending, so the sorting should be a noop.
+         CALL ORDER3(VEC,EIG,LRV,N,N,1)
          CALL QEXIT('QDIAG')
-         RETURN
       ENDIF
+
 C
 C     Memory allocation
 C
