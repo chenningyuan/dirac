@@ -516,7 +516,7 @@ C
       IF((NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
-
+#if 0
 C     Use the fast DSYEVR for real case
       IF (NZ.EQ.1) THEN
             DDUM = 0.0D0
@@ -555,7 +555,7 @@ C     do anything other than ascending, so the sorting should be a noop.
          CALL ORDER3(VEC,EIG,LRV,N,N,1)
          CALL QEXIT('QDIAG')
       ENDIF
-
+#endif
 C
 C     Memory allocation
 C
