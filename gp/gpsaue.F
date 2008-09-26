@@ -516,27 +516,13 @@ C
       IF((NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
-#if 0
+
 C     Use the fast DSYEVR for real case
-      IF (NZ.EQ.1) THEN
+      IF (NZ.EQ.1.AND.MATZ.EQ.1) THEN
             DDUM = 0.0D0
             IDUM = 0
             WORKDUM = 0.0D0
             IWORKDUM = 0
-         IF (MATZ.EQ.0) THEN
-c     eigval only
-c     first let lapack estimate memory use
-            CALL DSYEVR('N','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &           M,EIG,DDUM,1,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
-            LLWORK = WORKDUM
-            LILWORK = IWORKDUM
-            CALL MEMGET('REAL',KLWORK, LLWORK, WORK, KFREE, LFREE)
-            CALL MEMGET('INTE',KLIWORK, LILWORK, WORK, KFREE, LFREE)
-            CALL MEMGET('INTE',KISUPPZ, 2*N, WORK, KFREE, LFREE)
-            CALL DSYEVR('N','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &           M,EIG,DDUM,1,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
-     &           WORK(KLIWORK),LILWORK,IERR)
-         ELSE
 C     eigval and eigvec
 c     first let lapack estimate memory use
             CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
@@ -549,13 +535,12 @@ c     first let lapack estimate memory use
             CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
      &           M,EIG,VEC,LRV,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
      &           WORK(KLIWORK),LILWORK,IERR)
-         ENDIF
 C     DSYEVR does not guarantee a sorting order, but I have never seen it
 C     do anything other than ascending, so the sorting should be a noop.
-         CALL ORDER3(VEC,EIG,LRV,N,N,1)
-         CALL QEXIT('QDIAG')
+            CALL ORDER3(VEC,EIG,LRV,N,N,1)
+            CALL QEXIT('QDIAG')
+            RETURN
       ENDIF
-#endif
 C
 C     Memory allocation
 C
