@@ -1,3 +1,4 @@
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module io_moltra
 !----------------------------------------------------------------------------------
@@ -19,17 +20,20 @@ integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP
 integer, parameter :: NSP2 = 300 ! static allocation 
 !--------------------------------------------------------
 
+integer :: irrep_product_dirac(1:8,1:8)
+
 INTEGER KR(-NSP2:NSP2)
 
 CHARACTER*14 REPNT(16)
 
 !--------------------------------------------------------
-     integer, parameter :: MXREP=32, MAXSP=1000
+      integer, parameter :: MXREP=32, MAXSP=1000
 !--------------------------------------------------------
 character*4 REPN(16), REPNA(MXREP*2)
 
 integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
-real*8 EPS1(MAXSP)
+
+real*8 EPS1(MAXSP) ! orbital energies ...
 
 LOGICAL BREIT,SPFR
 
@@ -40,6 +44,15 @@ logical :: is_complex, mrconee_read = .false.
 contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function GetNBSYM() result(nbsym_dirac)
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+ nbsym_dirac = NBSYM
+ write(LUPRI,*) 'get NBSYM=',NBSYM
+end function GetNBSYM
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_mrconee
 !----------------------------------------------------------------------------------
 !
@@ -47,8 +60,10 @@ subroutine read_mrconee
 !----------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
+#include "dgroup.h"
 
 logical :: is_mrc
+!integer, external :: GetNBSYM
 
  inquire(FILE='MRCONEE',EXIST=is_mrc)
  if (.not.is_mrc) call QUIT('mrconee file not present !')
@@ -62,14 +77,69 @@ logical :: is_mrc
 
   READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
 
+! ... mult.table is incomplete, later modified ...
   READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 
 ! ... IREPSP is to be used as 2-dimensional array, read it like that
   READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),EPS1(ISP),ISP=1,NSP)
 
-
   CLOSE (MRCONEE,STATUS='KEEP')
+
   mrconee_read = .true.
+
+
+! ... copied from "ccdriv.F"
+
+!C
+!C      Right adjust representation names
+!C
+       DO IRP = 1, NSYMRP
+          REPN(IRP) = REPNT(IRP)(1:4)
+          CALL BLANKL (4,REPN(IRP))
+       ENDDO
+       DO IRP = 1, NREP
+          CALL BLANKL (4,REPNA(IRP))
+       ENDDO
+!C
+!C     Make inverse of multiplication table
+!C
+      DO JREP = 1, 2*NREP
+         DO IREP = 1, 2*NREP
+            KREP = MULTB(IREP,JREP,1)
+            MULTB(IREP,KREP,2) = JREP
+         ENDDO
+      ENDDO
+!C
+!C     Get rid of offset for boson reps
+!C
+      DO JREP = 1, NREP
+         DO IREP = 1, NREP
+            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
+            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
+         ENDDO
+      ENDDO
+
+      DO JREP = NREP + 1, 2*NREP
+         DO IREP = NREP + 1, 2*NREP
+            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
+            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
+         ENDDO
+      ENDDO
+
+!-----------------------------------------------------------
+
+! fill irrep_product_dirac !
+
+  irrep_product_dirac=0
+
+  write(LUPRI,*) 'GetNBSYM=',NBSYM
+  do i=1,NBSYM
+  do j=1,NBSYM
+   ! write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1))
+    write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,1)-2*NBSYM)
+    irrep_product_dirac(i,j)= MULTB(i,j,1)-2*NBSYM
+  enddo
+  enddo
 
   return
 
@@ -89,7 +159,9 @@ subroutine print_mrconee_data
 #include "implicit.h"
 #include "priunit.h"
 
-logical :: print_mt = .false.
+integer :: multbs(1:8,1:8)
+
+!logical :: print_mt = .false.
 
 if (.not.mrconee_read) then
   Write(LUPRI,*) 'MRCONEE file was not read...'
@@ -127,21 +199,30 @@ ENDDO
 
 write (LUPRI,'(/,2x,a)') '*** EPS1, IREPSP:'
 DO ISP = 1, NSP
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-         IREPSP(ISP),IREPSP(NSP+ISP), &
-         ' EPS1(ISP)=',EPS1(ISP)
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   IREPSP(ISP),IREPSP(NSP+ISP), &
+   ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP))
 ENDDO
 
-write (LUPRI,'(/,2x,a)') '*** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
+write (LUPRI,'(/,2x,a)') 'Multiplication table; *** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
 write (LUPRI,'(2x,a,2i3)') ' NREP, 2*NREP:',NREP,(2*NREP)
 
-if (print_mt) then
-  DO I=1,2*NREP
-  DO J=1,2*NREP
-    write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
-  ENDDO
-  ENDDO
-endif
+do i=1,2*NREP
+do j=1,2*NREP
+  ! write(LUPRI,'(2X,A,2I3,A,I3)') 'I,J:',I,J,' MULTB(I,J,1):',MULTB(I,J,1)
+  write(LUPRI,'(4x,2i3,a,2i4,1x,a4,1x,a4)')   & 
+  i,j,' - multb(i,j,1),multb(i,j,2):',MULTB(i,j,1),MULTB(i,j,2),REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,2))
+enddo
+enddo
+
+write(LUPRI,*)
+
+!do i=1,8
+!do j=1,8
+! write(LUPRI,'(2x,2i3,a,i4,1x,a4)')    & 
+!  i,j,' - ',MULTBS(i,j),REPNA(MULTBS(i,j))
+!enddo
+!enddo
 
 end subroutine print_mrconee_data
 
@@ -400,7 +481,6 @@ end subroutine read_mdcint
 
 end module io_moltra
 
-
 module Dirac_HSMRCC
 !----------------------------------------------------------------------------------
 !
@@ -436,6 +516,7 @@ use io_moltra
 !character :: dirac_file='Dirac_HSMRCC'
 character(len=12) :: dirac_file='Dirac_HSMRCC'
 character(len=4) :: repna_temp_a, repna_temp_b
+integer :: multbs(1:8,1:8)
 
 type(Vect) :: SpinOfOrb,OccGMSRef,IrrepOrb,IrpLabOrb,OrbType,OrbSpace,OrbEnergy
  
@@ -458,22 +539,27 @@ IrpLabOrb  = MakeVector('INTE',NSP,'GAMESS-like IrpLabOrb')
 OrbType    = MakeVector('INTE',NSP,'GAMESS-like OrbType')
 OrbSpace   = MakeVector('INTE',NSP,'GAMESS-like OrbSpace')
 
-OrbEnergy = MakeVector('REAL',NSP,'GAMESS-like OrbEnergy')
+OrbEnergy  = MakeVector('REAL',NSP,'GAMESS-like OrbEnergy')
+
+write(LUPRI,*)
 
 nelec_tot = 0
 do irp=1,NSYMRP
+  write(LUPRI,'(2x,i2,a,i2,a,i2,a)') irp,'/',NSYMRP,' -> ',NELEC(irp),' electrons'
   nelec_tot = nelec_tot + NELEC(irp)
 enddo
 
 write(LUPRI,*) 'nelec_tot=',nelec_tot
+write(LUPRI,*)
 
-
+numirrep_dirac = GetNBSYM()
+write(LUPRI,*) 'numirrep_dirac=',numirrep_dirac
 
 ! ... fill irreps now ...
 write(LUPRI,'(/,2x,a,i4,a)') 'Irreps (1-',NSP,' )'
 do i=1, NSP
-  write(LUPRI,'(2x,i3,a,i2,a,a4,a,f12.7)')   &  
-  i,': irrep no ',IREPSP(i+NSP),'- irrep label:',REPNA(IREPSP(i+NSP)),' orb.energy:',EPS1(i) 
+  write(LUPRI,'(2x,i3,a,2i2,a,a4,a,f12.7)')   &  
+  i,': irrep no ',IREPSP(i),IREPSP(i+NSP),'- irrep label:',REPNA(IREPSP(i+NSP)),' orb.energy:',EPS1(i) 
 enddo
 write(LUPRI,*)
 
@@ -481,6 +567,7 @@ write(LUPRI,*)
 do i=1, NSP/2
  write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
 enddo
+
 write(LUPRI,*)
 
 ! fill orb.en.
@@ -495,33 +582,24 @@ do i=1, NSP/2
  repna_temp_b = REPNA(IREPSP(i+NSP/2+NSP))
 
  !write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
- write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i, repna_temp_a, repna_temp_b
+ write(LUPRI,'(2x,i3,1x,a4,i2,1x,a4,i2)') i, repna_temp_a,IREPSP(i), repna_temp_b, IREPSP(i+NSP/2)
 
  IrrepOrb%p_iA1D(ii)    = IREPSP(i+NSP)
- !write(repna_temp,FMT='(I4)') IrpLabOrb%p_iA1D(ii)
- !write(repna_temp,'(I4)') IrpLabOrb%p_iA1D(ii)
-! write(repna_temp_a,'(i4)') IrpLabOrb%p_iA1D(ii)
- !write(repna_temp_a,'(i4)') IrpLabOrb%p_iA1D(ii)
-   read(repna_temp_a,'(a4)') IrpLabOrb%p_iA1D(ii)
+ read(repna_temp_a,'(a4)') IrpLabOrb%p_iA1D(ii)
 
+! IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP/2+NSP)
+ IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP) ! previously saved irrep...
 
- IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP/2+NSP)
-! write(repna_temp_b,FMT='(I4)') IrpLabOrb%p_iA1D(ii+1)
-! write(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
  read(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
 
  SpinOfOrb%p_iA1D(ii)   = +1
  SpinOfOrb%p_iA1D(ii+1) = -1
-! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
 
+! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
 
    ii = ii + 2
 
 enddo
-
-! extract symmetry labels
-!do i=1,NSP
-!enddo
 
 do i=1,NSP
  if (i<=nelec_tot) then
@@ -574,6 +652,10 @@ write(ludh) NCMO
 
 write(ludh) NACT
 
+write(ludh) numirrep_dirac
+
+write(ludh) irrep_product_dirac
+
 !write(ludh) ( SpinOfOrb%p_iA1D(i), i=1, NSP )
 write(ludh) ( SpinOfOrb%p_iA1D(1:NSP) )
 
@@ -582,6 +664,10 @@ write(ludh) ( OccGMSRef%p_iA1D(1:NSP) )
 write(ludh) ( OrbType%p_iA1D(1:NSP) )
 
 write(ludh) ( OrbSpace%p_iA1D(1:NSP) )
+
+write(ludh) ( IrrepOrb%p_iA1D(1:NSP) )
+
+write(ludh) ( IrpLabOrb%p_iA1D(1:NSP) )
 
 !write(ludh) ( OrbEnergy%p_rA1D(i), i=1, NSP )
 write(ludh) ( OrbEnergy%p_rA1D(1:NSP) )
@@ -594,9 +680,11 @@ write(LUPRI,*) 'saved NCORE=',NCORE
 write(LUPRI,*) 'saved NACT=',NACT
 write(LUPRI,*) 'saved NORBT=',NACT
 write(LUPRI,*) 'saved NSP=',NSP
+write(LUPRI,*) 'saved numirrep_dirac=',numirrep_dirac
 
 if (iprint_hscc >= 5) then
-  write(LUPRI,'(/,2x,a,a)') '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
+    write(LUPRI,'(/,2x,a,a)')   & 
+    '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
 endif
 
 call DeAllocObject(OrbEnergy)

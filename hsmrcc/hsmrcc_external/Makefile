@@ -189,10 +189,10 @@ c89objs := getopt.o hsmrmain.o
 #### DIRAC imports ####
 ####               ####
 #######################
-dirac_objs :=  ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o  \
-                ../../gp/tracing.o ../../gp/gpsaue.o ../../gp/mempkg.o \
+dirac_objs :=  ../../gp/qpack.o   ../../gp/gptrygve.o  ../../gp/gphjj.o  \
+               ../../gp/tracing.o ../../gp/gpsaue.o    ../../gp/mempkg.o \
                ../../gp/gpjeppe.o ../../pdpack/libpdlib.a   \
-               ../../abacus/hergp.o
+               ../../abacus/hergp.o ../../gp/gpc.o
 
 objects := $(modobjs) $(f90objs) $(c89objs)
 

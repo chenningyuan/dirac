@@ -72,6 +72,7 @@ subroutine InitHSMRBase
    ! ... Initialize gamess module, GMSMod ...
    call InitGMSMod
 
+   ! ... set CUTOFF 
    if ((.not.OPTION(RESTART)).and.(.not.OPTION(INTTOL))) CUTOFF  = TrfTol
 
    ! ... Generate HSMRCC Parameters ...
@@ -82,11 +83,13 @@ subroutine InitHSMRBase
 
    call InitIOMod
 
+   ! ... read 
    if (.not.OPTION(GENINT)) call ReadNZIntRecs
 
-   ! ... Initialize VacMod ...
-
+   ! ... Initialize S2MatrixElem...
    call InitS2MatEle
+
+   ! ... Initialize VacMod ...
    call InitVacMod
 
    ! ... Open Integral Files ...

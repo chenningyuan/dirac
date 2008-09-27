@@ -55,11 +55,16 @@
 
       if (Init) then
          write(UOUT,*) 'attempt to reinitialize init_s2matele'
-         call flush(UOUT)
-         call abort
+         call flushout
+         call quit('InitS2MatEle: attempt to reinitialize init_s2matele')
       endif
 
       Init  = .true.
+
+      if (get_iprint() >= 7) then
+        write(UOUT,'(/,2x,a,i4)') 'InitS2MatEle:   NVMO=',NVMO
+        write(UOUT,'(2x,a,i8)')   'InitS2MatEle: NVMOSQ=',NVMOSQ
+      endif
 
       allocate(s2_1(NVMO,NVMO))
       allocate(s2_2(NVMOSQ,NVMOSQ))
@@ -76,8 +81,8 @@
 
       if (.not.Init) then
          write(UOUT,*) 'error in end_s2matele'
-         call flush(UOUT)
-         call abort
+         call flushout
+         call quit('error in end_s2matele')
       endif
 
       Init = .false.
@@ -88,6 +93,7 @@
 
       end subroutine EndS2MatEle
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine CalcS2MatEle
 
       implicit none
@@ -106,10 +112,8 @@
 !                  + sum (k) [ <i|sz|k>*<k|sz|j> ]
 !
 
-      call QEnter('CalcS2MatEle')
-
       if (get_iprint() >= 7) then
-        write(UOUT,'(2x,a,i4)') 'in CalcS2MatEle: NVMO=',NVMO
+        write(UOUT,'(/,2x,a,i4)') 'in CalcS2MatEle: NVMO=',NVMO
       endif
 
       do j = 1, NVMO
@@ -170,7 +174,6 @@
       enddo
       enddo
 
-      call QExit('CalcS2MatEle')
       return
       
       end subroutine CalcS2MatEle

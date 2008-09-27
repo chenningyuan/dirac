@@ -208,7 +208,8 @@ subroutine InitReadDIRAC
 
 character*12 :: dirac_file='Dirac_HSMRCC'
 real*8    :: ENSCF_DIR
-integer   :: ludir = 18, iprint_dirac, NELEC_DIR, NSP, NORBT, NCORE_DIR, NACT_DIR
+integer   :: ludir = 18, iprint_dirac, NELEC_DIR, NSP, NORBT, NCORE_DIR, NACT_DIR,  & 
+             numirrep_dirac,irrep_product_dirac(1:8,1:8)
 logical   :: is_file, dir_spfr
 
 inquire(file=dirac_file, exist=is_file)
@@ -217,6 +218,7 @@ if (.not.is_file) then
   call quit('InitReadDIRAC: no dirac input file !...')
 endif
 
+! ... trunk/hsmrcc/dir_hscc_mods.F90
 open(ludir,file=dirac_file,form='unformatted',status='old', access='sequential')
 
 read(ludir) iprint_dirac
@@ -231,6 +233,8 @@ read(ludir) NSP
 read(ludir) NORBT
 read(ludir) NCORE_DIR
 read(ludir) NACT_DIR
+read(ludir) numirrep_dirac
+read(ludir) irrep_product_dirac
 
 write(UOUT,*) 'read iprint_dirac=',iprint_dirac
 write(UOUT,*) 'NELEC_DIR=',NELEC_DIR
@@ -240,6 +244,8 @@ write(UOUT,*) 'NSP=',NSP
 write(UOUT,*) 'NORBT=',NORBT
 write(UOUT,*) 'NCORE_DIR=',NCORE_DIR
 write(UOUT,*) 'NACT_DIR=',NACT_DIR
+write(UOUT,*) 'numirrep_dirac=',numirrep_dirac
+write(UOUT,*) 'irrep_product_dirac',irrep_product_dirac
 
 ! ... assign DIRAC HSCC variables ...
 NAO = NORBT
@@ -256,6 +262,10 @@ write(UOUT,*) 'assigned NCMO=',NCMO
 NSO = NSP
 TotEn = ENSCF_DIR
 
+! ... irrep_product - spin-free !
+ irrep_product = irrep_product_dirac
+
+
 ! ...  prepare variable  ...
   NVMO = NHOLE + NPTCL
 
@@ -271,6 +281,10 @@ TotEn = ENSCF_DIR
 
  read(ludir) OrbSpace
 
+ read(ludir) IrrepOrb
+
+ read(ludir) IrpLaborb
+
  read(ludir) OrbEnergy
 
 close(ludir) 
@@ -279,9 +293,10 @@ close(ludir)
       SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
       OccRef = OccGMSRef
 
+! ... other  symmetry stuff ... will it be sufficient ?
+      totally_symmetric_irrep = 1
 
-! ... symmetry stuff ... will it be sufficient ?
- !   numirrep = 4
+      numirrep = numirrep_dirac
 
 end subroutine  InitReadDIRAC
 

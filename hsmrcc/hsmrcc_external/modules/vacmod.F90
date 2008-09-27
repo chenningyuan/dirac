@@ -601,6 +601,7 @@ subroutine GenVac
      write(UOUT,*) 
    endif
 
+   ! miro: I have to check whether this condition is sufficient for read in symmetry
    if ( totally_symmetric_irrep /= 1 .or. numirrep == 0) then
      write(UOUT,'(/,2x,a,i5)') 'GenVac: totally_symmetric_irrep=',totally_symmetric_irrep
      write(UOUT,*) '**** irrep_product table ****:'
@@ -618,6 +619,8 @@ subroutine GenVac
    !    OccVac => Occupancy
    !    IrpVac => Irrep
    !    Ms2Vac => 2*M_s (excess number of alpha orbitals)
+   !
+   !    Needs "irrep_product" !
    !
 
    ms2max = 0
@@ -647,8 +650,7 @@ subroutine GenVac
       Ms2Vac(vac) = ms2
       IsMainVac(vac) = flag
       ms2max = MAX(ms2,ms2max)
-
-   enddo
+   enddo ! of vac = 1, NSTATE
 
    ! a symmetry block is defined by [ms2, irrep]
    ! find number of symmetry blocks in given model space
