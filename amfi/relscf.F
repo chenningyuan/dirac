@@ -47,7 +47,8 @@ C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
 C
       NALAR1=NALARM-1
@@ -152,7 +153,8 @@ C
 C     CALL MEMCHK('before  INPUT_AT34 1',WORK,1)
 
 CMI   CALL MEMGET('REAL',KC     ,LDIMC  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KC     ,LDIMC+1  ,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KC     ,LDIMC+1  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KC     ,LDIMC+2  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCTRAN ,LDIMC  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPQN   ,MXB    ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KZETA  ,MXB    ,WORK,KFREE,LFREE)
@@ -391,7 +393,9 @@ C
       CALL MEMGET('REAL', N2,LQM  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL', N3,LPQ  ,WORK,KFREE,LFREE)
 
+CMI    ... U variable
       CALL MEMGET('REAL', N4,LPQ  ,WORK,KFREE,LFREE)
+C     CALL MEMGET('REAL', N4,LPQ+3,WORK,KFREE,LFREE)
 
 CMI   write(LUPRI,*) 'before HFMAIN...LPQ=',LPQ
 
@@ -463,6 +467,8 @@ C     if (relscf_verbose)
       CALL MEMCHK('after HFMAIN',WORK,1)
 
       CALL MEMREL('AT34DIM',WORK,KWORK,KWORK,KFREE,LFREE)
+
+CMI   call quit('stopped after HFMAIN for debugging purposes')
 
       RETURN
       END
@@ -699,7 +705,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "relscf_dim.h"
 C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
-     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+CMI  *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
      *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
 !    *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
@@ -878,6 +885,7 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EIGEA (F,
      *P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
@@ -902,7 +910,8 @@ CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),
      *EC(2),CM1(2),Z1(2),Z2(2),DELZ(2),GMIN(MXBF,1),SMIN(MXBF,1),
-     *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(2),NROW(*),NBVAR(*),IORCN(*)
       DIMENSION F(1)
 C
@@ -2047,6 +2056,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(LPQ),T(LPQ),DT(LPQ,2),
       DIMENSION P(LQM),Q(LQM),S(LPQ),U(*),T(LPQ),DT(LPQ,*),
+CMI   DIMENSION P(LQM),Q(LQM),S(LPQ),U(0:*),T(LPQ),DT(LPQ,*),
 C    &          DOS(LPQ,2),PCAP(LPQ),QCAP(LPQ),FC(LPQ),FO(LPQ),
      &          DOS(LPQ,*),PCAP(LPQ),QCAP(LPQ),FC(LPQ),FO(LPQ),
      &          CM1SCF(MXBF,NOR),CM2SCF(MXBF,NOR),CSAV1(MXBF,NOR),
@@ -2148,6 +2158,8 @@ C
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
 
       CALL MEMCHK('after DENSI',WORK,1)
+CMI        return
+
 C
 C     CALCULATE ENERGY, IF APPLICABLE
 C
@@ -2159,17 +2171,13 @@ C
       CALL MEMCHK('HFMAIN after ENERGY',WORK,1)
 CMI        return
 
-CMI   if (relscf_verbose) write(6,"(a,i3,1x,f26.12)")
-CMI   IF (IPR_RELSCF.GE.2) then
       IF (IPR_RELSCF.GE.0) then
         write(LUPRI,"(a,i3,1x,f26.12)")
      & ' total energy iteration', nitscf,energ
       ENDIF
 
-CMI  ... check this print...
-CMI   IF (IPRINT.GT.1) THEN
       IF (IPR_RELSCF.GE.22) THEN
-       WRITE(LUPRI,'(2x,a)') '...extra printout in advance:'
+       WRITE(LUPRI,'(/,2x,a)') '...extra printout in advance:'
        CALL PREN(KPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
@@ -2266,8 +2274,11 @@ CMI         ... index J1 in C out of boundaries !
         END DO
         NSTEP2=NSTEP2+NSH
       END DO
+
+CMI        return  ! good return from HFMAIN !!!
 C
       IF (NSVD.EQ.1) GO TO 2
+
       NSTEP =0
       NSTEP2=0
       DO I=1,NSYM
@@ -2293,14 +2304,23 @@ CMI       if (relscf_verbose) write (6,*) 'after eigea 55'
         NSTEP =NSTEP +N1(I)
         NSTEP2=NSTEP2+NSH
       END DO
+
+CMI     ... wrong return - WORK hurt !
+CMI     return
+
       GO TO 3
 C
 C****   JACOBI DIAGONALIZATION
 C
-    2 CALL JDAAA
+    2  CONTINUE
+CMI      return   ! good return from HFMAIN   
+       CALL JDAAA
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+
+CMI     return ! good return
+
 3     CONTINUE
 C
 C     AVERAGING / EXTRAPOLATION
@@ -2694,7 +2714,8 @@ C     C: NOR*MXBF*NSYM AND  CTRAN,ITRAN: MXBAS*MXOCC     *
 C***********************************************************************
 CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
 CMI   DIMENSION C(0:LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
-      DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+CMI   DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
+      DIMENSION C(0:*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
 C     DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
      *          ITRAN(LDIMC),NROW(MXB),NBVAR(MXB),IORCN(MXB),
      *          CREAD(MXB*MXO),WORK(LWORK)
@@ -2971,7 +2992,18 @@ C
   120   FORMAT(6X,'NUMBER OF CLOSED SHELLS  :',10(I3,5X))
         WRITE(LUPRI,125 )(NOOC(I) ,I=1,NSYM)
   125   FORMAT(6X,'OPEN SHELL OCCUPATION    :',10(I3,5X),/)
+
       ENDIF
+
+C --- verify number of basis functions wrt total iterations
+      DO I=1,NSYM
+       IF ((NCSH(I)+NOOC(I)).GT.NBAS(I)) THEN
+         WRITE(LUPRI,'(/,2x,a,i2,a,i2,a,i2)')  
+     &   'symmetry:',I,' basis fu:',NBAS(I),
+     &   ' occupied:',NCSH(I)+NOOC(I)
+         CALL QUIT('RELSCF: insufficient number of basis functions !')
+       ENDIF
+      ENDDO
 
       IF (IPR_RELSCF.GE.2) THEN
        WRITE(LUPRI,135)
@@ -3124,8 +3156,8 @@ CMI        if (relscf_verbose) WRITE(LUPRI,*) ' SYMMETRY',L
            IF(NOOC(L).GT.0) NTT=1
            NTTC=NCSH(L)+NTT
            if (EX) then
-           read(istartunit,*)
-           READ(istartunit,*) (CREAD(II),II=1,NBAS(L)*NTTC)
+             read(istartunit,*)
+             READ(istartunit,*) (CREAD(II),II=1,NBAS(L)*NTTC)
            endif
            DO I=1,NTTC
 CMI          if (relscf_verbose) WRITE(LUPRI,*) ' VECTOR',I
@@ -3133,13 +3165,13 @@ CMI          if (relscf_verbose) WRITE(LUPRI,*) ' VECTOR',I
              IBEG=IEND+1
              IEND=IBEG+NBAS(L)-1
              if (EX) then
-             do II=1,NBAS(L)
-             C(II+IBEG-1)=CREAD(I+(II-1)*NTTC)
-             enddo
+              do II=1,NBAS(L)
+               C(II+IBEG-1)=CREAD(I+(II-1)*NTTC)
+              enddo
              else
-             do II=IBEG,IEND
-              C(II)=0d0
-              Enddo
+              do II=IBEG,IEND
+                C(II)=0d0
+              enddo
 C             write(LUPRI,*) 'C index:',
 C    &         IBEG,I,NBAS(L),NTTC, IBEG+I*NBAS(L)/NTTC-1,
 C    &         ' max:',LDIMC
@@ -3553,8 +3585,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),
-      DIMENSION P(*),Q(*),S(*),U(*),T(2),DT(*),V(*),PCAP(*),
-     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+      DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),V(*),PCAP(*),
+CMI  *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
+     *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),W(*),THRE(*),EPS(*),
      *EPSI(*),CM1(*),Z1(*),Z2(*),DELZ(*),
 CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
@@ -4681,9 +4714,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
-     *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(*),
+CMI  *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(*),
+     *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
      *EC(*),CM1(*),Z1(*),Z2(*),DELZ(*),
-     *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
+CMI  *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
+     *C(MXBF,*),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 #include "amfi_if.h"
