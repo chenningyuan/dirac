@@ -3900,7 +3900,7 @@ C     ... default L&S components... needs discussion about relation to DO2C4C/DO
       MC      = 2
 CMI   ... no specifications for individual AMFI center
       ALLAMFA = .TRUE.
-CMI     ... default initialization 
+CMI     ... default initialization - always include AMFI contribution
 #ifdef MOD_AMFI
       NOAMFI = .FALSE.
 #else
@@ -4354,6 +4354,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              GO TO 100
   149     CONTINUE
 C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
+CMI  when the AMFI-module is present and .NOAMFI keyword is present
 #ifdef MOD_AMFI
              NOAMFI = .TRUE.
 #endif
