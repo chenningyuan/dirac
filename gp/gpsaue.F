@@ -525,6 +525,9 @@ C     Use the fast DSYEVR for real case
             IWORKDUM = 0
 C     eigval and eigvec
 c     first let lapack estimate memory use
+CMI ...  I have to initialize it for intel mkl-lapack
+            INFO = 0
+            IERR = 0
             CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
      &           M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
             LLWORK = WORKDUM
