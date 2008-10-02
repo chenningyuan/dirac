@@ -517,6 +517,7 @@ C
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
 
+#ifdef LAPACK_QDIAG
 C     Use the fast DSYEVR for real case
       IF (NZ.EQ.1.AND.MATZ.EQ.1) THEN
             DDUM = 0.0D0
@@ -544,6 +545,7 @@ C     do anything other than ascending, so the sorting should be a noop.
             CALL QEXIT('QDIAG')
             RETURN
       ENDIF
+#endif
 C
 C     Memory allocation
 C
