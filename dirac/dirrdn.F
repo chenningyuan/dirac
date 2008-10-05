@@ -4509,10 +4509,10 @@ CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3999
          ENDIF
-         IF (ONESYS) THEN
+CMI      IF (ONESYS) THEN
 CMI        ... no AMFI contribution
-           IBSS = 999
-         ENDIF
+CMI        IBSS = 999
+CMI      ENDIF
         ENDIF
 
 CMI   ... fix the DKH2 keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -4527,10 +4527,10 @@ CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3022
           ENDIF
-          IF (ONESYS) THEN
+CMI       IF (ONESYS) THEN
 CMI        ... no AMFI contribution
-           IBSS = 022
-          ENDIF
+CMI        IBSS = 022
+CMI       ENDIF
         ENDIF ! end of DKH2
 
 CMI   ... fix the DKH1 keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -4545,10 +4545,10 @@ CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3011
           ENDIF
-          IF (ONESYS) THEN
+CMI       IF (ONESYS) THEN
 CMI        ... no AMFI contribution
-           IBSS = 011
-          ENDIF
+CMI        IBSS = 011
+CMI       ENDIF
         ENDIF ! end of DKH1
           
       ENDIF ! End of .BSS
@@ -5109,7 +5109,10 @@ C         Operator must be symmetric under time reversal
           ENDIF
         ENDDO
 CMI  ... treat the INPERR as in paminp.F - proper input is required
-        IF (INPERR.GT.0) CALL QUIT('Operator input error in *HAMINP')
+        IF (INPERR.GT.0) THEN
+          WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR
+          CALL QUIT('Operator input error in *HAMINP')
+        ENDIF
       ENDIF
       IF(ONESYS) THEN
         WRITE(LUPRI,'(3X,A)') '- Two-electron part ignored '//

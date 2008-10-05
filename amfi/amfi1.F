@@ -93,31 +93,42 @@ CMI    write(lupri,*) 'Exp_finite,EXP_FIN=',Exp_finite,EXP_FIN
 CMI ... reading in  
       read(IN,*) charge,Lhigh
       if (Lhigh.gt.Lmax) then 
-      write(LUPRI,*) 'readbas: Sorry, so far this code deals only ',
-     *'with maximum l-values of ',Lmax
-      CALL QUIT('Too high angular momentum values in AMFI')            
+        write(LUPRI,*) 'readbas: Sorry, so far this code deals only ',
+     &  'with maximum l-values of ',Lmax
+        CALL QUIT('Too high angular momentum values in AMFI') 
       endif  
 
       if (IPR_AMFI.GE.2) then 
          write(LUPRI,*) 
-     &     ' Functions will go up to an L-value of : ',Lhigh
+     &   ' Functions will go up to an L-value of : ',Lhigh
          write(LUPRI,'(A19,F7.2)') chcharge,charge    
       endif
 
       call initired
+
       Do iredrun=1,numbofsym
       do Lrun=0,Lhigh  
-      nmbMperIRL(iredrun,Lrun)=0 
+       nmbMperIRL(iredrun,Lrun)=0 
       enddo 
       enddo 
 
+CMI ... clean arrays (in the case of repeating atoms)
+      do Lrun=0,Lmax
+        nprimit(Lrun)=0
+        ncontrac(Lrun)=0
+      enddo
+
       do Lrun=0,Lhigh 
-CMI   if (amfi1_verbose) write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
-       IF (IPR_AMFI.GE.2) write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
-         read(IN,*) nprimit(Lrun),ncontrac(Lrun) 
-CMI   if (amfi1_verbose) 
-      if (IPR_AMFI.GE.2) 
-     &   write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
+
+        IF (IPR_AMFI.GE.2) THEN
+           write(LUPRI,'(2X,A,I3)') 'ANGULAR MOMENTUM ',LRUN  
+        ENDIF
+
+        read(IN,*) nprimit(Lrun),ncontrac(Lrun) 
+
+        IF (IPR_AMFI.GE.2) THEN
+          write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
+        ENDIF
 
 cbs   check keywords
 cbs   check maximum numbers
@@ -141,13 +152,13 @@ cbs   check maximum numbers
             CALL QUIT('Inconsistent input detected in AMFI')            
          endif
 
-CMI      if (amfi1_verbose)
-         if (IPR_AMFI.GE.2) 
-     &      write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
+         if (IPR_AMFI.GE.2) THEN
+            write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
      *         ' there will be ',
      *         ncontrac(Lrun),' contracted functions, built from ',
      *         nprimit(Lrun),
      *         ' uncontracted functions.' 
+         endif
 
 CMI ... this works only for uncontracted basis functions
          IF (ncontrac(Lrun).ne.nprimit(Lrun)) 
@@ -157,7 +168,7 @@ CMI ... this works only for uncontracted basis functions
 CMI         read(IN,*) exponents(ILINE,Lrun), 
 CMI  *           (cntscrtch(ILINE,JRUN,Lrun),
 CMI  *           Jrun=1,ncontrac(Lrun))
-CMI   ... only decontracted basis functions
+CMI   ... only decontracted basis functions !!!
             read(IN,*) exponents(ILINE,Lrun)
             do Jrun=1,ncontrac(Lrun)
               if (ILINE.eq.Jrun) then
@@ -195,7 +206,6 @@ cbs   setting the numbers of cartesians per IR
      *           nmbMperIRL(ipOw2ired(ipowxyz(1,mrun,Lrun),
      *           ipowxyz(2,mrun,Lrun),IpowxYz(3,mrun,Lrun)),lruN)+1
          enddo
-CMI      if (amfi1_verbose) then
          if (IPR_AMFI.GE.3) then
             write(LUPRI,*) stars                                        
             write(LUPRI,'(A,8I4)') 
@@ -205,7 +215,6 @@ CMI      if (amfi1_verbose) then
         endif
       enddo                     ! enddo for loop over L-values 
 
-CMI   if (amfi1_verbose) then
       if (IPR_AMFI.GE.3) then
          write(LUPRI,*) 'distribution of M-values'
          do Lrun=0,Lhigh
@@ -228,7 +237,6 @@ CMI   if (amfi1_verbose) then
       enddo
       enddo
 
-CMI   if (amfi1_verbose) then
       if (IPR_AMFI.GE.3) then
          write(LUPRI,*) stars                            
          write(LUPRI,'(A,8I3)')
@@ -243,6 +251,7 @@ CMI   if (amfi1_verbose) then
       isum=isum+itotalperIR(iredrun)
       enddo 
       numballcart=isum
+
 CMI... verify the total number of basis function
       IF (numballcart.gt.Mxcart) THEN
         write(lupri,*) 'numballcart=',numballcart
@@ -257,7 +266,6 @@ CMI... verify the total number of basis function
       enddo 
       enddo 
 
-CMI   if (amfi1_verbose) then
       if (IPR_AMFI.GE.3) then
          write(LUPRI,*) stars                                  
          write(LUPRI,'(A,8I3)') 
