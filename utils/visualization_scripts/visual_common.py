@@ -165,8 +165,12 @@ def plot_figure(figure):
 
                norm = (u_l[ipoint]**2.0 + v_l[ipoint]**2.0)**0.5
 
-               u_slice.append(u_l[ipoint]/norm)
-               v_slice.append(v_l[ipoint]/norm)
+               if abs(norm) > 1.0e-30:
+                  u_slice.append(u_l[ipoint]/norm)
+                  v_slice.append(v_l[ipoint]/norm)
+               else:
+                  u_slice.append(u_l[ipoint])
+                  v_slice.append(v_l[ipoint])
 
                ipoint = ipoint + 1
 
