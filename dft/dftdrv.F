@@ -490,22 +490,30 @@ C
           ENDDO
         ENDDO
       END IF 
-C
-C     Test on the number of electrons
-C
-      ELCTRX = NELECT+NAELEC
-      ERROR  = ELCTRN - ELCTRX
-      IF (ABS(ERROR) .GT. DFTELS) THEN
-         WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
-     &   ' Number of electrons from numerical integration:',ELCTRN,
-     &   ' Number of electrons from orbital occupations:  ',ELCTRX,
-     &   ' Error in the number of electrons:              ',ERROR,
-     &   ' Error larger than DFTELS (set input):          ',DFTELS,
-     &   ' Calculation aborted.'
-CTROND         CALL QUIT
-CTROND     &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
-        WRITE(LUPRI,'(A)') 'WARNING !!!'
-      END IF
+
+
+
+!     compare integrated number of electrons to electron count from orbital occupations
+!     =================================================================================
+
+      elctrx = nelect + naelec
+      error  = elctrn - elctrx
+
+      if (abs(error) .gt. dftels) then
+         write(lupri, *)
+         write(lupri, '(3x, a, f14.6)') 
+     &         'number of electrons from numerical integration:', elctrn
+         write(lupri, '(3x, a, f14.6)') 
+     &         'number of electrons from orbital occupations:  ', elctrx
+         write(lupri, '(3x, a, f14.6)') 
+     &         'WARNING: error in the number of electrons:     ', error
+         write(lupri, '(12x, a, f14.6)') 
+     &         'is larger than DFTELS (set input):    ',          dftels
+         write(lupri, '(12x, a)') 
+     &         'this can mean that the quadrature grid is inappropriate'
+         write(lupri, *)
+      end if
+
 C
 C
 C     Print section
