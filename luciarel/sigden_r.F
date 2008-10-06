@@ -562,7 +562,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
-     &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,IHINDX,
+     &                       IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
+     &                       IHX_LOC,IHX,IHINDX,
      &                       SIGN_NHX,I2DIATP,LABEL,IOP_REO,SIGN_OPREO,
      &                       IPRNT)
 *
@@ -725,8 +726,13 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 * For general purposes: First type with 
 *                       1-electron and 2-electron integrals:
       IFTONE = 1
+C     if only one-elecron operator (NO_TTWO > 0): spin-flip 
+C     integral types (one-electron integrals) are included as 
+C     2e-integrals depending on the operator symmetry...
+C     even for pure one-electron operators... - SK: 18 Sep 08
       IFTTWO = NHX + 1
-      IF (NO_TTWO .GT. 0) GOTO 200
+C
+      IF (NO_TTWO .gt. 0) GOTO 200
 *
 * operator:
 *. a+i alpha  a+j alpha  a k alpha  a l alpha, ordered so i.ge.j, k.ge.l
@@ -970,6 +976,7 @@ C     ... skip next set of two-electron terms
 *
 * Last type of non-spin-flip integrals
   300 ILTTWO = NHX
+      IFSFLT1= ILTTWO + 1
 *
 * one-electron spin orbit
 *
@@ -1047,11 +1054,13 @@ C     ... skip next set of two-electron terms
               END IF
             END IF
           END DO
-*    quaternionic matrix groups only!
+*         quaternionic matrix groups only!
         END DO
       END IF
+*     last one-electron spin-flip type integral
+      ILSFLT1 = NHX
 *
-* Two-electron terms with Delta mk .ne. 0
+*     two-electron terms with Delta mk .ne. 0
 *
       if (NO_TTWO .eq. 0) THEN
 *         include two-electron terms when NO_TTWO .gt. 0
@@ -1419,23 +1428,22 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
 *     end if (NO_TTWO .gt. 0)
 *
       if (IFLAG.ne.1.and.NTEST.ge.50) then
+        WRITE(LUWRT,'(/A/)') '  *** Information from  GET_HX_RELA ***'
+        WRITE(LUWRT,'(/A,I10)') '  Number of excitation types ', NHX
         do I=1,NHX
-          write(LUWRT,*) 'I,SIGN_NHX ',I,SIGN_NHX(I)
+          write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
+     &                     I,SIGN_NHX(I)
         end do
       end if
 *
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
-          WRITE(LUWRT,*) ' Information from  GET_HX_RELA '
-          WRITE(LUWRT,*)
-          write(LUWRT,*) ' Max. no of electrons per GAS:'
+          write(LUWRT,'(/A)') '  Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
           WRITE(LUWRT,*) ' The excitation types '
           CALL WRT_SPOX_TP(IHX,NHX)
 C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         end if
-        write(LUWRT,*)
-        WRITE(LUWRT,*) ' Number of excitation types ', NHX
       end if
 *
       RETURN
@@ -1629,14 +1637,12 @@ CSK      CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
 #endif
 CSK    end if
 CSK   END IF
-*
-*. A few constants
-      IONE = 1
-      ZERO = 0.0D0
-      ONE = 1.0D0
-*     symmetry of T
+C
+C     symmetry of operator (Hamiltonian)
+C     ----------------------------------
       IOPSM = IDBGMULT(INVELM(ICSM),ISSM)
-*     total length of sigma block
+C
+C     total length of sigma block
 #if defined (VAR_MPI2)
       LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,NSMST,IACT_S,IOFF_BLK_S,1)
 #else
@@ -1716,24 +1722,23 @@ C           Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST)
        DO JOP = 1, NMXOP_T
          IAC_AR(JOP) = 1
        END DO
-       ONE = 1.0D0
 * CA : KA => IA mappings in 1
 C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
        IAB_MAP = 1
        CALL MAP_EXSTR(ICA_EXP,IAC_AR,NCA_OP,IAOC,I1,XI1S,
-     &                NIKAINTM,IB_CA,ONE,ISMDST,IAB_MAP)
+     &                NIKAINTM,IB_CA,1.0D0,ISMDST,IAB_MAP)
 * CB : KB => IB     
        IAB_MAP = 2
        CALL MAP_EXSTR(ICB_EXP,IAC_AR,NCB_OP,IBOC,I2,XI2S,
-     &                NIKBINTM,IB_CB,ONE,ISMDST,IAB_MAP)
+     &                NIKBINTM,IB_CB,1.0D0,ISMDST,IAB_MAP)
 * AA : KA => JA
        IAB_MAP = 1
        CALL MAP_EXSTR(IAA_EXP,IAC_AR,NAA_OP,JAOC,I3,XI3S,
-     &                NJKAINTM,IB_AA,ONE,ISMDST,IAB_MAP)
+     &                NJKAINTM,IB_AA,1.0D0,ISMDST,IAB_MAP)
 * AB : KB => JB
        IAB_MAP = 2
        CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
-     &                NJKBINTM,IB_AB,ONE,ISMDST,IAB_MAP)
+     &                NJKBINTM,IB_AB,1.0D0,ISMDST,IAB_MAP)
 *. Loop over symmetry-blocks of C and Sigma
 #if defined (VAR_MPI2)
 *
@@ -1744,13 +1749,10 @@ C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
        I_BLK_C_SCR = IOFF_BLK_C
 #endif
        DO IASM = 1, NSMST 
-*
-*        parallel calculation: 
-*                              - sigma-blocks distributed
-*                              - check of 'active' c-blocks enabled
-*
+C
+C        parallel calculation: - sigma-blocks distributed
+C                              - check of 'active' c-blocks enabled
 #if defined (VAR_MPI2)
-*
         IF( IACT_S( I_BLK_S_SCR ) .ne. MYPROC ) THEN
 CSK          WRITE(LUWRT,*) ' I SKIP S_BLOCK',I_BLK_S_SCR,'with IACT_S',
 CSK     &                     IACT_S( I_BLK_S_SCR )
@@ -1759,47 +1761,27 @@ CSK        ELSE
 CSK          WRITE(LUWRT,*) ' I CALC S_BLOCK',I_BLK_S_SCR,'with IACT_S',
 CSK     &                     IACT_S( I_BLK_S_SCR )
         END IF
-*
 #endif
         IBSM = IDBGMULT(ISSM,INVELM(IASM))
-*
-        IS_INCLUDED = 1
-        IF(IS_RESTRICT.EQ.1.AND.IASM.LT.IBSM) IS_INCLUDED = 0
-        IF(IS_RESTRICT.EQ.-1.AND.IASM.GE.IBSM) IS_INCLUDED = 0
-*
-CSK        WRITE(LUWRT,*) 'IS_INCLUDED is for I_BLK_S_SCR',IS_INCLUDED,
-CSK     &                  I_BLK_S_SCR
-*
-        IF(IS_INCLUDED.EQ.1) THEN
 #if defined (VAR_MPI2)
-*
-*        reset offset for c-block loop
+C
+C        reset offset for c-block loop
          I_BLK_C_SCR = 0
          I_BLK_C_SCR = IOFF_BLK_C
 #endif
         DO JASM = 1, NSMST
 #if defined (VAR_MPI2)
-*
         IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
-*
 #endif
          JBSM = IDBGMULT(ICSM,INVELM(JASM))
-*
-         IC_INCLUDED = 1
-         IF(IC_RESTRICT.EQ.1.AND.JASM.LT.JBSM) IC_INCLUDED = 0
-         IF(IC_RESTRICT.EQ.-1.AND.JASM.GE.JBSM) IC_INCLUDED = 0
-CSK         WRITE(LUWRT,*) 'IC_INCLUDED is for I_BLK_C_SCR',IC_INCLUDED,
-CSK     &                   I_BLK_C_SCR
-*
-         IF(IC_INCLUDED.EQ.1) THEN
-         IF(NTEST.GE.1000) WRITE(LUWRT,'(A,4I4)') 
-     &   ' IASM, IBSM, JASM, JBSM ', IASM,IBSM,JASM,JBSM
+CSK      IF(NTEST.GE.1000) WRITE(LUWRT,'(A,4I4)') 
+CSK  &   ' IASM, IBSM, JASM, JBSM ', IASM,IBSM,JASM,JBSM
          DO KASM = 1, NSMST
 *. IAA_SM is symmetry of ANNIHILATOR string
           IAA_SM = IDBGMULT(KASM,INVELM(JASM))
           ICA_SM = IDBGMULT(IASM,INVELM(KASM))
-* To obtain the number of annnihilator strings of a given sym
-*. we find the number of creator strings of conjugated symmetry
+*         to obtain the number of annnihilator strings of a given sym
+*         we find the number of creator strings of conjugated symmetry
           LIAA_SM = NIAA(INVELM(IAA_SM))
           LICA_SM = NICA(ICA_SM)
           LKA_SM = NKA(KASM)
@@ -1820,20 +1802,19 @@ CSK     &                   I_BLK_C_SCR
            IF(LIAA_SM*LICA_SM*LIAB_SM*LICB_SM*LKA_SM*LKB_SM.NE.0)
      &     THEN
 *
-             IF(NTEST.GE.700) THEN
-               WRITE(LUWRT,*) ' ICA_SM, ICB_SM, IAA_SM,IAB_SM =',
-     &                      ICA_SM, ICB_SM, IAA_SM,IAB_SM
-             END IF 
-             CALL FLUSH(LUWRT)
+CSK          IF(NTEST.GE.700) THEN
+CSK            WRITE(LUWRT,*) ' ICA_SM, ICB_SM, IAA_SM,IAB_SM =',
+CSK  &                      ICA_SM, ICB_SM, IAA_SM,IAB_SM
+CSK          END IF 
 *
-             IF(NTEST.GE.1000) 
-     &       WRITE(LUWRT,'(A,2I4)') ' KASM,KBSM ', KASM, KBSM
-             IF(NTEST.GE.1000) 
-     &       WRITE(LUWRT,*) ' LKA_SM, LKB_SM', LKA_SM, LKB_SM
-             IF(NTEST.GE.1000) 
-     &       WRITE(LUWRT,'(A,4I3)')      
-     &       'LIAA_SM, LICA_SM,LIAB_SM,LICB_SM',
-     &        LIAA_SM, LICA_SM,LIAB_SM,LICB_SM
+CSK          IF(NTEST.GE.1000) 
+CSK  &       WRITE(LUWRT,'(A,2I4)') ' KASM,KBSM ', KASM, KBSM
+CSK          IF(NTEST.GE.1000) 
+CSK  &       WRITE(LUWRT,*) ' LKA_SM, LKB_SM', LKA_SM, LKB_SM
+CSK          IF(NTEST.GE.1000) 
+CSK  &       WRITE(LUWRT,'(A,4I3)')      
+CSK  &       'LIAA_SM, LICA_SM,LIAB_SM,LICB_SM',
+CSK  &        LIAA_SM, LICA_SM,LIAB_SM,LICB_SM
 *
 *. The operator strings of ICA, ICB, IAA, IAB 
             IUB = 1
@@ -1853,7 +1834,7 @@ CSK     &                   I_BLK_C_SCR
             CALL GETSTR2_TOTSM_SPGP_REL(IUB,IABGP,NGAS,IAB_SM_ADJ,
      &                                  NAB_OP,
      &                                  LIAB_SM2,IAB_STR,NORBT,0,0,0)
-* Batching                   
+*          batching                   
            LEN_KA_BAT = MAXLB
            LEN_KB_BAT = MAXLB
 *
@@ -1880,7 +1861,7 @@ CSK     &                   I_BLK_C_SCR
            IF(NAA_BT*MAXLB.LT.LIAA_SM) NAA_BT = NAA_BT + 1
            NAB_BT = LIAB_SM/MAXLB
            IF(NAB_BT*MAXLB.LT.LIAB_SM) NAB_BT = NAB_BT + 1
-*. Loop over batches
+*          loop over batches
            DO IKA_BT = 1, NKA_BT
            DO IKB_BT = 1, NKB_BT
             IKA_B = (IKA_BT-1)*LEN_KA_BAT + 1
@@ -1891,12 +1872,12 @@ CSK     &                   I_BLK_C_SCR
             IKB_E = MIN(LKB_SM,IKB_B +  LEN_KB_BAT - 1)
             NKB_B = IKB_E - IKB_B + 1
             NKB_B0 = NKB_B
-*. Loop over annihilation batches
+*           loop over annihilation batches
             DO IAA_BT = 1, NAA_BT
              IAA_B = (IAA_BT-1)*MAXLB + 1
              IAA_E = MIN(LIAA_SM,IAA_B + MAXLB -1)
              NAA_B = IAA_E-IAA_B+1
-*. KA => JA mapping
+*  KA => JA mapping
              IUB_KJ = 1
              CALL K_TO_J_TOT(KJAD,XKJAD,KASM,IKA_B,IKA_E,
      &                       IAA_STR,IAA_SM,NAA_B,IAA_B,IAA_E,
@@ -1908,19 +1889,19 @@ CSK     &                   I_BLK_C_SCR
              IAB_B = (IAB_BT-1)*MAXLB + 1
              IAB_E = MIN(LIAB_SM,IAB_B + MAXLB -1)
              NAB_B = IAB_E-IAB_B+1
-*. KB => JB mapping
+*  KB => JB mapping
              IUB_KJ = 2
              CALL K_TO_J_TOT(KJBD,XKJBD,KBSM,IKB_B,IKB_E,
      &                       IAB_STR,IAB_SM,NAB_B,IAB_B,IAB_E,
      &                       I4,XI4S,IB_AB,NJKBINTM,NAB_OP,IZEROKBJB,
      &                       IUB_KJ)
             IF(IZEROKBJB.EQ.0) THEN
-*. Loop over creation batches 
+*           loop over creation batches 
             DO ICA_BT = 1, NCA_BT
              ICA_B = (ICA_BT-1)*MAXLB + 1
              ICA_E = MIN(LICA_SM,ICA_B + MAXLB -1)
              NCA_B = ICA_E-ICA_B+1
-*. KA => IA mapping
+*  KA => IA mapping
              IUB_KJ = 1
              CALL K_TO_J_TOT(KIAD,XKIAD,KASM,IKA_B,IKA_E,
      &                       ICA_STR,ICA_SM,NCA_B,ICA_B,ICA_E,
@@ -1930,7 +1911,7 @@ CSK     &                   I_BLK_C_SCR
              ICB_B = (ICB_BT-1)*MAXLB + 1
              ICB_E = MIN(LICB_SM,ICB_B + MAXLB -1)
              NCB_B = ICB_E-ICB_B+1
-*. KB => IB mapping
+*  KB => IB mapping
              IUB_KJ = 2
              CALL K_TO_J_TOT(KIBD,XKIBD,KBSM,IKB_B,IKB_E,
      &                       ICB_STR,ICB_SM,NCB_B,ICB_B,ICB_E,
@@ -1938,18 +1919,18 @@ CSK     &                   I_BLK_C_SCR
      &                       IUB_KJ)
              IF(IZEROKBJB.EQ.0.AND.IZEROKAJA.EQ.0.AND.
      &          IZEROKBIB.EQ.0.AND.IZEROKAIA.EQ.0     ) THEN
-*. Compress Ka and Kb strings to active subset 
-C       COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
-*. Ka
+*            Compress Ka and Kb strings to active subset 
+C            COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
+*  Ka
              CALL COMPRS2LST_B(KIAD,XKIAD,NCA_B,KJAD,XKJAD,NAA_B,
      &                         NKA_B0,NKA_B,KIA,XKIA,KJA,XKJA)
-*. Kb
+*  Kb
              CALL COMPRS2LST_B(KIBD,XKIBD,NCB_B,KJBD,XKJBD,NAB_B,
      &                         NKB_B0,NKB_B,KIB,XKIB,KJB,XKJB)
              IM_ACTIVE = 1
-* Offset and form of T-coefficients
+*            offset and form of T-coefficients
              ITOFF = IB_T(ICA_SM,ICB_SM,INVELM(IAA_SM))
-csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
+csk          WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              IF(ITOFF.LT.0) THEN
                ITOFF = -ITOFF
                ITRNSP = 1
@@ -1976,8 +1957,7 @@ csk             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
      &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
      &                         ITRNSP,IDIAG,NTEST)
              ELSE
-*. Zero density subblock
-              ZERO = 0.0D0
+*             zero density subblock
               CALL DZERO(TBSUB,NCA_B*NCB_B*NAA_B*NAB_B)
              END IF
 *  
@@ -2032,14 +2012,14 @@ C
                CALL DGEMM('N','T',LKAB,LCAB,LAAB,FACTORAB,CJRES,LDA,
      &                    TBSUB,LDB,FACTORC,SIRES,LDC)
 C
-               IF(NTEST.GE.1000) THEN
-                 write(LUWRT,*)
-                 write(LUWRT,*) ' Excitation type ',IXTP
-                 write(LUWRT,*) ' IRIS,IRIC,ITOFF',IRIS,IRIC,ITOFF
-                 WRITE(LUWRT,*) ' Updated S(Ka,Kb,*)  from MATML7 '
-                 CALL WRTMATMN(SIRES,LKAB,LCAB,LKAB,LCAB,LUWRT)
-                 write(LUWRT,*)
-               END IF
+CSK            IF(NTEST.GE.1000) THEN
+CSK              write(LUWRT,*)
+CSK              write(LUWRT,*) ' Excitation type ',IXTP
+CSK              write(LUWRT,*) ' IRIS,IRIC,ITOFF',IRIS,IRIC,ITOFF
+CSK              WRITE(LUWRT,*) ' Updated S(Ka,Kb,*)  from MATML7 '
+CSK              CALL WRTMATMN(SIRES,LKAB,LCAB,LKAB,LCAB,LUWRT)
+CSK              write(LUWRT,*)
+CSK            END IF
              ELSE
 C
 C              call DGEMM - statistics
@@ -2056,17 +2036,15 @@ C
                CALL DGEMM('T','N',LCAB,LAAB,LKAB,FACTORAB,SIRES,LDA,
      &                    CJRES,LDB,FACTORC,TBSUB,LDC)
 C
-               IF(NTEST.GE.100) THEN
-                 write(LUWRT,*)
-                 write(LUWRT,*) '========================'
-                 write(LUWRT,*) ' UPDATED DENSITY        '
-                 write(LUWRT,*) '========================'
-                 write(LUWRT,*) ' Excitation type ',IXTP
-                 write(LUWRT,*) ' IRIS,IRIC,ITOFF',IRIS,IRIC,ITOFF
-                 WRITE(LUWRT,*) ' Updated TBSUB '
-                 CALL WRTMATMN(TBSUB,LCAB,LAAB,LCAB,LAAB,LUWRT)
-                 write(LUWRT,*)
-               END IF
+CSK            IF(NTEST.GE.100) THEN
+CSK              write(LUWRT,'(/A)') '========================'
+CSK              write(LUWRT,'( A)') ' UPDATED DENSITY        '
+CSK              write(LUWRT,'( A)') '========================'
+CSK              write(LUWRT,'( A)') ' Excitation type ',IXTP
+CSK              write(LUWRT,'( A)') ' IRIS,IRIC,ITOFF',IRIS,IRIC,ITOFF
+CSK              WRITE(LUWRT,'( A)') ' Updated TBSUB '
+CSK              CALL WRTMATMN(TBSUB,LCAB,LAAB,LCAB,LAAB,LUWRT)
+CSK            END IF
              END IF
 *
              T_END = Second()
@@ -2087,15 +2065,14 @@ C
      &                       2,NIA(IASM),NIB(IBSM),
      &                       NKA_B,NKB_B,NCA_B,NCB_B,
      &                       KIA,XKIA,KIB,XKIB)
-               if (NTEST.ge.100) then
-                 write(LUWRT,*)
-                 write(LUWRT,*) '========================'
-                 write(LUWRT,*) ' UPDATED SIGMA VECTOR   '
-                 write(LUWRT,*) '========================'
-                 write(LUWRT,*) 'ISBOFF : ',ISBOFF
-                 call wrtmatmn(SB(ISBOFF),NIA(IASM),NIB(IBSM),
-     &                                  NIA(IASM),NIB(IBSM),LUWRT)
-               end if
+CSK            if (NTEST.ge.100) then
+CSK              write(LUWRT,*) '========================'
+CSK              write(LUWRT,*) ' UPDATED SIGMA VECTOR   '
+CSK              write(LUWRT,*) '========================'
+CSK              write(LUWRT,*) 'ISBOFF : ',ISBOFF
+CSK              call wrtmatmn(SB(ISBOFF),NIA(IASM),NIB(IBSM),
+CSK  &                                  NIA(IASM),NIB(IBSM),LUWRT)
+CSK            end if
              ELSE IF(ITRNSP.EQ.0) THEN
 C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
                if ((IRIS.eq.1.and.IRIC.eq.2).or.
@@ -2130,8 +2107,6 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
          END DO
          END DO
 *        ^ End of loop over KASM, KBSM
-        END IF
-*       ^ End if symmetryblock of C should be included
 #if defined (VAR_MPI2)
  2002  CONTINUE
 *      ^ skip c-block not included in active-block-list; only in parallel
@@ -2140,8 +2115,6 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
 #endif
         END DO
 *       ^ End of loop over JASM
-       END IF
-*      ^ End if symmetryblock of S should be included
 #if defined (VAR_MPI2)
  3003  CONTINUE
 *      ^ skip s-block not included in node-list; only in parallel
@@ -2152,25 +2125,24 @@ C?             WRITE(6,*) ' Densi-call to TCC, ITOFF  = ', ITOFF
 *      ^ End of loop over IASM
       END IF
 *     ^ End if Ka and Kb are nontrivial strings
-      NTEST = 000
-      IF(NTEST.GE.300) THEN 
-        IF(ISD.EQ.1) THEN
-          WRITE(LUWRT,*) ' Updated sigma block '
-C              WRTVH1(H,IHSM,NRPSM,NCPSM,NSMOB,ISYM)
+C
+C     debug print section
+C
+CSK   IF(NTEST.GE.300) THEN 
+CSK     IF(ISD.EQ.1) THEN
+CSK       WRITE(LUWRT,*) ' Updated sigma block '
 #if defined (VAR_MPI2)
-          CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
+CSK       CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
 #else
-          CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
+CSK       CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
 #endif
-        ELSE IF (ISD.EQ.2) THEN
-          WRITE(LUWRT,*) ' Updated density block '
-          CALL WRT_TCC_BLK(TB,1,NICA,NICB,NIAA,NIAB,NSMST)
+CSK     ELSE IF (ISD.EQ.2) THEN
+CSK       WRITE(LUWRT,*) ' Updated density block '
+CSK       CALL WRT_TCC_BLK(TB,1,NICA,NICB,NIAA,NIAB,NSMST)
 C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
-        END IF
-      END IF
-*
+CSK     END IF
+CSK   END IF
       NTEST = 000
-*
  9999 RETURN
       END
 ***********************************************************************
@@ -2182,7 +2154,7 @@ C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
       SUBROUTINE IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
      &                        MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
      &                        MSCOMB_CC,MX_TBLK_AS,IFTONE,IFTTWO,
-     &                        ILTTWO,N1ELINT,IPRCC)
+     &                        ILTTWO,IFSFLT1,ILSFLT1,N1ELINT,IPRCC)
 *
 * Dimension of T operators in spin-orbital basis
 *
@@ -2242,6 +2214,7 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       MX_TBLK = 0
       MX_SBSTR = 0
       MX_TBLK_AS = 0
+      N1ELINT = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP 
@@ -2305,6 +2278,9 @@ C
              LEN_SCR7 = LEN_SCR1 * LEN_SCR2
              LENGTH  = LENGTH  + LEN_SCR7
              LENGTH2 = LENGTH2 + LEN_SCR7
+C            count one-electron integrals
+             IF((ITSS_TP.lt.IFTTWO).or.(ITSS_TP.ge.IFSFLT1
+     &           .and.ITSS_TP.le.ILSFLT1)) N1ELINT = N1ELINT + LEN_SCR7
              if (NTEST.ge.2000) then
                write(6,*) 'LENGTH ', LEN_SCR1 * LEN_SCR2
              end if
@@ -2324,20 +2300,19 @@ C
 C
       I_TOT_DIM_T = LENGTH
 C
-C     Number of non-spin-flip one- and two electron integrals 
-C     ( for diagonal ):
+C     determine number of one-electron and two-electron integrals
 C
-      N1ELINT = IBTSOSO_TP(IFTTWO) - IBTSOSO_TP(IFTONE)
-      NINT_2E = LENGTH - N1ELINT
+CSK   N1ELINT = IBTSOSO_TP(IFTTWO)  - IBTSOSO_TP(IFTONE)
+C
+      NINT_2E    = LENGTH - N1ELINT
+      
       N2ELINT_I8 = LENGTH - N1ELINT
 *
-csk   NTEST = 5
+CSK   NTEST = 5
       IF(NTEST.GE.3) THEN
         WRITE(6,*) ' Number of 1e-integrals : ', N1ELINT
         WRITE(6,*) ' Number of 2e-integrals : ', NINT_2E
-        WRITE(6,*) ' real number of integrals : ', N2ELINT_I8
-        WRITE(6,*) ' final LENGTH : ', LENGTH
-        WRITE(6,*) ' Number of T-coefficients ', LENGTH
+        WRITE(6,*) ' total number of integrals: ', NINT_2E + N1ELINT
         WRITE(6,*) ' Largest symmetry block of T ', MX_TBLK
         WRITE(6,*) ' Largest block of T ', MX_TBLK_AS
         WRITE(6,*) ' Largest substring : ', MX_SBSTR
@@ -2939,7 +2914,7 @@ C     INTEGER JGRP(MXPNGAS)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,IPRNT)
+      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -2969,7 +2944,7 @@ C
 #include "integrals_off.inc"
 #include "parluci.h"
 C
-C     specific input in order to handle large integral arrays on
+C     specific input in order to handle large integral arrays
 C     even on 32-bit systems
 C
       INTEGER*8 MX_TBLK, MX_TBLK_AS, MSCOMB_T
@@ -2981,7 +2956,8 @@ C
       call memmar(KLSOBEX_TEMP,4*NGAS,'ADDS  ',1,'SPOBET')
       IFLAG = 1
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
-     &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
+     &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
+     &                 WORK(KLSOBEX_TEMP),
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 IPRNT)
       NSPOBEX_TP = NHX
@@ -2996,7 +2972,8 @@ C
       call memmar(KSIOPREO,      NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
       IFLAG = 0
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
-     &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
+     &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
+     &                 WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),IPRNT)
@@ -3024,28 +3001,35 @@ C
       CALL ISETVC(WORK(KLSPOBEX_AC),IONE,NSPOBEX_TP)
       CALL ISETVC8_2(IBTSOSO_TP,IONE,NSPOBEX_TP)
 C
-C     dimensions for total symmetric operators, sym = 1
+C     dimensions for operator of symmetry ISYM_T (set in KRMC_LUCI2)
 C
-      ITOTSYM = 1
       MSCOMB_T = 0
-      CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ITOTSYM,
-     &           MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
-     &           MSCOMB_T,MX_TBLK_AS,IFTONE,IFTTWO,ILTTWO,
-     &           N1ELINT,IPRSIG)
 C
-C                output -- transfer common block information
+      CALL IDIM_TCC_DBG(WORK(KLSOBEX),NSPOBEX_TP,ISYM_T,MX_ST_TSOSO,
+     &                  MX_ST_TSOSO_BLK,MX_TBLK,MSCOMB_T,MX_TBLK_AS,
+     &                  IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,N1ELINT,
+     &                  IPRNT)
+C
+C     output -- transfer information to common block
 C
       LEN_T_VEC          = I_TOT_DIM_T
       N2ELINT            = NINT_2E
       MX_TBLK_MX         = MX_TBLK
       MX_ST_TSOSO_MX     = MX_ST_TSOSO
       MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
-C     WRITE(LUWRT,*) ' OUTPUT FROM SET_HOP_DBG:' 
-C     WRITE(LUWRT,*) '       LEN_T_VEC          =',LEN_T_VEC 
-C     WRITE(LUWRT,*) '       N2ELINT            =',N2ELINT 
-C     WRITE(LUWRT,*) '       MX_TBLK_MX         =',MX_TBLK_MX
-C     WRITE(LUWRT,*) '       MX_ST_TSOSO_MX     =',MX_ST_TSOSO_MX
-C     WRITE(LUWRT,*) '       MX_ST_TSOSO_BLK_MX =',MX_ST_TSOSO_BLK_MX
+C
+C     print section
+C
+      IF( IPRNT .gt. 0)THEN
+        WRITE(LUWRT,'(/A )')'  *** OUTPUT FROM SET_HOP_DBG *** ' 
+        WRITE(LUWRT,'( A/)')'      _______________________     ' 
+        WRITE(LUWRT,'(A,I20)')'  symmetry of T op. :',ISYM_T
+        WRITE(LUWRT,'(A,I20)')'  LEN_T_VEC         :',LEN_T_VEC 
+        WRITE(LUWRT,'(A,I20)')'  N2ELINT           :',N2ELINT
+        WRITE(LUWRT,'(A,I20)')'  MX_TBLK_MX        :',MX_TBLK_MX
+        WRITE(LUWRT,'(A,I20)')'  MX_ST_TSOSO_MX    :',MX_ST_TSOSO_MX
+        WRITE(LUWRT,'(A,I20)')'  MX_ST_TSOSO_BLK_MX:',MX_ST_TSOSO_BLK_MX
+      END IF
 C
       END
 ***********************************************************************
@@ -3086,6 +3070,7 @@ C
 *
 #include "wrkspc.inc"
 #include "cstate.inc"
+#include "cands.inc"
 #include "ctcc.inc"
 *
       CALL QENTER('SIGDC')
@@ -3096,7 +3081,8 @@ C
 C     arrays for partitioning of sigma (*_MS2 arrays are in CSTATE )
 C
       JCMBSPC = 1
-      call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
+C     ... use proper sigma symmetry ISSM not IREFSYM
+      call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,ISSM,
      &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                 NBAT_MS2,IBAT_MS2,0,
@@ -3191,12 +3177,13 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
-      LOGICAL WRITE_SB, SBLK_READS2
+      LOGICAL WRITE_SB
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
 #include "files_r.inc"
 *
 #include "dgroup.h"
+      LOGICAL SBLK_READS2
 *
 *     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
@@ -3813,8 +3800,6 @@ C
       dimension T(*)
       LOGICAL SBLK_READS2
 *
-      CALL QENTER('SIGD2')
-*
       NTESTL = 000
       NTEST = MAX(NTESTL,IPRNT)
 *
@@ -3899,8 +3884,6 @@ C           CPU-block - test if non-zero
      &                 IT_TTPL,IT_TTOL
 #endif
      &                 )
-*
-      CALL QEXIT('SIGD2')
 *
       END
 ***********************************************************************
