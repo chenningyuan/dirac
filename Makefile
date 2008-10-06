@@ -87,6 +87,10 @@ clean:
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
+# ... compilation of the standalone HSMRCC code
+hs:
+	make -C hsmrcc/hsmrcc_external/.
+
 # Main target here is utils, which buils all utilities and
 # puts them in $(INSTALL_DIR/bin)
 include utils/Makefile.utils
