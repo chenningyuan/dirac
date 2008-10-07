@@ -162,8 +162,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT INTEGER (A-Z)
 
       REAL*8 CC(*)
-      INTEGER KFREE,LFREE,ALLOC,KREP,LADC,RCW,IW,IRPLOOP,NOCC,ITAPBASE
-      LOGICAL CARITH
+      INTEGER KFREE,LFREE,KREP,LADC,RCW,IW,IRPLOOP,NOCC,ITAPBASE
+      LOGICAL CARITH,ALLOC
 C
 C---------------Description--------------------------------------------
 C
