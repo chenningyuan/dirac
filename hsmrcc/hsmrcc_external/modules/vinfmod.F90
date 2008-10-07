@@ -113,7 +113,9 @@ subroutine UpdateVINF
 
    write(UVINF) point_group, naxis, norder, numirrep, irrep_product, &
                 totally_symmetric_irrep, irrep_label
+
    write(UVINF) CoreShiftVal, VirtShiftVal
+
    write(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
 
    write(UVINF) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, &
@@ -121,6 +123,7 @@ subroutine UpdateVINF
 
    write(UVINF) NumRec, RecLen
 
+ ! ... positions, lenghts  number of integrals ...
    write(UVINF) StartRec(V2H2P), EndngRec(V2H2P), TotNZInt(V2H2P), NZIntRec_V2H2P
    write(UVINF) StartRec(VPPPP), EndngRec(VPPPP), TotNZInt(VPPPP), NZIntRec_VPPPP
    write(UVINF) StartRec(VHHHH), EndngRec(VHHHH), TotNZInt(VHHHH), NZIntRec_VHHHH
@@ -137,9 +140,23 @@ subroutine UpdateVINF
    write(UVINF) StartRec(FHP)  , EndngRec(FHP)  , TotNZInt(FHP)
    write(UVINF) StartRec(FPP)  , EndngRec(FPP)  , TotNZInt(FPP)
 
+   call printVINFstuff
+
+   return
+
+end subroutine UpdateVINF
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine printVINFstuff
+!
+!  ... print out data from update of the VINF file
+!
+
    if (get_iprint() >= 10) then
+
      call Header('Output from UpdateVINF',-1)
-     write(UOUT,'(/,2x,a)') 'UpdateVINF output - data set saved into <FileVINF>'
+
+     write(UOUT,'(/,2x,a)') 'UpdateVINF - data set saved into <FileVINF>'
      write(UOUT,*) 'OPTION:',OPTION
      write(UOUT,*) 'MAXITER, CONVTOL:',MAXITER, CONVTOL
      write(UOUT,*) 'CUTOFF=',CUTOFF
@@ -156,24 +173,56 @@ subroutine UpdateVINF
      write(UOUT,*) 'LABELSIZE=',LABELSIZE
      write(UOUT,*) 'NINTMX=',NINTMX
      write(UOUT,*) 
-     write(UOUT,*) 'NumRec=',NumRec
-     write(UOUT,*) 'RecLen=',RecLen
-     write(UOUT,*) 
-     write(UOUT,*) 'StartRec(FHH)=',StartRec(FHH)
-     write(UOUT,*) 'EndngRec(FHH)=',EndngRec(FHH)
-     write(UOUT,*) 'TotNZInt(FHH)=',TotNZInt(FHH)
-     write(UOUT,*) 
-     write(UOUT,*) 'StartRec(FHP)=',StartRec(FHP)
-     write(UOUT,*) 'EndngRec(FHP)=',EndngRec(FHP)
-     write(UOUT,*) 'TotNZInt(FHP)=',TotNZInt(FHP)
-     write(UOUT,*) 
-     write(UOUT,*) 'StartRec(FPP)=',StartRec(FPP)
-     write(UOUT,*) 'EndngRec(FPP)=',EndngRec(FPP)
-     write(UOUT,*) 'TotNZInt(FPP)=',TotNZInt(FPP)
-   endif
 
-   return
+     write(UOUT,'(2x,2(a,i7))') 'RecLen(V2H2P)=',RecLen(V2H2P),' NumRec(V2H2P)=', NumRec(V2H2P)
+     write(UOUT,'(2x,2(a,i7))') 'RecLen(VPPPP)=',RecLen(VPPPP),' NumRec(VPPPP)=',NumRec(VPPPP)
+     write(UOUT,'(2x,2(a,i7))') 'RecLen(VHHHH)=',RecLen(VHHHH),' NumRec(VHHHH)=',NumRec(VHHHH)
+     write(UOUT,'(2x,a,i7)') 'RecLen(VHHPP)=',RecLen(VHHPP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(V2HPP)=',RecLen(V2HPP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(V2PHH)=',RecLen(V2PHH)
 
-end subroutine UpdateVINF
+     write(UOUT,'(2x,a,i7)') 'RecLen(VPHHP)=',RecLen(VPHHP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(VPH2P)=',RecLen(VPH2P)
+     write(UOUT,'(2x,a,i7)') 'RecLen(VPHPP)=',RecLen(VPHPP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(V2HHP)=',RecLen(V2HHP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(VHHHP)=',RecLen(VHHHP)
+    ! ...
+     write(UOUT,*) 
+     write(UOUT,'(2x,a,i7)') 'RecLen(FHH)=',RecLen(FHH)
+     write(UOUT,'(2x,a,i7)') 'RecLen(FHP)=',RecLen(FHP)
+     write(UOUT,'(2x,a,i7)') 'RecLen(FPP)=',RecLen(FPP)
+     write(UOUT,*)
+ 
+
+ !    write(UOUT,'(4(a,i7))')  &  
+ !            ' StartRec(VPHPP)=',StartRec(VPHPP),' EndngRec(VPHPP)=',EndngRec(VPHPP), &
+ !            ' TotNZInt(VPHPP)=',TotNZInt(VPHPP),' NZIntRec_VPHPP =',NZIntRec_VPHPP
+
+ !    write(UOUT,'(4(a,i7))')  &  
+ !            ' StartRec(V2HHP)=',StartRec(V2HHP),' EndngRec(V2HHP)=',EndngRec(V2HHP), &
+ !            ' TotNZInt(V2HHP)=',TotNZInt(V2HHP),' NZIntRec_V2HHP =',NZIntRec_V2HHP
+
+!     write(UOUT,'(4(a,i7))')  &  
+ !            ' StartRec(VHHHP)=',StartRec(VHHHP),' EndngRec(VHHHP)=',EndngRec(VHHHP), &
+ !            ' TotNZInt(VHHHP)=',TotNZInt(VHHHP),' NZIntRec_VHHHP =',NZIntRec_VHHHP
+
+
+     write(UOUT,'(/,3(a,i7))') 'StartRec(FHH)=',StartRec(FHH), & 
+     ' EndngRec(FHH)=',EndngRec(FHH),' TotNZInt(FHH)=',TotNZInt(FHH)
+
+     write(UOUT,'(3(a,i7))') 'StartRec(FHP)=',StartRec(FHP),  & 
+     ' EndngRec(FHP)=',EndngRec(FHP),' TotNZInt(FHP)=',TotNZInt(FHP)
+
+     write(UOUT,'(3(a,i7))') 'StartRec(FPP)=',StartRec(FPP), & 
+     ' EndngRec(FPP)=',EndngRec(FPP),' TotNZInt(FPP)=',TotNZInt(FPP)
+
+     write(UOUT,*) 
+
+     call flushout
+
+ endif
+
+end subroutine printVINFstuff
+
 
 end module VINFMod

@@ -150,6 +150,9 @@ subroutine SetHSMRfiles(IFile,OFile)
 !
 !  Called as the last F90 routine from the main C-program "hsmrmain.c".
 !
+!
+!  NOTE: print level is set 
+!
 !--------------------------------------------------------------------------------
    use IOModule
    use Options
@@ -187,7 +190,7 @@ subroutine SetHSMRfiles(IFile,OFile)
    endif
 
    if (TRIM(IFile)==REPEAT(' ',ilen)) then
-      Write(*,*) 'blank Input File'
+      Write(*,*) 'SetHSMRfiles:blank Input File'
       !Write(UOUT,*) 'blank Input File'
       call Quit('SetHSMRfiles: blank Input File!')
    endif
@@ -239,7 +242,6 @@ if (.not. OPTION(DIRACp)) then
 else ! ie DIRAC is on
  continue
 endif
-
 
 ! ... some output ...
  if (get_iprint() >= 8) then

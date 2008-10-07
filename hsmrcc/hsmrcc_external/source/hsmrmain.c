@@ -798,7 +798,8 @@ int main (argc, argv)
    else /* the HSMRCC run is based solely upon the DIRAC program  */
      {
        // sethsmrfiles_(inpfile,outfile,0,0);
-        inpfile = "dirac_with_HSCC";
+       // inpfile = "dirac_with_HSCC";
+        inpfile = "Dirac_HSMRCC"; /* common part of file name of DIRAC prepared files */
         sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
      }
 

@@ -16,7 +16,7 @@ module IntGenMod
       module procedure IntFileGen_TwoBody
    end interface IntFileGen
   ! ... this specification is needed for showing out internal routines 
-   public :: DrvIntGen
+   public :: DrvIntGen, DrvIntGen_DIRAC
    public :: check_gms_integrals
 
 contains
@@ -27,12 +27,12 @@ subroutine DrvIntGen
 !          called from 'main' HSMRCC routine (source/hsmrcc.F90)
 !
 !--------------------------------------------------------------------------------
-
    use TimingMod
    implicit none
    integer :: StVRec
    integer :: GenIntBufSize
    integer :: i
+   logical :: isMR2EINT
 
    ! ... Progress Report on Integral Generation ...
 
@@ -42,7 +42,7 @@ subroutine DrvIntGen
 
 9011 format('******************************',/,&
             'HSMRCC INTEGRAL FILE GENERATOR',/,&
-            '******************************'/)    ! MI: gfortran does not accept '/' at the end...
+            '******************************'/)  
 
 9012 format('Integral CUTOFF is ',E13.8)
 9013 format('Generating 14 Integral Files .. ')
@@ -61,8 +61,16 @@ subroutine DrvIntGen
      'DrvIntGen: buffer for integrals allocated, size=',GenIntBufSize
    endif
 
-   ! ... Open Gamess integral FileMR2EINT file ...
+   ! ... check the present of Gamess integral file 
+   inquire(file=FileMR2EINT,exist=isMR2EINT)
 
+   if (.not.isMR2EINT) then
+     write(UOUT,*) 'DrvIntGen: Gamess integral file <FileMR2EINT> not present ! Error exit !'
+     call flushout
+     call quit('DrvIntGen: missing Gamess integral file FileMR2EINT !')
+   endif
+
+   ! ... Open Gamess integral FileMR2EINT file ...
    open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
    rewind(UMR2EINT)
 
@@ -178,6 +186,7 @@ subroutine DrvIntGen
 
    write(UOUT,9021) ToTTime()
    write(UOUT,9022)
+   call flushout
 
 9021 format('Done in ',F6.1,' seconds.'/)
 9022 format('**************************************',/,&
@@ -1075,7 +1084,7 @@ subroutine SetSRangeMM(R,SL,SH)
 
    SL = 1
    SH = (R-1)
-   !if (SH<SL) stop 'Error in SetSRangeMM'
+
    if (SH<SL) call quit('SH<SL => Error in SetSRangeMM!')
 
    return
@@ -1101,8 +1110,8 @@ function PackRSMM(R,S)
    integer, intent(in) :: R, S
    integer :: PackRSMM
 
- !  if (R==S) stop 'Error in PackRSMM'
    if (R==S) call quit('R==S => Error in PackRSMM')
+
    PackRSMM = MAXMIN(R,S)
 
    return
@@ -1180,7 +1189,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !
 !       FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
 !
-! - these are to be mimic by DIRAC !
+!    - these are to be mimic by DIRAC !
 !  
 !   
 !  Called from: DrvIntGen ("intgenmod.F90")  
@@ -1884,4 +1893,25 @@ endif
 
 end subroutine print_gms_int_ind
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine DrvIntGen_DIRAC
+logical :: isVIND,isVINT,isFPP,isFHP,isFHH
+
+
+write(UOUT,*) 'In DrvIntGen_DIRAC!'
+
+   ! ... check the present of DIRAC integral file 
+   inquire(file=FileVINT,exist=isVINT)
+   inquire(file=FileVIND,exist=isVIND)
+   inquire(file=FileFHH,exist=isFHH)
+   inquire(file=FileFHP,exist=isFHP)
+   inquire(file=FileFPP,exist=isFPP)
+
+ if (isVINT) write(UOUT,*) 'there is',FileVINT
+
+
+!call quit('DrvIntGen_DIRAC')
+end subroutine DrvIntGen_DIRAC
+
 end module IntGenMod
+

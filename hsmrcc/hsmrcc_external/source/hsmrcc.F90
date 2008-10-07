@@ -42,8 +42,12 @@ subroutine HSMRCC
 
    if (OPTION(GENINT)) then
 
-      ! ... integrals driver (modules/intgenmod.f90)
-      call DrvIntGen
+      ! ... Gamess integrals driver (modules/intgenmod.f90)
+      if (.not.OPTION(DIRACp)) then
+         call DrvIntGen       ! ... call Gamess integral driver
+      else
+         call DrvIntGen_DIRAC ! ... call DIRAC integrals based driver
+      endif
 
       ! ... update bunch of data on the file (modules/vinfmod.F90)
       call UpdateVINF

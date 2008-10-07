@@ -50,6 +50,8 @@ call StickMemory(WORK,LWORK)
 
 call prepare_dirac_HSMRCC_file
 
+call prepare_dirac_HSMRCC_int_files
+
 call UnstickMemory
 
 end subroutine HSCC_STUFF

@@ -487,7 +487,9 @@ module Dirac_HSMRCC
 !    handles all necessary data from DIRAC for the standalone HSMRCC code 
 !
 !----------------------------------------------------------------------------------
-integer, parameter :: ludh = 12 ! lu unit of formatted DIRAC_for_HSMRCC file
+  !  ... lu units of dirac prepared files for HSMRCC
+integer, parameter :: ludh = 12, lu_vind=13, lu_vint=14, lu_fhh=15, lu_fhp=16, lu_fpp=17 
+
 integer ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 
 integer :: NFRZV, NACT
@@ -697,6 +699,82 @@ call DeAllocObject(SpinOfOrb)
 
 !call Quit('prepare_dirac_HSMRCC_file')
 end subroutine prepare_dirac_HSMRCC_file
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_dirac_HSMRCC_int_files
+!-------------------------------------------------------------------------
+!
+!
+   ! ... Generate Integrals ...
+
+   ! ... The order of integral
+   ! ... generation is the order
+   ! ... in which NZIntRec info
+   ! ... is written into FileVINF
+   ! ... is the same as order in which
+   ! ... Integrals Info is written to
+   ! ... FileVIND & FileVINT
+   ! ... FileFHH, FileFHP & FileFPP
+   !
+   ! ... The order of generation
+   !
+   !   Two-body integral files
+   !
+   !       01. V2H2P
+   !       02. VPPPP
+   !       03. VHHHH
+   !       04. VHHPP
+   !       05. V2HPP
+   !       06. V2PHH
+   !       07. VPHHP
+   !       08. VPH2P
+   !       09. VPHPP
+   !       10. V2HHP
+   !       11. VHHHP
+   !
+   !   One-body itegral files
+   !
+   !       01. FHH
+   !       02. FHP
+   !       03. FPP
+   !     
+
+!
+!
+!
+!-------------------------------------------------------------------------
+use Memory
+use Vectors
+use io_moltra
+#include "implicit.h"
+#include "priunit.h"
+!character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
+!character(len=*) :: dirac_file='Dirac_HSMRCC'
+!character :: dirac_file='Dirac_HSMRCC'
+character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
+character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
+character(len=17) :: dirac_file_FHH='Dirac_HSMRCC.FHH'
+character(len=17) :: dirac_file_FHP='Dirac_HSMRCC.FHP'
+character(len=17) :: dirac_file_FPP='Dirac_HSMRCC.FPP'
+
+
+  write(LUPRI,*) 'preparing DIRAC integral files for HSMRCC !!!'
+
+open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
+open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
+open(lu_fhh,file=dirac_file_FHH,form='unformatted',status='unknown', access='sequential') 
+open(lu_fhp,file=dirac_file_FHP,form='unformatted',status='unknown', access='sequential') 
+open(lu_fpp,file=dirac_file_FPP,form='unformatted',status='unknown', access='sequential') 
+
+
+close(lu_vind)
+close(lu_vint)
+close(lu_fhh)
+close(lu_fhp)
+close(lu_fpp)
+
+end subroutine prepare_dirac_HSMRCC_int_files
 
 end module Dirac_HSMRCC
 

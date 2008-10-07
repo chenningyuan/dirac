@@ -758,7 +758,7 @@ subroutine ReadFileFull(FileName)
       case (VHHHP)
          NZIntRec => NZIntRec_VHHHP
       case default
-         write(UOUT,*) 'ReadFileFull: Unable to Read Full File, wrong case'
+         write(UOUT,*) 'ReadFileFull: Unable to Read Full File, wrong case FileName=',FileName
          call flushout
          call quit('ReadFileFull: Unable to Read Full File, wrong case !')
    end select
@@ -856,8 +856,7 @@ end subroutine ReadFileBlock
 subroutine OpenIntFiles
 !
 !
-! called from InitHSMRBase
-!
+!   called from InitHSMRBase
 !
 !
    implicit none
@@ -878,8 +877,15 @@ subroutine OpenIntFiles
    open(UFHP ,file=FileFHP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=4*2*NHMO*NPMO)
    open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=4*2*NPMO*NPMO)
 
-   if (get_iprint() >= 8) then
-    write(UOUT,*) 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open.'
+   if (get_iprint() >= 7) then
+     write(UOUT,'(/,2x,a)') 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open.'
+     write(UOUT,*) 'UVIND=',UVIND,' FileVIND=',FileVIND
+     write(UOUT,*) 'UVINT=',UVINT,' FileVINT=',FileVINT
+     write(UOUT,*) 'UFHH=',  UFHH,' FileFHH=',FileFHH
+     write(UOUT,*) 'UFHP=',  UFHP,' FileFHP=',FileFHP
+     write(UOUT,*) 'UFPP=',  UFPP,' FileFHH=',FileFPP
+     write(UOUT,*)  
+     call flushout
    endif
 
    return
@@ -897,10 +903,23 @@ subroutine OpenOtherFiles
 
    open(UHEFF,file=FileHEFF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    open(UCOEF,file=FileCOEF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
+
 ! .. direct access files
    open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
    open(UTOLD,file=FileTOLD,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
    open(UTAMP,file=FileTAMP,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=4*2*(1+NTSIZE))
+
+
+   if (get_iprint() >= 7) then
+     write(UOUT,'(/,2x,a)') 'OpenOtherFiles: UHEFF,UCOEF,UTNEW,UTOLD,UTAMP files open.'
+     write(UOUT,*) 'UHEFF=',UHEFF,' FileHEFF=',FileHEFF
+     write(UOUT,*) 'UCOEF=',UCOEF,' FileCOEF=',FileCOEF
+     write(UOUT,*) 'UTNEW=',UTNEW,' FileTNEW=',FileTNEW
+     write(UOUT,*) 'UTOLD=',UTOLD,' FileTOLD=',FileTOLD
+     write(UOUT,*) 'UTAMP=',UTAMP,' FileTAMP=',FileTAMP
+     write(UOUT,*)  
+     call flushout
+   endif
 
    return
 
@@ -911,9 +930,9 @@ subroutine CloseIntFiles
    implicit none
 
    if (.not.Init) then
-      write(UOUT,*) 'CloseIntFiles: IOMod not initialized'
-      call flushout
-      call quit('CloseIntFiles: IOMod not initialized')
+     write(UOUT,*) 'CloseIntFiles: IOMod not initialized'
+     call flushout
+     call quit('CloseIntFiles: IOMod not initialized')
    endif
 
    close(UVINT)
@@ -922,6 +941,10 @@ subroutine CloseIntFiles
    close(UFHP)
    close(UFHP)
    close(UFPP)
+
+   if (get_iprint() >= 7) then
+     write(UOUT,'(/,2x,a,/)') 'CloseIntFiles: UVINT, UVIND, UFHH, UFHP, UFHP, UFPP files closed.'
+   endif
 
    return
 
@@ -943,6 +966,10 @@ subroutine CloseOtherFiles
    close(UCNVR)
    close(UTNEW,status='DELETE')
    close(UTOLD,status='DELETE')
+
+   if (get_iprint() >= 7) then
+     write(UOUT,'(/,2x,a,/)') 'CloseOtherFiles: UTAMP,UHEFF,UCOEF,UCNVR files closed, UTNEW,UTOLD deleted.'
+   endif
 
    return
 
