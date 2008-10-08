@@ -65,6 +65,10 @@ if [  -z "$QUEUE" ]; then
    QUEUE=$DEFAULT_QUEUE;
 fi
 #
+if [  -z "$MPI_NPROC" ]; then
+   MPI_NPROC=$DEFAULT_MPI_NPROC;
+fi
+#
 if [  -z "$PAMDIR" ]; then
    PAMDIR=$DEFAULT_PAMDIR;
 fi
@@ -245,10 +249,39 @@ qsub -e $SHORT.\$JOB_ID.out -o $SHORT.\$JOB_ID.out -l s_cpu=$wallt_qsub -cwd -V 
 process_pbs ()
 {
 # 
-#  Create jobinp file for PBS queue system
+#  Create jobinp file for PBS queue system - the user can check its contents
+#
 #  
+if [ $MPI_NPROC -le 4 ]; then
+   NNODE=1
+elif [ $MPI_NPROC -le 8 ]; then
+   NNODE=2
+elif [ $MPI_NPROC -le 12 ]; then
+   NNODE=3
+elif [ $MPI_NPROC -le 16 ]; then
+   NNODE=4
+else
+  echo "$0: Too many nodes requested!"
+  exit 1
+fi
+
+#echo "NNODE="$NNODE
+
 cat << EOF > $jobinp
 #!/bin/bash
+#
+##PBS -N $jobname
+#
+#
+##PBS -l nodes=$NNODES
+#
+#
+##PBS $QUEUEQ
+#
+#
+##PBS -l walltime=$wallt_qsub
+#
+#
 #
 # ... print out important PBS variables
 #
@@ -260,6 +293,7 @@ echo '  PBS_O_QUEUE='\$PBS_O_QUEUE
 echo 'PBS_O_WORKDIR='\$PBS_O_WORKDIR
 echo '  PBS_JOBNAME='\$PBS_JOBNAME
 echo '    PBS_JOBID='\$PBS_JOBID
+echo ' PBS_NODEFILE='\$PBS_NODEFILE
 echo '------------------------------------'
 #
 #   ... change to original directory
@@ -268,7 +302,16 @@ cd $LOC
 #
 # execute pam shell script
 #
+
+echo
+echo 'DIRAC pam script starts'
+echo
+#
 $PAMDIR/pam $all_arguments
+#
+echo
+echo 'DIRAC pam script ends'
+echo
 #
 exit
 EOF
@@ -282,6 +325,7 @@ if [ $IPRINT -gt "8" ];  then
   echo "    jobout="$jobout
   echo "    jobinp="$jobinp
   echo "    QUEUEQ="$QUEUEQ
+  echo "    MPI_NPROC="$MPI_NPROC
   echo "wallt_qsub="$wallt_qsub
 fi
 #
@@ -291,7 +335,12 @@ fi
 #qsub -j oe  -N $SHORT  $jobinp
 
 # ... this works ...
-qsub -j oe -N $jobname -o $jobout  -l walltime=$wallt_qsub $jobinp
+#qsub -j oe -N $jobname -o $jobout  -l walltime=$wallt_qsub  $QUEUEQ  $jobinp
+
+#qsub -j oe -N $jobname -o $jobout  -l walltime=$wallt_qsub,nodes=$MPI_NPROC  $QUEUEQ  $jobinp
+
+# ... works for Odesne horseshoe ...
+qsub -j oe -N $jobname -o $jobout -V -l walltime=$wallt_qsub  $QUEUEQ  $jobinp
 
 
 echo "  -  Current user-status on queueing-system : "
@@ -321,6 +370,10 @@ case $QUEUE in
   CLASS="$QUEUE"
   ;;
 esac
+
+#
+#miro: the relation between MPI_NPROC and NNODE should be generalized !
+#
 if [ $MPI_NPROC -le 32 ]; then
    NNODE=1
 elif [ $MPI_NPROC -le 64 ]; then
@@ -429,7 +482,8 @@ DEFAULT_PAMDIR=~/bin
 DEFAULT_MW=256
 DEFAULT_NW=256
 #
-
+DEFAULT_MPI_NPROC=1
+#
 # miro: the default queue shouldn't be empty for PBS ?
 DEFAULT_QUEUE=default
 #DEFAULT_QUEUE=
