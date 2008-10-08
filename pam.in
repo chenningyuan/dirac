@@ -75,7 +75,8 @@ usage ()
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
    echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
    echo '                              This allows you to omit the molecule and input files.'
-   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default '
+   echo '                            '$BIN_DIR'/dirac.x '
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -notify                : Notify when finished to user starting job'
@@ -825,6 +826,9 @@ while [ -n "$1" ]; do
          shift
          ;;
       -qsys)
+         shift
+         ;;
+      -i)
          shift
          ;;
       -help)
