@@ -131,7 +131,10 @@ if [ $IPRINT -gt "5" ];  then
   echo 'MEM_IN_MWORDS='$MEM_IN_MWORDS
   echo 'MEM_IN_KBYTES='$MEM_IN_KBYTES
   echo 'MEM_IN_MBYTES='$MEM_IN_MBYTES
-  echo '    TIME=' $TIME
+  echo '      TIME=' $TIME
+  echo '  wallt_ll='$wallt_ll
+  echo 'wallt_bsub='$wallt_bsub
+  echo 'wallt_qsub='$wallt_qsub
 fi
 ###########################################################################################################
 }
@@ -270,17 +273,25 @@ fi
 cat << EOF > $jobinp
 #!/bin/bash
 #
-##PBS -N $jobname
+# Use controls since these are directly readable fromthe batch script
 #
+# job name
+#PBS -N $jobname
 #
-##PBS -l nodes=$NNODES
+# nodes
+#PBS -l nodes=$NNODE
 #
+# queue
+#PBS $QUEUEQ
 #
-##PBS $QUEUEQ
+# time
+#PBS -l walltime=$wallt_qsub
 #
+# unite stdout with stderr
+#PBS -j oe
 #
-##PBS -l walltime=$wallt_qsub
-#
+# stdout
+#PBS -o $jobout
 #
 #
 # ... print out important PBS variables
@@ -302,12 +313,18 @@ cd $LOC
 #
 # execute pam shell script
 #
-
+echo
+echo ' allocated nodes (machines):'
+cat \$PBS_NODEFILE 
+echo
+######
 echo
 echo 'DIRAC pam script starts'
 echo
 #
+
 $PAMDIR/pam $all_arguments
+
 #
 echo
 echo 'DIRAC pam script ends'
@@ -340,7 +357,14 @@ fi
 #qsub -j oe -N $jobname -o $jobout  -l walltime=$wallt_qsub,nodes=$MPI_NPROC  $QUEUEQ  $jobinp
 
 # ... works for Odesne horseshoe ...
-qsub -j oe -N $jobname -o $jobout -V -l walltime=$wallt_qsub  $QUEUEQ  $jobinp
+#qsub -j oe -N $jobname -o $jobout -V -l walltime=$wallt_qsub  $QUEUEQ  $jobinp
+#qsub -j oe -o $jobout -V -l walltime=$wallt_qsub  $jobinp
+
+# ... works for Odesne horseshoe ...
+#qsub -j oe -o $jobout -V $jobinp
+
+### the simplest 
+qsub -V $jobinp
 
 
 echo "  -  Current user-status on queueing-system : "
@@ -372,7 +396,7 @@ case $QUEUE in
 esac
 
 #
-#miro: the relation between MPI_NPROC and NNODE should be generalized !
+#miro: the relation between MPI_NPROC and NNODE should be somehow generalized !
 #
 if [ $MPI_NPROC -le 32 ]; then
    NNODE=1
@@ -511,8 +535,8 @@ DEFAULT_IPRINT="0"
 #echo '$4='$4
 
 set_defaults
-take_defaults
-convert_mem_time
+#take_defaults
+#convert_mem_time
 
 #
 # Process relevant arguments of pamq
@@ -598,6 +622,10 @@ argv="$1";shift; MENU=$argv
 #echo "MOL="$MOL
 #echo "MENU="$MENU
 
+
+take_defaults
+
+convert_mem_time
 
 submit_job
 
