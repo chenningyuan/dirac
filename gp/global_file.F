@@ -313,7 +313,7 @@ C     in two parts (the first part performs an implicit cast).
 
       INCLUDE "mpif.h"
 #include "global_file.h"
-      INTEGER*4 STATUS(MPI_STATUS_SIZE)
+      INTEGER   STATUS(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
       INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
