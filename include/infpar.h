@@ -56,8 +56,12 @@ extern struct common_diracinfpar {
 !     integer array ISTAT contains MPI_SOURCE information.
 !     Proper use of ISTAT on 64-bit machines in 
 !     combination with INT_STAR8 requires explicit declaration 
-!     as INTEGER*4 /March-2007 sk 
-      INTEGER*4 ISTAT
+!     as INTEGER*4 /March-2007 sk - This is only true for 
+!     32-bit MPI libraries.
+!     64-bit MPI libraries require INTEGER ISTAT (which will then be 
+!     INTEGER*8)
+!
+      INTEGER   ISTAT
 #endif
 
 !C -- end of infpar.h --
