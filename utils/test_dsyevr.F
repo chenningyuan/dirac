@@ -11,7 +11,7 @@
       double precision ddum, workdum, maxerr, maxvecerr, pi
       integer, allocatable :: iwork(:), isuppz(:)
       logical issorted
-      N = 4234
+      N = 234
       pi = 2*acos(0.0D0)
       print *,'Testing DSYEVR diagonalization of',N,'**2 matrix'
       print *,'Using',sizeof(N)*8,' bit integers'
