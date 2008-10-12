@@ -3,7 +3,7 @@ module scf_density_m
   use kinds_m
   use memory_allocator
   use matrix_oper
-  use matrix_mod
+  use matrix_autop
 
   implicit none
 

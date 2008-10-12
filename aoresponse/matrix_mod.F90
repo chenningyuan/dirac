@@ -1,4 +1,4 @@
-module matrix_mod
+module matrix_autop
 
   use matrix_oper
 
@@ -441,4 +441,4 @@ contains
 
   end function
 
-end module matrix_mod
+end module

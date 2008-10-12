@@ -1,6 +1,6 @@
 module PertDens
 
-    use matrix_mod
+    use matrix_autop
 #ifdef PRG_DIRAC
     use dirac_interface_m
 #endif /* PRG_DIRAC */
@@ -176,6 +176,7 @@ print* !newline after prints from SolveScfEq
         end subroutine
     end subroutine
 
+
     subroutine SolveSCFeq(w,S0,D0,F0,DSD,FDS,D,F)
 #ifndef PRG_DIRAC
         use NEWSOLVER
@@ -202,7 +203,15 @@ print* !newline after prints from SolveScfEq
         ww(1) = w; SOL(1)=DSD; DSD=0
         if (iszero(SOL(1))) SOL(1) = 1d-32*S0 !trick to get it allocated
 #ifndef PRG_DIRAC
-        call rsp_solver2(D0,S0,F0,.true.,1,RHS,ww,SOL)
+!ajt        if (norm(RHS(1))>1d-10) &
+ww(1) = norm(RHS(1))
+print '("before response solver: norm(RHS)="f)',ww(1)
+if (ww(1)>1d-10) then
+ww(1) = w
+            call rsp_solver2(D0,S0,F0,.true.,1,RHS,ww,SOL)
+else
+print '("=> skipping this equation")'
+endif
         DSD=SOL(1); RHS(1)=0; SOL(1)=0
         DSD = DSD*dag(DS) - DS*DSD; DS=0
         D = D + (-2.0d0)*DSD; DSD=0 !notice the -2
@@ -229,5 +238,6 @@ print* !newline after prints from SolveScfEq
         RHS(1)=F; F=0
         call PropFock(NOP,(/D0,D/),RHS); F=RHS(1); RHS(1)=0
     end subroutine
+
 
 end module PertDens

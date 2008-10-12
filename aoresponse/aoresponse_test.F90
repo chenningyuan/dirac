@@ -1,6 +1,6 @@
 module aoresponse_test_m
 
-    use matrix_mod
+    use matrix_autop
     use aoresponse_xc_m
     use aoresponse_visual_m
     use dirac_interface_m

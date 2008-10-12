@@ -3,7 +3,7 @@ module dirac_interface_m
   use kinds_m
   use memory_allocator
   use matrix_oper
-  use matrix_mod
+  use matrix_autop
   use aoresponse_input_m
   use aoresponse_xc_m
 

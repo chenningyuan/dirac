@@ -11,7 +11,7 @@ module PropInt
                      ,di_get_geomDeriv_molgrad_DFT,di_get_geomDeriv_FxD_DFT,di_get_geomDeriv_GxD_DFT
     use matrix_operations,only: mat_init,mat_to_full,mat_set_from_full
 #else
-    use matrix_mod
+    use matrix_autop
     use dirac_interface_m
 #endif /* PRG_DIRAC */
 
