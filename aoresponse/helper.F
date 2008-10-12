@@ -446,7 +446,7 @@
       end
 
       subroutine dipnuc_ifc()
-        call quit('dipnuc_ifc not there')
+!       call quit('dipnuc_ifc not there')
       end
 
       subroutine di_get_geomderiv_fxd_dft()
@@ -479,4 +479,21 @@
 
       subroutine di_get_geomderiv_gxd_dft()
         call quit('di_get_geomderiv_gxd_dft not there')
+      end
+
+      function natoms_ifc() result(n)
+        integer :: n
+        n = 137
+      end function
+
+      subroutine mat_to_full()
+        call quit('mat_to_full not there')
+      end
+
+      subroutine mat_set_from_full()
+        call quit('mat_set_from_full not there')
+      end
+
+      subroutine qdrnuc_ifc()
+        call quit('qdrnuc_ifc not there')
       end

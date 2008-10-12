@@ -192,12 +192,8 @@ contains
                 call quit('PropEnergy: m>2 not implemented at the moment')
             endif
         elseif (n==1.and.p(1)=='EL') then
-#ifndef PRG_DIRAC
             if (m==0) call DIPNUC_ifc(natom,r(1:3),(/(0d0,i=1,9*natom)/))
             if (m==0) e(1:c(2)-c(1)+1) = e(1:c(2)-c(1)+1) - r(c(1):c(2)) !sign change
-#else
-            !fixme
-#endif /* PRG_DIRAC */
             do j=0,c(2)-c(1); jj=c(1)+j
                 A(1) = oneint(xyz(jj)//'DIPLEN ')
                 do i=1,pb; ii=pb1-pb+i
@@ -261,12 +257,8 @@ contains
                 call quit('PropEnergy: MAG, m>2 not implemented yet!')
             endif
         elseif (n==1.and.p(1)=='ELGR') then
-#ifndef PRG_DIRAC
             if (m==0) call QDRNUC_ifc(r(1:6))
             if (m==0) e(1:c(2)-c(1)+1) = e(1:c(2)-c(1)+1) - r(c(1):c(2)) !sign change
-#else
-            !fixme
-#endif /* PRG_DIRAC */
             do k=0,c(2)-c(1); kk=c(1)+k
                 k1=kk-1; if (kk>1) k1=k1+2; if (kk>3) k1=k1+1
                 A(1) = oneint(xyz(1+mod(k1,3))//xyz(1+k1/3)//'THETA ')
@@ -603,11 +595,7 @@ contains
         type(matrix):: SD; integer:: NATOMS_ifc
         if (SD%nrow==nbas) return !stub
         nbas = SD%nrow
-#ifndef PRG_DIRAC
         natom = NATOMS_ifc()
-#else
-        natom = 137 ! fixme
-#endif /* PRG_DIRAC */
         tab(idx('GEO'))%rank = 3*natom
         !AllPrt(idx('NS'))%rank = depends on which isotopes
     end subroutine
@@ -617,12 +605,7 @@ contains
         character*8:: l; type(matrix):: A
         if (nbas==0) stop 'PropInt, oneint: nbas not initialized'
         if (undef(A)) call mat_init(A,nbas,nbas)
-#ifndef PRG_DIRAC
         call di_read_operator_int(l,A); A=A !to get it tracked by module TypeMatrix
-#else
-        call get_P(l, A)
-        A = A
-#endif /* PRG_DIRAC */
     end function
 
 
@@ -633,12 +616,8 @@ contains
         integer:: o,a; type(Matrix):: D; type(Matrix),intent(inout):: F(3**o)
         integer:: lw,i,j,k; real*8:: Df(nbas**2),Ff(nbas**2,3*o),w(600000)
         if (nbas==0) stop 'twomatr: nbas not initialized'
-#ifndef PRG_DIRAC
         call mat_to_full(D,1d0,Df); lw = 600000
         call GRCONT(w,lw,Ff,nbas**2*3*o,a/=0,a==0,o,a,.false.,.true.,Df,1)
-#else
-        call quit('error in twomatr')
-#endif /* PRG_DIRAC */
         do i=1,3**o; if (undef(F(i))) call mat_init(F(i),nbas,nbas); enddo
         do i=1,3**o
             j = i
@@ -646,11 +625,7 @@ contains
                 j=1+(i-1)/3; k=1+mod(i-1,3)
                 j=max(j,k)*(max(j,k)-1)/2+min(j,k)
             endif
-#ifndef PRG_DIRAC
             call mat_set_from_full(Ff(:,j),1d0,F(i))
-#else
-            call quit('error in twomatr')
-#endif /* PRG_DIRAC */
         enddo
     end subroutine
 
@@ -705,7 +680,6 @@ contains
         real*8,intent(inout):: e(:)
         real*8,allocatable:: wrk(:)
         if (nbas==0) stop 'PropInt.twoctr: nbas not initialized'
-#ifndef PRG_DIRAC
         !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
         if (what=='MM'.or.what=='MM') &
             call quit("PropInt.twoctr: 'M' or 'MM' not yet implemented")
@@ -726,9 +700,6 @@ contains
                         ,what(1:1)=='G',what(1:1)=='M',len(what),0 &
                         ,.true.,.false.,wrk(1:2*nbas**2),2)
         deallocate(wrk)
-#else
-        call quit('error in twoctr')
-#endif /* PRG_DIRAC */
     end subroutine
 
 
