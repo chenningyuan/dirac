@@ -10,6 +10,7 @@ module matrix_autop
   public norm
   public iszero
   public print
+  public undef
   public matrixstats
 
   public assignment(=)
@@ -72,6 +73,10 @@ module matrix_autop
     module procedure print_matrix
   end interface
 
+  interface undef
+    module procedure matrix_is_undefined
+  end interface
+
   type refp
     type(matrix), pointer :: m !pointer to referring matrix
     integer,      pointer :: s !stack top at creation (if temporary)
@@ -88,6 +93,15 @@ module matrix_autop
   type(datp), allocatable :: dat(:)
 
 contains
+
+  function matrix_is_undefined(A) result(r)
+
+    type(matrix), intent(in) :: A
+    logical                  :: r
+
+    r = (A%nrow == -1)
+
+  end function
 
   subroutine allocif()
   !if needed allocate/extend the tables refs,data. Set stkdir

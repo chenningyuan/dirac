@@ -2,9 +2,6 @@ module PropInt
 !routines for property contractions and matrices
 
 #ifndef PRG_DIRAC
-#endif /* PRG_DIRAC */
-
-#ifndef PRG_DIRAC
     use matrix_autop
     use dal_interface,only: di_GET_GbDs,di_read_operator_int,di_get_sigma_xc_cont,di_get_T_xc_cont &
                      ,di_get_MagDeriv_FxD_DFT,di_get_MagDeriv_GxD_DFT &
@@ -182,9 +179,10 @@ contains
                 do j=0,b(2)-1
                     call di_GET_GbDs(D(1+b(1)+1+j),A(1))
                     if (do_dft()) then
-                        call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
-!                       call di_get_sigma_xc_cont(D(1+b(1)+1+j),D(1),D(1),A(2))
-!                       A(1) = A(1) + A(2)
+!radovan please leave:
+!  call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
+                        call di_get_sigma_xc_cont(D(1+b(1)+1+j),D(1),D(1),A(2))
+                        A(1) = A(1) + A(2)
                     endif
                     do i=1,b(1)
                         e(i+b(1)*j) = trab(A(1),D(1+i)) !factor 2 hidden in trab
@@ -234,13 +232,9 @@ contains
             if (.not.all((/(iszero(D(i)),i=pb1-pb+1,pb1)/))) then
                 call twofck('M',D(1:1),A(1:3))
                 if (do_dft()) then
-#ifndef PRG_DIRAC
                     do i=1,3; call mat_init(A(3+i),nbas,nbas); enddo
                     call di_get_MagDeriv_FxD_DFT(A(4:6),D(1))
                     do i=1,3; A(i) = A(i) + A(3+i); A(3+i)=0; enddo
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                 endif
                 do i=1,pb; ii=pb1-pb+i
                     do k=0,c(2)-c(1); kk=c(1)+k
@@ -254,13 +248,9 @@ call quit('error in propint')
                 do i=1,b(1); if (iszero(D(1+i))) cycle
                     call twofck('M',D(1+i:1+i),A(1:3))
                     if (do_dft()) then
-#ifndef PRG_DIRAC
                         do k=1,3; call mat_init(A(3+k),nbas,nbas); enddo
                         call di_get_MagDeriv_GxD_DFT(D(1),D(1+i),A(4:6))
                         do k=1,3; A(k) = A(k) + A(3+k); A(3+k)=0; enddo
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                     endif
                     do j=0,b(2)-1; jj=1+b(1)+1+j
                         do k=0,c(2)-c(1); kk=c(1)+k
@@ -286,11 +276,7 @@ call quit('error in propint')
             enddo
         elseif (n==1.and.p(1)=='GEO') then
             if (m==0) then !nuclear repulsion contribution
-#ifndef PRG_DIRAC
                 call GRADNN_ifc(natom,r(1:3*natom))
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                 do i=1,c(2)-c(1)+1; ii=c(1)+i-1
                     e(i) = e(i) + r(ii); enddo
             endif
@@ -307,13 +293,9 @@ call quit('error in propint')
                 r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
                 if (m==0) r(1:3*natom) = r(1:3*natom)/2 !another half for molgra
                 if (do_dft()) then
-#ifndef PRG_DIRAC
                     if (m==0) call di_get_geomDeriv_molgrad_DFT(r(3*natom+1:3*natom*2),natom,D(1))
                     if (m/=0) call di_get_geomDeriv_FxD_DFT(r(3*natom+1:3*natom*2),natom,D(1),D(ii))
                     r(1:3*natom) = r(1:3*natom) + r(3*natom+1:3*natom*2)
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                 endif
                 do k=0,c(2)-c(1); kk=c(1)+k
                     e(i+pb*k) = e(i+pb*k) + r(kk)
@@ -324,12 +306,8 @@ call quit('error in propint')
                     call twoctr('G',D(1+i),D(jj),r(1:3*natom))
                     r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
                     if (do_dft()) then
-#ifndef PRG_DIRAC
                         call di_get_geomDeriv_GxD_DFT(r(3*natom+1:3*natom*2),natom,D(1),D(1+i),D(jj))
                         r(1:3*natom) = r(1:3*natom) + r(3*natom+1:3*natom*2)
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                     endif
                     do k=0,c(2)-c(1); kk=c(1)+k
                         e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk) !factor 8 here
@@ -393,11 +371,7 @@ call quit('error in propint')
             endif
         elseif (n==2.and.all(p==(/'EL','GEO'/))) then
             if (m==0) then !nuclear repulsion contribution
-#ifndef PRG_DIRAC
                 call DIPNUC_ifc(natom,(/0d0,0d0,0d0/),r(1:3*3*natom))
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                 do j=0,c(4)-c(2); jj=c(2)+j
                     do i=1,c(3)-c(1)+1; ii=c(1)+i-1
                         i1 = i+(c(3)-c(1)+1)*j
@@ -484,9 +458,10 @@ call quit('error in propint')
                 if (iszero(F(i))) F(i)=tiny(1d0)*D(1) !to get it allocated
                 F(i) = F(i) + A(1)
                 if (do_dft()) then !DFT contribution
-                    call xc_contribution(2, D(1), (/D(ii)/), (/F(i)/))
-!                   call di_get_sigma_xc_cont(D(ii),D(1),D(1),A(1))
-!                   F(i) = F(i) + A(1)
+!radovan please leave:
+!                    call xc_contribution(2, D(1), (/D(ii)/), (/F(i)/))
+                    call di_get_sigma_xc_cont(D(ii),D(1),D(1),A(1))
+                    F(i) = F(i) + A(1)
                 endif
             enddo
             if (do_dft().and.m==1) then
@@ -496,10 +471,11 @@ call quit('error in propint')
                     if (iszero(D(jj))) cycle
                     do i=1,b(1); ii=1+i
                         if (iszero(D(ii))) cycle
-                        A(1) = tiny(1d0)*A(1)
-                        A(1)%pg_sym = 1 + ieor(D(ii)%pg_sym - 1, D(jj)%pg_sym - 1)
-                        call xc_contribution(3, D(1), (/D(ii), D(jj)/), A(1:1))
-!                       call di_get_T_xc_cont(D(1),D(ii),D(jj),A(1))
+!radovan please leave:
+!                        A(1) = tiny(1d0)*A(1)
+!                        A(1)%pg_sym = 1 + ieor(D(ii)%pg_sym - 1, D(jj)%pg_sym - 1)
+!                        call xc_contribution(3, D(1), (/D(ii), D(jj)/), A(1:1))
+                        call di_get_T_xc_cont(D(1),D(ii),D(jj),A(1))
                         F(i+b(1)*j) = F(i+b(1)*j) + A(1)
                     enddo
                 enddo
@@ -531,15 +507,11 @@ call quit('error in propint')
                     F(i+pb*k) = F(i+pb*k) + A(kk)
                 enddo
                 if (do_dft()) then
-#ifndef PRG_DIRAC
                     if (m==0) call di_get_MagDeriv_FxD_DFT(A(1:3),D(1))
                     if (m/=0) call di_get_MagDeriv_GxD_DFT(D(1),D(ii),A(1:3))
                     do k=0,c(2)-c(1); kk=c(1)+k
                         F(i+pb*k) = F(i+pb*k) + A(kk)
                     enddo
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
                 endif; do k=1,3; A(k)=0; enddo
             enddo
         elseif (n==1.and.p(1)=='ELGR'.and.m==0) then !only m==0
@@ -644,7 +616,7 @@ call quit('error in propint')
     function oneint(l) result(A)
         character*8:: l; type(matrix):: A
         if (nbas==0) stop 'PropInt, oneint: nbas not initialized'
-        if (.not. A%is_defined) call mat_init(A,nbas,nbas)
+        if (undef(A)) call mat_init(A,nbas,nbas)
 #ifndef PRG_DIRAC
         call di_read_operator_int(l,A); A=A !to get it tracked by module TypeMatrix
 #else
@@ -667,7 +639,7 @@ call quit('error in propint')
 #else
         call quit('error in twomatr')
 #endif /* PRG_DIRAC */
-        do i=1,3**o; if (.not. F(i)%is_defined) call mat_init(F(i),nbas,nbas); enddo
+        do i=1,3**o; if (undef(F(i))) call mat_init(F(i),nbas,nbas); enddo
         do i=1,3**o
             j = i
             if (o==2) then
@@ -710,19 +682,15 @@ call quit('error in propint')
         allocate(wrk(lw))
         do i=1,nd; wrk(1+n2*(i-1):n2*i) = D(i)%elms; enddo
         !ajt Redundant: wrk(nbas**2+1:nbas**2*(nf+1)) = 0
-#ifndef PRG_DIRAC
         call GRCONT(wrk(1+n2*(nd+nf):lw),lw-n2*(nd+nf),wrk(1+n2*nd:n2*(nd+nf)) &
                    ,n2*nf,what(1:1)=='G',what(1:1)=='M',len(what),0 &
                    ,.false.,.true.,wrk(1:n2*nd),nd)
-#else
-call quit('error in propint')
-#endif /* PRG_DIRAC */
 !        call GRCONT(wrk(nbas**2*(nf+1)+1:),size(wrk)-nbas**2*(nf+1) &
 !                   ,wrk(nbas**2+1:nbas**2*(size(F)+1)),nbas**2*nf &
 !                   ,what(1:1)=='G',what(1:1)=='M',len(what),0 &
 !                   ,.false.,.true.,wrk(1:nbas**2),1)
         do i=1,nf
-            if (.not. F(i)%is_defined) call mat_init(F(i),nbas,nbas)
+            if (undef(F(i))) call mat_init(F(i),nbas,nbas)
             if (iszero(F(i))) call mat_init(F(i),nbas,nbas)
             F(i)%elms = wrk(1+n2*(nd+i-1):n2*(nd+i))
         enddo
@@ -897,7 +865,8 @@ call quit('error in propint')
         if (present(o)) then
             kk(1:m,3) = o(1:m)
             do i=m,1,-1
-                k(1:1) = minloc(kk(1:i,3))
+!radovan: check whether this is not minloc (was in my version)
+                k(1:1) = maxloc(kk(1:i,3))
                 j = k(1); k = kk(j,:)
                 kk(j:k(3)-1,:) = kk(j+1:k(3),:)
                 kk(k(3),:) = k

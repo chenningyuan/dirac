@@ -440,3 +440,43 @@
   300 continue
 
       end
+
+      subroutine gradnn_ifc()
+        call quit('gradnn_ifc not there')
+      end
+
+      subroutine dipnuc_ifc()
+        call quit('dipnuc_ifc not there')
+      end
+
+      subroutine di_get_geomderiv_fxd_dft()
+        call quit('di_get_geomderiv_fxd_dft not there')
+      end
+
+      subroutine di_get_magderiv_gxd_dft()
+        call quit('di_get_magderiv_gxd_dft not there')
+      end
+
+      subroutine di_get_magderiv_fxd_dft()
+        call quit('di_get_magderiv_fxd_dft not there')
+      end
+
+      subroutine di_get_sigma_xc_cont()
+        call quit('di_get_sigma_xc_cont not there')
+      end
+
+      subroutine di_get_t_xc_cont()
+        call quit('di_get_t_xc_cont not there')
+      end
+
+      subroutine grcont()
+        call quit('grcont not there')
+      end
+
+      subroutine di_get_geomderiv_molgrad_dft()
+        call quit('di_get_geomderiv_molgrad_dft not there')
+      end
+
+      subroutine di_get_geomderiv_gxd_dft()
+        call quit('di_get_geomderiv_gxd_dft not there')
+      end
