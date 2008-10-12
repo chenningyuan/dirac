@@ -1,4 +1,5 @@
-
+!     Test program for lapack symmetric eigensolver DSYEVR
+!     By ulfek 2008
 
 
       program test_dsyevr
@@ -10,10 +11,12 @@
       double precision ddum, workdum, maxerr, maxvecerr, pi
       integer, allocatable :: iwork(:), isuppz(:)
       logical issorted
-      N = 1234
+      N = 4234
       pi = 2*acos(0.0D0)
       print *,'Testing DSYEVR diagonalization of',N,'**2 matrix'
-      print *,'Bytes per integer:',sizeof(N)
+      print *,'Using',sizeof(N)*8,' bit integers'
+      print *,'Allocating matrix and vectors ',
+     &     ((2*N**2 + 3*N)*sizeof(ddum))/2**20,' MB'
       call flush(6)
       allocate( A(N,N), vec(N,N), eig(N), isuppz(2*N) )
 !     set A = 0.5 on the upper and lower second diagonals
@@ -34,7 +37,8 @@
          stop
       endif
       lwork = workdum
-      print *,'Allocating buffers: lwork =',lwork,' liwork =',liwork
+      print *,'Allocating work buffers',(lwork*sizeof(ddum)+
+     &     liwork*sizeof(idum))/2**10,' kB'
       call flush(6)
       allocate( work(lwork), iwork(liwork) )
       print *,'Diagonalizing..'
