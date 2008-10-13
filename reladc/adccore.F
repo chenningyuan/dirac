@@ -1683,9 +1683,9 @@ c
             CLOSE(ITAPADC+5)
 c
 c  analyze eigenvectors
+c 
+c   ........  a proper call has to be inserted here.
 c
-c           CALL VECANALYZE(IW,CC(ICRA),LADC,KREP, xxx xxx
-c    &                      CC(WRK_EVL),CC(WRK_AZZ))
 c
 c  release memory required for real diagonalization
 c
@@ -1894,6 +1894,8 @@ c
 
             N=LADC*NEIGENV*RCW
             CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC)
+            N=LADC*RCW
+            CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC)
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix
@@ -1925,15 +1927,10 @@ c
 c  analyze vectors
 c
           IF(NEIGENV.GT.0) THEN
-            IF(CARITH) THEN
-              CALL ZVECANALYZE(ITAPADC+6,ITAPADC+7,FILE2,KREP,LADC,
-     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
-            ELSE
-              CALL RVECANALYZE(ITAPADC+6,ITAPADC+7,FILE2,KREP,LADC,
-     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
-            ENDIF
+            CALL VECANALYZE(ITAPADC+6,ITAPADC+7,FILE2,KREP,LADC,NEIGENV,
+     &                      CC(WRK_EVL),CC(WRK_OEV),CC(WRK_OEV),CARITH)
           ENDIF
-
+      
 c ----------------- release memory used by the Lanczos routines
 
  899      CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)

@@ -218,11 +218,6 @@ c
      &                    CC(WRK_RWORK),LWORK,
      &                    CC(WRK_IOI),CC(WRK_IOJ),CC(WRK_BUF))
 c
-c  analyze eigenvectors
-c
-c           CALL VECANALYZE(IW,CC(ICRA),LADC,KREP, xxx xxx
-c    &                      CC(WRK_EVL),CC(WRK_AZZ))
-c
 c  release memory required for real diagonalization
 c
             CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
@@ -277,9 +272,14 @@ c
           THRVEC  = XTHRVEC(IRPLOOP)
 
 
-          WRITE(IW,*) '+++ Lanczos-input parameters in this run:'
-          WRITE(IW,*) '+++ NITER,NP,NEIGENV,EVLLIM,THRVEC:',
-     &                NITER,NP,NEIGENV,EVLLIM,THRVEC
+          WRITE(IW,*)
+          WRITE(IW,*) '*** Lanczos parameters:'
+          WRITE(IW,*)
+          WRITE(IW,*) 'Number of iterations:             ',NITER
+          WRITE(IW,*) 'Half band width:                  ',NP
+          WRITE(IW,*) 'Number of requested eigenvectors: ',NEIGENV
+          WRITE(IW,*) 'Printing limit for eigenvalues:   ',EVLLIM
+          WRITE(IW,*) 'Threshol for vector printing:     ',THRVEC
 C
 C  allocate required work space for band Lanczos iterations
 C  real/complex case are accounted for by the RCW variable
@@ -338,6 +338,8 @@ C
 C
 C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
+C  After the BANDDIA runs the corresponding eigenVECTORS of the
+C  Lanczos matrix are available in ZEV  resp. in CC(WRK_ZEV)
 C
           N=NITER
           CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC)
@@ -405,6 +407,8 @@ c
 
             N=LADC*NEIGENV*RCW
             CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC)
+            N=LADC*RCW
+            CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC)
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix
@@ -428,16 +432,11 @@ c
             ENDIF
           ENDIF
 c
-c  analyze vectors   !!!!!!!!  ****C H E CK *****
+c  analyze vectors 
 c
           IF(NEIGENV.GT.0) THEN
-            IF(CARITH) THEN
-              CALL ZVECANALYZE(ITAP6,ITAP6+1,FILE2,KREP,LADC,
-     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
-            ELSE
-              CALL RVECANALYZE(ITAP6,ITAP6+1,FILE2,KREP,LADC,
-     &                       NEIGENV,CC(WRK_EVL),CC(WRK_AEV),THRVEC)
-            ENDIF
+            CALL VECANALYZE(ITAP6,ITAP6+1,FILE2,KREP,LADC,NEIGENV,
+     &                      CC(WRK_EVL),CC(WRK_OEV),CC(WRK_OEV),CARITH)
           ENDIF
 
  899      CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
@@ -656,8 +655,8 @@ c     enddo
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RVECANALYZE(IOUNIT,IOUNIT2,DAFILE,KREP,LADC,
-     &                       NEIGENV,EVL,EVC,THR)
+      SUBROUTINE VECANALYZE(IOUNIT,IOUNIT2,DAFILE,KREP,LADC,NEIGENV,
+     &                      EVL,EVCR,EVCC,RCFLAG)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -665,7 +664,7 @@ C---------------Description--------------------------------------------
 C
 C     Analyzes eigenvectors of the ADC matrix
 C     Writes pole strengths and corresponding 1p-2h configuration
-C     to stdout if eigenvector entry is larger than THR.
+C     to stdout. Suitable for real and complex case.
 C
 C---------------Last modified------------------------------------------
 C
@@ -675,8 +674,9 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*9 DAFILE
       INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
-      REAL*8  EVL(LADC),THR
-      REAL*8 EVC(LADC,NEIGENV)
+      REAL*8  EVL(LADC),EVCR(LADC)
+      COMPLEX*16 EVCC(LADC)
+      LOGICAL RCFLAG
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -689,218 +689,115 @@ C
       DATA AUEV /27.2113957D0/
       CHARACTER*7 EVECFN
       REAL*8 B
-      character*78 field
+      COMPLEX*16 C
+      CHARACTER*78 FIELD
+      CHARACTER*17 MSG
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE(IW,800) KREP,THR
+      MSG='Eigenvectors are '
+      WRITE(IW,800) KREP
  800  FORMAT (//" ==================================================="/
      &        " ===    Eigenvector analysis for symmetry ",I2/
-     &        " ===    Configuration component threshold ",F10.4/
-     &        " ==================================================="//)
-c    &        " ===    From minimum eigenvalue of ",
-c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
-c    &        " ===    to maximum eigenvalue of   ",
-c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
+     &        " ==================================================="/)
 
 c
-c  open eigenvector file
+c  open eigenvector file and read matrix dimension and number of eigenvectors
 c
-      write(evecfn,'(a5,i1)') 'EVEC.',krep
-      open(iounit, file=EVECFN, form='UNFORMATTED',
-     &     access='SEQUENTIAL', status='UNKNOWN')
-      read(iounit) iladc,neigenv
-      if(iladc.ne.ladc) then
-        call quit('Incompatible eigenvector files!')
-      endif
-      write(iw,*) 'There are',neigenv,' eigenvectors on file.'
-      if(neigenv.gt.ladc) then
-        call quit('More eigenvectors than matrix dimension ?')
-      endif
-c
-c  reading eigenvectors for eigenvalues
-c
-      do j=1,neigenv
-        read(iounit) evl(j) 
-        read(iounit) (evc(ix,j),ix=1,ladc)
-      enddo
-      close(iounit)
+      IF(KREP.GT.9) THEN
+        WRITE(EVECFN,'(A5,I2)') 'EVEC.',KREP
+      ELSE
+        WRITE(EVECFN,'(A6,I1)') 'EVEC.0',KREP
+      ENDIF
+
+      OPEN(IOUNIT, FILE=EVECFN, FORM='UNFORMATTED',
+     &     ACCESS='SEQUENTIAL', STATUS='UNKNOWN')
+      READ(IOUNIT) ILADC,NEIGENV
+      IF(ILADC.NE.LADC) THEN
+        CALL QUIT('Incompatible eigenvector files!')
+      ENDIF
+      WRITE(IW,*) 'There are',NEIGENV,' eigenvectors on file.'
+      IF(NEIGENV.GT.LADC) THEN
+        CALL QUIT('Error: More eigenvectors than ADC matrix dimension!')
+      ENDIF
+      IF(RCFLAG) THEN
+        WRITE(IW,*) MSG,'complex.'
+      ELSE
+        WRITE(IW,*) MSG,'real.'
+      ENDIF
 c
 c  open direct access file with configuration data
 c
       WRITE(IW,*) 'ADC configuration data read from ',DAFILE
       IRECL = 78
-      OPEN(iounit2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
+      OPEN(IOUNIT2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 c
-c  starting analysis
+c ---------  analysis loop  -----------------------------------
 c
-      DO 300 I = 1,NEIGENV
+      DO 477 IL=1,NEIGENV
+        READ(IOUNIT) EVL(IL) 
+        IF(RCFLAG) THEN 
+          READ(IOUNIT) (EVCC(IX),IX=1,LADC)
+        ELSE
+          READ(IOUNIT) (EVCR(IX),IX=1,LADC)
+        ENDIF
 
-        WRITE(iw,*)
-        WRITE(iw,*) '----------------------------------------'
-        WRITE(iw,*) 'Eigenvalue ',I,':',EVL(I),' (a.u.)',
-     &               EVL(I)*AUEV,' (eV)'
+        WRITE(IW,*)
+        WRITE(IW,*) '----------------------------------------'
+        WRITE(IW,'(A,I5,A3,F12.6,A7,F12.6,A5)') 
+     & 'Eigenvalue ',IL,' : ',EVL(IL),' (a.u.)',EVL(IL)*AUEV,' (eV)'
 C
-C  determine weight of hole and particle space
+C  determine weight of hole and particle space of this current
+C  eigenvector and print out analysis
 C
         WH=0.0D0
         WP=0.0D0
-        DO J=1,LADC
-            B=EVC(J,I)
+        IF(RCFLAG) THEN
+          DO J=1,LADC
+            C=EVCC(J)
+            IF(J.LE.NO(KREP)) THEN
+              WH=WH + dble(C*dconjg(C))
+            ELSE
+              WP=WP + dble(C*dconjg(C))
+            ENDIF
+          ENDDO
+        ELSE
+          DO J=1,LADC
+            B=EVCR(J)
             IF(J.LE.NO(KREP)) THEN
               WH=WH + B*B
             ELSE
               WP=WP + B*B
             ENDIF
-        ENDDO
-        WRITE(iw,860) WH*100.0D0,WP*100.0D0
-        WRITE(iw,*) '----------------------------------------'
+          ENDDO
+        ENDIF
+    
+        WRITE(IW,860) WH*100.0D0,WP*100.0D0
+        WRITE(IW,*) '----------------------------------------'
 
-        DO 150 J=1,LADC
-          B=EVC(J,I)
-          B = B*B
-          IF(DABS(B).GE.THR) THEN
-            READ(iounit2,REC=J) field
-            WRITE(iw,'(A5,I6,A2,A78)') 'Conf:',J,' |',field
-          ENDIF
- 150    CONTINUE
+        IF(RCFLAG) THEN
+          DO J=1,LADC
+            C=EVCC(J)
+            C = C*dconjg(C)
+            READ(iounit2,REC=J) FIELD
+            WRITE(IW,'(F6.2,A2,A78)') dble(C),' |',FIELD
+          ENDDO
+        ELSE
+          DO J=1,LADC
+            B=EVCR(J)
+            B = B*B
+            READ(iounit2,REC=J) FIELD
+            WRITE(IW,'(F6.2,A2,A78)') B,' |',FIELD
+          ENDDO
+        ENDIF
 
- 300  CONTINUE
-
-      CLOSE(iounit2) 
-
-      RETURN
-C
-C  formats...
-C:
- 850  FORMAT (1X,'number of eigenpairs on output file : ',I4,/,
-     &        1X,'eigenpairs analysis requested for   : ',I4,' roots',/,
-     &        1X,'analysis will be performed    for   : ',I4,' roots')
- 860  FORMAT (/" Weight of 1h-space:",T25,F6.1,' %'/
-     &         " Weight of 1p-2h-space:",T25,F6.1,' %')
- 880  FORMAT (/" 1h space"//"   Configuration ",I3,2X,"Spinor ",I3,
-     &        " Irep ",A4," Coeff ",F10.4/)
- 890  FORMAT (/" 1p-2h space"//"   Configuration ",I4,"   (",
-     &        I2,A4,3X,I2,A4,3X,I2,A4,")"," Coeff ",F10.4)
- 1100 FORMAT (1X,/,1X,49('-'),/,1X,'# ',I4,' )',1X,
-     &        F12.6,' (eV)',1X,F12.6,' (Hartree)',/,1X,49('-'),/)
-
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZVECANALYZE(IOUNIT,IOUNIT2,DAFILE,KREP,LADC,
-     &                       NEIGENV,EVL,EVC,THR)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Analyzes eigenvectors of the ADC matrix
-C     Writes pole strengths and corresponding 1p-2h configuration
-C     to stdout if eigenvector entry is larger than THR.
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : MP
-C
-C---------------Calling variables--------------------------------------
-C
-      CHARACTER*9 DAFILE
-      INTEGER IOUNIT,IOUNIT2,KREP,LADC,NEIGENV
-      REAL*8  EVL(LADC),THR
-      COMPLEX*16 EVC(LADC,NEIGENV)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "../relccsd/symm.inc"
-#include "../relccsd/files.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 AUEV, WH, WP
-      DATA AUEV /27.2113957D0/
-      CHARACTER*7 EVECFN
-      COMPLEX*16 B
-      character*78 field
-C
-C---------------Executable code--------------------------------------
-C
-      WRITE(IW,800) KREP,THR
- 800  FORMAT (//" ==================================================="/
-     &        " ===    Eigenvector analysis for symmetry ",I2/
-     &        " ===    Configuration component threshold ",F10.4/
-     &        " ==================================================="//)
-c    &        " ===    From minimum eigenvalue of ",
-c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
-c    &        " ===    to maximum eigenvalue of   ",
-c    &           F10.4,' (Hartree)',3X,F10.4,' (eV)'/
-
+ 477  CONTINUE
 c
-c  open eigenvector file
+c ---------  end analysis loop  -----------------------------------
 c
-      write(evecfn,'(a5,i1)') 'EVEC.',krep
-      open(iounit, file=EVECFN, form='UNFORMATTED',
-     &     access='SEQUENTIAL', status='UNKNOWN')
-      read(iounit) iladc,neigenv
-      if(iladc.ne.ladc) then
-        call quit('Incompatible eigenvector files!')
-      endif
-      write(iw,*) 'There are',neigenv,' eigenvectors on file.'
-      if(neigenv.gt.ladc) then
-        call quit('More eigenvectors than matrix dimension ?')
-      endif
-c
-c  reading eigenvectors for eigenvalues
-c
-      do j=1,neigenv
-        read(iounit) evl(j) 
-        read(iounit) (evc(ix,j),ix=1,ladc)
-      enddo
-      close(iounit)
-c
-c  open direct access file with configuration data
-c
-      WRITE(IW,*) 'ADC configuration data read from ',DAFILE
-      IRECL = 78
-      OPEN(iounit2,FILE=DAFILE,ACCESS='DIRECT',RECL=IRECL,
-     &     STATUS='UNKNOWN')
-c
-c  starting analysis
-c
-      DO 300 I = 1,NEIGENV
-
-        WRITE(iw,*)
-        WRITE(iw,*) '----------------------------------------'
-        WRITE(iw,*) 'Eigenvalue ',I,':',EVL(I),' (a.u.)',
-     &               EVL(I)*AUEV,' (eV)'
-C
-C  determine weight of hole and particle space
-C
-        WH=0.0D0
-        WP=0.0D0
-        DO J=1,LADC
-            B=EVC(J,I)
-            IF(J.LE.NO(KREP)) THEN
-              WH=WH + dble(B*dconjg(B))
-            ELSE
-              WP=WP + dble(B*dconjg(B))
-            ENDIF
-        ENDDO
-        WRITE(iw,860) WH*100.0D0,WP*100.0D0
-        WRITE(iw,*) '----------------------------------------'
-
-        DO 150 J=1,LADC
-          B=EVC(J,I)
-          B = B*dconjg(B)
-          IF(ABS(B).GE.THR) THEN
-            READ(iounit2,REC=J) field
-            WRITE(iw,'(A5,I6,A2,A78)') 'Conf:',J,' |',field
-          ENDIF
- 150    CONTINUE
-
- 300  CONTINUE
-
-      CLOSE(iounit2) 
+      CLOSE(IOUNIT)
+      CLOSE(IOUNIT2) 
 
       RETURN
 C
@@ -963,8 +860,14 @@ C
       CHARACTER*7 EVECFN
 C
 C---------------Executable code--------------------------------------
-C
-      WRITE(EVECFN,'(A5,I1)') 'EVEC.',IRREP
+c
+c  create symmetry-specific name for the eigenvectors
+c
+      IF(IRREP.GT.9) THEN
+        WRITE(EVECFN,'(A5,I2)') 'EVEC.',IRREP
+      ELSE
+        WRITE(EVECFN,'(A6,I1)') 'EVEC.0',IRREP
+      ENDIF
 
       CALL PST('Executing real symmetric Band-Lanczos+')
       WRITE(IW,*)
@@ -978,7 +881,7 @@ C
       WRITE(IW,*) ' Eigenvector file:    ',EVECFN
       WRITE(IW,*)
 c
-c  ... clear approx eigenvector array if requested
+c  ... clear large eigenvector array if requested
 c
       IF(CFLAG) THEN
         DO I=1,NEIGENV
@@ -991,21 +894,21 @@ c
 c  ... read in purged eigenvector matrix ZVEC for calculation of
 c      the long eigenvectors.
 c
-      if(cflag) then
-        open(io_lan,filE='ZVEC',form='UNFORMATTED',status='UNKNOWN')
-        rewind(io_lan)
-        read(io_lan) n1
-        read(io_lan) n2
-        write(iw,*) 'There are',n1,' Lanczos eigenvectors available.'
-        write(iw,*) 'Reading ZVEC ...'
-        if(n1.ne.neigenv.or.n2.ne.niter)
-     &    call quit('incompatible eigenvector parameters!')
-        do i=1,n1
-          read(io_lan) 
-          read(io_lan) (z(ix,i),ix=1,n2)
-        enddo
-        close(io_lan,status='DELETE')
-      endif
+      IF(CFLAG) THEN
+        OPEN(IO_LAN,FILe='ZVEC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        REWIND(IO_LAN)
+        READ(IO_LAN) N1
+        READ(IO_LAN) N2
+        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
+        WRITE(IW,*) 'Reading ZVEC ...'
+        IF(N1.NE.NEIGENV.OR.N2.NE.NITER)
+     &    CALL QUIT('Incompatible eigenvector parameters!')
+        DO I=1,N1
+          READ(IO_LAN) 
+          READ(IO_LAN) (Z(IX,I),IX=1,N2)
+        ENDDO
+        CLOSE(IO_LAN,STATUS='DELETE')
+      ENDIF
 
 c
 c  ... clear Lanczos matrix
@@ -1016,7 +919,7 @@ c
         ENDDO
       ENDDO
 c
-c  ... clear r/p-vector array and initialize start vectors
+c  ... clear r/p-vector array and initialize cartesian start vectors
 c      start vectors are orthonormal and sit in the fields
 c      np+1,np+2,...,2*np
 c
@@ -1119,6 +1022,7 @@ c
         CALL IVXROT(IVX,2*NP+1)
 
  99   CONTINUE
+c----------------------------- lanczos loop end ----------------------
 c
 c  now write out Lanczos matrix when called for the FIRST time !
 c
@@ -1196,7 +1100,11 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE(EVECFN,'(A5,I1)') 'EVEC.',IRREP
+      IF(IRREP.GT.9) THEN
+        WRITE(EVECFN,'(A5,I2)') 'EVEC.',IRREP
+      ELSE
+        WRITE(EVECFN,'(A6,I1)') 'EVEC.0',IRREP
+      ENDIF
 
       WRITE(IW,*) ' Matrix dimension:',LADC
       WRITE(IW,*) ' Band width:      ',NP
@@ -2896,11 +2804,11 @@ C---------------Description--------------------------------------------
 C
 C  Perform the diagonalization of the real symmetric band matrix
 C  by calling the appropriate LAPACK routine. This routine
-C  is interfacing in order to avoid too many command line
+C  serves as an interface in order to avoid too many command line
 C  arguments.
 C  The Lanczos matrix T from the caller comes in the AB array.
-C     ****  ATTENTION ****  due to the usual conventions in the
-C    numerical recipes routines the original matrix T is DESTROYED !!!
+C     ****  ATTENTION ****  due to the usual programming conventions
+C  of the LAPACK routines the original matrix T is DESTROYED !!!
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2918,9 +2826,11 @@ C---------------Executable code--------------------------------------
 C
 C we always compute the eigenvectors of the band matrix, because
 C they are needed in the further analysis
-C These eigenvectors have FULL length. In the original formulation only
+C These eigenvectors have the FULL length of the Lanczos matrix. 
+C In the original formulation only
 C the first and last NP components were available and the whole
-C eigenvector was calculated by inverse iteration.
+C eigenvector was calculated by inverse iteration. We do not pursue this
+C direction due to problems with the inverse interation
 C
 
       JOBZ='V'
