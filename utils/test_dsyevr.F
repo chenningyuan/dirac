@@ -1,14 +1,12 @@
 !     Test program for lapack symmetric eigensolver DSYEVR
 !     By ulfek 2008
-
-
       program test_dsyevr
       implicit none
       integer i, j, k, N, lwork, liwork, info, idum, M
 !     Store matrices in contigous memory blocks with (:,:) ?
       double precision, allocatable :: A(:,:),vec(:,:),eig(:)
       double precision, allocatable :: work(:)
-      double precision ddum, workdum, maxerr, maxvecerr, pi
+      double precision ddum, workdum, maxerr, maxvecerr, pi, verr
       integer, allocatable :: iwork(:), isuppz(:)
       character(len=32) :: arg
       logical issorted
@@ -16,7 +14,7 @@
          call getarg(1,arg)
          read (arg,*), N
       else
-         N = 10
+         N = 19
       endif
       pi = 2*acos(0.0D0)
       print *,'Testing DSYEVR diagonalization of',N,'**2 matrix'
@@ -35,7 +33,12 @@
          A(i,i+1) = 0.5
          A(i+1,i) = 0.5
       enddo
-
+#ifdef DEBUG
+      print *,'Matrix to diagonalize:'
+      do i=1,N
+         write (6,'(100F4.1)') (A(i,j),j=1,N)
+      enddo
+#endif
       CALL DSYEVR('V','A','U',N,A,N,DDUM,DDUM,IDUM,IDUM,0.0D0,
      &     IDUM,EIG,VEC,N,IDUM,WORKDUM,-1,liwork,-1,INFO)
       if (info.ne.0) then
@@ -70,19 +73,32 @@
          do i=1,N
             j = (N-i+1)
             maxerr = max(maxerr,abs(eig(i) - cos((j*pi)/(N+1))))
-!     Discard the phase of vectors with abs
-c            print *,'vector ',j,' eigval:',eig(i)
+#ifdef DEBUG
+            print *,'vector ',i,' eigval:',eig(i)
+            print *,'  <Calculated>             <Exact>'
+#endif
             do k=1,N
-c               print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
-               maxvecerr = max(maxvecerr, abs(eig(i)*(abs(vec(k,i)) -
-     &              abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))))))
+!     Discard the phase of vectors with abs
+               verr = abs(eig(i)*(abs(vec(k,i)) -
+     &              abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1)))))
+               maxvecerr = max(maxvecerr, verr)
+#ifdef DEBUG
+               if (verr.gt.N*1.0D-14) then
+                  print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
+     &                 ,'<<<<< WARNING'
+               else
+                  print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
+               endif
+#endif
             enddo
-c            print *,'maxvecerr:',maxvecerr
+#ifdef DEBUG
+            print *,'maxvecerr so far:',maxvecerr
+#endif
          enddo
          print *,'Maximum absolute eigenvalue error:',maxerr
          print *,'Maximum absolute vector element error:',maxvecerr
       else
-         print *,'Eigenvalues not sorted so not testing them'
-         print *,'This is not an error in itself'
+         print *,'Eigenvalues not sorted so not testing them,'//
+     &        ' this can be ok.'
       endif
       end
