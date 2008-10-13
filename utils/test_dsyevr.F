@@ -10,13 +10,19 @@
       double precision, allocatable :: work(:)
       double precision ddum, workdum, maxerr, maxvecerr, pi
       integer, allocatable :: iwork(:), isuppz(:)
+      character(len=32) :: arg
       logical issorted
-      N = 234
+      if (iargc().gt.0) then
+         call getarg(1,arg)
+         read (arg,*), N
+      else
+         N = 10
+      endif
       pi = 2*acos(0.0D0)
       print *,'Testing DSYEVR diagonalization of',N,'**2 matrix'
       print *,'Using',sizeof(N)*8,' bit integers'
       print *,'Allocating matrix and vectors ',
-     &     ((2*N**2 + 3*N)*sizeof(ddum))/2**20,' MB'
+     &     ((2*N**2 + 3*N)*sizeof(ddum))/2**10,' kB'
       call flush(6)
       allocate( A(N,N), vec(N,N), eig(N), isuppz(2*N) )
 !     set A = 0.5 on the upper and lower second diagonals
@@ -65,10 +71,13 @@
             j = (N-i+1)
             maxerr = max(maxerr,abs(eig(i) - cos((j*pi)/(N+1))))
 !     Discard the phase of vectors with abs
+c            print *,'vector ',j,' eigval:',eig(i)
             do k=1,N
-               maxvecerr = max(maxvecerr, abs(abs(vec(k,j)) -
-     &              abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1)))))
+c               print *,vec(k,i),sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))
+               maxvecerr = max(maxvecerr, abs(eig(i)*(abs(vec(k,i)) -
+     &              abs(sqrt(2.0D0/(N+1))*sin((j*k*pi)/(N+1))))))
             enddo
+c            print *,'maxvecerr:',maxvecerr
          enddo
          print *,'Maximum absolute eigenvalue error:',maxerr
          print *,'Maximum absolute vector element error:',maxvecerr
