@@ -13,7 +13,18 @@ import re, sys, os, string
 iprint = 12
 
 job_name='queue test'
+job_inp='input_test'
+
+job_out='job_output'
+#loc=`pwd`
+loc='`pwd`'
+
 queue_system='pbs'
+
+queue_name='default'
+
+nnodes=2
+nodes_per_proc=4
 
 #pam_dir="`pwd`"
 pam_script_name="pam"
@@ -48,9 +59,52 @@ def sumbit_job():
 def process_pbs_script():
 	print 'prepare_pbs_script...'
 	f=open(queue_script, 'w')
-	print (f,'#!/bin/bash');
-	print (f,'# comment line');
-	print (f,'#PBS -N ',job_name);
+	s = ''
+	s += '''
+#!/bin/bash
+#
+# Use controls since these are directly readable fromthe batch script
+#
+# job name
+#PBS -N %s
+	''' % job_name
+	s += '''
+#
+# nodes
+#PBS -l nodes=%i
+	''' % nnodes
+	s += '''
+#
+# unite stdout with stderr
+#PBS -j oe
+#
+#
+#   queue job standard output - stdout
+#PBS -o %s
+	''' % job_out
+	s += '''
+#
+#
+# ... print out important PBS variables
+#
+echo '------------------------------------'
+echo '   PBS_O_HOME='\$PBS_O_HOME
+echo '   PBS_O_HOST='\$PBS_O_HOST
+echo '   PBS_SERVER='\$PBS_SERVER
+echo '  PBS_O_QUEUE='\$PBS_O_QUEUE
+echo 'PBS_O_WORKDIR='\$PBS_O_WORKDIR
+echo '  PBS_JOBNAME='\$PBS_JOBNAME
+echo '    PBS_JOBID='\$PBS_JOBID
+echo ' PBS_NODEFILE='\$PBS_NODEFILE
+echo '------------------------------------'
+#
+#   ... change to original directory
+#
+cd $loc
+	'''
+
+	f.write(s)
+	f.close()
 
 def process_loadleveler_script():
 	print 'prepare_loadleveler_script...'
