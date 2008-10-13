@@ -2,11 +2,13 @@
 !     By ulfek 2008
       program test_dsyevr
       implicit none
-      integer i, j, k, N, N2, N3, lwork, liwork, info, idum, M
+      integer i, j, k, N, N2, N3, lwork, liwork, info, idum, M,
+     &     idum2,idum3,idum4
 !     Store matrices in contigous memory blocks with (:,:) ?
       double precision, allocatable :: A(:,:),vec(:,:),eig(:)
       double precision, allocatable :: work(:)
-      double precision ddum, workdum, maxerr, maxvecerr, pi, verr
+      double precision ddum, workdum, maxerr, maxvecerr, pi, verr,
+     &     ddum2
       integer, allocatable :: iwork(:), isuppz(:)
       character(len=32) :: arg
       logical issorted
@@ -41,8 +43,8 @@
 #endif
       N2 = N
       N3 = N
-      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &     IDUM,EIG,VEC,N3,IDUM,WORKDUM,-1,liwork,-1,INFO)
+      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM2,IDUM,IDUM2,0.0D0,
+     &     IDUM3,EIG,VEC,N3,IDUM4,WORKDUM,-1,liwork,-1,INFO)
       if (info.ne.0) then
          print *, 'DSYEVR memory query failed:',info
          stop
@@ -54,7 +56,7 @@
       allocate( work(lwork), iwork(liwork) )
       print *,'Diagonalizing..'
       call flush(6)
-      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM,IDUM,IDUM,0.0D0,
+      CALL DSYEVR('V','A','U',N,A,N2,DDUM,DDUM2,IDUM,IDUM2,0.0D0,
      &     M,EIG,VEC,N3,isuppz,work,lwork, iwork,liwork,info)
       if (info.ne.0.or.M.ne.N) then
          print *,'Diagonalization failed, info = ',info,' M =',M
