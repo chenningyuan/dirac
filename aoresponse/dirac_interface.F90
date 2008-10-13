@@ -9,7 +9,7 @@ module dirac_interface_m
 
   implicit none
 
-  interface di_GET_GbDs
+  interface di_get_gbds
     module procedure get_G
   end interface
 
@@ -18,6 +18,81 @@ module dirac_interface_m
   end interface
 
 contains
+
+  subroutine dipnuc_ifc(n, f, fg)
+
+#include "mxcent.h"
+#include "dipole.h"
+
+    integer       :: n
+    real(kind_dp) :: f(3), fg(3, 3*n)
+
+    call dipnuc((/0.0d0/), (/0.0d0/), 0, .true.)
+
+    f  = dipmn
+    fg = ddipn(:, 1:3*n)
+
+  end subroutine
+
+  subroutine qdrnuc_ifc(q)
+
+#include "mxcent.h"
+#include "nuclei.h"
+#include "priunit.h"
+
+    real(kind_dp) :: q(6)
+
+    call quit('implement qdrnuc_ifc first')
+!   call nucqdr(cord(:, 1:nucdep), (/0.0d0, 0.0d0, 0.0d0/), lupri, 0)
+!   q = (/qdrnuc(1,1), qdrnuc(1:2, 2), qdrnuc(1:3, 3)/)
+
+  end subroutine
+
+  subroutine gradnn_ifc(n, g)
+
+#include "mxcent.h"
+#include "../abacus/cbinuc.h"
+#include "energy.h"
+
+    integer       :: n
+    real(kind_dp) :: g(3*n)
+
+    iprint = 0
+    maxdif = 1
+
+    call nucrep((0.0d0), (0.0d0), (0.0d0))
+
+    g(1:3*n) = gradnn(1:3*n)
+
+  end subroutine
+
+  subroutine mat_set_from_full(full, times, A, l)
+
+    real(kind_dp), intent(in)           :: full(*)
+    real(kind_dp), intent(in)           :: times
+    type(matrix)                        :: A
+    character(*),  intent(in), optional :: l
+!   ----------------------------------------------------------------------------
+
+    call dcopy(size(A%elms), full, 1, A%elms, 1)
+
+    if (times .ne. 1.0d0) call dscal(size(A%elms), times, A%elms, 1)
+
+  end subroutine
+
+  subroutine mat_to_full(A, times, full, l)
+
+    type(matrix),  intent(in)           :: A
+    real(kind_dp), intent(in)           :: times
+    real(kind_dp), intent(out)          :: full(*)
+    character(*),  intent(in), optional :: l
+!   ----------------------------------------------------------------------------
+
+    call dcopy(size(A%elms), A%elms, 1, full, 1)
+
+    if (times .ne. 1.0d0) call dscal(size(A%elms), times, full, 1)
+
+  end subroutine
 
   function do_dft() result(l)
 
