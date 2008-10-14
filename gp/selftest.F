@@ -20,9 +20,9 @@ C     only parts of info will changed, and we can detect this later.
      &        'LIWORK=',liwork
 #ifdef INT_STAR8
          print *,'You are using 64 bit integers in Dirac'//
-     &        ', make sure your Lapack library does the same'
+     &        ', make sure your Lapack library does the same!'
 #endif
+         print *,'Cannot continue without a working Lapack'
          call quit('Lapack test failed')
       endif
-      print *,'Lapack test ok'
       end

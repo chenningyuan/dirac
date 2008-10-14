@@ -301,6 +301,7 @@ C 3 = pretty print traceback to stdout...
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
+      WRITE (LUPRI,*) 'Intentionally causing a crash..'
       CALL FLSHFO(LUPRI)
          CALL CRASH()
       STOP 1000
