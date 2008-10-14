@@ -29,13 +29,14 @@ program dirprg
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
-#ifdef VAR_MPI 
+#ifdef VAR_MPI
 #include "mpif.h"
 #endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
   integer :: iscr_mem
-#ifdef VAR_MPI 
+  call selftest_lapack()
+#ifdef VAR_MPI
   call mpixinit()
   call stopwatch(1,numnod+1)
 #else
