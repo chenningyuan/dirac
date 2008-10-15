@@ -1214,7 +1214,7 @@ if [ $IPRINT -ge "5" ];  then
  echo '\n get_math_lib: lib_names='$lib_names
 fi
 
-question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libaries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
+question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libraries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
 
 for index in $lib_index; do 
   if [ $index -eq 0 ]; then
@@ -1354,6 +1354,20 @@ if [ -z "$LIB" -a -n "$lib_list" ]; then
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
+  $echo " Do you want Dirac to test the mathematic libraries at startup (Y/n)? \c"
+  read test_libs
+  case "$test_libs" in
+      "n" | "N")
+	  echo
+	  echo " Testing of mathematical libraries DISABLED!"
+	  echo " Make sure you know _exactly_ why you are doing this, and consider"
+	  echo " using the built-in reference libraries if you have problems with"
+	  echo " your optimized system libraries. One common problem is integer"
+	  echo " size mismatch between Dirac and BLAS/LAPACK."
+	  echo " Hit return to continue.."
+	  read
+	  cpp_f90="-DNO_SELFTEST $cpp_f90"
+  esac
 echo
 }
 

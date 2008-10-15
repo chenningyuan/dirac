@@ -35,7 +35,9 @@ program dirprg
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
   integer :: iscr_mem
+#ifndef NO_SELFTEST
   call selftest_lapack()
+#endif
 #ifdef VAR_MPI
   call mpixinit()
   call stopwatch(1,numnod+1)
