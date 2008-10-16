@@ -33,12 +33,13 @@ C     integer*8 call failed, try with integer*4
      &     IDUM2_4,0.0D0, IDUM3_4,EIG,VEC,N3_4,IDUM4_4,WORKDUM,
      &     mone_4,liwork_4,mone2_4,INFO_4)
       if (info_4.eq.0.and.liwork_4.gt.0) then
-         print *,'Call to LAPACK(DSYEVR) failed with integer*8,'//
-     &        'but worked with integer*4 arguments.'
-         print *,'However, DIRAC is configured to use integer*8.'
+         print *,'WARNING: Self test failed!'
+         print *,'Call to LAPACK(DSYEVR) failed with integer*8, but'
+         print *,'worked with integer*4 arguments. However, DIRAC is'
+         print *,'configured to use integer*8 (64 bit integers).'
+         print *,''
          print *,'You can fix this mismatch by linking to a integer*8'
          print *,'LAPACK library, or recompile DIRAC using integer*4.'
-         print *
       else
          print *,'ERRROR: Lapack integer*8 test failed with info =',
      &        INFO,'LIWORK=',liwork
@@ -49,8 +50,6 @@ C     integer*8 call failed, try with integer*4
          print *,'ERRROR: Lapack test failed with info =',INFO,
      &        'LIWORK=',liwork
 #endif
-
-         print *,'This test can be disabled in configure.'
          print *,'Cannot continue without a working LAPACK, quitting.'
          call quit('LAPACK test failed')
       endif
