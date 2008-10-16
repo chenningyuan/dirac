@@ -30,7 +30,7 @@ C     integer*8 call failed, try with integer*4
       CALL DSYEVR('V','A','U',N_4,A,N2_4,DDUM,DDUM2,IDUM_4,
      &     IDUM2_4,0.0D0, IDUM3_4,EIG,VEC,N3_4,IDUM4_4,WORKDUM,
      &     -1,liwork_4,-1,INFO_4)
-      if (info_4.eq.0.and.liwork.gt.0) then
+      if (info_4.eq.0.and.liwork_4.gt.0) then
          print *,'Call to LAPACK(DSYEVR) failed with integer*8,'//
      &        'but worked with integer*4 arguments.'
          print *,'However, DIRAC is configured to use integer*8.'
@@ -38,8 +38,10 @@ C     integer*8 call failed, try with integer*4
          print *,'LAPACK library, or recompile DIRAC using integer*4.'
          print *
       else
-         print *,'ERRROR: Lapack test failed with info =',INFO,
-     &        'LIWORK=',liwork
+         print *,'ERRROR: Lapack integer*8 test failed with info =',
+     &        INFO,'LIWORK=',liwork
+         print *,'ERRROR: Lapack integer*4 test failed with info =',
+     &        INFO,'LIWORK=',liwork
       endif
 #else
          print *,'ERRROR: Lapack test failed with info =',INFO,
