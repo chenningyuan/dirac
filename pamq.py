@@ -188,6 +188,7 @@ def process_queue_script():
  	elif queue_system=='bsub': 
 		process_bsub_script()	
  	elif queue_system=='xgrid': 
+		print
 #		process_xgrid_script()	
 	else:
 		print 'not defined queue_system=',queue_system
