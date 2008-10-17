@@ -54,3 +54,54 @@ C     integer*8 call failed, try with integer*4
          call quit('LAPACK test failed')
       endif
       end
+C
+C     MPI compatibility test
+C
+#ifdef VAR_MPI
+      subroutine selftest_mpi
+c     Call MPI routines with some small tests to see if things look ok
+      implicit real*8 (A-H,O-Z)
+#include "mpif.h"
+#include "infpar.h"
+      INTEGER MPIERR, IREQ
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+C
+C     send dummy message (from MASTER to MASTER...)
+C
+      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,0,25,
+     &               MPI_COMM_WORLD,IREQ,MPIERR)
+      CALL MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,
+     &               ISTAT,MPIERR)
+      IF( ISTAT(MPI_SOURCE) .ne. MPARID )THEN
+         print *,' *** ERROR: MPI self test failed! *** '
+         print *,' sender of message should have ID 0'
+         print *,' but has ID ',ISTAT(MPI_SOURCE)
+#ifdef INT_STAR8
+         print *,' ***********************************************'
+         print *,' DIRAC is configured to use integer*8 '
+         print *,' (64 bit integers).'
+         print *,' You need to link a MPI library that is compiled'
+         print *,' using integer*8 to fix this mismatch or you'
+         print *,' recompile DIRAC using integer*4.'
+         print *,' ***********************************************'
+#else
+         print *,' ***********************************************'
+         print *,' DIRAC is configured to use integer*4 '
+         print *,' (32 bit integers).'
+         print *,' You need to link a MPI library that is compiled'
+         print *,' using integer*4 to fix this mismatch or you'
+         print *,' recompile DIRAC using integer*8.'
+         print *,' ***********************************************'
+#endif
+         print *,' Cannot continue without a working MPI library.'
+         print *,' Quitting.'
+         CALL QUIT(' *** ERROR: MPI self test failed ***')
+      END IF
+C
+C     ... it looks ok, receive dummy message
+C
+      CALL MPI_IRECV(IMESS,1,my_MPI_INTEGER,0,MPI_ANY_TAG,
+     &                 MPI_COMM_WORLD,IREQ,MPIERR)
+      CALL MPI_WAIT(IREQ,ISTAT,MPIERR)
+      END 
+#endif
