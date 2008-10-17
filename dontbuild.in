@@ -1,6 +1,7 @@
 Files matching the regexps in this file will not be compiled
 This list starts out in dontbuild.in and is then modified by pamadm.
 This file should therefore list _everything_ that is not for release.
+build/.*
 oof/.*
 utils/.*
 aoresponse/.*

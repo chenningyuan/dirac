@@ -46,15 +46,7 @@
 #include <sys/resource.h>
 #include "patchlevel.h"
 #include "compinfo.h"
-
-
-#ifndef  NO_C99
-#include <stdint.h>
-typedef int64_t int_star_8_t;
-#else
-typedef long int_star_8_t; /* This should be long long on many machines. */
-#endif
-
+#include "fortran_interface.h"
 
 /*
  * Take string of tokens and return new ordering
@@ -108,7 +100,7 @@ static void print_time(time_t secs, FILE *dst)
 }
 
 /* Start timers, or stop and print cpu and wall time*/
-void stopwatch_(int *start, int *node_nr)
+void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 {
     static struct timeval start_wall;
     if (*start)
@@ -136,7 +128,7 @@ void stopwatch_(int *start, int *node_nr)
     }
 }
 
-void sysinf_(int *parcal)
+void sysinf_(fortran_int_t *parcal)
 
 {
    struct utsname *un;
@@ -176,9 +168,9 @@ void sysinf_(int *parcal)
 #define quit        quit_
     /* NOTE: if this does not link with the FORTRAN subroutine QUIT,
      * then try quit without the underscore */
-extern void quit(const char* str, int len);
+extern void quit(const char* str, fortran_int_t len);
 
-void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
+void compoff_(double *wrk, double *work, fortran_int8_t *k_offset) {
   *k_offset = wrk-work+1;
 /* Aug 2008: compoff_ shall always return k_offset as a FORTRAN INTEGER*8
  * so that we don't get nonsense if address difference is bigger than 31
@@ -190,7 +182,7 @@ void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
     printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
     printf( "compoff: wrk=%p work=%p diff=%d\n", wrk, work, wrk-work+1);
     printf( "k_offset=%d\n", *k_offset );
-    printf( "int %d long %d short int %d int_star_8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(int_star_8_t));
+    printf( "int %d long %d short int %d fortran_int8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(fortran_int8_t));
     quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
     exit(1);
   }
@@ -246,7 +238,7 @@ void distribute_env(const char* name, int mytid)
 #endif
 }
 
-int icommsize_(const int *istart, const int *iend)
+int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 {
   return iend-istart+1;
 }
@@ -256,7 +248,7 @@ int icommsize_(const int *istart, const int *iend)
   Workaround for buggy fortran SYSTEM() on some
   platforms (intel fortran 8.x-9.x)
 */
-int csystem_(const char *cmd, int cmdlen)
+int csystem_(const char *cmd, fortran_int_t cmdlen)
 {
   int i;
   char *s;
@@ -281,7 +273,7 @@ int csystem_(const char *cmd, int cmdlen)
 #include <time.h>
 #include <unistd.h>
 
-void unlink_(char * fname, int len)
+void unlink_(char * fname, fortran_int_t len)
 {
   int i;
   for(i=len; i>0 && !isspace(fname[i]); i--)
@@ -290,7 +282,7 @@ void unlink_(char * fname, int len)
   unlink(fname);
 }
 
-void getenv_(const char* str, char* val, int strl, int vall)
+void getenv_(const char* str, char* val, fortran_int_t strl, fortran_int_t vall)
 {
   char name[32];
   char *envv;
@@ -311,7 +303,7 @@ void getenv_(const char* str, char* val, int strl, int vall)
     val[i] = ' ';
 }
 
-void system_(char* str, int len)
+void system_(char* str, fortran_int_t len)
 {    
     char *buf = alloca(len+1);
     buf[len] = 0;
@@ -319,7 +311,7 @@ void system_(char* str, int len)
     printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
 }
 
-void flush_(int* lu)
+void flush_(fortran_int_t* lu)
 {
   /* no flushing */
 }
@@ -336,7 +328,7 @@ float etime_(float* et)
   return et[0] + et[1];
 }
 
-void fdate_(char* dt, int dtlen)
+void fdate_(char* dt, fortran_int_t dtlen)
 {
   time_t curr_time;
   time(&curr_time);
@@ -348,7 +340,7 @@ int time_(void)
   return (int)time(NULL);
 }
 
-void hostnm_(char* buf, int buflen)
+void hostnm_(char* buf, fortran_int_t buflen)
 {
   int i;
   gethostname(buf, buflen);
@@ -357,7 +349,7 @@ void hostnm_(char* buf, int buflen)
     buf[i] = ' ';
 }
 
-double* malloc_(int cnt)
+double* malloc_(fortran_int_int cnt)
 {
   return malloc(cnt);
 }

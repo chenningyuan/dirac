@@ -63,6 +63,9 @@ Makefile.dep: Makefile.obj Makefile.moddef
 	| egrep -v -f dontbuild | ./utils/mkdep.py $(DEPFPP) >> $@ 2>/dev/null
 	@find $(SOURCE_DIRS) -name '*.c' \
 	| egrep -v -f dontbuild | ./utils/mkdep.py $(DEPCPP) >> $@ 2>/dev/null
+# Add extra dependency for gpc.c on fortran_interface.h, since this file will not 
+# exist when we generate dependencies.
+	echo "gp/gpc.o: include/fortran_interface.h" >> Makefile.dep
 
 
 .PHONY:gp/compinfo.h
@@ -74,6 +77,12 @@ gp/compinfo.h:
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
 gp/gpc.o: gp/compinfo.h
+
+build/gen_fortran_interface_h: build/gen_fortran_interface_h.c
+	$(CC) $(CFLAGS) -o build/gen_fortran_interface_h $<
+
+include/fortran_interface.h: build/gen_fortran_interface_h
+	./build/gen_fortran_interface_h > include/fortran_interface.h
 
 include Makefile.obj
 include Makefile.dep
