@@ -48,6 +48,7 @@ initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
+testlibs=1 # always include libraries testing on I*4/I*8 problem
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 
@@ -429,6 +430,7 @@ usage ()  {
    echo '   --help                       : Print this'
    echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
    echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
+   echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90'
    echo '   --cc=CC                      : Set C compiler to CC'
@@ -1158,10 +1160,12 @@ setup_math_lib(){
                       optblas=$2;;
     libmkl_itp) append LIB "-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
+    libmkl_ilp64) append LIB "-L$2 -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl"
+                      optblas=$2;;
   esac
 
   if [ $IPRINT -ge "5" ];  then
-    echo 'setup_math_lib: setup variable LIB='$LIB
+    echo 'setup_math_lib: finally setup variable LIB='$LIB
   fi
   
   test_lib_arch $2
@@ -1181,6 +1185,7 @@ setup_math_lib(){
   fi
 }
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 get_math_lib(){
 # Try different versions and see how fast they are.
 
@@ -1198,6 +1203,11 @@ libs=" dirac blas$col_sep builtin$row_sep"
 libs="$libs dirac lapack$col_sep builtin$row_sep"
 
 old_lib lib_guess
+
+if [ $IPRINT -ge "5" ];  then
+  echo 'get_math_lib: lib_guess='$lib_guess
+fi
+
 search_libs libs "$math_dirs" "$lib_list"
 list_len "$libs"
 max_lib=$?
@@ -1205,13 +1215,17 @@ max_lib=$?
 default=""
 if [ -n "$lib_guess" ]; then
   remove_item libs "$lib_guess"
+
+  if [ $IPRINT -ge "5" ];  then
+    echo 'get_math_lib: after remove_item, lib_guess='$lib_guess
+  fi
+
   add_item libs "$lib_guess" default
 fi
-# If there is found more than one compiler let the user pick it.
-
 
 if [ $IPRINT -ge "5" ];  then
- echo '\n get_math_lib: lib_names='$lib_names
+ $echo '\n get_math_lib: lib_names='$lib_names
+ $echo '  get_math_lib: libs='$libs
 fi
 
 question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libraries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
@@ -1248,6 +1262,7 @@ for index in $lib_index; do
     setup_math_lib $1 $2
   fi
 done
+
 }
 
 test_lib_arch() {
@@ -1278,10 +1293,16 @@ nolib () {
    LIB=
 }
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 old_lib () {
-# Gets old libraries from Makefile.confi
+# Gets old libraries from Makefile.config
 return_libs=""
 old_libs=`./config.status "LIBS"`
+
+if [ $IPRINT -ge "5" ];  then
+ echo 'old_lib: from Makefile.config extracted old_libs='$old_libs
+fi
+
 #throw away junk and front junk
 if [ -z "$old_libs" ]; then return 0; fi
 old_libs=${old_libs#*-L}
@@ -1309,11 +1330,20 @@ while [ -n "$old_libs" ]; do
     "-lmath -lm -nx") lib_name="libmath";;
     "-lmkl_lapack -lguide -lpthread -lmkl") lib_name="libmkl";;
     "-lmkl_lapack -lmkl_ipf -lguide -ldl") lib_name="libmkl_ipf";;
+    "-lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl") lib_name="libmkl_ilp64";;
     "-lguide -lpthread -lmkl_itp") lib_name="libmkl_itp" ;;
   esac
   return_libs="$return_libs $lib_name$col_sep $lib_pwd$col_sep Previous installation$row_sep"
 done
 eval "$1=\"$return_libs\""
+
+if [ $IPRINT -ge "5" ];  then
+    echo 'old_lib: old_libs='$old_libs
+    echo 'old_lib: tmp_libs='$tmp_libs
+    echo 'old_lib: lib_name='$lib_name
+    echo 'old_lib: return_libs='$return_libs
+fi
+
 }
 
 find_mathlib ()  {
@@ -1333,7 +1363,8 @@ $echo
 #
 # libraries
 ext_list='.so .a'
-lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath libmkl libmkl_ipf libmkl_itp sunperf libveclib libdxml liblapack"
+lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath \ 
+    libmkl libmkl_ipf libmkl_itp libmkl_ilp64 sunperf libveclib libdxml liblapack"
 LIB=""
 math_dirs=$dir_list
 
@@ -1341,33 +1372,38 @@ if [ $IPRINT -ge "5" ];  then
     echo 'find_math_lib: setup math_dirs='$math_dirs
 fi
 
-# variable telling that there are both lapack and blas libraries
-# both_blas_lapack=
-
-
 if [ -z "$LIB" ]; then
   get_math_lib
 fi
 
 if [ -z "$LIB" -a -n "$lib_list" ]; then
+
+    if [ $IPRINT -ge "4" ];  then
+      echo 'find_math_lib: none lib found,      LIB='$LIB
+      echo 'find_math_lib: none lib found, lib_list='$lib_list
+    fi
+
     echo 'Mathematical libraries: none found'
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
-  $echo " Do you want Dirac to test the mathematic libraries at startup (Y/n)? \c"
-  read test_libs
-  case "$test_libs" in
-      "n" | "N")
-	  echo
-	  echo " Testing of mathematical libraries DISABLED!"
-	  echo " Make sure you know _exactly_ why you are doing this, and consider"
-	  echo " using the built-in reference libraries if you have problems with"
-	  echo " your optimized system libraries. One common problem is integer"
-	  echo " size mismatch between Dirac and BLAS/LAPACK."
-	  echo " Hit return to continue.."
-	  read
-	  cpp_f90="-DNO_SELFTEST $cpp_f90"
-  esac
+
+#
+# deal with testing of libraries ...
+#
+if [ $testlibs = 1 ]; then
+  $echo "\nTesting of Dirac mathematic libraries on Integer*4/8 problem enabled. \c"
+else
+  echo
+  echo " Testing of mathematical libraries DISABLED!"
+  echo " Make sure you know _exactly_ why you are doing this, and consider"
+  echo " using the built-in reference libraries if you have problems with"
+  echo " your optimized system libraries. One common problem is integer"
+  echo " size mismatch between Dirac and BLAS/LAPACK."
+  echo " Hit return to continue.."
+  read
+  cpp_f90="-DNO_SELFTEST $cpp_f90"
+fi
 echo
 }
 
@@ -2481,6 +2517,9 @@ while [ $# != 0 ]; do
          ;;
       "noopt")
 	 nooptim=1
+         ;;
+      "nolibtest")
+	 testlibs=0
          ;;
       "libdir" )
          if [ "${valomitted}" = "yes" ]; then
