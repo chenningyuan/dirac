@@ -40,6 +40,10 @@ program dirprg
 #endif
 #ifdef VAR_MPI
   call mpixinit()
+#ifndef NO_SELFTEST
+! MASTER checks MPI library compatibility
+  if (mytid == 0) call selftest_mpi()
+#endif
   call stopwatch(1,numnod+1)
 #else
   parcal  = .false.
