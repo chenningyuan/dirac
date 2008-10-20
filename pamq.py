@@ -21,7 +21,7 @@ class PamQVariables:
     self.local_dir='`pwd`'
     self.queue_system='pbs'
     self.queue_name='default'
-    self.nnodes=2
+    self.nnodes=1
     self.nodes_per_proc=4
 #pam_dir="`pwd`"
     self.pam_script_name="pam"
@@ -30,9 +30,8 @@ class PamQVariables:
 #  queue_script="pamq_batch_script"+str(os.getpid())
     self.queue_script="pamq_batch_script"
 
-#  os.system('`echo $HOME`')
-    os.system('echo "home ..." $HOME')
-    os.system('echo "pwd  ..." `pwd`')
+#    os.system('echo "home ..." $HOME')
+#    os.system('echo "pwd  ..." `pwd`')
   #home_dir=os.system('echo `pwd`')
  # home_dir=os.path.expanduser('~')
     self.home_dir=os.getenv("PWD")
@@ -56,8 +55,10 @@ def pamq_usage():
   print '-nosub     : do not submit, only prepare the script for batch'
   print '-i <number> : verbose print level, default',GlobalVars.iprint
   print '-qsys <queue_system> : batch system, default:','"',GlobalVars.queue_system,'"'
+  print '-ppn  <number> :  number of processors per 1 node, default:',GlobalVars.nodes_per_proc
+  print '-nodes <number> :  number of nodes, default:',GlobalVars.nnodes
   print '-jobname <queue job name> : name of the job batch system, default:... '
-  print '-pamdir <path/pam> : location of pam, default:',GlobalVars.pam_script
+  print '-pam <path/pam> : location of pam, default:',GlobalVars.pam_script
   print '             '
   print 'pam-flags are obtained using pam...'
 
@@ -76,10 +77,11 @@ def process_pbs_script():
 
   if GlobalVars.iprint >8 :
    print ' home directory:',GlobalVars.home_dir
+   print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
   f=open(GlobalVars.queue_script, 'w') # open file with queue commands
 
-  s = ''
+  s=''
   s += '''\
 #!/bin/bash
 #
@@ -88,6 +90,7 @@ def process_pbs_script():
 # job name
 #PBS -N %s
 ''' % GlobalVars.job_name
+#  print 'GlobalVars.job_name=',GlobalVars.job_name
   s += '''\
 #
 # nodes
@@ -213,10 +216,22 @@ def process_pamq_arguments():
       i=i+1	
       GlobalVars.queue_system=sys.argv[i]
       print 'obtained queue_system=',GlobalVars.queue_system
+    elif sys.argv[i]=='-ppn':
+      i=i+1	
+      GlobalVars.nodes_per_proc=sys.argv[i]
+      print 'obtained nodes_per_proc=',GlobalVars.nodes_per_proc
+    elif sys.argv[i]=='-nodes':
+      i=i+1	
+      GlobalVars.nnodes=sys.argv[i]
+      print 'obtained nodes=',GlobalVars.nnodes
     elif sys.argv[i]=='-jobname':
       i=i+1	
       GlobalVars.job_name=sys.argv[i]
       print 'obtained queue_system=',GlobalVars.job_name
+    elif sys.argv[i]=='-pam':
+      i=i+1	
+      GlobalVars.pam_script=sys.argv[i]
+      print 'obtained pam script=',GlobalVars.pam_script
     else:
       # store all remaining arguments
       if i>0:
@@ -240,8 +255,10 @@ def process_pamq_arguments():
 #########################################################################
 def main(*args):
 #  try:
-    GlobalVars = PamQVariables() 
     global GlobalVars
+    GlobalVars = PamQVariables() 
+   # global GlobalVars
+
     # some code here
     set_defaults()
 
