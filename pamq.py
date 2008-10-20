@@ -9,110 +9,96 @@
 
 import  sys, os, string
 
-
-global iprint, job_name, job_inp, job_out, loc, queue_system, queue_name, nnodes, \
-  nodes_per_proc, pam_script , queue_script, pam_arguments, submit_job, home_dir, \
-  pam_script_args
-
-def set_defaults():
-  global iprint, job_name, job_inp, job_out, loc, queue_system, queue_name, nnodes, \
- 		nodes_per_proc, pam_script, queue_script, pam_arguments, submit_job, home_dir
-
-  iprint=12
-
-  pam_arguments=' '
-
-  submit_job=1
-
-  job_name='queue_test'
-  job_inp='input_test'
-
-  job_out='job_output'
+class PamQVariables:
+  def __init__(self):
+    self.iprint=12
+    self.pam_arguments=' '
+    self.submit_job=1
+    self.job_name='queue_test'
+    self.job_inp='input_test'
+    self.job_out='job_output'
 #loc=`pwd`
-  local_dir='`pwd`'
-
-  queue_system='pbs'
-
-  queue_name='default'
-
-  nnodes=2
-  nodes_per_proc=4
-
+    self.local_dir='`pwd`'
+    self.queue_system='pbs'
+    self.queue_name='default'
+    self.nnodes=2
+    self.nodes_per_proc=4
 #pam_dir="`pwd`"
-  pam_script_name="pam"
-  pam_script_dir="~/bin"
-  pam_script=pam_script_dir + "/" + pam_script_name
-
-  queue_script="pamq_batch_script"
+    self.pam_script_name="pam"
+    self.pam_script_dir="~/bin"
+    self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
+#  queue_script="pamq_batch_script"+str(os.getpid())
+    self.queue_script="pamq_batch_script"
 
 #  os.system('`echo $HOME`')
-  os.system('echo "home ..." $HOME')
-  os.system('echo "pwd  ..." `pwd`')
+    os.system('echo "home ..." $HOME')
+    os.system('echo "pwd  ..." `pwd`')
   #home_dir=os.system('echo `pwd`')
  # home_dir=os.path.expanduser('~')
-  home_dir=os.getenv("PWD")
+    self.home_dir=os.getenv("PWD")
   #home_dir=string.join(os.system('echo `pwd`'))
  # home_dir=sys.pwd
+    if self.iprint >8 :
+      print ' setting home directory:',self.home_dir
+    print 'INITIALIZATION of class object done'
 
-  if iprint >8 :
-   print ' setting home directory:',home_dir
-
-#class queue_system:
-       # initialization
-#	def __init__():
-
-#def set_defaults():
-#	iprint=5
+def set_defaults():
+  global GlobalVars
+  print 'in set_defaults...'
 
 def pamq_usage():
-	print 'Usage: pamq.py queue-flags pam-flags [mol] [inp]'
-	print '             '
-	print '  own pamq queue-flags:'
-	print '             '
-	print '-nosub     : do not submit, only prepare the script for batch'
-	print '-i <number> : verbose print level, default',iprint
-	print '-qsys <queue_system> : batch system, default:','"',queue_system,'"'
-	print '-jobname <queue job name> : name of the job batch system, default:... '
-	print '-pamdir <path/pam> : location of pam, default:',pam_script
-	print '             '
-	print 'pam-flags are obtained using pam...'
+  global GlobalVars
+  print 'Usage: pamq.py queue-flags pam-flags [mol] [inp]'
+  print '             '
+  print '  own pamq queue-flags:'
+  print '             '
+  print '-help      : print out pam flags'
+  print '-nosub     : do not submit, only prepare the script for batch'
+  print '-i <number> : verbose print level, default',GlobalVars.iprint
+  print '-qsys <queue_system> : batch system, default:','"',GlobalVars.queue_system,'"'
+  print '-jobname <queue job name> : name of the job batch system, default:... '
+  print '-pamdir <path/pam> : location of pam, default:',GlobalVars.pam_script
+  print '             '
+  print 'pam-flags are obtained using pam...'
 
 def sumbit_job():  
 	if iprint > 7:
 		print 'submitting job'
 
 def process_pbs_script():
-  global queue_script
+  global GlobalVars
 
-  if iprint >8 :
+  if GlobalVars.iprint >8 :
     print 'prepare_pbs_script...'
 
   # unite into one local string
-  pam_script_args=pam_script+pam_arguments
-  if iprint >8 :
-   print ' home directory:',home_dir
+  GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
 
-  f=open(queue_script, 'w')
+  if GlobalVars.iprint >8 :
+   print ' home directory:',GlobalVars.home_dir
+
+  f=open(GlobalVars.queue_script, 'w') # open file with queue commands
+
   s = ''
-  s += '''
+  s += '''\
 #!/bin/bash
 #
 # Queue controls are directly readable from the submitting batch script
 #
 # job name
 #PBS -N %s
-  ''' % job_name
-  s += '''
+''' % GlobalVars.job_name
+  s += '''\
 #
 # nodes
 #PBS -l nodes=%i
-  ''' % nnodes
-  s += '''
+''' % GlobalVars.nnodes
+  s += '''\
 #
 # queue
 ##PBS -q %s
-  ''' % queue_name
-  s += '''
+''' % GlobalVars.queue_name
+  s += '''\
 #
 # unite stdout with stderr
 #PBS -j oe
@@ -120,8 +106,8 @@ def process_pbs_script():
 #
 #   queue job standard output - stdout
 #PBS -o %s
-  ''' % job_out
-  s += '''
+''' % GlobalVars.job_out
+  s += '''\
 #
 #
 # ... print out important PBS variables
@@ -137,131 +123,146 @@ echo '    PBS_JOBID='$PBS_JOBID
 echo ' PBS_NODEFILE='$PBS_NODEFILE
 echo '------------------------------------'
 #
-#   ... always change to the home directory
+# ... always change to the home directory 
+#  from where you execute DIRAC pam  
 #
 cd %s
-  ''' % home_dir
-  s += '''
+''' % GlobalVars.home_dir
+  s += '''\
 #
 #   ... execute own DIRAC pam script
 #
 %s 
-  ''' % pam_script_args
-  s += '''
+''' % GlobalVars.pam_script_args
+  s += '''\
 #
 #
-#
+# ... that's whole script, exit
 exit
-  '''
+'''
+# ... 
 
+# ... write all string to the file
   f.write(s)
   f.close()
 
  # submit job ...
-  if submit_job:
-    if iprint > 7:
-      print 'going to submit job with script ',queue_script
-    #os.system('qsub queue_script'),queue_script 
-    os.system("qsub "+queue_script)
-    #os.system('ls')
-
+  if GlobalVars.submit_job:
+    if GlobalVars.iprint > 7:
+      print 'going to submit job with prepared script ',GlobalVars.queue_script
+    os.system("qsub "+GlobalVars.queue_script)
+  else:
+    print 'job not submitting!'
 #
 #
 #
 def process_loadleveler_script():
-  if iprint > 7:
+  if GlobalVars.iprint > 7:
     print 'prepare_loadleveler_script...'
 
-
 def process_bsub_script():
-	if iprint > 7:
-		print 'preparing bsub script...'
+  if GlobalVars.iprint > 7:
+    print 'preparing bsub script...'
 
 def process_queue_script():
-	if iprint > 7:
-		print 'Going to prepare script for batch system...'
+  global GlobalVars
 
-	if queue_system=='pbs':
-		process_pbs_script()	
- 	elif queue_system=='loadleveler': 
-		process_loadleveler_script()	
- 	elif queue_system=='bsub': 
-		process_bsub_script()	
- 	elif queue_system=='xgrid': 
-		print
-#		process_xgrid_script()	
-	else:
-		print 'not defined queue_system=',queue_system
-		exit(0)
+  if GlobalVars.iprint > 7:
+    print 'Going to prepare script for batch system...'
+
+  if GlobalVars.queue_system=='pbs':
+    process_pbs_script()	
+  elif GlobalVars.queue_system=='loadleveler': 
+    process_loadleveler_script()	
+  elif GlobalVars.queue_system=='bsub': 
+    process_bsub_script()	
+  elif GlobalVars.queue_system=='xgrid': 
+    print
+#	process_xgrid_script()	
+  else:
+   print 'not defined queue_system=',GlobalVars.queue_system
+   exit(-1)
 
 
 #
-# process script arguments 
+#             process script arguments 
 #
 def process_pamq_arguments():
+  global GlobalVars
 
-  global iprint, pam_arguments, queue_system, job_name
-
-  if iprint > 7:
+  if GlobalVars.iprint > 7:
     print '\n processing arguments' 
     print 'len(sys.argv)=', len(sys.argv)
 		
-
-  i=0
 	#range_m1=range(0,len(sys.argv))-1
 	#print 'range(0,len(sys.argv))=',range(0,len(sys.argv))
 
 #	for i in range(0,len(sys.argv)):
   i=0
   while  i <  len(range(0,len(sys.argv))) :
-    if iprint > 7:
+    if GlobalVars.iprint > 7:
       print 'sys.argv[',i,']=', sys.argv[i]
     if sys.argv[i]=='-nosub':
-      print 'not submitting !'
+      GlobalVars.submit_job=0
+      print 'not submitting ! submit_job=',GlobalVars.submit_job
     elif sys.argv[i]=='-i':	
       i=i+1
-      iprint=sys.argv[i]	
-      print 'iprint=',iprint
+      GlobalVars.iprint=sys.argv[i]
+      print 'iprint=',GlobalVars.iprint
     elif sys.argv[i]=='-qsys':
       i=i+1	
-      queue_system=sys.argv[i]	
-      print 'obtained queue_system=',queue_system
+      GlobalVars.queue_system=sys.argv[i]
+      print 'obtained queue_system=',GlobalVars.queue_system
     elif sys.argv[i]=='-jobname':
       i=i+1	
-      job_name=sys.argv[i]
-      print 'obtained queue_system=',job_name
+      GlobalVars.job_name=sys.argv[i]
+      print 'obtained queue_system=',GlobalVars.job_name
     else:
       # store all remaining arguments
       if i>0:
-        pam_arguments=pam_arguments + ' ' + sys.argv[i]
-	if iprint > 7:
+        GlobalVars.pam_arguments=GlobalVars.pam_arguments + ' ' + sys.argv[i]
+	if GlobalVars.iprint > 7:
 	  print 'pam arg storing:',sys.argv[i]
-	  print 'filled pam arguments:',pam_arguments
+	  print 'filled pam arguments:',GlobalVars.pam_arguments
 			
     i = i + 1
 
-  if iprint > 7:
-    print 'remaining pam arguments:'
-    print pam_arguments
+  if GlobalVars.iprint > 7:
+
+    print 'extracted pam arguments:'
+    print GlobalVars.pam_arguments
 
   # unite into one local string
-	#  pam_script_args=pam_script+pam_arguments
+  #  pam_script_args=pam_script+pam_arguments
 
-	
+#########################################################################
+#                        MAIN FUNCTION
+#########################################################################
+def main(*args):
+#  try:
+    GlobalVars = PamQVariables() 
+    global GlobalVars
+    # some code here
+    set_defaults()
 
-#print ' ... python script'
-#
-#                   MAIN SCRIPT
-#
-#
+    if len(sys.argv) < 2 :
+      pamq_usage()
+      print 'error exit !'
+      sys.exit(2)
 
-set_defaults()
+    process_pamq_arguments()
 
-if len(sys.argv) < 2 :
-  pamq_usage()
-  exit
+    process_queue_script()
 
-process_pamq_arguments()
-
-process_queue_script()
+#  except:
+    # handle some exceptions
+#    print 'caught exception...'
+#  else:
+#    return 0 # exit errorlessly
+ 
+####
+###    process the main function
+####
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))
 
