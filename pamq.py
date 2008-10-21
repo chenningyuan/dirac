@@ -9,79 +9,127 @@
 
 import  sys, os, string
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class PamQVariables:
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def __init__(self):
-    self.iprint=12
+  #
+  #  initialize set of variables ...
+  #
+
+    # print level
+    self.iprint=1
+
     self.pam_arguments=' '
     self.submit_job=1
-    self.job_name='queue_test'
+
+    self.job_name='queue_job.'+str(os.getpid())
+
     self.job_inp='input_test'
-    self.job_out='job_output'
-#loc=`pwd`
-    self.local_dir='`pwd`'
+
+    self.job_out='queue_job.'+str(os.getpid())+'.log_out'
+
     self.queue_system='pbs'
-    self.queue_name='default'
+
+   #  self.queue_name='default'
+   # self.queue_name='workq'
+    self.queue_name='express'
+    self.queue_name_specified=0
+
+    # time 
+    self.queue_time='0:20'
+    self.queue_time_specified=0
+
+    # ... is serial job (no mpi adding)
+    self.is_serial=0
+
     self.nnodes=1
-    self.nodes_per_proc=4
-#pam_dir="`pwd`"
+    self.proc_per_node=4
     self.pam_script_name="pam"
     self.pam_script_dir="~/bin"
     self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
-#  queue_script="pamq_batch_script"+str(os.getpid())
-    self.queue_script="pamq_batch_script"
 
-#    os.system('echo "home ..." $HOME')
-#    os.system('echo "pwd  ..." `pwd`')
-  #home_dir=os.system('echo `pwd`')
- # home_dir=os.path.expanduser('~')
+    self.queue_script="pamq."+str(os.getpid())+".batch_script"
+
     self.home_dir=os.getenv("PWD")
-  #home_dir=string.join(os.system('echo `pwd`'))
- # home_dir=sys.pwd
+
     if self.iprint >8 :
       print ' setting home directory:',self.home_dir
-    print 'INITIALIZATION of class object done'
+      print 'INITIALIZATION of class object done'
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def set_pam_mpi(self):
+  #
+  # class method: set up mpi parameter for pam script
+  #
+    print 'setting mpi for pam' 
+    if GlobalVars.iprint > 7:
+      print 'set_pam_mpi: extracted pam arguments:', GlobalVars.pam_arguments
+    # print GlobalVars.pam_arguments
+
+    # extend pam flags with the necessary -mpi arguments
+    mpi_procs=GlobalVars.nnodes * GlobalVars.proc_per_node
+    GlobalVars.pam_arguments=' -mpi '+str(mpi_procs)+GlobalVars.pam_arguments
+
+    if GlobalVars.iprint > 7:
+      print 'set_pam_mpi: mpi-extended pam arguments:', GlobalVars.pam_arguments
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def set_defaults():
+#
+# TODO: read default data from some file
+#
   global GlobalVars
-  print 'in set_defaults...'
+  if GlobalVars.iprint > 7:
+     print 'in set_defaults...'
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def pamq_usage():
+#
+#
+#
   global GlobalVars
+
   print 'Usage: pamq.py queue-flags pam-flags [mol] [inp]'
   print '             '
   print '  own pamq queue-flags:'
   print '             '
-  print '-help      : print out pam flags'
-  print '-nosub     : do not submit, only prepare the script for batch'
-  print '-i <number> : verbose print level, default',GlobalVars.iprint
-  print '-qsys <queue_system> : batch system, default:','"',GlobalVars.queue_system,'"'
-  print '-ppn  <number> :  number of processors per 1 node, default:',GlobalVars.nodes_per_proc
-  print '-nodes <number> :  number of nodes, default:',GlobalVars.nnodes
-  print '-jobname <queue job name> : name of the job batch system, default:... '
-  print '-pam <path/pam> : location of pam, default:',GlobalVars.pam_script
+  print '-help                    : print out pam flags'
+  print '-nosub                   : do not submit, only prepare the script for batch'
+  print '-i <number>              : verbose print level, default: ',GlobalVars.iprint
+  print '-qsys <queue_system>     : batch system, default :','"',GlobalVars.queue_system,'"'
+  print '-q <queue>               : specify the queue, default :','"',GlobalVars.queue_name,'"'
+  print '-t <time>                : specify the time for queue job, default :',GlobalVars.queue_time
+  print '-ppn  <number>           : number of processors per 1 node, default:',GlobalVars.proc_per_node
+  print '-nodes <number>          : number of nodes, default :',GlobalVars.nnodes
+  print '-jobname <job name>      : name of the job batch system, default :','"',GlobalVars.job_name,'"'
+  print '-pam <path/pam_script>   : full location of pam, default :',GlobalVars.pam_script
   print '             '
   print 'pam-flags are obtained using pam...'
 
-def sumbit_job():  
-	if iprint > 7:
-		print 'submitting job'
-
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
+#
+#
+#   prepare the file for script and submit
+#
+#
   global GlobalVars
 
   if GlobalVars.iprint >8 :
-    print 'prepare_pbs_script...'
+     print 'in prepare_pbs_script...'
 
   # unite into one local string
   GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
 
   if GlobalVars.iprint >8 :
-   print ' home directory:',GlobalVars.home_dir
-   print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
+    print ' home directory:',GlobalVars.home_dir
+    print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
-  f=open(GlobalVars.queue_script, 'w') # open file with queue commands
+  f=open(GlobalVars.queue_script,'w') # open file with queue commands
 
-  s=''
+  s = ''
   s += '''\
 #!/bin/bash
 #
@@ -89,23 +137,52 @@ def process_pbs_script():
 #
 # job name
 #PBS -N %s
-''' % GlobalVars.job_name
-#  print 'GlobalVars.job_name=',GlobalVars.job_name
+  ''' % GlobalVars.job_name
   s += '''\
 #
-# nodes
+# number nodes (NOTE: different from number of processors specified by -mpi pam flag !)
+#
 #PBS -l nodes=%i
 ''' % GlobalVars.nnodes
-  s += '''\
+
+### if queue_name is specified, add it
+  if GlobalVars.queue_name_specified:
+    s += '''\
 #
-# queue
+# specify queue name
+#
+#PBS -q %s
+    ''' % GlobalVars.queue_name
+  else:
+    s += '''\
+#
+# queue name not specifies, using system default and inactive
+#
 ##PBS -q %s
-''' % GlobalVars.queue_name
+    ''' % GlobalVars.queue_name
+#
+# if time is specified in the input, add it
+#
+  if GlobalVars.queue_time_specified:
+    s += '''\
+#
+# specify time
+#
+#PBS -l walltime=%s
+    ''' % GlobalVars.queue_time
+  else:
+    s += '''\
+#
+# queue time not specified, using system default and inactive
+#
+##PBS -l walltime=%s
+    '''%GlobalVars.queue_time
+# ...continue ...
   s += '''\
 #
 # unite stdout with stderr
-#PBS -j oe
 #
+#PBS -j oe
 #
 #   queue job standard output - stdout
 #PBS -o %s
@@ -113,7 +190,7 @@ def process_pbs_script():
   s += '''\
 #
 #
-# ... print out important PBS variables
+# ... print out important PBS variables into standard output
 #
 echo '------------------------------------'
 echo '   PBS_O_HOME='$PBS_O_HOME
@@ -156,18 +233,29 @@ exit
     os.system("qsub "+GlobalVars.queue_script)
   else:
     print 'job not submitting!'
-#
-#
-#
+
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_loadleveler_script():
+#
+# TODO : add !
+#
   if GlobalVars.iprint > 7:
     print 'prepare_loadleveler_script...'
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_bsub_script():
+#
+# TODO : add !
+#
   if GlobalVars.iprint > 7:
     print 'preparing bsub script...'
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_queue_script():
+#
+# prepare the script according to queue syustem and submit it
+#
   global GlobalVars
 
   if GlobalVars.iprint > 7:
@@ -187,10 +275,11 @@ def process_queue_script():
    exit(-1)
 
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+def process_pamq_arguments():
 #
 #             process script arguments 
 #
-def process_pamq_arguments():
   global GlobalVars
 
   if GlobalVars.iprint > 7:
@@ -205,33 +294,80 @@ def process_pamq_arguments():
   while  i <  len(range(0,len(sys.argv))) :
     if GlobalVars.iprint > 7:
       print 'sys.argv[',i,']=', sys.argv[i]
+    #
+    #
+    #
     if sys.argv[i]=='-nosub':
       GlobalVars.submit_job=0
-      print 'not submitting ! submit_job=',GlobalVars.submit_job
+      if GlobalVars.iprint > 7:
+        print 'not submitting ! submit_job=',GlobalVars.submit_job
+    #
+    #
+    #
     elif sys.argv[i]=='-i':	
       i=i+1
-      GlobalVars.iprint=sys.argv[i]
-      print 'iprint=',GlobalVars.iprint
+      GlobalVars.iprint=int(sys.argv[i])
+      if GlobalVars.iprint > 0:
+        print 'obtained iprint=',GlobalVars.iprint
+        print 'obtained queue_system=',GlobalVars.queue_system
+    #
+    #
+    #
     elif sys.argv[i]=='-qsys':
       i=i+1	
       GlobalVars.queue_system=sys.argv[i]
-      print 'obtained queue_system=',GlobalVars.queue_system
+      if GlobalVars.iprint > 7:
+        print 'obtained queue_system=',GlobalVars.queue_system
+    #
+    #
+    #
+    elif sys.argv[i]=='-q':
+      i=i+1	
+      GlobalVars.queue_name=sys.argv[i]
+      if GlobalVars.iprint > 7:
+        print 'obtained queue_name=',GlobalVars.queue_name
+      GlobalVars.queue_name_specified=1
+    #
+    #
+    #
+    elif sys.argv[i]=='-t':
+      i=i+1	
+      GlobalVars.queue_time=sys.argv[i]
+      if GlobalVars.iprint > 7:
+        print 'obtained time=',GlobalVars.queue_time
+      GlobalVars.queue_time_specified=1
+    #
+    #
+    #
     elif sys.argv[i]=='-ppn':
       i=i+1	
-      GlobalVars.nodes_per_proc=sys.argv[i]
-      print 'obtained nodes_per_proc=',GlobalVars.nodes_per_proc
+      GlobalVars.proc_per_node=int(sys.argv[i])
+      if GlobalVars.iprint > 7:
+        print 'obtained proc_per_node=',GlobalVars.proc_per_node
+    #
+    #
+    #
     elif sys.argv[i]=='-nodes':
       i=i+1	
-      GlobalVars.nnodes=sys.argv[i]
-      print 'obtained nodes=',GlobalVars.nnodes
+      GlobalVars.nnodes=int(sys.argv[i])
+      if GlobalVars.iprint > 7:
+        print 'obtained nodes=',GlobalVars.nnodes
+    #
+    #
+    #
     elif sys.argv[i]=='-jobname':
       i=i+1	
       GlobalVars.job_name=sys.argv[i]
-      print 'obtained queue_system=',GlobalVars.job_name
+      if GlobalVars.iprint > 7:
+        print 'obtained queue_system=',GlobalVars.job_name
+    #
+    #
+    #
     elif sys.argv[i]=='-pam':
       i=i+1	
       GlobalVars.pam_script=sys.argv[i]
-      print 'obtained pam script=',GlobalVars.pam_script
+      if GlobalVars.iprint > 7:
+        print 'obtained pam script=',GlobalVars.pam_script
     else:
       # store all remaining arguments
       if i>0:
@@ -243,21 +379,25 @@ def process_pamq_arguments():
     i = i + 1
 
   if GlobalVars.iprint > 7:
-
     print 'extracted pam arguments:'
     print GlobalVars.pam_arguments
+
+  GlobalVars.set_pam_mpi()
 
   # unite into one local string
   #  pam_script_args=pam_script+pam_arguments
 
 #########################################################################
+#
 #                        MAIN FUNCTION
+#
+# MI: I had to remove error catching to be able to localize a bug in the script
+#
 #########################################################################
 def main(*args):
 #  try:
     global GlobalVars
     GlobalVars = PamQVariables() 
-   # global GlobalVars
 
     # some code here
     set_defaults()
@@ -277,9 +417,9 @@ def main(*args):
 #  else:
 #    return 0 # exit errorlessly
  
-####
-###    process the main function
-####
+###########################################################################
+###                   process the main function
+###########################################################################
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
 
