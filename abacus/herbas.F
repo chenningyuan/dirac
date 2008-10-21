@@ -1217,6 +1217,10 @@ C No documentation when end of file is found
 C
  200  CONTINUE
  1000 CONTINUE
+!radovan: this error printout below is quite annoying
+!         when you use own libraries to organize basis sets
+!         then you may get lots (nr of processors)
+!         of these messages
       WRITE (LUPRI,'(//A,I5/2A/)')
      &     'Error in reading basis set file, your basis '//
      &     'has no documentation. IOSTAT code:',IOERR,
