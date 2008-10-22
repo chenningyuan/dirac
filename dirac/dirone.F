@@ -3303,8 +3303,11 @@ C
 C
 C     Diagonalize overlap matrix
 C
+#ifdef FASTLOW
       IF (LOWJACO) THEN
+#endif
          CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+#ifdef FASTLOW
       ELSE
          CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK,IERR)
 c    QDIAG gives the reverse value ordering from RSJACO, so fix that here.
@@ -3314,6 +3317,7 @@ c    It would be better to rewrite the code below instead..
             CALL QUIT('Diagonalization of overlap matrix failed')
          ENDIF
       ENDIF
+#endif
       NV = 0
       DO I = 1,NS
         IF(EIG(I).LE.SSTOL) GOTO 10
