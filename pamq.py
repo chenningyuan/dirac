@@ -22,7 +22,7 @@ class PamQVariables:
     self.iprint=1
 
     self.pam_arguments=' '
-    self.submit_job=1
+    self.submit_job=True
 
     self.job_name='queue_job.'+str(os.getpid())
 
@@ -35,14 +35,14 @@ class PamQVariables:
    #  self.queue_name='default'
    # self.queue_name='workq'
     self.queue_name='express'
-    self.queue_name_specified=0
+    self.queue_name_specified=False
 
     # time 
     self.queue_time='0:20'
-    self.queue_time_specified=0
+    self.queue_time_specified=False
 
-    # ... is serial job (no mpi adding)
-    self.is_serial=0
+    # ... is serial job (ie no mpi adding to pam arguments !)
+    self.is_serial=False
 
     self.nnodes=1
     self.proc_per_node=4
@@ -63,10 +63,8 @@ class PamQVariables:
   #
   # class method: set up mpi parameter for pam script
   #
-    print 'setting mpi for pam' 
     if GlobalVars.iprint > 7:
       print 'set_pam_mpi: extracted pam arguments:', GlobalVars.pam_arguments
-    # print GlobalVars.pam_arguments
 
     # extend pam flags with the necessary -mpi arguments
     mpi_procs=GlobalVars.nnodes * GlobalVars.proc_per_node
@@ -97,6 +95,7 @@ def pamq_usage():
   print '             '
   print '-help                    : print out pam flags'
   print '-nosub                   : do not submit, only prepare the script for batch'
+  print '-serial                  : serial job (not mpi), default:',GlobalVars.is_serial
   print '-i <number>              : verbose print level, default: ',GlobalVars.iprint
   print '-qsys <queue_system>     : batch system, default :','"',GlobalVars.queue_system,'"'
   print '-q <queue>               : specify the queue, default :','"',GlobalVars.queue_name,'"'
@@ -138,7 +137,18 @@ def process_pbs_script():
 # job name
 #PBS -N %s
   ''' % GlobalVars.job_name
-  s += '''\
+
+#### if not serial job
+  if GlobalVars.is_serial:
+    s += '''\
+#
+# number nodes DEACTIVATED (serial job!)
+#
+##PBS -l nodes=%i
+    ''' % GlobalVars.nnodes
+  else:
+    # ... parallel job
+    s += '''\
 #
 # number nodes (NOTE: different from number of processors specified by -mpi pam flag !)
 #
@@ -156,7 +166,7 @@ def process_pbs_script():
   else:
     s += '''\
 #
-# queue name not specifies, using system default and inactive
+# queue name not specified, using system default, PBS command inactive
 #
 ##PBS -q %s
     ''' % GlobalVars.queue_name
@@ -283,24 +293,29 @@ def process_pamq_arguments():
   global GlobalVars
 
   if GlobalVars.iprint > 7:
-    print '\n processing arguments' 
+    print '\n processing all read arguments' 
     print 'len(sys.argv)=', len(sys.argv)
 		
-	#range_m1=range(0,len(sys.argv))-1
-	#print 'range(0,len(sys.argv))=',range(0,len(sys.argv))
-
-#	for i in range(0,len(sys.argv)):
+  # ... cycle - get flags
   i=0
   while  i <  len(range(0,len(sys.argv))) :
+    # print the current parameter
     if GlobalVars.iprint > 7:
       print 'sys.argv[',i,']=', sys.argv[i]
     #
     #
     #
     if sys.argv[i]=='-nosub':
-      GlobalVars.submit_job=0
+      GlobalVars.submit_job=False
       if GlobalVars.iprint > 7:
         print 'not submitting ! submit_job=',GlobalVars.submit_job
+    #
+    #
+    #
+    if sys.argv[i]=='-serial':
+      GlobalVars.is_serial=True
+      if GlobalVars.iprint > 7:
+        print 'no mpi job ! is_serial=',GlobalVars.is_serial
     #
     #
     #
@@ -326,7 +341,7 @@ def process_pamq_arguments():
       GlobalVars.queue_name=sys.argv[i]
       if GlobalVars.iprint > 7:
         print 'obtained queue_name=',GlobalVars.queue_name
-      GlobalVars.queue_name_specified=1
+      GlobalVars.queue_name_specified=True
     #
     #
     #
@@ -335,7 +350,7 @@ def process_pamq_arguments():
       GlobalVars.queue_time=sys.argv[i]
       if GlobalVars.iprint > 7:
         print 'obtained time=',GlobalVars.queue_time
-      GlobalVars.queue_time_specified=1
+      GlobalVars.queue_time_specified=True
     #
     #
     #
@@ -377,15 +392,15 @@ def process_pamq_arguments():
 	  print 'filled pam arguments:',GlobalVars.pam_arguments
 			
     i = i + 1
-
+  #
+  #
+  #
   if GlobalVars.iprint > 7:
     print 'extracted pam arguments:'
     print GlobalVars.pam_arguments
 
-  GlobalVars.set_pam_mpi()
-
-  # unite into one local string
-  #  pam_script_args=pam_script+pam_arguments
+  if not GlobalVars.is_serial:
+    GlobalVars.set_pam_mpi()
 
 #########################################################################
 #
