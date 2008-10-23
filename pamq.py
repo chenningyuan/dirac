@@ -7,7 +7,7 @@
 #  still in progrss
 #
 
-import  sys, os, string
+import  sys, os, string, optparse
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class PamQVariables:
@@ -21,7 +21,7 @@ class PamQVariables:
     # print level
     self.iprint=1
 
-    self.pam_arguments=' '
+    self.pam_arguments=''
     self.submit_job=True
 
     self.job_name='queue_job.'+str(os.getpid())
@@ -41,7 +41,7 @@ class PamQVariables:
     self.queue_time='0:20'
     self.queue_time_specified=False
 
-    # ... is serial job (ie no mpi adding to pam arguments !)
+    # ... is pure serial job (no mpi added to pam)
     self.is_serial=False
 
     self.nnodes=1
@@ -64,7 +64,9 @@ class PamQVariables:
   # class method: set up mpi parameter for pam script
   #
     if GlobalVars.iprint > 7:
+      print 'setting mpi for pam' 
       print 'set_pam_mpi: extracted pam arguments:', GlobalVars.pam_arguments
+    # print GlobalVars.pam_arguments
 
     # extend pam flags with the necessary -mpi arguments
     mpi_procs=GlobalVars.nnodes * GlobalVars.proc_per_node
@@ -72,40 +74,6 @@ class PamQVariables:
 
     if GlobalVars.iprint > 7:
       print 'set_pam_mpi: mpi-extended pam arguments:', GlobalVars.pam_arguments
-
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-def set_defaults():
-#
-# TODO: read default data from some file
-#
-  global GlobalVars
-  if GlobalVars.iprint > 7:
-     print 'in set_defaults...'
-
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-def pamq_usage():
-#
-#
-#
-  global GlobalVars
-
-  print 'Usage: pamq.py queue-flags pam-flags [mol] [inp]'
-  print '             '
-  print '  own pamq queue-flags:'
-  print '             '
-  print '-help                    : print out pam flags'
-  print '-nosub                   : do not submit, only prepare the script for batch'
-  print '-serial                  : serial job (not mpi), default:',GlobalVars.is_serial
-  print '-i <number>              : verbose print level, default: ',GlobalVars.iprint
-  print '-qsys <queue_system>     : batch system, default :','"',GlobalVars.queue_system,'"'
-  print '-q <queue>               : specify the queue, default :','"',GlobalVars.queue_name,'"'
-  print '-t <time>                : specify the time for queue job, default :',GlobalVars.queue_time
-  print '-ppn  <number>           : number of processors per 1 node, default:',GlobalVars.proc_per_node
-  print '-nodes <number>          : number of nodes, default :',GlobalVars.nnodes
-  print '-jobname <job name>      : name of the job batch system, default :','"',GlobalVars.job_name,'"'
-  print '-pam <path/pam_script>   : full location of pam, default :',GlobalVars.pam_script
-  print '             '
-  print 'pam-flags are obtained using pam...'
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
@@ -137,18 +105,7 @@ def process_pbs_script():
 # job name
 #PBS -N %s
   ''' % GlobalVars.job_name
-
-#### if not serial job
-  if GlobalVars.is_serial:
-    s += '''\
-#
-# number nodes DEACTIVATED (serial job!)
-#
-##PBS -l nodes=%i
-    ''' % GlobalVars.nnodes
-  else:
-    # ... parallel job
-    s += '''\
+  s += '''\
 #
 # number nodes (NOTE: different from number of processors specified by -mpi pam flag !)
 #
@@ -166,7 +123,8 @@ def process_pbs_script():
   else:
     s += '''\
 #
-# queue name not specified, using system default, PBS command inactive
+#
+# queue name not specifies, using system default and inactive
 #
 ##PBS -q %s
     ''' % GlobalVars.queue_name
@@ -175,6 +133,7 @@ def process_pbs_script():
 #
   if GlobalVars.queue_time_specified:
     s += '''\
+#
 #
 # specify time
 #
@@ -195,6 +154,7 @@ def process_pbs_script():
 #PBS -j oe
 #
 #   queue job standard output - stdout
+#
 #PBS -o %s
 ''' % GlobalVars.job_out
   s += '''\
@@ -287,119 +247,178 @@ def process_queue_script():
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pamq_arguments():
+#----------------------------------------------------------------------------------------
 #
-#             process script arguments 
+#   process script arguments 
 #
+#----------------------------------------------------------------------------------------
   global GlobalVars
+  from optparse import OptionParser
 
-  if GlobalVars.iprint > 7:
-    print '\n processing all read arguments' 
-    print 'len(sys.argv)=', len(sys.argv)
-		
-  # ... cycle - get flags
-  i=0
-  while  i <  len(range(0,len(sys.argv))) :
-    # print the current parameter
+  usage = "usage: %prog [pamq_options] pam_arg1 pam_arg2..."
+  parser = OptionParser(usage)
+
+  #  fill GlobalVars.pam_script
+  pam_script_add="location of pam script, default:"+GlobalVars.pam_script
+  parser.add_option("-p", "--pam", type="string", nargs=1,dest="dest_pam",default=GlobalVars.pam_script,
+                  help=pam_script_add, metavar="STRING")
+
+  #  fill GlobalVars.pam_arguments
+  dest_pam_arguments=" pam arguments (like '"' -noarch [*.mol] [*.inp]'"')"
+  parser.add_option("--pam_args", type="string", dest="dest_pam_args",
+                  help=dest_pam_arguments, metavar="'"'arg1 arg2 ... '"' ")
+
+  # ... get in the print level 
+  iprint_label='script verbose print level, default:'+str(GlobalVars.iprint)
+  parser.add_option("-i", "--iprint", type="int", nargs=1,  
+                  action="store", dest="dest_iprint", default=GlobalVars.iprint, 
+                  help=iprint_label, metavar="INT_NUM")
+
+  # ... do not submit flag
+  bool_submit=str(GlobalVars.submit_job)
+  nosub_label='do not submit job, prepare only the queue script for batch, default-submit:'+bool_submit
+  parser.add_option("--nosub", action="store_false", default=GlobalVars.submit_job,
+                     dest="dest_nosub", help=nosub_label) 
+
+  # ... specify as serial (no mpi)
+  bool_serial=str(GlobalVars.is_serial)
+  serial_label='submit job as serial (no mpi), default:'+bool_serial
+  parser.add_option("-s","--serial", action="store_true",default=GlobalVars.is_serial,
+                     dest="dest_is_serial", help=serial_label) 
+
+  #  ... get number of nodes
+  nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)
+  parser.add_option("-n", "--nodes", type="int",  nargs=1,
+                  action="store",dest="dest_nnodes", default=GlobalVars.nnodes, 
+                  help=nodes_label, metavar="INT_NUM")
+
+  # ... GlobalVars.queue_system
+  queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
+  parser.add_option( "--qsys", type="str", nargs=1,
+                  action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
+                  help=queue_system_label,metavar="STRING")
+
+  # ... GlobalVars.queue_name
+  queue_label='specify the queue, default :'+GlobalVars.queue_name
+  parser.add_option("-q", "--queue", type="string", nargs=1,
+                  action="store", dest="dest_queue_name", default=GlobalVars.queue_name, \
+                  help=queue_label,metavar="STRING")
+
+  # ... GlobalVars.queue_time
+  queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
+  parser.add_option("-t", "--time", type="string", nargs=1,
+                 # action="store", dest="dest_queue_time", default=GlobalVars.queue_time, \
+                  action="store", dest="dest_queue_time", 
+                  help=queue_time_label,metavar="STRING")
+
+  # ... GlobalVars.proc_per_node
+  queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
+  parser.add_option("--ppn", type="int", nargs=1,
+                 # action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
+                  action="store", dest="dest_ppn", 
+                  help=queue_ppn_label, metavar="STRING")
+
+  ###################################################################################################
+  #
+  #                                    ... finally assign
+  #
+  ###################################################################################################
+  (options, args) = parser.parse_args()
+
+# .. now assign individual arguments 
+
+  if GlobalVars.iprint > 5:
+    print '\n processing arguments:  len(sys.argv)=', len(sys.argv) 
+
+  if (options.dest_iprint is not None) :
+    GlobalVars.iprint=int(options.dest_iprint)
     if GlobalVars.iprint > 7:
-      print 'sys.argv[',i,']=', sys.argv[i]
-    #
-    #
-    #
-    if sys.argv[i]=='-nosub':
-      GlobalVars.submit_job=False
-      if GlobalVars.iprint > 7:
-        print 'not submitting ! submit_job=',GlobalVars.submit_job
-    #
-    #
-    #
-    if sys.argv[i]=='-serial':
-      GlobalVars.is_serial=True
-      if GlobalVars.iprint > 7:
-        print 'no mpi job ! is_serial=',GlobalVars.is_serial
-    #
-    #
-    #
-    elif sys.argv[i]=='-i':	
-      i=i+1
-      GlobalVars.iprint=int(sys.argv[i])
-      if GlobalVars.iprint > 0:
-        print 'obtained iprint=',GlobalVars.iprint
-        print 'obtained queue_system=',GlobalVars.queue_system
-    #
-    #
-    #
-    elif sys.argv[i]=='-qsys':
-      i=i+1	
-      GlobalVars.queue_system=sys.argv[i]
-      if GlobalVars.iprint > 7:
-        print 'obtained queue_system=',GlobalVars.queue_system
-    #
-    #
-    #
-    elif sys.argv[i]=='-q':
-      i=i+1	
-      GlobalVars.queue_name=sys.argv[i]
-      if GlobalVars.iprint > 7:
-        print 'obtained queue_name=',GlobalVars.queue_name
-      GlobalVars.queue_name_specified=True
-    #
-    #
-    #
-    elif sys.argv[i]=='-t':
-      i=i+1	
-      GlobalVars.queue_time=sys.argv[i]
-      if GlobalVars.iprint > 7:
-        print 'obtained time=',GlobalVars.queue_time
-      GlobalVars.queue_time_specified=True
-    #
-    #
-    #
-    elif sys.argv[i]=='-ppn':
-      i=i+1	
-      GlobalVars.proc_per_node=int(sys.argv[i])
-      if GlobalVars.iprint > 7:
-        print 'obtained proc_per_node=',GlobalVars.proc_per_node
-    #
-    #
-    #
-    elif sys.argv[i]=='-nodes':
-      i=i+1	
-      GlobalVars.nnodes=int(sys.argv[i])
-      if GlobalVars.iprint > 7:
-        print 'obtained nodes=',GlobalVars.nnodes
-    #
-    #
-    #
-    elif sys.argv[i]=='-jobname':
-      i=i+1	
-      GlobalVars.job_name=sys.argv[i]
-      if GlobalVars.iprint > 7:
-        print 'obtained queue_system=',GlobalVars.job_name
-    #
-    #
-    #
-    elif sys.argv[i]=='-pam':
-      i=i+1	
-      GlobalVars.pam_script=sys.argv[i]
-      if GlobalVars.iprint > 7:
-        print 'obtained pam script=',GlobalVars.pam_script
-    else:
-      # store all remaining arguments
-      if i>0:
-        GlobalVars.pam_arguments=GlobalVars.pam_arguments + ' ' + sys.argv[i]
-	if GlobalVars.iprint > 7:
-	  print 'pam arg storing:',sys.argv[i]
-	  print 'filled pam arguments:',GlobalVars.pam_arguments
-			
-    i = i + 1
-  #
-  #
-  #
-  if GlobalVars.iprint > 7:
-    print 'extracted pam arguments:'
-    print GlobalVars.pam_arguments
+      print 'assigned GlobalVars.iprint=',GlobalVars.iprint
 
-  if not GlobalVars.is_serial:
+  # number of nodes
+  if (options.dest_nnodes is not None) :
+    GlobalVars.nnodes=int(options.dest_nnodes)
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.nnodes=',GlobalVars.nnodes
+
+  # about submitting job
+  if (options.dest_nosub is not None) :
+    GlobalVars.submit_job=options.dest_nosub
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.submit_job=',GlobalVars.submit_job
+
+  #  bout no mpi stuff for pam 
+  if (options.dest_is_serial is not None) :
+    GlobalVars.is_serial=options.dest_is_serial
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.is_serial=',GlobalVars.is_serial
+
+  if (options.dest_pam is not None) :
+    GlobalVars.pam_script=options.dest_pam
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.pam_script=',GlobalVars.pam_script
+
+  # ... deal with pam arguments
+  if (options.dest_pam_args is not None) :
+    GlobalVars.pam_arguments=options.dest_pam_args
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.pam_arguments=',GlobalVars.pam_script
+  else :
+    GlobalVars.submit_job=False
+    print 'warning: no pam arguments in the script - not submitting ! '
+
+  # ... deal with queue_name
+  if (options.dest_queue_name is not None) :
+    GlobalVars.queue_name=options.dest_queue_name
+    GlobalVars.queue_name_specified=True
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.queue_name=',GlobalVars.queue_name
+      print 'assigned GlobalVars.queue_name_specified=',GlobalVars.queue_name_specified
+
+  # ... deal with the queue_system
+  if (options.dest_queue_system is not None) :
+    GlobalVars.queue_system=options.dest_queue_system
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.queue_system=',GlobalVars.queue_system
+
+  # ... deal with processors per node
+  if (options.dest_ppn is not None) :
+    GlobalVars.proc_per_node=options.dest_ppn
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.proc_per_node=',GlobalVars.proc_per_node
+
+  # ... deal with queue_time
+  if (options.dest_queue_time is not None) :
+    GlobalVars.queue_time=options.dest_queue_time
+    GlobalVars.queue_time_specified=True
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.queue_time=',GlobalVars.queue_name
+      print 'assigned GlobalVars.queue_time_specified=',GlobalVars.queue_time_specified
+
+#  if len(args) < 3:
+#    parser.error("incorrect number of arguments")
+
+  if (len(parser.largs)>0) :
+    print 'warning: leftover arguments:',parser.largs  
+
+  if GlobalVars.iprint > 8 :
+    print '\n processing arguments' 
+    print 'len(sys.argv)=', len(sys.argv)
+    for i in range(len(sys.argv)) :
+      print i,sys.argv[i]
+		
+  #------------------------------------------------------------------------
+  #      collect all left pamq.py argumnents into  pam_arguments
+  #------------------------------------------------------------------------
+  for item in parser.largs:
+    GlobalVars.pam_arguments= GlobalVars.pam_arguments+' '+item
+  GlobalVars.pam_arguments=' '+GlobalVars.pam_arguments
+
+  if GlobalVars.iprint > 7:
+    print 'extracted pam arguments:',GlobalVars.pam_arguments
+
+  # set mpi for pam 
+  if not GlobalVars.is_serial :
     GlobalVars.set_pam_mpi()
 
 #########################################################################
@@ -415,12 +434,12 @@ def main(*args):
     GlobalVars = PamQVariables() 
 
     # some code here
-    set_defaults()
+   # set_defaults()
 
-    if len(sys.argv) < 2 :
-      pamq_usage()
-      print 'error exit !'
-      sys.exit(2)
+  #  if len(sys.argv) < 2 :
+  #    pamq_usage()
+  #    print 'error exit !'
+  #    sys.exit(2)
 
     process_pamq_arguments()
 
