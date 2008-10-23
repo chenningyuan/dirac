@@ -370,6 +370,8 @@ def process_pamq_arguments():
   else :
     GlobalVars.submit_job=False
     print 'warning: no pam arguments in the script - not submitting ! '
+    print 'type: "',sys.argv[0],'-h" for help'
+    #print options.get_help()
 
   # ... deal with queue_name
   if (options.dest_queue_name is not None) :
