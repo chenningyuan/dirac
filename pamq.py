@@ -45,12 +45,16 @@ class PamQVariables:
     self.is_serial=False
 
     self.nnodes=1
-    self.proc_per_node=4
+
+   # self.proc_per_node=4
+    self.proc_per_node=1
+
     self.pam_script_name="pam"
     self.pam_script_dir="~/bin"
     self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
 
-    self.queue_script="pamq."+str(os.getpid())+".batch_script"
+   # self.queue_script="pamq."+str(os.getpid())+".batch_script"
+    self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
     self.home_dir=os.getenv("PWD")
 
@@ -100,9 +104,12 @@ def process_pbs_script():
   s += '''\
 #!/bin/bash
 #
-# Queue controls are directly readable from the submitting batch script
+#         Queue controls are directly readable from the submitting batch script
+#----------------------------------------------------------------------------------------
 #
-# job name
+#
+#     job name
+#
 #PBS -N %s
   ''' % GlobalVars.job_name
   s += '''\
@@ -112,7 +119,9 @@ def process_pbs_script():
 #PBS -l nodes=%i
 ''' % GlobalVars.nnodes
 
-### if queue_name is specified, add it
+#
+#   if the queue_name is specified in the input, add it
+#
   if GlobalVars.queue_name_specified:
     s += '''\
 #
@@ -124,12 +133,12 @@ def process_pbs_script():
     s += '''\
 #
 #
-# queue name not specifies, using system default and inactive
+# queue name not specified (command incative), using queue system default 
 #
 ##PBS -q %s
     ''' % GlobalVars.queue_name
 #
-# if time is specified in the input, add it
+#  if time is specified in the input, add it
 #
   if GlobalVars.queue_time_specified:
     s += '''\
@@ -163,15 +172,23 @@ def process_pbs_script():
 # ... print out important PBS variables into standard output
 #
 echo '------------------------------------'
-echo '   PBS_O_HOME='$PBS_O_HOME
-echo '   PBS_O_HOST='$PBS_O_HOST
-echo '   PBS_SERVER='$PBS_SERVER
-echo '  PBS_O_QUEUE='$PBS_O_QUEUE
-echo 'PBS_O_WORKDIR='$PBS_O_WORKDIR
-echo '  PBS_JOBNAME='$PBS_JOBNAME
-echo '    PBS_JOBID='$PBS_JOBID
-echo ' PBS_NODEFILE='$PBS_NODEFILE
+echo '  *** PBS control variables ***  ' 
 echo '------------------------------------'
+echo '  $ PBS_O_HOME='$PBS_O_HOME
+echo '   $PBS_O_HOST='$PBS_O_HOST
+echo '   $PBS_SERVER='$PBS_SERVER
+echo '  $PBS_O_QUEUE='$PBS_O_QUEUE
+echo '$PBS_O_WORKDIR='$PBS_O_WORKDIR
+echo '  $PBS_JOBNAME='$PBS_JOBNAME
+echo '    $PBS_JOBID='$PBS_JOBID
+echo ' $PBS_NODEFILE='$PBS_NODEFILE
+echo '------------------------------------'
+#
+#
+echo ''
+echo '****  assigned nodes (content of the $PBS_NODEFILE): ****'
+cat $PBS_NODEFILE
+echo ''
 #
 # ... always change to the home directory 
 #  from where you execute DIRAC pam  
@@ -198,15 +215,20 @@ exit
 
  # submit job ...
   if GlobalVars.submit_job:
-    if GlobalVars.iprint > 7:
-      print 'going to submit job with prepared script ',GlobalVars.queue_script
-    os.system("qsub "+GlobalVars.queue_script)
+    if GlobalVars.iprint >= 0 :
+      print '\ngoing to submit job with prepared script:',GlobalVars.queue_script
+      print '            standard output file will be:',GlobalVars.job_out
+      print '                  queue job name will be:',GlobalVars.job_name,'\n'
+
+    os.system("qsub "+GlobalVars.queue_script) # submitting !
+    # ... some info ...
     os.system("echo '  -  Current user-status on queueing-system : '")
     os.system("echo 'Job id           Name             User             Time Use S Queue'")
     os.system("echo '---------------- ---------------- ---------------- -------- - -----'")
     os.system("qstat | grep $USER")
   else:
-    print 'job not submitting!'
+    print '\n not submitting,prepared only the script for the batch system:',GlobalVars.queue_script
+    print ''
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -298,18 +320,28 @@ def process_pamq_arguments():
 
   # ... GlobalVars.queue_system
   queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
+#  queue_system_label='specify the queue system, none default '
   parser.add_option( "--qsys", type="str", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label,metavar="STRING")
 
+  # ... GlobalVars.job_name
+  queue_job_name_label='specify the name for the queue run, default:'+"'"+GlobalVars.job_name+"'"
+  parser.add_option( "--name", type="str", nargs=1,
+                  action="store",dest="dest_queue_job_name",  
+                  help=queue_job_name_label,metavar="STRING")
+
   # ... GlobalVars.queue_name
-  queue_label='specify the queue, default :'+GlobalVars.queue_name
+ # queue_label='specify the queue, default :'+GlobalVars.queue_name
+  queue_label='specify the queue (no default)'
   parser.add_option("-q", "--queue", type="string", nargs=1,
-                  action="store", dest="dest_queue_name", default=GlobalVars.queue_name, \
+                #  action="store", dest="dest_queue_name", default=GlobalVars.queue_name, \
+                  action="store", dest="dest_queue_name", 
                   help=queue_label,metavar="STRING")
 
   # ... GlobalVars.queue_time
-  queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
+ # queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
+  queue_time_label='specify the time in the queue (no default)'
   parser.add_option("-t", "--time", type="string", nargs=1,
                  # action="store", dest="dest_queue_time", default=GlobalVars.queue_time, \
                   action="store", dest="dest_queue_time", 
@@ -334,6 +366,13 @@ def process_pamq_arguments():
   if GlobalVars.iprint > 5:
     print '\n processing arguments:  len(sys.argv)=', len(sys.argv) 
 
+  # ... handle queue job name
+  if (options.dest_queue_job_name is not None) :
+    GlobalVars.job_name=options.dest_queue_job_name
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.job_name=',GlobalVars.job_name
+
+  # ... handle iprint
   if (options.dest_iprint is not None) :
     GlobalVars.iprint=int(options.dest_iprint)
     if GlobalVars.iprint > 7:
@@ -357,6 +396,7 @@ def process_pamq_arguments():
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.is_serial=',GlobalVars.is_serial
 
+  # ... handle pam directory
   if (options.dest_pam is not None) :
     GlobalVars.pam_script=options.dest_pam
     if GlobalVars.iprint > 7:
