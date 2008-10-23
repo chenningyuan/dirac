@@ -201,6 +201,10 @@ exit
     if GlobalVars.iprint > 7:
       print 'going to submit job with prepared script ',GlobalVars.queue_script
     os.system("qsub "+GlobalVars.queue_script)
+    os.system("echo '  -  Current user-status on queueing-system : '")
+    os.system("echo 'Job id           Name             User             Time Use S Queue'")
+    os.system("echo '---------------- ---------------- ---------------- -------- - -----'")
+    os.system("qstat | grep $USER")
   else:
     print 'job not submitting!'
 
