@@ -1260,6 +1260,11 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
+#ifdef MOD_LOG
+         call matexport_text('% In SCFCYC1')
+         call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
+     &        NTBAS(0),NTBAS(0),NZ)
+#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C

@@ -21,7 +21,7 @@
 #
 usage()
 {
-   echo 'Usage: pamadm [flags] tarfile'
+   echo 'Usage: pamadm [flags] [tarfile]'
    echo '   Flags:'
    echo '     -adm             : Include ALL modules (administrator)'
    echo '     -dft             : Include DFT module'
@@ -46,7 +46,8 @@ usage()
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     -adc             : Include ADC electron propagator module'
    echo '     -ecp             : Include ARGOS ECP module'
-   echo '     tarfile=make     : only generate new Makefile'
+   echo '     -log             : Enable matrix logging in Matlab format'
+   echo '     tarfile          : Name of export archive to create (if any)'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
 }
 #
@@ -326,6 +327,10 @@ setup()
        #  echo "OOF module not included"
        echo 
    fi
+   if [ -n "$LOGMOD" ]; then
+       LOG_FLG=-DMOD_LOG
+       echo ' - Will log interesting matrices in matlab format (very verbose!)'
+   fi
 ############################################################################
 #
 #           Add print-out on active Fotran90/95 modularity model
@@ -597,7 +602,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -813,6 +818,9 @@ while [ -n "$1" ]; do
       -oof)
          OOFMOD=1
 	 MODULES=1
+         ;;
+      -log)
+	 LOGMOD=1
          ;;
       -*)
          echo "Option \"$1\" not recognized."

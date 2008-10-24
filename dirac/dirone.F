@@ -3300,6 +3300,10 @@ C
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,1,LUPRI)
         write(lupri,*)
       ENDIF
+#ifdef MOD_LOG
+      call matexport_text('% Entering LOWGEN')
+      call matexport_double2('S',SMAT,LDM,NS,NS)
+#endif
 C
 C     Diagonalize overlap matrix
 C
@@ -3349,6 +3353,12 @@ C
         CALL HEADER('LOWGEN: Canonical Lowdin matrix:',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
+
+#ifdef MOD_LOG
+      call matexport_double2('V',VMAT,LDM,NS,NV)
+      call matexport_text('% Leaving LOWGEN')
+#endif
+
       CALL QEXIT('LOWGEN')
       RETURN
       END
