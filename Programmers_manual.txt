@@ -4,6 +4,9 @@ Lucas Visscher
 
 some additions by Christoph Jacob
 
+Note October 2008: The make file system has changed and is not related to 
+                   pamadm anymore. - ulfek.
+
 CHAPTER 1 : SCRIPTS AND MAINTENANCE
 
 The DIRAC programme system is maintained using the CVS and contains a number of shell 
