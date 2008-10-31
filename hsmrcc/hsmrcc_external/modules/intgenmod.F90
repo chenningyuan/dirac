@@ -24,7 +24,7 @@ contains
 subroutine DrvIntGen
 !--------------------------------------------------------------------------------
 !
-!          called from 'main' HSMRCC routine (source/hsmrcc.F90)
+!         called from main F90 'HSMRCC' routine (source/hsmrcc.F90)
 !
 !--------------------------------------------------------------------------------
    use TimingMod
@@ -33,6 +33,7 @@ subroutine DrvIntGen
    integer :: GenIntBufSize
    integer :: i
    logical :: isMR2EINT
+   character*20 :: integ_label
 
    ! ... Progress Report on Integral Generation ...
 
@@ -117,50 +118,72 @@ subroutine DrvIntGen
 
    call StartTiming
    StVRec = 1 ! ... starting position of integral record...
+ 
+   integ_label='2H2P'
    call IntFileGen(TimeTaken(:,V2H2P),RecLen(V2H2P),NumRec(V2H2P),StVRec,          &
                    StartRec(V2H2P),EndngRec(V2H2P),TotNZInt(V2H2P),NZIntRec_V2H2P, &
                    SIB_V2H2P,ResRecHP,RecNumHP,RecNumHP,                           &
-                   SetQRangeHP,SetRRangeHP,SetSRangeHP,PackRSHP)
+                   SetQRangeHP,SetRRangeHP,SetSRangeHP,PackRSHP,integ_label)
+   
+   integ_label='PPPP'
    call IntFileGen(TimeTaken(:,VPPPP),RecLen(VPPPP),NumRec(VPPPP),StVRec,          &
                    StartRec(VPPPP),EndngRec(VPPPP),TotNZInt(VPPPP),NZIntRec_VPPPP, &
                    SIB_VPPPP,ResRecMM,RecNumMM,RecNumMM,                           &
-                   SetQRangeMM,SetRRangePP,SetSRangeMM,PackRSMM)
+                   SetQRangeMM,SetRRangePP,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='HHHH'
    call IntFileGen(TimeTaken(:,VHHHH),RecLen(VHHHH),NumRec(VHHHH),StVRec,          &
                    StartRec(VHHHH),EndngRec(VHHHH),TotNZInt(VHHHH),NZIntRec_VHHHH, &
                    SIB_VHHHH,ResRecMM,RecNumMM,RecNumMM,                           &
-                   SetQRangeMM,SetRRangeHH,SetSRangeMM,PackRSMM)
+                   SetQRangeMM,SetRRangeHH,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='HHPP'
    call IntFileGen(TimeTaken(:,VHHPP),RecLen(VHHPP),NumRec(VHHPP),StVRec,          &
                    StartRec(VHHPP),EndngRec(VHHPP),TotNZInt(VHHPP),NZIntRec_VHHPP, &
                    SIB_VHHPP,ResRecMM,RecNumMM,RecNumMM,                           &
-                   SetQRangeMM,SetRRangePP,SetSRangeMM,PackRSMM)
+                   SetQRangeMM,SetRRangePP,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='2HPP'
    call IntFileGen(TimeTaken(:,V2HPP),RecLen(V2HPP),NumRec(V2HPP),StVRec,          &
                    StartRec(V2HPP),EndngRec(V2HPP),TotNZInt(V2HPP),NZIntRec_V2HPP, &
                    SIB_V2HPP,ResRec2H,RecNum2H,RecNumMM,                           &
-                   SetQRange2H,SetRRangePP,SetSRangeMM,PackRSMM)
+                   SetQRange2H,SetRRangePP,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='2PHH'
    call IntFileGen(TimeTaken(:,V2PHH),RecLen(V2PHH),NumRec(V2PHH),StVRec,          &
                    StartRec(V2PHH),EndngRec(V2PHH),TotNZInt(V2PHH),NZIntRec_V2PHH, &
                    SIB_V2PHH,ResRec2P,RecNum2P,RecNumMM,                           &
-                   SetQRange2P,SetRRangeHH,SetSRangeMM,PackRSMM)
+                   SetQRange2P,SetRRangeHH,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='PHHP'
    call IntFileGen(TimeTaken(:,VPHHP),RecLen(VPHHP),NumRec(VPHHP),StVRec,          &
                    StartRec(VPHHP),EndngRec(VPHHP),TotNZInt(VPHHP),NZIntRec_VPHHP, &
                    SIB_VPHHP,ResRecHP,RecNumHP,RecNumHP,                           &
-                   SetQRangeHP,SetRRangeHP,SetSRangeHP,PackRSHP)
+                   SetQRangeHP,SetRRangeHP,SetSRangeHP,PackRSHP,integ_label)
+
+   integ_label='PH2P'
    call IntFileGen(TimeTaken(:,VPH2P),RecLen(VPH2P),NumRec(VPH2P),StVRec,          &
                    StartRec(VPH2P),EndngRec(VPH2P),TotNZInt(VPH2P),NZIntRec_VPH2P, &
                    SIB_VPH2P,ResRec2P,RecNum2P,RecNumHP,                           &
-                   SetQRange2P,SetRRangeHP,SetSRangeHP,PackRSHP)
+                   SetQRange2P,SetRRangeHP,SetSRangeHP,PackRSHP,integ_label)
+
+   integ_label='PHPP'
    call IntFileGen(TimeTaken(:,VPHPP),RecLen(VPHPP),NumRec(VPHPP),StVRec,          &
                    StartRec(VPHPP),EndngRec(VPHPP),TotNZInt(VPHPP),NZIntRec_VPHPP, &
                    SIB_VPHPP,ResRecPH,RecNumPH,RecNumMM,                           &
-                   SetQRangePH,SetRRangePP,SetSRangeMM,PackRSMM)
+                   SetQRangePH,SetRRangePP,SetSRangeMM,PackRSMM,integ_label)
+
+   integ_label='2HHP'
    call IntFileGen(TimeTaken(:,V2HHP),RecLen(V2HHP),NumRec(V2HHP),StVRec,          &
                    StartRec(V2HHP),EndngRec(V2HHP),TotNZInt(V2HHP),NZIntRec_V2HHP, &
                    SIB_V2HHP,ResRec2H,RecNum2H,RecNumHP,                           &
-                   SetQRange2H,SetRRangeHP,SetSRangeHP,PackRSHP)
+                   SetQRange2H,SetRRangeHP,SetSRangeHP,PackRSHP,integ_label)
+
+   integ_label='HHHP'
    call IntFileGen(TimeTaken(:,VHHHP),RecLen(VHHHP),NumRec(VHHHP),StVRec,          &
                    StartRec(VHHHP),EndngRec(VHHHP),TotNZInt(VHHHP),NZIntRec_VHHHP, &
                    SIB_VHHHP,ResRecMM,RecNumMM,RecNumHP,                           &
-                   SetQRangeMM,SetRRangeHP,SetSRangeHP,PackRSHP)
+                   SetQRangeMM,SetRRangeHP,SetSRangeHP,PackRSHP,integ_label)
 
    if ( get_iprint() >= 7) then
      write(UOUT,'(2x,a)') 'DrvIntGen: all two-el.integrals done'
@@ -195,7 +218,7 @@ subroutine DrvIntGen
 
    deallocate(GenIntBuf) ! ... deallocate big buffer memory ...
 
-   close(UMR2EINT)
+   close(UMR2EINT) ! ... close Gamess 2-el. integrals file
 
    return
 
@@ -235,7 +258,9 @@ subroutine SIB_V2H2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    ! Now the given integral is
    ! in the current block.
 
+   ! ... calculate buffer index
    BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + B
+   ! ... store the <IJ||AB> integral
    GenIntBuf(BufInd) = AsyInt
 
    return
@@ -584,7 +609,7 @@ subroutine SIB_VHHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    I = P
    J = Q
    K = R
-   A = S - NCMO
+   A = S - NCMO ! substract occup.shells
 
    RecNum = MAXMIN(I,J)
    if ( RecNum < StRec ) return
@@ -1180,16 +1205,17 @@ end subroutine  written_int_ind
 subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                               StartRec,EndngRec,TotNZInt,NZIntRec,         &
                               SetIntBuf,ResolvRec,RecordNumPQ,RecordNumRS, &
-                              SetQRange,SetRRange,SetSRange,PackRS)
+                              SetQRange,SetRRange,SetSRange,PackRS,integ_label)
 !--------------------------------------------------------------------------------------------------------
 !
 !  routine is repeatedly reading Gamess integral file  FileMR2EINT (TRIM(IFile)//'.F296'; lu=UMR2EINT)
+!  and prepares 2-electron integral files for the HSMRCC run :
+!  FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
 !
-! and prepares 2-electron integral files for the HSMRCC run :
-!
-!       FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
-!
-!    - these are to be mimic by DIRAC !
+!  These are to be produced by DIRAC !
+!  
+!  
+!  SetIntBuf - SIB_Vxxxx routine which places integral on the buffer array  
 !  
 !   
 !  Called from: DrvIntGen ("intgenmod.F90")  
@@ -1203,8 +1229,10 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    integer, intent(out)   :: StartRec, EndngRec, TotNZInt
    integer, intent(inout) :: StVRec
    integer, intent(out)   :: NZIntRec(NumRec)
+   character*20, intent(in) :: integ_label
    ! ... Dummy Procedure and Function Interfaces
    interface
+      ! ... called as SIB_Vxxxx 
       subroutine SetIntBuf(St,En,RL,P,Q,R,S,VInt)
          implicit none
          integer, intent(in) :: St, En, RL
@@ -1264,8 +1292,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    external :: dtime
 
    if (get_iprint() >= 5) then
-      call header('Output from IntFileGen_TwoBody',-1)
-      write(UOUT,'(2x,3(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,'...EndngRec=',EndngRec
+     call header('Output from IntFileGen_TwoBody',-1)
+     write(UOUT,'(2x,3(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,'...EndngRec=',EndngRec
+     write(UOUT,'(5x,a,a)') 'integral type:',integ_label
    endif
 
    dtim = dtime(tarray)
@@ -1274,8 +1303,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    ! into the buffer.
    BufSize = SIZE(GenIntBuf)
    if ( BufSize < RecLen ) then
-      !stop 'Buffer must be big enough to contain a record'
-      call quit('IntFileGen_TwoBody: Buffer must be big enough to contain a record')
+      write(UOUT,*) 'BufSize >= RecLen!  BufSize,RecLen:',BufSize, RecLen 
+      call quit('IntFileGen_TwoBody: Buffer must be big enough to contain a record !')
    endif
    NumRecBuf = BufSize/RecLen
    NumBlocks = NumRec/NumRecBuf
@@ -1421,7 +1450,6 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
          do Q = QLow, QHig
             PQ = RecordNumPQ(P,Q)
             NZIntRec(PQ) = 0
-
             call SetRRange(RLow,RHig)
             do R = RLow, RHig
                call SetSRange(R,SLow,SHig)
@@ -1454,12 +1482,20 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                    ! ... add packed (R,S)-indexes into index-buffer
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
-                     if (get_iprint() >= 46) then
-                       write(UOUT,'(2x,a,4i3,a,f16.10,a,i8,a,i8)')   &
-                       'P,Q,R,S:',P,Q,R,S, & 
-                       ' integr:',NZVIntBuf(NZVIntBufInd),' pck indx:', NZVPkIBuf(NZVIntBufInd), &  
-                       ' PQRS=',PQRS
-                      endif
+                     if (get_iprint() >= 40) then
+                    !   write(UOUT,'(2x,4(a,i3,a,i3,a,i3), & 
+                    !                 a,f16.10,a,i7,a,i7)')  &
+                    !   '<',P,'(',StP,'-',EnP,')',Q,'(',QLow,'-',QHig,')||', & 
+                    !   R,'(',RLow,'-',RHig,')',S,'(',SLow,'-',SHig,')>=',  & 
+                    !   NZVIntBuf(NZVIntBufInd),  & 
+                    !   ' array pos:',NZVIntBufInd,  & 
+                    !   ' pck indx:', NZVPkIBuf(NZVIntBufInd)
+                       write(UOUT,'(6x,4(a,i3),a,f16.10,a,i7,a,i7)')  &  
+                       '<',P,' ',Q,'||',R,' ',S,'>=', & 
+                       NZVIntBuf(NZVIntBufInd),  & 
+                       ' array pos:',NZVIntBufInd,  & 
+                       ' pck indx:', NZVPkIBuf(NZVIntBufInd)
+                     endif
 
                   endif
                enddo
@@ -1900,7 +1936,7 @@ logical :: isVIND,isVINT,isFPP,isFHP,isFHH
 
 write(UOUT,*) 'In DrvIntGen_DIRAC!'
 
-   ! ... check the present of DIRAC integral file 
+! ... check the present of prepared DIRAC for HSCC integral files 
    inquire(file=FileVINT,exist=isVINT)
    inquire(file=FileVIND,exist=isVIND)
    inquire(file=FileFHH,exist=isFHH)
@@ -1910,7 +1946,8 @@ write(UOUT,*) 'In DrvIntGen_DIRAC!'
  if (isVINT) write(UOUT,*) 'there is',FileVINT
 
 
-!call quit('DrvIntGen_DIRAC')
+call quit('DrvIntGen_DIRAC')
+
 end subroutine DrvIntGen_DIRAC
 
 end module IntGenMod

@@ -6,7 +6,7 @@ subroutine GenHSMRpars
 !
 !   called from InitHSMRBase (source/inihsbase.F90)
 !
-!   NOTE: NCMO, NVMO ... data must be ready
+!   NOTE: NCMO, NVMO ... these data must be ready
 !
 !-----------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ subroutine GenHSMRpars
 
    if ( get_iprint() >= 10 ) then
      call HEADER('Output from GenHSMRpars',-1)
-     if (OPTION(DIRACp)) write(UOUT,'(10x,a)') 'DIRAC mode is ON!'
+     if (OPTION(DIRACp)) write(UOUT,'(10x,a)') '*** DIRAC mode is ON! ***'
      write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
      write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
      write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
@@ -101,6 +101,13 @@ subroutine GenHSMRpars
 
      write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE=',NINTMORB_CORE
      write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT=',NINTMORB_VIRT
+
+     write(UOUT,'(2x,a,i7)') 'NHMO=',NHMO
+     write(UOUT,'(2x,a,i7)') 'NPMO=',NPMO
+     write(UOUT,'(2x,a,i7)') 'NELE=',NELE
+     write(UOUT,'(2x,a,i7)') 'NTMO=',NTMO
+     write(UOUT,'(2x,a,i7)') 'NVMO=',NVMO
+
    endif
 
 end subroutine GenHSMRpars

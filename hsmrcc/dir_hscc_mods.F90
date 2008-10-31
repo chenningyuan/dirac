@@ -350,8 +350,10 @@ endif
 !Call ZeroObject(indl_vect)
 !Call ZeroObject(cbuf_vect)
 
- print_int = .false.
- print_batch_info = .false.
+ !print_int = .false.
+ print_int = .true.
+! print_batch_info = .false.
+ print_batch_info = .true.
 
   MOINT = 0
 
@@ -397,19 +399,28 @@ if (print_int) then
 
  do i=1,NONZR
    if (.NOT.is_complex) then
-     write(LUPRI,'(2x,a,2i5,f18.12)') 'k,l, real integral:',  & 
-           indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
-     write(LUPRI,'(2x,a,4i4)') 'I,J,K,L:',  & 
-           KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
+   !  write(LUPRI,'(2x,a,2i5,f18.12)') 'k,l, real integral:',  & 
+   !        indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),cbuf_vect%p_rA2D(1,i)
+
+   !  write(LUPRI,'(2x,a,4i4)') 'I,J,K,L:',  & 
+   !        KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
    else
-     write(LUPRI,*) 'k,l,cmplx int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),  &
-                     cbuf_vect%p_rA2D(1,i), cbuf_vect%p_rA2D(2,i)
+   !  write(LUPRI,*) 'k,l,cmplx int:',indk_vect%p_iA1D(i),indl_vect%p_iA1D(i),  &
+   !                  cbuf_vect%p_rA2D(1,i), cbuf_vect%p_rA2D(2,i)
    endif
 
+   if (.NOT.is_complex) then
  ! ... unique ,KU indexes
-   write(LUPRI,'(2x,a,4i5)') 'kramers unrestricted, unique(>0) indexes, I,J,K,L:',  &
-     KR(IKR),KR(JKR),KR(indk_vect%p_iA1D(i)),KR(indl_vect%p_iA1D(i))
-   CALL FLSHFO(LUPRI)
+      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12)') '<',KR(IKR),' ',KR(JKR),'|',  & 
+           KR(indk_vect%p_iA1D(i)),' ',KR(indl_vect%p_iA1D(i)),'>=', &
+           cbuf_vect%p_rA2D(1,i)
+      CALL FLSHFO(LUPRI)
+   else
+      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,2f18.12)') '<',KR(IKR),' ',KR(JKR),'|',  & 
+           KR(indk_vect%p_iA1D(i)),' ',KR(indl_vect%p_iA1D(i)),'>=', &
+           cbuf_vect%p_rA2D(1,i), cbuf_vect%p_rA2D(2,i)
+      CALL FLSHFO(LUPRI)
+   endif
 
  enddo
 
@@ -758,6 +769,12 @@ character(len=17) :: dirac_file_FHH='Dirac_HSMRCC.FHH'
 character(len=17) :: dirac_file_FHP='Dirac_HSMRCC.FHP'
 character(len=17) :: dirac_file_FPP='Dirac_HSMRCC.FPP'
 
+!logical doprepare=.false.
+logical:: doprepare=.true.
+
+
+
+if (doprepare) then
 
   write(LUPRI,*) 'preparing DIRAC integral files for HSMRCC !!!'
 
@@ -767,12 +784,13 @@ open(lu_fhh,file=dirac_file_FHH,form='unformatted',status='unknown', access='seq
 open(lu_fhp,file=dirac_file_FHP,form='unformatted',status='unknown', access='sequential') 
 open(lu_fpp,file=dirac_file_FPP,form='unformatted',status='unknown', access='sequential') 
 
-
 close(lu_vind)
 close(lu_vint)
 close(lu_fhh)
 close(lu_fhp)
 close(lu_fpp)
+
+endif
 
 end subroutine prepare_dirac_HSMRCC_int_files
 

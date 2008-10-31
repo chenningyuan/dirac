@@ -2,7 +2,7 @@
 module GMSMod
 !------------------------------------------------------------------------
 !
-!         Necessary stuff read from Gamess/DIRAC (integral) files
+!     Necessary stuff read from Gamess/DIRAC (integral) files
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -31,7 +31,7 @@ subroutine InitGMSMod
 !
 !  Initialize Gamess stuff 
 !
-! Called from InitHSMRBase (source/inihsbase.F90) - if not in the DIRAC mode
+! Called from InitHSMRBase (source/inihsbase.F90) - if not in the DIRAC mode !!!!
 !
 !---------------------------------------------------------------------------
 
@@ -48,10 +48,17 @@ subroutine InitGMSMod
    endif
 
    if (.not.OPTION(DIRACp)) then
+     if (get_iprint() >= 6) then
+       write(UOUT,'(2x,a,/)') '...going to call InitReadGMS routine'
+     endif
      ! ... read GMS based files
      call InitReadGMS
    else
-     call  InitReadDIRAC
+
+     call InitReadGMS
+
+    ! disable - all data shoule be in VINF ...
+    ! call  InitReadDIRAC
    endif
 
 !  ... final print-out of what has been read inside - simple variables & arrays
@@ -117,13 +124,17 @@ subroutine EndGMSMod
 end subroutine EndGMSMod
 
 
-!> allocate 1-electron data
-!> called from InitReadVINF, InitReadMREINT ....
-!>&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine alloc_bunch
-  implicit none
-
+!----------------------------------------------------------------------
+!
+! allocate 1-electron data
+! called from InitReadVINF, InitReadMREINT ....
+!
 !  ... needs: NSO, NVMO, NAO
+!
+!----------------------------------------------------------------------
+  implicit none
 
   if (get_iprint() >=7) then
     write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
@@ -133,7 +144,7 @@ subroutine alloc_bunch
 
   if (NSO <=0 .or. NVMO <=0 .or. NAO <=0) then
     write(UOUT,'(2x,a,3i4)')  & 
-    'alloc_bunch: used variables - NSO,NVMO,NAO:',NSO,NVMO,NAO
+    'alloc_bunch: used bad variables - NSO,NVMO,NAO:',NSO,NVMO,NAO
     call flushout
     call quit('alloc_bunch: wrong sizef for allocation !')
   endif
@@ -164,14 +175,27 @@ subroutine InitReadGMS
    implicit none
    integer NXX, IXX
 
+   if (get_iprint() >=7) then
+     call header('Output from InitReadGMS !',-1)
+   endif
+
+   ! ...
    if (OPTION(GENINT)) then
+     if (get_iprint() >= 7) then
+       write(UOUT,'(2x,a,/)')   & 
+       '...going to call InitReadMREINT - read core info from GMS integral files.'
+     endif
      call InitReadMREINT
    else
+     if (get_iprint() >= 7) then
+       write(UOUT,'(2x,a,/)') '...going to call InitReadVINF - read core info from VINF file'
+     endif
      call InitReadVINF
    endif
 
-   ! ... allocate gamess integral buffers
+   ! ... allocate gamess integral buffers 
 
+! Miro: do we need it when OPTION(GENINT)=.true. !
    ! ... set up size for gamess integral labels
    NXX = NINTMX
    IF (LABELSIZE.EQ.1) THEN
@@ -301,13 +325,19 @@ close(ludir)
 end subroutine  InitReadDIRAC
 
 
-!> read existing VINF file (when restarting)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitReadVINF
+!
+!> read existing VINF file (when restarting)
+!
+! called from InitReadGMS
+!
+!
 
 implicit none
 
       if (get_iprint() >=7) then
-        write(UOUT,*) 'InitReadVINF: going to read FileVINF file...'
+        write(UOUT,'(/,6x,a)') 'InitReadVINF: going to read FileVINF file...'
       endif
 
       !******************************************************
@@ -345,7 +375,8 @@ implicit none
          call quit(': Invalid Data in File UVINF 2 !')
       endif
 
-      if (NTMO /= NSO) then
+      ! mi: NTMO is zero 
+      if (NTMO /= NSO.and..not.OPTION(DIRACp)) then
          write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
          write(UOUT,*) 'Current NTMO is not valid for integral file'
          call flushout
@@ -378,9 +409,15 @@ integer :: i
 logical :: print_hcore_mtx = .false.
 
 write(UOUT,'(/,2x,a,/,2x,a)') 'Data arrays(i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy)', &
- '------------------------------------------------------------------------------------------------------------'
+'------------------------------------------------------------------------------------------------------------'
+write(UOUT,'(4x,a,i5)') 'range of arrays, NSO=',NSO 
 
-do i=1,NSO
+if (NSO==0) then 
+ write(UOUT,*) 'Error ! NSO=',NSO
+ call quit('InitReadVINF: NSO==0 !')
+endif
+
+do i=1, NSO
 
    write(UOUT,1298)   i,  & 
            SpinOfOrb(i),  & 

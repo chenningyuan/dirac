@@ -34,7 +34,7 @@ subroutine InitHSMRBase
 
    call StartTiming
 
-   ! ... Open FileVINF file ...
+   ! ... Open FileVINF file ...either new or existing
    call OpenVINF
 
    ! ... Read Options from FileVINF unless it is fresh run ...

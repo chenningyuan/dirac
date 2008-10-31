@@ -15,7 +15,7 @@ contains
 subroutine OpenVINF
 !------------------------------------------------------------------------------
 !
-!      Open HSMRCC file carrying information on the run 
+!      Open HSMRCC file VINF carrying information on the run 
 !
 !         called from InitHSMRBase (source/inihsbase.F90)
 !
@@ -35,8 +35,8 @@ subroutine OpenVINF
    endif
 
    if (OPTION(GENINT)) then
-!     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
-      open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
+      open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
+!     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    else
       ! ... restarting HSCC 
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
@@ -140,6 +140,7 @@ subroutine UpdateVINF
    write(UVINF) StartRec(FHP)  , EndngRec(FHP)  , TotNZInt(FHP)
    write(UVINF) StartRec(FPP)  , EndngRec(FPP)  , TotNZInt(FPP)
 
+   ! ... print out data ...
    call printVINFstuff
 
    return
@@ -148,9 +149,11 @@ end subroutine UpdateVINF
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine printVINFstuff
+!------------------------------------------------------------------------------------
 !
-!  ... print out data from update of the VINF file
+!         ... print out data from update of the VINF file
 !
+!------------------------------------------------------------------------------------
 
    if (get_iprint() >= 10) then
 
@@ -173,9 +176,16 @@ subroutine printVINFstuff
      write(UOUT,*) 'LABELSIZE=',LABELSIZE
      write(UOUT,*) 'NINTMX=',NINTMX
      write(UOUT,*) 
+     write(UOUT,*) 'NumRec:',NumRec
+     write(UOUT,*) 'RecLen:',RecLen
 
-     write(UOUT,'(2x,2(a,i7))') 'RecLen(V2H2P)=',RecLen(V2H2P),' NumRec(V2H2P)=', NumRec(V2H2P)
-     write(UOUT,'(2x,2(a,i7))') 'RecLen(VPPPP)=',RecLen(VPPPP),' NumRec(VPPPP)=',NumRec(VPPPP)
+ !    write(UOUT,'(4(a,i5))') 'RecLen(V2H2P)=',RecLen(V2H2P),' NumRec(V2H2P)=', NumRec(V2H2P), & 
+ !                ' TotNZInt(V2H2P)=',TotNZInt(V2H2P),' NZIntRec_V2H2P=',NZIntRec_V2H2P
+
+  !   write(UOUT,'(4(a,i5))') 'RecLen(VPPPP)=',RecLen(VPPPP),' NumRec(VPPPP)=',NumRec(VPPPP), & 
+  !                ' TotNZInt(VPPPP)=',TotNZInt(VPPPP),' NZIntRec_VPPPP=',NZIntRec_VPPPP
+
+
      write(UOUT,'(2x,2(a,i7))') 'RecLen(VHHHH)=',RecLen(VHHHH),' NumRec(VHHHH)=',NumRec(VHHHH)
      write(UOUT,'(2x,a,i7)') 'RecLen(VHHPP)=',RecLen(VHHPP)
      write(UOUT,'(2x,a,i7)') 'RecLen(V2HPP)=',RecLen(V2HPP)
@@ -188,7 +198,9 @@ subroutine printVINFstuff
      write(UOUT,'(2x,a,i7)') 'RecLen(VHHHP)=',RecLen(VHHHP)
     ! ...
      write(UOUT,*) 
-     write(UOUT,'(2x,a,i7)') 'RecLen(FHH)=',RecLen(FHH)
+     write(UOUT,'(3(a,i5))') 'StartRec(FHH)=',StartRec(FHH),' RecLen(FHH)=',RecLen(FHH), & 
+           ' TotNZInt(FHH)=',TotNZInt(FHH)
+
      write(UOUT,'(2x,a,i7)') 'RecLen(FHP)=',RecLen(FHP)
      write(UOUT,'(2x,a,i7)') 'RecLen(FPP)=',RecLen(FPP)
      write(UOUT,*)

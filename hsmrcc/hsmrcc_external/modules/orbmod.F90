@@ -15,6 +15,7 @@ module OrbMod
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsMainOrb(i)
 
    implicit none
@@ -26,6 +27,12 @@ function IsMainOrb(i)
       write(UOUT,*) "i,NVMO:",i,NVMO
       call flushout
       call quit('Invalid value for IsMainOrb')
+   endif
+
+   if (.not.allocated(OrbSpace).or.sizeof(OrbSpace) < i+NCMO ) then
+     write(UOUT,*) 'OrbSpace error !...sizeof(OrbSpace)=',sizeof(OrbSpace)
+     write(UOUT,*) 'IsMainOrb(i): i=',i,' i+NCMO=',i+NCMO
+     call quit('IsMainOrb: error with OrbSpace!')
    endif
 
    IsMainOrb = OrbSpace(i+NCMO).eq.PM_SPACE

@@ -17,9 +17,10 @@ subroutine HSMRCC
    use HEFFModule
    use VINFMod
    implicit none
-   integer :: i1, i2, i3, i4, i5
-   double precision, pointer :: VINT(:)
-   integer, pointer :: VIND(:)
+
+!   integer :: i1, i2, i3, i4, i5
+!   double precision, pointer :: VINT(:) ! 
+!   integer, pointer :: VIND(:)
 
    if (get_iprint() > 5 ) then
      call HEADER('Output from HSMRCC',-1)
