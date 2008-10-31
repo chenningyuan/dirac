@@ -47,7 +47,7 @@ shortusage ()
 {
    echo
    echo 'Usage: '$0' [Flags] [ARCHIVE.tgz] mol[.mol] menu[.inp]'
-   echo '   For information about flags enter "'$0'" without any options.'
+   echo '   For information run pam -help'
 }
 usage ()
 {
@@ -56,33 +56,36 @@ usage ()
    echo ' is given the calculation can restart from the contents of this file.'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
-   echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
-   echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
    echo '     -mw mem                : Set memory (in megawords) for master'
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the slave nodes'
-   echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
-   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
+   echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
    echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
-   echo '     -clean                 : Clean work area before calculation'
-   echo '     -keepwrk               : Keep work area after calculation (default: remove)'
-   echo '     -put "file1 file2 .."  : Put specified files from job directory to   work area'
-   echo '     -get "file1 file2 .."  : Get specified files to   job directory from work area'
+   echo '     -put "file1 file2 .."  : Put specified files from job directory to work area'
+   echo '     -get "file1 file2 .."  : Get specified files to job directory from work area'
+   echo '     -noarch                : Do not create a .tgz archive of the calculation'
+}
+extrausage ()
+{
+   echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
+   echo '     -notify                : Notify when finished to user starting job'
+   echo '     -user e-mail           : Notify when finished using specified e-mail address'
+   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default '
+   echo "                              $BIN_DIR/dirac.x"
+   echo '     -no-exe-copy           : Do not copy dirac.x to the working directory, run it in place.'
+   echo '     -run name              : File suffix for output; default "'$RUN'"'
+   echo '     -nice                  : execute Dirac with nice/npri'
+   echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
+   echo '                              This allows you to omit the molecule and input files.'
    echo '     -incmo                 : Copy DFCOEF from job directory to   work area (when restarting)'
    echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
-   echo '     -noarch                : Do not create a .tgz archive of the calculation'
-   echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
-   echo '                              This allows you to omit the molecule and input files.'
-   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default '
-   echo '                            '$BIN_DIR'/dirac.x '
-   echo '     -run name              : File suffix for output; default "'$RUN'"'
-   echo '     -nice                  : execute Dirac with nice/npri'
-   echo '     -notify                : Notify when finished to user starting job'
-   echo '     -user e-mail           : Notify when finished using specified e-mail address'
+   echo '     -clean                 : Clean work area before calculation'
+   echo '     -keepwrk               : Keep work area after calculation (default: remove)'
+   echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
-   echo '     -help                  : More help on pam than this'
 }
 #
 #
@@ -222,7 +225,11 @@ setup_command()
    #
    # Finally append executable
    #
-   DIRAC_CMD="$DIRAC_CMD ./$DIRAC"
+   if [[ -z "$NO_EXE_COPY" ]]; then
+      DIRAC_CMD="$DIRAC_CMD ./$DIRAC"
+   else
+      DIRAC_CMD="$DIRAC_CMD $BIN_DIR/$DIRAC"
+   fi
    #
    # Delete $WRK/$DIRAC if the executable is older than the
    # executable in $BIN_DIR. This is useful when you've compiled
@@ -230,7 +237,8 @@ setup_command()
    # in the previous calculation.
    #
 
-# miro: restored copying of dirac.x into working directory, which is run from there
+
+   if [[ -z "$NO_EXE_COPY" ]]; then
 
    if [ -f $WRK/$DIRAC ]; then
       if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
@@ -257,6 +265,8 @@ setup_command()
       fi
    else
       echo "was already there"
+   fi
+
    fi
 
 }
@@ -758,8 +768,8 @@ initialize
 ARG_SAVE="$*"
 if [ -z "$1" ]; then
    usage
-   EXIT=2
-   exitfunc 
+   echo ' Run pam -help to list all options'
+   exit 2
 fi
 
 while [ -n "$1" ]; do
@@ -855,29 +865,22 @@ while [ -n "$1" ]; do
          shift
          ALT_DIRAC=$1
          ;;
-      -t)
-         shift
-         ;;
-      -q)
-         shift
-         ;;
-      -qsys)
-         shift
-         ;;
-      -i)
-         shift
+      -no-exe-copy)
+	 NO_EXE_COPY=1
          ;;
       -help)
-         if [ -z "$PAGER" ]; then
-            PAGER=more
-         fi
-         nroff -man $SRC_DIR/pam.1 | $PAGER
-         EXIT=0
-         exitfunc
+#Restore the code below when manpage is up to date.
+#         if [ -z "$PAGER" ]; then
+#            PAGER=more
+#         fi
+#         nroff -man $SRC_DIR/pam.1 | $PAGER
+         usage
+         extrausage
+         echo ' For more information see http://dirac.chem.sdu.dk'
+	 exit 0
          ;;
       -*)
-         echo "ERROR: Flag $1 not recognized"
-         usage
+         echo "ERROR: Flag $1 not recognized. For help run pam -help"
          EXIT=2
          exitfunc
          ;;
