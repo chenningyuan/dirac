@@ -47,6 +47,7 @@ class PamQVariables:
     self.nnodes=1
 
    # self.proc_per_node=4
+   # self.proc_per_node=1
     self.proc_per_node=1
 
     self.pam_script_name="pam"
@@ -68,15 +69,21 @@ class PamQVariables:
   # class method: set up mpi parameter for pam script
   #
     if GlobalVars.iprint > 7:
-      print 'setting mpi for pam' 
+      print '\nsetting mpi for pam' 
       print 'set_pam_mpi: extracted pam arguments:', GlobalVars.pam_arguments
     # print GlobalVars.pam_arguments
 
     # extend pam flags with the necessary -mpi arguments
-    mpi_procs=GlobalVars.nnodes * GlobalVars.proc_per_node
+    mpi_procs=GlobalVars.nnodes*GlobalVars.proc_per_node
+
+    if GlobalVars.iprint >= 5:
+      print 'set_pam_mpi: calculated # mpi=',mpi_procs
+      print 'using GlobalVars.nnodes=',GlobalVars.nnodes
+      print 'and GlobalVars.proc_per_node=',GlobalVars.proc_per_node
+
     GlobalVars.pam_arguments=' -mpi '+str(mpi_procs)+GlobalVars.pam_arguments
 
-    if GlobalVars.iprint > 7:
+    if GlobalVars.iprint >= 7:
       print 'set_pam_mpi: mpi-extended pam arguments:', GlobalVars.pam_arguments
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -89,7 +96,7 @@ def process_pbs_script():
   global GlobalVars
 
   if GlobalVars.iprint >8 :
-     print 'in prepare_pbs_script...'
+     print '\nin prepare_pbs_script...'
 
   # unite into one local string
   GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
@@ -339,6 +346,14 @@ def process_pamq_arguments():
                   action="store", dest="dest_queue_name", 
                   help=queue_label,metavar="STRING")
 
+  # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
+  queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
+  parser.add_option("--pnode", type="int", nargs=1, \
+                 # action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
+                  action="store", dest="dest_ppn", \
+                  help=queue_ppn_label, metavar="INT")
+
+
   # ... GlobalVars.queue_time
  # queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
   queue_time_label='specify the time in the queue (no default)'
@@ -346,13 +361,6 @@ def process_pamq_arguments():
                  # action="store", dest="dest_queue_time", default=GlobalVars.queue_time, \
                   action="store", dest="dest_queue_time", 
                   help=queue_time_label,metavar="STRING")
-
-  # ... GlobalVars.proc_per_node
-  queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
-  parser.add_option("--ppn", type="int", nargs=1,
-                 # action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
-                  action="store", dest="dest_ppn", 
-                  help=queue_ppn_label, metavar="STRING")
 
   ###################################################################################################
   #
@@ -369,6 +377,7 @@ def process_pamq_arguments():
   # ... handle queue job name
   if (options.dest_queue_job_name is not None) :
     GlobalVars.job_name=options.dest_queue_job_name
+    #print '* assigned GlobalVars.job_name=',GlobalVars.job_name
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.job_name=',GlobalVars.job_name
 
@@ -406,11 +415,12 @@ def process_pamq_arguments():
   if (options.dest_pam_args is not None) :
     GlobalVars.pam_arguments=options.dest_pam_args
     if GlobalVars.iprint > 7:
-      print 'assigned GlobalVars.pam_arguments=',GlobalVars.pam_script
+      print 'assigned GlobalVars.pam_arguments=',GlobalVars.pam_arguments
   else :
     GlobalVars.submit_job=False
     print 'warning: no pam arguments in the script - not submitting ! '
     print 'type: "',sys.argv[0],'-h" for help'
+    parser.error("missing pam arguments !")
     #print options.get_help()
 
   # ... deal with queue_name
@@ -427,10 +437,12 @@ def process_pamq_arguments():
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.queue_system=',GlobalVars.queue_system
 
-  # ... deal with processors per node
+  # ... deal with  number of processors per 1 cluster node
+ # print '* options.dest_ppn=',options.dest_ppn
   if (options.dest_ppn is not None) :
-    GlobalVars.proc_per_node=options.dest_ppn
-    if GlobalVars.iprint > 7:
+  #  print 'options.dest_ppn=',options.dest_ppn
+    GlobalVars.proc_per_node=int(options.dest_ppn)
+    if GlobalVars.iprint >= 7:
       print 'assigned GlobalVars.proc_per_node=',GlobalVars.proc_per_node
 
   # ... deal with queue_time
@@ -441,11 +453,13 @@ def process_pamq_arguments():
       print 'assigned GlobalVars.queue_time=',GlobalVars.queue_name
       print 'assigned GlobalVars.queue_time_specified=',GlobalVars.queue_time_specified
 
-#  if len(args) < 3:
-#    parser.error("incorrect number of arguments")
+  # ... must be at leat one argument - pam_args !
+  if len(args) < 1:
+    parser.error("incorrect number of arguments")
 
   if (len(parser.largs)>0) :
-    print 'warning: leftover arguments:',parser.largs  
+    print 'error: leftover arguments found :',parser.largs 
+    parser.error("incorrect passing arguments, all must be under flags !")
 
   if GlobalVars.iprint > 8 :
     print '\n processing arguments' 
