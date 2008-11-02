@@ -30,11 +30,13 @@ class PamQVariables:
 
     self.job_out='queue_job.'+str(os.getpid())+'.log_out'
 
-    self.queue_system='pbs'
+    #self.queue_system='pbs'
+    self.queue_system=''
 
    #  self.queue_name='default'
    # self.queue_name='workq'
-    self.queue_name='express'
+   # self.queue_name='express'
+    self.queue_name=''
     self.queue_name_specified=False
 
     # time 
@@ -44,11 +46,12 @@ class PamQVariables:
     # ... is pure serial job (no mpi added to pam)
     self.is_serial=False
 
-    self.nnodes=1
+   # self.nnodes=1
+    self.nnodes=0
 
    # self.proc_per_node=4
    # self.proc_per_node=1
-    self.proc_per_node=1
+    self.proc_per_node=0
 
     self.pam_script_name="pam"
     self.pam_script_dir="~/bin"
@@ -58,6 +61,18 @@ class PamQVariables:
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
     self.home_dir=os.getenv("PWD")
+
+    # ... configuration file with selected defaults ...
+    self.prepare_config_file=False
+
+    #-------------------------------------------------------------------
+    #       ... list of implemented queue system for the script:
+    #-------------------------------------------------------------------
+    self.implemented_queue_systems=['pbs','bsub','loadleveler']
+    #self.implemented_queue_systems=['pbs\n','bsub','loadleveler']
+
+    if os.path.isfile("PAMQ_DEFAULTS") :
+      self.read_configure_file()
 
     if self.iprint >8 :
       print ' setting home directory:',self.home_dir
@@ -86,6 +101,125 @@ class PamQVariables:
     if GlobalVars.iprint >= 7:
       print 'set_pam_mpi: mpi-extended pam arguments:', GlobalVars.pam_arguments
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def create_configure_file(self):
+  #
+  # class method: create configure file with read parameters as DEFAULTS
+  #
+    if GlobalVars.iprint >= 0:
+      print 'preparing PAMQ_DEFAULTS file'
+    
+    f = open('PAMQ_DEFAULTS', 'w') 
+    f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
+
+    print 'len(GlobalVars.queue_system)=',len(GlobalVars.queue_system)
+
+    if (len(GlobalVars.queue_system)>0) :
+      f.write('# ... default queue system \n')
+      f.write('QUEUE_SYSTEM='+GlobalVars.queue_system+'\n')
+
+    if (len(GlobalVars.queue_name)>0) :
+      f.write('# ... default queue name \n')
+      f.write('QUEUE_NAME='+GlobalVars.queue_name+'\n')
+
+    if (GlobalVars.nnodes>0) :
+      f.write('# ... default number of nodes for (parallel) run\n')
+      f.write('NODES='+str(GlobalVars.nnodes)+'\n')
+
+    if (GlobalVars.proc_per_node>0) :
+      f.write('# ... default number of processors (CPU) per 1 node\n')
+      f.write('PROCESSORS_PER_NODE='+str(GlobalVars.proc_per_node)+'\n')
+
+    f.close()
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def read_configure_file(self):
+  #
+  # class method: read parameters (DEFAULTS) from the configure file
+  #
+    if self.iprint >= 0 :
+      print 'in ... read_configure_file'
+
+    f = open('PAMQ_DEFAULTS','r')
+    queue_system=''
+    # read line after line
+    for line in f:
+      #print line
+      if (line.find('QUEUE_SYSTEM') >= 0):
+         queue_system=line[line.find('=')+1:len(line)]
+         print 'read QUEUE_SYSTEM=',queue_system
+         #self.queue_system=queue_system    
+         self.save_queue_system(queue_system) 
+    
+      if (line.find('QUEUE_NAME') >= 0):
+         queue_name=line[ line.find('=')+1:len(line)]
+         print 'read QUEUE_NAME=',queue_name
+         self.queue_name=queue_name
+         self.queue_name_specified=True
+
+      if (line.find('NODES') >= 0):
+         nodes=line[ line.find('=')+1:len(line)]
+         print 'read NODES=',int(nodes)
+         self.nnodes=nodes
+
+      if (line.find('PROCESSORS_PER_NODE') >= 0):
+         ppn=line[line.find('=')+1:len(line)]
+         print 'read PPN=',int(ppn)
+         self.proc_per_node=ppn
+
+      if (line.find('PAM_SCRIPT') >= 0):
+         pam_script=line[line.find('=')+1:len(line)]
+         print 'read PAM_SCRIPT dir=',pam_script
+         self.proc_per_node=ppn
+
+
+    #exit(-1)
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def save_queue_system(self,qsys_in):
+  #
+  #  class method: check and save queue_system into proper variable
+  #
+  #  we are inside class method definition, so we are to use 'self.' specification
+  #
+
+ #   print ' hello world '.replace(' ', '')
+  #  z=' hello world '.replace(' ', '')
+  #  print 'z=',z
+
+   # print 'qsys_in=',qsys_in
+   # print 'len(qsys_in)=',len(qsys_in)
+   # print 'qsys_in.isalnum=',qsys_in.isalnum()
+
+    # .. check if there is empty space in the string
+   # qsys_in.strip() 
+
+   # qsys_in.replace('\n','')
+   # print 'after removing extra EOL character, qsys_in=',qsys_in
+   # print 'len(qsys_in)=',len(qsys_in)
+   # print 'qsys_in.isalnum=',qsys_in.isalnum()
+
+    # check the ending character !
+    if qsys_in.endswith('\n'):
+      print 'ending with EOL !' 
+      qsys_in=qsys_in[:-1]
+
+ #   print 'after removing extra EOL character, qsys_in=',qsys_in
+ #   print 'len(qsys_in)=',len(qsys_in)
+ #   print 'qsys_in.isalnum=',qsys_in.isalnum()
+
+    # check if the queue system is in the list ...
+    if (qsys_in not in self.implemented_queue_systems) :
+      print 'save_queue_system: entering queue system, qsys_in=',qsys_in
+      print 'self.implemented_queue_systems=',self.implemented_queue_systems
+      sys.exit()
+    else :
+      print 'save_queue_system: entering queue system VERYFIED!'
+      self.queue_system=qsys_in
+
+    if self.iprint >= 0:
+      print 'save_queue_system: saved class member queue_system=',self.queue_system
+   
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
 #
@@ -348,11 +482,10 @@ def process_pamq_arguments():
 
   # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
   queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
-  parser.add_option("--pnode", type="int", nargs=1, \
+  parser.add_option("--pnode", type="int", nargs=1, 
                  # action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
-                  action="store", dest="dest_ppn", \
+                  action="store", dest="dest_ppn", 
                   help=queue_ppn_label, metavar="INT")
-
 
   # ... GlobalVars.queue_time
  # queue_time_label='specify the time in the queue, default:'+GlobalVars.queue_time
@@ -361,6 +494,11 @@ def process_pamq_arguments():
                  # action="store", dest="dest_queue_time", default=GlobalVars.queue_time, \
                   action="store", dest="dest_queue_time", 
                   help=queue_time_label,metavar="STRING")
+
+  # ... prepare file with selected default variables (configuration file) ...
+  config_file_label='save read parameters (like qsys, queue... ) as defaults into file, default - do not save'
+  parser.add_option("--config", action="store_true", default=GlobalVars.prepare_config_file,
+                     dest="dest_prep_config", help=config_file_label) 
 
   ###################################################################################################
   #
@@ -418,9 +556,9 @@ def process_pamq_arguments():
       print 'assigned GlobalVars.pam_arguments=',GlobalVars.pam_arguments
   else :
     GlobalVars.submit_job=False
-    print 'warning: no pam arguments in the script - not submitting ! '
-    print 'type: "',sys.argv[0],'-h" for help'
-    parser.error("missing pam arguments !")
+#    print 'warning: no pam arguments in the script - not submitting ! '
+#    print 'type: "',sys.argv[0],'-h" for help'
+#    parser.error("missing pam arguments !")
     #print options.get_help()
 
   # ... deal with queue_name
@@ -453,9 +591,16 @@ def process_pamq_arguments():
       print 'assigned GlobalVars.queue_time=',GlobalVars.queue_name
       print 'assigned GlobalVars.queue_time_specified=',GlobalVars.queue_time_specified
 
+  # ... deal with creating variables_defaults file
+  if (options.dest_prep_config is not None) :
+    GlobalVars.prepare_config_file=options.dest_prep_config
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.prepare_config_file=',GlobalVars.prepare_config_file
+
+
   # ... must be at leat one argument - pam_args !
-  if len(args) < 1:
-    parser.error("incorrect number of arguments")
+  #if len(args) < 1:
+  #  parser.error("incorrect number of arguments")
 
   if (len(parser.largs)>0) :
     print 'error: leftover arguments found :',parser.largs 
@@ -481,6 +626,13 @@ def process_pamq_arguments():
   if not GlobalVars.is_serial :
     GlobalVars.set_pam_mpi()
 
+  # if prepare file, do not submit
+  if GlobalVars.prepare_config_file:
+    GlobalVars.submit_job=False
+    GlobalVars.create_configure_file()
+    if GlobalVars.iprint > 7:
+      print 'preparing configure file-not submitting job'
+  
 #########################################################################
 #
 #                        MAIN FUNCTION
@@ -503,7 +655,8 @@ def main(*args):
 
     process_pamq_arguments()
 
-    process_queue_script()
+    if (not GlobalVars.prepare_config_file) :
+      process_queue_script()
 
 #  except:
     # handle some exceptions
