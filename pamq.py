@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 #
-#  script for submitting DIRAC pam job into the queue system
+#  script for submitting DIRAC pam job into a queue system
 #
-# writen by Miro ILIAS,2008 after Luuks pamq
+# writen by Miro ILIAS,2008 after Luuk's pamq script
 #
-#  still in progrss
+# further improvement still in progress
 #
 
 import  sys, os, string, optparse
@@ -24,6 +24,7 @@ class PamQVariables:
     self.pam_arguments=''
     self.submit_job=True
 
+    # ... specify the default job name
     self.job_name='queue_job.'+str(os.getpid())
 
     self.job_inp='input_test'
@@ -68,10 +69,11 @@ class PamQVariables:
     self.prepare_config_file=False
 
     #-------------------------------------------------------------------
-    #       ... list of implemented queue system for the script:
+    #   ... list of implemented queue system for the script:
     #-------------------------------------------------------------------
     self.implemented_queue_systems=['pbs','bsub','loadleveler']
 
+    # ... set up file with defaults
     self.pamq_defaults_file=str(os.getenv("HOME"))+'/PAMQ_DEFAULTS'
 
     self.read_from_config_file=False
@@ -457,8 +459,89 @@ def process_loadleveler_script():
 #
 # TODO : add !
 #
+  global GlobalVars
+
   if GlobalVars.iprint > 7:
     print 'prepare_loadleveler_script...'
+
+  # unite into one local string
+  GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
+
+  if GlobalVars.iprint >8 :
+    print ' home directory:',GlobalVars.home_dir
+    print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
+
+  f=open(GlobalVars.queue_script,'w') # open file with queue commands
+
+  s = ''
+  s += '''\
+#
+# loadl stuff
+#
+# @ shell            = /bin/sh
+# @ network.MPI      = sn_all,not_shared,USnetwork.MPI   
+# @ notification     = never
+# @ queue      
+# 
+# 
+# @ initialdir       = %s
+''' % GlobalVars.home_dir
+  s += '''\
+#
+# @ output           = %s
+''' % GlobalVars.job_out
+  s += '''\
+#
+# @ error            = %s
+''' % GlobalVars.job_out
+  s += '''\
+#
+# @ node             = %s
+''' % str(GlobalVars.nnodes)
+  s += '''\
+# @ tasks_per_node   = %s
+''' % str(GlobalVars.proc_per_node)
+  s += '''\
+#
+# @ wall_clock_limit = %s
+''' % GlobalVars.queue_time
+  s += '''\
+#
+# @ environment      = LLSHELL=%s ;ENVIRONMENT=BATCH;
+''' % os.getenv("SHELL")
+  s += '''\
+#
+#  change to original directory
+#
+cd %s
+''' % GlobalVars.home_dir
+  s += '''\
+#
+export XLFRTEOPTS="namelist=old"
+#
+''' 
+
+# ... write all string to the file
+  f.write(s)
+  f.close()
+
+ # submit job ...
+  if GlobalVars.submit_job:
+    if GlobalVars.iprint >= 0 :
+      print '\ngoing to submit job with prepared script:',GlobalVars.queue_script
+      print '            standard output file will be:',GlobalVars.job_out
+      print '                  queue job name will be:',GlobalVars.job_name,'\n'
+
+    os.system("llsubmit "+GlobalVars.queue_script) # submitting !
+    # ... some info ...
+ #   os.system("echo '  -  Current user-status on queueing-system : '")
+ #   os.system("echo 'Job id           Name             User             Time Use S Queue'")
+ #   os.system("echo '---------------- ---------------- ---------------- -------- - -----'")
+ #   os.system("qstat | grep $USER")
+  else:
+    print '\n not submitting,prepared only the script for the batch system:',GlobalVars.queue_script
+    print ''
+
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_bsub_script():
