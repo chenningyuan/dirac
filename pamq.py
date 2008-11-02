@@ -70,9 +70,8 @@ class PamQVariables:
     #       ... list of implemented queue system for the script:
     #-------------------------------------------------------------------
     self.implemented_queue_systems=['pbs','bsub','loadleveler']
-    #self.implemented_queue_systems=['pbs\n','bsub','loadleveler']
 
-    if os.path.isfile("PAMQ_DEFAULTS") :
+    if os.path.isfile("PAMQ_DEFAULTS"):
       self.read_configure_file()
 
     if self.iprint >8 :
@@ -107,7 +106,7 @@ class PamQVariables:
   #
   # class method: create configure file with read parameters as DEFAULTS
   #
-    if GlobalVars.iprint >= 0:
+    if GlobalVars.iprint >= 12:
       print 'preparing PAMQ_DEFAULTS file'
     
     f = open('PAMQ_DEFAULTS', 'w') 
@@ -138,6 +137,10 @@ class PamQVariables:
       f.write('# ... default location of the DIRAC pam script \n')
       f.write('PAM_SCRIPT='+GlobalVars.pam_script+'\n')
 
+    if (GlobalVars.is_serial) :
+      f.write('# .... default serial jobs !\n')
+      f.write('SERIAL_JOBS_ONLY\n')
+
     f.close()
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -145,42 +148,45 @@ class PamQVariables:
   #
   # class method: read parameters (DEFAULTS) from the configure file
   #
-    if self.iprint >= 0 :
+    if self.iprint >= 12 :
       print 'in ... read_configure_file'
 
-    f = open('PAMQ_DEFAULTS','r')
-    queue_system=''
+    file = open('PAMQ_DEFAULTS','r')
+
     # read line after line
-    for line in f:
+    for line in file:
       #print line
       if (line.find('QUEUE_SYSTEM') >= 0 and not line.find('#') >= 0):
          queue_system=line[line.find('=')+1:len(line)]
-         print 'read QUEUE_SYSTEM=',queue_system
-         #self.queue_system=queue_system    
+         #print 'read QUEUE_SYSTEM=',queue_system
          self.save_queue_system(queue_system) 
     
       if (line.find('QUEUE_NAME') >= 0 and not line.find('#') >= 0):
          queue_name=line[ line.find('=')+1:len(line)]
-         print 'read QUEUE_NAME=',queue_name
+        # print 'read QUEUE_NAME=',queue_name
          self.queue_name=queue_name
          self.queue_name_specified=True
 
-      if (line.find('NODES') >= 0):
+      if (line.find('NODES') >= 0 and not line.find('#') >= 0):
          nodes=line[ line.find('=')+1:len(line)]
-         print 'read NODES=',int(nodes)
+         #print 'read NODES=',int(nodes)
          self.nnodes=nodes
 
-      if (line.find('PROCESSORS_PER_NODE') >= 0):
+      if (line.find('PROCESSORS_PER_NODE') >= 0 and not line.find('#') >= 0):
          ppn=line[line.find('=')+1:len(line)]
-         print 'read PPN=',int(ppn)
+         #print 'read PPN=',int(ppn)
          self.proc_per_node=ppn
 
-      if (line.find('PAM_SCRIPT') >= 0):
+      if (line.find('PAM_SCRIPT') >= 0 and not line.find('#') >= 0):
          pam_script=line[line.find('=')+1:len(line)]
-         print 'read PAM_SCRIPT dir=',pam_script
+        # print 'read PAM_SCRIPT dir=',pam_script
          self.save_pam_script(pam_script)
-         #self.proc_per_node=ppn
-    #exit(-1)
+
+      if (line.find('SERIAL_JOBS_ONLY') >= 0 and not line.find('#') >= 0):
+        # print 'serial runs as default !'
+         self.is_serial=True
+
+    file.close()
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def save_queue_system(self,qsys_in):
@@ -208,7 +214,7 @@ class PamQVariables:
 
     # check the ending character !
     if qsys_in.endswith('\n'):
-      print 'ending with EOL !' 
+     # print 'ending with EOL !' 
       qsys_in=qsys_in[:-1]
 
  #   print 'after removing extra EOL character, qsys_in=',qsys_in
@@ -221,10 +227,10 @@ class PamQVariables:
       print 'self.implemented_queue_systems=',self.implemented_queue_systems
       sys.exit()
     else :
-      print 'save_queue_system: entering queue system VERYFIED!'
+      #print 'save_queue_system: entering queue system VERYFIED!'
       self.queue_system=qsys_in
 
-    if self.iprint >= 0:
+    if self.iprint >= 12:
       print 'save_queue_system: saved class member queue_system=',self.queue_system
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -237,12 +243,12 @@ class PamQVariables:
 
     # check the ending character (if reading from file)!
     if pam_script_in.endswith('\n'):
-      print 'pam_script ending with EOL !' 
+      #print 'pam_script ending with EOL !' 
       pam_script_in=pam_script_in[:-1]
 
     # ... verify the existence of the pam script !
     if os.path.isfile(pam_script_in) :
-      print 'pam script is present!'
+      #print 'pam script is present!'
       self.pam_script=pam_script_in
     else:
       print 'save_pam_script: entering pam_script_in=',pam_script_in
@@ -492,7 +498,7 @@ def process_pamq_arguments():
   if (len(GlobalVars.queue_system)>0) :
     queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
   else :
-    queue_system_label='determine the queue system, none default=> MUST SPECIFY !'
+    queue_system_label='determine the queue system, no default=> MUST SPECIFY !'
   parser.add_option( "--qsys", type="str", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label,metavar="STRING")
