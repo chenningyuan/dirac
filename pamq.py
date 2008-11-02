@@ -61,6 +61,7 @@ class PamQVariables:
    # self.queue_script="pamq."+str(os.getpid())+".batch_script"
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
+    # home directory ...
     self.home_dir=os.getenv("PWD")
 
     # ... configuration file with selected defaults ...
@@ -71,8 +72,14 @@ class PamQVariables:
     #-------------------------------------------------------------------
     self.implemented_queue_systems=['pbs','bsub','loadleveler']
 
-    if os.path.isfile("PAMQ_DEFAULTS"):
+    self.pamq_defaults_file=str(os.getenv("HOME"))+'/PAMQ_DEFAULTS'
+
+    self.read_from_config_file=False
+   # if os.path.isfile("PAMQ_DEFAULTS"):
+    if os.path.isfile(self.pamq_defaults_file):
       self.read_configure_file()
+      self.read_from_config_file=True
+     # print 'defaults read from file'
 
     if self.iprint >8 :
       print ' setting home directory:',self.home_dir
@@ -104,44 +111,78 @@ class PamQVariables:
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def create_configure_file(self):
   #
-  # class method: create configure file with read parameters as DEFAULTS
+  #      class method: create configure file with important parameters as DEFAULTS
   #
     if GlobalVars.iprint >= 12:
       print 'preparing PAMQ_DEFAULTS file'
     
-    f = open('PAMQ_DEFAULTS', 'w') 
+    error_exit=False
+ 
+   # f = open('PAMQ_DEFAULTS', 'w') 
+   # f = open('~/PAMQ_DEFAULTS', 'w') 
+   # f = open(GlobalVars.pamq_defaults_file, 'w') 
+    f = open(self.pamq_defaults_file, 'w') 
+
+   # ... check if the file is open ...
+   # if not file_is_open(f) :
+   #   print '\n File ',self.pamq_defaults_file,' is not open ! Error ! \n' 
+   #   sys.exit()
+
+    print 'opening file for saving defaults in ~/ dir:',self.pamq_defaults_file
 
     f.write('###  \n')
     f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
     f.write('###  \n')
 
-    print 'len(GlobalVars.queue_system)=',len(GlobalVars.queue_system)
+   # print 'len(GlobalVars.queue_system)=',len(GlobalVars.queue_system)
 
     if (len(GlobalVars.queue_system)>0) :
       f.write('# ... default queue system \n')
       f.write('QUEUE_SYSTEM='+GlobalVars.queue_system+'\n')
+      print 'saved QUEUE_SYSTEM='+GlobalVars.queue_system
+    else :
+      print '\ncreate_configure_file: YOU MUST SPECIFY QUEUE SYSTEM!\n'
+      error_exit=True 
 
     if (len(GlobalVars.queue_name)>0) :
       f.write('# ... default queue name \n')
       f.write('QUEUE_NAME='+GlobalVars.queue_name+'\n')
+      print 'saved QUEUE_NAME=',GlobalVars.queue_name
 
     if (GlobalVars.nnodes>0) :
       f.write('# ... default number of nodes for (parallel) run\n')
       f.write('NODES='+str(GlobalVars.nnodes)+'\n')
+      print 'saved NODES=',GlobalVars.nnodes
+    else :
+      print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF NODES !\n'
+      error_exit=True 
 
     if (GlobalVars.proc_per_node>0) :
       f.write('# ... default number of processors (CPU) per 1 node\n')
       f.write('PROCESSORS_PER_NODE='+str(GlobalVars.proc_per_node)+'\n')
+      print 'saved PROCESSORS_PER_NODE=',GlobalVars.proc_per_node
+    else :
+      print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF PROCESSORS_PER_NODE !\n'
+      error_exit=True 
 
     if (len(GlobalVars.pam_script)>0) :
       f.write('# ... default location of the DIRAC pam script \n')
       f.write('PAM_SCRIPT='+GlobalVars.pam_script+'\n')
+      print 'saved PAM_SCRIPT=',GlobalVars.pam_script
+    else :
+      print '\ncreate_configure_file: YOU MUST SPECIFY LOCATION OF DIRAC PAM SCRIPT!\n'
+      error_exit=True 
 
     if (GlobalVars.is_serial) :
       f.write('# .... default serial jobs !\n')
       f.write('SERIAL_JOBS_ONLY\n')
+      print 'saved SERIAL_JOBS_ONLY'
 
     f.close()
+
+    if (error_exit) :
+      print('script error exit !')
+      sys.exit()
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def read_configure_file(self):
@@ -151,7 +192,9 @@ class PamQVariables:
     if self.iprint >= 12 :
       print 'in ... read_configure_file'
 
-    file = open('PAMQ_DEFAULTS','r')
+    #file = open('PAMQ_DEFAULTS','r')
+   # file = open('PAMQ_DEFAULTS','r')
+    file = open(self.pamq_defaults_file,'r')
 
     # read line after line
     for line in file:
@@ -180,7 +223,7 @@ class PamQVariables:
       if (line.find('PAM_SCRIPT') >= 0 and not line.find('#') >= 0):
          pam_script=line[line.find('=')+1:len(line)]
         # print 'read PAM_SCRIPT dir=',pam_script
-         self.save_pam_script(pam_script)
+         self.save_pam_script(pam_script,True)
 
       if (line.find('SERIAL_JOBS_ONLY') >= 0 and not line.find('#') >= 0):
         # print 'serial runs as default !'
@@ -234,7 +277,7 @@ class PamQVariables:
       print 'save_queue_system: saved class member queue_system=',self.queue_system
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-  def save_pam_script(self,pam_script_in):
+  def save_pam_script(self,pam_script_in,from_file=False):
   #
   #  class method: check and save queue_system into proper variable
   #
@@ -252,7 +295,9 @@ class PamQVariables:
       self.pam_script=pam_script_in
     else:
       print 'save_pam_script: entering pam_script_in=',pam_script_in
-      print 'save_pam_script: pam script does not exist!'
+      print 'save_pam_script: pam script does not exist! Error exit !'
+      if (from_file) :
+        print 'Bad pam_script value in the file PAMQ_DEFAULTS !' 
       sys.exit()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -443,8 +488,9 @@ def process_queue_script():
     print
 #	process_xgrid_script()	
   else:
-   print 'not defined queue_system=',GlobalVars.queue_system
-   exit(-1)
+   print '\nprocess_queue_script: NOT defined queue_system, GlobalVars.queue_system=',GlobalVars.queue_system
+   print 'process_queue_script: list of queue systems:\n',GlobalVars.implemented_queue_systems
+   sys.exit()
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -457,12 +503,17 @@ def process_pamq_arguments():
   global GlobalVars
   from optparse import OptionParser
 
-  usage = "usage: %prog [pamq_options] pam_arg1 pam_arg2..."
+  if GlobalVars.read_from_config_file :
+    usage = "usage: %prog arg1 arg2...; defaults read from file:"+GlobalVars.pamq_defaults_file
+  else :
+    usage = "usage: %prog arg1 arg2...; no defaults get from config file"
+    
   parser = OptionParser(usage)
 
   #  fill GlobalVars.pam_script
   pam_script_add="location of pam script, default:"+GlobalVars.pam_script
-  parser.add_option("-p", "--pam", type="string", nargs=1,dest="dest_pam",default=GlobalVars.pam_script,
+  parser.add_option("-p", "--pam", type="string", nargs=1,
+                  dest="dest_pam",default=GlobalVars.pam_script,
                   help=pam_script_add, metavar="STRING")
 
   #  fill GlobalVars.pam_arguments
@@ -488,8 +539,11 @@ def process_pamq_arguments():
   parser.add_option("-s","--serial", action="store_true",default=GlobalVars.is_serial,
                      dest="dest_is_serial", help=serial_label) 
 
-  #  ... get number of nodes
-  nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)
+  # ... get number of nodes
+  if (int(GlobalVars.nnodes) <=0) :
+    nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)+'=> YOU MUST SET IT!'
+  else :
+    nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)
   parser.add_option("-n", "--nodes", type="int",  nargs=1,
                   action="store",dest="dest_nnodes", default=GlobalVars.nnodes, 
                   help=nodes_label, metavar="INT_NUM")
@@ -498,7 +552,7 @@ def process_pamq_arguments():
   if (len(GlobalVars.queue_system)>0) :
     queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
   else :
-    queue_system_label='determine the queue system, no default=> MUST SPECIFY !'
+    queue_system_label='determine the queue system, no default=> YOU MUST SPECIFY IT !'
   parser.add_option( "--qsys", type="str", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label,metavar="STRING")
@@ -522,7 +576,11 @@ def process_pamq_arguments():
                   help=queue_label,metavar="STRING")
 
   # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
-  queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
+  if (int(GlobalVars.proc_per_node) <=0):
+    queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)+'<= YOU MUST SET IT !'
+  else:
+    queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
+
   parser.add_option("--pnode", type="int", nargs=1, 
                    action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
                  #action="store", dest="dest_ppn", 
@@ -584,9 +642,10 @@ def process_pamq_arguments():
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.is_serial=',GlobalVars.is_serial
 
-  # ... handle pam directory
+  # ... save the pam directory
   if (options.dest_pam is not None) :
-    GlobalVars.pam_script=options.dest_pam
+   # GlobalVars.pam_script=options.dest_pam
+    GlobalVars.save_pam_script(options.dest_pam)
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.pam_script=',GlobalVars.pam_script
 
