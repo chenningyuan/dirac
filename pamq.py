@@ -53,9 +53,10 @@ class PamQVariables:
    # self.proc_per_node=1
     self.proc_per_node=0
 
-    self.pam_script_name="pam"
-    self.pam_script_dir="~/bin"
-    self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
+   # self.pam_script_name="pam"
+   # self.pam_script_dir="~/bin"
+   # self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
+    self.pam_script=''
 
    # self.queue_script="pamq."+str(os.getpid())+".batch_script"
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
@@ -110,7 +111,10 @@ class PamQVariables:
       print 'preparing PAMQ_DEFAULTS file'
     
     f = open('PAMQ_DEFAULTS', 'w') 
+
+    f.write('###  \n')
     f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
+    f.write('###  \n')
 
     print 'len(GlobalVars.queue_system)=',len(GlobalVars.queue_system)
 
@@ -130,6 +134,10 @@ class PamQVariables:
       f.write('# ... default number of processors (CPU) per 1 node\n')
       f.write('PROCESSORS_PER_NODE='+str(GlobalVars.proc_per_node)+'\n')
 
+    if (len(GlobalVars.pam_script)>0) :
+      f.write('# ... default location of the DIRAC pam script \n')
+      f.write('PAM_SCRIPT='+GlobalVars.pam_script+'\n')
+
     f.close()
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -145,13 +153,13 @@ class PamQVariables:
     # read line after line
     for line in f:
       #print line
-      if (line.find('QUEUE_SYSTEM') >= 0):
+      if (line.find('QUEUE_SYSTEM') >= 0 and not line.find('#') >= 0):
          queue_system=line[line.find('=')+1:len(line)]
          print 'read QUEUE_SYSTEM=',queue_system
          #self.queue_system=queue_system    
          self.save_queue_system(queue_system) 
     
-      if (line.find('QUEUE_NAME') >= 0):
+      if (line.find('QUEUE_NAME') >= 0 and not line.find('#') >= 0):
          queue_name=line[ line.find('=')+1:len(line)]
          print 'read QUEUE_NAME=',queue_name
          self.queue_name=queue_name
@@ -170,9 +178,8 @@ class PamQVariables:
       if (line.find('PAM_SCRIPT') >= 0):
          pam_script=line[line.find('=')+1:len(line)]
          print 'read PAM_SCRIPT dir=',pam_script
-         self.proc_per_node=ppn
-
-
+         self.save_pam_script(pam_script)
+         #self.proc_per_node=ppn
     #exit(-1)
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -210,7 +217,7 @@ class PamQVariables:
 
     # check if the queue system is in the list ...
     if (qsys_in not in self.implemented_queue_systems) :
-      print 'save_queue_system: entering queue system, qsys_in=',qsys_in
+      print '\nsave_queue_system: entering queue system, qsys_in=',qsys_in
       print 'self.implemented_queue_systems=',self.implemented_queue_systems
       sys.exit()
     else :
@@ -219,7 +226,29 @@ class PamQVariables:
 
     if self.iprint >= 0:
       print 'save_queue_system: saved class member queue_system=',self.queue_system
-   
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def save_pam_script(self,pam_script_in):
+  #
+  #  class method: check and save queue_system into proper variable
+  #
+  #  we are inside class method definition, so we are to use 'self.' specification
+  #
+
+    # check the ending character (if reading from file)!
+    if pam_script_in.endswith('\n'):
+      print 'pam_script ending with EOL !' 
+      pam_script_in=pam_script_in[:-1]
+
+    # ... verify the existence of the pam script !
+    if os.path.isfile(pam_script_in) :
+      print 'pam script is present!'
+      self.pam_script=pam_script_in
+    else:
+      print 'save_pam_script: entering pam_script_in=',pam_script_in
+      print 'save_pam_script: pam script does not exist!'
+      sys.exit()
+
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
 #
@@ -460,8 +489,10 @@ def process_pamq_arguments():
                   help=nodes_label, metavar="INT_NUM")
 
   # ... GlobalVars.queue_system
-  queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
-#  queue_system_label='specify the queue system, none default '
+  if (len(GlobalVars.queue_system)>0) :
+    queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
+  else :
+    queue_system_label='determine the queue system, none default=> MUST SPECIFY !'
   parser.add_option( "--qsys", type="str", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label,metavar="STRING")
@@ -473,18 +504,22 @@ def process_pamq_arguments():
                   help=queue_job_name_label,metavar="STRING")
 
   # ... GlobalVars.queue_name
- # queue_label='specify the queue, default :'+GlobalVars.queue_name
-  queue_label='specify the queue (no default)'
-  parser.add_option("-q", "--queue", type="string", nargs=1,
-                #  action="store", dest="dest_queue_name", default=GlobalVars.queue_name, \
+  if (GlobalVars.queue_name_specified) :
+    queue_label='specify the queue, default :'+GlobalVars.queue_name
+    parser.add_option("-q", "--queue", type="string", nargs=1,
+                  action="store", dest="dest_queue_name",default=GlobalVars.queue_name,
+                  help=queue_label,metavar="STRING")
+  else :
+    queue_label='specify the queue (no default)'
+    parser.add_option("-q", "--queue", type="string", nargs=1,
                   action="store", dest="dest_queue_name", 
                   help=queue_label,metavar="STRING")
 
   # ... GlobalVars.proc_per_node ... "--ppn" not accepting !
   queue_ppn_label='specify number of processor per node, default:'+str(GlobalVars.proc_per_node)
   parser.add_option("--pnode", type="int", nargs=1, 
-                 # action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
-                  action="store", dest="dest_ppn", 
+                   action="store", dest="dest_ppn", default=GlobalVars.proc_per_node,
+                 #action="store", dest="dest_ppn", 
                   help=queue_ppn_label, metavar="INT")
 
   # ... GlobalVars.queue_time
@@ -496,7 +531,7 @@ def process_pamq_arguments():
                   help=queue_time_label,metavar="STRING")
 
   # ... prepare file with selected default variables (configuration file) ...
-  config_file_label='save read parameters (like qsys, queue... ) as defaults into file, default - do not save'
+  config_file_label='save read parameters (like qsys, queue... ) as defaults into PAMQ_DEFAULTS file,default - do not save'
   parser.add_option("--config", action="store_true", default=GlobalVars.prepare_config_file,
                      dest="dest_prep_config", help=config_file_label) 
 
