@@ -636,13 +636,13 @@ def process_pamq_arguments():
     queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
   else :
     queue_system_label='determine the queue system, no default=> YOU MUST SPECIFY IT !'
-  parser.add_option( "--qsys", type="str", nargs=1,
+  parser.add_option( "--qsys", type="string", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label,metavar="STRING")
 
   # ... GlobalVars.job_name
   queue_job_name_label='specify the name for the queue run, default:'+"'"+GlobalVars.job_name+"'"
-  parser.add_option( "--name", type="str", nargs=1,
+  parser.add_option( "--name", type="string", nargs=1,
                   action="store",dest="dest_queue_job_name",  
                   help=queue_job_name_label,metavar="STRING")
 
