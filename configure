@@ -664,18 +664,33 @@ fi
 mpi2check () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#  Check if MPI-2 is installed
+#  Check if MPI-2 is installed and modify flags accordingly
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 if [ "$mesp" = "mpi" ]; then
   mpi2version="yes"
+
+  if [ $IPRINT -ge "7" ];  then 
+    echo 'mpi2check: F90_COMP_NAME='$F90_COMP_NAME
+    echo 'mpi2check: F90real='$F90real
+  fi
+
   case $F90_COMP_NAME in
     xlf*|mpfort|mpxlf_r) comptst="$F90_COMP -WF,-DSYS_$sys_name" ;;
     *) comptst="$F90_COMP -DSYS_$sys_name" ;;
   esac
 # gfortran needs -fcray-pointer flag for POINTER statements in MPI2_test.F
   case $F90real in
-    gfortran) comptst="$comptst -fcray-pointer" ;;
+    gfortran|gfortran-*)
+        comptst="$comptst -fcray-pointer"
+        opt="$opt -fcray-pointer"
+        safe="$safe -fcray-pointer"
+        if [ $IPRINT -ge "7" ];  then 
+          echo 'mpi2check:   comptst='$comptst
+          echo 'mpi2check: opt='$opt
+          echo 'mpi2check: safe='$safe
+        fi
+    ;;
   esac
 
  $echo "\nChecking if a MPI-2 version is installed:"
