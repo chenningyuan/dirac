@@ -542,14 +542,18 @@ fi
 echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
 
-  $echo 'Will your nodes use local disks? (y/N) \c'
+ # $echo 'Will your nodes use local disks? (y/N) \c'
+  $echo 'Will your nodes use local disks? (Y/n) \c'
   read localdisks
   case "$localdisks" in
-  "yes" | "y" | "Y" )
-    localdisks="yes"
+ # "yes" | "y" | "Y" )
+  "no" | "n" | "N" )
+    #localdisks="yes"
+    localdisks="no"
     ;;
   *)
-    localdisks="no"
+    localdisks="yes"
+    #localdisks="no"
     ;;
   esac
 
@@ -605,15 +609,22 @@ if [ "$par" = "yes" ]; then
 #
 # MPI questions after we fixed the compiler
 #
-#  Ask for machine file
+#  Ask for the necessity of machine file and in the case of positive response (for some MPI libs)
+#  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-      $echo 'Specify default machinefile for MPI runs: (filename) (default: $PBS_NODEFILE): \c'
-      read mach_file
-      if [ -z "$mach_file" ]; then
-         mach_file='$PBS_NODEFILE'
+      $echo 'Does your MPI setting need machinefile (like MPICH2...) ? (N/y) \c'
+      mach_file=
+      default_answer="n"
+      get_answer
+      if [ "$answer" = "y" ] ; then
+         $echo 'Specify default machinefile for MPI runs: (filename) (default: $PBS_NODEFILE): \c'
+         read mach_file
+         if [ -z "$mach_file" ]; then
+            mach_file='$PBS_NODEFILE'
+         fi
       fi
-   else
+   else # if quick setting, no machinefile for MPI
       mach_file=
    fi
 #
@@ -2404,7 +2415,9 @@ SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=$SRC_DIR
 BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
+### ... check launcher carefully according to your MPI and PATH settings
 MPIRUN=$mpirun
+# ... if this is empty for parallel dirac.x, your MPI setting does not need it
 MACH_FILE=$mach_file
 LOCALDISKS=$localdisks
 # Passing files to local disks:
@@ -2449,10 +2462,21 @@ echo "pam files and edit them if you wish."
 echo
 echo "Please make sure that the mathematical libraries used have been "
 echo "compiled with the same compiler you are using now, otherwise it "
-echo "might be neccasary to link to additional runtime libraries."
+echo "might be neccesary to link to additional runtime libraries."
+echo "----- On 64bit architectures check that used math libraries are of the ILP64 type ! -----"
+
+if [ "$par"="yes" ]; then
+echo
+echo "pam script has been configured for use of Open MPI/MPICH2/Intel MPI/IBM MPI,..."
+echo "If you change the MPI library, please reconfigure the pam script."
+echo "---- On 64bit architectures check that used MPI libraries are of the ILP64 type ! -----"
+fi
+
+##### Miro: everythink should be under Dirac Wiki #####
 echo
 echo "Please check 'Known issues and problems' at"
 echo "   http://dirac.chem.sdu.dk/"
+3cho "and http://wiki.chem.vu.nl/dirac" 
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
