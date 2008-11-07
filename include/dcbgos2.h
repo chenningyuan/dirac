@@ -1,0 +1,9 @@
+C
+C     DEFINITION PARAMETERS GOSCIP :
+C
+C     /DCIGOS2/
+C        KDOGOSCI : Flag to do GOSCI calculation
+C
+      LOGICAL KDOGOSCI
+      COMMON /DCIGOS2/ KDOGOSCI
+      
