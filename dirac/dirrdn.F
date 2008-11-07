@@ -2054,7 +2054,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 12, NTABLE = 20)
+      PARAMETER (NDIR = 16, NTABLE = 20)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2066,15 +2066,17 @@ C
 #include "dcbham.h"
 #include "dcbreo.h"
 #include "dcbrot.h"
+#include "dcbgos2.h"
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
-     &             '*OPTIMI','*MP2 NO','*KRCICA','XXXXXXX'/
+     &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
+     &             '*GOSCI ','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
-     &             '.KR CC ','xXXXXXX','xXXXXXX','xXXXXXX'/
+     &             '.KR CC ','.COSCI ','.GOSCI ','xXXXXXX'/
 C
       NJOBS = 0
 C
@@ -2098,12 +2100,22 @@ C
       DOKRCI  = .FALSE.
       DOKRCC  = .FALSE.
       CBKRINI = .FALSE.
+      DOCOSCI = .FALSE.
+      DOGOSCI = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
 C
       LMOORD    = .FALSE.
       LMOORF    = .FALSE.
+C
+C.s/sya,2007.02.08
+C
+C     Initialize /DCIGOS2/ in dcbgos2.h
+C     ===================
+C
+      KDOGOSCI = .FALSE.
+C.q
 C
 C     Read menu file
 C     ==============
@@ -2270,8 +2282,16 @@ CSK         DOKRCC  = .TRUE.
 CSK         NJOBS = NJOBS + 1
             GO TO 100
  118     CONTINUE
+C&&& COSCI: Do a COSCI calculation
+            DOCOSCI = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
  119     CONTINUE
+C&&& GOSCI: Do a GOSCI calculation (new code)
+#ifdef MOD_KRMC
+            DOGOSCI = .TRUE.
+            NJOBS = NJOBS + 1
+#endif
             GO TO 100
  120     CONTINUE
             GO TO 100
@@ -2319,6 +2339,10 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          CALL QUIT('.LUCIAREL as stand-alone not implemented yet')
       END IF
       IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
+      IF(DOCOSCI) WRITE(LUPRI,'(A)') ' * Run COSCI CI code'
+#ifdef MOD_KRMC
+      IF(DOGOSCI) WRITE(LUPRI,'(A)') ' * Run GOSCI CI code'
+#endif
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
@@ -2370,7 +2394,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2425,7 +2449,30 @@ C     '*KRCICALC' - Kramers Restricted CI CALCulation
 #endif
         GO TO 200
 C
+!.s/sya,2007.01.31
    12 CONTINUE
+!
+!       Input for COSCI module
+!       Read input data
+!
+        CALL COSCI_INP(WORD,.FALSE.,WORK,LWORK)
+!.q
+        GO TO 200
+C
+!.s/sya,2007.02.06
+   13 CONTINUE
+        CALL GOSCI_INP(WORD,.FALSE.,WORK,LWORK)
+        GO TO 200
+!.q
+        GO TO 200
+C
+   14 CONTINUE
+        GO TO 200
+C
+   15 CONTINUE
+        GO TO 200
+C
+   16 CONTINUE
         GO TO 200
 C
     1 CONTINUE
@@ -2474,6 +2521,18 @@ C
          CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)
       ENDIF
+!
+!     Input of COSCI module
+!     Reset and just return back.
+!
+      IF( DOCOSCI ) THEN
+         CALL COSCI_INP(WORD,.TRUE.,WORK,LWORK)
+      END IF
+#ifdef MOD_KRMC
+      IF( DOGOSCI ) THEN
+         CALL GOSCI_INP(WORD,.TRUE.,WORK,LWORK)
+      END IF
+#endif
 C
       RETURN
 C
@@ -6829,5 +6888,374 @@ C
   220 CONTINUE
 C
       FIND_KEYWORD = KEY_FOUND
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck cosci_inp */
+      SUBROUTINE COSCI_INP(WORD,RESET,WORK,LWORK)
+!***********************************************************************
+!
+!     Input section for COSCI-module
+!
+!     Written by: S. Yamamoto - Jan 31, 2007
+!     Last-update: S. Yamamoto - 2007.06.08, chukyo-u
+!     Last-update: S. Yamamoto - 2007.09.16, chukyo-u
+!
+!     Copied from KRMCINP and modified.
+!     Common block data will be modified in this routine.
+!     The data is stored in the common block in the cossya.h file.
+!     Called by: DIRCTL->PAMINP->PSIINP->COSCI_INP
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+!
+      PARAMETER (NTABLE = 31)
+!     PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
+!
+      LOGICAL SET, NEWDEF, LBIT, RESET
+!     CHARACTER*4 REPNA(64)
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+!     CHARACTER REPA(8)*4
+      DIMENSION WORK(LWORK)
+!     DIMENSION MULTB_TMP(64,64)
+!
+!     ...for NFSYM
+#include "dgroup.h"
+!
+#include "cossya.h"
+!
+      INTEGER ISETKW(NTABLE)
+!
+!     ...The variable "SET" must have save attribute.
+      SAVE SET
+      DATA TABLE /'.PRINT ','.INACT ','.ACTIVE','.NREP  ','.NOPEN ',
+     &            '.GASO  ','.IELC  ','.MINMAX','.TRDM  ','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX'/
+      DATA SET/.FALSE./
+!
+      DATA MAXACT/31/
+      DATA LUMLF1/75/
+!----------------------------------------------------------------------
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+!
+!     ...Zero clear
+!
+      CALL IZERO(ISETKW,NTABLE)
+!
+!     Initialize /COSSYA0/
+!     ====================
+!
+      KCOSINP = .FALSE.
+      SYA_KTRDMAT = .FALSE.
+!
+!
+!     Initialize /COSSYA2/
+!     ====================
+!
+      SYA_INACT = 0
+      SYA_NOPEN = 0
+      SYA_GASO  = 0
+      SYA_IELC  = 0
+      SYA_MAXE  = 0
+      SYA_MINE  = 0
+      SYA_NTRDM = 0
+!
+!     Process input for COSSYA
+!     ========================
+!
+      NEWDEF = (WORD .EQ. '*COSCI ')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in COSCI_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in COSCI_INP.')
+!
+    1          CONTINUE
+!&&& .PRINT : print level in COSCI module
+                  READ(LUCMD,*) SYA_PRINT
+                  ISETKW(1) = 1
+               GO TO 100
+!
+    2          CONTINUE
+!&&& .INACT: number of inactive orbitals for each irrep
+                  READ(LUCMD,*) (SYA_INACT(I),I=1,NFSYM)
+                  ISETKW(2) = 1
+               GO TO 100
+!
+    3          CONTINUE
+!&&& .ACTIVE: number of active orbitals for each irrep
+                  READ(LUCMD,*) (SYA_ACTIV(I),I=1,NFSYM)
+                  ISETKW(3) = 1
+               GO TO 100
+!
+    4          CONTINUE
+!&&& .NREP: number of fermion+boson irreps.
+!           NREP is used only within this routine.
+                  READ(LUCMD,*) SYA_NREP
+                  ISETKW(4) = 1
+!.s/sya,2007.0920/
+!#                NREP = SYA_NREP
+!.q
+               GO TO 100
+!
+    5          CONTINUE
+!&&& .NOPEN: number of gas shell (counted by spinor)
+                  READ(LUCMD,*) SYA_NOPEN
+                  ISETKW(5) = 1
+               GO TO 100
+!
+    6          CONTINUE
+!&&& .GASO: GAS orbital set
+                  IF( ISETKW(4) .EQ. 0 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .NREP must be specified before .GASO !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  IF( ISETKW(5) .EQ. 0 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .NOPEN must be specified before .GASO !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  DO I = 1, SYA_NOPEN
+                     READ(LUCMD,*) (SYA_GASO(J,I),J=1,SYA_NREP)
+                  END DO
+                  ISETKW(6) = 1
+               GO TO 100
+!
+    7          CONTINUE
+!&&& .IELC: number of electros for each GAS 
+                  IF( ISETKW(5) .EQ.0 .OR. ISETKW(6) .EQ. 0 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .NOPEN must be specified before .IELC !'
+     &                  //' .GASO  must be specified before .IELC !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  DO I = 1, SYA_NOPEN
+                     READ(LUCMD,*) SYA_IELC(I)
+                  END DO
+                  ISETKW(7) = 1
+               GO TO 100
+!
+    8          CONTINUE
+!&&& .MINMAX: allowed minimum and maxmum number of electrons in each GAS shell
+                  IF( ISETKW(6) .EQ. 0 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .GASO must be specified before .MAXE !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  IF( ISETKW(7) .EQ. 1 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .IELC and .MAXE are exclusive each other !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  DO I = 1, SYA_NOPEN
+                      READ(LUCMD,*) SYA_MINE(I),SYA_MAXE(I)
+                  END DO
+                  ISETKW(8) = 1
+               GO TO 100
+!
+    9          CONTINUE
+!&&& .TRDM: number of states for which TRDM is to be calculated.
+                  IF( ISETKW(4) .EQ. 0 ) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &                  //' .NREP must be specified before .TRDM !'
+                     CALL QUIT('*** ERROR in COSCI_INP ***')
+                  END IF
+                  READ(LUCMD,*) (SYA_NTRDM(I),I=1,SYA_NREP)
+                  ISETKW(9) = 1
+                  SYA_KTRDMAT = .TRUE.
+               GO TO 100
+!
+   10          CONTINUE
+   11          CONTINUE
+   12          CONTINUE
+   13          CONTINUE
+   14          CONTINUE
+   15          CONTINUE
+   16          CONTINUE
+   17          CONTINUE
+   18          CONTINUE
+   19          CONTINUE
+   20          CONTINUE
+   21          CONTINUE
+   22          CONTINUE
+   23          CONTINUE
+   24          CONTINUE
+   25          CONTINUE
+   26          CONTINUE
+   27          CONTINUE
+   28          CONTINUE
+   29          CONTINUE
+   30          CONTINUE
+   31          CONTINUE
+!&&&  XXXXXX: invalid data
+                  CALL QUIT('*** ERROR in COSCI_INP *** ' //
+     &                      'invalid data XXXXXX')
+               GO TO 100
+!
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in COSCI_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in COSCI_INP.')
+            END IF
+      END IF
+  300 CONTINUE
+!
+!
+!     Check that the number of active orbitals is less than N1
+!     --------------------------------------------------------
+!
+      MACTVM = 0
+      DO I = 1, SYA_NOPEN
+         DO J = 1, NFSYM
+            MACTVM = MACTVM + SYA_GASO(J,I)
+         END DO
+      END DO
+      MACTVS = MACTVM * 2
+      IF( MACTVM .GT. MAXACT ) THEN
+        WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &    ' *** ERROR in COSCI_INP *** Too many active orbitals: ',
+     &    MACTVM, ' -- max is ',MAXACT
+        CALL QUIT(
+     &     '*** ERROR in COSCI_INP *** Too many active orbitals!')
+      END IF
+!
+!
+!     Check that the number of active electrons is less than MACTVS
+!     ---------------------------------------------------------------
+!
+      IF( ISETKW(7) .EQ. 1 ) THEN
+        MAEL = 0
+        DO I = 1, SYA_NOPEN
+           MAEL = MAEL + SYA_IELC(I)
+        END DO
+        IF( MAEL .GT. MACTVS ) THEN
+          WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &      ' *** ERROR in COSCI_INP *** Too many active electrons: ',
+     &      MAEL, ' -- max is ',MACTVS
+          CALL QUIT(
+     &      '*** ERROR in COSCI_INP *** Too many active electrons!')
+        END IF
+!
+!
+!     Check MINE and MAXE
+!     -------------------
+!
+        DO I = 1, SYA_NOPEN
+          SYA_MINE(I) = SYA_IELC(I)
+          SYA_MAXE(I) = SYA_IELC(I)
+        END DO
+      END IF
+!
+      IF( (ISETKW(7) .EQ. 1) .AND. (ISETKW(8) .EQ. 1) ) THEN
+        WRITE(LUPRI,'(A)') ' *** ERROR in COSCI_INP ***'
+     &     //' .IELC and .MINMAX are mutually exclusive !'
+        CALL QUIT('*** ERROR in COSCI_INP *** ')
+      END IF
+!
+!     If everything is OK, then set KCOSINP to .TRUE. .
+!     
+      KCOSINP = .TRUE.
+!
+!     Print section
+!     =============
+!
+      IF( .NOT.KCOSINP ) GOTO 9999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)')
+     &   ' COSCI_INP: Set-up for stand-alone COSCI calculation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+!
+      WRITE(LUPRI,'(A,I4)')
+     &   ' * General print level  : ',
+     &   SYA_PRINT
+!
+      WRITE(LUPRI,'(A,I4)')
+     &   ' * # fermion irreps     : ',
+     &   NFSYM
+!
+      WRITE(LUPRI,'(A,16I4)')
+     &   ' * Inactive orbitals    : ',
+     &   (SYA_INACT(I),I=1,NFSYM)
+!
+      WRITE(LUPRI,'(A,16I4)')
+     &   ' * Active orbitals      : ',
+     &   (SYA_ACTIV(I),I=1,NFSYM)
+!
+      WRITE(LUPRI,'(A,I4)')
+     &   ' * # fermi+boson irreps : ',
+     &   NREP
+!
+      WRITE(LUPRI,'(A,I4)')
+     &   ' * Number of gas shells : ',
+     &   SYA_NOPEN
+!
+      WRITE(LUPRI,'(A)')
+     &   ' * GAS orbital set      : '
+      DO I = 1, SYA_NOPEN
+         WRITE(LUPRI,'(26X,32I4)') (SYA_GASO(J,I),J=1,SYA_NREP)
+      END DO
+!
+      IF( ISETKW(7) .EQ. 1 ) THEN
+      WRITE(LUPRI,'(A)')
+     &   ' * IELC                 : '
+      DO I = 1, SYA_NOPEN
+         WRITE(LUPRI,'(26X,I4)') SYA_IELC(I)
+      END DO
+      END IF
+!
+      IF( ISETKW(8) .EQ. 1 ) THEN
+      WRITE(LUPRI,'(A)')
+     &   ' * MINE,MAXE            : '
+      DO I = 1, SYA_NOPEN
+         WRITE(LUPRI,'(26X,2I4)') SYA_MINE(I),SYA_MAXE(I)
+      END DO
+      END IF
+!
+      IF( ISETKW(9) .EQ. 1 ) THEN
+      WRITE(LUPRI,'(A)')
+     &   ' * Flag for TR-DMAT     : '
+      WRITE(LUPRI,'(26X,L7)') SYA_KTRDMAT
+      END IF
+!
+ 9999 CONTINUE
+!
       RETURN
       END

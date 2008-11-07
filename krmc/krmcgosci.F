@@ -3317,3 +3317,447 @@ C
       CALL FLSHFO(LUPRI)
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck gosci_inp */
+      SUBROUTINE GOSCI_INP(WORD,RESET,WORK,LWORK)
+!***********************************************************************
+!
+!     Input section for GOSCI-module
+!
+!     Written by: S. Yamamoto + tsaue, Feb 06, 2007
+!
+!     Copied from KRMCINP and modified.
+!     Common block data will be modified in this routine.
+!     The data is stored in the common block in the cossya.h file.
+!     Called by: DIRCTL->PAMINP->PSIINP->GOSCI_INP
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+!
+      PARAMETER (NTABLE = 31)
+!
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK),IMKSET(3)
+      DIMENSION MULTB_TMP(64,64)
+!
+#include "dcbham.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcborb.h"
+#include "dcbgosci.h"
+!
+C.s/sya,2007.02.07
+#include "dcbgos2.h"
+C.q
+!     ...The variable "SET" must have save attribute.
+      SAVE SET
+      DATA TABLE /'.PRINT ','.GASSH ','.GASSPC','.MK2REF','.MK2DEL',
+     &            '.INACTI','.CASSCF','.CI SYM','.RELSYM','.MK2LIM',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX'/
+      DATA SET/.FALSE./
+!
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C     Initialize DCBGOS
+C     ================
+C
+      IPRGOS = 0
+      IGOSREP = -1
+      DO IFRP = 1,NFSYM
+        IGOS_NISH(IFRP) = 0
+        IGOS_NASH(IFRP) = 0
+      ENDDO
+      IGOS_STATE = 1
+      GOS_UCIBOS = .FALSE.
+      CALL IZERO(IGOS_NGSHT,MAXASH_GOSCI)
+C
+C     Initialize DCBORB
+C     =================
+C     NOTE that we use the parts of it not used by HF !
+C     We thus assume no MCSCF in the same run...
+C
+      IGOS_NGAS = 0
+      DO I = 1,2
+         IGOS_NISH(I) = 0
+         IGOS_NASH(I) = 0
+         DO J = 1, MAXASH_GOSCI 
+            IGOS_NGSH(I,J) = 0
+         END DO
+      END DO
+      IGOS_NAELEC = -1
+C
+C.s/sya,2007.02.07
+C
+C     Initialize DCBGOS2
+C     ==================
+      KDOGOSCI = .FALSE.
+C.q
+C
+C     Process input
+C     =============
+C
+      CALL IZERO(IMKSET,3)
+      NEWDEF = (WORD .EQ. '*GOSCI ')
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in COSCI_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in COSCI_INP.')
+!
+    1          CONTINUE
+!&&&  PRINT : print level in GOSCI module
+                  READ(LUCMD,*) IPRGOS
+               GO TO 100
+!
+    2          CONTINUE
+!&&&  GASSH : GAS setup
+                  IF (IGOS_NGAS.GT.0) THEN
+                     CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                 'You cannot specify both .GASSH and .CASSCF')
+                  END IF
+                  READ(LUCMD,*) IGOS_NGAS
+                  IF (IGOS_NGAS .LT. 1 .OR. IGOS_NGAS .GT. MXMCGAS) THEN
+                     CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                         'illegal value of IGOS_NGAS')
+                  END IF
+                  DO I = 1, IGOS_NGAS
+                     READ(LUCMD,*) (IGOS_NGSH(J,I),J=1,NFSYM)
+                  END DO
+               GO TO 100
+!
+    3          CONTINUE
+C&&&  GASSPC: GAS space constraints
+                  IF (IGOS_NGAS .EQ. 0) THEN
+                     WRITE(LUPRI,'(A)') ' *** ERROR in GOSCI_INP ***'
+     &                  //' .GASSH must be specified before .GASSP!'
+                     CALL QUIT('*** ERROR in GOSCI_INP ***')
+                  END IF
+                  DO I = 1, IGOS_NGAS
+                     READ(LUCMD,*) (IGOS_NGSP(J,I),J=1,2)
+                  END DO
+                  IF (IGOS_NAELEC.LT.0) IGOS_NAELEC = 
+     &               IGOS_NGSP(2,IGOS_NGAS)
+               GO TO 100
+!
+    4          CONTINUE
+C&&&  MK2REFERENCE: 2 * M_K reference
+                  READ(LUCMD,*) IGOS_MK2REF
+                  IMKSET(2) = 1
+               GO TO 100
+    5          CONTINUE
+C&&&  MK2DELTA: 2 * DELTA M_K
+                  READ(LUCMD,*) IGOS_MK2DEL
+                  IMKSET(3) = 1
+               GO TO 100
+    6          CONTINUE
+C&&&  INACTIVE ORBITALS
+               READ(LUCMD,*) (IGOS_NISH(I),I=1,NFSYM)
+               GO TO 100
+    7          CONTINUE
+C&&&  CASSCF -- this defines a CAS space
+               IF (IGOS_NGAS .GT. 0) THEN
+                  CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                 'You cannot specify both .GASSH and .CASSCF')
+               END IF
+               READ(LUCMD,*) IGOS_NAELEC
+               READ(LUCMD,*) (IGOS_NASH(I),I=1,NFSYM)
+               IGOS_NGAS = 1
+               IGOS_NGSP(1,IGOS_NGAS) = IGOS_NAELEC
+               IGOS_NGSP(2,IGOS_NGAS) = IGOS_NAELEC 
+    8          CONTINUE
+C&&&  SYMMETRY: symmetry of the wave function
+               IF (IGOSREP .GT. 0) THEN
+                  CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
+               READ(LUCMD,*) IGOSREP
+               GO TO 100
+!
+    9          CONTINUE
+C&&&  RELSYM: symmetry of the wave function
+!.s/sya,2007.02.06
+               IF (IGOSREP .GT. 0) THEN
+                  CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                 'You can only specify symmetry once')
+               END IF
+               READ(LUCMD,*) IGOSREP
+!.q
+               GO TO 100
+!
+   10          CONTINUE
+C&&&  MK2LIM: min/max value of 2 * MK
+               READ(LUCMD,*) IGOS_MINMK2,IGOS_MAXMK2
+               IMKSET(1) = 1
+               GO TO 100
+!
+   11          CONTINUE
+   12          CONTINUE
+   13          CONTINUE
+   14          CONTINUE
+   15          CONTINUE
+   16          CONTINUE
+   17          CONTINUE
+   18          CONTINUE
+   19          CONTINUE
+   20          CONTINUE
+   21          CONTINUE
+   22          CONTINUE
+   23          CONTINUE
+   24          CONTINUE
+   25          CONTINUE
+   26          CONTINUE
+   27          CONTINUE
+   28          CONTINUE
+   29          CONTINUE
+   30          CONTINUE
+   31          CONTINUE
+!&&&  XXXXXX: invalid data
+                  CALL QUIT('*** ERROR in GOSCI_INP *** ' //
+     &                      'invalid data XXXXXX')
+               GO TO 100
+!
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in GOSCI_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in GOSCI_INP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Process input
+C     =============
+C
+      IF (IGOS_NGAS .GT. 0) THEN
+         IGOS_NASHT = 0
+         DO J = 1, NFSYM
+            IGOS_NASH(J) = 0
+            DO I = 1, IGOS_NGAS
+               IGOS_NASH(J) = IGOS_NASH(J) + IGOS_NGSH(J,I)
+            END DO
+            IGOS_NASHT = IGOS_NASHT + IGOS_NASH(J)
+         END DO
+      END IF
+      IF(IGOS_NASHT.GT.MAXASH_GOSCI) THEN
+        WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &       ' *** ERROR in GOSCI_INP *** Too many active orbitals: ',
+     &       IGOS_NASHT, ' -- max is ',MAXASH_GOSCI
+       CALL QUIT('*** ERROR in GOSCI_INP *** Too many active orbitals!')
+      ENDIF
+CTROND: set UCIBOS !!!!
+C
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)')
+     &   ' KRMCINP: Set-up for GOSCI calculation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRGOS
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Inactive orbitals     : ',(IGOS_NISH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Active orbitals       : ',(IGOS_NASH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * Active electrons      : ',IGOS_NAELEC
+      IF (IGOS_NGAS .GT. 0) THEN
+         WRITE(LUPRI,'(A,I3,A)')
+     &        ' * GAS space setup for ',IGOS_NGAS,' GAS space(s) : '
+         DO I = 1, IGOS_NGAS
+            WRITE(LUPRI,'(A,I3,A,2I4)')
+     &           '   - GAS space ',I,'       : ',
+     &           (IGOS_NGSH(J,I),J=1,NFSYM)
+            WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &      '    (constraints: min/max active electrons after space : ',
+     &           IGOS_NGSP(1,I),'/',IGOS_NGSP(2,I),')'
+         END DO
+         IF (IGOS_NGSP(2,IGOS_NGAS) .NE. IGOS_NAELEC)
+     &        CALL QUIT('*** ERROR in GOCSCI_INP *** ' //
+     &        'Inconsistency between .GASSP and .CASSCF')
+      END IF
+C
+C     Symmetry of the wave function:
+C     ------------------------------
+C
+C
+C     MK constraints in the CI expansion.
+C
+      IF (IMKSET(1) .EQ. 1) THEN
+C
+C        MINMK2/MAXMK2 explicitly set
+C
+      ELSE
+         IF (IMKSET(2) .EQ. 1 .AND. IMKSET(3) .EQ. 1) THEN
+C
+C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
+C
+            IGOS_MINMK2 = IGOS_MK2REF - IGOS_MK2DEL
+            IGOS_MAXMK2 = IGOS_MK2REF + IGOS_MK2DEL
+C
+         ELSE
+C
+C           Assign default values for MINMK2/MAXMK2
+C
+            IGOS_MAXMK2 = 2*MIN(IGOS_NAELEC,IGOS_NASHT) - IGOS_NAELEC
+            IGOS_MINMK2 = IGOS_NAELEC-2*MIN(IGOS_NAELEC,IGOS_NASHT)
+            IGOS_MK2REF = 0
+            IGOS_MK2DEL = IGOS_MAXMK2
+         END IF
+      END IF
+C
+C     Boson symmetry in the CI expansion
+C
+      IF(IGOSREP.GT.0) THEN
+        IF (SPINFR.AND.GOS_UCIBOS) THEN
+          NREP = NBSYM
+          WRITE(LUPRI,'(A)')
+     &    ' * Boson spatial spinor symmetry used in CI expansion.'
+          WRITE(LUPRI,'(2A)')
+     &    ' * Spatial symmetry (boson) of wave function : ',
+     &    REP( IGOSREP - 1 )
+          WRITE(LUPRI,'(A,I4,A,I3)')
+     &    ' * Allowed interval of 2 * MS :',
+     &    IGOS_MINMK2, ' to ', IGOS_MAXMK2
+        ELSE IF (.NOT.SPINFR.AND.GOS_UCIBOS) THEN
+          NREP = NBSYM
+          WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
+     &    ' symmetry (as non-rel) used in CI expansion.'
+          WRITE(LUPRI,'(2A)')
+     &    ' * Approximate spatial symmetry (boson) of wave function : ',
+     &    REP ( IGOSREP - 1 )
+          WRITE(LUPRI,'(A,I4,A,I3)')
+     &    ' * Allowed interval of approximate 2 * MS :',
+     &    IGOS_MINMK2, ' to ', IGOS_MAXMK2
+        ELSE
+          IF (SPINFR) THEN
+            CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+          ELSE
+            CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+          ENDIF
+          IF ( MOD ( IGOS_NAELEC, 2 ) .EQ. 0 ) THEN
+            IRRP = NREP + IGOSREP
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (boson) of wave function: ',
+     &        REPNA(IRRP)
+          ELSE
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (fermion) of wave function: ',
+     &        REPNA(IGOSREP)
+          END IF
+          WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of 2 * MK :',
+     &     IGOS_MINMK2, ' to ', IGOS_MAXMK2
+        END IF
+      ELSE
+CTROND: imporive on this,...
+        WRITE(LUPRI,'(A)') 
+     &    '* All symmetries used'
+      ENDIF
+C
+      IF (IGOSREP .GT. NREP) THEN
+            WRITE(LUPRI,'(/A//A,2I3)')
+     &         ' INPUT ERROR, requested .SYMMETRY is non-existent!',
+     &         ' symmetry, max value of symmetry = ', 
+     &           IGOSREP, NREP
+            CALL QUIT('INPUT ERROR for *GOSCI  .SYMMETRY')
+      END IF
+C
+C.s/sya,2007.02.07
+      KDOGOSCI = .TRUE.
+C.q
+C
+      CALL GOSCI_CPY
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gosci_cpy */
+      SUBROUTINE GOSCI_CPY
+C***********************************************************************
+C
+C     Transfer information from common block in dcbgosci.h to 
+C     common block in dcbkrmc.h.
+C
+C     Written by: S. Yamamoto - Fri Feb  9 15:26:44 CET 2007
+C     Last revision: 
+C     Called by: GOSCI_INP
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxmcgas.h"
+C
+#include "dgroup.h"
+#include "dcbgosci.h"
+#include "dcbkrmc.h"
+C
+      CALL QENTER('GOSCI_CPY')
+C
+      NKRMCGAS = IGOS_NGAS
+      NKRMC_MK2REF = IGOS_MK2REF
+      NKRMC_MK2DEL = IGOS_MK2DEL
+      NKRMC_MINMK2 = IGOS_MINMK2
+      NKRMC_MAXMK2 = IGOS_MAXMK2
+ccc   CALL IZERO(NKRMC_GSHT,MXMCGAS)
+      DO I = 1,NFSYM
+         NKRMCISH(I) = IGOS_NISH(I)
+         NKRMCASH(I) = IGOS_NASH(I)
+         DO J = 1, NKRMCGAS
+            NKRMCGSH(I,J) = IGOS_NGSH(I,J)
+ccc         NGSHT(J) = NGSHT(J) + NGSH(I,J)
+         END DO
+ccc      NOCC(I) = IGOS_NISH(I) + IGOS_NASH(I)
+      END DO
+      NKRMCAELEC = IGOS_NAELEC
+C     min and max electrons in each gas space:
+      DO J = 1, NKRMCGAS
+         NKRMCGSP(1,J) = IGOS_NGSP(1,J)
+         NKRMCGSP(2,J) = IGOS_NGSP(2,J)
+      END DO
+C
+      IPRKRMC = IPRGOS
+      IKRMC_ISTATE = 1
+      IKRMC_SYMMETRY = IGOSREP
+C
+      KRMC_UCIBOS = GOS_UCIBOS
+      KRMC_CIPROGRAM = 'GOSCI'
+C
+      CALL QEXIT('GOSCI_CPY')
+      RETURN
+      END
