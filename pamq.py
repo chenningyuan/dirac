@@ -4,7 +4,7 @@
 #
 # writen by Miro ILIAS, Tel Aviv, 2008 after Luuk's pamq script
 #
-# further improvements welcomed
+# further improvement, suggestion etc are warmly welcomed
 #
 
 import  sys, os, string, optparse
@@ -18,6 +18,13 @@ class PamQVariables:
   #  initialize set of variables ...
   #
 
+    ### contains pamq.py; modify it according to your setting !
+    self.dirac_home='/people/disk2/ilias/QCH_Work/qch_progs/dirac/my_opmpi_ifort_optim/trunk'
+
+
+    ### ... testscript path 
+    self.testlast_path=self.dirac_home+'/'+'testlast'
+
     # print level
     self.iprint=1
 
@@ -27,42 +34,37 @@ class PamQVariables:
     # ... specify the default job name
     self.job_name='queue_job.'+str(os.getpid())
 
-    self.job_inp='input_test'
-
     self.job_out='queue_job.'+str(os.getpid())+'.log_out'
 
-    #self.queue_system='pbs'
-    self.queue_system=''
+    self.queue_system='' # must be configured
 
-   #  self.queue_name='default'
-   # self.queue_name='workq'
-   # self.queue_name='express'
     self.queue_name=''
     self.queue_name_specified=False
 
     # time 
-    self.queue_time='0:20'
+    self.queue_time='00:20:00'
     self.queue_time_specified=False
 
     # ... is pure serial job (no mpi added to pam)
     self.is_serial=False
 
-   # self.nnodes=1
-    self.nnodes=0
+    self.nnodes=0  # must be configured 
+    self.proc_per_node=0 # must be configured 
+    self.mpi_procs=0 # calculated later as nnodes*proc_per_node
 
-   # self.proc_per_node=4
-   # self.proc_per_node=1
-    self.proc_per_node=0
+    # ... dirac tests 
+    self.dirac_tests_run=False
+    self.testrun_arguments=''
 
-   # self.pam_script_name="pam"
-   # self.pam_script_dir="~/bin"
-   # self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
-    self.pam_script=''
+    # ... what is going to be in script
+    self.batch_script_command=''
 
-   # self.queue_script="pamq."+str(os.getpid())+".batch_script"
+    # ... empty, otherwise : self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
+    self.pam_script='' # must be configured 
+
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
-    # home directory ...
+    # ... home directory ...
     self.home_dir=os.getenv("PWD")
 
     # ... configuration file with selected defaults ...
@@ -73,15 +75,14 @@ class PamQVariables:
     #-------------------------------------------------------------------
     self.implemented_queue_systems=['pbs','bsub','loadleveler','grid_engine']
 
-    # ... set up file with queue variables defaults
-    self.pamq_defaults_file=str(os.getenv("HOME"))+'/PAMQ_DEFAULTS'
+    # ... set up file with default variables
+   # self.pamq_defaults_file=str(os.getenv("HOME"))+'/PAMQ_DEFAULTS'
+    self.pamq_defaults_file=self.dirac_home+'/PAMQ_DEFAULTS'
 
     self.read_from_config_file=False
-   # if os.path.isfile("PAMQ_DEFAULTS"):
     if os.path.isfile(self.pamq_defaults_file):
       self.read_configure_file()
       self.read_from_config_file=True
-     # print 'defaults read from file'
 
     if self.iprint >8 :
       print ' setting home directory:',self.home_dir
@@ -90,45 +91,39 @@ class PamQVariables:
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_pam_mpi(self):
   #
-  # class method: set up mpi parameter for pam script
+  # class method: set up 'mpi' parameter for the pam script
   #
-    if GlobalVars.iprint > 7:
+    if self.iprint > 7:
       print '\nsetting mpi for pam' 
-      print 'set_pam_mpi: extracted pam arguments:', GlobalVars.pam_arguments
-    # print GlobalVars.pam_arguments
+      print 'set_pam_mpi: extracted pam arguments:', self.pam_arguments
 
     # extend pam flags with the necessary -mpi arguments
-    mpi_procs=GlobalVars.nnodes*GlobalVars.proc_per_node
+    self.mpi_procs=self.nnodes*self.proc_per_node
 
-    if GlobalVars.iprint >= 5:
-      print 'set_pam_mpi: calculated # mpi=',mpi_procs
-      print 'using GlobalVars.nnodes=',GlobalVars.nnodes
-      print 'and GlobalVars.proc_per_node=',GlobalVars.proc_per_node
+    if self.iprint >= 5:
+      print 'set_pam_mpi: calculated # mpi=',self.mpi_procs
+      print 'using self.nnodes=',self.nnodes
+      print 'and self.proc_per_node=',self.proc_per_node
 
-    GlobalVars.pam_arguments=' -mpi '+str(mpi_procs)+GlobalVars.pam_arguments
+    # ... add mpi stuff
+    self.pam_arguments=' -mpi '+str(self.mpi_procs)+self.pam_arguments
 
-    if GlobalVars.iprint >= 7:
-      print 'set_pam_mpi: mpi-extended pam arguments:', GlobalVars.pam_arguments
+    if self.iprint >= 7:
+      print 'set_pam_mpi: mpi-extended pam arguments:', self.pam_arguments
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def create_configure_file(self):
   #
   #      class method: create configure file with important parameters as DEFAULTS
   #
-    if GlobalVars.iprint >= 12:
+  #  we are inside class method definition, so we are to use 'self.' specification
+  #
+    if self.iprint >= 12:
       print 'preparing PAMQ_DEFAULTS file'
     
     error_exit=False
  
-   # f = open('PAMQ_DEFAULTS', 'w') 
-   # f = open('~/PAMQ_DEFAULTS', 'w') 
-   # f = open(GlobalVars.pamq_defaults_file, 'w') 
     f = open(self.pamq_defaults_file, 'w') 
-
-   # ... check if the file is open ...
-   # if not file_is_open(f) :
-   #   print '\n File ',self.pamq_defaults_file,' is not open ! Error ! \n' 
-   #   sys.exit()
 
     print 'opening file for saving defaults in ~/ dir:',self.pamq_defaults_file
 
@@ -136,46 +131,44 @@ class PamQVariables:
     f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
     f.write('###  \n')
 
-   # print 'len(GlobalVars.queue_system)=',len(GlobalVars.queue_system)
-
-    if (len(GlobalVars.queue_system)>0) :
+    if (len(self.queue_system)>0) :
       f.write('# ... default queue system \n')
-      f.write('QUEUE_SYSTEM='+GlobalVars.queue_system+'\n')
-      print 'saved QUEUE_SYSTEM='+GlobalVars.queue_system
+      f.write('QUEUE_SYSTEM='+self.queue_system+'\n')
+      print 'saved QUEUE_SYSTEM='+self.queue_system
     else :
       print '\ncreate_configure_file: YOU MUST SPECIFY QUEUE SYSTEM!\n'
       error_exit=True 
 
-    if (len(GlobalVars.queue_name)>0) :
+    if (len(self.queue_name)>0) :
       f.write('# ... default queue name \n')
-      f.write('QUEUE_NAME='+GlobalVars.queue_name+'\n')
-      print 'saved QUEUE_NAME=',GlobalVars.queue_name
+      f.write('QUEUE_NAME='+self.queue_name+'\n')
+      print 'saved QUEUE_NAME=',self.queue_name
 
-    if (GlobalVars.nnodes>0) :
+    if (self.nnodes>0) :
       f.write('# ... default number of nodes for (parallel) run\n')
-      f.write('NODES='+str(GlobalVars.nnodes)+'\n')
-      print 'saved NODES=',GlobalVars.nnodes
+      f.write('NODES='+str(self.nnodes)+'\n')
+      print 'saved NODES=',self.nnodes
     else :
       print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF NODES !\n'
       error_exit=True 
 
-    if (GlobalVars.proc_per_node>0) :
+    if (self.proc_per_node>0) :
       f.write('# ... default number of processors (CPU) per 1 node\n')
-      f.write('PROCESSORS_PER_NODE='+str(GlobalVars.proc_per_node)+'\n')
-      print 'saved PROCESSORS_PER_NODE=',GlobalVars.proc_per_node
+      f.write('PROCESSORS_PER_NODE='+str(self.proc_per_node)+'\n')
+      print 'saved PROCESSORS_PER_NODE=',self.proc_per_node
     else :
       print '\ncreate_configure_file: YOU MUST SPECIFY DEFAULT NUMBER OF PROCESSORS_PER_NODE !\n'
       error_exit=True 
 
-    if (len(GlobalVars.pam_script)>0) :
+    if (len(self.pam_script)>0) :
       f.write('# ... default location of the DIRAC pam script \n')
-      f.write('PAM_SCRIPT='+GlobalVars.pam_script+'\n')
-      print 'saved PAM_SCRIPT=',GlobalVars.pam_script
+      f.write('PAM_SCRIPT='+self.pam_script+'\n')
+      print 'saved PAM_SCRIPT=',self.pam_script
     else :
       print '\ncreate_configure_file: YOU MUST SPECIFY LOCATION OF THE DIRAC PAM SCRIPT !\n'
       error_exit=True 
 
-    if (GlobalVars.is_serial) :
+    if (self.is_serial) :
       f.write('# .... default for serial jobs !\n')
       f.write('SERIAL_JOBS_ONLY\n')
       print 'saved SERIAL_JOBS_ONLY (ie set only serial runs)'
@@ -191,11 +184,11 @@ class PamQVariables:
   #
   # class method: read parameters (DEFAULTS) from the configure file
   #
+  #  we are inside class method definition, so we are to use 'self.' specification
+  #
     if self.iprint >= 12 :
       print 'in ... read_configure_file'
 
-    #file = open('PAMQ_DEFAULTS','r')
-   # file = open('PAMQ_DEFAULTS','r')
     file = open(self.pamq_defaults_file,'r')
 
     # read line after line
@@ -282,6 +275,37 @@ class PamQVariables:
         print 'Bad pam_script value in the file PAMQ_DEFAULTS !' 
       sys.exit()
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def prepare_batch_script_command(self):
+  #
+  #   class method: prepare final script command
+  #
+  #  we are inside class method definition, so we are to use 'self.' specification
+  #
+  # ... either run test or standard dirac run
+  #
+
+  # unite into one local string
+    self.pam_script_args=self.pam_script+self.pam_arguments
+ 
+    if self.dirac_tests_run :
+      if os.path.isfile(self.testlast_path): 
+        if self.is_serial :
+          self.batch_script_command=self.testlast_path+self.testrun_arguments
+        else :
+          # ... parallel run of tests ...
+          self.batch_script_command=self.testlast_path+' --mpi='+str(self.mpi_procs)+' '+self.testrun_arguments
+          self.submit_job=True
+      else :
+        print 'prepare_batch_script_command: DIRAC testlast script NOT found in:\n',self.testlast_path  
+        sys.exit()
+    else :
+      self.batch_script_command=self.pam_script_args # complete pam command with arguments
+
+    if self.iprint > 7:
+      print 'prepare_batch_script_command:',self.batch_script_command
+  
+
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
 #
@@ -293,9 +317,6 @@ def process_pbs_script():
 
   if GlobalVars.iprint >8 :
      print '\nin prepare_pbs_script...'
-
-  # unite into one local string
-  GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
 
   if GlobalVars.iprint >8 :
     print ' home directory:',GlobalVars.home_dir
@@ -403,7 +424,7 @@ cd %s
 #   ... execute own DIRAC pam script
 #
 %s 
-''' % GlobalVars.pam_script_args
+''' % GlobalVars.batch_script_command
   s += '''\
 #
 #
@@ -443,13 +464,9 @@ def process_grid_engine_script():
   if GlobalVars.iprint >8 :
      print '\nin prepare_grid_engine_script...'
 
-
-  # unite into one local string
-  GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
-
   if GlobalVars.iprint >8 :
     print ' home directory:',GlobalVars.home_dir
-    print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
+    #print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
   f=open(GlobalVars.queue_script,'w') # open file with queue commands
 
@@ -524,7 +541,7 @@ echo '------------------------------------'
 #   ... execute own DIRAC pam script
 #
 %s 
-''' % GlobalVars.pam_script_args
+''' % GlobalVars.batch_script_command
   s += '''\
 #
 #
@@ -535,7 +552,7 @@ exit
   f.write(s)
   f.close()
 
-# submit job ...
+# submit job ... TODO: perhaps it is possible to make it universal ?
   if GlobalVars.submit_job:
     if GlobalVars.iprint >= 0 :
       print '\ngoing to submit job with prepared script:',GlobalVars.queue_script
@@ -563,12 +580,9 @@ def process_loadleveler_script():
   if GlobalVars.iprint > 7:
     print 'prepare_loadleveler_script...'
 
-  # unite into one local string
-  GlobalVars.pam_script_args=GlobalVars.pam_script+GlobalVars.pam_arguments
-
   if GlobalVars.iprint >8 :
     print ' home directory:',GlobalVars.home_dir
-    print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
+   # print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
   f=open(GlobalVars.queue_script,'w') # open file with queue commands
 
@@ -618,6 +632,16 @@ cd %s
 #
 export XLFRTEOPTS="namelist=old"
 #
+#
+# ... execute own DIRAC pam script
+#
+%s 
+''' % GlobalVars.batch_script_command
+  s += '''\
+#
+#
+# ... that's whole script, exit
+exit
 ''' 
 
 # ... write all string to the file
@@ -649,6 +673,8 @@ def process_bsub_script():
 #
   if GlobalVars.iprint > 7:
     print 'preparing bsub script...'
+
+  sys.exit()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_queue_script():
@@ -707,6 +733,11 @@ def process_pamq_arguments():
   dest_pam_arguments=" pam arguments (like '"' -noarch [*.mol] [*.inp]'"')"
   parser.add_option("--pam_args", type="string", dest="dest_pam_args",
                   help=dest_pam_arguments, metavar="'"'arg1 arg2 ... '"' ")
+
+  #  fill GlobalVars.testrun_arguments
+  dest_test_arguments="'"'testlast'"' arguments (like '"' --tests=short'"')"
+  parser.add_option("--test_args", type="string", dest="dest_test_args",
+                  help=dest_test_arguments, metavar="'"'args...'"' ")
 
   # ... get in the print level 
   iprint_label='script verbose print level, default:'+str(GlobalVars.iprint)
@@ -844,10 +875,16 @@ def process_pamq_arguments():
       print 'assigned GlobalVars.pam_arguments=',GlobalVars.pam_arguments
   else :
     GlobalVars.submit_job=False
-#    print 'warning: no pam arguments in the script - not submitting ! '
-#    print 'type: "',sys.argv[0],'-h" for help'
-#    parser.error("missing pam arguments !")
-    #print options.get_help()
+
+  # ... deal with testlast arguments
+  if (options.dest_test_args is not None) :
+    GlobalVars.testrun_arguments=options.dest_test_args
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.testrun_arguments=',GlobalVars.testrun_arguments
+    GlobalVars.dirac_tests_run=True
+  else :
+    GlobalVars.dirac_tests_run=False
+
 
   # ... deal with queue_name
   if (options.dest_queue_name is not None) :
@@ -919,7 +956,10 @@ def process_pamq_arguments():
     GlobalVars.submit_job=False
     GlobalVars.create_configure_file()
     if GlobalVars.iprint > 7:
-      print 'preparing configure file-not submitting job'
+      print 'preparing configure file-not submitting job '
+
+  # ... prepare final script command
+  GlobalVars.prepare_batch_script_command()
   
 #########################################################################
 #
@@ -932,9 +972,6 @@ def main(*args):
 #  try:
     global GlobalVars
     GlobalVars = PamQVariables() 
-
-    # some code here
-   # set_defaults()
 
   #  if len(sys.argv) < 2 :
   #    pamq_usage()
