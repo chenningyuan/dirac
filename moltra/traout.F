@@ -349,7 +349,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Set parameter to indicate whether the integrals are complex or real.
 C
-      IF (SPINFR.OR.LEVYLE.OR.NZ.EQ.1) THEN
+      IF (SPINFR.OR.NZ.EQ.1) THEN
          RCW = 1
       ELSE
          RCW = 2
@@ -360,7 +360,7 @@ C
       CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRKL,RCW*NKL,WORK,KFREE,LFREE)
 C
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
 C
 C     Special code that takes out the quaternion phase factors
 C     The resulting integrals have full 8-fold permutational

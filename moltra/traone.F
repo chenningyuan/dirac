@@ -526,7 +526,7 @@ C
 C
 C     Get multiplication table for the abelian subgroup
 C
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
          CALL GMULTSF (NSYMRPA,REPA,MULTB)
       ELSEIF (LINEAR) THEN
          CALL GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
@@ -556,7 +556,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-            IF (SPINFR.OR.LEVYLE) THEN
+            IF (SPINFR) THEN
                IRPAMO(II) = IBORB(IK) + 1
             ELSEIF (LINEAR) THEN
                MJ = IBORB(IK)
@@ -576,7 +576,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-             IF (SPINFR.OR.LEVYLE) THEN
+             IF (SPINFR) THEN
                IRPAMO(II) = IBORB(IK) + NBSYM + 1
             ELSEIF (LINEAR) THEN
                MJ = -IBORB(IK)
@@ -609,7 +609,7 @@ C     Total number of spinors, breit active in DHF ?,
 C     DHF energy, inversion symmetry (yes : 2; no : 1),
 C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
-      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE,
+      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
      &               NORBT
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)

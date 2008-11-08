@@ -414,7 +414,7 @@ C     totally symmetric matrices) it not necessary to do this because
 C     the combination with totally symmetric spinor products 
 C     makes that the phase factors cancel. 
 C
-      IF (LEVYLE.OR.SPINFR) THEN
+      IF (SPINFR) THEN
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
 C       Determine the boson character of the operator and the
