@@ -56,9 +56,9 @@ usage ()
    echo ' is given the calculation can restart from the contents of this file.'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential '
-   echo '     -mw mem                : Set memory (in megawords) for master'
+   echo '     -mw mem                : Set memory (in megawords) for master; default:'$WRKMEM_DEFAULT
    echo '                              (and slave nodes if "-nw mem" not specified)'
-   echo '     -nw mem                : Set memory (in megawords) for the slave nodes in parallel run'
+   echo '     -nw mem                : Set memory (in megawords) for the slave nodes in parallel run; default:'$WRKMEM_DEFAULT
 
    if [ -n "$MACH_FILE" ]; then
    echo '     -machinefile filename  : Specify file with list of nodes to be used in MPI run; default: "'$MACH_FILE'" '

@@ -2285,6 +2285,7 @@ cat <<EOF >> Makefile.config
 include Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
+# installation directory 
 INSTALL_DIR=$INSTALL_DIR
 
 # scratch directory (the same as in pam script)
@@ -2410,6 +2411,9 @@ echo '#!/bin/bash' > $INSTALL_DIR/pam
 echo '#!/bin/bash' > $SRC_DIR/test/runtest
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
+#
+# default memory used by dirac.x determined by configure/Makefile.config
+WRKMEM_DEFAULT=$memsiz
 #
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
