@@ -385,7 +385,7 @@ C
           DO 120 I = 0,MAXREP
             WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,A3,1X))')
      &        SYMOP(JSOP(I)),'|',
-     &        (SYMOP(IBTXOR(JSOP(I),JSOP(J))),J = 0,I)
+     &        (SYMOP(IBTXOR(JSOP(I),JSOP(J))),J = 0,MAXREP)
   120     CONTINUE
         ENDIF
 C
@@ -412,7 +412,7 @@ C
         WRITE(LUPRI,'(3X,A6,8A5)') '-----+',('-----',I = 0,MAXREP)
         DO 140 I = 0,MAXREP
           WRITE(LUPRI,'(3X,1X,A3,1X,A1,8(1X,A3,1X))')
-     &      REP(I),'|',(REP(IBTXOR(I,J)),J = 0,I)
+     &      REP(I),'|',(REP(IBTXOR(I,J)),J = 0,MAXREP)
   140   CONTINUE
       ENDIF
 C
