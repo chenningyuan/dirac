@@ -3819,7 +3819,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 52,NDIR = 8)
+      PARAMETER (NTABLE = 56,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3880,7 +3880,9 @@ C
 !                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
 !                   49        50        51        52
-     &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  '/
+     &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
+!                   53        54        55        56
+     &            '.NOSFMU','xXXXXXX','xXXXXXX','xXXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3969,6 +3971,7 @@ CMI   ... default value - no artificial atom
       QDOTS = .FALSE.
 Culfek: Do not scale gaunt integrals with exchange scale factor by default.
       LSCALE_DFT_GAUNT = .FALSE.
+      NOSFMU = .FALSE.
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) THEN
         HFXFAC  = D1
@@ -4033,7 +4036,7 @@ C     Keep track of number of changes and added finite field operators
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150, 
-     &                151,152),I
+     &                151,152,153,154,155,156),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4432,7 +4435,17 @@ C&&& QDOTS: activate artificial atom (quantum dots)
 !         .X2C4 is alias for .IOTC4
   152     continue
           go to 143
-
+  153     CONTINUE
+C&&& NOSFMU: do not generate spinfree multiplication table in spinfree calculations
+C    (see MRCON1 of the MOLTRA module)
+          NOSFMU = .TRUE.
+          GOTO 100
+  154     CONTINUE
+          GOTO 100
+  155     CONTINUE
+          GOTO 100
+  156     CONTINUE
+          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -4831,6 +4844,11 @@ CMI    ... quantum dots
 
       IF(SPINFR) THEN
          WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
+         IF(NOSFMU) THEN
+           WRITE(LUPRI,'(6X,A,A)')
+     &      'Spinfree multiplication tables (spin x space) NOT ',
+     &      'generated at the correlated level.'
+         ENDIF
       ELSE IF(SPINFR2) THEN
          WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'

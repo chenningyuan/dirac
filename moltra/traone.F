@@ -526,7 +526,7 @@ C
 C
 C     Get multiplication table for the abelian subgroup
 C
-      IF (SPINFR) THEN
+      IF (SPINFR.AND. .NOT.NOSFMU) THEN
          CALL GMULTSF (NSYMRPA,REPA,MULTB)
       ELSEIF (LINEAR) THEN
          CALL GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
@@ -556,7 +556,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-            IF (SPINFR) THEN
+            IF (SPINFR.AND. .NOT.NOSFMU) THEN
                IRPAMO(II) = IBORB(IK) + 1
             ELSEIF (LINEAR) THEN
                MJ = IBORB(IK)
@@ -576,7 +576,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-             IF (SPINFR) THEN
+            IF (SPINFR.AND. .NOT.NOSFMU) THEN
                IRPAMO(II) = IBORB(IK) + NBSYM + 1
             ELSEIF (LINEAR) THEN
                MJ = -IBORB(IK)

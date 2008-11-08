@@ -4136,7 +4136,7 @@ C
 C     dcbham.h
 C     --------
 C
-      NUMELM = NDCLHAM
+      NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
       CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
@@ -4673,7 +4673,7 @@ C.....Call GOSCIP module
       CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
       CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
      &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
-      CALL MEMREL('GOSRES',WORK,1,KFREE,KFREE,LFREE)
+      CALL MEMREL('PAMGOS',WORK,1,KFREE,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

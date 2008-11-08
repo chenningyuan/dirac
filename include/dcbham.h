@@ -87,6 +87,8 @@
 !     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
 !                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
 !                  included in DFT calculations.
+!     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
+!                  constructing direct products of spin and spatial symmetries
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -94,7 +96,7 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP                                     
+     &        INI2C, I2COFK, IPSOPP,I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -117,21 +119,21 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU
 
-! keep and actualize here number of elements in the DCLHAM common block
-! MI: in there not an automatic way how to keep this variable actual ?
-      INTEGER NDCLHAM
-      PARAMETER (NDCLHAM = 41)
-
-      COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
+      COMMON /DCLHAM/ I1_DCLHAM,                                        &
+     &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
-     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT
+     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
+     &                NOSFMU,                                           &
+     &                I2_DCLHAM
+
+!    Do NOT add any variables after the end tag !!!
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 
