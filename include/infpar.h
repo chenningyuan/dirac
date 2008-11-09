@@ -18,11 +18,11 @@ extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
     long iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
     long parher, slave, timing, debug, pario;
 #else
     int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
     int  parher, slave, timing, debug, pario;
 #endif 
 } diracinfpar_;
@@ -36,14 +36,14 @@ extern struct common_diracinfpar {
       REAL*8 TOTWAL
 !CSK      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
-      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID, NODE, NODES
+      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID,NODE,NODES,IPAREX
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
 !CSK      COMMON /DIRACINFPAR/ TOTWAL                                        &
 !CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
       COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
-     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES                         &
+     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES, IPAREX                 &
      &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
      &       ,NODNAM, MYNAME
 
