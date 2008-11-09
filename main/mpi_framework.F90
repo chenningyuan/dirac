@@ -42,14 +42,12 @@ use os_utils
 #include "mpif.h"
 #include "infpar.h"
 #include "dcbgen.h"
-INTEGER             :: IPAREX, IPAREX_SCR, IERR, NUMPROC
+INTEGER             :: IERR, NUMPROC
 CHARACTER (LEN=6)   :: DIRPAR
 !
 ! initialize
 !
 IERR       = 0
-IPAREX_SCR = 6
-IPAREX     = 1
 MYTID      = 0
 NUMNOD     = 0
 NUMPROC    = 0
@@ -63,7 +61,7 @@ IPAREX = GET_ENVIRONMENT_INTEGER('DIRPAR',1)
 !
 ! initialize MPI_COMM_WORLD
 !
-IF( IPAREX .ne. 0 )THEN
+IF( IPAREX .gt. 0 )THEN
   CALL MPI_INIT( IERR )
   IF( IERR .ne. 0 ) THEN
      WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXINIT ** MPI initialization failed. '
@@ -126,7 +124,8 @@ IF( IPAREX .ne. 0 )THEN
   CALL DIST_ENV(1)
   CALL DIST_ENV(2)
 ELSE
-	PARCAL = .FALSE.
+	PARCAL  = .FALSE.
+      NUMPROC = 1
 END IF ! IPAREX
 END SUBROUTINE MPIXINIT
 

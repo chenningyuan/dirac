@@ -38,21 +38,28 @@ program dirprg
 #ifndef NO_SELFTEST
   call selftest_lapack()
 #endif
+! check for sequential run with parallel executable; iparex = 1 for parallel
+! run mode
+  iparex = 0
 #ifdef VAR_MPI
   call mpixinit()
 #ifndef NO_SELFTEST
 ! MASTER checks MPI library compatibility
-  if (mytid == 0) call selftest_mpi()
+  if (mytid .eq. 0 .and. iparex .gt. 0 ) call selftest_mpi()
 #endif
-  call stopwatch(1,numnod+1)
+  if (parcal) then 
+    call stopwatch(1,numnod+1)
+  else
+    call stopwatch(1,numnod)
+  endif
 #else
   parcal  = .false.
-  iparcal = 0
   mytid   = 0
   mparid  = 0
   numnod  = 0
   call stopwatch(1,numnod)
 #endif
+  iparcal = 0
   if (parcal) iparcal = 1
 
   if (mytid == 0) then
@@ -84,6 +91,10 @@ program dirprg
     call sync_nodes(memsize,0)
     call sync_nodes(maxsize,2)
   else
+!   iparex <= 0
+    call allocator_init()
+    call allocator_setmax(maxsize)
+    print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
 #else
     call allocator_init()
     call allocator_setmax(maxsize)
@@ -126,9 +137,6 @@ program dirprg
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
-! if (parcal) call mpixfinalize()
-!             SK - 21-07-2008 Since we have called mpixinit explicitly, a call to
-!             mpixfinalize is mandatory.
-              call mpixfinalize()
+  if (parcal) call mpixfinalize()
 #endif
 end program dirprg
