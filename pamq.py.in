@@ -1,4 +1,6 @@
-#! /usr/bin/env python
+
+
+############################################################################################
 #
 # script for preparing and submitting DIRAC pam job into a specified  queue system
 #
@@ -6,21 +8,21 @@
 #
 # further improvement, suggestion etc are warmly welcomed
 #
+############################################################################################
 
-import  sys, os, string, optparse
-
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class PamQVariables:
-
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  # ... class containing all important variables, methods for submitting 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def __init__(self):
   #
-  #  initialize set of variables ...
+  #              ... initialize set of variables ...
   #
+    global install_dir # comes from configure
 
     ### contains pamq.py; modify it according to your setting !
-    self.dirac_home='/people/disk2/ilias/QCH_Work/qch_progs/dirac/my_opmpi_ifort_optim/trunk'
-
+   # self.dirac_home='/people/disk2/ilias/QCH_Work/qch_progs/dirac/my_opmpi_ifort_optim/trunk'
+    self.dirac_home=install_dir
 
     ### ... testscript path 
     self.testlast_path=self.dirac_home+'/'+'testlast'

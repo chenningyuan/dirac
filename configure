@@ -2413,7 +2413,7 @@ let wrkmem_reduced=$memsiz/1000000
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
 #
-# default memory used by dirac.x determined by configure/Makefile.config
+# default memory used by dirac.x is determined by Makefile.config 
 WRKMEM_DEFAULT=$wrkmem_reduced
 #
 SCR_DEFAULT=$worksp
@@ -2436,6 +2436,7 @@ DEBUGGER=$debug
 CLEANUP=
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
+
 chmod a+rx $INSTALL_DIR/pam
 echo "ok"
 echo
@@ -2477,16 +2478,39 @@ echo "If you change the MPI library, please reconfigure the pam script."
 echo "---- On 64bit architectures check that used MPI libraries are of the ILP64 type ! -----"
 fi
 
-##### Miro: everythink should be under Dirac Wiki #####
+##### Miro: everything know-how should be under Dirac Wiki #####
 echo
 echo "Please check 'Known issues and problems' at"
 echo "   http://dirac.chem.sdu.dk/"
-3cho "and http://wiki.chem.vu.nl/dirac" 
+echo "and http://wiki.chem.vu.nl/dirac" 
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
 echo "   make"
 echo "and then Dirac should be ready to run..."
+}
+
+make_pamq ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#     Make pamq.py python script
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+$echo 'Copying pamq.py python script to '$INSTALL_DIR' : \c'
+
+echo '#! /usr/bin/env python        '          >  $INSTALL_DIR/pamq.py
+echo '#                             '         >>  $INSTALL_DIR/pamq.py
+echo 'import  sys, os, string, optparse'      >>  $INSTALL_DIR/pamq.py
+echo '                                      ' >>  $INSTALL_DIR/pamq.py
+
+cat <<EOF>> $INSTALL_DIR/pamq.py
+# installation directory inserted by configure script
+global install_dir
+install_dir='$INSTALL_DIR' 
+EOF
+
+cat ./pamq.py.in  >>  $INSTALL_DIR/pamq.py
+chmod a+rx  $INSTALL_DIR/pamq.py
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2659,5 +2683,6 @@ set_installdir
 set_scratchdir
 make_Makefile.config
 make_pam_runtest
+make_pamq
 final_words
 
