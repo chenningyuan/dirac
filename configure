@@ -2409,11 +2409,12 @@ make_pam_runtest ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo '#!/bin/bash' > $INSTALL_DIR/pam
 echo '#!/bin/bash' > $SRC_DIR/test/runtest
+let wrkmem_reduced=$memsiz/1000000
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
 #
 # default memory used by dirac.x determined by configure/Makefile.config
-WRKMEM_DEFAULT=$memsiz
+WRKMEM_DEFAULT=$wrkmem_reduced
 #
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
