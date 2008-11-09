@@ -105,23 +105,32 @@ module IOmodule
       module procedure ReadFileBlock
    end interface
 
-   ! ... External Routines ...
+   ! ... External Routines ... mi: these are replaced by dirac/own counterparts ...
 
    external :: flush
    external :: abort
 
 contains
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitIOMod
+!---------------------------------------------------------------------------------
+!
+!   calculate attributes NumRec & RecLen  and allocate arrays NZIntRec_xxxx
+! for reading Gamess/DIRAC integrals 
+!
+! called from InitHSMRBase ("source/inihsbase.F90")
+!
+!---------------------------------------------------------------------------------
 
  implicit none
 
    ! ... Initialization Check ...
 
    if (Init) then
-      write(UOUT,*) 'Error Initializing IOMod'
+      write(UOUT,*) 'Error Initializing IOMod, Init=',Init
       call flushout
-      call Quit('InitIOMod:  Error Initializing IOMod !')
+      call quit('InitIOMod:  Error Initializing IOMod !')
    endif
    Init = .TRUE.
 
@@ -170,6 +179,11 @@ subroutine InitIOMod
    if (.not.allocated(NZIntRec_VPHPP)) allocate(NZIntRec_VPHPP(NumRec(VPHPP)))
    if (.not.allocated(NZIntRec_V2HHP)) allocate(NZIntRec_V2HHP(NumRec(V2HHP)))
    if (.not.allocated(NZIntRec_VHHHP)) allocate(NZIntRec_VHHHP(NumRec(VHHHP)))
+
+
+   if (get_iprint() > 5) then
+     write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
+   endif
 
    return
 

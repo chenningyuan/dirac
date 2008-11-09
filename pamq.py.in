@@ -20,12 +20,19 @@ class PamQVariables:
   #
     global install_dir # comes from configure
 
-    ### contains pamq.py; modify it according to your setting !
-   # self.dirac_home='/people/disk2/ilias/QCH_Work/qch_progs/dirac/my_opmpi_ifort_optim/trunk'
-    self.dirac_home=install_dir
+    if ( not os.path.isdir(install_dir)) :
+      print 'Error exit ! Installation directory does not exit !'
+      print 'install_dir=',install_dir
+      sys.exit()
 
+    ### contains installation directory ...
+    self.dirac_home=install_dir
+    
     ### ... testscript path 
     self.testlast_path=self.dirac_home+'/'+'testlast'
+    if not os.path.isfile(self.testlast_path):
+      print 'Error exit ! Dirac testlast file not found :',self.testlast_path
+      sys.exit()
 
     # print level
     self.iprint=1
@@ -61,12 +68,12 @@ class PamQVariables:
     # ... what is going to be in script
     self.batch_script_command=''
 
-    # ... empty, otherwise : self.pam_script=self.pam_script_dir + "/" + self.pam_script_name
-    self.pam_script='' # must be configured 
+    # ... default from currecnt directory
+    self.pam_script=self.dirac_home+'/pam' 
 
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
-    # ... home directory ...
+    # ... home directory from where pamq.py is launching...
     self.home_dir=os.getenv("PWD")
 
     # ... configuration file with selected defaults ...
@@ -78,9 +85,9 @@ class PamQVariables:
     self.implemented_queue_systems=['pbs','bsub','loadleveler','grid_engine']
 
     # ... set up file with default variables
-   # self.pamq_defaults_file=str(os.getenv("HOME"))+'/PAMQ_DEFAULTS'
     self.pamq_defaults_file=self.dirac_home+'/PAMQ_DEFAULTS'
 
+    #  ... read defaults from configure file ...
     self.read_from_config_file=False
     if os.path.isfile(self.pamq_defaults_file):
       self.read_configure_file()
@@ -321,7 +328,6 @@ def process_pbs_script():
      print '\nin prepare_pbs_script...'
 
   if GlobalVars.iprint >8 :
-    print ' home directory:',GlobalVars.home_dir
     print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
   f=open(GlobalVars.queue_script,'w') # open file with queue commands
@@ -468,7 +474,6 @@ def process_grid_engine_script():
 
   if GlobalVars.iprint >8 :
     print ' home directory:',GlobalVars.home_dir
-    #print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
 
   f=open(GlobalVars.queue_script,'w') # open file with queue commands
 
@@ -718,11 +723,12 @@ def process_pamq_arguments():
   if GlobalVars.read_from_config_file :
     usage = "usage: %prog arg1 arg2...; defaults read from file:"+GlobalVars.pamq_defaults_file
   else :
-    usage = "usage: %prog arg1 arg2...; no defaults get from config file"
-    
+    usage = "usage: %prog arg1 arg2...; no defaults get from config file."
+
+  usage=usage+'\n   script dwells in :'+GlobalVars.dirac_home   
   parser = OptionParser(usage)
 
-  #  fill GlobalVars.pam_script
+  #  take care  GlobalVars.pam_script
   if (len(GlobalVars.pam_script)==0) :
     pam_script_add="no default location of DIRAC pam script - YOU MUST SPECIFY IT !"
   else:
@@ -923,7 +929,6 @@ def process_pamq_arguments():
     GlobalVars.prepare_config_file=options.dest_prep_config
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.prepare_config_file=',GlobalVars.prepare_config_file
-
 
   # ... must be at leat one argument - pam_args !
   #if len(args) < 1:
