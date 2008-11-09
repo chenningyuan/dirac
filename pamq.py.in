@@ -1,5 +1,3 @@
-
-
 ############################################################################################
 #
 # script for preparing and submitting DIRAC pam job into a specified  queue system
@@ -21,8 +19,8 @@ class PamQVariables:
     global install_dir # comes from configure
 
     if ( not os.path.isdir(install_dir)) :
-      print 'Error exit ! Installation directory does not exit !'
-      print 'install_dir=',install_dir
+      print 'Error exit ! Installation directory install_dir does not exit !'
+      print '....variable install_dir=',install_dir
       sys.exit()
 
     ### contains installation directory ...
@@ -73,7 +71,7 @@ class PamQVariables:
 
     self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
-    # ... home directory from where pamq.py is launching...
+    # ... home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
 
     # ... configuration file with selected defaults ...
@@ -134,7 +132,7 @@ class PamQVariables:
  
     f = open(self.pamq_defaults_file, 'w') 
 
-    print 'opening file for saving defaults in ~/ dir:',self.pamq_defaults_file
+    print '\nOpening file for saving defaults in:',self.pamq_defaults_file
 
     f.write('###  \n')
     f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
@@ -325,10 +323,8 @@ def process_pbs_script():
   global GlobalVars
 
   if GlobalVars.iprint >8 :
-     print '\nin prepare_pbs_script...'
-
-  if GlobalVars.iprint >8 :
-    print ' GlobalVars.pam_script_args=',GlobalVars.pam_script_args
+    print '\nin prepare_pbs_script...'
+    print ' GlobalVars.pam_script_args=',GlobalVars.batch_script_command
 
   f=open(GlobalVars.queue_script,'w') # open file with queue commands
 
@@ -420,6 +416,11 @@ echo '------------------------------------'
 echo ''
 echo '****  assigned nodes (content of the $PBS_NODEFILE): ****'
 cat $PBS_NODEFILE
+#
+# ... for MPICH2 library boot hosts, DIRAC must use -machinefile <file> before -np <n_procs>
+#
+#mpdboot -f $PBS_NODEFILE
+#
 echo ''
 #
 # ... always change to the home directory 
@@ -431,12 +432,19 @@ cd %s
 #
 #   ... execute own DIRAC pam script
 #
+echo 'command to be executed'
+echo " %s "
+#
+''' % GlobalVars.batch_script_command
+#
+  s += '''\
 %s 
 ''' % GlobalVars.batch_script_command
   s += '''\
 #
 #
 # ... that's whole script, exit
+#
 exit
 '''
 # ... write all string to the file
