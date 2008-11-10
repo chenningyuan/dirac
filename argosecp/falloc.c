@@ -30,6 +30,7 @@
 
 #include "extsymbols.h"  /* Define the external symbol: */
 #include "stdio.h" 
+#include "stdlib.h" 
 void EXTERNAL_FALLOC( nelem, elsize, clean, work, addr, offset )
 
 #if defined(DEC) || defined(SGI)
@@ -55,8 +56,6 @@ long *offset;  /* output: offset to be used in the calling program */
 
 {
   char *dummy ;
-  extern char *malloc();
-  extern char *calloc();
   unsigned long tmp1,tmp2;
 #if defined (SGI) || defined (DEC)
   int  elsizecpy; 

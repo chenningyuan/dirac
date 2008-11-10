@@ -3168,7 +3168,7 @@ c
 *mdc*elseif unix
 c
 c     # generic bsd unix version.
-c     # see also $COLUMBUS/special/unix/* for library
+c     # see also $COLUMBUS/special/unix/ * for library
 c     # routines to support the following machines:
 c     #    IBM RS/6000
 c     #    Cray Y-MP, Cray 2 (optional, the cray may also use the mdc

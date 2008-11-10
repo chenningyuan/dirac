@@ -13,7 +13,8 @@ c
      &          isend(8,mxatom,8,mxatom),mj2(mxatom,mxatom),
      &          ngenl, ngenp, mcons, igcs
       real*8    chg(mxatom), 
-     &          xyz1(3,8,mxatom,mxatom), xyz2(3,8,mxatom,mxatom),
+C     &          xyz1(3,8,mxatom,mxatom), xyz2(3,8,mxatom,mxatom),
+     &          xyz1(3,mxatom,mxatom), xyz2(3,8,mxatom,mxatom),
      &          xyz3(3,8,mxatom,mxatom), xyz4(3)
 
 

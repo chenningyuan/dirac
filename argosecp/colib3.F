@@ -598,7 +598,7 @@ c                        statement. ctimel(*) is referenced in igetim().
 *mdc*elseif rs6000
 *c
 *c     # return user time plus user and system times for subprocesses.
-*c     # see also $COLUMBUS/special/unix/* for the library routine
+*c     # see also $COLUMBUS/special/unix/ * for the library routine
 *c     # fwtime().
 *c
 *      integer   numvl

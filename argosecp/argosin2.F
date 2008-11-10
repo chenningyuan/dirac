@@ -532,7 +532,7 @@ c
       if ((eline(neline)(1:3).eq.'ecp').or.
      &    (eline(neline)(1:3).eq.'ECP')) then
 c          
-         if (ecpidl.eq..true.) then
+         if (ecpidl) then
             read(eline(neline)(6:8),'(i3)') ecpidtmp
             if (ecpidtmp.eq.ecpidn) goto 2819
             goto 2811  

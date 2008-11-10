@@ -15,7 +15,7 @@ c     *** basis argos ***
       integer   lmnp1(mxatom) 
 c
 c     *** basis lines ***
-      parameter mxbline=150
+      parameter (mxbline=150)
       integer   nbline
       character bline(mxbline)*90
 c

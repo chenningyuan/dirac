@@ -259,9 +259,9 @@ c 43    continue
             blkcnt = blkcnt + 1
             write(lufile3,'(20i3)'),
      &         irowmax(icent,lang),irowmax(icent,lang),blkcnt
-            do 53 dimmr = 1, irowmax(icent,lang)
-               write(lufile3,'(20i3)'),(nint(CTRANarg(icent,lang,dimmr,
-     &               dimmc)),dimmc=1,irowmax(icent,lang))
+            do 53 nrow = 1, irowmax(icent,lang)
+               write(lufile3,'(20i3)') (nint(CTRANarg(icent,lang,nrow,
+     &               ncol)),ncol=1,irowmax(icent,lang))
   53        continue
   52     continue
   51  continue
@@ -284,7 +284,7 @@ c----------------------------------------------
 c----------------------------------------------
 c Card 8 : ecp
 c----------------------------------------------
-      if (ecpchk .eq. .false.) goto 2900
+      if (.not.ecpchk) goto 2900
       do i = 1, soindex-1                   ! (nmcrs)
          write(lufile3,'(2i5)') lcru(i),llsu(i)
          do j = 1, lcru(i) + 1                 ! ARPP
