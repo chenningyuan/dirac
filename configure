@@ -1848,6 +1848,7 @@ get_f90_flags(){
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
+      ldflag="-i_dynamic" # for ifort/ompi ilp64 arch
       ;;
     xlf|xlf_r)
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
@@ -2123,7 +2124,7 @@ case $machine in
 
       case "$F90real" in
       pathf90)
-         ldflag=i"$ldflag -i8" ;;
+         ldflag="$ldflag -i8" ;;
       esac
 
       find_real_cc
