@@ -53,12 +53,6 @@ NUMNOD     = 0
 NUMPROC    = 0
 MPARID     = 0
 !
-!
-! check for parallel execution
-! default: parallel if DIRPAR not defined
-!
-IPAREX = GET_ENVIRONMENT_INTEGER('DIRPAR',1)
-!
 ! initialize MPI_COMM_WORLD
 !
 IF( IPAREX .gt. 0 )THEN
@@ -123,9 +117,6 @@ IF( IPAREX .gt. 0 )THEN
 !
   CALL DIST_ENV(1)
   CALL DIST_ENV(2)
-ELSE
-	PARCAL  = .FALSE.
-      NUMPROC = 1
 END IF ! IPAREX
 END SUBROUTINE MPIXINIT
 

@@ -35,17 +35,25 @@ program dirprg
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
   integer :: iscr_mem
+! initialize common variables (parallel and sequential run)
+  mytid   = 0
+  mparid  = 0
+  numnod  = 0
+  parcal  = .false.
+  iparex  = 0
 #ifndef NO_SELFTEST
   call selftest_lapack()
 #endif
-! check for sequential run with parallel executable; iparex = 1 for parallel
-! run mode
-  iparex = 0
 #ifdef VAR_MPI
-  call mpixinit()
+! check for sequential run with parallel executable 
+! iparex = 1 for parallel run mode with MPI executable (default)
+  iparex = get_environment_integer('DIRPAR',1)
+!
+! initialize MPI environment and wake up slaves - set parcal == .true.
+  if (iparex .gt. 0) call mpixinit()
 #ifndef NO_SELFTEST
 ! MASTER checks MPI library compatibility
-  if (mytid .eq. 0 .and. iparex .gt. 0 ) call selftest_mpi()
+  if ( mytid .eq. 0 .and. parcal ) call selftest_mpi()
 #endif
   if (parcal) then 
     call stopwatch(1,numnod+1)
@@ -53,10 +61,6 @@ program dirprg
     call stopwatch(1,numnod)
   endif
 #else
-  parcal  = .false.
-  mytid   = 0
-  mparid  = 0
-  numnod  = 0
   call stopwatch(1,numnod)
 #endif
   iparcal = 0
