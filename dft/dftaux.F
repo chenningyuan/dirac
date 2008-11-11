@@ -48,6 +48,10 @@ c     T. Helgaker, T. Saue
 c                                  last revision: january 2008 (radovan)
 c=======================================================================
 
+!     to debug "local" ALDA - see comment further below
+!     use slater_m
+!     use vwn_derv_m
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -82,6 +86,8 @@ c=======================================================================
      &          vxc_vector(3),
 !
      &          vxc(99)
+!     to debug "local" ALDA - see comment further below
+!    &          derv_debug(0:60)
 
       do im = 1,nxcmat
         irepop = isymop(im) - 1
@@ -98,6 +104,14 @@ c=======================================================================
 !         LDA
 
           if(dabs(r_b) .gt. dfthrl) then
+
+!           this code here can be used to force SVWN derivative here and 
+!           use non-ALDA derivatives somewhere else in the code
+!           for this comment out call to dftpot1 and uncomment some things further up
+!           s_part   = slater_derv(2, r_0, w)
+!           call vwn_derv(0.5d0*r_0, 0.5d0*r_0, w, derv_debug)
+!           vwn_part = derv_debug(20)
+!           vxc(fRR) = s_part + vwn_part
 
             call dftpot1(vxc,w,r_0,d0)
             vxc_scalar = vxc(fRR)*r_b
