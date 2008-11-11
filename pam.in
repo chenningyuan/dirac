@@ -202,9 +202,10 @@ setup_command()
             exit 1
           fi
         fi
-#       ... handle number of processors AFTER machinefile (MPICH2 demand)...
+#       ... handle number of processors AFTER taking in machinefile (MPICH2 demand)...
         DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
 
+      # miro: what kind of parallel library is it ?
       elif [ "${MPIRUN##*/*/}" = 'openmpirun' ]; then
         DIRAC_CMD="$DIRAC_CMD -n $MPI_NPROC"
 #       Include machinefile
@@ -447,7 +448,7 @@ cd $WRK
 #
 distribute_work_dir()
 {
-#  This routine is only called when local disks
+#  This routine is only called when local disks are selected
 #  The list of machines available to dirac.x
 #
    if [ -z "$MACH_FILE" ]; then

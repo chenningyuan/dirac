@@ -516,8 +516,13 @@ fi
 echo
 }
 
-
+#
 parallel_stuff ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#       Set parallel enviroment 
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
 echo 'PARALLEL'
 echo
@@ -541,8 +546,6 @@ fi
 
 echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
-
- # $echo 'Will your nodes use local disks? (y/N) \c'
   $echo 'Will your nodes use local disks? (Y/n) \c'
   read localdisks
   case "$localdisks" in
@@ -574,37 +577,50 @@ if [ "$par" = "yes" ]; then
    fi
    echo '=> Parallel message passing: '$mesp
 #
-#  Check whether we have a parallel compiler available
+#  Check whether we have a parallel launcher/compiler available
 #
    if [ "$mesp" = "mpi" ]; then
       case $machine in
          *-ibm | powerpc64-unknown-linux* | ppc64* )
             parlib='no'
             parinc='yes'
-            mpirun='poe'
+           # mpirun='poe'
+            mpirun=`which poe 2>/dev/null`
             ;;
          *-hp)
             parlib='no'
             parinc='yes'
-            mpirun='mpirun'
+           #mpirun='mpirun'
+            mpirun=`which mpirun 2>/dev/null`
             ;;
          *-dec)
             parlib='yes'
             parinc='yes'
-            mpirun='dmpirun'
+           #mpirun='dmpirun'
+            mpirun=`which dmpirun 2>/dev/null`
             ;;
          i[3-6]86-* | x86_64-* | ia64-unknown-linux)
             parlib='yes'
             parinc='yes'
-            mpirun='mpirun'
+           # mpirun='mpirun'
+            mpirun=`which mpirun 2>/dev/null`
             ;;
          *)
             parlib='yes'
             parinc='yes'
-            mpirun='mpirun'
+            #mpirun='mpirun'
+            mpirun=`which mpirun 2>/dev/null`
             ;;
       esac
 
+      # printout of MPI launcher
+      if [ -n "$mpirun" ]; then
+        $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
+        $echi " === MPI launcher must come from the same directory as mpi-compilers (mpif90, mpicc...) ==="
+      else
+        $echo "MPI launcher NOT found ! Error exit!"
+        exit 1
+      fi
    fi
 #
 # MPI questions after we fixed the compiler
@@ -1121,7 +1137,6 @@ if [ $IPRINT -ge "8" ]; then
   echo 'find_debugger: variable a='$a
 fi
 
-
 if [ ! -z "$a" ]; then
 
   if [ $IPRINT -ge "8" ]; then
@@ -1369,7 +1384,6 @@ if [ $IPRINT -ge "5" ];  then
     echo 'old_lib: lib_name='$lib_name
     echo 'old_lib: return_libs='$return_libs
 fi
-
 }
 
 find_mathlib ()  {
@@ -1418,7 +1432,7 @@ fi
 # deal with testing of libraries ...
 #
 if [ $testlibs = 1 ]; then
-  $echo "\nTesting of Dirac mathematic libraries on Integer*4/8 problem enabled. \c"
+  $echo "\nTesting of Dirac mathematic/(parallel) libraries for ILP64 support (Integer*8 problem) enabled. \c"
 else
   echo
   echo " Testing of mathematical libraries DISABLED!"
@@ -2026,7 +2040,6 @@ case $machine in
 	  cpp_f90="-DVAR_MFDS $cpp_f90"
          esac
 
-
          if [ "$localdisks" = "no" ]; then
             cpp_f90="$cpp_f90 -DVAR_PFS"
          fi
@@ -2421,10 +2434,11 @@ SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=$SRC_DIR
 BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
-### ... check launcher carefully according to your MPI and PATH settings
+### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables)
 MPIRUN=$mpirun
 # ... if this is empty for parallel dirac.x, your MPI setting does not need it
 MACH_FILE=$mach_file
+# .... if yes, input files are beeing copied there
 LOCALDISKS=$localdisks
 # Passing files to local disks:
 RCP=$rcp
