@@ -616,7 +616,7 @@ if [ "$par" = "yes" ]; then
       # printout of MPI launcher
       if [ -n "$mpirun" ]; then
         $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
-        $echi " === MPI launcher must come from the same directory as mpi-compilers (mpif90, mpicc...) ==="
+        $echo "MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
       else
         $echo "MPI launcher NOT found ! Error exit!"
         exit 1
