@@ -108,6 +108,8 @@ c=======================================================================
 !           this code here can be used to force SVWN derivative here and 
 !           use non-ALDA derivatives somewhere else in the code
 !           for this comment out call to dftpot1 and uncomment some things further up
+!           also make sure that the LDA/GGA switch goes to LDA
+
 !           s_part   = slater_derv(2, r_0, w)
 !           call vwn_derv(0.5d0*r_0, 0.5d0*r_0, w, derv_debug)
 !           vwn_part = derv_debug(20)
