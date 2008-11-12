@@ -830,7 +830,8 @@ def process_pamq_arguments():
                   help=queue_time_label,metavar="STRING")
 
   # ... prepare file with selected default variables (configuration file) ...
-  config_file_label='save read parameters (like qsys, queue... ) as defaults into $HOME/PAMQ_DEFAULTS file, default - do not save'
+  config_file_label='save read parameters (like qsys, queue... ) as defaults into file ' \
+               +GlobalVars.dirac_home+'/PAMQ_DEFAULTS; default - do not save'
   parser.add_option("--config", action="store_true", default=GlobalVars.prepare_config_file,
                      dest="dest_prep_config", help=config_file_label) 
 
