@@ -295,7 +295,7 @@ endif
   write(LUPRI,'(2x,a,i3)') 'NKR is ',NKR
   write(LUPRI,'(/,2x,a)') 'KR array, KR(+I),KR(-I), I=1,NKR :'
   do I=1,NKR
-     write(LUPRI,'(2I8)') KR(I),KR(-I)
+     write(LUPRI,'(8X,2I8)') KR(I),KR(-I)
   enddo
 !
 ! ... read the rest ... integrals and indexes  ...
@@ -373,7 +373,7 @@ endif
 !   write(LUPRI,*) 'going to read indk_vect%p_iA1D/indl_vect%p_iA1D/cbuf_vect%p_rA2D ...'
 
    READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
-   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      & 
+   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      &
    (                      cbuf_vect%p_rA2D(1,INZ), INZ=1,NONZR,1) 
 
   endif
@@ -397,6 +397,8 @@ endif
 
 if (print_int) then
 
+ write(LUPRI,'(/,2x,a,2i4)') 'read < I J |... indexes',KR(IKR),KR(JKR)
+
  do i=1,NONZR
    if (.NOT.is_complex) then
    !  write(LUPRI,'(2x,a,2i5,f18.12)') 'k,l, real integral:',  & 
@@ -410,7 +412,7 @@ if (print_int) then
    endif
 
    if (.NOT.is_complex) then
- ! ... unique ,KU indexes
+ ! ... unique, KU indexes
       write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12)') '<',KR(IKR),' ',KR(JKR),'|',  & 
            KR(indk_vect%p_iA1D(i)),' ',KR(indl_vect%p_iA1D(i)),'>=', &
            cbuf_vect%p_rA2D(1,i)
@@ -594,6 +596,7 @@ use io_moltra
 character(len=12) :: dirac_file='Dirac_HSMRCC'
 character(len=4) :: repna_temp_a, repna_temp_b
 integer :: multbs(1:8,1:8)
+logical :: prepare_file=.false.
 
 type(Vect) :: SpinOfOrb,OccGMSRef,IrrepOrb,IrpLabOrb,OrbType,OrbSpace,OrbEnergy
  
@@ -709,47 +712,36 @@ do i=1,NSP
 
 enddo
 
+If (prepare_file) then
+
 !open(ludh,file='Dirac_for_HSMRCC.txt',form='formatted',status='unknown', access='sequential') 
 !open(ludh,file=dirac_file,form='formatted',status='unknown', access='sequential') 
 open(ludh,file=dirac_file,form='unformatted',status='unknown', access='sequential') 
-
 write(ludh) iprint_hscc
-
 write(ludh) nelec_tot
-
 write(ludh) SPFR
-
 write(ludh) ECORE
-
 write(ludh) NSP
-
 write(ludh) NORBT
-
 write(ludh) NCMO
-
 write(ludh) NACT
-
 write(ludh) numirrep_dirac
-
 write(ludh) irrep_product_dirac
-
 !write(ludh) ( SpinOfOrb%p_iA1D(i), i=1, NSP )
 write(ludh) ( SpinOfOrb%p_iA1D(1:NSP) )
-
 write(ludh) ( OccGMSRef%p_iA1D(1:NSP) )
-
 write(ludh) ( OrbType%p_iA1D(1:NSP) )
-
 write(ludh) ( OrbSpace%p_iA1D(1:NSP) )
-
 write(ludh) ( IrrepOrb%p_iA1D(1:NSP) )
-
 write(ludh) ( IrpLabOrb%p_iA1D(1:NSP) )
-
 !write(ludh) ( OrbEnergy%p_rA1D(i), i=1, NSP )
 write(ludh) ( OrbEnergy%p_rA1D(1:NSP) )
-
 close(ludh,status="keep")
+
+if (iprint_hscc >= 5) then
+    write(LUPRI,'(/,2x,a,a)')   & 
+    '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
+endif
 
 write(LUPRI,*) 
 write(LUPRI,*) 'saved NELEC_TOT=',nelec_tot
@@ -759,9 +751,6 @@ write(LUPRI,*) 'saved NORBT=',NACT
 write(LUPRI,*) 'saved NSP=',NSP
 write(LUPRI,*) 'saved numirrep_dirac=',numirrep_dirac
 
-if (iprint_hscc >= 5) then
-    write(LUPRI,'(/,2x,a,a)')   & 
-    '... (unformatted) Dirac input file for the HSMRCC run ready under name:',dirac_file
 endif
 
 call DeAllocObject(OrbEnergy)
@@ -796,12 +785,12 @@ subroutine prepare_dirac_HSMRCC_int_files
    !
    !   Two-body integral files
    !
-   !       01. V2H2P
-   !       02. VPPPP
-   !       03. VHHHH
-   !       04. VHHPP
-   !       05. V2HPP
-   !       06. V2PHH
+   !       01. V2H2P  <IJ||AB>  all I,J; all A,B
+   !       02. VPPPP  <AB||CD>  A>B, C>D
+   !       03. VHHHH  <IJ||KL>  I>J,K>L
+   !       04. VHHPP  <IJ||AB>  I>J,A>B
+   !       05. V2HPP  <IJ||AB>  all I,J ; A>B
+   !       06. V2PHH  <AB||IJ>  all A,B; I>J
    !       07. VPHHP
    !       08. VPH2P
    !       09. VPHPP

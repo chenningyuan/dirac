@@ -921,7 +921,6 @@ subroutine ResRec2P(PQ,P,Q)
 end subroutine ResRec2P
 
 function RecNumMM(P,Q)
-
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNumMM
@@ -929,13 +928,10 @@ function RecNumMM(P,Q)
    !if (P==Q) stop 'Error in RecNumMM'
    if (P==Q) call quit('P ==Q => Error in RecNumMM!')
    RecNumMM = MAXMIN(P,Q)
-
    return
-
 end function RecNumMM
 
 function RecNumHP(P,Q)
-
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNumHP
@@ -943,11 +939,9 @@ function RecNumHP(P,Q)
    RecNumHP = (P-1)*NPMO + Q
 
    return
-
 end function RecNumHP
 
 function RecNumPH(P,Q)
-
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNumPH
@@ -955,11 +949,9 @@ function RecNumPH(P,Q)
    RecNumPH = (P-1)*NHMO + Q
 
    return
-
 end function RecNumPH
 
 function RecNum2H(P,Q)
-
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNum2H
@@ -967,11 +959,9 @@ function RecNum2H(P,Q)
    RecNum2H = (P-1)*NHMO + Q
 
    return
-
 end function RecNum2H
 
 function RecNum2P(P,Q)
-
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNum2P
@@ -979,15 +969,12 @@ function RecNum2P(P,Q)
    RecNum2P = (P-1)*NPMO + Q
 
    return
-
 end function RecNum2P
 
 subroutine SetQRangeMM(P,SP,SQ,EP,EQ,QL,QH)
-
    implicit none
    integer, intent(in)  :: P, SP, SQ, EP, EQ
    integer, intent(out) :: QL, QH
-
 
    QL = 1
    QH = (P-1)
@@ -1002,7 +989,6 @@ subroutine SetQRangeMM(P,SP,SQ,EP,EQ,QL,QH)
    if (P==EP) QH = EQ
 
    return
-
 end subroutine SetQRangeMM
 
 subroutine SetQRangeHP(P,SP,SQ,EP,EQ,QL,QH)
@@ -1017,7 +1003,6 @@ subroutine SetQRangeHP(P,SP,SQ,EP,EQ,QL,QH)
    if (P==EP) QH = EQ
 
    return
-
 end subroutine SetQRangeHP
 
 subroutine SetQRangePH(P,SP,SQ,EP,EQ,QL,QH)
@@ -1211,9 +1196,15 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !  routine is repeatedly reading Gamess integral file  FileMR2EINT (TRIM(IFile)//'.F296'; lu=UMR2EINT)
 !  and prepares 2-electron integral files for the HSMRCC run :
 !  FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
-!
 !  These are to be produced by DIRAC !
-!  
+!
+!  Entering: RecLen
+!            NumRec
+!
+!            RecordNumPQ
+!            RecordNumRS
+!            PackRS
+!
 !  
 !  SetIntBuf - SIB_Vxxxx routine which places integral on the buffer array  
 !  
@@ -1275,7 +1266,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
       end function PackRS
    end interface
    ! ... Local Variables ...
-   integer :: P, Q, R, S
+   integer :: P, Q, R, S, R1, S1
    integer :: StP, EnP, StQ, EnQ
    integer :: QLow, QHig
    integer :: RLow, RHig
@@ -1293,7 +1284,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
    if (get_iprint() >= 5) then
      call header('Output from IntFileGen_TwoBody',-1)
-     write(UOUT,'(2x,3(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,'...EndngRec=',EndngRec
+     write(UOUT,'(2x,4(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,  & 
+                                '...EndngRec=',EndngRec,'...RecLen=',RecLen
      write(UOUT,'(5x,a,a)') 'integral type:',integ_label
    endif
 
@@ -1456,10 +1448,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                do S = SLow, SHig
                   RS = RecordNumRS(R,S)
                   PQRS = (PQ - StRec)*RecLen + RS
+
                   !  ... write if integral is larger than threshold ...
                   if ( DABS(GenIntBuf(PQRS)) > CUTOFF ) then
+                     ! ... increment index - array position
                      NZVIntBufInd = NZVIntBufInd + 1
-                     ! ... increment counter of nonzero, PQ-based integrals
+                     ! ... increment counter of nonzero, PQ-based integrals (first two-indexes) 
                      NZIntRec(PQ) = NZIntRec(PQ) + 1
 
                      ! ... write block of integrals 
@@ -1477,6 +1471,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                         NZVPkIBuf = 0       ! zero buffer with packed indexes
                         NZVIntBuf = DBLE(0) ! zero buffer with integrals
                      endif
+
                    ! ... add nonzero integral into integral-buffer
                      NZVIntBuf(NZVIntBufInd) = GenIntBuf(PQRS)
                    ! ... add packed (R,S)-indexes into index-buffer
@@ -1490,20 +1485,28 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                     !   NZVIntBuf(NZVIntBufInd),  & 
                     !   ' array pos:',NZVIntBufInd,  & 
                     !   ' pck indx:', NZVPkIBuf(NZVIntBufInd)
-                       write(UOUT,'(6x,4(a,i3),a,f16.10,a,i7,a,i7)')  &  
+
+                       call ResolvRec(NZVPkIBuf(NZVIntBufInd),R1,S1) ! recover R,S...
+                       write(UOUT,'(6x,4(a,i3),a,f16.10,4(a,i7),a,2i4)')  & 
                        '<',P,' ',Q,'||',R,' ',S,'>=', & 
-                       NZVIntBuf(NZVIntBufInd),  & 
-                       ' array pos:',NZVIntBufInd,  & 
-                       ' pck indx:', NZVPkIBuf(NZVIntBufInd)
+                       NZVIntBuf(NZVIntBufInd),' PQ=',PQ,' RS=',RS,  & 
+                       ' array pos:',NZVIntBufInd,                   & 
+                       ' PackRS:', NZVPkIBuf(NZVIntBufInd),' again R,S:',R1,S1
                      endif
 
                   endif
-               enddo
-            enddo
+               enddo ! end of S
+            enddo ! end of R
             ! ... increase counter of nonzero integrals of PQ index
             TotNZInt = TotNZInt + NZIntRec(PQ) 
-         enddo
-      enddo
+
+            if (get_iprint() >= 30) then
+               write(UOUT,'(1x,a,i5,a,i7)')   & 
+               'number of nonzero <PQ||RS> integrals, NZIntRec(PQ=',PQ,')=',NZIntRec(PQ)
+            endif
+
+         enddo ! end of Q
+      enddo ! end of P
    enddo
 
    ! End of all blocks
