@@ -38,6 +38,8 @@ module aoresponse_input_m
   logical,                 save :: aoresponse_integrate
   logical,                 save :: aoresponse_visual
   logical,                 save :: aoresponse_test_xc
+  logical,                 save :: aoresponse_test_geo
+  logical,                 save :: aoresponse_test_london
 
 contains
 

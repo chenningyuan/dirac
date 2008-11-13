@@ -208,7 +208,7 @@
 !                  13        14        15        16
      &            '.FREQ_P','.0GAMMA','.0BETA ','.INTEGR',
 !                  17        18        19        20
-     &            '.VISUAL','.TESTXC','.xxxxxx','.xxxxxx',
+     &            '.VISUAL','.TESTXC','.TESTGE','.TESTLO',
 !                  21        22        23        24
      &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx',
 !                  25        26        27        28
@@ -265,6 +265,8 @@
       aoresponse_integrate          = .false.
       aoresponse_visual             = .false.
       aoresponse_test_xc            = .false.
+      aoresponse_test_geo           = .false.
+      aoresponse_test_london        = .false.
 
 
 !     process input
@@ -381,7 +383,13 @@
           go to 100
 
    19     continue
+          aoresponse_test_geo = .true.
+          go to 100
+
    20     continue
+          aoresponse_test_london = .true.
+          go to 100
+
    21     continue
    22     continue
    23     continue
