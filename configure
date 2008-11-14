@@ -2,7 +2,7 @@
 #
 # FILE    : configure
 #
-# NOTE: THIS SCRIPT IS MORE THAN 2000 LINES. 
+# NOTE: THIS SCRIPT IS MORE THAN 2000 LINES.
 #       FIRST A LOT OF SCRIPT FUNCTIONS ARE DEFINED.
 #       THE ACTUAL SCRIPT IS AT THE BOTTOM, SEARCH FOR "MAIN SCRIPT" TO FIND IT.
 #
@@ -51,6 +51,9 @@ nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
+
+# Set NO_LARGEFILE to something to disable large file support on Linux
+NO_LARGEFILE=
 
 # default - no IBM mode
 IBMMOD=0
@@ -342,6 +345,35 @@ if [ $IPRINT -ge "8" ];  then
 fi
 }
 
+# Usage: ask_yesno y|n QUESTION
+# Ask a yes/no question and return true if the answer was
+# the same as the default. QUESTION should not include (y/N).
+ask_yesno ()
+{
+    ask_yesno_default="$1"
+    shift
+    while true; do
+	if [[ "$ask_yesno_default" = "y" ]]; then
+	    $echo "$*"' (Y/n)\c'
+	else
+	    $echo "$*"' (y/N)\c'
+	fi
+	read ask_yesno_answer
+	case "$ask_yesno_answer" in
+	    y|Y|yes)
+		[[ y = "$ask_yesno_default" ]]
+		return;;
+	    n|N|no)
+		[[ n = "$ask_yesno_default" ]]
+		return;;
+	    "")
+		return;;
+	    *)
+		echo "Please answer yes or no or hit return for default.";;
+	esac
+    done
+}
+
 question () {
 # Wondering whether this is usefull to generalize...
 # Arguments
@@ -457,12 +489,24 @@ if [ -z "$guess" ]; then
 fi
 
 guess=`./config.sub $guess 2>/dev/null`
-
 echo
-$echo "Configuring for $guess (can be changed with --system)"
 if echo "$guess" | grep -q x86_64; then
-    echo "Note: For 32 bit code generation use --system="`echo "$guess"|sed s/x86_64/i686/`
+    echo "Your are compiling on a x86_64 system. Do you want to use 64 bit"
+    echo "integers inside Dirac? This is only useful if you need more than"
+    echo "16 GB of memory in your calculations, and requires 64 bit integer"
+    echo "(ILP64) versions of your MPI, BLAS and LAPACK libraries."
+    echo
+    if ask_yesno n "Use 64 bit integers in Dirac?"; then
+        guess=`echo "$guess"|sed s/x86_64/i686/`
+	echo "Configuring Dirac to use 32 bit integers (LP64)."
+    else
+	echo " Configuring Dirac to use 64 bit integers (ILP64)."
+	echo " NB: Be aware that your external libraries _must_ also use"
+	echo " 64 bit integers, which is typically not the default"
+    fi
+    echo
 fi
+$echo "Configuring for $guess (can be changed with --system)"
 flavor=$guess
 machine=`echo $guess | sed 's/-[^-]*$//'`
 if [ "$machine" != "$guess" ]; then 
@@ -509,18 +553,17 @@ elif [ "$machine" = "mips-sgi" ]; then
    dir_list="/usr/lib64 /usr/lib32 $dir_list"
 fi
 
-if [ $IPRINT -ge "5" ];  then 
+if [ $IPRINT -ge "5" ];  then
     echo
     echo 'guess_system: variable dir_list=' $dir_list
 fi
-echo
 }
 
 #
 parallel_stuff ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#       Set parallel enviroment 
+#       Set parallel enviroment
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
@@ -528,38 +571,23 @@ echo 'PARALLEL'
 echo
 if [ -z "${par}" ]; then
   if [ $quick = 0 ]; then
-    $echo 'Do you want to install the program'\
-    'in a parallel version, using MPI? (y/N) \c'
-    read par
+      if ask_yesno n "Do you want to install the program in a parallel version, using MPI?"; then
+	  par=no
+      else
+	  par=yes
+      fi
   else
     par=no
   fi
-  case "$par" in
-  "yes" | "y" | "Y" )
-    par="yes" ;;
-  "no" | "n" | "" )
-    par="no" ;;
-  *)
-    parallel_stuff ;;
-  esac
 fi
 
 echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
-  $echo 'Will your nodes use local disks? (Y/n) \c'
-  read localdisks
-  case "$localdisks" in
- # "yes" | "y" | "Y" )
-  "no" | "n" | "N" )
-    #localdisks="yes"
-    localdisks="no"
-    ;;
-  *)
-    localdisks="yes"
-    #localdisks="no"
-    ;;
-  esac
-
+    if ask_yesno y "Will your nodes use local disks?"; then
+	localdisks="yes"
+    else
+	localdisks="no"
+    fi
   echo '=> - with local disks for each node: '${localdisks}''
 
 #
@@ -584,31 +612,26 @@ if [ "$par" = "yes" ]; then
          *-ibm | powerpc64-unknown-linux* | ppc64* )
             parlib='no'
             parinc='yes'
-           # mpirun='poe'
             mpirun=`which poe 2>/dev/null`
             ;;
          *-hp)
             parlib='no'
             parinc='yes'
-           #mpirun='mpirun'
             mpirun=`which mpirun 2>/dev/null`
             ;;
          *-dec)
             parlib='yes'
             parinc='yes'
-           #mpirun='dmpirun'
             mpirun=`which dmpirun 2>/dev/null`
             ;;
          i[3-6]86-* | x86_64-* | ia64-unknown-linux)
             parlib='yes'
             parinc='yes'
-           # mpirun='mpirun'
             mpirun=`which mpirun 2>/dev/null`
             ;;
          *)
             parlib='yes'
             parinc='yes'
-            #mpirun='mpirun'
             mpirun=`which mpirun 2>/dev/null`
             ;;
       esac
@@ -629,17 +652,13 @@ if [ "$par" = "yes" ]; then
 #  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-      $echo 'Does your MPI setting need machinefile (like MPICH2...) ? (N/y) \c'
-      mach_file=
-      default_answer="n"
-      get_answer
-      if [ "$answer" = "y" ] ; then
+       if ! ask_yesno n "Does your MPI setting need machinefile (like MPICH2...)?"; then
          $echo 'Specify default machinefile for MPI runs: (filename) (default: $PBS_NODEFILE): \c'
          read mach_file
          if [ -z "$mach_file" ]; then
             mach_file='$PBS_NODEFILE'
          fi
-      fi
+       fi
    else # if quick setting, no machinefile for MPI
       mach_file=
    fi
@@ -1015,7 +1034,6 @@ if [ -z "$comp_found" ]; then
   echo  "   Cannot proceed without a Fortran compiler in path"
   echo  "   Please check your path! "
   echo  " Or specify a compiler manually: "
-#  exit 
 fi
 
 question comp_index "$to_find compilers" "$comp_found" " Specify compiler manually" "$default"
@@ -1039,7 +1057,7 @@ if [ ! -z "$comp_pwd" ]; then
   if [ "$comp_pwd" != "/" ]; then
     comp_pwd="$comp_pwd/"
   fi
-fi 
+fi
 $echo "Compiler for $to_find: $comp_found\n"
 }
 
@@ -1054,7 +1072,7 @@ openmpif*|mpif*)
       mpishowopt="-show"
    else
       # LAM MPI
-      mpishowopt="-showme" 
+      mpishowopt="-showme"
    fi
    my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
    if "$F90_COMP" $mpishowopt | grep -q ifc; then
@@ -1071,7 +1089,7 @@ openmpif*|mpif*)
       F90real=lfc
    elif "$F90_COMP" $mpishowopt | grep -q g95; then
       F90real=g95
-   else 
+   else
       F90real=$F90_COMP
    fi
    echo "Compiler in $F90_COMP found to be $F90real ..."
@@ -1082,7 +1100,7 @@ mpxlf|mpxlf_r)
    ;;
 *)
    F90real=$F90_COMP_NAME;;
-esac   
+esac
 }
 
 find_real_cc(){
@@ -1093,7 +1111,7 @@ openmpicc| mpicc)
       mpishowopt="-show"
    else
       # LAM MPI
-      mpishowopt="-showme" 
+      mpishowopt="-showme"
    fi
     if $CC_COMP_NAME $mpishowopt | grep -q icc; then
       CCreal=icc
@@ -1103,7 +1121,7 @@ openmpicc| mpicc)
       CCreal=pgcc
    elif $CC_COMP_NAME $mpishowopt | grep -q gcc; then
       CCreal=gcc
-   else 
+   else
       CCreal=$CC_COMP_NAME
    fi
    echo "Compiler in $CC_COMP_NAME found to be $CCreal ..."
@@ -1111,7 +1129,7 @@ openmpicc| mpicc)
 *)
   CCreal=$CC_COMP_NAME
   ;;
-esac   
+esac
 echo
 }
 
@@ -1146,11 +1164,11 @@ if [ ! -z "$a" ]; then
   ### looking priority: idb, pgdbg, dbx, gdb ....
   if [ ! -z `which idb 2>/dev/null` ]; then
     which_debug="idb"
-  elif [ ! -z `which pgdbg 2>/dev/null` ]; then 
+  elif [ ! -z `which pgdbg 2>/dev/null` ]; then
     which_debug="pgdbg"
-  elif [ ! -z `which dbx 2>/dev/null` ]; then 
+  elif [ ! -z `which dbx 2>/dev/null` ]; then
     which_debug="dbx"
-  elif [ ! -z `which gdb 2>/dev/null` ]; then 
+  elif [ ! -z `which gdb 2>/dev/null` ]; then
     which_debug="gdb"
   fi
 fi
@@ -1208,21 +1226,17 @@ setup_math_lib(){
   if [ $IPRINT -ge "5" ];  then
     echo 'setup_math_lib: finally setup variable LIB='$LIB
   fi
-  
+
   test_lib_arch $2
   if [ 0 -eq $? ]; then
-    echo "System is $bit_set-bit, but the mathematical libraries are probably not." 
+    echo "System is $bit_set-bit, but the mathematical libraries are probably not."
     echo "Libraries: $2/$1"
-    $echo " Do you still want to use these libraries (y/N)?"
-    read use_blas
-    case "$use_blas" in
-      "yes" | "y" | "Y" ) ;;
-      *)
-        $echo "Please specify the libraries again."
+    if ask_yesno n " Do you still want to use these libraries?"; then
+	$echo "Please specify the libraries again."
         lib_names=""
         lib_dirs=""
-        get_math_lib ;;
-    esac
+        get_math_lib
+    fi
   fi
 }
 
@@ -1271,7 +1285,7 @@ fi
 
 question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libraries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
 
-for index in $lib_index; do 
+for index in $lib_index; do
   if [ $index -eq 0 ]; then
     $echo "No libraries are included at this moment."
     $echo "To add the libraries yourself edit Makefile.config manually!"
@@ -1539,7 +1553,6 @@ set_install_directory () {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-   # first null the variable
    INSTALL_DIR=
 
    # repeat until directory found - test on empty
@@ -1556,25 +1569,17 @@ set_install_directory () {
          $echo 'Found (in Makefile.config) proper directory for installation of' \
          'binaries and scripts:'
 	 $echo $curr
-	 $echo 'Do you want me to use it ? (Y/n) \c'
-
-	 default_answer="y"
-         get_answer
-
-	 if [ "$answer" = "n" ] ; then
-            curr=`pwd`
-	    $echo 'Do you want me to use current directory '$curr' ? (Y/n) \c'
-	    default_answer="y"
-            get_answer
-	    if [ "$answer" = "n" ] ; then
-	       $echo "Well, your choice, now type the directory:\c"
-               read INSTALL_DIR
-	    else
-               INSTALL_DIR=$curr
-	    fi
+	 if ask_yesno y "Do you want me to use it?"; then
+	     INSTALL_DIR=$curr
 	 else
-            INSTALL_DIR=$curr
-         fi
+	     curr=`pwd`
+	     if ask_yesno y "Do you want me to use current directory $curr?"; then
+		 INSTALL_DIR=$curr
+	     else
+		 $echo "Well, your choice, now type the directory:\c"
+		 read INSTALL_DIR
+	     fi
+	 fi
       else
       # when the previously used directory "$curr" is no longer valid
          curr=`pwd`
@@ -1592,62 +1597,6 @@ set_install_directory () {
 
    done
 echo
-}
-
-get_answer() {
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#  usefull procedure to get (typed) the answer - yes or no
-#
-#  uses the variable "default_answer" which has to be "y" or "n" or empty
-#
-#  exports the "answer" variable cotaining "y" or "n"
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-# "global" variable
-answer=
-# ... local variable
-this_answer=
-# ... to check whether the answer was proper
-answered=
-while [ -z "$answered" ]
-do
-     read this_answer
-
-     if [ $IPRINT -ge "12" ];  then
-        echo 'get_answer: read variable this_answer='$this_answer
-        echo 'get_answer: while variable default_answer='$default_answer
-     fi
-
-     # if answer empty and default_answer set
-     if [ -z "$this_answer" -a "$default_answer" = "y" ]; then
-        answer="y"
-	answered="good"
-     fi
-     if [ -z "$this_answer" -a "$default_answer" = "n" ]; then
-        answer="n"
-	answered="good"
-     fi
-
-     if [ -z $answered ]; then
-        case "$this_answer" in
-         "yes" | "y" | "Y"  )
-           answered="good"
-           answer="y"      ;;
-         "no"  | "n" | "N"  )
-           answered="good"
-           answer="n"      ;;
-         *)
-           answered=
-           $echo '  please type the proper answer - yes/y/Y or no/n/N \c'
-        ;;
-        esac
-     fi
-done
-
- if [ $IPRINT -ge "12" ];  then
-     echo 'get_answer: ASSIGNED variable answer='$answer
-  fi
 }
 
 set_scratchdir ()  {
@@ -1741,20 +1690,9 @@ get_worksp ()  {
       if [ ! -d $worksp ]; then
          echo 'WARNING: Scratch directory '$worksp' does not exist!'
          if [ $quick = 0 ]; then
-            ok=
-            while [ -z "$ok" ]; do
-               $echo "- Are you sure that you want $worksp ? (Y/n) \c"
-               read answer
-               case "$answer" in
-               "y" | "Y" | "yes" | "")
-                  ok=xxx
-                  ;;
-               "n" | "N" | "no")
-                  worksp=
-                  ok=xxx
-                  ;;
-               esac
-            done
+	     if ! ask_yesno y "- Are you sure that you want $worksp?"; then
+		 worksp=
+	     fi
          else
          # ... no prompt mode - check if worksp is empty...
             if [ -z $worksp ]; then
@@ -1926,22 +1864,11 @@ fi
 }
 
 get_largefiles(){
-#
-# Ask user whether the large file option can be set
-#
-  case $machine in
-    i[3-6]86-* | x86_64-* | ia64-unknown-linux)
-      if [ $quick = 0 ]; then
-        $echo '\nCan your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
-        read largefiles
-      else
-        largefiles=Y
-      fi
-      case "$largefiles" in
-      "yes" | "y" | "Y"|"" )
-        cpp_cc="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE $cpp_cc"
-      ;;
-      esac ;;
+    case $machine in
+	i?86-* | x86_64-* | ia64-unknown-linux)
+	    if [[ -z "$NO_LARGEFILE" ]]; then
+		cpp_cc="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE $cpp_cc"
+	    fi
     esac
 }
 
@@ -2188,25 +2115,7 @@ echo
 if [ -f Makefile.config ]; then
    echo 'Makefile.config exists. I will take a backup as Makefile.config.orig'
    if [ -f Makefile.config.orig  ]; then
-      echo 'Makefile.config.orig already exists.'
-      answer=
-      while [ "$answer" != "y" -a "$answer" != "n" ]
-      do
-         if [ $quick = 0 ]; then
-            $echo 'Do you want me to overwrite' \
-            'Makefile.config.orig anyway? (Y/n) \c'
-            read answer
-         else
-            answer=
-         fi
-         if [ -z "$answer" ]; then
-            answer="y"
-         fi
-      done
-      if [ "$answer" = "n" ];  then
-         echo 'I do not take a backup of Makefile.config.' \
-              'This file will be overwritten'
-      else
+      if ask_yesno y "Makefile.config.orig already exists. Overwrite?"; then
 	  mv Makefile.config Makefile.config.orig
       fi
    else
@@ -2424,7 +2333,9 @@ make_pam_runtest ()  {
 echo '#!/bin/bash' > $INSTALL_DIR/pam
 echo '#!/bin/bash' > $SRC_DIR/test/runtest
 let wrkmem_reduced=$memsiz/1000000
-$echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
+if [ $IPRINT -ge 1 ]; then
+    $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
+fi
 cat <<EOF>> $INSTALL_DIR/pam
 #
 # default memory used by dirac.x is determined by Makefile.config 
@@ -2453,17 +2364,20 @@ EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 
 chmod a+rx $INSTALL_DIR/pam
-echo "ok"
-echo
-$echo 'Preparing runtest shell script  : \c'
+if [ $IPRINT -ge 1 ]; then
+    echo "ok"
+    echo
+    $echo 'Preparing runtest shell script  : \c'
+fi
 cat <<EOF>> $SRC_DIR/test/runtest
 #
 BIN_DIR=$INSTALL_DIR
 EOF
 cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
 chmod a+rx $SRC_DIR/test/runtest
-echo "ok"
-
+if [ $IPRINT -ge 1 ]; then
+    echo "ok"
+fi
 if [ $IPRINT -ge "5" ]; then
   echo 'make_pam_runtest: done'
 fi
@@ -2478,27 +2392,31 @@ final_words () {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo "Before you run make, please check the Makefile.config and "
-echo "pam files and edit them if you wish."
-echo
-echo "Please make sure that the mathematical libraries used have been "
-echo "compiled with the same compiler you are using now, otherwise it "
-echo "might be neccesary to link to additional runtime libraries."
-echo "----- On 64bit architectures check that used math libraries are of the ILP64 type ! -----"
-
-if [ "$par"="yes" ]; then
-echo
-echo "pam script has been configured for use of Open MPI/MPICH2/Intel MPI/IBM MPI,..."
-echo "If you change the MPI library, please reconfigure the pam script."
-echo "---- On 64bit architectures check that used MPI libraries are of the ILP64 type ! -----"
-fi
-
-##### Miro: everything know-how should be under Dirac Wiki #####
+echo "END OF CONFIGURE"
 echo
 echo "Please check 'Known issues and problems' at"
-echo "   http://dirac.chem.sdu.dk/"
-echo "and http://wiki.chem.vu.nl/dirac" 
+echo "http://dirac.chem.sdu.dk/ and http://wiki.chem.vu.nl/dirac"
 echo "to see hints or/and problems concerning your platform."
+echo
+#echo "Please make sure that the mathematical libraries used have been "
+#echo "compiled with the same compiler you are using now, otherwise it "
+#echo "might be neccesary to link to additional runtime libraries."
+if [ "$bit_set" = "64" ]; then
+ echo "Dirac is configured to use 64 bit integers. Make sure that"
+ echo "your math libraries are of the ILP64 type!"
+fi
+
+if [ "$par" = "yes" ]; then
+echo "pam script has been configured for use of Open MPI/MPICH2/Intel MPI/IBM MPI,..."
+echo "If you change the MPI library, please reconfigure the pam script."
+if [ "$bit_set" = "64" ]; then
+ echo "If you use 64 bit integers make sure that MPI libraries are of "
+ echo "the ILP64 type!"
+fi
+fi
+echo
+echo "Before you run make, you may check the Makefile.config and "
+echo "pam files and edit them if you wish."
 echo
 echo "Then run "
 echo "   make"
@@ -2511,7 +2429,9 @@ make_pamq ()  {
 #     Make pamq.py python script
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-$echo 'Copying pamq.py python script to '$INSTALL_DIR' : \c'
+if [ $IPRINT -ge 1 ]; then
+    $echo 'Copying pamq.py python script to '$INSTALL_DIR' : \c'
+fi
 
 echo '#! /usr/bin/env python        '          >  $INSTALL_DIR/pamq.py
 echo '#                             '         >>  $INSTALL_DIR/pamq.py
