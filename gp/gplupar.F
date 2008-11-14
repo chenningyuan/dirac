@@ -1355,11 +1355,9 @@ C
         LBL = IBLOCKL(IBLK)
 C
 C       check if block is active
-C
         IF( ISCALFAC(IBLK) .ne. 0 ) THEN
 C
 C         check if block belongs to own group
-C
           IGROUPBLK = 0
           ISCRNODE = IBLOCKD(IBLK)
 C
@@ -1390,7 +1388,6 @@ csk       write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC,MYPROC',
 csk  &    ICOMM_ID,ROOTPROC,MYPROC
 C
 C         decide whether it is necessary to take part in communication
-C
           NNCOLOR = 0
           NNKEY = 0
           NNKEY = MYPROC + 1
@@ -1443,7 +1440,6 @@ C
       ROOTPROC = 0
 C
 C     pointer for file offset: skip real part of the c-vector
-C
       IOFF_SCRATCH_P = L_COMBI
 C
       IOFFSET_IN  = IOFF_SCRATCH_P
@@ -1453,7 +1449,6 @@ C     set correct block counter for imag part
 CSK      WRITE(LUWRT,*) 'IOFF_BLOCK is',IOFF_BLOCK
 C
 C     LOOP OVER BLOCKS
-C
       DO IBLK = 1, NBLOCK 
 C
 C       get length of block
@@ -1610,6 +1605,11 @@ C     some constants
       NNULL = 0
       IONE  = 1
 C
+C     WRITE(LUWRT,*) ' NPARBLOCK in copy routine'
+C     CALL IWRTMAMN(NPARBLOCK,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' IBLOCKL in copy routine'
+C     CALL IWRTMAMN(IBLOCKL,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C    
       ILEN = 0
 C
 C     loop over vectors
@@ -4630,20 +4630,15 @@ C?   &                         I,IGAT(I),XGAT(I)
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE I_DO_RCCTOS(IBLOCKL,ICCTOS,NBLOCKS,ICOMPL)
+      SUBROUTINE I_DO_RCCTOS(IBLOCKL,ICCTOS,NBLOCKS)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION IBLOCKL(*), ICCTOS(*)
 C
       IONE = 1
-      DO ILOOP = 1, ICOMPL
-        DO IBLK = 1, NBLOCKS
-          IF( IBLOCKL(IBLK) .gt. 0 ) THEN
-            ICCTOS( IBLK + ( NBLOCKS * ( ILOOP -1 ) ) ) = IONE
-          END IF
-        END DO
+      DO IBLK = 1, NBLOCKS
+        IF( IBLOCKL(IBLK) .gt. 0 ) ICCTOS(IBLK) = IONE
       END DO
-C
       END 
 ***********************************************************************
 *                                                                     *

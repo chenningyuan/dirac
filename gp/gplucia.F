@@ -2225,6 +2225,20 @@ CMI        IF(INCLUDE .EQ.1) THEN
       RETURN
       END
 ***********************************************************************
+      INTEGER FUNCTION IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISM)
+#include "implicit.h"
+      DIMENSION IXSYMLIST(IXSYMACT)
+C
+C     return active irrep # corresponding to symmetry irrep ISM
+C
+      IGET_ACTIVE_IRREP = 0
+      IRETURN           = 0
+      DO I = 1, IXSYMACT
+        IF( IXSYMLIST(I) .eq. ISM ) IRETURN = I
+      END DO
+      IGET_ACTIVE_IRREP = IRETURN
+      END 
+***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
@@ -2244,22 +2258,28 @@ CMI        IF(INCLUDE .EQ.1) THEN
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INI_BLOCKL(IBLOCKI,NDIM,IBATS)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     initialize vector containing block length
 C
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION IBLOCKI(NDIM), IBATS(8,*)
 C
-      DO ISBLK = 1, NDIM
-        IBLOCKI( ISBLK ) = IBATS(8,ISBLK)
-      END DO
+      CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI,1)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INI_BLOCKL_PRP(IBLOCKI,IMAXDIM,IXSYM,NDIM,IBATS)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     initialize vector containing block length - property run
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION IBLOCKI(IMAXDIM,*),IBATS(8,*)
+C
+      CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI(1,IXSYM),1)
 C
       END
 ***********************************************************************
@@ -3777,6 +3797,22 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
       END DO
 *
       RETURN 
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PRTRCCTOS(IMAT,IDIM1,IDIM2,LUPRI)
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION IMAT(IDIM1,IDIM2)
+*
+      DO I = 1, IDIM2
+         WRITE(LUPRI,*) ' priniting IMAT=RCCTOS for pair #I',I
+         CALL IWRTMAMN(IMAT(1,I),1,IDIM1,1,IDIM1,LUPRI)
+      END DO
+*
       END
 ***********************************************************************
 *                                                                     *
