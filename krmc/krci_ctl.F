@@ -109,7 +109,7 @@ C
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
-     &            '.CASSCF','-------','-------','.RELSYM','-------',
+     &            '.CASSCF','.OSCILL','.OMEGAQ','.RELSYM','-------',
      &            '-------','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
@@ -208,6 +208,10 @@ C
 C     ... in "krciprop.h"
       NPROP_KRCI  =    0
       DOPROP_KRCI = .FALSE.
+      DOSYMOPPRP  = .FALSE.
+      DOJZEXP     = .FALSE.
+      DOOSCILLST  = .FALSE.
+      RUNXPROP    = .FALSE.
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -518,13 +522,18 @@ C&&&  CASSCF -- this defines a CAS space
                   NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC 
                GO TO 100
    32          CONTINUE
-C&&&  
+C&&& .OSCILLATOR STRENGTH: calculate transition dipole moments and oscillator strenghts
+                  DOPROP_KRCI = .TRUE.
+                  DOOSCILLST  = .TRUE.
                GO TO 100
    33          CONTINUE
-C&&&  
+C&&& OMEGA quantum number: calculate <CI state|j_z|CI state> expectation value
+C                          using j_z = l_z + s_z
+                  DOPROP_KRCI  = .TRUE.
+                  DOJZEXP = .TRUE.
                GO TO 100
    34          CONTINUE
-C&&&  RELSYM: use relativistic double group symmetry of the wave function
+C&&&  RELSYM:  use relativistic double group symmetry of the wave function
 C              including spin in symmetry
                IF (IKWSET(22) .GT. 0) THEN
                   CALL QUIT('*** ERROR in KRCICALC *** ' //
@@ -862,26 +871,31 @@ C     ... only natural orbitals occupation numbers
         WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
       END IF
       IF( DOPROP_KRCI ) THEN
-        IFIND_PRP  = 0 
+C       ... obtain operator symmetry in LUCIARELs double group 
+C       subgroup notation
+        DOSYMOPPRP = .TRUE.
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'// 
      &     ' one-electron operators: '
+        IF( DOOSCILLST )  CALL DEF_OSCILL(WORK,LWORK,IPROPPRINT)
+        IF( DOJZEXP )     CALL DEF_OMEGAQUANT(WORK,LWORK,IPROPPRINT)
         DO I = 1, NPROP_KRCI
+C         ... initialize operator symmetry array
+          ISYMOPPRP_KRCI(I) = 0
+C
           INDXPR = LPROP_KRCI(I)
-          TMPLAB = PRPNAM(INDXPR)(1:8)
-          IF( TMPLAB .eq. 'XDIPLEN ' .or. TMPLAB .eq. 'YDIPLEN ' .or. 
-     &        TMPLAB .eq. 'ZDIPLEN ') IFIND_PRP = IFIND_PRP + 1
           CALL WRIXPR(I,INDXPR)
         ENDDO
 C
-C       check for XDIPLEN, YDIPLEN, ZDIPLEN. If all specified, 
-C       calculate oscillator strength.
-C
-        DOOSCILLST = .FALSE.
-        IF( IFIND_PRP .eq. 3 ) DOOSCILLST = .TRUE.
+      ENDIF
+      IF( DOOSCILLST ) THEN
         WRITE(LUPRI,'(/A)') ' * Calculation of oscillator strength'//
      &                     ' for (allowed) electronic transitions'
-      ENDIF
+      END IF
+      IF( DOJZEXP ) THEN
+        WRITE(LUPRI,'(/A)') ' * Determine omega quantum number for'//
+     &                      ' electronic eigenstates'
+      END IF
 C
   400 RETURN
       END
@@ -1021,7 +1035,18 @@ C     *** KR-CI property calculation ********************
 C     ***************************************************
 C
       IF( DOPROP_KRCI ) THEN
-         IOPT_SYMMETRY = 1
+C
+C        check symmetry with non-zero CI roots which 
+C        will also have NZCONF != 0.
+C        IOPT_SYMMETRY = 1  ! this fails for fermionic systems 
+C                             (ungerade number of electrons)
+         DO ISYM_CHECK = 1, NKRCI_MAX_SYM
+            NCIROOT_CHECK = NKRCI_CIROOTS(ISYM_CHECK)
+            IF( NCIROOT_CHECK .ne. 0 ) IOPT_SYMMETRY = ISYM_CHECK
+         END DO
+C        set run flag
+         RUNXPROP = .TRUE.
+C
          CALL RSETWOP(WORK,KFREE,LFREE) ! needed ? no orb-rot in CI !!!
          CALL KRCI_PROP(WORK(KCMO),WORK(KFREE),LFREE)
       END IF
@@ -1289,7 +1314,7 @@ C
          END IF
       END IF
 C
-C     Delete 2-el integral files from KRMCSCF or from MOLTRA, thez
+C     Delete 2-el integral files from KRMCSCF or from MOLTRA, they
 C     are probably not correct for KRCI. However, if neither KRMCSCF or
 C     MOLTRA have been active in this Dirac run, the we assume we are
 C     restarting KRCI and that any integrals are correct. (aug08, HJAaJ)

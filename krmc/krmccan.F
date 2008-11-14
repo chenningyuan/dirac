@@ -794,6 +794,7 @@ C
       DIMENSION CMO(*), WORK(*)
 C
 #include "memint.h"
+      MZ = MIN(2,NZ)
 C
 C     introduce property task
 C
@@ -820,11 +821,23 @@ C               1              4
      &   '  _________________________________',
      &   '  Total', NPROP_ROOTS_KRCI
 C
+C     eigenstate <--> symmetry relation
+      IXROOTS     = 0
+      IXROOTS_SYM = 0
+      CALL IZERO(ISYMEIG_KRCI,NPROP_ROOTS_KRCI)
+      DO I = 1, NKRCI_MAX_SYM
+         IXROOTS_SYM = I
+         DO J = 1, NKRCI_CIROOTS(I)
+            IXROOTS = IXROOTS + 1
+            ISYMEIG_KRCI(IXROOTS) = IXROOTS_SYM
+         END DO
+      END DO
+C
 C     ***************************************************
 C     *** Memory allocation *****************************
 C     ***************************************************
 C
-      LXPRPKRCI = NPROP_ROOTS_KRCI**2*NZ*NPROP_KRCI
+      LXPRPKRCI = MZ * NPROP_KRCI * NPROP_ROOTS_KRCI**2
       CALL MEMGET('REAL',KXPRPKRCI,LXPRPKRCI,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPRPCORE, NPROP_KRCI,WORK,KFREE,LFREE)
 C
@@ -836,7 +849,8 @@ C     ***************************************************
 C     *** operator(s) in MO representation **************
 C     ***************************************************
 C
-C     active-active part saved on file KRMC_FOCK
+C     active-active part in MOLFDIR format saved on 
+C     file KRMC_FOCK
 C
       CALL KRCIPRPMO(CMO,WORK(KPRPCORE),WORK(KFREE),LFREE)
 C
@@ -844,7 +858,7 @@ C     ***************************************************
 C     *** calculate properties **************************
 C     ***************************************************
 C
-C     CALL KRCIGETPRP
+      CALL KRCIGETPRP(WORK(KXPRPKRCI),WORK(KFREE),LFREE)
 C
 C     ***************************************************
 C     *** get spectroscopic quantities ******************
@@ -891,6 +905,8 @@ C
 C
 #include "memint.h"
 C
+      MZ = MIN(2,NZ)
+C
       CALL QENTER('KRCIPRPMO')
 C
       INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
@@ -907,6 +923,7 @@ C
 C
          INDXPR  = LPROP_KRCI(I)
          ISYM    = IPRPSYM(INDXPR)
+         ITRSYM  = IPRPTIM(INDXPR)
          IOPSY   = JBTOF(ISYM-1,1)
          FILELAB = PRPNAM(INDXPR)(1:8)
 C
@@ -927,27 +944,32 @@ C
 C        calculate PRPCORE(I) = 2.0D0 * SUM_(all inactive) P_ii
 C
          IF( NISHT .gt. 0)THEN
-            TEMP_PCORE  = SUM_DIAG_ELM(WORK(KRPRPMO),NORBT,NORBT)
+            TEMP_PCORE  = SUM_DIAG_ELM('I',WORK(KRPRPMO),NORBT,NORBT)
             PRPCOREE(I) = D2 * TEMP_PCORE
          ELSE
             PRPCOREE(I) = D0
          END IF
          IF (IPROPT .GE. 0)
      &      WRITE(LUPRI,9000) FILELAB,PRPCOREE(I)
- 9000 FORMAT(/' (KRCIPRPMO): ',A,' property core value: ',F25.15)
+ 9000 FORMAT(/' (KRCIPRPMO): ',A,' property core value: ',F25.15/)
 C
 C        get active-active part
 C
          CALL MEMGET('REAL',KRPRPMOAC,   N2ASHXQ,WORK,KFREE,LFREE)
-CSK      CALL MEMGET('REAL',KRPRPMOACM,4*N2ASHXQ,WORK,KFREE,LFREE)
-CSK      CALL DZERO(WORK(KRPRPMOACM),  4*N2ASHXQ)
-CSK      do not transform to MOLFDIR format here...
          CALL RGETAC(WORK(KRPRPMO),WORK(KRPRPMOAC),IPROPT)
+C
+C        transform to MOLFDIR format
+C
+         CALL MEMGET('REAL',KRPRPMOACM,4*N2ASHX*MZ,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KRPRPMOACM),  4*N2ASHX*MZ)
+         CALL QFC2MFC(WORK(KRPRPMOAC),WORK(KRPRPMOACM),ISYM,
+     &                ITRSYM,IPROPT)
+C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
 C
 C        save on file KRMC_FOCK
 C
-         IRWR = 0
-         CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KRPRPMOAC),N2ASHXQ,IRWR)
+         CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KRPRPMOACM),
+     &                     4*N2ASHX*MZ,0)
          CALL MEMREL('KRCIPRPMO',WORK,KWORK,KWORK,KFREE,LFREE)
       END DO
 C

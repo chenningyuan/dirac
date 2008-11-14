@@ -1710,6 +1710,7 @@ C***********************************************************************
 #include "../luciarel/noccn_inf.inc"
 #include "krmc_shmem.h"
 #include "krmcluci_inf.h"
+#include "krciprop.h"
 C
       CHARACTER*6 CIRUN
 C
@@ -2030,8 +2031,21 @@ C        Use iterative Davidson-Olsen type algorithm
 C        with MAXCIT iterations
          IDCOMH = 0
       END IF
-C     Always two-particle (full) Hamiltonian
+C     Always two-particle (full) Hamiltonian 
       IHAM12 = 2
+C     calculate property operator symmetry in double group subgroup
+C     notation
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 )
+     &  CALL MPI_BCAST(DOSYMOPPRP,1,MPI_LOGICAL,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+#endif
+C     reorder property operator matrix (already done by the MASTER...)
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 )
+     &  CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+#endif
 C     Wave function analysis
       IPRWFC = 0
       IF (CIRUN .EQ. 'ANALYZ') IPRWFC = 1
@@ -2184,6 +2198,21 @@ C     using revised integral allocation scheme
      &                  MPI_COMM_WORLD,IERR)
 #endif
       SPLIT_IJKL = CINT_SPLIT
+C
+C     if (CIRUN .eq. PROP1) disable all 'shared memory' stuff
+C                           --> implement C-sharing (IC_SHL) !?!
+      IF( CIRUN .eq. 'PROP1 ')THEN
+C        disable shared memory usage for now
+         IT_SHL     = - 1
+         IC_SHL     = - 1
+         SHARED_M   = .FALSE.
+         LEVEL_SM   = - 1
+         REORD_IJKL = .FALSE.
+         SPLIT_IJKL = .FALSE.
+      END IF
+C     sigma calculation in property run 
+      DOSIGPROP = .FALSE.
+C
 C     do not write file CIDIA_REL.x
 #if defined (VAR_MPI)
       NO_CDIAF = .TRUE.

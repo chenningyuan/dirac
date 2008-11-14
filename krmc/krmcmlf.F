@@ -82,6 +82,7 @@ C
       END IF
       IREP  = ISYM-1
       IOPSY = JBTOF(IREP,1)
+      IPRINT = 00
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output from QFC2MFC',-1)
          CALL HEADER('Input matrix:',-1)
@@ -90,6 +91,7 @@ C
      &   ISYM,IOPSY,ITIM
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
+      IPRINT = 00
 C
       IF ( NZ .EQ. 1 ) THEN
 C        DMFC matrix is pure real or pure imaginary, in this
@@ -215,11 +217,13 @@ C     ... end do IZ = 1,NZ
       END DO
 C     ... end do IFSY = 1,NFSYM
 C
+      IPRINT = 00
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
+      IPRINT = 00
 C
       CALL QEXIT('QFC2MFC')
       RETURN
@@ -253,6 +257,7 @@ C
       LOGICAL KSYMM
 C
 C
+csk   IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output from MFC2QFC',-1)
          CALL HEADER('Input matrix:',-1)
@@ -318,6 +323,7 @@ C
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
+csk   IPRINT = 00
 C
       RETURN
       END

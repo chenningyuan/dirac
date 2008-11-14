@@ -1059,7 +1059,7 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
 C
 C        Transform to X+, x++ format for DV and PV
 C
-CSK         IPROPT = 40
+CSK      IPROPT = 40
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
          IF (CALCPV) THEN
@@ -1067,7 +1067,7 @@ C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
      &           WORK(KPVMOLF),PV,IPROPT)
 C           CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PVD,IPRINT)
          END IF
-CSK         IPROPT = 00
+CSK      IPROPT = 00
          CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF ( NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
@@ -1095,7 +1095,7 @@ C        be a bit more slack (?) when running NO occ. numbers
 C        with LUCIAREL
 C
       IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
-        XDEPS = 1.0D-7 
+        XDEPS = 1.0D-6 
       END IF
 C
 C     IF (... debug check of DV,PV trace ...) THEN
@@ -1601,6 +1601,7 @@ C
       CALL MEMREL('RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETFC')
+      IPROPT = 00
       RETURN
  9011 FORMAT(/' RGETFC: ',A,' fock matrix, irrep ',I1)
       END
@@ -2710,14 +2711,21 @@ C
 C
 C     Make sure start guess orbitals are orthonormal !!!
 C
-      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+      IF (IPROPT .GE. 10) THEN
+         DO I = 1, NFSYM
+            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
 C
+      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
 C
 C     Write coefficients back to file as label NEWORB
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+            WRITE(LUPRI,'(A,I2)') ' Coefficients ( after GS), irrep ',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
