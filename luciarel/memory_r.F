@@ -417,7 +417,7 @@ C
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           write(LUWRT,*) ' NS has value  ',NS
           WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
         END IF
         IIDENT(NS) = IDENT
         KFREEL = KFREES
@@ -460,7 +460,7 @@ C
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
@@ -484,7 +484,7 @@ C       Set a mark at current free address
         IF(NM.GT.MAXMRK) THEN
           WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
           WRITE(LUWRT,*) ' Increase MAXMRK from ', MAXMRK
-          Call Abend1( 11 )
+          Call QUIT( ' *** ERROR in MEMMAR: too many memory marks. ***')
         END IF
         MARKC(NM) = IDENT
         MARK_ACT = IDENT 
@@ -499,7 +499,8 @@ C       Set a mark at current free address
           WRITE(LUWRT,'(A,A,A,A)')
      &    ' Actual MARK and MARK to be flushed ',
      &     IDENT,' versus ',MARK_ACT
-          STOP ' Error in memory flushing '
+          Call QUIT( ' *** ERROR in MEMMAR: mark mismatch 
+     &                 while flushing***')
         END IF
 C
         NSNLI = NS+NL
@@ -524,9 +525,9 @@ csk     WRITE(LUWRT,*)
 csk  &          ' MEMMAR: KBASE_LOCAL, XBASE_LOCAL, LMEMFREE_PTR',
 csk  &                    KBASE_LOCAL, XBASE_LOCAL, LMEMFREE_PTR
       ELSE
-          WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
-          WRITE(LUWRT,*) ' Too confused to continue  '
-          Call Abend1( 11 )
+        WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
+        WRITE(LUWRT,*) ' Too confused to continue  '
+        Call QUIT( ' *** ERROR in MEMMAR: unknown task parameter.*** ')
       END IF
 C
 C     Check paddings
@@ -633,14 +634,14 @@ C
           IF(ITSOK.EQ.0) THEN
             WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
      &                                                         IDENT 
-            Call Abend2( ' Error observed by  memory manager ' )
+            Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
           ENDIF
         END IF
 C
       IF(ISTOP.NE.0) THEN
         WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                     IDENT 
-        call Abend2( ' Error observed by  memory manager ' )
+     &                                                     IDENT
+        Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
       END IF
       RETURN
       END

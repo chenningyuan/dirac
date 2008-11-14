@@ -970,26 +970,26 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
-*
-* Allocate the three blocks VEC1, VEC2, C2 used in sigma, densi etc
-*
-* One of the blocks (KC2) is dimensioned so two partitioned blocks of
-* length LSCR2 can be stored
-*
-* Jeppe Olsen, Jan 1998
-*               Relativistic version, Feb. 98
-*
+C**********************************************************************
+C
+C     allocate two blocks: VEC1 and VEC2
+C     dimension for resolution block is computed:
+C                                    - two partitioned blocks of
+C                                      length LSCR2 can be stored
+C
+C      Jeppe Olsen, Jan 1998 - Relativistic version, Feb. 98
+C
+C      S. Knecht - Jul 2007: memory saving version enabled
+C      S. Knecht - Nov 2008: modified for CI property runs
+C
+C**********************************************************************
+C
       IMPLICIT REAL*8(A-H,O-Z)
-*
+C
       character*6 CIRUN
-*
+C
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -997,6 +997,7 @@ CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
+#include "krciprop.h"
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -1013,118 +1014,101 @@ CSK      SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,KC2,LSCR2,CIRUN)
 #include "cprnt.inc"
 #include "oper.inc"
 #include "gasstr.inc"
-*
+C
 #include "cgas.inc"
 #include "lucinp.inc"
-*. Common block for communicating with sigma
 #include "cands.inc"
-*
-      KDUM = 0
-      call memmar(KDUM,KDUM,'MARK  ',KDUM,'GET_3B')
-*
+C
+      IDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',KDUM,'GET_3B')
+C
       NTESTL = 0000
       NTEST = MAX(NTESTL,IPRDIA)
-*
+C
       ISPC = ISSPC
-      ISM  = ISSM
-*
       LSCR2 = 0
-*
-      DO IMS2 = 1, NMS2VAL
-*
-        if (NTEST.ge.100) write(LUWRT,*) 'Doing MS2 = ',MS2VAL(IMS2)
-        IATP = IST_FOR_DT(1,IMS2)
-        IBTP = IST_FOR_DT(2,IMS2)
-*
-        NAEL = NELEC(IATP)
-        NBEL = NELEC(IBTP)
-*
-        NOCTPA = NOCTYP(IATP)
-        NOCTPB = NOCTYP(IBTP)
-*
-        IOCTPA = IBSPGPFTP(IATP)
-        IOCTPB = IBSPGPFTP(IBTP)
-*
-        call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-        call memmar(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*
-        if (NTEST.ge.500) then
-          write(LUWRT,*) 'KLCIOIO at ',KLCIOIO
-          write(LUWRT,*) 'Length is ',NOCTPA*NOCTPB
-          write(LUWRT,*) 'KLCBLTP at ',KLCBLTP
-          write(LUWRT,*) 'Length is ',NSMST
-        end if
-*
-        CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
-        CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTP))
-*. Largest block of strings in zero order space
-        MXSTBL0 = MXNSTR
-*. This must be generalized !
-*. alpha and beta strings with an electron removed
-        IATPM1 = ITPM1(1,IMS2)
-        IBTPM1 = ITPM1(2,IMS2)
-*. alpha and beta strings with two electrons removed
-        IATPM2 = ITPM2(1,IMS2)
-        IBTPM2 = ITPM2(2,IMS2)
-*. Largest number of strings of given symmetry and type
-        MAXA = MXNSTR
-        IF(NAEL.GE.1) THEN
-          MAXA1 = IMNMX_REL(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-          MAXA = MAX(MAXA,MAXA1)
-        END IF
-        IF(NAEL.GE.2) THEN
-          MAXA1 = IMNMX_REL(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-          MAXA = MAX(MAXA,MAXA1)
-        END IF
-        MAXB = 0
-        IF(NBEL.GE.1) THEN
-          MAXB1 = IMNMX_REL(WORK(KNSTSO2(IBTPM1)),NSMST*NOCTYP(IBTPM1),
-     &                      2)
-          MAXB = MAX(MAXB,MAXB1)
-        END IF
-        IF(NBEL.GE.2) THEN
-          MAXB1 = IMNMX_REL(WORK(KNSTSO2(IBTPM2)),NSMST*NOCTYP(IBTPM2),
-     &                      2)
-          MAXB = MAX(MAXB,MAXB1)
-        END IF
-        MXSTBL = MAX(MAXA,MAXB)
-        IF(IPRCIX.GE.2 ) WRITE(LUWRT,*)
-     &  ' Largest block of strings with given symmetry and type',MXSTBL
-*. Largest number of resolution strings and spectator strings
-*  that can be treated simultaneously
-        MAXK = MIN(MXINKA,MXSTBL)
-*.scratch space for projected matrices and a CI block
-*
-*. Scratch space for CJKAIB resolution matrices
-*. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
-        CALL MXRESC_REL(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &                  NSMST,NSTFSMSPGP,NSTFSMSPGP2,MXPNSMST,
-     &                  NSMOB,MXPNGAS,NGAS,NOBPTS,NOBPTS2,IPRCIX,MAXK,
-     &                  NELFSPGP,
-     &                  MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
-        LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
-        LCJRES = LSCR2
-*. Note : LCJRES and MXADKBLK are being save in /CICISP/
-        IF(IPRCIX.GE.2) THEN
-          WRITE(LUWRT,*) 'GET_3BL: MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-          WRITE(LUWRT,*) 'GET_3BL: MXADKBLK ', MXADKBLK
-          WRITE(LUWRT,*) ' Space for resolution matrices ',LSCR2
-        END IF
+C
+      IF( CIRUN .ne. 'PROP1 ' ) IXSYMACT = 1
+C      
+      DO I = 1, IXSYMACT
+C
+        IJSYM = ISSM
+        IF( CIRUN .eq. 'PROP1 ' ) IJSYM = IXSYMLIST(I)
+C
+C       loop over MS2 spaces for "active" symmetry irrep
+        DO IMS2 = 1, NMS2VAL
+C
+          IATP = IST_FOR_DT(1,IMS2)
+          IBTP = IST_FOR_DT(2,IMS2)
+C
+          NAEL = NELEC(IATP)
+          NBEL = NELEC(IBTP)
+C
+          NOCTPA = NOCTYP(IATP)
+          NOCTPB = NOCTYP(IBTP)
+C
+          IOCTPA = IBSPGPFTP(IATP)
+          IOCTPB = IBSPGPFTP(IBTP)
+C
+          call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+          call memmar(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+C
+          CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+          CALL ZBLTP_REL(ISMOST(1,IJSYM),NSMST,IDC,WORK(KLCBLTP))
+C         largest block of strings in zero order space
+          MXSTBL0 = MXNSTR
+C         this must be generalized ! alpha and beta strings with an 
+C         electron removed
+          IATPM1 = ITPM1(1,IMS2)
+          IBTPM1 = ITPM1(2,IMS2)
+C         alpha and beta strings with two electrons removed
+          IATPM2 = ITPM2(1,IMS2)
+          IBTPM2 = ITPM2(2,IMS2)
+C         largest number of strings of given symmetry and type
+          MAXA = MXNSTR
+          IF(NAEL.GE.1) THEN
+            MAXA1 = IMNMX_REL(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),
+     &                        2)
+            MAXA = MAX(MAXA,MAXA1)
+          END IF
+          IF(NAEL.GE.2) THEN
+            MAXA1 = IMNMX_REL(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),
+     &                        2)
+            MAXA = MAX(MAXA,MAXA1)
+          END IF
+          MAXB = 0
+          IF(NBEL.GE.1) THEN
+            MAXB1 =IMNMX_REL(WORK(KNSTSO2(IBTPM1)),NSMST*NOCTYP(IBTPM1),
+     &                       2)
+            MAXB = MAX(MAXB,MAXB1)
+          END IF
+          IF(NBEL.GE.2) THEN
+            MAXB1 =IMNMX_REL(WORK(KNSTSO2(IBTPM2)),NSMST*NOCTYP(IBTPM2),
+     &                       2)
+            MAXB = MAX(MAXB,MAXB1)
+          END IF
+          MXSTBL = MAX(MAXA,MAXB)
+C
+C         largest number of resolution strings and spectator strings
+C         that can be treated simultaneously
+          MAXK = MIN(MXINKA,MXSTBL)
+C
+C         scratch space for CJKAIB resolution matrices
+C         size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
+          CALL MXRESC_REL(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
+     &                    NSMST,NSTFSMSPGP,NSTFSMSPGP2,MXPNSMST,NSMOB,
+     &                    MXPNGAS,NGAS,NOBPTS,NOBPTS2,IPRCIX,MAXK,
+     &                    NELFSPGP,MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,
+     &                    MXADKBLK)
+          LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
+          WRITE(LUWRT,*) ' LSCR2 for IJSYM',LSCR2,IJSYM
+        END DO
+C       ^ end loop over MK2 values
       END DO
-*     ^ End loop over MK2 values
-*
-      IF(ICISTR.EQ.1) THEN
-        WRITE(LUWRT,*) ' ICISTR = 0 not in action ANYMORE'
-        Call Abend2( ' ICISTR = 0 not in action ANYMORE' )
-      ELSE IF (ICISTR.EQ.2) THEN
-        L0BLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        L0BLOCK = MXSOOB
-      END IF
-*
-*     L2BLOCK and LBLOCK stored in crun.inc, proper dimensioning in Z_BLK_...
-*
+C     ^ end loop over active symmetry irreps
+C       
+C     L2BLOCK and LBLOCK are stored in crun.inc; dimensioning in Z_BLK_*
+      L0BLOCK = MXSOOB
 CSK...6-jul-07      LBLOCK = MAX(L2BLOCK,L0BLOCK)
       L3BLOCK = MAX(L2BLOCK,L0BLOCK)
 CSK...6-jul-07 new
@@ -1132,19 +1116,19 @@ CSK...6-jul-07 new
 CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
-*     
-      IF( NTEST .gt. 5 )THEN
+C     
+c     IF( NTEST .gt. 5 )THEN
         write(luwrt,*) 'L3BLOCK is',L3BLOCK
         write(luwrt,*) 'LBLOCK is',LBLOCK
         write(luwrt,*) 'LSCR2 is',LSCR2
         write(luwrt,*) 'LSCR12 is',LSCR12
         write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
-      END IF
-*
-      call memmar(KDUM,KDUM,'FLUSM ',KDUM,'GET_3B')
-*
-      write(LUWRT,*) ' '
-      WRITE(LUWRT,'(3X,A)') 
+c     END IF
+C
+      IDUM = 0
+      call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
+C
+      WRITE(LUWRT,'(/3X,A)') 
      & '=============================================================='
       WRITE(LUWRT,'(3X,A)') 
      & '==> allocation of two CI vectors and one resolution vector <=='
@@ -1155,13 +1139,13 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
      & 'allocate two CI vectors each of length:       ',LBLOCK
       WRITE(LUWRT,'(3X,A,1X,I15)')
      & 'allocate resolution vector of length:         ',LCJRES_SAVE
-      WRITE(LUWRT,'(3X,A)') 
+      WRITE(LUWRT,'(3X,A/)') 
      & '=============================================================='
-      write(LUWRT,*) ' '
-      CALL FLSHFO(LUWRT)
+C
+C     static allocation
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-*
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -1501,11 +1485,11 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
         continue
       END IF
 *
-      NTEST = 000
+CSK   NTEST = 100
 *
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Symmetry Information from GET_DBGSYM'
-        WRITE(6,*) ' ===================================='
+        WRITE(6,*) ' Symmetry Information from GRINFO'
+        WRITE(6,*) ' ================================'
         WRITE(6,*)
         WRITE(6,'(A,A)') ' Double group : ', DBGSYM
         WRITE(6,*)
@@ -1662,7 +1646,6 @@ C     initial definitions
 #endif
 *
       NTESTL = 0
-      IPRNT = 0000
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.2)
@@ -1735,7 +1718,7 @@ C     &                    ISPINFREE)
         LMAXE2LST = MAX(LMAXE2LST,L2D(IL2))
       END DO
 *
-      IF( MYPROC .eq. MASTER ) THEN
+      IF( MYPROC .eq. MASTER .and. NTEST .gt. 0) THEN
         write(6,'(/A,I10)')
      &   '   The largest block of two-electron integrals is',LMAXE2LST
       END IF
@@ -2082,21 +2065,15 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
       END DO
 *     ^ End of loop over MS2 spaces
 *
-*     Setting size of resolution matrices to no. of determinants:
-      LCSBLK = INT(XISPSM(ISYM_KRMC,1))
-*
-*     TODAY, May 16 2007, I (SK) will try to fix this:
-*
+*     Setting size of resolution matrices
       LCSBLK = IMAXLBLKSZ
 *      
-      write(LUWRT,*) '  Set LCSBLK to ',LCSBLK
+      IF(NTEST.ge.1) write(LUWRT,'(/A,I18/)') ' Set LCSBLK to ',LCSBLK
 *
 *     Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
-        write(LUWRT,*) ' WARNING: Resetting LCSBLK to: ',MXSB
+        write(LUWRT,'(/A,I18/)') ' WARNING: Resetting LCSBLK to: ',MXSB
         LCSBLK = MXSB
-C?      write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
-C?      write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
       end if
 *
       NTEST = 0
@@ -3124,9 +3101,6 @@ C?    CALL IWRTMA(IBSH,1,NSMSH,1,NSMSH)
 * ===============
 *     GAS case
 * ===============
-CSK      WRiTE(6,*) 'THIS IS MY IMOSF matrix',MYPROC
-CSK      CALL IWRTMA(IMOSF_SP(1,1),1,NIRREP,1,NIRREP)
-CSK      CALL IWRTMA(IMOSF_SP(1,2),1,NIRREP,1,NIRREP)
 *
       DO IGAS = 1, NGAS
 *. Shell => orbitals for each GAS space
@@ -3196,29 +3170,26 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 * ===============================================
 *. Well, report back
 * ===============================================
+CSK   NTEST = 100
       IF(NTEST.GT.0) THEN
-        IF( MYPROC .le. MASTER + 1 ) THEN
-        WRITE(LUOUT,*)
         IF(IDBG.EQ.0) THEN
-          WRITE(LUOUT,*) ' Number of orbitals per symmetry :'
-          WRITE(LUOUT,*) ' ================================='
+          WRITE(LUOUT,'(/A)') ' Number of orbitals per symmetry :'
+          WRITE(LUOUT,'( A)') ' ================================='
         ELSE
-          WRITE(LUOUT,*) ' Number of up spinors per symmetry :'
-          WRITE(LUOUT,*) ' =================================='
+          WRITE(LUOUT,'(/A)') ' Number of up spinors per symmetry :'
+          WRITE(LUOUT,'( A)') ' =================================='
         END IF
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
-     &  '            Symmetry  ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A)')
-     &  '           ========== ',('====',I = 1,NSMOB)
+        WRITE(LUOUT,'(/A,10I4,A)')
+     &  '             Symmetry  ',(I,I = 1,NSMOB)
+        WRITE(LUOUT,'(A,2X,10A)')
+     &  '             ========== ',('====',I = 1,NSMOB)
         DO IGAS = 1, NGAS
-          WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
+          WRITE(LUOUT,'(         A,I3,7X,A,10I4,8X,I3)')
      &    '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB)
         END DO
 *
         WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB
         WRITE(LUOUT,*) ' Total number of occupied orbitals ', NOCOB
-        END IF
       END IF
 *. Offsets for orbitals of given symmetry
       ITOOBS(1) = 1
@@ -3301,31 +3272,28 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
       END IF
 *.Information about spinor symmetries
       if (NTEST.ge.1) then
-        write(6,*)
-        WRITE(LUOUT,'(A)')
+        WRITE(LUOUT,'(/A)')
      &  '  Spin-up Spinors in Double group symmetry  '
         WRITE(LUOUT,'(A)')
      &  ' =========================================== '
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
-     &    '                Irrep ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A,A)')
-     &    '                ===== ',('====',I = 1,NSMOB )
+        WRITE(LUOUT,'(/A,10I4,A)')
+     &    '                 Irrep ',(I,I = 1,NSMOB)
+        WRITE(LUOUT,'(A,2X,10A,A)')
+     &    '                 ===== ',('====',I = 1,NSMOB )
         DO IGAS = 1, NGAS
           WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
      &    '        GAS',IGAS,'          ',
      &    (NGSOB(IRREP,IGAS),IRREP = 1, NSMOB )
         END DO
 *
-        WRITE(LUOUT,'(A)')
+        WRITE(LUOUT,'(/A)')
      &  '  Spin-down Spinors in Double group symmetry  '
         WRITE(LUOUT,'(A)')
      &  ' =========================================== '
-        WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
-     &    '                Irrep ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A,A)')
-     &    '                ===== ',('====',I = 1,NSMOB )
+        WRITE(LUOUT,'(/A,10I4,A)')
+     &    '                 Irrep ',(I,I = 1,NSMOB)
+        WRITE(LUOUT,'(A,2X,10A,A)')
+     &    '                 ===== ',('====',I = 1,NSMOB )
         DO IGAS = 1, NGAS
           WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
      &    '        GAS',IGAS,'          ',
@@ -3338,6 +3306,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 * Part 2 : Reordering arrays for orbitals  *
 *                                          *
 ********************************************
+      IPRNT = NTEST
         CALL ORBORD_GAS_REL(NSMOB,MXPOBS,MXPNGAS,NGAS,NGSOB,NGSOBT,
      &       NOCOBS,NTOOBS,NTOOB,
      &       IREOST,IREOTS,ISMFTO,ITPFSO,
@@ -3351,6 +3320,8 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
      &       IBSO2,NTSOB2,IBTSOB2,ITSOB2,NOBPTS2,IOBPTS2,
      &       ISMFSO2,ITPFTO2,NOBPT,IPRNT,IOSPIR,2)
         END IF
+        NTEST = 0
+        IPRNT = 0
 *
       RETURN
       END
@@ -3698,7 +3669,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
         Call Abend1( 5 )
       END IF
 *
-      NTEST = 00
+CSK   NTEST = 10
       NTEST = MAX(IPRNT,NTEST)
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' OSPIR speaking '
@@ -4089,221 +4060,6 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
  2002 CONTINUE
 *
       IF(NTEST.NE.0) THEN
-        WRITE(LUWRT,*) 'Output from PART_CIV4'
-        WRITE(LUWRT,*) '====================='
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Number of added batches ', NBATCH-IOFFBTC+1
-        DO JBATCH = IOFFBTC, NBATCH
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,*) ' Info on batch ', JBATCH
-          WRITE(LUWRT,*) ' *********************** '
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,*) '  Number of blocks included ', LBATCH(JBATCH)
-          WRITE(LUWRT,*) '  TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
-        END DO
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE PART_CIV4_SPC(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
-     &                         IOFFBLK,IOFFBTC,
-     &                         NSMST,MXLNG,IOCOC,ISMOST,
-     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-     &                         ICOMP,ITTSS_ORD,IDEBUGPRNT)
-*
-* Partition a CI vector with given MS2 into batches of blocks.
-* The length of a batch must be atmost MXLNG
-*
-* IF ICOMP. eq. 1 the complete ci vector is constructed
-*
-*. Output
-* NBATCH : Number of batches
-* LBATCH : Number of blocks in a given batch
-* LEBATCH : Number of elements in a given batch ( packed ) !
-* I1BATCH : Number of first block in a given batch
-* IBATCH : TTS blocks in Start of a given TTS block with respect to start
-*          of batch
-*   IBATCH(1,*) : Alpha type , relative to start of supergroup
-*   IBATCH(2,*) : Beta type , relative to start of supergroup
-*   IBATCH(3,*) : Sym of alpha
-*   IBATCH(4,*) : Sym of beta
-*   IBATCH(5,*) : Offset of block with respect to start of block in
-*                 expanded form
-*   IBATCH(6,*) : Offset of block with respect to start of block in
-*                 packed form
-*   IBATCH(7,*) : Length of block, expanded form
-*   IBATCH(8,*) : Length of block, packed form
-*
-*
-*
-* Jeppe Olsen, Jan. 1998
-*
-* Modified from PART_CIV2 for relativistic purposes
-*
-* Compared to PART_CIV2 the changes are
-* 1 : The type numbers are absolute, no need for additional
-*     reference to offset for given type
-* 2 : Blocks filled from a given offset
-*
-*
-* IMPORTANT change compared to PART_CIV3:
-*
-* MXLNG is no longer assumed to be equals to the total number 
-* of dets. Therefore we have to partition the CI vector being aware  
-* of putting symmetry blocks of same TT into different batches.
-*
-*  
-* REASON: SIGMA-vector / DENSITY matrix calculation is done wrt loops
-* over NSMST! 
-* 
-* S. Knecht - July 02 2007
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
-*.Input
-      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
-      INTEGER IOCOC(NOCTPA,NOCTPB)
-      INTEGER IBLTP(*)
-      INTEGER ISMOST(*)
-*.Output
-      INTEGER LBATCH(*)
-      INTEGER LEBATCH(*)
-      INTEGER I1BATCH(*)
-      INTEGER IBATCH(8,*)
-#include "parluci.h"
-*
-      I_SAVE_IBLOCK = 0
-      N_TRY = 0
-*
-      IF(IDEBUGPRNT .ge. 50 ) THEN
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' =================='
-        WRITE(LUWRT,*) '   PART_CIV4_SPC   '
-        WRITE(LUWRT,*) ' =================='
-        WRITE(LUWRT,*) ' IDC = ', IDC
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' NSSOA array ( input ) '
-        CALL IWRTMAMN(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,LUWRT)
-        WRITE(LUWRT,*) ' NSSOB array ( input ) '
-        CALL IWRTMAMN(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,LUWRT)
-      END IF
-*
-*. block  zero
-*
-      IB = 1
-      IA = 1
-      ISM = 1
-      IFRST = 1
-      NBATCH = IOFFBTC-1
-      IBLOCK = IOFFBLK-1
-      IFINI = 0
-*. Loop over batches of blocks
- 2000 CONTINUE
-      NBATCH = NBATCH + 1
-      LBATCH(NBATCH) = 0
-      I1BATCH(NBATCH) = IBLOCK  + 1
-      LENGTH = 0
-      LENGTHP= 0
-      NBLOCK = 0
-      IFRST = 1
-*. Loop over blocks in batch
- 1000 CONTINUE
-*. Next block : Order is currently : IB, IA, ISM  (leftmost inner loop )
-      IF(IFRST.EQ.0) THEN
-        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
-      END IF
-      IFRST = 0
-      IF(IFINI.EQ.1) GOTO 2002
-*. Should this block be included
-      IF(IBLTP(ISM).EQ.0) GOTO 1000
-      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
-      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
-C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
-*. can this block be included
-      IBSM = ISMOST(ISM)
-      NSTA = NSSOA(ISM,IA)
-      NSTB = NSSOB(IBSM,IB)
-      LBLOCK= NSTA*NSTB
-      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
-        LBLOCKP = NSTA*NSTB
-      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
-        LBLOCKP = NSTA*(NSTA+1)/2
-      END IF
-C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
-      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
-        NBLOCK = NBLOCK + 1
-        IBLOCK = IBLOCK + 1
-        LBATCH(NBATCH) = LBATCH(NBATCH)+1
-        IBATCH(1,IBLOCK) = IA
-        IBATCH(2,IBLOCK) = IB
-        IBATCH(3,IBLOCK) = ISM
-        IBATCH(4,IBLOCK) = IBSM
-        IBATCH(5,IBLOCK) = LENGTH+1
-        IBATCH(6,IBLOCK) = LENGTHP+1
-        IBATCH(7,IBLOCK) = LBLOCK
-        IBATCH(8,IBLOCK) = LBLOCKP
-        LENGTH = LENGTH + LBLOCK
-        LENGTHP= LENGTHP+ LBLOCKP
-        LEBATCH(NBATCH) = LENGTHP
-        GOTO 1000
-      ELSE IF(ICOMP.EQ.0.AND.
-     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(LUWRT,*) ' Not enough scratch space to include a '//
-     &                   'single Block'
-        WRITE(LUWRT,*) ' Since I cannot procede I will stop '
-        WRITE(LUWRT,*) ' Insufficient buffer detected in PART_CIV4_SPC'
-        WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        stop ' In PART_CIV4_SPC. '
-      ELSE
-*
-*     this batch is finished, goto next batch
-*
-*       is this the TT-1 block?
-        IF( ISM .ne. 1 )THEN
-*
-*         go back to ISM == 1 since we loop over NSMST in GNSIDE_REL
-*
-          N_TRY = N_TRY + 1
-*
-          IF( N_TRY .gt. 1 .and. I_SAVE_IBLOCK .eq. IBLOCK ) THEN
-            WRITE(LUWRT,*) ' Not enough scratch space to include a '//
-     &                     ' single Block'
-            WRITE(LUWRT,*) ' Since I cannot procede I will stop '
-            WRITE(LUWRT,*) ' Insufficient buffer detected in '//
-     &                     ' PART_CIV4_SPC'
-            WRITE(LUWRT,*) '  LENGTH ',LENGTH
-            WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
-            stop ' In PART_CIV4_SPC because of N_TRY .ge. 1. '
-          END IF
-*
-          I_SAVE_IBLOCK = IBLOCK
-*         set batch back to first available TT-1 block
-          call bck_tts(ITTSS_ORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,
-     &                 NBLOCK,LENGTH,LENGTHP,NBATCH,6)
-*
-          GOTO 2000
-*
-        ELSE
-          N_TRY = 0
-          I_SAVE_IBLOCK = 0
-          GOTO 2000
-        END IF
-*       ^ ISM check
-      END IF
-*     ^ length of batch < MXLNG?
- 2002 CONTINUE
-*
-      IF( IDEBUGPRNT .ge. 10 ) THEN
         WRITE(LUWRT,*) 'Output from PART_CIV4'
         WRITE(LUWRT,*) '====================='
         WRITE(LUWRT,*)
@@ -5408,7 +5164,8 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       SUBROUTINE Z_BLKFO_REL(IDC,NMS2VAL,ISPC,ISM,KPCLBT,KPCLEBT,
      &                       KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
      &                       NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
-     &                       I_SET_L2BLOCK,I_USE_PC,NPARBLOCK)
+     &                       NBLK_MS2_C,CALC_MS2_C,I_SET_L2BLOCK,
+     &                       I_USE_PC,NPARBLOCK)
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -5444,9 +5201,11 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 #include "strinp.inc"
 * new
 #include "parluci.h"
+#include "krciprop.h"
 *
+      LOGICAL CALC_MS2_C
 *.output
-      INTEGER NBLK_MS2(*), IBLK_MS2(*)
+      INTEGER NBLK_MS2(*), IBLK_MS2(*), NBLK_MS2_C(*)
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
       NTEST = 000
@@ -5473,17 +5232,10 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 *
       IDUM = 0
 *
-
-*
-*. Allowed length of each batch
-      IF(ICISTR.EQ.1) THEN
-*. assumes determinants
-        L0BLOCK = XISPSM(ISM,ISPC)
-      ELSE IF (ICISTR.EQ.2) THEN
-        L0BLOCK = MXSB
-      ELSE IF( ICISTR.EQ.3) THEN
-        L0BLOCK = MXSOOB
-      END IF
+*     allowed length of each batch
+CSK   IF( ICISTR.EQ.3) THEN
+      L0BLOCK = MXSOOB
+CSK   END IF
 *
       IF( I_SET_L2BLOCK .ge. 1 ) THEN
 *
@@ -5508,7 +5260,7 @@ csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *
         L2BLOCK = MIN(LCSBLK,L2BLOCK)
 *
-      ELSE IF (I_SET_L2BLOCK .eq. -1 ) THEN
+      ELSE IF (I_SET_L2BLOCK .eq. -1000 ) THEN
         L2BLOCK = 100 000
       END IF
 *     ^ I_SET_L2BLOCK 
@@ -5542,22 +5294,23 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 CSK      IF(NTEST.GE.1000) THEN
 CSK      END IF
-*. Loop over MS2 spaces
+C
+C     loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
         IBTP = IST_FOR_DT(2,IMS2)
-*
+C
         NOCTPA =  NOCTYP(IATP)
         NOCTPB =  NOCTYP(IBTP)
-*
+C
         IOCTPA = IBSPGPFTP(IATP)
         IOCTPB = IBSPGPFTP(IBTP)
-*. Info needed for generation of block info
+C       info needed for generation of block info
         call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
         CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
-*
+C
         CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
-*
+C
         IF(IMS2.EQ.1) THEN
           IOFFBLK = 1
           IOFFBTC = 1
@@ -5567,7 +5320,7 @@ CSK      END IF
         END IF
         IBLK_MS2(IMS2) = IOFFBLK
         IBAT_MS2(IMS2) = IOFFBTC
-*. Number of batches and blocks obtained until now
+C       number of batches and blocks obtained until now
         IF(IMS2.EQ.1) THEN
           NBATCHP = 0
           NBLOCKP = 0
@@ -5575,15 +5328,13 @@ CSK      END IF
           NBATCHP = NBATCH
           NBLOCKP = NBLOCK
         END IF
-*. Batches of C vector
+C
+C       batches of C vector
         ITTSS_ORD = 2
 #if defined (VAR_MPI2)
         IF( I_USE_PC .eq. 1 ) THEN
 *
-*         special routine that uses only node-blocks to determine 
-*         batches of a CI-vector
-*
-          IDEBUGPRNT = 500
+          IDEBUGPRNT = 000
 *
           CALL PART_CIV3_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
      &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
@@ -5593,8 +5344,7 @@ CSK      END IF
      &                     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                     WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
      &                     NPARBLOCK,IDEBUGPRNT)
-*
-          GOTO 100
+          IDEBUGPRNT = 000
 *
         ELSE IF( I_USE_PC .eq. 2 )THEN
 *
@@ -5611,53 +5361,24 @@ CSK      END IF
      &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
      &                       NPARBLOCK,IDEBUGPRNT)
+          IDEBUGPRNT = 000
+*
+        ELSE
+#endif
+*
+          CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                   IOFFBLK,IOFFBTC,
+     &                   NSMST,LBLOCK,WORK(KLCIOIO),
+     &                   ISMOST(1,ISM),
+     &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          GOTO 100
-*
-        ELSE IF( I_USE_PC .eq. 3 )THEN
-*
-*         special routine that uses only node-blocks to determine 
-*         batches of a CI-vector
-*
-          IDEBUGPRNT = 000
-*
-          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                       IOFFBLK,IOFFBTC,
-     &                       NSMST,LBLOCK,WORK(KLCIOIO),
-     &                       ISMOST(1,ISM),
-     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
-     &                       IDEBUGPRNT)
-*
-*     use this line as line 4 for testing more batches ...
-*     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          IDEBUGPRNT = 000
-          GOTO 100
-*
-*
-*
+#if defined (VAR_MPI2)
         END IF
 #endif
-CSK        WRITE(LUWRT,*) ' I WILL CALL PART_CIV4'
-        CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                 IOFFBLK,IOFFBTC,
-     &                 NSMST,LBLOCK,WORK(KLCIOIO),
-     &                 ISMOST(1,ISM),
-     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-Cold        CALL PART_CIV3(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-Cold     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-Cold     &                 IOFFBLK,IOFFBTC,
-Cold     &                 NSMST,LBLOCK,WORK(KLCIOIO),
-Cold     &                 ISMOST(1,ISM),
-Cold     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-*
- 100    CONTINUE
 *
 *. Number of BLOCKS hitherto
         NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
@@ -5694,8 +5415,83 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
         call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
      &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
       end if
+C
+C     this part is only relevant for sigma calculations as part of 
+C     the property module
+C
+      IF( .NOT. CALC_MS2_C ) GOTO 9999
+C
+C     if we run a property calculation and the call to this 
+C     routine occurs from inside SIGDEN_REL we need to define 
+C     atleast NBLK_MS2_C which may differ from NBLK_MS2 above 
+C     since either ISSM == ICSM (fine) or ISSM != ICSM (this loop
+C     is needed)
+C
+C     hidden information: IABS(I_SET_L2BLOCK) = ICSM
+C
+      ICSM_SCR = IABS(I_SET_L2BLOCK)
+      WRITE(LUWRT,*) ' ISM, ICSM_SCR is',ISM, ICSM_SCR
+C
+      CALL MEMMAR(KPCLBTX ,  MXNTTS,'ADDL  ',1,'CLBTX ')
+      CALL MEMMAR(KPCLEBTX,  MXNTTS,'ADDL  ',1,'CLEBTX')
+      CALL MEMMAR(KPCI1BTX,  MXNTTS,'ADDL  ',1,'CI1BTX')
+      CALL MEMMAR(KPCIBTX ,8*MXNTTS,'ADDL  ',1,'CIBTX ')
+      CALL MEMMAR(KPCBLTPX,  NSMST,'ADDL  ',2,'CBLTPX')
+C
+C     loop over MS2 spaces
+      DO IMS2 = 1, NMS2VAL
+        IATP = IST_FOR_DT(1,IMS2)
+        IBTP = IST_FOR_DT(2,IMS2)
+C
+        NOCTPA =  NOCTYP(IATP)
+        NOCTPB =  NOCTYP(IBTP)
+C
+        IOCTPA = IBSPGPFTP(IATP)
+        IOCTPB = IBSPGPFTP(IBTP)
+C       info needed for generation of block info
+        call memmar(KLCIOIOX,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+        CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIOX))
+C
+        CALL ZBLTP_REL(ISMOST(1,ICSM_SCR),NSMST,IDC,WORK(KPCBLTPX))
+C
+        IF(IMS2.EQ.1) THEN
+          IOFFBLK = 1
+          IOFFBTC = 1
+        ELSE
+          IOFFBLK = NBLOCK + 1
+          IOFFBTC = NBATCH + 1
+        END IF
+C       number of batches and blocks obtained until now
+        IF(IMS2.EQ.1) THEN
+          NBATCHP = 0
+          NBLOCKP = 0
+        ELSE
+          NBATCHP = NBATCH
+          NBLOCKP = NBLOCK
+        END IF
+C
+C       batches of C vector
+        ITTSS_ORD = 2
+        CALL PART_CIV4(IDC,WORK(KPCBLTPX),WORK(KNSTSO(IATP)),
+     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                 IOFFBLK,IOFFBTC,
+     &                 NSMST,LBLOCK,WORK(KLCIOIOX),
+     &                 ISMOST(1,ICSM_SCR),
+     &                 NBATCH,WORK(KPCLBTX),WORK(KPCLEBTX),
+     &                 WORK(KPCI1BTX),WORK(KPCIBTX),0,ITTSS_ORD)
+C
+C       number of BLOCKS so far
+        NBLOCK = IFRMR_REL(WORK(KPCI1BTX),1,NBATCH)
+     &         + IFRMR_REL(WORK(KPCLBTX),1,NBATCH) - 1
 *
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
+C       WRITE(LUWRT,*) ' IMS2, NBLK_MS2_C(IMS2) is',
+C    &                   IMS2,NBLOCK - NBLOCKP
+        NBLK_MS2_C(IMS2) = NBLOCK - NBLOCKP
+*
+      END DO
+*     ^ End of loop over MS2 values
+C
+9999  call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
 *
       END
 ***********************************************************************
@@ -5764,14 +5560,9 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
       END IF
 *
 *     allowed length of each batch
-      IF(ICISTR.EQ.1) THEN
-*       assumes determinants
-        L0BLOCK = XISPSM(ISM,ISPC)
-      ELSE IF (ICISTR.EQ.2) THEN
-        L0BLOCK = MXSB
-      ELSE IF( ICISTR.EQ.3) THEN
-        L0BLOCK = MXSOOB
-      END IF
+CSK   IF( ICISTR.EQ.3) THEN
+      L0BLOCK = MXSOOB
+CSK   END IF
 *
       IF( I_SET_L2BLOCK .ge. 1 ) THEN
 *
@@ -5782,8 +5573,8 @@ Cold     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *
         CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
         L2BLOCK        = LMEMFREE_PTR
-csk     WRITE(LUWRT,'(1X,A,1X,I20)')
-csk  & '  Current available free memory in double words:',L2BLOCK
+CSK     WRITE(LUWRT,'(1X,A,1X,I20)')
+CSK  & '  Current available free memory in double words:',L2BLOCK
 *
 *       we want to keep three blocks in memory at the same time
 *       CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
@@ -5885,7 +5676,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *         special routine that uses only node-blocks to determine 
 *         batches of a CI-vector
 *
-          IDEBUGPRNT = 500
+          IDEBUGPRNT = 000
 *
           CALL PART_CIV3_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
      &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
@@ -5895,8 +5686,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
      &                     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                     WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
      &                     NPARBLOCK,IDEBUGPRNT)
-*
-          GOTO 100
 *
         ELSE IF( I_USE_PC .eq. 2 )THEN
 *
@@ -5916,42 +5705,21 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          GOTO 100
+        ELSE
+#endif
 *
-        ELSE IF( I_USE_PC .eq. 3 )THEN
-*
-*         special routine that uses only node-blocks to determine 
-*         batches of a CI-vector
-*
-          IDEBUGPRNT = 000
-*
-          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                       IOFFBLK,IOFFBTC,
-     &                       NSMST,LBLOCK,WORK(KLCIOIO),
-     &                       ISMOST(1,ISM),
-     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
-     &                       IDEBUGPRNT)
-*
+          CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                   IOFFBLK,IOFFBTC,
+     &                   NSMST,LBLOCK,WORK(KLCIOIO),
+     &                   ISMOST(1,ISM),
+     &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          IDEBUGPRNT = 000
-          GOTO 100
-*
-*
-*
+#if defined (VAR_MPI2)
         END IF
 #endif
-        CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                 IOFFBLK,IOFFBTC,
-     &                 NSMST,LBLOCK,WORK(KLCIOIO),
-     &                 ISMOST(1,ISM),
-     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-*
- 100    CONTINUE
 *
 *. Number of BLOCKS hitherto
         NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
@@ -5977,19 +5745,20 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 *       flushing after
 *
       MIN2  = - 2
-      IZERO =   0
-      IIONE =   1
 *
-      CALL ISETVC(WORK(KNODELIST),  MIN2,NUM_BLOCKS)
-      CALL ISETVC(WORK(KBLOCKLIST),IZERO,NUM_BLOCKS)
-      CALL ISETVC(WORK(KRCCTOS),   IZERO,NUM_BLOCKS2)
+      CALL ISETVC(WORK(KNODELIST),MIN2,NUM_BLOCKS)
+      CALL IZERO(WORK(KBLOCKLIST),NUM_BLOCKS)
+      CALL IZERO(WORK(KRCCTOS),NUM_BLOCKS2)
 *     initialize block array
       CALL INI_BLOCKL(WORK(KBLOCKLIST),NBLOCK,WORK(KPCIBT))
 *
+      
 #if defined (VAR_MPI2)
+      COMPDISTL     = .TRUE.
+      COMPRCCTOS    = .TRUE.
       CALL BLOCK_DISTR_DRV_REL(WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                         NBLOCK,WORK(KRCCTOS),IT_TTPL,
-     &                         IGROUPLIST)
+     &                         WORK(KBLOCKLIST),WORK(KRCCTOS),
+     &                         IT_TTPL,IGROUPLIST)
 #endif
       END
 ***********************************************************************
@@ -6063,14 +5832,9 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
       IDUM = 0
 *
 *     allowed length of each batch
-      IF(ICISTR.EQ.1) THEN
-*       assumes determinants
-        L0BLOCK = XISPSM(ISM,ISPC)
-      ELSE IF (ICISTR.EQ.2) THEN
-        L0BLOCK = MXSB
-      ELSE IF( ICISTR.EQ.3) THEN
-        L0BLOCK = MXSOOB
-      END IF
+CSK   ELSE IF( ICISTR.EQ.3) THEN
+      L0BLOCK = MXSOOB
+CSK   END IF
 *
       IF( I_SET_L2BLOCK .eq. 1 ) THEN
 *
@@ -6171,7 +5935,7 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *         special routine that uses only node-blocks to determine 
 *         batches of a CI-vector
 *
-          IDEBUGPRNT = 500
+          IDEBUGPRNT = 000
 *
           CALL PART_CIV3_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
      &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
@@ -6181,8 +5945,6 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
      &                     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                     WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
      &                     NPARBLOCK,IDEBUGPRNT)
-*
-          GOTO 200
 *
         ELSE IF( I_USE_PC .eq. 2 )THEN
 *
@@ -6202,42 +5964,21 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          GOTO 200
+        ELSE
+#endif
 *
-        ELSE IF( I_USE_PC .eq. 3 )THEN
-*
-*         special routine that uses only node-blocks to determine 
-*         batches of a CI-vector
-*
-          IDEBUGPRNT = 000
-*
-          CALL PART_CIV4_SPC(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                       WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                       IOFFBLK,IOFFBTC,
-     &                       NSMST,LBLOCK,WORK(KLCIOIO),
-     &                       ISMOST(1,ISM),
-     &                       NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                       WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD,
-     &                       IDEBUGPRNT)
-*
+          CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                   IOFFBLK,IOFFBTC,
+     &                   NSMST,LBLOCK,WORK(KLCIOIO),
+     &                   ISMOST(1,ISM),
+     &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 *     use this line as line 4 for testing more batches ...
 *     &                       NSMST,L0BLOCK,WORK(KLCIOIO),
-          IDEBUGPRNT = 000
-          GOTO 200
-*
-*
-*
+#if defined (VAR_MPI2)
         END IF
 #endif
-        CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                 IOFFBLK,IOFFBTC,
-     &                 NSMST,LBLOCK,WORK(KLCIOIO),
-     &                 ISMOST(1,ISM),
-     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-*
- 200    CONTINUE
 *
 *. Number of BLOCKS hitherto
         NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
@@ -6277,6 +6018,406 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLK2')
 *
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE Z_BLKFO_XPROP(IDC,NMS2VAL,ISPC,KNODELIST,KBLOCKLIST,
+     &                         KRCCTOS,KXSYMDISTR,IXSYMBLK,IXSYMPAIRS,
+     &                         IRC,IGROUPLIST)
+C***********************************************************************
+C
+C     construct information about batch and block structure of all 
+C     CI spaces defined by ISPC(=1) and ISM used in property run.
+C
+C     Output is given in the form of pointers to vectors in WORK
+C
+C     based on Z_BLKFO_REL. 
+C
+C     Written by S. Knecht - Oct 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "cicisp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "strbas.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "strinp.inc"
+#include "parluci.h"
+#include "infpar.h"
+#include "krciprop.h"
+#if defined (VAR_MPI2)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+      DIMENSION IXSYMBLK(*)
+C
+C     min length of each batch
+      L0BLOCK = MXSOOB
+C
+C     L2BLOCK = max memory for c-vec and sigma-vec from
+C     ( curr. total mem - 3 mio for string info etc.) / 4
+C
+      L2BLOCK = 0
+C
+      CALL MEMMAR(L2BLOCK,0,'SFREEM',2,'SEEFRM')
+      L2BLOCK        = LMEMFREE_PTR
+C
+C     we want to keep three blocks in memory at the same time
+C     CB,SB,VEC3(=C2). estimated scratch memory: 9 000 000 real*8
+C     division by a factor of 4 = safety!
+C
+      L2BLOCK_SAVE_V = 0
+      L2BLOCK_SAVE_V = L2BLOCK
+      L2BLOCK = ( L2BLOCK - ( ISMEMFAC * 1 000 000 ) ) / 4
+C     check if L2BLOCK is a positive integer
+      IF( L2BLOCK .le. 0 )THEN
+C       set back to default...
+        WRITE(LUWRT,*) ' WARNING WARNING WARNING!!!'
+        WRITE(LUWRT,*) ' MEMFAC too large, reset to default == 9'
+        ISMEMFAC = 9
+        L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4
+      END IF
+C
+csk   WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+csk  &                  L0BLOCK,L2BLOCK,LCSBLK
+C
+      L2BLOCK = MIN(LCSBLK,L2BLOCK)
+C
+C     test if L2BLOCK has become too large...
+      LTEST_BLOCK = 0
+      LTEST_BLOCK = MIN(L2BLOCK,L_COMBI_MAX)
+C
+      IF( L2BLOCK .gt. LTEST_BLOCK )THEN
+C       reset to L_COMBI because that is already enough
+        L2BLOCK = LTEST_BLOCK
+      END IF
+C
+C     ... set LBLOCK value
+      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+C
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'ZBXPRP')
+C
+      NTTS = MXNTTS
+      CALL MEMMAR(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBTX ')
+      CALL MEMMAR(KPCBLTP,   NSMST,'ADDL  ',1,'CBLTPX')
+      CALL MEMMAR(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBTX ')
+      CALL MEMMAR(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBTX')
+      CALL MEMMAR(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BTX')
+C
+      NBLOCK_MAX = 0
+      IXSYMACT   = 0
+C
+      DO 100 IJSYM = 1, MXPROPKRCI_SYM
+C
+C       WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM',
+C    &                   IXSYMLIST(IJSYM), IJSYM
+        IF( IXSYMLIST(IJSYM) .eq. 0 ) GOTO 100
+C       loop over MS2 spaces for "active" symmetry irrep
+        DO IMS2 = 1, NMS2VAL
+          IATP = IST_FOR_DT(1,IMS2)
+          IBTP = IST_FOR_DT(2,IMS2)
+C
+          NOCTPA =  NOCTYP(IATP)
+          NOCTPB =  NOCTYP(IBTP)
+C
+          IOCTPA = IBSPGPFTP(IATP)
+          IOCTPB = IBSPGPFTP(IBTP)
+C
+C         info needed for generation of block info
+          CALL MEMMAR(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CXIOIO')
+          CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+C
+          CALL ZBLTP_REL(ISMOST(1,IJSYM),NSMST,IDC,WORK(KPCBLTP))
+C
+          IF(IMS2.EQ.1) THEN
+            IOFFBLK = 1
+            IOFFBTC = 1
+          ELSE
+            IOFFBLK = NBLOCK + 1
+            IOFFBTC = NBATCH + 1
+          END IF
+C         number of batches and blocks obtained until now
+          IF(IMS2.EQ.1) THEN
+            NBATCHP = 0
+            NBLOCKP = 0
+          ELSE
+            NBATCHP = NBATCH
+            NBLOCKP = NBLOCK
+          END IF
+C         batches of C vector
+          ITTSS_ORD = 2
+C
+          CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                   IOFFBLK,IOFFBTC,
+     &                   NSMST,LBLOCK,WORK(KLCIOIO),
+     &                   ISMOST(1,IJSYM),
+     &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+C
+C         number of BLOCKS so far
+          NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
+     &           + IFRMR_REL(WORK(KPCLBT),1,NBATCH) - 1
+C
+        END DO
+C       ^ End of loop over MS2 values
+        IXSYMBLK(IJSYM)     = NBLOCK
+        NBLOCK_MAX          = MAX(NBLOCK_MAX,NBLOCK)
+        IXSYMACT            = IXSYMACT + 1
+        IXSYMLIST(IXSYMACT) = IJSYM
+ 100  CONTINUE
+C     ^ End of loop over different symmetries
+
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'ZBXPRP')
+C
+C     start second part...
+C
+      IF( NBLOCK_MAX .eq. 0 )THEN
+          WRITE(LUWRT,*) ' *** ERROR in Z_BLKFO_XPROP: max number of'// 
+     &                   ' TTSS blocks is zero.'
+          CALL QUIT('*** Z_BLKFO_XPROP: max number of TTSS blocks is
+     &               zero ***')
+      END IF
+C
+      NUM_BLOCKS  = NBLOCK_MAX
+      NUM_BLOCKS2 = NBLOCK_MAX * IRC
+      WRITE(LUWRT,*) ' NXSYMPAIRS for RCCTOS allocation',NXSYMPAIRS
+C
+      CALL MEMMAR(KNODELIST, NUM_BLOCKS *IXSYMACT  ,'ADDS  ',1,'NODELS')
+      CALL MEMMAR(KBLOCKLIST,NUM_BLOCKS *IXSYMACT  ,'ADDS  ',1,'BLCKLS')
+      CALL MEMMAR(KXSYMDISTR,            IXSYMACT  ,'ADDS  ',1,'IXSYMD')
+      CALL MEMMAR(KRCCTOS,   NUM_BLOCKS2*NXSYMPAIRS,'ADDS  ',1,'RCCTOS')
+C     ^ keep them after exit
+C
+      CALL ISETVC(WORK(KNODELIST),-2,NUM_BLOCKS *IXSYMACT)
+      CALL IZERO(WORK(KBLOCKLIST),   NUM_BLOCKS *IXSYMACT)
+      CALL IZERO(WORK(KXSYMDISTR),               IXSYMACT)
+      CALL IZERO(WORK(KRCCTOS),      NUM_BLOCKS2*NXSYMPAIRS)
+C
+C     mark for local memory
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'ZBXPR2')
+C
+      NTTS = MXNTTS
+      CALL MEMMAR(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBTX2')
+      CALL MEMMAR(KPCBLTP,   NSMST,'ADDL  ',1,'CBLTX2')
+      CALL MEMMAR(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBTX2')
+      CALL MEMMAR(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBX2')
+      CALL MEMMAR(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BX2')
+C
+      DO 200 I = 1, IXSYMACT
+C
+        IJSYM = IXSYMLIST(I)
+C       loop over MS2 spaces for "active" symmetry irrep
+        DO IMS2 = 1, NMS2VAL
+          IATP = IST_FOR_DT(1,IMS2)
+          IBTP = IST_FOR_DT(2,IMS2)
+C
+          NOCTPA =  NOCTYP(IATP)
+          NOCTPB =  NOCTYP(IBTP)
+C
+          IOCTPA = IBSPGPFTP(IATP)
+          IOCTPB = IBSPGPFTP(IBTP)
+C
+C         info needed for generation of block info
+          CALL MEMMAR(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+          CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+C
+          CALL ZBLTP_REL(ISMOST(1,IJSYM),NSMST,IDC,WORK(KPCBLTP))
+C
+          IF(IMS2.EQ.1) THEN
+            IOFFBLK = 1
+            IOFFBTC = 1
+          ELSE
+            IOFFBLK = NBLOCK + 1
+            IOFFBTC = NBATCH + 1
+          END IF
+C         number of batches and blocks obtained until now
+          IF(IMS2.EQ.1) THEN
+            NBATCHP = 0
+            NBLOCKP = 0
+          ELSE
+            NBATCHP = NBATCH
+            NBLOCKP = NBLOCK
+          END IF
+C         batches of C vector
+          ITTSS_ORD = 2
+C
+          CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                   IOFFBLK,IOFFBTC,
+     &                   NSMST,LBLOCK,WORK(KLCIOIO),
+     &                   ISMOST(1,IJSYM),
+     &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+C
+C         number of BLOCKS so far
+          NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
+     &           + IFRMR_REL(WORK(KPCLBT),1,NBATCH) - 1
+C
+        END DO
+C       ^ End of loop over MS2 values
+C
+C       initialize symmetry irrep block array
+        CALL INI_BLOCKL_PRP(WORK(KBLOCKLIST),NUM_BLOCKS,IJSYM,
+     &                      NBLOCK,WORK(KPCIBT))
+ 200  CONTINUE
+C     ^ End of loop over different symmetries
+
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'ZBXPR2')
+C
+#if defined (VAR_MPI2)
+      CALL BLOCK_DISTR_PROP(WORK(KNODELIST),WORK(KBLOCKLIST),
+     &                      WORK(KRCCTOS),IXSYMPAIRS,
+     &                      WORK(KXSYMDISTR),IGROUPLIST)
+#endif
+      END
+#if defined (VAR_MPI2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE BLOCK_DISTR_PROP(NPARBLOCK_X,IBLOCKL_X,RCCTOS_X,
+     &                            IXSYMPAIRS,ISYM_DISTR,IGROUPLIST)
+C***********************************************************************      
+C
+C     driver routine for symmetry irrep dependent block distribution 
+C
+C     written by S. Knecht - Oct 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "krciprop.h"
+#include "mpif.h"
+#include "parluci.h"
+#include "infpar.h"
+#include "cands.inc"
+#include "mxpdim.inc"
+#include "symm.inc"
+      DIMENSION ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
+      DIMENSION NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
+      DIMENSION RCCTOS_X(NUM_BLOCKS2,*), IXSYMPAIRS(MXPROPKRCI_SYM,*)
+C
+      IXPAIR = 0
+C
+C     loop over all "active" symmetry irrep pairs
+C     for simplicity we assume the same even distribution for a given 
+C     sigma irrep no matter from which T_X x C pair it will be generated
+C
+C     COMPDISTL and COMPRCCTOS on common block in include/parluci.h.
+C
+      WRITE(LUWRT,*) ' calculating block distribution for act. irreps',
+     &                 IXSYMACT
+C
+      DO I = 1, IXSYMACT
+        IISYM = IXSYMLIST(I)
+        DO J = 1, IXSYMACT
+           IJSYM = IXSYMLIST(J)
+           IF( IXSYMPAIRS(IISYM,IJSYM) .eq. 1 )THEN
+             IXPAIR = IXPAIR + 1
+C
+C            reset IXSYMPAIRS to current pair number
+C            ---------------------------------------
+             IXSYMPAIRS(IISYM,IJSYM) = IXPAIR
+             IF( ISYM_DISTR(J) .eq. 0 ) THEN
+               COMPDISTL     = .TRUE.
+               COMPRCCTOS    = .TRUE.
+               ISYM_DISTR(J) = 1
+             ELSE
+               COMPDISTL  = .FALSE.
+               COMPRCCTOS = .TRUE.
+             END IF
+C            set correct symmetry for C and sigma
+             ICSM = IISYM
+             ISSM = IJSYM
+      WRITE(LUWRT,*) ' active: ICSM and ISSM are IXPAIR #: ',
+     &                         ICSM,ISSM,IXPAIR
+      WRITE(LUWRT,*) ' IXSYMPAIRS(ICSM,ISSM)=',IXSYMPAIRS(ICSM,ISSM)
+C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) before'
+C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) before'
+C     CALL IWRTMAMN(IBLOCKL_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' IBLOCKL_X(1,I) before'
+C     CALL IWRTMAMN(IBLOCKL_X(1,I),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' RCCTOS_X(1,IXPAIR) before'
+C     CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
+C    &              NUM_BLOCKS2,LUWRT)
+C
+C            set T operator arrays
+             ISYM_T    = IDBGMULT(INVELM(ICSM),ISSM)
+             IPRHAM_CI = 0
+             NO_TTWO   = 1
+             CALL SET_HOP_DBG(IHTYPE_X,NO_TTWO,ISYM_T,IPRHAM_CI)
+             CALL BLOCK_DISTR_DRV_REL(NPARBLOCK_X(1,J),IBLOCKL_X(1,J),
+     &                                IBLOCKL_X(1,I),RCCTOS_X(1,IXPAIR),
+     &                                IDUMMY,IGROUPLIST)
+C     WRITE(LUWRT,*) ' I (C),J (S),IXPAIR: ',I,J,IXPAIR
+C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) after'
+C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) after'
+C     CALL IWRTMAMN(IBLOCKL_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+      WRITE(LUWRT,*) ' ICSM,ISSM, RCCTOS_X(1,IXPAIR),IXPAIR',
+     &                 ICSM,ISSM,IXPAIR
+      CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
+     &              NUM_BLOCKS2,LUWRT)
+           END IF
+        END DO
+      END DO
+      WRITE(LUWRT,*) ' final RCCTOS_X lists of NXSYMPAIRS',NXSYMPAIRS
+      DO I = 1, NXSYMPAIRS
+        WRITE(LUWRT,*) ' RCCTOS_X(1,I) ,I',I
+        CALL IWRTMAMN(RCCTOS_X(1,I),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+      END DO
+      END
+#endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE GET_SC_PAIRS(IXSYMPAIRS,IXSYM,NX_OP,ISYMOPX,
+     &                        IXROOTS,IXROOTSYM)
+C***********************************************************************      
+C
+C     obtain all relevant sigma/C symmetry pairs
+C
+C     written by S. Knecht - Oct 2008
+C
+C     Last revision :
+C
+C***********************************************************************      
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "parluci.h"
+#include "mxpdim.inc"
+#include "symm.inc"
+#include "krciprop.h"
+       DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
+C
+      DO 100 I = 1, NX_OP
+         IF( ISYMOPX(I) .eq. 0 ) GOTO 100
+         DO J = 1, IXROOTS
+           ICSM = IXROOTSYM(J)
+           ISSM = IDBGMULT(ICSM,ISYMOPX(I))
+           IXSYMPAIRS(ICSM,ISSM) = 1
+         END DO
+ 100  CONTINUE
+C
+C     number of symmetry pairs
+      NXSYMPAIRS = 0
+      DO I = 1, IXSYM
+        DO J = 1, IXSYM
+          IF( IXSYMPAIRS(I,J).eq. 1) NXSYMPAIRS = NXSYMPAIRS + 1
+        END DO
+      END DO
+c     WRITE(LUWRT,*) ' GET_SC_PAIRS: number of symmetry pairs = ',
+c    &                 NXSYMPAIRS
+C
+       END
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

@@ -1315,9 +1315,9 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       INTEGER*8 ICOUNT_I8
       LOGICAL NOINT_FILE
 *
-      NTESTL = 0
+      NTESTL = 0000
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 00
+C     NTEST = 100
 *
 * Constants
       IZERO = 0
@@ -1328,10 +1328,11 @@ C     NOINT_FILE = .TRUE.
 * Double group type
       if (NZ.eq.1) then
         IDGTYP = 1
-        write(LUWRT,*) 
-        write(LUWRT,*) ' NOTICE from DIST_INTS_SIGDEN: '
-        write(LUWRT,*) '   Running in real algebra. '
-        write(LUWRT,*) '   Imaginary loops eliminated. '
+        IF( NTEST .gt. 1001 )THEN
+          write(LUWRT,'(/A)') ' NOTICE from DIST_INTS_SIGDEN: '
+          write(LUWRT,'( A)') ' Running in real algebra.      '
+          write(LUWRT,'(A/)') ' Imaginary loops eliminated.   '
+        END IF
       else if (NZ.eq.2) then
         IDGTYP = 2
       else if (NZ.eq.4) then
@@ -1343,15 +1344,10 @@ C     NOINT_FILE = .TRUE.
       if (DOUGRP.eq.7.or.DOUGRP.eq.4.or.DOUGRP.eq.1) INVSYM = 1
 *
 * Get reordering info depending on environment
-      if (INTIMP.eq.5) then
-C FIXME: Write me
-        call abend2('Not implemented yet.')
-C       call reo_info_molcas()
-        IRILP = 1
-      else if (INTIMP.eq.6) then
+      if (INTIMP.eq.6) then
         call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
-     &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
+     &                      INVSYM,IDGTYP,ISPINFREE,NTEST)
 *
         if (ISPINFREE.eq.1.or.IDGTYP.eq.1) then
           IRILP = 1
@@ -1361,7 +1357,7 @@ C       call reo_info_molcas()
       else if (INTIMP.eq.7) then
         call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
-     &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
+     &                      INVSYM,IDGTYP,ISPINFREE,NTEST)
         if (ISPINFREE.eq.1.or.IDGTYP.eq.1) then
           IRILP = 1
         else
@@ -1784,7 +1780,7 @@ C
                               if (CIRUN.ne.'DENS1 '
      &                            .and.CIRUN.ne.'DENS2 ')
      &                          call getint_sigden(YXINT,I_ADD,IRI,
-     &                                    NDIM_TOT,NASHT,F1,F2,IPRNT)
+     &                                    NDIM_TOT,NASHT,F1,F2,NTEST)
                             end if
                           end if
 *
@@ -1882,7 +1878,7 @@ C    &             ' at ',ICOUNT_I8
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
-     &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
+     &                                  IRI,NDIM_TOT,NASHT,F1,F2,NTEST)
                             end if
 C
                               T(ICOUNT_I8) = YINT - YXINT
@@ -3178,9 +3174,11 @@ C     dimension DMFC(*),H2AC(*)
         write(6,*)
         write(6,*) '1-el. integral array in getind_nz3:'
         call wrtmat(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
-        write(6,*)
-        write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
-        call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
+        if (NTEST.ge.200) then
+          write(6,*)
+          write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
+          call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
+        end if
       end if
 *
       NCT = 0
@@ -3199,7 +3197,7 @@ C     dimension DMFC(*),H2AC(*)
         IIN =  (IRI-1)*NASHT*NASHT +
      &          (J-1) *NASHT +
      &           I
-        if (NTEST.ge.5) then
+        if (NTEST.ge.1) then
           write(6,*) 'Index pair ',I,J,' address :',IIN
         end if
         YINT = DMFC(IIN)
@@ -3209,7 +3207,7 @@ C     dimension DMFC(*),H2AC(*)
 *  Reference are the unbarred spinors.)
         if (IRI.eq.2.and.INDEX_LOC(1).eq.0) YINT = - YINT
 *
-        if (NTEST.ge.2) write(6,'(2I3,2X,1F18.10)') I,J,YINT
+        if (NTEST.ge.1) write(6,'(2I3,2X,1F18.10)') I,J,YINT
 *
       else if (NCT.eq.4) then
 *
@@ -4709,14 +4707,7 @@ C     STOP ' Jeppe forced me to stop in GETINT '
 * New (memory saving) (NZ,3) integral interface (if true)
       NZ3FORM = .TRUE.
 *
-      if (INTIMP.eq.5) then
-        write(6,*) 'MOLCAS sigden import under development.'
-        write(6,*) 'Please be patient!'
-        call abend2('Quitting.')
-C FIXME: Write me
-c       call getinm_sigden()
-*
-      else if (INTIMP.eq.6) then
+      if (INTIMP.eq.6) then
 * MOLFDIR format Kramers reduced
         if (IRI.eq.1) then
           IRIOFF1 = 0
@@ -4861,6 +4852,150 @@ C. Interface to LUCAS integrals
       CALL QEXIT('GETIN')
 *
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_PRPOPSYM_KRCI(WORK,LWORK,NTEST)
+C***********************************************************************
+C
+C     calculate operator symmetry of all property operators NPROP_KRCI 
+C     in list LPROP_KRCI in LUCIAREL sub-double group notation.
+C     
+C     symmetry of property operator IVOP according to
+C      _           _              _      
+C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)⁺
+C
+C     final symmetry stored in ISYMOPPRP_KRCI (krciprop.h).
+C     
+C     symmetry setup in LUCIAREL
+C     ==========================
+C
+C             boson               fermion
+C             =====               =======
+C
+C     C2   :  a , b               1E,  2E
+C     C2h  :  ag, bg, au, bu      1Eg, 2Eg, 1Eu, 2Eu  
+C
+C     Written by S. Knecht - Sep 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "consts.h"
+C
+#include "dcbgen.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "krciprop.h"
+#include "krmcluci_inf.h"
+#include "mxpdim.inc"
+#include "symm.inc"
+      DIMENSION WORK(*)
+      CHARACTER REPVOP_KRCI*2, FILELAB*8
+C
+#include "memint.h"
+      MZ = MIN(NZ,2)
+      CALL QENTER('GET_PRPOPSYM_KRCI')
+C
+C     allocate for VOP matrix
+C
+      CALL MEMGET('REAL',KVOP,4*N2ASHX*MZ,WORK,KFREE,LFREE)
+C
+      IASP_DC       = 0
+      IBSP_DC       = 0
+      IASP_KRCI_SYM = 0
+      IBSP_KRCI_SYM = 0
+C
+C     loop over list of operators  
+C
+      DO 20 I = 1, NPROP_KRCI
+C
+        CALL DZERO(WORK(KVOP),  4*N2ASHX*MZ)
+C
+C       read VOP matrix from file
+C
+        INDXPR  = LPROP_KRCI(I)
+        FILELAB = PRPNAM(INDXPR)(1:8)
+C
+        CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KVOP),
+     &                    4*N2ASHX*MZ,1)
+C   
+C       find largest absolute element in VOP matrix
+C
+        INDEX_VOP   = IDAMAX(4*N2ASHX*MZ,WORK(KVOP),1)
+        ABS_MAX_ELM = DABS(WORK(KVOP+INDEX_VOP-1))
+C       ... if largest absolute element is zero, 
+C           nothing to do for this operator
+        IF( ABS_MAX_ELM .eq. D0 ) GOTO 20
+C
+        IF( NTEST .gt. 10 ) THEN
+           WRITE(LUPRI,'(/A,A8)') 
+     &     '  absolute largest element for operator ',FILELAB
+           WRITE(LUPRI,*) ' found to be:', ABS_MAX_ELM
+        END IF
+C
+C       which two spinors (in LUCIAREL symmetry notation) 
+C       IASP_KRCI_SYM and IBSP_KRCI_SYM does this operator connect?
+C
+        CALL GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ABS_MAX_ELM,
+     &                      WORK(KVOP),2*NASHT,2*NASHT,2*NASHT,2*NASHT,
+     &                      MZ,IPQTOQ(1,0),NTEST)
+C            GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
+C    &                      AMAT,NROW,NCOL,LRQ,LCQ,JZ,IQP,NTEST)
+                  
+C
+C       compute symmetry of operator IVOP and store in ISYMOPPRP_KRCI
+C
+        ISYMOPPRP_KRCI(I)=IDBGMULT(INVELM(IASP_KRCI_SYM),IBSP_KRCI_SYM)
+ 20   CONTINUE
+C
+C     print section
+C
+      IF( NTEST .ge. 0 )THEN
+         WRITE (LUPRI,'(/A,/A)') 
+     &   '  Determination of operator representation in KRCI module',
+     &   '  _______________________________________________________'
+     
+         WRITE (LUPRI,'(/A/A)')
+     &   '  operator     boson rep in DIRAC     boson rep in KR-CI',
+     &   '  ________     __________________     __________________'
+C            ZDIPLEN             B1u                     Au
+         DO I = 1, NPROP_KRCI
+           INDXPR  = LPROP_KRCI(I)
+           ISYMVOP = IPRPSYM(INDXPR)
+           ISYMVOP_KRCI = ISYMOPPRP_KRCI(I)
+           IF( DBGSYM(1:6) .eq. 'Cs    ' .or. 
+     &         DBGSYM(1:6) .eq. 'C2    ')THEN
+               IF( ISYMVOP_KRCI .eq. 1 )THEN
+                  REPVOP_KRCI = 'A '
+               ELSE
+                  REPVOP_KRCI = 'B '
+               END IF
+           ELSE IF( DBGSYM(1:6) .eq. 'C2h   ' )THEN
+               IF( ISYMVOP_KRCI .eq. 1 )THEN
+                  REPVOP_KRCI = 'Ag'
+               ELSE IF( ISYMVOP_KRCI .eq. 2 )THEN
+                  REPVOP_KRCI = 'Bg'
+               ELSE IF( ISYMVOP_KRCI .eq. 3 )THEN
+                  REPVOP_KRCI = 'Au'
+               ELSE 
+                  REPVOP_KRCI = 'Bu'
+               END IF
+           END IF
+           WRITE(LUPRI,'(A11,A15,A21)') 
+     &           PRPNAM(INDXPR)(1:8), REP(ISYMVOP-1), REPVOP_KRCI
+         END DO
+      END IF
+C
+C     release memory
+      CALL MEMREL('KRCIGETPRP',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('GET_PRPOPSYM_KRCI')
       END
 ***********************************************************************
 *                                                                     *
@@ -5716,12 +5851,6 @@ CTF
         write(6,*) 'Increase MXPNGAS in mxpdim.inc or reconsider.'
         Call Abend2( 'Quitting.' )
       end if
-*
-      if (PNTGRP.eq.9) DOUGRP = 4
-      if (PNTGRP.eq.8) DOUGRP = 5
-      if (PNTGRP.eq.7) DOUGRP = 6
-      if (PNTGRP.eq.6) DOUGRP = 7
-      if (PNTGRP.eq.5) DOUGRP = 8
 *
       NOBPIRR = 0
       IOFPGSM(1) = 0
@@ -9571,6 +9700,12 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       NINT_TOT   = N1ELINT + N2ELINT
 *
+C
+      CALL DZERO(F1,MIN(NZ,2)*(2*NASHT)**2 )
+CSK   WRITE(LUWRT,*) ' F1 before transfer'
+CSK   CALL WRTMATMN(F1,1,MIN(NZ,2)*(2*NASHT)**2,1,
+CSK  &                   MIN(NZ,2)*(2*NASHT)**2,LUWRT)
+C
       if (ISF.eq.1.or.NZ.eq.1) then
         IRILP = 1
       else
@@ -9728,11 +9863,9 @@ csk               write(LUWRT,*) ' continuing ...'
 *       ^ Loop over excitation types
  222    CONTINUE
       end do
-*     ^ Loop over Real/Imaginary
+*     ^ loop over real/imaginary
 *
- 333  CONTINUE
-*
-      return
+ 333  return
       end
 #if defined (VAR_MPI2)
 ***********************************************************************

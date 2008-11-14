@@ -2176,7 +2176,7 @@ CTF  Variable INONREL added to list. It is passed from CMICDV
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KLSBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                 IBAT_MS2,0,0,IDUMMY)
+     &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 *
       CALL RASSG3_REL(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC)

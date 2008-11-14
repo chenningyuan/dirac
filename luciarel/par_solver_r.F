@@ -115,7 +115,7 @@ C
        LOGICAL CONVER,RTCNV(100)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
-       CHARACTER WPART22*12
+       CHARACTER WPART22*12, FILELAB*8
        INTEGER NZERO,LZERO_SCRRED
        INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR
 *
@@ -183,7 +183,7 @@ C?       WRITE(6,*) ' Variational  solver '
 *
          CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
-         CALL ISETVC(LUCLIST,NZERO,NUM_BLOCKS2)
+         CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
 *         WRITE(LUWRT,*) 'LUCLIST for the 1st time:'
 *         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
@@ -218,6 +218,7 @@ CSK         CALL MPI_BARRIER(MYNEW_COMM,IERR)
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS,
      &                    IT_TTPL,IT_TTOL
+     &                   ,IBLOCKL,NPARBLOCK
 #endif
      &                   )
 *=======================================================================
@@ -356,8 +357,8 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *            add Olsen correction if neccessary
 *            current eigen-vector on LU5
 *
-             CALL ISETVC(LU4LIST,NZERO,IALL_LU4)
-             CALL ISETVC(LU5LIST,NZERO,IALL_LU5)
+             CALL IZERO(LU4LIST,IALL_LU4)
+             CALL IZERO(LU5LIST,IALL_LU5)
 *
 *
              CALL P1_B_PAR_RL_2(VEC1,VEC2,AVEC,-EIGAPR,IROOT,LU1LIST,
@@ -422,7 +423,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       reset LUCLIST
 *
-        CALL ISETVC(LUCLIST,NZERO,MY_ACT_BLK_ALL)
+        CALL IZERO(LUCLIST,MY_ACT_BLK_ALL)
 *
         CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
@@ -450,6 +451,7 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS,
      &                   IT_TTPL,IT_TTOL
+     &                  ,IBLOCKL,NPARBLOCK
 #endif
      &                  )
 *=======================================================================
@@ -551,7 +553,7 @@ C     TIMING FOR PARTS 2.1 - 2.2
 *
 *
 CSK        CALL DZERO(SCRRED,NROOT)
-        CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
+        CALL IZERO(LU3LIST,IALL_LU3)
 *
 *       c vectors to ILU1
 *
@@ -572,7 +574,7 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *       no scaling, we should already work in a normalized basis
 *
         CALL SETVEC(WORK,1.0D0,NROOT)
-        CALL ISETVC(LU1LIST,NZERO,NROOT*MY_ACT_BLK1)
+        CALL IZERO(LU1LIST,NROOT*MY_ACT_BLK1)
 *
         DO IROOT = 1, NROOT
 *
@@ -582,7 +584,7 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *
         END DO
 *
-        CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
+        CALL IZERO(LU3LIST,IALL_LU3)
 *
 *
 *       corresponding sigma vectors to ILU2
@@ -597,7 +599,7 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *
         END DO
 *
-        CALL ISETVC(LU2LIST,NZERO,NROOT)
+        CALL IZERO(LU2LIST,NROOT)
 *
         DO IROOT = 1, NROOT
 *
@@ -649,7 +651,7 @@ C
  1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
-         ITER = ITER - 1
+C?       ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
@@ -699,6 +701,16 @@ C
      &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
  1607   CONTINUE
+      END IF
+C
+C     store information about energies for each root on file
+C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
+      IF( MYPROC .eq. MASTER ) THEN
+        DO I = 1, NROOT
+           FINEIG(I) = EIG(ITER,I)+EIGSHF
+        END DO
+        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 *
       call qexit('MICDV4')
@@ -784,7 +796,7 @@ C
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12
-      CHARACTER WPART22*12
+      CHARACTER WPART22*12, FILELAB*8
       LOGICAL CONVER,RTCNV(100),EXSTOP
 *
 #include "krmcluci_inf.h"
@@ -893,7 +905,7 @@ CSK      end if
 *
 *        reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
 *
-         CALL ISETVC(LUCLIST,NZERO,NUM_BLOCKS2)
+         CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
          CALL COPVCD_PP_CC_B_C(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                         IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
@@ -914,6 +926,7 @@ CSK      end if
      &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                    IGROUPLIST,IPROCLIST,RCCTOS,
      &                    IT_TTPL,IT_TTOL
+     &                   ,IBLOCKL,NPARBLOCK
 #endif
      &                   )
 *=======================================================================
@@ -946,7 +959,7 @@ CSK      end if
        IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
        CALL DZERO(SCRRED_R,IREDL)
        CALL DZERO(SCRRED_I,IREDL)
-*      at first sum up
+*      ... sum up
        CALL REDVEC_REL(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
      &                 MPI_COMM_WORLD,-1)
        CALL REDVEC_REL(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
@@ -1010,9 +1023,9 @@ CSK      end if
 *
 *        reset scratch file lists ...
 *
-         CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
-         CALL ISETVC(LU4LIST,NZERO,IALL_LU4)
-         CALL ISETVC(LU5LIST,NZERO,IALL_LU5)
+         CALL IZERO(LU3LIST,IALL_LU3)
+         CALL IZERO(LU4LIST,IALL_LU4)
+         CALL IZERO(LU5LIST,IALL_LU5)
 *
          EIGAPR = EIG(IROOT,ITER)
 C        EIGAPR = EIG(IROOT,ITER-1)
@@ -1178,7 +1191,7 @@ csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       reset LUCLIST
 *
-        CALL ISETVC(LUCLIST,NZERO,NUM_BLOCKS2)
+        CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
         CALL COPVCD_PP_CC_B_C(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                        IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
@@ -1204,6 +1217,7 @@ csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
      &                   IGROUPLIST,IPROCLIST,RCCTOS,
      &                   IT_TTPL,IT_TTOL
+     &                  ,IBLOCKL,NPARBLOCK
 #endif
      &                  )
 *=======================================================================
@@ -1287,7 +1301,7 @@ CJO     call towave(nroot,eig(1,iter))
         timer3 = 0.0D0
         starttimer = MPI_WTIME()
 *
-        CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
+        CALL IZERO(LU3LIST,IALL_LU3)
 *
 *       c vectors from ILU1 to ILU1
 *
@@ -1307,7 +1321,7 @@ CJO     call towave(nroot,eig(1,iter))
 *
 *       no scaling, we should already work in a normalized basis
 *
-        CALL ISETVC(LU1LIST,NZERO,NROOT*MY_ACT_BLK2)
+        CALL IZERO(LU1LIST,NROOT*MY_ACT_BLK2)
 *
         DO IROOT = 1, NROOT
 *
@@ -1319,7 +1333,7 @@ CJO     call towave(nroot,eig(1,iter))
 *
         END DO
 *
-        CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
+        CALL IZERO(LU3LIST,IALL_LU3)
 *
 *       corresponding sigma vectors from ILU2 to ILU2
 *
@@ -1339,7 +1353,7 @@ CJO     call towave(nroot,eig(1,iter))
 *
 *       no scaling, we should already work in a normalized basis
 *
-        CALL ISETVC(LU2LIST,NZERO,NROOT*MY_ACT_BLK2)
+        CALL IZERO(LU2LIST,NROOT*MY_ACT_BLK2)
 *
         DO IROOT = 1, NROOT
 *
@@ -1349,7 +1363,7 @@ CJO     call towave(nroot,eig(1,iter))
 *
         END DO
 *
-        CALL ISETVC(LU3LIST,NZERO,IALL_LU3)
+        CALL IZERO(LU3LIST,IALL_LU3)
 *
         NVEC = NROOT
 *
@@ -1456,7 +1470,17 @@ C!?      ITER = ITER - 1
      &                 RNRM(IROOT,1)/RNRM(IROOT,ITER)
  1607   CONTINUE
       END IF
-*
+C
+C     store information about energies for each root on file
+C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
+      IF( MYPROC .eq. MASTER ) THEN
+        DO I = 1, NROOT
+           FINEIG(I) = EIG(ITER,I)+EIGSHF
+        END DO
+        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
+      END IF
+C
       call qexit('CMICDV_PAR')
 *
       RETURN

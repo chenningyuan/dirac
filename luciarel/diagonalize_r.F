@@ -267,7 +267,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
 *     (*_MS2 arrays are in CSTATE )
       JCMBSPC = 1
       call z_blkfo_rel_par(IDC,NMS2VAL,JCMBSPC,IREFSM,
-     &                     KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
+     &                     KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDMXXX,
      &                     NBATCH,NUM_BLOCKS,NBLK_MS2,IBLK_MS2,
      &                     NBAT_MS2,IBAT_MS2,0,1,NPARBLOCK)
 CSK      call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
@@ -278,9 +278,7 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
 #endif
 *
 *     Construct and diagonalize complete Hamiltonian 
-*
       IF( IDCOMH .eq. 1 )THEN
-*
 #if defined(VAR_MPI2)
         IF(NMPROC .ge. 1 ) THEN
           WRITE(LUWRT,*)  ' I am sorry, but this route does not work'
@@ -289,28 +287,11 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
         END IF
 #endif
         CALL COMHAM(VEC1,VEC2,NDIM,T_CC,SIGDEN_ROUTE)
-*
       END IF
 *
-*
       IF (IRC.EQ.1) THEN
-        write(LUWRT,*) ' '
-        write(LUWRT,*) ' Quaternion real algebra.           '
-        write(LUWRT,*) ' Using modified MICDV4 optimizer!   '
-        write(LUWRT,*) 
-     &  ' (Current version: No preconditioner, no root homing) '
-        write(LUWRT,*) ' '
-*
-C
-C#if defined (VAR_MPI2)
-C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C          CALL Abend2('Stefan forced me to stop after WRSVCD_REL')
-C#endif
 *
 *       Most general real optimizer
-*
 #if defined (VAR_MPI2)
 *
         call micdv4_enlmd_rel_par(T_CC,T_BUFF,VEC1,VEC2,
@@ -384,7 +365,6 @@ C
       call memmar(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
 *
       call qexit('CIEIG5')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -866,7 +846,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12, FILELAB*8
       LOGICAL CONVER,RTCNV(100),EXSTOP
 *
 #include "krmcluci_inf.h"
@@ -1477,7 +1457,17 @@ C!?      ITER = ITER - 1
      &                 RNRM(IROOT,1)/RNRM(IROOT,ITER)
  1607   CONTINUE
       END IF
-*
+C
+C     store information about energies for each root on file
+C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
+      IF( MYPROC .eq. MASTER ) THEN
+        DO I = 1, NROOT
+           FINEIG(I) = EIG(ITER,I)+EIGSHF
+        END DO
+        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
+      END IF
+C
       call qexit('CMICDV')
 *
 * Delete scratch units
@@ -2680,7 +2670,7 @@ C      END IF
        DIMENSION FINEIG(1)
        LOGICAL CONVER,RTCNV(10)
        REAL*8 INPRDD
-       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+       CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
        call qenter('MICDV4')
 *
@@ -3083,7 +3073,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
  1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
-         ITER = ITER - 1
+C?       ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
@@ -3145,15 +3135,24 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
  1607   CONTINUE
       END IF
-*
-      call qexit('MICDV4')
-*
-* Delete scratch units
+C
+C     store information about energies for each root on file
+C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
+      IF( MYPROC .eq. MASTER ) THEN
+        DO I = 1, NROOT
+           FINEIG(I) = EIG(ITER,I)+EIGSHF
+        END DO
+        WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
+        CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
+      END IF
+C
+C     Delete scratch units
       close(unit=LU3,status='DELETE')
       close(unit=LU4,status='DELETE')
-      close(unit=LU5,status='DELETE') ! think about that!!!!!!!!
+      close(unit=LU5,status='DELETE')
 C
-      RETURN
+      call qexit('MICDV4')
+C
  1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(/,I6,7F15.8,/,(1H ,5X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')

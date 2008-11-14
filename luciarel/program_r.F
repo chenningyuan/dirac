@@ -127,6 +127,7 @@ C     set some variables ...
 C     controls whether the T_DIAG part is stored on T_BUFF_D or not
       CPIC_PASS_D = .FALSE.
 C
+CSK   NTEST = 3
       IF(NTEST.GE.3) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ====================================='
@@ -158,12 +159,13 @@ C
         END DO
 C
        END IF
+CSK    NTEST = 0
 C
       ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
       write(LUWRT,*) ' Number of determinants/combinations  ',NDET
 C     transfer NDET to common block LUCIPARREL
-      L_COMBI = NDET 
+      L_COMBI = NDET
 C
 C     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN
@@ -180,16 +182,15 @@ C         quaternion real
       if (IRELACI.eq.1.and.NZ.eq.1) then
         write(LUWRT,*) ' Quaternion real relativistic CI '
       end if
+C     control variable for general file structure
+      LBLK = -1
 C
-C     transfer to CANDS --> check for transition dipole 
-C     moment runs: determine symmetry of vecs C1 and C2 
-C     --> mu = <C1|(x,y,z)|C2>
-C     IMPLEMENT ME:  transition dipole moment calculations
-C
+C     transfer symmetry of C and sigma to CANDS
       ICSM = ISM
       ISSM = ISM
       ICSPC = ISPC
       ISSPC = ISPC
+C
 C     transfer to LUCIPARREL
       IRC_SAVE = IRC
 C
@@ -217,9 +218,7 @@ C
 #endif
 C
 C     partition CI vector - for all MS2 spaces into batches
-C     (*_MS2 arrays are in CSTATE )
-C
-      CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+      CALL Z_BLKFO_REL_1(IDC,NMS2VAL,ICSPC,ICSM,KPCIBT,KPCBLTP,
      &                   KNODELIST,KBLOCKLIST,KRCCTOS,
      &                   NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
      &                   IBAT_MS2,1,0,IDUMMY,IRC,IT_TTPL,
@@ -236,7 +235,6 @@ C
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 C
 C       calculate length of T_BUFF
-C
         MY_T_LEN     = IGET_MY_T_LEN(IT_TTPL,NSPOBEX_TP,
      &                               N1ELINT,IRC)
         LEN_T_BUFF   = MY_T_LEN
@@ -335,7 +333,7 @@ C
       END IF
 #endif
 C
-      CALL Z_BLKFO_REL_2(IDC,NMS2VAL,ISPC,ISM,KPCIBT,KPCBLTP,
+      CALL Z_BLKFO_REL_2(IDC,NMS2VAL,ICSPC,ICSM,KPCIBT,KPCBLTP,
      &                   NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
      &                   IBAT_MS2,1,0,IDUMMY,IRC)
 C
@@ -419,24 +417,12 @@ C       ^ CIRUN == CIINII .or. SIGMAD .or. DIAG .or. KR-CI
       END IF
 C     ^ CIRUN == DIAG .or. CIRUN == CIINII .or. CIRUN == SIGMA ...
 #endif
-C     Class divisions of dets
-      IF(ICLSSEL.EQ.1) THEN
-        WRITE(LUWRT,*) ' Info for class selection constructed'
-        WRITE(LUWRT,*) ' Not implemented for relativistic version '
-        Call Abend2
-     & ( ' GASCI : CLSSEL not implemented for relativistic version' )
-      END IF
 C
-C     allocate memory : 2 vector blocks + 1 vector/scratch blocks
-      I_USE_SBLOCK=1
-      IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
-        CALL GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
-C       LSCR2 : Will be used for resolution matrices, save
-        LCJRES = LSCR2
-      END IF
+C     allocate memory : 2 vector blocks 
+C     store veclen for  1 vector/scratch block
+      CALL GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
 C
 C     CI diagonal - if required
-C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       if (CIRUN.eq.'DIAG  '.or.CIRUN.eq.'CIINII'.or.
      &    CIRUN.eq.'KR-CI '.or.
@@ -533,21 +519,8 @@ c
         INICI = -1
       END IF
       NPRDET = 0
-      LBLK = -1
 C     this is a CI and not a perturbation calculation
       IPERTOP = 0
-C     real or complex eigenvectors
-      IF(IRELACI.EQ.0) THEN
-C       real
-        IRC = 1
-      ELSE
-C       well, complex
-        IRC = 2
-        if (NZ.eq.1) then
-C         quaternion real
-          IRC = 1
-        end if
-      END IF
 C
 C     restart from previous vector(s)
 C
@@ -603,7 +576,7 @@ C
 C
 C            Arrays for partitioning of the CI vector
 C            (*_MS2 arrays are in CSTATE )
-             call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
+             call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ICSM,
      &                            KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
      &                            NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
      &                            IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
@@ -649,6 +622,7 @@ C
      &                       WORK(KBLOCKLIST),WORK(KNODELIST),
      &                       IGROUPLIST,IPROCLIST,WORK(KRCCTOS),
      &                       IT_TTPL,IT_TTOL
+     &                      ,WORK(KBLOCKLIST),WORK(KNODELIST)
 #endif
      &                       )
 ************************************************************************
@@ -866,7 +840,7 @@ C
 C
 C       arrays for partitioning of the CI vector
 C       (*_MS2 arrays are in CSTATE )
-        call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ISM,
+        call z_blkfo_rel_par(IDC,NMS2VAL,ISPC,ICSM,
      &                       KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
      &                       NBATCH_LD,NM_BLK_LD,NBLK_MS2_LD,
      &                       IBLK_MS2_LD,NBAT_MS2_LD,IBAT_MS2_LD,
@@ -1064,6 +1038,7 @@ C
      &                     WORK(KBLOCKLIST),WORK(KNODELIST),
      &                     IGROUPLIST,IPROCLIST,WORK(KRCCTOS),
      &                     IT_TTPL,IT_TTOL
+     &                    ,WORK(KBLOCKLIST),WORK(KNODELIST)
 #endif
      &                   )
 *=======================================================================
@@ -1113,6 +1088,10 @@ C         ^ MASTER !!!
 C
 #if defined (VAR_MPI2)
 C
+csk       WRITE(LUWRT,*) ' MY index array '
+csk       DO IJINDEX = 1, NTERMS 
+csk       WRITE(LUWRT,'(A,I4)') 'index: ',WORK(KINDEX+IJINDEX-1)
+csk       END DO
 csk    WRITE(LUWRT,*) ' MY T (BUFF) array'
 csk    IF( SPLIT_IJKL )THEN
 csk      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
@@ -1364,9 +1343,9 @@ C
 C     reset partitioning of CI vector to 'sequential' fashion
 C     (*_MS2 arrays are in CSTATE )
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
-     &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
+     &                 ISPC,ICSM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                 IBAT_MS2,0,0,IDUMMY)
+     &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
       write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
@@ -1537,7 +1516,7 @@ C FIXME !!!
         end if
         ISYM_T = 1
         NO_TTWO = 0
-        call set_hop_dbg(IHTYPE,NO_TTWO,IPRHAM_CI)
+        call set_hop_dbg(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
       END IF
 *. Symmetry of reference
       IF(PNTGRP.GT.1.and.PNTGRP.lt.5)

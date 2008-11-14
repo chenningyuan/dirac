@@ -142,7 +142,7 @@ C
 *
 #include "irat.inc"
 C     PARAMETER(IRAT = 2 )
-*. offset when work is integer array
+*     offset when work is integer array
       IIOFF = 1 + IRAT * (IROFF-1)
       IFRMR_REL = WORK(IIOFF-1+IELMNT)
 *
@@ -298,6 +298,91 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
       XI = XRI - XIR
 *
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INPRDD_REAL_CPLX(VEC1,VEC2,LU1,LU2,I1,I2,
+     &                            IREW,LBLK,XR,XI,MZ)
+C***********************************************************************     
+C
+C     two in general complex vectors are given : 
+C                    vec1 = vector number I1 on LU1
+C                    vec2 = vector number I2 on LU2
+C
+C     obtain inner product of these two vectors  
+C     <Vec(LU1)!Vec(Lu2)>
+C
+C     output given as XR : real part of inner product
+C                     XI : imaginary part of inner product
+C
+C     if LU1 = LU2, the imaginary part is set to zero
+C
+C     based on INPRDDC.
+C
+C     written by S. Knecht - Oct 2008
+C
+C***********************************************************************     
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION VEC1(*),VEC2(*)
+      REAL*8 INPRDD
+C
+      NTEST = 0
+      XR  = 0.0D0
+      XI  = 0.0D0
+      XRR = 0.0D0
+      XRI = 0.0D0
+      XIR = 0.0D0
+      XII = 0.0D0
+C
+C     position files at start of complex vectors I1, I2
+      IF(IREW.NE.0) THEN
+        CALL SKPVCD(LU1,MZ*(I1-1),VEC1,1,LBLK)
+        IF(LU2.NE.LU1) THEN
+          CALL SKPVCD(LU2,MZ*(I2-1),VEC1,1,LBLK)
+        END IF
+      END IF
+C
+      IF(LU1.EQ.LU2) THEN
+C
+C       Norm of vector
+        XRR = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+        IF( MZ .eq. 2 ) XII =  INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+        XIR = 0.0D0
+        XRI = 0.0D0
+      ELSE
+C
+C       general inner product of two vectors
+C       ------------------------------------
+C
+C       real * real
+        XRR = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+        IF(NTEST.NE.0)
+     &  WRITE(6,*) ' Real part * Real part ', XRR
+        IF( MZ .eq. 2 )THEN
+C
+C         real * imag
+          CALL SKPVCD(LU1,2*(I1-1),VEC1,1,LBLK)
+          XRI = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+          IF(NTEST.NE.0)
+     &    WRITE(6,*) ' Real part * Imag part ', XRI
+C
+C         imag*real
+          CALL SKPVCD(LU2,2*(I2-1),VEC1,1,LBLK)
+          XIR = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+          IF(NTEST.NE.0)
+     &    WRITE(6,*) ' Imag part * Real part ', XIR
+C
+C         imag*imag
+          CALL SKPVCD(LU1,2*(I1-1)+1,VEC1,1,LBLK)
+          CALL SKPVCD(LU2,2*(I2-1)+1,VEC1,1,LBLK)
+          XII = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+          IF(NTEST.NE.0)
+     &    WRITE(6,*) ' Imag part * Imag part ', XII
+        END IF
+      END IF
+C
+      XR = XRR + XII
+      XI = XRI - XIR
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -1170,14 +1255,9 @@ C
 C
       END
 #if defined (VAR_MPI2)
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CHECK_CONSIST( ICHECK_VEC, NDIM )
-C**********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     check if logical is consistent on each CPU
 C
@@ -1185,7 +1265,7 @@ C     Written by S. Knecht - Feb 22 2008
 C
 C     Last revision :
 C
-C***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "mpif.h"
 #include "infpar.h"
@@ -1195,10 +1275,6 @@ C***********************************************************************
 C
       ICHECK_SCR   = ICHECK_VEC(1)
       ICHECK_SCR_2 = 0
-C
-CSK      WRITE(6,*) ' subroutine CHECK_CONSIST: CHECK_SCR is ',   
-CSK     &             ICHECK_SCR
-C
       DO II = 1, NDIM
          ICHECK_SCR_2 = ICHECK_VEC(II)
          IF( ICHECK_SCR_2 .ne. ICHECK_SCR )THEN
@@ -1207,6 +1283,94 @@ C
             CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
      &   detected' )
           END IF
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIST_XPROP(XPROP,LUPROP_MAT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     distribute property integrals from MASTER to node-MASTER.
+C
+C     Written by S. Knecht - Oct 2008
+C
+C     Last revision :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+C information for property run
+#include "krciprop.h"
+#include "dcbxpr.h"
+      CHARACTER FILE_INFO_GROUPSZ*4,XPROP_INT*13,FILELAB_REOD*8,RODLAB*2
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_XPRP
+      DIMENSION XPROP(*)
+C
+      RODLAB    = 'RO'
+      IOFF_XPRP = 0
+C
+C     distribute from MASTER to node-MASTER(s)
+C     ---------------------------------------
+C
+C     file info object - provide useful hints for the MPI implementation
+C
+      CALL MPI_INFO_CREATE(FILE_INFO_OBJ, IERR)
+C
+C     ... number of CPUs sharing the following MPI-I/O file
+      WRITE (FILE_INFO_GROUPSZ,'(I4)') NEWCOMM_PROC
+      CALL MPI_INFO_SET(FILE_INFO_OBJ,"nb_proc",FILE_INFO_GROUPSZ,IERR)
+C
+#if defined (VAR_PFS)
+C
+C     special information on IBMs GPFS to enhance I/O performance
+C
+      CALL MPI_INFO_SET(FILE_INFO_OBJ, "IBM_largeblock_io", "true",IERR)
+#endif
+C
+C     ... set correct name
+      LXPROP_INT = 13
+      IF( MY_GROUPN .lt. 10 ) THEN    ! MPI ID has one digit
+        WRITE (XPROP_INT,'(A10,I1)') 'XPROP_INT.',MY_GROUPN
+        LXPROP_INT = 11
+      ELSE IF( MY_GROUPN .lt. 100 ) THEN ! MPI ID has two digits
+        WRITE (XPROP_INT,'(A10,I2)') 'XPROP_INT.',MY_GROUPN
+        LXPROP_INT = 12
+      ELSE ! MPI ID has three digits
+        WRITE (XPROP_INT,'(A10,I3)') 'XPROP_INT.',MY_GROUPN
+      END IF
+C
+C     ... open file
+      CALL MPI_FILE_OPEN(MYNEW_COMM,XPROP_INT(1:LXPROP_INT),
+     &     MPI_MODE_DELETE_ON_CLOSE + MPI_MODE_CREATE + MPI_MODE_RDWR,
+     &     FILE_INFO_OBJ,ILPRP_X,IERR)
+C
+      CALL MPI_INFO_FREE(FILE_INFO_OBJ,IERR)
+C
+C     ... set fileview
+      CALL MPI_FILE_SET_VIEW(ILPRP_X,IOFF_XPRP,MPI_REAL8,MPI_REAL8,
+     &        "native",MPI_INFO_NULL,IERR)
+C
+C     XPROP distribution
+      DO IPROP_X = 1, NPROP_KRCI
+         LEN_XPRP_INT = IN1ELPRP_KRCI(IPROP_X)
+         IF( LEN_XPRP_INT .gt. 0 ) THEN
+           IF( MYPROC .eq. MASTER )THEN
+             INDXPR  = LPROP_KRCI(IPROP_X)
+             WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
+             CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,XPROP,
+     &                         LEN_XPRP_INT,1)
+           END IF
+           IF( MYNEW_ID .eq. N_MASTER ) THEN
+             CALL MPI_BCAST(XPROP,LEN_XPRP_INT,MPI_REAL8,MASTER,
+     &                      ICOMM,IERR)
+             CALL MPI_FILE_WRITE_AT(ILPRP_X,IOFF_XPRP,XPROP,
+     &                              LEN_XPRP_INT,MPI_REAL8,ISTAT,IERR)
+C            new offset
+             IOFF_XPRP = IOFF_XPRP + LEN_XPRP_INT
+           END IF
+         END IF
       END DO
 C
       END

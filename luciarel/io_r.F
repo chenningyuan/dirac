@@ -230,8 +230,10 @@ C
 *  ---------
 *
 *  Timo Fleig    Mar 19, 2002
+*
 *  changes for parallel business: Stefan Knecht   Apr 24, 2007
-*==================================================
+*
+*==============================================
 *
 *  Old setup:
 *
@@ -253,8 +255,10 @@ C
 #include "parluci.h"
 #include "files_r.inc"
 #include "cstate.inc"
+#include "krciprop.h"
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL
+      LOGICAL EX
 *
 * =========================
 * Standard input and output
@@ -268,7 +272,7 @@ C
 * Input information
 * =================
 * Input file containing MO-AO transformation matrix
-      LUMOIN = 80
+      LUMOIN = - 1
 *. Input file for CI-vectors
 *. restart from file 21 is assumed
 *. Input , two electron integrals
@@ -343,11 +347,13 @@ C
         CALL QUIT("*** Error in DISKUN_REL *** assignment of 
      &            symmetry label to KRCI_CVECS file failed ")
       END IF
-      IF( MYPROC .eq. MASTER )THEN 
+      IF( .not. RUNXPROP )THEN
+        IF( MYPROC .eq. MASTER )THEN
 C
-         WRITE (NLUC_MPI,'(A10,A1,A1)') LUC_MPIN,'.',SYMFLABEL
-         Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
-     &        Form='UNFORMATTED')
+           WRITE (NLUC_MPI,'(A10,A1,A1)') LUC_MPIN,'.',SYMFLABEL
+           Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
+     &          Form='UNFORMATTED')
+        END IF
       END IF
 *. Sigma vector file
       LUHC =  62
@@ -572,7 +578,7 @@ CSK      LUSC62 = 95    ! conflict might occur with LU18 in genh1.F
       LUSC94_MPIL=9
       LUSC95_MPIL=7
 #endif
-*. open and close of LUSC92 - LUSC95 at relevant places ...
+*     open and close of LUSC92 - LUSC95 at relevant places ...
       LUSC96 = 96     ! File MRCONEE
       LUSC97 = 97     ! File MDCINT
       LUSC98 = 98
@@ -582,12 +588,33 @@ C
       IIJKL_ROD    = 99
       NIIJKL_ROD   = "IJKL_REOD"
       IIJKL_ROD_LL = 9
-*           
-* =================
-* Output files
-* =================
-*. Natural spinors in terms of double group adapted atomic spin-orbitals
-*.
+C           
+C     =================
+C       Output files
+C     =================
+C
+C     output file containing energies for (converged) roots 
+C     in each symmetry - file handle stored on common block 
+C     in file parluci.h
+      LU_INFO  = 80
+      IF( MYPROC .eq. MASTER )THEN
+C
+C       If old 'KRCI_CVECS.INFO' exists, then we are restarting a KRCI.
+        INQUIRE ( FILE = 'KRCI_CVECS.INFO', EXIST = EX )
+        IF( EX ) THEN
+          CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','OLD','DISKUN')
+        ELSE
+          CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','UNKNOWN','DISKUN')
+          CALL NEWLAB('SODLABEL',LU_INFO,LUOUT)
+        END IF
+        REWIND LU_INFO
+      END IF
+C
+C     file containing the property integrals (KR-CI/KR-MCSCF: KRMC_FOCK)
+C
+      LUPROP_MAT = 53
+C 
+C     natural spinors in terms of double group adapted atomic spin-orbitals
       LUMOUTR = 90
       LUMOUTI = 91
       LUMOUTR_MPIN ="NATSPIR" 
@@ -613,8 +640,6 @@ C
       NLUMOUTI_MPI = LUMOUTI_MPIN
       LUMOUTRI_MPIL = 7
 #endif
-*. open and close of LUMOUTR and LUMOUTI at relevant places ...
-*
       END
 ***********************************************************************
 *                                                                     *
@@ -637,9 +662,12 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
+#include "krciprop.h"
 *
       CLOSE(UNIT=LUDIA,STATUS='KEEP')
-      IF( MYPROC .eq. MASTER ) CLOSE(UNIT=LUC,STATUS='KEEP')
+      IF( MYPROC .eq. MASTER .and. .not. RUNXPROP )
+     &   CLOSE(UNIT=LUC,STATUS='KEEP')
+      IF( MYPROC .eq. MASTER ) CLOSE(UNIT=LU_INFO,STATUS='KEEP')
       CLOSE(UNIT=LUHC,STATUS='KEEP')
       CLOSE(UNIT=LUSC1,STATUS='KEEP')
       CLOSE(UNIT=LUSC2,STATUS='KEEP')
@@ -655,13 +683,57 @@ C
       CLOSE(UNIT=LUSC62,STATUS='DELETE')
 *
       END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_LUC_FILE(LUC,IXSYM,EX)
+**********************************************************************
+C
+C     open coefficient file (fh LUC) for symmetry irrep IXSYM
+C
+C     written by S. Knecht - Nov 2008
+C
+C     last revision:
+C
+C**********************************************************************
+#include "implicit.h"
+      CHARACTER LUC_NAME*10, my_LUC_NAME*12, SYMFLABEL*1
+      LOGICAL EX
+      EX = .FALSE.
+      LUC_NAME    = "KRCI_CVECS"
+      LUC_NAMEL   = 12
+      IF( IXSYM .eq. 1)THEN
+         SYMFLABEL = 'a'
+      ELSE IF( IXSYM .eq. 2 )THEN
+         SYMFLABEL = 'b'
+      ELSE IF( IXSYM .eq. 3 )THEN
+         SYMFLABEL = 'c'
+      ELSE IF( IXSYM .eq. 4 )THEN
+         SYMFLABEL = 'd'
+      ELSE IF( IXSYM .eq. 5 )THEN
+         SYMFLABEL = 'e'
+      ELSE IF( IXSYM .eq. 6 )THEN
+         SYMFLABEL = 'f'
+      ELSE IF( IXSYM .eq. 7 )THEN
+         SYMFLABEL = 'g'
+      ELSE IF( IXSYM .eq. 8 )THEN
+         SYMFLABEL = 'h'
+      ELSE 
+        WRITE(6,*) '  *** Error in GET_LUC_FILE *** assignment of'//
+     &              ' symmetry label to KRCI_CVECS file failed'   
+        CALL QUIT("*** Error in GET_LUC_FILE *** assignment of 
+     &            symmetry label to GET_LUC_FILE file failed ")
+      END IF
+C     set file name and open file (if existing)
+      WRITE (my_LUC_NAME,'(A10,A1,A1)') LUC_NAME,'.',SYMFLABEL
+      INQUIRE (FILE=my_LUC_NAME,EXIST=EX)
+      IF( EX )THEN 
+        OPEN(UNIT=LUC,FILE=my_LUC_NAME(1:LUC_NAMEL),STATUS='OLD',
+     &       FORM='UNFORMATTED')
+        REWIND LUC
+      END IF
+C
+      END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
+*     Dummy routine for normal compilations
       subroutine opnone
       end
 ***********************************************************************

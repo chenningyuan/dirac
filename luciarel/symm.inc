@@ -30,6 +30,7 @@
      &          IADJSYM,INVELM,NFRO_L,ITRIA_F,
      &          ITRIADB_F,ITRIASUM_F,ITRIADBSUM_F,
      &          MORB_DIRAC,IOFPGSM,INVSYM
+      common /DGSYMMC/ DBGSYM
 
 *
 * KRAMERS	: true: time-reversal symmetry invariant formalism

@@ -1,5 +1,18 @@
-*/CRUN/ : Defines RUN 
-* NOTE : Differs from OCT9 versiob of CRUN
+!
+!     KR-CI common block /CRUN/
+!      
+!     this common block contains all information that is 
+!     needed to determine KR-CI runtype, convergence information 
+!     as well as some symmetry variables. 
+!
+!     ISYM_T:    Hamiltonian operator symmetry
+!     MXCIV_CI:  max. dimension of CI subspace in Davidson diagonalizer
+!     E_THRE:    convergence control wrt to energy (real algebra)
+!     C_THRE:    convergence control wrt to energy (complex algebra)
+!     LBLOCK:    max. length of vector block to be allocated for
+!                Davidson diagonalizer - dynamically determined
+!     MAXIT:     max. number of Davidson iterations
+!
       logical KRASYM
       COMMON/CRUNR/THRES_E,XLAMBDA,E_THRE,C_THRE,E_CONV,C_CONV,E0READ,
      &            MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV_CI,

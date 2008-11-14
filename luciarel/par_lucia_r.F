@@ -49,8 +49,8 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL,NDIM,RCCTOS,
-     &                               IT_TTPL,IGROUPLIST)
+      SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
+     &                               RCCTOS,IT_TTPL,IGROUPLIST)
 C
 C     Driver routine for non-vanishing TTSS-block distribution among 
 C     all processors.  
@@ -61,12 +61,7 @@ C     T-block distribution for MPI based shared memory runs added.
 C
 C     S. Knecht                     - January 31 2008
 C
-C     writing to (reading from) info file BLOCK_INFO_MPI.0 added.
-C
-C     S. Knecht                     - February 19 2008
-C
 C     new TTSS block distribution routine added - purpose:
-C
 C     fill up all node groups first with each block in a row 
 C     --> try to get as even as possible afterwards.
 C
@@ -77,7 +72,7 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION RCCTOS(*), NPARBLOCK(*), IBLOCKL(*)
+      DIMENSION RCCTOS(*), NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
 #include "parluci.h"
 #include "typesz_mpi2.h"
 #include "wrkspc.inc"
@@ -99,220 +94,92 @@ C**********************************************************************
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TRED_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_RCCTOS_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_IAPROC_LEN
-      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
-      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, IWRITE_BYTE
-      INTEGER(KIND=MPI_OFFSET_KIND) IREAD_BYTE, IS_BYTE8_2
-      INTEGER IBLINFO_FILE, IFL_BLK_MPI
-      CHARACTER*14 PLUBL_INFO
-      CHARACTER*16 PLUBL_INFOL
-      LOGICAL STORE_BLK_INFO, EX
 C
-      NNULL =  0
       IMIN1 = -1
-      IBLINFO_FILE = 0
-      IDISP        = 0
-      IOFFSET      = 0
-      IS_BYTE8     = 0
-      IS_BYTE8_2   = 0
-      IWRITE_BYTE  = 0
-      IREAD_BYTE   = 0
-      IFL_BLK_MPI  = 0
-      IT_INFO_INC  = 0
       IT_ACTIVE_R  = 0
       IT_ACTIVE_I  = 0
-C     write/read info file
-C
-C     FIXME: check reading/writing of BLOCK_INFO_MPI.0 for 
-C            NOOCCN_DENS_RUN! SK - 5-03-2008! 
-C
-      STORE_BLK_INFO = .FALSE.
 C
 C     set mark for local memory
-C
       IDUM = 0
       CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'BLOCKD')
 C
-C
-C     calculate number of 'active blocks'
+C     calculate # of 'active blocks'
       I_NZERO_LEN_SCR = 0
-      I_NZERO_LEN     = 0
+      I_NZERO_LEN_C   = 0
+      I_NZERO_LEN_S   = 0
 C
-      DO IBLK = 1, NDIM
-        IF( IBLOCKL( IBLK ) .ne. 0 ) THEN 
+C     initialize RCCTOS - only real part considered
+      CALL IZERO(RCCTOS,NUM_BLOCKS2)
+      CALL I_DO_RCCTOS(IBLOCKL_S,RCCTOS,NUM_BLOCKS)
+C
+      DO IBLK = 1, NUM_BLOCKS
+        IF( IBLOCKL_C(IBLK) .ne. 0 ) THEN 
           I_NZERO_LEN_SCR = I_NZERO_LEN_SCR + 1
         END IF
       END DO
 C     transfer to common block /LUCIPARREL/
-      I_NZERO_LEN = I_NZERO_LEN_SCR
-C
-C     block distribution info file
-C
-      PLUBL_INFO = 'BLOCK_INFO_MPI'
-C
-C     set correct name
-C
-      WRITE(PLUBL_INFOL,'(A14,A1,I1)') PLUBL_INFO,'.',MASTER
-      IBLINFO_FILE = 16
-C
-      EX = .FALSE.
-      IF( MYPROC .eq. MASTER )THEN
-        INQUIRE(FILE=PLUBL_INFOL(1:IBLINFO_FILE),EXIST=EX)
-      END IF
-      EX = .FALSE.
-C
-C     bcast information whether file exists or not
-C
-      CALL MPI_BCAST(EX,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-C
-      IF( EX )THEN
-        IF( MYPROC .eq. MASTER )THEN
-          CALL MPI_FILE_OPEN(MPI_COMM_SELF,"BLOCK_INFO_MPI.0",
-     &                       MPI_MODE_CREATE + MPI_MODE_RDWR,
-     &                       MPI_INFO_NULL,IFL_BLK_MPI,IERR)
-C
-          CALL MPI_FILE_SET_VIEW(IFL_BLK_MPI,IDISP,MPI_BYTE,MPI_BYTE,
-     &                           "native",MPI_INFO_NULL,IERR)
-C
-          IOFFSET    = 0
-          IS_BYTE8   = ISIZE_my_int
-          IS_BYTE8_2 = NDIM
-          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,NPARBLOCK,
-     &                           IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk          WRITE(LUWRT,*) ' NPARBLOCK (read in)'
-csk          CALL IWRTMAMN(NPARBLOCK,1,NDIM,1,NDIM,LUWRT)
-          IOFFSET    = IOFFSET + IREAD_BYTE
-          IS_BYTE8   = ISIZE_my_int
-          IS_BYTE8_2 = NUM_BLOCKS2
-          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,RCCTOS,
-     &                          IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk          WRITE(LUWRT,*) ' RCCTOS (read in)'
-csk          CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-          IOFFSET    = IOFFSET + IREAD_BYTE
-          IS_BYTE8   = ISIZE_my_int
-          IS_BYTE8_2 = 1
-          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,ICOUNTABLK_C,
-     &                          IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk          WRITE(LUWRT,*) ' (read in) active C blocks',ICOUNTABLK_C
-          IOFFSET    = IOFFSET + IREAD_BYTE
-          IS_BYTE8   = ISIZE_my_int
-          IS_BYTE8_2 = 1
-          IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-          CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,IT_INFO_INC,
-     &                          IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-          IF( IT_INFO_INC .eq. 1 )THEN
-            IOFFSET    = IOFFSET + IREAD_BYTE
-            IS_BYTE8   = ISIZE_my_int
-            IS_BYTE8_2 = MY_TTPL_LEN
-            IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,IT_TTPL,
-     &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-csk            WRITE(LUWRT,*) ' IT_TTPL (read in)'
-csk            CALL IWRTMAMN8(IT_TTPL,1,MY_TTPL_LEN,1,MY_TTPL_LEN,LUWRT)
-            IOFFSET    = IOFFSET + IREAD_BYTE
-            IS_BYTE8   = ISIZE_int8
-            IS_BYTE8_2 = 1
-            IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,NINT_TOTAL,
-     &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-            IOFFSET    = IOFFSET + IREAD_BYTE
-            IS_BYTE8   = ISIZE_my_int
-            IS_BYTE8_2 = 1
-            IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,IT_ACTIVE_R,
-     &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
-            IOFFSET    = IOFFSET + IREAD_BYTE
-            IS_BYTE8   = ISIZE_my_int
-            IS_BYTE8_2 = 1
-            IREAD_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_READ_AT(IFL_BLK_MPI,IOFFSET,IT_ACTIVE_I,
-     &                            IREAD_BYTE,MPI_BYTE,ISTAT,IERR)
+      I_NZERO_LEN_C = I_NZERO_LEN_SCR
+      IF( CXPROPRUN ) THEN 
+        I_NZERO_LEN_SCR = 0
+        DO IBLK = 1, NUM_BLOCKS
+          IF( IBLOCKL_S(IBLK) .ne. 0 ) THEN 
+            I_NZERO_LEN_SCR = I_NZERO_LEN_SCR + 1
           END IF
-C
-C         finished - close file 
-          CALL MPI_FILE_CLOSE(IFL_BLK_MPI,IERR)
-        END IF
-        CALL MPI_BCAST(NPARBLOCK,NDIM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(RCCTOS,NUM_BLOCKS2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ICOUNTABLK_C,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-        CALL MPI_BCAST(IT_INFO_INC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-        IF( IT_INFO_INC .eq. 1 )THEN
-          CALL MPI_BCAST(IT_TTPL,NSPOBEX_TP*IRC_SAVE,my_MPI_INTEGER,
-     &                   MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(NINT_TOTAL,1,MPI_INTEGER8,
-     &                   MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(IT_ACTIVE_R,1,my_MPI_INTEGER,
-     &                   MASTER,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(IT_ACTIVE_I,1,my_MPI_INTEGER,
-     &                   MASTER,MPI_COMM_WORLD,IERR)
-        END IF
-C       print information obtained
-        CALL PRINT_BLOCK_DISTR(NDIM,NPARBLOCK,IT_TTPL,
-     &                         NSPOBEX_TP,IT_INFO_INC)
-C
-        IAM_NOT_INV = 1
-C
-        IF( MYPROC .ge. ICOUNTABLK_C ) THEN
-          IAM_NOT_INV = 0
-          IMINUS2 = - 2
-          CALL ISETVC(NPARBLOCK,IMINUS2,NDIM)
-        END IF
-C
-        IWRITE_T_DIST = 0
-        IF( IT_SHL .ge. 0 .and. IT_INFO_INC .ge. 0 ) THEN 
-          IWRITE_T_DIST = 1
-          GOTO 50
-        ELSE IF( IT_SHL .ge. 0 .and. IT_INFO_INC .lt. 0 )THEN
-          GOTO 50
-        END IF
-        GOTO 100
+        END DO
+        CALL MEMMAR(KXRCCTOS,NUM_BLOCKS,'ADDL  ',1,'IXRCCT')
+        CALL IZERO(WORK(KXRCCTOS),NUM_BLOCKS)
+        CALL I_DO_RCCTOS(IBLOCKL_C,WORK(KXRCCTOS),NUM_BLOCKS)
       END IF
- 33   CONTINUE
+C     transfer to common block
+      I_NZERO_LEN_S = I_NZERO_LEN_SCR
 C
-C     initialize also RCCTOS 
-      CALL ISETVC(RCCTOS,NNULL,NDIM)
-      CALL I_DO_RCCTOS(IBLOCKL,RCCTOS,NUM_BLOCKS,1)
-C
+C     needed for T-split distribution
       ICOMM_SIZE_TMP = ICOMM_SIZE
-C
       CALL MPI_BCAST(ICOMM_SIZE_TMP,1,my_MPI_INTEGER,N_MASTER,
      &               MYNEW_COMM,IERR)
 C
-      CALL MEMMAR(KCWEIGHTF  ,I_NZERO_LEN       ,'ADDL  ',1,'ICWGHT')
-      CALL MEMMAR(KACT_NUM   ,I_NZERO_LEN       ,'ADDL  ',1,'IACTNM')
-      CALL MEMMAR(KAM_BLK_ACT,NUM_BLOCKS        ,'ADDL  ',1,'IM_BLK')
-      CALL MEMMAR(KICCTOS    ,I_NZERO_LEN**2    ,'ADDL  ',1,'ICCTOS')
+      CALL MEMMAR(KCWEIGHTF  ,I_NZERO_LEN_S        ,'ADDL  ',1,'ICWGHT')
+      CALL MEMMAR(KACT_NUM   ,I_NZERO_LEN_S        ,'ADDL  ',1,'IACTNM')
+      CALL MEMMAR(KAM_BLK_ACTC,NUM_BLOCKS          ,'ADDL  ',1,'IM_BLC')
+      CALL MEMMAR(KAM_BLK_ACTS,NUM_BLOCKS          ,'ADDL  ',1,'IM_BLS')
       CALL MEMMAR(KGROUPCHECK,NMPROC*ICOMM_SIZE_TMP,'ADDL  ',1,'IGPCHK')
+      CALL MEMMAR(KICCTOS,I_NZERO_LEN_C*I_NZERO_LEN_S,
+     &                                              'ADDL  ',1,'ICCTOS')
 C
-      CALL IZERO(WORK(KICCTOS)    ,I_NZERO_LEN**2)
-      CALL IZERO(WORK(KAM_BLK_ACT),NUM_BLOCKS)
-      CALL IZERO(WORK(KCWEIGHTF)  ,I_NZERO_LEN)
-      CALL IZERO(WORK(KACT_NUM)  , I_NZERO_LEN)
+      CALL IZERO(WORK(KICCTOS)    ,I_NZERO_LEN_C*I_NZERO_LEN_S)
+      CALL IZERO(WORK(KAM_BLK_ACTC),NUM_BLOCKS)
+      CALL IZERO(WORK(KAM_BLK_ACTS),NUM_BLOCKS)
+      CALL IZERO(WORK(KCWEIGHTF)  ,I_NZERO_LEN_S)
+      CALL IZERO(WORK(KACT_NUM)  , I_NZERO_LEN_S)
       CALL IZERO(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
 C
-      CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACT),IBLOCKL,NDIM)
+      CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACTS),IBLOCKL_S,NUM_BLOCKS)
+      IF( CXPROPRUN ) THEN
+        CALL ISET_ARRAY_ACT_BLK(WORK(KAM_BLK_ACTC),IBLOCKL_C,NUM_BLOCKS)
+      ELSE
+        CALL ICOPY(NUM_BLOCKS,WORK(KAM_BLK_ACTS),1,WORK(KAM_BLK_ACTC),1)
+      END IF
 C
       CHECK_TC = .FALSE.
 C
 C     1. check for sigma <==> C connections
 C
-      CALL FIND_IMAT_SC_REL(RCCTOS,WORK(KICCTOS),WORK(KCWEIGHTF),
-     &                      WORK(KAM_BLK_ACT),NDIM)
+      IF( CXPROPRUN )THEN
+        CALL FIND_IMAT_SC_REL(WORK(KXRCCTOS),RCCTOS,WORK(KICCTOS),
+     &                         WORK(KCWEIGHTF),WORK(KAM_BLK_ACTC),
+     &                         WORK(KAM_BLK_ACTS),NUM_BLOCKS)
+      ELSE
+        CALL FIND_IMAT_SC_REL(RCCTOS,RCCTOS,WORK(KICCTOS),
+     &                        WORK(KCWEIGHTF),WORK(KAM_BLK_ACTC),
+     &                        WORK(KAM_BLK_ACTS),NUM_BLOCKS)
+      END IF
 C
       IF( SPLIT_IJKL )THEN
 C
 C       alternative block distribution
+C       ------------------------------
 C
 C       gather on each node-master
-C
         IF( MYNEW_ID .eq. N_MASTER )THEN
 C
           CALL MPI_ALLGATHER(IGROUPLIST,NMPROC,my_MPI_INTEGER,
@@ -323,22 +190,10 @@ C
         CALL MPI_BCAST(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP,
      &                 my_MPI_INTEGER,N_MASTER,MYNEW_COMM,IERR)
 C
-csk     WRITE(LUWRT,*) ' WORK(KGROUPCHECK) from process',MYPROC
-csk     CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
-csk  &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
-C
 C       order group array
-C
         CALL ORDER_ARRAY(WORK(KGROUPCHECK),NMPROC*ICOMM_SIZE_TMP)
 C
-csk     WRITE(LUWRT,*) ' WORK(KGROUPCHECK) after reordering',MYPROC
-csk     CALL IWRTMAMN(WORK(KGROUPCHECK),1,NMPROC*ICOMM_SIZE_TMP,1,
-csk  &                NMPROC*ICOMM_SIZE_TMP,LUWRT)
-C
-C
-        MY_BWEIGHT_LEN = I_NZERO_LEN
-csk     WRITE(LUWRT,*) ' MY_BWEIGHT_LEN, I_NZERO_LEN',
-csk  &                   MY_BWEIGHT_LEN, I_NZERO_LEN
+        MY_BWEIGHT_LEN = I_NZERO_LEN_S
         CALL MPIXMEM_ALLOC( MY_BWEIGHT_PTR, 3, MY_BWEIGHT_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         MY_BPROC_LEN   = NMPROC
@@ -347,10 +202,8 @@ csk  &                   MY_BWEIGHT_LEN, I_NZERO_LEN
 C
         CALL IZERO8(I_BWEIGHT,MY_BWEIGHT_LEN)
         CALL IZERO8(I_BPROC  ,MY_BPROC_LEN)
-csk     WRITE(LUWRT,*) '  *********** BLOCK WEIGHTs (start) ***********'
-csk     CALL IWRTMAMN8(I_BWEIGHT,1,I_NZERO_LEN,1,I_NZERO_LEN,LUWRT)
-C
-        CALL BLOCK_DISTR_2(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF),
+        CALL BLOCK_DISTR_2(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
+     &                     WORK(KCWEIGHTF),
      &                     WORK(KGROUPCHECK),I_BWEIGHT,I_BPROC,
      &                     WORK(KACT_NUM),ICOMM_SIZE_TMP)
 C       release memory
@@ -359,76 +212,21 @@ C       release memory
 C
       ELSE ! split_ijkl
 C
-C       default block distribution
-C
-        CALL BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,WORK(KCWEIGHTF))
+C       default block distribution - if requested
+        IF( COMPDISTL ) CALL BLOCK_DISTR_1(NUM_BLOCKS,IBLOCKL_S,
+     &                                     NPARBLOCK,WORK(KCWEIGHTF))
 C
       END IF
-C
-C     reset RCCTOS
-C
-      CALL IZERO(RCCTOS,NUM_BLOCKS2)
 C
 C     find all c-blocks connecting to a given sigma-block,
 C     store information in RCCTOS
-C
-      CALL FIND_CCTOS_REL(RCCTOS,NPARBLOCK,WORK(KICCTOS),IBLOCKL,
-     &                    IRC_SAVE,NDIM)
-C
-C     store information on file - may be useful on vector machines!
-C
-      IF( STORE_BLK_INFO .AND. MYPROC .eq. MASTER )THEN
-C
-        CALL MPI_FILE_OPEN(MPI_COMM_SELF,PLUBL_INFOL(1:IBLINFO_FILE),
-     &                     MPI_MODE_CREATE + MPI_MODE_RDWR,
-     &                     MPI_INFO_NULL,IFL_BLK_MPI,IERR)
-C
-        CALL MPI_FILE_SET_VIEW(IFL_BLK_MPI,IDISP,MPI_BYTE,MPI_BYTE,
-     &                         "native",MPI_INFO_NULL,IERR)
-C
-        IOFFSET     = 0
-        IS_BYTE8    = ISIZE_my_int
-        IS_BYTE8_2  = NDIM
-        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,NPARBLOCK,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' NPARBLOCK (written)'
-csk        CALL IWRTMAMN(NPARBLOCK,1,NDIM,1,NDIM,LUWRT)
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IS_BYTE8    = ISIZE_my_int
-        IS_BYTE8_2  = NUM_BLOCKS2
-        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,RCCTOS,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' RCCTOS (written)'
-csk        CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IS_BYTE8    = ISIZE_my_int
-        IS_BYTE8_2  = 1
-        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,ICOUNTABLK_C,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk        WRITE(LUWRT,*) ' (write) active C blocks',ICOUNTABLK_C
-        IT_INFO_INC =  - 1
-C       set to - 1 for compability with one-electron operator calls
-C       SK - Mar 2008
-        IF( IT_SHL .eq. - 1 ) IT_INFO_INC = 0
-        IOFFSET     = IOFFSET + IWRITE_BYTE
-        IS_BYTE8    = ISIZE_my_int
-        IS_BYTE8_2  = 1
-        IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-        CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,IT_INFO_INC,
-     &                         IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-C
-        CALL MPI_FILE_CLOSE(IFL_BLK_MPI,IERR)
-      END IF
-C
- 50   CONTINUE
+      CALL IZERO(RCCTOS,NUM_BLOCKS2)
+      CALL FIND_CCTOS_REL(RCCTOS,NPARBLOCK,WORK(KICCTOS),IBLOCKL_S,
+     &                    IBLOCKL_C,IRC_SAVE,NUM_BLOCKS)
 C
       IF( SPLIT_IJKL )THEN
 C
 C       find required T-blocks
-C
         MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
         CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
      &                      MPI_INFO_NULL, .FALSE.)
@@ -439,11 +237,10 @@ C       --> use connection vector RCCTOS and NPARBLOCK to produce
 C           output on IT_CTONE
 C
 C         2. check for T-connections
-C
-          CALL FIND_IMAT_SC_REL(RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,-1)
+          CALL FIND_IMAT_SC_REL(RCCTOS,RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,
+     &                          NPARBLOCK,-1)
 C
 C         save connections
-C
           LEN_COPY = NSPOBEX_TP*IRC_SAVE
           CALL ICOPY(LEN_COPY,IT_CTONE,1,IT_TTPL,1)
 C
@@ -454,10 +251,8 @@ csk       WRITE(LUWRT,*) ' IT_TTPL'
 csk       CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC_SAVE,1,
 csk  &                  NSPOBEX_TP*IRC_SAVE,LUWRT)
 C
-csk       CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
 C         release scratch memory
           CALL MPIXMEM_FREE(IT_CTONE)
-C
       END IF
 C
       IF( SHARED_M ) THEN
@@ -467,7 +262,7 @@ C         allocate memory via MPI calls for scratch matrices needed
 C
           MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
           MY_TRED_LEN   = NSPOBEX_TP * NEWCOMM_PROC_SM * IRC_SAVE
-          MY_RCCTOS_LEN = NDIM
+          MY_RCCTOS_LEN = NUM_BLOCKS
           MY_IAPROC_LEN = NEWCOMM_PROC_SM
 C
           CALL MPIXMEM_ALLOC( MY_TCTR_PTR ,   2, MY_TCTR_LEN, 
@@ -487,15 +282,16 @@ C             output on IT_CTONE / IT_CTALL <==> input for T_BLOCK_DISTR
 C
           CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
           CALL IZERO(IT_CTALL, NSPOBEX_TP * IRC_SAVE * NEWCOMM_PROC_SM)
-          CALL IZERO(IRCCTOS_2,NDIM)
+          CALL IZERO(IRCCTOS_2,NUM_BLOCKS)
           CALL ISETVC(I_APROC,IMIN1,NEWCOMM_PROC_SM)
 C         initialize for a second time
-          CALL I_DO_RCCTOS(IBLOCKL,IRCCTOS_2,NUM_BLOCKS,1)
+          CALL I_DO_RCCTOS(IBLOCKL_C,IRCCTOS_2,NUM_BLOCKS)
           CHECK_TC = .TRUE.
 C
 C         3. check for T-connections
 C
-          CALL FIND_IMAT_SC_REL(IRCCTOS_2,DUMMY,IT_CTONE,DUMMY,NDIM)
+          CALL FIND_IMAT_SC_REL(IRCCTOS_2,IRCCTOS_2,DUMMY,IT_CTONE,
+     &                          DUMMY,DUMMY,NUM_BLOCKS)
 C
 C
           CALL MPI_ALLGATHER(IT_CTONE,NSPOBEX_TP*IRC_SAVE,
@@ -528,62 +324,6 @@ C
 csk       WRITE(LUWRT,*) ' showing array IT_TTPL'
 csk       CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
 C
-C         store information on file - may be useful on vector machines!
-C
-          IF( STORE_BLK_INFO .AND. MYPROC .eq. MASTER )THEN
-C
-            CALL MPI_FILE_OPEN(MPI_COMM_SELF,
-     &                         PLUBL_INFOL(1:IBLINFO_FILE),
-     &                         MPI_MODE_CREATE + MPI_MODE_RDWR,
-     &                         MPI_INFO_NULL,IFL_BLK_MPI,IERR)
-C
-            CALL MPI_FILE_SET_VIEW(IFL_BLK_MPI,IDISP,MPI_BYTE,
-     &                             MPI_BYTE,"native",
-     &                             MPI_INFO_NULL,IERR)
-C
-            IF( IWRITE_T_DIST .eq. 1 ) THEN
-              IT_INFO_INC = 1
-              IOFFSET     = IOFFSET - IREAD_BYTE
-              IS_BYTE8    = ISIZE_my_int
-              IS_BYTE8_2  = 1
-              IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-              CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,IT_INFO_INC,
-     &                               IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-              IOFFSET     = IOFFSET + IWRITE_BYTE
-            ELSE
-              IOFFSET     = IOFFSET + IWRITE_BYTE
-            END IF
-C
-            IS_BYTE8    = ISIZE_my_int
-            IS_BYTE8_2  = MY_TTPL_LEN
-            IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,IT_TTPL,
-     &                             IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-csk            WRITE(LUWRT,*) ' IT_TTPL (written)'
-csk            CALL IWRTMAMN8(IT_TTPL,1,MY_TTPL_LEN,1,MY_TTPL_LEN,LUWRT)
-            IOFFSET     = IOFFSET + IWRITE_BYTE
-            IS_BYTE8    = ISIZE_int8
-            IS_BYTE8_2  = 1
-            IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,NINT_TOTAL,
-     &                             IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-            IOFFSET     = IOFFSET + IWRITE_BYTE
-            IS_BYTE8    = ISIZE_my_int
-            IS_BYTE8_2  = 1
-            IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,IT_ACTIVE_R,
-     &                             IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-            IOFFSET     = IOFFSET + IWRITE_BYTE
-            IS_BYTE8    = ISIZE_my_int
-            IS_BYTE8_2  = 1
-            IWRITE_BYTE = IS_BYTE8 * IS_BYTE8_2
-            CALL MPI_FILE_WRITE_AT(IFL_BLK_MPI,IOFFSET,IT_ACTIVE_I,
-     &                             IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
-C
-            CALL MPI_FILE_CLOSE(IFL_BLK_MPI,IERR)
-C
-          END IF
-C
 C         release scratch memory
           CALL MPIXMEM_FREE(IT_CTONE)
           CALL MPIXMEM_FREE(IT_CTALL)
@@ -592,10 +332,7 @@ C         release scratch memory
         END IF
       END IF
 C
-100   CONTINUE
-C
 C     flush local memory
-C
       IDUM = 0
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
 C
@@ -624,7 +361,7 @@ C     -----
 C     INPUT
 C     -----
 C
-C     NDIM:            total number of c-blocks
+C     NDIM:            total number of TTSS-blocks
 C     IBLOCKL(NDIM):   total length of each block
 C     ICWEIGHTF(NDIM): total 'weight factors' for each block
 C
@@ -919,7 +656,7 @@ C     -----
 C     INPUT
 C     -----
 C
-C     NDIM:                     total number of c-blocks
+C     NDIM:                     total number of TTSS-blocks
 C     IBLOCKL(NDIM):            total length of each block
 C     ICWEIGHTF(active blocks): total 'weight factors' for each block
 C     IACT_NUM(active blocks):  corresponding block number in total list
@@ -1627,13 +1364,11 @@ C
      & WRITE(LUWRT,*) 'Calculating offset for file', FILENAME
 C
 C     count active blocks for each cpu, calculate individual offset
-C
       ND_VEC_IOFF = 0
       ND_VEC_IOFF2 = 0
       NBLK_ACT = 0
 C
 C     scratch file for c-vector
-C
       IF( FILENAME .eq. 'ILUC  ' ) THEN
         DO JBLK = 1, NUM_BLOCKS
           IF( IBLOCKL(JBLK) .gt. 0 ) THEN
@@ -1642,16 +1377,12 @@ C
         END DO
 C
         MY_ACT_BLK_ALL = NUM_BLOCKS
-C
         GOTO 101
-C
       END IF
 C
       NBLK_ACT = 0
 C
-C
 C     we have group files, so only cpus within a group are relevant
-C
       MY_VEC1_IOFF = 0
       MY_VEC2_IOFF = 0
 C
@@ -1675,74 +1406,51 @@ C
           MULT1 = IRC_SAVE 
 C
 C         MY_VEC1_IOFF = length of one vector
-C
           MY_VEC1_IOFF = MY_VEC1_IOFF
 C
 C         MY_VEC1_IOFF = length of one vector x complex multiplier ( x 1 = real!)
-C
           I_VEC_LEN_SCR = MY_VEC2_IOFF
           MY_VEC2_IOFF = I_VEC_LEN_SCR * MULT1
 C
           MY_ACT_BLK1 = NBLK_ACT
           MY_ACT_BLK2 = NBLK_ACT * MULT1
-
 C
           IF( FILENAME .eq. 'LUDIA ' ) THEN
 C
 C           initialize MY_DIA_OFF
-C
             MY_DIA_OFF = 0
-C
             MY_DIA_OFF = ND_VEC_IOFF2 * MULT1
-C
           ELSE IF( FILENAME .eq. 'ILU1  ') THEN
 C
 C           initialize MY_LU1_OFF
-C
             MY_LU1_OFF = 0
-C
             MY_LU1_OFF = ND_VEC_IOFF2 * JVEC * MULT1
-C
           ELSE IF( FILENAME .eq. 'ILU2  ') THEN
 C
 C           initialize MY_LU2_OFF
-C
             MY_LU2_OFF = 0
-C
             MY_LU2_OFF = ND_VEC_IOFF2 * JVEC * MULT1
-C
           ELSE IF( FILENAME .eq. 'ILU3  ') THEN
 C
 C           initialize MY_LU3_OFF
-C
             MY_LU3_OFF = 0
-C
             MY_LU3_OFF = ND_VEC_IOFF2 * JVEC * MULT1
-C
           ELSE IF( FILENAME .eq. 'ILU4  ') THEN
 C
 C           initialize MY_LU4_OFF
-C
             MY_LU4_OFF = 0
-C
             MY_LU4_OFF = ND_VEC_IOFF2 * JVEC * MULT1
-C
           ELSE IF( FILENAME .eq. 'ILU5  ') THEN
 C
 C           initialize MY_LU5_OFF
-C
             MY_LU5_OFF = 0
-C
             MY_LU5_OFF = ND_VEC_IOFF2 * JVEC * MULT1
-C
           END IF
 C         ^ filenames
         END IF
 C
 C       reset ND_VEC_IOFF2 and ND_VEC_IOFF values
-C
         ND_VEC_IOFF2 = ND_VEC_IOFF
-C
         NBLK_ACT = 0
 C
       END DO
@@ -1768,6 +1476,165 @@ C
       END IF
 C
  101  CONTINUE     
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CALC_OFF_MPI_FILE_XPRP(IGROUPLIST,IBLOCKL_X,IBLOCKD_X,
+     &                                  IVECIN_ILU1,IVECIN_ILU2)
+C**********************************************************************
+C
+C     calculate file offsets and position pointers for MPI-I/O files 
+C     used in KR-CI property run.
+C
+C     find maximum vector length for a process within a group which 
+C     serves as MY_VEC1_IOFF for all processes in this group.
+C
+C     written by S. Knecht - Nov 2008
+C
+C     last revision:
+C
+C**********************************************************************
+C
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+#include "krciprop.h"
+C
+      DIMENSION IGROUPLIST(*), IBLOCKL_X(NUM_BLOCKS,*)
+      DIMENSION IBLOCKD_X(NUM_BLOCKS,*)
+      INTEGER NBLK_MAX_GP
+      INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
+      INTEGER(KIND=MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
+C
+      IVEC_MAX_GP   = 0
+      NBLK_MAX_GP   = 0
+      JVEC1         = IVECIN_ILU1
+      JVEC2         = IVECIN_ILU2
+      MULT1         = IRC_SAVE 
+      MULT2         = 0
+C
+      LVECLEN      = 0
+      NBLK_ACT     = 0
+      MY_VEC1_IOFF = 0
+      MY_VEC2_IOFF = 0
+C
+C     determine IVEC_MAX_GP and NBLK_MAX_GP
+C     --------------------------------
+      DO IPROC = 1, NEWCOMM_PROC
+C       next process in this group
+        JPROC = IGROUPLIST(IPROC)
+        DO IJSYM = 1, IXSYMACT
+C         next active symmetry irrep IJSYM (no absolute symmetry label)
+          LVECLEN  = 0
+          NBLK_ACT = 0
+          DO JBLK = 1, NUM_BLOCKS
+            IF(IBLOCKD_X(JBLK,IJSYM) .eq. JPROC ) THEN
+              LVECLEN  = LVECLEN + IBLOCKL_X(JBLK,IJSYM)
+              NBLK_ACT = NBLK_ACT + 1
+            END IF
+          END DO
+C         max vec length + block count for this symmetry irrep 
+C         and process JPROC
+          IVEC_MAX_GP   = MAX(IVEC_MAX_GP,LVECLEN)
+          NBLK_MAX_GP   = MAX(NBLK_MAX_GP,NBLK_ACT)
+        END DO
+      END DO
+C
+C     set MY_VEC1_IOFF, MY_VEC2_IOFF, MY_ACT_BLK1, MY_ACT_BLK2  
+C     --------------------------------------------------------
+
+C     MY_VEC1_IOFF = length of one vector (here: max per group)
+      MY_VEC1_IOFF = IVEC_MAX_GP
+      MY_VEC2_IOFF = IVEC_MAX_GP * MULT1
+C     MY_ACT_BLK1  = number of active blocks (here: max per group)
+      MY_ACT_BLK1  = NBLK_MAX_GP
+      MY_ACT_BLK2  = NBLK_MAX_GP * MULT1
+C
+C     set MY_LU1_OFF and MY_LU2_OFF
+      DO IPROC = 1, NEWCOMM_PROC
+C       next process in this group
+        JPROC      = IGROUPLIST(IPROC)
+        IPROC_OFF  = IPROC - 1
+        IF( MYPROC .eq. JPROC )THEN
+          MY_LU1_OFF = 0
+          MY_LU2_OFF = 0
+          MY_LU1_OFF = IVEC_MAX_GP * JVEC1 * MULT1 * IPROC_OFF
+          MY_LU2_OFF = IVEC_MAX_GP * JVEC2 * MULT1 * IPROC_OFF
+        END IF
+      END DO
+C
+C     IF( NPTEST_VAR .ge. 10 ) THEN
+        WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU1  offset :', MY_LU1_OFF
+        WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU2  offset :', MY_LU2_OFF
+        WRITE(LUWRT,*) '  MY_VEC1_IOFF :', MY_VEC1_IOFF
+        WRITE(LUWRT,*) '  MY_VEC2_IOFF :', MY_VEC2_IOFF
+        WRITE(LUWRT,*) '  MY_ACT_BLK1  :', MY_ACT_BLK1
+        WRITE(LUWRT,*) '  MY_ACT_BLK2  :', MY_ACT_BLK2
+C     END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIST_XCVEC(VEC1,LUC,LUOUT,LU1LIST,NPARBLOCK_X,
+     &                      IBLOCKL_X,IXBLK,IXSYMLIST,IXSYMACT,IZ)
+C**********************************************************************
+C
+C     distribute C vector blocks from MASTER to slaves for a given 
+C     symmetry irrep.
+C
+C     written by S. Knecht - Nov 2008
+C
+C     last revision:
+C
+C**********************************************************************
+C
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE), VEC1(*), IXBLK(*), IXSYMLIST(*)
+      DIMENSION LU1LIST(*), NPARBLOCK_X(NUM_BLOCKS,*)
+      DIMENSION IBLOCKL_X(NUM_BLOCKS,*)
+      INTEGER(KIND=MPI_OFFSET_KIND) ILU1_IOFFX, MULTX
+      LOGICAL EX
+#include "parluci.h"
+#include "mxmcgas.h"
+#include "dcbkrci.h"
+      ILU1_IOFFX = 0
+      MULTX      = 0
+      NVEC_TOT   = 0
+C
+C     update slaves of #roots per irrep
+      CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,IERR)
+C
+c     loop over active irreps
+      DO IXA = 1, IXSYMACT
+        IXSYM = IXSYMLIST(IXA)
+        IF( MYPROC .eq. MASTER ) CALL GET_LUC_FILE(LUC,IXSYM,EX)
+        NVEC     = NKRCI_CIROOTS(IXSYM)
+        MULTX    = NVEC_TOT
+C       offset for ILU1 and LU1LIST
+        ILU1_IOFFX     = MY_LU1_OFF + MULTX * MY_VEC2_IOFF
+        INT_ILU1_IOFFX = 1 + NVEC_TOT * MY_ACT_BLK2
+        NBLOCK         = IXBLK(IXSYM)
+        WRITE(LUWRT,*) ' copy #vector(s) for sym',NVEC,IXSYM
+        WRITE(LUWRT,*) ' ILU1_IOFFX and INT_ILU1_IOFFX (MYPROC)',
+     &                   ILU1_IOFFX,INT_ILU1_IOFFX,MYPROC
+        WRITE(LUWRT,*) ' LUOUTLIST NOW',MYPROC
+        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+C       distribute C vector(s)
+        CALL COP_REST_VEC_REL(VEC1,LUC,LUOUT,ILU1_IOFFX,
+     &                        LU1LIST(INT_ILU1_IOFFX),
+     &                        NPARBLOCK_X(1,IXA),IBLOCKL_X(1,IXA),
+     &                        NBLOCK,NVEC,IZ)
+C       close C vector file (opened in GET_LUC_FILE)
+        IF( MYPROC .eq. MASTER .and. EX ) CLOSE(LUC,STATUS='KEEP')
+C       keep track of correct offset
+        NVEC_TOT = NVEC_TOT + NVEC
+      END DO
+      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
+      CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
 ***********************************************************************
@@ -2330,80 +2197,71 @@ C     ^ loop over real and imag part of density matrix elements
 1001  CONTINUE
 *      
       END 
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FIND_CCTOS_REL(ISCALFAC,IBLOCKD,ICCTOS,IBLOCKL,
-     &                          I_RUN_COMPLEX,NBLOCK)
-*
-*. Find all c-blocks connecting to a given sigma-block for each cpu
-*  using the connection matrix ICCTOS.
-*. Each cpu stores the information in ISCALFAC.
-*. Connection is marked by 1
-*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FIND_CCTOS_REL(ISCALFAC,IBLOCKD,ICCTOS,IBLOCKL_S,
+     &                          IBLOCKL_C,I_RUN_COMPLEX,NBLOCK)
+C***********************************************************************
+C
+C     Find all c-blocks connecting to a given sigma-block for each cpu
+C     using the connection matrix ICCTOS.
+C     Each cpu stores the information in ISCALFAC.
+C     Connection is marked by 1
+C
+C     written by S. Knecht - Jun 2007
+C
+C     Last revision : S. Knecht - Oct 2008 
+C                   - adaption for property calculations
+C
+C***********************************************************************
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-*     ==========
-*       INPUT
-*     ==========
-*                      SBLOCKS    , CBLOCKS
-      DIMENSION ICCTOS(I_NZERO_LEN,I_NZERO_LEN), IBLOCKD( NBLOCK )
-      DIMENSION IBLOCKL( NBLOCK )
-*
-*     ===========
-*       OUTPUT
-*     ===========
-*
-*     NOTE: IF NZ == 2 (complex quaternion algebra needed):
-*     DIMENSION ISCALFAC(2*NBLOCK) else ISCALFAC(NBLOCK)
+C     ==========
+C       INPUT
+C     ==========
+C                      CBLOCKS    , SBLOCKS
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), IBLOCKD( NBLOCK )
+      DIMENSION IBLOCKL_S(NBLOCK), IBLOCKL_C(NBLOCK)
+C
+C     ===========
+C       OUTPUT
+C     ===========
+C
+C     NOTE: IF NZ == 2 (complex quaternion algebra needed):
+C     DIMENSION ISCALFAC(2*NBLOCK) else ISCALFAC(NBLOCK)
       DIMENSION ISCALFAC(*)
       IONE          = 1
-      I_AM_ACTIVE_S = 0
-      I_AM_ACTIVE_C = 0
       IPUT_BLK      = 0
-*
+C
       DO II_RC = 1, I_RUN_COMPLEX
-*
+C
         I_AM_ACTIVE_S = 0
         I_AM_ACTIVE_C = 0
-*
-        DO IBLK = 1, NBLOCK
-*
-          IF( IBLOCKL( IBLK) .eq. 0 ) GOTO 100
-*
+C
+        DO 100 IBLK = 1, NBLOCK
+C
+          IF( IBLOCKL_S(IBLK) .eq. 0 ) GOTO 100
+C
           I_AM_ACTIVE_S = I_AM_ACTIVE_S + IONE
-*
-          IF( IBLOCKD( IBLK ) .eq. MYPROC )THEN
-*
+C
+          IF( IBLOCKD(IBLK) .ne. MYPROC ) GOTO 100
             I_AM_ACTIVE_C = 0
-*
-            DO JBLK = 1,NBLOCK
-*
-              IF( IBLOCKL( JBLK ) .eq. 0 ) GOTO 200 
-*
+            DO 200 JBLK = 1,NBLOCK
+C
+              IF( IBLOCKL_C(JBLK) .eq. 0 ) GOTO 200 
               I_AM_ACTIVE_C = I_AM_ACTIVE_C + IONE
-*
-              IPUT_BLK = JBLK + ( NBLOCK * ( II_RC - 1) )
-*
-              IF( ICCTOS( I_AM_ACTIVE_C, I_AM_ACTIVE_S ) .ne. 0 ) 
-     &            ISCALFAC( IPUT_BLK ) = IONE
-*
- 200          CONTINUE
-*
-            ENDDO
-*
-          END IF
+C
+              IPUT_BLK = JBLK + (NBLOCK *(II_RC-1))
+C
+              IF( ICCTOS(I_AM_ACTIVE_C,I_AM_ACTIVE_S) .ne. 0 ) 
+     &            ISCALFAC(IPUT_BLK) = IONE
+C
+ 200        CONTINUE
+C
  100      CONTINUE
-*
-        ENDDO
       ENDDO
-*
       END
 ***********************************************************************
 *                                                                     *
@@ -3396,11 +3254,9 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FIND_IMAT_SC_REL(ISCALFAC,ICCTOS,ICWEIGHTF,
-     &                            IAM_BLK_ACT,NDIM)
-C
-C     Written by  S. Knecht         - June 20 2007 
-C
+      SUBROUTINE FIND_IMAT_SC_REL(ISCALFAC_C,ISCALFAC_S,ICCTOS,
+     &                            ICWEIGHTF,IAM_BLK_ACT_C,
+     &                            IAM_BLK_ACT_S,NDIM)
 C**********************************************************************
 C
 C     Compute connection matrix ICCTOS between the sigma and c vector
@@ -3408,38 +3264,54 @@ C     Store contribution of one c-block to sigma-blocks in ICWEIGHTF.
 C
 C     NOTE: only active blocks are counted in the connection matrix!
 C
+C     Written by  S. Knecht         - June 20 2007 
+C
+C**********************************************************************
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION ISCALFAC(*),ICCTOS(I_NZERO_LEN,I_NZERO_LEN)
-      DIMENSION ICWEIGHTF(*), IAM_BLK_ACT(*)
+#include "krciprop.h"
+      DIMENSION ISCALFAC_C(*),ISCALFAC_S(*),ICCTOS(I_NZERO_LEN_C,*)
+      DIMENSION ICWEIGHTF(*), IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "ipoist8.inc"
 #include "cstate.inc"
+#include "cands.inc"
 C
 C
       IDUM = 0
-      CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'FINDSC')
+      CALL MEMMAR(KXDUM,  IDUM,    'MARK  ',IDUM,'FINDSC')
 C
 C     arrays for partitioning of sigma
 C     (*_MS2 arrays are in CSTATE )
       JCMBSPC = 1
-      CALL Z_BLKFO_REL(IDC,NMS2VAL,JCMBSPC,IREFSM,
+C     we use I_SET_L2BLOCK as ICSM carrier to
+C     z_blkfo_rel. note the minus sign!
+      ICSM_SCR = 0
+      IF( DOSIGPROP ) ICSM_SCR =  - ICSM
+      CALL Z_BLKFO_REL(IDC,NMS2VAL,JCMBSPC,ISSM,
      &                 KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,KDUM,
      &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
-     &                 NBAT_MS2,IBAT_MS2,0,3,IDUMMY)
+     &                 NBAT_MS2,IBAT_MS2,NBLK_MS2_C,DOSIGPROP,
+     &                 ICSM_SCR,3,IDUMMY)
+C     SUBROUTINE Z_BLKFO_REL(IDC,NMS2VAL,ISPC,ISM,KPCLBT,KPCLEBT,
+C    &                       KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
+C    &                       NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
+C    &                       NBLK_MS2_C,CALC_MS2_C,I_SET_L2BLOCK,
+C    &                       I_USE_PC,NPARBLOCK)
+
 C
       ISIGDEN = 1
 C
       CALL FIND_IMAT_DRV1(NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &                    WORK(KLSI1BT),WORK(KLSIBT),ISIGDEN,
-     &                    ISCALFAC,ICCTOS,ICWEIGHTF,NDIM,
-     &                    IAM_BLK_ACT)
+     &                    ISCALFAC_C,ISCALFAC_S,ICCTOS,ICWEIGHTF,NDIM,
+     &                    IAM_BLK_ACT_C,IAM_BLK_ACT_S)
 *
-      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'FINDSC')
+      CALL MEMMAR(KXDUM,IDUM,'FLUSM ',IDUM,'FINDSC')
 *
       END
 ***********************************************************************
@@ -3449,8 +3321,8 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_IMAT_DRV1(NBATS,LBATS,LEBATS,I1BATS,IBATS,ISIGDEN,
-     &                          ISCLFAC,ICCTOS,ICWEIGHTF,
-     &                          NDIM_B,IAM_BLK_ACT)
+     &                          ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
+     &                          NDIM_B,IAM_BLK_ACT_C,IAM_BLK_ACT_S)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -3477,17 +3349,16 @@ C
 #include "clunit.inc"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION IAM_BLK_ACT(*) 
-      DIMENSION ISCLFAC(*), ICCTOS(I_NZERO_LEN,I_NZERO_LEN) 
-      DIMENSION ICWEIGHTF(*)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), ICWEIGHTF(*), ISCLFAC_C(*)
+      DIMENSION IAM_BLK_ACT_S(*),IAM_BLK_ACT_C(*),ISCLFAC_S(*)
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S) 
 #include "parluci.h"
+#include "krciprop.h"
 #include "dgroup.h"
 C     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
 C     scratch
-      INTEGER IONE, INT_IOFF1, INT_IOFF2
-      INTEGER INT_IOFF1_C, INT_IOFF2_C
+      INTEGER IONE, INT_IOFF1, INT_IOFF2, INT_IOFF1_C, INT_IOFF2_C
       LOGICAL CHECK_TSPLIT
 C
       IONE = 1
@@ -3520,22 +3391,19 @@ C
            CHECK_TSPLIT = .TRUE.
            IRILP = IRC_SAVE
       END IF
-csk   WRITE(LUWRT,*) ' CHECK_TSPLIT is ', CHECK_TSPLIT
 *
 *     loop over vectors of sigma and C : MK2 space
-*
       DO IRIS = 1,IRILP,1
 *
         INT_IOFF1  = 0
         INT_IOFF2  = 0
 *
-        INT_IOFF1  = 1 +  I_NZERO_LEN * ( IRIS - 1 )
+        INT_IOFF1  = 1 +  I_NZERO_LEN_S * ( IRIS - 1 )
 *
 *       FIXME: find max allocation down in sigden_rel2
         IVAL_ALLOC_SCR = 0
 *
 *       count the sigma blocks
-* 
         NUM_SBLK = 0
 *
         JBATABS = 0
@@ -3570,11 +3438,11 @@ csk   WRITE(LUWRT,*) ' CHECK_TSPLIT is ', CHECK_TSPLIT
 *
             IF( CHECK_TSPLIT ) THEN
               DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
-                IF( IAM_BLK_ACT( ISBLK ) .eq. MYPROC ) ICOMPUTE = 1
+                IF( IAM_BLK_ACT_S(ISBLK) .eq. MYPROC ) ICOMPUTE = 1
               END DO
             ELSE 
               DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
-                IF( ISCLFAC( ISBLK ) .eq. 1 ) ICOMPUTE = 1
+                IF( ISCLFAC_S(ISBLK) .eq. 1 ) ICOMPUTE = 1
               END DO
             END IF
 *
@@ -3589,11 +3457,24 @@ csk         WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
               INT_IOFF1_C = 0
               INT_IOFF2_C = 0
 *
-              INT_IOFF1_C = 1 + I_NZERO_LEN * ( IRIC -1 )
+              INT_IOFF1_C = 1 + I_NZERO_LEN_C * ( IRIC -1 )
               NUM_BLK = 0
 *
               DO IMK2_C = 1, NMS2VAL
                 MK2_C = MS2VAL(IMK2_C)
+C
+                MK2_DIFF = IABS(MK2_C - MK2_S)
+                max_MK2_DIFF = 4
+                IF( NTEST .ge. 50 )THEN
+                  IF (MK2_DIFF .gt. max_MK2_DIFF) THEN
+                    write(LUWRT,*) 'MK2 skip, MK2_DIFF =',MK2_DIFF
+                  END IF
+                END IF
+*               ... for any two-electron operator.
+*                   For one-electron operators max_MK2_DIFF = 1 or 0
+*                   (or zero, if NZ .lt. 4 and operator is not j- or
+*                   k-imaginary) /HJAAJ Aug 2008. TODO TODO to define
+*                   max_MK2_DIFF
 *
 * Kramers symmetry restriction
                 if (IKRA_SYM.eq.1.and.MK2_C.lt.0) then
@@ -3607,22 +3488,23 @@ csk         WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
                   IACTP = IST_FOR_DT(1,IMK2_C)
                   IBCTP = IST_FOR_DT(2,IMK2_C)
                   NBL_C = NBLK_MS2(IMK2_C)
+C                 C and sigma may have different symmetry in general
+                  IF( DOSIGPROP ) NBL_C = NBLK_MS2_C(IMK2_C)
 *                 set new offset
                   INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
 *
-CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
-*
-*
-                  CALL FIND_IMAT_DRV2(LBATS(JBATABS),
+                  IF (MK2_DIFF .le. max_MK2_DIFF)
+     &            CALL FIND_IMAT_DRV2(LBATS(JBATABS),
      &                                IBATS(1,I1BATS(JBATABS)),1,
      &                                1,IASTP,IBSTP,IRIS,IRIC,
-     &                                INT_IOFF1_C,ISCLFAC,
+     &                                INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,
      &                                ICCTOS,ICWEIGHTF,INT_IOFF1,
-     &                                NUM_SBLK,IAM_BLK_ACT,
-     &                                CHECK_TSPLIT)
+     &                                NUM_SBLK,IAM_BLK_ACT_C,
+     &                                IAM_BLK_ACT_S,CHECK_TSPLIT)
                 end if
-*               ^ End if Kramers restriction
-*               keep track of correct offset
+C               ^ end if Kramers restriction
+C
+C               keep track of correct offset
                 NUM_BLK = NUM_BLK + NBL_C
                 INT_IOFF2_C = NBL_C
 *
@@ -3652,10 +3534,10 @@ CSK                  WRITE(LUWRT,*) ' NEW OFFSET INT_IOFF1_C',INT_IOFF1_C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_IMAT_DRV2(NBLOCK,IBLOCK,IBOFF,ISIGDEN,IASTP_SCR,
-     &                          IBSTP_SCR,IRIS,IRIC,
-     &                          INT_IOFF1_C,ISCLFAC,ICCTOS,ICWEIGHTF,
-     &                          INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,
-     &                          CHECK_TSPLIT)
+     &                         IBSTP_SCR,IRIS,IRIC,
+     &                         INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
+     &                         ICWEIGHTF,INT_IOFF1,NUM_SBLK,
+     &                         IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -3796,20 +3678,16 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
      &     WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),
      &     WORK(KI3),WORK(KXI3S),WORK(KI4),WORK(KXI4S),
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
-     &     ISSM,ICSM,ISIGDEN,NCBATCH,
-     &     IDIAG,IRIS,IRIC,
-     &     NSPOBEX_TP,WORK(KLSOBEX),
-     &     WORK(KLSPOBEX_AC),
+     &     ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,IRIC,
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLSPOBEX_AC),
      &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
-     &     WORK(KLISMDST),
-     &     INT_IOFF1_C,ISCLFAC,ICCTOS,ICWEIGHTF,
-     &     INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,CHECK_TSPLIT)
-
-*
-*. Eliminate local memory
+     &     WORK(KLISMDST),INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
+     &     ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT_C,IAM_BLK_ACT_S,
+     &     CHECK_TSPLIT)
+C
+C     release local memory
       IDUM = 0
       call memmar(KDUM ,IDUM,'FLUSM ',2,'FNDSC2')
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -3818,17 +3696,17 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_IMAT_DRV3(NSBLOCK,ISBLOCK,
-     &           NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
-     &           IASTP,IBSTP,IACTP,IBCTP,MAXK,
-     &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
-     &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
-     &           ISSM,ICSM,ISIGDEN,NCBATCH,
-     &           IDIAG,IRIS,IRIC,
-     &           NSPOBEX_TP,ITSPOBEX_TP,
-     &           ISPOBEX_AC,
-     &           TOCC1,TOCC2,TOCC3,TOCC4,
-     &           ISMDST,INT_IOFF1_C,ISCLFAC,ICCTOS,
-     &           ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT,CHECK_TSPLIT)
+     &                          NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
+     &                          IASTP,IBSTP,IACTP,IBCTP,MAXK,
+     &                          I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                          LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
+     &                          ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,
+     &                          IRIC,NSPOBEX_TP,ITSPOBEX_TP,ISPOBEX_AC,
+     &                          TOCC1,TOCC2,TOCC3,TOCC4,ISMDST,
+     &                          INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
+     &                          ICWEIGHTF,INT_IOFF1,NUM_SBLK,
+     &                          IAM_BLK_ACT_C,IAM_BLK_ACT_S,
+     &                          CHECK_TSPLIT)
 *
 *
 * =====
@@ -3850,9 +3728,9 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION ICCTOS(I_NZERO_LEN,I_NZERO_LEN), ICWEIGHTF(*)
-      DIMENSION ISCLFAC(*), IAM_BLK_ACT(*)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), ICWEIGHTF(*),ISCLFAC_C(*)
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), ISCLFAC_S(*)
+      DIMENSION IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
 #include "parluci.h"
 *. General input
 #include "mxpdim.inc"
@@ -3871,12 +3749,10 @@ C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
       INTEGER NSSOA_S(NSMST,*),NSSOB_S(NSMST,*)
       INTEGER NSSOA_C(NSMST,*),NSSOB_C(NSMST,*)
 *.Scratch
-      DIMENSION I1(*),I2(*),I3(*),I4(*)
-      DIMENSION XI1S(*),XI2S(*),XI3S(*),XI4S(*)
+      DIMENSION I1(*),I2(*),I3(*),I4(*),XI1S(*),XI2S(*),XI3S(*),XI4S(*)
       DIMENSION ISMDST(*)
 *. T-coefficients
-      dimension ITSPOBEX_TP(4*NGAS,*)
-      INTEGER ISPOBEX_AC(*)
+      DIMENSION ITSPOBEX_TP(4*NGAS,*),ISPOBEX_AC(*)
       LOGICAL CHECK_TSPLIT
 *
       ONEM = -1.0D0
@@ -3924,7 +3800,7 @@ CSK     & JCBATCH, NJBLOCK, NCTT_BLK, I1C
           IST_C_BLK_CT = IC_OFF_BLK
           DO JBLK = ICBLK, ICBLK + NCBLK - 1
 csk         WRITE(LUWRT,*) ' Checking for c block',IC_OFF_BLK+JBLK-1
-            IF( ISCLFAC(IC_OFF_BLK+JBLK-1) .gt. 0 ) THEN
+            IF( ISCLFAC_C(IC_OFF_BLK+JBLK-1) .gt. 0 ) THEN
               ICOMPUTE_C = 1
 csk            WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
             END IF
@@ -3952,7 +3828,7 @@ csk         WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
               DO JJBLK = ISBLK, ISBLK + NSBLK - 1
 csk               WRITE(LUWRT,*) 'Checking for sigma block',
 csk  &                            IS_OFF_BLK+JJBLK-1
-                  IF( IAM_BLK_ACT( JJBLK + IS_OFF_BLK-1 ).eq. 
+                  IF( IAM_BLK_ACT_S( JJBLK + IS_OFF_BLK-1 ).eq. 
      &                MYPROC ) THEN
                     ICOMPUTE_S = 1
 csk                 WRITE(LUWRT,*) ' active s block found',
@@ -3963,7 +3839,7 @@ csk  &                               IS_OFF_BLK+JJBLK-1
               DO JJBLK = ISBLK, ISBLK + NSBLK - 1
 CSK                  WRITE(LUWRT,*) 'Checking for sigma block',
 CSK     &                            IS_OFF_BLK+JJBLK-1
-                  IF( ISCLFAC( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
+                  IF( ISCLFAC_S( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
                     ICOMPUTE_S = 1
 CSK                    WRITE(LUWRT,*) ' active s block found',
 CSK     &                               IS_OFF_BLK+JJBLK-1
@@ -4021,8 +3897,8 @@ C
      &                MAXK,TOCC1,TOCC2,TOCC3,TOCC4,
      &                ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
      &                ISMDST,INT_IOFF1_C+ICBLK-1,IS_OFF_BLK+ISBLK-1,
-     &                ISCLFAC,ISCLFAC,ICCTOS,ICWEIGHTF,IAM_BLK_ACT,
-     &                CHECK_TSPLIT)
+     &                ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
+     &                IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
                END IF
 *              ^ End if connection 
  8000       CONTINUE
@@ -4054,7 +3930,8 @@ C
      &           MAXLB,ICA_STR,ICB_STR,IAA_STR,IAB_STR,
      &           ITDIAG,ITABTRNSP,IC_RESTRICT,IS_RESTRICT,
      &           ISMDST,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S,
-     &           ICCTOS,ICWEIGHTF,IAM_BLK_ACT,CHECK_TSPLIT)
+     &           ICCTOS,ICWEIGHTF,IAM_BLK_ACT_C,
+     &           IAM_BLK_ACT_S,CHECK_TSPLIT)
 *
 * IX_RESTRICT = 1: BLocks in X are restricted to those with IASM.GE.IBSM
 * IX_RESTRICT =-1: BLocks in X are restricted to those with IASM.LT.IBSM
@@ -4071,12 +3948,10 @@ C
 #include "ctcc.inc"
 #include "parluci.h"
 *.Input
-      INTEGER NIA(*),NIB(*),NJA(*),NJB(*)
-      INTEGER IAOC(*),IBOC(*),JAOC(*),JBOC(*)
-      INTEGER ICA(*),ICB(*),IAA(*),IAB(*)
-      INTEGER IACT_C(*), IACT_S(*)
-      DIMENSION IAM_BLK_ACT(*) 
-      DIMENSION ICCTOS(I_NZERO_LEN,I_NZERO_LEN),ICWEIGHTF(*)
+      DIMENSION NIA(*),NIB(*),NJA(*),NJB(*),IAOC(*),IBOC(*)
+      DIMENSION ICA(*),ICB(*),IAA(*),IAB(*),JAOC(*),JBOC(*)
+      DIMENSION IACT_C(*), IACT_S(*),IAM_BLK_ACT_C(*),IAM_BLK_ACT_S(*)
+      DIMENSION ICCTOS(I_NZERO_LEN_C,*),ICWEIGHTF(*)
 *.Local Scratch
       INTEGER KAOC(MXPNGAS),KBOC(MXPNGAS)
       INTEGER NIKAINTM(MXPOBS,MXPLCCOP),NIKBINTM(MXPOBS,MXPLCCOP)
@@ -4105,130 +3980,139 @@ C
 *. and all orbitals of given type
       INTEGER ICA_STR(*),ICB_STR(*),IAA_STR(*),IAB_STR(*)
       INTEGER IFOUND_T_BLOCK_ACT, IOFF_XTYPE
-*
+C
       COMMON/KKKDUMMY/LEN_C2,LEN_S2
       COMMON/CMXCJ/MXCJ
       LOGICAL CHECK_TSPLIT
-*
-      ISKIP = 0
-      IPLAC_S = 0
-      IPLAC_C = 0
+C
+      ISKIP              = 0
+      IPLAC_S            = 0
+      IPLAC_C            = 0
       IFOUND_T_BLOCK_ACT = 0
-      IOFF_XTYPE = 0
-*      
-CSK      WRITE(LUWRT,*) ' IAM_BLK_ACT in FIND_IMAT_CALC'
-CSK      CALL IWRTMAMN(IAM_BLK_ACT,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-CSK      WRITE(LUWRT,*) ' IACT_C in FIND_IMAT_CALC'
-CSK      CALL IWRTMAMN(IACT_C,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK      WRITE(LUWRT,*) ' IACT_S in FIND_IMAT_CALC'
-CSK      CALL IWRTMAMN(IACT_S,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-CSK      WRITE(LUWRT,*) ' IOFF_BLK_S in FIND_IMAT_CALC',IOFF_BLK_S
-*
-CSK      write(LUWRT,*) 'Coupling with type ',IXTP
-*
-      IF(NTEST.GE.500) THEN
-        WRITE(LUWRT,*) ' ======================== '
-        WRITE(LUWRT,*) '  FIND_IMAT_CALC speaking '
-        WRITE(LUWRT,*) ' ======================== '
-        write(LUWRT,*) ' Real / imaginary contribution :'
-        write(LUWRT,*) ' Left , Right ',IRIS,IRIC
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' IAOC and IBOC in GENSIG'
-        CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUWRT)
-        CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUWRT)
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' JAOC and JBOC in GENSIG'
-        CALL IWRTMAMN(JAOC,1,NGAS,1,NGAS,LUWRT)
-        CALL IWRTMAMN(JBOC,1,NGAS,1,NGAS,LUWRT)
-        WRITE(LUWRT,*)
-        WRITE(LUWRT,*) ' Type of operator '
-        CALL WRT_TP_GENOP(ICA,ICB,IAA,IAB,NGAS)
-      END IF
-*
-*. A few constants
-      IONE = 1
-      ZERO = 0.0D0
-      ONE = 1.0D0
-*. Symmetry of T
+      IOFF_XTYPE         = 0
+      IONE               = 1
+C      
+CSK   WRITE(LUWRT,*) ' IAM_BLK_ACT_C in FIND_IMAT_CALC'
+CSK   CALL IWRTMAMN(IAM_BLK_ACT_C,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+CSK   WRITE(LUWRT,*) ' IAM_BLK_ACT_S in FIND_IMAT_CALC'
+CSK   CALL IWRTMAMN(IAM_BLK_ACT_S,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+CSK   WRITE(LUWRT,*) ' IACT_C in FIND_IMAT_CALC'
+CSK   CALL IWRTMAMN(IACT_C,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+CSK   WRITE(LUWRT,*) ' IACT_S in FIND_IMAT_CALC'
+CSK   CALL IWRTMAMN(IACT_S,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+CSK   WRITE(LUWRT,*) ' IOFF_BLK_S in FIND_IMAT_CALC',IOFF_BLK_S
+C
+CSK   write(LUWRT,*) 'Coupling with type ',IXTP
+C
+CSK   WRITE(LUWRT,*) ' ======================== '
+CSK   WRITE(LUWRT,*) '  FIND_IMAT_CALC speaking '
+CSK   WRITE(LUWRT,*) ' ======================== '
+CSK   write(LUWRT,*) ' Real / imaginary contribution :'
+CSK   write(LUWRT,*) ' Left , Right ',IRIS,IRIC
+CSK   WRITE(LUWRT,*)
+CSK   WRITE(LUWRT,*) ' IAOC and IBOC in GENSIG'
+CSK   CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUWRT)
+CSK   CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUWRT)
+CSK   WRITE(LUWRT,*)
+CSK   WRITE(LUWRT,*) ' JAOC and JBOC in GENSIG'
+CSK   CALL IWRTMAMN(JAOC,1,NGAS,1,NGAS,LUWRT)
+CSK   CALL IWRTMAMN(JBOC,1,NGAS,1,NGAS,LUWRT)
+CSK   WRITE(LUWRT,*)
+CSK   WRITE(LUWRT,*) ' Type of operator '
+CSK   CALL WRT_TP_GENOP(ICA,ICB,IAA,IAB,NGAS)
+C
+C     T operator symmetry
       IOPSM = IDBGMULT(INVELM(ICSM),ISSM)
-*
-*. types of strings in T in groupnotation
+      LI = INVELM(ICSM)
+C     WRITE(LUWRT,*) ' ISSM and ICSM and INVELM(ICSM)   ',ISSM,ICSM,LI
+C     WRITE(LUWRT,*) ' operator symmetry in FIND_IMAT...',IOPSM
+C
+C     types of strings in T in groupnotation
       CALL OCC_TO_GRP(ICA,ICAGP,1)
       CALL OCC_TO_GRP(ICB,ICBGP,1)
       CALL OCC_TO_GRP(IAA,IAAGP,1)
       CALL OCC_TO_GRP(IAB,IABGP,1)
 C          OCC_TO_GRP(IOCC,IGRP,IWAY)
-*
-*. Operators in T in expanded form
+C
+C     operators in T in expanded form
       CALL REF_OP(ICA,ICA_EXP,NCA_OP,NGAS,1,MXNOP)
       CALL REF_OP(ICB,ICB_EXP,NCB_OP,NGAS,1,MXNOP)
       CALL REF_OP(IAA,IAA_EXP,NAA_OP,NGAS,1,MXNOP)
       CALL REF_OP(IAB,IAB_EXP,NAB_OP,NGAS,1,MXNOP)
 C          REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
-*. Type of Ka and Kb
+C
+C     type of Ka and Kb
       CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,1,IAA,IKA_ZERO)
       CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,1,IAB,IKB_ZERO)
-* Check that annihilation has not acted upon empty GAS:
+C
+C     check that annihilation has not acted upon empty GAS 
       IF(IKA_ZERO.EQ.0.AND.IKB_ZERO.EQ.0) THEN
-* Get group of K mapped occupations
+C
+C      get group of K mapped occupations
        call occ_to_grp(KAOC,KAGP,1)
        call occ_to_grp(KBOC,KBGP,1)
-* Number of strings in this supergroup (new DBG routine)
-       do KSM = 1,NSMST,1
+C
+C      number of strings in this supergroup
+       DO KSM = 1,NSMST,1
          call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
          call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
-       end do
-*. Number of strings in excitation ops
-       do ISYM = 1,NSMST,1
+       END DO
+C
+C      number of strings in excitation ops
+       DO ISYM = 1,NSMST,1
          call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
          call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
-*. All arrays refer to strings of creation operators of given occ.
-*. So do not bother with difference between anni and crea here.
+C
+C        all arrays refer to strings of creation operators of given occ;
+C        so do not bother with difference between anni and crea here 
          call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
          call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
-       end do
-*. Offset for symmetryblocks of T
+       END DO
+C
+C      offset for symmetryblocks of T
        IF(ITABTRNSP.EQ.0) THEN
          CALL Z_TCC_OFF(IB_T,NICA,NICB,NIAA,NIAB,IOPSM,NSMST,ITDIAG)
        ELSE
          CALL Z_TCC_OFF(IB_T,NICB,NICA,NIAB,NIAA,IOPSM,NSMST,ITDIAG)
        END IF
 C             Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST)
-*. Creation path from C/S strings to K strings
-*. Mappings from !I> to !K> are annihilations mappings 
+C
+C      creation path from C/S strings to K strings
+C      mappings from !I> to !K> are annihilations mappings 
        NMXOP_T = MAX(NCA_OP,NCB_OP,NAA_OP,NAB_OP)
        DO JOP = 1, NMXOP_T
          IAC_AR(JOP) = 1
        END DO
        ONE = 1.0D0
-* CA : KA => IA mappings in 1
-C           MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
+C      CA : KA => IA mappings in 1
+C      MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
        IAB_MAP = 1
        CALL MAP_EXSTR(ICA_EXP,IAC_AR,NCA_OP,IAOC,I1,XI1S,
      &                NIKAINTM,IB_CA,ONE,ISMDST,IAB_MAP)
-* CB : KB => IB     
+C      CB : KB => IB     
        IAB_MAP = 2
        CALL MAP_EXSTR(ICB_EXP,IAC_AR,NCB_OP,IBOC,I2,XI2S,
      &                NIKBINTM,IB_CB,ONE,ISMDST,IAB_MAP)
-* AA : KA => JA
+C      AA : KA => JA
        IAB_MAP = 1
        CALL MAP_EXSTR(IAA_EXP,IAC_AR,NAA_OP,JAOC,I3,XI3S,
      &                NJKAINTM,IB_AA,ONE,ISMDST,IAB_MAP)
-* AB : KB => JB
+C      AB : KB => JB
        IAB_MAP = 2
        CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
      &                NJKBINTM,IB_AB,ONE,ISMDST,IAB_MAP)
-*
-*. Loop over symmetry-blocks of C and Sigma
-*
-*      initialize offsets for sigma- and c-block loops
+C
+C      loop over symmetry-blocks of C and sigma
+C      ________________________________________
+C
+C      initialize offsets for sigma- and c-block loops
        I_BLK_S_SCR = 0
        I_BLK_C_SCR = 0
        I_BLK_S_SCR = IOFF_BLK_S
        I_BLK_C_SCR = IOFF_BLK_C
-*
+C
        DO IASM = 1, NSMST 
-*
+C
         IF( IACT_S( I_BLK_S_SCR ) .eq. 0 ) THEN
 CSK          WRITE(LUWRT,*) ' I SKIP S_BLOCK',I_BLK_S_SCR,'with IACT_S',
 CSK     &                     IACT_S( I_BLK_S_SCR )
@@ -4237,60 +4121,43 @@ CSK        ELSE
 CSK          WRITE(LUWRT,*) ' I CALC S_BLOCK',I_BLK_S_SCR,'with IACT_S',
 CSK     &                     IACT_S( I_BLK_S_SCR )
         END IF
-*
+C
         IBSM = IDBGMULT(ISSM,INVELM(IASM))
-*
-        IS_INCLUDED = 1
-        IF(IS_RESTRICT.EQ.1.AND.IASM.LT.IBSM) IS_INCLUDED = 0
-        IF(IS_RESTRICT.EQ.-1.AND.IASM.GE.IBSM) IS_INCLUDED = 0
-*
-CSK        WRITE(LUWRT,*) 'IS_INCLUDED is for I_BLK_S_SCR',IS_INCLUDED,
-CSK     &                  I_BLK_S_SCR
-*
-        IF(IS_INCLUDED.EQ.1) THEN
-*
-*        reset offset for c-block loop
-         I_BLK_C_SCR = 0
-         I_BLK_C_SCR = IOFF_BLK_C
-CSK        WRITE(LUWRT,*) 'starting c-block check at block',I_BLK_C_SCR
+C
+C       reset offset for c-block loop
+        I_BLK_C_SCR = 0
+        I_BLK_C_SCR = IOFF_BLK_C
+CSK     WRITE(LUWRT,*) 'starting c-block check at block',I_BLK_C_SCR
         DO JASM = 1, NSMST
-*
-        IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
-*
+C
+         IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
+C
          JBSM = IDBGMULT(ICSM,INVELM(JASM))
-*
-         IC_INCLUDED = 1
-         IF(IC_RESTRICT.EQ.1.AND.JASM.LT.JBSM) IC_INCLUDED = 0
-         IF(IC_RESTRICT.EQ.-1.AND.JASM.GE.JBSM) IC_INCLUDED = 0
-CSK         WRITE(LUWRT,*) 'IC_INCLUDED is for I_BLK_C_SCR',IC_INCLUDED,
-CSK     &                   I_BLK_C_SCR
-*
-         IF(IC_INCLUDED.EQ.1) THEN
-         IF(NTEST.GE.1000) WRITE(LUWRT,'(A,4I4)') 
-     &   ' IASM, IBSM, JASM, JBSM ', IASM,IBSM,JASM,JBSM
+C
          DO KASM = 1, NSMST
-*. IAA_SM is symmetry of ANNIHILATOR string
+C         IAA_SM is symmetry of ANNIHILATOR string
           IAA_SM = IDBGMULT(KASM,INVELM(JASM))
           ICA_SM = IDBGMULT(IASM,INVELM(KASM))
-* To obtain the number of annnihilator strings of a given sym
-*. we find the number of creator strings of conjugated symmetry
+C
+C         to obtain the number of annnihilator strings of a given sym
+C         we find the number of creator strings of conjugated symmetry
           LIAA_SM = NIAA(INVELM(IAA_SM))
           LICA_SM = NICA(ICA_SM)
           LKA_SM = NKA(KASM)
-*
+C
           DO KBSM = 1, NSMST
-*
+C
            IAB_SM = IDBGMULT(KBSM,INVELM(JBSM))
            ICB_SM = IDBGMULT(IBSM,INVELM(KBSM))
-*
+C
            LIAB_SM = NIAB(INVELM(IAB_SM))
            LICB_SM = NICB(ICB_SM)
-*
+C
            LKB_SM = NKB(KBSM)
-*
+C
            IF(LIAA_SM*LICA_SM*LIAB_SM*LICB_SM*LKA_SM*LKB_SM.NE.0)
      &     THEN
-*
+C
 csk             WRITE(LUWRT,*) '  GREAT, THIS IS AN ALLOWED CONNECTION'
              IF( CHECK_TC .or. CHECK_TSPLIT ) THEN 
 csk               WRITE(LUWRT,*) ' this is T-block type ',IXTP
@@ -4298,38 +4165,34 @@ csk               WRITE(LUWRT,*) ' this is T-block type ',IXTP
                GOTO 111
              END IF
              
-CSK             WRITE(LUWRT,*) ' ICA_SM, ICB_SM, IAA_SM,IAB_SM =',
-CSK     &                        ICA_SM, ICB_SM, IAA_SM,IAB_SM
-CSK             WRITE(LUWRT,*) ' now i have to put in the connection'
-             IPLAC_S = IAM_BLK_ACT( I_BLK_S_SCR )
-             IPLAC_C = IAM_BLK_ACT( I_BLK_C_SCR )
+CSK          WRITE(LUWRT,*) ' ICA_SM, ICB_SM, IAA_SM,IAB_SM =',
+CSK  &                        ICA_SM, ICB_SM, IAA_SM,IAB_SM
+CSK          WRITE(LUWRT,*) ' now i have to put in the connection'
+             IPLAC_S = IAM_BLK_ACT_S( I_BLK_S_SCR )
+             IPLAC_C = IAM_BLK_ACT_C( I_BLK_C_SCR )
              ICCTOS( IPLAC_C, IPLAC_S ) = 1 
-             ICWEIGHTF( IPLAC_C ) = ICWEIGHTF( IPLAC_C ) + IONE
+             ICWEIGHTF( IPLAC_S ) = ICWEIGHTF( IPLAC_S ) + IONE
   111        CONTINUE
-*
+C
            END IF
-*          ^ End if symmetry combinations have nonvanishing dimensions
+C          ^ End if symmetry combinations have nonvanishing dimensions
          END DO
          END DO
-*        ^ End of loop over KASM, KBSM
-        END IF
-*       ^ End if symmetryblock of C should be included
+C        ^ End of loop over KASM, KBSM
  2002  CONTINUE
-*      ^ skip c-block not included in active-block-list; only in parallel
-*        calculations
+C      ^ skip c-block not included in active-block-list; only in parallel
+C        calculations
        I_BLK_C_SCR = I_BLK_C_SCR + 1
-        END DO
-*       ^ End of loop over JASM
-       END IF
-*      ^ End if symmetryblock of S should be included
+       END DO
+C      ^ End of loop over JASM
  3003  CONTINUE
-*      ^ skip s-block not included in node-list; only in parallel
-*        calculations
+C      ^ skip s-block not included in node-list; only in parallel
+C        calculations
        I_BLK_S_SCR = I_BLK_S_SCR + 1
        END DO
-*      ^ End of loop over IASM
+C      ^ End of loop over IASM
       END IF
-*     ^ End if Ka and Kb are nontrivial strings
+C     ^ End if Ka and Kb are nontrivial strings
 C
 C
       IF( IFOUND_T_BLOCK_ACT .eq. 1 ) THEN
@@ -5765,6 +5628,218 @@ C
 C     ^ loop over NVEC + IVEC
 C
 C     finally ...
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INPRDD_REAL_CPLX_XPRP(LUIN1,LUIN2,VEC1,VEC2,XR,XI,
+     &                                 NBATCH,LBATCH,LEBATCH,I1BATCH,
+     &                                 IBATCH,MY_IOFF_LUIN1,
+     &                                 MY_IOFF_LUIN2,LUIN1LIST,
+     &                                 LUIN2LIST,NVEC,ISSM,ISYM_CTRL,
+     &                                 MZ)
+C
+C
+C**********************************************************************
+C
+C     calculating GENERAL dot product between two vectors on 
+C     file LUIN1 resp. LUIN2
+C
+C     GENERAL means (in my order of vectors): 
+C
+C     real part == real * real + imag * imag
+C     imag part == real * imag - imag * real 
+C
+C     NOTE: NVEC = NVEC
+C
+C     active blocks on the MPI-files are flagged by a nonzero length
+C
+C     Written by  S. Knecht         - Oct 2008
+C
+C     Last revision:     S. Knecht  - Oct 2008
+C
+************************************************************************
+      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION VEC1(*), VEC2(*), XR(*), XI(*)
+      DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
+      DIMENSION LUIN1LIST(*), LUIN2LIST(*), ISYM_CTRL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+C
+C     initialize scratch offsets
+      NUM_BLK = 0
+      IOFFSET_SCRATCH = 0
+      IOFFSET_IN_LUIN1  = 0
+      IOFFSET_IN_LUIN2  = 0
+      IOFFSET_INT_IN1  = 0
+      IOFFSET_INT_IN2  = 0
+C
+C     zero final dot product vectors
+C
+      CALL DZERO(XR,NVEC)
+      IF( MZ .eq. 2 ) CALL DZERO(XI,NVEC)
+C
+C     =====================
+C     GENERAL INNER PRODUCT 
+C     =====================
+C
+      DO 500 JOFF = 1, NVEC
+C
+        IF( ISYM_CTRL(JOFF) .ne. ISSM ) GOTO 500
+C
+        IOFFSET_SCRATCH  = 0
+        NUM_BLK          = 0
+        NUM_ACTIVE_BATCH = 0
+C
+C       offset for LUIN1
+        IXOFF = 1
+C
+      DO ISBATCH = 1, NBATCH
+C
+C     -------------
+C      REAL * REAL
+C     -------------
+C
+C       offset for batch ISBATCH w.r.t JOFF
+C
+        CALL DZERO(VEC2,LEBATCH(ISBATCH))
+C
+C
+C       set new offset
+C       position in file is at the end of vector NVEC + IVEC - 1
+        IOFFSET_IN_LUIN1 = MY_IOFF_LUIN1 + IOFFSET_SCRATCH +
+     &                     ( IXOFF       - 1 )  * MY_VEC2_IOFF
+        IOFFSET_INT_IN1  = 1 + NUM_BLK  +
+     &                     ( IXOFF       - 1 ) * MY_ACT_BLK2
+C
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+C
+        CALL RDVEC_BATCH_DRV4(LUIN1,VEC2,LBATCH(ISBATCH),
+     &                       IBATCH(1,I1BATCH(ISBATCH)),
+     &                       IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
+     &                       LUIN1LIST,NUM_ACTIVE_BATCH)
+C
+CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C
+C       set new offset and zero read-in vector
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C
+        IOFFSET_IN_LUIN2 = MY_IOFF_LUIN2 + IOFFSET_SCRATCH +
+     &                     ( JOFF - 1 )  * MY_VEC2_IOFF
+        IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
+     &                     ( JOFF - 1 )  * MY_ACT_BLK2
+C
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
+C
+C       read in batch ISBATCH from LUIN1 to VEC1
+        CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
+     &                        LUIN2LIST,NUM_ACTIVE_BATCH)
+C
+CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+        IJ     = ( JOFF )
+        XR(IJ) = XR(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+C
+  100   CONTINUE
+C
+        IF( MZ .eq. 1) GOTO 444
+C
+C     -------------
+C      REAL * IMAG
+C     -------------
+C
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C
+C       set new offset
+        IOFFSET_IN_LUIN2 = MY_IOFF_LUIN2 + IOFFSET_SCRATCH +
+     &                     ( JOFF - 1 )  * MY_VEC2_IOFF + MY_VEC1_IOFF
+        IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
+     &                     ( JOFF - 1 )  * MY_ACT_BLK2  + MY_ACT_BLK1
+C
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+        CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
+     &                       IBATCH(1,I1BATCH(ISBATCH)),
+     &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
+     &                       LUIN2LIST,NUM_ACTIVE_BATCH)
+C
+CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+        XI(IJ) = XI(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+C
+  200   CONTINUE
+C
+C     -------------
+C      IMAG * IMAG
+C     -------------
+C
+C       set new offset and zero read-in vector
+        CALL DZERO(VEC2,LEBATCH(ISBATCH))
+C
+        IOFFSET_IN_LUIN1 = MY_IOFF_LUIN1 + IOFFSET_SCRATCH +
+     &                     ( IXOFF       - 1 ) * MY_VEC2_IOFF +
+     &                                           MY_VEC1_IOFF 
+        IOFFSET_INT_IN1  = 1 + NUM_BLK  + 
+     &                     ( IXOFF       - 1 ) * MY_ACT_BLK2  +
+     &                                           MY_ACT_BLK1
+C
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+C
+C       read in batch ISBATCH from LUIN1 to VEC2
+        CALL RDVEC_BATCH_DRV4(LUIN1,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
+     &                        LUIN1LIST,NUM_ACTIVE_BATCH)
+C
+CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C
+C       SUBSPH_I(IJ) == VEC1 * VEC2
+        XR(IJ) = XR(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+  300   CONTINUE
+C
+C     -------------
+C      IMAG * REAL
+C     -------------
+C
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C
+C       set new offset
+C
+        IOFFSET_IN_LUIN2 = MY_IOFF_LUIN2 + IOFFSET_SCRATCH +
+     &                     ( JOFF - 1 )  * MY_VEC2_IOFF
+        IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
+     &                     ( JOFF - 1 )  * MY_ACT_BLK2
+C
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
+        CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
+     &                       IBATCH(1,I1BATCH(ISBATCH)),
+     &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
+     &                       LUIN2LIST,NUM_ACTIVE_BATCH)
+C
+CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C
+C       SUBSPH_I(IJ) == VEC1 * VEC2
+        XI(IJ) = XI(IJ) - DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+  400   CONTINUE
+C
+  444   CONTINUE
+C       keep track of correct offset
+        IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
+        NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
+      END DO
+C     ^ loop over batches ...
+  500 CONTINUE
+C     ^ loop over NVEC
 C
       END
 ***********************************************************************
@@ -8198,7 +8273,9 @@ C
 C
 C     communicate some CIRUN specific variables, arrays ...
 C
-      IF( CIRUN .eq. 'NDET  ') THEN
+C     note: ISYM_KRMC == IOPT_SYMMETRY
+C
+      IF( CIRUN .eq. 'NDET  ' .or. CIRUN .eq. 'ANALYZ' ) THEN
 C
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
@@ -8217,9 +8294,6 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-csk     determine INTEGRAL handling
-csk     CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
-csk  &                 MPI_COMM_WORLD,IERR)
 C
       ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
 C
@@ -8243,13 +8317,6 @@ C
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
-      ELSE IF( CIRUN .eq. 'ANALYZ') THEN
-C
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
       ELSE IF( CIRUN .eq. 'IJKLRO') THEN
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
@@ -8259,9 +8326,6 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-csk     determine INTEGRAL handling
-csk     CALL MPI_BCAST(IIOMOD_REL,1,my_MPI_INTEGER,MASTER,
-csk  &                 MPI_COMM_WORLD,IERR)
       END IF
 C
 C       all needed for proper read-in of integrals...?
@@ -8817,7 +8881,6 @@ C**********************************************************************
       CHARACTER*12 WALLTID3, SECTID
 C
 C     set mark for local memory
-C
       IDUM = 0
       CALL MEMMAR(KDUM,  IDUM,    'MARK  ',IDUM,'UPLIST')
 C
@@ -8834,59 +8897,52 @@ C
 C     "mpi_allsum" local LUCLIST which then on all
 C     nodes will contain the number of non-zero C-blocks in
 C     the complete CI-vector
-C
       CALL REDVEC_REL(LUCLIST,WORK(KSCALLOC2),NUM_BLOCKS2,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
-C
       CALL ICOPY(NUM_BLOCKS2,RCCTOS,1,WORK(KSCALLOC3),1)
 C
-C     case 1: number of CPUs in new group not equal to total number
+C     case 1: number of CPUs in new group != to total number of CPUs
+C     case 2: number of CPUs in new group == to total number of CPUs
 C
-C     case 2: number of CPUs in new group equal to total number
-C
-*
       IF( NEWCOMM_PROC .ne. NMPROC ) THEN
-*
+C
         CALL REDVEC_REL(WORK(KSCALLOC3),ISCLFAC_GROUP,NUM_BLOCKS2,1,
      &                  MPI_SUM,MYNEW_COMM,0)
-*
-*       all local node-masters call this routine!
-*
+C
+C       all local node-masters call this routine!
+C
         IF( MYNEW_ID .eq. 0 ) THEN
            CALL COPVCD_PAR_BDRIV5_REL(ILUC,ILUC,CB,NPARBLOCK,
      &                                WORK(KSCALLOC2),ISCLFAC_GROUP,
      &                                IBLOCKL,NUM_BLOCKS,ICOMM,
      &                                IGROUPLIST,IPROCLIST,IRILP)
-C               COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
+C          CALL COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
 C     &                               ISCALFAC,ISCALFAC_GROUP,
 C     &                               IBLOCKL,NBLOCK,JCOMM,
 C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
-           CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
-*
+        CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,my_MPI_INTEGER,0,
+     &                 MYNEW_COMM,IERR)
       ELSE
-*
-         CALL UPDATE_GEN_LIST(WORK(KSCALLOC3),WORK(KSCALLOC2),
-     &                        NUM_BLOCKS2)
 C
-C        to be consistent with output of case 1
+       CALL UPDATE_GEN_LIST(WORK(KSCALLOC3),WORK(KSCALLOC2),NUM_BLOCKS2)
 C
-         CALL IZERO(ISCLFAC_GROUP,NUM_BLOCKS2)
-         CALL ICOPY(NUM_BLOCKS2,WORK(KSCALLOC3),1,ISCLFAC_GROUP,1)
+C      to be consistent with output of case 1
+       CALL IZERO(ISCLFAC_GROUP,NUM_BLOCKS2)
+       CALL ICOPY(NUM_BLOCKS2,WORK(KSCALLOC3),1,ISCLFAC_GROUP,1)
 C
       END IF
 C     ^ NEWCOMM_PROC == NMPROC ?
 C
-csk      WRITE(LUWRT,*) '  subroutine UPDATE_LUC_LIST speaking'
-csk      WRITE(LUWRT,*) 'LUCLIST:'
-csk      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-csk      WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
-csk      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+CSK      WRITE(LUWRT,*) '  subroutine UPDATE_LUC_LIST speaking'
+CSK      WRITE(LUWRT,*) 'LUCLIST:'
+CSK      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+CSK      WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
+CSK      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
 C
 C     final timing for block distribution
       blocktime = blocktime + MPI_WTIME() - starttimer
@@ -9092,6 +9148,92 @@ CSK       creation of many many batches
 *
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
 *
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISPC,ISM,LBATX,LEBATX,
+     &                            I1BATX,IBATX,NBATX,NPARBLOCK_X,IXCT)
+**********************************************************************
+C
+C     Construct information about batch and block structure of CI space
+C     defined by ISPC and ISM.
+C
+C     LBATX : length of each batch (in blocks)
+C     LEBATX: length of each batch (in elements)
+C     I1BATX: starting block of each batch
+C     IBATX : info on each block
+C     NBATX : number of batches
+C
+C      Jeppe Olsen, Feb 1998
+C
+C      S. Knecht - Nov 2008: modified for CI property runs
+C
+C**********************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "cicisp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "strbas.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "strinp.inc"
+#include "parluci.h"
+      DIMENSION NPARBLOCK_X(NUM_BLOCKS,*)
+C
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'XZBLKF')
+C
+C     get batches and blocks
+      IRUN_THIS = 0
+      ILENB_OLD = 0
+      INUMB_OLD = 0
+      NTTS = MXNTTS
+      CALL MEMMAR(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+C
+C     loop over MS2 spaces
+      DO IMS2 = 1, NMS2VAL
+*
+        IRUN_THIS = IRUN_THIS + 1
+        IATP      = IST_FOR_DT(1,IMS2)
+        IBTP      = IST_FOR_DT(2,IMS2)
+        IOCTPA    = IBSPGPFTP(IATP)
+        IOCTPB    = IBSPGPFTP(IBTP)
+        NOCTPA    = NOCTYP(IATP)
+        NOCTPB    = NOCTYP(IBTP)
+C       info needed for generation of block info
+        call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+        CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
+C
+        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
+C
+        IF(IMS2.EQ.1) THEN
+          IOFFBLK = 1
+          IOFFBTC = 1
+        ELSE
+          IOFFBLK   = NBLOCK + 1
+          IOFFBTC   = NBATX
+        END IF
+C
+        ITTSS_ORD = 2
+C
+C       special routine that uses only node-blocks to determine
+C       batches of a CI-vector
+        CALL PART_CIV4_PAR(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+     &                     WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                     IOFFBLK,IOFFBTC,NSMST,LBLOCK,WORK(KLCIOIO),
+     &                     ISMOST(1,ISM),NBATX,
+     &                     LBATX,LEBATX,I1BATX,IBATX,0,ITTSS_ORD,
+     &                     NPARBLOCK_X(1,IXCT),0,ILENB_OLD,
+     &                     INUMB_OLD,IRUN_THIS)
+C
+C       number of BLOCKS
+        NBLOCK = IFRMR_REL(I1BATX,1,NBATX)+IFRMR_REL(LBATX,1,NBATX)-1
+      END DO
+C     ^ End of loop over MS2 values
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'XZBLKF')
       END
 #else
       SUBROUTINE PAR_LUCIAREL_DUMMY

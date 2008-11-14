@@ -454,7 +454,7 @@ CTF  Shouldn't ABS be .le. 4 instead?
       CALL Z_BLKFO_REL(IDC,NMS2VAL,
      &                 ISPC,ISM,KLSLBT,KLSLEBT,KLSI1BT,KLSIBT,
      &                 KLSBLTP,NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
-     &                 NBAT_MS2,IBAT_MS2,0,0,IDUMMY)
+     &                 NBAT_MS2,IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 *
 *  Erase density matrices
       do IC=1,2,1
