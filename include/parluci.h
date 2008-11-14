@@ -21,10 +21,10 @@ C
      &        IAM_NOT_INV, IRUNPA,IODENSEPAR, NCBLOCKS_USED, IIOMOD,
      &        NFLGRPS, NROOT_INFO, IDISTROUTE, IPRINTSTAT,
      &        MSLVOUT_REL, LUWRT, IIOMOD_REL, NFLGRPS_REL, NROOT_SAVE,
-     &        NVEC_SAVE, L_COMBI, I_NZERO_LEN, ISHARE_DENSM,
-     &        IPARALLELIO, LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL,
-     &        LEVEL_SM, IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
-     &        IBI_MULT_BL
+     &        NVEC_SAVE, L_COMBI, ISHARE_DENSM, IPARALLELIO,
+     &        LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL, LEVEL_SM,IT_SHL,IC_SHL,
+     &        ICOUNTABLK_C, ISI_CALC_BL,IBI_MULT_BL,L_COMBI_S,
+     &        L_COMBI_MAX, I_NZERO_LEN_S,I_NZERO_LEN_C
 C
       PARAMETER (MSLVOUT_REL = 7)
 C
@@ -34,28 +34,29 @@ C
      &                IBLOCKCOMM,N_MASTER,
      &                MYNEW_ID_SM, MYNEW_COMM_SM, NEWCOMM_PROC_SM,
      &                N_MASTER_SM, MYNEW_ID_SM_C, MYNEW_COMM_SM_C,
-     &                NEWCOMM_PROC_SM_C, N_MASTER_SM_C, IXCOMM, 
+     &                NEWCOMM_PROC_SM_C, N_MASTER_SM_C,IXCOMM, 
      &                IXCOMM_SZ,IXCOMM_RK, NUM_BLOCKS, NUM_BLOCKS2,
      &                NPTEST_VAR, IRC_SAVE, LUCIWT, JVEC_SF,
-     &                LBLOCK_LUCI, IAM_NOT_INV, IRUNPA, IODENSEPAR, 
+     &                LBLOCK_LUCI, IAM_NOT_INV, IRUNPA,IODENSEPAR, 
      &                NCBLOCKS_USED, IIOMOD, NFLGRPS, NROOT_INFO, 
      &                IDISTROUTE, IPRINTSTAT, LUWRT, IIOMOD_REL, 
      &                NFLGRPS_REL, NROOT_SAVE, NVEC_SAVE, L_COMBI, 
      &                I_NZERO_LEN, ISHARE_DENSM, IPARALLELIO, 
      &                LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL, LEVEL_SM, 
      &                IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
-     &                IBI_MULT_BL,
-     &                LMEMFREE_PTR
+     &                IBI_MULT_BL,L_COMBI_S,L_COMBI_MAX,I_NZERO_LEN_S,
+     &                I_NZERO_LEN_C,
+     &                LU_INFO,LMEMFREE_PTR
 C
 C     MPI file lists and MPI file handles
 C
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5,
-     &        IALL_LU6, IALL_LU7, IALL_LUC, IIJKL_ROD
+     &        IALL_LU6, IALL_LU7, IALL_LUC, IIJKL_ROD, ILPRP_X
       COMMON/LUCIAPFILE/ IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,
      &                   ILUC,
      &                   IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,
      &                   IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC, 
-     &                   IIJKL_ROD
+     &                   IIJKL_ROD, ILPRP_X
 #if defined (VAR_MPI)
       INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, FILE_INFO_OBJ
       INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,
@@ -81,11 +82,13 @@ C
      &                  xcomputesi
 !     logical block
       LOGICAL CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA, 
-     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF
+     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF, CXPROPRUN, COMPDISTL,
+     &        COMPRCCTOS
 !
       COMMON/LUCI_LOG/
      &        CSCREEN, SHARED_M, REORD_IJKL, CHECK_TC, USE_EX_IDIA,
-     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF
+     &        SPLIT_IJKL, NO_INDIF, NO_CDIAF, CXPROPRUN, COMPDISTL,
+     &        COMPRCCTOS
 !     character block
       CHARACTER*9 NIIJKL_ROD
 	CHARACTER*1 SYMFLABEL
