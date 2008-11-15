@@ -676,13 +676,17 @@ if [ "$par" = "yes" ]; then
        read rsh
        case "$rsh" in
 	 "ssh")
-            rsh=ssh
-            rcp=scp
+           # rsh=ssh
+            rsh=`which rsh 2>/dev/null`
+           # rcp=scp
+            rcp=`which scp 2>/dev/null`
             echo 'Note that ssh/scp requires use of ssh-keygen without password !'
 	    ;;
 	 *)
-            rsh=rsh
-            rcp=rcp
+            #rsh=rsh
+            rsh=`which rsh 2>/dev/null`
+           #rcp=rcp
+            rcp=`which rcp 2>/dev/null`
 	    ;;
        esac
      fi
@@ -690,8 +694,10 @@ if [ "$par" = "yes" ]; then
 else
    mesp='dummy'
    mach_file=
-   rsh=rsh
-   rcp=rcp
+   #rsh=rsh
+   rsh=`which rsh 2>/dev/null`
+   #rcp=rcp
+   rcp=`which rcp 2>/dev/null`
 fi
 echo
 }
@@ -2213,8 +2219,7 @@ include Makefile.moddef
 WRKMEM=$memsiz
 # installation directory 
 INSTALL_DIR=$INSTALL_DIR
-
-# scratch directory (the same as in pam script)
+# scratch directory, the same as in "pam", from where it is used 
 SCRATCH_DIR=$worksp
 EOF
 
@@ -2238,6 +2243,19 @@ cat <<EOF >> Makefile.config
 F77=$F90_COMP
 F90=$F90_COMP
 CC =$CC_COMP
+EOF
+
+if [ "$par" = "yes" ]; then
+cat <<EOF >> Makefile.config
+#
+# mpi launcher, the same as in "pam" (there it is to be checked)
+# has to be the same kind (same directory) as mpif90/mpif77/mpicc compilers
+#
+MPIRUN=$mpirun
+EOF
+fi
+
+cat <<EOF >> Makefile.config
 
 # Libraries - check them according to your server equipment !
 # You may need blas and lapack (if not using the builtin) and
