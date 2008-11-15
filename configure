@@ -495,10 +495,13 @@ if echo "$guess" | grep -q x86_64; then
     echo "integers inside Dirac? This is only useful if you need more than"
     echo "16 GB of memory in your calculations, and requires 64 bit integer"
     echo "(ILP64) versions of your MPI, BLAS and LAPACK libraries."
+    echo "Running large-scale MCSCF/CI calculations using the LUCI* "
+    echo "modules, however, requires 64 bit integers on a x86_64 system."
     echo
     if ask_yesno n "Use 64 bit integers in Dirac?"; then
         guess=`echo "$guess"|sed s/x86_64/i686/`
 	echo "Configuring Dirac to use 32 bit integers (LP64)."
+	echo "NB: LUCI* modules cannot be used."
     else
 	echo " Configuring Dirac to use 64 bit integers (ILP64)."
 	echo " NB: Be aware that your external libraries _must_ also use"
