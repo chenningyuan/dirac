@@ -321,15 +321,17 @@ C  /* Deck pcmoi1 */
       SUBROUTINE PCMOI1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Read DHF-coefficients and eigenvalues from FORMATTED file
+C     Read DHF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
 C
 C     Written by T.Saue Feb 1997
+C     extended for KRMC modules - S. Knecht Nov 2008
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -339,7 +341,7 @@ C
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 C
-C     Get coefficients from FDPCMO
+C     Get coefficients from DFPCMO
 C
       INQUIRE(FILE='DFPCMO',EXIST=TOBE)
       IF(.NOT.TOBE) THEN
@@ -357,56 +359,97 @@ C
       READ (LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
-C     Write coefficients to DFCOEF
+C     Write coefficients to either KRMCSCF or DFCOEF
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
+#ifdef MOD_KRMC
+      IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
+        CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
+        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+        CLOSE (LUKRMC,STATUS='KEEP')
+        IWRTMO = 1
+      ELSE
+#endif /* MOD_KRMC */
+        CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IWRTMO = 2
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A)')
-     &    '* PCMOIN: Coefficients read from formatted DFPCMO ',
-     &    '          and written to unformatted DFCOEF'
+      IF( IWRTMO .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
+     &      '          and written to unformatted KRMCOLD'
+      ELSE IF( IWRTMO .eq. 2 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
+     &      '          and written to unformatted DFCOEF'
+      END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmou1 */
       SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Write DHF-coefficients and eigenvalues to FORMATTED file
+C     Write DHF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
 C
 C     Written by T.Saue Feb 1997
+C     extended for KRMC modules - S. Knecht Nov 2008
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE
+      LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 #include "memint.h"
 C
-C     Get coefficients from DFCOEF
+C     Get coefficients from either KRMCSCF or DFCOEF 
 C
+#ifdef MOD_KRMC
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+#else
+      TOBEK=.FALSE.
+#endif
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'PCMOUT: Unformatted file DFCOEF not found !'
-          CALL QUIT('PCMOUT: Unformatted file DFCOEF not found !')
+      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
+        WRITE(LUPRI,'(A)') 
+     &     'PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !'
+        CALL QUIT('PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
       ENDIF
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+#ifdef MOD_KRMC
+      IF(TOBEK.and.(DOKRMC.or.DOKRCI.or.DOKRCC))THEN
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PCMOUT')
+        JRDMO = -1
+        CALL RREADMO(CMO,JRDMO,1,LUKRMC)
+        CLOSE (LUKRMC,STATUS='KEEP')
+C       ... set to zero
+        TOTERG = 0.0D0
+        CALL DZERO(EIG,NORBT)
+        CALL IZERO(IBEIG,NORBT)
+        IREADMO = 1
+      ELSE
+#endif /* MOD_KRMC */
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &              WORK,KFREE,LFREE)
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IREADMO = 2
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Write coefficients to DFPCMO
 C
@@ -428,12 +471,17 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A)')
-     &    '* PCMOUT: Coefficients read from unformatted DFCOEF ',
-     &    '          and written to formatted DFPCMO'
+      IF( IREADMO .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOUT: Coefficients read from unformatted KRMCSCF',
+     &      '          and written to formatted DFPCMO'
+      ELSE IF( IREADMO .eq. 2)THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOUT: Coefficients read from unformatted DFCOEF ',
+     &      '          and written to formatted DFPCMO'
+      END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrifck */
