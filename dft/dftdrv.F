@@ -389,6 +389,16 @@ C
         if (alda_ha) gga_ha = .false.
       end if
 
+!     in QR it is not so easy to separate H+ and H-
+!     contributions since they may mix
+!     therefore i quit here if the user wants QR
+!     and not the full ALDA or XALDA
+      if ((doqr .and. alda_hs .and. (.not. alda_ha)) .or.
+     &    (doqr .and. alda_ha .and. (.not. alda_hs))) then
+        write(lupri, *) 'QR and partial ALDA is not implemented'
+        call quit('QR and partial ALDA is not implemented')
+      end if
+
 #if defined (VAR_MPI) 
 !     send gga_hs and gga_ha to nodes
       do node = 1, nodes
