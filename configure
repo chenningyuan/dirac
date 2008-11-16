@@ -2213,7 +2213,7 @@ esac
 
 #first define the preprocessing flags for the active modules
 
-cat <<EOF >> Makefile.config
+cat <<EOF > Makefile.config
 include Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
