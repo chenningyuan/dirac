@@ -52,6 +52,7 @@ C
 #endif
 #include "nuclei.h"
 #include "dftcom.h"
+#include "dftbuf.h"
 #include "dftac.h"
 #include "cdft.h"
 #include "dfterg.h"
@@ -243,14 +244,21 @@ C    &              KFREE,LFREE)
 !     in case of GGA symmetrize matrices
 !     see DFT RPA notes for more info
 
-      IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
-        CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
+#ifdef MOD_DNF
+      if (.not. df_fitvxc) then
+#endif /* MOD_DNF */
+
+      if (gga_hs) call sym_hs(excmat, nxcmat, isymop, ihrmop)
 #ifdef MOD_CDFT
-        IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
-          CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-        ENDIF
+      if(lbit(lbit_cdft,1) .or. lbit(lbit_cdft,2)) then !if spin or current density contribution
+        if (gga_ha) call sym_ha(excmat, nxcmat, isymop, ihrmop)
+      end if
 #endif /* MOD_CDFT */
-      ENDIF
+
+#ifdef MOD_DNF
+      end if
+#endif /* MOD_DNF */
+
 
 #ifdef MOD_DNF
       IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
@@ -362,41 +370,51 @@ C
          CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
      &               NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
-C
-      DOGGA = DFTISGGA()
-      IF (DOGRD) THEN
-         NDER = 1
-         CALL DZERO(GRADFT,MXCOOR)
-      END IF
-      IF (DOLND) THEN
-         NDER = 0
-      END IF
-      IF (DOLR.OR.DOQR) THEN
-         NDER = 0
-         IF(ALDAON) DOGGA = .FALSE.
-      END IF
-C
-      DOGRHO = .FALSE.
-      DOLRHO = .FALSE.
+
+
+!     figure out whether we need derivatives of basis functions
+!     and whether gga code structure will be used
+
+      nder = 0
+      if (dogrd) then
+        nder = 1
+        call dzero(gradft, mxcoor)
+      end if
+
+      gga_hs = dftisgga()
+      gga_ha = gga_hs
+
+      if (dolr .or. doqr) then
+        if (alda_hs) gga_hs = .false.
+        if (alda_ha) gga_ha = .false.
+      end if
+
 #if defined (VAR_MPI) 
-      DO NODE = 1,NODES
-        CALL MPI_SEND(DOGGA,1,MPI_LOGICAL,NODE,11,
-     &                MPI_COMM_WORLD,IERR)
-      END DO             
+!     send gga_hs and gga_ha to nodes
+      do node = 1, nodes
+        call mpi_send(gga_hs, 1, mpi_logical, node, 11, 
+     &                mpi_comm_world, ierr)
+        call mpi_send(gga_ha, 1, mpi_logical, node, 12, 
+     &                mpi_comm_world, ierr)
+      end do             
 #endif
-C
-      IF (DOGGA) THEN
-         FROMVX = DFTPOT
-         DOGRHO = .TRUE.
-         NDER = NDER + 1 
-         IF (FROMVX) THEN
-            DOLRHO = .TRUE.
-            NDER = NDER + 1 
-         END IF
-      ELSE
-         FROMVX = .FALSE.
-      END IF
-C
+
+      dogrho = .false.
+      dolrho = .false.
+
+      if (gga_hs .or. gga_ha) then
+        dogrho = .true.
+        nder   = nder + 1 
+        fromvx = dftpot
+        if (fromvx) then
+          dolrho = .true.
+          nder   = nder + 1 
+        end if
+      else
+        fromvx = .false.
+      end if
+
+
 C     integrate
 C
       ELCTRN = D0
@@ -594,6 +612,8 @@ C
 #include "dgroup.h"
 #include "densfit.h"
       LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
+      logical gga_qr
+
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
@@ -771,12 +791,11 @@ C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
            
-!          WRITE(lupri,*) 'DOGGA2', DOGGA
-           IF (DOGGA) THEN
-             VX(FZ0) = VX(FZ0)/RHOGRD
-           ENDIF
-C
-C
+           if (gga_hs) then
+             vx(fz0) = vx(fz0)/rhogrd
+           endif
+
+
 C         asymptotic correction
 C         =====================
 C
@@ -806,19 +825,16 @@ C
 #ifdef MOD_DNF
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-!          WRITE(lupri,*) 'DOGGA3', DOGGA
-               IF (DOGGA) THEN
+               IF (gga_hs) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
                   ENDDO
                ENDIF
-               CALL fit_DOEXC(DOGGA,VX(FR0),VT,GAO,GAO1,
+               CALL fit_DOEXC(gga_hs,VX(FR0),VT,GAO,GAO1,
      &                     WORK(KXCVEC),NBASISAUX)
            else  ! df_fitvxc
 #endif
-C conventional code...
-!            WRITE(lupri,*) 'DOGGA4', DOGGA
-             IF (DOGGA .AND. .NOT.FROMVX) THEN
+             if (gga_hs .and. .not. fromvx) then
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
                 ENDDO
@@ -854,14 +870,14 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
               call fit_DFT_LR(WORK(KLRCFIT),WORK(KLRXCVEC),
      &                        NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                        RHO,RHOGRD,RHG,WGHT,DOGGA,B0,nskipped)
+     &                        RHO,RHOGRD,RHG,WGHT,gga_hs,B0,nskipped)
            else  ! df_fitvxc
 !             CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-!    &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
+!    &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,gga_hs,BUF,B0)
              call dft_lr(dtrmat,excmat,nxcmat,
      &                   isymop,ihrmop,.false.,
      &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
+     &                   rho,rhogrd,rhg,wght,gga_hs,buf)
            endif
           ELCTRB = ELCTRB + WGHT*B0
         ENDIF
@@ -870,11 +886,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 !       linear response
         if(dolr) then
+
 #ifndef MOD_DNF
           call dft_lr(dtrmat,excmat,nxcmat,
      &                isymop,ihrmop,.false.,
      &                gao,gao1,
-     &                rho,rhogrd,rhg,wght,dogga,buf)
+     &                rho,rhogrd,rhg,wght,gga_hs,buf)
 #endif
 
 #ifdef MOD_CDFT
@@ -883,13 +900,13 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
             call sdft_lr(dtrmat,excmat,nxcmat,
      &                   isymop,ihrmop,.false.,
      &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
+     &                   rho,rhogrd,rhg,wght,gga_ha,buf)
           endif
 !         VRG contribution
           if(lbit(lbit_cdft,2)) then
             call vrg_lr(dtrmat,excmat,nxcmat,
      &                  isymop,ihrmop,gao,gao1,
-     &                  rho,rhogrd,rhg,wght,dogga,buf)
+     &                  rho,rhogrd,rhg,wght,gga_hs,buf)
           endif
 #endif /* MOD_CDFT */
         endif
@@ -897,7 +914,8 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !       quadratic response
         if(doqr) then
 #ifdef MOD_CDFT
-          call sdft_qr(dogga,
+          gga_qr = gga_hs .or. gga_ha
+          call sdft_qr(gga_qr,
      &                 lbit(lbit_cdft,1),
      &                 dtrmat,excmat,
      &                 isymop,ihrmop,gao,gao1,
@@ -916,17 +934,17 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
           call dft_lr(dtrmat,excmat,3,
      &                isymop,ihrmop,.true.,
      &                gao,gao1,
-     &                rho,rhogrd,rhg,wght,dogga,buf)
+     &                rho,rhogrd,rhg,wght,gga_hs,buf)
           if(lbit(lbit_cdft,1)) then
             call sdft_lr(dtrmat,excmat,3,
      &                   isymop,ihrmop,.true.,
      &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
+     &                   rho,rhogrd,rhg,wght,gga_ha,buf)
           endif
 #else
           call dft_qr(dtrmat,excmat,
      &                isymop,ihrmop,gao,gao1,
-     &                rho,rhogrd,rhg,wght,dogga,buf)
+     &                rho,rhogrd,rhg,wght,gga_hs,buf)
 #endif /* MOD_CDFT */
         endif
 
@@ -1274,11 +1292,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SYM_ANTIHERMITIAN */
-      SUBROUTINE SYM_ANTIHERMITIAN(AMAT,
-     &                             NMAT,
-     &                             ISYMOP,
-     &                             IHRMOP)
+      SUBROUTINE sym_ha(AMAT,
+     &                  NMAT,
+     &                  ISYMOP,
+     &                  IHRMOP)
 C=======================================================================
 C     symmetrize only specific symmetry blocks of a matrix
 C     written by Trond Saue march 2004
@@ -1364,11 +1381,10 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SYM_HERMITIAN */
-      SUBROUTINE SYM_HERMITIAN(AMAT,
-     &                         NMAT,
-     &                         ISYMOP,
-     &                         IHRMOP)
+      SUBROUTINE sym_hs(AMAT,
+     &                  NMAT,
+     &                  ISYMOP,
+     &                  IHRMOP)
 C=======================================================================
 C     symmetrize only specific symmetry blocks of a matrix
 C     written by Trond Saue march 2004
@@ -1586,38 +1602,39 @@ C
       CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF,NBAST*6,WORK,KFREE,LFREE)
-      IF (DOERG) THEN
-         NDER = 0
-      END IF 
-      IF (DOGRD) THEN
-         NDER = 1
-         CALL DZERO(GRADFT,MXCOOR)
-      END IF
-      IF (DOLND) THEN
-         NDER = 0
-      END IF
-      IF (DOLR.OR.DOQR) THEN
-         NDER = 0
-      END IF
-C
-      DOGGA = DFTISGGA()
-      CALL MPI_RECV(DOGGA,1,MPI_LOGICAL,MPARID,11,
-     &              MPI_COMM_WORLD,ISTAT,IERR)
-      DOGRHO = .FALSE.
-      DOLRHO = .FALSE.
-C
-      IF (DOGGA) THEN
-         FROMVX = DFTPOT
-         DOGRHO = .TRUE.
-         NDER = NDER + 1 
-         IF (FROMVX) THEN
-            DOLRHO = .TRUE.
-            NDER = NDER + 1 
-         END IF
-      ELSE
-         FROMVX = .FALSE.
-      END IF
-C
+
+
+!     figure out whether we need derivatives of basis functions
+!     and whether gga code structure will be used
+
+      nder = 0
+      if (dogrd) then
+        nder = 1
+        call dzero(gradft, mxcoor)
+      end if
+
+!     receive gga_hs and gga_ha
+      call mpi_recv(gga_hs, 1, mpi_logical, mparid, 11, 
+     &              mpi_comm_world, istat, ierr)
+      call mpi_recv(gga_ha, 1, mpi_logical, mparid, 12,
+     &              mpi_comm_world, istat, ierr)
+
+      dogrho = .false.
+      dolrho = .false.
+
+      if (gga_hs .or. gga_ha) then
+        dogrho = .true.
+        nder   = nder + 1 
+        fromvx = dftpot
+        if (fromvx) then
+          dolrho = .true.
+          nder   = nder + 1 
+        end if
+      else
+        fromvx = .false.
+      end if
+
+
 C     integrate
 C
       ELCTRN = D0

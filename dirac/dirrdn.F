@@ -3914,9 +3914,6 @@ C
       DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       DFTHAM  = .FALSE.
-#ifdef MOD_DFT
-      ALDAON  = .FALSE.
-#endif
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
@@ -4147,16 +4144,14 @@ C             projection scheme
              ICTLV1C(2) = 1
              ICHANG = ICHANG + 1
              GO TO 100
-  116      CONTINUE
-C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
-             DFTHAM = .TRUE.
-#ifdef MOD_DFT
-             ALDAON = .TRUE.
-#endif
-#ifdef MOD_DFT
-             CALL DOALDA(.TRUE.)
-#endif
-             GOTO 100
+
+!          old ALDA keyword
+  116      continue
+           write(lupri, *) 'place .ALDA keyword after *DFT'
+           call quit('place .ALDA keyword after *DFT')
+           go to 100
+
+
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
 #ifdef MOD_DFT

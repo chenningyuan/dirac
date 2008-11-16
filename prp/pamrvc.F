@@ -1419,8 +1419,11 @@ C
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
 #ifdef MOD_DFT
-C        for ALDA turn off exchange
-         IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
+!        turn off exchange for .ALDA
+!        unless user wants .XALDA
+         if (dftadd 
+     &       .and. (alda_hs .or. alda_ha)
+     &       .and. .not. xalda) ifckop(im) = 2
 #endif
          ISYMOP(IM) = JSYMOP
       END DO
@@ -1435,8 +1438,11 @@ C
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
 #ifdef MOD_DFT
-C        for ALDA turn off exchange
-         IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
+!        turn off exchange for .ALDA
+!        unless user wants .XALDA
+         if (dftadd 
+     &       .and. (alda_hs .or. alda_ha)
+     &       .and. .not. xalda) ifckop(im) = 2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO
@@ -1454,8 +1460,11 @@ C
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
 #ifdef MOD_DFT
-C        for ALDA turn off exchange
-         IF(DFTADD .AND. ALDAON) IFCKOP(IM)=2
+!        turn off exchange for .ALDA
+!        unless user wants .XALDA
+         if (dftadd 
+     &       .and. (alda_hs .or. alda_ha)
+     &       .and. .not. xalda) ifckop(im) = 2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO

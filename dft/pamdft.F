@@ -33,7 +33,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 28)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -58,7 +58,9 @@ C
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
-     &            '.COLLIN','.GAUNTS','.ZIPGRI','.XXXXXX'/
+     &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
+     &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
+     &            '.XALDA-','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -96,8 +98,12 @@ C          geometry in a geometry optimization) /hjaaj
       import_grid = .false.
       export_grid = .false.
       ZIPGRID = .FALSE.
-C
-C
+
+      alda_hs = .false.
+      alda_ha = .false.
+      xalda   = .false.
+
+
 C     initialize /DFTAC/
 C     ==================
 C
@@ -131,7 +137,9 @@ C
      &                      5, 6, 7, 8,
      &                      9,10,11,12,
      &                     13,14,15,16,
-     &                     17,18,19,20), I
+     &                     17,18,19,20,
+     &                     21,22,23,24,
+     &                     25,26,27,28), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -239,10 +247,10 @@ C                                 SAOP with response part
 C                                      asymptotic part is LBalpha
      &                               + 64
                  DFTHAM     = .TRUE.
-                 ALDAON     = .TRUE.
-#ifdef MOD_DFT
-                 CALL DOALDA(.TRUE.)
-#endif
+                 alda_hs = .true.
+                 alda_ha = .true.
+                 call setaldahs(.true.) !activate ALDA for the H+ part
+                 call setaldaha(.true.) !activate ALDA for the H- part
                  GOTO 100
 
  15              CONTINUE
@@ -278,8 +286,67 @@ C     .GAUNTSCALE
                  READ(LUCMD,'(A30)') ZIPGRID_TEXT
                  GOTO 100
 
- 20              CONTINUE
-                 GO TO 100
+!                .ALDA
+ 20              continue
+                 alda_hs = .true.
+                 alda_ha = .true.
+                 call setaldahs(.true.) !activate ALDA for the H+ part
+                 call setaldaha(.true.) !activate ALDA for the H- part
+                 go to 100
+
+!                .ALDA+
+!                use ALDA only for the      hermitian part
+ 21              continue
+                 alda_hs = .true.
+                 call setaldahs(.true.) !activate ALDA for the H+ part
+                 go to 100
+
+!                .ALDA-
+!                use ALDA only for the anti-hermitian part
+ 22              continue
+                 alda_ha = .true.
+                 call setaldaha(.true.) !activate ALDA for the H- part
+                 go to 100
+
+!                .XALDA
+!                use        (1-f)*S + VWN + f*HFx
+!                instead of       S + VWN
+ 23              continue
+                 xalda   = .true.
+                 alda_hs = .true.
+                 alda_ha = .true.
+                 call setxalda(.true.)
+                 call setaldahs(.true.) !activate ALDA for the H+ part
+                 call setaldaha(.true.) !activate ALDA for the H- part
+                 go to 100
+
+!                .XALDA+
+!                use XALDA only for the      hermitian part
+ 24              continue
+                 xalda   = .true.
+                 alda_hs = .true.
+                 call setxalda(.true.)
+                 call setaldahs(.true.) !activate ALDA for the H+ part
+                 go to 100
+
+!                .XALDA-
+!                use XALDA only for the anti-hermitian part
+ 25              continue
+                 xalda   = .true.
+                 alda_ha = .true.
+                 call setxalda(.true.)
+                 call setaldaha(.true.) !activate ALDA for the H- part
+                 go to 100
+
+ 26              continue
+                 go to 100
+
+ 27              continue
+                 go to 100
+
+ 28              continue
+                 go to 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE

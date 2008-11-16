@@ -157,15 +157,28 @@ dft_func_input (const char* line, int* inperr, int len, char** ConfString,
 
     return 0; /* failed to find */
 }
-static int do_alda  = 0; /* do not do ALDA approximation by default */
+
+static int do_xalda   = 0;
+static int do_alda_hs = 0; /* ALDA for      density part (     hermitian part), off by default */
+static int do_alda_ha = 0; /* ALDA for spin density part (anti-hermitian part), off by default */
 
 void
-doalda_(const int *alda)
+setxalda_(const int *xalda)
 {
-    do_alda = *alda;
+  do_xalda = *xalda;
 }
 
+void
+setaldahs_(const int *aldahs)
+{
+  do_alda_hs = *aldahs;
+}
 
+void
+setaldaha_(const int *aldaha)
+{
+  do_alda_ha = *aldaha;
+}
 
 void
 dftpot0_(FirstDrv *ds,
@@ -198,6 +211,7 @@ dftpot1_(SecondDrv *ds,
   real grada, grada2, grada3;
   real bygrada, bygrada2, bygrada3;
   real by2, by4, by8, by16, by32;
+  real x;
 
   drv2_clear(&drvs);
 
@@ -222,8 +236,13 @@ dftpot1_(SecondDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.second(&drvs, *weight, &dp);
+  if (do_alda_hs) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.second(&drvs, *weight*x, &dp);
+    VWNFunctional.second(&drvs, *weight, &dp); }
   else
     selected_func->second(&drvs, *weight, &dp);
 
@@ -275,6 +294,7 @@ dftpot2_(ThirdDrv *ds,
     real grad3 = grad2* *grad;
     real grad4 = grad3* *grad;
     real grad5 = grad4* *grad;
+  real x;
 
     FunThirdFuncDrv drvs;
     FunDensProp dp;
@@ -287,10 +307,15 @@ dftpot2_(ThirdDrv *ds,
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
 
     /* Get the functional derivatives for the appropriate functional */
-    if(do_alda)
-        LDAFunctional.third(&drvs, *weight, &dp);
+    if (do_alda_hs) {
+      if (do_xalda)
+        x = 1.0 - fun_get_hf_weight();
+      else
+        x = 1.0;
+      SlaterFunctional.third(&drvs, *weight*x, &dp);
+      VWNFunctional.third(&drvs, *weight, &dp); }
     else
-        selected_func->third(&drvs, *weight, &dp);
+      selected_func->third(&drvs, *weight, &dp);
     
     /* Evaluate the different derivatives */
     ds->fR   = drvs.df1000;
@@ -320,6 +345,7 @@ sdftpot1_(SecondDrv *ds,
   real grada, grada2, grada3;
   real bygrada, bygrada2, bygrada3;
   real by2, by4, by8, by16, by32;
+  real x;
 
   drv2_clear(&drvs);
 
@@ -344,8 +370,13 @@ sdftpot1_(SecondDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.second(&drvs, *weight, &dp);
+  if (do_alda_ha) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.second(&drvs, *weight*x, &dp);
+    VWNFunctional.second(&drvs, *weight, &dp); }
   else
     selected_func->second(&drvs, *weight, &dp);
        
@@ -384,6 +415,7 @@ sdftpot2_(ThirdDrv *ds,
   real grada, grada2, grada3, grada4, grada5;
   real bygrada, bygrada2, bygrada3, bygrada4, bygrada5;
   real by2, by4, by8, by16, by32, by64, by128, by256;
+  real x;
 
   drv3_clear(&drvs);
 
@@ -415,8 +447,13 @@ sdftpot2_(ThirdDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.third(&drvs, *weight, &dp);
+  if (do_alda_ha) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.third(&drvs, *weight*x, &dp);
+    VWNFunctional.third(&drvs, *weight, &dp); }
   else
     selected_func->third(&drvs, *weight, &dp);
 
@@ -549,7 +586,9 @@ dftsyncfunc_(int* amImaster)
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
     if(diracinfpar_.nodes==0||Initialized) return;
-    MPI_Bcast(&do_alda,      1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_xalda,     1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&dft_conf_len, 1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
         char* line = malloc(dft_conf_len);
