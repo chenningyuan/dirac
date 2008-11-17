@@ -39,16 +39,40 @@ C=======================================================================
      
       CALL MODENS(WORK(KDMAT_MO),STRING,IPRVIS)
 
+!     get AO density matrix
+
+      CALL DZERO(DMAT_AO,N2BBASXQ)
+
+!#ifdef PRG_DIRAC
+#ifdef allow_virtual_orbital_density
+!     radovan: this code part is for Markus
+!              to allow virtual orbital densities
+!              in DMOLI3 this block gets filtered out
+!              i will make the code nicer later, for
+!              the moment this fix is ok ...
+      DO I = 1,NFSYM
+        CALL QTRANS('MOAO','S',D0,
+     &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &              DMAT_AO(1+I2BASX(I,I)),
+     &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+     &              WORK(KDMAT_MO+I2ORBX(I,I)),
+     &              NORBT,NORBT,1,IPQTOQ(1,0),
+     &              CMO(1+ICMOQ(I)),
+     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &              CMO(1+ICMOQ(I)),
+     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &              WORK(KFREE),LFREE,0)
+      ENDDO
+      CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
+#else
       JSYMOP = 1
       IREPOP = 0
       JOPSY  = JBTOF(IREPOP,1)
       IH     = 1
 
-!     get AO density matrix
-
-      CALL DZERO(DMAT_AO,N2BBASXQ)
       CALL DMOLI3(0,IH,DMAT_AO,CMO,WORK(KDMAT_MO),
      &            WORK,KFREE,LFREE)
+#endif /* allow_virtual_orbital_density */
 
       IF(NZ .LT. 4) THEN
         DO IZ = 1,NZ
