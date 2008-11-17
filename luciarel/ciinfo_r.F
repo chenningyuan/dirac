@@ -1101,7 +1101,7 @@ C         size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
      &                    NELFSPGP,MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,
      &                    MXADKBLK)
           LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
-          WRITE(LUWRT,*) ' LSCR2 for IJSYM',LSCR2,IJSYM
+CSK       WRITE(LUWRT,*) ' LSCR2 for IJSYM',LSCR2,IJSYM
         END DO
 C       ^ end loop over MK2 values
       END DO
@@ -1117,13 +1117,13 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
 C     
-c     IF( NTEST .gt. 5 )THEN
+      IF( NTEST .gt. 5 )THEN
         write(luwrt,*) 'L3BLOCK is',L3BLOCK
         write(luwrt,*) 'LBLOCK is',LBLOCK
         write(luwrt,*) 'LSCR2 is',LSCR2
         write(luwrt,*) 'LSCR12 is',LSCR12
         write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
-c     END IF
+      END IF
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
@@ -5279,7 +5279,6 @@ csk     &                    L0BLOCK,L2BLOCK,LCSBLK
       END IF
 *
 *     ... set LBLOCK value
-*
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
       IF( I_SET_L2BLOCK .gt. 1 .or. I_USE_PC .eq. 0 ) THEN
        LBLOCK = MAX(LBLOCK,LCSBLK)
@@ -5430,7 +5429,7 @@ C
 C     hidden information: IABS(I_SET_L2BLOCK) = ICSM
 C
       ICSM_SCR = IABS(I_SET_L2BLOCK)
-      WRITE(LUWRT,*) ' ISM, ICSM_SCR is',ISM, ICSM_SCR
+C     WRITE(LUWRT,*) ' ISM, ICSM_SCR is',ISM, ICSM_SCR
 C
       CALL MEMMAR(KPCLBTX ,  MXNTTS,'ADDL  ',1,'CLBTX ')
       CALL MEMMAR(KPCLEBTX,  MXNTTS,'ADDL  ',1,'CLEBTX')
@@ -6084,8 +6083,8 @@ C       set back to default...
         L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4
       END IF
 C
-csk   WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-csk  &                  L0BLOCK,L2BLOCK,LCSBLK
+CSK   WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
+CSK  &                  L0BLOCK,L2BLOCK,LCSBLK
 C
       L2BLOCK = MIN(LCSBLK,L2BLOCK)
 C
@@ -6116,8 +6115,8 @@ C
 C
       DO 100 IJSYM = 1, MXPROPKRCI_SYM
 C
-C       WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM',
-C    &                   IXSYMLIST(IJSYM), IJSYM
+CSK     WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM, LBLOCK',
+CSK  &                   IXSYMLIST(IJSYM), IJSYM, LBLOCK
         IF( IXSYMLIST(IJSYM) .eq. 0 ) GOTO 100
 C       loop over MS2 spaces for "active" symmetry irrep
         DO IMS2 = 1, NMS2VAL
@@ -6189,7 +6188,6 @@ C
 C
       NUM_BLOCKS  = NBLOCK_MAX
       NUM_BLOCKS2 = NBLOCK_MAX * IRC
-      WRITE(LUWRT,*) ' NXSYMPAIRS for RCCTOS allocation',NXSYMPAIRS
 C
       CALL MEMMAR(KNODELIST, NUM_BLOCKS *IXSYMACT  ,'ADDS  ',1,'NODELS')
       CALL MEMMAR(KBLOCKLIST,NUM_BLOCKS *IXSYMACT  ,'ADDS  ',1,'BLCKLS')
@@ -6315,8 +6313,8 @@ C     sigma irrep no matter from which T_X x C pair it will be generated
 C
 C     COMPDISTL and COMPRCCTOS on common block in include/parluci.h.
 C
-      WRITE(LUWRT,*) ' calculating block distribution for act. irreps',
-     &                 IXSYMACT
+C     WRITE(LUWRT,*) ' block distribution for sum_(act. irreps) =',
+C    &                 IXSYMACT
 C
       DO I = 1, IXSYMACT
         IISYM = IXSYMLIST(I)
@@ -6339,9 +6337,9 @@ C            ---------------------------------------
 C            set correct symmetry for C and sigma
              ICSM = IISYM
              ISSM = IJSYM
-      WRITE(LUWRT,*) ' active: ICSM and ISSM are IXPAIR #: ',
-     &                         ICSM,ISSM,IXPAIR
-      WRITE(LUWRT,*) ' IXSYMPAIRS(ICSM,ISSM)=',IXSYMPAIRS(ICSM,ISSM)
+C     WRITE(LUWRT,*) ' active: ICSM and ISSM are IXPAIR #: ',
+C    &                         ICSM,ISSM,IXPAIR
+C     WRITE(LUWRT,*) ' IXSYMPAIRS(ICSM,ISSM)=',IXSYMPAIRS(ICSM,ISSM)
 C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) before'
 C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
 C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) before'
@@ -6365,18 +6363,18 @@ C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) after'
 C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
 C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) after'
 C     CALL IWRTMAMN(IBLOCKL_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-      WRITE(LUWRT,*) ' ICSM,ISSM, RCCTOS_X(1,IXPAIR),IXPAIR',
-     &                 ICSM,ISSM,IXPAIR
-      CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
-     &              NUM_BLOCKS2,LUWRT)
+C     WRITE(LUWRT,*) ' ICSM,ISSM, RCCTOS_X(1,IXPAIR),IXPAIR',
+C    &                 ICSM,ISSM,IXPAIR
+C     CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
+C    &              NUM_BLOCKS2,LUWRT)
            END IF
         END DO
       END DO
-      WRITE(LUWRT,*) ' final RCCTOS_X lists of NXSYMPAIRS',NXSYMPAIRS
-      DO I = 1, NXSYMPAIRS
-        WRITE(LUWRT,*) ' RCCTOS_X(1,I) ,I',I
-        CALL IWRTMAMN(RCCTOS_X(1,I),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-      END DO
+C     WRITE(LUWRT,*) ' final RCCTOS_X lists of NXSYMPAIRS',NXSYMPAIRS
+C     DO I = 1, NXSYMPAIRS
+C       WRITE(LUWRT,*) ' RCCTOS_X(1,I) ,I',I
+C       CALL IWRTMAMN(RCCTOS_X(1,I),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+C     END DO
       END
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      

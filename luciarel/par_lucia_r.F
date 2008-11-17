@@ -80,6 +80,7 @@ C**********************************************************************
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
 #include "ctcc.inc"
+#include "cands.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
       INTEGER(KIND=MPI_OFFSET_KIND) I_BWEIGHT, I_BPROC
@@ -205,7 +206,7 @@ C
         CALL BLOCK_DISTR_2(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
      &                     WORK(KCWEIGHTF),
      &                     WORK(KGROUPCHECK),I_BWEIGHT,I_BPROC,
-     &                     WORK(KACT_NUM),ICOMM_SIZE_TMP)
+     &                     WORK(KACT_NUM),ICOMM_SIZE_TMP,ISSM)
 C       release memory
         CALL MPIXMEM_FREE(I_BWEIGHT)
         CALL MPIXMEM_FREE(I_BPROC)
@@ -214,7 +215,8 @@ C
 C
 C       default block distribution - if requested
         IF( COMPDISTL ) CALL BLOCK_DISTR_1(NUM_BLOCKS,IBLOCKL_S,
-     &                                     NPARBLOCK,WORK(KCWEIGHTF))
+     &                                     NPARBLOCK,WORK(KCWEIGHTF),
+     &                                     ISSM)
 C
       END IF
 C
@@ -343,7 +345,8 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,ICWEIGHTF)
+      SUBROUTINE BLOCK_DISTR_1(NDIM,IBLOCKL,NPARBLOCK,ICWEIGHTF,
+     &                         JSYM_DISTBLK)
 C
 C     Block distribution routine for non-vanishing TTSS-block - initial 
 C     version.
@@ -364,6 +367,8 @@ C
 C     NDIM:            total number of TTSS-blocks
 C     IBLOCKL(NDIM):   total length of each block
 C     ICWEIGHTF(NDIM): total 'weight factors' for each block
+C     JSYM_DISTBLK   : symmetry irrep for which blocks are to be
+C                      distributed
 C
 C     ------
 C     OUTPUT
@@ -448,6 +453,12 @@ CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       ITEMPW1 = MXSIZE
 *
       IF(NPTEST.GE.0) THEN
+        WRITE(LUWRT,'(/7X,A)')
+     &  '==================================================='
+        WRITE(LUWRT,'(7X, A,I2)')
+     &  ' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
+        WRITE(LUWRT,'(7X,A/)')
+     &  '==================================================='
          WRITE(LUWRT,'(A,I19)')
      &'  total number of processes to distribute on :',NMPROC
          WRITE(LUWRT,'(A,I19)')
@@ -592,11 +603,9 @@ C
              Call Abend2('NE BLOCK_DISTR_1: Block not distributed')
           END IF
         END DO
-        WRITE(LUWRT,*)' '
-        WRITE(LUWRT,'(20X,A)')'================================'
-        WRITE(LUWRT,'(20X,A)')' Summation of even distribution '
-        WRITE(LUWRT,'(20X,A)')'================================'
-        WRITE(LUWRT,*)' '
+        WRITE(LUWRT,'(/20X,A)')'================================'
+        WRITE(LUWRT,'(20X, A)')' Summation of even distribution '
+        WRITE(LUWRT,'(20X,A/)')'================================'
         DO ISTI = 1, NTEMPP
           ITLTND = 0
           ITLBND = 0
@@ -630,9 +639,12 @@ C
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_2(NDIM,IBLOCKL,NPARBLOCK,ICWEIGHTF,
      &                         IALLGRPLST,I_BWEIGHT,I_BPROC,
-     &                         IACT_NUM,ICOMM_SZ_TMP)
+     &                         IACT_NUM,ICOMM_SZ_TMP,JSYM_DISTBLK)
 C
 C     Block distribution routine for non-vanishing TTSS-block.
+C
+C     JSYM_DISTBLK   : symmetry irrep for which blocks are to be
+C                      distributed
 C
 C     purpose: 
 C
@@ -763,6 +775,12 @@ C
       IPRODLEN = ITOTBLCKL/NTEMPP
 C
       IF(NPTEST.GE.0) THEN
+        WRITE(LUWRT,'(/7X,A)')
+     &  '==================================================='
+        WRITE(LUWRT,'(7X, A,I2)')
+     &  ' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
+        WRITE(LUWRT,'(7X,A/)')
+     &  '==================================================='
          WRITE(LUWRT,'(A,I19)')
      &'  total number of processes to distribute on :',NMPROC
          WRITE(LUWRT,'(A,I19)')
@@ -856,11 +874,9 @@ C
              Call Abend2('NE BLOCK_DISTR_2: Block not distributed')
           END IF
         END DO
-        WRITE(LUWRT,*)' '
-        WRITE(LUWRT,'(20X,A)')'================================'
-        WRITE(LUWRT,'(20X,A)')' Summation of even distribution '
-        WRITE(LUWRT,'(20X,A)')'================================'
-        WRITE(LUWRT,*)' '
+        WRITE(LUWRT,'(/20X,A)')'================================'
+        WRITE(LUWRT,'(20X, A)')' Summation of even distribution '
+        WRITE(LUWRT,'(20X,A/)')'================================'
         DO ISTI = 1, NTEMPP
           ITLTND = 0
           ITLBND = 0
@@ -1565,14 +1581,14 @@ C       next process in this group
         END IF
       END DO
 C
-C     IF( NPTEST_VAR .ge. 10 ) THEN
+      IF( NPTEST_VAR .ge. 10 ) THEN
         WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU1  offset :', MY_LU1_OFF
         WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU2  offset :', MY_LU2_OFF
         WRITE(LUWRT,*) '  MY_VEC1_IOFF :', MY_VEC1_IOFF
         WRITE(LUWRT,*) '  MY_VEC2_IOFF :', MY_VEC2_IOFF
         WRITE(LUWRT,*) '  MY_ACT_BLK1  :', MY_ACT_BLK1
         WRITE(LUWRT,*) '  MY_ACT_BLK2  :', MY_ACT_BLK2
-C     END IF
+      END IF
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1618,11 +1634,11 @@ C       offset for ILU1 and LU1LIST
         ILU1_IOFFX     = MY_LU1_OFF + MULTX * MY_VEC2_IOFF
         INT_ILU1_IOFFX = 1 + NVEC_TOT * MY_ACT_BLK2
         NBLOCK         = IXBLK(IXSYM)
-        WRITE(LUWRT,*) ' copy #vector(s) for sym',NVEC,IXSYM
-        WRITE(LUWRT,*) ' ILU1_IOFFX and INT_ILU1_IOFFX (MYPROC)',
-     &                   ILU1_IOFFX,INT_ILU1_IOFFX,MYPROC
-        WRITE(LUWRT,*) ' LUOUTLIST NOW',MYPROC
-        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+C       WRITE(LUWRT,*) ' copy #vector(s) for sym',NVEC,IXSYM
+C       WRITE(LUWRT,*) ' ILU1_IOFFX and INT_ILU1_IOFFX (MYPROC)',
+C    &                   ILU1_IOFFX,INT_ILU1_IOFFX,MYPROC
+C       WRITE(LUWRT,*) ' LUOUTLIST NOW',MYPROC
+C       CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C       distribute C vector(s)
         CALL COP_REST_VEC_REL(VEC1,LUC,LUOUT,ILU1_IOFFX,
      &                        LU1LIST(INT_ILU1_IOFFX),
@@ -1633,8 +1649,8 @@ C       close C vector file (opened in GET_LUC_FILE)
 C       keep track of correct offset
         NVEC_TOT = NVEC_TOT + NVEC
       END DO
-      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
-      CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+C     WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
+C     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
 ***********************************************************************
@@ -8317,7 +8333,7 @@ C
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
-      ELSE IF( CIRUN .eq. 'IJKLRO') THEN
+      ELSE IF( CIRUN .eq. 'IJKLRO' .or. CIRUN .eq. 'PROP1 ' ) THEN
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
@@ -8328,40 +8344,40 @@ C
      &                 MPI_COMM_WORLD,IERR)
       END IF
 C
-C       all needed for proper read-in of integrals...?
+C     all needed for proper read-in of integrals...?
 C
-        CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IPQTOQ,4*8,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IQTOPQ,4*8,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JTRLVL,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(nzxopp,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(OPT_NOPFQ,1,MPI_LOGICAL,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C       big integer arrays ...
-        CALL MPI_BCAST(IDXT2G,4*MAXORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDXU2G,MAXASH,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IDXG2U,MAXORB,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IPQTOQ,4*8,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IQTOPQ,4*8,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JTRLVL,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(nzxopp,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(OPT_NOPFQ,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+C     big integer arrays ...
+      CALL MPI_BCAST(IDXT2G,4*MAXORB,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IDXU2G,MAXASH,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IDXG2U,MAXORB,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
 C
-        CALL MPI_BCAST(NIDX3,2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NIDX4,2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IIDX3,2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IIDX4,2,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NIDX3,2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NIDX4,2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IIDX3,2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IIDX4,2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
 C
       END
 ***********************************************************************
@@ -8427,6 +8443,53 @@ C       ... integrals
      &                 MPI_COMM_WORLD,IERR)
       END IF
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SYNC_NODES_REL_XPROP()
+C**********************************************************************
+C
+C     Synchronize MASTER and NODES in KR-CI property calculation.
+C
+C     written by S. Knecht - Nov 2008
+C
+C     last revision:
+C
+C**********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "krciprop.h"
+#include "dcbkrci.h"
+C
+C     common block in dcbkrci.h
+      CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,IERR)
+C  
+C     common block in krciprop.h - integer part
+      CALL MPI_BCAST(NPROP_KRCI,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(LPROP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NPROP_ROOTS_KRCI,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ISYMOPPRP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IN1ELPRP_KRCI,MXPROP_KRCI,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ISYMEIG_KRCI,MXPRPE_KRCI,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IHTYPE_X,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+C  
+C     common block in krciprop.h - logicals
+      CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
       END
 ***********************************************************************
 *                                                                     *

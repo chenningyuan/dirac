@@ -1946,7 +1946,7 @@ C
  100    CONTINUE
 C
         IF( ALLOC_INT ) THEN
-          write(LUWRT,'(/A,I16,A)') 
+          IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(/A,I16,A)') 
      &         '  Allocating for ',NALLINT,' integrals.'
           CALL MEMMAR_I8(KT_CC,NALLINT,'ADDS  ',2,'KT_CC ')
           CALL DZERO8(WORK(KT_CC),NALLINT)
@@ -1970,7 +1970,7 @@ C
           call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
           CALL IZERO(IPOSDIA,NDIAMINT)
           CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
-          write(LUWRT,'(A,I16,A/)') 
+          IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(A,I16,A/)') 
      &         '  Allocating for ',NDIAMINT,' diagonal integrals.'
         ELSE
           call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')

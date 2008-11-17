@@ -619,6 +619,8 @@ C
 C
 C     largest number of dets - used for MPI file offset calculation
       L_COMBI_MAX = MAX(L_COMBI_MAX_SCR,L_COMBI_MAX)
+C     initialize L_COMBI to avoid crash in block distribution 
+      L_COMBI     = L_COMBI_MAX
 C
 C     T block allocation
       CALL MEMMAR_I8(KT_CC,IL_KTCC8,'ADDL  ',2,'KT_CC ')
@@ -663,12 +665,6 @@ C     initialize ...
       CALL IZERO(WORK(KILU1LIST),IALL_LU1)
       CALL IZERO(WORK(KILU2LIST),IALL_LU2)
       CALL IZERO(WORK(KILUCLIST),IALL_LUC)
-#endif
-C
-C     end of setup section
-C     --------------------
-C
-#if defined (VAR_MPI2)
 C
 C     T block distribution - reordered arrays of property integrals
       CALL DIST_XPROP(WORK(KT_CC),LUPROP_MAT)
@@ -678,6 +674,8 @@ C     distribute C vectors from MASTER to slaves for all active irreps
      &                WORK(KNODELIST),WORK(KBLOCKLIST),WORK(KXSYM_BLK),
      &                IXSYMLIST,IXSYMACT,IRC)
 C
+C     end of setup section
+C     --------------------
 #endif
 C
 C     computation section
@@ -786,8 +784,8 @@ C
             ELSE
               CALL MEMMAR(KXI,               0,'ADDL  ',2,'KXI   ')
             END IF
-      WRITE(LUWRT,*) 'calculating dot pd for s vector of ISSM and #',
-     &                ISSM,ISTATE_X
+C     WRITE(LUWRT,*) 'calculating dot pd for s vector of ISSM and #',
+C    &                ISSM,ISTATE_X
             CALL INPRDD_REAL_CPLX_XPRP(ILU2,ILU1,WORK(KVEC1),WORK(KVEC2)
      &                                ,WORK(KXR),WORK(KXI),NBATX,
      &                                 WORK(KPCLBXX),WORK(KPCLEXX),
@@ -796,14 +794,14 @@ C
      &                                 WORK(KILU2LIST),WORK(KILU1LIST),
      &                                 NPROP_ROOTS_KRCI,ISSM,
      &                                 ISYMEIG_KRCI,MZ)
-            WRITE(LUWRT,*) ' WORK(KXR) '
-            CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
-     &                    NPROP_ROOTS_KRCI,LUWRT)
-            IF( MZ.eq.2)THEN
-              WRITE(LUWRT,*) ' WORK(KXI) '
-              CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
-     &                      NPROP_ROOTS_KRCI,LUWRT)
-            END IF
+C           WRITE(LUWRT,*) ' WORK(KXR) '
+C           CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
+C    &                    NPROP_ROOTS_KRCI,LUWRT)
+C           IF( MZ.eq.2)THEN
+C             WRITE(LUWRT,*) ' WORK(KXI) '
+C             CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
+C    &                      NPROP_ROOTS_KRCI,LUWRT)
+C           END IF
 C
             DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
               IF( ISSM .ne. ISYMEIG_KRCI(ISTATE_Y) ) GOTO 300
@@ -860,8 +858,8 @@ C
         CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUWRT)
       END IF
       NTESTX = 00
-      WRITE(LUWRT,*) ' stefan forced me to stop in XPROP_KRCI'
-      CALL QUIT( ' stefan forced me to stop in XPROP_KRCI' )
+c     WRITE(LUWRT,*) ' stefan forced me to stop in XPROP_KRCI'
+c     CALL QUIT( ' stefan forced me to stop in XPROP_KRCI' )
 C     release memory
  9999 call MEMMAR(KDUMMY,IDUMMY,'FLUSM ',IDUM,'XPROP ')
 C
