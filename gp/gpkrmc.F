@@ -1303,3 +1303,24 @@ C
       END DO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DETXFLAB */
+      SUBROUTINE DETXFLAB(XSYMFLAB,IXSYM)
+C***********************************************************************
+C
+C     determine KRCI_CVECS.x xSYMFLAB
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+C
+      CHARACTER*1 XSYMFLAB(IXSYM), XLAB(16)
+      DATA (XLAB(I),I=1,16) /"a","b","c","d","e","f","g","h","i","j",
+     &                       "k","l","m","n","o","p"/
+      DO I = 1, IXSYM
+        XSYMFLAB(I) = XLAB(I)
+      END DO
+      END
