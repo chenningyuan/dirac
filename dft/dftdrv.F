@@ -241,72 +241,66 @@ C    &              KFREE,LFREE)
 #endif
 
 
-!     in case of GGA symmetrize matrices
-!     see DFT RPA notes for more info
+!     rescale
+      call dscal(n2bbasx, dp5, dmat, 1)
+      if (nasht .gt. 0) call gtdoav(dmat, -1)
 
 #ifdef MOD_DNF
       if (.not. df_fitvxc) then
 #endif /* MOD_DNF */
 
+!     in case of GGA symmetrize matrices
+!     see DFT RPA notes for more info
       if (gga_hs) call sym_hs(excmat, nxcmat, isymop, ihrmop)
 #ifdef MOD_CDFT
-      if(lbit(lbit_cdft,1) .or. lbit(lbit_cdft,2)) then !if spin or current density contribution
+!     if spin or current density contribution
+      if (lbit(lbit_cdft,1) .or. lbit(lbit_cdft,2)) then
         if (gga_ha) call sym_ha(excmat, nxcmat, isymop, ihrmop)
       end if
 #endif /* MOD_CDFT */
 
+      if (dolr .or. doqr) then
+
+!       insert half-phases
+        if (nz .lt. 4) then
+          do im = 1, nxcmat
+            irepop = isymop(im) - 1
+            do iz = 1, nz
+              iq = ipqtoq(iz, irepop)
+              call q2bphase('D', iq, 1, dtrmat(1, iz, im))
+              call q2bphase('F', iq, 1, excmat(1, iz, im))
+            end do
+          end do
+        end if
+
+!       rescale
+        call dscal(n2bbasxq*nxcmat, dp5, dtrmat, 1)
+      end if
+
+!     calculate final expectation value of two-electron matrix
+!     the KS contribution can then be subtracted 
+      if (doerg) then
+        errks = ddot(n2bbasx, dmat, 1, excmat, 1) - errks
+      end if 
+
 #ifdef MOD_DNF
+      else
+!       df_fitvxc is .true.
+        call memrel('dftexc-xcvec', work, kxcveb, kxcveb, kfree, lfree)
       end if
 #endif /* MOD_DNF */
 
+ 10   return
+      end
 
-#ifdef MOD_DNF
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
-#else
-      IF (DOLR.OR.DOQR) THEN
-#endif /* MOD_DNF */
-C       Insert half-phases
-        IF(NZ.LT.4) THEN
-           DO IM = 1,NXCMAT
-            IREPOP = ISYMOP(IM)-1
-            DO IZ = 1,NZ
-              IQ = IPQTOQ(IZ,IREPOP)
-              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDIF
 
-C     Rescale density matrices
-C
-      CALL DSCAL(N2BBASX,DP5,DMAT,1)
-      IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
-#ifdef MOD_DNF
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
-#else
-      IF (DOLR.OR.DOQR) THEN
-#endif /* MOD_DNF */
-        CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
-      END IF
-C
-C     Calculate final expectation value of two-electron matrix;
-C     the Kohn-Sham contribution can then be subtracted 
-#ifdef MOD_DNF
-      IF (DOERG.AND..NOT.DF_FITVXC) THEN
-#else
-      IF (DOERG) THEN
-#endif
-        ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
-      END IF 
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
-      ENDIF
-#endif
-C
- 10   RETURN
-      END
+
+
+
+
+
+
+
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,
