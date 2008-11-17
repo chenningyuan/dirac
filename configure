@@ -488,6 +488,7 @@ if [ -z "$guess" ]; then
    fi
 fi
 
+IsLP64=""
 guess=`./config.sub $guess 2>/dev/null`
 echo
 if echo "$guess" | grep -q x86_64; then
@@ -502,6 +503,7 @@ if echo "$guess" | grep -q x86_64; then
         guess=`echo "$guess"|sed s/x86_64/i686/`
 	echo "Configuring Dirac to use 32 bit integers (LP64)."
 	echo "NB: LUCI* modules cannot be used."
+        IsLP64=1
     else
 	echo " Configuring Dirac to use 64 bit integers (ILP64)."
 	echo " NB: Be aware that your external libraries _must_ also use"
@@ -1335,7 +1337,8 @@ test_lib_arch() {
 #
 
 if [ $bit_set -eq 32 ]; then
-  if [ -z `echo $1 |  grep "64"` ]; then
+ # if [ -z `echo $1 |  grep "64"` ]; then
+  if [ -z `echo $1 |  grep "64"` ]  || [ -n $IsLP64 ]; then
     return 1
   else
     return 0
@@ -1455,14 +1458,14 @@ fi
 # deal with testing of libraries ...
 #
 if [ $testlibs = 1 ]; then
-  $echo "\nTesting of Dirac mathematic/(parallel) libraries for ILP64 support (Integer*8 problem) enabled. \c"
+  $echo "\nTesting of used mathematic/(parallel) libraries for integer data type compatibility enabled. \c"
 else
   echo
   echo " Testing of mathematical libraries DISABLED!"
   echo " Make sure you know _exactly_ why you are doing this, and consider"
   echo " using the built-in reference libraries if you have problems with"
   echo " your optimized system libraries. One common problem is integer"
-  echo " size mismatch between Dirac and BLAS/LAPACK."
+  echo " size mismatch between Dirac and BLAS/LAPACK/(system MPI libs)."
   echo " Hit return to continue.."
   read
   cpp_f90="-DNO_SELFTEST $cpp_f90"
