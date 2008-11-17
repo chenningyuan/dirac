@@ -19,6 +19,111 @@ module dirac_interface_m
 
 contains
 
+  subroutine g_derv(D)
+
+    type(matrix), intent(inout) :: D
+!   ----------------------------------------------------------------------------
+    logical                     :: debug_me = .true.
+
+
+    logical                     :: retur
+
+
+
+
+!   type(matrix)                :: Fx, Fy, Fz
+
+!   integer,      parameter     :: nc = 3
+!   integer                     :: iz, ic
+    integer                     :: i2typ, itype, ndmat, i
+    integer                     :: ifctyp(8)
+!   integer                     :: isymop(nc), ihrmop(nc), ifckop(nc), i
+
+    real(kind_dp), allocatable :: work(:)
+    integer                    :: lwork
+
+
+    real(kind_dp)                :: DNTSKP(3,14,3)
+    real(kind_dp)                :: screen
+
+    real(kind_dp)                :: dummy
+    integer                      :: idummy
+
+
+#include "mxcent.h"
+#include "cbihr2.h"
+#include "dcbgrd.h"
+#include "dcbgen.h"
+#include "exeinf.h"
+#include "dorps.h"
+
+
+
+    D = 4.0d0*D
+    if (debug_me) then
+      call print(D, 'D in AO basis')
+    end if
+
+      DO I = 1, 3*MXCENT
+         DOPERT(I,1) = .TRUE.
+         DOPERT(I,2) = .TRUE.
+      END DO
+      FTRONV = .TRUE.
+      RELGRD = .TRUE.
+      CALL RSETSYM(.FALSE.,RELGRD,.FALSE.,.FALSE.)
+      CALL RTROINI(.FALSE.)
+
+    lwork = 20000000
+    call alloc(work, lwork)
+
+      CALL TROINV(work, lwork)
+
+
+      ITYPE  = 2
+      I2TYP  = 1 !LL
+      NDMAT   = 4
+     screen = -1.0d0
+     retur = .false.
+     INTCLASS  = 0
+
+      IFCTYP = 0
+!     Set IFCTYP
+!        Density matrix 1: Coulomb and Exchange
+         IFCTYP(1) = 13
+!        Density matrix 2-4: Only Exchange
+         IFCTYP(2) = 22
+         IFCTYP(3) = 22
+         IFCTYP(4) = 22
+
+
+             CALL DZERO(GRADEE,MXCOOR)
+           CALL DZERO(DNTSKP,3*14*3)
+
+        write(*,*) 'blub '
+         CALL TWOINT(work,lwork,DUMMY,D%elms,NDMAT,IDUMMY, &
+              IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,1,0,.true., &
+              .true.,.false.,TKTIME,1,0,0,0, &
+              0,retur,IDUMMY,I2TYP,ICEDIF,screen, &
+!             WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,  &
+              dummy,dummy,DUMMY,DNTSKP,  &
+              RELCAL,DUMMY,DUMMY)
+
+      do i = 1, 12
+        write(*,*) 'blub ', i, GRADEE(i)
+      end do
+    call dealloc(work)
+
+
+
+!   call quit('blub')
+
+
+
+
+    D = 0.25d0*D
+
+  end subroutine
+
   subroutine dipnuc_ifc(n, f, fg)
 
 #include "mxcent.h"

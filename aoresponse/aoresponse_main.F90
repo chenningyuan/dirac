@@ -41,6 +41,10 @@ contains
     call energy(D, F)
     call mu(S, D, F)
 
+    if (aoresponse_test_geo) then
+      call test_geo(D)
+    end if
+
     if (aoresponse_alpha) then
       call alpha(S, D, F, (/freq(1), -freq(1)/))
     end if

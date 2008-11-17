@@ -14,6 +14,17 @@ module aoresponse_test_m
 
 contains
 
+  subroutine test_geo(D)
+
+    type(matrix), intent(inout) :: D
+!   ----------------------------------------------------------------------------
+
+    D = 1.0d0*D
+  
+    call g_derv(D)
+
+  end subroutine
+
   subroutine nr_electrons(S, D)
 
     type(matrix), intent(inout) :: S, D
