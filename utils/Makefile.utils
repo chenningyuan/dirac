@@ -4,6 +4,7 @@
 
 utils: $(INSTALL_DIR)/labread.x \
        $(INSTALL_DIR)/twofit.x \
+       $(INSTALL_DIR)/mx2fit.x \
        $(INSTALL_DIR)/rspread.x \
        $(INSTALL_DIR)/twofit.x \
        $(INSTALL_DIR)/test_dsyevr
@@ -21,6 +22,11 @@ $(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o gp/tracing.o
+$(INSTALL_DIR)/mx2fit.x: utils/mx2fit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
+                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
+                    pdpack/dsp.o gp/tracing.o
+
 	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
