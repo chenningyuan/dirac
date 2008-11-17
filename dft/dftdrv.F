@@ -123,11 +123,13 @@ C     Initial expectation value of two-electron matrix
 #endif /* MOD_CDFT */
       ENDIF
 
-      IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
-C
-C     Scale density matrices
-C
-      CALL DSCAL(N2BBASX,D2,DMAT,1)
+!     get average density from open shells
+      if (nasht .gt. 0) call gtdoav(dmat, 1)
+
+!     scale
+      call dscal(n2bbasx, d2, dmat, 1)
+
+
 #ifdef MOD_DNF
 C aspg, how wil this symmetrization work with density fitting? 
 C up to now the code is skipped for df_fitvxc since we pass
@@ -243,6 +245,8 @@ C    &              KFREE,LFREE)
 
 !     rescale
       call dscal(n2bbasx, dp5, dmat, 1)
+
+!     get average density from open shells
       if (nasht .gt. 0) call gtdoav(dmat, -1)
 
 #ifdef MOD_DNF
