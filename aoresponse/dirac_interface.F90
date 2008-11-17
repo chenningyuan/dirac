@@ -66,16 +66,16 @@ contains
     itype  = 2
     screen = -1.0d0
 
-!   ll integrals
-    i2typ    = 1
-    intclass = 0
-
 !   set ifctyp
     ifctyp    = 0
     ifctyp(1) = 13 !coulomb and exchange
     ifctyp(2) = 22 !only exchange
     ifctyp(3) = 22
     ifctyp(4) = 22
+
+!   ll integrals
+    i2typ    = 1
+    intclass = 0
 
     call dzero(gradee, mxcoor)
     call dzero(skip, 3*14*3)
