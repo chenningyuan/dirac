@@ -44,7 +44,7 @@ C
 #include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
-      PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D2PI = D2*PI,D4=4.0D0,CENT=1.0D2)
       PARAMETER(NITER=10)
       PARAMETER(MORDER=16,MP=50,MXPRP=5)
@@ -116,6 +116,7 @@ C
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       WRITE(ILOGG,'(A,A40)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
+C     Convert x-values to atomic units
       DO I = 1,NP
        X(I) = X(I)/XTANG
       ENDDO
@@ -126,76 +127,12 @@ C
  60   CONTINUE
       WRITE(LUPRI,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
       WRITE(ILOGG,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
-      WRITE(LUPRI,'(A)') 
-     &  'Polynomial fit: Give order of polynomial '
-      READ(LUCMD,*) NORDER
-      IF(NORDER.LT.2) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* This program requires at least a quadratic fit.'
-        STOP 'Too low order fit !'
-      ENDIF
-      IF(NORDER.LT.4) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* WARNING: a quartic fit is needed for full functionality.'
-      ENDIF
-      IF(NP.LE.NORDER) THEN
-        WRITE(LUPRI,'(A,I3)') 
-     +    'Too few points for a polynomial fit of order',NORDER
-        STOP 'Too few points !'
-      ENDIF
-      IF(NORDER.GT.MORDER) THEN
-        STOP 'Order to large ....'
-      ENDIF
-      NDIM = NORDER + 1
-      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
-C* Estimate fit:
-      WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
-      WRITE(LUPRI,'(3X,A)') '* Coefficients:'
-      WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &      C(I),I=1,NDIM)  
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
-      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
-C
-      WRITE(ILOGG,'(72A1)') ('=',I=1,72)
-      WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
-      WRITE(ILOGG,'(3X,A)') '* Coefficients:'
-      WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
-     &      C(I),I=1,NDIM)  
-      WRITE(LUPRI,'(8X,A,4X,2A)')
-     &   'X',' Predicted Y',' Relative error'
-      DO I = 1,NP
-        YP = POLVAL(NORDER,C,X(I))
-        DEV = (YP-Y(I))/Y(I)
-        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') XTANG*X(I),YP,DEV
-      ENDDO
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
-      WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
+      CALL MODEFIT(NP,X,Y,A,B,C,MORDER,NORDER,ILOGG)
 C
 C     Find minimum
 C     ============
 C
-C* Find smallest y-value and take corresponding x-value as start value
-C* for Newton-Raphsons method      
-      IYOPT = IDMIN(NP,Y,1)
-      XOPT = X(IYOPT)
-      CALL NEWRAP(NORDER,DTOL,C,XOPT,NITER,IERR)
-      IF(IERR.EQ.1) THEN
-        WRITE(ILOGG,'(A)') 'Newtons method failed'
-        STOP 'Did not find minimum. Newtons method failed...'
-      ELSE
-        YOPT = POLVAL(NORDER,C,XOPT)
-        TEMP = XOPT*XTANG
-        WRITE(LUPRI,'(A,F18.5,A)') 
-     &    '* Local minimum   :',TEMP,' Angstroms'
-        WRITE(ILOGG,'(A,F18.5,A)') 
-     &    '* Local minimum   :',TEMP,' Angstroms'
-        WRITE(LUPRI,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YOPT,' Hartrees'
-        WRITE(ILOGG,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YOPT,' Hartrees'
-      ENDIF
+      CALL MODEMIN(XOPT,NP,X,Y,C,NORDER,ILOGG)
 C
 C     Get masses
 C     ==========
@@ -255,75 +192,16 @@ C
 C     Harmonic constant
 C     ==================
 C
-      V2 = POL2DER(NORDER,C,XOPT)
-      TEMP  = V2*XTJ/XTM/XTM
-      WRITE(LUPRI,'(A,1P,E18.4,A)') 
-     &   '* Force constant  :',TEMP, ' N/m'
-      WRITE(ILOGG,'(A,1P,E18.4,A)') 
-     &   '* Force constant  :',TEMP, ' N/m'
-      OMEGA = SQRT(V2/UM)
-      WRITE(LUPRI,'(A,1P,E12.5,A)') 
-     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
-      WRITE(ILOGG,'(A,1P,E12.5,A)') 
-     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
-      XDEV=D1/SQRT(D2*UM*OMEGA)
-      XMIN=XOPT-XDEV
-      XMAX=XOPT+XDEV
-      TEMP=XDEV*XTANG
-      WRITE(LUPRI,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
-     &   '* Mean displacement in harmonic ground state:',TEMP,
-     &   ' Angstroms',
-     &   '  corresponding to interval: ',
-     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
-      WRITE(ILOGG,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
-     &   '* Mean displacement in harmonic ground state:',TEMP,
-     &   ' Angstroms',
-     &   '  corresponding to interval: ',
-     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
-      IOUT=0
-      DO I = 1,NP
-        IF(X(I).LT.XMIN.OR.X(I).GT.XMAX) IOUT=IOUT+1
-      ENDDO
-      IF(IOUT.GT.0) THEN
-        WRITE(LUPRI,'(A,I5,A/A)')
-     &   '* WARNING : ',IOUT,' points lie outside interval...',
-     &   'This may reduce the quality of your spectroscopic constants.'
-        WRITE(ILOGG,'(A,I5,A/A)')
-     &   '* WARNING : ',IOUT,' points lie outside interval...',
-     &   'This may reduce the quality of your spectroscopic constants.'
-      ENDIF
+      CALL MODEHARM(OMEGA,V2,XOPT,UM,C,NP,NORDER,ILOGG)
+      CALL MODEDISP(X,NP,XOPT,UM,OMEGA,ILOGG)
+      WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       IF(NORDER.LT.4) GOTO 666 
 C
 C     Anharmonic constant
 C     ===================
 C
-      V3 = POLNDER(NORDER,C,XOPT,3)
-      V4 = POLNDER(NORDER,C,XOPT,4)
-      TEMP = 7.0D0*V3*V3/V2/9.0D0
-      T2 = 100.0D0*(TEMP - V4)/V4
-      WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative  (au)             : ', V3,
-     &   '* Fourth derivative (au)             : ', V4
-      WRITE(ILOGG,'(A,D20.10, F9.2,A)')
-     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
-      TEMP = D1/UM/OMEGA
-      T2   = TEMP*TEMP
-      WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
-      WRITE(LUPRI,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
-      WRITE(ILOGG,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
-      DE = OMEGA*OMEGA/WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, 'kJ/mol'
-      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
-      D0 = DE-(OMEGA/D2)+WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
-     &       D0*XTEV, 'eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
-     &       D0*XKJMOL, 'kJ/mol'
+      CALL MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
+      CALL MODEDISS(OMEGA,WXE)
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
 C
 C     Anharmonic constant at non-stationary geometry
@@ -339,36 +217,8 @@ C
      &    'Spectroscopic at non-stationary point ',
      &                  XNEW, 'Angstrom '
         XNEW = XNEW/XTANG
-        V2N = POL2DER(NORDER,C,XNEW)
-        TEMP  = V2N*XTJ/XTM/XTM
-        WRITE(LUPRI,'(A,1P,E18.4,A)') 
-     &   '* Force constant  :',TEMP, ' N/m'
-        WRITE(ILOGG,'(A,1P,E18.4,A)') 
-     &   '* Force constant  :',TEMP, ' N/m'
-        OMEGA = SQRT(V2N/UM)
-        WRITE(LUPRI,'(A,1P,E12.5,A)') 
-     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
-        WRITE(ILOGG,'(A,1P,E12.5,A)') 
-     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
-        V3N = POLNDER(NORDER,C,XNEW,3)
-        V4N = POLNDER(NORDER,C,XNEW,4)
-        TEMP = 7.0D0*V3N*V3N/V2N/9.0D0
-        T2 = 100.0D0*(TEMP - V4N)/V4N
-        WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative  (au)             : ', V3N,
-     &   '* Fourth derivative (au)             : ', V4N
-        WRITE(ILOGG,'(A,D20.10, F9.2,A)')
-     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
-        TEMP = D1/UM/OMEGA
-        T2   = TEMP*TEMP
-        WXE = (5.0D0*TEMP*T2*V3N*V3N/48.0D0/OMEGA)-(V4N*T2/16.0D0)
-        WRITE(LUPRI,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
-        WRITE(ILOGG,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
-      ELSEIF(REPLY.EQ.'n') THEN
+        CALL MODEHARM(OMEGAN,V2N,XNEW,UM,C,NP,NORDER,ILOGG)
+        CALL MODEANHARM(WXEN,OMEGAN,XNEW,UM,C,NP,NORDER,ILOGG)
       ENDIF
       IF(NPRP.EQ.0) GOTO 666
 C      
@@ -442,3 +292,105 @@ C
  666  CONTINUE
       END
 C
+      SUBROUTINE MODEFIT(NP,X,Y,A,B,C,MORDER,NORDER,ILOGG)
+C***********************************************************************
+C
+C     From NP points along a normal coordinate, do a polynomial fit.
+C     MORDER = maximum order of polynomial fit
+C     NORDER = actual order of polynomial fit
+C
+C     Written by T. Saue Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP)
+      WRITE(LUPRI,'(A)') 
+     &  'Polynomial fit: Give order of polynomial '
+      READ(LUCMD,*) NORDER
+      IF(NORDER.LT.2) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* This program requires at least a quadratic fit.'
+        STOP 'Too low order fit !'
+      ENDIF
+      IF(NORDER.LT.4) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* WARNING: a quartic fit is needed for full functionality.'
+      ENDIF
+      IF(NP.LE.NORDER) THEN
+        WRITE(LUPRI,'(A,I3)') 
+     +    'Too few points for a polynomial fit of order',NORDER
+        STOP 'Too few points !'
+      ENDIF
+      IF(NORDER.GT.MORDER) THEN
+        STOP 'Order to large ....'
+      ENDIF
+      NDIM = NORDER + 1
+      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
+C* Estimate fit:
+      WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
+      WRITE(LUPRI,'(3X,A)') '* Coefficients:'
+      WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
+     &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
+C
+      WRITE(ILOGG,'(72A1)') ('=',I=1,72)
+      WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
+      WRITE(ILOGG,'(3X,A)') '* Coefficients:'
+      WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
+     &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(8X,A,4X,2A)')
+     &   'X',' Predicted Y',' Relative error'
+      DO I = 1,NP
+        YP = POLVAL(NORDER,C,X(I))
+        DEV = (YP-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') XTANG*X(I),YP,DEV
+      ENDDO
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
+C
+      RETURN
+      END
+      SUBROUTINE MODEMIN(XOPT,NP,X,Y,C,NORDER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find local minimum,
+C     using Newton-Raphsons method
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      PARAMETER(DTOL = 1.0D-4)
+C
+      DIMENSION X(NP),Y(NP),C(NP)
+C* Find smallest y-value and take corresponding x-value as start value
+C* for Newton-Raphsons method      
+      IYOPT = IDMIN(NP,Y,1)
+      XOPT = X(IYOPT)
+      CALL NEWRAP(NORDER,DTOL,C,XOPT,NITER,IERR)
+      IF(IERR.EQ.1) THEN
+        WRITE(ILOGG,'(A)') 'Newtons method failed'
+        STOP 'Did not find minimum. Newtons method failed...'
+      ELSE
+        YOPT = POLVAL(NORDER,C,XOPT)
+        TEMP = XOPT*XTANG
+        WRITE(LUPRI,'(A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms'
+        WRITE(ILOGG,'(A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms'
+        WRITE(LUPRI,'(A,1P,E18.10,A)') 
+     &    '* Expected energy :',YOPT,' Hartrees'
+        WRITE(ILOGG,'(A,1P,E18.10,A)') 
+     &    '* Expected energy :',YOPT,' Hartrees'
+      ENDIF
+      RETURN
+      END

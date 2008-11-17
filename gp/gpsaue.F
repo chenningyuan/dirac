@@ -7095,3 +7095,147 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEHARM(OMEGA,V2,XOPT,UM,C,NP,NORDER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find harmonic constant
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
+      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
+      DIMENSION C(NP)
+C
+      V2 = POL2DER(NORDER,C,XOPT)
+      OMEGA = SQRT(V2/UM)
+      TEMP  = V2*XTJ/XTM/XTM
+      WRITE(LUPRI,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+      WRITE(ILOGG,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTCM,' cm-1'
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTCM,' cm-1'
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find anharmonic constant
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
+      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
+C
+      DIMENSION C(NP)
+C
+      V3 = POLNDER(NORDER,C,XOPT,3)
+      V4 = POLNDER(NORDER,C,XOPT,4)
+      TEMP = 7.0D0*V3*V3/V2/9.0D0
+      T2 = 100.0D0*(TEMP - V4)/V4
+      WRITE(ILOGG,'(A,D20.10)')
+     &   '* Third derivative  (au)             : ', V3,
+     &   '* Fourth derivative (au)             : ', V4
+      WRITE(ILOGG,'(A,D20.10, F9.2,A)')
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
+      TEMP = D1/UM/OMEGA
+      T2   = TEMP*TEMP
+      WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEDISP(X,NP,XOPT,UM,OMEGA,ILOGG)
+C***********************************************************************
+C
+C     Given a reduced mass and harmonic frequency, check 
+C     for points outside mean displacement in
+C     harmonic ground state
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
+      DIMENSION X(NP)
+      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XMIN=XOPT-XDEV
+      XMAX=XOPT+XDEV
+      TEMP=XDEV*XTANG
+      WRITE(LUPRI,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
+     &   '* Mean displacement in harmonic ground state:',TEMP,
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      WRITE(ILOGG,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
+     &   '* Mean displacement in harmonic ground state:',TEMP,
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      IOUT=0
+      DO I = 1,NP
+        IF(X(I).LT.XMIN.OR.X(I).GT.XMAX) IOUT=IOUT+1
+      ENDDO
+      IF(IOUT.GT.0) THEN
+        WRITE(LUPRI,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+        WRITE(ILOGG,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEDISS(OMEGA,WXE)
+C***********************************************************************
+C
+C     For a plynomial fit, estimate dissociation energy
+C     from a Morse model
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "codata.h"
+      PARAMETER(D2=2.0D0,D4=4.0D0)
+      DE = OMEGA*OMEGA/WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, 'kJ/mol'
+      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
+      D0 = DE-(OMEGA/D2)+WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XTEV, 'eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XKJMOL, 'kJ/mol'
+      RETURN
+      END
