@@ -23,32 +23,18 @@ contains
 
     type(matrix), intent(inout) :: D
 !   ----------------------------------------------------------------------------
-    logical                     :: debug_me = .true.
+    logical                     :: debug_me = .false.
 
+    real(kind_dp)               :: skip(3,14,3)
+    real(kind_dp)               :: screen
 
-    logical                     :: retur
+    integer                     :: i, i2typ, itype, ifctyp(8)
 
+    real(kind_dp), allocatable  :: work(:)
+    integer                     :: lwork
 
-
-
-!   type(matrix)                :: Fx, Fy, Fz
-
-!   integer,      parameter     :: nc = 3
-!   integer                     :: iz, ic
-    integer                     :: i2typ, itype, ndmat, i
-    integer                     :: ifctyp(8)
-!   integer                     :: isymop(nc), ihrmop(nc), ifckop(nc), i
-
-    real(kind_dp), allocatable :: work(:)
-    integer                    :: lwork
-
-
-    real(kind_dp)                :: DNTSKP(3,14,3)
-    real(kind_dp)                :: screen
-
-    real(kind_dp)                :: dummy
-    integer                      :: idummy
-
+    real(kind_dp)               :: dummy
+    integer                     :: idummy
 
 #include "mxcent.h"
 #include "cbihr2.h"
@@ -57,68 +43,55 @@ contains
 #include "exeinf.h"
 #include "dorps.h"
 
-
-
     D = 4.0d0*D
     if (debug_me) then
       call print(D, 'D in AO basis')
     end if
 
-      DO I = 1, 3*MXCENT
-         DOPERT(I,1) = .TRUE.
-         DOPERT(I,2) = .TRUE.
-      END DO
-      FTRONV = .TRUE.
-      RELGRD = .TRUE.
-      CALL RSETSYM(.FALSE.,RELGRD,.FALSE.,.FALSE.)
-      CALL RTROINI(.FALSE.)
+    do i = 1, 3*mxcent
+      dopert(i, 1) = .true.
+      dopert(i, 2) = .true.
+    end do
+
+    ftronv = .true.
+    relgrd = .true.
+    call rsetsym(.false., relgrd, .false., .false.)
+    call rtroini(.false.)
 
     lwork = 20000000
     call alloc(work, lwork)
 
-      CALL TROINV(work, lwork)
+    call troinv(work, lwork)
 
+    itype  = 2
+    screen = -1.0d0
 
-      ITYPE  = 2
-      I2TYP  = 1 !LL
-      NDMAT   = 4
-     screen = -1.0d0
-     retur = .false.
-     INTCLASS  = 0
+!   ll integrals
+    i2typ    = 1
+    intclass = 0
 
-      IFCTYP = 0
-!     Set IFCTYP
-!        Density matrix 1: Coulomb and Exchange
-         IFCTYP(1) = 13
-!        Density matrix 2-4: Only Exchange
-         IFCTYP(2) = 22
-         IFCTYP(3) = 22
-         IFCTYP(4) = 22
+!   set ifctyp
+    ifctyp    = 0
+    ifctyp(1) = 13 !coulomb and exchange
+    ifctyp(2) = 22 !only exchange
+    ifctyp(3) = 22
+    ifctyp(4) = 22
 
+    call dzero(gradee, mxcoor)
+    call dzero(skip, 3*14*3)
 
-             CALL DZERO(GRADEE,MXCOOR)
-           CALL DZERO(DNTSKP,3*14*3)
+    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
+                ifctyp, dummy, idummy, idummy, itype,      &
+                1, 0, .true., .true., .false., tktime,     &
+                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
+                icedif, screen, dummy, dummy, dummy, skip, &
+                relcal, dummy, dummy)
 
-        write(*,*) 'blub '
-         CALL TWOINT(work,lwork,DUMMY,D%elms,NDMAT,IDUMMY, &
-              IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,1,0,.true., &
-              .true.,.false.,TKTIME,1,0,0,0, &
-              0,retur,IDUMMY,I2TYP,ICEDIF,screen, &
-!             WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,  &
-              dummy,dummy,DUMMY,DNTSKP,  &
-              RELCAL,DUMMY,DUMMY)
-
-      do i = 1, 12
-        write(*,*) 'blub ', i, GRADEE(i)
-      end do
     call dealloc(work)
 
-
-
-!   call quit('blub')
-
-
-
+    do i = 1, 12
+      write(*,*) 'blub', i, gradee(i)
+    end do
 
     D = 0.25d0*D
 
