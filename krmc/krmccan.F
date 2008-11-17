@@ -833,6 +833,9 @@ C     eigenstate <--> symmetry relation
          END DO
       END DO
 C
+C     KRCI_CVECS.x vector file extensions
+      CALL DETXFLAB(XSYMFLAB,NKRCI_MAX_SYM)
+C
 C     ***************************************************
 C     *** Memory allocation *****************************
 C     ***************************************************
@@ -864,7 +867,12 @@ C     ***************************************************
 C     *** get spectroscopic quantities ******************
 C     ***************************************************
 C
-C     CALL KRCISPQUAN(WORK(KXPRPKRCI),LXPRPKRCI,WORK(KFREE),LFREE)
+C     array of eigenvalues 
+      CALL MEMGET('REAL',KXROOTS,NPROP_ROOTS_KRCI,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KXROOTS),NPROP_ROOTS_KRCI)
+C
+      CALL KRCIPRPANA(WORK(KXPRPKRCI),WORK(KXROOTS),WORK(KPRPCORE),
+     &                WORK(KFREE),LFREE)
 C
       CALL MEMREL('RPROP_KRCI',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -978,69 +986,120 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck KRCISPQUAN */
-C     SUBROUTINE KRCISPQUAN(VPROP,LVPROP,WORK,LWORK)
+C  /* Deck KRCIPRPANA */
+      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
 C
-C     Input:
-C        property matrix VPROP
+C     Input: property matrix XPROPMAT
 C
-C     Written by S. Knecht - Aug 2008
+C     Written by S. Knecht - Nov 2008
 C
 C     Last revision :
 C
 C***********************************************************************
-Cinclude "implicit.h"
-Cinclude "priunit.h"
+#include "implicit.h"
+#include "priunit.h"
 C
-Cinclude "dcborb.h"
-Cinclude "dcbopt.h"
-Cinclude "dcbgen.h"
-Cinclude "dcbbas.h"
-Cinclude "dgroup.h"
-Cinclude "krciprop.h"
-Cinclude "dcbxpr.h"
-C     REAL*8 OSCL
-C     DIMENSION VPROP(LVPROP), WORK(*), OSCL(3)
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "krciprop.h"
+#include "dcbkrci.h"
+#include "dcbxpr.h"
+#include "debye.h"
+      REAL*8 OSCL
+      DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
+      DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
+      CHARACTER FILELAB*8
+      LOGICAL EX
 C
-Cinclude "memint.h"
+#include "memint.h"
+      CALL QENTER('XKRCIPRPANA')
 C
-C     CALL QENTER('KRCISPQUAN')
+      MZ = MIN(NZ,2)
 C
-C     IF( DOOSCILLST )THEN
+C     transition dipole moments and oscillator strength
+      IF( DOOSCILLST )THEN
 C
-C       read final energies from file
+C       read final energies from file KRCI_CVECS.INFO
+        INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
+        IF( .not. EX ) THEN
+          WRITE(LUWRT,'(/A,2I4)')' *** ERROR in KRCIPRPANA.'//
+     &                           ' file KRCI_CVECS.INFO not found.'
+          CALL QUIT(' *** ERROR in KRCIPRPANA. file KRCI_CVECS.INFO 
+     &               not found.')
+        END IF
+        LU_INFO = 80
+        CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','OLD','XPRPAN')
+        NXSCR = 1
+        DO I = 1, NKRCI_MAX_SYM
+          IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
+            WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+            CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVECS(NXSCR),
+     &                        NKRCI_CIROOTS(I),1)
+          END IF
+          NXSCR = NXSCR + NKRCI_CIROOTS(I)
+        END DO
+C       ... close
+        CLOSE(LU_INFO,STATUS='KEEP')
+        WRITE(LUPRI,*)' energies of # of eigenstates =',NPROP_ROOTS_KRCI
+        CALL WRTMATMN(EVECS,1,NPROP_ROOTS_KRCI,1,NPROP_ROOTS_KRCI,LUPRI)
 C
-C       calculate and print oscillator strength 
+        WRITE(LUPRI,*) ' stefan forced me to stop in XKRCIPRPANA'
+        CALL QUIT( ' stefan forced me to stop in XKRCIPRPANA' )
 C
-C       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
-C    &       ' <f_l>/3    f_lx     f_ly     f_lz '
-C       WRITE(LUPRI,*) '-------------------------------------'/
-C    $       /'---------------------------------------'
-C       DERG = REFERG - GSERG
+C       transition dipole moments
+        WRITE(LUPRI,'(A/)')
+     &     '* transition dipole moments:'
+        WRITE(LUPRI,'(10X,3(A13,13X))')
+     &      'initial state','final state  ','    TDM     '
+        WRITE(LUPRI,'(10X,3(A12,13X))')
+     &      'contribution','contribution','contribution'
+        CALL PRSYMB(LUPRI,'-',76,0)
+        IOFF = ICHAR('w')
+        DO I = 1,3
+C          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
+C    &          CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
+C    &                     (DEBYE*DIPMN(I)),' Debye',
+C    &          (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',76,0)
+        WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
+C
+C       calculate and print oscillator strength
+        WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
+     &       ' <f_l>/3    f_lx     f_ly     f_lz '
+        WRITE(LUPRI,*) '-------------------------------------'/
+     $       /'---------------------------------------'
+        DERG = REFERG - GSERG
 C       Check sum rule for oscillator strength
-C       SUML = 0.0D0
-C       DO IVEC=1,NVEC
-c         transition moments
-C         DO IPRP=1,3
-c           Length gauge
-C           XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-C    &           PRPGRAD(1,1,1,IPRP))
-C           OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
-C         ENDDO
-C         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
-C    &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
-C    &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
-C    &         OSCL(1),OSCL(2),OSCL(3)
-C         SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
-C       ENDDO
-C       WRITE(LUPRI,*) '-------------------------------------'/
-C    $       /'---------------------------------------'
-C       WRITE(LUPRI,'(1A,1F10.6)')
-C    $     '   Sum of oscillator strength : ',SUML
-C     END IF
-C
-C     CALL QEXIT('KRCISPQUAN')
-C     END
+        SUML = 0.0D0
+        DO IVEC=1,NVEC
+C         oscillator strength for electronic transitions
+          DO IPRP=1,3
+C           Length gauge
+            XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
+     &           PRPGRAD(1,1,1,IPRP))
+            OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
+          ENDDO
+          WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+     &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
+     &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
+     &         OSCL(1),OSCL(2),OSCL(3)
+          SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+        ENDDO
+        WRITE(LUPRI,*) '-------------------------------------'/
+     $       /'---------------------------------------'
+        WRITE(LUPRI,'(1A,1F10.6)')
+     $     '   Sum of oscillator strength : ',SUML
+      END IF
+ 
+      CALL QEXIT('XKRCIPRPANA')
+      END
+C----------------------------------------------------------------------
+C     end of file krmccan.F
+C----------------------------------------------------------------------

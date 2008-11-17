@@ -109,7 +109,7 @@ C
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
-     &            '.CASSCF','.OSCILL','.OMEGAQ','.RELSYM','-------',
+     &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','-------',
      &            '-------','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
@@ -522,7 +522,7 @@ C&&&  CASSCF -- this defines a CAS space
                   NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC 
                GO TO 100
    32          CONTINUE
-C&&& .OSCILLATOR STRENGTH: calculate transition dipole moments and oscillator strenghts
+C&&& .TRDM calculation of transition dipole moments and oscillator strenghts
                   DOPROP_KRCI = .TRUE.
                   DOOSCILLST  = .TRUE.
                GO TO 100
@@ -684,10 +684,15 @@ C
          END IF
       END IF
 C
-C     Boson symmetry in the CI expansion
+C     Boson symmetries in the CI expansion
 C
-      ikrci_symmetry = NKRCI_MAX_SYM
-      ! TODO: make loop over all CIROOTS symmetries !!!!! Aug08
+      IKRCI_SYMMETRY = NKRCI_MAX_SYM
+      WRITE(LUPRI,'(A)')
+     & ' * optimization of wave function(s) in the following '//
+     &     'symmetries:'
+      DO 202 IKRCI_SYMMETRY = 1, NKRCI_MAX_SYM
+         IF( NKRCI_CIROOTS(IKRCI_SYMMETRY) .le. 0 ) GOTO 202
+C     ... next symmetry
       IF ((SPINFR).AND.KRCI_UCIBOS) THEN
          NREP = NBSYM
          WRITE(LUPRI,'(A)')
@@ -716,9 +721,11 @@ C
          ENDIF
          IF ( MOD ( NKRCIAELEC, 2 ) .EQ. 0 ) THEN
             IRRP = NREP + IKRCI_SYMMETRY
-            WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (boson) of wave function: ',
-     &        REPNA(IRRP)
+            WRITE(LUPRI,'(A,I3,2A)')
+     &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
+     &        ' in symmetry (boson):',REPNA(IRRP)
+C             store on common block in krciprop.h
+              XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
             IF (NKRCI_MAX_SYM .GT. NREP) THEN
                WRITE(LUPRI,'(/A//A,2I5)')
      &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
@@ -729,9 +736,11 @@ C
             END IF
 C
          ELSE
-            WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (fermion) of wave function: ',
-     &        REPNA(IKRCI_SYMMETRY)
+            WRITE(LUPRI,'(A,I3,2A)')
+     &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
+     &        ' in symmetry (fermion):',REPNA(IKRCI_SYMMETRY)
+C             store on common block in krciprop.h
+              XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
 C
 C           FIXME: check proper abort criterion
 C
@@ -745,19 +754,16 @@ CSK            CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
 CSK         END IF
          END IF
          WRITE(LUPRI,'(A,I4,A,I3)')
-     &     ' * Allowed interval of 2 * MK :',
+     &     '    -- Allowed interval of 2 * MK :',
      &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
       END IF
+ 202  CONTINUE
 C
       IF (KRCI_CIPROGRAM .eq. 'LUCIAREL' ) THEN
          WRITE(LUPRI,'(A/A)')
      &' * Using symmetry nomenclature for LUCIAREL. ',
      &'      Boson and Fermion irreps of complex (sub)groups  '
       END IF
-C
-      WRITE(LUPRI,'(/A/20I5)')
-     &     ' * Number of CI roots to be optimized in each symmetry:',
-     &     (NKRCI_CIROOTS(I), I = 1,NKRCI_MAX_SYM)
 C
       WRITE(LUPRI,'(/A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
@@ -975,15 +981,12 @@ C     *** Initialize common block information         ***
 C     ***************************************************
 C
       CALL MPIXCALC_TYPESZ()
-C
 #endif
-
 C
 C     ***************************************************
 C     *** Loop over symmetries for CI roots *************
 C     ***************************************************
 C
-
       CALL MEMGET('REAL',   KCMO  ,NCMOTQ  ,WORK,KFREE,LFREE)
       KFREE_100_LOOP = KFREE
 
@@ -995,37 +998,35 @@ C
      &   '&&& Number of CI roots for this symmetry',NCIROOT,
      &   ('&',I=1,80)
 
-      IF (NCIROOT .LE. 0) GO TO 100
+        IF (NCIROOT .LE. 0) GO TO 100
 C
-C     ***************************************************
-C     *** Initialize configurational and orbital      ***
-C     *** parameters.                                 ***
-C     ***************************************************
+C       ***************************************************
+C       *** Initialize configurational and orbital      ***
+C       *** parameters.                                 ***
+C       ***************************************************
 C
+        CALL RSETWOP(WORK,KFREE,LFREE)
+        CALL FLSHFO(LUPRI)
 C
-      CALL RSETWOP(WORK,KFREE,LFREE) ! needed ? no orb-rot in CI !!!
-      CALL FLSHFO(LUPRI)
+C       ***************************************************
+C       *** Memory allocation *****************************
+C       ***************************************************
 C
+        IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
+           CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+        ELSE
+           CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
+        END IF
 C
-C        ***************************************************
-C        *** Memory allocation *****************************
-C        ***************************************************
+C       ***************************************************
+C       *** Call DRIVER for CI calculation ****************
+C       ***************************************************
 C
-         IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
-            CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
-         ELSE
-            CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
-         END IF
+        CALL KRCI_CALC_1(WORK(KCMO),WORK(KCREF),
+     &                   WFTYP,WFCONV,WORK,KFREE,LFREE)
 C
-C        ***************************************************
-C        *** Call DRIVER for CI calculation ****************
-C        ***************************************************
-C
-         CALL KRCI_CALC_1(WORK(KCMO),WORK(KCREF),
-     &                    WFTYP,WFCONV,WORK,KFREE,LFREE)
-C
-         CALL MEMREL('KRCI_CALC_1',WORK,KWORK,KFREE_100_LOOP,
-     &               KFREE,LFREE)
+        CALL MEMREL('KRCI_CALC_1',WORK,KWORK,KFREE_100_LOOP,
+     &              KFREE,LFREE)
   100 CONTINUE
 C     ^-- end loop IOPT_SYMMETRY over CI state symmetries
   101 CONTINUE
@@ -1046,8 +1047,7 @@ C                             (ungerade number of electrons)
          END DO
 C        set run flag
          RUNXPROP = .TRUE.
-C
-         CALL RSETWOP(WORK,KFREE,LFREE) ! needed ? no orb-rot in CI !!!
+         CALL RSETWOP(WORK,KFREE,LFREE)
          CALL KRCI_PROP(WORK(KCMO),WORK(KFREE),LFREE)
       END IF
 C

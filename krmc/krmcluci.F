@@ -85,13 +85,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRMC_LUCI(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C***********************************************************************
-*
-*
-* L U C I A R E L
-*
-* parallel driver routine,
-* Stefan Knecht - April 2007
-*
+C
+C
+C     L U C I A R E L
+C
+C     parallel driver routine,
+C     written by Stefan Knecht - April 2007
+C
 C***********************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
 #include "priunit.h"
@@ -106,7 +106,7 @@ C     initial definitions
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
-*     Add the master node
+C     Add the master node
       NMPROC = NUMNOD + 1
 #else
       MASTER = 0
@@ -115,13 +115,10 @@ C     initial definitions
 #endif
 C
 C     Summon the slaves, who are waiting in the general menu routine.
-C
       CALL LUMSTI_REL
 C
 C     communicate necessary information with slaves ...
-C
 #if defined (VAR_MPI2)
-C
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUPRI)
 C
       IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or.
@@ -129,34 +126,24 @@ C
      &    CIRUN .eq. 'KR-CI ' ) THEN
 C
         CALL SYNC_NODES_REL_P2(F1,F2,CIRUN)
-C
+      ELSE IF( CIRUN .eq. 'PROP1 ' )THEN
+        CALL SYNC_NODES_REL_XPROP
       END IF
 C
 C     Transfer data to LUCIAREL common blocks (only for NODES) 
 C     --> communication is enabled.
-C
       CALL TRKRLUCI(CIRUN,1)
-C
 #endif
 C
 C     Transfer correct output file handle to common block
-C
       LUWRT = LUPRI
 C
 C     Enter the generic LUCIAREL routine 
 C     (master becomes now somewhat like primus inter parens)
-C
       CALL KRMC_LUCI2(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C
-C     close files ...
-C
-CSK?      CALL LUCI_CLOSEDOWN()
-C
 C     Return the slaves to the general menu routine.
-C
       CALL LUMSTE_REL
-C
-C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -426,17 +413,14 @@ C     property calculation - we split here from the "usual CIRUN" route.
 C     optimal (what we think - sk + hjaaj) loop structure:
 C
 C     loop iroot = 1, nroot
-C
-C           loop ipropT = 1, npropT
-C                                
-C                 |sigma_iroot> = ipropT|C_iroot>
+C        loop ipropT = 1, npropT
+C                              
+C           |sigma_iroot> = ipropT|C_iroot>
 C            
-C                 loop jroot = 1, nroot
-C
-C                      PROPMAT(jroot,iroot,ipropT,MZ) = <sigma_iroot|C_jroot>
-C
-C                 end loop
+C           loop jroot = 1, nroot
+C              PROPMAT(jroot,iroot,ipropT,MZ) = <sigma_iroot|C_jroot>
 C           end loop
+C        end loop
 C     end loop
 C             
       CXPROPRUN = .FALSE.
@@ -1667,7 +1651,6 @@ C     close files ...
 C
       CALL LUCI_CLOSEDOWN()
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_RSTRMC(WORK,LWORK)      
@@ -1706,7 +1689,6 @@ C     close files ...
 C
       CALL LUCI_CLOSEDOWN()
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCIGETPRP(VPROP_KRCI,WORK,LWORK)
@@ -1960,7 +1942,7 @@ C     adapted version of the slave RELCCSD routine
 C     written by Luuk Visscher.
 C     KRMC-LUCIAREL adaption: S. Knecht
 C
-C     Last revision: S. Knecht           - March  2007
+C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1985,28 +1967,24 @@ C
 #include "memint.h"
 C
       KFRSAV = KFREE
-*
-*       START 
-*     =========
-*
-*     arrange for the MPI stuff and correct node number
-*     to the total number of running invocations.
-*
+C
+C       START 
+C     =========
+C
+C     arrange for the MPI stuff and correct node number
+C     to the total number of running invocations.
       MASTER = MPARID
       MYPROC = MYTID
 C     Add the master node, NUMNOD = number of slaves
       NMPROC = NUMNOD + 1
 C
-C     initialize some variables ...
-C
+C     initialize core energy
       ECORE_KRMC = 0.0D0
-*
-*     create a node-unique filename as output file. Important on
-*     shared file systems. Otherwise all the output gets mingled in one
-*     file. You don't really want to do this.
-*
+C
+C     create a node-unique filename as output file. Important on
+C     shared file systems. Otherwise all the output gets mingled in one
+C     file. You don't really want to do this.
       LUCITABASF_REL="LUCIAREL.OUT"
-*
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (LUCIFILN_REL,'(A12,A1,I1)') LUCITABASF_REL,'.',MYPROC
          LUFIL=14
@@ -2019,37 +1997,30 @@ C
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD_REL MODULE")
       ENDIF
-*
-*     open the local input file and the node specific output file.
-*     Every access to the local stdout handle then automatically writes
-*     to the corresponding output file.
-*
-*
+C
+C     open the local input file and the node specific output file.
+C     Every access to the local stdout handle then automatically writes
+C     to the corresponding output file.
       OPEN(MSLVOUT_REL,FILE = LUCIFILN_REL(1:LUFIL))
 C
 C     transfer file handle to common block
-C
       LUWRT = MSLVOUT_REL
 C
 C     synchronize nodes, part 1
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,MSLVOUT_REL)
 C
-      MZ = MIN(NZ,2)
-C
 C     set property module run flag
       RUNXPROP = .FALSE.
-      IF( CIRUN .eq. 'PROP1 ') RUNXPROP = .TRUE.
+C     MZ value
+      MZ = MIN(NZ,2)
 C
       IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMA ' .or. 
      &    CIRUN .eq. 'SIGMAD' .or. CIRUN .eq. 'KR-CI ' ) THEN
 C
 C       read-in of integrals by nodes... no broadcast in SYNC_NO...P2
-C
         IF( (CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) 
      &      .and. IIOMOD_REL .eq. 1 )THEN
-C
           PARCAL = .FALSE.
-C
         END IF
 C
 C     Flag for type of integral interface:
@@ -2111,7 +2082,6 @@ C
 C
 C       synchronize nodes, part 2 (now CIRUN dependent!)
         CALL SYNC_NODES_REL_P2(WORK(KFCACM),WORK(KH2AC),CIRUN)
-C
       ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
 C
 C       Initialize density matrices to zero; currently I want to test
@@ -2134,6 +2104,16 @@ C
         CALL DZERO(WORK(KFCACM),MZ*N_FCACM)
 C
         CALL SYNC_NODES_REL_P2(WORK(KFCACM),WORK(KH2AC),CIRUN)
+      ELSE IF( CIRUN .eq. 'PROP1 ') THEN 
+        RUNXPROP = .TRUE.
+        CALL SYNC_NODES_REL_XPROP
+C
+C       allocate for property matrix
+        LXPRPKRCI = MZ * NPROP_KRCI * NPROP_ROOTS_KRCI**2
+        CALL MEMGET('REAL',KXPRPKRCI,LXPRPKRCI,WORK,KFREE,LFREE)
+C
+C       ... initialize
+        CALL DZERO(WORK(KXPRPKRCI),LXPRPKRCI)
       END IF
 C
 C     Transfer data to LUCIAREL common blocks.
@@ -2162,16 +2142,14 @@ C
 C
 C       Call LUCIAREL for calculating sigma vector(s).
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
-     &                 ECORE_KRMC,CIRUN)
-C 
+     &                  ECORE_KRMC,CIRUN)
         CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
 C
 C       Call LUCIAREL for calculating density matrix elements.
         CALL KRMC_LUCI2(WORK(KRHO1),WORK(KRHO2),WORK(KFREE),
-     &                    LFREE,DUMMY,CIRUN)
-C
+     &                  LFREE,DUMMY,CIRUN)
         CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'ANALYZ' ) THEN 
@@ -2196,12 +2174,17 @@ C
 C       Call LUCIAREL for integral reordering.
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
      &                  DUMMY,CIRUN)
-C
         CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+      ELSE IF( CIRUN .eq. 'PROP1 ' ) THEN 
+C
+C       Call LUCIAREL for property calculation.
+        CALL KRMC_LUCI2(DUMMY,WORK(KXPRPKRCI),WORK(KFREE),LFREE,
+     &                  DUMMY,CIRUN)
+        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+C
       END IF
 C
 C     close files ...
-C
       CALL LUCI_CLOSEDOWN()
 C
 C     LUCIAREL run is finished for the slaves ...

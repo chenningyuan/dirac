@@ -2554,7 +2554,7 @@ C
 C
 C     For KRMCSCF, LUKRM5 will be KRMCOLD from an old MCSCF calculation,
 C         if available.
-C     For KRCI, LUKR5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
+C     For KRCI, LUKRM5 will be KRMCSCF from preceeding MCSCF or KRMCOLD
 C         from an old MCSCF calculation, if either is available.
 C     (Aug 08, SK+HJAaJ)
 C
@@ -2721,8 +2721,6 @@ C
 C
       CALL RGMCMO(CMO,WORK(KFREE),LFREE)
 C
-C     Write coefficients back to file as label NEWORB
-C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
             WRITE(LUPRI,'(A,I2)') ' Coefficients ( after GS), irrep ',I
@@ -2730,6 +2728,8 @@ C
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
+C
+C     Write coefficients back to file as label NEWORB
 C
       IF (LBIT(IWRT,1)) THEN 
          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
