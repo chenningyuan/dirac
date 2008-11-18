@@ -391,9 +391,11 @@ C
 !     contributions since they may mix
 !     therefore i quit here if the user wants QR
 !     and not the full ALDA or XALDA
+!     it is really unfair to quit as late as here
+!     this can be checked earlier
+!     but this is anyway an exotic option
       if ((doqr .and. alda_hs .and. (.not. alda_ha)) .or.
      &    (doqr .and. alda_ha .and. (.not. alda_hs))) then
-        write(lupri, *) 'QR and partial ALDA is not implemented'
         call quit('QR and partial ALDA is not implemented')
       end if
 
