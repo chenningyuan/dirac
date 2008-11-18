@@ -43,7 +43,7 @@ contains
 #include "exeinf.h"
 #include "dorps.h"
 
-    D = 4.0d0*D
+    D = 2.0d0*D
     if (debug_me) then
       call print(D, 'D in AO basis')
     end if
@@ -93,7 +93,7 @@ contains
       write(*,*) 'blub', i, gradee(i)
     end do
 
-    D = 0.25d0*D
+    D = 0.5d0*D
 
   end subroutine
 
