@@ -735,12 +735,11 @@ fi
 #
 #
 
-#miro: copied from configure
 #
 #  Does 'echo' understand escapes?
 #
-echo_style=sysv
-if [ "  " = "`echo '\t'`" ]; then
+echo_style=sysv # for tcsh.
+if [ "	" = "`echo '\t'`" ]; then
    echo="echo"
 else
    echo="echo -e"
