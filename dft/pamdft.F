@@ -502,6 +502,8 @@ C     .GAUNTSCALE
       else
       write(lupri, '(a)')
      &     ' * No spin density contribution in response calculations.'
+      write(lupri, '(a)')
+     &     '     (if you want the spin density contribution, use .SDFT)'
       end if
 
 
@@ -542,6 +544,8 @@ C     .GAUNTSCALE
       write(lupri, '(a)')
      &     '   - for hybrid functionals exact exchange is '//
      &     'switched off in the solution of the response equation'
+      write(lupri, '(a)')
+     &     '     (if you want to keep it, use .XALDA)'
       end if
 
       end if !if (alda_hs .or. alda_ha)
