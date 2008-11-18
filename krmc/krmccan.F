@@ -1014,6 +1014,7 @@ C
       REAL*8 OSCL
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
+      DOUBLE COMPLEX XMOM
       CHARACTER FILELAB*8
       LOGICAL EX
 C
@@ -1022,7 +1023,7 @@ C
 C
       MZ = MIN(NZ,2)
 C
-C     transition dipole moments and oscillator strength
+C     (transition dipole moments) and oscillator strength
       IF( DOOSCILLST )THEN
 C
 C       read final energies from file KRCI_CVECS.INFO
@@ -1039,8 +1040,12 @@ C       read final energies from file KRCI_CVECS.INFO
         DO I = 1, NKRCI_MAX_SYM
           IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
             WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+            WRITE(LUPRI,*) ' getting energies for sym =',XSYMFLAB(I)
+            WRITE(LUPRI,*) ' offset NXSCR =',NXSCR
             CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVECS(NXSCR),
      &                        NKRCI_CIROOTS(I),1)
+        WRITE(LUPRI,*)' energies of # of eigenstates =',NPROP_ROOTS_KRCI
+        CALL WRTMATMN(EVECS,1,NPROP_ROOTS_KRCI,1,NPROP_ROOTS_KRCI,LUPRI)
           END IF
           NXSCR = NXSCR + NKRCI_CIROOTS(I)
         END DO
@@ -1052,13 +1057,11 @@ C
         WRITE(LUPRI,*) ' stefan forced me to stop in XKRCIPRPANA'
         CALL QUIT( ' stefan forced me to stop in XKRCIPRPANA' )
 C
-C       transition dipole moments
+C       transition dipole moments - sum of IZ==1 (+ IZ==2)???
         WRITE(LUPRI,'(A/)')
      &     '* transition dipole moments:'
         WRITE(LUPRI,'(10X,3(A13,13X))')
      &      'initial state','final state  ','    TDM     '
-        WRITE(LUPRI,'(10X,3(A12,13X))')
-     &      'contribution','contribution','contribution'
         CALL PRSYMB(LUPRI,'-',76,0)
         IOFF = ICHAR('w')
         DO I = 1,3
@@ -1075,27 +1078,27 @@ C       calculate and print oscillator strength
      &       ' <f_l>/3    f_lx     f_ly     f_lz '
         WRITE(LUPRI,*) '-------------------------------------'/
      $       /'---------------------------------------'
-        DERG = REFERG - GSERG
+C       DERG = REFERG - GSERG
 C       Check sum rule for oscillator strength
-        SUML = 0.0D0
-        DO IVEC=1,NVEC
+C       SUML = 0.0D0
+C       DO IVEC=1,NVEC
 C         oscillator strength for electronic transitions
-          DO IPRP=1,3
+C         DO IPRP=1,3
 C           Length gauge
-CMI         XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-CMI  &           PRPGRAD(1,1,1,IPRP))
-CMI         OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
-          ENDDO
-CMI       WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
-CMI  &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
-CMI  &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
-CMI  &         OSCL(1),OSCL(2),OSCL(3)
-          SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
-        ENDDO
-        WRITE(LUPRI,*) '-------------------------------------'/
-     $       /'---------------------------------------'
-        WRITE(LUPRI,'(1A,1F10.6)')
-     $     '   Sum of oscillator strength : ',SUML
+C           XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
+C    &           PRPGRAD(1,1,1,IPRP))
+C           OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
+C         ENDDO
+C         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+C    &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
+C    &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
+C    &         OSCL(1),OSCL(2),OSCL(3)
+C         SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+C       ENDDO
+C       WRITE(LUPRI,*) '-------------------------------------'/
+C    $       /'---------------------------------------'
+C       WRITE(LUPRI,'(1A,1F10.6)')
+C    $     '   Sum of oscillator strength : ',SUML
       END IF
  
       CALL QEXIT('XKRCIPRPANA')
