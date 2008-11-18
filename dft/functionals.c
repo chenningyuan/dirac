@@ -220,7 +220,7 @@ funlistfuncs(Functional *l[])
 void
 dftreport_(void)
 {
-    fun_printf("\n     This is a DFT calculation of type: %s",
+    fun_printf("* Kohn-Sham calculation using the xc functional: %s",
                selected_func->name);
     if(selected_func->report)
         selected_func->report();

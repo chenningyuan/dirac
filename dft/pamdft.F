@@ -357,86 +357,206 @@ C     .GAUNTSCALE
             END IF
       END IF
   300 CONTINUE
-C
-C     Print section
-C     =============
-C
-      IF(.NOT.DFTHAM) GOTO 999
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &   'DFTINP: Set-up for Kohn-Sham calculation:'
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A,I5)') ' * Print level: ',IPRDFT
-C
- 90   CONTINUE
-      WRITE(LUPRI,'(A)')
-     &     ' * Radial quadrature according to',
-     &     '          R. Lindh, P.-Aa. Malmqvist and L. Gagliardi'
-      WRITE(LUPRI,'(A,E12.5)')
-     &     '   Precision of radial quadrature set to: ', RADINT
-      WRITE(LUPRI,'(A,E12.5)')
-     &    '   Accepted error in integrated number of electrons: ',DFTELS
-      WRITE(LUPRI,'(A)')
-     &     ' * Angular quadrature according to Lebedev scheme.'
-      WRITE(LUPRI,'(A,I2)')
-     &     '   Angular integration exact up to order L = ', ANGINT
-      IF(NOPRUN) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' * Pruning of angular grid turned off.'
-      END IF
-      IF (INTCHK.GT.0) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' * Numerical integration will be tested.'
-      END IF
-C
-      IF(DFTPOT) THEN
-        WRITE(LUPRI,'(A)')
-     &        ' * Explicit exchange-correlation potential (.FROMVX):'
-        WRITE(LUPRI,'(A)')
-     &        '   WARNING: this option is not available in this version'
-        WRITE(LUPRI,'(A)')
-     &        '   and will be ignored (DFTPOT = .FALSE.)'
-        DFTPOT = .FALSE.
-      ENDIF
-C
-C             GRAC
-      IF(LBIT(LBIT_DFTAC,1)) THEN
-        WRITE(LUPRI,'(A)')
-     &        ' * Gradient regulated asymptotic correction:'
-        WRITE(LUPRI,'(A,F12.6)') '   alpha = ', GRAC_ALPHA
-        WRITE(LUPRI,'(A,F12.6)') '   beta  = ', GRAC_BETA
-        WRITE(LUPRI,'(A)')
-     &        '   threshold for difference in HOMO eigenvalue'
-        WRITE(LUPRI,'(A,E12.6)')
-     &        '   below which asymptotic correction is switched on: ',
-     &        DFTAC_THRESHOLD
-        WRITE(LUPRI,'(A,E12.6)')
-     &        '   bulk potential will be shifted by (IP): ', DFTAC_IP
-      ENDIF
-C             SAOP
-      IF(LBIT(LBIT_DFTAC,3)) THEN
-        WRITE(LUPRI,'(A)')
-     &        ' * Statistical averaging of (model) orbital potentials:'
-      ENDIF
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
-        WRITE(LUPRI,'(A)')
-     &        '   original SAOP as in JCP 112, 1344 (2000) chosen'
-        WRITE(LUPRI,'(A)')
-     &        '   this activates ALDA kernel'
-        WRITE(LUPRI,'(A)')
-     &        '   the functional under .DFT is expected to be GLLBhole'
-      ENDIF
-C
-      IF(LBIT(LBIT_DFTAC,6)) THEN
-        WRITE(LUPRI,'(A)') '   the asymptotic potential is LB94'
-      ENDIF
-      IF(LBIT(LBIT_DFTAC,7)) THEN
-        WRITE(LUPRI,'(A)') '   the asymptotic potential is LBalpha'
-      ENDIF
-C
-  999 CONTINUE
-C
-C
-      RETURN
-      END
+
+
+!     consistency
+!     ===========
+
+      if (dftpot) then
+        call quit('explicit xc potential (.FROMVX) not available')
+      end if
+
+      if (lbit(lbit_cdft, 3) .and. .not. lbit(lbit_cdft, 1)) then
+        call quit('please use .COLLINEAR together with .SDFT')
+      end if
+
+
+!     print section
+!     =============
+
+      if (.not. dftham) go to 999
+
+      call header('Set-up for Kohn-Sham calculation:', 2)
+
+
+!     print level
+!     -----------
+
+      write(lupri, '(a, i5)') ' * Print level: ', iprdft
+
+
+!     integration grid
+!     ----------------
+
+      write(lupri, '(a)')
+     &     ' * Numerical integration grid:'
+
+      if (import_grid) then
+      write(lupri, '(a)')
+     &     '   - integration grid imported from file'
+      else
+
+      write(lupri, '(a)')
+     &     '   - radial quadrature according to '//
+     &     'R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi'
+      write(lupri, '(a, e12.5)')
+     &     '     precision of radial quadrature set to: ', radint
+      write(lupri, '(a, i2)')
+     &     '   - angular quadrature using the Lebedev scheme, '//
+     &     'exact up to order L = ', angint
+
+      if (noprun) then
+      write(lupri, '(a)')
+     &     '   - pruning of angular grid turned off'
+      end if
+
+      if (intchk .gt. 0) then
+      write(lupri, '(a)')
+     &     '   - numerical integration will be tested'
+      end if
+
+      write(lupri, '(a, e12.5)')
+     &     '   - accepted error in integrated number '//
+     &     'of electrons: ', dftels
+
+      if (atsize) then
+      write(lupri, '(a)')
+     &     '   - estimate relative atomic sizes for use in the Becke'
+      write(lupri, '(a)')
+     &     '     partitioning scheme from atomic contributions '//
+     &     'to the density'
+      end if
+
+      end if !if (import_grid)
+
+      if (export_grid) then
+      write(lupri, '(a)')
+     &     '   - integration grid exported to file'
+      end if
+
+
+!     asymptotic correction
+!     ---------------------
+
+!     GRAC
+      if (lbit(lbit_dftac, 1)) then
+      write(lupri, '(a)')
+     &     ' * Gradient regulated asymptotic correction:'
+      write(lupri, '(a, e12.5)')
+     &     '   - alpha = ', grac_alpha
+      write(lupri, '(a, e12.5)')
+     &     '   - beta  = ', grac_beta
+      write(lupri, '(a)')
+     &     '   - threshold for difference in HOMO eigenvalue'
+      write(lupri, '(a, e12.5)')
+     &     '     below which asymptotic correction is switched on: ', 
+     &     dftac_threshold
+      write(lupri, '(a, e12.5)')
+     &     '   - bulk potential will be shifted by (IP): ', dftac_ip
+      end if
+
+!     SAOP
+      if (lbit(lbit_dftac, 3)) then
+      write(lupri, '(a)')
+     &     ' * Statistical averaging of (model) orbital potentials:'
+      end if
+
+!     SAOP with "response part"
+      if (lbit(lbit_dftac, 5)) then
+      write(lupri, '(a)')
+     &     '   - original SAOP as in JCP 112, 1344 (2000) chosen'
+      write(lupri, '(a)')
+     &     '   - this activates ALDA xc kernel'
+      write(lupri, '(a)')
+     &     '   - the functional under .DFT is expected to be GLLBhole'
+      end if
+
+!     asymptotic potential
+      if (lbit(lbit_dftac, 6)) then
+      write(lupri, '(a)')
+     &     '   - the asymptotic potential is LB94'
+      end if
+      if (lbit(lbit_dftac, 7)) then
+      write(lupri, '(a)')
+     &     '   - the asymptotic potential is LBalpha'
+      end if
+
+
+!     SDFT
+!     ----
+
+      if (lbit(lbit_cdft, 1)) then
+
+      write(lupri, '(a)')
+     &     ' * Spin density contribution in response calculations:'
+      if (lbit(lbit_cdft, 3)) then
+      write(lupri, '(a)')
+     &     '   - use the collinear approximation as '//
+     &     'a definition of the spin density'
+      else
+      write(lupri, '(a)')
+     &     '   - use the norm of the spin magnetization vector as '//
+     &     'a definition of the spin density (noncollinear definition)'
+      end if
+
+      else
+      write(lupri, '(a)')
+     &     ' * No spin density contribution in response calculations.'
+      end if
+
+
+!     ALDA
+!     ----
+
+      if (alda_hs .or. alda_ha) then
+
+      write(lupri, '(a)')
+     &     ' * Adiabatic local density approximation (ALDA):'
+      write(lupri, '(a)')
+     &     '   - approximate all functional derivatives '//
+     &     'beyond the xc potential by SVWN derivatives'
+
+      if (alda_hs .and. .not. alda_ha) then
+      write(lupri, '(a)')
+     &     '   - use ALDA only for the Hermitian part '//
+     &     '(density contribution)'
+      write(lupri, '(a)')
+     &     '   - use the proper xc kernel for the anti-Hermitian '//
+     &     'part (spin density contribution)'
+      end if
+
+      if (alda_ha .and. .not. alda_hs) then
+      write(lupri, '(a)')
+     &     '   - use ALDA only for the anti-Hermitian part '//
+     &     '(spin density contribution)'
+      write(lupri, '(a)')
+     &     '   - use the proper xc kernel for the Hermitian '//
+     &     'part (density contribution)'
+      end if
+
+      if (xalda) then
+      write(lupri, '(a)')
+     &     '   - keep the fraction of exact exchange of the '//
+     &     'xc functional in the solution of the response equation'
+      else
+      write(lupri, '(a)')
+     &     '   - for hybrid functionals exact exchange is '//
+     &     'switched off in the solution of the response equation'
+      end if
+
+      end if !if (alda_hs .or. alda_ha)
+
+
+!     thresholds
+!     ----------
+
+      write(lupri, '(a)')
+     &     ' * Thresholds:'
+      write(lupri, '(a, e12.5)')
+     &     '   - DFTHR0 = ', dfthr0
+      write(lupri, '(a, e12.5)')
+     &     '   - DFTHRL = ', dfthrl
+
+  999 continue
+      return
+      end

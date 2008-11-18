@@ -388,11 +388,11 @@ static void
 gga_report(void)
 {
     FuncList* lst;
-    fun_printf("Weighted mixed functional:");
+    fun_printf("  Weighted mixed functional:");
     if(fun_get_hf_weight()>0)
-        fun_printf("%25s: %10.5f", "HF exchange", fun_get_hf_weight());
+        fun_printf("%27s: %10.5f", "HF exchange", fun_get_hf_weight());
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        fun_printf("%25s: %10.5f", lst->func->name, lst->weight);
+        fun_printf("%27s: %10.5f", lst->func->name, lst->weight);
 }
 
 static real

@@ -4645,7 +4645,7 @@ C     Print section
 C     =============
 C
  400  CONTINUE
-      WRITE(LUPRI,'(A,I5)') ' * Print level :',IPRHAM
+      WRITE(LUPRI,'(A,I5)') ' * Print level:',IPRHAM
 C
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
