@@ -1082,14 +1082,14 @@ C       Check sum rule for oscillator strength
 C         oscillator strength for electronic transitions
           DO IPRP=1,3
 C           Length gauge
-            XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-     &           PRPGRAD(1,1,1,IPRP))
-            OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
+CMI         XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
+CMI  &           PRPGRAD(1,1,1,IPRP))
+CMI         OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
           ENDDO
-          WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
-     &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
-     &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
-     &         OSCL(1),OSCL(2),OSCL(3)
+CMI       WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
+CMI  &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
+CMI  &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
+CMI  &         OSCL(1),OSCL(2),OSCL(3)
           SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
         ENDDO
         WRITE(LUPRI,*) '-------------------------------------'/
