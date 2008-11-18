@@ -60,7 +60,7 @@ C
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
      &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
      &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
-     &            '.XALDA-','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XALDA-','.DFTTHR','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -102,6 +102,7 @@ C          geometry in a geometry optimization) /hjaaj
       alda_hs = .false.
       alda_ha = .false.
       xalda   = .false.
+      dft_thrs_changed = .false.
 
 
 C     initialize /DFTAC/
@@ -338,7 +339,10 @@ C     .GAUNTSCALE
                  call setaldaha(.true.) !activate ALDA for the H- part
                  go to 100
 
+!                .DFTTHR
  26              continue
+                 read(lucmd, *) dfthr0, dfthrl
+                 dft_thrs_changed = .true.
                  go to 100
 
  27              continue
@@ -554,8 +558,13 @@ C     .GAUNTSCALE
 !     thresholds
 !     ----------
 
+      if (dft_thrs_changed) then
       write(lupri, '(a)')
-     &     ' * Thresholds:'
+     &     ' * Default thresholds changed to:'
+      else
+      write(lupri, '(a)')
+     &     ' * Default thresholds used:'
+      end if
       write(lupri, '(a, e12.5)')
      &     '   - DFTHR0 = ', dfthr0
       write(lupri, '(a, e12.5)')
