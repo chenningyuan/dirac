@@ -376,7 +376,7 @@ C     .GAUNTSCALE
 
       if (.not. dftham) go to 999
 
-      call header('Set-up for Kohn-Sham calculation:', 2)
+      call header('Kohn-Sham calculation set-up', 2)
 
 
 !     print level
