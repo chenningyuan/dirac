@@ -61,7 +61,10 @@ C     Output: DMFC  - FCAC matrix in molfdir basis
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision :
+C
+C     Last revision : S. Knecht - Nov 2008  
+C                     removed nasty bug in offset calculation 
+C                     for DCOPY if ITIM == -1 and MZ == 2.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -82,7 +85,7 @@ C
       END IF
       IREP  = ISYM-1
       IOPSY = JBTOF(IREP,1)
-      IPRINT = 00
+C     IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output from QFC2MFC',-1)
          CALL HEADER('Input matrix:',-1)
@@ -91,7 +94,6 @@ C
      &   ISYM,IOPSY,ITIM
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
-      IPRINT = 00
 C
       IF ( NZ .EQ. 1 ) THEN
 C        DMFC matrix is pure real or pure imaginary, in this
@@ -174,7 +176,8 @@ C        DMFC(b,b) = -AR + AI i = (-DQFC(2)) + (-DQFC(1)) i
 C           copy -AI
             DO J = 1, NASH(JFSY)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
-     &                               DMFC(1+IOFFA,J+JOFFA,1),MZ)
+     &                               DMFC(1+IOFFA,J+JOFFA,MZ),1)
+Cbug &                               DMFC(1+IOFFA,J+JOFFA,1),MZ)
                CALL DSCAL(NASH(IFSY),DM1,DMFC(1+IOFFA,J+JOFFA,MZ),1)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
      &                               DMFC(1+IOFFB,J+JOFFB,MZ),1)
@@ -217,13 +220,12 @@ C     ... end do IZ = 1,NZ
       END DO
 C     ... end do IFSY = 1,NFSYM
 C
-      IPRINT = 00
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
-      IPRINT = 00
+C     IPRINT = 00
 C
       CALL QEXIT('QFC2MFC')
       RETURN
