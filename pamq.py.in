@@ -80,7 +80,7 @@ class PamQVariables:
     #-------------------------------------------------------------------
     #   ... list of implemented queue system for the script:
     #-------------------------------------------------------------------
-    self.implemented_queue_systems=['pbs','bsub','loadleveler','grid_engine']
+    self.implemented_queue_systems=['pbs','bsub','loadleveler','sge']
 
     # ... set up file with default variables
     self.pamq_defaults_file=self.dirac_home+'/PAMQ_DEFAULTS'
@@ -494,11 +494,16 @@ def process_grid_engine_script():
 #
 #     The job is located in the current directory
 #
+# NOTE: check if woking nodes share this home directory !
+# (on power.tau.ac.il not)
+#
 #$ -cwd
 #
 #  Shell script  
+#NOTE: Check if the script keeps all envormental variables for nodes-spce
+# (on power.tau.ac.il not)
 #
-#$ -S /bin/bash
+##$ -S /bin/bash
 #
 #     Job name
 #
@@ -523,7 +528,7 @@ def process_grid_engine_script():
 #
   s += '''\
 #
-# Export these environmental variables (miro: what doesit mean ?)
+# Export these environmental variables (for quantanamera.u-strabg.fr)
 #
 #$ -v P4_GLOBMEMSIZE=171966464
 #
@@ -705,7 +710,7 @@ def process_queue_script():
     process_pbs_script()	
   elif GlobalVars.queue_system=='loadleveler': 
     process_loadleveler_script()
-  elif GlobalVars.queue_system=='grid_engine': 
+  elif GlobalVars.queue_system=='sge': 
     process_grid_engine_script()
   elif GlobalVars.queue_system=='bsub': 
     process_bsub_script()
