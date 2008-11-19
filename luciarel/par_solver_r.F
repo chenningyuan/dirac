@@ -460,7 +460,6 @@ C       end of timing
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
-        WRITE(LUWRT,*) '   '
 *
 *       augment projected matrix using batch structure of CI vector(s)
 *
@@ -646,15 +645,13 @@ C
 *
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 2 )
-     &   WRITE(LUWRT,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+         WRITE(LUWRT,1170) MAXIT
+ 1170    FORMAT(/,'  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
-C?       ITER = ITER - 1
-         IF (IPRT .GE. 2 )
-     &   WRITE(LUWRT,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+         ITER = ITER - 1
+         WRITE(LUWRT,1180) ITER
+ 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
         END IF
 *
       IF ( IPRT .GT. 0 ) THEN
@@ -679,21 +676,18 @@ C?       ITER = ITER - 1
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
+        write(LUWRT,'(/A/)')
+     &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
         DO 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
+          write(LUWRT,9000) '   Final Eigenvalue ',IROOT,' : ',
      & FINEIG(IROOT)
  1601   CONTINUE
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
+        write(LUWRT,'(/A/)')
+     &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
       END IF
 *
  9000 FORMAT(A18,1I3,A3,F20.13)
-*
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
           WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
@@ -720,7 +714,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
 
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
  9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)
- 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A/)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
  9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
@@ -1475,7 +1469,7 @@ C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       IF( MYPROC .eq. MASTER ) THEN
         DO I = 1, NROOT
-           FINEIG(I) = EIG(ITER,I)+EIGSHF
+           FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
         WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)

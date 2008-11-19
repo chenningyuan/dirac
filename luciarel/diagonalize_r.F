@@ -1462,7 +1462,7 @@ C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       IF( MYPROC .eq. MASTER ) THEN
         DO I = 1, NROOT
-           FINEIG(I) = EIG(ITER,I)+EIGSHF
+           FINEIG(I) = EIG(I,ITER)+EIGSHF
         END DO
         WRITE(FILELAB,'(A7,A1)') "eroots.",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
@@ -3073,7 +3073,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
  1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
-C?       ITER = ITER - 1
+         ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(LUWRT,1180) ITER
  1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
