@@ -503,6 +503,17 @@ def process_grid_engine_script():
 #NOTE: Check if the script keeps all envormental variables for nodes-spce
 # (on power.tau.ac.il not)
 #
+#
+#  on some settings (like power.tau.ac.il not) consider 
+# that default batch memory limits might not sufficient for DIRAC  !
+#
+##$ -l h_vmem=3000M
+##$ -l h_vmem=15G  
+#
+##$ -l h_data=3000M
+##$ -l h_data=15G      
+#
+#
 ##$ -S /bin/bash
 #
 #     Job name
