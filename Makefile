@@ -68,6 +68,9 @@ Makefile.dep: Makefile.obj Makefile.moddef
 	echo "gp/gpc.o: include/fortran_interface.h" >> Makefile.dep
 
 
+dontbuild:dontbuild.in
+	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm to correct this."; false
+
 .PHONY:gp/compinfo.h
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
