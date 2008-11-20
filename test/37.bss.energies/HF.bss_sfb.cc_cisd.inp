@@ -51,11 +51,14 @@
 # Set up correlation step
 ############################################################
 **MOLTRA
+# needed for parallel run
+.SCHEME
+4
 .ACTIVE
 energy   -1000    999999  0.1
 *END OF
 
- &RELCCSD IPRNT=1, TIMING=T, DOENER=T,  NELEC=4,4  &END
+ &RELCCSD IPRNT=1, TIMING=T, DOENER=T,  NELEC=4,4, INTERFACE="DIRAC" &END
  &CCSORT USEOE=F &END
  &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T      &END
 
