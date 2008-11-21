@@ -1450,15 +1450,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                      ! ... increment counter of nonzero, PQ-based integrals (first two-indexes) 
                      NZIntRec(PQ) = NZIntRec(PQ) + 1
 
-                     ! ... write block of integrals 
-                     ! ... if number of integrals is larger than the parameter
+                     ! ... write block of integrals/indices of NZVINTBUFSIZE parameters
                      if ( NZVIntBufInd > NZVINTBUFSIZE ) then
                         ! ...  write buffer with integrals 
                         write(UVINT,rec=NxtRec) NZVIntBuf
                         ! ...  write buffer with indexes 
                         write(UVIND,rec=NxtRec) NZVPkIBuf
-
-                        !call written_int_ind(NxtRec,P,Q,R,S)
 
                         NxtRec = NxtRec + 1 ! shift to the next rectord
                         NZVIntBufInd = 1    ! reinitialize # of integrals per buffer 
@@ -1472,7 +1469,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
                      if (get_iprint() >= 40) then
-                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec, NZVIntBufInd, NZVIntBuf(NZVIntBufInd), & 
+                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,NZVIntBufInd, NZVIntBuf(NZVIntBufInd), & 
                              NZVPkIBuf(NZVIntBufInd),integ_label)
                      endif
 
@@ -1484,8 +1481,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
             TotNZInt = TotNZInt + NZIntRec(PQ) 
 
             if (get_iprint() >= 30) then
-               write(UOUT,'(1x,a,i5,a,i7)')   & 
-               'number of nonzero <PQ||RS> integrals, NZIntRec(PQ=',PQ,')=',NZIntRec(PQ)
+              write(UOUT,'(1x,3(a,i5),a,i8)')     & 
+              'number of nonzero <PQ||RS> integrals for P=',P,',Q=',Q,  &
+              ' NZIntRec(PQ=',PQ,')=',NZIntRec(PQ)
             endif
 
          enddo ! end of Q
@@ -1512,11 +1510,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
 end subroutine IntFileGen_TwoBody
 
-subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec, ArrayPos, Integral, IntIndex, integ_label)
+subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, IntIndex, integ_label)
 !--------------------------------------------------------------------------
 !
-!                  print the integral with proper indexes
+!    print the integral with proper indexes
 !
+!  ArrayPos : 1-NZVINTBUFSIZE
 !
 !--------------------------------------------------------------------------
    implicit none
@@ -1532,8 +1531,20 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec, ArrayPos, Integral, IntIndex,
          integer, intent(in)  :: Record
          integer, intent(out) :: P, Q
       end subroutine ResolvRec
+      function PackRS(R,S)
+         implicit none
+         integer, intent(in) :: R, S
+         integer :: PackRS
+      end function PackRS
    end interface
 
+   if (.not.PackRS(R,S)==IntIndex) then
+     call quit('print_integral: RS different from IntIndex !')
+   endif
+
+! -----------------------------------------------------------
+!             ... print-out own integrals
+! -----------------------------------------------------------
    selectcase (integ_label)
 
     case('2H2P') !  <PQ||RS>=<IJ||AB>

@@ -14,7 +14,7 @@ integer :: MDINT=20, MRCONEE=21
 CHARACTER*10 DATEX,TIMEX*8
 real*8 :: ECORE
 
-integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP 
+integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP, NKR
 
 !--------------------------------------------------------
 integer, parameter :: NSP2 = 300 ! static allocation 
@@ -35,9 +35,9 @@ integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
 
 real*8 EPS1(MAXSP) ! orbital energies ...
 
-LOGICAL BREIT,SPFR
+LOGICAL BREIT,SPFR,CARITH
 
-CHARACTER*10 NEXTFIL
+CHARACTER*10 NEXTFIL, INTERFACE
 
 logical :: is_complex, mrconee_read = .false.
 
@@ -51,6 +51,15 @@ function GetNBSYM() result(nbsym_dirac)
  nbsym_dirac = NBSYM
  write(LUPRI,*) 'get NBSYM=',NBSYM
 end function GetNBSYM
+
+function get_test() result(nintg)
+!function get_test() result(nintg)
+#include "priunit.h"
+integer:: nintg
+ write(LUPRI,*) 'in get_test !'
+ nintg=12
+end function get_test
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_mrconee
@@ -245,6 +254,13 @@ logical :: is_mdc, check_mem, print_int, print_batch_info
 
 integer :: RCW
 
+integer :: get_n_mdcint_intg
+
+!interface
+! function  get_n_mdcint_intg()
+! end function  get_n_mdcint_intg
+!end interface
+
 Call Header('MDCINT control print-out',-1)
 
 ! ... check if memory block is present
@@ -278,12 +294,17 @@ if (NKR > NSP2) then
 endif
 
 if (NKR /= NORBT .and. 2*NKR /= NORBT) then
- write(LUPRI,*) 'NKR=',NKR,' NORBT=',NORBT
- write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
+ write(LUPRI,*) 'CHECK: NKR=',NKR,' NORBT=',NORBT
+! write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
 ! call Quit('MRCONEE and MDCINT are incompatible !')
 endif
 
- write(LUPRI,*) 'Info from MDCINT file'
+write(LUPRI,*) 'Info from MDCINT file'
+
+! write(LUPRI,*) ' number of ALL nonzero integrals=',get_n_mdcint_intg()
+ ! nnzi=get_test()
+ nnzi=get_n_mdcint_intg()
+ write(LUPRI,*) ' number of ALL nonzero integrals=',nnzi
 
  write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
  write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
@@ -314,7 +335,7 @@ write(LUPRI,'(/2x,a,i1/)') 'the parameter RCW =',RCW
 
 ilenght = NKR*NKR ! 
 
- write(LUPRI,*) 'calculated array size, ilenght=',ilenght
+ write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
 
 ! call print_mem_param
 
@@ -435,7 +456,7 @@ endif
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
             OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
-            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next file ',FILE
+            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next MDCINTxx file ',NEXTFIL
             GOTO 1
          ENDIF
          !GOTO 1
@@ -491,6 +512,104 @@ endif
       'CARITH =',CARITH,', INTERFACE =',INTERFACE
 
 end subroutine read_mdcint
+
+function get_n_mdcint_intg() result(nintg)
+!-------------------------------------------------------------
+!
+!             Count number of integrals in MDCINT 
+!
+!-------------------------------------------------------------
+!implicit none
+!#include "implicit.h"
+#include "priunit.h"
+!implicit none
+integer :: nintg, IKR,JKR,NONZR,MOINT, INZ
+logical :: is_open, is_complex=.false.
+integer :: myIDUMMY
+double precision :: myDUMMY
+
+write(LUPRI,'(///,2x,a)') ' Going to count integrals '
+CALL FLSHFO(LUPRI)
+
+rewind(MDINT)
+read(MDINT)
+
+ MOINT=0
+
+
+ 1 continue
+
+  if (is_complex) then
+
+!   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
+!   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),     INZ=1,NONZR,1),  & 
+!   ( cbuf_vect%p_rA2D(1,INZ), cbuf_vect%p_rA2D(2,INZ), INZ=1,NONZR,1) 
+
+  else
+
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                      &
+!   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      &
+   ( myIDUMMY, myIDUMMY, INZ=1,NONZR,1),                                   &
+   (                   myDUMMY, INZ=1,NONZR,1) 
+
+  endif
+
+   MOINT = MOINT + NONZR
+
+!   write(LUPRI,*) IKR,JKR,NONZR
+!   write(LUPRI,'(2x,a,i6)') ' actual number of read integrals :',MOINT
+
+    IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NONZR = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next MDCINTxx file ',NEXTFIL
+            GOTO 1
+         ENDIF
+         !GOTO 1
+    ENDIF
+
+ if (NONZR == -1) then
+  ! call Quit('NONZR == -1!')
+ !  RETURN
+   GoTo 2
+ endif
+
+! write(LUPRI,*) '... jumping to read the next integral batch in the file ... '
+! CALL FLSHFO(LUPRI)
+
+ GoTo 1
+
+ 2 continue
+
+ write(LUPRI,*)  &
+ 'all integrals from the MDCINT file counted...number=',MOINT
+ write(LUPRI,*) ' while NKR**4=',NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(NKR*NKR*NKR*NKR)
+
+
+! get_n_mdcint_intg=MOINT
+ nintg=MOINT
+
+return
+
+
+!     ... reading file error outputs ...
+ 10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
+      CALL QUIT('ERROR READING HEADER MDCINT')
+
+ 10010 WRITE(6,'(/A/A,L10,2A)') & 
+      'END OF FILE branch taken when reading 2-e integrals', &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+       CALL QUIT('END OF FILE READING 2-E INTEGRALS')
+
+ 10020 WRITE(6,'(/A/A,L10,2A)')   &
+      'ERROR branch taken when reading 2-e integrals',  &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+
+end function get_n_mdcint_intg
 
 end module io_moltra
 
