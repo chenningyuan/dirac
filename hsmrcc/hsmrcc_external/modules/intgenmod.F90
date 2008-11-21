@@ -33,7 +33,7 @@ subroutine DrvIntGen
    integer :: GenIntBufSize
    integer :: i
    logical :: isMR2EINT
-   character*20 :: integ_label
+   character*4 :: integ_label
 
    ! ... Progress Report on Integral Generation ...
 
@@ -251,7 +251,7 @@ subroutine SIB_V2H2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    A = R - NCMO
    B = S - NCMO
 
-   RecNum = (I-1)*NPMO + A
+   RecNum = (I-1)*NPMO + A   ! IA
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
@@ -259,12 +259,11 @@ subroutine SIB_V2H2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    ! in the current block.
 
    ! ... calculate buffer index
-   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + B
+   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + B  ! JB
    ! ... store the <IJ||AB> integral
    GenIntBuf(BufInd) = AsyInt
 
    return
-
 end subroutine SIB_V2H2P
 
 subroutine SIB_V2HPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
@@ -296,7 +295,7 @@ subroutine SIB_V2HPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    A = R - NCMO
    B = S - NCMO
 
-   RecNum = (I-1)*NHMO + J
+   RecNum = (I-1)*NHMO + J  ! IJ
    if ( RecNum < StRec ) return
 
    if ( RecNum > EnRec ) return
@@ -343,7 +342,7 @@ subroutine SIB_V2PHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    I = R
    J = S
 
-   RecNum = (A-1)*NPMO + B
+   RecNum = (A-1)*NPMO + B ! AB
    if ( RecNum < StRec ) return
 
    if ( RecNum > EnRec ) return
@@ -354,7 +353,7 @@ subroutine SIB_V2PHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    IntVal = AsyInt
    IF ( I < J ) IntVal = -IntVal
 
-   BufInd = (RecNum - StRec)*RecLen + MAXMIN(I,J)
+   BufInd = (RecNum - StRec)*RecLen + MAXMIN(I,J) ! IJ
    GenIntBuf(BufInd) = IntVal
 
    return
@@ -390,7 +389,7 @@ subroutine SIB_VHHHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    K = R
    L = S
 
-   RecNum = MAXMIN(I,J)
+   RecNum = MAXMIN(I,J) ! IJ
 
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
@@ -402,9 +401,8 @@ subroutine SIB_VHHHH(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    IF ( I < J ) IntVal = -IntVal
    IF ( K < L ) IntVal = -IntVal
 
-   BufInd = (RecNum - StRec)*RecLen + MAXMIN(K,L)
+   BufInd = (RecNum - StRec)*RecLen + MAXMIN(K,L) ! KL
    GenIntBuf(BufInd) = IntVal
-
    
    return
 
@@ -440,7 +438,7 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    A = R - NCMO
    B = S - NCMO
 
-   RecNum = MaxMin(I,J)
+   RecNum = MaxMin(I,J)  ! IJ
    if ( RecNum < StRec ) return
 
    if ( RecNum > EnRec ) return
@@ -452,7 +450,7 @@ subroutine SIB_VHHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    IF ( I < J ) IntVal = -IntVal
    IF ( A < B ) IntVal = -IntVal
 
-   BufInd = (RecNum - StRec)*RecLen + MAXMIN(A,B)
+   BufInd = (RecNum - StRec)*RecLen + MAXMIN(A,B) ! AB
    GenIntBuf(BufInd) = IntVal
 
    return
@@ -516,12 +514,10 @@ subroutine SIB_VPHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    integer :: A, J, I, B
    integer :: RecNum, BufInd
 
-   ! For contributing to V2H2P, first index
+   ! For contributing to VPHHP, first index
    ! pair should be hole-hole type and second
    ! index pair should be particle-particle type.
    !
-   ! <P,Q||R,S> = <A,J||I,B>
-
    if ( P <= NCMO ) return
    if ( Q  > NHMO ) return
    if ( R  > NHMO ) return
@@ -530,17 +526,18 @@ subroutine SIB_VPHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    A = P - NCMO
    J = Q
    I = R
-   B = S - NCMO
+   B = S - NCMO ! <PQ||RS>=<AJ||IB>
 
-   RecNum = (I-1)*NPMO + A
+   RecNum = (I-1)*NPMO + A   ! IA
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
 
-   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + B
+   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + B ! JB
    GenIntBuf(BufInd) = AsyInt
+
 
    return
 
@@ -571,18 +568,17 @@ subroutine SIB_V2HHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    K = R
    A = S - NCMO
 
-   RecNum = (I-1)*NHMO + K
+   RecNum = (I-1)*NHMO + K   ! IK
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
 
-   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + A
+   BufInd = (RecNum - StRec)*RecLen + (J-1)*NPMO + A ! JA
    GenIntBuf(BufInd) = AsyInt
 
    return
-
 end subroutine SIB_V2HHP
 
 subroutine SIB_VHHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
@@ -611,7 +607,7 @@ subroutine SIB_VHHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    K = R
    A = S - NCMO ! substract occup.shells
 
-   RecNum = MAXMIN(I,J)
+   RecNum = MAXMIN(I,J) ! IJ
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
@@ -621,7 +617,7 @@ subroutine SIB_VHHHP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    IntVal = AsyInt
    IF ( I < J ) IntVal = -IntVal
 
-   BufInd = (RecNum - StRec)*RecLen + (K-1)*NPMO + A
+   BufInd = (RecNum - StRec)*RecLen + (K-1)*NPMO + A ! KA
    GenIntBuf(BufInd) = IntVal
 
    return
@@ -641,8 +637,6 @@ subroutine SIB_VPH2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    ! indices should be of particle type and fourth
    ! index should be of particle type.
    !
-   ! <P,Q||R,S> = <A,I||B,C>
-
    if ( P <= NCMO ) return
    if ( Q  > NHMO ) return
    if ( R <= NCMO ) return
@@ -651,16 +645,16 @@ subroutine SIB_VPH2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    A = P - NCMO
    I = Q
    B = R - NCMO
-   C = S - NCMO
+   C = S - NCMO !  <P,Q||R,S> = <A,I||B,C>
 
-   RecNum = (A-1)*NPMO + B
+   RecNum = (A-1)*NPMO + B ! AB
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
    ! Now the given integral is
    ! in the current block.
 
-   BufInd = (RecNum - StRec)*RecLen + (I-1)*NPMO + C
+   BufInd = (RecNum - StRec)*RecLen + (I-1)*NPMO + C ! IC
    GenIntBuf(BufInd) = AsyInt
 
    return
@@ -693,7 +687,7 @@ subroutine SIB_VPHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    B = R - NCMO
    C = S - NCMO
 
-   RecNum = (A-1)*NHMO + I
+   RecNum = (A-1)*NHMO + I ! AI
    if ( RecNum < StRec ) return
    if ( RecNum > EnRec ) return
 
@@ -703,7 +697,7 @@ subroutine SIB_VPHPP(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
    IntVal = AsyInt
    IF ( B < C ) IntVal = -IntVal
 
-   BufInd = (RecNum - StRec)*RecLen + MAXMIN(B,C)
+   BufInd = (RecNum - StRec)*RecLen + MAXMIN(B,C) ! BC
    GenIntBuf(BufInd) = IntVal
 
    return
@@ -1204,6 +1198,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !            RecordNumPQ
 !            RecordNumRS
 !            PackRS
+!            SetIntBuf - as SIB_Vxxxx (xxxx=2H2P,PPPP...all integral types)
 !
 !  
 !  SetIntBuf - SIB_Vxxxx routine which places integral on the buffer array  
@@ -1212,7 +1207,6 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 !  Called from: DrvIntGen ("intgenmod.F90")  
 !
 !---------------------------------------------------------------------------------------------------------
-
    implicit none
    ! ... Dummy Argument Variables ...
    real,    intent(inout) :: TimeTaken(2)
@@ -1220,7 +1214,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    integer, intent(out)   :: StartRec, EndngRec, TotNZInt
    integer, intent(inout) :: StVRec
    integer, intent(out)   :: NZIntRec(NumRec)
-   character*20, intent(in) :: integ_label
+   character*4, intent(in) :: integ_label
    ! ... Dummy Procedure and Function Interfaces
    interface
       ! ... called as SIB_Vxxxx 
@@ -1286,7 +1280,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
      call header('Output from IntFileGen_TwoBody',-1)
      write(UOUT,'(2x,4(a,i7))') '...StVRec=',StVRec,'...StartRec=',StartRec,  & 
                                 '...EndngRec=',EndngRec,'...RecLen=',RecLen
-     write(UOUT,'(5x,a,a)') 'integral type:',integ_label
+     write(UOUT,'(5x,a,a)') 'processing integral type:',integ_label
    endif
 
    dtim = dtime(tarray)
@@ -1478,23 +1472,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
                      if (get_iprint() >= 40) then
-                    !   write(UOUT,'(2x,4(a,i3,a,i3,a,i3), & 
-                    !                 a,f16.10,a,i7,a,i7)')  &
-                    !   '<',P,'(',StP,'-',EnP,')',Q,'(',QLow,'-',QHig,')||', & 
-                    !   R,'(',RLow,'-',RHig,')',S,'(',SLow,'-',SHig,')>=',  & 
-                    !   NZVIntBuf(NZVIntBufInd),  & 
-                    !   ' array pos:',NZVIntBufInd,  & 
-                    !   ' pck indx:', NZVPkIBuf(NZVIntBufInd)
-
-                       call ResolvRec(NZVPkIBuf(NZVIntBufInd),R1,S1) ! recover R,S...
-                       write(UOUT,'(6x,4(a,i3),a,f16.10,4(a,i7),a,2i4)')  & 
-                       '<',P,' ',Q,'||',R,' ',S,'>=', & 
-                       NZVIntBuf(NZVIntBufInd),' PQ=',PQ,' RS=',RS,  & 
-                       ' array pos:',NZVIntBufInd,                   & 
-                       ' PackRS:', NZVPkIBuf(NZVIntBufInd),' again R,S:',R1,S1
+                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec, NZVIntBufInd, NZVIntBuf(NZVIntBufInd), & 
+                             NZVPkIBuf(NZVIntBufInd),integ_label)
                      endif
 
                   endif
+
                enddo ! end of S
             enddo ! end of R
             ! ... increase counter of nonzero integrals of PQ index
@@ -1528,6 +1511,123 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    return
 
 end subroutine IntFileGen_TwoBody
+
+subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec, ArrayPos, Integral, IntIndex, integ_label)
+!--------------------------------------------------------------------------
+!
+!                  print the integral with proper indexes
+!
+!
+!--------------------------------------------------------------------------
+   implicit none
+   integer, intent(in)    :: P,Q,R,S, PQ, RS
+   integer, intent(in)    :: IntIndex, ArrayPos
+   integer    :: R1, S1, I,J,K,L,A,B,C,D
+   double precision, intent(in) :: Integral
+   character*4, intent(in) :: integ_label
+
+   interface
+      subroutine ResolvRec(Record,P,Q)
+         implicit none
+         integer, intent(in)  :: Record
+         integer, intent(out) :: P, Q
+      end subroutine ResolvRec
+   end interface
+
+   selectcase (integ_label)
+
+    case('2H2P') !  <PQ||RS>=<IJ||AB>
+ 
+       call ResolvRec(PQ,I,A) ! P,Q = I, A
+       call ResolvRec(RS,J,B) ! R,S = J, B
+
+     !  call ResolvRec(IntIndex,R1,S1) ! recover R,S...
+     !  write(UOUT,'(6x,4(a,i3),a,f16.10,4(a,i7),a,2i4)')  & 
+     !   '<',P,' ',Q,'||',R,' ',S,'>=', & 
+     !  Integral,' PQ=',PQ,' RS=',RS,  & 
+     !  ' array pos:',ArrayPos,        & 
+     !  ' PackRS:', IntIndex,' again R,S:',R1,S1
+
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. 2H2P,1324,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
+
+    case('PPPP')  ! <PQ||RS>=<AB||CD>
+
+       call ResolvRec(PQ,A,B) ! PQ is AB 
+       call ResolvRec(RS,C,D) ! RS is CD
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. PPPP,1234,<AB||CD>=<',A,' ',B,'||',C,' ',D,'>=',Integral  
+
+    case('HHHH') ! <PQ||RS>=<IJ||KL>
+
+       call ResolvRec(PQ,I,J) ! PQ is IJ
+       call ResolvRec(RS,K,L) ! RS is KL
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. HHHH,1234, <IJ||KL>=<',I,' ',J,'||',K,' ',L,'>=',Integral  
+
+    case('HHPP') ! <PQ||RS>=<IJ||AB>
+
+       call ResolvRec(PQ,I,J) ! PQ is IJ
+       call ResolvRec(RS,A,B) ! RS is AB
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. HHPP,1234,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
+
+    case('2HPP') ! <PQ||RS>=<IJ||AB>
+
+       call ResolvRec(PQ,I,J) ! PQ is IJ
+       call ResolvRec(RS,A,B) ! RS is AB
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. 2HPP,1234, <IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
+
+    case('2PHH')  ! <PQ||RS>=<A,B||I,J>
+
+       call ResolvRec(PQ,A,B) ! PQ is 
+       call ResolvRec(RS,I,J) ! RS is
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. 2PHH,1234,<AB||IJ>=<',A,' ',B,'||',I,' ',J,'>=',Integral 
+
+    case('PHHP') ! <PQ||RS>=<AJ||IB>
+
+       call ResolvRec(PQ,A,I) ! PQ is AI
+       call ResolvRec(RS,J,B) ! RS is JB
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. PHHP,1324, <AJ||IB>=<',A,' ',J,'||',I,' ',B,'>=',Integral  
+
+    case('PH2P') !<PQ||RS>=<AI||BC>
+
+       call ResolvRec(PQ,A,B) ! PQ is AB
+       call ResolvRec(RS,I,C) ! RS is IC
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. PH2P,1324, <AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
+
+
+    case('PHPP') ! <PQ||RS>=<AI||BC>
+
+       call ResolvRec(PQ,A,I) ! PQ is 
+       call ResolvRec(RS,B,C) ! RS is
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. PHPP,1234,<AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
+
+    case('2HHP') ! <P,Q||R,S>=<I,J||K,A>
+
+       call ResolvRec(PQ,I,K) ! PQ is IK
+       call ResolvRec(RS,J,A) ! RS is JA
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. 2HHP,1324,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral 
+
+    case('HHHP') ! <P,Q||R,S> = <I,J||K,A>
+
+       call ResolvRec(PQ,I,J) ! PQ is IJ
+       call ResolvRec(RS,K,A) ! RS is KA 
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+         ArrayPos,'. HHHP,1234,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral  
+    
+    case default
+        write(UOUT,*) 'nothing'
+        call quit('print_integral - error brach !')
+   end select
+  
+end subroutine print_integral
 
 subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                               StartRec,EndngRec,TotNZInt, &
