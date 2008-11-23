@@ -1262,6 +1262,8 @@ CMI ...not possible to add ! use dcbham.h for flag modif. operators...
 CMI#include "dcbprp.h"
 C
       CHARACTER*4 PCOMB
+C     ... the four characters in PCOMB define inclusion of the
+C         LL, SL, LS, and SS blocks of one-electron operators.
 C
       CALL QENTER('XPRADD')
 
