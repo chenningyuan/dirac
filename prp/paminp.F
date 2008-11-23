@@ -38,7 +38,7 @@ C    Called from:  PAMINP - first reading of the input
 C                  MINPRP - called when optimize is on 
 C                  (properties at final geometry)
 C
-C       Written by Trond Saue and Hans J.Aa.Jensen
+C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
@@ -910,6 +910,8 @@ C     Read property name
 C     ==================
 C
       IF (IKW .EQ. 0) THEN
+C        IKW .eq. 0 :  Property name
+C
          PNAME     = BLANK16
          LTKNR     = MIN(16,LTKN)
          READ(LINE(ITKN:80),'(A)') PNAME(1:LTKNR)
@@ -920,6 +922,7 @@ C        default diagonal operator name = label
          NFAC      = 0
          IKW       = 1
       ELSE IF (IKW .EQ. 1) THEN
+C        IKW .eq. 1 :  Keywords
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -940,6 +943,7 @@ C          If keyword defines operator type, then initialize
 C          =================================================
 C
            IF (I .GT. 5) THEN
+C             (the first five entries in TABKW are not operator types)
               IPTYP = I - 5
               NLABEL= 0
               NFAC  = 0
@@ -1007,6 +1011,7 @@ C     Read property labels for each component
 C     =======================================
 C
       ELSE IF (IKW .EQ. 2) THEN
+C        IKW .eq. 2 :  Property labels (to be found on file)
          NLABEL = NLABEL + 1
          PLABEL(NLABEL) = BLANK8
          LTKNR = MIN(8,LTKN)
@@ -1017,12 +1022,14 @@ C     Read class keyword
 C     ==================
 C
       ELSE IF (IKW .EQ. 3) THEN
+C        IKW .eq. 3 :  Class label
 CHJMAERKE: implement interpretation of class keyword
 C
 C     Read factor for each component
 C     ==============================
 C
       ELSE IF (IKW .EQ. 4) THEN
+C        IKW .eq. 4 :  Separate factor for each component
          NFAC = NFAC + 1
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
@@ -1035,6 +1042,7 @@ C
 C     Read a common factor for all components
 C     =======================================
       ELSE IF (IKW .EQ. 5) THEN
+C        IKW .eq. 5 :  Common factor for all components
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
          TOKEN16 = BLANK16
@@ -1049,6 +1057,7 @@ C     Unknown IKW
 C     ===========
 C
       ELSE
+C        IKW .gt. 5
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
      &    'Programming error in XPRINP, unknown IKW=',IKW
