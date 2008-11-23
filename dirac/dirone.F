@@ -65,6 +65,7 @@ C
       IF(.NOT.CLSCAL(I)) GOTO 10
 Chj     CLSCMB and PDOINT is now '+', '-', or '0',
 Chj     corresponding to a factor of +1, -1, or 0 on that block.
+C       The four blocks (AO basis): LL, SL, LS, SS
         DO J = 1,4
           IF (CLSCMB(I)(J:J) .EQ. '0') THEN
              COMB(J:J) = 'F'
@@ -77,6 +78,7 @@ C     Nuclear attraction integrals (molecular field)
 C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
         IF (NOSMLV) THEN
+C          ... zero SS integrals
            CLSCMB(I)(4:4) = '0'
            ILBL = IPRPLBL(1,I)
            PDOINT(ILBL)(4:4) = '0'
@@ -707,6 +709,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
 CMI ... TODO: to be later renamed to PRPMBU ...
+Chjaaj: NO! routine names should not be too cryptic, BU is too special to me.
+C       Current name is made from: PRPMAO - PRoPerty Matrix AO basis
+C       If we also want to tell that the order of the AO basis is BU, then
+C       e.g. as new nanme: PRPMAO_BU /nov.08-hjaaj
       SUBROUTINE PRPMAO(LU1INT,IOP,IDIMENS,PMAT,
      &                  OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
@@ -812,7 +818,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN 
           IC = 2
         ELSE
-          write(lupri,'(2X,A4)') 'PRPMAO: illegal PDOINT=',PDOINT
+          write(lupri,'(3A)') 'PRPMAO: illegal PDOINT = "',PDOINT,'"'
           CALL QUIT('PRPMAO: illegal PDOINT!')
         ENDIF
         IBRP = IPRLREP(KLBL)
@@ -902,7 +908,8 @@ C
           ENDIF
         ENDIF        
 C
-C       Phase transformation/PDOINT factor if necessary
+C       Phase transformation/PDOINT factor if necessary.
+C       The four blocks (AO basis): LL, SL, LS, SS
 C
 Chj     PDOINT is now '+', '-', or '0',
 Chj     corresponding to a factor of +1, -1, or 0 on that block.
@@ -1089,7 +1096,8 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN
           IC = 2
         ELSE
-          CALL QUIT('PRPMAO: illegal PDOINT!')
+          write(lupri,'(3A)') 'PRPMAOso: illegal PDOINT = "',PDOINT,'"'
+          CALL QUIT('PRPMAOso: illegal PDOINT!')
         ENDIF
         IBRP = IPRLREP(KLBL)
         IH   = IPRLTYP(KLBL)
@@ -1171,7 +1179,8 @@ C
           ENDIF
         ENDIF
 C
-C       Phase transformation/PDOINT factor if necessary
+C       Phase transformation/PDOINT factor if necessary.
+C       The four blocks (AO basis): LL, SL, LS, SS
 C
 c        this is changed so that
 c        PDOINT is now '+', '-', or '0',
@@ -2598,6 +2607,7 @@ C***********************************************************************
 C
 Chj   PDOINT is now '+', '-', or '0',
 Chj   corresponding to a factor of +1, -1, or 0 on that block.
+C     The four blocks (AO basis): LL, SL, LS, SS
       DO J = 1,4
         IF (PCOMB(J:J) .EQ. '0' .OR. PCOMB(J:J) .EQ. 'F') THEN
            COMB(J:J) = 'F'
