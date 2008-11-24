@@ -229,7 +229,7 @@ c
       integer  atebyt, forbyt
       external atebyt, forbyt
 c
-      call timer_argos(' ', tmin0, iargos, nlist )
+c      call timer_argos(' ', tmin0, iargos, nlist )
 c
       msu   = msup
       mstu  = mstup
@@ -245,7 +245,7 @@ c
       h2o1e = 0
       h2o2e = 0
 c
-      call timer_argos(' ', tminit, iclock, nlist )
+c      call timer_argos(' ', tminit, iclock, nlist )
 c
 c     # read input, compute il(*), cx(*), and the 1-e integrals.
 c
@@ -270,7 +270,7 @@ c     # read the 1-e high-water mark and check for errors.
         call bummer('driver: from 1-e h2ofin, ierr=',ierr,wrnerr)
       endif
 c
-      call timer_argos('seg1mn required', tmrein, iclock, nlist )
+c      call timer_argos('seg1mn required', tmrein, iclock, nlist )
 c
 *      if ( only1e .ne. 1 ) then
 *c
@@ -344,7 +344,7 @@ c     # write out the core allocation high-water marks.
       write(nlist, 6010 ) '2-e integral ', h2o2e
       write(nlist, 6010 ) 'overall argos', max( h2o1e, h2o2e )
 c
-      call timer_argos('argos required', tmclr, iargos, nlist )
+c      call timer_argos('argos required', tmclr, iargos, nlist )
 c
       return
 6010  format(' driver: ',a,' workspace high-water mark =',i10)
@@ -549,7 +549,7 @@ c
 c     # push the current allocation onto the stack.
       call h2opsh( (lcore - mcxu) )
 c
-      call timer_argos(' ', tminit, iclock, nlist )
+c      call timer_argos(' ', tminit, iclock, nlist )
 c
 c     # input processing.
 c
@@ -562,7 +562,7 @@ c
      &   nt,     ntl,    ntu,    x,          y,      z,      zcr,
      &   zet,    lcore,  ifirst, mem1 )
 c
-      call timer_argos('syminp required', tmrein, iclock, nlist )
+c      call timer_argos('syminp required', tmrein, iclock, nlist )
 c
 c     # pop back to the current level.
       call h2opop
@@ -590,7 +590,7 @@ c
 c     # pop back to the initial level.
       call h2opop
 c
-      call timer_argos('socfpd required', tmrein, iclock, nlist )
+c      call timer_argos('socfpd required', tmrein, iclock, nlist )
 c
 c     # compute the one-electron integrals.
 c
@@ -689,7 +689,7 @@ c       # pop the high-water mark stack.
         call h2opop
    60 continue
       write(nlist,*)
-      call timer_argos('oneint required', tmclr, iclock, nlist )
+c      call timer_argos('oneint required', tmclr, iclock, nlist )
 c
       return
       end
@@ -1231,8 +1231,10 @@ c
 c     # generate an additional title with a job and tdy stamp.
 c
       ntitle = ntitle + 1
+#ifdef ARGOS_STANDALONE
       title(ntitle)(1:40) = 'aoints SIFS file created by argos.'
       call siftdy( title(ntitle)(41:) )
+#endif
 c
       nsf = isf
       if ( nsf .gt. msfu ) then

@@ -151,6 +151,7 @@ c
 c
       call pbginf
 c
+#ifdef ARGOS_STANDALONE
       call getlcl( lcored, lcore, ierr )
       if ( ierr .ne. 0 ) then
          call bummer('argos: from getlcl: ierr=',ierr,faterr)
@@ -161,6 +162,7 @@ c        # here just to be safe.
          call bummer('argos: (lcore-lcored)=',
      &    (lcore-lcored), faterr )
       endif
+#endif
 c
       mem1   = 0
       ifirst = 1
