@@ -2111,7 +2111,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gmotra */
-      SUBROUTINE GMOTRA(WORK,LWORK)
+      SUBROUTINE GMOTRA(GOFAST,WORK,LWORK)
 C*****************************************************************************
 C
 C PURPOSE:
@@ -2159,9 +2159,10 @@ C   PAMIOU: LUTMAT
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      LOGICAL TWOBUF
+      LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
+      IF(GOFAST.AND..NOT.BSS) GOTO 10
 #include "memint.h"
       KFRSAV = KFREE
 C
@@ -2232,19 +2233,37 @@ C
 C       Case 2: Generate 2-component Hamiltonian
 C       ----------------------------------------
 C
-C aspg, timing
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
+        TOBE=.FALSE.
+        IF(GOFAST) THEN
+          INQUIRE(FILE='BSSMAT',EXIST=TOBE)
+        ENDIF
+        IF(TOBE) THEN
+C.........DFTMAT and BSSMAT available:
+C         1) open BSSMAT and remove all property integrals
+C         2) do picture change transformation of integrals on AOPROPER
+          WRITE(LUPRI,'(A,A)') '* WARNING: DIRAC found BSSMAT ',
+     &         '(X2c stuff) ... skipping generation of H2C'
+          LUBSS = 40
+          CALL OPNFIL(LUBSS,'BSSMAT','OLD','GMOTRA')
+          IF (FNDLAB('P2C_0001',LUBSS)) THEN
+            BACKSPACE(LUBSS)                   
+            CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+          ENDIF
+          CLOSE(LUBSS,STATUS='KEEP')
+          CALL PROP2BSS(WORK(KVMAT),IPRHAM,WORK(KFREE),LFREE)
+        ELSE
+          CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
+          KTMAT = KVMAT
+          IF (IPRHAM.GE.5) THEN
+            write(lupri,*) 'GMOTRA: branch BSS'
+            write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
+     &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
+          ENDIF
+        ENDIF
         CALL TIMER('mk_h2c',TIMSTR,TIMEND)
-C aspg, timing
 CMI    ... transformation matrix is the Large-electronic part of
 C          the adapted Lowdin matrix VMAT
-        KTMAT = KVMAT
-        IF (IPRHAM.GE.5) THEN
-          write(lupri,*) 'GMOTRA: branch BSS'
-          write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
-     &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
-        ENDIF
 
         IF(TWOCOMPBSS) THEN
 C
@@ -2390,11 +2409,13 @@ C
       CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
+      CALL ORBDAT
       CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Memory deallocation
 C
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
+ 10   CONTINUE
       CALL QEXIT('GMOTRA')
       RETURN
 C

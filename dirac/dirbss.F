@@ -105,7 +105,6 @@ C ... store transformed H2c_AO Hamiltonian in pure "LL" form ...
       ENDIF
 
 C ... for calculating properties in pure 2comp. mode do adapt 4comp.operators
-C     IF (TWOCOMPBSS.AND.DOPRP) THEN
       IF (TWOCOMPBSS) THEN
         CALL PROP2BSS(VMAT,IPRHAM,WORK(KFREE),LFREE)
       ENDIF

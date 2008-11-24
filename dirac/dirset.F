@@ -55,7 +55,7 @@ C
 #include "cbirea.h"
 #include "infpar.h"
 C
-      LOGICAL TWOBUF,GOFAST
+      LOGICAL TWOBUF,GOFAST,TOBE
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PAMSET')
@@ -69,7 +69,6 @@ C
       ELSE
         CALL GOTEST(GOFAST,IPREAD)
       ENDIF
-      IF(GOFAST.AND.(.NOT.DOHRM)) GOTO 10
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
@@ -87,7 +86,14 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-      CALL ONEGEN(WORK,LWORK)
+      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
+      IF(TOBE) THEN
+        WRITE(LUPRI,'(A,A)') 
+     &  '* WARNING: DIRAC found AOPROPER (one-electron integrals)',
+     &  '  ...will attempt restart.'
+      ELSE 
+        CALL ONEGEN(WORK,LWORK)
+      ENDIF
 #ifdef MOD_CAP
 CMI ... check if CAP is not for everlap control
 CMI  ... call of F90 routine
@@ -113,12 +119,7 @@ C
 C     DO4C2C=T : after 4c SCF perform IOTC transformation
 C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
 C
-      CALL GMOTRA(WORK,LWORK)
-C
-C     Write orbital output to DFTMAT
-C     ==============================
-C
-      CALL ORBDAT
+      CALL GMOTRA(GOFAST,WORK,LWORK)
 C
  10   CONTINUE
 C
@@ -1609,20 +1610,8 @@ C
       GOFAST = .FALSE.
       INQUIRE(FILE='DFTMAT',EXIST=GOFAST)
       IF(GOFAST) THEN
-        INQUIRE(FILE='AOPROPER',EXIST=GOFAST)
-        IF(GOFAST.AND.BSS) THEN
-          INQUIRE(FILE='BSSMAT',EXIST=GOFAST)
-          LUBSS = 40
-        ENDIF
-      ENDIF
-      IF(GOFAST) THEN
-        WRITE(LUPRI,'(A)') 
-     &  '* GOTEST found the following files:',
-     &  '    - DFTMAT: transformation matrices',
-     &  '    - AOPROPER: one-electron integrals'
-        IF(BSS) WRITE(LUPRI,'(A)')
-     &  '    - BSSMAT: BSS stuff'
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A,A)') 
+     &  '* WARNING: DIRAC found file DFTMAT (transformation matrices)',
      &  '  ...will attempt restart.'
       ENDIF
 C
@@ -1753,10 +1742,10 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
+C      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
       NBRP = 4/NZ
-      READ(LUTMAT)
-      READ(LUTMAT)
+C      READ(LUTMAT)
+C      READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
@@ -1775,7 +1764,7 @@ C
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
-      CLOSE(LUTMAT,STATUS='KEEP')      
+C      CLOSE(LUTMAT,STATUS='KEEP')      
 C
       RETURN
       END
