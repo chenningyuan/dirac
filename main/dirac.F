@@ -734,6 +734,7 @@ C
          OPT_DELSTR(I) = ' '
       END DO
 C
+      NMAX_SYM    = NKRCI_MAX_SYM
       MAXCIT      = MAXCIT_KRCI
       KTRLVL      = KTRLVL_KRCI
       IANACI      = IANACI_KRCI
