@@ -222,14 +222,20 @@ C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
 C
+      NTEST = 0
+C
       IF( IRWRT .eq. 0 )THEN
 C
 C       Write label at end or - if already existing - after SODLABEL
 C
         CALL LABKRMC(LUNIT,LABEL)
 C
-C       Write vector
-C
+C       debug print
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*) ' matrix put to file with label ',LABEL
+          CALL WRTMATMN(VECTOR,1,ISIZE,1,ISIZE,LUPRI)
+        END IF
+C       ... write
         CALL WRITSQ(LUNIT,ISIZE,VECTOR)
         CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
         REWIND LUNIT
@@ -238,7 +244,63 @@ C       ... read from file
         REWIND LUNIT
         CALL MOLLAB(LABEL,LUNIT,LUPRI)
         CALL READT(LUNIT,ISIZE,VECTOR)
+C
+C       debug print
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*) ' matrix read from file with label ',LABEL
+          CALL WRTMATMN(VECTOR,1,ISIZE,1,ISIZE,LUPRI)
+        END IF
       END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GET_KRCICVECS_E */
+      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,XSYMFLAB,
+     &                           NKRCI_MAX_SYM)
+C***********************************************************************
+C
+C     read eigenstate energies from file KRCI_CVECS.INFO
+C
+C     Input:
+C        NKRCI_MAX_SYM  - highest active symmetry irrep
+C        XSYMFLAB       - array containing file labels for each symmetry
+C        NKRCI_CIROOTS  - # eigenstates per symmetry irrep
+C
+C     Output:
+C        EVEC    - vector containing energies for all eigenstates
+C
+C     Written by S. Knecht - Nov 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION EVEC(*), NKRCI_CIROOTS(*)
+      CHARACTER*1 XSYMFLAB(*) 
+      CHARACTER*8 FILELAB
+      LOGICAL EX
+C
+C     read final energies from file KRCI_CVECS.INFO
+      INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
+      IF( .not. EX ) THEN
+        WRITE(LUPRI,'(/A,2I4)')' *** ERROR in GET_KRCICVECS_E.'//
+     &                         ' file KRCI_CVECS.INFO not found.'
+        CALL QUIT(' *** ERROR in GET_KRCICVECS_E. file KRCI_CVECS.INFO
+     &               not found.')
+      END IF
+      LU_INFO = 80
+      CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','OLD','XGETEN')
+      NXSCR = 1
+      DO I = 1, NKRCI_MAX_SYM
+        IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
+          WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+          CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
+     &                      NKRCI_CIROOTS(I),1)
+        END IF
+        NXSCR = NXSCR + NKRCI_CIROOTS(I)
+      END DO
+C     ... close
+      CLOSE(LU_INFO,STATUS='KEEP')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1323,4 +1385,29 @@ C
       DO I = 1, IXSYM
         XSYMFLAB(I) = XLAB(I)
       END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FIND_XPRPINDEX */
+      INTEGER FUNCTION IXPRPINDEX(PRPNAMES,LPROP_KRCI,NPROP,XLABEL)
+C***********************************************************************
+C
+C     find index of property XLABEL in KRCI format
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+C
+      CHARACTER*16 PRPNAMES(*), XLABEL
+      DIMENSION LPROP_KRCI(*)
+C
+      IXPRPINDEX = 0
+      I_SCR      = 0
+      DO I = 1, NPROP
+        INDXPR = LPROP_KRCI(I)
+        IF( PRPNAMES(INDXPR) .eq. XLABEL ) I_SCR = I
+      END DO
+      IXPRPINDEX = I_SCR
       END
