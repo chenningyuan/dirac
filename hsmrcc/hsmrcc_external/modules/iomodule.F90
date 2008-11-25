@@ -183,6 +183,7 @@ subroutine InitIOMod
 
    if (get_iprint() > 5) then
      write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
+     write(UOUT,'(2x,a)') 'RecLen,NumRec calculated; NZIntRec_Vxxx arrays allocated'
    endif
 
    return
@@ -288,6 +289,7 @@ subroutine InitBlockIO
 
 end subroutine InitBlockIO
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine AllocIntBufs
 !-------------------------------------------------------------------
 !
@@ -947,7 +949,7 @@ subroutine OpenIntFiles
 
 !  ... print out info
    if (get_iprint() >= 7) then
-     write(UOUT,'(/,2x,a)') 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
+     write(UOUT,'(/,2x,a,a)') 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
      write(UOUT,'(a,i2,a,a,a,i8)') 'UVIND=',UVIND,' 2-el.integrals,FileVIND=',FileVIND,' recl=',recl_vind
      write(UOUT,'(a,i2,a,a,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes,FileVINT=',FileVINT,' recl=',recl_vint
      write(UOUT,'(a,i2,a,a,a,i8)') 'UFHH=',UFHH,' 1-el. integ.,FileFHH=',FileFHH,' recl=',recl_fhh

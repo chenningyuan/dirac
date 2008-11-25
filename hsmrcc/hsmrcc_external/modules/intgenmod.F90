@@ -1469,8 +1469,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
                      if (get_iprint() >= 40) then
-                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,NZVIntBufInd, NZVIntBuf(NZVIntBufInd), & 
-                             NZVPkIBuf(NZVIntBufInd),integ_label)
+                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,NZVIntBufInd,  & 
+                          NZVIntBuf(NZVIntBufInd), NZVPkIBuf(NZVIntBufInd),integ_label)
                      endif
 
                   endif

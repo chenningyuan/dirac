@@ -48,9 +48,8 @@ call StickMemory(WORK,LWORK)
  call read_mdcint ! read MDCINT file
 !endif
 
-call prepare_dirac_HSMRCC_file
-
-call prepare_dirac_HSMRCC_int_files
+!call prepare_dirac_HSMRCC_file
+!call prepare_dirac_HSMRCC_int_files
 
 call UnstickMemory
 
