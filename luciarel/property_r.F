@@ -156,8 +156,8 @@ C
                  IASP_DC = K
                  IBSP_DC = I
                  INDICES_FOUND = .TRUE.
-CSK              WRITE(LUPRI,*) ' indices K, I',K,I
-CSK              WRITE(LUPRI,*) ' AMATRX(K,I)',AMATRX(K,I)
+C                WRITE(LUPRI,*) ' indices K, I',K,I
+C                WRITE(LUPRI,*) ' AMATRX(K,I)',AMATRX(K,I)
               END IF
     7       CONTINUE
     1    CONTINUE
@@ -439,38 +439,39 @@ C
 C       ... no two-electron excitations
         NO_TTWO   = 1
         IPRHAM_CI = 0
-        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
+        INDXPR    = LPROP_KRCI(II)
+        ITIM_SYM  = IPRPTIM(INDXPR) 
+        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
 C
 C       generate symmetry info for PICASSO
         CALL LUC2PIC(ISO1,IPRTRA)
 C
 C       read property matrix from file
         CALL DZERO(WORK(KXPROPM),4*N2ASHX*MZ)
-        INDXPR  = LPROP_KRCI(II)
         FILELAB = PRPNAM(INDXPR)(1:8)
         CALL KRCI_PRPFILE(LUF1MAT,FILELAB,WORK(KXPROPM),
      &                    4*N2ASHX*MZ,1)
 C       ... reorder always at this point: RUN_SHMEM_T = .FALSE.
         RUN_SHMEM_T = .FALSE.
-CSK     WRITE(LUWRT,'(/A,A8/)') '  Reorder step for property matrix: ',
-CSK  &                             FILELAB
-CSK     CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
+        WRITE(LUWRT,'(/A,A8/)') '  Reorder step for property matrix: ',
+     &                             FILELAB
+        CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
         CALL PICASSO(INTSPACE,ISO1,IPRTRA,MCSCF,NL2D,IUB2D,ISM2D,
      &               WORK(KXPROPM),DUMMY,DUMMY,DUMMY,IDUMMY,IBOSYM,
      &               CIRUN,RUN_SHMEM_T)
 C
 C       write sorted property matrix back to file
         WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
-CSK     WRITE(LUWRT,'(/A,A8/)') '  Final matrix on file with label: ',
-CSK  &                             FILELAB_REOD
-CSK     WRITE(LUWRT,'(A,I18/)') '  total number of integrals on KT_CC ',
-CSK  &                             NALLINT
+        WRITE(LUWRT,'(/A,A8/)') '  Final matrix on file with label: ',
+     &                             FILELAB_REOD
+        WRITE(LUWRT,'(A,I18/)') '  total number of integrals on KT_CC ',
+     &                             NALLINT
 C
 C       store number of non-zero integrals for this operator
         IN1ELPRP_KRCI(II) = 0
         LINT_WRITE        = NALLINT
         IN1ELPRP_KRCI(II) = LINT_WRITE
-CSK     CALL WRTMATMN(WORK(KT_CC),1,LINT_WRITE,1,LINT_WRITE,LUWRT)
+        CALL WRTMATMN(WORK(KT_CC),1,LINT_WRITE,1,LINT_WRITE,LUWRT)
         CALL KRCI_PRPFILE(LUF1MAT,FILELAB_REOD,WORK(KT_CC),
      &                    LINT_WRITE,0)
         XT_TEST = 0.0D0
@@ -673,6 +674,15 @@ C     distribute C vectors from MASTER to slaves for all active irreps
       CALL DIST_XCVEC(WORK(KVEC1),LUC,ILU1,WORK(KILU1LIST),
      &                WORK(KNODELIST),WORK(KBLOCKLIST),WORK(KXSYM_BLK),
      &                IXSYMLIST,IXSYMACT,IRC)
+C     scratch arrays
+      CALL MEMMAR(KXR,NPROP_ROOTS_KRCI,'ADDL  ',2,'KXR   ')
+      IF(MZ.eq.2) THEN 
+        CALL MEMMAR(KXI,NPROP_ROOTS_KRCI,'ADDL  ',2,'KXI   ')
+      ELSE
+        CALL MEMMAR(KXI,               0,'ADDL  ',2,'KXI   ')
+      END IF
+      CALL DZERO(WORK(KXR),NPROP_ROOTS_KRCI)
+      IF( MZ .eq. 2 ) CALL DZERO(WORK(KXI),NPROP_ROOTS_KRCI)
 C
 C     end of setup section
 C     --------------------
@@ -685,8 +695,6 @@ C     initialize start codes for ICSM_OLD and NVC_LUC (# of vec per irrep)
       ICSM_OLD  = -1
       NVC_LUC   = -3
 #if defined (VAR_MPI2)
-      IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'XPROP2')
 C     ... batches of blocks 
       CALL MEMMAR(KPCLBXX,MXNTTS,  'ADDL  ',1,'CLBTX ')
       CALL MEMMAR(KPCLEXX,MXNTTS,  'ADDL  ',1,'CLEBTX')
@@ -735,8 +743,12 @@ C
 C           only zero elements in property operator matrix
             IF( ISYM_T .le. 0 ) GOTO 200
 C
+            INDXPR    = LPROP_KRCI(IPROP_X)
+C           symmetry under time reversal (+1,-1)
+            ITIM_SYM  = IPRPTIM(INDXPR)
+C
 C           reset operator specific common blocks
-            CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
+            CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
 C
             LENGTH_BLK = IN1ELPRP_KRCI(IPROP_X)
 C           erase old property integrals
@@ -748,7 +760,6 @@ C           read new property integrals from disk
      &                            LENGTH_BLK,MPI_REAL8,ISTAT,IERR)
             IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
 #else
-            INDXPR  = LPROP_KRCI(IPROP_X)
             WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
             CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,WORK(KT_CC),
      &                        LENGTH_BLK,1)
@@ -777,15 +788,9 @@ C
 C           inner loop over all eigenstates
 #if defined (VAR_MPI2)
 C 
-            CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'XPROP1')
-            CALL MEMMAR(KXR,NPROP_ROOTS_KRCI,'ADDL  ',2,'KXR   ')
-            IF(MZ.eq.2) THEN 
-              CALL MEMMAR(KXI,NPROP_ROOTS_KRCI,'ADDL  ',2,'KXI   ')
-            ELSE
-              CALL MEMMAR(KXI,               0,'ADDL  ',2,'KXI   ')
-            END IF
-C     WRITE(LUWRT,*) 'calculating dot pd for s vector of ISSM and #',
-C    &                ISSM,ISTATE_X
+            INDXPR  = LPROP_KRCI(IPROP_X)
+      WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
+     &                ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
             CALL INPRDD_REAL_CPLX_XPRP(ILU2,ILU1,WORK(KVEC1),WORK(KVEC2)
      &                                ,WORK(KXR),WORK(KXI),NBATX,
      &                                 WORK(KPCLBXX),WORK(KPCLEXX),
@@ -793,28 +798,32 @@ C    &                ISSM,ISTATE_X
      &                                 MY_LU2_OFF,MY_LU1_OFF,
      &                                 WORK(KILU2LIST),WORK(KILU1LIST),
      &                                 NPROP_ROOTS_KRCI,ISSM,
-     &                                 ISYMEIG_KRCI,MZ)
-C           WRITE(LUWRT,*) ' WORK(KXR) '
-C           CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
-C    &                    NPROP_ROOTS_KRCI,LUWRT)
-C           IF( MZ.eq.2)THEN
-C             WRITE(LUWRT,*) ' WORK(KXI) '
-C             CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
-C    &                      NPROP_ROOTS_KRCI,LUWRT)
-C           END IF
+     &                                 ISYMEIG_KRCI,MZ,1)
+            WRITE(LUWRT,*) ' WORK(KXR) '
+            CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
+     &                    NPROP_ROOTS_KRCI,LUWRT)
+            IF( MZ.eq.2)THEN
+              WRITE(LUWRT,*) ' WORK(KXI) '
+              CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
+     &                      NPROP_ROOTS_KRCI,LUWRT)
+            END IF
 C
             DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
               IF( ISSM .ne. ISYMEIG_KRCI(ISTATE_Y) ) GOTO 300
               XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,1) =
      &                                              WORK(KXR+ISTATE_Y-1)
+C             WRITE(LUWRT,*) 'ISTATE_Y,ISTATE_X, PRPNAM(INDXPR) and'//
+C    &                       ' XPROPMAT(Y,X,PROP,1)',ISTATE_Y,ISTATE_X,
+C    &                        PRPNAM(INDXPR),
+C    &        XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,1)
               IF( MZ .eq. 2 ) XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2) =
      &                                              WORK(KXI+ISTATE_Y-1)
+C             WRITE(LUWRT,*) 'ISTATE_Y,ISTATE_X, PRPNAM(INDXPR) and'//
+C    &                       ' XPROPMAT(Y,X,PROP,2)',ISTATE_Y,ISTATE_X,
+C    &                        PRPNAM(INDXPR),
+C    &        XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2)
  300        CONTINUE
 C           ^ end of inner loop over all eigenstates
-C       
-C           release local scratch memmory
-            IDUM = 0
-            CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'XPROP1')
 #else
             DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
 C
@@ -834,9 +843,6 @@ C        ^ end of loop over all properties
 C     ^ end of outer loop over all eigenstates
 C
 #if defined (VAR_MPI2)
-C     release memory allocated for previous loops
-      IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'FLUSM  ',IDUM,'XPROP2')
 C
 C     update of complete property matrix
 C     ----------------------------------
@@ -852,6 +858,7 @@ C
 C     print section
 C     _____________
 C
+      NTESTX = 05
       IF( NTESTX .gt. 5)THEN
         WRITE(LUWRT,*) ' calculation of XPROPMAT finished'
         WRITE(LUWRT,*) ' content of XPROPMAT'

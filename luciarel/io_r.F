@@ -325,31 +325,17 @@ C
       LUC =   61
       LUC_MPIN ="KRCI_CVECS"
       LUC_MPIL=12
-      IF( IREFSM .eq. 1)THEN
-         SYMFLABEL = 'a'
-      ELSE IF( IREFSM .eq. 2 )THEN
-         SYMFLABEL = 'b'
-      ELSE IF( IREFSM .eq. 3 )THEN
-         SYMFLABEL = 'c'
-      ELSE IF( IREFSM .eq. 4 )THEN
-         SYMFLABEL = 'd'
-      ELSE IF( IREFSM .eq. 5 )THEN
-         SYMFLABEL = 'e'
-      ELSE IF( IREFSM .eq. 6 )THEN
-         SYMFLABEL = 'f'
-      ELSE IF( IREFSM .eq. 7 )THEN
-         SYMFLABEL = 'g'
-      ELSE IF( IREFSM .eq. 8 )THEN
-         SYMFLABEL = 'h'
-      ELSE 
-        WRITE(6,*) '  *** Error in DISKUN_REL *** assignment of'//
-     &              ' symmetry label to KRCI_CVECS file failed'   
-        CALL QUIT("*** Error in DISKUN_REL *** assignment of 
-     &            symmetry label to KRCI_CVECS file failed ")
-      END IF
-      IF( .not. RUNXPROP )THEN
-        IF( MYPROC .eq. MASTER )THEN
-C
+      IF( MYPROC .eq. MASTER )THEN
+        IF( IREFSM .le. NMAX_SYM_CI )THEN
+          SYMFLABEL = XSYMFLAB(IREFSM)
+C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
+        ELSE 
+          WRITE(LUWRT,*) '  *** Error in DISKUN_REL *** assignment of'//
+     &                   ' symmetry label to KRCI_CVECS file failed'   
+          CALL QUIT("*** Error in DISKUN_REL *** assignment of 
+     &              symmetry label to KRCI_CVECS file failed ")
+        END IF
+        IF( .not. RUNXPROP )THEN
            WRITE (NLUC_MPI,'(A10,A1,A1)') LUC_MPIN,'.',SYMFLABEL
            Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &          Form='UNFORMATTED')
@@ -695,27 +681,16 @@ C     last revision:
 C
 C**********************************************************************
 #include "implicit.h"
+#include "cstate.inc"
+#include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*12, SYMFLABEL*1
       LOGICAL EX
       EX = .FALSE.
       LUC_NAME    = "KRCI_CVECS"
       LUC_NAMEL   = 12
-      IF( IXSYM .eq. 1)THEN
-         SYMFLABEL = 'a'
-      ELSE IF( IXSYM .eq. 2 )THEN
-         SYMFLABEL = 'b'
-      ELSE IF( IXSYM .eq. 3 )THEN
-         SYMFLABEL = 'c'
-      ELSE IF( IXSYM .eq. 4 )THEN
-         SYMFLABEL = 'd'
-      ELSE IF( IXSYM .eq. 5 )THEN
-         SYMFLABEL = 'e'
-      ELSE IF( IXSYM .eq. 6 )THEN
-         SYMFLABEL = 'f'
-      ELSE IF( IXSYM .eq. 7 )THEN
-         SYMFLABEL = 'g'
-      ELSE IF( IXSYM .eq. 8 )THEN
-         SYMFLABEL = 'h'
+      IF( IXSYM .le. NMAX_SYM_CI )THEN
+         SYMFLABEL = XSYMFLAB(IXSYM)
+C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
       ELSE 
         WRITE(6,*) '  *** Error in GET_LUC_FILE *** assignment of'//
      &              ' symmetry label to KRCI_CVECS file failed'   
@@ -724,6 +699,7 @@ C**********************************************************************
       END IF
 C     set file name and open file (if existing)
       WRITE (my_LUC_NAME,'(A10,A1,A1)') LUC_NAME,'.',SYMFLABEL
+C     WRITE(6,*) 'reading from file KRCI_CVECS.x = ',my_LUC_NAME
       INQUIRE (FILE=my_LUC_NAME,EXIST=EX)
       IF( EX )THEN 
         OPEN(UNIT=LUC,FILE=my_LUC_NAME(1:LUC_NAMEL),STATUS='OLD',

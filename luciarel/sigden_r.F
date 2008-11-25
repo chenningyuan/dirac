@@ -555,57 +555,95 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
       RETURN 
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                       IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                       IHX_LOC,IHX,IHINDX,
      &                       SIGN_NHX,I2DIATP,LABEL,IOP_REO,SIGN_OPREO,
-     &                       IPRNT)
-*
-* Obtain number (IFLAG = 1) 
-* or number and types (IFLAG.NE.1) of excitations in relativistic Hamiltonian 
-*
-*--------------------------------
-* Hans Joergen Aa. Jensen and Stefan Knecht Mar 2008
-*   NO_TTWO.gt.0 for only one-electron terms
-* Jeppe Olsen and Timo Fleig
-*   March/April 2001
-* Orbital and electron number limitations
-*   Timo Fleig, June 2001
-* Updated to exclude unwanted components, Oct 2001
-*   JO and TF
-* Included LABEL specification of excitation type for DIRAC
-*   (and other interfaces)
-*--------------------------------
-*
-* IHTYPE = 1 : Include only Delta MK = 0 terms
-* IHTYPE = 2 : Include Delta Mk = 0 for two-electron part 
-*              and complete one-electron part
-* IHTYPE = 3 : Include all terms for relativisitic Hamiltonian
-*              in a basis of non-relativistic orbitals
-* IHTYPE = 4 : Include all terms for relativisitic Hamiltonian
-*              in a basis of relativistic spinors
-*
-* LABEL :  1 for unbarred (alpha)
-*         -1 for barred   (beta)
-*         and refers to integral (not operator!) indexing !!
-*
-* IOP_REO : Reordering array for output density elements.
-*           Relate definition of operator in this routine with
-*           general output CA AA CB AB (or corresponding scheme
-*           in DMK .ne. 0 cases). Not used in 1-el. case, but
-*           due to NHX type counting need to be defined.
-*
-* SIGN_OPREO : Sign for this operator reordering
-*          1.0 or -1.0 : Non-redundant density and sign
-*          0.0         : Redundant density type
-*
-*
+     &                       SIGN_ITIM_SYM,ITIM_SYM,IPRNT)
+C***********************************************************************
+C
+C     General purpose: obtain number (IFLAG = 1) or number and types (IFLAG.NE.1) 
+C     of excitations in relativistic Hamiltonian 
+C
+C     written by Jeppe Olsen and Timo Fleig - March/April 2001
+C
+C     last revisions:
+C
+C     Stefan Knecht Nov 2008 - fix one-electron operator matrix elements for 
+C                              correct behavior under time-reversal
+C                              symmetry. 
+C============================================================================
+C  
+C     ITIM_SYM == 1 for one-electron operators that are symmetric under
+C     time reversal symmetry
+C     ITIM_SYM == -1 for one-electron that are anti-symmetric under
+C     time reversal symmetry
+C
+C     according to K. Dyall and K. Faegri Jr, "Introduction to Relativistic 
+C     Quantum Chemistry", the following relations for matrix elements of 
+C     a hermitian one-electron operator are valid:
+C       __                        _             _
+C     f_pq = t x f*_pq   and    f_pq = -t x f*_pq 
+C
+C     where t = ITIM_SYM.
+C
+C     The integral fetching in GET_INTS_SIGDEN is based on the
+C     assumption that the operator is symmetric under time reversal symmetry, 
+C     that is 
+C       __                   _         _
+C     f_pq = f*_pq   and   f_pq = -f*_pq
+C             
+C     This might, however, not be the case for a general hermitian one-electron
+C     operator. We therefore have to multiply the operator matrix
+C     elements with the proper factor TRSYM. 
+C
+C     TODO: proper handling of two-electron operators (two-electron
+C     properties!) that are anti-symmetric wrt time reversal symmetry 
+C     S. Knecht Nov 2008
+C============================================================================
+C
+C     Hans Joergen Aa. Jensen and Stefan Knecht Mar 2008
+C       NO_TTWO.gt.0 for only one-electron terms
+C
+C     Timo Fleig, June 2001
+C       orbital and electron number limitations
+C
+C     JO and TF - Oct 2001
+C       updated to exclude unwanted components
+C       included LABEL specification of excitation type for DIRAC
+C       (and other interfaces)
+C============================================================================
+C
+C IHTYPE = 1 : Include only Delta MK = 0 terms
+C IHTYPE = 2 : Include Delta Mk = 0 for two-electron part 
+C              and complete one-electron part
+C IHTYPE = 3 : Include all terms for relativisitic Hamiltonian
+C              in a basis of non-relativistic orbitals
+C IHTYPE = 4 : Include all terms for relativisitic Hamiltonian
+C              in a basis of relativistic spinors
+C
+C LABEL :  1 for unbarred (alpha)
+C         -1 for barred   (beta)
+C         and refers to integral (not operator!) indexing !!
+C
+C IOP_REO : Reordering array for output density elements.
+C           Relate definition of operator in this routine with
+C           general output CA AA CB AB (or corresponding scheme
+C           in DMK .ne. 0 cases). Not used in 1-el. case, but
+C           due to NHX type counting need to be defined.
+C
+C SIGN_OPREO : Sign for this operator reordering
+C          1.0 or -1.0 : Non-redundant density and sign
+C          0.0         : Redundant density type
+C
+C SIGN_ITIM_SYM: sign for symmetry under time reversal (+1,-1)
+C
+C An excitation is stored as : 
+C (alpha creation, beta creation, alpha annihilation, beta annihilation)
+C
+C***********************************************************************
+C
 #include "implicit.inc"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
@@ -616,43 +654,48 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 #include "parluci.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
-*. input
-      dimension NOBPT(NGAS)
-*. output 
+C     INPUT
+C     -----
+      DIMENSION NOBPT(NGAS)
+C     OUTPUT
+C     ------
       INTEGER IHX(NGAS,4,*),IHINDX(4,*),LABEL(4,*),IOP_REO(4,*)
-      dimension SIGN_NHX(*),SIGN_OPREO(*)
-*. Local scratch
+      DIMENSION SIGN_NHX(*), SIGN_OPREO(*), SIGN_ITIM_SYM(*)
+C     local scratch
       INTEGER IHX_LOC(4*NGAS)
-*. An excitation is stored as : 
-*  Alpha creation,beta creation,alpha annihilation,beta annihilation.
-*
+C
+C
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
-*
-      IZERO = 0
+C
       ZERO = 0.D0
       ONE = 1.0D0
-*
+      DMONE = -1.0D0
+C
+C     set proper sign for one-electron matrix elements
+C     operator symmetry under time reversal (+1,-1)
+      TRSYM = ITIM_SYM * ONE
+C
       NHX = 0
-*
-* Determine maximum number of electrons per GAS first:
-* FIXME  : Hardwired only one type of GASSPC calculation for the
-*          moment. This would require other changes as well.
+C
+C Determine maximum number of electrons per GAS first:
+C FIXME  : Hardwired only one type of GASSPC calculation for the
+C          moment. This would require other changes as well.
       MXNELGS(1) = IGSOCCX(1,2,1)
       do IGAS=2,NGAS,1
         MXNELGS(IGAS) = IGSOCCX(IGAS,2,1) - IGSOCCX(IGAS-1,1,1)
         MXNELGS(IGAS) = min(MXNELGS(IGAS),2*NOBPT(IGAS))
       end do
-*
-*. Delta MK = 0 terms
-*
-* Operator: a+i alpha a j alpha
-*           where i belongs to IGAS and j belongs to JGAS
+C
+C  Delta MK = 0 terms
+C
+C Operator: a+i alpha a j alpha
+C           where i belongs to IGAS and j belongs to JGAS
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1) then
-              CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+              CALL IZERO(IHX_LOC,4*NGAS)
               IHX_LOC(IGAS+(1-1)*NGAS) = 1
               IHX_LOC(JGAS+(3-1)*NGAS) = 1
 *. Is this excitation type included ?
@@ -678,6 +721,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
+                  SIGN_ITIM_SYM(NHX) = ONE
+                  WRITE(LUWRT,*) ' alpha alpha type ',NHX
                 end if
               END IF
             end if
@@ -691,7 +736,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
         DO JGAS = 1, NGAS
           if (NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1) then
-              CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+              CALL IZERO(IHX_LOC,4*NGAS)
               IHX_LOC(IGAS+(2-1)*NGAS) = 1
               IHX_LOC(JGAS+(4-1)*NGAS) = 1
               CALL CAAB_INCLUDED(IHX_LOC,INCLUDED)
@@ -716,6 +761,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
+                  SIGN_ITIM_SYM(NHX) = ONE * TRSYM
+                  WRITE(LUWRT,*) ' beta beta type ',NHX
                 end if
               END IF
             end if
@@ -760,7 +807,7 @@ C
      &             (KGAS.ne.LGAS.and.MXNELGS(KGAS).ge.1.and.
      &              NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1.and.
      &                               MXNELGS(LGAS).ge.1))) then
-                CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                CALL IZERO(IHX_LOC,4*NGAS)
                 IHX_LOC(IGAS+(1-1)*NGAS) = 1
                 IHX_LOC(JGAS+(1-1)*NGAS) = IHX_LOC(JGAS+(1-1)*NGAS) + 1
                 IHX_LOC(KGAS+(3-1)*NGAS) = 1
@@ -795,6 +842,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IOP_REO(3,NHX) = 3
                     IOP_REO(4,NHX) = 2
                     SIGN_OPREO(NHX) = -ONE
+                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -829,7 +877,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
      &             (KGAS.ne.LGAS.and.MXNELGS(KGAS).ge.1.and.
      &              NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1.and.
      &                               MXNELGS(LGAS).ge.1))) then
-                CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                CALL IZERO(IHX_LOC,4*NGAS)
                 IHX_LOC(IGAS+(2-1)*NGAS) = 1
                 IHX_LOC(JGAS+(2-1)*NGAS) = IHX_LOC(JGAS+(2-1)*NGAS) + 1
                 IHX_LOC(KGAS+(4-1)*NGAS) = 1
@@ -859,6 +907,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IOP_REO(3,NHX) = 3
                     IOP_REO(4,NHX) = 2
                     SIGN_OPREO(NHX) = -ONE
+                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -882,7 +931,7 @@ C     ... skip next set of two-electron terms
      &            MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &            NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &            NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1) then
-                CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                CALL IZERO(IHX_LOC,4*NGAS)
                 IHX_LOC(IGAS+(1-1)*NGAS) = 1
                 IHX_LOC(JGAS+(2-1)*NGAS) = 1
                 IHX_LOC(KGAS+(4-1)*NGAS) = 1
@@ -912,6 +961,7 @@ C     ... skip next set of two-electron terms
                     IOP_REO(3,NHX) = 2
                     IOP_REO(4,NHX) = 3
                     SIGN_OPREO(NHX) = -1.D0 * ONE
+                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -934,7 +984,7 @@ C     ... skip next set of two-electron terms
      &              MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &              NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &              NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1) then
-                  call isetvc(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(1-1)*NGAS) = 1
                   IHX_LOC(JGAS+(2-1)*NGAS) = 1
                   IHX_LOC(KGAS+(3-1)*NGAS) = 1
@@ -964,6 +1014,7 @@ C     ... skip next set of two-electron terms
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 3
                       SIGN_OPREO(NHX) = ZERO
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   end if
                 end if
@@ -988,7 +1039,7 @@ C     ... skip next set of two-electron terms
           DO JGAS = 1, NGAS
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
      &          NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
-              CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+              CALL IZERO(IHX_LOC,4*NGAS)
               IHX_LOC(IGAS+(1-1)*NGAS) = 1
               IHX_LOC(JGAS+(4-1)*NGAS) = 1
               CALL CAAB_INCLUDED(IHX_LOC,INCLUDED)
@@ -1013,6 +1064,8 @@ C     ... skip next set of two-electron terms
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
+                  SIGN_ITIM_SYM(NHX) = ONE
+                  WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1025,7 +1078,7 @@ C     ... skip next set of two-electron terms
           DO JGAS = 1, NGAS
             if (MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
      &          NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1) then
-              CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+              CALL IZERO(IHX_LOC,4*NGAS)
               IHX_LOC(IGAS+(2-1)*NGAS) = 1
               IHX_LOC(JGAS+(3-1)*NGAS) = 1
               CALL CAAB_INCLUDED(IHX_LOC,INCLUDED)
@@ -1050,6 +1103,11 @@ C     ... skip next set of two-electron terms
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
+CSK               FIXME: check if that is correct - at least I found it 
+CSK                      in the above mentioned book.
+C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
+                  SIGN_ITIM_SYM(NHX) = ONE * TRSYM
+                  WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1086,7 +1144,7 @@ C     ... skip next set of two-electron terms
      &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(1-1)*NGAS) = 1
                   IHX_LOC(JGAS+(1-1)*NGAS) = IHX_LOC(JGAS+(1-1)*NGAS)+1
                   IHX_LOC(KGAS+(3-1)*NGAS) = 1
@@ -1116,6 +1174,7 @@ C     ... skip next set of two-electron terms
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = -1.D0 * ONE
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1139,7 +1198,7 @@ C     ... skip next set of two-electron terms
      &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(1-1)*NGAS) = 1
                   IHX_LOC(JGAS+(2-1)*NGAS) = 1
                   IHX_LOC(KGAS+(3-1)*NGAS) = 1
@@ -1169,6 +1228,7 @@ C     ... skip next set of two-electron terms
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ONE
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1192,7 +1252,7 @@ C     ... skip next set of two-electron terms
      &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(2-1)*NGAS) = 1
                   IHX_LOC(JGAS+(2-1)*NGAS) = IHX_LOC(JGAS+(2-1)*NGAS)+1
                   IHX_LOC(KGAS+(4-1)*NGAS) = 1
@@ -1223,6 +1283,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ZERO
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1246,7 +1307,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
      &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
      &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(1-1)*NGAS) = 1
                   IHX_LOC(JGAS+(2-1)*NGAS) = 1
                   IHX_LOC(KGAS+(4-1)*NGAS) = 1
@@ -1276,6 +1337,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ZERO
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1320,7 +1382,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
      &               (KGAS.ne.LGAS.and.MXNELGS(KGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1.and.
      &                                 MXNELGS(LGAS).ge.1))) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(1-1)*NGAS) = 1
                   IHX_LOC(JGAS+(1-1)*NGAS) = IHX_LOC(JGAS+(1-1)*NGAS)+1
                   IHX_LOC(KGAS+(4-1)*NGAS) = 1
@@ -1350,6 +1412,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 3
                       IOP_REO(4,NHX) = 2
                       SIGN_OPREO(NHX) = -ONE
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1384,7 +1447,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
      &               (KGAS.ne.LGAS.and.MXNELGS(KGAS).ge.1.and.
      &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1.and.
      &                                 MXNELGS(LGAS).ge.1))) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
+                  CALL IZERO(IHX_LOC,4*NGAS)
                   IHX_LOC(IGAS+(2-1)*NGAS) = 1
                   IHX_LOC(JGAS+(2-1)*NGAS) = IHX_LOC(JGAS+(2-1)*NGAS)+1
                   IHX_LOC(KGAS+(3-1)*NGAS) = 1
@@ -1414,6 +1477,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 3
                       IOP_REO(4,NHX) = 2
                       SIGN_OPREO(NHX) = -ONE
+                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1427,14 +1491,18 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
       end if
 *     end if (NO_TTWO .gt. 0)
 *
-      if (IFLAG.ne.1.and.NTEST.ge.50) then
+C     if (IFLAG.ne.1.and.NTEST.ge.50) then
+      if(IFLAG.ne.1)then
         WRITE(LUWRT,'(/A/)') '  *** Information from  GET_HX_RELA ***'
         WRITE(LUWRT,'(/A,I10)') '  Number of excitation types ', NHX
         do I=1,NHX
-          write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
-     &                     I,SIGN_NHX(I)
+C         write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
+C    &                     I,SIGN_NHX(I)
+          write(LUWRT,*) '  excitation type and sign SIGN_ITIM_SYM ',
+     &                     I,SIGN_ITIM_SYM(I)
         end do
       end if
+C     end if
 *
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
@@ -1600,12 +1668,12 @@ C     check norm
 CSK   if (NTEST.ge.100) write(LUWRT,*) 'Coupling with type ',IXTP
 *
 CSK   IF(NTEST.GE.500) THEN
-CSK     WRITE(LUWRT,*) ' ================ '
-CSK     WRITE(LUWRT,*) ' GNSIDE speaking '
-CSK     WRITE(LUWRT,*) ' ================ '
-CSK     write(LUWRT,*) ' Real / imaginary contribution :'
-CSK     write(LUWRT,*) ' Left , Right ',IRIS,IRIC
-CSK     WRITE(LUWRT,*)
+        WRITE(LUWRT,*) ' ================ '
+        WRITE(LUWRT,*) ' GNSIDE speaking '
+        WRITE(LUWRT,*) ' ================ '
+        write(LUWRT,*) ' Real / imaginary contribution :'
+        write(LUWRT,*) ' Left , Right ',IRIS,IRIC
+        WRITE(LUWRT,*)
 CSK     WRITE(LUWRT,*) ' IAOC and IBOC in GENSIG'
 CSK     CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUWRT)
 CSK     CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUWRT)
@@ -1687,7 +1755,9 @@ C     sign for bringing operators and amplitudes into new order
      &       + NAB_OP*(NAB_OP-1)/2
       IF(MOD(NPERM,2).EQ.1) THEN
         SIGNXXX  =  -1.0D0*SIGN_EXTERNAL
+        WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
       ELSE
+        WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
         SIGNXXX = SIGN_EXTERNAL
       END IF
 C     type of Ka and Kb
@@ -1920,7 +1990,7 @@ C            Kb
              IM_ACTIVE = 1
 C            offset and form of T-coefficients
              ITOFF = IB_T(ICA_SM,ICB_SM,INVELM(IAA_SM))
-csk          WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
+             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              IF(ITOFF.LT.0) THEN
                ITOFF = -ITOFF
                ITRNSP = 1
@@ -1946,6 +2016,9 @@ C
      &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
      &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
      &                         ITRNSP,IDIAG,NTEST)
+              WRITE(LUWRT,*) ' TBSUB for IRIC and IRIS',IRIC,IRIS
+              CALL WRTMATMN(TBSUB,1,NCA_B*NCB_B*NAA_B*NAB_B,1,
+     &                      NCA_B*NCB_B*NAA_B*NAB_B,LUWRT)
              ELSE
 C             zero density subblock
               CALL DZERO(TBSUB,NCA_B*NCB_B*NAA_B*NAB_B)
@@ -2873,7 +2946,7 @@ C     INTEGER JGRP(MXPNGAS)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
+      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRNT)
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -2906,12 +2979,9 @@ C
 C
 C     specific input in order to handle large integral arrays
 C     even on 32-bit systems
-C
       INTEGER*8 MX_TBLK, MX_TBLK_AS, MSCOMB_T
 C
-C
-C
-C     number of spin-orbital exctation operators in H
+C     number of spin-orbital excitation operators in H
 C
       call memmar(KLSOBEX_TEMP,4*NGAS,'ADDS  ',1,'SPOBET')
       IFLAG = 1
@@ -2919,7 +2989,7 @@ C
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                 WORK(KLSOBEX_TEMP),
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
-     &                 IPRNT)
+     &                 DUMMY,ITIM_SYM,IPRNT)
       NSPOBEX_TP = NHX
 C
 C     actual spin-orbital excitations
@@ -2930,13 +3000,14 @@ C
       call memmar(KLABEXTP,    4*NSPOBEX_TP,'ADDS  ',1,'LABXTP')
       call memmar(KLOP_REO,    4*NSPOBEX_TP,'ADDS  ',1,'OP_REO')
       call memmar(KSIOPREO,      NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
+      call memmar(KITIMSIGN,     NSPOBEX_TP,'ADDS  ',2,'TRSIGN')
       IFLAG = 0
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                 WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
-     &                 WORK(KSIOPREO),IPRNT)
+     &                 WORK(KSIOPREO),WORK(KITIMSIGN),ITIM_SYM,IPRNT)
 C
 C     Space for info in the different parts of Hamiltonian
 C
@@ -3571,10 +3642,10 @@ CSK             END IF
 C                 mark block as nonzero
                   LUHCLIST(INT_IOFF1) = IONE
 C                 transfer block to disc
-csk               WRITE(LUWRT,*) 'I transfer to file block ISBLK',
-csk     &                         ISBLK
-csk               CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
-csk               WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
+C                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
+C    &                            ISBLK
+C                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
+C                 WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
      &                                   MPI_REAL8,ISTAT,IERR)
                   ISI_CALC_BL = ISI_CALC_BL + 1
@@ -5090,8 +5161,6 @@ C
       IF( .not. COPY_NEW_C ) GOTO 100
 #if defined (VAR_MPI2)
 C
-C     erase old LU2LIST
-      CALL IZERO(LU2LIST,IALL_LU2)
 C     erase old LUCLIST
       CALL IZERO(LUCLIST,IALL_LUC)
 C
@@ -5121,6 +5190,8 @@ C     find corresponding symmetry pair
      &                        ' type found for ICSM and ISSM:',ICSM,ISSM
         CALL QUIT(' *** ERROR in XSIGDEN_CTRL: unknown pair type.')
       END IF
+C     erase old LU2LIST
+      CALL IZERO(LU2LIST,IALL_LU2)
 #else
 C     copy new C vector to scratch file
       CALL REWINE(LUSC61,-1)

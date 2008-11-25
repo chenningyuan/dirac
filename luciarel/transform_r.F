@@ -2138,7 +2138,7 @@ C             distribute to WORK(KT_CC) resp. T_BUFF!
 C
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,
+     &                              T_BUFF,WORK(KITIMSIGN),
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,WORK(KINTI12),
@@ -2149,7 +2149,7 @@ C
 CSK           NTEST = 20
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,
+     &                              T_BUFF,WORK(KITIMSIGN),
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,DUMMY,
@@ -2160,7 +2160,7 @@ CSK           NTEST = 00
             ELSE
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,
+     &                              T_BUFF,WORK(KITIMSIGN),
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,F2,

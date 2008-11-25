@@ -1253,6 +1253,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 ***********************************************************************
 * Driver routine for distribution of DIRAC integrals to
 * double group GAS lists
+*
 *   Routine using excitation operator sequence for integral
 *   storage definition (SIGDEN route)
 *
@@ -1264,13 +1265,18 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *  Implemented real groups (DIRAC) treated like complex groups
 *  with zero imaginary parts.
 *  Timo Fleig, August 25, 2003
+*
+*  implemented correct symmetry handling of one-electron property 
+*  operator elements wrt to time-reversal symmetry
+*  Stefan Knecht - Nov 2008
+*
 *----------------------------------------------
 *
 *  Implementation of T_BUFF use for MPIs "shared" memory version
 * 
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
-     &                            T_BUFF,
+     &                            T_BUFF,TRSYM_SIGN,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
      &                            NASHT,F1,F2,MDIASV,IBOSYM,
      &                            LABEL,CIRUN,IPRNT)
@@ -1307,7 +1313,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
      &          IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
-      dimension T(NALLINT), T_BUFF(*)
+      dimension T(NALLINT), T_BUFF(*), TRSYM_SIGN(NSPOBEX_TP)
 *
 * Space for the construction of SUBSTRINGS
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
@@ -1367,6 +1373,7 @@ C     NOINT_FILE = .TRUE.
 *
 *     open ASCII file for checking integral sorting information
 *
+      ntest = 1
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
@@ -1395,7 +1402,6 @@ C
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-            write(LUWRT,*)
             if (IRI.eq.1.and.NTEST.ge.2) write(LUWRT,*) 'REAL LOOP'
             if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
             if (IRI.eq.2.and.NTEST.ge.2) write(LUWRT,*) 'IMAG LOOP'
@@ -1411,6 +1417,7 @@ C
 * Loop over excitation types
         do IXTP=1,NSPOBEX_TP,1
 *
+           WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
 * Check for correct pointers to type blocks
           if (IRI.eq.1.and.ICOUNT_I8.ne.IBTSOSO_TP(IXTP)) then
             write(LUWRT,*) 'Pointers to types do not match numbers'
@@ -1420,7 +1427,7 @@ C
             write(LUWRT,*) 'Current type: ',IXTP
             call abend2('Quitting.')
           end if
-          if (NTEST.ge.2) then
+          if (NTEST.ge.1) then
             write(LUWRT,*) '======================'
             write(LUWRT,*) 'Processing type ',IXTP
             write(LUWRT,*) '======================'
@@ -1881,17 +1888,26 @@ C    &             ' at ',ICOUNT_I8
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,NTEST)
                             end if
 C
-                              T(ICOUNT_I8) = YINT - YXINT
+C                           keep track of correct sign for matrix
+C                           elements of anti-symmetric (wrt
+C                           time-reversal symmetry) hermitian 
+C                           one-electron operators
+                            WRITE(LUWRT,*)'YINT, TRSYM_SIGN(IXTP),IXTP',
+     &                                     YINT, TRSYM_SIGN(IXTP),IXTP
+                            YINT = YINT * TRSYM_SIGN(IXTP)
+C
+                            T(ICOUNT_I8) = YINT - YXINT
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
-C                        
                               if (NTEST.ge.1) then
-                                if (NTEST.ge.10)
-     &                              write(6,'(A,I4,A,4I3,A,1F18.12)') 
-     &                                    'INTEGRAL no. ',ICOUNT_I8,'(',
-     &                                     (INDEX(M),M=1,4),
-     &                                    ') Value: ',T(ICOUNT_I8)
+                                 write(LUWRT,'(A,I4,A,4I3,A,1F18.14)') 
+     &                              'INTEGRAL no. ',ICOUNT_I8,'(',
+     &                              (INDEX(M),M=1,4),
+     &                              ') Value: ',T(ICOUNT_I8)
+                                 write(LUWRT,'(A,3F18.14)') 
+     &                              'INTEGRALs: YINT,YXINT,YINT-YXINT',
+     &                                          YINT,YXINT,YINT-YXINT
 *                             write integral to file (for debugging):
                                 if (IXCH.eq.0) then
                                   write(LUINGR,'(I4,4X,4I3,1F18.14)') 
@@ -3170,7 +3186,7 @@ C     dimension DMFC(*),H2AC(*)
         write(6,*) '  Compound index dimension: ',NNASHX
       end if
 *
-      if (NTEST.ge.20) then
+      if (NTEST.ge.1) then
         write(6,*)
         write(6,*) '1-el. integral array in getind_nz3:'
         call wrtmat(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
@@ -3190,7 +3206,7 @@ C     dimension DMFC(*),H2AC(*)
       end do
 *
       if (NCT.eq.2) then
-        if (NTEST.ge.10) write(6,*) '1-electron integral.'
+        if (NTEST.ge.1) write(6,*) '1-electron integral.'
         I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
         J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
 * Compute input address
@@ -3206,6 +3222,9 @@ C     dimension DMFC(*),H2AC(*)
 * (According to h_(IJ) = -h_(I_J_). 
 *  Reference are the unbarred spinors.)
         if (IRI.eq.2.and.INDEX_LOC(1).eq.0) YINT = - YINT
+        if (IRI.eq.2.and.INDEX_LOC(1).eq.0.and. NTEST.ge.1) then
+          write(6,*) ' sign change for YINT'
+        end if
 *
         if (NTEST.ge.1) write(6,'(2I3,2X,1F18.10)') I,J,YINT
 *
@@ -3329,7 +3348,6 @@ C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
         call abend2('Quitting in getind_nz3.')
       end if
 *
-      return
       end
 ***********************************************************************
 *                                                                     *

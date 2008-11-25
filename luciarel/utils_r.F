@@ -218,7 +218,6 @@ C     IFAC = IFAC * IFLOC
         write(6,*) '             output factor  ',IFAC
       end if
 *
-      return
       end
 ***********************************************************************
 *                                                                     *
@@ -521,19 +520,16 @@ C
 csk   WRITE(LUWRT,*) ' IGET_MY_T_LEN:', IGET_MY_T_LEN
 C
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine unfold(ARRAY,VECTOR,IDIM,ISYM,NTRIAEL,IFAC)
 ***********************************************************************
 *  Unfold lower triangle square matrix to full size;
 *  I suppose that the input matrix is a one-dim. field with
 *  N(N/2 + 1) elements
 *  1) write vector to matrix
 *  2) unfold considering symmetry (e.g. hermitian or not)
+***********************************************************************
 *
-      subroutine unfold(ARRAY,VECTOR,IDIM,ISYM,NTRIAEL,IFAC)
       implicit real*8 (A-H,O-Z)
       dimension ARRAY(IDIM,IDIM),VECTOR(NTRIAEL)
 *
@@ -858,7 +854,7 @@ C
       END IF
 C
       call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                      ISOBEX,T,T_BUFF,
+     &                      ISOBEX,T,T_BUFF,WORK(KITIMSIGN),
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
      &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)

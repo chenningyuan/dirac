@@ -6354,7 +6354,11 @@ C            set T operator arrays
              ISYM_T    = IDBGMULT(INVELM(ICSM),ISSM)
              IPRHAM_CI = 0
              NO_TTWO   = 1
-             CALL SET_HOP_DBG(IHTYPE_X,NO_TTWO,ISYM_T,IPRHAM_CI)
+C            time-reversal symmetry of T does not affect count of 
+C            sigma = T x C couplings, it is just a sign...
+             ITIM_SYM_DUMMY  = 1
+             CALL SET_HOP_DBG(IHTYPE_X,NO_TTWO,ISYM_T,
+     &                        ITIM_SYM_DUMMY,IPRHAM_CI)
              CALL BLOCK_DISTR_DRV_REL(NPARBLOCK_X(1,J),IBLOCKL_X(1,J),
      &                                IBLOCKL_X(1,I),RCCTOS_X(1,IXPAIR),
      &                                IDUMMY,IGROUPLIST)

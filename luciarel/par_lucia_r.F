@@ -5652,7 +5652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                 IBATCH,MY_IOFF_LUIN1,
      &                                 MY_IOFF_LUIN2,LUIN1LIST,
      &                                 LUIN2LIST,NVEC,ISSM,ISYM_CTRL,
-     &                                 MZ)
+     &                                 MZ,IXOFF)
 C
 C
 C**********************************************************************
@@ -5700,6 +5700,10 @@ C     zero final dot product vectors
 C
       CALL DZERO(XR,NVEC)
       IF( MZ .eq. 2 ) CALL DZERO(XI,NVEC)
+C     WRITE(LUWRT,*) ' XR at start'
+C     CALL WRTMATMN(XR,1,NVEC,1,NVEC,LUWRT)
+C     WRITE(LUWRT,*) ' XI at start'
+C     CALL WRTMATMN(XI,1,NVEC,1,NVEC,LUWRT)
 C
 C     =====================
 C     GENERAL INNER PRODUCT 
@@ -5707,14 +5711,13 @@ C     =====================
 C
       DO 500 JOFF = 1, NVEC
 C
+C       WRITE(LUWRT,*) ' ISYM_CTRL(JOFF) , ISSM, JOFF',
+C    &                   ISYM_CTRL(JOFF) , ISSM, JOFF
         IF( ISYM_CTRL(JOFF) .ne. ISSM ) GOTO 500
 C
         IOFFSET_SCRATCH  = 0
         NUM_BLK          = 0
         NUM_ACTIVE_BATCH = 0
-C
-C       offset for LUIN1
-        IXOFF = 1
 C
       DO ISBATCH = 1, NBATCH
 C
@@ -5741,8 +5744,8 @@ C
      &                       IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                       LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
-CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       set new offset and zero read-in vector
         CALL DZERO(VEC1,LEBATCH(ISBATCH))
@@ -5760,10 +5763,9 @@ C       read in batch ISBATCH from LUIN1 to VEC1
      &                        IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                        LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
-CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
-        IJ     = ( JOFF )
-        XR(IJ) = XR(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+        XR(JOFF) = XR(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
   100   CONTINUE
 C
@@ -5787,9 +5789,9 @@ CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
      &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                       LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
-CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
-        XI(IJ) = XI(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+        XI(JOFF) = XI(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
   200   CONTINUE
 C
@@ -5815,11 +5817,11 @@ C       read in batch ISBATCH from LUIN1 to VEC2
      &                        IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                        LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
-CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       SUBSPH_I(IJ) == VEC1 * VEC2
-        XR(IJ) = XR(IJ) + DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+        XR(JOFF) = XR(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
   300   CONTINUE
 C
 C     -------------
@@ -5841,11 +5843,11 @@ CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
      &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                       LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
-CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       SUBSPH_I(IJ) == VEC1 * VEC2
-        XI(IJ) = XI(IJ) - DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
+        XI(JOFF) = XI(JOFF) - DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
   400   CONTINUE
 C
   444   CONTINUE
@@ -8464,6 +8466,7 @@ C**********************************************************************
 #include "dgroup.h"
 #include "krciprop.h"
 #include "dcbkrci.h"
+#include "dcbxpr.h"
 C
 C     common block in dcbkrci.h
       CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
@@ -8489,6 +8492,10 @@ C     common block in krciprop.h - logicals
       CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DOPROPREOD,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+C
+C     common block in dcbxpr.h - integer part
+      CALL MPI_BCAST(IPRPTIM,MAXPRPS,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       END
 ***********************************************************************
