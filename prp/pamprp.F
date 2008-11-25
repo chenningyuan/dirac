@@ -4146,8 +4146,8 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 C
-      CHARACTER PNAME(3)*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      CHARACTER PNAME(6)*16, PLABEL(6)*8
+      DIMENSION WORK(LWORK),PFAC(6),IOP(6)
 C
 C     define operator type, factor, name and label
 C
@@ -4155,21 +4155,30 @@ C
       PFAC(1)  = D1
       PFAC(2)  = D1
       PFAC(3)  = D1
+      PFAC(4)  = D1
+      PFAC(5)  = D1
+      PFAC(6)  = D1
 C     three components of dipole length integrals
       PNAME(1)  = 'X dipole length'
       PNAME(2)  = 'Y dipole length'
       PNAME(3)  = 'Z dipole length'
-      DO II  = 1, 3
+      PNAME(4)  = 'X dip vel'
+      PNAME(5)  = 'Y dip vel'
+      PNAME(6)  = 'Z dip vel'
+      DO II  = 1, 6
         IOP(II) = 1
       END DO
       PLABEL(1) = 'XDIPLEN'
       PLABEL(2) = 'YDIPLEN'
       PLABEL(3) = 'ZDIPLEN'
-      DO II = 1, 3
+      PLABEL(4) = 'XDIPVEL'
+      PLABEL(5) = 'YDIPVEL'
+      PLABEL(6) = 'ZDIPVEL'
+      DO II = 1, 6
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
      &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          CALL OP1IND('KRCI PROPDIP',LUCIINDTRP,LPROP_KRCI,
-     &               NPROP_KRCI,INDXPR,MXLUCIPRP)
+     &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4217,7 +4226,7 @@ C     define s_z and l_z as j_z = s_z + l_z
          CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
      &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
-     &               NPROP_KRCI,INDXPR,MXLUCIPRP)
+     &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
