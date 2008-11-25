@@ -35,6 +35,7 @@
 !     IXSYMACT  :  total number of "active" symmetry irreps
 !     NXSYMPAIRS:  number of C/sigma symmetry pairs
 !     IHTYPE_X  :  X operator type
+!     ITIM_SYM  :  symmetry under time reversal (+1,-1)
 !     LXPRPKRCI :  total dimension of KR-CI property matrix
 !     IPROPPRINT:  print level
 !
@@ -52,13 +53,13 @@
 !
 	INTEGER NPROP_KRCI, LPROP_KRCI, NPROP_ROOTS_KRCI, ISYMOPPRP_KRCI,
      &        LXPRPKRCI, IN1ELPRP_KRCI, ISYMEIG_KRCI, IXSYMLIST, 
-     &        IXSYMACT, NXSYMPAIRS, IHTYPE_X
+     &        IXSYMACT, NXSYMPAIRS, IHTYPE_X, ITIM_SYM
 	COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI),
      &                 NPROP_ROOTS_KRCI,ISYMOPPRP_KRCI(MXPROP_KRCI),
      &                 LXPRPKRCI,IN1ELPRP_KRCI(MXPROP_KRCI),
      &                 ISYMEIG_KRCI(MXPRPE_KRCI), 
      &                 IXSYMLIST(MXPROPKRCI_SYM),IXSYMACT,NXSYMPAIRS,
-     &                 IHTYPE_X
+     &                 IHTYPE_X, ITIM_SYM
 !	
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
      &        DOPROPREOD, DOSIGPROP, RUNXPROP
