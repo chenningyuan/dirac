@@ -684,8 +684,9 @@ C
          END IF
       END IF
 C
-C     Boson symmetries in the CI expansion
+C     boson or fermion symmetries in the CI expansion
 C
+C     set default
       IKRCI_SYMMETRY = NKRCI_MAX_SYM
       WRITE(LUPRI,'(A)')
      & ' * optimization of wave function(s) in the following '//
@@ -725,7 +726,7 @@ C     ... next symmetry
      &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
      &        ' in symmetry (boson):',REPNA(IRRP)
 C             store on common block in krciprop.h
-              XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
+              XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
             IF (NKRCI_MAX_SYM .GT. NREP) THEN
                WRITE(LUPRI,'(/A//A,2I5)')
      &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//

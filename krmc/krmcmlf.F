@@ -85,7 +85,7 @@ C
       END IF
       IREP  = ISYM-1
       IOPSY = JBTOF(IREP,1)
-C     IPRINT = 30
+      IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output from QFC2MFC',-1)
          CALL HEADER('Input matrix:',-1)
@@ -116,6 +116,7 @@ C        and imaginary part of DMFC matrix is stored in DMFC(*,*,2).
          JOFFB = JOFFA + NASH(JFSY)
       DO IPQZ = 1,NZ
          IQZ = IPQTOQ(IPQZ,IREP)
+         WRITE(LUPRI,*) ' IQZ is',IQZ
       IF (ITIM .EQ. 1) THEN
 C     ... ITIM .eq.  1, time invariant property
 C        DQFC = + AR + AI qi + BR qj + BI qk

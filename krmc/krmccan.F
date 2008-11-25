@@ -817,7 +817,7 @@ C               1              4
          NPROP_ROOTS_KRCI = NPROP_ROOTS_KRCI + NKRCI_CIROOTS(I)
          WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
       END DO
-         WRITE(LUPRI,'(A/A,I15)')
+         WRITE(LUPRI,'(A/A,I15/)')
      &   '  _________________________________',
      &   '  Total', NPROP_ROOTS_KRCI
 C
@@ -959,11 +959,12 @@ C
          END IF
          IF (IPROPT .GE. 0)
      &      WRITE(LUPRI,9000) FILELAB,PRPCOREE(I)
- 9000 FORMAT(/' (KRCIPRPMO): ',A,' property core value: ',F25.15/)
+ 9000 FORMAT(' (KRCIPRPMO): ',A,' property core value: ',F25.15/)
 C
 C        get active-active part
 C
          CALL MEMGET('REAL',KRPRPMOAC,   N2ASHXQ,WORK,KFREE,LFREE)
+CSK      IPROPT = 50
          CALL RGETAC(WORK(KRPRPMO),WORK(KRPRPMOAC),IPROPT)
 C
 C        transform to MOLFDIR format
@@ -975,7 +976,6 @@ C
 C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
 C
 C        save on file KRMC_FOCK
-C
          CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KRPRPMOACM),
      &                     4*N2ASHX*MZ,0)
          CALL MEMREL('KRCIPRPMO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -991,6 +991,9 @@ C  /* Deck KRCIPRPANA */
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
+C
+C     implemented: 1. oscillator strength for electronic transitions
+C                  2. omega expectation values (for j_z = s_z + l_z)
 C
 C     Input: property matrix XPROPMAT
 C
@@ -1011,97 +1014,278 @@ C
 #include "dcbkrci.h"
 #include "dcbxpr.h"
 #include "debye.h"
+      DOUBLE COMPLEX XMOM
       REAL*8 OSCL
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
-      DOUBLE COMPLEX XMOM
-      CHARACTER FILELAB*8
-      LOGICAL EX
+      INTEGER IND_DIP(3)
+      CHARACTER XLABEL*16
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
 C
       MZ = MIN(NZ,2)
 C
-C     (transition dipole moments) and oscillator strength
+C     get energies from file KRCI_CVECS.INFO
+      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
+C
+C     1. (transition dipole moments) and oscillator strengths
+C     =======================================================
+C
       IF( DOOSCILLST )THEN
 C
-C       read final energies from file KRCI_CVECS.INFO
-        INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
-        IF( .not. EX ) THEN
-          WRITE(LUWRT,'(/A,2I4)')' *** ERROR in KRCIPRPANA.'//
-     &                           ' file KRCI_CVECS.INFO not found.'
-          CALL QUIT(' *** ERROR in KRCIPRPANA. file KRCI_CVECS.INFO 
-     &               not found.')
-        END IF
-        LU_INFO = 80
-        CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','OLD','XPRPAN')
-        NXSCR = 1
-        DO I = 1, NKRCI_MAX_SYM
-          IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
-            WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
-            WRITE(LUPRI,*) ' getting energies for sym =',XSYMFLAB(I)
-            WRITE(LUPRI,*) ' offset NXSCR =',NXSCR
-            CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVECS(NXSCR),
-     &                        NKRCI_CIROOTS(I),1)
-        WRITE(LUPRI,*)' energies of # of eigenstates =',NPROP_ROOTS_KRCI
-        CALL WRTMATMN(EVECS,1,NPROP_ROOTS_KRCI,1,NPROP_ROOTS_KRCI,LUPRI)
-          END IF
-          NXSCR = NXSCR + NKRCI_CIROOTS(I)
-        END DO
-C       ... close
-        CLOSE(LU_INFO,STATUS='KEEP')
-        WRITE(LUPRI,*)' energies of # of eigenstates =',NPROP_ROOTS_KRCI
-        CALL WRTMATMN(EVECS,1,NPROP_ROOTS_KRCI,1,NPROP_ROOTS_KRCI,LUPRI)
+C       calculate and print oscillator strength - length gauge
+C       ------------------------------------------------------
 C
-        WRITE(LUPRI,*) ' stefan forced me to stop in XKRCIPRPANA'
-        CALL QUIT( ' stefan forced me to stop in XKRCIPRPANA' )
+C       determine index for (x,y,z)
+        XLABEL     = 'X dipole length'
+        IND_DIP(1) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Y dipole length'
+        IND_DIP(2) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Z dipole length'
+        IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XREAL = 0.0D0
+        XCOMP = 0.0D0
 C
-C       transition dipole moments - sum of IZ==1 (+ IZ==2)???
-        WRITE(LUPRI,'(A/)')
-     &     '* transition dipole moments:'
-        WRITE(LUPRI,'(10X,3(A13,13X))')
-     &      'initial state','final state  ','    TDM     '
-        CALL PRSYMB(LUPRI,'-',76,0)
-        IOFF = ICHAR('w')
-        DO I = 1,3
-C          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-C    &          CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
-C    &                     (DEBYE*DIPMN(I)),' Debye',
-C    &          (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
-        ENDDO
-        CALL PRSYMB(LUPRI,'-',76,0)
-        WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
-C
-C       calculate and print oscillator strength
-        WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
-     &       ' <f_l>/3    f_lx     f_ly     f_lz '
-        WRITE(LUPRI,*) '-------------------------------------'/
-     $       /'---------------------------------------'
-C       DERG = REFERG - GSERG
 C       Check sum rule for oscillator strength
-C       SUML = 0.0D0
-C       DO IVEC=1,NVEC
-C         oscillator strength for electronic transitions
-C         DO IPRP=1,3
-C           Length gauge
-C           XMOM = DZDOT(STEX_NPARAM,EVEC(1,1,1,IVEC),
-C    &           PRPGRAD(1,1,1,IPRP))
-C           OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(EVAL(IVEC) + DERG)
-C         ENDDO
-C         WRITE(LUPRI,'(1I5,1F16.8,2F10.6,6F10.6)')
-C    &         IVEC,(EVAL(IVEC) + DERG)*27.211383,
-C    &         (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0,
-C    &         OSCL(1),OSCL(2),OSCL(3)
-C         SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
-C       ENDDO
-C       WRITE(LUPRI,*) '-------------------------------------'/
-C    $       /'---------------------------------------'
-C       WRITE(LUPRI,'(1A,1F10.6)')
-C    $     '   Sum of oscillator strength : ',SUML
+        SUML = 0.0D0
+        WRITE(LUPRI,'(/A/A)')
+     & '    initial state             final state   '//
+     & '      oscillator strength (length gauge)',
+     & '  __________________       _________________'//
+     & '      __________________________________'
+        DO 200 IVEC=1,NPROP_ROOTS_KRCI
+          DO 100 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+            IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
+              INIST = IVEC
+              JFLST = JVEC
+            ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
+              GOTO 100
+            ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
+              INIST = JVEC
+              JFLST = IVEC
+            END IF
+            DEIG  = EVECS(JFLST) - EVECS(INIST)
+C           WRITE(LUPRI,*) ' INIST, JFLST, DEIG',INIST, JFLST, DEIG
+            DO IPRP=1,3
+C             length gauge
+              XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+              IF( MZ .eq. 2 ) 
+     &        XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
+              XMOM = DCMPLX(XREAL,XCOMP)
+C             WRITE(LUPRI,*) ' XREAL,XCOMP, ABS(XMOM)**2 ',
+C    &                         XREAL,XCOMP, ABS(XMOM)**2
+C             f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
+              OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(DEIG)
+            END DO
+            SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+            ISYMST_IN = ISYMEIG_KRCI(INIST)
+            ISYMST_FL = ISYMEIG_KRCI(JFLST)
+        WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
+     & '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
+     &       JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
+     &       (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
+        WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
+     & '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
+ 100      CONTINUE
+ 200    CONTINUE
+        WRITE(LUPRI,*) 
+     & ' -----------------------------------------------------------'//
+     & '----------'
+        WRITE(LUPRI,'(1A,1F10.6)')
+     $     '   Sum of oscillator strength : ',SUML
+C
+C       determine index for (dx,dy,dz)
+        XLABEL     = 'X dip vel'
+        IND_DIP(1) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Y dip vel'
+        IND_DIP(2) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Z dip vel'
+        IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XREAL = 0.0D0
+        XCOMP = 0.0D0
+C
+C       Check sum rule for oscillator strength
+        SUMV = 0.0D0
+        WRITE(LUPRI,'(/A/A)')
+     & '    initial state             final state   '//
+     & '      oscillator strength (velocity gauge)',
+     & '  __________________       _________________'//
+     & '      ____________________________________'
+        DO 400 IVEC=1,NPROP_ROOTS_KRCI
+          DO 300 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+            IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
+              INIST = IVEC
+              JFLST = JVEC
+            ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
+              GOTO 300
+            ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
+              INIST = JVEC
+              JFLST = IVEC
+            END IF
+            DEIG  = EVECS(JFLST) - EVECS(INIST)
+            DO IPRP=1,3
+C             velocity gauge
+              XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+              IF( MZ .eq. 2 ) 
+     &        XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
+              XMOM = DCMPLX(XREAL,XCOMP)
+C
+C             f_(dx,dy,dz)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
+              OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(DEIG)
+            END DO
+            SUMV = SUMV + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+            ISYMST_IN = ISYMEIG_KRCI(INIST)
+            ISYMST_FL = ISYMEIG_KRCI(JFLST)
+        WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
+     & '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
+     &       JFLST,'(',XREPEIG(ISYMST_FL),')                     ',
+     &       (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
+        WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
+     & '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
+ 300      CONTINUE
+ 400    CONTINUE
+        WRITE(LUPRI,*) 
+     & ' -----------------------------------------------------------'//
+     & '------------'
+        WRITE(LUPRI,'(1A,1F10.6/)')
+     &     '   Sum of oscillator strength : ',SUMV
+        WRITE(LUPRI,'(1A,1F10.6/)')
+     &     '   Total sum of oscillator strengths (velocity + length'//
+     &     ' gauge)  : ',SUMV+SUML
       END IF
- 
+C
+C     2. omega expectation values
+C     ===========================
+C
+      IF( DOJZEXP )THEN
+C       ... allocate omega matrix + eigvec and eigenvalue array
+        CALL MEMGET('REAL',KOMEGAEXP,NZ*NPROP_ROOTS_KRCI**2,WORK,
+     &              KFREE,LFREE)
+        CALL MEMGET('REAL',KOMEGAEIGVEC,NZ*NPROP_ROOTS_KRCI**2,WORK,
+     &              KFREE,LFREE)
+        CALL MEMGET('REAL',KOMEGAEIG,NPROP_ROOTS_KRCI,WORK,KFREE,LFREE)
+C       ... initialize
+        CALL DZERO(WORK(KOMEGAEXP),NZ*NPROP_ROOTS_KRCI**2)
+        CALL DZERO(WORK(KOMEGAEIGVEC),NZ*NPROP_ROOTS_KRCI**2)
+        CALL DZERO(WORK(KOMEGAEIG),NPROP_ROOTS_KRCI)
+C
+C       get and diagonalize omega expectation value matrix
+        CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),WORK(KOMEGAEIG),
+     &                     WORK(KOMEGAEIGVEC),NPROP_ROOTS_KRCI,NZ,
+     &                     XPROPMAT,NPROP_KRCI,WORK(KFREE),LFREE)
+C       release memory        
+        CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
+      END IF
+C 
       CALL QEXIT('XKRCIPRPANA')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GET_OMEGA_EXP */
+      SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,OMEGAEIGV,OMEGAEIGVEC,NOMEGAST,
+     &                         NZ,XPROPMAT,NPROPX,WORK,LWORK)
+C***********************************************************************
+C
+C     Diagonalize matrix containing j_z = s_z + l_z expectation values.
+C
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "krciprop.h"
+#include "dcbxpr.h"
+      DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), OMEGAEIGV(*)
+      DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*)
+      DIMENSION OMEGAEIGVEC(*)
+      INTEGER IND_DIP(2)
+      CHARACTER XLABEL*16
+#include "memint.h"
+      CALL QENTER('GET_OMEGA_EXP')
+C
+C     determine index for sigma_z and l_z
+      XLABEL     = 'z-spin'
+      IND_DIP(1) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROPX,XLABEL)
+      XLABEL     = 'z-angular mom'
+      IND_DIP(2) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROPX,XLABEL)
+C
+C     copy sz-matrix part and lz-matrix part to OMEGAMAT
+      DO IZ = 1, NZ
+        DO I = 1, NOMEGAST
+C         ... extract sz and copy to OMEGAMAT
+          CALL DCOPY(NOMEGAST,XPROPMAT(1,I,IND_DIP(1),IZ),1,
+     &               OMEGAMAT(1,I,IZ),1)
+C         ... now extract and add lz 
+          CALL DAXPY(NOMEGAST,1.0D0,XPROPMAT(1,I,IND_DIP(2),IZ),1,
+     &               OMEGAMAT(1,I,IZ),1)
+        END DO
+      END DO
+C     complete XPROPMAT
+      WRITE(LUPRI,*) ' complete XPROPMAT'
+      CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUPRI)
+C     complete OMEGAMAT
+      WRITE(LUPRI,*) ' complete OMEGAMAT'
+      CALL WRTMATMN(OMEGAMAT,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
+      WRITE(LUPRI,*) ' complete OMEGAEIGV'
+      CALL WRTMATMN(OMEGAEIGV,1,NOMEGAST,1,NOMEGAST,LUPRI)
+      WRITE(LUPRI,*) ' complete OMEGAEIGVEC'
+      CALL WRTMATMN(OMEGAEIGVEC,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
+C     WRITE(LUWRT,*) ' stefan forced me to stop in GET_OMEGA_EXP'
+C     CALL QUIT( ' stefan forced me to stop in GET_OMEGA_EXP' )
+C
+C     TEST: throw away diagonal part
+C
+C     DO IZ = 1, NZ
+C     DO I = 1, NOMEGAST
+C       DO J = 1, NOMEGAST
+C         IF( I .eq. J ) WRITE(LUPRI,*) 'diagonal element (I,J,IZ) = ',
+C    &                   I,J,IZ,OMEGAMAT(I,J,IZ)
+C         IF( I .eq. J ) OMEGAMAT(I,J,IZ) = 0.0D0
+C       END DO
+C     END DO
+C     END DO
+C
+C     diagonalize matrix
+      IF (NZ .EQ. 1) THEN
+         IJOB = 1
+         IORDER = 0
+         IPACK = 0
+         WRITE(LUPRI,*) ' IJOB, IORDER, IPACK',IJOB, IORDER, IPACK
+         CALL RSJACO(NOMEGAST,NOMEGAST,NOMEGAST,OMEGAMAT,OMEGAEIGV,
+     &        IJOB,IORDER,IPACK,OMEGAEIGVEC,WORK(KFREE),LFREE)
+      ELSE
+         MATZ = 1
+         WRITE(LUPRI,*) ' MATZ',MATZ
+         CALL QDIAG(NZ,NOMEGAST,OMEGAMAT,NOMEGAST,NOMEGAST,
+     &        OMEGAEIGV,MATZ,OMEGAEIGVEC,NOMEGAST,NOMEGAST,
+     &        WORK(KFREE),LFREE,IERR)
+         IF (IERR .NE. 0) THEN
+            WRITE(LUPRI,'(/,1X,2A,I4)')
+     &           '*** ERROR in GET_OMEGA_EXP ***: ',
+     &           'QDIAG failed with error code ',IERR
+            CALL QUIT('*** ERROR in GET_OMEGA_EXP ***')
+         END IF
+      END IF
+      WRITE(LUPRI,*) ' complete OMEGAMAT after diagonalization'
+      CALL WRTMATMN(OMEGAMAT,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
+      WRITE(LUPRI,*) ' OMEGAEIGV after diagonalization'
+      CALL WRTMATMN(OMEGAEIGV,1,NOMEGAST,1,NOMEGAST,LUPRI)
+      WRITE(LUPRI,*) ' OMEGAEIGVEC after diagonalization'
+      CALL WRTMATMN(OMEGAEIGVEC,1,NOMEGAST,1,NOMEGAST,LUPRI)
+      DO IZ = 1, NZ
+      DO I = 1, NOMEGAST
+        DO J = 1, NOMEGAST
+          IF( I .eq. J ) WRITE(LUPRI,*) 'diagonal element (I,J,IZ) = ',
+     &                   I,J,IZ,OMEGAMAT(I,J,IZ)
+        END DO
+      END DO
+      END DO
+C     ... done
+      CALL QEXIT('GET_OMEGA_EXP')
       END
 C----------------------------------------------------------------------
 C     end of file krmccan.F

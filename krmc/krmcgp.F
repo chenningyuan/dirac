@@ -1776,6 +1776,16 @@ C     Reference symmetry
      &                  MPI_COMM_WORLD,IERR)
 #endif
       IREFSM = IOPT_SYMMETRY
+C     max reference symmetry
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 ) 
+     &   CALL MPI_BCAST(NMAX_SYM,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+      NMAX_SYM_CI = NMAX_SYM
+C
+C     KRCI_CVECS.x vector file extensions
+      CALL DETXFLAB(XSYMFLAB,NMAX_SYM_CI)
 C     Roots to be obtained
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
@@ -1996,6 +2006,8 @@ C     Type of operator wrt. relativity
         ISO2 = 0
         ISPINFREE = 1
       END IF
+C     (pure) spin operator / behavior under time reversal symmetry?
+      SPIN_OP = .FALSE.
 C     Reference value for two times M_K projection
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )

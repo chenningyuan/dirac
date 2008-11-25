@@ -442,21 +442,19 @@ C
 C       set operator symmetry (Hamiltonian will be called 'T' 
 C       throughout the KR-CI module)
 C       default: totally symmetric operator
-        ISYM_T = 1
+        ISYM_T  = 1
 C
-        IF (CIRUN .EQ. 'DENS1 ' .or. CIRUN .EQ. 'PROP1 ') THEN
-           NO_TTWO = 1
-C          ... no two-electron excitations
-        ELSE
-           NO_TTWO = 0
-        END IF
-CSK     IPRHAM_CI = 100
-        call set_hop_dbg(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
-C     
-        IF(NOINT.EQ.1) THEN
-           WRITE(LUWRT,*) ' End of calculation without integrals'
-           GO TO 8888
-        END IF
+C       ... no two-electron excitations
+        NO_TTWO = 0
+        IF( CIRUN .eq. 'DENS1 ') NO_TTWO = 1
+C
+C       default Hamiltonian - symmetric wrt time-reversal symmetry
+        ITIM_SYM = 1
+C
+        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
+C
+C       no integrals - return to main routine 
+        IF( NOINT .eq. 1 ) GO TO 8888
 C
 C       loop over natural spinors (currently hardwired to 1)
         do INATIT=1,NATITER,1
