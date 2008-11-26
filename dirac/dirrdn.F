@@ -4164,6 +4164,9 @@ C              ... hjaaj: DFTINPUT accumulates def. of functional
 C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                   CALL DFTINPUT(LINE, INPERR)
+                  if (inperr .gt. 0) then
+                    call quit('unknown functional after .DFT')
+                  end if
 
 #ifdef MOD_ERI
 C aspg, 20070909
