@@ -195,12 +195,13 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "codata.h"
+#include "logging.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.ECP   ','.XXXXXX','.XXXXXX',
+     &             '.SPHTRA','.ECP   ','.LOGMEM','.XXXXXX',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -214,6 +215,7 @@ C
       ECPCALC  = .FALSE.
       SKIP2E = .FALSE.
       LOWJACO = .FALSE.
+      LOGMEMGET = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
@@ -330,6 +332,7 @@ C&&&& ECP: do ECP calculation, non-relativistic
 #endif
             GO TO 100
   111     CONTINUE
+          LOGMEMGET = .TRUE.
             GO TO 100
   112     CONTINUE
             GO TO 100

@@ -81,6 +81,8 @@ C
 C
 #include "iratdef.h"
 #include "memcb1.h"
+#include "logging.h"
+#include "priunit.h"
 C
       EXTERNAL MEMBKD
 C
@@ -116,6 +118,9 @@ C                         ^- make sure OK for KFREE .eq. 1
          END IF
          CALL QUIT('MEMGET ERROR, illegal type')
       END IF
+      IF (LOGMEMGET) THEN
+         WRITE (LUPRI,'(/A,2I10)') '@memget:',LREAL,LFREE
+      ENDIF
 C
 C
       MEMID(2) = LREAL
