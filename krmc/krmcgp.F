@@ -2008,7 +2008,7 @@ C     Type of operator wrt. relativity
         ISPINFREE = 1
       END IF
 C     (pure) spin operator / behavior under time reversal symmetry?
-      SPIN_OP = .FALSE.
+c     SPIN_OP = .FALSE.
 C     Reference value for two times M_K projection
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )

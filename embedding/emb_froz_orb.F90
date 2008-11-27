@@ -72,7 +72,7 @@ CONTAINS
         ! Read the numbers of the frozen orbitals (to frozen_orbital_numbers) 
         CALL READI (LUCOEF, NFRO(irrep), frozen_orb_nums)
 
-        WRITE (LUPRI, *), "frozen_orb_nums: ", frozen_orb_nums(1:NFRO(irrep))
+        WRITE (LUPRI, *) "frozen_orb_nums: ", frozen_orb_nums(1:NFRO(irrep))
 
         n_read = 0    
         DO i = 1, NFRO(irrep)

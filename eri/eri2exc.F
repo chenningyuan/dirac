@@ -61,6 +61,7 @@ C
 #include "infpar.h"
 #include "inforb.h"
 #include "shells.h"
+#include "cbihr2.h"
 C aspg, 2006-04-23
 C
 C the following ifdef was added due to the moving of HFXFAC from dftcom.h
@@ -107,11 +108,11 @@ c	whatever was requested, we will compute exchange only
 C 
       IF (MAXREP.GT.0) CALL QUIT('ERIEXC does not work with symmetry')
 C
-      THRXCH = MAX(THRXCH,1.00D-13)
-      THRSH  = MAX(THRS,1.00D-15)
-      THRXCH = 1.00D-10
-      THRGAM = 1.00D-13 
-      THRSH  = 1.00D-15
+cSimen Multiplication by empirical factor 0.1 to get approximately the same
+cSimen resuls as for hermit
+      THRXCH = SCRFCK * 1.00D-1
+      THRGAM = THRXCH * 1.00D-3
+      THRSH  = THRXCH * 1.00D-5
       IF (THRXC1.NE.D0) THRXCH = THRXC1
       IF (THRXC2.NE.D0) THRGAM = THRXC2
       IF (THRXC3.NE.D0) THRSH  = THRXC3
@@ -1239,7 +1240,7 @@ C
             ICMPCD = ICMPCD + 1
             IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
             IF (IODDAB .EQ. IODDCD) THEN
-            IF (IFCTYP(1).EQ.12) THEN
+            IF ((IFCTYP(1).EQ.12).OR.(IFCTYP(1).EQ.22)) THEN
                DO I = 1, NCCS
                   EINT = FAC*SO(I,ICMPAB,ICMPCD)
                   IF (ABS(EINT) .GT. THRXCH) THEN
