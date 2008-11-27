@@ -1713,7 +1713,6 @@ C***********************************************************************
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN
-      LOGICAL  SPIN_OP
 C
       CHARACTER*72 TITLEC(3)
 C
@@ -2007,8 +2006,6 @@ C     Type of operator wrt. relativity
         ISO2 = 0
         ISPINFREE = 1
       END IF
-C     (pure) spin operator / behavior under time reversal symmetry?
-c     SPIN_OP = .FALSE.
 C     Reference value for two times M_K projection
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
