@@ -1713,6 +1713,7 @@ C***********************************************************************
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN
+      LOGICAL  SPIN_OP
 C
       CHARACTER*72 TITLEC(3)
 C
