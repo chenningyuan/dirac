@@ -80,6 +80,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
+#include "krciprop.h"
 C
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
@@ -566,10 +567,14 @@ C
             WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (boson) of wave function: ',
      &        REPNA(IRRP)
+C             store on common block in krciprop.h
+              XREPEIG(IKRMC_SYMMETRY) = REPNA(IRRP)
          ELSE
             WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (fermion) of wave function: ',
      &        REPNA(IKRMC_SYMMETRY)
+C             store on common block in krciprop.h
+              XREPEIG(IKRMC_SYMMETRY) = REPNA(IKRMC_SYMMETRY)
          END IF
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     ' * Allowed interval of 2 * MK :',
