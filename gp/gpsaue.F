@@ -3895,6 +3895,7 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER(TOL=1.0D-16)
       DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
@@ -7240,7 +7241,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MODEFIT(NP,X,Y,A,B,C,MORDER,NORDER,ILOGG)
+      SUBROUTINE MODEFIT(NP,X,Y,A,B,C,D,MORDER,NORDER,ILOGG)
 C***********************************************************************
 C
 C     From NP points along a normal coordinate, do a polynomial fit.
@@ -7254,7 +7255,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "codata.h"
-      DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP)
+      DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
       READ(LUCMD,*) NORDER
