@@ -20,9 +20,11 @@
       endif
       pi = 2*acos(0.0D0)
       print *,'Testing DSYEVR diagonalization of',N,'**2 matrix'
+#ifdef FORTRAN2003
       print *,'Using',sizeof(N)*8,' bit integers'
       print *,'Allocating matrix and vectors ',
      &     ((2*N**2 + 3*N)*sizeof(ddum))/2**10,' kB'
+#endif
       call flush(6)
       allocate( A(N,N), vec(N,N), eig(N), isuppz(2*N) )
 !     set A = 0.5 on the upper and lower second diagonals
@@ -50,8 +52,10 @@
          stop
       endif
       lwork = workdum
+#ifdef FORTRAN2003
       print *,'Allocating work buffers',(lwork*sizeof(ddum)+
      &     liwork*sizeof(idum))/2**10,' kB'
+#endif
       call flush(6)
       allocate( work(lwork), iwork(liwork) )
       print *,'Diagonalizing..'
