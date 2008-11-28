@@ -616,6 +616,21 @@ C
       RETURN
 C
       END
+
+      SUBROUTINE QDIAG90(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,IERR)
+C     Like QDIAG but uses f90 memory allocation internally.
+#include "implicit.h"
+      double precision, allocatable :: work(:)
+      lwork = 6 + 2*N
+      IF(NZ.GT.1) THEN
+        NTAU = N*NZ
+        lwork = lwork + ntau
+      ENDIF
+      allocate(work(lwork))
+      call qdiag(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,work,lwork,IERR)
+      deallocate(work)
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qmgath */
       SUBROUTINE QMGATH(AIN,NRW1,NCL1,AOUT,NRW2,NCL2,NZ,
@@ -4332,6 +4347,44 @@ C
       RETURN
 C
       END
+
+      SUBROUTINE QTRANS90(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,IPRINT)
+c     Like QTRANS, but uses fortran 90 memory allocation internally
+#include "implicit.h"
+      double precision, allocatable :: work(:)
+      character typ*4
+C     find out how much buffer is needed in qtrans
+      IF(TYP.EQ.'AOMO') THEN
+         IF (NCAO.GE.NRAO) THEN
+            CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
+            NBUF = NRAO*NCMO*NZW
+         else
+            CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
+            NBUF = NRMO*NCAO*NZW
+         endif
+      else
+         IF(NCMO.GE.NRMO) THEN
+            CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
+            NBUF = NRMO*NCAO*NZW
+         else
+            CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
+            NBUF = NRAO*NCMO*NZW
+         endif
+      endif
+      allocate( work(nbuf) )
+      call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,
+     &                  work,nbuf,IPRINT)
+      end
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Sqstra */
       SUBROUTINE SQSTRA(IOPT,A,N,LRA,LCA,NZA,WORK,LWORK)
