@@ -1336,11 +1336,37 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck matgatx */
+      SUBROUTINE MATGATX(AMAT,NDIMA,BMAT,NDIMB,ISKIP,NZ)
+C***********************************************************************
+C
+C     Construct BMAT from AMAT elements.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - Nov 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NDIMA,NDIMA,NZ), BMAT(NDIMB,NDIMB,NZ)
+C
+      DO IZ = 1, NZ
+        DO J = 1, NDIMB
+          CALL DCOPY(NDIMB,AMAT(ISKIP+1,ISKIP+J,IZ),1,BMAT(1,J,IZ),1)
+        END DO
+      END DO
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck matsct */
       SUBROUTINE MATSCT(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,NZ)
 C***********************************************************************
 C
-C     Construct BMAT from AMAT elements using IDX.
+C     Construct AMAT from BMAT elements using IDX.
 C
 C     Input:
 C
@@ -1363,7 +1389,6 @@ C
             END DO
          END DO
       END DO
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DETXFLAB */
