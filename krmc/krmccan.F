@@ -153,6 +153,9 @@ C
 *            NO occ. numbers are calculated with LUCIAREL
 *
       IF( NATOLCR .and. NZ .eq. 2 ) THEN
+        WRITE(LUPRI,'(/A/)') 
+     & ' *** WARNING *** QDIAG sorts eigenvalues - NO occupation'//
+     & ' might appear in wrong order.'
         DO I = 1, NFSYM
            DO J = 1, NISH(I)
               JOCC = JOCC + 1
@@ -163,6 +166,7 @@ C
               JOCC = JOCC + 1
               JACT = JACT + 1
               OCCNO(JOCC) = WORK(KEIG + JACT_TOT - JACT )
+C             OCCNO(JOCC) = WORK(KEIG + JACT - 1)
            END DO
         END DO
       ELSE
@@ -210,8 +214,8 @@ C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
  9003 FORMAT(/'   Sum =',T15,F14.9)
- 9004 FORMAT(/'   Symmetry',I3,' -- REORDERED OCCUPATION --',
-     &            //,(5F14.9))
+ 9004 FORMAT(/'   Symmetry',I3,' ** REORDERED DESCENDING OCCUPATION **',
+     &            //,(5F14.9)/)
 C
       IF ( IPRINT .GE. 5 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
@@ -1159,21 +1163,17 @@ C     2. omega expectation values
 C     ===========================
 C
       IF( DOJZEXP )THEN
-C       ... allocate omega matrix + eigvec and eigenvalue array
+C       ... allocate omega matrix
         CALL MEMGET('REAL',KOMEGAEXP,NZ*NPROP_ROOTS_KRCI**2,WORK,
      &              KFREE,LFREE)
-        CALL MEMGET('REAL',KOMEGAEIGVEC,NZ*NPROP_ROOTS_KRCI**2,WORK,
-     &              KFREE,LFREE)
-        CALL MEMGET('REAL',KOMEGAEIG,NPROP_ROOTS_KRCI,WORK,KFREE,LFREE)
 C       ... initialize
         CALL DZERO(WORK(KOMEGAEXP),NZ*NPROP_ROOTS_KRCI**2)
-        CALL DZERO(WORK(KOMEGAEIGVEC),NZ*NPROP_ROOTS_KRCI**2)
-        CALL DZERO(WORK(KOMEGAEIG),NPROP_ROOTS_KRCI)
 C
 C       get and diagonalize omega expectation value matrix
-        CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),WORK(KOMEGAEIG),
-     &                     WORK(KOMEGAEIGVEC),NPROP_ROOTS_KRCI,NZ,
-     &                     XPROPMAT,NPROP_KRCI,WORK(KFREE),LFREE)
+        CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),NPROP_ROOTS_KRCI,NZ,
+     &                     XPROPMAT,NPROP_KRCI,XREPEIG,
+     &                     MAX_NKRCI_MAX_SYM,NKRCI_CIROOTS,
+     &                     WORK(KFREE),LFREE)
 C       release memory        
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
@@ -1182,8 +1182,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */
-      SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,OMEGAEIGV,OMEGAEIGVEC,NOMEGAST,
-     &                         NZ,XPROPMAT,NPROPX,WORK,LWORK)
+      SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,NOMEGAST,NZ,XPROPMAT,NPROPX,
+     &                         XREPOM,IALL_SYM,NKRCI_CIROOTS,
+     &                         WORK,LWORK)
 C***********************************************************************
 C
 C     Diagonalize matrix containing j_z = s_z + l_z expectation values.
@@ -1199,13 +1200,14 @@ C***********************************************************************
 C
 #include "krciprop.h"
 #include "dcbxpr.h"
-      DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), OMEGAEIGV(*)
+      CHARACTER*4 XREPOM(*)
+      DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), NKRCI_CIROOTS(*)
       DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*)
-      DIMENSION OMEGAEIGVEC(*)
       INTEGER IND_DIP(2)
       CHARACTER XLABEL*16
 #include "memint.h"
       CALL QENTER('GET_OMEGA_EXP')
+      NXTEST = 0
 C
 C     determine index for sigma_z and l_z
       XLABEL     = 'z-spin'
@@ -1224,66 +1226,78 @@ C         ... now extract and add lz
      &               OMEGAMAT(1,I,IZ),1)
         END DO
       END DO
-C     complete XPROPMAT
-      WRITE(LUPRI,*) ' complete XPROPMAT'
-      CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUPRI)
-C     complete OMEGAMAT
-      WRITE(LUPRI,*) ' complete OMEGAMAT'
-      CALL WRTMATMN(OMEGAMAT,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
-      WRITE(LUPRI,*) ' complete OMEGAEIGV'
-      CALL WRTMATMN(OMEGAEIGV,1,NOMEGAST,1,NOMEGAST,LUPRI)
-      WRITE(LUPRI,*) ' complete OMEGAEIGVEC'
-      CALL WRTMATMN(OMEGAEIGVEC,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
-C     WRITE(LUWRT,*) ' stefan forced me to stop in GET_OMEGA_EXP'
-C     CALL QUIT( ' stefan forced me to stop in GET_OMEGA_EXP' )
 C
-C     TEST: throw away diagonal part
-C
-C     DO IZ = 1, NZ
-C     DO I = 1, NOMEGAST
-C       DO J = 1, NOMEGAST
-C         IF( I .eq. J ) WRITE(LUPRI,*) 'diagonal element (I,J,IZ) = ',
-C    &                   I,J,IZ,OMEGAMAT(I,J,IZ)
-C         IF( I .eq. J ) OMEGAMAT(I,J,IZ) = 0.0D0
-C       END DO
-C     END DO
-C     END DO
-C
-C     diagonalize matrix
-      IF (NZ .EQ. 1) THEN
-         IJOB = 1
-         IORDER = 0
-         IPACK = 0
-         WRITE(LUPRI,*) ' IJOB, IORDER, IPACK',IJOB, IORDER, IPACK
-         CALL RSJACO(NOMEGAST,NOMEGAST,NOMEGAST,OMEGAMAT,OMEGAEIGV,
-     &        IJOB,IORDER,IPACK,OMEGAEIGVEC,WORK(KFREE),LFREE)
-      ELSE
-         MATZ = 1
-         WRITE(LUPRI,*) ' MATZ',MATZ
-         CALL QDIAG(NZ,NOMEGAST,OMEGAMAT,NOMEGAST,NOMEGAST,
-     &        OMEGAEIGV,MATZ,OMEGAEIGVEC,NOMEGAST,NOMEGAST,
-     &        WORK(KFREE),LFREE,IERR)
-         IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/,1X,2A,I4)')
-     &           '*** ERROR in GET_OMEGA_EXP ***: ',
-     &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in GET_OMEGA_EXP ***')
-         END IF
+C     debug print
+      NXTEST = 0
+      IF( NXTEST .gt. 0 )THEN
+C       complete XPROPMAT
+        WRITE(LUPRI,*) ' complete XPROPMAT'
+        CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUPRI)
+C       complete OMEGAMAT
+        WRITE(LUPRI,*) ' complete OMEGAMAT'
+        CALL WRTMATMN(OMEGAMAT,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
       END IF
-      WRITE(LUPRI,*) ' complete OMEGAMAT after diagonalization'
-      CALL WRTMATMN(OMEGAMAT,1,NZ*NOMEGAST**2,1,NZ*NOMEGAST**2,LUPRI)
-      WRITE(LUPRI,*) ' OMEGAEIGV after diagonalization'
-      CALL WRTMATMN(OMEGAEIGV,1,NOMEGAST,1,NOMEGAST,LUPRI)
-      WRITE(LUPRI,*) ' OMEGAEIGVEC after diagonalization'
-      CALL WRTMATMN(OMEGAEIGVEC,1,NOMEGAST,1,NOMEGAST,LUPRI)
-      DO IZ = 1, NZ
-      DO I = 1, NOMEGAST
-        DO J = 1, NOMEGAST
-          IF( I .eq. J ) WRITE(LUPRI,*) 'diagonal element (I,J,IZ) = ',
-     &                   I,J,IZ,OMEGAMAT(I,J,IZ)
+C
+C     print omega expectation values
+      WRITE(LUPRI,'(/A/,A)')
+     & '    omega expectation values for calculated eigenstates',
+     & '  ________________________________________________________'
+      WRITE(LUPRI,'(/A/,A/)')
+     & '    state #        symmetry        <omega>',
+     & '  ----------     -----------   ---------------'
+      IX_AC = 0
+C
+C     loop over all symmetries and block diagonalize
+      DO 100 IX = 1, IALL_SYM
+C
+C       only symmetries with non-zero number of eigenstates
+        IF( NKRCI_CIROOTS(IX) .le. 0 ) GOTO 100
+C
+        NXSTATES = NKRCI_CIROOTS(IX)
+C       ... allocate for x-x block diagonalization of <OMEGA>-matrix
+        CALL MEMGET('REAL',KOMX,   NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGVCX,NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGX,  NXSTATES      ,WORK,KFREE,LFREE)
+C       ... initialize
+        CALL DZERO(WORK(KOMX),   NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGVCX),NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGX),  NXSTATES)
+C
+C       extract x-x part of <OMEGA>-matrix
+        CALL MATGATX(OMEGAMAT,NOMEGAST,WORK(KOMX),NXSTATES,IX_AC,NZ)
+C
+C       WRITE(LUPRI,*) ' OMEGAMAT (block) before diagonalization'
+C       CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
+C    &                NZ*NXSTATES**2,LUPRI)
+C
+C       diagonalize
+        CALL DIAGC('X',WORK(KOMX),WORK(KEIGX),WORK(KEIGVCX),
+     &             NXSTATES,WORK(KFREE),LFREE)
+C
+        IF( NXTEST .gt. 0 )THEN
+          WRITE(LUPRI,*) ' OMEGAMAT after diagonalization'
+          CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
+     &                  NZ*NXSTATES**2,LUPRI)
+          WRITE(LUPRI,*) ' OMEGAEIGV after diagonalization'
+          CALL WRTMATMN(WORK(KEIGX),1,NXSTATES,1,NXSTATES,LUPRI)
+          WRITE(LUPRI,*) ' OMEGAEIGVEC after diagonalization'
+          CALL WRTMATMN(WORK(KEIGVCX),1,NZ*NXSTATES**2,1,
+     &                  NZ*NXSTATES**2,LUPRI)
+        END IF
+C
+C       print section
+        DO I = 1, NXSTATES
+        WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
+     &              I,XREPOM(IX),WORK(KEIGX+I-1)
         END DO
-      END DO
-      END DO
+C
+C       release memory
+        CALL MEMREL('RKRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)
+C
+C       keep track of active states
+        IX_AC = IX_AC + NXSTATES
+ 100  CONTINUE
+C
 C     ... done
       CALL QEXIT('GET_OMEGA_EXP')
       END

@@ -884,8 +884,8 @@ C       subgroup notation
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'// 
      &     ' one-electron operators: '
-        IF( DOOSCILLST )  CALL DEF_OSCILL(WORK,LWORK,IPROPPRINT)
-        IF( DOJZEXP )     CALL DEF_OMEGAQUANT(WORK,LWORK,IPROPPRINT)
+        IF( DOOSCILLST )  CALL DEF_OSCILL(WORK,LWORK,0)
+        IF( DOJZEXP )     CALL DEF_OMEGAQUANT(WORK,LWORK,0)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -900,7 +900,7 @@ C
      &                     ' for (allowed) electronic transitions'
       END IF
       IF( DOJZEXP ) THEN
-        WRITE(LUPRI,'(/A)') ' * Determine omega quantum number for'//
+        WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'
       END IF
 C

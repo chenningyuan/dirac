@@ -1614,6 +1614,9 @@ C
 C
       IOFF2 = 1
 C
+C     special matrix X
+      IF (C .EQ. 'X') GOTO 100
+C
       DO IFSYM = 1, NFSYM
 C
         IF (C .EQ. 'E') THEN
@@ -1629,7 +1632,7 @@ C
         ELSE
            WRITE(LUPRI,'(2A)')
      &          '*** ERROR in DIAGC *** Unknown control character: ',C
-           CALL Abend2('* ERROR in DIAGC * Unknown control character')
+           CALL QUIT('*** ERROR in DIAGC *** Unknown control character')
         END IF
 C
 C       diagonalize AM
@@ -1655,15 +1658,40 @@ C          ... calculate eigenvalues and eigenvectors
      &                 '*** ERROR in DIAGC ***: ',
      &                 '*** ERROR for control parameter: ',C,
      &                 'QDIAG failed with error code ',IERR
-                  CALL Abend2('*** ERROR in DIAGC: block diag ***')
+                  CALL QUIT('*** ERROR in DIAGC: block diag ***')
            END IF
         ENDIF
 C       ... new offset
         IOFF2 = IOFF2 + NDIM2
       ENDDO
 C
+C     special matrix X
+ 100  IF (C .EQ. 'X') THEN
+        NDIM2 = NDIM
+C
+C       ... calculate eigenvalues and eigenvectors
+        IF (NZ .EQ. 1) THEN
+           IJOB   = 1
+C          ... no sorting
+           IORDER = 0
+           IPACK  = 0
+           CALL RSJACO(NDIM,NDIM2,NDIM2,AM,EIG,IJOB,IORDER,IPACK,
+     &                 EIGVEC,WORK(KFREE),LFREE)
+        ELSE
+           MATZ = 1
+           CALL   QDIAG(NZ,NDIM2,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
+     &                  NDIM,NDIM2,WORK(KFREE),LFREE,IERR)
+           IF (IERR .NE. 0) THEN
+              WRITE(LUPRI,'(/,1X,4A,I4)')
+     &        '*** ERROR in DIAGC ***: ',
+     &        '*** ERROR for control parameter: ',C,
+     &        'QDIAG failed with error code ',IERR
+              CALL QUIT('*** ERROR in DIAGC: block diag ***')
+           END IF
+        END IF
+      END IF
+C
       CALL QEXIT('DIAGC')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TRKRLUCI */
