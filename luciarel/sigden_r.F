@@ -722,7 +722,7 @@ C           where i belongs to IGAS and j belongs to JGAS
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
                   SIGN_ITIM_SYM(NHX) = ONE
-                  WRITE(LUWRT,*) ' alpha alpha type ',NHX
+C                 WRITE(LUWRT,*) ' alpha alpha type ',NHX
                 end if
               END IF
             end if
@@ -762,7 +762,7 @@ C           where i belongs to IGAS and j belongs to JGAS
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
                   SIGN_ITIM_SYM(NHX) = ONE * TRSYM
-                  WRITE(LUWRT,*) ' beta beta type ',NHX
+C                 WRITE(LUWRT,*) ' beta beta type ',NHX
                 end if
               END IF
             end if
@@ -1065,7 +1065,7 @@ C     ... skip next set of two-electron terms
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
                   SIGN_ITIM_SYM(NHX) = ONE
-                  WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
+C                 WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1107,7 +1107,7 @@ CSK               FIXME: check if that is correct - at least I found it
 CSK                      in the above mentioned book.
 C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
                   SIGN_ITIM_SYM(NHX) = ONE * TRSYM
-                  WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
+C                 WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1491,18 +1491,17 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
       end if
 *     end if (NO_TTWO .gt. 0)
 *
-C     if (IFLAG.ne.1.and.NTEST.ge.50) then
-      if(IFLAG.ne.1)then
+      if (IFLAG.ne.1.and.NTEST.ge.50) then
+C     if(IFLAG.ne.1)then
         WRITE(LUWRT,'(/A/)') '  *** Information from  GET_HX_RELA ***'
         WRITE(LUWRT,'(/A,I10)') '  Number of excitation types ', NHX
         do I=1,NHX
-C         write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
-C    &                     I,SIGN_NHX(I)
+          write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
+     &                     I,SIGN_NHX(I)
           write(LUWRT,*) '  excitation type and sign SIGN_ITIM_SYM ',
      &                     I,SIGN_ITIM_SYM(I)
         end do
       end if
-C     end if
 *
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
@@ -1668,12 +1667,12 @@ C     check norm
 CSK   if (NTEST.ge.100) write(LUWRT,*) 'Coupling with type ',IXTP
 *
 CSK   IF(NTEST.GE.500) THEN
-        WRITE(LUWRT,*) ' ================ '
-        WRITE(LUWRT,*) ' GNSIDE speaking '
-        WRITE(LUWRT,*) ' ================ '
-        write(LUWRT,*) ' Real / imaginary contribution :'
-        write(LUWRT,*) ' Left , Right ',IRIS,IRIC
-        WRITE(LUWRT,*)
+C       WRITE(LUWRT,*) ' ================ '
+C       WRITE(LUWRT,*) ' GNSIDE speaking '
+C       WRITE(LUWRT,*) ' ================ '
+C       write(LUWRT,*) ' Real / imaginary contribution :'
+C       write(LUWRT,*) ' Left , Right ',IRIS,IRIC
+C       WRITE(LUWRT,*)
 CSK     WRITE(LUWRT,*) ' IAOC and IBOC in GENSIG'
 CSK     CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUWRT)
 CSK     CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUWRT)
@@ -1755,9 +1754,9 @@ C     sign for bringing operators and amplitudes into new order
      &       + NAB_OP*(NAB_OP-1)/2
       IF(MOD(NPERM,2).EQ.1) THEN
         SIGNXXX  =  -1.0D0*SIGN_EXTERNAL
-        WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
+C       WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
       ELSE
-        WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
+C       WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
         SIGNXXX = SIGN_EXTERNAL
       END IF
 C     type of Ka and Kb
@@ -1990,7 +1989,7 @@ C            Kb
              IM_ACTIVE = 1
 C            offset and form of T-coefficients
              ITOFF = IB_T(ICA_SM,ICB_SM,INVELM(IAA_SM))
-             WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
+C            WRITE(LUWRT,*) ' output of IB_T for current block',ITOFF
              IF(ITOFF.LT.0) THEN
                ITOFF = -ITOFF
                ITRNSP = 1
@@ -2016,9 +2015,9 @@ C
      &                         LICA_SM,NCA_B,ICA_B,LICB_SM,NCB_B,ICB_B,
      &                         LIAA_SM,NAA_B,IAA_B,LIAB_SM,NAB_B,IAB_B,
      &                         ITRNSP,IDIAG,NTEST)
-              WRITE(LUWRT,*) ' TBSUB for IRIC and IRIS',IRIC,IRIS
-              CALL WRTMATMN(TBSUB,1,NCA_B*NCB_B*NAA_B*NAB_B,1,
-     &                      NCA_B*NCB_B*NAA_B*NAB_B,LUWRT)
+C             WRITE(LUWRT,*) ' TBSUB for IRIC and IRIS',IRIC,IRIS
+C             CALL WRTMATMN(TBSUB,1,NCA_B*NCB_B*NAA_B*NAB_B,1,
+C    &                      NCA_B*NCB_B*NAA_B*NAB_B,LUWRT)
              ELSE
 C             zero density subblock
               CALL DZERO(TBSUB,NCA_B*NCB_B*NAA_B*NAB_B)
@@ -2161,18 +2160,18 @@ C
 C     debug print section
 C
 CSK   IF(NTEST.GE.300) THEN 
-CSK     IF(ISD.EQ.1) THEN
+C       IF(ISD.EQ.1) THEN
 CSK       WRITE(LUWRT,*) ' Updated sigma block '
 #if defined (VAR_MPI2)
 CSK       CALL WRTVH1_PAR(SB,ISSM,NIA,NIB,NSMST,0,IACT_S,IOFF_BLK_S,1)
 #else
 CSK       CALL WRTVH1(SB,ISSM,NIA,NIB,NSMST,0)
 #endif
-CSK     ELSE IF (ISD.EQ.2) THEN
-CSK       WRITE(LUWRT,*) ' Updated density block '
-CSK       CALL WRT_TCC_BLK(TB,1,NICA,NICB,NIAA,NIAB,NSMST)
+C       ELSE IF (ISD.EQ.2) THEN
+C         WRITE(LUWRT,*) ' Updated density block '
+C         CALL WRT_TCC_BLK(TB,1,NICA,NICB,NIAA,NIAB,NSMST)
 C              WRT_TCC_BLK(TCC,ITCC_SM,NCA,NCB,NAA,NAB,NSMST)
-CSK     END IF
+C       END IF
 CSK   END IF
       NTEST = 000
  9999 RETURN
@@ -3471,7 +3470,9 @@ CSK  &                      ICOMPUTE,JBATABS
               GOTO 60
             ENDIF
 #endif /* if def VAR_MPI2 */
-*
+C
+            LS = LEBATS(JBATABS)
+            CALL DZERO(HC,LS)
             if (ISIGDEN.eq.1) then
               if (NTEST.ge.500) then
                  WRITE(LUWRT,*)
@@ -3483,17 +3484,14 @@ CSK  &                      ICOMPUTE,JBATABS
                  WRITE(LUWRT,*) 
      &           ' =============================================='
                  WRITE(LUWRT,*)
-             end if
-              LS = LEBATS(JBATABS)
-              ZERO = 0.0D0
-              CALL DZERO(HC,LS)
+              end if
             else 
 C             ... sigma blocks read from disk in density run?
 C             this is important since we might skip complete s blocks 
 C             because of MK2_DIFF > 4.
               SBLK_READS2 = .FALSE.
             end if
-*
+C
 #if !defined (VAR_MPI2)
             call REWINE(LLUC,-1)
 #endif
@@ -3645,7 +3643,8 @@ C                 transfer block to disc
 C                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
 C    &                            ISBLK
 C                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
-C                 WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
+C                 WRITE(LUWRT,*) 'offset,length, IRIS',
+C    &                            IOFF_SCR1,LEN_T,IRIS
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
      &                                   MPI_REAL8,ISTAT,IERR)
                   ISI_CALC_BL = ISI_CALC_BL + 1
@@ -3670,12 +3669,12 @@ C                 WRITE(LUWRT,*) 'offset,length',IOFF_SCR1,LEN_T
 CSK too much information?                WALLTID  = SECTID(writetime)
                 WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
-                WRITE(LUWRT,60001) WALLTID2
+                IF( .NOT. DOSIGPROP ) WRITE(LUWRT,60001) WALLTID2
 CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
               END IF
 #endif /* if def VAR_MPI2 */
             END IF
-*           ^ ISIGDEN == 1
+C           ^ ISIGDEN == 1
 C
 #if !defined (VAR_MPI2)
 C           skip sigma blocks on disk
@@ -3715,13 +3714,13 @@ C           skip sigma blocks on disk
 #else
 *
       WALLTID3 = SECTID(BLOCKTIME)
-      WRITE(LUWRT,80000) WALLTID3
+      IF( .NOT. DOSIGPROP ) WRITE(LUWRT,80000) WALLTID3
       IF( SHARED_M .and. ISIGDEN .eq. 1 )THEN
         WALLTID3 = SECTID(mem_cp_time)
         WRITE(LUWRT,90000) WALLTID3
       END IF
 C
-      IF( TIMING ) THEN
+      IF( TIMING .and. (.NOT. DOSIGPROP)) THEN
 C
 C       print statistics
 C
@@ -3865,13 +3864,13 @@ C           CPU-block - test if non-zero
             CALL GSTTBLD2(SB(ISOFF),LUHC)
 #endif
 *
-            NTEST = 000
-            IF ( LEN2 .gt. 0 .and. NTEST .ge. 100) THEN
-              WRITE(LUWRT,'(/A,I6)') 
-     &        '  lhs vector block:',ISBLK
-              CALL WRTMATMN(SB(ISOFF),1,LEN2,1,LEN2,LUWRT)
-            END IF
-            NTEST = 000
+C           NTEST = 100
+C           IF ( LEN2 .gt. 0 .and. NTEST .ge. 100) THEN
+C             WRITE(LUWRT,'(/A,2I6)') 
+C    &        '  lhs vector block:',ISBLK, ISOFF
+C             CALL WRTMATMN(SB(ISOFF),1,LEN2,1,LEN2,LUWRT)
+C           END IF
+C           NTEST = 000
   80        CONTINUE
 #if defined (VAR_MPI2)
             IOFF_SCR2 = LEN2
@@ -4578,6 +4577,18 @@ C                    S_r = (H_r . C_r) - (H_i . C_i)
                      if (IRIS.eq.1.and.IRIC.eq.2) then
                        CALL DSCAL(JLEN,ONEM,CB(JOFF),1)
                      end if
+C                    NTEST = 200
+C                    IF (NTEST.GE.200) THEN
+C                      LEN = ICBLOCK(7,JBLK)
+C                      IF( LEN .gt. 0 ) THEN
+C                        WRITE(LUWRT,*) ' C block read in, '//
+C    &                                  'JBLK, JOFF, IRIS, IRIC:',
+C    &                   JBLK,JOFF,IRIS,IRIC
+C                        LEN = ICBLOCK(7,JBLK)
+C                        CALL WRTMATMN(CB(JOFF),1,LEN,1,LEN,LUWRT)
+C                      END IF
+C                    END IF
+C                    NTEST = 000
 #if defined (VAR_MPI2)
  8888                CONTINUE
                      IOFF_SCR_C = IOFF_SCR_C + JLEN
@@ -4652,7 +4663,9 @@ C              ^ end if connection
 C
  8000       CONTINUE
 C           ^  end of loop over spinorbital-excitation types 
-            NTEST = 000
+C
+#ifdef MOD_DEBUG
+            NTEST = 300
             IF(NTEST.GE.300) THEN
               WRITE(LUWRT,*) ' Updated sigma blocks ' 
 #if defined (VAR_MPI2)
@@ -4665,6 +4678,7 @@ C           ^  end of loop over spinorbital-excitation types
 #endif
             END IF
             NTEST = 000
+#endif /* debug mode */
 C
  9999       CONTINUE
 C           ^ skip TT-blocks for sigma if not included in nodelist

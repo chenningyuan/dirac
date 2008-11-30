@@ -220,11 +220,9 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       END IF
 *
       MRNRM = 1
-      IF(IRC.EQ.1) THEN
-       IFAC = 1
-      ELSE
-       IFAC = 2
-      END IF
+      IFAC = 1
+      IF(IRC.EQ.2) IFAC = 2
+C
       MEIG = MRNRM + (MXCIIT+1)*NROOTS
       MAPROJ = MEIG  + (MXCIIT+1)*2*(MAXVEC + NROOTS)
       IF(IRC.EQ.2) THEN
@@ -235,25 +233,55 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
       MAVEC = MAPROJI + MAXVEC*(MAXVEC+1)/2
       MWORK = MAVEC + MAXVEC ** 2*IFAC*IFAC
       MLFRSC = MWORK + MAXVEC*(MAXVEC+1)*IFAC*IFAC
+C
+C     new complex hermitian matrix diagonalizer
+      IF( IRC .eq. 2)THEN
+C     +1 added for safety reasons
+C     double complex!
+      LCWORK  = IRC * (2*MAXVEC + MAXVEC**2 + 1)
+C     +1 added for safety reasons
+      LRWORK = 1 + 5*MAXVEC + 2*MAXVEC**2 + 1
+C     +1 added for safety reasons
+      LIWORK = 3 + 5*MAXVEC + 1
+C     double complex!
+      LAMATC = IRC * MAXVEC * MAXVEC
+      LEIGVL = MAXVEC
+      END IF
+C
 *
       IF( IPRT .GE. 5 ) THEN
          WRITE(LUWRT,*) ' MRNRM MEIG MAPROJ MAVEC MWORK MLFRSC '
          WRITE(LUWRT,'(6I4)')  MRNRM,MEIG,MAPROJ,MAVEC,MWORK,MLFRSC
       END IF
 *
-* Proper allocation of scratch arrays:
+*     proper allocation of scratch arrays:
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'CIEIG5')
       call memmar(KRNRM,MEIG-1,'ADDL  ',2,'KRNRMS')
       call memmar(KEIG,MAPROJ-MEIG,'ADDL  ',2,'KEIGS ')
-      if (IRC.ne.1) then
-        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
-        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
-      else
+      if (IRC.eq.1) then
         call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
      &              2,'KAPROJ')
+      else
+        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
+        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
+C
+C       new stuff for complex hermitian matrix diagonalizer
+        call memmar(KAMATC,LAMATC,'ADDL  ',2,'KAMATC')
+        call memmar(KCWORK,LCWORK,'ADDL  ',2,'KCWORK')
+        call memmar(KRWORK,LRWORK,'ADDL  ',2,'KRWORK')
+        call memmar(KEIGVL,LEIGVL,'ADDL  ',2,'KEIGVL')
+        call memmar(KIWORK,LIWORK,'ADDL  ',1,'KIWORK')
+C
+C       ... initialize
+        CALL DZERO(WORK(KAMATC),LAMATC)
+        CALL DZERO(WORK(KCWORK),LCWORK)
+        CALL DZERO(WORK(KRWORK),LRWORK)
+        CALL DZERO(WORK(KEIGVL),LEIGVL)
+        CALL IZERO(WORK(KIWORK),LIWORK)
       end if
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
+      
 #if defined (VAR_MPI2)
 *
 *     scratch array for reducing operations
@@ -290,8 +318,8 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
       END IF
 *
       IF (IRC.EQ.1) THEN
-*
-*       Most general real optimizer
+C
+C       REAL DAVIDSON solver
 #if defined (VAR_MPI2)
 *
         call micdv4_enlmd_rel_par(T_CC,T_BUFF,VEC1,VEC2,
@@ -319,14 +347,12 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
      &                  LBLK,EIGSHF,THRES_E)
 *
 #endif
-*
         IROOTHOMING = 0
-*
       ELSE
-*. Complex numbers may be encountered
-*
+C
+C     Complex DAVIDSON solver 
 #if defined (VAR_MPI2)
-*
+C
         CALL CMICDV_PAR(VEC1,VEC2,WORK(KRNRM),
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
      &                  NROOTS,MAXVEC,NROOTS,
@@ -340,7 +366,8 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,WORK(KSCRRED),
      &                  WORK(KSCRRED2),IGROUPLIST,IPROCLIST,
-     &                  IT_TTPL,IT_TTOL)
+     &                  IT_TTPL,IT_TTOL,WORK(KAMATC),WORK(KCWORK),
+     &                  WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
 *
 #else
 *
@@ -350,21 +377,140 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
      &              T_CC,T_BUFF,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &              0,0,IHAM12,SIGDEN_ROUTE,THRES_E)
+     &              0,0,IHAM12,SIGDEN_ROUTE,THRES_E,WORK(KAMATC),
+     &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
 *
 #endif
-C     SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
-C     &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
-C     &                  T_CC,
-C     &                  APROJI,APROJR,AVEC,WORK,IPRT,
-C     &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-C     &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE)
-C
       END IF
 *     ^ End if switch real/complex numbers
-      call memmar(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
+      CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
 *
-      call qexit('CIEIG5')
+      CALL QEXIT('CIEIG5')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CEIGEN_NEW(HR,HI,NDIM,EIGVAL,EIGVEC,AMATC,CWORK,
+     &                      RWORK,EVL,IWORK)
+C***********************************************************************
+C
+C     find the eigenvalues and eigenvectors using 
+C     the general complex hermitian solver routine ZHEEVD
+C
+C     a complex hermitian matrix (double prec) is given in the form of 
+C     a real part HR and an imaginary part HI
+C
+C
+C     OUTPUT: 
+C             - eigenvalues in EIGVAL
+C             - eigenvectors in EIGVEC where
+C               real coefficients are stored from EIGVEC(1   ,  IVEC) 
+C                                              to EIGVEC(NDIM,  IVEC)
+C
+C               and imaginary coefficients   from EIGVEC(NDIM+1,IVEC)
+C                                                 EIGVEC(2*NDIM,IVEC)
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+C     INPUT
+      DIMENSION HR(NDIM*(NDIM+1)/2),HI(NDIM*(NDIM+1)/2)
+C     OUTPUT
+      DIMENSION EIGVAL(2*NDIM)
+      DIMENSION EIGVEC(2*NDIM,2*NDIM)
+C     scratch for LAPACK solver
+      INTEGER            IWORK(*)
+      DOUBLE PRECISION   RWORK(*), EVL(*)
+      COMPLEX*16         AMATC(NDIM,*), CWORK(*), ABUFF, A0
+      CHARACTER*1 JOBZ, UPLO
+
+      NTEST = 00
+      IF(NTEST.GT.00) THEN
+        WRITE(LUPRI,'(/A )') ' ======================='
+        WRITE(LUPRI,'( A )') '  WELCOME to CEIGEN_new '
+        WRITE(LUPRI,'( A/)') ' ======================='
+      END IF
+C
+      A0 = (0.0D0,0.0D0)
+C     initialize
+      DO ICOL = 1, NDIM
+        DO JROW = 1, NDIM
+          AMATC(JROW,ICOL) = A0
+        END DO
+      END DO
+      AREALP = 0.0D0
+      AIMAGP = 0.0D0
+C
+C     fill the lower triangular part of matrix AMATC
+      DO IROW = 1, NDIM
+        DO ICOL = 1, IROW
+          AREALP           = HR(IROW*(IROW-1)/2 + ICOL)
+          AIMAGP           = HI(IROW*(IROW-1)/2 + ICOL)
+          ABUFF            = DCMPLX(AREALP,AIMAGP)
+          AMATC(IROW,ICOL) = ABUFF
+#ifdef MOD_DEBUG
+          WRITE(LUPRI,*) ' IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HR(..)',
+     &    IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HR(IROW*(IROW-1)/2 + ICOL)
+          WRITE(LUPRI,*) ' IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HI(..)',
+     &    IROW, ICOL, IROW*(IROW-1)/2 + ICOL, HI(IROW*(IROW-1)/2 + ICOL)
+          WRITE(LUPRI,*) ' IROW, ICOL, AMATC(IROW,ICOL)',
+     &                     IROW, ICOL, AMATC(IROW,ICOL)
+#endif
+        END DO
+      END DO
+C
+C     diagonalize complex hermitian matrix AMATC(NDIM,NDIM)
+C     - get eigenvalues and eigenvectors
+      JOBZ   = 'V'
+      UPLO   = 'L'
+      INFO   =  0
+      LADIM  = NDIM
+C     +1 added for safety reasons
+      LCWORK  = 2*NDIM + NDIM**2 + 1
+C     +1 added for safety reasons
+      LRWORK = 1 + 5*NDIM + 2*NDIM**2 + 1
+C     +1 added for safety reasons
+      LIWORK = 3 + 5*NDIM + 1
+C
+C     call library routine
+      CALL ZHEEVD( JOBZ, UPLO, LADIM, AMATC, LADIM, EVL, CWORK, LCWORK,
+     &             RWORK, LRWORK, IWORK, LIWORK, INFO )
+      IF(INFO.NE.0) THEN
+         WRITE(LUPRI,'(/A,I4)') ' *** ERROR in CEIGEN_NEW: info code'//
+     &                  ' NOT zero from ZHEEVD:',INFO
+         CALL QUIT ('*** Error in CEIGEN_NEW (lapack zheevd) ***')
+      ENDIF
+C
+C     eigenvalues in EVL(NDIM) - copy to EIGVAL
+      N2DIM = 2*NDIM
+      CALL DZERO(EIGVAL,N2DIM)
+      CALL DCOPY(NDIM,EVL,1,EIGVAL,1)
+C
+C     eigenvectors in AMATC - insert into EIGVEC(N2DIM,N2DIM)
+      CALL DZERO(EIGVEC,N2DIM**2)
+      AREALP = 0.0D0
+      AIMAGP = 0.0D0
+      DO I = 1, NDIM
+        DO J = 1, NDIM
+C          real and imag part
+           AREALP           = DBLE(AMATC(J,I))
+           AIMAGP           = AIMAG(AMATC(J,I))
+           EIGVEC(J,I)      = AREALP
+           EIGVEC(NDIM+J,I) = AIMAGP
+        END DO
+      END DO
+C
+C     debug print section 
+      IF( NTEST .ge. 10 )THEN
+        WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvalues'
+        CALL WRTMATMN(EIGVAL,1,N2DIM,1,N2DIM,LUPRI)
+        WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvectors'
+        CALL WRTMATMN(EIGVEC,N2DIM,N2DIM,N2DIM,N2DIM,LUPRI)
+      END IF
+C
       END
 ***********************************************************************
 *                                                                     *
@@ -412,7 +558,6 @@ C
 * 1 : Assemble lower part of the symmetric matrix   (         )
 *                                                   (Hi     Hr)
       CALL DCOPY(NDIM*(NDIM+1)/2,HR,1,SCR(1),1)
-CSK?      CALL COPVEC(HR,SCR(1),NDIM*(NDIM+1)/2)
       DO IROW = NDIM+1,2*NDIM
         IROWOF = (IROW-1)*IROW/2+1
         IROWI = IROW-NDIM
@@ -427,7 +572,6 @@ CSK?      CALL COPVEC(HR,SCR(1),NDIM*(NDIM+1)/2)
         END DO
 *
         CALL DCOPY(IROWI,HR(IROWI*(IROWI-1)/2+1),1,SCR(IROWOF+NDIM),1)
-CSK?        CALL COPVEC(HR(IROWI*(IROWI-1)/2+1),SCR(IROWOF+NDIM),IROWI)
       END DO
 *
       IF(NTEST.NE.0) THEN
@@ -479,8 +623,7 @@ CTF     end do
         IF(LDEG.EQ.2) THEN
 *. No problem, just the additional degenerency is present,
 *. zap eigenvector IOFF + 1
-          ZERO = 0.0D0
-          CALL SETVEC(EIGVEC(1,IOFF+1),ZERO,2*NDIM)
+          CALL DZERO(EIGVEC(1,IOFF+1),2*NDIM)
         ELSE
 *. more than 2 degenerate eigenvectors, eliminate by Gram orthogonalization
 *. (Gram-Schmidt)
@@ -494,36 +637,26 @@ CTF     end do
      &              ,1)
                XI = DDOT(NDIM,EIGVEC(1,JVEC),1,EIGVEC(1+NDIM,IVEC),1)
      &            - DDOT(NDIM,EIGVEC(1+NDIM,JVEC),1,EIGVEC(1,IVEC),1)
-CSK?               XR = INPROD(EIGVEC(1,JVEC),EIGVEC(1,IVEC),NDIM)
-CSK?     &            + INPROD(EIGVEC(1+NDIM,JVEC),
-CSK?     &              EIGVEC(1+NDIM,IVEC),NDIM)
-CSK?               XI = INPROD(EIGVEC(1,JVEC),
-CSK?     &              EIGVEC(1+NDIM,IVEC),NDIM)
-CSK?     &            - INPROD(EIGVEC(1+NDIM,JVEC),
-CSK?     &              EIGVEC(1,IVEC),NDIM)
               CALL VECSUMC(EIGVEC(1,IVEC),EIGVEC(1,IVEC),
      &                     EIGVEC(1,JVEC),
      &                     ONE,ZERO,-XR,-XI,NDIM)
              END DO
 *. Normalize
              XNORM = DDOT(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IVEC),1)
-CSK?             XNORM = INPROD(EIGVEC(1,IVEC),EIGVEC(1,IVEC),
-CSK?     &                      2*NDIM)
         if(ntest.ge.10) WRITE(6,*) ' ldeg XNORM = ',ldeg, XNORM
              IF(ABS(XNORM).LE.THRES) THEN
 *. This is a zero vector
-               CALL SETVEC(EIGVEC(1,IVEC),ZERO,2*NDIM)
+               CALL DZERO(EIGVEC(1,IVEC),2*NDIM)
              ELSE
 *. This is not a zero vector
                SCALE = ONE/SQRT(XNORM)
                CALL DSCAL(2*NDIM,SCALE,EIGVEC(1,IVEC),1)
-CSK?               CALL SCALVE(EIGVEC(1,IVEC),SCALE,2*NDIM)
              END IF
            END DO
 *. End of not so simple case
          END IF
 *. End of this batch of degenerate eigenvalues
-         IOFF = IOFF + LDEG
+       IOFF = IOFF + LDEG
        IF(IOFF.LT.2*NDIM) GOTO 1000
 *
 *
@@ -532,14 +665,11 @@ CSK?               CALL SCALVE(EIGVEC(1,IVEC),SCALE,2*NDIM)
       IEFF = 0
       DO IVEC = 1, 2*NDIM
         XNORM = DDOT(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IVEC),1)
-CSK?        XNORM = INPROD(EIGVEC(1,IVEC),
-CSK?     &                 EIGVEC(1,IVEC),2*NDIM)
         if(ntest.ge.10) WRITE(6,*) ' XNORM = ',XNORM
         IF(XNORM.NE.0.0D0) THEN
           IEFF = IEFF + 1
           EIGVAL(IEFF) = EIGVAL(IVEC)
           CALL DCOPY(2*NDIM,EIGVEC(1,IVEC),1,EIGVEC(1,IEFF),1)
-CSK?          CALL COPVEC(EIGVEC(1,IVEC),EIGVEC(1,IEFF),2*NDIM)
         END IF
       END DO
       IF(NTEST.GE.10) THEN
@@ -794,7 +924,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &                  IPREDZN,INONREL,IHAM12,SIGDEN_ROUTE,
-     &                  CONVLIM)
+     &                  CONVLIM,AMATC,CWORK,RWORK,EVL,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -855,7 +985,20 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1)
-*
+      COMPLEX*16 AMATC(MAXVEC,*), CWORK(*)
+      DIMENSION RWORK(*),EVL(*)
+      INTEGER   IWORK(*)
+C
+C     min. DIMENSION of matrices and arrys required for complex
+C     hermitian matrix diagonalizer
+C
+C     AMATC: MAXVEC**2
+C     CWORK: 2*MAXVEC + MAXVEC**2
+C     RWORK: 1 + 5*MAXVEC + 2*MAXVEC**2
+C     EVL  : 1*MAXVEC
+C     IWORK: 3 + 5*MAXVEC
+C
+C
 * Dimensioning required of local vectors
 *      APROJR : MAXVEC*(MAXVEC+1)/2
 *      APROJI : MAXVEC*(MAXVEC+1)/2
@@ -985,11 +1128,22 @@ C                 INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
            WRITE(LUWRT,*) ' Initial projected matrix, imag part'
            CALL PRSYM(APROJI,NINVEC)
           END IF
-*. Diagonalize initial projected matrix
-C             CEIGEN(HR,HI,NDIM,EIG,C,SCR
-C?       write(6,*) 'NINVEC FOR CEIGEN ',NINVEC
-         CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
-*
+C
+C     Diagonalize initial projected matrix
+C
+C     S. Knecht - Nov 2008
+C     disabled old diagonalizer routine which gives wrong eigenvectors
+C     when we are dealing with (two) states of exact degeneracy.
+C     I have now implemented an interface to the complex hermitian
+C     matrix diagonalizer ZHEEVD (see e.g. pdpack/gp_zlapack.F) that
+C     is nowadays part of Intels MKL /Lapack libraries.
+CSK
+CSK   CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
+CSK
+      CALL CEIGEN_NEW(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,AMATC,CWORK,
+     &                RWORK,EVL,IWORK)
+C
+C
          IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
            WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
            WRITE(LUWRT,'(F22.13)')
@@ -1227,15 +1381,26 @@ C               INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
         CALL PRSYM(APROJR,NVEC)
         CALL PRSYM(APROJI,NVEC)
       END IF
-      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
-      CALL CEIGEN(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,WORK)
-*
-       IF(IPRT .GE. 3 ) THEN
-         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-         WRITE(LUWRT,'(5F22.13)')
-     &   ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
-CJO      call towave(nroot,eig(1,iter))
-       END IF
+      WRITE(LUWRT,*) 'Dimension of projected matrix:',NVEC
+C
+C     S. Knecht - Nov 2008
+C     disabled old diagonalizer routine which gives wrong eigenvectors
+C     when we are dealing with (two) states of exact degeneracy.
+C     I have now implemented an interface to the complex hermitian
+C     matrix diagonalizer ZHEEVD (see e.g. pdpack/gp_zlapack.F) that
+C     is nowadays part of Intels MKL /Lapack libraries.
+CSK
+CSK   CALL CEIGEN(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,WORK)
+CSK
+      CALL CEIGEN_NEW(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,AMATC,CWORK,
+     &                RWORK,EVL,IWORK)
+C
+      IF(IPRT .GE. 3 ) THEN
+        WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+        WRITE(LUWRT,'(5F22.13)')
+     &  ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
+CJO     call towave(nroot,eig(1,iter))
+      END IF
 *
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRT,*) ' Projected matrix and eigen pairs '

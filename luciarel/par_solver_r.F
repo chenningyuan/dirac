@@ -736,7 +736,8 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      RCCTOS,SCRRED_R,SCRRED_I,IGROUPLIST,
-     &                      IPROCLIST,IT_TTPL,IT_TTOL)
+     &                      IPROCLIST,IT_TTPL,IT_TTOL,AMATC,CWORK,
+     &                      RWORK,EVL,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -806,6 +807,19 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IT_TTPL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      COMPLEX*16 AMATC(MAXVEC,*), CWORK(*)
+      DIMENSION RWORK(*),EVL(*)
+      INTEGER   IWORK(*)
+C
+C     min. DIMENSION of matrices and arrys required for complex 
+C     hermitian matrix diagonalizer
+C
+C     AMATC: MAXVEC**2
+C     CWORK: 2*MAXVEC + MAXVEC**2
+C     RWORK: 1 + 5*MAXVEC + 2*MAXVEC**2    
+C     EVL  : 1*MAXVEC
+C     IWORK: 3 + 5*MAXVEC
+C
 *
 * Dimensioning required of local vectors
 *      APROJR : MAXVEC*(MAXVEC+1)/2
@@ -820,184 +834,176 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
 *
-       write(LUWRT,*) '  '
-       WRITE(LUWRT,*) '                     ======================='
-       WRITE(LUWRT,*) '                       Entering CMICDV_PAR  '
-       WRITE(LUWRT,*) '                     ======================='
-       write(LUWRT,*) '  '
-*
-*      no screening 
-*
-       CSCREEN = .FALSE.
+*     no screening 
+      CSCREEN = .FALSE.
 *
 *
-*      initialize LZERO_SCRRED
+*     initialize LZERO_SCRRED
+      LZERO_SCRRED = 0
+      LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
+C
+C
+      WRITE(LUWRT,'(/7X,A)') 
+     & ' ==========================================='
+      WRITE(LUWRT,'(7X, A)') 
+     & ' start of complex Davidson solver CMICDV_PAR'
+      WRITE(LUWRT,'(7X,A/)') 
+     & ' ==========================================='
+C
+      WRITE(LUWRT,'(/7X,A)') 
+     &              '=============================================='
+      WRITE(LUWRT,'(7X,A)') ' I will take you to a place '
+      WRITE(LUWRT,'(7X,A)') ' Where we shall find our'
+      WRITE(LUWRT,'(7X,A)') '  ROOTS, BLOODY ROOTS '
+      WRITE(LUWRT,'(7X,A)')
+      WRITE(LUWRT,'(7X,A)') '               Sepultura '
+      WRITE(LUWRT,'(7X,A/)') 
+     &              '=============================================='
 *
-       LZERO_SCRRED = 0
-       LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
+      WRITE(LUWRT,'(/A,1F25.15/)') 
+     &              '  Nuclear repulsion + core energy: ',EIGSHF
 *
-*
-*       @Timo: why only for test purposes? - SK
-CSK      if (NTEST.ge.1) then
-        write(LUWRT,*) '  '
-        write(LUWRT,'(10X,A)') 
-     &                '=============================================='
-        write(LUWRT,'(10X,A)') ' I´ll take you to a place '
-        write(LUWRT,'(10X,A)') ' Where we shall find our'
-        write(LUWRT,'(10X,A)') '  ROOTS, BLOODY ROOTS '
-        write(LUWRT,'(10X,A)')
-        write(LUWRT,'(10X,A)') '               Sepultura '
-        write(LUWRT,'(10X,A)') 
-     &                '=============================================='
-        write(LUWRT,*) '  '
-CSK      end if
-*
-      write(LUWRT,*) ' '
-      write(LUWRT,*) ' Nuclear repulsion + core energy: ',EIGSHF
-      write(LUWRT,*) ' '
-      write(LUWRT,*) ' '
-*
-       IF( MAXVEC .LT. 2 * NROOT ) THEN
-         WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
-         WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRT,*) ' Increase MXCIV_CI to be at least 2 * Nroot '
-         Call Abend1(' Enforced stop in CMICDV ')
-       END IF
-*
-*  Complex diagonalizer, therefore
-       IRC = 2
-*
-       CONVER = .FALSE.
-*
-       IF(MAXIT.EQ.0) THEN
-         WRITE(LUWRT,*) ' MAXIT = 0, so just a fast visit '
-         RETURN
-       END IF
-*
-       NZERO = 0
-*
-*      ===================
-*       Initial iteration
-*      ===================
-       ITER = 1
-       NVEC = 0
-*      start timing of initial iteration
-       xinit_time = MPI_WTIME()
-*              
-       IF( MAXIT .GE. 1 ) THEN
-*
-       CALL DZERO(APROJR, MAXVEC*(MAXVEC+1)/2 )
-       CALL DZERO(APROJI, MAXVEC*(MAXVEC+1)/2 )
-       CALL DZERO(SCRRED_R, MAXVEC*(MAXVEC+1)/2 )
-       CALL DZERO(SCRRED_I, MAXVEC*(MAXVEC+1)/2 )
-*
-       DO 10 IVEC = 1,NINVEC
-*
-*        copy c-vector to working-file ILUC
-*
-         CALL MPI_BARRIER(MYNEW_COMM,IERR)
-*
-*        reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
-*
-         CALL IZERO(LUCLIST,NUM_BLOCKS2)
-*
-         CALL COPVCD_PP_CC_B_C(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
-     &                         IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
-     &                         LUCLIST,IBLOCKL,IVEC-1)
-*
-*        set offset for sigma-file
-*
-         JVEC_SF = IVEC - 1
-*
-*        start calculation: sigma = H x C
-*
-*        timing this sigma-vector computation
-*
-         sigmatime = MPI_WTIME()
-*=======================================================================
-         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
-#if defined (VAR_MPI2)
-     &                   ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
-     &                    IGROUPLIST,IPROCLIST,RCCTOS,
-     &                    IT_TTPL,IT_TTOL
-     &                   ,IBLOCKL,NPARBLOCK
-#endif
-     &                   )
-*=======================================================================
-*        end of timing
-         sigmatime2 = MPI_WTIME()
-         WALLTID = SECTID(sigmatime2-sigmatime)
-         WRITE(LUWRT,9777) WALLTID
-         WRITE(LUWRT,*) '   '
-*
-*        projected matrix using batch structure of CI vector(s)
-*
-         CALL INPROD_B_PAR_CPLX(ILU1,ILU2,VEC1,VEC2,APROJR,APROJI,
-     &                          NBATV,LBATV,LEBATV,I1BATV,IBATV,
-     &                          MY_LU1_OFF,MY_LU2_OFF,LU1LIST,
-     &                          LU2LIST,IVEC)
-*
-   10  CONTINUE
-
-*      timing of initial iteration
-*
-       xinit_time2 = MPI_WTIME()
-       WALLTID = SECTID(xinit_time2-xinit_time)
-       WRITE(LUWRT,9888) WALLTID
-       WRITE(LUWRT,*) '   '
-*
-*      synchronize MPI_COMM_WORLD
-*
-       CONE = - 1.0D0
-       IREDL = 0
-       IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
-       CALL DZERO(SCRRED_R,IREDL)
-       CALL DZERO(SCRRED_I,IREDL)
-*      ... sum up
-       CALL REDVEC_REL(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
-     &                 MPI_COMM_WORLD,-1)
-       CALL REDVEC_REL(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
-     &                 MPI_COMM_WORLD,-1)
-*      ... update APROJR and APROJI 
-       CALL DCOPY(IREDL,SCRRED_R,1,APROJR,1)
-       CALL DSCAL(IREDL,CONE,SCRRED_I,1)
-       CALL DCOPY(IREDL,SCRRED_I,1,APROJI,1)
-*
-       IPRT = 00
-*
-       IF( IPRT .GE.10.OR.IPREDZN.NE.0 ) THEN
-         WRITE(LUWRT,*) ' Initial projected matrix, real part'
-         CALL PRSYMMN(APROJR,NINVEC,LUWRT)
-         WRITE(LUWRT,*) ' Initial projected matrix, imag part'
-         CALL PRSYMMN(APROJI,NINVEC,LUWRT)
-       END IF
-*
-*      diagonalize initial projected matrix
-*
-       CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
-*
-       IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
-         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
-         WRITE(LUWRT,'(F22.13)')
-     &   ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
-       END IF
-       IPRT = 0
-       NVEC = NINVEC
+      IF( MAXVEC .LT. 2 * NROOT ) THEN
+        WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
+        WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+        WRITE(LUWRT,*) ' Increase MXCIV_CI to be at least 2 * Nroot '
+        Call Abend1(' Enforced stop in CMICDV ')
       END IF
-*      ^ MAXIT .ge. 1
+*
+*     Complex diagonalizer, therefore
+      IRC = 2
+*
+      CONVER = .FALSE.
+*
+      IF( MAXIT .le. 0 ) GOTO 9999
+*
+      NZERO = 0
+*
+*     ===================
+*      Initial iteration
+*     ===================
+      ITER = 1
+      NVEC = 0
+*     start timing of initial iteration
+      xinit_time = MPI_WTIME()
+*              
+      CALL DZERO(APROJR, MAXVEC*(MAXVEC+1)/2 )
+      CALL DZERO(APROJI, MAXVEC*(MAXVEC+1)/2 )
+      CALL DZERO(SCRRED_R, MAXVEC*(MAXVEC+1)/2 )
+      CALL DZERO(SCRRED_I, MAXVEC*(MAXVEC+1)/2 )
+*
+      DO 10 IVEC = 1,NINVEC
+*
+*       copy c-vector to working-file ILUC
+        CALL MPI_BARRIER(MYNEW_COMM,IERR)
+*
+*       reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
+*
+        CALL IZERO(LUCLIST,NUM_BLOCKS2)
+*
+        CALL COPVCD_PP_CC_B_C(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
+     &                        IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
+     &                        LUCLIST,IBLOCKL,IVEC-1)
+*
+*       set offset for sigma-file
+*
+        JVEC_SF = IVEC - 1
+*
+*       start calculation: sigma = H x C
+*
+*       timing this sigma-vector computation
+*
+        sigmatime = MPI_WTIME()
+*=======================================================================
+        call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
+#if defined (VAR_MPI2)
+     &                  ,LUCLIST,LU2LIST,IBLOCKL,NPARBLOCK,
+     &                   IGROUPLIST,IPROCLIST,RCCTOS,
+     &                   IT_TTPL,IT_TTOL
+     &                  ,IBLOCKL,NPARBLOCK
+#endif
+     &                  )
+*=======================================================================
+*       end of timing
+        sigmatime2 = MPI_WTIME()
+        WALLTID = SECTID(sigmatime2-sigmatime)
+        WRITE(LUWRT,9777) WALLTID
+        WRITE(LUWRT,*) '   '
+*
+*       projected matrix using batch structure of CI vector(s)
+*
+        CALL INPROD_B_PAR_CPLX(ILU1,ILU2,VEC1,VEC2,APROJR,APROJI,
+     &                         NBATV,LBATV,LEBATV,I1BATV,IBATV,
+     &                         MY_LU1_OFF,MY_LU2_OFF,LU1LIST,
+     &                         LU2LIST,IVEC)
+*
+ 10   CONTINUE
+
+*     timing of initial iteration
+*
+      xinit_time2 = MPI_WTIME()
+      WALLTID = SECTID(xinit_time2-xinit_time)
+      WRITE(LUWRT,9888) WALLTID
+*
+*     synchronize MPI_COMM_WORLD
+*
+      CONE = - 1.0D0
+      IREDL = 0
+      IREDL = NINVEC*(NINVEC-1)/2 + NINVEC
+      CALL DZERO(SCRRED_R,IREDL)
+      CALL DZERO(SCRRED_I,IREDL)
+*     ... sum up
+      CALL REDVEC_REL(APROJR,SCRRED_R,IREDL,2,MPI_SUM,
+     &                MPI_COMM_WORLD,-1)
+      CALL REDVEC_REL(APROJI,SCRRED_I,IREDL,2,MPI_SUM,
+     &                MPI_COMM_WORLD,-1)
+*     ... update APROJR and APROJI 
+      CALL DCOPY(IREDL,SCRRED_R,1,APROJR,1)
+      CALL DSCAL(IREDL,CONE,SCRRED_I,1)
+      CALL DCOPY(IREDL,SCRRED_I,1,APROJI,1)
+*
+      IPRT = 00
+*
+      IF( IPRT .GE.10.OR.IPREDZN.NE.0 ) THEN
+        WRITE(LUWRT,*) ' Initial projected matrix, real part'
+        CALL PRSYMMN(APROJR,NINVEC,LUWRT)
+        WRITE(LUWRT,*) ' Initial projected matrix, imag part'
+        CALL PRSYMMN(APROJI,NINVEC,LUWRT)
+      END IF
+C
+C     diagonalize initial projected matrix
+C
+C     S. Knecht - Nov 2008
+C     disabled old diagonalizer routine which gives wrong eigenvectors 
+C     when we are dealing with (two) states of exact degeneracy.
+C     I have now implemented an interface to the complex hermitian 
+C     matrix diagonalizer ZHEEVD (see e.g. pdpack/gp_zlapack.F) that 
+C     is nowadays part of Intels MKL /Lapack libraries.
+CSK   
+CSK   CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
+CSK
+      CALL CEIGEN_NEW(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,AMATC,CWORK,
+     &                RWORK,EVL,IWORK)
+C
+      IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
+        WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
+        WRITE(LUWRT,'(F22.13)')
+     &  ( EIG(IROOT,1)+EIGSHF,IROOT=1,NROOT)
+      END IF
+      IPRT = 0
+      NVEC = NINVEC
 *
       IF ( MAXIT .eq. 1 .or. IPREDZN .eq. 1 ) GOTO  901
 *
-* ======================
-*. Loop over iterations
-* ======================
+*     ======================
+*     Loop over iterations
+*     ======================
 *
  1000 CONTINUE
 *       start timing of iteration
         WALLITR1 = MPI_WTIME()
 *
-        write(LUWRT,*)
-        write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
+        write(LUWRT,'(/A21,3X,I3)') ' Info from iteration ',ITER
         write(LUWRT,*) '_______________________'
 *
 *
@@ -1061,19 +1067,13 @@ csk           CALL IWRTMAMN(LU5LIST,1,IALL_LU5,1,IALL_LU5,LUWRT)
      &                            LU3LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                            I1BATV,IBATV,MY_LU3_OFF,MY_DIA_OFF,
      &                            MY_LU5_OFF,1,IRC,XNORM)
-*               H0M1TD_REL_PAR_CX(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,
-*    &                            LISTOUT,LISTIN,NBATCH,LBATCH,LEBATCH,
-*    &                            I1BATCH,IBATCH,OFFSET_OUT,OFFSET_DIAG,
-*    &                            OFFSET_IN,INV,XNORM)
 *
            XNORMO = XNORM
-CSK           WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
+CSK        WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
 *
 *          check for linear dependency...
-*
            CALL DZERO(SCRRED_R,2*(NVEC+IADD))
            CALL DZERO(SCRRED_I,2*(NVEC+IADD))
-          
 *
            CALL INPROD_B_PAR_CPLX2(ILU1,ILU3,VEC1,VEC2,SCRRED_R,
      &                             SCRRED_I,
@@ -1082,9 +1082,8 @@ CSK           WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
      &                             LU3LIST,NVEC,IADD)
 *
 *          communication is always essential ...
-*
-           CALL DZERO(VEC1,NVEC+IADD)
-           CALL DZERO(VEC2,NVEC+IADD)
+           CALL DZERO(VEC1,NVEC+IADD-1)
+           CALL DZERO(VEC2,NVEC+IADD-1)
 *
            CALL REDVEC_REL(SCRRED_R,VEC1,NVEC+IADD-1,2,
      &                     MPI_SUM,MPI_COMM_WORLD,-1)
@@ -1092,11 +1091,6 @@ CSK           WRITE(LUWRT,*) 'THIS IS XNORMO',XNORMO
      &                     MPI_SUM,MPI_COMM_WORLD,-1)
 *
 *          transfer information to WORK array...
-*
-CSK           DO JVEC = 1,NVEC+IADD-1
-CSK             WORK(2*(JVEC-1)+1) = VEC1(JVEC)
-CSK             WORK(2*(JVEC-1)+2) = VEC2(JVEC)
-CSK           END DO
            CALL DCOPY(NVEC+IADD-1,VEC1,1,WORK(1),2)
            CALL DCOPY(NVEC+IADD-1,VEC2,1,WORK(2),2)
 *
@@ -1118,31 +1112,24 @@ CSK           END DO
            END IF
 *
            SCALE = 1.0D0/SQRT(XNORM)
-*
-CSK           WRITE(LUWRT,*) ' Scale, scale**2*xnorm',scale,
-CSK     &                      scale**2*xnorm
+CSK        WRITE(LUWRT,*) ' Scale, scale**2*xnorm',scale,
+CSK  &                      scale**2*xnorm
 *
            CALL DSCAL( 2*(NVEC+IADD-1), SCALE, WORK, 1 )
-*
-*           
-*          1.3 orthogonalize to all previous vectors
-*          1.4 normalize vector
-*
+C           
+C          1.3 and 1.4 orthogonalize to all previous vectors 
+C          and normalize vector
            ONEM = -1.0D0
            CALL DSCAL(NVEC+IADD-1,ONEM,WORK(2),2)
-CSK           DO JVEC = 1, NVEC+IADD-1
-CSK             WORK(2*(JVEC-1)+2) =
-CSK     &      -WORK(2*(JVEC-1)+2)
-CSK           END DO
-*
+C
            CALL P1_B_PAR_CX_2(VEC1,VEC2,WORK,SCALE,LU1LIST,LU3LIST,
      &                        LU1LIST,
      &                        NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                        MY_LU1_OFF,MY_LU3_OFF,MY_LU1_OFF,
      &                        NVEC,IADD,ILU1,ILU3,ILU1)
-*
+C
          END IF
-*        ^ not converged...
+C        ^ not converged...
   100 CONTINUE
 CTF
       ITER = ITER + 1
@@ -1180,8 +1167,8 @@ CTF
 *
         CALL MPI_BARRIER(MYNEW_COMM,IERR)
 *
-csk        WRITE(LUWRT,*) 'LU1LIST again:'
-csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+csk     WRITE(LUWRT,*) 'LU1LIST again:'
+csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       reset LUCLIST
 *
@@ -1191,20 +1178,18 @@ csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
      &                        IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                        LUCLIST,IBLOCKL, NVEC + IVEC - 1 )
 *
-csk        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-csk        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-csk        WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
-csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+csk     WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
+csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
+csk     WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
+csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       set offset for sigma-file
-*
         JVEC_SF = NVEC + IVEC - 1
 *
 *       start calculation: sigma = H x C
 *
 *       timing this sigma-vector computation
         sigmatime = MPI_WTIME()
-*
 *=======================================================================
         call sigden_ctrl(VEC1,VEC2,ILUC,ILU2,T_CC,T_BUFF,1
 #if defined (VAR_MPI2)
@@ -1219,10 +1204,8 @@ csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         sigmatime2 = MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
         WRITE(LUWRT,9400) WALLTID
-        WRITE(LUWRT,*) '   '
 *
 *       projected matrix using batch structure of CI vector(s)
-*
         CALL INPROD_B_PAR_CPLX3(ILU1,ILU2,VEC1,VEC2,SCRRED_R,SCRRED_I,
      &                          NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                          MY_LU1_OFF,MY_LU2_OFF,LU1LIST,
@@ -1231,8 +1214,6 @@ csk        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
  150  CONTINUE 
 *
 *      synchronize MPI_COMM_WORLD
-*
-CSK       WRITE(LUWRT,*) 'start reducing at',ISTRED,IMUSTRED
 *
        CALL DZERO(APROJR(ISTRED),IMUSTRED)
        CALL DZERO(APROJI(ISTRED),IMUSTRED)
@@ -1252,25 +1233,31 @@ CSK       WRITE(LUWRT,*) 'start reducing at',ISTRED,IMUSTRED
       IPRT = 00
 *
 *     diagonalize projected matrix
-*
       NVEC = NVEC + IADD
       IF( IPRT  .GE. 10 ) THEN
-        WRITE(LUWRT,*) ' Projected matrices before CEIGEN '
+        WRITE(LUWRT,*) ' Projected matrices before CEIGEN_new '
         CALL PRSYM(APROJR,NVEC,LUWRT)
         CALL PRSYM(APROJI,NVEC,LUWRT)
       END IF
-*
-*     get eigenvalues
-*
-      CALL CEIGEN(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,WORK)
-*
+C
+C     S. Knecht - Nov 2008
+C     disabled old diagonalizer routine which gives wrong eigenvectors
+C     when we are dealing with (two) states of exact degeneracy.
+C     I have now implemented an interface to the complex hermitian
+C     matrix diagonalizer ZHEEVD (see e.g. pdpack/gp_zlapack.F) that
+C     is nowadays part of Intels MKL /Lapack libraries.
+CSK
+CSK   CALL CEIGEN(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,WORK)
+CSK
+      CALL CEIGEN_NEW(APROJR,APROJI,NVEC,EIG(1,ITER),AVEC,AMATC,CWORK,
+     &                RWORK,EVL,IWORK)
+C
       IF(IPRT .GE. 3 ) THEN
         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
         WRITE(LUWRT,'(5F22.13)')
      &  ( EIG(IROOT,ITER)+EIGSHF,IROOT=1,NROOT)
-CJO     call towave(nroot,eig(1,iter))
       END IF
-*
+C
       IF( IPRT  .GE. 5 ) THEN
         WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
         CALL PRSYMMN(APROJR,NVEC,LUWRT)
@@ -1278,16 +1265,16 @@ CJO     call towave(nroot,eig(1,iter))
         CALL WRTMATMN(AVEC,2*NVEC,NROOT,2*NVEC,NROOT,LUWRT)
       END IF
       IPRT = 0
-*
+C
   901 CONTINUE
-*
-*===========================================================
-*                         PART 3                           =
-*                                                          =
-*      perhaps reset or assemble converged eigenvectors    =
-*                                                          =
-*===========================================================
-*
+C
+C===========================================================
+C                         PART 3                           =
+C                                                          =
+C      perhaps reset or assemble converged eigenvectors    =
+C                                                          =
+C===========================================================
+C
       IF( NVEC + NROOT .gt. MAXVEC .or. CONVER .or. MAXIT .eq. ITER
      &   .or. IPREDZN .eq. 1 )THEN
 *
@@ -1298,63 +1285,48 @@ CJO     call towave(nroot,eig(1,iter))
         CALL IZERO(LU3LIST,IALL_LU3)
 *
 *       c vectors from ILU1 to ILU1
-*
         DO IROOT = 1, NROOT
-*
           DO JVEC = 1, NVEC
             WORK((JVEC-1)*2+1) =   AVEC((IROOT-1)*2* NVEC + JVEC )
             WORK((JVEC-1)*2+2) = - AVEC((IROOT-1)*2* NVEC + NVEC + JVEC)
           END DO
-*
           CALL P3_B_PAR_CPX(VEC1,VEC2,WORK,AVEC,LU1LIST,LU3LIST,
      &                      NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      MY_LU1_OFF,MY_LU3_OFF,
      &                      NVEC,2*NVEC,IROOT,ILU1,ILU3)
-*
         END DO
 *
 *       no scaling, we should already work in a normalized basis
-*
         CALL IZERO(LU1LIST,NROOT*MY_ACT_BLK2)
 *
         DO IROOT = 1, NROOT
-*
           CALL COPVCD_PP_B_CPX(VEC1,LU3LIST,LU1LIST,
      &                         NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU3_OFF,MY_LU1_OFF,IROOT,ILU3,ILU1)
-*
           WORK(2*NROOT*NVEC+IROOT) = 1.0D0
-*
         END DO
 *
         CALL IZERO(LU3LIST,IALL_LU3)
 *
 *       corresponding sigma vectors from ILU2 to ILU2
-*
         DO IROOT = 1, NROOT
-*
           DO JVEC = 1, NVEC
             WORK((JVEC-1)*2+1) =   AVEC((IROOT-1)*2* NVEC + JVEC )
             WORK((JVEC-1)*2+2) = - AVEC((IROOT-1)*2* NVEC + NVEC + JVEC)
           END DO
-*
           CALL P3_B_PAR_CPX(VEC1,VEC2,WORK,AVEC,LU2LIST,LU3LIST,
      &                      NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      MY_LU2_OFF,MY_LU3_OFF,
      &                      NVEC,2*NVEC,IROOT,ILU2,ILU3)
-*
         END DO
 *
 *       no scaling, we should already work in a normalized basis
-*
         CALL IZERO(LU2LIST,NROOT*MY_ACT_BLK2)
 *
         DO IROOT = 1, NROOT
-*
           CALL COPVCD_PP_B_CPX(VEC1,LU3LIST,LU2LIST,
      &                         NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU3_OFF,MY_LU2_OFF,IROOT,ILU3,ILU2)
-*
         END DO
 *
         CALL IZERO(LU3LIST,IALL_LU3)
@@ -1369,22 +1341,19 @@ CJO     call towave(nroot,eig(1,iter))
 *
         DO IROOT = 1,NROOT
           AVEC((IROOT-1)*2*NROOT+IROOT) = 1.0D0
-          APROJR(IROOT*(IROOT+1)/2 ) = EIG(IROOT,ITER)
+          APROJR(IROOT*(IROOT+1)/2 )    = EIG(IROOT,ITER)
         END DO
 *
 C
 C     finish timing part3
-C
       timer3 = timer3 + MPI_WTIME() - starttimer
       WALLTSTEP = SECTID(timer3)
       WRITE(LUWRT,9600) WALLTSTEP
-*
       END IF
 *     ^ NVEC + NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT or 
 *   &   IPREDZN == 1
 *
 *     timing of this iteration
-*
       WALLITR2 = MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
       WRITE(LUWRT,9300) WALLTID
@@ -1397,12 +1366,6 @@ C
       END IF
  1001 CONTINUE
 *
-CSK#if defined (VAR_MPI2)
-CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-CSK        CALL Abend2('Stefan forced me to stop after all')
-CSK#endif
 * ( End of loop over iterations )
 *
       IF(IPREDZN.EQ.0) THEN
@@ -1475,29 +1438,25 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
       END IF
 C
-      call qexit('CMICDV_PAR')
+ 9999 CALL QEXIT('CMICDV_PAR')
 *
       RETURN
  1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
  1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
 *
- 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
- 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
- 9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
- 9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
- 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
- 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A)
+ 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A/)
+ 9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A/)
+ 9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A/)
+ 9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A/)
+ 9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A/)
+ 9888 FORMAT(' >>>  WALL TIME FOR INITIAL ITERATION            : ',A/)
 *
       END
-*
 #else
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAR_DUMMY_REL2
-*     dummy routine for normal compilation
+C**********************************************************************
+C     dummy routine for normal compilation
+C**********************************************************************
       END
 #endif

@@ -1373,7 +1373,7 @@ C     NOINT_FILE = .TRUE.
 *
 *     open ASCII file for checking integral sorting information
 *
-      ntest = 1
+C     ntest = 1
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
@@ -1417,7 +1417,7 @@ C
 * Loop over excitation types
         do IXTP=1,NSPOBEX_TP,1
 *
-           WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
+C          WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
 * Check for correct pointers to type blocks
           if (IRI.eq.1.and.ICOUNT_I8.ne.IBTSOSO_TP(IXTP)) then
             write(LUWRT,*) 'Pointers to types do not match numbers'
@@ -1892,8 +1892,8 @@ C                           keep track of correct sign for matrix
 C                           elements of anti-symmetric (wrt
 C                           time-reversal symmetry) hermitian 
 C                           one-electron operators
-                            WRITE(LUWRT,*)'YINT, TRSYM_SIGN(IXTP),IXTP',
-     &                                     YINT, TRSYM_SIGN(IXTP),IXTP
+C                           WRITE(LUWRT,*)'YINT, TRSYM_SIGN(IXTP),IXTP',
+C    &                                     YINT, TRSYM_SIGN(IXTP),IXTP
                             YINT = YINT * TRSYM_SIGN(IXTP)
 C
                             T(ICOUNT_I8) = YINT - YXINT

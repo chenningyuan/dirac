@@ -5652,7 +5652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                 IBATCH,MY_IOFF_LUIN1,
      &                                 MY_IOFF_LUIN2,LUIN1LIST,
      &                                 LUIN2LIST,NVEC,ISSM,ISYM_CTRL,
-     &                                 MZ,IXOFF)
+     &                                 MZ,IXOFF,ISTATE_X)
 C
 C
 C**********************************************************************
@@ -5711,9 +5711,10 @@ C     =====================
 C
       DO 500 JOFF = 1, NVEC
 C
-C       WRITE(LUWRT,*) ' ISYM_CTRL(JOFF) , ISSM, JOFF',
-C    &                   ISYM_CTRL(JOFF) , ISSM, JOFF
         IF( ISYM_CTRL(JOFF) .ne. ISSM ) GOTO 500
+C
+C       WRITE(LUWRT,'(/A,I4,A,I4)') ' dot product for sigma vector', 
+C    &        ISTATE_X,' and C vector ',JOFF
 C
         IOFFSET_SCRATCH  = 0
         NUM_BLK          = 0
@@ -5737,14 +5738,14 @@ C       position in file is at the end of vector NVEC + IVEC - 1
         IOFFSET_INT_IN1  = 1 + NUM_BLK  +
      &                     ( IXOFF       - 1 ) * MY_ACT_BLK2
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+C       WRITE(LUWRT,*) 'This is my OFFSET for ISTATE_X',IOFFSET_IN_LUIN1
 C
         CALL RDVEC_BATCH_DRV4(LUIN1,VEC2,LBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
      &                       IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                       LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+C       WRITE(LUWRT,*) 'initial VEC2 (real) of ISTATE_X'
 C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       set new offset and zero read-in vector
@@ -5755,7 +5756,7 @@ C
         IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
      &                     ( JOFF - 1 )  * MY_ACT_BLK2
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
+C       WRITE(LUWRT,*) 'This is my OFFSET for JOFF',IOFFSET_IN_LUIN2
 C
 C       read in batch ISBATCH from LUIN1 to VEC1
         CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
@@ -5763,7 +5764,7 @@ C       read in batch ISBATCH from LUIN1 to VEC1
      &                        IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                        LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       WRITE(LUWRT,*) 'initial VEC1 (real) of JOFF'
 C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
         XR(JOFF) = XR(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
@@ -5783,13 +5784,13 @@ C       set new offset
         IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
      &                     ( JOFF - 1 )  * MY_ACT_BLK2  + MY_ACT_BLK1
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+C       WRITE(LUWRT,*) 'This is my OFFSET for JOFF',IOFFSET_IN_LUIN2
         CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
      &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                       LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       WRITE(LUWRT,*) 'initial VEC1 (imag) of JOFF'
 C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
         XI(JOFF) = XI(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
@@ -5809,7 +5810,7 @@ C
      &                     ( IXOFF       - 1 ) * MY_ACT_BLK2  +
      &                                           MY_ACT_BLK1
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN1',IOFFSET_IN_LUIN1
+C       WRITE(LUWRT,*) 'This is my OFFSET for ISTATE_X',IOFFSET_IN_LUIN1
 C
 C       read in batch ISBATCH from LUIN1 to VEC2
         CALL RDVEC_BATCH_DRV4(LUIN1,VEC2,LBATCH(ISBATCH),
@@ -5817,7 +5818,7 @@ C       read in batch ISBATCH from LUIN1 to VEC2
      &                        IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                        LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC2 on LUIN1'
+C       WRITE(LUWRT,*) 'initial VEC2 (imag) of ISTATE_X'
 C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       SUBSPH_I(IJ) == VEC1 * VEC2
@@ -5837,13 +5838,13 @@ C
         IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
      &                     ( JOFF - 1 )  * MY_ACT_BLK2
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN2',IOFFSET_IN_LUIN2
+C       WRITE(LUWRT,*) 'This is my OFFSET for JOFF',IOFFSET_IN_LUIN2
         CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
      &                       IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                       LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC1 on LUIN2'
+C       WRITE(LUWRT,*) 'initial VEC1 (real) of JOFF'
 C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       SUBSPH_I(IJ) == VEC1 * VEC2
@@ -5856,6 +5857,11 @@ C       keep track of correct offset
         NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
       END DO
 C     ^ loop over batches ...
+C
+C       WRITE(LUWRT,*) ' final XR(JOFF) --> JOFF,ISTATE_X',
+C    &                   XR(JOFF),JOFF,ISTATE_X
+C       IF( MZ .eq. 2) WRITE(LUWRT,*) ' final XI(JOFF)',XI(JOFF)
+C
   500 CONTINUE
 C     ^ loop over NVEC
 C
@@ -8245,7 +8251,7 @@ C       keep track of correct offset
         NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
 C
       END DO
-C     ^ loop over batches - real part
+C     ^ loop over batches - imag part
 C
       END
 ***********************************************************************

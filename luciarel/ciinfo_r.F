@@ -6083,8 +6083,6 @@ C       set back to default...
         L2BLOCK  = ( L2BLOCK_SAVE_V - ( ISMEMFAC * 1 000 000 ) ) / 4
       END IF
 C
-CSK   WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK ',
-CSK  &                  L0BLOCK,L2BLOCK,LCSBLK
 C
       L2BLOCK = MIN(LCSBLK,L2BLOCK)
 C
@@ -6099,6 +6097,8 @@ C       reset to L_COMBI because that is already enough
 C
 C     ... set LBLOCK value
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+C     WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK,LBLOCK ',
+C    &                  L0BLOCK,L2BLOCK,LCSBL,LBLOCKK
 C
       IDUM = 0
       CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'ZBXPRP')
@@ -6115,8 +6115,8 @@ C
 C
       DO 100 IJSYM = 1, MXPROPKRCI_SYM
 C
-CSK     WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM, LBLOCK',
-CSK  &                   IXSYMLIST(IJSYM), IJSYM, LBLOCK
+C       WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM, LBLOCK',
+C    &                   IXSYMLIST(IJSYM), IJSYM, LBLOCK
         IF( IXSYMLIST(IJSYM) .eq. 0 ) GOTO 100
 C       loop over MS2 spaces for "active" symmetry irrep
         DO IMS2 = 1, NMS2VAL
@@ -6249,6 +6249,8 @@ C         number of batches and blocks obtained until now
 C         batches of C vector
           ITTSS_ORD = 2
 C
+C         WRITE(LUWRT,*) 'IJSYM is',IJSYM
+C
           CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
      &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
      &                   IOFFBLK,IOFFBTC,
@@ -6265,7 +6267,7 @@ C
 C       ^ End of loop over MS2 values
 C
 C       initialize symmetry irrep block array
-        CALL INI_BLOCKL_PRP(WORK(KBLOCKLIST),NUM_BLOCKS,IJSYM,
+        CALL INI_BLOCKL_PRP(WORK(KBLOCKLIST),NUM_BLOCKS,I,
      &                      NBLOCK,WORK(KPCIBT))
  200  CONTINUE
 C     ^ End of loop over different symmetries

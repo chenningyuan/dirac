@@ -671,9 +671,9 @@ CSK   work with INTEGER*8
       call memmar(KFINDMI,4*NFINDM+1,'ADDL  ',1,'FINDMI')
 #endif
       if (NROOT.gt.MXROOT) then
-        write(LUWRT,*) ' Too many roots. '
-        write(LUWRT,*) ' Increase MXROOT to ',NROOT
-        call quit('Stop in LUCIAREL.')
+        WRITE(LUWRT,*) ' Too many roots. '
+        WRITE(LUWRT,*) ' Increase MXROOT to ',NROOT
+        CALL QUIT(' *** ERROR in GASCI_REL: too many roots ***')
       end if
       call memmar(KSCR2,NROOT,'ADDL  ',2,'SCR2S ')
 C
