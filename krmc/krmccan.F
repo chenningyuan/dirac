@@ -1030,13 +1030,13 @@ C
 C
       MZ = MIN(NZ,2)
 C
-C     get energies from file KRCI_CVECS.INFO
-      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
-C
 C     1. (transition dipole moments) and oscillator strengths
 C     =======================================================
 C
       IF( DOOSCILLST )THEN
+C
+C       get energies from file KRCI_CVECS.INFO
+        CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
 C
 C       calculate and print oscillator strength - length gauge
 C       ------------------------------------------------------
