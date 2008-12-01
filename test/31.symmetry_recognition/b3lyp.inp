@@ -3,13 +3,12 @@
 !
 **DIRAC
 .TITLE
-Generic input for NR B3LYP energy
-.WAVE F
+ Generic input for NR B3LYP energy
+.WAVE FUNCTION
 **HAMILTONIAN
 .LEVY-LEBLOND
 .DFT
-B3LYP
-**WAVE FUNCTIONS
+ B3LYP
+**WAVE FUNCTION
 .DHF
 *END OF
-

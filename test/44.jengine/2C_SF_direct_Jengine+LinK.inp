@@ -5,6 +5,8 @@ HF calculations with Jengine+LinK in pure two-component mode
 **HAMILTONIAN
 .IOTC
 .SPINFREE
+*DFT
+.4CGRID !here only to reproduce the reference outputs
 **INTEGRALS
 .JENGINE
 .LINK

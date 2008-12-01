@@ -60,7 +60,7 @@ C
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
      &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
      &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
-     &            '.XALDA-','.DFTTHR','.XXXXXX','.XXXXXX'/
+     &            '.XALDA-','.DFTTHR','.4CGRID','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -99,11 +99,11 @@ C          geometry in a geometry optimization) /hjaaj
       export_grid = .false.
       ZIPGRID = .FALSE.
 
-      alda_hs = .false.
-      alda_ha = .false.
-      xalda   = .false.
+      alda_hs          = .false.
+      alda_ha          = .false.
+      xalda            = .false.
       dft_thrs_changed = .false.
-
+      force_4c_grid    = .false.
 
 C     initialize /DFTAC/
 C     ==================
@@ -345,7 +345,11 @@ C     .GAUNTSCALE
                  dft_thrs_changed = .true.
                  go to 100
 
+!                force 4-c grid 
+!                (include small component in the grid generation)
+!                also for 1- and 2-c DFT calculations
  27              continue
+                 force_4c_grid = .true.
                  go to 100
 
  28              continue

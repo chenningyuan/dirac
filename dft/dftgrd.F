@@ -217,6 +217,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "ccom.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "dftcom.h"
 
       DIMENSION WRKSP(4*NUM),
@@ -356,7 +357,15 @@ C        Grid spacing....
          H = DUMMY
          DO LL = 1,NHTYP
            L = LL-1
-           NBAS=NUCORB(LL,1,IATOM)+NUCORB(LL,2,IATOM)
+
+           nbas = nucorb(ll, 1, iatom)
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+           if (mc .gt. 1 .or. force_4c_grid) then
+             nbas = nbas + nucorb(ll, 2, iatom)
+           end if
+
            IF(NBAS.GT.0) THEN
              HTMP = DISERR(RADERR,L)
              H = MIN(H,HTMP)
@@ -367,17 +376,34 @@ C        Grid spacing....
            ENDIF
          ENDDO
          EPH = EXP(H)
+
 C...     Inner grid point
-         AH = D2*MAX(AA(1,1,1,IATOM),AA(1,1,2,IATOM))
+         ah = aa(1, 1, 1, iatom)
+!        radovan:
+!        if Levy-Leblond or X2C, ignore small component
+!        unless user forces 4-c grid
+         if (mc .gt. 1 .or. force_4c_grid) then
+           ah = max(ah, aa(1, 1, 2, iatom))
+         end if
+         ah = d2*ah
+
          RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
          RL = EXP(RL)
+
 C...     Outer point
          RH = D0
          DO LL = 1,NHTYP
            L = LL-1
            AL=DUMMY
+
            IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
-           IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+           if (mc .gt. 1 .or. force_4c_grid) then
+             IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+           end if
+
            IF(AL.LT.DUMMY) THEN
              AL = AL+AL
              RHTMP = OUTERR(AL,L,RADERR)           

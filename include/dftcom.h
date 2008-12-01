@@ -8,7 +8,8 @@
       CHARACTER*30 GRIDFILE, ZIPGRID_TEXT
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, NOPRUN,   &
      &        ATSIZE, import_grid, export_grid, ZIPGRID,                &
-     &        alda_hs, alda_ha, xalda, dft_thrs_changed
+     &        alda_hs, alda_ha, xalda, dft_thrs_changed,                &
+     &        force_4c_grid
       INTEGER IPRDFT, LEBMIN, INTCHK, ANGINT, ANGMIN
       REAL*8 RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
 ! 
@@ -24,7 +25,8 @@
      &                IPRDFT, NOPRUN, ATSIZE,                           &
      &                import_grid, export_grid,                         &
      &                ZIPGRID, DFTHES, DFTHRS, DFTEST, DOVWNI, DFTIMG,  &
-     &                alda_hs, alda_ha, xalda, dft_thrs_changed
+     &                alda_hs, alda_ha, xalda, dft_thrs_changed,        &
+     &                force_4c_grid
 !
       COMMON /DFTRRR/ RADINT, DFTELS, DFTHR0, DFTHRL, DFTHRI
       COMMON /DFTCHR/ DFTTYP, GRIDFILE, ZIPGRID_TEXT

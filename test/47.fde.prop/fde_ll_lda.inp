@@ -13,6 +13,8 @@ electric properties for frozen density embedding
 ! if ommited, the default filename is EMBPOT. regardless
 ! of the name, this file has to be transferred to the
 ! scratch directory first
+*DFT
+.4CGRID !here only to reproduce the reference outputs
 *FDE
 .EMBPOT
 grid.out.full

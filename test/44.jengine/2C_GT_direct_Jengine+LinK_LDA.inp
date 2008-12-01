@@ -7,6 +7,8 @@ LDA calculations with Jengine in pure two-component mode, SOO included
  LDA
 .IOTC
 .GAUNT
+*DFT
+.4CGRID !here only to reproduce the reference outputs
 **INTEGRALS
 .JENGINE
 .NUCMOD
