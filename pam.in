@@ -60,11 +60,11 @@ usage ()
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the slave nodes in parallel run; default:'$WRKMEM_DEFAULT
 
-   if [ -n "$MACH_FILE" ]; then
+ if [ -n "$MACH_FILE" ]; then
    echo '     -machinefile filename  : Specify file with list of nodes to be used in MPI run; default: "'$MACH_FILE'" '
    else
    echo '     -machinefile filename  : Specify file with list of nodes to be used in MPI run; default - None '
-   fi
+ fi
 
    echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
    echo '     -put "file1 file2 .."  : Put specified files from job directory to work area'
@@ -193,7 +193,7 @@ setup_command()
       if [ "${MPIRUN##*/*/}" = 'mpirun' ]; then
 #        DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
 #       Include machinefile - if nonempty string
-        if [ -n "$MACH_FILE" ]; then
+        if [ "$MACH_FILE_MPIRUN" = "yes" ]; then
           # ... if a readable file exist, add it 
           if [ -r "$MACH_FILE" ]; then
             DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
@@ -209,7 +209,7 @@ setup_command()
       elif [ "${MPIRUN##*/*/}" = 'openmpirun' ]; then
         DIRAC_CMD="$DIRAC_CMD -n $MPI_NPROC"
 #       Include machinefile
-        if [ -n "$MACH_FILE" ]; then
+        if [ "$MACH_FILE_MPIRUN" = "yes" ]; then
           if [ -r "$MACH_FILE" ]; then
             DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
           else
@@ -466,6 +466,7 @@ distribute_work_dir()
 #  Loop over the remote machines and copy the contents of the work directory.
 #
    if test -f dirac_machines; then
+         echo '  Distributing files onto disks of local nodes '
       for node in `grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`; do
          echo "copying contents of $master:$WRK to $node:$WRK"
          $RSH $node "mkdir -p $WRK"

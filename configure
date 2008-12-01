@@ -586,10 +586,13 @@ if [ -z "${par}" ]; then
   fi
 fi
 
+read_mach_file=0
+
 echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
     if ask_yesno y "Will your nodes use local disks?"; then
 	localdisks="yes"
+        read_mach_file=1
     else
 	localdisks="no"
     fi
@@ -644,7 +647,7 @@ if [ "$par" = "yes" ]; then
       # printout of MPI launcher
       if [ -n "$mpirun" ]; then
         $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
-        $echo "MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
+        $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
       else
         $echo "MPI launcher NOT found ! Error exit!"
         exit 1
@@ -657,16 +660,34 @@ if [ "$par" = "yes" ]; then
 #  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-       if ! ask_yesno n "Does your MPI setting need machinefile (like MPICH2...)?"; then
-         $echo 'Specify default machinefile for MPI runs: (filename) (default: $PBS_NODEFILE): \c'
+      # if ! ask_yesno y "Does your MPI/cluster setting need machinefile ?"; then
+       if ! ask_yesno n "Does your MPI setting require machinefile for mpirun (like mpich2) ?"; then
+          mach_file_mpirun="yes"
+       else
+          mach_file_mpirun="no"
+          read_mach_file=1
+       fi
+
+       if [ "$localdisks"="yes" -a "$mach_file_mpirun"="no"  ]; then
+         $echo '\nUsing local disks - default machinefile for distribution of files needed !'
+       elif [ "$localdisks"="yes" -a "$mach_file_mpirun"="yes"  ]; then
+         $echo '\nBoth local disks & MPI launcher need default machinefile !'
+       elif [ "$localdisks"="no" -a "$mach_file_mpirun"="yes"  ]; then
+         $echo '\n MPI launcher needs default machinefile ! '
+       fi 
+
+       if [ $read_mach_file ]; then
+         $echo '\n Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
          read mach_file
          if [ -z "$mach_file" ]; then
             mach_file='$PBS_NODEFILE'
          fi
        fi
+
    else # if quick setting, no machinefile for MPI
       mach_file=
    fi
+
 #
 #  With local disks set remote copy/shell:
 #
@@ -678,16 +699,12 @@ if [ "$par" = "yes" ]; then
        read rsh
        case "$rsh" in
 	 "ssh")
-           # rsh=ssh
-            rsh=`which rsh 2>/dev/null`
-           # rcp=scp
+            rsh=`which ssh 2>/dev/null`
             rcp=`which scp 2>/dev/null`
             echo 'Note that ssh/scp requires use of ssh-keygen without password !'
 	    ;;
 	 *)
-            #rsh=rsh
             rsh=`which rsh 2>/dev/null`
-           #rcp=rcp
             rcp=`which rcp 2>/dev/null`
 	    ;;
        esac
@@ -2371,11 +2388,14 @@ SRC_DIR=$SRC_DIR
 BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
 ### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables)
 MPIRUN=$mpirun
-# ... if this is empty for parallel dirac.x, your MPI setting does not need it
+### ... is machinefile needed for MPIRUN launcher ? 
+MACH_FILE_MPIRUN=$mach_file_mpirun
+# .... if yes, input files are beeing copied there using machinefile 
+LOCALDISKS=$localdisks
+# ... default machine file - either for mpirun or for copying files onto local disks
 MACH_FILE=$mach_file
 # .... if yes, input files are beeing copied there
-LOCALDISKS=$localdisks
-# Passing files to local disks:
+# For passing files to local disks:
 RCP=$rcp
 RSH=$rsh
 #
