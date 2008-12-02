@@ -899,7 +899,7 @@ C
 C     print section
 C     _____________
 C
-      NTESTX = 05
+      NTESTX = 00
       IF( NTESTX .gt. 5)THEN
         WRITE(LUWRT,*) ' calculation of XPROPMAT finished'
         WRITE(LUWRT,*) ' content of XPROPMAT'
