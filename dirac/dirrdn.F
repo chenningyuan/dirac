@@ -2458,13 +2458,17 @@ C
 !       Input for COSCI module
 !       Read input data
 !
+#ifdef MOD_KRMC
         CALL COSCI_INP(WORD,.FALSE.,WORK,LWORK)
+#endif
 !.q
         GO TO 200
 C
 !.s/sya,2007.02.06
    13 CONTINUE
+#ifdef MOD_KRMC
         CALL GOSCI_INP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
 !.q
         GO TO 200
