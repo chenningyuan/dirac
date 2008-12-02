@@ -12,6 +12,8 @@
 .GRAC
 LB94
 0.5 40.0 0.79248 1.0D-6
+.ZIPGRID     !remove this keyword
+XYZ          !if you change the mol file
 **INTEGRALS
 .NUCMOD
  1

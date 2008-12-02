@@ -9,6 +9,8 @@
  GLLBhole
 *DFT
 .SAOP!
+.ZIPGRID     !remove this keyword
+XYZ          !if you change the mol file
 **INTEGRALS
 .NUCMOD
  1
