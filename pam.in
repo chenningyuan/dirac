@@ -202,8 +202,9 @@ setup_command()
             exit 1
           fi
         fi
-#       ... handle number of processors AFTER taking in machinefile (MPICH2 demand)...
-        DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
+#       ... handle number of processors AFTER taking in machinefile if demanded (MPICH2)...
+#        ... together with working directory for master/slaves
+        DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
 
       # miro: what kind of parallel library is it ?
       elif [ "${MPIRUN##*/*/}" = 'openmpirun' ]; then
@@ -384,6 +385,7 @@ remove_work_dir()
              echo "Contents of work directory $WRK on slave node $node"
              $RSH $node "ls -l $WRK"
              $RSH $node "rm -fr $WRK"
+             echo "Work directory $WRK on slave node $node deleted"
           fi
        done
    fi
@@ -397,6 +399,7 @@ remove_work_dir()
    if [ " $RMWRK" -eq 1 ]; then
       if [ $EXIT -eq 0 ]; then
          rm -fr $WRK
+         echo "Work work directory $WRK on master node $master deleted"
       else
          echo '*** DIRAC terminated with an error exit code'
          echo "- THEREFORE scratch work directory $WRK is not deleted as normal"
@@ -466,9 +469,14 @@ distribute_work_dir()
 #  Loop over the remote machines and copy the contents of the work directory.
 #
    if test -f dirac_machines; then
-         echo '  Distributing files onto disks of local nodes '
+      are_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
+      echo '  Allocated nodes for parallel run (content of dirac_machines file):'
+      cat dirac_machines
+      if [ -z "$are_nodes" ]; then
+        echo '  Distributing files onto local disks of nodes '
+      fi
       for node in `grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`; do
-         echo "copying contents of $master:$WRK to $node:$WRK"
+         echo "copying contents of master $master:$WRK to node $node:$WRK"
          $RSH $node "mkdir -p $WRK"
          if [ -n "$RMSCR" ]; then
             $RSH $node rm -f $WRK/*
