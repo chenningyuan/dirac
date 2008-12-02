@@ -70,7 +70,7 @@ C
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
 C
 #include "memint.h"
-C
+
       DOERG = LBIT(IOPTS,1)
       DOGRD = LBIT(IOPTS,2)
       DOLR  = LBIT(IOPTS,3)
