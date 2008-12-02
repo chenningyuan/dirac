@@ -1830,7 +1830,9 @@ get_f90_flags(){
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
-      ldflag="-i_dynamic" # for ifort/ompi ilp64 arch
+     #radovan: on my laptop this does not work
+     #         i get: ./dirac.x: error while loading shared libraries: libifport.so.5: cannot open shared object file: No such file or directory
+     #ldflag="-i_dynamic" # for ifort/ompi ilp64 arch
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
