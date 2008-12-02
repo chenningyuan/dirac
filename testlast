@@ -270,6 +270,7 @@ if [ -f logs/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
       echo " Below follows the list of tests that failed :"
       cat logs/$txtlog
+      exit -1
     else
       echo " Calculations completed at \`date\` : no errors were detected"
     fi
