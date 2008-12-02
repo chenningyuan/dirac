@@ -125,6 +125,7 @@ C        DMFC(a,b) =  BR + BI i = (+DQFC(3)) + (+DQFC(4)) i
 C        DMFC(b,a) = -BR + BI i = (-DQFC(3)) + (+DQFC(4)) i
 C        DMFC(b,b) =  AR - AI i = (+DQFC(1)) + (-DQFC(2)) i
          IF (IQZ .EQ. 1) THEN
+C           WRITE(LUPRI,*) ' copy AR'
 C           copy  AR
             DO J = 1, NASH(JFSY)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
@@ -135,6 +136,7 @@ C           copy  AR
          END IF
          IF (IQZ .EQ. 2) THEN
 C           copy  AI
+C           WRITE(LUPRI,*) ' copy AI'
             DO J = 1, NASH(JFSY)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
      &                               DMFC(1+IOFFA,J+JOFFA,MZ),1)
@@ -175,6 +177,7 @@ C        DMFC(b,a) =  BR - BI i = (+DQFC(4)) + (+DQFC(3)) i
 C        DMFC(b,b) = -AR + AI i = (-DQFC(2)) + (-DQFC(1)) i
          IF (IQZ .EQ. 1) THEN
 C           copy -AI
+C           WRITE(LUPRI,*) ' copy -AI'
             DO J = 1, NASH(JFSY)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
      &                               DMFC(1+IOFFA,J+JOFFA,MZ),1)
@@ -187,6 +190,7 @@ Cbug &                               DMFC(1+IOFFA,J+JOFFA,1),MZ)
          END IF
          IF (IQZ .EQ. 2) THEN
 C           copy  AR
+C           WRITE(LUPRI,*) ' copy AR'
             DO J = 1, NASH(JFSY)
                CALL DCOPY(NASH(IFSY),DQFC(1+IOFFQ,J+JOFFQ,IPQZ),1,
      &                               DMFC(1+IOFFA,J+JOFFA,1),1)

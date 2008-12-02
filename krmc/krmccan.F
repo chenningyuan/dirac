@@ -972,9 +972,13 @@ CSK      IPROPT = 50
          CALL RGETAC(WORK(KRPRPMO),WORK(KRPRPMOAC),IPROPT)
 C
 C        transform to MOLFDIR format
-C
          CALL MEMGET('REAL',KRPRPMOACM,4*N2ASHX*MZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KRPRPMOACM),  4*N2ASHX*MZ)
+C        WRITE(LUPRI,'(/2A)')'   KRCIPRPMO: MO matrix of property: ',
+C    &                           FILELAB
+C        WRITE(LUPRI,'(A,3I5)')
+C    &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
+C    &   ISYM,IOPSY,ITRSYM
          CALL QFC2MFC(WORK(KRPRPMOAC),WORK(KRPRPMOACM),ISYM,
      &                ITRSYM,IPROPT)
 C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
@@ -1274,7 +1278,7 @@ C       diagonalize
         CALL DIAGC('X',WORK(KOMX),WORK(KEIGX),WORK(KEIGVCX),
      &             NXSTATES,WORK(KFREE),LFREE)
 C
-        NXTEST = 1
+        NXTEST = 0
         IF( NXTEST .gt. 0 )THEN
           WRITE(LUPRI,*) ' OMEGAMAT after diagonalization'
           CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
@@ -1299,10 +1303,12 @@ C         CALL MEMGET('REAL',KEIGTX,  NXSTATES      ,WORK,KFREE,LFREE)
 C         CALL DZERO(WORK(KEIGTX),NXSTATES)
 C         CALL GET_XOMEGALIST(WORK(KEIGTX),WORK(KEIGVCX),NXSTATES,
 C    &                        XREPOM(IX),WORK(KEIGX))
-          WRITE(LUPRI,'(/3A//)') 
-     &    ' ***** OMEGA VALUES ARE SORTED in ascending order *****',
+          WRITE(LUPRI,'(/A/)') 
+     &    ' ***** OMEGA VALUES ARE SORTED in ascending order *****'
+          WRITE(LUPRI,'(A)') 
      &    ' To assign the states properly, rerun the property part'//
-     &    ' with less number of roots',
+     &    ' with less number of roots'
+          WRITE(LUPRI,'(A/)') 
      &    ' and do thus a stepwise identification... ;)'
 C
 C         print section
