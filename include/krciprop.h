@@ -45,7 +45,7 @@
 !     max. total number of roots in property run - value is 4 x MXROOT 
 !     defined in luciarel/mxpdim.inc which is the max. number of roots 
 !     per irrep.
-      PARAMETER(MXPRPE_KRCI=120)
+      PARAMETER(MXPRPE_KRCI=750)
       PARAMETER(IPROPPRINT=30)
 !     max symmetry irreps - this value has to be equal to 
 !     PARAMETER (MAX_NKRCI_MAX_SYM = 16) in dcbkrci.h - SK Oct 2008
