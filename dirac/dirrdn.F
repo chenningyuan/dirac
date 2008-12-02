@@ -2519,11 +2519,13 @@ C
 C
 C     Input of reladc module
 C
+#ifdef MOD_ADC
       IF(DOADC) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)
       ENDIF
+#endif
 !
 !     Input of COSCI module
 !     Reset and just return back.
