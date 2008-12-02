@@ -268,7 +268,8 @@ C
 C     Prepare for parallelization:
 C     setting up groups of processors (stored in /LUCIPARREL/)
 C
-      CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'GROUPL')
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
       CALL MEMMAR(KGROUPLIST, NMPROC,'ADDS  ',1,'IHOST2')

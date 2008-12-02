@@ -1274,6 +1274,7 @@ C       diagonalize
         CALL DIAGC('X',WORK(KOMX),WORK(KEIGX),WORK(KEIGVCX),
      &             NXSTATES,WORK(KFREE),LFREE)
 C
+        NXTEST = 1
         IF( NXTEST .gt. 0 )THEN
           WRITE(LUPRI,*) ' OMEGAMAT after diagonalization'
           CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
@@ -1284,12 +1285,40 @@ C
           CALL WRTMATMN(WORK(KEIGVCX),1,NZ*NXSTATES**2,1,
      &                  NZ*NXSTATES**2,LUPRI)
         END IF
+        NXTEST = 0
 C
-C       print section
-        DO I = 1, NXSTATES
-        WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
-     &              I,XREPOM(IX),WORK(KEIGX+I-1)
-        END DO
+C       in the complex case "NZ==2" the eigenvalues are sorted in
+C       ascending order - find absolute largest element in each
+C       eigenvector to identify the corresponding CI eigenstate.
+        IF( NZ .ge. 2 )THEN
+C
+C         FIXME: this "reordering" code does not work properly ...
+C
+C         list of CI eigenstates
+C         CALL MEMGET('REAL',KEIGTX,  NXSTATES      ,WORK,KFREE,LFREE)
+C         CALL DZERO(WORK(KEIGTX),NXSTATES)
+C         CALL GET_XOMEGALIST(WORK(KEIGTX),WORK(KEIGVCX),NXSTATES,
+C    &                        XREPOM(IX),WORK(KEIGX))
+          WRITE(LUPRI,'(/3A//)') 
+     &    ' ***** OMEGA VALUES ARE SORTED in ascending order *****',
+     &    ' To assign the states properly, rerun the property part'//
+     &    ' with less number of roots',
+     &    ' and do thus a stepwise identification... ;)'
+C
+C         print section
+          DO I = 1, NXSTATES
+            WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
+     &            I,XREPOM(IX),WORK(KEIGX+I-1)
+          END DO
+
+        ELSE
+C
+C         print section
+          DO I = 1, NXSTATES
+          WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
+     &                I,XREPOM(IX),WORK(KEIGX+I-1)
+          END DO
+        END IF
 C
 C       release memory
         CALL MEMREL('RKRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)

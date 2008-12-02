@@ -109,7 +109,7 @@ C
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
-     &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','-------',
+     &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
      &            '-------','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
@@ -139,6 +139,7 @@ C
       CINT_REORD_KRCI = .FALSE.
       CINT_SPLIT_KRCI = .FALSE.
       NATOLCR_KRCI    = .FALSE.
+      CHCKPT_KRCI     = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -543,6 +544,9 @@ C              including spin in symmetry
                IKWSET(22) = 2
                GO TO 100
    35          CONTINUE
+C&&&  CHECKP:  write intermediate check point file that is readable by 
+C              the MASTER - useful in parallel calculations
+               CHCKPT_KRCI = .TRUE.
                GO TO 100
    36          CONTINUE
                GO TO 100
@@ -902,6 +906,10 @@ C
       IF( DOJZEXP ) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'
+      END IF
+      IF( CHCKPT_KRCI ) THEN
+        WRITE(LUPRI,'(/A)') ' * Write check point file in parallel'//
+     &                      ' CI calculation'
       END IF
 C
   400 RETURN

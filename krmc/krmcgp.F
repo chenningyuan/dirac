@@ -2220,6 +2220,13 @@ C       disable shared memory usage
           IT_SHL = - 2
         END IF
       END IF
+C     write check point file during large-scale CI optimization 
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 )
+     &   CALL MPI_BCAST(CHCKPT_WRT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+      CHECKPOINT_LUCIX = CHCKPT_WRT
 C     using GAS-scheme specific integral file resp. writing it
       REORD_IJKL = .FALSE.
 #if defined (VAR_MPI)
@@ -2889,6 +2896,104 @@ C
       END DO
       SUM_DIAG_ELM = SUMDIAG
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* deck GET_XOMEGALIST */
+      SUBROUTINE GET_XOMEGALIST(OMLISTREOD,XEIGVC,NXSTATES,
+     &                          STATEREP,XEIGVL)
+C***********************************************************************
+C
+C     determine largest element of a given eigenvector to assign the 
+C     corresponding eigenstate.
+C
+C     Written by S. Knecht - Dec 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      CHARACTER STATEREP*4
+      DIMENSION OMLISTREOD(*), XEIGVL(*), XEIGVC(NXSTATES,NXSTATES,2)
+C
+      XLARGE  =  0.0D0
+      XMDUM   = -1.0D98
+      XXMDUM  = -1.0D-98
+      DO IXSTATE = 1, NXSTATES
+        OMLISTREOD(IXSTATE) = XMDUM
+      END DO
+      DO IXSTATE = 1, NXSTATES
+        XMAXVL = 0.0D0
+C
+C       find largest element for NZ == 1 and NZ == 2 of a given state
+        IMAXNONE = IDAMAX(NXSTATES,XEIGVC(1,IXSTATE,1),1)
+        IMAXNTWO = IDAMAX(NXSTATES,XEIGVC(1,IXSTATE,2),1)
+        IMAXIND  = IMAXNONE
+        IF( ABS(XEIGVC(IMAXNTWO,IXSTATE,2)) .gt.
+     &      ABS(XEIGVC(IMAXNONE,IXSTATE,1))) IMAXIND = IMAXNTWO
+        IMAXNTWO = 0
+C
+C       check if this index is already assigned (which may happen in
+C       some cases - H_2 molecule with 1s1p function) - if yes - goto 
+C       second largest element.
+        IF( OMLISTREOD(IMAXIND) .eq. XMDUM )THEN
+          OMLISTREOD(IMAXIND) = XEIGVL(IXSTATE)
+        ELSE
+          XLARGE = ABS(XEIGVC(IMAXIND,IXSTATE,1))
+          IF( IMAXIND .eq. IMAXNTWO ) XLARGE = 
+     &                                ABS(XEIGVC(IMAXIND,IXSTATE,2))
+          IMAXNONE2 = IFIND_NELM(XEIGVC(1,IXSTATE,1),NXSTATES,
+     &                           ABS(XXMDUM),IMAXNONE)
+          IMAXNTWO2 = IFIND_NELM(XEIGVC(1,IXSTATE,2),NXSTATES,
+     &                           ABS(XXMDUM),IMAXNTWO)
+          IMAXIND2  = IMAXNONE2
+          IF( ABS(XEIGVC(IMAXNTWO2,IXSTATE,2)) .gt.
+     &        ABS(XEIGVC(IMAXNONE2,IXSTATE,1))) IMAXIND2 = IMAXNTWO2
+          IF( OMLISTREOD(IMAXIND2) .eq. XMDUM )THEN
+            OMLISTREOD(IMAXIND2) = XEIGVL(IXSTATE)
+          ELSE
+            WRITE(LUPRI,'(/A,I5)')
+     &    ' *** ERROR in GET_XOMEGALIST *** failed to assign '//
+     &    ' eigenvector == ',IXSTATE
+            WRITE(LUPRI,'(/A,2I5)')
+     &    ' *** IMAXIND and IMAXIND2 are:',IMAXIND,IMAXIND2
+            WRITE(LUPRI,'(/A)') ' OMLISTREOD so far'
+            CALL WRTMATMN(OMLISTREOD,1,NXSTATES,1,NXSTATES,LUPRI)
+            CALL QUIT('* ERROR in GET_XOMEGALIST * assignment of 
+     &                an Omega quantum number to a given state failed')
+          END IF
+        END IF
+      END DO
+C
+C     list of eigenstates is filled - print
+      DO I = 1, NXSTATES
+        WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
+     &                I,STATEREP,OMLISTREOD(I)
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Function IFIND_NELM */
+      INTEGER FUNCTION IFIND_NELM(AVEC,NX,XMAX,MXINDEX)
+C***********************************************************************
+C
+C     find 2nd largest element in AVEC.
+C
+C     Written by S. Knecht - Dec 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION AVEC(NX)
+C
+      IFIND_NELM = 0
+      INDEX_SCR  = 0
+      XVAL       = 0.0D0
+      DO I = 1, NX
+        IF( I .ne. MXINDEX ) THEN
+          XVAL = AVEC(I)
+          IF( ABS(XVAL) .ge. XMAX ) INDEX_SCR = I
+        END IF
+      END DO
+      IFIND_NELM = INDEX_SCR
       END
 C=========================================================================
 C end of file krmcgp.F
