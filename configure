@@ -1190,13 +1190,13 @@ if [ ! -z "$a" ]; then
   fi
 
   ### looking priority: idb, pgdbg, dbx, gdb ....
-  if [ ! -z `which idb 2>/dev/null` ]; then
+  if [ -n "`which idb 2>/dev/null`" ]; then
     which_debug="idb"
-  elif [ ! -z `which pgdbg 2>/dev/null` ]; then
+  elif [ -n "`which pgdbg 2>/dev/null`" ]; then
     which_debug="pgdbg"
-  elif [ ! -z `which dbx 2>/dev/null` ]; then
+  elif [ -n "`which dbx 2>/dev/null`" ]; then
     which_debug="dbx"
-  elif [ ! -z `which gdb 2>/dev/null` ]; then
+  elif [ -n "`which gdb 2>/dev/null`" ]; then
     which_debug="gdb"
   fi
 fi
