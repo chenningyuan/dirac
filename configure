@@ -1833,6 +1833,8 @@ get_f90_flags(){
       ldflag="-i_dynamic" # for ifort/ompi ilp64 arch
       ;;
     xlf|xlf_r)
+      opt="-qsuppress=cmpmsg"
+      safe="-qsuppress=cmpmsg"
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
