@@ -421,7 +421,8 @@ C     operator type
 C     transfer to common block in krciprop.h
       IHTYPE_X  = IHTYPE
 C     set memory mark
-      CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'PROPRO')
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'PROPRO')
 C
 C     allocate for property operator matrix
 C
@@ -489,7 +490,8 @@ C     reordering done.
 C
 C     release memory
 C
-      CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'PROPRO')
+      IDUM = 0
+      CALL MEMMAR(KDUM,IDUM,'FLUSM',IDUM,'PROPRO')
 C
  999  CALL QEXIT('GET_XPROP_REOD_KRCI')
       END
@@ -553,6 +555,7 @@ C
       NTESTX = 10
 C
 C     set memory mark
+      IDUM = 0
       CALL MEMMAR(KDUMMY,IDUM,'MARK  ',IDUM,'XPROP ')
 C
       RODLAB = 'RO'

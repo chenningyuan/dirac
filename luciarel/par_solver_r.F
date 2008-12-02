@@ -126,12 +126,21 @@ C
        WRITE(LUWRT,*) '               Entering rel. MICDV4_par     '
        WRITE(LUWRT,*) '             ============================   '
        WRITE(LUWRT,*) '                                            '
-*
-*      no screening 
-*
+C
+C      no screening 
        CSCREEN = .FALSE.
+C
+C      do more explicit timing
        TIMING  = .TRUE.
-*
+C
+C      set check point parameters - approx after 20%, 40%, 60%, ... 
+C      of MAXIT
+       ITER_CHECKP = 0
+       ICHPARAM    = 0
+       IF( CHECKPOINT_LUCIX )THEN
+         ICHPARAM    = MAXIT/5
+       END IF
+C
        IPICO = 0
        IF(IPICO.NE.0) THEN
 C?       WRITE(6,*) ' Perturbative solver '
@@ -141,7 +150,6 @@ C?       WRITE(6,*) ' Variational  solver '
        END IF
 *
 *      initialize LZERO_SCRRED
-*
        LZERO_SCRRED = 0
        LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
 *
@@ -175,7 +183,8 @@ C?       WRITE(6,*) ' Variational  solver '
         
        CALL DZERO(APROJ, MAXVEC*(MAXVEC+1)/2 )
 *
-       ITER = 1
+       ITER        = 1
+       ITER_CHECKP = 1
 *
        DO 10 IVEC = 1,NINVEC
 *        
@@ -295,7 +304,8 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
         write(LUWRT,*)
         write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
         write(LUWRT,*) '_______________________'
-        ITER = ITER + 1
+        ITER        = ITER + 1
+        ITER_CHECKP = ITER_CHECKP + 1
 *
 *
 *===========================================================
@@ -621,14 +631,36 @@ CSK        CALL DZERO(SCRRED,NROOT)
           AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
           APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
         END DO
-*
 C
-C     finish timing part3
+C       write to check point file KRCI_CVECS.x (unit 61 see io_r.F)
+        IF( (.NOT. CONVER) .or. (ITER .lt. MAXIT))THEN
+          IF( CHECKPOINT_LUCIX .and. (ITER_CHECKP.ge.ICHPARAM))THEN
 C
-      timer3 = timer3 + MPI_WTIME() - starttimer
-      WALLTSTEP = SECTID(timer3)
-      WRITE(LUWRT,9600) WALLTSTEP
-*
+C           reset ITER_CHECKP
+            ITER_CHECKP = 0
+C           scratch file LUSC41 (unit 79 see io_r.F)
+            CALL REWINE(79,-1)
+            DO JROOT = 1, NROOT
+              CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
+     &                                  NPARBLOCK,NUM_BLOCKS,
+     &                                  IBLOCKL,MPI_COMM_WORLD,-1,
+     &                                  JROOT,LU1LIST,MY_LU1_OFF,1)
+            END DO
+            IF( MYPROC .eq. MASTER )THEN
+              CALL REWINE(79,-1)
+              CALL REWINE(61,-1)
+              DO JROOT = 1, NROOT
+                CALL COPVCDC(79,61,VEC1,0,1,-1)
+              ENDDO
+              CALL REWINE(61,-1)
+            END IF
+          END IF
+        END IF
+C
+C       finish timing part3
+        timer3 = timer3 + MPI_WTIME() - starttimer
+        WALLTSTEP = SECTID(timer3)
+        WRITE(LUWRT,9600) WALLTSTEP
       END IF
 *     ^ NVEC+NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT
 *
@@ -687,7 +719,7 @@ C
      &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
       END IF
 *
- 9000 FORMAT(A18,1I3,A3,F20.13)
+ 9000 FORMAT(A20,1I3,A3,F20.13)
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
           WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
@@ -833,12 +865,22 @@ C
 *
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
-*
-*     no screening 
+C
+C     no screening 
       CSCREEN = .FALSE.
-*
-*
-*     initialize LZERO_SCRRED
+C
+C     timing
+      TIMING = .FALSE.
+C
+C     set check point parameters - approx after 20%, 40%, 60%, ...
+C     of MAXIT
+      ITER_CHECKP = 0
+      ICHPARAM    = 0
+      IF( CHECKPOINT_LUCIX )THEN
+        ICHPARAM    = MAXIT/5
+      END IF
+C
+C     initialize LZERO_SCRRED
       LZERO_SCRRED = 0
       LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
 C
@@ -882,6 +924,7 @@ C
 *     ===================
 *      Initial iteration
 *     ===================
+      ITER_CHECKP = 1
       ITER = 1
       NVEC = 0
 *     start timing of initial iteration
@@ -1132,7 +1175,8 @@ C
 C        ^ not converged...
   100 CONTINUE
 CTF
-      ITER = ITER + 1
+      ITER        = ITER + 1
+      ITER_CHECKP = ITER_CHECKP + 1
 CTF
       IF( CONVER ) THEN
         ITER = ITER - 1
@@ -1343,7 +1387,31 @@ C
           AVEC((IROOT-1)*2*NROOT+IROOT) = 1.0D0
           APROJR(IROOT*(IROOT+1)/2 )    = EIG(IROOT,ITER)
         END DO
-*
+C
+C       write to check point file KRCI_CVECS.x (unit 61 see io_r.F)
+        IF( (.NOT. CONVER) .or. (ITER .lt. MAXIT))THEN
+          IF( CHECKPOINT_LUCIX .and. (ITER_CHECKP.ge.ICHPARAM))THEN
+C
+C           reset ITER_CHECKP
+            ITER_CHECKP = 0
+C           scratch file LUSC41 (unit 79 see io_r.F)
+            CALL REWINE(79,-1)
+            DO JROOT = 1, NROOT
+              CALL COPVCD_PAR_BDRIV_REL(ILU1,79,VEC1,
+     &                                  NPARBLOCK,NUM_BLOCKS,
+     &                                  IBLOCKL,MPI_COMM_WORLD,LBLK,
+     &                                  JROOT,LU1LIST,MY_LU1_OFF,IRC)
+            END DO
+            IF(MYPROC.EQ.MASTER) THEN
+              CALL REWINE(79,-1)
+              CALL REWINE(61,-1)
+              DO JROOT = 1, NROOT
+                CALL COPVCDC(79,61,VEC1,0,IRC,LBLK)
+              ENDDO
+              CALL REWINE(61,-1)
+            END IF
+          END IF
+        END IF
 C
 C     finish timing part3
       timer3 = timer3 + MPI_WTIME() - starttimer
@@ -1417,7 +1485,7 @@ C!?      ITER = ITER - 1
 *
       ECI = EIG(1,ITER)
 *
- 9000 format(A18,1I3,A3,F20.13)
+ 9000 format(A20,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT

@@ -6400,14 +6400,16 @@ C***********************************************************************
 #include "mxpdim.inc"
 #include "symm.inc"
 #include "krciprop.h"
-       DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
+      DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
+C
+      IONE = 1
 C
       DO 100 I = 1, NX_OP
          IF( ISYMOPX(I) .eq. 0 ) GOTO 100
          DO J = 1, IXROOTS
            ICSM = IXROOTSYM(J)
            ISSM = IDBGMULT(ICSM,ISYMOPX(I))
-           IXSYMPAIRS(ICSM,ISSM) = 1
+           IXSYMPAIRS(ICSM,ISSM) = IONE
          END DO
  100  CONTINUE
 C
@@ -6415,7 +6417,7 @@ C     number of symmetry pairs
       NXSYMPAIRS = 0
       DO I = 1, IXSYM
         DO J = 1, IXSYM
-          IF( IXSYMPAIRS(I,J).eq. 1) NXSYMPAIRS = NXSYMPAIRS + 1
+          IF( IXSYMPAIRS(I,J).eq. IONE ) NXSYMPAIRS = NXSYMPAIRS + 1
         END DO
       END DO
 c     WRITE(LUWRT,*) ' GET_SC_PAIRS: number of symmetry pairs = ',
