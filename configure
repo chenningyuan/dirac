@@ -1073,7 +1073,8 @@ if [ $comp_index -eq 0 ]; then
     echo ""
     $echo "Enter your compiler:\c"
     read comp_found
-    # jhs userinput instead of exit?    echo 'jhs Userinput here?'
+    comp_pwd=`dirname $comp_found`
+    comp_found=`basename $comp_found`
 else
     get_item "$comp_found" comp_found $comp_index 1
     set -- $comp_found
