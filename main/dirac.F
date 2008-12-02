@@ -635,6 +635,7 @@ C
       CSHMEMO     = .FALSE.
       CINT_REORD  = .FALSE.
       CINT_SPLIT  = .FALSE.
+      CHCKPT_WRT  = .FALSE.
 C
       CALL QEXIT('TKRMCORB')
       END
@@ -758,6 +759,7 @@ C
       CINT_REORD  = CINT_REORD_KRCI
       CINT_SPLIT  = CINT_SPLIT_KRCI
       COMPFAC     = 0.01D00
+      CHCKPT_WRT  = CHCKPT_KRCI
 C
       CALL QEXIT('TKRCIORB')
       END
