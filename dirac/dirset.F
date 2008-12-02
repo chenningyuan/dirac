@@ -87,7 +87,8 @@ C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
-      IF(TOBE) THEN
+!     radovan: don't restart if you do an optimization!
+      IF(TOBE .and. .not. optimi) THEN
         WRITE(LUPRI,'(A,A)') 
      &  '* WARNING: DIRAC found AOPROPER (one-electron integrals)',
      &  '  ...will attempt restart.'
