@@ -657,9 +657,14 @@ C
      &                            WORK(KNODELIST),NPROP_ROOTS_KRCI,1)
 C
 C     length for allocation of file arrays
+C     WRITE(LUWRT,*) ' NPROP_ROOTS_KRCI,MY_ACT_BLK2,NUM_BLOCKS,...',
+C    &NPROP_ROOTS_KRCI,MY_ACT_BLK2,NUM_BLOCKS,NUM_BLOCKS2
       IALL_LU1 = NPROP_ROOTS_KRCI * MY_ACT_BLK2
       IALL_LU2 = 1 * MY_ACT_BLK2
       IALL_LUC = NUM_BLOCKS2
+C     WRITE(LUWRT,*) ' RMEMCHK before list alloc',
+C    &                 IALL_LU1,IALL_LU2,IALL_LUC
+C     CALL RMEMCHK
 C
 C     allocate file arrays
       CALL MEMMAR(KILU1LIST,IALL_LU1,'ADDS  ',1,'LU1LST')
@@ -672,11 +677,15 @@ C     initialize ...
 C
 C     T block distribution - reordered arrays of property integrals
       CALL DIST_XPROP(WORK(KT_CC),LUPROP_MAT)
+C     WRITE(LUWRT,*) ' RMEMCHK before DIST_XCVEC'
+C     CALL RMEMCHK
 C
 C     distribute C vectors from MASTER to slaves for all active irreps
       CALL DIST_XCVEC(WORK(KVEC1),LUC,ILU1,WORK(KILU1LIST),
      &                WORK(KNODELIST),WORK(KBLOCKLIST),WORK(KXSYM_BLK),
      &                IXSYMLIST,IXSYMACT,IRC)
+C     WRITE(LUWRT,*) ' RMEMCHK after DIST_XCVEC'
+C     CALL RMEMCHK
 C     scratch arrays
       CALL MEMMAR(KXR,NPROP_ROOTS_KRCI,'ADDL  ',2,'KXR   ')
       IF(MZ.eq.2) THEN 
@@ -811,6 +820,7 @@ C
 C
 C           debug printing
 #ifdef MOD_DEBUG
+C
             WRITE(LUWRT,*) ' WORK(KXR) '
             CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
      &                    NPROP_ROOTS_KRCI,LUWRT)
@@ -820,6 +830,15 @@ C           debug printing
      &                      NPROP_ROOTS_KRCI,LUWRT)
             END IF
 #endif
+C
+C           lz is pure imaginary operator - scale with -1.0
+C           FIXME: introduce proper scaling for each imaginary 
+C                  operator
+            DMONE = -1.0D0
+            IF( PRPNAM(INDXPR) .eq. 'z-angular mom') THEN
+              CALL DSCAL(NPROP_ROOTS_KRCI,DMONE,WORK(KXR),1)
+              IF(MZ.eq.2) CALL DSCAL(NPROP_ROOTS_KRCI,DMONE,WORK(KXI),1)
+            END IF
 C
             CALL DCOPY(NPROP_ROOTS_KRCI,WORK(KXR),1,
      &                 XPROPMAT(1,ISTATE_X,IPROP_X,1),1)
@@ -880,7 +899,7 @@ C
 C     print section
 C     _____________
 C
-      NTESTX = 00
+      NTESTX = 05
       IF( NTESTX .gt. 5)THEN
         WRITE(LUWRT,*) ' calculation of XPROPMAT finished'
         WRITE(LUWRT,*) ' content of XPROPMAT'

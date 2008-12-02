@@ -1535,6 +1535,7 @@ C
       NBLK_ACT     = 0
       MY_VEC1_IOFF = 0
       MY_VEC2_IOFF = 0
+C     WRITE(LUWRT,*) '  NEWCOMM_PROC:', NEWCOMM_PROC
 C
 C     determine IVEC_MAX_GP and NBLK_MAX_GP
 C     --------------------------------
@@ -1542,10 +1543,13 @@ C     --------------------------------
 C       next process in this group
         JPROC = IGROUPLIST(IPROC)
         DO IJSYM = 1, IXSYMACT
+C         WRITE(LUWRT,*) '  IJSYM:', IJSYM
 C         next active symmetry irrep IJSYM (no absolute symmetry label)
           LVECLEN  = 0
           NBLK_ACT = 0
           DO JBLK = 1, NUM_BLOCKS
+C           WRITE(LUWRT,*) '  IBLOCKD_X(JBLK,IJSYM):',
+C    &                        IBLOCKD_X(JBLK,IJSYM)
             IF(IBLOCKD_X(JBLK,IJSYM) .eq. JPROC ) THEN
               LVECLEN  = LVECLEN + IBLOCKL_X(JBLK,IJSYM)
               NBLK_ACT = NBLK_ACT + 1
@@ -1555,6 +1559,8 @@ C         max vec length + block count for this symmetry irrep
 C         and process JPROC
           IVEC_MAX_GP   = MAX(IVEC_MAX_GP,LVECLEN)
           NBLK_MAX_GP   = MAX(NBLK_MAX_GP,NBLK_ACT)
+C         WRITE(LUWRT,*) '  IVEC_MAX_GP,NBLK_MAX_GP:',
+C    &                      IVEC_MAX_GP,NBLK_MAX_GP
         END DO
       END DO
 C

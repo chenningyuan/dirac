@@ -6179,7 +6179,7 @@ C     ^ End of loop over different symmetries
 C
 C     start second part...
 C
-      IF( NBLOCK_MAX .eq. 0 )THEN
+      IF( NBLOCK_MAX .le. 0 )THEN
           WRITE(LUWRT,*) ' *** ERROR in Z_BLKFO_XPROP: max number of'// 
      &                   ' TTSS blocks is zero.'
           CALL QUIT('*** Z_BLKFO_XPROP: max number of TTSS blocks is
