@@ -1,14 +1,14 @@
 #!/bin/sh
 
-MOL=hf;         export MOL;
+export MOL=hf
 
-MENU=b3lyp.inp; export MENU;
+export MENU=b3lyp.inp
 ../run.sh -copy d-aug-cc-pVDZ
 
-MENU=blyp.inp;  export MENU;
+export MENU=blyp.inp
 ../run.sh -copy d-aug-cc-pVDZ
 
-MENU=lda.inp;   export MENU;
+export MENU=lda.inp
 ../run.sh -copy d-aug-cc-pVDZ
 
 exit 0

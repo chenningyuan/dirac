@@ -6,12 +6,12 @@
 .DFT
  BLYP
 *DFT
-.RADINT
- 1.0D-10
-.ANGINT
- 35
-.ZIPGRID !be careful
-XY       !with this kw when you change the molecule
+.RADINT         !these parameters
+ 1.0D-3         !are not
+.ANGINT         !appropriate in
+ 15             !production calculations
+.ZIPGRID        !remove this keyword
+XY              !if you change the mol file
 **INTEGRALS
 .NUCMOD
  1
@@ -21,7 +21,7 @@ XY       !with this kw when you change the molecule
 .ITRINT
  0 0
 .EVCCNV
- 1.0D-6 1.0D8
+ 1.0D-4         !we use poor convergence threshold for the test
 **PROPERTIES
 .FIRST ORDER HYPERPOLAR
 *EXPECTATION
@@ -29,15 +29,15 @@ XY       !with this kw when you change the molecule
  ZZSECMOM
 *EXCITATIONS
 .EXCITATIONS
-1 3
+ 1 3
 .ANALYZE
 .SKIPEP
 .THRESH
-1.0D-6
+ 1.0D-3         !we use poor convergence threshold for the test
 *QUADRATIC
 .SKIPEP
 .THRESH
- 1.0D-6
+ 1.0D-3         !we use poor convergence threshold for the test
 .B FREQ
  1
  0.06
