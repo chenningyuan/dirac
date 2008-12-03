@@ -33,7 +33,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 28)
+      PARAMETER (NTABLE = 32)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -60,7 +60,8 @@ C
      &            '.SAOP  ','.SAOP! ','.SDFT  ','.VRG   ',
      &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
      &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
-     &            '.XALDA-','.DFTTHR','.4CGRID','.XXXXXX'/
+     &            '.XALDA-','.DFTTHR','.4CGRID','.COARSE',
+     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -86,14 +87,16 @@ C          geometry in a geometry optimization) /hjaaj
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
+
       RADINT = 1.0D-13
+      ANGMIN = 15
       ANGINT = 41
+
       INTCHK = 0
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
       DFTELS = 1.0D-3
       NOPRUN = .FALSE.
-      ANGMIN = 15
       ATSIZE = .FALSE.
       import_grid = .false.
       export_grid = .false.
@@ -140,7 +143,8 @@ C
      &                     13,14,15,16,
      &                     17,18,19,20,
      &                     21,22,23,24,
-     &                     25,26,27,28), I
+     &                     25,26,27,28,
+     &                     29,30,31,32), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -352,7 +356,22 @@ C     .GAUNTSCALE
                  force_4c_grid = .true.
                  go to 100
 
+!                .COARSE grid parameters
  28              continue
+                 radint = 1.0d-11
+                 angint = 35
+                 go to 100
+
+ 29              continue
+                 go to 100
+
+ 30              continue
+                 go to 100
+
+ 31              continue
+                 go to 100
+
+ 32              continue
                  go to 100
 
             ELSE IF (PROMPT .EQ. '*') THEN
