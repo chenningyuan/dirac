@@ -3,7 +3,7 @@
 ! The chosen functionals are GRAC: PBE0gracLB94
 !                        and SAOP: GLLBsaopLBalpha
 !
-! Note that the cc-pVDZ basis set is not appropriate for production calculations
-! of polarizabilities.
+! We assume that the basis sets are available in your standard path.
+! These sets can be obtained from the Dalton distribution and may later be included in the DIRAC distribution as well.
 !
-! We assume that the cc-pVDZ basis set is available in your standard path.
+! Note that a coarse DFT grid and a poor convergence threshold is used.

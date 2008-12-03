@@ -9,8 +9,9 @@
  GLLBhole
 *DFT
 .SAOP!
-.ZIPGRID     !remove this keyword
-XYZ          !if you change the mol file
+.ZIPGRID        !remove this keyword
+XYZ             !if you change the mol file
+.COARSE         !for the test we use a coarse grid
 **INTEGRALS
 .NUCMOD
  1
@@ -18,7 +19,7 @@ XYZ          !if you change the mol file
 .DHF
 *DHFCAL
 .EVCCNV
- 1.0E-9
+ 1.0E-5         !we use poor convergence threshold for the test
 **PROPERTIES
 .POLARIZABILITY
 *EXPECTATION

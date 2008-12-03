@@ -1,11 +1,11 @@
 #!/bin/sh
 
-MOL=Ne;               export MOL;
+export MOL=Ne
 
-MENU=PBE0gracLB94;    export MENU;
+export MENU=PBE0gracLB94
 ../run.sh
 
-MENU=GLLBsaopLBalpha; export MENU;
+export MENU=GLLBsaopLBalpha
 ../run.sh
 
 exit 0
