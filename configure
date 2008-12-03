@@ -673,11 +673,15 @@ if [ "$par" = "yes" ]; then
        elif [ "$localdisks"="yes" -a "$mach_file_mpirun"="yes"  ]; then
          $echo '\nBoth local disks & MPI launcher need default machinefile !'
        elif [ "$localdisks"="no" -a "$mach_file_mpirun"="yes"  ]; then
-         $echo '\n MPI launcher needs default machinefile ! '
+         $echo '\nMPI launcher needs default machinefile ! '
        fi 
 
        if [ $read_mach_file ]; then
-         $echo '\n Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
+         $echo '\nWarning: Each queuing system has its own variable for the file '
+         $echo 'with reserved nodes (machinefile). For instance, $HOSTNAME for SGE,'
+         $echo 'for IBM LoadLeveler is $XXXXX ....'
+         $echo 'As the default we offer $PBS_NODEFILE of the OpenPBS batch system.'
+         $echo 'Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
          read mach_file
          if [ -z "$mach_file" ]; then
             mach_file='$PBS_NODEFILE'
@@ -695,7 +699,7 @@ if [ "$par" = "yes" ]; then
    rcp=rcp
    if [ "$localdisks" = "yes" ]; then
      if [ $quick = 0 ]; then
-       $echo 'Remote shell/copy for passing files to local disks (rsh/ssh) (default: rsh): \c'
+       $echo '\nRemote shell/copy for passing files to local disks (rsh/ssh) (default: rsh): \c'
        read rsh
        case "$rsh" in
 	 "ssh")
@@ -1830,9 +1834,9 @@ get_f90_flags(){
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
-     #radovan: on my laptop this does not work
-     #         i get: ./dirac.x: error while loading shared libraries: libifport.so.5: cannot open shared object file: No such file or directory
-     #ldflag="-i_dynamic" # for ifort/ompi ilp64 arch
+      if [ "$par" = "yes" ]; then
+       ldflag="-i_dynamic" # activate it only for ifort-parallel 
+      fi
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
@@ -1848,9 +1852,12 @@ get_f90_flags(){
        ;;
   esac
 
-if [ $IPRINT -ge "5" ];  then
- echo 'get_f90_flags: got opt='$opt
-fi
+  if [ $IPRINT -ge "5" ];  then
+    echo '***  get_f90_flags ***'
+    echo '    opt='$opt
+    echo '   safe='$safe
+    echo '    mod='$mod
+  fi
 
 }
 
@@ -1890,10 +1897,10 @@ get_cc_flags(){
     ;;
   esac
 
-if [ $IPRINT -ge "5" ];  then
- echo 'get_cc_flags: got c_opt='$c_opt
- echo 'get_cc_flags: got c_safe='$c_safe
-fi
+  if [ $IPRINT -ge "5" ];  then
+   echo 'get_cc_flags: got c_opt='$c_opt
+   echo 'get_cc_flags: got c_safe='$c_safe
+  fi
 
 }
 
@@ -2326,7 +2333,6 @@ F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
 
-
 EOF
 
 #
@@ -2393,14 +2399,15 @@ SRC_DIR=$SRC_DIR
 BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
 ### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables)
 MPIRUN=$mpirun
-### ... is machinefile needed for MPIRUN launcher ? 
+### ... is machinefile needed for the MPIRUN launcher ? 
 MACH_FILE_MPIRUN=$mach_file_mpirun
-# .... if yes, input files are beeing copied there using machinefile 
+# .... if local disks needed, input files are copied onto slaves listed in machinefile 
 LOCALDISKS=$localdisks
-# ... default machine file - either for mpirun or for copying files onto local disks
+# ... default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file
-# .... if yes, input files are beeing copied there
+# 
 # For passing files to local disks:
+#
 RCP=$rcp
 RSH=$rsh
 #

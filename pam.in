@@ -399,10 +399,10 @@ remove_work_dir()
    if [ " $RMWRK" -eq 1 ]; then
       if [ $EXIT -eq 0 ]; then
          rm -fr $WRK
-         echo "Work work directory $WRK on master node $master deleted"
+         echo "Work directory $WRK on (master) node $master deleted"
       else
          echo '*** DIRAC terminated with an error exit code'
-         echo "- THEREFORE scratch work directory $WRK is not deleted as normal"
+         echo "- THEREFORE (master) scratch work directory $WRK is not deleted as normal"
          echo "  so you may restart the calculation, or debug, if possible"
          echo "  ( $WRK may be deleted by your queueing system )"
          echo "- REMEMBER to delete $WRK yourself !!!"; echo
