@@ -835,7 +835,7 @@ C           lz is pure imaginary operator - scale with -1.0
 C           FIXME: introduce proper scaling for each imaginary 
 C                  operator
             DMONE = -1.0D0
-            IF( PRPNAM(INDXPR) .eq. 'z-angular mom') THEN
+            IF( PRPNAM(INDXPR) .eq. 'z-angular mom' )THEN
               CALL DSCAL(NPROP_ROOTS_KRCI,DMONE,WORK(KXR),1)
               IF(MZ.eq.2) CALL DSCAL(NPROP_ROOTS_KRCI,DMONE,WORK(KXI),1)
             END IF
@@ -869,6 +869,10 @@ C             calculate all dot products <sigma_ISTATE_X|C_ISTATE_Y>
               IF( ISSM .ne. ISYMEIG_KRCI(ISTATE_Y)) GOTO 300
               CALL INPRDD_REAL_CPLX(VEC1,VEC2,LUHC,LUC,1,ISTATE_Y,1,
      &                              -1,XR,XI,MZ)
+              IF( PRPNAM(INDXPR) .eq. 'z-angular mom') THEN
+                XR = -XR
+                XI = -XI
+              END IF
               XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,1) = XR
               IF( MZ .eq. 2 ) XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2) = XI
 C

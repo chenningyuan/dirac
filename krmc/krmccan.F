@@ -1012,6 +1012,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER ( XTHRESH = 1.0D-7 )
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1089,12 +1090,15 @@ C             f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
             SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
-        WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
-     & '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
-     &       JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
-     &       (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
-        WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
-     & '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
+C
+C           print only values above a given threshold - 1.0D-7
+            IF( (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 .lt. XTHRESH ) GOTO 100
+            WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
+     &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
+     &      (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
+            WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
+     &  '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
  100      CONTINUE
  200    CONTINUE
         WRITE(LUPRI,*) 
@@ -1102,6 +1106,8 @@ C             f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
      & '----------'
         WRITE(LUPRI,'(1A,1F10.6)')
      $     '   Sum of oscillator strength : ',SUML
+C
+#ifdef CODE_NOT_WORKING
 C
 C       determine index for (dx,dy,dz)
         XLABEL     = 'X dip vel'
@@ -1159,8 +1165,9 @@ C             f_(dx,dy,dz)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
         WRITE(LUPRI,'(1A,1F10.6/)')
      &     '   Sum of oscillator strength : ',SUMV
         WRITE(LUPRI,'(1A,1F10.6/)')
-     &     '   Total sum of oscillator strengths (velocity + length'//
+     &     '   Total sum of oscillator strengths (length + velocity'//
      &     ' gauge)  : ',SUMV+SUML
+#endif
       END IF
 C
 C     2. omega expectation values
