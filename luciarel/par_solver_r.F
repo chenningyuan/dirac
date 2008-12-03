@@ -133,12 +133,12 @@ C
 C      do more explicit timing
        TIMING  = .TRUE.
 C
-C      set check point parameters - approx after 20%, 40%, 60%, ... 
+C      set check point parameters - approx after every 5th iteration 
 C      of MAXIT
        ITER_CHECKP = 0
        ICHPARAM    = 0
        IF( CHECKPOINT_LUCIX )THEN
-         ICHPARAM    = MAXIT/5
+         ICHPARAM    = 5
        END IF
 C
        IPICO = 0
@@ -872,12 +872,11 @@ C
 C     timing
       TIMING = .FALSE.
 C
-C     set check point parameters - approx after 20%, 40%, 60%, ...
-C     of MAXIT
+C     set check point parameters - approx after every 5th iteration
       ITER_CHECKP = 0
       ICHPARAM    = 0
       IF( CHECKPOINT_LUCIX )THEN
-        ICHPARAM    = MAXIT/5
+        ICHPARAM    = 5
       END IF
 C
 C     initialize LZERO_SCRRED
