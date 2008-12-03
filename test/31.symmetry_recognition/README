@@ -1,7 +1,6 @@
+! The test is meant to check the automatic detection of symmetry and calculates the nonrelativistic energy.
 !
-! This test calculates the non-relativistic DFT energy with the B3LYP functional
-! Note that we consistently leave out the SS integrals.
+! We assume that the basis sets are available in your standard path.
+! These sets can be obtained from the Dalton distribution and may later be included in the DIRAC distribution as well.
 !
-! The test is meant to check the automatic detection of symmetry and the use of NR basis sets
-! We assume that the correlation consistent basis sets are available in your standard path. These sets can be
-! obtained from the DALTON distribution and may later be included in the DIRAC distribution as well.
+! Note that a coarse DFT grid is used and the calculation is stopped after 4 iterations.

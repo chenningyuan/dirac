@@ -1,26 +1,14 @@
 #!/bin/sh
-#
-# Set up calculation
-#
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short")
-         MOL=H2O
-         ;;
-      "medium")
-         MOL=CH4
-         ;;
-      "long"|"small_benchmark")
-         MOL=SF6
-         ;;
-      "benchmark"|"large_benchmark")
-         MOL=SF6
-         ;;
-   esac
-else
-   MOL=H2O
-fi
-MENU=b3lyp;
-export MENU;
-export MOL;
+
+export MENU=lda
+
+export MOL=H2O
 ../run.sh
+
+export MOL=CH4
+../run.sh
+
+export MOL=SF6
+../run.sh
+
+exit 0
