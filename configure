@@ -586,7 +586,8 @@ if [ -z "${par}" ]; then
   fi
 fi
 
-read_mach_file=0
+# initialize for asking for machinefile
+read_mach_file=
 
 echo '=> Parallel version: '${par}''
 if [ "$par" = "yes" ]; then
@@ -660,12 +661,11 @@ if [ "$par" = "yes" ]; then
 #  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-      # if ! ask_yesno y "Does your MPI/cluster setting need machinefile ?"; then
        if ! ask_yesno n "Does your MPI setting require machinefile for mpirun (like mpich2) ?"; then
           mach_file_mpirun="yes"
+          read_mach_file=1
        else
           mach_file_mpirun="no"
-          read_mach_file=1
        fi
 
        if [ "$localdisks"="yes" -a "$mach_file_mpirun"="no"  ]; then
