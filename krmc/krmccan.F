@@ -1270,9 +1270,11 @@ C
 C       extract x-x part of <OMEGA>-matrix
         CALL MATGATX(OMEGAMAT,NOMEGAST,WORK(KOMX),NXSTATES,IX_AC,NZ)
 C
-C       WRITE(LUPRI,*) ' OMEGAMAT (block) before diagonalization'
-C       CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
-C    &                NZ*NXSTATES**2,LUPRI)
+#ifdef MOD_DEBUG
+        WRITE(LUPRI,*) ' OMEGAMAT (block) before diagonalization'
+        CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
+     &                NZ*NXSTATES**2,LUPRI)
+#endif
 C
 C       diagonalize
         CALL DIAGC('X',WORK(KOMX),WORK(KEIGX),WORK(KEIGVCX),
@@ -1296,13 +1298,15 @@ C       ascending order - find absolute largest element in each
 C       eigenvector to identify the corresponding CI eigenstate.
         IF( NZ .ge. 2 )THEN
 C
+#ifdef CODE_NOT_WORKING
 C         FIXME: this "reordering" code does not work properly ...
 C
 C         list of CI eigenstates
-C         CALL MEMGET('REAL',KEIGTX,  NXSTATES      ,WORK,KFREE,LFREE)
-C         CALL DZERO(WORK(KEIGTX),NXSTATES)
-C         CALL GET_XOMEGALIST(WORK(KEIGTX),WORK(KEIGVCX),NXSTATES,
-C    &                        XREPOM(IX),WORK(KEIGX))
+          CALL MEMGET('REAL',KEIGTX,  NXSTATES      ,WORK,KFREE,LFREE)
+          CALL DZERO(WORK(KEIGTX),NXSTATES)
+          CALL GET_XOMEGALIST(WORK(KEIGTX),WORK(KEIGVCX),NXSTATES,
+     &                        XREPOM(IX),WORK(KEIGX))
+#endif
           WRITE(LUPRI,'(/A/)') 
      &    ' ***** OMEGA VALUES ARE SORTED in ascending order *****'
           WRITE(LUPRI,'(A)') 
@@ -1316,7 +1320,6 @@ C         print section
             WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
      &            I,XREPOM(IX),WORK(KEIGX+I-1)
           END DO
-
         ELSE
 C
 C         print section
