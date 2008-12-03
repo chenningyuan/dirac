@@ -8,6 +8,13 @@ export MOL=H2O
 export MOL=CH4
 ../run.sh
 
+if [ "$RUNTYPE" = "short" ]; then
+   echo
+   echo "Completed short test"
+   echo "<-----"
+   exit
+fi
+
 export MOL=SF6
 ../run.sh
 
