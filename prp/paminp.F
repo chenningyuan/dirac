@@ -70,7 +70,7 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.C6    ','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -93,6 +93,7 @@ C
       DIPOLE       = .FALSE.
       QUADRU       = .FALSE.
       EPOLAR       = .FALSE.
+      DOVDW        = .FALSE.
       MSUSCP       = .FALSE.
       IMAGOUT      = 0
       SHIELD       = .FALSE.
@@ -366,6 +367,10 @@ C&&&& OPTROT - do optical rotation
             OPTROT = .TRUE.
             GO TO 100
   133    CONTINUE 
+C&&&& .C6 - evaluate C6 dispersion coefficients
+            DOXLR  = .TRUE.
+            EPOLAR = .TRUE.
+            DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
 C&&&& XXXXXX

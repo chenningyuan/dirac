@@ -28,7 +28,7 @@
       LOGICAL DOEXP, DOXLR, DOXPP, DOXQR, DIPOLE, EPOLAR, MSUSCP,       &
      &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
-     &        DOTPA,DOVER,DOEXCPRP,                                     &
+     &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
      &        test_aoresponse
@@ -38,7 +38,7 @@
 
       CHARACTER*4 PRPWF(MXPRPWF)
 
-      COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,       &
+      COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,DOVDW, &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &

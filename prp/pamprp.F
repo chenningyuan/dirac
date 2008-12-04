@@ -1969,6 +1969,8 @@ C
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
+      dimension average(maxflr)
+C
       CALL AROUND('Electric dipole polarizability')
       WRITE(LUPRI,*)
 C
@@ -2034,12 +2036,11 @@ C
           ENDIF
         ENDDO
 C
-C
-C       calculate average of trace
+C       calculate tensor trace
 C       ==========================
 C
-        average = (tmpmat(1, 1) + tmpmat(2, 2) + tmpmat(3, 3))/3.0d0
-C
+        average(ifreq)=(tmpmat(1,1)+tmpmat(2,2)+tmpmat(3,3))/3.0d0
+      
 C
 C       printout a.u.
 C       =============
@@ -2052,9 +2053,7 @@ C
      &              'zz', TMPMAT(3,3), 'a.u.', CNVTEXT(3)
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A5)') '@  ',
-     &              'average', average, 'a.u.'
-        WRITE(LUPRI,'(A)') '@'
-        WRITE(LUPRI,*)
+     &              'average', average(ifreq), 'a.u.'
 
 
 !       calculate anisotropy
@@ -2063,51 +2062,36 @@ C
         anisotropy_squared = 0.0d0
         do i = 1, 3
           do j = 1, 3
-            anisotropy_squared = anisotropy_squared
+              anisotropy_squared = anisotropy_squared
      &                         + (3.0d0/2.0d0)*tmpmat(i, j)*tmpmat(i, j)
      &                         - (1.0d0/2.0d0)*tmpmat(i, i)*tmpmat(j, j)
           end do
         end do
-
-        anisotropy = anisotropy_squared**0.5d0
 C
+        if (abs(anisotropy_squared) .lt. 1.0D-12) then
+           anisotropy = 0.0d0
+        else
+           anisotropy = anisotropy_squared**0.5d0
+        end if
 C
 C       print anisotropy
 C       ================
 C
         WRITE(LUPRI,'(A3,A11,F9.3,A10)') '@  ',
      &              'anisotropy', anisotropy, 'a.u.'
-        WRITE(LUPRI,'(A)') '@'
-C
-C
-C       convert to SI units
-C       ===================
-C
-        DO I = 1,3
-          DO J = 1,3
-            TMPMAT(I,J) = TMPMAT(I,J)*DFAC
-          ENDDO
-        ENDDO
-C
-C
-C       convert average of trace
-C       ========================
-C
-        average = average*DFAC
-C
 C
 C       printout SI
 C       ===========
 C
+        WRITE(LUPRI,'(/A3,A3,F22.8,A12)') '@  ',
+     &              'xx', TMPMAT(1,1)*DFAC, 'angstrom**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'xx', TMPMAT(1,1), 'angstrom**3'
+     &              'yy', TMPMAT(2,2)*DFAC, 'angstrom**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'yy', TMPMAT(2,2), 'angstrom**3'
-        WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &              'zz', TMPMAT(3,3), 'angstrom**3'
+     &              'zz', TMPMAT(3,3)*DFAC, 'angstrom**3'
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
-     &              'average', average, 'angstrom**3'
+     &              'average', average(ifreq)*DFAC, 'angstrom**3'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
 C
@@ -2117,6 +2101,10 @@ C
       ENDDO
 C
       CALL PRSYMB(LUPRI,'-',46,0)
+C
+      if (dovdw) then
+         call van_der_waals(nbfreq-1,average(2),work(kfree),lfree)
+      end if
 C
       RETURN
       END

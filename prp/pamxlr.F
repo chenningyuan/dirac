@@ -377,10 +377,11 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.IMAGIN','.GAUSS-','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
+#include "gauss_legendre.h"
 C
 
       IF (SET) THEN
@@ -423,8 +424,20 @@ C        as the default for LevyLe/BSS
       NLRBPT     = 0
       CALL IZERO(NLRAP,8)
       CALL IZERO(NLRBP,8)
-      NBFREQ     = 1
-      BFREQ(1)   = D0
+      IF (.NOT. DOVDW) THEN
+C     Ordinary linear response calculation
+         XLR_IMFREQ = .FALSE.
+         NBFREQ     = 1
+         BFREQ(1)   = D0
+      ELSE
+C     Calculation of C6 dispersion coefficient
+         XLR_IMFREQ = .TRUE.
+         NBFREQ = 11
+         BFREQ(1) = 0.0D0
+         DO IFREQ=1,10
+            BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+         END DO
+      END IF
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
       XLR_SKIPEE = .FALSE.
@@ -435,7 +448,6 @@ C        as the default for LevyLe/BSS
       TRIAB      = .FALSE.
       XLR_XVCFIL = 'NORXVC'
       XLR_UNCOUP = .FALSE.
-      XLR_IMFREQ = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
       NOSPIA     = .FALSE.
@@ -511,6 +523,14 @@ C&&&& OPERATOR: Both left/right side operator
                GO TO 100
     5          CONTINUE
 C&&&& B FREQuency
+                  IF (DOVDW) THEN
+C                 if van der Waals calculation, then frequencies are
+C                 set by the choice of quadrature scheme
+                     READ (LUCMD,*)
+                     READ (LUCMD,*)
+                     WRITE (LUPRI,'(/A)') 'Warning: frequencies ignored'
+                     GOTO 100
+                  END IF
                   READ (LUCMD, *) NBFREQ
                   IF (NBFREQ.GT.0) THEN
                     IF (NBFREQ.LE.MAXFLR) THEN
@@ -655,6 +675,44 @@ C&&& IMAGINARY: Purely imaginary frequencies
                  XLR_IMFREQ = .TRUE.
                GO TO 100
  34            CONTINUE
+C%%% GAUSS-LEGENDRE: specify number of quadrature points
+               READ(LUCMD,*) NBFREQ
+               NBFREQ = NBFREQ + 1
+               BFREQ(1) = 0.0D0
+               IF (NBFREQ-1.EQ.6) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_6PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.8) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_8PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.10) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.12) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_12PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.14) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_14PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.16) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_16PT(IFREQ)
+                  END DO                
+               ELSE
+                  NBFREQ=11
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+                  END DO
+                  WRITE(LUPRI,'( 3(/A) )') 
+     &' Warning! Incorrect number of quadrature points.',
+     &' Gauss-Legendre integration only implemented for'//
+     &' 6,8,10,12,14,16 points.', 'Default of 10 points will be used.'
+               END IF
                GO TO 100
  35            CONTINUE
                GO TO 100
@@ -869,11 +927,17 @@ C     CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'REAL frequencies:'
-      ENDIF
+      ENDIF    
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
       ENDDO
+      IF(DOVDW) THEN
+        WRITE(LUPRI,'(A)')
+     &' * Calculation of C6 dispersion coefficient'
+        WRITE(LUPRI,'(A,I2,A)')
+     &' * Gauss-Legendre integration with ',NBFREQ-1,' points' 
+      ENDIF
   999 CONTINUE
       IF (XLR_SKIPEE .AND. XLR_SKIPEP) THEN
          INPERR = INPERR + 1
