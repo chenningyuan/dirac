@@ -4009,3 +4009,148 @@ C=======================================================================
       RETURN
       END
 #endif
+
+      SUBROUTINE GET_AO_ATOM_MAP(IAOATOM)
+C     Return an array with the index of the atom carrying a certain
+C     AO. In case of SO combinations from multiple atoms give the index
+C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "aosotr.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
+      DIMENSION IAOATOM(NTBAS(0))
+      NAORBC = 0
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ  = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          NAORB = 0
+          DO ISHELL = 1,NLRGSH
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   IAOATOM(NAORBC) = JCENT
+c                   print *,naorb,'<->',naorbc
+                endif
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      NAORBL = NAORB
+C
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          NAORB = NAORBL
+          DO ISHELL = NLRGSH+1,KMAX
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   IAOATOM(NAORBC) = JCENT
+                endif
+              ENDDO
+             ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      END
+
+c
+c     Plan: Dcap = purify(D + [D,P]*[D,P]')
+c     Test that Dcap is pure, and [Dcap,P] = [Dcap,D] = 0
+c
+c
+      subroutine make_fragment_projector(icent,ncent,P,cmo)
+c     Make a projector on the basis of centers icent(1)
+c     .. icent(ncent) (and their symmetry related centers). The
+c     projector is created in MO basis (given by cmo) -ulfek
+      implicit none
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      integer icent, ncent, aomap, i, j, ifind,lwork
+      double precision P, tmp, cmo,work
+      double precision, allocatable :: Pao(:,:), Pso(:,:), vec(:,:),
+     &     val(:)
+      dimension P(norbt,norbt), icent(ncent), aomap(ntbas(0))
+c     Set up projector in AO basis
+      call get_ao_atom_map(aomap)
+      allocate( Pao(ntbas(0),ntbas(0)) )
+      allocate( Pso(ntbas(0),ntbas(0)) )
+      call dzero(Pao(1,1),ntbas(0)**2)
+      do i=1,ntbas(0)
+         if (ifind(aomap(i),icent,ncent).gt.0) then
+            Pao(i,i) = 1
+         endif
+      enddo
+      call dzero(Pso(1,1),ntbas(0)**2)
+c     go to so basis TODO: is irepdmp=0 correct?
+      call mtaoso(Pao,Pso,ntbas(0),0,0)
+c     to mo basis
+      call qtrans90('AOMO','S',0.0D0,
+     &     ntbas(0),ntbas(0),norbt,norbt,
+     &     Pso,ntbas(0),ntbas(0),1,ipqtoq(1,0),
+     &     P,norbt,norbt,1,ipqtoq(1,0),
+     &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),
+     &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),0)
+      deallocate( Pso )
+      deallocate( Pao )
+      call purify(P,norbt,1,1.0D-8,work,lwork)
+      end
+
+
+      subroutine purify(P,n,mz,thres)
+c     purify quaternion matrix P by setting eigenvalues > thres to 1 and
+c     eigenvalues <= thres to 0.
+      implicit none
+#include "dgroup.h"
+#include "dcbbas.h"
+      double precision P(n,n,mz), thres
+      double precision, allocatable :: val(:), vec(:,:,:)
+      integer ierr, kveg, keig, nvec, n, mz, i, j, k
+      allocate( vec(n,n,mz) )
+      allocate( val(n) )
+      call qdiag90(mz,n,P,n,n,val,1,vec,n,n,ierr)
+      if (ierr.ne.0) then
+         call quit('qdiag failed in purify()')
+      endif
+c     see how many nonzero eigenvalues we have
+      nvec = 0
+      print *,'In purify() - eigenvalues:'
+      do i=1,n
+         print *,val(i)
+         if (val(i).gt.thres) then
+            nvec = nvec + 1
+         endif
+      enddo
+c     P = vec*vec' for vectors n-nvec+1 .. n
+      CALL qgemm(n,n,nvec,1.0D0,
+     &     'N','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
+     &     'H','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
+     &          0.0D0,IPQTOQ(1,0),P,n,n,mz)
+      deallocate( vec )
+      deallocate( val )
+      end
