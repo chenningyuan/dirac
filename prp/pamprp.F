@@ -2103,7 +2103,10 @@ C
       CALL PRSYMB(LUPRI,'-',46,0)
 C
       if (dovdw) then
-         call van_der_waals(nbfreq-1,average(2),work(kfree),lfree)
+!        radovan: sorry for this comment but the target routine is 
+!                 missing in the repository
+!                 please add and uncomment
+!        call van_der_waals(nbfreq-1,average(2),work(kfree),lfree)
       end if
 C
       RETURN
