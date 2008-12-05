@@ -94,7 +94,7 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 
 clean:
-	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~'`
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
 
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
@@ -102,6 +102,9 @@ ftnchek:
 # ... compilation of the standalone HSMRCC code
 hs:
 	make -C hsmrcc/hsmrcc_external/.
+
+gcov:
+	find . -name '*.o' | xargs -iobj -n1 gcov -b -o obj obj
 
 # Main target here is utils, which buils all utilities and
 # puts them in $(INSTALL_DIR/bin)
