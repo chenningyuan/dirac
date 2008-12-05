@@ -1119,10 +1119,13 @@ C
       IF(XLR_XVCFIL.NE.'NORXVC') THEN
         INQUIRE(FILE=XLR_XVCFIL,EXIST=TOBE)
         RSREST = TOBE
-      ENDIF
-      IF(RSREST) THEN
-        LURST = 28
-        CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
+        IF(RSREST) THEN
+          LURST = 28
+          CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
+        ELSE
+          WRITE(LUPRI,*)
+     &    '*** WARNING: Restart file '//XLR_XVCFIL//' not found !'
+        ENDIF
       ENDIF
 
       CALL QEXIT('SETXLR')
