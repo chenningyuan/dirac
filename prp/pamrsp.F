@@ -1603,11 +1603,8 @@ C     Exit routine if no new trial vectors
 C     ====================================
 C
       IF (NTSIM.LT.1) GO TO 9999
-
-      e2full = .true. .and. .not. XRS_NOFQX
-      e2full = .true.
-Chj debug option
 C
+      E2FULL = .FALSE.
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
 #ifdef MOD_KRMC
@@ -2554,14 +2551,16 @@ C
       IF (W.NE.D0) THEN
         CALL DAXPY(N2A,-W,AS,1,WORK(KA2),1)
       END IF
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 'LINRED: Reduced E[2] - WS[2] matrix'
-        CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
-      ENDIF
 C
 C     Place G in buffer X
 C
       CALL DCOPY(N,G,1,X,1)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 'LINRED: Reduced E[2] - WS[2] matrix'
+        CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
+        WRITE(LUPRI,'(A)') 'LINRED: Reduced gradient'
+        CALL PRIRVC(X,N,IBTYP)
+      ENDIF
       IF(IMFREQ) THEN
         CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
         CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KPVT),INFO)
