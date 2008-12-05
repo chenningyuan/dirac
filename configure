@@ -441,8 +441,9 @@ question () {
   if [ -z "$answer" ]; then
     answer="$default"
   fi
+  zero=0
   for item in $answer; do
-    if [ 0 -gt $item -o $item -gt $max_item ]; then
+    if [ $zero -gt $item -o $item -gt $max_item ]; then
       $echo "$item is not a valid choice for $2. Please pick another."
       question "$1" "$2" "$3" "$4" "$5" "$6" "$7"
     fi
