@@ -3779,7 +3779,7 @@ C
      &             IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &             .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &             IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
+     &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,.false.,IDUM,DUM)
               CPU = SECOND() - CPU
               CALL SCRSTA(AOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
@@ -4396,7 +4396,7 @@ C
      &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
+     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,.false.,IDUM,DUM)
            CPU = SECOND() - CPU
            CALL SCRSTA(SOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
@@ -4581,7 +4581,7 @@ C.......Undifferentiated integrals written on file
      &               INDX,INDXAB,INTTYP,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,RTNTWO,ISHLA,I2TYP,ICEDIF,SCREEN,
-     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,.false.,
      &               INDEX,TIMES)
         IF(INTTYP.EQ.0) THEN
           THRS = THRBUF 

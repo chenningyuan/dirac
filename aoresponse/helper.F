@@ -460,10 +460,6 @@
 
       end
 
-      subroutine grcont()
-        call quit('grcont not there')
-      end
-
 
 !     XC stuff
 !     ========

@@ -21,6 +21,7 @@ contains
     type(matrix)  :: S, C_i, D, F
     real(kind_dp) :: freq(4)
     real(kind_dp) :: add_to
+    integer       :: natoms_ifc
 
     freq(1) = aoresponse_freq(1)
     freq(2) = aoresponse_freq(2)
@@ -42,7 +43,7 @@ contains
     call mu(S, D, F)
 
     if (aoresponse_test_geo) then
-      call test_geo(D)
+      call test_grcont(D%nrow, natoms_ifc(), .true., .false.)
     end if
 
     if (aoresponse_alpha) then

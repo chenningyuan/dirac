@@ -1813,7 +1813,7 @@ C
      &            INDXAB,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
      &            TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,
      &            IDUMMY,I2TYP,IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY,DINTSKP,
-     &            .TRUE.,DUMMY,DUMMY)
+     &            .TRUE.,.false.,DUMMY,DUMMY)
 C
 C     Finish buffer file if necessary
 C

@@ -1328,7 +1328,7 @@ C
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1437,7 +1437,7 @@ C
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1555,7 +1555,7 @@ C
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif

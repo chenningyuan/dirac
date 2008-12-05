@@ -19,34 +19,61 @@ module dirac_interface_m
 
 contains
 
-  subroutine g_derv(D)
+  subroutine grcont(work,     &              
+                    lwork,    &               
+                    g,        &           
+                    g_dim,    &               
+                    geo,      &             
+                    london,   &                
+                    max_derv, &                  
+                    iatom_in, &               
+                    energy,   &                
+                    fock,     &              
+                    dmat,     &              
+                    nr_dmat)
 
-    type(matrix), intent(inout) :: D
+    real(kind_dp)              :: work(*)
+    integer                    :: lwork
+
+    real(kind_dp)              :: g(*)
+    integer                    :: g_dim
+
+    logical                    :: geo, london
+
+    integer                    :: max_derv, iatom_in
+
+    logical                    :: energy, fock
+
+    real(kind_dp)              :: dmat(*)
+    integer                    :: nr_dmat
 !   ----------------------------------------------------------------------------
-    logical                     :: debug_me = .false.
+    real(kind_dp), allocatable :: fmat(:)
 
-    real(kind_dp)               :: skip(3,14,3)
-    real(kind_dp)               :: screen
+    real(kind_dp)              :: dummy
+    integer                    :: idummy
 
-    integer                     :: i, i2typ, itype, ifctyp(8)
+    logical                    :: gencnt
 
-    real(kind_dp), allocatable  :: work(:)
-    integer                     :: lwork
+    integer                    :: i, i2typ, itype, ifctyp(8), iatom, fmat_dim
 
-    real(kind_dp)               :: dummy
-    integer                     :: idummy
+    real(kind_dp)              :: skip(3, 14, 3)
+    real(kind_dp)              :: screen, f
 
 #include "mxcent.h"
 #include "cbihr2.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
+#include "dcbbas.h"
 #include "exeinf.h"
 #include "dorps.h"
 
-    D = 2.0d0*D
-    if (debug_me) then
-      call print(D, 'D in AO basis')
-    end if
+    
+
+!     DO I=1,3
+!        DO J=1,MXCENT
+!           DOCOOR(I,J) = .TRUE.
+!        END DO
+!     END DO
 
     do i = 1, 3*mxcent
       dopert(i, 1) = .true.
@@ -58,12 +85,8 @@ contains
     call rsetsym(.false., relgrd, .false., .false.)
     call rtroini(.false.)
 
-    lwork = 20000000
-    call alloc(work, lwork)
-
     call troinv(work, lwork)
 
-    itype  = 2
     screen = -1.0d0
 
 !   set ifctyp
@@ -72,28 +95,75 @@ contains
     ifctyp(2) = 22 !only exchange
     ifctyp(3) = 22
     ifctyp(4) = 22
+    ifctyp(5) = 13 !coulomb and exchange
+    ifctyp(6) = 22 !only exchange
+    ifctyp(7) = 22
+    ifctyp(8) = 22
 
-!   ll integrals
+    iatom = 0
+
+    if (energy) then
+
+      gencnt   = .true.
+      fmat_dim = g_dim
+
+      if (geo) then
+        itype = 2
+      else if (london) then
+        itype = -5
+      else
+        call quit('grcont: differentiated integrals not recognized')
+      end if
+
+    else if (fock) then
+
+      gencnt   = .false.
+      fmat_dim = 3*n2bbasxq
+
+      if (geo) then
+        itype = 8
+        iatom = iatom_in
+      else if (london) then
+        itype = -5
+      else
+        call quit('grcont: differentiated integrals not recognized')
+      end if
+
+    else
+      call quit('programming error in call to grcont')
+    end if
+
+    allocate(fmat(fmat_dim))
+    fmat = 0.0d0
+
+
+!   LL integrals
+!   ============
+
     i2typ    = 1
     intclass = 0
 
-    call dzero(gradee, mxcoor)
+!   call dzero(gradee, mxcoor)
     call dzero(skip, 3*14*3)
 
-    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
-                ifctyp, dummy, idummy, idummy, itype,      &
-                1, 0, .true., .true., .false., tktime,     &
-                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
-                icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, dummy, dummy)
+    call twoint(work, lwork, fmat, dmat, 4*nr_dmat, idummy,       &
+                ifctyp, dummy, idummy, idummy, itype,             &
+                max_derv, iatom, .true., .true., .false., tktime, &
+                1, 0, 0, 0, 0, .false., idummy, i2typ,            &
+                icedif, screen, dummy, dummy, dummy, skip,        &
+                relcal, gencnt, dummy, dummy)
 
-    call dealloc(work)
+    if (fock) then
+       if (geo)                          f = 0.25d0
+       if (london .and. max_derv .eq. 1) f = 0.50d0
+       if (london .and. max_derv .eq. 2) f = 1.00d0
 
-    do i = 1, 12
-      write(*,*) 'blub', i, gradee(i)
-    end do
+       call dscal(fmat_dim, f, fmat, 1)
+    end if
 
-    D = 0.5d0*D
+    call dcopy(g_dim, fmat, 1, g, 1)
+
+    deallocate(fmat)
 
   end subroutine
 

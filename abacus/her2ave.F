@@ -32,12 +32,12 @@ C  /* Deck intexp */
      &                  NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
-     &                  DINTSKP)
+     &                  DINTSKP,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT
+      LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*), 
@@ -95,7 +95,7 @@ CMI       ... I try this ...
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DDFOCK,
-     &            DINTSKP)
+     &            DINTSKP,GENCNT)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -105,7 +105,7 @@ C  /* Deck intex1 */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &                  NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,
-     &                  DDFOCK,DINTSKP)
+     &                  DDFOCK,DINTSKP,GENCNT)
 C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
@@ -123,7 +123,7 @@ C
      &           D4 = 4.0 D00, D8 = 8.0 D00)
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
-     &        EXPECT, LONDON, DOQUAT
+     &        EXPECT, LONDON, DOQUAT, GENCNT
 Cjth - bugfix ICORBD(NORBC)  -->  ICORBD(NORBD)
 C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -442,6 +442,68 @@ C                             ... subtract the act-act part, treated with PAO
      &                                - DMAT(D,A,8)*DMAT(C,B,8)
                                 END IF
                               END IF
+
+                              if (gencnt) then
+
+!                               radovan: for the moment noddy,
+!                               later i will make it more efficient
+
+!                               there are two matrices now
+!                               and we don't assume that the matrices are symmetric
+!                               first matrix is on 1-4, second 5-8
+!                               without SOC, operate only on 1 and 5
+
+                                pval = (dmat(a, b, 1) + dmat(b, a, 1))
+     &                                *(dmat(c, d, 5) + dmat(d, c, 5))
+     &                               + (dmat(a, b, 5) + dmat(b, a, 5))
+     &                                *(dmat(c, d, 1) + dmat(d, c, 1))
+
+                                xval = dmat(d, b, 1)*dmat(a, c, 5)
+     &                               + dmat(b, d, 1)*dmat(c, a, 5)
+     &                               + dmat(c, b, 1)*dmat(a, d, 5)
+     &                               + dmat(b, c, 1)*dmat(d, a, 5)
+     &                               + dmat(d, a, 1)*dmat(b, c, 5)
+     &                               + dmat(a, d, 1)*dmat(c, b, 5)
+     &                               + dmat(c, a, 1)*dmat(b, d, 5)
+     &                               + dmat(a, c, 1)*dmat(d, b, 5)
+
+!                               SOC situation, only exchange part
+                                if (doquat) then
+                                xval = xval
+!                                      2-6
+     &                               + dmat(d, b, 2)*dmat(a, c, 6)
+     &                               + dmat(b, d, 2)*dmat(c, a, 6)
+     &                               + dmat(c, b, 2)*dmat(a, d, 6)
+     &                               + dmat(b, c, 2)*dmat(d, a, 6)
+     &                               + dmat(d, a, 2)*dmat(b, c, 6)
+     &                               + dmat(a, d, 2)*dmat(c, b, 6)
+     &                               + dmat(c, a, 2)*dmat(b, d, 6)
+     &                               + dmat(a, c, 2)*dmat(d, b, 6)
+!                                      3-7
+     &                               + dmat(d, b, 3)*dmat(a, c, 7)
+     &                               + dmat(b, d, 3)*dmat(c, a, 7)
+     &                               + dmat(c, b, 3)*dmat(a, d, 7)
+     &                               + dmat(b, c, 3)*dmat(d, a, 7)
+     &                               + dmat(d, a, 3)*dmat(b, c, 7)
+     &                               + dmat(a, d, 3)*dmat(c, b, 7)
+     &                               + dmat(c, a, 3)*dmat(b, d, 7)
+     &                               + dmat(a, c, 3)*dmat(d, b, 7)
+!                                      4-8
+     &                               + dmat(d, b, 4)*dmat(a, c, 8)
+     &                               + dmat(b, d, 4)*dmat(c, a, 8)
+     &                               + dmat(c, b, 4)*dmat(a, d, 8)
+     &                               + dmat(b, c, 4)*dmat(d, a, 8)
+     &                               + dmat(d, a, 4)*dmat(b, c, 8)
+     &                               + dmat(a, d, 4)*dmat(c, b, 8)
+     &                               + dmat(c, a, 4)*dmat(b, d, 8)
+     &                               + dmat(a, c, 4)*dmat(d, b, 8)
+                                end if
+
+                                pval = dp125*pval
+                                xval =  dp25*xval
+
+                              end if !if (gencnt)
+
                               PVAL = PVAL - DP25*XVAL
                               IF (.NOT. NOPMAT) THEN
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
@@ -543,58 +605,206 @@ C
 CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
                         ELSE
 #ifdef PRG_DIRAC
-                           FACTOR = DP125*FAB*FCD*FCABCD
-                           IF (SUSCEP) THEN
-C
-                           IF (NODV) THEN
-                           XCADB = DMAT(C,A,1)*DMAT(D,B,1)
-                           XDACB = DMAT(D,A,1)*DMAT(C,B,1)
-                           IF (DOQUAT) THEN
 
-                              XCADB = XCADB
-     &                        + DMAT(C,A,2)*DMAT(D,B,2)
-     &                        + DMAT(C,A,3)*DMAT(D,B,3)
-     &                        + DMAT(C,A,4)*DMAT(D,B,4)
-                              XDACB = XDACB
-     &                        + DMAT(D,A,2)*DMAT(C,B,2)
-     &                        + DMAT(D,A,3)*DMAT(C,B,3)
-     &                        + DMAT(D,A,4)*DMAT(C,B,4)
+!radovan: added gencnt stuff plus partial deobfuscation of the code
 
-                            ENDIF
-                            PVAL1 = DTAB1*DMAT(C,D,1)
-     &                            - DP25*(XCADB + XDACB)
-                            PVAL2 = DP25*(XCADB - XDACB)
+                          if (suscep .or. gencnt) then
 
-                            ELSE  ! with DV, Rather do not touch yet...
-                              CALL QUIT(
-     &   'INTEX1: The DV part for relativ. suscep. is not implemented!')
-                                 PVAL1  = DTAB*DTCD - DVAB*DVCD
-     &                                  - DP25*(DTAC*DTBD - DVAC*DVBD
-     &                                        + DTAD*DTBC - DVAD*DVBC)
-                                 PVAL2  = DP25*(DTAC*DTBD - DVAC*DVBD
-     &                                        - DTAD*DTBC + DVAD*DVBC)
-                            END IF
-                              IF (.NOT.NOPMAT) THEN
-                                PVAL1 = PVAL1
-     &                                + PAO(IORBA,IORBB,IORBC,IORBD)
-                                PVAL2 = PVAL2
-     &                                + PAA(IORBA,IORBB,IORBC,IORBD)
-                              ENDIF
-                              PVAL1 = FACTOR*PVAL1
-                              PVAL2 = FACTOR*PVAL2
-                              IF (ABS(PVAL1) .GT. THRSH) THEN
-                                 NODER = .FALSE.
-                                 DO 900 I = 7, 18
-                                    DERIV(I)=DERIV(I)+PVAL1*AOINT(INT,I)
-  900                            CONTINUE
-                              END IF
-                              IF (ABS(PVAL2) .GT. THRSH) THEN
-                                 NODER = .FALSE.
-                                 DO 910 I = 19, 27
-                                    DERIV(I)=DERIV(I)+PVAL2*AOINT(INT,I)
-  910                            CONTINUE
-                              END IF
-                           END IF
+                            if (.not. nodv) 
+     &                      call quit('dv suscep not implemented')
+
+                            if (suscep .and. .not. gencnt) then
+
+                              ttcadb = dmat(c, a, 1)*dmat(d, b, 1)
+                              ttdacb = dmat(d, a, 1)*dmat(c, b, 1)
+                              if (doquat) then
+                                ttcadb = ttcadb
+     &                                 + dmat(c, a, 2)*dmat(d, b, 2)
+     &                                 + dmat(c, a, 3)*dmat(d, b, 3)
+     &                                 + dmat(c, a, 4)*dmat(d, b, 4)
+                                ttdacb = ttdacb 
+     &                                 + dmat(d, a, 2)*dmat(c, b, 2)
+     &                                 + dmat(d, a, 3)*dmat(c, b, 3)
+     &                                 + dmat(d, a, 4)*dmat(c, b, 4)
+                              end if
+
+                              pval1 = dmat(a, b, 1)*dmat(c, d, 1) 
+     &                              - dp25*(ttcadb + ttdacb)
+                              pval2 = dp25*(ttcadb - ttdacb)
+
+                            end if
+
+                            if (gencnt .and. .not. suscep) then
+
+!                             coulomb part
+                              pval1_c = (dmat(a, b, 1) - dmat(b, a, 1))
+     &                                 *(dmat(c, d, 5) + dmat(d, c, 5))
+     &                                + (dmat(a, b, 5) - dmat(b, a, 5))
+     &                                 *(dmat(c, d, 1) + dmat(d, c, 1))
+
+!                             exchange part
+                              pval1_x = dmat(d, b, 1)*dmat(a, c, 5)
+     &                                - dmat(b, d, 1)*dmat(c, a, 5)
+     &                                + dmat(c, b, 1)*dmat(a, d, 5)
+     &                                - dmat(b, c, 1)*dmat(d, a, 5)
+     &                                - dmat(d, a, 1)*dmat(b, c, 5)
+     &                                + dmat(a, d, 1)*dmat(c, b, 5)
+     &                                - dmat(c, a, 1)*dmat(b, d, 5)
+     &                                + dmat(a, c, 1)*dmat(d, b, 5)
+
+!                             SOC situation, only exchange part
+                              if (doquat) then
+                              pval1_x = pval1_x
+!                                       2-6
+     &                                + dmat(d, b, 2)*dmat(a, c, 6)
+     &                                - dmat(b, d, 2)*dmat(c, a, 6)
+     &                                + dmat(c, b, 2)*dmat(a, d, 6)
+     &                                - dmat(b, c, 2)*dmat(d, a, 6)
+     &                                - dmat(d, a, 2)*dmat(b, c, 6)
+     &                                + dmat(a, d, 2)*dmat(c, b, 6)
+     &                                - dmat(c, a, 2)*dmat(b, d, 6)
+     &                                + dmat(a, c, 2)*dmat(d, b, 6)
+!                                       3-7
+     &                                + dmat(d, b, 3)*dmat(a, c, 7)
+     &                                - dmat(b, d, 3)*dmat(c, a, 7)
+     &                                + dmat(c, b, 3)*dmat(a, d, 7)
+     &                                - dmat(b, c, 3)*dmat(d, a, 7)
+     &                                - dmat(d, a, 3)*dmat(b, c, 7)
+     &                                + dmat(a, d, 3)*dmat(c, b, 7)
+     &                                - dmat(c, a, 3)*dmat(b, d, 7)
+     &                                + dmat(a, c, 3)*dmat(d, b, 7)
+!                                       4-8
+     &                                + dmat(d, b, 4)*dmat(a, c, 8)
+     &                                - dmat(b, d, 4)*dmat(c, a, 8)
+     &                                + dmat(c, b, 4)*dmat(a, d, 8)
+     &                                - dmat(b, c, 4)*dmat(d, a, 8)
+     &                                - dmat(d, a, 4)*dmat(b, c, 8)
+     &                                + dmat(a, d, 4)*dmat(c, b, 8)
+     &                                - dmat(c, a, 4)*dmat(b, d, 8)
+     &                                + dmat(a, c, 4)*dmat(d, b, 8)
+                              end if
+
+!                             coulomb part (from pval1_c permute signs between dmats)
+                              pval2_c = (dmat(a, b, 1) + dmat(b, a, 1))
+     &                                 *(dmat(c, d, 5) - dmat(d, c, 5))
+     &                                + (dmat(a, b, 5) + dmat(b, a, 5))
+     &                                 *(dmat(c, d, 1) - dmat(d, c, 1))
+
+!                             exchange part (from pval1_x permute some signs: 1, 2, 7, 8)
+                              pval2_x =
+     &                                - dmat(d, b, 1)*dmat(a, c, 5)
+     &                                + dmat(b, d, 1)*dmat(c, a, 5)
+     &                                + dmat(c, b, 1)*dmat(a, d, 5)
+     &                                - dmat(b, c, 1)*dmat(d, a, 5)
+     &                                - dmat(d, a, 1)*dmat(b, c, 5)
+     &                                + dmat(a, d, 1)*dmat(c, b, 5)
+     &                                + dmat(c, a, 1)*dmat(b, d, 5)
+     &                                - dmat(a, c, 1)*dmat(d, b, 5)
+
+!                             SOC situation, only exchange part
+                              if (doquat) then
+                              pval2_x = pval2_x
+!                                       2-6
+     &                                - dmat(d, b, 2)*dmat(a, c, 6)
+     &                                + dmat(b, d, 2)*dmat(c, a, 6)
+     &                                + dmat(c, b, 2)*dmat(a, d, 6)
+     &                                - dmat(b, c, 2)*dmat(d, a, 6)
+     &                                - dmat(d, a, 2)*dmat(b, c, 6)
+     &                                + dmat(a, d, 2)*dmat(c, b, 6)
+     &                                + dmat(c, a, 2)*dmat(b, d, 6)
+     &                                - dmat(a, c, 2)*dmat(d, b, 6)
+!                                       3-7
+     &                                - dmat(d, b, 3)*dmat(a, c, 7)
+     &                                + dmat(b, d, 3)*dmat(c, a, 7)
+     &                                + dmat(c, b, 3)*dmat(a, d, 7)
+     &                                - dmat(b, c, 3)*dmat(d, a, 7)
+     &                                - dmat(d, a, 3)*dmat(b, c, 7)
+     &                                + dmat(a, d, 3)*dmat(c, b, 7)
+     &                                + dmat(c, a, 3)*dmat(b, d, 7)
+     &                                - dmat(a, c, 3)*dmat(d, b, 7)
+!                                       4-8
+     &                                - dmat(d, b, 4)*dmat(a, c, 8)
+     &                                + dmat(b, d, 4)*dmat(c, a, 8)
+     &                                + dmat(c, b, 4)*dmat(a, d, 8)
+     &                                - dmat(b, c, 4)*dmat(d, a, 8)
+     &                                - dmat(d, a, 4)*dmat(b, c, 8)
+     &                                + dmat(a, d, 4)*dmat(c, b, 8)
+     &                                + dmat(c, a, 4)*dmat(b, d, 8)
+     &                                - dmat(a, c, 4)*dmat(d, b, 8)
+                              end if
+
+                              pval1 = pval1_c - dp5*pval1_x
+                              pval2 = pval2_c - dp5*pval2_x
+
+                            end if
+
+                            if (suscep .and. gencnt) then
+
+!                             coulomb part
+                              pval1_c = dmat(a, b, 1)*dmat(c, d, 5)
+     &                                + dmat(b, a, 1)*dmat(d, c, 5)
+     &                                + dmat(c, d, 1)*dmat(b, a, 5)
+     &                                + dmat(d, c, 1)*dmat(a, b, 5)
+
+!                             exchange part
+                              pval1_x = dmat(a, c, 1)*dmat(b, d, 5)
+     &                                + dmat(c, a, 1)*dmat(d, b, 5)
+     &                                + dmat(b, d, 1)*dmat(a, c, 5)
+     &                                + dmat(d, b, 1)*dmat(c, a, 5)
+
+!                             SOC situation, only exchange part
+                              if (doquat) then
+                              pval1_x = pval1_x
+!                                       2-6
+     &                                + dmat(a, c, 2)*dmat(b, d, 6)
+     &                                + dmat(c, a, 2)*dmat(d, b, 6)
+     &                                + dmat(b, d, 2)*dmat(a, c, 6)
+     &                                + dmat(d, b, 2)*dmat(c, a, 6)
+!                                       3-7
+     &                                + dmat(a, c, 3)*dmat(b, d, 7)
+     &                                + dmat(c, a, 3)*dmat(d, b, 7)
+     &                                + dmat(b, d, 3)*dmat(a, c, 7)
+     &                                + dmat(d, b, 3)*dmat(c, a, 7)
+!                                       4-8
+     &                                + dmat(a, c, 4)*dmat(b, d, 8)
+     &                                + dmat(c, a, 4)*dmat(d, b, 8)
+     &                                + dmat(b, d, 4)*dmat(a, c, 8)
+     &                                + dmat(d, b, 4)*dmat(c, a, 8)
+                              end if
+
+                              pval1 = pval1_x
+                              pval1 = d2*pval1_c - pval1_x
+                              pval2 = pval1
+
+                            end if
+
+                            if (.not. nopmat .and. .not. gencnt) then
+                              pval1 = pval1 
+     &                              + pao(iorba, iorbb, iorbc, iorbd)
+                              pval2 = pval2 
+     &                              + paa(iorba, iorbb, iorbc, iorbd)
+                            end if
+
+                            factor = dp125*fab*fcd*fcabcd
+                            pval1  = factor*pval1
+                            pval2  = factor*pval2
+
+                            if (abs(pval1) .gt. thrsh) then
+                              noder = .false.
+                              do i = 7, 18
+                                deriv(i) = deriv(i) 
+     &                                   + pval1*aoint(int, i)
+                              end do
+                            end if
+                            if (abs(pval2) .gt. thrsh) then
+                              noder = .false.
+                              do i = 19, 27
+                                deriv(i) = deriv(i) 
+     &                                   + pval2*aoint(int, i)
+                              end do
+                            end if
+
+                          end if !if (suscep) then
 #else
                            FACTOR = DP125*FAB*FCD*FCABCD
                            IF (SUSCEP) THEN
@@ -712,9 +922,19 @@ C
   100 CONTINUE
       IF (.NOT.NODER) THEN
          IF (.NOT.LONDON .AND. EXPECT) THEN
-            CALL DEROUT(DERIV,NINTYP,IPRINT)
+            IF (GENCNT) THEN
+               CALL DROUTG(DERIV,FT,NINTYP,IPRINT)
+            ELSE
+               CALL DEROUT(DERIV,NINTYP,IPRINT)
+            END IF
          END IF
-         IF (SUSCEP) THEN
+         IF (LONDON .AND. GENCNT) THEN
+            IF (.NOT.SUSCEP) THEN
+               CALL LNDGC1(DERIV,FT,ISYMR,ISYMT,ISYMTS,IPRINT)
+            ELSE IF (SUSCEP) THEN
+               CALL LNDGC2(DERIV,FT,ISYMR,ISYMT,ISYMTS,IPRINT)
+            END IF
+         ELSE IF (LONDON .AND. SUSCEP) THEN
             CALL LNDOUT(DERIV,ISYMR,ISYMT,ISYMTS,IPRINT)
          END IF
       END IF
@@ -1220,6 +1440,191 @@ C
  4020 FORMAT (6F12.6)
  4030 FORMAT (//,1X,' Two-electron integral Hessian ',/)
       END
+
+!     radovan: copy-paste-adaptation of DEROUT
+!              equivalent to DALTON's DROUTG
+      subroutine droutg(deriv, expval, nintyp, iprint)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
+      DIMENSION DERIV(NINTYP), expval(*)
+C
+#include "nuclei.h"
+#include "expcom.h"
+#ifdef PRG_DIRAC
+#include "dcbgrd.h"
+#else
+#include "energy.h"
+#endif
+C
+      IF (IPRINT .GE.10) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 1110) TWOCEN, THRCEN
+         WRITE (LUPRI, 1120) ICENT1, ICENT2, ICENT3, ICENT4
+      END IF
+C
+C     ***************************
+C     ***** Two-Center Case *****
+C     ***************************
+C
+      IF (TWOCEN) THEN
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) - DAX
+            EXPVAL(BY) = EXPVAL(BY) - DAY
+            EXPVAL(BZ) = EXPVAL(BZ) - DAZ
+         END IF
+C
+C
+C     *****************************
+C     ***** Three-Center Case *****
+C     *****************************
+C
+      ELSE IF (THRCEN) THEN
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+         CX = 3*ICENT3 - 2
+         CY = 3*ICENT3 - 1
+         CZ = 3*ICENT3
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+            DBX = DERIV(4)
+            DBY = DERIV(5)
+            DBZ = DERIV(6)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) + DBX
+            EXPVAL(BY) = EXPVAL(BY) + DBY
+            EXPVAL(BZ) = EXPVAL(BZ) + DBZ
+C
+C           C electron-repulsion gradient elements:
+C
+            EXPVAL(CX) = EXPVAL(CX) - (DAX + DBX)
+            EXPVAL(CY) = EXPVAL(CY) - (DAY + DBY)
+            EXPVAL(CZ) = EXPVAL(CZ) - (DAZ + DBZ)
+         END IF
+C
+C
+C     ****************************
+C     ***** Four-Center Case *****
+C     ****************************
+C
+      ELSE
+         AX = 3*ICENT1 - 2
+         AY = 3*ICENT1 - 1
+         AZ = 3*ICENT1
+         BX = 3*ICENT2 - 2
+         BY = 3*ICENT2 - 1
+         BZ = 3*ICENT2
+         CX = 3*ICENT3 - 2
+         CY = 3*ICENT3 - 1
+         CZ = 3*ICENT3
+         DX = 3*ICENT4 - 2
+         DY = 3*ICENT4 - 1
+         DZ = 3*ICENT4
+C
+C        ***** Gradient *****
+C
+         IF (DERONE) THEN
+            DAX = DERIV(1)
+            DAY = DERIV(2)
+            DAZ = DERIV(3)
+            DBX = DERIV(4)
+            DBY = DERIV(5)
+            DBZ = DERIV(6)
+            DCX = DERIV(7)
+            DCY = DERIV(8)
+            DCZ = DERIV(9)
+C
+C           A electron-repulsion gradient elements:
+C
+            EXPVAL(AX) = EXPVAL(AX) + DAX
+            EXPVAL(AY) = EXPVAL(AY) + DAY
+            EXPVAL(AZ) = EXPVAL(AZ) + DAZ
+C
+C           B electron-repulsion gradient elements:
+C
+            EXPVAL(BX) = EXPVAL(BX) + DBX
+            EXPVAL(BY) = EXPVAL(BY) + DBY
+            EXPVAL(BZ) = EXPVAL(BZ) + DBZ
+C
+C           C electron-repulsion gradient elements:
+C
+            EXPVAL(CX) = EXPVAL(CX) + DCX
+            EXPVAL(CY) = EXPVAL(CY) + DCY
+            EXPVAL(CZ) = EXPVAL(CZ) + DCZ
+C
+C           D electron-repulsion gradient elements:
+C
+            EXPVAL(DX) = EXPVAL(DX) - (DAX + DBX + DCX)
+            EXPVAL(DY) = EXPVAL(DY) - (DAY + DBY + DCY)
+            EXPVAL(DZ) = EXPVAL(DZ) - (DAZ + DBZ + DCZ)
+         END IF
+C
+      END IF
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 1110) TWOCEN, THRCEN
+         WRITE (LUPRI, 1120) ICENT1, ICENT2, ICENT3, ICENT4
+         WRITE (LUPRI,'(A,3I5)') ' AX/Y/Z ',AX,AY,AZ
+         WRITE (LUPRI,'(A,3I5)') ' BX/Y/Z ',BX,BY,BZ
+         WRITE (LUPRI,'(A,3I5)') ' CX/Y/Z ',CX,CY,CZ
+         WRITE (LUPRI,'(A,3I5)') ' DX/Y/Z ',DX,DY,DZ
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, NINTYP)
+         NCDEP3 = 3*NUCDEP
+         IF (IPRINT .GE. 10) THEN
+            IF (DERONE) THEN
+               WRITE(LUPRI, 4010)
+               WRITE(LUPRI, 4020) (EXPVAL(I),I=1,NCDEP3)
+            END IF
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
+ 1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+ 4010 FORMAT (//,1X,' Two-electron integral gradient ',/)
+ 4020 FORMAT (6F12.6)
+      END
 C  /* Deck lndout */
       SUBROUTINE LNDOUT(DERIV,ISYMR,ISYMT,ISYMTS,IPRINT)
 C
@@ -1333,6 +1738,192 @@ C
       END IF
       RETURN
  1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+      END
+C  /* Deck lndgc1 */
+      SUBROUTINE LNDGC1(DERIV,EXPVAL,ISYMR,ISYMT,ISYMTS,IPRINT)
+C
+C     K.Ruud, May 2007, based on LNDOUT
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
+      DIMENSION DERIV(*), G1(3), G2(3)
+      DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
+#include "twocom.h"
+#include "symmet.h"
+#include "ibtfun.h"
+      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      NEXT(I) = MOD(I,3) + 1
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Subroutine LNDGC1',-1)
+         WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
+     &                             ISYMR, ISYMT, ISYMTS
+      END IF
+C
+      DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+      DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+      DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+      DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+      DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+      DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+C
+      G1(1) = DERIV(1)
+      G1(2) = DERIV(2)
+      G1(3) = DERIV(3)
+C
+      G2(1) = DERIV(4)
+      G2(2) = DERIV(5)
+      G2(3) = DERIV(6)
+C
+      DO 100 X1 = 1, 3
+         Y1   = NEXT (X1)
+         Z1   = NEXT (Y1)
+         ABY1 = DIFAB(Y1)
+         ABZ1 = DIFAB(Z1)
+         CDY1 = DIFCD(Y1)
+         CDZ1 = DIFCD(Z1)
+         X1S  = IPTAX(X1,2)
+         EXPVAL(X1S) = EXPVAL(X1S)
+     &               - ABY1*G1(Z1)
+     &               + ABZ1*G1(Y1)
+     &               - CDY1*G2(Z1)
+     &               + CDZ1*G2(Y1)
+  100 CONTINUE
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
+         WRITE(LUPRI,'(/A)') ' Unfinished contration with B1 integrals'
+         CALL OUTPUT(EXPVAL,1,3,1,1,3,1,1,LUPRI)
+         IF (IPRINT .GT. 10) THEN
+            WRITE (LUPRI,'(/A)') ' G1 '
+            CALL OUTPUT(G1,1,3,1,1,3,1,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G2 '
+            CALL OUTPUT(G2,1,3,1,1,3,1,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC1 >>>>>>>>',/)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+      END
+C  /* Deck lndgc2 */
+      SUBROUTINE LNDGC2(DERIV,EXPVAL,ISYMR,ISYMT,ISYMTS,IPRINT)
+C
+C     K.Ruud, May 2007, based on LNDOUT
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
+      DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
+      DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
+#include "twocom.h"
+#include "symmet.h"
+#include "ibtfun.h"
+      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      NEXT(I) = MOD(I,3) + 1
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Subroutine LNDGC2',-1)
+         WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
+     &                             ISYMR, ISYMT, ISYMTS
+      END IF
+C
+      DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+      DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+      DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+      DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+      DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+      DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+C
+      G11(1,1) = DERIV (7)
+      G11(1,2) = DERIV (8)
+      G11(1,3) = DERIV (9)
+      G11(2,1) = DERIV (8)
+      G11(2,2) = DERIV(10)
+      G11(2,3) = DERIV(11)
+      G11(3,1) = DERIV (9)
+      G11(3,2) = DERIV(11)
+      G11(3,3) = DERIV(12)
+C
+      G22(1,1) = DERIV(13)
+      G22(1,2) = DERIV(14)
+      G22(1,3) = DERIV(15)
+      G22(2,1) = DERIV(14)
+      G22(2,2) = DERIV(16)
+      G22(2,3) = DERIV(17)
+      G22(3,1) = DERIV(15)
+      G22(3,2) = DERIV(17)
+      G22(3,3) = DERIV(18)
+C
+      CALL DCOPY(9,DERIV(19),1,G12,1)
+C
+      DO 100 X1 = 1, 3
+         Y1   = NEXT (X1)
+         Z1   = NEXT (Y1)
+         ABY1 = DIFAB(Y1)
+         ABZ1 = DIFAB(Z1)
+         CDY1 = DIFCD(Y1)
+         CDZ1 = DIFCD(Z1)
+         X1S  = IPTAX(X1,2)
+         DO 200 X2 = X1, 3
+         IF (ISYMAX(X1,2).EQ.ISYMAX(X2,2)) THEN
+            Y2   = NEXT (X2)
+            Z2   = NEXT (Y2)
+            ABY2 = DIFAB(Y2)
+            ABZ2 = DIFAB(Z2)
+            CDY2 = DIFCD(Y2)
+            CDZ2 = DIFCD(Z2)
+            X2S  = IPTAX(X2,2)
+            EXPVAL(X1S,X2S) = EXPVAL(X1S,X2S)
+     &                      - ABY1*ABY2*G11(Z1,Z2)
+     &                      + ABY1*ABZ2*G11(Z1,Y2)
+     &                      + ABZ1*ABY2*G11(Y1,Z2)
+     &                      - ABZ1*ABZ2*G11(Y1,Y2)
+C
+     &                      - CDY1*CDY2*G22(Z1,Z2)
+     &                      + CDY1*CDZ2*G22(Z1,Y2)
+     &                      + CDZ1*CDY2*G22(Y1,Z2)
+     &                      - CDZ1*CDZ2*G22(Y1,Y2)
+C
+     &                      - ABY1*CDY2*G12(Z2,Z1)
+     &                      + ABY1*CDZ2*G12(Y2,Z1)
+     &                      + ABZ1*CDY2*G12(Z2,Y1)
+     &                      - ABZ1*CDZ2*G12(Y2,Y1)
+C
+     &                      - ABY2*CDY1*G12(Z1,Z2)
+     &                      + ABY2*CDZ1*G12(Y1,Z2)
+     &                      + ABZ2*CDY1*G12(Z1,Y2)
+     &                      - ABZ2*CDZ1*G12(Y1,Y2)
+         END IF
+  200    CONTINUE
+  100 CONTINUE
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
+         WRITE(LUPRI,'(/A)') ' Unfinished two-electron susceptibilities'
+         CALL OUTPUT(EXPVAL,1,3,1,3,3,3,1,LUPRI)
+         IF (IPRINT .GT. 10) THEN
+            WRITE (LUPRI,'(/A)') ' G11 '
+            CALL OUTPUT(G11,1,3,1,3,3,3,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G22 '
+            CALL OUTPUT(G22,1,3,1,3,3,3,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' G12 '
+            CALL OUTPUT(G12,1,3,1,3,3,3,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC2 >>>>>>>>',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck pblock */
