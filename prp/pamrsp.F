@@ -1947,8 +1947,6 @@ C
             REA = D4*DDOT(NZXOPEQ,BVBUF,1,SEVEC(1,JN),1)
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
-CTROND
-!           WRITE(6,*) 'old',I,J,REA       
           ENDIF
         ENDDO          
       ENDDO
@@ -1966,8 +1964,6 @@ C
             REA = D4*DDOT(NZXOPEQ,BEVEC(1,IN),1,SEVEC(1,JN),1)
             REDMAT(I,J) = FFAC*REA  
             REDMAT(J,I) = REA
-CTROND
-!           WRITE(6,*) 'new',I,J,REA       
           ENDIF
         ENDDO
       ENDDO
