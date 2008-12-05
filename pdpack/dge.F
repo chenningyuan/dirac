@@ -78,7 +78,11 @@ C
 #else
       CALL SGEFA (A,LDA,N,KPVT,INFO)
 #endif
-      IF (INFO.NE.0) RETURN
+      IF (INFO.NE.0) THEN
+            WRITE(LUPRI,'(A,A)')
+     &      '*** WARNING - INFO.ne.0 in DGESOL !'
+        RETURN
+      ENDIF
 C
       DO 100 J = 1,NSIM
 #if !defined (VAR_SBLAS)
