@@ -43,7 +43,8 @@ contains
     call mu(S, D, F)
 
     if (aoresponse_test_geo) then
-      call test_grcont(D%nrow, natoms_ifc(), .true., .false.)
+!     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
+      call debug_gradee(D, natoms_ifc())
     end if
 
     if (aoresponse_alpha) then

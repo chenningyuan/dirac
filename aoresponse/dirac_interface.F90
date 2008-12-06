@@ -19,17 +19,17 @@ module dirac_interface_m
 
 contains
 
-  subroutine grcont(work,     &              
-                    lwork,    &               
-                    g,        &           
-                    g_dim,    &               
-                    geo,      &             
-                    london,   &                
-                    max_derv, &                  
-                    iatom_in, &               
-                    energy,   &                
-                    fock,     &              
-                    dmat,     &              
+  subroutine grcont(work,     &
+                    lwork,    &
+                    g,        &
+                    g_dim,    &
+                    geo,      &
+                    london,   &
+                    max_derv, &
+                    iatom_in, &
+                    energy,   &
+                    fock,     &
+                    dmat,     &
                     nr_dmat)
 
     real(kind_dp)              :: work(*)
@@ -66,14 +66,6 @@ contains
 #include "dcbbas.h"
 #include "exeinf.h"
 #include "dorps.h"
-
-    
-
-!     DO I=1,3
-!        DO J=1,MXCENT
-!           DOCOOR(I,J) = .TRUE.
-!        END DO
-!     END DO
 
     do i = 1, 3*mxcent
       dopert(i, 1) = .true.
@@ -136,7 +128,6 @@ contains
     allocate(fmat(fmat_dim))
     fmat = 0.0d0
 
-
 !   LL integrals
 !   ============
 
@@ -164,6 +155,102 @@ contains
     call dcopy(g_dim, fmat, 1, g, 1)
 
     deallocate(fmat)
+
+  end subroutine
+
+  subroutine debug_gradee(D, nr_atoms)
+
+    type(matrix), intent(inout) :: D
+    integer                     :: nr_atoms
+!   ----------------------------------------------------------------------------
+    logical                     :: debug_me = .false.
+
+    real(kind_dp)               :: skip(3, 14, 3)
+    real(kind_dp)               :: screen
+
+    integer                     :: i, j, k, i2typ, itype, ifctyp(8)
+
+    real(kind_dp), allocatable  :: r(:, :)
+
+    real(kind_dp), allocatable  :: work(:)
+    integer                     :: lwork
+
+    real(kind_dp)               :: dummy
+    integer                     :: idummy
+
+#include "mxcent.h"
+#include "cbihr2.h"
+#include "dcbgrd.h"
+#include "dcbgen.h"
+#include "exeinf.h"
+#include "dorps.h"
+
+    D = 4.0d0*D
+    if (debug_me) then
+      call print(D, 'D in AO basis')
+    end if
+
+    do i = 1, 3*mxcent
+      dopert(i, 1) = .true.
+      dopert(i, 2) = .true.
+    end do
+
+    ftronv = .true.
+    relgrd = .true.
+    call rsetsym(.false., relgrd, .false., .false.)
+    call rtroini(.false.)
+
+    lwork = 20000000
+    call alloc(work, lwork)
+
+    call troinv(work, lwork)
+
+    itype  = 2
+    screen = -1.0d0
+
+!   set ifctyp
+    ifctyp    = 0
+    ifctyp(1) = 13 !coulomb and exchange
+    ifctyp(2) = 22 !only exchange
+    ifctyp(3) = 22
+    ifctyp(4) = 22
+
+    call alloc(r, nr_atoms*3, 3)
+    r = 0.0d0
+
+!   LL integrals
+!   ============
+
+    i2typ    = 1
+    intclass = 0
+
+    call dzero(gradee, mxcoor)
+    call dzero(skip, 3*14*3)
+
+    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
+                ifctyp, dummy, idummy, idummy, itype,      &
+                1, 0, .true., .true., .false., tktime,     &
+                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
+                icedif, screen, dummy, dummy, dummy, skip, &
+                relcal, dummy, dummy)
+
+    call dcopy(nr_atoms*3, gradee, 1, r(:, 1), 1)
+
+    call dealloc(work)
+
+    do i = 1, 4
+      j = (i-1)*3 + 1
+
+      write(*, '(a14, 3f21.10)') 'blub LL', r(j, 1), r(j+1, 1), r(j+2, 1)
+      write(*, '(a14, 3f21.10)') 'blub LS', r(j, 2), r(j+1, 2), r(j+2, 2)
+      write(*, '(a14, 3f21.10)') 'blub SS', r(j, 3), r(j+1, 3), r(j+2, 3)
+      write(*, '(a14         )') 'blub --'
+
+    end do
+
+    call dealloc(r)
+
+    D = 0.25d0*D
 
   end subroutine
 
