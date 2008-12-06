@@ -441,9 +441,8 @@ question () {
   if [ -z "$answer" ]; then
     answer="$default"
   fi
-  zero=0
   for item in $answer; do
-    if [ $zero -gt $item -o $item -gt $max_item ]; then
+    if [ 0 -gt $item -o $item -gt $max_item ]; then
       $echo "$item is not a valid choice for $2. Please pick another."
       question "$1" "$2" "$3" "$4" "$5" "$6" "$7"
     fi
@@ -1809,8 +1808,8 @@ get_f90_flags(){
       x86_64) march="-march=x86-64";;
       *) march="";;
       esac
-      c_opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
-      opt="-g -O3 -ffast-math -funroll-loops -ftree-vectorize $march"
+      c_opt="-g -O3 -ffast-math -funroll-loops -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
+      opt="-g -O3 -ffast-math -funroll-loops $march"
 #     gfortran needs flag -fcray-pointer if MPI-2 is enabled.
       if [ "$mpi2version" = "yes" ]; then
         $opt="$opt -fcray-pointer"
@@ -2455,9 +2454,6 @@ echo "Please check 'Known issues and problems' at"
 echo "http://dirac.chem.sdu.dk/ and http://wiki.chem.vu.nl/dirac"
 echo "to see hints or/and problems concerning your platform."
 echo
-#echo "Please make sure that the mathematical libraries used have been "
-#echo "compiled with the same compiler you are using now, otherwise it "
-#echo "might be neccesary to link to additional runtime libraries."
 if [ "$bit_set" = "64" ]; then
  echo "Dirac is configured to use 64 bit integers. Make sure that"
  echo "your math libraries are of the ILP64 type!"
