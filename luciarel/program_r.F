@@ -205,7 +205,6 @@ C
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 C
 C       allocate T-block list
-C
         MY_TTPL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)

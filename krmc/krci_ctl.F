@@ -110,7 +110,7 @@ C
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
-     &            '-------','-------','-------','-------','-------'/
+     &            '.USE PB','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -140,6 +140,7 @@ C
       CINT_SPLIT_KRCI = .FALSE.
       NATOLCR_KRCI    = .FALSE.
       CHCKPT_KRCI     = .FALSE.
+      CUSE_PBLFL_KRCI = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -549,6 +550,10 @@ C              the MASTER - useful in parallel calculations
                CHCKPT_KRCI = .TRUE.
                GO TO 100
    36          CONTINUE
+C&&&  USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (MPI file I/0 format)
+C              to write/get connection matrix and resulting block
+C              distribution
+               CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
                GO TO 100
@@ -1325,7 +1330,7 @@ C
 C
 C     Delete 2-el integral files from KRMCSCF or from MOLTRA, they
 C     are probably not correct for KRCI. However, if neither KRMCSCF or
-C     MOLTRA have been active in this Dirac run, the we assume we are
+C     MOLTRA have been active in this Dirac run, then we assume we are
 C     restarting KRCI and that any integrals are correct. (aug08, HJAaJ)
 C
       IF (DOKRMC .OR. DOTRA) THEN

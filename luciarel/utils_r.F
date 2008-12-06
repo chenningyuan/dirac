@@ -930,7 +930,7 @@ C
       IDISP    = 0
       IOFFSET  = 0
 C
-#if defined (VAR_PFS)
+#if defined (VAR_PFS) && defined (SYS_AIX)
 C
 C     provide useful I/O performance information on IBMs GPFS
 C
@@ -1101,7 +1101,7 @@ C
       IDISP    = 0
       IOFFSET  = 0
 C
-#if defined (VAR_PFS)
+#if defined (VAR_PFS) && defined (SYS_AIX)
 C
 C     provide useful information on IBMs GPFS to enhance 
 C     I/O performance
@@ -1369,5 +1369,116 @@ C            new offset
          END IF
       END DO
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_BLOCKFILE_DATA(BLOCKFLE,DIST_COMPLETE,NMPROC_FILE,
+     &                              SPLIT_IJKL_FILE,SHARED_M_FILE,
+     &                              ICCTOS,RCCTOS,NPARBLOCK,ICWEIGHTF,
+     &                              IT_TTPL,LEN_TTPL)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     read distribution data from formatted file KRCI_BLOCKDIST.x.
+C
+C     Written by S. Knecht - Dec 2008
+C
+C     Last revision :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "mpif.h"
+#include "infpar.h"
+#include "parluci.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE),RCCTOS(NUM_BLOCKS2)
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
+      DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
+      CHARACTER BLOCKFLE*16
+      LOGICAL SPLIT_IJKL_FILE, SHARED_M_FILE, DIST_COMPLETE
+C
+C     initialize
+      NMPROC_FILE  = 0
+      ISPLIT_FILE  = 0
+      ISHARED_FILE = -1
+      SPLIT_IJKL_FILE = .FALSE.
+      SHARED_M_FILE   = .FALSE.
+      LUKRCIBLK       = 81
+      OPEN(LUKRCIBLK,FILE=BLOCKFLE,STATUS='OLD',FORM='FORMATTED',
+     &     ACCESS='SEQUENTIAL')
+      REWIND LUKRCIBLK
+C
+C     read data from file
+      READ(LUKRCIBLK,'(3I5)') NMPROC_FILE,ISPLIT_FILE,ISHARED_FILE
+      READ(LUKRCIBLK,'(66I6)') 
+     &    ((ICCTOS(I,J),I = 1,I_NZERO_LEN_C),J=1,I_NZERO_LEN_S)
+      READ(LUKRCIBLK,'(66I6)') (RCCTOS(I), I = 1,NUM_BLOCKS2)
+      READ(LUKRCIBLK,'(66I6)') (NPARBLOCK(I), I = 1,NUM_BLOCKS)
+      READ(LUKRCIBLK,'(66I6)') (ICWEIGHTF(I), I = 1,I_NZERO_LEN_S)
+      IF( ISPLIT_FILE .gt.0 ) SPLIT_IJKL_FILE = .TRUE.
+C
+C     read IT_TTPL only if allocated...
+      IF( SPLIT_IJKL_FILE .and. .NOT. SPLIT_IJKL ) 
+     &    SPLIT_IJKL_FILE = .FALSE.
+      IF( ISHARED_FILE .eq. IT_SHL .and. IT_SHL .ge. 0 )
+     &    SHARED_M_FILE  = .TRUE.
+C
+C     read IT_TTPL
+      IF( SPLIT_IJKL_FILE .or. SHARED_M_FILE )THEN
+        READ(LUKRCIBLK,'(66I6)') (IT_TTPL(I),I=1,LEN_TTPL)
+      END IF
+      CLOSE(LUKRCIBLK,STATUS='KEEP')
+C
+C     check whether all information was available and correct
+      IF( NMPROC .eq. NMPROC_FILE )THEN
+        IF( (SPLIT_IJKL_FILE .eq. SPLIT_IJKL) .and.
+     &      ( ISHARED_FILE .eq. IT_SHL ) ) DIST_COMPLETE = .TRUE. 
+      END IF
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PUT_BLOCKFILE_DATA(BLOCKFLE,ICCTOS,RCCTOS,NPARBLOCK,
+     &                              ICWEIGHTF,IT_TTPL,LEN_TTPL)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     put distribution data to formatted file KRCI_BLOCKDIST.x.
+C
+C     Written by S. Knecht - Dec 2008
+C
+C     Last revision :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "mpif.h"
+#include "infpar.h"
+#include "parluci.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE),RCCTOS(NUM_BLOCKS2)
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
+      DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
+      CHARACTER BLOCKFLE*16
+      LOGICAL EX
+C
+C     initialize
+      ISPLIT_FILE  = 0
+      ISHARED_FILE = -1
+      IF( SPLIT_IJKL ) ISPLIT_FILE = 1
+      IF( SHARED_M .and. IT_SHL .ge. 0) ISHARED_FILE = IT_SHL
+      LUKRCIBLK       = 81
+      INQUIRE(FILE=BLOCKFLE,EXIST=EX)
+      IF(EX)THEN 
+        OPEN(LUKRCIBLK,FILE=BLOCKFLE,STATUS='OLD',FORM='FORMATTED',
+     &       ACCESS='SEQUENTIAL')
+        CLOSE(LUKRCIBLK,STATUS='DELETE')
+      END IF
+      OPEN(LUKRCIBLK,FILE=BLOCKFLE,STATUS='UNKNOWN',FORM='FORMATTED',
+     &     ACCESS='SEQUENTIAL')
+C
+C     put data to file
+      WRITE(LUKRCIBLK,'(3I5)') NMPROC,ISPLIT_FILE,ISHARED_FILE
+      WRITE(LUKRCIBLK,'(66I6)') 
+     &    ((ICCTOS(I,J),I = 1,I_NZERO_LEN_C),J=1,I_NZERO_LEN_S)
+      WRITE(LUKRCIBLK,'(66I6)') (RCCTOS(I), I = 1,NUM_BLOCKS2)
+      WRITE(LUKRCIBLK,'(66I6)') (NPARBLOCK(I), I = 1,NUM_BLOCKS)
+      WRITE(LUKRCIBLK,'(66I6)') (ICWEIGHTF(I), I = 1,I_NZERO_LEN_S)
+      IF( SPLIT_IJKL .or. ISHARED_FILE .ne. -1 )THEN
+        WRITE(LUKRCIBLK,'(66I6)') (IT_TTPL(I),I=1,LEN_TTPL)
+      END IF
+      CLOSE(LUKRCIBLK,STATUS='KEEP')
       END
 #endif

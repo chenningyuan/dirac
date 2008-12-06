@@ -597,7 +597,6 @@ C       If old 'KRCI_CVECS.INFO' exists, then we are restarting a KRCI.
       END IF
 C
 C     file containing the property integrals (KR-CI/KR-MCSCF: KRMC_FOCK)
-C
       LUPROP_MAT = 53
 C 
 C     natural spinors in terms of double group adapted atomic spin-orbitals

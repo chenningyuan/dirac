@@ -2227,6 +2227,14 @@ C     write check point file during large-scale CI optimization
      &                  MPI_COMM_WORLD,IERR)
 #endif
       CHECKPOINT_LUCIX = CHCKPT_WRT
+C     read from / write to block distribution file KRCI_BLOCKDIST.x
+C     (x=sym)
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 )
+     &   CALL MPI_BCAST(CPBLCK_FILE,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+      CPBLCK_FILE_LUCIX = CPBLCK_FILE
 C     using GAS-scheme specific integral file resp. writing it
       REORD_IJKL = .FALSE.
 #if defined (VAR_MPI)

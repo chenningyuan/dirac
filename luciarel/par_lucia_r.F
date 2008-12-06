@@ -67,11 +67,14 @@ C     --> try to get as even as possible afterwards.
 C
 C     S. Knecht                     - May 07 2008
 C
+C     optional reading from/writing to block file KRCI_BLOCKDIST.x 
+C     added.
+C
 C**********************************************************************
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), IT_TTPL(*), IGROUPLIST(*)
       DIMENSION RCCTOS(*), NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -83,22 +86,27 @@ C**********************************************************************
 #include "cands.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
-      INTEGER(KIND=MPI_OFFSET_KIND) I_BWEIGHT, I_BPROC
-      DIMENSION IT_TTPL(*), IGROUPLIST(*)
       POINTER (MY_TCTR_PTR,   IT_CTONE(IDUMMY_BUFF_SZ))
       POINTER (MY_TRED_PTR,   IT_CTALL(IDUMMY_BUFF_SZ))
       POINTER (MY_RCCTOS_PTR, IRCCTOS_2(IDUMMY_BUFF_SZ))
       POINTER (MY_IAPROC_PTR, I_APROC(IDUMMY_BUFF_SZ))
       POINTER (MY_BWEIGHT_PTR,I_BWEIGHT(IDUMMY_BUFF_SZ))
       POINTER (MY_BPROC_PTR,  I_BPROC(IDUMMY_BUFF_SZ))
+      INTEGER(KIND=MPI_OFFSET_KIND)  I_BWEIGHT, I_BPROC
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TCTR_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TRED_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_RCCTOS_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_IAPROC_LEN
+      CHARACTER BLOCKFLE*16
+      LOGICAL EX_BFL, DIST_COMPLETE, SPLIT_IJKL_FILE, SHARED_M_FILE
+      LOGICAL PRINT_BLOCK_DIST
 C
       IMIN1 = -1
       IT_ACTIVE_R  = 0
       IT_ACTIVE_I  = 0
+      IF( CPBLCK_FILE_LUCIX ) 
+     &    WRITE(BLOCKFLE,'(A15,A1)') 'KRCI_BLOCKDIST.',SYMFLABEL
+      PRINT_BLOCK_DIST = .TRUE.
 C
 C     set mark for local memory
       IDUM = 0
@@ -161,10 +169,50 @@ C
         CALL ICOPY(NUM_BLOCKS,WORK(KAM_BLK_ACTS),1,WORK(KAM_BLK_ACTC),1)
       END IF
 C
-      CHECK_TC = .FALSE.
+C     check if we want to reuse (write) the block distribution file
+C     KRCI_BLOCKDIST.x
+      DIST_COMPLETE = .FALSE.
+      IF( CPBLCK_FILE_LUCIX .and. (.NOT. CXPROPRUN ))THEN
+        IF( MYPROC .eq. MASTER )THEN
+          INQUIRE(FILE=BLOCKFLE,EXIST=EX_BFL)
+          IF( EX_BFL ) 
+     &       CALL GET_BLOCKFILE_DATA(BLOCKFLE,DIST_COMPLETE,NMPROC_FILE,
+     &                               SPLIT_IJKL_FILE,SHARED_M_FILE,
+     &                               WORK(KICCTOS),RCCTOS,NPARBLOCK,
+     &                               WORK(KCWEIGHTF),IT_TTPL,
+     &                               NSPOBEX_TP*IRC_SAVE)
+        END IF
+C       ^ end if MASTER
+C    
+C       slave update
+        CALL MPI_BCAST(EX_BFL,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+        IF( EX_BFL )THEN
+          CALL SYNC_NODES_BLOCKFILE_DATA(NMPROC_FILE,SPLIT_IJKL_FILE,
+     &                                   SHARED_M_FILE,DIST_COMPLETE,
+     &                                   WORK(KICCTOS),RCCTOS,NPARBLOCK,
+     &                                   WORK(KCWEIGHTF),IT_TTPL,
+     &                                   NSPOBEX_TP*IRC_SAVE)
+          IF( .NOT. DIST_COMPLETE )THEN
+C
+C           incomplete information on file available, that is either 
+C           - a block distribution where NMPROC(old) != NMPROC(act) 
+C           - or an inconsistency between keywords as SPLIT_IJKL or 
+C             SHARED_M (and the corresponding level)
+            IF( NMPROC_FILE     .ne. NMPROC ) GOTO 100
+            IF((SPLIT_IJKL_FILE .ne. SPLIT_IJKL) .or.
+     &        (SHARED_M_FILE .ne. SHARED_M ) )GOTO 200
+          END IF
+        END IF
+      END IF
+C
+C     complete information on file available, that is 
+C     NMPROC(old) on file KRCI_BLOCKDIST.x matches NMPROC(act)
+C     we have all required information
+      IF(DIST_COMPLETE) GOTO 9999
+C
+ 100  CHECK_TC = .FALSE.
 C
 C     1. check for sigma <==> C connections
-C
       IF( CXPROPRUN )THEN
         CALL FIND_IMAT_SC_REL(WORK(KXRCCTOS),RCCTOS,WORK(KICCTOS),
      &                         WORK(KCWEIGHTF),WORK(KAM_BLK_ACTC),
@@ -211,12 +259,15 @@ C       release memory
         CALL MPIXMEM_FREE(I_BWEIGHT)
         CALL MPIXMEM_FREE(I_BPROC)
 C
+        PRINT_BLOCK_DIST = .FALSE.
+C
       ELSE ! split_ijkl
 C
-C       default block distribution - if requested
+C       default block distribution - if required
         IF( COMPDISTL ) CALL BLOCK_DISTR_1(NUM_BLOCKS,IBLOCKL_S,
      &                                     NPARBLOCK,WORK(KCWEIGHTF),
      &                                     ISSM)
+        PRINT_BLOCK_DIST = .FALSE.
 C
       END IF
 C
@@ -226,7 +277,7 @@ C     store information in RCCTOS
       CALL FIND_CCTOS_REL(RCCTOS,NPARBLOCK,WORK(KICCTOS),IBLOCKL_S,
      &                    IBLOCKL_C,IRC_SAVE,NUM_BLOCKS)
 C
-      IF( SPLIT_IJKL )THEN
+ 200  IF( SPLIT_IJKL )THEN
 C
 C       find required T-blocks
         MY_TCTR_LEN   = NSPOBEX_TP * IRC_SAVE
@@ -238,23 +289,23 @@ C
 C       --> use connection vector RCCTOS and NPARBLOCK to produce
 C           output on IT_CTONE
 C
-C         2. check for T-connections
-          CALL FIND_IMAT_SC_REL(RCCTOS,RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,
+C       2. check for T-connections
+        CALL FIND_IMAT_SC_REL(RCCTOS,RCCTOS,DUMMY,IT_CTONE,NPARBLOCK,
      &                          NPARBLOCK,-1)
 C
-C         save connections
-          LEN_COPY = NSPOBEX_TP*IRC_SAVE
-          CALL ICOPY(LEN_COPY,IT_CTONE,1,IT_TTPL,1)
+C       save connections
+        LEN_COPY = NSPOBEX_TP*IRC_SAVE
+        CALL ICOPY(LEN_COPY,IT_CTONE,1,IT_TTPL,1)
 C
-csk       WRITE(LUWRT,*) ' IT_CTONE'
-csk       CALL IWRTMAMN(IT_CTONE,1,NSPOBEX_TP*IRC_SAVE,1,
-csk  &                  NSPOBEX_TP*IRC_SAVE,LUWRT)
-csk       WRITE(LUWRT,*) ' IT_TTPL'
-csk       CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC_SAVE,1,
-csk  &                  NSPOBEX_TP*IRC_SAVE,LUWRT)
+csk     WRITE(LUWRT,*) ' IT_CTONE'
+csk     CALL IWRTMAMN(IT_CTONE,1,NSPOBEX_TP*IRC_SAVE,1,
+csk  &                NSPOBEX_TP*IRC_SAVE,LUWRT)
+csk     WRITE(LUWRT,*) ' IT_TTPL'
+csk     CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC_SAVE,1,
+csk  &                NSPOBEX_TP*IRC_SAVE,LUWRT)
 C
-C         release scratch memory
-          CALL MPIXMEM_FREE(IT_CTONE)
+C       release scratch memory
+        CALL MPIXMEM_FREE(IT_CTONE)
       END IF
 C
       IF( SHARED_M ) THEN
@@ -291,7 +342,6 @@ C         initialize for a second time
           CHECK_TC = .TRUE.
 C
 C         3. check for T-connections
-C
           CALL FIND_IMAT_SC_REL(IRCCTOS_2,IRCCTOS_2,DUMMY,IT_CTONE,
      &                          DUMMY,DUMMY,NUM_BLOCKS)
 C
@@ -302,8 +352,7 @@ C
      &                       my_MPI_INTEGER,MYNEW_COMM_SM,IERR)
 C
 C         find active T-blocks...
-C
-          CALL IZERO(IT_CTONE, NSPOBEX_TP * IRC_SAVE )
+          CALL IZERO(IT_CTONE,NSPOBEX_TP*IRC_SAVE)
 C
           IT_ACTIVE_R = 0
           IT_ACTIVE_R = IPICK_T_ACTIVE(IT_CTALL,IT_CTONE,
@@ -333,6 +382,20 @@ C         release scratch memory
           CALL MPIXMEM_FREE(I_APROC)
         END IF
       END IF
+C
+C     write block distribution file if asked for
+      IF( CPBLCK_FILE_LUCIX .and. (.NOT. CXPROPRUN ))THEN
+        IF( MYPROC .eq. MASTER )THEN
+          CALL PUT_BLOCKFILE_DATA(BLOCKFLE,WORK(KICCTOS),RCCTOS,
+     &                            NPARBLOCK,WORK(KCWEIGHTF),
+     &                            IT_TTPL,NSPOBEX_TP*IRC_SAVE)
+        END IF
+      END IF
+C
+C     print block distribution (if we restart from a previous run)
+9999  IF( PRINT_BLOCK_DIST .and. MYPROC .eq. MASTER ) 
+     &    CALL PRINT_BLOCK_DISTR(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
+     &                           WORK(KCWEIGHTF),ISSM,BLOCKFLE)
 C
 C     flush local memory
       IDUM = 0
@@ -908,73 +971,119 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE PRINT_BLOCK_DISTR(NDIM,NPARBLOCK,IT_TTPL,
-     &                             NDIM_T,INFO_L)
+      SUBROUTINE PRINT_BLOCK_DISTR(NDIM,IBLOCKL,NPARBLOCK,ICWEIGHTF,
+     &                             JSYM_DISTBLK,BLKFILE)
 C
 C     print block distribution as read from file
-C     BLOCK_INFO_MPI."MYPROC".
+C     KRCI_BLOCKDIST."JSYM_DISTBLK"
 C
-C     Written by  S. Knecht         - February 19 2008
+C     Written by  S. Knecht         - Dec 2008
 C
 C**********************************************************************
 #include "implicit.h"
 #include "parluci.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION NPARBLOCK(NDIM), IT_TTPL(*)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), IBLOCKL(*), NPARBLOCK(*)
+      DIMENSION ICWEIGHTF(*)
+      CHARACTER BLKFILE*16
+      INTEGER*8 ITLTND, MXSIZE, ILEN, ITOTBLCKL, IPRODLEN
+      INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
 C
-      WRITE(LUWRT,*)' '
-      WRITE(LUWRT,'(20X,A)')'================================'
-      WRITE(LUWRT,'(20X,A)')' Summation of even distribution '
-      WRITE(LUWRT,'(20X,A)')' reduced output read from file  '
-      WRITE(LUWRT,'(20X,A)')'        BLOCK_INFO_MPI.0        '
-      WRITE(LUWRT,'(20X,A)')'================================'
-      WRITE(LUWRT,*)' '
+      I_AM_ACTIVE  = 0
+      IILENGTH_MAX = 0
+      IPRODLEN     = 0
+      ICOUNTABLK   = 0
+      ITOTBLCKL    = 0
+      ILEN         = 0
+      MXSIZE       = 0
+C
+      WRITE(LUWRT,'(/7X,A)')
+     &'=================================================='
+      WRITE(LUWRT,'(7X,A,A16)')
+     &'Block distribution read from file ',BLKFILE
+      WRITE(LUWRT,'(7X,A)')
+     &'=================================================='
+C
+      DO ICBL = 1, NDIM
+        IILENGTH = IBLOCKL(ICBL)
+        IF( IILENGTH .gt. 0 )THEN
+C
+          I_AM_ACTIVE  = I_AM_ACTIVE + 1
+          IIWEIGHTBLK  = ICWEIGHTF(I_AM_ACTIVE)
+          IPRODLEN     = IILENGTH * IIWEIGHTBLK
+          ILEN         = IPRODLEN
+          IILENGTH_MAX = MAX(IILENGTH_MAX,IILENGTH)
+C
+          IF( ILEN .lt. 0 ) THEN
+            WRITE(LUWRT,'(/A)')' *** ERROR in PRINT_BLOCK_DISTR *** '
+            WRITE(LUWRT,'(A,I10)')' minus block detected. # =',ICBL
+            WRITE(LUWRT,*)' ILEN = ',ILEN
+            WRITE(LUWRT,*)' IBLOCKL(ICBL) = ',IBLOCKL(ICBL)
+            WRITE(LUWRT,*)' ICWEIGHTF(ICBL) = ',ICWEIGHTF( I_AM_ACTIVE )
+            CALL QUIT(' *** ERROR in PRINT_BLOCK_DISTR *** Minus 
+     & block detected!')
+          END IF
+          IF( ILEN .ne. 0 )THEN
+             ICOUNTABLK = ICOUNTABLK + 1
+             ITOTBLCKL = ITOTBLCKL + ILEN
+          END IF
+          IF(ILEN.GE.MXSIZE) MXSIZE = ILEN
+        END IF
+C       ^ IILENGTH > 0
+      END DO
+C
+      WRITE(LUWRT,'(/7X,A)')
+     &'==================================================='
+      WRITE(LUWRT,'(7X, A,I2)')
+     &' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
+      WRITE(LUWRT,'(7X,A/)')
+     &'==================================================='
+       WRITE(LUWRT,'(A,I19)')
+     &'  total number of processes to distribute on :',NMPROC
+       WRITE(LUWRT,'(A,I19)')
+     &'  total number of blocks                     :',NDIM
+       WRITE(LUWRT,'(A,I19)') 
+     &'  total number of active blocks              :',ICOUNTABLK
+       WRITE(LUWRT,'(A,I19)')
+     &'  size of largest TTSS block                 :',IILENGTH_MAX 
+       WRITE(LUWRT,'(A,I19)')
+     &'  overall weighted active block length       :',ITOTBLCKL
+       WRITE(LUWRT,'(A,I19)')
+     &'  Maximum weighted block size                :',MXSIZE
+C
+C     final distribution
+      I_AM_ACTIVE  = 0
+      DO II = 1, NDIM
+       IF( NPARBLOCK(II) .eq. -1 ) THEN
+         WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
+         WRITE(LUWRT,*) 'Since I do not know how to proceed,'// 
+     &                  ' I will stop!'
+           Call Abend2('NE BLOCK_DISTR_1: Block not distributed')
+       END IF
+      END DO
+      WRITE(LUWRT,'(/20X,A)')'================================'
+      WRITE(LUWRT,'(20X, A)')' Summation of even distribution '
+      WRITE(LUWRT,'(20X,A/)')'================================'
       DO ISTI = 1, NMPROC
+        ITLTND = 0
         ITLBND = 0
+        I_AM_ACTIVE = 0
         DO IBLK = 1, NDIM
-          IF( NPARBLOCK(IBLK) .eq. ISTI -1 ) THEN
-            ITLBND = ITLBND + 1
+          IILENGTH = IBLOCKL(IBLK)
+          IF(IILENGTH.gt.0)THEN
+            I_AM_ACTIVE = I_AM_ACTIVE + 1
+            IF(NPARBLOCK(IBLK).eq.ISTI-1)THEN
+              IIWEIGHTBLK = ICWEIGHTF(I_AM_ACTIVE)
+              ITLTND      = ITLTND + (IILENGTH*IIWEIGHTBLK)
+              ITLBND      = ITLBND + 1
+            END IF
           END IF
         END DO
-        WRITE(LUWRT,'(3X,A,1X,I4,1X,A,1X,I6,1X,A)')
-     & 'CPU',ISTI-1,' computes',ITLBND,'blocks'
+        WRITE(LUWRT,'(2X,A,1X,I4,1X,A,1X,I6,1X,A,1X,I18)')
+     &  'CPU',ISTI-1,' computes',ITLBND,'blocks with a total weight of',
+     &      ITLTND
       END DO
-      IF( INFO_L .gt. 0) THEN
-        WRITE(LUWRT,*)' '
-        WRITE(LUWRT,'(20X,A)')
-     &  '++++++++++++++++++++++++++++++++++'
-        WRITE(LUWRT,'(20X,A)')
-     &  '+     T element distribution     +'
-        IF( IT_SHL .eq. 0 )THEN
-        WRITE(LUWRT,'(20X,A)')
-     &  '+        (on MASTER node)        +'
-        ELSE
-        WRITE(LUWRT,'(20X,A)')
-     &  '+            (global)            +'
-        END IF
-        WRITE(LUWRT,'(20X,A)')
-     &  '+  reduced output read from file +'
-        WRITE(LUWRT,'(20X,A)')
-     &  '+        BLOCK_INFO_MPI.0        +'
-        WRITE(LUWRT,'(20X,A)')
-     &  '++++++++++++++++++++++++++++++++++'
-        WRITE(LUWRT,*)' '
-        DO ISTI = 1, NEWCOMM_PROC_SM
-          ITLBND = 0
-          DO IMULT = 1, IRC_SAVE
-            DO IBLK = 1, NDIM_T
-              IF( IT_TTPL( IBLK+(NDIM_T * (IMULT - 1 ) ) ) 
-     &            .eq.ISTI -1)THEN
-                  ITLBND = ITLBND + 1
-              END IF
-            END DO
-          END DO
-          WRITE(LUWRT,'(2X,A,1X,I4,1X,A,1X,I5,1X,A)')
-     &'CPU',ISTI-1,' allocates for',ITLBND,' T blocks '
-        END DO
-      END IF
 C
       END
 ***********************************************************************
@@ -8509,6 +8618,64 @@ C
 C     common block in dcbxpr.h - integer part
       CALL MPI_BCAST(IPRPTIM,MAXPRPS,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
+C
+C     common block in dcbxpr.h - character array
+      CALL MPI_BCAST(PRPNAM,MAXPRPS*16,MPI_CHARACTER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SYNC_NODES_BLOCKFILE_DATA(NMPROC_FILE,SPLIT_IJKL_FILE,
+     &                                     SHARED_M_FILE,DIST_COMPLETE,
+     &                                     ICCTOS,RCCTOS,NPARBLOCK,
+     &                                     ICWEIGHTF,IT_TTPL,LEN_TTPL)
+
+C**********************************************************************
+C
+C     Synchronize MASTER and NODES about block file information.
+C
+C     written by S. Knecht - Dec 2008
+C
+C     last revision:
+C
+C**********************************************************************
+#include "implicit.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE), RCCTOS(*), NPARBLOCK(*)
+#include "parluci.h"
+      DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), IT_TTPL(LEN_TTPL)
+      LOGICAL SHARED_M_FILE, SPLIT_IJKL_FILE, DIST_COMPLETE
+C
+      CALL MPI_BCAST(NMPROC_FILE,1,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,IERR)
+C
+      IF( NMPROC_FILE .ne. NMPROC)THEN
+        CALL MPI_BCAST(ICCTOS,I_NZERO_LEN_C*I_NZERO_LEN_S,
+     &                 my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(ICWEIGHTF,I_NZERO_LEN_S,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+      END IF
+C
+C     reduced connection list and block distribution list
+      CALL MPI_BCAST(RCCTOS,NUM_BLOCKS2,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NPARBLOCK,NUM_BLOCKS,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+C
+C     T list?
+      CALL MPI_BCAST(SHARED_M_FILE,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(SPLIT_IJKL_FILE,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      IF( SHARED_M_FILE .or. SPLIT_IJKL_FILE )THEN
+        CALL MPI_BCAST(LEN_TTPL,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IT_TTPL,LEN_TTPL,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+      END IF
+      CALL MPI_BCAST(DIST_COMPLETE,1,MPI_LOGICAL,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+C
       END
 ***********************************************************************
 *                                                                     *
