@@ -550,7 +550,7 @@ C              the MASTER - useful in parallel calculations
                CHCKPT_KRCI = .TRUE.
                GO TO 100
    36          CONTINUE
-C&&&  USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (MPI file I/0 format)
+C&&&  USE PB:  use block file KRCI_BLOCKDIST.x (x=sym) (ascii format)
 C              to write/get connection matrix and resulting block
 C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
