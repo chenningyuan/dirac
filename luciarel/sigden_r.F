@@ -4047,13 +4047,6 @@ C
       call memmar(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
       call memmar(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
 C
-      LSIRES = MXINKA**4
-      LCJRES = LCJRES_SAVE
-C
-C     allocation of resolution matrices: sigma + C
-      call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
-      call memmar(KCJRES,LCJRES,'ADDL  ',2,'KCJRES')
-C
 C     T-elements
       INTSCR = MXINKA**4
       INTSCR = MIN(INTSCR,MX_TBLK_MX)
@@ -4130,6 +4123,14 @@ C     &     WORK(KNSTSO2(IBCTP)),NOCTPA_C,NOCTPB_C,NSMST,L0BLOCK,
 #endif
 C
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',2,'ISMDST')
+C
+      LSIRES = MXINKA**4
+      LCJRES = LCJRES_SAVE
+C
+C     allocation of resolution matrices: sigma + C
+      call memmar(KSIRES,LSIRES,'ADDL  ',2,'KSIRES')
+      call memmar(KCJRES,LCJRES,'ADDL  ',2,'KCJRES')
+C
 C     set offset for T_BUFF array
       LEN_T_BUFF_NZ = LEN_T_VEC
 #if defined (VAR_MPI2)

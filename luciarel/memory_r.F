@@ -402,6 +402,7 @@ C
 C
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
+          WRITE(LUWRT,*) ' difference in double words: ',KFREES-1-NWORD
 C
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
           WRITE(LUWRT,'(20X,A,2X,2I15)')IDENT, KBASE, KADD
@@ -448,6 +449,7 @@ C
 
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(LUWRT,*) ' difference in double words: ',KFREEL-1-NWORD
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
           WRITE(LUWRT,'(24X,A,2X,2I15)')IDENT,KBASE,KADD
           ISTOP = 1
@@ -759,6 +761,7 @@ C
 C
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREES-1
+          WRITE(LUWRT,*) ' difference in double words: ',KFREES-1-NWORD
 C
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
           WRITE(LUWRT,'(20X,A,2X,2I15)')IDENT, KBASE, KADD
@@ -805,6 +808,7 @@ C
 
           WRITE(LUWRT,*) ' MEMMAR : work array too short '
           WRITE(LUWRT,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(LUWRT,*) ' difference in double words: ',KFREEL-1-NWORD
           WRITE(LUWRT,*) ' Trying to allocate : identifer,offset,length'
           WRITE(LUWRT,'(24X,A,2X,2I15)')IDENT,KBASE,KADD
           ISTOP = 1

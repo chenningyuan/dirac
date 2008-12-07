@@ -180,6 +180,26 @@ C     PARAMETER(IRAT = 2 )
 *
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      INTEGER FUNCTION ISACTIVE_CPU(NPARBLOCK,NDIM,ISPROC)
+*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+*
+*     determine whether CPU is active or not
+*
+***********************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+
+      DIMENSION NPARBLOCK(NDIM)
+*
+      ISACTIVE_DUM = 0
+C
+      DO I = 1, NDIM
+        IF( NPARBLOCK(I) .eq. ISPROC ) ISACTIVE_DUM = 1
+      END DO
+C
+      ISACTIVE_CPU = ISACTIVE_DUM
+C
+      END
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

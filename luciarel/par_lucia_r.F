@@ -397,6 +397,11 @@ C     print block distribution (if we restart from a previous run)
      &    CALL PRINT_BLOCK_DISTR(NUM_BLOCKS,IBLOCKL_S,NPARBLOCK,
      &                           WORK(KCWEIGHTF),ISSM,BLOCKFLE)
 C
+C     determine whether this process is "active" or not
+      IAM_NOT_INV = 0
+      IAM_NOT_INV = ISACTIVE_CPU(NPARBLOCK,NUM_BLOCKS,MYPROC)
+      IF( IAM_NOT_INV .eq. 0) CALL ISETVC(NPARBLOCK,-2,NUM_BLOCKS)
+C
 C     flush local memory
       IDUM = 0
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
@@ -1059,7 +1064,9 @@ C     final distribution
          WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
          WRITE(LUWRT,*) 'Since I do not know how to proceed,'// 
      &                  ' I will stop!'
-           Call Abend2('NE BLOCK_DISTR_1: Block not distributed')
+         WRITE(LUWRT,*) ' *** ERROR in PRINT_BLOCK_DISTR ***'
+           CALL QUIT(' *** ERROR in PRINT_BLOCK_DISTR : Block not 
+     & distributed ***')
        END IF
       END DO
       WRITE(LUWRT,'(/20X,A)')'================================'
