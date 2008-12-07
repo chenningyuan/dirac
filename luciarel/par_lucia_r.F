@@ -2915,7 +2915,7 @@ C
       USE_EX_IDIA = .FALSE.
 C
       IF( MYPROC .eq. MASTER )THEN
-        IF( NEWCOMM_PROC .eq. NMPROC .and. ICIONLY .eq. 1)THEN
+        IF( NEWCOMM_PROC .eq. NMPROC .and. CKRCIONLY )THEN
           IDIA_SIZE = 0
           CALL MPI_FILE_GET_SIZE(IDIA,IDIA_SIZE,IERR)
 csk          WRITE(LUWRT,*) ' DIAPAR.1 found with size (bytes):',IDIA_SIZE

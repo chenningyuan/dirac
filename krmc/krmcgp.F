@@ -2278,6 +2278,11 @@ C     do not write file CIDIA_REL.x
 #else
       NO_CDIAF = .FALSE.
 #endif
+C
+C     flag for pure KR-CI run - enables reuse of already existing
+C     DIAPAR.1
+      CKRCIONLY = .FALSE.
+      IF( CIRUN .eq. 'KR-CI ') CKRCIONLY = .TRUE.
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
         IF( PNTGRP .ge. 2 .and. PNTGRP .le. 4 ) THEN
