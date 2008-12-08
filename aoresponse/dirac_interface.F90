@@ -215,8 +215,9 @@ contains
     ifctyp(3) = 22
     ifctyp(4) = 22
 
-    call alloc(r, nr_atoms*3, 3)
+    call alloc(r, nr_atoms*3, 5)
     r = 0.0d0
+
 
 !   LL integrals
 !   ============
@@ -235,12 +236,54 @@ contains
                 relcal, dummy, dummy)
 
     call dcopy(nr_atoms*3, gradee, 1, r(:, 1), 1)
+    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
+
+
+!   LS integrals
+!   ============
+
+    i2typ    = 2
+    intclass = 1
+
+    call dzero(gradee, mxcoor)
+    call dzero(skip, 3*14*3)
+
+    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
+                ifctyp, dummy, idummy, idummy, itype,      &
+                1, 0, .true., .true., .false., tktime,     &
+                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
+                icedif, screen, dummy, dummy, dummy, skip, &
+                relcal, dummy, dummy)
+
+    call dcopy(nr_atoms*3, gradee, 1, r(:, 2), 1)
+    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
+
+
+!   SS integrals
+!   ============
+
+    i2typ    = 3
+    intclass = 2
+
+    call dzero(gradee, mxcoor)
+    call dzero(skip, 3*14*3)
+
+    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
+                ifctyp, dummy, idummy, idummy, itype,      &
+                1, 0, .true., .true., .false., tktime,     &
+                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
+                icedif, screen, dummy, dummy, dummy, skip, &
+                relcal, dummy, dummy)
+
+    call dcopy(nr_atoms*3, gradee, 1, r(:, 3), 1)
+    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
 
     call dealloc(work)
 
     do i = 1, 4
       j = (i-1)*3 + 1
 
+      write(*, '(a14, 3f21.10)') 'blubtot', r(j, 5), r(j+1, 5), r(j+2, 5)
       write(*, '(a14, 3f21.10)') 'blub LL', r(j, 1), r(j+1, 1), r(j+2, 1)
       write(*, '(a14, 3f21.10)') 'blub LS', r(j, 2), r(j+1, 2), r(j+2, 2)
       write(*, '(a14, 3f21.10)') 'blub SS', r(j, 3), r(j+1, 3), r(j+2, 3)
