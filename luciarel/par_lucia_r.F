@@ -199,8 +199,8 @@ C           - a block distribution where NMPROC(old) != NMPROC(act)
 C           - or an inconsistency between keywords as SPLIT_IJKL or 
 C             SHARED_M (and the corresponding level)
             IF( NMPROC_FILE     .ne. NMPROC ) GOTO 100
-            IF((SPLIT_IJKL_FILE .ne. SPLIT_IJKL) .or.
-     &        (SHARED_M_FILE .ne. SHARED_M ) )GOTO 200
+            IF((SPLIT_IJKL_FILE .neqv. SPLIT_IJKL) .or.
+     &        (SHARED_M_FILE .neqv. SHARED_M ) )GOTO 200
           END IF
         END IF
       END IF
