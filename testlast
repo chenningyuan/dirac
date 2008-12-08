@@ -18,7 +18,7 @@ diracexe=' '
 # --------------------------------------
 testdir=`pwd`/test
 RUNTYPE="undefined"
-cvs="no"
+svn="no"
 mpi=" "
 parallel=" "
 nodes=1
@@ -77,8 +77,8 @@ usage='Usage: '$0'\n'\
 '\tshort, medium, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: --testdir=test)\n'\
-'--cvs=yes/no\n'\
-'\tRun cvs prior to compilation (default: --cvs=no)\n'\
+'--svn=yes/no\n'\
+'\tRun svn prior to compilation (default: --svn=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
 '--time=TIME\n'\
@@ -127,9 +127,9 @@ while [ $# != 0 ]; do
             RUNTYPE="$val"
          fi
          ;;
-      "cvs")
+      "svn")
          if [ "${valomitted}" = "no" ]; then
-            cvs="$val"
+            svn="$val"
          fi
          ;;
       "mpi")
@@ -176,25 +176,30 @@ else
    case "${tests}" in
       "short")
       run=short_test;
+      echo ' Will do preselected test set : ' $tests ;
       ;;
       "medium")
       run=medium_test;
+      echo ' Will do preselected test set : ' $tests ;
       ;;
       "long")
       run=long_test;
+      echo ' Will do preselected test set : ' $tests ;
       ;;
       "all")
       run=all_test;
+      echo ' Will do preselected test set : ' $tests ;
       ;;
       *)
       run=user_test;
+      echo ' Will do (in "'$RUNTYPE'" mode) user selected tests : ' $tests ;
       ;;
    esac
 fi
 
 #
 
-cvslog=cvs_log;
+svnlog=svn_log;
 makelog=make_log;
 runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
@@ -208,35 +213,37 @@ if [ ! -d "${testdir}/logs" ]; then
 fi
 cd ${testdir}/logs;
 backup $makelog
-backup $cvslog
+backup $svnlog
 backup $runlog
 backup $txtlog
 backup $htmlog
 
-# >>-*-*-*-*> do cvs update and make if $cvs is yes
+# >>-*-*-*-*> do svn update and make if $svn is yes
 
 cd ${testlastpath};
 #
-if [ "${cvs}" = "yes" ]; then
-  echo ' Starting CVS Update ... ' ;
-  cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
-  { echo " CVS update failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
-    cat ${testdir}/logs/$cvslog ; \
+if [ "${svn}" = "yes" ]; then
+  echo ' Starting SVN Update ... ' ;
+ # cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
+  svn up > ${testdir}/logs/$svnlog 2>&1 || \
+  { echo " SVN update failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$svnlog" ; \
+    cat ${testdir}/logs/$svnlog ; \
     exit 1 ;\
   }
 #
 #
-  echo ' Making the Makefiles (running pamadm) ...'
+  echo ' Making the Makefiles (running pamadm -adm) - basic set of modules ...'
   ./pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
   { echo " Pamadm failed" ; \
     echo " Here is the logfile ${testdir}/logs/$makelog" ; \
     cat ${testdir}/logs/$makelog ; \
     exit 1 ;\
   }
-  echo ' Checking dependencies ... '
-  make depend >> ${testdir}/logs/$makelog 2>&1 || \
-  { echo " Make depend failed" ; \
+  echo ' Cleaning (and checking dependencies...) '
+  #make depend >> ${testdir}/logs/$makelog 2>&1 || \
+  make clean >> ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Make clean/depend failed" ; \
     echo " Here is the logfile ${testdir}/logs/$makelog" ; \
     cat ${testdir}/logs/$makelog ; \
     exit 1 ;\
@@ -280,10 +287,16 @@ else
 fi
 EOF
 
-# >>-*-*-*-*> Run job script interactively or batch, depending on $queue
+# ... decide whether it is serial or parallel according to mpi parameter
+if [ -z $mpi ]; then
+ echo ' Tests in serial mode '
+else
+ echo ' Tests in parallel mode (mpi='$nodes')'
+fi
 
+# >>-*-*-*-*> Run job script interactively or batch, depending on $queue
 if [ "${queue}" = "none" ]; then
-  # The tests are default run interactively on the same machine as the cvs and make command is run.
+  # The tests are default run interactively on the same machine as the svn and make command is run.
   echo ' Starting test calculations interactively ... '
   chmod u+x job_testlast.sh
   ./job_testlast.sh
