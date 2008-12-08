@@ -192,7 +192,7 @@ else
       ;;
       *)
       run=user_test;
-      echo ' Will do (in "'$RUNTYPE'" mode) user selected tests : ' $tests ;
+      echo ' Will do (in runtime "'$RUNTYPE'" mode) user selected tests : ' $tests ;
       ;;
    esac
 fi
