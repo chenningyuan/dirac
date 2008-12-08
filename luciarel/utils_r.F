@@ -1448,7 +1448,7 @@ C     read IT_TTPL
 C
 C     check whether all information was available and correct
       IF( NMPROC .eq. NMPROC_FILE )THEN
-        IF( (SPLIT_IJKL_FILE .eq. SPLIT_IJKL) .and.
+        IF( (SPLIT_IJKL_FILE .eqv. SPLIT_IJKL) .and.
      &      ( ISHARED_FILE .eq. IT_SHL ) ) DIST_COMPLETE = .TRUE. 
       END IF
       END
