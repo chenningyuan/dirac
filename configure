@@ -468,7 +468,7 @@ usage ()  {
    echo '   --cc=CC                      : Set C compiler to CC'
    echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
-   echo '   --math_lib=MATH_LIB          : Choose the mathematical library MATH_LIB'
+   echo '   --math_lib="MATH_LIB"        : Choose the mathematical library MATH_LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
@@ -757,9 +757,10 @@ if [ "$mesp" = "mpi" ]; then
     xlf*|mpfort|mpxlf_r) comptst="$F90_COMP -WF,-DSYS_$sys_name" ;;
     *) comptst="$F90_COMP -DSYS_$sys_name" ;;
   esac
-# gfortran needs -fcray-pointer flag for POINTER statements in MPI2_test.F
+# gfortran needs -fcray-pointer flag for POINTER statements in MPI2_test.F !
   case $F90real in
     gfortran|gfortran-*)
+    #*/gfortran|*/gfortran-*)
         comptst="$comptst -fcray-pointer"
         opt="$opt -fcray-pointer"
         safe="$safe -fcray-pointer"
@@ -966,7 +967,7 @@ comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
 fi
-find_compiler "C" $CC_COMP
+find_compiler "C" $CC_COMP_NAME
 CC_COMP_NAME=$comp_found
 CC_COMP=${comp_pwd}${comp_found}
 
@@ -1006,7 +1007,6 @@ if [ $IPRINT -ge "7" ];  then
   echo 'old_compiler: set  old_pwd='$old_pwd
 fi
 
-
 if [ -n "$old_comp" ]; then 
   eval "$1=\" $old_comp$col_sep $old_pwd$col_sep Previous installation$row_sep\"" 
 fi
@@ -1028,20 +1028,19 @@ local default=
 comp_found=""
 comp_pwd=""
 
-
 old_compiler old_comp "$to_find"
 search_dirs=`echo "$PATH"|sed 's/:/ /g'`
 # BASH: search_dirs=${PATH//:/ }
 # Which doesn't work on mac!
 if [ ! -z "$2" ]; then
   local tmp_list=$comp_list
-  if [ -f "$2" ]; then
+  if [ -f "$2" ]; then # checks the presence of file (with full path)
     comp_found=$2
     comp_pwd=""
     echo "Compiler for $to_find: $comp_found"
     return 0
   else
-    echo "Compiler specified with --f90 not found"
+    echo "Compiler specified with --f90/--cc not found (you must also provide full path)."
     echo "Compiler: $2"
     echo "Checking for the standard compilers."
   fi
@@ -1098,74 +1097,115 @@ find_real_f90(){
 #
 # Find the underlying compiler for fortran mpi compilers
 #
+
+if [ $IPRINT -ge "8" ]; then
+ $echo "\n find_real_f90:"
+ $echo "F90_COMP_NAME=$F90_COMP_NAME"
+ $echo "F90_COMP=$F90_COMP"
+fi
+
 case "$F90_COMP_NAME" in
-openmpif*|mpif*)
-   if "$F90_COMP" -show > /dev/null; then
-      # MPICH
+*/openmpif*|*/mpif*|openmpif*|mpif*) # must consider a full path !
+   if    "$F90_COMP" -show   > /dev/null; then
+      # MPICH, OpenMPI
       mpishowopt="-show"
-   else
+   elif  "$F90_COMP" -showme > /dev/null; then
       # LAM MPI
       mpishowopt="-showme"
-   fi
-   my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
-   if "$F90_COMP" $mpishowopt | grep -q ifc; then
-      F90real=ifc
-   elif "$F90_COMP" $mpishowopt | grep -q ifort; then
-      F90real=ifort
-   elif "$F90_COMP" $mpishowopt | grep -q gfortran; then
-      F90real=gfortran
-   elif "$F90_COMP" $mpishowopt | grep -q pathf90; then
-      F90real=pathf90
-   elif "$F90_COMP" $mpishowopt | grep -q pgf90; then
-      F90real=pgf90
-   elif "$F90_COMP" $mpishowopt | grep -q lfc; then
-      F90real=lfc
-   elif "$F90_COMP" $mpishowopt | grep -q g95; then
-      F90real=g95
    else
-      F90real=$F90_COMP
+      $echo "\nNo Fortran parallel mpishowopt assigned. Configure might not be able to determine compiler flags.\n"
    fi
-   echo "Compiler in $F90_COMP found to be $F90real ..."
+   if [ $IPRINT -ge "8" ]; then
+     $echo "assigned mpishowopt=$mpishowopt"
+   fi
+
+   my_mpi_include_path=`$F90_COMP $mpishowopt | grep mpif.h | sed -e 's/ln -s //' | sed -e 's/mpif.h//g'|grep include`
+   if   "$F90_COMP" $mpishowopt | grep -q ifc      > /dev/null; then
+      F90real=ifc
+   elif "$F90_COMP" $mpishowopt | grep -q ifort    > /dev/null; then
+      F90real=ifort
+   elif "$F90_COMP" $mpishowopt | grep -q gfortran > /dev/null; then
+      F90real=gfortran
+   elif "$F90_COMP" $mpishowopt | grep -q pathf90  > /dev/null; then
+      F90real=pathf90
+   elif "$F90_COMP" $mpishowopt | grep -q pgf90    > /dev/null; then
+      F90real=pgf90
+   elif "$F90_COMP" $mpishowopt | grep -q lfc      > /dev/null; then
+      F90real=lfc
+   elif "$F90_COMP" $mpishowopt | grep -q g95      > /dev/null; then
+      F90real=g95
+#   else
+#      F90real=$F90_COMP
+   fi
+   echo "Fortran compiler in $F90_COMP found to be $F90real"
    ;;
-mpxlf|mpxlf_r)
+mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
    F90real=xlf
-   echo "Compiler in $F90_COMP found to be $F90real ..."
+   echo "Fortran compiler in $F90_COMP found to be $F90real"
    ;;
 *)
-   F90real=$F90_COMP_NAME;;
+   F90real=$F90_COMP_NAME # 'error' default
+   echo "No specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
+   ;;
 esac
+
+if [ $IPRINT -ge "8" ]; then
+ $echo "assigned mpishowopt=$mpishowopt"
+ $echo "assigned F90real=$F90real"
+fi
 }
 
 find_real_cc(){
+#
+#  Find the underlying compiler for C-mpi compiler
+#
+if [ $IPRINT -ge "8" ]; then
+ $echo "\n find_real_cc:"
+ $echo "CC_COMP_NAME=$CC_COMP_NAME"
+ $echo "CC_COMP=$CC_COMP"
+fi
+
 case "$CC_COMP_NAME" in
-openmpicc| mpicc)
-   if $CC_COMP -show 2>&1 /dev/null; then
-      # MPICH
+openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
+   if    "$CC_COMP"  -show   > /dev/null; then
+      # MPICH etc
       mpishowopt="-show"
-   else
-      # LAM MPI
+   elif  "$CC_COMP"  -showme > /dev/null; then
+      # LAM MPI etc
       mpishowopt="-showme"
-   fi
-    if $CC_COMP_NAME $mpishowopt | grep -q icc; then
-      CCreal=icc
-   elif $CC_COMP_NAME $mpishowopt | grep -q pathcc; then
-      CCreal=pathcc
-   elif $CC_COMP_NAME $mpishowopt | grep -q pgcc; then
-      CCreal=pgcc
-   elif $CC_COMP_NAME $mpishowopt | grep -q gcc; then
-      CCreal=gcc
    else
-      CCreal=$CC_COMP_NAME
+      $echo "\nNo C-parallel mpishowopt assigned. Configure might not be able to determine C-compiler flags.\n"
    fi
-   echo "Compiler in $CC_COMP_NAME found to be $CCreal ..."
+
+   if [ $IPRINT -ge "8" ]; then
+     $echo "assigned mpishowopt=$mpishowopt"
+   fi
+
+   if   $CC_COMP_NAME $mpishowopt | grep -q icc    > /dev/null; then
+      CCreal=icc
+   elif $CC_COMP_NAME $mpishowopt | grep -q pathcc > /dev/null; then
+      CCreal=pathcc
+   elif $CC_COMP_NAME $mpishowopt | grep -q pgcc   > /dev/null; then
+      CCreal=pgcc
+   elif $CC_COMP_NAME $mpishowopt | grep -q gcc    > /dev/null; then
+      CCreal=gcc
+  # else
+  #    CCreal=$CC_COMP_NAME
+   fi
+   echo "C compiler in $CC_COMP_NAME found to be $CCreal."
    ;;
 *)
   CCreal=$CC_COMP_NAME
+  echo "No specific C-compiler found in parallel $F90_COMP. Configure might not assign proper flags !"
   ;;
 esac
 echo
-}
 
+if [ $IPRINT -ge "8" ]; then
+ $echo "assigned CC_real=$CCreal"
+fi
+
+}
 
 find_debugger(){
 ###############################################################
@@ -1477,7 +1517,7 @@ elif [ -n "$LIB" ]; then
 fi
 
 #
-# deal with testing of libraries ...
+#  deal with testing of libraries ...
 #
 if [ $testlibs = 1 ]; then
   $echo "\nTesting of used mathematic/(parallel) libraries for integer data type compatibility enabled. \c"
@@ -1793,6 +1833,9 @@ fi
 }
 
 get_f90_flags(){
+#
+# according to $F90real assign flags
+#
   case "$F90real" in
     g95)
       opt="-g -O3 -ffast-math -Wno=155"
@@ -1850,6 +1893,11 @@ get_f90_flags(){
        cpp_cc="$cpp_cc -DVAR_EKO"
        mod="-module $MODULE_DIR"
        ;;
+    *)
+       $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
+       $echo "Error exit 1 !\n"
+       exit 1
+       ;;
   esac
 
   if [ $IPRINT -ge "5" ];  then
@@ -1858,10 +1906,13 @@ get_f90_flags(){
     echo '   safe='$safe
     echo '    mod='$mod
   fi
-
 }
 
 get_cc_flags(){
+#
+#  determine 'safe' and optimization flags for the C-compiler 
+# according to $CCreal
+#
   case "$CCreal" in
   gcc|cc)
     c_opt="-g -O3 -ffast-math"
@@ -1898,6 +1949,7 @@ get_cc_flags(){
   esac
 
   if [ $IPRINT -ge "5" ];  then
+   echo 'get_cc_flags: used CCreal='$CCreal
    echo 'get_cc_flags: got c_opt='$c_opt
    echo 'get_cc_flags: got c_safe='$c_safe
   fi
@@ -1926,6 +1978,14 @@ getmods()
 }
 
 set_compile_flags(){
+#
+# Find and assign proper compiler flags
+#
+
+  if [ $IPRINT -ge "7" ];  then 
+    $echo "\n in set_compile_flags \n"
+  fi
+
 f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 find_real_f90
@@ -2522,6 +2582,7 @@ echo '   Run configure with the --help argument for more options'
 #                        Parse arguments
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+echo ''
 while [ $# != 0 ]; do
    arg="$1"; shift
    echo "Argument: $arg"
