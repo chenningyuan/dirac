@@ -1101,16 +1101,18 @@ $echo "Compiler for $to_find: $comp_found\n"
 
 find_real_f90(){
 #
-# Find the underlying compiler for fortran mpi compilers
+# Find the underlying compiler for fortran compilers
 #
 
 if [ $IPRINT -ge "8" ]; then
- $echo "\n find_real_f90:"
- $echo "F90_COMP_NAME=$F90_COMP_NAME"
- $echo "F90_COMP=$F90_COMP"
+ $echo "\n ===  find_real_f90 ===="
+ $echo "   F90_COMP_NAME=$F90_COMP_NAME"
+ $echo "        F90_COMP=$F90_COMP"
+ $echo " current F90real=$F90_real"
 fi
 
 case "$F90_COMP_NAME" in
+
 */openmpif*|*/mpif*|openmpif*|mpif*) # must consider a full path !
    if    "$F90_COMP" -show   > /dev/null; then
       # MPICH, OpenMPI
@@ -1140,8 +1142,8 @@ case "$F90_COMP_NAME" in
       F90real=lfc
    elif "$F90_COMP" $mpishowopt | grep -q g95      > /dev/null; then
       F90real=g95
-#   else
-#      F90real=$F90_COMP
+   else
+      F90real=$F90_COMP
    fi
    echo "Fortran compiler in $F90_COMP found to be $F90real"
    ;;
@@ -1150,14 +1152,15 @@ mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
    echo "Fortran compiler in $F90_COMP found to be $F90real"
    ;;
 *)
-   F90real=$F90_COMP_NAME # 'error' default
-   $echo "\nNo specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
+   F90real=$F90_COMP_NAME # 'error' default for parallel branch
+   if [ "$par" = "yes" ]; then
+     $echo "\nNo specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
+   fi
    ;;
 esac
 
 if [ $IPRINT -ge "8" ]; then
- $echo "assigned mpishowopt=$mpishowopt"
- $echo "assigned F90real=$F90real"
+ $echo "find_real_f90:  assigned F90real=$F90real"
 fi
 }
 
@@ -1166,9 +1169,10 @@ find_real_cc(){
 #  Find the underlying compiler for C-mpi compiler
 #
 if [ $IPRINT -ge "8" ]; then
- $echo "\n find_real_cc:"
- $echo "CC_COMP_NAME=$CC_COMP_NAME"
- $echo "CC_COMP=$CC_COMP"
+ $echo "\n ====  find_real_cc: ===="
+ $echo "   CC_COMP_NAME=$CC_COMP_NAME"
+ $echo "        CC_COMP=$CC_COMP"
+ $echo " current CCreal=$CCreal"
 fi
 
 case "$CC_COMP_NAME" in
@@ -1195,20 +1199,22 @@ openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
       CCreal=pgcc
    elif $CC_COMP_NAME $mpishowopt | grep -q gcc    > /dev/null; then
       CCreal=gcc
-  # else
-  #    CCreal=$CC_COMP_NAME
+   else
+      CCreal=$CC_COMP_NAME
    fi
    $echo "C compiler in $CC_COMP_NAME found to be $CCreal."
    ;;
 *)
   CCreal=$CC_COMP_NAME
-  echo "No specific C-compiler found in parallel $F90_COMP. Configure might not assign proper flags !"
+  if [ "$par" = "yes" ]; then
+    $echo "No specific C-compiler found in parallel $CC_COMP_NAME. Configure might not assign proper flags !"
+  fi
   ;;
 esac
 echo
 
 if [ $IPRINT -ge "8" ]; then
- $echo "assigned CC_real=$CCreal"
+ $echo "find_real_CC: assigned CC_real=$CCreal"
 fi
 
 }
@@ -1936,9 +1942,10 @@ get_f90_flags(){
 
   if [ $IPRINT -ge "5" ];  then
     echo '***  get_f90_flags ***'
-    echo '    opt='$opt
-    echo '   safe='$safe
-    echo '    mod='$mod
+    echo ' F90real='$F90real
+    echo '     opt='$opt
+    echo '    safe='$safe
+    echo '     mod='$mod
   fi
 }
 
