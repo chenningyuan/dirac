@@ -49,6 +49,9 @@ initialize ()  {
 quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
+dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
+dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
+LIB="" # initialize, because it's used as parameter in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
 
@@ -464,11 +467,14 @@ usage ()  {
    echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
    echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
-   echo '   --f90=F90                    : Set fortran compiler to F90'
-   echo '   --cc=CC                      : Set C compiler to CC'
+   echo '   --f90=F90                    : Set fortran compiler to F90 (with full path)'
+   echo '   --cc=CC                      : Set C compiler to CC (with full path)'
    echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
-   echo '   --math_lib="MATH_LIB"        : Choose the mathematical library MATH_LIB'
+   echo '   --math_lib=MATH_LIB          : Choose the mathematical library MATH_LIB'
+   echo '   --dir_blas                   : Employ Dirac BLAS builtin library'
+   echo '   --dir_lapack                 : Employ Dirac LAPACK builtin library'
+   echo '   --all_math_lib=LIB           : Choose the mathematical libraries with full paths, LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
@@ -1145,7 +1151,7 @@ mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
    ;;
 *)
    F90real=$F90_COMP_NAME # 'error' default
-   echo "No specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
+   $echo "\nNo specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
    ;;
 esac
 
@@ -1192,7 +1198,7 @@ openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
   # else
   #    CCreal=$CC_COMP_NAME
    fi
-   echo "C compiler in $CC_COMP_NAME found to be $CCreal."
+   $echo "C compiler in $CC_COMP_NAME found to be $CCreal."
    ;;
 *)
   CCreal=$CC_COMP_NAME
@@ -1270,7 +1276,9 @@ echo
 }
 
 setup_math_lib(){
-
+#
+#
+#
   if [ $IPRINT -ge "5" ];  then
     echo 'setup_math_lib: entering param lib, 1='$1
     echo 'setup_math_lib: entering param dir, 2='$2
@@ -1297,7 +1305,7 @@ setup_math_lib(){
   esac
 
   if [ $IPRINT -ge "5" ];  then
-    echo 'setup_math_lib: finally setup variable LIB='$LIB
+    $echo 'setup_math_lib: finally setup variable LIB='$LIB
   fi
 
   test_lib_arch $2
@@ -1486,18 +1494,40 @@ $echo
 $echo 'The use of optimized BLAS and LAPACK routines implementation'
 $echo 'is very important, especially for the performance of MOLTRA and RELCCSD.'
 $echo
+
+#
+# if mathematical libraries(with path) are given in the flag, accept them 
+#
+# likewise check whether user wants builtin BLAS, LAPACK dirac defaults
+#
+if [ -n "$LIB" ]; then
+  $echo "Mathematical library(-ies) chosen in configure flag (to appear as \"LIBS\" in Makefile.config):"
+  $echo "      $LIB"
+  if [ $dirac_blas = 1 ]; then
+    $echo "\nEmployed default BLAS builtin library (through preprocessor flag) "
+    append cpp_f90 "-DUSE_DIRAC_BLAS"
+  fi
+  if [ $dirac_lapack = 1 ]; then
+    $echo "\nEmployed default LAPACK builtin library (through preprocessor flag) "
+    append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
+  fi
+  return 0 # leave subroutine - do not querry anymore
+fi
+
+
 #
 #  Check if use LIB_LIST from old Makefile.config
 #
 # libraries
 ext_list='.so .a'
+       #  $userlib comes from the parameter list
 lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath \ 
     libmkl libmkl_ipf libmkl_itp libmkl_ilp64 sunperf libveclib libdxml liblapack"
 LIB=""
 math_dirs=$dir_list
 
 if [ $IPRINT -ge "5" ];  then
-    echo 'find_math_lib: setup math_dirs='$math_dirs
+  $echo 'find_math_lib: setup math_dirs='$math_dirs
 fi
 
 if [ -z "$LIB" ]; then
@@ -1515,21 +1545,25 @@ if [ -z "$LIB" -a -n "$lib_list" ]; then
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
 fi
+}
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+deal_testlib () {
 #
 #  deal with testing of libraries ...
 #
+
 if [ $testlibs = 1 ]; then
-  $echo "\nTesting of used mathematic/(parallel) libraries for integer data type compatibility enabled. \c"
+  $echo "\nTesting of used mathematic(/parallel) libraries for integer data type compatibility enabled. \c"
 else
-  echo
-  echo " Testing of mathematical libraries DISABLED!"
-  echo " Make sure you know _exactly_ why you are doing this, and consider"
-  echo " using the built-in reference libraries if you have problems with"
-  echo " your optimized system libraries. One common problem is integer"
-  echo " size mismatch between Dirac and BLAS/LAPACK/(system MPI libs)."
-  echo " Hit return to continue.."
-  read
+  $echo
+  $echo " Testing of mathematical libraries DISABLED!"
+  $echo " Make sure you know _exactly_ why you are doing this, and consider"
+  $echo " using the built-in reference libraries if you have problems with"
+  $echo " your optimized system libraries. One common problem is integer"
+  $echo " size mismatch between Dirac and BLAS/LAPACK/(system MPI libs)."
+  $echo " Hit return to continue.."
+  $read
   cpp_f90="-DNO_SELFTEST $cpp_f90"
 fi
 echo
@@ -2644,6 +2678,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
+	 # extend the list of directories
          dir_list="$val $dir_list"
          ;;
       "mathematical_libraries" | "math_lib" )
@@ -2653,6 +2688,20 @@ while [ $# != 0 ]; do
             exit 1
          fi
          userlib="$val"
+         ;;
+      "dir_blas")
+	 dirac_blas=1
+         ;;
+      "dir_lapack")
+	 dirac_lapack=1
+         ;;
+      "all_math_lib" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         LIB="$val"
          ;;
       "memory_size" | "memory" | "mem" )
          if [ "${valomitted}" = "yes" ]; then
@@ -2727,6 +2776,7 @@ if [ "$mesp" = "mpi" ]; then
   find_mpi_path
 fi
 find_mathlib
+deal_testlib
 set_memsize
 set_installdir
 set_scratchdir
