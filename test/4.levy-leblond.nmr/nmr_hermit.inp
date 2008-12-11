@@ -1,0 +1,27 @@
+**DIRAC
+.TITLE
+HF NMR calculations with Jengine+density fitting in non-relativistic two-component mode
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.IOTC
+**INTEGRALS
+.NUCMOD
+ 1
+!*TWOINT
+!.AOFOCK
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.NODSCF
+.PRINT
+  1
+.CLOSED SHELL
+10
+**PROPERTIES
+.PVCSHI
+*LINEAR RESPONSE
+.ANALYZ
+*END OF
