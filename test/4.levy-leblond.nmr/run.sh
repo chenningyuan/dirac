@@ -21,4 +21,4 @@ MENU=nmr_LinK_df-Jengine
 MOL=H2O_df
 export MENU;
 export MOL;
-../run.sh
+#../run.sh
