@@ -17,3 +17,8 @@ MOL=H2O_nosym
 export MENU;
 export MOL;
 ../run.sh
+MENU=nmr_LinK_df-Jengine
+MOL=H2O_df
+export MENU;
+export MOL;
+../run.sh

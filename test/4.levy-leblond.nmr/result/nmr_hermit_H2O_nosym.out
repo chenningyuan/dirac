@@ -128,7 +128,7 @@ DIRAC serial allocating 134217728 words (1024 MB) of memory
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : login-0-1.local
+ Hostname          : login-0-0.local
  Operating system  : Linux 2.6.9-55.0.2.ELsmp
  Machine           : x86_64
  Run               : Sequential
@@ -138,7 +138,7 @@ DIRAC serial allocating 134217728 words (1024 MB) of memory
  Changeset         : '8024M' 
 
  
-     Data and time (Linux)  : Thu Dec 11 14:21:05 2008 
+     Data and time (Linux)  : Thu Dec 11 16:40:22 2008 
      Host name              :                                         
 
 
@@ -156,8 +156,8 @@ HF NMR calculations with Jengine+density fitting in non-relativistic two-compone
 **INTEGRALS
 .NUCMOD
  1
-!*TWOINT
-!.AOFOCK
+*TWOINT
+.AOFOCK
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
@@ -214,6 +214,17 @@ HF NMR calculations with Jengine+density fitting in non-relativistic two-compone
 
  Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
 
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ Extra output for the following shells:  0  0  0  0
+ * Direct calculation of Fock matrices in AO-basis.
+ * Default screening threshold in direct Fock matrix construction: 1.00E-12
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
 
 
  Changes of defaults for READIN:
@@ -1267,7 +1278,7 @@ XPRADD called for specifying PCOMB;
 
   MAKE_H2C: Two-component BSS mode - positronic shells deleted !
 
- >>> Time used in mk_h2c is   0.48 seconds
+ >>> Time used in mk_h2c is   0.47 seconds
 
 
   MNF.INP input file (for the AMFI stuff) is ready.
@@ -1287,7 +1298,7 @@ No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals      (NORB):    40
 
- >>> Time used in PAMSET is   0.55 seconds
+ >>> Time used in PAMSET is   0.53 seconds
 
 
 
@@ -1300,7 +1311,7 @@ Total no. of orbitals      (NORB):    40
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Dec 11 14:21:06 2008
+########## START ITERATION NO.   1 ##########   Thu Dec 11 16:40:22 2008
 
 
 
@@ -1310,24 +1321,24 @@ Total no. of orbitals      (NORB):    40
 Electronic energy         :   -48.017003375585958
 Nuclear potential energy  :     9.055003146800487
 Total energy              :   -38.962000228785470
-   * Quaternion diagonalization(CPU): 0.00300002s
+   * Quaternion diagonalization(CPU): 0.00299990s
    * Two-electron Fock matrix  (CPU): 0.00000000s
 It.   1    -38.96200022879      1.00D+20  0.00D+00  0.00D+00               0.00400007s   Scr. nuclei    Thu Dec 11
 
-########## START ITERATION NO.   2##########   Thu Dec 11 14:21:06 2008
+########## START ITERATION NO.   2##########   Thu Dec 11 16:40:22 2008
 
 
-* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+* GETGAB: label "GABAO0XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.19%    0.00%    2.12%   0.04199398s
+AOfock:LL  1.00D-12    0.00%   48.00%    0.00%    2.38%   0.03699398s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -83.86312699650928
+Total electronic energy            :    -83.86312699650929
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -74.80812384970879
+Total energy                       :    -74.80812384970881
 
 
                                Output from DIISD1:
@@ -1336,27 +1347,27 @@ Total energy                       :    -74.80812384970879
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.04999197s
-   * Quaternion diagonalization(CPU): 0.00200009s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.05399191s
+   * Two-electron Fock matrix  (CPU): 0.04599309s
+   * Quaternion diagonalization(CPU): 0.00199997s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.05099201s
 
-########## END ITERATION NO.   2 ##########   Thu Dec 11 14:21:06 2008
+########## END ITERATION NO.   2 ##########   Thu Dec 11 16:40:22 2008
 
-It.   2    -74.80812384971      3.58D+01  5.95D+00  3.78D+00               0.05399191s   LL             Thu Dec 11
+It.   2    -74.80812384971      3.58D+01  5.95D+00  3.78D+00               0.05099201s   LL             Thu Dec 11
 
-########## START ITERATION NO.   3##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   3##########   Thu Dec 11 16:40:22 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.05%    0.00%    2.12%   0.04099405s
+AOfock:LL  1.00D-12    0.00%   47.88%    0.00%    2.38%   0.03599501s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -84.64288358464134
+Total electronic energy            :    -84.64288358464100
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -75.58788043784085
+Total energy                       :    -75.58788043784051
 
 
                                Output from DIISD1:
@@ -1371,27 +1382,27 @@ Total energy                       :    -75.58788043784085
      lambda     6.150D-01
          2      2.903D-01
          3      7.097D-01
-   * Two-electron Fock matrix  (CPU): 0.04199398s
+   * Two-electron Fock matrix  (CPU): 0.03799510s
    * Quaternion diagonalization(CPU): 0.00199902s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04499316s
+>>> Total CPU-time : 0.04199386s
 
-########## END ITERATION NO.   3 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   3 ##########   Thu Dec 11 16:40:22 2008
 
-It.   3    -75.58788043784      7.80D-01 -2.59D+00  1.70D+00   DIIS   2    0.04499316s   LL             Thu Dec 11
+It.   3    -75.58788043784      7.80D-01 -2.59D+00  1.70D+00   DIIS   2    0.04199386s   LL             Thu Dec 11
 
-########## START ITERATION NO.   4##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   4##########   Thu Dec 11 16:40:22 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.22%    0.00%    2.12%   0.04099405s
+AOfock:LL  1.00D-12    0.00%   48.03%    0.00%    2.38%   0.03599501s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.12379562396208
+Total electronic energy            :    -85.12379562396222
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.06879247716159
+Total energy                       :    -76.06879247716174
 
 
                                Output from DIISD1:
@@ -1407,27 +1418,27 @@ Total energy                       :    -76.06879247716159
          2     -2.804D-02
          3      9.992D-02
          4      9.281D-01
-   * Two-electron Fock matrix  (CPU): 0.04299307s
-   * Quaternion diagonalization(CPU): 0.00199997s
+   * Two-electron Fock matrix  (CPU): 0.03699493s
+   * Quaternion diagonalization(CPU): 0.00300002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04799294s
+>>> Total CPU-time : 0.04299307s
 
-########## END ITERATION NO.   4 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   4 ##########   Thu Dec 11 16:40:22 2008
 
-It.   4    -76.06879247716      4.81D-01  1.11D+00  2.95D-01   DIIS   3    0.04799294s   LL             Thu Dec 11
+It.   4    -76.06879247716      4.81D-01  1.11D+00  2.95D-01   DIIS   3    0.04299307s   LL             Thu Dec 11
 
-########## START ITERATION NO.   5##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   5##########   Thu Dec 11 16:40:22 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04199207s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699493s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13632635215153
+Total electronic energy            :    -85.13632635215170
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08132320535104
+Total energy                       :    -76.08132320535121
 
 
                                Output from DIISD1:
@@ -1444,27 +1455,27 @@ Total energy                       :    -76.08132320535104
          3     -8.405D-03
          4     -5.477D-02
          5      1.062D+00
-   * Two-electron Fock matrix  (CPU): 0.04299200s
+   * Two-electron Fock matrix  (CPU): 0.03699493s
    * Quaternion diagonalization(CPU): 0.00300002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04799199s
+>>> Total CPU-time : 0.04299402s
 
-########## END ITERATION NO.   5 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   5 ##########   Thu Dec 11 16:40:22 2008
 
-It.   5    -76.08132320535      1.25D-02 -1.52D-01  1.06D-02   DIIS   4    0.04799199s   LL             Thu Dec 11
+It.   5    -76.08132320535      1.25D-02 -1.52D-01  1.06D-02   DIIS   4    0.04299402s   LL             Thu Dec 11
 
-########## START ITERATION NO.   6##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   6##########   Thu Dec 11 16:40:22 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04199302s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699410s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636063017049
+Total electronic energy            :    -85.13636063017051
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135748337000
+Total energy                       :    -76.08135748337003
 
 
                                Output from DIISD1:
@@ -1482,27 +1493,27 @@ Total energy                       :    -76.08135748337000
          4     -7.937D-04
          5     -1.478D-01
          6      1.149D+00
-   * Two-electron Fock matrix  (CPU): 0.04199302s
-   * Quaternion diagonalization(CPU): 0.00200009s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04699302s
+   * Two-electron Fock matrix  (CPU): 0.03799403s
+   * Quaternion diagonalization(CPU): 0.00300002s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.04399395s
 
-########## END ITERATION NO.   6 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   6 ##########   Thu Dec 11 16:40:22 2008
 
-It.   6    -76.08135748337      3.43D-05  8.33D-04  2.32D-03   DIIS   5    0.04699302s   LL             Thu Dec 11
+It.   6    -76.08135748337      3.43D-05  8.33D-04  2.32D-03   DIIS   5    0.04399395s   LL             Thu Dec 11
 
-########## START ITERATION NO.   7##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   7##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04199302s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699398s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636269770808
+Total electronic energy            :    -85.13636269770818
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135955090759
+Total energy                       :    -76.08135955090769
 
 
                                Output from DIISD1:
@@ -1521,27 +1532,27 @@ Total energy                       :    -76.08135955090759
          5     -2.044D-02
          6     -1.068D-01
          7      1.125D+00
-   * Two-electron Fock matrix  (CPU): 0.04199302s
-   * Quaternion diagonalization(CPU): 0.00199902s
+   * Two-electron Fock matrix  (CPU): 0.03699398s
+   * Quaternion diagonalization(CPU): 0.00299907s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04899192s
+>>> Total CPU-time : 0.04399204s
 
-########## END ITERATION NO.   7 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   7 ##########   Thu Dec 11 16:40:23 2008
 
-It.   7    -76.08135955091      2.07D-06  5.24D-04  4.64D-04   DIIS   6    0.04899192s   LL             Thu Dec 11
+It.   7    -76.08135955091      2.07D-06  5.24D-04  4.64D-04   DIIS   6    0.04399204s   LL             Thu Dec 11
 
-########## START ITERATION NO.   8##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   8##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.01%   0.04099405s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.22%   0.03599501s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636280997213
+Total electronic energy            :    -85.13636280997221
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135966317164
+Total energy                       :    -76.08135966317172
 
 
                                Output from DIISD1:
@@ -1561,27 +1572,27 @@ Total energy                       :    -76.08135966317164
          6      6.001D-03
          7     -4.016D-01
          8      1.387D+00
-   * Two-electron Fock matrix  (CPU): 0.04299402s
-   * Quaternion diagonalization(CPU): 0.00299883s
+   * Two-electron Fock matrix  (CPU): 0.03599501s
+   * Quaternion diagonalization(CPU): 0.00199902s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04799294s
+>>> Total CPU-time : 0.04299402s
 
-########## END ITERATION NO.   8 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   8 ##########   Thu Dec 11 16:40:23 2008
 
-It.   8    -76.08135966317      1.12D-07 -6.38D-05  1.18D-04   DIIS   7    0.04799294s   LL             Thu Dec 11
+It.   8    -76.08135966317      1.12D-07 -6.38D-05  1.18D-04   DIIS   7    0.04299402s   LL             Thu Dec 11
 
-########## START ITERATION NO.   9##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.   9##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04199386s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699493s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636281903203
+Total electronic energy            :    -85.13636281903212
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135967223154
+Total energy                       :    -76.08135967223163
 
 
                                Output from DIISD1:
@@ -1602,27 +1613,27 @@ Total energy                       :    -76.08135967223154
          7      7.105D-02
          8     -3.728D-01
          9      1.300D+00
-   * Two-electron Fock matrix  (CPU): 0.04199386s
-   * Quaternion diagonalization(CPU): 0.00300002s
+   * Two-electron Fock matrix  (CPU): 0.03699493s
+   * Quaternion diagonalization(CPU): 0.00199986s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04899311s
+>>> Total CPU-time : 0.04299295s
 
-########## END ITERATION NO.   9 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.   9 ##########   Thu Dec 11 16:40:23 2008
 
-It.   9    -76.08135967223      9.06D-09 -2.04D-05  2.02D-05   DIIS   8    0.04899311s   LL             Thu Dec 11
+It.   9    -76.08135967223      9.06D-09 -2.04D-05  2.02D-05   DIIS   8    0.04299295s   LL             Thu Dec 11
 
-########## START ITERATION NO.  10##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.  10##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.01%   0.04199314s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.22%   0.03699493s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636281927185
+Total electronic energy            :    -85.13636281927187
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135967247136
+Total energy                       :    -76.08135967247138
 
 
                                Output from DIISD1:
@@ -1644,27 +1655,27 @@ Total energy                       :    -76.08135967247136
          8      7.212D-02
          9     -4.550D-01
         10      1.391D+00
-   * Two-electron Fock matrix  (CPU): 0.04199314s
-   * Quaternion diagonalization(CPU): 0.00300026s
+   * Two-electron Fock matrix  (CPU): 0.03799498s
+   * Quaternion diagonalization(CPU): 0.00300002s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04899311s
+>>> Total CPU-time : 0.04399395s
 
-########## END ITERATION NO.  10 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.  10 ##########   Thu Dec 11 16:40:23 2008
 
-It.  10    -76.08135967247      2.40D-10  4.20D-06  4.23D-06   DIIS   9    0.04899311s   LL             Thu Dec 11
+It.  10    -76.08135967247      2.40D-10  4.20D-06  4.23D-06   DIIS   9    0.04399395s   LL             Thu Dec 11
 
-########## START ITERATION NO.  11##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.  11##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04099393s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699398s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636281928183
+Total electronic energy            :    -85.13636281928189
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135967248134
+Total energy                       :    -76.08135967248140
 
 
                                Output from DIISD1:
@@ -1686,27 +1697,27 @@ Total energy                       :    -76.08135967248134
          9      1.298D-01
         10     -4.782D-01
         11      1.365D+00
-   * Two-electron Fock matrix  (CPU): 0.04199386s
-   * Quaternion diagonalization(CPU): 0.00199986s
+   * Two-electron Fock matrix  (CPU): 0.03699398s
+   * Quaternion diagonalization(CPU): 0.00199902s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04899192s
+>>> Total CPU-time : 0.04499304s
 
-########## END ITERATION NO.  11 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.  11 ##########   Thu Dec 11 16:40:23 2008
 
-It.  11    -76.08135967248      9.98D-12 -8.84D-07  5.90D-07   DIIS   9    0.04899192s   LL             Thu Dec 11
+It.  11    -76.08135967248      1.00D-11 -8.84D-07  5.90D-07   DIIS   9    0.04499304s   LL             Thu Dec 11
 
-########## START ITERATION NO.  12##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.  12##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04199386s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03799415s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636281928203
+Total electronic energy            :    -85.13636281928231
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135967248154
+Total energy                       :    -76.08135967248182
 
 
                                Output from DIISD1:
@@ -1719,44 +1730,44 @@ Total energy                       :    -76.08135967248154
 * DIIS coefficients. Sum:1.000D+00
 
      lambda     4.939D-15
-         4     -9.878D-07
+         4     -9.877D-07
          5      1.329D-05
-         6     -5.372D-05
+         6     -5.371D-05
          7     -1.337D-04
          8      2.240D-03
          9     -1.702D-02
         10      6.833D-02
         11     -3.525D-01
         12      1.299D+00
-   * Two-electron Fock matrix  (CPU): 0.04199386s
-   * Quaternion diagonalization(CPU): 0.00299907s
+   * Two-electron Fock matrix  (CPU): 0.03799415s
+   * Quaternion diagonalization(CPU): 0.00300026s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04699206s
+>>> Total CPU-time : 0.04399395s
 
-########## END ITERATION NO.  12 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.  12 ##########   Thu Dec 11 16:40:23 2008
 
-It.  12    -76.08135967248      1.99D-13  8.14D-08  1.20D-07   DIIS   9    0.04699206s   LL             Thu Dec 11
+It.  12    -76.08135967248      4.26D-13  8.14D-08  1.20D-07   DIIS   9    0.04399395s   LL             Thu Dec 11
 
-########## START ITERATION NO.  13##########   Thu Dec 11 14:21:07 2008
+########## START ITERATION NO.  13##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.20%    0.00%    2.12%   0.04099393s
+AOfock:LL  1.00D-12    0.00%   48.02%    0.00%    2.38%   0.03699398s
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.13636281928197
+Total electronic energy            :    -85.13636281928214
 Nuclear potential energy           :      9.05500314680049
-Total energy                       :    -76.08135967248148
-   * Two-electron Fock matrix  (CPU): 0.04099393s
-   * Quaternion diagonalization(CPU): 0.00299907s
+Total energy                       :    -76.08135967248165
+   * Two-electron Fock matrix  (CPU): 0.03699398s
+   * Quaternion diagonalization(CPU): 0.00300026s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04399395s
+>>> Total CPU-time : 0.03899312s
 
-########## END ITERATION NO.  13 ##########   Thu Dec 11 14:21:07 2008
+########## END ITERATION NO.  13 ##########   Thu Dec 11 16:40:23 2008
 
-It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.04399395s   LL             Thu Dec 11
+It.  13    -76.08135967248     -1.71D-13 -2.44D-08  3.37D-08   DIIS   9    0.03899312s   LL             Thu Dec 11
 
 
                                    SCF - CYCLE
@@ -1773,18 +1784,18 @@ It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.043
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
 It.   1    -38.96200022879      1.00D+20  0.00D+00  0.00D+00               0.00400007s   Scr. nuclei    Thu Dec 11
-It.   2    -74.80812384971      3.58D+01  5.95D+00  3.78D+00               0.05399191s   LL             Thu Dec 11
-It.   3    -75.58788043784      7.80D-01 -2.59D+00  1.70D+00   DIIS   2    0.04499316s   LL             Thu Dec 11
-It.   4    -76.06879247716      4.81D-01  1.11D+00  2.95D-01   DIIS   3    0.04799294s   LL             Thu Dec 11
-It.   5    -76.08132320535      1.25D-02 -1.52D-01  1.06D-02   DIIS   4    0.04799199s   LL             Thu Dec 11
-It.   6    -76.08135748337      3.43D-05  8.33D-04  2.32D-03   DIIS   5    0.04699302s   LL             Thu Dec 11
-It.   7    -76.08135955091      2.07D-06  5.24D-04  4.64D-04   DIIS   6    0.04899192s   LL             Thu Dec 11
-It.   8    -76.08135966317      1.12D-07 -6.38D-05  1.18D-04   DIIS   7    0.04799294s   LL             Thu Dec 11
-It.   9    -76.08135967223      9.06D-09 -2.04D-05  2.02D-05   DIIS   8    0.04899311s   LL             Thu Dec 11
-It.  10    -76.08135967247      2.40D-10  4.20D-06  4.23D-06   DIIS   9    0.04899311s   LL             Thu Dec 11
-It.  11    -76.08135967248      9.98D-12 -8.84D-07  5.90D-07   DIIS   9    0.04899192s   LL             Thu Dec 11
-It.  12    -76.08135967248      1.99D-13  8.14D-08  1.20D-07   DIIS   9    0.04699206s   LL             Thu Dec 11
-It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.04399395s   LL             Thu Dec 11
+It.   2    -74.80812384971      3.58D+01  5.95D+00  3.78D+00               0.05099201s   LL             Thu Dec 11
+It.   3    -75.58788043784      7.80D-01 -2.59D+00  1.70D+00   DIIS   2    0.04199386s   LL             Thu Dec 11
+It.   4    -76.06879247716      4.81D-01  1.11D+00  2.95D-01   DIIS   3    0.04299307s   LL             Thu Dec 11
+It.   5    -76.08132320535      1.25D-02 -1.52D-01  1.06D-02   DIIS   4    0.04299402s   LL             Thu Dec 11
+It.   6    -76.08135748337      3.43D-05  8.33D-04  2.32D-03   DIIS   5    0.04399395s   LL             Thu Dec 11
+It.   7    -76.08135955091      2.07D-06  5.24D-04  4.64D-04   DIIS   6    0.04399204s   LL             Thu Dec 11
+It.   8    -76.08135966317      1.12D-07 -6.38D-05  1.18D-04   DIIS   7    0.04299402s   LL             Thu Dec 11
+It.   9    -76.08135967223      9.06D-09 -2.04D-05  2.02D-05   DIIS   8    0.04299295s   LL             Thu Dec 11
+It.  10    -76.08135967247      2.40D-10  4.20D-06  4.23D-06   DIIS   9    0.04399395s   LL             Thu Dec 11
+It.  11    -76.08135967248      1.00D-11 -8.84D-07  5.90D-07   DIIS   9    0.04499304s   LL             Thu Dec 11
+It.  12    -76.08135967248      4.26D-13  8.14D-08  1.20D-07   DIIS   9    0.04399395s   LL             Thu Dec 11
+It.  13    -76.08135967248     -1.71D-13 -2.44D-08  3.37D-08   DIIS   9    0.03899312s   LL             Thu Dec 11
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   13 iterations.
 * Average elapsed time per iteration: 
@@ -1795,13 +1806,13 @@ It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.043
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.136362819281970
+   Electronic energy                        :    -85.136362819282141
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055003146800487
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.081359672481483
+   Total energy                             :    -76.081359672481653
 
 
                                    Eigenvalues
@@ -1816,9 +1827,9 @@ It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.043
      1.10183828981  ( 2)        1.17619777251  ( 2)        1.39919140475  ( 2)        1.45833141013  ( 2)        1.62291696915  ( 2)
      1.65400174349  ( 2)        1.87795090030  ( 2)        2.30037542245  ( 2)        2.38049800383  ( 2)        3.25751337579  ( 2)
      3.27435968150  ( 2)        3.30919404362  ( 2)        3.37100756006  ( 2)        3.50711616869  ( 2)        3.80289539916  ( 2)
-     4.10106774174  ( 2)        6.08124021345  ( 2)        6.52758388404  ( 2)        6.79108218326  ( 2)       13.01976924504  ( 2)
+     4.10106774174  ( 2)        6.08124021345  ( 2)        6.52758388404  ( 2)        6.79108218326  ( 2)       13.01976924505  ( 2)
     22.14165869060  ( 2)       22.30515685934  ( 2)       33.37504352615  ( 2)       33.62292034944  ( 2)       33.77984439188  ( 2)
-    61.49027032474  ( 2)      230.53093801147  ( 2)      851.96135161864  ( 2)     3409.87698512433  ( 2)    15466.27333084742  ( 2)
+    61.49027032474  ( 2)      230.53093801147  ( 2)      851.96135161864  ( 2)     3409.87698512432  ( 2)    15466.27333084741  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.17711035 au (symmetry E1 )
@@ -1871,8 +1882,8 @@ It.  13    -76.08135967248     -5.68D-14  2.44D-08  3.37D-08   DIIS   9    0.043
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    40                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0813596724815397
-* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 14:21:07 2008
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0813596724818240
+* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 16:40:23 2008
 
 
 
@@ -1883,35 +1894,35 @@ MAGFLDX          - Symmetry: A    T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2              
-* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 14:21:07 2008
+* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 16:40:23 2008
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1              
-* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 14:21:06 2008
+* Heading :HF NMR calculations with Jengine+density fitting iThu Dec 11 16:40:22 2008
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.50D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 4.00D+02
 * Screening threshold in LR solver scaled with norm of property vector:  9.8509D-01
   and changed to:  2.4627D-08
 
-########## START MICROITERATION NO.   1 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   1 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   52.51%    0.00%    1.90%   0.03899407s
+AOfock:LL  2.46D-08    0.00%   52.29%    0.00%    2.05%   0.03599405s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.45E-01  2.45E-01
 
-########## START MICROITERATION NO.   2 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   2 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   54.67%    0.00%    1.99%   0.03799510s
+AOfock:LL  2.46D-08    0.00%   54.38%    0.00%    1.93%   0.03399467s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   8.32D-09
-(XRSRED) oo-norm of anti-symmetry of REDE =   4.16D-09      (element (  2,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.01D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   5.04D-09      (element (  2,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1919,13 +1930,13 @@ SOfock:LL  2.46D-08    0.00%   54.67%    0.00%    1.99%   0.03799510s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  8.60E-02  8.60E-02
 
-########## START MICROITERATION NO.   3 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   3 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   55.24%    0.00%    2.15%   0.03899479s
+AOfock:LL  2.46D-08    0.00%   54.91%    0.00%    1.89%   0.03399515s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   3.24D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   8.58D-09      (element (  3,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   4.17D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.11D-08      (element (  3,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1933,13 +1944,13 @@ SOfock:LL  2.46D-08    0.00%   55.24%    0.00%    2.15%   0.03899479s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  8.34E-03  8.34E-03
 
-########## START MICROITERATION NO.   4 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   4 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   59.45%    0.00%    3.11%   0.03699398s
+AOfock:LL  2.46D-08    0.00%   59.16%    0.00%    1.68%   0.03299499s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.03D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   7.89D-08      (element (  4,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.66D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   5.66D-08      (element (  4,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1947,13 +1958,13 @@ SOfock:LL  2.46D-08    0.00%   59.45%    0.00%    3.11%   0.03699398s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.09E-03  1.09E-03
 
-########## START MICROITERATION NO.   5 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   5 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   63.95%    0.00%    3.36%   0.03699398s
+AOfock:LL  2.46D-08    0.00%   63.51%    0.00%    1.86%   0.03299427s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   3.35D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   7.89D-08      (element (  4,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   4.02D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.02D-07      (element (  5,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1961,13 +1972,13 @@ SOfock:LL  2.46D-08    0.00%   63.95%    0.00%    3.36%   0.03699398s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.50E-04  1.50E-04
 
-########## START MICROITERATION NO.   6 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   6 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.00%   71.56%    0.00%    3.57%   0.03599405s
+AOfock:LL  2.46D-08    0.00%   71.27%    0.00%    1.94%   0.03099489s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.42D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   4.45D-07      (element (  6,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.83D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   5.53D-07      (element (  6,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1975,13 +1986,13 @@ SOfock:LL  2.46D-08    0.00%   71.56%    0.00%    3.57%   0.03599405s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.77E-05  4.77E-05
 
-########## START MICROITERATION NO.   7 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   7 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.28%   78.28%    0.00%    4.34%   0.03299499s
+AOfock:LL  2.46D-08    0.28%   78.07%    0.00%    3.00%   0.02999496s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.92D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.36D-07      (element (  7,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   3.70D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.78D-07      (element (  7,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -1989,19 +2000,19 @@ SOfock:LL  2.46D-08    0.28%   78.28%    0.00%    4.34%   0.03299499s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.90E-05  1.90E-05
 
-########## START MICROITERATION NO.   8 ##########   Thu Dec 11 14:21:07 2008
+########## START MICROITERATION NO.   8 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.46D-08    0.38%   83.70%    0.00%    4.91%   0.03199601s
+AOfock:LL  2.46D-08    0.38%   82.91%    0.00%    4.49%   0.02699590s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   4.33D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.36D-07      (element (  7,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   5.54D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.78D-07      (element (  7,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-05  3.31E-06  3.31E-06
+     0.00000000  1.00E-05  3.33E-06  3.33E-06
 
 
                              Final output from XRSCTL
@@ -2012,37 +2023,37 @@ SOfock:LL  2.46D-08    0.38%   83.70%    0.00%    4.91%   0.03199601s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.04499292s  (LL       )     [  1]
+* It.  1   0.03999400s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.45D-01 |   2.45D-01
 ==============================================
-* It.  2   0.04099298s  (LL       )     [  1]
+* It.  2   0.03899407s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.60D-02 |   8.60D-02
 ==============================================
-* It.  3   0.04299402s  (LL       )     [  1]
+* It.  3   0.03699493s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.34D-03 |   8.34D-03
 ==============================================
-* It.  4   0.04099393s  (LL       )     [  1]
+* It.  4   0.03699398s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.09D-03 |   1.09D-03
 ==============================================
-* It.  5   0.04099417s  (LL       )     [  1]
+* It.  5   0.03599405s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.50D-04 |   1.50D-04
 ==============================================
-* It.  6   0.04099393s  (LL       )     [  1]
+* It.  6   0.03499508s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.77D-05 |   4.77D-05
 ==============================================
-* It.  7   0.03599381s  (LL       )     [  1]
+* It.  7   0.03399491s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.90D-05 |   1.90D-05
 ==============================================
-* It.  8   0.03499508s  (LL       )     [  1]
+* It.  8   0.03099513s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   3.31D-06 |   3.31D-06
+            0.000000 :   3.33D-06 |   3.33D-06
 ==============================================
 
 << 1, 1>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2065,28 +2076,28 @@ SOfock:LL  2.46D-08    0.38%   83.70%    0.00%    4.91%   0.03199601s
      1(E1 )  0.12345723E+02      75.21%
      2(E1 )  0.18545058E+01      11.30%
      5(E1 )  0.17784345E+01      10.83%
-     4(E1 )  0.43842636E+00       2.67%
+     4(E1 )  0.43842630E+00       2.67%
    Dominant virtual orbitals:
     33(E1 )  0.10704391E+02      65.21%
     27(E1 )  0.36982268E+01      22.53%
      6(E1 )  0.12778161E+01       7.78%
-    11(E1 )  0.12493979E+01       7.61%
-     9(E1 )  0.88436764E+00       5.39%
-    34(E1 ) -0.66273649E+00      -4.04%
-    15(E1 ) -0.55449204E+00      -3.38%
-    19(E1 )  0.36547576E+00       2.23%
+    11(E1 )  0.12493978E+01       7.61%
+     9(E1 )  0.88436772E+00       5.39%
+    34(E1 ) -0.66273656E+00      -4.04%
+    15(E1 ) -0.55449257E+00      -3.38%
+    19(E1 )  0.36547621E+00       2.23%
    Amplitudes larger than threshold   0.20E+01
 
         1(i:E1 ) --->     33(v:E1 )  0.97753023E+01      59.55%
         1(i:E1 ) --->     27(v:E1 )  0.27473884E+01      16.74%
         5(i:E1 ) --->      6(v:E1 )  0.12777752E+01       7.78%
-        5(i:E1 ) --->      9(v:E1 )  0.88223413E+00       5.37%
-        2(i:E1 ) --->     27(v:E1 )  0.84477212E+00       5.15%
+        5(i:E1 ) --->      9(v:E1 )  0.88223415E+00       5.37%
+        2(i:E1 ) --->     27(v:E1 )  0.84477211E+00       5.15%
         2(i:E1 ) --->     33(v:E1 )  0.83576574E+00       5.09%
         1(i:E1 ) --->     11(v:E1 )  0.70687474E+00       4.31%
-        1(i:E1 ) --->     34(v:E1 ) -0.60569026E+00      -3.69%
-        5(i:E1 ) --->     15(v:E1 ) -0.54889187E+00      -3.34%
-        5(i:E1 ) --->     19(v:E1 )  0.36372539E+00       2.22%
+        1(i:E1 ) --->     34(v:E1 ) -0.60569033E+00      -3.69%
+        5(i:E1 ) --->     15(v:E1 ) -0.54889183E+00      -3.34%
+        5(i:E1 ) --->     19(v:E1 )  0.36372534E+00       2.22%
 -----------------------------------------------------------------------------------------------
 
 << 3, 1>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2111,37 +2122,37 @@ SOfock:LL  2.46D-08    0.38%   83.70%    0.00%    4.91%   0.03199601s
 
 -----------------------------------------------------------------------------------------------
 
-<< 5, 1>>: -0.28707241E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 5, 1>>: -0.28707275E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 ) -0.28084861E-01      97.83%
-     5(E1 )  0.13916736E-01     -48.48%
-     4(E1 ) -0.76516007E-02      26.65%
-     2(E1 ) -0.68869464E-02      23.99%
+     3(E1 ) -0.28084879E-01      97.83%
+     5(E1 )  0.13916735E-01     -48.48%
+     4(E1 ) -0.76516115E-02      26.65%
+     2(E1 ) -0.68869514E-02      23.99%
    Dominant virtual orbitals:
-    14(E1 ) -0.25381775E-01      88.42%
-    16(E1 ) -0.11575886E-01      40.32%
-     9(E1 )  0.10349449E-01     -36.05%
-    22(E1 ) -0.26609239E-02       9.27%
-    20(E1 ) -0.23377919E-02       8.14%
-    19(E1 )  0.19617925E-02      -6.83%
-     6(E1 )  0.19203596E-02      -6.69%
-    25(E1 ) -0.60643535E-03       2.11%
+    14(E1 ) -0.25381777E-01      88.42%
+    16(E1 ) -0.11575882E-01      40.32%
+     9(E1 )  0.10349450E-01     -36.05%
+    22(E1 ) -0.26609240E-02       9.27%
+    20(E1 ) -0.23377922E-02       8.14%
+    19(E1 )  0.19617748E-02      -6.83%
+     6(E1 )  0.19203602E-02      -6.69%
+    25(E1 ) -0.60643796E-03       2.11%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     14(v:E1 ) -0.25381219E-01      88.41%
+        3(i:E1 ) --->     14(v:E1 ) -0.25381221E-01      88.41%
         5(i:E1 ) --->      9(v:E1 )  0.10333305E-01     -36.00%
-        2(i:E1 ) --->     16(v:E1 ) -0.68988597E-02      24.03%
-        4(i:E1 ) --->     16(v:E1 ) -0.46764326E-02      16.29%
+        2(i:E1 ) --->     16(v:E1 ) -0.68988588E-02      24.03%
+        4(i:E1 ) --->     16(v:E1 ) -0.46764299E-02      16.29%
         3(i:E1 ) --->     22(v:E1 ) -0.26608684E-02       9.27%
-        4(i:E1 ) --->     20(v:E1 ) -0.20211225E-02       7.04%
-        5(i:E1 ) --->     19(v:E1 )  0.20116123E-02      -7.01%
+        4(i:E1 ) --->     20(v:E1 ) -0.20211222E-02       7.04%
+        5(i:E1 ) --->     19(v:E1 )  0.20116120E-02      -7.01%
         5(i:E1 ) --->      6(v:E1 )  0.19244834E-02      -6.70%
-        4(i:E1 ) --->     11(v:E1 ) -0.99243929E-03       3.46%
-        5(i:E1 ) --->     25(v:E1 ) -0.61578196E-03       2.15%
+        4(i:E1 ) --->     11(v:E1 ) -0.99243931E-03       3.46%
+        5(i:E1 ) --->     25(v:E1 ) -0.61578218E-03       2.15%
 -----------------------------------------------------------------------------------------------
 
 << 6, 1>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2166,37 +2177,37 @@ SOfock:LL  2.46D-08    0.38%   83.70%    0.00%    4.91%   0.03199601s
 
 -----------------------------------------------------------------------------------------------
 
-<< 8, 1>>: -0.28707241E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 8, 1>>: -0.28707275E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 ) -0.28084861E-01      97.83%
-     5(E1 )  0.13916736E-01     -48.48%
-     4(E1 ) -0.76516007E-02      26.65%
-     2(E1 ) -0.68869464E-02      23.99%
+     3(E1 ) -0.28084879E-01      97.83%
+     5(E1 )  0.13916735E-01     -48.48%
+     4(E1 ) -0.76516115E-02      26.65%
+     2(E1 ) -0.68869514E-02      23.99%
    Dominant virtual orbitals:
-    14(E1 ) -0.25381775E-01      88.42%
-    16(E1 ) -0.11575886E-01      40.32%
-     9(E1 )  0.10349449E-01     -36.05%
-    22(E1 ) -0.26609239E-02       9.27%
-    20(E1 ) -0.23377919E-02       8.14%
-    19(E1 )  0.19617925E-02      -6.83%
-     6(E1 )  0.19203596E-02      -6.69%
-    25(E1 ) -0.60643535E-03       2.11%
+    14(E1 ) -0.25381777E-01      88.42%
+    16(E1 ) -0.11575882E-01      40.32%
+     9(E1 )  0.10349450E-01     -36.05%
+    22(E1 ) -0.26609240E-02       9.27%
+    20(E1 ) -0.23377922E-02       8.14%
+    19(E1 )  0.19617748E-02      -6.83%
+     6(E1 )  0.19203602E-02      -6.69%
+    25(E1 ) -0.60643796E-03       2.11%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     14(v:E1 ) -0.25381219E-01      88.41%
+        3(i:E1 ) --->     14(v:E1 ) -0.25381221E-01      88.41%
         5(i:E1 ) --->      9(v:E1 )  0.10333305E-01     -36.00%
-        2(i:E1 ) --->     16(v:E1 ) -0.68988597E-02      24.03%
-        4(i:E1 ) --->     16(v:E1 ) -0.46764326E-02      16.29%
+        2(i:E1 ) --->     16(v:E1 ) -0.68988588E-02      24.03%
+        4(i:E1 ) --->     16(v:E1 ) -0.46764299E-02      16.29%
         3(i:E1 ) --->     22(v:E1 ) -0.26608684E-02       9.27%
-        4(i:E1 ) --->     20(v:E1 ) -0.20211225E-02       7.04%
-        5(i:E1 ) --->     19(v:E1 )  0.20116123E-02      -7.01%
+        4(i:E1 ) --->     20(v:E1 ) -0.20211222E-02       7.04%
+        5(i:E1 ) --->     19(v:E1 )  0.20116120E-02      -7.01%
         5(i:E1 ) --->      6(v:E1 )  0.19244834E-02      -6.70%
-        4(i:E1 ) --->     11(v:E1 ) -0.99243929E-03       3.46%
-        5(i:E1 ) --->     25(v:E1 ) -0.61578196E-03       2.15%
+        4(i:E1 ) --->     11(v:E1 ) -0.99243931E-03       3.46%
+        5(i:E1 ) --->     25(v:E1 ) -0.61578218E-03       2.15%
 -----------------------------------------------------------------------------------------------
 
 << 9, 1>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2221,23 +2232,23 @@ MAGFLDY          - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  1.1808D+00
   and changed to:  2.9520D-08
 
-########## START MICROITERATION NO.   1 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   1 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   52.57%    0.00%    2.13%   0.03899407s
+AOfock:LL  2.95D-08    0.00%   52.24%    0.00%    2.28%   0.03399491s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.74E-01  2.74E-01
 
-########## START MICROITERATION NO.   2 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   2 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   54.46%    0.00%    2.21%   0.03899384s
+AOfock:LL  2.95D-08    0.00%   54.04%    0.00%    2.22%   0.03499508s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.30D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.49D-09      (element (  2,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.93D-09
+(XRSRED) oo-norm of anti-symmetry of REDE =   9.65D-10      (element (  2,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2245,13 +2256,13 @@ SOfock:LL  2.95D-08    0.00%   54.46%    0.00%    2.21%   0.03899384s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  9.12E-02  9.12E-02
 
-########## START MICROITERATION NO.   3 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   3 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   54.74%    0.00%    2.31%   0.03899384s
+AOfock:LL  2.95D-08    0.00%   54.36%    0.00%    2.19%   0.03399515s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   3.22D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   8.00D-09      (element (  3,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   3.69D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.67D-08      (element (  3,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2259,13 +2270,13 @@ SOfock:LL  2.95D-08    0.00%   54.74%    0.00%    2.31%   0.03899384s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  7.25E-03  7.25E-03
 
-########## START MICROITERATION NO.   4 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   4 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   59.95%    0.00%    2.84%   0.03699398s
+AOfock:LL  2.95D-08    0.00%   59.35%    0.00%    2.06%   0.03299499s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.36D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.64D-08      (element (  4,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   2.47D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.10D-08      (element (  4,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2273,13 +2284,13 @@ SOfock:LL  2.95D-08    0.00%   59.95%    0.00%    2.84%   0.03699398s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  9.68E-04  9.68E-04
 
-########## START MICROITERATION NO.   5 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   5 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   64.91%    0.00%    3.03%   0.03599405s
+AOfock:LL  2.95D-08    0.00%   64.55%    0.00%    1.97%   0.03199506s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   3.88D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.64D-08      (element (  4,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   5.07D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.10D-08      (element (  4,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2287,13 +2298,13 @@ SOfock:LL  2.95D-08    0.00%   64.91%    0.00%    3.03%   0.03599405s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.76E-04  1.76E-04
 
-########## START MICROITERATION NO.   6 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   6 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.00%   73.85%    0.00%    3.15%   0.03499413s
+AOfock:LL  2.95D-08    0.00%   73.13%    0.00%    1.80%   0.03099513s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.71D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.32D-07      (element (  6,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.15D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   2.84D-07      (element (  6,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2301,13 +2312,13 @@ SOfock:LL  2.95D-08    0.00%   73.85%    0.00%    3.15%   0.03499413s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.67E-05  5.67E-05
 
-########## START MICROITERATION NO.   7 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   7 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.12%   78.64%    0.00%    4.04%   0.03399515s
+AOfock:LL  2.95D-08    0.12%   78.07%    0.00%    2.87%   0.02899599s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   3.89D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   9.37D-07      (element (  7,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   3.66D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.03D-06      (element (  7,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2315,19 +2326,19 @@ SOfock:LL  2.95D-08    0.12%   78.64%    0.00%    4.04%   0.03399515s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.29E-05  2.29E-05
 
-########## START MICROITERATION NO.   8 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   8 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.95D-08    0.28%   83.33%    0.00%    4.86%   0.03199506s
+AOfock:LL  2.95D-08    0.28%   82.54%    0.00%    3.65%   0.02899480s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   5.46D-06
-(XRSRED) oo-norm of anti-symmetry of REDE =   9.37D-07      (element (  7,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   5.41D-06
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.03D-06      (element (  7,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-05  4.11E-06  4.11E-06
+     0.00000000  1.00E-05  4.12E-06  4.12E-06
 
 
                              Final output from XRSCTL
@@ -2338,76 +2349,76 @@ SOfock:LL  2.95D-08    0.28%   83.33%    0.00%    4.86%   0.03199506s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.04299402s  (LL       )     [  1]
+* It.  1   0.03799415s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.74D-01 |   2.74D-01
 ==============================================
-* It.  2   0.04299307s  (LL       )     [  1]
+* It.  2   0.03899384s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.12D-02 |   9.12D-02
 ==============================================
-* It.  3   0.04299283s  (LL       )     [  1]
+* It.  3   0.03799510s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.25D-03 |   7.25D-03
 ==============================================
-* It.  4   0.04099393s  (LL       )     [  1]
+* It.  4   0.03599381s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.68D-04 |   9.68D-04
 ==============================================
-* It.  5   0.04099417s  (LL       )     [  1]
+* It.  5   0.03699517s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.76D-04 |   1.76D-04
 ==============================================
-* It.  6   0.03799391s  (LL       )     [  1]
+* It.  6   0.03399491s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.67D-05 |   5.67D-05
 ==============================================
-* It.  7   0.03799486s  (LL       )     [  1]
+* It.  7   0.03299403s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.29D-05 |   2.29D-05
 ==============================================
-* It.  8   0.03599310s  (LL       )     [  1]
+* It.  8   0.03299499s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   4.11D-06 |   4.11D-06
+            0.000000 :   4.12D-06 |   4.12D-06
 ==============================================
 
-<< 1, 2>>: -0.14278730E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 1, 2>>: -0.14278731E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
      1(E1 ) -0.12524094E+02      87.71%
-     2(E1 ) -0.23003200E+01      16.11%
-     4(E1 )  0.11674396E+01      -8.18%
-     3(E1 ) -0.64009380E+00       4.48%
+     2(E1 ) -0.23003201E+01      16.11%
+     4(E1 )  0.11674397E+01      -8.18%
+     3(E1 ) -0.64009387E+00       4.48%
    Dominant virtual orbitals:
     35(E1 ) -0.83043384E+01      58.16%
-    29(E1 ) -0.31121570E+01      21.80%
-    34(E1 ) -0.85566773E+00       5.99%
-    12(E1 ) -0.82402140E+00       5.77%
-    13(E1 )  0.75426786E+00      -5.28%
-     9(E1 ) -0.54376281E+00       3.81%
-    15(E1 ) -0.45730173E+00       3.20%
-    33(E1 ) -0.39719104E+00       2.78%
-     6(E1 ) -0.36030941E+00       2.52%
-    26(E1 ) -0.34335064E+00       2.40%
+    29(E1 ) -0.31121571E+01      21.80%
+    34(E1 ) -0.85566770E+00       5.99%
+    12(E1 ) -0.82402133E+00       5.77%
+    13(E1 )  0.75426816E+00      -5.28%
+     9(E1 ) -0.54376301E+00       3.81%
+    15(E1 ) -0.45730141E+00       3.20%
+    33(E1 ) -0.39719107E+00       2.78%
+     6(E1 ) -0.36030960E+00       2.52%
+    26(E1 ) -0.34335060E+00       2.40%
    Amplitudes larger than threshold   0.20E+01
 
-        1(i:E1 ) --->     35(v:E1 ) -0.75989254E+01      53.22%
-        1(i:E1 ) --->     29(v:E1 ) -0.24341768E+01      17.05%
-        1(i:E1 ) --->     34(v:E1 ) -0.78256310E+00       5.48%
-        3(i:E1 ) --->     13(v:E1 )  0.76031717E+00      -5.32%
+        1(i:E1 ) --->     35(v:E1 ) -0.75989253E+01      53.22%
+        1(i:E1 ) --->     29(v:E1 ) -0.24341769E+01      17.05%
+        1(i:E1 ) --->     34(v:E1 ) -0.78256303E+00       5.48%
+        3(i:E1 ) --->     13(v:E1 )  0.76031720E+00      -5.32%
         4(i:E1 ) --->      8(v:E1 )  0.67221001E+00      -4.71%
-        4(i:E1 ) --->      7(v:E1 )  0.66231594E+00      -4.64%
-        2(i:E1 ) --->     35(v:E1 ) -0.63702765E+00       4.46%
-        2(i:E1 ) --->     29(v:E1 ) -0.62335549E+00       4.37%
-        1(i:E1 ) --->     12(v:E1 ) -0.55370415E+00       3.88%
-        3(i:E1 ) --->      9(v:E1 ) -0.55081782E+00       3.86%
-        3(i:E1 ) --->     15(v:E1 ) -0.46476268E+00       3.25%
-        3(i:E1 ) --->      6(v:E1 ) -0.37167677E+00       2.60%
-        1(i:E1 ) --->     33(v:E1 ) -0.36261341E+00       2.54%
-        2(i:E1 ) --->      8(v:E1 ) -0.35405108E+00       2.48%
+        4(i:E1 ) --->      7(v:E1 )  0.66231591E+00      -4.64%
+        2(i:E1 ) --->     35(v:E1 ) -0.63702759E+00       4.46%
+        2(i:E1 ) --->     29(v:E1 ) -0.62335560E+00       4.37%
+        1(i:E1 ) --->     12(v:E1 ) -0.55370409E+00       3.88%
+        3(i:E1 ) --->      9(v:E1 ) -0.55081790E+00       3.86%
+        3(i:E1 ) --->     15(v:E1 ) -0.46476241E+00       3.25%
+        3(i:E1 ) --->      6(v:E1 ) -0.37167682E+00       2.60%
+        1(i:E1 ) --->     33(v:E1 ) -0.36261344E+00       2.54%
+        2(i:E1 ) --->      8(v:E1 ) -0.35405097E+00       2.48%
 -----------------------------------------------------------------------------------------------
 
 << 2, 2>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2421,97 +2432,92 @@ SOfock:LL  2.95D-08    0.28%   83.33%    0.00%    4.86%   0.03199506s
 
 -----------------------------------------------------------------------------------------------
 
-<< 3, 2>>: -0.23045205E-07 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 3, 2>>: -0.23339048E-07 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     5(E1 ) -0.15404716E-07      66.85%
-     2(E1 ) -0.75306318E-08      32.68%
-     4(E1 ) -0.11814674E-08       5.13%
-     1(E1 )  0.10871841E-08      -4.72%
+     5(E1 ) -0.18503392E-07      79.28%
+     2(E1 ) -0.54890891E-08      23.52%
+     1(E1 )  0.14818345E-08      -6.35%
+     4(E1 ) -0.80887530E-09       3.47%
    Dominant virtual orbitals:
-    15(E1 )  0.18684322E-07     -81.08%
-     6(E1 ) -0.17217679E-07      74.71%
-     9(E1 ) -0.77650743E-08      33.69%
-    16(E1 ) -0.68648755E-08      29.79%
-    19(E1 ) -0.48115928E-08      20.88%
-    27(E1 )  0.37532746E-08     -16.29%
-    11(E1 ) -0.36512318E-08      15.84%
-    25(E1 ) -0.19187138E-08       8.33%
-    10(E1 ) -0.14466657E-08       6.28%
-    30(E1 )  0.13184375E-08      -5.72%
-    21(E1 ) -0.87475586E-09       3.80%
-    33(E1 ) -0.80798567E-09       3.51%
-    13(E1 ) -0.68176124E-09       2.96%
-    28(E1 ) -0.56329476E-09       2.44%
+    15(E1 )  0.20949809E-07     -89.76%
+     6(E1 ) -0.18940714E-07      81.15%
+     9(E1 ) -0.84762298E-08      36.32%
+    19(E1 ) -0.75369078E-08      32.29%
+    11(E1 ) -0.35105233E-08      15.04%
+    16(E1 ) -0.30124328E-08      12.91%
+    25(E1 ) -0.24210260E-08      10.37%
+    27(E1 )  0.19742224E-08      -8.46%
+    30(E1 )  0.19549679E-08      -8.38%
+    10(E1 ) -0.18246986E-08       7.82%
+    21(E1 ) -0.12090268E-08       5.18%
+    28(E1 ) -0.77275335E-09       3.31%
    Amplitudes larger than threshold   0.20E+01
 
-        5(i:E1 ) --->     15(v:E1 )  0.18568095E-07     -80.57%
-        5(i:E1 ) --->      6(v:E1 ) -0.17092441E-07      74.17%
-        5(i:E1 ) --->      9(v:E1 ) -0.76985691E-08      33.41%
-        2(i:E1 ) --->     16(v:E1 ) -0.54577160E-08      23.68%
-        5(i:E1 ) --->     19(v:E1 ) -0.47658875E-08      20.68%
-        2(i:E1 ) --->     11(v:E1 ) -0.37310556E-08      16.19%
-        2(i:E1 ) --->     27(v:E1 )  0.24480333E-08     -10.62%
-        5(i:E1 ) --->     25(v:E1 ) -0.18778447E-08       8.15%
-        5(i:E1 ) --->     10(v:E1 ) -0.14516368E-08       6.30%
-        5(i:E1 ) --->     30(v:E1 )  0.13092336E-08      -5.68%
-        4(i:E1 ) --->     16(v:E1 ) -0.11520460E-08       5.00%
-        5(i:E1 ) --->     21(v:E1 ) -0.86215851E-09       3.74%
-        2(i:E1 ) --->     33(v:E1 ) -0.84772219E-09       3.68%
-        1(i:E1 ) --->     27(v:E1 )  0.75382757E-09      -3.27%
-        5(i:E1 ) --->     13(v:E1 ) -0.67712829E-09       2.94%
-        5(i:E1 ) --->     28(v:E1 ) -0.58525452E-09       2.54%
-        4(i:E1 ) --->     27(v:E1 )  0.55148361E-09      -2.39%
-        1(i:E1 ) --->     11(v:E1 )  0.54582116E-09      -2.37%
-        4(i:E1 ) --->     11(v:E1 ) -0.46617100E-09       2.02%
+        5(i:E1 ) --->     15(v:E1 )  0.20819609E-07     -89.21%
+        5(i:E1 ) --->      6(v:E1 ) -0.18803646E-07      80.57%
+        5(i:E1 ) --->      9(v:E1 ) -0.84049234E-08      36.01%
+        5(i:E1 ) --->     19(v:E1 ) -0.74651408E-08      31.99%
+        2(i:E1 ) --->     11(v:E1 ) -0.36079812E-08      15.46%
+        2(i:E1 ) --->     16(v:E1 ) -0.26928545E-08      11.54%
+        5(i:E1 ) --->     25(v:E1 ) -0.23716761E-08      10.16%
+        5(i:E1 ) --->     30(v:E1 )  0.19413589E-08      -8.32%
+        5(i:E1 ) --->     10(v:E1 ) -0.18389921E-08       7.88%
+        2(i:E1 ) --->     27(v:E1 )  0.13109489E-08      -5.62%
+        5(i:E1 ) --->     21(v:E1 ) -0.11961879E-08       5.13%
+        5(i:E1 ) --->     28(v:E1 ) -0.80496773E-09       3.45%
+        4(i:E1 ) --->     16(v:E1 ) -0.63120656E-09       2.70%
+        1(i:E1 ) --->     11(v:E1 )  0.57449747E-09      -2.46%
+        2(i:E1 ) --->     33(v:E1 ) -0.54418236E-09       2.33%
+        4(i:E1 ) --->     11(v:E1 ) -0.47726737E-09       2.04%
 -----------------------------------------------------------------------------------------------
 
-<< 4, 2>>:  0.44883003E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 4, 2>>:  0.44883001E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 )  0.49025227E-01     109.23%
-     4(E1 ) -0.90478629E-02     -20.16%
-     2(E1 )  0.47955346E-02      10.68%
+     3(E1 )  0.49025222E-01     109.23%
+     4(E1 ) -0.90478591E-02     -20.16%
+     2(E1 )  0.47955348E-02      10.68%
    Dominant virtual orbitals:
-    13(E1 )  0.24394909E-01      54.35%
-     8(E1 ) -0.23532845E-01     -52.43%
-    17(E1 )  0.20905589E-01      46.58%
-     9(E1 )  0.19119615E-01      42.60%
-     7(E1 ) -0.88652302E-02     -19.75%
-    18(E1 )  0.56923297E-02      12.68%
-     6(E1 )  0.49915217E-02      11.12%
-    15(E1 )  0.41399337E-02       9.22%
-    10(E1 ) -0.29810254E-02      -6.64%
-    24(E1 )  0.25585893E-02       5.70%
-    19(E1 ) -0.14112902E-02      -3.14%
-    21(E1 ) -0.10919578E-02      -2.43%
+    13(E1 )  0.24394915E-01      54.35%
+     8(E1 ) -0.23532844E-01     -52.43%
+    17(E1 )  0.20905592E-01      46.58%
+     9(E1 )  0.19119617E-01      42.60%
+     7(E1 ) -0.88652305E-02     -19.75%
+    18(E1 )  0.56923374E-02      12.68%
+     6(E1 )  0.49915221E-02      11.12%
+    15(E1 )  0.41399303E-02       9.22%
+    10(E1 ) -0.29810241E-02      -6.64%
+    24(E1 )  0.25585863E-02       5.70%
+    19(E1 ) -0.14112875E-02      -3.14%
+    21(E1 ) -0.10919584E-02      -2.43%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     13(v:E1 )  0.24493504E-01      54.57%
+        3(i:E1 ) --->     13(v:E1 )  0.24493505E-01      54.57%
         4(i:E1 ) --->      8(v:E1 ) -0.19469216E-01     -43.38%
-        3(i:E1 ) --->      9(v:E1 )  0.19048304E-01      42.44%
-        4(i:E1 ) --->     17(v:E1 )  0.11992974E-01      26.72%
-        2(i:E1 ) --->     17(v:E1 )  0.89614645E-02      19.97%
-        4(i:E1 ) --->      7(v:E1 ) -0.77879919E-02     -17.35%
-        3(i:E1 ) --->      6(v:E1 )  0.49701553E-02      11.07%
-        4(i:E1 ) --->     18(v:E1 )  0.44879385E-02      10.00%
-        3(i:E1 ) --->     15(v:E1 )  0.41446655E-02       9.23%
-        2(i:E1 ) --->      8(v:E1 ) -0.40590779E-02      -9.04%
-        3(i:E1 ) --->     10(v:E1 ) -0.29743063E-02      -6.63%
-        3(i:E1 ) --->     24(v:E1 )  0.25586062E-02       5.70%
-        4(i:E1 ) --->     12(v:E1 )  0.18501647E-02       4.12%
-        3(i:E1 ) --->     19(v:E1 ) -0.14154954E-02      -3.15%
-        2(i:E1 ) --->     18(v:E1 )  0.11714526E-02       2.61%
-        3(i:E1 ) --->     21(v:E1 ) -0.10890331E-02      -2.43%
-        2(i:E1 ) --->      7(v:E1 ) -0.10705953E-02      -2.39%
-        4(i:E1 ) --->     26(v:E1 )  0.10458839E-02       2.33%
-        2(i:E1 ) --->     12(v:E1 ) -0.96505607E-03      -2.15%
+        3(i:E1 ) --->      9(v:E1 )  0.19048306E-01      42.44%
+        4(i:E1 ) --->     17(v:E1 )  0.11992973E-01      26.72%
+        2(i:E1 ) --->     17(v:E1 )  0.89614653E-02      19.97%
+        4(i:E1 ) --->      7(v:E1 ) -0.77879915E-02     -17.35%
+        3(i:E1 ) --->      6(v:E1 )  0.49701559E-02      11.07%
+        4(i:E1 ) --->     18(v:E1 )  0.44879366E-02      10.00%
+        3(i:E1 ) --->     15(v:E1 )  0.41446631E-02       9.23%
+        2(i:E1 ) --->      8(v:E1 ) -0.40590767E-02      -9.04%
+        3(i:E1 ) --->     10(v:E1 ) -0.29743076E-02      -6.63%
+        3(i:E1 ) --->     24(v:E1 )  0.25586049E-02       5.70%
+        4(i:E1 ) --->     12(v:E1 )  0.18501627E-02       4.12%
+        3(i:E1 ) --->     19(v:E1 ) -0.14155016E-02      -3.15%
+        2(i:E1 ) --->     18(v:E1 )  0.11714513E-02       2.61%
+        3(i:E1 ) --->     21(v:E1 ) -0.10890357E-02      -2.43%
+        2(i:E1 ) --->      7(v:E1 ) -0.10705957E-02      -2.39%
+        4(i:E1 ) --->     26(v:E1 )  0.10458840E-02       2.33%
+        2(i:E1 ) --->     12(v:E1 ) -0.96505673E-03      -2.15%
 -----------------------------------------------------------------------------------------------
 
 << 5, 2>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2525,83 +2531,83 @@ SOfock:LL  2.95D-08    0.28%   83.33%    0.00%    4.86%   0.03199506s
 
 -----------------------------------------------------------------------------------------------
 
-<< 6, 2>>: -0.79892855E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 6, 2>>: -0.79892889E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 ) -0.39811108E-01      49.83%
-     4(E1 ) -0.24245830E-01      30.35%
-     2(E1 ) -0.15680703E-01      19.63%
+     3(E1 ) -0.39811135E-01      49.83%
+     4(E1 ) -0.24245829E-01      30.35%
+     2(E1 ) -0.15680711E-01      19.63%
    Dominant virtual orbitals:
-    13(E1 ) -0.42041372E-01      52.62%
-    17(E1 ) -0.25125095E-01      31.45%
-     8(E1 ) -0.14289505E-01      17.89%
-     9(E1 )  0.92140585E-02     -11.53%
-     7(E1 ) -0.77077559E-02       9.65%
-    18(E1 )  0.67000599E-02      -8.39%
-    10(E1 ) -0.53483520E-02       6.69%
-     6(E1 )  0.32565280E-02      -4.08%
-    15(E1 ) -0.18718624E-02       2.34%
+    13(E1 ) -0.42041371E-01      52.62%
+    17(E1 ) -0.25125092E-01      31.45%
+     8(E1 ) -0.14289503E-01      17.89%
+     9(E1 )  0.92140599E-02     -11.53%
+     7(E1 ) -0.77077554E-02       9.65%
+    18(E1 )  0.67000442E-02      -8.39%
+    10(E1 ) -0.53483556E-02       6.69%
+     6(E1 )  0.32565283E-02      -4.08%
+    15(E1 ) -0.18718634E-02       2.34%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     13(v:E1 ) -0.41979137E-01      52.54%
-        4(i:E1 ) --->     17(v:E1 ) -0.14263125E-01      17.85%
-        2(i:E1 ) --->     17(v:E1 ) -0.10819061E-01      13.54%
+        3(i:E1 ) --->     13(v:E1 ) -0.41979139E-01      52.54%
+        4(i:E1 ) --->     17(v:E1 ) -0.14263124E-01      17.85%
+        2(i:E1 ) --->     17(v:E1 ) -0.10819062E-01      13.54%
         4(i:E1 ) --->      8(v:E1 ) -0.92438211E-02      11.57%
-        3(i:E1 ) --->      9(v:E1 )  0.92177658E-02     -11.54%
-        4(i:E1 ) --->      7(v:E1 ) -0.66563807E-02       8.33%
-        4(i:E1 ) --->     18(v:E1 )  0.56778789E-02      -7.11%
-        3(i:E1 ) --->     10(v:E1 ) -0.53517856E-02       6.70%
-        2(i:E1 ) --->      8(v:E1 ) -0.48691672E-02       6.09%
-        3(i:E1 ) --->      6(v:E1 )  0.32609201E-02      -4.08%
-        3(i:E1 ) --->     15(v:E1 ) -0.18604054E-02       2.33%
+        3(i:E1 ) --->      9(v:E1 )  0.92177672E-02     -11.54%
+        4(i:E1 ) --->      7(v:E1 ) -0.66563803E-02       8.33%
+        4(i:E1 ) --->     18(v:E1 )  0.56778764E-02      -7.11%
+        3(i:E1 ) --->     10(v:E1 ) -0.53517879E-02       6.70%
+        2(i:E1 ) --->      8(v:E1 ) -0.48691657E-02       6.09%
+        3(i:E1 ) --->      6(v:E1 )  0.32609205E-02      -4.08%
+        3(i:E1 ) --->     15(v:E1 ) -0.18604043E-02       2.33%
 -----------------------------------------------------------------------------------------------
 
-<< 7, 2>>:  0.44883003E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 7, 2>>:  0.44883001E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 )  0.49025227E-01     109.23%
-     4(E1 ) -0.90478629E-02     -20.16%
-     2(E1 )  0.47955346E-02      10.68%
+     3(E1 )  0.49025222E-01     109.23%
+     4(E1 ) -0.90478591E-02     -20.16%
+     2(E1 )  0.47955347E-02      10.68%
    Dominant virtual orbitals:
-    13(E1 )  0.24394909E-01      54.35%
-     8(E1 ) -0.23532845E-01     -52.43%
-    17(E1 )  0.20905589E-01      46.58%
-     9(E1 )  0.19119615E-01      42.60%
-     7(E1 ) -0.88652302E-02     -19.75%
-    18(E1 )  0.56923297E-02      12.68%
-     6(E1 )  0.49915217E-02      11.12%
-    15(E1 )  0.41399337E-02       9.22%
-    10(E1 ) -0.29810254E-02      -6.64%
-    24(E1 )  0.25585893E-02       5.70%
-    19(E1 ) -0.14112902E-02      -3.14%
-    21(E1 ) -0.10919578E-02      -2.43%
+    13(E1 )  0.24394915E-01      54.35%
+     8(E1 ) -0.23532844E-01     -52.43%
+    17(E1 )  0.20905592E-01      46.58%
+     9(E1 )  0.19119617E-01      42.60%
+     7(E1 ) -0.88652305E-02     -19.75%
+    18(E1 )  0.56923374E-02      12.68%
+     6(E1 )  0.49915221E-02      11.12%
+    15(E1 )  0.41399303E-02       9.22%
+    10(E1 ) -0.29810241E-02      -6.64%
+    24(E1 )  0.25585863E-02       5.70%
+    19(E1 ) -0.14112875E-02      -3.14%
+    21(E1 ) -0.10919584E-02      -2.43%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     13(v:E1 )  0.24493504E-01      54.57%
+        3(i:E1 ) --->     13(v:E1 )  0.24493505E-01      54.57%
         4(i:E1 ) --->      8(v:E1 ) -0.19469216E-01     -43.38%
-        3(i:E1 ) --->      9(v:E1 )  0.19048304E-01      42.44%
-        4(i:E1 ) --->     17(v:E1 )  0.11992974E-01      26.72%
-        2(i:E1 ) --->     17(v:E1 )  0.89614645E-02      19.97%
-        4(i:E1 ) --->      7(v:E1 ) -0.77879919E-02     -17.35%
-        3(i:E1 ) --->      6(v:E1 )  0.49701553E-02      11.07%
-        4(i:E1 ) --->     18(v:E1 )  0.44879385E-02      10.00%
-        3(i:E1 ) --->     15(v:E1 )  0.41446655E-02       9.23%
-        2(i:E1 ) --->      8(v:E1 ) -0.40590779E-02      -9.04%
-        3(i:E1 ) --->     10(v:E1 ) -0.29743063E-02      -6.63%
-        3(i:E1 ) --->     24(v:E1 )  0.25586062E-02       5.70%
-        4(i:E1 ) --->     12(v:E1 )  0.18501647E-02       4.12%
-        3(i:E1 ) --->     19(v:E1 ) -0.14154954E-02      -3.15%
-        2(i:E1 ) --->     18(v:E1 )  0.11714526E-02       2.61%
-        3(i:E1 ) --->     21(v:E1 ) -0.10890331E-02      -2.43%
-        2(i:E1 ) --->      7(v:E1 ) -0.10705953E-02      -2.39%
-        4(i:E1 ) --->     26(v:E1 )  0.10458839E-02       2.33%
-        2(i:E1 ) --->     12(v:E1 ) -0.96505607E-03      -2.15%
+        3(i:E1 ) --->      9(v:E1 )  0.19048306E-01      42.44%
+        4(i:E1 ) --->     17(v:E1 )  0.11992973E-01      26.72%
+        2(i:E1 ) --->     17(v:E1 )  0.89614653E-02      19.97%
+        4(i:E1 ) --->      7(v:E1 ) -0.77879915E-02     -17.35%
+        3(i:E1 ) --->      6(v:E1 )  0.49701559E-02      11.07%
+        4(i:E1 ) --->     18(v:E1 )  0.44879366E-02      10.00%
+        3(i:E1 ) --->     15(v:E1 )  0.41446631E-02       9.23%
+        2(i:E1 ) --->      8(v:E1 ) -0.40590767E-02      -9.04%
+        3(i:E1 ) --->     10(v:E1 ) -0.29743076E-02      -6.63%
+        3(i:E1 ) --->     24(v:E1 )  0.25586049E-02       5.70%
+        4(i:E1 ) --->     12(v:E1 )  0.18501627E-02       4.12%
+        3(i:E1 ) --->     19(v:E1 ) -0.14155016E-02      -3.15%
+        2(i:E1 ) --->     18(v:E1 )  0.11714513E-02       2.61%
+        3(i:E1 ) --->     21(v:E1 ) -0.10890357E-02      -2.43%
+        2(i:E1 ) --->      7(v:E1 ) -0.10705957E-02      -2.39%
+        4(i:E1 ) --->     26(v:E1 )  0.10458840E-02       2.33%
+        2(i:E1 ) --->     12(v:E1 ) -0.96505673E-03      -2.15%
 -----------------------------------------------------------------------------------------------
 
 << 8, 2>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2615,38 +2621,38 @@ SOfock:LL  2.95D-08    0.28%   83.33%    0.00%    4.86%   0.03199506s
 
 -----------------------------------------------------------------------------------------------
 
-<< 9, 2>>:  0.79892853E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 9, 2>>:  0.79892888E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 )  0.39811108E-01      49.83%
-     4(E1 )  0.24245831E-01      30.35%
-     2(E1 )  0.15680701E-01      19.63%
+     3(E1 )  0.39811135E-01      49.83%
+     4(E1 )  0.24245830E-01      30.35%
+     2(E1 )  0.15680710E-01      19.63%
    Dominant virtual orbitals:
-    13(E1 )  0.42041372E-01      52.62%
-    17(E1 )  0.25125095E-01      31.45%
-     8(E1 )  0.14289505E-01      17.89%
-     9(E1 ) -0.92140587E-02     -11.53%
-     7(E1 )  0.77077559E-02       9.65%
-    18(E1 ) -0.67000599E-02      -8.39%
-    10(E1 )  0.53483520E-02       6.69%
-     6(E1 ) -0.32565280E-02      -4.08%
-    15(E1 )  0.18718624E-02       2.34%
+    13(E1 )  0.42041371E-01      52.62%
+    17(E1 )  0.25125092E-01      31.45%
+     8(E1 )  0.14289503E-01      17.89%
+     9(E1 ) -0.92140601E-02     -11.53%
+     7(E1 )  0.77077554E-02       9.65%
+    18(E1 ) -0.67000442E-02      -8.39%
+    10(E1 )  0.53483556E-02       6.69%
+     6(E1 ) -0.32565283E-02      -4.08%
+    15(E1 )  0.18718634E-02       2.34%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     13(v:E1 )  0.41979137E-01      52.54%
-        4(i:E1 ) --->     17(v:E1 )  0.14263125E-01      17.85%
-        2(i:E1 ) --->     17(v:E1 )  0.10819061E-01      13.54%
+        3(i:E1 ) --->     13(v:E1 )  0.41979139E-01      52.54%
+        4(i:E1 ) --->     17(v:E1 )  0.14263124E-01      17.85%
+        2(i:E1 ) --->     17(v:E1 )  0.10819062E-01      13.54%
         4(i:E1 ) --->      8(v:E1 )  0.92438211E-02      11.57%
-        3(i:E1 ) --->      9(v:E1 ) -0.92177658E-02     -11.54%
-        4(i:E1 ) --->      7(v:E1 )  0.66563807E-02       8.33%
-        4(i:E1 ) --->     18(v:E1 ) -0.56778789E-02      -7.11%
-        3(i:E1 ) --->     10(v:E1 )  0.53517856E-02       6.70%
-        2(i:E1 ) --->      8(v:E1 )  0.48691672E-02       6.09%
-        3(i:E1 ) --->      6(v:E1 ) -0.32609201E-02      -4.08%
-        3(i:E1 ) --->     15(v:E1 )  0.18604054E-02       2.33%
+        3(i:E1 ) --->      9(v:E1 ) -0.92177672E-02     -11.54%
+        4(i:E1 ) --->      7(v:E1 )  0.66563803E-02       8.33%
+        4(i:E1 ) --->     18(v:E1 ) -0.56778764E-02      -7.11%
+        3(i:E1 ) --->     10(v:E1 )  0.53517879E-02       6.70%
+        2(i:E1 ) --->      8(v:E1 )  0.48691657E-02       6.09%
+        3(i:E1 ) --->      6(v:E1 ) -0.32609205E-02      -4.08%
+        3(i:E1 ) --->     15(v:E1 )  0.18604043E-02       2.33%
 -----------------------------------------------------------------------------------------------
 
 
@@ -2660,23 +2666,23 @@ MAGFLDZ          - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  5.8932D-01
   and changed to:  1.4733D-08
 
-########## START MICROITERATION NO.   1 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   1 ##########   Thu Dec 11 16:40:23 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   53.34%    0.00%    1.90%   0.03899407s
+AOfock:LL  1.47D-08    0.00%   53.18%    0.00%    2.02%   0.03499508s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.02E-01  1.02E-01
 
-########## START MICROITERATION NO.   2 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   2 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   55.45%    0.00%    2.02%   0.03899407s
+AOfock:LL  1.47D-08    0.00%   55.22%    0.00%    1.89%   0.03399372s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.92D-09
-(XRSRED) oo-norm of anti-symmetry of REDE =   9.59D-10      (element (  2,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.81D-09
+(XRSRED) oo-norm of anti-symmetry of REDE =   9.05D-10      (element (  2,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2684,13 +2690,13 @@ SOfock:LL  1.47D-08    0.00%   55.45%    0.00%    2.02%   0.03899407s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  2.20E-02  2.20E-02
 
-########## START MICROITERATION NO.   3 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   3 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   56.66%    0.00%    2.34%   0.03799391s
+AOfock:LL  1.47D-08    0.00%   56.46%    0.00%    1.85%   0.03399515s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.68D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.39D-09      (element (  3,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   1.85D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.09D-09      (element (  3,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2698,13 +2704,13 @@ SOfock:LL  1.47D-08    0.00%   56.66%    0.00%    2.34%   0.03799391s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  3.03E-03  3.03E-03
 
-########## START MICROITERATION NO.   4 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   4 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   60.11%    0.00%    2.50%   0.03799391s
+AOfock:LL  1.47D-08    0.00%   59.80%    0.00%    1.81%   0.03399420s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.23D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   6.39D-09      (element (  3,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   2.51D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   7.09D-09      (element (  3,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2712,13 +2718,13 @@ SOfock:LL  1.47D-08    0.00%   60.11%    0.00%    2.50%   0.03799391s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  4.39E-04  4.39E-04
 
-########## START MICROITERATION NO.   5 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   5 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   66.10%    0.00%    2.23%   0.03599501s
+AOfock:LL  1.47D-08    0.00%   65.65%    0.00%    1.46%   0.03199506s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   9.74D-08
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.05D-08      (element (  5,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   8.50D-08
+(XRSRED) oo-norm of anti-symmetry of REDE =   2.17D-08      (element (  5,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2726,13 +2732,13 @@ SOfock:LL  1.47D-08    0.00%   66.10%    0.00%    2.23%   0.03599501s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  1.22E-04  1.22E-04
 
-########## START MICROITERATION NO.   6 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   6 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   72.70%    0.00%    2.49%   0.03599501s
+AOfock:LL  1.47D-08    0.00%   72.14%    0.00%    1.70%   0.03099489s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.61D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.05D-08      (element (  5,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   2.85D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   9.09D-08      (element (  6,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2740,13 +2746,13 @@ SOfock:LL  1.47D-08    0.00%   72.70%    0.00%    2.49%   0.03599501s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.65E-05  5.65E-05
 
-########## START MICROITERATION NO.   7 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   7 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    0.00%   74.08%    0.00%    5.45%   0.03399491s
+AOfock:LL  1.47D-08    0.00%   73.93%    0.00%    3.09%   0.02999496s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.82D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.05D-08      (element (  5,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   3.54D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   9.09D-08      (element (  6,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2754,13 +2760,13 @@ SOfock:LL  1.47D-08    0.00%   74.08%    0.00%    5.45%   0.03399491s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-05  5.96E-06  5.96E-06
 
-########## START MICROITERATION NO.   8 ##########   Thu Dec 11 14:21:08 2008
+########## START MICROITERATION NO.   8 ##########   Thu Dec 11 16:40:24 2008
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
+AOfock:LL  1.47D-08    1.56%   87.10%    0.00%    2.47%   0.02599502s
 
-(XRSRED)  1-norm of anti-symmetry of REDE =   4.71D-07
-(XRSRED) oo-norm of anti-symmetry of REDE =   9.85D-08      (element (  8,  1))
+(XRSRED)  1-norm of anti-symmetry of REDE =   6.44D-07
+(XRSRED) oo-norm of anti-symmetry of REDE =   1.04D-07      (element (  8,  1))
 
 * Trial vectors in this micro iteration:  E-:  1
 
@@ -2777,35 +2783,35 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.04299307s  (LL       )     [  1]
+* It.  1   0.03899503s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.02D-01 |   1.02D-01
 ==============================================
-* It.  2   0.04299307s  (LL       )     [  1]
+* It.  2   0.03799415s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.20D-02 |   2.20D-02
 ==============================================
-* It.  3   0.04199386s  (LL       )     [  1]
+* It.  3   0.03699493s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   3.03D-03 |   3.03D-03
 ==============================================
-* It.  4   0.04199409s  (LL       )     [  1]
+* It.  4   0.03799295s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.39D-04 |   4.39D-04
 ==============================================
-* It.  5   0.03999305s  (LL       )     [  1]
+* It.  5   0.03499508s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.22D-04 |   1.22D-04
 ==============================================
-* It.  6   0.03999376s  (LL       )     [  1]
+* It.  6   0.03399491s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.65D-05 |   5.65D-05
 ==============================================
-* It.  7   0.03799534s  (LL       )     [  1]
+* It.  7   0.03499508s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.96D-06 |   5.96D-06
 ==============================================
-* It.  8   0.03399467s  (LL       )     [  1]
+* It.  8   0.02999496s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.88D-06 |   1.88D-06
 ==============================================
@@ -2821,44 +2827,42 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
 -----------------------------------------------------------------------------------------------
 
-<< 2, 3>>: -0.76981408E-08 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 2, 3>>: -0.73804837E-08 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     5(E1 ) -0.65608067E-08      85.23%
-     2(E1 ) -0.18889800E-08      24.54%
-     1(E1 )  0.84888269E-09     -11.03%
+     5(E1 ) -0.63215686E-08      85.65%
+     2(E1 ) -0.18109830E-08      24.54%
+     1(E1 )  0.83465940E-09     -11.31%
    Dominant virtual orbitals:
-    15(E1 )  0.87318164E-08    -113.43%
-     6(E1 ) -0.77548747E-08     100.74%
-     9(E1 ) -0.31813264E-08      41.33%
-    19(E1 ) -0.29393002E-08      38.18%
-    11(E1 ) -0.12811541E-08      16.64%
-    25(E1 ) -0.76926727E-09       9.99%
-    21(E1 ) -0.44058317E-09       5.72%
-    10(E1 ) -0.42521406E-09       5.52%
-    30(E1 )  0.37864981E-09      -4.92%
-    33(E1 )  0.35717024E-09      -4.64%
+    15(E1 )  0.84276509E-08    -114.19%
+     6(E1 ) -0.74752057E-08     101.28%
+     9(E1 ) -0.30697831E-08      41.59%
+    19(E1 ) -0.28037997E-08      37.99%
+    11(E1 ) -0.12323832E-08      16.70%
+    25(E1 ) -0.72084825E-09       9.77%
+    10(E1 ) -0.42909704E-09       5.81%
+    21(E1 ) -0.42372668E-09       5.74%
+    30(E1 )  0.37320364E-09      -5.06%
+    33(E1 )  0.35492250E-09      -4.81%
    Amplitudes larger than threshold   0.20E+01
 
-        5(i:E1 ) --->     15(v:E1 )  0.88893556E-08    -115.47%
-        5(i:E1 ) --->      6(v:E1 ) -0.77052399E-08     100.09%
-        5(i:E1 ) --->      9(v:E1 ) -0.31159479E-08      40.48%
-        5(i:E1 ) --->     19(v:E1 ) -0.28808423E-08      37.42%
-        2(i:E1 ) --->     11(v:E1 ) -0.13560400E-08      17.62%
-        5(i:E1 ) --->     25(v:E1 ) -0.67330934E-09       8.75%
-        5(i:E1 ) --->     10(v:E1 ) -0.64672321E-09       8.40%
-        5(i:E1 ) --->     21(v:E1 ) -0.44105608E-09       5.73%
-        5(i:E1 ) --->     30(v:E1 )  0.37709173E-09      -4.90%
-        1(i:E1 ) --->     27(v:E1 )  0.33247659E-09      -4.32%
-        1(i:E1 ) --->     33(v:E1 )  0.31567158E-09      -4.10%
-        2(i:E1 ) --->     27(v:E1 ) -0.30975914E-09       4.02%
-        5(i:E1 ) --->     28(v:E1 ) -0.23702941E-09       3.08%
-        1(i:E1 ) --->     11(v:E1 )  0.21831092E-09      -2.84%
-        2(i:E1 ) --->     10(v:E1 )  0.16824180E-09      -2.19%
-        4(i:E1 ) --->     15(v:E1 ) -0.15436635E-09       2.01%
+        5(i:E1 ) --->     15(v:E1 )  0.85561593E-08    -115.93%
+        5(i:E1 ) --->      6(v:E1 ) -0.74210374E-08     100.55%
+        5(i:E1 ) --->      9(v:E1 ) -0.30027340E-08      40.68%
+        5(i:E1 ) --->     19(v:E1 ) -0.27725457E-08      37.57%
+        2(i:E1 ) --->     11(v:E1 ) -0.13052751E-08      17.69%
+        5(i:E1 ) --->     25(v:E1 ) -0.64801548E-09       8.78%
+        5(i:E1 ) --->     10(v:E1 ) -0.62265531E-09       8.44%
+        5(i:E1 ) --->     21(v:E1 ) -0.42436361E-09       5.75%
+        5(i:E1 ) --->     30(v:E1 )  0.37249138E-09      -5.05%
+        1(i:E1 ) --->     27(v:E1 )  0.31517544E-09      -4.27%
+        1(i:E1 ) --->     33(v:E1 )  0.30884946E-09      -4.18%
+        2(i:E1 ) --->     27(v:E1 ) -0.30075215E-09       4.07%
+        5(i:E1 ) --->     28(v:E1 ) -0.22801745E-09       3.09%
+        1(i:E1 ) --->     11(v:E1 )  0.21086004E-09      -2.86%
 -----------------------------------------------------------------------------------------------
 
 << 3, 3>>:  0.00000000E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
@@ -2883,30 +2887,30 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
 -----------------------------------------------------------------------------------------------
 
-<< 5, 3>>:  0.65915740E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 5, 3>>:  0.65915761E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 )  0.45479326E-01      69.00%
-     4(E1 )  0.21869026E-01      33.18%
+     3(E1 )  0.45479336E-01      69.00%
+     4(E1 )  0.21869031E-01      33.18%
      5(E1 ) -0.17109167E-01     -25.96%
-     2(E1 )  0.15676488E-01      23.78%
+     2(E1 )  0.15676493E-01      23.78%
    Dominant virtual orbitals:
-    16(E1 )  0.42345461E-01      64.24%
-    14(E1 )  0.37052249E-01      56.21%
+    16(E1 )  0.42345459E-01      64.24%
+    14(E1 )  0.37052250E-01      56.21%
      8(E1 ) -0.12883985E-01     -19.55%
     11(E1 )  0.20534796E-02       3.12%
-    18(E1 ) -0.20250867E-02      -3.07%
-     7(E1 ) -0.13225259E-02      -2.01%
+    18(E1 ) -0.20250812E-02      -3.07%
+     7(E1 ) -0.13225248E-02      -2.01%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     16(v:E1 )  0.42344623E-01      64.24%
-        4(i:E1 ) --->     14(v:E1 )  0.21530215E-01      32.66%
-        2(i:E1 ) --->     14(v:E1 )  0.15520834E-01      23.55%
+        3(i:E1 ) --->     16(v:E1 )  0.42344622E-01      64.24%
+        4(i:E1 ) --->     14(v:E1 )  0.21530216E-01      32.66%
+        2(i:E1 ) --->     14(v:E1 )  0.15520833E-01      23.55%
         5(i:E1 ) --->      8(v:E1 ) -0.12846809E-01     -19.49%
-        5(i:E1 ) --->     18(v:E1 ) -0.20688799E-02      -3.14%
+        5(i:E1 ) --->     18(v:E1 ) -0.20688798E-02      -3.14%
         3(i:E1 ) --->     11(v:E1 )  0.20535430E-02       3.12%
         5(i:E1 ) --->      7(v:E1 ) -0.13219140E-02      -2.01%
 -----------------------------------------------------------------------------------------------
@@ -2933,30 +2937,30 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
 -----------------------------------------------------------------------------------------------
 
-<< 8, 3>>: -0.65915740E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 8, 3>>: -0.65915761E-01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 -----------------------------------------------------------------------------------------------
 
 * ORBITAL ANALYSIS
 
    Dominant inactive orbitals:
-     3(E1 ) -0.45479326E-01      69.00%
-     4(E1 ) -0.21869026E-01      33.18%
+     3(E1 ) -0.45479336E-01      69.00%
+     4(E1 ) -0.21869031E-01      33.18%
      5(E1 )  0.17109166E-01     -25.96%
-     2(E1 ) -0.15676488E-01      23.78%
+     2(E1 ) -0.15676493E-01      23.78%
    Dominant virtual orbitals:
-    16(E1 ) -0.42345461E-01      64.24%
-    14(E1 ) -0.37052249E-01      56.21%
+    16(E1 ) -0.42345459E-01      64.24%
+    14(E1 ) -0.37052250E-01      56.21%
      8(E1 )  0.12883985E-01     -19.55%
     11(E1 ) -0.20534796E-02       3.12%
-    18(E1 )  0.20250867E-02      -3.07%
-     7(E1 )  0.13225259E-02      -2.01%
+    18(E1 )  0.20250812E-02      -3.07%
+     7(E1 )  0.13225248E-02      -2.01%
    Amplitudes larger than threshold   0.20E+01
 
-        3(i:E1 ) --->     16(v:E1 ) -0.42344623E-01      64.24%
-        4(i:E1 ) --->     14(v:E1 ) -0.21530215E-01      32.66%
-        2(i:E1 ) --->     14(v:E1 ) -0.15520834E-01      23.55%
+        3(i:E1 ) --->     16(v:E1 ) -0.42344622E-01      64.24%
+        4(i:E1 ) --->     14(v:E1 ) -0.21530216E-01      32.66%
+        2(i:E1 ) --->     14(v:E1 ) -0.15520833E-01      23.55%
         5(i:E1 ) --->      8(v:E1 )  0.12846809E-01     -19.49%
-        5(i:E1 ) --->     18(v:E1 )  0.20688799E-02      -3.14%
+        5(i:E1 ) --->     18(v:E1 )  0.20688798E-02      -3.14%
         3(i:E1 ) --->     11(v:E1 ) -0.20535430E-02       3.12%
         5(i:E1 ) --->      7(v:E1 )  0.13219140E-02      -2.01%
 -----------------------------------------------------------------------------------------------
@@ -2982,7 +2986,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1O  01           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -2990,7 +2994,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1O  01           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -14.27873040986 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+   -14.27873063066 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -3006,7 +3010,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2O  01           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    16.41518492411 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    16.41518475239 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -3014,7 +3018,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2O  01           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -3022,7 +3026,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2O  01           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.76981408D-08 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
+   -0.73804837D-08 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -3030,7 +3034,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3O  01           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -3038,7 +3042,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3O  01           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.23045205D-07 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+   -0.23339048D-07 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -3054,7 +3058,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1H  02           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 4),B( 2)>> - linear response function (real):
@@ -3062,7 +3066,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1H  02           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.44883003D-01 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.44883001D-01 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 4),B( 3)>> - linear response function (real):
@@ -3078,7 +3082,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  02           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.28707241D-01 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+   -0.28707275D-01 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 5),B( 2)>> - linear response function (real):
@@ -3086,7 +3090,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  02           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 5),B( 3)>> - linear response function (real):
@@ -3094,7 +3098,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  02           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-    0.65915740D-01 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
+    0.65915761D-01 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 1)>> - linear response function (real):
@@ -3102,7 +3106,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3H  02           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 2)>> - linear response function (real):
@@ -3110,7 +3114,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3H  02           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.79892855D-01 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+   -0.79892889D-01 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 3)>> - linear response function (real):
@@ -3126,7 +3130,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1H  03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 7),B( 2)>> - linear response function (real):
@@ -3134,7 +3138,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa1H  03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.44883003D-01 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.44883001D-01 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 7),B( 3)>> - linear response function (real):
@@ -3150,7 +3154,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.28707241D-01 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+   -0.28707275D-01 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 8),B( 2)>> - linear response function (real):
@@ -3158,7 +3162,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 8),B( 3)>> - linear response function (real):
@@ -3166,7 +3170,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa2H  03           A    T-
    B - MAGFLDZ              A    T-
 -----------------------------------------------------------------------------------------------
-   -0.65915740D-01 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
+   -0.65915761D-01 a.u. at frequency      0.00000000 a.u.    3.19E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 9),B( 1)>> - linear response function (real):
@@ -3174,7 +3178,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3H  03           A    T-
    B - MAGFLDX              A    T-
 -----------------------------------------------------------------------------------------------
-    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.36E-06   (converged)
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    3.38E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 9),B( 2)>> - linear response function (real):
@@ -3182,7 +3186,7 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
    A - PVCa3H  03           A    T-
    B - MAGFLDY              A    T-
 -----------------------------------------------------------------------------------------------
-    0.79892853D-01 a.u. at frequency      0.00000000 a.u.    3.48E-06   (converged)
+    0.79892888D-01 a.u. at frequency      0.00000000 a.u.    3.49E-06   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 9),B( 3)>> - linear response function (real):
@@ -3220,15 +3224,15 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
     15(E1 )  1.41%
    Excitation amplitudes larger than threshold   0.18E-01
 
-        5(i:E1 ) --->      6(v:E1 )  0.17103132E+00
-        5(i:E1 ) --->      9(v:E1 )  0.12817250E+00
-        3(i:E1 ) --->     14(v:E1 )  0.58868250E-01
-        5(i:E1 ) --->     19(v:E1 )  0.33459068E-01
+        5(i:E1 ) --->      6(v:E1 )  0.17103131E+00
+        5(i:E1 ) --->      9(v:E1 )  0.12817251E+00
+        3(i:E1 ) --->     14(v:E1 )  0.58868255E-01
+        5(i:E1 ) --->     19(v:E1 )  0.33459063E-01
         4(i:E1 ) --->     11(v:E1 )  0.30050730E-01
-        5(i:E1 ) --->     15(v:E1 )  0.27686517E-01
-        2(i:E1 ) --->     16(v:E1 )  0.24512562E-01
-        4(i:E1 ) --->     20(v:E1 )  0.20305502E-01
-        4(i:E1 ) --->     16(v:E1 )  0.17673099E-01
+        5(i:E1 ) --->     15(v:E1 )  0.27686515E-01
+        2(i:E1 ) --->     16(v:E1 )  0.24512559E-01
+        4(i:E1 ) --->     20(v:E1 )  0.20305499E-01
+        4(i:E1 ) --->     16(v:E1 )  0.17673089E-01
 ** E solution vectors : MAGFLDY          Irrep: A   Trev:  -1 Length:        175
  Freq.:   0.000000 Norm:   0.37546186E+00 Residual norm:   0.35E-05
    Dominant inactive orbitals:
@@ -3246,18 +3250,18 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
     10(E1 )  1.06%
    Excitation amplitudes larger than threshold   0.28E-01
 
-        4(i:E1 ) --->      8(v:E1 )  0.24302494E+00
-        4(i:E1 ) --->      7(v:E1 )  0.19473402E+00
-        3(i:E1 ) --->     13(v:E1 )  0.12372986E+00
-        3(i:E1 ) --->      9(v:E1 )  0.10122925E+00
-        4(i:E1 ) --->     17(v:E1 )  0.64433587E-01
-        3(i:E1 ) --->      6(v:E1 )  0.62896410E-01
-        2(i:E1 ) --->     17(v:E1 )  0.45582685E-01
-        2(i:E1 ) --->      8(v:E1 )  0.42601175E-01
-        3(i:E1 ) --->     10(v:E1 )  0.38625963E-01
-        5(i:E1 ) --->     14(v:E1 )  0.31875441E-01
-        3(i:E1 ) --->     15(v:E1 )  0.29533477E-01
-        4(i:E1 ) --->     18(v:E1 )  0.29114560E-01
+        4(i:E1 ) --->      8(v:E1 )  0.24302493E+00
+        4(i:E1 ) --->      7(v:E1 )  0.19473401E+00
+        3(i:E1 ) --->     13(v:E1 )  0.12372987E+00
+        3(i:E1 ) --->      9(v:E1 )  0.10122926E+00
+        4(i:E1 ) --->     17(v:E1 )  0.64433582E-01
+        3(i:E1 ) --->      6(v:E1 )  0.62896418E-01
+        2(i:E1 ) --->     17(v:E1 )  0.45582689E-01
+        2(i:E1 ) --->      8(v:E1 )  0.42601162E-01
+        3(i:E1 ) --->     10(v:E1 )  0.38625980E-01
+        5(i:E1 ) --->     14(v:E1 )  0.31875437E-01
+        3(i:E1 ) --->     15(v:E1 )  0.29533460E-01
+        4(i:E1 ) --->     18(v:E1 )  0.29114547E-01
 ** E solution vectors : MAGFLDZ          Irrep: A   Trev:  -1 Length:        175
  Freq.:   0.000000 Norm:   0.31358521E+00 Residual norm:   0.32E-05
    Dominant inactive orbitals:
@@ -3276,12 +3280,12 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
         5(i:E1 ) --->      7(v:E1 )  0.21758770E+00
         5(i:E1 ) --->      8(v:E1 )  0.16723520E+00
-        3(i:E1 ) --->     16(v:E1 )  0.96917110E-01
-        4(i:E1 ) --->     14(v:E1 )  0.82454425E-01
-        2(i:E1 ) --->     14(v:E1 )  0.55884668E-01
+        3(i:E1 ) --->     16(v:E1 )  0.96917108E-01
+        4(i:E1 ) --->     14(v:E1 )  0.82454429E-01
+        2(i:E1 ) --->     14(v:E1 )  0.55884667E-01
         3(i:E1 ) --->     11(v:E1 )  0.37546958E-01
         5(i:E1 ) --->     12(v:E1 )  0.35614372E-01
-        5(i:E1 ) --->     18(v:E1 )  0.30650656E-01
+        5(i:E1 ) --->     18(v:E1 )  0.30650655E-01
 ----------------------------------------------------------------------------
 
 
@@ -3295,15 +3299,15 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
                      x                   y                   z
 
-         x    0.0000000000E+00    0.5747448080E-06    0.0000000000E+00
-         y   -0.6607409788E-06    0.0000000000E+00    0.3098641358E-15
-         z    0.0000000000E+00    0.9276113107E-15    0.0000000000E+00
+         x    0.0000000000E+00    0.5747448168E-06    0.0000000000E+00
+         y   -0.6607409719E-06    0.0000000000E+00    0.2970778626E-15
+         z    0.0000000000E+00    0.9394390475E-15    0.0000000000E+00
    trace/3                                                                0.0000000000E+00
 
           principal components
 
-             -0.4299808541E-07
-              0.4299808541E-07
+             -0.4299807751E-07
+              0.4299807751E-07
               0.0000000000E+00
 
      sum/3    0.0000000000E+00
@@ -3319,56 +3323,56 @@ SOfock:LL  1.47D-08    1.56%   87.74%    0.00%    3.41%   0.02999592s
 
                      x                   y                   z
 
-         x    0.0000000000E+00    0.2450090004E-09    0.0000000000E+00
-         y   -0.1567081534E-09    0.0000000000E+00    0.3598232873E-09
-         z    0.0000000000E+00   -0.4361220767E-09    0.0000000000E+00
+         x    0.0000000000E+00    0.2450089894E-09    0.0000000000E+00
+         y   -0.1567083389E-09    0.0000000000E+00    0.3598233978E-09
+         z    0.0000000000E+00   -0.4361222638E-09    0.0000000000E+00
    trace/3                                                                0.0000000000E+00
 
           principal components
 
-              0.5834926062E-10
-             -0.5834926062E-10
-              0.2480688499E-20
+              0.5834921129E-10
+             -0.5834921129E-10
+              0.2480797764E-20
 
-     sum/3   -0.1027721929E-27
+     sum/3    0.6161062923E-26
 
                 principal axes
 
-         x    0.5350421286E+00   -0.5350378673E+00    0.6538076178E+00
-         y    0.7071067812E+00    0.7071067812E+00   -0.4608742791E-05
-         z   -0.4623093343E+00    0.4623142660E+00    0.7566608215E+00
+         x    0.5350413903E+00   -0.5350371288E+00    0.6538088264E+00
+         y    0.7071067812E+00    0.7071067812E+00   -0.4608847536E-05
+         z   -0.4623101889E+00    0.4623151207E+00    0.7566597772E+00
 
    nucleus    H     
   g-factor    0.5585694000E+01
 
                      x                   y                   z
 
-         x    0.0000000000E+00    0.2450090004E-09    0.0000000000E+00
-         y   -0.1567081534E-09    0.0000000000E+00   -0.3598232878E-09
-         z    0.0000000000E+00    0.4361220708E-09    0.0000000000E+00
+         x    0.0000000000E+00    0.2450089894E-09    0.0000000000E+00
+         y   -0.1567083389E-09    0.0000000000E+00   -0.3598233983E-09
+         z    0.0000000000E+00    0.4361222612E-09    0.0000000000E+00
    trace/3                                                                0.0000000000E+00
 
           principal components
 
-              0.5834925851E-10
-             -0.5834925851E-10
-              0.2480686600E-20
+              0.5834921028E-10
+             -0.5834921028E-10
+              0.2480801359E-20
 
-     sum/3   -0.5044252046E-26
+     sum/3    0.3051315352E-26
 
                 principal axes
 
-         x    0.5350421481E+00   -0.5350378867E+00   -0.6538075861E+00
-         y    0.7071067812E+00    0.7071067812E+00    0.4608740033E-05
-         z    0.4623093118E+00   -0.4623142436E+00    0.7566608490E+00
+         x    0.5350413996E+00   -0.5350371381E+00   -0.6538088111E+00
+         y    0.7071067812E+00    0.7071067812E+00    0.4608846211E-05
+         z    0.4623101780E+00   -0.4623151099E+00    0.7566597904E+00
 
 ----------------------------------------------
 
  
-     Data and time (Linux)  : Thu Dec 11 14:21:08 2008 
+     Data and time (Linux)  : Thu Dec 11 16:40:24 2008 
      Host name              :                                         
->>>> Node 0, utime: 2, stime: 0, minflt: 287198, majflt: 0, nvcsw: 6698, nivcsw: 1830
->>>> Total WALL time used in DIRAC: 4s
+>>>> Node 0, utime: 2, stime: 0, minflt: 287195, majflt: 0, nvcsw: 7288, nivcsw: 1557
+>>>> Total WALL time used in DIRAC: 3s
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************

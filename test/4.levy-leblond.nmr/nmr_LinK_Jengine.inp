@@ -11,8 +11,8 @@ HF NMR calculations with Jengine+density fitting in non-relativistic two-compone
 .LINK
 .NUCMOD
  1
-!*TWOINT
-!.AOFOCK
+*TWOINT
+.AOFOCK
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
