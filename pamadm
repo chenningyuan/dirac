@@ -467,6 +467,7 @@ make_export()
      \$szCurrDir/testlast \\
      \$szCurrDir/basis \\
      \$szCurrDir/basis_dalton \\
+     \$szCurrDir/build \\
      \$szCurrDir/utils 2> export.log
 echo $dirs
 # Now add the standard files from each active directory (module).
