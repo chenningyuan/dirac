@@ -819,7 +819,7 @@ C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*140 STRING
+      CHARACTER*200 STRING  ! contains the full directory path
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 #include "inftap.h"
