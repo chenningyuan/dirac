@@ -369,10 +369,10 @@ C
 #endif
 #endif
 #if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
+!C 930414-hjaaj: apparent error IBM's xlf library routines:
+!C    when 'T6' then column 1-5 not blanked but contains text
+!C    from a previous print statement!
+!C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
 C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
 C     CALL hostnm_(HSTNAM)
@@ -1083,7 +1083,7 @@ C
     1 REWIND (LU)
       RETURN
       END
-C  /* Deck readi */
+!C  /* Deck readi */
       SUBROUTINE READI (IT,N,INTX)
 C
 C (30-Jan-1984) hjaaj
@@ -1128,11 +1128,11 @@ C  /* Deck readt */
       WRITE (STRING,'(A25,I5)') 'READT: Error reading file, unit ',IT
       CALL QUIT(STRING)
       END
-C  /* Deck writi */
+!C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
+!C
+!C (30-Jan-1984) hjaaj
+!C
       DIMENSION INTX(N)
       WRITE (IT) INTX
       RETURN
@@ -1188,10 +1188,10 @@ C
 C
     3 IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1225,12 +1225,12 @@ C     a non-existing file
      *       /T22,'when searching for label ',A8,
      *       /T22,'IOSTAT value :',I7)
       END
-C  /* Deck fndlab */
+!C  /* Deck fndlab */
       LOGICAL FUNCTION FNDLAB(A,LU)
-C
-C 26-May-1985 hjaaj -- logical function version of SEARCH
-C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
-C
+!C
+!C 26-May-1985 hjaaj -- logical function version of SEARCH
+!C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
+!C
       CHARACTER*8 A, B(4), C
       DATA C/'********'/
       IRDERR = 0
@@ -1244,18 +1244,18 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
       CLOSE(LU,ERR=8)
 #endif
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
 C
@@ -1288,10 +1288,10 @@ C
 C
     3 IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1308,9 +1308,9 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
          CLOSE(LU,ERR=8)
     8    CONTINUE
 #endif
@@ -1346,18 +1346,18 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
       CLOSE(LU,ERR=3)
 #endif
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
     8 FNDLB2 = .FALSE.
@@ -1394,10 +1394,10 @@ C     a non-existing file
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
     8 NXTLAB = .FALSE.

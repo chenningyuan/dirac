@@ -33,7 +33,6 @@ C*****************************************************************************
 C
 C     This routine goes through the list of one-electron integrals specified
 C     in the COMMON block XCBCLS. The integrals will be put on the file
-C     AOPROPER.
 C
 C     Called from: MINPRP
 C                  PAMSET
@@ -53,7 +52,7 @@ C
 #include "dcbprl.h"
 #include "dcbham.h"
 #include "dcbcls.h"
-#include "dcbxpr.h"
+!#include "dcbxpr.h"
 #include "cbihr1.h"
 #include "cbiher.h"
       CALL QENTER('ONEGEN')
@@ -79,10 +78,11 @@ C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
         IF (NOSMLV) THEN
 C          ... zero SS integrals
-           CLSCMB(I)(4:4) = '0'
-           ILBL = IPRPLBL(1,I)
-           PDOINT(ILBL)(4:4) = '0'
+           CALL NOSSNUCATT
            COMB(4:4) = 'F'
+C          WRITE(LUPRI,'(2X,A,A4)')
+C    &     'No SS-nuclear attraction integrals'// 
+C    &     '(MOLFLD), adapted COMB=',COMB
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
@@ -110,6 +110,52 @@ C
       CLOSE(LU1INT,STATUS='KEEP')
  20   CONTINUE
       CALL QEXIT('ONEGEN')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NOSSNUCATT
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Delete marking SS-block of in nucl.attraction integrals as empty
+C
+C Called from: PAMSET (when restart from AOPROPER)
+C              ONEGEN
+C when NOSMLV=.true.
+C
+C Written by Miro Ilias, Dec. 2008, Tel Aviv
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL MOLFLD_FOUND
+#include "dcbprl.h"
+#include "dcbcls.h"
+#include "dcbxpr.h"
+
+      MOLFLD_FOUND=.FALSE.
+
+      DO I=1,NPRPCLS
+        IF (CLSINT(I).EQ.'MOLFLD ') THEN
+          MOLFLD_FOUND=.TRUE.
+          CLSCMB(I)(4:4) = '0'
+          ILBL = IPRPLBL(1,I)
+          PDOINT(ILBL)(4:4) = '0'
+        ENDIF
+      ENDDO
+
+      IF (MOLFLD_FOUND) THEN
+        WRITE(LUPRI,'(2X,A,A4)')
+     &  'No SS-nuclear attraction integrals'// 
+     &  '(MOLFLD), adapted PDOINT=',PDOINT(ILBL)
+      ELSE
+        WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
+     &   ' found in operator list!'
+        WRITE(LUPRI,*) 'NOSSNUCATT routine was supposed to zero'//
+     &   'SS-block of them !'
+        CALL QUIT('NOSSNUCATT: end here')
+      ENDIF
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -273,6 +319,8 @@ C  /* Deck nucatt */
 C*****************************************************************************
 C
 C     Generate nuclear attraction integrals
+C
+C     IPRINT is IPRONE
 C
 C     Called from: ONEGEN
 C
@@ -749,8 +797,6 @@ C
 C
       EXTERNAL BDQALGEBRA
 
-      CALL QENTER('PRPMAO')
-
 CMI   ... find out type of AO matrix - triangular or square
       IF (IDIMENS.NE.N2BBASX.AND.IDIMENS.NE.NNBBASX) THEN
        write(lupri,*) 'PRPMAO: NNBBASX,N2BBASX,IDIMENS=',
@@ -769,7 +815,7 @@ C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
-     & 'Generating property matrix for the property ',PRPNAM(IOP)
+     & 'Generating property matrix for the property: ',PRPNAM(IOP)
         IF (SQUARE) THEN
          write(lupri,*)
      &   '.... it is the SQUARE matrix ' 
@@ -978,7 +1024,6 @@ C         ... accumulate the property ...
         ENDDO
       ENDIF
 
-      CALL QEXIT('PRPMAO')
       RETURN
 C
  1000 CONTINUE
@@ -2481,8 +2526,7 @@ C
 CMI  ... check of keywords..
       IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
      &  CALL QUIT('MODHAM: SLGROUP not correspond with'//
-     &'VEXTPJ/FREEPJ/LEVYLE flags!')
-
+     &  ' VEXTPJ/FREEPJ/LEVYLE flags!')
       
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
@@ -2561,7 +2605,6 @@ C
  80     CONTINUE
       ENDIF
 
-
 CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
 CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
       IF (SLGROUP) THEN
@@ -2573,11 +2616,9 @@ CMI    ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
       ENDIF
 
 CMI   ... adaptation for the linear symmetry 
-
       IF (SLGROUP) THEN
 C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
        CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
-
        IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &  'MODHAM: "SL" resorted transformation matrix'//
@@ -2620,7 +2661,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      LOGICAL FNDLB3
+      LOGICAL FNDLB3, FINDLABEL
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
 
@@ -2657,8 +2698,15 @@ C
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
      &                     ' not found on LU1INT = ',LU1INT
+        WRITE(LUPRI,*) 'label RTNLBL=',RTNLBL
+
+        !MI: more printout for testing purposes
+        !IF (IPRINT.GE.20) THEN
+          REWIND LU1INT
+          FINDLABEL=FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,32)
+        !ENDIF
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found')
+     &   ' of COMB '//COMB//' not found on AOPROPER file !')
       ENDIF
 
       CALL FLSHFO(LUPRI)
@@ -2674,6 +2722,8 @@ C  18-Jan-1995 tsaue
 C  1. Find MOLECULE label and block COMB on unformatted file LU
 C       a)Cannot find label: return FALSE
 C       b)Finds label      : continues
+
+CMI: 12/12/2008: added printout for betted debugg
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2686,6 +2736,12 @@ C***********************************************************************
 C     Found label SRCLBL on LU; check COMB
         IF(RTNLBL(2)(5:8).NE.COMB) THEN
 CMI       ... control print out ...
+          IF (IPRINT.GE.30) THEN
+            WRITE(LUPRI,'(2X,A,A)') 'FNDLB3: searching for SRCLBL=',
+     &      SRCLBL
+            WRITE(LUPRI,'(2X,A,A4,A,A4)') 'FNDLB3: '//
+     &      'RTNLBL(2)(5:8)=',RTNLBL(2)(5:8),'.ne. COMB=',COMB
+          ENDIF
           GOTO 10
         ENDIF
         FNDLB3 = .TRUE.

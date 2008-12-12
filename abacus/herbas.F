@@ -821,7 +821,7 @@ C*********************************************************
       CHARACTER*(*) BASNAM
       CHARACTER*140 STRING
       CHARACTER SIGN
-      LOGICAL EXST
+      LOGICAL EXST, EXST2, USE_BASNAM
 #include "inftap.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -877,9 +877,28 @@ C
 C     Inquire if "/path/basis-set" exists.
 C
       INQUIRE (FILE = STRING, EXIST = EXST)
+CMI  ... on certain systems (like PC-linux,OpenMPI-gfortran) string
+C     beginning with '/' is NOT the proper file name ! therefore
+C     continue in inquiring:
+      EXST2=EXST
+      USE_BASNAM=.FALSE.
+      IF (.NOT.EXST2) THEN
+        INQUIRE (FILE = BASNAM, EXIST = EXST)
+        IF (EXST) THEN  
+          WRITE(LUPRI,"(/,2X,A,A,/,A,A)")
+     &     "Info: used proper basis set name: ",
+     &    BASNAM,"  instead of: ",STRING
+          USE_BASNAM=.TRUE.
+        ENDIF
+      ENDIF
+        
       IF (EXST) THEN
+        IF (.NOT.USE_BASNAM) THEN
          OPEN(LUBAS, FILE=STRING)
-C
+        ELSE
+         OPEN(LUBAS, FILE=BASNAM)
+        ENDIF
+C     
 C
 C        Searching the file for the element.
 C
@@ -913,6 +932,8 @@ C
  301  CONTINUE
       WRITE (LUPRI,'(/,3A)')
      +     'Basis "',BASNAM(1:LSTR),'" doesn''t exist'
+      WRITE(LUPRI,'(2X,A,A)') 'basis name, STRING=',STRING
+      WRITE(LUPRI,'(2X,A,A)') 'basis name, BASNAM=',BASNAM
       IF (BASNAM(1:6) .EQ. 'Huckel') THEN
          WRITE (LUPRI,'(A)')
      +        'NB! Basis Huckel must be available to use Huckel guess!'
@@ -1221,10 +1242,18 @@ C
 !         when you use own libraries to organize basis sets
 !         then you may get lots (nr of processors)
 !         of these messages
-      WRITE (LUPRI,'(//A,I5/2A/)')
-     &     'Error in reading basis set file, your basis '//
-     &     'has no documentation. IOSTAT code:',IOERR,
+CMI: well, rather use warning message
+CMI   WRITE (LUPRI,'(//A,I5/2A/)')
+CMI  &     'Error in reading basis set file, your basis '//
+CMI  &     'has no documentation. IOSTAT code:',IOERR,
+CMI  &     'Basis set: ',BASNAM
+      WRITE (LUPRI,'(A,/,A,A)')
+     &     'Info(warning) about the basis set file: your basis '//
+     &     'has no documentation.',
      &     'Basis set: ',BASNAM
+
+Chj   CALL QUIT('Incomplete basis set file in HERBAS')
+
 Chj   CALL QUIT('Incomplete basis set file in HERBAS')
       RETURN
       END

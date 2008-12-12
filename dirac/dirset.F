@@ -89,9 +89,12 @@ C
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
       IF(TOBE .and. .not. optimi) THEN
-        WRITE(LUPRI,'(A,A)') 
-     &  '* WARNING: DIRAC found AOPROPER (one-electron integrals)',
-     &  '  ...will attempt restart.'
+        WRITE(LUPRI,'(2X,A,A)') 
+     &  '* WARNING: DIRAC found the AOPROPER file ',
+     &  '(one-electron integrals) ...will attempt restart.'
+        IF (NOSMLV) THEN
+          CALL NOSSNUCATT
+        ENDIF
       ELSE 
         CALL ONEGEN(WORK,LWORK)
       ENDIF

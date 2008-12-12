@@ -1145,11 +1145,11 @@ case "$F90_COMP_NAME" in
    else
       F90real=$F90_COMP
    fi
-   echo "Fortran compiler in $F90_COMP found to be $F90real"
+   echo "Fortran compiler in $F90_COMP found to be: $F90real"
    ;;
 mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
    F90real=xlf
-   echo "Fortran compiler in $F90_COMP found to be $F90real"
+   echo "Fortran compiler in $F90_COMP found to be: $F90real"
    ;;
 *)
    F90real=$F90_COMP_NAME # 'error' default for parallel branch
@@ -1202,7 +1202,7 @@ openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
    else
       CCreal=$CC_COMP_NAME
    fi
-   $echo "C compiler in $CC_COMP_NAME found to be $CCreal."
+   $echo "C compiler in $CC_COMP_NAME found to be: $CCreal."
    ;;
 *)
   CCreal=$CC_COMP_NAME

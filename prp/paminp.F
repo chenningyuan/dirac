@@ -2362,13 +2362,13 @@ C
           OPTYPE = ' (complex)  '
         ENDIF
         IF(I.EQ.1) THEN
-          WRITE(LUPRI,'(6X,A,A8,4X,'//FMT//',A12)')
+          WRITE(LUPRI,'(6X,A,A8,1X,A4,4X,'//FMT//',A12)')
      &      'Labels and factors     : ',
-     &      PRPLBL(IPRPLBL(I,INDXPR)),
+     &      PRPLBL(IPRPLBL(I,INDXPR)),PDOINT(IPRPLBL(I,INDXPR)),
      &      FACPRP(I,INDXPR),OPTYPE
         ELSE
-          WRITE(LUPRI,'(31X,A8,4X,'//FMT//',A12)')
-     &      PRPLBL(IPRPLBL(I,INDXPR)),
+          WRITE(LUPRI,'(31X,A8,1X,A4,4X,'//FMT//',A12)')
+     &      PRPLBL(IPRPLBL(I,INDXPR)),PDOINT(IPRPLBL(I,INDXPR)),
      &      FACPRP(I,INDXPR),OPTYPE
         ENDIF
       ENDDO
