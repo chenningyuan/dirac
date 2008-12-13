@@ -2979,7 +2979,7 @@ C
 #include "krmcluci_inf.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
-      LOGICAL   MOISNO
+      LOGICAL   MOISNO, EX
 C
       CALL QENTER('RCIST')
       CALL RTKTIME(.TRUE.,2)
@@ -3036,7 +3036,9 @@ C
 C
          IF( CINT_REORD ) THEN
 C
-           CALL LUCI_IJKLRO(CMO,WORK(KFREE),LFREE)
+           INQUIRE (FILE='IJKL_REOD',EXIST=EX)
+           IF(.NOT.EX)
+     &     CALL LUCI_IJKLRO(CMO,WORK(KFREE),LFREE)
 C
            IF( MAXCIT .le. 0 ) THEN
 C
