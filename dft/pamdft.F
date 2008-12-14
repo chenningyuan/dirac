@@ -61,7 +61,7 @@ C
      &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
      &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
      &            '.XALDA-','.DFTTHR','.4CGRID','.COARSE',
-     &            '.GRID T','.xxxxxx','.xxxxxx','.xxxxxx'/
+     &            '.GRID T','.OLD DF','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -74,50 +74,60 @@ C
       ELSE
          SET = .TRUE.
       END IF
-C
-C
-C     Initialize /DFTCOM/ and integration parameters
-C     ==============================================
-C
-      IPRDFT = 2
-      GRDONE = .FALSE.
-C     ... GRDONE false: calculate grid
-C         (this also ensures new grid is calculated for each
-C          geometry in a geometry optimization) /hjaaj
-      DFTPOT = .FALSE.
-      DFTORD = .FALSE.
-      DFTASC = .FALSE.
 
-      RADINT = 1.0D-13
-      ANGMIN = 15
-      ANGINT = 41
 
-      INTCHK = 0
-      DFTHR0 = 1.0D-9
-      DFTHRL = 1.0D-10
-      DFTELS = 1.0D-3
-      NOPRUN = .FALSE.
-      ATSIZE = .FALSE.
-      import_grid = .false.
-      export_grid = .false.
-      ZIPGRID = .FALSE.
+!     initialize dftcom.h
+!     ===================
 
-      alda_hs          = .false.
-      alda_ha          = .false.
-      xalda            = .false.
+      iprdft = 2
+
+!     this also ensures that a new grid is calculated for each 
+!     geometry in a geometry optimization
+      grdone = .false.
+
+      dftpot = .false.
+      dftord = .false.
+      dftasc = .false.
+
+      noprun = .false.
+      angmin = 15
+      angint = 41
+      radint = 1.0d-13
+
+      intchk = 0
+
+      atsize = .false.
+
+      import_grid   = .false.
+      export_grid   = .false.
+      zipgrid       = .false.
+      force_4c_grid = .false.
+      old_dft       = .false.
+ 
+      dfthr0 = 1.0d-9
+      dfthrl = 1.0d-10
+      dfthri = 1.0d-15
+      dftels = 1.0d-3
       dft_thrs_changed = .false.
-      force_4c_grid    = .false.
 
-C     initialize /DFTAC/
-C     ==================
-C
-      LBIT_DFTAC           = 0
-      ICOUNTER_DFTAC_DEBUG = 0
-C
-C
+      alda_hs = .false.
+      alda_ha = .false.
+      xalda   = .false.
+
+
+!     initialize dftac.h
+!     ==================
+
+      lbit_dftac           = 0
+      icounter_dftac_debug = 0
+
 
 !     initialize cdft.h
-      LBIT_CDFT = 0
+!     =================
+
+      lbit_cdft = 0
+
+
 
 C
 C
@@ -362,13 +372,15 @@ C     .GAUNTSCALE
                  angint = 35
                  go to 100
 
-!                grid type
+!                .GRID TYPE
  29              continue
                  read(lucmd, '(a80)') line
 !                call dftgridinput(line)
                  go to 100
 
+!                .OLD DFT
  30              continue
+                 old_dft = .true.
                  go to 100
 
  31              continue
