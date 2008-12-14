@@ -46,7 +46,7 @@
       PARAMETER (MXCNSM = 8)
       PARAMETER (MTYP = 30)
 !     Required in order to handle GAS and RAS within /LUCINP/   
-      PARAMETER (MXPNGAS = 7)
+      PARAMETER (MXPNGAS = 8)
       PARAMETER (MXPNSMST = 8)
 !     Largest allowed division of space for perturbation operator
       PARAMETER (MXPPTSPC=20)
