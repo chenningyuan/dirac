@@ -112,15 +112,24 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	struct rusage rusage;
 	if (getrusage(RUSAGE_SELF,&rusage) == 0)
 	{
-	    /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+	  /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+         /* miro: deactivated, because often it's beeing printed among master data, hurting thus output
+
 	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld\n",
 		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
 		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+          */
 	}
+
 	if (*node_nr == 0) /* print wall time only on the master */
 	{
 	    struct timeval end_wall;
 	    gettimeofday(&end_wall, NULL);
+
+	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld\n",
+		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+
 	    printf(">>>> Total WALL time used in DIRAC: ");
 	    print_time(end_wall.tv_sec - start_wall.tv_sec,stdout);
 	    printf("\n");
