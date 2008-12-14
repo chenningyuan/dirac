@@ -379,10 +379,10 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
    master=`hostname -s`
-   unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
 
-  # if test -f $WRK/dirac_machines; then
-   if [  -n "$unique_nodes" ]; then
+   if test -f $WRK/dirac_machines; then # check the presence of "dirac_machines" file
+     unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
+     if [  -n "$unique_nodes" ]; then
        for node in ` uniq $WRK/dirac_machines | sed s/:.//`; do
           if [ $node != $master ]; then
              echo "Contents of work directory $WRK on slave node $node"
@@ -392,6 +392,7 @@ remove_work_dir()
              $echo "Work directory $WRK on slave node $node deleted."
           fi
        done
+     fi
    fi
 #
 #  Now delete work directory on primary machine if requested
