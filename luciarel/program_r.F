@@ -703,6 +703,10 @@ C
 C
 #if defined (VAR_MPI2)
 C
+C     delete big scratch files when doing large-scale CI run
+C     (CIRUN .eq. KR-CI) before collecting all vectors
+      CALL SETUNITS_PAR_CLOSE_REL(CIRUN,1)
+C
       IF( IAM_NOT_INV .eq. 0 ) GOTO 505
 C
       LBLK = -1
@@ -720,6 +724,7 @@ C
      &                            MPI_COMM_WORLD,LBLK,JROOT,
      &                            WORK(KILU1LIST),MY_LU1_OFF,IRC)
       END DO
+      CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
       IF(MYPROC.EQ.MASTER) THEN
         CALL REWINE(LUSC41,-1)
         CALL REWINE(LUC,-1)
@@ -739,7 +744,8 @@ C
       END IF
       NPTESTVAR = 00
 C
- 505    CONTINUE
+ 505  CONTINUE
+      IF( IAM_NOT_INV .eq. 0 ) CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
 #endif
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1318,8 +1324,8 @@ C
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       else
-        write(LUWRT,*) 'CIRUN has unallowed value :',CIRUN
-        call quit('Stopping in GASCI')
+        WRITE(LUWRT,*) 'CIRUN has unallowed value :',CIRUN
+        CALL QUIT(' *** ERROR in GASCI *** Unallowed CIRUN type.')
       end if
 C     ^ CIRUN cases for MCSCF calls.
 *+++++++++++++++++++++++++++++++++++++++++++++++++++

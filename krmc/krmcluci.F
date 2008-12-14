@@ -634,7 +634,7 @@ C
 C
 C     free all MPI-2 groups
 C
-      CALL SETUNITS_PAR_CLOSE_REL
+      IF(CIRUN .ne. 'KR-CI ') CALL SETUNITS_PAR_CLOSE_REL(CIRUN,0)
       CALL GROUP_DESTRUCTOR_REL(MYNEW_COMM,MYNEW_COMM_SM,ICOMM,
      &                          MYNEW_COMM_SM_C)
 C
