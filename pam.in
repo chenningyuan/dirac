@@ -291,8 +291,24 @@ setup_command()
 #
 execute_dirac()
 {
+   master=`hostname -s`
+   if test -f dirac_machines; then
+      unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
+   else
+      unique_nodes=""
+   fi
+   if [ "$DIRPAR" = "1" ]; then 
+    if [ -n "$unique_nodes" ]; then
+     $echo "   Executing parallel, $MPI_NPROC cpu run, on $master and $unique_nodes in working directory, command:"
+    else
+     $echo "   Executing parallel, $MPI_NPROC cpu run, only on $master in working directory, command:"
+    fi
+    $echo "         \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
+   else
+     $echo "   Executing serial run on $master in working directory, command:"
+     $echo "         \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
+   fi
 
-   echo "   Executing on `hostname` in working directory \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
    BDIR=$BASDIR
    while [ -n "`echo $BDIR | grep ':'`" ]; do
       TDIR=`echo $BDIR | cut -d ":" -f 1`
@@ -483,7 +499,7 @@ distribute_work_dir()
       echo "   Allocated nodes for parallel $MPI_NPROC cpu run (content of dirac_machines file):"
       cat dirac_machines
       if [ -n "$unique_nodes" ]; then
-        $echo '  Distributing files onto local disks of nodes: '
+        $echo "  Distributing files onto local disks of nodes: "
       else
         # empty string $unique_nodes
         $echo "   All cpus are on one machine - $master - therefore no distributing files among other nodes."
@@ -704,7 +720,7 @@ save_old_output()
 #
 set_dirac_environment()
 {
-   export DIRPAR # tell dirac.x if parallel run or not
+   export DIRPAR # tell dirac.x if it is parallel run or not
    export BASDIR # tell dirac.x which directories to search for basis sets
    if [ -n "$MEMORY" ]; then
       DIRWRK=$MEMORY; export DIRWRK
