@@ -2608,6 +2608,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 #include "csm.inc"
 #include "symm.inc"
 #include "ctcc.inc"
+#include "parluci.h"
 *. Input
       INTEGER IOP(NGAS),IAC(NGAS),IREFOC(NGAS)
 *. Output
@@ -4061,7 +4062,7 @@ C
 C     arrays for storing NEL consecutive annihilations/creations
       LSCR4 = MXINKA*MXINKA*MXINKA
       call memmar(KI1G  ,LSCR4,'ADDL  ',1,'I1G   ')
-      call memmar(KXI1G,LSCR4,'ADDL  ',2,'XIG  ')
+      call memmar(KXI1G,LSCR4,'ADDL  ',2,'XIG   ')
 C
       call memmar(KI2G  ,LSCR4,'ADDL  ',1,'I2G   ')
       call memmar(KXI2G,LSCR4,'ADDL  ',2,'XI2G  ')
@@ -4122,7 +4123,7 @@ C     &     WORK(KNSTSO2(IBCTP)),NOCTPA_C,NOCTPB_C,NSMST,L0BLOCK,
      &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
 #endif
 C
-      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',2,'ISMDST')
+      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',1,'ISMDST')
 C
       LSIRES = MXINKA**4
       LCJRES = LCJRES_SAVE

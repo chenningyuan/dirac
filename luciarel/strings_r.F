@@ -346,7 +346,7 @@ CTF   DIMENSION IOFFI(LOFFI)
 * (NKSTR,*), Where NKSTR is the number of K-strings of
 *  correct symmetry . Nk is provided by this routine.
 *
-      CALL QENTER('ADAST ')
+C     CALL QENTER('ADAST ')
 *
       NTEST = 0000
       IF(NTEST.GE.100) THEN
@@ -517,10 +517,7 @@ C?    WRITE(6,*) ' NIGASL = ', NIGASL
       END DO
       IF(NTEST.GE.1000) WRITE(6,*) ' NELB = ', NELB
 *
-      ZERO =0.0D0
-      IZERO = 0    
-COLD  CALL SETVEC(XI1S,ZERO,NORBTS*NKSTR)
-      CALL ISETVC(I1,IZERO,NORBTS*NKSTR)
+      CALL IZERO(I1,NORBTS*NKSTR)
 *
 * Loop over symmetry distribtions of K strings
 *
@@ -636,7 +633,7 @@ C!    call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
         END IF
       END IF
 *
-      CALL QEXIT('ADAST ')
+C     CALL QEXIT('ADAST ')
       RETURN
       END
 ***********************************************************************
@@ -777,11 +774,9 @@ C?    CALL IWRTMA(IZ,NOCOB,NKEL+1,NOCOB,NKEL+1)
         IEND = 0
       END IF
 *. Start by zeroing
-      ZERO = 0.0D0
-      IZERO = 0
       DO IIORB = 1, LORB
 C       CALL SETVEC(XI1S(1,IIORB),ZERO,NK)
-        CALL ISETVC(I1(1,IIORB),IZERO,NK)
+        CALL IZERO(I1(1,IIORB),NK)
       END DO
 *
       DO KKSTR = KMIN,KEND
@@ -945,7 +940,7 @@ C     STOP'JEPPE forced me to stop in ADS1   '
       INTEGER I1(LI1,*)
       DIMENSION XI1S(LI1,*)
 *
-      CALL QENTER('ADST  ')
+C     CALL QENTER('ADST  ')
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
@@ -1045,7 +1040,7 @@ CT       CALL QEXIT('GENSTR')
      &          NOCOB,KMAX,KMIN,IEND,KACT,SCLFAC)
 *
 C     SAVE NELK , NSTRK
-      CALL QEXIT('ADST  ')
+C     CALL QEXIT('ADST  ')
       RETURN
       END
 ***********************************************************************
@@ -1116,7 +1111,7 @@ C     SAVE NELK , NSTRK
 *
       DIMENSION IOFFI(LOFFI)
       call memmar(KLOFFI,LOFFI,'ADDL',1,'LLOFFI')
-      CALL QENTER('ADSTN ')
+C     CALL QENTER('ADSTN ')
 *
       IF(NGAS.GT.MXLNGAS) THEN
         WRITE(6,*) ' Ad hoc programming in ADSTN (IOFFI)'
@@ -1176,10 +1171,8 @@ CEND
       ELSE
         NORBTS= NOBPTS2(IOBTP,IOBSM)
       END IF
-      ZERO =0.0D0
-      CALL SETVEC(XI1S,ZERO,NORBTS*NKSTR)
-      IZERO = 0
-      CALL ISETVC(I1,IZERO,NORBTS*NKSTR)
+      CALL DZERO(XI1S,NORBTS*NKSTR)
+      CALL IZERO(I1,NORBTS*NKSTR)
 *
 *. First orbital of given GASSpace
        IBORBSP = IELSUM(NOBPT,IOBTP-1)+1
@@ -1450,7 +1443,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
       END IF
 *
       call memmar(KLOFFI,LOFFI,'FREE',1,'LLOFFI')
-      CALL QEXIT('ADSTN ')
+C     CALL QEXIT('ADSTN ')
       RETURN
       END
 ***********************************************************************
@@ -1963,7 +1956,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
       INTEGER NNSTSGP(MXPNSMST,MXPNGAS)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
 *
-      CALL QENTER('GETST')
+C     CALL QENTER('GETST')
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
@@ -2110,7 +2103,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         END IF
       END IF
 *
-      CALL QEXIT('GETST')
+C     CALL QEXIT('GETST')
       RETURN
       END 
 ***********************************************************************
@@ -2175,7 +2168,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       INTEGER NNSTSGP(MXPNSMST,MXPNGAS)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
 *
-      CALL QENTER('GETST')
+C     CALL QENTER('GETST')
 *
       IF(MOD(ISTRTP,2).EQ.0) THEN
 *. Barred spinor
@@ -2412,7 +2405,7 @@ c         if (NGASCT.eq.0) goto 1001
 *
  1002 continue
 *
-      CALL QEXIT('GETST')
+C     CALL QEXIT('GETST')
       RETURN
       END
 ***********************************************************************
@@ -3468,7 +3461,7 @@ C
 *. A bit of scratch
 C     DIMENSION IOCTYP(MXPNGAS)
 *
-      CALL QENTER('STRIN')
+C     CALL QENTER('STRIN')
 *
       NTESTL = 000
       NTEST = MAX(NTESTL,IPRNT)
@@ -3704,9 +3697,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
           IGSOB = IELSUM(NOBPT,IGAS-1)+1
           IEL = NELFGP(IGRP)
           NSTINI = NSTFGP(IGRP)
-          IZERO = 0
-          CALL ISETVC(STIN(KSTSTM(IGRP,1)),IZERO,NGSOBP*NSTINI)
-          CALL ISETVC(STIN(KSTSTM(IGRP,2)),IZERO,NGSOBP*NSTINI)
+          CALL IZERO(STIN(KSTSTM(IGRP,1)),NGSOBP*NSTINI)
+          CALL IZERO(STIN(KSTSTM(IGRP,2)),NGSOBP*NSTINI)
           JGRP = ISTAC(IGRP,2)
           CALL CRESTR_GAS_REL(STIN(KOCSTR(IGRP)),NSTFGP(IGRP),
      &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,STIN(KZ(JGRP)),
@@ -3725,9 +3717,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
           IGSOB = IELSUM(NOBPT,IGAS-1)+1
           IEL = NELFGP(IGRP)
           NSTINI = NSTFGP(IGRP)
-          IZERO = 0
-          CALL ISETVC(STIN(KSTSTM2(IGRP,1)),IZERO,NGSOBP*NSTINI)
-          CALL ISETVC(STIN(KSTSTM2(IGRP,2)),IZERO,NGSOBP*NSTINI)
+          CALL IZERO(STIN(KSTSTM2(IGRP,1)),NGSOBP*NSTINI)
+          CALL IZERO(STIN(KSTSTM2(IGRP,2)),NGSOBP*NSTINI)
           JGRP = ISTAC(IGRP,2)
           CALL CRESTR_GAS_REL(STIN(KOCSTR2(IGRP)),NSTFGP(IGRP),
      &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,STIN(KZ(JGRP)),
@@ -3747,7 +3738,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
 *. Now to string types, i.e. strings of with given number of elecs
 *
-      CALL ISETVC(NSTFSMSPGP,0,MXPNSMST*NTSPGP)
+      CALL IZERO(NSTFSMSPGP,MXPNSMST*NTSPGP)
       MXNSTR = -1
       DO ITP = 1, NSTTYP
 *. Loop over supergroups of given type . i.e. strings
@@ -3864,9 +3855,8 @@ C           FUNCTION MAX_NSYMDIST_DBG(NSPGRP,ISPGRP,NGAS,NSMST)
 *
 * Maps creation/annihilation of given gas orb from given supergroup
 * gives new supergroup.
-      IZERO = 0
-      CALL ISETVC(WORK(KSPGPCR),IZERO,NGAS*NTSPGP)
-      CALL ISETVC(WORK(KSPGPAN),IZERO,NGAS*NTSPGP)
+      CALL IZERO(WORK(KSPGPCR),NGAS*NTSPGP)
+      CALL IZERO(WORK(KSPGPAN),NGAS*NTSPGP)
 *
       DO ISTTYP = 1,NSTTYP
 *. Creation map from this type
@@ -3903,9 +3893,8 @@ C    &       ' annihilation map from ',ISTTYP,' to ',ISTTYPA
       END DO
 *
 C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
-      CALL LMEMCHK
 *
-      CALL QEXIT('STRIN')
+C     CALL QEXIT('STRIN')
       RETURN
       END
 ***********************************************************************
@@ -3936,7 +3925,7 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *. Local scratch
       DIMENSION IOCTYP(MXPNGAS)
 *
-      CALL QENTER('STRTYP_REL')
+C     CALL QENTER('STRTYP_REL')
       NTESTL = 000
       NTEST = MAX(IPRNT,NTESTL)
 *. As input NCISPC GAS spaces IGSOCCX are given.
@@ -3991,11 +3980,11 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *.
 *. Occupation classes corresponding to largest CI space
 *
-      CALL QENTER('OCCLS')
+C     CALL QENTER('OCCLS')
       CALL OCCLS_REL(1,NOCCLS,IOCCLS,NACTEL,NGAS,
      &               IGSOCC(1,1),IGSOCC(1,2))
       NMXOCCLS = NOCCLS
-      CALL QEXIT('OCCLS')
+C     CALL QEXIT('OCCLS')
 *
 *. Loop over MS2 spaces
 *
@@ -4372,8 +4361,6 @@ C     END IF
        WRITE(6,*) ' Number of beta  supergroups  ', NSPGPFTP(2)
       END IF
 *
-      WRITE(6,*)
-*
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Information about types of strings'
         WRITE(6,*) ' =================================='
@@ -4394,7 +4381,7 @@ C     END IF
         CALL IWRTMA(NOCTYP,1,NSTTYP,1,NSTTYP)
       END IF
 *
-      CALL QEXIT('STRTYP_REL')
+C     CALL QEXIT('STRTYP_REL')
 *
       RETURN
       END
@@ -4715,7 +4702,9 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 *. Input
       INTEGER ISPGRP(NGAS,NSPGRP)
 *
+      MAX_NSYMDIST_DBG = 0
       MAXX = -1
+      NJDIST = -1
       DO IAB = 1, 2
        DO JSPGRP = 1, NSPGRP
         CALL NST_SPGRP_DBG(NGAS,ISPGRP(1,JSPGRP),1,NSMST,
