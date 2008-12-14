@@ -292,7 +292,7 @@ setup_command()
 execute_dirac()
 {
 
-   echo "   Executing in working directory \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
+   echo "   Executing on `hostname` in working directory \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
    BDIR=$BASDIR
    while [ -n "`echo $BDIR | grep ':'`" ]; do
       TDIR=`echo $BDIR | cut -d ":" -f 1`
@@ -379,13 +379,17 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
    master=`hostname -s`
-   if test -f $WRK/dirac_machines; then
+   unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
+
+  # if test -f $WRK/dirac_machines; then
+   if [  -n "$unique_nodes" ]; then
        for node in ` uniq $WRK/dirac_machines | sed s/:.//`; do
           if [ $node != $master ]; then
              echo "Contents of work directory $WRK on slave node $node"
-             $RSH $node "ls -l $WRK"
-             $RSH $node "rm -fr $WRK"
-             echo "Work directory $WRK on slave node $node deleted"
+             $RSH $node "ls -l $WRK"  
+             $RSH $node "rm -fr $WRK" || \
+             ($echo "Error exit: work directory $WRK on slave node $node not deleted!"; EXIT=1; exitfunc)
+             $echo "Work directory $WRK on slave node $node deleted."
           fi
        done
    fi
@@ -398,8 +402,9 @@ remove_work_dir()
    ls -l $WRK
    if [ " $RMWRK" -eq 1 ]; then
       if [ $EXIT -eq 0 ]; then
-         rm -fr $WRK
-         echo "Work directory $WRK on (master) node $master deleted"
+         rm -fr $WRK || \
+         ($echo "Error exit: work directory $WRK on master node $master not deleted!"; EXIT=1; exitfunc)
+         echo "Work directory $WRK on (master) node $master deleted."
       else
          echo '*** DIRAC terminated with an error exit code'
          echo "- THEREFORE (master) scratch work directory $WRK is not deleted as normal"
@@ -428,9 +433,11 @@ set_work_dir()
    # Make $WRK if non-existing
    # The -p switch makes all parent directories first
    #
-   mkdir -p $WRK || echo "   MKDIR error\!"
+   mkdir -p $WRK || $echo "\n   MKDIR error!"
    if [ ! -d $WRK ]; then
-      echo "   Could not create work directory: $WRK"
+      $echo "   Could not create work directory: $WRK"
+      $echo "   while beeing on host:\c";hostname
+      $echo "   with disks (df -h):"; df -h   
       EXIT=1
       exitfunc
    fi
@@ -438,7 +445,8 @@ set_work_dir()
    # Remove contents of $WRK if requested ( RMSCR )
    #
    if [ -n "$RMSCR" ]; then
-      rm -f $WRK/* 2> /dev/null || echo "rm $WRK error\!"
+      rm -f $WRK/* 2> /dev/null || \
+      ( echo "rm $WRK error\!"; EXIT=1; exitfunc )
    fi
 cd $WRK
 }
@@ -469,20 +477,29 @@ distribute_work_dir()
 #  Loop over the remote machines and copy the contents of the work directory.
 #
    if test -f dirac_machines; then
-      are_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
-      echo '  Allocated nodes for parallel run (content of dirac_machines file):'
+
+      unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
+      echo "   Allocated nodes for parallel $MPI_NPROC cpu run (content of dirac_machines file):"
       cat dirac_machines
-      if [ -z "$are_nodes" ]; then
-        echo '  Distributing files onto local disks of nodes '
+      if [ -n "$unique_nodes" ]; then
+        $echo '  Distributing files onto local disks of nodes: '
+      else
+        # empty string $unique_nodes
+        $echo "   All cpus are on one machine - $master - therefore no distributing files among other nodes."
       fi
-      for node in `grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`; do
+      # if nonempty $unique_nodes, distribution/coying done
+      for node in $unique_nodes; do
          echo "copying contents of master $master:$WRK to node $node:$WRK"
-         $RSH $node "mkdir -p $WRK"
+         $RSH $node "mkdir -p $WRK" 
          if [ -n "$RMSCR" ]; then
-            $RSH $node rm -f $WRK/*
+           $echo "first removing existing $node:$WRK"
+           $RSH $node rm -f $WRK/* || \
+           ($echo "Error exit: existing work directory $WRK on slave node $node not deleted!"; EXIT=1 ; exitfunc)
          fi
          for file in ` ls `; do
-           $RCP $file $node:$WRK/$file
+           $echo "copying of $master:$file onto $node:$WRK/."
+           $RCP $file $node:$WRK/$file || \
+           ($echo "Error exit: $master:$file not copyied onto $node:$WRK/$file !";EXIT=1;exitfunc)
          done
       done
    fi

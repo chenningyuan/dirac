@@ -686,7 +686,7 @@ if [ "$par" = "yes" ]; then
          $echo '\nWarning: Each queuing system has its own variable for the file '
          $echo 'with reserved nodes (machinefile). For instance, $HOSTNAME for SGE,'
          $echo 'for IBM LoadLeveler is $XXXXX ....'
-         $echo 'As the default we offer $PBS_NODEFILE of the OpenPBS batch system.'
+         $echo 'As the default, we offer $PBS_NODEFILE of the OpenPBS batch system.'
          $echo 'Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
          read mach_file
          if [ -z "$mach_file" ]; then
@@ -701,8 +701,10 @@ if [ "$par" = "yes" ]; then
 #
 #  With local disks set remote copy/shell:
 #
-   rsh=rsh
-   rcp=rcp
+#   rsh=rsh
+   rsh=""
+#   rcp=rcp
+   rcp=""
    if [ "$localdisks" = "yes" ]; then
      if [ $quick = 0 ]; then
        $echo '\nRemote shell/copy for passing files to local disks (rsh/ssh) (default: rsh): \c'
@@ -2507,12 +2509,12 @@ LOCALDISKS=$localdisks
 # ... default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file
 # 
-# For passing files to local disks:
+# For passing files to local disks; if empty, no copying to local disks of nodes
 #
 RCP=$rcp
 RSH=$rsh
 #
-# debugger - check it on your machine installation
+# debugger - check it according to your machine installation
 #
 DEBUGGER=$debug
 #
