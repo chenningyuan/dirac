@@ -1916,7 +1916,8 @@ get_f90_flags(){
       ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
-      safe="-g -w -assume byterecl"
+#     radovan: some routines in the aoresponse module need -auto -fno-inline
+      safe="-g -w -assume byterecl -auto -fno-inline"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       if [ "$par" = "yes" ]; then
