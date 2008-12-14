@@ -11,7 +11,7 @@
 !
 ! At the end of the geometry optimization the bond angle closes, but not all the way to 90
 ! degrees. This is due to Pauli repulsion between the hydrogen atoms, as explained by
-! Kutlzelnigg in his classic paper in Angew. Chem. Int. Ed. Engl. 23 (1984) 272.
+! Kutzelnigg in his classic paper in Angew. Chem. Int. Ed. Engl. 23 (1984) 272.
 !
 !
 ! MI: Extended for pure two-component IOTC (Trond's one-step approach) calculations.
