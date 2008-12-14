@@ -61,7 +61,7 @@ C
      &            '.COLLIN','.GAUNTS','.ZIPGRI','.ALDA  ',
      &            '.ALDA+ ','.ALDA- ','.XALDA ','.XALDA+',
      &            '.XALDA-','.DFTTHR','.4CGRID','.COARSE',
-     &            '.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
+     &            '.GRID T','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -362,7 +362,10 @@ C     .GAUNTSCALE
                  angint = 35
                  go to 100
 
+!                grid type
  29              continue
+                 read(lucmd, '(a80)') line
+!                call dftgridinput(line)
                  go to 100
 
  30              continue
