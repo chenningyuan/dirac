@@ -81,6 +81,7 @@ C
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' Double Annihilation connecting  '
@@ -95,6 +96,7 @@ C
           WRITE(6,*) ' Types of connecting annihilation ops', ITYP,JTYP
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -163,6 +165,7 @@ C
       DIMENSION XI1S(*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ====================== '
@@ -172,6 +175,7 @@ C
         WRITE(6,*) ' IOB,IOBSM,IOBTP ', IOB,IOBSM,IOBTP
         WRITE(6,*) ' JOB,JOBSM,JOBTP ', JOB,JOBSM,JOBTP
       END IF
+#endif
 *
 C?    IF(SCLFAC.NE.1.0D0) THEN
 C?      WRITE(6,*) 'Problemo, ADADST '
@@ -210,9 +214,11 @@ CTF
       CALL NEWTYP_REL(K1SPGPABS,1,JOBTP,1,KSPGPABS)
       CALL SYMCOM_REL(2,0,IOBSM,K1SM,ISM)
       CALL SYMCOM_REL(2,0,JOBSM,KSM,K1SM)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) WRITE(6,*)
      & ' K1SM,K1SPGPABS,KSM,KSPGPABS : ',
      &   K1SM,K1SPGPABS,KSM,KSPGPABS
+#endif
 * In ADADS1_GAS we need : Occupation of KSTRINGS
 *                         lexical => Actual order for I strings
 * Generate if required
@@ -349,6 +355,7 @@ CTF   DIMENSION IOFFI(LOFFI)
 C     CALL QENTER('ADAST ')
 *
       NTEST = 0000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
 *
         WRITE(6,*)
@@ -374,6 +381,7 @@ C     CALL QENTER('ADAST ')
         END IF
 *
       END IF
+#endif
 *
 C!    call memmar(KDUM,IDUM,'MARK  ',IDUM,'ADASTG')
 *. A few preparations
@@ -420,7 +428,9 @@ C!    call memmar(KDUM,IDUM,'MARK  ',IDUM,'ADASTG')
 *. b:) active group in K strings
       NIEL = NELFGP(IGRP(IACGRP))
       NKEL = NIEL + IDELTA
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) WRITE(6,*) ' NIEL and NKEL ',NIEL,NKEL
+#endif
       NOBIACP1 = NOBPT(IACGAS) + 1
       IF(NKEL.EQ.-1.OR.NKEL.EQ.NOBIACP1) THEN
 *. No strings with this number of elecs - be happy : No work
@@ -434,7 +444,9 @@ C!    call memmar(KDUM,IDUM,'MARK  ',IDUM,'ADASTG')
         DO JGRP = IBGPSTR(IACGAS),IBGPSTR(IACGAS)+NGPSTR(IACGAS)-1
           IF(NELFGP(JGRP).EQ.NKEL) KACGRP = JGRP
         END DO
+#if defined LUCI_DEBUG
         IF(NTEST.GE.1000) WRITE(6,*) ' KACGRP = ',KACGRP
+#endif
 *. KACGRP is the Active group itself
         IF(KACGRP.EQ.0) THEN
           WRITE(6,*)' ADAST : cul de sac, active K group not found'
@@ -453,8 +465,10 @@ C!    call memmar(KDUM,IDUM,'MARK  ',IDUM,'ADASTG')
       call nst_spgrp_dbg(NIGRP,KGRP,KSM,NSMST,NKSTR,NKDIST,IAB)
 CTF   CALL NST_SPGRP(NIGRP,KGRP,KSM,WORK(KNSTSGP(1)),
 CTF  &               NSMST,NKSTR,NKDIST)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) WRITE(6,*)
      & ' KSM, NKSTR : ', KSM, NKSTR
+#endif
       IF(NKSTR.EQ.0) GOTO 9999
 *. Last active space in K strings and number of strings 
 *  per group and sym
@@ -476,11 +490,13 @@ CTF  &               NSMST,NKSTR,NKDIST)
 *. MIN/MAX for Kstrings
       call minmax_for_sym_dist_dbg(NIGRP,KGRP,MNVLK,MXVLK,
      &                             NKDIST_TOT,IAB)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) THEN
         write(6,*) 'MNVLK and MXVLK '
         CALL IWRTMA(MNVLK,1,NIGRP,1,NIGRP)
         CALL IWRTMA(MXVLK,1,NIGRP,1,NIGRP)
       END IF
+#endif
 *. (NKDIST_TOT is number of distributions, all symmetries )
 * ==============
 *. I Strings
@@ -515,7 +531,9 @@ C?    WRITE(6,*) ' NIGASL = ', NIGASL
       DO JGRP = 1, IACGRP-1
         NELB = NELB + NELFGP(IGRP(JGRP))
       END DO
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) WRITE(6,*) ' NELB = ', NELB
+#endif
 *
       CALL IZERO(I1,NORBTS*NKSTR)
 *
@@ -530,10 +548,12 @@ C?    WRITE(6,*) ' NIGASL = ', NIGASL
 *. Next distribution
         CALL NEXT_SYM_DISTR_REL(NGASL,MNVLK,MXVLK,ISMFGS,KSM,KFIRST,
      &                          NONEW)
+#if defined LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           write(6,*) ' Symmetry distribution '
           call iwrtma(ISMFGS,1,NIGRP,1,NIGRP)
         END IF
+#endif
         IF(NONEW.EQ.1) GOTO 9999
 * NONEW is not equal to 1, treat this distribution:
         KFIRST = 0
@@ -573,10 +593,12 @@ C       DO IGAS =  IOBTP +1, NIGRP
 *. I and K strings of given symmetry distribution
         NISD = NSTB*NIAC*NSTA
         NKSD = NSTB*NKAC*NSTA
+#if defined LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           write(6,*) ' nstb nsta niac nkac ',
      &                 nstb,nsta,niac,nkac
         END IF
+#endif
 *. Obtain annihilation/creation mapping for all strings of this type
 *. Are group mappings in expanded or compact form
         IF(IAC.EQ.1.AND.ISTAC(KACGRP,2).EQ.0) THEN
@@ -618,6 +640,7 @@ C       IF(NGASL-1.GT.0) GOTO 1000
  9999 CONTINUE
 C!    call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from ADAST_GAS '
         WRITE(6,*) ' ===================== '
@@ -632,6 +655,7 @@ C!    call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ADASTG')
           END DO
         END IF
       END IF
+#endif
 *
 C     CALL QEXIT('ADAST ')
       RETURN
@@ -702,12 +726,14 @@ C     CALL QEXIT('ADAST ')
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       NTEST = 0000
       if (NTEST.ge.1000) then
         write(6,*) 'ADD_STR_GROUP speaking: Input string array'
         call iwrtma(ISTADD,NELADD,IOFADD-1+NSTADD,
      &                     NELADD,IOFADD-1+NSTADD)
       end if
+#endif
 *
       RETURN
       END
@@ -753,12 +779,14 @@ C     CALL QEXIT('ADAST ')
       DIMENSION XI1S(LI1,*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
        WRITE(6,*) ' ================= '
        WRITE(6,*) ' ADS1_GAS speaking '
        WRITE(6,*) ' ================= '
        WRITE(6,*) ' IORB,LORB ', IORB,LORB
       END IF
+#endif
 C?    WRITE(6,*) ' IZ matrix in ADS1 '
 C?    CALL IWRTMA(IZ,NOCOB,NKEL+1,NOCOB,NKEL+1)
 *
@@ -782,10 +810,12 @@ C       CALL SETVEC(XI1S(1,IIORB),ZERO,NK)
       DO KKSTR = KMIN,KEND
 C?    write(6,'(a,I12)') 'KKSTR    ',KKSTR
 C?    WRITE(6,*) ' Occ of K ', (KSTR(JEL,KKSTR),JEL=1,NKEL)
+#if defined LUCI_DEBUG
        IF(NTEST.GE.1000) THEN
          WRITE(6,*) ' Occupation of string ', KKSTR
          CALL IWRTMA(KSTR(1,KKSTR),1,NKEL,1,NKEL)
        END IF
+#endif
 *
        SGN = -1.0D0*SCLFAC
        DO KEL = 1, NKEL+1
@@ -826,8 +856,10 @@ C          IF(IORB2.GE.IORB1) THEN
              DO JEL = KEL, NKEL
                IREVLEX = IREVLEX + IZ(KSTR(JEL,KKSTR),JEL+1)
              END DO
+#if defined LUCI_DEBUG
              IF(NTEST.GE.1000) WRITE(6,*)
      &       'KEL IORB1,IORB2,IREVLEX ',KEL,IORB1,IORB2,IREVLEX
+#endif
              DO IIORB = IORB1, IORB2
                XI1S(KKSTR-KMIN+1,IIORB-IORBMIN+1) = SGN
                I1(KKSTR-KMIN+1,IIORB-IORBMIN+1) =
@@ -861,6 +893,7 @@ C          IF(IORB2.GE.IORB1) THEN
  2912  CONTINUE
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GT.0) THEN
         WRITE(6,*) ' Output from ADS1_GAS '
         WRITE(6,*) ' ===================== '
@@ -875,6 +908,7 @@ C          IF(IORB2.GE.IORB1) THEN
   200     CONTINUE
         END IF
       END IF
+#endif
 *
 C     WRITE(6,*) 'JEPPE forced me to stop in ADS1   '
 C     STOP'JEPPE forced me to stop in ADS1   '
@@ -942,6 +976,7 @@ C     STOP'JEPPE forced me to stop in ADS1   '
 *
 C     CALL QENTER('ADST  ')
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================== '
@@ -950,6 +985,7 @@ C     CALL QENTER('ADST  ')
         WRITE(6,*)
         WRITE(6,*) ' ISM ISPGP ITP',ISM,ISPGP,ITP
       END IF
+#endif
 *
 C?    IF(SCLFAC.NE.1.0D0) THEN
 C?      WRITE(6,*) ' Problemo, ADST_GAS'
@@ -992,16 +1028,20 @@ CTF
         Call Abend('Quitting')
       end if
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) WRITE(6,*)
      &' ADST : IORB IORBTP IORBSM : ', IORB,IORBTP,IORBSM
+#endif
       ISPGPABS = IBSPGPFTP(ITP)-1+ISPGP
       CALL NEWTYP_REL(ISPGPABS,1,IORBTP,1,KSPGPABS)
       KTP = ITP + 2
       KSPGPREL = KSPGPABS - IBSPGPFTP(KTP) + 1
 *.
       CALL SYMCOM_REL(2,0,IORBSM,KSM,ISM)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) WRITE(6,*)
      & ' KSM and KSPGPABS : ', KSM,KSPGPABS
+#endif
 *. In order to construct mapping we need to generate
 *.      Reorder array : lexical order => actual order for I strings
 *.      Occupation of K strings
@@ -1034,7 +1074,9 @@ CT       CALL QEXIT('GENSTR')
       END IF
 *. a+i !kstr> = +/- !istr>
       NSTRK = NSTRKS(K12)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) WRITE(6,*) ' NSTRK = ', NSTRK
+#endif
       CALL ADS1_GAS(NK,I1,XI1S,LI1,IORB,NORB,
      &          WORK(KLLOC),NELK,NSTRK,WORK(KLLREO),WORK(KLLZ),
      &          NOCOB,KMAX,KMIN,IEND,KACT,SCLFAC)
@@ -1120,6 +1162,7 @@ C     CALL QENTER('ADSTN ')
       END IF
 *
       NTEST = 00
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ==================== '
@@ -1130,6 +1173,7 @@ C     CALL QENTER('ADSTN ')
         WRITE(6,*) '  ISPGP ISPGPSM ISPGPTP :  ',
      &                ISPGP,ISPGPSM,ISPGPTP
       END IF
+#endif
 *
 C?    IF(SCLFAC.NE.1.0D0) THEN
 C?      WRITE(6,*) ' Problemo : ADSTN_GAS'
@@ -1162,8 +1206,10 @@ CSTART
          NKSTR = NSTFSMSPGP2(KSM,KSPGRPABS)
       END IF
 CEND
+#if defined LUCI_DEBUG
       IF(NTEST.GE.200) WRITE(6,*)
      & ' KSM, KSPGPRABS, NKSTR : ', KSM,KSPGRPABS, NKSTR
+#endif
       IF(NKSTR.EQ.0) GOTO 9999
 *
       IF(IUB.EQ.1) THEN
@@ -1261,10 +1307,12 @@ C?     CALL IWRTMA(NACIST,1,NSMST,1,NSMST)
 *.  sym of SPACE NGASL
         CALL SYMCOM_REL(2,1,ISTSMM1,ISMGSN,ISPGPSM)
         ISMFGS(NGASL) = ISMGSN
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' next symmetry of NGASL spaces '
           CALL IWRTMA(ISMFGS,1,NGASL,1,NGASL)
         END IF
+#endif
 *. Number of strings with this symmetry combination
         NSTRII = 1
         DO IGAS = 1, NGASL
@@ -1281,11 +1329,13 @@ C?     CALL IWRTMA(NACIST,1,NSMST,1,NSMST)
         call i_save_r(WORK(KLOFFI),NSTRINT+1,IOFF)
 CTF     IOFFI(IOFF) = NSTRINT + 1
         NSTRINT = NSTRINT + NSTRII
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,'(A22,I8,I8,I8)')
      &    'IOFF,NSTRINT+1 NSTRII ',
      &     IOFF,IFRMR_REL(WORK(KLOFFI),1,IOFF),NSTRII
         END IF
+#endif
 *
       IF(NGASL-1.GT.0) GOTO 2000
  2001 CONTINUE
@@ -1339,10 +1389,12 @@ CTF     IOFFI(IOFF) = NSTRINT + 1
          IF(NONEW.NE.0) GOTO 1001
         END IF
         KFIRST = 0
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' next symmetry of NGASL-1 spaces '
           CALL IWRTMA(ISMFGS,NGASL-1,1,NGASL-1,1)
         END IF
+#endif
 *. Symmetry of NGASL -1 spaces given, symmetry of total space
         ISTSMM1 = 1
         DO IGAS = 1, NGASL -1
@@ -1356,10 +1408,12 @@ CTF     IOFFI(IOFF) = NSTRINT + 1
         DO IGAS = NGASL+1,NGAS
           ISMFGS(IGAS) = 1
         END DO
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
+#endif
 *. Number of strings of this symmetry distribution
         NSTRIK = 1
         DO IGAS = 1, NGASL
@@ -1427,6 +1481,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 *
  9999 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from ADSTN_GAS '
         WRITE(6,*) ' ===================== '
@@ -1441,6 +1496,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
           END DO
         END IF
       END IF
+#endif
 *
       call memmar(KLOFFI,LOFFI,'FREE',1,'LLOFFI')
 C     CALL QEXIT('ADSTN ')
@@ -1487,6 +1543,7 @@ C     CALL QEXIT('ADSTN ')
       END IF
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' Single Creation connecting  '
         WRITE(6,*) ' Left string '
@@ -1500,6 +1557,7 @@ C     CALL QEXIT('ADSTN ')
           WRITE(6,*) ' Type of connecting creation op', JTYP
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -1544,6 +1602,7 @@ C     CALL QEXIT('ADSTN ')
       END IF
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' Single Annihilation connecting  '
         WRITE(6,*) ' Left string '
@@ -1557,6 +1616,7 @@ C     CALL QEXIT('ADSTN ')
           WRITE(6,*) ' Type of connecting annihilation op', JTYP
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -1620,6 +1680,7 @@ C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
 *
       NTEST0 =  000
       NTEST = MAX(IPRNT,NTEST0)
+#if defined LUCI_DEBUG
       IF( NTEST .GE. 20 ) THEN
         WRITE(6,*)  ' =============== '
         WRITE(6,*)  ' CRESTR speaking '
@@ -1627,6 +1688,7 @@ C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
         WRITE(6,*)
          WRITE(6,*) ' Number of input electrons ', NEL
       END IF
+#endif
 C     WRITE(6,*) ' Reorder array NEWORD '
 C     CALL IWRTMA(NEWORD,1,NSTINO,1,NSTINO)
 *
@@ -1686,6 +1748,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 *
  1000 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF ( NTEST .GE. 20) THEN
         MAXPR = 60
         NPR = MIN(NSTINI,MAXPR)
@@ -1705,6 +1768,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
      &     (TI(I,ISTRIN),I = 1,NORB)
         END DO
       END IF
+#endif
 *
       RETURN
       END
@@ -1754,11 +1818,13 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       NTEST0 = 000
       NTEST = MAX(NTEST0,IPRNT)
 *
+#if defined LUCI_DEBUG
       IF( NTEST .GE. 10) THEN
         WRITE(6,*)  ' =============== '
         WRITE(6,*)  ' GENSTR speaking '
         WRITE(6,*)  ' =============== '
       END IF
+#endif
 *
       NSTRIN = 0
       IORB1F = 1
@@ -1786,10 +1852,12 @@ C?          write(6,*) ' corresponding number ', JSTRIN
              IF(NONEW1 .EQ. 1 ) GOTO 1003
            END IF
          END IF
+#if defined LUCI_DEBUG
          IF( NTEST .GE. 500) THEN
            WRITE(6,*) ' RAS 1 string '
            CALL IWRTMA(IOC,1,IEL1,1,IEL1)
          END IF
+#endif
          IFRST2 = 1
          IFRST3 = 1
 * Loop over RAS 2 occupancies
@@ -1806,10 +1874,12 @@ C?          write(6,*) ' corresponding number ', JSTRIN
                END IF
              END IF
            END IF
+#if defined LUCI_DEBUG
            IF( NTEST .GE. 500) THEN
              WRITE(6,*) ' RAS 1 2 string '
              CALL IWRTMA(IOC,1,IEL1+IEL2,1,IEL1+IEL2)
            END IF
+#endif
            IFRST3 = 1
 * Loop over RAS 3 occupancies
   903      CONTINUE
@@ -1827,10 +1897,12 @@ C?          write(6,*) ' corresponding number ', JSTRIN
                  END IF
                END IF
              END IF
+#if defined LUCI_DEBUG
              IF( NTEST .GE. 500 ) THEN
                WRITE(6,*) ' RAS 1 2 3 string '
                CALL IWRTMA(IOC,1,NEL,1,NEL)
              END IF
+#endif
 * Next string has been constructed , Enlist it !.
              NSTRIN = NSTRIN + 1
 *. Symmetry
@@ -1847,8 +1919,10 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
                LEXCI = ISTRNM(IOC,NACOB,NEL,Z,IREORD,0)
                LACTU = ISTASO(ISYM,IGRP)-1+LSTASO(ITYP,ISYM)
                IREORD(LEXCI) = LACTU
+#if defined LUCI_DEBUG
                IF(NTEST.GT.500) WRITE(6,*) ' LEXCI,LACTU',
      &         LEXCI,LACTU
+#endif
                CALL ICOPVE(IOC,STRING(1,LACTU),NEL)
              END IF
 *
@@ -1859,6 +1933,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
  1003 CONTINUE
  1001 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1 ) THEN
         WRITE(6,*) ' Number of strings generated   ', NSTRIN
       END IF
@@ -1888,6 +1963,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
         WRITE(6,*) ' ============================================'
         CALL IWRTMA(IREORD,1,NPR,1,NPR)
       END IF
+#endif
 
       RETURN
       END
@@ -1958,6 +2034,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 *
 C     CALL QENTER('GETST')
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================== '
@@ -1980,6 +2057,7 @@ C     CALL QENTER('GETST')
           CALL IWRTMA(IZ,NORBT,NEL,NORBT,NEL)
         END IF
       END IF
+#endif
 *. Absolut number of this supergroup
 *. Occupation per gasspace
 *. Largest occupied space 
@@ -2015,12 +2093,14 @@ C     CALL QENTER('GETST')
         END DO
       END DO
 * Largest and lowest active symmetries for each GAS space
+#if defined LUCI_DEBUG
       IF(NTEST.GE.200) THEN
          WRITE(6,*) ' Type of each GAS space '
          CALL IWRTMA(ITPFGS,1,NGAS,1,NGAS)
          WRITE(6,*) ' Number of elecs per GAS space '
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
       END IF 
+#endif
 *
 *. Loop over symmetries of each GAS
 *
@@ -2038,10 +2118,12 @@ C     CALL QENTER('GETST')
          IF(NONEW.NE.0) GOTO 1001
         END IF
         IFIRST = 0
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' next symmetry of NGASL-1 spaces '
           CALL IWRTMA(ISMFGS,NGASL-1,1,NGASL-1,1)
         END IF
+#endif
 *. Symmetry of NGASL -1 spaces given, symmetry of total space
         ISTSMM1 = 1
         DO IGAS = 1, NGASL -1
@@ -2055,10 +2137,12 @@ C     CALL QENTER('GETST')
         DO IGAS = NGASL+1,NGAS
           ISMFGS(IGAS) = 1
         END DO
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
+#endif
 *. Obtain all strings of this symmetry 
         CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
      &                              NSTR,NEL,
@@ -2088,6 +2172,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *. End of loop over symmetry distributions
       NSTR = ISTRBS - 1
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' NEL(b) = ', NEL
         WRITE(6,*) ' Number of strings generated ', NSTR
@@ -2102,6 +2187,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           CALL IWRTMA(IREO,1,NSTR,1,NSTR)
         END IF
       END IF
+#endif
 *
 C     CALL QEXIT('GETST')
       RETURN
@@ -2178,6 +2264,7 @@ C     CALL QENTER('GETST')
       END IF
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================== '
@@ -2194,6 +2281,7 @@ C     CALL QENTER('GETST')
           CALL IWRTMA(IZ,NORBT,NEL,NORBT,NEL)
         END IF
       END IF
+#endif
 *. Absolut number of this supergroup
       ISPGRPA = IBSPGPFTP(ISTRTP) - 1 + ISPGRP
 *. Occupation per gasspace
@@ -2238,6 +2326,7 @@ C     CALL QENTER('GETST')
           end if
         END DO
       END DO
+#if defined LUCI_DEBUG
       if (NTEST.ge.300) then
         write(6,*) 'NSMST :  ',NSMST
         do IGAS = 1, NGAS
@@ -2246,6 +2335,7 @@ C     CALL QENTER('GETST')
           end do
         end do
       end if
+#endif
 *
 CTF
 * If no strings are found in a given GAS, we set the symmetry
@@ -2260,6 +2350,7 @@ CTF
 CTF
 *
 * Largest and lowest active symmetries for each GAS space
+#if defined LUCI_DEBUG
       IF(NTEST.GE.200) THEN
          WRITE(6,*) ' Type of each GAS space '
          CALL IWRTMA(ITPFGS,1,NGAS,1,NGAS)
@@ -2274,6 +2365,7 @@ CTF
           WRITE(6,'(2I5)') MINVAL(I),MAXVAL(I)
         END DO
       END IF
+#endif
 *
 *. Loop over symmetries of each GAS
 *
@@ -2292,6 +2384,7 @@ C        NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
          CALL NXTNUM3(ISMFGS,NGASL-1,MINVAL,MAXVAL,NONEW)
          do IGS=1,NGAS,1
             if (ISMFGS(IGS).gt.NIRR_DG_LOC) then
+#if defined LUCI_DEBUG
               if (NTEST.ge.1) then
                 write(6,*) 'Problem in getstr_totsm_spgp'
                 write(6,*) 'NIRR_DG_LOC = ',NIRR_DG_LOC
@@ -2299,42 +2392,51 @@ C        NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
                 write(6,*) 'ISMFGS(',IGS,') : ',ISMFGS(IGS)
                 write(6,*) 'setting symmetry to 1'
               end if
+#endif
               ISMFGS(IGS) = 1
             end if
          end do
          IF(NONEW.NE.0) GOTO 1001
         END IF
         IFIRST = 0
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' next symmetry of NGASL-1 spaces '
           CALL IWRTMA(ISMFGS,NGASL-1,1,NGASL-1,1)
         END IF
+#endif
 *. Symmetry of NGASL -1 spaces given, symmetry of total space
         ISTSMM1 = 1
         DO IGAS = 1, NGASL -1
+#if defined LUCI_DEBUG
           if (NTEST.ge.300) then
             write(6,*) 'ISMFGS(',IGAS,') in getstr_totsm_spgp',
      &                  ISMFGS(IGAS)
           end if
+#endif
 C?        write(6,*) ' ISTSMM1 : ', ISTSMM1
           CALL SYMCOM_REL(3,1,ISTSMM1,ISMFGS(IGAS),JSTSMM1)
 C              SYMCOM(ITASK,IOBJ,I1,I2,I12)
           ISTSMM1 = JSTSMM1
         END DO
 *. required sym of SPACE NGASL
+#if defined LUCI_DEBUG
         if (NTEST.ge.300) then
           write(6,*) 'ISMGSN in getstr_totsm_spgp',ISMGSN
         end if
+#endif
         CALL SYMCOM_REL(2,1,ISTSMM1,ISMGSN,ISPGRPSM)
         ISMFGS(NGASL) = ISMGSN
 *
         DO IGAS = NGASL+1,NGAS
           ISMFGS(IGAS) = 1
         END DO
+#if defined LUCI_DEBUG
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
+#endif
 *. Obtain all strings of this symmetry
 CT      CALL QENTER('GASSM')
         CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
@@ -2361,10 +2463,12 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
         ISTRBS = ISTRBS + NSTR
 *. ready for next symmetry distribution
+#if defined LUCI_DEBUG
         if (NTEST.ge.1) then
           write(6,*) 'Loop status in getstr_totsm_spgp'
           write(6,*) 'NGAS-1 is  ',NGAS-1
         end if
+#endif
         NGASCT = NGASCT - 1
         if (NGAS-1.ne.0) then
 c         if (NGASCT.eq.0) goto 1001
@@ -2389,6 +2493,7 @@ c         if (NGASCT.eq.0) goto 1001
          END DO
        END IF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Number of strings generated ', NSTR
         WRITE(6,*)
@@ -2402,6 +2507,7 @@ c         if (NGASCT.eq.0) goto 1001
           CALL IWRTMA(IREO,1,NSTR,1,NSTR)
         END IF
       END IF
+#endif
 *
  1002 continue
 *
@@ -2460,6 +2566,7 @@ C     INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS), ISTRNM(MXPNGAS)
       END DO
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) '  GETSTR_GASSM_SPGP speaking '
         WRITE(6,*) '  =========================== '
@@ -2471,6 +2578,7 @@ C     INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS), ISTRNM(MXPNGAS)
         CALL IWRTMA(NSTFGS,1,NGAS,1,NGAS)
         CALL IWRTMA(IBSTFGS,1,NGAS,1,NGAS)
       END IF
+#endif
 *. Last gasspace with a nonvanishing number of electrons
       IGASL = 0
       DO IGAS = 1, NGAS
@@ -2540,6 +2648,7 @@ C?        call memchk
  1001 CONTINUE
       NSTR = NSTRTOT
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Info from  GETSTR_GASSM_SPGP '
         WRITE(6,*) ' ============================='
@@ -2556,6 +2665,7 @@ C?        call memchk
         WRITE(6,*) ' Strings generated '
         CALL PRTSTR(ISTROC,NEL,NSTR)
       END IF
+#endif
 *
       RETURN
       END
@@ -2580,7 +2690,6 @@ C?        call memchk
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. Input
       INTEGER ILA(NGAS),ILB(NGAS),IRA(NGAS),IRB(NGAS)
       INTEGER ICA(NGAS),ICB(NGAS),IAA(NGAS),IAB(NGAS)
@@ -2593,6 +2702,7 @@ C?        call memchk
      &  ICON = 0
       END DO
 *
+#if defined LUCI_DEBUG
       NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) 'GXFSTR : IRA, IRB, ILA, ILB '
@@ -2612,8 +2722,8 @@ C?        call memchk
           WRITE(6,*) ' No contact '
         END IF
       END IF
+#endif
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -2660,12 +2770,14 @@ C    &              ITPFSO(MXPORB)
 *
       ISYMS1_REL = ISYM
 *
+#if defined LUCI_DEBUG
       NTEST = 0
       IF(NTEST .NE. 0 ) THEN
         WRITE(6,*) ' ISYMS1, String and symmetry '
         CALL IWRTMA(STRING,1,NEL,1,NEL)
         WRITE(6,*) ISYM
       END IF
+#endif
 *
       RETURN
       END
@@ -2721,11 +2833,13 @@ C    &              ITPFSO(MXPORB)
       ISYMS2_REL = ISYM
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF( NTEST .GE. 1 ) THEN
         WRITE(6,*) ' STRING '
         CALL IWRTMA(STRING,1,NEL,1,NEL)
         WRITE(6,'(A,3I3)') ' MLSTR, IPARI ISYMS2 ', MLSTR,IPARI,ISYM
       END IF
+#endif
 *
       RETURN
       END
@@ -2755,11 +2869,13 @@ C    &              ITPFSO(MXPORB)
       ISYMSDG = ISYM
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST .NE. 0 ) THEN
         WRITE(6,*) ' ISYMS1, String and symmetry '
         CALL IWRTMA(STRING,1,NEL,1,NEL)
         WRITE(6,*) ISYM
       END IF
+#endif
 *
       RETURN
       END
@@ -2848,8 +2964,10 @@ C
 *. Start of string information
       call memmar(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0)
      &WRITE(6,*) ' First word with string information',KSTINF
+#endif
 *
 *.  Offsets for occupation and reorder array of strings
 *
@@ -2949,12 +3067,14 @@ C
 *. Last word of string information
 *
       call memmar(KSTINE,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0)
      &WRITE(6,*) ' Last word with string information',KSTINE-1
       IF( NTEST .NE. 0 ) THEN
         WRITE(6,*) ' R*8 words used for storing Strinformation ',
      &               KSTINE - KSTINF
       END IF
+#endif
 *
       RETURN
       END
@@ -2990,6 +3110,7 @@ C
       INTEGER IGRP(MXPNGAS)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' ======================='
         WRITE(6,*) ' NST_SPGP is speaking '
@@ -2998,6 +3119,7 @@ C
         WRITE(6,*) ' Occupation of supergroup '
         CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
       END IF
+#endif
 *. Occupation => groups
 C  OCC_TO_GRP_(NSTR,IOCC,IGRP,IWAY)
       CALL OCC_TO_GRP(IOCC,IGRP,1)
@@ -3048,11 +3170,13 @@ C  OCC_TO_GRP_(NSTR,IOCC,IGRP,IWAY)
         GOTO 1000
       END IF         
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) 
      &  ' Number of strings per symmetry for supergroup'
         CALL IWRTMA10(NSTFSM(1),1,NSMST,1,NSMST)
       END IF
+#endif
 *
       RETURN
       END
@@ -3097,6 +3221,7 @@ C     DIMENSION NSTSGP(NSMST,*)
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' =========================='
         WRITE(6,*) ' NST_SPGRP_DBG is speaking '
@@ -3107,6 +3232,7 @@ C     DIMENSION NSTSGP(NSMST,*)
         WRITE(6,'(A,20I3)') ' The active groups       ',
      &                      (IGRP(I),I=1,NIGRP)
       END IF
+#endif
 *
       IF(NIGRP.EQ.0) THEN
         IF(ISM_TOT.EQ.1) THEN 
@@ -3159,10 +3285,12 @@ C     DIMENSION NSTSGP(NSMST,*)
  1001 CONTINUE
       NSTRIN = LENGTH
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Number of strings obtained ', LENGTH
         WRITE(6,*) ' Number of symmetry-distributions',NDIST
       END IF
+#endif
 *
       RETURN
       END
@@ -3190,6 +3318,7 @@ C     DIMENSION NSTSGP(NSMST,*)
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' ======================='
         WRITE(6,*) ' NSTPTP_GAS is speaking '
@@ -3202,6 +3331,7 @@ C     DIMENSION NSTSGP(NSMST,*)
         write(6,*) 'First 3 columns of NSTSGP'
         CALL IWRTMA(NSTSGP,NSMST,3,NSMST,3)
       END IF
+#endif
 *
       CALL ISETVC(NSTSSPGP(1,IGRP),0,NSMST)
 *. Max and Min for allowed symmetries
@@ -3253,12 +3383,14 @@ C?      WRITE(6,*) ISMSPGP , NST
       END DO
 *
       NTEST = 00
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*)
      &  ' Number of strings per symmetry for supergroup',IGRP
         CALL IWRTMA10(NSTSSPGP(1,IGRP),1,NSMST,1,NSMST)
         WRITE(6,*) ' Largest number of strings of given sym ',MXNSTR
       END IF
+#endif
 *
       RETURN
       END
@@ -3317,10 +3449,12 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
              IF(NONEW1 .EQ. 1 ) GOTO 1003
            END IF
          END IF
+#if defined LUCI_DEBUG
          IF( NTEST .GE.500) THEN
            WRITE(6,*) ' RAS 1 string '
            CALL IWRTMA(IOC,1,IEL1,1,IEL1)
          END IF
+#endif
          IFRST2 = 1
          IFRST3 = 1
 * Loop over RAS 2 occupancies
@@ -3337,10 +3471,12 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
                END IF
              END IF
            END IF
+#if defined LUCI_DEBUG
            IF( NTEST .GE.500) THEN
              WRITE(6,*) ' RAS 1 2 string '
              CALL IWRTMA(IOC,1,IEL1+IEL2,1,IEL1+IEL2)
            END IF
+#endif
            IFRST3 = 1
 * Loop over RAS 3 occupancies
   903      CONTINUE
@@ -3358,10 +3494,12 @@ C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
                  END IF
                END IF
              END IF
+#if defined LUCI_DEBUG
              IF( NTEST .GE. 500) THEN
                WRITE(6,*) ' RAS 1 2 3 string '
                CALL IWRTMA(IOC,1,NEL,1,NEL)
              END IF
+#endif
 * Next string has been constructed , Enlist it !.
              NSTRIN = NSTRIN + 1
 *. Symmetry of string
@@ -3390,6 +3528,7 @@ C                   IOCTP2(STRING,NEL)
         END IF
       END DO
  
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5)
      &WRITE(6,*) ' Number of strings generated   ', NSTRIN
       IF(NTEST .GE. 10 ) THEN
@@ -3401,6 +3540,7 @@ C                   IOCTP2(STRING,NEL)
         WRITE(6,*) '================================================'
         CALL IWRTMA(ISTASO(1,IOTYP),1,NSMST,1,NSMST)
       END IF
+#endif
 C
       RETURN
       END
@@ -3479,6 +3619,7 @@ C     CALL QENTER('STRIN')
 *
 *.First free address
       call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
+#if defined LUCI_DEBUG
       if (NTEST.ge.1) then
         write(6,*) 'Getting first free address in strinf_gas'
         write(6,*) '----------------------------------------'
@@ -3493,6 +3634,7 @@ C     CALL QENTER('STRIN')
         write(6,*)
         write(6,*) '======================================='
       end if
+#endif
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -3538,10 +3680,12 @@ C     CALL QENTER('STRIN')
 *
 *. Min and max of sym for each group
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.50) then
         write(6,*) 'NSTFSMGP array:'
         call iwrtma(NSTFSMGP,NSMST,NGRP,MXPNSMST,MXPSTT)
       end if
+#endif
 *
       DO IGP = 1, NGRP
        MX = 1
@@ -3558,12 +3702,13 @@ C     CALL QENTER('STRIN')
        MINMAX_SM_GP(2,IGP) = MX
       END DO
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.30) THEN
         WRITE(6,*) ' MINMAX array for sym of groups '
         WRITE(6,*) ' =============================='
         CALL IWRTMA(MINMAX_SM_GP,2,NGRP,2,MXPSTT)
       end if
-
+#endif
 *. In double group CI, the spin down spinors may have different symmetry,
 *  obtain the corresponding symmetries
       IF(PNTGRP.GE.5) THEN
@@ -3574,6 +3719,7 @@ C     CALL QENTER('STRIN')
        ISMFTO2(IORB) = ISWAP
       END DO
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.50) then
         WRITE(6,*) ' Updated ISMFTO array '
         CALL IWRTMA(ISMFTO,1,NTOOB,1,NTOOB)
@@ -3586,6 +3732,7 @@ C     CALL QENTER('STRIN')
         write(6,*)
         write(6,*) '======================================='
       end if
+#endif
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -3630,10 +3777,12 @@ C     CALL QENTER('STRIN')
 *
 *. Min and max of sym for each group
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.50) then
         write(6,*) 'NSTFSMGP2 array:'
         call iwrtma(NSTFSMGP2,NSMST,NGRP,MXPNSMST,MXPSTT)
       end if
+#endif
 *
       DO IGP = 1, NGRP
        MX = 1
@@ -3650,11 +3799,13 @@ C     CALL QENTER('STRIN')
        MINMAX_SM_GP2(2,IGP) = MX
       END DO
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.3) THEN
         WRITE(6,*) ' MINMAX array for sym of groups '
         WRITE(6,*) ' =============================='
         CALL IWRTMA(MINMAX_SM_GP2,2,NGRP,2,MXPSTT)
       end if
+#endif
 
 *. Restore ORDER !
       DO IORB = 1, NTOOB
@@ -3673,6 +3824,7 @@ C     CALL QENTER('STRIN')
       END IF
 *     ^ End of switch double grop / point group
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' Number of strings per group and symmetry '
         CALL IWRTMA10(STIN(KNSTSGP(1)),NSMST,NGRP,NSMST,NGRP)
@@ -3684,6 +3836,7 @@ C     CALL QENTER('STRIN')
         END IF
 *
       END IF
+#endif
 *
 *
 * 4.5 : Creation/Annihilation mappings between different
@@ -3776,6 +3929,7 @@ C     CALL QENTER('STRIN')
      &         NSTFSMSPGP2(1,IBSPGPFTP(ITP)),MXPNSMST,NSPGPFTP(ITP))
         END IF
 *       ^ End of double group/point group switch
+#if defined LUCI_DEBUG
         IF(NTEST.GE.5) THEN
           WRITE(6,*)
      &    ' Number of strings per sym (row) and supergroup(column)',
@@ -3792,11 +3946,13 @@ C     CALL QENTER('STRIN')
           END IF
 
         END IF
+#endif
 *
       END DO
 *. Number of electrons in each AS for each supergroup
       CALL ZNELFSPGP_REL(IPRNT)
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*)
         WRITE(6,*) ' =============================='
@@ -3810,6 +3966,7 @@ C     CALL QENTER('STRIN')
      &    ISPGP, (NELFSPGP(IGS, ISPGP), IGS = 1, NGAS)
         END DO
       END IF
+#endif
 *. Largest number of strings belonging to given supergroup
 *. Largest Occupation block for given supergroup and sym
       MAX_STR_OC_BLK = -1
@@ -3828,6 +3985,7 @@ C     CALL QENTER('STRIN')
         END DO
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.2) THEN
       WRITE(6,*)
      & ' Largest number of strings of given supergroup        ',
@@ -3842,6 +4000,7 @@ C     CALL QENTER('STRIN')
         WRITE(6,*) ' Matrix NSTFSMSPGP '
         CALL IWRTMA(NSTFSMSPGP,NSMST,NTSPGP,MXPNSMST,NTSPGP)
       end if
+#endif
 *
 * Largest number of symmetrydistributions for any given supergroup
 C           FUNCTION MAX_NSYMDIST_DBG(NSPGRP,ISPGRP,NGAS,NSMST)
@@ -3942,6 +4101,7 @@ C     CALL QENTER('STRTYP_REL')
        IGSOCC(IGAS,2) = MAXI
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Compound GAS space : '
         WRITE(6,*) ' ====================='
@@ -3953,7 +4113,7 @@ C     CALL QENTER('STRTYP_REL')
      &    '   GAS',IGAS,IGSOCC(IGAS,1),IGSOCC(IGAS,2)
         END DO
       END IF
-
+#endif
 *
 *. Find min and max number of elecs in each subspace
 *
@@ -3967,6 +4127,7 @@ C     CALL QENTER('STRTYP_REL')
         END IF
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*)
         WRITE(6,'(A)') ' Min and Max occupation in each GAS space: '
@@ -3977,6 +4138,7 @@ C     CALL QENTER('STRTYP_REL')
      &    '  GAS',IGAS,MNGSOC(IGAS),MXGSOC(IGAS)
         END DO
        END IF
+#endif
 *.
 *. Occupation classes corresponding to largest CI space
 *
@@ -4004,10 +4166,12 @@ C     CALL QEXIT('OCCLS')
      &      ( ' NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY ' )
         END IF
 *
+#if defined LUCI_DEBUG
         IF(NTEST.GE.5) THEN
           WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
           WRITE(6,'(5I6)')   MS2,NACTEL,NAEL,NBEL
         END IF
+#endif
 *. Number of electrons to be subtracted or added
         MAXSUB = 2
         MAXADD = 2
@@ -4036,18 +4200,22 @@ C     CALL QEXIT('OCCLS')
          MXBL = MXBL - MNB
          MNBL = MAX(0,MNBL-MXB)
 *
+#if defined LUCI_DEBUG
          IF(NTEST.GE.100) THEN
           WRITE(6,*) ' Occupation numbers for IGAS = ', IGAS
           WRITE(6,*) ' MXAL MNAL MXBL MNBL ',MXAL,MNAL,MXBL,MNBL
           WRITE(6,*) ' MXA MNA MXB MNB ',MXA,MNA,MXB,MNB
          END IF
+#endif
 *
          MNAB = MIN(MNA,MNB)
          MXAB = MAX(MXA,MXB)
          MNAB = MAX(0,MNAB-MAXSUB)
          IF(MNAB*2.GE.2*NOBPT(IGAS)) MXAB = MIN(MXAB + 2,2*NOBPT(IGAS))
 *
+#if defined LUCI_DEBUG
          IF(NTEST.GE.100) WRITE(6,*) ' MNAB,MXAB',MNAB,MXAB
+#endif
          IF(IMS2.EQ.1) THEN
            MNELFGP(IGAS) = MNAB
            MXELFGP(IGAS) = MXAB
@@ -4062,6 +4230,7 @@ C       ^ End of loop over gasspaces
       END DO
 C     ^ End of loop over IMS2 values
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*)
         WRITE(6,'(A)')
@@ -4076,14 +4245,17 @@ C     ^ End of loop over IMS2 values
      &    IGAS, MNELFGP(IGAS),MXELFGP(IGAS)
         END DO
       END IF
+#endif
 *. Total number of groups
       NGRP = 0
       DO IGAS = 1, NGAS
         NGRP = NGRP + MXELFGP(IGAS)-MNELFGP(IGAS)+1
       END DO
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Total number of groups ', NGRP
       END IF
+#endif
       IF(NGRP.GT.MXPSTT) THEN
         WRITE(6,*) ' Too many string groups '
         WRITE(6,*) ' Current limit ', MXPSTT
@@ -4110,6 +4282,7 @@ C     ^ End of loop over IMS2 values
         LGRP = LGRP + NGPSTR(IGAS)
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*)
         WRITE(6,'(A)') ' Information about Groups of strings '
@@ -4136,6 +4309,7 @@ C     ^ End of loop over IMS2 values
      &    IITYPE,IGSFGP(IGRP),NELFGP(IGRP),NSTFGP(IGRP)
         END DO
       END IF
+#endif
 *
 *. Creation-annihilation connections between groups
 *
@@ -4150,6 +4324,7 @@ C     ^ End of loop over IMS2 values
         END DO
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*)
         WRITE(6,*) ' ======================================'
@@ -4158,6 +4333,7 @@ C     ^ End of loop over IMS2 values
         WRITE(6,*)
         CALL IWRTMA(ISTAC,NGRP,2,MXPSTT,2)
       END IF
+#endif
 *.
 *
 * Range of nael and nbel for wave function types.
@@ -4177,10 +4353,12 @@ C     ^ End of loop over IMS2 values
       NAELMN = MAX(0,NAELMN-2)
       NBELMN = MAX(0,NBELMN-2)
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' Range of alpha electrons',NAELMN,' to ', NAELMX
         WRITE(6,*) ' Range of beta  electrons',NBELMN,' to ', NBELMX
       END IF
+#endif
 *
 * Type 1 : NAEL electrons
 *      2 : NBEL ELECTRONS
@@ -4355,6 +4533,7 @@ C     END IF
          Call Abend2( ' Increase MXPSTT' )
        END IF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.2) THEN
        WRITE(6,*) ' Total number of super groups ', NTSPGP
        WRITE(6,*) ' Number of alpha supergroups  ', NSPGPFTP(1)
@@ -4380,6 +4559,7 @@ C     END IF
         write(6,*) 'NOCTYP vector:'
         CALL IWRTMA(NOCTYP,1,NSTTYP,1,NSTTYP)
       END IF
+#endif
 *
 C     CALL QEXIT('STRTYP_REL')
 *
@@ -4475,13 +4655,14 @@ CTF
       end do
 CTF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) THEN
         WRITE(6,*)  ' MINVAL and MAXVAL '
         CALL IWRTMA(MINVAL,1,NIGRP,1,NIGRP)
         CALL IWRTMA(MAXVAL,1,NIGRP,1,NIGRP)
         WRITE(6,*) ' NIGRP = ', NIGRP
       END IF
-
+#endif
 *. Total number of strings that will be generated
       NBLKS = 1
       DO IGAS = 1, NGASL-1
@@ -4519,10 +4700,12 @@ CTF
 *.  sym of SPACE NGASL
         CALL SYMCOM_REL(2,1,ISTSMM1,ISMGSN,ISYM)
         ISMFGS(NGASL) = ISMGSN
+#if defined LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' next symmetry of NGASL spaces '
           CALL IWRTMA(ISMFGS,1,NGASL,1,NGASL)
         END IF
+#endif
 *. Number of strings with this symmetry combination
         NSTRII = 1
         DO IGAS = 1, NGASL
@@ -4538,14 +4721,17 @@ CTF
 *
         IPNT(IOFF) = NSTRINT + 1
         NSTRINT = NSTRINT + NSTRII
+#if defined LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' IOFF, IPNT(IOFF) NSTRII ',
      &                 IOFF, IPNT(IOFF),NSTRII
         END IF
+#endif
 *
       IF(NGASL-1.GT.0) GOTO 2000
  2001 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' Output from TS_SYM_PNT'
@@ -4555,6 +4741,7 @@ CTF
         WRITE(6,*) ' Offset array  for symmetry blocks'
         CALL IWRTMA(IPNT,1,NBLKS,1,NBLKS)
       END IF
+#endif
 *
       RETURN
       END
@@ -4576,12 +4763,14 @@ CTF
 *
       NORB = NORB1 + NORB2 + NORB3
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' >>>> WEIGHT <<<<< '
         WRITE(6,*) ' NORB1 NORB2 NORB3 ',NORB1,NORB2,NORB3
         WRITE(6,*) ' NEL MNRS1 MXRS1 MNRS3 MXRS3 '
         WRITE(6,*)   NEL,MNRS1,MXRS1,MNRS3,MXRS3
       END IF
+#endif
 *
       KLFREE = 1
       KLMAX = KLFREE
@@ -4649,7 +4838,7 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 * ******************************************************************
 * Mappings between strings with the same type ISTTP index , +/- 1 el
 * ******************************************************************
-      CALL ISETVC(ISTAC,0,2*MXPSTT)
+      CALL IZERO(ISTAC,2*MXPSTT)
       DO  IGAS = 1, NGAS
 *. groups for a given gas spaces goes with increasing number of orbitals,
 *  so the first space does not have any creation mapping
@@ -4658,24 +4847,21 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
         MGRP = NGPSTR(IGAS)
         DO IGRP = 1, MGRP
           IIGRP = IGRP + IBGPSTR(IGAS) -1
-          IF(IGRP.NE.1) THEN
 *. Annihilation map is present : IIGRP => IIGRP - 1
-            ISTAC(IIGRP,1) = IIGRP -1
-          END IF
-          IF(IGRP.NE.MGRP) THEN
+          IF(IGRP.NE.1) ISTAC(IIGRP,1) = IIGRP -1
 *. Creation map is present : IIGRP => IIGRP + 1
-             ISTAC(IIGRP,2) = IIGRP + 1
-          END IF
+          IF(IGRP.NE.MGRP) ISTAC(IIGRP,2) = IIGRP + 1
         END DO
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST .GE. 10 ) THEN
         WRITE(6,*) ' Type - type mapping array ISTAC '
         WRITE(6,*) ' =============================== '
         CALL IWRTMA(ISTAC,NGRP  ,2,MXPSTT,2)
       END IF
+#endif
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -4717,10 +4903,12 @@ C       call nst_spgrp_dbg(NIGRP,KGRP,KSM,NSMST,NKSTR,NKDIST,IAB)
       MAX_NSYMDIST_DBG = MAXX
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Largest number of symmetrydistributions ',
      &  MAXX
       END IF
+#endif
 *
       RETURN
       END
