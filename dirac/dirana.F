@@ -4078,11 +4078,35 @@ C
       ENDDO
       END
 
+
 c
-c     Plan: Dcap = purify(D + [D,P]*[D,P]')
-c     Test that Dcap is pure, and [Dcap,P] = [Dcap,D] = 0
+C     Calculate a capped density matrix of the atoms
+c     listed in icent.
 c
-c
+      subroutine make_cap_dmat(icent,ncent,cmo,D,thres)
+      implicit none
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      double precision cmo(*), D(norbt,norbt,nz),thres,ovsum
+      integer icent, ncent, i, j, k
+      dimension icent(ncent)
+      print *,'making fragment projector'
+      call make_fragment_projector(icent,ncent,D,cmo)
+c     keep only occupied block of the projector
+      do k=1,nz
+         do i=nish(1)+1,norbt
+            do j=1,norbt
+               D(j,i,k) = 0
+               D(i,j,k) = 0
+            enddo
+         enddo
+      enddo
+c     purify to get orbitals of the cap
+      call purify(D,norbt,nz,thres)
+      call matexport_double3('Dcap',D,norbt,norbt,norbt,norbt,nz)
+      end
+
       subroutine make_fragment_projector(icent,ncent,P,cmo)
 c     Make a projector on the basis of centers icent(1)
 c     .. icent(ncent) (and their symmetry related centers). The
@@ -4091,34 +4115,43 @@ c     projector is created in MO basis (given by cmo) -ulfek
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      integer icent, ncent, aomap, i, j, ifind,lwork
-      double precision P, tmp, cmo,work
+      integer icent, ncent, aomap, i, j, ifind,lwork, n
+      double precision P, tmp, cmo, work
       double precision, allocatable :: Pao(:,:), Pso(:,:), vec(:,:),
      &     val(:)
-      dimension P(norbt,norbt), icent(ncent), aomap(ntbas(0))
+      dimension P(norbt,norbt,nz), icent(ncent), aomap(ntbas(0))
 c     Set up projector in AO basis
       call get_ao_atom_map(aomap)
       allocate( Pao(ntbas(0),ntbas(0)) )
       allocate( Pso(ntbas(0),ntbas(0)) )
       call dzero(Pao(1,1),ntbas(0)**2)
+      n = 0
       do i=1,ntbas(0)
          if (ifind(aomap(i),icent,ncent).gt.0) then
             Pao(i,i) = 1
+            n = n + 1
          endif
       enddo
+      print *,'Marking',n,' orbitals as belonging to system A'
       call dzero(Pso(1,1),ntbas(0)**2)
 c     go to so basis TODO: is irepdmp=0 correct?
       call mtaoso(Pao,Pso,ntbas(0),0,0)
+      n = 0
+      do i=1,ntbas(0)
+         if (abs(Pso(i,i)).gt.1e-14) then
+            n = n + 1
+         endif
+      enddo
 c     to mo basis
       call qtrans90('AOMO','S',0.0D0,
      &     ntbas(0),ntbas(0),norbt,norbt,
      &     Pso,ntbas(0),ntbas(0),1,ipqtoq(1,0),
-     &     P,norbt,norbt,1,ipqtoq(1,0),
+     &     P,norbt,norbt,nz,ipqtoq(1,0),
      &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),
      &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),0)
       deallocate( Pso )
       deallocate( Pao )
-      call purify(P,norbt,1,1.0D-8,work,lwork)
+      call purify(P,norbt,nz,1.0D-8,work,lwork)
       end
 
 
