@@ -47,7 +47,9 @@ dirac_objs :=  gp/qpack.o      gp/gptrygve.o  gp/gphjj.o  \
                gp/gpjeppe.o    gp/gpc.o  \
                abacus/hergp.o            \
                pdpack/gp_dlapack.o pdpack/arhpack.o pdpack/eispack.o \
-               pdpack/linextra.o   pdpack/dsp.o     pdpack/printpkg.o
+               pdpack/linextra.o   pdpack/dsp.o     pdpack/printpkg.o \
+	       pdpack/gpblas.o  pdpack/gp_zlinpack.o pdpack/gp_zlapack.o \
+	       pdpack/gp_auxlapack.o pdpack/dlamch.o	
 
 #
 # ... all own hsmrcc objects 
