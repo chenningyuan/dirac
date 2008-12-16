@@ -240,6 +240,7 @@ CTEMP     ISM2(3,5) = 1
       NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.10) then
         write(6,*)
         write(6,*) ' -------------------------------- '
@@ -249,6 +250,7 @@ CTEMP     ISM2(3,5) = 1
         write(6,'(A17,I4,I4)') 'MK2REF_CI,MK2DEL_CI are',
      &                          MK2REF_CI,MK2DEL_CI
       end if
+#endif
 *
       IF(IDBGCI.EQ.0.AND.IRELACI.EQ.0) THEN
 *. Single MS2 space
@@ -310,6 +312,7 @@ CTEMP     ISM2(3,5) = 1
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*)
         WRITE(6,'(A,I2)') ' Number of MS2/MK2 values', NMS2VAL
@@ -320,6 +323,7 @@ CTEMP     ISM2(3,5) = 1
           WRITE(6,'(1H ,I3)') MS2VAL(IMS2)
         END DO
       END IF
+#endif
 *
       RETURN
       END
@@ -413,6 +417,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       END DO
 *
       NTEST = 1
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1) THEN
          WRITE(6,*) ' Output from EXCCLS '
          WRITE(6,*) ' ==================='
@@ -424,6 +429,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
          WRITE(6,*) ' Active output classes '
          CALL IWRTMA(IACTOUT,NCLS,1,NCLS,1)
       END IF
+#endif
 *
       RETURN
       END
@@ -517,6 +523,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
           NBL_C = NBLK_MS2(IMK2_R)
           CALL COPNBLKD(LUC,LUSCR,C,NBL_C,0,LBLK)
           CALL ITODS(-1,1,-1,LUSCR)
+#if defined LUCI_DEBUG
           if (NTEST.ge.50) then
             WRITE(6,*)
      &      ' ********************************************* '
@@ -533,6 +540,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
      &      ' MK2/IRI vector of C :  MK2_R, IRIR =', MK2_R,IRIR
             WRITE(6,*)
           end if
+#endif
           write(6,'(/A/A,I4,I3/A)')
      &         ' ----------------------------------------------',
      &         ' Contrib. Kramers proj., real/im  ',MK2_R,IRIR,
@@ -549,6 +557,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
           IASPGPTP = IACTP
           IBSPGPTP = IBCTP
 *
+#if defined LUCI_DEBUG
           IF(NTEST.GE.10) THEN
             WRITE(6,*) ' ================'
             WRITE(6,*) ' GASANA speaking '
@@ -557,6 +566,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
             WRITE(6,'(3X,4I6)')  IACTP,IBCTP,NAEL,NBEL
             WRITE(6,'(A14,2I6)') ' NOCTPA NOCTPB ', NOCTPA,NOCTPB
           END IF
+#endif
 *
 **. Info on block structure of space
 *
@@ -715,11 +725,13 @@ CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
      & '  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
      & '  ========================================================='
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.10) then
          WRITE(6,'(A,I6)') ' GASANAS : NBL_C = ',NBL_C
          WRITE(6,'(A,I6)') ' GASANAS : IASPGPTP = ',IASPGPTP
          WRITE(6,'(A,I6)') ' GASANAS : IBSPGPTP = ',IBSPGPTP
       end if
+#endif
 *
       DO JBLOCK = 1, NBL_C
 *
@@ -727,8 +739,10 @@ CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
          IBTP = IBLOCK(2,JBLOCK)
          IASM = IBLOCK(3,JBLOCK)
          IBSM = IBLOCK(4,JBLOCK)
+#if defined LUCI_DEBUG
          if (NTEST.ge.5) write(6,'(A,1X,I6,I6,I6,I6)')
      &        ' IATP,IBTP,IASM,IBSM = ',IATP,IBTP,IASM,IBSM
+#endif
 *. Obtain alpha strings of sym IASM and type IATP
          IDUM = 0
          CALL GETSTR_TOTSM_SPGP_REL(IASPGPTP,IATP,IASM,NAEL,
@@ -749,8 +763,10 @@ CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
 *
          NIA = NSSOA(IASM,IATP)
          NIB = NSSOB(IBSM,IBTP)
+#if defined LUCI_DEBUG
          if (NTEST.ge.5) write(6,'(A,1X,I9,I9)')
      &        ' NIA,NIB = ',NIA,NIB
+#endif
 *
          IMZERO = 0
          if (ICISTR.ge.2) then
@@ -758,6 +774,7 @@ CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
 *? Perhaps use GSTTBL here?
             CALL IFRMDS(IDET,1,-1,LUC)
             CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
+#if defined LUCI_DEBUG
             if (NTEST.ge.10) then
               write(6,'(A,I8)') ' Number of elements read in ',IDET
             end if
@@ -766,6 +783,7 @@ CTF       IF (ICISTR.NE.1) CALL REWINE(LUC,-1)
               write(6,*) 'Partition of C vector is: '
               call wrtmat(C,IDET,1,IDET,1)
             end if
+#endif
             IDET = 0
          END IF
 C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
@@ -1117,6 +1135,7 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
 C     
+#if defined LUCI_DEBUG
       IF( NTEST .gt. 5 )THEN
         write(luwrt,*) 'L3BLOCK is',L3BLOCK
         write(luwrt,*) 'LBLOCK is',LBLOCK
@@ -1124,6 +1143,7 @@ C
         write(luwrt,*) 'LSCR12 is',LSCR12
         write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
       END IF
+#endif
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
@@ -1170,14 +1190,16 @@ C
       NTEST = 000
 *. Absolute group number
       ISPGPABS = ISPGP + IBSPGPFTP(ITP) -1
-      CALL ICOPVE(ISPGPFTP(1,ISPGPABS),IGRP,NGAS)
+      CALL ICOPY(NGAS,ISPGPFTP(1,ISPGPABS),1,IGRP,1)
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' GET_SPGP_INF_REL : ISPGP ITP ISPGPABS',
      &              ISPGP, ITP, ISPGPABS
         WRITE(6,*) ' Groups of supergroups'
         CALL IWRTMA(IGRP,1,NGAS,1,NGAS)
       END IF
+#endif
 *
       RETURN
       END
@@ -1487,6 +1509,7 @@ C
 *
 CSK   NTEST = 100
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Symmetry Information from GRINFO'
         WRITE(6,*) ' ================================'
@@ -1534,6 +1557,7 @@ CSK   NTEST = 100
         WRITE(6,*) ' ================='
         WRITE(6,'(10X,8I3)') (INVELM(IREP),IREP=1,NIRR_DG)
       END IF
+#endif
 *
       return
       end
@@ -1648,8 +1672,10 @@ C     initial definitions
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.2)
      &    WRITE(6,'(A25,I3)') ' INTDIM speaking, IDBG = ', IDBG
+#endif
 *
 * =================================
 * integrals in point group symmetry
@@ -1930,9 +1956,11 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
       END IF
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Kramers connected symmetries',ISYM,IKRSM
       END IF
+#endif
 *
       RETURN
       END
@@ -1991,7 +2019,9 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 *. Number of spaces
       NICISP = NCMBSPC
 *
-*.Local memory
+*.    set mark for local memory
+      IDUM = 0
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'LCISP ')
 *
 *.  Largest NOCTPA*NOCTPB
       MXNOCAB = 0
@@ -2068,7 +2098,9 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *     Setting size of resolution matrices
       LCSBLK = IMAXLBLKSZ
 *      
+#if defined LUCI_DEBUG
       IF(NTEST.ge.1) write(LUWRT,'(/A,I18/)') ' Set LCSBLK to ',LCSBLK
+#endif
 *
 *     Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
@@ -2078,6 +2110,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 *
       NTEST = 0
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.1) then
         WRITE(LUWRT,*)
      &  ' Number of internal combinations per symmetry '
@@ -2099,6 +2132,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
           CALL IWRTMAMN(NBLKIC(1,ICI),1,NSMCI,1,NSMCI,LUWRT)
         END DO
       end if
+#endif
 *
 *. Largest number of BLOCKS in a CI expansion
       MXNTTS = 0
@@ -2108,6 +2142,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
        END DO
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(LUWRT,*) ' Largest number of blocks in CI expansion',
      &                   MXNTTS
@@ -2119,7 +2154,13 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
           CALL IWRTMAMN(LCOLIC(1,ICI),1,NSMCI,1,NSMCI,LUWRT)
         END DO
       END IF
+#endif
 *
+C
+C     eliminate local memory
+      IDUM = 0
+      call memmar(KDUM ,IDUM,'FLUSM ',2,'LCISP ')
+
       CALL QEXIT('LCISP')
 *
       RETURN
@@ -2156,7 +2197,9 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
       DIMENSION LSMGP(MXPOBS,MXPNGAS)
 *
       NTEST = 0000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) WRITE(6,*) ' >> Entering MINMAX_... <<'
+#endif
 *
       DO JGRP = 1, NIGRP
 C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2 
@@ -2174,6 +2217,7 @@ C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2
         NDIST = NDIST*(MXVAL(JGRP)-MNVAL(JGRP)+1)
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Group combination : '
         WRITE(6,'(5X,10I3)') (IGRP(JGRP),JGRP=1, NIGRP)
@@ -2188,6 +2232,7 @@ C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2
       END IF
 *
       IF(NTEST.GE.1000) WRITE(6,*) ' >> Leaving MINMAX_... <<'
+#endif
 *
       RETURN
       END
@@ -2267,11 +2312,13 @@ C        ISM = (IPARI-1)*NML + MNML - 1
         Call Abend1( 20 )
       END IF
 *
+#if defined LUCI_DEBUG
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,'(A,A)') ' MLSM speaking ,type= ',TYPE
         WRITE(6,'(A,3I4)') ' IML IPARI ISM ',IML,IPARI,ISM
       END IF
+#endif
 *
       RETURN
       END
@@ -2467,11 +2514,13 @@ C 100     CONTINUE
       NDXFSM2 = MDX
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.NE.0) THEN
          WRITE(6,'(A39,I10)')
      &   ' Number of double excitations obtained ', MDX
       END IF
+#endif
 *
       RETURN
       END
@@ -2544,10 +2593,12 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
       END IF
 *     /\ End  of NEW_OR_OLD switch
 *
+#if defined LUCI_DEBUG
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' NEWTYP ,  OUTSPGP ', OUTSPGP
       END IF
+#endif
 *
       RETURN
       END
@@ -2603,12 +2654,14 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       NTEST  = 000
       IF(NTEST .GE. 100 ) THEN
         WRITE(6,*) ' Output from GTSPGP_REL '
         WRITE(6,*)
      &   ' IWAY ISPGP IEL ', IWAY,ISPGP,(IEL(IGAS),IGAS = 1, NGAS)
       END IF
+#endif
 *
       RETURN
       END
@@ -2668,6 +2721,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
       END IF
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         IF(NONEW.EQ.1) THEN
          WRITE(6,*) ' No new symmetry distributions '
@@ -2676,6 +2730,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
          CALL IWRTMA(ISYM,1,NGAS,1,NGAS)
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -2718,8 +2773,8 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
 *. block types
       DIMENSION IBLTP(*)
 *
-      CALL QENTER('NGASD')
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' NGASDT speaking'
         WRITE(6,*) ' ==============='
@@ -2734,6 +2789,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
         CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
         CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
       END IF
+#endif
 *
       MXSB = 0
       MXSOOB = 0
@@ -2762,11 +2818,13 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
            XLTSSA = LTSSA
            DO 100 IBTP = 1, MXBTP
 *
+#if defined LUCI_DEBUG
              IF(NTEST.GE.10) THEN
                WRITE(6,*) ' Alpha super group and beta super group'
                CALL IWRTMA(IAOCC(1,IATP),1,NGAS,1,NGAS)
                CALL IWRTMA(IBOCC(1,IBTP),1,NGAS,1,NGAS)
              END IF
+#endif
 *
              IF(IOCOC(IATP,IBTP).EQ.1) THEN
 *. Size of unpacked block
@@ -2791,12 +2849,12 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
         END IF
   300 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1) THEN
         WRITE(6,*) ' NGASDT : NCOMB XNCOMB ,NTTSBL',
      &               NCOMB,XNCOMB,NTTSBL
       END IF
-*
-      CALL QEXIT('NGASD')
+#endif
 *
       RETURN
       END
@@ -2845,11 +2903,13 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
 
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,'(A32,I8,A1,I8)')
      &  ' Number of single excitations of symmetry ',
      &    ISXSM,',',NSXFSM2
       END IF
+#endif
 *
       RETURN
       END
@@ -2886,11 +2946,13 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *
 *
       NTEST = 00
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
          WRITE(6,*)  ' OCCLS in action '
          WRITE(6,*) ' =================='
          WRITE(6,*) ' NGAS NEL ', NGAS,NEL
       END IF
+#endif
 *
       ISKIP = 1
       NOCCLS = 0
@@ -2941,16 +3003,19 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
         IF(IEL.EQ.NEL.AND.NEGA.EQ.0) THEN
           NOCCLS = NOCCLS + 1
           IF(IWAY.EQ.2) THEN
+#if defined LUCI_DEBUG
             IF(NTEST.GE.100) THEN
               WRITE(6,*) ' Another allowed class : '
               CALL IWRTMA(IOC,1,NGAS,1,NGAS)
             END IF
-            CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
+#endif
+            CALL ICOPY(NGAS,IOC,1,IOCCLS(1,NOCCLS),1)
           END IF
         END IF
       END IF
       IF(NONEW.EQ.0) GOTO 1000
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
          WRITE(6,*) ' Number of Allowed occupation classes ', NOCCLS
          IF(IWAY.EQ.2.AND.NTEST.GE.20) THEN
@@ -2958,6 +3023,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
            CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)
          END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -2996,11 +3062,13 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
         IF(JJGRP.EQ.0 ) INCLUDED = 0
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' Occupation  '
         CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
         WRITE(6,*) ' Included = ',INCLUDED
       END IF
+#endif
 *
       RETURN
       END 
@@ -3171,6 +3239,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *. Well, report back
 * ===============================================
 CSK   NTEST = 100
+#if defined LUCI_DEBUG
       IF(NTEST.GT.0) THEN
         IF(IDBG.EQ.0) THEN
           WRITE(LUOUT,'(/A)') ' Number of orbitals per symmetry :'
@@ -3191,16 +3260,19 @@ CSK   NTEST = 100
         WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB
         WRITE(LUOUT,*) ' Total number of occupied orbitals ', NOCOB
       END IF
+#endif
 *. Offsets for orbitals of given symmetry
       ITOOBS(1) = 1
       DO  ISMOB = 2, NSMOB
         ITOOBS(ISMOB) = ITOOBS(ISMOB-1)+NTOOBS(ISMOB-1)
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GT.0) THEN
         WRITE(6,*) ' Offsets for orbital of given symmetry '
         CALL IWRTMA(ITOOBS,1,NSMOB,1,NSMOB)
       END IF
+#endif
 *
       IF(IDBG.EQ.1) THEN
 *. Repete the above for construction of beta spinors
@@ -3243,6 +3315,7 @@ CSK   NTEST = 100
 * ===============================================
 *. Well, report back
 * ===============================================
+#if defined LUCI_DEBUG
        IF(NTEST.GT.0) THEN
          WRITE(LUOUT,*)
          WRITE(LUOUT,*) ' Number of down spinors per symmetry :'
@@ -3259,18 +3332,22 @@ CSK   NTEST = 100
          WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB2
          WRITE(LUOUT,*) ' Total number of occupied orbitals ', NOCOB2
        END IF
+#endif
 *. Offsets for orbitals of given symmetry
        ITOOBS2(1) = 1
        DO  ISMOB = 2, NSMOB
          ITOOBS2(ISMOB) = ITOOBS2(ISMOB-1)+NTOOBS2(ISMOB-1)
        END DO
 *
+#if defined LUCI_DEBUG
        IF(NTEST.GT.0) THEN
          WRITE(6,*) ' Offsets for orbital of given symmetry '
          CALL IWRTMA(ITOOBS2,1,NSMOB,1,NSMOB)
        END IF
+#endif
       END IF
 *.Information about spinor symmetries
+#if defined LUCI_DEBUG
       if (NTEST.ge.1) then
         WRITE(LUOUT,'(/A)')
      &  '  Spin-up Spinors in Double group symmetry  '
@@ -3300,6 +3377,7 @@ CSK   NTEST = 100
      &    (NGSOB2(IRREP,IGAS),IRREP = 1, NSMOB )
         END DO
       end if
+#endif
 *
 ********************************************
 *                                          *
@@ -3414,6 +3492,7 @@ CSK   NTEST = 100
       NTEST = 0
       NTEST = MAX(IPRNT,NTEST)
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.10) then
         WRITE(6,*) ' ICOMP = ', ICOMP
         WRITE(6,*) ' Four elements of relevant IORD row '
@@ -3421,6 +3500,7 @@ CSK   NTEST = 100
      &   IORD(ICOMP,1),IORD(ICOMP,2),
      &   IORD(ICOMP,3),IORD(ICOMP,4)
       end if
+#endif
 *
       ITSOFF = 1
       DO IGAS = 1, NGAS
@@ -3475,6 +3555,7 @@ CSK   NTEST = 100
         NOBPT(IGAS) = NGSOBT(IGAS)
       END DO
 *
+#if defined LUCI_DEBUG
       IF( NTEST .GE. 10 ) THEN
         WRITE(6,*)
         WRITE(6,*) ' ==================='
@@ -3507,6 +3588,7 @@ CSK   NTEST = 100
         WRITE(6,*) ' ITFTO array : '
         CALL IWRTMA(ITFTO,1,NTOOB,1,NTOOB)
       END IF
+#endif
 *
 
       RETURN
@@ -3671,6 +3753,7 @@ CSK   NTEST = 100
 *
 CSK   NTEST = 10
       NTEST = MAX(IPRNT,NTEST)
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' OSPIR speaking '
         WRITE(6,*) ' ================'
@@ -3692,6 +3775,7 @@ CSK   NTEST = 10
           WRITE(6,'(10I4)') (IOSPIR(2,I),I=1,NIRR_DG)
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -3755,6 +3839,7 @@ CSK   NTEST = 10
       INTEGER IBATCH(8,*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================='
@@ -3767,6 +3852,7 @@ CSK   NTEST = 10
         WRITE(6,*) ' NSSOB array ( input ) '
         CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
       END IF
+#endif
 *
 *. block  zero
 *
@@ -3841,6 +3927,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
       END IF
  2002 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) 'Output from PART_CIV3'
         WRITE(6,*) '====================='
@@ -3858,6 +3945,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
           END DO
         END DO
       END IF
+#endif
 *
       RETURN
       END
@@ -3938,6 +4026,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
       N_TRY = 0
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' =================='
@@ -3950,6 +4039,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
         WRITE(LUWRT,*) ' NSSOB array ( input ) '
         CALL IWRTMAMN(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,LUWRT)
       END IF
+#endif
 *
 *. block  zero
 *
@@ -4059,6 +4149,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *     ^ length of batch < MXLNG?
  2002 CONTINUE
 *
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(LUWRT,*) 'Output from PART_CIV4'
         WRITE(LUWRT,*) '====================='
@@ -4076,6 +4167,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           END DO
         END DO
       END IF
+#endif
 *
       END
 ***********************************************************************
@@ -4150,6 +4242,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       INTEGER IBATCH(8,*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ====================='
@@ -4162,6 +4255,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         WRITE(LUWRT,*) ' NSSOB array ( input ) '
         CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
       END IF
+#endif
 *
 *. block  zero
 *
@@ -4337,6 +4431,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
       INTEGER IBATCH(8,*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ========================='
@@ -4349,6 +4444,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
         WRITE(LUWRT,*) ' NSSOB array ( input ) '
         CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
       END IF
+#endif
       I_SAVE_IBLOCK = 0
 *
 *. block  zero
@@ -4524,8 +4620,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *.Output
       DIMENSION IPNTR(*)
 *
-      IZERO = 0
-      CALL ISETVC(IPNTR,IZERO,NSMOB)
+      CALL IZERO(IPNTR,NSMOB)
 COLD  CALL ISETVC(ISM2 ,IZERO,NSMOB)
 *
       IOFF = 1
@@ -4546,6 +4641,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
   100 CONTINUE
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1) THEN
         WRITE(6,*) ' dimension of two-dimensional array ',IOFF-1
       END IF
@@ -4553,6 +4649,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
         WRITE(6,*) ' Pointer '
         CALL IWRTMA(IPNTR,1,NSMOB,1,NSMOB)
       END IF
+#endif
 *
       RETURN
       END
@@ -4585,8 +4682,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
       INTEGER IPNTR(NSMOB,NSMOB,NSMOB)
 *
       NTEST = 000
-      IZERO = 0
-      CALL ISETVC(IPNTR,IZERO,NSMOB ** 3 )
+      CALL IZERO(IPNTR,NSMOB ** 3 )
 *
       IOFF= 1
       DO 10 I1SM = 1, NSMOB
@@ -4644,18 +4740,22 @@ C             ISM4A(I1SM,I2SM,I3SM) = I4SM
 C             ISM4A(I1SM,I2SM,I3SM) = I4SM
               IOFF=  IOFF+ N12*(N12-1)/2
             END IF
+#if defined LUCI_DEBUG
             if (NTEST.ge.100) then
               WRITE(6,*) ' I1SM I2SM I3SM I4SM    IOFF'
               WRITE(6,'(1H ,4I4,I9)')   I1SM,I2SM,I3SM,I4SM,IOFF
             end if
+#endif
    30       CONTINUE
    20     CONTINUE
    10   CONTINUE
 *
 *
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
          WRITE(6,*) ' Length of 4 dimensional array ', IOFF - 1
       END IF
+#endif
 *
       RETURN
       END
@@ -4763,7 +4863,7 @@ CSK        CALL IWRTMA(IOSPIR,1,NIRREP,1,NIRREP)
 CSK        CALL IWRTMA(NSHPIR,1,NIRREP,1,NIRREP)
 CSK      END IF
 *
-      CALL ISETVC(NOBPS,0,NSMOB)
+      CALL IZERO(NOBPS,NSMOB)
       NOB = 0
       JSM = 0
       DO 100 IRREP = 1, NIRREP
@@ -4777,6 +4877,7 @@ C         IISM = IOSPIR(ISM,IRREP)
   100 CONTINUE
 *
       NTEST = 00
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
          WRITE(6,*) ' SHTOOB Speaking '
          WRITE(6,*) ' =============== '
@@ -4784,6 +4885,7 @@ C         IISM = IOSPIR(ISM,IRREP)
          WRITE(6,*) ' Number of orbitals per symmetry '
          CALL IWRTMA(NOBPS,1,NSMOB,1,NSMOB)
       END IF
+#endif
 *
       RETURN
       END
@@ -4809,11 +4911,13 @@ C            MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
   100 CONTINUE
 *
       NTEST = 1
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' ISGVST array '
         WRITE(6,*) ' ============ '
         CALL IWRTMA(ISGVST,1,NSMST,1,NSMST)
       END IF
+#endif
 *
       RETURN
       END
@@ -4844,6 +4948,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
  1000 CONTINUE
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF( NTEST.NE. 0 ) THEN
         WRITE(6,*) ' ==============='
         WRITE(6,*) ' Info from SMOST '
@@ -4853,6 +4958,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
           CALL IWRTMA(ISMOST(1,ITOTSM),1,NSMST,1,NSMST)
  1010   CONTINUE
       END IF
+#endif
 *
       RETURN
       END
@@ -4885,11 +4991,13 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
   100 CONTINUE
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' STSTSM : STSTSX, STSTDX '
         CALL IWRTMA(STSTSX,NSMST,NSMST,NSMST,NSMST)
         CALL IWRTMA(STSTDX,NSMST,NSMST,NSMST,NSMST)
       END IF
+#endif
 *
       RETURN
       END
@@ -4946,6 +5054,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
       END IF
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from SXTYP_GAS : '
         WRITE(6,*) ' ======================= '
@@ -4962,6 +5071,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
           END DO
         END IF
       END IF
+#endif
 *
       RETURN
       END
@@ -5043,6 +5153,7 @@ C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
 *
       NTEST = 0000
 *
+#if defined LUCI_DEBUG
       if (NTEST.ge.2000) then
         write(6,*)
         write(6,*) 'symcom test:'
@@ -5052,6 +5163,7 @@ C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
         write(6,*) 'I2    : ',I2
         write(6,*) 'I12   : ',I12
       end if
+#endif
 *
       IF(PNTGRP.EQ.1) THEN
         CALL SYMCM1(ITASK,IOBJ,I1,I2,I12)
@@ -5209,6 +5321,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================== '
@@ -5217,6 +5330,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
         WRITE(6,*)
         WRITE(6,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
+#endif
 *
 *. Pointers to output arrays
       NTTS = MXNTTS
@@ -5389,6 +5503,7 @@ C       batches of C vector
       END DO
 *     ^ End of loop over MS2 values
 
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1) THEN
        WRITE(LUWRT,*) ' Total number of batches', NBATCH
        WRITE(LUWRT,*) ' Total number of blocks ', NBLOCK
@@ -5407,6 +5522,7 @@ C       batches of C vector
        END DO
 *
       END IF
+#endif
 *
 * Transfer information to common block for KRMC - LUCIAREL
 * communication:
@@ -5549,6 +5665,7 @@ C
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ========================== '
@@ -5557,6 +5674,7 @@ C
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
+#endif
 *
 *     allowed length of each batch
 CSK   IF( ICISTR.EQ.3) THEN
@@ -5812,6 +5930,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ========================== '
@@ -5820,6 +5939,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
+#endif
 *
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLK2')
@@ -5989,6 +6109,7 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
       END DO
 *     ^ End of loop over MS2 values
 
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1) THEN
        WRITE(LUWRT,*) ' Total number of batches', NBATCH
        WRITE(LUWRT,*) ' Total number of blocks ', NBLOCK
@@ -6007,6 +6128,7 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
        END DO
 *
       END IF
+#endif
 *
 *     transfer information to common block for KRMC - LUCIAREL
 *     communication:
@@ -6476,10 +6598,12 @@ C
   100 CONTINUE
 *
       NTEST = 0
+#if defined LUCI_DEBUG
       IF ( NTEST .NE. 0 ) THEN
          WRITE(6,*) ' Block type of symmetry blocks '
          CALL IWRTMA(ICBLTP,1,MAXSYM,1,MAXSYM)
       END IF
+#endif
 *
       RETURN
       END
@@ -6555,6 +6679,7 @@ C     WRITE(6,*)
         END DO
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' Distribution of electrons in Active spaces '
         DO ITP = 1, NSTTP
@@ -6565,6 +6690,7 @@ C     WRITE(6,*)
           CALL IWRTMA(NELFSPGP(1,IBSPGP),NGAS,NSPGP,MXPNGAS,NSPGP)
         END DO
       END IF
+#endif
 *
       RETURN
       END
@@ -6685,12 +6811,14 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       DO 10 ISYM = 1, NSMOB
         NORASM(ISYM) = IFREQ(ISMFTO,ISYM,NACOB)
    10 CONTINUE
+#if defined LUCI_DEBUG
       IF( NTEST.GE. 2 ) THEN
         WRITE(6,*) ' NORASM '
         CALL IWRTMA(NORASM,1,NSMOB,1,NSMOB)
         WRITE(6,*) ' MNMLOB,MXMLOB ',MNMLOB,MXMLOB
         WRITE(6,*) ' NMLOB, NSMOB ',NMLOB,NSMOB
       END IF
+#endif
 *
 **  2. Information about strings
 *
@@ -6724,10 +6852,12 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       NMLST  = MXMLST - MNMLST + 1
       NSMST  = NIG * NMLST
 *
+#if defined LUCI_DEBUG
       IF( NTEST .GE. 2 ) THEN
         WRITE(6,*) ' MXMLST,MNMLST,NSMST'
         WRITE(6,*)   MXMLST,MNMLST,NSMST
       END IF
+#endif
 *
 ** 3. Information about single excitations
 *
@@ -6736,9 +6866,11 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       NMLSX  = MXMLSX - MNMLSX +1
       NSMSX  = NIG * NMLSX
 
+#if defined LUCI_DEBUG
       IF( NTEST .GE.2 ) THEN
         WRITE(6,*) ' NMLSX,NSMSX,MNMLSX ',NMLSX,NSMSX,MNMLSX
       END IF
+#endif
 *
 ** 4 : External configurations(double excitations)
 *
@@ -6746,9 +6878,11 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       MNMLDX = -4*MAXMLO
       NMLDX  = MXMLDX - MNMLDX + 1
       NSMDX  = NIG * NMLDX
+#if defined LUCI_DEBUG
       IF( NTEST .GE.2 ) THEN
         WRITE(6,*) ' NMLDX,NSMDX,MNMLDX ',NMLDX,NSMDX,MNMLDX
       END IF
+#endif
 *
 ** 5 : Determinants
 *
@@ -6762,6 +6896,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       ITSSX = 0 - MNMLSX + 1
       ITSDX = 0 - MNMLDX + 1
 
+#if defined LUCI_DEBUG
       IF ( NTEST .GE. 1 ) THEN
         WRITE(6,*)
         WRITE(6,'(A,I4)')
@@ -6779,6 +6914,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
         WRITE(6,*) ' Total symmetric single excitation .. ',ITSSX
         WRITE(6,*) ' Total symmetric double excitation .. ',ITSDX
       END IF
+#endif
 *
       RETURN
       END
@@ -6927,6 +7063,7 @@ C       MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.10) THEN
          WRITE(6,*) ' ADASX '
          WRITE(6,*) ' ===== '
@@ -6944,6 +7081,7 @@ C       MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
          WRITE(6,*) ' ======'
          CALL IWRTMA(SXDXSX,NSMSX,NSMDX,2*MXPOBS,4*MXPOBS)
       END IF
+#endif
 *
       RETURN
       END
