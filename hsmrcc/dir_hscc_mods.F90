@@ -300,7 +300,7 @@ is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
  call scan_mdcint(nnzi, nintbl)
 
  write(LUPRI,*) ' number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
- write(LUPRI,*) ' number of <I J|-integral blocks on MDCINT=',nintbl
+ write(LUPRI,*) ' number of <I J|-integral BLOCKS on MDCINT=',nintbl
 
  write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
  write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
@@ -483,7 +483,7 @@ endif
  write(LUPRI,*) 'indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
 
 ! ... print all NONZERO integrals in proper order
- write(LUPRI,'(/,6x,a)') '...integrals printed again from big array...'
+ write(LUPRI,'(/,6x,a)') '...all nonzero integrals printed again from big array...'
 
  do i=1,NKR
  do j=1,NKR
@@ -650,6 +650,9 @@ subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
 !------------------------------------------------------------------------
   use Memory
   use Vectors
+
+ use Parameters ! Sham's module
+
 #include "implicit.h"
 #include "priunit.h"
 type(Array2Dim), intent(in) :: cbuf
@@ -657,20 +660,38 @@ type(Array3Dim), intent(in) :: pos_ij, pos_kl
 character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
 character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
 
- call header('output from prepare_HSMRCC_Vfiles',-1)
+call header('output from prepare_HSMRCC_Vfiles',-1)
 
 open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
 open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
 
 ! 01. V2H2P  <IJ||AB>
-write(LUPRI,*) '01. V2H2P  <IJ||AB>'
+write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
 
+write(LUPRI,*) '02. VPPPP  <AB||CD>'
+
+write(LUPRI,*) '03. VHHHH  <IJ||KL>'
+
+write(LUPRI,*) '04. VHHPP  <IJ||AB>'
+
+write(LUPRI,*) '05. V2HPP  <IJ||AB>'
+
+write(LUPRI,*) '06. V2PHH  <AB||IJ>'
+
+write(LUPRI,*) '07. VPHHP  <AI||JB>'
+
+write(LUPRI,*) '08. VPH2P  <AI||BC>'
+
+write(LUPRI,*) '09. VPHPP  <AI||JB>'
+
+write(LUPRI,*) '10. V2HHP  <IJ||KA>'
+
+write(LUPRI,*) '11. VHHHP  <IJ||KA>'
 
 close(lu_vind)
 close(lu_vint)
 
 end subroutine prepare_HSMRCC_Vfiles
-
 
 end module io_moltra
 
@@ -683,7 +704,7 @@ module Dirac_HSMRCC
   !  ... lu units of dirac prepared files for HSMRCC
 integer, parameter :: ludh = 12, lu_vind=13, lu_vint=14, lu_fhh=15, lu_fhp=16, lu_fpp=17 
 
-integer ::  NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
+integer :: NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 integer :: NHMO=0, NPMO=0
 
 integer :: NFRZV, NACT
@@ -701,12 +722,14 @@ integer, dimension(NVFIL) :: TotNZInt, NumBlock
 
 contains
 
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine prepare_dirac_HSMRCC_file
-!----------------------------------------------------------------------------------
+subroutine prepare_dirac_HSMRCC_VINF_file
 !
-! prepare files with DIRAC data (orbitals, symmetry, number of electrons..etc) for the 
-! standalone HSMRCC run
+!            prepare *VINF - file for DIRAC
+!
+! 
+!    Needs data from already prepared VINT,VIND integral files !
 !
 !                       content of VINF file  ....
 !
@@ -762,6 +785,26 @@ subroutine prepare_dirac_HSMRCC_file
 !modules/iomodule.F90:   integer, dimension(NVFIL) :: StartRec, EndngRec
 !modules/iomodule.F90:   integer, dimension(NVFIL) :: TotNZInt, NumBlock
 !modules/parameters.F90:   integer, parameter :: NVFIL  = 14
+!
+!----------------------------------------------------------------------------------
+use Memory
+use Vectors
+use io_moltra
+#include "implicit.h"
+
+call Header('Output from "prepare_dirac_HSMRCC_VINF_file"',-1)
+
+
+
+
+end subroutine prepare_dirac_HSMRCC_VINF_file
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_dirac_HSMRCC_file
+!----------------------------------------------------------------------------------
+!
+!  prepare files with DIRAC data (orbitals, symmetry, number of electrons..etc) for the 
+! standalone HSMRCC run
 !
 !----------------------------------------------------------------------------------
 use Memory
@@ -982,10 +1025,6 @@ subroutine prepare_dirac_HSMRCC_int_files
    !       02. FHP
    !       03. FPP
    !     
-
-!
-!
-!
 !-------------------------------------------------------------------------
 use Memory
 use Vectors

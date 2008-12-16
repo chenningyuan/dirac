@@ -5,6 +5,15 @@
 
 include Makefile.config
 
+
+#-----------------------------------------------
+# control chars for bold display
+#  cs : startbold 
+#  ce : endbold
+#-----------------------------------------------
+cs = [1m
+ce = [m
+
 TARGET=$(INSTALL_DIR)/dirac.x
 SOURCE_DIRS=.
 
@@ -91,7 +100,9 @@ include Makefile.obj
 include Makefile.dep
 
 $(TARGET): $(OBJ)
+	@echo -e "$(cs)\nLinking  dirac compiled objects into executable:$(ce)"
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	@echo -e "\nExecutable $(cs)$(TARGET)$(ce) is ready."
 
 clean:
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
@@ -99,9 +110,8 @@ clean:
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
-# ... compilation of the standalone HSMRCC code
-hs:
-	make -C hsmrcc/hsmrcc_external/.
+# ... for the compilation of the standalone HSMRCC code
+include hsmrcc/hsmrcc_external/Makefile.hsmrcc
 
 gcov:
 	find . -name '*.o' | xargs -iobj -n1 gcov -b -o obj obj
@@ -123,3 +133,4 @@ include utils/Makefile.utils
 	$(F90) $(F90FLAGS) -c -o $*.o $*.f90
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
+

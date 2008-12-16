@@ -38,7 +38,7 @@ usage()
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
    echo '     -cap             : Include CAP module'
-   echo '     -hscc            : Include interface for the (external) HSMRCC code'
+   echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
    echo '     -qdots           : Include Quantum Dots functionality (artificial atom)'
    echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
    echo '     -amfi            : Include the AMFI functionality into DIRAC'
@@ -299,7 +299,7 @@ setup()
          HSCCMAK=HSCC_OBJ
          HSCCTAR=1
 	 F90MODS=ALL_F90MODS
-         echo " - HSMRCC interface module"
+         echo " - HSMRCC interface module, plus own HSMRCC routines"
    fi
    #
    #  Dirac Quantum Dots modification
@@ -667,8 +667,15 @@ if [ -n "$AMFIFLG" ]; then
 fi
 if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc"
-   dirs="$dirs hsmrcc/second_quant"
+ #  dirs="$dirs hsmrcc/second_quant"
+# miro: added Sham's HSMRCC modules to be included
+   dirs="$dirs hsmrcc_external/modules"
    rmline dontbuild "hsmrcc/\.\*"
+  # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
+  # rmline dontbuild "hsmrcc/second_quant/\.\*" 
+   rmline dontbuild "hsmrcc/hsmrcc_external/\.\*"
+   rmline dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
+   rmline dontbuild "hsmrcc/hsmrcc_external/source/\.\*"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"

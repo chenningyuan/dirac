@@ -9,6 +9,9 @@ visual/.*
 cdft/.*
 hsmrcc/.*
 hsmrcc/hsmrcc_external/.*
+hsmrcc/hsmrcc_external/source/.*
+hsmrcc/hsmrcc_external/source/hsmrmain.c
+hsmrcc/hsmrcc_external/modules/.*
 hsmrcc/second_quant/.*
 argosecp/.*
 cap/.*

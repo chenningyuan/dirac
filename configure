@@ -83,7 +83,7 @@ row_sep=";"
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#   General purpose functions (MAINLY LAYOUT)
+#              General purpose functions (MAINLY LAYOUT)
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -1883,6 +1883,7 @@ get_f90_flags(){
       opt="-g -O3 -ffast-math -Wno=155"
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
+      noformain="" # please add it
       ;;
     gfortran*)
       gfver=`$F90real -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
@@ -1901,18 +1902,21 @@ get_f90_flags(){
       fi
       safe="-g $march"
       mod="-J$MODULE_DIR"
+      noformain="" # does not exist ?
       ;;
     pgf90)
       opt="-g -fastsse"
       safe="-g"
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
+      noformain="-Mnomain"
       ;;
     lfc)
       opt="-g --fast"
       safe="-g"
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
+      noformain="" # please add
       ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
@@ -1923,6 +1927,7 @@ get_f90_flags(){
       if [ "$par" = "yes" ]; then
        ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
+      noformain="-nofor_main"
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
@@ -1930,11 +1935,13 @@ get_f90_flags(){
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
+      noformain="" # please add
       ;;
     pathf90)
-       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
-       cpp_cc="$cpp_cc -DVAR_EKO"
-       mod="-module $MODULE_DIR"
+      ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+      cpp_cc="$cpp_cc -DVAR_EKO"
+      mod="-module $MODULE_DIR"
+      noformain="" # please add
        ;;
     *)
        $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
@@ -2379,12 +2386,15 @@ cat <<EOF >> Makefile.config
 F77=$F90_COMP
 F90=$F90_COMP
 CC =$CC_COMP
+
+# Flag mainly for separate no-Fortran-main function executables build of DIRAC generated objects
+NO_FORTRAN_MAIN=$noformain
 EOF
 
 if [ "$par" = "yes" ]; then
 cat <<EOF >> Makefile.config
 #
-# mpi launcher, the same as in "pam" (there it is to be checked)
+# mpi launcher, the same as in "pam" (there it is to be checked !)
 # has to be the same kind (same directory) as mpif90/mpif77/mpicc compilers
 #
 MPIRUN=$mpirun
