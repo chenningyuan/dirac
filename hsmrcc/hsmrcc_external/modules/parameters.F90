@@ -78,7 +78,8 @@ module Parameters
    double precision, parameter :: one  = 1.0d00
    double precision, parameter :: half = 0.5d00
 
-   double precision, parameter :: NaN    = Z'7FF8000000000000'
+!  double precision, parameter :: NaN    = Z'7FF8000000000000'
+   double precision, parameter :: NaN    = transfer(Z'7FF8000000000000',0d0)
 
   ! ... check it for different compilers !!!
 

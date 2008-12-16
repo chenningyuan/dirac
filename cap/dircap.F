@@ -2055,7 +2055,8 @@ C     ... input parameters ...
 C     ... internal variables ...
       INTEGER I
 C     ------------------------------------------------------------------
-      IF (N.LT.0) PAUSE 'ERROR: FACTORIAL UNDEFINED'
+CMI   IF (N.LT.0) PAUSE 'ERROR: FACTORIAL UNDEFINED'
+      IF (N.LT.0) CALL QUIT('ERROR: FACTORIAL UNDEFINED')
       F = 1.0D0
       DO I = 2,N
         F = F*DBLE(I)
@@ -2076,9 +2077,12 @@ C     ... externals ...
       EXTERNAL F
       DOUBLE PRECISION F
 C     ------------------------------------------------------------------
-      IF (N.LT.0) PAUSE 'ERROR (NK): N < 0'
-      IF (K.LT.0) PAUSE 'ERROR (NK): K < 0'
-      IF (K.GT.N) PAUSE 'ERROR (NK): K > N'
+CMI   IF (N.LT.0) PAUSE 'ERROR (NK): N < 0'
+      IF (N.LT.0) CALL QUIT('ERROR (NK): N < 0')
+CMI   IF (K.LT.0) PAUSE 'ERROR (NK): K < 0'
+      IF (K.LT.0) CALL QUIT('ERROR (NK): K < 0')
+CMI   IF (K.GT.N) PAUSE 'ERROR (NK): K > N'
+      IF (K.GT.N) CALL QUIT('ERROR (NK): K > N')
       NK = F(N)/(F(N-K)*F(K))
 C     ------------------------------------------------------------------
 C     Last modified: 05. 10. 2003
@@ -2108,8 +2112,10 @@ C     ... externals ...
       EXTERNAL NK
       DOUBLE PRECISION NK
 C     ------------------------------------------------------------------
-      IF (M.LT.0) PAUSE 'ERROR (TRIG): M < 0'
-      IF (N.LT.0) PAUSE 'ERROR (TRIG): N < 0'
+CMI   IF (M.LT.0) PAUSE 'ERROR (TRIG): M < 0'
+      IF (M.LT.0) CALL QUIT('ERROR (TRIG): M < 0')
+CMI   IF (N.LT.0) PAUSE 'ERROR (TRIG): N < 0'
+      IF (N.LT.0) CALL QUIT('ERROR (TRIG): N < 0')
 C     ------------------------------------------------------------------
       CTRIG = C0
       DO JM = 0,M
@@ -2135,7 +2141,8 @@ C       ----------------------------------------------------------------
       CTRIG = CTRIG/((C2**M)*(IM**M)*(C2**N))
 C     ------------------------------------------------------------------
       IF (DABS(DIMAG(CTRIG)).GT.TOL) 
-     &   PAUSE 'ERROR (TRIG): OUTPUT IS NOT A REAL NUMBER'
+CMI  &   PAUSE 'ERROR (TRIG): OUTPUT IS NOT A REAL NUMBER'
+     &   CALL QUIT('ERROR (TRIG): OUTPUT IS NOT A REAL NUMBER')
 C     ------------------------------------------------------------------
       TRIG = DREAL(CTRIG)
 C     ------------------------------------------------------------------
