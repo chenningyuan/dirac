@@ -224,7 +224,7 @@ subroutine DrvIntGen
 
 end subroutine DrvIntGen
 
-include "maxmin.h"
+!include "maxmin.h"
 
 subroutine SIB_V2H2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
 
@@ -1611,7 +1611,6 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. PH2P,1324, <AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
 
-
     case('PHPP') ! <PQ||RS>=<AI||BC>
 
        call ResolvRec(PQ,A,I) ! PQ is 
@@ -2058,7 +2057,6 @@ write(UOUT,*) 'In DrvIntGen_DIRAC!'
    inquire(file=FileFPP,exist=isFPP)
 
  if (isVINT) write(UOUT,*) 'there is',FileVINT
-
 
 call quit('DrvIntGen_DIRAC')
 

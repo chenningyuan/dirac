@@ -60,9 +60,8 @@ subroutine EnDenom(T,TSize,vac)
 
    return
 
-contains
-
-include "maxmin.h"
-include "tind.h"
+!contains
+!include "maxmin.h"
+!include "tind.h"
 
 end subroutine EnDenom

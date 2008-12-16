@@ -56,9 +56,8 @@ subroutine Compensate(TRES,TOLD,TSize,vac)
 
    return
 
-contains
-
-include "maxmin.h"
-include "tind.h"
+!contains
+!include "maxmin.h"
+!include "tind.h"
 
 end subroutine Compensate

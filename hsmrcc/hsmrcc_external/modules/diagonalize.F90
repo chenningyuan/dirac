@@ -35,7 +35,7 @@
 !                         but each left and right vector should
 !                         be seperately normalized.
 !-----------------------------------------------------------------------------------
-      subroutine diagonalize            &
+      subroutine diagonalize_hscc       &
                  (                      &
                     sym,                &
                     n, ldmat,           &
@@ -92,8 +92,6 @@
       double precision  norm
       double precision  dtmp
 
-      call QEnter('diagonalize')
-
       info = 0
       lwork = 8*n
 
@@ -105,8 +103,8 @@
          if (info /= 0) then
             write(UOUT,*) "diagonalize: Failure in LAPACK routine DSYEV"
             write(UOUT,*) "INFO  = ",info
-            call flush(UOUT)
-            call abort
+            call flushout
+            call quit('diagonalize: Failure in LAPACK routine DSYEV')
          endif
 
          ev = wr
@@ -174,7 +172,7 @@
               write(UOUT,*)  wr(i), wi(i) 
             enddo
             write(UOUT,*) "...aborting..."
-            call flush(UOUT)
+            call flushout
             ! call abort
             call QUIT( 'diagonalize :'//  &
            'Complex eigenvalues during diagonalization...aborting')
@@ -210,8 +208,15 @@
          if (info.ne.0) then
             write(UOUT,*) "Failure in LAPACK routine DGETRF"
             write(UOUT,*) "INFO  = ",info
-            call flush(UOUT)
-            call abort
+            write(UOUT,*) 'nev=',nev,' n=',n
+            write(UOUT,*) 'ipiv=',(ipiv(i),i=1,n)
+            do i=1,n
+            do j=1,n
+              write(UOUT,'(2x,a,i3,a,i3,a,f12.6)') ' ovl(',i,';',j,')=',ovl(i,j)
+            enddo           
+            enddo           
+            call flushout
+            call quit('Failure in LAPACK routine DGETRF')
          endif
 
          call DGETRI(nev,ovl,n,ipiv,work,lwork,info)
@@ -239,7 +244,5 @@
 
       endif
 
-      call QExit('diagonalize')
       return
-
-      end
+      end subroutine diagonalize_hscc

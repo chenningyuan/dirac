@@ -112,8 +112,7 @@ subroutine EndHSMR
 
    return
 
-contains
-
-include "tind.h"
+!contains
+!include "tind.h"
 
 end subroutine EndHSMR

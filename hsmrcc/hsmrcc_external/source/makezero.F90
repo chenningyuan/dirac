@@ -67,8 +67,7 @@ subroutine MakeZero(T,TSize,vac)
 
    return
 
-contains
-
-include "tind.h"
+!contains
+!include "tind.h"
 
 end subroutine MakeZero

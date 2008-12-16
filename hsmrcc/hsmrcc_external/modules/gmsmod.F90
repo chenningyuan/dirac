@@ -44,22 +44,14 @@ subroutine InitGMSMod
    ! ... from FileVINF which has a copy of this info      ...
 
    if (get_iprint() >= 6) then
-     Call Header('Output from InitGMSMod routine',-1)
+    if (.not.OPTION(DIRACp)) then
+     Call Header('Output from InitGMSMod routine - GAMESS mode',-1)
+    else
+     Call Header('Output from InitGMSMod routine - DIRAC mode',-1)
+    endif
    endif
 
-   if (.not.OPTION(DIRACp)) then
-     if (get_iprint() >= 6) then
-       write(UOUT,'(2x,a,/)') '...going to call InitReadGMS routine'
-     endif
-     ! ... read GMS based files
-     call InitReadGMS
-   else
-
-     call InitReadGMS
-
-    ! disable - all data shoule be in VINF ...
-    ! call  InitReadDIRAC
-   endif
+   call InitReadGMS
 
 !  ... final print-out of what has been read inside - simple variables & arrays
    if (get_iprint() >=7) then
@@ -176,14 +168,15 @@ subroutine InitReadGMS
    integer NXX, IXX
 
    if (get_iprint() >=7) then
-     call header('Output from InitReadGMS !',-1)
+     call header('Output from InitReadGMS',-1)
    endif
 
    ! ...
-   if (OPTION(GENINT)) then
+  ! if (OPTION(GENINT)) then
+   if (OPTION(GENINT).and..not.OPTION(DIRACp)) then
      if (get_iprint() >= 7) then
        write(UOUT,'(2x,a,/)')   & 
-       '...going to call InitReadMREINT - read core info from GMS integral files.'
+       '...going to call InitReadMREINT - read core info from GMS integral files; not DIRAC mode'
      endif
      call InitReadMREINT
    else
@@ -195,7 +188,7 @@ subroutine InitReadGMS
 
    ! ... allocate gamess integral buffers 
 
-! Miro: do we need it when OPTION(GENINT)=.true. !
+! Miro:  we do need it when OPTION(GENINT)=.true. !
    ! ... set up size for gamess integral labels
    NXX = NINTMX
    IF (LABELSIZE.EQ.1) THEN
@@ -337,7 +330,7 @@ subroutine InitReadVINF
 implicit none
 
       if (get_iprint() >=7) then
-        write(UOUT,'(/,6x,a)') 'InitReadVINF: going to read FileVINF file...'
+        write(UOUT,'(/,6x,a,/)') 'InitReadVINF: going to read FileVINF file...'
       endif
 
       !******************************************************
@@ -346,6 +339,8 @@ implicit none
       !******************************************************
 
       rewind(UVINF)
+
+      write(UOUT,*) 'rewind of of FileVINF done'
 
       read(UVINF)
       read(UVINF)
@@ -357,6 +352,8 @@ implicit none
       read(UVINF)
 
       read(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
+ 
+       write(UOUT,*) 'till here FileVINF read'
 
       ! ... Check for Validity of Data ...
 
@@ -386,7 +383,7 @@ implicit none
       ! ... Allocate for next read ...
       call alloc_bunch
 
-      ! ... Read Orbital Energies and MO Coeffeints ...
+      ! ... Read Orbital Energies and MO Coeffeints ... variables must be allocated !
 
       read(UVINF) SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, &
                   OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
@@ -443,7 +440,10 @@ end subroutine print_gms_data
 
 !> read data from GAMESS integral files 
 subroutine InitReadMREINT
-
+!
+!
+!    called from InitReadGMS when OPTION(GENINT)=T
+!
    implicit none
 
    integer j1, j2, j3, j4, j5, j6, j7, j8, j9

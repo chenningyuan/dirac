@@ -726,7 +726,7 @@ subroutine DiagHEFF
       ! ... obtain a set of biorthogonal vectors   ...
       ! ... abort if complex eigenvalues are found ...
 
-      call diagonalize                  &
+      call diagonalize_hscc             &
            (                            &
               .false.,                  &
               nvac, nvac,               &
@@ -753,6 +753,6 @@ subroutine DiagHEFF
 
 end subroutine DiagHEFF
 
-include "tind.h"
+!include "tind.h"
 
 end module HEFFModule

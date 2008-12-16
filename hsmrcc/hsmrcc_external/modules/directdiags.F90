@@ -139,8 +139,8 @@ subroutine DrvDirect(vac)
 
 end subroutine DrvDirect
 
-include "maxmin.h"
-include "tind.h"
+!include "maxmin.h" ! in parameters.F90 module
+!include "tind.h"
 
 subroutine Dir_V2H2P(TimeTaken,vac)
 

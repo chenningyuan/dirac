@@ -183,7 +183,7 @@ subroutine InitIOMod
 
    if (get_iprint() > 5) then
      write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
-     write(UOUT,'(2x,a)') 'RecLen,NumRec calculated; NZIntRec_Vxxx arrays allocated'
+     write(UOUT,'(2x,a)') 'RecLen,NumRec calculated; 11 NZIntRec_Vxxxx arrays allocated'
    endif
 
    return
@@ -873,11 +873,9 @@ end subroutine ReadFileBlock
 subroutine OpenIntFiles
 !-----------------------------------------------------------------------------
 !
+!   Open HSMRCC intgeral file - these files MUST BE READY when running HSMRCC from DIRAC
 !
 !   called from InitHSMRBase (source/inihsbase.F90)
-!
-!
-!   mi: these files MUST BE READY when running HSMRCC from DIRAC
 !
 !-----------------------------------------------------------------------------
    implicit none
@@ -945,7 +943,6 @@ subroutine OpenIntFiles
 
    recl_fpp=4*2*NPMO*NPMO
    open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fpp)
-
 
 !  ... print out info
    if (get_iprint() >= 7) then

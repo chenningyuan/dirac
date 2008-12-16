@@ -17,7 +17,7 @@ subroutine OpenVINF
 !
 !      Open HSMRCC file VINF carrying information on the run 
 !
-!         called from InitHSMRBase (source/inihsbase.F90)
+!  called from InitHSMRBase (source/inihsbase.F90)
 !
 !------------------------------------------------------------------------------
    implicit none
@@ -28,7 +28,7 @@ subroutine OpenVINF
      write(UOUT,'(2x,a,i3,a,a)') 'where lu UVINF=',UVINF,'and file name, FileVINF=',FileVINF
      write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
      if (OPTION(GENINT)) then
-       write(UOUT,*) 'opening as UNKNOWN'
+       write(UOUT,*) 'opening as UNKNOWN (new)'
      else
        write(UOUT,*) 'opening as OLD - exist !!!'
      endif
