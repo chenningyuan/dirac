@@ -107,8 +107,8 @@ module IOmodule
 
    ! ... External Routines ... mi: these are replaced by dirac/own counterparts ...
 
-   external :: flush
-   external :: abort
+!   external :: flush
+!   external :: abort
 
 contains
 

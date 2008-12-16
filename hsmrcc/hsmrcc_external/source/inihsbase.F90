@@ -24,7 +24,7 @@ subroutine InitHSMRBase
    double precision :: Core, Virt
    double precision :: cnv, cut
    integer :: fseek, ierrno
-   external :: fseek
+!   external :: fseek
 
    if ( get_iprint() > 5 ) then
      call HEADER('Output from InitHSMRBase',-1)
@@ -107,8 +107,10 @@ subroutine set_output_stream()
 !
 use IOModule
 
-   integer :: fseek, ierrno
-   external :: fseek
+   !integer :: fseek, ierrno
+   integer(kind=4) :: ierrno ! kind=4 is gfortran demand
+
+!   external :: fseek
 
    if (OPTION(TTYRUN)) then
       UOUT = 6 ! ... terminal output ...
@@ -128,7 +130,8 @@ use IOModule
          ': UOUT assigned file is ',FileHSMR
       endif
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
-         ierrno = fseek(UOUT,0,2)
+        ! ierrno = fseek(UOUT,0,2)
+         call fseek(UOUT,0,2,ierrno) ! GNU/gfortran substitute
          if (ierrno/=0) then
            write(UOUT,*) ': fseek error on UOUT'
            call flushout

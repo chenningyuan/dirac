@@ -208,7 +208,7 @@ subroutine Calc_HEFF_ZerBody(TimeTaken,vac)
    integer,          dimension(:), pointer :: VIND
    double precision, dimension(:), pointer :: VINT
    real :: dtim, dtime, tarray(2)
-   external :: dtime
+!   external :: dtime
 
    dtim = dtime(tarray)
 
@@ -279,7 +279,7 @@ subroutine Calc_HEFF_OneBody(TimeTaken,vac)
    integer :: iexc, tind
    integer :: lamda, gaama
    real :: dtim, dtime, tarray(2)
-   external :: dtime
+!   external :: dtime
 
    dtim = dtime(tarray)
 
@@ -317,7 +317,7 @@ subroutine Calc_HEFF_TwoBody(TimeTaken,vac)
    integer :: iexc, tind
    integer :: lamda, gaama, sigma, delta
    real :: dtim, dtime, tarray(2)
-   external :: dtime
+!   external :: dtime
 
    dtim = dtime(tarray)
 

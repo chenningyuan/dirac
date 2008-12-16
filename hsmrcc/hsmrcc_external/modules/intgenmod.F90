@@ -1274,7 +1274,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    integer NXX
    integer NPACKIC, NPACK, LABEL
    real :: dtim, dtime, tarray(2)
-   external :: dtime
+!   external :: dtime
 
    if (get_iprint() >= 5) then
      call header('Output from IntFileGen_TwoBody',-1)
@@ -1672,7 +1672,7 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    integer NXX
    integer NPACKIC, NPACK, LABEL
    real :: dtim, dtime, tarray(2)
-   external :: dtime
+!   external :: dtime
    ! ... Automatic Array ...
    double precision :: IntF(NumRec*(RecLen/NVMO))
 
