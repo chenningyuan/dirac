@@ -15,6 +15,15 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 .BSS
 2999
 .CMPEIG
+*AMFI
+.PRNT_A 
+0
+.PRNT_S
+0
+.MXITER
+45
+.AMFICH
+0
 **WAVE FUNCTIONS
 .DHF
 .RELCCSD

@@ -3837,7 +3837,7 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "amfi_if.h"
+!#include "amfi_if.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -3877,11 +3877,11 @@ C
 !                   21        22        23        24
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
 !                   25        26        27        28
-     &            '.INTFLG','.BSS   ','.AMFICH','.YREQ1 ',
+     &            '.INTFLG','.BSS   ','xXXXXXX','.YREQ1 ',
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
-     &            '.CONT2C','.BEG_2C','.VACPOL','.NOAMFC',
+     &            '.CONT2C','.BEG_2C','.VACPOL','xXXXXXX',
 !                   37        38        39        40
      &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
 !                   41        42        43        44
@@ -3965,8 +3965,8 @@ CMI   ... own keywords for 1. or 2.order Douglas-Kroll-Hess with AMFI SSO
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
-CMI   ... no specifications for individual AMFI center
-      ALLAMFA = .TRUE.
+!CMI   ... no specifications for individual AMFI center
+!      ALLAMFA = .TRUE.
 CMI     ... default initialization - always include AMFI contribution
 #ifdef MOD_AMFI
       NOAMFI = .FALSE.
@@ -4278,12 +4278,12 @@ C      as they need to be modified within BSS transformations
              ENDIF
             GO TO 100
   127     CONTINUE
-#ifdef MOD_AMFI 
-C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
-C     for mean-field summations of each atom in the system
-C          ... read integer number
-             READ(LUCMD,*) IMFCH
-#endif
+!#ifdef MOD_AMFI 
+!C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
+!C     for mean-field summations of each atom in the system
+!C          ... read integer number
+!             READ(LUCMD,*) IMFCH
+!#endif
             GO TO 100
   128     CONTINUE
 C&&&&   Solve R-equation 1
@@ -4325,12 +4325,12 @@ C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
             GO TO 100
   136     CONTINUE
-#ifdef MOD_AMFI
+!#ifdef MOD_AMFI
 C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
-            ALLAMFA = .FALSE.
-            READ(LUCMD,*) NAMFA
-            READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
-#endif
+!            ALLAMFA = .FALSE.
+!            READ(LUCMD,*) NAMFA
+!            READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
+!#endif
             GO TO 100
   137     CONTINUE
 C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
@@ -4422,8 +4422,8 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              TWOCOMP = .TRUE.
              GO TO 100
   149     CONTINUE
-C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
-CMI  when the AMFI-module is present and .NOAMFI keyword is present
+C&&& .NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
+CMI    when the AMFI-module is selected through the preprocessor command
 #ifdef MOD_AMFI
              NOAMFI = .TRUE.
 #endif
@@ -4702,8 +4702,8 @@ C         .... two-step method of Barysz
 
 C       ... take care of AMFI contribution
         IF (BSS.AND.NOAMFI) THEN
-         WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution in the '  
-     &   //'2-component mode !'
+         WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution to the '  
+     &   //'2-component transformed Hamiltonian !'
         ENDIF
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
 #ifdef MOD_AMFI
@@ -4727,68 +4727,6 @@ C       ... take care of AMFI contribution
             WRITE(LUPRI,'(A)')
      &     '     N.B: Gaunt key is on '
           ENDIF
-
-#ifdef MOD_AMFI
-          IF (IMFCH.NE.0) THEN
-            WRITE(LUPRI,'(1X,A,I4)')
-     &     ' * AMFI mean-field summations on individual atoms'//
-     &     ' are modified due to the total charge of the system:',
-     &     IMFCH
-          ENDIF
-CMI    .... treat AMFI centers, if selected in the input          
-          IF (.NOT.ALLAMFA) THEN
-          WRITE(LUPRI,'(1X,A,I2,A,$)')
-     &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
-          WRITE(LUPRI,*) ( IAMFA(I), I = 1, NAMFA )
-          WRITE(LUPRI,'(4X,A)')
-     &   'List of all nuclei (see "Cartesian Coordinates" above):'
-          IX = 0
-          DO I=1,NUCIND
-          DO J=1,NUCDEG(I)
-           IX = IX + 1
-           write(lupri,'(5X,I2,A,I4,$)')
-     &     IX,'. nuclei, charge:',NINT(CHARGE(I))
-           IZX = 0
-           DO K = 1, NAMFA
-             IF (IAMFA(K).EQ.IX) THEN
-              write(lupri,'(A)')
-     &        ' ... no AMFI contribution from this nuclei '
-              IZX=1
-             ENDIF
-           ENDDO
-           IF (IZX.EQ.0) write(lupri,*)
-          ENDDO
-          ENDDO
-C          ... do some check of entering values of NAMFA,IAMFA
-          IF (NAMFA.GT.IX) THEN
-           write(lupri,*) 'HAMINP: NAMFA=',NAMFA,
-     &     ' is greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
-          ENDIF
-          DO K=1,NAMFA
-           IF (IAMFA(K).GT.IX) THEN
-             write(lupri,*)
-     &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
-     &       ' greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
-           ENDIF
-          ENDDO
-          IF (NAMFA.GE.2) THEN
-C           ... check on identical nucleus numbers ....
-            DO K=1,NAMFA-1
-              DO L=K+1,NAMFA
-               IF (IAMFA(K).EQ.IAMFA(L)) THEN
-                write(lupri,*) K,'. and ',L,
-     &          '. AMFI-banned nuclei have identical numbers ! =',
-     &           IAMFA(K),IAMFA(L)
-                 CALL QUIT('HAMINP: Found 2 identical values'//
-     &                     ' of IAMFA(K) !!!')
-               ENDIF
-              ENDDO
-            ENDDO
-          ENDIF
-          ENDIF
-#endif /* MOD_AMFI */
 
 CMI       ... take care of AMFI CSC test transformation, if specified through the entering IBSS number
           IF (IBSS.GT.999.AND.IBSS.LE.1999) THEN
@@ -4836,18 +4774,22 @@ CMI ... this is on TODO list
         ENDIF
       ENDIF
 
+#ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
         WRITE(LUPRI,'(1X,A)')
      &  '* Activated calculation of the Complex'//
      &  ' Absorption Potential (CAP) integrals '
       ENDIF
+#endif
 
+#ifdef MOD_QDOTS 
 CMI    ... quantum dots
       IF (QDOTS) THEN
         WRITE(LUPRI,'(2X,A)') 
      &  '* Activated calculations of artificial system (quantum dots).'
       ENDIF
+#endif
 
       IF(SPINFR) THEN
          WRITE(LUPRI,'(3X,A)') '- Spin-orbit interactions neglected'
@@ -4890,7 +4832,7 @@ C aspg, 20070909
          ENDIF
 
       ENDIF
-#endif
+#endif /* MOD_DFT */
       IF(DOLVC) ISSINT = 0
 C
 C     Reset MC if necessary

@@ -9399,7 +9399,7 @@ C  /* Deck amfi_relscf_inp */
       SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Input reading for AMFI/RELSCF parts.
+C   Input reading for AMFI/RELSCF module.
 C
 C   Called from HAMINP.
 C
@@ -9409,7 +9409,11 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbham.h"
 #include "amfi_if.h"
+#include "nuclei.h"
       PARAMETER (NTABLE = 20)
       PARAMETER (D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
@@ -9418,8 +9422,8 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
-      DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.AMFICH',
+     &            '.NOAMFC','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -9445,6 +9449,11 @@ C
 
 !    ... maximum number of iterations
       MXXTRP_INP     = 50
+
+!    ... default overall mean-field charge
+      IMFCH=0
+!    ... all atomic centers are included for the AMFI contribution
+      ALLAMFA=.TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
 C 
 C
 C     Process input for AMFI/RELSCF
@@ -9480,22 +9489,28 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in AMFI_RELSCF_INP.')
  1             CONTINUE
-C&&&  ... print variable for AMFI
+C&&&  .PRNT_A:  print variable for AMFI
                READ(LUCMD,*) IPR_AMFI
                GO TO 100
  2             CONTINUE
-C&&&  ... print variable for RELSCF
+C&&&  .PRNT_S:  print variable for RELSCF
                  READ(LUCMD,*) IPR_RELSCF
                GO TO 100
  3             CONTINUE
-C&&&  ... read maximum number of iterations for RELSCF
+C&&&  .MXITER:  read maximum number of iterations for RELSCF
                  READ(LUCMD,*) MXXTRP_INP
                  GO TO 100
  4               CONTINUE
-C&&& 
+C&&&  .AMFICH:    Get the artificial charge of the molecule 
+!        for mean-field summations of each atom in the system
+!     ...  read integer number
+                 READ(LUCMD,*) IMFCH
                  GO TO 100
  5               CONTINUE
-C&&& 
+C&&& .NOAMFC: specify centers for AMFI which only are to be added to the BSS+AMFI Hamiltonian
+                 ALLAMFA = .FALSE.
+                 READ(LUCMD,*) NAMFA
+                 READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
                  GO TO 100
  6               CONTINUE
 C&&& 
@@ -9534,6 +9549,71 @@ C
 C
       WRITE(LUPRI,'(1X,A,I5)')
      &  '*RELSCF maximum number of iterations:',MXXTRP_INP
+
+      IF (IMFCH.NE.0) THEN
+        WRITE(LUPRI,'(1X,A,I4)')
+     &  '* AMFI mean-field summations on individual atoms'//
+     &  ' are modified due to the artificial charge of the system:',
+     &  IMFCH
+      ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &  '* All AMFI mean-field summations are on neutral'//
+     &  ' individual atoms.'
+      ENDIF
+
+C ... take care of AMFI centers if specified in the input
+      IF (.NOT.ALLAMFA) THEN 
+          WRITE(LUPRI,'(1X,A,I2,A,$)')
+     &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
+          WRITE(LUPRI,*) ( IAMFA(I), I = 1, NAMFA )
+          WRITE(LUPRI,'(4X,A)')
+     &   'List of all nuclei (see "Cartesian Coordinates" above):'
+          IX = 0
+          DO I=1,NUCIND
+          DO J=1,NUCDEG(I)
+           IX = IX + 1
+           write(lupri,'(5X,I2,A,I4,$)')
+     &     IX,'. nuclei, charge:',NINT(CHARGE(I))
+           IZX = 0
+           DO K = 1, NAMFA
+             IF (IAMFA(K).EQ.IX) THEN 
+              write(lupri,'(A)')
+     &        ' ... no AMFI contribution from this nuclei '
+              IZX=1
+             ENDIF
+           ENDDO
+           IF (IZX.EQ.0) write(lupri,*)
+          ENDDO
+          ENDDO
+C          ... do some check of entering values of NAMFA,IAMFA
+          IF (NAMFA.GT.IX) THEN 
+           write(lupri,*) ': NAMFA=',NAMFA,
+     &     ' is greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+          ENDIF
+          DO K=1,NAMFA
+           IF (IAMFA(K).GT.IX) THEN
+             write(lupri,*)
+     &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
+     &       ' greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           ENDIF
+          ENDDO
+          IF (NAMFA.GE.2) THEN
+C           ... check on identical nucleus numbers ....
+            DO K=1,NAMFA-1
+              DO L=K+1,NAMFA
+               IF (IAMFA(K).EQ.IAMFA(L)) THEN
+                write(lupri,*) K,'. and ',L,
+     &          '. AMFI-banned nuclei have identical numbers ! =',
+     &           IAMFA(K),IAMFA(L)
+                 CALL QUIT(': Found 2 identical values'//
+     &                     ' of IAMFA(K) !!!')
+               ENDIF
+              ENDDO
+            ENDDO
+          ENDIF
+      ENDIF
 
 C
   999 CONTINUE
