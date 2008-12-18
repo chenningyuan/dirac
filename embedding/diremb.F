@@ -517,6 +517,10 @@ C     GET an id for LUGRIDOUT.
       ALLOCATE(hes_rho(6,size(points,2)))
       ALLOCATE(vc(size(points,2)))
       
+      rho      = 0.0d0
+      grad_rho = 0.0d0
+      hes_rho  = 0.0d0
+      vc       = 0.0d0
 
       WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
       DO i=1,size(points,2)
@@ -524,7 +528,7 @@ C     JHS Get the values of the basisfunctions in every gridpoint
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              points(1,i),points(2,i),points(3,i),
      &              BUF,WORK,LWORK,NDIMENSION,2,DOLND,print_fde)
-C     JHS calculate the SCF density and it's derivatives. 
+C     JHS calculate the SCF density and its derivatives. 
         CALL GETRHO(rho(1,i),0,GAO,DMAT,BUF)
         CALL GETGRHO(grad_rho(3,i),0,GAO,GAO1,DMAT,BUF)
         CALL GETLRHO(hes_rho(1,i),hes_rho(2,i),hes_rho(3,i),
@@ -543,7 +547,6 @@ C     JHS Calculate the coulomb potential.
      &    'Calculating the coulomb potential and its derivatives.'
 C      FLUSH(LUPRI)
       CALL EMB_VC(DMAT,points,vc,print_fde, WORK,LWORK)
-
 
       WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
 
