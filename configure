@@ -667,7 +667,7 @@ if [ "$par" = "yes" ]; then
 #  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-       if ! ask_yesno n "Does your MPI setting require machinefile for mpirun (like mpich2) ?"; then
+       if ! ask_yesno n "Does your MPI setting require machinefile for MPI launcher (like mpich2) ?"; then
           mach_file_mpirun="yes"
           read_mach_file=1
        else
@@ -682,10 +682,11 @@ if [ "$par" = "yes" ]; then
          $echo '\nMPI launcher needs default machinefile ! '
        fi 
 
+       # miro: please add machinefile variable for other batch systems as well
        if [ $read_mach_file ]; then
          $echo '\nWarning: Each queuing system has its own variable for the file '
          $echo 'with reserved nodes (machinefile). For instance, $HOSTNAME for SGE,'
-         $echo 'for IBM LoadLeveler is $XXXXX ....'
+         $echo '$LSB_HOSTS for LSF, $XXX for IBM LoadLeveler...'
          $echo 'As the default, we offer $PBS_NODEFILE of the OpenPBS batch system.'
          $echo 'Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
          read mach_file
@@ -696,6 +697,7 @@ if [ "$par" = "yes" ]; then
 
    else # if quick setting, no machinefile for MPI
       mach_file=
+      $echo '\n No machinefile assigned in the quick setting mode.'
    fi
 
 #
