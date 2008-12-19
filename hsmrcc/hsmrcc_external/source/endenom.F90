@@ -63,7 +63,7 @@ subroutine EnDenom(T,TSize,vac)
 contains
 
 !include "maxmin.h"
-include "../modules/maxmin.h"
+#include "../modules/maxmin.h"
 !include "tind.h"
 
 end subroutine EnDenom

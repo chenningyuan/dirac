@@ -218,7 +218,7 @@ function VacNum(tvac)
 
 end function VacNum
 
-include "maxmin.h"
+#include "maxmin.h"
 
 !   These subroutines return the vaccum
 !   number of a given excitation from

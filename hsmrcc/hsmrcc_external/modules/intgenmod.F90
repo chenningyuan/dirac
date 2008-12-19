@@ -224,7 +224,7 @@ subroutine DrvIntGen
 
 end subroutine DrvIntGen
 
-include "maxmin.h"
+#include "maxmin.h"
 
 subroutine SIB_V2H2P(StRec,EnRec,RecLen,P,Q,R,S,AsyInt)
 
