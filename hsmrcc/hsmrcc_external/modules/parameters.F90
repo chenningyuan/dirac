@@ -24,7 +24,7 @@ module Parameters
     !> ...32 bit architecture on
    integer, parameter :: INTSFP = 2 
 #else
-    !> ... 64-bit architecture on
+    !> ... 64-bit architecture on (x86_64) 
    integer, parameter :: INTSFP = 1 
 #endif
 
@@ -81,7 +81,6 @@ module Parameters
 !  double precision, parameter :: NaN    = Z'7FF8000000000000'
    double precision, parameter :: NaN    = transfer(Z'7FF8000000000000',0d0)
 
-  ! ... check it for different compilers !!!
 
   ! double precision, parameter :: NegInf = Z'FFF0000000000000'
  !  gfortran 4-1
@@ -174,7 +173,7 @@ module Parameters
 function TIND(ij)
 !--------------------------------------------------------------------------------------
 ! ... inline integer function inserted in various places of the code
-! ... depends on 'outside' variables NPMOSQ, NSING stored in module Parameters
+! ... depends on module variables NPMOSQ, NSING stored in module Parameters
 !--------------------------------------------------------------------------------------
    integer, intent(in) :: ij
    integer :: TIND
@@ -182,30 +181,23 @@ function TIND(ij)
    return
 end function TIND
 
-!include "maxmin.h"
+subroutine check_FileRec_param
+!
+! check variables for dimensions for NumRec/RecLen arrays
+!
 
-function MAXMIN(i,j)
+! NHMO, NPMO, NVMO, NHMOSQ, NPMOSQ
+if (NHMO==0.or.NPMO==0.or.NVMO==0.or.NHMOSQ==0.or.NPMOSQ==0) then
+    write(UOUT,'(/,5x,a)') 'check_FileRec_param: some parameters are zero !'
+   write(UOUT,*) 'NHMO=',NHMO
+   write(UOUT,*) 'NPMO=',NPMO
+   write(UOUT,*) 'NVMO=',NVMO
+   write(UOUT,*) 'NHMSQ=',NHMOSQ
+   write(UOUT,*) 'NPMOSQ=',NPMOSQ
+   call quit('check_FileRec_param : some NumRec  param. are zero !')
+endif
 
-   implicit none
-   integer, intent(in) :: i, j
-   integer :: MAXMIN
-   integer :: mx, mn
-
-!  if (i==j) stop 'Illegal call to MAXMIN'
-
-   if (i==j) then
-!    ... better error output ...
-     write(6,*) 'error in MAXMIN ! i,j=',i,j
-     Call Quit('Illegal call to MAXMIN')
-   endif
-
-   mx = MAX(i,j)
-   mn = MIN(i,j)
-   MAXMIN = ((mx-2)*(mx-1))/2 + mn
-
-   return
-
-end function MAXMIN
+end subroutine check_FileRec_param
 
 
 end module Parameters

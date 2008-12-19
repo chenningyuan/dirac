@@ -749,9 +749,9 @@ C
         GO TO 300
   313 CONTINUE
 #ifdef MOD_HSCC
-!     IF (DOHSCC) THEN
+      IF (DOHSCC) THEN
         CALL HSCCINP(WORD,.false.)
-!     ENDIF
+      ENDIF
 #else
 C       prevent dirac.x running into an infinite loop here
 C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
@@ -763,12 +763,6 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
         GO TO 300
 C
   400 CONTINUE
-
-#ifdef MOD_HSCC
-!     IF (DOHSCC) THEN
-!       CALL HSCCINP(WORD,.true.)
-!     ENDIF
-#endif
 
 C
 C     Process defaults for 2- and 4-index transformations

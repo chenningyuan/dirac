@@ -244,6 +244,6 @@
 
       end function two_s_plus1
 
-!include "maxmin.h"
+include "maxmin.h"
 
       end module S2MatEle

@@ -113,13 +113,37 @@ module IOmodule
 contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine set_dirac_hscc_file_names
+!
+! assign file names for 6 Dirac prepared files 
+!
+
+FileVINT='Dirac_HSMRCC.VINT'
+FileVIND='Dirac_HSMRCC.VIND'
+FileVINF='Dirac_HSMRCC.VINF'
+FileFHH ='Dirac_HSMRCC.FHH'
+FileFHP ='Dirac_HSMRCC.FHP'
+FileFPP ='Dirac_HSMRCC.FPP'
+
+if (get_iprint() >= 5) then
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileVINF=',FileVINF
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileVINT=',FileVINT
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileVIND=',FileVIND
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFHH
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFHP
+ write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFPP
+endif
+
+end subroutine set_dirac_hscc_file_names
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitIOMod
 !---------------------------------------------------------------------------------
 !
-!   calculate attributes NumRec & RecLen  and allocate arrays NZIntRec_xxxx
-! for reading Gamess/DIRAC integrals 
+!   calculate attributes NumRec & RecLen and allocate arrays NZIntRec_xxxx
+! for reading Gamess/DIRAC-made integrals 
 !
-! called from InitHSMRBase ("source/inihsbase.F90")
+!  called from InitHSMRBase ("source/inihsbase.F90")
 !
 !---------------------------------------------------------------------------------
 
@@ -132,10 +156,12 @@ subroutine InitIOMod
       call flushout
       call quit('InitIOMod:  Error Initializing IOMod !')
    endif
-   Init = .TRUE.
+   Init = .TRUE. ! it means it's initialized
+
+   ! first check NumRec/RecLen dimensions
+   call check_FileRec_param
 
    ! ... Setup File Attributes ...
-
    NumRec(V2H2P) = NHMO*NPMO
    NumRec(VPPPP) = NPMOSQ
    NumRec(VHHHH) = NHMOSQ
@@ -166,8 +192,26 @@ subroutine InitIOMod
    RecLen(FHP)   = NVMO*NPMO
    RecLen(FPP)   = NVMO*NPMO
 
-   ! ... Allocate & Setup NZIntRec Arrays ...
+   if (get_iprint() >= 5) then
+     write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
+     write(UOUT,'(2x,a)') 'NumRec & RecLen arrays initialized !'
+   endif
 
+   call InitIOMod_alloc_NZIntRec
+
+   return
+
+end subroutine InitIOMod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine InitIOMod_alloc_NZIntRec
+!
+! allocation of NZIntRec in separate routine
+!
+! called from InitIOMod
+!
+
+   ! ... Allocate & Setup NZIntRec Arrays ...
    if (.not.allocated(NZIntRec_V2H2P)) allocate(NZIntRec_V2H2P(NumRec(V2H2P)))
    if (.not.allocated(NZIntRec_VPPPP)) allocate(NZIntRec_VPPPP(NumRec(VPPPP)))
    if (.not.allocated(NZIntRec_VHHHH)) allocate(NZIntRec_VHHHH(NumRec(VHHHH)))
@@ -180,18 +224,20 @@ subroutine InitIOMod
    if (.not.allocated(NZIntRec_V2HHP)) allocate(NZIntRec_V2HHP(NumRec(V2HHP)))
    if (.not.allocated(NZIntRec_VHHHP)) allocate(NZIntRec_VHHHP(NumRec(VHHHP)))
 
-
    if (get_iprint() > 5) then
-     write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
-     write(UOUT,'(2x,a)') 'RecLen,NumRec calculated; 11 NZIntRec_Vxxxx arrays allocated'
+     write(UOUT,'(/,4x,a)') '*** Output from InitIOMod_alloc_NZIntRec ***'
+     write(UOUT,'(2x,a)') '11 NZIntRec_Vxxxx arrays allocated'
    endif
 
-   return
+end subroutine InitIOMod_alloc_NZIntRec
 
-end subroutine InitIOMod
-
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine ReadNZIntRecs
-
+!
+!
+!   Read data on records on FileVINF file: StartRec,EndngRec,TotNZInt, NZIntRec_Vxxxx for 11 int.types
+!
+!
    implicit none
 
    if (.not.Init) then
@@ -227,8 +273,12 @@ subroutine ReadNZIntRecs
    read(UVINF) StartRec(FHP)  , EndngRec(FHP)  , TotNZInt(FHP)
    read(UVINF) StartRec(FPP)  , EndngRec(FPP)  , TotNZInt(FPP)
 
-   return
+   if (get_iprint() > 5) then
+     write(UOUT,'(/,4x,a)') '*** Output from ReadNZIntRecs ***'
+     write(UOUT,'(2x,a)') 'StartRec/EndngRec/TotNZInt/NZIntRec_Vxxxx record arrays read from FileVINF'
+   endif
 
+   return
 end subroutine ReadNZIntRecs
 
 subroutine InitBlockIO
@@ -869,15 +919,15 @@ subroutine ReadFileBlock(FileName,Block,St,En)
 
 end subroutine ReadFileBlock
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine OpenIntFiles
-!-----------------------------------------------------------------------------
+!----------------------------------------------------------------------------------------
 !
 !   Open HSMRCC intgeral file - these files MUST BE READY when running HSMRCC from DIRAC
 !
 !   called from InitHSMRBase (source/inihsbase.F90)
 !
-!-----------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------
    implicit none
    character(len=10) :: stat
    integer:: recl_vind,recl_vint,recl_fhh,recl_fhp,recl_fpp 

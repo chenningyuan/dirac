@@ -651,19 +651,29 @@ subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
   use Memory
   use Vectors
 
- use Parameters ! Sham's module
+ !use Parameters ! HSMRCC  module
+ use IOmodule ! HSMRCC  module
 
 #include "implicit.h"
 #include "priunit.h"
 type(Array2Dim), intent(in) :: cbuf
 type(Array3Dim), intent(in) :: pos_ij, pos_kl
-character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
-character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
+
+!character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
+!character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
 
 call header('output from prepare_HSMRCC_Vfiles',-1)
 
-open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
-open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
+call set_dirac_hscc_file_names
+!
+write(LUPRI,*) 'from IOmodule stuff: UVINT=',UVINT
+write(LUPRI,*) 'from IOmodule stuff: UVIND=',UVIND
+write(LUPRI,*) 'from IOmodule stuff: FileVINT=',FileVINT
+write(LUPRI,*) 'from IOmodule stuff: FileVIND=',FileVIND
+!
+
+!open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
+!open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
@@ -688,8 +698,8 @@ write(LUPRI,*) '10. V2HHP  <IJ||KA>'
 
 write(LUPRI,*) '11. VHHHP  <IJ||KA>'
 
-close(lu_vind)
-close(lu_vint)
+!close(lu_vind)
+!close(lu_vint)
 
 end subroutine prepare_HSMRCC_Vfiles
 
@@ -702,23 +712,21 @@ module Dirac_HSMRCC
 !
 !----------------------------------------------------------------------------------
   !  ... lu units of dirac prepared files for HSMRCC
-integer, parameter :: ludh = 12, lu_vind=13, lu_vint=14, lu_fhh=15, lu_fhp=16, lu_fpp=17 
-
-integer :: NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
-integer :: NHMO=0, NPMO=0
-
-integer :: NFRZV, NACT
-
-real(kind=8) :: TotEn, NucEn, TrfTol
+!integer, parameter :: ludh = 12, lu_vind=13, lu_vint=14, lu_fhh=15, lu_fhp=16, lu_fpp=17 
+!integer :: NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
+!integer :: NHMO=0, NPMO=0
+!integer :: NFRZV, NACT
+!real(kind=8) :: TotEn, NucEn, TrfTol
 
 integer, public :: iprint_hscc = 0
 
 ! ... stuff from HSMRCC code for preparing VINF,VIND,VINT, FHH, FHP, FPP files ...
-integer, parameter :: NVFIL  = 14
+!integer, parameter :: NVFIL  = 14
+!integer, dimension(NVFIL) :: NumRec, RecLen
+!integer, dimension(NVFIL) :: StartRec, EndngRec
+!integer, dimension(NVFIL) :: TotNZInt, NumBlock
 
-integer, dimension(NVFIL) :: NumRec, RecLen
-integer, dimension(NVFIL) :: StartRec, EndngRec
-integer, dimension(NVFIL) :: TotNZInt, NumBlock
+! ... all is in HSMRCC !
 
 contains
 
@@ -1034,31 +1042,30 @@ use Vectors
 !character(len=22) :: dirac_file='Dirac_for_HSMRCC.txt'
 !character(len=*) :: dirac_file='Dirac_HSMRCC'
 !character :: dirac_file='Dirac_HSMRCC'
-character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
-character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
-character(len=17) :: dirac_file_FHH='Dirac_HSMRCC.FHH'
-character(len=17) :: dirac_file_FHP='Dirac_HSMRCC.FHP'
-character(len=17) :: dirac_file_FPP='Dirac_HSMRCC.FPP'
+!character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
+!character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
+!character(len=17) :: dirac_file_FHH='Dirac_HSMRCC.FHH'
+!character(len=17) :: dirac_file_FHP='Dirac_HSMRCC.FHP'
+!character(len=17) :: dirac_file_FPP='Dirac_HSMRCC.FPP'
 
-!logical doprepare=.false.
-logical:: doprepare=.true.
+logical :: doprepare=.false.
+!logical:: doprepare=.true.
 
 
 if (doprepare) then
 
   write(LUPRI,*) 'preparing DIRAC integral files for HSMRCC !!!'
 
-open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
-open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
-open(lu_fhh,file=dirac_file_FHH,form='unformatted',status='unknown', access='sequential') 
-open(lu_fhp,file=dirac_file_FHP,form='unformatted',status='unknown', access='sequential') 
-open(lu_fpp,file=dirac_file_FPP,form='unformatted',status='unknown', access='sequential') 
-
-close(lu_vind)
-close(lu_vint)
-close(lu_fhh)
-close(lu_fhp)
-close(lu_fpp)
+!open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
+!open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
+!open(lu_fhh,file=dirac_file_FHH,form='unformatted',status='unknown', access='sequential') 
+!open(lu_fhp,file=dirac_file_FHP,form='unformatted',status='unknown', access='sequential') 
+!open(lu_fpp,file=dirac_file_FPP,form='unformatted',status='unknown', access='sequential') 
+!close(lu_vind)
+!close(lu_vint)
+!close(lu_fhh)
+!close(lu_fhp)
+!close(lu_fpp)
 
 endif
 
