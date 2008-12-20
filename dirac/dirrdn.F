@@ -2269,10 +2269,12 @@ C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             NJOBS = NJOBS + 1
             GO TO 100
  115     CONTINUE
+#ifdef MOD_ADC
 C&&&& RELADC: Calculate one-particle electron propagator with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
             NJOBS = NJOBS + 1
+#endif
             GO TO 100
  116     CONTINUE
 C&&&& KR CI :  perform (large-scale) KR-CI calculation 
@@ -2348,7 +2350,9 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
 #endif
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
+#ifdef MOD_ADC
       IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
+#endif
       IF(DOKRCI)
      &   WRITE(LUPRI,'(A)') ' * Kramers restricted CI calculation'
 C
