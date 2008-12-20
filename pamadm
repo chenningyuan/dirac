@@ -444,6 +444,7 @@ make_export()
      \$szCurrDir/Makefile.dep \\
      \$szCurrDir/Makefile.moddef \\
      \$szCurrDir/dontbuild \\
+     \$szCurrDir/dontbuild.in \\
      \$szCurrDir/safebuild \\
      \$szCurrDir/doc/doc.html \\
      \$szCurrDir/doc/pam.1 \\
