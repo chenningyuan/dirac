@@ -5,7 +5,6 @@
 
 include Makefile.config
 
-
 #-----------------------------------------------
 # control chars for bold display
 #  cs : startbold 
@@ -112,8 +111,11 @@ clean:
 ftnchek:
 	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
-# ... for the compilation of the standalone HSMRCC code
+# ... for the compilation of the (optional) standalone HSMRCC code
+is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
+ifneq ($(strip $(is_hscc)),) 
 include hsmrcc/hsmrcc_external/Makefile.hsmrcc
+endif
 
 gcov:
 	find . -name '*.o' | xargs -iobj -n1 gcov -b -o obj obj
