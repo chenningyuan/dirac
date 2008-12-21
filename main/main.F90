@@ -41,9 +41,6 @@ program dirprg
   numnod  = 0
   parcal  = .false.
   iparex  = 0
-!#ifndef NO_SELFTEST
-!  call selftest_lapack()
-!#endif
 #ifdef VAR_MPI
 ! check for sequential run with parallel executable 
 ! iparex = 1 for parallel run mode with MPI executable (default)
@@ -51,10 +48,6 @@ program dirprg
 !
 ! initialize MPI environment and wake up slaves - set parcal == .true.
   if (iparex .gt. 0) call mpixinit()
-#ifndef NO_SELFTEST
-! MASTER checks MPI library compatibility
-!  if ( mytid .eq. 0 .and. parcal ) call selftest_mpi()
-#endif
   if (parcal) then 
     call stopwatch(1,numnod+1)
   else
