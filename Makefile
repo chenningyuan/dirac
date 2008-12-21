@@ -83,9 +83,11 @@ dontbuild:dontbuild.in
 .PHONY:gp/compinfo.h
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
-	@echo "#define WHERE_COMPILED \"${HOST}\"" >> $@
+	@echo "#define WHERE_COMPILED \"${HOSTNAME}\"" >> $@
+	@echo "#define ILP_DATA_MODEL \"${ILP_DATATYPE}\"" >> $@
 	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
+	@echo "#define LIBRARIES \"${LIBS}\"" >> $@
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
 gp/gpc.o: gp/compinfo.h

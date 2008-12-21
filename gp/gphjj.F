@@ -357,14 +357,15 @@ C
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
 #ifndef VAR_EKO
 C
 C     CALL HOSTNM(HSTNAM)
 C
-      CALL GETENV('HOST',HSTNAM)
+CMI   CALL GETENV('HOST',HSTNAM)
+      CALL GETENV('HOSTNAME',HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif

@@ -169,6 +169,8 @@ void sysinf_(fortran_int_t *parcal)
 
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
+   printf(" Libraries         : %s \n", LIBRARIES);
+   printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
    printf(" Changeset         : %s \n", VERSION);
    fflush(stdout);
    free(un);

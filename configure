@@ -495,8 +495,11 @@ if [ -z "$guess" ]; then
 fi
 
 IsLP64=""
+ilp_datatype="ILP32" # by default assume 32-bit system (with no 8-byte integer)
 guess=`./config.sub $guess 2>/dev/null`
 echo
+
+# miro : this checks only for the  x86_64 architecture, not  for other 64-bit architectures (ia64-unknown-linux | *-cray) !
 if echo "$guess" | grep -q x86_64; then
     echo "Your are compiling on a x86_64 system. Do you want to use 64 bit"
     echo "integers inside Dirac? This is only useful if you need more than"
@@ -506,14 +509,16 @@ if echo "$guess" | grep -q x86_64; then
     echo "modules, however, requires 64 bit integers on a x86_64 system."
     echo
     if ask_yesno n "Use 64 bit integers in Dirac?"; then
-        guess=`echo "$guess"|sed s/x86_64/i686/`
-	echo "Configuring Dirac to use 32 bit integers (LP64)."
+        guess=`echo "$guess"|sed s/x86_64/i686/` # as it is 32-bit system
+	echo "Configuring Dirac to use 32 bit integers (I32LP64)."
 	echo "NB: LUCI* modules cannot be used."
         IsLP64=1
+        ilp_datatype="I32LP64" # assign ILP-data type
     else
 	echo " Configuring Dirac to use 64 bit integers (ILP64)."
 	echo " NB: Be aware that your external libraries _must_ also use"
 	echo " 64 bit integers, which is typically not the default"
+        ilp_datatype="ILP64"  # assign ILP-data type
     fi
     echo
 fi
@@ -552,7 +557,6 @@ case $machine in
       $echo "\tpreferred fortran compiler and mathematical libraries" \
             "available."
       exit 1
-
 esac
 
 #
@@ -568,6 +572,7 @@ if [ $IPRINT -ge "5" ];  then
     echo
     echo 'guess_system: variable dir_list=' $dir_list
 fi
+
 }
 
 #
@@ -1310,8 +1315,17 @@ setup_math_lib(){
                       optblas=$2;;
     libmkl_itp) append LIB "-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
-    libmkl_ilp64) append LIB "-L$2 -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl"
-                      optblas=$2;;
+
+    # miro: this is the only ILP64 library we offer
+    libmkl_ilp64)
+        append LIB "-L$2 -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl"
+        optblas=$2
+        if [ "$ilp_datatype" != "ILP64" ]; then
+          $echo "\nYour data type model $ilp_datatype does not correspond with the selected ILP64 library $LIB !\n"
+          $echo "Error exit 1 !\n"
+          exit 1
+        fi
+        ;;
   esac
 
   if [ $IPRINT -ge "5" ];  then
@@ -2449,6 +2463,9 @@ F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
 
+# ILP data type mode (to be passed to dirac.x)
+ILP_DATATYPE=$ilp_datatype
+
 EOF
 
 #
@@ -2532,6 +2549,10 @@ RSH=$rsh
 DEBUGGER=$debug
 #
 CLEANUP=
+#
+# ILPdata type model
+#
+ILP_DATATYPE=$ilp_datatype
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 
