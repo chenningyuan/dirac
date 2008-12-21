@@ -115,6 +115,10 @@ ftnchek:
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
 ifneq ($(strip $(is_hscc)),) 
 include hsmrcc/hsmrcc_external/Makefile.hsmrcc
+else
+hs: # for compilation of the standalone external code
+	@echo "The hsmrcc/hsmrcc_external/Makefile.hsmrcc file does not exist."
+	@echo "The hsmrcc_external code is not active (exported)."
 endif
 
 gcov:

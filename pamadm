@@ -299,7 +299,9 @@ setup()
          HSCCMAK=HSCC_OBJ
          HSCCTAR=1
 	 F90MODS=ALL_F90MODS
-         echo " - HSMRCC interface module, plus own HSMRCC routines"
+         cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
+         (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
+         echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc"
    fi
    #
    #  Dirac Quantum Dots modification
