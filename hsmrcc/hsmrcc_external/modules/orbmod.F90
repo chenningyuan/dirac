@@ -29,8 +29,9 @@ function IsMainOrb(i)
       call quit('Invalid value for IsMainOrb')
    endif
 
-   if (.not.allocated(OrbSpace).or.sizeof(OrbSpace) < i+NCMO ) then
-     write(UOUT,*) 'OrbSpace error !...sizeof(OrbSpace)=',sizeof(OrbSpace)
+  ! if (.not.allocated(OrbSpace).or.sizeof(OrbSpace) < i+NCMO ) then
+   if (.not.allocated(OrbSpace).or.size(OrbSpace) < i+NCMO ) then
+     write(UOUT,*) 'OrbSpace error !...size(OrbSpace)=',size(OrbSpace)
      write(UOUT,*) 'IsMainOrb(i): i=',i,' i+NCMO=',i+NCMO
      call quit('IsMainOrb: error with OrbSpace!')
    endif
