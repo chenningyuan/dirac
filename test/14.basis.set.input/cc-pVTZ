@@ -20,7 +20,7 @@ $ P-type functions
      0.38800000  0.00000000  1.00000000
 $ D-type functions
     1    1    0
-           1.05700000  1.00000000
+     1.05700000  1.00000000
 $
 a 6
 $ S-type functions
@@ -48,7 +48,7 @@ $ D-type functions
      0.31800000  0.00000000  1.00000000
 $ F-type functions
     1    1    0
-           0.76100000  1.00000000
+     0.76100000  1.00000000
 $
 a 8
 $ S-type functions
