@@ -131,13 +131,13 @@ use IOModule
       endif
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
        !  ierrno = fseek(UOUT,0,2)
-       !  call fseek(UOUT,0,2,ierrno) ! GNU/gfortran substitute
-        ! if (ierrno/=0) then
-        !   write(UOUT,*) ': fseek error on UOUT'
-        !   call flushout
-        !   call Quit(': fseek error on UOUT!')
-        ! endif
-          call quit('fseek deactivated for the current opteron gfortran, which has not fseek')
+         call fseek(UOUT,0,2,ierrno) ! GNU/gfortran substitute
+         if (ierrno/=0) then
+           write(UOUT,*) ': fseek error on UOUT'
+           call flushout
+           call Quit(': fseek error on UOUT!')
+         endif
+         ! call quit('fseek deactivated for the current opteron gfortran, which has not fseek')
       endif
    endif
 

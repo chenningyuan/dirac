@@ -1090,7 +1090,8 @@ subroutine AssignVect2D_real(Vector,iprint,n1,n2)
 use GeneralPointers
 #include "priunit.h"
 real(kind=8), target :: Vector(n1,n2)
-integer(kind=4), intent(in) :: iprint,n1,n2
+!integer(kind=4), intent(in) :: iprint,n1,n2
+integer, intent(in) :: iprint,n1,n2
 p2_real8 => Vector 
 if (iprint >= 10) then
  write(LUPRI,*) 'AssignVect2D_real: real 2dim pointer assigned'
@@ -1128,13 +1129,12 @@ subroutine AssignVect2D_inte(Vector,iprint,n1,n2)
 use GeneralPointers
 #include "priunit.h"
 integer, target :: Vector(n1,n2)
-integer(kind=4), intent(in) :: iprint,n1,n2
-call QENTER('AssignVect2D_inte')
+!integer(kind=4), intent(in) :: iprint,n1,n2
+integer, intent(in) :: iprint,n1,n2
 p2_inte => Vector 
 if (iprint >= 10) then
  write(LUPRI,*) 'AssignVect2D_inte: integer 2dim pointer assigned.'
 endif
-call QEXIT('AssignVect2D_inte')
 end subroutine AssignVect2D_inte
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
