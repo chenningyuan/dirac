@@ -523,7 +523,7 @@ C                 skip contiuation lines for contraction coeff.
 
                   IF (IPRINT.GE.5) THEN
                     write(lupri,*)
-     &              'read 1 NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              'READNU read 1 - NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
      &              NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)
                   ENDIF
 
@@ -546,8 +546,11 @@ C
 
                   IF (IPRINT.GE.6) THEN
                     write(lupri,*)
-     &              'read 2 J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              'READNU read 2 - J,NBLOCK,ALPHA(J,NBLOCK)',
      &              J,NBLOCK,ALPHA(J,NBLOCK)
+                    write(lupri,*)
+     &              'READNU read 2 - CPRIMU:',
+     &              (CPRIMU(J,I,NBLOCK),I=1,KNTORB)
                   ENDIF
 C   
 C     If there are more lines with contraction-coeffecients, 
@@ -576,6 +579,12 @@ C
                            READ (STRING,'(F16.9,6F12.9)') 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
+                           IF (IPRINT.GE.6) THEN
+                             WRITE(LUPRI,*) 
+     &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
+                             WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
+     &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
+                           ENDIF
                         END IF
 C     
 C     Blank line read the next one
@@ -619,8 +628,10 @@ C
                CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
 
              IF (IPRINT.GE.5) THEN
-              write(lupri,*) 'INTEXP,NBLOCK,ALPHA',
+              write(lupri,*) 'READNU:  INTEXP,NBLOCK,ALPHA',
      &         INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
+              write(LUPRI,*) 'READNU: CPRIMU(INTEXP,INTORB,NBLOCK) =',
+     &         CPRIMU(INTEXP,INTORB,NBLOCK)
              ENDIF
 
  199        CONTINUE 
