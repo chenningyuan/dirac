@@ -3335,8 +3335,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17)
       CHARACTER*1 SPDCAR
+
       DIMENSION ALPHA(KPRIM), CPRIM(KPRIM,KPRIM), CPRIMU(KPRIM,KPRIM)
+
+      LOGICAL ZERONORM
 C
+      ZERONORM=.FALSE.
       PIPPI = (DP5/PI)**DP75
       DO 100 N = 1, NRCIJ
          SUM = D0
@@ -3345,7 +3349,10 @@ C
             T = D2*SQRT(ALPHA(L)*ALPHA(M))/(ALPHA(L)+ALPHA(M))
             SUM = SUM + CPRIMU(L,N)*CPRIMU(M,N)*(T**(I + DP5))
   200    CONTINUE
-         IF (SQRT(SUM) .LT. THRMIN) GOTO 1000
+         IF (SQRT(SUM) .LT. THRMIN) THEN ! error branch - print output
+           ZERONORM=.TRUE.
+           GOTO 900  ! ensure the full control print-out
+         ENDIF
          SUM=D1/SQRT(SUM)
          DO 300 L=1, NUCIJ
             CPRIM(L,N)=CPRIMU(L,N)*SUM*(D4*ALPHA(L))**(DP5*I+DP25)*PIPPI
@@ -3354,7 +3361,8 @@ C
 
 C     ... control print-out
       IF (IPREAD.GE.10) THEN
-       WRITE(LUPRI,'(/,2X,A,I3)')
+ 900   CONTINUE
+       WRITE(LUPRI,'(/,8X,A,I3,/)')
      & '***  Output from NRMORB, block #:',I
        WRITE(LUPRI,'(2X,A,I3,A,I3)')
      & 'uncontracted / contracted shells, NUCIJ/NRCIJ: ',NUCIJ,'/',NRCIJ
@@ -3363,11 +3371,12 @@ C    & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
        DO N = 1, NRCIJ
         WRITE(LUPRI,'(2X,A,I2)') ' contracted shell #',N
         DO L = 1,NUCIJ
-         WRITE(LUPRI,'(2X,I3,3(A,F12.7))')
-     &   L,'. exponent:',ALPHA(L),' contr.coeff:',CPRIMU(L,N),
+         WRITE(LUPRI,'(2X,I3,A,F12.7,A,2I3,F12.7,A,F12.7)')
+     &   L,'. exponent:',ALPHA(L),' contr.coeff:',L,N,CPRIMU(L,N),
      &   ' normalized contr.coeff.', CPRIM(L,N)
         ENDDO
        ENDDO
+       IF (ZERONORM) GOTO 1000 ! error brach 
       ENDIF
 
       RETURN

@@ -468,7 +468,6 @@ C
        write(lupri,*) 'DSM=',DSM
       ENDIF
 
-
 C
 C Initializing a counting variable that must be 0 before loop
 C
@@ -481,7 +480,17 @@ C Reading the primitive and contracted coeffecients
 C
          READ(LUBAS, '(A88)', IOSTAT = IOERR, ERR = 2000)
      +        STRING
+
+         IF (IPRINT.GE.7) THEN
+           WRITE(LUPRI,'(2X,A,A)') 'READNU: read STRING=',STRING
+         ENDIF
+
          READ (STRING, '(A1)') SIGN
+
+         IF (IPRINT.GE.7) THEN
+           WRITE(LUPRI,'(2X,A,A)') 'READNU: read SIGN=',SIGN
+         ENDIF
+
          IF (SIGN .EQ. ' ') THEN
 C
 C Calling a subroutine that checks whether the line is a blank one. If
