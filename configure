@@ -1902,7 +1902,8 @@ get_f90_flags(){
       noformain="" # please add it
       ;;
     gfortran*)
-      gfver=`$F90real -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+     # to determine version you need the compiler with its full path 
+      gfver=`$F90_COMP -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
       cpp_f90="$cpp_f90 -DGFORTRAN=$gfver"
       case $prc in
       i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
