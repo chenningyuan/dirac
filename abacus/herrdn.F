@@ -3385,7 +3385,9 @@ C    & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
      &    'NRMORB INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
      &    ' of ',SPDCAR(I-1),' type has zero norm.',
      &    ' Contraction matrix: ',NUCIJ,NRCIJ
-         CALL QUIT('CGTO with zero norm.')
+        WRITE(LUPRI,'(2X,A)')
+     &  'This might indicate broken basis set input, please check it!'
+        CALL QUIT('CGTO with zero norm. Check the basis set input !')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck orbpro */
