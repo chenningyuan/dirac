@@ -115,8 +115,13 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_dirac_hscc_file_names
 !
-! assign file names for 6 Dirac prepared files 
+! assign file names for 6 Dirac-prepared files 
 !
+! called from Dirac_HSMRCC interface 
+!
+
+! write(UOUT,*) 'set_dirac_hscc_file_names'
+! write(UOUT,*) 'get_iprint=',get_iprint()
 
 FileVINT='Dirac_HSMRCC.VINT'
 FileVIND='Dirac_HSMRCC.VIND'
@@ -126,12 +131,14 @@ FileFHP ='Dirac_HSMRCC.FHP'
 FileFPP ='Dirac_HSMRCC.FPP'
 
 if (get_iprint() >= 5) then
- write(UOUT,'(2x,a,a)') 'dirac assigned FileVINF=',FileVINF
- write(UOUT,'(2x,a,a)') 'dirac assigned FileVINT=',FileVINT
- write(UOUT,'(2x,a,a)') 'dirac assigned FileVIND=',FileVIND
- write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFHH
- write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFHP
- write(UOUT,'(2x,a,a)') 'dirac assigned FileFHH=',FileFPP
+ write(UOUT,'(/,4x,a,/)') '=== Output from "set_dirac_hscc_file_names" ==='
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu,UVINF=',UVINF,' dirac assigned  FileVINF=',FileVINF
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu,UVINT=',UVINT,' dirac assigned  FileVINT=',FileVINT
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu,UVIND=',UVIND,' dirac assigned  FileVIND=',FileVIND
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu, UFHH=',UFHH, ' dirac assigned   FileFHH=',FileFHH
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu, UFHP=',UFHP, ' dirac assigned   FileFHH=',FileFHP
+ write(UOUT,'(2x,a,i2,a,a20)') 'lu, UFPP=',UFPP, ' dirac assigned   FileFHH=',FileFPP
+ write(UOUT,*) 
 endif
 
 end subroutine set_dirac_hscc_file_names
@@ -158,7 +165,7 @@ subroutine InitIOMod
    endif
    Init = .TRUE. ! it means it's initialized
 
-   ! first check NumRec/RecLen dimensions
+   ! first check NumRec/RecLen dimensions (ie nonzero NHMO, NPMO parameters)
    call check_FileRec_param
 
    ! ... Setup File Attributes ...
@@ -923,9 +930,16 @@ end subroutine ReadFileBlock
 subroutine OpenIntFiles
 !----------------------------------------------------------------------------------------
 !
-!   Open HSMRCC intgeral file - these files MUST BE READY when running HSMRCC from DIRAC
+! Open HSMRCC intgeral files:
 !
-!   called from InitHSMRBase (source/inihsbase.F90)
+!     - opening as new when running HSMRCC from Gamess (own HSMRCC integral files generation)
+!        or when called from dirac_hsmrcc interface
+!     - HSMRCC integral files MUST BE READY when running HSMRCC from DIRAC
+!
+! called from:  
+!              InitHSMRBase (source/inihsbase.F90)
+!                              dir_hscc_mods.F90
+!
 !
 !-----------------------------------------------------------------------------------------
    implicit none
@@ -937,15 +951,17 @@ subroutine OpenIntFiles
      call header('OpenIntFiles: going to open UVIND, UVINT, UFHH, UFHP, UFPP files',-1)
    endif
 
+   call check_FileRec_param
+
    if (.not.Init) then
       write(UOUT,'(/,2x,a)') 'OpenIntFiles: IOMod not initialized !'
       call flushout
       call quit('OpenIntFiles: IOMod not initialized')
    endif
 
-   if (OPTION(GENINT)) then
-     !stat = 'NEW'
-      stat = 'UNKNOWN'
+   if (OPTION(GENINT).or.get_dirac_hscc_interface_mode()) then
+     stat = 'NEW'
+     ! stat = 'UNKNOWN'
    else
       stat = 'OLD'
    endif
@@ -996,12 +1012,13 @@ subroutine OpenIntFiles
 
 !  ... print out info
    if (get_iprint() >= 7) then
-     write(UOUT,'(/,2x,a,a)') 'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
-     write(UOUT,'(a,i2,a,a,a,i8)') 'UVIND=',UVIND,' 2-el.integrals,FileVIND=',FileVIND,' recl=',recl_vind
-     write(UOUT,'(a,i2,a,a,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes,FileVINT=',FileVINT,' recl=',recl_vint
-     write(UOUT,'(a,i2,a,a,a,i8)') 'UFHH=',UFHH,' 1-el. integ.,FileFHH=',FileFHH,' recl=',recl_fhh
-     write(UOUT,'(a,i2,a,a,a,i8)') 'UFHP=',UFHP,' 1-el. integ.,FileFHP=',FileFHP,' recl=',recl_fhp
-     write(UOUT,'(a,i2,a,a,a,i8)') 'UFPP=',UFPP,' 1-el. integ.,FileFPP=',FileFPP,' recl=',recl_fpp
+     write(UOUT,'(/,2x,a,a)')   & 
+     'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
+     write(UOUT,'(a,i2,a,a15,a,i8)') 'UVIND=',UVIND,' 2-el.integrals,FileVIND=',FileVIND,' recl=',recl_vind
+     write(UOUT,'(a,i2,a,a15,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes,FileVINT=',FileVINT,' recl=',recl_vint
+     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFHH=',UFHH,' 1-el. integ.,FileFHH=',FileFHH,' recl=',recl_fhh
+     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFHP=',UFHP,' 1-el. integ.,FileFHP=',FileFHP,' recl=',recl_fhp
+     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFPP=',UFPP,' 1-el. integ.,FileFPP=',FileFPP,' recl=',recl_fpp
      write(UOUT,*)  
      call flushout
    endif

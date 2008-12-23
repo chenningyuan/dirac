@@ -69,6 +69,7 @@ subroutine HSCCINP(WORD,reset)
 !-----------------------------------------------------------------------------
 
  use Dirac_HSMRCC  ! ... parameters for the external HSMRCC code
+ use Parameters ! .. from hsmrcc_external/modules
 
 #include "implicit.h"
 #include "priunit.h"
@@ -168,6 +169,19 @@ EndDo
 
 ! Call QUIT('in HSCCINP !')
 
+ call set_dirac_UOUT
+
+ call set_dirac_hscc_interface_mode
+
+ call check_dirac_hscc_interface_mode
+
+ if (.not.get_dirac_hscc_interface_mode()) call quit('NOT in dirac_hscc_interface_mode !')
+
+ call set_hscc_iprint(iprint_hscc) ! call hsmrcc_external routine 
+
+ WRITE(LUPRI,*) 'HSCC get_iprint()=',get_iprint()
+ WRITE(LUPRI,*) 'HSCC variable UOUT=',UOUT
+ 
  print *,' returning from HSCCINP ...'
 
  Return

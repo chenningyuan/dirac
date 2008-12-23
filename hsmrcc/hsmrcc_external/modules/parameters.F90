@@ -141,22 +141,54 @@ module Parameters
    !> ... is complex algebra (i.e. when complex relativ.group used)
      logical :: is_complex = .false.  
    end type dirac
+
+   !> ... is dirac-like print-out channel
+   logical :: dirac_UOUT=.false.
+
+   !> ... is dirac_hscc_interface on
+   logical, private :: dirac_hscc_interface_mode=.false.
  
    contains
 
+   subroutine set_dirac_UOUT
+#include "priunit.h"
+   UOUT=LUPRI
+   write(UOUT,'(/,2x,a,i2)') 'UOUT set according to DIRAC LUPRI to value ',UOUT
+   dirac_UOUT=.true.
+   end subroutine set_dirac_UOUT
+
+  !> ... tell we are in the Dirac_HSMRCC interface mode, where we are reusing a lot of HSMRCC stuff
+   subroutine set_dirac_hscc_interface_mode
+     dirac_hscc_interface_mode=.true.
+   end subroutine set_dirac_hscc_interface_mode
+
+   !> ... returns the protected dirac_hscc_interface_mode
+   function get_dirac_hscc_interface_mode() result(is_mode)
+     logical :: is_mode
+     is_mode = dirac_hscc_interface_mode
+   end function get_dirac_hscc_interface_mode
+
+   subroutine  check_dirac_hscc_interface_mode
+    if (.not.get_dirac_hscc_interface_mode()) then
+      call quit('check_dirac_hscc_interface_mode: NOT in the DIRAC_HSMRCC_interface mode !')
+    endif
+   end  subroutine  check_dirac_hscc_interface_mode
+
    !> ... set the IPRINT variable
-   subroutine set_iprint (ipr)
+   subroutine set_hscc_iprint (ipr)
    !>  entering general printing variable (between 0-100, veryfied inside)
     integer, intent(in) :: ipr
     integer, parameter :: ipr_max = 100
     if (ipr < 0 .or. ipr > ipr_max) then
-     write(UOUT,*) 'set_iprint: entering iprint = ',ipr
-     write(UOUT,*) 'set_iprint: wrong entering variable ! must be <0,100>'
-     call Quit('set_iprint: wrong entering variable ! must be <0,100>')
+     write(UOUT,*) 'set_hscc_iprint: entering iprint = ',ipr
+     write(UOUT,*) 'set_hscc_iprint: wrong entering variable ! must be <0,100>'
+     call quit('set_hscc_iprint: wrong entering variable ! must be <0,100>')
     else 
       IPRINT = ipr
     endif
-   end subroutine set_iprint
+    print *,'set_hscc_iprint: print parameter variable set to IPRINT=',IPRINT
+    !call quit('set_hscc_iprint') ! test crash ...
+   end subroutine set_hscc_iprint
 
    !> ... returns the protected IPRINT variable
    function get_iprint() result(ipr)
@@ -194,10 +226,9 @@ if (NHMO==0.or.NPMO==0.or.NVMO==0.or.NHMOSQ==0.or.NPMOSQ==0) then
    write(UOUT,*) 'NVMO=',NVMO
    write(UOUT,*) 'NHMSQ=',NHMOSQ
    write(UOUT,*) 'NPMOSQ=',NPMOSQ
-   call quit('check_FileRec_param : some NumRec  param. are zero !')
+   write(UOUT,*) 
+   call quit('check_FileRec_param : some NumRec param. are zero !')
 endif
-
 end subroutine check_FileRec_param
-
 
 end module Parameters

@@ -6,10 +6,11 @@ subroutine GenHSMRpars
 !
 !   called from InitHSMRBase (source/inihsbase.F90)
 !
-!   NOTE: NCMO, NVMO ... these data must be ready
+!   NOTE: Needs NCMO, NVMO, NHOLE, NEMO, NPCTL ... variables must be ready !
+!
+!   assumes filled: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt,
 !
 !-----------------------------------------------------------------------
-
    use Parameters ! most of parameters are stored here ...
    use OrbMod
    use IOModule
@@ -20,7 +21,11 @@ subroutine GenHSMRpars
 
    if ( get_iprint() >= 10 ) then
      call HEADER('Output from GenHSMRpars',-1)
-     if (OPTION(DIRACp)) write(UOUT,'(10x,a)') '*** DIRAC mode is ON! ***'
+     if (OPTION(DIRACp)) then
+       write(UOUT,'(10x,a)') '*** DIRAC mode is ON! ***'
+     else
+       write(UOUT,'(10x,a)') '*** GAMESS mode is ON! ***'
+     endif
      write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
      write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
      write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
@@ -43,15 +48,18 @@ subroutine GenHSMRpars
    NDBLE  = NHMOSQ*NPMOSQ
    NTSIZE = NSING + NDBLE
 
-!  ... main space, Pm
+!------------------------------------------------------------------
+!    ... Needs: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt  ...
+!------------------------------------------------------------------
+
+!  ... main space, Pm, NMAINORB
    NMAINORB = 0
    do i = 1, NVMO
      if (IsMainOrb(i)) NMAINORB = NMAINORB + 1
    enddo
    if (NMAINORB==0) call quit('GenHSMRpars: NMAINORB .eq. 0 !')
 
-
-!  ... intermediate space, Pi
+!  ... intermediate space, Pi, make ready NINTMORB
    NINTMORB = 0
    do i = 1, NVMO
       if (IsIntmOrb(i)) NINTMORB = NINTMORB + 1
@@ -107,7 +115,6 @@ subroutine GenHSMRpars
      write(UOUT,'(2x,a,i7)') 'NELE=',NELE
      write(UOUT,'(2x,a,i7)') 'NTMO=',NTMO
      write(UOUT,'(2x,a,i7)') 'NVMO=',NVMO
-
    endif
 
 end subroutine GenHSMRpars

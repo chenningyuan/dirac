@@ -45,8 +45,10 @@ module Options
 !
 !           ... simple print out of basic options in DIRAC ...
 !
+!  called from  source/sethsmropts.F90
+!
 !--------------------------------------------------------------------------
- use Parameters
+! use Parameters
 
  call Header('*** Printing out OPTIONs ***',-1)
 
@@ -58,7 +60,7 @@ module Options
  write(*,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
  write(*,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
  write(*,*) ' OPTION  [GMSCHK]   =',OPTION(GMSCHK)
- write(*,*) '  UOUT=',UOUT
+! write(*,*) '  UOUT=',UOUT
 
  end subroutine print_Options
 

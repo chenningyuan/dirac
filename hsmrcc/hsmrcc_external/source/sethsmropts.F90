@@ -22,7 +22,7 @@ subroutine SetHSMR_IPRINT(ipr)
   integer :: ipr_temp 
    
   ipr_temp = ipr ! needed proper integer data type 
-  call set_iprint (ipr_temp) ! call module routine
+  call set_hscc_iprint (ipr_temp) ! call module routine
 
 end subroutine SetHSMR_IPRINT
 

@@ -666,14 +666,11 @@ call header('output from prepare_HSMRCC_Vfiles',-1)
 
 call set_dirac_hscc_file_names
 !
-write(LUPRI,*) 'from IOmodule stuff: UVINT=',UVINT
-write(LUPRI,*) 'from IOmodule stuff: UVIND=',UVIND
-write(LUPRI,*) 'from IOmodule stuff: FileVINT=',FileVINT
-write(LUPRI,*) 'from IOmodule stuff: FileVIND=',FileVIND
-!
 
-!open(lu_vind,file=dirac_file_VIND,form='unformatted',status='unknown', access='sequential') 
-!open(lu_vint,file=dirac_file_VINT,form='unformatted',status='unknown', access='sequential') 
+! ... open all HSMRCC made files 
+call OpenIntFiles
+
+
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
@@ -801,8 +798,6 @@ use io_moltra
 #include "implicit.h"
 
 call Header('Output from "prepare_dirac_HSMRCC_VINF_file"',-1)
-
-
 
 
 end subroutine prepare_dirac_HSMRCC_VINF_file
