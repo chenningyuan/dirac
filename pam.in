@@ -67,7 +67,7 @@ usage ()
  fi
 
    echo '     -wrkdir  directory     : Full directory path for work area; default "'$SCR/$MOL.'$$"'
-   echo '     -wrkpath directory     : Directory path (without user login name) for work area; default "'$SCR''
+   echo '     -wrkpath directory     : Directory path (without user login name) for work area; default "'$SCR'"'
    echo '     -put "file1 file2 .."  : Put specified files from job directory to work area'
    echo '     -get "file1 file2 .."  : Get specified files to job directory from work area'
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
@@ -403,13 +403,14 @@ remove_work_dir()
        for node in ` uniq $WRK/dirac_machines | sed s/:.//`; do
           if [ $node != $master ]; then
             $echo "\n  Contents of work directory $WRK on slave node $node:"
-            $RSH $node "ls -l $WRK"  
+            $RSH $node "ls -l $WRK" 
+
+            $echo "  Total size of the slave node $node work directory:\c"
+            $RSH $node "du -h -s $WRK" || \
+            ($echo "...could not be determined, du -h -s command not working...")
+ 
             $RSH $node "rm -fr $WRK" || \
             ($echo "Error exit: work directory $WRK on slave node $node not deleted!"; EXIT=1; exitfunc)
-
-            $echo "Total size of the work directory:\c"
-            $RSH $node "du -h -s $WRK" || \
-            ($echo "...could not be determined, du -h -s command not working.")
             
             $echo "Work directory $WRK on slave node $node deleted."
           fi
@@ -424,7 +425,7 @@ remove_work_dir()
    cd ..
    ls -l $WRK
 
-   $echo "Total size of the work directory:\c"
+   $echo "  Total size of the main (master) node $master work directory:\c"
    du -h -s $WRK || \
    ($echo "...could not be determined, du -h -s command not working.")
    
@@ -535,7 +536,7 @@ distribute_work_dir()
            ($echo "Error exit: existing work directory $WRK on slave node $node not deleted!"; EXIT=1 ; exitfunc)
          fi
          for file in ` ls `; do
-           $echo "copying of $master:$file onto $node:$WRK/."
+           $echo "copying $master:$file onto $node:$WRK/."
            $RCP $file $node:$WRK/$file || \
            ($echo "Error exit: $master:$file not copyied onto $node:$WRK/$file !";EXIT=1;exitfunc)
          done
