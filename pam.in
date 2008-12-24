@@ -66,7 +66,8 @@ usage ()
    echo '     -machinefile filename  : Specify file with list of nodes to be used in MPI run; default - None '
  fi
 
-   echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
+   echo '     -wrkdir  directory     : Full directory path for work area; default "'$SCR/$MOL.'$$"'
+   echo '     -wrkpath directory     : Directory path (without user login name) for work area; default "'$SCR''
    echo '     -put "file1 file2 .."  : Put specified files from job directory to work area'
    echo '     -get "file1 file2 .."  : Get specified files to job directory from work area'
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
@@ -452,8 +453,17 @@ remove_work_dir()
 set_work_dir()
 {
    if [ -n "$SCR_DIR" ]; then
+#   ... full path of work directory given by user
       WRK=$SCR_DIR
    else
+      if [ -n "$SCR_PATH" ]; then
+        # assign user provided path with user login name
+        if [ "$LOGNAME" = "" ]; then
+           SCR=$SCR_PATH/$USER
+        else
+           SCR=$SCR_PATH/$LOGNAME
+        fi
+      fi
       WRK=$SCR/$MOL.$$
    fi
    #
@@ -462,6 +472,7 @@ set_work_dir()
    #
    mkdir -p $WRK || $echo "\n   MKDIR error!"
    if [ ! -d $WRK ]; then
+      $echo "            Error exit !                "
       $echo "   Could not create work directory: $WRK"
       $echo "   while beeing on host:\c";hostname
       $echo "   with disks (df -h):"; df -h   
@@ -782,6 +793,7 @@ initialize()
 
    RUN='out'
 
+# ... SCR_DEFAULT is set and copied into pam by configure
    if [ "$LOGNAME" = "" ]; then
       SCR=$SCR_DEFAULT/$USER
    else
@@ -789,6 +801,7 @@ initialize()
    fi
 
    SCR_DIR=
+   SCR_PATH=
 
    MPI_NPROC=
    DIRPAR=0 # initialize to sequential
@@ -898,7 +911,11 @@ while [ -n "$1" ]; do
          ;;
       -wrkdir|-workdir|-scr|-scratch)
          shift
-         SCR_DIR=$1
+         SCR_DIR=$1 # set the full path by user
+         ;;
+      -wrkpath|-workpath)
+         shift
+         SCR_PATH=$1
          ;;
       -machinefile|-mf)
          shift
