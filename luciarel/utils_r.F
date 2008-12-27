@@ -1294,10 +1294,10 @@ C
       DO II = 1, NDIM
          ICHECK_SCR_2 = ICHECK_VEC(II)
          IF( ICHECK_SCR_2 .ne. ICHECK_SCR )THEN
-             WRITE(LUWRT,*) ' subroutine CHECK_CONSIST: unconsistency 
-     &   detected ', ICHECK_SCR, ICHECK_SCR_2
-            CALL Abend2(' subroutine CHECK_CONSIST: unconsistency 
-     &   detected' )
+           WRITE(LUWRT,*) ' *** ERROR in CHECK_CONSIST: unconsistency'//
+     &                    ' detected ***:', ICHECK_SCR, ICHECK_SCR_2
+           CALL QUIT(' *** ERROR in CHECK_CONSIST: unconsistency 
+     & detected *** ' )
           END IF
       END DO
       END

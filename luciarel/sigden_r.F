@@ -457,12 +457,14 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       CALL OCC_INCLUDED(IEXOP(1,4),INCLUDED)
       IF(INCLUDED.EQ.0) INCLUDED_CAAB = 0
 *
+#if defined LUCI_DEBUG
       NTEST = 000
       IF(NTEST.GE.100) THEN
        WRITE(6,*) ' CAAB excitation operator '
        CALL WRT_SPOX_TP(IEXOP,1)
        WRITE(6,*) ' INCLUDED_CAAB = ', INCLUDED_CAAB
       END IF
+#endif
 *
       RETURN
       END
@@ -502,6 +504,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       END DO
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         write(6,*) 'CCEX_OCC_OCC speaking:'
         WRITE(6,*) ' Input occupation '   
@@ -515,6 +518,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
         WRITE(6,*) ' Output string '
         CALL IWRTMA(IOUTOCC,1,NGAS,1,NGAS)
       END IF
+#endif
 *
       RETURN
       END
@@ -544,6 +548,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       END DO
 *
       NTEST = 00
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' NCA, NCB, NAA, NAB = '
         CALL IWRTMA(NCA,1,NGAS,1,NGAS)
@@ -552,6 +557,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
         CALL IWRTMA(NAB,1,NGAS,1,NGAS)
         WRITE(6,*) ' IDIAG = ', IDIAG
       END IF
+#endif
 *
       RETURN 
       END
@@ -1491,6 +1497,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
       end if
 *     end if (NO_TTWO .gt. 0)
 *
+#if defined LUCI_DEBUG
       if (IFLAG.ne.1.and.NTEST.ge.50) then
 C     if(IFLAG.ne.1)then
         WRITE(LUWRT,'(/A/)') '  *** Information from  GET_HX_RELA ***'
@@ -1502,8 +1509,10 @@ C     if(IFLAG.ne.1)then
      &                     I,SIGN_ITIM_SYM(I)
         end do
       end if
+#endif
 *
       if (IFLAG.ne.1) then
+#if defined LUCI_DEBUG
         if (NTEST.ge.100) then
           write(LUWRT,'(/A)') '  Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
@@ -1511,6 +1520,7 @@ C     if(IFLAG.ne.1)then
           CALL WRT_SPOX_TP(IHX,NHX)
 C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         end if
+#endif
       end if
 *
       RETURN
@@ -2234,9 +2244,11 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       NTEST = 0000
       NTEST = MAX(NTEST,IPRCC)
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' IDIM_TCC : MSCOMB_CC, ISYM = ', MSCOMB_CC,ISYM
       END IF
+#endif
 *
       LENGTH = 0
       LENGTH2 = 0
@@ -2248,13 +2260,16 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
       N1ELINT = 0
 *
       DO ITSS_TP = 1, NTSOSO_TP
+#if defined LUCI_DEBUG
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP 
+#endif
 *. Occupation to group translation 
        CALL OCC_TO_GRP(ITSOSO_TP(1+0*NGAS,ITSS_TP),ICA_GRP,1)
        CALL OCC_TO_GRP(ITSOSO_TP(1+1*NGAS,ITSS_TP),ICB_GRP,1)
        CALL OCC_TO_GRP(ITSOSO_TP(1+2*NGAS,ITSS_TP),IAA_GRP,1)
        CALL OCC_TO_GRP(ITSOSO_TP(1+3*NGAS,ITSS_TP),IAB_GRP,1)
 *
+#if defined LUCI_DEBUG
        if (NTEST.ge.50) then
          write(6,*) ' Output from OCC_TO_GRP : '
          write(6,*) ' ICA_GRP : ',(ICA_GRP(I),I=1,NGAS,1)
@@ -2262,6 +2277,7 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
          write(6,*) ' ICA_GRP : ',(IAA_GRP(I),I=1,NGAS,1)
          write(6,*) ' ICA_GRP : ',(IAB_GRP(I),I=1,NGAS,1)
        end if
+#endif
 *
        NEL_CA = IELSUM(ITSOSO_TP(1+0*NGAS,ITSS_TP),NGAS)
        NEL_CB = IELSUM(ITSOSO_TP(1+1*NGAS,ITSS_TP),NGAS)
@@ -2292,12 +2308,14 @@ csk   DIMENSION IBTSOSO_TP(NTSOSO_TP)
              CALL NST_SPGRP_DBG(NGAS,IAB_GRP,I_AN_BE_SM,NSMST,
      &                          LEN_AB,NDIST_AB,2)
 *
+#if defined LUCI_DEBUG
              IF(NTEST.GE.1000) THEN
                WRITE(6,'(A,4I5)') ' sym of CA CB AA AB',
      &         I_CR_AL_SM, I_CR_BE_SM, I_AN_AL_SM, I_AN_BE_SM
                WRITE(6,'(A,4I5)') ' LEN_CA, LEN_CB, LEN_AA, LEN_AB ',
      &                      LEN_CA, LEN_CB, LEN_AA, LEN_AB
              END IF
+#endif
 *
              LEN_SCR3 = LEN_CA
              LEN_SCR4 = LEN_CB
@@ -2312,9 +2330,11 @@ C
 C            count one-electron integrals
              IF((ITSS_TP.lt.IFTTWO).or.(ITSS_TP.ge.IFSFLT1
      &           .and.ITSS_TP.le.ILSFLT1)) N1ELINT = N1ELINT + LEN_SCR7
+#if defined LUCI_DEBUG
              if (NTEST.ge.2000) then
                write(6,*) 'LENGTH ', LEN_SCR1 * LEN_SCR2
              end if
+#endif
 *
              MX_ST_TSOSO = 
      &       MAX(MX_ST_TSOSO,LEN_CA,LEN_CB,LEN_AA,LEN_AB)
@@ -2340,6 +2360,7 @@ C
       N2ELINT_I8 = LENGTH - N1ELINT
 *
 CSK   NTEST = 5
+#if defined LUCI_DEBUG
       IF(NTEST.GE.3) THEN
         WRITE(6,*) ' Number of 1e-integrals : ', N1ELINT
         WRITE(6,*) ' Number of 2e-integrals : ', NINT_2E
@@ -2361,6 +2382,7 @@ CSK   NTEST = 5
            WRITE(6,*) 'IBTSOSO_TP(',II,') is ',IBTSOSO_TP(II)
          END DO
       END IF
+#endif
       NTEST = 0000
 *
       RETURN
@@ -2398,11 +2420,13 @@ CSK   NTEST = 5
       ITDIANUM = IADR
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Address of diagonal T-element : '
         WRITE(6,*) ' ICA, ICB, IAA, IAB, NC,NA, IADR = ',
      &               ICA, ICB, IAA, IAB, NC,NA, IADR
       END IF
+#endif
 *
       RETURN
       END
@@ -2483,9 +2507,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
       END IF
+#endif
 *
       RETURN
       END
@@ -2517,9 +2543,11 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       LEN_TT_BLOCK = LEN
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' LEN_TT_BLOCK = ', LEN_TT_BLOCK 
       END IF
+#endif
 *
       END
 ***********************************************************************
@@ -2576,9 +2604,11 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
       LEN_TT_BLOCK_PAR = LEN
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*) ' LEN_TT_BLOCK_PAR = ', LEN_TT_BLOCK_PAR
       END IF
+#endif
 *
       END
 ***********************************************************************
@@ -2626,6 +2656,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 C     MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IB,SCLFAC)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' MAP_EXSTR speaking' 
          WRITE(6,*) ' =================='
@@ -2636,13 +2667,18 @@ C     MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SSX,NK,IB,SCLFAC)
         CALL IWRTMA(IOP,1,NOP,1,NOP)
         CALL IWRTMA(IAC,1,NOP,1,NOP)
       END IF
+#endif
 *
-      CALL ICOPVE(IREFOC,KOC,NGAS)
+      CALL ICOPY(NGAS,IREFOC,1,KOC,1)
       CALL OCC_TO_GRP(KOC,KGRP,1)
       IOFF = 1
+#if defined LUCI_DEBUG
       IF(NTEST.GE.1000) WRITE(6,*) ' NOP = ', NOP
+#endif
       DO JOP = NOP,1,-1
+#if defined LUCI_DEBUG
        IF(NTEST.GE.1000) WRITE(6,*) ' JOP = ', JOP
+#endif
 *
        JGAS = IOP(JOP)
        JAC  = IAC(JOP)
@@ -2697,14 +2733,17 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
        END IF
        KOC(JGAS) = KOC(JGAS) + JDELTA
        CALL OCC_TO_GRP(KOC,KGRP,1)
+#if defined LUCI_DEBUG
        IF(NTEST.GE.1000) THEN
          WRITE(6,*) ' KOC and KGRP '
          CALL IWRTMA(KOC,1,NGAS,1,NGAS)
          CALL IWRTMA(KGRP,1,NGAS,1,NGAS)
        END IF
+#endif
 *
       END DO
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from MAP_EXSTR '
         WRITE(6,*) ' Mappings from a+/a !K(J)> to !K(J-1)> '
@@ -2743,6 +2782,7 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
          END DO
         END DO
       END IF
+#endif
 *
       RETURN
       END 
@@ -2799,12 +2839,14 @@ C    &                  IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
       NST_FOR_OCC = NSTR
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Number of electrons and orbitals per gasspace '
         CALL IWRTMA(NELEC_PER_GAS,1,NGAS,1,NGAS)
         CALL IWRTMA(NORB_PER_GAS,1,NGAS,1,NGAS)
         WRITE(6,*) ' Number of strings = ', NSTR
       END IF
+#endif
 *
       RETURN
       END
@@ -2846,7 +2888,8 @@ C     INTEGER JGRP(MXPNGAS)
           END DO
           IGRP(IOBTP) = JJGRP
 *
-          IF(JJGRP.EQ.0.or.NTEST.ge.10) THEN
+#if defined LUCI_DEBUG
+          IF(NTEST.ge.10) THEN
            WRITE(6,*) ' Group not included in list '
            WRITE(6,*) ' Input occupations : '
            CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
@@ -2861,8 +2904,11 @@ C     INTEGER JGRP(MXPNGAS)
            do K=IBGPSTR(IOBTP), IBGPSTR(IOBTP) + NGPSTR(IOBTP)-1
              write(6,*) 'NELFGP(',K,') =', NELFGP(K)
            end do
-           if (JJGRP.eq.0) STOP ' Group not included in list '
           END IF
+#endif
+          if (JJGRP.eq.0) 
+     &       CALL QUIT(' *** ERROR in OCC_TO_GRP: Group not included 
+     &                   in list ***')
         END DO
 *
       ELSE
@@ -2872,11 +2918,13 @@ C     INTEGER JGRP(MXPNGAS)
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' Occupation and corresponding group array '
         CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
         CALL IWRTMA(IGRP,1,NGAS,1,NGAS) 
       END IF
+#endif
 *
       RETURN
       END 
@@ -2927,6 +2975,7 @@ C     INTEGER JGRP(MXPNGAS)
         END DO
       END IF
 *
+#if defined LUCI_DEBUG
       NTEST = 000
       IF(NTEST.GE.100) THEN
         IF(IWAY.EQ.1) THEN
@@ -2938,6 +2987,7 @@ C     INTEGER JGRP(MXPNGAS)
         CALL IWRTMA(IOPGAS,1,NGAS,1,NGAS)
         CALL IWRTMA(IOP,1,NOP,1,NOP)
       END IF
+#endif
 *
       RETURN
       END
@@ -3258,6 +3308,7 @@ C***********************************************************************
         call quit('*** ERROR in SIGDEN_REL ***')
       end if
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.50) THEN 
         write(LUWRT,*)
         write(LUWRT,*)
@@ -3268,6 +3319,7 @@ C***********************************************************************
         write(LUWRT,*) '++++++++++++++++++++++++++++++++++++++'
         WRITE(LUWRT,*) '          ICSM, ISSM = ', ICSM, ISSM
       END IF
+#endif
 *
 *     file LUSC37 is not needed in a MPI run
 *
@@ -3353,6 +3405,7 @@ C***********************************************************************
 #else
 *=====================================================
 
+#if defined LUCI_DEBUG
       if (NTEST.ge.1000) then
         write(LUWRT,*) '--------------------------------------'
         write(LUWRT,*) ' Printing vectors in SIGDEN_REL.      '
@@ -3364,6 +3417,7 @@ C***********************************************************************
           call wrtvcdc(HC,LLUHC,1,IRILP,-1)
         end if
       end if
+#endif
 *
       CALL REWINE(LLUC,-1)
       CALL REWINE(LLUHC,-1)
@@ -3396,12 +3450,14 @@ C?      WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
 *
 #endif /* if def VAR_MPI2 */
 *
+#if defined LUCI_DEBUG
         if (NTEST.ge.50) then
           write(LUWRT,*)
           write(LUWRT,*) '-----------------------'
           write(LUWRT,*) ' SIGMA LOOP , IRIS = ',IRIS
           write(LUWRT,*) '-----------------------'
         end if
+#endif
 *
 *       count the 'active' sigma blocks
 * 
@@ -3410,11 +3466,13 @@ C?      WRITE(LUWRT,*) 'INT_IOFF1 in SIGDEN',INT_IOFF1
         JBATABS = 0
         DO IMK2_S = 1, NMS2VAL
           MK2_S = MS2VAL(IMK2_S)
+#if defined LUCI_DEBUG
           if (NTEST.ge.50) then
             write(LUWRT,*) '- - - - - - - - - - - -'
             write(LUWRT,*) ' MK2_S LOOP , MK2_S = ',MK2_S
             write(LUWRT,*) '- - - - - - - - - - - -'
           end if
+#endif
 *
           IASTP = IST_FOR_DT(1,IMK2_S)
           IBSTP = IST_FOR_DT(2,IMK2_S)
@@ -3475,6 +3533,7 @@ C
             LS = LEBATS(JBATABS)
             CALL DZERO(HC,LS)
             if (ISIGDEN.eq.1) then
+#if defined LUCI_DEBUG
               if (NTEST.ge.500) then
                  WRITE(LUWRT,*)
                  WRITE(LUWRT,*)
@@ -3486,6 +3545,7 @@ C
      &           ' =============================================='
                  WRITE(LUWRT,*)
               end if
+#endif
             else 
 C             ... sigma blocks read from disk in density run?
 C             this is important since we might skip complete s blocks 
@@ -3497,12 +3557,14 @@ C
             call REWINE(LLUC,-1)
 #endif
             DO IRIC = 1,IRILP,1
+#if defined LUCI_DEBUG
             if (NTEST.ge.50) then
               write(LUWRT,*)
               write(LUWRT,*) '-----------------------'
               write(LUWRT,*) ' C     LOOP , IRIC = ',IRIC
               write(LUWRT,*) '-----------------------'
             end if
+#endif
 #if defined (VAR_MPI2)
 *             initialize reading
               IOFF_SCR1_C = 0
@@ -3525,18 +3587,22 @@ C
 *
               DO IMK2_C = 1, NMS2VAL
                 MK2_C = MS2VAL(IMK2_C)
+#if defined LUCI_DEBUG
                 if (NTEST.ge.50) then
                   write(LUWRT,*) '- - - - - - - - - - - -'
                   write(LUWRT,*) ' MK2_C LOOP , MK2_C = ',MK2_C
                   write(LUWRT,*) '- - - - - - - - - - - -'
                 end if
+#endif
                 MK2_DIFF = ABS(MK2_C - MK2_S)
                 max_MK2_DIFF = 4
+#if defined LUCI_DEBUG
                 IF( NTEST .ge. 50 )THEN
                   IF (MK2_DIFF .gt. max_MK2_DIFF) THEN
                     write(LUWRT,*) 'MK2 skip, MK2_DIFF =',MK2_DIFF
                   END IF
                 END IF
+#endif
 *               ... for any two-electron operator.
 *                   For one-electron operators max_MK2_DIFF = 1 or 0
 *                   (or zero, if NZ .lt. 4 and operator is not j- or
@@ -3607,6 +3673,7 @@ C                   skip blocks with given MK2_C
 *
  60       CONTINUE
             if(ISIGDEN.eq.1) then
+#if defined LUCI_DEBUG
               if(NTEST.ge.100) then
                 WRITE(LUWRT,'(/A)') ' ******************'
                 WRITE(LUWRT,'( A)') ' *  final sbatch  *'
@@ -3614,6 +3681,7 @@ C                   skip blocks with given MK2_C
                 CALL WRTMATMN(HC,1,LEBATS(JBATABS),1,
      &                         LEBATS(JBATABS),LUWRT)
               end if
+#endif
               KBATSEND = I1BATS(JBATABS) + LBATS(JBATABS)
 #if defined (VAR_MPI2)
               starttimer = MPI_WTIME()
@@ -3814,11 +3882,13 @@ C
       NTESTL = 000
       NTEST = MAX(NTESTL,IPRNT)
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(LUWRT,*) ' ================='
         WRITE(LUWRT,*) ' SIGDEN2 speaking :'
         WRITE(LUWRT,*) ' ================='
       END IF
+#endif
 #if defined (VAR_MPI2)
 *     initialize scratch variables      
       IOFF_SCR2     = 0
@@ -4315,6 +4385,7 @@ C
       NTEST = MAX(NTESTL,max(IPRS,IPRD))
 C
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.800) THEN
         WRITE(LUWRT,*) ' ================'
         WRITE(LUWRT,*) ' SIGDEN4 speaking :'
@@ -4329,13 +4400,16 @@ C
      &      IBLOCK,(ISBLOCK(II,IBLOCK),II=1,5)
           END DO
       END IF
+#endif
       NTEST = 000
 *
 #if !defined (VAR_MPI2)
+#if defined LUCI_DEBUG
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
       END IF
+#endif
 *     rewind C file
       REWIND LUC
 #else
@@ -4383,10 +4457,12 @@ C
           JBTP  = ICBLOCK(2,ICBLK)
           ICOFF = ICBLOCK(5,ICBLK)
 C
+#if defined LUCI_DEBUG
           IF(NTEST.GE.500) THEN
             WRITE(LUWRT,*) ' Next block of C, ICBLK,JATP,JBTP,ICOFF ',
      &      ICBLK,JATP,JBTP
           END IF
+#endif
 C
 #if defined (VAR_MPI2)
 C
@@ -4666,7 +4742,7 @@ C
  8000       CONTINUE
 C           ^  end of loop over spinorbital-excitation types 
 C
-#ifdef MOD_DEBUG
+#if defined LUCI_DEBUG
             NTEST = 300
             IF(NTEST.GE.300) THEN
               WRITE(LUWRT,*) ' Updated sigma blocks ' 
@@ -4761,6 +4837,7 @@ C     ^End of loop over batches of C blocks
       NTEST = max(NTESTL,IPRNT)
 csk      NTEST = 500
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Input to TCC_SUBBLK '
         WRITE(LUWRT,*) ' NCA, NCB, NAA, NAB', NCA,NCB,NAA,NAB
@@ -4779,6 +4856,7 @@ csk      NTEST = 500
           CALL WRTMATMN(TCC,NCA*NCB,NAA*NAB,NCA*NCB,NAA*NAB,LUWRT)
         END IF
       END IF
+#endif
 *
       IF(IAB_TRNSP.EQ.0.AND.IDIAG.EQ.0) THEN
 
@@ -4907,12 +4985,14 @@ C        ^ "shared memory" / split mode
        END DO
       END IF
 *
+#if defined LUCI_DEBUG
       IF(NTEST.GE.500) THEN 
         WRITE(LUWRT,*) ' TCC_SUBBLK : TCC_SUB '
         NCAB_SUB = NCA_SUB*NCB_SUB
         NAAB_SUB = NAA_SUB*NAB_SUB
         CALL WRTMATMN(TCC_SUB,NCAB_SUB,NAAB_SUB,NCAB_SUB,NAAB_SUB,LUWRT)
       END IF
+#endif
 *  
       END
 ***********************************************************************
@@ -5265,10 +5345,12 @@ C
       INTEGER IBT(MXNDGIRR,MXNDGIRR,MXNDGIRR)
 *
       NTEST = 000
+#if defined LUCI_DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Z_TCC_OFF speaking '
         WRITE(6,*) ' NSMST, IDIAG = ', NSMST, IDIAG
       END IF
+#endif
 *
       IOFF = 1
       DO ISM_C = 1, NSMST
@@ -5295,11 +5377,13 @@ C
               LEN = NCA(ISM_CA)*NAA(ISM_AA)
               IOFF = IOFF + LEN*(LEN+1)/2
             END IF
+#if defined LUCI_DEBUG
             if (NTEST.ge.100) then
               write(6,'(A,I2,A,I2,A,I2,A,I5)') 
      &                'IBT(',ISM_CA,',',ISM_CB,',',ISM_AA,') =',
      &                 IBT(ISM_CA,ISM_CB,ISM_AA)
             end if
+#endif
 *
           END DO
         END DO

@@ -1897,7 +1897,7 @@ CSK       WRITE(6,*) ' my EX result: ALLOC_INT',myproc,ex,ALLOC_INT
             CALL MPIXMEM_ALLOC( MY_CHECK_F_PTR, 2, MY_CHECK_F_LEN,
      &                          MPI_INFO_NULL, .FALSE. )
 C
-            CALL IZERO(CHECK_FILE,IXCOMM_SZ)
+            CALL IZERO(ICHECK_FILE,IXCOMM_SZ)
 C
             IEX_GAT   = 0 
 C
