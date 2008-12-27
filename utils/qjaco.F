@@ -26,12 +26,16 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!> Program for testing (and improving) the quaternion Jacobi (block)
+!! diagonalization procedure
       Program QJACOBITEST
-
       PARAMETER(MAXMTX=900000,MAXBL=400)
 #include"implicit.h"
 #include"priunit.h"
-      LOGICAL DOEVE,ISFILE
+      !> process also eigenvectors
+      LOGICAL DOEVE 
+      !> check the presence of the file
+      LOGICAL ISFILE 
       DIMENSION A(MAXMTX),EV(MAXMTX),IBL(MAXBL)
 
      
@@ -53,6 +57,7 @@ C
 C  Get basic date: N,NZ,NBL,IPRINT
 C
 C *******************************************************************8
+!> get the basic variables:  N,NZ,NBL,IPRINT
       SUBROUTINE GETNNZ(N,NZ,NBL,LUF,ISFILE,IPRINT)
 #include"implicit.h"
       PARAMETER (D0=0.0D0)
@@ -86,14 +91,20 @@ C *******************************************************************8
 C ============================================================
 C            ... prepare testing matrix
 C ============================================================
+!> ... prepare the testing matrix
       SUBROUTINE PREPMATRIX(A,N,NZ,NBL,IBL,DOEVE,IPRINT,LUF,ISFILE)
 #include"implicit.h"
       PARAMETER (D0=0.0D0)
 #include"priunit.h"
-      DIMENSION A(N,N,NZ)
+      !> matrix to be diagonalized
+      DIMENSION A(N,N,NZ) 
+      !> blocks positions in the matrix to be diagonalized
       INTEGER IBL(NBL,1:4)
-      REAL*8  RANDOMNUMBER
-      LOGICAL DOEVE,ISFILE,FROMFILE
+      !> function for getting randon numbers
+      REAL*8  RANDOMNUMBER  !< random number ...
+      LOGICAL DOEVE, !< process eigenvactors
+     &        ISFILE, !< check presence of file
+     &        FROMFILE !< somethink...
 
       FROMFILE=.FALSE.
       DOEVE = .TRUE.
@@ -207,14 +218,13 @@ C       ....now fill the matrix
       RETURN
       END
 
-C****************************************************************
-C    Function used to generate numbers for filling the matrix
-C****************************************************************
       REAL*8 FUNCTION RANDOMNUMBER(I,J)
+!> Function used to generate numbers to filling the matrix with them
 #include"implicit.h"
 #include"priunit.h"
 C     RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND(0) 
-      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND()
+      !> get the random number
+      RANDOMNUMBER = DFLOAT(3*I+4*J)*RAND() !< restriction...
       RETURN
       END
 
