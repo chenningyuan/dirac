@@ -2,13 +2,13 @@
 subroutine GenHSMRpars
 !-----------------------------------------------------------------------
 !
-!   Generate set of parameters for the HSMRCC run.
+!  Generate set of parameters for the HSMRCC run.
 !
-!   called from InitHSMRBase (source/inihsbase.F90)
+!  called from InitHSMRBase (source/inihsbase.F90)
 !
-!   NOTE: Needs NCMO, NVMO, NHOLE, NEMO, NPCTL ... variables must be ready !
+!  NOTE: Needs NCMO, NVMO, NHOLE, NEMO, NPCTL ... variables must be ready !
 !
-!   assumes filled: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt,
+!  assumes filled arrays: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt ...
 !
 !-----------------------------------------------------------------------
    use Parameters ! most of parameters are stored here ...
@@ -21,7 +21,7 @@ subroutine GenHSMRpars
 
    if ( get_iprint() >= 10 ) then
      call HEADER('Output from GenHSMRpars',-1)
-     if (OPTION(DIRACp)) then
+     if (OPTION(HSCC_DIRAC_MODE)) then
        write(UOUT,'(10x,a)') '*** DIRAC mode is ON! ***'
      else
        write(UOUT,'(10x,a)') '*** GAMESS mode is ON! ***'

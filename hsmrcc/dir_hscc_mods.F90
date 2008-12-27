@@ -641,65 +641,6 @@ return
 end subroutine scan_mdcint
 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
-!------------------------------------------------------------------------
-!
-!              prepare VINT & VIND files for HSMRCC
-!
-!------------------------------------------------------------------------
-  use Memory
-  use Vectors
-
- !use Parameters ! HSMRCC  module
- use IOmodule ! HSMRCC  module
-
-#include "implicit.h"
-#include "priunit.h"
-type(Array2Dim), intent(in) :: cbuf
-type(Array3Dim), intent(in) :: pos_ij, pos_kl
-
-!character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
-!character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
-
-call header('output from prepare_HSMRCC_Vfiles',-1)
-
-call set_dirac_hscc_file_names
-!
-
-! ... open all HSMRCC made files 
-call OpenIntFiles
-
-
-
-! 01. V2H2P  <IJ||AB>
-write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
-
-write(LUPRI,*) '02. VPPPP  <AB||CD>'
-
-write(LUPRI,*) '03. VHHHH  <IJ||KL>'
-
-write(LUPRI,*) '04. VHHPP  <IJ||AB>'
-
-write(LUPRI,*) '05. V2HPP  <IJ||AB>'
-
-write(LUPRI,*) '06. V2PHH  <AB||IJ>'
-
-write(LUPRI,*) '07. VPHHP  <AI||JB>'
-
-write(LUPRI,*) '08. VPH2P  <AI||BC>'
-
-write(LUPRI,*) '09. VPHPP  <AI||JB>'
-
-write(LUPRI,*) '10. V2HHP  <IJ||KA>'
-
-write(LUPRI,*) '11. VHHHP  <IJ||KA>'
-
-!close(lu_vind)
-!close(lu_vint)
-
-end subroutine prepare_HSMRCC_Vfiles
-
 end module io_moltra
 
 module Dirac_HSMRCC
@@ -716,6 +657,8 @@ module Dirac_HSMRCC
 !real(kind=8) :: TotEn, NucEn, TrfTol
 
 integer, public :: iprint_hscc = 0
+
+logical, public :: nohsccfiles=.false.
 
 ! ... stuff from HSMRCC code for preparing VINF,VIND,VINT, FHH, FHP, FPP files ...
 !integer, parameter :: NVFIL  = 14
@@ -1067,4 +1010,68 @@ endif
 end subroutine prepare_dirac_HSMRCC_int_files
 
 end module Dirac_HSMRCC
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
+!------------------------------------------------------------------------
+!
+!              prepare VINT & VIND files for HSMRCC
+!
+!------------------------------------------------------------------------
+  use Memory
+  use Vectors
+
+  use Dirac_HSMRCC
+  use io_moltra
+
+ !use Parameters ! HSMRCC  module
+  use IOmodule ! HSMRCC  module
+
+#include "implicit.h"
+#include "priunit.h"
+type(Array2Dim), intent(in) :: cbuf
+type(Array3Dim), intent(in) :: pos_ij, pos_kl
+
+!character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
+!character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
+
+call header('output from prepare_HSMRCC_Vfiles',-1)
+
+call set_dirac_hscc_file_names
+!
+
+! ... open all HSMRCC made files 
+if (.not.nohsccfiles) call OpenIntFiles
+
+
+! 01. V2H2P  <IJ||AB>
+write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
+
+write(LUPRI,*) '02. VPPPP  <AB||CD>'
+
+write(LUPRI,*) '03. VHHHH  <IJ||KL>'
+
+write(LUPRI,*) '04. VHHPP  <IJ||AB>'
+
+write(LUPRI,*) '05. V2HPP  <IJ||AB>'
+
+write(LUPRI,*) '06. V2PHH  <AB||IJ>'
+
+write(LUPRI,*) '07. VPHHP  <AI||JB>'
+
+write(LUPRI,*) '08. VPH2P  <AI||BC>'
+
+write(LUPRI,*) '09. VPHPP  <AI||JB>'
+
+write(LUPRI,*) '10. V2HHP  <IJ||KA>'
+
+write(LUPRI,*) '11. VHHHP  <IJ||KA>'
+
+!close(lu_vind)
+!close(lu_vint)
+
+end subroutine prepare_HSMRCC_Vfiles
+
+
 

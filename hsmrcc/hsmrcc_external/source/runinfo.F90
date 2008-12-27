@@ -61,7 +61,7 @@ subroutine PrintRunInfo
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'/)
 
 ! ... print-out whether it is DIRAC or GAMESS run
-if (OPTION(DIRACp)) then
+if (OPTION(HSCC_DIRAC_MODE)) then
   write(UOUT,8010)   &
   '*** This is DIRAC based HSMRCC run. ***'
 else
@@ -93,7 +93,7 @@ write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
                     OnOff(OPTION(AVGVAL)),   OnOff(OPTION(REPTIME)),  &
                     OnOff(OPTION(QUAD)),     OnOff(OPTION(CONVTAMP)), &
                     OnOff(OPTION(NOHSMR)),   OnOff(OPTION(NOAPND)),   &
-                    OnOff(OPTION(RDGUESS)),  OnOff(OPTION(DIRACp))
+                    OnOff(OPTION(RDGUESS)),  OnOff(OPTION(HSCC_DIRAC_MODE))
 
 
 9021 format('************',/,&
@@ -110,7 +110,7 @@ write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
             'Only Intergal Generation        [NOHSMR] = ',a3,/, &
             'Do not append results           [NOAPND] = ',a3,/, &
             'Read T-Amplitude guess         [RDGUESS] = ',a3,/, &   
-            'DIRAC based run                 [DIRACp] = ',a3,/ )  
+            'DIRAC based run                 [HSCC_DIRAC_MODE] = ',a3,/ )  
            
 !  print out other information
 
@@ -132,7 +132,7 @@ write(UOUT,9011) NTMO, NCMO, NVMO, NEMO, NHOLE, NPTCL, NELE, NSTATE, NTSIZE
 
 !   ...  information from gamess
 ! TODO: splitt for GAMESS / DIRAC
-if (OPTION(DIRACp)) then
+if (OPTION(HSCC_DIRAC_MODE)) then
  write(UOUT,'(/,2x,a)') 'DIRAC information...'
  ! ...
 else

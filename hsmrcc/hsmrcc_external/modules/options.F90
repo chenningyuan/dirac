@@ -27,17 +27,29 @@ module Options
    integer, parameter :: SHFTVIRT = 15
    integer, parameter :: NOAPND   = 16
    integer, parameter :: RDGUESS  = 17
-   integer, parameter :: DIRACp   = 18  ! ... can not be "DIRAC"
+   integer, parameter :: HSCC_DIRAC_MODE   = 18  
    integer, parameter :: GMSCHK   = 19  
+   integer, parameter :: DIRAC_MODE   = 20
 
    ! ... total number of integer options - has to be updated...
-   integer, parameter :: NUMOPTS  = 19
+   integer, parameter :: NUMOPTS  = 20
 
-!    logical arrays ... 
+!    default initialization of logical arrays ... 
    logical :: OPTION(NUMOPTS) = .FALSE.
    logical :: OPTPRV(NUMOPTS) = .FALSE.
 
  contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ subroutine set_dirac_mode
+!
+! tell HSMRCC code that some it's routines are used from within DIRAC
+!
+#include "priunit.h"
+   OPTION(DIRAC_MODE)=.true.
+   write(LUPRI,'(2x,a,l1)')   & 
+   'DIRAC reusing HSMRCC routines - OPTION(DIRAC_MODE) set to:',OPTION(DIRAC_MODE)
+ end subroutine set_dirac_mode
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine print_Options
@@ -58,7 +70,7 @@ module Options
  write(*,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
  write(*,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
  write(*,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
- write(*,*) ' OPTION  [DIRACp]   =',OPTION(DIRACp)
+ write(*,*) ' OPTION  [HSCC_DIRAC_MODE]   =',OPTION(HSCC_DIRAC_MODE)
  write(*,*) ' OPTION  [GMSCHK]   =',OPTION(GMSCHK)
 ! write(*,*) '  UOUT=',UOUT
 

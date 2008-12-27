@@ -83,7 +83,7 @@ CHARACTER(len=7) :: WORD, KEYWORD=''
 ! ... nice F90 version 
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
-character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NACT  ','.NCORE ','.XXXXXX','.XXXXXX' /)
+character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NACT  ','.NCORE ','.DRYRUN','.XXXXXX' /)
 
  if (set) then
   if (reset) set = .false.
@@ -143,6 +143,8 @@ Do
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
         write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc
+      Case ('.DRYRUN')
+        nohsccfiles=.true.
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
         '" is not yet implemented in HSCCINP.'
@@ -166,6 +168,12 @@ EndDo
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hscc
  WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
+
+ if (nohsccfiles) then
+  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run).'
+ else
+  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
+ endif
 
 ! Call QUIT('in HSCCINP !')
 

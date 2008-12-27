@@ -11,6 +11,7 @@ module GMSMod
    use SymInf
    use OrbMod
    implicit none
+
    integer :: NAO, NSO, NFRZV
 
   ! integer :: NVMO !  it's in Parameters
@@ -44,7 +45,7 @@ subroutine InitGMSMod
    ! ... from FileVINF which has a copy of this info      ...
 
    if (get_iprint() >= 6) then
-    if (.not.OPTION(DIRACp)) then
+    if (.not.OPTION(HSCC_DIRAC_MODE)) then
      Call Header('Output from InitGMSMod routine - GAMESS mode',-1)
     else
      Call Header('Output from InitGMSMod routine - DIRAC mode',-1)
@@ -56,7 +57,7 @@ subroutine InitGMSMod
 !  ... final print-out of what has been read inside - simple variables & arrays
    if (get_iprint() >=7) then
 
-    if (OPTION(DIRACp)) then
+    if (OPTION(HSCC_DIRAC_MODE)) then
       write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from DIRAC ====='
     else
       write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from GAMESS ====='
@@ -136,7 +137,7 @@ subroutine alloc_bunch
 
   if (NSO <=0 .or. NVMO <=0 .or. NAO <=0) then
     write(UOUT,'(2x,a,3i4)')  & 
-    'alloc_bunch: used bad variables - NSO,NVMO,NAO:',NSO,NVMO,NAO
+    'alloc_bunch: used bad variables ! - NSO,NVMO,NAO:',NSO,NVMO,NAO
     call flushout
     call quit('alloc_bunch: wrong sizef for allocation !')
   endif
@@ -173,7 +174,7 @@ subroutine InitReadGMS
 
    ! ...
   ! if (OPTION(GENINT)) then
-   if (OPTION(GENINT).and..not.OPTION(DIRACp)) then
+   if (OPTION(GENINT).and..not.OPTION(HSCC_DIRAC_MODE)) then
      if (get_iprint() >= 7) then
        write(UOUT,'(2x,a,/)')   & 
        '...going to call InitReadMREINT - read core info from GMS integral files; not DIRAC mode'
@@ -373,7 +374,7 @@ implicit none
       endif
 
       ! mi: NTMO is zero 
-      if (NTMO /= NSO.and..not.OPTION(DIRACp)) then
+      if (NTMO /= NSO.and..not.OPTION(HSCC_DIRAC_MODE)) then
          write(UOUT,*) ' NTMO=',NTMO,' NSO=',NSO
          write(UOUT,*) 'Current NTMO is not valid for integral file'
          call flushout

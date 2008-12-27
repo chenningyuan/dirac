@@ -2046,7 +2046,6 @@ end subroutine print_gms_int_ind
 subroutine DrvIntGen_DIRAC
 logical :: isVIND,isVINT,isFPP,isFHP,isFHH
 
-
 write(UOUT,*) 'In DrvIntGen_DIRAC!'
 
 ! ... check the present of prepared DIRAC for HSCC integral files 

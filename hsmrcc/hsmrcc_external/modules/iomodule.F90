@@ -968,7 +968,7 @@ subroutine OpenIntFiles
 
 ! ----------------------------------------------------
    inquire(file=FileVIND,exist=exist_file)
-   if (.not.exist_file.and.OPTION(DIRACp)) then
+   if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileVIND does not exist!')
    endif
    
@@ -977,7 +977,7 @@ subroutine OpenIntFiles
 
 ! ----------------------------------------------------
    inquire(file=FileVINT,exist=exist_file)
-   if (.not.exist_file.and.OPTION(DIRACp)) then
+   if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileVINT does not exist!')
    endif
 
@@ -985,7 +985,7 @@ subroutine OpenIntFiles
    open(UVINT,file=FileVINT,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vint)
 ! ----------------------------------------------------
    inquire(file=FileFHH,exist=exist_file)
-   if (.not.exist_file.and.OPTION(DIRACp)) then
+   if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileFHH does not exist!')
    endif
 
@@ -994,7 +994,7 @@ subroutine OpenIntFiles
 
 ! ----------------------------------------------------
    inquire(file=FileFHP,exist=exist_file)
-   if (.not.exist_file.and.OPTION(DIRACp)) then
+   if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileFHP does not exist!')
    endif
 
@@ -1003,7 +1003,7 @@ subroutine OpenIntFiles
 
 ! ----------------------------------------------------
    inquire(file=FileFPP,exist=exist_file)
-   if (.not.exist_file.and.OPTION(DIRACp)) then
+   if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileFPP does not exist!')
    endif
 

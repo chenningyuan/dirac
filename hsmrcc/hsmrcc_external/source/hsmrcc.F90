@@ -44,7 +44,7 @@ subroutine HSMRCC
    if (OPTION(GENINT)) then
 
       ! ... Gamess integrals driver (modules/intgenmod.f90)
-      if (.not.OPTION(DIRACp)) then
+      if (.not.OPTION(HSCC_DIRAC_MODE)) then
          call DrvIntGen       ! ... call Gamess integral driver
       else
          call DrvIntGen_DIRAC ! ... call DIRAC integrals based driver
