@@ -2,7 +2,9 @@
 module GMSMod
 !------------------------------------------------------------------------
 !
-!     Necessary stuff read from Gamess/DIRAC (integral) files
+!     Necessary stuff read from Gamess (integral) files
+!
+! also for DIRAC mode
 !
 !------------------------------------------------------------------------
    use Parameters
@@ -12,7 +14,8 @@ module GMSMod
    use OrbMod
    implicit none
 
-   integer :: NAO, NSO, NFRZV
+  ! integer :: NAO, NSO, NFRZV
+   integer :: NAO=0, NSO=0, NFRZV=0
 
   ! integer :: NVMO !  it's in Parameters
    double precision :: TotEn, NucEn, TrfTol
@@ -30,9 +33,9 @@ contains
 subroutine InitGMSMod
 !---------------------------------------------------------------------------
 !
-!  Initialize Gamess stuff 
+! Initialize Gamess stuff 
 !
-! Called from InitHSMRBase (source/inihsbase.F90) - if not in the DIRAC mode !!!!
+! Called from InitHSMRBase (source/inihsbase.F90) - if not in the DIRAC mode !
 !
 !---------------------------------------------------------------------------
 
@@ -93,8 +96,12 @@ subroutine EndGMSMod
 !--------------------------------------------------------------------
    implicit none
 
+   if (get_iprint() >=8) then
+      write(UOUT,'(/,2x,a)') 'EndGMSMod: going to deallocate HSCC specific data.'
+   endif
+
    if (allocated(SpinOfOrb))     deallocate(SpinOfOrb)
-   if (allocated(SpinOfActvOrb)) deallocate(SpinOfOrb)
+   if (allocated(SpinOfActvOrb)) deallocate(SpinOfActvOrb)
    if (allocated(OccGMSRef))     deallocate(OccGMSRef)
    if (allocated(OccRef))        deallocate(OccRef)
    if (allocated(IrrepOrb ))     deallocate(IrrepOrb )
@@ -105,11 +112,15 @@ subroutine EndGMSMod
    if (allocated(OrbCoeff))      deallocate(OrbCoeff)
    if (allocated(HCoreMatrix))   deallocate(HCoreMatrix)
 
+   if (get_iprint() >=8) then
+     write(UOUT,'(/,2x,a)') 'EndGMSMod: going to deallocate GMS specific data.'
+   endif
+
    if (allocated(XXPREAD)) deallocate(XXPREAD)
    if (allocated(IXPREAD)) deallocate(IXPREAD)
 
    if (get_iprint() >=8) then
-      write(UOUT,'(/,2x,a)') 'EndGMSMod: data deallocated'
+      write(UOUT,'(/,2x,a)') 'EndGMSMod: all data arrays deallocated'
    endif
 
    return
@@ -118,7 +129,7 @@ end subroutine EndGMSMod
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine alloc_bunch
+subroutine alloc_VINF_arrays
 !----------------------------------------------------------------------
 !
 ! allocate 1-electron data
@@ -130,7 +141,7 @@ subroutine alloc_bunch
   implicit none
 
   if (get_iprint() >=7) then
-    write(UOUT,'(/,2x,a,/)') '=== Output from alloc_bunch - before allocations ==='
+    write(UOUT,'(/,2x,a,/)') '=== Output from alloc_VINF_arrays - before allocations ==='
     write(UOUT,'(2x,a,3i4)') 'used variables - NSO,NVMO,NAO:', NSO,NVMO,NAO
     call flushout
   endif
@@ -143,9 +154,7 @@ subroutine alloc_bunch
   endif
 
   if (.not.allocated(SpinOfOrb))     allocate(SpinOfOrb(NSO))
-  if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
   if (.not.allocated(OccGMSRef))     allocate(OccGMSRef(NSO))
-  if (.not.allocated(OccRef))        allocate(OccRef(NSO))
   if (.not.allocated(IrrepOrb))      allocate(IrrepOrb(NSO))
   if (.not.allocated(IrpLabOrb))     allocate(IrpLabOrb(NSO))
   if (.not.allocated(OrbType))       allocate(OrbType(NSO))
@@ -154,12 +163,15 @@ subroutine alloc_bunch
   if (.not.allocated(OrbCoeff))      allocate(OrbCoeff(NAO,NSO))
   if (.not.allocated(HCoreMatrix))   allocate(HCoreMatrix(NSO,NSO))
 
+  if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
+  if (.not.allocated(OccRef))        allocate(OccRef(NSO))
+
   if (get_iprint() >=7) then
     write(UOUT,'(2x,a,/)') 'alloc_bunch: SpinOfOrb, SpinOfActvOrb and other data allocated...'
     call flushout
   endif
 
-end subroutine alloc_bunch
+end subroutine alloc_VINF_arrays
 
 
 !>  read GMS stuff
@@ -287,7 +299,7 @@ TotEn = ENSCF_DIR
 ! ...  prepare variable  ...
   NVMO = NHOLE + NPTCL
 
- call alloc_bunch
+ call alloc_VINF_arrays
 
 ! ... read arrays ...
 
@@ -326,7 +338,6 @@ subroutine InitReadVINF
 !
 ! called from InitReadGMS
 !
-!
 
 implicit none
 
@@ -354,7 +365,7 @@ implicit none
 
       read(UVINF) NAO, NSO, NFRZV, TotEn, NucEn, TrfTol, IUNIQ, LABELSIZE, NINTMX
  
-       write(UOUT,*) 'till here FileVINF read'
+ !      write(UOUT,*) 'till here FileVINF read'
 
       ! ... Check for Validity of Data ...
 
@@ -382,7 +393,7 @@ implicit none
       endif
 
       ! ... Allocate for next read ...
-      call alloc_bunch
+      call alloc_VINF_arrays
 
       ! ... Read Orbital Energies and MO Coeffeints ... variables must be allocated !
 
@@ -565,7 +576,7 @@ subroutine InitReadMREINT
 
       ! ... Allocate for next read ...
 
-      call alloc_bunch
+      call alloc_VINF_arrays
 
       ! ... Read next Record ...
 

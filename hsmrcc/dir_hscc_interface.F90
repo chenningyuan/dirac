@@ -44,9 +44,11 @@ call print_HSMRCC_Dirac_info
 call StickMemory(WORK,LWORK)
 
 !if (check_MOints.and.iprint_hscc >= 10) then
- call read_mrconee; call print_mrconee_data
- call read_mdcint ! read MDCINT file
+! call read_mrconee; call print_mrconee_data
+! call read_mdcint ! read MDCINT file
 !endif
+
+call read_moltra_files ! read MRCONEE & MDCINT
 
 !call prepare_dirac_HSMRCC_file
 !call prepare_dirac_HSMRCC_int_files
@@ -135,11 +137,11 @@ Do
       Case ('.OPTION')
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
       Case ('.NCORE')
-        READ(LUCMD,*) NCMO
-        write(LUPRI,*) ' read NCMO=',NCMO
+        READ(LUCMD,*) NCMO_DIRAC
+        write(LUPRI,*) ' read NCMO=',NCMO_DIRAC
       Case ('.NACT')
-        READ(LUCMD,*) NACT
-        write(LUPRI,*) ' read NACT=',NACT
+        READ(LUCMD,*) NACT_DIRAC
+        write(LUPRI,*) ' read NACT=',NACT_DIRAC
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
         write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc
@@ -167,7 +169,7 @@ EndDo
  WRITE(LUPRI,'(1X,A)') 'HSCCINP: Set-up for the external standalone HSMRCC code'
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hscc
- WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
+! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
 
  if (nohsccfiles) then
   WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run).'
@@ -216,9 +218,7 @@ subroutine print_HSMRCC_Dirac_info
 !-----------------------------------------------------------------------------
 #include "priunit.h"
 
-!  write(LUPRI,'(/2x,a/)') 'interface for eff. and intermed.Ham. HSMRCC method'
-
-   write(LUPRI,9001)
+write(LUPRI,9001)
 
 9001 format('                                                                 ',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
@@ -235,8 +235,7 @@ subroutine print_HSMRCC_Dirac_info
             '|                                                               |',/, &
             '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++' )
 
-
-  end subroutine print_HSMRCC_Dirac_info
+end subroutine print_HSMRCC_Dirac_info
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  subroutine make_dirac_syminf

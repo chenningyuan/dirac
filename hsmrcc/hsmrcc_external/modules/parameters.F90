@@ -94,18 +94,20 @@ module Parameters
 
    ! HSMRCC parameters
 
-   integer :: NCMO
-   integer :: NHOLE
-   integer :: NPTCL
-   integer :: NEMO
+   integer :: NCMO=0
+   !> number of holes
+   integer :: NHOLE=0
+   !> number of particled
+   integer :: NPTCL=0
+   integer :: NEMO=0
 
  !> number of active electrons ...
-   integer :: NELE 
+   integer :: NELE=0
 
-   integer :: NVMO
-   integer :: NHMO
-   integer :: NPMO
-   integer :: NTMO
+   integer :: NVMO=0
+   integer :: NHMO=0
+   integer :: NPMO=0
+   integer :: NTMO=0
 
    integer :: NHMOSQ
    integer :: NPMOSQ
@@ -129,7 +131,7 @@ module Parameters
    !> ... control print-out parameter (introduced by MI)
    integer, private :: IPRINT = 0
 
-   ! ... print-out channel - moved here from the module "IOmodule"
+   !> ... print-out channel - moved here from the module "IOmodule"
    integer :: UOUT  = 51
 
    !> ... DIRAC mode parameters ...
@@ -150,6 +152,7 @@ module Parameters
  
    contains
 
+   !> set print-out channel
    subroutine set_dirac_UOUT
 #include "priunit.h"
    UOUT=LUPRI

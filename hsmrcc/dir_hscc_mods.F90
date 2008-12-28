@@ -62,6 +62,38 @@ end function get_test
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine read_moltra_files
+ use Memory
+ use Vectors
+ use GMSMod
+#include "implicit.h"
+#include "priunit.h"
+
+type(Array2Dim) :: cbuf
+type(Array3Dim) :: pos_ij, pos_kl
+
+call read_mrconee;  call print_mrconee_data
+
+call read_mdcint(cbuf,pos_ij, pos_kl)
+
+call set_hscc_VINF_data
+
+call prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
+
+call DeAllocObject(pos_kl)
+call DeAllocObject(pos_ij)
+call DeAllocObject(cbuf)
+
+if (get_iprint() >=6) then
+  write(LUPRI,*) "...going to deallocate stuff"
+endif
+! ... deallocate VINF data 
+call EndGMSMod
+
+end subroutine read_moltra_files
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_mrconee
 !----------------------------------------------------------------------------------
 !
@@ -95,7 +127,6 @@ logical :: is_mrc
   CLOSE (MRCONEE,STATUS='KEEP')
 
   mrconee_read = .true.
-
 
 ! ... copied from "ccdriv.F"
 
@@ -236,7 +267,7 @@ write(LUPRI,*)
 end subroutine print_mrconee_data
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine read_mdcint
+subroutine read_mdcint(cbuf,pos_ij, pos_kl)
 !-------------------------------------------------------------------------
 !
 !       ... read the MDCINT file 
@@ -288,8 +319,8 @@ endif
 
 if (NKR /= NORBT .and. 2*NKR /= NORBT) then
  write(LUPRI,*) 'CHECK: NKR=',NKR,' NORBT=',NORBT
-! write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
-! call Quit('MRCONEE and MDCINT are incompatible !')
+ !write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
+ !call Quit('MRCONEE and MDCINT are incompatible !')
 endif
 
 write(LUPRI,*) 'Info from MDCINT file'
@@ -509,10 +540,10 @@ endif
  ' ... going to deallocate objects in LIFO order ... '
  CALL FLSHFO(LUPRI)
 ! ... deallocate objects in LIFO order ...
- call DeAllocObject(pos_kl)
- call DeAllocObject(pos_ij)
- call DeAllocObject(cbuf)
- write(LUPRI,*) 'cbuf_vect released ...'; CALL FLSHFO(LUPRI)
+! call DeAllocObject(pos_kl)
+! call DeAllocObject(pos_ij)
+! call DeAllocObject(cbuf)
+! write(LUPRI,*) 'cbuf_vect released ...'; CALL FLSHFO(LUPRI)
  write(LUPRI,*) 'leavig "read_mdcint"...bye bye'; CALL FLSHFO(LUPRI)
 
  return
@@ -646,15 +677,17 @@ end module io_moltra
 module Dirac_HSMRCC
 !----------------------------------------------------------------------------------
 !
-!    handles all necessary data from DIRAC for the standalone HSMRCC code 
+!     handles all necessary data from DIRAC for the standalone HSMRCC code 
 !
 !----------------------------------------------------------------------------------
   !  ... lu units of dirac prepared files for HSMRCC
-!integer, parameter :: ludh = 12, lu_vind=13, lu_vint=14, lu_fhh=15, lu_fhp=16, lu_fpp=17 
 !integer :: NTMO=0, NCMO=0, NVMO=0, NEMO=0, NHOLE=0, NPTCL=0, NELE=0
 !integer :: NHMO=0, NPMO=0
 !integer :: NFRZV, NACT
+
 !real(kind=8) :: TotEn, NucEn, TrfTol
+
+integer, public :: NCMO_DIRAC, NACT_DIRAC, NFRZV_DIRAC
 
 integer, public :: iprint_hscc = 0
 
@@ -670,16 +703,14 @@ logical, public :: nohsccfiles=.false.
 
 contains
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prepare_dirac_HSMRCC_VINF_file
 !
 !            prepare *VINF - file for DIRAC
-!
 ! 
 !    Needs data from already prepared VINT,VIND integral files !
 !
-!                       content of VINF file  ....
+!    content of VINF file  ....
 !
    ! ...............................................................................................
    ! ...  Rec     Module    : Variables present in the record                                    ...
@@ -1068,10 +1099,46 @@ write(LUPRI,*) '10. V2HHP  <IJ||KA>'
 
 write(LUPRI,*) '11. VHHHP  <IJ||KA>'
 
-!close(lu_vind)
-!close(lu_vint)
 
 end subroutine prepare_HSMRCC_Vfiles
 
+
+!>   set important HSCC parameters
+!!  for VINF file
+subroutine set_hscc_VINF_data
+
+use io_moltra
+use Dirac_HSMRCC
+use Parameters
+use GMSMod
+#include "implicit.h"
+#include "priunit.h"
+
+call header('Output from set_hscc_data',-1)
+
+!  NCMO_DIRAC,  NACT_DIRAC
+ NAO = NORBT
+NEMO = NAO
+
+! ... active space - double excitations
+NPTCL = 2
+NHOLE = 2
+
+!NACT = NACT_DIR
+NCMO = NCORE_DIR
+
+NSO = NSP
+
+! ...  prepare variable  ...
+NVMO = NHOLE + NPTCL
+
+if (get_iprint() >=8) then
+  write(LUPRI,*)  "going to call alloc_VINF_arrays"
+endif
+call alloc_VINF_arrays
+
+! .. fill arrays ...
+
+end subroutine set_hscc_VINF_data
 
 
