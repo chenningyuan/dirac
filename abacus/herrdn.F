@@ -3351,6 +3351,7 @@ C
   200    CONTINUE
          IF (SQRT(SUM) .LT. THRMIN) THEN ! error branch - print output
            ZERONORM=.TRUE.
+           IPREAD = 10
            GOTO 900  ! ensure the full control print-out
          ENDIF
          SUM=D1/SQRT(SUM)
@@ -3360,8 +3361,8 @@ C
   100 CONTINUE
 
 C     ... control print-out
-      IF (IPREAD.GE.10) THEN
  900   CONTINUE
+      IF (IPREAD.GE.10) THEN
        WRITE(LUPRI,'(/,8X,A,I3,/)')
      & '***  Output from NRMORB, block #:',I
        WRITE(LUPRI,'(2X,A,I3,A,I3)')
