@@ -55,7 +55,13 @@ usage ()
    echo ' Run Dirac with the given molecule and input file. If a .tgz archive'
    echo ' is given the calculation can restart from the contents of this file.'
    echo '   Flags:'
-   echo '     -mpi n                 : Run MPI with n nodes; default sequential '
+
+ if [ "$DIRPAR" = "1" ]; then
+   echo '     -mpi n                 : Run MPI with n nodes; default parallel with no of cpu='$MPI_NPROC
+ else
+   echo '     -mpi n                 : Run MPI with n nodes; default: sequential (ie -mpi flag not needed) '
+ fi
+
    echo '     -mw mem                : Set memory (in megawords) for master; default:'$WRKMEM_DEFAULT
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the slave nodes in parallel run; default:'$WRKMEM_DEFAULT
@@ -322,7 +328,7 @@ execute_dirac()
    else
       $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
          ( \
-            echo "   $DIRAC returned non-zero exit code" ; \
+            $echo "\n   $DIRAC returned non-zero exit code" ; \
             $CLEANUP ; EXIT=1 ; export EXIT \
          )
    fi
@@ -361,6 +367,8 @@ print_header()
 #
 exitfunc()
 {
+   $echo "\nEXIT code="$EXIT
+
    if [ -r "$OUTPUT_FILE" ]; then
        grep WARNING $OUTPUT_FILE
   	if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
@@ -408,9 +416,14 @@ remove_work_dir()
             $echo "  Total size of the slave node $node work directory:\c"
             $RSH $node "du -h -s $WRK" || \
             ($echo "...could not be determined, du -h -s command not working...")
- 
+
+            $echo "  Info on the disk space usage on the slave node $node:"
+            $RSH $node "df -h" || \
+            ($echo "...could not be determined, df command not working...")
+
             $RSH $node "rm -fr $WRK" || \
-            ($echo "Error exit: work directory $WRK on slave node $node not deleted!"; EXIT=1; exitfunc)
+            ($echo "Error exit: work directory $WRK on slave node $node not deleted!"; \ 
+             EXIT=1; exitfunc)
             
             $echo "Work directory $WRK on slave node $node deleted."
           fi
@@ -428,11 +441,16 @@ remove_work_dir()
    $echo "  Total size of the main (master) node $master work directory:\c"
    du -h -s $WRK || \
    ($echo "...could not be determined, du -h -s command not working.")
+
+   $echo "  Info on the disk space usage on the master node $master (df -h):"
+   df -h || \
+   ($echo "...could not be determined, df command not working...")
    
    if [ " $RMWRK" -eq 1 ]; then
       if [ $EXIT -eq 0 ]; then
          rm -fr $WRK || \
-         ($echo "Error exit: work directory $WRK on master node $master not deleted!"; EXIT=1; exitfunc)
+         ($echo "Error exit: work directory $WRK on master node $master not deleted!"; \
+           EXIT=1; exitfunc)
          echo "Work directory $WRK on main (master) node $master deleted."
       else
          echo '*** DIRAC terminated with an error exit code'
@@ -487,7 +505,17 @@ set_work_dir()
       rm -f $WRK/* 2> /dev/null || \
       ( echo "rm $WRK error\!"; EXIT=1; exitfunc )
    fi
-cd $WRK
+  
+   # go the working directory - check if command is properly executed !
+   this_node=`hostname`
+   this_directory=`pwd`
+   cd $WRK || \
+      ( $echo "\nWhile beeing on the node $this_node in the current directory $this_directory :"
+        $echo "I can not set to the work directory $WRK ! Error exir ! "; \
+        EXIT=1 ;  exitfunc )
+
+   this_directory=`pwd`
+   $echo "Set to working directory $WRK, current absolute position (pwd) is: $this_directory"
 }
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -797,7 +825,15 @@ initialize()
    SCR_PATH=
 
    MPI_NPROC=
-   DIRPAR=0 # initialize to sequential
+
+# according to $MPIRUN decide whether this is serial or parallel run
+   if [ -n "$MPIRUN" ]; then
+     DIRPAR=1 # initialize to parallel
+     MPI_NPROC=1
+   else
+     DIRPAR=0 # initialize to sequential
+   fi
+
    MPIARG=
 
    NICE=
@@ -917,7 +953,7 @@ while [ -n "$1" ]; do
       -mpi)
          shift
          MPI_NPROC=$1
-         DIRPAR=1 # set to parallel run
+       # DIRPAR=1 # set to parallel run
          ;;
       -mpiarg)
          shift

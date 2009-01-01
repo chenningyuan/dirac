@@ -680,7 +680,7 @@ if [ "$par" = "yes" ]; then
        fi
 
        if [ "$localdisks"="yes" -a "$mach_file_mpirun"="no"  ]; then
-         $echo '\nUsing local disks - default machinefile for distribution of files needed !'
+         $echo '\nUsing local disks - default machinefile for distribution of files among nodes needed !'
        elif [ "$localdisks"="yes" -a "$mach_file_mpirun"="yes"  ]; then
          $echo '\nBoth local disks & MPI launcher need default machinefile !'
        elif [ "$localdisks"="no" -a "$mach_file_mpirun"="yes"  ]; then
@@ -2531,7 +2531,7 @@ SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=$SRC_DIR
 BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
-### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables)
+### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables) - if assigned, pam defaults is parallel run
 MPIRUN=$mpirun
 ### ... is machinefile needed for the MPIRUN launcher ? 
 MACH_FILE_MPIRUN=$mach_file_mpirun
