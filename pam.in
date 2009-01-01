@@ -367,7 +367,7 @@ print_header()
 #
 exitfunc()
 {
-   $echo "\nEXIT code="$EXIT
+  # $echo "\nEXIT code="$EXIT
 
    if [ -r "$OUTPUT_FILE" ]; then
        grep WARNING $OUTPUT_FILE
@@ -515,7 +515,14 @@ set_work_dir()
         EXIT=1 ;  exitfunc )
 
    this_directory=`pwd`
-   $echo "Set to working directory $WRK, current absolute position (pwd) is: $this_directory"
+
+   if [ "$WRK" != "$this_directory" ]; then
+     $echo "\n              The specified work directory is : $WRK "
+     $echo "While the current absolute position (pwd) is : $this_directory"
+     $echo "\n Error exit ! Wrong working directory !"
+     EXIT=1 ;  exitfunc 
+   fi
+
 }
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
