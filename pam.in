@@ -515,12 +515,11 @@ set_work_dir()
         EXIT=1 ;  exitfunc )
 
    this_directory=`pwd`
-
    if [ "$WRK" != "$this_directory" ]; then
-     $echo "\n              The specified work directory is : $WRK "
-     $echo "While the current absolute position (pwd) is : $this_directory"
-     $echo "\n Error exit ! Wrong working directory !"
-     EXIT=1 ;  exitfunc 
+     $echo "\n The pam flag given work directory is : $WRK "
+     $echo " Its absolute path (pwd) is : $this_directory"
+     WRK=$this_directory
+     $echo "  Work directory provided with its full path, WRK=$WRK\n"
    fi
 
 }
