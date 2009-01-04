@@ -1,9 +1,12 @@
-#include "getopt.h"
+#include <getopt.h> /*  under /usr/include  */
+/* #include "getopt.h" */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+
+#define BAD_OPTION -100 /* taken from own local "getopt.h", which is not active now */
 
 /* The following external Fortran90 SetHSMR routines are
  * to pass various values to the HSMR program.           */

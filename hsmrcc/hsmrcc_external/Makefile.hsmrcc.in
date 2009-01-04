@@ -35,7 +35,8 @@ f90objs := $(srcdir)/initguess.o   $(srcdir)/inihsbase.o   $(srcdir)/endhsmr.o  
            $(srcdir)/hsmrcc.o      $(srcdir)/inihsiter.o   $(srcdir)/runinfo.o   $(srcdir)/maproots.o   \
            $(srcdir)/startiter.o   $(srcdir)/compensate.o  $(srcdir)/genhsmrpars.o
 
-c89objs := $(srcdir)/getopt.o $(srcdir)/hsmrmain.o
+#c89objs := $(srcdir)/getopt.o $(srcdir)/hsmrmain.o
+c89objs :=  $(srcdir)/hsmrmain.o
 
 #
 # ... all own hsmrcc objects together

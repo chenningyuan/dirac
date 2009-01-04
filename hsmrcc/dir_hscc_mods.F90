@@ -41,6 +41,8 @@ CHARACTER*10 NEXTFIL, INTERFACE
 
 logical :: is_complex, mrconee_read = .false.
 
+integer, public :: nelec_tot=0
+
 contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -49,7 +51,7 @@ function GetNBSYM() result(nbsym_dirac)
 #include "priunit.h"
 #include "dgroup.h"
  nbsym_dirac = NBSYM
- write(LUPRI,*) 'get NBSYM=',NBSYM
+ write(LUPRI,'(2x,a,i2)') 'get NBSYM=',NBSYM
 end function GetNBSYM
 
 function get_test() result(nintg)
@@ -60,6 +62,24 @@ integer:: nintg
  nintg=12
 end function get_test
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine count_nelec_tot
+!
+! .. count total number of electrons through DIRAC irreps
+!
+#include "implicit.h"
+#include "priunit.h"
+
+nelec_tot = 0
+do irp=1,NSYMRP
+ write(LUPRI,'(2x,i2,a,i2,a,i2,a)') irp,'/',NSYMRP,' -> ',NELEC(irp),' electrons'
+ nelec_tot = nelec_tot + NELEC(irp)
+enddo
+
+write(LUPRI,'(/,2x,a,i2,/)')  & 
+'count_nelec_tot: total number of electrons is:',nelec_tot
+
+end subroutine count_nelec_tot
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_moltra_files
@@ -687,7 +707,7 @@ module Dirac_HSMRCC
 
 !real(kind=8) :: TotEn, NucEn, TrfTol
 
-integer, public :: NCMO_DIRAC, NACT_DIRAC, NFRZV_DIRAC
+integer, public :: NCMO_DIRAC=0, NACT_DIRAC=0, NFRZV_DIRAC=0
 
 integer, public :: iprint_hscc = 0
 
@@ -1125,20 +1145,150 @@ NPTCL = 2
 NHOLE = 2
 
 !NACT = NACT_DIR
-NCMO = NCORE_DIR
+!NCMO = NCORE_DIR
+NCMO = NCMO_DIRAC
 
 NSO = NSP
 
 ! ...  prepare variable  ...
 NVMO = NHOLE + NPTCL
 
+call count_nelec_tot
+write(LUPRI,*) 'nelec_tot=',nelec_tot
+numirrep_dirac = GetNBSYM()
+write(LUPRI,*) 'numirrep_dirac=',numirrep_dirac
+
 if (get_iprint() >=8) then
-  write(LUPRI,*)  "going to call alloc_VINF_arrays"
+ write(LUPRI,*)  "going to call alloc_VINF_arrays"
 endif
+
 call alloc_VINF_arrays
 
-! .. fill arrays ...
+! .. fill these arrays ...
+call fill_VINF_arrays
 
 end subroutine set_hscc_VINF_data
 
+subroutine fill_VINF_arrays
+!
+!   fill SpinOf, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy
+!
+!  IrpLabOrb is integer for char ! all arrays are in OrbMod module
+!
+use io_moltra
+use Dirac_HSMRCC
+use Parameters
+use GMSMod
+#include "implicit.h"
+#include "priunit.h"
+character(len=4) :: repna_temp_a, repna_temp_b
+integer :: multbs(1:8,1:8)
+
+if (get_iprint() >=8) then
+  write(LUPRI,'(/,4x,a,/)') "Output from fill_VINF_arrays"
+endif
+
+write(LUPRI,*) 'numirrep_dirac=',numirrep_dirac
+
+write(LUPRI,'(/,2x,a,i4,a)') 'Irreps (1-',NSP,' )'
+do i=1, NSP
+  write(LUPRI,'(2x,i3,a,2i2,a,a4,a,f12.7)')   &  
+  i,': irrep no ',IREPSP(i),IREPSP(i+NSP),'- irrep label:',REPNA(IREPSP(i+NSP)),' orb.energy:',EPS1(i) 
+enddo
+write(LUPRI,*)
+
+! once again...
+do i=1, NSP/2
+ write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
+enddo
+
+! fill orb.en.
+ii = 1
+do i=1, NSP/2
+
+! write(LUPRI,*) 'EPS1(',i,')=',EPS1(i),EPS1(i+NSP/2)
+! OrbEnergy%p_rA1D(ii)   = EPS1(i) 
+ OrbEnergy(ii)   = EPS1(i)
+! OrbEnergy%p_rA1D(ii+1) = EPS1(i+NSP/2)
+ OrbEnergy(ii+1) = EPS1(i+NSP/2)
+ 
+ repna_temp_a = REPNA(IREPSP(i+NSP))
+ repna_temp_b = REPNA(IREPSP(i+NSP/2+NSP))
+
+ !write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
+ write(LUPRI,'(2x,i3,1x,a4,i2,1x,a4,i2)') i, repna_temp_a,IREPSP(i), repna_temp_b, IREPSP(i+NSP/2)
+
+ !IrrepOrb%p_iA1D(ii)    = IREPSP(i+NSP)
+ IrrepOrb(ii)    = IREPSP(i+NSP)
+
+ !read(repna_temp_a,'(a4)') IrpLabOrb%p_iA1D(ii)
+ read(repna_temp_a,'(a4)') IrpLabOrb(ii)
+
+! IrrepOrb%p_iA1D(ii+1)  = IREPSP(i+NSP) ! previously saved irrep...
+ IrrepOrb(ii+1)  = IREPSP(i+NSP) ! previously saved irrep...
+
+ !read(repna_temp_b,'(a4)') IrpLabOrb%p_iA1D(ii+1)
+ read(repna_temp_b,'(a4)') IrpLabOrb(ii+1)
+
+! SpinOfOrb%p_iA1D(ii)   = +1
+ SpinOfOrb(ii)   = +1
+! SpinOfOrb%p_iA1D(ii+1) = -1
+ SpinOfOrb(ii+1) = -1
+! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
+ ii = ii + 2
+enddo
+
+write(LUPRI,'(/,2x,a,i3)') 'IrrepOrb, SpinOfOrb ... arrays filled, NSP=',NSP
+
+if (iprint_hscc >= 5) then
+  write(LUPRI,'(/,2x,a,/)') '***  HSMRCC active space info ***'
+  write(LUPRI,'(4x,a,i3)') 'NCMO_DIRAC=',NCMO_DIRAC
+  write(LUPRI,'(4x,a,i3)') 'NACT_DIRAC=',NACT_DIRAC
+endif
+
+do i=1,NSP
+
+ if (i<=nelec_tot) then
+ ! OccGMSRef%p_iA1D(i) = 1
+  OccGMSRef(i)=1
+ else
+  !OccGMSRef%p_iA1D(i) = 0
+  OccGMSRef(i)=0
+ endif
+!
+ if (i<=NCMO_DIRAC) then
+ ! OrbType%p_iA1D(i) = -1
+  OrbType(i) = -1
+ ! OrbSpace%p_iA1D(i) = -1
+  OrbSpace(i) = -1
+ else if ( i>NCMO_DIRAC .and. i<=NCMO_DIRAC+NACT_DIRAC ) then
+ ! OrbType%p_iA1D(i) = 0
+  OrbType(i) = 0
+ ! OrbSpace%p_iA1D(i) = 1
+  OrbSpace(i) = 1
+ else if ( i>NCMO_DIRAC+NACT_DIRAC ) then
+ ! OrbType%p_iA1D(i) = 1
+  OrbType(i) = 1
+ ! OrbSpace%p_iA1D(i) = -1
+  OrbSpace(i) = -1
+ else
+  call quit('dead branch !')
+ endif
+
+ if (iprint_hscc >= 5) then
+
+   write(LUPRI,876) i,SpinOfOrb(i),OccGMSRef(i),  & 
+                    OrbType(i),OrbSpace(i),       & 
+                    IrrepOrb(i),IrpLabOrb(i),OrbEnergy(i)
+
+   876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x, &
+                   'irp=',i2,1x,' irplab=',a4,1x,'orb.en=',f12.7)
+ endif
+
+enddo
+
+call print_gms_data
+
+
+end subroutine fill_VINF_arrays
 

@@ -138,10 +138,10 @@ Do
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
       Case ('.NCORE')
         READ(LUCMD,*) NCMO_DIRAC
-        write(LUPRI,*) ' read NCMO=',NCMO_DIRAC
+        write(LUPRI,*) ' read NCMO_DIRAC=',NCMO_DIRAC
       Case ('.NACT')
         READ(LUCMD,*) NACT_DIRAC
-        write(LUPRI,*) ' read NACT=',NACT_DIRAC
+        write(LUPRI,*) ' read NACT_DIRAC=',NACT_DIRAC
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
         write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc
@@ -170,6 +170,10 @@ EndDo
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hscc
 ! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
+
+ WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
+ WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
+ !WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
 
  if (nohsccfiles) then
   WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run).'

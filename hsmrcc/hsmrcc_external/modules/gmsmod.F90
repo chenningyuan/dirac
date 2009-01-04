@@ -15,7 +15,8 @@ module GMSMod
    implicit none
 
   ! integer :: NAO, NSO, NFRZV
-   integer :: NAO=0, NSO=0, NFRZV=0
+  ! integer :: NAO=0, NSO=0, NFRZV=0
+   integer :: NAO=-1, NSO=-1, NFRZV=-1
 
   ! integer :: NVMO !  it's in Parameters
    double precision :: TotEn, NucEn, TrfTol
@@ -333,11 +334,13 @@ end subroutine  InitReadDIRAC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitReadVINF
+!---------------------------------------------------------------------
 !
-!> read existing VINF file (when restarting)
+! read existing VINF file (when restarting)
 !
 ! called from InitReadGMS
 !
+!---------------------------------------------------------------------
 
 implicit none
 
@@ -411,14 +414,21 @@ end subroutine InitReadVINF
 
 !> print allocated data read from GAMESS/DIRAC files
 subroutine print_gms_data
+!----------------------------------------------------------------------------------------------------
 !
-!  SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy, OrbCoeff, HCoreMatrix
+!  Prints  SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy, OrbCoeff, 
 !
+!  and HCoreMatrix if wished
+!
+!----------------------------------------------------------------------------------------------------
 integer :: i
 logical :: print_hcore_mtx = .false.
 
+call header('Output from "print_gms_data"',-1)
+
 write(UOUT,'(/,2x,a,/,2x,a)') 'Data arrays(i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy)', &
-'------------------------------------------------------------------------------------------------------------'
+'--------------------------------------------------------------------------------------------------------------'
+
 write(UOUT,'(4x,a,i5)') 'range of arrays, NSO=',NSO 
 
 if (NSO==0) then 

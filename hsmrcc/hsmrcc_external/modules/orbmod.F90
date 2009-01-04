@@ -2,14 +2,17 @@ module OrbMod
 
    use Parameters
    use IOModule
+
    implicit none
    double precision, allocatable, dimension(:) :: OrbEn
    double precision, allocatable, dimension(:) :: GenEn
    double precision, allocatable, dimension(:) :: ShiftEn
+
    integer, allocatable :: SpinOfOrb(:), SpinOfActvOrb(:)
    integer, allocatable :: OccGMSRef(:), OccRef(:)
    integer, allocatable :: IrrepOrb(:), IrpLabOrb(:)
    integer, allocatable :: OrbType(:), OrbSpace(:)
+
    double precision, allocatable :: OrbEnergy(:), OrbCoeff(:,:)
    double precision, allocatable :: HCoreMatrix(:,:)
 
@@ -17,7 +20,6 @@ contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsMainOrb(i)
-
    implicit none
    integer i
    logical IsMainOrb
@@ -39,11 +41,9 @@ function IsMainOrb(i)
    IsMainOrb = OrbSpace(i+NCMO).eq.PM_SPACE
 
    return
-
 end function IsMainOrb
 
 function IsIntmOrb(i)
-
    implicit none
    integer i
    logical IsIntmOrb
@@ -58,11 +58,9 @@ function IsIntmOrb(i)
    IsIntmOrb = OrbSpace(i+NCMO).eq.PI_SPACE
 
    return
-
 end function IsIntmOrb
 
 function IsIntmCore(i)
-
    implicit none
    integer i
    logical IsIntmCore
@@ -78,7 +76,6 @@ function IsIntmCore(i)
    if (IsIntmCore) IsIntmCore = OccRef(i+NCMO).eq.1
 
    return
-
 end function IsIntmCore
 
 function IsIntmVirt(i)
