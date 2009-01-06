@@ -707,7 +707,7 @@ module Dirac_HSMRCC
 
 !real(kind=8) :: TotEn, NucEn, TrfTol
 
-integer, public :: NCMO_DIRAC=0, NACT_DIRAC=0, NFRZV_DIRAC=0
+integer, public :: NCMO_DIRAC=0, NACT_DIRAC=0, NFRZV_DIRAC=-1, NEMO_DIRAC=-1
 
 integer, public :: iprint_hscc = 0
 
@@ -1062,7 +1062,6 @@ end subroutine prepare_dirac_HSMRCC_int_files
 
 end module Dirac_HSMRCC
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
 !------------------------------------------------------------------------
@@ -1090,35 +1089,12 @@ type(Array3Dim), intent(in) :: pos_ij, pos_kl
 call header('output from prepare_HSMRCC_Vfiles',-1)
 
 call set_dirac_hscc_file_names
-!
 
 ! ... open all HSMRCC made files 
-if (.not.nohsccfiles) call OpenIntFiles
-
-
-! 01. V2H2P  <IJ||AB>
-write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
-
-write(LUPRI,*) '02. VPPPP  <AB||CD>'
-
-write(LUPRI,*) '03. VHHHH  <IJ||KL>'
-
-write(LUPRI,*) '04. VHHPP  <IJ||AB>'
-
-write(LUPRI,*) '05. V2HPP  <IJ||AB>'
-
-write(LUPRI,*) '06. V2PHH  <AB||IJ>'
-
-write(LUPRI,*) '07. VPHHP  <AI||JB>'
-
-write(LUPRI,*) '08. VPH2P  <AI||BC>'
-
-write(LUPRI,*) '09. VPHPP  <AI||JB>'
-
-write(LUPRI,*) '10. V2HHP  <IJ||KA>'
-
-write(LUPRI,*) '11. VHHHP  <IJ||KA>'
-
+if (.not.nohsccfiles) then
+  call OpenIntFiles
+  call make_VIND_VINT_files
+endif
 
 end subroutine prepare_HSMRCC_Vfiles
 
@@ -1138,7 +1114,10 @@ call header('Output from set_hscc_data',-1)
 
 !  NCMO_DIRAC,  NACT_DIRAC
  NAO = NORBT
-NEMO = NAO
+
+!
+!NEMO = NAO ! WRONG !!!
+!NEMO=NEMO_DIRAC
 
 ! ... active space - double excitations
 NPTCL = 2
@@ -1146,7 +1125,10 @@ NHOLE = 2
 
 !NACT = NACT_DIR
 !NCMO = NCORE_DIR
+
 NCMO = NCMO_DIRAC
+
+NFRZV = NFRZV_DIRAC
 
 NSO = NSP
 
@@ -1164,8 +1146,14 @@ endif
 
 call alloc_VINF_arrays
 
+! ... set options ...
+OPTION(HSCC_DIRAC_MODE)=.false.
+OPTION(DIRAC_MODE)     =.true.
+
 ! .. fill these arrays ...
 call fill_VINF_arrays
+
+call GenHSMRpars
 
 end subroutine set_hscc_VINF_data
 
@@ -1201,6 +1189,8 @@ write(LUPRI,*)
 do i=1, NSP/2
  write(LUPRI,'(2x,i3,1x,a4,1x,a4)') i,REPNA(IREPSP(i+NSP)),REPNA(IREPSP(i+NSP/2+NSP))
 enddo
+
+NEMO_DIRAC=0
 
 ! fill orb.en.
 ii = 1
@@ -1240,11 +1230,7 @@ enddo
 
 write(LUPRI,'(/,2x,a,i3)') 'IrrepOrb, SpinOfOrb ... arrays filled, NSP=',NSP
 
-if (iprint_hscc >= 5) then
-  write(LUPRI,'(/,2x,a,/)') '***  HSMRCC active space info ***'
-  write(LUPRI,'(4x,a,i3)') 'NCMO_DIRAC=',NCMO_DIRAC
-  write(LUPRI,'(4x,a,i3)') 'NACT_DIRAC=',NACT_DIRAC
-endif
+NEMO_DIRAC=0
 
 do i=1,NSP
 
@@ -1269,6 +1255,7 @@ do i=1,NSP
  else if ( i>NCMO_DIRAC+NACT_DIRAC ) then
  ! OrbType%p_iA1D(i) = 1
   OrbType(i) = 1
+  NEMO_DIRAC=NEMO_DIRAC+1
  ! OrbSpace%p_iA1D(i) = -1
   OrbSpace(i) = -1
  else
@@ -1287,8 +1274,70 @@ do i=1,NSP
 
 enddo
 
-call print_gms_data
 
+! .. update
+SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
+OccRef = OccGMSRef
+totally_symmetric_irrep = 1
+numirrep = numirrep_dirac
+NEMO= NEMO_DIRAC
+
+if (iprint_hscc >= 5) then
+  write(LUPRI,'(/,2x,a,/)') '***  HSMRCC active space info ***'
+  write(LUPRI,'(4x,a,i3)') 'NCMO_DIRAC=',NCMO_DIRAC
+  write(LUPRI,'(4x,a,i3)') 'NACT_DIRAC=',NACT_DIRAC
+  write(LUPRI,'(4x,a,i3)') 'NEMO_DIRAC=',NEMO_DIRAC
+endif
+
+if (NEMO_DIRAC == -1) call quit('NEMO_DIRAC bad number !')
+
+
+
+
+call print_gms_data
 
 end subroutine fill_VINF_arrays
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine make_VIND_VINT_files(cbuf,pos_ij,pos_kl)
+!----------------------------------------------------------------
+!
+! prepare integral files
+!
+!----------------------------------------------------------------
+use Memory
+use Vectors
+
+use io_moltra
+use Dirac_HSMRCC
+use Parameters
+use GMSMod
+#include "implicit.h"
+#include "priunit.h"
+
+type(Array2Dim), intent(in) :: cbuf
+type(Array3Dim), intent(in) :: pos_ij, pos_kl
+
+
+! 01. V2H2P  <IJ||AB>
+write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
+
+write(LUPRI,*) '02. VPPPP  <AB||CD>'
+
+write(LUPRI,*) '03. VHHHH  <IJ||KL>'
+
+write(LUPRI,*) '04. VHHPP  <IJ||AB>'
+
+write(LUPRI,*) '05. V2HPP  <IJ||AB>'
+
+write(LUPRI,*) '06. V2PHH  <AB||IJ>'
+
+write(LUPRI,*) '07. VPHHP  <AI||JB>'
+
+write(LUPRI,*) '08. VPH2P  <AI||BC>'
+
+write(LUPRI,*) '09. VPHPP  <AI||JB>'
+
+write(LUPRI,*) '10. V2HHP  <IJ||KA>'
+
+end subroutine make_VIND_VINT_files

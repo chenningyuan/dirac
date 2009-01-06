@@ -18,7 +18,7 @@ module OrbMod
 
 contains
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsMainOrb(i)
    implicit none
    integer i
@@ -43,6 +43,7 @@ function IsMainOrb(i)
    return
 end function IsMainOrb
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsIntmOrb(i)
    implicit none
    integer i
@@ -60,16 +61,17 @@ function IsIntmOrb(i)
    return
 end function IsIntmOrb
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsIntmCore(i)
    implicit none
    integer i
    logical IsIntmCore
 
    if ((i.le.0).or.(i.gt.NVMO)) then
-      write(UOUT,*) "Invalid value for IsIntmCore"
-      write(UOUT,*) "i,NVMO:",i,NVMO
-      call flushout
-      call quit('Invalid value for IsIntmCore')
+     write(UOUT,*) "Invalid value for IsIntmCore"
+     write(UOUT,*) "i,NVMO:",i,NVMO
+     call flushout
+     call quit('Invalid value for IsIntmCore')
    endif
 
    IsIntmCore = IsIntmOrb(i)
@@ -78,16 +80,17 @@ function IsIntmCore(i)
    return
 end function IsIntmCore
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function IsIntmVirt(i)
    implicit none
    integer i
    logical IsIntmVirt
 
    if ((i.le.0).or.(i.gt.NVMO)) then
-      write(UOUT,*) "Invalid value for IsIntmVirt:"
-      write(UOUT,*) "i,NVMO:",i,NVMO
-      call flushout
-      call quit('Invalid value for IsIntmVirt')
+     write(UOUT,*) "Invalid value for IsIntmVirt:"
+     write(UOUT,*) "i,NVMO:",i,NVMO
+     call flushout
+     call quit('Invalid value for IsIntmVirt')
    endif
 
    IsIntmVirt = IsIntmOrb(i)
@@ -95,5 +98,19 @@ function IsIntmVirt(i)
 
    return
 end function IsIntmVirt
+
+subroutine print_orbmod_functions
+ implicit none
+ integer i
+
+ write(UOUT,'(/,6x,a,i3,a,i3)') '*** Output from OrbMod ***,(1-NVMO=',NVMO,' NCMO=',NCMO
+ do i=1, NVMO
+   write(UOUT,'(2x,i3,a,l1,a,l1,a,l1,a,l1)')  & 
+    i,'. IsMainOrb:',IsMainOrb(i), ' IsIntmOrb:',IsIntmOrb(i),  & 
+    ' IsIntmCore:',IsIntmCore(i),' IsIntmVirt:',IsIntmVirt(i)
+ enddo
+ call flushout
+
+end subroutine print_orbmod_functions
 
 end module OrbMod

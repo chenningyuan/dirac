@@ -16,7 +16,8 @@ module GMSMod
 
   ! integer :: NAO, NSO, NFRZV
   ! integer :: NAO=0, NSO=0, NFRZV=0
-   integer :: NAO=-1, NSO=-1, NFRZV=-1
+  ! integer :: NAO=-1, NSO=-1, NFRZV=-1
+   integer :: NAO=-1, NSO=-1, NFRZV=0
 
   ! integer :: NVMO !  it's in Parameters
    double precision :: TotEn, NucEn, TrfTol
@@ -25,6 +26,7 @@ module GMSMod
 
    integer :: IUNIQ, LABELSIZE, NINTMX
 
+   ! ... arrays for GAMESS integral files ...
    double precision, allocatable :: XXPREAD(:)
    integer, allocatable :: IXPREAD(:)
 
@@ -60,25 +62,7 @@ subroutine InitGMSMod
 
 !  ... final print-out of what has been read inside - simple variables & arrays
    if (get_iprint() >=7) then
-
-    if (OPTION(HSCC_DIRAC_MODE)) then
-      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from DIRAC ====='
-    else
-      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from GAMESS ====='
-    endif
-!   -----
-    write(UOUT,'(8x,a,i4)')     '   NAO=',NAO
-    write(UOUT,'(8x,a,i4)')     '   NSO=',NSO
-    write(UOUT,'(8x,a,i4)')     '  NCMO=',NCMO
-    write(UOUT,'(8x,a,i4)')     '  NEMO=',NEMO
-    write(UOUT,'(8x,a,i4)')     ' NHOLE=',NHOLE
-    write(UOUT,'(8x,a,i4)')     ' NPTCL=',NPTCL
-    write(UOUT,'(8x,a,f18.13)') ' TotEn=',TotEn
-    write(UOUT,'(8x,a,f18.13)') ' NucEn=',NucEn
-    write(UOUT,'(8x,a,f18.13)') 'TrfTol=',TrfTol
-
     call print_gms_data
-
    endif
 
    return
@@ -177,7 +161,13 @@ end subroutine alloc_VINF_arrays
 
 !>  read GMS stuff
 subroutine InitReadGMS
-
+!--------------------------------------------------------------------------
+!
+!
+!       read either Gamess integral files; or VINF file when present
+!
+!
+!--------------------------------------------------------------------------
    implicit none
    integer NXX, IXX
 
@@ -420,11 +410,35 @@ subroutine print_gms_data
 !
 !  and HCoreMatrix if wished
 !
+!  called from both DIRAC/HSCC
+!
 !----------------------------------------------------------------------------------------------------
 integer :: i
 logical :: print_hcore_mtx = .false.
 
 call header('Output from "print_gms_data"',-1)
+
+    if (OPTION(HSCC_DIRAC_MODE)) then
+      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from DIRAC ====='
+    else if (.not.OPTION(HSCC_DIRAC_MODE).and..not.OPTION(DIRAC_MODE)) then
+      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: obtained variables - from GAMESS ====='
+    else if (OPTION(DIRAC_MODE)) then
+      write(UOUT,'(/,2x,a,/)') '===== InitGMSMod: in DIRAC_mode ====='
+    else
+     call quit('dead brach ! fix it !') 
+    endif
+
+!   -----
+    write(UOUT,'(8x,a,i4)')     '   NAO=',NAO
+    write(UOUT,'(8x,a,i4)')     '   NSO=',NSO
+    write(UOUT,'(8x,a,i4)')     ' NFRZV=',NFRZV
+    write(UOUT,'(8x,a,i4)')     '  NCMO=',NCMO
+    write(UOUT,'(8x,a,i4)')     '  NEMO=',NEMO
+    write(UOUT,'(8x,a,i4)')     ' NHOLE=',NHOLE
+    write(UOUT,'(8x,a,i4)')     ' NPTCL=',NPTCL
+    write(UOUT,'(8x,a,f18.13)') ' TotEn=',TotEn
+    write(UOUT,'(8x,a,f18.13)') ' NucEn=',NucEn
+    write(UOUT,'(8x,a,f18.13)') 'TrfTol=',TrfTol
 
 write(UOUT,'(/,2x,a,/,2x,a)') 'Data arrays(i, SpinOfOrb, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy)', &
 '--------------------------------------------------------------------------------------------------------------'

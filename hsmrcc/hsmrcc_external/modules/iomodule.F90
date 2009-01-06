@@ -238,13 +238,15 @@ subroutine InitIOMod_alloc_NZIntRec
 
 end subroutine InitIOMod_alloc_NZIntRec
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine ReadNZIntRecs
+!-------------------------------------------------------------------------------------------------------
 !
 !
-!   Read data on records on FileVINF file: StartRec,EndngRec,TotNZInt, NZIntRec_Vxxxx for 11 int.types
+!  Read data on records on FileVINF file: StartRec,EndngRec,TotNZInt, NZIntRec_Vxxxx for 11 int.types
 !
 !
+!-------------------------------------------------------------------------------------------------------
    implicit none
 
    if (.not.Init) then
@@ -312,6 +314,7 @@ subroutine InitBlockIO
    NumBlock(V2HHP) = 1
    NumBlock(VHHHP) = 1
    NumBlock(FHH)   = 1
+
    ! ... block reading procedure ...
    NumBlock(VPPPP) = NumBlock_VPPPP()
    NumBlock(VPH2P) = NumBlock_VPH2P()

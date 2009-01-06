@@ -8,7 +8,7 @@ subroutine GenHSMRpars
 !
 !  NOTE: Needs NCMO, NVMO, NHOLE, NEMO, NPCTL ... variables must be ready !
 !
-!  assumes filled arrays: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt ...
+!  needs functions: IsMainOrb, IsIntmOrb, IsIntmCore, IsIntmVirt ...
 !
 !-----------------------------------------------------------------------
    use Parameters ! most of parameters are stored here ...
@@ -20,18 +20,25 @@ subroutine GenHSMRpars
    integer N_CHOOSE_R
 
    if ( get_iprint() >= 10 ) then
+
      call HEADER('Output from GenHSMRpars',-1)
      if (OPTION(HSCC_DIRAC_MODE)) then
-       write(UOUT,'(10x,a)') '*** DIRAC mode is ON! ***'
-     else
-       write(UOUT,'(10x,a)') '*** GAMESS mode is ON! ***'
+       write(UOUT,'(10x,a)') '*** HSMRCC: DIRAC mode is ON! ***'
+     else if (.not.OPTION(HSCC_DIRAC_MODE).and..not.OPTION(DIRAC_MODE)) then
+       write(UOUT,'(10x,a)') '*** HSMRCC: GAMESS mode is ON! ***'
+     else if (OPTION(DIRAC_MODE)) then
+       write(UOUT,'(10x,a)') '*** We are in DIRAC - preparing files for HSMRCC ***'
      endif
+
      write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
      write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
      write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
      write(UOUT,'(2x,a,i4)') ' NEMO=',NEMO
      write(UOUT,'(2x,a,i4)') 'NPTCL=',NPTCL
      call flushout
+
+     call print_orbmod_functions
+
    endif
 
    NHMO = NCMO + NVMO
@@ -57,7 +64,11 @@ subroutine GenHSMRpars
    do i = 1, NVMO
      if (IsMainOrb(i)) NMAINORB = NMAINORB + 1
    enddo
-   if (NMAINORB==0) call quit('GenHSMRpars: NMAINORB .eq. 0 !')
+
+   if (NMAINORB==0) then
+    write(UOUT,'(2x,a)') 'IsMainOrb(i), i=1,NVMO gives all false !'
+    call quit('GenHSMRpars: NMAINORB .eq. 0 !')
+   endif
 
 !  ... intermediate space, Pi, make ready NINTMORB
    NINTMORB = 0
@@ -97,8 +108,8 @@ subroutine GenHSMRpars
    MAXEXC = MIN(NHOLE,NPTCL)
 
    ! ... control print-out
-   if ( get_iprint() >= 10 ) then
-     write(UOUT,'(/,8x,a)') 'GenGSMRpars: calculated parameters:'
+   if ( get_iprint() >= 7 ) then
+     write(UOUT,'(/,8x,a)') '**** GenGSMRpars: calculated parameters: ****'
      write(UOUT,'(2x,a,i7)') '       NSTATE=',NSTATE
      write(UOUT,'(2x,a,i7)') '  NSTATE_MAIN=',NSTATE_MAIN
      write(UOUT,'(2x,a,i7)') '  NSTATE_INTM=',NSTATE_INTM
