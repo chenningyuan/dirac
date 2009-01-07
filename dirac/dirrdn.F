@@ -6728,7 +6728,8 @@ C         if reading input from a terminal
 C
 C        Look for 2-component Hamiltonians
 C
-         IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   ') THEN
+         IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
+     &       WORD.EQ.'.X2C   ') THEN
            TWOCOMP=.TRUE. 
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
