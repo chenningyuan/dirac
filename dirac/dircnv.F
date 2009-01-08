@@ -86,6 +86,10 @@ C
         ELSE
           IREC = MOD(NITER-2,MXDIIS-1) + 1
         ENDIF
+        IF (IPRSCF.GE.3) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &'DHFCNV: going to read Fock MO matrix from previous SCF cycle'
+        ENDIF
         CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
 C
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)

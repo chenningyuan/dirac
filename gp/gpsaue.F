@@ -2652,11 +2652,11 @@ C  /* Deck readac */
       RETURN
  10   CONTINUE
 CMI   ...adding more on error report
-      WRITE(LUPRI,*) '*** Error in READAC ***'
-      write(lupri,*) 'file number IT=',IT
-      write(lupri,*) 'number of elements to be read N=',N
-      write(lupri,*) ' RECORD #: IREC=',IREC
-      write(lupri,*) ' IOSTAT=',IOS
+      WRITE(LUPRI,'(/,6X,A)')  '*** Error in READAC ***'
+      write(lupri,'(2X,A,I4)') 'file number IT=',IT
+      write(lupri,'(2X,A,I8)') 'number of elements to be read N=',N
+      write(lupri,'(2X,A,I4)') ' RECORD #: IREC=',IREC
+      write(lupri,'(2X,A,I4)') ' IOSTAT=',IOS
       CALL QUIT('READAC: Error reading file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

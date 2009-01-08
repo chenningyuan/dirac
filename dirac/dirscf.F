@@ -158,7 +158,7 @@ C=============================================================
         SSMTRC = SSMTRC_SAVE
 
         BSS = .FALSE.
-        CALL GMOTRA(WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
         CALL SETDC2(0)
 
@@ -189,20 +189,29 @@ C         .... prepare the DFCOEF file with staring MO's
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFDIIS')
-          IF (IPRSCF.GE.2) WRITE(LUPRI,*)
-     &  'PSIDHF: DFDIIS file was deleted'
+          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
+
+        INQUIRE(FILE='DFFOCK',EXIST=EX)
+        IF (EX) THEN
+          CALL SYSTEM('/bin/rm DFFOCK')
+          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &    'PSIDHF: DFFOCK file from previous SCF cycle was deleted.'
+        ENDIF
+
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFEVEC')
-          IF (IPRSCF.GE.2) WRITE(LUPRI,*)
-     &  'PSIDHF: DFEVEC file was deleted'
+          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &    'PSIDHF: DFEVEC file from previous SCF cycle was deleted.'
         ENDIF
+
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
          CALL SYSTEM('/bin/rm DFCOEF')
-         IF (IPRSCF.GE.2) WRITE(LUPRI,*)
-     &   'PSIDHF: DFCOEF file was deleted'
+         IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &   'PSIDHF: DFCOEF file from previous SCF cycle was deleted.'
         ENDIF
 
         DHFCONV(1)=.FALSE.
@@ -246,45 +255,43 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
       DO4C2C = DO4C2C_SAVE
       IF (DO4C2C) THEN
-        write(lupri,*) 'PSIDHF: transfer  4c - > 2c !!!'
-        CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
+        write(lupri,'(4X,A)') 'PSIDHF: Descending to two-component'// 
+     &'mode after previous four-component cycles.'
+        CALL TITLER('Two-component BSS/DKH Kohn-Sham calculations',
      &      '*',125)
+        BSS     = .TRUE.
+        TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
+        TWOCOMP = .FALSE.
 
-        BSS= .TRUE.
+        ! needs this flag for preparing transformed data
+        CMPEIG = .TRUE. 
+
         START2C = .FALSE.
-        CALL GMOTRA(WORK(KFREE),LFREE)
+        CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 
 CMI      ... DO NOT continue in SCF iterations !!!
-         IF (.NOT.CONT2C) THEN
+        IF (.NOT.CONT2C) THEN
 C        ... only one iteration 
            MAXITR = 1
-
-        IF (.NOT.ONESYS) THEN
-         TRIFCK_SAVE = TRIFCK
-         TRIVEC_SAVE = TRIVEC
-         TRIFCK = .FALSE.
-         TRIVEC = .FALSE.
-        ENDIF
-
-         DODAMP = .FALSE.
-         DODIIS = .FALSE.
-         DODSCF = .FALSE.
-         BNCRON = .FALSE.
-
-         ELSE
-
-C        DODAMP = .FALSE.
-C        DODIIS = .FALSE.
-
-C        DODSCF = .FALSE.
-         BNCRON = .FALSE.
-
+           IF (.NOT.ONESYS) THEN
+             TRIFCK_SAVE = TRIFCK
+             TRIVEC_SAVE = TRIVEC
+             TRIFCK = .FALSE.
+             TRIVEC = .FALSE.
+           ENDIF
+           DODAMP = .FALSE.
+           DODIIS = .FALSE.
+           DODSCF = .FALSE.
+           BNCRON = .FALSE.
+        ELSE
+           BNCRON = .FALSE.
 C         ... need to reset them...
-         DHFCONV(1)=.FALSE.
-         DHFCONV(2)=.FALSE.
-         DHFEXIT=.FALSE.
+           DHFCONV(1)=.FALSE.
+           DHFCONV(2)=.FALSE.
+           DHFEXIT=.FALSE.
         ENDIF
 
+CMI  ... remove some file from previous SCF cycle ...
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
         INQUIRE(FILE='DFEVEC',EXIST=EX)
@@ -292,33 +299,19 @@ C         ... need to reset them...
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
-CC      INQUIRE(FILE='DFCYCL',EXIST=EX)
-CC      IF (EX) CALL SYSTEM('/bin/rm DFCYCL')
-
         CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
-C       INTDEF = 1
-C       INTFLG = 1
-C       INTGEN = 1
-
         RESTFCK = .TRUE.
-
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
-
-C       IF (.NOT.ONESYS) THEN
-C        TRIFCK = TRIFCK_SAVE 
-C        TRIVEC = TRIVEC_SAVE
-C       ENDIF
 
         CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
 
         CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-
       ENDIF
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
@@ -873,8 +866,8 @@ CMI ==================================================================
       IF (RESTFCK) THEN
         CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
         IF (DO4C2C) THEN
-C ... do read the FD_2c in Lowdin MO basis from the BSSMAT to 
-C      provide restarting of the postDHF BSS-SCF procedure
+C ...    read the FD_2c in Lowdin MO basis from the BSSMAT to 
+C       provide restarting of the postDHF-BSS-SCF procedure
         REWIND LUBSS   
         IF (FNDLAB('FD2C_LMO',LUBSS)) THEN                     
           ISIZE = (NESH(1)*NESH(1)*NZ) 
@@ -884,7 +877,7 @@ C      provide restarting of the postDHF BSS-SCF procedure
      &  'DFSOLV: FD_2c elements in Lowdin MO basis were read'// 
      &  ' from the BSSMAT file(FD2C_LMO)-starting guess for BSS-SCF.'
          ELSE
-           CALL QUIT('DFSOLV: FD2C_LMO not found !')           
+           CALL QUIT('DFSOLV: FD2C_LMO label in BSSMAT not found !') 
          END IF         
       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
         IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
@@ -892,8 +885,8 @@ C      provide restarting of the postDHF BSS-SCF procedure
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
           IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
-     &  'DFSOLV: FD_4c elements in RKB MO basis were read'// 
-     &  ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
+     &    'DFSOLV: FD_4c elements in RKB MO basis were read'// 
+     &    ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
           ELSE                                                       
             CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
           END IF         

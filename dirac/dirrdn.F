@@ -220,6 +220,7 @@ C
 C     Look for 2c. Hamiltonians
 C
       CALL HAMSCAN
+
 C
 C     Read menu file
 C     ==============
@@ -392,6 +393,9 @@ C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
 C
+      !write(LUPRI,*) 'TWOCOMP=',TWOCOMP
+      !write(LUPRI,*) 'TWOCOMPBSS=',TWOCOMPBSS
+      
       WRITE(LUPRI,'(1X,A,F18.7)')
      +   '* The speed of light : ',CVEL
       IF(CVAL.NE.CVEL) THEN
@@ -401,14 +405,18 @@ C
      +   ' to : ',CVAL
       ENDIF
 
-      IF (TWOCOMP)  THEN
+      IF (TWOCOMP) THEN
         WRITE(LUPRI,'(1X,A)')
-     &  '* Running in pure two-component mode'
+     &  '* Running in pure two-component mode (with LL integrals only)'
         INTGEN = 1
         ISLDIR = 0
         ISSDIR = 0
         IGTDIR = 0
+      ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &  '* Running in the four-component mode'
       ENDIF
+
 #ifdef MOD_ECP
       IF (ECPCALC)
      &  WRITE(LUPRI,'(1X,A)') 
@@ -1919,9 +1927,10 @@ CMI =====================================================================
       ENDIF
 
       IF (DO4C2C) THEN
+       BSS=.FALSE.
        WRITE(LUPRI,'(A)')
      &  ' ***** After DC-SCF turn into BSS-SCF *****'
-       WRITE(LUPRI,*) '...restaring code I2CHAM=',I2CHAM,
+       WRITE(LUPRI,'(A,I1)') 'with restaring code I2CHAM=',I2CHAM,
      &  ' THIS means...'
        IF (USEDF) THEN
          WRITE(LUPRI,'(2X,A)')
@@ -1939,7 +1948,7 @@ CMI =====================================================================
        ELSE
          WRITE(LUPRI,'(2X,A)')
      &   '...do only 1 SCF iteration'//
-     &   ' .'
+     &   '.'
        ENDIF
        WRITE(LUPRI,*)
       ENDIF
@@ -3859,7 +3868,8 @@ Cdirac#include "functionals.h"
 #include "cbieri.h"
 #endif
 C
-      LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE
+      LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
+     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -3960,6 +3970,10 @@ C     ... trasfer 2c-> 4c and 4c->2c
       START2C = .FALSE.
       INI2C   = -1
       DO4C2C  = .FALSE.
+
+      TWOCOMP_SAVE    = TWOCOMP
+      TWOCOMPBSS_SAVE = TWOCOMPBSS
+
       USEDF   = .FALSE.
       CONT2C  = .FALSE.
       CMPEIG  = .FALSE.
@@ -3969,8 +3983,6 @@ CMI   ... own keywords for 1. or 2.order Douglas-Kroll-Hess with AMFI SSO
       I2CHAM  = -1
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
-!CMI   ... no specifications for individual AMFI center
-!      ALLAMFA = .TRUE.
 CMI     ... default initialization - always include AMFI contribution
 #ifdef MOD_AMFI
       NOAMFI = .FALSE.
@@ -4299,14 +4311,16 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
             GO TO 100
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
-CMI      ... not active yet (planned to be used within UKBAL for the infinite order)
+CMI      ... not active yet 
              BLOCKD = .TRUE.
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...
-             DO2C4C = .TRUE.
+            DO2C4C = .TRUE.
             START2C = .TRUE.
             INI2C   = 3
+            !TWOCOMP=.FALSE.
+            !TWOCOMPBSS=.TRUE.
             GO TO 100
   132     CONTINUE
 C&&& DO4C2C:  descend to the 2c level after 4c SCF ...
@@ -4503,6 +4517,17 @@ C
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
 
+      IF (DO2C4C.AND.DO4C2C) THEN
+        WRITE(LUPRI,'(A)') '.DO2C4C and .DO4C2C not accepted !'
+        CALL QUIT('Conflicting options : .DO2C4C and .DO4C2C !')
+      ENDIF
+
+CMI   ... take care of 2c-4c/4c-2c transitions !
+      IF (DO2C4C.OR.DO4C2C) THEN
+          TWOCOMP=TWOCOMP_SAVE
+          TWOCOMPBSS=TWOCOMPBSS_SAVE 
+      ENDIF
+
 CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
@@ -4558,6 +4583,7 @@ CMI  ... check not combining .IOTC, .DKH1, .DKH2
 
 CMI  ... todo: more precise specification needed
         IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE.
+
 CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
          IF (USEDF) THEN
@@ -4610,10 +4636,6 @@ CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3022
           ENDIF
-CMI       IF (ONESYS) THEN
-CMI        ... no AMFI contribution
-CMI        IBSS = 022
-CMI       ENDIF
         ENDIF ! end of DKH2
 
 CMI   ... fix the DKH1 keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -4628,10 +4650,6 @@ CMI        ... instead we use GAUNT_SAVE
            GAUNT = .FALSE.
            IBSS = 3011
           ENDIF
-CMI       IF (ONESYS) THEN
-CMI        ... no AMFI contribution
-CMI        IBSS = 011
-CMI       ENDIF
         ENDIF ! end of DKH1
           
       ENDIF ! End of .BSS
@@ -4698,6 +4716,19 @@ C         .... two-step method of Barysz
           ENDIF
         ENDIF
 
+        IF (DO4C2C) THEN 
+          WRITE(LUPRI,'(1X,A,I3)')
+     & '* after finishing four-component SCF procedure '//
+     & ' perform BSS transformation of Dirac-Fock operator'//
+     & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+        ENDIF
+
+        IF (DO2C4C) THEN
+         WRITE(LUPRI,'(1X,A,I1)')
+     &   '* after (few) two-component SCF iterations do'//
+     &   ' jump at the four-component level ! Code INI2C=',INI2C
+        ENDIF
+
         IF (TWOCOMP) THEN
           WRITE(LUPRI,'(1X,A)') '  - running in 2-component modus'
         ELSE
@@ -4742,13 +4773,11 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         ENDIF
         
 CMI ... this is on TODO list
-        IF (DO2C4C) WRITE(LUPRI,'(1X,A,I1)')
-     & '* after (few) two-component SCF iterations do'//
-     & ' jump at the four-component level ! Code INI2C=',INI2C
-        IF (DO4C2C) WRITE(LUPRI,'(1X,A,I3)')
-     & '* after finishing four-component SCF procedure '//
-     & ' perform BSS transformation of Dirac-Fock operator'//
-     & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+!        IF (DO2C4C) THEN
+!         WRITE(LUPRI,'(1X,A,I1)')
+!     &   '* after (few) two-component SCF iterations do'//
+!     &   ' jump at the four-component level ! Code INI2C=',INI2C
+!        ENDIF
 
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
@@ -6691,7 +6720,10 @@ C***********************************************************************
 C
 C     Search for keywords in the Hamiltonian input
 C
+C     Called from: GENINP
+C
 C     Written by T. Saue Aug 21 2006
+C     Last modifications: M.Ilias, Jan.2008 for 2c4c jumps
 C
 C***********************************************************************
 #include "implicit.h"
@@ -6701,6 +6733,15 @@ C
 #include "dcbham.h"
 #include "cbirea.h"
       CHARACTER WORD*7,PROMPT*1
+      LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
+
+      ISDO2C4C=.FALSE.
+      ISDO4C2C=.FALSE.
+
+      TWOCOMP_SAVE    = TWOCOMP
+      TWOCOMPBSS_SAVE = TWOCOMPBSS
+      CNTMAT_SAVE     = CNTMAT
+
 C
 C     Read menu file
 C     ==============
@@ -6733,16 +6774,38 @@ C
            TWOCOMP=.TRUE. 
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
+           ! write(LUPRI,*) "HAMSCAN detected BSS..."
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
+         IF (WORD.EQ.'.DO2C4C') THEN
+           ISDO2C4C =.TRUE.
+         ENDIF
+         IF (WORD.EQ.'.DO4C2C') THEN
+            ISDO4C2C =.TRUE.
+            !write(LUPRI,*) "HAMSCAN detected DO4C2C..."
+         ENDIF
          GOTO 930
       ELSE IF (PROMPT .EQ. '*') THEN
-        RETURN
+         GOTO 940 ! instead of RETURN
       ELSE
         GOTO 930
       END IF
       REWIND (LUCMD,IOSTAT=IOS)
+
+ 940  CONTINUE
+
+      IF (ISDO2C4C) THEN
+           TWOCOMP=TWOCOMP_SAVE
+           TWOCOMPBSS=TWOCOMPBSS_SAVE
+           CNTMAT=CNTMAT_SAVE
+      ENDIF
+
+      IF (ISDO4C2C) THEN
+         TWOCOMP=TWOCOMP_SAVE
+         TWOCOMPBSS=TWOCOMPBSS_SAVE
+         CNTMAT=CNTMAT_SAVE
+      ENDIF
 C
       RETURN
       END

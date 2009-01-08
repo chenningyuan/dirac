@@ -2273,6 +2273,7 @@ C
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
+
       ELSE IF (BSS) THEN
 C
 C       Case 2: Generate 2-component Hamiltonian
