@@ -418,7 +418,7 @@ remove_work_dir()
             ($echo "...could not be determined, du -h -s command not working...")
 
             $echo "  Info on the disk space usage on the slave node $node:"
-            $RSH $node "df -h" || \
+            $RSH $node "df -h ." || \
             ($echo "...could not be determined, df command not working...")
 
             $RSH $node "rm -fr $WRK" || \
@@ -442,8 +442,8 @@ remove_work_dir()
    du -h -s $WRK || \
    ($echo "...could not be determined, du -h -s command not working.")
 
-   $echo "  Info on the disk space usage on the master node $master (df -h):"
-   df -h || \
+   $echo "  Info on the disk space usage on the master node $master (df -h .):"
+   df -h . || \
    ($echo "...could not be determined, df command not working...")
    
    if [ " $RMWRK" -eq 1 ]; then
@@ -494,7 +494,7 @@ set_work_dir()
       $echo "            Error exit !                "
       $echo "   Could not create work directory: $WRK"
       $echo "   while beeing on host:\c";hostname
-      $echo "   with disks (df -h):"; df -h   
+      $echo "   with disks (df -h):"; df -h 
       EXIT=1
       exitfunc
    fi
