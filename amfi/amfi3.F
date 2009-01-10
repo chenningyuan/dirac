@@ -1861,11 +1861,12 @@ CMI         if ( amfi3_verbose ) then
 #include "priunit.h"
 #include "para.h"
 #include "param.h"
+#include "scfarr.h"
 cbs   get expansions of atomic orbitals in contracted functions
       common /nucleus/ charge,Exp_finite
       character*12    occtext
       integer closedshells(0:LMAX),openshells(0:LMAX)
-      logical doscf
+      logical doscf, EX
       dimension xorb(MxprimL,MxContL,0:lmax)
       dimension ovlpprimcont(MxcontL,MxprimL),
      *dummytrafo(MxcontL,MxprimL)
@@ -1873,8 +1874,8 @@ cbs   get expansions of atomic orbitals in contracted functions
 
 #include "amfi_if.h"
 c     logical amfi3_verbose
-
       data doscf / .true. /
+#include "memint.h"
 
 c     amfi3_verbose = .false.
 
@@ -1931,15 +1932,18 @@ CMI   endif
      *nprimit(l)),l=0,Lmax_occ)
       rewind(17)
       close(17,status='keep')
+C
+C     set file labels for file RELSCF_COEF
+      CALL GETLAB_RELSCF(INT(CHARGE))
 
 CMI   call system('relscf < TOSCF > scf.out')
 CMI ... run internal atomic SCF code which reads TOSCF input file
       CALL INT_AT_SCF(WORK,LWORK)
-
-      open(unit=7,file='fort.7',form='formatted',
-     *status='unknown')
-CMI   close(17)
-      rewind(7)
+      IF(ONRELSCF) THEN
+C     ... that is all - SK - Jan 09
+        WRITE(LUPRI,*)' *** INFO from getocc_ao: quit as you wanted ***'
+        CALL QUIT(' *** getocc_ao: quit as you wanted *** ')
+      END IF
 cbs   set the ocupation numbers 
       do lrun=0,lhigh
       do i=1,closedshells(lrun)
@@ -1956,41 +1960,83 @@ cbs
 cbs   read the MO coefficients   
 CMI ======================================================
 CMI   if (amfi3_verbose) then
+C     IPR_AMFI_SAVE = IPR_AMFI
+C     IPR_AMFI = 2
       if (IPR_AMFI.GE.2) then
-         write(LUPRI,*) 'AMFI: atomic orbitals to be read from fort.7' 
+         write(LUPRI,*) 'AMFI: atomic orbitals to be read from'//
+     &                  ' RELSCF_COEF' 
          write(LUPRI,*) 'lhigh = ',lhigh   
       endif
+C
+C     check if 'RELSCF_COEF' exists.
+      LURELSCFCOEF = 7
+      INQUIRE ( FILE = 'RELSCF_COEF', EXIST = EX )
+      IF(.not. EX) THEN
+        WRITE(LUPRI,*) ' *** ERROR in getAOs2: coefficient file not'//
+     &                 ' present - missing RELSCF_COEF! ***'
+        CALL QUIT('* ERROR in getAOs2: coefficient file not present *')
+      END IF
+      CALL OPNFIL(LURELSCFCOEF,'RELSCF_COEF','OLD','GETAOs')
+      REWIND LURELSCFCOEF
+C
+C
+      CALL IZERO(IRELSCF_INFO,MXRELSCF_INFO)
 
+      CALL MEMGET('REAL',KRELCOEFFX,LDIMC+2,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KRELCOEFFX),LDIMC+2)
+C
+C     read info array
+      CALL IREAAMFI(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,
+     &              MXRELSCF_INFO)
+      IPLACEVLEN = 0
+C     WRITE(LUPRI,*) ' IRELSCF_INFO(1)',IRELSCF_INFO(1)
+      IPLACEVLEN = (IRELSCF_INFO(1) * 2) + 2
+C     WRITE(LUPRI,*) ' IPLACEVLEN = ',IPLACEVLEN
+      ISIZEVLEN  = IRELSCF_INFO(IPLACEVLEN)
+C
+C     read coefficients from file RELSCF_COEF to temporary array
+      CALL REAAMFI(LURELSCFCOEF,RELSCFLABX,WORK(KRELCOEFFX),ISIZEVLEN)
+C     WRITE(LUPRI,*) ' coeff matrix from file: len = ',ISIZEVLEN
+C     CALL WRTMATMN(WORK(KRELCOEFFX),1,ISIZEVLEN,1,ISIZEVLEN,LUPRI)
+
+      CLOSE(UNIT=LURELSCFCOEF,STATUS='KEEP')
+C
+C     distribute to xorb
+      lrelscfvec = 1
       do lrun=0,lhigh
-CMI      if (amfi3_verbose) 
-         if (IPR_AMFI.GE.2) 
+CMI      if (amfi3_verbose)
+         if (IPR_AMFI.GE.2)
      &      write(LUPRI,*) 'lrun = ',lrun,
      &         ' nprimit=',nprimit(lrun),' nocc=',noccorb(lrun)
-     
-         if (noccorb(lrun).gt.0) then
-            read(7,*) itest1,itest2 
 
-            if (itest1.ne.nprimit(lrun)) stop 'fuck 1' 
-            if (itest2.ne.noccorb(lrun)) stop 'fuck 2' 
+         if (noccorb(lrun).gt.0) then
+C           consistency check
+            if (IRELSCF_INFO((1+(2*lrun+1))).ne.nprimit(lrun))
+     &         stop 'fuck 1'
+            if (IRELSCF_INFO((1+(2*lrun+2))).ne.noccorb(lrun))
+     &         stop 'fuck 2'
 
             do irun=1,nprimit(lrun)
+               do jrun=1,noccorb(lrun)
+                 xorb(irun,jrun,lrun) = WORK(KRELCOEFFX+lrelscfvec-1)
+                 lrelscfvec = lrelscfvec + 1
+               enddo
+CMI            if (amfi3_verbose)
+               if (IPR_AMFI.GE.2)
+     &            WRITE(LUPRI,*)
+     &                   (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun))
+            enddo
+         endif
+      enddo
+C     ... release memmory
+      CALL MEMREL('getAOs2',WORK,KWORK,KWORK,KFREE,LFREE)
+      CLOSE(UNIT=LURELSCFCOEF,STATUS='KEEP')
 
-CMI            write(lupri,*) '...reading for irun=',irun,'/',nprimit(lrun)
-
-               read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun))
-
-CMI            if (amfi3_verbose) 
-               if (IPR_AMFI.GE.2) 
-     &            WRITE(LUPRI,*) 
-     &                   (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
-            enddo   
-         endif   
-      enddo   
-
-      close(7)
 CMI   if (amfi3_verbose) write(LUPRI,*) '-- orbitals read from fort.7' 
       if (IPR_AMFI.GE.2) write(LUPRI,*)
-     &  '-- orbitals read from fort.7, closed'
+     &  '-- orbitals read from RELSCF_COEF, closed'
+
+C     IPR_AMFI = IPR_AMFI_SAVE
 
       do lrun=0,lhigh
       if (noccorb(lrun).gt.0) then
@@ -2070,13 +2116,6 @@ CBS   write(6,'(A3,I3)') 'L= ',lrun
       occup(i,lrun)=1d0*openshells(lrun)/dfloat(lrun+lrun+1)
       AOcoeffs(i,i,lrun)=1d0
       noccorb(lrun)=i
-      endif
-      if (noccorb(lrun).gt.0) then
-CBS   write(6,'(A,I3)') 'number of orbitals ',noccorb(lrun)
-CBS   do iorbital=1,noccorb(lrun)
-CBS   write(6,'(A,8F8.4)') occtext,(occup(iorbital,lrun),
-CBS  *iorbital=1,noccorb(lrun))
-CBS   enddo
       endif
       enddo
 
@@ -2444,6 +2483,128 @@ CMI      iopen(irun)=iopocc(irun,icharge)
          iopen(irun)=0
       end do
       return
+      end
+      subroutine getlab_relscf(icharge)
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
+      parameter (ichargemax=118)
+      character*3 occtxt(0:ichargemax) 
+      character*4 textin, textrl
+#include "amfi_if.h"
+
+      data (occtxt(i),i=0,ichargemax) /
+     *'dum',  ! 0
+CMI  *' H: no mean-field             ',
+     *' H ','He ', ! 1-2
+     *'Li ','Be ', ! 3-4
+     *' B ',' C ', ! 5-6
+     *' N ',' O ', ! 7-8
+     *' F ','Ne ', ! 9-10
+     *'Na ','Mg ', ! 11-12
+     *'Al ','Si ',
+     *' P ',' S ',
+     *'Cl ','Ar ',
+     *' K ','Ca ',
+     *'Sc ','Ti ',
+     *' V ','Cr ',
+     *'Mn ','Fe ',
+     *'Co ','Ni ',
+     *'Cu ','Zn ',
+     *'Ga ','Ge ',
+     *'As ','Se ',
+     *'Br ','Kr ',
+     *'Rb ','Sr ',
+     *' Y ','Zr ',
+     *'Nb ',
+     *'Mo ',
+     *'Tc ',
+     *'Ru ',
+     *'Rh ',
+     *'Pd ',
+     *'Ag ',
+     *'Cd ',
+     *'In ',
+     *'Sn ',
+     *'Sb ',
+     *'Te ',
+     *' I ',
+     *'Xe ',
+     *'Cs ',
+     *'Ba ',
+     *'La ',
+     *'Ce ',
+     *'Pr ',
+     *'Nd ',
+     *'Pm ',
+     *'Sm ',
+     *'Eu ',
+     *'Gd ',
+     *'Tb ',
+     *'Dy ',
+     *'Ho ',
+     *'Er ',
+     *'Tm ',
+     *'Yb ',
+     *'Lu ',
+     *'Hf ',
+     *'Ta ',
+     *' W ',
+     *'Re ',
+     *'Os ',
+     *'Ir ',
+     *'Pt ', 
+     *'Au ',
+     *'Hg ',
+     *'Tl ',
+     *'Pb ',
+     *'Bi ',
+     *'Po ',
+     *'At ',
+     *'Rn ',
+     *'Fr ',
+     *'Ra ',
+     *'Ac ',
+     *'Th ',
+     *'Pa ',
+     *' U ',
+     *'Np ',
+     *'Pu ',
+     *'Am ',
+     *'Cm ',  ! 96
+     *'Bk ',  ! 97
+     *'Cf ',  ! 98
+     *'Es ',  ! 99
+     *'Fm ',  ! 100
+     *'Md ',  ! 101
+     *'No ',  ! 102
+     *'Lr ',  ! 103
+     *'Rf ',  ! 104
+     *'Db ',  ! 105
+     *'Sg ',  ! 106
+     *'Bh ',  ! 107
+     *'Hs ',  ! 108
+     *'Mt ',  ! 109
+     *'Ds ',  ! 110
+     *'Rg ',  ! 111
+     *'Uub',  ! 112
+     *'Uut',  ! 113
+     *'Uuq',  ! 114
+     *'Uup',  ! 115
+     *'Uuh',  ! 116
+     *'Uus',  ! 117
+     *'Uuo'/  ! 118
+cbs
+      if (icharge.gt.ichargemax) then
+         CALL QUIT('occupations not implemented')
+      endif
+      textin = 'inte'
+      textrl = 'real'
+C
+C     set file labels for file RELSCF_COEF
+      WRITE(RELSCFLABI,'(A3,A1,A4)') occtxt(icharge),'.',textin
+      WRITE(RELSCFLABX,'(A3,A1,A4)') occtxt(icharge),'.',textrl
+
       end
 
       double precision function  getCG(

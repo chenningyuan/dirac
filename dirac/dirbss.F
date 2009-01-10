@@ -9393,6 +9393,7 @@ C   Called from HAMINP.
 C
 C   Written by Miro ILIAS, Prievidza, 2008
 C   Last modifications: MI, Odense, June 2008
+C                       S. Knecht, Duesseldorf, Jan 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -9411,7 +9412,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.AMFICH',
-     &            '.NOAMFC','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.NOAMFC','.ONLSCF','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -9441,8 +9442,9 @@ C
 !    ... default overall mean-field charge
       IMFCH=0
 !    ... all atomic centers are included for the AMFI contribution
-      ALLAMFA=.TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
-C 
+      ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
+      ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
+C
 C
 C     Process input for AMFI/RELSCF
 C     ==================================
@@ -9501,7 +9503,9 @@ C&&& .NOAMFC: specify centers for AMFI which only are to be added to the BSS+AMF
                  READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
                  GO TO 100
  6               CONTINUE
-C&&& 
+C&&& .ONLSCF: stop after RELSCF run - orbital coefficients are saved to
+C                file RELSCF_COEF
+                 ONRELSCF = .TRUE.
                  GO TO 100
  7               CONTINUE
 C&&& 
@@ -9548,6 +9552,10 @@ C
      &  '* All AMFI mean-field summations are on neutral'//
      &  ' individual atoms.'
       ENDIF
+      IF( ONRELSCF ) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &  '* AMFI will stop after RELSCF run ...'
+      END IF
 
 C ... take care of AMFI centers if specified in the input
       IF (.NOT.ALLAMFA) THEN 

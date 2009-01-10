@@ -348,12 +348,11 @@ C
 C    TRANSFORM BACK
 C
       CALL TRSMT(G,REVT,EV2,N,AUX,OVE)
-      CALL ADDMA(ISIZE,EV2,V)
-
       CR=1/CHARGE
-      DO I=1,ISIZE
-        V(I)=-V(I)*CR
-      END DO
+      FAC_CRX = -1.0D0*CR
+      CALL ADDMA(ISIZE,EV2,V)
+      CALL DSCAL(ISIZE,FAC_CRX,V,1)
+
       RETURN
       END
 
@@ -1194,7 +1193,7 @@ C
       CPU=SECONDX()
 
       IF (IPR_RELSCF.GE.2) THEN
-       WRITE (LUPRU,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
+       WRITE (LUPRI,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
    65  FORMAT(I5,5(1X,D16.10),I5,F14.2)
       ENDIF
 
@@ -2650,7 +2649,8 @@ CMI    return
       CALL OUTPUT_RELSCF
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
-     *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+     *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN,
+     *    WORK(KFREE),LFREE)
 
 
       IF (IPR_RELSCF.GE.5) THEN
@@ -2859,7 +2859,7 @@ C
 C     SET DEFAULT VALUES
 C
       CHARACTER*4 NBLANK,BSTATE,STATE
-      logical *4 EX
+      LOGICAL EX, RELSCF_RST, FNDLAB
       DATA OPER /'NON-REL ','SQR     ','EV      '/
 
 CMI   DATA NBLANK /'    '/,BSTATE/'  '/,IBLANK /4H    /
@@ -2874,6 +2874,7 @@ CMI   write(LUPRI,*) 'INPUT_AT34: IBLANK=',IBLANK
 C
 c     relscf_verbose = .false.
 C
+#include "memint.h"
       NDIMC=MXOCC*MXOCC
       NDIMZ1=MXBAS
       NDIMR=MXBAS
@@ -2998,12 +2999,12 @@ C
       IF (IPR_RELSCF.GE.2) THEN
         WRITE(LUPRI,'(/,2X,A)')
      &  'INPUT_AT34: read data from the TOSCF file'
+CSK     charge is relative atomic mass
         WRITE(LUPRI,'(2X,A,F12.6)') 'charge=',charge
         WRITE(LUPRI,'(2X,A,4I3)')   'NBAS:',(NBAS(I),I=1,4) 
         WRITE(LUPRI,'(2X,A,4I3)')   'NCSH:',(NCSH(I),I=1,4) 
         WRITE(LUPRI,'(2X,A,4I3)')   'NOOC:',(NOOC(I),I=1,4) 
-        WRITE(LUPRI,'(2X,A,4I3)')   'parameter IREL=',IREL
-        WRITE(LUPRI,*) 
+        WRITE(LUPRI,'(2X,A,I3/)')   'parameter IREL=',IREL
       ENDIF
 
       if (IREL.eq.0) then
@@ -3135,7 +3136,7 @@ C
 
       ENDIF
 
-C --- verify number of basis functions wrt total iterations
+C --- verify number of basis functions wrt shell occupation
       DO I=1,NSYM
        IF ((NCSH(I)+NOOC(I)).GT.NBAS(I)) THEN
          WRITE(LUPRI,'(/,2x,a,i2,a,i2,a,i2)')  
@@ -3154,7 +3155,7 @@ C --- verify number of basis functions wrt total iterations
       ENDIF 
 
       DO i=1,24
-           ajmn(i)=0.5*ajmn(i)
+        ajmn(i)=0.5*ajmn(i)
       END DO
       NBAST=0
       NOSHT=0
@@ -3269,53 +3270,113 @@ C
         IF(NBASM.LT.NBAS1) NBASM=NBAS1
       END DO
       MXBF=NBASM
-
-      IF(IVEC.EQ.1) THEN
-         IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' INPUT VECTORS'
-         DO I=1,4*MXBF
-           C(I)=0
-         END DO
-         IEND=0
-         inquire(FILE='STARTORB',EXIST=EX)
-         istartunit=44
-         if (EX.and.IPR_RELSCF.GE.2) 
-     &      write(LUPRI,*) 'starting orbitals read from file'
-         if (EX) OPEN(UNIT=istartunit,STATUS='UNKNOWN',FILE='STARTORB')
-         if (EX) rewind(istartunit)
-         DO L=1,4
-           IF(NBAS(L).EQ.0) GO TO 665
-           IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' SYMMETRY',L
-           NTT=0
-           IF(NOOC(L).GT.0) NTT=1
-           NTTC=NCSH(L)+NTT
-           if (EX) then
-             read(istartunit,*)
-             READ(istartunit,*) (CREAD(II),II=1,NBAS(L)*NTTC)
-           endif
-           DO I=1,NTTC
-             if (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' VECTOR',I
-             IBEG=IEND+1
-             IEND=IBEG+NBAS(L)-1
-             if (EX) then
-              do II=1,NBAS(L)
-               C(II+IBEG-1)=CREAD(I+(II-1)*NTTC)
-              enddo
-             else
-              do II=IBEG,IEND
-                C(II)=0d0
-              enddo
-C             write(LUPRI,*) 'C index:',
-C    &         IBEG,I,NBAS(L),NTTC, IBEG+I*NBAS(L)/NTTC-1,
-C    &         ' max:',LDIMC
-              C(IBEG+I*NBAS(L)/NTTC-1)=1d0
-             endif
-             if (IPR_RELSCF.GE.2) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
-             IEND=IEND+MXBF-NBAS(L)
-           END DO
- 665       CONTINUE
-         END DO
- 666     FORMAT(4F18.14)
-      ENDIF
+C
+C     S. Knecht - Jan 2009: implementation of a working restart option; 
+C     Atomic SCF calculations on neutral atoms are sometimes hard to 
+C     converge. However, the ionic system may not. In this case, we want
+C     to do the ion first and reuse the optimized coefficients for the
+C     neutral atom.
+C
+C     restart from old coefficients for this atom?
+C
+C     initialize coefficients vector
+      CALL DZERO(C,LDIMC+2)
+CSK   IPR_RELSCF_SAVE = IPR_RELSCF
+CSK   IPR_RELSCF   = 2
+      LURELSCFCOEF = 7
+C
+C     search label RELSCFLABX (coefficients) on file RELSCF_COEF
+      INQUIRE(FILE='RELSCF_COEF',EXIST=EX)
+      RELSCF_RST = .FALSE.
+      IF( EX )THEN
+        CALL OPNFIL(LURELSCFCOEF,'RELSCF_COEF','OLD','INat34')
+        REWIND LURELSCFCOEF
+        IF (FNDLAB(RELSCFLABX,LURELSCFCOEF)) RELSCF_RST = .TRUE.
+        CLOSE(LURELSCFCOEF,STATUS='KEEP')
+      END IF
+      IF(IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' INPUT VECTORS'
+      if(RELSCF_RST.and.IPR_RELSCF.GE.2) 
+     &    write(LUPRI,*) 'starting orbitals read from file'
+      IF( RELSCF_RST ) THEN 
+        CALL OPNFIL(LURELSCFCOEF,'RELSCF_COEF','OLD','INat34')
+        REWIND LURELSCFCOEF
+        CALL IZERO(IRELSCF_INFO,MXRELSCF_INFO)
+C       scratch memory
+        CALL MEMGET('REAL',KRELCOEFFX,LDIMC+2,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KRELCOEFFX),LDIMC+2)
+C
+C       read info array
+        CALL IREAAMFI(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,
+     &                MXRELSCF_INFO)
+        IPLACEVLEN = 0
+CSK     WRITE(LUPRI,*) ' IRELSCF_INFO(1)',IRELSCF_INFO(1)
+        IPLACEVLEN = (IRELSCF_INFO(1) * 2) + 2
+CSK     WRITE(LUPRI,*) ' IPLACEVLEN = ',IPLACEVLEN
+        ISIZEVLEN  = IRELSCF_INFO(IPLACEVLEN)
+C
+C       read coefficients from file RELSCF_COEF to temporary array
+        CALL REAAMFI(LURELSCFCOEF,RELSCFLABX,WORK(KRELCOEFFX),
+     &               ISIZEVLEN)
+CSK     WRITE(LUPRI,*) ' coeff matrix from file: len = ',ISIZEVLEN
+CSK     CALL WRTMATMN(WORK(KRELCOEFFX),1,ISIZEVLEN,1,ISIZEVLEN,LUPRI)
+C
+C       FIXME: end of loop should be LMAX! - SK Jan 2009
+        LBASL_MAX = 0
+        DO L =1,4
+          LBASL_MAX = MAX(LBASL_MAX,NBAS(L))
+        END DO
+        CALL MEMGET('REAL',KRELCLMAX,LBASL_MAX,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KRELCLMAX),LBASL_MAX)
+        CLOSE(UNIT=LURELSCFCOEF,STATUS='KEEP')
+      END IF
+C
+C     FIXME: end of loop should be LMAX! - SK Jan 2009
+      IBEG  = 0
+      IEND  = 0
+      IENDL = 0
+      DO L=1,4
+        IF(NBAS(L).EQ.0) GO TO 665
+        IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' SYMMETRY',L
+        IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' NBAS(L)',NBAS(L)
+        IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' MXBF',MXBF
+        NTT=0
+        IF(NOOC(L).GT.0) NTT=1
+        NTTC=NCSH(L)+NTT
+CSK     WRITE(LUPRI,*) ' NTTC, NCSH(L), NTT',NTTC, NCSH(L), NTT
+        DO I=1,NTTC
+          if (IPR_RELSCF.GE.2) WRITE(LUPRI,*) ' VECTOR',I
+          IBEG=IEND+1
+          IEND=IBEG+NBAS(L)-1
+CSK       IF (IPR_RELSCF.GE.2) WRITE(LUPRI,*) 'IBEG, IEND',IBEG, IEND
+          if (RELSCF_RST) THEN
+            CALL DZERO(WORK(KRELCLMAX),LBASL_MAX)
+            TEST_BASLNRM = 0.0D0
+            do II=1,NBAS(L)
+CSK           WRITE(LUPRI,*) ' index IENDL + I-1+(II-1)*NTTC',
+CSK  &                               IENDL + I-1+(II-1)*NTTC
+              C(II+IBEG-1)=WORK(KRELCOEFFX+ IENDL + I-1+(II-1)*NTTC)
+              WORK(KRELCLMAX+II-1) = 
+     &        WORK(KRELCOEFFX+IENDL+ I-1+(II-1)*NTTC)
+            enddo
+C
+C           check whether this vector is a null vector, i.e. starting
+C           from coefficients obtained for the ionized atom where this 
+C           shell was empty.
+            TEST_BASLNRM = DDOT(NBAS(L),WORK(KRELCLMAX),1,
+     &                          WORK(KRELCLMAX),1)
+            IF( TEST_BASLNRM .eq. 0.0D0 ) C(IBEG+I*NBAS(L)/NTTC-1)=1d0
+          else 
+            C(IBEG+I*NBAS(L)/NTTC-1)=1d0
+          end if
+          if (IPR_RELSCF.GE.2) WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
+Cbuggy? - SK - Jan 2009  IEND=IEND+MXBF-NBAS(L)
+        END DO
+ 665    CONTINUE
+        IENDL = IEND
+      END DO
+ 666  FORMAT(4F18.14)
+CSK   IPR_RELSCF = IPR_RELSCF_SAVE
+      if (RELSCF_RST) CALL MEMREL('INat34',WORK,KWORK,KWORK,KFREE,LFREE)
 C
  1005 IF (NVAR.EQ.0) GO TO 209
       if (IPR_RELSCF.GE.2)
@@ -4233,7 +4294,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE OUTPUT_RELSCF
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,
-     *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
+     *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
@@ -4260,6 +4321,7 @@ CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
 CMI  *C(MXBF,1),CTRAN(2),PQN(*),ZETA(*),ZETINC(*),
      *C(MXBF,*),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
+      DIMENSION WORK(LWORK)
 
       COMMON/WIGXXX/ A1,A2,EXP1,EXP2,UP(MXB),DOWN(MXB),IUP(4),NGAUSS
 C
@@ -4269,34 +4331,68 @@ C
       DIMENSION NOOC(5)
       DIMENSION NTYSM(4),ATCO(300)
 C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
-      LOGICAL LLIE(4)
+      LOGICAL LLIE(4), EX
 #include "amfi_if.h"
 c     logical relscf_verbose
 CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
       DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
+#include "memint.h"
       IDCTR=MXCC*NEWBAS
 C
-C     PUNCH VECTORS
-      open (unit=7,file='fort.7',status='UNKNOWN',form='formatted')
-      rewind(7)
-      K=0
+C     write out vectors to file RELSCF_COEF
+CSK   NSYM is equal to highest angular momentum orbital occupied, i.e.
+C     if f^2 --> NSYM = 4
+      CALL MEMGET('REAL',KRELCOEFFX,LDIMC+2,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KRELCOEFFX),LDIMC+2)
+      CALL IZERO(IRELSCF_INFO,MXRELSCF_INFO)
+
+      K          = 0
+      LINF_X     = 1
+      LRELSCFVEC = 1
+      IRELSCF_INFO(LINF_X) = NSYM
+      LINF_X = LINF_X + 1
       DO L=1,NSYM
         LNBF=NBAS(L)
         NTSHL=NCSH(L)+NOSH(L)
-        write(7,'(2I5)') LNBF,NTSHL
-CBS   Here, the optimized contration coeffs are written
+C        
+        IRELSCF_INFO(LINF_X) = LNBF
+        LINF_X = LINF_X + 1
+        IRELSCF_INFO(LINF_X) = NTSHL
+        LINF_X = LINF_X + 1
+C
         DO J=1,LNBF
-          WRITE(7,5033) (C(J,K1),K1=K+1,K+NTSHL)
+          IF (IPR_RELSCF.GE.2)WRITE (LUPRI,5037)(C(J,K1),K1=K+1,K+NTSHL)
+          DO K1=K+1,K+NTSHL
+            WORK(KRELCOEFFX+LRELSCFVEC-1) = C(J,K1)
+            LRELSCFVEC = LRELSCFVEC + 1
+          END DO
         END DO
         K=K+NTSHL
       END DO
-      close(7,status="keep")
-
-CMI   return
-
-C5033 FORMAT(8(F9.6,1X))
-CMI ... increase format, because some MO coefficients might by .gt. abs(10)
- 5033 FORMAT(8(F11.6,1X))
+ 5037 FORMAT(4F18.14)
+C
+C     check if old 'RELSCF_COEF' exists.
+      LURELSCFCOEF = 7
+      INQUIRE ( FILE = 'RELSCF_COEF', EXIST = EX )
+      IF( EX ) THEN
+        CALL OPNFIL(LURELSCFCOEF,'RELSCF_COEF','OLD','OUTREL')
+      ELSE
+        CALL OPNFIL(LURELSCFCOEF,'RELSCF_COEF','UNKNOWN','OUTREL')
+        CALL NEWLAB('SODLABEL',LURELSCFCOEF,LUPRI)
+      END IF
+      REWIND LURELSCFCOEF
+      
+      ISIZEV = LRELSCFVEC - 1
+      IRELSCF_INFO(LINF_X) = ISIZEV
+      CALL IWRTAMFI(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,MXRELSCF_INFO)
+C
+C     write coefficients to file RELSCF_COEF
+CSK   WRITE(LUPRI,*) ' coeff matrix to file'
+CSK   CALL WRTMATMN(WORK(KRELCOEFFX),1,ISIZEV,1,ISIZEV,LUPRI)
+      CALL WRTAMFI(LURELSCFCOEF,RELSCFLABX,WORK(KRELCOEFFX),ISIZEV)
+      CLOSE(UNIT=LURELSCFCOEF,STATUS='KEEP')
+C     ... release memmory
+      CALL MEMREL('OUTPUT_RELSCF',WORK,KWORK,KWORK,KFREE,LFREE)
 
       IF(NPOEFA.EQ.0) GO TO 101
 C     PUNCH ZETA OR CONTRACTION COEFFICIENTS
@@ -4583,7 +4679,7 @@ C
 
       if (IPR_RELSCF.GE.2) WRITE (LUPRI,1225)
 
-      if (IPR_RELSCF.GE.2) WRITE(6,230) ENERG,POT,CIN,VIR
+      if (IPR_RELSCF.GE.2) WRITE(LUPRI,230) ENERG,POT,CIN,VIR
 
 !      return ! ...good return !
 
@@ -5993,5 +6089,197 @@ c     relscf_verbose = .false.
 
   140 FORMAT(5D21.8)
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LABAMFI(LUNIT,LABEL)
+C***********************************************************************
+C
+C     Write label LABEL to LUNIT;
+C       If label LABEL exists:
+C         Seek to label SODLABEL and write from there.
+C       Else:
+C         Seek to label EOFLABEL, backspace and write from there
+C       End If
+C
+C     Input:
+C        LABEL   - the label
+C
+C     Output:
+C
+C     Written by S. Knecht - Jan 2009
+C     inspired by LABKRMC written by J. Thyssen
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      CHARACTER LABEL*8
+      LOGICAL   FNDLAB
+C
+      REWIND(LUNIT)
+      IF (FNDLAB(LABEL,LUNIT)) THEN
+C
+C        label exists.
+C        seek to label SODLABEL and write from there.
+         REWIND(LUNIT)
+         IF (.NOT. FNDLAB('SODLABEL',LUNIT)) THEN
+            CALL QUIT('LABAMFI: wrong structure in file - no SODLABEL')
+         END IF
+      ELSE
+C
+C       label does not exist
+C       seek to label EOFLABEL and write from there
+         REWIND(LUNIT)
+         IF (FNDLAB('EOFLABEL',LUNIT))
+     &      BACKSPACE LUNIT
+C
+      END IF
+C
+C     write label
+      CALL NEWLAB(LABEL,LUNIT,LUPRI)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WRTAMFI(LUNIT,LABEL,VECTOR,ISIZE)
+C***********************************************************************
+C
+C     Write VECTOR to LUNIT under label LABEL.
+C
+C     Input:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     Output:
+C
+C     written by S. Knecht - Jan 2009
+C     inspired by WRTKRMC by J. Thyssen
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION VECTOR(ISIZE)
+      CHARACTER LABEL*8
+C
+C     Write label at end or - if already existing - after SODLABEL
+      CALL LABAMFI(LUNIT,LABEL)
+C
+C     Write vector
+      CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+C
+      REWIND LUNIT
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE IWRTAMFI(LUNIT,LABEL,IVECTOR,ISIZE)
+C***********************************************************************
+C
+C     Write VECTOR to LUNIT under label LABEL.
+C
+C     Input:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     Output:
+C
+C     written by S. Knecht - Jan 2009
+C     inspired by IWRTKRMC by J. Thyssen
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION IVECTOR(ISIZE)
+      CHARACTER LABEL*8
+C
+C     Write label at end or - if already existing - after SODLABEL
+      CALL LABKRMC(LUNIT,LABEL)
+C
+C     Write vector
+      CALL WRITI(LUNIT,ISIZE,IVECTOR)
+      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+C
+      REWIND LUNIT
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE REAAMFI(LUNIT,LABEL,VECTOR,ISIZE)
+C***********************************************************************
+C
+C     Read VECTOR from LUNIT under label LABEL.
+C
+C     Input:
+C
+C     Output:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     written by S. Knecht - Jan 2009
+C     inspired by REAKRMC by J. Thyssen
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION VECTOR(ISIZE)
+      CHARACTER LABEL*8
+      LOGICAL   FNDLAB
+C
+      REWIND(LUNIT)
+      IF (FNDLAB(LABEL,LUNIT)) THEN
+C
+C        Label exists.
+         CALL READT(LUNIT,ISIZE,VECTOR)
+C
+      ELSE
+         WRITE(LUPRI,'(//A/,3A,I3)')
+     &        '*** ERROR in REAAMFI ***',
+     &        'Label <',LABEL,'> does not exist on unit ',LUNIT
+         CALL QUIT('*** ERROR in REAAMFI ***')
+      END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE IREAAMFI(LUNIT,LABEL,IVECTOR,ISIZE)
+C***********************************************************************
+C
+C     Read VECTOR from LUNIT under label LABEL.
+C
+C     Input:
+C
+C     Output:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     written by S. Knecht - Jan 2009
+C     inspired by IREAKRMC by J. Thyssen
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION IVECTOR(ISIZE)
+      CHARACTER LABEL*8
+      LOGICAL   FNDLAB
+C
+      REWIND(LUNIT)
+      IF (FNDLAB(LABEL,LUNIT)) THEN
+C
+C        Label exists.
+C
+         CALL READI(LUNIT,ISIZE,IVECTOR)
+C
+      ELSE
+         WRITE(LUPRI,'(//A/,3A,I3)')
+     $        '*** ERROR in IREAAMFI ***',
+     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
+         CALL QUIT('*** ERROR in IREAAMFI ***')
+      END IF
+C
       END
 #endif /*  MOD_AMFI  */
