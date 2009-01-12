@@ -311,8 +311,10 @@ C#include "nuclei.h"
 C     CHARACTER CHRSEG*10,DEG*2
 
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
-     &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
+!    &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &     JCO(KANG,KATOM),NUC(*),NRC(*),
+!    &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
+     &     CPRIMU(KPRIM,KPRIM,*),SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
 
       DATA BLNK /'E','S','P','D','F','G','H','I'/
@@ -336,7 +338,10 @@ C        KBLOCK = KBLOCK + IQM(I)
 C        DO II = 1 , IQM(I)
          DO II = 1 , NBLCK(I)
 C       ... find out pointer to beginning of exponents
+CMI       IF ( (IIQM+II).NE.0 ) THEN ! boundaries fix
+CMI       IF ((IIQM+II).LE.KBLOCK .AND. (IIQM+II).NE.0) THEN ! boundaries fix
            IEXP = IEXP + NUC(IIQM+II)
+CMI       ENDIF
          ENDDO
 C        IIQM = IIQM + IQM(I)
          IIQM = IIQM + NBLCK(I)
@@ -433,7 +438,8 @@ C*************************************************************************
       CHARACTER CHRSEG*10,DEG*2
 
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
-     &      JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+CMI  &      JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &      JCO(KANG,KATOM),NUC(*),NRC(*),
      &      CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
       DIMENSION IPCON(KPRIM),IUNNO(MXCENT,2)
 

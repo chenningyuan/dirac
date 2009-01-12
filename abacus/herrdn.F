@@ -4413,6 +4413,7 @@ C
             IC     = LCLASS(IA)
             ncenta = NCENT(IA)
             irowmax(icent,NHKTA) = nucdega * KHKTA
+            IF (IA-1.GE.1) THEN ! arrays boundaries fix
             if (ncenta .eq. ICENT) then
                if ((ncenta .ne. NCENT(IA-1)) .or.
      &             (NHKTA .ne. NHKT(IA-1))) then
@@ -4459,6 +4460,7 @@ c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
   431                CONTINUE
   421             continue
                endif
+            endif
             endif
   411    CONTINUE
   401 CONTINUE
@@ -4942,8 +4944,10 @@ C
                ELSE
                   SIGNJ = '+'
                END IF
-               LABINT(IADR) = CHRNOS(I+1)//SPDCAR(I)//
+               IF ((I+1).LE.9.AND.J.LE.9) THEN ! boundaries fix
+                 LABINT(IADR) = CHRNOS(I+1)//SPDCAR(I)//
      &                        CHRNOS(ABS(J))//SIGNJ
+               ENDIF
   200       CONTINUE
             IOFF = IOFF + 2*I + 1
          END IF
