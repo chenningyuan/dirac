@@ -47,7 +47,8 @@ initialize ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0 # otherwise 1 if "--quick" parameter is in the list
-nooptim=0 # otherwise 1 of "--noopt" parameter is in the list
+nooptim=0 # otherwise 1 if "--noopt" parameter is in the list
+checkbounds=0 # or 1 if "--checkbounds" parameter in the list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
 dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
@@ -465,6 +466,7 @@ usage ()  {
    echo '   --help                       : Print this'
    echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
    echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
+   echo '   --checkbounds                : Add Fortran compiler flag for checking array boundaries'
    echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90 (with full path)'
@@ -1894,12 +1896,14 @@ get_f90_flags(){
 #
 # according to $F90real assign flags
 #
+  check_array_bounds=""
   case "$F90real" in
     g95)
       opt="-g -O3 -ffast-math -Wno=155"
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
+      check_array_bounds="" # please add
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
@@ -1920,6 +1924,7 @@ get_f90_flags(){
       safe="-g $march"
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
+      check_array_bounds="-fbounds-check" 
       ;;
     pgf90)
       opt="-g -fastsse"
@@ -1927,6 +1932,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
+      check_array_bounds="" # please add
       ;;
     lfc)
       opt="-g --fast"
@@ -1934,6 +1940,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
       noformain="" # please add
+      check_array_bounds="" # please add
       ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
@@ -1945,6 +1952,7 @@ get_f90_flags(){
        ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
       noformain="-nofor_main"
+      check_array_bounds="-check bounds" 
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
@@ -1953,12 +1961,14 @@ get_f90_flags(){
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       noformain="" # please add
+      check_array_bounds="" # please add
       ;;
     pathf90)
       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
       cpp_cc="$cpp_cc -DVAR_EKO"
       mod="-module $MODULE_DIR"
       noformain="" # please add
+      check_array_bounds="" # please add
        ;;
     *)
        $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
@@ -2442,15 +2452,27 @@ EOF
 #
 ##########################################################################
 
-# determine whether to flush into Makefile.config safe or optimized flags
-if [ $nooptim = 1 ]; then
-# ... employ flags with no optimization
+# determine what flags to be flushed into Makefile.config:  SAFE or OPTIMIZED flags
+if [ $nooptim = 1 ]; then # ... employ flags with no optimization
+#
   use_flags=$safe
   use_c_flags=$c_safe
-else
-# ... employ flags with the optimization
+else # ... employ flags with the optimization
+#
   use_flags=$opt
   use_c_flags=$c_opt
+fi
+
+# determined whether we add checking array boudaries or not
+if [ $checkbounds = 1 ]; then
+  use_flags="$check_array_bounds $use_flags" 
+  if [ -n $check_array_bounds ]; then
+    $echo "\nFortran flag '"$check_array_bounds"' for checking array bounds included."
+    $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+  else
+    $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
+    $echo "Please edit the script."
+  fi
 fi
 
 cat <<EOF >> Makefile.config
@@ -2712,6 +2734,9 @@ while [ $# != 0 ]; do
          ;;
       "noopt")
 	 nooptim=1
+         ;;
+      "checkbounds")
+	 checkbounds=1
          ;;
       "nolibtest")
 	 testlibs=0
