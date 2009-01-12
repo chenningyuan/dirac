@@ -5,14 +5,6 @@
 
 include Makefile.config
 
-#-----------------------------------------------
-# control chars for bold display
-#  cs : startbold 
-#  ce : endbold
-#-----------------------------------------------
-cs = [1m
-ce = [m
-
 TARGET=$(INSTALL_DIR)/dirac.x
 SOURCE_DIRS=.
 
@@ -101,9 +93,8 @@ include Makefile.obj
 include Makefile.dep
 
 $(TARGET): $(OBJ)
-	@echo -e "$(cs)\nLinking  dirac compiled objects into executable:$(ce)"
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
-	@echo -e "\nExecutable $(cs)$(TARGET)$(ce) is ready."
+	@echo -e "\nExecutable $(TARGET) is ready."
 
 clean:
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
@@ -113,7 +104,7 @@ ftnchek:
 
 # ... for the compilation of the (optional) standalone HSMRCC code
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
-ifneq ($(strip $(is_hscc)),) 
+ifneq ($(strip $(is_hscc)),)
 include hsmrcc/hsmrcc_external/Makefile.hsmrcc
 else
 hs: # for compilation of the standalone external code
