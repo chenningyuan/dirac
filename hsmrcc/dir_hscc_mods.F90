@@ -52,8 +52,8 @@ integer :: nnzi=0, nintbl=0
 integer :: RCW
 
 ! store also cbuf, pos_ij, pos_kl
-type(Array2Dim) :: cbuf
-type(Array3Dim) :: pos_ij, pos_kl
+type(Array2Dim), save :: cbuf
+type(Array3Dim), save :: pos_ij, pos_kl
 
 contains
 
