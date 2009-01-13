@@ -2452,6 +2452,20 @@ EOF
 #
 ##########################################################################
 
+# determined whether we add Fortran flag for checking array boudaries or not
+if [ $checkbounds = 1 ]; then
+# ...
+  safe="$check_array_bounds $safe"
+  opt="$check_array_bounds $opt"
+  if [ -n $check_array_bounds ]; then
+   $echo "\nFortran flag '"$check_array_bounds"' for checking array bounds included."
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+  else
+   $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
+   $echo "Please edit the script."
+  fi
+fi
+
 # determine what flags to be flushed into Makefile.config:  SAFE or OPTIMIZED flags
 if [ $nooptim = 1 ]; then # ... employ flags with no optimization
 #
@@ -2461,18 +2475,6 @@ else # ... employ flags with the optimization
 #
   use_flags=$opt
   use_c_flags=$c_opt
-fi
-
-# determined whether we add checking array boudaries or not
-if [ $checkbounds = 1 ]; then
-  use_flags="$check_array_bounds $use_flags" 
-  if [ -n $check_array_bounds ]; then
-    $echo "\nFortran flag '"$check_array_bounds"' for checking array bounds included."
-    $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
-  else
-    $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
-    $echo "Please edit the script."
-  fi
 fi
 
 cat <<EOF >> Makefile.config
