@@ -1398,7 +1398,7 @@ C  /* Deck runopt */
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
-      LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
+      LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, COND1
       CHARACTER TMPLIN*80, WRDRSP*7
       DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
@@ -1878,8 +1878,14 @@ C     Check if increase of gradient norm should cause reinitialization
 C     of Hessian. Reinitialization occurs when the norm of the gradient
 C     is larger than the norm of the gradient two iterations earlier.
 C
-         IF ((.NOT. NEWTON) .AND. (GRDINI .AND. (ITRNMR .GE. 2) .AND.
-     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)))) THEN
+         IF (ITRNMR-2.GE.0) THEN
+            COND1=(.NOT. NEWTON).AND.(GRDINI.AND.(ITRNMR .GE. 2).AND.
+     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)))
+         ELSE
+          COND1=(.NOT. NEWTON) .AND. (GRDINI .AND. (ITRNMR .GE. 2)) 
+         ENDIF
+
+         IF (COND1) THEN
             WRITE(LUPRI,*)
             WRITE(LUPRI,*)'***** NOTE! *****'
             WRITE(LUPRI,*)'Due to increasing gradient norm, ' //

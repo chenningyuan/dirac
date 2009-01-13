@@ -173,10 +173,7 @@ C
       call memget('REAL',kcnv,nrspf,work,kfree,lfree)
 C
 C
-CMI
       CALL MEMCHK('prpxlr_mpg 1.00',WORK,1)
-
-      CALL FLSHFO(LUPRI)
 C
       call prpxl1_mpg(work(klrf),work(kcnv),DMO,XMO,
      &                work,kfree,lfree)
@@ -716,7 +713,8 @@ C
          call memget('REAL',kxvec,nzxopeq*nfreq,work,kfree,lfree)
          call memget('REAL',kbbuf,      nzxopeq,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,        NESIM,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
+CMI      call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
+         call getlr1(ablrf,jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
      &               work(kcmo),work(kibrp),iorbcl,work(kzxope),
@@ -775,7 +773,8 @@ C
          call memget('REAL',kgvec,nzxoppq      ,work,kfree,lfree)
          call memget('REAL',kbbuf,nzxoppq      ,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
+CMI      call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
+         call getlr1(ablrf,jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
      &               work(kcmo),work(kibrp),iorbcl,work(kzxopp),
      &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,

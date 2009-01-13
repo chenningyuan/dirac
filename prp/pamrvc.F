@@ -570,8 +570,10 @@ C
       IF (NASHT.GT.1) THEN
          CALL MEMGET('REAL',KFQT,NCSIM * NASHT * NORBT * NZ,
      &        WORK,KFREE,LFREE)
+
          CALL MEMGET('REAL',KFQX,NOSIM * NASHT * NORBT * NZ,
      &        WORK,KFREE,LFREE)
+
          CALL MEMGET('REAL',KH2ACX,
      &        NOSIM * NASHT * NASHT * NNASHX * NZ * 3,
      &        WORK,KFREE,LFREE)
@@ -4507,6 +4509,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
+#include "dummy.h"
 C
       DIMENSION SEVEC(NXOPE,NZ,*), SPVEC(NXOPP,NZ,*)
       DIMENSION FX(N2ORBXQ,*), FQX(NASHT*NORBT*NZ,*), DV(*)
@@ -4557,18 +4560,30 @@ C        e-e part
 C        --------
 C
          IF (NXOPE .GT. 0) THEN
+           IF (NASHT.NE.0) THEN
             CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
      &           FQX(1,I),SEVEC(1,1,I),JXOPE,NXOPE,WORK(KFPV),DFAC,
      &           IPQTOQ(1,IREP),IPRXRS)
+           ELSE
+            CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
+     &           DUMMY,SEVEC(1,1,I),JXOPE,NXOPE,WORK(KFPV),DFAC,
+     &           IPQTOQ(1,IREP),IPRXRS)
+           ENDIF
          END IF
 C
 C        e-p part
 C        --------
 C
          IF (NXOPP .GT. 0) THEN
+           IF (NASHT.NE.0) THEN
             CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
      &           FQX(1,I),SPVEC(1,1,I),JXOPP,NXOPP,WORK(KFPV),DFAC,
      &           IPQTOQ(1,IREP),IPRXRS)
+           ELSE
+            CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
+     &           DUMMY,SPVEC(1,1,I),JXOPP,NXOPP,WORK(KFPV),DFAC,
+     &           IPQTOQ(1,IREP),IPRXRS)
+           ENDIF
          END IF
 C
          IF (NASHT .GT. 0) IM = IM + 1
@@ -4601,21 +4616,35 @@ C        e-e part
 C        --------
 C
          IF (NXOPE .GT. 0) THEN
+           IF (NASHT.NE.0) THEN
             CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
      &           FQX(1,I+NESIM),
      &           SEVEC(1,1,I+NESIM),JXOPE,NXOPE,WORK(KFPV),DFAC,
      &           IPQTOQ(1,IREP),IPRXRS)
+           ELSE
+            CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
+     &           DUMMY,
+     &           SEVEC(1,1,I+NESIM),JXOPE,NXOPE,WORK(KFPV),DFAC,
+     &           IPQTOQ(1,IREP),IPRXRS)
+           ENDIF
          END IF
 C
 C        e-p part
 C        --------
 C
          IF (NXOPP .GT. 0) THEN
+           IF (NASHT.NE.0) THEN
             CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
      &           FQX(1,I+NESIM),
      &           SPVEC(1,1,I+NESIM),JXOPP,NXOPP,WORK(KFPV),DFAC,
      &           IPQTOQ(1,IREP),IPRXRS)
-         END IF
+           ELSE
+            CALL RORBGRD(.TRUE.,DV,FX(1,IM),FX(1,IM),FX(1,IM+1),
+     &           DUMMY,
+     &           SPVEC(1,1,I+NESIM),JXOPP,NXOPP,WORK(KFPV),DFAC,
+     &           IPQTOQ(1,IREP),IPRXRS)
+           ENDIF
+         ENDIF
          IF (NASHT .GT. 0) IM = IM + 1
 C
       END DO
@@ -5242,6 +5271,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
+#include "dummy.h"
 C
       DIMENSION FQX(NORBT*NASHT*NZ,*), FX(N2ORBXQ,*), DV(*)
       DIMENSION WORK(*)
