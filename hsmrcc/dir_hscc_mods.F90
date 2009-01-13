@@ -7,6 +7,8 @@ module io_moltra
 !  moltra integral files MRCONEE & MDCINT
 !
 !----------------------------------------------------------------------------------
+  use Memory
+  use Vectors
 
 ! ... file numbers ... 
 integer :: MDINT=20, MRCONEE=21
@@ -15,6 +17,8 @@ CHARACTER*10 DATEX,TIMEX*8
 real*8 :: ECORE
 
 integer :: NSP, NFSYM, NZ, NORBT, NSYMRP, NELEC(16), NREP, NKR
+
+integer :: ilenght=0
 
 !--------------------------------------------------------
 integer, parameter :: NSP2 = 300 ! static allocation 
@@ -43,7 +47,46 @@ logical :: is_complex, mrconee_read = .false.
 
 integer, public :: nelec_tot=0
 
+integer :: nnzi=0, nintbl=0
+
+integer :: RCW
+
+! store also cbuf, pos_ij, pos_kl
+type(Array2Dim) :: cbuf
+type(Array3Dim) :: pos_ij, pos_kl
+
 contains
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine alloc_mdcint_data
+!
+! allocate arrays for MDCINT 2-el.integrals /  indexes
+!
+#include "implicit.h"
+#include "priunit.h"
+
+if (.not.IsMemorySticked() ) then
+ write(LUPRI,*) ' memory array not present !' 
+ call Quit(' memory array not present !  ')
+else
+ write(LUPRI,*) ' alloc_mdcint_data: memory sticked !' 
+endif
+
+write(LUPRI,*) 'alloc_mdcint_data: calculated array size, ilenght=',ilenght
+
+! ... note: "ccdriv.F":1923 is using RCW !!!
+cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
+
+! third index : 1 - position, 2 - block no
+pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
+pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array!
+
+end subroutine alloc_mdcint_data
+
+subroutine dalloc_mdcint_data
+
+end subroutine dalloc_mdcint_data
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function GetNBSYM() result(nbsym_dirac)
@@ -89,16 +132,18 @@ subroutine read_moltra_files
 #include "implicit.h"
 #include "priunit.h"
 
-type(Array2Dim) :: cbuf
-type(Array3Dim) :: pos_ij, pos_kl
+!type(Array2Dim) :: cbuf
+!type(Array3Dim) :: pos_ij, pos_kl
 
 call read_mrconee;  call print_mrconee_data
 
-call read_mdcint(cbuf,pos_ij, pos_kl)
+!call read_mdcint(cbuf,pos_ij, pos_kl)
+call read_mdcint
 
 call set_hscc_VINF_data
 
-call prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
+call prepare_HSMRCC_Vfiles
+
 
 call DeAllocObject(pos_kl)
 call DeAllocObject(pos_ij)
@@ -287,22 +332,22 @@ write(LUPRI,*)
 end subroutine print_mrconee_data
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine read_mdcint(cbuf,pos_ij, pos_kl)
+!subroutine read_mdcint(cbuf,pos_ij, pos_kl)
+subroutine read_mdcint
 !-------------------------------------------------------------------------
 !
 !       ... read the MDCINT file 
 !
 !-------------------------------------------------------------------------
-  use Memory
-  use Vectors
+!  use Memory
+!  use Vectors
 !  use Dirac_HSMRCC
 #include "implicit.h"
 #include "priunit.h"
 type(Vect) :: indk_vect, indl_vect
-type(Array2Dim) :: cbuf
-type(Array3Dim) :: pos_ij, pos_kl
+!type(Array2Dim) :: cbuf
+!type(Array3Dim) :: pos_ij, pos_kl
 logical :: is_mdc, check_mem, print_int, print_batch_info 
-integer :: RCW
 double precision :: Iijkl
 
 Call Header('MDCINT control print-out',-1)
@@ -348,8 +393,8 @@ write(LUPRI,*) 'Info from MDCINT file'
 ! ... determine whether entering 2-electron integrals are real or complex 
 is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
 
- call scan_mdcint(nnzi, nintbl)
-
+ !call scan_mdcint(nnzi, nintbl)
+ call scan_mdcint
  write(LUPRI,*) ' number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
  write(LUPRI,*) ' number of <I J|-integral BLOCKS on MDCINT=',nintbl
 
@@ -377,20 +422,18 @@ ilenght = NKR*NKR !
 
 write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
 
+call alloc_mdcint_data
+
 indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
 indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 
 ! call print_mem_param
 
 ! ... note: "ccdriv.F":1923 is using RCW !!!
-cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
+!cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
+!pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
+!pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array 
 
-!call  set_vect_iprint(30)
-
-! third index : 1 - position, 2 - block no
-pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
-
-pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array !
 
 indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
 indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
@@ -455,7 +498,7 @@ endif
     call Quit('NONZR > ilenght; out of memory allocation !')
   endif
 
-   MOINT = MOINT + NONZR
+  MOINT = MOINT + NONZR
 
   if (print_batch_info) then
     write(LUPRI,'(2x,a,i5)')  '..read IJ-integral block:',iblock
@@ -469,7 +512,7 @@ if (print_int) then
 
  write(LUPRI,'(/,2x,a,2i4)') 'read < I J |... indexes',KR(IKR),KR(JKR)
 
- do INZ=1,NONZR
+ do INZ=1, NONZR
    icount = icount + 1
    if (.NOT.is_complex) then
    !  ... unique, KU indexes
@@ -554,7 +597,7 @@ endif
  enddo
  enddo
 
- call prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
+! call prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
 
  write(LUPRI,*)  &
  ' ... going to deallocate objects in LIFO order ... '
@@ -583,7 +626,8 @@ endif
 
 end subroutine read_mdcint
 
-subroutine scan_mdcint(nnzi, nintbl)
+!subroutine scan_mdcint(nnzi, nintbl)
+subroutine scan_mdcint
 !-----------------------------------------------------------------------------
 !
 !   Scan (read once) the integral file MDCINT: 
@@ -595,7 +639,7 @@ subroutine scan_mdcint(nnzi, nintbl)
 implicit none
 !#include "implicit.h"
 #include "priunit.h"
-integer, intent(out) :: nnzi, nintbl 
+!integer, intent(out) :: nnzi, nintbl 
 integer :: IKR,JKR,NONZR,MOINT, INZ
 logical :: is_open
 integer :: myIDUMMY
@@ -1063,7 +1107,7 @@ end subroutine prepare_dirac_HSMRCC_int_files
 end module Dirac_HSMRCC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
+subroutine prepare_HSMRCC_Vfiles
 !------------------------------------------------------------------------
 !
 !              prepare VINT & VIND files for HSMRCC
@@ -1080,8 +1124,8 @@ subroutine prepare_HSMRCC_Vfiles(cbuf,pos_ij,pos_kl)
 
 #include "implicit.h"
 #include "priunit.h"
-type(Array2Dim), intent(in) :: cbuf
-type(Array3Dim), intent(in) :: pos_ij, pos_kl
+!type(Array2Dim), intent(in) :: cbuf
+!type(Array3Dim), intent(in) :: pos_ij, pos_kl
 
 !character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
 !character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
@@ -1092,17 +1136,22 @@ call set_dirac_hscc_file_names
 
 ! ... open all HSMRCC made files 
 if (.not.nohsccfiles) then
+  call InitIOMod
   call OpenIntFiles
   call make_VIND_VINT_files
+  call quit('end in prepare_HSMRCC_Vfiles')
 endif
 
 end subroutine prepare_HSMRCC_Vfiles
 
-
-!>   set important HSCC parameters
-!!  for VINF file
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_hscc_VINF_data
-
+!----------------------------------------------------------
+!
+!    set important HSCC parameters
+!  for VINF file
+!
+!----------------------------------------------------------
 use io_moltra
 use Dirac_HSMRCC
 use Parameters
@@ -1126,7 +1175,7 @@ NHOLE = 2
 !NACT = NACT_DIR
 !NCMO = NCORE_DIR
 
-NCMO = NCMO_DIRAC
+ NCMO = NCMO_DIRAC
 
 NFRZV = NFRZV_DIRAC
 
@@ -1150,7 +1199,7 @@ call alloc_VINF_arrays
 OPTION(HSCC_DIRAC_MODE)=.false.
 OPTION(DIRAC_MODE)     =.true.
 
-! .. fill these arrays ...
+! ... fill these arrays ...
 call fill_VINF_arrays
 
 call GenHSMRpars
@@ -1274,7 +1323,6 @@ do i=1,NSP
 
 enddo
 
-
 ! .. update
 SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
 OccRef = OccGMSRef
@@ -1292,14 +1340,13 @@ endif
 if (NEMO_DIRAC == -1) call quit('NEMO_DIRAC bad number !')
 
 
-
-
 call print_gms_data
 
 end subroutine fill_VINF_arrays
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine make_VIND_VINT_files(cbuf,pos_ij,pos_kl)
+!subroutine make_VIND_VINT_files(cbuf,pos_ij,pos_kl)
+subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
 ! prepare integral files
@@ -1315,8 +1362,8 @@ use GMSMod
 #include "implicit.h"
 #include "priunit.h"
 
-type(Array2Dim), intent(in) :: cbuf
-type(Array3Dim), intent(in) :: pos_ij, pos_kl
+!type(Array2Dim), intent(in) :: cbuf
+!type(Array3Dim), intent(in) :: pos_ij, pos_kl
 
 
 ! 01. V2H2P  <IJ||AB>

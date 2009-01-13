@@ -5,7 +5,6 @@ module IOmodule
    implicit none
 
    ! ... Initialization Status Flag ...
-
    logical, private :: Init = .FALSE.
 
    ! ... IO Unit Numbers ...
@@ -150,8 +149,10 @@ subroutine InitIOMod
 !   calculate attributes NumRec & RecLen and allocate arrays NZIntRec_xxxx
 ! for reading Gamess/DIRAC-made integrals 
 !
-!  called from InitHSMRBase ("source/inihsbase.F90")
-!
+!  called from : 
+!            InitHSMRBase ("source/inihsbase.F90")
+!             dirac HSCC interface
+!   
 !---------------------------------------------------------------------------------
 
  implicit none
@@ -180,6 +181,7 @@ subroutine InitIOMod
    NumRec(VPHPP) = NPMO*NHMO
    NumRec(V2HHP) = NHMO*NHMO
    NumRec(VHHHP) = NHMOSQ
+
    NumRec(FHH)   = NHMO
    NumRec(FHP)   = NHMO
    NumRec(FPP)   = NPMO
@@ -200,8 +202,7 @@ subroutine InitIOMod
    RecLen(FPP)   = NVMO*NPMO
 
    if (get_iprint() >= 5) then
-     write(UOUT,'(/,4x,a)') '*** Output from InitIOMod ***'
-     write(UOUT,'(2x,a)') 'NumRec & RecLen arrays initialized !'
+     call print_int_file_attributes
    endif
 
    call InitIOMod_alloc_NZIntRec
@@ -209,6 +210,31 @@ subroutine InitIOMod
    return
 
 end subroutine InitIOMod
+
+subroutine print_int_file_attributes
+
+  write(UOUT,'(/,1x,a,/)') '*** InitIOMod: print of NumRec & RecLen arrays ***'
+
+  write(UOUT,9234) 'NumRec(V2H2P)=',NumRec(V2H2P),' RecLen(V2H2P)=',RecLen(V2H2P)
+  write(UOUT,9234) 'NumRec(VPPPP)=',NumRec(VPPPP),' RecLen(V2H2P)=',RecLen(VPPPP)
+  write(UOUT,9234) 'NumRec(VHHHH)=',NumRec(VHHHH),' RecLen(VHHHH)=',RecLen(VHHHH)
+  write(UOUT,9234) 'NumRec(VHHPP)=',NumRec(VHHPP),' RecLen(VHHPP)=',RecLen(VHHPP)
+  write(UOUT,9234) 'NumRec(V2HPP)=',NumRec(V2HPP),' RecLen(V2HPP)=',RecLen(V2HPP)
+  write(UOUT,9234) 'NumRec(V2PHH)=',NumRec(V2PHH),' RecLen(V2PHH)=',RecLen(V2PHH)
+  write(UOUT,9234) 'NumRec(VPHHP)=',NumRec(VPHHP),' RecLen(VPHHP)=',RecLen(VPHHP)
+  write(UOUT,9234) 'NumRec(VPH2P)=',NumRec(VPH2P),' RecLen(VPH2P)=',RecLen(VPH2P)
+  write(UOUT,9234) 'NumRec(VPHPP)=',NumRec(VPHPP),' RecLen(VPHPP)=',RecLen(VPHPP)
+  write(UOUT,9234) 'NumRec(V2HHP)=',NumRec(V2HHP),' RecLen(V2HHP)=',RecLen(V2HHP)
+  write(UOUT,9234) 'NumRec(VHHHP)=',NumRec(VHHHP),' RecLen(VHHHP)=',RecLen(VHHHP)
+
+  write(UOUT,9235) 'NumRec(FHH)=',NumRec(FHH),' RecLen(FHH)=',RecLen(FHH)
+  write(UOUT,9235) 'NumRec(FHP)=',NumRec(FHP),' RecLen(FHP)=',RecLen(FHP)
+  write(UOUT,9235) 'NumRec(FPP)=',NumRec(FPP),' RecLen(FPP)=',RecLen(FPP)
+
+   9234 format(2x,a,i5,a,i5)
+   9235 format(2x,a,i4,a,i4)
+
+end subroutine print_int_file_attributes 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitIOMod_alloc_NZIntRec
