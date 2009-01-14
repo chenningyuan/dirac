@@ -99,8 +99,9 @@ $(TARGET): $(OBJ)
 clean:
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
 
-ftnchek:
-	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
+# miro: deactivated ...
+#ftnchek:  
+#	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
 # ... for the compilation of the (optional) standalone HSMRCC code
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
@@ -119,17 +120,49 @@ gcov:
 # puts them in $(INSTALL_DIR/bin)
 include utils/Makefile.utils
 
-# Implicit rules
+##########################################################################                    
+#
+#                    Implicit rules 
+#  
+#  for extra compilation with safe-flags, index-range-check + other checks flags,
+#  
+#  TODO: add ftnchek for F77 files
+#
+##########################################################################                    
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .o
+.SUFFIXES : .F .F90 .f90 .c .s .r .o
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
+.F.s:
+	@echo "Compiling with Fortran safe flags:"
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F
+.F.r:
+	@echo "Compiling with Fortran safe & checking flags:"
+	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
+.F90.s:
+	@echo "Compiling with Fortran safe flags:"
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90
+.F90.r:
+	@echo "Compiling with Fortran safe & other checking flags:"
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90
 .f90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.f90
+.f90.s:
+	@echo "Compiling with Fortran safe flags:"
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90
+.f90.r:
+	@echo "Compiling with Fortran safe & other checking flags:"
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
+.c.s:
+	@echo "Compiling with C safe flags:"
+	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c
+.c.r:
+	@echo "Compiling with C safe & other checking flags:"
+	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c
 

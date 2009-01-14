@@ -1903,7 +1903,7 @@ get_f90_flags(){
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
-      check_array_bounds="" # please add
+      F_check_array_bounds="" # please add
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
@@ -1924,7 +1924,7 @@ get_f90_flags(){
       safe="-g $march"
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
-      check_array_bounds="-fbounds-check" 
+      F_check_array_bounds="-fbounds-check" 
       ;;
     pgf90)
       opt="-g -fastsse"
@@ -1932,7 +1932,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
-      check_array_bounds="" # please add
+      F_check_array_bounds="-Mbounds" # please add
       ;;
     lfc)
       opt="-g --fast"
@@ -1940,7 +1940,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
       noformain="" # please add
-      check_array_bounds="" # please add
+      F_check_array_bounds="" # please add
       ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
@@ -1952,7 +1952,7 @@ get_f90_flags(){
        ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
       noformain="-nofor_main"
-      check_array_bounds="-check bounds" 
+      F_check_array_bounds="-check bounds -fpstkchk" 
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
@@ -1961,14 +1961,14 @@ get_f90_flags(){
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       noformain="" # please add
-      check_array_bounds="" # please add
+      F_check_array_bounds="" # please add
       ;;
     pathf90)
       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
       cpp_cc="$cpp_cc -DVAR_EKO"
       mod="-module $MODULE_DIR"
       noformain="" # please add
-      check_array_bounds="" # please add
+      F_check_array_bounds="" # please add
        ;;
     *)
        $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
@@ -1995,10 +1995,12 @@ get_cc_flags(){
   gcc|cc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
+    C_check_array_bounds="-fbounds-check" # OK ?
     ;;
   mpicc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
+    C_check_array_bounds="" # please add
     echo
     echo WARNING:
     echo   Could not determine which compiler mpicc is using, assuming it is gcc
@@ -2007,14 +2009,17 @@ get_cc_flags(){
   pgcc)
     c_opt="-g -fastsse"
     c_safe="-g"
+    C_check_array_bounds="-Mbounds -Mchkstk" # 
     ;;
   icc)
     c_opt="-g -O3 -ip -w"
     c_safe="-g -w"
+    C_check_array_bounds="-Wcheck -fpstkchk -fstack-security-check" # 
     ;;
   pathcc)
     c_opt=$opt
     c_safe=$safe
+    C_check_array_bounds="" # please add
     ;;
   esac
 
@@ -2454,14 +2459,24 @@ EOF
 
 # determined whether we add Fortran flag for checking array boudaries or not
 if [ $checkbounds = 1 ]; then
-# ...
-  safe="$check_array_bounds $safe"
-  opt="$check_array_bounds $opt"
-  if [ -n $check_array_bounds ]; then
-   $echo "\nFortran flag '"$check_array_bounds"' for checking array bounds included."
+#  ... Fortran flag ...
+  safe="$F_check_array_bounds $safe"
+  opt="$F_check_array_bounds $opt"
+  if [ -n $F_check_array_bounds ]; then
+   $echo "\nFortran flag '"$F_check_array_bounds"' for checking array bounds included."
    $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
   else
    $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
+   $echo "Please edit the script."
+  fi
+#   ... C flag ...
+  c_safe="$C_check_array_bounds $c_safe"
+  c_opt="$C_check_array_bounds $c_opt"
+  if [ -n $C_check_array_bounds ]; then
+   $echo "\nC flag '"$C_check_array_bounds"' for checking array bounds included."
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+  else
+   $echo "\nNo C flag for checking array bounds is included for compiler $CCreal."
    $echo "Please edit the script."
   fi
 fi
@@ -2487,6 +2502,10 @@ CFLAGS=$use_c_flags $cc_inc $cpp_cc
 F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
+
+# Fortran/C flag for array bounds & other possible checks
+FFLAGS_CHECK=$F_check_array_bounds
+CFLAGS_CHECK=$C_check_array_bounds
 
 # ILP data type mode (to be passed to dirac.x)
 ILP_DATATYPE=$ilp_datatype
