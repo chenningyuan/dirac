@@ -2306,13 +2306,15 @@ if [ -f Makefile.config ]; then
       mv Makefile.config Makefile.config.orig
    fi
 fi
-#
-# Parallel preprocessor directive need to be set
-#
-INCLUDE_DIR=include
-MODULE_DIR=modules
-arflag=
 
+# ... special care of include, modules directories - dealt in Makefile.config 
+INCLUDE_DIR="\${include_dir}"
+MODULE_DIR="\${modules_dir}"
+
+# miro: what's that ?
+arflag= 
+
+# Parallel preprocessor directive need to be set
 set_compile_flags
 mpi2check
 get_largefiles
@@ -2440,6 +2442,22 @@ cat <<EOF >> Makefile.config
 # mpi (if parallel). For mpi you also need the correct -I flag
 # in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
+
+###
+### take special care of include/ modules/ directories due to makefile(s) in subdirectories
+###
+is_include_dir := \$(wildcard include)
+ifneq (\$(strip \$(is_include_dir)),)
+include_dir=include
+else
+include_dir=\${INSTALL_DIR}/include
+endif
+is_modules_dir := \$(wildcard modules)
+ifneq (\$(strip \$(is_module_dir)),)
+modules_dir=modules
+else
+modules_dir=\${INSTALL_DIR}/modules
+endif
 
 # preprocessing
 DEPFPP=$FPP $cpp_f90 $depend_flags $parinc
