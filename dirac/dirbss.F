@@ -8876,18 +8876,20 @@ CMI  ... called from AMFI/contandmult
 #include "priunit.h"
       DIMENSION IL(*),IML(*)
 
-       IX = I
-        J = 0
-      LX = IL(I)
-      MLX=IML(I)
+      IX  =  I
+       J  =  0
+      LX  =  IL(I)
+      MLX =  IML(I)
 
- 20   CONTINUE
-      IF (LX.EQ.IL(IX) .AND. MLX.EQ.IML(IX) .AND. IX.GT.0) THEN
-         IX = IX - 1
-         J = J + 1
-         GOTO 20
+      IF (IX.GT.0) THEN
+ 20     CONTINUE
+        IF (LX.EQ.IL(IX) .AND. MLX.EQ.IML(IX)) THEN
+          IX = IX - 1
+           J = J + 1
+          IF (IX.GT.0) GOTO 20
+        ENDIF
       ENDIF
-     
+
       INDX_LML = J 
 
       RETURN
