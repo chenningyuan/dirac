@@ -3,7 +3,10 @@
 # listed in safebuild will be built with "safe" flags.
 # This files might require GNU make
 
+is_mc := $(wildcard Makefile.config)
+ifneq ($(strip $(is_mc)),)
 include Makefile.config
+endif
 
 TARGET=$(INSTALL_DIR)/dirac.x
 SOURCE_DIRS=.
@@ -89,8 +92,8 @@ build/gen_fortran_interface_h: build/gen_fortran_interface_h.c
 include/fortran_interface.h: build/gen_fortran_interface_h
 	./build/gen_fortran_interface_h > include/fortran_interface.h
 
-include Makefile.obj
-include Makefile.dep
+include $(INSTALL_DIR)/Makefile.obj
+include $(INSTALL_DIR)/Makefile.dep
 
 $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
@@ -118,7 +121,7 @@ gcov:
 
 # Main target here is utils, which buils all utilities and
 # puts them in $(INSTALL_DIR/bin)
-include utils/Makefile.utils
+include $(INSTALL_DIR)/utils/Makefile.utils
 
 ##########################################################################                    
 #

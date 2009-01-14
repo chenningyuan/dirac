@@ -2389,11 +2389,11 @@ esac
 #first define the preprocessing flags for the active modules
 
 cat <<EOF > Makefile.config
-include Makefile.moddef
-# default memory (in 8 byte words)
-WRKMEM=$memsiz
 # installation directory 
 INSTALL_DIR=$INSTALL_DIR
+include $INSTALL_DIR/Makefile.moddef
+# default memory (in 8 byte words)
+WRKMEM=$memsiz
 # scratch directory, the same as in "pam", from where it is used 
 SCRATCH_DIR=$worksp
 EOF
