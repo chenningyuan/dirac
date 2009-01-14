@@ -1482,9 +1482,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Loop through the rows and check whether the data is to be flushed
 C
+      N=0
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
-         N = LGBUF(IBUF,I_FILE)
+         IF (IBUF.NE.0) N = LGBUF(IBUF,I_FILE)
          IF (IBUF.GT.0.AND.N.GT.0) THEN
             INODE = IROWS(3,I)
 #if defined (VAR_PFS)
@@ -1505,7 +1506,7 @@ C
 #endif
             N = 0
          ENDIF
-         LGBUF(IBUF,I_FILE) = N
+         IF (IBUF.NE.0) LGBUF(IBUF,I_FILE) = N
       ENDDO
 C
       PERC = N_WRITTEN+N_DELETED
