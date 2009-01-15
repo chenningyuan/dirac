@@ -1139,6 +1139,7 @@ if (.not.nohsccfiles) then
   call InitIOMod
   call OpenIntFiles
   call make_VIND_VINT_files
+
   call quit('end in prepare_HSMRCC_Vfiles')
 endif
 
@@ -1349,7 +1350,7 @@ end subroutine fill_VINF_arrays
 subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
-! prepare integral files
+!                prepare integral files
 !
 !----------------------------------------------------------------
 use Memory
@@ -1365,9 +1366,23 @@ use GMSMod
 !type(Array2Dim), intent(in) :: cbuf
 !type(Array3Dim), intent(in) :: pos_ij, pos_kl
 
+!write(LUPRI,*) 'NHMO=',NHMO
+!write(LUPRI,*) 'NPMO=',NPMO
+
+call print_params
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
+
+do I=1,NHMO
+do A=1,NPMO
+do J=1,NHMO
+do B=1,NHMO
+
+enddo
+enddo
+enddo
+enddo
 
 write(LUPRI,*) '02. VPPPP  <AB||CD>'
 

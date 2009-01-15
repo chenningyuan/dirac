@@ -969,7 +969,6 @@ subroutine OpenIntFiles
 !              InitHSMRBase (source/inihsbase.F90)
 !                              dir_hscc_mods.F90
 !
-!
 !-----------------------------------------------------------------------------------------
    implicit none
    character(len=10) :: stat
@@ -1039,16 +1038,16 @@ subroutine OpenIntFiles
    recl_fpp=4*2*NPMO*NPMO
    open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fpp)
 
-!  ... print out info
+!  ... print out info ...
    if (get_iprint() >= 7) then
      write(UOUT,'(/,2x,a,a)')   & 
-     'OpenIntFiles: UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
-     write(UOUT,'(a,i2,a,a15,a,i8)') 'UVIND=',UVIND,' 2-el.integrals,FileVIND=',FileVIND,' recl=',recl_vind
-     write(UOUT,'(a,i2,a,a15,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes,FileVINT=',FileVINT,' recl=',recl_vint
-     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFHH=',UFHH,' 1-el. integ.,FileFHH=',FileFHH,' recl=',recl_fhh
-     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFHP=',UFHP,' 1-el. integ.,FileFHP=',FileFHP,' recl=',recl_fhp
-     write(UOUT,'(a,i2,a,a15,a,i8)') 'UFPP=',UFPP,' 1-el. integ.,FileFPP=',FileFPP,' recl=',recl_fpp
-     write(UOUT,*)  
+     'UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
+     write(UOUT,'(a,i2,a,a18,a,i8)') 'UVIND=',UVIND,' 2-el.integrals, FileVIND=',FileVIND,' recl=',recl_vind
+     write(UOUT,'(a,i2,a,a18,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes, FileVINT=',FileVINT,' recl=',recl_vint
+     write(UOUT,'(a,i2,a,a18,a,i8)') ' UFHH=',UFHH, ' 1-el. integ., FileFHH=',FileFHH,' recl=',recl_fhh
+     write(UOUT,'(a,i2,a,a18,a,i8)') ' UFHP=',UFHP, ' 1-el. integ., FileFHP=',FileFHP,' recl=',recl_fhp
+     write(UOUT,'(a,i2,a,a18,a,i8)') ' UFPP=',UFPP, ' 1-el. integ., FileFPP=',FileFPP,' recl=',recl_fpp
+     write(UOUT,*) 
      call flushout
    endif
 

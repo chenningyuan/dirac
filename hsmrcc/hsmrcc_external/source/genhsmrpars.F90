@@ -30,12 +30,7 @@ subroutine GenHSMRpars
        write(UOUT,'(10x,a)') '*** We are in DIRAC - preparing files for HSMRCC ***'
      endif
 
-     write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
-     write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
-     write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
-     write(UOUT,'(2x,a,i4)') ' NEMO=',NEMO
-     write(UOUT,'(2x,a,i4)') 'NPTCL=',NPTCL
-     call flushout
+     call print_params
 
      call print_orbmod_functions
 
@@ -109,6 +104,7 @@ subroutine GenHSMRpars
 
    ! ... control print-out
    if ( get_iprint() >= 7 ) then
+
      write(UOUT,'(/,8x,a)') '**** GenGSMRpars: calculated parameters: ****'
      write(UOUT,'(2x,a,i7)') '       NSTATE=',NSTATE
      write(UOUT,'(2x,a,i7)') '  NSTATE_MAIN=',NSTATE_MAIN
@@ -126,6 +122,7 @@ subroutine GenHSMRpars
      write(UOUT,'(2x,a,i7)') 'NELE=',NELE
      write(UOUT,'(2x,a,i7)') 'NTMO=',NTMO
      write(UOUT,'(2x,a,i7)') 'NVMO=',NVMO
+
    endif
 
 end subroutine GenHSMRpars

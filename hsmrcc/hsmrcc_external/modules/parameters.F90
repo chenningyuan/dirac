@@ -234,4 +234,14 @@ if (NHMO==0.or.NPMO==0.or.NVMO==0.or.NHMOSQ==0.or.NPMOSQ==0) then
 endif
 end subroutine check_FileRec_param
 
+subroutine print_params
+! ... print some paramaters
+  write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
+  write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
+  write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
+  write(UOUT,'(2x,a,i4)') ' NEMO=',NEMO
+  write(UOUT,'(2x,a,i4)') 'NPTCL=',NPTCL
+  call flushout
+end subroutine print_params
+
 end module Parameters
