@@ -2308,6 +2308,7 @@ if [ -f Makefile.config ]; then
 fi
 
 # ... special care of include, modules directories - dealt in Makefile.config 
+# either relative path (when in main dirac directory), or absolute (when in local directories)
 INCLUDE_DIR="\${include_dir}"
 MODULE_DIR="\${modules_dir}"
 
@@ -2443,9 +2444,10 @@ cat <<EOF >> Makefile.config
 # in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
 
-###
-### take special care of include/ modules/ directories due to makefile(s) in subdirectories
-###
+#
+# take special care of include/ modules/ directories due to Makefile(s) in local directories
+# either relative path or FULL path needed for local Makefile(s)
+#
 is_include_dir := \$(wildcard include)
 ifneq (\$(strip \$(is_include_dir)),)
 include_dir=include
