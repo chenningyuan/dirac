@@ -732,7 +732,7 @@ cat <<EOF > Makefile.dirs
 include $install_dir/Makefile.config
 
 # positioning to main dir needed due to relative positions of OBJ files  !
-default:"        
+default:
 	make -C $install_dir/.
 
 # take in the main Makefile to have defined suffixes, targest etc ...
