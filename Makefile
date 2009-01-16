@@ -126,7 +126,8 @@ clean:
 	@echo -e $(CLEANING_MESSAGE)
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
 
-# miro: deactivated ...
+#miro: deactivated stuff for ftnchek
+#CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noargumants -arguments=number -usage=var-unitialized
 #ftnchek:  
 #	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
 
