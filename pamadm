@@ -673,6 +673,7 @@ if [ -n "$HSCCFLG" ]; then
  #  dirs="$dirs hsmrcc/second_quant"
 # miro: added Sham's HSMRCC modules to be included
    dirs="$dirs hsmrcc/hsmrcc_external/modules"
+   dirs="$dirs hsmrcc/hsmrcc_external/source"
    rmline dontbuild "hsmrcc/\.\*"
   # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
   # rmline dontbuild "hsmrcc/second_quant/\.\*" 
