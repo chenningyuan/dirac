@@ -126,10 +126,7 @@ clean:
 	@echo -e $(CLEANING_MESSAGE)
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
 
-#miro: deactivated stuff for ftnchek
-#CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noargumants -arguments=number -usage=var-unitialized
-#ftnchek:  
-#	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
+CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noargumants -arguments=number -usage=var-unitialized
 
 #  Conditional include to check whether we have the (optional) HSMRCC module active 
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
@@ -159,7 +156,7 @@ include $(INSTALL_DIR)/utils/Makefile.utils
 ##########################################################################                    
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .s .r .o
+.SUFFIXES : .F .F90 .f90 .c .s .r .o .chek
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
@@ -169,6 +166,10 @@ include $(INSTALL_DIR)/utils/Makefile.utils
 .F.r:
 	@echo "Compiling with Fortran safe & checking flags:"
 	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F
+
+.F.chek:
+	ftnchek $(CHKFLAGS) $< $(CPPFLAGS) > $@
+
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
 .F90.s:
