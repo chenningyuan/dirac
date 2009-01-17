@@ -10,9 +10,6 @@ is_mc := $(wildcard Makefile.config)
 ifneq ($(strip $(is_mc)),)
 # file is included only when called from the main directory, otherwise NOT (needed for local Makefiles)
 include Makefile.config  
-CLEANING_MESSAGE="\n Cleaning the entire DIRAC of *.o,*.mod files."
-else
-CLEANING_MESSAGE="\n Cleaning only this local directory of *.o,*.mod files."
 endif
 
 TARGET=$(INSTALL_DIR)/dirac.x
@@ -123,7 +120,7 @@ $(TARGET): $(OBJ)
 	@echo -e "\nExecutable $(TARGET) is ready."
 
 clean:
-	@echo -e $(CLEANING_MESSAGE)
+	@echo "Cleaning the whole DIRAC of *.o,*.mod... files"
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' \
 	-o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
 
