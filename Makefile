@@ -195,3 +195,15 @@ include $(INSTALL_DIR)/utils/Makefile.utils
 	@echo "Compiling with C safe & other checking flags:"
 	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c
 
+# compilations (no linking) of $(OBJ)-market source files with specified flags
+# from local directories through make -C ../../.. <target>
+r:
+	@echo "Check-flags compilation of all DIRAC source files without linking."
+	$(MAKE) $(OBJ:.o=.r)
+s:
+	@echo "Safe-flags compilation of all DIRAC source files without linking."
+	$(MAKE) $(OBJ:.o=.s)
+o:
+	@echo "Standard compilation of all DIRAC source files without linking."
+	$(MAKE) $(OBJ)
+
