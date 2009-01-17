@@ -739,17 +739,27 @@ default:
 # take in the main Makefile to have defined suffixes, targest etc ...
 include $install_dir/Makefile
 
-r:
-	@echo "compilation with checking flags in this local directory"
-	\$(MAKE) \`ls *.F *.F90 *.c 2>/dev/null | sed 's/\.F90/\.r/g; s/\.c/.r/g; s/\.F/\.r/g'\`
-
+o:
+	@echo "default compilation to generate object files in this local directory"
+	\$(MAKE) \`ls *.F *.F90 *.c 2>/dev/null | sed 's/\.F90/\.o/g; s/\.c/\.o/g; s/\.F/\.o/g'\`
 s:
 	@echo "compilation with safe-lags in this local directory"
 	\$(MAKE) \`ls *.F *.F90 *.c 2>/dev/null | sed 's/\.F90/\.s/g; s/\.c/\.s/g; s/\.F/\.s/g'\`
 
-o:
-	@echo "default compilation to generate object files in this local directory"
-	\$(MAKE) \`ls *.F *.F90 *.c 2>/dev/null | sed 's/\.F90/\.o/g; s/\.c/\.o/g; s/\.F/\.o/g'\`
+r:
+	@echo "compilation with checking flags in this local directory"
+	\$(MAKE) \`ls *.F *.F90 *.c 2>/dev/null | sed 's/\.F90/\.r/g; s/\.c/.r/g; s/\.F/\.r/g'\`
+
+i:
+	@echo "preprocessing of F77 files in this local directory"
+	\$(MAKE) \`(ls *.F 2>/dev/null || echo "-q" )| sed 's/\.F/\.i/g'\`
+
+fc:
+	@echo "F77 check of all preprocessed *.i files in the local directory"
+	\$(MAKE) i # ..
+	ftnchek \$(FTNCHEK_FLAGS) \`ls *.i 2>/dev/null\` > dirac.ftnchek
+
+
 
 # positioning to main dir needed due to relative postions of hscc object files 
 hs:

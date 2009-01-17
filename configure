@@ -2462,7 +2462,10 @@ modules_dir=\${INSTALL_DIR}/modules
 endif
 
 # preprocessing
-DEPFPP=$FPP $cpp_f90 $depend_flags $parinc
+FPP_FLAGS=$cpp_f90 $depend_flags $parinc
+# 
+DEPFPP=$FPP \${FPP_FLAGS}
+#
 DEPCPP=$CPP $cpp_cc $parinc $depend_flags
 
 # linker

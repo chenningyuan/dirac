@@ -124,9 +124,8 @@ $(TARGET): $(OBJ)
 
 clean:
 	@echo -e $(CLEANING_MESSAGE)
-	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*'`
-
-CHEKFLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noargumants -arguments=number -usage=var-unitialized
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' \
+	-o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
 
 #  Conditional include to check whether we have the (optional) HSMRCC module active 
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
@@ -151,59 +150,71 @@ include $(INSTALL_DIR)/utils/Makefile.utils
 #  
 #  for extra compilation with safe-flags, index-range-check + other checks flags,
 #  
-#  TODO: add ftnchek for F77 files
 #
 ##########################################################################                    
 
+# flags for the ftnchek
+FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
+
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .s .r .o .chek
+.SUFFIXES : .F .F90 .f90 .c .s .r .o .i .fc
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
 .F.s:
 	@echo "Compiling with Fortran safe flags:"
-	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
 	@echo "Compiling with Fortran safe & checking flags:"
-	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F
+	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
 
-.F.chek:
-	ftnchek $(CHKFLAGS) $< $(CPPFLAGS) > $@
+.F.i:
+	@echo "preprocessing Fortran77 source file:"
+	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
+
+.i.fc:  
+	ftnchek $(FTNCHEK_FLAGS) $*.i > $*.fc
 
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
 .F90.s:
 	@echo "Compiling with Fortran safe flags:"
-	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
 .F90.r:
 	@echo "Compiling with Fortran safe & other checking flags:"
-	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
 .f90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.f90
 .f90.s:
 	@echo "Compiling with Fortran safe flags:"
-	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
 .f90.r:
 	@echo "Compiling with Fortran safe & other checking flags:"
-	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
 .c.s:
 	@echo "Compiling with C safe flags:"
-	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c
+	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
 .c.r:
 	@echo "Compiling with C safe & other checking flags:"
-	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c
+	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
 
 # compilations (no linking) of $(OBJ)-market source files with specified flags
 # from local directories through make -C ../../.. <target>
-r:
-	@echo "Check-flags compilation of all DIRAC source files without linking."
-	$(MAKE) $(OBJ:.o=.r)
-s:
-	@echo "Safe-flags compilation of all DIRAC source files without linking."
-	$(MAKE) $(OBJ:.o=.s)
+
 o:
 	@echo "Standard compilation of all DIRAC source files without linking."
 	$(MAKE) $(OBJ)
+s:
+	@echo "Safe-flags compilation of all DIRAC source files without linking."
+	$(MAKE) $(OBJ:.o=.s)
+r:
+	@echo "Check-flags compilation of all DIRAC source files without linking."
+	$(MAKE) $(OBJ:.o=.r)
+
+#miro: I'd like also  $(MAKE) $(OBJ_F77:.o=.i) / $(MAKE) $(OBJ_F77:.o=.fc)
+# - we can not do the total preprocessing/Ftnchek of ALL F77 files, 
+# because we do not have separate variable, OBJ_F77, for all F77 objects in DIRAC
+# Ulf, would you please split OBJ into separate OBJ_F77, OBJ_F90 and OBJ_C in your *py-script 
 
