@@ -33,8 +33,12 @@ check:
 preprocess:
 	make -C$(BACK) $(addsuffix .i,$(basename $(F77SRC)))
 
+ifneq ($(F77SRC),)
 ftnchek:
 	@make -C$(BACK) $(addsuffix .fc,$(basename $(F77SRC)))
+else
+$(error No F77 source files in this directory)
+endif
 
 clean:
 	@echo "Cleaning this local directory:"
