@@ -119,10 +119,13 @@ $(TARGET): $(OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	@echo -e "\nExecutable $(TARGET) is ready."
 
-allclean:
+ifneq ($(strip $(is_mc)),)
+# this target is visible from the main directory (no warning of target overriding from local Makefile-s)
+clean:
 	@echo "Cleaning the entire DIRAC of *.o,*.mod... files"
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' \
 	-o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
+endif
 
 #  Conditional include to check whether we have the (optional) HSMRCC module active 
 is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
