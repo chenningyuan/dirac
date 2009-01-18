@@ -38,4 +38,5 @@ ftnchek:
 
 clean:
 	@echo "Cleaning this local directory:"
-	$(RM) *.o *.mod *.gc* *.s *.r *.i *.fc *~
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
+
