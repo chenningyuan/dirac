@@ -760,8 +760,8 @@ fc:
 	ftnchek \$(FTNCHEK_FLAGS) \`ls *.i 2>/dev/null\` > dirac.ftnchek
 
 clean:
-	@echo "Cleaning local directory"
-	rm -f *.o *.mod *.s *.r *.i *.fc
+	@echo "Cleaning this local directory:"
+	\$(RM) *.o *.mod *.gc* *.s *.r *.i *.fc
 
 # positioning to main dir needed due to relative postions of hscc object files 
 hs:
