@@ -752,7 +752,8 @@ r:
 
 i:
 	@echo "preprocessing of F77 files in this local directory"
-	\$(MAKE) \`(ls *.F 2>/dev/null || echo "-q" )| sed 's/\.F/\.i/g'\`
+	@ls *.F 2>/dev/null || echo -e "\nNo F77 files in this directory !\n"
+	@\$(MAKE) \`(ls *.F 2>/dev/null || echo "-q" )| sed 's/\.F/\.i/g'\`
 
 fc:
 	@echo "F77 check of all preprocessed *.i files in the local directory"
