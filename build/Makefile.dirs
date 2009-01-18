@@ -11,10 +11,8 @@ HERE:=$(subst $(ROOT)/,,$(PWD))
 
 #Collect local file names
 F77FILES:=$(wildcard *.F)
-F90FILES:=$(wildcard *.f90)
-F90FILES:=$(F90FILES) $(wildcard *.F90)
-CFILES:=$(wildcard *.c)
-SRC:=$(addprefix $(HERE)/,$(F77FILES) $(F90FILES) $(CFILES))
+ALLFILES:=$(wildcard *.F *.f90 *.F90 *.c)
+SRC:=$(addprefix $(HERE)/,$(ALLFILES))
 F77SRC:=$(addprefix $(HERE)/,$(F77FILES))
 # strip out files in "dontbuild"
 SRC:=$(foreach FILE,$(SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/build/dontbuild && echo $(FILE)))
