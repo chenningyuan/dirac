@@ -609,10 +609,10 @@ cp build/dontbuild.in build/dontbuild
 # we therefore make dummy includes so that make depend can
 # run properly.
 if [ ! -r "Makefile.dep" ]; then
-    touch -t 198001010000 Makefile.dep
+    touch -t 198001010000 build/Makefile.dep
 fi
 if [ ! -r "Makefile.obj" ]; then
-    touch -t 198001010000 Makefile.obj
+    touch -t 198001010000 build/Makefile.obj
 fi
 
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
