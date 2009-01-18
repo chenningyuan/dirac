@@ -200,15 +200,18 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 # compilations (no linking) of $(OBJ)-market source files with specified flags
 # from local directories through make -C ../../.. <target>
 
-ao:
+ifneq ($(strip $(is_mc)),)
+# to supress overriding warning: these targets are visible only from main directory, not from local directories
+o:
 	@echo "Standard compilation of all DIRAC source files without linking."
 	$(MAKE) $(OBJ)
-as:
+s:
 	@echo "Safe-flags compilation of all DIRAC source files without linking."
 	$(MAKE) $(OBJ:.o=.s)
-ar:
+r:
 	@echo "Check-flags compilation of all DIRAC source files without linking."
 	$(MAKE) $(OBJ:.o=.r)
+endif
 
 #miro: I'd like also define target i: $(MAKE) $(OBJ_F77:.o=.i) & fc: $(MAKE) $(OBJ_F77:.o=.fc)
 # - we can not do the total preprocessing/Ftnchek of ALL F77 files, 
