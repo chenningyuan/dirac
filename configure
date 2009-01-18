@@ -2050,10 +2050,10 @@ get_largefiles(){
 
 getmods()
 {
-    if [ -r Makefile.moddef ]; then
-	egrep '^MODS=' Makefile.moddef | cut -c 6-
+    if [ -r build/Makefile.moddef ]; then
+	egrep '^MODS=' build/Makefile.moddef | cut -c 6-
     else
-	echo "Error, cannot find Makefile.moddef." >&2
+	echo "Error, cannot find build/Makefile.moddef." >&2
 	echo "Run pamadm to correct this problem. Quitting." >&2
 	# Suicide is painless, it brings on many changes
 	kill $$
@@ -2309,8 +2309,8 @@ fi
 
 # ... special care of include, modules directories - dealt in Makefile.config 
 # either relative path (when in main dirac directory), or absolute (when in local directories)
-INCLUDE_DIR="\${include_dir}"
-MODULE_DIR="\${modules_dir}"
+INCLUDE_DIR=include
+MODULE_DIR=modules
 
 # miro: what's that ?
 arflag= 
@@ -2392,12 +2392,12 @@ esac
 #first define the preprocessing flags for the active modules
 
 cat <<EOF > Makefile.config
-# installation directory 
+# installation directory
 INSTALL_DIR=$INSTALL_DIR
-include $INSTALL_DIR/Makefile.moddef
+include build/Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
-# scratch directory, the same as in "pam", from where it is used 
+# scratch directory, the same as in "pam", from where it is used
 SCRATCH_DIR=$worksp
 EOF
 
@@ -2444,26 +2444,9 @@ cat <<EOF >> Makefile.config
 # in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
 
-#
-# take special care of include/ modules/ directories due to Makefile(s) in local directories
-# either relative path or FULL path needed for local Makefile(s)
-#
-is_include_dir := \$(wildcard include)
-ifneq (\$(strip \$(is_include_dir)),)
-include_dir=include
-else
-include_dir=\${INSTALL_DIR}/include
-endif
-is_modules_dir := \$(wildcard modules)
-ifneq (\$(strip \$(is_module_dir)),)
-modules_dir=modules
-else
-modules_dir=\${INSTALL_DIR}/modules
-endif
-
 # preprocessing
 FPP_FLAGS=$cpp_f90 $depend_flags $parinc
-# 
+#
 DEPFPP=$FPP \${FPP_FLAGS}
 #
 DEPCPP=$CPP $cpp_cc $parinc $depend_flags

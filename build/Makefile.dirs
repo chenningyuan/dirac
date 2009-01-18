@@ -1,0 +1,43 @@
+#This is a makefile than can be used from subdirectories to
+#do some tasks useful for developers. Most things are done
+#through the main makefile in the end.
+
+# Find out the relative path back to the Dirac root
+BACK:=$(shell x=""; while [ ! -r "$${x}pamadm" ];\
+	do x="../$$x"; done; echo "$$x")
+ROOT:=$(shell cd $(BACK); pwd)
+# Path from the root to $PWD
+HERE:=$(subst $(ROOT)/,,$(PWD))
+
+#Collect local file names
+F77FILES:=$(wildcard *.F)
+F90FILES:=$(wildcard *.f90)
+F90FILES:=$(F90FILES) $(wildcard *.F90)
+CFILES:=$(wildcard *.c)
+SRC:=$(addprefix $(HERE)/,$(F77FILES) $(F90FILES) $(CFILES))
+F77SRC:=$(addprefix $(HERE)/,$(F77FILES))
+# strip out files in "dontbuild"
+SRC:=$(foreach FILE,$(SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/build/dontbuild && echo $(FILE)))
+F77SRC:=$(foreach FILE,$(F77SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/build/dontbuild && echo $(FILE)))
+
+default:
+	@make -C$(BACK)
+
+obj:
+	@make -C$(BACK) $(addsuffix .o,$(basename $(SRC)))
+
+safe:
+	@make -C$(BACK) $(addsuffix .s,$(basename $(SRC)))
+
+check:
+	@make -C$(BACK) $(addsuffix .r,$(basename $(SRC)))
+
+preprocess:
+	make -C$(BACK) $(addsuffix .i,$(basename $(F77SRC)))
+
+ftnchek:
+	@make -C$(BACK) $(addsuffix .fc,$(basename $(F77SRC)))
+
+clean:
+	@echo "Cleaning this local directory:"
+	$(RM) *.o *.mod *.gc* *.s *.r *.i *.fc *~

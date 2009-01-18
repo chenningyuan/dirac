@@ -1,0 +1,53 @@
+# Extra targets that are rarely used.
+
+#  Conditional include to check whether we have the (optional) HSMRCC module active
+is_hscc := $(wildcard hsmrcc/hsmrcc_external/Makefile.hsmrcc)
+ifneq ($(strip $(is_hscc)),)
+include hsmrcc/hsmrcc_external/Makefile.hsmrcc
+else
+
+ifneq ($(strip $(is_mc)),)
+# target "hs" is vible only from main directory, not from local DIRAC directories
+#  - in this way we supress target overriding warning from local Makefile-s
+hs: # for compilation of the standalone external code
+	@echo "The hsmrcc/hsmrcc_external/Makefile.hsmrcc file does not exist."
+	@echo "The hsmrcc_external code is not active (exported)."
+endif
+
+endif
+
+
+#  Implicit rules
+#  for extra compilation with safe-flags, index-range-check + other checks flags,
+
+# flags for the ftnchek,  F77 source code verifying utility
+FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
+
+
+.F.s:
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
+.F.r:
+	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
+
+.F.i:
+	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
+
+.i.fc:
+	ftnchek $(FTNCHEK_FLAGS) $*.i > $*.fc
+
+.F90.s:
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
+.F90.r:
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
+
+.f90.s:
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
+.f90.r:
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
+
+.c.s:
+	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
+.c.r:
+	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
+
+
