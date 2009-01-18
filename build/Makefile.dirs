@@ -37,7 +37,8 @@ ifneq ($(F77SRC),)
 ftnchek:
 	@make -C$(BACK) $(addsuffix .fc,$(basename $(F77SRC)))
 else
-$(error No F77 source files in this directory)
+ftnchek:
+	$(error No F77 source files in this directory)
 endif
 
 clean:
