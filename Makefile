@@ -97,6 +97,7 @@ $(TARGET): $(OBJ)
 	@echo "Executable $(TARGET) is ready."
 
 clean:
+	@echo "Cleaning the entire DIRAC (recursively) of *.o,*.mod,... files"
 	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
 
 # Main target here is utils, which buils all utilities and
