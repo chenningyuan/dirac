@@ -30,6 +30,9 @@ safe:
 check:
 	@make -C$(BACK) $(addsuffix .r,$(basename $(SRC)))
 
+prof:
+	@make -C$(BACK) $(addsuffix .p,$(basename $(SRC)))
+
 preprocess:
 	$(if $(F77SRC),,$(error No F77 source files in this directory))
 	make -C$(BACK) $(addsuffix .i,$(basename $(F77SRC)))
@@ -41,7 +44,7 @@ ftnchek:
 	cat `ls *.fc` > dirac.ftnchek
 clean:
 	@echo "Cleaning (nonrecursive) the local directory:"
-	rm -f *.o *.mod *.gc*  *.s *.r *.i *.fc
+	rm -f *.o *.mod *.gc*  *.s *.r *.i *.fc *.p
 
 # clean the whole DIRAC from local directory
 allclean:

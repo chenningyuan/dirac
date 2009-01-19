@@ -81,8 +81,8 @@ usage ()
 extrausage ()
 {
    echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
-   echo '     -notify                : Notify when finished to user starting job'
-   echo '     -user e-mail           : Notify when finished using specified e-mail address'
+   echo '     -notify                : Notify when finished to user starting job (requires mail sender working)'
+   echo '     -user e-mail           : Notify when finished using specified e-mail address (requires mail sender working)'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default '
    echo "                              $BIN_DIR/dirac.x"
@@ -99,6 +99,7 @@ extrausage ()
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
    echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
+   echo '     -prof                  : After finishing run do profilin with "'$PROFILER'"'
 }
 #
 #
@@ -333,6 +334,30 @@ execute_dirac()
          )
    fi
 }
+
+### profile dirac
+profile_dirac()
+{
+
+#default output after finishing DIRAC
+GMON="gmon.out" 
+
+if [ -n "$PROFILER" ]; then
+#
+ if [ -r "$GMON" ]; then
+   $echo "\n Performing profiling the code, command:"
+   $echo " \"$PROFILER $DIRAC $GMON >> $OUTPUT_FILE\" ....:\c "
+   $PROFILER $DIRAC $GMON >> $OUTPUT_FILE || \
+   ( $echo "Error in profiling !"; EXIT=1 ; exitfunc)
+   $echo "OK. Report added to the output file."
+ else
+  $echo "\nNo profiling, gmon.out not found."
+ fi
+else
+ $echo "\nNo profiler assigned although profiling wanted. Check the script."
+fi
+}
+
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -811,6 +836,7 @@ initialize()
    PUT_FILES=
 
    DEBUG=
+   PROFILE=
 
    GET_FILES=
 
@@ -895,6 +921,9 @@ while [ -n "$1" ]; do
          ;;
       -debug)
          DEBUG=1
+         ;;
+      -prof)
+         PROFILE=1
          ;;
       -get|-save)
          shift
@@ -1039,6 +1068,10 @@ if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
 execute_dirac
+if [ "$PROFILE" = "1" ]; then
+  profile_dirac
+fi
+
 save_files
 remove_work_dir
 #

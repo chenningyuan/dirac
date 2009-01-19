@@ -48,7 +48,8 @@ initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 if "--noopt" parameter is in the list
-checkbounds=0 # or 1 if "--checkbounds" parameter in the list
+checkbounds=0 # or 1 if "--checkbounds" parameter is in the list
+doprofile=0 # or 1 if "--profile" is in the parameter list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
 dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
@@ -466,7 +467,8 @@ usage ()  {
    echo '   --help                       : Print this'
    echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
    echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
-   echo '   --checkbounds                : Add Fortran compiler flag for checking array boundaries'
+   echo '   --checkbounds                : Add compilers flags for checking array boundaries'
+   echo '   --profile                    : Add compilers/linker flags for code profiling'
    echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90 (with full path)'
@@ -1230,6 +1232,20 @@ fi
 
 }
 
+find_profiler(){
+# search for profiler - now only gprof
+profiler=''
+if [ -n "`which gprof 2>/dev/null`" ]; then
+    profiler="gprof"
+fi
+# ...
+if [ -z "$profiler" ]; then
+  $echo "\n gprof profiler not found - not possible do code profiling"
+else
+  $echo "\nAssigned program profiler: "$profiler
+fi
+}
+
 find_debugger(){
 ###############################################################
 #
@@ -1248,7 +1264,7 @@ which_debug=''
 
 a=`which which 2>&1`
 if [ $IPRINT -ge "8" ]; then
-  echo 'find_debugger: variable a='$a
+  echo 'find_debugger: variable a=exec(which which)='$a
 fi
 
 if [ ! -z "$a" ]; then
@@ -1288,6 +1304,7 @@ if [ -z "$debug" ]; then
 else
    $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
 fi
+
 echo
 
 }
@@ -1904,6 +1921,7 @@ get_f90_flags(){
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
       F_check_array_bounds="" # please add
+      F_profile="" # please add
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
@@ -1925,6 +1943,7 @@ get_f90_flags(){
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
       F_check_array_bounds="-fbounds-check" 
+      F_profile="-pg"
       ;;
     pgf90)
       opt="-g -fastsse"
@@ -1933,6 +1952,7 @@ get_f90_flags(){
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
       F_check_array_bounds="-Mbounds" # please add
+      F_profile="-pg"
       ;;
     lfc)
       opt="-g --fast"
@@ -1941,6 +1961,7 @@ get_f90_flags(){
       mod="-M $MODULE_DIR"
       noformain="" # please add
       F_check_array_bounds="" # please add
+      F_profile="" # please add
       ;;
     ifort)
       opt="-g -O3 -ip -w -assume byterecl"
@@ -1953,6 +1974,7 @@ get_f90_flags(){
       fi
       noformain="-nofor_main"
       F_check_array_bounds="-check bounds -fpstkchk" 
+      F_profile="-pg" 
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
@@ -1962,6 +1984,7 @@ get_f90_flags(){
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       noformain="" # please add
       F_check_array_bounds="" # please add
+      F_profile="" # please add
       ;;
     pathf90)
       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
@@ -1969,6 +1992,7 @@ get_f90_flags(){
       mod="-module $MODULE_DIR"
       noformain="" # please add
       F_check_array_bounds="" # please add
+      F_profile="" # please add
        ;;
     *)
        $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
@@ -1996,11 +2020,13 @@ get_cc_flags(){
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
     C_check_array_bounds="-fbounds-check" # OK ?
+    C_profile="-pg" 
     ;;
   mpicc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
     C_check_array_bounds="" # please add
+    C_profile="" # please add
     echo
     echo WARNING:
     echo   Could not determine which compiler mpicc is using, assuming it is gcc
@@ -2010,16 +2036,19 @@ get_cc_flags(){
     c_opt="-g -fastsse"
     c_safe="-g"
     C_check_array_bounds="-Mbounds -Mchkstk" # 
+    C_profile="-pg" 
     ;;
   icc)
     c_opt="-g -O3 -ip -w"
     c_safe="-g -w"
     C_check_array_bounds="-Wcheck -fpstkchk -fstack-security-check" # 
+    C_profile="-pg" 
     ;;
   pathcc)
     c_opt=$opt
     c_safe=$safe
     C_check_array_bounds="" # please add
+    C_profile="" # please add
     ;;
   esac
 
@@ -2028,6 +2057,7 @@ get_cc_flags(){
   xlf)
     c_opt='-g -O2 -qcpluscmt'
     c_safe='-g -qcpluscmt'
+    C_profile="" # please add
     ;;
   esac
 
@@ -2415,6 +2445,65 @@ else
     FPP="cpp"
 fi
 
+# determine whether we add Fortran flag for checking array boudaries or not
+if [ $checkbounds = 1 ]; then
+#  ... Fortran flag ...
+  safe="$F_check_array_bounds $safe"
+  opt="$F_check_array_bounds $opt"
+  if [ -n "$F_check_array_bounds" ]; then
+   $echo "\nFortran flag '"$F_check_array_bounds"' for checking array bounds included."
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+  else
+   $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
+   $echo "Though requested. Please edit the script."
+  fi
+#   ... C flag ...
+  c_safe="$C_check_array_bounds $c_safe"
+  c_opt="$C_check_array_bounds $c_opt"
+  if [ -n "$C_check_array_bounds" ]; then
+   $echo "\nC flag '"$C_check_array_bounds"' for checking array bounds included."
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+  else
+   $echo "\nNo C flag for checking array bounds is included for compiler $CCreal."
+   $echo "Though requested. Please edit the script."
+  fi
+fi
+
+# determine whether we add profiling flag to compilers/linker
+if [ $doprofile = 1 ]; then 
+
+  safe="$F_profile $safe"
+  opt="$F_profile $opt"
+  ldflag="$F_profile $ldflag"
+
+  if [ -n "$F_profile" ]; then
+   $echo "\nFortran flag '"$F_profile"' for profiling/linking included."
+  else
+   $echo "\nNo flag for profiling/linking for Fortran compiler $F90real."
+   $echo "Though requested. Please edit the script.\n"
+  fi
+
+  c_safe="$C_profile $c_safe"
+  c_opt="$C_profile $c_opt"
+  if [ -n "$C_profile" ]; then
+   $echo "\nC flag '"$C_profile"' for profiling included."
+  else
+   $echo "\nNo C flag for profiling is included for compiler $CCreal."
+   $echo "Though requested. Please edit the script.\n"
+  fi
+fi
+
+# determine what flags to be flushed into Makefile.config:  SAFE or OPTIMIZED flags
+if [ $nooptim = 1 ]; then # ... employ flags with no optimization
+#
+  use_flags=$safe
+  use_c_flags=$c_safe
+else # ... employ flags with the optimization
+#
+  use_flags=$opt
+  use_c_flags=$c_opt
+fi
+
 cat <<EOF >> Makefile.config
 
 # Fortran and C compilers
@@ -2451,6 +2540,14 @@ DEPFPP=$FPP \${FPP_FLAGS}
 #
 DEPCPP=$CPP $cpp_cc $parinc $depend_flags
 
+# Fortran/C flag for array bounds & other possible run-time checks
+FFLAGS_CHECK=$F_check_array_bounds
+CFLAGS_CHECK=$C_check_array_bounds
+
+# Fortran/C flag for code profiling
+FFLAG_PROFILE=$F_profile
+CFLAG_PROFILE=$C_profile
+
 # linker
 LD=\$(F90)
 LDFLAGS=$ldflag
@@ -2463,41 +2560,6 @@ EOF
 #
 ##########################################################################
 
-# determined whether we add Fortran flag for checking array boudaries or not
-if [ $checkbounds = 1 ]; then
-#  ... Fortran flag ...
-  safe="$F_check_array_bounds $safe"
-  opt="$F_check_array_bounds $opt"
-  if [ -n $F_check_array_bounds ]; then
-   $echo "\nFortran flag '"$F_check_array_bounds"' for checking array bounds included."
-   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
-  else
-   $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
-   $echo "Please edit the script."
-  fi
-#   ... C flag ...
-  c_safe="$C_check_array_bounds $c_safe"
-  c_opt="$C_check_array_bounds $c_opt"
-  if [ -n $C_check_array_bounds ]; then
-   $echo "\nC flag '"$C_check_array_bounds"' for checking array bounds included."
-   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
-  else
-   $echo "\nNo C flag for checking array bounds is included for compiler $CCreal."
-   $echo "Please edit the script."
-  fi
-fi
-
-# determine what flags to be flushed into Makefile.config:  SAFE or OPTIMIZED flags
-if [ $nooptim = 1 ]; then # ... employ flags with no optimization
-#
-  use_flags=$safe
-  use_c_flags=$c_safe
-else # ... employ flags with the optimization
-#
-  use_flags=$opt
-  use_c_flags=$c_opt
-fi
-
 cat <<EOF >> Makefile.config
 # compiler flags, standard
 F77FLAGS=`xlfify $use_flags $f90_inc $mod $cpp_f90`
@@ -2508,10 +2570,6 @@ CFLAGS=$use_c_flags $cc_inc $cpp_cc
 F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
-
-# Fortran/C flag for array bounds & other possible checks
-FFLAGS_CHECK=$F_check_array_bounds
-CFLAGS_CHECK=$C_check_array_bounds
 
 # ILP data type mode (to be passed to dirac.x)
 ILP_DATATYPE=$ilp_datatype
@@ -2597,6 +2655,10 @@ RSH=$rsh
 # debugger - check it according to your machine installation
 #
 DEBUGGER=$debug
+#
+# profiler - check it according to your machine installation, we offer gprof :)
+#
+PROFILER=$profiler
 #
 CLEANUP=
 #
@@ -2765,6 +2827,9 @@ while [ $# != 0 ]; do
       "checkbounds")
 	 checkbounds=1
          ;;
+      "profile")
+	 doprofile=1
+         ;;
       "nolibtest")
 	 testlibs=0
          ;;
@@ -2868,6 +2933,7 @@ parallel_stuff
 safeflags_stuff
 find_compilers
 find_debugger
+find_profiler
 if [ "$mesp" = "mpi" ]; then
   find_mpi_path
 fi

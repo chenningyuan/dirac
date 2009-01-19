@@ -18,12 +18,12 @@ endif
 # flags for the ftnchek,  F77 source code verifying utility
 FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
 
-
 .F.s:
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
 	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
-
+.F.p:
+	$(F77) $(F77FLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.F > $*.p
 .F.i:
 	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
 
@@ -34,16 +34,22 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
 .F90.r:
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
+.F90.p:
+	$(F90) $(F90FLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.F90  > $*.p
 
 .f90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
 .f90.r:
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
+.f90.p:
+	$(F90) $(FFLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.f90  > $*.p
 
 .c.s:
 	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
 .c.r:
 	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
+.c.p:
+	$(CC) $(CFLAGS_SAFE) $(CFLAG_PROFILE) -c -o $*.o $*.c > $*.p
 
 obj: $(OBJ) 
 	@echo
@@ -56,3 +62,13 @@ safe: $(OBJ:.o=.s) $(TARGET)
 check: $(OBJ:.o=.r) $(TARGET)
 	@echo
 	@echo "Executable $(TARGET) is ready with run-time checking."
+
+#
+# own target for profiling due to linker need for profiling flag
+#
+prof: $(OBJ:.o=.p) 
+	$(LD) $(LDFLAGS) $(FFLAG_PROFILE) -o $@ $(OBJ) $(LIBS)
+	@echo
+	@echo "Executable $(TARGET) with profiling info is ready."
+	@echo
+

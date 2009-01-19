@@ -36,8 +36,8 @@ def scan_file(path,cppcmd):
                     includes.add(m.group(2))
     return (includes,use_mod,gen_mod)
 
-def objpath(srcpath):
-    return srcpath[:srcpath.rfind(".")]+".o"
+def objpath(srcpath,dot_suffix):
+    return srcpath[:srcpath.rfind(".")]+dot_suffix
 
 filedat = {}
 
@@ -50,15 +50,19 @@ for key,val in filedat.items():
     for m in val[2]:
         module_def[m] = key
 
+# put here all suffixes used in the DIRAC make system
+dot_suffixes = [".o",".s",".r",".i",".p"]
+
 for key,val in filedat.items():
-    print objpath(key)+":",
+  for this_dot_suffix in dot_suffixes:
+    print objpath(key,str(this_dot_suffix))+":",
     for incf in val[0]:
         if len(incf) > 0 and incf[0] != '/': # Do not list dependencies on system headers
             print incf,
     for m in val[1]:
         if module_def.has_key(m):
             if module_def[m] != key:
-                print objpath(module_def[m]), # do not print self interaction
+                print objpath(module_def[m],str(this_dot_suffix)), # do not print self interaction
         else:
             sys.stderr.write("Warning: cannot find definition of Fortran module %s.\n" % m)
     print

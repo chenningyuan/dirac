@@ -11,8 +11,8 @@ $(TARGET):
 
 depend:
 	@echo Forcing a rebuild of Makefile.obj and Makefile.dep
-	@rm Makefile.obj
-	@rm Makefile.dep
+	@rm -f Makefile.obj
+	@rm -f Makefile.dep
 # Make empty old files that can be included but will trigger a remake
 # This is needed because some make versions stop if an include file is
 # not found.
@@ -64,8 +64,11 @@ build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 	| egrep -v -f build/dontbuild | ./utils/mkdep.py $(DEPCPP) >> $@ 2>/dev/null
 # Add extra dependency for gpc.c on fortran_interface.h, since this file will not
 # exist when we generate dependencies.
-	echo "gp/gpc.o: include/fortran_interface.h" >> build/Makefile.dep
-
+	@echo "gp/gpc.o: include/fortran_interface.h" >> build/Makefile.dep
+	@echo "gp/gpc.s: include/fortran_interface.h" >> build/Makefile.dep
+	@echo "gp/gpc.r: include/fortran_interface.h" >> build/Makefile.dep
+	@echo "gp/gpc.p: include/fortran_interface.h" >> build/Makefile.dep
+	@echo "gp/gpc.i: include/fortran_interface.h" >> build/Makefile.dep
 
 dontbuild:dontbuild.in
 	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm to correct this."; false
@@ -98,18 +101,17 @@ $(TARGET): $(OBJ)
 
 clean:
 	@echo "Cleaning the entire DIRAC (recursively) of *.o,*.mod,... files"
-	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc' `
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc'  -o -name '*.p' `
 
 # Main target here is utils, which buils all utilities and
 # puts them in $(INSTALL_DIR/bin)
 include utils/Makefile.utils
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .s .r .o .i .fc
+.SUFFIXES : .F .F90 .f90 .c .s .r .o .i .fc .p
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
-
 
 .F90.o:
 	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
