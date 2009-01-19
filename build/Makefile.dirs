@@ -31,6 +31,7 @@ check:
 	@make -C$(BACK) $(addsuffix .r,$(basename $(SRC)))
 
 preprocess:
+	$(if $(F77SRC),,$(error No F77 source files in this directory))
 	make -C$(BACK) $(addsuffix .i,$(basename $(F77SRC)))
 
 ftnchek:
