@@ -45,6 +45,10 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .c.r:
 	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
 
+obj: $(OBJ) 
+	@echo
+	@echo "All DIRAC source files are recompiled (with dependencies) using standard flags (without linking)."
+
 safe: $(OBJ:.o=.s) $(TARGET)
 	@echo
 	@echo "Executable $(TARGET) is ready with safe compiler flags."
