@@ -85,7 +85,8 @@ CHARACTER(len=7) :: WORD, KEYWORD=''
 ! ... nice F90 version 
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.NACT  ','.XXXXXX','.XXXXXX' /)
 !character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NELEC ','.XXXXXX','.XXXXXX','.XXXXXX' /)
-character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NACT  ','.NCORE ','.DRYRUN','.NFRZV ' /)
+!character(len=7) :: TABLE_TEMP, TABLE(5) =  (/'.PRINT ','.NACT  ','.NCORE ','.DRYRUN','.NFRZV ' /)
+character(len=7) :: TABLE_TEMP, TABLE(4) =  (/'.PRINT ','.NACT  ','.NCORE ','.DRYRUN' /)
 
  if (set) then
   if (reset) set = .false.
@@ -142,9 +143,9 @@ Do
       Case ('.NACT')
         READ(LUCMD,*) NACT_DIRAC
         write(LUPRI,*) ' read NACT_DIRAC=',NACT_DIRAC
-      Case ('.NFRZV')
-        READ(LUCMD,*) NFRZV_DIRAC
-        write(LUPRI,*) ' read NFRZV_DIRAC=',NFRZV_DIRAC
+ !     Case ('.NFRZV')
+ !       READ(LUCMD,*) NFRZV_DIRAC
+ !       write(LUPRI,*) ' read NFRZV_DIRAC=',NFRZV_DIRAC
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hscc
         write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc
@@ -176,9 +177,7 @@ EndDo
 
  WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
  WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
- WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
-
- !WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
+! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
 
  if (nohsccfiles) then
   WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run).'

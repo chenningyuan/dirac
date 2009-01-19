@@ -1369,15 +1369,16 @@ use GMSMod
 !write(LUPRI,*) 'NHMO=',NHMO
 !write(LUPRI,*) 'NPMO=',NPMO
 
-call print_params
+call print_basic_params
+call print_gms_parameters
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
 
-do I=1,NHMO
-do A=1,NPMO
-do J=1,NHMO
-do B=1,NHMO
+do II=1,NHMO
+do IA=1,NPMO
+do IJ=1,NHMO
+do IB=1,NHMO
 
 enddo
 enddo

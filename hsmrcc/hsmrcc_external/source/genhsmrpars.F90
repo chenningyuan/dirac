@@ -22,15 +22,10 @@ subroutine GenHSMRpars
    if ( get_iprint() >= 10 ) then
 
      call HEADER('Output from GenHSMRpars',-1)
-     if (OPTION(HSCC_DIRAC_MODE)) then
-       write(UOUT,'(10x,a)') '*** HSMRCC: DIRAC mode is ON! ***'
-     else if (.not.OPTION(HSCC_DIRAC_MODE).and..not.OPTION(DIRAC_MODE)) then
-       write(UOUT,'(10x,a)') '*** HSMRCC: GAMESS mode is ON! ***'
-     else if (OPTION(DIRAC_MODE)) then
-       write(UOUT,'(10x,a)') '*** We are in DIRAC - preparing files for HSMRCC ***'
-     endif
 
-     call print_params
+     call print_where
+
+     call print_basic_params
 
      call print_orbmod_functions
 
@@ -104,25 +99,8 @@ subroutine GenHSMRpars
 
    ! ... control print-out
    if ( get_iprint() >= 7 ) then
-
-     write(UOUT,'(/,8x,a)') '**** GenGSMRpars: calculated parameters: ****'
-     write(UOUT,'(2x,a,i7)') '       NSTATE=',NSTATE
-     write(UOUT,'(2x,a,i7)') '  NSTATE_MAIN=',NSTATE_MAIN
-     write(UOUT,'(2x,a,i7)') '  NSTATE_INTM=',NSTATE_INTM
-     write(UOUT,'(2x,a,i7)') '       NAXEXC=',MAXEXC
-
-     write(UOUT,'(2x,a,i7)') '     NMAINORB=',NMAINORB
-     write(UOUT,'(2x,a,i7)') '     NINTMORB=',NINTMORB
-
-     write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE=',NINTMORB_CORE
-     write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT=',NINTMORB_VIRT
-
-     write(UOUT,'(2x,a,i7)') 'NHMO=',NHMO
-     write(UOUT,'(2x,a,i7)') 'NPMO=',NPMO
-     write(UOUT,'(2x,a,i7)') 'NELE=',NELE
-     write(UOUT,'(2x,a,i7)') 'NTMO=',NTMO
-     write(UOUT,'(2x,a,i7)') 'NVMO=',NVMO
-
+     call print_gms_parameters
    endif
 
 end subroutine GenHSMRpars
+

@@ -234,14 +234,38 @@ if (NHMO==0.or.NPMO==0.or.NVMO==0.or.NHMOSQ==0.or.NPMOSQ==0) then
 endif
 end subroutine check_FileRec_param
 
-subroutine print_params
-! ... print some paramaters
+subroutine print_basic_params
+! ... print basic parameters
+  write(UOUT,'(/,8x,a,/)') '**** (Parameters) basis parameters: ****'
   write(UOUT,'(2x,a,i4)') ' NCMO=',NCMO
   write(UOUT,'(2x,a,i4)') ' NVMO=',NVMO
   write(UOUT,'(2x,a,i4)') 'NHOLE=',NHOLE
   write(UOUT,'(2x,a,i4)') ' NEMO=',NEMO
   write(UOUT,'(2x,a,i4)') 'NPTCL=',NPTCL
   call flushout
-end subroutine print_params
+end subroutine print_basic_params
+
+subroutine print_gms_parameters
+! ....
+    write(UOUT,'(/,8x,a,/)') '**** (GenGSMRpars) calculated parameters: ****'
+
+    write(UOUT,'(2x,a,i7)') '       NSTATE=',NSTATE
+    write(UOUT,'(2x,a,i7)') '  NSTATE_MAIN=',NSTATE_MAIN
+    write(UOUT,'(2x,a,i7)') '  NSTATE_INTM=',NSTATE_INTM
+    write(UOUT,'(2x,a,i7)') '       NAXEXC=',MAXEXC
+
+    write(UOUT,'(2x,a,i7)') '     NMAINORB=',NMAINORB
+    write(UOUT,'(2x,a,i7)') '     NINTMORB=',NINTMORB
+
+    write(UOUT,'(2x,a,i7)') 'NINTMORB_CORE=',NINTMORB_CORE
+    write(UOUT,'(2x,a,i7)') 'NINTMORB_VIRT=',NINTMORB_VIRT
+
+    write(UOUT,'(2x,a,i7)') 'NHMO=',NHMO
+    write(UOUT,'(2x,a,i7)') 'NPMO=',NPMO
+    write(UOUT,'(2x,a,i7)') 'NELE=',NELE
+    write(UOUT,'(2x,a,i7)') 'NTMO=',NTMO
+    write(UOUT,'(2x,a,i7)') 'NVMO=',NVMO
+
+end subroutine print_gms_parameters
 
 end module Parameters

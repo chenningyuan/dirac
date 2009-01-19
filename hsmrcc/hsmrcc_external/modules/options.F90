@@ -49,7 +49,23 @@ module Options
    OPTION(DIRAC_MODE)=.true.
    write(LUPRI,'(2x,a,l1)')   & 
    'DIRAC reusing HSMRCC routines - OPTION(DIRAC_MODE) set to:',OPTION(DIRAC_MODE)
- end subroutine set_dirac_mode
+end subroutine set_dirac_mode
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_where
+
+#include "priunit.h"
+
+
+  if (OPTION(HSCC_DIRAC_MODE)) then
+       write(LUPRI,'(2x,a)') '*** in HSMRCC part: DIRAC mode is ON (DIRAC-HSMRCC choice)  ***'
+  else if (.not.OPTION(HSCC_DIRAC_MODE).and..not.OPTION(DIRAC_MODE)) then
+       write(LUPRI,'(2x,a)') '*** in HSMRCC part: GAMESS mode is ON (GAMESS-HSMRCC choice) ***'
+  else if (OPTION(DIRAC_MODE)) then
+       write(LUPRI,'(2x,a)') '*** We are in DIRAC preparing files for HSMRCC ***'
+  endif
+
+end subroutine print_where
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine print_Options
