@@ -48,8 +48,10 @@ allclean:
 	@echo
 	@make -C$(BACK) clean
 
-# miro's 'external' stuff
+# miro's 'external' HSMRCC stuff
 hs:
 	@make -C$(BACK) hs
+
+hs_clean:
 	@make -C$(BACK) hs_clean
 
