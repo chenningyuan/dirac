@@ -132,7 +132,7 @@ C
 C     Find minimum
 C     ============
 C
-      CALL MODEMIN(XOPT,NP,X,Y,C,NORDER,ILOGG)
+      CALL MODEMIN(XOPT,NP,X,Y,C,NORDER,NITER,ILOGG)
 C
 C     Get masses
 C     ==========

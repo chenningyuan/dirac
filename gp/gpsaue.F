@@ -7359,7 +7359,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MODEMIN(XOPT,NP,X,Y,C,NORDER,ILOGG)
+      SUBROUTINE MODEMIN(XOPT,NP,X,Y,C,NORDER,NITER,ILOGG)
 C***********************************************************************
 C
 C     Given a polynomial fit, find local minimum,
