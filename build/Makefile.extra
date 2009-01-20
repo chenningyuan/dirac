@@ -58,8 +58,8 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(CC) $(CPP_FLAGS) -E $*.c > $*.i
 
 obj: $(OBJ) 
-	@echo
-	@echo "All DIRAC source files are recompiled (with dependencies) using standard flags (without linking)."
+	@echo -e "\nDIRAC source files (at least these recently modifies) are recompiled\n\
+	(with dependencies)  using standard flags (without linking).\n"
 
 safe: $(OBJ:.o=.s) $(TARGET)
 	@echo
