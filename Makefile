@@ -16,8 +16,8 @@ depend:
 # Make empty old files that can be included but will trigger a remake
 # This is needed because some make versions stop if an include file is
 # not found.
-	@touch -t 198001010000 Makefile.obj
-	@touch -t 198001010000 Makefile.dep
+	@touch -t 198001010000 build/Makefile.obj
+	@touch -t 198001010000 build/Makefile.dep
 	$(MAKE) build/Makefile.dep
 
 # Make a list of objects to build, and exceptions for files that need
@@ -68,7 +68,6 @@ build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 	@echo "gp/gpc.s: include/fortran_interface.h" >> build/Makefile.dep
 	@echo "gp/gpc.r: include/fortran_interface.h" >> build/Makefile.dep
 	@echo "gp/gpc.p: include/fortran_interface.h" >> build/Makefile.dep
-	@echo "gp/gpc.i: include/fortran_interface.h" >> build/Makefile.dep
 
 dontbuild:dontbuild.in
 	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm to correct this."; false

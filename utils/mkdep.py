@@ -51,7 +51,7 @@ for key,val in filedat.items():
         module_def[m] = key
 
 # put here all suffixes used in the DIRAC make system
-dot_suffixes = [".o",".s",".r",".i",".p"]
+dot_suffixes = [".o",".s",".r",".p"]
 
 for key,val in filedat.items():
   for this_dot_suffix in dot_suffixes:
