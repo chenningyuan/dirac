@@ -345,11 +345,11 @@ GMON="gmon.out"
 if [ -n "$PROFILER" ]; then
 #
  if [ -r "$GMON" ]; then
-   $echo "\n Performing profiling the code, command:"
-   $echo " \"$PROFILER $DIRAC $GMON >> $OUTPUT_FILE\" ....:\c "
+   $echo "\n Profiling the code, command:"
+   $echo " \"$PROFILER $DIRAC $GMON >> $OUTPUT_FILE\"...\c"
    $PROFILER $DIRAC $GMON >> $OUTPUT_FILE || \
    ( $echo "Error in profiling !"; EXIT=1 ; exitfunc)
-   $echo "OK. Report added to the output file."
+   $echo "OK.\n  Flat profile report added to the output file."
  else
   $echo "\nNo profiling, gmon.out not found."
  fi
