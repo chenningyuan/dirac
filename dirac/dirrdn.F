@@ -547,9 +547,10 @@ C
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.NO4IND','xXXXXXX','.OPTIMI','.MINIMI'/
+     &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI'/
 C
       NJOBS = 0
+      NOSFCRASH=.FALSE.
 C
 C     Read menu file
 C     ==============
@@ -625,6 +626,8 @@ C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
             NOTRA = .TRUE.
             GO TO 100
   110    CONTINUE
+C&&& .NOSFCR: no Segm.fault crash when quit for creating profiling output,gmon.out 
+            NOSFCRASH=.TRUE.
             GO TO 100
  111     CONTINUE
 C&&&& OPTIMIZE: Geometry optimization
@@ -671,6 +674,14 @@ C
       IF(OPTIMI)  WRITE(LUPRI,'(3X,A/3X,A)') '* Geometry optimi'//
      &    'zation','  IMPORTANT'//
      &    ': *WAVE F must be present for readin of wavefunction.'
+
+      IF (NOSFCRASH) THEN
+        WRITE(LUPRI,'(3X,A)')'* No segment.fault quit(crash).'//
+     &  'Necessary for getting profiling file, gmon.out.'
+      ELSE
+        WRITE(LUPRI,'(3X,A)')'* Crash with segment.fault. Worth for'// 
+     &  ' debugging.'
+      ENDIF
 C
  666  CONTINUE
 C

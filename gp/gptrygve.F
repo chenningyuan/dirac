@@ -301,11 +301,29 @@ C 3 = pretty print traceback to stdout...
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
-      WRITE (LUPRI,*) 'Intentionally causing a crash..'
+
+CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
+#if defined (NO_SF_QUIT)
+      WRITE (LUPRI,*)
+     &'Intentionally causing a crash without a Segm.Fault'
       CALL FLSHFO(LUPRI)
-         CALL CRASH()
       STOP 1000
+#else
+CMI ... might be input defined restriction for some reasons
+      IF (.NOT.NOSFCRASH) THEN
+        WRITE (LUPRI,*)
+     & 'Intentionally causing a crash with a Segm.Fault'
+        CALL FLSHFO(LUPRI)
+        CALL CRASH()
+      ELSE
+        WRITE (LUPRI,*)
+     &  'Intentionally causing a crash without a Segm.Fault'
+        CALL FLSHFO(LUPRI)
+        STOP 1001
+      ENDIF
+#endif
       END
+
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
 C

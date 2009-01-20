@@ -4,6 +4,7 @@
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***
+!
 !  DOPIN - read MO-coefficients from formatted file and write them to
 !          unformatted
 !  DOPUT - write MO-coefficients to formatted file
@@ -21,6 +22,7 @@
 !
 !  These flags should be passed on to every module
 !
+! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
 !
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
@@ -34,7 +36,7 @@
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
@@ -43,7 +45,7 @@
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
-     &                DOACIN, CBKRINI, SKIP2E, LOWJACO
+     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
