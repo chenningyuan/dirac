@@ -23,28 +23,48 @@ default:
 
 obj:
 	@make -C$(BACK) $(addsuffix .o,$(basename $(SRC)))
+	@echo -e "\n  At least recently modified local source files (with all dependencies)\
+	 compiled with standard flags.\n"
 
 safe:
 	@make -C$(BACK) $(addsuffix .s,$(basename $(SRC)))
+	@echo -e "\n  At least recently modified local source files (with all dependencies)\
+	 compiled with safe flags.\n"
 
 check:
 	@make -C$(BACK) $(addsuffix .r,$(basename $(SRC)))
+	@echo -e "\n  At least recently modified local source files (with all dependencies)\
+	compiled with run-time checking flags.\n"
 
 prof:
 	@make -C$(BACK) $(addsuffix .p,$(basename $(SRC)))
+	@echo -e "\n At least recently modified local source files (with all dependencies)\
+	 compiled with profiling flags.\n"
+
+lprof:
+	@make -C$(BACK) prof
+	@echo -e "\n At least recently modified DIRAC source files (with all dependencies)\
+	 compiled with profiling flags.\n"
 
 preprocess:
-	$(if $(F77SRC),,$(error No F77 source files in this directory))
-	make -C$(BACK) $(addsuffix .i,$(basename $(F77SRC)))
+	make -C$(BACK) $(addsuffix .i,$(basename $(SRC)))
+	@echo -e "\n All local source files \
+	 preprocessed into *.i files.\n"
 
 ftnchek:
-	$(if $(F77SRC),,$(error No F77 source files in this directory))
+	$(if $(F77SRC),,$(error No F77 source files for ftnchek in this directory !))
 	@make -C$(BACK) $(addsuffix .fc,$(basename $(F77SRC)))
-	@echo "*.fc files are ready, collecting them into into one summary file - dirac.ftnchek"
-	cat `ls *.fc` > dirac.ftnchek
+	@echo
+	@echo -e "Individual F77 ftnchek-resulting *.fc files\
+	 (at least of recently modified source files)\
+	 are ready,\n\
+	collecting them into into one summary file - dirac.ftnchek. \n"
+	@cat `ls *.fc` > dirac.ftnchek
+
 clean:
-	@echo "Cleaning (nonrecursive) the local directory:"
+	@echo -e "\nCleaning (nonrecursive) the local directory:"
 	rm -f *.o *.mod *.gc*  *.s *.r *.i *.fc *.p
+	@echo
 
 # clean the whole DIRAC from local directory
 allclean:

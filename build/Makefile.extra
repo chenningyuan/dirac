@@ -36,6 +36,8 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
 .F90.p:
 	$(F90) $(F90FLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.F90  > $*.p
+.F90.i:
+	$(F90) $(FPP_FLAGS) -E $*.F90 > $*.i
 
 .f90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
@@ -43,6 +45,8 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
 .f90.p:
 	$(F90) $(FFLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.f90  > $*.p
+.f90.i:
+	$(F90) $(FPP_FLAGS) -E $*.f90  > $*.i
 
 .c.s:
 	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
@@ -50,6 +54,8 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
 .c.p:
 	$(CC) $(CFLAGS_SAFE) $(CFLAG_PROFILE) -c -o $*.o $*.c > $*.p
+.c.i:
+	$(CC) $(CPP_FLAGS) -E $*.c > $*.i
 
 obj: $(OBJ) 
 	@echo
@@ -62,6 +68,11 @@ safe: $(OBJ:.o=.s) $(TARGET)
 check: $(OBJ:.o=.r) $(TARGET)
 	@echo
 	@echo "Executable $(TARGET) is ready with run-time checking."
+
+preprocess: $(OBJ:.o=.i)
+	@echo
+	@echo "All DIRAC source files preprocessed into *.i files."
+	@echo
 
 #
 # own target for profiling due to linker need for profiling flag

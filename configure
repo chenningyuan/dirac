@@ -2533,18 +2533,18 @@ cat <<EOF >> Makefile.config
 # in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
 
-# preprocessing
+# preprocessing of Fortran source files
 FPP_FLAGS=$cpp_f90 $depend_flags $parinc
-#
 DEPFPP=$FPP \${FPP_FLAGS}
-#
-DEPCPP=$CPP $cpp_cc $parinc $depend_flags
+# preprocessing of C source files
+CPP_FLAGS=$cpp_cc $parinc $depend_flags
+DEPCPP=$CPP \${CPP_FLAGS}
 
-# Fortran/C flag for array bounds & other possible run-time checks
+# Fortran/C flags for array bounds & other possible run-time checks
 FFLAGS_CHECK=$F_check_array_bounds
 CFLAGS_CHECK=$C_check_array_bounds
 
-# Fortran/C flag for code profiling
+# Fortran/C flags for code profiling
 FFLAG_PROFILE=$F_profile
 CFLAG_PROFILE=$C_profile
 
