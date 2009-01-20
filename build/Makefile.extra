@@ -23,7 +23,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .F.r:
 	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
 .F.p:
-	$(F77) $(F77FLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.F > $*.p
+	$(F77) $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
 .F.i:
 	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
 
@@ -35,7 +35,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .F90.r:
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
 .F90.p:
-	$(F90) $(F90FLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.F90  > $*.p
+	$(F90) $(FFLAG_PROFILE) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.p
 .F90.i:
 	$(F90) $(FPP_FLAGS) -E $*.F90 > $*.i
 
@@ -44,7 +44,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .f90.r:
 	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
 .f90.p:
-	$(F90) $(FFLAGS_SAFE) $(FFLAG_PROFILE) -c -o $*.o $*.f90  > $*.p
+	$(F90) $(FFLAG_PROFILE) $(FFLAGS_SAFE) -c -o $*.o $*.f90  > $*.p
 .f90.i:
 	$(F90) $(FPP_FLAGS) -E $*.f90  > $*.i
 
@@ -53,7 +53,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .c.r:
 	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
 .c.p:
-	$(CC) $(CFLAGS_SAFE) $(CFLAG_PROFILE) -c -o $*.o $*.c > $*.p
+	$(CC) $(CFLAG_PROFILE) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.p
 .c.i:
 	$(CC) $(CPP_FLAGS) -E $*.c > $*.i
 
@@ -78,7 +78,7 @@ preprocess: $(OBJ:.o=.i)
 # own target for profiling due to linker need for profiling flag
 #
 prof: $(OBJ:.o=.p) 
-	$(LD) $(LDFLAGS) $(FFLAG_PROFILE) -o $@ $(OBJ) $(LIBS)
+	$(LD) $(FFLAG_PROFILE) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	@echo
 	@echo "Executable $(TARGET) with profiling info is ready."
 	@echo
