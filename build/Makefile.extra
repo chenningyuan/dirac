@@ -77,8 +77,9 @@ preprocess: $(OBJ:.o=.i)
 #
 # own target for profiling due to linker need for profiling flag
 #
+
 prof: $(OBJ:.o=.p) 
-	$(LD) $(FFLAG_PROFILE) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(LD) $(LDFLAGS) $(FFLAG_PROFILE) -o $(TARGET) $(OBJ) $(LIBS)
 	@echo
 	@echo "Executable $(TARGET) with profiling info is ready."
 	@echo
