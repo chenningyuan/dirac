@@ -1974,7 +1974,7 @@ get_f90_flags(){
       fi
       noformain="-nofor_main"
       F_check_array_bounds="-check bounds -fpstkchk" 
-      F_profile="-pg" 
+      F_profile="-p" 
       ;;
     xlf|xlf_r)
       opt="-qsuppress=cmpmsg"
