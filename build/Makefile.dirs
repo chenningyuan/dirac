@@ -26,25 +26,38 @@ obj:
 	@echo -e "\n  At least recently modified local source files (with all dependencies)\
 	 compiled with standard flags.\n"
 
+allobj:
+	@make -C$(BACK) obj
+	@echo -e "\n  At least recently modified  source files (with all dependencies)\
+	 compiled with standard flags.\n"
+
 safe:
 	@make -C$(BACK) $(addsuffix .s,$(basename $(SRC)))
 	@echo -e "\n  At least recently modified local source files (with all dependencies)\
 	 compiled with safe flags.\n"
+
+allsafe:
+	@make -C$(BACK) safe
+
 
 check:
 	@make -C$(BACK) $(addsuffix .r,$(basename $(SRC)))
 	@echo -e "\n  At least recently modified local source files (with all dependencies)\
 	compiled with run-time checking flags.\n"
 
+allcheck:
+	@make -C$(BACK) check
+	@echo -e "\n  At least recently modified source files (with all dependencies)\
+	compiled with run-time checking flags.\n"
+
+
 prof:
 	@make -C$(BACK) $(addsuffix .p,$(basename $(SRC)))
 	@echo -e "\n At least recently modified local source files (with all dependencies)\
 	 compiled with profiling flags.\n"
 
-lprof:
+allprof:
 	@make -C$(BACK) prof
-	@echo -e "\n At least recently modified DIRAC source files (with all dependencies)\
-	 compiled with profiling flags.\n"
 
 preprocess:
 	make -C$(BACK) $(addsuffix .i,$(basename $(SRC)))
