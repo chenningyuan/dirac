@@ -21,6 +21,9 @@ F77SRC:=$(foreach FILE,$(F77SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/buil
 default:
 	@make -C$(BACK)
 
+depend:
+	@make -C$(BACK) depend
+
 obj:
 	@make -C$(BACK) $(addsuffix .o,$(basename $(SRC)))
 	@echo -e "\n  At least recently modified local source files (with all dependencies)\
