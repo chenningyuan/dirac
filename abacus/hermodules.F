@@ -470,7 +470,7 @@
                   idot=i
                 END SELECT 
               END DO
-              var=READ_NUM8(filenum,iprev,i,ios,idot)
+              VAR=0.0
               index=1
             END IF
           ELSE
@@ -548,7 +548,7 @@
                   idot=i
                 END SELECT 
               END DO
-              var=READ_NUM(filenum,iprev,i,ios,idot)
+              VAR=0.0
               index=1
             END IF
           ELSE
@@ -621,7 +621,7 @@
                   iprev=i
                 END SELECT 
               END DO
-              var=READ_INTEGER(filenum,iprev,i,ios)
+              var=0
               index=1
             END IF
           ELSE
