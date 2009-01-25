@@ -16,8 +16,12 @@ subroutine AllocTAMP
    if (.not.allocated(TOLD))  allocate(TOLD(0:NTSIZE))
    if (.not.allocated(TNEW))  allocate(TNEW(0:NTSIZE))
 
-   return
+   if (get_iprint() > 8) then
+     write(UOUT,*) '    TSING allocated with size=',NSING
+     write(UOUT,*) 'TOLD,TNEW allocated with size=',NTSIZE
+   endif
 
+   return
 end subroutine AllocTAMP
 
 subroutine DeAllocTAMP

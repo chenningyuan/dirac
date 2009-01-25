@@ -991,7 +991,11 @@ subroutine OpenIntFiles
      stat = 'NEW'
      ! stat = 'UNKNOWN'
    else
-      stat = 'OLD'
+     stat = 'OLD'
+   endif
+
+   if (get_iprint() >= 7) then
+     write(UOUT,'(2X,A,A)') '...going to open files as :',stat
    endif
 
 ! ----------------------------------------------------
@@ -1000,6 +1004,10 @@ subroutine OpenIntFiles
     call quit('OpenIntFiles: FileVIND does not exist!')
    endif
    
+   if (exist_file.and.stat=='NEW') then
+     call quit('OpenIntFiles: FileVIND exist, can not ne open as NEW !')
+   endif
+
    recl_vind=(4*2*NZVINTBUFSIZE)/INTSFP
    open(UVIND,file=FileVIND,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vind)
 
@@ -1009,12 +1017,20 @@ subroutine OpenIntFiles
     call quit('OpenIntFiles: FileVINT does not exist!')
    endif
 
+   if (exist_file.and.stat=='NEW') then
+     call quit('OpenIntFiles: FileVINT exist, can not ne open as NEW !')
+   endif
+
    recl_vint=4*2*NZVINTBUFSIZE
    open(UVINT,file=FileVINT,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vint)
 ! ----------------------------------------------------
    inquire(file=FileFHH,exist=exist_file)
    if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
     call quit('OpenIntFiles: FileFHH does not exist!')
+   endif
+
+   if (exist_file.and.stat=='NEW') then
+     call quit('OpenIntFiles: FileFHH exist, can not ne open as NEW !')
    endif
 
    recl_fhh=4*2*NHMO*NHMO
@@ -1026,6 +1042,10 @@ subroutine OpenIntFiles
     call quit('OpenIntFiles: FileFHP does not exist!')
    endif
 
+   if (exist_file.and.stat=='NEW') then
+     call quit('OpenIntFiles: FileFHP exist, can not ne open as NEW !')
+   endif
+
    recl_fhp=4*2*NHMO*NPMO
    open(UFHP ,file=FileFHP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fhp)
 
@@ -1035,13 +1055,17 @@ subroutine OpenIntFiles
     call quit('OpenIntFiles: FileFPP does not exist!')
    endif
 
+   if (exist_file.and.stat=='NEW') then
+     call quit('OpenIntFiles: FileFPP exist, can not ne open as NEW !')
+   endif
+
    recl_fpp=4*2*NPMO*NPMO
    open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fpp)
 
 !  ... print out info ...
    if (get_iprint() >= 7) then
      write(UOUT,'(/,2x,a,a)')   & 
-     'UVIND, UVINT, UFHH, UFHP, UFPP files open with status=',stat
+     'UVIND, UVINT, UFHH, UFHP, UFPP files were open with status=',stat
      write(UOUT,'(a,i2,a,a18,a,i8)') 'UVIND=',UVIND,' 2-el.integrals, FileVIND=',FileVIND,' recl=',recl_vind
      write(UOUT,'(a,i2,a,a18,a,i8)') 'UVINT=',UVINT,' 2-el.integ. indexes, FileVINT=',FileVINT,' recl=',recl_vint
      write(UOUT,'(a,i2,a,a18,a,i8)') ' UFHH=',UFHH, ' 1-el. integ., FileFHH=',FileFHH,' recl=',recl_fhh
@@ -1059,7 +1083,6 @@ subroutine OpenOtherFiles
 !
 !  called from InitHSMRIter (source/inihsiter.F90)
 !
-
    implicit none
    integer :: recl_ntsize
 
@@ -1069,11 +1092,22 @@ subroutine OpenOtherFiles
       call quit('OpenOtherFiles: IOMod not initialized')
    endif
 
+   if (get_iprint() >= 7) then
+     write(UOUT,*) 'OpenOtherFiles: going to open FileHEFF,FileCOEF with lu: ',UHEFF,UCOEF
+     write(UOUT,*) 'file names:',FileHEFF,FileCOEF
+   endif
+
    open(UHEFF,file=FileHEFF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    open(UCOEF,file=FileCOEF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
 
 ! .. direct access files
    recl_ntsize=(4*2*(1+NTSIZE))
+
+   if (get_iprint() >= 7) then
+     write(UOUT,*) 'OpenOtherFiles: going to open FileTNEW,FileTOLD,FileTAMP files with recl_ntsize=', \
+     recl_ntsize
+   endif
+
    open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)
    open(UTOLD,file=FileTOLD,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)
    open(UTAMP,file=FileTAMP,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)

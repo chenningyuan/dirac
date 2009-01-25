@@ -1,3 +1,73 @@
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine dirprg_hscc
+!
+! called from DIRAC/main
+!
+use Parameters
+use IOModule
+use Options
+use Dirac_HSMRCC
+
+implicit none
+#include "priunit.h"
+
+if (.not.nohsccdirac) then
+  write(LUPRI,'(2x,a)')  'dirprg_hscc - returning'
+  return
+else
+  write(LUPRI,'(2x,a)')  'dirprg_hscc - continuing with HSCC.'
+endif
+
+write(LUPRI,'(2x,a,i3)') 'dirprg_hscc: get_iprint()=',get_iprint()
+
+call FLSHFO(LUPRI)
+
+! ... initialization of basic variables to make HSCC running in DIRAC mode
+call Init_HSMRCC_BasicVars
+
+call HSMRCC
+
+end subroutine dirprg_hscc
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine Init_HSMRCC_BasicVars
+!
+! ... initialize only few basis variables for HSMRCC which are otherwise initialized by
+! ... C-part (hsmrcc.c) 
+!
+! ... later OPTIONS[xxx] are read from DIRAC prepared files
+!
+use Options
+use Parameters
+
+implicit none
+#include "priunit.h"
+character*12 :: filename="Dirac_HSMRCC"
+
+write(LUPRI,*) "Init_HSMRCC_BasicVars: "
+
+OPTION(TTYRUN)=.true.
+OPTION(GMSCHK)=.false.
+
+OPTION(DIRAC_MODE)=.false.
+OPTION(GENINT)  = .FALSE.
+
+
+OPTION(HSCC_DIRAC_MODE)=.true. ! tell that this is HSCC from DIRAC
+
+call unset_dirac_hscc_interface_mode
+
+call print_options; 
+call print_where
+
+call call_dirac_sethsmrfiles
+
+!call SetHSMRfiles(filename,"",12,0)
+
+end subroutine Init_HSMRCC_BasicVars
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSMRCC
 !---------------------------------------------------------------------------

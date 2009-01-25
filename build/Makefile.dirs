@@ -82,6 +82,11 @@ clean:
 	rm -f *.o *.mod *.gc*  *.s *.r *.i *.fc *.p
 	@echo
 
+touch:
+	@echo -e "\n Touching source files (*.F,*.F90,*.c) in the local directory"
+	touch `ls *.F *.F90 *.c 2> /dev/null`
+
+
 # clean the whole DIRAC from local directory
 allclean:
 	@echo

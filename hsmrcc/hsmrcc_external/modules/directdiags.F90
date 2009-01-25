@@ -57,6 +57,11 @@ subroutine InitDirect
    if (.not.allocated(ResP))     allocate(ResP(MAX(NPMOSQ,NHMOSQ)))
    if (.not.allocated(ResQ))     allocate(ResQ(MAX(NPMOSQ,NHMOSQ)))
 
+   if (get_iprint() > 5 ) then
+     write(UOUT,*) 'InitDirect: allocated stuff '
+   endif
+
+
    pq = 0
    do p = 2, MAX(NPMO,NHMO)
    do q = 1, (p-1)

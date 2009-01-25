@@ -755,7 +755,7 @@ integer, public :: NCMO_DIRAC=0, NACT_DIRAC=0, NFRZV_DIRAC=-1, NEMO_DIRAC=-1
 
 integer, public :: iprint_hscc = 0
 
-logical, public :: nohsccfiles=.false.
+logical, public :: nohsccfiles=.false., nohsccdirac=.false.
 
 ! ... stuff from HSMRCC code for preparing VINF,VIND,VINT, FHH, FHP, FPP files ...
 !integer, parameter :: NVFIL  = 14
@@ -1140,7 +1140,7 @@ if (.not.nohsccfiles) then
   call OpenIntFiles
   call make_VIND_VINT_files
 
-  call quit('end in prepare_HSMRCC_Vfiles')
+!  call quit('end in prepare_HSMRCC_Vfiles')
 endif
 
 end subroutine prepare_HSMRCC_Vfiles

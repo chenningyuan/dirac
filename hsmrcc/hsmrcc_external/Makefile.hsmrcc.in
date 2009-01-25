@@ -1,7 +1,7 @@
 #
 #
-#  This file gets included from the main makefile, and
-# make has to be run from the top level directory.
+#   This file gets included from the main makefile, and
+#  make has to be run from the top level directory.
 #
 #
 
@@ -19,46 +19,6 @@ moddir=hsmrcc/hsmrcc_external/modules
 # ... directory with source files 
 srcdir=hsmrcc/hsmrcc_external/source
 
-###############################################################################
-####     Object Files - from HSMRCC modules/ and source/ directories       ####
-###############################################################################
-
-modobjs := $(moddir)/parameters.o   $(moddir)/options.o     $(moddir)/orbmod.o    $(moddir)/iomodule.o   \
-           $(moddir)/tindexmod.o    $(moddir)/timingmod.o   $(moddir)/tamps.o     $(moddir)/vacmod.o     \
-           $(moddir)/intgenmod.o    $(moddir)/convmod.o     $(moddir)/shift.o     $(moddir)/heffmod.o    \
-           $(moddir)/directdiags.o  $(moddir)/renormdiags.o $(moddir)/vinfmod.o   $(moddir)/gmsmod.o     \
-           $(moddir)/syminf.o       $(moddir)/diagonalize.o $(moddir)/hmatrix.o   $(moddir)/symblock.o   \
-           $(moddir)/s2matele.o     $(moddir)/prntmat.o     $(moddir)/n_choose_r.o
-
-f90objs := $(srcdir)/initguess.o   $(srcdir)/inihsbase.o   $(srcdir)/endhsmr.o   $(srcdir)/makezero.o   \
-           $(srcdir)/sethsmropts.o $(srcdir)/printinfo.o   $(srcdir)/endenom.o   $(srcdir)/diagrams.o   \
-           $(srcdir)/hsmrcc.o      $(srcdir)/inihsiter.o   $(srcdir)/runinfo.o   $(srcdir)/maproots.o   \
-           $(srcdir)/startiter.o   $(srcdir)/compensate.o  $(srcdir)/genhsmrpars.o
-
-#c89objs := $(srcdir)/getopt.o $(srcdir)/hsmrmain.o
-c89objs :=  $(srcdir)/hsmrmain.o
-
-#
-# ... all own hsmrcc objects together
-#
-hsmrcc_objects := $(modobjs) $(f90objs) $(c89objs)
-
-##########################################################################
-####
-#### DIRAC imports:
-####             
-#### Note: pdpack/libpdlib.a is replaced pdpack-object files 
-####             
-##########################################################################
-dirac_objs :=  gp/qpack.o      gp/gptrygve.o  gp/gphjj.o  \
-               gp/tracing.o    gp/gpsaue.o    gp/mempkg.o \
-               gp/gpjeppe.o    gp/gpc.o  \
-               abacus/hergp.o            \
-               pdpack/gp_dlapack.o pdpack/arhpack.o pdpack/eispack.o \
-               pdpack/linextra.o   pdpack/dsp.o     pdpack/printpkg.o \
-	       pdpack/gpblas.o  pdpack/gp_zlinpack.o pdpack/gp_zlapack.o \
-	       pdpack/gp_auxlapack.o pdpack/dlamch.o	
-
 #================================
 ### default : executable file ###
 #================================
@@ -68,11 +28,12 @@ hs : $(hscc_exec)
 ##################
 ###  linking   ###
 ##################
-$(hscc_exec) : $(hsmrcc_objects) $(dirac_objs) $(srcdir)/hsmrmain.o
+$(hscc_exec) : $(OBJ)
 	$(CC)  -DSTANDALONE_HSMRCC $(CFLAGS) -c -o $(srcdir)/hsmrmain.o  $(srcdir)/hsmrmain.c
 	@echo -e "\nGoing to link Dirac-compiled objects (hsmrcc sources, modules): " 
-	$(LD) -o $@ $(NO_FORTRAN_MAIN) $(hsmrcc_objects) $(dirac_objs) $(LIBS)
-	@touch $(srcdir)/hsmrmain.c
+	$(LD) -o $@ $(NO_FORTRAN_MAIN) $(OBJ) $(LIBS)
+	touch $(srcdir)/hsmrmain.c
+
 
 ##################
 ###  cleaning  ###

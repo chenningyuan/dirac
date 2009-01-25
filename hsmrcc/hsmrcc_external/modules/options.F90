@@ -45,6 +45,8 @@ module Options
 !
 ! tell HSMRCC code that some it's routines are used from within DIRAC
 !
+! this means NOT running full hsmrcc.x, only reusing it's routines 
+!
 #include "priunit.h"
    OPTION(DIRAC_MODE)=.true.
    write(LUPRI,'(2x,a,l1)')   & 
@@ -54,8 +56,8 @@ end subroutine set_dirac_mode
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_where
 
+implicit none
 #include "priunit.h"
-
 
   if (OPTION(HSCC_DIRAC_MODE)) then
        write(LUPRI,'(2x,a)') '*** in HSMRCC part: DIRAC mode is ON (DIRAC-HSMRCC choice)  ***'
@@ -68,7 +70,7 @@ subroutine print_where
 end subroutine print_where
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine print_Options
+subroutine print_Options
 !--------------------------------------------------------------------------
 !
 !           ... simple print out of basic options in DIRAC ...
@@ -76,20 +78,34 @@ end subroutine print_where
 !  called from  source/sethsmropts.F90
 !
 !--------------------------------------------------------------------------
-! use Parameters
 
  call Header('*** Printing out OPTIONs ***',-1)
 
 ! write(UOUT,'(/,2x,a)') 'print_Options ....'
  write(*,'(/,2x,a)') 'print_Options ....'
-! write(UOUT,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
- write(*,*) ' OPTION  [GENINT]   =',OPTION(GENINT)
- write(*,*) ' OPTION  [PRNTINF]  =',OPTION(PRNTINF)
- write(*,*) ' OPTION  [MAXIT]    =',OPTION(MAXIT)
- write(*,*) ' OPTION  [HSCC_DIRAC_MODE]   =',OPTION(HSCC_DIRAC_MODE)
- write(*,*) ' OPTION  [GMSCHK]   =',OPTION(GMSCHK)
+ write(*,*) ' OPTION  [GENINT]           =',OPTION(GENINT)
+ write(*,*) ' OPTION  [PRNTINF]          =',OPTION(PRNTINF)
+ write(*,*) ' OPTION  [VERBOSE]          =',OPTION(VERBOSE)
+ write(*,*) ' OPTION  [RESTART]          =',OPTION(RESTART)
+ write(*,*) ' OPTION  [TTYRUN]           =',OPTION(TTYRUN)
+ write(*,*) ' OPTION  [AVGVAL]           =',OPTION(AVGVAL)
+ write(*,*) ' OPTION  [REPTIME]          =',OPTION(REPTIME)
+ write(*,*) ' OPTION  [QUAD]             =',OPTION(QUAD)
+ write(*,*) ' OPTION  [CONVTAMP]         =',OPTION(CONVTAMP)
+ write(*,*) ' OPTION  [NOHSMR]           =',OPTION(NOHSMR)
+ write(*,*) ' OPTION  [MAXIT]            =',OPTION(MAXIT)
+ write(*,*) ' OPTION  [INTTOL]           =',OPTION(INTTOL)
+ write(*,*) ' OPTION  [CNVTOL]           =',OPTION(CNVTOL)
+ write(*,*) ' OPTION  [SHFTCORE]         =',OPTION(SHFTCORE)
+ write(*,*) ' OPTION  [SHFTVIRT]         =',OPTION(SHFTVIRT)
+ write(*,*) ' OPTION  [NOAPND]           =',OPTION(NOAPND)
+ write(*,*) ' OPTION  [RDGUESS]          =',OPTION(RDGUESS)
+
+ write(*,*) ' OPTION  [HSCC_DIRAC_MODE]  =',OPTION(HSCC_DIRAC_MODE)
+ write(*,*) ' OPTION  [GMSCHK]           =',OPTION(GMSCHK)
+ write(*,*) ' OPTION  [DIRAC_MODE]       =',OPTION(DIRAC_MODE)
 ! write(*,*) '  UOUT=',UOUT
 
- end subroutine print_Options
+end subroutine print_Options
 
 end module Options

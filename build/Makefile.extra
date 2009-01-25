@@ -25,7 +25,8 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 
 #miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
 .F.p:
-	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
+	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
+	$(F77) $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
 .F.i:
 	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
 

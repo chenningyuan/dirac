@@ -29,6 +29,7 @@ program dirprg
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
+#include "dcbpsi.h"
 #ifdef VAR_MPI
 #include "mpif.h"
 #endif
@@ -137,11 +138,20 @@ program dirprg
 #endif
   if (mytid == 0) then
      call stopwatch(0,mytid)
-     print '(a)','********** E N D   of   D I R A C  output  **********'
-     print '(a/)', '*****************************************************'
+     print '(a)', '********** E N D   of   D I R A C  output  **********'
+     print '(a/)','*****************************************************'
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
   if (parcal) call mpixfinalize()
 #endif
+
+#ifdef MOD_HSCC 
+ if (DOHSCC) then
+   print '(/,2x,a)','Continuing with the external HSCC code.'
+   call dirprg_hscc 
+ endif
+#endif
+
 end program dirprg
+

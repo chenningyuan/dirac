@@ -21,6 +21,7 @@ subroutine OpenVINF
 !
 !------------------------------------------------------------------------------
    implicit none
+   logical :: existVINF
 
    if (get_iprint() >=7) then
      write(UOUT,'(/,2x,a,a80)')   & 
@@ -28,18 +29,26 @@ subroutine OpenVINF
      write(UOUT,'(2x,a,i3,a,a)') 'where lu UVINF=',UVINF,'and file name, FileVINF=',FileVINF
      write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
      if (OPTION(GENINT)) then
-       write(UOUT,*) 'opening as UNKNOWN (new)'
+       write(UOUT,*) 'going to open as UNKNOWN (new)'
      else
-       write(UOUT,*) 'opening as OLD - exist !!!'
+       write(UOUT,*) 'going to open as OLD - previously preparef file'
      endif
    endif
 
+
    if (OPTION(GENINT)) then
       open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
-!     open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
    else
+      inquire(file=FileVINF,exist=existVINF)
+
+      if (existVINF) then
       ! ... restarting HSCC 
-      open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+        open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
+      else
+        write(UOUT,'(a,a)') FileVINF," file NOT found ! Error exit !"
+        call quit('OpenVINF: FileVINF NOT found !')
+      endif
+
    endif
 
    return

@@ -245,7 +245,11 @@ int readint(opt,val)
 
 /*   Main program   */
 
-int main (argc, argv)
+#if defined STANDALONE_HSMRCC
+int main (argc, argv) 
+#else
+int main_hsmrcc (argc, argv)  
+#endif
    int argc;
    char **argv;
 
@@ -766,8 +770,8 @@ int main (argc, argv)
    }
    if (!opts[INTTOL]) inttol = DEFAULT_INTTOL;
 
-   if (!opts[NCMO])  ncmo  = DEFAULT_NCMO;
-   if (!opts[NEMO])  nemo  = DEFAULT_NEMO;
+   if (!opts[NCMO])  ncmo  = DEFAULT_NCMO ;
+   if (!opts[NEMO])  nemo  = DEFAULT_NEMO ;
    if (!opts[NHOLE]) nhole = DEFAULT_NHOLE;
    if (!opts[NPTCL]) nptcl = DEFAULT_NPTCL;
    if (!opts[MAXIT]) maxit = DEFAULT_MAXIT;
@@ -827,4 +831,19 @@ int main (argc, argv)
    qexit_c_(routine_name, (int *) strlen(routine_name));
    exit(0);
 }
+
+
+void call_dirac_sethsmrfiles_(void)
+/* call from F90 file .. not working ...  */
+{
+  char *inpfile;
+  char *outfile;
+
+  inpfile = NULL;
+  outfile = NULL;
+
+ inpfile = "Dirac_HSMRCC"; /* common part of file name of DIRAC prepared files */
+ sethsmrfiles_(inpfile,outfile,strlen(inpfile),0);
+}
+
 

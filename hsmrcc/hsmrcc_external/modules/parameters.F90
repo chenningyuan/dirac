@@ -165,6 +165,10 @@ module Parameters
      dirac_hscc_interface_mode=.true.
    end subroutine set_dirac_hscc_interface_mode
 
+   subroutine unset_dirac_hscc_interface_mode
+     dirac_hscc_interface_mode=.false.
+   end subroutine unset_dirac_hscc_interface_mode
+
    !> ... returns the protected dirac_hscc_interface_mode
    function get_dirac_hscc_interface_mode() result(is_mode)
      logical :: is_mode

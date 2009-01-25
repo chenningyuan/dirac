@@ -672,6 +672,7 @@ if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc"
  #  dirs="$dirs hsmrcc/second_quant"
 # miro: added Sham's HSMRCC modules to be included
+   dirs="$dirs hsmrcc/hsmrcc_external"
    dirs="$dirs hsmrcc/hsmrcc_external/modules"
    dirs="$dirs hsmrcc/hsmrcc_external/source"
    rmline build/dontbuild "hsmrcc/\.\*"
@@ -680,6 +681,7 @@ if [ -n "$HSCCFLG" ]; then
    rmline build/dontbuild "hsmrcc/hsmrcc_external/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/source/\.\*"
+   #rmline build/dontbuild "hsmrcc/hsmrcc_external/source/hsmrmain.c"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"

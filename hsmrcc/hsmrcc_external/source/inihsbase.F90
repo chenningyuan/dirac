@@ -109,8 +109,9 @@ use IOModule
 
    !integer :: fseek, ierrno
    integer(kind=4) :: ierrno ! kind=4 is gfortran demand
+   ! external :: fseek
 
- !  external :: fseek
+   print '(a,l)', 'set_output_stream, OPTION(TTYRUN)=',OPTION(TTYRUN)
 
    if (OPTION(TTYRUN)) then
       UOUT = 6 ! ... terminal output ...
