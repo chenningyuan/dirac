@@ -1510,14 +1510,15 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 
 end subroutine IntFileGen_TwoBody
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, IntIndex, integ_label)
-!--------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------------
 !
-!    print the integral with proper indexes
+!      print the integral with proper indexes
 !
-!  ArrayPos : 1-NZVINTBUFSIZE
+!    ArrayPos : 1-NZVINTBUFSIZE
 !
-!--------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------------
    implicit none
    integer, intent(in)    :: P,Q,R,S, PQ, RS
    integer, intent(in)    :: IntIndex, ArrayPos
@@ -1549,86 +1550,79 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
 
     case('2H2P') !  <PQ||RS>=<IJ||AB>
  
-       call ResolvRec(PQ,I,A) ! P,Q = I, A
-       call ResolvRec(RS,J,B) ! R,S = J, B
-
-     !  call ResolvRec(IntIndex,R1,S1) ! recover R,S...
-     !  write(UOUT,'(6x,4(a,i3),a,f16.10,4(a,i7),a,2i4)')  & 
-     !   '<',P,' ',Q,'||',R,' ',S,'>=', & 
-     !  Integral,' PQ=',PQ,' RS=',RS,  & 
-     !  ' array pos:',ArrayPos,        & 
-     !  ' PackRS:', IntIndex,' again R,S:',R1,S1
+       call ResolvRec(PQ,I,A) ! P,Q = I,A
+       call ResolvRec(RS,J,B) ! R,S = J,B
 
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. 2H2P,1324,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
 
     case('PPPP')  ! <PQ||RS>=<AB||CD>
 
-       call ResolvRec(PQ,A,B) ! PQ is AB 
-       call ResolvRec(RS,C,D) ! RS is CD
+       call ResolvRec(PQ,A,B) ! PQ is A,B 
+       call ResolvRec(RS,C,D) ! RS is C,D
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. PPPP,1234,<AB||CD>=<',A,' ',B,'||',C,' ',D,'>=',Integral  
 
     case('HHHH') ! <PQ||RS>=<IJ||KL>
 
-       call ResolvRec(PQ,I,J) ! PQ is IJ
-       call ResolvRec(RS,K,L) ! RS is KL
+       call ResolvRec(PQ,I,J) ! PQ is I,J
+       call ResolvRec(RS,K,L) ! RS is K,L
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. HHHH,1234, <IJ||KL>=<',I,' ',J,'||',K,' ',L,'>=',Integral  
 
     case('HHPP') ! <PQ||RS>=<IJ||AB>
 
-       call ResolvRec(PQ,I,J) ! PQ is IJ
-       call ResolvRec(RS,A,B) ! RS is AB
+       call ResolvRec(PQ,I,J) ! PQ is I,J
+       call ResolvRec(RS,A,B) ! RS is A,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. HHPP,1234,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
 
     case('2HPP') ! <PQ||RS>=<IJ||AB>
 
-       call ResolvRec(PQ,I,J) ! PQ is IJ
-       call ResolvRec(RS,A,B) ! RS is AB
+       call ResolvRec(PQ,I,J) ! PQ is I,J
+       call ResolvRec(RS,A,B) ! RS is A,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. 2HPP,1234, <IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
 
     case('2PHH')  ! <PQ||RS>=<A,B||I,J>
 
-       call ResolvRec(PQ,A,B) ! PQ is 
-       call ResolvRec(RS,I,J) ! RS is
+       call ResolvRec(PQ,A,B) ! PQ is A,B
+       call ResolvRec(RS,I,J) ! RS is I,J
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. 2PHH,1234,<AB||IJ>=<',A,' ',B,'||',I,' ',J,'>=',Integral 
 
     case('PHHP') ! <PQ||RS>=<AJ||IB>
 
-       call ResolvRec(PQ,A,I) ! PQ is AI
-       call ResolvRec(RS,J,B) ! RS is JB
+       call ResolvRec(PQ,A,I) ! PQ is A,I
+       call ResolvRec(RS,J,B) ! RS is J,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. PHHP,1324, <AJ||IB>=<',A,' ',J,'||',I,' ',B,'>=',Integral  
 
     case('PH2P') !<PQ||RS>=<AI||BC>
 
-       call ResolvRec(PQ,A,B) ! PQ is AB
-       call ResolvRec(RS,I,C) ! RS is IC
+       call ResolvRec(PQ,A,B) ! PQ is A,B
+       call ResolvRec(RS,I,C) ! RS is I,C
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. PH2P,1324, <AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
 
     case('PHPP') ! <PQ||RS>=<AI||BC>
 
-       call ResolvRec(PQ,A,I) ! PQ is 
-       call ResolvRec(RS,B,C) ! RS is
+       call ResolvRec(PQ,A,I) ! PQ is A,I
+       call ResolvRec(RS,B,C) ! RS is B,C
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. PHPP,1234,<AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
 
     case('2HHP') ! <P,Q||R,S>=<I,J||K,A>
 
-       call ResolvRec(PQ,I,K) ! PQ is IK
-       call ResolvRec(RS,J,A) ! RS is JA
+       call ResolvRec(PQ,I,K) ! PQ is I,K
+       call ResolvRec(RS,J,A) ! RS is J,A
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. 2HHP,1324,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral 
 
     case('HHHP') ! <P,Q||R,S> = <I,J||K,A>
 
-       call ResolvRec(PQ,I,J) ! PQ is IJ
-       call ResolvRec(RS,K,A) ! RS is KA 
+       call ResolvRec(PQ,I,J) ! PQ is I,J
+       call ResolvRec(RS,K,A) ! RS is K,A 
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. HHHP,1234,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral  
     
