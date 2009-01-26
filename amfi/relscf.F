@@ -4384,11 +4384,14 @@ C     check if old 'RELSCF_COEF' exists.
       
       ISIZEV = LRELSCFVEC - 1
       IRELSCF_INFO(LINF_X) = ISIZEV
+C     WRITE(LUPRI,*) ' array IRELSCF_INFO'
+C     CALL IWRTMAMN(IRELSCF_INFO,1,MXRELSCF_INFO,1,MXRELSCF_INFO,LUPRI)
+C     WRITE(LUPRI,*) ' ISIZEV is',ISIZEV
       CALL IWRTAMFI(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,MXRELSCF_INFO)
 C
 C     write coefficients to file RELSCF_COEF
-CSK   WRITE(LUPRI,*) ' coeff matrix to file'
-CSK   CALL WRTMATMN(WORK(KRELCOEFFX),1,ISIZEV,1,ISIZEV,LUPRI)
+C     WRITE(LUPRI,*) ' coeff matrix to file'
+C     CALL WRTMATMN(WORK(KRELCOEFFX),1,ISIZEV,1,ISIZEV,LUPRI)
       CALL WRTAMFI(LURELSCFCOEF,RELSCFLABX,WORK(KRELCOEFFX),ISIZEV)
       CLOSE(UNIT=LURELSCFCOEF,STATUS='KEEP')
 C     ... release memmory
@@ -6166,7 +6169,9 @@ C     Write label at end or - if already existing - after SODLABEL
       CALL LABAMFI(LUNIT,LABEL)
 C
 C     Write vector
-      CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+C     ... buggy on 32-bit systems 
+C     CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+      WRITE(LUNIT) VECTOR
       CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
@@ -6232,6 +6237,9 @@ C
       REWIND(LUNIT)
       IF (FNDLAB(LABEL,LUNIT)) THEN
 C
+C        WRITE(LUPRI,*) ' start reading from file for LABEL ',LABEL
+C        WRITE(LUPRI,*) ' LUNIT is',LUNIT
+C        WRITE(LUPRI,*) ' size of vector is',ISIZE
 C        Label exists.
          CALL READT(LUNIT,ISIZE,VECTOR)
 C
