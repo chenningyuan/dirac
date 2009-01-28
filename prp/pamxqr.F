@@ -2974,7 +2974,7 @@ C
 C
 C Settings for parallel calculation
 C
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetTaskDistribFlags(.TRUE. , .TRUE. , .TRUE. , .TRUE. )
       call SetIntTaskArrayDimension(NPOS,PARCAL)
 C
 C Print

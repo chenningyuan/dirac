@@ -1269,7 +1269,7 @@ C     IFCKOP(3) = 1
 
       NFMTX = 3 ! Number of Fock matrixes - 3(x,y,z)
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetTaskDistribFlags( .TRUE. , .TRUE. , .TRUE. , .TRUE. )
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
@@ -2812,7 +2812,7 @@ C       DO IH1 = IW1, 3 ! Components of H(1)
           IREP1 = ISYM1 - 1
           IREP12 = IBTXOR(IREP2,IREP1) 
           CALL DZERO(WORK(KSMAT),N2ORBXQ)
-          CALL GETDHB(IB,FAC2LO,WORK(KSMAT),
+          CALL GETDHB(IB,D0,WORK(KSMAT),
      &           INDXPR1,IOPSY,WORK,KFREE,LFREE,IPRINT)
 
 C ... call TTRA for {W/S(1),F(1)} .. get all into KSWMAT
@@ -2919,7 +2919,7 @@ C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
          IREP12  = IBTXOR(IREP1,IREP2) ! Final symm.
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
          IB = 4 ! 0100B -> get F'=FCKLON... {T(1),F(0)}+W into WORK(KWMAT)
-         CALL GETDHB(IB,FAC2LO,WORK(KWMAT),
+         CALL GETDHB(IB,D0,WORK(KWMAT),
      &          INDXPR2,IOPSY,WORK,KFREE,LFREE,IPRINT)
 
 C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
