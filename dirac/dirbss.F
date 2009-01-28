@@ -5255,7 +5255,7 @@ C  ======== End of handling Fock-Dirac 2c =========
 C      ... this option does not matter....
       DOJACOBI = .FALSE.
       CALL RFBSSMAT('VMAT2C  ',.TRUE.,'CMP_EIGVAL',
-     &        VMAT,N2BBASX,LUBSS,IPRHAM)
+     &        VMAT,N2BBASX,LUBSS,IPRINT)
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
       IF (WRITEH2C) THEN
 C      ... transformed 1 electron Dirac Hamiltonian
