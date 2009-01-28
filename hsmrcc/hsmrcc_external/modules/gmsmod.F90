@@ -97,6 +97,8 @@ subroutine EndGMSMod
    if (allocated(OrbCoeff))      deallocate(OrbCoeff)
    if (allocated(HCoreMatrix))   deallocate(HCoreMatrix)
 
+   if (allocated(MOLTRA_indx))   deallocate(MOLTRA_indx)
+
    if (get_iprint() >=8) then
      write(UOUT,'(/,2x,a)') 'EndGMSMod: going to deallocate GMS specific data.'
    endif
@@ -150,6 +152,11 @@ subroutine alloc_VINF_arrays
 
   if (.not.allocated(SpinOfActvOrb)) allocate(SpinOfActvOrb(NVMO))
   if (.not.allocated(OccRef))        allocate(OccRef(NSO))
+
+  if ( OPTION(DIRAC_MODE) ) then
+  !   ... allocate only when in DIRAC preparing mode for HSMRCC ...
+     if (.not.allocated(MOLTRA_indx)) allocate(MOLTRA_indx(NSO))
+  endif
 
   if (get_iprint() >=7) then
     write(UOUT,'(2x,a,/)') 'alloc_bunch: SpinOfOrb, SpinOfActvOrb and other data allocated...'
@@ -224,8 +231,8 @@ subroutine InitReadGMS
 
 end subroutine  InitReadGMS
 
+subroutine InitReadDIRAC  ! ... NOT ACTIVE !!!
 !> read DIRAC file with data
-subroutine InitReadDIRAC
 
 character*12 :: dirac_file='Dirac_HSMRCC'
 real*8    :: ENSCF_DIR
@@ -451,19 +458,9 @@ if (NSO==0) then
 endif
 
 do i=1, NSO
-
-   write(UOUT,1298)   i,  & 
-           SpinOfOrb(i),  & 
-           OccGMSRef(i),  & 
-            IrrepOrb(i),  & 
-           IrpLabOrb(i),  &
-             OrbType(i),  &
-            OrbSpace(i),  &
-           OrbEnergy(i)
+  call print_gms_data_line(i)
 enddo
 
-  1298 format (i3,1x,'Spin=',i2,1x,'Occ=',i1,1x,'Irp=',i1,1x,      & 
-      'IrpLab=',a3,'Type=',i2,1x,'Space=',i2,1x,'OrbEn=',f12.6)
 
 if (print_hcore_mtx) then
 ! ... print HCoreMatrix
@@ -473,11 +470,51 @@ endif
 
 end subroutine print_gms_data
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine  print_gms_data_line(i)
+!
+! ... prints one line of indexed data
+! 
+integer, intent(in) :: i
 
-!> read data from GAMESS integral files 
+  if (.not.allocated(MOLTRA_indx)) then
+
+   write(UOUT,1298)   i,  & 
+           SpinOfOrb(i),  & 
+           OccGMSRef(i),  & 
+            IrrepOrb(i),  & 
+           IrpLabOrb(i),  &
+             OrbType(i),  &
+            OrbSpace(i),  &
+           OrbEnergy(i)
+  else
+
+   write(UOUT,1299)   i,  & 
+           SpinOfOrb(i),  & 
+           OccGMSRef(i),  & 
+            IrrepOrb(i),  & 
+           IrpLabOrb(i),  &
+             OrbType(i),  &
+            OrbSpace(i),  &
+           OrbEnergy(i),  & 
+         MOLTRA_indx(i)
+
+  endif
+
+  1298 format (i3,1x,'Spin=',i2,1x,'Occ=',i1,1x,'Irp=',i1,1x,      & 
+     'IrpLab=',a3,'Type=',i2,1x,'Space=',i2,1x,'OrbEn=',f12.6)
+
+  1299 format (i3,1x,'Spin=',i2,1x,'Occ=',i1,1x,'Irp=',i1,1x,      & 
+     'IrpLab=',a3,'Type=',i2,1x,'Space=',i2,1x,'OrbEn=',f12.6,1x,'MOLTRA indx=',i4)
+
+end subroutine print_gms_data_line
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitReadMREINT
 !
 !
+!> read data from GAMESS integral files 
 !    called from InitReadGMS when OPTION(GENINT)=T
 !
    implicit none

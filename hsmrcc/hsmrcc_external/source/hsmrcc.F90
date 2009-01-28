@@ -13,7 +13,7 @@ use Dirac_HSMRCC
 implicit none
 #include "priunit.h"
 
-if (.not.nohsccdirac) then
+if (nohsccdirac) then
   write(LUPRI,'(2x,a)')  'dirprg_hscc - returning'
   return
 else

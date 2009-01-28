@@ -13,6 +13,8 @@ module OrbMod
    integer, allocatable :: IrrepOrb(:), IrpLabOrb(:)
    integer, allocatable :: OrbType(:), OrbSpace(:)
 
+   integer, allocatable :: MOLTRA_indx(:) ! for MOLTRA indexes
+
    double precision, allocatable :: OrbEnergy(:), OrbCoeff(:,:)
    double precision, allocatable :: HCoreMatrix(:,:)
 
@@ -103,7 +105,7 @@ subroutine print_orbmod_functions
  implicit none
  integer i
 
- write(UOUT,'(/,6x,a,i3,a,i3)') '*** Output from OrbMod ***,(1-NVMO=',NVMO,' NCMO=',NCMO
+ write(UOUT,'(/,6x,a,i3,a,i3,a)') '*** Output from OrbMod ***,(1-NVMO=',NVMO,' NCMO=',NCMO,')'
  do i=1, NVMO
    write(UOUT,'(2x,i3,a,l1,a,l1,a,l1,a,l1)')  & 
     i,'. IsMainOrb:',IsMainOrb(i), ' IsIntmOrb:',IsIntmOrb(i),  & 

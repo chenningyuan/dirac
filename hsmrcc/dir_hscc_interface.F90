@@ -246,6 +246,42 @@ write(LUPRI,9001)
 
 end subroutine print_HSMRCC_Dirac_info
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7
+function get_moltra_index(is_hole,i) result(moi)
+
+! returns MOLTRA spinor index of HSMRCC NHMO/NPMO  index i
+
+use io_moltra
+use Parameters
+use GMSMod
+
+#include "implicit.h"
+#include "priunit.h"
+
+integer, intent(in) :: i
+logical, intent(in) :: is_hole
+
+integer :: moi
+
+!  write(LUPRI,*) 'NCMO:',NCMO
+!  write(LUPRI,*) 'NVMO:',NVMO
+!  write(LUPRI,*) 'NEMO:',NEMO
+
+if (is_hole) then ! ... is hole (1-NHMO)
+
+  write(LUPRI,*) 'hole index, i=',i
+  call print_gms_data_line(i)
+
+else ! .. is particle (index 1-NPMO)
+
+  write(LUPRI,*) 'particle index, i=',i
+  call print_gms_data_line(i+NCMO)
+
+endif
+
+
+end function get_moltra_index
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  subroutine make_dirac_syminf
 !-----------------------------------------------------------------------------

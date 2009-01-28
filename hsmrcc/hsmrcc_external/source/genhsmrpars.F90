@@ -32,7 +32,9 @@ subroutine GenHSMRpars
    endif
 
    NHMO = NCMO + NVMO
+
    NPMO = NEMO + NVMO
+
    NELE = NCMO + NHOLE
    NTMO = NCMO + NVMO + NEMO
    NVMO = NHOLE + NPTCL
@@ -43,6 +45,7 @@ subroutine GenHSMRpars
 
    NSING  = NHMO*NPMO
    NDBLE  = NHMOSQ*NPMOSQ
+
    NTSIZE = NSING + NDBLE
 
 !------------------------------------------------------------------

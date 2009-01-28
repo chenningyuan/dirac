@@ -7,8 +7,8 @@ module io_moltra
 !  moltra integral files MRCONEE & MDCINT
 !
 !----------------------------------------------------------------------------------
-  use Memory
-  use Vectors
+ use Memory
+ use Vectors
 
 ! ... file numbers ... 
 integer :: MDINT=20, MRCONEE=21
@@ -405,7 +405,7 @@ is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
   write(LUPRI,'(2x,a,i3)') 'NKR is ',NKR
   write(LUPRI,'(/,2x,a)') 'KR array, KR(+I),KR(-I), I=1,NKR :'
   do I=1,NKR
-     write(LUPRI,'(8X,2I8)') KR(I),KR(-I)
+   write(LUPRI,'(8X,2I8)') KR(I),KR(-I)
   enddo
 !
 ! ... read the rest ... integrals and indexes  ...
@@ -501,7 +501,7 @@ endif
   MOINT = MOINT + NONZR
 
   if (print_batch_info) then
-    write(LUPRI,'(2x,a,i5)')  '..read IJ-integral block:',iblock
+    write(LUPRI,'(2x,a,i5)')  '...read IJ-integral block:',iblock
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
     write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
@@ -1135,13 +1135,13 @@ call header('output from prepare_HSMRCC_Vfiles',-1)
 call set_dirac_hscc_file_names
 
 ! ... open all HSMRCC made files 
-if (.not.nohsccfiles) then
-  call InitIOMod
-  call OpenIntFiles
+!if (.not.nohsccfiles) then
+!  call InitIOMod
+!  call OpenIntFiles
   call make_VIND_VINT_files
 
 !  call quit('end in prepare_HSMRCC_Vfiles')
-endif
+!endif
 
 end subroutine prepare_HSMRCC_Vfiles
 
@@ -1194,11 +1194,11 @@ if (get_iprint() >=8) then
  write(LUPRI,*)  "going to call alloc_VINF_arrays"
 endif
 
-call alloc_VINF_arrays
-
 ! ... set options ...
 OPTION(HSCC_DIRAC_MODE)=.false.
-OPTION(DIRAC_MODE)     =.true.
+OPTION(DIRAC_MODE)     =.true. ! for further "alloc_VINF_arrays"
+
+call alloc_VINF_arrays
 
 ! ... fill these arrays ...
 call fill_VINF_arrays
@@ -1207,16 +1207,19 @@ call GenHSMRpars
 
 end subroutine set_hscc_VINF_data
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine fill_VINF_arrays
 !
-!   fill SpinOf, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy
+! fill SpinOf, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy
 !
-!  IrpLabOrb is integer for char ! all arrays are in OrbMod module
+! IrpLabOrb is integer for char ! all arrays are in OrbMod module
 !
 use io_moltra
 use Dirac_HSMRCC
 use Parameters
+! use OrbMod ! TODO: move here print_gms_data ?
 use GMSMod
+
 #include "implicit.h"
 #include "priunit.h"
 character(len=4) :: repna_temp_a, repna_temp_b
@@ -1244,6 +1247,7 @@ NEMO_DIRAC=0
 
 ! fill orb.en.
 ii = 1
+
 do i=1, NSP/2
 
 ! write(LUPRI,*) 'EPS1(',i,')=',EPS1(i),EPS1(i+NSP/2)
@@ -1275,7 +1279,12 @@ do i=1, NSP/2
 ! SpinOfOrb%p_iA1D(ii+1) = -1
  SpinOfOrb(ii+1) = -1
 ! write(LUPRI,'(a,2i4,2f12.7)') 'orb_en:',ii,ii+1,OrbEnergy%p_rA1D(ii),OrbEnergy%p_rA1D(ii+1)
+
+ MOLTRA_indx(ii)   = i
+ MOLTRA_indx(ii+1) = i+(NSP/2)
+ 
  ii = ii + 2
+
 enddo
 
 write(LUPRI,'(/,2x,a,i3)') 'IrrepOrb, SpinOfOrb ... arrays filled, NSP=',NSP
@@ -1313,13 +1322,7 @@ do i=1,NSP
  endif
 
  if (iprint_hscc >= 5) then
-
-   write(LUPRI,876) i,SpinOfOrb(i),OccGMSRef(i),  & 
-                    OrbType(i),OrbSpace(i),       & 
-                    IrrepOrb(i),IrpLabOrb(i),OrbEnergy(i)
-
-   876 format(i3,1x,'spin=',i2,1x,'occ=',i2,1x,'orbtype=',i2,1x,'orbspace=',i2,1x, &
-                   'irp=',i2,1x,' irplab=',a4,1x,'orb.en=',f12.7)
+   call print_gms_data_line(i)
  endif
 
 enddo
@@ -1328,7 +1331,7 @@ enddo
 SpinOfActvOrb = SpinOfOrb(NCMO+1:NCMO+NVMO)
 OccRef = OccGMSRef
 totally_symmetric_irrep = 1
-numirrep = numirrep_dirac
+numirrep = numirrep_dirac ! .... NOT initialized !
 NEMO= NEMO_DIRAC
 
 if (iprint_hscc >= 5) then
@@ -1340,7 +1343,6 @@ endif
 
 if (NEMO_DIRAC == -1) call quit('NEMO_DIRAC bad number !')
 
-
 call print_gms_data
 
 end subroutine fill_VINF_arrays
@@ -1350,7 +1352,7 @@ end subroutine fill_VINF_arrays
 subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
-!                prepare integral files
+!                 prepare integral files
 !
 !----------------------------------------------------------------
 use Memory
@@ -1375,14 +1377,26 @@ call print_gms_parameters
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
 
+!write(LUPRI,*) 'NHMO=',NHMO
+!write(LUPRI,*) 'NPMO=',NPMO
+
 do II=1,NHMO
+
+i_mo =  get_moltra_index(.true.,II)
+
 do IA=1,NPMO
 do IJ=1,NHMO
-do IB=1,NHMO
+do IB=1,NPMO
+  ! write(LUPRI,'(a,i3,a,i3,a,i3,a,i3)') '<',II,' ',IA,'||',IJ,' ',IB,'>'
+enddo
+enddo
+enddo
 
 enddo
-enddo
-enddo
+
+
+do IA=1,NPMO
+ i_mo=get_moltra_index(.false.,IA)
 enddo
 
 write(LUPRI,*) '02. VPPPP  <AB||CD>'

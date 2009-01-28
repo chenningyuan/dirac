@@ -104,6 +104,7 @@ subroutine print_Options
  write(*,*) ' OPTION  [HSCC_DIRAC_MODE]  =',OPTION(HSCC_DIRAC_MODE)
  write(*,*) ' OPTION  [GMSCHK]           =',OPTION(GMSCHK)
  write(*,*) ' OPTION  [DIRAC_MODE]       =',OPTION(DIRAC_MODE)
+
 ! write(*,*) '  UOUT=',UOUT
 
 end subroutine print_Options
