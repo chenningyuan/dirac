@@ -6117,7 +6117,7 @@ C ==============================================================================
      &   WORK(KF1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &   VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
      &   VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
-     &   WORK(KFREE),LFREE,IPRINT)
+     &   WORK(KFREE),LFREE,IPRHAM)
 
         IF (IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -6171,7 +6171,7 @@ C         ... do the picture chnage transf; WORK(KFOCK2) -> WORK(KF2C2EL)
      &    WORK(KF1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &    VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
      &    VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
-     &      WORK(KFREE),LFREE,IPRINT)
+     &    WORK(KFREE),LFREE,IPRHAM)
 
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
@@ -6461,8 +6461,8 @@ C         ... do the picture change transf U^+.F1.U
 C      ... do write the F1=H1+U1_SO 2c into the BSSMAT file
 C      to be used later in ONEFCK
       CALL W2BSSMAT(1,.TRUE.,'FD2C_USO','FDTR2C',
-     &            WORK(KF1),N2BBASXQ,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
+     &            WORK(KF1),N2BBASXQ,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')                         
      &  'FDTR2C: FD2c(h1+u1_SO) SA-AO elements were written '//
      &  ' into the BSSMAT file (FD2C_USO), the EOFLABEL renewed.'
