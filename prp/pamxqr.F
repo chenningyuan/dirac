@@ -2974,7 +2974,6 @@ C
 C
 C Settings for parallel calculation
 C
-CMI   call SetTaskDistribFlags(.TRUE. , .TRUE. , .TRUE. , .TRUE. )
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
 C

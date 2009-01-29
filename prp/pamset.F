@@ -590,7 +590,6 @@ C
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
 
       call SaveTaskDistribFlags(saveflags)
-CMI   call SetTaskDistribFlags(.TRUE. , .TRUE. , .TRUE. , .TRUE.)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN

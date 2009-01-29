@@ -671,7 +671,6 @@ c     Multiply with -j from the right
 #include "blocks.h"
 #include "dcbfir.h"
       integer npos
-CMI   call SetTaskDistribFlags(.TRUE. , .TRUE. , .TRUE. , .TRUE.)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       END

@@ -152,7 +152,6 @@ C
 C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
 C            
 
-CMI      call SetTaskDistribFlags( .TRUE. , .TRUE. , .TRUE. , .TRUE. )
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /)) 
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
