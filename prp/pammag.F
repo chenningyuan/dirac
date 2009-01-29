@@ -1269,7 +1269,8 @@ C     IFCKOP(3) = 1
 
       NFMTX = 3 ! Number of Fock matrixes - 3(x,y,z)
 
-      call SetTaskDistribFlags( .TRUE. , .TRUE. , .TRUE. , .TRUE. )
+CMI      call SetTaskDistribFlags( .TRUE. , .TRUE. , .TRUE. , .TRUE. )
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /)) 
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
