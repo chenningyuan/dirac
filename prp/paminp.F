@@ -510,13 +510,6 @@ CMI ... read again the input
 #ifdef MOD_XPP
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
-CMI ... no quadratic response whin BSS yet
-      IF (BSS.AND.DOXQR) THEN
-        WRITE(LUPRI,'(2X,A)')
-C    &'No quadratic response with BSS Hamitonian yet.'
-     &'Quadratic response with 2component BSS/IOTC Hamitonian.'
-C       DOXQR=.FALSE.
-      ENDIF 
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)

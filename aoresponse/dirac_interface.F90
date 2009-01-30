@@ -950,7 +950,7 @@ contains
 
 !   call alloc_maxsize(freemem, 1, verbose)
 !   lfree = (freemem/2)*2
-    lfree = n2bbasxq*100
+    lfree = n2bbasxq*100 !fixme, not necessary
     call alloc(work, lfree)
     kfree = 1
 
@@ -969,6 +969,9 @@ contains
 
 !   parameters
 !   ==========
+
+!fixme:check call setrsp
+
 
     static    = .false.
 
