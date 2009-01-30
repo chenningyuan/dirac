@@ -1669,14 +1669,6 @@ C=======================================================================
         lsymop(jsop(i)) = .true.
       end do
 
-!     do i = 1, maxrep
-!       write(*, *) 'blub', i, lsymop(jsop(i)), jsop(i)
-!     end do
-
-      write(*, *) 'blubx', lsymop(1)
-      write(*, *) 'bluby', lsymop(2)
-      write(*, *) 'blubz', lsymop(4)
-
       IF(lsymop(1)) THEN
         IF(CORD(1,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
