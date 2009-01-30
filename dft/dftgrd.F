@@ -1650,22 +1650,44 @@ C=======================================================================
 #include "dftcom.h"
 #include "nuclei.h"
 
+
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+
+      logical :: lsymop(7)
       DIMENSION X(*),
      &          Y(*),
      &          Z(*),
      &          W(*)
 
-      IF(ZIPGRID_TEXT(1:1) .EQ. 'X') THEN
+      do i = 1, maxrep
+        lsymop(i) = .false.
+      end do
+
+      do i = 1, maxrep
+        lsymop(jsop(i)) = .true.
+      end do
+
+!     do i = 1, maxrep
+!       write(*, *) 'blub', i, lsymop(jsop(i)), jsop(i)
+!     end do
+
+      write(*, *) 'blubx', lsymop(1)
+      write(*, *) 'bluby', lsymop(2)
+      write(*, *) 'blubz', lsymop(4)
+
+      IF(lsymop(1)) THEN
         IF(CORD(1,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
         ENDIF
       ENDIF
-      IF(ZIPGRID_TEXT(2:2) .EQ. 'Y') THEN
+      IF(lsymop(2)) THEN
         IF(CORD(2,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(Y,Z,X,W,NR_POINTS)
         ENDIF
       ENDIF
-      IF(ZIPGRID_TEXT(3:3) .EQ. 'Z') THEN
+      IF(lsymop(4)) THEN
         IF(CORD(3,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(Z,X,Y,W,NR_POINTS)
         ENDIF

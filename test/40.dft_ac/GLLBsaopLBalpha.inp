@@ -9,8 +9,7 @@
  GLLBhole
 *DFT
 .SAOP!
-.ZIPGRID        !remove this keyword
-XYZ             !if you change the mol file
+.ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS
 .NUCMOD

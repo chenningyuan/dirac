@@ -10,8 +10,7 @@
  1.0D-3         !are not
 .ANGINT         !appropriate in
  15             !production calculations
-.ZIPGRID        !remove this keyword
-XY              !if you change the mol file
+.ZIPGRID
 **INTEGRALS
 .NUCMOD
  1

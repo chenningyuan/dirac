@@ -10,8 +10,7 @@
 .DFT
  LDA
 *DFT
-.ZIPGRID        !remove this keyword
-XY              !if you change the mol file
+.ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **WAVE FUNCTIONS
 .DHF

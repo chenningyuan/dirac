@@ -298,7 +298,6 @@ C     .GAUNTSCALE
 
  19              CONTINUE
                  ZIPGRID = .TRUE.
-                 READ(LUCMD,'(A30)') ZIPGRID_TEXT
                  GOTO 100
 
 !                .ALDA
