@@ -3043,9 +3043,6 @@ C
         ELSE
           NREF = NTMO(I)
         ENDIF
-CMI     ... it uses NZT now !
-CMI     ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
-CMI     ISIZE = ISIZE + NZT*NFBAS(I,0)*NTMO(I)
         ISIZE = ISIZE + NZT*NFBAS(I,0)*NREF
         IF (IPRINT.GE.5) THEN
           write(lupri,'(2X,A,I1,A,I1,A,I3)')
@@ -3111,8 +3108,6 @@ C
               CALL FLSHFO(LUPRI)
             END IF
          END IF
-CMI      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
-CMI      IOFF = IOFF + NZT*NFBAS(I,0)*NTMO(I)
          IOFF = IOFF + NZT*NFBAS(I,0)*NREF
          IF (TWOC) ITMAT = ITMAT + (NFBAS(I,0)*NREF*NZT)
       END DO
