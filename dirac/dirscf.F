@@ -824,9 +824,18 @@ CMI ... perform all this only if we do note restart BSS from DC or vice versa
         IF ((NASHT.GT.0.AND.AOC).OR.DIISAO) THEN
           CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
+C         read LUTMAT rec#2 with SAOMO
+C         NZT is the NZ value for the transformation matrix
+          ISIZE = 0
+          DO I = 1,NFSYM
+            ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
+          END DO
+          CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
+          CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
         ELSE
           KDTEMP = KFREE
           KDEVEC = KFREE
+          KSAOMO = KFREE
         ENDIF
 
         IF (((NASHT.GT.0).AND.AOC).AND.TRIVEC) THEN
@@ -837,19 +846,10 @@ CMI ... perform all this only if we do note restart BSS from DC or vice versa
           KCMOSAV = KFREE
         END IF
         IF (NASHT.GT.0.AND.AOC) THEN
-C         read LUTMAT rec#2 with SAOMO
-C         NZT is the NZ value for the transformation matrix
-          ISIZE = 0
-          DO I = 1,NFSYM
-            ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
-          END DO
-          CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
-          CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
           CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
      &                WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
      &                WORK(KFREE),LFREE)
         ELSE
-          KSAOMO = KFREE
           CALL MKMOFK(FMO,FAO,DUMMY,WORK(KTMAT),DUMMY,
      &              DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
         END IF
