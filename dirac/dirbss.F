@@ -78,7 +78,7 @@ C    (when USEDF=.true.)
         write(LUPRI,'(/2X,A)')
      &  'MAKE_H2C: Going to do the picture change transformations'//
      &  ' of four-component Fock-Dirac AO matrixes'//
-     &  ' (renews files DFFCK1, DFFCK2, get FD1AO_DK)'
+     &  ' (renews files DFFCK1, DFFCK2)'
         IF (USEDF) THEN
 C       ... in this case we block-diagonalize the Fock-Dirac operator
          write(LUPRI,'(4X,A/)')
@@ -86,8 +86,8 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
      &   ' the block-diagonalization of the FOCK-DIRAC operator.'
         ELSE
          write(LUPRI,'(4X,A/)')
-     &   '... the picture change transformation matrix comes from'//
-     &   ' block-diagonalizations of DIRAC operator.'
+     &   '... the picture change transformation matrix comes from the'//
+     &   ' block-diagonalizations of DIRAC bare-nucleus operator.'
         ENDIF
        ENDIF
 
