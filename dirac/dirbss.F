@@ -170,13 +170,16 @@ C On input :
 C ==========
 C  FOCK - array used inside
 C  I2COFK - determines the integral type
+C
 C  Note that it the temporary default, BSS is really run in 4-component
 C  mode, that is the small components are simply set to zero.
+C
 C  True 2-component mode means that the small components are fully absent.
 C
 C * BSS transformation of one-electron problem:
 C    1 - 2c matrix from 4c: h2c from h_D(1)_4C
 C    2 - 2c matrix from 4c: h2c_CSC(+AMFI if present) from hD(1)_4C
+C
 C * BSS transformation after 4c SCF, that is using the mean-field potential:
 C    3 - 2c one-electron matrix 
 C    4 - 2c full Fock matrix
@@ -206,33 +209,40 @@ C     ==================================================================
 C
       CALL QENTER('GETH2CAO')
 
-C     Select the label
+C     Select the label according to the I2COFK parameter
       IF      (I2COFK.EQ.1) THEN       
 C.... h2c from h_D(1)_4C ... DEFAULT ...    
-        HAM2CL = 'H1AO_DK '      
+        HAM2CL = 'H1AO_DK ' 
       ELSE IF (I2COFK.EQ.2) THEN      
-C.... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
+C.... h2c_CSC(+AMFI,if present) from hD(1)_4C                                     
         HAM2CL = 'H1AO_DK2'     
 C.... these are post-DC-SCF two-component Hamiltonians ...                         
 C     =============================================================                       
       ELSE IF (I2COFK.EQ.3) THEN 
 C.... h2c(1) from FD4C - one electron terms !                                          
-C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
-        HAM2CL = 'FD1AO_DK'    
-      ELSE IF (I2COFK.EQ.4) THEN    
-C.... full Fock_2c transformed from FD4C                                               
-        HAM2CL = 'FDAO_DK '   
+C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE ! 
+        HAM2CL = 'FD1AO_DK' 
+      ELSE IF (I2COFK.EQ.4) THEN 
+C.... full Fock_2c transformed from FD4C  
+        HAM2CL = 'FDAO_DK ' 
       ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
 C.... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
         HAM2CL = 'FD2C_USO' 
       ELSE IF (I2COFK.EQ.7) THEN    
-C.... it's H1AO_DK or H1AO_DK2 in LL basis
+C.... it's H1AO_DK or H1AO_DK2 in LL basis (ie pure two-component modus)
         HAM2CL = 'H2CAO_LL' 
       ELSE     
-        WRITE(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
+        WRITE(LUPRI,*) 'H2CAOLL: I2COFK=',I2COFK   
         CALL QUIT(
-     &'ONEFCK: Wrong value of the entering I2COFK!')
-      ENDIF                                  
+     &  'ONEFCK: Wrong value of the entering I2COFK!')
+      ENDIF  
+
+      IF (IPRINT.GE.0) THEN
+       WRITE(LUPRI,'(/,2X,A,I1,A,A)')
+     &  'GETH2CAO: asked for 2c Hamiltonian (param.I2COFK=',I2COFK,'):',
+     &  HAM2CL
+      ENDIF
+
 C
 C     Read chosen two-component hamiltonian integrals from file BSSMAT
 C     ==================================================================
@@ -1675,12 +1685,16 @@ C     ... pure 2c mode after the DC-SCF ...
        ELSE IF (I2CHAM.EQ.6) THEN
          I2COFK = 6
        ELSE
-         CALL QUIT(
-     &   'EXTR_BSS_INFO: I2CHAM parameter '//
-     &   ' is wrong (not 3/4/5/6) !' )
+        CONTINUE
+!         CALL QUIT(
+!     &   'EXTR_BSS_INFO: I2CHAM parameter '//
+!     &   ' is wrong (not 3/4/5/6) !' )
        ENDIF
       ENDIF
-      WRITE(LUPRI,*)
+
+      WRITE(LUPRI,'(2X,A,I1)')
+     &'* I2COFK parameter for H2c specification set to:',I2COFK
+
       CALL FLSHFO(LUPRI)
       CALL QEXIT('EXTR_BSS_INFO')
       RETURN
@@ -1733,7 +1747,7 @@ C     ... save the IBSS
       ENDIF
 
       IF (IPRINT.GE.3) THEN
-       WRITE (LUPRI,'(/A,I5,A,4I3)')
+       WRITE (LUPRI,'(/,4X,A,I4,A,4I3)')
      &'EXTR_DIG: IBSS=axyz=',IBSS_SAVE,
      &' ...extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
       ENDIF
@@ -6392,7 +6406,7 @@ C ... add U1_SO to the H1
         ISIZE2 = NORB(1)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NORB(2)*NORB(2)*NZ
         CALL DAXPY(ISIZE2,D1,WORK(KFDK1),1,WORK(KFDK),1)
-C      .. DM1 give surprisingly results for B 3s1p atom ...
+CMI      .. DM1 give surprisingly results for B 3s1p atom ...
       ENDIF
 
 C  =======================================================================
@@ -6458,7 +6472,7 @@ C         ... do the picture change transf U^+.F1.U
 
       ENDDO
 
-C      ... do write the F1=H1+U1_SO 2c into the BSSMAT file
+C      ... write the F1=H1+U1_SO 2c into the BSSMAT file
 C      to be used later in ONEFCK
       CALL W2BSSMAT(1,.TRUE.,'FD2C_USO','FDTR2C',
      &            WORK(KF1),N2BBASXQ,LUBSS,IPRHAM)

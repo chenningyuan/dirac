@@ -1937,28 +1937,30 @@ CMI =====================================================================
       ENDIF
       ENDIF
 
+!     ... descend to the two-component level     
       IF (DO4C2C) THEN
        BSS=.FALSE.
        WRITE(LUPRI,'(A)')
-     &  ' ***** After DC-SCF turn into BSS-SCF *****'
-       WRITE(LUPRI,'(A,I1)') 'with restaring code I2CHAM=',I2CHAM,
-     &  ' THIS means...'
+     &  ' ** After four-component DC-SCF switch to the two-component'//
+     &  ' framwork (BSS) **'
+       WRITE(LUPRI,'(3X,A,I2,A)') 'with restaring code I2CHAM=',I2CHAM,
+     &  ' WHAT means...'
        IF (USEDF) THEN
          WRITE(LUPRI,'(2X,A)')
-     &   '...using the (converged) Fock-Dirac matrix for the infinite'//
-     &   ' order transformation (not h_D(1)).'
+     &   '...using the Fock-Dirac matrix for the infinite'//
+     &   ' order transformation (not Dirac bare nucleus, h_D(1)).'
        ELSE
          WRITE(LUPRI,'(2X,A)')
-     &   '...using the picture change tranf.matrix from h_D(1) for '//
-     &   'the infinite-order transformation of the Fock-Dirac matrix.'
+     &   '...using the Dirac bare nucleus, h_D(1), for '//
+     &   'the infinite-order transformation.'
        ENDIF
        IF (CONT2C) THEN
          WRITE(LUPRI,'(2X,A)')
-     &   '...continue two-component SCF procedure'//
+     &   '...continue the two-component SCF procedure'//
      &   '.'
        ELSE
          WRITE(LUPRI,'(2X,A)')
-     &   '...do only 1 SCF iteration'//
+     &   '...do only 1 SCF iteration (get non-canonical orbitals)'//
      &   '.'
        ENDIF
        WRITE(LUPRI,*)
@@ -4600,7 +4602,7 @@ CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
          IF (USEDF) THEN
            I2CHAM = 3
          ELSE
-           I2CHAM = 4
+!          I2CHAM = 4
          ENDIF
         ENDIF
 

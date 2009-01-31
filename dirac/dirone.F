@@ -519,10 +519,10 @@ CMI   ... control output ...
        ENDIF
       ENDIF
 
-CMI...   If BSS is active read one-electron
-CMI     DKn(BSS) AO integrals from the BSSMAT file (lu=LUBSS)
       IF (BSS) THEN
-       CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM) 
+!MI If BSS is active read one-electron DKn(BSS) AO integrals from the
+!   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
+       CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
       ELSE
 C
 C     Memory allocation
