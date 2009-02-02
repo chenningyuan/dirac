@@ -3138,7 +3138,7 @@ C
 
 C --- verify number of basis functions wrt shell occupation
       DO I=1,NSYM
-       IF ((NCSH(I)+NOOC(I)).GT.NBAS(I)) THEN
+       IF ((NCSH(I)+NOSH(I)).GT.NBAS(I)) THEN
          WRITE(LUPRI,'(/,2x,a,i2,a,i2,a,i2)')  
      &   'symmetry:',I,' basis fu:',NBAS(I),
      &   ' occupied:',NCSH(I)+NOOC(I)
