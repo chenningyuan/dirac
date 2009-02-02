@@ -49,7 +49,7 @@ integer, public :: nelec_tot=0
 
 integer :: nnzi=0, nintbl=0
 
-integer :: RCW
+integer :: RCW=0
 
 ! store also cbuf, pos_ij, pos_kl
 type(Array2Dim), save :: cbuf
@@ -59,9 +59,9 @@ contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine alloc_mdcint_data
-!
-! allocate arrays for MDCINT 2-el.integrals /  indexes
-!
+!------------------------------------------------------------------------------------
+!         allocate arrays for MDCINT 2-el.integrals & their indexes
+!------------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 
@@ -72,18 +72,28 @@ else
  write(LUPRI,*) ' alloc_mdcint_data: memory sticked !' 
 endif
 
+if (ilenght.eq.0.or.RCW.eq.0.or.nnzi.eq.0) then
+  call quit('alloc_mdcint_data: parameters NOT ready !')
+endif
+
 write(LUPRI,*) 'alloc_mdcint_data: calculated array size, ilenght=',ilenght
 
 ! ... note: "ccdriv.F":1923 is using RCW !!!
 cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
 
 ! third index : 1 - position, 2 - block no
-pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
-pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array!
+pos_ij = Make3DimArray('INTE',2*NKR,2*NKR,2,'position of <IJ| int.blocks on integral array') 
+
+pos_kl = Make3DimArray('INTE',2*NKR,2*NKR,nintbl,'position of |KL> integrals in given block on integral array') ! huge array!
 
 end subroutine alloc_mdcint_data
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine dalloc_mdcint_data
+
+! dealloc cbuf, pos_ij, pos_kl
+
+
 
 end subroutine dalloc_mdcint_data
 
@@ -418,14 +428,11 @@ else
 endif
 write(LUPRI,'(/2x,a,i1/)') 'the parameter RCW =',RCW
 
-ilenght = NKR*NKR ! 
+ilenght = (2*NKR)*(2*NKR) ! 
 
 write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
 
 call alloc_mdcint_data
-
-indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
-indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 
 ! call print_mem_param
 
@@ -433,7 +440,6 @@ indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
 !cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
 !pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
 !pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array 
-
 
 indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
 indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
@@ -501,7 +507,7 @@ endif
   MOINT = MOINT + NONZR
 
   if (print_batch_info) then
-    write(LUPRI,'(2x,a,i5)')  '...read IJ-integral block:',iblock
+    write(LUPRI,'(2x,a,i5)')  '...read <IJ|-integral block:',iblock
     write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
     write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
     write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
@@ -531,15 +537,15 @@ if (print_int) then
 endif
 
   pos_ij%p_iA3D(KR(IKR),KR(JKR),1) = icbuf
- ! pos_ij%p_iA3D(KR(IKR),KR(JKR),1) = icbuf-1
+
   icbuf = icbuf + NONZR
   iblock = iblock + 1    ! incrememt integral block
   pos_ij%p_iA3D(KR(IKR),KR(JKR),2) = iblock
 
-! save kl-indexes for a given block on a big array !
+! save KL-indexes of a given block on a big array !
   do INZ=1,NONZR
    ! ... store position on block array
-    pos_kl%p_iA3D(indk_vect%p_iA1D(INZ),indl_vect%p_iA1D(INZ),iblock) = INZ
+    pos_kl%p_iA3D(KR(indk_vect%p_iA1D(INZ)),KR(indl_vect%p_iA1D(INZ)),iblock) = INZ
   enddo
 
     IF (IKR.EQ.0) THEN
@@ -579,19 +585,33 @@ endif
 ! ... print all NONZERO integrals in proper order
  write(LUPRI,'(/,6x,a)') '...all nonzero integrals printed again from big array...'
 
- do i=1,NKR
- do j=1,NKR
- !do i=1,NKR
- !do l=1,NKR  
- do k=1,NKR
- do l=1,NKR  
+ do i=1,2*NKR
+ do j=1,2*NKR
+ do k=1,2*NKR
+ do l=1,2*NKR  
+
     ! must be nonzero integral 
-    if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0) then 
+   ! if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then 
+
+    if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_ij%p_iA3D(i,j,2).ne.0  & 
+                                   .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then 
+
       int_pos= ( pos_ij%p_iA3D(i,j,1)+pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) - 1) 
+
+      if (int_pos.gt.nnzi) then ! handle error indexes
+       write(LUPRI,*) 'int_pos=',int_pos,' while nnzi=',nnzi
+       write(LUPRI,*) 'i,j,pos_ij%p_iA3D(i,j,1):',i,j, pos_ij%p_iA3D(i,j,1)
+       write(LUPRI,*) 'pos_ij%p_iA3D(i,j,2):',pos_ij%p_iA3D(i,j,2)
+       write(LUPRI,*) 'pos_kl%p_iA3D(i,j,p_iA3D(i,j,2)):',pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2))
+      endif
+
       Iijkl=cbuf%p_rA2D(1,int_pos)
-      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i7)') '<',i,' ',j,'|',  & 
+
+      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i7)') '<IJ|KL>, KU indexes, <',i,' ',j,'|',  & 
                     k,' ',l,'>=',Iijkl,' array pos:',int_pos
+
     endif
+
  enddo
  enddo
  enddo
@@ -626,28 +646,26 @@ endif
 
 end subroutine read_mdcint
 
-!subroutine scan_mdcint(nnzi, nintbl)
 subroutine scan_mdcint
 !-----------------------------------------------------------------------------
 !
 !   Scan (read once) the integral file MDCINT: 
 ! 
-!  -  count number of nonzero integrals  : nnzi
-!  - count number of IJ-block  :      nintbl
+!  -  count number of nonzero integrals  :      nnzi
+!
+!   - count number of IJ-blocks          :      nintbl
 !
 !-----------------------------------------------------------------------------
 implicit none
 !#include "implicit.h"
 #include "priunit.h"
-!integer, intent(out) :: nnzi, nintbl 
-integer :: IKR,JKR,NONZR,MOINT, INZ
+integer :: IKR,JKR,NONZR,MOINT,INZ
 logical :: is_open
-integer :: myIDUMMY
+integer :: myIDUMMY, myIDUMMY2
 double precision :: myDUMMY, myDUMMY2
 
-write(LUPRI,'(///,2x,a)') ' Going to count integrals '
+write(LUPRI,'(///,2x,a)') ' Going to count MDCINT integrals & integral blocks:'
 write(LUPRI,*) 'is_complex=',is_complex
-
 CALL FLSHFO(LUPRI)
 
 nintbl=0; nnzi=0
@@ -661,26 +679,21 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 
   if (is_complex) then
 
-   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
-!   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),     INZ=1,NONZR,1),  & 
-    ( myIDUMMY, myIDUMMY, INZ=1,NONZR,1),                   &
-!   ( cbuf_vect%p_rA2D(1,INZ), cbuf_vect%p_rA2D(2,INZ), INZ=1,NONZR,1) 
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,           &
+    ( myIDUMMY, myIDUMMY2, INZ=1,NONZR,1),                   &
     ( myDUMMY , myDUMMY2, INZ=1,NONZR,1)
   else
 
    READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,           &
-!   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ), INZ=1,NONZR,1),      &
-   (  myIDUMMY, myIDUMMY,  INZ=1,NONZR,1),                  &
-   (           myDUMMY,    INZ=1,NONZR,1) 
+   (  myIDUMMY, myIDUMMY2,  INZ=1,NONZR,1),                  &
+   (            myDUMMY,    INZ=1,NONZR,1) 
 
   endif
 
   MOINT = MOINT + NONZR
 
-  nintbl = nintbl + 1 ! increment number of integral blocks
-
-!   write(LUPRI,*) IKR,JKR,NONZR
-!   write(LUPRI,'(2x,a,i6)') ' actual number of read integrals :',MOINT
+ ! nintbl = nintbl + 1 ! increment number of integral blocks
+ if (IKR.ne.0.and.JKR.ne.0.and.NONZR.ne.0)  nintbl = nintbl + 1 ! increment number of integral blocks
 
   IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -711,7 +724,7 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 
  write(LUPRI,*)  &
  'all integrals from the MDCINT file counted...number=',MOINT
- write(LUPRI,*) ' while NKR**4=',NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(NKR*NKR*NKR*NKR)
+ write(LUPRI,*) ' while (2*NKR)**4=',16*NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(16*NKR*NKR*NKR*NKR)
 
  write(LUPRI,*)  &
  'number of integral blocks:',nintbl
@@ -1382,7 +1395,7 @@ write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
 
 do II=1,NHMO
 
-i_mo =  get_moltra_index(.true.,II)
+i_mo=get_moltra_index(.true.,II)
 
 do IA=1,NPMO
 do IJ=1,NHMO
@@ -1398,6 +1411,8 @@ enddo
 do IA=1,NPMO
  i_mo=get_moltra_index(.false.,IA)
 enddo
+
+!-------------------------------------------------
 
 write(LUPRI,*) '02. VPPPP  <AB||CD>'
 
