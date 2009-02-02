@@ -69,6 +69,7 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -284,6 +285,11 @@ C
                END IF
 C
  10         CONTINUE
+C
+C           write back to file with label MCCINATO
+            CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+            WRITE(LUPRI,'(/A)')
+     &   '  Natural orbitals saved as MCCINATO on KRMCSCF'
 C
             MOISNO = .TRUE.
             CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)

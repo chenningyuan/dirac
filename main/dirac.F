@@ -754,8 +754,9 @@ C
       NATONL      = .FALSE.
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = .FALSE.
+      GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
+      TRA_NATO    = TRANATO_KRCI
       CRDFO_MAT   = CRDFO_MAT_KRCI
       CWRTFO_MAT  = CWRTFO_MAT_KRCI
       CSHMEMO     = CSHMEMO_KRCI

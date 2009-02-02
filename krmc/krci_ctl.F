@@ -110,7 +110,7 @@ C
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
-     &            '.USE PB','-------','-------','-------','-------'/
+     &            '.USE PB','.GENFOC','.TRA NO','-------','-------'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -141,6 +141,8 @@ C
       NATOLCR_KRCI    = .FALSE.
       CHCKPT_KRCI     = .FALSE.
       CUSE_PBLFL_KRCI = .FALSE.
+      GENFOCK_KRCI    = .FALSE.
+      TRANATO_KRCI    = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -556,8 +558,13 @@ C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
+C&&&  GENFOC:  transform positronic/inactive/virtual spinors to 
+C              Fock-type spinors
+               GENFOCK_KRCI = .TRUE.
                GO TO 100
    38          CONTINUE
+C&&&  TRA NO:  transform to natural CI spinors
+               TRANATO_KRCI = .TRUE.
                GO TO 100
    39          CONTINUE
                GO TO 100
@@ -915,6 +922,10 @@ C
       IF( CHCKPT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Write check point file in parallel'//
      &                      ' CI calculation'
+      END IF
+      IF( GENFOCK_KRCI ) THEN
+        WRITE(LUPRI,'(/A)') ' * Transform positronic/inactive/virtual'//
+     &                      ' spinors to Fock-type spinors'
       END IF
 C
   400 RETURN

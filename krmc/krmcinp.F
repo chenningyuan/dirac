@@ -916,6 +916,7 @@ C
       COMPROT     = .FALSE.
       GENFOCK     = .FALSE.
       NATOLCR     = .FALSE.
+      TRA_NATO    = .FALSE.
       CRDFO_MAT   = .FALSE.
       CWRTFO_MAT  = .FALSE.
       COMPFAC     = 0.01D00

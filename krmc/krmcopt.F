@@ -3103,8 +3103,12 @@ C
 C         NOTE: IF MOPT_MXMACRO < 0: CREF is not allocated!
 C               requires appropriate treatment in LUCI_DENS ...
 C
+C         SK - Feb 2009: introduced TRA_NATO for transformation to 
+C                        natural CI/MCSCF orbitals. They can be useful 
+C                        for further analysis, e.g., visualization.
+C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                TRA_NATO,MOISNO,IPRNO,WORK,KFREE,LFREE)
 C
          END DO
 C
