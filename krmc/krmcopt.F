@@ -2744,12 +2744,9 @@ C     *****************************
 C     *** (2) Conf. start guess ***
 C     *****************************
 C
-C
-C     TEST: SK - will be adopted sooner or later ...
-C
       IF( GENFOCK ) THEN
         IF (LBIT(IWRT,2)) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
-        GOTO 2100
+CSK     GOTO 2100
       END IF
 C
 C
@@ -3054,7 +3051,7 @@ C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
-         IF (IANACI.EQ.1) THEN
+ 500     IF (IANACI.EQ.1) THEN
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
          END IF
 C
@@ -3065,7 +3062,6 @@ C
      &         OPT_CIPROGRAM,'"'
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
- 500  CONTINUE
 C
       WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
