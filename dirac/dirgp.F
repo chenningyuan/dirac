@@ -1605,6 +1605,7 @@ C     Read coefficients from unformatted DFCOEF,
 C     take out symmetry and write to unformatted DFACMO 
 C
 C     Written by T.Saue May 26 2003
+C     extended for KRMC modules - S. Knecht Feb 2009
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1613,6 +1614,7 @@ C*****************************************************************************
 #include "maxorb.h"
       PARAMETER(DM1 = -1.0D0)
 C
+#include "dcbpsi.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -1620,7 +1622,7 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE
+      LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
       DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
      &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
@@ -1628,13 +1630,18 @@ C
       DIMENSION IDIM(3)
 #include "memint.h"
 C
-C     First check if file DFCOEF is there
+C     First check if file KRMCSCF or DFCOEF is there
 C
+#ifdef MOD_KRMC
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+#else
+      TOBEK=.FALSE.
+#endif
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'ACMOUT: Unformatted file DFCOEF not found !'
-          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
+      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
+        WRITE(LUPRI,'(A)') 
+     &  'ACMOUT: Unformatted file DFCOEF/KRMCSCF not found !'
+        CALL QUIT('ACMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
       ENDIF
 C
 C     Find correct ordering of nuclei
@@ -1654,13 +1661,30 @@ C
         I1 = I1 + NTBAS(IC)
       ENDDO
 C
-C     Get coefficients from DFCOEF --> stored in CMO1
-C     ===============================================
+C     Get coefficients from KRMCSCF/DFCOEF --> stored in CMO1
+C     =======================================================
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')        
-      CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+#ifdef MOD_KRMC
+      IF(TOBEK.and.(DOKRMC.or.DOKRCI.or.DOKRCC))THEN
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
+        JRDMO = -1
+        CALL RREADMO(CMO1,JRDMO,1,LUKRMC)
+        CLOSE (LUKRMC,STATUS='KEEP')
+C       ... set to zero
+        TOTERG = 0.0D0
+        CALL DZERO(EIG1,NORBT)
+        CALL IZERO(IBEIG1,NORBT)
+        IREADMO = 1
+      ELSE
+#endif /* MOD_KRMC */
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
+        CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
+     &              WORK,KFREE,LFREE)
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IREADMO = 2
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Transform to AO-basis --> stored in CMO2
 C     ========================================
@@ -1705,12 +1729,15 @@ C
 C     Get correct column ordering
 C     ===========================
 C 
-      CALL INDEXX(NORBT,EIG1,IBUF)
-C     Sort eigenvalues and boson irrep info
-      DO J = 1,NORBT
-        EIG2(J) = EIG1(IBUF(J))
-        CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
-      ENDDO
+C     ... only if coefficients are read from DFCOEF
+      IF(IREADMO .eq. 2)THEN
+        CALL INDEXX(NORBT,EIG1,IBUF)
+C       Sort eigenvalues and boson irrep info
+        DO J = 1,NORBT
+          EIG2(J) = EIG1(IBUF(J))
+          CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
+        ENDDO
+      END IF
       CALL IZERO(IBEIG2,NORBT)
 C
 C     Write coefficients etc. to file
@@ -1733,7 +1760,19 @@ C
       CALL WRITT(LUCOEF,NORBT,EIG2)
       CALL WRITI(LUCOEF,NORBT,IBEIG2)
       CLOSE(LUCOEF,STATUS='KEEP')
-      RETURN
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      IF( IREADMO .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* ACMOU1: Coefficients read from unformatted KRMCSCF',
+     &      '          and written to unformatted DFACMO (no symmetry)'
+      ELSE IF( IREADMO .eq. 2)THEN
+        WRITE(LUPRI,'(A)')
+     &      '* ACMOU1: Coefficients read from unformatted DFCOEF ',
+     &      '          and written to unformatted DFACMO (no symmetry)'
+      END IF
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou2 */
