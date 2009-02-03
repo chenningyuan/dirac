@@ -291,6 +291,9 @@ C           write back to file with label MCCINATO
             WRITE(LUPRI,'(/A)')
      &   '  Natural orbitals saved as MCCINATO on KRMCSCF'
 C
+C           copy back MO coefficients
+            CALL DZERO(CMO,NCMOTQ)
+            CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
             MOISNO = .TRUE.
             CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
          ENDIF
