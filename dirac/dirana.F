@@ -258,8 +258,8 @@ C     Memory allocation
       CALL MEMGET('REAL',KPNTOT,N2LAB*NFSYM  ,WORK,KFREE,LFREE)
 C
       CALL MULPO1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
-     &            WORK(KIPGR),WORK(KPOPG),WORK(KIEFF),WORK(KPGTOT),
-     &            WORK(KPNTOT),WORK(KFREE),LFREE,KRMC_FLG)
+     &            WORK(KBEIG),WORK(KIPGR),WORK(KPOPG),WORK(KIEFF),
+     &            WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),LFREE,KRMC_FLG)
 C
 C     Memory deallocation
       CALL MEMREL('MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -284,7 +284,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo1 */
-      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
+      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
      &                  PGTOT,PNTOT,WORK,LWORK,KRMC_FLG)
 C***********************************************************************
 C
@@ -317,8 +317,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 C
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IPGRS(*),
-     &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
+     &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
@@ -445,6 +445,7 @@ C       ====================================
 C
         CALL MEMGET('REAL',KOCC,NVECS,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
+     &              IBEIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
      &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE,KRMC_FLG)
         CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
@@ -476,7 +477,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
-      SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
+      SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
      &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK,
      &           KRMC_FLG)
 C***********************************************************************
@@ -489,6 +490,12 @@ C     PNET - net population(triangularly row-packed)
 C     PGRS - gross population
 C     SMAT - overlap matrix
 C     COEF - coefficients
+C
+C     KRMC_FLG = 2: Orbitals and occupancies read from 
+C                   label NEWNATOB/MP2NATOC on file KRMCOLD
+C     KRMC_FLG = 1: Orbitals read from
+C                   label NEWORB on file KRMCSCF
+C     KRMC_FLG = 0  Orbitals read from DFCOEF
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
@@ -507,10 +514,12 @@ C  DGROUP: NZ
 C  DCBDHF: NOPEN
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcbdhf.h"
 C 
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -519,12 +528,13 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
-      CHARACTER FMT*6,MXFORM*6
+      CHARACTER FMT*6,MXFORM*6,SYMLAB*9
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),
-     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IPGRS(*),
+     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
+      DATA SYMLAB/'         '/
 C
       CALL QENTER('MULPO2')
 #include "memint.h"
@@ -568,9 +578,17 @@ c
      &       '* Electronic eigenvalue no.',JVEC(I),
      &       '     Occupation :',OCC(I)
           ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+             IF(SPINFR) THEN
+               ID = IBEIG(II)
+               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+             ELSEIF(LINEAR) THEN
+               ID = IBEIG(II)
+               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+             ENDIF
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+     &          EIG(II),'       (Occupation : f = ',OCC(I),')',
+     &          SYMLAB
           END IF
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
@@ -579,12 +597,13 @@ c
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+     &          EIG(II),'       (Occupation : f = ',OCC(I),')',
+     &          SYMLAB
           END IF
         END IF
-        CALL PRSYMB(LUPRI,'=',80,0)
+        CALL PRSYMB(LUPRI,'=',90,0)
 C
 C       Calculate SO population matrix
 C       ==============================
