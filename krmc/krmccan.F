@@ -78,7 +78,7 @@ C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-      LOGICAL NATORB, MOISNO
+      LOGICAL NATORB, MOISNO, EX, FILEOPEN
 C
       CALL QENTER('RGETNO')
       KFRSAV = KFREE
@@ -287,9 +287,24 @@ C
  10         CONTINUE
 C
 C           write back to file with label MCCINATO
-            CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+            LUNI = -1
+            INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
+            IF(EX.and.FILEOPEN)THEN
+              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+            ELSE IF( EX.and.(.not. FILEOPEN))THEN
+              LUNI = 99
+              CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
+              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+              CLOSE(LUNI,STATUS='KEEP')
+            ELSE IF(.NOT. EX)THEN
+              LUNI = 99
+              CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
+              CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
+              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+              CLOSE(LUNI,STATUS='KEEP')
+            END IF
             WRITE(LUPRI,'(/A)')
-     &   '  Natural orbitals saved as MCCINATO on KRMCSCF'
+     &   '  Natural orbitals saved with label MCCINATO on KRMCSCF'
 C
 C           copy back MO coefficients
             CALL DZERO(CMO,NCMOTQ)

@@ -963,7 +963,7 @@ C
 #include "dcbkrci.h"
 #include "krciprop.h"
 C
-      LOGICAL EX
+      LOGICAL EX, FILEOPEN
       INTEGER RENAME
 C
 #include "memint.h"
@@ -1087,13 +1087,29 @@ C     Save orbitals on file KRMCSCF if it does not exist.
 C     Other DIRAC modules may expect to find it, e.g., 
 C     MULLPOP.
 C
-      INQUIRE ( FILE = 'KRMCSCF', EXIST = EX )
-      IF( .NOT. EX ) THEN
-        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','KRCI  ')
-        CALL NEWLAB('*KRCI   ',LUKRMC,LUPRI)
-        CALL WRTKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-        CLOSE(LUKRMC,STATUS='KEEP')
+      LUNI = -1
+      INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
+      IF(EX.and.FILEOPEN)THEN
+        CALL WRTKRMC(LUNI,'NEWORB  ',WORK(KCMO),NCMOTQ)
+      ELSE IF( EX.and.(.not. FILEOPEN))THEN
+        LUNI = 99
+        CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','KR CI ')
+        CALL WRTKRMC(LUNI,'NEWORB  ',WORK(KCMO),NCMOTQ)
+        CLOSE(LUNI,STATUS='KEEP')
+      ELSE IF(.NOT. EX)THEN
+        LUNI = 99
+        CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','KR CI ')
+        CALL NEWLAB('*KRCI   ',LUNI,LUPRI)
+        CALL WRTKRMC(LUNI,'NEWORB  ',WORK(KCMO),NCMOTQ)
+        CLOSE(LUNI,STATUS='KEEP')
       END IF
+C     INQUIRE(FILE ='KRMCSCF',EXIST=EX)
+C     IF( .NOT. EX ) THEN
+C       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','KRCI  ')
+C       CALL NEWLAB('*KRCI   ',LUKRMC,LUPRI)
+C       CALL WRTKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
+C       CLOSE(LUKRMC,STATUS='KEEP')
+C     END IF
 C
 C
 C     ***************************************************
