@@ -386,7 +386,6 @@ C  /* Deck nucat1 */
 #include "dummy.h"
 #include "mxcent.h"
 C
-      REAL*8 ARPP(NNBBAST)
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
@@ -430,11 +429,13 @@ C      **                                         **
 C      *********************************************
       IF (ECPCALC) then
          OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
-         READ(59),(ARPP(I),I=1,NNBBAST)
+         CALL MEMGET('REAL',KARPP,NNBBAST,WORK,KFREE,LFREE)
+         CALL READT(59,NNBBAST,WORK(KARPP))
          close(59)
          DO I=0,NNBBAST-1
-            WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
+            WORK(KNUCS+i)=WORK(KNUCS+i)+WORK(KARPP+i)
          ENDDO
+         CALL MEMREL('NUCAT1.ECPCALC',WORK,KWORK,KARPP,KFREE,LFREE)
       ENDIF
 #endif
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
