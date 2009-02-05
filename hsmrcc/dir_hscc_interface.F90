@@ -248,19 +248,15 @@ end subroutine print_HSMRCC_Dirac_info
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7
 function get_moltra_index(is_hole,i) result(moi)
-
 ! returns MOLTRA spinor index of HSMRCC NHMO/NPMO  index i
-
 use io_moltra
 use Parameters
 use GMSMod
-
 #include "implicit.h"
 #include "priunit.h"
 
 integer, intent(in) :: i
 logical, intent(in) :: is_hole
-
 integer :: moi
 
 !  write(LUPRI,*) 'NCMO:',NCMO
@@ -268,19 +264,76 @@ integer :: moi
 !  write(LUPRI,*) 'NEMO:',NEMO
 
 if (is_hole) then ! ... is hole (1-NHMO)
-
-  write(LUPRI,*) 'hole index, i=',i
-  call print_gms_data_line(i)
-
+ ! write(LUPRI,*) 'hole index, i=',i
+ !call print_gms_data_line(i)
+ moi=MOLTRA_indx(i)
 else ! .. is particle (index 1-NPMO)
-
-  write(LUPRI,*) 'particle index, i=',i
-  call print_gms_data_line(i+NCMO)
-
+ ! write(LUPRI,*) 'particle index, i=',i
+ ! call print_gms_data_line(i+NCMO)
+  moi=MOLTRA_indx(i+NCMO)
 endif
 
+!write(LUPRI,*) 'moi=',moi
 
 end function get_moltra_index
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_moltra_integral(i,j,k,l) result(moint)
+!-----------------------------------------------------------------------------
+!
+!   get nonzero MOLTRA integral (IJ|KL) from MOLTRA integral list
+!
+!------------------------------------------------------------------------------
+use io_moltra
+use Parameters
+use GMSMod
+#include "implicit.h"
+#include "priunit.h"
+
+integer, intent(in) :: i,j,k,l ! KU indexes
+real*8 :: moint
+
+moint=0.0d0
+
+!
+! ... take into account symmetry properties of (IJ|KL) 
+!
+!  (IJ|KL) = (JI|LK)=(KL|IJ)=(LK|JI) for Coulomb integrals
+!
+
+! (IJ|KL)
+ if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_ij%p_iA3D(i,j,2).ne.0  & 
+     .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then
+
+    int_pos=(pos_ij%p_iA3D(i,j,1)+pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) - 1)
+    moint=cbuf%p_rA2D(1,int_pos)
+
+! (JI|LK)
+ else if ( pos_ij%p_iA3D(j,i,1).ne.0 .and. pos_ij%p_iA3D(j,i,2).ne.0  &
+       .and. pos_kl%p_iA3D(l,k,pos_ij%p_iA3D(j,i,2)).ne.0 ) then
+
+    int_pos=(pos_ij%p_iA3D(j,i,1)+pos_kl%p_iA3D(l,k,pos_ij%p_iA3D(j,i,2)) - 1)
+    moint=cbuf%p_rA2D(1,int_pos)
+
+! (KL|IJ)
+ else if ( pos_ij%p_iA3D(k,l,1).ne.0 .and. pos_ij%p_iA3D(k,l,2).ne.0  &
+       .and. pos_kl%p_iA3D(i,j,pos_ij%p_iA3D(k,l,2)).ne.0 ) then
+
+    int_pos=(pos_ij%p_iA3D(k,l,1)+pos_kl%p_iA3D(i,j,pos_ij%p_iA3D(k,l,2)) - 1)
+    moint=cbuf%p_rA2D(1,int_pos)
+
+! (LK|JI)
+ else if ( pos_ij%p_iA3D(l,k,1).ne.0 .and. pos_ij%p_iA3D(l,k,2).ne.0  &
+       .and. pos_kl%p_iA3D(j,i,pos_ij%p_iA3D(j,i,2)).ne.0 ) then
+
+    int_pos=(pos_ij%p_iA3D(l,k,1)+pos_kl%p_iA3D(j,i,pos_ij%p_iA3D(l,k,2)) - 1)
+    moint=cbuf%p_rA2D(1,int_pos)
+   
+ endif
+
+end function get_moltra_integral
+
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  subroutine make_dirac_syminf

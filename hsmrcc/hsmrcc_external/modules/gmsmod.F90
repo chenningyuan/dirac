@@ -478,6 +478,7 @@ subroutine  print_gms_data_line(i)
 integer, intent(in) :: i
 
   if (.not.allocated(MOLTRA_indx)) then
+  ! ... print without MOLTRA  spinor index
 
    write(UOUT,1298)   i,  & 
            SpinOfOrb(i),  & 
@@ -488,6 +489,7 @@ integer, intent(in) :: i
             OrbSpace(i),  &
            OrbEnergy(i)
   else
+  ! ... print with MOLTRA spinor index
 
    write(UOUT,1299)   i,  & 
            SpinOfOrb(i),  & 

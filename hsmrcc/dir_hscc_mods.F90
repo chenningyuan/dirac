@@ -516,19 +516,19 @@ endif
 
 if (print_int) then
 
- write(LUPRI,'(/,2x,a,2i4)') 'read < I J |... indexes',KR(IKR),KR(JKR)
+ write(LUPRI,'(/,2x,a,2i4)') 'read ( I J |... indexes',KR(IKR),KR(JKR)
 
  do INZ=1, NONZR
    icount = icount + 1
    if (.NOT.is_complex) then
    !  ... unique, KU indexes
-      write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. <',KR(IKR),' ',KR(JKR),'|',  & 
-           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),'>=', &
+      write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
+           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
            cbuf%p_rA2D(1,INZ+icbuf-1)
       CALL FLSHFO(LUPRI)
    else
-      write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,2f18.12)') icount,'. <',KR(IKR),' ',KR(JKR),'|',  & 
-           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),'>=', &
+      write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,2f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
+           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
            cbuf%p_rA2D(1,INZ+icbuf-1), cbuf%p_rA2D(2,INZ+icbuf-1)
       CALL FLSHFO(LUPRI)
    endif
@@ -607,8 +607,8 @@ endif
 
       Iijkl=cbuf%p_rA2D(1,int_pos)
 
-      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i7)') '<IJ|KL>, KU indexes, <',i,' ',j,'|',  & 
-                    k,' ',l,'>=',Iijkl,' array pos:',int_pos
+      write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,i7)') '(IJ|KL), KU indexes, (',i,' ',j,'|',  & 
+                    k,' ',l,')=',Iijkl,' array pos:',int_pos
 
     endif
 
@@ -724,6 +724,7 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 
  write(LUPRI,*)  &
  'all integrals from the MDCINT file counted...number=',MOINT
+
  write(LUPRI,*) ' while (2*NKR)**4=',16*NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(16*NKR*NKR*NKR*NKR)
 
  write(LUPRI,*)  &
@@ -1378,8 +1379,9 @@ use GMSMod
 #include "implicit.h"
 #include "priunit.h"
 
-!type(Array2Dim), intent(in) :: cbuf
-!type(Array3Dim), intent(in) :: pos_ij, pos_kl
+!external :: get_moltra_index
+integer :: get_moltra_index
+real*8 :: get_moltra_integral
 
 !write(LUPRI,*) 'NHMO=',NHMO
 !write(LUPRI,*) 'NPMO=',NPMO
@@ -1394,23 +1396,38 @@ write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
 !write(LUPRI,*) 'NPMO=',NPMO
 
 do II=1,NHMO
-
-i_mo=get_moltra_index(.true.,II)
-
 do IA=1,NPMO
 do IJ=1,NHMO
 do IB=1,NPMO
-  ! write(LUPRI,'(a,i3,a,i3,a,i3,a,i3)') '<',II,' ',IA,'||',IJ,' ',IB,'>'
+
+ ii_mo=get_moltra_index(.true.,II)
+ ia_mo=get_moltra_index(.false.,IA)
+ ij_mo=get_moltra_index(.true.,IJ)
+ ib_mo=get_moltra_index(.false.,IB)
+
+! write(LUPRI,'(a,i3,a,i3,a,i3,a,i3,a)') 'moltra KU indexes: <',ii_mo,' ',ia_mo,'||',ij_mo,' ',ib_mo,'>'
+
+ !SInt_ijab=get_moltra_integral(ii_mo,ij_mo,ia_mo,ib_mo)
+  SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)
+ !SInt_ijba=get_moltra_integral(ii_mo,ij_mo,ib_mo,ia_mo)
+  SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
+
+ ASInt_ijab=SInt_ijab-SInt_ijba
+
+ if (DABs(SInt_ijab).gt.1.0d-14 .or. DABs(SInt_ijba).gt.1.0d-14 ) then
+ !if (DABs(ASInt_ijab).gt.1.0d-14) then
+
+   write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,3f18.12,a,4i3)') & 
+         '<IJ||AB>, <',II,' ',IJ,'||',  & 
+       IA,' ',IB,'>=',ASInt_ijab,SInt_ijab,SInt_ijba,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
+
+ endif
+
+enddo
 enddo
 enddo
 enddo
 
-enddo
-
-
-do IA=1,NPMO
- i_mo=get_moltra_index(.false.,IA)
-enddo
 
 !-------------------------------------------------
 
@@ -1433,3 +1450,5 @@ write(LUPRI,*) '09. VPHPP  <AI||JB>'
 write(LUPRI,*) '10. V2HHP  <IJ||KA>'
 
 end subroutine make_VIND_VINT_files
+
+

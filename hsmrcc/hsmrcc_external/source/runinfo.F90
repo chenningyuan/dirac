@@ -2,7 +2,7 @@
 subroutine PrintRunInfo
 !----------------------------------------------------------------
 !
-!                  print basic run info ...
+!     print basic info on the run ...
 !
 !     Called from source/hsmrcc.F90/HSMRCC routine
 !
@@ -212,6 +212,8 @@ endif
 
    write(UOUT,9071)
 9071 format('Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out-Out',/)
+
+   if (get_iprint() >= 5) call control_print_VIND_VINT
 
    return
 

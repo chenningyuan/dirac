@@ -107,8 +107,6 @@ subroutine DrvDirect(vac)
    implicit none
    integer, intent(in) :: vac
 
-   call QEnter('DrvDirect')
-
    if (.not.Init) then
       write(UOUT,*) 'Direct Diagram module not Initialized'
       call flush(UOUT)
@@ -139,7 +137,6 @@ subroutine DrvDirect(vac)
      write(UOUT,'(2x,a,i3)') '... DrvDirect: end for vac=',vac
    endif
 
-   call QExit('DrvDirect')
    return
 
 end subroutine DrvDirect

@@ -27,6 +27,7 @@ call FLSHFO(LUPRI)
 ! ... initialization of basic variables to make HSCC running in DIRAC mode
 call Init_HSMRCC_BasicVars
 
+! ... call subroutine of the program ...
 call HSMRCC
 
 end subroutine dirprg_hscc
@@ -53,7 +54,6 @@ OPTION(GMSCHK)=.false.
 
 OPTION(DIRAC_MODE)=.false.
 OPTION(GENINT)  = .FALSE.
-
 
 OPTION(HSCC_DIRAC_MODE)=.true. ! tell that this is HSCC from DIRAC
 
