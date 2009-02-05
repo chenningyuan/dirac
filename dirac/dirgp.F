@@ -1737,6 +1737,9 @@ C       Sort eigenvalues and boson irrep info
           EIG2(J) = EIG1(IBUF(J))
           CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
         ENDDO
+      ELSE
+        NDIM = NTBAS(0)*NORBT*4
+        CALL DCOPY(NDIM,CMO1,1,CMO2,1)
       END IF
       CALL IZERO(IBEIG2,NORBT)
 C
