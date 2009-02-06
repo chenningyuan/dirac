@@ -1675,6 +1675,21 @@ C       ... set to zero
         CALL DZERO(EIG1,NORBT)
         CALL IZERO(IBEIG1,NORBT)
         IREADMO = 1
+      ELSE IF(TOBEK.and.(.not.DOKRMC.or..not.DOKRCI.or..not.DOKRCC))THEN
+C
+C       read CI/MCSCF natural orbitals and occupancies
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
+        JRDMO = -1
+        CALL RREADMO(CMO1,JRDMO,4,LUKRMC)
+        CALL REAKRMC(LUKRMC,'MCNATOCC',EIG1,NORBT)
+        CLOSE (LUKRMC,STATUS='KEEP')
+C
+C       temporary fix for use of occupancies in Mulliken population
+C       analysis - set energy to 137.0D0 - SK Feb 2009
+        TOTERG = 137.0D0
+C       ... set to zero
+        CALL IZERO(IBEIG1,NORBT)
+        IREADMO = 3
       ELSE
 #endif /* MOD_KRMC */
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
@@ -1765,7 +1780,7 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF( IREADMO .eq. 1 )THEN
+      IF( IREADMO .eq. 1 .or. IREADMO .eq. 3 )THEN
         WRITE(LUPRI,'(A)')
      &      '* ACMOU1: Coefficients read from unformatted KRMCSCF',
      &      '          and written to unformatted DFACMO (no symmetry)'
