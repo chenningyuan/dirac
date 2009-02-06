@@ -2062,11 +2062,12 @@ subroutine control_print_VIND_VINT
 !  ... make control print of all integrals when file is open and read
 !
  implicit none
- integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block
- integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
  integer,          dimension(:), pointer :: VIND
  double precision, dimension(:), pointer :: VINT
  double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
 
 call header('control printout of all integrals and their indexes',-1)
 
@@ -2094,17 +2095,20 @@ ENDDO
 
  829 format(4x,'V2H2P, 1324, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
+if (.not.skip_blocks) then
 
 write(UOUT,'(1x,a,i3)') '****  02. VPPPP  <AB||CD>  ****, # blocks:',NumBlock(VPPPP)
 nullify(VINT)
 nullify(VIND)
 En = 0
 do  Block = 1, NumBlock(VPPPP)
-call ReadFile(VPPPP,Block,St,En)
+call ReadFile(VPPPP,Block,StBl,EnBl)
 DO A = 1, NPMO
 DO B = 1, NPMO
    !AB = RecNumMM(A,B) ! does not work !
    AB = RecNum2P(A,B) ! this calculates the record number of PP index pair
+ En = 0
+ do iblock=StBl,EnBl
    St = En + 1
    En = En + NZIntRec(AB)
    IF (En < St) cycle
@@ -2114,21 +2118,26 @@ DO B = 1, NPMO
       CD = VIND(ICD)
       CALL ResRecMM(CD,C,D) ! obtain C,D
       VAB_CD = VINT(ICD)
-      WRITE(UOUT,830) A,B,C,D,VAB_CD
+      WRITE(UOUT,830) A,B,C,D,VAB_CD,Block
    ENDDO
+ enddo
 ENDDO
 ENDDO
 enddo
- 830 format(4x,'VPPPP, 1234, <AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 830 format(4x,'VPPPP, 1234, <AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
+            f18.12,' block:',i3)
+endif
 
 write(UOUT,'(1x,a)') '****  03. VHHHH <IJ||KL>  ****'
-nullify(VINT)
-nullify(VIND)
+nullify(VINT); nullify(VIND)
 call ReadFile(VHHHH)
 En = 0
-DO I = 1, NHMO
-DO J = 1, NHMO
+!DO I = 1, NHMO
+DO I = 2, NHMO
+!DO J = 1, NHMO
+DO J = 1, I-1
    IJ = RecNumMM(I,J) ! this calculates the record number of PP index pair
+   !IJ = RecNum2H(I,J) ! 
    St = En + 1
    En = En + NZIntRec(IJ)
    IF (En < St) cycle
@@ -2137,12 +2146,13 @@ DO J = 1, NHMO
    DO IKL = 1, NZIntRec(IJ)
       KL = VIND(IKL)
       CALL ResRecMM(KL,K,L) ! obtain K,L
+      !CALL ResRec2H(KL,K,L) ! obtain K,L
       VIJ_KL = VINT(IKL)
       WRITE(UOUT,831) I,J,K,L,VIJ_KL
    ENDDO
 ENDDO
 ENDDO
- 831 format(4x,'HSMRCC indexed, <IJ||KL>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 831 format(4x,'03. VHHHH, <IJ||KL>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
 write(UOUT,'(1x,a)') '****  05. V2HPP <IJ||AB> ****'
 nullify(VINT)
@@ -2151,7 +2161,8 @@ call ReadFile(V2HPP)
 En = 0
 DO I = 1, NHMO
 DO J = 1, NHMO
-   IJ = RecNumMM(I,J) ! 
+   !IJ = RecNumMM(I,J) ! 
+   IJ = RecNum2H(I,J) ! 
    St = En + 1
    En = En + NZIntRec(IJ)
    IF (En < St) cycle
@@ -2160,6 +2171,7 @@ DO J = 1, NHMO
    DO IAB = 1, NZIntRec(IJ)
       AB = VIND(IAB)
       CALL ResRecMM(AB,A,B) ! obtain A,B
+      !CALL ResRec2P(AB,A,B) ! obtain A,B
       VIJ_AB = VINT(IAB)
       WRITE(UOUT,832) I,J,A,B,VIJ_AB
    ENDDO
@@ -2190,15 +2202,17 @@ ENDDO
 ENDDO
  833 format(4x,'HSMRCC indexed, <AB||IJ>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
-write(UOUT,'(1x,a)') '****  07. VPHHP <AJ||IB> ****'
-
+!!! problem here !!!
+write(UOUT,'(1x,a)') '****  07. VPHHP, 3124 <AJ||IB> ****'
 nullify(VINT)
 nullify(VIND)
 call ReadFile(VPHHP)
 En = 0
 DO I = 1, NHMO
 DO A = 1, NPMO
-   IA = RecNumHP(I,A) ! get A,I
+   !AI = RecNumPH(A,I) ! 
+   IA = RecNumHP(I,A) ! 
+   !AI = RecNumHP(A,I) ! 
    St = En + 1
    En = En + NZIntRec(IA)
    IF (En < St) cycle
@@ -2206,13 +2220,15 @@ DO A = 1, NPMO
    VIND => IndBuf(St:En)
    DO IJB = 1, NZIntRec(IA)
       JB = VIND(IJB)
-      CALL ResRecMM(IB,J,B) ! obtain J,B
+      CALL ResRecHP(IB,J,B) ! obtain J,B
       VAJ_IB = VINT(IJB)
       WRITE(UOUT,834) A,J,I,B,VAJ_IB
    ENDDO
 ENDDO
 ENDDO
- 834 format(4x,'HSMRCC indexed, <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 834 format(4x,'07. VPHHP, 1324, <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+
+if (.not.skip_blocks) then
 
 write(UOUT,'(1x,a)') '****  08. VPH2P <AI||BC> ****'
 nullify(VINT)
@@ -2222,7 +2238,7 @@ do  Block = 1, NumBlock(VPH2P)
 call ReadFile(VPH2P,block,St,En)
 DO A = 1, NPMO
 DO B = 1, NPMO
-   AB = RecNumHP(A,B) ! 
+   AB = RecNum2P(A,B) ! 
    St = En + 1
    En = En + NZIntRec(AB)
    IF (En < St) cycle
@@ -2230,7 +2246,7 @@ DO B = 1, NPMO
    VIND => IndBuf(St:En)
    DO IIC = 1, NZIntRec(AB)
       IC = VIND(IIC)
-      CALL ResRecMM(IC,I,C) ! obtain J,B
+      CALL ResRecHP(IC,I,C) ! obtain J,B
       VAI_BC = VINT(IIC)
       WRITE(UOUT,835) A,I,B,C,VAI_BC
    ENDDO
@@ -2239,7 +2255,9 @@ ENDDO
 enddo
  835 format(4x,'HSMRCC indexed, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
+endif
 
+if (.not.skip_blocks) then
 write(UOUT,'(1x,a)') '****  09. VPHPP <AI||BC> ****'
 nullify(VINT)
 nullify(VIND)
@@ -2264,53 +2282,55 @@ ENDDO
 ENDDO
 enddo
  836 format(4x,'HSMRCC indexed, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+endif
 
-write(UOUT,'(1x,a)') '****  10. V2HHP <IJ||KA> ****'
+write(UOUT,'(1x,a)') '****  10. V2HHP, 1324, <IJ||KA> ****'
 nullify(VINT)
 nullify(VIND)
 call ReadFile(V2HHP)
 En = 0
-DO A = 1, NPMO
 DO I = 1, NHMO
-   AI = RecNumPH(A,I) ! get A,I
+DO K = 1, NHMO
+  ! AI = RecNumPH(A,I) ! get A,I
+   IK = RecNum2H(I,K) ! get I,K
    St = En + 1
-   En = En + NZIntRec(AI)
+   En = En + NZIntRec(IK)
    IF (En < St) cycle
    VINT => IntBuf(St:En)
    VIND => IndBuf(St:En)
-   DO IJB = 1, NZIntRec(AI)
-      JB = VIND(IJB)
-      CALL ResRecMM(IB,J,B) ! obtain J,B
-      VAJ_IB = VINT(IJB)
-      WRITE(UOUT,837) A,J,I,B,VAJ_IB
+   DO IJA = 1, NZIntRec(IK)
+      JA = VIND(IJA)
+      CALL ResRecHP(JA,J,A) ! obtain J,A
+      VIJ_KA = VINT(IJA)
+      WRITE(UOUT,837) I,J,K,A,VIJ_KA
    ENDDO
 ENDDO
 ENDDO
- 837 format(4x,'V2HHP <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 837 format(4x,'10.V2HHP, 1324, <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
-write(UOUT,'(1x,a)') '****  11. VHHHP <IJ||KA> ****'
-nullify(VINT)
-nullify(VIND)
+write(UOUT,'(1x,a)') '****  11. VHHHP, 1234, <IJ||KA> ****'
+nullify(VINT); nullify(VIND)
 call ReadFile(VHHHP)
 En = 0
-DO I = 1, NHMO
-DO J = 1, NHMO
-   IJ = RecNum2H(I,J) ! get I,J
+DO I = 2, NHMO
+DO J = 1, I-1
+  ! IJ = RecNum2H(I,J) ! get I,J
+  IJ = RecNumMM(I,J) ! get I,J
    St = En + 1
-   En = En + NZIntRec(AI)
+   En = En + NZIntRec(IJ)
    IF (En < St) cycle
    VINT => IntBuf(St:En)
    VIND => IndBuf(St:En)
    DO IKA = 1, NZIntRec(IJ)
       KA = VIND(IKA)
       CALL ResRecHP(KA,K,A) ! get K,A
+      !CALL ResRecPH(KA,K,A) ! get K,A
       VIJ_KA = VINT(IKA)
       WRITE(UOUT,838) I,J,K,A,VIJ_KA
    ENDDO
 ENDDO
 ENDDO
- 838 format(4x,'VHHHP <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
-
+ 838 format(4x,'11. VHHHP,1234, <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
 end subroutine control_print_VIND_VINT
 

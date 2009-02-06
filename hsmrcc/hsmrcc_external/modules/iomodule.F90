@@ -836,8 +836,9 @@ end subroutine EndIOMod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine ReadFileFull(FileName)
-!-------------------------------------------------------------------------------
+!----------------------------------------------------------------------------------
 !
+! read big chunk of seleced integrals (accroding to FileName) together with indexes
 !
 !-------------------------------------------------------------------------------
 
@@ -889,9 +890,11 @@ end subroutine ReadFileFull
 subroutine ReadFileBlock(FileName,Block,St,En)
 !---------------------------------------------------------------------------------
 !
-!  read block of integrals & indexes from files UVINT, UVIND  
+! read block of integrals & indexes from files UVINT, UVIND  
 !
 ! reads VPPPP, VPH2P, VPHPP types of integrals (large - thus block reading necessary)
+!
+! returns St, En
 !
 !----------------------------------------------------------------------------------
    implicit none
@@ -951,7 +954,7 @@ subroutine ReadFileBlock(FileName,Block,St,En)
          St = BlkSt_VPHPP(Block)
          En = BlkEn_VPHPP(Block)
       case default
-         write(UOUT,*) 'ReadFileBlock: Unable to Perform Block IO, wrong case'
+         write(UOUT,*) 'ReadFileBlock: Unable to Perform Block IO, wrong case=',FileName
          call flushout
          call quit('ReadFileBlock: Unable to Perform Block IO, wrong case !')
    end select
