@@ -445,15 +445,15 @@ C
 C       read CI/MCSCF natural orbitals and occupancies
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
         JRDMO = -1
-        CALL RREADMO(CMO1,JRDMO,4,LUKRMC)
-        CALL REAKRMC(LUKRMC,'MCNATOCC',EIG1,NORBT)
+        CALL RREADMO(CMO,JRDMO,4,LUKRMC)
+        CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
         CLOSE (LUKRMC,STATUS='KEEP')
 C
 C       temporary fix for use of occupancies in Mulliken population
 C       analysis - set energy to 137.0D0 - SK Feb 2009
         TOTERG = 137.0D0
 C       ... set to zero
-        CALL IZERO(IBEIG1,NORBT)
+        CALL IZERO(IBEIG,NORBT)
         IREADMO = 3
       ELSE
 #endif /* MOD_KRMC */
