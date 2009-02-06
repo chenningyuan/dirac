@@ -195,8 +195,14 @@ C
          END IF
          ICI_RT = IDENSLR_STATE
 C        
-C        save occupancies temporary 
-         CALL DCOPY(NORBT,OCCNO,1,WORK(KOCCNO2),1)
+C        save occupancies for later use 
+         DO I = 1, NFSYM
+           IOFF1 = IOCC(I) + 1
+           IOFF2 = IORB(I) + 1
+           IF(NOCC(I).gt.0)THEN
+             CALL DCOPY(NOCC(I),OCCNO(IOFF1),1,WORK(KOCCNO2+IOFF2-1),1)
+           END IF
+         END DO
          WRITE(LUPRI,'(//A,I3,/A)')
      &        '   Natural orbital occupation numbers for state:',ICI_RT,
      &        '   ------------------------------------------------'

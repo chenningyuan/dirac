@@ -604,8 +604,9 @@ C       ... MP2-NOs
            OCC2(I) = OCC(NPSH(IFRP)+JVEC(I))
         ELSE IF(KRMC_FLG.EQ.3) THEN
 C       ... CI-NOs
-           OCC2(I) = OCC(NPSH(IFRP)+JVEC(I))
+           OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))
         END IF
+CSKdebug CALL WRTMATMN(OCC,1,NORBT,1,NORBT,LUPRI)
 c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
