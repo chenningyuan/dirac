@@ -2374,6 +2374,7 @@ C
 C        IOPT = 1: read from label NEWORB
 C        IOPT = 2: read from label OLDORB
 C        IOPT = 3: read from label NEWNATOB
+C        IOPT = 4: read from label MCCINATO
 C
 C     Output:
 C        CMO     - MO coefficients
@@ -2406,7 +2407,7 @@ C
       ELSE
          NOSTOP = .FALSE.
       END IF
-      IF (IOPT .LT. 1 .OR. IOPT .GT. 3) THEN
+      IF (IOPT .LT. 1 .OR. IOPT .GT. 4) THEN
           WRITE(LUPRI,'(/A,I10)')
      &       ' rREADMO: ERROR: Unknown option ',IOPT
           CALL QUIT('rREADMO: ERROR: Unknown option.')
@@ -2422,8 +2423,10 @@ C
          LABEL = 'NEWORB  '
       ELSE IF( IOPT .EQ. 2 )THEN
          LABEL = 'OLDORB  '
-      ELSE
+      ELSE IF( IOPT .EQ. 3 )THEN
          LABEL = 'NEWNATOB'
+      ELSE IF( IOPT .EQ. 4 )THEN
+         LABEL = 'MCCINATO'
       END IF
 C
       CALL MOLLAB(LABEL,LUNIT,IERR)

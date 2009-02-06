@@ -142,6 +142,8 @@ C  LABELS: NLAB
 #include "dcbmp2no.h"
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
+      LOGICAL FNDLAB,CINATORB
+      CHARACTER FILELABEL*8
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('MULPOP')
@@ -197,9 +199,12 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+C...  may be oversized when not all orbitals are investigated
+      CALL MEMGET('REAL',KOCC ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
       CALL DZERO(WORK(KCMO),N2BBASXQ)
+      CALL DZERO(WORK(KOCC),NORBT)
 C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
@@ -213,21 +218,38 @@ C
 C          ... initialize
            CALL DZERO(WORK(KEIG_NAT),NESHT)
 C          ... read from file
-           CALL READMP2NAT(WORK(KCMO),WORK(KEIG),WORK(KEIG_NAT))
+           CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
      &           ' label NEWNATOB/MP2NATOC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
+           CINATORB = .FALSE.
            CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
-           KRMC_FLG = 1
+           REWIND(LUKRMC)
+           FILELABEL = 'MCCINATO'
+           CINATORB = FNDLAB(FILELABEL,LUKRMC)
            JRDMO = -1
-           CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-           IF (JRDMO .EQ. 0) THEN
-              WRITE(LUPRI,'(/A)')
-     &             ' (MULPOP)  Orbitals read from' //
-     &             ' label NEWORB on file KRMCSCF'
+           IF(CINATORB)THEN
+             KRMC_FLG = 3
+C            coefficients
+             CALL RREADMO(WORK(KCMO),JRDMO,4,LUKRMC)
+C            occupancies
+             CALL REAKRMC(LUKRMC,'MCNATOCC',WORK(KOCC),NORBT)
+             IF (JRDMO .EQ. 0) THEN
+                WRITE(LUPRI,'(/A)')
+     &               ' (MULPOP)  Orbitals read from' //
+     &               ' label MCCINATO on file KRMCSCF'
+             END IF
+           ELSE
+             KRMC_FLG = 1
+             CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+             IF (JRDMO .EQ. 0) THEN
+                WRITE(LUPRI,'(/A)')
+     &               ' (MULPOP)  Orbitals read from' //
+     &               ' label NEWORB on file KRMCSCF'
+             END IF
            END IF
          END IF
          CLOSE (LUKRMC)
@@ -238,13 +260,26 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
+C
+C        check for energy 137.0D0 - if found we are doing a Mulliken
+C        population analysis of MCSCF/CI natural orbitals in C1
+C        symmetry - SK Feb 2009 - this is only a temporary fix. In the
+C        long run, occupancies should also be stored on DFCOEF. FIXME!
+         TEST_ENERGY = 137.0D0
+         IF(TOTERG .eq. TEST_ENERGY )THEN
+           CALL DCOPY(NORBT,WORK(KEIG),1,WORK(KOCC),1)
+           KRMC_FLG = 3
+         END IF
 #ifdef MOD_KRMC
       END IF
 #endif /* MOD_KRMC */
 C
 C     Get labels for population analysis
 C
+      IPRPOP_SAVE = IPRPOP
+      IPRPOP = 2
       CALL GETPLB(IPRPOP)
+      IPRPOP = IPRPOP_SAVE
 C
 C     Memory allocation
       NNLAB = (NPOPLAB*(NPOPLAB+1))/2
@@ -258,8 +293,9 @@ C     Memory allocation
       CALL MEMGET('REAL',KPNTOT,N2LAB*NFSYM  ,WORK,KFREE,LFREE)
 C
       CALL MULPO1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
-     &            WORK(KBEIG),WORK(KIPGR),WORK(KPOPG),WORK(KIEFF),
-     &            WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),LFREE,KRMC_FLG)
+     &            WORK(KOCC),WORK(KBEIG),WORK(KIPGR),WORK(KPOPG),
+     &            WORK(KIEFF),WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),
+     &            LFREE,KRMC_FLG)
 C
 C     Memory deallocation
       CALL MEMREL('MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -284,7 +320,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo1 */
-      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
+      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,OCC,IBEIG,IPGRS,POPG,IEFF,
      &                  PGTOT,PNTOT,WORK,LWORK,KRMC_FLG)
 C***********************************************************************
 C
@@ -318,7 +354,7 @@ C
 #include "dgroup.h"
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
-     &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),
+     &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),OCC(*),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
@@ -443,12 +479,13 @@ C
 C       Perform Mulliken population analysis
 C       ====================================
 C
-        CALL MEMGET('REAL',KOCC,NVECS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KOCC2,NVECS,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IBEIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
-     &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE,KRMC_FLG)
-        CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
+     &              WORK(KJVEC),OCC,WORK(KOCC2),WORK(KFREE),LFREE,
+     &              KRMC_FLG)
+        CALL MEMREL('MULPO1.occ',WORK,KOCC2,KOCC2,KFREE,LFREE)
  20     CONTINUE
         CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
@@ -478,8 +515,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
       SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
-     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK,
-     &           KRMC_FLG)
+     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,OCC2,WORK,
+     &           LWORK,KRMC_FLG)
 C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -529,7 +566,7 @@ C
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
       CHARACTER FMT*6,MXFORM*6,SYMLAB*9
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
      &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
@@ -542,7 +579,7 @@ C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVECS + NEVECS
 
-      CALL DZERO(OCC,NVEC)
+      CALL DZERO(OCC2,NVEC)
       DO I = 1,NVEC
 c
 c       Find fractional occupation for each requested orbital string
@@ -553,30 +590,38 @@ c
 c     ... open shell
           NVORB =  NVORB + NACSH(IFRP,IOPEN)
           IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
-            OCC(I) = DF(IOPEN)
+            OCC2(I) = DF(IOPEN)
             GO TO 100
           ENDIF
         END DO
         IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
 c     ... closed shell
-          OCC(I) = DF(0)
+          OCC2(I) = DF(0)
         ENDIF
 100     CONTINUE
         ELSE IF(KRMC_FLG.EQ.2) THEN
 C       ... MP2-NOs
-           OCC(I) = EIG(NPSH(IFRP)+JVEC(I))
+           OCC2(I) = OCC(NPSH(IFRP)+JVEC(I))
+        ELSE IF(KRMC_FLG.EQ.3) THEN
+C       ... CI-NOs
+           OCC2(I) = OCC(NPSH(IFRP)+JVEC(I))
         END IF
 c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           IF (KRMC_FLG.EQ.1) THEN
-             WRITE(LUPRI,'(/A,I3)')
-     &       '* Electronic eigenvalue no.',JVEC(I)
+             WRITE(LUPRI,'(/A,I3,A)')
+     &       '* Electronic eigenvalue no.',JVEC(I),': '
           ELSE IF (KRMC_FLG.EQ.2) THEN
-             WRITE(LUPRI,'(/A,I3,A,F12.8)')
-     &       '* Electronic eigenvalue no.',JVEC(I),
-     &       '     Occupation :',OCC(I)
+             WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+     &       '* Electronic eigenvalue no.',JVEC(I),': ',
+     &       '     Occupation :',OCC2(I)
+          ELSE IF(KRMC_FLG.EQ.3) THEN
+C           ... CI-NOs
+             WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+     &       '* Electronic eigenvalue no.',JVEC(I),': ',
+     &       '      Occupation :',OCC2(I)
           ELSE
              IF(SPINFR) THEN
                ID = IBEIG(II)
@@ -587,7 +632,7 @@ c
              ENDIF
              WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
           END IF
         ELSE
@@ -599,7 +644,7 @@ c
           ELSE
              WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
           END IF
         END IF
@@ -621,10 +666,13 @@ C       Multiply fractional occupation on population.
 C       =============================================
 C
         IF(KRMC_FLG.EQ.0) THEN
-           FACTOR  = D2*OCC(I)
-C       ... MP2-NOs
+           FACTOR  = D2*OCC2(I)
         ELSE IF(KRMC_FLG.EQ.2) THEN
-           FACTOR = OCC(I)
+C       ... MP2-NOs
+           FACTOR = OCC2(I)
+        ELSE IF(KRMC_FLG.EQ.3) THEN
+C       ... CI-NOs
+           FACTOR = OCC2(I)
         ELSE
            GO TO 1001
         END IF
@@ -753,6 +801,7 @@ C
 C     Generate population matrix for basis
 C     ====================================
 C
+C     IPRINT = 4
       SUMA = D0
       SUMB = D0
       IOFF = IBAS(IFRP)
@@ -844,6 +893,7 @@ C
      &                1,NGLAB,NGLAB,NGLAB,1,LUPRI)
         ENDIF
       ENDIF
+C     IPRINT = 0
 C
       RETURN
 C

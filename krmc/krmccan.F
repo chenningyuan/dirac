@@ -149,6 +149,8 @@ C
       JOCC = 0
       JACT = 0
       JACT_TOT = 0
+      CALL MEMGET('REAL',KOCCNO2,NORBT  ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KOCCNO2),NORBT)
 *
 *     FIXME: right order of active orbitals if NZ == 2 and 
 *            NO occ. numbers are calculated with LUCIAREL
@@ -192,6 +194,9 @@ C
      &' **************************************************************'
          END IF
          ICI_RT = IDENSLR_STATE
+C        
+C        save occupancies temporary 
+         CALL DCOPY(NORBT,OCCNO,1,WORK(KOCCNO2),1)
          WRITE(LUPRI,'(//A,I3,/A)')
      &        '   Natural orbital occupation numbers for state:',ICI_RT,
      &        '   ------------------------------------------------'
@@ -210,7 +215,6 @@ C
             END IF
          END DO
       END IF
-      IPRINT = 0
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Symmetry',I3,//,(5F14.9))
@@ -227,8 +231,6 @@ C
      &           NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
-C
-      CALL MEMREL('RGETNO.diag',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C     Transform to natural orbitals
 C     -----------------------------
@@ -291,16 +293,19 @@ C           write back to file with label MCCINATO
             INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
             IF(EX.and.FILEOPEN)THEN
               CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
             ELSE IF( EX.and.(.not. FILEOPEN))THEN
               LUNI = 99
               CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
               CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
               CLOSE(LUNI,STATUS='KEEP')
             ELSE IF(.NOT. EX)THEN
               LUNI = 99
               CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
               CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
               CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
               CLOSE(LUNI,STATUS='KEEP')
             END IF
             WRITE(LUPRI,'(/A)')
@@ -310,9 +315,9 @@ C           copy back MO coefficients
             CALL DZERO(CMO,NCMOTQ)
             CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
             MOISNO = .TRUE.
-            CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
          ENDIF
       ENDIF
+      CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETNO')
