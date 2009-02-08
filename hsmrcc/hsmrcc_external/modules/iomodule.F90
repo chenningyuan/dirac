@@ -213,7 +213,7 @@ end subroutine InitIOMod
 
 subroutine print_int_file_attributes
 
-  write(UOUT,'(/,1x,a,/)') '*** InitIOMod: print of NumRec & RecLen arrays ***'
+  write(UOUT,'(/,4x,a,/)') '*** NumRec & RecLen data ***'
 
   write(UOUT,9234) 'NumRec(V2H2P)=',NumRec(V2H2P),' RecLen(V2H2P)=',RecLen(V2H2P)
   write(UOUT,9234) 'NumRec(VPPPP)=',NumRec(VPPPP),' RecLen(V2H2P)=',RecLen(VPPPP)
@@ -226,7 +226,7 @@ subroutine print_int_file_attributes
   write(UOUT,9234) 'NumRec(VPHPP)=',NumRec(VPHPP),' RecLen(VPHPP)=',RecLen(VPHPP)
   write(UOUT,9234) 'NumRec(V2HHP)=',NumRec(V2HHP),' RecLen(V2HHP)=',RecLen(V2HHP)
   write(UOUT,9234) 'NumRec(VHHHP)=',NumRec(VHHHP),' RecLen(VHHHP)=',RecLen(VHHHP)
-
+  write(UOUT,*) 
   write(UOUT,9235) 'NumRec(FHH)=',NumRec(FHH),' RecLen(FHH)=',RecLen(FHH)
   write(UOUT,9235) 'NumRec(FHP)=',NumRec(FHP),' RecLen(FHP)=',RecLen(FHP)
   write(UOUT,9235) 'NumRec(FPP)=',NumRec(FPP),' RecLen(FPP)=',RecLen(FPP)
@@ -445,6 +445,27 @@ subroutine DeAllocIntBufs
    return
 
 end subroutine DeAllocIntBufs
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine check_VIND_VINT_readiness
+!  ... check whether files VIND,VINT are open,
+!       and arrays BufIntgrl,BufIndex allocated
+logical :: is_VIND_file, is_VIND_open, is_VINT_file, is_VINT_open
+
+inquire(file=FileVIND,exist=is_VIND_file, opened=is_VIND_open)
+inquire(file=FileVINT,exist=is_VINT_file, opened=is_VINT_open)
+
+if (.not.(allocated(BufIntgrl).and.allocated(BufIndex).and.is_VIND_open.and.is_VINT_open)) then
+  write(UOUT,*) 'is_VIND_file=',is_VIND_file
+  write(UOUT,*) 'is_VINT_file=',is_VINT_file
+  write(UOUT,*) 'is_VIND_open=',is_VIND_open
+  write(UOUT,*) 'is_VINT_open=',is_VINT_open
+  write(UOUT,*) 'allocated(BufIntgrl):',allocated(BufIntgrl)
+  write(UOUT,*) ' allocated(BufIndex):',allocated(BufIndex)
+  call quit('check_VIND_VINT_readiness: VINT/VIND not ready for reading !')
+endif
+
+end subroutine check_VIND_VINT_readiness
 
 function NumBlock_VPPPP()
 

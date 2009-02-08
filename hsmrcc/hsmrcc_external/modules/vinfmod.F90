@@ -169,7 +169,9 @@ subroutine printVINFstuff
      call Header('Output from UpdateVINF',-1)
 
      write(UOUT,'(/,2x,a)') 'UpdateVINF - data set saved into <FileVINF>'
-     write(UOUT,*) 'OPTION:',OPTION
+
+     call print_Options
+
      write(UOUT,*) 'MAXITER, CONVTOL:',MAXITER, CONVTOL
      write(UOUT,*) 'CUTOFF=',CUTOFF
      write(UOUT,*) 
@@ -185,8 +187,6 @@ subroutine printVINFstuff
      write(UOUT,*) 'LABELSIZE=',LABELSIZE
      write(UOUT,*) 'NINTMX=',NINTMX
      write(UOUT,*) 
-     write(UOUT,*) 'NumRec:',NumRec
-     write(UOUT,*) 'RecLen:',RecLen
 
  !    write(UOUT,'(4(a,i5))') 'RecLen(V2H2P)=',RecLen(V2H2P),' NumRec(V2H2P)=', NumRec(V2H2P), & 
  !                ' TotNZInt(V2H2P)=',TotNZInt(V2H2P),' NZIntRec_V2H2P=',NZIntRec_V2H2P
@@ -194,17 +194,7 @@ subroutine printVINFstuff
   !   write(UOUT,'(4(a,i5))') 'RecLen(VPPPP)=',RecLen(VPPPP),' NumRec(VPPPP)=',NumRec(VPPPP), & 
   !                ' TotNZInt(VPPPP)=',TotNZInt(VPPPP),' NZIntRec_VPPPP=',NZIntRec_VPPPP
 
-
-     write(UOUT,'(2x,2(a,i7))') 'RecLen(VHHHH)=',RecLen(VHHHH),' NumRec(VHHHH)=',NumRec(VHHHH)
-     write(UOUT,'(2x,a,i7)') 'RecLen(VHHPP)=',RecLen(VHHPP)
-     write(UOUT,'(2x,a,i7)') 'RecLen(V2HPP)=',RecLen(V2HPP)
-     write(UOUT,'(2x,a,i7)') 'RecLen(V2PHH)=',RecLen(V2PHH)
-
-     write(UOUT,'(2x,a,i7)') 'RecLen(VPHHP)=',RecLen(VPHHP)
-     write(UOUT,'(2x,a,i7)') 'RecLen(VPH2P)=',RecLen(VPH2P)
-     write(UOUT,'(2x,a,i7)') 'RecLen(VPHPP)=',RecLen(VPHPP)
-     write(UOUT,'(2x,a,i7)') 'RecLen(V2HHP)=',RecLen(V2HHP)
-     write(UOUT,'(2x,a,i7)') 'RecLen(VHHHP)=',RecLen(VHHHP)
+     call print_int_file_attributes
     ! ...
      write(UOUT,*) 
      write(UOUT,'(3(a,i5))') 'StartRec(FHH)=',StartRec(FHH),' RecLen(FHH)=',RecLen(FHH), & 

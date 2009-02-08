@@ -2061,21 +2061,40 @@ subroutine control_print_VIND_VINT
 !
 !  ... make control print of all integrals when file is open and read
 !
- implicit none
- integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock
- integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
- integer,          dimension(:), pointer :: VIND
- double precision, dimension(:), pointer :: VINT
- double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
- logical :: skip_blocks=.true.
+  call header('control printout of all integrals and their indexes',-1)
 
-call header('control printout of all integrals and their indexes',-1)
+call control_print_V2H2P ! 1.
+call control_print_VPPPP ! 2. block
+call control_print_VHHHH ! 3.
+call control_print_VHHPP ! 4.
+call control_print_V2HPP ! 5.
+call control_print_V2PHH ! 6.
+call control_print_VPHHP ! 7.
+call control_print_VPH2P ! 8. block
+call control_print_VPHPP ! 9. block
+call control_print_V2HHP ! 10.
+call control_print_VHHHP ! 11.
 
-write(UOUT,'(1x,a)') '****  01. V2H2P, 1324, <IJ||AB>  ****'
-nullify(VINT)
-nullify(VIND)
+end subroutine control_print_VIND_VINT
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine control_print_V2H2P
+! 
+! ... read and prints 2H2P integrals & indexes
+!
+implicit none
+integer :: I,J,IJ,St,En,IA,A,B,JB,IJB,icount
+integer,          dimension(:), pointer :: VIND
+double precision, dimension(:), pointer :: VINT
+double precision :: VIJ_AB
+
+call check_VIND_VINT_readiness
+
+call header('****  01. V2H2P, 1324, <IJ||AB>  ****',-1)
+
+nullify(VINT); nullify(VIND)
 call ReadFile(V2H2P)
-En = 0
+En = 0 ; icount=0
 DO I = 1, NHMO
 DO A = 1, NPMO
    IA = RecNumHP(I,A) ! this calculates the record number of HP index pair
@@ -2088,27 +2107,47 @@ DO A = 1, NPMO
       JB = VIND(IJB)
       CALL ResRecHP(JB,J,B) ! obtain J,B
       VIJ_AB = VINT(IJB)
-      WRITE(UOUT,829) I,J,A,B,VIJ_AB
+      icount = icount + 1
+      WRITE(UOUT,829) icount,I,J,A,B,VIJ_AB
    ENDDO
+   WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
+   'Number of nonzero integrals for IA pair, I=',I,' A=',A, &
+   ' NZIntRec(',IA,')=',NZIntRec(IA)
 ENDDO
 ENDDO
+ 829 format(4x,i8,1x,'V2H2P-1, 1324, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
- 829 format(4x,'V2H2P, 1324, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+end subroutine control_print_V2H2P
 
-if (.not.skip_blocks) then
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine control_print_VPPPP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
 
-write(UOUT,'(1x,a,i3)') '****  02. VPPPP  <AB||CD>  ****, # blocks:',NumBlock(VPPPP)
-nullify(VINT)
-nullify(VIND)
-En = 0
+write(UOUT,'(/,4x,a,i3,/)')  & 
+ '****  02. VPPPP  <AB||CD>  ****, # of integr.blocks:',NumBlock(VPPPP)
+write(UOUT,*) 'NumBlock(VPPPP)=',NumBlock(VPPPP)
+nullify(VINT); nullify(VIND)
+
+ii=0
+En=0
 do  Block = 1, NumBlock(VPPPP)
 call ReadFile(VPPPP,Block,StBl,EnBl)
-DO A = 1, NPMO
-DO B = 1, NPMO
-   !AB = RecNumMM(A,B) ! does not work !
-   AB = RecNum2P(A,B) ! this calculates the record number of PP index pair
+ write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+En=0
+! do iblock=StBl,EnBl
+
+DO A = 2, NPMO
+DO B = 1, A-1
+! call ReadFile(VPPPP,Block,StBl,EnBl)
+! write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+ AB = RecNumMM(A,B) 
  En = 0
- do iblock=StBl,EnBl
    St = En + 1
    En = En + NZIntRec(AB)
    IF (En < St) cycle
@@ -2117,16 +2156,27 @@ DO B = 1, NPMO
    DO ICD = 1, NZIntRec(AB)
       CD = VIND(ICD)
       CALL ResRecMM(CD,C,D) ! obtain C,D
-      VAB_CD = VINT(ICD)
-      WRITE(UOUT,830) A,B,C,D,VAB_CD,Block
+      VAB_CD = VINT(ICD); ii=ii+1
+      WRITE(UOUT,830) ii,A,B,C,D,VAB_CD,Block
    ENDDO
- enddo
+   WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
+   'Number of nonzero integrals for AB pair, A=',A,' B=',B, &
+   ' NZIntRec(',AB,')=',NZIntRec(AB)
 ENDDO
 ENDDO
 enddo
- 830 format(4x,'VPPPP, 1234, <AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
+ 830 format(4x,i8,1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
             f18.12,' block:',i3)
-endif
+
+end subroutine control_print_VPPPP
+
+subroutine control_print_VHHHH
+implicit none
+integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+integer,          dimension(:), pointer :: VIND
+double precision, dimension(:), pointer :: VINT
+double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
 
 write(UOUT,'(1x,a)') '****  03. VHHHH <IJ||KL>  ****'
 nullify(VINT); nullify(VIND)
@@ -2153,8 +2203,54 @@ DO J = 1, I-1
 ENDDO
 ENDDO
  831 format(4x,'03. VHHHH, <IJ||KL>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+end subroutine control_print_VHHHH
 
-write(UOUT,'(1x,a)') '****  05. V2HPP <IJ||AB> ****'
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine control_print_VHHPP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+
+write(UOUT,'(/,4x,a,/)') '****  04. VHHPP, 1234, <IJ||AB> ****'
+nullify(VINT)
+nullify(VIND)
+call ReadFile(V2HPP)
+En = 0
+DO I = 2, NHMO
+DO J = 1, I-1
+   IJ = RecNumMM(I,J) ! 
+   !IJ = RecNum2H(I,J) ! 
+   St = En + 1
+   En = En + NZIntRec(IJ)
+   IF (En < St) cycle
+   VINT => IntBuf(St:En)
+   VIND => IndBuf(St:En)
+   DO IAB = 1, NZIntRec(IJ)
+      AB = VIND(IAB)
+      CALL ResRecMM(AB,A,B) ! obtain A,B
+      !CALL ResRec2P(AB,A,B) ! obtain A,B
+      VIJ_AB = VINT(IAB)
+      WRITE(UOUT,8311) I,J,A,B,VIJ_AB
+   ENDDO
+ENDDO
+ENDDO
+ 8311 format(4x,'04. VHHPP, 1234, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+
+end subroutine control_print_VHHPP
+
+subroutine control_print_V2HPP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
+
+write(UOUT,'(/,4x,a,/)') '****  05. V2HPP, 1234, <IJ||AB> ****'
 nullify(VINT)
 nullify(VIND)
 call ReadFile(V2HPP)
@@ -2177,7 +2273,19 @@ DO J = 1, NHMO
    ENDDO
 ENDDO
 ENDDO
- 832 format(4x,'HSMRCC indexed, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 832 format(4x,'V2HPP-5, 1234, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+
+end subroutine control_print_V2HPP
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine control_print_V2PHH
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
 
 write(UOUT,'(1x,a)') '****  06. V2PHH <AB||IJ> ****'
 nullify(VINT)
@@ -2200,9 +2308,17 @@ DO B = 1, NPMO
    ENDDO
 ENDDO
 ENDDO
- 833 format(4x,'HSMRCC indexed, <AB||IJ>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 833 format(4x,'V2PHH-6, 1234, <AB||IJ>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+end subroutine control_print_V2PHH
 
-!!! problem here !!!
+subroutine control_print_VPHHP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+
 write(UOUT,'(1x,a)') '****  07. VPHHP, 3124 <AJ||IB> ****'
 nullify(VINT)
 nullify(VIND)
@@ -2212,6 +2328,7 @@ DO I = 1, NHMO
 DO A = 1, NPMO
    !AI = RecNumPH(A,I) ! 
    IA = RecNumHP(I,A) ! 
+   !IA = RecNumPH(I,A) ! 
    !AI = RecNumHP(A,I) ! 
    St = En + 1
    En = En + NZIntRec(IA)
@@ -2220,17 +2337,27 @@ DO A = 1, NPMO
    VIND => IndBuf(St:En)
    DO IJB = 1, NZIntRec(IA)
       JB = VIND(IJB)
-      CALL ResRecHP(IB,J,B) ! obtain J,B
+      CALL ResRecHP(JB,J,B) ! obtain J,B
       VAJ_IB = VINT(IJB)
       WRITE(UOUT,834) A,J,I,B,VAJ_IB
    ENDDO
 ENDDO
 ENDDO
- 834 format(4x,'07. VPHHP, 1324, <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 834 format(4x,'07. VPHHP, 3124, <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+end subroutine control_print_VPHHP
+
+subroutine control_print_VPH2P
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
 
 if (.not.skip_blocks) then
 
-write(UOUT,'(1x,a)') '****  08. VPH2P <AI||BC> ****'
+write(UOUT,'(/,4x,a,/)') '****  08. VPH2P <AI||BC> ****'
 nullify(VINT)
 nullify(VIND)
 En = 0
@@ -2253,9 +2380,18 @@ DO B = 1, NPMO
 ENDDO
 ENDDO
 enddo
- 835 format(4x,'HSMRCC indexed, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
-
+ 835 format(4x,'VPH2P-8, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 endif
+end subroutine control_print_VPH2P
+
+subroutine control_print_VPHPP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
 
 if (.not.skip_blocks) then
 write(UOUT,'(1x,a)') '****  09. VPHPP <AI||BC> ****'
@@ -2281,8 +2417,21 @@ DO I = 1, NHMO
 ENDDO
 ENDDO
 enddo
- 836 format(4x,'HSMRCC indexed, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 836 format(4x,'VPHPP-9, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 endif
+
+end subroutine control_print_VPHPP
+
+
+subroutine control_print_V2HHP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
+
 
 write(UOUT,'(1x,a)') '****  10. V2HHP, 1324, <IJ||KA> ****'
 nullify(VINT)
@@ -2308,6 +2457,17 @@ ENDDO
 ENDDO
  837 format(4x,'10.V2HHP, 1324, <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
+end subroutine control_print_V2HHP
+
+subroutine control_print_VHHHP
+ implicit none
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer,          dimension(:), pointer :: VIND
+ double precision, dimension(:), pointer :: VINT
+ double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ logical :: skip_blocks=.true.
+
 write(UOUT,'(1x,a)') '****  11. VHHHP, 1234, <IJ||KA> ****'
 nullify(VINT); nullify(VIND)
 call ReadFile(VHHHP)
@@ -2332,7 +2492,8 @@ ENDDO
 ENDDO
  838 format(4x,'11. VHHHP,1234, <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
-end subroutine control_print_VIND_VINT
+end subroutine control_print_VHHHP
+
 
 
 end module IntGenMod
