@@ -120,6 +120,7 @@ subroutine UpdateVINF
 
    write(UVINF) CUTOFF
 
+   ! ... symmetry info ...
    write(UVINF) point_group, naxis, norder, numirrep, irrep_product, &
                 totally_symmetric_irrep, irrep_label
 
@@ -132,7 +133,7 @@ subroutine UpdateVINF
 
    write(UVINF) NumRec, RecLen
 
- ! ... positions, lenghts  number of integrals ...
+ ! ... positions, lenghts,  number of integrals ...
    write(UVINF) StartRec(V2H2P), EndngRec(V2H2P), TotNZInt(V2H2P), NZIntRec_V2H2P
    write(UVINF) StartRec(VPPPP), EndngRec(VPPPP), TotNZInt(VPPPP), NZIntRec_VPPPP
    write(UVINF) StartRec(VHHHH), EndngRec(VHHHH), TotNZInt(VHHHH), NZIntRec_VHHHH

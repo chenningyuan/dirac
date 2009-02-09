@@ -2061,6 +2061,7 @@ subroutine control_print_VIND_VINT
 !
 !  ... make control print of all integrals when file is open and read
 !
+
   call header('control printout of all integrals and their indexes',-1)
 
 call control_print_V2H2P ! 1.
@@ -2121,35 +2122,45 @@ end subroutine control_print_V2H2P
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VPPPP
+!
+! ...   
+!
  implicit none
- integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
- integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer :: St,En,IAB,A,B,AB,C,D,CD,Block,iblock,ii
+ integer :: ICD,iblock_CD,StBl,EnBl
  integer,          dimension(:), pointer :: VIND
  double precision, dimension(:), pointer :: VINT
- double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
- logical :: skip_blocks=.true.
+ double precision ::  VAB_CD
 
 write(UOUT,'(/,4x,a,i3,/)')  & 
  '****  02. VPPPP  <AB||CD>  ****, # of integr.blocks:',NumBlock(VPPPP)
 write(UOUT,*) 'NumBlock(VPPPP)=',NumBlock(VPPPP)
+
 nullify(VINT); nullify(VIND)
 
 ii=0
 En=0
 do  Block = 1, NumBlock(VPPPP)
+
+nullify(VINT); nullify(VIND)
 call ReadFile(VPPPP,Block,StBl,EnBl)
- write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+
 En=0
 ! do iblock=StBl,EnBl
 
 DO A = 2, NPMO
 DO B = 1, A-1
-! call ReadFile(VPPPP,Block,StBl,EnBl)
-! write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+
  AB = RecNumMM(A,B) 
  En = 0
+
+ do iblock_CD = StBl, EnBl
+ ! CALL ResRecMM(CD,C,D) ! obtain C,D
+
    St = En + 1
-   En = En + NZIntRec(AB)
+   !En = En + NZIntRec(AB)
+   En = En + NZIntRec(iblock_CD)
    IF (En < St) cycle
    VINT => IntBuf(St:En)
    VIND => IndBuf(St:En)
@@ -2162,10 +2173,18 @@ DO B = 1, A-1
    WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
    'Number of nonzero integrals for AB pair, A=',A,' B=',B, &
    ' NZIntRec(',AB,')=',NZIntRec(AB)
+
+ enddo
+
+  ! WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
+  ! 'Number of nonzero integrals for AB pair, A=',A,' B=',B, &
+  ! ' NZIntRec(',AB,')=',NZIntRec(AB)
+
 ENDDO
 ENDDO
+
 enddo
- 830 format(4x,i8,1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
+ 830 format(4x,i8,'.',1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
             f18.12,' block:',i3)
 
 end subroutine control_print_VPPPP
