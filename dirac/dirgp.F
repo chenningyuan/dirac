@@ -1770,6 +1770,7 @@ C       Sort eigenvalues and boson irrep info
       ELSE
         NDIM = NTBAS(0)*NORBT*4
         CALL DCOPY(NDIM,CMO1,1,CMO2,1)
+        CALL DZERO(EIG2,NORBT)
       END IF
       CALL IZERO(IBEIG2,NORBT)
 C
