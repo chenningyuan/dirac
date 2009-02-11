@@ -839,6 +839,7 @@ subroutine ResRecMM(PQ,P,Q)
 
    ! Perform Reverse of MaxMin
    ! Get P and Q from MAXMIN(P,Q)
+   ! P,Q are either hole-hole (HH) or particle-particle indexes (PP)
 
    P = 1
    do
@@ -858,7 +859,7 @@ subroutine ResRecHP(PQ,P,Q)
    integer, intent(out) :: P, Q
 
    ! PQ = (P-1)*NPMO + Q
-   ! finding P & Q from PQ.
+   ! finding P & Q from PQ, where P is hole(H), Q particle (P) index
 
    P = (PQ-1)/NPMO + 1
    Q = PQ - (P-1)*NPMO
@@ -874,7 +875,7 @@ subroutine ResRecPH(PQ,P,Q)
    integer, intent(out) :: P, Q
 
    ! PQ = (P-1)*NHMO + Q
-   ! finding P & Q from PQ.
+   ! finding P & Q from PQ, where P is particle and Q hole index
 
    P = (PQ-1)/NHMO + 1
    Q = PQ - (P-1)*NHMO
@@ -890,7 +891,7 @@ subroutine ResRec2H(PQ,P,Q)
    integer, intent(out) :: P, Q
 
    ! PQ = (P-1)*NHMO + Q
-   ! finding P & Q from PQ.
+   ! finding P & Q from PQ, where both P,Q are hole indexes
 
    P = (PQ-1)/NHMO + 1
    Q = PQ - (P-1)*NHMO
@@ -906,7 +907,7 @@ subroutine ResRec2P(PQ,P,Q)
    integer, intent(out) :: P, Q
 
    ! PQ = (P-1)*NPMO + Q
-   ! finding P & Q from PQ.
+   ! finding P & Q from PQ. Both P,Q are particle type indexes (P)
 
    P = (PQ-1)/NPMO + 1
    Q = PQ - (P-1)*NPMO
@@ -921,12 +922,16 @@ function RecNumMM(P,Q)
    integer :: RecNumMM
 
    !if (P==Q) stop 'Error in RecNumMM'
-   if (P==Q) call quit('P ==Q => Error in RecNumMM!')
+   if (P==Q) then
+     write(UOUT,*) 'RecNumMM: P,Q:',P,Q
+     call quit('P ==Q => Error in RecNumMM!')
+   endif
    RecNumMM = MAXMIN(P,Q)
    return
 end function RecNumMM
 
 function RecNumHP(P,Q)
+! returns position of PQ common index; P is hole index, Q particle index
    implicit none
    integer, intent(in) :: P, Q
    integer :: RecNumHP
@@ -1188,8 +1193,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                               SetQRange,SetRRange,SetSRange,PackRS,integ_label)
 !--------------------------------------------------------------------------------------------------------
 !
-!  routine is repeatedly reading Gamess integral file  FileMR2EINT (TRIM(IFile)//'.F296'; lu=UMR2EINT)
-!  and prepares 2-electron integral files for the HSMRCC run :
+!  routine is repeatingly reading Gamess integral file  FileMR2EINT (TRIM(IFile)//'.F296'; lu=UMR2EINT)
+!  and is preparing 2-electron integral/indexes file for the HSMRCC run :
+!
 !  FileVIND(TRIM(IFile)//'.VIND'; lu=UVIND) & FileVINT(TRIM(IFile)//'.VINT'; lu=UVINT)
 !  These are to be produced by DIRAC !
 !
@@ -1470,7 +1476,7 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                      NZVPkIBuf(NZVIntBufInd) = PackRS(R,S)
 
                      if (get_iprint() >= 40) then
-                       call print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,NZVIntBufInd,  & 
+                       call print_integral(P,Q,R,S,PQ,RS,PackRS,NZVIntBufInd,  & 
                           NZVIntBuf(NZVIntBufInd), NZVPkIBuf(NZVIntBufInd),integ_label)
                      endif
 
@@ -1482,9 +1488,11 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
             TotNZInt = TotNZInt + NZIntRec(PQ) 
 
             if (get_iprint() >= 30) then
+             if (NZIntRec(PQ).ne.0) then
               write(UOUT,'(1x,3(a,i5),a,i8)')     & 
               'number of nonzero <PQ||RS> integrals for P=',P,',Q=',Q,  &
               ' NZIntRec(PQ=',PQ,')=',NZIntRec(PQ)
+             endif
             endif
 
          enddo ! end of Q
@@ -1512,10 +1520,10 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
 end subroutine IntFileGen_TwoBody
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, IntIndex, integ_label)
+subroutine print_integral(P,Q,R,S,PQ,RS,PackRS,ArrayPos, Integral, IntIndex, integ_label)
 !-----------------------------------------------------------------------------------------------------
 !
-!      print the integral with proper indexes
+!     print the integral with proper indexes
 !
 !    ArrayPos : 1-NZVINTBUFSIZE
 !
@@ -1528,11 +1536,6 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
    character*4, intent(in) :: integ_label
 
    interface
-      subroutine ResolvRec(Record,P,Q)
-         implicit none
-         integer, intent(in)  :: Record
-         integer, intent(out) :: P, Q
-      end subroutine ResolvRec
       function PackRS(R,S)
          implicit none
          integer, intent(in) :: R, S
@@ -1541,6 +1544,8 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
    end interface
 
    if (.not.PackRS(R,S)==IntIndex) then
+     write(UOUT,*) 'print_integral: RS=',RS
+     write(UOUT,*) 'print_integral: R,S=',R,S
      call quit('print_integral: RS different from IntIndex !')
    endif
 
@@ -1551,10 +1556,10 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
 
     case('2H2P') !  <PQ||RS>=<IJ||AB>
  
-       call ResolvRec(PQ,I,A) ! P,Q = I,A
-       call ResolvRec(RS,J,B) ! R,S = J,B
+       call ResRecHP(PQ,I,A) ! P,Q = I,A
+       call ResRecHP(RS,J,B) ! R,S = J,B
 
-       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
+       write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')        & 
          ArrayPos,'. V2H2P-1,1324,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
 
        if (P.ne.I.or.Q.ne.A.or.R.ne.J.or.S.ne.B) then
@@ -1565,8 +1570,8 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
 
     case('PPPP')  ! <PQ||RS>=<AB||CD>
 
-       call ResolvRec(PQ,A,B) ! PQ is A,B 
-       call ResolvRec(RS,C,D) ! RS is C,D
+       call ResRecMM(PQ,A,B) ! PQ is A,B 
+       call ResRecMM(RS,C,D) ! RS is C,D
 
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. VPPPP-2,1234,<AB||CD>=<',A,' ',B,'||',C,' ',D,'>=',Integral  
@@ -1579,8 +1584,8 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
 
     case('HHHH') ! <PQ||RS>=<IJ||KL>
 
-       call ResolvRec(PQ,I,J) ! PQ is I,J
-       call ResolvRec(RS,K,L) ! RS is K,L
+       call ResRecMM(PQ,I,J) ! PQ is I,J
+       call ResRecMM(RS,K,L) ! RS is K,L
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. VHHHH-3,1234, <IJ||KL>=<',I,' ',J,'||',K,' ',L,'>=',Integral  
 
@@ -1592,66 +1597,111 @@ subroutine print_integral(P,Q,R,S,PQ,RS,ResolvRec,PackRS,ArrayPos, Integral, Int
 
     case('HHPP') ! <PQ||RS>=<IJ||AB>
 
-       call ResolvRec(PQ,I,J) ! PQ is I,J
-       call ResolvRec(RS,A,B) ! RS is A,B
+       call ResRecMM(PQ,I,J) ! PQ is I,J
+       call ResRecMM(RS,A,B) ! RS is A,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
-         ArrayPos,'. VHHPP-4,1234,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
+         ArrayPos,'. VHHPP-4,1234,<IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral 
+
+       if (P.ne.I.or.Q.ne.J.or.R.ne.A.or.S.ne.B) then
+         write(UOUT,'(8x,a,4i4)') '---  I,J,A,B:',I,J,A,B
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('VHHHH: no correspondence of indexes !')
+       endif
 
     case('2HPP') ! <PQ||RS>=<IJ||AB>
 
-       !call ResolvRec(PQ,I,J) ! PQ is I,J
        call ResRec2H(PQ,I,J) ! PQ is I,J
-       !call ResolvRec(RS,A,B) ! RS is A,B
        call ResRecMM(RS,A,B) ! RS is A,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. V2HPP-5,1234, <IJ||AB>=<',I,' ',J,'||',A,' ',B,'>=',Integral  
 
-       write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+       if (P.ne.I.or.Q.ne.J.or.R.ne.A.or.S.ne.B) then
+         write(UOUT,'(8x,a,4i4)') '---  I,J,A,B:',I,J,A,B
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('V2HPP: no correspondence of indexes !')
+       endif
 
     case('2PHH')  ! <PQ||RS>=<A,B||I,J>
 
-       call ResolvRec(PQ,A,B) ! PQ is A,B
-       call ResolvRec(RS,I,J) ! RS is I,J
+       call ResRec2P(PQ,A,B) ! PQ is A,B
+       call ResRecMM(RS,I,J) ! RS is I,J
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. V2PHH-6,1234,<AB||IJ>=<',A,' ',B,'||',I,' ',J,'>=',Integral 
 
+       if (P.ne.A.or.Q.ne.B.or.R.ne.I.or.S.ne.J) then
+         write(UOUT,'(8x,a,4i4)') '---  A,B,I,J:',A,B,I,J
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('V2PHH: no correspondence of indexes !')
+       endif
+
     case('PHHP') ! <PQ||RS>=<AJ||IB>
 
-       call ResolvRec(PQ,A,I) ! PQ is A,I
-       call ResolvRec(RS,J,B) ! RS is J,B
+       call ResRecHP(PQ,I,A) ! PQ is I,A
+       call ResRecHP(RS,J,B) ! RS is J,B
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. VPHHP-7,1324, <AJ||IB>=<',A,' ',J,'||',I,' ',B,'>=',Integral  
 
+       if (P.ne.I.or.Q.ne.A.or.R.ne.J.or.S.ne.B) then
+         write(UOUT,'(8x,a,4i4)') '---  A,I,J,B:',I,A,J,B
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('VPHHP: no correspondence of indexes !')
+       endif
+
     case('PH2P') !<PQ||RS>=<AI||BC>
 
-       call ResolvRec(PQ,A,B) ! PQ is A,B
-       call ResolvRec(RS,I,C) ! RS is I,C
+       call ResRec2P(PQ,A,B) ! PQ is A,B
+       call ResRecHP(RS,I,C) ! RS is I,C
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
-         ArrayPos,'. VPH2P-8,1324, <AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
+         ArrayPos,'. VPH2P-8,1324, <AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral 
+
+       if (P.ne.A.or.Q.ne.B.or.R.ne.I.or.S.ne.C) then
+         write(UOUT,'(8x,a,4i4)') '---  A,B,I,C:',A,B,I,C
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('VPH2P: no correspondence of indexes !')
+       endif
 
     case('PHPP') ! <PQ||RS>=<AI||BC>
 
-       call ResolvRec(PQ,A,I) ! PQ is A,I
-       call ResolvRec(RS,B,C) ! RS is B,C
+       call ResRecPH(PQ,A,I) ! PQ is A,I
+       call ResRecMM(RS,B,C) ! RS is B,C
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. VPHPP-9,1234,<AI||BC>=<',A,' ',I,'||',B,' ',C,'>=',Integral  
 
+       if (P.ne.A.or.Q.ne.I.or.R.ne.B.or.S.ne.C) then
+         write(UOUT,'(8x,a,4i4)') '---  A,I,B,C:',A,I,B,C
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('VPHPP: no correspondence of indexes !')
+       endif
+
+
     case('2HHP') ! <P,Q||R,S>=<I,J||K,A>
 
-       call ResolvRec(PQ,I,K) ! PQ is I,K
-       call ResolvRec(RS,J,A) ! RS is J,A
+       call ResRec2H(PQ,I,K) ! PQ is I,K
+       call ResRecHP(RS,J,A) ! RS is J,A
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. V2HHP-10,1324,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral 
 
+       if (P.ne.I.or.Q.ne.K.or.R.ne.J.or.S.ne.A) then
+         write(UOUT,'(8x,a,4i4)') '---  I,K,J,A:',I,K,J,A
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('V2HHP: no correspondence of indexes !')
+       endif
+
     case('HHHP') ! <P,Q||R,S> = <I,J||K,A>
 
-       call ResolvRec(PQ,I,J) ! PQ is I,J
-       call ResolvRec(RS,K,A) ! RS is K,A 
+       call ResRecMM(PQ,I,J) ! PQ is I,J
+       call ResRecHP(RS,K,A) ! RS is K,A 
        write(UOUT,'(2x,i4,a,i3,a,i3,a,i3,a,i3,a,f16.10)')  & 
          ArrayPos,'. VHHHP-11,1234,<IJ||KA>=<',I,' ',J,'||',K,' ',A,'>=',Integral  
+
+       if (P.ne.I.or.Q.ne.J.or.R.ne.K.or.S.ne.A) then
+         write(UOUT,'(8x,a,4i4)') '---  I,J,K,A:',I,J,K,A
+         write(UOUT,'(8x,a,4i4)') '---  P,Q,R,S:',P,Q,R,S
+         call quit('VHHHP: no correspondence of indexes !')
+       endif
     
     case default
-        write(UOUT,*) 'nothing'
+        write(UOUT,*) 'nothing, integ_label=',integ_label
         call quit('print_integral - error brach !')
    end select
 
@@ -2088,14 +2138,14 @@ subroutine control_print_VIND_VINT
   call header('control printout of all integrals and their indexes',-1)
 
 call control_print_V2H2P ! 1.
-!call control_print_VPPPP ! 2. block
+call control_print_VPPPP ! 2. block
 call control_print_VHHHH ! 3.
 call control_print_VHHPP ! 4.
 call control_print_V2HPP ! 5.
 call control_print_V2PHH ! 6.
 call control_print_VPHHP ! 7.
-!call control_print_VPH2P ! 8. block
-!call control_print_VPHPP ! 9. block
+call control_print_VPH2P ! 8. block
+call control_print_VPHPP ! 9. block
 call control_print_V2HHP ! 10.
 call control_print_VHHHP ! 11.
 
@@ -2159,31 +2209,18 @@ write(UOUT,'(/,4x,a,i3,/)')  &
  '****  02. VPPPP  <AB||CD>  ****, # of integr.blocks:',NumBlock(VPPPP)
 write(UOUT,*) 'NumBlock(VPPPP)=',NumBlock(VPPPP)
 
-nullify(VINT); nullify(VIND)
-
 ii=0
-En=0
 do  Block = 1, NumBlock(VPPPP)
 
-nullify(VINT); nullify(VIND)
-call ReadFile(VPPPP,Block,StBl,EnBl)
-write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+ nullify(VINT); nullify(VIND)
+ call ReadFile(VPPPP,Block,StBl,EnBl)
+ write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
 
-En=0
-! do iblock=StBl,EnBl
-
-DO A = 2, NPMO
-DO B = 1, A-1
-
- AB = RecNumMM(A,B) 
  En = 0
-
- do iblock_CD = StBl, EnBl
- ! CALL ResRecMM(CD,C,D) ! obtain C,D
-
+ do AB = StBl, EnBl
+   CALL ResRecMM(AB,A,B) ! obtain a,B
    St = En + 1
-   !En = En + NZIntRec(AB)
-   En = En + NZIntRec(iblock_CD)
+   En = En + NZIntRec(AB)
    IF (En < St) cycle
    VINT => IntBuf(St:En)
    VIND => IndBuf(St:En)
@@ -2198,14 +2235,6 @@ DO B = 1, A-1
    ' NZIntRec(',AB,')=',NZIntRec(AB)
 
  enddo
-
-  ! WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
-  ! 'Number of nonzero integrals for AB pair, A=',A,' B=',B, &
-  ! ' NZIntRec(',AB,')=',NZIntRec(AB)
-
-ENDDO
-ENDDO
-
 enddo
  830 format(4x,i8,'.',1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
             f18.12,' block:',i3)
@@ -2397,7 +2426,9 @@ ENDDO
  834 format(4x,i5,'. VPHHP-7, 1324, <AJ||IB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 end subroutine control_print_VPHHP
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VPH2P
+
  implicit none
  integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
  integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
@@ -2405,16 +2436,18 @@ subroutine control_print_VPH2P
  double precision, dimension(:), pointer :: VINT
  double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
 
-
-write(UOUT,'(/,4x,a,/)') '****  08. VPH2P <AI||BC> ****'
+write(UOUT,'(/,4x,a,/)') '****  08. VPH2P, 1324, <AI||BC> ****'
 nullify(VINT)
 nullify(VIND)
-En = 0
+En = 0; ii=0
 do  Block = 1, NumBlock(VPH2P)
-call ReadFile(VPH2P,block,St,En)
-DO A = 1, NPMO
+call ReadFile(VPH2P,block,StBl,EnBl)
+write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+
+En=0
+DO A = StBl, EnBl
 DO B = 1, NPMO
-   AB = RecNum2P(A,B) ! 
+   AB =  (A-1)*NPMO + B
    St = En + 1
    En = En + NZIntRec(AB)
    IF (En < St) cycle
@@ -2422,48 +2455,56 @@ DO B = 1, NPMO
    VIND => IndBuf(St:En)
    DO IIC = 1, NZIntRec(AB)
       IC = VIND(IIC)
-      CALL ResRecHP(IC,I,C) ! obtain J,B
-      VAI_BC = VINT(IIC)
-      WRITE(UOUT,835) A,I,B,C,VAI_BC
+      CALL ResRecHP(IC,I,C) ! obtain I,C
+      VAI_BC = VINT(IIC); ii=ii+1
+      WRITE(UOUT,835) ii,A,I,B,C,VAI_BC
    ENDDO
+   WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                            &
+   'Number of nonzero integrals for first index pair, A=',A,' B=',B, &
+   ' NZIntRec(',AB,')=',NZIntRec(AB)
 ENDDO
 ENDDO
 enddo
- 835 format(4x,'VPH2P-8, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 835 format(4x,i5,'.VPH2P-8, 1324, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 end subroutine control_print_VPH2P
 
 subroutine control_print_VPHPP
  implicit none
- integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
- integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
+ integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,BC,IBC,Block,ii
+ integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl
  integer,          dimension(:), pointer :: VIND
  double precision, dimension(:), pointer :: VINT
- double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ double precision :: VAI_BC
 
-write(UOUT,'(1x,a)') '****  09. VPHPP <AI||BC> ****'
-nullify(VINT)
-nullify(VIND)
-En = 0
+write(UOUT,'(/,4x,a,/)') '****  09. VPHPP, 1234, <AI||BC> ****'
+
+ii=0
 do  Block = 1, NumBlock(VPHPP)
-call ReadFile(VPHPP,block,St,En)
-DO A = 1, NPMO
+call ReadFile(VPHPP,block,StBl,EnBl)
+write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+nullify(VINT); nullify(VIND)
+En = 0
+DO A = StBl,EnBl
 DO I = 1, NHMO
-   AI = RecNumHP(A,I) ! get A,I
+   AI = (A-1)*NHMO + I
    St = En + 1
    En = En + NZIntRec(AI)
    IF (En < St) cycle
    VINT => IntBuf(St:En)
    VIND => IndBuf(St:En)
-   DO IJB = 1, NZIntRec(AI)
-      JB = VIND(IJB)
-      CALL ResRecMM(IB,J,B) ! obtain J,B
-      VAI_BC = VINT(IJB)
-      WRITE(UOUT,836) A,I,B,C,VAI_BC
+   DO IBC = 1, NZIntRec(AI)
+      BC = VIND(IBC)
+      CALL ResRecMM(BC,B,C) ! obtain B,C
+      VAI_BC = VINT(IBC); ii=ii+1
+      WRITE(UOUT,836) ii,A,I,B,C,VAI_BC
    ENDDO
+   WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                            &
+   'Number of nonzero integrals for first index pair, A=',A,' I=',I, &
+   ' NZIntRec(',AI,')=',NZIntRec(AI)
 ENDDO
 ENDDO
 enddo
- 836 format(4x,'VPHPP-9, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+ 836 format(4x,i8,'.',1x,'VPHPP-9, 1234, <AI||BC>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
 end subroutine control_print_VPHPP
 
