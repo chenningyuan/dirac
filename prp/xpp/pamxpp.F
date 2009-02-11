@@ -196,7 +196,7 @@ Chj: MAXRM, MXLOAD
 #include "dcbxrs.h"
 C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
-     &          RCNV(MAXEXC,NBSYM), IORBCL(2,*),WORK(*)
+     &          RCNV(MAXEXC,NBSYM), IORBCL(4,*),WORK(*)
       CHARACTER TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
@@ -214,6 +214,7 @@ CTROND  Check out active ones...
         DO I = 1,NFSYM
           NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
         ENDDO
+        
         CALL MEMGET('REAL',KEIG,NI,WORK,KFREE,LFREE)
         CALL EIGEXT(WORK(KEIG),IORBCL,1,WORK,KFREE,LFREE)
       ELSE
@@ -580,7 +581,7 @@ C              has a norm that is a fraction RESFAC of the max norm
                   READ(LUCMD,*) RESXPP
                GO TO 100
  26            CONTINUE
-C&&&& ORBANA: Analyze individual contributions to repsonse functions
+C&&&& ORBANA: Analyze individual contributions to response functions
                   ORBXPP = .TRUE.
                GO TO 100
  27            CONTINUE
@@ -870,7 +871,7 @@ Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
-     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(2,*),
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETPPF')
@@ -1009,7 +1010,7 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
-     &          CMO(*),EIG(*),IBEIG(*),IORBCL(2,*),
+     &          CMO(*),EIG(*),IBEIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
       DATA BLANK16/'                '/
