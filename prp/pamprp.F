@@ -202,7 +202,7 @@ C
 #ifdef MOD_XPP
       IF (DOXPP) THEN
          IF (WF. EQ. 'DHF') THEN
-            CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KFREE,LFREE)
+            CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
          ELSE
             CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &           'PP excitation energies not implemented for ' // WF )
