@@ -137,7 +137,7 @@ contains
 
     G(1) = 1.0d-100*D
 
-    call propfock(nop, (/D, D/), G)
+    call prop_fock(nop, (/D, D/), G)
     write(*, *) 'electronic energy from F**D - 0.5d0*G(1)**D:', F**D - 0.5d0*G(1)**D
 
     G(1) = 0
@@ -160,7 +160,7 @@ contains
     F = 1.0d0*F
 
     e_i = 0.0d0
-    call propenergy((/'EL'/), (/D/), e_i)
+    call prop_energy((/'EL'/), (/D/), e_i)
 
     do i = 1, 3
       print '("@ -< "a1" > = " f26.10)', fc(i), -e_i(i)
@@ -178,10 +178,10 @@ contains
     real(kind_dp)               :: e_ij(3, 3), avg
     integer                     :: i, j
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(2:2))
 
     e_ij = 0.0d0
-    call propenergy((/'EL'/), (/D, D_i/), e_ij)
+    call prop_energy((/'EL'/), (/D, D_i/), e_ij)
 
     if (aoresponse_visual .or. aoresponse_integrate) then
       call aoresponse_visual_driver((/D, D_i/))
@@ -229,9 +229,9 @@ contains
     D = 1.0d0*D
     F = 1.0d0*F
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(2:2))
 
     e_ijk = 0.0d0
 
@@ -286,9 +286,9 @@ contains
 
 
 
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
+    call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-    call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
+    call prop_energy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
 
     print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
 
@@ -330,17 +330,17 @@ contains
     D = 1.0d0*D
     F = 1.0d0*F
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
 
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
+    call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
     if (aoresponse_visual .or. aoresponse_integrate) then
       call aoresponse_visual_driver((/D, D_i, D_ij/))
     end if
 
     e_ijk = 0.0d0
-    call propenergy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
+    call prop_energy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
 
     print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
 
@@ -384,9 +384,9 @@ contains
     D = 1.0d0*D
     F = 1.0d0*F
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
 
 #ifdef debug_me
 !   radovan: please don't remove this
@@ -520,7 +520,7 @@ contains
       end do
     end do
 
-    call pertdensfock((/'EL'/),   &
+    call pert_dens((/'EL'/),   &
                         S,        &
                       (/D/),      &
                       (/F/),      &
@@ -529,7 +529,7 @@ contains
                         w=w(1:1), &
                         c=(/ui/))
 
-    call pertdensfock((/'EL'/),   &
+    call pert_dens((/'EL'/),   &
                         S,        &
                       (/D/),      &
                       (/F/),      &
@@ -538,7 +538,7 @@ contains
                         w=w(2:2), &
                         c=(/uj/))
 
-    call pertdensfock((/'EL', 'EL'/),     &
+    call pert_dens((/'EL', 'EL'/),     &
                         S,                &
                       (/D,                &
                         D_i(ui),          &
@@ -552,7 +552,7 @@ contains
                         c=(/ui, uj/))
 
     e_ijk = 0.0d0
-    call propenergy((/'EL'/), &
+    call prop_energy((/'EL'/), &
                     (/D,      &
                       D_i,    &
                       D_j,    &
@@ -626,7 +626,7 @@ contains
       end do
     end do
 
-    call pertdensfock((/'EL'/),   &
+    call pert_dens((/'EL'/),   &
                         S,        &
                       (/D/),      &
                       (/F/),      &
@@ -635,7 +635,7 @@ contains
                         w=w(1:1), &
                         c=(/ui/))
 
-    call pertdensfock((/'EL'/),   &
+    call pert_dens((/'EL'/),   &
                         S,        &
                       (/D/),      &
                       (/F/),      &
@@ -644,7 +644,7 @@ contains
                         w=w(2:2), &
                         c=(/uj/))
 
-    call pertdensfock((/'EL'/),   &
+    call pert_dens((/'EL'/),   &
                         S,        &
                       (/D/),      &
                       (/F/),      &
@@ -653,7 +653,7 @@ contains
                         w=w(3:3), &
                         c=(/uk/))
 
-    call pertdensfock((/'EL', 'EL'/),     &
+    call pert_dens((/'EL', 'EL'/),     &
                         S,                &
                       (/D,                &
                         D_i(ui),          &
@@ -666,7 +666,7 @@ contains
                         w=(/w(1), w(2)/), &
                         c=(/ui, uj/))
 
-    call pertdensfock((/'EL', 'EL'/),     &
+    call pert_dens((/'EL', 'EL'/),     &
                         S,                &
                       (/D,                &
                         D_i(ui),          &
@@ -679,7 +679,7 @@ contains
                         w=(/w(1), w(3)/), &
                         c=(/ui, uk/))
 
-    call pertdensfock((/'EL', 'EL'/),     &
+    call pert_dens((/'EL', 'EL'/),     &
                         S,                &
                       (/D,                &
                         D_j(uj),          &
@@ -692,7 +692,7 @@ contains
                         w=(/w(2), w(3)/), &
                         c=(/uj, uk/))
 
-    call pertdensfock((/'EL', 'EL', 'EL'/),     &
+    call pert_dens((/'EL', 'EL', 'EL'/),     &
                         S,                      &
                       (/D,                      &
                         D_i(ui),                &
@@ -714,7 +714,7 @@ contains
                         c=(/ui, uj, uk/))
 
     e_ijkl = 0.0d0
-    call propenergy((/'EL'/),  &
+    call prop_energy((/'EL'/),  &
                     (/D,       &
                       D_i,     &
                       D_j,     &
@@ -777,20 +777,20 @@ contains
     D = 1.0d0*D
     F = 1.0d0*F
 
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
-    call pertdensfock((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(3:3))
 
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_i, D_k/), (/F, F_i, F_k/), D_ik, F_ik, w=(/w(1), w(3)/))
-    call pertdensfock((/'EL', 'EL'/), S, (/D, D_j, D_k/), (/F, F_j, F_k/), D_jk, F_jk, w=w(2:3))
+    call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
+    call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_k/), (/F, F_i, F_k/), D_ik, F_ik, w=(/w(1), w(3)/))
+    call pert_dens((/'EL', 'EL'/), S, (/D, D_j, D_k/), (/F, F_j, F_k/), D_jk, F_jk, w=w(2:3))
 
-    call pertdensfock((/'EL', 'EL', 'EL'/), S, (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk/), &
+    call pert_dens((/'EL', 'EL', 'EL'/), S, (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk/), &
                                                (/F, F_i, F_j, F_k, F_ij, F_ik, F_jk/), &
                                                D_ijk, F_ijk, w=w(1:3))
 
     e_ijkl = 0.0d0
-    call propenergy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
+    call prop_energy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
 
     print '("@ gamma (w = "4f9.4")")', w(1), w(2), w(3), w(4)
 
@@ -841,13 +841,13 @@ subroutine beta_debug(S,D,F,w)
     character*(4) :: NOP(0)
     S=S; D=D; F=F !track them
     if (abs(sum(w))>1d-15) call QUIT('PropTest/HyPolari: sum(w) should be zero!')
-    call PertDensFock((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
+    call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
     do i = 1, 3
 
        H(1) = 1.0d-50*D
-       call PropFock((/'EL'/),(/D/),H,c=(/i/))
+       call prop_fock((/'EL'/),(/D/),H,c=(/i/))
        G(1) = 1.0d-50*D
-       call PropFock(NOP,(/D,Df(i)/),G)
+       call prop_fock(NOP,(/D,Df(i)/),G)
 
        T = H(1) + G(1) - Ff(i)
        write(*, *) 'debug_norm 1:', T**T
@@ -878,9 +878,9 @@ subroutine beta_debug(S,D,F,w)
 
     end do
 !   call quit('over and out')
-!   call PertDensFock((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
-    call PertDensFock((/'EL'/),S,(/D/),(/F/),De,Fe,w=w(2:2))
-    call PertDensFock((/'EL','EL'/),S,(/D,Df,De/),(/F,Ff,Fe/),Dfe,Ffe,w=w(1:2))
+!   call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
+    call pert_dens((/'EL'/),S,(/D/),(/F/),De,Fe,w=w(2:2))
+    call pert_dens((/'EL','EL'/),S,(/D,Df,De/),(/F,Ff,Fe/),Dfe,Ffe,w=w(1:2))
     do i = 1, 3
        do j = 1, 3
           ij = i + 3*(j-1)
@@ -889,7 +889,7 @@ subroutine beta_debug(S,D,F,w)
       end do
     end do
 
-    Efff=0; call PropEnergy((/'EL'/),(/D,Df,De,Dfe/),Efff,b=(/3,3/))
+    Efff=0; call prop_energy((/'EL'/),(/D,Df,De,Dfe/),Efff,b=(/3,3/))
     print '("First hyperpolarizability -Efff w="3f6.3/9(3f26.13/))',w,-Efff
     do i=1,3; Df(i)=0; De(i)=0; Ff(i)=0; Fe(i)=0; enddo
     do i=1,3*3; Dfe(i)=0; Ffe(i)=0; enddo

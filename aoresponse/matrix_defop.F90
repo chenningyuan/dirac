@@ -4,10 +4,12 @@ module matrix_defop
 
   implicit none
 
+  public tr
   public trab
   public trps
   public dag
   public norm
+  public dot
   public iszero
   public print
   public undef
@@ -25,6 +27,9 @@ module matrix_defop
   interface assignment(=)
     module procedure matrix_eq_matrix
     module procedure matrix_eq_zero
+        module procedure mat_eq_zero_1D
+        module procedure mat_eq_zero_2D
+        module procedure mat_eq_zero_3D
   end interface
 
   interface operator(+)
@@ -45,8 +50,16 @@ module matrix_defop
     module procedure matrix_div_real
   end interface
 
+  interface dot
+    module procedure matrix_dot_matrix
+  end interface
+
   interface operator(**)
     module procedure matrix_dot_matrix
+  end interface
+
+  interface tr
+    module procedure matrix_product_trace
   end interface
 
   interface trab
@@ -298,6 +311,42 @@ contains
     call insref(A)  !if no other ref, this will deallocate A's data
 
   end subroutine
+
+
+    subroutine mat_eq_zero_1D(A,zero)
+        type(matrix),intent(inout) :: A(:)
+        integer,intent(in)         :: zero
+        integer                    :: i
+        do i=1,size(A)
+            A(i) = 0
+        end do
+    end subroutine
+
+    subroutine mat_eq_zero_2D(A,zero)
+        type(matrix),intent(inout) :: A(:,:)
+        integer,intent(in)         :: zero
+        integer                    :: i,j
+        do j=1,size(A,2)
+            do i=1,size(A,1)
+                A(i,j) = 0
+            end do
+        end do
+    end subroutine
+
+    subroutine mat_eq_zero_3D(A,zero)
+        type(matrix),intent(inout) :: A(:,:,:)
+        integer,intent(in)         :: zero
+        integer                    :: i,j,k
+        do k=1,size(A,3)
+            do j=1,size(A,2)
+                do i=1,size(A,1)
+                    A(i,j,k) = 0
+                end do
+            end do
+        end do
+    end subroutine
+
+
 
   function matrix_plus_matrix(A, B) result(C)
 

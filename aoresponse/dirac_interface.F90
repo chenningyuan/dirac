@@ -804,7 +804,7 @@ contains
 
   subroutine response_solver(freq, RHS, Dp)
 
-    real(kind_dp), intent(in)    :: freq(:)
+    real(kind_dp), intent(in)    :: freq
     type(matrix),  intent(inout) :: RHS
     type(matrix),  intent(inout) :: Dp
 !   -------------------------------------------------------------------------
@@ -1002,7 +1002,8 @@ contains
 
     intdef    = ill_int + 2*isl_int + 4*iss_int + 8*igt_int
 
-    nr_freq   = size(freq)
+!   nr_freq   = size(freq)
+    nr_freq   = 1
     jsymop    = RHS%pg_sym
     jtimop    = RHS%tr_sym
     jopsy     = RHS%fermi_pointer

@@ -460,6 +460,19 @@
 
       end
 
+      subroutine get_natoms(nr_atoms)
+
+#include "mxcent.h"
+#include "nuclei.h"
+
+      integer nr_atoms
+
+      nr_atoms = natoms
+
+      end subroutine
+
+
+
 
 !     XC stuff
 !     ========
