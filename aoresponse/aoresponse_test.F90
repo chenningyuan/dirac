@@ -743,7 +743,7 @@ contains
 
           do l = 1, 3
             if (abs(e_ijkl(i, j, k, l)) > small) then
-              print '("@ gamma (w = "4f8.4")" a10 a2 a2 a2 f26.10)', w(1),  &
+              print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', w(1),  &
                                                                      w(2),  &
                                                                      w(3),  &
                                                                      w(4),  &
@@ -792,7 +792,7 @@ contains
     e_ijkl = 0.0d0
     call propenergy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
 
-    print '("@ gamma (w = "4f8.4")")', w(1), w(2), w(3), w(4)
+    print '("@ gamma (w = "4f9.4")")', w(1), w(2), w(3), w(4)
 
     do i = 1, 3
 

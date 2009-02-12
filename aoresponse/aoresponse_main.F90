@@ -80,7 +80,7 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma dc Kerr (w = "4f7.3"):" f26.10)', freq(1), &
+      print '("@ averaged gamma dc Kerr (w = "4f9.4"):" f26.10)', freq(1), &
                                                                   freq(2), &
                                                                   freq(3), &
                                                                   freq(4), &
@@ -106,7 +106,7 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma dc SHG (w = "4f7.3"):" f26.10)', freq(1), &
+      print '("@ averaged gamma dc SHG (w = "4f9.4"):" f26.10)', freq(1), &
                                                                  freq(2), &
                                                                  freq(3), &
                                                                  freq(4), &
@@ -130,7 +130,7 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma THG (w = "4f7.3"):" f26.10)', freq(1), &
+      print '("@ averaged gamma THG (w = "4f9.4"):" f26.10)', freq(1), &
                                                               freq(2), &
                                                               freq(3), &
                                                               freq(4), &
@@ -154,7 +154,7 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma IDRI (w = "4f7.3"):" f26.10)', freq(1), &
+      print '("@ averaged gamma IDRI (w = "4f9.4"):" f26.10)', freq(1), &
                                                                freq(2), &
                                                                freq(3), &
                                                                freq(4), &
