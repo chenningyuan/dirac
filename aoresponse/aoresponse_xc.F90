@@ -5,8 +5,8 @@ module aoresponse_xc_m
   use scf_density_m
   use grid_m
   use memory_allocator
-  use matrix_oper
-  use matrix_autop
+! use matrix_oper
+  use matrix_defop
 
   implicit none
 

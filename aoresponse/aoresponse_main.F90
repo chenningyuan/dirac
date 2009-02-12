@@ -2,7 +2,7 @@ module aoresponse_main_m
 
   use kinds_m
   use memory_allocator
-  use matrix_autop
+  use matrix_defop
   use dirac_interface_m
   use aoresponse_input_m
   use aoresponse_test_m

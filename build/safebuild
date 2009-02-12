@@ -2,6 +2,6 @@ Files listed here will be compiled with "safe" compiler options
 pdpack/dlamch.F
 amfi/amfi.F
 amfi/amfi1.F
-aoresponse/matrix_oper.F90
-aoresponse/matrix_autop.F90
+aoresponse/matrix_defop.F90
+aoresponse/matrix_genop.F90
 abacus/hermodules.F

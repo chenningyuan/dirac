@@ -1,6 +1,6 @@
-module matrix_autop
+module matrix_defop
 
-  use matrix_oper
+  use matrix_genop
 
   implicit none
 

@@ -2,13 +2,13 @@ module PropInt
 !routines for property contractions and matrices
 
 #ifndef PRG_DIRAC
-    use matrix_autop
+    use matrix_defop
     use dal_interface,only: di_GET_GbDs,di_read_operator_int,di_get_sigma_xc_cont,di_get_T_xc_cont &
                      ,di_get_MagDeriv_FxD_DFT,di_get_MagDeriv_GxD_DFT &
                      ,di_get_geomDeriv_molgrad_DFT,di_get_geomDeriv_FxD_DFT,di_get_geomDeriv_GxD_DFT
     use matrix_operations,only: mat_init,mat_to_full,mat_set_from_full
 #else
-    use matrix_autop
+    use matrix_defop
     use dirac_interface_m
 #endif /* PRG_DIRAC */
 

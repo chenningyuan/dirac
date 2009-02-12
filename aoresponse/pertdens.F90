@@ -1,6 +1,6 @@
 module PertDens
 
-    use matrix_autop
+    use matrix_defop
 #ifdef PRG_DIRAC
     use dirac_interface_m
 #endif /* PRG_DIRAC */

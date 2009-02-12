@@ -1,4 +1,4 @@
-module matrix_oper
+module matrix_genop
 
   use kinds_m
 ! use memory_allocator
@@ -220,4 +220,4 @@ contains
 
   end subroutine
 
-end module matrix_oper
+end module

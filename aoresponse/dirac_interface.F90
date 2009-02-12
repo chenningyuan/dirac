@@ -2,8 +2,8 @@ module dirac_interface_m
 
   use kinds_m
   use memory_allocator
-  use matrix_oper
-  use matrix_autop
+! use matrix_oper
+  use matrix_defop
   use aoresponse_input_m
   use aoresponse_xc_m
 

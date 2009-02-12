@@ -2,8 +2,8 @@ module scf_density_m
 
   use kinds_m
   use memory_allocator
-  use matrix_oper
-  use matrix_autop
+  use matrix_genop
+  use matrix_defop
 
   implicit none
 
