@@ -80,11 +80,13 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma dc Kerr (w = "4f9.4"):" f26.10)', freq(1), &
-                                                                  freq(2), &
-                                                                  freq(3), &
-                                                                  freq(4), &
-                                                                  add_to
+      print '(a30 " (w = "4f9.4"):" f26.10)', &
+            '@ averaged gamma dc Kerr',       &
+            freq(1),                          &
+            freq(2),                          &
+            freq(3),                          &
+            freq(4),                          &
+            add_to
 
     end if
 
@@ -106,11 +108,13 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma dc SHG (w = "4f9.4"):" f26.10)', freq(1), &
-                                                                 freq(2), &
-                                                                 freq(3), &
-                                                                 freq(4), &
-                                                                 add_to
+      print '(a30 " (w = "4f9.4"):" f26.10)', &
+            '@ averaged gamma dc SHG',        &
+            freq(1),                          &
+            freq(2),                          &
+            freq(3),                          &
+            freq(4),                          &
+            add_to
 
     end if
 
@@ -130,11 +134,13 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma THG (w = "4f9.4"):" f26.10)', freq(1), &
-                                                              freq(2), &
-                                                              freq(3), &
-                                                              freq(4), &
-                                                              add_to
+      print '(a30 " (w = "4f9.4"):" f26.10)', &
+            '@ averaged gamma dc THG',        &
+            freq(1),                          &
+            freq(2),                          &
+            freq(3),                          &
+            freq(4),                          &
+            add_to
 
     end if
 
@@ -154,11 +160,13 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged gamma IDRI (w = "4f9.4"):" f26.10)', freq(1), &
-                                                               freq(2), &
-                                                               freq(3), &
-                                                               freq(4), &
-                                                               add_to
+      print '(a30 " (w = "4f9.4"):" f26.10)', &
+            '@ averaged gamma IDRI',          &
+            freq(1),                          &
+            freq(2),                          &
+            freq(3),                          &
+            freq(4),                          &
+            add_to
 
     end if
 
@@ -190,11 +198,13 @@ contains
 
       add_to = add_to/15.0d0
 
-      print '("@ averaged static gamma (w = "4f7.3"):" f26.10)', freq(1), &
-                                                                 freq(2), &
-                                                                 freq(3), &
-                                                                 freq(4), &
-                                                                 add_to
+      print '(a30 " (w = "4f9.4"):" f26.10)', &
+            '@ averaged static gamma',        &
+            freq(1),                          &
+            freq(2),                          &
+            freq(3),                          &
+            freq(4),                          &
+            add_to
 
     end if
 
