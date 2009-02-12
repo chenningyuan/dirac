@@ -625,10 +625,6 @@ C
       LUEVEC    = 22
       LUCMOS    = 23
       LUSMOS    = 24
-      N2EVECTQ  = 0
-      DO IFRP = 1,NFSYM
-         N2EVECTQ = N2EVECTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
-      ENDDO
 C
 C     Closed shell Hartree - Fock
 C     ===========================
@@ -1646,7 +1642,8 @@ C.......read records containing orbital information
           I2TMT(IFRP) = N2TMT
           N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
           I2TMOT(IFRP) = N2TMOTQ
-          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+          N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
         ENDDO
         IF(SUB_BL) THEN
           DO IFRP = 1,NFSYM
@@ -1680,7 +1677,8 @@ C.......Look for a formatted file with same information
             I2TMT(IFRP) = N2TMT
             N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
             I2TMOT(IFRP) = N2TMOTQ
-            N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+            N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+            N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
           ENDDO
           IF(SUB_BL) THEN
             DO IFRP = 1,NFSYM

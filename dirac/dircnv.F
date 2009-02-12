@@ -86,10 +86,6 @@ C
         ELSE
           IREC = MOD(NITER-2,MXDIIS-1) + 1
         ENDIF
-        IF (IPRSCF.GE.3) THEN
-         WRITE(LUPRI,'(2X,A)')
-     &'DHFCNV: going to read Fock MO matrix from previous SCF cycle'
-        ENDIF
         CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
 C
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)
@@ -327,7 +323,7 @@ C
          END IF
 C
          CALL DZERO(EBUF,NFMAT*N2BBASXQ)
-         CALL DZERO(EVEC,N2EVECTQ)
+         CALL DZERO(EVEC,N2TMOTQ)
 C
          DO 10 I = 1,NFSYM
             IF (NOCC(I).EQ.0) GOTO 10
@@ -455,13 +451,13 @@ C     ================
 C
 C        Construct density matrix in MO-basis
 C        ====================================
-C
+C        Read coefficients in orthonormal basis
          REWIND LUCMOS
          CALL READT(LUCMOS,N2TMOTQ,EVEC)
 C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
-            IF(NOCC(I).EQ.0) GOTO 20
+            IF(NOCCMF(I).EQ.0) GOTO 20
             IF(IPRSCF.GE.3) THEN
 C             Transform Fock matrix to current orthonormal MO-basis      
               CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
@@ -471,15 +467,15 @@ C             Transform Fock matrix to current orthonormal MO-basis
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRSCF)
-             KOFF = I2TMOT(I) + NPSHMF(I)*(NTMO(I)+1) + 1
-             CALL HEADER
-     &       ('DIISER: Fock matrix (occ-nesh) in current MO-basis',-1)
-             WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-             CALL PRQMAT(EBUF(KOFF),NESHMF(I),NOCC(I),
-     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+              KOFF = I2TMOT(I) + NPSHMF(I)*(NTMO(I)+1) + 1
+              CALL HEADER
+     &        ('DIISER: Fock matrix (occ-nesh) in current MO-basis',-1)
+              WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
+              CALL PRQMAT(EBUF(KOFF),NESHMF(I),NOCCMF(I),
+     &                    NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
 C...........closed shell
-            ISTART=NPSH(I)+1
+            ISTART=NPSHMF(I)+1
             CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  D1,D0,
      &                  EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
@@ -505,9 +501,9 @@ C
 C        Form error vector
 C        =================
 C
-         CALL DZERO(EVEC,N2EVECTQ)
+         CALL DZERO(EVEC,N2TMOTQ)
          DO 30 I = 1,NFSYM
-           IF(NOCC(I).EQ.0) GOTO 30
+           IF(NOCCMF(I).EQ.0) GOTO 30
            IF(SUB_BL) THEN
              IBO = 0
              DO ISUB = 1,N_SUB_BL(I)
@@ -551,7 +547,7 @@ C     Transform error vector to current orthonormal MO-basis
         REWIND LUCMOS
         CALL READT(LUCMOS,N2TMOTQ,EBUF)
         DO 40 I = 1,NFSYM
-          IF(NOCC(I).EQ.0) GOTO 40
+          IF(NOCCMF(I).EQ.0) GOTO 40
           NDIM = NTMO(I)*NTMO(I)*NZ
           CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
           CALL QTRANS('AOMO','S',D0,NTMO(I),NTMO(I),
@@ -564,9 +560,9 @@ C     Transform error vector to current orthonormal MO-basis
           CALL HEADER
      &       ('DIISER DIISMO: Error matrix in current MO-basis',-1)
           WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-          KOFF = KBUF + NPSH(I)*NTMO(I)
+          KOFF = KBUF + NPSHMF(I)*(NTMO(I)+1)
           IF(IPRSCF.GE.3) THEN
-            CALL PRQMAT(WORK(KOFF),NTMO(I),NOCCMF(I),
+            CALL PRQMAT(WORK(KOFF),NTMO(I),NTMO(I),
      &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
           NDIM = NTMO(I)*NTMO(I)
@@ -590,7 +586,7 @@ C     Transform error vector to current orthonormal MO-basis
      &       'Occ. orb. ',J1, '  largest gradient partner: ',J2,
      &        SQRT(GMAX)
           ENDDO
-          CALL MEMREL('DIISER.MOerr',WORK,KWORK,KWORK,KFREE,LFREE)
+          CALL MEMREL('DIISER.MOerr',WORK,KWORK,KBUF,KFREE,LFREE)
  40     CONTINUE
       ENDIF
 C
@@ -604,12 +600,12 @@ C        from g,g* norm to g norm         : 1/sqrt(2)
 C        --------------------------------------------
 C        total factor to get g norm         sqrt(2)
 C
-      EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1)
+      EVCVAL = SQRT(D2)*DNRM2(N2TMOTQ,EVEC,1)
 C     
       IF (IPRSCF.GE.10) THEN
         CALL HEADER('DIISER: Resulting value of EVCVAL ',-1)
         WRITE(LUPRI,'(4X,A,D15.6)')
-     &  '>>> EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1) = ',EVCVAL
+     &  '>>> EVCVAL = SQRT(D2)*DNRM2(N2TMOTQ,EVEC,1) = ',EVCVAL
       ENDIF
       CALL FLSHFO(LUPRI)
 C
@@ -735,7 +731,7 @@ C     Write current error vector to direct access unit
 C     ================================================
 C
       IREC = MOD(ITDIIS-1,MXDIIS-1) + 1
-      CALL WRTDAC(LUEVEC,N2EVECTQ,EVEC,IREC)
+      CALL WRTDAC(LUEVEC,N2TMOTQ,EVEC,IREC)
 C
 C     First DIIS iteration; initialize
 C     ================================
@@ -916,7 +912,7 @@ C
       JREC  = ITDIIS - NPREV - 2
       DO I = 1, NPREV
         IREC = MOD(JREC+I,MXDIIS-1) + 1
-        CALL READAC(LUEVEC,N2EVECTQ,EBUF,IREC)
+        CALL READAC(LUEVEC,N2TMOTQ,EBUF,IREC)
         BMAT(IOFF+I) = BIJELM(EBUF,EVEC)
       ENDDO
       BMAT(IOFF+NPREV+1) = BIJELM(EVEC,EVEC)
@@ -971,30 +967,17 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D2=2.0D0,D8=8.00D00)
+      PARAMETER(D2=2.0D0)
 C
 C Used from COMMON blocks:
-C   dcbdhf.h: N2EVECTQ
+C   dcbdhf.h: N2TMOTQ
 C   dcborb.h: NASHT, NAELEC
 C
 #include "dcbdhf.h"
 #include "dcborb.h"
 
       DIMENSION EVEC1(*),EVEC2(*)
-C
-      BIJELM = DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
-      IF (DIISAO .OR. NASHT.GT.0 .OR. NAELEC.GT.0) THEN
-C
-C     jth: The new errorvector is half as big as in DALTON
-C       => the trace of two matrices is one fourth as big
-C       => we multiply by four (old code multiplied by two, so
-C                               a total of 8)
-C
-         BIJELM = D8*BIJELM
-      ELSE
-         BIJELM = D2*BIJELM
-      END IF
-
+      BIJELM = D2*DDOT(N2TMOTQ,EVEC1,1,EVEC2,1)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

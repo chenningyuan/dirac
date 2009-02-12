@@ -520,7 +520,8 @@ C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
         I2TMOT(IFRP) = N2TMOTQ
-        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
         IORB(IFRP)  = NORBT
 C       ...  Count total number of orbitals  ...
         NORBT    = NORBT  + NORB(IFRP)

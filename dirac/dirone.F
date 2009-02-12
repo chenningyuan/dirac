@@ -2379,7 +2379,8 @@ C
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
         I2TMOT(IFRP) = N2TMOTQ
-        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
       ENDDO
 C
 C     Copy information from NBORB to the subblock array if we have not
@@ -2409,7 +2410,8 @@ C
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
           I2TMOT(IFRP) = N2TMOTQ
-          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+          N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
           NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
         ENDDO
         CALL SETDC2(0)
@@ -5663,10 +5665,8 @@ C         If so, subtract from occupation number
 C
 C     Final adjustments
 C
-      NPSHMF(IFRP) = NPSH(IFRP)
-      NESHMF(IFRP) = NESH(IFRP)
-      NPSH(IFRP) = NPSH(IFRP) + NP
-      NESH(IFRP) = NESH(IFRP) + NE
+      NPSHMF(IFRP) = NPSH(IFRP) - NP
+      NESHMF(IFRP) = NESH(IFRP) - NE
       DO I = 1,NFRO(IFRP)
         IVEC(I) = IVEC(I) + NPSH(IFRP) - NDEL(2)
       ENDDO
@@ -6113,6 +6113,7 @@ C     These variables are later set by SETDC2, but needed here...
           I2ORBT(I)= N2ORBT*NZ
           N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
           I2TMOT(I) = N2TMOTQ
+          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
           N2TMOTQ = N2TMOTQ + NTMO(I)*NTMO(I)*NZ
         ENDDO
         CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
@@ -6259,23 +6260,16 @@ C         Backtransform to SO-basis
      &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
           CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
 C
-C         If frozen orbitals, save to file
+C         Save frozen orbitals to file
+C         
 C
-          IF(NFRO(IFRP).GT.0) THEN
-            NBUF = NFBAS(IFRP,0)*NZ
-            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
+          NBUF = NFBAS(IFRP,0)*NZ
+          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+          CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
      &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
-            CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)       
-          ENDIF
-C
-C         Adjust number of positive and negative energy solutions
-C         Note that an adjustment for frozen orbitals takes place
-C         in WRIFRZ
-          NESH(IFRP) = NESH(IFRP)-NQ(1)
-          NPSH(IFRP) = NPSH(IFRP)-NQ(2)
+          CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)       
           TOBE = .TRUE.       
         ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
 C         Move transformation matrix if columns was deleted in previous

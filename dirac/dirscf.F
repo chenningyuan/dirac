@@ -409,7 +409,7 @@ C
 C       Open files necessary for Dirac-Fock calculation
 C
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*N2EVECTQ,STATUS='UNKNOWN')
+     +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
         CALL OPNFIL(LUDENS,'DFDENS','UNKNOWN','PREDHF')
       ENDIF
@@ -826,11 +826,7 @@ CMI ... perform all this only if we do note restart BSS from DC or vice versa
           CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
 C         read LUTMAT rec#2 with SAOMO
 C         NZT is the NZ value for the transformation matrix
-          ISIZE = 0
-          DO I = 1,NFSYM
-            ISIZE = ISIZE + NZT*NTMO(I)*NFBAS(I,0)
-          END DO
-          CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KSAOMO,N2TMT,WORK,KFREE,LFREE)
           CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
         ELSE
           KDTEMP = KFREE
@@ -3441,7 +3437,6 @@ C
       NASHMFT = 0
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
-         NISHMF(I) = NISH(I)
 C
 C        LV : CAUTION, POSSIBLE BUG
 C
@@ -3585,8 +3580,7 @@ C         real matrices, but a blocking given by another array.
 C         Initialize FAO to zero.
 C         --------------------------------------------------------
 C
-          N2TMO = NTMO(I)*NTMO(I)
-          CALL DZERO(FAO(1+I2TMOT(I)),N2TMO*NZ)
+          CALL DZERO(FAO(1+I2TMOT(I)),N2TMO(I)*NZ)
 
           IBO = 0
           DO ISUB = 1, N_SUB_BL(I)
@@ -4033,6 +4027,7 @@ C
       IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','SUBFRZ')
       DO IFRP = 1,NFSYM
         NISHMF(IFRP) = NISH(IFRP)
+        NOCCMF(IFRP) = NOCC(IFRP)
         DO IOPEN = 1,NOPEN
           NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
         END DO
@@ -4175,7 +4170,8 @@ C     Generate untransformed coefficients (MO basis)
 C     and prepare for overlap selection
 C
 C     INPUT:
-C       COFT - MO coefficients in SO-basis
+C       COFT - MO coefficients in SO-basis; they have been read by READCMO
+C              and so the number of coefficients is NORB(IFRP) in symmetry IFRP.
 C      
 C     Written by Trond Saue, July 10 2006
 C
@@ -4200,45 +4196,31 @@ C.....read SAOMO at rec#2 of LUTMAT
       CALL READT(LUTMAT,N2TMT,TMAT)
       CLOSE(LUTMAT,STATUS='KEEP')
 C
-C     Check if the number of coefficients on file is
-C     LARGER than the number of coefficients in 
-C     orthonormal basis (frozen orbitals thus excluded)
-C
-      REWIND LUCOEF
-      READ(LUCOEF) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-      TOBE = .FALSE.
-      NC = 0
-      DO IFRP = 1,NFSYM
-        IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-        IF(IDIM(3,IFRP).GT.NTMO(IFRP)) TOBE=.TRUE.
-        NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
-      ENDDO
-      IF(TOBE) THEN
-C.......note that we assume that COFU can hold these orbitals !
-        CALL READT(LUCOEF,NC,COFU)
-        IOPT = 2
-        CALL ADCNRM(IOPT,COFT,DUM,IDUM,COFU,DUM,DUM,
-     &              TMAT,IDIM,WORK,KFREE,LFREE)
-      ENDIF
-C
 C     Transform MO-coefficients to orthonormal basis
 C     ==============================================
 C
 C.....transform coefficients to orthonormal basis --> COFU
+C     Frozen orbitals must be projected out, see ADJCMO
       DO IFRP = 1,NFSYM
-        CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
+        IF(NFRO(IFRP).EQ.0) THEN
+          CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
      &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
      &                 NFBAS(IFRP,0),NTMO(IFRP),NZT,
      &         'N','N',IPQTOQ(1,0),COFT(ICMOQ(IFRP)+1),
-     &                 NFBAS(IFRP,0),NTMO(IFRP),NZ,
+     &                 NFBAS(IFRP,0),NORB(IFRP),NZ,
      &              D0,IPQTOQ(1,0),COFU(I2TMOT(IFRP)+1),
      &                 NTMO(IFRP),NTMO(IFRP),NZ)
+        ELSE
+          CALL ADJCMO(COFT(ICMOQ(IFRP)+1),COFU(I2TMOT(IFRP)+1),
+     &                TMAT(I2TMT(IFRP)+1),
+     &                NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),IFRP,
+     &                 WORK,KFREE,LFREE)
+        ENDIF
         IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I2)') 
      &     'PRECMOS: Coefficients in SO-basis, fermion ircop ',IFRP
-          CALL PRQMAT(COFT(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),
-     &                NFBAS(IFRP,0),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          CALL PRQMAT(COFT(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
           WRITE(LUPRI,'(A,I2)') 
      &     'PRECMOS: Coefficients in orthonormal basis, fermion ircop '
      &     ,IFRP
@@ -4249,12 +4231,6 @@ C.....transform coefficients to orthonormal basis --> COFU
 C.....write coefficients in orthonormal basis to file
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2TMOTQ,COFU)
-      IF(TOBE) THEN
-C.......read back in the original coefficients...
-        IOPT = 2
-        CALL REACMO(LUCOEF,'DFCOEF',COFT,DUM,IDUM,TOTERG,IOPT,
-     &              WORK,KFREE,LFREE)
-      ENDIF
 C
 C     Prepare for overlap selection
 C     =============================
@@ -4510,156 +4486,127 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C*/ Deck adcnmr */
-      SUBROUTINE ADCNRM(IOPT,CMO,EIG,IBEIG,CBUF,EBUF,IBUF,
-     &                   TMAT,IDIM,WORK,KFREE,LFREE)
+C/* Deck Adjcmo */
+      SUBROUTINE ADJCMO(COFT,COFU,TMAT,NB,NT,NO,IFRP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Adjust number of coefficients CMO, eigenvalues EIG
-C     and subblock information IBEIG using norms of
-C     coefficients in orthonormal basis
+C     Project out frozen orbitals from coefficients in orthonormal basis
+C     For each orbital class the density matrix in the orthonormal basis
+C     is generated, then diagonalized and the null vectors eliminated.
 C
-C
-C     IDIM(1,IFRP) - number of positronic solutions
-C     IDIM(2,IFRP) - number of electronic solutions
-C     IDIM(3,IFRP) - number of orbitals
-
-C     Written by T. Saue Jan 2 2007
+C     Written by T. Saue Feb 4 2009
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
+#include "dgroup.h"
 #include "dcborb.h"
-#include "dgroup.h"
-      LOGICAL LBIT
-      DIMENSION CMO(*),EIG(*),IBEIG(*),CBUF(*),EBUF(*),IBUF(*),
-     &          TMAT(*),WORK(*)
-      DIMENSION IDIM(3,2)
-C
-      KFRSAV = KFREE
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ADCNRM')
-      READ(LUTMAT)
-      CALL READT(LUTMAT,N2TMT,TMAT)
-      CLOSE(LUTMAT,STATUS='KEEP')
-C.....transform coefficients to orthonormal basis
-      ICOFF = 1
-      IEOFF = 1
-      DO IFRP = 1,NFSYM
-        IF(IDIM(3,IFRP).EQ.NTMO(IFRP)) THEN
-          NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZ
-          CALL DCOPY(NDIM,CBUF(ICOFF),1,CMO(ICMOQ(IFRP)+1),1)
-          IF(LBIT(IOPT,3)) THEN
-            CALL DCOPY(NTMO(IFRP),EBUF(IEOFF),1,EIG(IORB(IFRP)+1),1)
-          ENDIF
-          IF(LBIT(IOPT,4)) THEN
-            CALL ICOPY(NTMO(IFRP),IBUF(IEOFF),1,IBEIG(IORB(IFRP)+1),1)
-          ENDIF
-        ELSE
-          NDIM = NTMO(IFRP)*IDIM(3,IFRP)*NZ
-          CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
-          NDIM = IDIM(3,IFRP)
-          CALL MEMGET('REAL',KARR,NDIM,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIND,NDIM,WORK,KFREE,LFREE)
-          CALL CNRMSEL(CMO(ICMOQ(IFRP)+1),CBUF(ICOFF),WORK(KBUF),
-     &               TMAT(I2TMT(IFRP)+1),NZT,NFBAS(IFRP,0),NTMO(IFRP),
-     &               IDIM(3,IFRP),NESH(IFRP),NPSH(IFRP),
-     &               IDIM(1,IFRP),WORK(KARR),WORK(KIND))
-          IF(LBIT(IOPT,3)) THEN
-            CALL CNRMSELE(EIG(IORB(IFRP)+1),NTMO(IFRP),EBUF(IEOFF),
-     &                    IDIM(3,IFRP),WORK(KARR))
-          ENDIF
-          IF(LBIT(IOPT,4)) THEN
-            CALL CNRMSELI(IBEIG(IORB(IFRP)+1),NTMO(IFRP),IBUF(IEOFF),
-     &                    IDIM(3,IFRP),WORK(KARR))
-          ENDIF
-          CALL MEMREL('ADCNRM.red',WORK,KBUF,KBUF,KFREE,LFREE)
+#include "dcbbas.h"
+#include "dcbdhf.h"
+      DIMENSION COFT(NB,NO,NZ),COFU(NT,NT,NZ),TMAT(NB,NT,NZT),WORK(*)
+      NF = 0
+      IOFT = 1
+      IOFU = 1
+C.....negative energy shells
+      IF(NPSH(IFRP).GT.0) THEN
+        CALL ADJCMO1(COFT(1,IOFT,1),COFU(1,IOFU,1),TMAT,
+     &               NPSH(IFRP),NPSHMF(IFRP),NB,NO,NT,
+     &               WORK,KFREE,LFREE)
+        IOFT = IOFT + NPSH(IFRP)
+        IOFU = IOFU + NPSHMF(IFRP)
+        NF   = NF + NPSH(IFRP) - NPSHMF(IFRP)
+      ENDIF
+C.....inactive shells
+      IF(NISH(IFRP).GT.0) THEN
+        CALL ADJCMO1(COFT(1,IOFT,1),COFU(1,IOFU,1),TMAT,
+     &               NISH(IFRP),NISHMF(IFRP),NB,NO,NT,
+     &               WORK,KFREE,LFREE)
+        IOFT = IOFT + NISH(IFRP)
+        IOFU = IOFU + NISHMF(IFRP)
+        NF   = NF + NISH(IFRP) - NISHMF(IFRP)
+      ENDIF
+C.....active shells
+      DO IOPEN = 1,NOPEN
+        IF(NACSH(IFRP,IOPEN).GT.0) THEN
+          CALL ADJCMO1(COFT(1,IOFT,1),COFU(1,IOFU,1),TMAT,
+     &                 NACSH(IFRP,IOPEN),NACSHMF(IFRP,IOPEN),NB,NO,NT,
+     &                 WORK,KFREE,LFREE)
+          IOFT = IOFT + NACSH(IFRP,IOPEN)
+          IOFU = IOFU + NACSHMF(IFRP,IOPEN)
+          NF   = NF + NACSH(IFRP,IOPEN) - NACSHMF(IFRP,IOPEN)
         ENDIF
-        ICOFF = ICOFF + NFBAS(IFRP,0)*IDIM(3,IFRP)*NZ
-        IEOFF = IEOFF + IDIM(3,IFRP)
       ENDDO
+C.....virtuals
+      IF(NSSH(IFRP).GT.0) THEN
+        NSSHMF = NSSH(IFRP) - NFRO(IFRP) + NF
+        CALL ADJCMO1(COFT(1,IOFT,1),COFU(1,IOFU,1),TMAT,
+     &               NSSH(IFRP),NSSHMF,NB,NO,NT,
+     &               WORK,KFREE,LFREE)
+      ENDIF
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck cnrmsel */
-      SUBROUTINE CNRMSEL(CMO,CBUF,BUF,TMAT,NZT,NBAS,NTMO,NORB,NESH,NPSH,
-     &                   IDIM,ARR,INDX)
+C/* Deck adjcmo1 */
+      SUBROUTINE ADJCMO1(COFT,COFU,TMAT,NVEC,NVECMF,NB,NO,NT,
+     &                   WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     In the case when NORB.GT.NTMO, select the coefficients
-C     with the largest norm....
+C     Project frozen orbitals out of this shell 
+C     (inactive/active or secondary).
+C     Coefficients are in orthonormal basis and should therefore
+C     be orthonormal, that is
+C       S_{ij} = C(dagger)_ik * C_kj} = delta_{ij}
+C     The metric is diagonalized and the coefficients rotated to
+C     eliminate the null space.
 C
-C     Written by T. Saue Jan 2 2007
+C     Written by Trond Saue Feb 6 2009
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1=1.0D0,D0=0.0D0,DM1 = -1.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "dgroup.h"
-      DIMENSION CMO(NBAS,NTMO,NZ),CBUF(NBAS,NORB,NZ),BUF(NTMO,NORB,NZ),
-     &          TMAT(NBAS,NTMO,NZT),ARR(NORB),INDX(NORB),IDIM(2)
-C.....Transform coefficients to orthonormal basis
-      CALL QGEMM(NTMO,NORB,NBAS,D1,
-     &         'H','N',IPQTOQ(1,0),TMAT,NBAS,NTMO,NZT,
-     &         'N','N',IPQTOQ(1,0),CBUF,NBAS,NORB,NZ,
-     &              D0,IPQTOQ(1,0),BUF,NTMO,NORB,NZ)
-C.....Find coefficients with smallest norm
-      DO I = 1,NORB
-        ARR(I) = QNRM2(NTMO,NZ,BUF(1,I,1),NTMO,NORB,1)
-!       WRITE(6,*) 'TMP = ',I,ARR(I)
-      ENDDO
-      CALL INDEXX(NORB,ARR,INDX)
-      CALL DZERO(ARR,NORB)
-      NDEL = NORB - NTMO
-      DO I = 1,NDEL
-        II = INDX(I)
-        ARR(II) = DM1
-      ENDDO
+#include "dcbbas.h"
+      DIMENSION COFT(NB,NO,NZ),COFU(NT,NT,NZ),TMAT(NB,NT,NZT),WORK(*)
+C
 C     
-      II = 0
-      DO I = 1,NORB
-      IF(ARR(I).GE.D0) THEN
-        II = II + 1
-        DO IZ = 1,NZ
-          CALL DCOPY(NBAS,CBUF(1,I,IZ),1,CMO(1,II,IZ),1)        
-        ENDDO
+      KFRSAV = KFREE
+      IF(NVECMF.EQ.NVEC) THEN
+        CALL QGEMM(NT,NVEC,NB,D1,
+     &       'H','N',IPQTOQ(1,0),TMAT,NB,NT,NZT,
+     &       'N','N',IPQTOQ(1,0),COFT,NB,NO,NZ,
+     &            D0,IPQTOQ(1,0),COFU,NT,NT,NZ)
+      ELSEIF(NVECMF.GT.0) THEN
+        NDDIM = NVEC*NVEC*NZ
+        NCDIM = NT*NVEC*NZ
+        CALL MEMGET('REAL',KD,NDDIM,WORK,KFREE,LFREE)      
+        CALL MEMGET('REAL',KC,NCDIM,WORK,KFREE,LFREE)      
+        CALL QGEMM(NT,NVEC,NB,D1,
+     &       'H','N',IPQTOQ(1,0),TMAT,NB,NT,NZT,
+     &       'N','N',IPQTOQ(1,0),COFT,NB,NO,NZ,
+     &            D0,IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ)
+C.......Form metric
+        CALL QGEMM(NVEC,NVEC,NT,D1,
+     &       'H','N',IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ,
+     &       'N','N',IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ,
+     &            D0,IPQTOQ(1,0),WORK(KD),NVEC,NVEC,NZ)
+        CALL MEMGET('REAL',KV,NDDIM,WORK,KFREE,LFREE)      
+        CALL MEMGET('REAL',KE,NVEC,WORK,KFREE,LFREE)      
+C.......Diagonalize metric; eigenvalues are in ascending order
+        CALL QDIAG(NZ,NVEC,WORK(KD),NVEC,NVEC,WORK(KE),1,
+     &             WORK(KV),NVEC,NVEC,WORK(KFREE),LFREE,IERR)
+C.....  Rotate orbitals into place
+        IOFF = NVEC*(NVEC-NVECMF)
+        CALL QGEMM(NT,NVECMF,NVEC,D1,
+     &       'N','N',IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ,
+     &       'N','N',IPQTOQ(1,0),WORK(KV+IOFF),NVEC,NVEC,NZ,
+     &            D0,IPQTOQ(1,0),COFU,NT,NT,NZ)
+        CALL MEMREL('ADJCMO1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDIF
-      ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Cnrmsele */
-      SUBROUTINE CNRMSELE(V,N,VB,NB,ARR)
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
-      DIMENSION V(N),VB(NB),ARR(NB)
-      II = 0
-      DO I = 1,NB
-      IF(ARR(I).GE.D0) THEN
-        II = II + 1
-        V(II) = VB(I)
-      ENDIF
-      ENDDO
-      RETURN
-      END
-      SUBROUTINE CNRMSELI(IV,N,IVB,NB,ARR)
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
-      DIMENSION IV(N),IVB(NB),ARR(NB)
-      II = 0
-      DO I = 1,NB
-      IF(ARR(I).GE.D0) THEN
-        II = II + 1
-        IV(I) = IVB(II)
-      ENDIF
-      ENDDO
-      RETURN
-      END
+

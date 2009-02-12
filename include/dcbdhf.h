@@ -45,21 +45,20 @@
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
-     &                        INTBUF, ITRINT(2), IPREIG, NEVEC(2),      &
-     &        N2EVECQ(2), I2EVECTQ(2), N2EVECTQ, NSMOTQ, ISMOQ(2),      &
+     &        INTBUF, ITRINT(2), IPREIG,NSMOTQ, ISMOQ(2),               &
      &        ITRSCF(0:15), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),        &
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
-     &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),NESHMF(2),         &
+     &        NTMO(2), I2TMOT(2), N2TMO(2),N2TMOTQ, NISHMF(2),NESHMF(2),&
      &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPSHMF(2),        &
      &        NPRJNUC(MFRAG),MAXITR2, NMOFREEZE(2),                     &
      &        IMOFREEZE(MXMOFREEZE)       
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG, INTBUF,      &
-     &                ITRINT, IPREIG, NEVEC, N2EVECQ, I2EVECTQ,         &
-     &                N2EVECTQ, NSMOTQ, ISMOQ, ITRSCF, NFMAT, ISYMOP,   &
-     &                IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, MAXBCK, &
-     &                NFRAG, NTMO, I2TMOT, N2TMOTQ, NISHMF, NACSHMF,    &
+     &                ITRINT, IPREIG, NSMOTQ, ISMOQ, ITRSCF, NFMAT,     &
+     &                ISYMOP, IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, &
+     &                MAXBCK, NFRAG, NTMO, I2TMOT, N2TMO,N2TMOTQ,       &
+     &                NISHMF, NACSHMF,                                  &
      &                NASHMFT, NOCCMF, NESHMF,NPSHMF,NPRJNUC, MAXITR2,  &
      &                NMOFREEZE, IMOFREEZE                                         
 
