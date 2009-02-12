@@ -41,5 +41,3 @@ krmc/.*
 amfi/.*
 prp/xpp/.*
 prp/esr/.*
-aoresponse/prop_integrals.f90
-aoresponse/rsp_equations.f90

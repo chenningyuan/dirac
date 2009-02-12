@@ -4,8 +4,8 @@ module aoresponse_test_m
     use aoresponse_xc_m
     use aoresponse_visual_m
     use dirac_interface_m
-    use propint
-    use pertdens
+    use prop_integ
+    use rsp_equations
 
     implicit none
 

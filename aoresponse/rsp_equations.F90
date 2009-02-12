@@ -1,10 +1,10 @@
-module PertDens
+module rsp_equations
 
     use matrix_defop
 #ifdef PRG_DIRAC
     use dirac_interface_m
 #endif /* PRG_DIRAC */
-    use PropInt
+    use prop_integ
     implicit none
 
     public PertFock,PertSCFeq,PertDensFock
@@ -240,4 +240,4 @@ endif
     end subroutine
 
 
-end module PertDens
+end module

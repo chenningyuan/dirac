@@ -1,4 +1,4 @@
-module PropInt
+module prop_integ
 !routines for property contractions and matrices
 
 #ifndef PRG_DIRAC
@@ -852,4 +852,4 @@ contains
     end subroutine
 
 
-end module PropInt
+end module
