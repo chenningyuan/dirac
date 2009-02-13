@@ -827,7 +827,7 @@ CMI ... perform all this only if we do note restart BSS from DC or vice versa
 C         read LUTMAT rec#2 with SAOMO
 C         NZT is the NZ value for the transformation matrix
           CALL MEMGET('REAL',KSAOMO,N2TMT,WORK,KFREE,LFREE)
-          CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
+          CALL READT(LUTMAT,N2TMT,WORK(KSAOMO))
         ELSE
           KDTEMP = KFREE
           KDEVEC = KFREE
