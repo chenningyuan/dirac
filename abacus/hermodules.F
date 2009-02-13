@@ -18,42 +18,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
-!     !!! NEW MODULE FOR CONVERTING BETWEEN TYPES !!!
-!     OTHER SOLLUTIONS (C++) ARE MORE THAN WELCOME
-!     JHS, 11-04-2007
-      MODULE CONVERSION
-        PRIVATE
-        PUBLIC INTTOCHAR
-!     Maybe include priunit.h instead of passing output variable?
-        INTEGER, SAVE      :: zerochar=-1
-        INTEGER, PARAMETER :: maxint=11
-        
-      CONTAINS
-        CHARACTER(LEN=maxint) FUNCTION INTTOCHAR(n)
-#include "priunit.h"
-          INTEGER, INTENT(IN) :: n
-          INTEGER             :: i,j,n_temp
-
-!MI        write(lupri,*) 'INTTOCHAR: n=',n
-!MI ...  NASTY BUG with gfortran/g95 - spoiled integer !!!
-!MI  ... needed help_variable
-           n_temp = n
-
-          IF (zerochar<0) zerochar=IACHAR('0')
-          inttochar=' '
-          DO i=0,maxint-1
-            IF (10**i>n) EXIT
-          END DO 
-          IF (i==maxint) i=i-1
-          DO j=i,0, -1
-!MI         write(lupri,*) 'n,j,zerochar=',n,j,zerochar
-            inttochar(i-j:i-j)=ACHAR(MOD((n_temp/(10**j)), 10)+zerochar)
-!MI         write(lupri,*) 'n,j,zerochar=',n,j,zerochar
-!MI         write(lupri,*) 'inttochar(i-j:i-j)=',inttochar(i-j:i-j)
-          END DO
-        END FUNCTION INTTOCHAR
-
-      END MODULE CONVERSION
 
 !     !!! MODULE FOR HANDLING FILES !!!
 !     Contains
@@ -61,24 +25,9 @@
 !         Opens a file and returns the id. Which is a new number if only the
 !         name is given, otherwise it is equal to filenum.
 !         A negative or zero indicates an error.
-!       - GET_LENGTH(filename) or GET_LENGTH(filenum)
-!         Returns the maximum linelength of a file.
 !       - GET_EXTENSION(filename)
 !         Returns the first extension in the array filetypes for which
 !         filename.extension is an existing filename.
-!       - READ_VAR(filenum,linewidth,var,index,fixedwidth,skip)
-!         Reads a variable of character, integer or real type starting
-!         from position index.
-!         By default text is read from index tot the next unquoted space
-!         or one of the unqouted commentsigns: '#'
-!         if fixedwidth is given all characters between index and index+
-!         fixedwidth are read into var.
-!         The type of variable var determines how the text will be interpreted.
-!         If skip='TRUE', the filepointer is positioned to the next line.
-!         Index is set to the first non read character.
-!         If it is 0 the end of the file is reached.
-!         If it smaler than 0 an error has occured.
-!     For the errorcodes see the comments in the corresponding routines.
 !    
 !     JHS 05-07-07
 
@@ -86,31 +35,17 @@
       IMPLICIT NONE
 
       PRIVATE
-      PUBLIC OPEN_FILE, GET_LENGTH, GET_EXTENSION, READ_VAR
+      PUBLIC OPEN_FILE, GET_EXTENSION, filter_comments
 
         CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: filetypes=(/'MOL', &
      &                                                           'XYZ'/)
         INTEGER :: linewidth=0
 
         INTERFACE OPEN_FILE
-          MODULE PROCEDURE OPEN_FILE_NAME, OPEN_FILE_NUM
+          MODULE PROCEDURE OPEN_FILE_NAME, OPEN_FILE_NUM, OPEN_SCRATCH
         END INTERFACE
         
-        INTERFACE READ_VAR
-#if defined (SYS_SX64) 
-!SK       SK: 16-11-2007 on NEC's 64-Bit SX-6/SX-8 machines
-!SK       we do not have REAL! REAL*8 is the minimum...
-          MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL8
-#else
-          MODULE PROCEDURE READ_CHAR,READ_INT,READ_REAL,READ_REAL8
-#endif
-        END INTERFACE  
         
-        INTERFACE GET_LENGTH
-          MODULE PROCEDURE GET_LENGTH_NUM, GET_LENGTH_NAME
-        END INTERFACE
-
-
       CONTAINS
 
         INTEGER FUNCTION OPEN_FILE_NAME(filename)
@@ -144,6 +79,32 @@
           END IF
 
         END FUNCTION OPEN_FILE_NAME
+
+        INTEGER FUNCTION OPEN_SCRATCH()
+!     Opens a file and returns it's identifying number (>0) if the operation was succesful.
+!     If the opening was insuccesful a negative or 0 is returned. 
+!      0  -   File does not exists.
+!     -1  -   To many files opened.
+!     -99  -   Error while executing the open statement.
+          INTEGER, parameter :: maxfile=99
+          LOGICAL :: ex
+          INTEGER :: n
+
+          DO n=1,maxfile
+            INQUIRE(n, opened=ex)
+            IF (.NOT.(ex)) THEN
+              OPEN(n, status='SCRATCH')
+              EXIT
+            END IF
+          END DO
+ 563      open_scratch=-99
+          IF (n>maxfile) THEN
+            open_scratch=-1 ! To many files opened
+          ELSE
+             open_scratch=n ! Open file
+          END IF                  
+
+        END FUNCTION OPEN_SCRATCH
 
         INTEGER FUNCTION OPEN_FILE_NUM(filename, filenum, formatted,    &
      &                                 lupri)
@@ -180,55 +141,6 @@
 
         END FUNCTION OPEN_FILE_NUM
 
-        INTEGER FUNCTION GET_LENGTH_NUM(filenum, lupri)
-!     Returns the maximum linelength of an already opened file.
-!
-          INTEGER, INTENT(IN) :: filenum
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
-          INTEGER             :: ios, length, newlength
-          CHARACTER(LEN=1)   :: tmpchr
-
-          REWIND(filenum)
-          length=0
-          DO
-            newlength=0
-            DO
-              READ(filenum, '(a)', iostat=ios, ADVANCE='no') tmpchr
-              IF (ios<0) THEN
-                length=MAX(length, newlength)
-                EXIT
-              ELSE
-                newlength=newlength+1
-              END IF
-            END DO
-            IF (ios==-1) THEN
-              EXIT
-            ELSE IF (.NOT.(ios==-2).and.PRESENT(lupri)) THEN
-              WRITE (lupri,'(A)')                                       &
-     &        "WARNING problems encountered while reading file."
-            END IF
-          END DO
-          REWIND(filenum)
-        get_length_num=length
-        END FUNCTION GET_LENGTH_NUM
-      
-        INTEGER FUNCTION GET_LENGTH_NAME(filename, lupri)
-!     Opens a file, returns the maximum line length and closes the file again
-!
-          CHARACTER(LEN=*), INTENT(IN) :: filename
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
-          INTEGER :: filenum
-          
-          filenum=open_file(filename)
-          IF (filenum>0) THEN
-            get_length_name=get_length_num(filenum)
-            close(filenum)
-          ELSE
-            WRITE(lupri,'(a)') 'Could not open file. name=', filename
-            get_length_name=-1
-          END IF
-        END FUNCTION GET_LENGTH_NAME
-
         FUNCTION GET_EXTENSION(filename)
           CHARACTER(LEN=*), INTENT(IN) :: filename
           CHARACTER(LEN=LEN(filetypes(1))) :: get_extension
@@ -246,388 +158,31 @@
           IF (i>size_ft)  get_extension=' '
         END FUNCTION
                
-        SUBROUTINE READ_CHAR(filenum, linewidth, var, index, fixedwidth,&
-     &                       skip)
-!     TMP adjust for an optional linewith.
+        subroutine filter_comments(filein,fileout)
+          integer             :: filein,fileout
+          character(len=192)  :: str
+          character(len=1)    :: chr
+          integer             :: i,ios
 
-          INTEGER, INTENT(IN)           :: filenum
-          INTEGER, INTENT(IN)           :: linewidth
-          INTEGER, INTENT(INOUT)        :: index
-          CHARACTER(LEN=*), INTENT(OUT) :: var
-          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
-          LOGICAL, INTENT(IN), OPTIONAL :: skip
+          rewind(filein)
+          fileout=OPEN_SCRATCH()
 
-          LOGICAL                       :: quoted=.FALSE.
-          LOGICAL                       :: lskip
-          INTEGER :: iprev, ios, i
-          CHARACTER(LEN=linewidth) :: str
+          do 
+            read(filein,'(192a)',iostat=ios) str
+            if (ios) exit
+            do i=1,len(str)
+              select case (str(i:i))
+              case ('#','!')               
+                exit
+              end select
+            end do      
+            write(fileout,*) str(1:i-1)
+          end do
+          rewind(filein)
+          rewind(fileout)
           
-          if (present(skip)) then; lskip = skip;
-          else; lskip=.false.; endif
-          var=' '; iprev=index
 
-          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
-
-          IF (ios==0) THEN
-            IF (present(fixedwidth)) THEN
-              DO i=index,MIN(len(str), index+fixedwidth)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  index=1
-                  EXIT                  
-                END SELECT 
-              END DO
-              IF (i-2>index.OR.fixedwidth==1) var=str(iprev:i-1)
-              IF (lskip) THEN
-                index=1
-              ELSE IF (i-1>linewidth) THEN
-                index=1
-              ELSE
-                BACKSPACE(filenum)
-                index=i
-              END IF
-            ELSE  
-              DO i=index, len(str)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  IF (.NOT.(quoted)) THEN
-                    IF (iprev<i-1) var=str(iprev:i)
-                    index=1
-                    RETURN
-                  END IF
-                CASE (' ')
-                  IF (.not.(quoted)) THEN
-                    IF (iprev==1.AND.iprev<i) THEN
-                      var=str(iprev:i)
-                      IF (lskip) THEN
-                        index=1
-                      ELSE
-                        BACKSPACE(filenum)
-                        index=i
-                      END IF
-                      RETURN
-                    ELSE IF (iprev<i-1) THEN
-                      var=str(iprev+1:i)
-                      IF (lskip) THEN
-                        index=1
-                      ELSE
-                        BACKSPACE(filenum)
-                        index=i
-                      END IF
-                      RETURN
-                    END IF
-                    iprev=i
-                  END IF
-                CASE ('"')
-                  quoted=.not.(quoted)
-                  if (.not.(quoted)) THEN
-                    var=str(iprev+1:i-1)
-                    IF (lskip) THEN
-                      index=1
-                    ELSE
-                      BACKSPACE(filenum)
-                      index=i+1
-                    END IF
-                    RETURN
-                  END IF                    
-                END SELECT 
-              END DO             
-
-              var=str(iprev:i)
-              index=1
-            END IF
-          ELSE
-            index=-1
-          END IF
-        END SUBROUTINE READ_CHAR
-
-        REAL(KIND=8) FUNCTION READ_NUM8(filenum,iprev,i,ios,idot)
-          USE CONVERSION
-#include "priunit.h"
-          INTEGER, INTENT(IN)    :: filenum, i, iprev
-          INTEGER, INTENT(IN), OPTIONAL :: idot
-          INTEGER, INTENT(OUT) :: ios
-          CHARACTER(LEN=64) :: chr
-         
-          CALL QENTER('READ_NUM8') 
-   
-!MI       write(lupri,*) 'idot,iprev,i=',idot,iprev,i
-
-          IF (present(idot) .AND. idot>0) THEN
-            chr='(t'//trim(inttochar(iprev+1))//', f'//                 &
-     &           trim(inttochar(i-iprev-1))//'.'//                      &
-     &           trim(inttochar(i-idot-1))//')'
-          ELSE
-            chr='(t'//trim(inttochar(iprev+1))//', f'//                 &
-     &           trim(inttochar(i-iprev-1))//')'
-          END IF
-          BACKSPACE(filenum)
-
-!MI        write(lupri,*) 'chr=',chr
-
-          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_NUM8
-
-!MI        write(lupri,*) 'READ_NUM8=',READ_NUM8
-
-          CALL QEXIT('READ_NUM8') 
-
-        END FUNCTION READ_NUM8
-
-        REAL FUNCTION READ_NUM(filenum,iprev,i,ios,idot)
-          USE CONVERSION
-          INTEGER, INTENT(IN)    :: filenum, i, iprev
-          INTEGER, INTENT(IN), OPTIONAL :: idot
-          INTEGER, INTENT(OUT) :: ios
-          CHARACTER(LEN=64) :: chr
-         
-          IF (present(idot) .AND. idot>0) THEN
-            chr='(t'//trim(inttochar(iprev+1))//', f'//                 &
-     &           trim(inttochar(i-iprev-1))//'.'//                      &
-     &           trim(inttochar(i-idot-1))//')'
-          ELSE
-            chr='(t'//trim(inttochar(iprev+1))//', f'//                 &
-     &           trim(inttochar(i-iprev-1))//')'
-          END IF
-          BACKSPACE(filenum)
-          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_NUM
-        END FUNCTION READ_NUM
-
-      INTEGER FUNCTION READ_INTEGER(filenum,iprev,i,ios)
-          USE CONVERSION
-          INTEGER, INTENT(IN)    :: filenum, i, iprev
-          INTEGER, INTENT(OUT) :: ios
-          CHARACTER(LEN=64) :: chr
-         
-          chr='(t'//trim(inttochar(iprev+1))//', i'//                   &
-     &         trim(inttochar(i-iprev-1))//')'
-
-          BACKSPACE(filenum)
-          READ(filenum, chr,ADVANCE='yes', iostat=ios) READ_INTEGER
-        END FUNCTION READ_INTEGER
-
-        SUBROUTINE READ_REAL8(filenum,linewidth,var,index,fixedwidth,   &
-     &                        skip)
-!     TMP adjust for an optional linewith.
-#include "priunit.h"
-          INTEGER, INTENT(IN)           :: filenum
-          INTEGER, INTENT(IN)           :: linewidth
-          INTEGER, INTENT(INOUT)        :: index
-          REAL(KIND=8), INTENT(OUT) :: var
-          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
-          LOGICAL, INTENT(IN), OPTIONAL :: skip
-          
-          LOGICAL                       :: lskip
-          INTEGER :: iprev, ios, idot=0,i
-          CHARACTER(LEN=linewidth) :: str
-
-          if (present(skip)) then; lskip = skip;
-          else; lskip=.false.; endif
-          var=0; iprev=index; idot=0
-
-          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
-
-          IF (ios==0) THEN
-            IF (present(fixedwidth)) THEN
-              DO i=index+1,MIN(len(str), index+fixedwidth)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  EXIT
-                CASE ('.')
-                  idot=i
-                END SELECT               
-              END DO
-              IF (i-2>index.OR.fixedwidth==1)                           &
-     &          var=READ_NUM8(filenum,index,i-1,ios,idot)
-              IF (lskip) THEN 
-                index=1
-              ELSE IF (i>linewidth) THEN 
-                index=1
-              ELSE
-                BACKSPACE(filenum)
-                index=i
-              END IF
-            ELSE
-              DO i=index, len(str)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  IF (iprev<i-1)                                        &
-     &              var=READ_NUM8(filenum,iprev,i,ios,idot)
-                  index=1
-                  RETURN
-                CASE (' ')
-                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
-                    var=READ_NUM8(filenum,iprev,i,ios,idot)
-                    IF (lskip) THEN 
-                      index=1
-                    ELSE
-                      BACKSPACE(filenum)
-                    index=i
-                    END IF
-                    RETURN
-                  END IF
-                  iprev=i
-                CASE ('.')
-                  idot=i
-                END SELECT 
-              END DO
-              VAR=0.0
-              index=1
-            END IF
-          ELSE
-            index=-1
-           END IF
- 
-!MI       write(LUPRI,*) 'var=',var
-
-        END SUBROUTINE READ_REAL8
-
-#if !defined (SYS_SX64)
-        SUBROUTINE READ_REAL(filenum,linewidth,var,index,fixedwidth,    &
-     &                       skip)
-!     TMP adjust for an optional linewith.
-#include "priunit.h"
-          INTEGER, INTENT(IN)           :: filenum
-          INTEGER, INTENT(IN)           :: linewidth
-          INTEGER, INTENT(INOUT)        :: index
-          REAL, INTENT(OUT) :: var
-          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
-          LOGICAL, INTENT(IN), OPTIONAL :: skip
-          
-          LOGICAL                       :: lskip
-          INTEGER :: iprev, ios, idot=0,i
-          CHARACTER(LEN=linewidth) :: str
-
-          if (present(skip)) then; lskip = skip;
-          else; lskip=.false.; endif
-
-          var=0.0; iprev=index; idot=0
-          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
-
-
-          IF (ios==0) THEN
-            IF (present(fixedwidth)) THEN
-              DO i=index+1,MIN(len(str), index+fixedwidth)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  EXIT
-                CASE ('.')
-                  idot=i
-                END SELECT  
-              END DO
-              IF (i-2>index.OR.fixedwidth==1)                           &
-     &          var=READ_NUM(filenum,index,i-1,ios,idot)
-              IF (lskip) THEN 
-                index=1
-              ELSE IF (i>linewidth) THEN 
-                index=1
-              ELSE
-                BACKSPACE(filenum)
-                index=i
-              END IF
-            ELSE
-              DO i=index+1, len(str)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  IF (iprev<i-1.OR.i==2)                                &
-     &              var=READ_NUM(filenum,iprev,i,ios,idot)
-                  index=1
-                  RETURN
-                CASE (' ')
-                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
-                    var=READ_NUM(filenum,iprev,i,ios,idot)
-                    IF (lskip) THEN 
-                      index=1
-                    ELSE
-                      BACKSPACE(filenum)
-                    index=i
-                    END IF
-                    RETURN
-                  END IF
-                  iprev=i
-                CASE ('.')
-                  idot=i
-                END SELECT 
-              END DO
-              VAR=0.0
-              index=1
-            END IF
-          ELSE
-            index=-1
-           END IF
-
-!MI       write(LUPRI,*) 'var=',var
-
-        END SUBROUTINE READ_REAL
-
-#endif /* !defined (SYS_SX64) */
-
-        SUBROUTINE READ_INT(filenum,linewidth,var,index,fixedwidth,     &
-     &                      skip)
-!     TMP adjust for an optional linewith.
-          INTEGER, INTENT(IN)           :: filenum
-          INTEGER, INTENT(IN)           :: linewidth
-          INTEGER, INTENT(INOUT)        :: index
-          INTEGER, INTENT(OUT) :: var
-          INTEGER, INTENT(IN), OPTIONAL :: fixedwidth
-          LOGICAL, INTENT(IN), OPTIONAL :: skip
-          
-          LOGICAL                       :: lskip
-          INTEGER :: iprev, ios,i
-          CHARACTER(LEN=linewidth) :: str
-          
-          if (present(skip)) then; lskip = skip;
-          else; lskip=.false.; endif
-
-          var=0; iprev=index
-          READ(filenum, '(a)', ADVANCE='yes', iostat=ios) str
-
-          IF (ios==0) THEN
-            IF (present(fixedwidth)) THEN
-              DO i=index+1,MIN(len(str), index+fixedwidth)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  EXIT
-                END SELECT  
-              END DO
-              IF (i-2>index.OR.fixedwidth==1)                           &
-     &          var=READ_INTEGER(filenum,index,i-1,ios)
-              IF (lskip) THEN 
-                index=1
-              ELSE IF (i>linewidth) THEN 
-                index=1
-              ELSE
-                BACKSPACE(filenum)
-                index=i
-              END IF
-            ELSE
-              DO i=index, len(str)
-                SELECT CASE (str(i:i))
-                CASE ('#')
-                  IF (iprev<i-1)                                        &
-     &              var=READ_INTEGER(filenum,iprev,i,ios)
-                  index=1
-                  RETURN
-                CASE (' ')
-                  IF (iprev<i-1.OR.(i==2.AND..NOT.(index==2))) THEN
-                    var=READ_INTEGER(filenum,iprev,i,ios)
-                    IF (lskip) THEN 
-                      index=1
-                    ELSE
-                      BACKSPACE(filenum)
-                    index=i
-                    END IF
-                    RETURN
-                  END IF
-                  iprev=i
-                END SELECT 
-              END DO
-              var=0
-              index=1
-            END IF
-          ELSE
-            index=-1
-           END IF
-        END SUBROUTINE READ_INT
+        end subroutine
 
       END MODULE FILE
 
@@ -650,9 +205,9 @@
 !     DETERMINES HOW DIFFERENT MOLECULE FILES SHOULD BE READ.
 !     !!! PAM CAPITALIZES THE EXTENSIONS !!!
 
-        INTEGER, PARAMETER :: namelen=8, basislen=32
+        INTEGER, PARAMETER :: namelen=8, basislen=32,linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
-        INTEGER            :: i
+        INTEGER            :: i,ios
 
         TYPE atom
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
@@ -742,46 +297,63 @@
           bas%jco=>JCO2
         END SUBROUTINE
 
-        SUBROUTINE ADD_FAM(filenum,linelen,bas,index)
+        SUBROUTINE ADD_FAM(filenum,linelen,bas)
 !     JHS050707 Assigns for different types of family basissets an array FAM. 
 !               And reads the needed coefficients from file.
           INTEGER,INTENT(IN) :: filenum,linelen
           TYPE(basistype)    :: bas
           REAL,TARGET,ALLOCATABLE,SAVE :: FAM(:)
-          INTEGER,INTENT(INOUT) :: index
           INTEGER               :: i
+#include "priunit.h"
 
+! JHS test, iqm needs to be included as well!
           SELECT CASE(bas%type)
           CASE('WELLTEMP')
             ALLOCATE(FAM(5))
-            DO i=1,5
-              CALL READ_VAR(filenum,linelen,FAM(i),index)
-            END DO
+            read(filenum,*,iostat=ios) FAM(1:5)
+            if (ios) then
+              write(lupri,*) "ERROR(add_fam) : ", 
+     &          "Specify 5 coefficients for WELLTEMP basis."
+              call exit(1)
+            end if
             bas%fam=FAM
           CASE('EVENTEMP')
-            ALLOCATE(FAM(5))
-            DO i=1,3
-              CALL READ_VAR(filenum,linelen,FAM(i),index)
-            END DO
+            ALLOCATE(FAM(3))
+            read(filenum,*,iostat=ios) FAM(1:3)
+            if (ios) then
+              write(lupri,*) "ERROR(add_fam) : ", 
+     &          "Specify 3 coefficients for EVENTEMP basis."
+              call exit(1)
+            end if
             bas%fam=FAM
           CASE('GEOM')
             ALLOCATE(FAM(5))
-            CALL READ_VAR(filenum,linelen,FAM(1),index)
-            CALL READ_VAR(filenum,linelen,FAM(2),index)
+            read(filenum,*,iostat=ios) FAM(1:2), FAM(5)
+            if (ios) then
+              write(lupri,*) "ERROR(add_fam) : ", 
+     &          "Specify 3 coefficients for GEOM basis."
+              call exit(1)
+            end if
             FAM(3)=D0
             FAM(4)=D0
-            CALL READ_VAR(filenum,linelen,FAM(5),index)
-
             bas%fam=FAM
           CASE('FAMILY')
             ALLOCATE(FAM(1))
-            CALL READ_VAR(filenum,linelen,FAM(1),index)
+            read(filenum,*,iostat=ios) FAM(1)
+            if (ios) then
+              write(lupri,*) "ERROR(add_fam) : ", 
+     &          "Specify 1 coefficients for FAMILY basis."
+              call exit(1)
+            end if
             bas%fam=FAM
           CASE('DUALFAMILY')
             ALLOCATE(FAM(2))
-            DO i=1,2
-              CALL READ_VAR(filenum,linelen,FAM(i),index)
-            END DO
+            read(filenum,*,iostat=ios) FAM(1:2)
+            if (ios) then
+              write(lupri,*) "ERROR(add_fam) : ", 
+     &          "Specify 2 coefficients for DUAL basis."
+              call exit(1)
+            end if
             bas%fam=FAM
           END SELECT
         END SUBROUTINE
@@ -794,37 +366,42 @@
           TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
           TYPE(atom), POINTER                :: mol
+          CHARACTER(len=linelen)             :: str
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
-          INTEGER                            :: i,index
+          INTEGER                            :: i,index,tmp_file,ios
  
           CALL QENTER('READ_ATOMS')
 
+          call filter_comments(filenum,tmp_file)
+
           mol=>null()
-          IF (.NOT.(PARHER).AND.IPREAD>1)                               &
+          IF (.NOT.(PARHER).AND.IPREAD>1)                               
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
 
-          REWIND(filenum)
+          ios=0
           index=1
-          DO
-            name=' '
-            x=0
-            IF (index<0) EXIT
-            CALL READ_VAR(filenum, linelen,name, index) 
-            IF (index<=1) CYCLE
-            CALL READ_VAR(filenum, linelen,x(1), index)
-            IF (index<=1) CYCLE
-            CALL READ_VAR(filenum, linelen,x(2), index)
-            IF (index<=1) CYCLE
-            CALL READ_VAR(filenum, linelen,x(3), index)
+          do while(not(ios))
 
+            name=''
+            x(1:3)=0.0
+
+            READ(tmp_file, *,iostat=ios) name, x(1), x(2), x(3)
             IF (IPREAD >= 4) THEN
-              write(lupri,*) 'READ_ATOMS: read coordinates:',           &
+              write(lupri,*) 'READ_ATOMS: read coordinates:',           
      &        x(1),x(2),x(3)
             ENDIF
-!     JHS050707 If coordinates are missing the atom is not added to the list.
-            CALL ADD_ATOM(mol,fatom,name,x)            
-          END DO
+
+            if (ios) then
+! Error try to detect what went wrong.
+              backspace(tmp_file)
+              READ(tmp_file, '(192a)',iostat=ios) str
+            else
+              CALL ADD_ATOM(mol,fatom,name,x)  
+            end if
+          end do
+
+          close(tmp_file)
 
           IF(.NOT.(PARHER).AND. IPREAD>1) WRITE(LUPRI,*) 'Done'
 
@@ -1055,7 +632,7 @@
             END IF
           END DO
           IF (PRESENT(LUPRI)) WRITE(LUPRI,*) 'WARING:                   & 
-     &         No charge found for element', atomname
+     &         No charge found for element: ', atomname
 
         END FUNCTION
 
@@ -1075,6 +652,7 @@
           TYPE(atom)                         :: tmpmol
           TYPE(basistype),POINTER            :: bas
           TYPE(basistype)                    :: tmpbas
+          integer                            :: tmp_file,ios
 
 !     FOR UNIT CONVERSION
           REAL(KIND=8)      :: UNITS=1.0
@@ -1094,8 +672,8 @@
      &      WRITE(LUPRI,*) 'Reading basisset information from file...'
 
 !     initialization for security
-          REWIND(filenum)
-
+         call filter_comments(filenum,tmp_file)
+          
           mol=>null()
           bas=>null()
           index=1
@@ -1104,16 +682,15 @@
           NSYMOP=0
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
-          WRITE(LUPRI,*) 'INIT',NSYMOP,ADDSYM,KASYM
 
 !     Standard for xyz is angstrom.
           UNITS=1/XTANG
 
 
           DO
-            CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)          
+            read(tmp_file,*,iostat=ios) str
 
-            IF (index<0) THEN
+            IF (ios) THEN
               EXIT
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str              
@@ -1133,80 +710,106 @@
 !     JHS050707 In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
 !               like cc-pVDZ etc. This will be the basisset for all atoms that are not
 !               specified in the .SPECIAL section.
-                BACKSPACE(filenum)
-                CALL READ_VAR(filenum,linelen,str,index, skip=.TRUE.)
-                IF (str>' ') THEN
+                BACKSPACE(tmp_file)
+                read(tmp_file,*,iostat=ios) tmpbas%file
+                if (not(ios) .and. tmpbas%file>'') then         
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
-                  tmpbas%file=str
                   tmpbas%next=>NULL()
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CYCLE
-                END IF
-              ELSE IF(section(2)=='*BASIS'.AND.                         &
+                else if (ios) then
+                  write(lupri,*) "ERROR(readbasis): ",                  
+     &                           "Expecting default basisset name."
+
+                  exit
+                end if
+              ELSE IF(section(2)=='*BASIS'.AND.                         
      &                section(3)=='.SPECIAL') THEN
 !     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
-                BACKSPACE(filenum)
+                BACKSPACE(tmp_file)
                 tmpbas%name=' '
                 tmpbas%comp=' '
                 tmpbas%type=' '
                 tmpbas%file=' '
                 tmpbas%next=>NULL()
                 
-                CALL READ_VAR(filenum,linelen,tmpbas%name,index)
-                IF (index<=1) CYCLE
-
-                CALL READ_VAR(filenum,linelen,tmpbas%comp,index)
-                IF (index<=1) CYCLE
-                CALL READ_VAR(filenum,linelen,tmpbas%type,index)                
-                IF (index<=1) THEN
-                  tmpbas%file=tmpbas%comp
-                  tmpbas%comp='LARGE'
-                  tmpbas%type='BASIS'
-                  CALL ADD_BASIS(bas,firstbas,tmpbas)
-                  CYCLE
-                END IF
-
-                SELECT CASE(tmpbas%type)
-                CASE ('BASIS','MOLFBAS')                                
-                  IF (index<=1) CYCLE              
-                  CALL READ_VAR(filenum,linelen,tmpbas%file,index,      & 
-     &                 skip=.TRUE.)
-                  CALL ADD_BASIS(bas,firstbas,tmpbas)
-  
-                CASE('INTGRL','EXPLICIT')
+                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
+     &                                      tmpbas%type
+                if (ios) then
+                  backspace(tmp_file)
+                  read(tmp_file,*,iostat=ios) tmpbas%name
+                  if(not(ios) .and. tmpbas%name>'') then
+                    tmpbas%file=tmpbas%name
+                    tmpbas%comp='LARGE'
+                    tmpbas%type='BASIS'
+                    CALL ADD_BASIS(bas,firstbas,tmpbas)
+                    CYCLE
+                  else if (ios) then
+                     write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "Specify a filename or full basisname for ",
+     &                 ".SPECIAL basis."
+                     exit
+                  end if
+                else if(tmpbas%name>'' .and. tmpbas%type>'' 
+     &            .and. tmpbas%comp>'') then
+                  SELECT CASE(tmpbas%type)
+                  CASE ('BASIS','MOLFBAS')
+                    backspace(tmp_file)               
+                    read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
+     &                                      tmpbas%type,tmpbas%file
+                    if (not(ios) .and. tmpbas%file>'') then
+                      CALL ADD_BASIS(bas,firstbas,tmpbas)
+                    else if (ios) then
+                     write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "Specify a filename for ",tmpbas%type
+                    end if
+                  CASE('INTGRL','EXPLICIT')
 !     FIRST read rest of the line and then read the explicit coefficients.
 !     TMP We read the coefficients in in the old way in write commonblock
-                  CALL READ_VAR(filenum,linelen,iqm,index)
-                  ALLOCATE(JCO(iqm))
-                  DO i=1,iqm-1
-                    CALL READ_VAR(filenum,linelen,JCO(i),index)
-                  END DO                 
-                  CALL READ_VAR(filenum,linelen,JCO(i),index,           &
-     &                 skip=.TRUE.)
-                  CALL ADD_JCO(tmpbas,JCO)
-                  CALL ADD_BASIS(bas,firstbas,tmpbas)
-                  DEALLOCATE(JCO)
+                    read(tmp_file,*,iostat=ios) iqm
+                    if (ios .or. iqm=='') then
+                      write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "No iqm for ",tmpbas%type," specified."
+                      cycle
+                    end if
+                    ALLOCATE(JCO(iqm))
+                    read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
+                    if (ios) then
+                      write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "Specify at least ",iqm," coefficients"
+                      cycle
+                    end if
+                    CALL ADD_JCO(tmpbas,JCO)
+                    CALL ADD_BASIS(bas,firstbas,tmpbas)
+                    DEALLOCATE(JCO)
   
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
-                  CALL ADD_FAM(filenum,linelen,tmpbas,index)
-               
-                  CALL READ_VAR(filenum,linelen,iqm,index)
-                  ALLOCATE(JCO(iqm))
-                  DO i=1,iqm-1
-                    CALL READ_VAR(filenum,linelen,JCO(i),index)
-                  END DO                 
-                  CALL READ_VAR(filenum,linelen,JCO(i),index,           &
-     &                 skip=.TRUE.)
-                  CALL ADD_JCO(tmpbas,JCO)
-                  CALL ADD_BASIS(bas,firstbas,tmpbas)
-                  DEALLOCATE(JCO)
-  
-                CASE DEFAULT
-                  READ(filenum,*)
-                  CYCLE
-                END SELECT
+                    CALL ADD_FAM(tmp_file,linelen,tmpbas)
+                    
+                    read(tmp_file,*,iostat=ios) iqm
+                    if (ios .or. iqm=='') then
+                      write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "No iqm for ",tmpbas%type," specified."
+                      cycle
+                    end if
+                    ALLOCATE(JCO(iqm))
+                    read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
+                    if (ios) then
+                      write(tmp_file,*) "ERROR(readbasis) :", 
+     &                 "Specify at least ",iqm," coefficients"
+                      cycle
+                    end if
+                    CALL ADD_JCO(tmpbas,JCO)
+                    CALL ADD_BASIS(bas,firstbas,tmpbas)
+                    DEALLOCATE(JCO)
+
+                  CASE DEFAULT
+                    READ(tmp_file,*)
+                    CYCLE
+                  END SELECT
+                end if
 !              ELSE IF (section(2)=='*BASIS') THEN
 !     JHS050707  TO BE IMPLEMENTED Specify an other coordinate system than cartesian.
 !                SELECT CASE (section(3))
@@ -1214,34 +817,39 @@
 !                CASE ('.OWN'); 
 !                 
       
-             ELSE IF(section(2)=='*SYMMETRY') THEN
-                BACKSPACE(filenum)
-                index=1
-                CALL READ_VAR(filenum,linelen,NSYMOP,index,skip=.FALSE.)                
-                do i=1,3
-                  do j=1,3
-                    if (index<=0) then
-                      write(LUPRI,*)                                    & 
-     &                   'ERROR:hermodules.F reading symmetry.'
-            CALL QUIT('*** ERROR READ_BASIS, symmetry not               &
-     &                     correctly specified')
-                    CALL READ_VAR(filenum,linelen,kasym(i,j),           &
-     &           index,1,.FALSE.)
-                    end if
-                  end do
-                end do
+!             ELSE IF(section(2)=='*SYMMETRY') THEN
+!                BACKSPACE(tmp_file)
+!                CALL READ_VAR(tmp_file,linelen,NSYMOP,index,skip=.FALSE.)                
+!                do i=1,3
+!                  do j=1,3
+!                    if (index<=0) then
+!                      write(LUPRI,*)                                    & 
+!     &                   'ERROR:hermodules.F reading symmetry.'
+!            CALL QUIT('*** ERROR READ_BASIS, symmetry not               &
+!     &                     correctly specified')
+!                    CALL READ_VAR(tmp_file,linelen,kasym(i,j),           &
+!     &           index,1,.FALSE.)
+!                    end if
+!                  end do
+!                end do
                   
               ELSE IF (section(2)=='*CENTERS') THEN
 !     JHS050707 We specify the charges, the others are found in the table of nucdata.h
-                BACKSPACE(filenum)
+                BACKSPACE(tmp_file)
                 name=' '
                 charge=0.0
                 nucexp=0.0
   
-                CALL READ_VAR(filenum,linelen,name,index)
-                IF (.NOT.(index>1)) CYCLE
-                CALL READ_VAR(filenum,linelen,charge,index)
-                IF (index>1) CALL READ_VAR(filenum,linelen,nucexp,index)
+                read(tmp_file,*,iostat=ios) name, charge, nucexp
+                if (ios) then
+                  read(tmp_file,*,iostat=ios) name, charge
+                  if (ios) then
+                    write(tmp_file,*) "ERROR(readbasis) :", 
+     &          "Not a valid name and charge specified for *CENTERS"
+                    cycle
+                  end if
+                end if
+
                 mol=>firstatom
                 DO 
                   mol=>FIND_ATOM(mol,name)
@@ -1267,12 +875,17 @@
                   UNITS=XTANG
                   unitname='au'
                 CASE DEFAULT
-                  BACKSPACE(filenum)
-                  CALL READ_VAR(filenum, linelen,unitname,index)
-                  CALL READ_VAR(filenum, linelen,UNITS,index)
+                  BACKSPACE(tmp_file)
                   tmpunit=' '
-                  IF(index>1) CALL READ_VAR(filenum,                    &
-     &                 linelen,tmpunit,index,skip=.TRUE.)
+                  read(tmp_file,*,iostat=ios) unitname,units,tmpunit
+                  if (ios) then
+                    read(tmp_file,*,iostat=ios) unitname,units
+                    if (ios) then
+                    write(tmp_file,*) "ERROR(readbasis) :", 
+     &          "Specify a unitname and a unit and it's value *UNITS"
+                    cycle
+                    end if
+                  end if
                   SELECT CASE(tmpunit)
                   CASE ('ANGSTROM', 'A')
                     UNITS=UNITS/XTANG
@@ -1447,12 +1060,13 @@
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
           CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name,comp
           CHARACTER(LEN=linelen) :: str,pressect,pressub
+          character(len=linelen) :: tmp_name,tmp_comp
           INTEGER                :: index
 
           REWIND(infile)
           DO            
-            CALL READ_VAR(infile,linelen,str,index, skip=.TRUE.)          
-            IF (index<0) THEN
+            read(infile,*,iostat=ios) str
+            IF (ios) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
@@ -1462,9 +1076,10 @@
             ELSE IF (pressect==section.AND.pressub==subsection) THEN
               IF (str==name) THEN
                 BACKSPACE(infile)
-                CALL READ_VAR(infile,linelen,str,index)
-                CALL READ_VAR(infile,linelen,str,index,skip=.TRUE.)
-                IF (str==comp) EXIT
+                tmp_name=''
+                tmp_comp=''
+                read(infile,*,iostat=ios) tmp_name,tmp_comp
+                IF (not(ios) .and. str==comp) EXIT
               END IF
             END IF
           END DO
@@ -1615,7 +1230,7 @@
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
 !     POSITION the input file.
-          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
+          CALL POS_FILE(infile, lupri, linelen,                         &
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
           CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),         &
      &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
@@ -1655,7 +1270,7 @@
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),
+          CALL POS_FILE(infile, lupri, linelen,
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
@@ -1673,7 +1288,7 @@
      & "Well-tempered basis set typed explicitly in input file "
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
+          CALL POS_FILE(infile, lupri, linelen,
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
@@ -1740,7 +1355,7 @@
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
-            CALL POS_FILE(infile, lupri, GET_LENGTH(infile),              &
+            CALL POS_FILE(infile, lupri, linelen,
      &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp) 
             CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),         &
      &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                       &
@@ -2005,8 +1620,8 @@
 
           INTEGER, INTENT(IN) :: molfile,inpfile,lupri
 
-          CALL READ_ATOMS(molfile,GET_LENGTH(molfile),firstatom,lupri)
-          CALL READ_BASIS(inpfile, GET_LENGTH(inpfile),lupri)
+          CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+          CALL READ_BASIS(inpfile, linelen,lupri)
 
           IF(.NOT.(PARHER)) CALL PRINT_ATOMS(firstatom,lupri)
           IF(.NOT.(PARHER)) CALL PRINT_BASIS(firstbas,lupri)
@@ -2017,10 +1632,4 @@
 
 
       END MODULE READFILE
-
-
-
-
-
-
 
