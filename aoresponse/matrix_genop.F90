@@ -16,6 +16,14 @@ module matrix_genop
     integer                :: fermi_pointer = 1
     real(kind_dp), pointer :: elms(:)
     logical                :: is_defined    = .false.
+
+      type(Matrix),pointer :: block(:)
+      !the indexes hvere the blocks start
+      integer,dimension(:,:), pointer :: blockpos!(2,:)
+      !room for any auxaliary information
+      integer, pointer     :: iaux(:)
+      real(8), pointer :: raux(:)
+
   end type
 
     interface mat_init
