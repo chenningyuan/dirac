@@ -169,7 +169,7 @@
 
           do 
             read(filein,'(192a)',iostat=ios) str
-            if (ios) exit
+            if (ios.ne.0) exit
             do i=1,len(str)
               select case (str(i:i))
               case ('#','!')               
