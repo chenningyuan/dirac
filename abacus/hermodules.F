@@ -311,7 +311,7 @@
           CASE('WELLTEMP')
             ALLOCATE(FAM(5))
             read(filenum,*,iostat=ios) FAM(1:5)
-            if (ios) then
+            if (ios.ne.0) then
               write(lupri,*) "ERROR(add_fam) : ", 
      &          "Specify 5 coefficients for WELLTEMP basis."
               call exit(1)
@@ -320,7 +320,7 @@
           CASE('EVENTEMP')
             ALLOCATE(FAM(3))
             read(filenum,*,iostat=ios) FAM(1:3)
-            if (ios) then
+            if (ios.ne.0) then
               write(lupri,*) "ERROR(add_fam) : ", 
      &          "Specify 3 coefficients for EVENTEMP basis."
               call exit(1)
@@ -329,7 +329,7 @@
           CASE('GEOM')
             ALLOCATE(FAM(5))
             read(filenum,*,iostat=ios) FAM(1:2), FAM(5)
-            if (ios) then
+            if (ios.ne.0) then
               write(lupri,*) "ERROR(add_fam) : ", 
      &          "Specify 3 coefficients for GEOM basis."
               call exit(1)
@@ -340,7 +340,7 @@
           CASE('FAMILY')
             ALLOCATE(FAM(1))
             read(filenum,*,iostat=ios) FAM(1)
-            if (ios) then
+            if (ios.ne.0) then
               write(lupri,*) "ERROR(add_fam) : ", 
      &          "Specify 1 coefficients for FAMILY basis."
               call exit(1)
@@ -349,7 +349,7 @@
           CASE('DUALFAMILY')
             ALLOCATE(FAM(2))
             read(filenum,*,iostat=ios) FAM(1:2)
-            if (ios) then
+            if (ios.ne.0) then
               write(lupri,*) "ERROR(add_fam) : ", 
      &          "Specify 2 coefficients for DUAL basis."
               call exit(1)
@@ -381,7 +381,7 @@
 
           ios=0
           index=1
-          do while(not(ios))
+          do while(.not.(ios.ne.0))
 
             name=''
             x(1:3)=0.0
@@ -392,7 +392,7 @@
      &        x(1),x(2),x(3)
             ENDIF
 
-            if (ios) then
+            if (ios.ne.0) then
 ! Error try to detect what went wrong.
               backspace(tmp_file)
               READ(tmp_file, '(192a)',iostat=ios) str
@@ -690,7 +690,7 @@
           DO
             read(tmp_file,*,iostat=ios) str
 
-            IF (ios) THEN
+            IF (ios.ne.0) THEN
               EXIT
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str              
@@ -712,14 +712,14 @@
 !               specified in the .SPECIAL section.
                 BACKSPACE(tmp_file)
                 read(tmp_file,*,iostat=ios) tmpbas%file
-                if (not(ios) .and. tmpbas%file>'') then         
+                if (.not.(ios.ne.0) .and. tmpbas%file>'') then         
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
                   tmpbas%next=>NULL()
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CYCLE
-                else if (ios) then
+                else if (ios.ne.0) then
                   write(lupri,*) "ERROR(readbasis): ",                  
      &                           "Expecting default basisset name."
 
@@ -737,16 +737,16 @@
                 
                 read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
      &                                      tmpbas%type
-                if (ios) then
+                if (ios.ne.0) then
                   backspace(tmp_file)
                   read(tmp_file,*,iostat=ios) tmpbas%name
-                  if(not(ios) .and. tmpbas%name>'') then
+                  if(.not.(ios.ne.0) .and. tmpbas%name>'') then
                     tmpbas%file=tmpbas%name
                     tmpbas%comp='LARGE'
                     tmpbas%type='BASIS'
                     CALL ADD_BASIS(bas,firstbas,tmpbas)
                     CYCLE
-                  else if (ios) then
+                  else if (ios.ne.0) then
                      write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "Specify a filename or full basisname for ",
      &                 ".SPECIAL basis."
@@ -759,9 +759,9 @@
                     backspace(tmp_file)               
                     read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
      &                                      tmpbas%type,tmpbas%file
-                    if (not(ios) .and. tmpbas%file>'') then
+                    if (.not.(ios.ne.0) .and. tmpbas%file>'') then
                       CALL ADD_BASIS(bas,firstbas,tmpbas)
-                    else if (ios) then
+                    else if (ios.ne.0) then
                      write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "Specify a filename for ",tmpbas%type
                     end if
@@ -769,14 +769,14 @@
 !     FIRST read rest of the line and then read the explicit coefficients.
 !     TMP We read the coefficients in in the old way in write commonblock
                     read(tmp_file,*,iostat=ios) iqm
-                    if (ios .or. iqm=='') then
+                    if ( ios.ne.0 .or. iqm.eq.0) then
                       write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
-                    if (ios) then
+                    if (ios.ne.0) then
                       write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "Specify at least ",iqm," coefficients"
                       cycle
@@ -789,14 +789,14 @@
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
                     
                     read(tmp_file,*,iostat=ios) iqm
-                    if (ios .or. iqm=='') then
+                    if (ios.ne.0 .or. iqm==0) then
                       write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
-                    if (ios) then
+                    if (ios.ne.0) then
                       write(tmp_file,*) "ERROR(readbasis) :", 
      &                 "Specify at least ",iqm," coefficients"
                       cycle
@@ -841,9 +841,9 @@
                 nucexp=0.0
   
                 read(tmp_file,*,iostat=ios) name, charge, nucexp
-                if (ios) then
+                if (ios.ne.0) then
                   read(tmp_file,*,iostat=ios) name, charge
-                  if (ios) then
+                  if (ios.ne.0) then
                     write(tmp_file,*) "ERROR(readbasis) :", 
      &          "Not a valid name and charge specified for *CENTERS"
                     cycle
@@ -878,9 +878,9 @@
                   BACKSPACE(tmp_file)
                   tmpunit=' '
                   read(tmp_file,*,iostat=ios) unitname,units,tmpunit
-                  if (ios) then
+                  if (ios.ne.0) then
                     read(tmp_file,*,iostat=ios) unitname,units
-                    if (ios) then
+                    if (ios.ne.0) then
                     write(tmp_file,*) "ERROR(readbasis) :", 
      &          "Specify a unitname and a unit and it's value *UNITS"
                     cycle
@@ -1066,7 +1066,7 @@
           REWIND(infile)
           DO            
             read(infile,*,iostat=ios) str
-            IF (ios) THEN
+            IF (ios.ne.0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
@@ -1079,7 +1079,7 @@
                 tmp_name=''
                 tmp_comp=''
                 read(infile,*,iostat=ios) tmp_name,tmp_comp
-                IF (not(ios) .and. str==comp) EXIT
+                IF (.not.(ios.ne.0) .and. str==comp) EXIT
               END IF
             END IF
           END DO
