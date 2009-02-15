@@ -2182,14 +2182,22 @@ DO A = 1, NPMO
       CALL ResRecHP(JB,J,B) ! obtain J,B
       VIJ_AB = VINT(IJB)
       icount = icount + 1
-      WRITE(UOUT,829) icount,I,J,A,B,VIJ_AB
+      if (.not.allocated(MOLTRA_indx)) then
+        WRITE(UOUT,829) icount,I,J,A,B,VIJ_AB
+      else
+        WRITE(UOUT,2829) icount,I,J,A,B,VIJ_AB,  & 
+        MOLTRA_indx(I),MOLTRA_indx(A+NCMO),MOLTRA_indx(J),MOLTRA_indx(B+NCMO)
+      endif
    ENDDO
    WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
    'Number of nonzero integrals for IA pair, I=',I,' A=',A, &
    ' NZIntRec(',IA,')=',NZIntRec(IA)
 ENDDO
 ENDDO
+
  829 format(4x,i8,1x,'V2H2P-1, 1324, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
+2829 format(4x,i8,1x,'V2H2P-1, 1324, <IJ||AB>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12,   & 
+            ' MOLTRA:(',i3,1x,i3,'||',i3,1x,i3,')')
 
 end subroutine control_print_V2H2P
 

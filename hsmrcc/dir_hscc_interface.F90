@@ -248,7 +248,9 @@ end subroutine print_HSMRCC_Dirac_info
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7
 function get_moltra_index(is_hole,i) result(moi)
+!
 ! returns MOLTRA spinor index of HSMRCC NHMO/NPMO  index i
+!
 use io_moltra
 use Parameters
 use GMSMod
@@ -281,9 +283,32 @@ end function get_moltra_index
 function get_moltra_integral(i,j,k,l) result(moint)
 !-----------------------------------------------------------------------------
 !
-!   get nonzero MOLTRA integral (IJ|KL) from MOLTRA integral list
+!  get MOLTRA integral (IJ|KL) from MOLTRA integral list
+!
+!  if none found, simply returns zero
 !
 !------------------------------------------------------------------------------
+!C     Real groups       : classes 1-4 are used
+!C     Complex groups    : classes 1-8 are used
+!C     Quaternion groups : classes 1-16 are used
+!C
+!C     Class 1  : Real part of integrals      (i    j    |k    l   )
+!C     Class 2  : Real part of integrals      (i    j    |kbar lbar)
+!C     Class 3  : Real part of integrals      (i    jbar |k    lbar)
+!C     Class 4  : Real part of integrals      (i    jbar |kbar l   )
+!C     Class 5  : Imaginary part of integrals (i    j    |k    l   )
+!C     Class 6  : Imaginary part of integrals (i    j    |kbar lbar)
+!C     Class 7  : Imaginary part of integrals (i    jbar |k    lbar)
+!C     Class 8  : Imaginary part of integrals (i    jbar |kbar l   )
+!C     Class 9  : Real part of integrals      (i    j    |kbar l   )
+!C     Class 10 : Real part of integrals      (i    j    |k    lbar)
+!C     Class 11 : Real part of integrals      (ibar j    |k    l   )
+!C     Class 12 : Real part of integrals      (i    jbar |k    l   )
+!C     Class 13 : Imaginary part of integrals (i    j    |kbar l   )
+!C     Class 14 : Imaginary part of integrals (i    j    |k    lbar)
+!C     Class 15 : Imaginary part of integrals (ibar j    |k    l   )
+!C     Class 16 : Imaginary part of integrals (i    jbar |k    l   )
+!-----------------------------------------------------------------------------
 use io_moltra
 use Parameters
 use GMSMod
@@ -291,48 +316,67 @@ use GMSMod
 #include "priunit.h"
 
 integer, intent(in) :: i,j,k,l ! KU indexes
+!integer, intent(in) :: i_kr,j_kr,k_kr,l_kr  ! ...
 real*8 :: moint
 
 moint=0.0d0
 
+!write(LUPRI,'(4x,a,4i3)') 'get_moltra_integral: (i,j,k,l):',i,j,k,l
+
+i_kr=+1;j_kr=+1;k_kr=+1;l_kr=+1
+
+if (i>NSP/2) i_kr=-1
+if (j>NSP/2) j_kr=-1
+if (k>NSP/2) k_kr=-1
+if (l>NSP/2) l_kr=-1
+
+
+! TODO: print-out 
+!write(LUPRI,'(4x,a,a,i3,a,i2,a,i3,a,i2,a,i3,a,i2,a,i3,a,i2,a)')  & 
+!          'get_moltra_integral: (i,j,k,l):',                     & 
+!          '(',i,'[',i_kr,']',j,'[',j_kr,']|',k,'[',k_kr,']',l,'[',l_kr,'])'
+
+! ... take into account Kramers symmetries of integrals ...
+if (i_kr.eq.+1.and.j_kr.eq.+1.and.k_kr.eq.+1.and.l_kr.eq.+1) then      ! (aa|aa)
+ ix=i; jx=j; kx=k;     lx=l
+else if (i_kr.eq.+1.and.j_kr.eq.+1.and.k_kr.eq.-1.and.l_kr.eq.-1) then ! (aa|bb)
+ ix=i; jx=j; kx=k-NSP/2; lx=l-NSP/2
+else if (i_kr.eq.-1.and.j_kr.eq.-1.and.k_kr.eq.+1.and.l_kr.eq.+1) then ! (bb|aa)
+ ix=i-NSP/2; jx=j-NSP/2; kx=k; lx=l
+else if (i_kr.eq.-1.and.j_kr.eq.-1.and.k_kr.eq.-1.and.l_kr.eq.-1) then ! (bb|bb)
+ ix=i-NSP/2; jx=j-NSP/2; kx=k-NSP/2; lx=l-NSP/2
+else
+ return ! no suitable combination of 'bars' for nonzero integral
+endif
+
+! write(LUPRI,'(4x,a,4i3)') '...new indexes, i,j,k,l:',ix,jx,kx,lx 
+
 !
-! ... take into account symmetry properties of (IJ|KL) 
+! ... take into account general symmetry properties of (IJ|KL) 
 !
 !  (IJ|KL) = (JI|LK)=(KL|IJ)=(LK|JI) for Coulomb integrals
 !
 
 ! (IJ|KL)
- if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_ij%p_iA3D(i,j,2).ne.0  & 
-     .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 ) then
 
-    int_pos=(pos_ij%p_iA3D(i,j,1)+pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) - 1)
-    moint=cbuf%p_rA2D(1,int_pos)
-
-! (JI|LK)
- else if ( pos_ij%p_iA3D(j,i,1).ne.0 .and. pos_ij%p_iA3D(j,i,2).ne.0  &
-       .and. pos_kl%p_iA3D(l,k,pos_ij%p_iA3D(j,i,2)).ne.0 ) then
-
-    int_pos=(pos_ij%p_iA3D(j,i,1)+pos_kl%p_iA3D(l,k,pos_ij%p_iA3D(j,i,2)) - 1)
-    moint=cbuf%p_rA2D(1,int_pos)
-
-! (KL|IJ)
- else if ( pos_ij%p_iA3D(k,l,1).ne.0 .and. pos_ij%p_iA3D(k,l,2).ne.0  &
-       .and. pos_kl%p_iA3D(i,j,pos_ij%p_iA3D(k,l,2)).ne.0 ) then
-
-    int_pos=(pos_ij%p_iA3D(k,l,1)+pos_kl%p_iA3D(i,j,pos_ij%p_iA3D(k,l,2)) - 1)
-    moint=cbuf%p_rA2D(1,int_pos)
-
-! (LK|JI)
- else if ( pos_ij%p_iA3D(l,k,1).ne.0 .and. pos_ij%p_iA3D(l,k,2).ne.0  &
-       .and. pos_kl%p_iA3D(j,i,pos_ij%p_iA3D(j,i,2)).ne.0 ) then
-
-    int_pos=(pos_ij%p_iA3D(l,k,1)+pos_kl%p_iA3D(j,i,pos_ij%p_iA3D(l,k,2)) - 1)
-    moint=cbuf%p_rA2D(1,int_pos)
-   
+  ipos_ijkl=get_nonzero_integral_position(ix,jx,kx,lx)
+  ipos_jilk=get_nonzero_integral_position(jx,ix,lx,kx)
+  ipos_klij=get_nonzero_integral_position(kx,lx,ix,jx)
+  ipos_lkji=get_nonzero_integral_position(lx,kx,jx,ix)
+ 
+ if (ipos_ijkl.ne.-1) then
+    moint=cbuf%p_rA2D(1,ipos_ijkl)
+ else if (ipos_jilk.ne.-1) then
+    moint=cbuf%p_rA2D(1,int_jilk)
+ else if (ipos_klij.ne.-1) then
+    moint=cbuf%p_rA2D(1,ipos_klij)
+ else if (ipos_lkji.ne.-1) then
+    moint=cbuf%p_rA2D(1,ipos_lkji)
  endif
 
-end function get_moltra_integral
+ return
 
+end function get_moltra_integral
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -97,7 +97,7 @@ subroutine EndGMSMod
    if (allocated(OrbCoeff))      deallocate(OrbCoeff)
    if (allocated(HCoreMatrix))   deallocate(HCoreMatrix)
 
-   if (allocated(MOLTRA_indx))   deallocate(MOLTRA_indx)
+ !  if (allocated(MOLTRA_indx))   deallocate(MOLTRA_indx)
 
    if (get_iprint() >=8) then
      write(UOUT,'(/,2x,a)') 'EndGMSMod: going to deallocate GMS specific data.'

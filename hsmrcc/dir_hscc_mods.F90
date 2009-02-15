@@ -82,9 +82,10 @@ write(LUPRI,*) 'alloc_mdcint_data: calculated array size, ilenght=',ilenght
 cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
 
 ! third index : 1 - position, 2 - block no
-pos_ij = Make3DimArray('INTE',2*NKR,2*NKR,2,'position of <IJ| int.blocks on integral array') 
+pos_ij = Make3DimArray('INTE',2*NKR,2*NKR,2,'position of (IJ| int.blocks on integral array') 
 
-pos_kl = Make3DimArray('INTE',2*NKR,2*NKR,nintbl,'position of |KL> integrals in given block on integral array') ! huge array!
+! ... later take care of +1 index in better way
+pos_kl = Make3DimArray('INTE',2*NKR,2*NKR,nintbl+1,'position of |KL) integrals in given block on integral array') ! huge array!
 
 end subroutine alloc_mdcint_data
 
@@ -93,10 +94,41 @@ subroutine dalloc_mdcint_data
 
 ! dealloc cbuf, pos_ij, pos_kl
 
-
-
 end subroutine dalloc_mdcint_data
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+function get_nonzero_integral_position(i,j,k,l) result(int_pos)
+!----------------------------------------------------------------------------
+!
+!     returns position of NONZERO (IJ|KL) integral on big array, or -1
+!
+!----------------------------------------------------------------------------
+implicit none
+#include "priunit.h"
+integer, intent(in) :: i,j,k,l
+integer :: int_pos
+
+int_pos=-1
+
+! pos_ij, pos_kl must be allocated !
+if (.not.pos_ij%is_alloc.or..not.pos_kl%is_alloc) then
+  write(LUPRI,*) "get_nonzero_integral_position: arrays not allocated !"
+  call quit('get_nonzero_integral_position: arrays not allocated !')
+endif 
+
+if ( pos_ij%p_iA3D(i,j,1).ne.0 .and. pos_ij%p_iA3D(i,j,2).ne.0        &
+     .and. pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)).ne.0 )        then
+
+  int_pos=(pos_ij%p_iA3D(i,j,1) + pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) - 1)
+  
+ ! write(LUPRI,*) 'pos_ij%p_iA3D(i,j,1) =',pos_ij%p_iA3D(i,j,1) 
+ ! write(LUPRI,*) 'pos_ij%p_iA3D(i,j,2),nintbl =',pos_ij%p_iA3D(i,j,2),nintbl
+ ! write(LUPRI,*) 'pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2)) =',pos_kl%p_iA3D(k,l,pos_ij%p_iA3D(i,j,2))
+ ! write(LUPRI,*) 'int_pos=',int_pos
+
+endif
+
+end function get_nonzero_integral_position
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function GetNBSYM() result(nbsym_dirac)
@@ -539,7 +571,9 @@ endif
   pos_ij%p_iA3D(KR(IKR),KR(JKR),1) = icbuf
 
   icbuf = icbuf + NONZR
+
   iblock = iblock + 1    ! incrememt integral block
+
   pos_ij%p_iA3D(KR(IKR),KR(JKR),2) = iblock
 
 ! save KL-indexes of a given block on a big array !
@@ -1390,7 +1424,7 @@ call print_basic_params
 call print_gms_parameters
 
 ! 01. V2H2P  <IJ||AB>
-write(LUPRI,*) '01. V2H2P, 1324, <IJ||AB>'
+write(LUPRI,'(/,4x,a,/)') '01. V2H2P, 1324, <IJ||AB>'
 
 !write(LUPRI,*) 'NHMO=',NHMO
 !write(LUPRI,*) 'NPMO=',NPMO
@@ -1400,26 +1434,40 @@ do IA=1,NPMO
 do IJ=1,NHMO
 do IB=1,NPMO
 
- ii_mo=get_moltra_index(.true.,II)
- ia_mo=get_moltra_index(.false.,IA)
- ij_mo=get_moltra_index(.true.,IJ)
- ib_mo=get_moltra_index(.false.,IB)
+! ii_mo=get_moltra_index(.true.,II)
+! ia_mo=get_moltra_index(.false.,IA)
+! ij_mo=get_moltra_index(.true.,IJ)
+! ib_mo=get_moltra_index(.false.,IB)
+
+ii_mo=MOLTRA_indx(II);      ij_mo=MOLTRA_indx(IJ); 
+ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
+
+!write(LUPRI,'(4x,a,4i3)') 'moltra indx i,j,a,b:',ii_mo,ij_mo,ia_mo,ib_mo
 
 ! write(LUPRI,'(a,i3,a,i3,a,i3,a,i3,a)') 'moltra KU indexes: <',ii_mo,' ',ia_mo,'||',ij_mo,' ',ib_mo,'>'
 
- !SInt_ijab=get_moltra_integral(ii_mo,ij_mo,ia_mo,ib_mo)
-  SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)
- !SInt_ijba=get_moltra_integral(ii_mo,ij_mo,ib_mo,ia_mo)
-  SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
+ SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)
+ ! SInt_ijab=get_moltra_integral(ii_mo,SpinOfOrb(II),ia_mo,SpinOfOrb(IA),           & 
+ !                               ij_mo,SpinOfOrb(IJ),ib_mo,SpinOfOrb(IB)   )
+
+ SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
+ ! SInt_ijba=get_moltra_integral(ii_mo,SpinOfOrb(II),ib_mo,SpinOfOrb(IB),  & 
+ !                               ij_mo,SpinOfOrb(IJ),ia_mo,SpinOfOrb(IA))
 
  ASInt_ijab=SInt_ijab-SInt_ijba
 
- if (DABs(SInt_ijab).gt.1.0d-14 .or. DABs(SInt_ijba).gt.1.0d-14 ) then
- !if (DABs(ASInt_ijab).gt.1.0d-14) then
+ !if (DABs(SInt_ijab).gt.1.0d-14 .or. DABs(SInt_ijba).gt.1.0d-14 ) then
+ if (DABs(ASInt_ijab).gt.1.0d-14) then
 
    write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,3f18.12,a,4i3)') & 
          '<IJ||AB>, <',II,' ',IJ,'||',  & 
        IA,' ',IB,'>=',ASInt_ijab,SInt_ijab,SInt_ijba,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
+
+ else
+
+ !  write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,a,4i3)')    & 
+ !        '<IJ||AB>, <',II,' ',IJ,'||',                & 
+ !      IA,' ',IB,'>= 0',' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
 
  endif
 
