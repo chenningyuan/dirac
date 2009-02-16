@@ -162,22 +162,24 @@ contains
     F   = 1.0d0*F
     C_i = 1.0d0*C_i
 
-    A = D
+    call print(F, 'test_matrix_defop: F')
+
+    A = F
     call print(A, 'test_matrix_defop: A = F')
 
-    A = D + D
+    A = F + F
     call print(A, 'test_matrix_defop: A = F + F')
 
-    A = D - D
+    A = F - F
     call print(A, 'test_matrix_defop: A = F - F')
 
-    A = S*D
+    A = D*F
     call print(A, 'test_matrix_defop: A = D*F')
 
-    A = 2.0d0*D
+    A = 2.0d0*F
     call print(A, 'test_matrix_defop: A = 2.0d0*F')
 
-    A = D/2.0d0
+    A = F/2.0d0
     call print(A, 'test_matrix_defop: A = F/2.0d0')
 
     A = C_i*dag(C_i)
