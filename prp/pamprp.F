@@ -6222,10 +6222,6 @@ C ------------------------------------------------------
 CMI ... take care of the correct form of PRPLBL(IPL) name
             READ(PRPNAM(IPL)(10:11),'(I2)') IA
             IB = MOD(I+2,3) + 1
-CMI   ... for compatibility with Dalton exp.values (NSLO) !
-CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
-CTROND            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
-CMI   ... new sign convention !!!
             TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
          ENDDO
          IF (IPRPRP.GE.2) THEN
@@ -6262,7 +6258,6 @@ C         ... extract the reorthonormalization part into the PMAT
          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
 C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
-CTROND         CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
       END IF
 #endif /* MOD_LONDON */
 C
@@ -8233,7 +8228,6 @@ C
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
       KFRSAV = KFREE
       CALL MEMGET('REAL',KTEMP,9,WORK,KFREE,LFREE)
-CTROND      CALL MEMGET('REAL',KBETA,NBFREQ,WORK,KFREE,LFREE)
       CALL PRP_OPTRO1(ABLRF,ABCNV,WORK(KTEMP),
      &            WORK,KFREE,LFREE)
       CALL MEMREL('PRP_OPTROT',WORK,1,KFRSAV,KFREE,LFREE)

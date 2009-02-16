@@ -106,10 +106,6 @@ C     reorthonormalization terms over positronic shells
 C ... when you want to change the DOEPRN default value in URKBAL,
 C      use the NOEPRN keyword (see below)
       IF (URKBAL) DOEPRN=.TRUE.
-CTROND: I can not see why these should be set to zero here....!!!
-CTROND  ..they are initialized already in HERINP...
-CTROND      CALL DZERO(GAGORG,3)
-CTROND      CALL DZERO(DIPORG,3)
 
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
@@ -1378,7 +1374,7 @@ C ==========
 C  Get the total one-electron magnetic field property gradient dh~(B)/dB
 C  in MO basis when using London orbitals and write it to the DA file ONELON.
 C
-C  Experession:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
+C  Expression:  RM1H1 + RM1H2 + RM1H3(sq) + RM1RN(sq) (x,y,z)
 C
 C  On output: CMO exports MO coefficients
 C             IBEIG and boson irreps info...
@@ -1428,7 +1424,7 @@ C Open file for the London one-electron contributions, dh(B)/dB_c
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 
-C Allocate memmory for storing components of dh(B)/dB_c
+C Allocate memory for storing components of dh(B)/dB_c
 
       CALL MEMGET('REAL',KDHB,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDHBIX,N2ORBXQ,WORK,KFREE,LFREE)
@@ -1859,8 +1855,6 @@ C
             DO 810 I = ISTRA,ISTRA + NORBA - 1
                IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
                NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-CTROND               IA    = IBTSHR(IPIND(I),8)
-CTROND               NA    = IBTSHR(IPIND(I),4) - IA*16
                NHKTA = NHKT(IA)
                KHKTA = KHKT(IA)
                MULA  = ISTBAO(IA)
@@ -1876,8 +1870,6 @@ CTROND               NA    = IBTSHR(IPIND(I),4) - IA*16
                      DO 840 J = ISTRB,ISTRB + NORBB - 1
                         IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
                         NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-CTROND                        IB    = IBTSHR(IPIND(J),8)
-CTROND                        NB    = IBTSHR(IPIND(J),4) - IB*16
                         NHKTB = NHKT(IB)
                         KHKTB = KHKT(IB)
                         MULB  = ISTBAO(IB)
