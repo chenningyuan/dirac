@@ -38,6 +38,7 @@ contains
 
     call get_F(F)
 
+    call test_matrix_defop(S, D, F, C_i)
     call nr_electrons(S, D)
     call energy(D, F)
     call mu(S, D, F)

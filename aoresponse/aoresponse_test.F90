@@ -148,6 +148,55 @@ contains
 
   end subroutine
 
+  subroutine test_matrix_defop(S, D, F, C_i)
+
+!   ----------------------------------------------------------------------------
+    type(matrix), intent(inout) :: S, D, F, C_i
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: A
+!   ----------------------------------------------------------------------------
+
+    S   = 1.0d0*S
+    D   = 1.0d0*D
+    F   = 1.0d0*F
+    C_i = 1.0d0*C_i
+
+    A = D
+    call print(A, 'test_matrix_defop: A = D')
+
+    A = D + D
+    call print(A, 'test_matrix_defop: A = D + D')
+
+    A = D - D
+    call print(A, 'test_matrix_defop: A = D - D')
+
+    A = S*D
+    call print(A, 'test_matrix_defop: A = S*D')
+
+    A = 2.0d0*D
+    call print(A, 'test_matrix_defop: A = 2.0d0*D')
+
+    A = D/2.0d0
+    call print(A, 'test_matrix_defop: A = D/2.0d0')
+
+    A = C_i*dag(C_i)
+    call print(A, 'test_matrix_defop: A = C_i*dag(C_i)')
+
+    A = (C_i*dag(C_i)/2.0d0) - D
+    call print(A, 'test_matrix_defop: A = (C_i*dag(C_i)/2.0d0) - D')
+
+!   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
+
+    write(*, *) 'test_matrix_defop: dot(S, D)', dot(S, D)
+
+    write(*, *) 'test_matrix_defop: tr(S, D)', tr(S, D)
+
+    write(*, *) 'test_matrix_defop: norm(D)', norm(D)
+
+    write(*, *) 'test_matrix_defop: sqrt(dot(D, D))', sqrt(dot(D, D))
+
+  end subroutine
+
   subroutine mu(S, D, F)
 
     type(matrix), intent(inout) :: S, D, F
