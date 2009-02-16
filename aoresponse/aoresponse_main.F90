@@ -34,11 +34,12 @@ contains
 
     D   = C_i*dag(C_i)
     D   = D/2.0d0
-    C_i = 0
 
     call get_F(F)
 
     call test_matrix_defop(S, D, F, C_i)
+    C_i = 0
+
     call nr_electrons(S, D)
     call energy(D, F)
     call mu(S, D, F)
@@ -215,48 +216,48 @@ contains
 
   end subroutine
 
-  subroutine test_matrix_stat()
+! subroutine test_matrix_stat()
 
-    type(matrix) :: A, B, C
+!   type(matrix) :: A, B, C
 
-                            call matrixstats('entering subroutine   ')
+!                           call matrixstats('entering subroutine   ')
 
-    call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
-    A = A                 ; call matrixstats('A = A                 ')
-    B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
-    C = A + B             ; call matrixstats('C = A + B             ')
-    C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
+!   call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
+!   A = A                 ; call matrixstats('A = A                 ')
+!   B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
+!   C = A + B             ; call matrixstats('C = A + B             ')
+!   C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
 
-    call test_matrix_stat_sub()
-    call test_matrix_stat_sub()
-    call test_matrix_stat_sub()
+!   call test_matrix_stat_sub()
+!   call test_matrix_stat_sub()
+!   call test_matrix_stat_sub()
 
-    A = 0                 ; call matrixstats('A = 0                 ')
-    B = 0                 ; call matrixstats('B = 0                 ')
-    C = 0                 ; call matrixstats('C = 0                 ')
+!   A = 0                 ; call matrixstats('A = 0                 ')
+!   B = 0                 ; call matrixstats('B = 0                 ')
+!   C = 0                 ; call matrixstats('C = 0                 ')
 
-                            call matrixstats('leaving subroutine    ')
+!                           call matrixstats('leaving subroutine    ')
 
-  end subroutine
+! end subroutine
 
-  subroutine test_matrix_stat_sub()
+! subroutine test_matrix_stat_sub()
 
-    type(matrix) :: A, B, C
+!   type(matrix) :: A, B, C
 
-                            call matrixstats('entering subroutine   ')
+!                           call matrixstats('entering subroutine   ')
 
-    call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
-    A = A                 ; call matrixstats('A = A                 ')
-    B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
-    C = A + B             ; call matrixstats('C = A + B             ')
-    C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
+!   call mat_init(A, 5, 5); call matrixstats('call mat_init(A, 5, 5)')
+!   A = A                 ; call matrixstats('A = A                 ')
+!   B = 2.0d0*A           ; call matrixstats('B = 2.0d0*A           ')
+!   C = A + B             ; call matrixstats('C = A + B             ')
+!   C = C/2.0d0           ; call matrixstats('C = C/2.0d0           ')
 
-    A = 0                 ; call matrixstats('A = 0                 ')
-    B = 0                 ; call matrixstats('B = 0                 ')
-    C = 0                 ; call matrixstats('C = 0                 ')
+!   A = 0                 ; call matrixstats('A = 0                 ')
+!   B = 0                 ; call matrixstats('B = 0                 ')
+!   C = 0                 ; call matrixstats('C = 0                 ')
 
-                            call matrixstats('leaving subroutine    ')
+!                           call matrixstats('leaving subroutine    ')
 
-  end subroutine
+! end subroutine
 
 end module
