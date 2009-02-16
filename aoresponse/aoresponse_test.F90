@@ -1,6 +1,7 @@
 module aoresponse_test_m
 
     use matrix_defop
+    use matrix_genop
     use aoresponse_xc_m
     use aoresponse_visual_m
     use dirac_interface_m
@@ -120,7 +121,7 @@ contains
     S = 1.0d0*S
     D = 1.0d0*D
 
-    write(*, *) 'electron count from S**D:', S**D
+    write(*, *) 'electron count from S**D:', dot(S, D)
 
   end subroutine
 
@@ -138,7 +139,7 @@ contains
     G(1) = 1.0d-100*D
 
     call prop_fock(nop, (/D, D/), G)
-    write(*, *) 'electronic energy from F**D - 0.5d0*G(1)**D:', F**D - 0.5d0*G(1)**D
+    write(*, *) 'electronic energy from F**D - 0.5d0*G(1)**D:', dot(F, D) - 0.5d0*dot(G(1), D)
 
     G(1) = 0
 
@@ -162,22 +163,22 @@ contains
     C_i = 1.0d0*C_i
 
     A = D
-    call print(A, 'test_matrix_defop: A = D')
+    call print(A, 'test_matrix_defop: A = F')
 
     A = D + D
-    call print(A, 'test_matrix_defop: A = D + D')
+    call print(A, 'test_matrix_defop: A = F + F')
 
     A = D - D
-    call print(A, 'test_matrix_defop: A = D - D')
+    call print(A, 'test_matrix_defop: A = F - F')
 
     A = S*D
-    call print(A, 'test_matrix_defop: A = S*D')
+    call print(A, 'test_matrix_defop: A = D*F')
 
     A = 2.0d0*D
-    call print(A, 'test_matrix_defop: A = 2.0d0*D')
+    call print(A, 'test_matrix_defop: A = 2.0d0*F')
 
     A = D/2.0d0
-    call print(A, 'test_matrix_defop: A = D/2.0d0')
+    call print(A, 'test_matrix_defop: A = F/2.0d0')
 
     A = C_i*dag(C_i)
     call print(A, 'test_matrix_defop: A = C_i*dag(C_i)')
@@ -188,12 +189,14 @@ contains
 !   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
 
     write(*, *) 'test_matrix_defop: dot(S, D)', dot(S, D)
-
     write(*, *) 'test_matrix_defop: tr(S, D)', tr(S, D)
+
+    write(*, *) 'test_matrix_defop: dot(D, F)', dot(D, F)
+    write(*, *) 'test_matrix_defop: tr(D, F)', tr(D, F)
 
     write(*, *) 'test_matrix_defop: norm(D)', norm(D)
 
-    write(*, *) 'test_matrix_defop: sqrt(dot(D, D))', sqrt(dot(D, D))
+    write(*, *) 'test_matrix_defop: sqrt(dot(F, F))', sqrt(dot(F, F))
 
   end subroutine
 
@@ -302,7 +305,7 @@ contains
 !       A = (X_j(j)*D_i(i) + X_i(i)*D_j(j))*S - S*(D_i(i)*X_j(j) + D_j(j)*X_i(i))
 
 !       do k = 1, 3
-!         e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*trab(Y_k(k), A)
+!         e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*tr(Y_k(k), A)
 !       end do
 
 !       A = 0
@@ -320,7 +323,7 @@ contains
         A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
 
         do k = 1, 3
-          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(Y_k(k), A)
+          e_ijk(i, j, k) = e_ijk(i, j, k) - tr(Y_k(k), A)
         end do
 
         A = 0
@@ -492,7 +495,7 @@ contains
       do j = 1, 3
         A = (F_j(j)*D_i(i) + F_i(i)*D_j(j))*S - S*(D_i(i)*F_j(j) + D_j(j)*F_i(i))
         do k = 1, 3
-          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(Y_k(k), A)
+          e_ijk(i, j, k) = e_ijk(i, j, k) - tr(Y_k(k), A)
         end do
       end do
     end do
@@ -505,7 +508,7 @@ contains
       do j = 1, 3
         A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
         do k = 1, 3
-          e_ijk(i, j, k) = e_ijk(i, j, k) - trab(Y_k(k), A)
+          e_ijk(i, j, k) = e_ijk(i, j, k) - tr(Y_k(k), A)
         end do
       end do
     end do
@@ -899,10 +902,10 @@ subroutine beta_debug(S,D,F,w)
        call prop_fock(NOP,(/D,Df(i)/),G)
 
        T = H(1) + G(1) - Ff(i)
-       write(*, *) 'debug_norm 1:', T**T
+!      write(*, *) 'debug_norm 1:', T**T
 
        T = Df(i)*S*D + D*S*Df(i) - Df(i)
-       write(*, *) 'debug_norm 2:', T**T
+!      write(*, *) 'debug_norm 2:', T**T
 
 !      M = H(1)*D*S - S*D*H(1)
 !      write(*, *) 'debug matrix 1:'
@@ -923,7 +926,7 @@ subroutine beta_debug(S,D,F,w)
        T = Ff(i)*D*S - S*D*Ff(i) + F*Df(i)*S - S*Df(i)*F
 !      write(*, *) 'debug matrix 5:'
 !      call mat_print(T)
-       write(*, *) 'debug_norm 4:', T**T
+!      write(*, *) 'debug_norm 4:', T**T
 
     end do
 !   call quit('over and out')
@@ -934,7 +937,7 @@ subroutine beta_debug(S,D,F,w)
        do j = 1, 3
           ij = i + 3*(j-1)
           T = Dfe(ij)*S*D + De(j)*S*Df(i) + Df(i)*S*De(j) + D*S*Dfe(ij) - Dfe(ij)
-       write(*, *) 'debug_norm 5:', T**T
+!      write(*, *) 'debug_norm 5:', T**T
       end do
     end do
 
