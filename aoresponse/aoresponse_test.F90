@@ -185,8 +185,8 @@ contains
     A = C_i*dag(C_i)
     call print(A, 'test_matrix_defop: A = C_i*dag(C_i)')
 
-    A = (C_i*dag(C_i)/2.0d0) - D
-    call print(A, 'test_matrix_defop: A = (C_i*dag(C_i)/2.0d0) - D')
+    A = C_i*dag(C_i); A = A/2.0d0
+    call print(A, 'test_matrix_defop: A = C_i*dag(C_i); A = A/2.0d0')
 
 !   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
 
@@ -196,7 +196,7 @@ contains
     write(*, *) 'test_matrix_defop: dot(D, F)', dot(D, F)
     write(*, *) 'test_matrix_defop: tr(D, F)', tr(D, F)
 
-    write(*, *) 'test_matrix_defop: norm(D)', norm(D)
+    write(*, *) 'test_matrix_defop: norm(F)', norm(F)
 
     write(*, *) 'test_matrix_defop: sqrt(dot(F, F))', sqrt(dot(F, F))
 
