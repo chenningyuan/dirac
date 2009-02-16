@@ -1426,60 +1426,69 @@ call print_gms_parameters
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,'(/,4x,a,/)') '01. V2H2P, 1324, <IJ||AB>'
 
-!write(LUPRI,*) 'NHMO=',NHMO
-!write(LUPRI,*) 'NPMO=',NPMO
+icount=0 ! nonzero integrals counter
 
 do II=1,NHMO
 do IA=1,NPMO
+ inz=0
 do IJ=1,NHMO
 do IB=1,NPMO
-
-! ii_mo=get_moltra_index(.true.,II)
-! ia_mo=get_moltra_index(.false.,IA)
-! ij_mo=get_moltra_index(.true.,IJ)
-! ib_mo=get_moltra_index(.false.,IB)
 
 ii_mo=MOLTRA_indx(II);      ij_mo=MOLTRA_indx(IJ); 
 ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
 
-!write(LUPRI,'(4x,a,4i3)') 'moltra indx i,j,a,b:',ii_mo,ij_mo,ia_mo,ib_mo
-
-! write(LUPRI,'(a,i3,a,i3,a,i3,a,i3,a)') 'moltra KU indexes: <',ii_mo,' ',ia_mo,'||',ij_mo,' ',ib_mo,'>'
-
  SInt_ijab=get_moltra_integral(ii_mo,ia_mo,ij_mo,ib_mo)
- ! SInt_ijab=get_moltra_integral(ii_mo,SpinOfOrb(II),ia_mo,SpinOfOrb(IA),           & 
- !                               ij_mo,SpinOfOrb(IJ),ib_mo,SpinOfOrb(IB)   )
 
  SInt_ijba=get_moltra_integral(ii_mo,ib_mo,ij_mo,ia_mo)
- ! SInt_ijba=get_moltra_integral(ii_mo,SpinOfOrb(II),ib_mo,SpinOfOrb(IB),  & 
- !                               ij_mo,SpinOfOrb(IJ),ia_mo,SpinOfOrb(IA))
 
  ASInt_ijab=SInt_ijab-SInt_ijba
 
- !if (DABs(SInt_ijab).gt.1.0d-14 .or. DABs(SInt_ijba).gt.1.0d-14 ) then
  if (DABs(ASInt_ijab).gt.1.0d-14) then
 
-   write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,3f18.12,a,4i3)') & 
-         '<IJ||AB>, <',II,' ',IJ,'||',  & 
-       IA,' ',IB,'>=',ASInt_ijab,SInt_ijab,SInt_ijba,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
-
- else
-
- !  write(LUPRI,'(2x,a,i3,a,i3,a,i3,a,i3,a,a,4i3)')    & 
- !        '<IJ||AB>, <',II,' ',IJ,'||',                & 
- !      IA,' ',IB,'>= 0',' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1234, <IJ||AB>, <',II,' ',IJ,'||',  & 
+       IA,' ',IB,'>=',ASInt_ijab,' (ia|jb):',ii_mo,ia_mo,ij_mo,ib_mo
 
  endif
 
 enddo
 enddo
+   write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA, & 
+   ' is :',inz
 enddo
 enddo
 
 
-!-------------------------------------------------
+write(LUPRI,'(/,4x,a,/)') '02. VPPPP  <AB||CD>'
+icount=0
+do IA=2,NPMO
+do IB=1,IA-1
+ inz=0
+do IC=2,NPMO
+do ID=1,IC-1
 
-write(LUPRI,*) '02. VPPPP  <AB||CD>'
+ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
+ic_mo=MOLTRA_indx(IC+NCMO); id_mo=MOLTRA_indx(ID+NCMO)
+
+SInt_abcd=get_moltra_integral(ia_mo,ic_mo,ib_mo,id_mo)
+SInt_abdc=get_moltra_integral(ia_mo,id_mo,ib_mo,ic_mo)
+ 
+ASInt_abcd=SInt_abcd-SInt_abdc
+
+if (DABs(ASInt_abcd).gt.1.0d-14) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1234, <AB||CD>, <',IA,' ',IB,'||',  & 
+       IC,' ',ID,'>=',ASInt_abcd,' (ac|bd):',ia_mo,ic_mo,ib_mo,id_mo
+endif
+
+enddo
+enddo
+   write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
+   ' is :',inz
+enddo
+enddo
 
 write(LUPRI,*) '03. VHHHH  <IJ||KL>'
 

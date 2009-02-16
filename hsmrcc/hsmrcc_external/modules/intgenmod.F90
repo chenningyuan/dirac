@@ -2236,7 +2236,12 @@ do  Block = 1, NumBlock(VPPPP)
       CD = VIND(ICD)
       CALL ResRecMM(CD,C,D) ! obtain C,D
       VAB_CD = VINT(ICD); ii=ii+1
-      WRITE(UOUT,830) ii,A,B,C,D,VAB_CD,Block
+      if (.not.allocated(MOLTRA_indx)) then
+        WRITE(UOUT,830) ii,A,B,C,D,VAB_CD,Block
+      else
+        WRITE(UOUT,2830) ii,A,B,C,D,VAB_CD,Block, & 
+        MOLTRA_indx(A+NCMO),MOLTRA_indx(C+NCMO),MOLTRA_indx(B+NCMO),MOLTRA_indx(D+NCMO)
+      endif
    ENDDO
    WRITE(UOUT,'(1X,A,I3,A,I3,A,I5,A,I6)')                   & 
    'Number of nonzero integrals for AB pair, A=',A,' B=',B, &
@@ -2246,6 +2251,9 @@ do  Block = 1, NumBlock(VPPPP)
 enddo
  830 format(4x,i8,'.',1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
             f18.12,' block:',i3)
+ 2830 format(4x,i8,'.',1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
+            f18.12,' block:',i3,' MOLTRA:(',i3,1x,i3,'||',i3,1x,i3,')' )
+
 
 end subroutine control_print_VPPPP
 
