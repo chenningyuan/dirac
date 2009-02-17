@@ -7268,10 +7268,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MODEDISS(OMEGA,WXE)
+      SUBROUTINE MODEDISS(OMEGA,WXE,ILOGG)
 C***********************************************************************
 C
-C     For a plynomial fit, estimate dissociation energy
+C     For a polynomial fit, estimate dissociation energy
 C     from a Morse model
 C
 C     Trond Saue, Nov 17 2008

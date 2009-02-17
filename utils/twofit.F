@@ -201,7 +201,7 @@ C     Anharmonic constant
 C     ===================
 C
       CALL MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
-      CALL MODEDISS(OMEGA,WXE)
+      CALL MODEDISS(OMEGA,WXE,ILOGG)
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
 C
 C     Anharmonic constant at non-stationary geometry
