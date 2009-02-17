@@ -1185,7 +1185,6 @@ C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
             INDI = JXOP(1,I)
             INDA = JXOP(2,I)
             ISSYM(IEXC) = IBEIG(INDA) + IFAC*IBEIG(INDI)
-            WRITE(6,*) 'max..',IEXC,I,JXOP(1,I),JXOP(2,I),ISSYM(IEXC)
           ENDDO
         ENDIF
       ENDIF      
