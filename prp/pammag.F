@@ -375,12 +375,12 @@ C/* Deck GETCON */
      &                  KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
-C     Get the reortonormalization term  
-C    {T(1),h(m_K)} when using LAO. Calculated as expectation value.
+C   Get the reortonormalization contribution term,
+C   {T(1),h(m_K)}, when using LAO. Calculated as expectation value.
 C
-C    MI/sept.2003: The .DOEPRN parameter decides whether to do
-C     reorthonormalization over both p+e shells, or only over
-C     the electronic shells. 
+C   MI/sept.2003: The .DOEPRN parameter decides whether to do
+C   reorthonormalization over both p+e shells, or only over
+C   the electronic shells. 
 C
 C***********************************************************************
 #include "implicit.h"
@@ -465,8 +465,8 @@ C --------------------------------------------
      &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI )
            ENDIF
 C --------------------------------------------------------------------
-C ... calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
-C     as expectation value
+C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
+C    as expectation value
 C --------------------------------------------------------------------
 C .. do not perform the picture change transformation 
 C    of connection matrixes !
@@ -612,7 +612,7 @@ C/* Deck TWOLO1 */
 C***********************************************************************
 C
 C     Construct two electron part of differentiated Hamiltonian
-C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z
+C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z|B=0
 C
 C     Written by T. Enevoldsen Feb 4 1998
 C
@@ -3055,9 +3055,9 @@ C
       ENDIF
 
 C------------------------------------------------
-C          X component of B-field
+C          X component of the B-field
 C------------------------------------------------
-C           RM1H1 operator ... i Q_MN <r beta' c^2 > 
+C     RM1H1 operator ... i Q_MN <r beta' c^2 > 
 C
       PNAME    = 'LAO-XRM1H1'
       IPTYP    = 1
@@ -3081,7 +3081,7 @@ C
       ENDIF
 
 C--------------------------------------------------------------
-C            RM1H2 operator ... i Q_MN < r_vec Vnuc >
+C       RM1H2 operator ... i Q_MN < r_vec Vnuc >
 C--------------------------------------------------------------
       PNAME    = 'LAO-XRM1H2'
       IPTYP    = 1
@@ -3092,7 +3092,7 @@ C--------------------------------------------------------------
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(2,1) = INDXPR
 C--------------------------------------------------------------
-C             RM1H3  operator ... i c Q_MN < r_vec (alp.p) >
+C       RM1H3  operator ... i c Q_MN < r_vec (alp.p) >
 C--------------------------------------------------------------
       PNAME     = 'LAO-XRM1H3'
       IPTYP     = 8
@@ -3107,7 +3107,7 @@ C--------------------------------------------------------------
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,1) = INDXPR
 C
-C           RM1RN-X operator
+C  RM1RN-X operator of +(c/2).< r_n x alpha >
 C
       PNAME    = 'LAO-XRM1RN'
       IPTYP    = 5
@@ -3241,7 +3241,7 @@ C
      &     INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPLONDON(3,3) = INDXPR
 C
-C        RM1RN-Z operator
+C        RM1RN-Z operator of +(c/2).< r_n x alpha >
 C
       PNAME     = 'LAO-ZRM1RN'
       IPTYP     = 7
@@ -3414,7 +3414,6 @@ C    IB = 1011 (11) - get ONELON + FAC2LO*TWOLON (FAC2LO is entering)
 C    IB = 1111 (15) - get ONELON + FCKLON + FAC2LO*TWOLON (FAC2LO is entering)
 C    IB = 0001 (1)  - get only ONELON 
 C    IB = 0101 (5)  - get only ONELON + FCKLON
-C
 C
 C  The entering INDXPR for this case corresponds to some component of the
 C  RM1H1 operator (X/Y/Z). 
