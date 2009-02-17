@@ -560,7 +560,8 @@ contains
           factor =  1.0
         end if
 
-        r = r + factor*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)*(/((B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim), j = 1, j_dim), i = 1, i_dim)/))
+        r = r + factor*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)* &
+        (/((B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim), j = 1, j_dim), i = 1, i_dim)/))
 
       end do
 

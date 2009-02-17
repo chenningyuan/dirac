@@ -336,6 +336,7 @@ contains
                     e(i+pb*j) = e(i+pb*j) + tr(A(1),D(ii)) !factor 2 hidden in **
                 end do
             end do
+#ifdef FIXME_G95
         else if (n==2.and.all(p==(/'EL','MAG'/)).and.m/=0) then !no m==0 because MAG imag
             do l=0,c(4)-c(2); ll=c(2)+l
                 do k=0,c(3)-c(1); kk=c(1)+k
@@ -346,6 +347,7 @@ contains
                     end do
                 end do
             end do
+#endif
         else if (n==2.and.all(p==(/'MAG','MAG'/))) then
             !one-electron integral contribution
             do l=0,c(4)-c(2); ll=c(2)+l
@@ -387,6 +389,7 @@ contains
             else
                 call quit('prop_energy: MAG-MAG, m>2 not implemented yet!')
             end if
+#ifdef FIXME_G95
         else if (n==2.and.all(p==(/'EL','GEO'/))) then
             if (m==0) then !nuclear repulsion contribution
                 call DIPNUC_ifc(natom,(/0d0,0d0,0d0/),r(1:3*3*natom))
@@ -459,6 +462,7 @@ contains
                     end do
                 end do
             end do
+#endif
         else
             print *,'prop_energy: no integrals for these perturbations: ', &
                     (p(i)//' ',i=1,n)
@@ -561,6 +565,7 @@ contains
                 end do
                 if (do_dft()) call quit('prop_fock: GEO with DFT not implemented')
             end do
+#ifdef FIXME_G95
         else if (n==2.and.all(p==(/'EL','MAG'/)).and.m==0) then
             do j=0,c(4)-c(2); jj=c(2)+j;
                 do i=1,c(3)-c(1)+1; ii=c(1)+i-1; kk=i+(c(3)-c(1)+1)*j
@@ -577,6 +582,7 @@ contains
             end do
         else if (n==2.and.all(p==(/'MAG','MAG'/))) then
 !            call twofck('MM',D(1),(/(D(1),i=1,9)/))
+#endif
         else
             print *,'prop_fock: no integrals for these perturbations:', &
                     (' '//p(i),i=1,n)
