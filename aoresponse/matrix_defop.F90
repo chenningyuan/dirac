@@ -1,317 +1,802 @@
+!Copyright 2009 Andreas J. Thorvaldsen
+!This file is made available under the terms of the
+!GNU Lesser General Public License.
+
+!radovan: this file is generic for both DALTON and DIRAC
+!         DALTON or DIRAC specific things are in matrix_genop
+!         which is the backend to matrix_defop
+
 module matrix_defop
+!Defined operators for type(matrix)
+!(which in linsca comes from module matrix_operations).
+!
+!The operators are as follows:
+!
+!    equals                       A = B
+!    plus                         A + B
+!    minus                        A - B
+!    matrix product               A * B
+!    scale by real(8)             r * A
+!    divide by real(8)            A / r
+!    (conjugate) transpose        dag(A)
+!    trace                        tr(A)
+!    scalar product               dot(A,B)
+!    product trace                tr(A,B),
+!    for zeroing and freeing      A=0, A(:)=0, A(:,:)=0
+!    norm ie. sqrt(dot(A,A))      norm(A)
+!    mat_to_full                  A = B(:,:)
+!    mat_set_from_full            B(:,:) = A, B(:) = A
+!
+!To increase performance and lower memory needs, formulas are not
+!evaluated by executing the operators immediately, but the operators are
+!first collected into "batches" of the forms
+!
+!    axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
+!    gemm:       Y = a * X(^T) * Z(^T) + b * Y
+!
+!To create matrices, mat_init (from module matrix_operations)
+!has been generalized. This is to hide context-specific information,
+!(closed/open shell, real/complex, 1/2/4-component, full/sparse)
+!and make it possible to write general code:
+!
+!    call mat_init(A,nrow,ncol)       original version
+!    call mat_init(A,B)               same shape
+!    call mat_init(A,B,'T')           transpose shape
+!    call mat_init(A,B,'T',C,'N')     rows and columns from diff. mats.
+!    call mat_init(A,B,zero=.true.)   non-allocated zero of same shape
+!    call mat_init(A,reset=.true.)    reset to defaults, nullifying pointers
+!    call mat_init(A,B,alias=.true.)  copy pointers, no new allocation
+!
+!Comparison of the shapes (and content) of matrices is done with mat_same
+!
+!    if (mat_same(A,B)) ..            if same shape and content (alias)
+!    if (mat_same(A,B,'N')) ..        if same shapes
+!    if (mat_same(A,B,'T')) ..        if transposed shapes
+!    if (mat_same(A,B,'T','R')) ..    if A's rows matches B's columns
+!    if (mat_same(A,B,'N','C')) ..    if A's columns matches B's columns
+!
+!For printing matrices, mat_print has been replaced:
+!
+!    call mat_print(A,label='A',width=7,unit=6,braces='{')
+!
+!The label is printed on the line preceding the matrix. Width specifies the
+!text width of each column (excluding separator). The number of digits printed
+!is adjusted so that no columns become overfilled (*****). Braces can either
+!be one character {, [, (, | etc., or four '{,};', where the comma is column
+!separator and semicolon row separator. This is convenient for pasting into
+!python, maple, mathematica, etc.
+!
+!To check the state of matrices: Whether defined: isdef(A),
+!whether zero: iszero(A)
+!
+!In order to pass a "formula", such as A+3*dag(B) etc., as argument X to a subroutine,
+!the subroutine must execute mat_fix_arg(X) before using X inside the subroutine.
+!At the end of the subroutine mat_unfix_arg(X) should be called in order to free X.
+!Neither call has any effect on a non-temporary matrix argument.
+!This is neccessary since the Fortran programmer cannot tell whether the temporary
+!is used inside its own subruoutine, where it should be deleted after use,
+!or inside a called subroutine, in which it should be non-temporary.
+!
+!In order to have type(matrix) as the result of a function, mat_fix_result(X)
+!should be called before returning from the function. This sets X's status as
+!temporary, so that it will be deleted once used.
 
-  use matrix_genop
+    use matrix_genop, &
+          & mat_trace_nontmp => mat_trace, &
+          & mat_print_nontmp => mat_print
+    implicit none
 
-  implicit none
+    public matrix
+    public mat_init
+!   public mat_print
+    public isdef
+    public iszero
+    public assignment(=)
+    public operator(+)
+    public operator(-)
+    public operator(*)
+    public operator(/)
+    public dag
+    public dot
+    public tr
+    public norm
+    public mat_fix_arg
+    public mat_unfix_arg
+    public mat_fix_result
+    public matrix_defop_debug
+    private
 
-  public tr
-  public trab
-  public trps
-  public dag
-  public norm
-  public dot
-  public iszero
-  public print
-  public undef
-  public matrixstats
-
-  public assignment(=)
-  public operator(+)
-  public operator(-)
-  public operator(*)
-  public operator(/)
-  public operator(**)
-
-  private
-
-  interface assignment(=)
-    module procedure matrix_eq_matrix
-    module procedure matrix_eq_zero
+    interface assignment(=)
+        module procedure mat_eq_mat
+        module procedure mat_eq_zero
         module procedure mat_eq_zero_1D
         module procedure mat_eq_zero_2D
         module procedure mat_eq_zero_3D
-  end interface
+    end interface
 
-  interface operator(+)
-    module procedure matrix_plus_matrix
-  end interface
+    interface isdef
+        module procedure mat_isdef
+    end interface
 
-  interface operator(-)
-    module procedure matrix_minus_matrix
-    module procedure minus_matrix
-  end interface
+    interface iszero
+        module procedure mat_iszero
+    end interface
 
-  interface operator(*)
-    module procedure real_times_matrix
-    module procedure matrix_times_matrix
-  end interface
+    interface operator(+)
+        module procedure plus_mat
+        module procedure mat_plus_mat
+    end interface
 
-  interface operator(/)
-    module procedure matrix_div_real
-  end interface
+    interface operator(-)
+        module procedure minus_mat
+        module procedure mat_minus_mat
+    end interface
 
-  interface dot
-    module procedure matrix_dot_matrix
-  end interface
+    interface operator(*)
+        module procedure mat_times_mat
+        module procedure real_times_mat
+    end interface
 
-  interface operator(**)
-    module procedure matrix_dot_matrix
-  end interface
+    interface operator(/)
+        module procedure mat_div_real
+    end interface
 
-  interface tr
-    module procedure matrix_product_trace
-  end interface
+    interface dag
+        module procedure mat_dagger
+    end interface
 
-  interface trab
-    module procedure matrix_product_trace
-  end interface
+    interface dot
+        module procedure mat_dot_product
+    end interface
 
-  interface dag
-    module procedure dag_matrix
-  end interface
+    interface tr
+        module procedure mat_trace
+       !module procedure mat_product_trace
+        module procedure mat_dot_product
+    end interface
 
-  interface trps
-    module procedure dag_matrix
-  end interface
+!   interface print
+!       module procedure mat_print
+!   end interface
 
-  interface norm
-    module procedure matrix_norm
-  end interface
+    interface norm
+        module procedure mat_norm
+    end interface
 
-  interface iszero
-    module procedure matrix_is_zero
-  end interface
+    type tmp_mat
+    !specification of M = rx*X^tx * Z^tz + ry*Y gemm
+    !       or        M = rx*X^tx * Z^tz        gemm
+    !       or        M = rx*X^tx        + ry*Y axtpby
+    !       or        M = rx*X^tx               axt or by
+    !M points to the matrix where result is to be stored, which is undef.
+    !Flags dx,dy,dz decides whether arguments whould be deleted after use
+        type(matrix),pointer :: M, X, Z, Y !associated or not- pointers
+        real(8)              ::   rx,   ry !scale factors
+        logical              ::   tx,tz    !transpose
+        logical              ::   dx,dz,dy !delete after use
+    end type
 
-  interface print
-    module procedure print_matrix
-  end interface
+    !tmp(:) contains a 'stack' of temporary matrices
+    integer,parameter         :: max_tmp = 64
+    type(tmp_mat),target,save :: tmp(max_tmp)
+    integer                   :: top_tmp = 0 !0 as "before index 1, thus empty"
 
-  interface undef
-    module procedure matrix_is_undefined
-  end interface
-
-  type refp
-    type(matrix), pointer :: m !pointer to referring matrix
-    integer,      pointer :: s !stack top at creation (if temporary)
-    integer               :: i !index of referred data (in dat(:) table)
-  end type
-
-  type datp
-    real*8, pointer :: d(:) !pointer to data
-    integer         :: c !reference count
-  end type
-
-  integer                 :: nref = 0, ndat = 0, maxdat = 0, stkdir
-  type(refp), allocatable :: ref(:)
-  type(datp), allocatable :: dat(:)
+    logical :: matrix_defop_debug = .false.
 
 contains
 
-  function matrix_is_undefined(A) result(r)
+    function undef(A)
+        type(matrix),intent(in) :: A
+        logical                 :: undef
+        undef = .not.isdef(A)
+    end function
 
-    type(matrix), intent(in) :: A
-    logical                  :: r
+    function find_tmp(A,errmsg) result(T)
+    !if A is defined, return null, if A is undefined and A%elms
+    !points to within tmp(1:max_tmp), return A%elms
+        type(matrix),target,  intent(in) :: A
+        character(*),optional,intent(in) :: errmsg
+        type(tmp_mat),pointer            :: T
+        if (A%nrow==-1 .and. A%ncol/=-1 .and. &
+                     .not.associated(A%elms)) then
+            T => tmp(A%ncol)
+            T%M => A
+            T%M%ncol = -1
+        else if (isdef(A)) then
+            nullify(T) !not found, not temporary
+        else if (present(errmsg)) then
+            call quit(errmsg)
+        end if !otherwise, just return null
+    end function
 
-    r = (A%nrow == -1)
+    function new_tmp(M,X,Z,Y,rx,ry,tx,tz,dx,dz,dy) result(T)
+    !record the temporary, non-zero matrix M in tmp(:)
+        type(matrix),         target,intent(inout) ::  M
+        type(matrix),target,optional,intent(in) ::  X, Z, Y
+        real(8),            optional,intent(in) :: rx,   ry
+        logical,            optional,intent(in) :: tx,tz
+        logical,            optional,intent(in) :: dx,dz,dy
+        type(tmp_mat),pointer :: T
+        integer               :: i
+        if (top_tmp==max_tmp) then
+            print '(a)','error: tmp(1:max_tmp) in linears/matrix_defop.f90 is full'
+            print '(a,i2,a)','       increase max_tmp=',max_tmp,' and recompile'
+            call quit('matrix new_tmp : tmp(1:max_tmp) is full')
+        end if
+        do i=1,top_tmp+1
+            if (i==top_tmp) cycle !this i taken
+            if (i==top_tmp+1) top_tmp = top_tmp+1
+            T => tmp(i)
+            if (.not.associated(T%M)) exit
+        end do
+        T%M => M
+        nullify(T%X);   if (present(X))  T%X  => X
+        nullify(T%Z);   if (present(Z))  T%Z  => Z
+        nullify(T%Y);   if (present(Y))  T%Y  => Y
+        T%rx = 1d0;     if (present(rx)) T%rx = rx
+        T%ry = merge(1d0,0d0,present(Y))
+                        if (present(ry)) T%ry = ry
+        T%tx = .false.; if (present(tx)) T%tx = tx
+        T%tz = .false.; if (present(tz)) T%tz = tz
+        T%dx = .false.; if (present(dx)) T%dx = dx
+        T%dz = .false.; if (present(dz)) T%dz = dz
+        T%dy = .false.; if (present(dy)) T%dy = dy
+        !hack: point M%ncol to T,
+        if (.not.isdef(M)) then
+            M%ncol = i      !so we can find T when we
+            nullify(M%elms) !eventually want to use M
+        end if
+    end function
 
-  end function
+    subroutine del_tmp(T)
+    !remove tmp_mat T from within tmp(:), deallocate t%M if needed
+        type(tmp_mat),intent(inout) :: T
+        nullify(T%M)
+        !update last occupied index
+        do while (top_tmp/=0)
+            if (associated(tmp(top_tmp)%M)) exit
+            top_tmp = top_tmp - 1
+        end do
+    end subroutine
 
-  subroutine allocif()
-  !if needed allocate/extend the tables refs,data. Set stkdir
-      type(refp):: reft(nref) !temporary for ref
-      type(datp):: datt(maxdat) !temporary for dat
-      integer:: maxref,i
-      maxref=0; if (maxdat/=0) maxref = size(ref)
-      if (maxref>nref+1.and.maxdat>ndat+1) return !no reallocation needed
-      if (maxdat==0) call getdir()
-      if (maxref<=nref+1) then
-          if (maxdat/=0) reft(1:nref) = ref(1:nref)
-          if (maxdat/=0) deallocate(ref)
-          allocate(ref(max(64,2*maxref)))
-          ref(1:nref) = reft(1:nref)
-      endif
-      if (maxdat<=ndat+1) then
-          if (maxdat/=0) datt(1:maxdat) = dat(1:maxdat)
-          if (maxdat/=0) deallocate(dat)
-          allocate(dat(max(8,2*maxdat)))
-          dat(1:maxdat) = datt(1:maxdat)
-          dat(maxdat+1:)%c = 0 !vacant slots
-          maxdat = max(8,2*maxdat)
-      endif
-  contains
-      subroutine getdir()
-          integer:: j
-          stkdir = merge(-1,1,loc(j)<loc(i))
-      end subroutine
+    subroutine zero_tmp(T)
+    !initialize T%M to a zero matrix of the correct shape,
+    !then delete (or not) T%X,T%Z,T%Y, then del_tmp(T)
+        type(tmp_mat),intent(inout) :: T
+        !if (matrix_defop_debug) print *,'zero_tmp',loc(T%M),T%M%nrow,T%M%ncol
+        if (T%M%nrow==-1 .and. T%M%ncol/=-1) T%M%ncol = -1
+        if (isdef(T%M)) then
+            if (.not.iszero(T%M)) call mat_free(T%M)
+        end if
+        if (associated(T%Z)) then
+            call mat_init(T%M,T%X,merge('T','N',T%tx) &
+                             ,T%Z,merge('T','N',T%tz),zero=.true.)
+        else
+            call mat_init(T%M,T%X,merge('T','N',T%tx),zero=.true.)
+        end if
+        if (T%dx) call mat_free(T%X)
+        if (T%dz) call mat_free(T%Z)
+        if (T%dy) call mat_free(T%Y)
+        call del_tmp(T)
+    end subroutine
+
+
+    subroutine eval_tmp(T)
+    !evaluate the expression M = a*X*Z + b*Y, as specified in the fields of T,
+    !by executing either an axtpby or a gemm operation. Then remove T from tmp(:)
+        type(tmp_mat),intent(inout) :: T
+        logical                     :: zeroM,useM,ltmp
+        real(8)                     :: rtmp
+        type(matrix),target         :: reM
+        !if (matrix_defop_debug) print *,'eval_tmp',loc(T%M),' =',loc(T%X) &
+        !                                     ,' *',loc(T%Z),' +',loc(T%Y)
+        !hack: remove the T-reference from M%ncol
+        if (T%M%nrow==-1 .and. T%M%ncol/=-1 &
+            .and..not.associated(T%M%elms)) T%M%ncol = -1
+        zeroM = .not.isdef(T%M)          !two steps, to prevent
+        if (.not.zeroM) zeroM = iszero(T%M) !iszero(undef) error
+        !if M = M^N + Y or X^N + Y with only X temporary, swap X and Y
+        if (.not.associated(T%Z) .and. .not.T%dy .and. .not.associated(T%Y,T%M) &
+            .and. .not.T%tx .and. (T%dx.or.associated(T%X,T%M))) then
+            ltmp = T%dx; T%dx = T%dy; T%dy = ltmp
+            rtmp = T%rx; T%rx = T%ry; T%ry = rtmp
+            T%Z => T%X;  T%X => T%Y;  T%Y => T%Z; nullify(T%Z)
+        end if
+        !if M = M^T + Y, M*Z + Y or X*M + Y, it must not be overwritten
+        !during the operation, so move M=X/Z to reM and clear M
+        if (associated(T%Z,T%M)) then
+            call mat_init(reM,T%M,alias=.true.)
+            T%Z => reM
+            call mat_init(T%M,reset=.true.)
+            zeroM = .true.
+            if (associated(T%X,T%M)) T%X => reM
+            if (associated(T%Y,T%M)) T%Y => reM
+        else if (associated(T%X,T%M).and.(T%tx.or.associated(T%Z))) then
+            call mat_init(reM,T%M,alias=.true.)
+            T%X => reM
+            call mat_init(T%M,reset=.true.)
+            zeroM = .true.
+            if (associated(T%Y,T%M)) T%Y => reM
+        end if
+        !determine whether to use M's current allocation, or Y's
+        if (zeroM) then
+            useM = .false. !nothing to free
+        else if (associated(T%Y).and.T%dy) then
+            useM = .false.
+        else if (associated(T%Y,T%M)) then
+            useM = .true. !obviously correct shape
+        else if (associated(T%Y).and..not.T%dy) then
+            useM = mat_same(T%M,T%Y,'N')
+        else if (.not.associated(T%Z)) then
+            useM = mat_same(T%M,T%X,merge('T','N',T%tx))
+        else
+            useM = ( mat_same(T%M,T%X,'R',merge('C','R',T%tx)) &
+                .and.mat_same(T%M,T%Z,'C',merge('R','C',T%tz)) )
+        end if
+        if (.not.zeroM .and. .not.useM) call mat_free(T%M)
+        !determine whether A should be reallocated, or simply duplicate Y.
+        if (useM) then
+            !no allocation needed
+        else if (associated(T%Y).and.T%dy) then
+            !If Y is temporary, no allocation, just transfer Y to M
+            call mat_init(T%M,T%Y,alias=.true.)
+            call mat_init(T%Y,reset=.true.)
+            T%dy = .false.
+            T%Y => T%M
+        else if (associated(T%Y,T%M)) then
+            !if Y=M, no allocation, the result is added to Y
+        else if (associated(T%Y).and.associated(T%Z)) then
+            !if M=a*X*Z+b*Y, allocate M, and do M=b*Y first
+            if (.not.useM) call mat_init(T%M,T%Y,'N')
+            call mat_axtpby(T%M, T%ry,T%Y,'N',0d0,T%M)
+  ! T%M%ih_sym        =  T%Y%ih_sym       
+  ! T%M%tr_sym        =  T%Y%tr_sym       
+  ! T%M%pg_sym        =  T%Y%pg_sym       
+  ! T%M%fermi_pointer =  T%Y%fermi_pointer
+            T%Y => T%M
+            T%ry = 1d0
+        else if (associated(T%Z)) then
+            !if M=a*X*Z, allocate M
+            call mat_init(T%M,T%X,merge('T','N',T%tx) &
+                             ,T%Z,merge('T','N',T%tz))
+        else !if M=a*X+b*Y or M=a*X, allocate M
+            call mat_init(T%M,T%X,merge('T','N',T%tx))
+        end if
+        !execute the requested operation, axtpby or gemm
+        if (associated(T%Z)) then
+            call mat_gemm(T%rx,T%X,merge('T','N',T%tx) &
+                              ,T%Z,merge('T','N',T%tz),T%ry,T%M) !Y is M
+  ! T%M%ih_sym        =  T%X%ih_sym       
+  ! T%M%tr_sym        =  T%X%tr_sym       
+  ! T%M%pg_sym        =  T%X%pg_sym       
+  ! T%M%fermi_pointer =  T%X%fermi_pointer
+        !   call print(T%M, 'blub temp')
+        else if (associated(T%X).or.T%ry/=1d0 &
+                .or..not.associated(T%Y,T%M)) then
+            call mat_axtpby(T%M, T%rx,T%X,merge('T','N',T%tx),T%ry,T%Y)
+        !   call print(T%M, 'blub temp')
+  ! T%M%ih_sym        =  T%Y%ih_sym       
+  ! T%M%tr_sym        =  T%Y%tr_sym       
+  ! T%M%pg_sym        =  T%Y%pg_sym       
+  ! T%M%fermi_pointer =  T%Y%fermi_pointer
+        end if
+        !delete X and/or Z, as specified. Y is never deleted
+        if (associated(T%X,reM).or.associated(T%Z,reM)) &
+            call mat_free(reM)
+        if (T%dx) call mat_free(T%X)
+        if (T%dz) call mat_free(T%Z)
+        call del_tmp(T)
+    end subroutine
+
+
+    subroutine mat_eq_mat(A,B)
+    !denne skal altid tømme tmp(:)
+        type(matrix),target,intent(inout) :: A
+        type(matrix)                      :: B
+        type(tmp_mat),pointer             :: T
+        logical                           :: defB
+        if (matrix_defop_debug) print *,'mat_eq_mat',loc(A),' =',loc(B),B%nrow,B%ncol,associated(B%elms)
+        T => find_tmp(B,'matrix A = B : B undefined')
+        if (associated(T)) then
+            T%M => A
+            call eval_tmp(T)
+        else if (mat_same(A,B)) then
+            !nothing
+        else if (iszero(B)) then
+            T => new_tmp(A,X=B)
+            call zero_tmp(T)
+        else
+            T => new_tmp(A,X=B)
+            call eval_tmp(T)
+        end if
+
+    A%ih_sym        =  B%ih_sym
+    A%tr_sym        =  B%tr_sym
+    A%pg_sym        =  B%pg_sym
+    A%fermi_pointer =  B%fermi_pointer
+
+    end subroutine
+
+
+  subroutine gen_mat_plus_mat(A, plus, B, C)
+
+!   ----------------------------------------------------------------------------
+    type(matrix),  target, intent(in) :: A, B
+    type(matrix),  target             :: C
+    logical,               intent(in) :: plus
+!   ----------------------------------------------------------------------------
+    type(tmp_mat), pointer            :: TA, TB, TC
+    logical                           :: A_is_zero, B_is_zero, swap, ltmp
+!   ----------------------------------------------------------------------------
+
+    TA => find_tmp(A, 'matrix A + B: A undefined')
+    TB => find_tmp(B, 'matrix A + B: B undefined')
+
+!   find out whether A or B or both are zero
+    A_is_zero = .false.
+    B_is_zero = .false.
+    if (.not. associated(TA)) A_is_zero = iszero(A)
+    if (.not. associated(TB)) B_is_zero = iszero(B)
+
+!   decide whether to swap A and B
+!   if (associated(TA) .and. associated(TB)) then
+!     swap = (.not. associated(TB%Y) .and. &
+!                  (associated(TB%Z) .or. .not. TA%tx .or. associated(TA%Z) .or. associated(TA%Y)))
+!   else if (.not. associated(TA) .and. associated(TB)) then
+!     swap = (A_is_zero .or. .not. associated(TB%Y))
+!   else
+!     swap = (A_is_zero .and. .not. B_is_zero)
+!   end if
+
+!   if (swap) then
+
+!     ltmp      = A_is_zero
+!     A_is_zero = B_is_zero
+!     B_is_zero = ltmp
+
+!     TC => TA
+!     TA => TB
+!     TB => TC
+
+!     TC => new_tmp(C,                               &
+!                   X = B,                           &
+!                   Y = A,                           &
+!                   rx = merge(1.0d0, -1.0d0, plus), &
+!                   dx = associated(TA),             &
+!                   dy = associated(TB))
+!   else
+      TC => new_tmp(C,                               &
+                    X = A,                           &
+                    Y = B,                           &
+                    ry = merge(1.0d0, -1.0d0, plus), &
+                    dx = associated(TA),             &
+                    dy = associated(TB))
+!   end if
+
+    if (associated(TA)) then
+!     A is simple: X or X*Z
+!     promote into C%X, C%Z
+!     if (.not. associated(TA%Y)) then
+!        TC%rx = TC%rx*TA%rx
+!        TC%tx = TA%tx
+!        TC%tz = TA%tz
+!        TC%dx = TA%dx
+!        TC%dz = TA%dz
+!        TC%X => TA%X
+!        TC%Z => TA%Z
+!        call del_tmp(TA)
+!     A is complicated: X*Z + Y
+!     evaluate it
+!     else
+         call eval_tmp(TA)
+!     end if
+    end if
+
+    if (associated(TB)) then
+!     B is simple
+!     promote into C%Y
+!     if (.not. TB%tx .and. .not. associated(TB%Z) &
+!                     .and. .not. associated(TB%Y)) then
+!        TC%ry = TC%ry*TB%rx
+!        TC%dy = TB%dx
+!        TC%Y => TB%X
+!        call del_tmp(TB)
+!     B is complicated
+!     evaluate it
+!     else
+         call eval_tmp(TB)
+!     end if
+    end if
+
+!   verify that shapes do indeed match
+    if (associated(TC%Z)) then
+      if (.not. mat_same(TC%X, TC%Y, 'R', merge('C', 'R', TC%tx)) .or. &
+          .not. mat_same(TC%Z, TC%Y, 'C', merge('R', 'C', TC%tz)))     &
+          call quit('matrix A + B: different shapes')
+    else
+      if (.not. mat_same(TC%X, TC%Y, merge('T', 'N', TC%tx))) &
+          call quit('matrix A + B: different shapes')
+    end if
+
+!   if either of A and/or B are zero, remove from TC
+    if (A_is_zero .and. B_is_zero) then
+      call zero_tmp(TC)
+    else if (A_is_zero) then
+      TC%X => TC%Y
+      TC%rx = TC%ry
+      TC%dx = TC%dy
+      TC%tx = .false.
+      nullify(TC%Y)
+      TC%ry = 0.0d0
+      TC%dy = .false.
+    else if (B_is_zero) then
+      nullify(TC%Y)
+      TC%ry = 0.0d0
+      TC%dy = .false.
+    end if
+
+    C%ih_sym        =  B%ih_sym
+    C%tr_sym        =  B%tr_sym
+    C%pg_sym        =  B%pg_sym
+    C%fermi_pointer =  B%fermi_pointer
+
+
   end subroutine
 
-  subroutine delabove(k)
-  !delete all type(Matrix) located higher than k on the stack
-      integer:: k,i,j
-      call allocif()
-      do i=nref,1,-1
-          if ((loc(ref(i)%m)-loc(k))*stkdir<0) exit
-          j = ref(i)%i
-          dat(j)%c = dat(j)%c-1
-          if (dat(j)%c==0) then
-              deallocate(dat(j)%d)
-              ndat = ndat-1
-          endif
-      enddo
-      nref = i
-  end subroutine
 
-  subroutine insref(A,s)
-  !Register the reference A => A%elms in ref(:) and dat(:)
-      type(Matrix),intent(inout),target:: A
-      integer,intent(in),optional,target:: s !stack top
-      integer:: i,j,k; logical:: found,zero,same
-
-      A%is_defined = .true.
-
-      !see if any reference from A is recorded
-      do i=nref,0,-1
-          if (i==0) exit
-          if ((loc(ref(i)%m)-loc(A))*stkdir<0) exit
-      enddo; j=i+1; k=ref(j)%i
-      found  = (j/=nref+1.and.associated(ref(j)%m,A))
-      zero = (.not.associated(A%elms).or.abs(loc(A%elms)-loc(i))<2**28)
-      same = .false.; if (found) same = associated(dat(k)%d,A%elms)
-      !if A is recorded, but now is zero or A%elms is on the stack, remove the previous record
-      if (found.and.zero) then
-           ref(j:nref-1) = ref(j+1:nref)
-           nref = nref-1
-      endif
-      !if A was recorded as referring to some other data, remove that
-      if (found.and..not.same) then
-          dat(k)%c = dat(k)%c-1
-          if (dat(k)%c==0) deallocate(dat(k)%d)
-          if (dat(k)%c==0) ndat = ndat-1
-      endif
-      !see if A%elms is already recorded as some dat(k)%d
-      do i=size(dat),1,-1
-          if (dat(i)%c==0) then
-              k = i; cycle
-          elseif (associated(A%elms,dat(i)%d)) then
-              k = i; exit
-          endif
-      enddo
-      !if A is not already recorded, make space for it
-      if (.not.found.and..not.zero) then
-          ref(j+1:nref+1) = ref(j:nref)
-          nref = nref+1
-      endif
-      !insert A
-      if (.not.zero) then
-          ref(j)%m => A
-          ref(j)%i = k
-          nullify(ref(j)%s)
-          if (present(s)) ref(j)%s => s
-          dat(k)%d => A%elms
-          if (dat(k)%c==0) ndat = ndat+1
-          if (.not.same) dat(k)%c = dat(k)%c+1
-      endif
-  end subroutine
-
-  subroutine deltmparg(A, B,r)
-  !delete matrix A if found in ref(:), and stacktop at
-  !creation was higher than B or r
-      type(Matrix),intent(in),target:: A
-      type(Matrix),intent(in),optional:: B
-      real*8,intent(in),optional:: r
-      integer:: i,j
-      if (present(B).eqv.present(r)) &
-          call QUIT('TypeMatrix/deltmparg: B OR r should be present')
-      !search for A
-      do i=nref,1,-1
-          if ((loc(ref(i)%m)-loc(A))*stkdir<=0) exit
-      enddo; j=ref(i)%i
-      if (.not.associated(ref(i)%m,A)) return
-      !no need: if (.not.associated(dat(j)%d,A%elms)) return
-      if (.not.associated(ref(i)%s)) return !if A is non-temp
-      if (present(B).and.(loc(B)-loc(ref(i)%s))*stkdir>0) return
-      if (present(r).and.(loc(r)-loc(ref(i)%s))*stkdir>0) return
-      !delete A
-      !no need: A%nrow = -1; nullify(A%elms)
-      ref(i:nref-1) = ref(i+1:nref)
-      nref = nref-1
-      dat(j)%c = dat(j)%c-1
-      if (dat(j)%c==0) then
-          deallocate(dat(j)%d)
-          ndat = ndat-1
-      endif
-  end subroutine
-
-  subroutine MatrixStats(label)
-      character(*),intent(in),optional:: label
-      integer:: i,j; character*40:: fmt
-      if (present(label)) print '(a)',label
-      if (stkdir==0) call allocif() !to get ref,dat allocated
-      print '("ndat="i2" size(dat)="i3" nref="i2" size(ref)="i4)', &
-              ndat,size(dat),nref,size(ref)
-      i = maxval(ref(1:nref)%i)
-      write (fmt,'("(a4,"i3"i13/a4,"i3"i13/a4,"i3"i2,a6,"i3"i2/)")') nref,i,nref,i
-      print fmt,'ref=',(loc(ref(j)%m),j=1,nref),'dat=',(loc(dat(j)%d),j=1,i) &
-               ,'idx=',ref(1:nref)%i,'  cnt=',dat(1:i)%c
-      call delabove(i)
-  end subroutine
+    function mat_plus_mat(A,B) result(C)
+    !verify that shapes match, check for zeros
+        type(matrix),target,intent(in) :: A,B
+        type(matrix),target            :: C
+        call gen_mat_plus_mat(A,.true.,B,C)
+    end function
 
 
-! matrix operations which use ref
-! ===============================
+    function mat_minus_mat(A,B) result(C)
+    !verify that shapes match, check for zeros
+        type(matrix),target,intent(in) :: A,B
+        type(matrix),target            :: C
+        call gen_mat_plus_mat(A,.false.,B,C)
+    end function
 
-  subroutine matrix_eq_matrix(A, B)
 
-    type(matrix), intent(inout) :: A
-    type(matrix), intent(in)    :: B
-    integer                     :: i
+    function mat_times_mat(A,B) result(C)
+    !verify that shapes match, check for zeroes
+        type(matrix),target,intent(in) :: A,B
+        type(matrix),target            :: C
+        type(tmp_mat),pointer          :: TA,TB,TC
+        logical                        :: zeroA,zeroB
+        !if (matrix_defop_debug) print *,'mat_times_mat',loc(A) &
+        !                            ,' *',loc(B),' => ',loc(C)
+        TA => find_tmp(A,'matrix A * B : A undefined')
+        TB => find_tmp(B,'matrix A * B : B undefined')
+        zeroA = .false.; zeroB = .false.
+        if (.not.associated(TA)) zeroA = iszero(A)
+        if (.not.associated(TB)) zeroB = iszero(B)
+        TC => new_tmp(C,X=A,dx=associated(TA),Z=B,dz=associated(TB))
+        if (associated(TA)) then
+            if (.not.associated(TA%Z) .and. .not.associated(TA%Y)) then
+                TC%rx = TC%rx*TA%rx
+                TC%tx = TA%tx
+                TC%dx = TA%dx
+                TC%X => TA%X
+                call del_tmp(TA)
+            else
+                call eval_tmp(TA)
+            end if
+        end if
+        if (associated(TB)) then
+            if (.not.associated(TB%Z) .and. .not.associated(TB%Y)) then
+                TC%rx = TC%rx*TB%rx
+                TC%tz = TB%tx
+                TC%dz = TB%dx
+                TC%Z => TB%X
+                call del_tmp(TB)
+            else
+                call eval_tmp(TB)
+            end if
+        end if
+        !finally, verify that rows
+        if (.not.mat_same(TC%X,TC%Z,merge('R','C',TC%tx),merge('C','R',TC%tz))) &
+            call quit('matrix A * B : incompatible shapes')
+        !if either of X or Z are zero, zero C
+        if (zeroA.or.zeroB) call zero_tmp(TC)
+    end function
 
-    call delabove(i)
 
-    if (.not. B%is_defined) call quit('A = B: B undefined')
+    subroutine gen_real_times_mat(r,A,B)
+        real(8),            intent(in) :: r
+        type(matrix),target,intent(in) :: A
+        type(matrix),target            :: B
+        type(tmp_mat),pointer          :: T,TT
+        !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
+        T => find_tmp(A,'matrix r * A : A undefined')
+        if (associated(T)) then
+            TT => new_tmp(B,X=T%X,Z=T%Z,Y=T%Y,rx=r*T%rx,ry=r*T%ry &
+                         ,tx=T%tx,tz=T%tz,dx=T%dx,dz=T%dz,dy=T%dy)
+            call del_tmp(T)
+            if (r==0d0) call zero_tmp(TT)
+        else
+            T => new_tmp(B,X=A,rx=r)
+            if (r==0d0.or.iszero(A)) call zero_tmp(T)
+        end if
+    B%ih_sym        =  A%ih_sym
+    B%tr_sym        =  A%tr_sym
+    B%pg_sym        =  A%pg_sym
+    B%fermi_pointer =  A%fermi_pointer
 
-    call matrix_eq_matrix_backend(A, B)
+    end subroutine
 
-    call insref(A)
-    call deltmparg(B, A)
+    function real_times_mat(r,A) result(B)
+        real(8),            intent(in) :: r
+        type(matrix),target,intent(in) :: A
+        type(matrix),target            :: B
+        call gen_real_times_mat(r,A,B)
+    end function
 
-  end subroutine
+    function plus_mat(A) result(B)
+        type(matrix),target,intent(in) :: A
+        type(matrix),target            :: B
+        call gen_real_times_mat(1d0,A,B)
+    end function
 
-  function dag_matrix(A) result(B)
+    function minus_mat(A) result(B)
+        type(matrix),target,intent(in) :: A
+        type(matrix),target            :: B
+        call gen_real_times_mat(-1d0,A,B)
+    end function
 
-    type(matrix), intent(in) :: A
-    type(matrix)             :: B
-    integer                  :: i
+    function mat_div_real(A,r) result(B)
+        type(matrix),target,intent(in) :: A
+        real(8),            intent(in) :: r
+        type(matrix),target            :: B
+        if (r==0) call quit('matrix A / r : division by zero')
+        call gen_real_times_mat(1/r,A,B)
+    end function
 
-    call delabove(i)
+    function mat_dagger(A) result(B)
+    !transpose the matrix A. If A is temporary and A=a*X or A=a*X*Z,
+    !only swap X and Z, and slip-swap tx and tz.
+    !Otherwise, evaluate A (if tmp), and create a new temporary for B
+        type(matrix),target,intent(in) :: A
+        type(matrix),target            :: B
+        type(tmp_mat),pointer          :: T,TT
+        logical                        :: ltmp
+        !if (matrix_defop_debug) print *,'mat_dagger',loc(A),' => ',loc(B)
+        T => find_tmp(A,'matrix dag(A) : A undefined')
+        if (.not.associated(T)) then
+            T => new_tmp(B,X=A,tx=.true.)
+            if (iszero(A)) call zero_tmp(T)
+        else if (associated(T%Y)) then
+            call eval_tmp(T)
+            T => new_tmp(B,X=A,tx=.true.,dx=.true.)
+        else if (associated(T%Z)) then
+            TT => new_tmp(B,X=T%Z,Z=T%X,rx=T%rx,tx=.not.T%tz &
+                         ,tz=.not.T%tx,dx=T%dz,dz=T%dx)
+            call del_tmp(T)
+        else
+            TT => new_tmp(B,X=T%X,rx=T%rx,tx=.not.T%tx,dx=T%dx)
+            call del_tmp(T)
+        end if
+    B%ih_sym        =  A%ih_sym
+    B%tr_sym        =  A%tr_sym
+    B%pg_sym        =  A%pg_sym
+    B%fermi_pointer =  A%fermi_pointer
+    end function
 
-    if (.not. A%is_defined) call quit('B = dag(A): A undefined')
 
-    call dag_matrix_backend(A, B)
+    function gen_mat_dot(A,B,trps) result(r)
+    !back for mat_dot_product and mat_product_trace (dot(A,B) and tr(A,B), resp.)
+        type(matrix),target,intent(inout) :: A,B
+        real(8)                           :: r
+        type(tmp_mat),pointer             :: TA,TB
+        logical                           :: zeroA,zeroB,trps,delA,delB
+        !if (matrix_defop_debug) print *,'mat_product_trace/mat_dot_product',loc(A),loc(B)
+        TA => find_tmp(A,'matrix dot/tr(A,B) : A undefined')
+        TB => find_tmp(B,'matrix dot/tr(A,B) : B undefined')
+        zeroA = .false.; zeroB = .false.
+        if (.not.associated(TA)) zeroA = iszero(A)
+        if (.not.associated(TB)) zeroB = iszero(B)
+        r = merge(0d0,1d0,zeroA.or.zeroB)
+        delA = associated(TA); delB = associated(TB)
+        if (associated(TA)) then
+            if (.not.associated(TA%Z).and..not.associated(TA%Y)) then
+                r = r*TA%rx
+                trps = (trps.neqv.TA%tx)
+                call mat_init(A,TA%X,alias=.true.)
+                call mat_init(TA%X,reset=.true.)
+                delA = TA%dx
+                call del_tmp(TA)
+            else
+                call eval_tmp(TA)
+            end if
+        end if
+        if (associated(TB)) then
+            if (.not.associated(TB%Z).and..not.associated(TB%Y)) then
+                r = r*TB%rx
+                trps = (trps.neqv.TB%tx)
+                call mat_init(B,TB%X,alias=.true.)
+                call mat_init(TB%X,reset=.true.)
+                delB = TB%dx
+                call del_tmp(TB)
+            else
+                call eval_tmp(TB)
+            end if
+        end if
+        !verify that shapes match
+        if (.not.mat_same(A,B,merge('T','N',trps))) &
+            call quit('matrix dot/tr(A,B) : different shapes')
+        !calculate only if prefactor nonzero
+        if (r/=0d0) r = r*mat_dot(A,B,merge('T','N',trps)) * 2 !due to alpha and beta blocks
+        !release any temporary operands
+        if (delA) call mat_free(A)
+        if (delB) call mat_free(B)
+    end function
 
-    call insref(B, i)
-    call deltmparg(A, B)
 
-  end function
+    function mat_dot_product(A,B) result(r)
+        type(matrix),target,intent(inout) :: A,B
+        real*8                            :: r
+!        print *,'blub mat_dot_product',loc(A),loc(B)
+!       call quit('blub')
+        r = gen_mat_dot(A,B,(.false.))
+!       write(*, *) 'blub dot 99'
+    end function
 
-  subroutine matrix_eq_zero(A, zero)
+    function mat_product_trace(A,B) result(r)
+        type(matrix),target,intent(inout) :: A,B
+        real*8                            :: r
+!       !print *,'mat_product_trace',loc(A),loc(B)
+!       write(*, *) 'blub tr 01'
+        r = gen_mat_dot(A,B,(.true.))
+!       write(*, *) 'blub tr 99'
+    end function
 
-    type(matrix), intent(inout) :: A
-    integer,      intent(in)    :: zero
-    integer                     :: i
+    function mat_trace(A) result(r)
+        type(matrix),target,intent(inout) :: A
+        real(8)                           :: r
+        type(tmp_mat),pointer             :: T
+        T => find_tmp(A,'matrix r * A : A undefined')
+        if (associated(T)) then
+            if (associated(T%Z)) then
+                if (.not.mat_same(T%X,T%Z,merge('N','T',T%tx.neqv.T%tz) &
+                                         ,merge('C','R',T%tx))) &
+                    call quit('matrix tr(A) : A not square')
+                r = T%rx * mat_dot(T%X,T%Z,merge('T','N',T%tx.neqv.T%tz))
+            else
+                if (.not.mat_same(T%X,T%X)) &
+                    call quit('matrix tr(A) : A not square')
+                r = T%rx * mat_trace_nontmp(T%X)
+            end if
+            if (associated(T%Y)) &
+                r = r + T%ry * mat_trace_nontmp(T%Y)
+            call zero_tmp(T) !this leaves A as zero
+            call mat_init(A,reset=.true.) !undefine A
+        else if (.not.iszero(A)) then
+            r = mat_trace_nontmp(A)
+        else
+            r = 0d0
+        end if
+    end function
 
-    call delabove(i)
+    function mat_norm(A) result(r)
+        type(matrix),target,intent(inout) :: A
+        real(8)                           :: r
+        !print *,'mat_norm',loc(A)
+        r = sqrt(gen_mat_dot(A,A,(.false.)))
+    end function
 
-    if (.not. A%is_defined) call quit('A = 0: A undefined')
-
-    if (zero /= 0) call quit('A = z: z must be 0')
-
-    call insref(A)  !store data on A, kick out any previous data
-    nullify(A%elms) !this means A is zero
-    call insref(A)  !if no other ref, this will deallocate A's data
-
-  end subroutine
-
+    subroutine mat_eq_zero(A,zero)
+        type(matrix),intent(inout) :: A
+        integer,intent(in)         :: zero
+        type(matrix)               :: B
+        !if (matrix_defop_debug) print *,'mat_eq_zero A=',loc(A),' elms=',loc(A%elms)
+        if (zero/=0) call quit('matrix A = z: z must be 0')
+        if (.not.isdef(A)) call quit('A = 0: A undefined')
+        call mat_init(B,A,alias=.true.)
+        call mat_init(A,B,zero=.true.)
+        call mat_free(B)
+    end subroutine
 
     subroutine mat_eq_zero_1D(A,zero)
         type(matrix),intent(inout) :: A(:)
@@ -346,162 +831,54 @@ contains
         end do
     end subroutine
 
+!   subroutine mat_print(A,unit,width,label,braces)
+!       type(matrix)                     :: A
+!       integer,     optional,intent(in) :: unit,width
+!       character(*),optional,intent(in) :: label,braces
+!       type(tmp_mat),pointer            :: T
+!       logical                          :: delA!,defA
+!         defA = isdef(A)
+!         nullify(T); if (.not.defA) T => find_tmp(A)
+!         if (.not.defA .and. .not.associated(T)) &
+!             call quit('mat_print(A) : A undefined')
+!       T => find_tmp(A,'mat_print(A) : A undefined')
+!       delA = associated(T)
+!       if (associated(T)) call eval_tmp(T)
+!      !call mat_print_nontmp(A,unit,width,label,braces)
+!       call mat_print_dirac(A, label)
+!       if (delA) call mat_free(A)
+!   end subroutine
 
+    subroutine mat_fix_arg(A)
+        type(matrix),intent(inout) :: A
+        type(tmp_mat),pointer      :: T
+        !no action on non-temporary arguments
+        if (isdef(A)) return
+        T => find_tmp(A,'mat_fix_arg(A) : A undefined')
+        call eval_tmp(T)
+        T => new_tmp(A) !hide A in tmp(:)
+    end subroutine
 
-  function matrix_plus_matrix(A, B) result(C)
+    subroutine mat_unfix_arg(A)
+        type(matrix),intent(inout) :: A
+        type(tmp_mat),pointer      :: T
+        T => find_tmp(A) !look for A in tmp
+        if (.not.associated(T)) return !it wasn't previously fixed
+        call zero_tmp(T)
+        call mat_init(A,reset=.true.)
+    end subroutine
 
-    type(matrix), intent(in) :: A, B
-    type(matrix)             :: C
-    integer                  :: i
-
-    call delabove(i)
-
-    if (.not. A%is_defined) call quit('C = A + B: A undefined')
-    if (.not. B%is_defined) call quit('C = A + B: B undefined')
-
-    C =  matrix_plus_matrix_backend(A, B)
-
-    call insref(C, i)
-    call deltmparg(A, C)
-    call deltmparg(B, C)
-
-  end function
-
-  function real_times_matrix(r, A) result(B)
-
-    type(matrix), intent(in) :: A
-    real*8,       intent(in) :: r
-    type(matrix)             :: B
-    integer                  :: i
-
-    call delabove(i)
-
-    if (.not. A%is_defined) call quit('B = r*A: A undefined')
-
-    B = real_times_matrix_backend(r, A)
-
-    call insref(B, i)
-    call deltmparg(A, B)
-
-  end function
-
-  function matrix_times_matrix(A, B) result(C)
-
-    type(matrix), intent(in) :: A, B
-    type(matrix)             :: C
-    integer                  :: i
-
-    call delabove(i)
-
-    if (.not. A%is_defined) call quit('C = A + B: A undefined')
-    if (.not. B%is_defined) call quit('C = A + B: B undefined')
-
-    call matrix_times_matrix_backend(A, B, C)
-
-    call insref(C, i)
-    call deltmparg(A, C)
-    call deltmparg(B, C)
-
-  end function
-
-  function matrix_dot_matrix(A, B) result(r)
-
-    type(matrix), intent(in) :: A, B
-    real*8                   :: r
-    integer                  :: i
-
-    if (.not. A%is_defined) call quit('r = A**B: A undefined')
-    if (.not. B%is_defined) call quit('r = A**B: B undefined')
-
-    r = matrix_dot_matrix_backend(A, B)
-
-    call deltmparg(A, r=r)
-    call deltmparg(B, r=r)
-
-  end function
-
-  function matrix_product_trace(A, B) result(r)
-
-    type(matrix), intent(in) :: A, B
-    real*8                   :: r
-    integer                  :: i
-
-    if (.not. A%is_defined) call quit('r = dag(A)**B: A undefined')
-    if (.not. B%is_defined) call quit('r = dag(A)**B: B undefined')
-
-    r = dag(A)**B
-
-    call deltmparg(A, r=r)
-    call deltmparg(B, r=r)
-
-  end function
-
-  function matrix_is_zero(A) result(is_zero)
-
-    type(matrix), intent(in) :: A
-    logical                  :: is_zero
-    integer                  :: i
-
-    call delabove(i)
-
-    if (.not. A%is_defined) call quit('A undefined in matrix_is_zero(A)')
-
-    is_zero = (.not. associated(A%elms))
-
-  end function
-
-  subroutine print_matrix(A, label, w)
-
-    type(matrix), intent(in)           :: A
-    character(*), intent(in), optional :: label
-    integer,      intent(in), optional :: w
-    integer                            :: i
-
-    call delabove(i)
-
-    call print_matrix_backend(A, label, w)
-
-  end subroutine
-
-
-! matrix operations which wrap around other operations
-! ====================================================
-
-  function matrix_norm(A) result(r)
-
-    type(matrix), intent(in) :: A
-    real*8                   :: r
-
-    r = (A**A)**0.5d0
-
-  end function
-
-  function matrix_minus_matrix(A, B) result(C)
-
-    type(matrix), intent(in) :: A, B
-    type(matrix)             :: C
-
-    C = A + (-B)
-
-  end function
-
-  function minus_matrix(A) result(B)
-
-    type(matrix), intent(in) :: A
-    type(matrix)             :: B
-
-    B = (-1.0d0)*A
-
-  end function
-
-  function matrix_div_real(A, r) result(B)
-
-    type(matrix), intent(in) :: A
-    real*8,       intent(in) :: r
-    type(matrix)             :: B
-
-    B = (1.0d0/r)*A
-
-  end function
+    subroutine mat_fix_result(A)
+        type(matrix),intent(inout) :: A
+        type(tmp_mat),pointer      :: T
+        type(matrix),save,target   :: fixA
+        if (.not.isdef(A)) &
+            call quit('mat_fix_result(A) : A undefined')
+        if (isdef(fixA)) &
+            call quit('mat_fix_result(A) : another fixed result already exists')
+        call mat_init(fixA,A,alias=.true.) !diplicate A in fixA
+        call mat_init(A,reset=.true.)      !reset/clear/undefine A
+        T => new_tmp(A,X=fixA,dx=.true.)   !temporary A = 1*fixA, fixA to be deleted
+    end subroutine
 
 end module

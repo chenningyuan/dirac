@@ -1,22 +1,62 @@
+!ajt dec08 Contains slightly generalized versions of the
+!          operations in modulematrix_operations.
+!
+!Mainly intended as hidden back-end for module matrix_defop.
+!
+!mat_axtpby  combines  mat_trans, mat_scal, mat_copy,
+!                      mat_assign, and mat_add
+!
+!mat_gemm  is  mat_mul
+!
+!mat_dot  combines  mat_dotproduct and mat_trAB
+!
+!mat_init  is generalized so that another matrix can fill
+!          the role of nrow and ncol.
+
 module matrix_genop
 
-  use kinds_m
-! use memory_allocator
+#ifndef PRG_DIRAC
+    use matrix_operations,only: matrix,mat_mul, &
+          & mat_init_full    => mat_init, &
+          & mat_free_nonzero => mat_free
+#endif /* PRG_DIRAC */  
 
-  implicit none
+    implicit none
 
 #include "dgroup.h"
 
+    public matrix
+    public print
+    public mat_init
+    public mat_free
+    public mat_same
+    public mat_isdef
+    public mat_iszero
+    public mat_axtpby
+    public mat_gemm
+    public mat_dot
+    public mat_trace
+    public mat_print
+
   type matrix
-    integer                :: nrow
-    integer                :: ncol
+    integer                :: nrow = -1
+    integer                :: ncol = -1
     integer                :: ih_sym        = 1
     integer                :: tr_sym        = 1
     integer                :: pg_sym        = 1
     integer                :: fermi_pointer = 1
-    real(kind_dp), pointer :: elms(:)
-    logical                :: is_defined    = .false.
+    real(8), pointer :: elms(:)
+!   logical                :: is_defined    = .false.
+
+      integer, pointer     :: iaux(:)
+      real(8), pointer :: raux(:)
   end type
+
+    private
+
+    interface print
+        module procedure mat_print
+    end interface
 
     interface mat_init
         module procedure mat_init_full
@@ -24,6 +64,227 @@ module matrix_genop
     end interface
 
 contains
+
+  subroutine mat_dense_mul(a,b,transa,transb,alpha,beta,c)
+     implicit none
+     TYPE(Matrix), intent(IN) :: a, b
+     character, intent(in)    :: transa, transb
+     character                :: ta, tb
+     REAL(8), INTENT(IN)  :: alpha, beta
+     TYPE(Matrix)             :: c
+     INTEGER                  :: m,n,k
+#ifdef PRG_DIRAC
+    integer      :: iq(4)
+#endif /* PRG_DIRAC */  
+
+     if (transa == 'n' .or. transa == 'N') then
+       m = a%nrow
+       k = a%ncol
+     elseif (transa == 't' .or. transa == 'T') then
+       m = a%ncol
+       k = a%nrow
+     else
+       print*,'unknown format in mat_dense_mul'
+       STOP 'unknown format in mat_dense_mul'
+     endif
+     if (transb == 'n' .or. transb == 'N') then
+       n = b%ncol
+       if (b%nrow /= k) STOP 'weird'
+     elseif (transb == 't' .or. transb == 'T') then
+       n = b%nrow
+       if (b%ncol /= k) STOP 'weird'
+     endif
+#ifndef PRG_DIRAC
+!write (mat_lu,*) 'matrix a'
+!call mat_dense_print(a, 1, a%nrow, 1, a%ncol, mat_lu)
+!write (mat_lu,*) 'matrix b'
+!call mat_dense_print(b, 1, b%nrow, 1, b%ncol, mat_lu)
+!write (mat_lu,*) 'matrix c'
+!call mat_dense_print(c, 1, c%nrow, 1, c%ncol, mat_lu)
+     call DGEMM(transa,transb,m,n,k,alpha,&
+               &a%elms,a%nrow,b%elms,b%nrow,beta,c%elms,c%nrow)
+#else
+
+!     SUBROUTINE QGEMM(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA,
+!    &                             FB,TB,IQPB,B,LRB,LCB,NZB,
+!    &                              BETA,IQPC,C,LRC,LCC,NZC)
+!         CALL DGEMM(OA,OB,M,N,K,FACA,A(1,IZA),LRA,B(1,IZB),LRB,
+!    &               FACB,C(1,IZC),LRC)
+
+      call iqpack(ipqtoq(1, A%pg_sym-1), nz, &
+                  ipqtoq(1, B%pg_sym-1), nz, &
+                  iq                   , nz)
+
+
+    ta = 'N'
+    tb = 'N'
+    if (transa == 't') ta = 'H'
+    if (transb == 't') tb = 'H'
+    if (transa == 'T') ta = 'H'
+    if (transb == 'T') tb = 'H'
+
+!   C%nrow       = A%nrow
+!   C%ncol       = B%ncol
+    C%pg_sym     = 1 + ieor(A%pg_sym-1, B%pg_sym-1)
+      call qgemm(m, n, k,                1.0d0,  &
+                 ta, 'N', ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
+                 tb, 'N', ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
+                 0.0d0,    iq                      , C%elms, C%nrow, C%ncol, nz)
+
+
+#endif /* PRG_DIRAC */  
+
+  end subroutine mat_dense_mul
+
+      SUBROUTINE mat_mul(a, b, transa, transb, alpha, beta, c)
+         !c = alpha*ab + beta*c
+         !transa = 'T'/'t' - transposed, 'N'/'n' - normal
+         implicit none
+         TYPE(Matrix), intent(IN) :: a, b
+         character, intent(in)    :: transa, transb
+         REAL(8), INTENT(IN)  :: alpha, beta
+         TYPE(Matrix), intent(inout):: c
+         integer :: ak, bk, ci, cj
+    !    if (INFO_TIME_MAT) CALL TIMER('START ',mat_TSTR,mat_TEN)
+      !  no_of_matmuls = no_of_matmuls + 1
+         if (transa == 'n' .or. transa == 'N') then
+           ak = a%ncol
+           ci = a%nrow
+         elseif (transa == 't' .or. transa == 'T') then
+           ak = a%nrow
+           ci = a%ncol
+         endif
+         if (transb == 'n' .or. transb == 'N') then
+           bk = b%nrow
+           cj = b%ncol
+         elseif (transb == 't' .or. transb == 'T') then
+           bk = b%ncol
+           cj = b%nrow
+         endif
+         if (ak /= bk .or. ci /= c%nrow .or. cj /= c%ncol) then
+           STOP 'wrong dimensions in mat_mul or unknown trans possibility'
+         endif
+!        select case(matrix_type)
+!         case(mtype_symm_dense)
+!             call mat_symm_dense_mul(a,b,transa, transb,alpha,beta,c)
+!        case(mtype_dense)
+             call mat_dense_mul(a,b,transa, transb,alpha,beta,c)
+!        case(mtype_sparse1)
+!            call mat_sparse1_mul(a,b,transa, transb,alpha,beta,c)
+!ifdef HAVE_BSM
+!        case(mtype_sparse_block)
+!            call bsm_mul(a,b,transa, transb,alpha,beta,c)
+!endif
+!         case(mtype_unres_symm_dense)
+!             call mat_unres_symm_dense_mul(a,b,transa, transb,alpha,beta,c)
+!        case(mtype_unres_dense)
+!            call mat_unres_dense_mul(a,b,transa, transb,alpha,beta,c)
+!         case(mtype_unres_sparse1)
+!             call mat_unres_sparse1_mul(a,b,transa, transb,alpha,beta,c)
+!        case default
+!             stop "mat_mul not implemented for this type of matrix"
+!        end select
+!        if (INFO_TIME_MAT) CALL TIMER('MATMUL ',mat_TSTR,mat_TEN)
+      END SUBROUTINE mat_mul
+
+  subroutine mat_dense_init(a,nrow,ncol)
+     implicit none
+     TYPE(Matrix) :: a
+     integer, intent(in) :: nrow, ncol
+     integer :: nsize
+!A%elms should not be associated with anything.
+!if so, the memory will be lost!!
+     NULLIFY(a%elms)
+     a%nrow = nrow
+     a%ncol = ncol
+     nsize = A%nrow*A%ncol*nz
+     ALLOCATE(a%elms(nsize))
+!    call dens_stat_allocated_memory(nsize)
+  end subroutine mat_dense_init
+
+  subroutine mat_dense_free(a)
+     implicit none
+     TYPE(Matrix) :: a
+     integer :: nsize
+     if (.not.ASSOCIATED(a%elms)) then
+       print*,'memory previously released!!'
+       STOP 'Error in mat_dense_free - memory previously released'
+     endif
+!    nsize = SIZE(a%elms)
+     DEALLOCATE(a%elms)
+     NULLIFY(a%elms)
+!    call dens_stat_deallocated_memory(nsize)
+  end subroutine mat_dense_free
+
+      SUBROUTINE mat_init_full(a, nrow, ncol)
+         implicit none
+         TYPE(Matrix) :: a
+         INTEGER, INTENT(IN)   :: nrow, ncol
+!        select case(matrix_type)
+!         case(mtype_symm_dense)
+!             call mat_symm_dense_init(a)
+!        case(mtype_dense)
+             call mat_dense_init(a,nrow,ncol)
+!        case(mtype_sparse1)
+!            call mat_sparse1_init(a,nrow,ncol)
+!       case(mtype_sparse_block)
+!ifdef HAVE_BSM
+!          CALL bsm_init(a,nrow,ncol)
+!          a%nrow = nrow
+!          a%ncol = ncol
+!endif
+!         case(mtype_unres_symm_dense)
+!             call mat_unres_symm_dense_init(a)
+!        case(mtype_unres_dense)
+!            call mat_unres_dense_init(a,nrow,ncol)
+!         case(mtype_unres_sparse1)
+!             call mat_unres_sparse1_init(a)
+!        case default
+!             stop "mat_init not implemented for this type of matrix"
+!        end select
+
+         NULLIFY(a%iaux, a%raux)
+
+      END SUBROUTINE
+
+      SUBROUTINE mat_free_nonzero(a)
+         implicit none
+         TYPE(Matrix) :: a
+!        select case(matrix_type)
+!         case(mtype_symm_dense)
+!             call mat_symm_dense_free(a)
+!        case(mtype_dense)
+             call mat_dense_free(a)
+!        case(mtype_sparse1)
+!            call mat_sparse1_free(a)
+!ifdef HAVE_BSM
+!        case(mtype_sparse_block)
+!            call bsm_free(a)
+!endif
+!         case(mtype_unres_symm_dense)
+!             call mat_unres_symm_dense_free(a)
+!        case(mtype_unres_dense)
+!            call mat_unres_dense_free(a)
+!         case(mtype_unres_sparse1)
+!             call mat_unres_sparse1_free(a)
+!        case default
+!             stop "mat_free not implemented for this type of matrix"
+!        end select
+
+      !free auxaliary data
+      if (ASSOCIATED(a%iaux)) deallocate(a%iaux)
+      if (ASSOCIATED(a%raux)) deallocate(a%raux)
+
+      END SUBROUTINE
+
+
+    subroutine mat_free(A)
+        type(matrix),intent(inout) :: A
+        !if (associated(A%elms)) print *,'mat_free',loc(A),' elms=',loc(A%elms)
+        if (associated(A%elms)) call mat_free_nonzero(A)
+        A%nrow = -1; A%ncol = -1
+    end subroutine
+
 
     subroutine mat_init_from(C,A,ta,B,tb,zero,alias,reset)
         type(matrix),         intent(inout) :: C
@@ -81,105 +342,259 @@ contains
         end if
     end subroutine
 
-  subroutine mat_init_full(A, nrow, ncol)
 
-    type(matrix), intent(inout) :: A
-    integer,      intent(in)    :: nrow, ncol
+    function mat_isdef(A)
+        type(matrix),intent(in) :: A
+        logical                 :: mat_isdef
+        mat_isdef = .not.(A%nrow==-1 .and. A%ncol==-1)
+    end function
 
-    A%nrow       = nrow
-    A%ncol       = ncol
-    A%is_defined = .true.
+    function mat_iszero(A)
+        type(matrix),intent(in) :: A
+        logical                 :: mat_iszero
+        if (A%nrow==-1 .and. A%ncol==-1) &
+            call quit('mat_iszero(A) : matrix A undefined')
+        mat_iszero = .not.associated(A%elms)
+    end function
 
-    nullify(A%elms)
-    allocate(A%elms(A%nrow*A%ncol*nz))
+    function mat_same(A,B,ta,tb)
+        type(matrix),         intent(in) :: A,B
+        character*1, optional,intent(in) :: ta,tb
+        logical                          :: mat_same
+        character*1                      :: taa,tbb
+        taa = 'N'; if (present(ta)) taa = ta
+        tbb = 'N'; if (present(tb)) tbb = tb
+        if (taa=='N'.and.tbb=='N' .or. taa=='T'.and.tbb=='T') then
+            mat_same = (A%nrow==B%nrow .and. A%ncol==B%ncol)
+        else if (taa=='N'.and.tbb=='T' .or. taa=='T'.and.tbb=='N') then
+            mat_same = (A%nrow==B%ncol .and. A%ncol==B%nrow)
+        else if (taa=='R'.and.tbb=='R') then
+            mat_same = (A%nrow==B%nrow)
+        else if (taa=='R'.and.tbb=='C') then
+            mat_same = (A%nrow==B%ncol)
+        else if (taa=='C'.and.tbb=='R') then
+            mat_same = (A%ncol==B%nrow)
+        else if (taa=='C'.and.tbb=='C') then
+            mat_same = (A%ncol==B%ncol)
+        else
+            call quit('mat_same input error : ta='//taa//' tb='//tbb)
+        end if
+        if (.not.present(ta) .and. .not.present(tb)) &
+            mat_same = mat_same .and. associated(A%elms,B%elms)
+    end function
+
+
+  subroutine transpose_block(f, g, i_dim, j_dim, block, tblock)
+
+!                            tblock = f*block^T + g*tblock
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: f
+    real(8), intent(in)    :: g
+    integer, intent(in)    :: i_dim
+    integer, intent(in)    :: j_dim
+    real(8), intent(in)    :: block(i_dim*j_dim)
+    real(8), intent(inout) :: tblock(i_dim*j_dim)
+!   ----------------------------------------------------------------------------
+
+    call dscal(i_dim*j_dim, f, block, 1)
+
+    tblock = g*tblock + reshape(transpose(reshape(block, (/i_dim, j_dim/))), (/i_dim*j_dim/))
 
   end subroutine
 
-  subroutine matrix_eq_matrix_backend(A, B)
+  subroutine mat_axtpby(Z, a, X, tx, b, Y)
 
-    type(matrix) :: A, B
+!                       Z = a*X^tx + b*Y
 
-    A%nrow          =  B%nrow
-    A%ncol          =  B%ncol
-    A%ih_sym        =  B%ih_sym
-    A%tr_sym        =  B%tr_sym
-    A%pg_sym        =  B%pg_sym
-    A%fermi_pointer =  B%fermi_pointer
-    A%is_defined    =  .true.
+!   ----------------------------------------------------------------------------
+    type(matrix),  intent(inout) :: Z
+    real(8),       intent(in)    :: a, b
+    type(matrix),  intent(in)    :: X, Y
+    character(1),  intent(in)    :: tx
+!   ----------------------------------------------------------------------------
+    logical                      :: Y_is_Z
+    integer                      :: i_dim, j_dim, iz
+    real(8)                      :: q
+!   ----------------------------------------------------------------------------
 
-    A%elms          => B%elms
+    i_dim = Z%nrow
+    j_dim = Z%ncol
+
+    if (tx /= 'N' .and. tx /= 'T') call quit('mat_axtpby input error: tx must be N or T')
+
+    if (b == 0.0d0) then
+
+      if (a == 0.0d0)                 Z%elms = 0.0d0
+
+      if (a /= 0.0d0 .and. tx == 'N') Z%elms = a*X%elms
+
+      if (a /= 0.0d0 .and. tx == 'T') then
+        do iz = 1, nz
+          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+            q = -1.0
+          else
+            q =  1.0
+          end if
+          call transpose_block(a*q, b, i_dim, j_dim,                            &
+                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
+                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
+        end do
+    Z%ih_sym        = X%ih_sym
+    Z%tr_sym        = X%tr_sym
+    Z%pg_sym        = X%pg_sym
+    Z%fermi_pointer = X%fermi_pointer
+      end if
+
+    else if (b /= 0.0d0 .and. associated(Y%elms, Z%elms)) then
+
+      if (a == 0.0d0)                 Z%elms = b*Z%elms
+
+      if (a /= 0.0d0 .and. tx == 'N') Z%elms = b*Z%elms + a*X%elms
+
+      if (a /= 0.0d0 .and. tx == 'T') then
+        do iz = 1, nz
+          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+            q = -1.0
+          else
+            q =  1.0
+          end if
+          call transpose_block(a*q, b, i_dim, j_dim,                            &
+                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
+                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
+        end do
+    Z%ih_sym        = X%ih_sym
+    Z%tr_sym        = X%tr_sym
+    Z%pg_sym        = X%pg_sym
+    Z%fermi_pointer = X%fermi_pointer
+      end if
+
+    else
+
+      if (a == 0.0d0)                 Z%elms = b*Y%elms
+
+      if (a /= 0.0d0 .and. tx == 'N') Z%elms = b*Y%elms + a*X%elms
+
+      if (a /= 0.0d0 .and. tx == 'T') then
+        do iz = 1, nz
+          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+            q = -1.0
+          else
+            q =  1.0
+          end if
+          call transpose_block(a*q, 0.0d0, i_dim, j_dim,                        &
+                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
+                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
+        end do
+        Z%elms = Z%elms + b*Y%elms
+    Z%ih_sym        = X%ih_sym
+    Z%tr_sym        = X%tr_sym
+    Z%pg_sym        = X%pg_sym
+    Z%fermi_pointer = X%fermi_pointer
+      end if
+
+    end if
+
 
   end subroutine
 
-  function real_times_matrix_backend(r, A) result(B)
+    subroutine mat_gemm(rab,A,ta,B,tb,rc,C)
+        !matrix multiply: C = rc*C + rab * A^ta * B^tb
+        !assumed initialied and with corresponding shapes
+        type(matrix),   intent(in) :: A,B
+        type(matrix),intent(inout) :: C
+        real*8,         intent(in) :: rab,rc
+        character*1,    intent(in) :: ta,tb
 
-    type(matrix),  intent(in) :: A
-    real(kind_dp), intent(in) :: r
-    type(matrix)              :: B
+        !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
+        call mat_mul(A,B,ta,tb,rab,rc,C)
 
-    B%nrow          = A%nrow
-    B%ncol          = A%ncol
-    B%ih_sym        = A%ih_sym
-    B%tr_sym        = A%tr_sym
-    B%pg_sym        = A%pg_sym
-    B%fermi_pointer = A%fermi_pointer
-    B%is_defined    = .true.
+ !  C%ih_sym        = B%ih_sym
+ !  C%tr_sym        = B%tr_sym
+ !  C%pg_sym        = B%pg_sym
+ !  C%fermi_pointer = B%fermi_pointer
 
-    nullify(B%elms)
 
-    if (r /= 0 .and. associated(A%elms)) then
-      allocate(B%elms(B%nrow*B%ncol*nz))
-      B%elms       = r*A%elms
-    end if
+    end subroutine
 
-  end function
+    function mat_dot(A,B,t) result(r)
+        !matrix dot product: sum Aij (B(^T))ij
+        !assumed initialied and with equal/transpose shapes
+        type(matrix),        intent(in) :: A,B
+        character*1,optional,intent(in) :: t
+        real*8                          :: r, factor
+        integer                         :: n, iz
+        character*1                     :: t_set
 
-  function matrix_plus_matrix_backend(A, B) result(C)
+        integer                         :: i, j, i_dim, j_dim
 
-    type(matrix), intent(in) :: A, B
-    type(matrix)             :: C
+        t_set = 'N'
+        if (present(t)) t_set = t
 
-    if (A%nrow /= B%nrow) call quit('different shapes in C = A + B')
-    if (A%ncol /= B%ncol) call quit('different shapes in C = A + B')
+        r = 0.0d0
 
-    C%nrow          = B%nrow
-    C%ncol          = B%ncol
-    C%ih_sym        = B%ih_sym
-    C%tr_sym        = B%tr_sym
-    C%pg_sym        = B%pg_sym
-    C%fermi_pointer = B%fermi_pointer
-    C%is_defined    = .true.
+        i_dim = A%nrow
+        j_dim = A%ncol
 
-    nullify(C%elms)
+        if (ieor(A%pg_sym-1, B%pg_sym-1) == 0) then
 
-    if (associated(A%elms) .and. associated(B%elms)) then
-      allocate(C%elms(C%nrow*C%ncol*nz))
-      C%elms = A%elms + B%elms
-    else if (associated(A%elms)) then
-      C%elms => A%elms
-    else if (associated(b%elms)) then
-      C%elms => B%elms
-    end if
+          if (t_set == 'N') then
 
-  end function
+              r = sum(A%elms*B%elms)
+         !do iz = 1, nz
+         !do iz = 1, 1
+         !  do i = 1, i_dim
+         !    do j = 1, j_dim
+         !       r = r + A%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim)*B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim)
+         !    end do
+         !  end do
+         !end do
 
-  function matrix_dot_matrix_backend(A, B) result(r)
+          else if (t_set == 'T') then
 
-    type(matrix), intent(in) :: A, B
-    real(kind_dp)            :: r
+!     n = B%nrow*B%ncol
+      do iz = 1, nz
+        if (ipqtoq(iz, B%pg_sym - 1) > 1) then
+          factor = -1.0
+        else
+          factor =  1.0
+        end if
 
-    if (A%nrow /= B%nrow) call quit('different shapes in r = A**B')
-    if (A%ncol /= B%ncol) call quit('different shapes in r = A**B')
+        r = r + factor*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)*(/((B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim), j = 1, j_dim), i = 1, i_dim)/))
 
-    r = 0.0d0
+      end do
 
-    if (.not.(associated(A%elms) .and. associated(B%elms))) return
+          else
 
-    if (ieor(A%pg_sym-1, B%pg_sym-1) == 0) r = 2.0d0*sum(A%elms*B%elms)
+            call quit('mat_dot input error: t = '//t)
 
-  end function
+          end if
 
-  subroutine print_matrix_backend(A, label, w)
+        end if
+
+
+
+
+
+
+
+
+
+    end function
+
+    function mat_trace(A) result(r)
+        !matrix sum Aii, for A square and assumed initialied
+        type(matrix),intent(in) :: A
+        real*8                  :: r
+        integer                 :: i
+        if (A%nrow/=A%ncol) call quit('mat_trace(A) : A not square')
+        r = 0d0
+        if (associated(A%elms)) &
+            r = sum((/(A%elms(1+(i-1)*(A%nrow+1)),i=1,A%nrow)/))
+    end function
+
+
+  subroutine mat_print(A, label, w)
 
     type(matrix), intent(in)           :: A
     character(*), intent(in), optional :: label
@@ -206,79 +621,68 @@ contains
 
   end subroutine
 
-  subroutine matrix_times_matrix_backend(A, B, C)
-
-    type(matrix) :: A, B, C
-    integer      :: iq(4)
-
-    if (A%ncol /= B%nrow) call quit('incompatible shapes in C = A*B')
-
-    C%nrow       = A%nrow
-    C%ncol       = B%ncol
-    C%pg_sym     = 1 + ieor(A%pg_sym-1, B%pg_sym-1)
-    C%is_defined = .true.
-
-    if (associated(A%elms) .and. associated(B%elms)) then
-
-      allocate(C%elms(C%nrow*C%ncol*nz))
-
-      call iqpack(ipqtoq(1, A%pg_sym-1), nz, &
-                  ipqtoq(1, B%pg_sym-1), nz, &
-                  iq                   , nz)
-
-      call qgemm(A%nrow, B%ncol, A%ncol, 1.0d0,  &
-                 'N', 'N', ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
-                 'N', 'N', ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
-                 0.0d0,    iq                   , C%elms, C%nrow, C%ncol, nz)
-
-    end if
-
-  end subroutine
-
-  subroutine dag_matrix_backend(A, B)
-
-    type(matrix)  :: A
-    type(matrix)  :: B
-    real(kind_dp) :: factor
-    integer       :: iz
-
-    B%ncol          = A%nrow
-    B%nrow          = A%ncol
-    B%ih_sym        = A%ih_sym
-    B%tr_sym        = A%tr_sym
-    B%pg_sym        = A%pg_sym
-    B%fermi_pointer = A%fermi_pointer
-    B%is_defined    = .true.
-
-    if (associated(A%elms)) then
-      allocate(B%elms(B%nrow*B%ncol*nz))
-
-      do iz = 1, nz
-        if (ipqtoq(iz, A%pg_sym-1) > 1) then
-          factor = -1.0
-        else
-          factor =  1.0
+    subroutine mat_print_dalton(A,unit,width,label,braces)
+        !print matrix A to standard out,starting with label
+        type(matrix),         intent(in) :: A
+        integer,     optional,intent(in) :: unit,width
+        character(*),optional,intent(in) :: label,braces
+        integer                          :: u,w,d,i,j
+        character*30                     :: fmt
+        character*1                      :: bra,ces,csep,rsep
+        !process argument unit, which defaults to standard output
+        u = 6; if (present(unit)) u = unit
+        !set d to the largest number of digits to be printed
+        d = 1 !before the decimal point (including - signs)
+        if (associated(A%elms)) d = &
+           max(max(1,ceiling(log10(maxval(A%elms)))) &
+              ,max(2,1+ceiling(log10(-minval(A%elms)))))
+        w = 7 !process default for width
+        if (present(width)) w = max(width,d+2) !max, to avoid *****
+        d = w-d-1 !set d to the number of decimals to be printed
+        if (present(label)) then
+            fmt = '(a,ikk,a1,ikk,a1)'
+            write (fmt( 5: 6),'(i2)') max(1,ceiling(log10(1d0*A%nrow)))
+            write (fmt(12:13),'(i2)') max(1,ceiling(log10(1d0*A%ncol)))
+            write (u,fmt(1:17)),'matrix : '//label//'(',A%nrow,',',A%ncol,')'
         end if
+        fmt = '(a2,fww.dd,nnnn(a1,fww.dd),a2)'
+        write (fmt(6:15),'(i2,a,i2,a,i4)'),w,'.',d,',',A%ncol-1
+        fmt(21:25) = fmt(6:10)
+        if (present(braces)) then
+            bra = braces(1:1)
+            if (len(braces)==4) then
+                csep = braces(2:2)
+                ces = braces(3:3)
+                rsep = braces(4:4)
+            else
+                csep = ','; rsep = ','
+                ces = merge(')',merge('}',merge(']',bra &
+                           ,bra=='['),bra=='{'),bra=='(')
+                if (len(braces)==2) ces = braces(2:2)
+            end if
+            do i=1,A%nrow
+                if (associated(A%elms)) &
+                    write (u,fmt),merge(bra,' ',i==1)//bra,A%elms(i) &
+                                 ,(csep,A%elms(i+A%nrow*j),j=1,A%ncol-1) &
+                                 ,ces//merge(ces,rsep,i==A%nrow)
+                if (.not.associated(A%elms)) &
+                    write (u,fmt),merge(bra,' ',i==1)//bra,0d0 &
+                                 ,(csep,0d0,j=1,A%ncol-1) &
+                                 ,ces//merge(ces,rsep,i==A%nrow)
+            end do
+        else
+            fmt(2:4) = '   '   !remove braces
+            fmt(17:18) = ' x'  !and separators
+            fmt(27:29) = '   ' !from the format
+            do i=1,A%nrow
+                if (associated(A%elms)) &
+                    write (u,fmt),A%elms(i:i+A%nrow*(A%ncol-1):A%nrow)
+                if (.not.associated(A%elms)) &
+                    write (u,fmt),(0d0,j=1,A%ncol)
+            end do
+        end if
+        write (u,'()') !final empty line
+    end subroutine
 
-        call transpose_block(factor, A%elms((iz-1)*A%nrow*A%ncol + 1:iz*A%nrow*A%ncol), A%nrow, A%ncol, &
-                                     B%elms((iz-1)*B%nrow*B%ncol + 1:iz*B%nrow*B%ncol))
-
-      end do
-    endif
-
-  end subroutine
-
-  subroutine transpose_block(factor, block, nrow, ncol, tblock)
-
-    real(kind_dp),    intent(in)    :: factor
-    integer,          intent(in)    :: nrow
-    integer,          intent(in)    :: ncol
-    real(kind_dp),    intent(in)    :: block(nrow*ncol)
-    real(kind_dp),    intent(inout) :: tblock(nrow*ncol)
-
-    tblock = reshape(transpose(reshape(block, (/nrow, ncol/))), (/nrow*ncol/))
-    call dscal(nrow*ncol, factor, tblock, 1)
-
-  end subroutine
 
 end module

@@ -391,7 +391,7 @@ contains
 
 #include "dcbbas.h"
 
-    if (.not. F%is_defined) call mat_init(F, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(F)) call mat_init(F, ntbas(0), ntbas(0))
 
     F1 = 1.0d-100*F
     F2 = 1.0d-100*F
@@ -425,7 +425,7 @@ contains
 #include "dcbbas.h"
 #include "dcbdhf.h"
 
-    if (.not. G%is_defined) call mat_init(G, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(G)) call mat_init(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
 
@@ -469,7 +469,7 @@ contains
 #include "dcborb.h"
 #include "dcbbas.h"
 
-    if (.not. C%is_defined) call mat_init(C, ntbas(0), norbt)
+    if (.not. mat_isdef(C)) call mat_init(C, ntbas(0), norbt)
     C%elms = 0.0d0
 
     call alloc(eigenvalues, norbt)
@@ -600,7 +600,7 @@ contains
 
 #include "memint.h"
 
-    if (.not. S%is_defined) call mat_init(S, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(S)) call mat_init(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
     lfree = 2*((nnbbasx + n2bbasx)*2)/2
@@ -651,7 +651,7 @@ contains
 
     call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
 
-    if (.not. P%is_defined) call mat_init(P, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(P)) call mat_init(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
 
     P%pg_sym        = iprpsym(op_index)
@@ -889,8 +889,14 @@ contains
                                      orbital_rotation_vector_pn)
 
     call get_C(C)
-    RHS_mo = dag(C)*RHS*C
+    RHS_mo = dag(C)*(RHS*C)
     C      = 0
+
+!fixme
+    RHS_mo%ih_sym        = RHS%ih_sym
+    RHS_mo%tr_sym        = RHS%tr_sym
+    RHS_mo%pg_sym        = RHS%pg_sym
+    RHS_mo%fermi_pointer = RHS%fermi_pointer
 
     if (debug_me) then
       call print(RHS,    'RHS in AO basis')
@@ -1161,7 +1167,14 @@ contains
     Dp%elms = 0.0d0
     if (.not. static) Dp%ih_sym = 0
 
-    Dp = 0.5d0*(Ci*Wp*dag(Cs) - Cs*Wp*dag(Ci))
+    Dp = (Ci*(Wp*dag(Cs))) - (Cs*(Wp*dag(Ci)))
+    Dp = 0.5d0*Dp
+
+!fixme
+    Dp%ih_sym        = Wp%ih_sym
+    Dp%tr_sym        = Wp%tr_sym
+    Dp%pg_sym        = Wp%pg_sym
+    Dp%fermi_pointer = Wp%fermi_pointer
 
     if (debug_me) then
       call print(Wp, 'Wp')
