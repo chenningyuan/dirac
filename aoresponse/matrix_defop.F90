@@ -403,8 +403,6 @@ contains
 
     end subroutine
 
-#ifndef PRG_DIRAC
-
     subroutine gen_mat_plus_mat(A,plus,B,C)
         type(matrix),target,intent(in)  :: A,B
         type(matrix),target             :: C
@@ -428,18 +426,25 @@ contains
             swap = (zeroA .and. .not.zeroB)
         end if
         !make the swap, and create a new tmp_mat C = A + B
+#ifndef PRG_DIRAC
+!fixme: for some mysterious reason this 
+!       does not work for me with DIRAC
         if (swap) then
             ltmp = zeroA; zeroA = zeroB; zeroB = ltmp
             TC  => TA;    TA   => TB;    TB   => TC
             TC => new_tmp(C,X=B,Y=A,rx=merge(1d0,-1d0,plus) &
                          ,dx=associated(TA),dy=associated(TB))
         else
+#endif /* PRG_DIRAC */
             TC => new_tmp(C,X=A,Y=B,ry=merge(1d0,-1d0,plus) &
                          ,dx=associated(TA),dy=associated(TB))
+#ifndef PRG_DIRAC
         end if
+#endif /* PRG_DIRAC */
         !if A is undefined and X or X*Z (simple) promote into C%X,C%Z
         !if A is undefined and X*Z + Y (complicated), evaluate it
         if (associated(TA)) then
+#ifndef PRG_DIRAC
             if (.not.associated(TA%Y)) then
                 TC%rx = TC%rx*TA%rx
                 TC%tx = TA%tx; TC%tz = TA%tz
@@ -449,10 +454,17 @@ contains
             else
                 call eval_tmp(TA)
             end if
+#else
+!fixme: for some mysterious reason this 
+!       does not work for me with DIRAC
+!       for the moment i simply evaluate always
+                call eval_tmp(TA)
+#endif /* PRG_DIRAC */
         end if
         !if B is undefined and X^N (simple) promote into C%Y,
         !otherwise evaluate B
         if (associated(TB)) then
+#ifndef PRG_DIRAC
             if (.not.TB%tx .and. .not.associated(TB%Z) &
                            .and. .not.associated(TB%Y)) then
                 TC%ry = TC%ry*TB%rx
@@ -462,6 +474,12 @@ contains
             else
                 call eval_tmp(TB)
             end if
+#else
+!fixme: for some mysterious reason this 
+!       does not work for me with DIRAC
+!       for the moment i simply evaluate always
+                call eval_tmp(TB)
+#endif /* PRG_DIRAC */
         end if
         !verify that shapes do indeed match
         if (associated(TC%Z)) then
@@ -485,134 +503,15 @@ contains
             TC%ry = 0d0
             TC%dy = .false.
         end if
-    end subroutine
-#else
-  subroutine gen_mat_plus_mat(A, plus, B, C)
 
-!   ----------------------------------------------------------------------------
-    type(matrix),  target, intent(in) :: A, B
-    type(matrix),  target             :: C
-    logical,               intent(in) :: plus
-!   ----------------------------------------------------------------------------
-    type(tmp_mat), pointer            :: TA, TB, TC
-    logical                           :: A_is_zero, B_is_zero, swap, ltmp
-!   ----------------------------------------------------------------------------
-
-    TA => find_tmp(A, 'matrix A + B: A undefined')
-    TB => find_tmp(B, 'matrix A + B: B undefined')
-
-!   find out whether A or B or both are zero
-    A_is_zero = .false.
-    B_is_zero = .false.
-    if (.not. associated(TA)) A_is_zero = iszero(A)
-    if (.not. associated(TB)) B_is_zero = iszero(B)
-
-!   decide whether to swap A and B
-!   if (associated(TA) .and. associated(TB)) then
-!     swap = (.not. associated(TB%Y) .and. &
-!                  (associated(TB%Z) .or. .not. TA%tx .or. associated(TA%Z) .or. associated(TA%Y)))
-!   else if (.not. associated(TA) .and. associated(TB)) then
-!     swap = (A_is_zero .or. .not. associated(TB%Y))
-!   else
-!     swap = (A_is_zero .and. .not. B_is_zero)
-!   end if
-
-!   if (swap) then
-
-!     ltmp      = A_is_zero
-!     A_is_zero = B_is_zero
-!     B_is_zero = ltmp
-
-!     TC => TA
-!     TA => TB
-!     TB => TC
-
-!     TC => new_tmp(C,                               &
-!                   X = B,                           &
-!                   Y = A,                           &
-!                   rx = merge(1.0d0, -1.0d0, plus), &
-!                   dx = associated(TA),             &
-!                   dy = associated(TB))
-!   else
-      TC => new_tmp(C,                               &
-                    X = A,                           &
-                    Y = B,                           &
-                    ry = merge(1.0d0, -1.0d0, plus), &
-                    dx = associated(TA),             &
-                    dy = associated(TB))
-!   end if
-
-    if (associated(TA)) then
-!     A is simple: X or X*Z
-!     promote into C%X, C%Z
-!     if (.not. associated(TA%Y)) then
-!        TC%rx = TC%rx*TA%rx
-!        TC%tx = TA%tx
-!        TC%tz = TA%tz
-!        TC%dx = TA%dx
-!        TC%dz = TA%dz
-!        TC%X => TA%X
-!        TC%Z => TA%Z
-!        call del_tmp(TA)
-!     A is complicated: X*Z + Y
-!     evaluate it
-!     else
-         call eval_tmp(TA)
-!     end if
-    end if
-
-    if (associated(TB)) then
-!     B is simple
-!     promote into C%Y
-!     if (.not. TB%tx .and. .not. associated(TB%Z) &
-!                     .and. .not. associated(TB%Y)) then
-!        TC%ry = TC%ry*TB%rx
-!        TC%dy = TB%dx
-!        TC%Y => TB%X
-!        call del_tmp(TB)
-!     B is complicated
-!     evaluate it
-!     else
-         call eval_tmp(TB)
-!     end if
-    end if
-
-!   verify that shapes do indeed match
-    if (associated(TC%Z)) then
-      if (.not. mat_same(TC%X, TC%Y, 'R', merge('C', 'R', TC%tx)) .or. &
-          .not. mat_same(TC%Z, TC%Y, 'C', merge('R', 'C', TC%tz)))     &
-          call quit('matrix A + B: different shapes')
-    else
-      if (.not. mat_same(TC%X, TC%Y, merge('T', 'N', TC%tx))) &
-          call quit('matrix A + B: different shapes')
-    end if
-
-!   if either of A and/or B are zero, remove from TC
-    if (A_is_zero .and. B_is_zero) then
-      call zero_tmp(TC)
-    else if (A_is_zero) then
-      TC%X => TC%Y
-      TC%rx = TC%ry
-      TC%dx = TC%dy
-      TC%tx = .false.
-      nullify(TC%Y)
-      TC%ry = 0.0d0
-      TC%dy = .false.
-    else if (B_is_zero) then
-      nullify(TC%Y)
-      TC%ry = 0.0d0
-      TC%dy = .false.
-    end if
-
+#ifdef PRG_DIRAC
     C%ih_sym        =  B%ih_sym
     C%tr_sym        =  B%tr_sym
     C%pg_sym        =  B%pg_sym
     C%fermi_pointer =  B%fermi_pointer
-
-
-  end subroutine
 #endif /* PRG_DIRAC */
 
+    end subroutine
 
     function mat_plus_mat(A,B) result(C)
     !verify that shapes match, check for zeros
