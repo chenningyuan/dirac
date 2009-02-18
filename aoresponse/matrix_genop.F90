@@ -95,21 +95,9 @@ contains
        if (b%ncol /= k) STOP 'weird'
      endif
 #ifndef PRG_DIRAC
-!write (mat_lu,*) 'matrix a'
-!call mat_dense_print(a, 1, a%nrow, 1, a%ncol, mat_lu)
-!write (mat_lu,*) 'matrix b'
-!call mat_dense_print(b, 1, b%nrow, 1, b%ncol, mat_lu)
-!write (mat_lu,*) 'matrix c'
-!call mat_dense_print(c, 1, c%nrow, 1, c%ncol, mat_lu)
      call DGEMM(transa,transb,m,n,k,alpha,&
                &a%elms,a%nrow,b%elms,b%nrow,beta,c%elms,c%nrow)
 #else
-
-!     SUBROUTINE QGEMM(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA,
-!    &                             FB,TB,IQPB,B,LRB,LCB,NZB,
-!    &                              BETA,IQPC,C,LRC,LCC,NZC)
-!         CALL DGEMM(OA,OB,M,N,K,FACA,A(1,IZA),LRA,B(1,IZB),LRB,
-!    &               FACB,C(1,IZC),LRC)
 
       call iqpack(ipqtoq(1, A%pg_sym-1), nz, &
                   ipqtoq(1, B%pg_sym-1), nz, &
@@ -164,126 +152,54 @@ contains
          if (ak /= bk .or. ci /= c%nrow .or. cj /= c%ncol) then
            STOP 'wrong dimensions in mat_mul or unknown trans possibility'
          endif
-!        select case(matrix_type)
-!         case(mtype_symm_dense)
-!             call mat_symm_dense_mul(a,b,transa, transb,alpha,beta,c)
-!        case(mtype_dense)
              call mat_dense_mul(a,b,transa, transb,alpha,beta,c)
-!        case(mtype_sparse1)
-!            call mat_sparse1_mul(a,b,transa, transb,alpha,beta,c)
-!ifdef HAVE_BSM
-!        case(mtype_sparse_block)
-!            call bsm_mul(a,b,transa, transb,alpha,beta,c)
-!endif
-!         case(mtype_unres_symm_dense)
-!             call mat_unres_symm_dense_mul(a,b,transa, transb,alpha,beta,c)
-!        case(mtype_unres_dense)
-!            call mat_unres_dense_mul(a,b,transa, transb,alpha,beta,c)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_mul(a,b,transa, transb,alpha,beta,c)
-!        case default
-!             stop "mat_mul not implemented for this type of matrix"
-!        end select
-!        if (INFO_TIME_MAT) CALL TIMER('MATMUL ',mat_TSTR,mat_TEN)
       END SUBROUTINE mat_mul
 
-  subroutine mat_dense_init(a,nrow,ncol)
-     implicit none
-     TYPE(Matrix) :: a
-     integer, intent(in) :: nrow, ncol
-     integer :: nsize
-!A%elms should not be associated with anything.
-!if so, the memory will be lost!!
-     NULLIFY(a%elms)
-     a%nrow = nrow
-     a%ncol = ncol
-     nsize = A%nrow*A%ncol*nz
-     ALLOCATE(a%elms(nsize))
-!    call dens_stat_allocated_memory(nsize)
-  end subroutine mat_dense_init
+  subroutine mat_init_full(A, nrow, ncol)
 
-  subroutine mat_dense_free(a)
-     implicit none
-     TYPE(Matrix) :: a
-     integer :: nsize
-     if (.not.ASSOCIATED(a%elms)) then
-       print*,'memory previously released!!'
-       STOP 'Error in mat_dense_free - memory previously released'
-     endif
-!    nsize = SIZE(a%elms)
-     DEALLOCATE(a%elms)
-     NULLIFY(a%elms)
-!    call dens_stat_deallocated_memory(nsize)
-  end subroutine mat_dense_free
+!   ----------------------------------------------------------------------------
+    type(matrix)            :: A
+    integer,     intent(in) :: nrow, ncol
+!   ----------------------------------------------------------------------------
 
-      SUBROUTINE mat_init_full(a, nrow, ncol)
-         implicit none
-         TYPE(Matrix) :: a
-         INTEGER, INTENT(IN)   :: nrow, ncol
-!        select case(matrix_type)
-!         case(mtype_symm_dense)
-!             call mat_symm_dense_init(a)
-!        case(mtype_dense)
-             call mat_dense_init(a,nrow,ncol)
-!        case(mtype_sparse1)
-!            call mat_sparse1_init(a,nrow,ncol)
-!       case(mtype_sparse_block)
-!ifdef HAVE_BSM
-!          CALL bsm_init(a,nrow,ncol)
-!          a%nrow = nrow
-!          a%ncol = ncol
-!endif
-!         case(mtype_unres_symm_dense)
-!             call mat_unres_symm_dense_init(a)
-!        case(mtype_unres_dense)
-!            call mat_unres_dense_init(a,nrow,ncol)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_init(a)
-!        case default
-!             stop "mat_init not implemented for this type of matrix"
-!        end select
+    nullify(A%elms)
+    nullify(A%iaux)
+    nullify(A%raux)
 
-         NULLIFY(a%iaux, a%raux)
+    A%nrow = nrow
+    A%ncol = ncol
 
-      END SUBROUTINE
+    allocate(A%elms(A%nrow*A%ncol*nz))
 
-      SUBROUTINE mat_free_nonzero(a)
-         implicit none
-         TYPE(Matrix) :: a
-!        select case(matrix_type)
-!         case(mtype_symm_dense)
-!             call mat_symm_dense_free(a)
-!        case(mtype_dense)
-             call mat_dense_free(a)
-!        case(mtype_sparse1)
-!            call mat_sparse1_free(a)
-!ifdef HAVE_BSM
-!        case(mtype_sparse_block)
-!            call bsm_free(a)
-!endif
-!         case(mtype_unres_symm_dense)
-!             call mat_unres_symm_dense_free(a)
-!        case(mtype_unres_dense)
-!            call mat_unres_dense_free(a)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_free(a)
-!        case default
-!             stop "mat_free not implemented for this type of matrix"
-!        end select
+  end subroutine
 
-      !free auxaliary data
-      if (ASSOCIATED(a%iaux)) deallocate(a%iaux)
-      if (ASSOCIATED(a%raux)) deallocate(a%raux)
+  subroutine mat_free(A)
 
-      END SUBROUTINE
+!   ----------------------------------------------------------------------------
+    type(matrix), intent(inout) :: A
+!   ----------------------------------------------------------------------------
+
+    if (associated(A%elms)) then
+
+      deallocate(A%elms)
+      nullify(A%elms)
+  
+      if (associated(A%iaux)) deallocate(A%iaux)
+      if (associated(A%raux)) deallocate(A%raux)
+
+    end if
+
+    A%nrow = -1
+    A%ncol = -1
+
+  end subroutine
 
 
-    subroutine mat_free(A)
-        type(matrix),intent(inout) :: A
-        !if (associated(A%elms)) print *,'mat_free',loc(A),' elms=',loc(A%elms)
-        if (associated(A%elms)) call mat_free_nonzero(A)
-        A%nrow = -1; A%ncol = -1
-    end subroutine
+
+
+
+
+
 
 
     subroutine mat_init_from(C,A,ta,B,tb,zero,alias,reset)
@@ -595,11 +511,10 @@ contains
     end function
 
 
-  subroutine mat_print(A, label, w)
+  subroutine mat_print(A, label)
 
     type(matrix), intent(in)           :: A
     character(*), intent(in), optional :: label
-    integer,      intent(in), optional :: w
 
     write(*, *) 'matrix        = ', label
     write(*, *) 'ih_sym        = ', A%ih_sym
