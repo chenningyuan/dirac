@@ -181,9 +181,9 @@ contains
 
     do iz = 1, nz
 
-      q = 1.0
+      q = 1.0d0
 #ifdef PRG_DIRAC
-      if (get_ipqtoq(iz, X%pg_sym - 1) > 1) q = -1.0
+      if (get_ipqtoq(iz, X%pg_sym - 1) > 1) q = -1.0d0
 #endif /* PRG_DIRAC */ 
 
       Z%elms = b*Z%elms                                         &
@@ -257,10 +257,10 @@ contains
 !   ----------------------------------------------------------------------------
     type(matrix),           intent(in) :: A, B
     character(1), optional, intent(in) :: t
-    real*8                             :: r
+    real(8)                            :: r
 !   ----------------------------------------------------------------------------
     character(1)                       :: t_set
-    real*8                             :: factor
+    real(8)                            :: q
     integer                            :: i, j, i_dim, j_dim, iz
 !   ----------------------------------------------------------------------------
 
@@ -286,12 +286,12 @@ contains
 
       do iz = 1, nz
 
-        factor = 1.0
+        q = 1.0d0
 #ifdef PRG_DIRAC
-        if (get_ipqtoq(iz, B%pg_sym - 1) > 1) factor = -1.0
+        if (get_ipqtoq(iz, B%pg_sym - 1) > 1) q = -1.0d0
 #endif /* PRG_DIRAC */ 
 
-        r = r + factor*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)* &
+        r = r + q*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)* &
         (/((B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim), j = 1, j_dim), i = 1, i_dim)/))
 
       end do
