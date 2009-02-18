@@ -82,9 +82,7 @@ module matrix_defop
 !temporary, so that it will be deleted once used.
 
     use matrix_genop
-!   use matrix_genop, &
-!         & mat_trace_nontmp => mat_trace, &
-!         & mat_print_nontmp => mat_print
+
     implicit none
 
     public matrix
@@ -152,8 +150,11 @@ module matrix_defop
 
     interface tr
         module procedure mat_trace
-       !module procedure mat_product_trace
+#ifndef PRG_DIRAC
+        module procedure mat_product_trace
+#else
         module procedure mat_dot_product
+#endif /* PRG_DIRAC */
     end interface
 
     interface norm
@@ -394,14 +395,103 @@ contains
             call eval_tmp(T)
         end if
 
+#ifdef PRG_DIRAC
     A%ih_sym        =  B%ih_sym
     A%tr_sym        =  B%tr_sym
     A%pg_sym        =  B%pg_sym
     A%fermi_pointer =  B%fermi_pointer
+#endif /* PRG_DIRAC */
 
     end subroutine
 
+#ifndef PRG_DIRAC
 
+    subroutine gen_mat_plus_mat(A,plus,B,C)
+        type(matrix),target,intent(in)  :: A,B
+        type(matrix),target             :: C
+        type(tmp_mat),pointer           :: TA,TB,TC
+        logical                         :: zeroA,zeroB,swap,ltmp,plus
+        !if (matrix_defop_debug) print *,'mat_plus_minus_mat',loc(A),loc(B) &
+        !                ,' => ',loc(C),' A%nrow=',A%nrow,' A%ncol=',A%ncol &
+        !                ,' B%nrow=',B%nrow,' B%ncol=',B%ncol,associated(B%elms)
+        TA => find_tmp(A,'matrix A + B : A undefined')
+        TB => find_tmp(B,'matrix A + B : B undefined')
+        zeroA = .false.; zeroB = .false.
+        if (.not.associated(TA)) zeroA = iszero(A)
+        if (.not.associated(TB)) zeroB = iszero(B)
+        !decide whether to swap A and B
+        if (associated(TA).and.associated(TB)) then
+            swap = ( .not.associated(TB%Y) .and. (associated(TB%Z) &
+                    .or..not.TA%tx.or.associated(TA%Z).or.associated(TA%Y)))
+        else if (.not.associated(TA).and.associated(TB)) then
+            swap = (zeroA .or. .not.associated(TB%Y))
+        else
+            swap = (zeroA .and. .not.zeroB)
+        end if
+        !make the swap, and create a new tmp_mat C = A + B
+        if (swap) then
+            ltmp = zeroA; zeroA = zeroB; zeroB = ltmp
+            TC  => TA;    TA   => TB;    TB   => TC
+            TC => new_tmp(C,X=B,Y=A,rx=merge(1d0,-1d0,plus) &
+                         ,dx=associated(TA),dy=associated(TB))
+        else
+            TC => new_tmp(C,X=A,Y=B,ry=merge(1d0,-1d0,plus) &
+                         ,dx=associated(TA),dy=associated(TB))
+        end if
+        !if A is undefined and X or X*Z (simple) promote into C%X,C%Z
+        !if A is undefined and X*Z + Y (complicated), evaluate it
+        if (associated(TA)) then
+            if (.not.associated(TA%Y)) then
+                TC%rx = TC%rx*TA%rx
+                TC%tx = TA%tx; TC%tz = TA%tz
+                TC%dx = TA%dx; TC%dz = TA%dz
+                TC%X => TA%X;  TC%Z => TA%Z
+                call del_tmp(TA)
+            else
+                call eval_tmp(TA)
+            end if
+        end if
+        !if B is undefined and X^N (simple) promote into C%Y,
+        !otherwise evaluate B
+        if (associated(TB)) then
+            if (.not.TB%tx .and. .not.associated(TB%Z) &
+                           .and. .not.associated(TB%Y)) then
+                TC%ry = TC%ry*TB%rx
+                TC%dy = TB%dx
+                TC%Y => TB%X
+                call del_tmp(TB)
+            else
+                call eval_tmp(TB)
+            end if
+        end if
+        !verify that shapes do indeed match
+        if (associated(TC%Z)) then
+            if (.not.mat_same(TC%X,TC%Y,'R',merge('C','R',TC%tx)) .or. &
+                .not.mat_same(TC%Z,TC%Y,'C',merge('R','C',TC%tz))) &
+                call quit('matrix A + B : different shapes')
+        else
+            if (.not.mat_same(TC%X,TC%Y,merge('T','N',TC%tx))) &
+                call quit('matrix A + B : different shapes')
+        end if
+        !if either of A and/or B are zero, remove from TC
+        if (zeroA.and.zeroB) then
+            call zero_tmp(TC)
+        else if (zeroA) then
+            TC%X => TC%Y;  nullify(TC%Y)
+            TC%rx = TC%ry; TC%ry = 0d0
+            TC%tx = .false.;
+            TC%dx = TC%dy; TC%dy = .false.
+        else if (zeroB) then
+            nullify(TC%Y)
+            TC%ry = 0d0
+            TC%dy = .false.
+        end if
+    end subroutine
+
+
+
+
+#else
   subroutine gen_mat_plus_mat(A, plus, B, C)
 
 !   ----------------------------------------------------------------------------
@@ -526,6 +616,7 @@ contains
 
 
   end subroutine
+#endif /* PRG_DIRAC */
 
 
     function mat_plus_mat(A,B) result(C)
@@ -604,10 +695,12 @@ contains
             T => new_tmp(B,X=A,rx=r)
             if (r==0d0.or.iszero(A)) call zero_tmp(T)
         end if
+#ifdef PRG_DIRAC
     B%ih_sym        =  A%ih_sym
     B%tr_sym        =  A%tr_sym
     B%pg_sym        =  A%pg_sym
     B%fermi_pointer =  A%fermi_pointer
+#endif /* PRG_DIRAC */
 
     end subroutine
 
@@ -662,10 +755,14 @@ contains
             TT => new_tmp(B,X=T%X,rx=T%rx,tx=.not.T%tx,dx=T%dx)
             call del_tmp(T)
         end if
+
+#ifdef PRG_DIRAC
     B%ih_sym        =  A%ih_sym
     B%tr_sym        =  A%tr_sym
     B%pg_sym        =  A%pg_sym
     B%fermi_pointer =  A%fermi_pointer
+#endif /* PRG_DIRAC */
+
     end function
 
 
