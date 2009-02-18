@@ -1,17 +1,13 @@
-!ajt dec08 Contains slightly generalized versions of the
-!          operations in modulematrix_operations.
-!
-!Mainly intended as hidden back-end for module matrix_defop.
-!
-!mat_axtpby  combines  mat_trans, mat_scal, mat_copy,
-!                      mat_assign, and mat_add
-!
-!mat_gemm  is  mat_mul
-!
-!mat_dot  combines  mat_dotproduct and mat_trAB
-!
-!mat_init  is generalized so that another matrix can fill
-!          the role of nrow and ncol.
+
+! written by Andreas J. Thorvaldsen
+! radovan.bast@uit.no (2009-02-18): generalized for DIRAC
+
+! module contains slightly generalized versions of the
+! operations in matrix_operations (Dalton)
+
+! mainly intended as hidden back-end for matrix_defop
+! mat_init is generalized so that another matrix can fill
+! the role of nrow and ncol
 
 module matrix_genop
 
@@ -22,36 +18,38 @@ module matrix_genop
             mat_init_full    => mat_init, &
             mat_free_nonzero => mat_free
 #else
-!     matrix_genop_interface provides DIRAC (dense) versions of
-!     matrix, mat_mul, mat_init_full, mat_free_nonzero
   use matrix_genop_interface
+!     matrix_genop_interface provides 
+!     DIRAC (only dense) versions of
+!     matrix, mat_mul, mat_init_full, mat_free_nonzero
+!     plus other DIRAC specifics
 #endif /* PRG_DIRAC */  
 
-    implicit none
+  implicit none
 
-#ifdef PRG_DIRAC
-!radovan: will move this to a proper interface later
-#include "dgroup.h"
-#endif /* PRG_DIRAC */ 
+  public matrix
+  public mat_init
+  public mat_free
+  public mat_same
+  public mat_isdef
+  public mat_iszero
+  public mat_axtpby
+  public mat_gemm
+  public mat_dot
+  public mat_trace_nontmp
+  public mat_print_nontmp
 
-    public matrix
-    public mat_init
-    public mat_free
-    public mat_same
-    public mat_isdef
-    public mat_iszero
-    public mat_axtpby
-    public mat_gemm
-    public mat_dot
-    public mat_trace_nontmp
-    public mat_print_nontmp
+  private
 
-    private
+  interface mat_init
+    module procedure mat_init_full
+    module procedure mat_init_from
+  end interface
 
-    interface mat_init
-        module procedure mat_init_full
-        module procedure mat_init_from
-    end interface
+  integer :: nz = 1
+! nz is introduced to accommodate complex and quaternion algebra for DIRAC
+! it could be part of the matrix type
+! for the moment it is a parameter
 
 contains
 
@@ -231,6 +229,9 @@ contains
 
     i_dim = Z%nrow
     j_dim = Z%ncol
+#ifdef PRG_DIRAC
+  nz = get_nz()
+#endif /* PRG_DIRAC */ 
 
     if (tx /= 'N' .and. tx /= 'T') call quit('mat_axtpby input error: tx must be N or T')
 
@@ -242,7 +243,7 @@ contains
 
       if (a /= 0.0d0 .and. tx == 'T') then
         do iz = 1, nz
-          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
             q = -1.0
           else
             q =  1.0
@@ -265,7 +266,7 @@ contains
 
       if (a /= 0.0d0 .and. tx == 'T') then
         do iz = 1, nz
-          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
             q = -1.0
           else
             q =  1.0
@@ -288,7 +289,7 @@ contains
 
       if (a /= 0.0d0 .and. tx == 'T') then
         do iz = 1, nz
-          if (ipqtoq(iz, X%pg_sym - 1) > 1) then
+          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
             q = -1.0
           else
             q =  1.0
@@ -355,6 +356,9 @@ contains
 
         integer                         :: i, j, i_dim, j_dim
 
+#ifdef PRG_DIRAC
+  nz = get_nz()
+#endif /* PRG_DIRAC */ 
         t_set = 'N'
         if (present(t)) t_set = t
 
@@ -373,7 +377,7 @@ contains
 
 !     n = B%nrow*B%ncol
       do iz = 1, nz
-        if (ipqtoq(iz, B%pg_sym - 1) > 1) then
+        if (get_ipqtoq(iz, B%pg_sym - 1) > 1) then
           factor = -1.0
         else
           factor =  1.0
@@ -417,6 +421,9 @@ contains
         character*30                     :: fmt
         character*1                      :: bra,ces,csep,rsep
 
+#ifdef PRG_DIRAC
+  nz = get_nz()
+#endif /* PRG_DIRAC */ 
     write(*, *) 'matrix        = ', label
     write(*, *) 'ih_sym        = ', A%ih_sym
     write(*, *) 'tr_sym        = ', A%tr_sym
@@ -424,13 +431,13 @@ contains
     write(*, *) 'fermi_pointer = ', A%fermi_pointer
 
     if (associated(A%elms)) then
-      call prqmat(A%elms,                &
-                  A%nrow,                &
-                  A%ncol,                &
-                  A%nrow,                &
-                  A%ncol,                &
-                  nz,                    &
-                  ipqtoq(1, A%pg_sym-1), &
+      call prqmat(A%elms,                    &
+                  A%nrow,                    &
+                  A%ncol,                    &
+                  A%nrow,                    &
+                  A%ncol,                    &
+                  nz,                        &
+                  get_ipqtoq(1, A%pg_sym-1), &
                   6)
     else
       write(*, *) 'all elements zero'

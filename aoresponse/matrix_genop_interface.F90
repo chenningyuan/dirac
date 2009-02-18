@@ -6,11 +6,8 @@ module matrix_genop_interface
 
   implicit none
 
-#ifdef PRG_DIRAC
-!fixme
-#include "dgroup.h"
-#endif /* PRG_DIRAC */
-
+  public get_nz
+  public get_ipqtoq
   public matrix
   public mat_mul
   public mat_init_full
@@ -30,7 +27,37 @@ module matrix_genop_interface
     real(8), pointer :: raux(:)
   end type
 
+  integer :: nz = 1
+! nz is introduced to accommodate complex and quaternion algebra for DIRAC
+! it could be part of the matrix type
+! for the moment it is a parameter
+
 contains
+
+  function get_nz() result(nz_up)
+
+#include "dgroup.h"
+
+!   ----------------------------------------------------------------------------
+    integer :: nz_up
+!   ----------------------------------------------------------------------------
+
+    nz_up = nz
+
+  end function
+
+  function get_ipqtoq(i, j) result(k)
+
+#include "dgroup.h"
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: i, j
+    integer             :: k
+!   ----------------------------------------------------------------------------
+
+    k = ipqtoq(i, j)
+
+  end function
 
   subroutine mat_dense_mul(a,b,transa,transb,alpha,beta,c)
      TYPE(Matrix), intent(IN) :: a, b
@@ -65,9 +92,10 @@ contains
                &a%elms,a%nrow,b%elms,b%nrow,beta,c%elms,c%nrow)
 #else
 
-      call iqpack(ipqtoq(1, A%pg_sym-1), nz, &
-                  ipqtoq(1, B%pg_sym-1), nz, &
-                  iq                   , nz)
+  nz = get_nz()
+      call iqpack(get_ipqtoq(1, A%pg_sym-1), nz, &
+                  get_ipqtoq(1, B%pg_sym-1), nz, &
+                  iq                       , nz)
 
 
     ta = 'N'
@@ -81,8 +109,8 @@ contains
 !   C%ncol       = B%ncol
     C%pg_sym     = 1 + ieor(A%pg_sym-1, B%pg_sym-1)
       call qgemm(m, n, k,                1.0d0,  &
-                 ta, 'N', ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
-                 tb, 'N', ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
+                 ta, 'N', get_ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
+                 tb, 'N', get_ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
                  0.0d0,    iq                      , C%elms, C%nrow, C%ncol, nz)
 
 
@@ -135,6 +163,7 @@ contains
     A%nrow = nrow
     A%ncol = ncol
 
+  nz = get_nz()
     allocate(A%elms(A%nrow*A%ncol*nz))
 
   end subroutine
