@@ -158,159 +158,88 @@ contains
             mat_same = mat_same .and. associated(A%elms,B%elms)
     end function
 
+  subroutine mat_axtpby_dag(a, b, Z, X)
 
-#ifndef PRG_DIRAC
-
-    subroutine mat_axtpby(Z,a,X,tx,b,Y)
-        type(matrix),intent(inout) :: Z
-        type(matrix),intent(in)    :: X,Y
-        real(8),     intent(in)    :: a,b
-        character*1, intent(in)    :: tx
-        logical                    :: ZisY
-        !print *,'mat_axtpby',loc(X),tx,loc(Y),' =>',loc(Z)
-        if (tx/='N'.and.tx/='T') &
-            call quit('mat_axtpby input error : tx must be N or T')
-        if (b==0) then
-            if (a==0) Z%elms = 0d0
-            if (a/=0 .and. tx/='T') Z%elms = a*X%elms
-            if (a/=0 .and. tx=='T') Z%elms = a*reshape(transpose( &
-                    reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
-        else
-            if (associated(Y%elms,Z%elms)) then
-                if (a==0) Z%elms = b*Z%elms
-                if (a/=0 .and. tx/='T') Z%elms = b*Z%elms + a*X%elms
-                if (a/=0 .and. tx=='T') Z%elms = b*Z%elms + a*reshape(transpose( &
-                                  reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
-            else
-                if (a==0) Z%elms = b * Y%elms
-                if (a/=0 .and. tx/='T') Z%elms = b*Y%elms + a*X%elms
-                if (a/=0 .and. tx=='T') Z%elms = b*Y%elms + a*reshape(transpose( &
-                                  reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
-            end if
-        end if
-    end subroutine
-
-
-#else
-
-  subroutine transpose_block(f, g, i_dim, j_dim, block, tblock)
-
-!                            tblock = f*block^T + g*tblock
+!            Z = a*X^dag + b*Z
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: f
-    real(8), intent(in)    :: g
-    integer, intent(in)    :: i_dim
-    integer, intent(in)    :: j_dim
-    real(8), intent(in)    :: block(i_dim*j_dim)
-    real(8), intent(inout) :: tblock(i_dim*j_dim)
+    real(8),      intent(in)    :: a
+    real(8),      intent(in)    :: b
+    type(matrix), intent(inout) :: Z
+    type(matrix), intent(in)    :: X
+!   ----------------------------------------------------------------------------
+    integer                     :: i_dim, j_dim, iz
+    real(8)                     :: q
 !   ----------------------------------------------------------------------------
 
-    call dscal(i_dim*j_dim, f, block, 1)
+    i_dim = Z%nrow
+    j_dim = Z%ncol
 
-    tblock = g*tblock + reshape(transpose(reshape(block, (/i_dim, j_dim/))), (/i_dim*j_dim/))
+#ifdef PRG_DIRAC
+    nz = get_nz()
+#endif /* PRG_DIRAC */ 
+
+    do iz = 1, nz
+
+      q = 1.0
+#ifdef PRG_DIRAC
+      if (get_ipqtoq(iz, X%pg_sym - 1) > 1) q = -1.0
+#endif /* PRG_DIRAC */ 
+
+      Z%elms = b*Z%elms                                         &
+             + a*q*reshape(transpose(reshape(                   &
+               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
+               (/i_dim, j_dim/))), (/i_dim*j_dim/))
+    end do
+
+#ifdef PRG_DIRAC
+    Z%ih_sym        = X%ih_sym
+    Z%tr_sym        = X%tr_sym
+    Z%pg_sym        = X%pg_sym
+    Z%fermi_pointer = X%fermi_pointer
+#endif /* PRG_DIRAC */ 
 
   end subroutine
 
   subroutine mat_axtpby(Z, a, X, tx, b, Y)
 
-!                       Z = a*X^tx + b*Y
+!                       Z = a*X     + b*Y ;  tx = 'N'
+!                    or Z = a*X^dag + b*Y ;  tx = 'T'
 
 !   ----------------------------------------------------------------------------
-    type(matrix),  intent(inout) :: Z
-    real(8),       intent(in)    :: a, b
-    type(matrix),  intent(in)    :: X, Y
-    character(1),  intent(in)    :: tx
+    type(matrix), intent(inout) :: Z
+    real(8),      intent(in)    :: a, b
+    type(matrix), intent(in)    :: X, Y
+    character(1), intent(in)    :: tx
 !   ----------------------------------------------------------------------------
-    logical                      :: Y_is_Z
-    integer                      :: i_dim, j_dim, iz
-    real(8)                      :: q
-!   ----------------------------------------------------------------------------
-
-    i_dim = Z%nrow
-    j_dim = Z%ncol
-#ifdef PRG_DIRAC
-  nz = get_nz()
-#endif /* PRG_DIRAC */ 
 
     if (tx /= 'N' .and. tx /= 'T') call quit('mat_axtpby input error: tx must be N or T')
 
     if (b == 0.0d0) then
 
       if (a == 0.0d0)                 Z%elms = 0.0d0
-
       if (a /= 0.0d0 .and. tx == 'N') Z%elms = a*X%elms
-
-      if (a /= 0.0d0 .and. tx == 'T') then
-        do iz = 1, nz
-          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
-            q = -1.0
-          else
-            q =  1.0
-          end if
-          call transpose_block(a*q, b, i_dim, j_dim,                            &
-                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
-                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
-        end do
-    Z%ih_sym        = X%ih_sym
-    Z%tr_sym        = X%tr_sym
-    Z%pg_sym        = X%pg_sym
-    Z%fermi_pointer = X%fermi_pointer
-      end if
+      if (a /= 0.0d0 .and. tx == 'T') call mat_axtpby_dag(a, 0.0d0, Z, X)
 
     else if (b /= 0.0d0 .and. associated(Y%elms, Z%elms)) then
 
       if (a == 0.0d0)                 Z%elms = b*Z%elms
-
       if (a /= 0.0d0 .and. tx == 'N') Z%elms = b*Z%elms + a*X%elms
-
-      if (a /= 0.0d0 .and. tx == 'T') then
-        do iz = 1, nz
-          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
-            q = -1.0
-          else
-            q =  1.0
-          end if
-          call transpose_block(a*q, b, i_dim, j_dim,                            &
-                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
-                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
-        end do
-    Z%ih_sym        = X%ih_sym
-    Z%tr_sym        = X%tr_sym
-    Z%pg_sym        = X%pg_sym
-    Z%fermi_pointer = X%fermi_pointer
-      end if
+      if (a /= 0.0d0 .and. tx == 'T') call mat_axtpby_dag(a, b, Z, X)
 
     else
 
       if (a == 0.0d0)                 Z%elms = b*Y%elms
-
       if (a /= 0.0d0 .and. tx == 'N') Z%elms = b*Y%elms + a*X%elms
 
       if (a /= 0.0d0 .and. tx == 'T') then
-        do iz = 1, nz
-          if (get_ipqtoq(iz, X%pg_sym - 1) > 1) then
-            q = -1.0
-          else
-            q =  1.0
-          end if
-          call transpose_block(a*q, 0.0d0, i_dim, j_dim,                        &
-                               X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
-                               Z%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim))
-        end do
+        call mat_axtpby_dag(a, 0.0d0, Z, X)
         Z%elms = Z%elms + b*Y%elms
-    Z%ih_sym        = X%ih_sym
-    Z%tr_sym        = X%tr_sym
-    Z%pg_sym        = X%pg_sym
-    Z%fermi_pointer = X%fermi_pointer
       end if
 
     end if
 
-
   end subroutine
-
-#endif /* PRG_DIRAC */ 
 
     subroutine mat_gemm(rab,A,ta,B,tb,rc,C)
         !matrix multiply: C = rc*C + rab * A^ta * B^tb
