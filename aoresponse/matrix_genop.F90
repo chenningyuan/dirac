@@ -323,82 +323,59 @@ contains
         call mat_mul(A,B,ta,tb,rab,rc,C)
     end subroutine
 
-#ifndef PRG_DIRAC
+  function mat_dot(A, B, t) result(r)
 
-    function mat_dot(A,B,t) result(r)
-        !matrix dot product: sum Aij (B(^T))ij
-        !assumed initialied and with equal/transpose shapes
-        type(matrix),        intent(in) :: A,B
-        character*1,optional,intent(in) :: t
-        real(8)                         :: r
-        integer                         :: i,j
-        character*1                     :: tt
-        tt = 'N'; if (present(t)) tt = t
-        if (t=='N') then
-            r = sum(A%elms*B%elms)
-        else if (t=='T') then
-            r = sum(A%elms*(/((B%elms(i+(j-1)*B%nrow),j=1,B%ncol),i=1,B%nrow)/))
-        else
-            call quit('mat_dotprod input error : t='//t)
-        end if
-    end function
-
-#else
-
-    function mat_dot(A,B,t) result(r)
-        !matrix dot product: sum Aij (B(^T))ij
-        !assumed initialied and with equal/transpose shapes
-        type(matrix),        intent(in) :: A,B
-        character*1,optional,intent(in) :: t
-        real*8                          :: r, factor
-        integer                         :: n, iz
-        character*1                     :: t_set
-
-        integer                         :: i, j, i_dim, j_dim
+!   ----------------------------------------------------------------------------
+    type(matrix),           intent(in) :: A, B
+    character(1), optional, intent(in) :: t
+    real*8                             :: r
+!   ----------------------------------------------------------------------------
+    character(1)                       :: t_set
+    real*8                             :: factor
+    integer                            :: i, j, i_dim, j_dim, iz
+!   ----------------------------------------------------------------------------
 
 #ifdef PRG_DIRAC
-  nz = get_nz()
+    nz = get_nz()
 #endif /* PRG_DIRAC */ 
-        t_set = 'N'
-        if (present(t)) t_set = t
 
-        r = 0.0d0
+    t_set = 'N'
+    if (present(t)) t_set = t
 
-        i_dim = A%nrow
-        j_dim = A%ncol
+    r = 0.0d0
 
-        if (ieor(A%pg_sym-1, B%pg_sym-1) == 0) then
+    i_dim = A%nrow
+    j_dim = A%ncol
 
-          if (t_set == 'N') then
+#ifdef PRG_DIRAC
+    if (ieor(A%pg_sym-1, B%pg_sym-1) == 0) then
+#endif /* PRG_DIRAC */ 
 
-              r = sum(A%elms*B%elms)
+    if (t_set == 'N') then
+      r = sum(A%elms*B%elms)
+    else if (t_set == 'T') then
 
-          else if (t_set == 'T') then
-
-!     n = B%nrow*B%ncol
       do iz = 1, nz
-        if (get_ipqtoq(iz, B%pg_sym - 1) > 1) then
-          factor = -1.0
-        else
-          factor =  1.0
-        end if
+
+        factor = 1.0
+#ifdef PRG_DIRAC
+        if (get_ipqtoq(iz, B%pg_sym - 1) > 1) factor = -1.0
+#endif /* PRG_DIRAC */ 
 
         r = r + factor*sum(A%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim)* &
         (/((B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim), j = 1, j_dim), i = 1, i_dim)/))
 
       end do
 
-          else
+    else
+      call quit('mat_dot input error: t = '//t)
+    end if
 
-            call quit('mat_dot input error: t = '//t)
+#ifdef PRG_DIRAC
+    end if
+#endif /* PRG_DIRAC */ 
 
-          end if
-
-        end if
-
-    end function
-
-#endif /* PRG_DIRAC */  
+  end function
 
     function mat_trace_nontmp(A) result(r)
         !matrix sum Aii, for A square and assumed initialied
@@ -411,7 +388,6 @@ contains
             r = sum((/(A%elms(1+(i-1)*(A%nrow+1)),i=1,A%nrow)/))
     end function
 
-#ifdef PRG_DIRAC
     subroutine mat_print_nontmp(A,unit,width,label,braces)
         !print matrix A to standard out,starting with label
         type(matrix),         intent(in) :: A
@@ -421,38 +397,7 @@ contains
         character*30                     :: fmt
         character*1                      :: bra,ces,csep,rsep
 
-#ifdef PRG_DIRAC
-  nz = get_nz()
-#endif /* PRG_DIRAC */ 
-    write(*, *) 'matrix        = ', label
-    write(*, *) 'ih_sym        = ', A%ih_sym
-    write(*, *) 'tr_sym        = ', A%tr_sym
-    write(*, *) 'pg_sym        = ', A%pg_sym
-    write(*, *) 'fermi_pointer = ', A%fermi_pointer
-
-    if (associated(A%elms)) then
-      call prqmat(A%elms,                    &
-                  A%nrow,                    &
-                  A%ncol,                    &
-                  A%nrow,                    &
-                  A%ncol,                    &
-                  nz,                        &
-                  get_ipqtoq(1, A%pg_sym-1), &
-                  6)
-    else
-      write(*, *) 'all elements zero'
-    end if
-
-  end subroutine
-#else
-    subroutine mat_print_nontmp(A,unit,width,label,braces)
-        !print matrix A to standard out,starting with label
-        type(matrix),         intent(in) :: A
-        integer,     optional,intent(in) :: unit,width
-        character(*),optional,intent(in) :: label,braces
-        integer                          :: u,w,d,i,j
-        character*30                     :: fmt
-        character*1                      :: bra,ces,csep,rsep
+#ifndef PRG_DIRAC
         !process argument unit, which defaults to standard output
         u = 6; if (present(unit)) u = unit
         !set d to the largest number of digits to be printed
@@ -506,7 +451,28 @@ contains
             end do
         end if
         write (u,'()') !final empty line
-    end subroutine
+#else
+    write(*, *) 'matrix        = ', label
+    write(*, *) 'ih_sym        = ', A%ih_sym
+    write(*, *) 'tr_sym        = ', A%tr_sym
+    write(*, *) 'pg_sym        = ', A%pg_sym
+    write(*, *) 'fermi_pointer = ', A%fermi_pointer
+
+    nz = get_nz()
+
+    if (associated(A%elms)) then
+      call prqmat(A%elms,                    &
+                  A%nrow,                    &
+                  A%ncol,                    &
+                  A%nrow,                    &
+                  A%ncol,                    &
+                  nz,                        &
+                  get_ipqtoq(1, A%pg_sym-1), &
+                  6)
+    else
+      write(*, *) 'all elements zero'
+    end if
 #endif /* PRG_DIRAC */  
+    end subroutine
 
 end module
