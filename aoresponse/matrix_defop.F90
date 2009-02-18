@@ -394,7 +394,6 @@ contains
             T => new_tmp(A,X=B)
             call eval_tmp(T)
         end if
-
 #ifdef PRG_DIRAC
     A%ih_sym        =  B%ih_sym
     A%tr_sym        =  B%tr_sym
@@ -487,10 +486,6 @@ contains
             TC%dy = .false.
         end if
     end subroutine
-
-
-
-
 #else
   subroutine gen_mat_plus_mat(A, plus, B, C)
 
@@ -755,7 +750,6 @@ contains
             TT => new_tmp(B,X=T%X,rx=T%rx,tx=.not.T%tx,dx=T%dx)
             call del_tmp(T)
         end if
-
 #ifdef PRG_DIRAC
     B%ih_sym        =  A%ih_sym
     B%tr_sym        =  A%tr_sym
