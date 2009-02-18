@@ -23,7 +23,10 @@ module matrix_genop
 
     implicit none
 
+#ifdef PRG_DIRAC
+!radovan: will move this to a proper interface later
 #include "dgroup.h"
+#endif /* PRG_DIRAC */ 
 
     public matrix
     public mat_init
@@ -37,6 +40,8 @@ module matrix_genop
     public mat_trace_nontmp
     public mat_print_nontmp
 
+#ifdef PRG_DIRAC
+!radovan: will move this to a proper interface later
   type matrix
     integer                :: nrow = -1
     integer                :: ncol = -1
@@ -50,6 +55,7 @@ module matrix_genop
       integer, pointer     :: iaux(:)
       real(8), pointer :: raux(:)
   end type
+#endif /* PRG_DIRAC */ 
 
     private
 
@@ -115,6 +121,7 @@ contains
 
 
 #endif /* PRG_DIRAC */  
+
 
   end subroutine mat_dense_mul
 
@@ -293,6 +300,40 @@ contains
     end function
 
 
+#ifndef PRG_DIRAC
+
+    subroutine mat_axtpby(Z,a,X,tx,b,Y)
+        type(matrix),intent(inout) :: Z
+        type(matrix),intent(in)    :: X,Y
+        real(8),     intent(in)    :: a,b
+        character*1, intent(in)    :: tx
+        logical                    :: ZisY
+        !print *,'mat_axtpby',loc(X),tx,loc(Y),' =>',loc(Z)
+        if (tx/='N'.and.tx/='T') &
+            call quit('mat_axtpby input error : tx must be N or T')
+        if (b==0) then
+            if (a==0) Z%elms = 0d0
+            if (a/=0 .and. tx/='T') Z%elms = a*X%elms
+            if (a/=0 .and. tx=='T') Z%elms = a*reshape(transpose( &
+                    reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
+        else
+            if (associated(Y%elms,Z%elms)) then
+                if (a==0) Z%elms = b*Z%elms
+                if (a/=0 .and. tx/='T') Z%elms = b*Z%elms + a*X%elms
+                if (a/=0 .and. tx=='T') Z%elms = b*Z%elms + a*reshape(transpose( &
+                                  reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
+            else
+                if (a==0) Z%elms = b * Y%elms
+                if (a/=0 .and. tx/='T') Z%elms = b*Y%elms + a*X%elms
+                if (a/=0 .and. tx=='T') Z%elms = b*Y%elms + a*reshape(transpose( &
+                                  reshape(X%elms ,(/X%nrow,X%ncol/))),(/X%nrow*X%ncol/))
+            end if
+        end if
+    end subroutine
+
+
+#else
+
   subroutine transpose_block(f, g, i_dim, j_dim, block, tblock)
 
 !                            tblock = f*block^T + g*tblock
@@ -407,24 +448,40 @@ contains
 
   end subroutine
 
+#endif /* PRG_DIRAC */ 
+
     subroutine mat_gemm(rab,A,ta,B,tb,rc,C)
         !matrix multiply: C = rc*C + rab * A^ta * B^tb
         !assumed initialied and with corresponding shapes
         type(matrix),   intent(in) :: A,B
         type(matrix),intent(inout) :: C
-        real*8,         intent(in) :: rab,rc
+        real(8),        intent(in) :: rab,rc
         character*1,    intent(in) :: ta,tb
-
         !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
         call mat_mul(A,B,ta,tb,rab,rc,C)
-
- !  C%ih_sym        = B%ih_sym
- !  C%tr_sym        = B%tr_sym
- !  C%pg_sym        = B%pg_sym
- !  C%fermi_pointer = B%fermi_pointer
-
-
     end subroutine
+
+#ifndef PRG_DIRAC
+
+    function mat_dot(A,B,t) result(r)
+        !matrix dot product: sum Aij (B(^T))ij
+        !assumed initialied and with equal/transpose shapes
+        type(matrix),        intent(in) :: A,B
+        character*1,optional,intent(in) :: t
+        real(8)                         :: r
+        integer                         :: i,j
+        character*1                     :: tt
+        tt = 'N'; if (present(t)) tt = t
+        if (t=='N') then
+            r = sum(A%elms*B%elms)
+        else if (t=='T') then
+            r = sum(A%elms*(/((B%elms(i+(j-1)*B%nrow),j=1,B%ncol),i=1,B%nrow)/))
+        else
+            call quit('mat_dotprod input error : t='//t)
+        end if
+    end function
+
+#else
 
     function mat_dot(A,B,t) result(r)
         !matrix dot product: sum Aij (B(^T))ij
@@ -450,14 +507,6 @@ contains
           if (t_set == 'N') then
 
               r = sum(A%elms*B%elms)
-         !do iz = 1, nz
-         !do iz = 1, 1
-         !  do i = 1, i_dim
-         !    do j = 1, j_dim
-         !       r = r + A%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim)*B%elms(i + (j - 1)*i_dim + (iz - 1)*i_dim*j_dim)
-         !    end do
-         !  end do
-         !end do
 
           else if (t_set == 'T') then
 
@@ -482,20 +531,14 @@ contains
 
         end if
 
-
-
-
-
-
-
-
-
     end function
+
+#endif /* PRG_DIRAC */  
 
     function mat_trace_nontmp(A) result(r)
         !matrix sum Aii, for A square and assumed initialied
         type(matrix),intent(in) :: A
-        real*8                  :: r
+        real(8)                 :: r
         integer                 :: i
         if (A%nrow/=A%ncol) call quit('mat_trace(A) : A not square')
         r = 0d0
