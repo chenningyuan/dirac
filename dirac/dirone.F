@@ -6105,16 +6105,16 @@ C     These variables are later set by SETDC2, but needed here...
         NORBT  = 0
         N2ORBT = 0
         N2TMOTQ = 0
-        DO I = 1,NFSYM
-          I2TMT(I) = N2TMT
-          N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZT
-          IORB(I)  = NORBT
-          NORBT    = NORBT  + NORB(I)
-          I2ORBT(I)= N2ORBT*NZ
-          N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
-          I2TMOT(I) = N2TMOTQ
-          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
-          N2TMOTQ = N2TMOTQ + NTMO(I)*NTMO(I)*NZ
+        DO IFRP = 1,NFSYM
+          I2TMT(IFRP)  = N2TMT
+          N2TMT        = N2TMT + NFORB(IFRP,0)*NORB(IFRP)*NZT
+          IORB(IFRP)   = NORBT
+          NORBT        = NORBT  + NORB(IFRP)
+          I2ORBT(IFRP) = N2ORBT*NZ
+          N2ORBT       = N2ORBT + NFBAS(IFRP,0)*NORB(IFRP)
+          I2TMOT(IFRP) = N2TMOTQ
+          N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+          N2TMOTQ      = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
         ENDDO
         CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
