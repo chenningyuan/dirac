@@ -26,7 +26,6 @@ module matrix_genop
 #include "dgroup.h"
 
     public matrix
-    public print
     public mat_init
     public mat_free
     public mat_same
@@ -35,8 +34,8 @@ module matrix_genop
     public mat_axtpby
     public mat_gemm
     public mat_dot
-    public mat_trace
-    public mat_print
+    public mat_trace_nontmp
+    public mat_print_nontmp
 
   type matrix
     integer                :: nrow = -1
@@ -54,10 +53,6 @@ module matrix_genop
 
     private
 
-    interface print
-        module procedure mat_print
-    end interface
-
     interface mat_init
         module procedure mat_init_full
         module procedure mat_init_from
@@ -66,7 +61,6 @@ module matrix_genop
 contains
 
   subroutine mat_dense_mul(a,b,transa,transb,alpha,beta,c)
-     implicit none
      TYPE(Matrix), intent(IN) :: a, b
      character, intent(in)    :: transa, transb
      character                :: ta, tb
@@ -127,7 +121,6 @@ contains
       SUBROUTINE mat_mul(a, b, transa, transb, alpha, beta, c)
          !c = alpha*ab + beta*c
          !transa = 'T'/'t' - transposed, 'N'/'n' - normal
-         implicit none
          TYPE(Matrix), intent(IN) :: a, b
          character, intent(in)    :: transa, transb
          REAL(8), INTENT(IN)  :: alpha, beta
@@ -499,7 +492,7 @@ contains
 
     end function
 
-    function mat_trace(A) result(r)
+    function mat_trace_nontmp(A) result(r)
         !matrix sum Aii, for A square and assumed initialied
         type(matrix),intent(in) :: A
         real*8                  :: r
@@ -510,11 +503,15 @@ contains
             r = sum((/(A%elms(1+(i-1)*(A%nrow+1)),i=1,A%nrow)/))
     end function
 
-
-  subroutine mat_print(A, label)
-
-    type(matrix), intent(in)           :: A
-    character(*), intent(in), optional :: label
+#ifdef PRG_DIRAC
+    subroutine mat_print_nontmp(A,unit,width,label,braces)
+        !print matrix A to standard out,starting with label
+        type(matrix),         intent(in) :: A
+        integer,     optional,intent(in) :: unit,width
+        character(*),optional,intent(in) :: label,braces
+        integer                          :: u,w,d,i,j
+        character*30                     :: fmt
+        character*1                      :: bra,ces,csep,rsep
 
     write(*, *) 'matrix        = ', label
     write(*, *) 'ih_sym        = ', A%ih_sym
@@ -536,8 +533,8 @@ contains
     end if
 
   end subroutine
-
-    subroutine mat_print_dalton(A,unit,width,label,braces)
+#else
+    subroutine mat_print(A,unit,width,label,braces)
         !print matrix A to standard out,starting with label
         type(matrix),         intent(in) :: A
         integer,     optional,intent(in) :: unit,width
@@ -559,10 +556,10 @@ contains
             fmt = '(a,ikk,a1,ikk,a1)'
             write (fmt( 5: 6),'(i2)') max(1,ceiling(log10(1d0*A%nrow)))
             write (fmt(12:13),'(i2)') max(1,ceiling(log10(1d0*A%ncol)))
-            write (u,fmt(1:17)),'matrix : '//label//'(',A%nrow,',',A%ncol,')'
+            write (u,fmt(1:17)) 'matrix : '//label//'(',A%nrow,',',A%ncol,')'
         end if
         fmt = '(a2,fww.dd,nnnn(a1,fww.dd),a2)'
-        write (fmt(6:15),'(i2,a,i2,a,i4)'),w,'.',d,',',A%ncol-1
+        write (fmt(6:15),'(i2,a,i2,a,i4)') w,'.',d,',',A%ncol-1
         fmt(21:25) = fmt(6:10)
         if (present(braces)) then
             bra = braces(1:1)
@@ -578,11 +575,11 @@ contains
             end if
             do i=1,A%nrow
                 if (associated(A%elms)) &
-                    write (u,fmt),merge(bra,' ',i==1)//bra,A%elms(i) &
+                    write (u,fmt) merge(bra,' ',i==1)//bra,A%elms(i) &
                                  ,(csep,A%elms(i+A%nrow*j),j=1,A%ncol-1) &
                                  ,ces//merge(ces,rsep,i==A%nrow)
                 if (.not.associated(A%elms)) &
-                    write (u,fmt),merge(bra,' ',i==1)//bra,0d0 &
+                    write (u,fmt) merge(bra,' ',i==1)//bra,0d0 &
                                  ,(csep,0d0,j=1,A%ncol-1) &
                                  ,ces//merge(ces,rsep,i==A%nrow)
             end do
@@ -592,13 +589,13 @@ contains
             fmt(27:29) = '   ' !from the format
             do i=1,A%nrow
                 if (associated(A%elms)) &
-                    write (u,fmt),A%elms(i:i+A%nrow*(A%ncol-1):A%nrow)
+                    write (u,fmt) A%elms(i:i+A%nrow*(A%ncol-1):A%nrow)
                 if (.not.associated(A%elms)) &
-                    write (u,fmt),(0d0,j=1,A%ncol)
+                    write (u,fmt) (0d0,j=1,A%ncol)
             end do
         end if
         write (u,'()') !final empty line
     end subroutine
-
+#endif /* PRG_DIRAC */  
 
 end module

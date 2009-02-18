@@ -81,14 +81,15 @@ module matrix_defop
 !should be called before returning from the function. This sets X's status as
 !temporary, so that it will be deleted once used.
 
-    use matrix_genop, &
-          & mat_trace_nontmp => mat_trace, &
-          & mat_print_nontmp => mat_print
+    use matrix_genop
+!   use matrix_genop, &
+!         & mat_trace_nontmp => mat_trace, &
+!         & mat_print_nontmp => mat_print
     implicit none
 
     public matrix
     public mat_init
-!   public mat_print
+    public mat_print
     public isdef
     public iszero
     public assignment(=)
@@ -154,10 +155,6 @@ module matrix_defop
        !module procedure mat_product_trace
         module procedure mat_dot_product
     end interface
-
-!   interface print
-!       module procedure mat_print
-!   end interface
 
     interface norm
         module procedure mat_norm
@@ -349,10 +346,6 @@ contains
             !if M=a*X*Z+b*Y, allocate M, and do M=b*Y first
             if (.not.useM) call mat_init(T%M,T%Y,'N')
             call mat_axtpby(T%M, T%ry,T%Y,'N',0d0,T%M)
-  ! T%M%ih_sym        =  T%Y%ih_sym       
-  ! T%M%tr_sym        =  T%Y%tr_sym       
-  ! T%M%pg_sym        =  T%Y%pg_sym       
-  ! T%M%fermi_pointer =  T%Y%fermi_pointer
             T%Y => T%M
             T%ry = 1d0
         else if (associated(T%Z)) then
@@ -366,19 +359,9 @@ contains
         if (associated(T%Z)) then
             call mat_gemm(T%rx,T%X,merge('T','N',T%tx) &
                               ,T%Z,merge('T','N',T%tz),T%ry,T%M) !Y is M
-  ! T%M%ih_sym        =  T%X%ih_sym       
-  ! T%M%tr_sym        =  T%X%tr_sym       
-  ! T%M%pg_sym        =  T%X%pg_sym       
-  ! T%M%fermi_pointer =  T%X%fermi_pointer
-        !   call print(T%M, 'blub temp')
         else if (associated(T%X).or.T%ry/=1d0 &
                 .or..not.associated(T%Y,T%M)) then
             call mat_axtpby(T%M, T%rx,T%X,merge('T','N',T%tx),T%ry,T%Y)
-        !   call print(T%M, 'blub temp')
-  ! T%M%ih_sym        =  T%Y%ih_sym       
-  ! T%M%tr_sym        =  T%Y%tr_sym       
-  ! T%M%pg_sym        =  T%Y%pg_sym       
-  ! T%M%fermi_pointer =  T%Y%fermi_pointer
         end if
         !delete X and/or Z, as specified. Y is never deleted
         if (associated(T%X,reM).or.associated(T%Z,reM)) &
@@ -392,10 +375,11 @@ contains
     subroutine mat_eq_mat(A,B)
     !denne skal altid tømme tmp(:)
         type(matrix),target,intent(inout) :: A
-        type(matrix)                      :: B
+        type(matrix),       intent(in)    :: B
         type(tmp_mat),pointer             :: T
         logical                           :: defB
-        if (matrix_defop_debug) print *,'mat_eq_mat',loc(A),' =',loc(B),B%nrow,B%ncol,associated(B%elms)
+        !if (matrix_defop_debug) print *,'mat_eq_mat',loc(A),' =' &
+        !                ,loc(B),B%nrow,B%ncol,associated(B%elms)
         T => find_tmp(B,'matrix A = B : B undefined')
         if (associated(T)) then
             T%M => A
@@ -736,20 +720,16 @@ contains
 
     function mat_dot_product(A,B) result(r)
         type(matrix),target,intent(inout) :: A,B
-        real*8                            :: r
-!        print *,'blub mat_dot_product',loc(A),loc(B)
-!       call quit('blub')
+        real(8)                           :: r
+        !print *,'mat_dot_product',loc(A),loc(B)
         r = gen_mat_dot(A,B,(.false.))
-!       write(*, *) 'blub dot 99'
     end function
 
     function mat_product_trace(A,B) result(r)
         type(matrix),target,intent(inout) :: A,B
-        real*8                            :: r
-!       !print *,'mat_product_trace',loc(A),loc(B)
-!       write(*, *) 'blub tr 01'
+        real(8)                           :: r
+        !print *,'mat_product_trace',loc(A),loc(B)
         r = gen_mat_dot(A,B,(.true.))
-!       write(*, *) 'blub tr 99'
     end function
 
     function mat_trace(A) result(r)
@@ -831,23 +811,22 @@ contains
         end do
     end subroutine
 
-!   subroutine mat_print(A,unit,width,label,braces)
-!       type(matrix)                     :: A
-!       integer,     optional,intent(in) :: unit,width
-!       character(*),optional,intent(in) :: label,braces
-!       type(tmp_mat),pointer            :: T
-!       logical                          :: delA!,defA
+    subroutine mat_print(A,unit,width,label,braces)
+        type(matrix)                     :: A
+        integer,     optional,intent(in) :: unit,width
+        character(*),optional,intent(in) :: label,braces
+        type(tmp_mat),pointer            :: T
+        logical                          :: delA!,defA
 !         defA = isdef(A)
 !         nullify(T); if (.not.defA) T => find_tmp(A)
 !         if (.not.defA .and. .not.associated(T)) &
 !             call quit('mat_print(A) : A undefined')
-!       T => find_tmp(A,'mat_print(A) : A undefined')
-!       delA = associated(T)
-!       if (associated(T)) call eval_tmp(T)
-!      !call mat_print_nontmp(A,unit,width,label,braces)
-!       call mat_print_dirac(A, label)
-!       if (delA) call mat_free(A)
-!   end subroutine
+        T => find_tmp(A,'mat_print(A) : A undefined')
+        delA = associated(T)
+        if (associated(T)) call eval_tmp(T)
+        call mat_print_nontmp(A,unit,width,label,braces)
+        if (delA) call mat_free(A)
+    end subroutine
 
     subroutine mat_fix_arg(A)
         type(matrix),intent(inout) :: A

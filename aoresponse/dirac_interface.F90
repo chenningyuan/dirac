@@ -2,7 +2,6 @@ module dirac_interface_m
 
   use kinds_m
   use memory_allocator
-! use matrix_oper
   use matrix_defop
   use aoresponse_input_m
   use aoresponse_xc_m
@@ -187,7 +186,7 @@ contains
 
     D = 4.0d0*D
     if (debug_me) then
-      call print(D, 'D in AO basis')
+      call mat_print(D, label = 'D in AO basis')
     end if
 
     do i = 1, 3*mxcent
@@ -682,7 +681,7 @@ contains
     P = 2.0d0*P
 
     if (debug_me) then
-      call print(P, 'P in AO basis')
+      call mat_print(P, label = 'P in AO basis')
     end if
 
     call dealloc(ptri)
@@ -899,8 +898,8 @@ contains
     RHS_mo%fermi_pointer = RHS%fermi_pointer
 
     if (debug_me) then
-      call print(RHS,    'RHS in AO basis')
-      call print(RHS_mo, 'RHS in MO basis')
+      call mat_print(RHS,    label = 'RHS in AO basis')
+      call mat_print(RHS_mo, label = 'RHS in MO basis')
     end if
 
     if (do_pp) then
@@ -1177,10 +1176,10 @@ contains
     Dp%fermi_pointer = Wp%fermi_pointer
 
     if (debug_me) then
-      call print(Wp, 'Wp')
-      call print(Dp, 'Dp')
-      call print(Ci, 'Ci')
-      call print(Cs, 'Cs')
+      call mat_print(Wp, label = 'Wp')
+      call mat_print(Dp, label = 'Dp')
+      call mat_print(Ci, label = 'Ci')
+      call mat_print(Cs, label = 'Cs')
     end if
 
     Ci = 0

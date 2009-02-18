@@ -162,34 +162,34 @@ contains
     F   = 1.0d0*F
     C_i = 1.0d0*C_i
 
-    call print(F, 'test_matrix_defop: F')
+    call mat_print(F, label = 'test_matrix_defop: F')
 
     A = F
-    call print(A, 'test_matrix_defop: A = F')
+    call mat_print(A, label = 'test_matrix_defop: A = F')
 
     A = F + F
-    call print(A, 'test_matrix_defop: A = F + F')
+    call mat_print(A, label = 'test_matrix_defop: A = F + F')
 
     A = F - F
-    call print(A, 'test_matrix_defop: A = F - F')
+    call mat_print(A, label = 'test_matrix_defop: A = F - F')
 
     A = D*F
-    call print(A, 'test_matrix_defop: A = D*F')
+    call mat_print(A, label = 'test_matrix_defop: A = D*F')
 
     A = 2.0d0*F
-    call print(A, 'test_matrix_defop: A = 2.0d0*F')
+    call mat_print(A, label = 'test_matrix_defop: A = 2.0d0*F')
 
     A = F/2.0d0
-    call print(A, 'test_matrix_defop: A = F/2.0d0')
+    call mat_print(A, label = 'test_matrix_defop: A = F/2.0d0')
 
     A = C_i*dag(C_i)
-    call print(A, 'test_matrix_defop: A = C_i*dag(C_i)')
+    call mat_print(A, label = 'test_matrix_defop: A = C_i*dag(C_i)')
 
     A = C_i*dag(C_i); A = A/2.0d0
-    call print(A, 'test_matrix_defop: A = C_i*dag(C_i); A = A/2.0d0')
+    call mat_print(A, label = 'test_matrix_defop: A = C_i*dag(C_i); A = A/2.0d0')
 
     A = F*D*S - S*D*F
-    call print(A, 'test_matrix_defop: A = F*D*S - S*D*F')
+    call mat_print(A, label = 'test_matrix_defop: A = F*D*S - S*D*F')
 
 !   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
 
