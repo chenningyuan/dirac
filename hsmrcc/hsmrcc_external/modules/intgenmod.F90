@@ -2131,11 +2131,11 @@ end subroutine DrvIntGen_DIRAC
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VIND_VINT
-!
-!  ... make control print of all integrals when file is open and read
-!
+!----------------------------------------------------------------------------------
+!  ... make control print of all integrals when file is open and read  ...
+!----------------------------------------------------------------------------------
 
-  call header('control printout of all integrals and their indexes',-1)
+call header('control printout of all integrals and their indexes',-1)
 
 call control_print_V2H2P ! 1.
 call control_print_VPPPP ! 2. block
@@ -2222,7 +2222,7 @@ do  Block = 1, NumBlock(VPPPP)
 
  nullify(VINT); nullify(VIND)
  call ReadFile(VPPPP,Block,StBl,EnBl)
- write(UOUT,*) 'StBl,EnBl:',StBl,EnBl
+ write(UOUT,'(4x,a,2i4)') 'StBl,EnBl:',StBl,EnBl
 
  En = 0
  do AB = StBl, EnBl
@@ -2253,7 +2253,6 @@ enddo
             f18.12,' block:',i3)
  2830 format(4x,i8,'.',1x,'VPPPP-2,1234,<AB||CD>=<',i3,' ',i3,'||',i3,' ',i3,'>=', & 
             f18.12,' block:',i3,' MOLTRA:(',i3,1x,i3,'||',i3,1x,i3,')' )
-
 
 end subroutine control_print_VPPPP
 
@@ -2295,6 +2294,7 @@ end subroutine control_print_VHHHH
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VHHPP
+! ... print out VHHPP integrals ...
  implicit none
  integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
  integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
