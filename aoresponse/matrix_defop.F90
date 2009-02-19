@@ -150,11 +150,7 @@ module matrix_defop
 
     interface tr
         module procedure mat_trace
-#ifndef PRG_DIRAC
         module procedure mat_product_trace
-#else
-        module procedure mat_dot_product
-#endif /* PRG_DIRAC */
     end interface
 
     interface norm
