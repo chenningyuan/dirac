@@ -46,8 +46,8 @@ contains
 
     if (aoresponse_test_geo) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
-!     call debug_1grad(D, natoms_ifc())
-      call debug_2grad(D, natoms_ifc())
+      call debug_1grad(D, F, natoms_ifc())
+      call debug_2grad(D,    natoms_ifc())
     end if
 
     if (aoresponse_alpha) then

@@ -66,10 +66,7 @@ contains
 #include "exeinf.h"
 #include "dorps.h"
 
-    do i = 1, 3*mxcent
-      dopert(i, 1) = .true.
-      dopert(i, 2) = .true.
-    end do
+    dopert = .true.
 
     ftronv = .true.
     relgrd = .true.
@@ -154,6 +151,152 @@ contains
     call dcopy(g_dim, fmat, 1, g, 1)
 
     deallocate(fmat)
+
+  end subroutine
+
+  subroutine debug_1grad(D, F, nr_atoms)
+
+!   ----------------------------------------------------------------------------
+    type(matrix), intent(in) :: D
+    type(matrix), intent(in) :: F
+    integer                  :: nr_atoms
+!   ----------------------------------------------------------------------------
+    type(matrix)             :: C, D_folded, F_mo, F_temp, F_folded
+
+    integer                  :: i, j, k, ifctyp(8), iz, ifsym, ioff
+
+    real(8), allocatable     :: work(:)
+    integer                  :: lwork
+
+    real(8), allocatable     :: w01(:)
+    real(8), allocatable     :: w02(:)
+    real(8), allocatable     :: w03(:)
+    real(8), allocatable     :: w04(:)
+    integer, allocatable     :: w05(:)
+    integer, allocatable     :: w06(:)
+    integer, allocatable     :: w07(:)
+    real(8), allocatable     :: w08(:)
+
+    real(8)                  :: dummy
+    integer                  :: idummy
+
+    logical                  :: doint(2, 2) = .true.
+    logical                  :: debug_me = .false.
+!   ----------------------------------------------------------------------------
+
+!fixme: make proper interfaces
+#include "mxcent.h"
+#include "cbihr2.h"
+#include "dcbgrd.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "exeinf.h"
+#include "dorps.h"
+#include "dcbbas.h"
+#include "nuclei.h"
+
+    lwork = 20000000
+    call alloc(work, lwork)
+
+    D_folded = 4.0d0*D
+    F_temp   = 0.5d0*F
+
+    call bstobu(D_folded%elms, nz, work, lwork)
+    call bstobu(F_temp%elms,   nz, work, lwork)
+
+    call get_C(C)
+
+    F_mo   = dag(C)*(F_temp*C)
+    F_temp = 1.0d-50*F_mo
+
+    do ifsym = 1, nfsym
+      if (nish(i) > 0) then
+        ioff = i2orbt(ifsym) + npsh(ifsym)*norb(ifsym)
+        call dcopy(nish(ifsym)*norb(ifsym), F_mo%elms(1 + ioff), 1, F_temp%elms(1 + ioff), 1)
+      end if
+    end do
+
+    F_temp   = 2.0d0*F_temp
+    F_folded = C*(F_temp*dag(C))
+
+    C      = 0
+    F_mo   = 0
+    F_temp = 0
+
+    do iz = 1, nz
+      call rmolgrd_foldmat(D_folded%elms((iz - 1)*n2bbasx + 1), ntbas(0), (iz == 1))
+      call rmolgrd_foldmat(F_folded%elms((iz - 1)*n2bbasx + 1), ntbas(0), (iz == 1))
+    end do
+
+!   fixme: half-phases ...
+!   fixme: QO to AO
+
+    if (debug_me) then
+      call mat_print(F_mo,     label = 'blub F_mo')
+      call mat_print(F_temp,   label = 'blub F_temp')
+      call mat_print(F_folded, label = 'blub F_folded')
+      call mat_print(D_folded, label = 'blub D_folded')
+    end if
+
+    grd_nosmlv = .false.
+    grd_nosmls = .false.
+
+    dopert = .true.
+    ftronv = .true.
+    relgrd = .true.
+
+    call rsetsym(.false., relgrd, .false., .false.)
+    call rtroini(.false.)
+
+    call troinv(work, lwork)
+
+!   set ifctyp
+    ifctyp    = 0
+    ifctyp(1) = 13 !coulomb and exchange
+    ifctyp(2) = 22 !only exchange
+    ifctyp(3) = 22
+    ifctyp(4) = 22
+
+    allocate(w01(nnbbasx*3))
+    allocate(w02(nucdep*3))
+    allocate(w03(nucdep*3))
+    allocate(w04(nucdep*3))
+    allocate(w05(nucdep))
+    allocate(w06(nucdep))
+    allocate(w07(nucdep))
+    allocate(w08(nucdep))
+
+    call onedr1(w01,                                                       &
+                D_folded%elms, F_folded%elms,                              & 
+                w02, w03, w04, w05, w06, w07, w08,                         &
+                dummy, work, lwork, 0, .true., 1, .true., .true., .false., &
+                ntbas(0), nnbbasx, nnbbast, doint,                         &
+                (/'FFFF', 'FFFF'/), .false.)
+
+    D_folded = 0
+    F_folded = 0
+
+    call dealloc(work)
+
+    deallocate(w01)
+    deallocate(w02)
+    deallocate(w03)
+    deallocate(w04)
+    deallocate(w05)
+    deallocate(w06)
+    deallocate(w07)
+    deallocate(w08)
+
+    do i = 1, nr_atoms
+      j = (i - 1)*3 + 1
+      write(*, '(a14, 3f21.10)') '1grad kin mo', (gradkn(j + k, 1), k = 0, 2)
+      write(*, '(a14, 3f21.10)') '1grad kin be', (gradkn(j + k, 2), k = 0, 2)
+      write(*, '(a14, 3f21.10)') '1grad nuc LL', (gradnu(j + k, 1), k = 0, 2)
+      write(*, '(a14, 3f21.10)') '1grad nuc SS', (gradnu(j + k, 2), k = 0, 2)
+      write(*, '(a14, 3f21.10)') '1grad reo LL', (gradro(j + k, 1), k = 0, 2)
+      write(*, '(a14, 3f21.10)') '1grad reo SS', (gradro(j + k, 2), k = 0, 2)
+      write(*, '(a14         )') '---------'
+    end do
 
   end subroutine
 
