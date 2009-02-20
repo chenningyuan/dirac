@@ -181,7 +181,7 @@ contains
     integer                  :: idummy
 
     logical                  :: doint(2, 2) = .true.
-    logical                  :: debug_me = .false.
+    logical                  :: debug_me    = .false.
 !   ----------------------------------------------------------------------------
 
 !fixme: make proper interfaces
@@ -257,14 +257,14 @@ contains
     ifctyp(3) = 22
     ifctyp(4) = 22
 
-    allocate(w01(nnbbasx*3))
-    allocate(w02(nucdep*3))
-    allocate(w03(nucdep*3))
-    allocate(w04(nucdep*3))
-    allocate(w05(nucdep))
-    allocate(w06(nucdep))
-    allocate(w07(nucdep))
-    allocate(w08(nucdep))
+    call alloc(w01, nnbbasx*3)
+    call alloc(w02, nucdep*3)
+    call alloc(w03, nucdep*3)
+    call alloc(w04, nucdep*3)
+    call alloc(w05, nucdep)
+    call alloc(w06, nucdep)
+    call alloc(w07, nucdep)
+    call alloc(w08, nucdep)
 
     call onedr1(w01,                                                       &
                 D_folded%elms, F_folded%elms,                              & 
@@ -278,14 +278,14 @@ contains
 
     call dealloc(work)
 
-    deallocate(w01)
-    deallocate(w02)
-    deallocate(w03)
-    deallocate(w04)
-    deallocate(w05)
-    deallocate(w06)
-    deallocate(w07)
-    deallocate(w08)
+    call dealloc(w01)
+    call dealloc(w02)
+    call dealloc(w03)
+    call dealloc(w04)
+    call dealloc(w05)
+    call dealloc(w06)
+    call dealloc(w07)
+    call dealloc(w08)
 
     do i = 1, nr_atoms
       j = (i - 1)*3 + 1
