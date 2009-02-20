@@ -1449,7 +1449,6 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                do S = SLow, SHig
                   RS = RecordNumRS(R,S)
                   PQRS = (PQ - StRec)*RecLen + RS
-
                   !  ... write if integral is larger than threshold ...
                   if ( DABS(GenIntBuf(PQRS)) > CUTOFF ) then
                      ! ... increment index - array position
@@ -1687,7 +1686,7 @@ subroutine print_integral(P,Q,R,S,PQ,RS,PackRS,ArrayPos, Integral, IntIndex, int
          call quit('V2HHP: no correspondence of indexes !')
        endif
 
-    case('HHHP') ! <P,Q||R,S> = <I,J||K,A>
+    case('HHHP') ! <P,Q||R,S> = <I,J||K,A>, 1234
 
        call ResRecMM(PQ,I,J) ! PQ is I,J
        call ResRecHP(RS,K,A) ! RS is K,A 
@@ -2418,11 +2417,7 @@ call ReadFile(VPHHP)
 En = 0; ii=0
 DO I = 1, NHMO
 DO A = 1, NPMO
-   !AI = RecNumPH(A,I) ! 
-   !AI = RecNumHP(I,A) ! 
    IA = RecNumHP(I,A) !
-   !IA = RecNumPH(I,A) ! 
-   !AI = RecNumHP(A,I) ! 
    St = En + 1
    En = En + NZIntRec(IA)
    IF (En < St) cycle
@@ -2450,7 +2445,7 @@ subroutine control_print_VPH2P
  integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA
  integer,          dimension(:), pointer :: VIND
  double precision, dimension(:), pointer :: VINT
- double precision :: VIJ_AB, VAB_CD, VIJ_KL, VAB_IJ, VAJ_IB, VAI_BC,VIJ_KA
+ double precision ::  VAI_BC
 
 write(UOUT,'(/,4x,a,/)') '****  08. VPH2P, 1324, <AI||BC> ****'
 nullify(VINT)
@@ -2564,6 +2559,7 @@ end subroutine control_print_V2HHP
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine control_print_VHHHP
+! ... print HHHP integrals from the file
  implicit none
  integer :: I,J,IJ,St,En,IAB,A,B,AB,C,D,CD,IB,IKA,KA,Block,iblock,ii
  integer :: IJB,IA,JB,ICD,K,L,IKL,KL,IIJ,IIC,AI,IC,StBl,EnBl,IK,IJA,JA

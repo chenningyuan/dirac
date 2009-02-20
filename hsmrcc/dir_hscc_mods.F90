@@ -1396,11 +1396,10 @@ call print_gms_data
 end subroutine fill_VINF_arrays
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!subroutine make_VIND_VINT_files(cbuf,pos_ij,pos_kl)
 subroutine make_VIND_VINT_files
 !----------------------------------------------------------------
 !
-!                 prepare integral files
+!       prepare integral&indexes files :  VINT & VIND
 !
 !----------------------------------------------------------------
 use Memory
@@ -1563,17 +1562,155 @@ enddo
 enddo
 enddo
 
-write(LUPRI,'(/,4x,a,/)') '06. V2PHH  <AB||IJ>'
+write(LUPRI,'(/,4x,a,/)') '06. V2PHH, 1234, <AB||IJ>'
+icount=0
+do IA=1,NPMO
+do IB=1,NPMO
+ inz=0
+do II=2,NHMO
+do IJ=2,II-1
+ ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
+ SInt_abij=get_moltra_integral(ia_mo,ii_mo,ib_mo,ij_mo) 
+ SInt_abji=get_moltra_integral(ia_mo,ij_mo,ib_mo,ii_mo)
+ ASInt_abij=SInt_abij-SInt_abji
+ if (DABs(ASInt_abij).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1234, <AB||IJ>, <',IA,' ',IB,'||',  & 
+       II,' ',IJ,'>=',ASInt_abij,' (ab|ij):',ia_mo,ib_mo,ii_mo,ij_mo
+ endif
+enddo
+enddo
+  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
+  ' is :',inz
+enddo
+enddo
 
-write(LUPRI,'(/,4x,a,/)') '07. VPHHP  <AI||JB>'
+write(LUPRI,'(/,4x,a,/)') '07. VPHHP, 3124,<AJ||IB>'
+icount=0
+do II=1, NHMO
+do IA=1, NPMO
+ inz=0
+do IJ=1, NHMO
+do IB=1, NPMO
+ ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB)
+ SInt_ajib=get_moltra_integral(ia_mo,ii_mo,ij_mo,ib_mo) 
+ SInt_ajbi=get_moltra_integral(ia_mo,ib_mo,ij_mo,ii_mo) 
+ ASInt_ajib=SInt_ajib-SInt_ajbi
 
-write(LUPRI,'(/,4x,a,/)') '08. VPH2P  <AI||BC>'
+ if (DABs(ASInt_ajib).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, & 
+       '. 3124, <AJ||IB>, <',IA,' ',IJ,'||',   & 
+       II,' ',IB,'>=',ASInt_ajib,' (ij|ab):',ii_mo,ij_mo,ia_mo,ib_mo
+ endif
 
-write(LUPRI,'(/,4x,a,/)') '09. VPHPP  <AI||JB>'
+enddo
+enddo
+  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,A=',II,IA, & 
+  ' is :',inz
+enddo
+enddo
 
-write(LUPRI,'(/,4x,a,/)') '10. V2HHP  <IJ||KA>'
+write(LUPRI,'(/,4x,a,/)') '08. VPH2P, 1324, <AI||BC>'
+icount=0
+do IA=1,NPMO
+do IB=1,NPMO
+ inz=0
+do II=1,NHMO
+do IC=1,NPMO
+ ii_mo=MOLTRA_indx(II);ia_mo=MOLTRA_indx(NCMO+IA);ib_mo=MOLTRA_indx(NCMO+IB);ic_mo=MOLTRA_indx(NCMO+IC)
+ SInt_aibc=get_moltra_integral(ia_mo,ib_mo,ii_mo,ic_mo) 
+ SInt_aicb=get_moltra_integral(ia_mo,ic_mo,ii_mo,ib_mo) 
+ ASInt_aibc=SInt_aibc-SInt_aicb
+ if (DABs(ASInt_aibc).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1324, <AI||BC>, <',IA,' ',II,'||',  & 
+       IB,' ',IC,'>=',ASInt_aibc,' (ab|ic):',ia_mo,ib_mo,ii_mo,ic_mo
+ endif
+enddo
+enddo
+  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,B=',IA,IB, & 
+  ' is :',inz
+enddo
+enddo
 
-write(LUPRI,'(/,4x,a,/)') '11. VHHHP  <IJ||KA>'
+write(LUPRI,'(/,4x,a,/)') '09. VPHPP, 1234, <AI||BC>'
+icount=0
+do IA=1,NPMO
+do II=1,NHMO
+ inz=0
+do IB=2,NPMO
+do IC=1,IB-1
+ ii_mo=MOLTRA_indx(II);ia_mo=MOLTRA_indx(NCMO+IA);
+ ib_mo=MOLTRA_indx(NCMO+IB);ic_mo=MOLTRA_indx(NCMO+IC)
+ SInt_aibc=get_moltra_integral(ia_mo,ib_mo,ii_mo,ic_mo) 
+ SInt_aicb=get_moltra_integral(ia_mo,ic_mo,ii_mo,ib_mo) 
+ ASInt_aibc=SInt_aibc-SInt_aicb
+ if (DABs(ASInt_aibc).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1234, <AI||BC>, <',IA,' ',II,'||',  & 
+       IB,' ',IC,'>=',ASInt_aibc,' (ab|ic):',ia_mo,ib_mo,ii_mo,ij_mo
+ endif
+enddo
+enddo
+ write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair A,I=',IA,II, & 
+ ' is :',inz
+enddo
+enddo
+
+write(LUPRI,'(/,4x,a,/)') '10. V2HHP, 1324, <IJ||KA>'
+icount=0
+do II=1,NHMO
+do IK=1,NHMO
+ inz=0
+do IJ=1,NHMO
+do IA=1,NPMO
+ ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ia_mo=MOLTRA_indx(NCMO+IA);ik_mo=MOLTRA_indx(IK)
+ SInt_ijka=get_moltra_integral(ii_mo,ik_mo,ij_mo,ia_mo) 
+ SInt_ijak=get_moltra_integral(ii_mo,ia_mo,ij_mo,ik_mo)
+ ASInt_ijka=SInt_ijka-SInt_ijak
+ if (DABs(ASInt_ijka).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1324, <IJ||KA>, <',II,' ',IJ,'||',  & 
+       IK,' ',IA,'>=',ASInt_ijka,' (ik|ja):',ii_mo,ik_mo,ij_mo,ia_mo
+ endif
+
+enddo
+enddo
+  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,K=',II,IK, & 
+  ' is :',inz
+enddo
+enddo
+
+write(LUPRI,'(/,4x,a,/)') '11. VHHHP, 1234, <IJ||KA>'
+icount=0
+do II=2,NHMO
+do IJ=1,II-1
+ inz=0
+do IK=1,NHMO
+do IA=1,NPMO
+ ii_mo=MOLTRA_indx(II);ij_mo=MOLTRA_indx(IJ);ik_mo=MOLTRA_indx(IK);ia_mo=MOLTRA_indx(NCMO+IA)
+ SInt_ijka=get_moltra_integral(ii_mo,ik_mo,ij_mo,ia_mo) 
+ SInt_ijak=get_moltra_integral(ii_mo,ia_mo,ij_mo,ik_mo)
+ ASInt_ijka=SInt_ijka-SInt_ijak
+ if (DABs(ASInt_ijka).gt.zerothrs) then
+   icount = icount + 1; inz = inz + 1
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+       '. 1234, <IJ||KA>, <',II,' ',IJ,'||',  & 
+       IK,' ',IA,'>=',ASInt_ijka,' (ik|ja):',ii_mo,ik_mo,ij_mo,ia_mo
+ endif
+
+enddo
+enddo
+  write(LUPRI,'(1x,a,2i4,a,i4)') 'Number of nonzero integrals for pair I,J=',II,IJ, & 
+  ' is :',inz
+enddo
+enddo
+
 
 end subroutine make_VIND_VINT_files
 
