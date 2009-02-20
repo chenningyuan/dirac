@@ -37,7 +37,7 @@ contains
 
     call get_F(F)
 
-    call test_matrix_defop(S, D, F, C_i)
+!   call test_matrix_defop(S, D, F, C_i)
     C_i = 0
 
     call nr_electrons(S, D)
@@ -46,7 +46,8 @@ contains
 
     if (aoresponse_test_geo) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
-      call debug_gradee(D, natoms_ifc())
+!     call debug_1grad(D, natoms_ifc())
+      call debug_2grad(D, natoms_ifc())
     end if
 
     if (aoresponse_alpha) then

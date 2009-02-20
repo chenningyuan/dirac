@@ -3,4 +3,5 @@ pdpack/dlamch.F
 amfi/amfi.F
 amfi/amfi1.F
 abacus/hermodules.F
-aoresponse/matrix_defop.F90
+aoresponse/matrix_defop_old.F90
+aoresponse/matrix_genop_old.F90

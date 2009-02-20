@@ -157,8 +157,9 @@ contains
 
   end subroutine
 
-  subroutine debug_gradee(D, nr_atoms)
+  subroutine debug_2grad(D, nr_atoms)
 
+!   ----------------------------------------------------------------------------
     type(matrix), intent(inout) :: D
     integer                     :: nr_atoms
 !   ----------------------------------------------------------------------------
@@ -176,6 +177,7 @@ contains
 
     real(kind_dp)               :: dummy
     integer                     :: idummy
+!   ----------------------------------------------------------------------------
 
 #include "mxcent.h"
 #include "cbihr2.h"
@@ -232,7 +234,7 @@ contains
                 1, 0, .true., .true., .false., tktime,     &
                 1, 0, 0, 0, 0, .false., idummy, i2typ,     &
                 icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, dummy, dummy)
+                relcal, .false., dummy, dummy)
 
     call dcopy(nr_atoms*3, gradee, 1, r(:, 1), 1)
     call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
@@ -252,7 +254,7 @@ contains
                 1, 0, .true., .true., .false., tktime,     &
                 1, 0, 0, 0, 0, .false., idummy, i2typ,     &
                 icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, dummy, dummy)
+                relcal, .false., dummy, dummy)
 
     call dcopy(nr_atoms*3, gradee, 1, r(:, 2), 1)
     call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
@@ -272,7 +274,7 @@ contains
                 1, 0, .true., .true., .false., tktime,     &
                 1, 0, 0, 0, 0, .false., idummy, i2typ,     &
                 icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, dummy, dummy)
+                relcal, .false., dummy, dummy)
 
     call dcopy(nr_atoms*3, gradee, 1, r(:, 3), 1)
     call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
@@ -280,13 +282,13 @@ contains
     call dealloc(work)
 
     do i = 1, 4
-      j = (i-1)*3 + 1
+      j = (i - 1)*3 + 1
 
-      write(*, '(a14, 3f21.10)') 'blubtot', r(j, 5), r(j+1, 5), r(j+2, 5)
-      write(*, '(a14, 3f21.10)') 'blub LL', r(j, 1), r(j+1, 1), r(j+2, 1)
-      write(*, '(a14, 3f21.10)') 'blub LS', r(j, 2), r(j+1, 2), r(j+2, 2)
-      write(*, '(a14, 3f21.10)') 'blub SS', r(j, 3), r(j+1, 3), r(j+2, 3)
-      write(*, '(a14         )') 'blub --'
+      write(*, '(a14, 3f21.10)') '2grad tot', r(j, 5), r(j + 1, 5), r(j + 2, 5)
+      write(*, '(a14, 3f21.10)') '2grad  LL', r(j, 1), r(j + 1, 1), r(j + 2, 1)
+      write(*, '(a14, 3f21.10)') '2grad  LS', r(j, 2), r(j + 1, 2), r(j + 2, 2)
+      write(*, '(a14, 3f21.10)') '2grad  SS', r(j, 3), r(j + 1, 3), r(j + 2, 3)
+      write(*, '(a14         )') '---------'
 
     end do
 

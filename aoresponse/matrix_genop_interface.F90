@@ -1,3 +1,4 @@
+#ifdef USE_NEW_DEFOP
 
 ! radovan.bast@uit.no (2009-02-18):
 ! this module is the interface between matrix_genop and DIRAC
@@ -190,3 +191,4 @@ contains
   end subroutine
 
 end module
+#endif

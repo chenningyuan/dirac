@@ -1,4 +1,5 @@
 
+#ifdef USE_NEW_DEFOP
 ! written by Andreas J. Thorvaldsen
 ! radovan.bast@uit.no (2009-02-18): generalized for DIRAC
 
@@ -405,3 +406,4 @@ contains
     end subroutine
 
 end module
+#endif
