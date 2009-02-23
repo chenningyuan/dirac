@@ -191,4 +191,9 @@ contains
   end subroutine
 
 end module
+#else
+
+subroutine matrix_genop_interface_do_nothing()
+end subroutine
+
 #endif
