@@ -406,4 +406,9 @@ contains
     end subroutine
 
 end module
+#else
+
+subroutine matrix_genop_do_nothing()
+end subroutine
+
 #endif

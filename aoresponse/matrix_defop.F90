@@ -848,4 +848,9 @@ contains
     end subroutine
 
 end module
+#else
+
+subroutine matrix_defop_do_nothing()
+end subroutine
+
 #endif
