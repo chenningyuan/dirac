@@ -236,7 +236,7 @@ contains
     else
 
         call general_density_block(density%scalar,    &
-                                   M%elms(1+offset),  &
+                                   M%elms(1),         &
                                    get_density,       &
                                    M%pg_sym - 1,      &
                                    gao_slice_left,    &
@@ -247,7 +247,7 @@ contains
                                    density%factor_lx)
 
         call general_density_block(density%scalar,    &
-                                   M%elms(1+offset),  &
+                                   M%elms(1),         &
                                    get_density,       &
                                    M%pg_sym - 1,      &
                                    gao_slice_left,    &

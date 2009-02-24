@@ -210,7 +210,7 @@ contains
     F_temp = 1.0d-50*F_mo
 
     do ifsym = 1, nfsym
-      if (nish(i) > 0) then
+      if (nish(ifsym) > 0) then
         ioff = i2orbt(ifsym) + npsh(ifsym)*norb(ifsym)
         call dcopy(nish(ifsym)*norb(ifsym), F_mo%elms(1 + ioff), 1, F_temp%elms(1 + ioff), 1)
       end if
