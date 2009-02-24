@@ -48,7 +48,7 @@ initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 quick=0 # otherwise 1 if "--quick" parameter is in the list
 nooptim=0 # otherwise 1 if "--noopt" parameter is in the list
-checkbounds=0 # or 1 if "--checkbounds" parameter is in the list
+checkbounds=0 # or 1 if "--check" parameter is in the list
 doprofile=0 # or 1 if "--profile" is in the parameter list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
@@ -467,7 +467,7 @@ usage ()  {
    echo '   --help                       : Print this'
    echo '   --quick                      : Do not prompt user (WARNING: might prepare wrong Makefile.config!)'
    echo '   --noopt                      : Use compilers flags without optimization for the compilation of Dirac'
-   echo '   --checkbounds                : Add compilers flags for checking array boundaries'
+   echo '   --check                      : Add compilers flags for run-time checking array boundaries & other '
    echo '   --profile                    : Add compilers/linker flags for code profiling'
    echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
@@ -1920,7 +1920,7 @@ get_f90_flags(){
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
-      F_check_array_bounds="" # please add
+      F_check_flags="-Wuninitialized" # please add more
       F_profile="" # please add
       ;;
     gfortran*)
@@ -1942,7 +1942,7 @@ get_f90_flags(){
       safe="-g $march"
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
-      F_check_array_bounds="-fbounds-check" 
+      F_check_flags="-fbounds-check" 
       F_profile="-pg"
       ;;
     pgf90)
@@ -1951,7 +1951,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
-      F_check_array_bounds="-Mbounds" # please add
+      F_check_flags="-Mbounds" # please add more 
       F_profile="-pg"
       ;;
     lfc)
@@ -1960,7 +1960,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
       noformain="" # please add
-      F_check_array_bounds="" # please add
+      F_check_flags="" # please add more
       F_profile="" # please add
       ;;
     ifort)
@@ -1972,7 +1972,7 @@ get_f90_flags(){
        ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
       noformain="-nofor_main"
-      F_check_array_bounds="-check bounds -fpstkchk" 
+      F_check_flags="-check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback" 
       F_profile="-p" 
       ;;
     xlf|xlf_r)
@@ -1982,7 +1982,7 @@ get_f90_flags(){
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
       noformain="" # please add
-      F_check_array_bounds="" # please add
+      F_check_flags="" # please add more...
       F_profile="" # please add
       ;;
     pathf90)
@@ -1990,7 +1990,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_EKO"
       mod="-module $MODULE_DIR"
       noformain="" # please add
-      F_check_array_bounds="" # please add
+      F_check_flags="" # please add 
       F_profile="" # please add
        ;;
     *)
@@ -2018,13 +2018,13 @@ get_cc_flags(){
   gcc|cc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
-    C_check_array_bounds="-fbounds-check" # OK ?
+    C_check_flags="-fbounds-check -Wall" # please check/add more  ?
     C_profile="-pg" 
     ;;
   mpicc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
-    C_check_array_bounds="" # please add
+    C_check_flags="" # please add
     C_profile="" # please add
     echo
     echo WARNING:
@@ -2034,19 +2034,19 @@ get_cc_flags(){
   pgcc)
     c_opt="-g -fastsse"
     c_safe="-g"
-    C_check_array_bounds="-Mbounds -Mchkstk" # 
+    C_check_flags="-Mbounds -Mchkstk" # please check/add more
     C_profile="-pg" 
     ;;
   icc)
     c_opt="-g -O3 -ip -w"
     c_safe="-g -w"
-    C_check_array_bounds="-Wcheck -fpstkchk -fstack-security-check" # 
+    C_check_flags="-Wcheck -fpstkchk -fstack-security-check" # 
     C_profile="-pg" 
     ;;
   pathcc)
     c_opt=$opt
     c_safe=$safe
-    C_check_array_bounds="" # please add
+    C_check_flags="" # please add
     C_profile="" # please add
     ;;
   esac
@@ -2447,20 +2447,20 @@ fi
 # determine whether we add Fortran flag for checking array boudaries or not
 if [ $checkbounds = 1 ]; then
 #  ... Fortran flag ...
-  safe="$F_check_array_bounds $safe"
-  opt="$F_check_array_bounds $opt"
-  if [ -n "$F_check_array_bounds" ]; then
-   $echo "\nFortran flag '"$F_check_array_bounds"' for checking array bounds included."
+  safe="$F_check_flags $safe"
+  opt="$F_check_flags $opt"
+  if [ -n "$F_check_flags" ]; then
+   $echo "\nFortran flag '"$F_check_flags"' for checking array bounds & other run-time parameters included."
    $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
   else
    $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
    $echo "Though requested. Please edit the script."
   fi
 #   ... C flag ...
-  c_safe="$C_check_array_bounds $c_safe"
-  c_opt="$C_check_array_bounds $c_opt"
-  if [ -n "$C_check_array_bounds" ]; then
-   $echo "\nC flag '"$C_check_array_bounds"' for checking array bounds included."
+  c_safe="$C_check_flags $c_safe"
+  c_opt="$C_check_flags $c_opt"
+  if [ -n "$C_check_flags" ]; then
+   $echo "\nC flag '"$C_check_flags"' for checking array bounds & other run-time parameters included."
    $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
   else
    $echo "\nNo C flag for checking array bounds is included for compiler $CCreal."
@@ -2540,8 +2540,8 @@ CPP_FLAGS=$cpp_cc $parinc $depend_flags
 DEPCPP=$CPP \${CPP_FLAGS}
 
 # Fortran/C flags for array bounds & other possible run-time checks
-FFLAGS_CHECK=$F_check_array_bounds
-CFLAGS_CHECK=$C_check_array_bounds
+FFLAGS_CHECK=$F_check_flags
+CFLAGS_CHECK=$C_check_flags
 
 # Fortran/C flags for code profiling
 FFLAG_PROFILE=$F_profile
@@ -2823,7 +2823,7 @@ while [ $# != 0 ]; do
       "noopt")
 	 nooptim=1
          ;;
-      "checkbounds")
+      "check")
 	 checkbounds=1
          ;;
       "profile")
