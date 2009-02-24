@@ -298,6 +298,7 @@ C           antisymmetric density matrix
 C
 C     Check whether this is a pure DFT calculation (no exchange)
 C
+!radovan: HFXFAC and HFXMU are not set!
       IF (HFXFAC.EQ.D0 .AND. HFXMU.EQ.D0) THEN
         IY = MOD(IY,2)
 C       ... only Coulomb contribution

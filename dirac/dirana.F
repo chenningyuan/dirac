@@ -171,6 +171,7 @@ C       MP2-NO default values
         ILABDF_M = ILABDF
         DONETP_M = DONETP
         ADDSML_M = ADDSML
+!radovan: ORBDEF is not initialized!
         ORBDEF_M = ORBDEF
         LABDEF_M = LABDEF
 C
