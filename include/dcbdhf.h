@@ -8,7 +8,8 @@
 !     PROJEC     - any projection, defined by a set of coefficients
 !     ... (descriptions are to be added)
 !
-!     ERGCNV2, EVCCNV2, FCKCNV2, MAXITR2 - related to the preliminary
+!     ERGCNV2, EVCCNV2, FCKCNV2, MAXITR2 - related to the preliminary SCF method before turning to 4c mode
+!
 !     BSS-SCF (...MI/sept05 - can be extended by more SCF control flags )
 !
 

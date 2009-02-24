@@ -232,8 +232,7 @@ C        *************************************************
 C        *** Call PSIDHF for Roothaan/DIIS iterations  ***
 C        *************************************************
 C
-!radovan: maxit2 is not set!
-         IF (MAXITR.GT.0.OR.MAXIT2.GT.0) THEN
+         IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
             CALL PSIDHF(WFCONV,WORK,LWORK)
          END IF
 C
