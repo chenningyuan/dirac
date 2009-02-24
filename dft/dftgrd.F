@@ -754,6 +754,7 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
+      lebmin = angmin !from common block
       NOLD=NSCHEME
       IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
