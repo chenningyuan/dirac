@@ -1416,8 +1416,6 @@ C
   200 CONTINUE
 C
       NAX = 3*NCENTA - 2
-      NAX = 3*NCENTA - 2
-      NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
       NAZ = 3*NCENTA
       NBX = 3*NCENTB - 2
