@@ -168,34 +168,56 @@ end subroutine count_nelec_tot
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_moltra_files
+!
+!
+!
  use Memory
  use Vectors
  use GMSMod
+ use VINFMod
+
 #include "implicit.h"
 #include "priunit.h"
 
-!type(Array2Dim) :: cbuf
-!type(Array3Dim) :: pos_ij, pos_kl
 
 call read_mrconee;  call print_mrconee_data
 
-!call read_mdcint(cbuf,pos_ij, pos_kl)
 call read_mdcint
 
+call set_dirac_hscc_file_names
 call set_hscc_VINF_data
 
-call prepare_HSMRCC_Vfiles
+call InitIOMod
 
+if (.not.nohsccfiles) then
+ call OpenIntFiles
+endif
 
+! 2-el transformed integrals
+call  make_VIND_VINT_files
+
+! ... deallocate big arrays for 2-el MO integrals (allocation was done in read_mdcint)
 call DeAllocObject(pos_kl)
 call DeAllocObject(pos_ij)
 call DeAllocObject(cbuf)
 
-if (get_iprint() >=6) then
-  write(LUPRI,*) "...going to deallocate stuff"
+! 1-el. transformed integrals
+if (.not.nohsccfiles) then
+call CloseIntFiles ! close HSMRCC integral files 
+! ... finally update VINF file
+call OpenVINF
+call UpdateVINF
+call CloseVINF
 endif
-! ... deallocate VINF data 
+
+! ... deallocate VINF arrays ...
 call EndGMSMod
+
+call reset_Init
+
+if (get_iprint() >=6) then
+  write(LUPRI,*) "...end routine >>>read_moltra_files<<<"
+endif
 
 end subroutine read_moltra_files
 
@@ -413,7 +435,6 @@ endif
 inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call Quit('No MDCINT file!')
 
 open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
-!open(MDINT,file="MDCINT",form='UNFORMATTED')
 rewind(MDINT)
 
 write(LUPRI,'(//2x,a,i3)') 'The MDCINT file open and rewinded...lu=',MDINT
@@ -467,7 +488,6 @@ write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
 call alloc_mdcint_data
 
 ! call print_mem_param
-
 ! ... note: "ccdriv.F":1923 is using RCW !!!
 !cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
 !pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
@@ -1154,44 +1174,16 @@ end subroutine prepare_dirac_HSMRCC_int_files
 
 end module Dirac_HSMRCC
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine prepare_HSMRCC_Vfiles
-!------------------------------------------------------------------------
-!
-!              prepare VINT & VIND files for HSMRCC
-!
-!------------------------------------------------------------------------
-  use Memory
-  use Vectors
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine prepare_HSMRCC_Ffiles
+!----------------------------------------------------------------
+! prepare FHH, FPH, FPP HSMRCC files
+!----------------------------------------------------------------
 
-  use Dirac_HSMRCC
-  use io_moltra
+Call Header('Output from prepare_HSMRCC_Ffiles',-1)
 
- !use Parameters ! HSMRCC  module
-  use IOmodule ! HSMRCC  module
 
-#include "implicit.h"
-#include "priunit.h"
-!type(Array2Dim), intent(in) :: cbuf
-!type(Array3Dim), intent(in) :: pos_ij, pos_kl
-
-!character(len=17) :: dirac_file_VIND='Dirac_HSMRCC.VIND'
-!character(len=17) :: dirac_file_VINT='Dirac_HSMRCC.VINT'
-
-call header('output from prepare_HSMRCC_Vfiles',-1)
-
-call set_dirac_hscc_file_names
-
-! ... open all HSMRCC made files 
-!if (.not.nohsccfiles) then
-!  call InitIOMod
-!  call OpenIntFiles
-  call make_VIND_VINT_files
-
-!  call quit('end in prepare_HSMRCC_Vfiles')
-!endif
-
-end subroutine prepare_HSMRCC_Vfiles
+end subroutine prepare_HSMRCC_Ffiles
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine set_hscc_VINF_data
@@ -1409,20 +1401,34 @@ use io_moltra
 use Dirac_HSMRCC
 use Parameters
 use GMSMod
+use IntGenMod
 #include "implicit.h"
 #include "priunit.h"
 
 !external :: get_moltra_index
 integer :: get_moltra_index
+integer :: StVRec,StRec, EnRec, NxtRec
+
+!integer         , dimension(NZVINTBUFSIZE) :: NZVPkIBuf
+!double precision, dimension(NZVINTBUFSIZE) :: NZVIntBuf
+
 real*8 :: get_moltra_integral
-
-real*8 :: zerothrs=1.0d-14
-
-!write(LUPRI,*) 'NHMO=',NHMO
-!write(LUPRI,*) 'NPMO=',NPMO
+real*8 :: zerothrs=1.0d-14 ! to be replaced byu CUTOFF
 
 call print_basic_params
 call print_gms_parameters
+
+NZVIntBufInd=0
+NZVIntBuf    = DBLE(0)
+NZIntRec_V2H2P = 0 ! array
+NZVPkIBuf    = 0
+TotNZInt(V2H2P) = 0
+
+StVRec=1
+StartRec(V2H2P) = StVRec
+EndngRec = DBLE(0)
+StartRec = StVRec
+NxtRec   = StVRec
 
 ! 01. V2H2P  <IJ||AB>
 write(LUPRI,'(/,4x,a,/)') '01. V2H2P, 1324, <IJ||AB>'
@@ -1431,6 +1437,8 @@ icount=0 ! nonzero integrals counter
 
 do II=1,NHMO
 do IA=1,NPMO
+ IPQ=RecNumHP(II,IA)
+ NZIntRec_V2H2P(IPQ)=0 
  inz=0
 do IJ=1,NHMO
 do IB=1,NPMO
@@ -1446,10 +1454,30 @@ ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
 
  if (DABs(ASInt_ijab).gt.zerothrs) then
 
-   icount = icount + 1; inz = inz + 1
-   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
+  icount = icount + 1; inz = inz + 1
+  write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
        '. 1234, <IJ||AB>, <',II,' ',IJ,'||',  & 
        IA,' ',IB,'>=',ASInt_ijab,' (ia|jb):',ii_mo,ia_mo,ij_mo,ib_mo
+
+  NZVIntBufInd=NZVIntBufInd+1
+  NZIntRec_V2H2P(IPQ)=NZIntRec_V2H2P(IPQ)+1
+
+  if ( NZVIntBufInd > NZVINTBUFSIZE ) then
+
+     if (.not.nohsccfiles) then
+       write(UVINT,rec=NxtRec) NZVIntBuf
+       write(UVIND,rec=NxtRec) NZVPkIBuf
+     endif
+
+     NxtRec = NxtRec + 1
+     NZVIntBufInd = 1
+     NZVPkIBuf = 0
+     NZVIntBuf = DBLE(0) 
+
+  endif 
+
+  NZVIntBuf(NZVIntBufInd) = ASInt_ijab
+  NZVPkIBuf(NZVIntBufInd) = PackRSHP(IJ,IB)
 
  endif
 
@@ -1459,6 +1487,16 @@ enddo
    ' is :',inz
 enddo
 enddo
+
+TotNZInt(V2H2P) = TotNZInt(V2H2P) + NZIntRec_V2H2P(IPQ)
+EndngRec(V2H2P) = NxtRec
+if ( TotNZInt(V2H2P) /= 0 ) then
+  if (.not.nohsccfiles) then
+    write(UVINT,rec=NxtRec) NZVIntBuf
+    write(UVIND,rec=NxtRec) NZVPkIBuf
+  endif
+  StVRec = EndngRec(V2H2P) + 1
+endif
 
 
 write(LUPRI,'(/,4x,a,/)') '02. VPPPP  <AB||CD>'
@@ -1713,5 +1751,4 @@ enddo
 
 
 end subroutine make_VIND_VINT_files
-
 

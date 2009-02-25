@@ -8,6 +8,7 @@ module IntGenMod
    private
    integer, parameter :: ASINTBUFSIZE  = 5460
    double precision, public :: CUTOFF
+   ! NZVINTBUFSIZE in IOModule
    integer         , dimension(NZVINTBUFSIZE) :: NZVPkIBuf
    double precision, dimension(NZVINTBUFSIZE) :: NZVIntBuf
    double precision, allocatable :: GenIntBuf(:)
@@ -17,9 +18,10 @@ module IntGenMod
    end interface IntFileGen
 
   ! ... this specification is needed for showing out internal routines 
-   public :: DrvIntGen, DrvIntGen_DIRAC
+   public :: DrvIntGen, DrvIntGen_DIRAC,NZVPkIBuf,NZVIntBuf 
    public :: check_gms_integrals, control_print_VIND_VINT
-
+   public :: PackRSHP,RecNumHP
+ 
 contains
 
 subroutine DrvIntGen

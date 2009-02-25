@@ -15,12 +15,15 @@ contains
 subroutine OpenVINF
 !------------------------------------------------------------------------------
 !
-!      Open HSMRCC file VINF carrying information on the run 
+!    Open HSMRCC file VINF carrying important data of the run 
 !
-!  called from InitHSMRBase (source/inihsbase.F90)
+!   called from:
+! ----------------  
+!                    InitHSMRBase (source/inihsbase.F90)
 !
 !------------------------------------------------------------------------------
    implicit none
+   integer :: ios
    logical :: existVINF
 
    if (get_iprint() >=7) then
@@ -28,16 +31,22 @@ subroutine OpenVINF
      'OpenVINF:  going to open the UNFORMATTED file FileVINF=',FileVINF
      write(UOUT,'(2x,a,i3,a,a)') 'where lu UVINF=',UVINF,'and file name, FileVINF=',FileVINF
      write(UOUT,'(2x,a,l1)') '...and OPTION(GENINT)=',OPTION(GENINT)
-     if (OPTION(GENINT)) then
-       write(UOUT,*) 'going to open as UNKNOWN (new)'
+     write(UOUT,'(2x,a,l1)') '...and OPTION(DIRAC_MODE)=',OPTION(DIRAC_MODE)
+     if (OPTION(GENINT).or.OPTION(DIRAC_MODE)) then
+     !if (OPTION(GENINT).and..not.OPTION(DIRAC_MODE) )  then
+       write(UOUT,'(6x,a)') 'going to open as UNKNOWN (new)'
      else
-       write(UOUT,*) 'going to open as OLD - previously preparef file'
+       write(UOUT,'(6x,a)') 'going to open as OLD - previously prepared file'
      endif
    endif
 
 
-   if (OPTION(GENINT)) then
-      open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW')
+  ! if (OPTION(GENINT)) then
+   if (OPTION(GENINT).or.OPTION(DIRAC_MODE) ) then
+      open(UVINF,file=FileVINF,access='SEQUENTIAL',form='UNFORMATTED',status='NEW',iostat=ios)
+      if (ios.ne.0) then
+        call quit('OpenVINF: could not open NEW UVINF...')
+      endif
    else
       inquire(file=FileVINF,exist=existVINF)
 
@@ -70,6 +79,7 @@ subroutine UpdateVINF
 !
 ! ... called from HSMRCC (source/hsmrcc.F90) before iterations cycle starts
 ! ... plus from others (source/endhsmr.F90)
+!
 !
 !---------------------------------------------------------------------------------
 
@@ -157,11 +167,11 @@ subroutine UpdateVINF
 
 end subroutine UpdateVINF
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine printVINFstuff
 !------------------------------------------------------------------------------------
 !
-!         ... print out data from update of the VINF file
+!               ... print out data from update of the VINF file
 !
 !------------------------------------------------------------------------------------
 

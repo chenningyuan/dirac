@@ -42,11 +42,12 @@ module Options
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine set_dirac_mode
-!
+!-------------------------------------------------------------------------
 ! tell HSMRCC code that some it's routines are used from within DIRAC
 !
 ! this means NOT running full hsmrcc.x, only reusing it's routines 
 !
+!-------------------------------------------------------------------------
 #include "priunit.h"
    OPTION(DIRAC_MODE)=.true.
    write(LUPRI,'(2x,a,l1)')   & 

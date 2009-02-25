@@ -142,16 +142,21 @@ endif
 
 end subroutine set_dirac_hscc_file_names
 
+subroutine reset_Init
+! ... set to FALSE initialization variable (needed in DIRAC HSCC preparing files part)
+ Init=.FALSE.
+end subroutine reset_Init
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitIOMod
 !---------------------------------------------------------------------------------
 !
-!   calculate attributes NumRec & RecLen and allocate arrays NZIntRec_xxxx
-! for reading Gamess/DIRAC-made integrals 
+! calculate attributes NumRec & RecLen and allocate arrays NZIntRec_xxxx
+! for reading Gamess/DIRAC-made integrals & for preparing DIRAC-HSMRCC integrals
 !
 !  called from : 
-!            InitHSMRBase ("source/inihsbase.F90")
-!             dirac HSCC interface
+!         InitHSMRBase ("source/inihsbase.F90")
+!         dirac HSCC interface ("dir_hscc_mods.F90")
 !   
 !---------------------------------------------------------------------------------
 
@@ -161,8 +166,7 @@ subroutine InitIOMod
 
    if (Init) then
       write(UOUT,*) 'Error Initializing IOMod, Init=',Init
-      call flushout
-      call quit('InitIOMod:  Error Initializing IOMod !')
+      call quit('InitIOMod:  Error Initializing IOMod ! It was already set to true !')
    endif
    Init = .TRUE. ! it means it's initialized
 
@@ -236,13 +240,15 @@ subroutine print_int_file_attributes
 
 end subroutine print_int_file_attributes 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitIOMod_alloc_NZIntRec
+!-------------------------------------------------------------------------------------
 !
 ! allocation of NZIntRec in separate routine
 !
 ! called from InitIOMod
 !
+!-------------------------------------------------------------------------------------
 
    ! ... Allocate & Setup NZIntRec Arrays ...
    if (.not.allocated(NZIntRec_V2H2P)) allocate(NZIntRec_V2H2P(NumRec(V2H2P)))
@@ -259,7 +265,7 @@ subroutine InitIOMod_alloc_NZIntRec
 
    if (get_iprint() > 5) then
      write(UOUT,'(/,4x,a)') '*** Output from InitIOMod_alloc_NZIntRec ***'
-     write(UOUT,'(2x,a)') '11 NZIntRec_Vxxxx arrays allocated'
+     write(UOUT,'(2x,a,/)') '11 NZIntRec_Vxxxx arrays allocated'
    endif
 
 end subroutine InitIOMod_alloc_NZIntRec
@@ -1001,7 +1007,7 @@ subroutine OpenIntFiles
 !-----------------------------------------------------------------------------------------
    implicit none
    character(len=10) :: stat
-   integer:: recl_vind,recl_vint,recl_fhh,recl_fhp,recl_fpp 
+   integer:: recl_vind,recl_vint,recl_fhh,recl_fhp,recl_fpp,ios 
    logical:: exist_file
 
    if (get_iprint() >= 7) then
@@ -1038,7 +1044,14 @@ subroutine OpenIntFiles
    endif
 
    recl_vind=(4*2*NZVINTBUFSIZE)/INTSFP
-   open(UVIND,file=FileVIND,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vind)
+   open(UVIND,file=FileVIND,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vind,iostat=ios)
+
+   if (ios.ne.0) then
+     write(UOUT,*) 'UVIND=',UVIND
+     write(UOUT,*) 'FileVIND=',FileVIND
+     write(UOUT,*) 'recl_vind=',recl_vind 
+     call quit('OpenIntFiles: FileVIND opening failure !')
+   endif
 
 ! ----------------------------------------------------
    inquire(file=FileVINT,exist=exist_file)
@@ -1051,7 +1064,7 @@ subroutine OpenIntFiles
    endif
 
    recl_vint=4*2*NZVINTBUFSIZE
-   open(UVINT,file=FileVINT,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vint)
+   open(UVINT,file=FileVINT,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_vint,iostat=ios)
 ! ----------------------------------------------------
    inquire(file=FileFHH,exist=exist_file)
    if (.not.exist_file.and.OPTION(HSCC_DIRAC_MODE)) then
@@ -1063,7 +1076,7 @@ subroutine OpenIntFiles
    endif
 
    recl_fhh=4*2*NHMO*NHMO
-   open(UFHH ,file=FileFHH ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fhh)
+   open(UFHH ,file=FileFHH ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fhh,iostat=ios)
 
 ! ----------------------------------------------------
    inquire(file=FileFHP,exist=exist_file)
@@ -1076,7 +1089,7 @@ subroutine OpenIntFiles
    endif
 
    recl_fhp=4*2*NHMO*NPMO
-   open(UFHP ,file=FileFHP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fhp)
+   open(UFHP ,file=FileFHP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fhp,iostat=ios)
 
 ! ----------------------------------------------------
    inquire(file=FileFPP,exist=exist_file)
@@ -1089,7 +1102,7 @@ subroutine OpenIntFiles
    endif
 
    recl_fpp=4*2*NPMO*NPMO
-   open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fpp)
+   open(UFPP ,file=FileFPP ,access='DIRECT',form='UNFORMATTED',status=stat,recl=recl_fpp,iostat=ios)
 
 !  ... print out info ...
    if (get_iprint() >= 7) then
@@ -1110,7 +1123,7 @@ end subroutine OpenIntFiles
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine OpenOtherFiles
 !
-!  called from InitHSMRIter (source/inihsiter.F90)
+!       called from InitHSMRIter (source/inihsiter.F90)
 !
    implicit none
    integer :: recl_ntsize
@@ -1156,7 +1169,11 @@ subroutine OpenOtherFiles
    return
 end subroutine OpenOtherFiles
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine CloseIntFiles
+!-----------------------------------------------------------------------------
+!                close VINT,VIND,FHH,FHP,FPP files
+!-----------------------------------------------------------------------------
 
    implicit none
 

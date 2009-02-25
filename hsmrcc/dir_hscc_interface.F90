@@ -4,7 +4,7 @@ subroutine HSCC_STUFF(WORK,LWORK)
 !
 !  Called from PAMTRA, if defined (MOD_HSCC)
 !
-!  Written by Miro Ilias, Tel Aviv/Prievidza 2007,2008
+!  Written by Miro Ilias, Tel Aviv/Prievidza 2007,2008,2009
 !
 !----------------------------------------------------------------------------------
 use Memory
@@ -48,7 +48,8 @@ call StickMemory(WORK,LWORK)
 ! call read_mdcint ! read MDCINT file
 !endif
 
-call read_moltra_files ! read MRCONEE & MDCINT
+! read MRCONEE & MDCINT, prepare integral files
+call read_moltra_files 
 
 !call prepare_dirac_HSMRCC_file
 !call prepare_dirac_HSMRCC_int_files
@@ -177,16 +178,14 @@ EndDo
 ! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
 
  if (nohsccfiles) then
-  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run).'
+  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
  else
   WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
  endif
 
  if (nohsccdirac) then
-  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by Dirac, do not continue with "afterDIRAC" HSCC.'
+  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by DIRAC, do not continue with "afterDIRAC" HSCC.'
  endif
-
-! Call QUIT('in HSCCINP !')
 
  call set_dirac_UOUT
 

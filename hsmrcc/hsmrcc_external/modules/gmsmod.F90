@@ -72,9 +72,10 @@ end subroutine InitGMSMod
 subroutine EndGMSMod
 !--------------------------------------------------------------------
 !
-! Deallocate all allocated arrays.
+! Deallocate some arrays.
 !
-! Called from : sr. EndHSMR - source/endhsmr.F90
+! Called from : EndHSMR - source/endhsmr.F90
+!               read_moltra_files (dir_hscc_mods.F90)
 !
 ! TODO: include status checking of deallocations
 !
@@ -100,18 +101,24 @@ subroutine EndGMSMod
  !  if (allocated(MOLTRA_indx))   deallocate(MOLTRA_indx)
 
    if (get_iprint() >=8) then
-     write(UOUT,'(/,2x,a)') 'EndGMSMod: going to deallocate GMS specific data.'
+     write(UOUT,'(/,2x,a,/)') 'EndGMSMod: HSCC specific arrays (SpinOfOrb,SpinOfActvOrb,..) deallocated'
    endif
 
-   if (allocated(XXPREAD)) deallocate(XXPREAD)
-   if (allocated(IXPREAD)) deallocate(IXPREAD)
+   if (allocated(XXPREAD)) then
+      deallocate(XXPREAD)
+      if (get_iprint() >=8) then
+         write(UOUT,'(/,2x,a)') 'EndGMSMod: GMS specific array XXPREAD deallocated.'
+      endif
+   endif
 
-   if (get_iprint() >=8) then
-      write(UOUT,'(/,2x,a)') 'EndGMSMod: all data arrays deallocated'
+   if (allocated(IXPREAD)) then
+     deallocate(IXPREAD)
+     if (get_iprint() >=8) then
+        write(UOUT,'(/,2x,a)') 'EndGMSMod: GMS specific array IXPREAD deallocated.'
+     endif
    endif
 
    return
-
 end subroutine EndGMSMod
 
 
@@ -165,14 +172,11 @@ subroutine alloc_VINF_arrays
 
 end subroutine alloc_VINF_arrays
 
-
-!>  read GMS stuff
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitReadGMS
 !--------------------------------------------------------------------------
 !
-!
-!       read either Gamess integral files; or VINF file when present
-!
+!   read either Gamess integral files; or VINF file when present
 !
 !--------------------------------------------------------------------------
    implicit none
@@ -409,9 +413,11 @@ implicit none
 
 end subroutine InitReadVINF
 
-!> print allocated data read from GAMESS/DIRAC files
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_gms_data
-!----------------------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------------------------
+!
+!> print allocated data read from GAMESS/DIRAC files
 !
 !  Prints  SpinOfOrb, OccGMSRef, IrrepOrb, IrpLabOrb, OrbType, OrbSpace, OrbEnergy, OrbCoeff, 
 !
@@ -419,7 +425,7 @@ subroutine print_gms_data
 !
 !  called from both DIRAC/HSCC
 !
-!----------------------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------------------------
 integer :: i
 logical :: print_hcore_mtx = .false.
 
@@ -512,13 +518,15 @@ integer, intent(in) :: i
 end subroutine print_gms_data_line
 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine InitReadMREINT
+!----------------------------------------------------------------------------
 !
+! read data from GAMESS integral files, FileMR1EINT and FileMR2EINT
 !
-!> read data from GAMESS integral files 
-!    called from InitReadGMS when OPTION(GENINT)=T
+! called from InitReadGMS when OPTION(GENINT)=T
 !
+!----------------------------------------------------------------------------
    implicit none
 
    integer j1, j2, j3, j4, j5, j6, j7, j8, j9
