@@ -129,6 +129,14 @@ FileFHH ='Dirac_HSMRCC.FHH'
 FileFHP ='Dirac_HSMRCC.FHP'
 FileFPP ='Dirac_HSMRCC.FPP'
 
+FileTAMP = 'Dirac_HSMRCC.TAMP'
+FileTOLD  ='Dirac_HSMRCC.TOLD'
+FileTNEW  ='Dirac_HSMRCC.TNEW'
+FileHEFF  ='Dirac_HSMRCC.HEFF'
+FileCOEF  ='Dirac_HSMRCC.COEF'
+FileCNVR  ='Dirac_HSMRCC.CNVR'
+
+
 if (get_iprint() >= 5) then
  write(UOUT,'(/,4x,a,/)') '=== Output from "set_dirac_hscc_file_names" ==='
  write(UOUT,'(2x,a,i2,a,a20)') 'lu,UVINF=',UVINF,' dirac assigned  FileVINF=',FileVINF
@@ -1126,7 +1134,7 @@ subroutine OpenOtherFiles
 !       called from InitHSMRIter (source/inihsiter.F90)
 !
    implicit none
-   integer :: recl_ntsize
+   integer :: recl_ntsize, ios
 
    if (.not.Init) then
       write(UOUT,*) 'OpenOtherFiles: IOMod not initialized'
@@ -1139,8 +1147,15 @@ subroutine OpenOtherFiles
      write(UOUT,*) 'file names:',FileHEFF,FileCOEF
    endif
 
-   open(UHEFF,file=FileHEFF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
-   open(UCOEF,file=FileCOEF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN')
+   open(UHEFF,file=FileHEFF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN',iostat=ios)
+   if (ios.ne.0) then
+     call quit('error in opening FileHEFF !')
+   endif
+
+   open(UCOEF,file=FileCOEF,access='SEQUENTIAL',form='UNFORMATTED',status='UNKNOWN',iostat=ios)
+   if (ios.ne.0) then
+     call quit('error in opening FileCOEF !')
+   endif
 
 ! .. direct access files
    recl_ntsize=(4*2*(1+NTSIZE))
@@ -1150,10 +1165,9 @@ subroutine OpenOtherFiles
      recl_ntsize
    endif
 
-   open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)
-   open(UTOLD,file=FileTOLD,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)
-   open(UTAMP,file=FileTAMP,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize)
-
+   open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize,iostat=ios)
+   open(UTOLD,file=FileTOLD,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize,iostat=ios)
+   open(UTAMP,file=FileTAMP,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize,iostat=ios)
 
    if (get_iprint() >= 7) then
      call header('OpenOtherFiles: UHEFF,UCOEF,UTNEW,UTOLD,UTAMP files open.',-1)
