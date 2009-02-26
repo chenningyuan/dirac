@@ -8,11 +8,6 @@ module slater_m
 
   private
 
-  real(kind_dp), parameter :: small = 1.0d-20
-  real(kind_dp), parameter :: pi    = 3.141592653589793d0
-  real(kind_dp), parameter :: f_13  = 1.0d0/3.0d0
-  real(kind_dp), parameter :: g     = -(6.0d0/pi)**f_13
-
 contains
 
   function slater_derv(order, n, w) result(v)
@@ -39,6 +34,15 @@ contains
 !   ----------------------------------------------------------------------------
     real(kind_dp)             :: na, p, e, f
     integer                   :: i
+    real(kind_dp)             :: small
+    real(kind_dp)             :: pi   
+    real(kind_dp)             :: f_13 
+    real(kind_dp)             :: g    
+
+    small = 1.0d-20
+    pi    = 3.141592653589793d0
+    f_13  = 1.0d0/3.0d0
+    g     = -(6.0d0/pi)**f_13
 
     na = n/2.0d0
 
