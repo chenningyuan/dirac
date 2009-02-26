@@ -62,7 +62,7 @@ call unset_dirac_hscc_interface_mode
 call print_options; 
 call print_where
 
-call call_dirac_sethsmrfiles
+!call call_dirac_sethsmrfiles
 
 !call SetHSMRfiles(filename,"",12,0)
 
