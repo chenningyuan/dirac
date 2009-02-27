@@ -1007,6 +1007,7 @@ C
 #include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
@@ -1021,6 +1022,7 @@ C
       DATA BLANK2/'  '/
 C
 #include "chrnos.h"
+#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -1055,7 +1057,7 @@ C
 C     We have two rounds,
 C     first with ITIM = IPX = JTIMOP and second with ITIM = IMX
 C
-      TEST=FIRST.AND.LINEAR
+      TEST=FIRST.AND.(LINEAR.OR.(SPINFR.AND.(NZ.EQ.1)))
       IF(TEST) CALL DZERO(BMAX,NEXCNV)
       XPOMAX = D0
       IROUND = 0
@@ -1088,7 +1090,6 @@ C
               BMAX(IEXC) = DTEMP
             ENDIF
           ENDDO
-          I = ISSYM(IEXC)
         ENDDO
       ENDIF
 C
@@ -1186,6 +1187,13 @@ C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
             INDA = JXOP(2,I)
             ISSYM(IEXC) = IBEIG(INDA) + IFAC*IBEIG(INDI)
           ENDDO
+        ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+          DO IEXC = 1,NEXCNV
+            I = ISSYM(IEXC)
+            INDI = JXOP(1,I)
+            INDA = JXOP(2,I)
+            ISSYM(IEXC) = IBTXOR(IBEIG(INDA),IBEIG(INDI))
+          ENDDO
         ENDIF
       ENDIF      
 C
@@ -1207,12 +1215,17 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
 #include "pgroup.h"
+#include "dcbham.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
+#include "symmet.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
@@ -1225,6 +1238,7 @@ C
      &          WORK(*)
       DATA TTYP /'T-','T0','T+'/
       DATA SYMLAB/'     '/
+#include "ibtfun.h"
 C
       IF(ORBXPP) THEN
         NI = 0
@@ -1262,6 +1276,7 @@ C
         ENDIF
         DO IBF = 1,NBF
           ISYM = JFSYM(IBF,IOPSY)
+          IREP = ISYM-1
           IF (JSYMTEST .GT. 0) THEN
              IF (ISYM.NE.JSYMTEST) GO TO 500
           END IF
@@ -1270,7 +1285,7 @@ C
           IF (KEXCNV(ISYM).GT.0) THEN
              CALL PRSYMB(LUPRI,'=',80,0)
              WRITE(LUPRI,'(/A,I2,A,A3/)')
-     &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(ISYM-1)
+     &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(IREP)
           END IF
           DO I = 1,KEXCNV(ISYM)
              CALL PRSYMB(LUPRI,'-',80,0)
@@ -1288,6 +1303,25 @@ C
                WRITE(SYMLAB(1:3),'(I3)') ABS(ISSYM(I,ISYM))/2
                WRITE(LUPRI,'(0P,A17,A5,F30.4,A)')
      &           ' Linear symmetry:',SYMLAB,
+     &            OMEGA(I,ISYM)*XTEV,' eV'
+             ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+               ISPACE = ISSYM(I,ISYM)
+               ISPIN = IBTXOR(ISPACE,IREP)
+               WRITE(SYMLAB(3:5),'(A3)') REP(ISPACE)
+               IF(ISPIN.EQ.0) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'S0'
+               ELSEIF(ISPIN.EQ.ISYMAX(3,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Tz'
+               ELSEIF(ISPIN.EQ.ISYMAX(2,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Ty'
+               ELSEIF(ISPIN.EQ.ISYMAX(1,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Tx'
+               ELSE
+                 WRITE(6,*)
+     &            'ERROR: Spin-space symmetry failed',ISPIN,ISPACE
+               ENDIF
+               WRITE(LUPRI,'(0P,A17,A5,F30.4,A)')
+     &           ' Nonrel. sym.:   ',SYMLAB,
      &            OMEGA(I,ISYM)*XTEV,' eV'
              ELSE
                WRITE(LUPRI,'(0P,22X,F30.4,A)')
