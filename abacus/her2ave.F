@@ -152,8 +152,7 @@ C
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 CMI  define calculation of SO contributions
-      DOQUAT = .NOT. (SPINFR .OR. LEVYLE)
-C     DOQUAT = .TRUE.
+      DOQUAT = .NOT.SPINFR
 C
       CALL DZERO(DINTMAX,3) 
       DV = .NOT. NODV
