@@ -175,7 +175,7 @@ subroutine read_moltra_files
  use Vectors
  use GMSMod
  use VINFMod
- use Dirac_HSMRCC
+! use Dirac_HSMRCC
 
 #include "implicit.h"
 #include "priunit.h"
