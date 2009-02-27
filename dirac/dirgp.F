@@ -3228,7 +3228,7 @@ C
         CALL QSYMANA(CMO2,NTBAS(0),NORBT,NBF,IBUF)
         DO IFRP = 1,NFSYM
           IF(NORB(IFRP).NE.NBF(IFRP)) THEN
-            WRITE(LUPRI,'()')
+            WRITE(LUPRI, *)
      &        '*** ERROR: ACMOIN Fermion ircop:',IFRP,
      &        '     Expected : ',NORB(IFRP),
      &        '     Found    : ',NBF(IFRP)
