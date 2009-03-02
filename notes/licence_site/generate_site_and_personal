@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cat head_personal.tex licence.tex > personal.tex
+cat head_site.tex     licence.tex > site.tex
+
+exit 0
