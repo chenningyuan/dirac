@@ -1964,7 +1964,7 @@ get_f90_flags(){
       F_profile="" # please add
       ;;
     ifort)
-      opt="-g -O3 -ip -w -assume byterecl"
+      opt="-g -O3 -ip -w -assume byterecl -diag-disable vec"
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
