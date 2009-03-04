@@ -1920,7 +1920,7 @@ get_f90_flags(){
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
-      F_check_flags="-Wuninitialized" # please add more
+      F_check_flags="-Wuninitialized -Wunreachable-code -Wunused" # please add more
       F_profile="" # please add
       ;;
     gfortran*)
