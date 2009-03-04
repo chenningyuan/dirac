@@ -1071,6 +1071,7 @@ C
 C
       RETURN
 C
+!radovan: this is unreachable!
  9000 WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open input file'
       CALL QUIT('*** ERROR (HERINP) unable to open input file (unit 5)')
       END

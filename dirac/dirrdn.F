@@ -3347,7 +3347,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -6804,6 +6804,7 @@ C
       ELSE
         GOTO 930
       END IF
+!radovan: this command is unreachable
       REWIND (LUCMD,IOSTAT=IOS)
 
  940  CONTINUE

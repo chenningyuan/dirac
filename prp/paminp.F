@@ -1491,6 +1491,7 @@ C
 C
  1000 CONTINUE
  1010 CONTINUE
+!radovan: rest of the routine is unreachable
       WRITE (LUPRI,'(/A/2A/2A)')
      &'INDXPL ERROR: illegal PCOMB or PDOINT',
      &'    PCOMB    = ',PCOMB,

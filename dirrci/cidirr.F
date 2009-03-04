@@ -1918,6 +1918,7 @@ C
 C
       RETURN
 C
+!radovan: unreachable
 10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
       END
 C

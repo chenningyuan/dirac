@@ -2111,6 +2111,7 @@ C
 C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       RETURN
+!radovan: rest of the routine is unreachable
  10   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
       CALL QUIT('GETGAB: Error reading GAB from AOPROPER !')

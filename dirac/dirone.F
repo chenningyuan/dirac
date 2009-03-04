@@ -1027,6 +1027,7 @@ C         ... accumulate the property ...
 
       RETURN
 C
+!radovan: the rest of the routine is unreachable
  1000 CONTINUE
 C
 C     Not able to read IDOINT information from PDOINT
@@ -1294,6 +1295,7 @@ C
         ENDDO
       ENDIF
       RETURN
+!radovan: the rest of the routine is unreachable
 C
 C     Not able to read IDOINT information from PDOINT
 C
