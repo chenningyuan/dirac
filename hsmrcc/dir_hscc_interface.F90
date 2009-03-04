@@ -84,7 +84,7 @@ CHARACTER:: PROMPT*1=''
 CHARACTER(len=7) :: WORD, KEYWORD=''
 
 ! ... nice F90 version 
-character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSDIR','.DRYRUN', & 
+character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
                                               '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /)
 
  if (set) then
