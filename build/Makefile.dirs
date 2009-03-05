@@ -92,10 +92,19 @@ allclean:
 	@echo
 	@make -C$(BACK) clean
 
-# miro's 'external' HSMRCC stuff
+# miro's 'external' HSMRCC / HighSect FSCC stuff
 hs:
 	@make -C$(BACK) hs
 
 hs_clean:
 	@make -C$(BACK) hs_clean
+
+hsfs:
+	@make -C$(BACK) hsfs
+
+hsfs_csd:
+	@make -C$(BACK) hsfs_csd
+
+hsfs_clean:
+	@make -C$(BACK) hsfs_clean
 
