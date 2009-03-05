@@ -1890,7 +1890,7 @@ set_bit_arch(){
       g95|pgf90|ifc|ifort|pathf90)
          opt="$opt -i8"
          safe="$safe -i8" 
-         mcmodel_medium="-mcmodel=medium"
+         mcmodel_medium="-mcmodel=medium -intel-shared" # mi: check if it is for all these compilers !
       ;;
 #
 #   ... take care of gfortran, gfortran-4.2, gfortran-4.3 etc...
