@@ -1,1 +1,0 @@
-/home/miro/qch_software/development/svn_dirac/hscc_devel/dirac_hscc_modif/gfortran_gcc_noopt_ownlibs_ILP64/trunk/build/Makefile.dirs
