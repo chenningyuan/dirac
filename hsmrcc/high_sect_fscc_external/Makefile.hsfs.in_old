@@ -1,0 +1,49 @@
+#
+#
+#
+
+# relative position of files
+srcdir=hsmrcc/high_sect_fscc_external
+
+hsfs_csd=$(srcdir)/bin/csd.x
+hsfs_csu=$(srcdir)/bin/csu.x
+#hsfs_chu=$(srcdir)/bin/chu.x
+
+all_hsfs_execs=$(hsfs_csd) $(hsfs_csu) $(hsfs_chu)
+hsfs_execs=$(all_hsfs_execs)
+
+## default - all executables ...
+hsfs: $(hsfs_execs) $(OBJS)
+
+hsfs_csd : $(hsfs_csd)
+hsfs_csu : $(hsfs_csu)
+hsfs_chu : $(hsfs_chu)
+
+#
+# need for AMD64 when static data exceed 2GB
+#
+
+$(srcdir)/ccsd.o : $(srcdir)/ccsd.F
+	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir)/ccsd.o  $(srcdir)/ccsd.F
+	@echo "ccsd.F compiled..."
+
+
+$(hsfs_csd) : $(srcdir)/csd.o 
+	$(LD) -o $@ $(srcdir)/csd.o $(OBJ) $(LIBS)
+	@echo -e "exec ready" 
+
+$(hsfs_csu) : $(srcdir)/csu.o 
+	$(LD) -o $@ $(srcdir)/csu.o $(OBJ) $(LIBS)
+	@echo -e "..." 
+
+$(hsfs_chu) : $(srcdir)/chu.o 
+	$(LD) -o $@ $(srcdir)/chu.o $(OBJ) $(LIBS)
+	@echo -e "..." 
+
+
+# cleaning #
+hsfs_clean :
+	@rm -f $(srcdir)/*.o
+	@rm -f $(srcdir)/bin/*.x
+	@echo "cleaning of hsfs directory done"
+
