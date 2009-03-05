@@ -303,7 +303,7 @@
           INTEGER,INTENT(IN) :: filenum,linelen
           TYPE(basistype)    :: bas
           REAL,TARGET,ALLOCATABLE,SAVE :: FAM(:)
-          INTEGER               :: i
+          INTEGER               :: i,ios
 #include "priunit.h"
 
 ! JHS test, iqm needs to be included as well!
