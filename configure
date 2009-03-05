@@ -53,6 +53,7 @@ doprofile=0 # or 1 if "--profile" is in the parameter list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
 dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
+mcmodel_medium="" # filled later
 LIB="" # initialize, because it's used as parameter in the list
 SRC_DIR=`pwd`
 dir_list="/lib /usr/lib /usr/local/lib /usr/lib64 /sw/lib"
@@ -1888,12 +1889,16 @@ set_bit_arch(){
 #
       g95|pgf90|ifc|ifort|pathf90)
          opt="$opt -i8"
-         safe="$safe -i8" ;;
+         safe="$safe -i8" 
+         mcmodel_medium="-mcmodel=medium"
+      ;;
 #
 #   ... take care of gfortran, gfortran-4.2, gfortran-4.3 etc...
       gfortran-*|gfortran)
          opt="$opt -fdefault-integer-8"
-         safe="$safe -fdefault-integer-8" ;;
+         safe="$safe -fdefault-integer-8"
+         mcmodel_medium="-mcmodel=medium"
+      ;;
 #
 #   .... take care of Lahey fortran
       lfc)
@@ -2513,6 +2518,9 @@ CC =$CC_COMP
 
 # Flag mainly for separate no-Fortran-main function executables build of DIRAC generated objects
 NO_FORTRAN_MAIN=$noformain
+
+# Fortran flag for the medium memory model (needed for some x86_64)
+MCMODEL_MEDIUM=$mcmodel_medium
 EOF
 
 if [ "$par" = "yes" ]; then

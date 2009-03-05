@@ -8,10 +8,15 @@ aoresponse/.*
 visual/.*
 cdft/.*
 hsmrcc/.*
+hsmrcc/interface/.*
 hsmrcc/hsmrcc_external/.*
 hsmrcc/hsmrcc_external/source/.*
 hsmrcc/hsmrcc_external/modules/.*
 hsmrcc/second_quant/.*
+hsmrcc/high_sect_fscc_external/.*
+hsmrcc/high_sect_fscc_external/csd.F
+hsmrcc/high_sect_fscc_external/csu.F
+hsmrcc/high_sect_fscc_external/chu.F
 argosecp/.*
 cap/.*
 dft/fun-pw92.c

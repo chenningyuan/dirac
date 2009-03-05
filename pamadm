@@ -39,6 +39,7 @@ usage()
    echo '     -aoresponse      : Include AO response module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
+   echo '     -hsfs            : Include higher external Higher sector FSCC codes together with objects'
    echo '     -qdots           : Include Quantum Dots functionality (artificial atom)'
    echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
    echo '     -amfi            : Include the AMFI functionality into DIRAC'
@@ -302,6 +303,16 @@ setup()
          cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
          (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
          echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc"
+   fi
+   #
+   #   
+   #
+   if [ -n "$HSFSMOD" ]; then
+         HSFSFLG='-DMOD_HSFS'
+         HSFSTAR=1
+         cp hsmrcc/high_sect_fscc_external/Makefile.hsfs.in  hsmrcc/high_sect_fscc_external/Makefile.hsfs || \
+         (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
+         echo " - HS FS CC mode active"
    fi
    #
    #  Dirac Quantum Dots modification
@@ -669,19 +680,25 @@ if [ -n "$AMFIFLG" ]; then
    rmline build/dontbuild "amfi/\.\*"
 fi
 if [ -n "$HSCCFLG" ]; then
-   dirs="$dirs hsmrcc"
+   dirs="$dirs hsmrcc/interface"
  #  dirs="$dirs hsmrcc/second_quant"
-# miro: added Sham's HSMRCC modules to be included
+
+# miro: added Sham's HSMRCC modules 
    dirs="$dirs hsmrcc/hsmrcc_external"
    dirs="$dirs hsmrcc/hsmrcc_external/modules"
    dirs="$dirs hsmrcc/hsmrcc_external/source"
    rmline build/dontbuild "hsmrcc/\.\*"
+   rmline build/dontbuild "hsmrcc/interface/\.\*"
   # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
   # rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
    rmline build/dontbuild "hsmrcc/hsmrcc_external/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/source/\.\*"
-   #rmline build/dontbuild "hsmrcc/hsmrcc_external/source/hsmrmain.c"
+fi
+if [ -n "$HSFSFLG" ]; then
+   dirs="$dirs hsmrcc/high_sect_fscc_external"
+   rmline build/dontbuild "hsmrcc/\.\*"
+   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/\.\*"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
@@ -834,6 +851,9 @@ while [ -n "$1" ]; do
       -hscc)
          HSCCMOD=1
          OOFMOD=1
+         ;;
+      -hsfs)
+         HSFSMOD=1
          ;;
       -qdots)
          QDOTSMOD=1
