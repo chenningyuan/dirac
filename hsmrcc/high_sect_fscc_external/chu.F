@@ -492,7 +492,8 @@ c ******************************************
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("vu0 ","thu ")
-      call fold("thu ","thuf")
+!      call fold("thu ","thuf")
+      call fold_ccsd("thu ","thuf")
       call diveps("thu ")
       call cmult ("thu ",-1.d0,"thu ")
       if (iopt(17).ne.0) then
@@ -714,7 +715,8 @@ c ******************************************************
       call reorder("tb15","s2  ",1342,5,1)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call sqr("tnew","s2  ")
-      call fold("tnew","thuf")
+!     call fold("tnew","thuf")
+      call fold_ccsd("tnew","thuf")
       call dfoldu
       call diveps("tnew")
       call cmult("tnew",-1.d0,"tnew")
@@ -988,7 +990,8 @@ c *************************************************
       call mult("thvf","ta3 ","s2  ",131)
 c --------------
       call mult("thuf","t1vr","s3  ",311)
-      call unfold("s3  ","s1  ",3)
+!     call unfold("s3  ","s1  ",3)
+      call unfold_ccsd("s3  ","s1  ",3)
       call add("s2  ",1.d0,"s1  ",1.d0,"s2  ")
 c --------------
       call mult("thuf","tm4 ","s3  ",222)

@@ -267,6 +267,7 @@ C  *******************************************************************
       return
       end
 
+! renamed due to name overlaping with relccsd routine
 !      subroutine fold(name2,namef)
       subroutine fold_ccsd(name2,namef)
       implicit real*8 (a-h,o-z)
