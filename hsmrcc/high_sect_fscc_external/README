@@ -32,7 +32,7 @@ III. Files needed for compilation:
 for all programs - c??.f csdsub.f
 for csv-z, chv-z  - also eneru.f (look at the Makefile)
 
-
+ Miro: all compilation was moved under DIRAC
 
 IV. Formatted 'input' file (c**.in):
 line 1 - title
@@ -273,7 +273,7 @@ c    *** Be carefull!!! ***
 
 ========================================
 IX. "param.f" file  parameters description: 
- renamed to "param_ccsd.h"
+miro:  renamed to "param_ccsd.h"
 ========================================
 
 
