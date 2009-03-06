@@ -5,28 +5,26 @@
 # relative position of files
 srcdir_hsfs=hsmrcc/high_sect_fscc_external
 
+# list of executables ...
 hsfs_csd=$(srcdir_hsfs)/bin/csd.x
 hsfs_csu=$(srcdir_hsfs)/bin/csu.x
+hsfs_csv=$(srcdir_hsfs)/bin/csv.x
+hsfs_csw=$(srcdir_hsfs)/bin/csw.x
+hsfs_csx=$(srcdir_hsfs)/bin/csx.x
+hsfs_csy=$(srcdir_hsfs)/bin/csy.x
 hsfs_chu=$(srcdir_hsfs)/bin/chu.x
 
-all_hsfs_execs=$(hsfs_csd) $(hsfs_csu) $(hsfs_chu)
-hsfs_execs=$(all_hsfs_execs)
+## default executables to be compiled (more to be added)...
+hsfs: hsfs_csd hsfs_csu 
 
-## default - all executables ...
-hsfs: $(hsfs_execs) $(OBJS)
-
-hsfs_csd : $(hsfs_csd)
-hsfs_csu : $(hsfs_csu)
-hsfs_chu : $(hsfs_chu)
-
-### some (or all if LIB empty) routines needs to be picked from here
+### some routines (or all if LIB empty) need to be picked from here
 HSFS_LIBS=pdpack/gpblas.o pdpack/gp_dlapack.o pdpack/dsp.o pdpack/eispack.o pdpack/dge.o \
           pdpack/dlamch.o pdpack/gp_auxlapack.o
 
 #
 # need for AMD64 when static data exceed 2GB
 #
-#  ccsd.o could be among DIRAC objects/dependencies for gfortran, however, for ifort needs
+#  ccsd.o could be among DIRAC objects/dependencies for gfortran, however, for ifort/gcc it must
 # to be completely separated from DIRAC objects...
 # 
 
@@ -34,7 +32,7 @@ $(srcdir_hsfs)/ccsd.o : $(srcdir_hsfs)/ccsd.F
 	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/ccsd.o  $(srcdir_hsfs)/ccsd.F
 	@echo "ccsd.F compiled..."
 
-# DIRAC & internal ccsd.o dependecies
+# manually added DIRAC & internal ccsd.o dependecies
 $(srcdir_hsfs)/ccsd.o : $(srcdir_hsfs)/ccsd.F $(srcdir_hsfs)/param_ccsd.h \
                         $(srcdir_hsfs)/mclock.c include/priunit.h include/implicit.h \
                         $(srcdir_hsfs)/cfiles.h
@@ -44,30 +42,51 @@ $(srcdir_hsfs)/ccsd.o : $(srcdir_hsfs)/ccsd.F $(srcdir_hsfs)/param_ccsd.h \
 # 'relocation truncated to fit..' error 
 #
 
-$(hsfs_csd) : $(srcdir_hsfs)/csd.o $(OBJ)
+hsfs_csd : $(srcdir_hsfs)/csd.o $(OBJ)
 	$(F77) -DSTANDALONE_HSFS $(MCMODEL_MEDIUM)  $(F77FLAGS) -c -o $(srcdir_hsfs)/csd.o  $(srcdir_hsfs)/csd.F
 	$(LD) $(MCMODEL_MEDIUM)  -o $@  $(srcdir_hsfs)/csd.o $(srcdir_hsfs)/ccsd.o $(LIBS) $(HSFS_LIBS)
 	@echo -e "csd.x ready" 
-
 $(srcdir_hsfs)/csd.o : $(srcdir_hsfs)/csd.F $(srcdir_hsfs)/ccsd.o
 
-
-$(hsfs_csu) : $(srcdir_hsfs)/csu.o $(OBJ)
-	$(F77) -DSTANDALONE_HSFS $(MCMODEL_MEDIUM)  $(F77FLAGS) -c -o $(srcdir_hsfs)/csu.o $(srcdir_hsfs)/csu.F
+hsfs_csu : $(srcdir_hsfs)/csu.o $(OBJ)
+	$(F77) -DSTANDALONE_HSFS $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/csu.o $(srcdir_hsfs)/csu.F
 	$(LD) $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/csu.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
 	@echo -e "csu.x ready" 
-
 $(srcdir_hsfs)/csu.o : $(srcdir_hsfs)/csu.F $(srcdir_hsfs)/ccsd.o
 
+hsfs_csv : $(srcdir_hsfs)/csv.o $(OBJ)
+	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/csv.o $(srcdir_hsfs)/csv.F
+	$(LD)  $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/csv.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
+	@echo -e "csv.x ready" 
+$(srcdir_hsfs)/csv.o : $(srcdir_hsfs)/csv.F $(srcdir_hsfs)/ccsd.o
 
-$(hsfs_chu) : $(srcdir_hsfs)/chu.F $(OBJ)
+hsfs_csw : $(srcdir_hsfs)/csw.o $(OBJ)
+	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/csw.o $(srcdir_hsfs)/csw.F
+	$(LD) $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/csw.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
+	@echo -e "csw.x ready" 
+$(srcdir_hsfs)/csw.o : $(srcdir_hsfs)/csw.F $(srcdir_hsfs)/ccsd.o
+
+hsfs_csx : $(srcdir_hsfs)/csx.F $(srcdir_hsfs)/ccsd.o
+	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/csx.o $(srcdir_hsfs)/csx.F
+	$(LD) $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/csx.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
+	@echo -e "csx.x ready" 
+$(srcdir_hsfs)/csx.o : $(srcdir_hsfs)/csx.F $(srcdir_hsfs)/ccsd.o
+
+hsfs_csy : $(srcdir_hsfs)/csy.F $(srcdir_hsfs)/ccsd.o
+	$(F77) $(MCMODEL_MEDIUM) $(F77FLAGS) -c -o $(srcdir_hsfs)/csy.o $(srcdir_hsfs)/csy.F
+	$(LD) $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/csy.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
+	@echo -e "csy.x ready" 
+$(srcdir_hsfs)/csy.o : $(srcdir_hsfs)/csy.F $(srcdir_hsfs)/ccsd.o
+
+hsfs_chu : $(srcdir_hsfs)/chu.F $(OBJ)
 	$(F77) -DSTANDALONE_HSFS $(MCMODEL_MEDIUM)  $(F77FLAGS) -c -o $(srcdir_hsfs)/chu.o $(srcdir_hsfs)/chu.F
 	$(LD) $(MCMODEL_MEDIUM) -o $@ $(srcdir_hsfs)/chu.o $(srcdir_hsfs)/ccsd.o $(LIBS)  $(HSFS_LIBS)
 	@echo -e "chu.x ready" 
-
 $(srcdir_hsfs)/chu.o : $(srcdir_hsfs)/chu.F $(srcdir_hsfs)/ccsd.o
 
+############
 # cleaning #
+############
 hsfs_clean :
 	@rm -f $(srcdir_hsfs)/*.o
 	@rm -f $(srcdir_hsfs)/bin/*.x
