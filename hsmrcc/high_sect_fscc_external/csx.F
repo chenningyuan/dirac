@@ -1,13 +1,16 @@
       program csx
       implicit real*8 (a-h,o-z)
       include 'parameters.f'
+
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /csdtime/ csdstim,csdltim
+
       common // gen(nbig)
       common /i/ igen(nbig)
+
       character*256 filenm,filenm2,filenm3,filenm6,
      1filenm51,filenm52,filenm54,filenm59,filenm61,filenm23
       real*4 cputime

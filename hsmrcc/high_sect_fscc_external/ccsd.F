@@ -7,9 +7,14 @@ c  zero out file (create if does not exist)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cij1.h"
+!      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       integer indx_nstrt ! mi add
 
       call tmplt(iii,iiv,name,ntape)
@@ -31,11 +36,16 @@ c  zero out file (create if does not exist)
       
 #include "param_ccsd.h"
 
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "cfiles.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       call tmplt6 (iii,iiv,name,ntape)
       nsize=ije1(nij1)
 
@@ -43,16 +53,23 @@ c  zero out file (create if does not exist)
       call prt6 (name,name,2)
       return
       end
+
       subroutine clear8 (name,iii,iiv)
       implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"
 
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cfiles.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       call tmplt8 (iii,iiv,name,ntape)
       nsize=ije1(nij1)
       call dcopy (nsize,0.d0,0,gen(nstrt(2,ntape-1)+1),1)
@@ -80,11 +97,16 @@ C  *******************************************************************
       
 #include "param_ccsd.h"
 
-      common  // gen(nbig)
-      common /i/ igen(nbig)
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "gen.h"
+
+!      common  // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "strt.h"
+!      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
       find2=0.d0
       id=ior(ishft(j1,8),j2)
       do 10 i=1,nsize1
@@ -101,11 +123,15 @@ C  *******************************************************************
       
 #include "param_ccsd.h"
 
-      common  // gen(nbig)
-      common /i/ igen(nbig)
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "gen.h"
+!      common  // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "strt.h"
+!      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
       find4=0.d0
       id=ior(ior(ishft(j1,24),ishft(j2,16)),ior(ishft(j3,8),j4))
       do 10 i=1,nsize2
@@ -122,12 +148,18 @@ C  *******************************************************************
       
 #include "param_ccsd.h"
 
-      common  // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!      common  // gen(nbig)
+!      common /i/ igen(nbig)
+
       common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
+#include "strt.h"
+!      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
+
       find6=0.d0
       id=ior(ishft(j1,16),ior(ishft(j2,8),j3))
       ind=ior(ishft(j4,16),ior(ishft(j5,8),j6))
@@ -6538,13 +6570,20 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
       dimension ia(10),ja(10),msk(5),indx(ndij),dummy(ndij),iord(10)
       data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+
       i1=iord(1)
       i2=iord(2)
       i3=iord(3)
@@ -6618,13 +6657,24 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
       common /ijtemp/ ijtmp1(ndp6)
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
       dimension ia(12),ja(12),msk(6),iord(12)
       data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
       call files_ccsd (namef,ntapef,new,2,-1,-1)
@@ -6688,11 +6738,19 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
       dimension ia(12),ja(12),msk(6),indx(ndij),dummy(ndij),iord(12)
       data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
       i1=iord(1)
@@ -6769,7 +6827,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       
 #include "param_ccsd.h"
 
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
 c  ints collected in gen, indices in itmp. at the end, arrays are
 c  sorted and expanded according to indices (in igen) generated
 c  by tmplt.
@@ -6779,11 +6839,19 @@ c  by tmplt.
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /rsp2/  nrsp2,irsp2(500)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "rsp2.h"
+!     common /rsp2/  nrsp2,irsp2(500)
+
+#include "cint.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+
       logical lrsp
       data zero / 1.d-13/
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
@@ -6930,23 +6998,34 @@ c  by tmplt.
       call prtime(name,ije(nij),0)
       return
       end
+
       subroutine selt1(iii,iiv,name,iparm)
       implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"
 
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
 
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
       common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-      common /rsp1/  nrsp1,irsp1(100)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "fock.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+
+#include "rsp1.h"
+!     common /rsp1/  nrsp1,irsp1(100)
+
       logical lrsp
       data zero / 1.d-13/
       ipack(i1,i2)=ior(ishft(i1,8),i2)
@@ -6998,13 +7077,17 @@ c  by tmplt.
       call prtime(name,ije(nij),0)
       return
       end
+
       subroutine seltyp4(iii,iiv,name,iparm)
       implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"
 
 c  this program for pppp only. integrals <ij|kl> collected, i.ge.j .
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
 c  ints collected in gen, indices in itmp. at the end, arrays are
 c  sorted and expanded according to indices (in igen) generated
 c  by tmplt.
@@ -7014,11 +7097,18 @@ c  by tmplt.
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "cint.h"
+!      common /cint/ nint,idum1,vint(ndint),iint(ndint)
+
       data zero / 1.e-13/
+
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8),i4)           )
       if ((iii.ne.3333).or.(iiv.ne.0)) then
@@ -7103,9 +7193,12 @@ c  indices not retained for pppp.
       call prtime(name,lngth,0)
       return
       end
+
       subroutine sqr3 (name)       
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+#include "prm.h"
+!     common /prm/ iperm(0:6,720)
+
       call perms (3)
       call move    (name,"s1  ")
       do 10 i=2,6  
@@ -7118,9 +7211,12 @@ c  indices not retained for pppp.
       call prtime ("sqr3",0,2)
       return
       end
+
       subroutine sqr4 (name)         
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+#include "prm.h"
+!     common /prm/ iperm(0:6,720)
+
       call perms (4)
       call move  (name,"s1  ")
       do 10 i=2,24
@@ -7134,9 +7230,11 @@ c  indices not retained for pppp.
       call prtime ("sqr4",0,2)
       return
       end
+
       subroutine sqr4l3 (name)
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+#include "prm.h"
+!      common /prm/ iperm(0:6,720)
       call perms (3)
       call move  (name,"s1  ")
       do 10 i=2,6  
@@ -7158,7 +7256,8 @@ c  indices not retained for pppp.
 
       subroutine tmplt(ii1234,j1234,name,num)
       implicit real*8 (a-h,o-z)
-      integer*4 ch1,ch2
+!     integer*4 ch1,ch2
+      integer ch1,ch2
 c   ii1234<0 - collect 1/2 file (i>j)
       
 #include "param_ccsd.h"
@@ -7169,10 +7268,16 @@ c   ii1234<0 - collect 1/2 file (i>j)
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "dat.h"
+!      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
       i1234=iabs(ii1234)
@@ -7298,11 +7403,18 @@ c   special for scratch files, which start with "s".
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
       ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
@@ -7423,12 +7535,21 @@ c   special for scratch files, which start with s
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-      common /dpd/ nir,igmt(8,8),ici(200)
+
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
+#include "dpd.h"
+!      common /dpd/ nir,igmt(8,8),ici(200)
+
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
       call parse8 (iii,i1,i2,i3,i4,i5,i6,i7,i8)
@@ -7563,12 +7684,21 @@ c   special for scratch files, which start with s
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-      common /idv/ iv(200),nvalo
+
+#include "dat.h"
+!      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
+#include "idv.h"
+!     common /idv/ iv(200),nvalo
+
       dimension icsym(200)
       ipack(i,j,k,l,m)=ior(ishft(i,16),
      1ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
@@ -7667,21 +7797,34 @@ c   special for scratch files, which start with s
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "cij1.h" ! attention, variable changed names !
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+
       common /idv/ iv(200),nvalo
+
       dimension icsym(200)
+
       ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),
      1ior(ior(ishft(k,12),ishft(l,8)),ior(ishft(m,4),n)))
+
+      nij=nij1 ! mi: from common block
+
       iii=6
       iiv=1
       call files_ccsd (name,num,new,1,iii,iiv)
       if (new.le.0) return
       nij=0
-      ije(0)=0
+!     ije(0)=0
+      ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
@@ -7724,8 +7867,10 @@ c   special for scratch files, which start with s
 90     continue
        if (nt.gt.nt00) then
         nij=nij+1
-        ije(nij)=nt-nt0
-        ij(nij)=ipack(ja,jb,jc,jd,je,jf)       
+!       ije(nij)=nt-nt0
+        ije1(nij)=nt-nt0
+!       ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
+        ij1(nij)=ipack(ja,jb,jc,jd,je,jf) 
         call ivsort (igen(nt00+1),nt-nt00)
         if (nij.gt.ndij) write (6,*) 'nij reached ',
      1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
@@ -7733,8 +7878,10 @@ c   special for scratch files, which start with s
        end if
 30    continue
       igen(nstrt(1,num-1)+1)=nij
-      call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-      call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+!     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
+      call kcopy (nij,ij1(1),igen(nstrt(1,num-1)+2))
+!     call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+      call kcopy (nij+1,ije1(0),igen(nstrt(1,num-1)+nij+2))
       igen(nstrt(1,num-1)+2*nij+3)=iii
       igen(nstrt(1,num-1)+2*nij+4)=iiv
       do 150 i=1,nt-nt0
@@ -7768,17 +7915,24 @@ c   special for scratch files, which start with s
       
 #include "param_ccsd.h"
 
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
 
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij3.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t1a file in t1sqr does not exist'
@@ -7829,11 +7983,19 @@ c
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
+#include "cij3.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+
       dimension ia(5,6),ind(12),ninds(ndij)
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,
      1          6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
@@ -7919,17 +8081,26 @@ c
       
 #include "param_ccsd.h"
 
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
 
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cij1.h"
+!      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
+#include "cij3.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+
       dimension ia(4,8),ind(16),ninds(ndij)
       data ia / 1,3,3,3,3,1,4,4,4,4,1,5,5,5,5,1, 
      1          2,6,6,6,6,2,7,7,7,7,2,8,8,8,8,2 /
@@ -8009,6 +8180,7 @@ c
       call add (namet,1.d0,name4,1.d0,namet)
       return
       end
+
       subroutine t2sqr (name2a,name2b,name4,namet,iparm) 
       implicit real*8 (a-h,o-z)
       
@@ -8020,12 +8192,21 @@ c
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cij1.h"
+!      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
+#include "cij3.h"
+!      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+
       dimension ia(3,8),ind(16),ninds(ndij)
+
       data ia / 1,1,1,2,5,5,5,2,6,6,6,2,3,3,3,4,7,7,7,4,8,8,8,4 /
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
@@ -8110,8 +8291,10 @@ c
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
       call dimx (ije(nij),ndp3,"tchng6  ")
       if (iparm.eq.2) then
         nij1=0
@@ -8163,9 +8346,13 @@ c
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
+
       call dimx (ije(nij),ndp3,"tchng8  ")
       nij1=0
       istrt=nstrt(1,ntapef-1)+2*nij+4
@@ -8189,9 +8376,11 @@ c
       call kcopy (nij+1,ije1(0),ije(0))
       return
       end
+
       subroutine tmpcng(nij,ij,ije,ntapef,nf,nt)
       implicit real*8 (a-h,o-z)
-	integer*4 ch1,ch2
+!     integer*4 ch1,ch2
+      integer ch1,ch2
 c   change nf-index grouping to nt-index grouping.
       
 #include "param_ccsd.h"
@@ -8202,8 +8391,10 @@ c   change nf-index grouping to nt-index grouping.
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
       if (nt.eq.nf) return
       if (nt.gt.nf) go to 310
       nij1=0
@@ -8239,9 +8430,13 @@ c   change nf-index grouping to nt-index grouping.
       call dimx(nij,ndij,"tmpcng")
       return
       end
+
       function v1det (ja,jb)
       implicit real*8 (a-h,o-z)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       v1det=0.d0
       j1=(ja+1)/2
       j2=(jb+1)/2
@@ -8267,10 +8462,15 @@ c   change nf-index grouping to nt-index grouping.
       end if
       return
       end
+
       function v3det (ja,jb,jc,jd,je,jf)                   
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "prm.h"
+!     common /prm/ iperm(0:6,720)
+
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       dimension jj1(6),ii(3)
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2
@@ -8334,10 +8534,14 @@ c   change nf-index grouping to nt-index grouping.
 10    continue
       return
       end 
+
       function v5det (ja,jb,jc,jd,je,jf,jg,jh,ji,jj)
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "prm.h"
+!      common /prm/ iperm(0:6,720)
+#include "dat.h"
+!      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       dimension jj1(10),ii(5)
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2
@@ -8376,9 +8580,11 @@ c   change nf-index grouping to nt-index grouping.
       end if
       return
       end
+
       function v6det (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+#include "prm.h"
+!      common /prm/ iperm(0:6,720)
       dimension jj1(12),ii(6)
       jj1(1)=(ja+1)/2 
       jj1(2)=(jb+1)/2 
