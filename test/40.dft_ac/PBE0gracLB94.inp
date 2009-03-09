@@ -11,7 +11,7 @@
 .ALDA
 .GRAC
 LB94
-0.5 40.0 0.79248 1.0D-6
+0.5 40.0 0.79248 1.0D-2
 .ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS
