@@ -1274,7 +1274,7 @@ C
 C
 C     Prepare for screening
 C
-      IF(SCRTRA.GT.D0) THEN
+      IF(SCRTRA .GT. 0.0d0) THEN
         CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
      &              WORK(KQ(1,1)),WORK(KQ(1,2)),
      &              WORK(KQ(1,3)),WORK(KQ(1,4)),
