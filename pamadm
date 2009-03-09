@@ -96,8 +96,6 @@ setup()
    #
    if [ -n "$DFTMOD" ]; then
       DFTFLG='-DMOD_DFT'
-      DFTOBJ='$(DFTOBJS) $(DFTOBJS_C)'
-      DFTMAK=DFT_OBJ
       DFTTAR=1
       echo " - DFT module (DFT)"
    fi
@@ -106,8 +104,6 @@ setup()
    #
    if [ -n "$ESRMOD" ]; then
       ESRFLG='-DMOD_ESR'
-      ESROBJ='$(ESROBJS)'
-      ESRMAK=ESR_OBJ
       ESRTAR=1
       echo " - ESR property module (ESR)"
    fi
@@ -116,8 +112,6 @@ setup()
    #
    if [ -n "$XPPMOD" ]; then
       XPPFLG='-DMOD_XPP -DMOD_STEX'
-      XPPOBJ='$(XPPOBJS)'
-      XPPMAK=XPP_OBJ
       XPPTAR=1
       echo " - Excitation energy module (XPP and STEX)"
    fi
@@ -126,10 +120,6 @@ setup()
    #
    if [ -n "$KRMCMOD" ]; then
       KRMCFLG='-DMOD_KRMC'
-      KRMCOBJ='$(KRMC_FOBJS) $(KRMC_COBJS)'
-      KRMCMAK=KRMC_OBJ
-      LUCIARELOBJ='$(LUCIARELOBJS)'
-      LUCIARELMAK=LUCIAREL_OBJ
       KRMCTAR=1
       echo " - KR-MCSCF and LUCIAREL modules (KRMC)"
    fi
@@ -145,8 +135,6 @@ setup()
    #
    if [ -n "$ERIMOD" ]; then
       ERIFLG='-DMOD_ERI'
-      ERIOBJ='$(ERIOBJS)'
-      ERIMAK=ERI_OBJ
       ERITAR=1
       echo " - ERI two-electron integral module"
    fi
@@ -155,8 +143,6 @@ setup()
    #
    if [ -n "$DNFMOD" ]; then
       DNFFLG='-DMOD_DNF'
-      DNFOBJ='$(DNFOBJS)'
-      DNFMAK=DNF_OBJ
       DNFTAR=1
       echo " - DNF density fitting module"
    fi
@@ -165,8 +151,6 @@ setup()
    #
    if [ -n "$FMMMOD" ]; then
       FMMFLG='-DMOD_FMM'
-      FMMOBJ='$(FMMOBJS)'
-      FMMMAK=FMM_OBJ
       FMMTAR=1
       echo " - Fast Multipole Method (fmm) module"
    fi
@@ -176,8 +160,6 @@ setup()
    if [ -n "$EMBMOD" ]; then
       if [ -n "$DFTMOD" ]; then
          EMBFLG='-DMOD_EMB'
-         EMBOBJ='$(EMBOBJS)'
-         EMBMAK=EMB_OBJ
          EMBTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
@@ -190,8 +172,6 @@ setup()
    #
    if [ -n "$XMLMOD" ]; then
       XMLFLG='-DMOD_XML'
-      XMLOBJ='$(XMLOBJS)'
-      XMLMAK=XML_OBJ
       XMLTAR=1
       F90MODS=ALL_F90MODS
       echo " - XML input/output module (with Fortran90/95 modules)"
@@ -201,8 +181,6 @@ setup()
    #
    if [ -n "$ADCMOD" ]; then
       ADCFLG='-DMOD_ADC'
-      ADCOBJ='$(ADCOBJS)'
-      ADCMAK=ADC_OBJ
       ADCTAR=1
       echo " - ADC electron propagator module"
    fi
@@ -211,8 +189,6 @@ setup()
    #
    if [ -n "$ECPMOD" ]; then
       ECPFLG='-DMOD_ECP'
-      ECPOBJ='$(ECPOBJS) $(ECPOBJS_C)'
-      ECPMAK=ECP_OBJ
       ECPTAR=1
       echo " - ECP argos module"
    fi
@@ -222,8 +198,6 @@ setup()
    if [ -n "$CDFTMOD" ]; then
       if [ -n "$DFTMOD" ]; then
          CDFTFLG='-DMOD_CDFT'
-         CDFTOBJ='$(CDFTOBJS)'
-         CDFTMAK=CDFT_OBJ
          CDFTTAR=1
          echo " - SDFT/CDFT module"
       else
@@ -235,8 +209,6 @@ setup()
    #
    if [ -n "$VISUALMOD" ]; then
       VISUALFLG='-DMOD_VISUAL'
-      VISUALOBJ='$(VISUALOBJS)'
-      VISUALMAK=VISUAL_OBJ
       VISUALTAR=1
       F90MODS=ALL_F90MODS
       echo " - visualization module"
@@ -246,8 +218,6 @@ setup()
    #
    if [ -n "$AORESPONSEMOD" ]; then
       AORESPONSEFLG='-DMOD_AORESPONSE'
-      AORESPONSEOBJ='$(AORESPONSEOBJS)'
-      AORESPONSEMAK=AORESPONSE_OBJ
       AORESPONSETAR=1
       F90MODS=ALL_F90MODS
       echo " - AO response module"
@@ -257,8 +227,6 @@ setup()
    #
    if [ -n "$CAPMOD" ]; then
          CAPFLG='-DMOD_CAP'
-         CAPOBJ='$(CAPOBJS)'
-         CAPMAK=CAP_OBJ
          CAPTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - CAP module"
@@ -296,8 +264,6 @@ setup()
    #
    if [ -n "$HSCCMOD" ]; then
          HSCCFLG='-DMOD_HSCC'
-         HSCCOBJ='$(HSCCOBJS)'
-         HSCCMAK=HSCC_OBJ
          HSCCTAR=1
 	 F90MODS=ALL_F90MODS
          cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
@@ -319,8 +285,6 @@ setup()
    #
    if [ -n "$QDOTSMOD" ]; then
          QDOTSFLG='-DMOD_QDOTS'
-        # QDOTSOBJ='$(QDOTSBJS)'
-        # QDOTSMAK=QDOTS_OBJ
         # QDOTSTAR=1
 	 F90MODS=ALL_F90MODS
          echo " - Quantum Dots (artificial atom) enabled"
@@ -330,8 +294,6 @@ setup()
    #
    if [ -n "$OOFMOD" ]; then
          OOF_FLG='-DMOD_OOF'
-         OOF_OBJ='$(OOF_OBJS)'
-         OOF_MAK=OOF_OBJ
          OOF_TAR=1
 	 F90MODS=ALL_F90MODS
          echo " - OOF module"
