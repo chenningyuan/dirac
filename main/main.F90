@@ -132,7 +132,7 @@ program dirprg
      print '(a)', '*****************************************************'
   endif
 #ifdef VAR_MPI
-  if (parcal) then
+  if ( iparcal .eq. 1 ) then
     call sync_nodes(idummy,1)
   endif
 #endif
@@ -143,7 +143,7 @@ program dirprg
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
-  if (parcal) call mpixfinalize()
+  if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
 
 #ifdef MOD_HSCC 
