@@ -2947,15 +2947,15 @@ C     END IF
 C
       USE_EX_IDIA = .FALSE.
 C
-      IF( MYPROC .eq. MASTER )THEN
-        IF( NEWCOMM_PROC .eq. NMPROC .and. CKRCIONLY )THEN
-          IDIA_SIZE = 0
-          CALL MPI_FILE_GET_SIZE(IDIA,IDIA_SIZE,IERR)
-csk          WRITE(LUWRT,*) ' DIAPAR.1 found with size (bytes):',IDIA_SIZE
-          IF( IDIA_SIZE .gt. 0 ) USE_EX_IDIA = .TRUE.
-        END IF
-      END IF
-      CALL MPI_BCAST(USE_EX_IDIA,1,MPI_LOGICAL,0,MYNEW_COMM,IERR)
+CSK   IF( MYPROC .eq. MASTER )THEN
+CSK     IF( NEWCOMM_PROC .eq. NMPROC .and. CKRCIONLY )THEN
+CSK       IDIA_SIZE = 0
+CSK       CALL MPI_FILE_GET_SIZE(IDIA,IDIA_SIZE,IERR)
+CSK          WRITE(LUWRT,*) ' DIAPAR.1 found with size (bytes):',IDIA_SIZE
+CSK       IF( IDIA_SIZE .gt. 0 ) USE_EX_IDIA = .TRUE.
+CSK     END IF
+CSK   END IF
+CSK   CALL MPI_BCAST(USE_EX_IDIA,1,MPI_LOGICAL,0,MYNEW_COMM,IERR)
 C
 csk      IF( USE_EX_IDIA )THEN
 csk       WRITE(LUWRT,*) ' existing DIAPAR.1 found which may be reused.'
