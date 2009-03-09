@@ -1,5 +1,5 @@
 !
-! common blocks - huge arrays 
+!   common blocks - huge arrays  !
 !
       real*8   gen(nbig)                              
       integer igen(nbig)     

@@ -7,17 +7,32 @@
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "gen.h"
+!      common // gen(nbig)
+!      common /i/ igen(nbig)
+
+#include "cfiles.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+
+#include "cint.h"
+!      common /cint/ nint,idum1,vint(ndint),iint(ndint)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+
       common /csdtime/ csdstim,csdltim
+
       common /dbg/ iter,idebug
+
       character*256 filenm,filenm51,filenm6,filenm20
+
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))
@@ -27,10 +42,13 @@ c     iopt(5) - print only elements gt 10**(-iopt(5))
 c     iopt(6) - start avrg.
 c     iopt(8) - fock.
 c     iopt(10) .ne.0 - do not save pppp.
+
       real*4 cputime
       filenm(1:1)=' '
+
       call getenv('input',filenm)
       if (filenm(1:1).eq.' ') filenm='input'
+
       open(5,file=filenm)
       filenm6(1:1)=' '
       call getenv('output',filenm6)
@@ -48,25 +66,34 @@ c     iopt(10) .ne.0 - do not save pppp.
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
+
       write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
+
       csdstim = cputime(real(0.))
       csdltim = csdstim
       nflcur=0
       Nstrt(1,0)=0
       nstrt(2,0)=0
+
+! ... readin with ccsd.F routines
       call rdin
       call rdsym
+
       if (iopt(10).eq.0) then
         filenm(1:1)=' '
         call getenv('tape9',filenm)
         if (filenm(1:1).eq.' ') filenm='tape9'
         open(9,file=filenm,form='UNFORMATTED')
       endif
+
       convrg = 10.d0**(-iopt(3))
       write (6,'('' max # of iter='',i3,''. convrg='',e10.2)') 
      1 iopt(2),convrg
+
       call prtime("rdin",0,0)
+
       call ordv
+
       iter=0
       call tinit
       if (iopt(17).ne.0) then
@@ -337,19 +364,24 @@ c              hppp 2314 = vd8
 c              hppp 2134 = vd12
 c              hppp 2143 = vd14
 !-------------------------------------------------------------------------------
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "cint.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "fock.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
 c
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
-	print *,"**************************"
+      print *,"**************************"
       call seltyp   (2233,0,"hhpp",4)
       call seltyp   (2333,0,"hppp",4)
       call seltyp   (2323,0,"hphp",4)
       call seltyp   (2222,0,"hhhh",4)
       call seltyp   (2223,0,"hhhp",4)
-	  print *,"**************************"
+       print *,"**************************"
       call seltyp4  (3333,0,"pppp",4)
       call reorder  ("hhpp","va1 ",1324,4)
       call reorder  ("hhpp","va2 ",1423,4)
@@ -404,6 +436,7 @@ c calc tinit = hhpp / eps
       return
       end
 c**************************************************************
+
       subroutine ener(id)
       implicit real*8 (a-h,o-z)
 c   id=1 for rle, 0 regularly.
@@ -539,7 +572,7 @@ c ****************************************************
       call diag16
       call diag21
       call diag2
-      call diag3
+      call diag3_csd
       call dgt1p3
       call dgt1p4
       if (iopt(17).ge.4) then
@@ -932,7 +965,7 @@ c  ******************************************************
       return
       end
 c *******************************************************
-      subroutine diag3
+      subroutine diag3_csd
       implicit real*8 (a-h,o-z)
 c   incl diags 3 28
 c   diag 28

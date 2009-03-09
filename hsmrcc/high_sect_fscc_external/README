@@ -1,3 +1,9 @@
+
+
+Connection to Sham's modified Gamess program for making MO-transformed integrals.
+
+
+
 I. Fock-space cc programs:
 ==========================
 csd - closed shell      (0h,0p)-sector
@@ -16,7 +22,7 @@ chx - ionize 4nd electron  (4,0)-sector
 chy - ionize 5nd electron  (5,0)-sector
 chz - ionize 6nd electron  (6,0)-sector
 
-chp,chq - excite 1 electron (1,1) sector
+chp,chq - excite 1 electron (1,1) sector [mi: now in Gal's package]
     In (1,2) sector do cst.f then m21b.f
     In (2,1) sector for CCSD or CCSDT-1 do cht.f then m12b.f
     In (2,1) sector for CCSDT do cht.f only
@@ -32,7 +38,7 @@ III. Files needed for compilation:
 for all programs - c??.f csdsub.f
 for csv-z, chv-z  - also eneru.f (look at the Makefile)
 
- Miro: all compilation was moved under DIRAC
+Miro: all compilation has moved under DIRAC makefile system
 
 IV. Formatted 'input' file (c**.in):
 line 1 - title

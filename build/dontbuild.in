@@ -16,7 +16,17 @@ hsmrcc/second_quant/.*
 hsmrcc/high_sect_fscc_external/.*
 hsmrcc/high_sect_fscc_external/csd.F
 hsmrcc/high_sect_fscc_external/csu.F
+hsmrcc/high_sect_fscc_external/csv.F
+hsmrcc/high_sect_fscc_external/csw.F
+hsmrcc/high_sect_fscc_external/csx.F
+hsmrcc/high_sect_fscc_external/csy.F
+hsmrcc/high_sect_fscc_external/csz.F
+hsmrcc/high_sect_fscc_external/chx.F
+hsmrcc/high_sect_fscc_external/chy.F
+hsmrcc/high_sect_fscc_external/chz.F
 hsmrcc/high_sect_fscc_external/chu.F
+hsmrcc/high_sect_fscc_external/chv.F
+hsmrcc/high_sect_fscc_external/chw.F
 argosecp/.*
 cap/.*
 dft/fun-pw92.c

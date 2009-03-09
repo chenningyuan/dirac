@@ -22,7 +22,14 @@
 !
 ! this file by ulfek march 2008
 
+#if defined FORTRAN_MAIN_AS_SUBROUTINE
+! ... needed to get another Fortran executable 
+subroutine dirprg
+#else
+! default executable - dirac.x
 program dirprg
+#endif
+
   use memory_allocator
   use os_utils
   implicit none
@@ -153,5 +160,9 @@ program dirprg
  endif
 #endif
 
+#if defined FORTRAN_MAIN_AS_SUBROUTINE
+end subroutine dirprg
+#else
 end program dirprg
+#endif
 

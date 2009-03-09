@@ -2911,9 +2911,10 @@ C
 C
       RETURN
       END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dimx(nn,n0,na)
       implicit real*8 (a-h,o-z)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2932,6 +2933,7 @@ C
       end if
       return
       end
+
       subroutine diveps(namef)
       implicit real*8 (a-h,o-z)
       
@@ -5867,6 +5869,8 @@ c
       return
       end
 !
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine readv(nint,v,ind,nintmx,nfock,fock,ifock,nfockmx)
 !
 !         basic reading subroutine called from many places
@@ -5940,8 +5944,8 @@ c       write(*,*) 'bef read'
 c       write(*,*) 'aft read. nn=',nn
         if (nn.le.0) go to 135
       endif
-      call dimx(nint+intrc,nintmx,"nint")
 
+      call dimx(nint+intrc,nintmx,"nint")
 C--------------------------------------------------------
 C         UNPACK, ELIMINATE INTS WITH CORE ORBS
 C--------------------------------------------------------
@@ -7801,8 +7805,8 @@ c   special for scratch files, which start with s
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 
-#include "cij1.h" ! attention, variable changed names !
-!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+!!!#include "cij1.h" ! attention, variable changed names !
+      common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
 
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -7816,15 +7820,15 @@ c   special for scratch files, which start with s
       ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),
      1ior(ior(ishft(k,12),ishft(l,8)),ior(ishft(m,4),n)))
 
-      nij=nij1 ! mi: from common block
+!!    nij=nij1 ! mi: from common block
 
       iii=6
       iiv=1
       call files_ccsd (name,num,new,1,iii,iiv)
       if (new.le.0) return
       nij=0
-!     ije(0)=0
-      ije1(0)=0
+      ije(0)=0
+!!    ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
@@ -7867,10 +7871,10 @@ c   special for scratch files, which start with s
 90     continue
        if (nt.gt.nt00) then
         nij=nij+1
-!       ije(nij)=nt-nt0
-        ije1(nij)=nt-nt0
-!       ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
-        ij1(nij)=ipack(ja,jb,jc,jd,je,jf) 
+        ije(nij)=nt-nt0
+!!      ije1(nij)=nt-nt0
+        ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
+!!      ij1(nij)=ipack(ja,jb,jc,jd,je,jf) 
         call ivsort (igen(nt00+1),nt-nt00)
         if (nij.gt.ndij) write (6,*) 'nij reached ',
      1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
@@ -7878,10 +7882,10 @@ c   special for scratch files, which start with s
        end if
 30    continue
       igen(nstrt(1,num-1)+1)=nij
-!     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-      call kcopy (nij,ij1(1),igen(nstrt(1,num-1)+2))
-!     call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
-      call kcopy (nij+1,ije1(0),igen(nstrt(1,num-1)+nij+2))
+      call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
+!!    call kcopy (nij,ij1(1),igen(nstrt(1,num-1)+2))
+      call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+!!    call kcopy (nij+1,ije1(0),igen(nstrt(1,num-1)+nij+2))
       igen(nstrt(1,num-1)+2*nij+3)=iii
       igen(nstrt(1,num-1)+2*nij+4)=iiv
       do 150 i=1,nt-nt0
@@ -8501,9 +8505,11 @@ c   change nf-index grouping to nt-index grouping.
       end if
       return
       end
+
       function v4det (ja,jb,jc,jd,je,jf,jg,jh)         
       implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+#include "prm.h"
+!      common /prm/ iperm(0:6,720)
       dimension jj1(8),ii(4)
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2 

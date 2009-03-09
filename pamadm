@@ -659,9 +659,11 @@ if [ -n "$HSCCFLG" ]; then
 fi
 if [ -n "$HSFSFLG" ]; then
    dirs="$dirs hsmrcc/high_sect_fscc_external"
-# this directory must not be included into DIRAC objects pool
-#   rmline build/dontbuild "hsmrcc/\.\*"
-#   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/\.\*"
+   rmline build/dontbuild "hsmrcc/\.\*"
+   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/\.\*"
+   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csd.F"
+   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csu.F"
+   rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csv.F"
 fi
 if [ -n "$OOF_FLG" ]; then
    dirs="$dirs oof"
