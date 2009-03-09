@@ -24,7 +24,8 @@ contains
               call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
               Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
           end do; W=0
-          print '("Eg"/<nc/3>(3(f22.15)/))',Eg
+!fixme
+!         print '("Eg"/<nc/3>(3(f22.15)/))',Eg
       end subroutine
 
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
