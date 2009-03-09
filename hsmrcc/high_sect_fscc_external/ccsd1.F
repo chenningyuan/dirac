@@ -1,32 +1,24 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine clear(name,iii,iiv)
-      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
 c  zero out file (create if does not exist)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "cij1.h"
 !      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
-      integer indx_nstrt ! mi add
 
       call tmplt(iii,iiv,name,ntape)
       nsize=ije1(nij1)
 
-! problem: relocation truncated to fit: R_X86_64_32S against symbol `cfiles_' defined in COMMON...
 !      call dcopy(nsize,0.d0,0,
 !     1 gen(nstrt(2,ntape-1)+1),1)
-
-!      call dcopy(nsize,0.d0,0,gen(nstrt(2,ntape-1)+1),1)
-      indx_nstrt=nstrt(2,ntape-1)+1
-      call dcopy(nsize,0.d0,0,gen(indx_nstrt),1)
+      call dcopy(nsize,0.d0,0,gen(nstrt(2,ntape-1)+1),1)
 
       return
       end
@@ -35,16 +27,14 @@ c  zero out file (create if does not exist)
       implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 
       call tmplt6 (iii,iiv,name,ntape)
       nsize=ije1(nij1)

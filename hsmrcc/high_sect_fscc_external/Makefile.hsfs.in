@@ -9,16 +9,6 @@ srcdir_hsfs=hsmrcc/high_sect_fscc_external
 ## default executables to be compiled (more to be added)...
 hsfs: hsfs_csd hsfs_csu hsfs_csv
 
-
-#
-# need for AMD64 when static data exceed 2GB
-#
-#  ccsd.o could be among DIRAC objects/dependencies for gfortran, however, 
-#  for ifort/gcc it must
-# to be completely separated from DIRAC objects...
-# 
-# standalone codes can not be linked against all DIRAC object files due to the
-# 'relocation truncated to fit..' error 
 #
 
 touch_all:
@@ -59,6 +49,9 @@ $(srcdir_hsfs)/bin/csv.x : $(OBJ)
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csv.x" is ready." 
 
+#
+#       adapat later ...
+#
 hsfs_csw : $(srcdir_hsfs)/bin/csw.x
 $(srcdir_hsfs)/bin/csw.x : $(OBJ)
 	make main_as_subr

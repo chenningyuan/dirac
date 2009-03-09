@@ -1,7 +1,16 @@
 
-
 Connection to Sham's modified Gamess program for making MO-transformed integrals.
 
+Note on compilation: I had to lower some array sizes to reduce the size of common blocks below 2GB
+Otherwise it would not be possible to use DIRAC makefile/dependencies system and one would have resort
+to write own dependencies of each executable. With the so called medium memory model, flag 'mcmodel=medium'.
+
+Also I had to rename some routines in independent executable files because of overlaping their names.
+Now all object files are used for linking executable files, therefore all function names must be unique.
+
+These GAMESS files (produces by Sham's changes) are read:
+ HCRMO  $SCR/$JOB.F281
+ MULMO  $SCR/$JOB.F282
 
 
 I. Fock-space cc programs:
@@ -22,11 +31,10 @@ chx - ionize 4nd electron  (4,0)-sector
 chy - ionize 5nd electron  (5,0)-sector
 chz - ionize 6nd electron  (6,0)-sector
 
-chp,chq - excite 1 electron (1,1) sector [mi: now in Gal's package]
+chp,chq - excite 1 electron (1,1) sector [mi: not found in Gal's package]
     In (1,2) sector do cst.f then m21b.f
     In (2,1) sector for CCSD or CCSDT-1 do cht.f then m12b.f
     In (2,1) sector for CCSDT do cht.f only
-
 
 II.    CCSD    available for (2,1)
       CCSDT   available for (0,0) (1,1) (1,2) 
@@ -47,7 +55,9 @@ line 2 - iopt(1:20) (20i3)
  iopt(2) - max number of iterations.
  iopt(3) - convergence criterion. convergence reached when all
            t amplitudes agree to 10**(-iopt(3))
+
  iopt(4) .ne.0 - do rle (convergence accelerator) every iopt(4) iterations.
+
  iopt(5) - t amplitudes (and other quantities, depending on iopt(1))
            printed only if elements gt 10**(-iopt(5))
 
@@ -61,11 +71,13 @@ line 2 - iopt(1:20) (20i3)
             default: i61=1 .
 
  iopt(7) - if .ne.0, continuation run. ???
+
  iopt(8) .eq.0 - for Hartree-Fock orbitals only: read only orbital energies
          .gt.0 - for arbitrary orbitals: read Fock matrix and orbital energies
          .eq.2 - (usual practice) - orb.energies are taken from diagonal
                  of Fock matrix.
          .le.0 - shifts for orb. energies (doesn't work properly)
+
  iopt(9) .ne.0 - incomplete model space, implemented fully in csv, csu;
                  partially in chp, chq (to delete whole symmetry blocks
                  of 1-electron excitations).
@@ -85,6 +97,7 @@ line 2 - iopt(1:20) (20i3)
  iopt (17) = 1 : CCSDT-1a
                = 2 : CCSDT-1b (= CCSDT-1)
                = 3 : CCSDT
+
  iopt (19) = 1 : ACES II
  iopt (19) = 0 : GAMESS
 

@@ -2600,19 +2600,20 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 140   format(1x,6(1x,4i2,'=',f11.7))
       return
       end
+
       subroutine prt6 (name,tit,iparm)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       dimension a(4),id(3),ind(3,4)
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -2665,17 +2666,18 @@ c             write (6,*) ' '
       end 
       subroutine prt8 (name,tit,iparm)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
       common // gen(nbig)
       common /i/ igen(nbig)
+
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+
       common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       dimension a(4),id(4),ind(4,4)
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
@@ -2755,11 +2757,12 @@ c             write (6,*) ' '
       subroutine rdin
 !--------------------------------------------------------------------------------
 !
-!    input reading routine 
+!       input reading routine 
 !
 !--------------------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -2769,9 +2772,16 @@ c             write (6,*) ' '
 
       read (5,'(10a8)')     title
       write(6,'(1h1,10a8)') title
-      read (5,'(40i3)')    (iopt(i),i=1,40)
-      write(6,'(1x,40i3)') (iopt(i),i=1,40)
-      read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
+
+!     read (5,'(40i3)')    (iopt(i),i=1,40)
+      read (LUCMD,'(40i3)')    (iopt(i),i=1,40)
+      write(LUPRI,'(1x,40i3)') (iopt(i),i=1,40)
+
+      write(LUPRI,'(4x,a)') "iopt(40) read in"
+
+!     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
+      read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
+      write(LUPRI,'(4x,a,i3)') "norb read in, norb=",norb
 
       do 110 i=1,norb
       do 105 j=1,5
@@ -2783,37 +2793,42 @@ c             write (6,*) ' '
       icv(i)=1
       go to 110
 105        continue
+!     ... error branch
       write (6,1050) i,cc(i)
 1050  format ('0 **** error in type of orb',i3,3x,a1)
       call abext('rdin    ')
+   
+!     ... standard output branch 
 110   continue
-      write (6,'(i4,'' norbs. types''/(1x,80a1))') norb,(cc(i),i=1,norb)
+      write (LUPRI,'(i4,'' norbs. types''/(1x,80a1))') norb,(cc(i),i=1,norb)
+
       return
       end
 
-
       subroutine rdfile(nt,nrec,name,ieof)
-      implicit real*8 (a-h,o-z)
-c  read file nt, skipping nrec records, to internal file number
-c  nflcur+1, calling it "name".
-c  disk file structure for tc etc:
-c  1. nij (# of subblocks)
-c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
-c  3. ia(1:ije1(nij)), indices.
-c  4. a(1:ije1(nij)), actual values.
-c     ***   april 1990: 1-3 are now in igen, 4 in gen.  ****
-c    nt.eq.9 = file without indices (pppp).
-c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+
+!c  read file nt, skipping nrec records, to internal file number
+!c  nflcur+1, calling it "name".
+!c  disk file structure for tc etc:
+!c  1. nij (# of subblocks)
+!c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
+!c  3. ia(1:ije1(nij)), indices.
+!c  4. a(1:ije1(nij)), actual values.
+!c     ***   april 1990: 1-3 are now in igen, 4 in gen.  ****
+!c    nt.eq.9 = file without indices (pppp).
+!c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
       
 #include "param_ccsd.h"
 
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
 
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
       rewind nt
       if (nrec.gt.0) then
         do 10 i=1,4*nrec

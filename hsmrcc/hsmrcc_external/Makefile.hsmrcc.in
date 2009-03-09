@@ -40,7 +40,9 @@ $(hscc_exec) : $(OBJ)
 ##################
 hs_clean :
 	@echo -n "Cleaning up all object files in "$(moddir)" and "$(srcdir)" directories"
-	@rm -f $(hsmrcc_objects)
+#	@rm -f $(srcdir)/*.o  $(moddir)/*.o
+	make -C $(srcdir)/. clean 
+	make -C $(moddir)/. clean
 	@echo "...Done."
 	@echo -n "Cleaning up the executable " $(INSTALL_DIR)/$(hscc_exec)
 	@rm -f $(hscc_exec) 

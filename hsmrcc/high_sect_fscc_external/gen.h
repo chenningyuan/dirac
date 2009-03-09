@@ -1,5 +1,5 @@
 !
-!   common blocks - huge arrays  !
+!   common block - huge array, shoudl not exceed 2GB
 !
       real*8   gen(nbig)                              
       integer igen(nbig)     
@@ -9,5 +9,4 @@
 
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
 

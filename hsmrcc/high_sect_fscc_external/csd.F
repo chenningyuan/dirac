@@ -4,32 +4,29 @@
       subroutine csd
 #endif
 
-      implicit real*8 (a-h,o-z)
+!      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "cfiles.h"
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
-
 #include "cint.h"
 !      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cij2.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-
-      common /csdtime/ csdstim,csdltim
-
-      common /dbg/ iter,idebug
+#include "csdtime.h"
+!     common /csdtime/ csdstim,csdltim
+#include "dbg.h"
+!     common /dbg/ iter,idebug
 
       character*256 filenm,filenm51,filenm6,filenm20
 
@@ -44,30 +41,36 @@ c     iopt(8) - fock.
 c     iopt(10) .ne.0 - do not save pppp.
 
       real*4 cputime
-      filenm(1:1)=' '
 
+! open some files
+      filenm(1:1)=' '
       call getenv('input',filenm)
       if (filenm(1:1).eq.' ') filenm='input'
-
       open(5,file=filenm)
+
       filenm6(1:1)=' '
       call getenv('output',filenm6)
       if (filenm6(1:1).ne.' ') open(6,file=filenm6,form='FORMATTED',
      1 status='UNKNOWN',access='SEQUENTIAL')
+
       filenm51(1:1)=' '
       call getenv('tape51',filenm51)
       if (filenm51(1:1).eq.' ') filenm51='tape51'
       open(51,file=filenm51,form='UNFORMATTED')
+
       filenm20(1:1)=' '
       call getenv('tape20',filenm20)
       if (filenm20(1:1).eq.' ') filenm20='tape20'
       open(20,file=filenm20,form='UNFORMATTED')
+
       filenm(1:1)=' '
       call getenv('tape12',filenm)
+
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
 
-      write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
+!     write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
+      call header('standalone CCSD program, heritage of TAU group',-1)
 
       csdstim = cputime(real(0.))
       csdltim = csdstim
@@ -75,7 +78,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       Nstrt(1,0)=0
       nstrt(2,0)=0
 
-! ... readin with ccsd.F routines
+! ... readin with ccsd.F routines ...
       call rdin
       call rdsym
 
@@ -414,7 +417,10 @@ c
 c ******************************************
       subroutine tinit
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
 c calc tinit = hhpp / eps
       if (iopt(20).ne.0) then
        call rdfile (51,0,"tc  ",-1)
@@ -441,13 +447,17 @@ c**************************************************************
       implicit real*8 (a-h,o-z)
 c   id=1 for rle, 0 regularly.
 #include "param_ccsd.h"
+#include "cfiles.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
       e=0.d0
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
       if (id.eq.1) then
@@ -486,7 +496,10 @@ c   id=1 for rle, 0 regularly.
 c *****************************************************
       subroutine ordta
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       call reorder("tc  ","ta1 ",1324,4)
       call reorder("tc  ","ta2 ",1423,4)
       call reorder("tm  ","tm1 ",1324,5)
@@ -509,7 +522,10 @@ c *****************************************************
 c ******************************************************
       subroutine ordtb
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       call diveps    ("t1nw")
       call reorder("tb1  ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -539,7 +555,10 @@ c ******************************************************
 c **********************************************************
       subroutine calt1
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       call move("hp  ","t1nw")
       call dg1n2
       call dg1n3
@@ -556,7 +575,10 @@ c **********************************************************
 c ****************************************************
       subroutine calt2
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       call cmult("hhpp",0.5d0,"tnew")
       call diag4
       call diag5
@@ -594,10 +616,14 @@ c   diag 42
 c *******************************************************
       subroutine calt3
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /dbg/ iter,idebug
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "cfiles.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "dbg.h"
+!     common /dbg/ iter,idebug
+
       if (iopt(17).ge.1) then
 c  dg1n13
         call reord6    ("t30 ","s1  ",124356)
@@ -825,8 +851,12 @@ c  dg3n8,10
 c *******************************************************
       subroutine calt4
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /dbg/ iter,idebug
+
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dbg.h"
+!     common /dbg/ iter,idebug
+
       if (iopt(17).eq.4) then
 c  dg4n1
         call mult8    ("t30 ","hppp","s1  ",1)
@@ -1625,7 +1655,8 @@ C  *********************************************************************
 !     subroutine wrtbox
       subroutine wrtbox_csd
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call wrtfile (20,0,"bx1 ")
       call wrtfile (20,1,"bx2 ")
       call wrtfile (20,2,"bx3 ")
