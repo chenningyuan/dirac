@@ -49,6 +49,15 @@ C
       IF (INTTYP .EQ. 12) THEN
          NPOINT = NPQUAD
          NSHINT = 9*NATOM*NATOM
+      else if (inttyp .eq. 70) then
+         npoint = 1
+         nshint = 3*noptyp
+      else if (inttyp .eq. 71) then
+         npoint = 1
+         nshint = 3*noptyp
+      else if (inttyp .eq. 72) then
+         npoint = 1
+         nshint = 3*noptyp
       ELSE
          NPOINT = 1
          NSHINT = NOPTYP
@@ -398,6 +407,21 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
+      else if (inttyp .eq. 70) then
+         jmaxd  = 3
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
+      else if (inttyp .eq. 71) then
+         jmaxd  = 3
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
+      else if (inttyp .eq. 72) then
+         jmaxd  = 3
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
       ELSE IF (INTTYP .EQ.73) THEN
          JMAXD  = 1
          JMAXM  = 0
@@ -749,6 +773,9 @@ C
      &                    .OR. (INTTYP .EQ. 55)
      &                    .OR. (INTTYP .EQ. 56)
      &                    .OR. (INTTYP .EQ. 57)
+     &                    .or. (inttyp .eq. 70)
+     &                    .or. (inttyp .eq. 71)
+     &                    .or. (inttyp .eq. 72)
      &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
@@ -774,6 +801,9 @@ C
          IF (INTTYP .EQ. 56) JMAX = JMAX + 4
          IF (INTTYP .EQ. 57) JMAX = JMAX + 4
          IF (INTTYP .EQ. 58) JMAX = JMAX + 1
+         if (inttyp .eq. 70) jmax = jmax + 1
+         if (inttyp .eq. 71) jmax = jmax + 1
+         if (inttyp .eq. 72) jmax = jmax + 1
          IF (INTTYP .EQ. 203) JMAX = JMAX + 1 ! RM1H2
          IF (INTTYP .EQ. 204) JMAX = JMAX + 2 ! RNST
          IF (INTTYP .EQ. 208) JMAX = JMAX + 2 ! RM2H2
@@ -783,6 +813,9 @@ C
      &                            .OR. (INTTYP .EQ. 25)
      &                            .OR. (INTTYP .EQ. 54)
      &                            .OR. (INTTYP .EQ. 58)
+     &                            .or. (inttyp .eq. 70)
+     &                            .or. (inttyp .eq. 71)
+     &                            .or. (inttyp .eq. 72)
      &                            .OR. (INTTYP .EQ. 203) ! RM1H2
      &                            .OR. (INTTYP .EQ. 208) ! RM2H2
          ISTEPU = JMAX + 1
@@ -919,6 +952,9 @@ C
          ELSE IF (INTTYP .EQ. 57) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+!        else if (inttyp .eq. 70) then
+!        else if (inttyp .eq. 71) then
+!        else if (inttyp .eq. 72) then
          ELSE
             FULMAT = .TRUE.
             DO 200 I = 1, NOPTYP
@@ -1036,6 +1072,9 @@ C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
      &    .OR. (INTTYP.EQ.27) .OR. (INTTYP.EQ.28) .OR. (INTTYP.EQ.34)
      &    .OR. (INTTYP.EQ.40) .OR. (INTTYP.EQ.44) .OR. (INTTYP.EQ.50)
      &    .OR. (INTTYP.EQ.51) .OR. (INTTYP.EQ.52)
+     &    .or. (inttyp .eq. 70)
+     &    .or. (inttyp .eq. 71)
+     &    .or. (inttyp .eq. 72)
      &    .OR. (INTTYP.EQ.201) .OR. (INTTYP.EQ.207)
 
 C     ADD Nuclear Attraction Integrals, true if we need V_ne operator.
@@ -1171,6 +1210,9 @@ C
      &                       .OR. (INTTYP .EQ. 55)
      &                       .OR. (INTTYP .EQ. 56)
      &                       .OR. (INTTYP .EQ. 57)
+     &                       .or. (inttyp .eq. 70)
+     &                       .or. (inttyp .eq. 71)
+     &                       .or. (inttyp .eq. 72)
      &                       .OR. (INTTYP .EQ. 203) ! RM1H2
      &                       .OR. (INTTYP .EQ. 204) ! RNST
      &                       .OR. (INTTYP .EQ. 208) ! RM2H2 
@@ -1184,7 +1226,12 @@ C
             END IF
             FACTOR = D1
             DO 300 IATOMC = 1, NATOMC
-               IF (ADDNAI) FACTOR = FACINT(IATOMC)
+               if (addnai 
+     &             .or. (inttyp .eq. 70)
+     &             .or. (inttyp .eq. 71)
+     &             .or. (inttyp .eq. 72)) then
+                 FACTOR = FACINT(IATOMC)
+               end if
                DIFCPX = CORCX(IATOMC) - CORPX
                DIFCPY = CORCY(IATOMC) - CORPY
                DIFCPZ = CORCZ(IATOMC) - CORPZ
@@ -1619,6 +1666,24 @@ C
      &                  SHLINT,NOPTYP,NATOMC,.FALSE.,ONCN,
      &                  CORCX,CORCY,CORCZ)
 
+
+!        first geo derivatives of the kinetic energy
+!        ===========================================
+
+         else if (inttyp .eq. 70) then
+            call geo1kin_integrals(odc, 
+     &                             jmaxa, 
+     &                             jmaxb, 
+     &                             jmaxt, 
+     &                             jmaxd, 
+     &                             jmaxm, 
+     &                             shgtf, 
+     &                             shlint,
+     &                             ahgtf, 
+     &                             natomc, 
+     &                             noptyp, 
+     &                             ncentc)
+
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -1958,6 +2023,108 @@ C
   100 CONTINUE
       RETURN
       END
+
+      subroutine geo1kin_integrals(odc,
+     &                             jmaxa,
+     &                             jmaxb,
+     &                             jmaxt,
+     &                             jmaxd,
+     &                             jmaxm,
+     &                             shgtf,
+     &                             shlint,
+     &                             ahgtf,
+     &                             natomc,
+     &                             noptyp,
+     &                             ncentc)
+
+      implicit none
+
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "onecom.h"
+#include "lmns.h"
+
+!     --------------------------------------------------------------------------
+      double precision odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3)
+      integer          jmaxa, jmaxb, jmaxt, jmaxd, jmaxm
+      double precision shgtf
+      double precision shlint(kcktab, noptyp, 3)
+      double precision ahgtf(*)
+      integer          natomc
+      integer          noptyp
+      integer          ncentc(*)
+!     --------------------------------------------------------------------------
+      integer          i
+      integer          xa, ya, za
+      integer          xb, yb, zb
+      integer          xc, yc, zc
+      integer          ia, la, ma, na
+      integer          ib, lb, mb, nb
+      double precision dx0, dy0, dz0
+      double precision dx1, dy1, dz1
+      double precision dx2, dy2, dz2
+      double precision tx, ty, tz, txx, txy, txz, tyy, tyz, tzz
+!     --------------------------------------------------------------------------
+
+      xa = 3*(icenta - 1) + 1
+      ya = 3*(icenta - 1) + 2
+      za = 3*(icenta - 1) + 3
+      xb = 3*(icentb - 1) + 1
+      yb = 3*(icentb - 1) + 2
+      zb = 3*(icentb - 1) + 3
+
+      i = 0
+
+      do ia = 1, kckta
+
+        la = lvalua(ia)
+        ma = mvalua(ia)
+        na = nvalua(ia)
+
+        do ib = 1, kcktb
+
+          lb = lvalub(ib)
+          mb = mvalub(ib)
+          nb = nvalub(ib)
+
+          dx0 = shgtf*odc(la, lb, 0, 0, 0, 1)
+          dy0 = shgtf*odc(ma, mb, 0, 0, 0, 2)
+          dz0 = shgtf*odc(na, nb, 0, 0, 0, 3)
+          dx1 = shgtf*odc(la, lb, 0, 1, 0, 1)
+          dy1 = shgtf*odc(ma, mb, 0, 1, 0, 2)
+          dz1 = shgtf*odc(na, nb, 0, 1, 0, 3)
+          dx2 = shgtf*odc(la, lb, 0, 2, 0, 1)
+          dy2 = shgtf*odc(ma, mb, 0, 2, 0, 2)
+          dz2 = shgtf*odc(na, nb, 0, 2, 0, 3)
+        
+          i = i + 1
+
+          txx = dx2*dy0*dz0
+          txy = dx1*dy1*dz0
+          txz = dx1*dy0*dz1
+          tyy = dx0*dy2*dz0
+          tyz = dx0*dy1*dz1
+          tzz = dx0*dy0*dz2
+
+          tx = 1.0d0*(txx + txy + txz)
+          ty = 1.0d0*(txy + tyy + tyz)
+          tz = 1.0d0*(txz + tyz + tzz)
+
+          shlint(i, xa, 1) = shlint(i, xa, 1) + tx
+          shlint(i, ya, 1) = shlint(i, ya, 1) + ty
+          shlint(i, za, 1) = shlint(i, za, 1) + tz
+          shlint(i, xb, 2) = shlint(i, xb, 2) - tx
+          shlint(i, yb, 2) = shlint(i, yb, 2) - ty
+          shlint(i, zb, 2) = shlint(i, zb, 2) - tz
+
+        end do
+      end do
+
+      end subroutine
+
+
+
+
 C  /* Deck dplint */
       SUBROUTINE DPLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,ORIGIN)
@@ -4117,6 +4284,8 @@ C  /* Deck hdbtra */
  100  CONTINUE
       RETURN
       END
+
+
 C  /* Deck hdotra */
       SUBROUTINE HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)

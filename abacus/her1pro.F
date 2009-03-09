@@ -315,7 +315,7 @@ C
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
      &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
      &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT',
-     &            'CAPD_VD', 'XXXXXXX', 'XXXXXXX','XXXXXXX'
+     &            'CAPD_VD', 'GEO1KIN', 'GEO1NUC','GEO1OVL'
      &                         /
 
 C
@@ -335,8 +335,8 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74
-     &             ), I
+     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,
+     &             75,76,77), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1853,21 +1853,52 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   75 CONTINUE
-      GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   76 CONTINUE
-      GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   77 CONTINUE
-      GO TO 200
+
+
+!     geo1kin: first geo derivatives of kinetic energy integrals
+!     ==========================================================
+   
+ 75   continue
+      inttyp = 70
+      if (iprint .gt. 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy integrals'
+      call setatm(doatom, natom, inttyp)
+      call geo1_typ('KIN', noptyp, intrep, labint, doatom, natom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     geo1nuc: first geo derivatives of nuclear attraction integrals
+!     ==============================================================
+   
+ 76   continue
+      inttyp = 71
+      if (iprint .gt. 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'nuclear attraction integrals'
+      call setatm(doatom, natom, inttyp)
+      call geo1_typ('NUC', noptyp, intrep, labint, doatom, natom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     geo1ovl: first geo derivatives of overlap integrals
+!     ===================================================
+   
+ 77   continue
+      inttyp = 72
+      if (iprint .gt. 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'overlap integrals'
+      call setatm(doatom, natom, inttyp)
+      call geo1_typ('OVL', noptyp, intrep, labint, doatom, natom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
 
   200 CONTINUE
 C
@@ -2721,7 +2752,58 @@ C
  100  CONTINUE
       RETURN
       END
-C  /* Deck efntyp */
+
+      subroutine geo1_typ(what_kind,
+     &                    noptyp,
+     &                    intrep,
+     &                    labint,
+     &                    doatom,
+     &                    natom)
+
+      implicit none 
+
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+
+      character(3) what_kind
+      integer      noptyp
+      integer      intrep(9*mxcent)
+      character(8) labint(9*mxcent)
+      logical      doatom(nucind)
+      integer      natom
+
+      integer   is, ixyz, iatom, irep, ityp
+
+      noptyp = 3*natom
+      call ntypts(noptyp)
+
+      ityp = 0
+      do irep = 0, maxrep
+        do iatom = 1, nucind
+          if (doatom(iatom)) then
+            do ixyz = 1, 3
+              is = iptcnt(3*(iatom - 1) + ixyz, irep, 1)
+              if (is .gt. 0) then
+                ityp = ityp + 1
+                labint(ityp) = 'GEO1'
+     &                         //what_kind
+     &                         //chrnos(is/100)
+     &                         //chrnos(mod(is, 100)/10)
+     &                         //chrnos(mod(is, 10))
+                intrep(ityp) = irep
+              end if
+            end do
+          end if
+        end do
+      end do
+
+      end subroutine
+
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include "implicit.h"
 #include "priunit.h"
@@ -2747,8 +2829,10 @@ C
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      ITYP = ITYP + 1
-                     LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/10)
-     &                                    //CHRNOS(MOD(ISCOOR,10))//'  '
+
+                     labint(ityp) = 'NEF '//chrnos(iscoor/10)
+     &                              //chrnos(mod(iscoor, 10))//'  '
+
                      INTREP(ITYP) = IREP
                   END IF
  200           CONTINUE
@@ -2757,6 +2841,8 @@ C
  50   CONTINUE 
       RETURN
       END
+
+
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
 #include "implicit.h"
@@ -3545,7 +3631,7 @@ C
 C
 C     Write label
 C
-C     CALL NEWLAB(LABEL,LUPROP,LUPRI)
+      write(*, *) 'blub label', LABEL
       CALL NEWLB2(LABEL,RTNLBL,LUPROP,LUPRI)
 C
 C     Write integrals

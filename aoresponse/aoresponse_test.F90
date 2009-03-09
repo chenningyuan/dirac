@@ -15,6 +15,18 @@ module aoresponse_test_m
 
 contains
 
+      subroutine MolGradi(S,D,F,nc)
+          type(matrix):: S,D,F,W,Sg(1)
+          real(8):: Eg(nc); integer:: nc,i
+          Eg=0; call prop_energy((/'GEO'/),(/D/),Eg)
+          W = D*F*D
+          do i=1,nc
+              call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
+              Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
+          end do; W=0
+          print '("Eg"/<nc/3>(3(f22.15)/))',Eg
+      end subroutine
+
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
 
     integer             :: n, nr_atoms

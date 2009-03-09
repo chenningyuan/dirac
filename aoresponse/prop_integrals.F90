@@ -290,7 +290,16 @@ contains
             end if
             !one-electron integral contribution
             do k=0,c(2)-c(1); kk=c(1)+k
+#ifndef PRG_DIRAC
                 call oneint('1DHAM'//c09(kk/100)//c09(mod(kk,100)/10)//c09(mod(kk,10)),A(1))
+#else
+                call oneint('GEO1KIN'              &
+                            //c09(kk/100)          &
+                            //c09(mod(kk, 100)/10) &
+                            //c09(mod(kk,10)),     &
+                            A(1))
+!               add d1nuc
+#endif /* PRG_DIRAC */
                 do i=1,pb; ii=pb1-pb+i
                     e(i+pb*k) = e(i+pb*k) + tr(A(1),D(ii))
                 end do
@@ -618,8 +627,11 @@ contains
             if (.not.all(w==(/0d0,1d0/))) &
                 call quit('PropInt.prop_overlap: unexpected w')
             do i=1,c(2)-c(1)+1; ii=c(1)+i-1
+#ifndef PRG_DIRAC
+!fixme
                 call oneint('1DOVL'//c09(ii/100)//c09(mod(ii,100)/10) &
                                    //c09(mod(ii,10)),S(i))
+#endif /* PRG_DIRAC */
                 S(i) = -S(i) !notice minus sign
             end do
         else if (n==2.and.p(1)=='MAG'.and.p(2)=='MAG') then
@@ -659,14 +671,23 @@ contains
         !AllPrt(idx('NS'))%rank = depends on which isotopes
     end subroutine
 
+  subroutine oneint(l, A)
 
-    subroutine oneint(l,A)
-        character*8, intent(in)    :: l
-        type(matrix),intent(inout) :: A
-        if (iszero(A)) call mat_init(A,A)
-        call di_read_operator_int(l,A)
-    end subroutine
+!   radovan: frontend to routine which reads AO integrals
+!            (typically from AOPROPER)
+!            with the label l into matrix A
+!            please don't use fixed length of l, 
+!            rather (*) to be more flexible
 
+!   ----------------------------------------------------------------------------
+    character(*), intent(in)    :: l
+    type(matrix), intent(inout) :: A
+!   ----------------------------------------------------------------------------
+
+    if (iszero(A)) call mat_init(A, A)
+    call di_read_operator_int(l, A)
+
+  end subroutine
 
     subroutine twofck(what,D,F, a,b)
     !what='G' : 3 geometry-derivative Fock matrices; atom a

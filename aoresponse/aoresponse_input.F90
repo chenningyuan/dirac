@@ -5,15 +5,9 @@ module aoresponse_input_m
 
   implicit none
 
-  type perturbation_op_t
-    integer       :: pg_sym, tr_sym, nr_components, typ
-    real(kind_dp) :: prefactors(2)
-    character(8)  :: op_name, labels(2)
-  end type
-
   integer, parameter            :: max_nr_op = 137
 
-  type(perturbation_op_t), save :: perturbation_op(max_nr_op)
+  character(16),           save :: op_name_to_aoproper(max_nr_op)
 
   logical,                 save :: aoresponse_skip_pp
   logical,                 save :: aoresponse_skip_pn
@@ -51,53 +45,103 @@ contains
     op_index = -1
 
     do i = 1, max_nr_op
-      if (perturbation_op(i)%op_name == op_name) then
+      if (op_name_to_aoproper(i) == op_name) then
         op_index = i
       end if
     end do
 
     if (op_index == -1) then
-      call quit('find_op_index: index not found')
+      call quit('find_op_index: index for '//op_name//' not found')
     end if
 
   end function
 
-  subroutine add_op(op_name,            &
-                    typ, nr_components, &
-                    prefactors,         &
+  subroutine add_op_by_hand(op_name,    &
+                            typ,        &
+                            pg_sym,     &
+                            tr_sym,     &
+                            prefactors, &
+                            pointers,   &
+                            blocks)
+
+!   ----------------------------------------------------------------------------
+    character(16), intent(in)  :: op_name
+    integer,       intent(in)  :: typ
+    integer,       intent(in)  :: pg_sym
+    integer,       intent(in)  :: tr_sym
+    real(8),       intent(in)  :: prefactors(3)
+    integer,       intent(in)  :: pointers(3)
+    character(4),  intent(in)  :: blocks
+!   ----------------------------------------------------------------------------
+    integer                    :: i
+!   ----------------------------------------------------------------------------
+
+#include "dcbxpr.h"
+#include "dcbprl.h"
+
+    i = nprps + 1
+
+    prpnam(i)  = op_name
+    iprptyp(i) = typ
+    iprpsym(i) = pg_sym
+    iprptim(i) = tr_sym
+
+    facprp(1:3,  i) = prefactors(1:3)
+    iprplbl(1:3, i) = pointers(1:3)
+
+    nprps = i
+
+    op_name_to_aoproper(i) = op_name
+
+    i = nprplbl + 1
+
+    prplbl(i)  = op_name
+    pdoint(i)  = blocks
+    iprlrep(i) = pg_sym - 1
+    iprltyp(i) = tr_sym
+
+    nprplbl = i
+
+  end subroutine
+
+  subroutine add_op(op_name,       &
+                    typ,           &
+                    nr_components, &
+                    prefactors,    &
                     labels)
 
-    character(7),  intent(in)  :: op_name
-    integer,       intent(in)  :: typ, nr_components
-    real(kind_dp), intent(in)  :: prefactors(nr_components)
-    character(8),  intent(in)  :: labels(nr_components)
 !   ----------------------------------------------------------------------------
-    integer                    :: indxpr, isyxpr, itrxpr, i
-    real(kind_dp), allocatable :: work(:)
-    integer                    :: lwork
+    character(7), intent(in)  :: op_name
+    integer,      intent(in)  :: typ
+    integer,      intent(in)  :: nr_components
+    real(8),      intent(in)  :: prefactors(nr_components)
+    character(8), intent(in)  :: labels(nr_components)
+!   ----------------------------------------------------------------------------
+    integer                   :: i
+    integer                   :: pg_sym
+    integer                   :: tr_sym
+    real(8),      allocatable :: work(:)
+    integer                   :: lwork
+!   ----------------------------------------------------------------------------
 
     lwork = 200000
     call alloc(work, lwork)
 
-    call xprind(op_name//'         ',   &
-                typ, nr_components,     &
-                prefactors,             &
-                labels,                 &
-                indxpr, isyxpr, itrxpr, &
-                work, lwork, 0)
+    call xprind(op_name//'         ', &                                
+                typ,                  &              
+                nr_components,        &                           
+                prefactors,           &                                
+                labels,               &                                
+                i,                    &            
+                pg_sym,               &                 
+                tr_sym,               &                     
+                work,                 &               
+                lwork,                &                
+                0)
 
     call dealloc(work)
 
-    perturbation_op(indxpr)%pg_sym        = isyxpr
-    perturbation_op(indxpr)%tr_sym        = itrxpr
-    perturbation_op(indxpr)%nr_components = nr_components
-    perturbation_op(indxpr)%typ           = typ
-    perturbation_op(indxpr)%op_name       = op_name
-
-    do i = 1, nr_components
-      perturbation_op(indxpr)%prefactors(i) = prefactors(i)
-      perturbation_op(indxpr)%labels(i)     = labels(i)
-    end do
+    op_name_to_aoproper(i) = op_name
 
   end subroutine
 

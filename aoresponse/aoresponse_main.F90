@@ -48,6 +48,7 @@ contains
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
       call debug_1grad(D, F, natoms_ifc())
       call debug_2grad(D,    natoms_ifc())
+      call MolGradi(S,D,F,3*natoms_ifc())
     end if
 
     if (aoresponse_alpha) then

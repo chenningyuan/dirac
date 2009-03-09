@@ -18,6 +18,73 @@ module dirac_interface_m
 
 contains
 
+  subroutine print_prp_common_blocks()
+
+!   ----------------------------------------------------------------------------
+    integer :: i 
+!   ----------------------------------------------------------------------------
+
+#include "dcbxpr.h"
+#include "dcbprl.h"
+
+    do i = 1, nprps
+      write(*, *) 'dcbxpr:  --------------'
+      write(*, *) 'dcbxpr:  i             ', i            
+      write(*, *) 'dcbxpr:  prpnam(i)     ', prpnam(i)     
+      write(*, *) 'dcbxpr:  iprptyp(i)    ', iprptyp(i)    
+      write(*, *) 'dcbxpr:  iprpsym(i)    ', iprpsym(i)    
+      write(*, *) 'dcbxpr:  iprptim(i)    ', iprptim(i)    
+      write(*, *) 'dcbxpr:  facprp(1, i)  ', facprp(1, i)  
+      write(*, *) 'dcbxpr:  facprp(2, i)  ', facprp(2, i)  
+      write(*, *) 'dcbxpr:  facprp(3, i)  ', facprp(3, i)  
+      write(*, *) 'dcbxpr:  iprplbl(1, i) ', iprplbl(1, i) 
+      write(*, *) 'dcbxpr:  iprplbl(2, i) ', iprplbl(2, i) 
+      write(*, *) 'dcbxpr:  iprplbl(3, i) ', iprplbl(3, i) 
+      write(*, *) 'dcbxpr:  --------------'
+    end do
+
+    do i = 1, nprplbl
+      write(*, *) 'dcbprl:  -----------'
+      write(*, *) 'dcbprl:  i          ', i            
+      write(*, *) 'dcbprl:  prplbl(i)  ', prplbl(i) 
+      write(*, *) 'dcbprl:  pdoint(i)  ', pdoint(i) 
+      write(*, *) 'dcbprl:  iprlrep(i) ', iprlrep(i)
+      write(*, *) 'dcbprl:  iprltyp(i) ', iprltyp(i)
+      write(*, *) 'dcbprl:  -----------'
+    end do
+
+  end subroutine
+
+  subroutine request_1el_integrals(label, blocks)
+
+!   can be used like this:
+!   call request_1el_integrals('BETAMAT', '000+')
+!   ----------------------------------------------------------------------------
+    character(7), intent(in) :: label
+    character(4), intent(in) :: blocks
+!   ----------------------------------------------------------------------------
+    integer                  :: last_position
+!   ----------------------------------------------------------------------------
+
+#include "dcbcls.h"
+
+    last_position = nprpcls + 1
+    if (last_position > maxcls) then
+      call quit('request_1el_integrals: last_position > maxcls')
+    end if
+
+    clscal(last_position) = .true.
+    clsint(last_position) = label
+    clscmb(last_position) = blocks
+
+!   important only for c/s moment integrals
+!   here set it to something
+    iordcl(last_position) = 0
+
+    nprpcls = last_position
+
+  end subroutine
+
   subroutine grcont(work,     &
                     lwork,    &
                     g,        &

@@ -188,6 +188,7 @@
       subroutine aoresponse_input(word)
 
       use aoresponse_input_m
+      use dirac_interface_m
 
       implicit none
 
@@ -198,6 +199,7 @@
       character(1)       :: prompt
       character(7)       :: word, word_save
       character(7)       :: table(ntable)
+      real(8)            :: v(3)
 
 !                   1         2         3         4
       data table /'.SKIPEE','.SKIPEP','.THRESH','.ALPHA ',
@@ -235,12 +237,44 @@
 !     ====
 
       do i = 1, max_nr_op
-        perturbation_op(i)%op_name = ''
+        op_name_to_aoproper(i) = ''
       end do
 
       call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
       call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
       call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
+
+!     call request_1el_integrals('BETAMAT', '000+')
+      call request_1el_integrals('GEO1KIN', '+00+')
+
+      v = (/1.0d0, 0.0d0, 0.0d0/)
+
+      call add_op_by_hand('GEO1KIN001      ',1,1,1,v,
+     &                    (/ 9, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN002      ',1,1,1,v, 
+     &                    (/10, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN003      ',1,1,1,v, 
+     &                    (/11, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN004      ',1,1,1,v, 
+     &                    (/12, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN005      ',1,1,1,v, 
+     &                    (/13, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN006      ',1,1,1,v, 
+     &                    (/14, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN007      ',1,1,1,v, 
+     &                    (/15, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN008      ',1,1,1,v, 
+     &                    (/16, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN009      ',1,1,1,v, 
+     &                    (/17, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN010      ',1,1,1,v, 
+     &                    (/18, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN011      ',1,1,1,v, 
+     &                    (/19, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN012      ',1,1,1,v, 
+     &                    (/20, 0, 0/), '+00+')
+
+      call print_prp_common_blocks()
 
       aoresponse_skip_pp            = .false.
       aoresponse_skip_pn            = .false.

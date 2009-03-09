@@ -637,7 +637,7 @@ C     ============================
 C
       IOP = IPMOLFLD
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &            OP1INT,FIRST,IPRHAM)
 CMI     ... dcbham.h is needed
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
@@ -652,7 +652,7 @@ CMI/Febr.2006 For TWOCOMP=.true. this is the exact nonrelativistic kinetic energ
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &       OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &       OP1INT,FIRST,IPRHAM)
 
 C
 C     Beta matrix
@@ -664,7 +664,7 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
 
         IOP = IPBETAMT
         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &           OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &           OP1INT,FIRST,IPRHAM)
 
       ENDIF
 
@@ -683,7 +683,7 @@ C.........Fock matrix
           TOBE = .TRUE.
         ELSE
           CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,OP1INT,FIRST,
-     &                WORK(KFREE),LFREE,IPRHAM)
+     &                IPRHAM)
         ENDIF
       ENDDO
 C
@@ -713,7 +713,7 @@ c
          IOP = IPSOPP
 c      making it square by using N2BBASX
          CALL PRPMAOso(LU1INT,IOP,N2BBASX,FOCK,
-     &          OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &          OP1INT,FIRST,IPRHAM)
       endif
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -763,7 +763,7 @@ C       Current name is made from: PRPMAO - PRoPerty Matrix AO basis
 C       If we also want to tell that the order of the AO basis is BU, then
 C       e.g. as new nanme: PRPMAO_BU /nov.08-hjaaj
       SUBROUTINE PRPMAO(LU1INT,IOP,IDIMENS,PMAT,
-     &                  OP1INT,FIRST,WORK,LWORK,IPRINT)
+     &                  OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
@@ -794,7 +794,7 @@ C
 C
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
       LOGICAL FIRST(*), DOINT(4), SQUARE
-      DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),WORK(LWORK), IDOINT(4)
+      DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),IDOINT(4)
 C
       EXTERNAL BDQALGEBRA
 
@@ -1040,7 +1040,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
 C  /* Deck prpmaoso */
       SUBROUTINE PRPMAOso(LU1INT,IOP,IDIMENS,PMAT,
-     &                  OP1INT,FIRST,WORK,LWORK,IPRINT)
+     &                  OP1INT,FIRST,IPRINT)
 C*************************************************************************
 ****    
 C     
@@ -1071,8 +1071,7 @@ C
 C
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
       LOGICAL FIRST(*), DOINT(4), SQUARE
-CMI   DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
-      DIMENSION PMAT(IDIMENS,4),OP1INT(IDIMENS),WORK(LWORK), IDOINT(4)
+      DIMENSION PMAT(IDIMENS,4),OP1INT(IDIMENS),IDOINT(4)
 C
       EXTERNAL BDQALGEBRA
 
@@ -1305,7 +1304,6 @@ C
       CALL QUIT('PRPMAO: Not able to read COMB')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck prpmao */
       SUBROUTINE PRPMSAO(INDXPR,IDIMENS,PTRI,PMAT,
      &              OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
@@ -1434,17 +1432,14 @@ CMI    -----  get the full four-component operator -------
 C     ... do resort PTRI to the boson sorted basis
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
-!radovan: work is not used inside prpmao
-CMI ???  if so, fix of this PRPMAO call is needed....
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
-     &                WORK(KFREE),LFREE,IPRINT2)   
+     &                IPRINT2)   
 
           CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
-!radovan: work is not used inside prpmao
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
-     &                       WORK(KFREE),LFREE,IPRINT2)   
+     &                       IPRINT2)   
 
           CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
@@ -2100,14 +2095,14 @@ C     ===========
 C
       IOP = IPBETAMT
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,WORK,LWORK,IPRHAM)
+     &            OP1INT,FIRST,IPRHAM)
 C
 C     Kinetic energy
 C     ==============
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,WORK,LWORK,IPRHAM)
+     &            OP1INT,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -3004,14 +2999,14 @@ C     ===========
 C
       IOP = IPBETAMT
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &         OP1INT,FIRST,WORK,LWORK,IPRHAM)
+     &         OP1INT,FIRST,IPRHAM)
 C
 C     Kinetic energy
 C     ==============
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &           OP1INT,FIRST,WORK,LWORK,IPRHAM)
+     &           OP1INT,FIRST,IPRHAM)
 C
 C     Make full matrix
 C     ================
@@ -3045,7 +3040,7 @@ C
       FIRST(1) = .TRUE.
       IOP = IPMOLFLD
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &            OP1INT,FIRST,WORK,LWORK,IPRHAM)
+     &            OP1INT,FIRST,IPRHAM)
 C
 C     Make full matrix
 C     ================
@@ -5538,7 +5533,7 @@ C
       FIRST = .TRUE.
       IOP =  IPANGMOM
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &         OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &         OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C     
 C     Get the spin-z operator
@@ -5547,7 +5542,7 @@ C
       FIRST = .TRUE.
       IOP =  IPSPNMOM
       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &        OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+     &        OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
 C     
