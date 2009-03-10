@@ -1,0 +1,18 @@
+
+
+sq_dir=hsmrcc/second_quant
+
+main_as_subr:
+	$(F90) -DFORTRAN_MAIN_AS_SUBROUTINE $(F90FLAGS) -c -o main/main.o  main/main.F90
+
+sq: $(sq_dir)/SecQuant.x 
+
+$(sq_dir)/SecQuant.x : $(OBJ)
+	make main_as_subr
+	$(F90) $(LDFLAGS) -DSTANDALONE_SECQUANT $(F90FLAGS) -c -o $(sq_dir)/test.o $(sq_dir)/test.F90
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	rm $(sq_dir)/test.o
+
+sq_clean:
+	@rm -f $(sq_dir)/*.o  $(sq_dir)/*.x
+	echo "Cleaning of " $(sq_dir) " directory done."
