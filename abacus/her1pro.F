@@ -3631,7 +3631,6 @@ C
 C
 C     Write label
 C
-      write(*, *) 'blub label', LABEL
       CALL NEWLB2(LABEL,RTNLBL,LUPROP,LUPRI)
 C
 C     Write integrals
