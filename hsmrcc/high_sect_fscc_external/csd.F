@@ -90,7 +90,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       endif
 
       convrg = 10.d0**(-iopt(3))
-      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)') 
+      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') 
      1 iopt(2),convrg
 
       call prtime("rdin",0,0)

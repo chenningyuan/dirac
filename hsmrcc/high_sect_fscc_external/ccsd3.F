@@ -79,20 +79,25 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine readv(nint,v,ind,nintmx,nfock,fock,ifock,nfockmx)
-!
+!---------------------------------------------------------------------------
 !         basic reading subroutine called from many places
-!
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------------
+       use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
+#include "implicit.h"
+#include "priunit.h"
+!      implicit real*8 (a-h,o-z)
       dimension v(*),ind(*),irerdr(200),irerdrv(200),etmp(200)
       dimension fock(*),ifock(*)
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
       dimension ilet(6)
       data ilet /1hc,1hc,1hh,1hg,1hp,1hv/
       data zero /1.d-8/
 
-      write(*,*) 'entered readv'
+      write(LUPRI,'(/,2x,a)') 'entered readv'
 
 c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
       if (iopt(19).eq.0) then
@@ -100,7 +105,14 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
         write(*,*) 'this is GAMESS connected stuff !'
       endif
 
-      if (iopt(19).ne.0) intrc=600
+      if (iopt(19).ne.0) then
+         call quit('aces ii not supported !')
+        intrc=600
+      endif
+
+! miro:  insertion of own reading procedure
+      call get_gamess_ints 
+      return
 
       rewind(12,iostat=ios)
       if (ios.ne.0) then
@@ -108,9 +120,11 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
        call  abext('readv : failed rewing of unit 12 !')
       endif
 
+!     ... read number of orbitals and orbital energies
       read (12,iostat=ios) nort,(eps(i),i=1,nort)
       if (ios.ne.0) then
-        write(*,*) 'failed read (12) nort,(eps(i),i=1,nort)!'
+        write(LUPRI,'(/,4x,a)') 
+     &  'failed read (12) nort,(eps(i),i=1,nort)!'
         call  abext('readv : failed read (12) nort,(eps(i),i=1,nort)')
       endif
 
@@ -141,7 +155,8 @@ c  changes for aces99
 
       if (iopt(19).eq.0) read (12)
       nint=0
-120   if(iopt(19).eq.0) then
+
+120   if(iopt(19).eq.0) then ! GAMESS
         read (12) nn,(ind(nint+i),i=1,2725),
      1  (v(nint+i),i=1,2725)
       else
@@ -179,12 +194,16 @@ C--------------------------------------------------------
 199   write(*,*) 'Record in tape12 too short'
       call abext('12short')
 135   continue
-      write (6,*) nint,' integrals and indices read in '
+
+!------------------------------------------------------------
+      write (LUPRI,*) nint,' integrals and indices read in '
+
       if (iopt(8).eq.0) then
         nfock=0
         return
       endif
       if (iopt(8).lt.0) go to 410
+
 ! ----------- Fock matrix reading --------------
       READ (12) NFOCK,(FOCK(I),I=1,NFOCK),(IFOCK(I),I=1,NFOCK)
       WRITE (6,*) NFOCK,' FOCK MATRIX ELEMENTS READ IN'

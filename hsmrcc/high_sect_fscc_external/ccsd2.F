@@ -58,9 +58,7 @@ C
 
       subroutine diveps(namef)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -99,18 +97,21 @@ C
       endif
       return
       end
+
       subroutine dveps6 (name)           
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "dat.h"
+!      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       call files_ccsd (name,ntape,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) 'file for dveps6 not found'
@@ -2800,11 +2801,14 @@ c             write (6,*) ' '
    
 !     ... standard output branch 
 110   continue
-      write (LUPRI,'(i4,'' norbs. types''/(1x,80a1))') norb,(cc(i),i=1,norb)
+      write (LUPRI,'(i4,'' norbs. types''/(1x,80a1))')
+     &        norb,(cc(i),i=1,norb)
 
+      write(LUPRI,'(/,2x,a)') 'end rdin'
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdfile(nt,nrec,name,ieof)
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -2868,48 +2872,89 @@ c             write (6,*) ' '
       endif
       end
 
-
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdsym
-!
-! reading of the input file ...
-!
-      implicit real*8 (a-h,o-z)
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-      common /dpd/ nir,igmt(8,8),ici(200)
-      dimension itemp(64)
+!----------------------------------------------------------------------------
+!                   next reading of the input file ...
+!----------------------------------------------------------------------------
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+#include "dpd.h"
+!     common /dpd/ nir,igmt(8,8),ici(200)
+
+      dimension itemp(64) ! 8x8
       data itemp / 1,2,3,4,5,6,7,8,2,1,4,3,6,5,8,7,3,4,1,2,7,8,5,6,
      1           4,3,2,1,8,7,6,5,5,6,7,8,1,2,3,4,6,5,8,7,2,1,4,3,
      2           7,8,5,6,3,4,1,2,8,7,6,5,4,3,2,1 /
 
-      write(*,*) 'Enter nclass variable:'
-      read (*,1000,iostat=ios) nclass
-      if (ios.ne.0) then
-        write(*,*) 'error in reading nclass!'
-        stop 'error in reading nclass!'
+      ! mi: save time - no typing of input, data ready
+      logical :: no_inter_rd=.true.
+
+      if (no_inter_rd) then
+       nclass=1
+       write(LUPRI,'(/,2x,a)') 'rdsym: nclass variable set to 1'
+      else
+        write(LUPRI,'(/,2x,a)') 'rdsym: Enter nclass variable:'
+        read (*,1000,iostat=ios) nclass
+        if (ios.ne.0) then
+          write(LUPRI,*) 'error in reading nclass!'
+          call quit('error in reading nclass!')
+        endif
       endif
+
+      write(LUPRI,'(2x,a)') 
+     &   'type of of orbitals (20i3) per symmetry(1-nclass):'
+
+      if (no_inter_rd) then
+        do i=1,nclass
+          iclass(i)=0
+        enddo
+      else
+
       read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
+1000  format(20i3)
       if (ios.ne.0) then
-        write(*,*) 'error in reading iclass!'
+        write(LUPRI,*) 'error in reading iclass!'
         stop 'error in reading iclass!'
       endif
 
-1000  format(20i3)
-      write (*,1100) nclass,(iclass(i),i=1,nclass)
-1100  format(i4,' orb classes. # of orbs ',30i3)
-c-------------------------------------------------
-c  isym is  0 for orbs remaining invariant
-c  isym is  1 for orbs changing sign
-c  isym is -1 for orbs doing neither
-c-------------------------------------------------
+      endif
+
+      write (LUPRI,1100) nclass,(iclass(i),i=1,nclass)
+1100  format(/,i4,' orb classes; # of orbs ',30i3)
+
+!c-------------------------------------------------
+!c  isym is  0 for orbs remaining invariant
+!c  isym is  1 for orbs changing sign
+!c  isym is -1 for orbs doing neither
+!c-------------------------------------------------
       nsym=1
-110   read (*,1000) (isym(i,nsym),i=1,nclass)
-      if (isym(1,nsym).ge.9) go to 120
-      write (*,1200) nsym,(isym(i,nsym),i=1,nclass)
+
+110   continue
+      if (no_inter_rd) then
+         do i=1,nclass
+           isym(i,nsym)=0
+         enddo
+        ! isym(1,nsym)=9
+      else
+        read (*,1000) (isym(i,nsym),i=1,nclass)
+      endif
+
+      !if (isym(1,nsym).ge.9) go to 120
+      if (isym(1,nsym).ge.9.or.no_inter_rd) go to 120
+
+      write (LUPRI,1200) nsym,(isym(i,nsym),i=1,nclass)
 1200  format(' isym(',i3,')=',30i3)
+
       nsym=nsym+1
       go to 110
 120   nsym=nsym-1
-c
+
+
+!c
       ibias(1)=0
       do 140 i=1,nclass
 140   ibias(i+1)=ibias(i)+iclass(i)
@@ -2918,6 +2963,7 @@ c
           ici(j)=i
 30      continue
 20    continue
+
       ii=0
       do 40 i=1,8
         do 50 j=1,8
@@ -2925,6 +2971,7 @@ c
           igmt(i,j)=itemp(ii)
 50      continue
 40    continue
+
 !  nir should be the number of irreducible representations ...
       if (nclass.eq.1) then
         nir=1
@@ -2932,9 +2979,8 @@ c
         nir=2**nsym
       end if
   
-      write(*,*) 'returning from rdsym'
+      write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
 
       return
       end
-
 

@@ -24,7 +24,7 @@ $(srcdir_hsfs)/bin/csd.x : $(OBJ)
 	make touch_all
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csd.o  $(srcdir_hsfs)/csd.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS)  -o $@ $(OBJ) $(LIBS) 
 	rm $(srcdir_hsfs)/csd.o
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csd.x" is ready." 
@@ -34,7 +34,7 @@ $(srcdir_hsfs)/bin/csu.x : $(OBJ)
 	make touch_all
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csu.o  $(srcdir_hsfs)/csu.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD)  $(LDFLAGS) -o $@ $(OBJ) $(LIBS) 
 	rm $(srcdir_hsfs)/csu.o
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csu.x" is ready." 
@@ -44,7 +44,7 @@ $(srcdir_hsfs)/bin/csv.x : $(OBJ)
 	make touch_all
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csv.o  $(srcdir_hsfs)/csv.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS) 
 	rm $(srcdir_hsfs)/csv.o
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csv.x" is ready." 
@@ -56,7 +56,7 @@ hsfs_csw : $(srcdir_hsfs)/bin/csw.x
 $(srcdir_hsfs)/bin/csw.x : $(OBJ)
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csw.o  $(srcdir_hsfs)/csw.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS) 
 	@touch main/main.F90 
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csw.x" is ready." 
 
@@ -64,7 +64,7 @@ hsfs_csx : $(srcdir_hsfs)/bin/csx.x
 $(srcdir_hsfs)/bin/csx.x : $(OBJ)
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csx.o  $(srcdir_hsfs)/csx.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS)  -o $@ $(OBJ) $(LIBS) 
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csx.x" is ready." 
 
@@ -72,7 +72,7 @@ hsfs_csy : $(srcdir_hsfs)/bin/csy.x
 $(srcdir_hsfs)/bin/csy.x : $(OBJ)
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csy.o  $(srcdir_hsfs)/csy.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS)  -o $@ $(OBJ) $(LIBS) 
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csy.x" is ready." 
 
@@ -80,7 +80,7 @@ hsfs_csz : $(srcdir_hsfs)/bin/csz.x
 $(srcdir_hsfs)/bin/csz.x : $(OBJ)
 	make main_as_subr
 	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/csz.o  $(srcdir_hsfs)/csz.F
-	$(LD)  -o $@ $(OBJ) $(LIBS) 
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS) 
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csz.x" is ready." 
 
