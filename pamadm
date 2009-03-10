@@ -269,6 +269,10 @@ setup()
          cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
          (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
          echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc"
+
+       #  cp hsmrcc/second_quant/Makefile.secquant.in  hsmrcc/second_quant/Makefile.secquant || \
+       #  (echo "Error exit:  !"; exit 1)
+       #  echo " - second quantization module active"
    fi
    #
    #   
@@ -652,7 +656,7 @@ if [ -n "$HSCCFLG" ]; then
    rmline build/dontbuild "hsmrcc/\.\*"
    rmline build/dontbuild "hsmrcc/interface/\.\*"
   # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
-  # rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
+   rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
    rmline build/dontbuild "hsmrcc/hsmrcc_external/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/source/\.\*"
