@@ -656,7 +656,7 @@ if [ -n "$HSCCFLG" ]; then
    rmline build/dontbuild "hsmrcc/\.\*"
    rmline build/dontbuild "hsmrcc/interface/\.\*"
   # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
-   rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
+  # rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
    rmline build/dontbuild "hsmrcc/hsmrcc_external/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/source/\.\*"
