@@ -19,7 +19,7 @@ module IntGenMod
 
   ! ... this specification is needed for showing out internal routines 
    public :: DrvIntGen, DrvIntGen_DIRAC,NZVPkIBuf,NZVIntBuf 
-   public :: check_gms_integrals, control_print_VIND_VINT
+   public :: check_gms_integrals, control_print_VIND_VINT, check_gms_spacial_integrals
    public :: PackRSHP,RecNumHP
  
 contains
@@ -1890,6 +1890,8 @@ SUBROUTINE PREAD(LABSIZ,NWDVAR,IS,XX,IX,NX,NINTMX)
 ! Called from : IntFileGen_OneBody
 !               IntFileGen_TwoBody
 !
+!   testing routine
+!
 !--------------------------------------------------------------
 
    implicit none
@@ -1948,7 +1950,7 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 !--------------------------------------------------------------
 
    implicit none
-   INTEGER IS, NX, NINTMX,MAX2,MAX2_DIM
+   INTEGER IS, NX, NINTMX,MAX2,MAX2_DIM,ios
    DOUBLE PRECISION XX(NINTMX)
    integer (kind=8), save :: ic = 0
 
@@ -1964,8 +1966,13 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
 
 ! ... for 64bit/LABELSIZE=2 error:
 !  PGFIO-F-219/unformatted read/unit=11/attempt to read/write past end of record.
-   READ(IS) NX,IX,XX
+   READ(IS,iostat=ios) NX,IX,XX
   ! READ(IS,ERR=1200) NX,IX,XX
+
+  if (ios.ne.0) then
+    write(UOUT,*) 'PRD: error in reading from GAMESS file !'
+    call quit('PRD: error in reading from GAMESS file !')
+  endif
 
    if (get_iprint() >= 22) then
      ic = ic + 1
@@ -1978,13 +1985,13 @@ SUBROUTINE PRD(IS,XX,IX,NX,NINTMX,MAX2,MAX2_DIM)
  1200  Call Quit('PRD: Gamess unformatted/sequential file reading error exit !')
 END SUBROUTINE PRD
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine  check_gms_integrals
-!--------------------------------------------------------------
+!------------------------------------------------------------------------------------
 !
+!             opens, and read GAMESS prepared integrals
 !
-!
-!--------------------------------------------------------------
+!------------------------------------------------------------------------------------
    integer NXX
    integer NPACKIC, NPACK, LABEL
    integer :: ASBufInd, NZVIntBufInd
@@ -1998,11 +2005,10 @@ subroutine  check_gms_integrals
 
 
  call Header('output from check_gms_integrals',-1)
+
  write(UOUT,*) 'check_gms_integrals...'
 
-
  open(UMR2EINT,file=FileMR2EINT,access='SEQUENTIAL',form='UNFORMATTED',status='OLD')
-
  if ( get_iprint() >= 7) then
    write(UOUT,'(/2x,a,a/)')  &
    '... gamess integral file open and rewinded, FileMR2EINT=',FileMR2EINT
@@ -2012,16 +2018,21 @@ subroutine  check_gms_integrals
 ! Read first three records - see "modules/gmsmod.F90"
 
   rewind(UMR2EINT)
+
   read(UMR2EINT)
   read(UMR2EINT)
   read(UMR2EINT)  IUNIQ, LABELSIZE, NINTMX
 
-  write(UOUT,'(2x,a,i3,a,i3,a,i3)') 'IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE
-  write(UOUT,'(2x,a,i8)') ' NINTMX=',NINTMX
+  ! print-out important integrals parameters
+  write(UOUT,'(/,2x,a,i3,a,i3,a,i3)') 'IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE
+  write(UOUT,'(2x,a,i8,/)') ' NINTMX=',NINTMX
+
 
   if (.not.allocated(XXPREAD)) allocate(XXPREAD(NINTMX))
   if (.not.allocated(IXPREAD)) allocate(IXPREAD(NINTMX))
 
+
+! ... own cycle of reading ...
       NPACKIC = 0
       do
         ! ... INTSFP set in Parameters
@@ -2106,6 +2117,128 @@ subroutine  check_gms_integrals
      if (.not.allocated(IXPREAD)) deallocate(IXPREAD)
 
 end subroutine check_gms_integrals
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
+!------------------------------------------------------------------------------------
+!
+!             opens, and read GAMESS prepared integrals
+!
+!  called from HighSect FSCC codes !
+!
+!------------------------------------------------------------------------------------
+#include "priunit.h"
+   integer, intent(in) :: lu_file
+   integer, intent(in)  ::   IUNIQ, LABELSIZE, NINTMX
+   integer NXX
+   integer NPACKIC, NPACK, LABEL
+   integer :: ASBufInd, NZVIntBufInd
+   integer :: P, Q, R, S
+   integer :: NumIntRec, EnPkInd
+   double precision :: ASInt
+
+   double precision, allocatable :: XXPREAD(:)
+   integer, allocatable :: IXPREAD(:)
+
+ call Header('output from check_gms_spacial_integrals',-1)
+
+ UOUT=LUPRI ! needed for other codes !
+
+ write(UOUT,*) 'check_gms_integrals...'
+
+  ! print-out important integrals parameters
+ write(UOUT,'(/,2x,a,i3,a,i3,a,i3)') 'IUNIQ=',IUNIQ,' LABELSIZE=',LABELSIZE
+ write(UOUT,'(2x,a,i8,/)') ' NINTMX=',NINTMX
+
+  if (.not.allocated(XXPREAD)) allocate(XXPREAD(NINTMX))
+  if (.not.allocated(IXPREAD)) allocate(IXPREAD(NINTMX))
+
+! ... own cycle of reading ...
+      NPACKIC = 0
+      do
+        ! ... INTSFP set in Parameters
+        ! call PREAD(LABELSIZE,INTSFP,UMR2EINT,XXPREAD,IXPREAD,NXX,NINTMX)
+         call PREAD(LABELSIZE,INTSFP,lu_file,XXPREAD,IXPREAD,NXX,NINTMX)
+         NumIntRec = NXX
+     
+         write(UOUT,'(2x,a,i8)') 'PREAD done, NumIntRec=',NumIntRec
+           
+         IF (LABELSIZE.EQ.2) THEN
+            do ASBufInd = 1, IABS(NumIntRec)
+
+               NPACK = NPACKIC + ASBufInd
+               ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(2*NPACK-1)
+               P = ISHFT( LABEL, -16 )
+               Q = IAND(  LABEL, 65535 )
+               LABEL = IXPREAD(2*NPACK)
+               R = ISHFT( LABEL, -16 )
+               S = IAND(  LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, aa ')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#else
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -48 )
+               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               S = IAND( LABEL, 65535 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#endif
+            enddo
+         ELSE IF (LABELSIZE.EQ.1) THEN
+            do ASBufInd = 1, IABS(NumIntRec)
+               NPACK = NPACKIC + ASBufInd
+               ASInt = XXPREAD(NPACK)
+
+! select 32/64-bit code by preprocessor statement
+#if defined (ARCH32BIT) 
+               LABEL = IXPREAD(NPACK)
+               P =       ISHFT( LABEL, -24 )
+               Q = IAND( ISHFT( LABEL, -16 ), 255 )
+               R = IAND( ISHFT( LABEL,  -8 ), 255 )
+               S = IAND(        LABEL,        255 )
+               call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ba')
+               call print_gms_int_ind(P,Q,R,S,ASInt)
+#else
+               IF ( MOD(NPACK,2) .EQ. 0 ) THEN
+                  LABEL = IXPREAD(NPACK/2)
+                  P = IAND( ISHFT( LABEL, -24 ), 255 )
+                  Q = IAND( ISHFT( LABEL, -16 ), 255 )
+                  R = IAND( ISHFT( LABEL,  -8 ), 255 )
+                  S = IAND( LABEL, 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bb')
+                  call print_gms_int_ind(P,Q,R,S,ASInt)
+               ELSE
+                  LABEL = IXPREAD((NPACK/2)+1)
+                  P = ISHFT( LABEL, -56 )
+                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
+                  call print_gms_int_ind(P,Q,R,S,ASInt)
+               ENDIF
+#endif
+            enddo
+         ENDIF
+         if (get_iprint() >= 18) then
+            write(UOUT,'(2x,a,i8)')   &
+            ': read NumIntRec=',NumIntRec
+            if (NumIntRec <= 0) write(UOUT,'(2x,a)') &
+            '...negative, going to exit cycle of reading Gamess file !'
+            call flushout
+         endif
+         if (NumIntRec <= 0) exit
+      enddo
+
+     ! ... deallocate stuff ...
+     if (.not.allocated(XXPREAD)) deallocate(XXPREAD)
+     if (.not.allocated(IXPREAD)) deallocate(IXPREAD)
+
+end subroutine check_gms_spacial_integrals
 
 subroutine print_gms_int_ind(P,Q,R,S,ASInt)
 integer, intent(in) :: P,Q,R,S
@@ -2601,8 +2734,6 @@ ENDDO
  838 format(4x,i5,'. VHHHP-11, 1234, <IJ||KA>=<',i3,' ',i3,'||',i3,' ',i3,'>=',f18.12)
 
 end subroutine control_print_VHHHP
-
-
 
 end module IntGenMod
 

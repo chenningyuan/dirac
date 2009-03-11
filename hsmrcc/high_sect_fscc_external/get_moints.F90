@@ -15,6 +15,7 @@
 
    integer,allocatable :: IOCCMO(:)
    real*8,allocatable  :: ORBENMO(:)
+   real*8,allocatable  :: HCOREMO(:,:) 
 
  contains
 
@@ -23,10 +24,10 @@
 #include "priunit.h"
 
   open (unit=LuHCRMO,file=FileHCRMO,form="unformatted",status="old",iostat=ios_hcrmo)
-  open (unit=LuMULMO,file=FileHCRMO,form="unformatted",status="old",iostat=ios_mulmo)
+  open (unit=LuMULMO,file=FileMULMO,form="unformatted",status="old",iostat=ios_mulmo)
 
   if (ios_hcrmo.eq.0.and.ios_mulmo.eq.0) then
-   write(LUPRI,*) 'GAMESS files open'
+   write(LUPRI,*) 'GAMESS  produced files open'
   else
    write(LUPRI,*) 'GAMESS files not open !'
    call quit('GAMESS files not open !')
@@ -42,6 +43,7 @@
    call open_gamess_files
 
    call rd_hcrmo
+   call rd_mulmo
 
    call quit('get_gamess_ints')
 
@@ -59,8 +61,9 @@
    read(LuHCRMO) NMO
    write(LUPRI,*) 'read NMO=',NMO
 
-   call alloc(IOCCMO,NMO)
-   call alloc(ORBENMO,NMO)
+   call alloc(IOCCMO,NMO,id="IOCCMO")
+   call alloc(ORBENMO,NMO,id="ORBENMO")
+   call alloc(HCOREMO,NMO,NMO,id="HCOREMO")
 
    read(LuHCRMO) IOCCMO
    read(LuHCRMO) ORBENMO
@@ -68,7 +71,48 @@
    write(LUPRI,*) 'IOCCMO:', (IOCCMO(I),I=1,NMO)
    write(LUPRI,*) 'ORBENMO:',(ORBENMO(I),I=1,NMO)
 
+ ! now read Hcore
+ ! WRITE(IHCRMO) HCOREMO
+
+   read(LuHCRMO) HCOREMO
+   write(LUPRI,'(/,4x,a,2i3)') 'Hcore matrix',NMO,NMO
+   call OUTPUT(HCOREMO,1,NMO,1,NMO,NMO,NMO,1,LUPRI)
+ 
  end subroutine rd_hcrmo 
+
+ subroutine rd_mulmo
+  use memory_allocator
+  use Parameters ! from HSMRCC
+  use IntGenMod ! from SHam's HSMRCC
+#include "implicit.h"
+#include "priunit.h"
+
+!  C     THE FIRST RECORD CONTAINS INFORMATION                             
+!      WRITE(IMULMO) NMO, IUNIQ, LABELSIZE, NINTMX
+!      WRITE(IMULMO) IOCCMO
+!      WRITE(IMULMO) ORBENMO
+
+  rewind(LuMULMO)
+  
+  read(LuMULMO,iostat=ios) NMO, IUNIQ, LABELSIZE, NINTMX
+  if (ios.ne.0) then
+    write(LUPRI,'(/,2x,a)') 'error in MULMO reading of NMO, IUNIQ, LABELSIZE, NINTMX '
+    call quit('error in MULMO reading of NMO, IUNIQ, LABELSIZE, NINTMX ')
+  endif
+
+  read(LuMULMO) ! skip IOCCMO
+  read(LuMULMO) ! skip ORBENMO
+
+  write(LUPRI,*) 'NMO=',NMO
+  write(LUPRI,*) 'IUNIQ=',IUNIQ
+  write(LUPRI,*) 'LABELSIZE=',LABELSIZE
+  write(LUPRI,*) 'NINTMX=',NINTMX
+
+! ... continue with reading of integrals&indexes
+  call set_hscc_iprint (50)
+  call check_gms_spacial_integrals(LuMULMO,IUNIQ, LABELSIZE, NINTMX)
+
+ end subroutine rd_mulmo 
 
  end module get_gamess_mo_ints
 

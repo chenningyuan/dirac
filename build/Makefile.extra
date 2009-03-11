@@ -1,8 +1,8 @@
 # Extra targets that are rarely used.
 
 #  Conditional include to check whether we have the (optional) HSMRCC module active
-hscc_make := hsmrcc/hsmrcc_external/Makefile.hsmrcc
-is_hscc := $(wildcard $(hscc_make))
+hscc_make = hsmrcc/hsmrcc_external/Makefile.hsmrcc
+is_hscc = $(wildcard $(hscc_make))
 ifneq ($(strip $(is_hscc)),)
 include $(hscc_make)
 else
@@ -11,14 +11,14 @@ hs: # for compilation of the standalone external code
 	@echo "The hsmrcc external code is not active (exported)."
 endif
 
-secquant_make := hsmrcc/second_quant/Makefile.secquant
-is_secquant := $(wildcard $(secquant_make))
-ifneq ($(strip $(is_secquant)),)
-include $(secquant_make)
-else
-sq:
-	@echo "Sec.quantization module not active (not exported)"
-endif
+#secquant_make=hsmrcc/second_quant/Makefile.secquant
+#is_secquant=$(wildcard $(secquant_make))
+#ifneq ($(strip $(is_secquant)),)
+#include $(secquant_make)
+#else
+#sq:
+#	@echo "Sec.quantization module not active (not exported)"
+#endif
 
 #
 #  Conditional include for higher sector FSCC codes
