@@ -1469,6 +1469,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                         NZVIntBufInd = 1    ! reinitialize # of integrals per buffer 
                         NZVPkIBuf = 0       ! zero buffer with packed indexes
                         NZVIntBuf = DBLE(0) ! zero buffer with integrals
+                        if (get_iprint() >= 40) then
+                         write(UOUT,'(4X,A)') '...buffer flushed out 1'
+                        endif
                      endif
 
                    ! ... add nonzero integral into integral-buffer
@@ -1507,6 +1510,9 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
       write(UVINT,rec=NxtRec) NZVIntBuf
       write(UVIND,rec=NxtRec) NZVPkIBuf
       StVRec = EndngRec + 1
+      if (get_iprint() >= 40) then
+           write(UOUT,'(4X,A)') '...buffer flushed out 2'
+      endif
    endif
    dtim = dtime(tarray)
    TimeTaken = TimeTaken + tarray

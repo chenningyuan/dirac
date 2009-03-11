@@ -1088,6 +1088,7 @@ ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
  if (DABs(ASInt_ijab).gt.zerothrs) then
 
   icount = icount + 1; inz = inz + 1
+
   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount, &  
        '. 1234, <IJ||AB>, <',II,' ',IJ,'||',  & 
        IA,' ',IB,'>=',ASInt_ijab,' (ia|jb):',ii_mo,ia_mo,ij_mo,ib_mo
@@ -1109,7 +1110,9 @@ ia_mo=MOLTRA_indx(IA+NCMO); ib_mo=MOLTRA_indx(IB+NCMO)
 
   endif 
 
+  ! ... add nonzero integral into integral-buffer
   NZVIntBuf(NZVIntBufInd) = ASInt_ijab
+  ! ... add packed (R,S)-indexes into index-buffer
   NZVPkIBuf(NZVIntBufInd) = PackRSHP(IJ,IB)
 
  endif
@@ -1123,6 +1126,7 @@ enddo
 
 TotNZInt(V2H2P) = TotNZInt(V2H2P) + NZIntRec_V2H2P(IPQ)
 EndngRec(V2H2P) = NxtRec
+
 if ( TotNZInt(V2H2P) /= 0 ) then
   if (.not.nohsccfiles) then
     write(UVINT,rec=NxtRec) NZVIntBuf
