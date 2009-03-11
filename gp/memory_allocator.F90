@@ -70,6 +70,8 @@
             module procedure alloc_real_5d
             module procedure alloc_real_6d
             module procedure alloc_int
+            module procedure alloc_int_2d
+            module procedure alloc_int_3d
          end interface alloc
 
          interface allocp
@@ -85,6 +87,8 @@
             module procedure dealloc_real_5d
             module procedure dealloc_real_6d
             module procedure dealloc_int
+            module procedure dealloc_int_2d
+            module procedure dealloc_int_3d
          end interface dealloc
 
          interface deallocp
@@ -101,6 +105,8 @@
             module procedure initData_real_5d
             module procedure initData_real_6d
             module procedure initDataInt
+            module procedure initDataInt_2d
+            module procedure initDataInt_3d
          end interface initData
 
          interface alloc_maxsize
@@ -314,6 +320,20 @@
 
                forall (i=1:size) data(i) = 0
             end subroutine initDataInt
+  
+            subroutine initDataInt_2d(data,size1,size2)
+               integer :: i, j, size1,size2
+               integer :: data(:,:)
+
+               forall (i=1:size1, j=1:size2) data(i,j) = 0
+            end subroutine initDataInt_2d
+  
+            subroutine initDataInt_3d(data,size1,size2,size3)
+               integer :: i, j, k, size1,size2,size3
+               integer :: data(:,:,:)
+
+               forall (i=1:size1, j=1:size2, k=1:size3) data(i,j,k) = 0
+            end subroutine initDataInt_3d
  
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -524,6 +544,58 @@
                   call allocErrorHandler(alreadyAllocated,var_id=local_id)
                endif
             end subroutine alloc_int
+
+            subroutine alloc_int_2d(data,size1,size2,id)
+               integer                        :: size1, size2, status, totalsize
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, allocatable, target   :: data(:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2),stat=status)
+
+                  totalsize = size1*size2
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size1,size2)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_int_2d
+
+            subroutine alloc_int_3d(data,size1,size2,size3,id)
+               integer                        :: size1, size2, size3, status, totalsize
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, allocatable, target   :: data(:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.allocated(data)) then
+                  allocate(data(size1,size2,size3),stat=status)
+
+                  totalsize = size1*size2*size3
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,totalsize,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size1,size2,size3)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_int_3d
 
 !
 ! using pointers
@@ -768,6 +840,54 @@
                   call allocErrorHandler(alreadyDeallocated,var_id=local_id)
                endif
             end subroutine dealloc_int
+
+            subroutine dealloc_int_2d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, allocatable :: data(:,:)
+               
+               if (present(id)) then
+                  write (local_id,'(a)') id   
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_int_2d
+
+            subroutine dealloc_int_3d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               integer, allocatable :: data(:,:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (allocated(data)) then
+                  deallocate(data,stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_int_3d
+
+
 
             subroutine dealloc_pint_1d(data, id)
                integer                        :: status
