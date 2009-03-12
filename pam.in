@@ -62,9 +62,15 @@ usage ()
    echo '     -mpi n                 : Run MPI with n nodes; default: sequential (ie -mpi flag not needed) '
  fi
 
-   echo '     -mw mem                : Set memory (in megawords) for master; default:'$WRKMEM_DEFAULT
+   echo '     -mw n                  : Set memory (in megawords) for master; default: '$WRKMEM_DEFAULT
    echo '                              (and slave nodes if "-nw mem" not specified)'
-   echo '     -nw mem                : Set memory (in megawords) for the slave nodes in parallel run; default:'$WRKMEM_DEFAULT
+   echo '     -nw n                  : Set memory (in megawords) for the slave nodes in parallel run; default: '$WRKMEM_DEFAULT
+
+   let MEM_IN_MB_DEFAULT=$WRKMEM_DEFAULT/8
+
+   echo '     -mem n                 : Set memory (in Mb) for master; default: '$MEM_IN_MB_DEFAULT' Mb'
+   echo '                              (and slave nodes if "-mem" not specified)'
+   echo '     -slavemem n            : Set memory (in Mb) for the slave nodes in parallel run; default: '$MEM_IN_MB_DEFAULT' Mb'
 
  if [ -n "$MACH_FILE" ]; then
    echo '     -machinefile filename  : Specify file with list of nodes to be used in MPI run; default: "'$MACH_FILE'" '
@@ -947,6 +953,14 @@ while [ -n "$1" ]; do
       -full-restart)
          # Unpack everything from a given archive file, not only DFCOEF
          RESTART_ONLY=   
+         ;;
+      -mem)
+         shift
+         let MEMORY=$1*128000
+         ;;
+      -slavemem)
+         shift
+         let NODE_MEMORY=$1*128000
          ;;
       -mw|-memory)
          shift
