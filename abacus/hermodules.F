@@ -383,7 +383,7 @@
           index=1
           do while(.not.(ios.ne.0))
 
-            name=''
+            name=' '
             x(1:3)=0.0
 
             READ(tmp_file, *,iostat=ios) name, x(1), x(2), x(3)
@@ -712,7 +712,7 @@
 !               specified in the .SPECIAL section.
                 BACKSPACE(tmp_file)
                 read(tmp_file,*,iostat=ios) tmpbas%file
-                if (.not.(ios.ne.0) .and. tmpbas%file>'') then         
+                if (.not.(ios.ne.0) .and. tmpbas%file>' ') then         
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
@@ -740,7 +740,7 @@
                 if (ios.ne.0) then
                   backspace(tmp_file)
                   read(tmp_file,*,iostat=ios) tmpbas%name
-                  if(.not.(ios.ne.0) .and. tmpbas%name>'') then
+                  if(.not.(ios.ne.0) .and. tmpbas%name>' ') then
                     tmpbas%file=tmpbas%name
                     tmpbas%comp='LARGE'
                     tmpbas%type='BASIS'
@@ -752,14 +752,14 @@
      &                 ".SPECIAL basis."
                      exit
                   end if
-                else if(tmpbas%name>'' .and. tmpbas%type>'' 
-     &            .and. tmpbas%comp>'') then
+                else if(tmpbas%name>' ' .and. tmpbas%type>' ' 
+     &            .and. tmpbas%comp>' ') then
                   SELECT CASE(tmpbas%type)
                   CASE ('BASIS','MOLFBAS')
                     backspace(tmp_file)               
                     read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
      &                                      tmpbas%type,tmpbas%file
-                    if (.not.(ios.ne.0) .and. tmpbas%file>'') then
+                    if (.not.(ios.ne.0) .and. tmpbas%file>' ') then
                       CALL ADD_BASIS(bas,firstbas,tmpbas)
                     else if (ios.ne.0) then
                      write(tmp_file,*) "ERROR(readbasis) :", 
@@ -1076,8 +1076,8 @@
             ELSE IF (pressect==section.AND.pressub==subsection) THEN
               IF (str==name) THEN
                 BACKSPACE(infile)
-                tmp_name=''
-                tmp_comp=''
+                tmp_name=' '
+                tmp_comp=' '
                 read(infile,*,iostat=ios) tmp_name,tmp_comp
                 IF (.not.(ios.ne.0) .and. str==comp) EXIT
               END IF
