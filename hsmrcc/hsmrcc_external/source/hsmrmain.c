@@ -1,5 +1,9 @@
-#include <getopt.h> /*  under /usr/include  */
-/* #include "getopt.h" */
+/*  under /usr/include  */
+/* #include <getopt.h> */ 
+
+/*  own header file (needed for some architectures) */
+#include "getopt.h" 
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
