@@ -1161,8 +1161,8 @@ subroutine OpenOtherFiles
    recl_ntsize=(4*2*(1+NTSIZE))
 
    if (get_iprint() >= 7) then
-     write(UOUT,*) 'OpenOtherFiles: going to open FileTNEW,FileTOLD,FileTAMP files with recl_ntsize=', \
-     recl_ntsize
+!    write(UOUT,*) 'OpenOtherFiles: going to open FileTNEW,FileTOLD,FileTAMP files with recl_ntsize=',\\
+!    recl_ntsize
    endif
 
    open(UTNEW,file=FileTNEW,access='DIRECT',form='UNFORMATTED',status='UNKNOWN',recl=recl_ntsize,iostat=ios)
