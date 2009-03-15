@@ -341,11 +341,11 @@ endif
 Call Header('MRCONEE print-out',-1)
 
 write(LUPRI,'(2x,a,i3)')     'Total # of KU spinors, NSP=',NSP
-write(LUPRI,'(2x,a,l)')      ' is BREIT correction=',BREIT
+write(LUPRI,'(2x,a,l1)')      ' is BREIT correction=',BREIT
 write(LUPRI,'(2x,a,f12.6)')  ' ECORE=',ECORE
 write(LUPRI,'(2x,a,i3)')     ' NFSYM=',NFSYM
 write(LUPRI,'(2x,a,i3)')     ' NZ=',NZ
-write(LUPRI,'(2x,a,l)')      ' is spin-free, SPFR=',SPFR
+write(LUPRI,'(2x,a,l1)')      ' is spin-free, SPFR=',SPFR
 write(LUPRI,'(2x,a,i3)')     ' NORBT=',NORBT
 
 write(LUPRI,'(/,2x,a,i2)')  ' NSYMRP=',NSYMRP
