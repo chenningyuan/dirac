@@ -135,7 +135,7 @@ function Xget_string(self) result(str_out)
     str_out(i:i) = self(1)%strp(i)
    enddo
   else
-    str_out=''
+    str_out=' '
   endif
   call QEXIT('get_string')
 end function Xget_string
@@ -173,7 +173,7 @@ function get_string(self) result(str_out)
     str_out(i:i) = self(1)%strp(i)
    enddo
   else
-    str_out=''
+    str_out=' '
   endif
 
 end function get_string
