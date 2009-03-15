@@ -80,8 +80,8 @@ subroutine HSCCINP(WORD,reset)
 Logical, save :: set = .false.
 Logical, intent(in) :: reset
 
-CHARACTER:: PROMPT*1=''
-CHARACTER(len=7) :: WORD, KEYWORD=''
+CHARACTER:: PROMPT*1=' '
+CHARACTER(len=7) :: WORD, KEYWORD=' '
 
 ! ... nice F90 version 
 character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
