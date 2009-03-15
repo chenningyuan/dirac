@@ -31,21 +31,28 @@
   else
    write(LUPRI,*) 'GAMESS files not open !'
    call quit('GAMESS files not open !')
-
   endif
 
  end subroutine open_gamess_files
 
- subroutine get_gamess_ints
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ subroutine get_gamess_ints(nort,eps,nn,ind,v,nint)
+!
+!    provide data for high-sect CCSD from GAMESS 
+!  
+! called from readv(ccsd3.F)
+!
 #include "implicit.h"
 #include "priunit.h"
+   real*8, intent(inout) :: eps(*), v(*)
+   integer, intent(inout) :: ind(*),nint
 
    call open_gamess_files
 
    call rd_hcrmo
-   call rd_mulmo
+   call rd_mulmo(v,ind,nint)
 
-   call quit('get_gamess_ints')
+   !call quit('get_gamess_ints')
 
  end subroutine get_gamess_ints
 
@@ -80,12 +87,14 @@
  
  end subroutine rd_hcrmo 
 
- subroutine rd_mulmo
+ subroutine rd_mulmo(v,ind,nint)
   use memory_allocator
   use Parameters ! from HSMRCC
   use IntGenMod ! from SHam's HSMRCC
 #include "implicit.h"
 #include "priunit.h"
+   real*8, intent(inout) :: v(*)
+   integer, intent(inout) :: ind(*),nint
 
 !  C     THE FIRST RECORD CONTAINS INFORMATION                             
 !      WRITE(IMULMO) NMO, IUNIQ, LABELSIZE, NINTMX
@@ -110,9 +119,16 @@
 
 ! ... continue with reading of integrals&indexes
   call set_hscc_iprint (50)
-  call check_gms_spacial_integrals(LuMULMO,IUNIQ, LABELSIZE, NINTMX)
+
+ ! ... routine in HSMRCC directories
+  call check_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)
+
+  !call get_gms_mo_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX)
+  !call get_gms_mo_integrals
 
  end subroutine rd_mulmo 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
  end module get_gamess_mo_ints
 

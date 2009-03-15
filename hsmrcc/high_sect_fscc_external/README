@@ -8,9 +8,10 @@ to write own dependencies of each executable. With the so called medium memory m
 Also I had to rename some routines in independent executable files because of overlaping their names.
 Now all object files are used for linking executable files, therefore all function names must be unique.
 
-These GAMESS files (produces by Sham's changes) are read:
+These GAMESS files (produces by Sham's changes) are read (get_moints.F90) :
  HCRMO  $SCR/$JOB.F281
  MULMO  $SCR/$JOB.F282
+
 
 
 I. Fock-space cc programs:
@@ -40,7 +41,6 @@ II.    CCSD    available for (2,1)
       CCSDT   available for (0,0) (1,1) (1,2) 
                           (0,1) (0,2) (0,3) (0,4) (0,5) (0,6) 
                           (1,0) (2,0) (3,0) (4,0) (5,0) (6,0) 
-
      
 III. Files needed for compilation:
 for all programs - c??.f csdsub.f
@@ -102,7 +102,7 @@ line 2 - iopt(1:20) (20i3)
  iopt (19) = 0 : GAMESS
 
 
-line 3 - norb = # of orbitals in transformed integral file. (i3)
+line 3 - norb = # of (spacial) orbitals in transformed integral file. (i3)
 line 4 - cc(1:norb) = type of orbitals. following types are allowed:
                     c - inactive (applies to inactive orbitals appearing
                         in the integral file)

@@ -20,6 +20,7 @@ module IntGenMod
   ! ... this specification is needed for showing out internal routines 
    public :: DrvIntGen, DrvIntGen_DIRAC,NZVPkIBuf,NZVIntBuf 
    public :: check_gms_integrals, control_print_VIND_VINT, check_gms_spacial_integrals
+   !public :: PackRSHP,RecNumHP,pread, check_pqrs, print_gms_int_ind_mul,get_iprint,flushout 
    public :: PackRSHP,RecNumHP
  
 contains
@@ -2119,10 +2120,10 @@ subroutine  check_gms_integrals
 end subroutine check_gms_integrals
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
+subroutine check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
 !------------------------------------------------------------------------------------
 !
-!             opens, and read GAMESS prepared integrals
+!           open, and read GAMESS prepared integrals
 !
 !  called from HighSect FSCC codes !
 !
@@ -2130,6 +2131,11 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
 #include "priunit.h"
    integer, intent(in) :: lu_file
    integer, intent(in)  ::   IUNIQ, LABELSIZE, NINTMX
+   integer, intent(inout) :: nnint
+
+   integer, intent(inout) :: ind(*) ! indexes
+   double precision, intent(inout) :: v(*) ! integrals
+
    integer NXX
    integer NPACKIC, NPACK, LABEL
    integer :: ASBufInd, NZVIntBufInd
@@ -2153,14 +2159,23 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
   if (.not.allocated(XXPREAD)) allocate(XXPREAD(NINTMX))
   if (.not.allocated(IXPREAD)) allocate(IXPREAD(NINTMX))
 
+  nnint = 1
+
 ! ... own cycle of reading ...
       NPACKIC = 0
       do
         ! ... INTSFP set in Parameters
         ! call PREAD(LABELSIZE,INTSFP,UMR2EINT,XXPREAD,IXPREAD,NXX,NINTMX)
          call PREAD(LABELSIZE,INTSFP,lu_file,XXPREAD,IXPREAD,NXX,NINTMX)
+
          NumIntRec = NXX
      
+!       .. copy onto big arrays 
+         call dcopy(NXX,XXPREAD,1,v(nnint),1)
+         call icopy(NXX,IXPREAD,1,ind(nnint),1)
+
+         nnint = nnint + IABS(NXX)
+
          write(UOUT,'(2x,a,i8)') 'PREAD done, NumIntRec=',NumIntRec
            
          IF (LABELSIZE.EQ.2) THEN
@@ -2178,7 +2193,7 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
                R = ISHFT( LABEL, -16 )
                S = IAND(  LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, aa ')
-               call print_gms_int_ind(P,Q,R,S,ASInt)
+               call print_gms_int_ind_mul(P,Q,R,S,ASInt)
 #else
                LABEL = IXPREAD(NPACK)
                P =       ISHFT( LABEL, -48 )
@@ -2186,7 +2201,7 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
                R = IAND( ISHFT( LABEL, -16 ), 65535 )
                S = IAND( LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
-               call print_gms_int_ind(P,Q,R,S,ASInt)
+               call print_gms_int_ind_mul(P,Q,R,S,ASInt)
 #endif
             enddo
          ELSE IF (LABELSIZE.EQ.1) THEN
@@ -2202,7 +2217,7 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
                R = IAND( ISHFT( LABEL,  -8 ), 255 )
                S = IAND(        LABEL,        255 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ba')
-               call print_gms_int_ind(P,Q,R,S,ASInt)
+               call print_gms_int_ind_mul(P,Q,R,S,ASInt)
 #else
                IF ( MOD(NPACK,2) .EQ. 0 ) THEN
                   LABEL = IXPREAD(NPACK/2)
@@ -2211,7 +2226,7 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
                   R = IAND( ISHFT( LABEL,  -8 ), 255 )
                   S = IAND( LABEL, 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bb')
-                  call print_gms_int_ind(P,Q,R,S,ASInt)
+                  call print_gms_int_ind_mul(P,Q,R,S,ASInt)
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
                   P = ISHFT( LABEL, -56 )
@@ -2219,7 +2234,7 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
                   R = IAND( ISHFT( LABEL, -40 ), 255 )
                   S = IAND( ISHFT( LABEL, -32 ), 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
-                  call print_gms_int_ind(P,Q,R,S,ASInt)
+                  call print_gms_int_ind_mul(P,Q,R,S,ASInt)
                ENDIF
 #endif
             enddo
@@ -2239,6 +2254,25 @@ subroutine  check_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX)
      if (.not.allocated(IXPREAD)) deallocate(IXPREAD)
 
 end subroutine check_gms_spacial_integrals
+
+subroutine print_gms_int_ind_mul(P,Q,R,S,Integral)
+! .. copied:
+!
+!C        IN THIS PASS, CONSTRUCT ALL MO INTEGRALS (IJ|KL) WITH ... 
+!C                                                                       
+!C             JMIN <= J <= JMAX                                      
+!C             I >= J                                                   
+!C             1 <= K <= I                                              
+!C             IF (I.NE.K) 1 <= L <= K                                  
+!C             IF (I.EQ.K) 1 <= L <= J                                  
+!C                                      
+integer, intent(in) :: P,Q,R,S
+real*8, intent(in) :: Integral
+if (get_iprint() >= 20) then
+  write(UOUT,'(2x,a,2i4,a,2i4,a,f18.12)') '(',P,Q,'|',R,S,')=',Integral
+endif
+end subroutine print_gms_int_ind_mul
+
 
 subroutine print_gms_int_ind(P,Q,R,S,ASInt)
 integer, intent(in) :: P,Q,R,S

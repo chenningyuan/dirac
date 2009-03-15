@@ -665,7 +665,7 @@ c  diag 34
         call add       ("va1 ",2.d0,"va2 ",-1.d0,"s2  ")
         call mult      ("s2  ","t1c ","s3  ",202)
 c v1  Feb 95
-	call add       ("s3  ",1.d0,"hp  ",1.d0,"s3  ")
+        call add       ("s3  ",1.d0,"hp  ",1.d0,"s3  ")
 
         call reorder   ("s3  ","s2  ",1243,4)
         call mult6     ("s1  ","s2  ","s3  ",0)
@@ -1318,7 +1318,7 @@ c  diag 1
       call reorder  ("hppp","bx1 ",1342,4)
 C v1 Feb 95
       call mult     ("ta5 ","ph  ","s1  ",311)
-      call add	    ("bx1 ",1.d0,"s1  ",-0.5d0,"bx1 ")
+      call add      ("bx1 ",1.d0,"s1  ",-0.5d0,"bx1 ")
 c  diag 2 
       call add      ("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
       call mult     ("ta1 ","s1  ","s2  ",222)
@@ -1518,7 +1518,7 @@ c  diag 1
 c v1 Feb2
       call add      ("bx8 ",1.d0,"hh  ",1.d0,"bx8 ")
       call mult     ("t1c ","hp  ","s1  ",111)
-      call add 	    ("bx8 ",1.d0,"s1  ",1.d0,"bx8 ")
+      call add      ("bx8 ",1.d0,"s1  ",1.d0,"bx8 ")
 c  diag 2 
       call add      ("hhpp",-2.d0,"va6 ",1.d0,"s1  ")
       call mult     ("tm  ","s1  ","s2  ",113)

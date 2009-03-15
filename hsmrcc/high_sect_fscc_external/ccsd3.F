@@ -94,6 +94,10 @@
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 
       dimension ilet(6)
+ 
+      logical :: skip_old_read=.true.
+      logical :: use_new_gamess=.true.
+
       data ilet /1hc,1hc,1hh,1hg,1hp,1hv/
       data zero /1.d-8/
 
@@ -106,13 +110,15 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
       endif
 
       if (iopt(19).ne.0) then
-         call quit('aces ii not supported !')
+         call quit('miro: aces ii not supported !')
         intrc=600
       endif
 
 ! miro:  insertion of own reading procedure
-      call get_gamess_ints 
-      return
+!     call get_gamess_ints 
+!     return
+
+      if (.not.skip_old_read) then
 
       rewind(12,iostat=ios)
       if (ios.ne.0) then
@@ -128,8 +134,10 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
         call  abext('readv : failed read (12) nort,(eps(i),i=1,nort)')
       endif
 
-      if (nort.ne.norb) write (*,*) 'discrepancy in norb: ',norb,nort
-      if (nort.ne.norb) then                      
+      endif
+
+      if (nort.ne.norb.and..not.skip_old_read) then
+        write (*,*) 'discrepancy in norb: ',norb,nort 
         call abext('readv: nort.ne.norb ! ')
       end if
 
@@ -153,13 +161,21 @@ c  changes for aces99
 3400  format(3('orb ',i3,2x,a1,', e=',1pe12.5,:,';  '))
 340   continue
 
-      if (iopt(19).eq.0) read (12)
-      nint=0
+      if (.not.skip_old_read) then
+        if (iopt(19).eq.0) read (12)
+      endif
 
-120   if(iopt(19).eq.0) then ! GAMESS
+      nint=0 ! initialization for the loop
+
+      if (.not.use_new_gamess) then
+
+120   continue
+      if(iopt(19).eq.0) then ! GAMESS
+       if (.not.skip_old_read) then
         read (12) nn,(ind(nint+i),i=1,2725),
      1  (v(nint+i),i=1,2725)
-      else
+       endif
+      else ! ACESS II
 c       write(*,*) 'bef read'
         read (12,end=135,err=199) (v(nint+i),i=1,600),(ind(nint+i),
      1  i=1,600),nn
@@ -168,46 +184,74 @@ c       write(*,*) 'aft read. nn=',nn
       endif
 
       call dimx(nint+intrc,nintmx,"nint")
+
 C--------------------------------------------------------
 C         UNPACK, ELIMINATE INTS WITH CORE ORBS
 C--------------------------------------------------------
       nnint=nint
       do 130 i=nnint+1,nnint+abs(nn)
+
       if (abs(v(i)).lt.zero) go to 130
+
       J1=iand(ishft(ind(i),-24),'ff'X)
       J2=iand(ishft(ind(i),-16),'ff'X)
       J3=iand(ishft(ind(i),-8) ,'ff'X)
       J4=iand(ind(i)           ,'ff'X)
-      if(iopt(19).eq.2) then
+
+      if(iopt(19).eq.2) then ! ACESII
         j1=irerdrv(j1)
         j2=irerdrv(j2)
         j3=irerdrv(j3)
         j4=irerdrv(j4)
       endif
+
+!     miro: what is ic ?
       if((ic(j1).eq.1).or.(ic(j2).eq.1).or.(ic(j3).eq.1).or.
      1                                      (ic(j4).eq.1)) go to 130
-      nint=nint+1
+
+      nint=nint+1 ! increase index
+
       v(nint)=v(i)
       ind(nint)=ior(ishft(j1,24),ior(ishft(j3,16),ior(ishft(j2,8),j4)))
+
 130   continue
-      if (nn.gt.0) go to 120
+
+      if (nn.gt.0) go to 120 ! loop
+
 199   write(*,*) 'Record in tape12 too short'
       call abext('12short')
+
 135   continue
 
+      else
+
+        ! ... get in new GAMESS integrals ...
+        call get_gamess_ints(nort,eps,nn,ind,v,nint) 
+
+        write(LUPRI,*) 'after, nint=',nint
+
+      endif
+
 !------------------------------------------------------------
-      write (LUPRI,*) nint,' integrals and indices read in '
+      write (LUPRI,'(/,4x,i6,a,/)') 
+     &      nint,' integrals and indices read in !'
 
       if (iopt(8).eq.0) then
         nfock=0
+        write (LUPRI,'(/,a,/)') 
+     & 'Cannonical  Hartree-Fock orbitals'//
+     & ' (-orbital energies needed only), leaving.'
+        call quit('end in ccsd3.f')
         return
       endif
+
       if (iopt(8).lt.0) go to 410
 
 ! ----------- Fock matrix reading --------------
       READ (12) NFOCK,(FOCK(I),I=1,NFOCK),(IFOCK(I),I=1,NFOCK)
       WRITE (6,*) NFOCK,' FOCK MATRIX ELEMENTS READ IN'
       CALL dimx(NFOCK,NFOCKMX,"NFOCK")
+
       lf=0
       do 220 i=1,nfock
       if (abs(fock(i)).lt.1.d-9) go to 220
@@ -217,6 +261,7 @@ C--------------------------------------------------------
 220   continue
       nfock=lf
       write (*,*) nfock,' nonzero fock matrix elements left'
+
       do 250 i=1,nfock
       i1=iand(ifock(i),'ff'X)
       i2=ishft(ifock(i),-8)
@@ -258,6 +303,7 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
           fock(nfock)=-adde
         endif
 430   continue
+
 440   write (*,*) ' modified orbital energies'
       do 450 icl=1,nclass
         write (*,3300) icl
@@ -286,8 +332,10 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
 c   subroutine finds # of file named NAME. if not found,
 c   increases nflcur by 1, starts new file.
 c   nflcur set to 0 at start of program.
