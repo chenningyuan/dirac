@@ -144,7 +144,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       end if
       write (6,*) ' '
       write (6,4321) iter,diff,idec(idiff),diff1,idec(idiff1)
-4321	format (" iteration # ",i3,"  diffmx= ",e10.3,2x,i12,e10.3,2x,i12)
+ 4321 format (" iteration # ",i3,"  diffmx= ",e10.3,2x,i12,e10.3,2x,i12)
       if (iopt(17).ne.0) then
         write (6,2401) df3,idec(iddf3),idec(inddf3)
       end if
