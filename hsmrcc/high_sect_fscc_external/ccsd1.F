@@ -1848,18 +1848,26 @@ c  iparm=6 : 8x2=8
       end if
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine abext(aa)
-      implicit real*8 (a-h,o-z)
+!
+!  ... exit routine, extended by DIRAC quit
+!
+#include "implicit.h"
+#include "priunit.h"
+!     implicit real*8 (a-h,o-z)
       character*8 aa
       integer*4 ii
       ii=99
-      write(6,*) ' aborted from ',aa
-      call abort()
+      write(LUPRI,*) ' aborted from ',aa
+      call quit(aa)
+!     call abort()
       end
+
       subroutine add(name1,f1,name2,f2,namet)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)

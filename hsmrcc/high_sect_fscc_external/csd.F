@@ -70,7 +70,8 @@ c     iopt(10) .ne.0 - do not save pppp.
       open(12,file=filenm,form='UNFORMATTED')
 
 !     write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
-      call header('standalone CCSD program, heritage of TAU group',-1)
+      call header(
+     & 'standalone CCSD program, precious heritage of TAU group',-1)
 
       csdstim = cputime(real(0.))
       csdltim = csdstim
@@ -90,12 +91,13 @@ c     iopt(10) .ne.0 - do not save pppp.
       endif
 
       convrg = 10.d0**(-iopt(3))
+
       write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') 
      1 iopt(2),convrg
 
       call prtime("rdin",0,0)
 
-      call ordv
+      call ordv ! sorting integrals
 
       iter=0
       call tinit
@@ -345,7 +347,8 @@ c  different endings
       end
 c *********************************************
       subroutine ordv
-      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 !-------------------------------------------------------------------------------
 c va: hhpp
@@ -369,15 +372,14 @@ c              hppp 2143 = vd14
 !-------------------------------------------------------------------------------
 #include "cint.h"
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "fock.h"
 !     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
 c
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
+
       print *,"**************************"
       call seltyp   (2233,0,"hhpp",4)
       call seltyp   (2333,0,"hppp",4)
@@ -417,7 +419,6 @@ c
 c ******************************************
       subroutine tinit
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -441,8 +442,8 @@ c calc tinit = hhpp / eps
       end if
       return
       end
-c**************************************************************
 
+c**************************************************************
       subroutine ener(id)
       implicit real*8 (a-h,o-z)
 c   id=1 for rle, 0 regularly.

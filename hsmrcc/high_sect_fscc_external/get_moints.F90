@@ -45,21 +45,25 @@
 #include "implicit.h"
 #include "priunit.h"
    real*8, intent(inout) :: eps(*), v(*)
-   integer, intent(inout) :: ind(*),nint
+   integer, intent(inout) :: ind(*),nint, nort
 
    call open_gamess_files
 
-   call rd_hcrmo
+   call rd_hcrmo(eps, nort)
    call rd_mulmo(v,ind,nint)
 
    !call quit('get_gamess_ints')
 
  end subroutine get_gamess_ints
 
- subroutine rd_hcrmo
+ subroutine rd_hcrmo(eps,nort)
   use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
+   real*8, intent(inout) :: eps(*)
+   integer, intent(inout) :: nort
+
+
 !C     THE FIRST RECORD CONTAINS INFORMATION                             
 !     WRITE(IHCRMO) NMO                                                 
 !     WRITE(IHCRMO) IOCCMO                                  
@@ -83,7 +87,11 @@
 
    read(LuHCRMO) HCOREMO
    write(LUPRI,'(/,4x,a,2i3)') 'Hcore matrix',NMO,NMO
+
    call OUTPUT(HCOREMO,1,NMO,1,NMO,NMO,NMO,1,LUPRI)
+
+   nort = NMO
+   call dcopy (NMO,ORBENMO,1,eps,1)
  
  end subroutine rd_hcrmo 
 
@@ -121,7 +129,7 @@
   call set_hscc_iprint (50)
 
  ! ... routine in HSMRCC directories
-  call check_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)
+  call get_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)
 
   !call get_gms_mo_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX)
   !call get_gms_mo_integrals

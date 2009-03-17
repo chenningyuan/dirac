@@ -1,19 +1,17 @@
-
-
-c ***********************************************
+!c ***********************************************
       SUBROUTINE MINV(AB,N,LDA,SCRATCH,DET,EPS,M,MODE)
-C
-C     A subroutine that calculates the determinant and inverse of
-C          a matrix, as well as solving systems of linear equations.
-C     Martin J. McBride.  11/25/85.
-C     General Electric CRD, Information System Operation.
-C
-C  THE COMMENTS ABOVE REFER TO AN OLD "SCIPORT" VERSION OF THIS ROUTINE,
-C  PRESUMABLY WRITTEN BY MR. MC BRIDE.  UNFORTUNATELY, IT SEEMS THAT 
-C  HE IS A BAD PROGRAMMER AND THIS ROUTINE DID NOT WORK.  MINV IS NOW
-C  A SIMPLE INTERFACE TO LINPACK ROUTINES WHICH *WORK*
-C
-CEND
+!C
+!C     A subroutine that calculates the determinant and inverse of
+!C          a matrix, as well as solving systems of linear equations.
+!C     Martin J. McBride.  11/25/85.
+!C     General Electric CRD, Information System Operation.
+!C
+!C  THE COMMENTS ABOVE REFER TO AN OLD "SCIPORT" VERSION OF THIS ROUTINE,
+!C  PRESUMABLY WRITTEN BY MR. MC BRIDE.  UNFORTUNATELY, IT SEEMS THAT 
+!C  HE IS A BAD PROGRAMMER AND THIS ROUTINE DID NOT WORK.  MINV IS NOW
+!C  A SIMPLE INTERFACE TO LINPACK ROUTINES WHICH *WORK*
+!C
+!CEND
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION AB(LDA,1),SCRATCH(1),X(2)
 C
@@ -25,10 +23,11 @@ C
 1000   FORMAT(T3,'@MINV-F, Only one system can be solved at a time.')
        CALL abext('minv')
       ENDIF
+!              ... library routine pdpack/dge.F
       IF(M.EQ.0)CALL DGEDI(AB,LDA,N,SCRATCH,X,SCRATCH(IOFF),11)
-C
-C THIS IS WRONG, BUT WHO CARES?
-C
+!C
+!C THIS IS WRONG, BUT WHO CARES?
+!C
       DET=X(1)      
 C
       RETURN
@@ -36,11 +35,15 @@ C
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dimx(nn,n0,na)
-      implicit real*8 (a-h,o-z)
+!
+! check whether there is enough space on static arrays (nn<=n0)
+!
+#include "implicit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
       character*8 na
+
       if (nn.le.n0) then   
         return
       else
@@ -62,10 +65,14 @@ C
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) ' file for diveps not found'
@@ -77,11 +84,11 @@ C
       if (iii1.gt.100) then
         do 20 i=1,nsize
         if (gen(istrt2+i).ne.0.) then
-	  igg=igen(istrt1+i)
-	  ka=iand(ishft(igg,-24),'ff'X)
-	  kb=iand(ishft(igg,-16),'ff'X)
-	  kc=iand(ishft(igg, -8),'ff'X)
-	  kd=iand(      igg     ,'ff'X)
+          igg=igen(istrt1+i)
+          ka=iand(ishft(igg,-24),'ff'X)
+          kb=iand(ishft(igg,-16),'ff'X)
+          kc=iand(ishft(igg, -8),'ff'X)
+          kd=iand(      igg     ,'ff'X)
           gen(istrt2+i)=gen(istrt2+i)/
      2    (eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
@@ -89,8 +96,8 @@ C
       else
         do 25 i=1,nsize
         if (gen(istrt2+i).ne.0.d0) then
-	  kc=iand(ishft(igen(istrt1+i),-8),'ff'X)
-	  kd=iand(      igen(istrt1+i)    ,'ff'X)
+          kc=iand(ishft(igen(istrt1+i),-8),'ff'X)
+          kd=iand(      igen(istrt1+i)    ,'ff'X)
           gen(istrt2+i)=gen(istrt2+i)/(eps(kc)-eps(kd))
         endif
 25      continue
@@ -2037,8 +2044,9 @@ c   to general. (iline=4 is last line).
 10    ic(i)=ishft(ia(i),j)
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vsort (ivec,N8,rlvec)
-C
 !     IMPLICIT INTEGER*4 (A-Z)
       IMPLICIT INTEGER (A-Z)
 !     INTEGER*4  ivec(*),TEMP
@@ -2046,35 +2054,36 @@ C
 !     integer*4 N8
       integer N8
       real*8 rlvec(*),rltemp
-C      integer lftbit,nx4,n
-C
+!C      integer lftbit,nx4,n
+!C
       n=n8
       IF (N .LE. 1) RETURN
-C     P0 = AND(N-1,MASK(LEADZ(N-1)+1))
+
+!C     P0 = AND(N-1,MASK(LEADZ(N-1)+1))
       nx4=n-1
       P0 = lftbit(nx4)
       P = P0
-C
+!C
    20 Q = P0
       R = 0
       D = P
       I = 0
-C
+!C
    30 IF (IAND(I,P) .EQ. R) THEN
-C$DIR NO_RECURRENCE
+!C$DIR NO_RECURRENCE
          DO 32 J=1,MIN (P,N-I-D)
-c           TEMP       = MAX (VEC(J+I),VEC(J+I+D))
-c           VEC(J+I)   = MIN (VEC(J+I),VEC(J+I+D))
-c           VEC(J+I+D) = TEMP
-CGJ
-C Now works for 32 bits
-	if (ishft( ivec(j+i),-1).gt.ishft( ivec(j+i+d),-1)) then
-	    temp       = ivec(j+i)
-	    ivec(j+i)   = ivec(j+i+d)
+!c           TEMP       = MAX (VEC(J+I),VEC(J+I+D))
+!c           VEC(J+I)   = MIN (VEC(J+I),VEC(J+I+D))
+!c           VEC(J+I+D) = TEMP
+!CGJ
+!C Now works for 32 bits
+        if (ishft( ivec(j+i),-1).gt.ishft( ivec(j+i+d),-1)) then
+            temp       = ivec(j+i)
+            ivec(j+i)   = ivec(j+i+d)
             ivec(J+I+D) = TEMP
-	    rltemp     = rlvec(j+i)
-	    rlvec(j+i) = rlvec(j+i+d)
-	    rlvec(j+i+d) = rltemp
+            rltemp     = rlvec(j+i)
+            rlvec(j+i) = rlvec(j+i+d)
+            rlvec(j+i+d) = rltemp
         Else If ((ishft(ivec(j+i),-1).eq.ishft(ivec(j+i+d),-1))
      +  .AND. (iabs(ivec(j+i)).gt.iabs(ivec(j+i+d)))) then
             temp       = ivec(j+i)
@@ -2089,7 +2098,7 @@ C Now works for 32 bits
       ENDIF
       I = I + P
       IF ((I+D) .LT. N) GO TO 30
-C
+!C
       IF (Q .NE. P) THEN
         D = Q-P
         Q = Q/2
@@ -2097,27 +2106,27 @@ C
         I = 0
         GO TO 30
       ENDIF
-C
+!C
       P = P/2
       IF (P .GT. 4) GO TO 20
-C
+!C
    70 Q = P0
       R = 0
       D = P
-C
+!C
    80 DO 82 I=1,P
-C$DIR NO_RECURRENCE
+!C$DIR NO_RECURRENCE
       DO 82 J=I,N-D-R,2*P
-c        TEMP       = MAX (VEC(J+R),VEC(J+R+D))
-c        VEC(J+R)   = MIN (VEC(J+R),VEC(J+R+D))
-c        VEC(J+R+D) = TEMP
+!c        TEMP       = MAX (VEC(J+R),VEC(J+R+D))
+!c        VEC(J+R)   = MIN (VEC(J+R),VEC(J+R+D))
+!c        VEC(J+R+D) = TEMP
         if (ishft( ivec(j+r),-1).gt.ishft( ivec(j+r+d),-1)) then
-	    temp       = ivec(j+r)
-	    ivec(j+r)   = ivec(j+r+d)
+            temp       = ivec(j+r)
+            ivec(j+r)   = ivec(j+r+d)
             ivec(J+R+D) = TEMP
-	    rltemp     = rlvec(j+r)
-	    rlvec(j+r) = rlvec(j+r+d)
-	    rlvec(j+r+d) = rltemp
+            rltemp     = rlvec(j+r)
+            rlvec(j+r) = rlvec(j+r+d)
+            rlvec(j+r+d) = rltemp
         Else If ((ishft(ivec(j+r),-1).eq.ishft(ivec(j+r+d),-1))
      +  .AND. (iabs(ivec(j+r)).gt.iabs(ivec(j+r+d)))) then
             temp       = ivec(j+r)
@@ -2126,41 +2135,64 @@ c        VEC(J+R+D) = TEMP
             rltemp     = rlvec(j+r)
             rlvec(j+r) = rlvec(j+r+d)
             rlvec(j+r+d) = rltemp
-
         endif
    82 CONTINUE
-C
+!C
       IF (Q .NE. P) THEN
          D = Q - P
          Q = Q / 2
          R = P
          GO TO 80
       ENDIF
-C
+!C
       P = P / 2
       IF (P .NE. 0) GO TO 70
-C
+!C
       RETURN
       END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vxsort(itmp,ntmp,nt,t,it)
-      implicit real*8 (a-h,o-z)
-c  sort itmp, expnd to it, gather t accordingly.
+!-------------------------------------------------------------------
+!  ...  what does it do ?
+!
+!c  sort itmp, expnd to it, gather t accordingly.
+!
+!  checks nt,ntmp
+!
+!  called many times from ccsd3.F
+!
+!-------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+!     implicit real*8 (a-h,o-z)
       dimension itmp(ntmp),t(nt),it(nt)
-      if (ntmp.gt.1) call vsort(itmp,ntmp,t)
-C      print '(2hGG,Z8)',(itmp(i),i=1,ntmp)
+
+      if (ntmp.gt.1) then
+         call vsort(itmp,ntmp,t)
+         write(LUPRI,*) 'after vsort called'
+      endif
+!C      print '(2hGG,Z8)',(itmp(i),i=1,ntmp)
+
       if (ntmp.gt.nt) then
-        write (*,*) ' vxsort. ntmp gt nt! ',ntmp,nt
+
+        write (LUPRI,*) ' vxsort. ntmp gt nt! ',ntmp,nt
+
         call zeroup(ntmp,itmp,t,1.d-8)
-        write (*,*) ntmp,' integrals left'
+        write (LUPRI,*) ntmp,' integrals left'
+
         if (ntmp.gt.nt) then
           call zeroup(ntmp,itmp,t,5.d-6)
-          write (*,*) ntmp,' integrals left'
+          write (LUPRI,*) ntmp,' integrals left'
           if (ntmp.gt.nt) then
-            write (*,*) ' vxsort. ntmp still gt nt ',ntmp,nt
+            write (LUPRI,'(2x,a,2i5)')
+     &      ' vxsort. ntmp still gt nt ',ntmp,nt
             call abext('vxsort  ')
           endif
         endif
+
       endif
+
       if (ntmp.lt.nt) then
         lt=nt
         ltmp=ntmp
@@ -2177,37 +2209,37 @@ C      print '(2hGG,Z8)',(itmp(i),i=1,ntmp)
         elseif (abs(t(ltmp)).lt.2.d-5) then
           ltmp=ltmp-1
         else
-	Do i=-20,20
+        Do i=-20,20
           write (*,100) lt,nt,ltmp+i,ntmp+i,idec(itmp(ltmp+i)),
      +                   idec(it(ntmp+i)),t(ltmp+i)
 100       format(' label not in tmplt. lt nt ltmp ntmp itmp it t=',
      1    4i7,1x,2i9,e12.4)
-	End Do
+        EndDo
           call abext('vxsort  ')   
         endif
         if (lt.gt.0) go to 20
       endif
       return
       end
+
       subroutine wrtfile(nt,nrec,name)
       implicit real*8 (a-h,o-z)
-c  write internal file "name" on tape nt, skipping nrec records.
-c  disk file structure for tc etc:
-c  1. nij (# of subblocks)
-c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
-c  3. ia(1:ije1(nij)), indices.
-c  4. a(1:ije1(nij)), actual values.
-c    nt.eq.9 = file witout indices (pppp).
-c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
-      
+!c  write internal file "name" on tape nt, skipping nrec records.
+!c  disk file structure for tc etc:
+!c  1. nij (# of subblocks)
+!c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
+!c  3. ia(1:ije1(nij)), indices.
+!c  4. a(1:ije1(nij)), actual values.
+!c    nt.eq.9 = file witout indices (pppp).
+!c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
       rewind nt
       if (nrec.gt.0) then
         do 10 i=1,4*nrec
