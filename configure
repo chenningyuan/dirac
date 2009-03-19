@@ -1903,8 +1903,9 @@ set_bit_arch(){
 #   .... take care of Lahey fortran
       lfc)
          opt="$opt --long"
-         safe="$safe --long" 
-         mcmodel_medium="" # to add
+         safe="$safe --long"
+	 # ... to add..
+         mcmodel_medium=" " 
          ;;
     esac
   fi
