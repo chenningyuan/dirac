@@ -176,7 +176,7 @@ end subroutine alloc_VINF_arrays
 subroutine InitReadGMS
 !--------------------------------------------------------------------------
 !
-!   read either Gamess integral files; or VINF file when present
+!       read either Gamess integral files; or VINF file when present
 !
 !--------------------------------------------------------------------------
    implicit none
@@ -225,6 +225,7 @@ subroutine InitReadGMS
    '----------------------------------------------------------------------------',    &
    'InitReadGMS: read LABELSIZE=',LABELSIZE,'; set INTSFP (parameters.F90) ',INTSFP,   & 
    '...read NXX=',NXX,' and set IXX=',IXX
+
 #if defined (ARCH32BIT) 
    write(UOUT,'(a)') '...we are on the 32-bit architecture '
 #else

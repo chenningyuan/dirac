@@ -1908,6 +1908,10 @@ set_bit_arch(){
          mcmodel_medium=" " 
          ;;
     esac
+  else  
+    if [ "$IsLP64" != "1" ]; then # we are on truly 32-bit architectures 
+      cpp_f90="-DARCH32BIT $cpp_f90"
+    fi
   fi
 
 if [ $IPRINT -ge "5" ];  then

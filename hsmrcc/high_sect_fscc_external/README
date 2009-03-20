@@ -12,10 +12,11 @@ These GAMESS files (produces by Sham's changes) are read (get_moints.F90) :
  HCRMO  $SCR/$JOB.F281
  MULMO  $SCR/$JOB.F282
 
+I use ARCH32BIT preprocessor flag to specify 32-bit architectures.
 
 
 I. Fock-space cc programs:
-==========================
+========================================
 csd - closed shell      (0h,0p)-sector
 
 csv - add 1 electron    (0,1)-sector

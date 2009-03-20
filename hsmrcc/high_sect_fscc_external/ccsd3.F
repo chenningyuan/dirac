@@ -1299,7 +1299,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call vxsort(itmp,nout,ije(nij),gen(istrt2+1),
      1 igen(istrt1+1))
 
-      write (6,1900) ije(nij),iii,iiv
+!     write (6,1900) ije(nij),iii,iiv
+      write (LUPRI,1900) ije(nij),iii,iiv
 1900  format('collected ',i9,' integrals of type ',2i6)
 
       call prt(name,name,iparm)
