@@ -12,7 +12,7 @@ subroutine PrintRunInfo
    use IOModule
    use IntGenMod
    use VacMod
-   use SymInf
+   use SymInfHSCC
    use GMSMod
    use OrbMod
    use Shift

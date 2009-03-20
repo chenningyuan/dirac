@@ -1,4 +1,4 @@
-module SymInf
+module SymInfHSCC
 
    use IOmodule
    implicit none
@@ -521,4 +521,4 @@ contains
 
       end subroutine print_irrep_tables
 
-end module SymInf
+end module SymInfHSCC

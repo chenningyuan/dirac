@@ -10,7 +10,7 @@ module GMSMod
    use Parameters
    use Options
    use IOModule
-   use SymInf
+   use SymInfHSCC
    use OrbMod
    implicit none
 
