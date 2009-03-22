@@ -52,7 +52,7 @@ Miro: all compilation has moved under DIRAC makefile system
 IV. Formatted 'input' file (c**.in):
 line 1 - title
 line 2 - iopt(1:20) (20i3)
- iopt(1) - print level (normally 0)
+ iopt(1) - print level (normally 0) - use it more abudantly for control printouts !
  iopt(2) - max number of iterations.
  iopt(3) - convergence criterion. convergence reached when all
            t amplitudes agree to 10**(-iopt(3))

@@ -84,8 +84,8 @@
 !---------------------------------------------------------------------------
        use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
 #include "implicit.h"
-#include "priunit.h"
 !      implicit real*8 (a-h,o-z)
+#include "priunit.h"
       dimension v(*),ind(*),irerdr(200),irerdrv(200),etmp(200)
       dimension fock(*),ifock(*)
 #include "dat.h"
@@ -101,7 +101,10 @@
       data ilet /1hc,1hc,1hh,1hg,1hp,1hv/
       data zero /1.d-8/
 
-      write(LUPRI,'(/,2x,a)') 'entered readv'
+      if (iopt(1).ge.5) then
+         call header('Output from "readv"',-1)
+         write(LUPRI,'(/,2x,a)') 'entered readv'
+      endif
 
 c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
       if (iopt(19).eq.0) then
@@ -228,14 +231,15 @@ C--------------------------------------------------------
         ! ... get in new GAMESS integrals ...
         call get_gamess_ints(nort,eps,nn,ind,v,nint) 
 
-        write(LUPRI,*) 'after, nint=',nint
-        write(LUPRI,*) 'after, nort=',nort
-        write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
-        
-        do i=1,nint
-          write(LUPRI,'(i4,a,f18.12,a,i22)')  
-     &    i,'. int:',v(i),' pck indx:',ind(i)
-        enddo
+        if (iopt(1).ge.5) then ! control prinout
+          write(LUPRI,*) 'after, nint=',nint
+          write(LUPRI,*) 'after, nort=',nort
+          write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
+          do i=1,nint
+            write(LUPRI,'(i4,a,f18.12,a,i22)')  
+     &      i,'. int:',v(i),' pck indx:',ind(i)
+          enddo
+        endif
 
       endif
 
@@ -247,7 +251,7 @@ C--------------------------------------------------------
         nfock=0
         write (LUPRI,'(/,a,/)') 
      & 'Cannonical  Hartree-Fock orbitals'//
-     & ' (-orbital energies needed only), leaving.'
+     & ' (-orbital energies needed only) are used, leaving.'
 
       !  call quit('end in ccsd3.f')
         return
@@ -324,8 +328,8 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 !      subroutine files(name,num,new,ijnum,iii,iiv)
       subroutine files_ccsd(name,num,new,ijnum,iii,iiv)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
+      integer*4 ch1,ch2
+!     integer ch1,ch2
       
 #include "param_ccsd.h"
 
@@ -643,9 +647,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       subroutine reord6 (namef,namet,iord)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -1118,7 +1120,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !  sorted and expanded according to indices (in igen) generated
 !  by tmplt.
 !
-! routine called many times from high.sector execs
+! routine called many times from high.sector executables
+!
 !------------------------------------------------------------------------
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1142,16 +1145,26 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       logical lrsp
       data zero / 1.d-13/
 
-!     .. function definition
+!     .. function definition - on 32bit !
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8) ,i4)           )
 
+      if (iopt(1).ge.5) then ! control printout
+        call header('Output from "selftyp"',-1)
+        write(LUPRI,'(2x,a,i3)') 'nint=',nint
+      endif
+
       call tmplt(iii,iiv,name,num)
+
+!     ... assumes ije is filled
       lngth=ije(nij)
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
+
       call parse(iii,i1,i2,i3,i4)
+
       call parse(iiv,iv1,iv2,iv3,iv4)
+
       lrsp=(iopt(9).ne.0).and.(iv1.eq.1).and.(iv2.eq.1)
       nh=0
       nv=0
@@ -1329,8 +1342,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       logical lrsp
       data zero / 1.d-13/
-!      32-bit function
 
+!      32-bit function
       ipack(i1,i2)=ior(ishft(i1,8),i2)
 
       if (iopt(8).eq.0) then
@@ -1558,32 +1571,33 @@ c  indices not retained for pppp.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt(ii1234,j1234,name,num)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
+      integer*4 ch1,ch2
+!     integer ch1,ch2
 c   ii1234<0 - collect 1/2 file (i>j)
       
 #include "param_ccsd.h"
-
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
+
       i1234=iabs(ii1234)
       call parse(i1234,i1,i2,i3,i4)
       call parse(j1234,j1,j2,j3,j4)
@@ -1698,15 +1712,12 @@ c   special for scratch files, which start with "s".
 
       subroutine tmplt6 (iii,iiv,name,num)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
-      
+      integer*4 ch1,ch2
+!     integer ch1,ch2
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
@@ -1729,6 +1740,7 @@ c   special for scratch files, which start with "s".
       nij=0
       ije(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
+
       nt0=nt
       do 10 ica=1,nclass
       ja1=ibias(ica)+1
@@ -1780,14 +1792,19 @@ c   special for scratch files, which start with "s".
 60            continue
              end if
 40          continue
+
             if (nt.gt.nt00) then
              call dimx (nt,nbig,"tmp6    ")
              nij=nij+1
              ije(nij)=nt-nt0
              ij(nij)=ipack3(ja,jb,jc)
              call ivsort (igen(nt00+1),nt-nt00)
-             if (nij.gt.ndij) write (6,*) 'nij reached ',
+
+             if (nij.gt.ndij) then 
+               write (6,*) 'nij reached ',
      1       nij,' at jabc=',ja,jb,jc
+             endif
+
              call dimx (nij,ndij,"tmpndij ")
             end if
            end if
@@ -1830,8 +1847,8 @@ c   special for scratch files, which start with s
 
       subroutine tmplt8 (iii,iiv,name,num)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
+      integer*4 ch1,ch2
+!     integer ch1,ch2
       
 #include "param_ccsd.h"
 
@@ -1979,8 +1996,8 @@ c   special for scratch files, which start with s
 
       subroutine tmplt10 (name,num)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
+      integer*4 ch1,ch2
+!     integer ch1,ch2
       
 #include "param_ccsd.h"
 
@@ -2092,35 +2109,28 @@ c   special for scratch files, which start with s
 
       subroutine tmplt12 (name,num)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
-      
+      integer*4 ch1,ch2
+!     integer ch1,ch2
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
 !!!#include "cij1.h" ! attention, variable changed names !
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
-      common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-
-      common /idv/ iv(200),nvalo
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+#include "idv.h"
+!     common /idv/ iv(200),nvalo
 
       dimension icsym(200)
 
       ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),
      1ior(ior(ishft(k,12),ishft(l,8)),ior(ishft(m,4),n)))
-
-!!    nij=nij1 ! mi: from common block
 
       iii=6
       iiv=1
@@ -2128,7 +2138,6 @@ c   special for scratch files, which start with s
       if (new.le.0) return
       nij=0
       ije(0)=0
-!!    ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
@@ -2172,9 +2181,7 @@ c   special for scratch files, which start with s
        if (nt.gt.nt00) then
         nij=nij+1
         ije(nij)=nt-nt0
-!!      ije1(nij)=nt-nt0
         ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
-!!      ij1(nij)=ipack(ja,jb,jc,jd,je,jf) 
         call ivsort (igen(nt00+1),nt-nt00)
         if (nij.gt.ndij) write (6,*) 'nij reached ',
      1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
@@ -2183,9 +2190,7 @@ c   special for scratch files, which start with s
 30    continue
       igen(nstrt(1,num-1)+1)=nij
       call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-!!    call kcopy (nij,ij1(1),igen(nstrt(1,num-1)+2))
       call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
-!!    call kcopy (nij+1,ije1(0),igen(nstrt(1,num-1)+nij+2))
       igen(nstrt(1,num-1)+2*nij+3)=iii
       igen(nstrt(1,num-1)+2*nij+4)=iiv
       do 150 i=1,nt-nt0
@@ -2683,18 +2688,14 @@ c
 
       subroutine tmpcng(nij,ij,ije,ntapef,nf,nt)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
+      integer*4 ch1,ch2
+!     integer ch1,ch2
 c   change nf-index grouping to nt-index grouping.
-      
 #include "param_ccsd.h"
-
       dimension ij(nij),ije(0:nij),ij1(ndij),ije1(0:ndij)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
@@ -2737,10 +2738,8 @@ c   change nf-index grouping to nt-index grouping.
 
       function v1det (ja,jb)
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
       v1det=0.d0
       j1=(ja+1)/2
       j2=(jb+1)/2
@@ -2753,6 +2752,7 @@ c   change nf-index grouping to nt-index grouping.
       end if
       return
       end
+
       function v2det (ja,jb,jc,jd)
       implicit real*8 (a-h,o-z)
       v2det=0.d0
@@ -2771,10 +2771,8 @@ c   change nf-index grouping to nt-index grouping.
       implicit real*8 (a-h,o-z)
 #include "prm.h"
 !     common /prm/ iperm(0:6,720)
-
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
       dimension jj1(6),ii(3)
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2

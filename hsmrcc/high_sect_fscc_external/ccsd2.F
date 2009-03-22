@@ -324,7 +324,7 @@ c
 8200  format (' row',i3,10f12.7/(1x,10f12.7))
 830   call rg(60,ndt,ham,ev,evi,1,vec,scr,scr(61),ierr)
       if (ierr.ne.0) then
-	write (*,'('' rg ierr='',i4)') ierr
+        write (*,'('' rg ierr='',i4)') ierr
         call abext('ehp     ')
       endif
       if (ipr.eq.0) print 8300,(ev(i),i=1,ndt)
@@ -405,10 +405,10 @@ c     order and print collected energies.
       time=cputime(0.)
       return
       end
+
       subroutine eneru2 (egr0,nval,ihp,ipr)
       implicit real*8 (a-h,o-z)
       external ispin,hmatel
-      
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1480,9 +1480,10 @@ c  calculate heff matrix elements
 10    continue
       return
       end 
+
       function imax (id1,ind1,id2,ind2,iparm)
       implicit real*8 (a-h,o-z)
-	integer*4 ch1,ch2
+      integer*4 ch1,ch2
       if (id1.gt.id2) then
         imax=1
       else if (id2.gt.id1) then
@@ -1505,19 +1506,17 @@ c  calculate heff matrix elements
       end
       subroutine imove(ntapef,ntapet)
       implicit real*8 (a-h,o-z)
-!     integer*4 ch1,ch2
-      integer ch1,ch2
-      
+      integer*4 ch1,ch2
+!     integer ch1,ch2
 #include "param_ccsd.h"
-
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
       nija=igen(nstrt(1,ntapef-1)+1)
       call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1)
       call kcopy(nija+1,igen(nstrt(1,ntapef-1)+nija+2),ije1(0))
@@ -1596,11 +1595,12 @@ c   special for scratch files, which start with "s".
       end if
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ivsort(ivec,n8)
 C
       IMPLICIT INTEGER (A-Z)
-!     INTEGER*4  ivec(*),TEMP,N8
-      INTEGER  ivec(*),TEMP,N8
+      INTEGER*4  ivec(*),TEMP,N8
       integer lftbit,nx4,n
 C
       n=n8
@@ -2047,12 +2047,12 @@ c   to general. (iline=4 is last line).
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vsort (ivec,N8,rlvec)
-!     IMPLICIT INTEGER*4 (A-Z)
-      IMPLICIT INTEGER (A-Z)
-!     INTEGER*4  ivec(*),TEMP
-      INTEGER  ivec(*),TEMP
-!     integer*4 N8
-      integer N8
+      IMPLICIT INTEGER*4 (A-Z)
+!     IMPLICIT INTEGER (A-Z)
+      INTEGER*4  ivec(*),TEMP
+!     INTEGER  ivec(*),TEMP
+      integer*4 N8
+!     integer N8
       real*8 rlvec(*),rltemp
 !C      integer lftbit,nx4,n
 !C
@@ -2156,7 +2156,7 @@ c   to general. (iline=4 is last line).
 !-------------------------------------------------------------------
 !  ...  what does it do ?
 !
-!c  sort itmp, expnd to it, gather t accordingly.
+!c  sort  according indexes in itmp, expand to "it", gather "t" accordingly.
 !
 !  checks nt,ntmp
 !

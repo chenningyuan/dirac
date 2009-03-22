@@ -71,10 +71,13 @@ c     iopt(10) .ne.0 - do not save pppp.
 
 !     write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
       call header(
-     & 'standalone CCSD program, precious heritage of TAU group',-1)
+     & 'Standalone CCSD program, precious heritage of the TAU group',-1)
+
+      write(LUPRI,'(2x,a,i3,/)') 'Print level:',iopt(1)
 
       csdstim = cputime(real(0.))
       csdltim = csdstim
+
       nflcur=0
       Nstrt(1,0)=0
       nstrt(2,0)=0
@@ -349,6 +352,7 @@ c *********************************************
       subroutine ordv
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "param_ccsd.h"
 !-------------------------------------------------------------------------------
 c va: hhpp
@@ -377,7 +381,13 @@ c              hppp 2143 = vd14
 #include "fock.h"
 !     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
 c
+
+      if (iopt(1).ge.5) then
+        call header('Output from "ordv"',-1)
+      endif
+
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
+
       call prtime   ("readv   ",nint,0)
 
       print *,"**************************"
@@ -416,6 +426,7 @@ c
       call prtime("ordv",0,0)
       return
       end
+
 c ******************************************
       subroutine tinit
       implicit real*8 (a-h,o-z)

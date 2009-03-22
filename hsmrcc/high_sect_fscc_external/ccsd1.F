@@ -326,7 +326,7 @@ c  for chp, chq only for exclusion of whole symmetries.
       if (iii1.lt.100) then
 c   1-electron t.
         do 120 i=1,nsize2
-	i1=iand(igen(istrt21+i),'ff'X)
+        i1=iand(igen(istrt21+i),'ff'X)
         if (icv(i1).eq.0) go to 120
         if (iopt(9).ne.0) then
           do 105 ir=1,nrsp1
@@ -1851,9 +1851,9 @@ c  iparm=6 : 8x2=8
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine abext(aa)
-!
+!--------------------------------------------------------
 !  ... exit routine, extended by DIRAC quit
-!
+!--------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 !     implicit real*8 (a-h,o-z)
@@ -1865,7 +1865,13 @@ c  iparm=6 : 8x2=8
 !     call abort()
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine add(name1,f1,name2,f2,namet)
+!-------------------------------------------------------------
+!
+!
+!
+!-------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -1876,6 +1882,7 @@ c  iparm=6 : 8x2=8
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
       common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
       common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+
 c   namet=name1*f1+name2*f2
       if ((name1.eq.name2).and.(name1.eq.namet)) then
         write (6,*) 'all three names in add are identical'
@@ -1919,6 +1926,7 @@ c   namet=name1*f1+name2*f2
       endif
       return
       end
+
       subroutine cmult(namef,f,namet)
       implicit real*8 (a-h,o-z)
 c   namet=f*namef
@@ -1950,6 +1958,7 @@ c   namet=f*namef
       cputime = mclock()/1000000.
       return
       end
+
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -2062,10 +2071,20 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end if
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine detlst(nval)
+!-----------------------------------------------------------------------------
+!
+!
+!
+!-----------------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /det/ nvlspo,lstvso(100),lstdet(1000),ndets,isplit
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "det.h"
+!     common /det/ nvlspo,lstvso(100),lstdet(1000),ndets,isplit
+
       if (nval.eq.1) then
         ndets=0
         do 220 i=1,nvlspo
