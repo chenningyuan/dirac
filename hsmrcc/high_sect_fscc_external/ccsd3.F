@@ -325,14 +325,31 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      subroutine files(name,num,new,ijnum,iii,iiv)
       subroutine files_ccsd(name,num,new,ijnum,iii,iiv)
-      implicit real*8 (a-h,o-z)
+!-----------------------------------------------------------------------------------
+!
+c   subroutine finds # of file named NAME. if not found,
+c   increases nflcur by 1, starts new file.
+!
+c   nflcur set to 0 at start of program.
+c   new is 1 for new file, -1 for new file with indices copied from
+c   another file, 0 for existing file. ijnum=0 used for existing
+c   scratch file, i.e. file to be completely rewritten.
+!
+!  Not dealing with true files, here file=diagram;
+!  organizes room for particular diagram on array gen/igen
+!
+!  Fills common blocks cij[1-6]
+!
+!-----------------------------------------------------------------------------------
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
       integer*4 ch1,ch2
 !     integer ch1,ch2
-      
 #include "param_ccsd.h"
-
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij2.h"
@@ -348,27 +365,33 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+#include "dat.h" ! miro added due to control printouts
 
-c   subroutine finds # of file named NAME. if not found,
-c   increases nflcur by 1, starts new file.
-c   nflcur set to 0 at start of program.
-c   new is 1 for new file, -1 for new file with indices copied from
-c   another file, 0 for existing file. ijnum=0 used for existing
-c   scratch file, i.e. file to be completely rewritten.
-      if (nflcur.eq.0) go to 20
+      if (iopt(1).ge.5) then
+        call header("Output from files_ccsd",-1)
+        write(LUPRI,*) 'nflcur=',nflcur
+        write(LUPRI,'(2x,a,4a)') 'name=',name
+        write(LUPRI,*) 'num=',num
+       ! write(LUPRI,*) 'new=',new
+      endif
+
+!   ... skips filling common blocks (no diagram ready now)
+      if (nflcur.eq.0) go to 20 
+
+! namefl(:) array with all diagram names
       num=1000
       do 10 i=1,nflcur
 10    if (name.eq.namefl(i)) num=i
+
       if (num.le.nflcur) then
-        new=0
+        new=0 ! diagram already exists
+
 c  next lines for case where temp file reopened with same name,
 c  different type (must be sn files). iii=-1 means ignore iii.
-
-	if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
+      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
 C Gal 95
            itmp=4H       
            jtmp='ffffff00'X
@@ -381,15 +404,16 @@ C Gal 95
           if (isaa.ne.i_4hs) then
             write (*,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
-            call abext('files   ')
+            call abext('files   ') ! interruts
           endif
         endif
+
       if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
-          new=1
+          new=1 ! new file
           iiia(num)=iii
           iiva(num)=iiv
           do 15 i=1,nflcur
-         if ((i.ne.num).and.(iiia(i).eq.iii).and.(iiva(i).eq.iiv)) then
+          if ((i.ne.num).and.(iiia(i).eq.iii).and.(iiva(i).eq.iiv)) then
             new=-1
             call imove(i,num)
             return
@@ -398,17 +422,32 @@ C Gal 95
           return
         endif
         if (ijnum.eq.0) return
+
         nija=igen(nstrt(1,num-1)+1)
+!         ...  filling  cij* common blocks with diagrams created earlier
         if (ijnum.eq.1) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij1)
-          call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije1(0))
+!         ...   cij* common blocks ...
+          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij1) ! fill nij1,ij1(:)
+          call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije1(0)) ! fill ije1(:)
           iii1=igen(nstrt(1,num-1)+2*nija+3)
           iiv1=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (iopt(1).ge.5) then
+            write(LUPRI,*) 'ijnum=1, nij1=',nij1
+            write(LUPRI,*) 'nija,iii1,iiv1:',nija,iii1,iiv1
+          endif
+
         elseif (ijnum.eq.2) then
           call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij2)
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije2(0))
           iii2=igen(nstrt(1,num-1)+2*nija+3)
           iiv2=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (iopt(1).ge.5) then
+            write(LUPRI,*) 'ijnum=2, nij2=',nij2
+            write(LUPRI,*) 'nija,iii2,iiv2:',nija,iii2,iiv2
+          endif
+
         elseif (ijnum.eq.3) then
           call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij3)
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije3(0))
@@ -430,21 +469,29 @@ C Gal 95
           iii6=igen(nstrt(1,num-1)+2*nija+3)
           iiv6=igen(nstrt(1,num-1)+2*nija+4)
         else
-          write (6,*) ' files called with incorrect ijnum, ',ijnum
+          write (LUPRI,*) ' files called with incorrect ijnum, ',ijnum
           call abext('files   ')  
         endif
+
         return
       endif
-c  new file
+
+c  new file when nflcur is 0
 20    nflcur=nflcur+1
       namefl(nflcur)=name
       num=nflcur
+
       iiia(nflcur)=iii
       iiva(nflcur)=iiv
+
       new=1
-      if (iii.eq.-2) return
-      if (nflcur.eq.1) go to 40
-      do 30 i=1,nflcur-1
+
+      if (iii.eq.-2) return ! return
+
+      if (nflcur.eq.1) go to 40 ! skip the cycle
+
+!     ... cycle ...
+      do 30 i=1, nflcur-1
       if ((iiia(i).eq.iii).and.(iiva(i).eq.iiv)) then
         new=-1
         call imove(i,num)
@@ -452,10 +499,13 @@ c     write (6,*) ' transf indx from ',i,' to ',num
         go to 40
       endif
 30    continue
-40    continue
+
+40    continue ! bye step
+
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine reorder(namef,namet,iord,iparm)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -1151,18 +1201,26 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (iopt(1).ge.5) then ! control printout
         call header('Output from "selftyp"',-1)
-        write(LUPRI,'(2x,a,i3)') 'nint=',nint
+        write(LUPRI,'(2x,a,i6)') 'nint=',nint
+        write(LUPRI,'(2x,a,i6)') 'nij=',nij
+        write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
+        write(LUPRI,*)
       endif
 
       call tmplt(iii,iiv,name,num)
 
-!     ... assumes ije is filled
+!        ... assumes ije(:) is filled
       lngth=ije(nij)
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
 
-      call parse(iii,i1,i2,i3,i4)
+      if (iopt(1).ge.5) then ! ... control printout
+        write(LUPRI,'(/,2x,a,i5)') ' lngth=',lngth
+        write(LUPRI,'(2x,a,i5)')   'istrt1=',istrt1
+        write(LUPRI,'(2x,a,i5)')   'istrt2=',istrt2
+      endif
 
+      call parse(iii,i1,i2,i3,i4)
       call parse(iiv,iv1,iv2,iv3,iv4)
 
       lrsp=(iopt(9).ne.0).and.(iv1.eq.1).and.(iv2.eq.1)
@@ -1229,6 +1287,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j2,j1,j4)
+
 120   if (j2.eq.j4) go to 130
       if (ipack(ic(j1),ic(j4),ic(j3),ic(j2)).ne.i1234) go to 130
 
@@ -1254,6 +1313,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         do 135 ii=1,nrsp2
 135     if (j12.eq.irsp2(ii)) go to 140
       endif
+
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j4,j1,j2)
@@ -1318,6 +1378,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       call prt(name,name,iparm)
       call prtime(name,ije(nij),0)
+
       return
       end
 
@@ -1575,15 +1636,25 @@ c  indices not retained for pppp.
       subroutine tmplt(ii1234,j1234,name,num)
 !--------------------------------------------------------------------------------
 !
+!  What does it do ?
+!
+!
+! Cretaes the structure of diagrams with iii,iiv numbers; make space for diagrams
+! on gen,igen
+!
+! Calculates number of integrals, pair, sort integrals according to first ij-indexes 
 !
 !--------------------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+!      implicit real*8 (a-h,o-z)
+#include "priunit.h"
       integer*4 ch1,ch2
 !     integer ch1,ch2
 c   ii1234<0 - collect 1/2 file (i>j)
       
 #include "param_ccsd.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+#include "cij1_0.h"
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -1595,18 +1666,39 @@ c   ii1234<0 - collect 1/2 file (i>j)
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 
+!     4-indexes (up 256) packed into one number
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
+
+      if (iopt(1).ge.5) then ! control printout
+        call header('Output from "tmplt"',-1)
+        !write(LUPRI,'(2x,a,i3)') 'nint=',nint
+      endif
 
       i1234=iabs(ii1234)
       call parse(i1234,i1,i2,i3,i4)
       call parse(j1234,j1,j2,j3,j4)
+
       call files_ccsd(name,num,new,1,i1234,j1234)
-      if (new.le.0) return
+      if (iopt(1).ge.5) then ! control printout
+        write(LUPRI,*) "tmplt: after files_ccsd, new=",new
+        write(LUPRI,*) "tmplt: after files_ccsd, num=",num
+      endif
+
+      if (new.le.0) then
+        write(LUPRI,*) "tmplt: new.le.0, return"
+        return
+      endif
+
       nij=0
       ije(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
+
+      if (iopt(1).ge.5) then ! ... control printout
+        write(LUPRI,'(/,2x,a,i12)') 'tmplt, nt=',nt
+      endif
+
       if ((i1.eq.0).and.(i2.eq.0)) go to 310
       do 290 ica=1,nclass
       ja1=ibias(ica)+1
@@ -1640,16 +1732,25 @@ c  symmetry operations
 220   continue
 230   continue
 240   continue
+
       if (nt.gt.nt00) then
         ije1=ije(nij)+1
         nij=nij+1
         ije(nij)=nt-nt0
-	ij(nij)=ior(ishft(ja,8),jb)
+        ij(nij)=ior(ishft(ja,8),jb)
+
+        if (iopt(1).ge.5) then
+          write(LUPRI,*) 'nij,ije(nij),ij(nij)=',nij,ije(nij),ij(nij)
+        endif
+
         call ivsort(igen(nt00+1),nt-nt00)
 C	print '(Z8)',(igen(i),i=nt00+1,nt)
-        if (nij.gt.ndij) write (*,*) ' nij reached ',nij,' at jab=',ja,jb
+        if (nij.gt.ndij) then 
+          write (*,*) ' nij reached ',nij,' at jab=',ja,jb
+        endif
         call dimx(nij,ndij,"tmpndij")
       endif
+
 280   continue
 290   continue
 c
@@ -1692,6 +1793,7 @@ c  one electron
       nstrt(2,num)=nstrt(2,num-1)+(nt-nt0)
       call dimx(nstrt(1,num),nbig,"tmplt1")
       call dimx(nstrt(2,num),nbig,"tmplt2")
+
 c   special for scratch files, which start with "s".
            itmp=4H       
            jtmp='ffffff00'X
@@ -1707,6 +1809,7 @@ c   special for scratch files, which start with "s".
         call dimx(nstrt(1,num),nbig,"tmplt1")
         call dimx(nstrt(2,num),nbig,"tmplt2")
       endif
+
       return
       end
 
@@ -2178,6 +2281,7 @@ c   special for scratch files, which start with s
          igen(nt)=ipack(jg,jh,ji,jj,jk,jl)
         end if
 90     continue
+
        if (nt.gt.nt00) then
         nij=nij+1
         ije(nij)=nt-nt0
@@ -2187,6 +2291,7 @@ c   special for scratch files, which start with s
      1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
         call dimx (nij,ndij,"tmpndij ")
        end if
+
 30    continue
       igen(nstrt(1,num-1)+1)=nij
       call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))

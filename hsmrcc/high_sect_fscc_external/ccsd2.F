@@ -35,9 +35,9 @@ C
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dimx(nn,n0,na)
-!
-! check whether there is enough space on static arrays (nn<=n0)
-!
+!------------------------------------------------------------------------
+!    check whether there is enough space on static arrays (nn<=n0)
+!------------------------------------------------------------------------
 #include "implicit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1504,7 +1504,11 @@ c  calculate heff matrix elements
       end if
       return
       end
+
       subroutine imove(ntapef,ntapet)
+!
+! copy fro 1 dim array to another
+!
       implicit real*8 (a-h,o-z)
       integer*4 ch1,ch2
 !     integer ch1,ch2
@@ -1681,6 +1685,7 @@ C
 C
       RETURN
       END
+
       subroutine kcopy(n,ia,ib)
       implicit real*8 (a-h,o-z)
       dimension ia(*),ib(*)
@@ -1688,6 +1693,7 @@ C
 10    ib(i)=ia(i)
       return
       end
+
 	function lftbit(n)
 	integer*4 n,i,ipos
 	integer*4 nlim(32)
@@ -1709,6 +1715,7 @@ C
 	lftbit=nlim(ipos)
 	return
 	end
+
       subroutine match6 (k1,k2,nval,isign,nm)
       implicit real *8 (a-h,o-z)
       dimension k1(6),k2(6),m1(6),m2(6),mm1(6),mm2(6),
@@ -2379,7 +2386,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       ntmp=nn
       return
       end
+
       subroutine parse(ii,i1,i2,i3,i4)
+!
+! extracts 4 digits from the 4-digit integer number
       implicit real*8 (a-h,o-z)
       ia=ii
       i4=mod(ia,10)
@@ -2390,6 +2400,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       i1=ia/10
       return
       end
+
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
       implicit real*8 (a-h,o-z)
       ia=ii 
@@ -2926,8 +2937,9 @@ c             write (6,*) ' '
       logical :: no_inter_rd=.true.
 
       if (no_inter_rd) then
-       nclass=1
-       write(LUPRI,'(/,2x,a)') 'rdsym: nclass variable set to 1'
+       nclass=4
+       write(LUPRI,'(/,2x,a,i3)') 
+     & 'rdsym: nclass variable set to',nclass
       else
         write(LUPRI,'(/,2x,a)') 'rdsym: Enter nclass variable:'
         read (*,1000,iostat=ios) nclass
