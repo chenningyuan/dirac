@@ -2163,7 +2163,7 @@ c   to general. (iline=4 is last line).
 !-------------------------------------------------------------------
 !  ...  what does it do ?
 !
-!c  sort  according indexes in itmp, expand to "it", gather "t" accordingly.
+!c  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
 !
 !  checks nt,ntmp
 !
@@ -2172,6 +2172,7 @@ c   to general. (iline=4 is last line).
 !-------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
+!#include "dat.h"
 !     implicit real*8 (a-h,o-z)
       dimension itmp(ntmp),t(nt),it(nt)
 
@@ -2182,12 +2183,9 @@ c   to general. (iline=4 is last line).
 !C      print '(2hGG,Z8)',(itmp(i),i=1,ntmp)
 
       if (ntmp.gt.nt) then
-
         write (LUPRI,*) ' vxsort. ntmp gt nt! ',ntmp,nt
-
         call zeroup(ntmp,itmp,t,1.d-8)
         write (LUPRI,*) ntmp,' integrals left'
-
         if (ntmp.gt.nt) then
           call zeroup(ntmp,itmp,t,5.d-6)
           write (LUPRI,*) ntmp,' integrals left'
@@ -2197,10 +2195,10 @@ c   to general. (iline=4 is last line).
             call abext('vxsort  ')
           endif
         endif
-
       endif
 
       if (ntmp.lt.nt) then
+        write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
         ltmp=ntmp
 20      if (itmp(ltmp).eq.it(lt)) then
@@ -2216,21 +2214,25 @@ c   to general. (iline=4 is last line).
         elseif (abs(t(ltmp)).lt.2.d-5) then
           ltmp=ltmp-1
         else
-        Do i=-20,20
-          write (*,100) lt,nt,ltmp+i,ntmp+i,idec(itmp(ltmp+i)),
-     +                   idec(it(ntmp+i)),t(ltmp+i)
-100       format(' label not in tmplt. lt nt ltmp ntmp itmp it t=',
+         ! ... error branch
+         Do i=-20,20
+          write (LUPRI,100) lt,nt,ltmp+i,ntmp+i,idec(itmp(ltmp+i)),
+     +                      idec(it(ntmp+i)),t(ltmp+i)
+100       format(' label not in tmplt!; lt nt ltmp ntmp itmp it t=',
      1    4i7,1x,2i9,e12.4)
-        EndDo
-          call abext('vxsort  ')   
+         EndDo
+         call abext('vxsort  ')   
         endif
         if (lt.gt.0) go to 20
-      endif
+      endif ! of ntmp < nt
+
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtfile(nt,nrec,name)
-      implicit real*8 (a-h,o-z)
+!----------------------------------------------------------------------------------
+!
 !c  write internal file "name" on tape nt, skipping nrec records.
 !c  disk file structure for tc etc:
 !c  1. nij (# of subblocks)
@@ -2239,6 +2241,9 @@ c   to general. (iline=4 is last line).
 !c  4. a(1:ije1(nij)), actual values.
 !c    nt.eq.9 = file witout indices (pppp).
 !c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
+!
+!----------------------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2597,32 +2602,48 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end if
       return
       end
-      subroutine prt(name,tit,iparm)
-      implicit real*8 (a-h,o-z)
-      
-#include "param_ccsd.h"
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine prt(name,tit,iparm)
+!---------------------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------------------
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
+#include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+
       dimension a(6),ind(4,6)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       if (iparm.gt.iopt(1)) return
+
       flim=10.d0**(-iopt(5))
       if (iopt(5).le.0) flim=0.d0
+
       call files_ccsd(name,num,new,1,-1,-1)
+
       if (new.ne.0) then
-        write (6,*) ' prt tried to read nonexistent file'
+        write (LUPRI,*) ' prt tried to read nonexistent file'
         call abext('prt     ')
       endif
+
       nsize=ije(nij)
-      write (6,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
+      write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
 110   format(' file ',a8,', size iii iiv=',4i7,' ij records:'/
      1 (8(2x,z4,i8,';')))
+
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
       io=0
@@ -2630,18 +2651,20 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       if (abs(gen(istrt2+i)).ge.flim) then
         io=io+1
         a(io)=gen(istrt2+i)
-	ind(1,io)=iand(ishft(igen(istrt1+i),-24),'ff'X)
-	ind(2,io)=iand(ishft(igen(istrt1+i),-16),'ff'X)
-	ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,'ff'X)
-	ind(4,io)=iand(           igen(istrt1+i),'ff'X)
+        ind(1,io)=iand(ishft(igen(istrt1+i),-24),'ff'X)
+        ind(2,io)=iand(ishft(igen(istrt1+i),-16),'ff'X)
+        ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,'ff'X)
+        ind(4,io)=iand(           igen(istrt1+i),'ff'X)
         if (io.eq.6) then
           write(6,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
           io=0
         endif
       endif
 30    continue
-      if (io.gt.0) write(6,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
+
+      if (io.gt.0) write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
 140   format(1x,6(1x,4i2,'=',f11.7))
+
       return
       end
 
@@ -2949,13 +2972,15 @@ c             write (6,*) ' '
         endif
       endif
 
-      write(LUPRI,'(2x,a)') 
-     &   'type of of orbitals (20i3) per symmetry(1-nclass):'
+      write(LUPRI,'(/,2x,a)') 
+     & 'Number of of orbitals (20i3) per symmetry(1-nclass):'
 
       if (no_inter_rd) then
         do i=1,nclass
           iclass(i)=0
         enddo
+        iclass(1)=7; iclass(2)=0; iclass(3)=1; iclass(4)=1
+        write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
       else
 
       read (*,1000,iostat=ios) (iclass(i),i=1,nclass)

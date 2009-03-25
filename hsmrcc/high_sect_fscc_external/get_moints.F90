@@ -57,7 +57,7 @@
  end subroutine get_gamess_ints
 
  subroutine rd_hcrmo(eps,nort)
-  use memory_allocator
+  use memory_allocator ! use Andre's stuff
 #include "implicit.h"
 #include "priunit.h"
    real*8, intent(inout) :: eps(*)
@@ -70,6 +70,7 @@
 !     WRITE(IHCRMO) ORBENMO          
 
    read(LuHCRMO) NMO
+
    write(LUPRI,*) 'read NMO=',NMO
 
    call alloc(IOCCMO,NMO,id="IOCCMO")
@@ -79,16 +80,20 @@
    read(LuHCRMO) IOCCMO
    read(LuHCRMO) ORBENMO
 
-   write(LUPRI,*) 'IOCCMO:', (IOCCMO(I),I=1,NMO)
-   write(LUPRI,*) 'ORBENMO:',(ORBENMO(I),I=1,NMO)
+  ! if (iopt(1).ge.5) then
+     write(LUPRI,*) 'IOCCMO:', (IOCCMO(I),I=1,NMO)
+     write(LUPRI,*) 'ORBENMO:',(ORBENMO(I),I=1,NMO)
+  ! endif
 
  ! now read Hcore
  ! WRITE(IHCRMO) HCOREMO
 
    read(LuHCRMO) HCOREMO
-   write(LUPRI,'(/,4x,a,2i3)') 'Hcore matrix',NMO,NMO
 
-   call OUTPUT(HCOREMO,1,NMO,1,NMO,NMO,NMO,1,LUPRI)
+  ! if (iopt(1).ge.5) then
+     write(LUPRI,'(/,4x,a,2i3)') 'Hcore matrix',NMO,NMO
+     call OUTPUT(HCOREMO,1,NMO,1,NMO,NMO,NMO,1,LUPRI)
+  ! endif
 
    nort = NMO
    call dcopy (NMO,ORBENMO,1,eps,1)
@@ -126,7 +131,8 @@
   write(LUPRI,*) 'NINTMX=',NINTMX
 
 ! ... continue with reading of integrals&indexes
-  call set_hscc_iprint (50)
+ ! iprint=iopt(1); 
+  call set_hscc_iprint(50)
 
  ! ... routine in HSMRCC directories
   call get_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)

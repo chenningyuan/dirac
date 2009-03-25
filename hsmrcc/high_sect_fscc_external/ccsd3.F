@@ -1179,6 +1179,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #include "param_ccsd.h"
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
+!#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1208,6 +1209,17 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       endif
 
       call tmplt(iii,iiv,name,num)
+
+      if (iopt(1).ge.5) then ! control printout
+        write(LUPRI,'(2x,a,i6)') 'after tmplt, nint=',nint
+        write(LUPRI,'(2x,a,i6)') '              nij=',nij
+        write(LUPRI,'(2x,a,i6)') '           nflcur=',nflcur
+        write(LUPRI,*)
+      endif
+
+
+
+
 
 !        ... assumes ije(:) is filled
       lngth=ije(nij)
@@ -1653,8 +1665,8 @@ c  indices not retained for pppp.
 c   ii1234<0 - collect 1/2 file (i>j)
       
 #include "param_ccsd.h"
-#include "cij1_0.h"
-!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+!#include "cij1_0.h"
+      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)

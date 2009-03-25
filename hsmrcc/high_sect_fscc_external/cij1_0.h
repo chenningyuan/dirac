@@ -9,16 +9,13 @@
 !     ije(0)=0
 !
 
-      integer       nij,ij(ndij),ije(0:ndij),iii,iiv
-      common /cij1/ nij,ij,      ije,        iii,iiv
+      integer       nij,ij(ndij),ije(0:ndij),iiii,iivi
+      common /cij1/ nij,ij,      ije,        iiii,iivi
 
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 
 !
+!   Note: /cij1/ block is overlapping with the include file "cij1.h"
 !
-!   Note: overlapping with the include file "cij1.h":
-!
-!   common /cij1/ nij, ij (ndij),ije (0:ndij),iiii,iivi
-!   
 !
 
