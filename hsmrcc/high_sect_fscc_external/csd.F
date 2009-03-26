@@ -145,8 +145,11 @@ c     iopt(10) .ne.0 - do not save pppp.
           end if
         end if
       endif
+
       call t1sqr("t1c ","t1c ","tc  ","tm  ")
+
       call ener(0)
+
 220   iter=iter+1
       call prtime("start iter",iter,0)
       call flush (6)
@@ -160,6 +163,7 @@ c     iopt(10) .ne.0 - do not save pppp.
         call calt4
       end if
       call ordtb
+
       if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
         fnew=max(dfloat(iopt(6)/100),1.d0)
         if (fnew.le.6.5d0) then
@@ -181,12 +185,14 @@ c     iopt(10) .ne.0 - do not save pppp.
         end if
         write (6,'('' t averaged with fnew '',f7.3)') fnew
       endif
+
       if (iopt(17).ne.0) then
         call fmax6 ("t3nw",t3max,id3mx,ind3mx)
         if (iopt(17).ge.4) then
           call fmax8 ("t4nw",t4max,id4mx,ind4mx)
         end if
       end if
+
       call fmax("tnew",tmax,itmax)
       call fmax("t1nw",t1max,it1max)
       if (iopt(17).ge.4) then
@@ -207,17 +213,21 @@ c     iopt(10) .ne.0 - do not save pppp.
       if (iopt(17).ge.4) then
         write (6,2402) df4,idec(iddf4),idec(inddf4)
       end if
-2401  format (24x,f14.9,2x,i8,2x,i8)
+!2401  format (24x,f14.9,2x,i8,2x,i8)
+2401  format (24x,d14.9,2x,i8,2x,i8)
 2402  format (22x,e10.3,2x,i8,2x,i8)
       write (6,*) ' '
       write (6,2400) tmax,idec(itmax),t1max,idec(it1max)
-2400  format(' max t, t1, t3, t4=',f15.9,2x,i12,f17.9,2x,i6)
+!2400  format(' max t, t1, t3, t4=',f15.9,2x,i12,f17.9,2x,i6)
+2400  format(' max t, t1, t3, t4=',d15.9,2x,i12,d17.9,2x,i6)
+
       if (iopt(17).ne.0) then
         write (6,2401) t3max,idec(id3mx),idec(ind3mx)
       end if
       if (iopt(17).ge.4) then
         write (6,2401) t4max,idec(id4mx),idec(ind4mx)
       end if
+
       write (6,*) ' '
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
         write (*,*) ' abort. tmax out of bounds'
@@ -348,6 +358,7 @@ c  different endings
       call prtime ("end ",0,0)
       stop
       end
+
 c *********************************************
       subroutine ordv
 #include "implicit.h"
@@ -386,6 +397,7 @@ c
         call header('Output from "ordv"',-1)
       endif
 
+     ! call dzero(vint,ndint); call izero(iint,ndint)
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
       call prtime   ("readv   ",nint,0)
@@ -456,7 +468,12 @@ c calc tinit = hhpp / eps
 
 c**************************************************************
       subroutine ener(id)
-      implicit real*8 (a-h,o-z)
+!
+!   Calculate CCSD correlation energy
+!
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
 c   id=1 for rle, 0 regularly.
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -472,6 +489,7 @@ c   id=1 for rle, 0 regularly.
 
       e=0.d0
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
+
       if (id.eq.1) then
         call t1sqr("tr1 ","tr1 ","tr  ","s3  ")
         call files_ccsd("s3  ",ntm,new,2,-1,-1)
@@ -492,7 +510,9 @@ c   id=1 for rle, 0 regularly.
       nsize=ije1(nij1)
       istrt1=nstrt(2,nt1-1)
       istrt2=nstrt(2,nth-1)
+
       e=e+2.d0*ddot(nsize,gen(istrt1+1),1,gen(istrt2+1),1)
+
       if (id.eq.1) then
         write (6,110) e
       else if (id.eq.2) then
@@ -505,6 +525,7 @@ c   id=1 for rle, 0 regularly.
 130   format (' correlation energy(final)= ',e15.8)
       return
       end
+
 c *****************************************************
       subroutine ordta
       implicit real*8 (a-h,o-z)

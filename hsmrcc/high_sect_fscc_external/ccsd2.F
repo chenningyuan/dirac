@@ -39,6 +39,7 @@ C
 !    check whether there is enough space on static arrays (nn<=n0)
 !------------------------------------------------------------------------
 #include "implicit.h"
+#include "priunit.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -47,11 +48,11 @@ C
       if (nn.le.n0) then   
         return
       else
-        write (6,10) na,nn,n0
+        write (LUPRI,10) na,nn,n0
 10      format('0 **** dimension overflow at ',a8,1h:,i8,
      1   ', n allowed ',i8)
         do 20 i=1,nflcur
-          write (6,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
+          write (LUPRI,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
 99        format (1x,i3,1x,a8,1x,i20)
 20      continue
         call abext('dimx    ')
@@ -168,9 +169,9 @@ C
 10    continue
       return
       end
+
       subroutine dveps8 (name)           
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -205,9 +206,9 @@ C
 10    continue
       return
       end
+
       subroutine ehp(ipr)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2163,7 +2164,7 @@ c   to general. (iline=4 is last line).
 !-------------------------------------------------------------------
 !  ...  what does it do ?
 !
-!c  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
+!  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
 !
 !  checks nt,ntmp
 !
@@ -2620,12 +2621,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-
-      dimension a(6),ind(4,6)
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+      dimension a(6),ind(4,6)
 
       if (iparm.gt.iopt(1)) return
 
@@ -2640,9 +2639,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       endif
 
       nsize=ije(nij)
+
       write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-110   format(' file ',a8,', size iii iiv=',4i7,' ij records:'/
-     1 (8(2x,z4,i8,';')))
+110   format(' file ',a4,', size iii iiv=',4i7,' ij records:'/
+     & (8(2x,z4,i8,';')))
 
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
@@ -2656,14 +2656,16 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,'ff'X)
         ind(4,io)=iand(           igen(istrt1+i),'ff'X)
         if (io.eq.6) then
-          write(6,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
+          write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
           io=0
         endif
       endif
 30    continue
 
-      if (io.gt.0) write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
-140   format(1x,6(1x,4i2,'=',f11.7))
+      if (io.gt.0) then
+        write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,io)
+140     format(1x,6(1x,4i2,'=',d11.5))
+      endif
 
       return
       end
@@ -2731,21 +2733,22 @@ c             write (6,*) ' '
       write (6,*) ' ' 
       return
       end 
+
       subroutine prt8 (name,tit,iparm)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
-
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
       dimension a(4),id(4),ind(4,4)
+
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
       if (iopt(5).le.0) flim=0.d0
@@ -3023,7 +3026,7 @@ c             write (6,*) ' '
 120   nsym=nsym-1
 
 
-!c
+!  ----   fill ibias, ici   ----- 
       ibias(1)=0
       do 140 i=1,nclass
 140   ibias(i+1)=ibias(i)+iclass(i)
@@ -3037,11 +3040,11 @@ c             write (6,*) ' '
       do 40 i=1,8
         do 50 j=1,8
           ii=ii+1
-          igmt(i,j)=itemp(ii)
+          igmt(i,j)=itemp(ii) ! MI: igmt multiplication table ?
 50      continue
 40    continue
 
-!  nir should be the number of irreducible representations ...
+! MI: nir should be the number of irreducible representations ?
       if (nclass.eq.1) then
         nir=1
       else

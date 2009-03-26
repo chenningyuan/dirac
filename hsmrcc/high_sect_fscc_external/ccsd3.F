@@ -25,19 +25,22 @@
       return
       end
 
-
-
-      subroutine reads (nt,nrec,name)       
-      implicit real*8 (a-h,o-z)
-      
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine reads (nt,nrec,name) 
+!---------------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------------
+#include "implicit.h"
+!      implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
       rewind nt
       igotit=0
       do 20 i=1,nflcur
@@ -80,7 +83,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine readv(nint,v,ind,nintmx,nfock,fock,ifock,nfockmx)
 !---------------------------------------------------------------------------
+!
 !         basic reading subroutine called from many places
+!
 !---------------------------------------------------------------------------
        use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
 #include "implicit.h"
@@ -94,26 +99,29 @@
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 
       dimension ilet(6)
- 
+
       logical :: skip_old_read=.true.
       logical :: use_new_gamess=.true.
 
       data ilet /1hc,1hc,1hh,1hg,1hp,1hv/
       data zero /1.d-8/
 
+! function definition - packing of indexes
+      ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
+     &                       ior(ishft(i3,8) ,i4))
+
       if (iopt(1).ge.5) then
          call header('Output from "readv"',-1)
-         write(LUPRI,'(/,2x,a)') 'entered readv'
       endif
 
 c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
       if (iopt(19).eq.0) then
         intrc=2725
-        write(*,*) 'this is GAMESS connected stuff !'
+        write(LUPRI,*) 'this is GAMESS connected stuff !'
       endif
 
       if (iopt(19).ne.0) then
-         call quit('miro: aces ii not supported !')
+         call quit('miro: aces ii not YET supported !')
         intrc=600
       endif
 
@@ -146,6 +154,7 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
 
 c  changes for aces99
       if (iopt(19).eq.2) then
+        ! read # of orbs pre irreducible reps or indexes ?
         read (12) (irerdr(i),i=1,norb)
         do i=1,norb
           irerdrv(irerdr(i))=i
@@ -156,13 +165,14 @@ c  changes for aces99
         enddo
       endif
 
-      do 340 icl=1,nclass
-      write (*,3300) icl
-3300  format(' irrep ',i2)
-      write (*,3400) (io,ilet(2*ic(io)-1+icv(io)),eps(io),
-     1 io=ibias(icl)+1,ibias(icl+1))
-3400  format(3('orb ',i3,2x,a1,', e=',1pe12.5,:,';  '))
-340   continue
+!     ... printout - orb.energies per symmetries
+!      do 340 icl=1,nclass
+!      write (*,3300) icl
+!3300  format(' irrep ',i2)
+!      write (*,3400) (io,ilet(2*ic(io)-1+icv(io)),eps(io),
+!     1 io=ibias(icl)+1,ibias(icl+1))
+!3400  format(3('orb ',i3,2x,a1,', e=',1pe12.5,:,';  '))
+!340   continue
 
       if (.not.skip_old_read) then
         if (iopt(19).eq.0) read (12)
@@ -227,7 +237,6 @@ C--------------------------------------------------------
 135   continue
 
       else
-
         ! ... get in new GAMESS integrals ...
         call get_gamess_ints(nort,eps,nn,ind,v,nint) 
 
@@ -235,13 +244,34 @@ C--------------------------------------------------------
           write(LUPRI,*) 'after, nint=',nint
           write(LUPRI,*) 'after, nort=',nort
           write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
-          do i=1,nint
-            write(LUPRI,'(i4,a,f18.12,a,i22)')  
-     &      i,'. int:',v(i),' pck indx:',ind(i)
+
+          do i=1, nint
+            J1=iand(ishft(ind(i),-24),'ff'X)
+            J2=iand(ishft(ind(i),-16),'ff'X)
+            J3=iand(ishft(ind(i),-8) ,'ff'X)
+            J4=iand(ind(i)           ,'ff'X)
+            !ipckindx=ipack(j1,j2,j3,j4)
+            ipckindx=ipack(j1,j3,j2,j4) ! dirac notation !
+            ind(i)=ipckindx
+            write(LUPRI,'(i4,a,f18.12,a,2i11,a,4i3)') 
+     &      i,'. int:',v(i),' pck in:',ind(i),ipckindx,
+     &      ' indx:',J1,J2,J3,J4
           enddo
         endif
 
       endif
+
+! place here the printout
+!     ... printout - orb.energies per symmetries
+      WRITE(LUPRI,'(/,2X,A)') 
+     &  'Orbitals per symmetry, their irreps, energies...'
+      do 340 icl=1,nclass
+      write (*,3300) icl
+3300  format(' irrep ',i2)
+      write (*,3400) (io,ilet(2*ic(io)-1+icv(io)),eps(io),
+     1 io=ibias(icl)+1,ibias(icl+1))
+3400  format(3('orb ',i3,2x,a1,', e=',1pe12.5,:,';  '))
+340   continue
 
 !------------------------------------------------------------
       write (LUPRI,'(/,4x,i6,a,/)') 
@@ -322,6 +352,7 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
         write (*,3400) (io,ilet(2*ic(io)-1+icv(io)),eps(io),
      1  io=ibias(icl)+1,ibias(icl+1))
 450   continue
+
       return
       end
 
@@ -372,9 +403,9 @@ c   scratch file, i.e. file to be completely rewritten.
 
       if (iopt(1).ge.5) then
         call header("Output from files_ccsd",-1)
-        write(LUPRI,*) 'nflcur=',nflcur
+        write(LUPRI,'(2x,a,i5)') 'nflcur=',nflcur
         write(LUPRI,'(2x,a,4a)') 'name=',name
-        write(LUPRI,*) 'num=',num
+        write(LUPRI,'(2x,a,i5)') 'num=',num
        ! write(LUPRI,*) 'new=',new
       endif
 
@@ -1167,6 +1198,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !  ints collected in gen, indices in itmp.
 ! at the end, arrays are
+!
 !  sorted and expanded according to indices (in igen) generated
 !  by tmplt.
 !

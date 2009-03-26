@@ -134,7 +134,7 @@
  ! iprint=iopt(1); 
   call set_hscc_iprint(50)
 
- ! ... routine in HSMRCC directories
+ ! ... routine in HSMRCC directories !
   call get_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)
 
   !call get_gms_mo_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX)
@@ -145,5 +145,4 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
  end module get_gamess_mo_ints
-
 
