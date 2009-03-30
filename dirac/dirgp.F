@@ -542,7 +542,7 @@ C
 #include "dgroup.h"
 #include "dcbdhf.h"
       LOGICAL INFO
-      CHARACTER TEXT*74, FILNAM*20
+      CHARACTER TEXT*74, FILNAM*60
       DIMENSION FOCK(N2BBASXQ*N)
 C
       REWIND IUNIT

@@ -96,7 +96,6 @@ C     Default orbital strings is all occupied and all virtuals
         WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
       IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
 C     MP2_ANTIS  = .TRUE.
       MP2_ANTIS  = .FALSE.
@@ -288,7 +287,6 @@ C
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
-CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
       IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
       IF(SCRMP2.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
@@ -790,8 +788,8 @@ C
       IF (ITRA_INTFL4.EQ.-8) THEN
          ITRA_INTFL4 = ITRA_INTFLG
       ENDIF
-CMI   IF (LEVYLE) THEN
-      IF (LEVYLE.OR.BSS) THEN
+
+      IF (LEVYLE.OR.BSS.OR.DO4C2C) THEN
          ITRA_INTFL2 = MOD(ITRA_INTFL2,2)
          ITRA_INTFL4 = MOD(ITRA_INTFL4,2)
       ENDIF
@@ -1244,7 +1242,8 @@ C
 C     Processing section
 C     ------------------
 C
-      IF (LEVYLE) THEN
+CMI ... TODO:  should be adapted properly for 2c-4c/4c-2c stuff
+      IF (LEVYLE.OR.BSS.OR.DO4C2C) THEN
         ILSINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -1287,15 +1286,15 @@ C
       ENDIF
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL integrals not included.'
-CMI   IF (.NOT.LEVYLE) THEN
-      IF (.NOT.(LEVYLE.OR.BSS)) THEN
+
+! .. always print out what integrals are included
          IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS integrals not included.'
          IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS integrals not included.'
          IF (IGTINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* Gaunt integrals not included.'
-      END IF
+
  999  CONTINUE
       RETURN
       END
