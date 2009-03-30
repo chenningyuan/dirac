@@ -397,7 +397,7 @@ c
         call header('Output from "ordv"',-1)
       endif
 
-     ! call dzero(vint,ndint); call izero(iint,ndint)
+!     ! call dzero(vint,ndint); call izero(iint,ndint)
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
       call prtime   ("readv   ",nint,0)
