@@ -815,7 +815,7 @@ C     Transform AO Fock matrix to reference MO basis
 C     ============================================== 
 C
       CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','DFSOLV')
 CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 
