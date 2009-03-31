@@ -461,7 +461,7 @@ C     specified in COMMON block CBIHAM.
 C
 C     It can be (in SA-AO basis): 
 C         i) Dirac 1-el. operator
-C        ii) BSS two-component operator (either in the 4comp. or in the reduced 2comp. framework)
+C        ii) BSS/IOTC two-component operator (either in the 4comp. or in the reduced 2comp. framework)
 C       iii) Non-relativistic operator (in reduced two-component framework)
 C
 C     Routine is called from many places.
@@ -475,6 +475,7 @@ C
 C MI&HJAaJ (2003): If BSS=.TRUE., read the TWO-COMPONENT
 C                   relativistic bare nuclei (in AO basis) from the file
 C                   BSSMAT (label='H1AO_DK')
+C
 C   MI/Strasbg,2005 added new labels containing
 C        various modified atomic integrals of H2c AO
 C   MI/Strasbg,Febr. 2006 H2cAO Hamiltonian reading placed into separate routine
@@ -2351,7 +2352,7 @@ C
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,WORK(KFREE),LFREE)
+     &             .FALSE.,.FALSE.,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -2468,7 +2469,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
-      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,WORK,LWORK)
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the
@@ -2485,7 +2486,12 @@ C            possibly with sperical and RKB transformations embedded.
 C            (is destroyed!)
 C
 C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
-C                do resort columns of the transformation matrix into S-L order)
+C                resort columns of the transformation matrix into "S-L" order)
+C
+C     LSYMAD  - if .true., apply the LINSYM procedure for adaptation
+C               of the transformation matrix for the linear symmetry - needed in connection
+C               to 4c->2c transition (.DO4C2C keyword)
+C
 C        
 C     On output:
 C   ==============
@@ -2494,10 +2500,13 @@ C  TMAT - total 4c AO -> MO transformation matrix (may be also linear-symmetry a
 C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
+C
+C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear MO
+C         to the linear MO
 C     
 C   Written by T.Saue, October 1995
 C   Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
-C            M.Ilias, 2005, to include LINAD, SLGROUP
+C            M.Ilias, 2005, to include LSYMAD, SLGROUP
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -2520,7 +2529,7 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      LOGICAL SLGROUP
+      LOGICAL SLGROUP,LSYMAD
       CALL QENTER('MODHAM')
 #include "memint.h" 
 C
@@ -2617,6 +2626,59 @@ CMI    ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
       ENDIF
 
 CMI   ... adaptation for the linear symmetry 
+      IF (LSYMAD) THEN
+        ISIZE = NFBAS(1,0)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
+        CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
+        CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
+        CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
+        IF(IPRHAM.GE.5) THEN
+          CALL HEADER(
+     &   'MODHAM: BEFORE LINSYM final transformation'//
+     &   ' matrix 4c AO->MO, VMAT(copyied from TMAT) ',-1)
+          IMAT = 1
+          DO I = 1,NFSYM
+          IF(NORB(I).GT.0) THEN
+           WRITE(LUPRI,'(/A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
+           CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+          ENDIF
+          ENDDO
+        ENDIF
+        CALL DZERO(TMAT,N2BBASXQ)
+        CALL DZERO(TBUF,N2BBASXQ)
+        CALL LINSYM(TMAT,VMAT,TBUF,EIG,
+     &            WORK(KFREE),LFREE)
+C ...   always return non-linear symmetry adapted transformation matrix :
+        CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
+        IF(IPRHAM.GE.5) THEN
+         CALL HEADER(
+     &  'MODHAM: AFTER LINSYM final transformation'//
+     &  ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
+         IMAT = 1
+         IBUF = 1
+         DO I = 1,NFSYM
+         IF(NORB(I).GT.0) THEN
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          WRITE(LUPRI,'(/5X,A/)')
+     &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
+     &    '  matrix (TBUF).'
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+          IBUF = IBUF + NORB(I)*NORB(I)*NZ
+         ENDIF
+         ENDDO
+        ENDIF
+      ENDIF
+
       IF (SLGROUP) THEN
 C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
        CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)

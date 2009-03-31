@@ -4600,9 +4600,9 @@ CMI  ... todo: more precise specification needed
 CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
          IF (USEDF) THEN
-           I2CHAM = 3
+           I2CHAM = 3 ! use Fock-Dirac matrix for 2c transformation
          ELSE
-!          I2CHAM = 4
+           I2CHAM = 4 ! use Dirac bare nuclesu for 2c transformation
          ENDIF
         ENDIF
 
