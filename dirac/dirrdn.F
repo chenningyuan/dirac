@@ -1072,7 +1072,9 @@ C&&&& CLOSED: number of closed shell electrons
                   READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*)
-     &             'DHFINP: Error in reading .CLOSED occupation'
+     &             'DHFINP: Error in reading .CLOSED occupation !'
+                    WRITE(LUPRI,*) 'Read NELEC_DHF(I),I=1,NFSYM:',
+     &              (NELEC_DHF(I),I=1,NFSYM)
                    CALL QUIT(
      &             'DHFINP: Error in reading .CLOSED occupation')
                   ENDIF
