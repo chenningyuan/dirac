@@ -1069,7 +1069,13 @@ C&&& TRIFCK: Start on two-electron Fock matrix read from file
                GO TO 100
    18          CONTINUE
 C&&&& CLOSED: number of closed shell electrons
-                  READ (LUCMD,*) (NELEC_DHF(I),I=1,NFSYM)
+                  READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
+                  IF (IOS.NE.0) THEN
+                    WRITE(LUPRI,*)
+     &             'DHFINP: Error in reading .CLOSED occupation'
+                   CALL QUIT(
+     &             'DHFINP: Error in reading .CLOSED occupation')
+                  ENDIF
                   INIOCC = .FALSE.
                GO TO 100
    19          CONTINUE
