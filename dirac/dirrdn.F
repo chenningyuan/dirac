@@ -1143,6 +1143,13 @@ C
                    WRITE(LUPRI,*) 'for NFSYM=2 has to be like xx/xx,xx'
                    CALL QUIT(
      &             'DHFINP: Error in open-shell input reading !')
+                  ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
+                   WRITE(LUPRI,*)
+     &        'DHFINP: Error in open-shell input reading for NFSYM=1 !'
+                   WRITE(LUPRI,*)
+     &        'for NFSYM=1 is has to be like xx/xx'
+                   CALL QUIT(
+     &        'DHFINP: Error in open-shell input reading !')
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
