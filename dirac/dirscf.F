@@ -254,9 +254,11 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
       ENDIF
 
       DO4C2C = DO4C2C_SAVE
+
       IF (DO4C2C) THEN
-        write(lupri,'(4X,A)') 'PSIDHF: Descending to two-component'// 
-     &'mode after previous four-component cycles.'
+        write(lupri,'(/,4X,A)')
+     &  '*** PSIDHF: Descending to two-component'// 
+     &  ' mode after previous four-component HF cycles.'
         CALL TITLER('Two-component BSS/DKH Kohn-Sham calculations',
      &      '*',125)
         BSS     = .TRUE.
@@ -2708,12 +2710,14 @@ C***********************************************************************
       CALL QENTER('SELBOS')
 
       IF (IPRINT.GE.7) THEN
-       CALL HEADER('*** Output from SELBOS ***',-1)
-       write(lupri,*) 'fermion symmetry',IFSYM,' NORB(IFRP)=',NO
+       CALL HEADER('*** Output from SELBOS - before resorting ***',-1)
+       write(lupri,'(2x,a,i1,a,i1,a,i4)')
+     &  'fermion symmetry IFSYM,',IFSYM,'/',NFSYM,' NORB(IFSYM)=',NO
        write(lupri,*)
-     &      'entering eigenvalues and boson irreps of each MO:'
+     &  'entering eigenvalues and boson irreps of each MO:'
        DO J=1,NO
-         write(lupri,*) J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
+        write(lupri,'(I3,a,f18.10,a,i2)')
+     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
        ENDDO
       ENDIF
 C
@@ -2732,11 +2736,13 @@ C
 
       IF (IPRINT.GE.7) THEN
        CALL HEADER('SELBOS: after resorting ',-1)
-       write(lupri,*) 'fermion symmetry',IFSYM,' NORB(IFRP)=',NO
+       write(lupri,'(2x,a,i1,a,i1,a,i4)')
+     &  'fermion symmetry, IFSYM ',IFSYM,'/',NFSYM,' NORB(IFSYM)=',NO
        write(lupri,*)
      &      'resorted eigenvalues and boson irreps of each MO:'
        DO J=1,NO
-         write(lupri,*) J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
+        write(lupri,'(I3,a,f18.10,a,i2)')
+     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
        ENDDO
       ENDIF
 C
@@ -3652,10 +3658,11 @@ C
           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 
           IF (DODBG.AND.IPRHAM.GE.8) THEN
-           write(lupri,*)
-           write(lupri,*) 'DFDIAG(subbl) - IBEIG values'
-           write(lupri,*) 'IBEIG sym',I,' > ',
-     &       (IBEIG(IORB(I)+K),K=1,NTMO(I))
+           write(lupri,'(/,2x,a)') 'DFDIAG(subbl) - IBEIG values'
+           write(lupri,'(2x,a,i3,a)') 'IBEIG sym',I,' >: '
+           do K=1,NTMO(I)
+            write(LUPRI,'(2X,I3,A,I3)') K,'-',IBEIG(IORB(I)+K)
+           enddo
           ENDIF
 C
 C       3 : ZORA; diagonalize modified LL block

@@ -855,7 +855,6 @@ C      the H2c in LINSYM_MO basis !!!
           IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
         ENDDO
       ENDIF
-
 C .... write the 2c-adapted lin-sym adapted Lowdin matrix into the file
       CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','LOWD2C',
      &              VMAT,N2BBASX,LUBSS,IPRINT)

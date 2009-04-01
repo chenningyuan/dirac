@@ -278,7 +278,7 @@ C
       ENDIF
  10   CONTINUE
       IF (IPRINT.GE.10) THEN
-        WRITE(LUPRI,'(A)') '* Output from GENDEN:'
+        WRITE(LUPRI,'(/,8X,A,/)') '* Output from GENDEN:'
         DO I = 1,6
         IF (LBIT(IFLAG,I)) THEN
           IF (I.EQ.1) THEN
@@ -301,7 +301,7 @@ C
           ENDIF
         ENDIF
         ENDDO
-        DO IFRP = 1,NFSYM
+        DO IFRP = 1, NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
           CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
@@ -374,6 +374,8 @@ C***********************************************************************
 C
 C     Generate density matrix for SCF calculations
 C
+C     Entering CMO - MO coefficients
+C
 C     Written by T. Saue Nov 23 2004
 C
 C***********************************************************************
@@ -382,10 +384,25 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0,DM1=-1.0D0)
 #include "dcbham.h"
 #include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 #include "dcbdhf.h"
       DIMENSION DMAT(*),CMO(*)
 C
       CALL QENTER('DENMAT')
+
+      IF (IPRINT.GE.7) THEN
+        CALL HEADER('Output from DENMAT',-1)
+        WRITE(LUPRI,'(3X,A)')
+     &  'Entering molecular orbitals (CMO):'
+        DO IFRP = 1, NFSYM
+          WRITE(LUPRI,'(/A,I1,A,I1)')
+     &    '* Fermion irrep ',IFRP,'/',NFSYM
+          CALL PRQMAT(CMO(1+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
+     &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      ENDIF
+
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       IDEN = 1
       IF(VACPOL.AND..NOT.MIXVAC) THEN

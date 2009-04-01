@@ -5281,6 +5281,15 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
+          IF (IPRHAM.GE.15) THEN
+           CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1) 
+           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
+
           IF(DOJACO) THEN
             CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL),WORK(KFREE),LFREE)
