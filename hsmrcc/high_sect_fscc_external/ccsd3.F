@@ -399,7 +399,8 @@ c   scratch file, i.e. file to be completely rewritten.
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-#include "dat.h" ! miro added due to control printouts
+!  ! miro added due to control printouts
+#include "dat.h" 
 
       if (iopt(1).ge.5) then
         call header("Output from files_ccsd",-1)
