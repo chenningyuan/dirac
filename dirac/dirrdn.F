@@ -1134,6 +1134,17 @@ C
                      READ (TEXT,'(I20)') IAC1
                      IAC2 = 0
                   END IF
+
+                  IF (IPERIOD.EQ.0.AND.NFSYM.GE.2) THEN
+                   WRITE(LUPRI,*)
+     &            'DHFINP: Error in open-shell input reading !'
+                   WRITE(LUPRI,*) 'NOPEN:',NOPEN,' NFSYM:',NFSYM
+                   WRITE(LUPRI,'(A,A)') 'text:',LINE
+                   WRITE(LUPRI,*) 'for NFSYM=2 has to be like xx/xx,xx'
+                   CALL QUIT(
+     &             'DHFINP: Error in open-shell input reading !')
+                  ENDIF
+
                   IF (NFSYM .EQ. 1) IAC2 = 0
                   IF ( (MOD(IAC1,2) .NE. 0) .OR.
      &                 (MOD(IAC2,2) .NE. 0) .OR.
