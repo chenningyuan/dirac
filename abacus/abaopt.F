@@ -2259,6 +2259,7 @@ C
 #include "infopt.h"
 #include "optinf.h"
 #include "siripc.h"
+#include "dftcom.h"
 #ifndef PRG_DIRAC
 #include "mx2orb.h"
 #include "infinp.h"
@@ -2281,6 +2282,7 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+      IF (DFTRUN) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
          IF (DOCCSD) THEN
