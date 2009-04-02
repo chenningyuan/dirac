@@ -5317,6 +5317,14 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
+          IF (IPRHAM.GE.15) THEN
+           CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1) 
+           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
           IF(DOJACO) THEN
             CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
