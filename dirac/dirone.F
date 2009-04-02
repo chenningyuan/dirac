@@ -5298,6 +5298,11 @@ C
      &                EIG(IEIGE),1,
      &                WORK(KVLL),NL,NL,
      &                WORK(KFREE),LFREE,IERR)
+            IF (IERR.NE.0) THEN
+              WRITE(LUPRI,'(2X,A)')
+     &        'LINSYM: Errorneous diagonalization !'
+              CALL QUIT('LINSYM: Errorneous diagonalization !')
+            ENDIF
           ENDIF
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
