@@ -5193,7 +5193,7 @@ C ************************************************************************
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck cmp_eigval */      
        SUBROUTINE CMP_EIGVAL(VMAT,TMAT,TBUF,EIG,IBEIG,WRITEH2C,SPFR,
      &                       SPFR_BEG,ONLYSO1,SAVESO1,
@@ -5343,10 +5343,10 @@ C      ... this option does not matter....
 
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
       IF (WRITEH2C) THEN
-C      ... transformed 1 electron Dirac Hamiltonian
+C      ... transformed  bare nucleus Dirac Hamiltonian
        LABELH2='H1AO_DK '
       ELSE
-C      ... transformed converged Fock-Dirac Hamiltonian
+C      ... transformed converged Fock-Dirac Hamiltonian (both closed/open-shell)
        LABELH2='FDAO_DK '
       ENDIF
  
@@ -5364,12 +5364,20 @@ C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
       IH1FP = 1
       DO I = 1, NFSYM
       IF (NORB(I).GT.0) THEN
-
        IF (IPRINT.GE.4) THEN
-
 C    ... print out H2c matrix in AO "xhi" basis
         CALL HEADER(
-     &'CMP_EIGVAL: Final H(2c)_LL in "xhi" SA-AO basis ' ,-1)
+     &'CMP_EIGVAL: Final H(2c)_LL in "xhi" SA-AO basis ',-1)
+        IF (WRITEH2C) THEN
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Dirac bare nucleus,'//
+     &    ' H1AO_DK.' 
+        ELSE
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Fock-Dirac Hamiltonian,'//
+     &    ' FDAO_DK.' 
+        ENDIF
+
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &        '*** Fermion corep ',I,'/',NFSYM
         CALL PRQMAT(TBUF(1+I2BASX(I,I)),NFBAS(I,1),NFBAS(I,1),
