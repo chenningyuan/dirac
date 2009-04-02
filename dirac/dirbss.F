@@ -5399,6 +5399,11 @@ C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
           CALL HEADER(
      &   'CMP_EIGVAL: H2c in (MO_ee) ON Lowdin basis "Theta" to'//
      &   ' be diagonalized, TMAT',-1)
+          IF (.NOT.WRITEH2C) THEN
+            WRITE(LUPRI,'(3X,A,/)')
+     &      'This is FD2C_LMO, FD_2c in Lowdin matrix for subsequent'//
+     &      ' postDHF->BSS SCF step' 
+          ENDIF
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(TMAT(IH2MO),NESH(I),NESH(I),
@@ -5414,7 +5419,7 @@ C       ... offset for Lowdin matrix
 
       IF (.NOT.WRITEH2C) THEN
 C ...  save FD_2c in Lowdin MO basis to the BSSMAT file
-C ...  to be used at the post-DC-SCF level in DFSOLV !
+C ...  to be used at the post-DC-BSS-SCF level in DFSOLV !
        ISIZE = NESH(1)*NESH(1)*NZ
        IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
        CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
@@ -5422,7 +5427,7 @@ C ...  to be used at the post-DC-SCF level in DFSOLV !
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
-     &  ' into the BSSMAT file, EOFLABEL renewed.'           
+     &  ' into the BSSMAT file (FD2C_LMO), EOFLABEL renewed.'  
        ENDIF
 
       ENDIF 
