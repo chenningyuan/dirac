@@ -976,7 +976,9 @@ c    &               ' integration were skipped while getting b0'
 C aspg+rb, 2007-01-19
 C aspg: do we really need this for linear response?
          if (DOLR) then
-            CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
+!radovan: KXLRCVEC not set
+          call quit('lr and fitvxc not implemented')
+!         CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
           CALL MEMREL('dftdr1-lrvxc',WORK,KLRXCVEC,KLRXCVEC,KFREE,LFREE)
           CALL MEMREL('dftdr1-lrfc', WORK,KLRCFIT ,KLRCFIT ,KFREE,LFREE)
          endif
