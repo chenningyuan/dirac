@@ -445,8 +445,7 @@ C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
-        IOPT = 14
-        IF(IPRSCF.GE.1) IOPT = 15
+        IOPT = 15
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT,
      &              WORK,KFREE,LFREE)
 C
