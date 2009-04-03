@@ -5147,7 +5147,7 @@ C     Construct matrix Jz(x,y,z) and transform to eigenvectors of this operator
 C
 C     Routine based on MODHAM and parts of the ZORA diagonalization routine
 C
-C     Called from GLINSM
+C     Called from GLINSM, LOWD2C
 C
 C     On input:  VMAT 4c AO-MO RKB transformation matrix
 C
@@ -5517,7 +5517,7 @@ C
         IF(NORB(I).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
-     &  'LINSYM: Transformation matrix in orthon. basis (MO->MO)',-1)
+     &'LINSYM: Transformation matrix in orthon. basis (MO->MO),TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
@@ -5537,7 +5537,8 @@ C
 
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
-     &'LINSYM: Final (symm.blocked) transformation matrix (AO->MO)',-1)
+     &'LINSYM: Final (symm.blocked) transformation'//
+     &' matrix (AO->MO),TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),

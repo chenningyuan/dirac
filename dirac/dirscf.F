@@ -2698,11 +2698,12 @@ C
 C        Written by L. Visscher
 C        April 1999
 C
-C        Last modifications: MI, august 2005
+C        Last modifications: MI, august 2005, April 2009 (Tel Aviv)
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
 
@@ -2711,12 +2712,15 @@ C***********************************************************************
       IF (IPRINT.GE.7) THEN
        CALL HEADER('*** Output from SELBOS - before resorting ***',-1)
        write(lupri,'(2x,a,i1,a,i1,a,i4)')
-     &  'fermion symmetry IFSYM,',IFSYM,'/',NFSYM,' NORB(IFSYM)=',NO
+     & 'fermion symmetry IFSYM/NFSYM=',IFSYM,'/',NFSYM,
+     & ' NORB(IFSYM)=',NO
        write(lupri,*)
-     &  'entering eigenvalues and boson irreps of each MO:'
+     & 'entering eigenvalues and boson irreps of each MO:'
        DO J=1,NO
-        write(lupri,'(I3,a,f18.10,a,i2)')
-     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
+        write(lupri,'(I3,a,f18.10,a,i2,a)')
+     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J),
+     &  ' correspoding eigenvector:'
+        write(lupri,'(5f16.8)') (EVEC(K,J),K=1,NO)
        ENDDO
       ENDIF
 C
@@ -2733,17 +2737,6 @@ C
       CALL DCOPY(NO,RDUM,1,EIG,1)
       CALL ICOPY(NO,IDUM,1,IBEIG,1)
 
-      IF (IPRINT.GE.7) THEN
-       CALL HEADER('SELBOS: after resorting ',-1)
-       write(lupri,'(2x,a,i1,a,i1,a,i4)')
-     &  'fermion symmetry, IFSYM ',IFSYM,'/',NFSYM,' NORB(IFSYM)=',NO
-       write(lupri,*)
-     &      'resorted eigenvalues and boson irreps of each MO:'
-       DO J=1,NO
-        write(lupri,'(I3,a,f18.10,a,i2)')
-     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J)
-       ENDDO
-      ENDIF
 C
 C     Sort the eigenvectors
 C
@@ -2751,6 +2744,22 @@ C
          CALL DCOPY(NO,EVEC(1,INDX(J)),1,RDUM(1,J),1)
       ENDDO
       CALL DCOPY(NO*NO,RDUM,1,EVEC,1)
+
+      IF (IPRINT.GE.7) THEN
+       CALL HEADER('SELBOS: after resorting ',-1)
+       write(lupri,'(2x,a,i1,a,i1,a,i4)')
+     &  'fermion symmetry, IFSYM/NFSYM=',IFSYM,'/',NFSYM,
+     &  ' NORB(IFSYM)=',NO
+       write(lupri,*)
+     &      'resorted eigenvalues and boson irreps of each MO:'
+       DO J=1,NO
+        write(lupri,'(I3,a,f18.10,a,i2,a)')
+     &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J),
+     &  ' correspoding eigenvector:'
+        write(lupri,'(5f16.8)') (EVEC(K,J),K=1,NO)
+       ENDDO
+      ENDIF
+
 C
       CALL QEXIT('SELBOS')
       RETURN
@@ -3942,10 +3951,12 @@ C
    
       IF (IPRINT.GE.4) THEN
        CALL HEADER('*** Output from INIBOS ***',-1)
-       write(lupri,*) ' SORTLS=',SORTLS
-       write(lupri,*) 'IBOS for IFRP=:',IFRP,' NORB(IFRP)=',NORB(IFRP),
-     & ' pos.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
-       write(lupri,*) 'boson irreps of each MO (from pos. to el.):',
+       write(lupri,'(2X,A,L1)') 'flag on S_L resorting, SORTLS=',SORTLS
+       write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
+     & 'IBOS for IFRP=',IFRP,' NORB(IFRP)=',NORB(IFRP),
+     & ' positr.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
+       write(lupri,'(2X,A,/,4X,25I3)')
+     & 'boson irreps of each MO (from pos. to el.):',
      &                (IBOS(J),J=1,NORB(IFRP))
       ENDIF
 
