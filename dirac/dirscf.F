@@ -864,13 +864,13 @@ CMI ==================================================================
         CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
         IF (DO4C2C) THEN
 C ...    read the FD_2c in Lowdin MO basis from the BSSMAT to 
-C       provide restarting of the postDHF-BSS-SCF procedure
+C       provide starting for the postDHF-BSS-SCF procedure
         REWIND LUBSS   
         IF (FNDLAB('FD2C_LMO',LUBSS)) THEN                     
           ISIZE = (NESH(1)*NESH(1)*NZ) 
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
-          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
+          IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)') 
      &  'DFSOLV: FD_2c elements in Lowdin MO basis were read'// 
      &  ' from the BSSMAT file(FD2C_LMO)-starting guess for BSS-SCF.'
          ELSE

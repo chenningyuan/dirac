@@ -4513,28 +4513,31 @@ C
 C
 C  PURPOSE:  Do the selective (or full) diagonalization of 
 C            the entering hermitian (real,complex,quaternion) matrix
-C            using the Jacobi diagonalization method (extended 
-C            for quaternion matrixes).
+C            using the Jacobi diagonalization method, which is  extended 
+C            for quaternion matrixes.
 C
 C  On input:  A(N,N,NZ) ... quaternion matrix (is destroyed after!)
-C             DOEVE ... if .true., do calculate eigenvectors,
-C                   and for IPRINT.GE.2 do the consistency check 
+C             DOEVE ... if .true., calculate eigenvectors,
+C                   and for IPRINT.GE.2 also do the consistency check 
+C
+C             NBL=0 ... do the traditional diagonalization (parameter IBL substitute with dummy variable,IDUMMY)
+C             NBL>0 ... do the block diagonalization, where blocks to be zeored are specified in IBL
 C
 C             IPRINT - print level 
 C  1 ... print timing and basic info
 C  2 ... print out entering matrix into text file, reconstruct it
-C        back at using eigenvalues and eigenvectors
+C        back at using eigenvalues and eigenvectors (if DOEVE=.true.)
 C  3 ... + print out entering and final matrix, print out result fo Ph*P,P*Ph,
-C          print out iteration process, aigebvalues (if NZ=0)
-C  4 ... + do print eigenvectors (if NZ=0)
-C  5 ... + do print whole matrix in each iteration
-C  6 ... + do print whole P after iter., do print A before and after iter.
-C  7 ... + do print Ppq
+C          print out iteration process, eigenvalues (if DOEVE=.true.)
+C  4 ... +  print eigenvectors (if DOEVE=.true.)
+C  5 ... +  print whole matrix in each iteration
+C  6 ... +  print whole P after iter., print A before and after iter.
+C  7 ... +  print Ppq
 C                       
-C
 C  On output: A - diagonal (NBL=0) or block diagonal (NBL>1) matrix
-C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
+C             so eigenvalues are on the diagonal of the (destroyed) A matrix
 C
+C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
 C
 C  Written: M Ilias, Strasbourg, May 2005
 C      
@@ -4565,11 +4568,12 @@ C        .... file number and file name of the check file
       IF (IPRINT.GE.2) THEN
        CALL HEADER(
      &'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
-       write(lupri,*)
+       write(lupri,'(2X,A,I5)')
      &  'size of the square hermitian/real symmetric matrix, N=',N
-       write(lupri,*)
-     &  'type of matrix {real(1), complex(2) or quaternion(4)}, NZ=',NZ
-       write(lupri,*)
+       write(lupri,'(2X,A,I2)')
+     &  'type of matrix {real(NZ=1), complex(NZ=2) or'//
+     &  ' quaternion(NZ=4)}, NZ=',NZ
+       write(lupri,'(2X,A,I5)')
      &  'PRINT level:',IPRINT
        CALL FLSHFO(LUPRI)
        CALL GETTIM(CPU1,WALL1)
@@ -4598,7 +4602,8 @@ C      ... do make unit matrixes for accumulation of future eigenvector
 
         IF (DOEVE) THEN
             OPEN(LUF,FILE=FILENAME,STATUS="UNKNOWN",FORM="FORMATTED")
-            write(lupri,*) 'The file #',LUF,' with name:',FILENAME,
+            write(lupri,'(2X,A,I2,A,A,A)')
+     &      'The file #',LUF,' with name:',FILENAME,
      &      ' has been open.'
 
             IF (IPRINT.GE.3) THEN
@@ -4609,7 +4614,7 @@ C      ... do make unit matrixes for accumulation of future eigenvector
             DO I=1,N
             DO J=1,N
             IF (IPRINT.GE.3) THEN
-             write(lupri,*)
+             write(lupri,'(A,I3,A,I3,A,4F18.12)')
      &         '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
             ENDIF
 C            ... write matrix elements to file for later checking...
@@ -4620,7 +4625,7 @@ C            write(luf,*) I,J,(A(I,J,IZ),IZ=1,NZ)
             ENDDO
             ENDDO
         ENDIF
-         write(lupri,'(/A,A/)') 
+         write(lupri,'(2X,A,A)') 
      & '...entering matrix has been written to the file ',FILENAME
       ENDIF
 
@@ -6013,12 +6018,12 @@ C        ... after elimination of Apq find indexes of the next largest element
        WALL   = WALL2 - WALL1
        CPUTID = SECTID(CPU)
        WALLTID = SECTID(WALL)
-       write(lupri,'(/2X,A,I7)')
+       write(lupri,'(2X,A,I7)')
      &  '>>>> QJACOBI finished, # of iterations: ',ITER
        write(lupri,'(2X,A,2D12.5,/,2X,A,D12.5)')
-     &      ' last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
-     &      ' "zero" off-diag elem. threshold: ',ZEROTHRS
-       WRITE(LUPRI,'(A,A12,A1,A12)')
+     &      'last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
+     &      '"zero" off-diag elem. threshold: ',ZEROTHRS
+       WRITE(LUPRI,'(2X,A,A12,A1,A12)')
      &        '>>>> CPU/wall  time used in QJACOBI:',
      &             CPUTID,'/',WALLTID
        CALL FLSHFO(LUPRI)
@@ -6105,7 +6110,7 @@ C         ... rewind file
           REWIND(LUF)
 
          IF (IPRINT.GE.4) THEN
-         write(lupri,'(/3X,A)') '**** Eigenvectors:'
+           write(lupri,'(/3X,A)') '**** Eigenvectors:'
          ENDIF
 
 C ***********************************************
@@ -6134,13 +6139,14 @@ C          ....  P*P_H
 
 C          ... do print eignevector...
           IF (IPRINT.GE.4) THEN
-          write(lupri,*) '** P(',I,',',J,')_r:',
+          write(lupri,'(A,I3,A,I3,A,F18.12)') '** P(',I,',',J,')_r:',
      &     EV(I,J,1)
           ENDIF
 
 C         ... print of unit matrixes
           IF (IPRINT.GE.3) THEN
-         write(lupri,*) '>> P^H*P(',I,',',J,')_r:',
+           write(lupri,'(A,I3,A,I3,A,F18.12,A,F18.12)')
+     &      '>> P^H*P(',I,',',J,')_r:',
      &     TOPIPR,' >> P*P^H:',
      &     TOQIPR
           ENDIF
@@ -6195,10 +6201,10 @@ C         ... read elements from the file...
 C          READ(LUF,*) I1,J1,AIJFR
 
            IF (IPRINT.GE.3) THEN
-           write(lupri,*)
+           write(lupri,'(A,I3,A,I3,A,D12.5)')
      &     '>>>>>  reconstructed A(',I,',',J,')_r =',
      &     AIJ_R
-           write(lupri,*)
+           write(lupri,'(A,I3,A,I3,A,D12.5,A,D12.5)')
      &     '>>>>> entering elem. A(',I,',',J,')_r =',
      &     AIJFR,' difference: ',AIJ_R-AIJFR
            ENDIF
@@ -6221,8 +6227,9 @@ C           ... check the differences...
             ENDDO
 
             CLOSE(LUF,STATUS="KEEP")
-            write(lupri,'(/,A/)')
-     &      'The file was closed, comparison A=P.Ad.P^H was done'
+            write(lupri,'(2X,A,I2,A)')
+     &      'The auxiliary file (lu=#,',LUF,') was closed, checking'//
+     &      ' of A=P.Ad.P^H done'
 
 C ****************************************************
 C *************** Complex  matrixes ******************

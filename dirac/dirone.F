@@ -5156,6 +5156,7 @@ C                TBUF - MO to MO transformation matrix adapted for linear symmet
 C
 C     Written by L.Visscher, october 2003
 C     Last changes: M.Ilias, Strasbourg, 2005 
+C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -5174,6 +5175,7 @@ C  DGROUP:
 #include <dcborb.h>
 #include <dgroup.h>
 #include <cbihr1.h>
+#include "dummy.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
@@ -5290,19 +5292,27 @@ C
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
-          IF(DOJACO) THEN
-            CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
+          IF (.NOT.DOQJACO) THEN
+            IF(DOJACO) THEN
+              CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL),WORK(KFREE),LFREE)
-          ELSE
-            CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
+            ELSE
+              CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
      &                EIG(IEIGE),1,
      &                WORK(KVLL),NL,NL,
      &                WORK(KFREE),LFREE,IERR)
-            IF (IERR.NE.0) THEN
-              WRITE(LUPRI,'(2X,A)')
-     &        'LINSYM: Errorneous diagonalization !'
-              CALL QUIT('LINSYM: Errorneous diagonalization !')
+              IF (IERR.NE.0) THEN
+                WRITE(LUPRI,'(2X,A)')
+     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_LL!'
+               CALL QUIT(
+     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
+              ENDIF
             ENDIF
+          ELSE
+            CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,IDUMMY,.TRUE.,2)
+            DO II=1,NL
+              EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
+            ENDDO
           ENDIF
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1) 
@@ -5312,6 +5322,7 @@ C
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
+           !call quit('in linsym')
           ENDIF
         ENDIF
 C
@@ -5330,14 +5341,27 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
-          IF(DOJACO) THEN
-            CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
+          IF (.NOT.DOQJACO) THEN
+            IF(DOJACO) THEN
+              CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS),WORK(KFREE),LFREE)
-          ELSE
-            CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
+            ELSE
+              CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
      &                EIG(IEIGP),1,
      &                WORK(KVSS),NS,NS,
      &                WORK(KFREE),LFREE,IERR)
+              IF (IERR.NE.0) THEN
+                WRITE(LUPRI,'(2X,A)')
+     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_SS!'
+               CALL QUIT(
+     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
+              ENDIF
+            ENDIF
+          ELSE
+            CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,.TRUE.,2)
+            DO II=1,NS
+              EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
+            ENDDO
           ENDIF
           IF (IPRHAM.GE.15) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1) 

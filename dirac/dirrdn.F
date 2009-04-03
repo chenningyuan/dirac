@@ -201,7 +201,7 @@ C
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.ECP   ','.LOGMEM','.XXXXXX',
+     &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -216,6 +216,7 @@ C
       SKIP2E = .FALSE.
       LOWJACO = .FALSE.
       LOGMEMGET = .FALSE.
+      DOQJACO  = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
@@ -336,6 +337,8 @@ C&&&& ECP: do ECP calculation, non-relativistic
           LOGMEMGET = .TRUE.
             GO TO 100
   112     CONTINUE
+!           Jacobi diagonalization of quaternion matrixes
+            DOQJACO=.TRUE.
             GO TO 100
   113    CONTINUE
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
@@ -454,9 +457,17 @@ C
      +     '* Thresholds for linear dependence:',
      +     'Large components:  ',STOL(1),
      +     'Small components:  ',STOL(2)
+
+      IF (DOJACO.AND.DOQJACO) DOJACO=.FALSE. 
+
       IF(DOJACO) WRITE(LUPRI,'(1X,A)')
      &    '* Matrix diagonalization by the Jacobi method '//
      &    'for real groups.'
+
+      IF(DOQJACO) WRITE(LUPRI,'(1X,A)')
+     &    '* Matrix diagonalization by the quaternion Jacobi method '//
+     &    'for real, complex and quaternion groups (only in LINSYM).'
+
       IF(DOPIN) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients read from formatted file ',
      &     ' DFPCMO and written to DFCOEF'

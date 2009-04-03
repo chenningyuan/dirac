@@ -20,6 +20,9 @@
 !  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode
 !  SKIP2E - Skip all two electron steps.
 !
+!  DOJACO - do the Jacobi diagonalization of real matrixes
+!  DOQJACO - Jacobi diagonalization of quaternion Jacobi matrixes
+!
 !  These flags should be passed on to every module
 !
 ! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
@@ -36,7 +39,7 @@
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
@@ -45,7 +48,8 @@
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
-     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH
+     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
+     &                DOQJACO
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
