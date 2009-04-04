@@ -40,6 +40,11 @@ MENU=bss_rkb.ci;
 export MENU;
 ../run.sh
 ######################################"
+echo "DC2BSS_rkb Hamiltonian"
+MENU=dc2bss_rkb_df.ci;
+export MENU;
+../run.sh
+######################################"
 #REMOVE_BEGIN
 echo "BSS+MFSSO Hamiltonian"
 MENU=bss+mfsso.ci;
