@@ -11,6 +11,8 @@ Fluorine atom.
 #.LVCORR
 .BSS
 999
+.ONESTEP
+.USE_DF
 .DO4C2C
 .CMPEIG
 .PRINT
