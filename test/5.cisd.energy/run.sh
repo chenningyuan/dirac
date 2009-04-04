@@ -42,6 +42,11 @@ MENU=F.bss_rkb.cisd;
 export MENU;
 ../run.sh
 ###############################
+echo "DC2BSS_RKB(DF) cisd run"
+MENU=F.dc2bss_rkb_df.cisd;
+export MENU;
+../run.sh
+###############################
 
 ###############################
 if [ "$RUNTYPE" = "medium" ]; then
