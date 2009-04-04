@@ -719,7 +719,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dgroup.h"
       DIMENSION VMAT(*),TBUF(*),TMAT(*),EIG(*),WORK(LWORK)
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
-      LOGICAL PURLO
+      LOGICAL PURLO, WANT_LINEAR
 #include "memint.h"
 
       CALL QENTER('LOWD2C')
@@ -815,7 +815,9 @@ C ==========================================================
      & ' was written into the BSSMAT file, EOFLABEL was renewed.'
       ENDIF
 
+      WANT_LINEAR=.FALSE.
       IF (LINEAR) THEN 
+!     IF (WANT_LINEAR) THEN 
 C     ... for the linear symmetry DO ADAPT the Lowdin matrix !
 C      ... the proper setting for the 2c mode is needed !
 C   ... when we have Fock-Dirac matrix SCF in linear symmetry, we need
@@ -5226,7 +5228,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
       LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,DOJACOBI,WRITEH2C,
-     &        PURLO,USEDF,DO4C2C,START2C
+     &        PURLO,USEDF,DO4C2C,START2C,WANT_LINEAR
       CHARACTER*8 LABELH1,LABELH2,LBL
 
       CALL QENTER('CMP_EIGVAL')
@@ -5325,10 +5327,11 @@ C  ======== End of handling Fock-Dirac 2c =========
 C  ======== End of handling Fock-Dirac 2c =========
 
 C      ... this option does not matter....
-      DOJACOBI = .FALSE.
+!      DOJACOBI = .FALSE.
 
-
-      IF (LINEAR) THEN
+      WANT_LINEAR=.FALSE.
+       IF (LINEAR) THEN
+!     IF (WANT_LINEAR) THEN
           LABELH1='VMAT2C_L'
       ELSE
           LABELH1='VMAT2C  '
@@ -5450,7 +5453,7 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
 
 C      ... diagonalize the H2c in MO(ee) basis !
        IF (DOJACOBI.AND.NZ.EQ.1) THEN
-         write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
+!        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
      &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
      &                  WORK(KFREE),LFREE)

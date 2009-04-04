@@ -6095,8 +6095,13 @@ C            ... switch I,J columns of P(eigenvectors) !
      &'>>>> QJACOBI: RESULTING MATRIX after unit.transformations <<<<'
          DO I=1,N
          DO J=1,N
-          write(lupri,*)
-     &     '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
+           IF (I.NE.J) THEN
+          write(lupri,'(A,I4,A,I4,A,4F16.8)')
+     &     'offdiag elem, A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
+           ELSE
+          write(lupri,'(A,I4,A,I4,A,4F16.8)')
+     &     'diagonal elem,A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
+           ENDIF
          ENDDO
          ENDDO
          write(lupri,*)

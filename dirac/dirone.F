@@ -3436,20 +3436,23 @@ C                    Febr2006 - MI
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "dcbgen.h"
 #include "priunit.h"
+#include "dcbgen.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),WORK(LWORK)
 C
+#include "memint.h"
       CALL QENTER('LOWGEN')
 
-
-      IF (IPRINT.GE.15) THEN
-        CALL HEADER('LOWGEN: Entering overlap matrix',-1)
+CMI .. mover before diagonalization which can destroy SMAT
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('LOWGEN: Lowdin input (overlap) matrix:',-1)
+        WRITE(LUPRI,'(3X,A,2I5)') 'size :',NS,NS
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,1,LUPRI)
-        write(lupri,*)
       ENDIF
+
 #ifdef MOD_LOG
       call matexport_text('% Entering LOWGEN')
       call matexport_double2('S',SMAT,LDM,NS,NS)
@@ -3457,6 +3460,7 @@ C
 C
 C     Diagonalize overlap matrix
 C
+      IF (.NOT.DOQJACO) THEN
 #ifdef FASTLOW
       IF (LOWJACO) THEN
 #endif
@@ -3472,6 +3476,32 @@ c    It would be better to rewrite the code below instead..
          ENDIF
       ENDIF
 #endif
+      ELSE
+CMI   ... (quaternion) Jacobi diagonalization routine
+        NSS=NS*NS
+        CALL MEMGET('REAL',KSMAT,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KVMAT,NSS,WORK,KFREE,LFREE)
+        IPOS=0
+        DO II=1,NS
+        DO JJ=1,NS
+          WORK(KSMAT+IPOS)=SMAT(JJ,II) ! needed NxN matrix for input
+          IPOS=IPOS+1
+        ENDDO
+        ENDDO
+        CALL QJACOBI(WORK(KSMAT),WORK(KVMAT),NS,1,0,IDUMMY,.TRUE.,2)
+        IPOS=0
+        DO II=1,NS
+          EIG(II)=WORK(KSMAT+(NS*(II-1)+II-1)) ! extract eigenvalues
+        DO JJ=1,NS
+          VMAT(JJ,II)=WORK(KVMAT+IPOS) ! extract eigenvectors
+          IPOS=IPOS+1
+        ENDDO
+        ENDDO
+        CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
+        CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
+      ENDIF
+
+!    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
         IF(EIG(I).LE.SSTOL) GOTO 10
@@ -3489,10 +3519,6 @@ C
      &   EIG(NV)
       ENDIF
 
-      IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Lowdin input matrix:',-1)
-        CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,1,LUPRI)
-      ENDIF
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
@@ -3500,7 +3526,8 @@ C
       ENDIF
 C
       IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Canonical Lowdin matrix:',-1)
+        CALL HEADER(
+     &  'LOWGEN: Canonical Lowdin matrix(ie eigenvectors):',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
 
