@@ -3616,6 +3616,7 @@ C
 C
 C           Diagonalize the isub'th block of parity i
 C
+            IF (.NOT.DOQJACO) THEN
             IF (DOJACO) THEN
               CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
      &                    EIG(IEIG),1,1,0,FAO(IMAT),
@@ -3624,6 +3625,34 @@ C
               CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
+            ENDIF
+            ELSE
+             CALL MEMGET('REAL',KFMO,NBO*NBO,WORK,KFREE,LFREE)
+             CALL MEMGET('REAL',KFA, NBO*NBO,WORK,KFREE,LFREE)
+             IPOS=0
+             DO II=1,NBO
+             DO JJ=1,NBO
+              WORK(KFMO+IPOS)=FMO(IMAT+(NTMO(I)*(II-1))+JJ-1)
+              IPOS=IPOS+1
+             ENDDO
+             ENDDO
+             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,IDUMMY,.TRUE.,2)
+              IPOS=0
+              DO II=1,NBO
+                EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
+                DO JJ=1,NBO ! store eigenvectors
+!                FAO(IMAT+(NBO*(II-1))+JJ-1)=
+!                 FAO(IMAT+((NTMO(I)+1)*IBO)*(II-1)+JJ-1)=
+                  FAO( IMAT+ (NTMO(I)*(II-1)+JJ-1) ) =
+!                FAO(IMAT+IPOS)=
+!    &            WORK(KFA+IPOS)
+     &            WORK(KFA+(NBO*(II-1))+JJ-1)
+                  IPOS=IPOS+1
+                ENDDO
+              ENDDO
+              CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
+              CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
+             ! call quit('end here')
             ENDIF
 
             IF (DODBG) THEN

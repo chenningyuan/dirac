@@ -4607,14 +4607,15 @@ C      ... do make unit matrixes for accumulation of future eigenvector
      &      ' has been open.'
 
             IF (IPRINT.GE.3) THEN
-            WRITE(LUPRI,'(/,2X,A)')
+             WRITE(LUPRI,'(/,2X,A)')
      & 'QJACOBI: ENTERING hermitian(real,complex,quaternion) matrix A'
+            ! CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQ(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
             ENDIF
 
             DO I=1,N
             DO J=1,N
             IF (IPRINT.GE.3) THEN
-             write(lupri,'(A,I3,A,I3,A,4F18.12)')
+             write(lupri,'(A,I3,A,I3,A,4D15.8)')
      &         '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
             ENDIF
 C            ... write matrix elements to file for later checking...
@@ -4630,7 +4631,7 @@ C            write(luf,*) I,J,(A(I,J,IZ),IZ=1,NZ)
       ENDIF
 
 C  ... format of elements in the file...
- 1000 FORMAT(2I5,2X,I1,2X,F27.16) 
+ 1000 FORMAT(2I5,2X,I1,2X,D30.17) 
   
          FINISHED = .false.
          ITER = 0
@@ -6006,7 +6007,8 @@ C        ... after elimination of Apq find indexes of the next largest element
           WASELIM = .FALSE.
 
           IF (IPRINT.GE.3) THEN
-            write(lupri,*) ' ... ITER=',ITER, ' SUMSQ=',SUMSQ
+            write(lupri,'(3X,A,I6,A,D12.7)')
+     &      '...ITER=',ITER,' SUMSQ=',SUMSQ
           ENDIF
           IF (.NOT.ELIM(1).AND..NOT.ELIM(2)) FINISHED=.TRUE.
 
