@@ -257,7 +257,6 @@ C     exist.
 C
       IF(ATSIZE) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
-C        CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
          CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
          CALL HEADER('Density based relative atomic sizes',-1)
          CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
