@@ -181,7 +181,6 @@ C     then we must restart DIIS
 C     Likewise if One-center app. is turned off in this iteration     /jkp
 C
       IF (INTFLG.NE.INTBUF.OR.ONECOFF.OR..NOT.DIISON) THEN
-CMI     IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
         IF(ITDIIS.GT.0) THEN
           IF (.NOT.(START2C.AND..NOT.DO4C2C)) THEN
             CLOSE(LUDIIS,STATUS='DELETE')
