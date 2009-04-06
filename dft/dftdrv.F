@@ -70,12 +70,11 @@ C
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
 C
 #include "memint.h"
-
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
+      DOERG  = LBIT(IOPTS,1)
+      DOGRD  = LBIT(IOPTS,2)
+      DOLR   = LBIT(IOPTS,3)
+      DOQR   = LBIT(IOPTS,4)
+      DOLND  = LBIT(IOPTS,5)
       LUQUAD = 44
 C
 #ifdef MOD_DNF
@@ -85,9 +84,9 @@ C prepare for accumulating integrals...
          CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KXCVEB),NBASISAUX)
          if (DOERG) then 
-         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
+           CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
          else if (DOLR) then 
-         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
+           CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
          endif
       ENDIF
 Caspg+rbast
@@ -101,14 +100,10 @@ C     Initial expectation value of two-electron matrix
 #endif /* MOD_DNF */
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
-
-
 !     check hermiticity of density matrices
-
       NR_HERMITIAN     = 0
       NR_ANTIHERMITIAN = 0
       NR_GENERAL       = 0
-
       DO I = 1,NXCMAT
         IF(IHRMOP(I) .EQ. -1) NR_ANTIHERMITIAN = NR_ANTIHERMITIAN + 1
         IF(IHRMOP(I) .EQ.  0) NR_GENERAL       = NR_GENERAL       + 1
@@ -122,14 +117,10 @@ C     Initial expectation value of two-electron matrix
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
 #endif /* MOD_CDFT */
       ENDIF
-
 !     get average density from open shells
       if (nasht .gt. 0) call gtdoav(dmat, 1)
-
 !     scale
       call dscal(n2bbasx, d2, dmat, 1)
-
-
 #ifdef MOD_DNF
 C aspg, how wil this symmetrization work with density fitting? 
 C up to now the code is skipped for df_fitvxc since we pass
@@ -160,6 +151,9 @@ C       the diagonal for the appropriate symmetry blocks...
         ENDIF
       END IF
 C
+C     Set memory tag
+      KFRSAV = KFREE      
+C
 C
 C     get density matrices for SAOP
 C     =============================
@@ -168,14 +162,12 @@ C
       KDMAT_RESP_AO  = KFREE
       IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
         CALL SET_LBIT(LBIT_DFTAC,4) !SAOP is active
-
         CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,
      &              WORK,KFREE,LFREE)
         IF(LBIT(LBIT_DFTAC,5)) THEN !SAOP with response part
           CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,
      &                WORK,KFREE,LFREE)
         ENDIF
-C
         CALL DFTAC_SAOP_GET_DMATS(WORK(KDMAT_OUTER_AO),
      &                            WORK(KDMAT_RESP_AO),
      &                            WORK(KFREE),LFREE)
@@ -212,7 +204,11 @@ C
         CALL MEMGET('REAL',KGAO,NDIMENSION,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGA1,3*NDIMENSION,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGA2,6*NDIMENSION,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGB1,3*NDIMENSION,WORK,KFREE,LFREE)
+        IF(DOLND) THEN
+          CALL MEMGET('REAL',KGB1,3*NDIMENSION,WORK,KFREE,LFREE)
+        ELSE
+          KGB1=KFREE
+        ENDIF
         CALL MEMGET('REAL',KCNT,NDIMENSION,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBUF,NDIMENSION*4,WORK,KFREE,LFREE)
@@ -223,21 +219,7 @@ C
      &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &              WORK(KCNT),WORK(KDST),WORK(KBUF),
      &              WORK(KFREE),LFREE,LUQUAD,IPRDFT)
-C             SAOP is active
-      IF(LBIT(LBIT_DFTAC,4)) THEN
-        CALL MEMREL('DFTDRV',WORK,KDMAT_OUTER_AO,KDMAT_OUTER_AO,
-     &              KFREE,LFREE)
-      ELSE
-        CALL MEMREL('DFTDRV-buf',WORK,KBUF,KBUF,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-dst',WORK,KDST,KDST,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-cnt',WORK,KCNT,KCNT,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-gb1',WORK,KGB1,KGB1,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-ga2',WORK,KGA2,KGA2,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-ga1',WORK,KGA1,KGA1,KFREE,LFREE)
-        CALL MEMREL('DFTDRV-gao',WORK,KGAO,KGAO,KFREE,LFREE)
-C       CALL MEMREL('DFTDRV-all',WORK,KGAO,KGAO,
-C    &              KFREE,LFREE)
-      ENDIF
+        CALL MEMREL('DFTDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 #if defined (VAR_MPI)
       ENDIF
 #endif
@@ -296,15 +278,6 @@ C    &              KFREE,LFREE)
 
  10   return
       end
-
-
-
-
-
-
-
-
-
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,
@@ -433,7 +406,7 @@ C
       REWIND LUQUAD
       R2TOT = D0
       NPNTS = 0
-
+     
   100 CONTINUE
 
       IF(import_grid) THEN
@@ -441,7 +414,6 @@ C
       ELSE
         READ(LUQUAD) NPOINT
       ENDIF
-
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
@@ -493,7 +465,7 @@ C
      &                 DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                 GAO,GAO1,GAO2,GAB1,
-     &                 NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
+     &                 NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT,0)
 #if defined (VAR_MPI) 
          ENDIF
 #endif
@@ -519,8 +491,6 @@ C
         ENDDO
       END IF 
 
-
-
 !     compare integrated number of electrons to electron count from orbital occupations
 !     =================================================================================
 
@@ -541,7 +511,6 @@ C
      &         'this can mean that the quadrature grid is inappropriate'
          write(lupri, *)
       end if
-
 C
 C
 C     Print section
@@ -597,7 +566,7 @@ C/* Deck dftdr1 */
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,WORK,LWORK,IPRINT)
+     &                  NCNT,DST,BUF,WORK,LWORK,IPRINT,NYTID)
 C***********************************************************************
 C
 C     Written by Trond Saue and T.Helgaker
@@ -642,7 +611,6 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
 C
-      
       NDIMENSION = NBAST
 #ifdef MOD_DNF
       ELCTRB = 0.0D0
@@ -692,9 +660,6 @@ C aspg+rb, 2007-01-19
       ENDIF
 Caspg+rbast, 2006-09-21
 #endif /* MOD_DNF */
-
-
-
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -787,6 +752,7 @@ C       Number of electrons
 C       ===================
 C
         ELCTRN = ELCTRN + WGHT*RHO
+        DTROND = DTROND + WGHT*RHO
 C
 C       Energy
 C       ======
@@ -959,7 +925,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
         endif
 
   300 CONTINUE !end of loop over grid points
-
 
 
 
@@ -1561,6 +1526,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftpar */
       SUBROUTINE DFTPAR(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &                  GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
      &                  WORK,KFREE,LFREE,IPRINT)
 C
 C     T.Saue and T. Helgaker 
@@ -1592,8 +1558,9 @@ C
 C
       LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
-     &          DTRMAT(*),EXCMAT(*),ISYMOP(NXCMAT),
-     &          IHRMOP(NXCMAT),WORK(*)
+     &          DTRMAT(*),NCNT(*),DST(*),BUF(*),
+     &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(*)
 C
       KWORK = KFREE
       TIMSTR = SECOND()
@@ -1607,15 +1574,6 @@ C
       LEXCMAT = NBAST*NBAST*NZ*NXCMAT
       CALL DZERO(EXCMAT,LEXCMAT)
 C
-      CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGB1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF,NBAST*6,WORK,KFREE,LFREE)
-
-
 !     figure out whether we need derivatives of basis functions
 !     and whether gga code structure will be used
 
@@ -1676,9 +1634,8 @@ C
       CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &            DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
-     &            WORK(KCNT),WORK(KDST),WORK(KBUF),
-     &            WORK(KFREE),LFREE,IPRINT)
+     &            GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
+     &            WORK(KFREE),LFREE,IPRINT,MYTID)
       CALL MEMREL('DFTPAR.loop',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       GOTO 100
 C
@@ -2091,10 +2048,24 @@ C
       CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
 C
 C
+      NDIMENSION = NTBAS(0)
+      CALL MEMGET('REAL',KGAO,NDIMENSION,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGA1,3*NDIMENSION,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGA2,6*NDIMENSION,WORK,KFREE,LFREE)
+      IF(DOLND) THEN
+        CALL MEMGET('REAL',KGB1,3*NDIMENSION,WORK,KFREE,LFREE)
+      ELSE
+        KGB1=KFREE
+      ENDIF
+      CALL MEMGET('REAL',KCNT,NDIMENSION,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF,NDIMENSION*4,WORK,KFREE,LFREE)
       IPRINT = 0
       CALL DFTPAR(WORK(KDEN),
      &            DMAT_RESP_AO,DMAT_OUTER_AO,
      &            WORK(KDTR),WORK(KEXC),NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
+     &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL DFTRES(WORK(KEXC),NXCMAT,IOPTS,WORK,KFREE,LFREE,IPRINT)
       RETURN
