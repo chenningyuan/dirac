@@ -4325,13 +4325,13 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT,IGTINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &          'HAMINP: Error in reading ILLINT,ISLINT,ISSINT,IGTINT')
+     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT,IGTINT')
                ENDIF
             ELSE
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &          'HAMINP: Error in reading ILLINT,ISLINT,ISSINT')
+     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT')
                ENDIF
             END IF
             GO TO 100
