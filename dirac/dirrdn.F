@@ -4322,9 +4322,17 @@ C       or do continue SCF proces to get cannonical orbitals.)
   125     CONTINUE
 C&&& INTFLG: Specify what two-integrals should be included in this run
             IF (IGTINT .EQ. 1) THEN
-               READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+               READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT,IGTINT
+               IF (IOS.NE.0) THEN
+                CALL QUIT(
+     &          'HAMINP: Error in reading ILLINT,ISLINT,ISSINT,IGTINT')
+               ENDIF
             ELSE
-               READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
+               IF (IOS.NE.0) THEN
+                CALL QUIT(
+     &          'HAMINP: Error in reading ILLINT,ISLINT,ISSINT')
+               ENDIF
             END IF
             GO TO 100
   126     CONTINUE
@@ -4334,7 +4342,14 @@ C       transformed relativistic Hamiltonian
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
 C        ... read 3-digit number
-             READ(LUCMD,*) IBSS
+             READ(LUCMD,*,IOSTAT=IOS) IBSS
+             IF (IOS.NE.0) THEN
+               WRITE(LUPRI,'(2X,A)')
+     &         'HAMINP: Error in reading .BSS/IBSS '
+               WRITE(LUPRI,*) 'IBSS=',IBSS 
+               CALL QUIT(
+     &         'HAMINP: Error in reading of .BSS/IBSS')
+             ENDIF
 C
 C    Check that we have not defined operators yet,
 C      as they need to be modified within BSS transformations
