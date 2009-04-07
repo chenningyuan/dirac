@@ -168,7 +168,6 @@ C
 C     integrate
 C
       REWIND LUQUAD
-      R2TOT = D0
       NPNTS = 0
   100 CONTINUE
       READ(LUQUAD) NPOINT

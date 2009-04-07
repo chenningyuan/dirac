@@ -404,7 +404,6 @@ C
 C
       IF(MYTID.EQ.0) THEN
         REWIND LUQUAD
-        R2TOT = D0
         NPNTS = 0
 C*      Loop over batches of grid points
   100   CONTINUE
