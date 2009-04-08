@@ -62,7 +62,7 @@ COLAV
       CALL MEMGET('INTE',KICLAB,NBAST,WORK,KFREE,LFREE)
       CALL GRTES1(WORK(KSMAT),WORK(KGAO),WORK(KGA1),WORK(KGA2),
      &     WORK(KGB1),WORK(KCNT),WORK(KDST),WORK(KBUF),WORK(KICLAB),
-     &     WORK(KFREE),LFREE,LUQUAD,IPRDFT)
+     &     WORK(KFREE),LFREE,IPRDFT)
       CALL MEMREL('GRTES1',WORK,KWORK,KWORK,KFREE,LFREE)
 
       RETURN
@@ -72,7 +72,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C /* Deck grtes1 */
       SUBROUTINE GRTES1(SMAT,GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,ICLAB,WORK,LWORK,LUQUAD,IPRINT)
+     &                  NCNT,DST,BUF,ICLAB,WORK,LWORK,IPRINT)
 C                                                                      C
 C     T. Helgaker sep 99                                               C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
