@@ -14,7 +14,7 @@
      &                alda_hs, alda_ha, xalda, dft_thrs_changed,        &
      &                force_4c_grid, old_dft
 
-      integer         iprdft, intchk, angint, angmin
+      integer         iprdft, intchk, angint, angmin, luquad
 
       real*8          radint, dftels, dfthr0, dfthrl, dfthri
 
@@ -27,6 +27,6 @@
      &                alda_hs, alda_ha, xalda, dft_thrs_changed,        &
      &                force_4c_grid, old_dft
 
-      common /dftcmi/ iprdft, intchk, angint, angmin
+      common /dftcmi/ iprdft, intchk, angint, angmin, luquad
 
       common /dftcmr/ radint, dftels, dfthr0, dfthrl, dfthri
