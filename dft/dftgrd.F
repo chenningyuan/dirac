@@ -144,20 +144,8 @@ C
      &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
      &              WORK(KRBC),WORK(KRVEC),
      &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),
-     &              NAT,NUM,WORK(KZAN),WORK(KC),LUQUAD,
+     &              NAT,NUM,WORK(KZAN),WORK(KC),
      &              IPRINT,WORK(KFREE),LFREE)
-C
-C     Close unit LUQUAD
-C     =================
-C
-C     CLOSE(LUQUAD,STATUS='KEEP')
-C
-
-
-
-
-
-
 C
 C     Check accuracy of numerical integration
 C     =======================================
@@ -184,7 +172,7 @@ C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
      &                    NUCORB,AA,DMAT,CHIMT,
-     &                    NAT,NUM,ZAN,C,LUQUAD,IPRINT,WORK,LWORK)
+     &                    NAT,NUM,ZAN,C,IPRINT,WORK,LWORK)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
