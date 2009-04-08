@@ -508,8 +508,10 @@ C
  400    CONTINUE
 #endif
       ENDIF
+#if defined (VAR_MPI)
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,
      &                       IPRINT)
+#endif
       IF(MYTID.EQ.0) THEN
         IF (DOLND) THEN
           DO I = 1, NTBAS(0)
