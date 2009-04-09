@@ -56,12 +56,11 @@ C
       CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGB1,3*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF,NBAST*4,WORK,KFREE,LFREE)
 COLAV
       CALL MEMGET('INTE',KICLAB,NBAST,WORK,KFREE,LFREE)
       CALL GRTES1(WORK(KSMAT),WORK(KGAO),WORK(KGA1),WORK(KGA2),
-     &     WORK(KGB1),WORK(KCNT),WORK(KDST),WORK(KBUF),WORK(KICLAB),
+     &     WORK(KGB1),WORK(KCNT),WORK(KBUF),WORK(KICLAB),
      &     WORK(KFREE),LFREE,IPRDFT)
       CALL MEMREL('GRTES1',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -72,7 +71,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C /* Deck grtes1 */
       SUBROUTINE GRTES1(SMAT,GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,ICLAB,WORK,LWORK,IPRINT)
+     &                  NCNT,BUF,ICLAB,WORK,LWORK,IPRINT)
 C                                                                      C
 C     T. Helgaker sep 99                                               C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
@@ -121,7 +120,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION GAO(*), GAO1(*), 
      &          GAO2(*), GAB1(*), WORK(LWORK), 
-     &          NCNT(*), DST(*), BUF(*)
+     &          NCNT(*), BUF(*)
 
 #include "dcbibt.h"
 #include "memint.h"
@@ -182,7 +181,7 @@ C
       CALL GRTES2(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &               SMAT,DFTASC,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
+     &               NCNT,BUF,WORK(KFREE),LFREE,IPRINT)
 
          CALL MEMREL('GRTES2',WORK,KWORK,KWORK,KFREE,LFREE)
          GO TO 100
@@ -438,7 +437,7 @@ C     /* Deck grtes2 */                                                C
       SUBROUTINE GRTES2(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &               SMAT,DFTASC,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,DST,BUF,
+     &               NCNT,BUF,
      &               WORK,LWORK,IPRINT)
 C                                                                      C
 C     Written by Trond Saue and T.Helgaker                             C
@@ -466,7 +465,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            WEIGHT(NPOINT),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3), 
-     &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
+     &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1),
      &            WORK(LWORK)
       DIMENSION RHG(3)

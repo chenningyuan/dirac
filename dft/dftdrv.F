@@ -44,7 +44,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -53,6 +52,7 @@ C
 #include "nuclei.h"
 #include "dftcom.h"
 #include "dftbuf.h"
+#include "dcborb.h"
 #include "dftac.h"
 #include "cdft.h"
 #include "dfterg.h"
@@ -70,6 +70,7 @@ C
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
 C
 #include "memint.h"
+      TIMSTR = SECOND()
       DOERG  = LBIT(IOPTS,1)
       DOGRD  = LBIT(IOPTS,2)
       DOLR   = LBIT(IOPTS,3)
@@ -153,6 +154,13 @@ C
 C     Set memory tag
       KFRSAV = KFREE      
 C
+C     Calculate grid
+C     ==============
+C
+      IF (.NOT.GRDONE) THEN
+         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1)
+         GRDONE = .TRUE.
+      END IF
 C
 C     get density matrices for SAOP
 C     =============================
@@ -172,56 +180,54 @@ C
      &                            WORK(KFREE),LFREE)
       ENDIF
 C
+C     Initialize
+C     ==========
 C
-C     Calculate grid
-C
-      IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1)
-         GRDONE = .TRUE.
+      GGA_HS = DFTISGGA()
+      GGA_HA = GGA_HS
+
+      IF (DOLR .OR. DOQR) THEN
+        IF (ALDA_HS) GGA_HS = .FALSE.
+        IF (ALDA_HA) GGA_HA = .FALSE.
       END IF
+!       in QR it is not so easy to separate H+ and H-
+!       contributions since they may mix
+!       therefore i quit here if the user wants QR
+!       and not the full ALDA or XALDA
+!       it is really unfair to quit as late as here
+!       this can be checked earlier
+!       but this is anyway an exotic option
+      IF ((DOQR .AND. ALDA_HS .AND. (.NOT. ALDA_HA)) .OR.
+     &      (DOQR .AND. ALDA_HA .AND. (.NOT. ALDA_HS))) THEN
+        CALL QUIT('QR and partial ALDA is not implemented')
+      END IF
+C
+C     Integrate
+C     =========
+C
 #if defined (VAR_MPI)
       IF(PARCAL) THEN
 C       Get hold of slaves
         CALL DIRAC_PARCTL( 4 )
 C
-        CALL DFT_PARDRV(DMAT,WORK(KDMAT_RESP_AO),
-     &                  WORK(KDMAT_OUTER_AO),
-     &                  DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,IOPTS,
+        CALL DFT_PARDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
+     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  WORK(KFREE),LFREE,IPRDFT)
 C
       ELSE
 #endif
-C
-C     Integrate
-        NDIM = NTBAS(0)
-#ifdef MOD_DNF
-Caspg, the mult by two here is still not quite understandable...
-        IF (DF_FITVXC) NDIM = MAX(NTBAS(0),NBASISAUX)
-#endif
-C
-        CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGA1,3*NDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGA2,6*NDIM,WORK,KFREE,LFREE)
-        IF(DOLND) THEN
-          CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
-        ELSE
-          KGB1=KFREE
-        ENDIF
-        CALL MEMGET('REAL',KCNT,NDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
 C        
         CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
-     &              DTRMAT,EXCMAT,NXCMAT,
-     &              ISYMOP,IHRMOP,IOPTS,
-     &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
-     &              WORK(KCNT),WORK(KDST),WORK(KBUF),
-     &              WORK(KFREE),LFREE,IPRDFT)
+     &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &              DUM,DUM,WORK(KFREE),LFREE,IPRDFT)
         CALL MEMREL('DFTDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 #if defined (VAR_MPI)
       ENDIF
 #endif
+C
+C     Post-processing
+C     ===============
+C
 !     rescale
       call dscal(n2bbasx, dp5, dmat, 1)
 !     get average density from open shells
@@ -268,13 +274,17 @@ C
       end if
 #endif /* MOD_DNF */
 
+      TIMEXC = SECOND() - TIMSTR
+      WRITE (LUPRI,'(1X)')
+      CALL TIMTXT('>>>> Time used in DFTEXC:',TIMEXC,LUPRI)
+      WRITE (LUPRI,'(1X)')
  10   return
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &                  GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
-     &                  WORK,LWORK,IPRINT)
+     &                  IDISP,ISEND,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -303,7 +313,9 @@ C#include "inforb.h"
 #include "orgcom.h"
 #include "dftbuf.h"
 #include "functionals.h"
+#include "cdft.h"
 #include "dgroup.h"
+#include "densfit.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -313,13 +325,10 @@ C
       DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
 #endif
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
-     &          DTRMAT(*),NCNT(*),DST(*),BUF(*),
-     &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
+     &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
+     &          IDISP(*),ISEND(*),WORK(LWORK)
 C
 #include "memint.h"
-      KFRSAV = KFREE
-      TIMSTR = SECOND()
 C
       DOERG = LBIT(IOPTS,1)
       DOGRD = LBIT(IOPTS,2)
@@ -327,14 +336,6 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
 C
-      IF(MYTID.EQ.0) THEN
-        IF (IPRINT .GE. 100) THEN
-           CALL HEADER('DMAT in DFTDRV ',-1)
-           CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
-     &               NTBAS(0),NTBAS(0),1,LUPRI)
-        END IF
-      ENDIF
-
 !     figure out whether we need derivatives of basis functions
 !     and whether gga code structure will be used
 
@@ -343,43 +344,6 @@ C
         nder = 1
         call dzero(gradft, mxcoor)
       end if
-      IF(MYTID.EQ.0) THEN
-        gga_hs = dftisgga()
-        gga_ha = gga_hs
-
-        if (dolr .or. doqr) then
-          if (alda_hs) gga_hs = .false.
-          if (alda_ha) gga_ha = .false.
-        end if
-
-!       in QR it is not so easy to separate H+ and H-
-!       contributions since they may mix
-!       therefore i quit here if the user wants QR
-!       and not the full ALDA or XALDA
-!       it is really unfair to quit as late as here
-!       this can be checked earlier
-!       but this is anyway an exotic option
-        if ((doqr .and. alda_hs .and. (.not. alda_ha)) .or.
-     &      (doqr .and. alda_ha .and. (.not. alda_hs))) then
-          call quit('QR and partial ALDA is not implemented')
-        end if
-
-#if defined (VAR_MPI) 
-!       send gga_hs and gga_ha to nodes
-        do node = 1, nodes
-          call mpi_send(gga_hs, 1, mpi_logical, node, 11, 
-     &                  mpi_comm_world, ierr)
-          call mpi_send(gga_ha, 1, mpi_logical, node, 12, 
-     &                  mpi_comm_world, ierr)
-        end do             
-      ELSE
-!     receive gga_hs and gga_ha
-        call mpi_recv(gga_hs, 1, mpi_logical, mparid, 11, 
-     &                mpi_comm_world, istat, ierr)
-        call mpi_recv(gga_ha, 1, mpi_logical, mparid, 12,
-     &                mpi_comm_world, istat, ierr)
-#endif
-      ENDIF
 
       dogrho = .false.
       dolrho = .false.
@@ -395,24 +359,58 @@ C
       else
         fromvx = .false.
       end if
-
-
+#ifdef MOD_CDFT
+!       GAO1 are needed for VRG
+        IF(LBIT(LBIT_CDFT,2)) THEN
+          IF(NDER .LT. 1) NDER = 1
+        ENDIF
+#endif /* MOD_CDFT */
+C
+C     Allocate arrays for basis functions and their derivatives at grid points
+C
+      NDIM = NTBAS(0)
+#ifdef MOD_DNF
+      IF (DF_FITVXC) NDIM = MAX(NTBAS(0),NBASISAUX)
+#endif
+      CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
+      KGA1=KFREE
+      IF(NDER.GE.1) CALL MEMGET('REAL',KGA1,3*NDIM,WORK,KFREE,LFREE)
+      KGA2=KFREE
+      IF(NDER.GE.2) CALL MEMGET('REAL',KGA2,6*NDIM,WORK,KFREE,LFREE)
+      KGB1=KFREE
+      IF(DOLND) CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCNT,NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
+C
 C     integrate
 C
       ELCTRN = D0
       EDFTY  = D0
 C
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         REWIND LUQUAD
         NPNTS = 0
-C*      Loop over batches of grid points
-  100   CONTINUE
+      ENDIF
+C*    Loop over batches of grid points
+  100 CONTINUE
+      KLOOP = KFREE
+      IF(MYTID.EQ.MPARID) THEN
         IF(import_grid) THEN
           READ(LUQUAD,*) NPOINT
         ELSE
           READ(LUQUAD) NPOINT
         ENDIF
-        IF (NPOINT.GT.0) THEN
+      ENDIF
+#if defined (VAR_MPI) 
+      IF(PARCAL) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID,
+     &                          MPI_COMM_WORLD,IERR)
+#endif
+      IF( NPOINT .lt. 0 ) THEN
+         GOTO 200
+      ELSE IF(  NPOINT .eq. 0 ) THEN
+          GOTO 100      
+      ELSE
+        IF(MYTID.EQ.MPARID) THEN
           NPNTS = NPNTS + NPOINT
           CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
@@ -421,176 +419,157 @@ C*      Loop over batches of grid points
 
           IF(import_grid) THEN
             CALL import_dft_grid(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
-     &                    LUQUAD,NPOINT)
+     &                      LUQUAD,NPOINT)
           ELSE
             CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
      &                 LUQUAD,NPOINT)
           ENDIF
-
+        ENDIF
 #if defined (VAR_MPI) 
-          IF(PARCAL) THEN
-            NBATCH = NPOINT/NODES
-            NREST = NPOINT
-            KXB = KX
-            KYB = KY
-            KZB = KZ
-            KWB = KW
-            NTEST = 1
-            DO NODE = 1,NODES
-              CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                   MPI_COMM_WORLD,ISTAT,IERR)
-              NWHO = ISTAT(MPI_SOURCE)
-              IF(NODE.EQ.NODES) NBATCH = NREST
-              CALL MPI_SEND(NBATCH,1,my_MPI_INTEGER,
-     &                      NWHO,30,MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(WORK(KXB),NBATCH,MPI_DOUBLE_PRECISION,
-     &                  NWHO,32,MPI_COMM_WORLD,IERR)
-              KXB = KXB + NBATCH
-              CALL MPI_SEND(WORK(KYB),NBATCH,MPI_DOUBLE_PRECISION,
-     &                  NWHO,33,MPI_COMM_WORLD,IERR)
-              KYB = KYB + NBATCH
-              CALL MPI_SEND(WORK(KZB),NBATCH,MPI_DOUBLE_PRECISION,
-     &                  NWHO,34,MPI_COMM_WORLD,IERR)
-              KZB = KZB + NBATCH
-              CALL MPI_SEND(WORK(KWB),NBATCH,MPI_DOUBLE_PRECISION,
-     &                  NWHO,35,MPI_COMM_WORLD,IERR)
-              KWB = KWB + NBATCH
-              NREST = NREST - NBATCH
+        IF(PARCAL) THEN
+          NODESALL=NODES+1
+          NBATCH = NPOINT/NODESALL
+          NREST = MOD(NPOINT,NODESALL)
+          myNPOINT = NBATCH
+C.........send nothing to master
+          IF(MYTID.EQ.MPARID) THEN ! master
+            ISEND(1) = NBATCH
+            IDISP(1) = 0
+            DO I = 1,NODES-1
+              ISEND(I+1) = NBATCH
+              IDISP(I+1) = NBATCH*I
             ENDDO
-          ELSE
-#endif
-            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
-     &                 DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &                 DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &                 GAO,GAO1,GAO2,GAB1,
-     &                 NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT,0)
-#if defined (VAR_MPI) 
+            ISEND(NODESALL) = NBATCH + NREST
+            IDISP(NODESALL) = NBATCH*NODES
+C            send data to slaves - all grid points in one send chunk
+             CALL MPI_SCATTERV(WORK(KX),ISEND,IDISP,
+     &                MPI_DOUBLE_PRECISION,DUMMY,0,
+     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KY),ISEND,IDISP,
+     &                MPI_DOUBLE_PRECISION,DUMMY,0,
+     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KZ),ISEND,IDISP,
+     &                MPI_DOUBLE_PRECISION,DUMMY,0,
+     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KW),ISEND,IDISP,
+     &                MPI_DOUBLE_PRECISION,DUMMY,0,
+     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+          ELSE ! slaves
+C           the last process gets the rest; these points are usually
+C           the most diffuse ones and therefore the most screened ones
+            IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
+            CALL MEMGET('REAL',KX,myNPOINT,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KY,myNPOINT,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KZ,myNPOINT,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KW,myNPOINT,WORK,KFREE,LFREE)
+C           receive data from master - all grid points in one receive chunk
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
+     &               MPI_DOUBLE_PRECISION,WORK(KX),myNPOINT,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
+     &               MPI_DOUBLE_PRECISION,WORK(KY),myNPOINT,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
+     &               MPI_DOUBLE_PRECISION,WORK(KZ),myNPOINT,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
+     &               MPI_DOUBLE_PRECISION,WORK(KW),myNPOINT,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
           ENDIF
-#endif
-          CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
-          GO TO 100
-        ELSE IF (NPOINT .EQ.0 ) THEN
-          GO TO 100
         ELSE
-          GO TO 200
-        END IF
-  200   CONTINUE
-#if defined (VAR_MPI)
-      ELSE
-  300   CONTINUE
-        CALL MPI_SEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
-     &              MPI_COMM_WORLD,IERR)
-C
-        CALL MPI_RECV(NPOINT,1,my_MPI_INTEGER,MPARID,30,
-     &               MPI_COMM_WORLD,ISTAT,IERR)
-        IF (NPOINT .EQ. -1) GOTO 400
-        CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
-      
-        CALL MPI_RECV(WORK(KX),NPOINT,MPI_DOUBLE_PRECISION,
-     &                MPARID,32,MPI_COMM_WORLD,ISTAT,IERR)
-        CALL MPI_RECV(WORK(KY),NPOINT,MPI_DOUBLE_PRECISION,
-     &                MPARID,33,MPI_COMM_WORLD,ISTAT,IERR)
-        CALL MPI_RECV(WORK(KZ),NPOINT,MPI_DOUBLE_PRECISION,
-     &                MPARID,34,MPI_COMM_WORLD,ISTAT,IERR)
-        CALL MPI_RECV(WORK(KW),NPOINT,MPI_DOUBLE_PRECISION,
-     &                MPARID,35,MPI_COMM_WORLD,ISTAT,IERR)
-        CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
+#endif
+            myNPOINT = NPOINT
+#if defined (VAR_MPI) 
+        ENDIF
+#endif
+        CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),myNPOINT,
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &              GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
-     &              WORK(KFREE),LFREE,IPRINT,MYTID)
-        CALL MEMREL('DFTPAR.loop',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-        GOTO 300
-C
- 400    CONTINUE
-#endif
-      ENDIF
+     &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
+     &              WORK(KCNT),WORK(KBUF),
+     &              WORK(KFREE),LFREE,IPRINT,0)
+        CALL MEMREL('DFTDRV.loop',WORK,KWORK,KLOOP,KFREE,LFREE)
+        GO TO 100
+        ENDIF
+ 200    CONTINUE
 #if defined (VAR_MPI)
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,
      &                       IPRINT)
 #endif
-      IF(MYTID.EQ.0) THEN
-        IF (DOLND) THEN
-          DO I = 1, NTBAS(0)
-            DO J = 1, I - 1 
-              AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
-              EXCMAT(I,J,1,1) =   AVERAG 
-              EXCMAT(J,I,1,1) = - AVERAG 
-            ENDDO
+      CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      IF(MYTID.NE.MPARID) RETURN
+      IF (DOLND) THEN
+        DO I = 1, NTBAS(0)
+          DO J = 1, I - 1 
+            AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
+            EXCMAT(I,J,1,1) =   AVERAG 
+            EXCMAT(J,I,1,1) = - AVERAG 
           ENDDO
-        END IF 
+        ENDDO
+      END IF 
 
-!       compare integrated number of electrons to electron count from orbital occupations
-!       =================================================================================
+!     compare integrated number of electrons to electron count from orbital occupations
+!     =================================================================================
 
-        elctrx = nelect + naelec
-        error  = elctrn - elctrx
+      elctrx = nelect + naelec
+      error  = elctrn - elctrx
 
-        if (abs(error) .gt. dftels) then
-          write(lupri, *)
-          write(lupri, '(3x, a, f14.6)') 
-     &      'number of electrons from numerical integration:', elctrn
-          write(lupri, '(3x, a, f14.6)') 
-     &      'number of electrons from orbital occupations:  ', elctrx
-          write(lupri, '(3x, a, f14.6)') 
-     &      'WARNING: error in the number of electrons:     ', error
-          write(lupri, '(12x, a, f14.6)') 
-     &      'is larger than DFTELS (set input):    ',          dftels
-          write(lupri, '(12x, a)') 
-     &       'this can mean that the quadrature grid is inappropriate'
-          write(lupri, *)
-        end if
+      if (abs(error) .gt. dftels) then
+        write(lupri, *)
+        write(lupri, '(3x, a, f14.6)') 
+     &    'number of electrons from numerical integration:', elctrn
+        write(lupri, '(3x, a, f14.6)') 
+     &    'number of electrons from orbital occupations:  ', elctrx
+        write(lupri, '(3x, a, f14.6)') 
+     &    'WARNING: error in the number of electrons:     ', error
+        write(lupri, '(12x, a, f14.6)') 
+     &    'is larger than DFTELS (set input):    ',          dftels
+        write(lupri, '(12x, a)') 
+     &     'this can mean that the quadrature grid is inappropriate'
+        write(lupri, *)
+      end if
 C
 C
-C       Print section
+C     Print section
 C
-        IF(IPRINT .GE. 2) THEN 
-          WRITE(LUPRI,'(2X,A,I24)')
+      IF(IPRDFT .GE. 2) THEN 
+        WRITE(LUPRI,'(2X,A,I24)')
      &              ' Number of quadrature points:       ', NPNTS
-          WRITE(LUPRI,'(2X,A,F24.16)')
+        WRITE(LUPRI,'(2X,A,F24.16)')
      &              ' Number of electrons:               ', ELCTRN
-          IF(DOERG) THEN
-            WRITE(LUPRI,'(2X,A,F24.16)')
+        IF(DOERG) THEN
+          WRITE(LUPRI,'(2X,A,F24.16)')
      &                ' DFT exchange-correlation energy:   ', EDFTY
-          ENDIF
         ENDIF
-
-
-        IF (IPRINT .GE. 100) THEN
-          IF (DOERG) THEN
-             CALL HEADER('EXCMAT in DFTDRV ',-1)
-             CALL OUTPUT(EXCMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),1,LUPRI)
-          END IF
-          IF (DOLND) THEN
-            CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,1,1),
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-            CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,1,2),
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-            CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,1,3),
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-          END IF
-          IF (DOGRD) THEN
-            CALL HEADER('GRADFT in DFTDRV ',-1)
-            CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
-          END IF
-          IF (DOLR.OR.DOQR) THEN
-            CALL HEADER('EXCMAT in DFTDRV ',-1)
-            CALL OUTPUT(EXCMAT(1,1,1,1),
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-          END IF
-        END IF
-        TIMDRV = SECOND() - TIMSTR
-        WRITE (LUPRI,'(1X)')
-        CALL TIMTXT('>>>> Time used in DFTDRV:',TIMDRV,LUPRI)
-        WRITE (LUPRI,'(1X)')
       ENDIF
+      IF (IPRINT .GE. 100) THEN
+        IF (DOERG) THEN
+           CALL HEADER('EXCMAT in DFTDRV ',-1)
+           CALL OUTPUT(EXCMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),1,LUPRI)
+        END IF
+        IF (DOLND) THEN
+          CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
+          CALL OUTPUT(EXCMAT(1,1,1,1),
+     &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+          CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
+          CALL OUTPUT(EXCMAT(1,1,1,2),
+     &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+          CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
+          CALL OUTPUT(EXCMAT(1,1,1,3),
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+        END IF
+        IF (DOGRD) THEN
+          CALL HEADER('GRADFT in DFTDRV ',-1)
+          CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
+        END IF
+        IF (DOLR.OR.DOQR) THEN
+          CALL HEADER('EXCMAT in DFTDRV ',-1)
+          CALL OUTPUT(EXCMAT(1,1,1,1),
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+        END IF
+      ENDIF
+C
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -599,7 +578,7 @@ C/* Deck dftdr1 */
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                  GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,WORK,LWORK,IPRINT,NYTID)
+     &                  NCNT,BUF,WORK,LWORK,IPRINT,NYTID)
 C***********************************************************************
 C
 C     Written by Trond Saue and T.Helgaker
@@ -631,7 +610,7 @@ C
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &            DTRMAT(*),GAO(*), GAO1(*), GAO2(NBAST,6),
      &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
-     &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
+     &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
@@ -704,13 +683,6 @@ C
 C
 C       AOs
 C       ===
-C
-#ifdef MOD_CDFT
-!       GAO1 are needed for VRG
-        IF(LBIT(LBIT_CDFT,2)) THEN
-          IF(NDER .LT. 1) NDER = 1
-        ENDIF
-#endif /* MOD_CDFT */
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
@@ -1503,53 +1475,24 @@ C
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
 C
-      IF (MYTID.EQ.0) THEN
-        CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
-C
-C     **************************
-C     ***** Master receive *****
-C     **************************
-C
-        NTEST = -1
-        DO I = 1,NODES
-          CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,ISTAT,IERR)
-          NWHO = ISTAT(MPI_SOURCE)
-          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NWHO,30,
-     &                    MPI_COMM_WORLD,IERR)
-          CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-          ELCTRN = ELCTRN + TEMP
-          IF(DOERG) THEN
-            CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-            EDFTY = EDFTY + TEMP
-          ENDIF
-          CALL MPI_RECV(WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,NWHO,45,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-          CALL DAXPY(LFMAT,D1,WORK(KFBUF),1,EXCMAT,1)
-        ENDDO
+      IF (MYTID.EQ.0) CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
+      CALL MPI_REDUCE(ELCTRN,EELCTRN,1,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+      CALL MPI_REDUCE(EXCMAT,WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+      IF(DOERG) CALL MPI_REDUCE(EDFTY,EEDFTY,1,MPI_DOUBLE_PRECISION,
+     &                          MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+      IF(MYTID.EQ.0) THEN
+        ELCTRN=EELCTRN
+        IF(DOERG) EDFTY=EEDFTY
+        CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
-      ELSE 
-C
-C     ***********************
-C     ***** Slave send  *****
-C     ***********************
-C
-         CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
-         IF(DOERG) THEN
-           CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                   MPI_COMM_WORLD,IERR)
-         ENDIF
-         CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
-     &                 MPI_COMM_WORLD,IERR)
       ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dftprd */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C***********************************************************************
       SUBROUTINE DFTPRD
 C
 C     Communicate DIRAC common blocks for parallell DFT-calculation
@@ -1560,6 +1503,7 @@ C                                 symmet
 C
 C     Based on traprd, Written by T. Saue 2000
 C
+C***********************************************************************
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -1587,7 +1531,7 @@ C     ****** Send COMMON blocks ******
 C     ********************************
 C
 C.....dcbham.h
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_HAM,I2_HAM)
       ENDIF
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -1595,7 +1539,7 @@ C.....dcbham.h
       CALL MPI_BCAST(I1_HAM,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C.....dcborb.h
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
       ENDIF
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -1603,7 +1547,7 @@ C.....dcborb.h
       CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C.....dcbbas.h
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
       ENDIF
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -1611,7 +1555,7 @@ C.....dcbbas.h
       CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C.....dgroup.h
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
       ENDIF
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -1619,7 +1563,7 @@ C.....dgroup.h
       CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C.....symmet.h
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
       ENDIF
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
@@ -1640,11 +1584,12 @@ C  /* Deck pardrv */
       SUBROUTINE DFT_PARDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
      &                      WORK,LWORK,IPRINT)
+C***********************************************************************
 C
 C     A cut and paste job by T. Saue Sep 25 2003
 C     Based on HER_PARDRV which was
 C     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1669,12 +1614,6 @@ C
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
 C
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
-C
 C     Ensure that NODES .LE. MAXNOD
 C
       IF (NODES .GT. MAXNOD) THEN
@@ -1692,99 +1631,23 @@ C
 C-----------------------
 C     Send data
 C-----------------------
-C
-      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C     Transfer various COMMON blocks
-      CALL DFTPRD
-C     Transfer dftcom
-      LSEND(1)  = DFTADD
-      LSEND(2)  = GRDONE
-      LSEND(3)  = DFTRUN
-      LSEND(4)  = DFTPOT
-      LSEND(5)  = DFTORD
-      LSEND(6)  = DFTASC
-      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-C
-
-#ifdef MOD_CDFT
-!     transfer parameters for spin/current density response
-      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-#endif /* MOD_CDFT */
-
-!     broadcast thresholds
-      CALL MPI_BCAST(DFTHR0,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DFTHRL,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-
-
-
-C     transfer parameters for asymptotic correction
-C     =============================================
-C
-      CALL MPI_BCAST(LBIT_DFTAC,1,
-     &               my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C             GRAC is active
-      IF(LBIT(LBIT_DFTAC,2)) THEN
-        CALL MPI_BCAST(GRAC_ALPHA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(GRAC_BETA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_IP,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(HOMO_EIGENVALUE,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_THRESHOLD,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C             SAOP is active
-      IF(LBIT(LBIT_DFTAC,4)) THEN
-        CALL MPI_BCAST(DMAT_OUTER_AO,N2BBASX,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
-        CALL MPI_BCAST(DMAT_RESP_AO,N2BBASX,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C
-C
-C     Transfer functionals
-      CALL DFTSYNCFUNC(1)
-C     Transfer control parameters
-C     write(lupri,*) 'Before IOPTS broadcast'
-      CALL MPI_BCAST(IOPTS,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C     write(lupri,*) 'After IOPTS broadcast'
-C
-      CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-C
-      CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      IF(DOLR.OR.DOQR) THEN
-        LMAT = N2BBASXQ*NXCMAT
-        CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      ENDIF
-
-C     write(lupri,*) 'Broadcasted'
+      CALL DFTPAR_INIT1(IOPTS,NXCMAT)
+      CALL DFTPAR_INIT2(IOPTS,NXCMAT,ISYMOP,IHRMOP,
+     &                  DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
+      NODESALL=NODES+1
+      CALL MEMGET('INTE',KDISP,NODESALL,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KSEND,NODESALL,WORK,KFREE,LFREE)
       CALL DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
      &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &            DUM,DUM,DUM,DUM,IDUM,DUM,DUM,
-     &            WORK(KFREE),LFREE,IPRINT)
-C     write(lupri,*) 'DFTDRV done'
-C
+     &            WORK(KDISP),WORK(KSEND),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFT_PARDRV')
-C     write(lupri,*) 'Exit DFT_PARDRV'
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1811,7 +1674,7 @@ C
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL DOERG,DOGRD,DOLND,DOLR,LSEND(6),LBIT
+      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
 C
       CALL QENTER('DFTNOD')
 #include "memint.h"
@@ -1827,150 +1690,51 @@ C
       SLAVE = .TRUE.
       DEBUG  = .FALSE.
 C
-C     ***************************************************
-C     ***** Receive initialization data from master *****
-C     ***************************************************
-C
-      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C     Various common blocks
-      CALL DFTPRD
-C     Receive some dftcom variables
-      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      DFTADD = LSEND(1)
-      GRDONE = LSEND(2)
-      DFTRUN = LSEND(3)
-      DFTPOT = LSEND(4)
-      DFTORD = LSEND(5)
-      DFTASC = LSEND(6)
-C
-
-#ifdef MOD_CDFT
-!     receive parameters for spin/current density response
-      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-#endif /* MOD_CDFT */
-
-!     broadcast thresholds
-      CALL MPI_BCAST(DFTHR0,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DFTHRL,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-
-C     receive parameters for asymptotic correction
-C     ============================================
-C
-      CALL MPI_BCAST(LBIT_DFTAC,1,
-     &               my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C             GRAC is active
-      IF(LBIT(LBIT_DFTAC,2)) THEN
-        CALL MPI_BCAST(GRAC_ALPHA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(GRAC_BETA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_IP,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(HOMO_EIGENVALUE,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_THRESHOLD,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
-C             SAOP is active
-      IF(LBIT(LBIT_DFTAC,4)) THEN
-        CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMAT_OUTER_AO),N2BBASX,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ELSE
-        KSAOPDMATRESP = KFREE
-      ENDIF
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
-        CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDMAT_RESP_AO),N2BBASX,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ELSE
-        KSAOPDMATOUTER = KFREE
-      ENDIF
-C
-C
-C     Receive functionals
-      CALL DFTSYNCFUNC(0)
-C     Transfer control parameters
-      CALL MPI_BCAST(IOPTS,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
-      CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),IOPTS,
-     &            WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
-     &            WORK,KFREE,LFREE)
-C
-      CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('DFTNOD')
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck dftno1 */
-      SUBROUTINE DFTNO1(NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &                  DMAT_RESP_AO,DMAT_OUTER_AO,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Next part of DFT node program.
-C     T. Saue March 4 2004
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
-#include "infpar.h"
-#include "dcbbas.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
-      DIMENSION ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),WORK(*)
-C
+C     Receive initialization data from master 1
+C     =========================================
+      CALL DFTPAR_INIT1(IOPTS,NXCMAT)
       DOERG = LBIT(IOPTS,1)
       DOGRD = LBIT(IOPTS,2)
       DOLR  = LBIT(IOPTS,3)
       DOQR  = LBIT(IOPTS,4)
       DOLND = LBIT(IOPTS,5)
-C
-      CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-C
+C.....Memory allocation
       LMAT = N2BBASXQ*NXCMAT
+      CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
-      CALL MPI_BCAST(WORK(KDEN),N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
       IF(DOLR.OR.DOQR) THEN
         CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KDTR),LMAT,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
       ELSE
         KDTR = KFREE
       ENDIF
-      CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KEXC),LMAT)
-C
-C
-      NDIM = NTBAS(0)
-      CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA1,3*NDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA2,6*NDIM,WORK,KFREE,LFREE)
-      IF(DOLND) THEN
-        CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
-      ELSE
-        KGB1=KFREE
+C.....Allocate density matrices for SAOP
+      KDMAT_OUTER_AO = KFREE
+      KDMAT_RESP_AO  = KFREE
+      IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
+        CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,
+     &              WORK,KFREE,LFREE)
+        IF(LBIT(LBIT_DFTAC,5)) THEN !SAOP with response part
+          CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,
+     &                WORK,KFREE,LFREE)
+        ENDIF
       ENDIF
-      CALL MEMGET('REAL',KCNT,NDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
+C
+C     Receive initialization data from master 2
+C     =========================================
+      CALL DFTPAR_INIT2(IOPTS,NXCMAT,WORK(KSYM),WORK(KHRM),
+     &                  WORK(KDEN),WORK(KDTR),
+     &                  WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO))
+C.....Initialization
       IPRINT = 0
-      CALL DFTDRV(WORK(KDEN),DMAT_RESP_AO,DMAT_OUTER_AO,
-     &            WORK(KDTR),WORK(KEXC),NXCMAT,ISYMOP,IHRMOP,IOPTS,
-     &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
-     &            WORK(KCNT),WORK(KDST),WORK(KBUF),
-     &            WORK(KFREE),LFREE,IPRINT)
+      CALL DZERO(WORK(KEXC),LMAT)
+C.....Integrate
+      CALL DFTDRV(WORK(KDEN),WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
+     &            WORK(KDTR),WORK(KEXC),NXCMAT,WORK(KSYM),WORK(KHRM),
+     &            IOPTS,DUM,DUM,WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('DFTNOD')
       RETURN
       END
 #endif
@@ -2018,3 +1782,150 @@ C
       END IF
       END
 #endif /* MOD_DNF */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck dftinit1 */
+      SUBROUTINE DFTPAR_INIT1(IOPTS,NXCMAT)
+C***********************************************************************
+C
+C     Initialize parallel DFT run
+C
+C     Written by T. Saue April 7 2009
+C 
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+#include "infpar.h"
+#include "dftcom.h"
+#include "dftbuf.h"
+#include "dftac.h"
+#include "cdft.h"
+      LOGICAL LBIT,LSEND(6)
+C
+      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C     Transfer various COMMON blocks
+      CALL DFTPRD
+      IF(MYTID.EQ.MPARID) THEN
+C       Transfer dftcom
+        LSEND(1)  = DFTADD
+        LSEND(2)  = GRDONE
+        LSEND(3)  = DFTRUN
+        LSEND(4)  = DFTPOT
+        LSEND(5)  = DFTORD
+        LSEND(6)  = DFTASC
+      ENDIF
+      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      IF(MYTID.NE.MPARID) THEN
+        DFTADD = LSEND(1)
+        GRDONE = LSEND(2)
+        DFTRUN = LSEND(3)
+        DFTPOT = LSEND(4)
+        DFTORD = LSEND(5)
+        DFTASC = LSEND(6)
+      ENDIF
+C     Transfer control parameters
+C     ===========================
+      CALL MPI_BCAST(IOPTS,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(GGA_HS,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(GGA_HA,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+C
+C     broadcast thresholds
+C     ====================
+      CALL MPI_BCAST(DFTHR0,1,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DFTHRL,1,
+     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+#ifdef MOD_CDFT
+C
+C     transfer parameters for spin/current density response
+C     =====================================================
+      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+#endif /* MOD_CDFT */
+C
+C     transfer parameters for asymptotic correction
+C     =============================================
+      CALL MPI_BCAST(LBIT_DFTAC,1,
+     &               my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C             GRAC is active
+      IF(LBIT(LBIT_DFTAC,2)) THEN
+        CALL MPI_BCAST(GRAC_ALPHA,1,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(GRAC_BETA,1,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DFTAC_IP,1,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(HOMO_EIGENVALUE,1,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DFTAC_THRESHOLD,1,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      ENDIF
+C
+C     Transfer functionals
+C     ====================
+      IF(MYTID.EQ.MPARID) THEN
+        CALL DFTSYNCFUNC(1)
+      ELSE
+        CALL DFTSYNCFUNC(0)
+      ENDIF
+ 
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck dftinit2 */
+      SUBROUTINE DFTPAR_INIT2(IOPTS,NXCMAT,ISYMOP,IHRMOP,
+     &                       DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
+C***********************************************************************
+C
+C     Initialize parallel DFT run
+C
+C     Written by T. Saue April 7 2009
+C 
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+#include "infpar.h"
+#include "dftcom.h"
+#include "dftac.h"
+#include "cdft.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
+      DIMENSION DMAT(N2BBASX),DTRMAT(*),
+     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
+      DOERG  = LBIT(IOPTS,1)
+      DOGRD  = LBIT(IOPTS,2)
+      DOLR   = LBIT(IOPTS,3)
+      DOQR   = LBIT(IOPTS,4)
+      DOLND  = LBIT(IOPTS,5)
+      CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      IF(DOLR.OR.DOQR) THEN
+        LMAT = N2BBASXQ*NXCMAT
+        CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
+     &                   MPI_COMM_WORLD,IERR)
+      ENDIF
+      IF(LBIT(LBIT_DFTAC,4)) THEN
+        CALL MPI_BCAST(DMAT_OUTER_AO,N2BBASX,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      ENDIF
+C             SAOP with response part
+      IF(LBIT(LBIT_DFTAC,5)) THEN
+        CALL MPI_BCAST(DMAT_RESP_AO,N2BBASX,
+     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+      ENDIF
+      RETURN
+      END
