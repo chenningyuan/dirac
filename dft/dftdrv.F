@@ -1737,51 +1737,6 @@ C.....Integrate
       CALL QEXIT('DFTNOD')
       RETURN
       END
-#endif
-
-#ifdef MOD_DNF
-C /* deck fit_DOEXC */
-      SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1,
-     &                     VXC_integrals,NDIM)
-C***********************************************************************
-C
-C     Construct the set of integrals of Vxc over fit fucntions,
-C     <V_{xc}|\Chi_i>
-C
-C     Written by Andre Gomes and Radovan Bast
-C     Strasbourg, January 2007
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
-C
-      DIMENSION GAO(*), GAO1(*), VXC_vector(3), VXC_integrals(*)
-      LOGICAL ISGGA
-C
-C ndim should be equal to nbasisaux...
-C
-      IF (ISGGA) THEN
-         DO I = 1, NDIM
-            IOFF1 = I
-            IOFF2 = IOFF1 + NDIM
-            IOFF3 = IOFF2 + NDIM
-            VXC_integrals(I) = VXC_integrals(I)
-     &                       + D1 * VXC_scalar * GAO(I)
-! be careful with the factor below, compared to dalton and to the 
-! evaluation over orbital basis 
-     &                       + D1 * VXC_vector(1) * GAO1(IOFF1)
-     &                       + D1 * VXC_vector(2) * GAO1(IOFF2)
-     &                       + D1 * VXC_vector(3) * GAO1(IOFF3)
-         ENDDO
-      ELSE ! only lda
-         DO I = 1, NDIM 
-            VXC_integrals(I) = VXC_integrals(I)
-     &                       + D1 * VXC_scalar * GAO(I)
-         ENDDO
-      END IF
-      END
-#endif /* MOD_DNF */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftinit1 */
       SUBROUTINE DFTPAR_INIT1(IOPTS,NXCMAT)
@@ -1929,3 +1884,48 @@ C             SAOP with response part
       ENDIF
       RETURN
       END
+#endif /* VAR_MPI */
+
+#ifdef MOD_DNF
+C /* deck fit_DOEXC */
+      SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1,
+     &                     VXC_integrals,NDIM)
+C***********************************************************************
+C
+C     Construct the set of integrals of Vxc over fit fucntions,
+C     <V_{xc}|\Chi_i>
+C
+C     Written by Andre Gomes and Radovan Bast
+C     Strasbourg, January 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+      DIMENSION GAO(*), GAO1(*), VXC_vector(3), VXC_integrals(*)
+      LOGICAL ISGGA
+C
+C ndim should be equal to nbasisaux...
+C
+      IF (ISGGA) THEN
+         DO I = 1, NDIM
+            IOFF1 = I
+            IOFF2 = IOFF1 + NDIM
+            IOFF3 = IOFF2 + NDIM
+            VXC_integrals(I) = VXC_integrals(I)
+     &                       + D1 * VXC_scalar * GAO(I)
+! be careful with the factor below, compared to dalton and to the 
+! evaluation over orbital basis 
+     &                       + D1 * VXC_vector(1) * GAO1(IOFF1)
+     &                       + D1 * VXC_vector(2) * GAO1(IOFF2)
+     &                       + D1 * VXC_vector(3) * GAO1(IOFF3)
+         ENDDO
+      ELSE ! only lda
+         DO I = 1, NDIM 
+            VXC_integrals(I) = VXC_integrals(I)
+     &                       + D1 * VXC_scalar * GAO(I)
+         ENDDO
+      END IF
+      END
+#endif /* MOD_DNF */
