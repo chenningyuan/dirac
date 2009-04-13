@@ -590,8 +590,8 @@ C***********************************************************************
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 #include "mxcent.h"
-C
 #include "nuclei.h"
+#include "shells.h"
 #include "inforb.h"
 #include "orgcom.h"
 #include "dftbuf.h"
@@ -608,8 +608,8 @@ C
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
-     &            DTRMAT(*),GAO(*), GAO1(*), GAO2(NBAST,6),
-     &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
+     &            DTRMAT(*),GAO(*), GAO1(*), GAO2(*),
+     &            GAB1(*),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
@@ -1485,6 +1485,7 @@ C
       IF(MYTID.EQ.0) THEN
         ELCTRN=EELCTRN
         IF(DOERG) EDFTY=EEDFTY
+        WRITE(0,*) 'DFTres..master ',ELCTRN,EDFTY
         CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
@@ -1523,8 +1524,19 @@ C
 #include "infpar.h"
 #include "parint.h"
 #include "blocks.h"
+CTROND
+#include "shells.h"
+#include "nuclei.h"
 C
 #if defined (VAR_MPI)
+
+CTROND: Temporary fix !!!
+      NSAUE=3*NUCIND   
+      CALL MPI_BCAST(CORD,NSAUE,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NSAUE=3*MXSHEL
+      CALL MPI_BCAST(CENT,NSAUE,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
 C
 C     ********************************
 C     ****** Send COMMON blocks ******
