@@ -574,7 +574,6 @@ C
         CALL GET_PRIMITF()
 #endif
       END IF
-C
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
       
@@ -771,11 +770,7 @@ C
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF .GT. 1)
      &      CALL DZERO(HESSEE,NUMHES)
-CTROND      ELSE IF (ITYPE .EQ. 3) THEN
-CTROND         CALL DZERO(FMAT,NREQUI)
       ELSE IF (ITYPE .EQ. -5) THEN
-CTROND        CALL DZERO(FMAT,3*N2BASX)
-CMI      CALL DZERO(SUS2EL,9)
          CALL DZERO(SUS2ELBUF,9)
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,3*N2BASX)
@@ -840,12 +835,6 @@ C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
 
              CALL MPI_RECV(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,NWHO,40,
      &                MPI_COMM_WORLD,ISTAT,IERR)
-
-CMI         write(0,*) 'RVRES: received two-electron integral'//  
-CMI  &      ' susceptibilities from slaves:'            
-C             CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)               
-CMI           CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)               
-CMI          .... accumulate data from nodes into SUS2EL
               CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
 
             END IF
@@ -1133,11 +1122,7 @@ C
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
          NREQUI = 0
          LFMAT  = NFMAT*N2BASX
-CMI      write(0,*) "node...dimens NFMAT,N2BASX:",NFMAT,N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-CMI      NUMSUS = 9
-CMI      NREQUI = 3*NNBASX + NUMSUS
-CMI      LFMAT  = 0
          LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
@@ -1161,8 +1146,6 @@ C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF.GT.1) CALL DZERO(HESSEE,NUMHES)
-CMI   ELSE IF (ITYPE .EQ. -5) THEN
-CMI      CALL DZERO(SUS2EL,NUMSUS)
       END IF
 C
 C     ***********************************
@@ -1262,7 +1245,6 @@ C
 #if defined (VAR_MPI)
 
       CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
@@ -1385,7 +1367,6 @@ C
 C
       IF (NEWGEO) RDINPC = .FALSE.
 C     
-
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
 CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
@@ -1849,8 +1830,6 @@ C     This reduces the size of data transferred to Master.
 C     For itypes 2 and 3 this routine is called outside TWOINT,
 C     to avoid doing the same work more than once.
 C
-CMI      *** TEC entry ***
-CMI   IF (DDFOCK) THEN
       IF (DDFOCK.AND..NOT.LONDON) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
@@ -1973,10 +1952,8 @@ C
       ENDIF
 #endif
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-CMI    write(0,*) "Node sending dintkip"
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ELSE IF (ITYPE.EQ.2) THEN
@@ -1984,17 +1961,10 @@ CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-CMI - from TEC code...
       ELSE IF(ITYPE.EQ.-5) THEN 
           CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-
-CMI      write(0,*) 'SDRES: sending two-electron integral'//
-CMI  &               ' susceptibilities to master:' 
-CMI       CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)                        
           CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
-CMI       CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)                        
-CMI        ... sending to the master...
           CALL MPI_SEND(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
 
