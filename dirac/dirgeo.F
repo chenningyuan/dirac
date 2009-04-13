@@ -60,7 +60,6 @@ C
 C       We want the analytical gradient, check whether it is implemented
         DONGRD = NOGRAD.OR.DODFT.OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
      &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
-CTROND        DONGRD = .NOT. (DODHF .AND. HAMGRD)
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use numerical molecular gradient',
@@ -90,12 +89,16 @@ C*****************************************************************************
 #include "implicit.h"
       DIMENSION WORK(LWORK)
       LOGICAL FIRST
+CTROND
+      LOGICAL TOBE
       SAVE FIRST
       DATA FIRST /.TRUE./
 C 
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
+CTROND
+#include "dftcom.h"
 C
       CALL QENTER('EXEDIR')
 C
@@ -125,6 +128,12 @@ C*****************************************************************************
 C*****  S E T U P  -  M O D U L E  *******************************************
 C*****************************************************************************
 C
+CTROND
+      WRITE(0,*) 'Starting a new iteration !'
+      CALL SYSTEM('ls')
+      WRITE(6,*) 'more TESTING..'
+      CALL FLSHFO(6)
+CTROND
          CALL PAMSET(WORK,LWORK)
       END IF
 C
