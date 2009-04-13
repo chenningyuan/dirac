@@ -3252,9 +3252,7 @@ C     * TRIVEC: Looking for old coefficients
 C     --------------------------------------
 C
 CMI/May05 Do not use old DFCOEF when DO4CT2C=.TRUE. !
-C     IF(TRIVEC.AND..NOT.FD2CMO) THEN
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
-CMI   IF(TRIVEC) THEN
         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
         IF(TOBE) THEN
           BARNUC = .FALSE.
