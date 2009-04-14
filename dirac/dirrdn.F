@@ -5411,7 +5411,12 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 CMI  ... reading input routine for AMFI+RELSCF
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
+        ELSE
+          GO TO 1
         ENDIF
+#else
+        CALL QUIT(
+     &  '*AMFI specified, but AMFI is not included in this version')
 #endif
         GO TO 200
     7 CONTINUE
