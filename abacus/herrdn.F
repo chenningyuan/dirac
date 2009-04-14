@@ -998,8 +998,9 @@ C
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               ADDSTO = .FALSE.
-              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
-     &             'nuclear charge larger than 18'
+culfek: Not relevant for Dirac at this point.
+c              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
+c     &             'nuclear charge larger than 18'
             END IF
           ENDIF
         ENDIF
