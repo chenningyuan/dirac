@@ -693,8 +693,8 @@ if [ "$par" = "yes" ]; then
        fi 
 
        # miro: please add machinefile variable for other batch systems as well
-       if [ $read_mach_file ]; then
-         $echo '\nWarning: Each queuing system has its own variable for the file '
+       if [ -n "$read_mach_file" ]; then
+         $echo 'Each queuing system has its own variable for the file '
          $echo 'with reserved nodes (machinefile). For instance, $HOSTNAME for SGE,'
          $echo '$LSB_HOSTS for LSF, $XXX for IBM LoadLeveler...'
          $echo 'As the default, we offer $PBS_NODEFILE of the OpenPBS batch system.'
