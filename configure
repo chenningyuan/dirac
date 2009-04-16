@@ -665,9 +665,9 @@ if [ "$par" = "yes" ]; then
       # printout of MPI launcher
       if [ -n "$mpirun" ]; then
         $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
-        $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
+#ulfek: why? It just has to be correct. $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
       else
-        $echo "MPI launcher NOT found ! Error exit!"
+        $echo "MPI launcher NOT found! Error exit!"
         exit 1
       fi
    fi
@@ -678,7 +678,7 @@ if [ "$par" = "yes" ]; then
 #  continue with querrying for nodefile
 #
    if [ $quick = 0 ]; then
-       if ! ask_yesno n "Does your MPI setting require machinefile for MPI launcher (like mpich2) ?"; then
+       if ! ask_yesno n "Does your MPI setting require machinefile for MPI launcher (like mpich2)?"; then
           mach_file_mpirun="yes"
           read_mach_file=1
        else
@@ -686,11 +686,11 @@ if [ "$par" = "yes" ]; then
        fi
 
        if [ "$localdisks"="yes" -a "$mach_file_mpirun"="no"  ]; then
-         $echo '\nUsing local disks - default machinefile for distribution of files\n among nodes needed !'
+         $echo '\nUsing local disks - default machinefile for distribution of files\n among nodes needed!'
        elif [ "$localdisks"="yes" -a "$mach_file_mpirun"="yes"  ]; then
-         $echo '\nBoth local disks & MPI launcher need default machinefile !'
+         $echo '\nBoth local disks & MPI launcher need default machinefile!'
        elif [ "$localdisks"="no" -a "$mach_file_mpirun"="yes"  ]; then
-         $echo '\nMPI launcher needs default machinefile ! '
+         $echo '\nMPI launcher needs default machinefile! '
        fi 
 
        # miro: please add machinefile variable for other batch systems as well
@@ -726,7 +726,7 @@ if [ "$par" = "yes" ]; then
 	 "ssh")
             rsh=`which ssh 2>/dev/null`
             rcp=`which scp 2>/dev/null`
-            echo 'Note that ssh/scp requires use of ssh-keygen without password !'
+            echo 'Note that ssh/scp requires use of ssh keys without password!'
 	    ;;
 	 *)
             rsh=`which rsh 2>/dev/null`
@@ -814,11 +814,11 @@ if [ "$mesp" = "mpi" ]; then
     echo  "    - KR-MCSCF using LUCIAREL  "
     echo  "    - MOLTRA with parallel I/O (helpful for global/shared scratch spaces)"
     echo  " "
-    $echo "Configure with MPI-2 support anyway? (y/N) \c"
-    read mpi2version
-    if [ "$mpi2version" = "y" ]; then
+    if ask_yesno y "Continue without MPI-2 support?"; then
+	echo " - MPI-2 functionality disabled"
+    else
 	mpi2version=yes
-	echo "OK. Remember to add MPI2 paths to Makefile.config if necessary !!!"
+	echo "OK. Remember to add MPI2 paths to Makefile.config if necessary!"
     fi;
   fi
   if [ "$mpi2version" = "yes" ]; then
@@ -876,7 +876,7 @@ if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
  
 # jhs could be changed in a while loop in case of typo's
   if [ -z "$parlib" ]; then
-    echo "Please enter the directory containing your mpi libraries:"
+    echo "Please enter the path to your mpi libraries:"
     read mpi_lib
     search_libs parlib "$mpi_lib $mpi_lib/lib" "libmpi libmpich" ".a .so .so.0" 
     if [ -n "$parlib" ]; then
@@ -885,7 +885,7 @@ if [ "$parlib" = "yes" -a "$mesp" = "mpi" ]; then
       parlib=-lmpi
       parlib_pwd=$2
     else 
-      $echo "Not a valid mpi library found. Please edit Makefile.config manually!"
+      $echo "No valid mpi library found. Please edit Makefile.config manually!"
       parlib=""
       parlib_pwd=""
     fi
@@ -1093,7 +1093,7 @@ question comp_index "$to_find compilers" "$comp_found" " Specify compiler manual
 if [ $comp_index -eq 0 ]; then
     echo ""
     echo "Note that compiler flags may not be set correctly."
-    echo "Check Makefile.config afterwards !"
+    echo "Check Makefile.config afterwards!"
     echo ""
     $echo "Enter your compiler:\c"
     read comp_found
@@ -1169,7 +1169,7 @@ mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
 *)
    F90real=$F90_COMP_NAME # 'error' default for parallel branch
    if [ "$par" = "yes" ]; then
-     $echo "\nNo specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags !"
+     $echo "\nNo specific Fortran-compiler found in parallel $F90_COMP. Can not assign proper flags!"
    fi
    ;;
 esac
@@ -1222,7 +1222,7 @@ openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
 *)
   CCreal=$CC_COMP_NAME
   if [ "$par" = "yes" ]; then
-    $echo "No specific C-compiler found in parallel $CC_COMP_NAME. Configure might not assign proper flags !"
+    $echo "No specific C-compiler found in parallel $CC_COMP_NAME. Configure might not assign proper flags!"
   fi
   ;;
 esac
@@ -1302,7 +1302,7 @@ else
 fi
 
 if [ -z "$debug" ]; then
-   $echo "\nDebugger not set ! Add it into pam manually"
+   $echo "\nDebugger not set! Add it into pam manually"
 else
    $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
 fi
@@ -1342,8 +1342,8 @@ setup_math_lib(){
         append LIB "-L$2 -lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl"
         optblas=$2
         if [ "$ilp_datatype" != "ILP64" ]; then
-          $echo "\nYour data type model $ilp_datatype does not correspond with the selected ILP64 library $LIB !\n"
-          $echo "Error exit 1 !\n"
+          $echo "\nYour data type model $ilp_datatype does not correspond with the selected ILP64 library $LIB!\n"
+          $echo "Error exit 1!\n"
           exit 1
         fi
         ;;
@@ -1639,8 +1639,8 @@ if [ -z "$memdef" ]; then
     echo 'set_memsize:  assigned memdef='$memdef
    fi
 
-   echo 'DIRAC uses approximately 6.4 MB for static allocations.'
-   echo 'How many MB RAM to use as default?'
+   echo 'How many MB RAM should Dirac use as default?'
+   echo ' -this is the maximum memory used by the older parts of the program'
    echo ' -we do not recommend going below 64 MB'
    echo ' -note that memory use can be changed' \
         'through the shell variable DIRWRK'
@@ -1743,7 +1743,7 @@ set_install_directory () {
 
       # verify install directory
       if [ ! -d "$INSTALL_DIR" ]; then
-         echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again !"
+         echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again!"
          INSTALL_DIR=
          # ... continues within the "while" cycle
       fi
@@ -1772,7 +1772,7 @@ if [ -z "$worksp" ]; then
        get_worksp
 else
    if [ ! -d $worksp -a $quick=0]; then
-       echo 'Scratch directory '$worksp' you does not exist! Repeat !'
+       echo 'Scratch directory '$worksp' you does not exist! Repeat!'
        get_worksp
    fi
 fi
@@ -2008,7 +2008,7 @@ get_f90_flags(){
        ;;
     *)
        $echo "\nget_f90_flags: Flags undetermined for the Fortran compiler $F90real !"
-       $echo "Error exit 1 !\n"
+       $echo "Error exit 1!\n"
        exit 1
        ;;
   esac
@@ -2465,7 +2465,7 @@ if [ $checkbounds = 1 ]; then
   opt="$F_check_flags $opt"
   if [ -n "$F_check_flags" ]; then
    $echo "\nFortran flag '"$F_check_flags"' for checking array bounds & other run-time parameters included."
-   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature!"
   else
    $echo "\nNo Fortran flag for checking array bounds included for compiler $F9Oreal."
    $echo "Though requested. Please edit the script."
@@ -2475,7 +2475,7 @@ if [ $checkbounds = 1 ]; then
   c_opt="$C_check_flags $c_opt"
   if [ -n "$C_check_flags" ]; then
    $echo "\nC flag '"$C_check_flags"' for checking array bounds & other run-time parameters included."
-   $echo "WARNING: DIRAC is not yet debugged for this programming feature !"
+   $echo "WARNING: DIRAC is not yet debugged for this programming feature!"
   else
    $echo "\nNo C flag for checking array bounds is included for compiler $CCreal."
    $echo "Though requested. Please edit the script."
@@ -2725,7 +2725,7 @@ if [ "$bit_set" = "64" ]; then
 fi
 
 if [ "$par" = "yes" ]; then
-echo "pam script has been configured for use of Open MPI/MPICH2/Intel MPI/IBM MPI,..."
+echo "pam script has been configured for your MPI version."
 echo "If you change the MPI library, please reconfigure the pam script."
 if [ "$bit_set" = "64" ]; then
  echo "If you use 64 bit integers make sure that MPI libraries are of "
