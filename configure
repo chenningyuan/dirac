@@ -610,10 +610,11 @@ if [ "$par" = "yes" ]; then
     if ask_yesno y "Will your nodes use local disks?"; then
 	localdisks="yes"
         read_mach_file=1
+	echo '=> Node list will be taken from MPI machine file,'
+	echo '   input files will be distributed with rsh or ssh.'
     else
 	localdisks="no"
     fi
-  echo '=> - with local disks for each node: '${localdisks}''
 
 #
 #  Parallel architectures are difficult, better warn the user
