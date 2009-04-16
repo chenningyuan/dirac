@@ -207,7 +207,8 @@ C#endif
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
       CALL DZERO(EXPKR ,3)
-CTSAUE
+      NPATOM = 0
+      CALL IZERO(IPATOM,MXCENT)
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
 C      2 - Gaussian nucleus
