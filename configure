@@ -699,10 +699,16 @@ if [ "$par" = "yes" ]; then
          $echo 'with reserved nodes (machinefile). For instance, $HOSTNAME for SGE,'
          $echo '$LSB_HOSTS for LSF, $XXX for IBM LoadLeveler...'
          $echo 'As the default, we offer $PBS_NODEFILE of the OpenPBS batch system.'
+	 if [ "$localdisks" == yes ]; then
+	     $echo 'Since your nodes use local disk you need to give a machine'
+	     $echo 'file, even if your mpirun does not require it.'
+	 fi
          $echo 'Specify the machinefile (filename/variable; default:$PBS_NODEFILE): \c'
          read mach_file
          if [ -z "$mach_file" ]; then
             mach_file='$PBS_NODEFILE'
+	    $echo ' No machine file given, please check and correct pam'
+	    $echo ' script manually.'
          fi
        fi
 
