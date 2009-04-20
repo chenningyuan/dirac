@@ -477,13 +477,13 @@ C............scatter data and send remainings to last node
      &                        MPI_COMM_WORLD,IERR)
              IF( NREST .ne. 0 )THEN
                IDISP_REST = IDISP(NODESALL) + NBATCH
-               CALL MPI_SEND(WORK(KX+IDISP_REST-1),NREST,MPI_REAL8,
+               CALL MPI_SEND(WORK(KX+IDISP_REST),NREST,MPI_REAL8,
      &                       NODES,90,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KY+IDISP_REST-1),NREST,MPI_REAL8,
+               CALL MPI_SEND(WORK(KY+IDISP_REST),NREST,MPI_REAL8,
      &                       NODES,91,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KZ+IDISP_REST-1),NREST,MPI_REAL8,
+               CALL MPI_SEND(WORK(KZ+IDISP_REST),NREST,MPI_REAL8,
      &                       NODES,92,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KW+IDISP_REST-1),NREST,MPI_REAL8,
+               CALL MPI_SEND(WORK(KW+IDISP_REST),NREST,MPI_REAL8,
      &                       NODES,93,MPI_COMM_WORLD,IERR)
              END IF
 #endif
@@ -533,13 +533,13 @@ C...........receive data via scatter
 C...........remainings for the last node
             IF(MYTID .eq. NODES .and. NREST .ne. 0 ) THEN
               IDISP_REST = NBATCH
-              CALL MPI_RECV(WORK(KX+IDISP_REST-1),NREST,MPI_REAL8,
+              CALL MPI_RECV(WORK(KX+IDISP_REST),NREST,MPI_REAL8,
      &                      MPARID,90,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KY+IDISP_REST-1),NREST,MPI_REAL8,
+              CALL MPI_RECV(WORK(KY+IDISP_REST),NREST,MPI_REAL8,
      &                      MPARID,91,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KZ+IDISP_REST-1),NREST,MPI_REAL8,
+              CALL MPI_RECV(WORK(KZ+IDISP_REST),NREST,MPI_REAL8,
      &                      MPARID,92,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KW+IDISP_REST-1),NREST,MPI_REAL8,
+              CALL MPI_RECV(WORK(KW+IDISP_REST),NREST,MPI_REAL8,
      &                      MPARID,93,MPI_COMM_WORLD,ISTAT,IERR)
             END IF
 #endif
