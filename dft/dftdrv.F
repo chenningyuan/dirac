@@ -387,21 +387,27 @@ C
       ELCTRN = D0
       EDFTY  = D0
 C
+#ifdef VAR_MPI
       IF(MYTID.EQ.MPARID) THEN
+#endif /* ifdef VAR_MPI */
         REWIND LUQUAD
         NPNTS = 0
+#ifdef VAR_MPI
       ENDIF
+#endif /* ifdef VAR_MPI */
 C*    Loop over batches of grid points
   100 CONTINUE
       KLOOP = KFREE
+#ifdef VAR_MPI
       IF(MYTID.EQ.MPARID) THEN
+#endif /* ifdef VAR_MPI */
         IF(import_grid) THEN
           READ(LUQUAD,*) NPOINT
         ELSE
           READ(LUQUAD) NPOINT
         ENDIF
+#ifdef VAR_MPI
       ENDIF
-#if defined (VAR_MPI) 
       IF(PARCAL) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID,
      &                          MPI_COMM_WORLD,IERR)
 #endif
@@ -410,7 +416,9 @@ C*    Loop over batches of grid points
       ELSE IF(  NPOINT .eq. 0 ) THEN
           GOTO 100      
       ELSE
+#ifdef VAR_MPI
         IF(MYTID.EQ.MPARID) THEN
+#endif /* ifdef VAR_MPI */
           NPNTS = NPNTS + NPOINT
           CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
@@ -424,8 +432,9 @@ C*    Loop over batches of grid points
             CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
      &                 LUQUAD,NPOINT)
           ENDIF
+#ifdef VAR_MPI
         ENDIF
-#if defined (VAR_MPI) 
+
         IF(PARCAL) THEN
           NODESALL=NODES+1
           NBATCH = NPOINT/NODESALL
@@ -497,7 +506,11 @@ C           receive data from master - all grid points in one receive chunk
      &                       IPRINT)
 #endif
       CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
-      IF(MYTID.NE.MPARID) RETURN
+
+#ifdef VAR_MPI
+      if (mytid .ne. mparid) return
+#endif /* ifdef VAR_MPI */
+
       IF (DOLND) THEN
         DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
