@@ -387,27 +387,21 @@ C
       ELCTRN = D0
       EDFTY  = D0
 C
-#ifdef VAR_MPI
       IF(MYTID.EQ.MPARID) THEN
-#endif /* ifdef VAR_MPI */
         REWIND LUQUAD
         NPNTS = 0
-#ifdef VAR_MPI
       ENDIF
-#endif /* ifdef VAR_MPI */
 C*    Loop over batches of grid points
   100 CONTINUE
       KLOOP = KFREE
-#ifdef VAR_MPI
       IF(MYTID.EQ.MPARID) THEN
-#endif /* ifdef VAR_MPI */
         IF(import_grid) THEN
           READ(LUQUAD,*) NPOINT
         ELSE
           READ(LUQUAD) NPOINT
         ENDIF
-#ifdef VAR_MPI
       ENDIF
+#if defined (VAR_MPI) 
       IF(PARCAL) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID,
      &                          MPI_COMM_WORLD,IERR)
 #endif
@@ -416,9 +410,7 @@ C*    Loop over batches of grid points
       ELSE IF(  NPOINT .eq. 0 ) THEN
           GOTO 100      
       ELSE
-#ifdef VAR_MPI
         IF(MYTID.EQ.MPARID) THEN
-#endif /* ifdef VAR_MPI */
           NPNTS = NPNTS + NPOINT
           CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
@@ -432,9 +424,8 @@ C*    Loop over batches of grid points
             CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
      &                 LUQUAD,NPOINT)
           ENDIF
-#ifdef VAR_MPI
         ENDIF
-
+#if defined (VAR_MPI) 
         IF(PARCAL) THEN
           NODESALL=NODES+1
           NBATCH = NPOINT/NODESALL
@@ -450,20 +441,54 @@ C.........send nothing to master
             ENDDO
             ISEND(NODESALL) = NBATCH + NREST
             IDISP(NODESALL) = NBATCH*NODES
-C            send data to slaves - all grid points in one send chunk
-             CALL MPI_SCATTERV(WORK(KX),ISEND,IDISP,
-     &                MPI_DOUBLE_PRECISION,DUMMY,0,
-     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KY),ISEND,IDISP,
-     &                MPI_DOUBLE_PRECISION,DUMMY,0,
-     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KZ),ISEND,IDISP,
-     &                MPI_DOUBLE_PRECISION,DUMMY,0,
-     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KW),ISEND,IDISP,
-     &                MPI_DOUBLE_PRECISION,DUMMY,0,
-     &                MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+C           send data to slaves - all grid points in one send chunk
+C           FIXME: scatterv does not work for INT_STAR8...
+C                  SK - Apr 2009
+C
+#if !defined (INT_STAR8)
+C............scatterv data
+             CALL MPI_SCATTERV(WORK(KX),ISEND,IDISP,MPI_REAL8,
+     &                         DUMMY,0,MPI_REAL8,MPARID,
+     &                         MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KY),ISEND,IDISP,MPI_REAL8,
+     &                         DUMMY,0,MPI_REAL8,MPARID,
+     &                         MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KZ),ISEND,IDISP,MPI_REAL8,
+     &                         DUMMY,0,MPI_REAL8,MPARID,
+     &                         MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTERV(WORK(KW),ISEND,IDISP,MPI_REAL8,
+     &                         DUMMY,0,MPI_REAL8,MPARID,
+     &                         MPI_COMM_WORLD,IERR)
+#else
+             CALL MEMGET('REAL',KXDUM,myNPOINT,WORK,KFREE,LFREE)
+C
+C............scatter data and send remainings to last node
+             CALL MPI_SCATTER(WORK(KX),myNPOINT,MPI_REAL8,
+     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTER(WORK(KY),myNPOINT,MPI_REAL8,
+     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTER(WORK(KZ),myNPOINT,MPI_REAL8,
+     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+             CALL MPI_SCATTER(WORK(KW),myNPOINT,MPI_REAL8,
+     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+             IF( NREST .ne. 0 )THEN
+               IDISP_REST = IDISP(NODESALL) + NBATCH
+               CALL MPI_SEND(WORK(KX+IDISP_REST-1),NREST,MPI_REAL8,
+     &                       NODES,90,MPI_COMM_WORLD,IERR)
+               CALL MPI_SEND(WORK(KY+IDISP_REST-1),NREST,MPI_REAL8,
+     &                       NODES,91,MPI_COMM_WORLD,IERR)
+               CALL MPI_SEND(WORK(KZ+IDISP_REST-1),NREST,MPI_REAL8,
+     &                       NODES,92,MPI_COMM_WORLD,IERR)
+               CALL MPI_SEND(WORK(KW+IDISP_REST-1),NREST,MPI_REAL8,
+     &                       NODES,93,MPI_COMM_WORLD,IERR)
+             END IF
+#endif
           ELSE ! slaves
+C
 C           the last process gets the rest; these points are usually
 C           the most diffuse ones and therefore the most screened ones
             IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
@@ -472,19 +497,55 @@ C           the most diffuse ones and therefore the most screened ones
             CALL MEMGET('REAL',KZ,myNPOINT,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KW,myNPOINT,WORK,KFREE,LFREE)
 C           receive data from master - all grid points in one receive chunk
-            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
-     &               MPI_DOUBLE_PRECISION,WORK(KX),myNPOINT,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
-     &               MPI_DOUBLE_PRECISION,WORK(KY),myNPOINT,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
-     &               MPI_DOUBLE_PRECISION,WORK(KZ),myNPOINT,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,
-     &               MPI_DOUBLE_PRECISION,WORK(KW),myNPOINT,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+C
+C           FIXME: scatterv does not work for INT_STAR8...
+C                  SK - Apr 2009
+#if !defined (INT_STAR8)
+C...........receive data via scatterv
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8,
+     &                        WORK(KX),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8,
+     &                        WORK(KY),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8,
+     &                        WORK(KZ),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8,
+     &                        WORK(KW),myNPOINT,MPI_REAL8,MPARID,
+     &                        MPI_COMM_WORLD,IERR)
+#else
+C...........reset for scatter length
+            IF(MYTID.eq.NODES) myNPOINT = NBATCH
+C...........receive data via scatter
+            CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8,
+     &                       WORK(KX),myNPOINT,MPI_REAL8,MPARID,
+     &                       MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8,
+     &                       WORK(KY),myNPOINT,MPI_REAL8,MPARID,
+     &                       MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8,
+     &                       WORK(KZ),myNPOINT,MPI_REAL8,MPARID,
+     &                       MPI_COMM_WORLD,IERR)
+            CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8,
+     &                       WORK(KW),myNPOINT,MPI_REAL8,MPARID,
+     &                       MPI_COMM_WORLD,IERR)
+C...........remainings for the last node
+            IF(MYTID .eq. NODES .and. NREST .ne. 0 ) THEN
+              IDISP_REST = NBATCH
+              CALL MPI_RECV(WORK(KX+IDISP_REST-1),NREST,MPI_REAL8,
+     &                      MPARID,90,MPI_COMM_WORLD,ISTAT,IERR)
+              CALL MPI_RECV(WORK(KY+IDISP_REST-1),NREST,MPI_REAL8,
+     &                      MPARID,91,MPI_COMM_WORLD,ISTAT,IERR)
+              CALL MPI_RECV(WORK(KZ+IDISP_REST-1),NREST,MPI_REAL8,
+     &                      MPARID,92,MPI_COMM_WORLD,ISTAT,IERR)
+              CALL MPI_RECV(WORK(KW+IDISP_REST-1),NREST,MPI_REAL8,
+     &                      MPARID,93,MPI_COMM_WORLD,ISTAT,IERR)
+            END IF
+#endif
           ENDIF
+C.........add rest to total number of myNPOINT on last node
+          IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
         ELSE
 #endif
             myNPOINT = NPOINT
@@ -506,11 +567,7 @@ C           receive data from master - all grid points in one receive chunk
      &                       IPRINT)
 #endif
       CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
-
-#ifdef VAR_MPI
-      if (mytid .ne. mparid) return
-#endif /* ifdef VAR_MPI */
-
+      IF(MYTID.NE.MPARID) RETURN
       IF (DOLND) THEN
         DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
