@@ -292,7 +292,9 @@ C      CALL TEST_OOF(WORK(KFREE),LFREE)
 C
 C     Print section
 C
-      CALL HEADER('*** Output from MAKE_BSS ***',-1)
+      IF (IPRHAM.GE.1) THEN
+        CALL HEADER('*** Output from MAKE_BSS ***',-1)
+      ENDIF
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
 C ======================================================================
@@ -300,13 +302,14 @@ C ======================================================================
      &     ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,NOPRTR,BLOCKD,
      &     DO4C2C,USEDF,CONT2C,START2C,I2CHAM,DO2C4C,INI2C,I2COFK,
      &     YREQ1,IC_AMFI,GETPCTM,NOAMFI,IPRHAM)
-C  ... do not compare eigenvalues for ONLYSO1 = T
+C  ... do not compare eigenvalues for ONLYSO1 = T, what is testing mode
+C  on BSS-SO1 integrals against AMFI SO1 terms
       CMPEIG = CMPEIG.AND..NOT.ONLYSO1
-C     ... do initiate the important FreeParticleBasis flag!
+C     ... initialize the important FreeParticleBasis flag!
 C     If .false., we use the one-step RKB approach.
       FPB = .NOT.NOPRTR
 
-C get transf. matrix (RKB)
+C  allocate multipurpose arrays 
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -319,6 +322,7 @@ C get transf. matrix (RKB)
 
 C     ... choose the file number !
       LUBSS = 40
+      ! .. save 4c Lowdin transformation matrix  
       CALL W2BSSMAT(4,.TRUE.,'VMAT4C  ','MAKE_BSS',
      &              VMAT,N2BBASX,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN
@@ -329,7 +333,8 @@ C     ... choose the file number !
 C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
-      LINAD = ( DO4C2C.AND.LINEAR )
+      ! flag for the adaptation for the linear symmetry
+      LINAD = ( DO4C2C.AND.LINEAR ) 
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
      &            LINAD,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)
@@ -338,7 +343,7 @@ C     1. Write transformation matrices to file BSSMAT
       CALL HANDLE_RKB(VMAT,WORK(KTMAT),WORK(KTBUF),
      &            LINAD,FPB,IPRHAM,WORK(KFREE),LFREE)
 
-C      ... allocate memmory 
+C      ... allocate more memmory 
       CALL MEMGET('INTE',KIBEIG,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFACKIN,NTBAS(1),WORK,KFREE,LFREE)
 
@@ -538,7 +543,7 @@ C       ...  Count total number of orbitals  ...
         write(lupri,'(3X,A,I1,A,I4)') 'IORB(',I,')  =',IORB(I)
         write(lupri,'(3X,A,I1,A,I4)') 'I2ORBT(',I,')=',I2ORBT(I)
        ENDDO
-       write(lupri,'(2X,A,I3)') 'N2TMT=',N2TMT
+       write(lupri,'(4X,A,I3)') 'N2TMT=',N2TMT
       ENDIF
 
       RETURN
@@ -553,7 +558,7 @@ C  After the MODHAM routine take care of matrices
 C
 C  On input:
 C ------------
-C    VMAT - (non-linear) SL resorted RKB AO to MO (FPB = F)
+C    VMAT - (non-linear) SL resorted RKB AO to MO (for FPB = False)
 C    TMAT - Non-linsym RKB transformation matrix 4c AO->MO
 C    TBUF - RKB MO to LINSYM RKB_MO (LINAD = T)
 C

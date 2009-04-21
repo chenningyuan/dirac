@@ -2725,7 +2725,7 @@ C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
 C***********************************************************************
 C
-C     Read property integrals from file with label PRPLBL
+C     Read property integrals from file with the label PRPLBL
 C     and class blocks defined by COMB 
 C     Return integrals in PRPINT and return labels in RTNLBL
 C

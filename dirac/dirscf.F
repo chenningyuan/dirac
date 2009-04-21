@@ -2768,12 +2768,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck appbos */
       SUBROUTINE APPBOS (IFRP,NO,INDX,IBEIG,EVEC,RDUM)
 C***********************************************************************
+C
 C     PURPOSE:
 C        Identify vectors by their largest boson character
 C        This approximate labeling can be used in the CI code.
 C
 C        Works only for the modified Dirac equation
 C        (restricted kinetic balance)
+C
+C     Called from: DFDIAG
 C
 C        Written by L. Visscher
 C        October 2000
