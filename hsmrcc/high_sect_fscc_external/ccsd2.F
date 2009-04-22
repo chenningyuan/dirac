@@ -1603,11 +1603,21 @@ c   special for scratch files, which start with "s".
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ivsort(ivec,n8)
-C
+!--------------------------------------------------------
+!
+!
+!--------------------------------------------------------
       IMPLICIT INTEGER (A-Z)
+#include "priunit.h"
       INTEGER*4  ivec(*),TEMP,N8
       integer lftbit,nx4,n
+#include "dat.h"
 C
+      if (iopt(1).ge.5) then
+       call header("Output from ivsort",-1)
+       write(LUPRI,*) 'ivsort: entering n8=',n8
+      endif
+
       n=n8
       IF (N .LE. 1) RETURN
 C     P0 = AND(N-1,MASK(LEADZ(N-1)+1))
@@ -1627,12 +1637,12 @@ c           TEMP       = MAX (VEC(J+I),VEC(J+I+D))
 c           VEC(J+I)   = MIN (VEC(J+I),VEC(J+I+D))
 c           VEC(J+I+D) = TEMP
         if (ishft( ivec(j+i),-1).gt.ishft( ivec(j+i+d),-1)) then
-	    temp       = ivec(j+i)
-	    ivec(j+i)   = ivec(j+i+d)
+            temp       = ivec(j+i)
+            ivec(j+i)   = ivec(j+i+d)
             ivec(J+I+D) = TEMP
         Else If ((ishft(ivec(j+i),-1).eq.ishft(ivec(j+i+d),-1))
      +  .AND. (iabs(ivec(j+i)).gt.iabs(ivec(j+i+d)))) then
-           temp       = ivec(j+i)
+             temp       = ivec(j+i)
             ivec(j+i)   = ivec(j+i+d)
             ivec(J+I+D) = TEMP
         endif
@@ -1663,8 +1673,8 @@ c        TEMP       = MAX (VEC(J+R),VEC(J+R+D))
 c        VEC(J+R)   = MIN (VEC(J+R),VEC(J+R+D))
 c        VEC(J+R+D) = TEMP
         if (ishft( ivec(j+r),-1).gt.ishft( ivec(j+r+d),-1)) then
-	    temp       = ivec(j+r)
-	    ivec(j+r)   = ivec(j+r+d)
+            temp       = ivec(j+r)
+            ivec(j+r)   = ivec(j+r+d)
             ivec(J+R+D) = TEMP
         Else If ((ishft(ivec(j+r),-1).eq.ishft(ivec(j+r+d),-1))
      +  .AND. (iabs(ivec(j+r)).gt.iabs(ivec(j+r+d)))) then
@@ -1695,10 +1705,10 @@ C
       return
       end
 
-	function lftbit(n)
-	integer*4 n,i,ipos
-	integer*4 nlim(32)
-	data nlim/'0'o,'1'o,'2'o,'4'o,
+      function lftbit(n)
+      integer*4 n,i,ipos
+      integer*4 nlim(32)
+      data nlim/'0'o,'1'o,'2'o,'4'o,
      x             '10'o,'20'o,'40'o,
      x             '100'o,'200'o,'400'o,
      x             '1000'o,'2000'o,'4000'o,
@@ -1709,13 +1719,13 @@ C
      x             '100000000'o,'200000000'o,'400000000'o,
      x             '1000000000'o,'2000000000'o,'4000000000'o,
      x             '10000000000'o/
-	ipos=0
-	do i=1,32
-	if (n.ge.nlim(i)) ipos=i
-	enddo
-	lftbit=nlim(ipos)
-	return
-	end
+        ipos=0
+        do i=1,32
+        if (n.ge.nlim(i)) ipos=i
+        enddo
+        lftbit=nlim(ipos)
+        return
+        end
 
       subroutine match6 (k1,k2,nval,isign,nm)
       implicit real *8 (a-h,o-z)
@@ -1775,9 +1785,7 @@ C
 
       subroutine move(namef,namet)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2608,7 +2616,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       subroutine prt(name,tit,iparm)
 !---------------------------------------------------------------------------------
 !
-!
+!            prints integrals & indexes ?
 !
 !---------------------------------------------------------------------------------
 #include "implicit.h"
@@ -2632,6 +2640,12 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       if (iopt(5).le.0) flim=0.d0
 
       call files_ccsd(name,num,new,1,-1,-1)
+
+      if (iopt(1).ge.5) then
+        call header('Output from "prt"',-1)
+        write(LUPRI,*) 'flim=',flim
+        write(LUPRI,'(a,a4)') 'name=',name
+      endif
 
       if (new.ne.0) then
         write (LUPRI,*) ' prt tried to read nonexistent file'
@@ -2879,28 +2893,43 @@ c             write (6,*) ' '
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdfile(nt,nrec,name,ieof)
+!-------------------------------------------------------------------------------------
+!
+!
+!  read file "nt", skipping "nrec" records, to internal file number
+!  "nflcur"+1, calling it "name".
+!
+!  disk file structure for tc etc:
+!
+!  1. nij (# of subblocks)
+!  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
+!  3. ia(1:ije1(nij)), indices.
+!  4. a(1:ije1(nij)), actual values.
+!
+!     ***   april 1990: 1-3 are now in igen, 4 in gen.  ****
+!    nt.eq.9 = file without indices (pppp).
+!  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
+!
+!-------------------------------------------------------------------------------------
 #include "implicit.h"
+#include "priunit.h"
 !     implicit real*8 (a-h,o-z)
-
-!c  read file nt, skipping nrec records, to internal file number
-!c  nflcur+1, calling it "name".
-!c  disk file structure for tc etc:
-!c  1. nij (# of subblocks)
-!c  2. ij1(1:nij), subblock id's; ije1(0:nij), subblock ends; iii, iiv.
-!c  3. ia(1:ije1(nij)), indices.
-!c  4. a(1:ije1(nij)), actual values.
-!c     ***   april 1990: 1-3 are now in igen, 4 in gen.  ****
-!c    nt.eq.9 = file without indices (pppp).
-!c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+! mi: added for control printouts
+#include "dat.h"
+
+      if (iopt(1).ge.5) then
+        call header('Output from rdfile',-1)
+        write(LUPRI,'(2x,a,i5)') 'nt=',nt
+        write(LUPRI,'(2x,a,i5)') 'nrec=',nrec
+        write(LUPRI,'(2x,a,4a)') 'name=',name
+      endif
 
       rewind nt
       if (nrec.gt.0) then
@@ -2917,6 +2946,7 @@ c             write (6,*) ' '
       iiva(nflcur)=igen(nstr1+2*nij+4)
       namefl(nflcur)=name
       nsize=igen(nstr1+2*nij+2)
+
       if (nt.ne.9) then
         read (nt) (igen(nstr1+2*nij+4+i),i=1,nsize)
         read (nt) (gen(nstr2+i),i=1,nsize)
@@ -2927,15 +2957,17 @@ c             write (6,*) ' '
         nstrt(1,nflcur)=nstr1+2*nij+4
         nstrt(2,nflcur)=nstr2+nsize
       endif
+
       call dimx(nstrt(1,nflcur),nbig,"rdfile1")
       call dimx(nstrt(2,nflcur),nbig,"rdfile2")
       return
+
 190   if (ieof.eq.0) then
         ieof=1
         return
       else
-        write (*,*) 'rdfile encountered eof'
-        write (*,110) nt,nrec,name
+        write (LUPRI,*) 'rdfile encountered eof'
+        write (LUPRI,110) nt,nrec,name
 110     format(' nt nrec name=',i5,i4,2x,a8)
         call abext('rdfile  ')
       endif

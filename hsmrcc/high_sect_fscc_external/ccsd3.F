@@ -84,10 +84,16 @@
       subroutine readv(nint,v,ind,nintmx,nfock,fock,ifock,nfockmx)
 !---------------------------------------------------------------------------
 !
-!         basic reading subroutine called from many places
+!         basic reading subroutine
+!
+!         nint - total number of integrals
+!         v    - array for integrals
+!         ind  - array with packed indexes
+!
+!      called from:  ordv (csd.F)
 !
 !---------------------------------------------------------------------------
-       use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
+      use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
 #include "implicit.h"
 !      implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -241,7 +247,8 @@ C--------------------------------------------------------
         call get_gamess_ints(nort,eps,nn,ind,v,nint) 
 
         if (iopt(1).ge.5) then ! control prinout
-          write(LUPRI,*) 'after, nint=',nint
+          write(LUPRI,'(/,2x,a,i5)') 
+     &    'after call get_gamess_ints, nint=',nint
           write(LUPRI,*) 'after, nort=',nort
           write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
 
@@ -318,6 +325,7 @@ C      write (*,2600) i,i1,i2,fock(i)
 C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 260   continue
       go to 440
+! ... modification of fock, orbital energies
 410   adde=-iopt(8)*0.1
       do 430 io=1,norb
         if (ic(io).eq.2.and.icv(io).eq.0) then
@@ -374,6 +382,8 @@ c   scratch file, i.e. file to be completely rewritten.
 !
 !  Fills common blocks cij[1-6]
 !
+!  returns num
+!
 !-----------------------------------------------------------------------------------
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -399,23 +409,23 @@ c   scratch file, i.e. file to be completely rewritten.
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-!  ! miro added due to control printouts
+! miro: added due to control printouts
 #include "dat.h" 
 
       if (iopt(1).ge.5) then
         call header("Output from files_ccsd",-1)
-        write(LUPRI,'(2x,a,i5)') 'nflcur=',nflcur
-        write(LUPRI,'(2x,a,4a)') 'name=',name
-        write(LUPRI,'(2x,a,i5)') 'num=',num
+        write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
+        write(LUPRI,'(2x,a,a4)') 'name=',name
+        write(LUPRI,'(2x,a,i7)') 'num=',num
        ! write(LUPRI,*) 'new=',new
       endif
 
 !   ... skips filling common blocks (no diagram ready now)
       if (nflcur.eq.0) go to 20 
 
-! namefl(:) array with all diagram names
+! namefl(:) - array with all diagram names
       num=1000
-      do 10 i=1,nflcur
+      do 10 i=1, nflcur
 10    if (name.eq.namefl(i)) num=i
 
       if (num.le.nflcur) then
@@ -436,7 +446,7 @@ C Gal 95
           if (isaa.ne.i_4hs) then
             write (*,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
-            call abext('files   ') ! interruts
+            call abext('files   ') ! interrupts
           endif
         endif
 
@@ -453,6 +463,7 @@ C Gal 95
 15        continue
           return
         endif
+
         if (ijnum.eq.0) return
 
         nija=igen(nstrt(1,num-1)+1)
@@ -619,6 +630,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !     common /dpd/ nir,igmt(8,8),ici(200)
 
       dimension ia(8),ja(8)
+! ... to be replaced by include file ...
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      &ior(ishft(k,8),l))
 
@@ -726,7 +738,6 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       return
       end
 
-
       subroutine reord6 (namef,namet,iord)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -818,7 +829,6 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call prtime ("reord6   ",0,1)
       return
       end
-
 
       subroutine reord7 (namef,namet,iord)         
       implicit real*8 (a-h,o-z)
@@ -1106,7 +1116,6 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       return
       end
 
-
       subroutine reord13 (namef,namet,iord)         
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -1203,7 +1212,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !  sorted and expanded according to indices (in igen) generated
 !  by tmplt.
 !
-! routine called many times from high.sector executables
+!  routine called many times from high.sector executables
+!
+!  it assumes vint,iint files with integrals/indexes !
 !
 !------------------------------------------------------------------------
 !      implicit real*8 (a-h,o-z)
@@ -1212,8 +1223,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #include "param_ccsd.h"
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
-!#include "cij1_0.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
+#include "cij1_0.h"
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -1235,6 +1246,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (iopt(1).ge.5) then ! control printout
         call header('Output from "selftyp"',-1)
+        write(LUPRI,'(2x,a,a4)') 'name=',name
+        write(LUPRI,'(2x,a,i7)') 'iii=',iii
+        write(LUPRI,'(2x,a,i7)') 'iiv=',iiv
+        write(LUPRI,'(2x,a,i7)') 'iparm=',iparm
+
         write(LUPRI,'(2x,a,i6)') 'nint=',nint
         write(LUPRI,'(2x,a,i6)') 'nij=',nij
         write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
@@ -1250,19 +1266,15 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,*)
       endif
 
-
-
-
-
 !        ... assumes ije(:) is filled
       lngth=ije(nij)
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
 
       if (iopt(1).ge.5) then ! ... control printout
-        write(LUPRI,'(/,2x,a,i5)') ' lngth=',lngth
-        write(LUPRI,'(2x,a,i5)')   'istrt1=',istrt1
-        write(LUPRI,'(2x,a,i5)')   'istrt2=',istrt2
+        write(LUPRI,'(/,2x,a,i5)') 'seltyp, lngth=',lngth
+        write(LUPRI,'(2x,a,i5)')   '       istrt1=',istrt1
+        write(LUPRI,'(2x,a,i5)')   '       istrt2=',istrt2
       endif
 
       call parse(iii,i1,i2,i3,i4)
@@ -1315,8 +1327,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       nout=nout+1
       gen(istrt2+nout)=vint(i)
-
       itmp(nout)=ipack(j1,j2,j3,j4)
+
 110   if (j1.eq.j3) go to 120
 
       if (ipack(ic(j3),ic(j2),ic(j1),ic(j4)).ne.i1234) go to 120
@@ -1373,9 +1385,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         do 145 ii=1,nrsp2
 145     if (j12.eq.irsp2(ii)) go to 150
       endif
+
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j1,j4,j3)
+
 150   if (j1.eq.j3) go to 160
       if (ipack(ic(j2),ic(j3),ic(j4),ic(j1)).ne.i1234) go to 160
       if (iand(ipack(icv(j2),icv(j3),icv(j4),icv(j1)),iv1234).ne.iv1234)
@@ -1385,9 +1399,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         do 155 ii=1,nrsp2
 155     if (j12.eq.irsp2(ii)) go to 160
       endif
+
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j3,j4,j1)
+
 160   if (j2.eq.j4) go to 170
       if (ipack(ic(j4),ic(j1),ic(j2),ic(j3)).ne.i1234) go to 170
       if (iand(ipack(icv(j4),icv(j1),icv(j2),icv(j3)),iv1234).ne.iv1234)
@@ -1397,9 +1413,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         do 165 ii=1,nrsp2
 165     if (j12.eq.irsp2(ii)) go to 170
       endif
+
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j1,j2,j3)
+
 170   if ((j1.eq.j3).or.(j2.eq.j4)) go to 190
       if (ipack(ic(j4),ic(j3),ic(j2),ic(j1)).ne.i1234) go to 190
       if (iand(ipack(icv(j4),icv(j3),icv(j2),icv(j1)),iv1234).ne.iv1234)
@@ -1409,9 +1427,19 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         do 175 ii=1,nrsp2
 175     if (j12.eq.irsp2(ii)) go to 190
       endif
+
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j3,j2,j1)
+
+      if (iopt(1).ge.5) then
+       write(LUPRI,*) 'seltyp: stored integral/packed index'
+       write(LUPRI,*) 'gen(istrt2+nout),vint(i)=',
+     &                gen(istrt2+nout),vint(i)
+       write(LUPRI,*) 'itmp(nout)=',itmp(nout)
+        write(LUPRI,*) 'j1,j2,j3,j4:',j1,j2,j3,j4
+      endif
+
 190   continue
 
       call vxsort(itmp,nout,ije(nij),gen(istrt2+1),
@@ -1419,7 +1447,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
 !     write (6,1900) ije(nij),iii,iiv
       write (LUPRI,1900) ije(nij),iii,iiv
-1900  format('collected ',i9,' integrals of type ',2i6)
+1900  format('seltyp collected ',i9,' integrals of type ',2i6)
 
       call prt(name,name,iparm)
       call prtime(name,ije(nij),0)
@@ -1427,7 +1455,13 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine selt1(iii,iiv,name,iparm)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 #include "ctmp.h"
@@ -1501,32 +1535,31 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine seltyp4(iii,iiv,name,iparm)
-      implicit real*8 (a-h,o-z)
-      
-#include "param_ccsd.h"
-
+!------------------------------------------------------------------------
+!
 c  this program for pppp only. integrals <ij|kl> collected, i.ge.j .
-
-#include "ctmp.h"
-!     common /ctmp/ tmp(ndp4),itmp(ndp4)
-
+!
 c  ints collected in gen, indices in itmp. at the end, arrays are
 c  sorted and expanded according to indices (in igen) generated
 c  by tmplt.
+!
+!
+!------------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
+#include "param_ccsd.h"
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
       common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "cint.h"
 !      common /cint/ nint,idum1,vint(ndint),iint(ndint)
 
@@ -1534,6 +1567,7 @@ c  by tmplt.
 
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8),i4)           )
+
       if ((iii.ne.3333).or.(iiv.ne.0)) then
         write (*,*) ' seltyp4 called with incorrect iii, iiv:',iii,iiv
         call abext('seltyp4 ')
@@ -1670,6 +1704,7 @@ c  indices not retained for pppp.
       call prtime ("sqr4l3  ",0,2)
       return
       end
+
       subroutine sqr(namef,names)
       implicit real*8 (a-h,o-z)
       call reorder(namef,names,2143,5)
@@ -1684,7 +1719,7 @@ c  indices not retained for pppp.
 !  What does it do ?
 !
 !
-! Cretaes the structure of diagrams with iii,iiv numbers; make space for diagrams
+! Creates the structure of diagrams with iii,iiv numbers; make space for diagrams
 ! on gen,igen
 !
 ! Calculates number of integrals, pair, sort integrals according to first ij-indexes 
@@ -1696,7 +1731,6 @@ c  indices not retained for pppp.
       integer*4 ch1,ch2
 !     integer ch1,ch2
 c   ii1234<0 - collect 1/2 file (i>j)
-      
 #include "param_ccsd.h"
 !#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
@@ -1856,7 +1890,7 @@ c   special for scratch files, which start with "s".
       endif
 
       return
-      end
+      end ! of tmplt
 
       subroutine tmplt6 (iii,iiv,name,num)
       implicit real*8 (a-h,o-z)
@@ -1997,25 +2031,18 @@ c   special for scratch files, which start with s
       implicit real*8 (a-h,o-z)
       integer*4 ch1,ch2
 !     integer ch1,ch2
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-
 #include "dpd.h"
 !      common /dpd/ nir,igmt(8,8),ici(200)
 
@@ -2537,26 +2564,19 @@ c
 
       subroutine t1t3 (name1,name3,name4,namet,iparm) 
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "cij1.h"
 !      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cij2.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-
 #include "cij3.h"
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 
@@ -2642,25 +2662,18 @@ c
 
       subroutine t2sqr (name2a,name2b,name4,namet,iparm) 
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       common /ctmp/ tmp(ndp4),itmp(ndp4)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "cij1.h"
 !      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cij2.h"
 !      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-
 #include "cij3.h"
 !      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 
@@ -2739,17 +2752,14 @@ c
       call add (namet,1.d0,name4,1.d0,namet)
       return
       end
+
       subroutine tchng6 (nij,ij,ije,ntapef,iparm)       
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       dimension ij(ndij),ije(0:ndij),ij1(ndij),ije1(0:ndij),itmp(ndij)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
@@ -2794,21 +2804,17 @@ c
       end if
       return
       end
+
       subroutine tchng8 (nij,ij,ije,ntapef)       
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       dimension ij(ndij),ije(0:ndij),ije1(0:ndij)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
 

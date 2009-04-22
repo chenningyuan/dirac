@@ -1,5 +1,5 @@
 !
-!    common blocks 
+!    common block
 !
 
        integer istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,

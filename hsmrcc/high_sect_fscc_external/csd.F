@@ -103,7 +103,9 @@ c     iopt(10) .ne.0 - do not save pppp.
       call ordv ! sorting integrals
 
       iter=0
+
       call tinit
+
       if (iopt(17).ne.0) then
         call files_ccsd ("t30 ",ntape4,new,1,-1,-1)
         write (6,*) 'length of three body file = ',ije1(nij1)
@@ -128,6 +130,7 @@ c     iopt(10) .ne.0 - do not save pppp.
           write (6,2401) t4max,idec(id4mx),idec(ind4mx)
         end if
       end if
+
       if (iopt(4).gt.0) then
         if (iopt(17).eq.0) then
           call dbdiag  ("hp  ","hhpp","dum3","dum4",1100,1)
@@ -151,11 +154,13 @@ c     iopt(10) .ne.0 - do not save pppp.
       call ener(0)
 
 220   iter=iter+1
+
       call prtime("start iter",iter,0)
       call flush (6)
       call ordta
       call calt1
       call calt2
+
       if (iopt(17).ne.0) then
         call calt3
       end if
@@ -228,11 +233,13 @@ c     iopt(10) .ne.0 - do not save pppp.
         write (6,2401) t4max,idec(id4mx),idec(ind4mx)
       end if
 
+!     ... error output ...
       write (6,*) ' '
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
         write (*,*) ' abort. tmax out of bounds'
-        call abext('tmax    ')        
+        call abext('tmax    ') 
       endif
+
 c diis
       if (iopt(4).lt.0) then
         call diis(iter,icnvg,11,"t1nw","t1c ","tnew","tc  ")
@@ -394,11 +401,22 @@ c              hppp 2143 = vd14
 c
 
       if (iopt(1).ge.5) then
-        call header('Output from "ordv"',-1)
+        call header('Output from ordv',-1)
       endif
 
 !     ! call dzero(vint,ndint); call izero(iint,ndint)
-      call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
+      call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
+
+      if (iopt(1).ge.5) then
+        write(LUPRI,'(/,2x,a,2i6)') 
+     &  'ordv after readv: nint,ndint=',nint,ndint
+        write(LUPRI,*) 'indexes & integrals: '
+        do i=1,nint
+          write(LUPRI,*) i,'. iint(i)=',iint(i),' vint(i)=',vint(i)
+        enddo
+      endif
+
+! mi: check integrals !!!
 
       call prtime   ("readv   ",nint,0)
 
@@ -439,9 +457,16 @@ c
       return
       end
 
-c ******************************************
+c **********************************************************************
       subroutine tinit
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!  Initialize amplitudes ...
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+!      implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -457,12 +482,14 @@ c calc tinit = hhpp / eps
        call move     ("hp  ","t1c ")
        call diveps   ("t1c ")
       end if  
+
       if ((iopt(17).ne.0).and.(iopt(20).ne.1)) then
-        call clear6   ("t30 ",222333,0)
+        call clear6("t30 ",222333,0)
         if (iopt(17).ge.4) then
-          call clear8   ("t40 ",22223333,0)
+          call clear8("t40 ",22223333,0)
         end if
       end if
+
       return
       end
 
@@ -497,6 +524,7 @@ c   id=1 for rle, 0 regularly.
         call files_ccsd("tm  ",ntm,new,2,-1,-1)
       endif
       call files_ccsd("s2  ",nts2,new,1,-1,-1)
+
       nsize=ije1(nij1)
       istrt1=nstrt(2,ntm-1)
       istrt2=nstrt(2,nts2-1)
@@ -523,6 +551,7 @@ c   id=1 for rle, 0 regularly.
 110   format (' correlation energy (rle) = ',e15.8)
 120   format (' correlation energy       = ',e15.8)
 130   format (' correlation energy(final)= ',e15.8)
+
       return
       end
 

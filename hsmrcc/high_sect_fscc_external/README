@@ -5,15 +5,17 @@ Note on compilation: I had to lower some array sizes to reduce the size of commo
 Otherwise it would not be possible to use DIRAC makefile/dependencies system and one would have resort
 to write own dependencies of each executable. With the so called medium memory model, flag 'mcmodel=medium'.
 
-Also I had to rename some routines in independent executable files because of overlaping their names.
+Also I had to rename some routines in some (not all) independent executable files because of overlaping their names.
 Now all object files are used for linking executable files, therefore all function names must be unique.
 
 These GAMESS files (produces by Sham's changes) are read (get_moints.F90) :
  HCRMO  $SCR/$JOB.F281
  MULMO  $SCR/$JOB.F282
 
-I use ARCH32BIT preprocessor flag to specify 32-bit architectures.
+I use the "ARCH32BIT" preprocessor flag to specify 32-bit architectures.
 
+Efforts with old ACESII were not succesfull - despite compilation there is some memory crash
+at the beginning.
 
 I. Fock-space cc programs:
 ========================================
