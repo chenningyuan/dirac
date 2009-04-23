@@ -550,9 +550,17 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine reorder(namef,namet,iord,iparm)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "param_ccsd.h"
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!      common /ctmp/ tmp(ndp4),itmp(ndp4)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -563,6 +571,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij2.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "dat.h"
 
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/

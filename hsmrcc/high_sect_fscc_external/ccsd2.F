@@ -1605,6 +1605,7 @@ c   special for scratch files, which start with "s".
       subroutine ivsort(ivec,n8)
 !--------------------------------------------------------
 !
+! makes some sorting
 !
 !--------------------------------------------------------
       IMPLICIT INTEGER (A-Z)
@@ -2286,11 +2287,10 @@ c   to general. (iline=4 is last line).
       rewind nt
       return
       end
+
       subroutine wrtrle (name,itape,loc) 
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2328,11 +2328,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end if
       return     
       end 
+
       subroutine zero (name)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2386,6 +2385,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end if
       return
       end
+
       subroutine zeroup(ntmp,itmp,t,zero)
       implicit real*8 (a-h,o-z)
       dimension itmp(ntmp),t(ntmp)
@@ -2629,6 +2629,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+!     ... needs own include file ...
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -2644,6 +2645,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       if (iopt(1).ge.5) then
         call header('Output from "prt"',-1)
         write(LUPRI,*) 'flim=',flim
+        write(LUPRI,*) 'num=',num
         write(LUPRI,'(a,a4)') 'name=',name
       endif
 
@@ -2673,6 +2675,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
           write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
           io=0
         endif
+
+!       ... mi:  printout/error trap !
+        if (dabs(a(io)).gt.1.0d+5) then
+         write(LUPRI,*) 'error ! big value ! index istrt2+i=',istrt2+i
+         write(LUPRI,*) 'a(io)=gen(istrt2+i)=',gen(istrt2+i)
+         call quit('prt: big values of integral!')
+        endif
+
       endif
 30    continue
 
@@ -2701,6 +2711,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
       if (iopt(5).le.0) flim=0.d0
+
       call files_ccsd(name,num,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) ' prt6 tried to read nonexistent file'
