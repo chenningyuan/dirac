@@ -1453,6 +1453,7 @@ C     Update file pointers
 C
       LGREC(IBUF,I_FILE) = IREC
       I_BF_REC(I_FILE) = IREC
+      records_in_buffer(ibuf) = records_in_buffer(ibuf)+1      
 C
       RETURN
       END
@@ -1515,47 +1516,6 @@ C
       WRITE (LUPRI,1000) N_WRITTEN,PERC
  1000 FORMAT (/" Buffers flushed:",I16," HT integrals written (",
      &        F6.2,"% )") 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)
-C
-C     Read back the sorted integrals and put them at the right position
-C
-C     Written by Luuk Visscher, August 2004
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
-      REAL*8 RGBUF(NGBFSZ),A(NROW)
-      DIMENSION IGBUF(2,NGBFSZ)
-C
-      LGFIL    = I_BF_UNIT+I_FILE
-      IREC     = LGREC(IBUF,I_FILE)
-C
-      CALL DZERO (A,NROW)
-C
-    1 IF (IREC.EQ.0) RETURN
-C
-C     Read a batch and the link to the previous record.
-C
-      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
-      IREC = IRECN
-C
-C     Pick out the integrals that we need.
-C
-      DO I = 1, N
-         IF (IGBUF(2,I).EQ.ICOL) THEN
-            A(IGBUF(1,I)) = RGBUF(I)
-         ENDIF
-      ENDDO
-C
-C     We read in reverse order, if we have the first block we're done
-C
-      GOTO 1
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1820,3 +1780,131 @@ C
       RETURN
       END
 #endif
+
+c 
+      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL,do_finesort)
+C
+C     Read back the sorted integrals and put them at the right position
+C
+C     Written by Luuk Visscher, August 2004
+c
+C        adapted by Andre Gomes,   March  2009
+c
+c        - difference now is that the records related to this buffer are sorted
+c          and we can just read those related to the column we want. the information
+c          of which columns are in which records is in the metadata file generated
+c          by the fine sorting routines before the 2HT actually starts 
+C
+#include "implicit.h"
+#include "priunit.h"
+c debug
+      integer*8 total_used
+      common/totalreads/total_used
+c debug
+#include "bucket_sort.h"
+#include "infpar.h"
+       REAL*8 RGBUF(NGBFSZ),A(NROW)
+       integer used, unused
+       DIMENSION IGBUF(2,NGBFSZ)
+       logical do_finesort
+
+       LGFIL         = I_BF_UNIT+I_FILE
+       irec_initial  = LGREC(IBUF,I_FILE)
+       irec_final    = 0
+
+       if (do_finesort) then
+          call set_record_range(IBUF,ICOL,irec_initial,irec_final)
+       endif
+ 
+       CALL DZERO (A,NROW)
+ 
+       itimes = 0
+       used   = 0
+       unused = 0
+ 
+       irec = irec_initial
+
+    1  if ((irec.eq.0).or.(irec.lt.irec_final)) then
+
+          if (.false.) then
+             write (*,*) ' '
+           write (*,*) ' ---+ i/o stats for buffer ',ibuf,' column',icol
+             write (*,*) '    + number of reads   ',itimes
+             write (*,*) '    + integrals used    ',used
+             write (*,*) '    + integrals unused  ',unused
+             write (*,*) ' '
+             total_used = total_used + used
+             write (*,*) '    + integrals used (total) ',total_used
+             write (*,*) ' '
+          endif
+
+          return
+       endif
+C
+C     Read a batch and the link to the previous record.
+C
+      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
+      itimes=itimes+1
+      IREC = IRECN
+C
+C     Pick out the integrals that we need.
+C
+      DO I = 1, N
+         IF (IGBUF(2,I).EQ.ICOL) THEN
+            used=used+1
+            A(IGBUF(1,I)) = RGBUF(I)
+         else
+         unused=unused+1 
+         ENDIF
+      ENDDO
+C
+C     We read in reverse order, if we have the first block we're done
+C
+      GOTO 1
+C
+      RETURN
+      END
+
+
+      subroutine set_record_range(IBUF,ICOL,irec_initial,irec_final)
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+         integer, intent(in)  :: ibuf, icol
+         integer, intent(out) :: irec_initial, irec_final 
+         integer :: meta(3), imdrec, imdrecn
+
+c getting metadata for this buffer, column combination in the metadata file
+
+         LMFIL  = I_MD_UNIT+1
+         imdrec = irec_md_lastwritten(ibuf)
+
+         if (imdrec.eq.0.or.irec_initial.eq.0) then
+            return
+         endif
+
+ 11      if (imdrec.eq.0) goto 12
+            read(LMFIL,REC=imdrec) imdrecn,iactive,kl,meta
+c aspg debug
+            if (.false.) then
+               write (*,*) ' '
+               write (*,*) '       current  ',imdrec
+               write (*,*) '       next     ',imdrecn
+               write (*,*) '       buff     ',iactive
+               write (*,*) '       kl       ',kl
+               write (*,*) '       metadata ',(meta(i), i=1,3)
+               write (*,*) ' '
+            endif
+c aspg debug
+            if (meta(1).eq.icol) goto 12
+
+            imdrec = imdrecn
+            goto 11
+ 12      continue
+
+c debugging metadata usage. forcing it to read everything again...
+         irec_initial = meta(2)
+         irec_final   = meta(3)
+
+      end subroutine set_record_range
+

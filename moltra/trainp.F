@@ -40,7 +40,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
-      PARAMETER (NTABLE = 19)
+      PARAMETER (NTABLE = 20)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -60,7 +60,7 @@ C
       DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','xMSOUT ',
      &            '.POSITR','.SCHEME','xTHROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.ORGALG','.NOSORT',
-     &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44'/
+     &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44','.xxxxxx'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -135,7 +135,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                    11,12,13,14,15,16,17,18,19), I
+     &                    11,12,13,14,15,16,17,18,19,20), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -247,6 +247,8 @@ C&&&& TPRI34: Threshold for printing 3/4 transformed inetgrals
 C&&&& TPRI44: Threshold for printing fully-transformed inetgrals
                READ(LUCMD,*) ITHR
                TPRI44 = 10.D0**(ITHR)
+               GO TO 100
+   20          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -402,7 +404,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 4, NTABLE = 25)
+      PARAMETER (NDIR = 4, NTABLE = 26)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -425,7 +427,8 @@ C
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','xXXXXXX'/
+     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.S6FHTS',
+     &            'xXXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -453,6 +456,13 @@ C      if problems are encountered, should be reverted to scheme 4
       else
          ISTRAT = 6
       endif
+
+c
+c     activate/deactivate fine sorting of 1HT data for scheme6
+c
+      do_finesort       = .false.
+      set_auto_finesort = .false.
+c
 
       ITRA_INTFLG = INTGEN
       IGTINT = IBTAND(INTGEN/8,1)
@@ -521,7 +531,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25), I
+     &                      16,17,18,19,20,21,22,23,24,25,26), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -708,6 +718,16 @@ C&&&& HSMRCC - interface
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
+               READ(LUCMD,*) IS6SORT
+               if (is6sort.eq.0) then
+                  do_finesort       = .false.
+                  set_auto_finesort = .false.
+               elseif (is6sort.eq.1) then
+                  do_finesort       = .true.
+                  set_auto_finesort = .false.
+               endif
+               GO TO 100
+   26          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -889,6 +909,21 @@ C
   503 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - write half-transformed integrals (ij|rs) to disk'
+
+        if (set_auto_finesort) then
+           WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals to be determined'//
+     &    ' on the fly from the dimension of the problem'
+        else
+           if (do_finesort) then
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is enabled'
+           else
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is disabled'
+           endif
+        endif
+
         GOTO 500
   504 CONTINUE
         WRITE(LUPRI,'(A)')
@@ -903,6 +938,21 @@ C
   506 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - write half-transformed integrals (ij|rs) to disk'
+
+        if (set_auto_finesort) then
+           WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals to be determined'//
+     &    ' on the fly from the dimension of the problem'
+        else
+           if (do_finesort) then
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is enabled'
+           else
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is disabled'
+           endif
+        endif
+
         GOTO 500
   500 CONTINUE
       IF(SCRTRA.GT.D0) THEN

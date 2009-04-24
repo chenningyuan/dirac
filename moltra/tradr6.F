@@ -532,6 +532,7 @@ C
 C     Written by L.Visscher
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -545,6 +546,7 @@ C
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)
+      integer, allocatable :: node_for_buffer(:)
 C
 C     Make sure that the caller writes correct code
 C
@@ -606,6 +608,26 @@ C
       NBSYMP = NBSYM / NFSYM
       KL_IN_BUF = (NBSYMP * NSTR1T) / NBUF_L
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
+
+caspg, debug
+      if (.false.) then
+      if (MYTID.eq.0) then
+      write (*,*) 'debug, in DEFINE_SORT:'
+      write (*,*) '                              N_BUFFER:',N_BUFFER
+      write (*,*) '                              NSTR2T  :',NSTR2T
+      write (*,*) '              NBUF_L(=N_BUFFER/NSTR2T):',NBUF_L
+      write (*,*) '                              NBSYM   :',NBSYM
+      write (*,*) '                              NBSYMP  :',NBSYMP
+      write (*,*) '                              NFSYM   :',NFSYM
+      write (*,*) '                              NSTR1T  :',NSTR1T
+      write (*,*) 'KL_IN_BUF(=(NBSYMP*NSTR1T)/NBUF_L) (a):',KL_IN_BUF
+      endif
+      endif
+caspg, debug
+
+c temporarty storage for 1HT fine-sorting 
+      call alloc(node_for_buffer,N_BUFFER)
+
 C
 C     Assign each (ireprs,k,l) combination to a buffer
 C     The incoming integrals are ordered as (k,l,iz ; r,s,ireprs,ic), we later want to read 
@@ -646,6 +668,8 @@ C                    .. and its relative position therein
                      LSORT(2,KL,IREPRS) = IN_BUF    
 C                    .. and the node to which it is assigned
                      LSORT(3,KL,IREPRS) = LDIST(L)
+c                    .. also store information for the fine-sort of 1HT integrals, if required
+                     node_for_buffer(ibuf) = ldist(l) 
                  ENDIF
                  ENDDO
               ENDDO
@@ -653,6 +677,11 @@ C                    .. and the node to which it is assigned
         ENDDO
       ENDDO
 C
+c aspg, for 1HT fine-sort
+      call init_finesort_commons(kl_in_buf,n_buffer,node_for_buffer)
+      call dealloc(node_for_buffer)
+c aspg, for 1HT fine-sort
+
       IF(IPRINT.GE.3) THEN
          CALL HEADER('Arrays for sort of halftr. integrals ',-1)
          DO L = 1, NSTR2T
@@ -1145,6 +1174,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      integer*8 total_used
+      common/totalreads/total_used
 C
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LSORT(3,NFPCK12T,0:7)
@@ -1178,6 +1209,17 @@ C
 C
 C     Transform righthand indices to molecular spinor basis
 C
+c aspg, testing
+        total_used     = 0
+        itimes_bufread = 0                
+        itimes_qtrans  = 0                
+        itimes_izloop  = 0                
+                                          
+        call timer('START ',TIMSTR,TIMEND)
+                                                                        
+        if (do_finesort) call sort_buffers(mytid,1)
+c aspg, testing
+c
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
@@ -1208,7 +1250,7 @@ C           Allocate space to read halftransformed integrals
      &                             NZ*NSPCK(IREPPQ,0),ICOL,IBUF)
 #else
             CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
-     &                             NZ*NSPCK(IREPPQ,0),ICOL)
+     &                             NZ*NSPCK(IREPPQ,0),ICOL,do_finesort)
 #endif
             CALL GMAT_SYM (IREPPQ,WORK(KGMAT),NSPCK(IREPPQ,0),ICS,ICF)
             IOFF = KGMAT

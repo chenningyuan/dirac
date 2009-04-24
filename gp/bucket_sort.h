@@ -50,3 +50,29 @@ C
 C     Statistics
       INTEGER*8 N_WRITTEN, N_DELETED
       COMMON /BF_SENDI8/ N_WRITTEN, N_DELETED
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c aspg, 2009-04-24
+c
+c variables used in the fine-sorting of the 1HT of scheme6
+c
+      PARAMETER (MAXKLINBUF=150)
+      PARAMETER (MAXRECINBUF=5000)
+
+      PARAMETER (MAX_BUF_files=1)
+      PARAMETER (I_SORTED_UNIT=400)
+
+      integer KLpairsInBuffer, max_records_per_buffer
+
+      integer node_for_buffer(N_BUFFER)
+      integer records_in_buffer(N_BUFFER)
+      integer irec_md_lastwritten(N_BUFFER)
+      integer irec_md_global_lastwritten
+
+      parameter(i_md_unit=931)
+
+      common/kl_buf_info/KLpairsInBuffer,max_records_per_buffer,
+     &       records_in_buffer, node_for_buffer,
+     &       irec_md_lastwritten, irec_md_global_lastwritten
+c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
