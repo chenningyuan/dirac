@@ -517,12 +517,13 @@ c below is a selection sort implementation...
        end subroutine selection_sort_in_memory
       
       subroutine print_buffer(a,b,total_entries)
+#include "priunit.h"
          integer :: total_entries, i
          integer :: b(2,total_entries)
          real*8  :: a(total_entries)
 
          do i = 1, total_entries
-            write (6,'(3I12F12.8)') i,b(1,i),b(2,i),a(i)
+            write (LUPRI,'(2X,3I1,F12.8)') i,b(1,i),b(2,i),a(i)
          enddo
       
       end subroutine print_buffer
