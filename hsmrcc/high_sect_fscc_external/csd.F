@@ -637,7 +637,6 @@ c **********************************************************
 c ****************************************************
       subroutine calt2
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -674,7 +673,7 @@ c   diag 42
       end if
       call prtime    ("calt2   ",0,1)
       return
-      end
+      end subroutine calt2
 c *******************************************************
       subroutine calt3
       implicit real*8 (a-h,o-z)

@@ -1506,15 +1506,21 @@ c  calculate heff matrix elements
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine imove(ntapef,ntapet)
+!------------------------------------------------------------------
 !
-! copy fro 1 dim array to another
+!     copy from 1 dim array to another on "igen"
 !
+!  "ntapef" - file name to be copied into another file "ntapet"
+!
+!------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       integer*4 ch1,ch2
 !     integer ch1,ch2
 #include "param_ccsd.h"
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -1523,12 +1529,14 @@ c  calculate heff matrix elements
 !     common /i/ igen(nbig)
 
       nija=igen(nstrt(1,ntapef-1)+1)
-      call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1)
+      call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1) ! why copying to single variable ??
       call kcopy(nija+1,igen(nstrt(1,ntapef-1)+nija+2),ije1(0))
+
       iii1=igen(nstrt(1,ntapef-1)+2*nija+3)
       iiv1=igen(nstrt(1,ntapef-1)+2*nija+4)
       nstrt(1,ntapet)=nstrt(1,ntapet-1)+2*nij1+4+ije1(nij1)
       nstrt(2,ntapet)=nstrt(2,ntapet-1)+ije1(nij1)
+
       call dimx(nstrt(1,ntapet),nbig,"imove1")
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 c   special for scratch files, which start with "s".
@@ -1550,7 +1558,7 @@ c   special for scratch files, which start with "s".
       call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),
      1 igen(nstrt(1,ntapet-1)+1))
       return
-      end
+      end subroutine imove
 
       function ispin(idet,nval)
       implicit real*8 (a-h,o-z)
@@ -1699,12 +1707,13 @@ C
       END
 
       subroutine kcopy(n,ia,ib)
+! copy n members of integer array "ia" to array "ib"
       implicit real*8 (a-h,o-z)
       dimension ia(*),ib(*)
       do 10 i=1,n
 10    ib(i)=ia(i)
       return
-      end
+      end subroutine kcopy
 
       function lftbit(n)
       integer*4 n,i,ipos
@@ -2182,7 +2191,7 @@ c   to general. (iline=4 is last line).
 !-------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-!#include "dat.h"
+#include "dat.h"
 !     implicit real*8 (a-h,o-z)
       dimension itmp(ntmp),t(nt),it(nt)
 
@@ -2237,7 +2246,7 @@ c   to general. (iline=4 is last line).
       endif ! of ntmp < nt
 
       return
-      end
+      end subroutine vxsort
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtfile(nt,nrec,name)
@@ -2386,7 +2395,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zeroup(ntmp,itmp,t,zero)
+!  moves 'zero' elements & their indexes at the end of the array
       implicit real*8 (a-h,o-z)
       dimension itmp(ntmp),t(ntmp)
       nn=0
@@ -2399,7 +2410,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 120   continue
       ntmp=nn
       return
-      end
+      end subroutine zeroup
 
       subroutine parse(ii,i1,i2,i3,i4)
 !
@@ -2677,8 +2688,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         endif
 
 !       ... mi:  printout/error trap !
-        if (dabs(a(io)).gt.1.0d+5) then
+        if (dabs(a(io)).gt.1.0d+7) then
          write(LUPRI,*) 'error ! big value ! index istrt2+i=',istrt2+i
+         write(LUPRI,*) 'istrt1=nstrt(1,num-1)+2*nij+4,where num=',num
          write(LUPRI,*) 'a(io)=gen(istrt2+i)=',gen(istrt2+i)
          call quit('prt: big values of integral!')
         endif
@@ -2692,7 +2704,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       endif
 
       return
-      end
+      end subroutine prt
 
       subroutine prt6 (name,tit,iparm)
       implicit real*8 (a-h,o-z)

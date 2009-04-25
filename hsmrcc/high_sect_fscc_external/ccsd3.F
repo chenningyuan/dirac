@@ -416,11 +416,11 @@ c   scratch file, i.e. file to be completely rewritten.
         call header("Output from files_ccsd",-1)
         write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
         write(LUPRI,'(2x,a,a4)') 'name=',name
-        write(LUPRI,'(2x,a,i7)') 'num=',num
+       ! write(LUPRI,'(2x,a,i7)') 'num=',num
        ! write(LUPRI,*) 'new=',new
       endif
 
-!   ... skips filling common blocks (no diagram ready now)
+!   ... skips filling common blocks variables (no diagram ready now)
       if (nflcur.eq.0) go to 20 
 
 ! namefl(:) - array with all diagram names
@@ -444,7 +444,7 @@ C Gal 95
           i_4hs=4hs 
 !         if (isaa.ne.4hs   ) then
           if (isaa.ne.i_4hs) then
-            write (*,120) name,iii,iiv,iiia(num),iiva(num)
+            write (LUPRI,120) name,iii,iiv,iiia(num),iiva(num)
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
             call abext('files   ') ! interrupts
           endif
@@ -546,7 +546,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 40    continue ! bye step
 
       return
-      end
+      end subroutine files_ccsd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine reorder(namef,namet,iord,iparm)
@@ -616,7 +616,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call prt(namet,namet,iparm)
       call prtime(namet,ije1(nij1),1)
       return
-      end
+      end subroutine reorder
 
       subroutine reordx (namef,namet,iord)
       implicit real*8 (a-h,o-z)
