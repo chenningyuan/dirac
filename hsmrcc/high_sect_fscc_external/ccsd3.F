@@ -385,6 +385,7 @@ c   scratch file, i.e. file to be completely rewritten.
 !  returns num
 !
 !-----------------------------------------------------------------------------------
+      use print_level
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -410,9 +411,9 @@ c   scratch file, i.e. file to be completely rewritten.
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 ! miro: added due to control printouts
-#include "dat.h" 
+!#include "dat.h" 
 
-      if (iopt(1).ge.5) then
+      if (getiprint() >= 5) then
         call header("Output from files_ccsd",-1)
         write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
         write(LUPRI,'(2x,a,a4)') 'name=',name
@@ -475,7 +476,8 @@ C Gal 95
           iii1=igen(nstrt(1,num-1)+2*nija+3)
           iiv1=igen(nstrt(1,num-1)+2*nija+4)
 
-          if (iopt(1).ge.5) then
+         ! if (iopt(1).ge.5) then
+          if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=1, nij1=',nij1
             write(LUPRI,*) 'nija,iii1,iiv1:',nija,iii1,iiv1
           endif
@@ -486,7 +488,8 @@ C Gal 95
           iii2=igen(nstrt(1,num-1)+2*nija+3)
           iiv2=igen(nstrt(1,num-1)+2*nija+4)
 
-          if (iopt(1).ge.5) then
+         ! if (iopt(1).ge.5) then
+          if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=2, nij2=',nij2
             write(LUPRI,*) 'nija,iii2,iiv2:',nija,iii2,iiv2
           endif
@@ -512,8 +515,9 @@ C Gal 95
           iii6=igen(nstrt(1,num-1)+2*nija+3)
           iiv6=igen(nstrt(1,num-1)+2*nija+4)
         else
-          write (LUPRI,*) ' files called with incorrect ijnum, ',ijnum
-          call abext('files   ')  
+          write (LUPRI,*) 
+     &    'ccsd_files called with incorrect ijnum, ',ijnum
+          call abext('ccsd_files   ')  
         endif
 
         return
@@ -552,7 +556,9 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       subroutine reorder(namef,namet,iord,iparm)
 !------------------------------------------------------------------------
 !
+! iparm - print level
 !
+! change characteriostics of the diagram, for example 2143 as iord means changing order of indexes
 !
 !------------------------------------------------------------------------
 #include "implicit.h"
@@ -571,7 +577,9 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij2.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-#include "dat.h"
+
+! print level commig in as iparm
+!#include "dat.h" 
 
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
@@ -610,14 +618,19 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call vands(lngth2,igen(istrt21+1),msk(i4),itmp(lngth2+600))
       call vshfcs(lngth2,itmp(lngth2+600),8*i4-32,itmp(lngth2+600))
       call viorv(lngth2,itmp,itmp(lngth2+600),itmp)
+
+!     ... acting on gen !!!
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),
      1 igen(istrt11+1))
+
+       ! ... print out
       call prt(namet,namet,iparm)
       call prtime(namet,ije1(nij1),1)
       return
       end subroutine reorder
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine reordx (namef,namet,iord)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -1714,9 +1727,14 @@ c  indices not retained for pppp.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine sqr(namef,names)
+!
+! symmetrization; "namef" name of the nonsymmetrized diagram to be symmterized 
+! into "names"
+!
       implicit real*8 (a-h,o-z)
-      call reorder(namef,names,2143,5)
+      call reorder(namef,names,2143,5) ! switch indexes
       call add(namef,1.d0,names,1.d0,namef)
       return
       end
@@ -1899,7 +1917,7 @@ c   special for scratch files, which start with "s".
       endif
 
       return
-      end ! of tmplt
+      end subroutine tmplt
 
       subroutine tmplt6 (iii,iiv,name,num)
       implicit real*8 (a-h,o-z)

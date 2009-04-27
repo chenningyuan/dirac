@@ -1356,29 +1356,64 @@ c   move p to p transitions to folded
 110   continue
       return
       end
-      subroutine mult(name2,name3,namet,mmm)
-      implicit real*8 (a-h,o-z)
-      
-#include "param_ccsd.h"
 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine mult(name2,name3,namet,mmm)
+!-----------------------------------------------------------------------
+!
+!   multiplication of 2 diagrams: name2 x name3 -> namet
+!
+! where mmm is type ofmultiplication, mmm of 3 digits m1m2m3
+!
+! m1- how many free lines in name2 (are not participating in multiplication)
+! m2 -                       name3
+! m3 - how many lines will be contracted (multiplied) to produce final diagram "namet"
+!       
+!-----------------------------------------------------------------------
+      use print_level
+      implicit real*8 (a-h,o-z)
+#include "priunit.h"
+#include "param_ccsd.h"
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
+
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
       common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
       common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+!#include "dat.h"  ! for printing - does not work !
+
+      if (getiprint().ge.5) then
+       call header ('Output from mult',-1)
+       write(LUPRI,'(2x,a,a4)') 'name2=',name2
+       write(LUPRI,'(2x,a,a4)') 'name3=',name3
+       write(LUPRI,'(2x,a,a4)') 'namet=',namet
+       write(LUPRI,'(2x,a,i4)') 'mmm=',mmm
+      endif
+
+      ! split mmm into 3 digits m1,m2,m3
       call parse(mmm,idum,m1,m2,m3)
+
+      ! find diagram "name2", fill cij2 common block,returns number ntape2
       call files_ccsd(name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) ' mult input tape does not exist, ',name2
+        write (LUPRI,'(2x,a,a4)') 
+     &  ' mult input tape does not exist, ',name2
         call abext('mult    ')
       endif
+
+      ! find diagram "name3", fill cij3 common block
       call files_ccsd(name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
         write (6,*) ' mult input tape does not exist, ',name3
         call abext('mult    ')
       endif
+
+      ! check if 2 multiplying files fit each other
       n=10**m3
       if (((iii2-n*(iii2/n)).ne.(iii3-n*(iii3/n))).or.
      1    ((iiv2-n*(iiv2/n)).ne.(iiv3-n*(iiv3/n)))) then
@@ -1387,18 +1422,21 @@ c   move p to p transitions to folded
         write (6,*) iii2,iii3,iiv2,iiv3
         call abext('mult    ')
       end if
+
+!    make characteristic of the final diagram "namet"
       iii=10**m2*(iii2/10**m3)+iii3/10**m3
       iiv=10**m2*(iiv2/10**m3)+iiv3/10**m3
+!    create structure of the final diagram
       call tmplt(iii,iiv,namet,ntapet)
-      istrt11=nstrt(1,ntapet-1)+2*nij1+4
+      istrt11=nstrt(1,ntapet-1)+2*nij1+4 
       istrt12=nstrt(2,ntapet-1)
       istrt21=nstrt(1,ntape2-1)+2*nij2+4
       istrt22=nstrt(2,ntape2-1)
       istrt31=nstrt(1,ntape3-1)+2*nij3+4
       istrt32=nstrt(2,ntape3-1)
-      nsize1=ije1(nij1)
-      nsize2=ije2(nij2)
-      nsize3=ije3(nij3)
+      nsize1=ije1(nij1) ! how many values in resulting diagram
+      nsize2=ije2(nij2) !                in 1 diagram
+      nsize3=ije3(nij3) !                in 2 diagram
 c
       if (m3.ne.2) then
         call tmpcng(nij1,ij1,ije1,ntapet,2,4-m2)
@@ -1406,14 +1444,19 @@ c
         call tmpcng(nij3,ij3,ije3,ntape3,2,4-m3)
       endif
 c
+      ! zeroe array for final diagram values
       call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
       kbb=0
       kcc=0
       ib0='ffff'X
       msk1=256**m2-1
+
+!     cycle of i1 for the final diagram
       do 250 i1=1,nsize1
+
       ib=ishft(igen(istrt11+i1),-8*m2)
       ic=iand(igen(istrt11+i1),msk1)
+
       if (ib.eq.ib0) go to 225
       do 210 kb=kbb+1,nij2
       if (ib.eq.ij2(kb)) then
@@ -1450,18 +1493,31 @@ c
 2200    format(' length and indices',i5/(10(1x,z8)))
         call abext('mult    ')
       endif
+
       n20=istrt22+ije2(kbb-1)+1
       n30=istrt32+ije3(kcc-1)+1
+
       gen(istrt12+i1)=ddot(n2,gen(n20),1,
      1 gen(n30),1)
+
+! insert printing & checking
+      if (dabs(gen(istrt12+i1)).ge.1.0d+5) then
+        write(LUPRI,*) 'mult: too big value !, gen=',gen(istrt12+i1) 
+         do jj=1,n2
+          write(LUPRI,'(2(i6,1x,d13.7,1x))')
+     &     n20+jj-1,gen(n20+jj-1),n30+jj-1,gen(n30+jj-1)
+         enddo
+        call quit('mult: error exit!') 
+      endif
+
 250   continue
+
       return
-      end
+      end subroutine mult
+
       subroutine mult6 (name2,name3,namet,id)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common // gen(nbig)

@@ -73,8 +73,6 @@ c     iopt(10) .ne.0 - do not save pppp.
       call header(
      & 'Standalone CCSD program, precious heritage of the TAU group',-1)
 
-      write(LUPRI,'(2x,a,i3,/)') 'Print level:',iopt(1)
-
       csdstim = cputime(real(0.))
       csdltim = csdstim
 
@@ -1100,8 +1098,9 @@ c *********************************************
       end
 c **************************************************
       subroutine diag7
+! most comp. demanding diagram, symmetric
       implicit real*8 (a-h,o-z)
-      call mult("pppp","tm  ","s2  ",222)
+      call mult("pppp","tm  ","s2  ",222) ! "pppp"x"tm"->"s2"
       call sqr("s2  ","s3  ")
       call add("tb4 ",1.d0,"s2  ",0.5d0,"tb4 ")
       call prt("s2  ","2*diag7 ",3)

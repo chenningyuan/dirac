@@ -2184,6 +2184,8 @@ c   to general. (iline=4 is last line).
 !
 !  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
 !
+!  t, it is usually gen, igen
+!
 !  checks nt,ntmp
 !
 !  called many times from ccsd3.F
@@ -2867,6 +2869,7 @@ c             write (6,*) ' '
 !       input reading routine 
 !
 !--------------------------------------------------------------------------------
+       use print_level
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -2884,7 +2887,9 @@ c             write (6,*) ' '
       read (LUCMD,'(40i3)')    (iopt(i),i=1,40)
       write(LUPRI,'(1x,40i3)') (iopt(i),i=1,40)
 
-      write(LUPRI,'(4x,a)') "iopt(40) read in"
+      write(LUPRI,'(4x,a)') "iopt(1..40) read in"
+      call extract_print_level
+      write(LUPRI,'(2x,a,i3,/)') 'Print level:',getiprint()
 
 !     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
@@ -2934,6 +2939,7 @@ c             write (6,*) ' '
 !  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
 !
 !-------------------------------------------------------------------------------------
+      use print_level
 #include "implicit.h"
 #include "priunit.h"
 !     implicit real*8 (a-h,o-z)
@@ -2945,13 +2951,14 @@ c             write (6,*) ' '
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 ! mi: added for control printouts
-#include "dat.h"
+!#include "dat.h"
 
-      if (iopt(1).ge.5) then
+!     if (iopt(1).ge.5) then
+      if (getiprint().ge.5) then
         call header('Output from rdfile',-1)
         write(LUPRI,'(2x,a,i5)') 'nt=',nt
         write(LUPRI,'(2x,a,i5)') 'nrec=',nrec
-        write(LUPRI,'(2x,a,4a)') 'name=',name
+        write(LUPRI,'(2x,a,a4)') 'name=',name
       endif
 
       rewind nt
@@ -2959,6 +2966,7 @@ c             write (6,*) ' '
         do 10 i=1,4*nrec
 10      read (nt)
       endif
+
       read (nt,end=190) nij
       nflcur=nflcur+1
       nstr1=nstrt(1,nflcur-1)
@@ -2979,6 +2987,17 @@ c             write (6,*) ' '
         read (nt) (gen(nstr2+i),i=1,nsize)
         nstrt(1,nflcur)=nstr1+2*nij+4
         nstrt(2,nflcur)=nstr2+nsize
+      endif
+
+      if (getiprint() >= 5) then
+       write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
+       write(LUPRI,'(2x,a,i7)') 'nstr2=',nstr2
+       ! print out extra big values 
+       do i=1,nsize
+         if (dabs(gen(nstr2+i)).ge.1.0d+5) then
+           write(LUPRI,*) nstr2+i,gen(nstr2+i)
+         endif
+       enddo
       endif
 
       call dimx(nstrt(1,nflcur),nbig,"rdfile1")
