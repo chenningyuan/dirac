@@ -167,8 +167,35 @@ C           ...  Ga, Ge, As, Se, Br, Kr
             CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
          END IF
 #endif   /* STO3G-HUCKEL */
+C djw Feb 2005
+C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
-         IF (BASNAM(2:10) .EQ. 'aug-cc-pV') THEN
+         IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
+            BASTMP(1:78) = BASNAM(3:80)
+            IF (BASNAM(1:2) .EQ. 'd-') THEN
+               IAUG = 1
+            ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
+               IAUG = 2
+            ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
+               IAUG = 3
+
+!radovan: added some nonstandard augmentation prefixes
+!         i need them to test high-order response
+!         use at own risk
+            else if (basnam(1:2) .eq. '5-') then
+               iaug = 4
+            else if (basnam(1:2) .eq. '6-') then
+               iaug = 5
+            else if (basnam(1:2) .eq. '7-') then
+               iaug = 6
+
+            ELSE
+               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
+     &              'augmentation level'
+               CALL QUIT('Illegal augmentation level in HERBAS')
+            END IF
+C for backward compatibility the old notation is retained
+         ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
             BASTMP(1:79) = BASNAM(2:80)
             IF (BASNAM(1:1) .EQ. 'd') THEN
                IAUG = 1
@@ -618,14 +645,32 @@ C
 C Read all of the primitives, and the coeffecients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
+C Fix jan -01 VB: For certain elements some of the cc basis sets do 
+C not contain exponents that are monotonically decreasing.
+C Before augmenting we have to determine the two lowest exponents.
+C
          IF (IAUG .GT. 0) THEN
-            DO 199 KAUG = 1, IAUG
+            do kaug = 1, iaug
                INTEXP = INTEXP + 1
                INTORB = INTORB + 1
-               ALPHA(INTEXP,NBLOCK) = ALPHA(INTEXP-1,NBLOCK)
-     &                               *ALPHA(INTEXP-1,NBLOCK)
-     &                               /ALPHA(INTEXP-2,NBLOCK)
+               IF (ALPHA(1,NBLOCK) .GT. ALPHA(2,NBLOCK)) THEN
+                  EXMIN1 = ALPHA(2,NBLOCK)
+                  EXMIN2 = ALPHA(1,NBLOCK)
+               ELSE
+                  EXMIN1 = ALPHA(1,NBLOCK)
+                  EXMIN2 = ALPHA(2,NBLOCK)
+               END IF
+               do iex = 3, intexp - 1
+                  IF (ALPHA(IEX,NBLOCK) .LT. EXMIN1) THEN
+                     EXMIN2 = EXMIN1
+                     EXMIN1 = ALPHA(IEX,NBLOCK)
+                  ELSE IF (ALPHA(IEX,NBLOCK) .LT. EXMIN2) THEN
+                     EXMIN2 = ALPHA(IEX,NBLOCK)
+                  END IF
+               end do
+               ALPHA(INTEXP,NBLOCK) = EXMIN1*EXMIN1/EXMIN2
                CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+            end do
 
              IF (IPRINT.GE.5) THEN
               write(lupri,*) 'READNU:  INTEXP,NBLOCK,ALPHA',
@@ -634,7 +679,6 @@ C
      &         CPRIMU(INTEXP,INTORB,NBLOCK)
              ENDIF
 
- 199        CONTINUE 
          END IF
 
          IF (POLFUN) THEN
