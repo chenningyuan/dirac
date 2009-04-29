@@ -111,7 +111,8 @@ c aspg, debug
      &                        data_chunksize,
      &                        KLpairsInBuffer,imdsz,isiz1)
 
-         write (6,'(A31I8A9I5)') '     + Done fine-sorting buffer',
+c        write (6,'(A31I8A9I5)') '     + Done fine-sorting buffer',
+         write (6,*) '     + Done fine-sorting buffer',
      &                       buffer,' at node ',thisnode
 
          call flush(6)
@@ -269,6 +270,9 @@ c overwrite the unsorted buffer with the sorted one
      &                         irec_md_global_lastwritten,
      &                         irec_md_lastwritten, kl_in_buffer)
 
+            deallocate(count)
+            deallocate(a2)
+            deallocate(b2)
             deallocate(a)
             deallocate(b)
             deallocate(metadata)
@@ -281,6 +285,9 @@ c overwrite the unsorted buffer with the sorted one
 c aspg, strange bug! see comments above...
       iactive_buffer=iactive
       
+      deallocate(count)
+      deallocate(a2)
+      deallocate(b2)
       deallocate(a)
       deallocate(b)
       deallocate(metadata)
