@@ -1620,12 +1620,13 @@ c   special for scratch files, which start with "s".
 #include "priunit.h"
       INTEGER*4  ivec(*),TEMP,N8
       integer lftbit,nx4,n
-#include "dat.h"
+!#include "dat.h"
 C
-      if (iopt(1).ge.5) then
-       call header("Output from ivsort",-1)
-       write(LUPRI,*) 'ivsort: entering n8=',n8
-      endif
+      !if (iopt(1).ge.5) then
+!      if (iopt(1).ge.4) then
+!       call header("Output from ivsort",-1)
+!       write(LUPRI,*) 'ivsort: entering n8=',n8
+!      endif
 
       n=n8
       IF (N .LE. 1) RETURN
@@ -1704,7 +1705,7 @@ C
       IF (P .NE. 0) GO TO 70
 C
       RETURN
-      END
+      END SUBROUTINE ivsort
 
       subroutine kcopy(n,ia,ib)
 ! copy n members of integer array "ia" to array "ib"
@@ -2074,11 +2075,8 @@ c   to general. (iline=4 is last line).
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vsort (ivec,N8,rlvec)
       IMPLICIT INTEGER*4 (A-Z)
-!     IMPLICIT INTEGER (A-Z)
       INTEGER*4  ivec(*),TEMP
-!     INTEGER  ivec(*),TEMP
       integer*4 N8
-!     integer N8
       real*8 rlvec(*),rltemp
 !C      integer lftbit,nx4,n
 !C
@@ -2191,15 +2189,21 @@ c   to general. (iline=4 is last line).
 !  called many times from ccsd3.F
 !
 !-------------------------------------------------------------------
+      use print_level
 #include "implicit.h"
-#include "priunit.h"
-#include "dat.h"
 !     implicit real*8 (a-h,o-z)
+#include "priunit.h"
+!#include "dat.h"
       dimension itmp(ntmp),t(nt),it(nt)
 
+      if (getiprint() >= 1) then
+       call header('Output from vxsort',-1)
+       write(LUPRI,'(2x,a,2i6)') 'ntmp,nt=',ntmp,nt
+      endif
+    
       if (ntmp.gt.1) then
          call vsort(itmp,ntmp,t)
-         write(LUPRI,*) 'after vsort called'
+         !write(LUPRI,*) 'after vsort called'
       endif
 !C      print '(2hGG,Z8)',(itmp(i),i=1,ntmp)
 
@@ -2222,6 +2226,7 @@ c   to general. (iline=4 is last line).
         write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
         ltmp=ntmp
+!       ... cycle
 20      if (itmp(ltmp).eq.it(lt)) then
           t(lt)=t(ltmp)
           lt=lt-1
@@ -2631,6 +2636,11 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !
 !            prints integrals & indexes ?
 !
+!  name : 4-byte (integer) character 
+!  tit  :  8-byte  (real)  character
+!
+! iparm : printout parameter 
+!
 !---------------------------------------------------------------------------------
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -2648,6 +2658,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       dimension a(6),ind(4,6)
 
+      if (iopt(1).ge.5) then
+        call header('Output from "prt"',-1)
+        write(LUPRI,'(2x,a,a8)') 'tit=',tit
+        write(LUPRI,'(2x,a,i5)') 'iparm=',iparm
+        write(LUPRI,'(2x,a,a4)') 'name=',name
+      endif
+
       if (iparm.gt.iopt(1)) return
 
       flim=10.d0**(-iopt(5))
@@ -2656,10 +2673,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call files_ccsd(name,num,new,1,-1,-1)
 
       if (iopt(1).ge.5) then
-        call header('Output from "prt"',-1)
-        write(LUPRI,*) 'flim=',flim
-        write(LUPRI,*) 'num=',num
-        write(LUPRI,'(a,a4)') 'name=',name
+        write(LUPRI,*) 'prt: flim=',flim
+        write(LUPRI,*) 'prt: num=',num
       endif
 
       if (new.ne.0) then

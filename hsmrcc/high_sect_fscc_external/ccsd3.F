@@ -77,7 +77,7 @@
       call dimx(nstrt(1,nfl),nbig,"reads   ")
       call dimx(nstrt(2,nfl),nbig,"reads   ")
       return
-      end
+      end subroutine reads
 !
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -98,6 +98,7 @@
 !      implicit real*8 (a-h,o-z)
 #include "priunit.h"
       dimension v(*),ind(*),irerdr(200),irerdrv(200),etmp(200)
+
       dimension fock(*),ifock(*)
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -246,25 +247,32 @@ C--------------------------------------------------------
         ! ... get in new GAMESS integrals ...
         call get_gamess_ints(nort,eps,nn,ind,v,nint) 
 
-        if (iopt(1).ge.5) then ! control prinout
+        !if (iopt(1).ge.5) then ! control prinout
+        if (iopt(1).ge.4) then ! control prinout
           write(LUPRI,'(/,2x,a,i5)') 
      &    'after call get_gamess_ints, nint=',nint
           write(LUPRI,*) 'after, nort=',nort
           write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
+        endif
 
+          ! very important - use switch to DIRAC notation of indexes
           do i=1, nint
             J1=iand(ishft(ind(i),-24),'ff'X)
             J2=iand(ishft(ind(i),-16),'ff'X)
             J3=iand(ishft(ind(i),-8) ,'ff'X)
             J4=iand(ind(i)           ,'ff'X)
+
             !ipckindx=ipack(j1,j2,j3,j4)
             ipckindx=ipack(j1,j3,j2,j4) ! dirac notation !
             ind(i)=ipckindx
+
+           if (iopt(1).ge.4) then ! control prinout
             write(LUPRI,'(i4,a,f18.12,a,2i11,a,4i3)') 
      &      i,'. int:',v(i),' pck in:',ind(i),ipckindx,
      &      ' indx:',J1,J2,J3,J4
+           endif
+
           enddo
-        endif
 
       endif
 
@@ -413,11 +421,13 @@ c   scratch file, i.e. file to be completely rewritten.
 ! miro: added due to control printouts
 !#include "dat.h" 
 
-      if (getiprint() >= 5) then
+      !if (getiprint() >= 5) then
+      if (getiprint() >= 4) then
         call header("Output from files_ccsd",-1)
-        write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
-        write(LUPRI,'(2x,a,a4)') 'name=',name
-       ! write(LUPRI,'(2x,a,i7)') 'num=',num
+        write(LUPRI,'(2x,a,i7)')  'nflcur=',nflcur
+        write(LUPRI,'(2x,a,a4)')  'name=',name
+        write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
+        write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
        ! write(LUPRI,*) 'new=',new
       endif
 
@@ -489,7 +499,7 @@ C Gal 95
           iiv2=igen(nstrt(1,num-1)+2*nija+4)
 
          ! if (iopt(1).ge.5) then
-          if (getiprint().ge.5) then
+          if (getiprint().ge.4) then
             write(LUPRI,*) 'ijnum=2, nij2=',nij2
             write(LUPRI,*) 'nija,iii2,iiv2:',nija,iii2,iiv2
           endif
@@ -1236,7 +1246,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !  routine called many times from high.sector executables
 !
-!  it assumes vint,iint files with integrals/indexes !
+!  it assumes vint,iint arrays filled with integrals/indexes !
+!
+!  parameters: iparm - printing level for "prt"
 !
 !------------------------------------------------------------------------
 !      implicit real*8 (a-h,o-z)
@@ -1264,9 +1276,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
 !     .. function definition - on 32bit !
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
-     1                       ior(ishft(i3,8) ,i4)           )
+     1                       ior(ishft(i3,8) ,i4) )
 
-      if (iopt(1).ge.5) then ! control printout
+!     if (iopt(1).ge.5) then ! control printout
+      if (iopt(1).ge.4) then ! control printout
         call header('Output from "selftyp"',-1)
         write(LUPRI,'(2x,a,a4)') 'name=',name
         write(LUPRI,'(2x,a,i7)') 'iii=',iii
@@ -1281,10 +1294,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       call tmplt(iii,iiv,name,num)
 
-      if (iopt(1).ge.5) then ! control printout
-        write(LUPRI,'(2x,a,i6)') 'after tmplt, nint=',nint
-        write(LUPRI,'(2x,a,i6)') '              nij=',nij
-        write(LUPRI,'(2x,a,i6)') '           nflcur=',nflcur
+!     if (iopt(1).ge.5) then ! control printout
+      if (iopt(1).ge.4) then ! control printout
+        write(LUPRI,'(/,2x,a,i6)') 'after tmplt, nint=',nint
+        write(LUPRI,'(2x,a,i6)')   '              nij=',nij
+        write(LUPRI,'(2x,a,i6)')   '           nflcur=',nflcur
         write(LUPRI,*)
       endif
 
@@ -1293,7 +1307,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
 
-      if (iopt(1).ge.5) then ! ... control printout
+!     if (iopt(1).ge.5) then ! ... control printout
+      if (iopt(1).ge.4) then ! ... control printout
         write(LUPRI,'(/,2x,a,i5)') 'seltyp, lngth=',lngth
         write(LUPRI,'(2x,a,i5)')   '       istrt1=',istrt1
         write(LUPRI,'(2x,a,i5)')   '       istrt2=',istrt2
@@ -1325,6 +1340,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       j3=iand(ishft(iint(i),-8) ,'ff'X)
       j4=iand(          iint(i) ,'ff'X)
 
+      if (iopt(1).ge.4) then ! control printout
+         write(LUPRI,'(1x,i5,a,i10,a,4i3,a,d12.6)')
+     &   i,'-',iint(i),'-',j1,j2,j3,j4,' :',vint(i)
+      endif
+
       njh=0
       njv=0
       if (ic(j1).eq.2) njh=njh+1
@@ -1351,6 +1371,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j1,j2,j3,j4)
 
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
+
 110   if (j1.eq.j3) go to 120
 
       if (ipack(ic(j3),ic(j2),ic(j1),ic(j4)).ne.i1234) go to 120
@@ -1366,6 +1390,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j2,j1,j4)
+
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
+
 
 120   if (j2.eq.j4) go to 130
       if (ipack(ic(j1),ic(j4),ic(j3),ic(j2)).ne.i1234) go to 130
@@ -1383,6 +1412,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j1,j4,j3,j2)
 
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
+
 130   if ((j1.eq.j3).or.(j2.eq.j4)) go to 140
       if (ipack(ic(j3),ic(j4),ic(j1),ic(j2)).ne.i1234) go to 140
       if (iand(ipack(icv(j3),icv(j4),icv(j1),icv(j2)),iv1234).ne.iv1234)
@@ -1396,6 +1429,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j4,j1,j2)
+
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
 
 140   if ((j1.eq.j2).and.(j3.eq.j4)) go to 190
 
@@ -1412,6 +1449,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j1,j4,j3)
 
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
+
 150   if (j1.eq.j3) go to 160
       if (ipack(ic(j2),ic(j3),ic(j4),ic(j1)).ne.i1234) go to 160
       if (iand(ipack(icv(j2),icv(j3),icv(j4),icv(j1)),iv1234).ne.iv1234)
@@ -1425,6 +1466,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j3,j4,j1)
+
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
 
 160   if (j2.eq.j4) go to 170
       if (ipack(ic(j4),ic(j1),ic(j2),ic(j3)).ne.i1234) go to 170
@@ -1440,6 +1485,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j1,j2,j3)
 
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
+      endif
+
 170   if ((j1.eq.j3).or.(j2.eq.j4)) go to 190
       if (ipack(ic(j4),ic(j3),ic(j2),ic(j1)).ne.i1234) go to 190
       if (iand(ipack(icv(j4),icv(j3),icv(j2),icv(j1)),iv1234).ne.iv1234)
@@ -1454,22 +1503,29 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j3,j2,j1)
 
-      if (iopt(1).ge.5) then
-       write(LUPRI,*) 'seltyp: stored integral/packed index'
-       write(LUPRI,*) 'gen(istrt2+nout),vint(i)=',
-     &                gen(istrt2+nout),vint(i)
-       write(LUPRI,*) 'itmp(nout)=',itmp(nout)
-        write(LUPRI,*) 'j1,j2,j3,j4:',j1,j2,j3,j4
+      if (iopt(1).ge.4) then
+        write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
-190   continue
+190   continue ! end of cycle
+
+
+!  control printout before calling vxort
+      if (iopt(1).ge.4) then ! 
+       write(LUPRI,'(/,2x,a,i6)')
+     & 'seltyp-before calling vxsort, nout=',nout
+       write(LUPRI,'(2x,a,i6)') 'ije(nij)=',ije(nij)
+       write(LUPRI,'(2x,a,i6)') 'istrt2+1=',istrt2+1
+       write(LUPRI,'(2x,a,i6)') 'istrt1+1=',istrt1+1
+      endif
 
       call vxsort(itmp,nout,ije(nij),gen(istrt2+1),
      1 igen(istrt1+1))
 
-!     write (6,1900) ije(nij),iii,iiv
       write (LUPRI,1900) ije(nij),iii,iiv
 1900  format('seltyp collected ',i9,' integrals of type ',2i6)
+ 
+      !call quit('after vxsort')
 
       call prt(name,name,iparm)
       call prtime(name,ije(nij),0)
@@ -1743,8 +1799,7 @@ c  indices not retained for pppp.
       subroutine tmplt(ii1234,j1234,name,num)
 !--------------------------------------------------------------------------------
 !
-!  What does it do ?
-!
+! What does it do ?
 !
 ! Creates the structure of diagrams with iii,iiv numbers; make space for diagrams
 ! on gen,igen
@@ -1776,7 +1831,8 @@ c   ii1234<0 - collect 1/2 file (i>j)
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
 
-      if (iopt(1).ge.5) then ! control printout
+!     if (iopt(1).ge.5) then ! control printout
+      if (iopt(1).ge.4) then ! control printout
         call header('Output from "tmplt"',-1)
         !write(LUPRI,'(2x,a,i3)') 'nint=',nint
       endif
@@ -1786,13 +1842,14 @@ c   ii1234<0 - collect 1/2 file (i>j)
       call parse(j1234,j1,j2,j3,j4)
 
       call files_ccsd(name,num,new,1,i1234,j1234)
-      if (iopt(1).ge.5) then ! control printout
+!     if (iopt(1).ge.5) then ! control printout
+      if (iopt(1).ge.4) then ! control printout
         write(LUPRI,*) "tmplt: after files_ccsd, new=",new
         write(LUPRI,*) "tmplt: after files_ccsd, num=",num
       endif
 
       if (new.le.0) then
-        write(LUPRI,*) "tmplt: new.le.0, return"
+       ! write(LUPRI,*) "tmplt: new.le.0, return"
         return
       endif
 
@@ -1801,7 +1858,8 @@ c   ii1234<0 - collect 1/2 file (i>j)
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
 
-      if (iopt(1).ge.5) then ! ... control printout
+!     if (iopt(1).ge.5) then ! ... control printout
+      if (iopt(1).ge.4) then ! ... control printout
         write(LUPRI,'(/,2x,a,i12)') 'tmplt, nt=',nt
       endif
 
@@ -1845,7 +1903,8 @@ c  symmetry operations
         ije(nij)=nt-nt0
         ij(nij)=ior(ishft(ja,8),jb)
 
-        if (iopt(1).ge.5) then
+       ! if (iopt(1).ge.5) then
+        if (iopt(1).ge.4) then
           write(LUPRI,*) 'nij,ije(nij),ij(nij)=',nij,ije(nij),ij(nij)
         endif
 

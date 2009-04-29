@@ -65,13 +65,12 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       filenm(1:1)=' '
       call getenv('tape12',filenm)
-
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
 
-!     write (*,*) '   $$$$$$$$$   csd   $$$$$$$$$$  '
       call header(
-     & 'Standalone CCSD program, precious heritage of the TAU group',-1)
+     & 'Standalone spin-adapted CCSD program,'//
+     &' precious heritage of the TAU group',-1)
 
       csdstim = cputime(real(0.))
       csdltim = csdstim
@@ -91,6 +90,7 @@ c     iopt(10) .ne.0 - do not save pppp.
         open(9,file=filenm,form='UNFORMATTED')
       endif
 
+      ! convergence criterium 
       convrg = 10.d0**(-iopt(3))
 
       write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') 
@@ -405,8 +405,9 @@ c
 !     ! call dzero(vint,ndint); call izero(iint,ndint)
       call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
-      if (iopt(1).ge.5) then
-        write(LUPRI,'(/,2x,a,2i6)') 
+      !if (iopt(1).ge.5) then
+      if (iopt(1).ge.4) then
+        write(LUPRI,'(/,2x,a,i7,1x,i7)') 
      &  'ordv after readv: nint,ndint=',nint,ndint
         write(LUPRI,*) 'indexes & integrals: '
         do i=1,nint
@@ -493,9 +494,14 @@ c calc tinit = hhpp / eps
 
 c**************************************************************
       subroutine ener(id)
+!--------------------------------------------------------------
 !
-!   Calculate CCSD correlation energy
+!            Calculate CCSD correlation energy
 !
+!   id parameter : 2 - final correlation energy
+!
+!
+!--------------------------------------------------------------
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -537,26 +543,26 @@ c   id=1 for rle, 0 regularly.
       istrt1=nstrt(2,nt1-1)
       istrt2=nstrt(2,nth-1)
 
+      ! ... final formula ...
       e=e+2.d0*ddot(nsize,gen(istrt1+1),1,gen(istrt2+1),1)
 
       if (id.eq.1) then
-        write (6,110) e
+        write (LUPRI,'(/,2X,A,F17.9)')
+     &  'correlation energy (rle)=',e
       else if (id.eq.2) then
-        write (6,130) e
+        write (LUPRI,'(/,2X,A,F17.9)')
+     &  'correlation energy(final)=',e
       else
-        write (6,120) e
+        write (LUPRI,'(/,2X,A,F17.9)')
+     &  'correlation energy=',e
       endif
-110   format (' correlation energy (rle) = ',e15.8)
-120   format (' correlation energy       = ',e15.8)
-130   format (' correlation energy(final)= ',e15.8)
 
       return
-      end
+      end subroutine ener
 
 c *****************************************************
       subroutine ordta
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -582,7 +588,6 @@ c *****************************************************
 c ******************************************************
       subroutine ordtb
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
@@ -615,10 +620,8 @@ c ******************************************************
 c **********************************************************
       subroutine calt1
       implicit real*8 (a-h,o-z)
-
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
       call move("hp  ","t1nw")
       call dg1n2
       call dg1n3
