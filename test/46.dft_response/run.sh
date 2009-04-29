@@ -3,12 +3,12 @@
 export MOL=hf
 
 export MENU=b3lyp.inp
-../run.sh -copy d-aug-cc-pVDZ
+../run.sh
 
 export MENU=blyp.inp
-../run.sh -copy d-aug-cc-pVDZ
+../run.sh
 
 export MENU=lda.inp
-../run.sh -copy d-aug-cc-pVDZ
+../run.sh
 
 exit 0

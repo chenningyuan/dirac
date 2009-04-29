@@ -90,7 +90,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
  *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Timo Fleig               University of Duesseldorf         Germany      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
  *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
  *    Trygve U. Helgaker       University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
@@ -129,16 +129,18 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.24-22-generic
+ Operating system  : Linux 2.6.24-23-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 15:34:43 Dec  3 2008 (by bast@)
- FORTRAN compiler  : /opt/intel/fc/10.1.015/bin/ifort -g -O3 -ip -w -assume byterecl -Iinclude -module modules -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ Last compilation  : 14:14:51 Apr 29 2009 (by bast@)
+ FORTRAN compiler  : /opt/intel/fc/10.1.015/bin/ifort -g -O3 -ip -w -assume byterecl -diag-disable vec -Iinclude -module modules -DARCH32BIT -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
  C compiler        : /opt/intel/cc/10.1.015/bin/icc -g -O3 -ip -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- Changeset         : '8071' 
+ External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
+ ILP data model    : ILP32 
+ Changeset         : '8831M' 
 
  
-     Data and time (Linux)  : Wed Dec  3 18:24:08 2008
+     Date and time (Linux)  : Wed Apr 29 14:15:08 2009
      Host name              :                                         
 
 
@@ -158,11 +160,12 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  1.0D-3         !are not
 .ANGINT         !appropriate in
  15             !production calculations
-.ZIPGRID        !remove this keyword
-XY              !if you change the mol file
+.ZIPGRID
 **INTEGRALS
 .NUCMOD
  1
+*READIN
+.UNCONTRACT
 **WAVE FUNCTION
 .DHF
 *DHFCAL
@@ -199,6 +202,7 @@ XY              !if you change the mol file
  Jobs in this run:
    * Wave function
    * Properties
+   * Crash with segment.fault. Worth for debugging.
 
 
     **************************************************************************
@@ -206,6 +210,7 @@ XY              !if you change the mol file
     **************************************************************************
 
  * The speed of light :        137.0359998
+ * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -235,6 +240,14 @@ XY              !if you change the mol file
 
 
 
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
  Settings for FCK3 calculation:
  ------------------------------
 
@@ -252,16 +265,6 @@ Dynamical threshold is not (yet) implemented in DIRAC
 
   .                                                                       
   .                                                                       
-
-
-Error in reading basis set file, your basis has no documentation. IOSTAT code:   -1
-Basis set: d-aug-cc-pVDZ                                                                   
-
-
-
-Error in reading basis set file, your basis has no documentation. IOSTAT code:   -1
-Basis set: d-aug-cc-pVDZ                                                                   
-
 
 
                       SYMADD: Requested addition of symmetry
@@ -390,7 +393,16 @@ Represented as: C2v
   -----------------------------
 
   Atom type   1   2
-   Reference not found in input                                                   
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Sc - Zn                                                                        
+   N.B. Balabanov and K.A. Peterson, J. Chem. Phys. 123, 064107 (2005)            
 
 
   Cartesian Coordinates
@@ -678,7 +690,7 @@ Represented as: C2v
     1  ZZSECMOM             A1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : ZZSECMOM     1.0000000000000 (real)     
+      Labels and factors     : ZZSECMOM +000     1.0000000000000 (real)     
 ...........................................................................
 ---------------------------------------------------------------------------
 ===========================================================================
@@ -721,17 +733,17 @@ Represented as: C2v
     1  XDIPLEN              B1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : XDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : XDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     2  YDIPLEN              B2      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : YDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : YDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     3  ZDIPLEN              A1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : ZDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : ZDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
    +-------------+
  * | B-operators |
@@ -739,17 +751,17 @@ Represented as: C2v
     1  XDIPLEN              B1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : XDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : XDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     2  YDIPLEN              B2      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : YDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : YDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     3  ZDIPLEN              A1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : ZDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : ZDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
    +-------------+
  * | C-operators |
@@ -757,17 +769,17 @@ Represented as: C2v
     1  XDIPLEN              B1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : XDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : XDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     2  YDIPLEN              B2      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : YDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : YDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
     3  ZDIPLEN              A1      T+
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : ZDIPLEN      1.0000000000000 (real)     
+      Labels and factors     : ZDIPLEN  +000     1.0000000000000 (real)     
 ...........................................................................
 
 
@@ -783,6 +795,7 @@ Represented as: C2v
     ************************ End of input processing ************************
     *************************************************************************
 
+  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
 
 
                             Generating Lowdin matrix:
@@ -816,7 +829,7 @@ No. of positive energy orbitals (NESH):    59
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals      (NORB):    59
 
- >>> Time used in PAMSET is   0.23 seconds
+ >>> Time used in PAMSET is   0.10 seconds
 
 
 
@@ -829,16 +842,16 @@ Total no. of orbitals      (NORB):    59
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Dec  3 18:24:09 2008
+########## START ITERATION NO.   1 ##########   Wed Apr 29 14:15:08 2009
 
-It.   1    -52.49177352134      1.00D+20  0.00D+00  0.00D+00               0.01000002s   Scr. nuclei    Wed Dec  3
+It.   1    -52.49177325790      1.00D+20  0.00D+00  0.00D+00               0.01000001s   Scr. nuclei    Wed Apr 29
 
-########## START ITERATION NO.   2##########   Wed Dec  3 18:24:09 2008
+########## START ITERATION NO.   2##########   Wed Apr 29 14:15:08 2009
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.83%    0.00%    0.00%   0.13000000s
+SOfock:LL  1.00D-12    0.00%    1.83%    0.00%    0.00%   0.03999999s
 
 
  ********************************************************************************
@@ -865,164 +878,164 @@ H       1   0.369E-01   0.232E+02   0.399E+00      14     392
    Number of grid points in quadrature:      1092 ( 32.6%)
 
 
- >>>> Time used in DFTGRD:   0.00 seconds
+ >>>> Time used in DFTGRD:   0.01 seconds
 
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0000845560002922
-   DFT exchange-correlation energy:       -11.0763024081019132
+   Number of electrons:                    10.0000845862612859
+   DFT exchange-correlation energy:       -11.0763009097541225
 
- >>>> Time used in DFTDRV:   0.09 seconds
+ >>>> Time used in DFTEXC:   0.04 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.26999999s
+
+########## END ITERATION NO.   2 ##########   Wed Apr 29 14:15:08 2009
+
+It.   2    -99.16876073499      4.67D+01  2.81D+00  3.35D+00               0.26999999s   LL             Wed Apr 29
+
+########## START ITERATION NO.   3##########   Wed Apr 29 14:15:08 2009
+
+    3 *** Differential density matrix. DCOVLP     = 0.5596
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.84%    0.00%    0.00%   0.03999999s
+   Number of quadrature points:                           1092
+   Number of electrons:                    10.0008888969369441
+   DFT exchange-correlation energy:        -8.0437942305313292
+
+ >>>> Time used in DFTEXC:   0.03 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.07999998s
+
+########## END ITERATION NO.   3 ##########   Wed Apr 29 14:15:08 2009
+
+It.   3    -96.41839101278     -2.75D+00 -3.80D+00  4.16D+00   DIIS   2    0.07999998s   LL             Wed Apr 29
+
+########## START ITERATION NO.   4##########   Wed Apr 29 14:15:08 2009
+
+    4 *** Differential density matrix. DCOVLP     = 0.5119
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.74%    0.00%    0.00%   0.04000002s
+   Number of quadrature points:                           1092
+   Number of electrons:                    10.0000129114216119
+   DFT exchange-correlation energy:       -10.8233752855494405
+
+ >>>> Time used in DFTEXC:   0.03 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.07999999s
+
+########## END ITERATION NO.   4 ##########   Wed Apr 29 14:15:08 2009
+
+It.   4    -99.45617680575      3.04D+00  3.52D+00  1.55D+00   DIIS   3    0.07999999s   LL             Wed Apr 29
+
+########## START ITERATION NO.   5##########   Wed Apr 29 14:15:08 2009
+
+    5 *** Differential density matrix. DCOVLP     = 0.8495
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    2.03%    0.00%    0.00%   0.04000002s
+   Number of quadrature points:                           1092
+   Number of electrons:                    10.0003020209573315
+   DFT exchange-correlation energy:       -10.1697227484529940
+
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.74999999s
+>>> Total CPU-time : 0.08000004s
 
-########## END ITERATION NO.   2 ##########   Wed Dec  3 18:24:09 2008
+########## END ITERATION NO.   5 ##########   Wed Apr 29 14:15:08 2009
 
-It.   2    -99.16876004485      4.67D+01  2.81D+00  3.35D+00               0.74999999s   LL             Wed Dec  3
+It.   5    -99.81228385517      3.56D-01 -7.66D-01  1.10D-01   DIIS   4    0.08000004s   LL             Wed Apr 29
 
-########## START ITERATION NO.   3##########   Wed Dec  3 18:24:10 2008
+########## START ITERATION NO.   6##########   Wed Apr 29 14:15:09 2009
 
-    3 *** Differential density matrix. DCOVLP     = 0.5590
+    6 *** Differential density matrix. DCOVLP     = 0.9755
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.84%    0.00%    0.00%   0.13000000s
+SOfock:LL  1.00D-12    0.00%    2.64%    0.00%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0008890183328347
-   DFT exchange-correlation energy:        -8.0436961045323478
+   Number of electrons:                    10.0002805651464186
+   DFT exchange-correlation energy:       -10.1277347183318547
 
- >>>> Time used in DFTDRV:   0.10 seconds
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.26000000s
+>>> Total CPU-time : 0.07999998s
 
-########## END ITERATION NO.   3 ##########   Wed Dec  3 18:24:10 2008
+########## END ITERATION NO.   6 ##########   Wed Apr 29 14:15:09 2009
 
-It.   3    -96.41813935000     -2.75D+00 -3.80D+00  4.16D+00   DIIS   2    0.26000000s   LL             Wed Dec  3
+It.   6    -99.81485778672      2.57D-03 -3.97D-02  3.78D-02   DIIS   5    0.07999998s   LL             Wed Apr 29
 
-########## START ITERATION NO.   4##########   Wed Dec  3 18:24:10 2008
-
-    4 *** Differential density matrix. DCOVLP     = 0.5118
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.74%    0.00%    0.00%   0.12000000s
-   Number of quadrature points:                           1092
-   Number of electrons:                    10.0000129007825134
-   DFT exchange-correlation energy:       -10.8233810048595185
-
- >>>> Time used in DFTDRV:   0.09 seconds
-
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.26000000s
-
-########## END ITERATION NO.   4 ##########   Wed Dec  3 18:24:10 2008
-
-It.   4    -99.45617217135      3.04D+00  3.52D+00  1.55D+00   DIIS   3    0.26000000s   LL             Wed Dec  3
-
-########## START ITERATION NO.   5##########   Wed Dec  3 18:24:11 2008
-
-    5 *** Differential density matrix. DCOVLP     = 0.8490
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.03%    0.00%    0.00%   0.13999999s
-   Number of quadrature points:                           1092
-   Number of electrons:                    10.0003019650603573
-   DFT exchange-correlation energy:       -10.1697150794976441
-
- >>>> Time used in DFTDRV:   0.09 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.25000000s
-
-########## END ITERATION NO.   5 ##########   Wed Dec  3 18:24:11 2008
-
-It.   5    -99.81228407391      3.56D-01 -7.66D-01  1.10D-01   DIIS   4    0.25000000s   LL             Wed Dec  3
-
-########## START ITERATION NO.   6##########   Wed Dec  3 18:24:11 2008
-
-    6 *** Differential density matrix. DCOVLP     = 0.9754
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.65%    0.00%    0.00%   0.13000000s
-   Number of quadrature points:                           1092
-   Number of electrons:                    10.0002804847026585
-   DFT exchange-correlation energy:       -10.1277325813844161
-
- >>>> Time used in DFTDRV:   0.10 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.25000001s
-
-########## END ITERATION NO.   6 ##########   Wed Dec  3 18:24:11 2008
-
-It.   6    -99.81485794943      2.57D-03 -3.97D-02  3.78D-02   DIIS   5    0.25000001s   LL             Wed Dec  3
-
-########## START ITERATION NO.   7##########   Wed Dec  3 18:24:11 2008
+########## START ITERATION NO.   7##########   Wed Apr 29 14:15:09 2009
 
     7 *** Differential density matrix. DCOVLP     = 1.0015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.03%    0.00%    0.00%   0.13000011s
+SOfock:LL  1.00D-12    0.00%    4.03%    0.00%    0.00%   0.04000002s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002856331763361
-   DFT exchange-correlation energy:       -10.1327436188883055
+   Number of electrons:                    10.0002857111371917
+   DFT exchange-correlation energy:       -10.1327439003641544
 
- >>>> Time used in DFTDRV:   0.04 seconds
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.20000006s
+>>> Total CPU-time : 0.07999998s
 
-########## END ITERATION NO.   7 ##########   Wed Dec  3 18:24:11 2008
+########## END ITERATION NO.   7 ##########   Wed Apr 29 14:15:09 2009
 
-It.   7    -99.81504348365      1.86D-04  5.29D-03  8.94D-03   DIIS   6    0.20000006s   LL             Wed Dec  3
+It.   7    -99.81504329004      1.86D-04  5.29D-03  8.94D-03   DIIS   6    0.07999998s   LL             Wed Apr 29
 
-########## START ITERATION NO.   8##########   Wed Dec  3 18:24:11 2008
+########## START ITERATION NO.   8##########   Wed Apr 29 14:15:09 2009
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.27%    0.00%    0.00%   0.04999995s
+SOfock:LL  1.00D-12    0.00%    5.26%    0.00%    0.00%   0.04000002s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002840688800969
-   DFT exchange-correlation energy:       -10.1350489161584125
+   Number of electrons:                    10.0002841473081840
+   DFT exchange-correlation energy:       -10.1350485349105135
 
- >>>> Time used in DFTDRV:   0.03 seconds
+ >>>> Time used in DFTEXC:   0.03 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.06999999s
+
+########## END ITERATION NO.   8 ##########   Wed Apr 29 14:15:09 2009
+
+It.   8    -99.81505491405      1.16D-05  3.00D-03  1.43D-03   DIIS   7    0.06999999s   LL             Wed Apr 29
+
+########## START ITERATION NO.   9##########   Wed Apr 29 14:15:09 2009
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    7.55%    0.00%    0.00%   0.03999996s
+   Number of quadrature points:                           1092
+   Number of electrons:                    10.0002839526015670
+   DFT exchange-correlation energy:       -10.1355940142310299
+
+ >>>> Time used in DFTEXC:   0.03 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.08000004s
+
+########## END ITERATION NO.   9 ##########   Wed Apr 29 14:15:09 2009
+
+It.   9    -99.81505519375      2.80D-07  6.57D-04  1.44D-04   DIIS   8    0.08000004s   LL             Wed Apr 29
+
+########## START ITERATION NO.  10##########   Wed Apr 29 14:15:09 2009
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   11.01%    0.00%    0.00%   0.03999996s
+   Number of quadrature points:                           1092
+   Number of electrons:                    10.0002839401690746
+   DFT exchange-correlation energy:       -10.1356533450293185
+
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.07999992s
 
-########## END ITERATION NO.   8 ##########   Wed Dec  3 18:24:11 2008
+########## END ITERATION NO.  10 ##########   Wed Apr 29 14:15:09 2009
 
-It.   8    -99.81505511219      1.16D-05  3.00D-03  1.43D-03   DIIS   7    0.07999992s   LL             Wed Dec  3
-
-########## START ITERATION NO.   9##########   Wed Dec  3 18:24:11 2008
-
-    9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.55%    0.00%    0.00%   0.07999992s
-   Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838741660725
-   DFT exchange-correlation energy:       -10.1355945430247250
-
- >>>> Time used in DFTDRV:   0.10 seconds
-
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.21000005s
-
-########## END ITERATION NO.   9 ##########   Wed Dec  3 18:24:11 2008
-
-It.   9    -99.81505539202      2.80D-07  6.58D-04  1.44D-04   DIIS   8    0.21000005s   LL             Wed Dec  3
-
-########## START ITERATION NO.  10##########   Wed Dec  3 18:24:12 2008
-
-   10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   11.01%    0.00%    0.00%   0.12999988s
-   Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
-   DFT exchange-correlation energy:       -10.1356538751565335
-
- >>>> Time used in DFTDRV:   0.10 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.25000000s
-
-########## END ITERATION NO.  10 ##########   Wed Dec  3 18:24:12 2008
-
-It.  10    -99.81505539477      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.25000000s   LL             Wed Dec  3
+It.  10    -99.81505519650      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.07999992s   LL             Wed Apr 29
 
 
                                    SCF - CYCLE
@@ -1038,33 +1051,33 @@ It.  10    -99.81505539477      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.250
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -52.49177352134      1.00D+20  0.00D+00  0.00D+00               0.01000002s   Scr. nuclei    Wed Dec  3
-It.   2    -99.16876004485      4.67D+01  2.81D+00  3.35D+00               0.74999999s   LL             Wed Dec  3
-It.   3    -96.41813935000     -2.75D+00 -3.80D+00  4.16D+00   DIIS   2    0.26000000s   LL             Wed Dec  3
-It.   4    -99.45617217135      3.04D+00  3.52D+00  1.55D+00   DIIS   3    0.26000000s   LL             Wed Dec  3
-It.   5    -99.81228407391      3.56D-01 -7.66D-01  1.10D-01   DIIS   4    0.25000000s   LL             Wed Dec  3
-It.   6    -99.81485794943      2.57D-03 -3.97D-02  3.78D-02   DIIS   5    0.25000001s   LL             Wed Dec  3
-It.   7    -99.81504348365      1.86D-04  5.29D-03  8.94D-03   DIIS   6    0.20000006s   LL             Wed Dec  3
-It.   8    -99.81505511219      1.16D-05  3.00D-03  1.43D-03   DIIS   7    0.07999992s   LL             Wed Dec  3
-It.   9    -99.81505539202      2.80D-07  6.58D-04  1.44D-04   DIIS   8    0.21000005s   LL             Wed Dec  3
-It.  10    -99.81505539477      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.25000000s   LL             Wed Dec  3
+It.   1    -52.49177325790      1.00D+20  0.00D+00  0.00D+00               0.01000001s   Scr. nuclei    Wed Apr 29
+It.   2    -99.16876073499      4.67D+01  2.81D+00  3.35D+00               0.26999999s   LL             Wed Apr 29
+It.   3    -96.41839101278     -2.75D+00 -3.80D+00  4.16D+00   DIIS   2    0.07999998s   LL             Wed Apr 29
+It.   4    -99.45617680575      3.04D+00  3.52D+00  1.55D+00   DIIS   3    0.07999999s   LL             Wed Apr 29
+It.   5    -99.81228385517      3.56D-01 -7.66D-01  1.10D-01   DIIS   4    0.08000004s   LL             Wed Apr 29
+It.   6    -99.81485778672      2.57D-03 -3.97D-02  3.78D-02   DIIS   5    0.07999998s   LL             Wed Apr 29
+It.   7    -99.81504329004      1.86D-04  5.29D-03  8.94D-03   DIIS   6    0.07999998s   LL             Wed Apr 29
+It.   8    -99.81505491405      1.16D-05  3.00D-03  1.43D-03   DIIS   7    0.06999999s   LL             Wed Apr 29
+It.   9    -99.81505519375      2.80D-07  6.57D-04  1.44D-04   DIIS   8    0.08000004s   LL             Wed Apr 29
+It.  10    -99.81505519650      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.07999992s   LL             Wed Apr 29
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.33333333s
+      LL           :    0.11111111s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -105.10917304183074
+   Electronic energy                        :    -105.10917284355808
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       5.29411764705882
 
    Sum of all contributions to the energy
-   Total energy                             :     -99.81505539477192
+   Total energy                             :     -99.81505519649926
 
 
                                    Eigenvalues
@@ -1073,42 +1086,42 @@ It.  10    -99.81505539477      2.75D-09  7.00D-05  7.32D-06   DIIS   8    0.250
 
 * Boson symmetry A1 
   * Closed shell, f = 1.0000
-   -24.10652871080  ( 2)       -1.10876259497  ( 2)       -0.50510961671  ( 2)
+   -24.10652905669  ( 2)       -1.10876285863  ( 2)       -0.50510983994  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    -0.03201434761  ( 2)        0.01493441585  ( 2)        0.03454006882  ( 2)        0.06547936868  ( 2)        0.08019253571  ( 2)
-     0.19181224620  ( 2)        0.19913099739  ( 2)        0.31949407195  ( 2)        0.32021011079  ( 2)        0.50386573815  ( 2)
-     0.57753141247  ( 2)        0.70430584326  ( 2)        1.29289794754  ( 2)        1.43512144231  ( 2)        1.59583049884  ( 2)
-     2.16808927970  ( 2)        2.84576613250  ( 2)        3.18567870974  ( 2)        4.46087701462  ( 2)        4.74435383696  ( 2)
-     7.60318517886  ( 2)       15.65161061539  ( 2)       21.75731234533  ( 2)       41.44421322798  ( 2)       75.55215254030  ( 2)
-   288.38150308029  ( 2)     1096.51866356989  ( 2)     4747.68782532624  ( 2)    28562.12203350935  ( 2)
+    -0.03201401744  ( 2)        0.01492505842  ( 2)        0.03457134342  ( 2)        0.06543798002  ( 2)        0.08036624633  ( 2)
+     0.19202832486  ( 2)        0.19874875546  ( 2)        0.32006284449  ( 2)        0.32080880434  ( 2)        0.50415028697  ( 2)
+     0.57751422556  ( 2)        0.70439518231  ( 2)        1.29374764900  ( 2)        1.43579345747  ( 2)        1.59595251406  ( 2)
+     2.16795602443  ( 2)        2.84588078517  ( 2)        3.18618971377  ( 2)        4.46155469331  ( 2)        4.74466874545  ( 2)
+     7.60312477472  ( 2)       15.65147914293  ( 2)       21.75744357272  ( 2)       41.44419285367  ( 2)       75.55203826502  ( 2)
+   288.38140267284  ( 2)     1096.51857440901  ( 2)     4747.68774719521  ( 2)    28562.12196891984  ( 2)
 
 * Boson symmetry B1 
   * Closed shell, f = 1.0000
-    -0.36288486026  ( 2)
+    -0.36288520715  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.03296383052  ( 2)        0.07382954913  ( 2)        0.20487218144  ( 2)        0.30978435901  ( 2)        0.49551283706  ( 2)
-     1.20053727054  ( 2)        1.33207184122  ( 2)        1.97393154417  ( 2)        4.43492738409  ( 2)        7.05265994994  ( 2)
-    41.09116892114  ( 2)
+     0.03299743411  ( 2)        0.07393644070  ( 2)        0.20496779061  ( 2)        0.31006385913  ( 2)        0.49602406007  ( 2)
+     1.20113562574  ( 2)        1.33236822897  ( 2)        1.97405358404  ( 2)        4.43582794703  ( 2)        7.05272958540  ( 2)
+    41.09120552602  ( 2)
 
 * Boson symmetry B2 
   * Closed shell, f = 1.0000
-    -0.36288486026  ( 2)
+    -0.36288520715  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.03296383052  ( 2)        0.07382954913  ( 2)        0.20487218144  ( 2)        0.30978435901  ( 2)        0.49551283706  ( 2)
-     1.20053727054  ( 2)        1.33207184122  ( 2)        1.97393154417  ( 2)        4.43492738409  ( 2)        7.05265994994  ( 2)
-    41.09116892114  ( 2)
+     0.03299743411  ( 2)        0.07393644070  ( 2)        0.20496779061  ( 2)        0.31006385913  ( 2)        0.49602406007  ( 2)
+     1.20113562574  ( 2)        1.33236822897  ( 2)        1.97405358404  ( 2)        4.43582794703  ( 2)        7.05272958540  ( 2)
+    41.09120552602  ( 2)
 
 * Boson symmetry A2 
   * Virtual eigenvalues, f = 0.0000
-     0.32017659324  ( 2)        1.29288342418  ( 2)        4.46132168553  ( 2)
+     0.32077518380  ( 2)        1.29373273868  ( 2)        4.46199927904  ( 2)
 
 * Occupation in fermion symmetry E1 
   * Inactive orbitals
-    A1  A1  A1  B1  B2  
+    A1  A1  A1  B2  B1  
   * Virtual orbitals
-    A1  A1  B2  B1  A1  A1  B1  B2  A1  A1  A1  B2  B1  B2  B1  A1  A2  A1  
-    B1  B2  A1  A1  A1  B1  B2  A2  A1  B2  B1  A1  A1  B2  B1  A1  A1  A1  
-    B2  B1  A1  A2  A1  B1  B2  A1  A1  A1  B2  B1  A1  A1  A1  A1  A1  A1  
+    A1  A1  B2  B1  A1  A1  B1  B2  A1  A1  A1  B1  B2  B1  B2  A1  A2  A1  
+    B1  B2  A1  A1  A1  B2  B1  A2  A1  B1  B2  A1  A1  B2  B1  A1  A1  A1  
+    B1  B2  A1  A2  A1  B2  B1  A1  A1  A1  B2  B1  A1  A1  A1  A1  A1  A1  
 
 * Occupation of subblocks
                        E1 :  A1   B1   B2   A2                                                              
@@ -1119,10 +1132,10 @@ tot.num. of pos.erg shells:   32   12   12    3
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -0.03201435 au (symmetry A1 )
-  - E(HOMO) :    -0.36288486 au (symmetry B2 )
+    E(LUMO) :    -0.03201402 au (symmetry A1 )
+  - E(HOMO) :    -0.36288521 au (symmetry B1 )
   ------------------------------------------
-    gap     :     0.33087051 au
+    gap     :     0.33087119 au
 
 
 
@@ -1170,7 +1183,7 @@ tot.num. of pos.erg shells:   32   12   12    3
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    ZZSECMOM         :     5.450884662376 a.u.      F   F
+    ZZSECMOM         :     5.450867758309 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1181,8 +1194,8 @@ tot.num. of pos.erg shells:   32   12   12    3
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    59                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -99.8150553920228276
-* Heading :DIRAC: No title specified !!!                     Wed Dec  3 18:24:12 2008
+* REACMO: Coefficients read from file DFCOEF - Total energy: -99.8150551937501263
+* Heading :DIRAC: No title specified !!!                     Wed Apr 29 14:15:09 2009
 
 
 
@@ -1191,39 +1204,39 @@ tot.num. of pos.erg shells:   32   12   12    3
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast/hf.152
-* Heading :DIRAC: No title specified !!!                     Wed Dec  3 18:24:12 2008
+* REAFCK: Fock matrix read from file /scratch/bast/hf.21243/DFFCK2                               
+* Heading :DIRAC: No title specified !!!                     Wed Apr 29 14:15:09 2009
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
-   DFT exchange-correlation energy:       -10.1356538751565335
+   Number of electrons:                    10.0002839401690746
+   DFT exchange-correlation energy:       -10.1356533450293185
 
- >>>> Time used in DFTDRV:   0.09 seconds
+ >>>> Time used in DFTEXC:   0.07 seconds
 
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast/hf.152
-* Heading :DIRAC: No title specified !!!                     Wed Dec  3 18:24:09 2008
+* REAFCK: Fock matrix read from file /scratch/bast/hf.21243/DFFCK1                               
+* Heading :DIRAC: No title specified !!!                     Wed Apr 29 14:15:08 2009
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.10D-07
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.23D+03
 
-########## START MICROITERATION NO.   1 ##########   Wed Dec  3 18:24:12 2008
+########## START MICROITERATION NO.   1 ##########   Wed Apr 29 14:15:09 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
+SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.08000004s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.11 seconds
+ >>>> Time used in DFTEXC:   0.05 seconds
 
 * Trial vectors in this micro iteration:  E+:  4  E-:  4
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.33087335  1.00E-03  8.13E-07  5.75E-07  5.75E-07
-     0.33087335  1.00E-03  8.13E-07  5.75E-07  5.75E-07
-     0.37782161  1.00E-03  3.55E-07  2.51E-07  2.51E-07
+     0.33087403  1.00E-03  8.13E-07  5.75E-07  5.75E-07
+     0.33087403  1.00E-03  8.13E-07  5.75E-07  5.75E-07
+     0.37781260  1.00E-03  3.54E-07  2.51E-07  2.51E-07
 
 
                              Final output from XRSCTL
@@ -1234,11 +1247,11 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.36000013s  (LL       )     [  4]     [  4]
+* It.  1   0.15999997s  (LL       )     [  4]     [  4]
 --------------------------------------------------------
-            0.330873 :   8.13D-07 |   5.75D-07  5.75D-07
-            0.330873 :   8.13D-07 |   5.75D-07  5.75D-07
-            0.377822 :   3.55D-07 |   2.51D-07  2.51D-07
+            0.330874 :   8.13D-07 |   5.75D-07  5.75D-07
+            0.330874 :   8.13D-07 |   5.75D-07  5.75D-07
+            0.377813 :   3.55D-07 |   2.51D-07  2.51D-07
 ========================================================
 
 
@@ -1250,17 +1263,14 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
  *** Excitations of boson symmetry 1 : A1 
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.33087335 a.u.    8.13D-07 (converged)
-                                              9.0035 eV
-
+ Excitation no.   1 excitation energy     0.33087403 a.u.    8.13D-07 (converged)
+ Nonrel. sym.:   TxB2                         9.0035 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.33087335 a.u.    8.13D-07 (converged)
-                                              9.0035 eV
-
+ Excitation no.   2 excitation energy     0.33087403 a.u.    8.13D-07 (converged)
+ Nonrel. sym.:   TyB1                         9.0035 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.37782161 a.u.    3.55D-07 (converged)
-                                             10.2810 eV
-
+ Excitation no.   3 excitation energy     0.37781260 a.u.    3.54D-07 (converged)
+ Nonrel. sym.:   TxB2                        10.2808 eV
 ================================================================================
 
 
@@ -1272,17 +1282,14 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
  *** Excitations of boson symmetry 1 : A1 
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     0.33087335 a.u.    8.13D-07 (converged)
-                                              9.0035 eV
-
+ Excitation no.   1 excitation energy     0.33087403 a.u.    8.13D-07 (converged)
+ Nonrel. sym.:   TxB2                         9.0035 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     0.33087335 a.u.    8.13D-07 (converged)
-                                              9.0035 eV
-
+ Excitation no.   2 excitation energy     0.33087403 a.u.    8.13D-07 (converged)
+ Nonrel. sym.:   TyB1                         9.0035 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     0.37782161 a.u.    3.55D-07 (converged)
-                                             10.2810 eV
-
+ Excitation no.   3 excitation energy     0.37781260 a.u.    3.54D-07 (converged)
+ Nonrel. sym.:   TxB2                        10.2808 eV
 ================================================================================
 
 
@@ -1296,17 +1303,17 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    59                                          
 ** E solution vectors : PP EXCITATIONA1  Irrep: A1  Trev:   1 Length:        270
- Freq.:   0.330873 Norm:   0.50000000E+00 Residual norm:   0.81E-06
+ Freq.:   0.330874 Norm:   0.50000000E+00 Residual norm:   0.81E-06
    Dominant inactive orbitals:
-     5(E1 ) 50.00%
      4(E1 ) 50.00%
+     5(E1 ) 50.00%
    Dominant virtual orbitals:
      6(E1 )100.00%
    Excitation amplitudes larger than threshold   0.30E-01
 
-        5(i:E1 ) --->      6(v:E1 )  0.35355339E+00
         4(i:E1 ) --->      6(v:E1 )  0.35355339E+00
- Freq.:   0.377822 Norm:   0.70710678E+00 Residual norm:   0.35E-06
+        5(i:E1 ) --->      6(v:E1 )  0.35355339E+00
+ Freq.:   0.377813 Norm:   0.70710678E+00 Residual norm:   0.35E-06
    Dominant inactive orbitals:
      4(E1 )100.00%
    Dominant virtual orbitals:
@@ -1314,7 +1321,7 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
    Excitation amplitudes larger than threshold   0.43E-01
 
         4(i:E1 ) --->      7(v:E1 )  0.70710678E+00
- Freq.:   0.330873 Norm:   0.50000000E+00 Residual norm:   0.81E-06
+ Freq.:   0.330874 Norm:   0.50000000E+00 Residual norm:   0.81E-06
    Dominant inactive orbitals:
      5(E1 ) 50.00%
      4(E1 ) 50.00%
@@ -1325,8 +1332,8 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
         5(i:E1 ) --->      6(v:E1 )  0.35355339E+00
         4(i:E1 ) --->      6(v:E1 )  0.35355339E+00
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -99.8150553920228276
-* Heading :DIRAC: No title specified !!!                     Wed Dec  3 18:24:12 2008
+* REACMO: Coefficients read from file DFCOEF - Total energy: -99.8150551937501263
+* Heading :DIRAC: No title specified !!!                     Wed Apr 29 14:15:09 2009
 
     * Orbital classes:
     Fermion ircop:E1 
@@ -1353,21 +1360,21 @@ SOfock:LL  8.10D-07    0.70%   17.20%    0.00%    0.00%   0.13999987s
 
  at the following  2 frequencies:
   0.06000000  0.00000000
-E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  6.53170D-03
+E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  6.53330D-03
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.10D-07
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.23D+03
 * Screening threshold in LR solver scaled with norm of property vector:  2.6683D+00
   and changed to:  2.1625D-06
 
-########## START MICROITERATION NO.   1 ##########   Wed Dec  3 18:24:13 2008
+########## START MICROITERATION NO.   1 ##########   Wed Apr 29 14:15:09 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.16D-06    0.00%   17.84%    0.00%    0.00%   0.12999988s
+SOfock:LL  2.16D-06    0.00%   17.84%    0.00%    0.00%   0.05999994s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.12 seconds
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
@@ -1376,18 +1383,14 @@ SOfock:LL  2.16D-06    0.00%   17.84%    0.00%    0.00%   0.12999988s
      0.06000000  1.00E-03  1.37E+00  1.37E+00  3.61E-07
      0.00000000  1.00E-03  1.36E+00  1.36E+00  0.00E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed Dec  3 18:24:13 2008
+########## START MICROITERATION NO.   2 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.16D-06    0.00%   17.41%    0.00%    0.00%   0.13999987s
+SOfock:LL  2.16D-06    0.00%   17.41%    0.00%    0.00%   0.04000008s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.15 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.24D-04
-(XRSRED) oo-norm of anti-symmetry of REDE =   4.56D-05      (element (  4,  1))
+ >>>> Time used in DFTEXC:   0.05 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  0
 
@@ -1396,18 +1399,14 @@ SOfock:LL  2.16D-06    0.00%   17.41%    0.00%    0.00%   0.13999987s
      0.06000000  1.00E-03  2.93E-01  2.91E-01  3.85E-02
      0.00000000  1.00E-03  2.90E-01  2.90E-01  0.00E+00
 
-########## START MICROITERATION NO.   3 ##########   Wed Dec  3 18:24:13 2008
+########## START MICROITERATION NO.   3 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.16D-06    0.00%   22.87%    0.00%    0.00%   0.14000010s
+SOfock:LL  2.16D-06    0.00%   22.87%    0.00%    0.00%   0.05000007s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.15 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.17D-03
-(XRSRED) oo-norm of anti-symmetry of REDE =   2.37D-04      (element (  5,  4))
+ >>>> Time used in DFTEXC:   0.05 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
@@ -1416,18 +1415,14 @@ SOfock:LL  2.16D-06    0.00%   22.87%    0.00%    0.00%   0.14000010s
      0.06000000  1.00E-03  2.15E-02  2.09E-02  5.02E-03
      0.00000000  1.00E-03  2.09E-02  2.09E-02  0.00E+00
 
-########## START MICROITERATION NO.   4 ##########   Wed Dec  3 18:24:14 2008
+########## START MICROITERATION NO.   4 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.16D-06    0.00%   38.46%    0.00%    0.00%   0.13000011s
+SOfock:LL  2.16D-06    0.00%   38.45%    0.00%    0.00%   0.04999995s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.14 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   4.39D-03
-(XRSRED) oo-norm of anti-symmetry of REDE =   8.33D-04      (element (  9,  4))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
@@ -1445,22 +1440,22 @@ SOfock:LL  2.16D-06    0.00%   38.46%    0.00%    0.00%   0.13000011s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.27999998s  (LL       )     [  1]     [  1]
+* It.  1   0.11000001s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
             0.060000 :   1.37D+00 |   1.37D+00  3.61D-07
             0.000000 :   1.36D+00 |   1.36D+00  0.00D+00
 ========================================================
-* It.  2   0.30999995s  (LL       )     [  2]     [  0]
+* It.  2   0.10000002s  (LL       )     [  2]     [  0]
 --------------------------------------------------------
             0.060000 :   2.94D-01 |   2.91D-01  3.85D-02
             0.000000 :   2.90D-01 |   2.90D-01  0.00D+00
 ========================================================
-* It.  3   0.31999993s  (LL       )     [  2]     [  1]
+* It.  3   0.10000002s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   2.15D-02 |   2.09D-02  5.02D-03
             0.000000 :   2.09D-02 |   2.09D-02  0.00D+00
 ========================================================
-* It.  4   0.30999994s  (LL       )     [  2]     [  1]
+* It.  4   0.09000003s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   1.63D-03 |   1.59D-03  3.42D-04
             0.000000 :   1.38D-03 |   1.38D-03  0.00D+00
@@ -1473,41 +1468,37 @@ SOfock:LL  2.16D-06    0.00%   38.46%    0.00%    0.00%   0.13000011s
 
  at the following  2 frequencies:
   0.06000000  0.00000000
-E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.42797D-02
+E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.42825D-02
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.10D-07
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.23D+03
 * Screening threshold in LR solver scaled with norm of property vector:  2.4540D+00
   and changed to:  1.9888D-06
 
-########## START MICROITERATION NO.   1 ##########   Wed Dec  3 18:24:14 2008
+########## START MICROITERATION NO.   1 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   18.03%    0.00%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   18.02%    0.00%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.10 seconds
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.06000000  1.00E-03  5.73E-01  5.73E-01  2.54E-07
+     0.06000000  1.00E-03  5.73E-01  5.73E-01  2.55E-07
      0.00000000  1.00E-03  5.55E-01  5.55E-01  0.00E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed Dec  3 18:24:14 2008
+########## START MICROITERATION NO.   2 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   22.88%    0.00%    0.00%   0.12000036s
+SOfock:LL  1.99D-06    0.70%   22.86%    0.00%    0.00%   0.04000008s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.13 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.58D-05
-(XRSRED) oo-norm of anti-symmetry of REDE =   1.11D-05      (element (  4,  1))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  0
 
@@ -1516,18 +1507,14 @@ SOfock:LL  1.99D-06    0.70%   22.88%    0.00%    0.00%   0.12000036s
      0.06000000  1.00E-03  1.14E-01  1.12E-01  2.04E-02
      0.00000000  1.00E-03  1.07E-01  1.07E-01  0.00E+00
 
-########## START MICROITERATION NO.   3 ##########   Wed Dec  3 18:24:14 2008
+########## START MICROITERATION NO.   3 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.13 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.49D-04
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.12D-05      (element (  6,  1))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
@@ -1536,25 +1523,21 @@ SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.11999989s
      0.06000000  1.00E-03  6.76E-03  6.66E-03  1.12E-03
      0.00000000  1.00E-03  6.53E-03  6.53E-03  0.00E+00
 
-########## START MICROITERATION NO.   4 ##########   Wed Dec  3 18:24:15 2008
+########## START MICROITERATION NO.   4 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   39.25%    0.02%    0.00%   0.02999997s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.12 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.50D-04
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.12D-05      (element (  6,  1))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
      0.06000000  1.00E-03  1.66E-04  1.64E-04  2.62E-05
-     0.00000000  1.00E-03  1.53E-04  1.53E-04  0.00E+00
+     0.00000000  1.00E-03  1.52E-04  1.52E-04  0.00E+00
 
 
                              Final output from XRSCTL
@@ -1565,25 +1548,25 @@ SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.25000000s  (LL       )     [  1]     [  1]
+* It.  1   0.07999992s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
-            0.060000 :   5.73D-01 |   5.73D-01  2.54D-07
+            0.060000 :   5.73D-01 |   5.73D-01  2.55D-07
             0.000000 :   5.55D-01 |   5.55D-01  0.00D+00
 ========================================================
-* It.  2   0.27999998s  (LL       )     [  2]     [  0]
+* It.  2   0.08000004s  (LL       )     [  2]     [  0]
 --------------------------------------------------------
             0.060000 :   1.14D-01 |   1.12D-01  2.04D-02
             0.000000 :   1.07D-01 |   1.07D-01  0.00D+00
 ========================================================
-* It.  3   0.28999996s  (LL       )     [  2]     [  1]
+* It.  3   0.09000003s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   6.75D-03 |   6.66D-03  1.12D-03
             0.000000 :   6.53D-03 |   6.53D-03  0.00D+00
 ========================================================
-* It.  4   0.28999973s  (LL       )     [  2]     [  1]
+* It.  4   0.09999991s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   1.66D-04 |   1.64D-04  2.62D-05
-            0.000000 :   1.53D-04 |   1.53D-04  0.00D+00
+            0.000000 :   1.52D-04 |   1.52D-04  0.00D+00
 ========================================================
 
 
@@ -1593,41 +1576,37 @@ SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
 
  at the following  2 frequencies:
   0.06000000  0.00000000
-E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.42797D-02
+E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.42825D-02
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.10D-07
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.23D+03
 * Screening threshold in LR solver scaled with norm of property vector:  2.4540D+00
   and changed to:  1.9888D-06
 
-########## START MICROITERATION NO.   1 ##########   Wed Dec  3 18:24:15 2008
+########## START MICROITERATION NO.   1 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   18.03%    0.00%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   18.02%    0.00%    0.00%   0.02999997s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.10 seconds
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     0.06000000  1.00E-03  5.73E-01  5.73E-01  2.54E-07
+     0.06000000  1.00E-03  5.73E-01  5.73E-01  2.55E-07
      0.00000000  1.00E-03  5.55E-01  5.55E-01  0.00E+00
 
-########## START MICROITERATION NO.   2 ##########   Wed Dec  3 18:24:15 2008
+########## START MICROITERATION NO.   2 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   22.88%    0.00%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   22.86%    0.00%    0.00%   0.02999997s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.12 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.58D-05
-(XRSRED) oo-norm of anti-symmetry of REDE =   1.11D-05      (element (  4,  1))
+ >>>> Time used in DFTEXC:   0.03 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  0
 
@@ -1636,18 +1615,14 @@ SOfock:LL  1.99D-06    0.70%   22.88%    0.00%    0.00%   0.11999989s
      0.06000000  1.00E-03  1.14E-01  1.12E-01  2.04E-02
      0.00000000  1.00E-03  1.07E-01  1.07E-01  0.00E+00
 
-########## START MICROITERATION NO.   3 ##########   Wed Dec  3 18:24:16 2008
+########## START MICROITERATION NO.   3 ##########   Wed Apr 29 14:15:10 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.13000011s
+SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.02999997s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.12 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   1.49D-04
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.12D-05      (element (  6,  1))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
@@ -1656,25 +1631,21 @@ SOfock:LL  1.99D-06    0.70%   28.62%    0.00%    0.00%   0.13000011s
      0.06000000  1.00E-03  6.76E-03  6.66E-03  1.12E-03
      0.00000000  1.00E-03  6.53E-03  6.53E-03  0.00E+00
 
-########## START MICROITERATION NO.   4 ##########   Wed Dec  3 18:24:16 2008
+########## START MICROITERATION NO.   4 ##########   Wed Apr 29 14:15:11 2009
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
+SOfock:LL  1.99D-06    0.70%   39.25%    0.02%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.12 seconds
-
-
-(XRSRED)  1-norm of anti-symmetry of REDE =   2.50D-04
-(XRSRED) oo-norm of anti-symmetry of REDE =   3.12D-05      (element (  6,  1))
+ >>>> Time used in DFTEXC:   0.04 seconds
 
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
      0.06000000  1.00E-03  1.66E-04  1.64E-04  2.62E-05
-     0.00000000  1.00E-03  1.53E-04  1.53E-04  0.00E+00
+     0.00000000  1.00E-03  1.52E-04  1.52E-04  0.00E+00
 
 
                              Final output from XRSCTL
@@ -1685,25 +1656,25 @@ SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.25000000s  (LL       )     [  1]     [  1]
+* It.  1   0.08000016s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
-            0.060000 :   5.73D-01 |   5.73D-01  2.54D-07
+            0.060000 :   5.73D-01 |   5.73D-01  2.55D-07
             0.000000 :   5.55D-01 |   5.55D-01  0.00D+00
 ========================================================
-* It.  2   0.26999998s  (LL       )     [  2]     [  0]
+* It.  2   0.08999991s  (LL       )     [  2]     [  0]
 --------------------------------------------------------
             0.060000 :   1.14D-01 |   1.12D-01  2.04D-02
             0.000000 :   1.07D-01 |   1.07D-01  0.00D+00
 ========================================================
-* It.  3   0.28999973s  (LL       )     [  2]     [  1]
+* It.  3   0.08999991s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   6.75D-03 |   6.66D-03  1.12D-03
             0.000000 :   6.53D-03 |   6.53D-03  0.00D+00
 ========================================================
-* It.  4   0.29000021s  (LL       )     [  2]     [  1]
+* It.  4   0.09000016s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.060000 :   1.66D-04 |   1.64D-04  2.62D-05
-            0.000000 :   1.53D-04 |   1.53D-04  0.00D+00
+            0.000000 :   1.52D-04 |   1.52D-04  0.00D+00
 ========================================================
  
  ======================================================================
@@ -1714,49 +1685,49 @@ SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
  A operator, boson symmetry, frequency:   ZDIPLEN    1 -0.060000
  B operator, boson symmetry, frequency:   ZDIPLEN    1  0.060000
 
- Value of electronic part:      -6.674509230081
+ Value of electronic part:      -6.674397460255
  Value of positronic part:       0.000000000000
- Value of total response :      -6.674509230081
+ Value of total response :      -6.674397460255
 
  Linear response function in a.u.
  A operator, boson symmetry, frequency:   ZDIPLEN    1  0.000000
  B operator, boson symmetry, frequency:   ZDIPLEN    1  0.000000
 
- Value of electronic part:      -6.620779578035
+ Value of electronic part:      -6.620674002150
  Value of positronic part:       0.000000000000
- Value of total response :      -6.620779578035
+ Value of total response :      -6.620674002150
 
  Linear response function in a.u.
  A operator, boson symmetry, frequency:   XDIPLEN    2 -0.060000
  B operator, boson symmetry, frequency:   XDIPLEN    2  0.060000
 
- Value of electronic part:      -5.871140093416
+ Value of electronic part:      -5.870668598367
  Value of positronic part:       0.000000000000
- Value of total response :      -5.871140093416
+ Value of total response :      -5.870668598367
 
  Linear response function in a.u.
  A operator, boson symmetry, frequency:   XDIPLEN    2  0.000000
  B operator, boson symmetry, frequency:   XDIPLEN    2  0.000000
 
- Value of electronic part:      -5.806766107303
+ Value of electronic part:      -5.806318651575
  Value of positronic part:       0.000000000000
- Value of total response :      -5.806766107303
+ Value of total response :      -5.806318651575
 
  Linear response function in a.u.
  A operator, boson symmetry, frequency:   YDIPLEN    3 -0.060000
  B operator, boson symmetry, frequency:   YDIPLEN    3  0.060000
 
- Value of electronic part:      -5.871140093416
+ Value of electronic part:      -5.870668598367
  Value of positronic part:       0.000000000000
- Value of total response :      -5.871140093416
+ Value of total response :      -5.870668598367
 
  Linear response function in a.u.
  A operator, boson symmetry, frequency:   YDIPLEN    3  0.000000
  B operator, boson symmetry, frequency:   YDIPLEN    3  0.000000
 
- Value of electronic part:      -5.806766107303
+ Value of electronic part:      -5.806318651575
  Value of positronic part:       0.000000000000
- Value of total response :      -5.806766107303
+ Value of total response :      -5.806318651575
  
  ======================================================================
  >>>>>    Q U A D R A T I C   R E S P O N S E   F U N C T I O N   <<<<<
@@ -1767,80 +1738,80 @@ SOfock:LL  1.99D-06    0.70%   39.23%    0.02%    0.00%   0.11999989s
  B operator, boson symmetry, frequency:   XDIPLEN    2  0.060000
  C operator, boson symmetry, frequency:   XDIPLEN    2  0.000000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.37%    0.00%    0.00%   0.13999987s
+SOfock:LL  1.00D-12    0.00%    1.37%    0.00%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.19 seconds
+ >>>> Time used in DFTEXC:   0.06 seconds
 
 
- Value of electronic part:      0.865335167700
+ Value of electronic part:      0.865196066694
  Value of positronic part:      0.000000000000
- Value of total response :      0.865335167700
+ Value of total response :      0.865196066694
 
  Quadratic response function no.  2 out of  5 in a.u.
  A operator, boson symmetry, frequency:   ZDIPLEN    1 -0.060000
  B operator, boson symmetry, frequency:   YDIPLEN    3  0.060000
  C operator, boson symmetry, frequency:   YDIPLEN    3  0.000000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.37%    0.00%    0.00%   0.13999987s
+SOfock:LL  1.00D-12    0.00%    1.37%    0.00%    0.00%   0.04000020s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.19 seconds
+ >>>> Time used in DFTEXC:   0.07 seconds
 
 
- Value of electronic part:      0.865335167700
+ Value of electronic part:      0.865196066693
  Value of positronic part:      0.000000000000
- Value of total response :      0.865335167700
+ Value of total response :      0.865196066693
 
  Quadratic response function no.  3 out of  5 in a.u.
  A operator, boson symmetry, frequency:   XDIPLEN    2 -0.060000
  B operator, boson symmetry, frequency:   XDIPLEN    2  0.060000
  C operator, boson symmetry, frequency:   ZDIPLEN    1  0.000000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.13999987s
+SOfock:LL  1.00D-12    0.00%    1.53%    0.00%    0.00%   0.04999995s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.19 seconds
+ >>>> Time used in DFTEXC:   0.06 seconds
 
 
- Value of electronic part:      0.961218710572
+ Value of electronic part:      0.961090347860
  Value of positronic part:      0.000000000000
- Value of total response :      0.961218710572
+ Value of total response :      0.961090347860
 
  Quadratic response function no.  4 out of  5 in a.u.
  A operator, boson symmetry, frequency:   YDIPLEN    3 -0.060000
  B operator, boson symmetry, frequency:   YDIPLEN    3  0.060000
  C operator, boson symmetry, frequency:   ZDIPLEN    1  0.000000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.14999962s
+SOfock:LL  1.00D-12    0.00%    1.53%    0.00%    0.00%   0.03999996s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.20 seconds
+ >>>> Time used in DFTEXC:   0.06 seconds
 
 
- Value of electronic part:      0.961218710572
+ Value of electronic part:      0.961090347859
  Value of positronic part:      0.000000000000
- Value of total response :      0.961218710572
+ Value of total response :      0.961090347859
 
  Quadratic response function no.  5 out of  5 in a.u.
  A operator, boson symmetry, frequency:   ZDIPLEN    1 -0.060000
  B operator, boson symmetry, frequency:   ZDIPLEN    1  0.060000
  C operator, boson symmetry, frequency:   ZDIPLEN    1  0.000000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.15999985s
+SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.05000019s
    Number of quadrature points:                           1092
-   Number of electrons:                    10.0002838617426484
+   Number of electrons:                    10.0002839401690746
 
- >>>> Time used in DFTDRV:   0.22 seconds
+ >>>> Time used in DFTEXC:   0.06 seconds
 
 
- Value of electronic part:      8.817991681863
+ Value of electronic part:      8.823037781318
  Value of positronic part:      0.000000000000
- Value of total response :      8.817991681863
+ Value of total response :      8.823037781318
 
  
  ======================================================================
@@ -1854,20 +1825,20 @@ SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.15999985s
  ----------------------------------------------------------------------
   A-oper    B-oper    C-oper    B-freq    C-freq       <<A;B,C>>_wB,wC
  ----------------------------------------------------------------------
-  ZDIPLEN   XDIPLEN   XDIPLEN   0.060000  0.000000          0.86533517
-  ZDIPLEN   YDIPLEN   YDIPLEN   0.060000  0.000000          0.86533517
-  XDIPLEN   XDIPLEN   ZDIPLEN   0.060000  0.000000          0.96121871
-  YDIPLEN   YDIPLEN   ZDIPLEN   0.060000  0.000000          0.96121871
-  ZDIPLEN   ZDIPLEN   ZDIPLEN   0.060000  0.000000          8.81799168
+  ZDIPLEN   XDIPLEN   XDIPLEN   0.060000  0.000000          0.86519607
+  ZDIPLEN   YDIPLEN   YDIPLEN   0.060000  0.000000          0.86519607
+  XDIPLEN   XDIPLEN   ZDIPLEN   0.060000  0.000000          0.96109035
+  YDIPLEN   YDIPLEN   ZDIPLEN   0.060000  0.000000          0.96109035
+  ZDIPLEN   ZDIPLEN   ZDIPLEN   0.060000  0.000000          8.82303778
  ----------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
  
-     Data and time (Linux)  : Wed Dec  3 18:24:19 2008
+     Date and time (Linux)  : Wed Apr 29 14:15:11 2009
      Host name              :                                         
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 9, stime: 0, minflt: 127121, majflt: 0, nvcsw: 103, nivcsw: 226
->>>> Total WALL time used in DIRAC: 11s
+>>>> Node 0, utime: 3, stime: 0, minflt: 127127, majflt: 0, nvcsw: 80, nivcsw: 73
+>>>> Total WALL time used in DIRAC: 4s
