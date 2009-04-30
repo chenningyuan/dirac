@@ -132,7 +132,8 @@
 
 ! ... continue with reading of integrals&indexes
  ! iprint=iopt(1); 
-  call set_hscc_iprint(50)
+  !call set_hscc_iprint(50)
+  call set_hscc_iprint(1)
 
  ! ... routine in HSMRCC directories !
   call get_gms_spacial_integrals(LuMULMO,IUNIQ,LABELSIZE,NINTMX,v,ind,nint)

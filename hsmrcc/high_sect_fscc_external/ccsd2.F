@@ -428,13 +428,16 @@ c     order and print collected energies.
       common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /det/  nvlspo,lstvso(100),lstdet(1000),ndets,isplit 
       common /idv/  iv(200),nvalo
+
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600),
      1 ntr(12)
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),veci(60,60),ham(60,60)
       dimension lldet(6,700),lsdet(700),list(6)
+
       equivalence (veci,ham)
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
+
       if (nval.gt.6) then
         nvalp=3
         egr=egr0
@@ -729,7 +732,7 @@ c     if (ipr.lt.2) go to 830
 830   call rg(60,ndt,ham,ev,evi,1,vec,scr,scr(61),ierr)
       if (ierr.ne.0) then                
         write (*,'('' rg ierr='',i4)') ierr
-	call abext('eneru2  ')  
+        call abext('eneru2  ')  
       endif
 c      if (ipr.eq.0) write (*,8300) tit,(ev(i),i=1,ndt)
 c8300  format (1x,a8,' energies:',7e15.8/(1x,8e15.8))
@@ -878,16 +881,17 @@ c   indx iwork
 100   format (' unmatched label ',z8)
       return
       end
+
       subroutine fmax6 (namef,tmax,idmax,indmax)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-#include "cfiles.h"
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
         write(*,*) ' file for fmax6 not found'
@@ -909,13 +913,11 @@ c   indx iwork
 10    continue
       return
       end
+
       subroutine fmax8 (namef,tmax,idmax,indmax)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -942,6 +944,7 @@ c   indx iwork
 10    continue
       return
       end
+
       subroutine fmax(namef,tmax,itmax)
       implicit real*8 (a-h,o-z)
       
@@ -973,6 +976,7 @@ c   indx iwork
 20    continue
       return
       end
+
       function hdet11(ldet,ia,ib)
       implicit real*8 (a-h,o-z)
       
@@ -2855,10 +2859,21 @@ c             write (6,*) ' '
       return
       end 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prtime(tit,n,iparm)
-      implicit real*8 (a-h,o-z)
-      common /csdtime/ csdstim,csdltim
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!-----------------------------------------------------------------------
+!
+!       print time using system specific routine
+!
+!-----------------------------------------------------------------------
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
+#include "csdtime.h"
+!     common /csdtime/ csdstim,csdltim
+#include "dat.h"
+!      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       character*8 clockx
       real*4 cputime
       if (iparm.gt.iopt(1)) return
@@ -2867,15 +2882,15 @@ c             write (6,*) ' '
       acum = t - csdstim
 
 !mi: gfortran does not know time...
-!     call time(clockx)
+      call time(clockx)
 
       print 900,tit,acum,diff,n,clockx
 900   format (' time aft ',a8,f10.3,';added ',
      1 f8.3,' n=',i8,'. ',a24)
       csdltim = t
-      call flush (6)
+      call flush (LUPRI)
       return
-      end
+      end subroutine prtime
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdin
@@ -2932,7 +2947,7 @@ c             write (6,*) ' '
 
       write(LUPRI,'(/,2x,a)') 'end rdin'
       return
-      end
+      end subroutine rdin
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdfile(nt,nrec,name,ieof)
@@ -3028,7 +3043,7 @@ c             write (6,*) ' '
 110     format(' nt nrec name=',i5,i4,2x,a8)
         call abext('rdfile  ')
       endif
-      end
+      end subroutine rdfile
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdsym

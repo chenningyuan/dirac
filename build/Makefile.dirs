@@ -99,11 +99,20 @@ hs:
 hs_clean:
 	@make -C$(BACK) hs_clean
 
+# all higher sector executables
 hsfs:
 	@make -C$(BACK) hsfs
 
 hsfs_csd:
 	@make -C$(BACK) hsfs_csd
+hsfs_csv:
+	@make -C$(BACK) hsfs_csv
+hsfs_csu:
+	@make -C$(BACK) hsfs_csu
+hsfs_chv:
+	@make -C$(BACK) hsfs_chv
+hsfs_chu:
+	@make -C$(BACK) hsfs_chu
 
 hsfs_clean:
 	@make -C$(BACK) hsfs_clean

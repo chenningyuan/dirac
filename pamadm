@@ -814,6 +814,8 @@ while [ -n "$1" ]; do
          ;;
       -hsfs)
          HSFSMOD=1
+         HSCCMOD=1
+         OOFMOD=1
          ;;
       -qdots)
          QDOTSMOD=1

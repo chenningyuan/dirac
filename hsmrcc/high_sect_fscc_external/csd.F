@@ -151,6 +151,13 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       call ener(0)
 
+!     initialization
+        diff=0.0d0
+       diff1=0.0d0
+         df3=0.0d0
+         df4=0.0d0
+
+!  ... iteration cycle ....
 220   iter=iter+1
 
       call prtime("start iter",iter,0)
@@ -206,10 +213,12 @@ c     iopt(10) .ne.0 - do not save pppp.
       end if
       call diffmax("tc  ","tnew","s2  ",diff,idiff)
       call diffmax("t1c ","t1nw","s2  ",diff1,idiff1)
+
       write (6,*) ' '
       write (6,'('' iteration # '',i3,'' diffmx='',e10.3,2x,i12,
      1 e10.3,2x,i12)') 
      2 iter,diff,idec(idiff),diff1,idec(idiff1)
+
       if (iopt(17).ne.0) then
         write (6,2402) df3,idec(iddf3),idec(inddf3)
       end if
@@ -269,8 +278,12 @@ c diis
       end if
       call prt("tnew","new t   ",2)
       call prt("t1nw","new t1  ",2)
+
+!     write(LUPRI,*) abs(diff),abs(diff1),abs(df3),abs(df4) ! control printout
+
       if (max(abs(diff),abs(diff1),
-     1abs(df3),abs(df4)).lt.convrg) go to 910
+     1 abs(df3),abs(df4)).lt.convrg) go to 910
+
       call wrtfile (51,0,"tc  ")
       call wrtfile (51,1,"t1c ")
       if (iopt(17).ne.0) then
@@ -333,12 +346,15 @@ c  rle singular
       go to 220
 c
 c  different endings
-910   write (6,'('' csd  converged after iter '',i3)') iter
+910   write (LUPRI,'('' csd  converged after iter '',i3)') iter
       call ener(2)
+      write(LUPRI,*)
       go to 970
-920   write (6,*) ' iteration limit'
+920   write (LUPRI,*) ' iteration limit reached'
       call abext('limit   ')     
+
 970   continue
+
       if (iopt(17).ge.4) then
         call prt8 ("t40 ","last t4 ",0)
       end if
@@ -358,6 +374,7 @@ c  different endings
           call wrtfile (51,3,"t40 ")
         end if
       end if
+
       write (*,*) nstrt(1,nflcur),' words used in igen,',
      1  nstrt(2,nflcur),' words used in gen'
       call prtime ("end ",0,0)
@@ -499,7 +516,7 @@ c**************************************************************
 !            Calculate CCSD correlation energy
 !
 !   id parameter : 2 - final correlation energy
-!
+!                  other than 1,2 - iteration correl.energy
 !
 !--------------------------------------------------------------
 #include "implicit.h"
@@ -533,6 +550,7 @@ c   id=1 for rle, 0 regularly.
       istrt1=nstrt(2,ntm-1)
       istrt2=nstrt(2,nts2-1)
       e=-ddot(nsize,gen(istrt1+1),1,gen(istrt2+1),1)
+
       if (id.eq.1) then
         call files_ccsd("tr1 ",nt1,new,1,-1,-1)
       else
@@ -547,13 +565,13 @@ c   id=1 for rle, 0 regularly.
       e=e+2.d0*ddot(nsize,gen(istrt1+1),1,gen(istrt2+1),1)
 
       if (id.eq.1) then
-        write (LUPRI,'(/,2X,A,F17.9)')
+        write (LUPRI,'(/,2X,A,F20.14)')
      &  'correlation energy (rle)=',e
       else if (id.eq.2) then
-        write (LUPRI,'(/,2X,A,F17.9)')
+        write (LUPRI,'(/,2X,A,F20.14)')
      &  'correlation energy(final)=',e
       else
-        write (LUPRI,'(/,2X,A,F17.9)')
+        write (LUPRI,'(/,2X,A,F20.14)')
      &  'correlation energy=',e
       endif
 
