@@ -85,7 +85,6 @@ setup()
       LONDONMOD=1
       IHFSCCMOD=1
       ADCMOD=1
-      F90MODS=ALL_F90MODS
 # MI  - needs to be fixed for gfortran !!!
 #      EMBMOD=1
 #      ECPMOD=1
@@ -161,7 +160,6 @@ setup()
       if [ -n "$DFTMOD" ]; then
          EMBFLG='-DMOD_EMB'
          EMBTAR=1
-	 F90MODS=ALL_F90MODS
          echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
       else
          echo "ab initio/DFT embedding module not included - depends on DFT module "
@@ -173,7 +171,6 @@ setup()
    if [ -n "$XMLMOD" ]; then
       XMLFLG='-DMOD_XML'
       XMLTAR=1
-      F90MODS=ALL_F90MODS
       echo " - XML input/output module (with Fortran90/95 modules)"
    fi
    #
@@ -210,7 +207,6 @@ setup()
    if [ -n "$VISUALMOD" ]; then
       VISUALFLG='-DMOD_VISUAL'
       VISUALTAR=1
-      F90MODS=ALL_F90MODS
       echo " - visualization module"
    fi
    #
@@ -219,7 +215,6 @@ setup()
    if [ -n "$AORESPONSEMOD" ]; then
       AORESPONSEFLG='-DMOD_AORESPONSE'
       AORESPONSETAR=1
-      F90MODS=ALL_F90MODS
       echo " - AO response module"
    fi
    #
@@ -228,7 +223,6 @@ setup()
    if [ -n "$CAPMOD" ]; then
          CAPFLG='-DMOD_CAP'
          CAPTAR=1
-	 F90MODS=ALL_F90MODS
          echo " - CAP module"
   # else
       #  echo "CAP module is not included "
@@ -265,7 +259,6 @@ setup()
    if [ -n "$HSCCMOD" ]; then
          HSCCFLG='-DMOD_HSCC'
          HSCCTAR=1
-	 F90MODS=ALL_F90MODS
          cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
          (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
          echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc"
@@ -290,7 +283,6 @@ setup()
    if [ -n "$QDOTSMOD" ]; then
          QDOTSFLG='-DMOD_QDOTS'
         # QDOTSTAR=1
-	 F90MODS=ALL_F90MODS
          echo " - Quantum Dots (artificial atom) enabled"
    fi
    #
@@ -299,7 +291,6 @@ setup()
    if [ -n "$OOFMOD" ]; then
          OOF_FLG='-DMOD_OOF'
          OOF_TAR=1
-	 F90MODS=ALL_F90MODS
          echo " - OOF module"
       else
        #  echo "OOF module not included"
