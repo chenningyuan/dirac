@@ -58,6 +58,11 @@ contains
 
   subroutine parse_dft_input(word_io, reset)
 
+!   radovan: if you add new keywords then it's 
+!            nice if the user gets the confirmation
+!            that something is happening in the output
+!            so write something in report_after_dft_input
+
 !   ----------------------------------------------------------------------------
     character(7), intent(inout) :: word_io
     logical,      intent(in)    :: reset
