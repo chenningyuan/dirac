@@ -5457,6 +5457,7 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
       IF (NORB(I).GT.0) THEN
 
 C      ... diagonalize the H2c in MO(ee) basis !
+!      radovan: DOJACOBI is not set!
        IF (DOJACOBI.AND.NZ.EQ.1) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
