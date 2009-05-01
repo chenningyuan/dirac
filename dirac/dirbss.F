@@ -5232,7 +5232,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),TMAT(*),
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
-      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,DOJACOBI,WRITEH2C,
+      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,WRITEH2C,
      &        PURLO,USEDF,DO4C2C,START2C,WANT_LINEAR
       CHARACTER*8 LABELH1,LABELH2,LBL
 
@@ -5330,9 +5330,6 @@ C     ... save Fock-Dirac matrix in 2c SA-AO "xhi" into BSSMAT
 C  ======== End of handling Fock-Dirac 2c =========
       ENDIF
 C  ======== End of handling Fock-Dirac 2c =========
-
-C      ... this option does not matter....
-!      DOJACOBI = .FALSE.
 
       WANT_LINEAR=.FALSE.
        IF (LINEAR) THEN
@@ -5457,8 +5454,8 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
       IF (NORB(I).GT.0) THEN
 
 C      ... diagonalize the H2c in MO(ee) basis !
-!      radovan: DOJACOBI is not set!
-       IF (DOJACOBI.AND.NZ.EQ.1) THEN
+!       DOJACO is defined in dcbgen.h, only for real matrixes
+       IF (DOJACO.AND.NZ.EQ.1) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
      &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
