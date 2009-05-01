@@ -49,6 +49,17 @@ $(srcdir_hsfs)/bin/csv.x : $(OBJ)
 	make touch_all
 	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/csv.x" is ready." 
 
+# ionize 1 electron, (1,0) sector
+hsfs_chv : $(srcdir_hsfs)/bin/chv.x
+$(srcdir_hsfs)/bin/chv.x : $(OBJ)
+	make touch_all
+	make main_as_subr
+	$(F77) -DSTANDALONE_HSFS  $(F77FLAGS) -c -o $(srcdir_hsfs)/chv.o  $(srcdir_hsfs)/chv.F
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS) 
+	rm $(srcdir_hsfs)/chv.o
+	make touch_all
+	@echo -e "\n Independent executable "$(srcdir_hsfs)/bin/chv.x" is ready." 
+
 #
 #       adapat later ...
 #

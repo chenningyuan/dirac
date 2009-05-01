@@ -8,14 +8,14 @@ to write own dependencies of each executable. With the so called medium memory m
 Also I had to rename some routines in some (not all) independent executable files because of overlaping their names.
 Now all object files are used for linking executable files, therefore all function names must be unique.
 
-These GAMESS files (produces by Sham's changes) are read (get_moints.F90) :
+These GAMESS files (produced due to Sham's changes) are read (get_moints.F90) :
  HCRMO  $SCR/$JOB.F281
  MULMO  $SCR/$JOB.F282
 
 I use the "ARCH32BIT" preprocessor flag to specify 32-bit architectures.
 
-Efforts with old ACESII were not succesfull - despite compilation there is some memory crash
-at the beginning.
+Efforts with old ACESII were not fruitfull - despite succesfull compilation there is some memory crash
+at the beginning of the run.
 
 I. Fock-space cc programs:
 ========================================
@@ -122,13 +122,17 @@ line 7 - F(24i3) L(I), I=1,NNNN - L=0 or 1 depend on symmetry group
 (one line for every symmetry operation. indicators for orb groups, 0 if
 group symmetric under operation, 1 if group antisymmetric (20i3).)
 last line - number '9' 
+
 next lines (if are presented):
+
 incomplete model space info (for iopt(9) ne 0):
-in csv:
+
+in (chv) csv (subroutine rdrsp1):
       read (5,*) nrsp1,((it(j,i),j=1,2),i=1,nrsp1)
    where a transition from it(1,i) to it(2,i) (both valence orbitals)
    takes you from p space to q space.
-in csu:
+
+in (chu) csu (subroutine rdrsp2):
       read (5,*) nrsp2,((it(j,i),j=1,2),i=1,nrsp2)
    where (it(1,i),it(2,i)) defines an r space determinant (should be in p
    but isn't)
@@ -143,7 +147,7 @@ the example, input is
 because 3 to 4 can take 34 to 44. in csu, put number of r-space determinants,
 then determinants. in the example,
 1, 4,4.
-c -----------------------------------------------------------
+c ------------------------------------------------------------------------------------
 
 =========================================================================
 V. SOME INPUT EXAMPLES AND EXPLANATIONS:

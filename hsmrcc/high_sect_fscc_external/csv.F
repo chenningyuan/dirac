@@ -4,18 +4,27 @@
       subroutine csv
 #endif
 
-      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
 #include "param_ccsd.h"
+#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "cij1.h"
+!      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cfiles.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cint.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "dat.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "csdtime.h"
+!     common /csdtime/ csdstim,csdltim
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /csdtime/ csdstim,csdltim
       character*256 filenm,filenm51,filenm52,filenm6,filenm20,filenm21
+
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))
@@ -25,6 +34,7 @@ c     iopt(5) - print only elements gt 10**(-iopt(5))
 c     iopt(6) - start avrg.
 c     iopt(8) - fock.
 c     iopt(10) .ne.0 - do not save pppp.
+
       real*4 cputime
       filenm(1:1)=' '
       call getenv('input',filenm)
@@ -57,8 +67,10 @@ c     iopt(10) .ne.0 - do not save pppp.
       write (*,*) '   $$$$$$$$$   csv   $$$$$$$$$  '
       csdstim = cputime(real(0.))
       csdltim = csdstim
+
       call rdin
       call rdsym
+
       if (iopt(10).eq.0) then
         filenm(1:1)=' '
         call getenv('tape9',filenm)
@@ -69,6 +81,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       write (6,'('' max # of iter='',i3,''. convrg='',e10.2)')
      1 iopt(2),convrg
       call prtime("rdin    ",0,0)
+      ! incomplete active space stuff
       if (iopt(9).ne.0) call rdrsp1
       nflcur=0
       nstrt(1,0)=0
@@ -105,6 +118,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       endif
       write(6,2400) tmax,idec(itmax),t1max,idec(it1max)
       call t1sqr("t1v ","t1c ","tv  ","tm  ")
+
 220   iter=iter+1
       call prtime("strt itr",iter,0)
       call flush (6)
@@ -258,6 +272,7 @@ c  different endings
       call flush (6)
       stop
       end
+
 c *********************************************
       subroutine ordvv
       implicit real*8 (a-h,o-z)
@@ -491,7 +506,7 @@ c ******************************************
         call move    ("vv0 ","tv  ")
         call diveps  ("tv  ")
         call move    ("vv10","t1v ")
-        call fold    ("t1v ","tvf ")
+        call fold_ccsd ("t1v ","tvf ")
         call diveps  ("t1v ")
        end if
           if ((iopt(17).ne.0).and.(iopt(20).ne.1)) then
@@ -822,7 +837,7 @@ c    diag 34,35a,35b
         call add       ("va1 ",2.d0,"va2 ",-1.d0,"s1  ")
         call mult      ("s1  ","t1c ","s2  ",202)
 c v1 Feb 95
- 	call add       ("s2  ",1.d0,"hp  ",1.d0,"s2  ")
+        call add       ("s2  ",1.d0,"hp  ",1.d0,"s2  ")
         call mult6     ("s3  ","s2  ","s1  ",0)
         call add       ("s1  ",1.d0,"tnew",1.d0,"tnew")
 c    diag 36a,38a
@@ -886,7 +901,7 @@ c  dg1n13,14
         call add       ("s3  ",1.d0,"t1nw",1.d0,"t1nw")
       end if
 c
-      call fold("t1nw","tvf ")
+      call fold_ccsd("t1nw","tvf ")
       call heff1_csv
       call dfold1
       call diveps("t1nw")
@@ -1460,7 +1475,7 @@ c **************************************************
       call prt("s3  ","dfold1  ",3)
 c --------------------------
       call mult("tvf ","t1or","s2  ",111)
-      if (iopt(9).ne.0) call fold("s2  ","s3  ")
+      if (iopt(9).ne.0) call fold_ccsd("s2  ","s3  ")
       call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
       call prt("s2  ","dfold1   ",3)
       if (iopt(17).eq.3) then

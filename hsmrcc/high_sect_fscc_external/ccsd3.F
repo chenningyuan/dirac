@@ -1,6 +1,7 @@
       subroutine rdrsp1
       implicit real*8 (a-h,o-z)
-      common /rsp1/  nrsp1,irsp1(100)
+#include "rsp1.h"
+!     common /rsp1/  nrsp1,irsp1(100)
       dimension it(2,100)
       read (5,*) nrsp1,((it(j,i),j=1,2),i=1,nrsp1)
       call dimx(nrsp1,100,"rdrsp1")
@@ -11,10 +12,10 @@
       return
       end
 
-
       subroutine rdrsp2
       implicit real*8 (a-h,o-z)
-      common /rsp2/  nrsp2,irsp2(500)
+#include "rsp2.h"
+!      common /rsp2/  nrsp2,irsp2(500)
       dimension it(2,500)
       read (5,*) nrsp2,((it(j,i),j=1,2),i=1,nrsp2)
       call dimx(nrsp2,500,"rdrsp2")

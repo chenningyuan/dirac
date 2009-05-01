@@ -1,6 +1,13 @@
+#if defined STANDALONE_HSFS
       program chv
+#else
+      subroutine chv
+#endif
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+
+#include "param_ccsd.h"
+!     include 'parameters.f'
+
       common // gen(nbig)
       common /i/ igen(nbig)
       common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
@@ -296,10 +303,13 @@ c  different endings
       call prtime("end     ",iter,0)
       stop
       end
+
 c *********************************************
       subroutine ordvv
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
+
 c va: pphh
 c vb: phph
 c vc: ppph

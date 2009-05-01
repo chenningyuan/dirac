@@ -293,9 +293,7 @@ C  *******************************************************************
 !      subroutine fold(name2,namef)
       subroutine fold_ccsd(name2,namef)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common // gen(nbig)
@@ -309,6 +307,7 @@ c  for chp, chq only for exclusion of whole symmetries.
       common /rsp1/  nrsp1,irsp1(100)
       common /rsp2/  nrsp2,irsp2(500)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
       call files_ccsd(name2,ntape2,new,2,-1,-1)
       iiv1=11
       if (iii2.gt.100) iiv1=1111
@@ -402,6 +401,7 @@ c   move p to p transitions to folded
       call prtime("folded  ",nsize1,1)
       return
       end
+
       subroutine fold4 (nameu,namef,ind,ninds)
       implicit real*8 (a-h,o-z)
       
