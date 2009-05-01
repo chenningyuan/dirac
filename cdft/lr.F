@@ -60,6 +60,8 @@ c                                                           radovan bast
 c                                            last revision: january 2008
 c=======================================================================
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -72,9 +74,11 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
+
+#ifdef MOD_AUTODIFF
+#include "../dft/xc_fortran_interface.h"
+#endif
 
       logical   is_gga,
      &          lbit,
@@ -91,10 +95,11 @@ c=======================================================================
      &          s_b (  3),
      &          gs_b(3,3),
 !
-     &          vxc(99)
+     &          vxc(99),
+     &          derv(99)
 
       k_start = 1
-      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
+      if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
       do im = 1,nxcmat
         irepop = isymop(im) - 1
@@ -148,13 +153,79 @@ c=======================================================================
      &                  )
         endif
 
-        if(worth_it .gt. dfthrl) then
+        if(worth_it .gt. dft_cfg_dfthrl) then
 
-          if(is_gga) then
-            call sdftpot1(vxc,w,r_0,gr_0_norm)
+          if (is_gga) then
+
+#ifdef MOD_AUTODIFF
+            if (dft_cfg_autodiff) then
+
+              vxc = 0.0d0
+              Z   = gr_0_norm*gr_0_norm
+
+!             remember that BLYP = Slater + Becke correction + LYP
+              call lda_eval(LDA_SLATER, 2, r_0, derv)
+              vxc(fss) = vxc(fss)
+     &                 + taylor_deriv(derv, 2, (/0, 2/))
+
+              call gga_eval(GGA_BECKE, 2, r_0, Z, derv)
+              vxc(fss) = vxc(fss)
+     &                 + taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
+              vxc(fsy) = vxc(fsy)
+     &                 + taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
+              vxc(fyy) = vxc(fyy)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
+              vxc(fx)  = vxc(fx)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
+
+              call gga_eval(GGA_LYP, 2, r_0, Z, derv)
+              vxc(fss) = vxc(fss)
+     &                 + taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
+              vxc(fsy) = vxc(fsy)
+     &                 + taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
+              vxc(fyy) = vxc(fyy)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
+              vxc(fx)  = vxc(fx)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
+
+              vxc = vxc*w
+
+            else
+#endif
+
+              call sdftpot1(vxc, w, r_0, gr_0_norm)
+
+#ifdef MOD_AUTODIFF
+            end if
+#endif
+
           else
-            call sdftpot1(vxc,w,r_0,d0)
-          endif
+
+#ifdef MOD_AUTODIFF
+            if (dft_cfg_autodiff) then
+
+              vxc = 0.0d0
+
+              call lda_eval(LDA_SLATER, 2, r_0, derv)
+              vxc(fss) = vxc(fss)
+     &                 + taylor_deriv(derv, 2, (/0, 2/))
+
+              call lda_eval(LDA_VWN, 2, r_0, derv)
+              vxc(fss) = vxc(fss)
+     &                 + taylor_deriv(derv, 2, (/0, 2/))
+
+              vxc = vxc*w
+
+            else
+#endif
+
+              call sdftpot1(vxc, w, r_0, 0.0d0)
+
+#ifdef MOD_AUTODIFF
+            end if
+#endif
+
+          end if
 
           do k = k_start,3
             call sdft_lr_collinear(vxc,
@@ -205,8 +276,6 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
 
       logical   is_gga
@@ -275,6 +344,8 @@ C                                                           radovan bast
 C                                              last revision: march 2007
 C=======================================================================
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -288,8 +359,6 @@ C=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
 
       DIMENSION DTRMAT(*),
@@ -332,7 +401,7 @@ C=======================================================================
           FO_VORTICITY_NORM = DSQRT(DDOT(3,FO_VORTICITY,1,
      &                                     FO_VORTICITY,1))
 
-          IF(FO_VORTICITY_NORM .LT. DFTHRL) GOTO 999
+          IF(FO_VORTICITY_NORM .LT. dft_cfg_DFTHRL) GOTO 999
 
           CALL GET_ROTVPARA(.FALSE.,
      &                      FO_VORTICITY,

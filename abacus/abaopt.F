@@ -2253,13 +2253,14 @@ C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "infopt.h"
 #include "optinf.h"
 #include "siripc.h"
-#include "dftcom.h"
 #ifndef PRG_DIRAC
 #include "mx2orb.h"
 #include "infinp.h"
@@ -2282,8 +2283,12 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
-!radovan: fixme dft_cfg
-      IF (DFTRUN) GRDONE = .FALSE.
+
+      if (dft_cfg_is_dft_calculation) then
+!       get a new grid at new geometry
+        dft_cfg_grid_is_done = .false.
+      end if
+
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
          IF (DOCCSD) THEN

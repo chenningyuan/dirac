@@ -3888,6 +3888,11 @@ C***********************************************************************
 #ifdef MOD_EMB
       USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
 #endif
+#ifdef MOD_DFT
+      use dft_cfg
+      use dft_input
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3910,10 +3915,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-Cdirac#include "functionals.h"
-#endif
 #ifdef MOD_ERI
 #include "cbieri.h"
 #endif
@@ -4059,12 +4060,8 @@ CMI ... this routine is beeing called after HAMINP, in PAMINP
 CMI   CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
 #ifdef MOD_DFT
-C
-C     Initialize from DFTCOM
-C     ----------------------
-C
-      DFTRUN = .FALSE.
-      DFTADD = .FALSE.
+      dft_cfg_set    = .false.
+      dft_cfg_is_dft_calculation = .false.
 #endif
 
 C
@@ -4255,8 +4252,7 @@ c DIRAOF->SKLFC1
 
                END IF
                DFTHAM = .TRUE.
-               DFTADD = .TRUE.
-               DFTRUN = .TRUE.
+      dft_cfg_is_dft_calculation = .true.
                SETFUN = .TRUE.
 #endif
             GO TO 100
@@ -5382,7 +5378,9 @@ C
         GO TO 200
     3 CONTINUE
 #ifdef MOD_DFT
-        CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
+      call parse_dft_input(word, .false.)
+      call consistency_after_dft_input()
+      call report_after_dft_input()
 #else
 C       hjaaj 3jun2003: dirac.x went into an infinite loop here
 C       if *DFT in input but MOD_DFT not defined !!!
@@ -5429,7 +5427,7 @@ C
 #ifdef MOD_DFT
 Chjaaj: we need to be sure DFT is initialized (and SET reset for geom.opt.)
 CJuly2003
-      CALL DFTINP(WORD,.TRUE.,WORK,LWORK)
+      call parse_dft_input(word, .true.)
 #endif
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 

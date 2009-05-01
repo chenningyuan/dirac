@@ -183,20 +183,36 @@ setaldaha_(const int *aldaha)
 void
 dftpot0_(FirstDrv *ds,
          const real* weight,
-         const real* rho, 
+         const real* rho,
          const real* grad)
 {
-    FunFirstFuncDrv drvs;
-    FunDensProp dp;
-    /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
-    dp.rhoa  = dp.rhob  = *rho  *0.5;
-    dp.grada = dp.gradb = *grad *0.5;
-    dp.gradab = dp.grada * dp.gradb;
-    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
-    drv1_clear(&drvs);
-    selected_func->first(&drvs, *weight, &dp);
-    ds->fR = drvs.df1000;
-    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
+  FunFirstFuncDrv drvs;
+  FunDensProp dp;
+
+  real grada;
+  real bygrada;
+  real by2, by4;
+
+  drv1_clear(&drvs);
+
+  dp.rhoa   = dp.rhob  = *rho *0.5;
+  dp.grada  = dp.gradb = *grad*0.5;
+  dp.gradab = dp.grada * dp.gradb;
+
+  grada  = *grad*0.5;
+
+  bygrada  = 1.0/grada;
+
+  by2   = 0.50000000;
+  by4   = 0.25000000;
+
+  dp.subsystem[0] = NULL;
+  dp.subsystem[1] = NULL;
+
+  selected_func->first(&drvs, *weight, &dp);
+
+  ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
 }
 
 void

@@ -356,6 +356,10 @@ C     Last revision : Jan 27 1997 - tsaue
 C                     July 2005 - MI - adapted for DC2BSS calculations.
 C
 C*****************************************************************************
+#ifdef MOD_DFT
+      use dft_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -368,9 +372,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 #ifdef MOD_DNF
 #include "densfit.h"
 #endif
@@ -543,22 +544,14 @@ C
 C       Construct Kohn-Sham contribution
 C       ================================
 #ifdef MOD_DNF
-        IF(DFTADD.AND..NOT.DF_FITVXC) THEN
+        IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
 #else /* mod_dnf */ 
-        IF(DFTADD) THEN
+        IF(dft_cfg_is_dft_calculation) THEN
 #endif
-C          tsaue: turn off test on numerical integration,
-C                 When starting from coefficients from a different
-C                 geometry; they are not orthonormal at the new
-C                 geometry and thus the correct number of electrons
-C                 is generally not integrated
-           TMP = DFTELS
-           DFTELS = D1
 C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
            IOPTS = 1
            CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
      &                 IPRSCF)
-           DFTELS = TMP
            TDXC = SECOND() - TDXC
         ENDIF
 #endif
@@ -727,7 +720,7 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
 #ifdef MOD_DFT
-          IF(DFTADD) THEN
+          IF(dft_cfg_is_dft_calculation) THEN
           CPUTID = SECTID(TDXC)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
@@ -1158,6 +1151,11 @@ C     Written by T.Saue Mar 3 1995
 C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
+
+#ifdef MOD_DFT
+      use dft_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1170,10 +1168,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-C#ifdef MOD_DFT
-#include "dftcom.h"
-#include "dftac.h"
-C#endif
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1212,22 +1206,19 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
-C
-C     asymptotic correction
-      OLD_HOMO_EIGENVALUE = D0
-C
-C
-C
-      DO 10 ITER = 2,MAXITR
 #ifdef MOD_DFT
-C
-C        asymptotic correction
-C                GRAC                    SAOP
-         IF(LBIT(LBIT_DFTAC,1) .OR. LBIT(LBIT_DFTAC,3)) THEN
-           CALL DFTAC_EIGENVALUES(EIG,OLD_HOMO_EIGENVALUE)
-         ENDIF
+!     asymptotic correction
+      old_homo_eigenvalue = 0.0d0
 #endif
-C
+      DO 10 ITER = 2,MAXITR
+
+#ifdef MOD_DFT
+!       asymptotic correction
+        if(dft_cfg_grac .or. dft_cfg_saop) then
+          call dftac_eigenvalues(eig, old_homo_eigenvalue)
+        end if
+#endif
+
          NITER  = NITER + 1
          KITER  = KITER + 1
          CALL GTINFO(DAYTID)
@@ -1348,9 +1339,9 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
 #ifdef MOD_DNF
-         IF(DFTADD.AND..NOT.DF_FITVXC) THEN
+         IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
 #else
-         IF(DFTADD) THEN
+         IF(dft_cfg_is_dft_calculation) THEN
 #endif
 C         NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
              IOPTS = 1
@@ -1549,7 +1540,6 @@ C
 #include "dcbgen.h"
 #ifdef MOD_DFT
 #include "dfterg.h"
-#include "dftcom.h"
 #endif
 #ifdef MOD_DNF
 #include "densfit.h"
@@ -3185,6 +3175,10 @@ C
 C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
+#ifdef MOD_DFT
+      use dft_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3192,7 +3186,6 @@ C***********************************************************************
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dftcom.h"
 C
       DIMENSION BMAT(MXDIIS*MXDIIS)
       LOGICAL TOBE,OLDFMO,DSCFON,BARNUC
@@ -3267,8 +3260,10 @@ CMI/May05 Do not use old DFCOEF when DO4CT2C=.TRUE. !
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
           TRIVEC = .FALSE.
-C     Do not use density-based atomic size adjustments in this case:
-          ATSIZE = .FALSE.
+#ifdef MOD_DFT
+!         do not use density-based atomic size adjustments in this case
+          dft_cfg_estimate_radii = .false.
+#endif
         ENDIF
       ENDIF
 C

@@ -44,6 +44,9 @@ C     so many thanks to Andreas!
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+
+       use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -52,12 +55,10 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dftac.h"
 #include "dftbuf.h"
 #include "dgroup.h"
 #include "functionals.h"
 C
-      LOGICAL   LBIT
       DIMENSION VX(DERVS1),
      &          VX_BULK(DERVS1),
      &          VX_OUTER(DERVS1),
@@ -68,7 +69,7 @@ C
 C     GRAC parameters
 C     ===============
 C
-      IF(LBIT(LBIT_DFTAC,1)) THEN !GRAC
+      if (dft_cfg_grac) then
         RHO43 = RHO*RHO13
         X = D0
         IF(RHO43 .NE. D0) THEN
@@ -76,14 +77,16 @@ C
         ELSE
           RETURN
         ENDIF
-      ENDIF
+      end if
 C
 C
 C     shift bulk?
 C     ===========
 C
-      SHIFTBULK = D0
-      IF(LBIT(LBIT_DFTAC,1)) SHIFTBULK = DFTAC_IP + HOMO_EIGENVALUE !GRAC
+      shiftbulk = 0.0d0
+      if (dft_cfg_grac) then
+        shiftbulk = dft_cfg_ac_ip + dft_cfg_homo_eigenvalue
+      end if
 C
 C
 C     bulk potential
@@ -91,16 +94,16 @@ C     ==============
 C
       CALL DZERO(VX_BULK,DERVS1)
 C
-      IF(LBIT(LBIT_DFTAC,4)) THEN !SAOP with response part
+      IF (dft_cfg_saop_with_response_part) THEN
         CALL DZERO(VX_SLATER,DERVS1)
         CALL DZERO(VX_RESP,DERVS1)
 C
         CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,GRADIENT_NORM)
         VX_RESP(FR0) = 0.42D0*WEIGHT*RHO_RESP/RHO
         VX_BULK(FR0) = VX_SLATER(FR0) + VX_RESP(FR0)
-      ELSE !GRAC
+      ELSE
         VX_BULK(FR0) = VX(FR0)
-      ENDIF
+      END IF
 C
       VX_BULK(FZ0) = VX(FZ0)
 C
@@ -110,9 +113,9 @@ C     ====================
 C
       CALL DZERO(VX_OUTER,DERVS1)
 C
-      IF(LBIT(LBIT_DFTAC,6))
+      IF(dft_cfg_asymptote_is_lb94)
      &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
-      IF(LBIT(LBIT_DFTAC,7))
+      IF(dft_cfg_asymptote_is_lbalpha)
      &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
 C
 C
@@ -120,11 +123,11 @@ C     howto FADE (with D0 .LE. FADE .LE. D1)
 C     ======================================
 C
 !     SAOP
-      IF(LBIT(LBIT_DFTAC,3))
-     &                     FADE = RHO_OUTER/RHO
+      IF(dft_cfg_saop)
+     & FADE = RHO_OUTER/RHO
 !     GRAC
-      IF(LBIT(LBIT_DFTAC,1))
-     &                     FADE = D1/(D1+EXP(-GRAC_ALPHA*(X-GRAC_BETA)))
+      IF(dft_cfg_grac)
+     & FADE = D1/(D1+EXP(-dft_cfg_GRAC_ALPHA*(X-dft_cfg_GRAC_BETA)))
 C
 C
 C     connection
@@ -151,6 +154,7 @@ C     which has been incorporated into this one, so thanks Andreas!
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+       use dft_cfg
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -159,23 +163,21 @@ C-----------------------------------------------------------------------
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dftcom.h"
-#include "dftac.h"
 C
-      LOGICAL LBIT
       DIMENSION EIGENVALUES(*)
 
 
 !     get the homo eigenvalue
 !     =======================
 
-      if (.not. lbit(lbit_dftac, 2)) then !grac is not active
-        homo_eigenvalue = -1.0d20
+      if (.not. dft_cfg_grac_is_active) then
+        dft_cfg_homo_eigenvalue = -1.0d20
         do i = 1, nfsym
           if(nish(i) .gt. 0) then
             do j = 1, nish(i)
               e = eigenvalues((i-1)*norb(1) + npsh(i) + j)
-              if(e .gt. homo_eigenvalue) homo_eigenvalue = e
+              if(e .gt. dft_cfg_homo_eigenvalue) 
+     &            dft_cfg_homo_eigenvalue = e
             end do
           end if
         end do
@@ -185,26 +187,22 @@ C
 C     turn asymptotic correction on ?
 C     ===============================
 C
-      IF(LBIT(LBIT_DFTAC,3)) CALL SET_LBIT(LBIT_DFTAC,4)
+      if (dft_cfg_saop) dft_cfg_saop_is_active = .true.
 C
-      DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - HOMO_EIGENVALUE)
-      OLD_HOMO_EIGENVALUE = HOMO_EIGENVALUE
+      DELTA_HOMO = ABS(OLD_HOMO_EIGENVALUE - dft_cfg_homo_eigenvalue)
+      OLD_HOMO_EIGENVALUE = dft_cfg_homo_eigenvalue
 C
-      IF(DELTA_HOMO .LE. DFTAC_THRESHOLD) THEN
-        IF(LBIT(LBIT_DFTAC,1)) CALL SET_LBIT(LBIT_DFTAC,2)
-      ENDIF
-C
+      if (delta_homo .le. dft_cfg_ac_threshold) then
+        if (dft_cfg_grac) dft_cfg_grac_is_active = .true.
+      end if
+
 !     GRAC is active
-      IF(LBIT(LBIT_DFTAC,2))
+      if (dft_cfg_grac_is_active)
      &                WRITE(LUPRI,*) 'GRAC asymptotic correction active'
 !     SAOP is active
-      IF(LBIT(LBIT_DFTAC,4))
+      if (dft_cfg_saop_is_active)
      &                WRITE(LUPRI,*) 'SAOP asymptotic correction active'
-C
-C     ICOUNTER_DFTAC_DEBUG = ICOUNTER_DFTAC_DEBUG + 1 !for debug only
-C     IF(ICOUNTER_DFTAC_DEBUG .GT. 15) LBIT_DFTAC = LBIT_DFTAC + 128
-C
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -217,6 +215,7 @@ C     get orbital energies and density matrices for SAOP
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+       use dft_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -228,14 +227,11 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "nuclei.h"
-#include "dftcom.h"
-#include "dftac.h"
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      LOGICAL   LBIT,
-     &          FILE_IS_THERE,
+      LOGICAL   FILE_IS_THERE,
      &          FILE_IS_OPENED
       DIMENSION DMAT_OUTER_AO(*),
      &          DMAT_RESP_AO(*),
@@ -253,8 +249,7 @@ C
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT_OUTER_MO ,N2ORBX,
      &            WORK,KFREE,LFREE)
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
+      IF(dft_cfg_saop_with_response_part) THEN
         CALL MEMGET('REAL',KDMAT_RESP_MO,N2ORBX,
      &              WORK,KFREE,LFREE)
       ENDIF
@@ -294,12 +289,13 @@ C
 !     get the homo eigenvalue
 !     =======================
 
-      homo_eigenvalue = -1.0d20
+      dft_cfg_homo_eigenvalue = -1.0d20
       do i = 1, nfsym
         if(nish(i) .gt. 0) then
           do j = 1, nish(i)
             e = work(keig + j - 1 + (i-1)*norb(1) + npsh(i))
-            if(e .gt. homo_eigenvalue) homo_eigenvalue = e
+            if(e .gt. dft_cfg_homo_eigenvalue) 
+     &          dft_cfg_homo_eigenvalue = e
           end do
         end if
       end do
@@ -315,7 +311,8 @@ C
           DO J = 1,NISH(I)
             K = K+1
             WORK(KSAOPENERGIES+K-1) =
-     &            HOMO_EIGENVALUE-WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
+     &            dft_cfg_homo_eigenvalue
+     &           -WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
           ENDDO
         ENDIF
       ENDDO
@@ -326,8 +323,7 @@ C     ============================
 C
       CALL DZERO(DMAT_OUTER_AO,N2BBASX)
       CALL DZERO(WORK(KDMAT_OUTER_MO),N2ORBX)
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
+      IF(dft_cfg_saop_with_response_part) THEN
         CALL DZERO(DMAT_RESP_AO,N2BBASX)
         CALL DZERO(WORK(KDMAT_RESP_MO),N2ORBX)
       ENDIF
@@ -339,8 +335,7 @@ C             SAOP with response part
             JOFF = (NORB(1)*(I-1)+NPSH(I))*NORBT
             JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
             JOFF = JOFF+(J-1)*NORBT+J-1
-C                   SAOP with response part
-            IF(LBIT(LBIT_DFTAC,5)) THEN
+            IF(dft_cfg_saop_with_response_part) THEN
               WORK(KDMAT_RESP_MO+JOFF)
      &                                 = SQRT(WORK(KSAOPENERGIES+K-1))
             ENDIF
@@ -369,8 +364,7 @@ C
             SOMEDIFF = ABS(WORK(KSAOPENERGIES+KCHECK)
      &                                  -WORK(KSAOPENERGIES+KCHECK-1))
             IF(SOMEDIFF.LT.1.0D-5) THEN
-C                     SAOP with response part
-              IF(LBIT(LBIT_DFTAC,5)) THEN
+              IF(dft_cfg_saop_with_response_part) THEN
                 WORK(KDMAT_RESP_MO+JOFF)
      &                               = WORK(KDMAT_RESP_MO+JOFFNEXT)
               ENDIF
@@ -387,8 +381,7 @@ C     ==========================
 C
       DO I = 1,NFSYM
         IF(NISH(I).GT.0) THEN
-C                 SAOP with response part
-          IF(LBIT(LBIT_DFTAC,5)) THEN
+          IF(dft_cfg_saop_with_response_part) THEN
             CALL QTRANS('MOAO','S',D0,
      &                  NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &                  DMAT_RESP_AO(1+I2BASX(I,I)),
@@ -414,8 +407,7 @@ C                 SAOP with response part
      &                WORK(KFREE),LFREE,0)
         ENDIF
       ENDDO
-C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
+      IF(dft_cfg_saop_with_response_part) THEN
         CALL DSCAL(N2BBASX,D2,DMAT_RESP_AO,1)
       ENDIF
       CALL DSCAL(N2BBASX,D2,DMAT_OUTER_AO,1)

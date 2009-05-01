@@ -1391,15 +1391,16 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
+#ifdef MOD_DFT
+       use dft_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 C
       DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
@@ -1423,9 +1424,9 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dftadd 
-     &       .and. (alda_hs .or. alda_ha)
-     &       .and. .not. xalda) ifckop(im) = 2
+         if (dft_cfg_is_dft_calculation .and.
+     &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
+     &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
          ISYMOP(IM) = JSYMOP
       END DO
@@ -1442,9 +1443,9 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dftadd 
-     &       .and. (alda_hs .or. alda_ha)
-     &       .and. .not. xalda) ifckop(im) = 2
+         if (dft_cfg_is_dft_calculation .and.
+     &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
+     &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO
@@ -1464,9 +1465,9 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dftadd 
-     &       .and. (alda_hs .or. alda_ha)
-     &       .and. .not. xalda) ifckop(im) = 2
+         if (dft_cfg_is_dft_calculation .and.
+     &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
+     &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
            ISYMOP(IM) = JSYMOP
          ENDDO
@@ -3529,6 +3530,10 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+#ifdef MOD_DFT
+        use dft_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -3540,9 +3545,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 #ifdef MOD_DNF
 #include "densfit.h"
 #endif
@@ -3600,9 +3602,9 @@ C     Construct Kohn-Sham contribution
 C     ================================
 C
 #ifdef MOD_DNF
-      IF(DFTADD.AND..NOT.DF_FITVXC) THEN
+      IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
 #else
-      IF(DFTADD) THEN
+      IF(dft_cfg_is_dft_calculation) THEN
 #endif
         IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
 C       Generate standard density matrix
@@ -3612,22 +3614,6 @@ C       Generate standard density matrix
         IOPTS = 4
         CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,ISYMOP,IHRMOP,IOPTS,
      &              WORK(KFREE),LFREE,IPRXRS)
-
-!-------------------------------------------------------------------------------
-!       radovan: please don't remove this part
-!                i use it for testing AO response development code
-!       if (.not. Du%is_defined) call mat_init(Du, ntbas(0), ntbas(0))
-!       Du%elms = 0.0d0
-!       Dp      = 1.0d-100*Du
-!       Fp      = 1.0d-100*Du
-!       call daxpy(ntbas(0)*ntbas(0)*nz, 
-!    &             2.0d0, work(kbuf), 1, Du%elms, 1)
-!       call daxpy(ntbas(0)*ntbas(0)*nz, 
-!    &             2.0d0, fmo,        1, Dp%elms, 1)
-!       call xc_contribution(2, Du, (/Dp/), (/Fp/))
-!       call daxpy(ntbas(0)*ntbas(0)*nz, 
-!    &             1.0d0, Fp%elms,    1, FAO, 1)
-!-------------------------------------------------------------------------------
 
         CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
       ENDIF

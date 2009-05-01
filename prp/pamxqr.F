@@ -2290,6 +2290,11 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+#ifdef MOD_DFT
+      use dft_cfg
+#endif
+
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -2298,9 +2303,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -2371,7 +2373,7 @@ C
 !     construct XC contribution
 !     =========================
 
-      if (dftadd) then
+      if (dft_cfg_is_dft_calculation) then
 
 !       get unperturbed density matrix
         call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
@@ -2934,7 +2936,6 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "blocks.h"
 #include "dcbfir.h"
-#include "dftcom.h"
 C
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 C

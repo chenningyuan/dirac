@@ -585,11 +585,11 @@ contains
 
   function do_dft() result(l)
 
-#include "dftcom.h"
-
     logical :: l
 
-    l = dftadd
+!fixme
+!   l = dftadd
+    l = .false.
 
   end function
 

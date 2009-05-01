@@ -48,9 +48,7 @@ c     T. Helgaker, T. Saue
 c                                  last revision: january 2008 (radovan)
 c=======================================================================
 
-!     to debug "local" ALDA - see comment further below
-!     use slater_m
-!     use vwn_derv_m
+      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -60,14 +58,12 @@ c=======================================================================
 
 #include "inforb.h"
 #include "nuclei.h"
-#if defined (PRG_DIRAC)
 #include "dgroup.h"
-#else
-#include "wrkrsp.h"
-#include "dftinf.h"
-#endif
-#include "dftcom.h"
 #include "functionals.h"
+
+#ifdef MOD_AUTODIFF
+#include "../dft/xc_fortran_interface.h"
+#endif
 
       logical   is_gga,
      &          lbit,
@@ -85,9 +81,8 @@ c=======================================================================
 !
      &          vxc_vector(3),
 !
-     &          vxc(99)
-!     to debug "local" ALDA - see comment further below
-!    &          derv_debug(0:60)
+     &          vxc(99),
+     &          derv(99)
 
       do im = 1,nxcmat
         irepop = isymop(im) - 1
@@ -103,19 +98,32 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !         LDA
 
-          if(dabs(r_b) .gt. dfthrl) then
+          if(dabs(r_b) .gt. dft_cfg_dfthrl) then
 
-!           this code here can be used to force SVWN derivative here and 
-!           use non-ALDA derivatives somewhere else in the code
-!           for this comment out call to dftpot1 and uncomment some things further up
-!           also make sure that the LDA/GGA switch goes to LDA
+#ifdef MOD_AUTODIFF
+            if (dft_cfg_autodiff) then
 
-!           s_part   = slater_derv(2, r_0, w)
-!           call vwn_derv(0.5d0*r_0, 0.5d0*r_0, w, derv_debug)
-!           vwn_part = derv_debug(20)
-!           vxc(fRR) = s_part + vwn_part
+              vxc = 0.0d0
+             
+              call lda_eval(LDA_SLATER, 2, r_0, derv)
+              vxc(frr) = vxc(frr)
+     &                 + taylor_deriv(derv, 2, (/2, 0/))
+             
+              call lda_eval(LDA_VWN, 2, r_0, derv)
+              vxc(frr) = vxc(frr)
+     &                 + taylor_deriv(derv, 2, (/2, 0/))
+             
+              vxc = vxc*w
 
-            call dftpot1(vxc,w,r_0,d0)
+            else
+#endif
+
+              call dftpot1(vxc, w, r_0, 0.0d0)
+
+#ifdef MOD_AUTODIFF
+            end if
+#endif
+
             vxc_scalar = vxc(fRR)*r_b
 
             call doexc1(vxc_scalar,irepop,excmat(1,1,1,im),gao)
@@ -144,8 +152,49 @@ c=======================================================================
      &                   dabs(gr_b(3))
      &                  )
 
-          if(worth_it .gt. dfthrl) then
-            call dftpot1(vxc,w,r_0,gr_0_norm)
+          if(worth_it .gt. dft_cfg_dfthrl) then
+
+#ifdef MOD_AUTODIFF
+            if (dft_cfg_autodiff) then
+
+              vxc = 0.0d0
+              Z   = gr_0_norm*gr_0_norm
+             
+!             remember that BLYP = Slater + Becke correction + LYP
+              call lda_eval(LDA_SLATER, 2, r_0, derv)
+              vxc(frr) = vxc(frr)
+     &                 + taylor_deriv(derv, 2, (/2, 0/))
+             
+              call gga_eval(GGA_BECKE, 2, r_0, Z, derv)
+              vxc(frr) = vxc(frr)
+     &                 + taylor_deriv(derv, 5, (/2, 0, 0, 0, 0/))
+              vxc(frz) = vxc(frz)
+     &                 + taylor_deriv(derv, 5, (/1, 0, 1, 0, 0/))
+              vxc(fzz) = vxc(fzz)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 2, 0, 0/))
+              vxc(fz0) = vxc(fz0)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
+             
+              call gga_eval(GGA_LYP, 2, r_0, Z, derv)
+              vxc(frr) = vxc(frr)
+     &                 + taylor_deriv(derv, 5, (/2, 0, 0, 0, 0/))
+              vxc(frz) = vxc(frz)
+     &                 + taylor_deriv(derv, 5, (/1, 0, 1, 0, 0/))
+              vxc(fzz) = vxc(fzz)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 2, 0, 0/))
+              vxc(fz0) = vxc(fz0)
+     &                 + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
+             
+              vxc = vxc*w
+
+            else
+#endif
+
+              call dftpot1(vxc, w, r_0, gr_0_norm)
+
+#ifdef MOD_AUTODIFF
+            end if
+#endif
 
             Z_b = d2*ddot(3,gr_0,1,gr_b,1)
 
@@ -170,290 +219,6 @@ c=======================================================================
 
       return
       end
-c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine dft_qr(dtrmat,excmat,isymop,ihrmop,gao,gao1,
-     &                  rho,nrmgrd,grdrho,wght,dogga,buf)
-!***********************************************************************
-!
-!     Calculate the DFT contributions the quadratic response.
-!
-!     Input:
-!     dtrmat(*,*,*,1) --- B density matrix
-!     dtrmat(*,*,*,2) --- C density matrix
-!     dtrmat(*,*,*,3) --- BC density matrix
-!     isymop          --- operator symmetry
-!     ihrmop          --- operator hermiticity
-!     gao             ---
-!     gao1            ---
-!     rho             --- \rho in current grid point
-!     nrmgrd          --- |\nabla\rho| in current grid point
-!                         (corresponds to rhogrd in LR)
-!     grdrho          --- \nabla\rho in current grid point
-!                         (corresponds to rhg in LR)
-!     wght            ---
-!     dogga           --- LDA or GGA
-!     buf             --- scratch memory
-!
-!     Output:
-!     excmat(*,*,*,1) --- G^{[B]C} matrix
-!     excmat(*,*,*,2) --- G^{[C]B} matrix
-!     excmat(*,*,*,3) --- H^{[BC]} matrix
-!
-!     Written by johhe Jan 2007
-!
-!***********************************************************************
-!
-      implicit none
-!
-#include "mxcent.h"
-#include "inforb.h"
-#if defined (PRG_DIRAC)
-#include "dgroup.h"
-#else
-#include "wrkrsp.h"
-#include "dftinf.h"
-#endif
-#include "dftcom.h"
-#include "functionals.h"
-!
-!     I/O VARIABLES
-!
-      double precision dtrmat(nbast,nbast,nz,3)
-      double precision excmat(nbast,nbast,nz,3)
-      integer isymop(3), ihrmop(3)
-      double precision gao(nbast), gao1(nbast,3)
-      double precision rho, nrmgrd, grdrho(3), wght, buf(*)
-      logical dogga
-!
-!     INTERNAL VARIABLES
-!
-!     Symmetry of the different operators
-      integer irepbop, irepcop, irepbcop
-!
-!     One and two times modified densities w.r.t. perturbations B and C
-!     (rho_B corresponds to b0 in LR)
-      double precision rho_B, rho_C, rho_BC
-!
-!     Gradients of the modified densities
-!     (grdrho_B corresponds to b3 in LR)
-      double precision grdrho_B(3), grdrho_C(3), grdrho_BC(3)
-!
-!     \zeta^X=|\nabla\rho^X|^2 for the different modified densities
-!     (zeta_B corresponds to br in LR)
-      double precision zeta_B, zeta_C, zeta_BC
-!
-!     xc-potential (functional derivatives of e_{xc} w.r.t. \rho and \zeta)
-      double precision vxc(dervs3)
-!
-!     s and v in the equation
-!       f_{pq} = s \Omega_{pq} + \mathbf{v} \cdot \nabla\Omega_{pq}
-      double precision sxc, vt(3)
-!
-!     Pre-factors associated with different parts of \mathbf{v}
-      double precision facr, facb, facc
-!
-!     To check if a point needs to be included or not.
-      double precision bmax, cmax, bcmax
-!
-!     Loop index
-      integer i
-!
-!     Calculate the ireps for the different perturbing operators
-      irepbop  = isymop(1)-1
-      irepcop  = isymop(2)-1
-      irepbcop = isymop(3)-1
-!
-!     Get perturbed densities
-!     =======================
-!
-!     Modified density w.r.t. B
-      call getrho(rho_B,irepbop,gao,dtrmat(1,1,1,1),buf)
-!
-!     Modified density w.r.t. C
-      call getrho(rho_C,irepcop,gao,dtrmat(1,1,1,2),buf)
-!
-!     Two times modified density w.r.t. B and C
-      call getrho(rho_BC,irepbcop,gao,dtrmat(1,1,1,3),buf)
-!
-!       ***************
-!       ***** LDA *****
-!       ***************
-!
-      if(.not.dogga) then
-!
-!     Get the functional derivatives
-         call dftpot2(vxc,wght,rho,0D0)
-!
-!     Constructing g^{[C]B}
-         if(dabs(rho_B).gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc = vxc(frr)*rho_B
-!
-!           Linear transformation
-            call doexc1(sxc,irepbop,excmat(1,1,1,1),gao)
-         end if
-!
-!     Constructing g^{[B]C}
-         if(dabs(rho_C).gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc = vxc(frr)*rho_C
-!
-!           Linear transformation
-            call doexc1(sxc,irepcop,excmat(1,1,1,2),gao)
-         END IF
-!
-!     Constructing h^{[BC]}
-         if(dabs(rho_BC).gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc = 2.0D0*vxc(frrr)*rho_B*rho_C + vxc(frr)*rho_BC
-!
-!           Linear transformation
-            call doexc1(sxc,irepbcop,excmat(1,1,1,3),gao)
-         end if
-!
-      else
-!
-!         ***************
-!         ***** GGA *****
-!         ***************
-!
-!     Get gradients of perturbed densities
-!     ====================================
-!
-!     Gradients of the different modified densities
-      if(ihrmop(1) .eq. 1) then
-        call getgrho(grdrho_b,irepbop,
-     &               gao,gao1,
-     &               dtrmat(1,1,1,1),buf)
-      else
-        call get_gradient_nh(grdrho_b,
-     &                       irepbop,
-     &                       gao,
-     &                       gao1,
-     &                       dtrmat(1,1,1,1),
-     &                       buf)
-      endif
-      if(ihrmop(2) .eq. 1) then
-        call getgrho(grdrho_c,irepcop,
-     &               gao,gao1,
-     &               dtrmat(1,1,1,2),buf)
-      else
-        call get_gradient_nh(grdrho_c,
-     &                       irepcop,
-     &                       gao,
-     &                       gao1,
-     &                       dtrmat(1,1,1,2),
-     &                       buf)
-      endif
-      if(ihrmop(3) .eq. 1) then
-        call getgrho(grdrho_bc,irepbcop,
-     &               gao,gao1,
-     &               dtrmat(1,1,1,3),buf)
-      else
-        call get_gradient_nh(grdrho_bc,
-     &                       irepbcop,
-     &                       gao,
-     &                       gao1,
-     &                       dtrmat(1,1,1,3),
-     &                       buf)
-      endif
-!
-!     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_B}
-         zeta_B = 2.0D0*(grdrho_B(1)*grdrho(1) + grdrho_B(2)*grdrho(2) +
-     &                   grdrho_B(3)*grdrho(3))
-!
-!     \zeta^B = \frac{\partial\zeta}{\partial\epsilon_C}
-         zeta_C = 2.0D0*(grdrho_C(1)*grdrho(1) + grdrho_C(2)*grdrho(2) +
-     &                   grdrho_C(3)*grdrho(3))
-!
-!     \zeta^{BC} = \frac{\partial^2\zeta}{\partial\epsilon_B\partial\epsilon_C}
-!     Note the factor 4 which comes from that \rho^{BC} is already symmetrized,
-!     and, hence, a factor 2 is enough on the first line.
-         zeta_BC = 2.0D0*(grdrho_BC(1)*grdrho(1) +
-     &                    grdrho_BC(2)*grdrho(2) +
-     &                    grdrho_BC(3)*grdrho(3)) +
-     &             4.0d0*(grdrho_B(1)*grdrho_C(1) +
-     &                    grdrho_B(2)*grdrho_C(2) +
-     &                    grdrho_B(3)*grdrho_C(3))
-!
-!     Get the functional derivatives
-         call dftpot2(vxc,wght,rho,nrmgrd)
-!
-!     Constructing g^{[B]C}
-!
-         bmax = max(abs(rho_B),
-     &              abs(grdrho_B(1)),abs(grdrho_B(2)),abs(grdrho_B(3)))
-         if (bmax.gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc  = vxc(frr)*rho_B + vxc(frz)*zeta_B
-!
-!           Calculate vt
-            facr = vxc(frz)*rho_B + vxc(fzz)*zeta_B
-            do i=1,3
-               vt(i) = 2.0D0 * (facr*grdrho(i) + vxc(fz0)*grdrho_B(i))
-            end do
-!
-!           Linear transformation
-            call doexc2(sxc,vt,irepbop,excmat(1,1,1,1),gao,gao1)
-!
-         end if
-!
-!     Constructing g^{[C]B}
-!
-         cmax = max(abs(rho_C),
-     &              abs(grdrho_C(1)),abs(grdrho_C(2)),abs(grdrho_C(3)))
-         if (cmax.gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc  = vxc(frr)*rho_C + vxc(frz)*zeta_C
-!
-!           Calculate vt
-            facr = vxc(frz)*rho_C + vxc(fzz)*zeta_C
-            do I=1,3
-               vt(i) = 2.0D0 * (facr*grdrho(i) + vxc(fz0)*grdrho_C(i))
-            end do
-!
-!           Linear transformation
-            call doexc2(sxc,vt,irepcop,excmat(1,1,1,2),gao,gao1)
-!
-         end if
-!
-!     Constructing h^{[BC]}
-!
-         bcmax = max(bmax,cmax,abs(rho_BC),
-     &            abs(grdrho_BC(1)),abs(grdrho_BC(2)),abs(grdrho_BC(3)))
-         if (bcmax.gt.dfthrl) then
-!
-!           Calculate sxc
-            sxc =  2.0D0*vxc(frrr)*rho_B*rho_C +
-     &             2.0d0*vxc(frrz)*(rho_B*zeta_C+rho_C*zeta_B) +
-     &             2.0D0*vxc(frzz)*zeta_B*zeta_C+vxc(frr)*rho_BC +
-     &             vxc(frz)*zeta_BC
-!
-!           Calculate vt
-            facr = 2.0D0*vxc(fzzz)*zeta_B*zeta_C +
-     &             2.0d0*vxc(frzz)*(rho_B*zeta_C+rho_C*zeta_B) +
-     &             2.0D0*vxc(frrz)*rho_B*rho_C + vxc(frz)*rho_BC +
-     &             vxc(fzz)*zeta_BC
-            facb = 2.0d0*vxc(frz)*rho_C + 2.0d0*vxc(fzz)*zeta_C
-            facc = 2.0d0*vxc(frz)*rho_B + 2.0d0*vxc(fzz)*zeta_B
-            do i=1,3
-               vt(i) = 2.0D0 * ( facr*grdrho(i) +
-     &                           facb*grdrho_B(i) + facc*grdrho_C(i) +
-     &                           vxc(fz0) * grdrho_BC(i) )
-            end do
-!
-!           Linear transformation
-            call doexc2(sxc,vt,irepbcop,excmat(1,1,1,3),gao,gao1)
-!
-         end if
-!
-      end if
-      end
 c
       SUBROUTINE FORTWRT(str, slength)
 #include "priunit.h"
@@ -477,6 +242,7 @@ C
 C adapted from DFT_LR for density fitting
 C andre gomes and radovan bast, january 2007
 C
+      use dft_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -491,7 +257,6 @@ C
 #include "wrkrsp.h"
 #include "dftinf.h"
 #endif
-#include "dftcom.h"
 #include "functionals.h"
 C
       INTEGER A, B
@@ -518,7 +283,7 @@ C       ***** LDA *****
 C       ***************
 C
         IF(.NOT.DOGGA) THEN
-          IF(DABS(B0).GT.DFTHRL) THEN
+          IF(DABS(B0).GT.dft_cfg_DFTHRL) THEN
 C
 C            Calculated VT
 C
@@ -547,7 +312,7 @@ C
            ENDDO
            BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
 C
-           IF (BMAX.GT.DFTHRL) THEN
+           IF (BMAX.GT.dft_cfg_DFTHRL) THEN
               CALL DFTPOT1(VXC,WGHT,RHO,RHOGRD)
               BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
               FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR

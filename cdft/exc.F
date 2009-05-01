@@ -47,6 +47,8 @@ C                                                           radovan bast
 C                                              last revision: march 2007
 C=======================================================================
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -59,7 +61,6 @@ C=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
 #include "../dft/functionals.h"
 
       LOGICAL   IS_GGA,
@@ -73,7 +74,7 @@ C=======================================================================
 
       F = D1
       G = D1
-      IF(LBIT(LBIT_CDFT,4)) G = -D1 !operator is \beta\sigma instead of \sigma
+      if (dft_cfg_sdft_beta) g = -1.0d0
       IU         = 1
       IV         = 1
       IX         = 2

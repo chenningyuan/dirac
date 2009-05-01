@@ -221,6 +221,8 @@ c                                                           radovan bast
 c                                               last revision: june 2007
 c=======================================================================
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -235,8 +237,6 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
 
       logical   add_r,
@@ -292,7 +292,7 @@ c=======================================================================
       call dzero(vxc_vector,4*3*4*2)
 
       ixyz_start = 1
-      if(lbit(lbit_cdft,3)) ixyz_start = 3 !collinear approximation
+      if (dft_cfg_sdft_collinear) ixyz_start = 3 !collinear approximation
 
       do ibc = 1,3
         if(use_var(1)) then
@@ -649,7 +649,7 @@ c=======================================================================
      &                 dabs(vxc_vector(2,3,ibc,1)),
      &                 dabs(vxc_vector(3,3,ibc,1))
      &                )
-        if(worth_it .gt. dfthrl) then
+        if(worth_it .gt. dft_cfg_dfthrl) then
           call doexc2(vxc_vector(0,3,ibc,1),
      &                vxc_vector(1,3,ibc,1),
      &                isymop(ibc)-1,
@@ -665,7 +665,7 @@ c=======================================================================
      &                   dabs(vxc_vector(2,ixyz,ibc,2)),
      &                   dabs(vxc_vector(3,ixyz,ibc,2))
      &                  )
-          if(worth_it .gt. dfthrl) then
+          if(worth_it .gt. dft_cfg_dfthrl) then
 
 !           scaling only the h- part to get symmetrization right
 !           the h+ part is scaled inside doexc2
@@ -709,6 +709,8 @@ c                                                           radovan bast
 c                                               last revision: june 2007
 c=======================================================================
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -721,9 +723,11 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
+
+#ifdef MOD_AUTODIFF
+#include "../dft/xc_fortran_interface.h"
+#endif
 
       logical   add_grad,
      &          add_spin,
@@ -776,12 +780,13 @@ c=======================================================================
 !               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
      &          v_bc_ah(3,3),
 !
-     &          vxc(99)
+     &          vxc(99),
+     &          derv(99)
 
 #include "ibtfun.h"
 
       k_start = 1
-      if(lbit(lbit_cdft,3)) k_start = 3 !collinear approximation
+      if(dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
         call getrho(r_b,isymop(1)-1,gao,
      &            dtrmat(1,1,1,1),buf)
@@ -827,17 +832,55 @@ c=======================================================================
         enddo
       endif
 
-      if(add_grad) then
-        call dftpot2(vxc,w,r_0,gr_0_norm)
+      if (add_grad) then
+
+       !if (dft_cfg_autodiff) then
+       !  call quit('implement me first')
+       !else
+          call dftpot2(vxc, w, r_0, gr_0_norm)
+       !end if
+
       else
-        call dftpot2(vxc,w,r_0,d0)
-      endif
+
+#ifdef MOD_AUTODIFF
+        if (dft_cfg_autodiff) then
+
+          vxc = 0.0d0
+
+          call lda_eval(LDA_SLATER, 3, r_0, derv)
+          vxc(frrr) = vxc(frrr)
+     &              + taylor_deriv(derv, 2, (/3, 0/))
+
+          call lda_eval(LDA_VWN, 3, r_0, derv)
+          vxc(frrr) = vxc(frrr)
+     &              + taylor_deriv(derv, 2, (/3, 0/))
+
+          vxc = vxc*w
+
+        else
+#endif
+
+          call dftpot2(vxc, w, r_0, 0.0d0)
+
+#ifdef MOD_AUTODIFF
+        end if
+#endif
+
+      end if
 
       if(add_spin) then
         if(add_grad) then
-          call sdftpot2(vxc,w,r_0,gr_0_norm)
+         !if (dft_cfg_autodiff) then
+         !  call quit('implement me first')
+         !else
+            call sdftpot2(vxc, w, r_0, gr_0_norm)
+         !end if
         else
-          call sdftpot2(vxc,w,r_0,d0)
+         !if (dft_cfg_autodiff) then
+         !  call quit('implement me first')
+         !else
+            call sdftpot2(vxc, w, r_0, 0.0d0)
+         !end if
         endif
       endif
 
@@ -980,7 +1023,7 @@ c=======================================================================
      &               dabs(v_bc_h(2)),
      &               dabs(v_bc_h(3))
      &              )
-      if(worth_it .gt. dfthrl) then
+      if(worth_it .gt. dft_cfg_dfthrl) then
         call doexc2(s_bc_h,
      &              v_bc_h,
      &              isymop(3)-1,
@@ -1005,7 +1048,7 @@ c=======================================================================
      &                 dabs(v_bc_ah(2,k)),
      &                 dabs(v_bc_ah(3,k))
      &                )
-        if(worth_it .gt. dfthrl) then
+        if(worth_it .gt. dft_cfg_dfthrl) then
           call exc_m(add_grad,
      &               s_bc_ah(k),
      &               v_bc_ah(1,k),

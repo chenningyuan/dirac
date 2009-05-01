@@ -34,6 +34,8 @@ C     00100: DOLR,  linear response contribution
 C     01000: DOQR,  quadratic response contribution
 C     10000: DOLND, include London orbitals
 C
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -50,11 +52,8 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "nuclei.h"
-#include "dftcom.h"
 #include "dftbuf.h"
 #include "dcborb.h"
-#include "dftac.h"
-#include "cdft.h"
 #include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
@@ -157,50 +156,58 @@ C
 C     Calculate grid
 C     ==============
 C
-      IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1)
-         GRDONE = .TRUE.
-      END IF
-C
-C     get density matrices for SAOP
-C     =============================
-C
-      KDMAT_OUTER_AO = KFREE
-      KDMAT_RESP_AO  = KFREE
-      IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
-        CALL SET_LBIT(LBIT_DFTAC,4) !SAOP is active
-        CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,
-     &              WORK,KFREE,LFREE)
-        IF(LBIT(LBIT_DFTAC,5)) THEN !SAOP with response part
-          CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,
-     &                WORK,KFREE,LFREE)
-        ENDIF
-        CALL DFTAC_SAOP_GET_DMATS(WORK(KDMAT_OUTER_AO),
-     &                            WORK(KDMAT_RESP_AO),
-     &                            WORK(KFREE),LFREE)
-      ENDIF
+      if (.not. dft_cfg_grid_is_done) then
+         call dftgrd(dmat, work(kfree), lfree, 1)
+         dft_cfg_grid_is_done = .true.
+      end if
+
+!     get density matrices for SAOP
+      kdmat_outer_ao = kfree
+      kdmat_resp_ao  = kfree
+
+      if (dft_cfg_saop) then
+        dft_cfg_saop_is_active = .true.
+        call memget('REAL', kdmat_outer_ao, n2bbasx,
+     &              work, kfree, lfree)
+        if (dft_cfg_saop_with_response_part) then
+          call memget('REAL', kdmat_resp_ao, n2bbasx,
+     &                work, kfree, lfree)
+        end if
+        call dftac_saop_get_dmats(work(kdmat_outer_ao),
+     &                            work(kdmat_resp_ao),
+     &                            work(kfree), lfree)
+      end if
+
+
 C
 C     Initialize
 C     ==========
 C
-      GGA_HS = DFTISGGA()
-      GGA_HA = GGA_HS
+      gga_hs = dftisgga()
+      gga_ha = gga_hs
 
-      IF (DOLR .OR. DOQR) THEN
-        IF (ALDA_HS) GGA_HS = .FALSE.
-        IF (ALDA_HA) GGA_HA = .FALSE.
-      END IF
-!       in QR it is not so easy to separate H+ and H-
-!       contributions since they may mix
-!       therefore i quit here if the user wants QR
-!       and not the full ALDA or XALDA
-!       it is really unfair to quit as late as here
-!       this can be checked earlier
-!       but this is anyway an exotic option
-      IF ((DOQR .AND. ALDA_HS .AND. (.NOT. ALDA_HA)) .OR.
-     &      (DOQR .AND. ALDA_HA .AND. (.NOT. ALDA_HS))) THEN
-        CALL QUIT('QR and partial ALDA is not implemented')
-      END IF
+      if (dolr .or. doqr) then
+        if (dft_cfg_alda_hs) gga_hs = .false.
+        if (dft_cfg_alda_ha) gga_ha = .false.
+      end if
+
+!     in QR it is not so easy to separate H+ and H-
+!     contributions since they may mix
+!     therefore i quit here if the user wants QR
+!     and not the full ALDA or XALDA
+!     it is really unfair to quit as late as here
+!     this can be checked earlier
+!     but this is anyway an exotic option
+      if ((doqr .and. dft_cfg_alda_hs .and.
+     &      (.not. dft_cfg_alda_ha)) .or.
+     &    (doqr .and. dft_cfg_alda_ha .and.
+     &           (.not. dft_cfg_alda_hs))) then
+        call quit('QR and partial ALDA is not implemented')
+      end if
+
+
+      iprdft = dft_cfg_print_level
+
 C
 C     Integrate
 C     =========
@@ -238,12 +245,14 @@ C
 !     in case of GGA symmetrize matrices
 !     see DFT RPA notes for more info
       if (gga_hs) call sym_hs(excmat, nxcmat, isymop, ihrmop)
+
 #ifdef MOD_CDFT
 !     if spin or current density contribution
-      if (lbit(lbit_cdft,1) .or. lbit(lbit_cdft,2)) then
+      if (dft_cfg_sdft) then
         if (gga_ha) call sym_ha(excmat, nxcmat, isymop, ihrmop)
       end if
-#endif /* MOD_CDFT */
+#endif
+
       if (dolr .or. doqr) then
 !       insert half-phases
         if (nz .lt. 4) then
@@ -288,6 +297,9 @@ C /* Deck dftdrv */
 C
 C     T. Helgaker sep 99
 C
+
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -306,14 +318,11 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #endif
-C#include "inforb.h"
 #include "nuclei.h"
 #include "dfterg.h"
-#include "dftcom.h"
 #include "orgcom.h"
 #include "dftbuf.h"
 #include "functionals.h"
-#include "cdft.h"
 #include "dgroup.h"
 #include "densfit.h"
 C
@@ -351,7 +360,7 @@ C
       if (gga_hs .or. gga_ha) then
         dogrho = .true.
         nder   = nder + 1 
-        fromvx = dftpot
+        fromvx = dft_cfg_explicit_potential
         if (fromvx) then
           dolrho = .true.
           nder   = nder + 1 
@@ -359,12 +368,13 @@ C
       else
         fromvx = .false.
       end if
+
 #ifdef MOD_CDFT
 !       GAO1 are needed for VRG
-        IF(LBIT(LBIT_CDFT,2)) THEN
-          IF(NDER .LT. 1) NDER = 1
-        ENDIF
-#endif /* MOD_CDFT */
+        if (dft_cfg_cdft_vrg) then
+          if (nder .lt. 1) nder = 1
+        end if
+#endif
 C
 C     Allocate arrays for basis functions and their derivatives at grid points
 C
@@ -387,18 +397,23 @@ C
       ELCTRN = D0
       EDFTY  = D0
 C
+#ifndef VAR_MPI
+      mytid  = 0
+      mparid = 0
+#endif
+
       IF(MYTID.EQ.MPARID) THEN
-        REWIND LUQUAD
+        REWIND dft_cfg_file_unit
         NPNTS = 0
       ENDIF
 C*    Loop over batches of grid points
   100 CONTINUE
       KLOOP = KFREE
       IF(MYTID.EQ.MPARID) THEN
-        IF(import_grid) THEN
-          READ(LUQUAD,*) NPOINT
+        IF(dft_cfg_import_grid) THEN
+          READ(dft_cfg_file_unit,*) NPOINT
         ELSE
-          READ(LUQUAD) NPOINT
+          READ(dft_cfg_file_unit) NPOINT
         ENDIF
       ENDIF
 #if defined (VAR_MPI) 
@@ -417,12 +432,12 @@ C*    Loop over batches of grid points
           CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
 
-          IF(import_grid) THEN
+          IF(dft_cfg_import_grid) THEN
             CALL import_dft_grid(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
-     &                      LUQUAD,NPOINT)
+     &                      dft_cfg_file_unit,NPOINT)
           ELSE
             CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
-     &                 LUQUAD,NPOINT)
+     &                 dft_cfg_file_unit,NPOINT)
           ENDIF
         ENDIF
 #if defined (VAR_MPI) 
@@ -584,25 +599,31 @@ C.........add rest to total number of myNPOINT on last node
       elctrx = nelect + naelec
       error  = elctrn - elctrx
 
-      if (abs(error) .gt. dftels) then
-        write(lupri, *)
-        write(lupri, '(3x, a, f14.6)') 
-     &    'number of electrons from numerical integration:', elctrn
-        write(lupri, '(3x, a, f14.6)') 
-     &    'number of electrons from orbital occupations:  ', elctrx
-        write(lupri, '(3x, a, f14.6)') 
-     &    'WARNING: error in the number of electrons:     ', error
-        write(lupri, '(12x, a, f14.6)') 
-     &    'is larger than DFTELS (set input):    ',          dftels
-        write(lupri, '(12x, a)') 
-     &     'this can mean that the quadrature grid is inappropriate'
-        write(lupri, *)
+      if (abs(error) .gt. dft_cfg_accepted_error) then
+         write(lupri, *)
+         write(lupri, '(3x, a, f14.6)')
+     &         'number of electrons from numerical integration:', elctrn
+         write(lupri, '(3x, a, f14.6)')
+     &         'number of electrons from orbital occupations:  ', elctrx
+         write(lupri, '(3x, a, f14.6)')
+     &         'WARNING: error in the number of electrons:     ', error
+         write(lupri, '(12x, a, f14.6)')
+     &         'is larger than .ERRELS (set input):    ',
+     &          dft_cfg_accepted_error
+         write(lupri, '(12x, a)')
+     &         'this can happen when starting from coefficients'
+         write(lupri, '(12x, a)')
+     &         'from a different geometry'
+         write(lupri, '(12x, a)')
+     &         'or it can mean that the quadrature '//
+     &         'grid is inappropriate'
+         write(lupri, *)
       end if
 C
 C
 C     Print section
 C
-      IF(IPRDFT .GE. 2) THEN 
+      IF(dft_cfg_print_level .GE. 2) THEN 
         WRITE(LUPRI,'(2X,A,I24)')
      &              ' Number of quadrature points:       ', NPNTS
         WRITE(LUPRI,'(2X,A,F24.16)')
@@ -654,6 +675,9 @@ C
 C     Written by Trond Saue and T.Helgaker
 C
 C***********************************************************************
+
+       use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -666,9 +690,6 @@ C***********************************************************************
 #include "inforb.h"
 #include "orgcom.h"
 #include "dftbuf.h"
-#include "dftcom.h"
-#include "dftac.h"
-#include "cdft.h"
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
@@ -679,15 +700,31 @@ C***********************************************************************
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
-     &            DTRMAT(*),GAO(*), GAO1(*), GAO2(*),
+     &            DTRMAT(*),                 GAO2(*),
      &            GAB1(*),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
+
+!     this does not look very useful
+!     but after merge with autodiff branch it will make sense
+      real(8), target  :: gao(*)
+      real(8), target  :: gao1(*)
+      real(8), pointer :: gao_p(:)
+      real(8), pointer :: gao1_p(:)
+
 C
 #include "memint.h"
 C
+
+
+!     this does not look very useful
+!     but after merge with autodiff branch it will make sense
+         gao_p  => gao(1:nbast)
+         gao1_p => gao1(1:nbast*3)
+
+
       DOERG = LBIT(IOPTS,1)
       DOGRD = LBIT(IOPTS,2)
       DOLR  = LBIT(IOPTS,3)
@@ -772,7 +809,7 @@ C
         ENDIF
 #endif
 Caspg+rbast, 2006-09-21
-        IF (RHO.LE.DFTHR0) GO TO 300
+        IF (RHO.LE.dft_cfg_dfthr0) GO TO 300
         RHO13  = RHO**DP3
 C
 C       Gradient of density
@@ -780,10 +817,11 @@ C       ===================
 C
 #ifdef MOD_CDFT
 !     gradient is needed for VRG
-      IF(LBIT(LBIT_CDFT,2)) THEN
-        DOGRHO = .TRUE.
-      ENDIF
+      if (dft_cfg_cdft_vrg) then
+        dogrho = .true.
+      end if
 #endif /* MOD_CDFT */
+
         IF (DOGRHO) THEN
 #ifdef MOD_DNF
           IF (DF_FITVXC) THEN  ! 
@@ -834,28 +872,26 @@ C       ==============================
 C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
-           
+
            if (gga_hs) then
-             vx(fz0) = vx(fz0)/rhogrd
-           endif
+!            this factor has nothing to do
+!            with symmetrization later
+!            it comes from the fact that derivative of Z
+!            yields two identical terms (one left, one right)
+             vx(fz0) = 2.0d0*vx(fz0)
+           end if
 
-
-C         asymptotic correction
-C         =====================
-C
-C            SAOP is active
-          IF(LBIT(LBIT_DFTAC,4)) THEN
-            CALL GETRHO(RHO_OUTER,0,GAO,DMAT_OUTER_AO,BUF)
-C              SAOP with response part
-            IF(LBIT(LBIT_DFTAC,5)) THEN
-              CALL GETRHO(RHO_RESP,0,GAO,DMAT_RESP_AO,BUF)
-            ENDIF
-          ENDIF
-C            GRAC is active          SAOP is active
-          IF(LBIT(LBIT_DFTAC,2).OR.LBIT(LBIT_DFTAC,4)) THEN
-            CALL DFTAC(VX,WGHT,
-     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,RHOGRD)
-          ENDIF
+!         asymptotic correction
+          if (dft_cfg_saop_is_active) then
+            call getrho(rho_outer, 0, gao, dmat_outer_ao, buf)
+            if (dft_cfg_saop_with_response_part) then
+              call getrho(rho_resp, 0, gao, dmat_resp_ao, buf)
+            end if
+          end if
+          if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+            call dftac(vx, wght, rho, rho13,
+     &                 rho_resp, rho_outer, rhogrd)
+          end if
 C
 C
         ENDIF
@@ -907,90 +943,94 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 !       ENDIF
 
 
-#ifdef MOD_DNF
-!       Hessian transformation via density fitting
-        IF(DOLR) THEN
-C aspg+rb, 2007-01-19, df-vxc modularized code
-           if (DF_FITVXC) then
-              call fit_DFT_LR(WORK(KLRCFIT),WORK(KLRXCVEC),
-     &                        NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                        RHO,RHOGRD,RHG,WGHT,gga_hs,B0,nskipped)
-           else  ! df_fitvxc
-!             CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-!    &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,gga_hs,BUF,B0)
-             call dft_lr(dtrmat,excmat,nxcmat,
-     &                   isymop,ihrmop,.false.,
-     &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,gga_hs,buf)
-           endif
-          ELCTRB = ELCTRB + WGHT*B0
-        ENDIF
-#endif
-
 
 !       linear response
         if(dolr) then
 
-#ifndef MOD_DNF
-          call dft_lr(dtrmat,excmat,nxcmat,
-     &                isymop,ihrmop,.false.,
-     &                gao,gao1,
-     &                rho,rhogrd,rhg,wght,gga_hs,buf)
-#endif
+          call dft_lr(dtrmat,
+     &                excmat,
+     &                nxcmat,
+     &                isymop,
+     &                ihrmop,
+     &                .false.,
+     &                gao_p,
+     &                gao1_p,
+     &                rho,
+     &                rhogrd,
+     &                rhg,
+     &                wght,
+     &                gga_hs,
+     &                buf)
 
 #ifdef MOD_CDFT
 !         spin magnetization contribution
-          if(lbit(lbit_cdft,1)) then
+          if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,nxcmat,
      &                   isymop,ihrmop,.false.,
      &                   gao,gao1,
      &                   rho,rhogrd,rhg,wght,gga_ha,buf)
           endif
 !         VRG contribution
-          if(lbit(lbit_cdft,2)) then
+          if (dft_cfg_cdft_vrg) then
             call vrg_lr(dtrmat,excmat,nxcmat,
      &                  isymop,ihrmop,gao,gao1,
      &                  rho,rhogrd,rhg,wght,gga_hs,buf)
           endif
-#endif /* MOD_CDFT */
+#endif /* ifdef MOD_CDFT */
         endif
 
 !       quadratic response
         if(doqr) then
-#ifdef MOD_CDFT
-          gga_qr = gga_hs .or. gga_ha
-          call sdft_qr(gga_qr,
-     &                 lbit(lbit_cdft,1),
-     &                 dtrmat,excmat,
-     &                 isymop,ihrmop,gao,gao1,
-     &                 rho,rhogrd,rhg,wght,buf)
 
-!         the idea here is that   r^[B]               \omega_{ia}^[C]
-!                                 r^[C]               \omega_{ia}^[B]
-!                                 r^[BC]              \omega_{ia}
-!         and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
-!                                 q^[C]  \cdot \nabla \omega_{ia}^[B]
-!                                 q^[BC] \cdot \nabla \omega_{ia}
+#ifdef MOD_AUTODIFF
+          if (iorder > 0) then
+            call aor_xc_new(iorder, 
+     &                      nxcmat, 
+     &                      gga_hs,
+     &                      dtrmat, 
+     &                      excmat,
+     &                      isymop,
+     &                      gao_p,
+     &                      gao1_p,
+     &                      rho,
+     &                      rhg,
+     &                      wght,
+     &                      buf)
+          else
+#endif
+            gga_qr = gga_hs .or. gga_ha
+            call sdft_qr(gga_qr,
+     &                   sdft,
+     &                   dtrmat,excmat,
+     &                   isymop,ihrmop,gao,gao1,
+     &                   rho,rhogrd,rhg,wght,buf)
 
-!         can be evaluated using (s)dft_lr (below)
-!         only the remaining part is done in sdft_qr (above)
+!           the idea here is that   r^[B]               \omega_{ia}^[C]
+!                                   r^[C]               \omega_{ia}^[B]
+!                                   r^[BC]              \omega_{ia}
+!           and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
+!                                   q^[C]  \cdot \nabla \omega_{ia}^[B]
+!                                   q^[BC] \cdot \nabla \omega_{ia}
+            
+!           can be evaluated using (s)dft_lr (below)
+!           only the remaining part is done in sdft_qr (above)
+            
+            call dft_lr(dtrmat,excmat,3,
+     &                  isymop,ihrmop,.true.,
+     &                  gao,gao1,
+     &                  rho,rhogrd,rhg,wght,gga_hs,buf)
+            if (dft_cfg_sdft) then
+              call sdft_lr(dtrmat,excmat,3,
+     &                     isymop,ihrmop,.true.,
+     &                     gao,gao1,
+     &                     rho,rhogrd,rhg,wght,gga_ha,buf)
+            endif
+#ifdef MOD_AUTODIFF
+          end if
+#endif
 
-          call dft_lr(dtrmat,excmat,3,
-     &                isymop,ihrmop,.true.,
-     &                gao,gao1,
-     &                rho,rhogrd,rhg,wght,gga_hs,buf)
-          if(lbit(lbit_cdft,1)) then
-            call sdft_lr(dtrmat,excmat,3,
-     &                   isymop,ihrmop,.true.,
-     &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,gga_ha,buf)
-          endif
-#else
-          call dft_qr(dtrmat,excmat,
-     &                isymop,ihrmop,gao,gao1,
-     &                rho,rhogrd,rhg,wght,gga_hs,buf)
-#endif /* MOD_CDFT */
         endif
+
 
   300 CONTINUE !end of loop over grid points
 
@@ -1531,7 +1571,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dftbuf.h"
-#include "dftcom.h"
 #include "dfterg.h"
 #include "dgroup.h"
       LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
@@ -1681,12 +1720,9 @@ C
 C
 #include "infpar.h"
 #include "dcbbas.h"
-#include "dftcom.h"
-#include "dftac.h"
-#include "cdft.h"
 #include "dgroup.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOLR,DOQR,LBIT, LSEND(6)
+      LOGICAL DOERG, DOGRD, DOLND, DOLR,DOQR,LBIT
 C
       DIMENSION EXCMAT(*),DMAT(N2BBASX),
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
@@ -1741,6 +1777,9 @@ C     written by T. Saue March 4
 C
 C    This is the node program for DFT                           *
 C***********************************************************************
+
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1750,9 +1789,6 @@ C
 #endif
 C
 #include "dcbbas.h"
-#include "dftcom.h"
-#include "dftac.h"
-#include "cdft.h"
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
@@ -1794,10 +1830,10 @@ C.....Memory allocation
 C.....Allocate density matrices for SAOP
       KDMAT_OUTER_AO = KFREE
       KDMAT_RESP_AO  = KFREE
-      IF(LBIT(LBIT_DFTAC,3)) THEN !SAOP
+      if (dft_cfg_saop_is_active) then
         CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX,
      &              WORK,KFREE,LFREE)
-        IF(LBIT(LBIT_DFTAC,5)) THEN !SAOP with response part
+        if (dft_cfg_saop_with_response_part) then
           CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX,
      &                WORK,KFREE,LFREE)
         ENDIF
@@ -1829,6 +1865,9 @@ C
 C     Written by T. Saue April 7 2009
 C 
 C***********************************************************************
+
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1836,70 +1875,23 @@ C
       INCLUDE 'mpif.h'
 #endif
 #include "infpar.h"
-#include "dftcom.h"
 #include "dftbuf.h"
-#include "dftac.h"
-#include "cdft.h"
-      LOGICAL LBIT,LSEND(6)
+      LOGICAL LBIT
 C
       CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C     Transfer various COMMON blocks
-      CALL DFTPRD
-      IF(MYTID.EQ.MPARID) THEN
-C       Transfer dftcom
-        LSEND(1)  = DFTADD
-        LSEND(2)  = GRDONE
-        LSEND(3)  = DFTRUN
-        LSEND(4)  = DFTPOT
-        LSEND(5)  = DFTORD
-        LSEND(6)  = DFTASC
-      ENDIF
-      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      IF(MYTID.NE.MPARID) THEN
-        DFTADD = LSEND(1)
-        GRDONE = LSEND(2)
-        DFTRUN = LSEND(3)
-        DFTPOT = LSEND(4)
-        DFTORD = LSEND(5)
-        DFTASC = LSEND(6)
-      ENDIF
+
+!     transfer various common blocks
+      call dftprd
+
+!     sync dft_cfg
+      call sync_dft_cfg
+
 C     Transfer control parameters
 C     ===========================
       CALL MPI_BCAST(IOPTS,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(GGA_HS,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(GGA_HA,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-C
-C     broadcast thresholds
-C     ====================
-      CALL MPI_BCAST(DFTHR0,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DFTHRL,1,
-     &               MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-#ifdef MOD_CDFT
-C
-C     transfer parameters for spin/current density response
-C     =====================================================
-      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-#endif /* MOD_CDFT */
-C
-C     transfer parameters for asymptotic correction
-C     =============================================
-      CALL MPI_BCAST(LBIT_DFTAC,1,
-     &               my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-C             GRAC is active
-      IF(LBIT(LBIT_DFTAC,2)) THEN
-        CALL MPI_BCAST(GRAC_ALPHA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(GRAC_BETA,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_IP,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(HOMO_EIGENVALUE,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DFTAC_THRESHOLD,1,
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
+
 C
 C     Transfer functionals
 C     ====================
@@ -1923,6 +1915,9 @@ C
 C     Written by T. Saue April 7 2009
 C 
 C***********************************************************************
+
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1930,9 +1925,6 @@ C
       INCLUDE 'mpif.h'
 #endif
 #include "infpar.h"
-#include "dftcom.h"
-#include "dftac.h"
-#include "cdft.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
@@ -1955,14 +1947,15 @@ C
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                   MPI_COMM_WORLD,IERR)
       ENDIF
-      IF(LBIT(LBIT_DFTAC,4)) THEN
+
+      if (dft_cfg_saop_is_active) then
         CALL MPI_BCAST(DMAT_OUTER_AO,N2BBASX,
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
-      ENDIF
+        if (dft_cfg_saop_with_response_part) then
 C             SAOP with response part
-      IF(LBIT(LBIT_DFTAC,5)) THEN
         CALL MPI_BCAST(DMAT_RESP_AO,N2BBASX,
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        ENDIF
       ENDIF
       RETURN
       END

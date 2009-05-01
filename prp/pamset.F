@@ -514,6 +514,9 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
+#ifdef MOD_DFT
+       use dft_cfg
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -529,9 +532,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
@@ -630,7 +630,7 @@ C          Hermitian operator
 C
 C     Construct Kohn-Sham contribution
 C     ================================
-      IF(DFTADD) THEN
+      IF(dft_cfg_is_dft_calculation) THEN
          CALL GENDEN(FAO,CMO,1,IPRINT)
 C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
          IOPTS = 1

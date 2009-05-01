@@ -30,13 +30,14 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+        use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
       PARAMETER (D0=0.0D0)
@@ -67,9 +68,9 @@ C     DFTWRK
 C     ======
 C
       RNDMAX  = 20.0D0
-      RADERR  = RADINT
-      NSCHEME = ANGINT
-      LEBMIN  = ANGMIN
+      RADERR  = dft_cfg_RADINT
+      NSCHEME = dft_cfg_ANGINT
+      LEBMIN  = dft_cfg_ANGMIN
 
 C
 C     *******************************************
@@ -104,34 +105,34 @@ C..added for the MOLCAS scheme:
 C..added for density-based atomic size estimates
       CALL MEMGET('REAL',KCHIMT,NATOMS*NATOMS  ,WORK,KFREE,LFREE)
 C
-C     Open unit LUQUAD
+C     Open unit
 C     ================
 C
-      LUQUAD = 44
-      IF(import_grid) THEN
-        OPEN(LUQUAD,
+      dft_cfg_file_unit = 44
+      IF(dft_cfg_import_grid) THEN
+        OPEN(dft_cfg_file_unit,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  GRIDFILE)
+     &       FILE   =  dft_cfg_GRIDFILE)
       ELSE
-        OPEN(LUQUAD,
+        OPEN(dft_cfg_file_unit,
      &       FORM   = 'UNFORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
      &       FILE   = 'DIRAC.QUAD')
       ENDIF
-      REWIND LUQUAD
+      REWIND dft_cfg_file_unit
 
-      if (import_grid) go to 999
+      if (dft_cfg_import_grid) go to 999
 
-      if (export_grid) then
-        OPEN(LUQUAD+1,
+      if (dft_cfg_export_grid) then
+        OPEN(dft_cfg_file_unit+1,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  GRIDFILE)
-        rewind luquad+1
+     &       FILE   =  dft_cfg_GRIDFILE)
+        rewind dft_cfg_file_unit+1
       end if
 
 C
@@ -150,7 +151,7 @@ C
 C     Check accuracy of numerical integration
 C     =======================================
 C
-      IF (INTCHK .GT.0) THEN
+      IF (dft_cfg_integration_check_level .GT.0) THEN
          CALL GRTEST(WORK(KFREE),LFREE,JPRINT)
       END IF
 
@@ -182,6 +183,7 @@ C      Adapted for Dalton by T. Helgaker                               C
 C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       use dft_cfg
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -206,7 +208,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dftcom.h"
 
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
@@ -243,7 +244,7 @@ C
 C     Get density-based atomic radii if requested AND coefficients 
 C     exist.
 C
-      IF(ATSIZE) THEN
+      IF(dft_cfg_estimate_radii) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
          CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
          CALL HEADER('Density based relative atomic sizes',-1)
@@ -349,7 +350,7 @@ C        Grid spacing....
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. force_4c_grid) then
+           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
              nbas = nbas + nucorb(ll, 2, iatom)
            end if
 
@@ -369,7 +370,7 @@ C...     Inner grid point
 !        radovan:
 !        if Levy-Leblond or X2C, ignore small component
 !        unless user forces 4-c grid
-         if (mc .gt. 1 .or. force_4c_grid) then
+         if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
            ah = max(ah, aa(1, 1, 2, iatom))
          end if
          ah = d2*ah
@@ -387,7 +388,7 @@ C...     Outer point
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. force_4c_grid) then
+           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
              IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
            end if
 
@@ -490,16 +491,17 @@ C          Scale weights with multiplicity of center
 
 
 !        drop points that are redundant and rescale
-         IF(ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
+         IF(dft_cfg_ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
 
 
 C
-C        Write to file LUQUAD
+C        Write to file
 C        ====================
 C
-         CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NTHIS)
-         if (export_grid) then
-           call export_dft_grid(x8, y8, z8, wt8, luquad+1, nthis)
+         CALL WRTQUA(X8,Y8,Z8,WT8,dft_cfg_file_unit,NTHIS)
+         if (dft_cfg_export_grid) then
+           call export_dft_grid(x8, y8, z8, wt8, 
+     &                          dft_cfg_file_unit+1, nthis)
          end if
 
          NTOTAL = NTOTAL + NTHIS
@@ -512,9 +514,10 @@ C
 10    CONTINUE
 
       NLAST = -1
-      CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NLAST)
-      if (export_grid) then
-        call export_dft_grid(x8, y8, z8, wt8, luquad+1, nlast)
+      CALL WRTQUA(X8,Y8,Z8,WT8,dft_cfg_file_unit,NLAST)
+      if (dft_cfg_export_grid) then
+        call export_dft_grid(x8, y8, z8, wt8, 
+     &                       dft_cfg_file_unit+1, nlast)
       end if
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
@@ -523,7 +526,7 @@ C
 C
 C     Print file
 C
-      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,LUQUAD)
+      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,dft_cfg_file_unit)
       RETURN
       END
 
@@ -722,9 +725,10 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+       use dft_cfg
+
 #include "implicit.h" 
 #include "priunit.h" 
-#include "dftcom.h"
 #include "pi.h"
 
       PARAMETER (MAXNUM=1455)
@@ -741,9 +745,10 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
-      lebmin = angmin !from common block
+      lebmin = dft_cfg_angmin
       NOLD=NSCHEME
-      IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
+      IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND.
+     &    .NOT.dft_cfg_no_pruning) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
          NTOT=MIN(NTOT,IANG)
          NSCHEME=NLEBSET(NTOT)
@@ -1158,7 +1163,6 @@ C
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"
-#include "dftcom.h"
 C
       CALL QENTER('GETCHI')
 C
@@ -1598,7 +1602,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
       DIMENSION ZAN(*), C(*)
@@ -1635,7 +1638,6 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "dftcom.h"
 #include "nuclei.h"
 
 

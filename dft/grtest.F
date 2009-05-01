@@ -31,6 +31,8 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -42,11 +44,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "inforb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "memint.h"
 
-CTROND      LUQUAD = 29
-      LUQUAD = 44
+      iprdft = dft_cfg_print_level
+      dft_cfg_file_unit = 44
 C
 C     Allocate SMAT and send to  DFTDRV
 C
@@ -78,6 +79,8 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+         use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -106,7 +109,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "nuclei.h"
 #include "dfterg.h"
-#include "dftcom.h"
 #include "orgcom.h"
 #include "dftbuf.h"
 #include "functionals.h"
@@ -124,6 +126,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dcbibt.h"
 #include "memint.h"
+
+      iprint = dft_cfg_print_level
+
 
 C
 C     Map basis functions onto atomic centers in array ICLAB
@@ -166,20 +171,21 @@ C
 C
 C     integrate
 C
-      REWIND LUQUAD
+      REWIND dft_cfg_file_unit
       NPNTS = 0
   100 CONTINUE
-      READ(LUQUAD) NPOINT
+      READ(dft_cfg_file_unit) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
-         CALL GRTES3(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),LUQUAD,NPOINT)
+         CALL GRTES3(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
+     &               dft_cfg_file_unit,NPOINT)
 
       CALL GRTES2(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
-     &               SMAT,DFTASC,
+     &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,BUF,WORK(KFREE),LFREE,IPRINT)
 
@@ -422,7 +428,7 @@ C
      &      ' Position and label               : (',
      &      MAXIR,',',MAXJR,') = (',RMXLB1,',',RMXLB2,')'
 
-      IF (INTCHK.GE.2) THEN
+      IF (dft_cfg_integration_check_level .GE. 2) THEN
          CALL HEADER('Errors in numerical SMAT ', -1)
          CALL OUTPUT(SMAT(1,1,1),1,NTBAS(0),1,NTBAS(0),NTBAS(0),
      &        NTBAS(0),1,LUPRI)
@@ -435,7 +441,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C     /* Deck grtes2 */                                                C
       SUBROUTINE GRTES2(CORX,CORY,CORZ,WEIGHT,NPOINT,
-     &               SMAT,DFTASC,
+     &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,BUF,
      &               WORK,LWORK,IPRINT)
@@ -459,7 +465,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dfterg.h"
 #include "functionals.h"
       
-      LOGICAL DFTASC
       DIMENSION SMAT(*)
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
@@ -574,7 +579,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
 
