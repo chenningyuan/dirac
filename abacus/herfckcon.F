@@ -65,7 +65,6 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"
-#include "dftcom.h"
       PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
       PARAMETER (K = 1)
@@ -279,7 +278,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "dftcom.h"
       PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT)

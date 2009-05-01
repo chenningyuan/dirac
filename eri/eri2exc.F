@@ -62,16 +62,12 @@ C
 #include "inforb.h"
 #include "shells.h"
 #include "cbihr2.h"
-C aspg, 2006-04-23
-C
-C the following ifdef was added due to the moving of HFXFAC from dftcom.h
-C to dcbham.h
-C
+
 #ifdef PRG_DIRAC
+! HFXFAC in dcbham.h
 #include "dcbham.h"
 #endif
-C
-#include "dftcom.h"
+
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*), IFCSAV(NDMT)
@@ -825,16 +821,11 @@ C
 #include "inforb.h"
 #include "shells.h"
 #include "odclss.h"
-C aspg, 2006-04-23
-C
-C the following ifdef was added due to the moving of HFXFAC from dftcom.h
-C to dcbham.h
-C
+
 #ifdef PRG_DIRAC
+! HFXFAC in dcbham.h
 #include "dcbham.h"
 #endif
-C
-#include "dftcom.h"
       LOGICAL WRTINT_SAVE, FCKINT_SAVE
 C
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
@@ -1194,16 +1185,12 @@ C  /* Deck exindf */
 #include "ericom.h"
 #include "erithr.h"
 #include "nuclei.h"
-C aspg, 2006-04-23
-C
-C the following ifdef was added due to the moving of HFXFAC from dftcom.h
-C to dcbham.h
-C
+
 #ifdef PRG_DIRAC
+! HFXFAC in dcbham.h
 #include "dcbham.h"
 #endif
-C
-#include "dftcom.h"
+
 #include "aobtch.h"
 #include "hertop.h"
 #include "symmet.h"

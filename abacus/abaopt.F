@@ -2282,6 +2282,7 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+!radovan: fixme dft_cfg
       IF (DFTRUN) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)

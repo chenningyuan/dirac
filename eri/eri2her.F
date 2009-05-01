@@ -45,16 +45,12 @@ C     Two-electron Dirac delta added (WK/UniKA/22-11-2002).
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
 #include "ericom.h"
-C aspg, 2006-04-23
-C
-C the following ifdef was added due to the moving of HFXFAC from dftcom.h
-C to dcbham.h
-C
+
 #ifdef PRG_DIRAC
+! HFXFAC in dcbham.h
 #include "dcbham.h"
 #endif
-C
-#include "dftcom.h"
+
 #include "cbieri.h"
 #include "drw2el.h"
       PARAMETER (D1M = -1.D0)

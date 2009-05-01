@@ -401,7 +401,6 @@ C
 #include "gnrinf.h"
 #endif
 #ifdef MOD_DFT
-#include "dftcom.h"
 #include "dfterg.h"
 #endif
 #include "molinp.h"
@@ -1221,7 +1220,6 @@ C
 #include "gnrinf.h"
 #endif
 #ifdef MOD_DFT
-#include "dftcom.h"
 #include "dfterg.h"
 #endif
 #include "molinp.h"
@@ -1919,7 +1917,6 @@ C
 #include "energy.h"
 #endif
 #ifdef MOD_DFT
-#include "dftcom.h"
 #include "dfterg.h"
 #include "dftbuf.h"
 #endif

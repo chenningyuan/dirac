@@ -81,7 +81,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "dftcom.h"
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
 #include "memint.h"

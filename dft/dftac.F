@@ -52,7 +52,6 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dftcom.h"
 #include "dftac.h"
 #include "dftbuf.h"
 #include "dgroup.h"

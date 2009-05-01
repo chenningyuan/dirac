@@ -55,7 +55,6 @@ C
 #include "infpri.h"
 #endif
 #include "priunit.h"
-#include "dftcom.h"
 #include "cbihr2.h"
 #include "cbieri.h"
 #include "cbifck3.h"

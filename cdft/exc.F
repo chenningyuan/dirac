@@ -60,7 +60,6 @@ C=======================================================================
 #include "dgroup.h"
 #include "inforb.h"
 #include "cdft.h"
-#include "dftcom.h"
 #include "../dft/functionals.h"
 
       LOGICAL   IS_GGA,
