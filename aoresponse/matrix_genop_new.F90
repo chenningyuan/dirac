@@ -1,5 +1,4 @@
 
-#ifdef USE_NEW_DEFOP
 ! written by Andreas J. Thorvaldsen
 ! radovan.bast@uit.no (2009-02-18): generalized for DIRAC
 
@@ -187,6 +186,9 @@ contains
       if (get_ipqtoq(iz, X%pg_sym - 1) > 1) q = -1.0d0
 #endif /* PRG_DIRAC */ 
 
+! some compilers do not initialize variables as zero, such as gfortran
+! and this would results in NaN
+      if (b == 0.0d0) Z%elms = 0.0d0
       Z%elms = b*Z%elms                                         &
              + a*q*reshape(transpose(reshape(                   &
                X%elms((iz - 1)*i_dim*j_dim + 1:iz*i_dim*j_dim), &
@@ -406,9 +408,3 @@ contains
     end subroutine
 
 end module
-#else
-
-subroutine matrix_genop_do_nothing()
-end subroutine
-
-#endif

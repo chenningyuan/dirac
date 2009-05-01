@@ -1,4 +1,3 @@
-#ifdef USE_NEW_DEFOP
 
 ! radovan.bast@uit.no (2009-02-18):
 ! this module is the interface between matrix_genop and DIRAC
@@ -68,7 +67,11 @@ contains
      TYPE(Matrix)             :: c
      INTEGER                  :: m,n,k
 #ifdef PRG_DIRAC
-    integer      :: iq(4)
+    integer      :: iq(4) = (/1, 2, 3, 4/)
+#endif /* PRG_DIRAC */  
+
+#ifdef PRG_DIRAC
+#include "dgroup.h"
 #endif /* PRG_DIRAC */  
 
      if (transa == 'n' .or. transa == 'N') then
@@ -94,9 +97,12 @@ contains
 #else
 
   nz = get_nz()
-      call iqpack(get_ipqtoq(1, A%pg_sym-1), nz, &
-                  get_ipqtoq(1, B%pg_sym-1), nz, &
-                  iq                       , nz)
+
+      if (nbsym > 1) then
+        call iqpack(get_ipqtoq(1, A%pg_sym-1), nz, &
+                    get_ipqtoq(1, B%pg_sym-1), nz, &
+                    iq                       , nz)
+      end if
 
 
     ta = 'N'
@@ -191,9 +197,3 @@ contains
   end subroutine
 
 end module
-#else
-
-subroutine matrix_genop_interface_do_nothing()
-end subroutine
-
-#endif

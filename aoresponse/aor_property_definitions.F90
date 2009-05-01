@@ -1,17 +1,16 @@
-module aoresponse_test_m
+module aor_property_definitions
 
     use matrix_defop
     use matrix_genop
-    use aoresponse_xc_m
     use aoresponse_visual_m
-    use dirac_interface_m
+    use dirac_interface
     use prop_integ
     use rsp_equations
 
     implicit none
 
     character(1)  :: fc(3) = (/'x', 'y', 'z'/)
-    real(kind_dp) :: small = 1.0d-10
+    real(kind_dp) :: tiny = 1.0d-10
 
 contains
 
@@ -24,7 +23,6 @@ contains
               call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
               Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
           end do; W=0
-!fixme
 !         print '("Eg"/<nc/3>(3(f22.15)/))',Eg
       end subroutine
 
@@ -251,20 +249,32 @@ contains
 
   subroutine alpha(S, D, F, w)
 
-    type(matrix), intent(inout) :: S, D, F
-    real(kind_dp)               :: w(2)
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3)
-    type(matrix)                :: F_i(3)
-    real(kind_dp)               :: e_ij(3, 3), avg
+    type(matrix), intent(inout) :: S, D, F
+    real(8),      intent(in)    :: w(2)
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: D_i(3), F_i(3)
+    real(8)                     :: e_ij(3, 3), avg
     integer                     :: i, j
+!   ----------------------------------------------------------------------------
+
+    if (abs(sum(w)) > tiny) call quit('alpha: frequencies do not sum up to zero')
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    do i = 1, 3
+      D_i(i) = 1.0d-100*D
+      F_i(i) = 1.0d-100*F
+    end do
 
     call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(2:2))
 
     e_ij = 0.0d0
     call prop_energy((/'EL'/), (/D, D_i/), e_ij)
 
-    if (aoresponse_visual .or. aoresponse_integrate) then
+    if (aor_cfg_visual .or. aor_cfg_integrate) then
       call aoresponse_visual_driver((/D, D_i/))
     end if
 
@@ -276,7 +286,7 @@ contains
       F_i(i) = 0
 
       do j = 1, 3
-        if (abs(e_ij(i, j)) > small) then
+        if (abs(e_ij(i, j)) > tiny) then
           print '("@" a10 a2 f26.10)', fc(i), fc(j), -e_ij(i, j)
         end if
       end do
@@ -304,7 +314,7 @@ contains
     real(kind_dp)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
-    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -386,7 +396,7 @@ contains
         F_ij(i, j) = 0
 
         do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > small) then
+          if (abs(e_ijk(i, j, k)) > tiny) then
             print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
           end if
         end do
@@ -405,7 +415,7 @@ contains
     real(kind_dp)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
-    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -416,7 +426,7 @@ contains
 
     call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-    if (aoresponse_visual .or. aoresponse_integrate) then
+    if (aor_cfg_visual .or. aor_cfg_integrate) then
       call aoresponse_visual_driver((/D, D_i, D_ij/))
     end if
 
@@ -438,7 +448,7 @@ contains
         F_ij(i, j) = 0
 
         do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > small) then
+          if (abs(e_ijk(i, j, k)) > tiny) then
             print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
           end if
         end do
@@ -459,7 +469,7 @@ contains
     integer                     :: i, j, k
     character(4)                :: nop(0)
 
-    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -560,7 +570,7 @@ contains
 
       do j = 1, 3
         do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > small) then
+          if (abs(e_ijk(i, j, k)) > tiny) then
             print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
           end if
         end do
@@ -582,7 +592,7 @@ contains
     real(kind_dp)                :: e_ijk(3, 3, 3)
     integer                      :: i, j, k
 
-    if (abs(sum(w)) > small) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -653,7 +663,7 @@ contains
 
         do k = 1, 3
 
-          if (abs(e_ijk(i, j, k)) > small) then
+          if (abs(e_ijk(i, j, k)) > tiny) then
             print '("@ beta (w = "3f8.4")" a10 a2 a2 f26.10)', w(1),  &
                                                                w(2),  &
                                                                w(3),  &
@@ -682,7 +692,7 @@ contains
     real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
     integer                      :: i, j, k, l
 
-    if (abs(sum(w)) > small) call quit('gamma: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -823,7 +833,7 @@ contains
           F_ijk(i, j, k) = 0
 
           do l = 1, 3
-            if (abs(e_ijkl(i, j, k, l)) > small) then
+            if (abs(e_ijkl(i, j, k, l)) > tiny) then
               print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', w(1),  &
                                                                      w(2),  &
                                                                      w(3),  &
@@ -852,7 +862,7 @@ contains
     real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
     integer                      :: i, j, k, l
 
-    if (abs(sum(w)) > small) call quit('gamma: frequencies do not sum up to zero')
+    if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -899,7 +909,7 @@ contains
           F_ijk(i, j, k) = 0
 
           do l = 1, 3
-            if (abs(e_ijkl(i, j, k, l)) > small) then
+            if (abs(e_ijkl(i, j, k, l)) > tiny) then
               print '("@" a10 a2 a2 a2 f26.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
             end if
           end do

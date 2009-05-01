@@ -801,7 +801,7 @@ while [ -n "$1" ]; do
       -visual)
          VISUALMOD=1
          ;;
-      -aoresponse)
+      -aoresponse|-ao)
          AORESPONSEMOD=1
          ;;
       -cap)

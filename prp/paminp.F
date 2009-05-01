@@ -42,6 +42,10 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+#ifdef MOD_AORESPONSE
+         use aor_input
+#endif /* MOD_AORESPONSE */
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -497,7 +501,7 @@ C     *STEX
    10 CONTINUE
 #ifdef MOD_AORESPONSE
          test_aoresponse = .true.
-         call aoresponse_input(word)
+         call parse_aor_input(word)
 #else
          CALL QUIT('*AORESPONSE not included in this version')
 #endif /* MOD_AORESPONSE */

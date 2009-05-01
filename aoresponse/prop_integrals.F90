@@ -19,7 +19,8 @@ module prop_integ
                      ,di_get_geomDeriv_molgrad_DFT,di_get_geomDeriv_FxD_DFT,di_get_geomDeriv_GxD_DFT
     use matrix_operations,only: mat_to_full,mat_set_from_full
 #else
-    use dirac_interface_m
+    use dirac_interface
+    use dft_cfg
 #endif /* PRG_DIRAC */
 
     implicit none
@@ -53,7 +54,7 @@ module prop_integ
             c09(0:9) = (/'0','1','2','3','4','5','6','7','8','9'/)
 
 #ifndef PRG_DIRAC
-    logical,external:: do_dft
+  logical, external :: do_dft
 #endif /* PRG_DIRAC */
 
 contains
@@ -110,11 +111,22 @@ contains
         subroutine subr()
             integer:: bb(m),of(nf); type(matrix):: FF(nf)
             call prop_order(n,op,cc,m,size(D),nf, bb,of, b=b,o=o)
-            !order F into FF, call core function fock_core, then reorder back into F
-            do i=1,nf; FF(of(i)) = F(i); F(i)=0; end do
+
+!           order F into FF
+            do i = 1, nf
+              FF(of(i)) = F(i)
+              F(i)      = 0
+            end do
+
             call fock_core(n,m,(/(p(op(i)),i=1,n)/) &
                     ,(/(cc(op(i)),i=1,n),(cc(n+op(i)),i=1,n)/),D,bb,FF)
-            do i=1,nf; F(i) = FF(of(i)); FF(of(i))=0; end do
+
+!           reorder back into F
+            do i = 1, nf
+              F(i)      = FF(of(i))
+              FF(of(i)) = 0
+            end do
+
         end subroutine
     end subroutine
 
@@ -192,10 +204,12 @@ contains
                 do j=0,b(2)-1
                     call di_GET_GbDs(D(1+b(1)+1+j),A(1))
                     if (do_dft()) then
-!radovan please leave:
-!  call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
-                        call di_get_sigma_xc_cont(D(1+b(1)+1+j),D(1),D(1),A(2))
-                        A(1) = A(1) + A(2)
+#ifndef PRG_DIRAC
+!                       call di_get_sigma_xc_cont(D(1+b(1)+1+j),D(1),D(1),A(2))
+!                       A(1) = A(1) + A(2)
+#else
+!                       call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
+#endif /* PRG_DIRAC */
                     end if
                     do i=1,b(1)
                         e(i+b(1)*j) = tr(A(1),D(1+i)) !factor 2 hidden in tr
@@ -482,44 +496,180 @@ contains
 
 
     subroutine fock_core(n,m,p,c,D,b,F)
+#ifdef PRG_DIRAC
+#include "dgroup.h"
+#include "dcbbas.h"
+#endif /* PRG_DIRAC */
         integer:: n,m,c(n+n),b(m); character(*):: p(n) !perturbation lables
         type(matrix):: D(product(b+1)) !density matrix expansion to contract over
         type(matrix),intent(inout):: F(product(b)*product(c(n+1:n+n)-c(1:n)+1)) !result
+
+        real(8) :: z(ntbas(0)*ntbas(0)*nz)
+        integer :: ones(50)     
+        integer :: nr_dmat
+ 
+    integer, parameter       :: lwork = 1000000
+    real(8)                  :: work(lwork)
         integer:: i,j,k,ii,jj,kk,i1,pb,pb1; type(Matrix):: A(9)
         do i=1,size(A); A(i)=0d0*D(1); end do
         pb = product(b); pb1 = product(b+1)
-        if (n==0) then
-            if (m==0) stop 'prop_fock: unperturbed Fock matrix requested'
-            call mat_init(A(1),A(1)) !di_GET_GbDs expects initalized
-            do i=1,pb; ii=pb1-pb+i
-                if (iszero(D(ii))) cycle
-                call di_GET_GbDs(D(ii),A(1))
-                F(i) = F(i) + A(1)
-                if (do_dft()) then !DFT contribution
-!radovan please leave:
-!                    call xc_contribution(2, D(1), (/D(ii)/), (/F(i)/))
-                    call di_get_sigma_xc_cont(D(ii),D(1),D(1),A(1))
-                    F(i) = F(i) + A(1)
-                end if
+
+        ones = 1
+
+        if (n == 0) then
+
+          if (m == 0) call quit('fock_core: unperturbed Fock matrix requested')
+
+            call mat_init(A(1), A(1))
+
+            do i = 1, pb
+
+              ii = pb1 - pb + i
+              if (iszero(D(ii))) cycle
+
+              call di_GET_GbDs(D(ii), A(1))
+
+              F(i) = F(i) + A(1)
+
             end do
-            if (do_dft().and.m==1) then
-                !nothing more
-            else if (do_dft().and.m==2) then
-                do j=0,b(2)-1; jj=1+b(1)+1+j
-                    if (iszero(D(jj))) cycle
-                    do i=1,b(1); ii=1+i
-                        if (iszero(D(ii))) cycle
-!radovan please leave:
-!                        A(1) = tiny(1d0)*A(1)
-!                        A(1)%pg_sym = 1 + ieor(D(ii)%pg_sym - 1, D(jj)%pg_sym - 1)
-!                        call xc_contribution(3, D(1), (/D(ii), D(jj)/), A(1:1))
-                        call di_get_T_xc_cont(D(1),D(ii),D(jj),A(1))
-                        F(i+b(1)*j) = F(i+b(1)*j) + A(1)
-                    end do
-                end do
-            else if (do_dft()) then
-                call quit('prop_fock: DFT m==3 not omplemented')
+
+            if (do_dft()) then
+
+              z       = 0.0d0
+              nr_dmat = size(D)
+
+              do i = 1, nr_dmat
+                if (iszero(D(i))) then
+                  D(i) = tiny(0.0d0)*D(1)
+                end if
+              end do
+
+              if (m == 1) then
+                call dftexc(2.0d0*D(1)%elms,     &
+                            (/                   &
+                              D(2)%elms          &
+                             /),                 &
+                            z,                   &
+                            nr_dmat,             &
+                            (/ones(1:nr_dmat)/), &
+                            (/ones(1:nr_dmat)/), &
+                            8,                   &
+                            m + 1,               &
+                            work,                &
+                            lwork,               &
+                            0)
+              end if
+
+              if (m == 2) then
+                call dftexc(2.0d0*D(1)%elms,     &
+                            (/                   &
+                              D(2)%elms,         &
+                              D(3)%elms,         &
+                              D(4)%elms          &
+                             /),                 &
+                            z,                   &
+                            nr_dmat,             &
+                            (/ones(1:nr_dmat)/), &
+                            (/ones(1:nr_dmat)/), &
+                            8,                   &
+                            m + 1,               &
+                            work,                &
+                            lwork,               &
+                            0)
+              end if
+
+              if (m == 3) then
+!               restriction: 
+!               all perturbation operators are same
+!               so i pass only the representative density matrices
+                call dftexc(2.0d0*D(1)%elms,   &
+                            (/                 &
+                              D(3+1)%elms,     &
+                              D(6+1)%elms      &
+                             /),               &
+                            z,                 &
+                            m - 1,             &
+                            (/ones(1:m - 1)/), &
+                            (/ones(1:m - 1)/), &
+                            8,                 &
+                            m + 1,             &
+                            work,              &
+                            lwork,             &
+                            0)
+              end if
+
+              if (m == 4) then
+!               restriction: 
+!               all perturbation operators are same
+!               so i pass only the representative density matrices
+                call dftexc(2.0d0*D(1)%elms,   &
+                            (/                 &
+                              D( 4+1)%elms,    &
+                              D(10+1)%elms,    &
+                              D(14+1)%elms     &
+                             /),               &
+                            z,                 &
+                            m - 1,             &
+                            (/ones(1:m - 1)/), &
+                            (/ones(1:m - 1)/), &
+                            8,                 &
+                            m + 1,             &
+                            work,              &
+                            lwork,             &
+                            0)
+              end if
+
+              if (m == 5) then
+!               restriction: 
+!               all perturbation operators are same
+!               so i pass only the representative density matrices
+                call dftexc(2.0d0*D(1)%elms,   &
+                            (/                 &
+                              D( 5+1)%elms,    &
+                              D(15+1)%elms,    &
+                              D(25+1)%elms,    &
+                              D(30+1)%elms     &
+                             /),               &
+                            z,                 &
+                            m - 1,             &
+                            (/ones(1:m - 1)/), &
+                            (/ones(1:m - 1)/), &
+                            8,                 &
+                            m + 1,             &
+                            work,              &
+                            lwork,             &
+                            0)
+              end if
+
+              if (m == 6) then
+!               restriction: 
+!               all perturbation operators are same
+!               so i pass only the representative density matrices
+                call dftexc(2.0d0*D(1)%elms,   &
+                            (/                 &
+                              D( 6+1)%elms,    &
+                              D(21+1)%elms,    &
+                              D(41+1)%elms,    &
+                              D(56+1)%elms,    &
+                              D(62+1)%elms     &
+                             /),               &
+                            z,                 &
+                            m - 1,             &
+                            (/ones(1:m - 1)/), &
+                            (/ones(1:m - 1)/), &
+                            8,                 &
+                            m + 1,             &
+                            work,              &
+                            lwork,             &
+                            0)
+              end if
+
+              A(1) = tiny(0.0d0)*D(1)
+              call daxpy(ntbas(0)*ntbas(0)*nz, 4.0d0, z, 1, A(1)%elms, 1)
+              F(1) = F(1) + A(1)
+
             end if
+
         else if (n==1.and.p(1)=='EL') then !only m==0
             do i=1,c(2)-c(1)+1; ii=c(1)+i-1
                 call oneint(xyz(ii)//'DIPLEN ',A(1))

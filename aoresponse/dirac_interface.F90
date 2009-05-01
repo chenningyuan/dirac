@@ -1,10 +1,10 @@
-module dirac_interface_m
+module dirac_interface
 
   use kinds_m
   use memory_allocator
   use matrix_defop
-  use aoresponse_input_m
-  use aoresponse_xc_m
+  use matrix_genop
+  use aor_cfg
 
   implicit none
 
@@ -15,6 +15,9 @@ module dirac_interface_m
   interface di_read_operator_int
     module procedure get_P
   end interface
+
+  integer, parameter            :: max_nr_op = 137
+  character(16),           save :: op_name_to_aoproper(max_nr_op)
 
 contains
 
@@ -261,6 +264,7 @@ contains
 #include "dorps.h"
 #include "dcbbas.h"
 #include "nuclei.h"
+#include "dgroup.h"
 
     lwork = 20000000
     call alloc(work, lwork)
@@ -299,10 +303,10 @@ contains
 !   fixme: QO to AO
 
     if (debug_me) then
-      call mat_print(F_mo,     label = 'blub F_mo')
-      call mat_print(F_temp,   label = 'blub F_temp')
-      call mat_print(F_folded, label = 'blub F_folded')
-      call mat_print(D_folded, label = 'blub D_folded')
+      call mat_print(F_mo,     label = 'debug F_mo')
+      call mat_print(F_temp,   label = 'debug F_temp')
+      call mat_print(F_folded, label = 'debug F_folded')
+      call mat_print(D_folded, label = 'debug D_folded')
     end if
 
     grd_nosmlv = .false.
@@ -398,7 +402,7 @@ contains
 
     D = 4.0d0*D
     if (debug_me) then
-      call mat_print(D, label = 'D in AO basis')
+      call mat_print(D, label = 'debug D in AO basis')
     end if
 
     do i = 1, 3*mxcent
@@ -585,11 +589,13 @@ contains
 
   function do_dft() result(l)
 
-    logical :: l
+    use dft_cfg
 
-!fixme
-!   l = dftadd
-    l = .false.
+!   ----------------------------------------------------------------------------
+    logical :: l
+!   ----------------------------------------------------------------------------
+
+    l = dft_cfg_is_dft_calculation
 
   end function
 
@@ -670,17 +676,22 @@ contains
 
   subroutine get_C(C)
 
+!   ----------------------------------------------------------------------------
     type(matrix),  intent(inout) :: C
 !   ----------------------------------------------------------------------------
     real(kind_dp), allocatable   :: eigenvalues(:)
     integer,       parameter     :: file_unit = 66
     real(kind_dp)                :: dummy_dp
     integer                      :: dummy_i
+!   ----------------------------------------------------------------------------
 
 #include "dcborb.h"
 #include "dcbbas.h"
 
-    if (.not. mat_isdef(C)) call mat_init(C, ntbas(0), norbt)
+!   this didn't work with gfortran
+!   if (.not. mat_isdef(C)) call mat_init(C, ntbas(0), norbt)
+                            call mat_init(C, ntbas(0), norbt)
+
     C%elms = 0.0d0
 
     call alloc(eigenvalues, norbt)
@@ -844,6 +855,7 @@ contains
 #include "dcbgen.h"
 #include "dcbxpr.h"
 
+    write(*, *) 'blub', op_name
     op_index = find_op_index(op_name)
 
     idimension = nnbbasx
@@ -893,7 +905,7 @@ contains
     P = 2.0d0*P
 
     if (debug_me) then
-      call mat_print(P, label = 'P in AO basis')
+      call mat_print(P, label = 'debug P in AO basis')
     end if
 
     call dealloc(ptri)
@@ -1001,11 +1013,11 @@ contains
     end if
 
     if (debug_me) then
-      call header('orbital_rotation_vector_pp', -1)
+      call header('debug orbital_rotation_vector_pp', -1)
       do i = 1, size(orbital_rotation_vector_pp)/2
         write(*, *) i, orbital_rotation_vector_pp(1, i), '->', orbital_rotation_vector_pp(2, i)
       end do
-      call header('orbital_rotation_vector_pn', -1)
+      call header('debug orbital_rotation_vector_pn', -1)
       do i = 1, size(orbital_rotation_vector_pn)/2
         write(*, *) i, orbital_rotation_vector_pn(1, i), '->', orbital_rotation_vector_pn(2, i)
       end do
@@ -1063,9 +1075,9 @@ contains
 #include "dcbxrs.h"
 #include "dgroup.h"
 
-    if (.not. aoresponse_skip_pp) do_pp = .true.
-    if (.not. aoresponse_skip_pn) do_pn = .true.
-    if (levyle .or. bss)          do_pn = .false.
+    if (.not. aor_cfg_skip_pp) do_pp = .true.
+    if (.not. aor_cfg_skip_pn) do_pn = .true.
+    if (levyle .or. bss)       do_pn = .false.
 
     call set_orbital_rotation_vector(.false.,                    &
                                      length_pp,                  &
@@ -1110,8 +1122,8 @@ contains
     RHS_mo%fermi_pointer = RHS%fermi_pointer
 
     if (debug_me) then
-      call mat_print(RHS,    label = 'RHS in AO basis')
-      call mat_print(RHS_mo, label = 'RHS in MO basis')
+      call mat_print(RHS,    label = 'debug RHS in AO basis')
+      call mat_print(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
     if (do_pp) then
@@ -1132,7 +1144,7 @@ contains
       call dscal(length_pp*nz, -1.0d0, prop_gradient_pp, 1)
 
       if (debug_me) then
-        call header('prop_gradient_pp', -1)
+        call header('debug prop_gradient_pp', -1)
         call print_q_vector(prop_gradient_pp, length_pp)
       end if
 
@@ -1156,7 +1168,7 @@ contains
       call dscal(length_pn*nz, -1.0d0, prop_gradient_pn, 1)
 
       if (debug_me) then
-        call header('prop_gradient_pn', -1)
+        call header('debug prop_gradient_pn', -1)
         call print_q_vector(prop_gradient_pn, length_pn)
       end if
 
@@ -1199,7 +1211,7 @@ contains
     tknorm    = .false.
     diaghe    = .true.
     iprxrs    = 0
-    thcxrs    = aoresponse_threshold_response
+    thcxrs    = aor_cfg_threshold_response
     resfac    = 1.0d3
     maxitr    = 150
     nredm     = 400
@@ -1293,9 +1305,9 @@ contains
                                      eigvec)
 
       if (debug_me) then
-        call header('response_vector_pph', -1)
+        call header('debug response_vector_pph', -1)
         call prbvec(6, response_vector_pph, nr_freq, length_pp)
-        call header('response_vector_ppa', -1)
+        call header('debug response_vector_ppa', -1)
         call prbvec(6, response_vector_ppa, nr_freq, length_pp)
       end if
 
@@ -1328,9 +1340,9 @@ contains
                                      eigvec)
 
       if (debug_me) then
-        call header('response_vector_pnh', -1)
+        call header('debug response_vector_pnh', -1)
         call prbvec(6, response_vector_pnh, nr_freq, length_pn)
-        call header('response_vector_pna', -1)
+        call header('debug response_vector_pna', -1)
         call prbvec(6, response_vector_pna, nr_freq, length_pn)
       end if
 
@@ -1388,10 +1400,10 @@ contains
     Dp%fermi_pointer = Wp%fermi_pointer
 
     if (debug_me) then
-      call mat_print(Wp, label = 'Wp')
-      call mat_print(Dp, label = 'Dp')
-      call mat_print(Ci, label = 'Ci')
-      call mat_print(Cs, label = 'Cs')
+      call mat_print(Wp, label = 'debug Wp')
+      call mat_print(Dp, label = 'debug Dp')
+      call mat_print(Ci, label = 'debug Ci')
+      call mat_print(Cs, label = 'debug Cs')
     end if
 
     Ci = 0
@@ -1503,6 +1515,159 @@ contains
                 ipqtoq(1, 0),     &
                 6)
 
+  end subroutine
+
+  function find_op_index(op_name) result(op_index)
+
+    character(*), intent(in) :: op_name
+    integer                  :: op_index, i
+
+    op_index = -1
+
+    do i = 1, max_nr_op
+      if (op_name_to_aoproper(i) == op_name) then
+        op_index = i
+      end if
+    end do
+
+    if (op_index == -1) then
+      call quit('find_op_index: index for '//op_name//' not found')
+    end if
+
+  end function
+
+  subroutine add_op_by_hand(op_name,    &
+                            typ,        &
+                            pg_sym,     &
+                            tr_sym,     &
+                            prefactors, &
+                            pointers,   &
+                            blocks)
+
+!   ----------------------------------------------------------------------------
+    character(16), intent(in)  :: op_name
+    integer,       intent(in)  :: typ
+    integer,       intent(in)  :: pg_sym
+    integer,       intent(in)  :: tr_sym
+    real(8),       intent(in)  :: prefactors(3)
+    integer,       intent(in)  :: pointers(3)
+    character(4),  intent(in)  :: blocks
+!   ----------------------------------------------------------------------------
+    integer                    :: i
+!   ----------------------------------------------------------------------------
+
+#include "dcbxpr.h"
+#include "dcbprl.h"
+
+    i = nprps + 1
+
+    prpnam(i)  = op_name
+    iprptyp(i) = typ
+    iprpsym(i) = pg_sym
+    iprptim(i) = tr_sym
+
+    facprp(1:3,  i) = prefactors(1:3)
+    iprplbl(1:3, i) = pointers(1:3)
+
+    nprps = i
+
+    op_name_to_aoproper(i) = op_name
+
+    i = nprplbl + 1
+
+    prplbl(i)  = op_name
+    pdoint(i)  = blocks
+    iprlrep(i) = pg_sym - 1
+    iprltyp(i) = tr_sym
+
+    nprplbl = i
+
+  end subroutine
+
+  subroutine add_op(op_name,       &
+                    typ,           &
+                    nr_components, &
+                    prefactors,    &
+                    labels)
+
+!   ----------------------------------------------------------------------------
+    character(7), intent(in)  :: op_name
+    integer,      intent(in)  :: typ
+    integer,      intent(in)  :: nr_components
+    real(8),      intent(in)  :: prefactors(nr_components)
+    character(8), intent(in)  :: labels(nr_components)
+!   ----------------------------------------------------------------------------
+    integer                   :: i
+    integer                   :: pg_sym
+    integer                   :: tr_sym
+    real(8),      allocatable :: work(:)
+    integer                   :: lwork
+!   ----------------------------------------------------------------------------
+
+    lwork = 200000
+    call alloc(work, lwork)
+
+    call xprind(op_name//'         ', &                                
+                typ,                  &              
+                nr_components,        &                           
+                prefactors,           &                                
+                labels,               &                                
+                i,                    &            
+                pg_sym,               &                 
+                tr_sym,               &                     
+                work,                 &               
+                lwork,                &                
+                0)
+
+    call dealloc(work)
+
+    op_name_to_aoproper(i) = op_name
+
+  end subroutine
+
+  subroutine ask_for_integrals()
+      integer :: i
+      real(8) :: v(3)
+
+      do i = 1, max_nr_op
+        op_name_to_aoproper(i) = ''
+      end do
+
+      call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
+      call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
+      call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
+
+!     call request_1el_integrals('BETAMAT', '000+')
+      call request_1el_integrals('GEO1KIN', '+00+')
+
+      v = (/1.0d0, 0.0d0, 0.0d0/)
+
+      call add_op_by_hand('GEO1KIN001      ',1,1,1,v, &
+                          (/ 9, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN002      ',1,1,1,v,  &
+                          (/10, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN003      ',1,1,1,v,  &
+                          (/11, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN004      ',1,1,1,v,  &
+                          (/12, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN005      ',1,1,1,v,  &
+                          (/13, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN006      ',1,1,1,v,  &
+                          (/14, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN007      ',1,1,1,v,  &
+                          (/15, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN008      ',1,1,1,v,  &
+                          (/16, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN009      ',1,1,1,v,  &
+                          (/17, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN010      ',1,1,1,v,  &
+                          (/18, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN011      ',1,1,1,v,  &
+                          (/19, 0, 0/), '+00+')
+      call add_op_by_hand('GEO1KIN012      ',1,1,1,v,  &
+                          (/20, 0, 0/), '+00+')
+
+      call print_prp_common_blocks()
   end subroutine
 
 end module

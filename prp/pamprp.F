@@ -126,7 +126,7 @@ C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
 #ifdef MOD_AORESPONSE
-      use aoresponse_main_m
+      use aor_main
 #endif /* MOD_AORESPONSE */
 
 #ifdef MOD_EMB

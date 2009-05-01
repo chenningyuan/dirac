@@ -1,4 +1,3 @@
-#ifdef USE_NEW_DEFOP
 !Copyright 2009 Andreas J. Thorvaldsen
 !This file is made available under the terms of the
 !GNU Lesser General Public License.
@@ -848,9 +847,3 @@ contains
     end subroutine
 
 end module
-#else
-
-subroutine matrix_defop_do_nothing()
-end subroutine
-
-#endif

@@ -70,7 +70,8 @@ contains
         real*8,intent(in),optional:: w(:) !signed frequencies of each p
         integer:: n,cc(2*size(p)),b(size(p)),op(size(p)),ne
         integer:: i,j,k,i0,j0,k0,ij,ik,jk,ij0,ik0,jk0,ijk,ijk0,ji,jj
-        real*8:: ww(size(p)+1); type(matrix):: Sp(3),Tp(3); n=size(p)
+        integer:: imax
+        real*8:: ww(size(p)+1); type(matrix):: Sp(3),Tp(3),X,SDF(1); n=size(p)
         call prop_check('pert_scf_eq',S0,n,p, c=c,w=w, op=op,cc=cc,ww=ww,ne=ne); ww(n+1)=0
         if (any(op/=(/(i,i=1,n)/))) call quit('PertSCFeq: General case not implemented')
         b = cc(n+1:n+n)-cc(1:n)+1
@@ -79,33 +80,107 @@ contains
         if (size(F)/=product(b+1)) call quit( &
             'pert_scf_eq: size(F)/=product(b+1) wrong number of Fock matrices')
         !ajt fixme: This should be written optimized an for general orders
-        if (n==1.and.all(p=='EL'.or.p=='MAGO')) then
-            do i=1,b(1)
-                DSD(i) = D(1+i)*S0*D(1)+D(1)*S0*D(1+i)-D(1+i)
-                FDS(i) = F(1+i)*D(1)*S0-S0*D(1)*F(1+i) &
-                       + F(1)*D(1+i)*S0-S0*D(1+i)*F(1)-ww(1)*S0*D(1+i)*S0
-            enddo
-        elseif (n==2.and.all(p=='EL'.or.p=='MAGO')) then
-            do i0=1,b(1); do j0=1,b(2); ij0=i0+b(1)*(j0-1)
-                i=1+i0; j=1+b(1)+j0; ij=1+b(1)+b(2)+ij0
+
+
+
+        X = -sum(ww/2.0d0)*S0
+
+#define AOR_ONLY_INDIVIDUAL_COMPONENTS
+#ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
+        if (all(p == 'EL' .or. p == 'MAGO')) then
+
+          DSD(1) = tiny(1.0d0)*D(1)
+          FDS(1) = tiny(1.0d0)*F(1)
+          SDF(1) = tiny(1.0d0)*F(1)
+
+          imax = size(D)
+
+          do i = 1, imax
+            j = imax - i + 1
+
+            DSD(1) = DSD(1) + D(i)*S0*D(j)
+            FDS(1) = FDS(1) + F(i)*D(j)
+            SDF(1) = SDF(1) + D(i)*F(j)
+          end do
+
+          DSD(1) = DSD(1) - D(imax)
+
+          FDS(1) = FDS(1) + X*D(imax)
+          SDF(1) = SDF(1) + D(imax)*X
+
+          FDS(1) = FDS(1)*S0 - S0*SDF(1)
+#else
+
+
+
+        if      (n == 1 .and. all(p == 'EL' .or. p == 'MAGO')) then
+          do i = 1, b(1)
+            DSD(i) = D(1+i)*S0*D(1  ) &
+                   + D(1  )*S0*D(1+i) &
+                   - D(1+i)
+            FDS(i) = F(1+i)*D(1  )*S0 - S0*D(1  )*F(1+i) &
+                   + F(1  )*D(1+i)*S0 - S0*D(1+i)*F(1  ) &
+                   - ww(1)*S0*D(1+i)*S0
+          end do
+        else if (n == 2 .and. all(p == 'EL' .or. p == 'MAGO')) then
+          do i0 = 1, b(1)
+            do j0 = 1, b(2)
+                ij0 = i0 + b(1)*(j0-1)
+                i   = 1 + i0
+                j   = 1 + b(1) + j0
+                ij  = 1 + b(1) + b(2) + ij0
+
                 DSD(ij0) = D(ij)*S0*D(1)+D(1)*S0*D(ij)-D(ij)+D(j)*S0*D(i)+D(i)*S0*D(j)
                 FDS(ij0) = (F(ij)*D(1)+F(j)*D(i)+F(i)*D(j)+(F(1)-sum(ww/2)*S0)*D(ij))*S0 &
                       - S0*(D(1)*F(ij)+D(i)*F(j)+D(j)*F(i)+D(ij)*(F(1)+sum(ww/2)*S0))
-            enddo; enddo
-        elseif (n==3.and.all(p=='EL'.or.p=='MAGO')) then
-            do i0=1,b(1); do j0=1,b(2); do k0=1,b(3)
-                ij0=i0+b(1)*(j0-1); ik0=i0+b(1)*(k0-1); jk0=j0+b(2)*(k0-1)
-                ijk0=i0+b(1)*(j0-1)+b(1)*b(2)*(k0-1)
-                i=1+i0; j=1+b(1)+j0; k=1+b(1)+b(2)+k0; ij=1+b(1)+b(2)+b(3)+ij0
-                ik=1+b(1)+b(2)+b(3)+b(1)*b(2)+ik0; jk=1+b(1)+b(2)+b(3)+b(1)*b(2)+b(1)*b(3)+jk0
-                ijk=1+b(1)+b(2)+b(3)+b(1)*b(2)+b(1)*b(3)+b(2)*b(3)+ijk0
+
+             !  DSD(ij0) = D(ij)*S0*D(1) &
+             !           + D(1 )*S0*D(ij) &
+             !           + D(j )*S0*D(i) &
+             !           + D(i )*S0*D(j) &
+             !           - D(ij)
+             !  FDS(ij0) = (F(ij)*D(1) &
+             !           +  F(j )*D(i) &
+             !           +  F(i )*D(j) &
+             !           +  F(1) *D(ij))*S0 &
+             !           -  sum(ww/2)*S0*D(ij)*S0 &
+             !           - S0*(D(1 )*F(ij) &
+             !           +     D(i )*F(j ) &
+             !           +     D(j )*F(i ) &
+             !           +     D(ij)*F(1)) &
+             !           - S0*sum(ww/2)*S0
+            end do
+          end do
+        else if (n == 3 .and. all(p == 'EL' .or. p == 'MAGO')) then
+          do i0 = 0, b(1) - 1
+          do j0 = 0, b(2) - 1
+          do k0 = 0, b(3) - 1
+
+            i    = i0 + 2
+            j    = j0 + 2 + b(1)
+            k    = k0 + 2 + b(1) + b(2)
+                                     
+            ij   = i0 + 2 + b(1) + b(2) + b(3) + b(1)*j0
+            ik   = i0 + 2 + b(1) + b(2) + b(3) + b(1)*b(2) + b(1)*k0
+            jk   = j0 + 2 + b(1) + b(2) + b(3) + b(1)*b(2) + b(1)*b(3) + b(2)*k0
+                                            
+            ijk  = i0 + 2 + b(1) + b(2) + b(3) + b(1)*b(2) + b(1)*b(3) + b(2)*b(3) + b(1)*j0 + b(1)*b(2)*k0
+                                            
+            ijk0 =  i0 + 1 +b(1)*j0 + b(1)*b(2)*k0
+                                            
                 DSD(ijk0) = D(ijk)*S0*D(1)*S0*D(ijk)-D(ijk)+D(jk)*S0*D(i)+D(i)*S0*D(jk) &
                           + D(ik)*S0*D(j)+D(j)*S0*D(ik)+D(ij)*S0*D(k)+D(k)*S0*D(ij)
                 FDS(ijk0) = (F(ijk)*D(1)+F(jk)*D(i)+F(ik)*D(j)+F(ij)*D(k) &
                           +  F(k)*D(ij)+F(j)*D(ik)+F(i)*D(jk)+(F(1)-sum(ww/2)*S0)*D(ijk))*S0 &
                        - S0*(D(1)*F(ijk)+D(i)*F(jk)+D(j)*F(ik)+D(k)*F(ij) &
                           +  D(ij)*F(k)+D(ik)*F(j)+D(jk)*F(i)+D(ijk)*(F(1)+sum(ww/2)*S0))
-            enddo; enddo; enddo
+
+
+
+          end do
+          end do
+          end do
+#endif /* AOR_ONLY_INDIVIDUAL_COMPONENTS */
         elseif (n==1) then
             do i=1,b(1)
                 call prop_overlap(p,S0,Sp,c=(/cc(1)+i-1/))
@@ -193,7 +268,7 @@ contains
     !     at least FDS, for use in Sellers-type formulas
 
 #ifdef PRG_DIRAC
-        use dirac_interface_m
+        use dirac_interface
 #else
         use newsolver
 #endif /* PRG_DIRAC */
@@ -242,14 +317,14 @@ contains
         Dp  = Dp + 2.0d0*DSD
 #else
         R = -(RHS(1) - dag(RHS(1)))/2.0d0 !ajt: changed sign on RHS
-        if (dot(R,R) > aoresponse_threshold_rhs) then
+        if (dot(R,R) > aor_cfg_threshold_rhs) then
             R%tr_sym = 1
             call response_solver(w, R, SOL(1))
             Dp = Dp + SOL(1)
         end if
 
         R = -(RHS(1) + dag(RHS(1)))/2.0d0 !ajt: changed sign on RHS
-        if (dot(R,R) > aoresponse_threshold_rhs) then
+        if (dot(R,R) > aor_cfg_threshold_rhs) then
             R%tr_sym = -1
             call response_solver(w, R, SOL(1))
             Dp = Dp + SOL(1)
