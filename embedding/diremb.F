@@ -59,7 +59,12 @@ C      IMPLICIT NONE
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
+
+#ifndef PRG_DIRAC
+!radovan: it needs dfthri, but not if DIRAC is used
 #include "dftcom.h"
+#endif
+
 #include "ccom.h"
 #include "inforb.h"
       INTEGER :: p,q
