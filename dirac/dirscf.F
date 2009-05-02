@@ -356,6 +356,7 @@ C     Last revision : Jan 27 1997 - tsaue
 C                     July 2005 - MI - adapted for DC2BSS calculations.
 C
 C*****************************************************************************
+
 #ifdef MOD_DFT
       use dft_cfg
 #endif
@@ -385,6 +386,10 @@ C
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
+
+#ifdef MOD_DFT
+      type(dft_options_t) :: dft_options
+#endif
 C
       CALL QENTER('PREDHF')
 C
@@ -540,21 +545,45 @@ C
 C
         TDXC = SECOND()
         TDF2 = TDXC - TDF2
+
+
+
 #ifdef MOD_DFT
-C       Construct Kohn-Sham contribution
-C       ================================
+!       construct kohn-sham contribution
+!       ================================
+
+        if (dft_cfg_is_dft_calculation) then
+
 #ifdef MOD_DNF
-        IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
-#else /* mod_dnf */ 
-        IF(dft_cfg_is_dft_calculation) THEN
+        if (.not. df_fitvxc) then
 #endif
-C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-           IOPTS = 1
-           CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
-     &                 IPRSCF)
-           TDXC = SECOND() - TDXC
-        ENDIF
+
+          call reset_dft_options(dft_options)
+          dft_options%energy = .true.
+
+          call dftexc(dmat,
+     &                dummy,
+     &                fock,
+     &                1,
+     &                1,
+     &                1,
+     &                1,
+     &                dft_options,
+     &                work(kfree),
+     &                lfree,
+     &                iprscf)
+
+           tdxc = second() - tdxc
+
+#ifdef MOD_DNF
+        end if
 #endif
+
+        end if
+#endif /* ifdef MOD_DFT */
+
+
+
 C
 C       Solvent contribution
 C
@@ -1178,6 +1207,9 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
+#ifdef MOD_DFT
+      type(dft_options_t) :: dft_options
+#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1335,20 +1367,44 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+
+
+
+
+
 #ifdef MOD_DFT
-C        Construct Kohn-Sham contribution
-C        ================================
+!       construct kohn-sham contribution
+!       ================================
+
+        if (dft_cfg_is_dft_calculation) then
+
 #ifdef MOD_DNF
-         IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
-#else
-         IF(dft_cfg_is_dft_calculation) THEN
+        if (.not. df_fitvxc) then
 #endif
-C         NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-             IOPTS = 1
-             CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
-     &                   IPRSCF)
-         ENDIF
+
+          call reset_dft_options(dft_options)
+          dft_options%energy = .true.
+
+          call dftexc(dmat,
+     &                dummy,
+     &                fock,
+     &                1,
+     &                1,
+     &                1,
+     &                1,
+     &                dft_options,
+     &                work(kfree),
+     &                lfree,
+     &                iprscf)
+
+#ifdef MOD_DNF
+        end if
 #endif
+
+        end if
+#endif /* ifdef MOD_DFT */
+
+
 C
 C        Solvent contribution
 C        ====================

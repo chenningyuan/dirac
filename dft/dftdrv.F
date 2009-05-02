@@ -19,21 +19,24 @@ C
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
-C 
-C /* Deck dftexc */
-      SUBROUTINE DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &                  ISYMOP,IHRMOP,IOPTS,
-     &                  WORK,LWORK,IPRINT)
-C
-C     T. Helgaker sep 99
-C     DIRAC adaption by T.Saue
-C
-C     00001: DOERG, calculate DFT energy
-C     00010: DOGRD, calculate molecular gradient
-C     00100: DOLR,  linear response contribution
-C     01000: DOQR,  quadratic response contribution
-C     10000: DOLND, include London orbitals
-C
+
+
+      subroutine dftexc(dmat,
+     &                  dmat_perturbed,
+     &                  fmat,
+     &                  nr_dmat_perturbed,
+!                       for aoresponse nr_dmat_perturbed \neq nr_fmat
+     &                  nr_fmat,
+     &                  isymop,
+     &                  ihrmop,
+     &                  dft_options,
+     &                  work,
+     &                  lwork,
+     &                  iprint)
+
+!     written by T. Helgaker
+!     DIRAC adaption by T. Saue
+
       use dft_cfg
 
 #include "implicit.h"
@@ -58,23 +61,21 @@ C
 #include "dgroup.h"
 #include "functionals.h"
 #include "densfit.h"
-      LOGICAL DOERG, 
-     &        DOGRD, 
-     &        DOLND, 
-     &        DOLR,
-     &        LBIT,
-     &        DOQR
-      DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
+
+      real(8) :: dmat(n2bbasx, nz, *)
+      real(8) :: dmat_perturbed(n2bbasx, nz, *)
+      real(8) :: fmat(n2bbasx, nz, *)
+
+      integer :: isymop(nr_dmat_perturbed)
+      integer :: ihrmop(nr_dmat_perturbed)
+
+      real(8) :: work(lwork)
+
+      type(dft_options_t) :: dft_options
 C
 #include "memint.h"
       TIMSTR = SECOND()
-      DOERG  = LBIT(IOPTS,1)
-      DOGRD  = LBIT(IOPTS,2)
-      DOLR   = LBIT(IOPTS,3)
-      DOQR   = LBIT(IOPTS,4)
-      DOLND  = LBIT(IOPTS,5)
+
 C
 #ifdef MOD_DNF
 C aspg+rbast 2006-10-10
@@ -82,9 +83,9 @@ C prepare for accumulating integrals...
       IF (DF_FITVXC) THEN ! 
          CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KXCVEB),NBASISAUX)
-         if (DOERG) then 
+         if (dft_options%energy) then 
            CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
-         else if (DOLR) then 
+         else if (dft_options%lr) then 
            CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
          endif
       ENDIF
@@ -93,23 +94,23 @@ Caspg+rbast
 C
 C     Initial expectation value of two-electron matrix
 #ifdef MOD_DNF
-      IF (DOERG.AND..NOT.DF_FITVXC) THEN
+      IF (dft_options%energy.AND..NOT.DF_FITVXC) THEN
 #else
-      IF (DOERG) THEN
+      IF (dft_options%energy) THEN
 #endif /* MOD_DNF */
-         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
+         ERRKS = DDOT(N2BBASX,DMAT,1,fmat,1)
       END IF 
 !     check hermiticity of density matrices
       NR_HERMITIAN     = 0
       NR_ANTIHERMITIAN = 0
       NR_GENERAL       = 0
-      DO I = 1,NXCMAT
-        IF(IHRMOP(I) .EQ. -1) NR_ANTIHERMITIAN = NR_ANTIHERMITIAN + 1
-        IF(IHRMOP(I) .EQ.  0) NR_GENERAL       = NR_GENERAL       + 1
-        IF(IHRMOP(I) .EQ.  1) NR_HERMITIAN     = NR_HERMITIAN     + 1
+      DO I = 1,nr_dmat_perturbed
+        IF(ihrmop(I) .EQ. -1) NR_ANTIHERMITIAN = NR_ANTIHERMITIAN + 1
+        IF(ihrmop(I) .EQ.  0) NR_GENERAL       = NR_GENERAL       + 1
+        IF(ihrmop(I) .EQ.  1) NR_HERMITIAN     = NR_HERMITIAN     + 1
       ENDDO
 
-      IF(DOLR) THEN
+      IF(dft_options%lr) THEN
         IF(NR_GENERAL .GT. 0)
      &           CALL QUIT('DFT LR: general density matrix or matrices')
 #ifndef MOD_CDFT
@@ -123,12 +124,12 @@ C     Initial expectation value of two-electron matrix
 #ifdef MOD_DNF
 C aspg, how wil this symmetrization work with density fitting? 
 C up to now the code is skipped for df_fitvxc since we pass
-C 'dummy' in the place of dtrmat...
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
+C 'dummy' in the place of dmat_perturbed...
+      IF ((dft_options%lr.OR.dft_options%qr).AND..NOT.DF_FITVXC) THEN
 #else
-      IF (DOLR.OR.DOQR) THEN
+      IF (dft_options%lr.OR.dft_options%qr) THEN
 #endif /*MOD_DNF */
-        CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
+        CALL DSCAL(N2BBASXQ*nr_dmat_perturbed,D2,dmat_perturbed,1)
 C       Insert half-phases:
 C       The symmetry scheme tries to pack the real symemtric and three 
 C       imaginary anti-symmetric matrices of the original quaternion 
@@ -139,12 +140,12 @@ C       symmetry about the diagonal, but this is not generally true.
 C       The insertion of half-phases assures the correcy symmetry about
 C       the diagonal for the appropriate symmetry blocks...
         IF(NZ.LT.4) THEN
-          DO IM = 1,NXCMAT
-            IREPOP = ISYMOP(IM)-1
+          DO IM = 1,nr_dmat_perturbed
+            IREPOP = isymop(IM)-1
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
-              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
+              CALL Q2BPHASE('D',IQ,1,dmat_perturbed(1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,fmat(1,IZ,IM))
             ENDDO
           ENDDO
         ENDIF
@@ -183,12 +184,12 @@ C
 C     Initialize
 C     ==========
 C
-      gga_hs = dftisgga()
-      gga_ha = gga_hs
+      dft_options%gga_hs = dftisgga()
+      dft_options%gga_ha = dft_options%gga_hs
 
-      if (dolr .or. doqr) then
-        if (dft_cfg_alda_hs) gga_hs = .false.
-        if (dft_cfg_alda_ha) gga_ha = .false.
+      if (dft_options%lr .or. dft_options%qr) then
+        if (dft_cfg_alda_hs) dft_options%gga_hs = .false.
+        if (dft_cfg_alda_ha) dft_options%gga_ha = .false.
       end if
 
 !     in QR it is not so easy to separate H+ and H-
@@ -198,9 +199,9 @@ C
 !     it is really unfair to quit as late as here
 !     this can be checked earlier
 !     but this is anyway an exotic option
-      if ((doqr .and. dft_cfg_alda_hs .and.
+      if ((dft_options%qr .and. dft_cfg_alda_hs .and.
      &      (.not. dft_cfg_alda_ha)) .or.
-     &    (doqr .and. dft_cfg_alda_ha .and.
+     &    (dft_options%qr .and. dft_cfg_alda_ha .and.
      &           (.not. dft_cfg_alda_hs))) then
         call quit('QR and partial ALDA is not implemented')
       end if
@@ -218,14 +219,16 @@ C       Get hold of slaves
         CALL DIRAC_PARCTL( 4 )
 C
         CALL DFT_PARDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &                  dmat_perturbed,fmat,nr_dmat_perturbed,
+     &                  isymop,ihrmop,dft_options,
      &                  WORK(KFREE),LFREE,IPRDFT)
 C
       ELSE
 #endif
 C        
         CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
-     &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &              dmat_perturbed,fmat,nr_dmat_perturbed,
+     &              isymop,ihrmop,dft_options,
      &              DUM,DUM,WORK(KFREE),LFREE,IPRDFT)
         CALL MEMREL('DFTDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 #if defined (VAR_MPI)
@@ -244,36 +247,40 @@ C
 #endif /* MOD_DNF */
 !     in case of GGA symmetrize matrices
 !     see DFT RPA notes for more info
-      if (gga_hs) call sym_hs(excmat, nxcmat, isymop, ihrmop)
+      if (dft_options%gga_hs) then
+        call sym_hs(fmat, nr_dmat_perturbed, isymop, ihrmop)
+      end if
 
 #ifdef MOD_CDFT
 !     if spin or current density contribution
       if (dft_cfg_sdft) then
-        if (gga_ha) call sym_ha(excmat, nxcmat, isymop, ihrmop)
+        if (dft_options%gga_ha) then
+          call sym_ha(fmat, nr_dmat_perturbed, isymop, ihrmop)
+        end if
       end if
 #endif
 
-      if (dolr .or. doqr) then
+      if (dft_options%lr .or. dft_options%qr) then
 !       insert half-phases
         if (nz .lt. 4) then
-          do im = 1, nxcmat
+          do im = 1, nr_dmat_perturbed
             irepop = isymop(im) - 1
             do iz = 1, nz
               iq = ipqtoq(iz, irepop)
-              call q2bphase('D', iq, 1, dtrmat(1, iz, im))
-              call q2bphase('F', iq, 1, excmat(1, iz, im))
+              call q2bphase('D', iq, 1, dmat_perturbed(1, iz, im))
+              call q2bphase('F', iq, 1, fmat(1, iz, im))
             end do
           end do
         end if
 
 !       rescale
-        call dscal(n2bbasxq*nxcmat, dp5, dtrmat, 1)
+        call dscal(n2bbasxq*nr_dmat_perturbed, dp5, dmat_perturbed, 1)
       end if
 
 !     calculate final expectation value of two-electron matrix
 !     the KS contribution can then be subtracted 
-      if (doerg) then
-        errks = ddot(n2bbasx, dmat, 1, excmat, 1) - errks
+      if (dft_options%energy) then
+        errks = ddot(n2bbasx, dmat, 1, fmat, 1) - errks
       end if 
 
 #ifdef MOD_DNF
@@ -292,7 +299,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options,
      &                  IDISP,ISEND,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker sep 99
@@ -326,7 +333,6 @@ C
 #include "dgroup.h"
 #include "densfit.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
@@ -336,20 +342,19 @@ C
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          IDISP(*),ISEND(*),WORK(LWORK)
+      type(dft_options_t) :: dft_options
 C
 #include "memint.h"
 C
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
 C
+
+
+
 !     figure out whether we need derivatives of basis functions
 !     and whether gga code structure will be used
 
       nder = 0
-      if (dogrd) then
+      if (dft_options%gradient) then
         nder = 1
         call dzero(gradft, mxcoor)
       end if
@@ -357,7 +362,7 @@ C
       dogrho = .false.
       dolrho = .false.
 
-      if (gga_hs .or. gga_ha) then
+      if (dft_options%gga_hs .or. dft_options%gga_ha) then
         dogrho = .true.
         nder   = nder + 1 
         fromvx = dft_cfg_explicit_potential
@@ -388,7 +393,9 @@ C
       KGA2=KFREE
       IF(NDER.GE.2) CALL MEMGET('REAL',KGA2,6*NDIM,WORK,KFREE,LFREE)
       KGB1=KFREE
-      IF(DOLND) CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
+      IF(dft_options%london) then
+        CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
+      end if
       CALL MEMGET('INTE',KCNT,NDIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
 C
@@ -569,7 +576,8 @@ C.........add rest to total number of myNPOINT on last node
 #endif
         CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),myNPOINT,
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &              dft_options,
      &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &              WORK(KCNT),WORK(KBUF),
      &              WORK(KFREE),LFREE,IPRINT,0)
@@ -578,12 +586,13 @@ C.........add rest to total number of myNPOINT on last node
         ENDIF
  200    CONTINUE
 #if defined (VAR_MPI)
-      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,
+      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,dft_options,
+     &                       WORK,KFREE,LFREE,
      &                       IPRINT)
 #endif
       CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       IF(MYTID.NE.MPARID) RETURN
-      IF (DOLND) THEN
+      IF (dft_options%london) THEN
         DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
             AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
@@ -628,18 +637,18 @@ C
      &              ' Number of quadrature points:       ', NPNTS
         WRITE(LUPRI,'(2X,A,F24.16)')
      &              ' Number of electrons:               ', ELCTRN
-        IF(DOERG) THEN
+        IF(dft_options%energy) THEN
           WRITE(LUPRI,'(2X,A,F24.16)')
      &                ' DFT exchange-correlation energy:   ', EDFTY
         ENDIF
       ENDIF
       IF (IPRINT .GE. 100) THEN
-        IF (DOERG) THEN
+        IF (dft_options%energy) THEN
            CALL HEADER('EXCMAT in DFTDRV ',-1)
            CALL OUTPUT(EXCMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
      &                  NTBAS(0),1,LUPRI)
         END IF
-        IF (DOLND) THEN
+        IF (dft_options%london) THEN
           CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
           CALL OUTPUT(EXCMAT(1,1,1,1),
      &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
@@ -650,11 +659,11 @@ C
           CALL OUTPUT(EXCMAT(1,1,1,3),
      &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
         END IF
-        IF (DOGRD) THEN
+        IF (dft_options%gradient) THEN
           CALL HEADER('GRADFT in DFTDRV ',-1)
           CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
         END IF
-        IF (DOLR.OR.DOQR) THEN
+        IF (dft_options%lr.OR.dft_options%qr) THEN
           CALL HEADER('EXCMAT in DFTDRV ',-1)
           CALL OUTPUT(EXCMAT(1,1,1,1),
      &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
@@ -667,7 +676,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                  dft_options,
      &                  GAO,GAO1,GAO2,GAB1,
      &                  NCNT,BUF,WORK,LWORK,IPRINT,NYTID)
 C***********************************************************************
@@ -694,7 +704,6 @@ C***********************************************************************
 #include "functionals.h"
 #include "dgroup.h"
 #include "densfit.h"
-      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
       logical gga_qr
 
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
@@ -706,6 +715,7 @@ C***********************************************************************
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
+      type(dft_options_t) :: dft_options
 
 !     this does not look very useful
 !     but after merge with autodiff branch it will make sense
@@ -725,11 +735,6 @@ C
          gao1_p => gao1(1:nbast*3)
 
 
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
 C
       NDIM = NBAST
 #ifdef MOD_DNF
@@ -742,9 +747,9 @@ C Birkenheuer et at (IJQC 102, 743, 2005) to compute the
 C exchange-correlation contibutions together with density fitting 
       IF (DF_FITVXC) THEN ! 
 C actions disabled so far...
-         DOGRD = .false.
-         DOQR  = .false.
-         DOLND = .false.
+         dft_options%gradient = .false.
+         dft_options%qr  = .false.
+         dft_options%london = .false.
          CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
          CALL READ_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
@@ -760,7 +765,7 @@ c        write (*,*) ' DEBUG: fit coefficients'
 c        do i=1,ndimension
 c           write (*,*) i,WORK(KCFIT+I-1)
 c        enddo
-         if (DOLR) then
+         if (dft_options%lr) then
 c           DF_FITVXC_LR = .true.
             CALL MEMGET('REAL',KLRCFIT,NBASISAUX,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KLRXCVEC,NBASISAUX,WORK,KFREE,LFREE)
@@ -794,7 +799,7 @@ C       ===
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,WORK,LWORK,NDIM,NDER,DOLND,IPRINT)
+     &              BUF,WORK,LWORK,NDIM,NDER,dft_options%london,IPRINT)
 C
 C       Density
 C       =======
@@ -830,7 +835,7 @@ C
               RHG(IXYZ) = 
      &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KCFIT),1)
 C enable this later...
-c             if (dolr) 
+c             if (dft_options%lr) 
 c    &           b3(ixyz) = 
 c    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
              ENDDO
@@ -863,17 +868,19 @@ C
 C       Energy
 C       ======
 C
-        IF(DOERG) THEN
+        IF(dft_options%energy) THEN
            EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
         ENDIF
 C
 C       Exchange-correlation potential 
 C       ==============================
 C
-        IF (DOERG.OR.DOGRD.OR.DOLND) THEN
+        if (dft_options%energy
+     &      .or. dft_options%gradient
+     &      .or. dft_options%london) then
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
 
-           if (gga_hs) then
+           if (dft_options%gga_hs) then
 !            this factor has nothing to do
 !            with symmetrization later
 !            it comes from the fact that derivative of Z
@@ -900,21 +907,22 @@ C
 C       Exchange-correlation contribution to Kohn-Sham matrix
 C       =====================================================
 C
-        IF (DOERG) THEN
+        IF (dft_options%energy) THEN
            IREPOP = 0
 #ifdef MOD_DNF
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-               IF (gga_hs) THEN
+               IF (dft_options%gga_hs) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
                   ENDDO
                ENDIF
-               CALL fit_DOEXC(gga_hs,VX(FR0),VT,GAO,GAO1,
+               CALL fit_DOEXC(dft_options%gga_hs,
+     &                     VX(FR0),VT,GAO,GAO1,
      &                     WORK(KXCVEC),NBASISAUX)
            else  ! df_fitvxc
 #endif
-             if (gga_hs .and. .not. fromvx) then
+             if (dft_options%gga_hs .and. .not. fromvx) then
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
                 ENDDO
@@ -925,27 +933,11 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #ifdef MOD_DNF
            endif ! df_fitvxc
 #endif
-        END IF ! DOERG
-
-!
-!       Exchange-correlation contribution to molecular gradient
-!       =======================================================
-!
-!       IF(DOGRD) THEN
-!TROND           CALL DFTFRC
-!       ENDIF
-!
-!       London contributions to Kohn-Sham matrix 
-!       ========================================
-!
-!       IF (DOLND) THEN
-!TROND          CALL DFTMAG         
-!       ENDIF
-
+        END IF ! dft_options%energy
 
 
 !       linear response
-        if(dolr) then
+        if(dft_options%lr) then
 
           call dft_lr(dtrmat,
      &                excmat,
@@ -959,7 +951,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                rhogrd,
      &                rhg,
      &                wght,
-     &                gga_hs,
+     &                dft_options%gga_hs,
      &                buf)
 
 #ifdef MOD_CDFT
@@ -968,25 +960,25 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
             call sdft_lr(dtrmat,excmat,nxcmat,
      &                   isymop,ihrmop,.false.,
      &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,gga_ha,buf)
+     &                   rho,rhogrd,rhg,wght,dft_options%gga_ha,buf)
           endif
 !         VRG contribution
           if (dft_cfg_cdft_vrg) then
             call vrg_lr(dtrmat,excmat,nxcmat,
      &                  isymop,ihrmop,gao,gao1,
-     &                  rho,rhogrd,rhg,wght,gga_hs,buf)
+     &                  rho,rhogrd,rhg,wght,dft_options%gga_hs,buf)
           endif
 #endif /* ifdef MOD_CDFT */
         endif
 
 !       quadratic response
-        if(doqr) then
+        if(dft_options%qr) then
 
 #ifdef MOD_AUTODIFF
           if (iorder > 0) then
             call aor_xc_new(iorder, 
      &                      nxcmat, 
-     &                      gga_hs,
+     &                      dft_options%gga_hs,
      &                      dtrmat, 
      &                      excmat,
      &                      isymop,
@@ -998,7 +990,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                      buf)
           else
 #endif
-            gga_qr = gga_hs .or. gga_ha
+            gga_qr = dft_options%gga_hs .or. dft_options%gga_ha
             call sdft_qr(gga_qr,
      &                   sdft,
      &                   dtrmat,excmat,
@@ -1018,12 +1010,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
             call dft_lr(dtrmat,excmat,3,
      &                  isymop,ihrmop,.true.,
      &                  gao,gao1,
-     &                  rho,rhogrd,rhg,wght,gga_hs,buf)
+     &                  rho,rhogrd,rhg,wght,dft_options%gga_hs,buf)
             if (dft_cfg_sdft) then
               call sdft_lr(dtrmat,excmat,3,
      &                     isymop,ihrmop,.true.,
      &                     gao,gao1,
-     &                     rho,rhogrd,rhg,wght,gga_ha,buf)
+     &                     rho,rhogrd,rhg,wght,dft_options%gga_ha,buf)
             endif
 #ifdef MOD_AUTODIFF
           end if
@@ -1048,7 +1040,7 @@ c    &               ' integration were skipped while getting b0'
       IF (DF_FITVXC) THEN ! releasing temp space used for the df code
 C aspg+rb, 2007-01-19
 C aspg: do we really need this for linear response?
-         if (DOLR) then
+         if (dft_options%lr) then
 !radovan: KXLRCVEC not set
           call quit('lr and fitvxc not implemented')
 !         CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
@@ -1549,13 +1541,16 @@ C=======================================================================
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftres */
-      SUBROUTINE DFTRES(EXCMAT,NXCMAT,IOPTS,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE DFTRES(EXCMAT,NXCMAT,dft_options,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Send receive DFTresults
 C     Written by T.Saue and T.helgaker
 C
 C***********************************************************************
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -1573,28 +1568,24 @@ C
 #include "dftbuf.h"
 #include "dfterg.h"
 #include "dgroup.h"
-      LOGICAL DOERG, DOGRD, DOLND, DOLR, DOQR, LBIT
       DIMENSION EXCMAT(*),WORK(*)
+      type(dft_options_t) :: dft_options
 C
       KWORK = KFREE
       LFMAT = N2BBASX*NXCMAT*NZ
-C
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
 C
       IF (MYTID.EQ.0) CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
       CALL MPI_REDUCE(ELCTRN,EELCTRN,1,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
       CALL MPI_REDUCE(EXCMAT,WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
-      IF(DOERG) CALL MPI_REDUCE(EDFTY,EEDFTY,1,MPI_DOUBLE_PRECISION,
+      if (dft_options%energy) then
+        CALL MPI_REDUCE(EDFTY,EEDFTY,1,MPI_DOUBLE_PRECISION,
      &                          MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+      end if
       IF(MYTID.EQ.0) THEN
         ELCTRN=EELCTRN
-        IF(DOERG) EDFTY=EEDFTY
+        IF(dft_options%energy) EDFTY=EEDFTY
         CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
@@ -1703,7 +1694,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pardrv */
       SUBROUTINE DFT_PARDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                      dft_options,
      &                      WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -1711,6 +1703,8 @@ C     A cut and paste job by T. Saue Sep 25 2003
 C     Based on HER_PARDRV which was
 C     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
 C***********************************************************************
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1722,12 +1716,12 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      LOGICAL DOERG, DOGRD, DOLND, DOLR,DOQR,LBIT
 C
       DIMENSION EXCMAT(*),DMAT(N2BBASX),
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &          DTRMAT(N2BBASX,NZ,NXCMAT),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
+      type(dft_options_t) :: dft_options
 C
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
@@ -1749,8 +1743,8 @@ C
 C-----------------------
 C     Send data
 C-----------------------
-      CALL DFTPAR_INIT1(IOPTS,NXCMAT)
-      CALL DFTPAR_INIT2(IOPTS,NXCMAT,ISYMOP,IHRMOP,
+      CALL DFTPAR_INIT1(dft_options,NXCMAT)
+      CALL DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP,
      &                  DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
 C
 C-----------------------
@@ -1761,7 +1755,7 @@ C
       CALL MEMGET('INTE',KDISP,NODESALL,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KSEND,NODESALL,WORK,KFREE,LFREE)
       CALL DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
-     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,IOPTS,
+     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options,
      &            WORK(KDISP),WORK(KSEND),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFT_PARDRV')
@@ -1792,7 +1786,7 @@ C
 #include "infpar.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
+      type(dft_options_t) :: dft_options
 C
       CALL QENTER('DFTNOD')
 #include "memint.h"
@@ -1810,19 +1804,14 @@ C
 C
 C     Receive initialization data from master 1
 C     =========================================
-      CALL DFTPAR_INIT1(IOPTS,NXCMAT)
-      DOERG = LBIT(IOPTS,1)
-      DOGRD = LBIT(IOPTS,2)
-      DOLR  = LBIT(IOPTS,3)
-      DOQR  = LBIT(IOPTS,4)
-      DOLND = LBIT(IOPTS,5)
+      CALL DFTPAR_INIT1(dft_options,NXCMAT)
 C.....Memory allocation
       LMAT = N2BBASXQ*NXCMAT
       CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
-      IF(DOLR.OR.DOQR) THEN
+      IF(dft_options%lr.OR.dft_options%qr) THEN
         CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
       ELSE
         KDTR = KFREE
@@ -1841,7 +1830,7 @@ C.....Allocate density matrices for SAOP
 C
 C     Receive initialization data from master 2
 C     =========================================
-      CALL DFTPAR_INIT2(IOPTS,NXCMAT,WORK(KSYM),WORK(KHRM),
+      CALL DFTPAR_INIT2(dft_options,NXCMAT,WORK(KSYM),WORK(KHRM),
      &                  WORK(KDEN),WORK(KDTR),
      &                  WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO))
 C.....Initialization
@@ -1850,63 +1839,144 @@ C.....Initialization
 C.....Integrate
       CALL DFTDRV(WORK(KDEN),WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
      &            WORK(KDTR),WORK(KEXC),NXCMAT,WORK(KSYM),WORK(KHRM),
-     &            IOPTS,DUM,DUM,WORK(KFREE),LFREE,IPRINT)
+     &            dft_options,DUM,DUM,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFTNOD')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck dftinit1 */
-      SUBROUTINE DFTPAR_INIT1(IOPTS,NXCMAT)
-C***********************************************************************
-C
-C     Initialize parallel DFT run
-C
-C     Written by T. Saue April 7 2009
-C 
-C***********************************************************************
+
+
+#ifdef VAR_MPI
+      subroutine dftpar_init1(dft_options, nxcmat)
+
+!     written by T. Saue april 7 2009
 
       use dft_cfg
 
-#include "implicit.h"
-#include "priunit.h"
-C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
+      implicit none
+
+#include "mpif.h"
 #include "infpar.h"
 #include "dftbuf.h"
-      LOGICAL LBIT
-C
-      CALL MPI_BCAST(NXCMAT,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 
-!     transfer various common blocks
-      call dftprd
+!     --------------------------------------------------------------------------
+      type(dft_options_t), intent(inout) :: dft_options
+      integer,             intent(inout) :: nxcmat
+!     --------------------------------------------------------------------------
+      logical                            :: i_am_the_master
+      integer                            :: idx, ierr
+      logical                            :: pack_logical(7)
+      integer                            :: pack_integer(1)
+!                                                    1000 is a phantasy number
+      integer, parameter                 :: nbytes = 1000
+      character                          :: scratch(nbytes)
+!     --------------------------------------------------------------------------
+
+      if (mytid == mparid) then
+        i_am_the_master = .true.
+      else
+        i_am_the_master = .false.
+      end if
+
+!     sync nxcmat
+
+      call mpi_bcast(nxcmat,
+     &               1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
+
+!     sync various common blocks
+
+      call dftprd()
 
 !     sync dft_cfg
-      call sync_dft_cfg
 
-C     Transfer control parameters
-C     ===========================
-      CALL MPI_BCAST(IOPTS,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(GGA_HS,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(GGA_HA,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      call sync_dft_cfg()
 
-C
-C     Transfer functionals
-C     ====================
-      IF(MYTID.EQ.MPARID) THEN
-        CALL DFTSYNCFUNC(1)
-      ELSE
-        CALL DFTSYNCFUNC(0)
-      ENDIF
+!     sync dft_options
+
+      if (i_am_the_master) then
+
+        pack_logical(1) = dft_options%energy
+        pack_logical(2) = dft_options%gradient
+        pack_logical(3) = dft_options%london
+        pack_logical(4) = dft_options%lr
+        pack_logical(5) = dft_options%qr
+        pack_logical(6) = dft_options%gga_hs
+        pack_logical(7) = dft_options%gga_ha
+        pack_integer(1) = dft_options%aor_xc_order
+
+        idx = 1
+        call mpi_pack(pack_logical,      
+     &                size(pack_logical),
+     &                mpi_logical,       
+     &                scratch,           
+     &                nbytes,            
+     &                idx,               
+     &                mpi_comm_world,    
+     &                ierr)
+        call mpi_pack(pack_integer,      
+     &                size(pack_integer),
+     &                my_MPI_INTEGER,       
+     &                scratch,           
+     &                nbytes,            
+     &                idx,               
+     &                mpi_comm_world,    
+     &                ierr)
+
+      end if
+
+      call mpi_bcast(scratch,        
+     &               nbytes,         
+     &               mpi_packed,     
+     &               0,              
+     &               mpi_comm_world, 
+     &               ierr)
+
+
+      if (.not. i_am_the_master) then
+
+        idx = 1
+        call mpi_unpack(scratch,           
+     &                  nbytes,            
+     &                  idx,               
+     &                  pack_logical,      
+     &                  size(pack_logical),
+     &                  mpi_logical,       
+     &                  mpi_comm_world,    
+     &                  ierr)
+        call mpi_unpack(scratch,           
+     &                  nbytes,            
+     &                  idx,               
+     &                  pack_integer,      
+     &                  size(pack_integer),
+     &                  my_MPI_INTEGER,       
+     &                  mpi_comm_world,    
+     &                  ierr)
+
+        dft_options%energy       = pack_logical(1)
+        dft_options%gradient     = pack_logical(2)
+        dft_options%london       = pack_logical(3)
+        dft_options%lr           = pack_logical(4)
+        dft_options%qr           = pack_logical(5)
+        dft_options%gga_hs       = pack_logical(6)
+        dft_options%gga_ha       = pack_logical(7)
+        dft_options%aor_xc_order = pack_integer(1)
+
+      end if     
+
+!     sync functionals
+
+      call dftsyncfunc(i_am_the_master)
  
-C
-      RETURN
-      END
+      end
+#endif /* ifdef VAR_MPI */
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftinit2 */
-      SUBROUTINE DFTPAR_INIT2(IOPTS,NXCMAT,ISYMOP,IHRMOP,
+      SUBROUTINE DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP,
      &                       DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
 C***********************************************************************
 C
@@ -1927,22 +1997,17 @@ C
 #include "infpar.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL DOERG,DOGRD,DOLND,DOLR,DOQR,LBIT
       DIMENSION DMAT(N2BBASX),DTRMAT(*),
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
-      DOERG  = LBIT(IOPTS,1)
-      DOGRD  = LBIT(IOPTS,2)
-      DOLR   = LBIT(IOPTS,3)
-      DOQR   = LBIT(IOPTS,4)
-      DOLND  = LBIT(IOPTS,5)
+      type(dft_options_t) :: dft_options
       CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      IF(DOLR.OR.DOQR) THEN
+      IF(dft_options%lr.OR.dft_options%qr) THEN
         LMAT = N2BBASXQ*NXCMAT
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                   MPI_COMM_WORLD,IERR)

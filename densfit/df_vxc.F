@@ -72,6 +72,8 @@ C at this point, both Gjk and the integral list are C read from
 C files "FITXCG" and "FITVXC", respectively, in order to avoid 
 C much change to the current function calls.
 C 
+        use dft_cfg
+
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -83,28 +85,40 @@ C
 #endif
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
+      type(dft_options_t) :: dft_options
 #include "memint.h"
 C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
 C
-C     NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-#if defined (PRG_DIRAC)
+
+#ifdef PRG_DIRAC
+
       if (using_diffdens) then
-         call quit('Unsupported option')
+       call quit('unsupported option')
       endif
 
-      if (DODFLR) then
-         IOPTS = 4
+      call reset_dft_options(dft_options)
+      if (dodflr) then
+        dft_options%lr = .true.
       else
-         IOPTS = 1
-      endif
+        dft_options%energy = .true.
+      end if
 
-      write (*,*) ' DEBUG, from df_vxc, IOPTS=',IOPTS
-      CALL DFTEXC(DMAT,DUMMY,DUMMY,1,1,1,IOPTS,WORK(KFREE),LFREE,
-     &              IPRSCF)
-#else
-C
-#endif /* PRG_DIRAC */
+      call dftexc(dmat,
+     &            dummy,
+     &            dummy,
+     &            1,
+     &            1,
+     &            1,
+     &            1,
+     &            dft_options,
+     &            work(kfree),
+     &            lfree,
+     &            iprscf)
+
+#endif /* ifdef PRG_DIRAC */
+
+
 C
 C after that, we get gkj and the integrals above from file...
 C

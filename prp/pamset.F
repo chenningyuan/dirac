@@ -535,6 +535,11 @@ C
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
+
+#ifdef MOD_DFT
+      type(dft_options_t) :: dft_options
+#endif
+
 C
 #include "ibtfun.h"
 C
@@ -626,17 +631,51 @@ C          Hermitian operator
 
         IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
+
+
+
+
+#ifdef MOD_DFT
+!       construct kohn-sham contribution
+!       ================================
+
+        if (dft_cfg_is_dft_calculation) then
+
+          call genden(fao, cmo, 1, iprint)
+
+          call reset_dft_options(dft_options)
+          dft_options%energy = .true.
+
+          call dftexc(fao,
+     &                dum,
+     &                fmo,
+     &                1,
+     &                1,
+     &                1,
+     &                1,
+     &                dft_options,
+     &                work(kfree),
+     &                lfree,
+     &                iprint)
+
+        end if
+#endif /* ifdef MOD_DFT */
+
+
+
 #ifdef MOD_DFT
 C
 C     Construct Kohn-Sham contribution
 C     ================================
       IF(dft_cfg_is_dft_calculation) THEN
-         CALL GENDEN(FAO,CMO,1,IPRINT)
-C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-         IOPTS = 1
-         CALL DFTEXC(FAO,DUM,FMO,1,1,1,IOPTS,WORK(KFREE),LFREE,IPRINT)
       ENDIF
 #endif
+
+
+
+
+
+
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

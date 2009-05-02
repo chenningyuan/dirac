@@ -3554,6 +3554,11 @@ C
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
+
+#ifdef MOD_DFT
+      type(dft_options_t) :: dft_options
+#endif
+
 C
 C
       CALL QENTER('GMOLITX1')
@@ -3596,28 +3601,52 @@ C
 #endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
-#ifdef MOD_DFT
-C
-C     Construct Kohn-Sham contribution
-C     ================================
-C
-#ifdef MOD_DNF
-      IF(dft_cfg_is_dft_calculation.AND..NOT.DF_FITVXC) THEN
-#else
-      IF(dft_cfg_is_dft_calculation) THEN
-#endif
-        IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
-C       Generate standard density matrix
-        IREPOP = JSYMOP-1
-        CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-        IOPTS = 4
-        CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,ISYMOP,IHRMOP,IOPTS,
-     &              WORK(KFREE),LFREE,IPRXRS)
 
-        CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
-      ENDIF
+
+
+
+#ifdef MOD_DFT
+!       construct kohn-sham contribution
+!       ================================
+
+        if (dft_cfg_is_dft_calculation) then
+
+#ifdef MOD_DNF
+        if (.not. df_fitvxc) then
 #endif
+
+          if (ncsim > 0) then
+            call quit('gmolitx1: mcscf-dft not implemented')
+          end if
+
+!         generate standard density matrix
+          call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+          call genden(work(kbuf), cmo, 1, iprxrs)
+
+          call reset_dft_options(dft_options)
+          dft_options%lr = .true.
+
+          call dftexc(work(kbuf),
+     &                fmo,
+     &                fao,
+     &                nosim,
+     &                nosim,
+     &                isymop,
+     &                ihrmop,
+     &                dft_options,
+     &                work(kfree),
+     &                lfree,
+     &                iprxrs)
+
+          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+
+#ifdef MOD_DFT
+        end if
+#endif
+
+        end if
+#endif /* ifdef MOD_DFT */
+
 C
 C     Add solvent contributions
 C     -------------------------

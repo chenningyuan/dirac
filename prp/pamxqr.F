@@ -2310,6 +2310,11 @@ C
      &          VECAEP(NZYAEP,NZ),VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
+
+#ifdef MOD_DFT
+      type(dft_options_t) :: dft_options
+#endif
+
 C
       CALL QENTER('E3DRV')
 C
@@ -2388,13 +2393,17 @@ C
         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
         call dzero(work(kxc), 3*n2bbasxq)
 
+        call reset_dft_options(dft_options)
+        dft_options%qr = .true.
+
         call dftexc(work(kdmat),
      &              work(kd1ao),
      &              work(kxc),
      &              3,
+     &              3,
      &              isymop,
      &              ihrmop,
-     &              8,
+     &              dft_options,
      &              work(kfree),
      &              lfree,
      &              iprxqr)

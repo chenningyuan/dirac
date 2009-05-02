@@ -6,6 +6,19 @@ module dft_cfg
 
   implicit none
 
+  type dft_options_t
+!   see also routine reset_dft_options
+!   and sync routine(s) for parallel dft
+    logical :: energy
+    logical :: gradient
+    logical :: london
+    logical :: lr
+    logical :: qr
+    logical :: gga_hs
+    logical :: gga_ha
+    integer :: aor_xc_order
+  end type
+
   save
 
   integer, parameter :: dft_cfg_mxbllen = 160
@@ -65,6 +78,23 @@ module dft_cfg
   real(8)            :: dft_cfg_grac_beta
 
 contains
+
+  subroutine reset_dft_options(dft_options)
+
+!   ----------------------------------------------------------------------------
+    type(dft_options_t) :: dft_options
+!   ----------------------------------------------------------------------------
+
+    dft_options%energy       = .false.
+    dft_options%gradient     = .false.
+    dft_options%london       = .false.
+    dft_options%lr           = .false.
+    dft_options%qr           = .false.
+    dft_options%gga_hs       = .false.
+    dft_options%gga_ha       = .false.
+    dft_options%aor_xc_order = 0
+
+  end subroutine
 
   subroutine dft_cfg_init()
 
@@ -216,7 +246,7 @@ contains
                     ierr)
       call mpi_pack(pack_integer,       &
                     size(pack_integer), &
-                    mpi_integer,        &
+                    my_MPI_INTEGER,     &
                     scratch,            &
                     nbytes,             &
                     idx,                &
@@ -256,7 +286,7 @@ contains
                       idx,                &
                       pack_integer,       &
                       size(pack_integer), &
-                      mpi_integer,        &
+                      my_MPI_INTEGER,     &
                       mpi_comm_world,     &
                       ierr)
 

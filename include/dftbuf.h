@@ -1,7 +1,7 @@
       LOGICAL         DODRC, DOVWN, DOBCK, DOLYP, DOGRHO, DOLRHO,       &
-     &                FROMVX, gga_hs, gga_ha
+     &                FROMVX
       COMMON /DFTLBF/ DODRC, DOVWN, DOBCK, DOLYP, DOGRHO, DOLRHO,       &
-     &                FROMVX, gga_hs, gga_ha
+     &                FROMVX
 
       REAL*8 FACDRC, FACVWN, FACBCK, FACLYP, ELCTRN, ERGDRC, ERGVWN,    &
      &       ERGBCK, ERGLYP, ED, EV, EB, EL, VD, VV, VB1, VB2, VL1, VL2,&
