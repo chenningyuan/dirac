@@ -360,18 +360,10 @@ C
       end if
 
       dogrho = .false.
-      dolrho = .false.
 
       if (dft_options%gga_hs .or. dft_options%gga_ha) then
         dogrho = .true.
         nder   = nder + 1 
-        fromvx = dft_cfg_explicit_potential
-        if (fromvx) then
-          dolrho = .true.
-          nder   = nder + 1 
-        end if
-      else
-        fromvx = .false.
       end if
 
 #ifdef MOD_CDFT
@@ -847,6 +839,9 @@ c    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
 #endif
           RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
         END IF
+
+
+#ifdef ENABLE_HESSIAN_OF_DENSITY
 C
 C       Hessian of density
 C       ===================
@@ -859,6 +854,10 @@ C
      &           + D2*(RHG(1)*RXY*RHG(2) + RHG(1)*RXZ*RHG(3) 
      &               + RHG(2)*RYZ*RHG(3))
         END IF
+#endif /* ifdef ENABLE_HESSIAN_OF_DENSITY */
+
+
+
 C
 C       Number of electrons
 C       ===================
@@ -922,7 +921,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                     WORK(KXCVEC),NBASISAUX)
            else  ! df_fitvxc
 #endif
-             if (dft_options%gga_hs .and. .not. fromvx) then
+             if (dft_options%gga_hs) then
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
                 ENDDO
