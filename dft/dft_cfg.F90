@@ -2,7 +2,7 @@ module dft_cfg
 
 ! radovan: if you modify this module (add new stuff)
 !          don't forget to update
-!          routines dft_cfg_init and sync_dft_cfg (below)
+!          routines init_dft_cfg and sync_dft_cfg (below)
 
   implicit none
 
@@ -14,8 +14,6 @@ module dft_cfg
     logical :: london
     logical :: lr
     logical :: qr
-    logical :: gga_hs
-    logical :: gga_ha
     integer :: aor_xc_order
   end type
 
@@ -27,6 +25,11 @@ module dft_cfg
 
   logical            :: dft_cfg_set
   logical            :: dft_cfg_is_dft_calculation
+
+  logical            :: dft_cfg_gga_hs
+  logical            :: dft_cfg_gga_ha
+  logical            :: dft_cfg_need_gao1
+  logical            :: dft_cfg_need_gao2
 
   logical            :: dft_cfg_keep_ao
   logical            :: dft_cfg_ao_are_in_mem
@@ -90,15 +93,18 @@ contains
     dft_options%london       = .false.
     dft_options%lr           = .false.
     dft_options%qr           = .false.
-    dft_options%gga_hs       = .false.
-    dft_options%gga_ha       = .false.
     dft_options%aor_xc_order = 0
 
   end subroutine
 
-  subroutine dft_cfg_init()
+  subroutine init_dft_cfg()
 
     dft_cfg_gridfile = ''
+
+    dft_cfg_gga_hs    = .false.
+    dft_cfg_gga_ha    = .false.
+    dft_cfg_need_gao1 = .false.
+    dft_cfg_need_gao2 = .false.
 
     dft_cfg_keep_ao            = .false.
     dft_cfg_ao_are_in_mem      = .false.
@@ -161,7 +167,7 @@ contains
 !   ----------------------------------------------------------------------------
     logical             :: i_am_the_master
     integer             :: idx, ierr
-    logical             :: pack_logical(28)
+    logical             :: pack_logical(32)
     real(8)             :: pack_double_precision(10)
     integer             :: pack_integer(6)
 !                                   1000 is a phantasy number
@@ -182,32 +188,36 @@ contains
 
       pack_logical( 1) = dft_cfg_set
       pack_logical( 2) = dft_cfg_is_dft_calculation
-      pack_logical( 3) = dft_cfg_keep_ao
-      pack_logical( 4) = dft_cfg_ao_are_in_mem
-      pack_logical( 5) = dft_cfg_grid_is_done
-      pack_logical( 6) = dft_cfg_explicit_potential
-      pack_logical( 7) = dft_cfg_no_pruning
-      pack_logical( 8) = dft_cfg_estimate_radii
-      pack_logical( 9) = dft_cfg_import_grid
-      pack_logical(10) = dft_cfg_export_grid
-      pack_logical(11) = dft_cfg_zipgrid
-      pack_logical(12) = dft_cfg_alda_hs
-      pack_logical(13) = dft_cfg_alda_ha
-      pack_logical(14) = dft_cfg_xalda
-      pack_logical(15) = dft_cfg_force_4c_grid
-      pack_logical(16) = dft_cfg_old_dft
-      pack_logical(17) = dft_cfg_sdft
-      pack_logical(18) = dft_cfg_sdft_collinear
-      pack_logical(19) = dft_cfg_sdft_beta
-      pack_logical(20) = dft_cfg_cdft_vrg
-      pack_logical(21) = dft_cfg_autodiff
-      pack_logical(22) = dft_cfg_grac
-      pack_logical(23) = dft_cfg_grac_is_active
-      pack_logical(24) = dft_cfg_saop
-      pack_logical(25) = dft_cfg_saop_is_active
-      pack_logical(26) = dft_cfg_saop_with_response_part
-      pack_logical(27) = dft_cfg_asymptote_is_lb94
-      pack_logical(28) = dft_cfg_asymptote_is_lbalpha
+      pack_logical( 3) = dft_cfg_gga_hs   
+      pack_logical( 4) = dft_cfg_gga_ha   
+      pack_logical( 5) = dft_cfg_need_gao1
+      pack_logical( 6) = dft_cfg_need_gao2
+      pack_logical( 7) = dft_cfg_keep_ao
+      pack_logical( 8) = dft_cfg_ao_are_in_mem
+      pack_logical( 9) = dft_cfg_grid_is_done
+      pack_logical(10) = dft_cfg_explicit_potential
+      pack_logical(11) = dft_cfg_no_pruning
+      pack_logical(12) = dft_cfg_estimate_radii
+      pack_logical(13) = dft_cfg_import_grid
+      pack_logical(14) = dft_cfg_export_grid
+      pack_logical(15) = dft_cfg_zipgrid
+      pack_logical(16) = dft_cfg_alda_hs
+      pack_logical(17) = dft_cfg_alda_ha
+      pack_logical(18) = dft_cfg_xalda
+      pack_logical(19) = dft_cfg_force_4c_grid
+      pack_logical(20) = dft_cfg_old_dft
+      pack_logical(21) = dft_cfg_sdft
+      pack_logical(22) = dft_cfg_sdft_collinear
+      pack_logical(23) = dft_cfg_sdft_beta
+      pack_logical(24) = dft_cfg_cdft_vrg
+      pack_logical(25) = dft_cfg_autodiff
+      pack_logical(26) = dft_cfg_grac
+      pack_logical(27) = dft_cfg_grac_is_active
+      pack_logical(28) = dft_cfg_saop
+      pack_logical(29) = dft_cfg_saop_is_active
+      pack_logical(30) = dft_cfg_saop_with_response_part
+      pack_logical(31) = dft_cfg_asymptote_is_lb94
+      pack_logical(32) = dft_cfg_asymptote_is_lbalpha
 
       pack_double_precision( 1) = dft_cfg_radint
       pack_double_precision( 2) = dft_cfg_accepted_error
@@ -290,34 +300,38 @@ contains
                       mpi_comm_world,     &
                       ierr)
 
-      dft_cfg_set                     = pack_logical( 1)
-      dft_cfg_is_dft_calculation      = pack_logical( 2)
-      dft_cfg_keep_ao                 = pack_logical( 3)
-      dft_cfg_ao_are_in_mem           = pack_logical( 4)
-      dft_cfg_grid_is_done            = pack_logical( 5)
-      dft_cfg_explicit_potential      = pack_logical( 6)
-      dft_cfg_no_pruning              = pack_logical( 7)
-      dft_cfg_estimate_radii          = pack_logical( 8)
-      dft_cfg_import_grid             = pack_logical( 9)
-      dft_cfg_export_grid             = pack_logical(10)
-      dft_cfg_zipgrid                 = pack_logical(11)
-      dft_cfg_alda_hs                 = pack_logical(12)
-      dft_cfg_alda_ha                 = pack_logical(13)
-      dft_cfg_xalda                   = pack_logical(14)
-      dft_cfg_force_4c_grid           = pack_logical(15)
-      dft_cfg_old_dft                 = pack_logical(16)
-      dft_cfg_sdft                    = pack_logical(17)
-      dft_cfg_sdft_collinear          = pack_logical(18)
-      dft_cfg_sdft_beta               = pack_logical(19)
-      dft_cfg_cdft_vrg                = pack_logical(20)
-      dft_cfg_autodiff                = pack_logical(21)
-      dft_cfg_grac                    = pack_logical(22)
-      dft_cfg_grac_is_active          = pack_logical(23)
-      dft_cfg_saop                    = pack_logical(24)
-      dft_cfg_saop_is_active          = pack_logical(25)
-      dft_cfg_saop_with_response_part = pack_logical(26)
-      dft_cfg_asymptote_is_lb94       = pack_logical(27)
-      dft_cfg_asymptote_is_lbalpha    = pack_logical(28)
+      dft_cfg_set                     = pack_logical( 1)       
+      dft_cfg_is_dft_calculation      = pack_logical( 2)                      
+      dft_cfg_gga_hs                  = pack_logical( 3)             
+      dft_cfg_gga_ha                  = pack_logical( 4)             
+      dft_cfg_need_gao1               = pack_logical( 5)             
+      dft_cfg_need_gao2               = pack_logical( 6)             
+      dft_cfg_keep_ao                 = pack_logical( 7)           
+      dft_cfg_ao_are_in_mem           = pack_logical( 8)                 
+      dft_cfg_grid_is_done            = pack_logical( 9)                
+      dft_cfg_explicit_potential      = pack_logical(10)                      
+      dft_cfg_no_pruning              = pack_logical(11)              
+      dft_cfg_estimate_radii          = pack_logical(12)                  
+      dft_cfg_import_grid             = pack_logical(13)               
+      dft_cfg_export_grid             = pack_logical(14)               
+      dft_cfg_zipgrid                 = pack_logical(15)           
+      dft_cfg_alda_hs                 = pack_logical(16)           
+      dft_cfg_alda_ha                 = pack_logical(17)           
+      dft_cfg_xalda                   = pack_logical(18)         
+      dft_cfg_force_4c_grid           = pack_logical(19)                 
+      dft_cfg_old_dft                 = pack_logical(20)           
+      dft_cfg_sdft                    = pack_logical(21)        
+      dft_cfg_sdft_collinear          = pack_logical(22)                  
+      dft_cfg_sdft_beta               = pack_logical(23)             
+      dft_cfg_cdft_vrg                = pack_logical(24)            
+      dft_cfg_autodiff                = pack_logical(25)            
+      dft_cfg_grac                    = pack_logical(26)        
+      dft_cfg_grac_is_active          = pack_logical(27)                  
+      dft_cfg_saop                    = pack_logical(28)        
+      dft_cfg_saop_is_active          = pack_logical(29)                  
+      dft_cfg_saop_with_response_part = pack_logical(30)                           
+      dft_cfg_asymptote_is_lb94       = pack_logical(31)                     
+      dft_cfg_asymptote_is_lbalpha    = pack_logical(32)
 
       dft_cfg_radint          = pack_double_precision( 1)
       dft_cfg_accepted_error  = pack_double_precision( 2)

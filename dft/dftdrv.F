@@ -180,16 +180,16 @@ C
       end if
 
 
-C
-C     Initialize
-C     ==========
-C
-      dft_options%gga_hs = dftisgga()
-      dft_options%gga_ha = dft_options%gga_hs
+
+!     check whether gga code structure will be used
+!     =============================================
+
+      dft_cfg_gga_hs = dftisgga()
+      dft_cfg_gga_ha = dft_cfg_gga_hs
 
       if (dft_options%lr .or. dft_options%qr) then
-        if (dft_cfg_alda_hs) dft_options%gga_hs = .false.
-        if (dft_cfg_alda_ha) dft_options%gga_ha = .false.
+        if (dft_cfg_alda_hs) dft_cfg_gga_hs = .false.
+        if (dft_cfg_alda_ha) dft_cfg_gga_ha = .false.
       end if
 
 !     in QR it is not so easy to separate H+ and H-
@@ -199,12 +199,33 @@ C
 !     it is really unfair to quit as late as here
 !     this can be checked earlier
 !     but this is anyway an exotic option
-      if ((dft_options%qr .and. dft_cfg_alda_hs .and.
-     &      (.not. dft_cfg_alda_ha)) .or.
-     &    (dft_options%qr .and. dft_cfg_alda_ha .and.
-     &           (.not. dft_cfg_alda_hs))) then
-        call quit('QR and partial ALDA is not implemented')
+      if (dft_options%qr) then
+        if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
+          call quit('QR and partial ALDA is not implemented')
+        end if
+        if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
+          call quit('QR and partial ALDA is not implemented')
+        end if
       end if
+
+
+!     check whether derivatives of basis functions are needed
+!     =======================================================
+
+!     it should already be set to .false. but just to be sure
+      dft_cfg_need_gao1 = .false.
+      dft_cfg_need_gao2 = .false.
+
+      if (dft_cfg_gga_hs .or. dft_cfg_gga_ha) then
+        dft_cfg_need_gao1 = .true.
+      end if
+
+      if (dft_cfg_cdft_vrg) then
+        dft_cfg_need_gao1 = .true.
+      end if
+
+
+
 
 
       iprdft = dft_cfg_print_level
@@ -247,14 +268,14 @@ C
 #endif /* MOD_DNF */
 !     in case of GGA symmetrize matrices
 !     see DFT RPA notes for more info
-      if (dft_options%gga_hs) then
+      if (dft_cfg_gga_hs) then
         call sym_hs(fmat, nr_dmat_perturbed, isymop, ihrmop)
       end if
 
 #ifdef MOD_CDFT
 !     if spin or current density contribution
       if (dft_cfg_sdft) then
-        if (dft_options%gga_ha) then
+        if (dft_cfg_gga_ha) then
           call sym_ha(fmat, nr_dmat_perturbed, isymop, ihrmop)
         end if
       end if
@@ -350,28 +371,6 @@ C
 
 
 
-!     figure out whether we need derivatives of basis functions
-!     and whether gga code structure will be used
-
-      nder = 0
-      if (dft_options%gradient) then
-        nder = 1
-        call dzero(gradft, mxcoor)
-      end if
-
-      dogrho = .false.
-
-      if (dft_options%gga_hs .or. dft_options%gga_ha) then
-        dogrho = .true.
-        nder   = nder + 1 
-      end if
-
-#ifdef MOD_CDFT
-!       GAO1 are needed for VRG
-        if (dft_cfg_cdft_vrg) then
-          if (nder .lt. 1) nder = 1
-        end if
-#endif
 C
 C     Allocate arrays for basis functions and their derivatives at grid points
 C
@@ -381,10 +380,17 @@ C
 #endif
       CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
       KGA1=KFREE
-      IF(NDER.GE.1) CALL MEMGET('REAL',KGA1,3*NDIM,WORK,KFREE,LFREE)
-      KGA2=KFREE
-      IF(NDER.GE.2) CALL MEMGET('REAL',KGA2,6*NDIM,WORK,KFREE,LFREE)
-      KGB1=KFREE
+
+      if (dft_cfg_need_gao1) then
+        call memget('REAL', kga1, 3*ndim, work, kfree, lfree)
+      end if
+      kga2 = kfree
+
+      if (dft_cfg_need_gao2) then
+        call memget('REAL', kga2, 6*ndim, work, kfree, lfree)
+      end if
+      kgb1 = kfree
+
       IF(dft_options%london) then
         CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
       end if
@@ -777,6 +783,10 @@ C aspg+rb, 2007-01-19
       ENDIF
 Caspg+rbast, 2006-09-21
 #endif /* MOD_DNF */
+
+        nder = 0
+        if (dft_cfg_need_gao1) nder = 1
+
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -789,6 +799,7 @@ C
 C       AOs
 C       ===
 C
+
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
      &              BUF,WORK,LWORK,NDIM,NDER,dft_options%london,IPRINT)
@@ -812,14 +823,8 @@ C
 C       Gradient of density
 C       ===================
 C
-#ifdef MOD_CDFT
-!     gradient is needed for VRG
-      if (dft_cfg_cdft_vrg) then
-        dogrho = .true.
-      end if
-#endif /* MOD_CDFT */
 
-        IF (DOGRHO) THEN
+        IF (dft_cfg_need_gao1) THEN
 #ifdef MOD_DNF
           IF (DF_FITVXC) THEN  ! 
              DO IXYZ = 1,3
@@ -879,7 +884,7 @@ C
      &      .or. dft_options%london) then
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
 
-           if (dft_options%gga_hs) then
+           if (dft_cfg_gga_hs) then
 !            this factor has nothing to do
 !            with symmetrization later
 !            it comes from the fact that derivative of Z
@@ -911,17 +916,17 @@ C
 #ifdef MOD_DNF
 C aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-               IF (dft_options%gga_hs) THEN
+               IF (dft_cfg_gga_hs) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
                   ENDDO
                ENDIF
-               CALL fit_DOEXC(dft_options%gga_hs,
+               CALL fit_DOEXC(dft_cfg_gga_hs,
      &                     VX(FR0),VT,GAO,GAO1,
      &                     WORK(KXCVEC),NBASISAUX)
            else  ! df_fitvxc
 #endif
-             if (dft_options%gga_hs) then
+             if (dft_cfg_gga_hs) then
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
                 ENDDO
@@ -950,7 +955,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                rhogrd,
      &                rhg,
      &                wght,
-     &                dft_options%gga_hs,
+     &                dft_cfg_gga_hs,
      &                buf)
 
 #ifdef MOD_CDFT
@@ -959,13 +964,13 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
             call sdft_lr(dtrmat,excmat,nxcmat,
      &                   isymop,ihrmop,.false.,
      &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dft_options%gga_ha,buf)
+     &                   rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
           endif
 !         VRG contribution
           if (dft_cfg_cdft_vrg) then
             call vrg_lr(dtrmat,excmat,nxcmat,
      &                  isymop,ihrmop,gao,gao1,
-     &                  rho,rhogrd,rhg,wght,dft_options%gga_hs,buf)
+     &                  rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
           endif
 #endif /* ifdef MOD_CDFT */
         endif
@@ -977,7 +982,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
           if (iorder > 0) then
             call aor_xc_new(iorder, 
      &                      nxcmat, 
-     &                      dft_options%gga_hs,
+     &                      dft_cfg_gga_hs,
      &                      dtrmat, 
      &                      excmat,
      &                      isymop,
@@ -989,7 +994,7 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
      &                      buf)
           else
 #endif
-            gga_qr = dft_options%gga_hs .or. dft_options%gga_ha
+            gga_qr = dft_cfg_gga_hs .or. dft_cfg_gga_ha
             call sdft_qr(gga_qr,
      &                   sdft,
      &                   dtrmat,excmat,
@@ -1009,12 +1014,12 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
             call dft_lr(dtrmat,excmat,3,
      &                  isymop,ihrmop,.true.,
      &                  gao,gao1,
-     &                  rho,rhogrd,rhg,wght,dft_options%gga_hs,buf)
+     &                  rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
             if (dft_cfg_sdft) then
               call sdft_lr(dtrmat,excmat,3,
      &                     isymop,ihrmop,.true.,
      &                     gao,gao1,
-     &                     rho,rhogrd,rhg,wght,dft_options%gga_ha,buf)
+     &                     rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
             endif
 #ifdef MOD_AUTODIFF
           end if
@@ -1864,7 +1869,7 @@ C.....Integrate
 !     --------------------------------------------------------------------------
       logical                            :: i_am_the_master
       integer                            :: idx, ierr
-      logical                            :: pack_logical(7)
+      logical                            :: pack_logical(5)
       integer                            :: pack_integer(1)
 !                                                    1000 is a phantasy number
       integer, parameter                 :: nbytes = 1000
@@ -1899,8 +1904,6 @@ C.....Integrate
         pack_logical(3) = dft_options%london
         pack_logical(4) = dft_options%lr
         pack_logical(5) = dft_options%qr
-        pack_logical(6) = dft_options%gga_hs
-        pack_logical(7) = dft_options%gga_ha
         pack_integer(1) = dft_options%aor_xc_order
 
         idx = 1
@@ -1956,8 +1959,6 @@ C.....Integrate
         dft_options%london       = pack_logical(3)
         dft_options%lr           = pack_logical(4)
         dft_options%qr           = pack_logical(5)
-        dft_options%gga_hs       = pack_logical(6)
-        dft_options%gga_ha       = pack_logical(7)
         dft_options%aor_xc_order = pack_integer(1)
 
       end if     

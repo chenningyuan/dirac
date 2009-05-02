@@ -451,6 +451,8 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -474,6 +476,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            VX(DERVS1),
      &            WORK(LWORK)
       DIMENSION RHG(3)
+
+      nder = 0
+      if (dft_cfg_need_gao1) nder = 1
+
 
       DO 300 IPNT = 1, NPOINT
          WGHT = WEIGHT(IPNT)

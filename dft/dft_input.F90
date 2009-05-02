@@ -84,7 +84,7 @@ contains
       dft_cfg_set = .true.
     end if
 
-    call dft_cfg_init()
+    call init_dft_cfg()
 
     if (word_io /= '*DFT   ') return
 
