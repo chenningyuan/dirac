@@ -55,7 +55,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "nuclei.h"
-#include "dftbuf.h"
 #include "dcborb.h"
 #include "dfterg.h"
 #include "dgroup.h"
@@ -349,7 +348,6 @@ C
 #include "nuclei.h"
 #include "dfterg.h"
 #include "orgcom.h"
-#include "dftbuf.h"
 #include "functionals.h"
 #include "dgroup.h"
 #include "densfit.h"
@@ -697,7 +695,6 @@ C***********************************************************************
 #include "shells.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "dftbuf.h"
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
@@ -1569,7 +1566,6 @@ C
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dftbuf.h"
 #include "dfterg.h"
 #include "dgroup.h"
       DIMENSION EXCMAT(*),WORK(*)
@@ -1861,7 +1857,6 @@ C.....Integrate
 
 #include "mpif.h"
 #include "infpar.h"
-#include "dftbuf.h"
 
 !     --------------------------------------------------------------------------
       type(dft_options_t), intent(inout) :: dft_options

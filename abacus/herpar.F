@@ -1918,7 +1918,6 @@ C
 #endif
 #ifdef MOD_DFT
 #include "dfterg.h"
-#include "dftbuf.h"
 #endif
 #include "suscpt.h"
 #include "infpar.h"
@@ -1935,6 +1934,7 @@ C
       IF(ITYPE.EQ.7) THEN
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+!        radovan: this looks like old unused stuff
          CALL MPI_SEND(ERGDRC,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(ERGVWN,1,MPI_DOUBLE_PRECISION,MPARID,40,

@@ -110,7 +110,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "dfterg.h"
 #include "orgcom.h"
-#include "dftbuf.h"
 #include "functionals.h"
 
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -463,7 +462,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "dftbuf.h"
 #include "dfterg.h"
 #include "functionals.h"
       

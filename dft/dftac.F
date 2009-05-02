@@ -55,7 +55,6 @@ C-----------------------------------------------------------------------
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dftbuf.h"
 #include "dgroup.h"
 #include "functionals.h"
 C
