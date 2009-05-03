@@ -57,3 +57,4 @@ amfi/.*
 prp/xpp/.*
 prp/esr/.*
 aoresponse/matrix.*new.*
+autodiff/.*
