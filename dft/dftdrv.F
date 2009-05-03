@@ -39,21 +39,20 @@ C
 
       use dft_cfg
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-C 
-      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
-C
-#include "dcbgen.h"
-#include "dcbham.h"
 #include "dcbbas.h"
+
+#ifdef VAR_MPI
+! parcal in dcbgen.h
+#include "dcbgen.h"
 #include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "mpif.h"
 #endif
+
 #include "nuclei.h"
 #include "dcborb.h"
 #include "dfterg.h"
@@ -61,107 +60,105 @@ C
 #include "functionals.h"
 #include "densfit.h"
 
-      real(8) :: dmat(n2bbasx, nz, *)
-      real(8) :: dmat_perturbed(n2bbasx, nz, *)
-      real(8) :: fmat(n2bbasx, nz, *)
-
-      integer :: isymop(nr_dmat_perturbed)
-      integer :: ihrmop(nr_dmat_perturbed)
-
-      real(8) :: work(lwork)
-
-      type(dft_options_t) :: dft_options
-C
-#include "memint.h"
-      TIMSTR = SECOND()
-
-C
-#ifdef MOD_DNF
-C aspg+rbast 2006-10-10
-C prepare for accumulating integrals... 
-      IF (DF_FITVXC) THEN ! 
-         CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KXCVEB),NBASISAUX)
-         if (dft_options%energy) then 
-           CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
-         else if (dft_options%lr) then 
-           CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
-         endif
-      ENDIF
-Caspg+rbast
+!     --------------------------------------------------------------------------
+      real(8), intent(in) :: dmat(n2bbasx, nz, *)
+      real(8)             :: dmat_perturbed(n2bbasx, nz, *)
+      real(8)             :: fmat(n2bbasx, nz, *)
+      integer, intent(in) :: nr_dmat_perturbed
+      integer, intent(in) :: nr_fmat
+      integer, intent(in) :: isymop(nr_dmat_perturbed)
+      integer, intent(in) :: ihrmop(nr_dmat_perturbed)
+      type(dft_options_t), intent(in) :: dft_options
+      real(8)             :: work(lwork)
+      integer             :: lwork
+      integer, intent(in) :: iprint
+!     --------------------------------------------------------------------------
+      integer             :: kwork, kfree, kfree_save, lfree
+      integer             :: kdmat_outer_ao, kdmat_resp_ao, kxcveb
+      integer             :: iz, im, iq
+      real(8)             :: time_start, time_in_xc, second
+      real(8)             :: ddot
+#ifdef VAR_MPI
+      integer             :: istat(mpi_status_size)
 #endif
-C
-C     Initial expectation value of two-electron matrix
-#ifdef MOD_DNF
-      IF (dft_options%energy.AND..NOT.DF_FITVXC) THEN
-#else
-      IF (dft_options%energy) THEN
-#endif /* MOD_DNF */
-         ERRKS = DDOT(N2BBASX,DMAT,1,fmat,1)
-      END IF 
-!     check hermiticity of density matrices
-      NR_HERMITIAN     = 0
-      NR_ANTIHERMITIAN = 0
-      NR_GENERAL       = 0
-      DO I = 1,nr_dmat_perturbed
-        IF(ihrmop(I) .EQ. -1) NR_ANTIHERMITIAN = NR_ANTIHERMITIAN + 1
-        IF(ihrmop(I) .EQ.  0) NR_GENERAL       = NR_GENERAL       + 1
-        IF(ihrmop(I) .EQ.  1) NR_HERMITIAN     = NR_HERMITIAN     + 1
-      ENDDO
+!     --------------------------------------------------------------------------
 
-      IF(dft_options%lr) THEN
-        IF(NR_GENERAL .GT. 0)
-     &           CALL QUIT('DFT LR: general density matrix or matrices')
-#ifndef MOD_CDFT
-        IF(NR_HERMITIAN .EQ. 0) GOTO 10
-#endif /* MOD_CDFT */
-      ENDIF
-!     get average density from open shells
-      if (nasht .gt. 0) call gtdoav(dmat, 1)
-!     scale
-      call dscal(n2bbasx, d2, dmat, 1)
+#include "memint.h"
+
+!     start timer
+      time_start = second()
+
+!     prepare for accumulating integrals with density fitting
 #ifdef MOD_DNF
-C aspg, how wil this symmetrization work with density fitting? 
-C up to now the code is skipped for df_fitvxc since we pass
-C 'dummy' in the place of dmat_perturbed...
-      IF ((dft_options%lr.OR.dft_options%qr).AND..NOT.DF_FITVXC) THEN
-#else
-      IF (dft_options%lr.OR.dft_options%qr) THEN
-#endif /*MOD_DNF */
-        CALL DSCAL(N2BBASXQ*nr_dmat_perturbed,D2,dmat_perturbed,1)
-C       Insert half-phases:
-C       The symmetry scheme tries to pack the real symemtric and three 
-C       imaginary anti-symmetric matrices of the original quaternion 
-C       matrix. The DFT contribution goes into the real part. 
-C       For a totally symmetric density (IREPOP=0) the DFT contribution 
-C       will go into the first packed matrix (IZ=1) having the correct
-C       symmetry about the diagonal, but this is not generally true.
-C       The insertion of half-phases assures the correcy symmetry about
-C       the diagonal for the appropriate symmetry blocks...
-        IF(NZ.LT.4) THEN
-          DO IM = 1,nr_dmat_perturbed
-            IREPOP = isymop(IM)-1
-            DO IZ = 1,NZ
-              IQ = IPQTOQ(IZ,IREPOP)
-              CALL Q2BPHASE('D',IQ,1,dmat_perturbed(1,IZ,IM))
-              CALL Q2BPHASE('F',IQ,1,fmat(1,IZ,IM))
-            ENDDO
-          ENDDO
-        ENDIF
-      END IF
-C
-C     Set memory tag
-      KFRSAV = KFREE      
-C
-C     Calculate grid
-C     ==============
-C
+      if (df_fitvxc) then
+        call memget('REAL', kxcveb, nbasisaux, work, kfree, lfree)
+        call dzero(work(kxcveb), nbasisaux)
+        if (dft_options%energy) then 
+          call save_matrix(work(kxcveb), 1, nbasisaux, 'FITVXC')
+        else if (dft_options%lr) then 
+          call save_matrix(work(kxcveb), 1, nbasisaux, 'LRDFVX')
+        end if
+      end if
+#endif
+
+!     initial expectation value of the two-electron matrix
+#ifdef MOD_DNF
+      if (.not. df_fitvxc) then
+#endif
+      if (dft_options%energy) then
+        errks = ddot(n2bbasx, dmat, 1, fmat, 1)
+      end if
+#ifdef MOD_DNF
+      end if
+#endif
+
+!     get average density from open shells
+      if (nasht > 0) call gtdoav(dmat, 1)
+
+!     scale
+      call dscal(n2bbasx, 2.0d0, dmat, 1)
+
+
+!     scale and insert half-phases
+
+#ifdef MOD_DNF
+      if (.not. df_fitvxc) then
+#endif
+      if (dft_options%lr .or. dft_options%qr) then
+
+        call dscal(n2bbasxq*nr_dmat_perturbed,
+     &             2.0d0, dmat_perturbed, 1)
+
+        if (nz < 4) then
+          do iz = 1, nz
+            do im = 1, nr_dmat_perturbed
+              iq = ipqtoq(iz, isymop(im) - 1)
+              call q2bphase('D', iq, 1, dmat_perturbed(1, iz, im))
+            end do
+            do im = 1, nr_fmat
+              iq = ipqtoq(iz, isymop(im) - 1)
+              call q2bphase('F', iq, 1, fmat(1, iz, im))
+            end do
+          end do
+        end if
+
+      end if
+#ifdef MOD_DNF
+      end if
+#endif
+
+!     set memory tag
+      kfree_save = kfree      
+
+!     calculate grid
       if (.not. dft_cfg_grid_is_done) then
-         call dftgrd(dmat, work(kfree), lfree, 1)
-         dft_cfg_grid_is_done = .true.
+        call dftgrd(dmat, work(kfree), lfree, 1)
+        dft_cfg_grid_is_done = .true.
       end if
 
-!     get density matrices for SAOP
+
+!     get density matrices for saop
+
       kdmat_outer_ao = kfree
       kdmat_resp_ao  = kfree
 
@@ -175,13 +172,12 @@ C
         end if
         call dftac_saop_get_dmats(work(kdmat_outer_ao),
      &                            work(kdmat_resp_ao),
-     &                            work(kfree), lfree)
+     &                            work(kfree), 
+     &                            lfree)
       end if
 
 
-
 !     check whether gga code structure will be used
-!     =============================================
 
       dft_cfg_gga_hs = dftisgga()
       dft_cfg_gga_ha = dft_cfg_gga_hs
@@ -209,7 +205,6 @@ C
 
 
 !     check whether derivatives of basis functions are needed
-!     =======================================================
 
 !     it should already be set to .false. but just to be sure
       dft_cfg_need_gao1 = .false.
@@ -224,82 +219,71 @@ C
       end if
 
 
+!     integrate
 
-
-
-      iprdft = dft_cfg_print_level
-
-C
-C     Integrate
-C     =========
-C
-#if defined (VAR_MPI)
-      IF(PARCAL) THEN
-C       Get hold of slaves
+#ifdef VAR_MPI
+      if (parcal) then
+!       Get hold of slaves
         CALL DIRAC_PARCTL( 4 )
-C
         CALL DFT_PARDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
      &                  dmat_perturbed,fmat,nr_dmat_perturbed,
      &                  isymop,ihrmop,dft_options,
-     &                  WORK(KFREE),LFREE,IPRDFT)
-C
-      ELSE
+     &                  WORK(KFREE),LFREE,dft_cfg_print_level)
+      else
 #endif
-C        
         CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO),
      &              dmat_perturbed,fmat,nr_dmat_perturbed,
      &              isymop,ihrmop,dft_options,
-     &              DUM,DUM,WORK(KFREE),LFREE,IPRDFT)
-        CALL MEMREL('DFTDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-#if defined (VAR_MPI)
-      ENDIF
+     &              dummy,dummy,WORK(KFREE),LFREE,dft_cfg_print_level)
+        CALL MEMREL('DFTDRV',WORK,kfree_save,kfree_save,KFREE,LFREE)
+#ifdef VAR_MPI
+      end if
 #endif
-C
-C     Post-processing
-C     ===============
-C
+
 !     rescale
-      call dscal(n2bbasx, dp5, dmat, 1)
+      call dscal(n2bbasx, 0.5d0, dmat, 1)
+
 !     get average density from open shells
-      if (nasht .gt. 0) call gtdoav(dmat, -1)
+      if (nasht > 0) call gtdoav(dmat, -1)
+
 #ifdef MOD_DNF
       if (.not. df_fitvxc) then
-#endif /* MOD_DNF */
-!     in case of GGA symmetrize matrices
-!     see DFT RPA notes for more info
-      if (dft_cfg_gga_hs) then
-        call sym_hs(fmat, nr_dmat_perturbed, isymop, ihrmop)
-      end if
-
-#ifdef MOD_CDFT
-!     if spin or current density contribution
-      if (dft_cfg_sdft) then
-        if (dft_cfg_gga_ha) then
-          call sym_ha(fmat, nr_dmat_perturbed, isymop, ihrmop)
-        end if
-      end if
 #endif
 
+!     in case of gga symmetrize matrices
+      if (dft_cfg_gga_hs) then
+        call sym_hs(fmat, nr_fmat, isymop, ihrmop)
+      end if
+      if (dft_cfg_gga_ha .and. dft_cfg_sdft) then
+        call sym_ha(fmat, nr_fmat, isymop, ihrmop)
+      end if
+
+
+!     rescale and insert half-phases
+
       if (dft_options%lr .or. dft_options%qr) then
-!       insert half-phases
-        if (nz .lt. 4) then
-          do im = 1, nr_dmat_perturbed
-            irepop = isymop(im) - 1
-            do iz = 1, nz
-              iq = ipqtoq(iz, irepop)
+
+        if (nz < 4) then
+          do iz = 1, nz
+            do im = 1, nr_dmat_perturbed
+              iq = ipqtoq(iz, isymop(im) - 1)
               call q2bphase('D', iq, 1, dmat_perturbed(1, iz, im))
+            end do
+            do im = 1, nr_fmat
+              iq = ipqtoq(iz, isymop(im) - 1)
               call q2bphase('F', iq, 1, fmat(1, iz, im))
             end do
           end do
         end if
 
-!       rescale
-        call dscal(n2bbasxq*nr_dmat_perturbed, dp5, dmat_perturbed, 1)
+        call dscal(n2bbasxq*nr_dmat_perturbed,
+     &             0.5d0, dmat_perturbed, 1)
+
       end if
 
 !     calculate final expectation value of two-electron matrix
-!     the KS contribution can then be subtracted 
       if (dft_options%energy) then
+!       the ks contribution can then be subtracted 
         errks = ddot(n2bbasx, dmat, 1, fmat, 1) - errks
       end if 
 
@@ -308,14 +292,20 @@ C
 !       df_fitvxc is .true.
         call memrel('dftexc-xcvec', work, kxcveb, kxcveb, kfree, lfree)
       end if
-#endif /* MOD_DNF */
+#endif
 
-      TIMEXC = SECOND() - TIMSTR
-      WRITE (LUPRI,'(1X)')
-      CALL TIMTXT('>>>> Time used in DFTEXC:',TIMEXC,LUPRI)
-      WRITE (LUPRI,'(1X)')
- 10   return
+!     timing
+      time_in_xc = second() - time_start
+      write(lupri, '(1x)')
+      call timtxt('>>>> time used in dftexc:', time_in_xc, lupri)
+      write(lupri, '(1x)')
+
       end
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO,
