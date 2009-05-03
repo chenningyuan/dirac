@@ -6,10 +6,7 @@
 .DFT
  B3LYP
 *DFT
-.RADINT         !these parameters
- 1.0D-3         !are not
-.ANGINT         !appropriate in
- 15             !production calculations
+.DEBUG          !very coarse grid
 .ZIPGRID
 **INTEGRALS
 .NUCMOD
