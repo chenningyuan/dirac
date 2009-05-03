@@ -103,6 +103,7 @@ line 2 - iopt(1:20) (20i3)
 
  iopt (19) = 1 : ACES II
  iopt (19) = 0 : GAMESS
+ iopt (19) = 7 : svn DIRAC (miro's adaptation)
 
 
 line 3 - norb = # of (spacial) orbitals in transformed integral file. (i3)

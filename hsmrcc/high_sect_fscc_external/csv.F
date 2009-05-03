@@ -95,12 +95,15 @@ c     iopt(10) .ne.0 - do not save pppp.
         end if
       end if
       call t1sqr("t1c ","t1c ","tc  ","tcm ")
-      call ordvv
-      call calvv0
-      call pdiag
+!     call ordvv
+      call ordvv_csv
+      call calvv0_csv
+!     call pdiag
+      call pdiag_csv
       iter=0
       ieof=0
-      call tvinit
+!     call tvinit
+      call tvinit_csv
       call prt ("tv  ","tv      ",2)
       call fmax ("tv  ",tmax,itmax)
       call fmax ("t1v ",t1max,it1max)
@@ -122,13 +125,14 @@ c     iopt(10) .ne.0 - do not save pppp.
 220   iter=iter+1
       call prtime("strt itr",iter,0)
       call flush (6)
-      call ordtva
+!     call ordtva
+      call ordtva_csv
       if (iopt(17).ne.0) then
-        call caltv3
+        call caltv3_csv
       end if
-      call caltv2
-      call caltv1
-      call ordtvb
+      call caltv2_csv
+      call caltv1_csv
+      call ordtvb_csv
       if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
         fnew=max(dfloat(iopt(6)/100),1.d0)
         if (fnew.le.6.5d0) then
@@ -274,7 +278,8 @@ c  different endings
       end
 
 c *********************************************
-      subroutine ordvv
+!     subroutine ordvv
+      subroutine ordvv_csv
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 !      include 'parameters.f'
@@ -344,20 +349,20 @@ c
       return
       end
 c**************************************************************
-      subroutine calvv0
+      subroutine calvv0_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call ordta0_csv
       call move("vhpp","vv0 ")
-      call diag3a
-      call diag4b
-      call diag5b
+      call diag3a_csv
+      call diag4b_csv
+      call diag5b_csv
       call diag6b
       call diag8_csv
-      call diag20b
-      call diag18b
-      call diag22a
-      call diag26a
+      call diag20b_csv
+      call diag18b_csv
+      call diag22a_csv
+      call diag26a_csv
       if (iopt(17).ge.1) then
 c  diag 31a
         call reord6  ("t30 ","s1  ",124356)
@@ -414,25 +419,26 @@ c
       else if (iopt(17).eq.3) then
 c  GROUP I
 c   diag 3
-        call box12    (0)
+!       call box12    (0)
+        call box12_csv(0)
         call mult6    ("bx12","tc  ","s1  ",1)
         call reord6   ("s1  ","s2  ",124356)
         call reord7   ("s2  ","s1  ",132456)
         call reord6   ("s1  ","v30 ",125364)
 c  GROUP II
 c   diag 2
-        call box13    (0)
+        call box13_csv(0)
         call mult6    ("bx13","tc3 ","s1  ",1)
         call reord6   ("s1  ","s2  ",124536)
         call add      ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c   diag 3
-        call box14    (0)
+        call box14_csv(0)
         call mult6    ("bx14","tc3 ","s1  ",1)
         call reord6   ("s1  ","s2  ",124356)
         call add      ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c  GROUP III
 c   diag 2
-        call box15    (0)
+        call box15_csv(0)
         call reord6   ("t30 ","s1  ",124536)
         call mult6    ("bx15","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -440,7 +446,7 @@ c   diag 2
         call add      ("s2  ",0.5d0,"v30 ",1.d0,"v30 ")
 c  GROUP IV
 c   diag 3
-        call box16    (0)
+        call box16_csv(0)
         call reord6   ("t30 ","s1  ",124635)
         call mult6    ("bx16","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -448,7 +454,7 @@ c   diag 3
         call add      ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c  GROUP V
 c   diag 3
-        call box17    (0)
+        call box17_csv(0)
         call reord6   ("t30 ","s1  ",124635)
         call mult6    ("bx17","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -456,7 +462,7 @@ c   diag 3
         call add      ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c  GROUP VI
 c   diag 2
-        call box18    (0)
+        call box18_csv(0)
         call reord6   ("t30 ","s1  ",126345)
         call reord7   ("s1  ","s2  ",132456)
         call reord6   ("s2  ","s1  ",126543)
@@ -464,7 +470,7 @@ c   diag 2
         call add      ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c  GROUP IX
 c   diag 2
-        call box19    (0)
+        call box19_csv(0)
         call reord6   ("t30 ","s1  ",124563)
         call mult6    ("s1  ","bx19","s2  ",5)
         call reord6   ("s2  ","s1  ",126534)
@@ -479,21 +485,23 @@ c
       return
       end
 c ****************************************
-      subroutine pdiag
+!     subroutine pdiag
+      subroutine pdiag_csv
       implicit real*8 (a-h,o-z)
-      call pdig9
-      call pdig11
-      call pdig12
-      call pdig13a
-      call pdig14
-      call pdig23b
+      call pdig9_csv
+      call pdig11_csv
+      call pdig12_csv
+      call pdig13a_csv
+      call pdig14_csv
+      call pdig23b_csv
       call pdg1n10
       call pdg1n11
       call pdgt1p4
       return
       end
 c ******************************************
-      subroutine tvinit
+!     subroutine tvinit
+      subroutine tvinit_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       if (iopt(20).ge.1) then
@@ -557,7 +565,8 @@ c ******************************************************
       return
       end
 c *****************************************************
-      subroutine ordtva
+!     subroutine ordtva
+      subroutine ordtva_csv
       implicit real*8 (a-h,o-z)
       call reorder("tv  ","ta1 ",1324,4,1)
       call reorder("tv  ","ta2 ",1423,4,1)
@@ -576,7 +585,8 @@ c *****************************************************
       return
       end
 c ****************************************************
-      subroutine caltv3
+!     subroutine caltv3
+      subroutine caltv3_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -605,7 +615,8 @@ c   diag 2
         call reord6   ("s1  ","s2  ",124635)
         call add      ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 3
-        call box12    (1)
+!       call box12    (1)
+        call box12_csv(1)
         call mult6    ("bx12","tc  ","s1  ",1)
         call reord6   ("s1  ","s2  ",124356)
         call reord7   ("s2  ","s1  ",132456)
@@ -619,12 +630,12 @@ c   diag 1
         call reord6   ("s1  ","s2  ",125463)
         call add      ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 2
-        call box13    (1)
+        call box13_csv(1)
         call mult6    ("bx13","tc3 ","s1  ",1)
         call reord6   ("s1  ","s2  ",124536)
         call add      ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 3
-        call box14    (1)
+        call box14_csv(1)
         call mult6    ("bx14","tc3 ","s1  ",1)
         call reord6   ("s1  ","s2  ",124356)
         call add      ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
@@ -635,7 +646,7 @@ c   diag 1
         call reord6   ("s2  ","s1  ",125346)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 2
-        call box15    (1)
+        call box15_csv(1)
         call reord6   ("t30 ","s1  ",124536)
         call mult6    ("bx15","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -653,7 +664,7 @@ c   diag 2
         call reord6   ("s2  ","s1  ",125436)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 3
-        call box16    (1)
+        call box16_csv(1)
         call reord6   ("t30 ","s1  ",124635)
         call mult6    ("bx16","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -671,7 +682,7 @@ c   diag 2
         call reord6   ("s2  ","s1  ",125634)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 3
-        call box17    (1)
+        call box17_csv(1)
         call reord6   ("t30 ","s1  ",124635)
         call mult6    ("bx17","s1  ","s2  ",3)
         call reord7   ("s2  ","s1  ",132456)
@@ -688,7 +699,7 @@ c   diag 1
         call reord6   ("s2  ","s1  ",126345)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 2
-        call box18    (1)
+        call box18_csv(1)
         call reord6   ("t30 ","s1  ",126345)
         call reord7   ("s1  ","s2  ",132456)
         call reord6   ("s2  ","s1  ",126543)
@@ -757,7 +768,7 @@ c   diag 1
         call reord6   ("s2  ","s1  ",126345)
         call add      ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c   diag 2
-        call box19    (1)
+        call box19_csv(1)
         call reord6   ("t30 ","s1  ",124563)
         call mult6    ("s1  ","bx19","s2  ",5)
         call reord6   ("s2  ","s1  ",126534)
@@ -773,26 +784,27 @@ c   diag 2
       return
       end
 C  *******************************************************************
-      subroutine caltv2
+      subroutine caltv2_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("vv0 ","tnew")
-      call diag2a
-      call diag4a
-      call diag5a
-      call diag6a
+      call diag2a_csv
+      call diag4a_csv
+      call diag5a_csv
+      call diag6a_csv
       call diag7_csv
       call diag9_csv
       call diag11_csv
       call diag12_csv
-      call diag13a
-      call diag13b
+      call diag13a_csv
+      call diag13b_csv
       call diag14_csv
       call diag15_csv
-      call diag21a
-      call diag22b
-      call diag23b
-      call diag28a
+      call diag21a_csv
+      call diag22b_csv
+      call diag23b_csv
+!     call diag28a
+      call diag28a_csv
       call dgt1p4_csv
       if (iopt(17).ge.1) then
 c  diag 30a
@@ -879,7 +891,7 @@ c    diag 37b,39b
       return
       end
 c **********************************************************
-      subroutine caltv1
+      subroutine caltv1_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("vv10","t1nw")
@@ -903,13 +915,13 @@ c  dg1n13,14
 c
       call fold_ccsd("t1nw","tvf ")
       call heff1_csv
-      call dfold1
+      call dfold1_csv
       call diveps("t1nw")
       call prtime     ("caltv1  ",0,1)
       return
       end
 C  ********************************************************************
-      subroutine ordtvb
+      subroutine ordtvb_csv
       implicit real*8 (a-h,o-z)
       call reorder("tb1 ","s2  ",1324,5,1)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -940,7 +952,7 @@ c   diag7 in two parts, as only half of pppp collected
       return
       end
 c **********************************************
-      subroutine diag3a
+      subroutine diag3a_csv
       implicit real*8 (a-h,o-z)
       call mult("vh  ","tc3 ","s2  ",131)
       call add("vv0 ",1.d0,"s2  ",-1.d0,"vv0 ")
@@ -949,7 +961,7 @@ c **********************************************
       return
       end
 c ***************************************************
-      subroutine diag2a
+      subroutine diag2a_csv
       implicit real*8 (a-h,o-z)
 c   incl 2a, 2b, 3b
 c   2a
@@ -968,7 +980,7 @@ c   3b
       return
       end
 c ******************************************************
-      subroutine diag4a
+      subroutine diag4a_csv
       implicit real*8 (a-h,o-z)
       call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
       call mult("ta1 ","s2  ","s3  ",222)
@@ -978,7 +990,7 @@ c ******************************************************
       return
       end
 c *****************************************************
-      subroutine diag4b
+      subroutine diag4b_csv
       implicit real*8 (a-h,o-z)
       call add("vva1",2.d0,"vphp",-1.d0,"s2  ")
       call mult("s2  ","tc1 ","s3  ",222)
@@ -988,7 +1000,7 @@ c *****************************************************
       return
       end
 c ********************************************
-      subroutine diag5a
+      subroutine diag5a_csv
       implicit real*8 (a-h,o-z)
       call mult("tm2 ","va1 ","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
@@ -997,7 +1009,7 @@ c ********************************************
       return
       end
 c *********************************************************
-      subroutine diag5b
+      subroutine diag5b_csv
       implicit real*8 (a-h,o-z)
       call mult("vva1","tcm2","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
@@ -1006,7 +1018,7 @@ c *********************************************************
       return
       end
 c *******************************************************
-      subroutine diag6a
+      subroutine diag6a_csv
       implicit real*8 (a-h,o-z)
       call mult("tm2 ","hphp","s3  ",222)
       call add("tb15",1.d0,"s3  ",-1.d0,"tb15")
@@ -1033,7 +1045,7 @@ c *************************************************************
       return
       end
 c ******************************************************
-      subroutine pdig9
+      subroutine pdig9_csv
       implicit real*8 (a-h,o-z)
 c   incl diags 9 10a 20a 23a
       call add("tc1 ",-2.d0,"tcm2",1.d0,"s2  ")
@@ -1062,7 +1074,7 @@ c **********************************************************
       return
       end
 c ************************************************************
-      subroutine pdig11
+      subroutine pdig11_csv
       implicit real*8 (a-h,o-z)
 c   incl diags 10b, 11,24a
 c   10b
@@ -1088,7 +1100,7 @@ c ************************************************
       return
       end
 c ***************************************************
-      subroutine pdig12
+      subroutine pdig12_csv
       implicit real*8 (a-h,o-z)
 c   incl diags 12, 25a
       call mult("tcm2","va2 ","pd12",222)
@@ -1109,7 +1121,7 @@ c **************************************************
       return
       end
 c ************************************************************
-      subroutine pdig13a
+      subroutine pdig13a_csv
       implicit real*8 (a-h,o-z)
 c   incl 13a 18a
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
@@ -1123,7 +1135,7 @@ c   18a
       return
       end
 c **********************************************************
-      subroutine diag13a
+      subroutine diag13a_csv
       implicit real*8 (a-h,o-z)
       call mult("ta15","p13a","s2  ",311)
       call add("tb2 ",1.d0,"s2  ",1.d0,"tb2 ")
@@ -1132,7 +1144,7 @@ c **********************************************************
       return
       end
 c ******************************************************
-      subroutine diag13b
+      subroutine diag13b_csv
       implicit real*8 (a-h,o-z)
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("tm  ","s2  ","s3  ",113)
@@ -1143,7 +1155,7 @@ c ******************************************************
       return
       end
 c *********************************************************
-      subroutine pdig14
+      subroutine pdig14_csv
       implicit real*8 (a-h,o-z)
 c   incl 14ab, 19ab
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
@@ -1181,7 +1193,7 @@ c ******************************************************
       return
       end
 c ************************************************************
-      subroutine diag18b
+      subroutine diag18b_csv
       implicit real*8 (a-h,o-z)
       call add("vvc1",-2.d0,"vhhp",1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
@@ -1192,7 +1204,7 @@ c ************************************************************
       return
       end
 c **********************************************************
-      subroutine diag20b
+      subroutine diag20b_csv
       implicit real*8 (a-h,o-z)
 c   incl 20b, 21b, 17a
       call add("vvc1",-2.d0,"vhhp",1.d0,"s2  ")
@@ -1212,7 +1224,7 @@ c ---------------------------------
       return
       end
 c ***************************************************
-      subroutine diag21a
+      subroutine diag21a_csv
       implicit real*8 (a-h,o-z)
 c   incl 21a, 27a, 29a
 c   27a
@@ -1232,7 +1244,7 @@ c ------------
       return
       end
 c ********************************************
-      subroutine diag22a
+      subroutine diag22a_csv
       implicit real*8 (a-h,o-z)
 c   diag 17b
       call seltyp(3232,1000,"s2  ",5)
@@ -1249,7 +1261,7 @@ c ----------------------------------
       return
       end
 c **************************************************
-      subroutine diag22b
+      subroutine diag22b_csv
       implicit real*8 (a-h,o-z)
 c   incl 22b, 27b, 29b
       call mult("ta2 ","vc10","s2  ",222)
@@ -1269,7 +1281,7 @@ c -------------
       return
       end
 c ************************************************
-      subroutine pdig23b
+      subroutine pdig23b_csv
       implicit real*8 (a-h,o-z)
 c   incl 23b, 24b, 25b, 26b, 16a, 18b
 c   23b
@@ -1299,7 +1311,7 @@ c   28b
       return
       end
 c *************************************************
-      subroutine diag23b
+      subroutine diag23b_csv
       implicit real*8 (a-h,o-z)
       call mult("t1v ","p23b","s2  ",131)
       call add("tb6 ",1.d0,"s2  ",1.d0,"tb6 ")
@@ -1308,7 +1320,8 @@ c *************************************************
       return
       end
 c *************************************************
-      subroutine diag28a
+!     subroutine diag28a
+      subroutine diag28a_csv
       implicit real*8 (a-h,o-z)
       call mult("t1c ","hp  ","s2  ",111)
       call mult("ta15","s2  ","s1  ",311)
@@ -1318,7 +1331,7 @@ c *************************************************
       return
       end
 c ***************************************************
-      subroutine diag26a
+      subroutine diag26a_csv
       implicit real*8 (a-h,o-z)
 c   incl 26a, 16b
       call reorder("tcm ","s1  ",3412,5,0)
@@ -1466,7 +1479,7 @@ c **********************************************************
       return
       end
 c **************************************************
-      subroutine dfold1
+      subroutine dfold1_csv
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call reorder("tv  ","s2  ",2341,5,1)
@@ -1590,7 +1603,8 @@ C  *********************************************************************
       return
       end 
 C  *******************************************************************
-      subroutine box12 (iparm)
+!     subroutine box12 (iparm)
+      subroutine box12_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1649,7 +1663,7 @@ c
       return
       end
 C  *******************************************************************
-      subroutine box13 (iparm)
+      subroutine box13_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1705,7 +1719,7 @@ c
       return
       end 
 C  *******************************************************************
-      subroutine box14 (iparm)
+      subroutine box14_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1762,7 +1776,7 @@ c
       return
       end
 C  *******************************************************************
-      subroutine box15 (iparm)
+      subroutine box15_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1792,7 +1806,7 @@ c
       return
       end
 C  *******************************************************************
-      subroutine box16 (iparm)
+      subroutine box16_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1818,7 +1832,7 @@ c
       return
       end
 C  *******************************************************************
-      subroutine box17 (iparm)
+      subroutine box17_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1840,7 +1854,7 @@ c
       return
       end 
 C  ******************************************************************
-      subroutine box18 (iparm)
+      subroutine box18_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1861,7 +1875,7 @@ c
       return
       end
 C  ******************************************************************
-      subroutine box19 (iparm)
+      subroutine box19_csv (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1885,58 +1899,60 @@ c v1 Feb 95
 C  *******************************************************************
       subroutine wrtbox_csv
       implicit real*8 (a-h,o-z)
-      call box12    (0)
+!     call box12    (0)
+      call box12_csv(0)
       call wrtfile  (21,0,"bx12")
-      call box12    (1)
+!     call box12    (1)
+      call box12_csv(1)
       call reads    (21,0,"s1  ")
       call add      ("s1  ",1.d0,"bx12",1.d0,"bx12")
       call wrtfile  (21,0,"bx12")
 c
-      call box13    (0)
+      call box13_csv(0)
       call wrtfile  (21,1,"bx13")
-      call box13    (1)
+      call box13_csv(1)
       call reads    (21,1,"s1  ")
       call add      ("s1  ",1.d0,"bx13",1.d0,"bx13")
       call wrtfile  (21,1,"bx13")
 c
-      call box14    (0)
+      call box14_csv(0)
       call wrtfile  (21,2,"bx14")
-      call box14    (1)
+      call box14_csv(1)
       call reads    (21,2,"s1  ")
       call add      ("s1  ",1.d0,"bx14",1.d0,"bx14")
       call wrtfile  (21,2,"bx14")
 c
-      call box15    (0)
+      call box15_csv(0)
       call wrtfile  (21,3,"bx15")
-      call box15    (1)
+      call box15_csv(1)
       call reads    (21,3,"s1  ")
       call add      ("s1  ",1.d0,"bx15",1.d0,"bx15")
       call wrtfile  (21,3,"bx15")
 c
-      call box16    (0)
+      call box16_csv(0)
       call wrtfile  (21,4,"bx16")
-      call box16    (1)
+      call box16_csv(1)
       call reads    (21,4,"s1  ")
       call add      ("s1  ",1.d0,"bx16",1.d0,"bx16")
       call wrtfile  (21,4,"bx16")
 c
-      call box17    (0)
+      call box17_csv(0)
       call wrtfile  (21,5,"bx17")
-      call box17    (1)
+      call box17_csv(1)
       call reads    (21,5,"s1  ")
       call add      ("s1  ",1.d0,"bx17",1.d0,"bx17")
       call wrtfile  (21,5,"bx17")
 c
-      call box18    (0)
+      call box18_csv(0)
       call wrtfile  (21,6,"bx18")
-      call box18    (1)
+      call box18_csv(1)
       call reads    (21,6,"s1  ")
       call add      ("s1  ",1.d0,"bx18",1.d0,"bx18")
       call wrtfile  (21,6,"bx18")
 c
-      call box19    (0)
+      call box19_csv(0)
       call wrtfile  (21,7,"bx19")
-      call box19    (1)
+      call box19_csv(1)
       call reads    (21,7,"s1  ")
       call add      ("s1  ",1.d0,"bx19",1.d0,"bx19")
       call wrtfile  (21,7,"bx19")

@@ -641,15 +641,23 @@ c **********************************************************
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("hp  ","t1nw")
-      call dg1n2
-      call dg1n3
-      call dg1n5
-      call dg1n6
-      call dg1n7
-      call dg1n8
-      call dg1n9
+!     call dg1n2
+      call dg1n2_csd
+!     call dg1n3
+      call dg1n3_csd
+!     call dg1n5
+      call dg1n5_csd
+!     call dg1n6
+      call dg1n6_csd
+!     call dg1n7
+      call dg1n7_csd
+!     call dg1n8
+      call dg1n8_csd
+!     call dg1n9
+      call dg1n9_csd
       call dg1n10
-      call dg1n11
+!     call dg1n11
+      call dg1n11_csd
       call prtime    ("calt1   ",0,1)
       return
       end
@@ -660,23 +668,36 @@ c ****************************************************
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
       call cmult("hhpp",0.5d0,"tnew")
-      call diag4
-      call diag5
-      call diag6
-      call diag7
-      call diag8
-      call diag9
-      call diag11
-      call diag12
-      call diag15
-      call diag13
-      call diag14
+!     call diag4
+      call diag4_csd
+!     call diag5
+      call diag5_csd
+!     call diag6
+      call diag6_csd
+!     call diag7
+      call diag7_csd
+!     call diag8
+      call diag8_csd
+!      call diag9
+      call diag9_csd
+!      call diag11
+      call diag11_csd
+!     call diag12
+      call diag12_csd
+!      call diag15
+      call diag15_csd
+!     call diag13
+      call diag13_csd
+!     call diag14
+      call diag14_csd
       call diag16
-      call diag21
-      call diag2
+      call diag21_csd
+!     call diag2
+      call diag2_csd
       call diag3_csd
-      call dgt1p3
-      call dgt1p4
+      call dgt1p3_csd
+!     call dgt1p4
+      call dgt1p4_csd
       if (iopt(17).ge.4) then
 c  diags 40,41
         call reordx   ("t40 ","s1  ",12563478)
@@ -1066,7 +1087,8 @@ c   diag 3
       return
       end
 c  ******************************************************
-      subroutine diag2
+!     subroutine diag2
+      subroutine diag2_csd
       implicit real*8 (a-h,o-z)
       call mult("tc  ","pp  ","s2  ",311)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -1090,7 +1112,8 @@ c ----------------------------------
       return
       end
 c **********************************************
-      subroutine diag4
+!     subroutine diag4
+      subroutine diag4_csd
       implicit real*8 (a-h,o-z)
       call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
       call mult("ta1 ","s2  ","s1  ",222)
@@ -1100,7 +1123,8 @@ c **********************************************
       return
       end
 c *********************************************
-      subroutine diag5
+!     subroutine diag5
+      subroutine diag5_csd
       implicit real*8 (a-h,o-z)
       call mult("tm2 ","va1 ","s1  ",222)
       call add("tb1 ",1.d0,"s1  ",-1.d0,"tb1 ")
@@ -1109,7 +1133,8 @@ c *********************************************
       return
       end
 c *********************************************
-      subroutine diag6
+!     subroutine diag6
+      subroutine diag6_csd
       implicit real*8 (a-h,o-z)
       call mult("tm2 ","hphp","s1  ",222)
       call add("tb15",1.d0,"s1  ",-1.d0,"tb15")
@@ -1118,7 +1143,8 @@ c *********************************************
       return
       end
 c **************************************************
-      subroutine diag7
+!     subroutine diag7
+      subroutine diag7_csd
 ! most comp. demanding diagram, symmetric
       implicit real*8 (a-h,o-z)
       call mult("pppp","tm  ","s2  ",222) ! "pppp"x"tm"->"s2"
@@ -1129,7 +1155,8 @@ c **************************************************
       return
       end
 c *********************************************
-      subroutine diag8
+!     subroutine diag8
+      subroutine diag8_csd
       implicit real*8 (a-h,o-z)
       call mult("hhhh","tm4 ","s2  ",222)
       call add("tnew",1.d0,"s2  ",0.5d0,"tnew")
@@ -1138,7 +1165,8 @@ c *********************************************
       return
       end
 c ******************************************************
-      subroutine diag9
+!     subroutine diag9
+      subroutine diag9_csd
       implicit real*8 (a-h,o-z)
 c   includes diags 9 10 20 23
       call add("tm2 ",-1.d0,"ta1 ",1.d0,"s2  ")
@@ -1161,7 +1189,8 @@ c ---------------------------
       return
       end
 c **********************************************
-      subroutine diag11
+!     subroutine diag11
+      subroutine diag11_csd
       implicit real*8 (a-h,o-z)
 c   includes diag 11 24
       call mult("tm2 ","va1 ","s1  ",222)
@@ -1176,7 +1205,8 @@ c --------------------------------------
       return
       end
 c ***********************************************
-      subroutine diag12
+!     subroutine diag12
+      subroutine diag12_csd
       implicit real*8 (a-h,o-z)
 c   includes diag 12 25
       call mult("tm2 ","va2 ","s1  ",222)
@@ -1191,7 +1221,8 @@ c -----------------------------------------
       return
       end
 c **********************************************************
-      subroutine diag13
+!     subroutine diag13
+      subroutine diag13_csd
       implicit real*8 (a-h,o-z)
 c   include diag 13 18
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
@@ -1208,7 +1239,8 @@ c ----------------------------------------
       return
       end
 c **********************************************************
-      subroutine diag14
+!     subroutine diag14
+      subroutine diag14_csd
       implicit real*8 (a-h,o-z)
 c   include diag 14 19
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
@@ -1225,7 +1257,8 @@ c ----------------------------------------
       return
       end
 c ******************************************************
-      subroutine diag15
+!     subroutine diag15
+      subroutine diag15_csd
       implicit real*8 (a-h,o-z)
 c   includes diag 15 26
       call mult("tm  ","hhpp","s1  ",222)
@@ -1249,7 +1282,7 @@ c ****************************************************
       return
       end
 c *******************************************************
-      subroutine diag21
+      subroutine diag21_csd
       implicit real*8 (a-h,o-z)
 c   incl diags 21 22 27 29 17
 c   diag 21
@@ -1276,7 +1309,8 @@ c -----------------------------------
       return
       end
 c *************************************************
-      subroutine dg1n2
+!     subroutine dg1n2
+      subroutine dg1n2_csd
       implicit real*8 (a-h,o-z)
       call add("vd7 ",2.d0,"vd8 ",-1.d0,"s1  ")
       call mult("tm1 ","s1  ","s3  ",113)
@@ -1286,7 +1320,8 @@ c *************************************************
       return
       end
 c **********************************************************
-      subroutine dg1n3
+!     subroutine dg1n3
+      subroutine dg1n3_csd
       implicit real*8 (a-h,o-z)
       call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
       call mult("s2  ","hp  ","s3  ",202)
@@ -1296,7 +1331,8 @@ c **********************************************************
       return
       end
 c **********************************************************
-      subroutine dg1n5
+!     subroutine dg1n5
+      subroutine dg1n5_csd
       implicit real*8 (a-h,o-z)
       call mult("t1c ","pp  ","s2  ",111)
       call add("t1nw",1.d0,"s2  ",1.d0,"t1nw")
@@ -1305,7 +1341,8 @@ c **********************************************************
       return
       end
 c *****************************************************************
-      subroutine dg1n6
+!     subroutine dg1n6
+      subroutine dg1n6_csd
       implicit real*8 (a-h,o-z)
       call add("vc4 ",-2.d0,"vc8 ",1.d0,"s2  ")
       call mult("s2  ","tm4 ","s3  ",113)
@@ -1315,7 +1352,8 @@ c *****************************************************************
       return
       end
 c ***************************************************************
-      subroutine dg1n7
+!     subroutine dg1n7
+      subroutine dg1n7_csd
       implicit real*8 (a-h,o-z)
       call add("va1 ",2.d0,"hphp",-1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
@@ -1325,7 +1363,8 @@ c ***************************************************************
       return
       end
 c ***********************************************************************
-      subroutine dg1n8
+!     subroutine dg1n8
+      subroutine dg1n8_csd
       implicit real*8 (a-h,o-z)
       call mult("hh  ","t1or","s2  ",111)
       call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
@@ -1334,7 +1373,8 @@ c ***********************************************************************
       return
       end
 c ******************************************************************
-      subroutine dg1n9
+!     subroutine dg1n9
+      subroutine dg1n9_csd
       implicit real*8 (a-h,o-z)
       call add("hhpp",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("tc  ","s2  ","s3  ",113)
@@ -1356,7 +1396,8 @@ c ****************************************************************
       return
       end
 c ***************************************************************
-      subroutine dg1n11
+!     subroutine dg1n11
+      subroutine dg1n11_csd
       implicit real*8 (a-h,o-z)
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
@@ -1368,7 +1409,7 @@ c ***************************************************************
       return
       end
 c *****************************************************
-      subroutine dgt1p3
+      subroutine dgt1p3_csd
       implicit real*8 (a-h,o-z)
 c   compensates for overcounting t1**3
       call mult("t1c ","vd14","s2  ",131)
@@ -1380,7 +1421,8 @@ c   compensates for overcounting t1**3
       return
       end
 c ****************************************
-      subroutine dgt1p4
+!     subroutine dgt1p4
+      subroutine dgt1p4_csd
       implicit real*8 (a-h,o-z)
 c   compensates for overcounting t1**4
       call mult("t1c ","hhpp","s3  ",131)

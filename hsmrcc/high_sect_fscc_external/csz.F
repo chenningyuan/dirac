@@ -1,6 +1,11 @@
+#if defined STANDALONE_HSFS
       program csz
+#else
+      subroutine csz
+#endif
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
@@ -78,15 +83,20 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
           iv(nvalo)=j      
         end if
 20    continue
-      call ordv
-      call ordta
+!     call ordv
+      call ordv_csz
+!     call ordta
+      call ordta_csz
       call t1sqr      ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr      ("t1v ","t1c ","tv  ","tvm ")
       call t1sqr      ("t1v ","t1v ","tu  ","tum ")
-      call diags1
+!     call diags1
+      call diags1_csz
       if (iopt(17).eq.3) then
-        call diags31
-        call diags32
+!       call diags31
+        call diags31_csz
+!       call diags32
+        call diags32_csz
       end if
       call fmax    ("tzf ",tmax,idum)
       write (6,99) tmax
@@ -123,9 +133,11 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       stop
       end
 C  *******************************************************************
-      subroutine ordv
+!     subroutine ordv
+      subroutine ordv_csz
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
@@ -143,7 +155,8 @@ c
       return
       end
 C  *******************************************************************
-      subroutine ordta
+!     subroutine ordta
+      subroutine ordta_csz
       implicit real*8 (a-h,o-z)
       call fold4      ("t1c ","s1  ",2,2)
       call reorder    ("s1  ","te1 ",1243,4)
@@ -155,7 +168,8 @@ C  *******************************************************************
       return
       end
 C  ********************************************************************
-      subroutine diags1
+!     subroutine diags1
+      subroutine diags1_csz
       implicit real*8 (a-h,o-z)
       dimension iord(12)
       data iord / 1,7,8,3,2,9,4,5,10,6,12,11 /
@@ -168,7 +182,8 @@ c  diag 1
       return
       end
 C  ********************************************************************
-      subroutine diags31
+!     subroutine diags31
+      subroutine diags31_csz
       implicit real*8 (a-h,o-z)
       dimension iord(12)
       data iord / 1,2,3,7,8,9,10,6,5,4,12,11 /
@@ -324,7 +339,8 @@ c
       return
       end
 C  *******************************************************************
-      subroutine diags32
+!     subroutine diags32
+      subroutine diags32_csz
       implicit real*8 (a-h,o-z)
       dimension iord(12)
       data iord / 1,2,3,4,7,8,9,6,5,12,11,10 /

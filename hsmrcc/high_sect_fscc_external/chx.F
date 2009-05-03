@@ -1,6 +1,12 @@
+#if defined STANDALONE_HSFS
       program chx
+#else
+      subroutine chx
+#endif
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
+
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
@@ -76,14 +82,18 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1hv","t1c ","thv ","tvm ")
       call t1sqr    ("t1hv","t1hv","thu ","tum ")
-      call ordv 
-      call ordta
-      call diags1
+!     call ordv 
+      call ordv_chx 
+!     call ordta
+      call ordta_chx
+!     call diags1
+      call diags1_chx
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
-        call diags2
+        call diags2_chx
       end if
       if (iopt(17).eq.3) then
-        call diags 3
+!       call diags 3
+        call diags3_chx ! mi fix
       end if
       call sqr4    ("thxf")
       egr0=0.d0
@@ -99,9 +109,11 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       stop
       end
 C  *******************************************************************
-      subroutine ordv 
+!     subroutine ordv 
+      subroutine ordv_chx 
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
       common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1) 
@@ -126,7 +138,8 @@ C  *******************************************************************
       return
       end
 C  *******************************************************************
-      subroutine ordta
+!     subroutine ordta
+      subroutine ordta_chx
       implicit real*8 (a-h,o-z)
       call fold4    ("t1c ","t1c1",2,2)
       call fold4    ("thv ","s1  ",3,4)
@@ -136,7 +149,8 @@ C  *******************************************************************
       return
       end
 C  *******************************************************************
-      subroutine diags1
+!     subroutine diags1
+      subroutine diags1_chx
       implicit real*8 (a-h,o-z)
 c  GROUP I
 c   diag 1
@@ -245,7 +259,7 @@ c
       return
       end
 C  *******************************************************************
-      subroutine diags2
+      subroutine diags2_chx
       implicit real*8 (a-h,o-z)
 c  diag 1
       call fold6    ("t33 ","s1  ",4,1)
@@ -266,7 +280,7 @@ c  diag 2
       return
       end 
 C  *******************************************************************
-      subroutine diags3
+      subroutine diags3_chx
       implicit real*8 (a-h,o-z)
 c  GROUP I
 c   diag 1

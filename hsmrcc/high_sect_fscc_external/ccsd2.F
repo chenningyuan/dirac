@@ -2865,6 +2865,8 @@ c             write (6,*) ' '
 !
 !       print time using system specific routine
 !
+!  tit - entering string, but here considered as real*8 
+!
 !-----------------------------------------------------------------------
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -2918,6 +2920,7 @@ c             write (6,*) ' '
       write(LUPRI,'(1x,40i3)') (iopt(i),i=1,40)
 
       write(LUPRI,'(4x,a)') "iopt(1..40) read in"
+
       call extract_print_level
       write(LUPRI,'(2x,a,i3,/)') 'Print level:',getiprint()
 
@@ -3158,5 +3161,5 @@ c             write (6,*) ' '
       write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
 
       return
-      end
+      end subroutine rdsym
 

@@ -85,13 +85,13 @@
       subroutine readv(nint,v,ind,nintmx,nfock,fock,ifock,nfockmx)
 !---------------------------------------------------------------------------
 !
-!         basic reading subroutine
+!  basic reading subroutine for integrals & indexes, fock matrix
 !
 !         nint - total number of integrals
 !         v    - array for integrals
 !         ind  - array with packed indexes
 !
-!      called from:  ordv (csd.F)
+! called from all executables !
 !
 !---------------------------------------------------------------------------
       use get_gamess_mo_ints ! my own module for getting GAMESS new integrals
@@ -125,18 +125,17 @@
 c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
       if (iopt(19).eq.0) then
         intrc=2725
-        write(LUPRI,*) 'this is GAMESS connected stuff !'
-      endif
-
-      if (iopt(19).ne.0) then
+        write(LUPRI,'(/,2x,a)') 'GAMESS is providing integrals.'
+      else if (iopt(19).eq.7) then
+        write(LUPRI,'(/,2x,a)') 'DIRAC is providing integrals.'
+      else ! (iopt(19).ne.0) then
          call quit('miro: aces ii not YET supported !')
-        intrc=600
+         intrc=600
       endif
 
-! miro:  insertion of own reading procedure
-!     call get_gamess_ints 
-!     return
-
+!   =================================
+!     ==== Old reading - skip  ====
+!   =================================
       if (.not.skip_old_read) then
 
       rewind(12,iostat=ios)
@@ -244,7 +243,8 @@ C--------------------------------------------------------
 
 135   continue
 
-      else
+      else if (iopt(19).ne.7) then
+
         ! ... get in new GAMESS integrals ...
         call get_gamess_ints(nort,eps,nn,ind,v,nint) 
 
@@ -274,6 +274,10 @@ C--------------------------------------------------------
            endif
 
           enddo
+
+      else 
+        ! ... get DIRAC integrals
+        call get_dirac_ints(nort,eps,nn,ind,v,nint) 
 
       endif
 
@@ -371,7 +375,7 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 450   continue
 
       return
-      end
+      end subroutine readv
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      subroutine files(name,num,new,ijnum,iii,iiv)

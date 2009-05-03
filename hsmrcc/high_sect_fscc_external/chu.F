@@ -99,19 +99,22 @@ c     iopt(10) .ne.0 - do not save pppp.
           call reord6 ("s1  ","s2  ",125346)
           call reord7 ("s2  ","s1  ",132456)
           call reord6 ("s1  ","t30 ",126345)
-          call rdbox
+!         call rdbox
+          call rdbox_chu
         end if
       end if
       call t1sqr("t1c ","t1c ","tc  ","tcm ")
       call t1sqr("t1hv","t1c ","thv ","tvm ")
-      call ordvu
+!     call ordvu
+      call ordvu_chu
       call calvu0
 c      call pdiag
 c  pdiag eliminated for lack of io file numbers. to be reinstated
 c  if possible, as significant time saving is achieved.
       iter=0
       ieof=0
-      call tuinit
+!     call tuinit
+      call tuinit_chu
       call prt("thu ","thu     ",2)
       call prt("thuf","thuf    ",2)
       call fmax("thu ",tmax,itmax)
@@ -133,12 +136,12 @@ c  if possible, as significant time saving is achieved.
       call t1sqr("t1hv","t1hv","thu ","tm  ")
 220   iter=iter+1
       call prtime("strt itr",iter,0)
-      call ordtua
+      call ordtua_chu
       if (iopt(17).ne.0) then
-        call caltu3
+        call caltu3_chu
       end if
-      call caltu2
-      call ordtub
+      call caltu2_chu
+      call ordtub_chu
       if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
         fnew=max(dfloat(iopt(6)/100),1.d0)
         if (fnew.le.6.5d0) then
@@ -246,7 +249,8 @@ c  different endings
       if (iopt(17).ne.0) then
         call wrtfile  (55,2,"t32 ")
         if (iopt(17).eq.3) then
-          call wrtbox
+!         call wrtbox
+          call wrtbox_chu
         end if
       end if
       write (*,*) nstrt(1,nflcur),' words used in igen,',
@@ -255,7 +259,8 @@ c  different endings
       stop
       end
 c *********************************************
-      subroutine ordvu
+!     subroutine ordvu
+      subroutine ordvu_chu
       implicit real*8 (a-h,o-z)
       external idec
 #include "param_ccsd.h"
@@ -315,23 +320,33 @@ c**************************************************************
       subroutine calvu0
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      call ordta0
+      call ordta0_chu
       call move("gghh","vu0 ")
       call cmult("vu0 ",0.5d0,"vu0 ")
-      call diag3
-      call diag4
-      call diag5
-      call diag6
-      call diag8
-      call diag9
-      call diag11
-      call diag12
-      call diag13
-      call dgt1p3
-      call dgt1p4
-      call diag21
-      call diag26
-      call diag28
+      call diag3_chu
+!     call diag4
+      call diag4_chu
+!     call diag5
+      call diag5_chu
+!     call diag6
+      call diag6_chu
+!     call diag8
+      call diag8_chu
+!     call diag9
+      call diag9_chu
+!     call diag11
+      call diag11_chu
+!     call diag12
+      call diag12_chu
+!     call diag13
+      call diag13_chu
+      call dgt1p3_chu
+!     call dgt1p4
+      call dgt1p4_chu
+      call diag21_chu
+      call diag26_chu
+!     call diag28
+      call diag28_chu
       if (iopt(17).ne.0) then
 c  diag 31
         call reord6    ("t31 ","s1  ",125346)
@@ -364,7 +379,7 @@ c    diag 36,38
         call reorder   ("s1  ","s2  ",1423,4)
         call add       ("s2  ",1.d0,"vu0 ",1.d0,"vu0 ")
       end if
-      call ordtb0
+      call ordtb0_chu
       call sqr("vu0 ","s2  ")
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1b
@@ -423,7 +438,7 @@ c   diag 2
         call reord6     ("s1  ","s2  ",125463)
         call add        ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
 c   diag 3
-        call box24      (0)
+        call box24_chu  (0)
         call mult6      ("bx24","tc4 ","s1  ",1)
         call reord6     ("s1  ","s2  ",126354)
         call add        ("s2  ",1.d0,"v30 ",1.d0,"v30 ")
@@ -471,7 +486,7 @@ c   diag 1
         call reord6     ("s2  ","s1  ",126345)
         call add        ("s1  ",1.d0,"v30 ",1.d0,"v30 ")
 c   diag 2
-        call box25      (0)
+        call box25_chu  (0)
         call reord6     ("t30 ","s1  ",126345)
         call reord7     ("s1  ","s2  ",132456)
         call reord6     ("s2  ","s1  ",126543)
@@ -488,7 +503,8 @@ c   diag 3
       return
       end
 c ******************************************
-      subroutine tuinit
+!     subroutine tuinit
+      subroutine tuinit_chu
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("vu0 ","thu ")
@@ -507,7 +523,7 @@ c ******************************************
       return
       end
 c **************************************************
-      subroutine ordta0
+      subroutine ordta0_chu
       implicit real*8 (a-h,o-z)
 c  tv1 = tv 1324
 c  tvm1 = tvm 1324
@@ -540,7 +556,7 @@ c  tb15 = tnew 1342
       return
       end
 c ******************************************************
-      subroutine ordtb0
+      subroutine ordtb0_chu
       implicit real*8 (a-h,o-z)
       call reorder("tb1 ","s2  ",1324,4,0)
       call add("vu0 ",1.d0,"s2  ",1.d0,"vu0 ")
@@ -552,7 +568,7 @@ c ******************************************************
       return
       end
 c *****************************************************
-      subroutine ordtua
+      subroutine ordtua_chu
       implicit real*8 (a-h,o-z)
       call reorder("thu ","ta3 ",1432,4,1)
       call reorder("tm  ","tm4 ",3412,4,1)
@@ -566,7 +582,7 @@ c *****************************************************
       return
       end
 c ****************************************************
-      subroutine caltu3
+      subroutine caltu3_chu
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move          ("v30 ","t3nw")
@@ -583,7 +599,7 @@ c   diag 1
         call add         ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
 c  GROUP II
 c   diag 3
-        call box24       (1)
+        call box24_chu   (1)
         call mult6       ("bx24","tc4 ","s1  ",1)
         call reord6      ("s1  ","s2  ",126354)
         call add         ("s2  ",1.d0,"t3nw",1.d0,"t3nw")
@@ -607,7 +623,7 @@ c   diag 1
         call add         ("s1  ",1.d0,"t3nw",1.d0,"t3nw")
 c  GROUP VI
 c   diag 2
-        call box25       (1)
+        call box25_chu   (1)
         call reord6      ("t30 ","s1  ",126345)
         call reord7      ("s1  ","s2  ",132565)
         call reord6      ("s2  ","s1  ",126543)
@@ -654,16 +670,21 @@ c   diag 1
       return
       end
 C  *********************************************************************
-      subroutine caltu2
+      subroutine caltu2_chu
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call move("vu0 ","tnew")
       call cmult("tnew",0.5d0,"tnew")
-      call diag2
-      call diag7
-      call diag14
-      call diag15
-      call diag27
+!     call diag2
+      call diag2_chu
+!     call diag7
+      call diag7_chu
+!     call diag14
+      call diag14_chu
+!     call diag15
+      call diag15_chu
+!     call diag27
+      call diag27_chu
       if (iopt(17).ne.0) then
 c  diag 30
         call reord6  ("t32 ","s1  ",124356)
@@ -701,7 +722,7 @@ c    diag 37,39
       return
       end
 c ******************************************************
-      subroutine ordtub
+      subroutine ordtub_chu
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call reorder("tb1 ","s2  ",1324,5,1)
@@ -717,7 +738,7 @@ c ******************************************************
       call sqr("tnew","s2  ")
 !     call fold("tnew","thuf")
       call fold_ccsd("tnew","thuf")
-      call dfoldu
+      call dfoldu_chu
       call diveps("tnew")
       call cmult("tnew",-1.d0,"tnew")
       if (iopt(17).ne.0) then
@@ -731,7 +752,8 @@ c ******************************************************
       return
       end
 c *************************************************
-      subroutine diag7
+!     subroutine diag7
+      subroutine diag7_chu
       implicit real*8 (a-h,o-z)
       call mult("tm  ","hhhh","s2  ",222)
       call add("tnew",1.d0,"s2  ",0.5d0,"tnew")
@@ -740,7 +762,8 @@ c *************************************************
       return
       end
 c **********************************************
-      subroutine diag8
+!     subroutine diag8
+      subroutine diag8_chu
       implicit real*8 (a-h,o-z)
       call mult("ggpp","tcm4","s2  ",222)
       call add("vu0 ",1.d0,"s2  ",0.5d0,"vu0 ")
@@ -749,7 +772,7 @@ c **********************************************
       return
       end
 c *************************************************
-      subroutine diag3
+      subroutine diag3_chu
       implicit real*8 (a-h,o-z)
       call mult("gp  ","tv3 ","s1  ",131)
       call add("vu0 ",1.d0,"s1  ",1.d0,"vu0 ")
@@ -758,7 +781,8 @@ c *************************************************
       return
       end
 c **************************************************
-      subroutine diag2
+!     subroutine diag2
+      subroutine diag2_chu
       implicit real*8 (a-h,o-z)
       call mult("thu ","hh  ","s2  ",311)
       call add("tnew",1.d0,"s2  ",-1.d0,"tnew")
@@ -767,7 +791,8 @@ c **************************************************
       return
       end
 c *******************************************************
-      subroutine diag4
+!     subroutine diag4
+      subroutine diag4_chu
       implicit real*8 (a-h,o-z)
       call add("vva1",2.d0,"ghph",-1.d0,"s2  ")
       call mult("s2  ","tv1 ","s1  ",222)
@@ -777,7 +802,8 @@ c *******************************************************
       return
       end
 c ************************************************************
-      subroutine diag5
+!     subroutine diag5
+      subroutine diag5_chu
       implicit real*8 (a-h,o-z)
       call mult("vva1","tvm2","s1  ",222)
       call add("tb1 ",1.d0,"s1  ",-1.d0,"tb1 ")
@@ -786,7 +812,8 @@ c ************************************************************
       return
       end
 c ************************************************************
-      subroutine diag6
+!     subroutine diag6
+      subroutine diag6_chu
       implicit real*8 (a-h,o-z)
       call mult("ghph","tvm2","s1  ",222)
       call add("tb15",1.d0,"s1  ",-1.d0,"tb15")
@@ -795,7 +822,8 @@ c ************************************************************
       return
       end
 c *******************************************************************
-      subroutine diag9
+!     subroutine diag9
+      subroutine diag9_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 9 10 20 23
       call add("tv1 ",-1.d0,"tvm2",1.d0,"s2  ")
@@ -820,7 +848,8 @@ c -------------
       return
       end
 c **************************************************
-      subroutine diag11
+!     subroutine diag11
+      subroutine diag11_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 11 24
       call mult("tvm2","va1 ","s1  ",222)
@@ -835,7 +864,8 @@ c -----------------
       return
       end
 c **************************************************
-      subroutine diag12
+!     subroutine diag12
+      subroutine diag12_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 12 25
       call mult("tvm2","va2 ","s1  ",222)
@@ -850,7 +880,8 @@ c ------------------
       return
       end
 c ************************************************
-      subroutine diag13
+!     subroutine diag13
+      subroutine diag13_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 13 18
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
@@ -867,7 +898,8 @@ c -----------
       return
       end
 c ****************************************************
-      subroutine diag14
+!     subroutine diag14
+      subroutine diag14_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 14 19
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
@@ -884,7 +916,8 @@ c --- pdig14 to here
       return
       end
 c ****************************************************
-      subroutine diag15
+!     subroutine diag15
+      subroutine diag15_chu
       implicit real*8 (a-h,o-z)
       call mult("tm  ","pphh","s1  ",222)
       call mult("s1  ","tcm4","s2  ",222)
@@ -894,7 +927,7 @@ c ****************************************************
       return
       end
 c ****************************************************
-      subroutine diag21
+      subroutine diag21_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 21 17 22
       call mult("tv2 ","vvc1","s1  ",222)
@@ -914,7 +947,8 @@ c --------------
       return
       end
 c ************************************************
-      subroutine diag27
+!     subroutine diag27
+      subroutine diag27_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 27 29
 c   diag 29
@@ -931,7 +965,8 @@ c ---------------
       return
       end
 c **********************************************************
-      subroutine diag28
+!     subroutine diag28
+      subroutine diag28_chu
       implicit real*8 (a-h,o-z)
       call mult("t1hv","ph  ","s2  ",111)
       call reorder("thv ","s3  ",1432,5,0)
@@ -942,7 +977,7 @@ c **********************************************************
       return
       end
 c *********************************************************
-      subroutine diag26
+      subroutine diag26_chu
       implicit real*8 (a-h,o-z)
 c   incl diags 26 16
       call reorder("tcm ","s1  ",3412,5,0)
@@ -959,7 +994,7 @@ c -------------
       return
       end
 c *********************************************************
-      subroutine dgt1p3
+      subroutine dgt1p3_chu
       implicit real*8 (a-h,o-z)
 c   compensates for overcounting
       call mult("t1hv","vd14","s2  ",131)
@@ -971,7 +1006,8 @@ c   compensates for overcounting
       return
       end
 c ****************************************************
-      subroutine dgt1p4
+!     subroutine dgt1p4
+      subroutine dgt1p4_chu
       implicit real*8 (a-h,o-z)
 c   -t1**4 compensates for overcounting
       call mult("t1hv","pphh","s3  ",131)
@@ -984,7 +1020,7 @@ c   -t1**4 compensates for overcounting
       return
       end
 c *************************************************
-      subroutine dfoldu
+      subroutine dfoldu_chu
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call mult("thvf","ta3 ","s2  ",131)
@@ -1028,7 +1064,8 @@ c  diag f3
       return
       end
 C ********************************************************************
-      subroutine rdbox
+!     subroutine rdbox
+      subroutine rdbox_chu
       implicit real*8 (a-h,o-z)
       call rdfile  (20,1,"bx2 ",-1)
       call reads   (20,2,"s1  ")
@@ -1052,7 +1089,7 @@ C ********************************************************************
       return
       end
 C  *******************************************************************
-      subroutine box24 (iparm)
+      subroutine box24_chu (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1108,7 +1145,7 @@ c  diag 7
       return
       end 
 C  *******************************************************************
-      subroutine box25 (iparm)
+      subroutine box25_chu (iparm)
       implicit real*8 (a-h,o-z)
       if (iparm.eq.0) then
 c  diag 1
@@ -1125,19 +1162,20 @@ c  diag 3
       return
       end
 C  *******************************************************************
-      subroutine wrtbox
+!     subroutine wrtbox
+      subroutine wrtbox_chu
       implicit real*8 (a-h,o-z)
 c
-      call box24    (0)
+      call box24_chu(0)
       call wrtfile  (32,0,"bx24")
-      call box24    (1)
+      call box24_chu(1)
       call reads    (32,0,"s1  ")
       call add      ("s1  ",1.d0,"bx24",1.d0,"bx24")
       call wrtfile  (32,0,"bx24")
 c
-      call box25    (0)
+      call box25_chu(0)
       call wrtfile  (32,1,"bx25")
-      call box25    (1)
+      call box25_chu(1)
       call reads    (32,1,"s1  ")
       call add      ("s1  ",1.d0,"bx25",1.d0,"bx25")
       call wrtfile  (32,1,"bx25")

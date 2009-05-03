@@ -99,20 +99,37 @@ hs:
 hs_clean:
 	@make -C$(BACK) hs_clean
 
-# all higher sector executables
+# all higher sectors executables
 hsfs:
 	@make -C$(BACK) hsfs
 
+# individual executables
 hsfs_csd:
 	@make -C$(BACK) hsfs_csd
 hsfs_csv:
 	@make -C$(BACK) hsfs_csv
 hsfs_csu:
 	@make -C$(BACK) hsfs_csu
+hsfs_csw:
+	@make -C$(BACK) hsfs_csw
+hsfs_csx:
+	@make -C$(BACK) hsfs_csx
+hsfs_csy:
+	@make -C$(BACK) hsfs_csy
+hsfs_csz:
+	@make -C$(BACK) hsfs_csz
 hsfs_chv:
 	@make -C$(BACK) hsfs_chv
 hsfs_chu:
 	@make -C$(BACK) hsfs_chu
+hsfs_chw:
+	@make -C$(BACK) hsfs_chw
+hsfs_chx:
+	@make -C$(BACK) hsfs_chx
+hsfs_chy:
+	@make -C$(BACK) hsfs_chy
+hsfs_chz:
+	@make -C$(BACK) hsfs_chz
 
 hsfs_clean:
 	@make -C$(BACK) hsfs_clean

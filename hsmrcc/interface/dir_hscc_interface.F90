@@ -387,3 +387,33 @@ end function get_moltra_integral
 !-----------------------------------------------------------------------------
 !  end subroutine make_dirac_syminf
 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
+!------------------------------------------------------------------
+!    provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
+!  
+! called from readv(ccsd3.F)
+!
+!------------------------------------------------------------------
+ use Memory
+ use Vectors
+ use io_moltra
+
+#include "implicit.h"
+#include "priunit.h"
+   real*8, intent(inout) :: eps(*), v(*)
+   integer, intent(inout) :: ind(*),nint, nort
+
+  call read_mrconee;  call print_mrconee_data
+
+  call read_mdcint ! needs WORK memory array !
+
+!   call rd_hcrmo(eps, nort)
+!   call rd_mulmo(v,ind,nint)
+
+   call quit('get_dirac_ints')
+
+ end subroutine get_dirac_ints
+
+

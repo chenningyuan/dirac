@@ -143,7 +143,5 @@
 
  end subroutine rd_mulmo 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
  end module get_gamess_mo_ints
 

@@ -1,6 +1,12 @@
-      program csw 
+#if defined STANDALONE_HSFS
+      program csw
+#else
+      subroutine csw                     
+#endif
+
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
+!     include 'parameters.f'
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
      1 iiia(200),iiva(200)
       common /cint/ nint,idum1,vint(ndint),iint(ndint)
@@ -89,16 +95,18 @@ c     iopt(10) .ne.0 - do not write tape9
         call rdfile (52,3,"t31 ",-1)
         call rdfile (54,2,"t32 ",-1)
         if (iopt(17).eq.3) then
-          call rdbox
+!         call rdbox
+          call rdbox_csw
         end if
       end if
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1v ","t1c ","tv  ","tvm ")
       call t1sqr    ("t1v ","t1v ","tu  ","tum ")
-      call ordv
-      call ordta0
+!     call ordv
+      call ordv_csw
+      call ordta0_csw
       if (iopt(17).ne.0) then
-        call calvw0
+        call calvw0_csw
         call move     ("v30 ","t33 ")
         call sqr3     ("t33 ")
         call zero     ("t33 ")
@@ -121,7 +129,7 @@ c     iopt(10) .ne.0 - do not write tape9
             iter=iter+1
             call prtime("strt itr",iter,0)
             call flush (6) 
-            call caltw3 
+            call caltw3_csw 
             if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
               fnew=max(dfloat(iopt(6)/100),1.d0)
               if (fnew.le.6.5d0) then
@@ -183,7 +191,8 @@ c     iopt(10) .ne.0 - do not write tape9
           call prt6 ("t33 ","last t33",0)
         end if
       end if
-      call endiag 
+!     call endiag 
+      call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
       call eneru2 (egr0,2,3,max(1,iopt(1)))
       call eneru2 (egr0,3,3,max(1,iopt(1)))
@@ -199,9 +208,10 @@ c     iopt(10) .ne.0 - do not write tape9
       stop
       end
 C ********************************************************************
-      subroutine ordv
+!     subroutine ordv
+      subroutine ordv_csw
       implicit real*8 (a-h,o-z)
-      include 'parameters.f'
+#include "param_ccsd.h"
       common /cint/nint,idum1,vint(ndint),iint(ndint)
       common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
@@ -228,7 +238,7 @@ C ********************************************************************
       return
       end
 C *********************************************************************
-      subroutine ordta0
+      subroutine ordta0_csw
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call reorder    ("tv  ","tv1 ",1324,4)
@@ -243,7 +253,7 @@ C *********************************************************************
       return
       end
 C  ********************************************************************
-      subroutine calvw0  
+      subroutine calvw0_csw  
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -294,7 +304,7 @@ c  diag 11
       return
       end
 C  **********************************************************************
-      subroutine caltw3
+      subroutine caltw3_csw
       implicit real*8 (a-h,o-z)
       call move     ("v30 ","t3nw")     
 c   diag 7
@@ -369,7 +379,8 @@ c
       return
       end
 C  *********************************************************************
-      subroutine endiag
+!     subroutine endiag
+      subroutine endiag_csw
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 c  GROUP I
@@ -577,7 +588,8 @@ c  diag e5
       return
       end
 C  ********************************************************************
-      subroutine rdbox
+!     subroutine rdbox
+      subroutine rdbox_csw
       implicit real*8 (a-h,o-z)
       call rdfile  (20,6,"bx7 ",-1)
       call rdfile  (21,0,"bx12",-1)
