@@ -1935,6 +1935,7 @@ get_f90_flags(){
       noformain="" # please add it
       F_check_flags="-Wuninitialized -Wunreachable-code" # please add more
       F_profile="" # please add
+      ldflag="-lstdc++"
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
@@ -1957,6 +1958,7 @@ get_f90_flags(){
       noformain="" # does not exist ?
       F_check_flags="-fbounds-check" 
       F_profile="-pg"
+      ldflag="-lstdc++"
       ;;
     pgf90)
       opt="-g -fastsse"
@@ -1984,6 +1986,7 @@ get_f90_flags(){
       if [ "$par" = "yes" ]; then
        ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
+      ldflag="$ldflag -cxxlib -lstdc++"
       noformain="-nofor_main"
       F_check_flags="-check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback" 
       F_profile="-p" 

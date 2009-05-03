@@ -26,7 +26,7 @@ contains
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "../dft/functionals.h"
-#include "../dft/xc_fortran_interface.h"
+#include "../autodiff/xc_fortran_interface.h"
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: order
@@ -61,9 +61,6 @@ contains
     real(8)                :: ddot
 !   ----------------------------------------------------------------------------
 
-#ifdef MOD_AUTODIFF
-#include "../dft/xc_fortran_interface.h"
-#endif
 !   get perturbed densities
 
     r(0) = r_0

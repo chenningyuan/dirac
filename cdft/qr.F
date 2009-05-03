@@ -726,7 +726,7 @@ c=======================================================================
 #include "../dft/functionals.h"
 
 #ifdef MOD_AUTODIFF
-#include "../dft/xc_fortran_interface.h"
+#include "../autodiff/xc_fortran_interface.h"
 #endif
 
       logical   add_grad,

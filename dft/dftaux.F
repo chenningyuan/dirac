@@ -62,7 +62,7 @@ c=======================================================================
 #include "functionals.h"
 
 #ifdef MOD_AUTODIFF
-#include "../dft/xc_fortran_interface.h"
+#include "../autodiff/xc_fortran_interface.h"
 #endif
 
       logical   is_gga,
