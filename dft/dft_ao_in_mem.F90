@@ -4,8 +4,6 @@ module dft_ao_in_mem
 
   real(8), allocatable, target :: ao_in_mem(:)
   real(8), pointer             :: ao_in_mem_p(:)
-  real(8), pointer             :: gao_p(:)
-  real(8), pointer             :: gao1_p(:)
 
 ! public init_ao_in_mem
 ! public kill_ao_in_mem

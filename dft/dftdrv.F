@@ -124,7 +124,9 @@ C
 #ifdef MOD_DNF
       if (.not. df_fitvxc) then
 #endif
-      if (dft_options%lr .or. dft_options%qr) then
+      if (dft_options%lr 
+     &    .or. dft_options%qr
+     &    .or. (dft_options%aor_xc_order > 0)) then
 
         call dscal(n2bbasxq*nr_dmat_perturbed,
      &             2.0d0, dmat_perturbed, 1)
@@ -261,7 +263,9 @@ C
 
 !     rescale and insert half-phases
 
-      if (dft_options%lr .or. dft_options%qr) then
+      if (dft_options%lr 
+     &    .or. dft_options%qr
+     &    .or. (dft_options%aor_xc_order > 0)) then
 
         if (nz < 4) then
           do iz = 1, nz
@@ -344,10 +348,8 @@ C
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
-#else
-      DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
 #endif
+      DIMENSION EXCMAT(*)
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          IDISP(*),ISEND(*),WORK(LWORK)
@@ -579,13 +581,15 @@ C.........add rest to total number of myNPOINT on last node
       CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       IF(MYTID.NE.MPARID) RETURN
       IF (dft_options%london) THEN
-        DO I = 1, NTBAS(0)
-          DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
-            EXCMAT(I,J,1,1) =   AVERAG 
-            EXCMAT(J,I,1,1) = - AVERAG 
-          ENDDO
-        ENDDO
+!radovan:
+!       reactivate later, now i need excmat(*)
+!       DO I = 1, NTBAS(0)
+!         DO J = 1, I - 1 
+!           AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
+!           EXCMAT(I,J,1,1) =   AVERAG 
+!           EXCMAT(J,I,1,1) = - AVERAG 
+!         ENDDO
+!       ENDDO
       END IF 
 
 !     compare integrated number of electrons to electron count from orbital occupations
@@ -635,15 +639,15 @@ C
      &                  NTBAS(0),1,LUPRI)
         END IF
         IF (dft_options%london) THEN
-          CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
-          CALL OUTPUT(EXCMAT(1,1,1,1),
-     &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-          CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
-          CALL OUTPUT(EXCMAT(1,1,1,2),
-     &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-          CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
-          CALL OUTPUT(EXCMAT(1,1,1,3),
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+!         CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
+!         CALL OUTPUT(EXCMAT(1,1,1,1),
+!    &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+!         CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
+!         CALL OUTPUT(EXCMAT(1,1,1,2),
+!    &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
+!         CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
+!         CALL OUTPUT(EXCMAT(1,1,1,3),
+!    &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
         END IF
         IF (dft_options%gradient) THEN
           CALL HEADER('GRADFT in DFTDRV ',-1)
@@ -651,7 +655,7 @@ C
         END IF
         IF (dft_options%lr.OR.dft_options%qr) THEN
           CALL HEADER('EXCMAT in DFTDRV ',-1)
-          CALL OUTPUT(EXCMAT(1,1,1,1),
+          CALL OUTPUT(EXCMAT,
      &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
         END IF
       ENDIF
@@ -673,6 +677,10 @@ C
 C***********************************************************************
 
        use dft_cfg
+       use dft_ao_in_mem
+#ifdef MOD_AORESPONSE
+       use aor_xc
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -689,21 +697,25 @@ C***********************************************************************
 #include "functionals.h"
 #include "dgroup.h"
 #include "densfit.h"
+
+#ifdef MOD_AUTODIFF
+#include "../autodiff/xc_fortran_interface.h"
+#endif
+
       logical gga_qr
 
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*),
      &            DTRMAT(*),                 GAO2(*),
-     &            GAB1(*),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
+     &            GAB1(*),EXCMAT(*), 
      &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
       DIMENSION RHG(3),VT(3)
+      DIMENSION derv(99)
       type(dft_options_t) :: dft_options
 
-!     this does not look very useful
-!     but after merge with autodiff branch it will make sense
       real(8), target  :: gao(*)
       real(8), target  :: gao1(*)
       real(8), pointer :: gao_p(:)
@@ -714,10 +726,6 @@ C
 C
 
 
-!     this does not look very useful
-!     but after merge with autodiff branch it will make sense
-         gao_p  => gao(1:nbast)
-         gao1_p => gao1(1:nbast*3)
 
 
 C
@@ -774,6 +782,34 @@ Caspg+rbast, 2006-09-21
         nder = 0
         if (dft_cfg_need_gao1) nder = 1
 
+        gao_p  => gao(1:nbast)
+        gao1_p => gao1(1:nbast*3)
+
+
+
+!radovan: please don't delete, code under construction
+!     if (dft_cfg_keep_ao) then
+
+!       itimes = nbast
+!       if (dft_cfg_need_gao1) itimes = itimes*4
+
+!       radovan: hardcoded for testing, will fix later ...
+!       if (.not. associated(ao_in_mem_p)) then
+!         call init_ao_in_mem(17357*itimes)
+!       end if
+
+!       if (npoint .eq. 8535) then
+!         ao_in_mem_p => ao_in_mem(1:8535*itimes)
+!       end if
+!       if (npoint .eq. 8822) then
+!         ao_in_mem_p => ao_in_mem(8535*itimes+1:17357*itimes)
+!       end if
+
+!     end if
+
+
+
+
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -782,14 +818,57 @@ Caspg+rbast, 2006-09-21
         END IF
 C
         WGHT = WEIGHT(IPNT)
-C
-C       AOs
-C       ===
-C
 
-        CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
-     &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,WORK,LWORK,NDIM,NDER,dft_options%london,IPRINT)
+!radovan: please don't delete, code under construction
+!      if (.not. dft_cfg_ao_are_in_mem) then
+
+         call getsos(gao, gao1, gao2, gab1, ncnt,
+     &               corx(ipnt), cory(ipnt), corz(ipnt),
+     &               buf, work, lwork, ndim,
+     &               nder, dft_options%london, iprint)
+
+!radovan: please don't delete, code under construction
+!        copy gao to mem
+!        if (dft_cfg_keep_ao) then
+!          if (dft_cfg_need_gao1) then
+!            call dcopy(nbast,
+!    &                  gao, 1,
+!    &                  ao_in_mem_p(4*nbast*(ipnt-1) + 1), 1)
+!            call dcopy(3*nbast,
+!    &                  gao1, 1,
+!    &                  ao_in_mem_p(4*nbast*(ipnt-1) + nbast + 1), 1)
+!          else
+!            call dcopy(nbast,
+!    &                  gao, 1,
+!    &                  ao_in_mem_p(nbast*(ipnt-1) + 1), 1)
+!          end if
+!          if (ipnt .eq. 8822) then
+!          dft_cfg_ao_are_in_mem = .true.
+!          end if
+!        end if
+!      end if
+!      if (dft_cfg_ao_are_in_mem) then
+!        if (dft_cfg_need_gao1) then
+!          iao  = 4*nbast*(ipnt - 1)         + 1
+!          iao1 = 4*nbast*(ipnt - 1) + nbast + 1
+!          gao1_p => ao_in_mem_p(iao1:iao1 + nbast*3)
+!        else
+!          iao = nbast*(ipnt - 1) + 1
+!        end if
+!        gao_p => ao_in_mem_p(iao:iao + nbast)
+!      end if
+
+
+
+
+
+
+
+
+
+
+
+
 C
 C       Density
 C       =======
@@ -805,7 +884,6 @@ C
 #endif
 Caspg+rbast, 2006-09-21
         IF (RHO.LE.dft_cfg_dfthr0) GO TO 300
-        RHO13  = RHO**DP3
 C
 C       Gradient of density
 C       ===================
@@ -855,29 +933,106 @@ C       Number of electrons
 C       ===================
 C
         ELCTRN = ELCTRN + WGHT*RHO
-C
-C       Energy
-C       ======
-C
-        IF(dft_options%energy) THEN
-           EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
-        ENDIF
-C
-C       Exchange-correlation potential 
-C       ==============================
-C
+
+
+
+
+!       energy density
+!       ==============
+
+        if (dft_cfg_gga_hs) Z = rhogrd*rhogrd
+
+        if (dft_options%energy) then
+
+          energy_density = 0.0d0
+
+#ifdef MOD_AUTODIFF
+          if (dft_cfg_autodiff) then
+
+            if (dft_cfg_gga_hs) then
+              call lda_eval(LDA_SLATER, 0, rho, derv)
+              energy_density = energy_density + derv(1)
+              call gga_eval(GGA_BECKE, 0, rho, Z, derv)
+              energy_density = energy_density + derv(1)
+              call gga_eval(GGA_LYP, 0, rho, Z, derv)
+              energy_density = energy_density + derv(1)
+            else
+              call lda_eval(LDA_SLATER, 0, rho, derv)
+              energy_density = energy_density + derv(1)
+              call lda_eval(LDA_VWN, 0, rho, derv)
+              energy_density = energy_density + derv(1)
+            end if
+
+          else
+#endif /* ifdef MOD_AUTODIFF */
+
+            energy_density = dftenergy(rho, rhogrd)
+
+#ifdef MOD_AUTODIFF
+          end if
+#endif
+
+          edfty = edfty + wght*energy_density
+
+        end if
+
+
+!       exchange-correlation potential 
+!       ==============================
+
         if (dft_options%energy
      &      .or. dft_options%gradient
      &      .or. dft_options%london) then
-           CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
 
-           if (dft_cfg_gga_hs) then
-!            this factor has nothing to do
-!            with symmetrization later
-!            it comes from the fact that derivative of Z
-!            yields two identical terms (one left, one right)
-             vx(fz0) = 2.0d0*vx(fz0)
-           end if
+#ifdef MOD_AUTODIFF
+          if (dft_cfg_autodiff) then
+
+            vx = 0.0d0
+
+            if (dft_cfg_gga_hs) then
+              Z = rhogrd*rhogrd
+
+!             remember that BLYP = Slater + Becke correction + LYP
+              call lda_eval(LDA_SLATER, 1, rho, derv)
+              vx(fr0) = vx(fr0)
+     &                + taylor_deriv(derv, 2, (/1, 0/))
+              call gga_eval(GGA_BECKE, 1, rho, Z, derv)
+              vx(fr0) = vx(fr0)
+     &                + taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
+              vx(fz0) = vx(fz0)
+     &                + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
+              call gga_eval(GGA_LYP, 1, rho, Z, derv)
+              vx(fr0) = vx(fr0)
+     &                + taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
+              vx(fz0) = vx(fz0)
+     &                + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
+            else
+              call lda_eval(LDA_SLATER, 1, rho, derv)
+              vx(fr0) = vx(fr0)
+     &                + taylor_deriv(derv, 2, (/1, 0/))
+              call lda_eval(LDA_VWN, 1, rho, derv)
+              vx(fr0) = vx(fr0)
+     &                + taylor_deriv(derv, 2, (/1, 0/))
+            end if
+
+            vx = vx*wght
+
+          else
+#endif /* ifdef MOD_AUTODIFF */
+
+            call dftpot0(vx, wght, rho, rhogrd)
+
+#ifdef MOD_AUTODIFF
+          end if
+#endif
+
+          if (dft_cfg_gga_hs) then
+!           this factor has nothing to do
+!           with symmetrization later
+!           it comes from the fact that derivative of Z
+!           yields two identical terms (one left, one right)
+            vx(fz0) = 2.0d0*vx(fz0)
+          end if
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
@@ -887,12 +1042,17 @@ C
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+            rho13 = rho**dp3
             call dftac(vx, wght, rho, rho13,
      &                 rho_resp, rho_outer, rhogrd)
           end if
-C
-C
-        ENDIF
+
+        end if !exchange-correlation potential
+
+
+
+
+
 C
 C
 C       Exchange-correlation contribution to Kohn-Sham matrix
@@ -963,22 +1123,8 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
         endif
 
 
-#ifdef MOD_AUTODIFF
-!         if (iorder > 0) then
-!           call aor_xc_new(iorder, 
-!    &                      nxcmat, 
-!    &                      dft_cfg_gga_hs,
-!    &                      dtrmat, 
-!    &                      excmat,
-!    &                      isymop,
-!    &                      gao_p,
-!    &                      gao1_p,
-!    &                      rho,
-!    &                      rhg,
-!    &                      wght,
-!    &                      buf)
-!         else
-#endif
+
+
 
 
 !       quadratic response
@@ -1013,6 +1159,26 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
           endif
 
         endif
+
+
+#ifdef MOD_AUTODIFF
+#ifdef MOD_AORESPONSE
+          if (dft_options%aor_xc_order > 0) then
+            call aor_xc_new(dft_options%aor_xc_order, 
+     &                      nxcmat, 
+     &                      dft_cfg_gga_hs,
+     &                      dtrmat, 
+     &                      excmat,
+     &                      isymop,
+     &                      gao_p,
+     &                      gao1_p,
+     &                      rho,
+     &                      rhg,
+     &                      wght,
+     &                      buf)
+          end if
+#endif /* ifdef MOD_AORESPONSE */
+#endif /* ifdef MOD_AUTODIFF */
 
 
   300 CONTINUE !end of loop over grid points

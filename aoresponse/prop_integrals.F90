@@ -496,7 +496,9 @@ contains
 
 
     subroutine fock_core(n,m,p,c,D,b,F)
+
 #ifdef PRG_DIRAC
+      use dft_cfg
 #include "dgroup.h"
 #include "dcbbas.h"
 #endif /* PRG_DIRAC */
@@ -511,6 +513,7 @@ contains
     integer, parameter       :: lwork = 1000000
     real(8)                  :: work(lwork)
         integer:: i,j,k,ii,jj,kk,i1,pb,pb1; type(Matrix):: A(9)
+        type(dft_options_t) :: dft_options
         do i=1,size(A); A(i)=0d0*D(1); end do
         pb = product(b); pb1 = product(b+1)
 
@@ -544,37 +547,40 @@ contains
                 end if
               end do
 
+              call reset_dft_options(dft_options)
+              dft_options%aor_xc_order = m + 1
+
               if (m == 1) then
-                call dftexc(2.0d0*D(1)%elms,     &
-                            (/                   &
-                              D(2)%elms          &
-                             /),                 &
-                            z,                   &
-                            nr_dmat,             &
-                            (/ones(1:nr_dmat)/), &
-                            (/ones(1:nr_dmat)/), &
-                            8,                   &
-                            m + 1,               &
-                            work,                &
-                            lwork,               &
+                call dftexc(2.0d0*D(1)%elms, &
+                            (/               &
+                              D(2)%elms      &
+                             /),             &
+                            z,               &
+                            1,               &
+                            1,               &
+                            (/ones(1:1)/),   &
+                            (/ones(1:1)/),   &
+                            dft_options,     &
+                            work,            &
+                            lwork,           &
                             0)
               end if
 
               if (m == 2) then
-                call dftexc(2.0d0*D(1)%elms,     &
-                            (/                   &
-                              D(2)%elms,         &
-                              D(3)%elms,         &
-                              D(4)%elms          &
-                             /),                 &
-                            z,                   &
-                            nr_dmat,             &
-                            (/ones(1:nr_dmat)/), &
-                            (/ones(1:nr_dmat)/), &
-                            8,                   &
-                            m + 1,               &
-                            work,                &
-                            lwork,               &
+                call dftexc(2.0d0*D(1)%elms, &
+                            (/               &
+                              D(2)%elms,     &
+                              D(3)%elms,     &
+                              D(4)%elms      &
+                             /),             &
+                            z,               &
+                            3,               &
+                            1,               &
+                            (/ones(1:3)/),   &
+                            (/ones(1:3)/),   &
+                            dft_options,     &
+                            work,            &
+                            lwork,           &
                             0)
               end if
 
@@ -589,10 +595,10 @@ contains
                              /),               &
                             z,                 &
                             m - 1,             &
+                            1,                 &
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
-                            8,                 &
-                            m + 1,             &
+                            dft_options,       &
                             work,              &
                             lwork,             &
                             0)
@@ -610,10 +616,10 @@ contains
                              /),               &
                             z,                 &
                             m - 1,             &
+                            1,                 &
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
-                            8,                 &
-                            m + 1,             &
+                            dft_options,       &
                             work,              &
                             lwork,             &
                             0)
@@ -632,10 +638,10 @@ contains
                              /),               &
                             z,                 &
                             m - 1,             &
+                            1,                 &
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
-                            8,                 &
-                            m + 1,             &
+                            dft_options,       &
                             work,              &
                             lwork,             &
                             0)
@@ -655,10 +661,10 @@ contains
                              /),               &
                             z,                 &
                             m - 1,             &
+                            1,                 &
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
-                            8,                 &
-                            m + 1,             &
+                            dft_options,       &
                             work,              &
                             lwork,             &
                             0)
