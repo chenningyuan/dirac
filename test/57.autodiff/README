@@ -1,11 +1,6 @@
-! tests DFT linear/quadratic response
-! integration grid is very coarse
-! (remove the keywords .RADINT and .ANGINT in production calculations)
+! this is a clone of test 46
 !
-! also remove
-! .ZIPGRID
-! XY
-! since this keyword will enforce a specific symmetry for the grid
-! even if you change the molecule or orientation
-!
-! these keywords are placed here only to speed up the test
+! b3lyp does not work yet
+! this is a known issue
+! and a fix is easy but first i will work on
+! a proper keyword input
