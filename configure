@@ -11,7 +11,7 @@
 # The shell script is a heavily modified version of the script used for DALTON
 #
 # It tries to determine what platform we are on (although allowing builds
-# for other platforms, as needed for crosscompiling), as well as detect any
+# for other platforms, as needed for cross-compiling), as well as detect any
 # interesting mathematical libraries on the present computer.
 #
 #
@@ -90,6 +90,47 @@ row_sep=";"
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+# Read of yes/no answer, the output in standardized to 'y' or 'n'. /hjaaj
+get_yes_or_no() {
+    if test "$do_quick_config" = y; then
+        answer="$2"
+    else
+        answer=
+    fi
+    while [ "$answer" != "y" -a "$answer" != "n" ]
+    do
+      $ECHO "$1 [y/n] \c"
+      read answer
+#     standardize answer
+      case $answer in
+	y* | Y*) answer="y" ;;
+	n* | N*) answer="n" ;;
+      esac
+    done
+} # END get_yes_or_no
+
+#
+# Define backup function /hjaaj
+#
+backup () {
+  if [ "$1" = "-v" ]; then ekko=1; shift
+  else ekko=0;
+  fi
+  for i in $* ; do
+     if [ -f "${i}" ]; then
+        for j in 6 5 4 3 2 1 0 ; do
+           jp=`expr $j + 1`
+           if [ -f "${i}.${j}" ]; then
+              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+              mv -f "${i}.${j}" "${i}.${jp}"
+           fi
+        done
+        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+        mv -f "${i}" "${i}.0"
+     fi
+  done
+} # END backup ()
+
 append () {
 # Append $2 to the variable with the name $1
 # TODO: Should also escape single quotes in input
@@ -154,7 +195,7 @@ blank () {
     tmp="$tmp "
   done
 # Adds all blanks at the same time for performance
-# Is there a way to surpress immediate refresh of the terminal window?
+# Is there a way to suppress immediate refresh of the terminal window?
 #   One solution is to build a complete string of every line
 #   and print it only to screen when it's completely finished.
   $echo "$tmp\c"
@@ -276,7 +317,7 @@ print_list() {
   fi
 
 # The actual printing...
-# (Here we have the possibility to make the layout terminalsize dependent.
+# (Here we have the possibility to make the layout terminal size dependent.
 #  The system variable $COLUMNS needs to be queried to do this.)
   IFS=$row_sep
   for item in $list; do
@@ -381,14 +422,14 @@ ask_yesno ()
 }
 
 question () {
-# Wondering whether this is usefull to generalize...
+# Wondering whether this is useful to generalize...
 # Arguments
 # 1 answer
 # 2 What
 # 3 list
 # 4 extra options
 # 5 default value
-# 6 (optional) multiple returnvalues
+# 6 (optional) multiple return values
 # 7 (optional) text before question
   
   local OLD_IFS=$IFS
@@ -558,7 +599,7 @@ case $machine in
       echo "Then please report to dirac-admin@chem.sdu.dk"
       echo "Also include the command: "
       $echo "\t\`uname -m\` , \`uname -r\` , \`uname -s\` and \`uname -v\` "
-      $echo "\tYou may also recommend compilerflags," 
+      $echo "\tYou may also recommend compiler flags," 
       $echo "\tpreferred fortran compiler and mathematical libraries" \
             "available."
       exit 1
@@ -584,7 +625,7 @@ fi
 parallel_stuff ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#       Set parallel enviroment
+#       Set parallel environment
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
@@ -675,7 +716,7 @@ if [ "$par" = "yes" ]; then
 # MPI questions after we fixed the compiler
 #
 #  Ask for the necessity of machine file and in the case of positive response (for some MPI libs)
-#  continue with querrying for nodefile
+#  continue with querying for nodefile
 #
    if [ $quick = 0 ]; then
        if ! ask_yesno n "Does your MPI setting require machinefile for MPI launcher (like mpich2)?"; then
@@ -1262,7 +1303,7 @@ fi
 
 debug='dbx'
 which_debug=''
-# jhs Tmpfix for non-unix sytems
+# jhs Tmpfix for non-unix systems
 
 a=`which which 2>&1`
 if [ $IPRINT -ge "8" ]; then
@@ -1276,6 +1317,7 @@ if [ ! -z "$a" ]; then
   fi
 
   ### looking priority: idb, pgdbg, dbx, gdb ....
+  #hjaaj: should only use e.g. pgdbg if compiler is pg*
   if [ -n "`which idb 2>/dev/null`" ]; then
     which_debug="idb"
   elif [ -n "`which pgdbg 2>/dev/null`" ]; then
@@ -1556,7 +1598,7 @@ if [ -n "$LIB" ]; then
     $echo "\nEmployed default LAPACK builtin library (through preprocessor flag) "
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   fi
-  return 0 # leave subroutine - do not querry anymore
+  return 0 # leave subroutine - do not query anymore
 fi
 
 
@@ -1683,14 +1725,14 @@ if [ -z "$INSTALL_DIR" ]; then
 else
    # verify entered (as parameter) installation directory
    if [ ! -d "$INSTALL_DIR" ]; then
-     $echo "ERROR: $INSTALL_DIR (you typed as the paramater) does not exist \n "
+     $echo "ERROR: $INSTALL_DIR (you typed as the parameter) does not exist \n "
      # no exit, rather repeat searching for the directory
      set_install_directory
    fi
 fi
 
 #-------------------------------------------------------------------
-#     ... finally print-out the veryfied installation directory
+#     ... finally print-out the verified installation directory
 #-------------------------------------------------------------------
 $echo 'Install directory for DIRAC executable and script: '
 $echo "$INSTALL_DIR\n"
@@ -2098,8 +2140,8 @@ getmods()
     if [ -r build/Makefile.moddef ]; then
 	egrep '^MODS=' build/Makefile.moddef | cut -c 6-
     else
-	echo "Error, cannot find build/Makefile.moddef." >&2
-	echo "Run pamadm to correct this problem. Quitting." >&2
+	echo "Error, cannot find the file: build/Makefile.moddef" >&2
+	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
 	# Suicide is painless, it brings on many changes
 	kill $$
     fi
@@ -2342,14 +2384,8 @@ echo
 echo 'MAKING MAKEFILE.CONFIG'
 echo
 if [ -f Makefile.config ]; then
-   echo 'Makefile.config exists. I will take a backup as Makefile.config.orig'
-   if [ -f Makefile.config.orig  ]; then
-      if ask_yesno y "Makefile.config.orig already exists. Overwrite?"; then
-	  mv Makefile.config Makefile.config.orig
-      fi
-   else
-      mv Makefile.config Makefile.config.orig
-   fi
+   echo 'Makefile.config exists. I will take a backup.'
+   backup -v Makefile.config
 fi
 
 # ... special care of include, modules directories - dealt in Makefile.config 
@@ -2461,7 +2497,7 @@ else
     FPP="cpp"
 fi
 
-# determine whether we add Fortran flag for checking array boudaries or not
+# determine whether we add Fortran flag for checking array boundaries or not
 if [ $checkbounds = 1 ]; then
 #  ... Fortran flag ...
   safe="$F_check_flags $safe"
@@ -2638,11 +2674,22 @@ fi
 make_pam_runtest ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#     Make pam and runtest shell script
-#   bash is preferred - otherwise use sh
+#     Make pam and runtest shell scripts
+#     bash is preferred - otherwise use sh
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-echo '#!/bin/bash' > $INSTALL_DIR/pam
+pam_file=$INSTALL_DIR/pam
+if [ -f $pam_file]; then
+   echo 'pam exists. I will take a backup.'
+   backup -v $pam_file
+fi
+runtest_file=$SRC_DIR/test/runtest
+if [ -f $runtest_file]; then
+   echo 'runtest exists. I will take a backup.'
+   backup -v $runtest_file
+fi
+#
+echo '#!/bin/bash' > $pam_file
 echo '#!/bin/bash' > $SRC_DIR/test/runtest
 let wrkmem_reduced=$memsiz/1000000
 if [ $IPRINT -ge 1 ]; then
