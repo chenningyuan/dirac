@@ -1684,6 +1684,26 @@ C
 10    CONTINUE
       RETURN
       END
+      subroutine init_factorial_common_block
+!     radovan: adaptation of dfactr for usual factorials
+
+      implicit none
+
+      real(8) :: fact
+      integer :: i
+
+      common /factrl/ fact(30)
+
+      fact(1) = 1.0d0
+     
+      do i = 2, 30
+        fact(i) = float(i)*fact(i - 1)
+      end do
+
+      end subroutine
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsjaco */
       SUBROUTINE RSJACO(LDM,NDIM,NROWE,AMAT,EIG,IJOB,IORDER,IPACK,EVEC,

@@ -962,55 +962,55 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 #endif /* ifdef MOD_CDFT */
         endif
 
+
+#ifdef MOD_AUTODIFF
+!         if (iorder > 0) then
+!           call aor_xc_new(iorder, 
+!    &                      nxcmat, 
+!    &                      dft_cfg_gga_hs,
+!    &                      dtrmat, 
+!    &                      excmat,
+!    &                      isymop,
+!    &                      gao_p,
+!    &                      gao1_p,
+!    &                      rho,
+!    &                      rhg,
+!    &                      wght,
+!    &                      buf)
+!         else
+#endif
+
+
 !       quadratic response
         if(dft_options%qr) then
 
-#ifdef MOD_AUTODIFF
-          if (iorder > 0) then
-            call aor_xc_new(iorder, 
-     &                      nxcmat, 
-     &                      dft_cfg_gga_hs,
-     &                      dtrmat, 
-     &                      excmat,
-     &                      isymop,
-     &                      gao_p,
-     &                      gao1_p,
-     &                      rho,
-     &                      rhg,
-     &                      wght,
-     &                      buf)
-          else
-#endif
-            gga_qr = dft_cfg_gga_hs .or. dft_cfg_gga_ha
-            call sdft_qr(gga_qr,
-     &                   sdft,
-     &                   dtrmat,excmat,
-     &                   isymop,ihrmop,gao,gao1,
-     &                   rho,rhogrd,rhg,wght,buf)
+          gga_qr = dft_cfg_gga_hs .or. dft_cfg_gga_ha
+          call sdft_qr(gga_qr,
+     &                 sdft,
+     &                 dtrmat,excmat,
+     &                 isymop,ihrmop,gao,gao1,
+     &                 rho,rhogrd,rhg,wght,buf)
 
-!           the idea here is that   r^[B]               \omega_{ia}^[C]
-!                                   r^[C]               \omega_{ia}^[B]
-!                                   r^[BC]              \omega_{ia}
-!           and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
-!                                   q^[C]  \cdot \nabla \omega_{ia}^[B]
-!                                   q^[BC] \cdot \nabla \omega_{ia}
-            
-!           can be evaluated using (s)dft_lr (below)
-!           only the remaining part is done in sdft_qr (above)
-            
-            call dft_lr(dtrmat,excmat,3,
-     &                  isymop,ihrmop,.true.,
-     &                  gao,gao1,
-     &                  rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
-            if (dft_cfg_sdft) then
-              call sdft_lr(dtrmat,excmat,3,
-     &                     isymop,ihrmop,.true.,
-     &                     gao,gao1,
-     &                     rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
-            endif
-#ifdef MOD_AUTODIFF
-          end if
-#endif
+!         the idea here is that   r^[B]               \omega_{ia}^[C]
+!                                 r^[C]               \omega_{ia}^[B]
+!                                 r^[BC]              \omega_{ia}
+!         and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
+!                                 q^[C]  \cdot \nabla \omega_{ia}^[B]
+!                                 q^[BC] \cdot \nabla \omega_{ia}
+          
+!         can be evaluated using (s)dft_lr (below)
+!         only the remaining part is done in sdft_qr (above)
+          
+          call dft_lr(dtrmat,excmat,3,
+     &                isymop,ihrmop,.true.,
+     &                gao,gao1,
+     &                rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
+          if (dft_cfg_sdft) then
+            call sdft_lr(dtrmat,excmat,3,
+     &                   isymop,ihrmop,.true.,
+     &                   gao,gao1,
+     &                   rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
+          endif
 
         endif
 

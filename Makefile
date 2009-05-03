@@ -27,8 +27,8 @@ build/Makefile.obj: build/safebuild build/dontbuild
 	@echo "Collecting all source files for build into :  build/Makefile.obj"
 	@echo "#Automatically generated file, do not edit" > $@
 	@echo "OBJ=\\" >> $@
-	@(find . -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
-	| egrep -v -f build/dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@)
+	@(find . -name '*.cpp' -o -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
+	| egrep -v -f build/dontbuild|sed 's/\.[cfF90p]*$$/.o \\/g' >> $@)
 	@echo >> $@
 # safe .F files
 # The true command is needed on certain systems (AIX on Jump) where the
@@ -60,7 +60,7 @@ build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 	@find . -name '*.F' -o -name '*.F90' -o -name '*.f90' \
 	| egrep -v -f build/dontbuild | ./utils/mkdep.py $(DEPFPP) \
 	2>&1 >> $@  | egrep -v "mpi[f]*\.h"; true
-	@find . -name '*.c' \
+	@find . -name '*.c' -o -name '*.cpp'\
 	| egrep -v -f build/dontbuild | ./utils/mkdep.py $(DEPCPP) \
 	2>&1 >> $@ | egrep -v "mpi[f]*\.h"; true
 # Add extra dependency for gpc.c on fortran_interface.h, since
@@ -108,7 +108,7 @@ clean:
 include utils/Makefile.utils
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .s .r .o .i .fc .p
+.SUFFIXES : .F .F90 .f90 .c .cpp .s .r .o .i .fc .p 
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
@@ -121,6 +121,9 @@ include utils/Makefile.utils
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c -o $*.o $*.cpp
 
 # Include rules for targets that are mainly used for developers.
 # This include can be omitted in case you use a non-gnu make.

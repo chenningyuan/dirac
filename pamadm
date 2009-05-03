@@ -37,6 +37,7 @@ usage()
    echo '     -cdft            : Include SDFT/CDFT module'
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
+   echo '     -autodiff        : Include autodiff module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
    echo '     -hsfs            : Include higher external Higher sector FSCC codes together with objects'
@@ -79,7 +80,6 @@ setup()
       KRMCMOD=1
       CDFTMOD=1
       VISUALMOD=1
-#     AORESPONSEMOD=1
       IHFSCCMOD=1
       AMFIMOD=1
       LONDONMOD=1
@@ -217,6 +217,13 @@ setup()
       AORESPONSETAR=1
       echo " - AO response module"
    fi
+
+#  autodiff module
+   if [ -n "$AUTODIFFMOD" ]; then
+      AUTODIFFFLG='-DMOD_AUTODIFF'
+      echo " - autodiff module"
+   fi
+
    #
    #      CAP module
    #
@@ -564,7 +571,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $CAPFLG $HSCCFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -628,6 +635,12 @@ if [ -n "$AORESPONSEFLG" ]; then
    dirs="$dirs aoresponse"
    rmline build/dontbuild "aoresponse/\.\*"
 fi
+
+if [ -n "$AUTODIFFFLG" ]; then
+   dirs="$dirs autodiff"
+   rmline build/dontbuild "autodiff/\.\*"
+fi
+
 if [ -n "$CAPFLG" ]; then
    dirs="$dirs cap"
    rmline build/dontbuild "cap/\.\*"
@@ -803,6 +816,9 @@ while [ -n "$1" ]; do
          ;;
       -aoresponse|-ao)
          AORESPONSEMOD=1
+         ;;
+      -autodiff)
+         AUTODIFFMOD=1
          ;;
       -cap)
          CAPMOD=1

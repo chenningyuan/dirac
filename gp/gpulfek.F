@@ -1,5 +1,3 @@
-
-
       function ifind(i,arr,len)
 C     Return the index of the first occurance of i in arr, or 0 if not
 C     found.
@@ -14,3 +12,24 @@ C     found.
       enddo
       ifind = 0
       end
+c     Return a derivative of the taylor series stored in coeff,
+c     with exponents as the derivative order for each variable.
+      function taylor_deriv(coeff, nvar, exponents) result(d)
+
+      implicit none
+
+      integer :: i, nvar, exponents(nvar), poly_index
+      real(8) :: d, coeff(*), fact
+
+      common /factrl/ fact(30)
+
+      d = coeff(poly_index(nvar, exponents))
+
+      do i = 1, nvar
+        if (exponents(i) > 0) then
+          d = d*fact(exponents(i))
+        end if
+      end do
+
+
+      end function

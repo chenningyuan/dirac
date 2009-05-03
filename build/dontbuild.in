@@ -5,6 +5,7 @@ build/.*
 oof/.*
 utils/.*
 aoresponse/.*
+autodiff/.*
 visual/.*
 cdft/.*
 hsmrcc/.*
@@ -57,4 +58,5 @@ amfi/.*
 prp/xpp/.*
 prp/esr/.*
 aoresponse/matrix.*new.*
-autodiff/.*
+autodiff/bench_taylor.*
+autodiff/unittest_taylor.*
