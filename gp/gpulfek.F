@@ -12,6 +12,8 @@ C     found.
       enddo
       ifind = 0
       end
+
+#ifdef MOD_AUTODIFF
 c     Return a derivative of the taylor series stored in coeff,
 c     with exponents as the derivative order for each variable.
       function taylor_deriv(coeff, nvar, exponents) result(d)
@@ -33,3 +35,4 @@ c     with exponents as the derivative order for each variable.
 
 
       end function
+#endif /* ifdef MOD_AUTODIFF */
