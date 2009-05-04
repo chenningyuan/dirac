@@ -78,9 +78,13 @@ C
       integer             :: iz, im, iq
       real(8)             :: time_start, time_in_xc, second
       real(8)             :: ddot
+
 #ifdef VAR_MPI
-      integer             :: istat(mpi_status_size)
-#endif
+#ifndef INT_STAR8
+      integer             :: istat
+#endif /* ifndef INT_STAR8 */
+      dimension              istat(mpi_status_size)
+#endif /* ifdef VAR_MPI */
 !     --------------------------------------------------------------------------
 
 #include "memint.h"
