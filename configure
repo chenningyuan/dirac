@@ -2679,12 +2679,12 @@ make_pam_runtest ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 pam_file=$INSTALL_DIR/pam
-if [ -f $pam_file]; then
+if [ -f $pam_file ]; then
    echo 'pam exists. I will take a backup.'
    backup -v $pam_file
 fi
 runtest_file=$SRC_DIR/test/runtest
-if [ -f $runtest_file]; then
+if [ -f $runtest_file ]; then
    echo 'runtest exists. I will take a backup.'
    backup -v $runtest_file
 fi
