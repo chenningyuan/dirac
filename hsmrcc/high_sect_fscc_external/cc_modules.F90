@@ -12,7 +12,7 @@ subroutine extract_print_level
  print_level_read = .true.! print variable is extracted
 end subroutine extract_print_level
 
-function getiprint result(ipr)
+function getiprint() result(ipr)
   integer :: ipr
 
  if (.not.print_level_read) then
