@@ -655,7 +655,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,30)
+      CALL SETATM(WORK(KDATOM),NATOM,-30)
       CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1823,7 +1823,8 @@ C
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,30)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-30)
       CALL PRP_EFG1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
      &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1874,16 +1875,23 @@ C     print section
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
-         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-         DO I = 1,3
-            DO J = 1,3
-               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-               EFG_METHOD(I,J,IATOM) = EFGTOT(I,J,IATOM)
-               EFGPRINT1 = EFGEL(I,J,IATOM) 
-               EFGPRINT2 = EFGNUC(I,J,IATOM) 
-               EFGPRINT3 = EFGTOT(I,J,IATOM)
-               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12) THEN
+      IATOM = 0
+      NATOM = 0
+      DO IA = 1, NUCIND
+        DO ISYMOP = 0,MAXOPR
+        IF (IBTAND(ISTBNU(IA),ISYMOP).EQ.0) THEN
+          IATOM = IATOM + 1
+          IF(DOATOM(IA)) THEN
+            NATOM = NATOM + 1
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+            DO I = 1,3
+              DO J = 1,3
+                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,NATOM)
+                EFG_METHOD(I,J,IATOM) = EFGTOT(I,J,IATOM)
+                EFGPRINT1 = EFGEL(I,J,NATOM) 
+                EFGPRINT2 = EFGNUC(I,J,IATOM) 
+                EFGPRINT3 = EFGTOT(I,J,IATOM)
+                IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12) THEN
                   IF (ABS(EFG_METHOD(I,I,IATOM)).GT.1.0D+04) THEN
                      FMTEFG = '(2X,A3,3(3X,E16.10,A))'
                   ELSE
@@ -1892,9 +1900,12 @@ C     print section
                   WRITE(LUPRI,FMTEFG)
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGPRINT1,
      &              ' au ',EFGPRINT2,' au ',EFGPRINT3,' au '
-               ENDIF
+                ENDIF
+              END DO
             END DO
-         END DO
+          ENDIF
+        ENDIF
+        END DO
       END DO
 C
 C           diagonalize total efg tensor
@@ -1904,7 +1915,12 @@ C
       WRITE(LUPRI,'(12X,A)')
      &     'Total contribution to principal components '
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
+      IATOM = 0
+      DO IA = 1, NUCIND
+        DO ISYMOP = 0,MAXOPR
+        IF (IBTAND(ISTBNU(IA),ISYMOP).EQ.0) THEN
+          IATOM = IATOM + 1
+          IF(DOATOM(IA)) THEN
             CALL DUNIT(AXIS(1,1,IATOM),3)
             IJ = 1
             DO I = 1, 3
@@ -1919,8 +1935,8 @@ C
             EFGTOT(3,3,IATOM) = PVAL(6)
             WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
             DO I=1,3
-               FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
-               WRITE(LUPRI,FMTEFG)
+              FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
+              WRITE(LUPRI,FMTEFG)
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &              ,EFGTOT(I,I,IATOM),' au '
             ENDDO
@@ -1928,11 +1944,14 @@ C
 C           print section principle axis
 C
             IF (IPRINT .GE. 4) THEN
-               WRITE(LUPRI,'(A/)')
+              WRITE(LUPRI,'(A/)')
      &           '  Principal axis to total contribution'
-               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-               CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+              CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
             END IF
+          ENDIF
+        ENDIF
+        END DO
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)')
