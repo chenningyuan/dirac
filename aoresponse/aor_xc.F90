@@ -49,7 +49,14 @@ contains
 
     real(8)                :: derv(max_order, max_order)
     real(8)                :: derv_i(999, 3)
-    real(8)                :: vx(999)
+!#define CHECK_DERV
+#ifdef CHECK_DERV
+    real(8)                :: f, ff
+    real(8)                :: derv_ip(999, 3)
+    real(8)                :: derv_im(999, 3)
+    real(8)                :: derv_p(max_order, max_order)
+    real(8)                :: derv_m(max_order, max_order)
+#endif
     real(8)                :: p, taylor_deriv
 
     real(8)                :: r(0:max_order)
@@ -64,6 +71,9 @@ contains
 !   get perturbed densities
 
     r(0) = r_0
+#ifdef CHECK_DERV
+    f = r(0)/1.0d5
+#endif
 
     do i = 1, nr_dmat
       call getrho(r(i),             &
@@ -105,6 +115,10 @@ contains
 !   get derivatives and put them in derv_i (intermediate)
 
     derv_i = 0.0d0
+#ifdef CHECK_DERV
+    derv_ip = 0.0d0
+    derv_im = 0.0d0
+#endif
 
     if (use_gga) then
 
@@ -116,12 +130,22 @@ contains
 
       call lda_eval(LDA_SLATER, order, r(0), derv_i(1, 1))
       call lda_eval(LDA_VWN,    order, r(0), derv_i(1, 2))
+#ifdef CHECK_DERV
+      call lda_eval(LDA_SLATER, order, r(0)+f, derv_ip(1, 1))
+      call lda_eval(LDA_VWN,    order, r(0)+f, derv_ip(1, 2))
+      call lda_eval(LDA_SLATER, order, r(0)-f, derv_im(1, 1))
+      call lda_eval(LDA_VWN,    order, r(0)-f, derv_im(1, 2))
+#endif
 
     end if
 
 !   multiply by the weight
 
     derv_i = derv_i*w
+#ifdef CHECK_DERV
+    derv_ip = derv_ip*w
+    derv_im = derv_im*w
+#endif
 
 !   distribute derivatives into d
 
@@ -150,6 +174,21 @@ contains
       do on = 1, order
         derv(on, 0) = taylor_deriv(derv_i(1, 1), 2, (/on, 0/)) &
                     + taylor_deriv(derv_i(1, 2), 2, (/on, 0/))
+#ifdef CHECK_DERV
+        derv_p(on, 0) = taylor_deriv(derv_ip(1, 1), 2, (/on, 0/)) &
+                      + taylor_deriv(derv_ip(1, 2), 2, (/on, 0/))
+        derv_m(on, 0) = taylor_deriv(derv_im(1, 1), 2, (/on, 0/)) &
+                      + taylor_deriv(derv_im(1, 2), 2, (/on, 0/))
+
+        if (on > 1) then
+          ff = (derv_p(on-1, 0) - derv_m(on-1, 0))/(2.0d0*f)
+          write(*, '(a7, i2, 3e14.6)') 'compare',   &
+                                       on,          &
+                                       r(0),        &
+                                       derv(on, 0), &
+                                       ff
+        end if
+#endif
       end do
 
     end if
