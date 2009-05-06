@@ -30,7 +30,7 @@ cd ../$release
 #
 # First delete code that should not be released.
 #
-delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_VISUAL -UMOD_CDFT -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
+delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_AUTODIFF -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
 
 echo "Removing functionalities from source files"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
@@ -109,8 +109,6 @@ for directory in hsmrcc \
                  autodiff \
                  argosecp \
                  arducca \
-                 visual \
-                 cdft \
                  krmc \
                  luciarel \
                  aoresponse \
@@ -144,8 +142,8 @@ fi
 
 # run pamadm with the correct flags
 #
-echo "Running pamadm -dft -xpp -eri -adc export"
-./pamadm -dft -xpp -eri -adc export > /dev/null
+echo "Running pamadm -dft -xpp -eri -adc -cdft -visual export"
+./pamadm -dft -xpp -eri -adc -cdft -visual export > /dev/null
 if [[ -r $release.tar.gz ]]; then
     echo "Created ../$release/$release.tar.gz"
 else
