@@ -293,14 +293,14 @@ contains
 !     from here on r(1) is a first-order density
 !     and r(2) is a second-order density etc.
       s = s +       derv(4, 0)*r(1)*r(1)*r(1) &
-            + 3.0d0*derv(3, 0)*r(1)*r(2)
+            + 3.0d0*derv(3, 0)*r(1)*r(2) !i jk, j ik, k ij
 
     else if (order == 5) then
 
       s = s +       derv(5, 0)*r(1)*r(1)*r(1)*r(1) &
-            + 6.0d0*derv(4, 0)*r(1)*r(1)*r(2)      &
-            + 4.0d0*derv(3, 0)*r(1)*r(3)           &
-            + 3.0d0*derv(3, 0)*r(2)*r(2)
+            + 6.0d0*derv(4, 0)*r(1)*r(1)*r(2)      & !i j kl, i k jl, i l jk, j k il, j l ik, k l ij
+            + 4.0d0*derv(3, 0)*r(1)*r(3)           & !i jkl, j ikl, k ijl, l ijk
+            + 3.0d0*derv(3, 0)*r(2)*r(2)             !ij kl, ik jl, il jk
 
     else if (order == 6) then
 
@@ -340,15 +340,15 @@ contains
 !     1 4 1
 !     1 5
 
-      s = s +        derv(7, 0)*r(1)*r(1)*r(1)*r(1)*r(1)*r(1) &
-            + 15.0d0*derv(6, 0)*r(1)*r(1)*r(1)*r(1)*r(2)      &
-            + 20.0d0*derv(5, 0)*r(1)*r(1)*r(1)*r(3)           &
-            + 15.0d0*derv(4, 0)*r(1)*r(1)*r(4)                &
-            +  6.0d0*derv(3, 0)*r(1)*r(5)                     &
-            + 30.0d0*derv(5, 0)*r(1)*r(1)*r(2)*r(2)           &
-            + 60.0d0*derv(4, 0)*r(1)*r(2)*r(3)                &
-            + 15.0d0*derv(3, 0)*r(2)*r(4)                     &
-            + 10.0d0*derv(3, 0)*r(3)*r(3)
+      s = s +        derv(7, 0)*r(1)*r(1)*r(1)*r(1)*r(1)*r(1) & !i j k l m n
+            + 15.0d0*derv(6, 0)*r(1)*r(1)*r(1)*r(1)*r(2)      & !i j k l mn, ...
+            + 20.0d0*derv(5, 0)*r(1)*r(1)*r(1)*r(3)           & !i j k lmn, ...
+            + 15.0d0*derv(4, 0)*r(1)*r(1)*r(4)                & !i j klmn, ...
+            +  6.0d0*derv(3, 0)*r(1)*r(5)                     & !i jklmn, ...
+            + 30.0d0*derv(5, 0)*r(1)*r(1)*r(2)*r(2)           & !i j kl mn, ...
+            + 60.0d0*derv(4, 0)*r(1)*r(2)*r(3)                & !i jk lmn, ...
+            + 15.0d0*derv(3, 0)*r(2)*r(4)                     & !ij klmn, ...
+            + 10.0d0*derv(3, 0)*r(3)*r(3)                       !ijk lmn, ...
 
     end if
 
