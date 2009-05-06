@@ -419,16 +419,17 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbham.h"
+
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','xXXXXXX'/
+      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','*HSFS  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.S6FHTS',
-     &            'xXXXXXX'/
+     &            '.HSFS  '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -442,8 +443,11 @@ C
       LSPES2 = .FALSE.
       LSPES4 = .FALSE.
 
-CMI  ... no HSCC
+!       ... no HSCC
       DOHSCC = .FALSE.
+!       ... no HSFS 
+      DOHSFS = .FALSE.
+
 C
 C     Initialize /DCBTRA/
 C     ===================
@@ -560,11 +564,32 @@ C&&&& Range of ACTIVE orbitals in 4-index transformation module
                GO TO 100
     3          CONTINUE
 C&&&& INTFLG - Integral classes not included in transformation
-                  IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
-                  ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  END IF
+                 IF (IGTINT .EQ. 1) THEN
+                    READ(LUCMD,*,IOSTAT=IOS) 
+     &                ILLINT,ILSINT,ISSINT,IGTINT
+                    IF (IOS.NE.0) THEN
+                     WRITE(LUPRI,*)
+     &                'TRAINP: Error in reading .INTFLG data,'//
+     &                ' ILLINT,ILSINT,ISSINT,IGTINT:'
+                     WRITE(LUPRI,*) 'read values :',
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     CALL FLSHFO(LUPRI)
+                     CALL QUIT(
+     &               'TRAINP: Error in reading 4 .INTFLG paramaters')
+                    ENDIF
+                 ELSE
+                    READ(LUCMD,*,IOSTAT=IOS) ILLINT,ILSINT,ISSINT
+                    IF (IOS.NE.0) THEN
+                      WRITE(LUPRI,*)
+     &                'TRAINP: Error in reading .INTFLG data,'//
+     &                ' ILLINT,ILSINT,ISSINT:'
+                     WRITE(LUPRI,*) 'read values :',
+     &               ILLINT,ILSINT,ISSINT
+                     CALL FLSHFO(LUPRI)
+                     CALL QUIT(
+     &               'TRAINP: Error in reading 3 .INTFLG paramaters')
+                    ENDIF
+                 END IF
                   ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
@@ -618,11 +643,21 @@ C&&&& Range of CORE orbitals in 2-index transformation module
                GO TO 100
     9          CONTINUE
 C&&&& SCHEME - choose method in 4-index transformation
-                  READ(LUCMD,*) ISTRAT
+                  READ(LUCMD,*,IOSTAT=IOS) ISTRAT
+                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) 'TRAINP: read ISTRAT=',ISTRAT
+                   CALL QUIT(
+     &             'TRAINP: Error in reading **MOLTRA .SCHEME')
+                  ENDIF
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output of integrals to MDCINT
-                  READ(LUCMD,*) THROUT
+                  READ(LUCMD,*,IOSTAT=IOS) THROUT
+                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) 'TRAINP: read THROUT=',THROUT
+                   CALL QUIT(
+     &             'TRAINP: Error in reading **MOLTRA .THROUT')
+                  ENDIF
                GO TO 100
    11          CONTINUE
 C&&&& NO2IND - Skip 2-index transformation of effective Fock matrix
@@ -714,7 +749,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   NOMDCINT = .FALSE.
                GO TO 100
    24          CONTINUE
-C&&&& HSMRCC - interface
+!&&&& HSMRCC - interface
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
@@ -728,6 +763,8 @@ C&&&& HSMRCC - interface
                endif
                GO TO 100
    26          CONTINUE
+!&&&& HSFS - interface
+                  DOHSFS = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -778,6 +815,16 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 #endif
         GO TO 300
   314 CONTINUE
+#ifdef MOD_HSFS
+      IF (DOHSFS) THEN
+        CALL HSFSINP(WORD,.false.)
+      ENDIF
+#else
+C       prevent dirac.x running into an infinite loop here
+C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
+        CALL QUIT('*HSFS specified, '//
+     &     'but HSFS module is not included in this version')
+#endif
         GO TO 300
 C
   400 CONTINUE

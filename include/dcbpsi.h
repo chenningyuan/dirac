@@ -14,6 +14,7 @@
 !  DOMP2NO - make MP2 natural orbitals
 !  DOCCM - perform coupled-cluster calculation with RELCCSD
 !  DOHSCC - perform HSMRCC calculation with external code
+!  DOHSFS - perform higher sector FSCC calculations with external code
 !  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
@@ -24,13 +25,13 @@
 !  DOGOSCI- do GOSCI calculation 
 
       LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,                &
+     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGOSCI
 
       COMMON /DCLPSI/                                                   &
      &        DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,                &
+     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGOSCI
 ! --- end of dcbpsi.h ---

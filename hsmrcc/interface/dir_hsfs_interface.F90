@@ -1,4 +1,82 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine HSFS_STUFF(WORK,LWORK)
+!----------------------------------------------------------------------------------
+!
+!  Called from PAMTRA, if defined (MOD_HSFS)
+!
+!  Written by Miro Ilias, Tel Aviv/Prievidza 2009
+!
+!----------------------------------------------------------------------------------
+use Memory
+use io_moltra
+
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbpsi.h"
+
+real*8, intent(in) :: WORK(LWORK)
+!logical :: check_point = .false.
+!logical :: check_point = .true.
+!integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
+!integer :: ipos1,ipos2,ipos3,ipos4
+
+!logical :: check_MOints = .false.
+!logical :: check_MOints = .true.
+
+if (.not.DOHSFS) then
+ write(LUPRI,'(2x,a)') 'DOHSFS=.false., no HSFS data preparation'
+ return
+endif
+
+call print_HSFS_Dirac_info
+
+call read_mrconee;  call print_mrconee_data
+
+call StickMemory(WORK,LWORK)
+
+
+!call read_moltra_files
+
+call UnstickMemory
+
+end subroutine HSFS_STUFF
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine print_HSFS_Dirac_info
+!-----------------------------------------------------------------------------
+!
+! Print-out basic info on the Dirac_HSMRCC interface run
+!
+! Called from:
+!
+! Written by Miro ILIAS, Tel Aviv 2009
+!
+!-----------------------------------------------------------------------------
+#include "priunit.h"
+
+write(LUPRI,9001)
+
+9001 format('                                                                 ',/, &
+            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
+            '|                                                               |',/, &
+            '|        I N T E R F A C E                                      |',/, &
+            '|                                                               |',/, &
+            '| FOR THE STANDALONE PROGRAMS FOR HIGHER-SECTOR COUPLED         |',/, &
+            '| CLUSER CODES                                                  |',/, &
+            '|                                                               |',/, &
+            '|                                                               |',/, &
+            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++',/, &
+            '|                                                               |',/, &
+            '| Written by Miro ILIAS, Tel Aviv 2009                          |',/, &
+            '|                                                               |',/, &
+            '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++' )
+
+call FLSHFO(LUPRI)
+
+end subroutine print_HSFS_Dirac_info
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine HSFSINP(WORD,reset)
 !-----------------------------------------------------------------------------
 !
@@ -25,7 +103,7 @@ character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.N
 
  if (set) then
   if (reset) set = .false.
-  write(lupri,*) 'HSCCINP was called .... leaving at the beginning ... '
+  write(lupri,*) 'HSFSINP was called .... leaving at the beginning ... '
   Return
  endif
  if (reset) then

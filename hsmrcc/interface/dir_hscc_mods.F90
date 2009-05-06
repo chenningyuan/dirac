@@ -39,7 +39,7 @@ integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
 
 real*8 EPS1(MAXSP) ! orbital energies ...
 
-LOGICAL BREIT,SPFR,CARITH
+LOGICAL BREIT,SPFR,CARITH ! Breit interaction, spin-free, complex-arithmetic
 
 CHARACTER*10 NEXTFIL, INTERFACE
 
