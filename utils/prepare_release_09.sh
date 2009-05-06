@@ -1,6 +1,8 @@
 #!/bin/bash
 
-echo "** Dirac08 release preparation script **"
+release='DIRAC09'
+
+echo "** $release release preparation script **"
 echo
 
 # First make sure that we run from the Dirac root, and that
@@ -11,19 +13,19 @@ if [[ ! -d dirac || ! -d abacus ]]; then
     exit -1
 fi
 
-if [[ -r ../Dirac08 ]]; then
-    echo "Directory ../Dirac08 already exist, I cannot proceed."
+if [[ -r ../$release ]]; then
+    echo "Directory ../$release already exist, I cannot proceed."
     exit 1
 fi
 
 # Make a copy of the current source tree with tar (to preserve
 # symlinks and other properties)
-echo "Copying source tree to ../Dirac08"
+echo "Copying source tree to ../$release"
 
-mkdir ../Dirac08
-tar c . | (cd ../Dirac08; tar x)
+mkdir ../$release
+tar c . | (cd ../$release; tar x)
 
-cd ../Dirac08
+cd ../$release
 
 #
 # First delete code that should not be released.
@@ -139,7 +141,7 @@ if [ -r Makefile.config ]; then
     make depend > /dev/null
 else
     echo "Cannot find Makefile.config"
-    echo "  - Dirac08.tar.gz will NOT include dependencies"
+    echo "  - $release.tar.gz will NOT include dependencies"
 fi
 
 
@@ -147,10 +149,10 @@ fi
 #
 echo "Running pamadm -dft -xpp -eri -adc export"
 ./pamadm -dft -xpp -eri -adc export > /dev/null
-if [[ -r Dirac08.tar.gz ]]; then
-    echo "Created ../Dirac08/Dirac08.tar.gz"
+if [[ -r $release.tar.gz ]]; then
+    echo "Created ../$release/$release.tar.gz"
 else
-    echo "Failed to create ../Dirac08/Dirac08.tar.gz"
-    echo "Run pamadm in ../Dirac08 to debug"
+    echo "Failed to create ../$release/$release.tar.gz"
+    echo "Run pamadm in ../$release to debug"
 fi
 
