@@ -3640,7 +3640,7 @@ C
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-#ifdef MOD_DFT
+#ifdef MOD_DNF
         end if
 #endif
 
