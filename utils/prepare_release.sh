@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# radovan: this script worked with revision 7770
+
 echo "** Dirac08 release preparation script **"
 echo
 
