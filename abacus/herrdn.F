@@ -3832,7 +3832,7 @@ C
                END IF
                IF (NNRC .LE. 5) THEN
 !MI: gfortran accepts ASSIGN, but issues misleading warning "Deleted
-!feature" 
+!feature" (http://gcc.gnu.org/ml/fortran/2008-08/msg00257.html)
                   ASSIGN 1000 TO IFMTA
                   ASSIGN 1010 TO IFMTB
                   ASSIGN 1020 TO IFMTC
