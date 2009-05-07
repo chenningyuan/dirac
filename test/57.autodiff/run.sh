@@ -2,8 +2,8 @@
 
 export MOL=hf
 
-export MENU=b3lyp.inp
-../run.sh
+#export MENU=b3lyp.inp
+#../run.sh
 
 export MENU=blyp.inp
 ../run.sh
