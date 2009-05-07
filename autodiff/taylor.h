@@ -47,7 +47,7 @@ struct binomial<0,k>
 
 // Number of terms in a polynomial of nvar variables
 // up to and including order ndeg.
-static inline int polylen(int nvar, int ndeg)
+static inline int taylor_len(int nvar, int ndeg)
 {
   if (ndeg < 0)
     return 0;
@@ -62,7 +62,7 @@ static inline int polylen(int nvar, int ndeg)
 
 // Return the index of the term with exponents
 // This is a slow operation
-int poly_index(int nvar, const int exponents[]);
+int taylor_index(int nvar, const int exponents[]);
 
 // Multiply polynomials with coefficients p1 and p2,
 // and _add_ the result to dst.
@@ -85,7 +85,7 @@ class taylor
     }
   // Set the constant term to c0 and the first order term of
   // variable var to 1.
-  taylor(tnum_t c0, int var)
+  taylor(tnum_t c0, int var, tnum_t var_value = 1.0)
     {
       c[0] = c0;
       for (int i=1;i<binomial<Ndeg+Nvar,Ndeg>::value;i++)
@@ -94,7 +94,7 @@ class taylor
       assert(Nvar>=1);
       assert(var>=0);
       assert(var<Nvar);
-      c[1+var] = 1;
+      c[1+var] = var_value;
     }
   // Evaluate polynomial or derivative of polynomial at x.
   // This is not a fast or accurate function.
@@ -151,7 +151,7 @@ class taylor
       int k = 1;
       for (int i=1;i<=Ndeg;i++)
 	{
-	  for (;k<polylen(Nvar,i);k++)
+	  for (;k<taylor_len(Nvar,i);k++)
 	    c[k] *= an;
 	  an *= alpha;
 	}

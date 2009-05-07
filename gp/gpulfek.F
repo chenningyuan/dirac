@@ -20,12 +20,12 @@ c     with exponents as the derivative order for each variable.
 
       implicit none
 
-      integer :: i, nvar, exponents(nvar), poly_index
+      integer :: i, nvar, exponents(nvar), taylor_index
       real(8) :: d, coeff(*), fact
 
       common /factrl/ fact(30)
 
-      d = coeff(poly_index(nvar, exponents))
+      d = coeff(taylor_index(nvar, exponents))
 
       do i = 1, nvar
         if (exponents(i) > 0) then
