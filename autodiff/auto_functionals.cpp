@@ -54,8 +54,8 @@ template<int N>
 static taylor<2,N> vwn_correlation(double R0)
 {
   assert(R0 > 1e-20);
-  taylor<2,N> R(R0,0); // R = R0 + x
-  taylor<2,N> S(0,1); // S = S0 + y
+  taylor<2,N> R(R0,0,AUTO_FUNCTIONAL_SCALING); // R = R0 + x
+  taylor<2,N> S(0,1,AUTO_FUNCTIONAL_SCALING); // S = S0 + y
   taylor<2,N> s = pow(3/(4*M_PI),1.0/6)/pow(R,1.0/6);
   taylor<2,N> t = S/R;
   taylor<2,N> g = 1.92366105093154*(pow(1 + t,4.0/3) + pow(1 - t,4.0/3) - 2);
@@ -92,7 +92,7 @@ taylor<2,7> vwn_correlation(double R0);
 template<int N>
 static taylor<2,N> slater_exchange(double R0)
 {
-  taylor<2,N> R(R0,0), S(0,1);
+  taylor<2,N> R(R0,0,AUTO_FUNCTIONAL_SCALING), S(0,1,AUTO_FUNCTIONAL_SCALING);
   const double prefactor = -3.0/4.0*pow(6/M_PI, 1.0/3.0);
   return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));
 }
@@ -126,10 +126,13 @@ static taylor<5,N> lyp_correlation(double R0, double Z0)
     const double A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const double CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
 
-    taylor<5,N> rho(R0,0);
+    taylor<5,N> rho(R0,0,AUTO_FUNCTIONAL_SCALING);
     taylor<5,N> rho2 = rho*rho;
     taylor<5,N> rhom13 = pow(rho,-1.0/3.0);
-    taylor<5,N> S(0,1), Z(Z0,2), X(0,3), Y(0,4);
+    taylor<5,N> S(0,1,AUTO_FUNCTIONAL_SCALING), 
+      Z(Z0,2,AUTO_FUNCTIONAL_SCALING), 
+      X(0,3,AUTO_FUNCTIONAL_SCALING), 
+      Y(0,4,AUTO_FUNCTIONAL_SCALING);
     taylor<5,N> ngrada2 = (X+Z+2*Y)/4;
     taylor<5,N> ngradb2 = (X+Z-2*Y)/4;
     taylor<5,N> rhoa = (rho + S)/2;
@@ -173,8 +176,9 @@ static taylor<5,N> becke_exchange(double R0,double Z0)
 {
   
   taylor<5,N> ea(0),eb(0);
-  taylor<5,N> R(R0,0), S(0,1);
-  taylor<5,N> Z(Z0,2), X(0,3), Y(0,4);
+  taylor<5,N> R(R0,0,AUTO_FUNCTIONAL_SCALING), S(0,1,AUTO_FUNCTIONAL_SCALING);
+  taylor<5,N> Z(Z0,2,AUTO_FUNCTIONAL_SCALING), 
+    X(0,3,AUTO_FUNCTIONAL_SCALING), Y(0,4,AUTO_FUNCTIONAL_SCALING);
   taylor<5,N> rhoa = (R + S)/2;
   taylor<5,N> rhob = (R - S)/2;
 
