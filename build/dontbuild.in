@@ -10,6 +10,7 @@ visual/.*
 cdft/.*
 hsmrcc/.*
 hsmrcc/interface/.*
+hsmrcc/interface/dir_hsfs_interface.F90
 hsmrcc/hsmrcc_external/.*
 hsmrcc/hsmrcc_external/source/.*
 hsmrcc/hsmrcc_external/modules/.*

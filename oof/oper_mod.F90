@@ -28,11 +28,9 @@
  ! integer (kind=4), intent(in) :: oper_indx
   integer , intent(in) :: oper_indx
   logical (kind=1) :: is
- call QENTER('Operators:operator_on_dirac_list')
 
-  
+    is = .false.
 
- call QEXIT('Operators:operator_on_dirac_list')
  end function operator_on_dirac_list
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

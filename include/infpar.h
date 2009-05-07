@@ -61,8 +61,8 @@ extern struct common_diracinfpar {
 !     64-bit MPI libraries require INTEGER ISTAT (which will then be 
 !     INTEGER*8)
 !
-!     radovan: it's not ideal that istat type is not defined ifndef INT_STAR8
-!              i don't want to fix it, because maybe there is a reason
+!     radovan: it is not ideal that istat type is not defined ifndef INT_STAR8
+!              i do not want to fix it, because maybe there is a reason
       INTEGER   ISTAT
 #endif
 

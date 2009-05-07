@@ -266,6 +266,10 @@ setup()
    if [ -n "$HSCCMOD" ]; then
          HSCCFLG='-DMOD_HSCC'
          HSCCTAR=1
+	 # delet old file
+	 if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
+	   /bin/rm -r hsmrcc/hsmrcc_external/Makefile.hsmrcc
+	 fi
          cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
          (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
          echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc."
@@ -280,6 +284,10 @@ setup()
    if [ -n "$HSFSMOD" ]; then
          HSFSFLG='-DMOD_HSFS'
          HSFSTAR=1
+	 # delet old file
+	 if [ -f hsmrcc/high_sect_fscc_external/Makefile.hsfs ]; then
+            /bin/rm -r hsmrcc/high_sect_fscc_external/Makefile.hsfs
+	 fi
          cp hsmrcc/high_sect_fscc_external/Makefile.hsfs.in  hsmrcc/high_sect_fscc_external/Makefile.hsfs || \
          (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
          echo " - HS FS CC mode active with own HSFS routines, active Makefile.hsfs."
@@ -669,6 +677,7 @@ if [ -n "$HSFSFLG" ]; then
    dirs="$dirs hsmrcc/high_sect_fscc_external"
    rmline build/dontbuild "hsmrcc/\.\*"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/\.\*"
+   rmline build/dontbuild "hsmrcc/interface/dir_hsfs_interface.F90"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csd.F"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csv.F"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csu.F"
