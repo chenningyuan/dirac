@@ -6221,14 +6221,21 @@ C from here ABREP(b) and LREP(f) are known.
               EPSA=EPS(AOFF+AFIE)
               BUF(DES)=EPSA+EPSB+EPSL+EPSK+EPSKS
               DES=DES+1
- 25          ENDDO
- 30         ENDDO
+!25          ENDDO
+ 25          CONTINUE
+ 30         CONTINUE
+! 30         ENDDO
 
- 40       ENDDO
+  40       CONTINUE
+! 40       ENDDO
+!         ENDDO
          ENDDO                
- 45     ENDDO
- 50    ENDDO
- 55   ENDDO
+! 45     ENDDO
+ 45     CONTINUE
+!50    ENDDO
+ 50    CONTINUE
+!55   ENDDO
+ 55   CONTINUE
 
       ISIZE=DES-1
 
@@ -6598,7 +6605,8 @@ C
         DO 45 LREP=1,NREP
          LOFF=IO(LREP)
          KREP=MULTB(LREP,KLREP+NREP,2)
-         IF(KREP.LT.LREP) GOTO45
+!        IF(KREP.LT.LREP) GOTO45
+         IF(KREP.LT.LREP) GOTO 45
          KOFF=IO(KREP)
          DO L=1,NO(LREP)
            EPSL=EPS(LOFF+L)
@@ -6619,8 +6627,10 @@ C
              ENDDO
            ENDDO
          ENDDO
- 45     ENDDO
- 60   ENDDO
+! 45     ENDDO
+ 45      CONTINUE
+!60   ENDDO
+ 60   CONTINUE
 
       IF( (OFF-1).NE.NVOOT(AKLREP)) THEN
         WRITE(IW,*) ' *** Expected value of counter:',NVOOT(AKLREP)
@@ -6681,7 +6691,8 @@ C
         DO 45 BREP=1,NREP
          BOFF=IV(BREP) + IO(NREP+1)
          AREP=MULTB(BREP,ABREP+NREP,2)
-         IF(AREP.LT.BREP) GOTO45
+!        IF(AREP.LT.BREP) GOTO45
+         IF(AREP.LT.BREP) GOTO 45
          AOFF=IV(AREP) + IO(NREP+1)
 c     x=multb(arep,brep,1)
 c     write(iw,*) 'MAKEEKOVV irrep',multb(jrep,x+nrep,2)
@@ -6704,8 +6715,10 @@ c     write(iw,*) 'MAKEEKOVV irrep',multb(jrep,x+nrep,2)
              ENDDO
            ENDDO
          ENDDO
- 45     ENDDO
- 60   ENDDO
+! 45     ENDDO
+ 45     CONTINUE
+!60   ENDDO
+ 60   CONTINUE
 
       IF( (OFF).NE.NOVVT(JABREP)) THEN
         WRITE(IW,*) ' *** Expected value of counter:',NOVVT(JABREP)
@@ -7346,8 +7359,10 @@ c
              ENDDO
            ENDDO
          ENDDO
- 45     ENDDO
- 60   ENDDO
+! 45     ENDDO
+ 45     CONTINUE
+! 60   ENDDO
+ 60   CONTINUE
 
       CLOSE(LUN)
 
