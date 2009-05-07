@@ -5703,7 +5703,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
-      DIMENSION IMOKW(NTABLE)
+C     DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
       LOGICAL CA,LUEND

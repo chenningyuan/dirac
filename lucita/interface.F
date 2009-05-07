@@ -96,7 +96,7 @@ C
 *
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
-      dimension IMOKW(NTABLE)
+C     dimension IMOKW(NTABLE)
       character*1 CRDHEL
       character*3 SCR3,YESSTATEMENT
       character*10 PERFORMCI
