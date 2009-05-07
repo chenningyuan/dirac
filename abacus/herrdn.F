@@ -3831,6 +3831,8 @@ C
                   CHRSEG = 'gen. cont.'
                END IF
                IF (NNRC .LE. 5) THEN
+!MI: gfortran accepts ASSIGN, but issues misleading warning "Deleted
+!feature" 
                   ASSIGN 1000 TO IFMTA
                   ASSIGN 1010 TO IFMTB
                   ASSIGN 1020 TO IFMTC
