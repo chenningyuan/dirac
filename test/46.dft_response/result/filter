@@ -1,19 +1,13 @@
 $ERROR 1.E-7
 
-From:                               TOTAL ENERGY
-To:                               Eigenvalues
+Nlines 1:Number of electrons
+Nlines 1:Electronic energy
+Nlines 1:ZZSECMOM
 
-$ERROR 1.E-6
+$ERROR 1.E-4
 
-From: *************************** Expectation values
-To:    s0 = T : Expectation value
+Nlines 1:Nonrel. sym.
 
-From:                Linear response excitations; final output
-To:                  Analysis of response solution vectors
+$ERROR 1.E-7
 
-From: >>>>>>>>    L I N E A R   R E S P O N S E
-To: >>>>>    Q U A D R A T I C   R E S P O N S E
-
-Nlines 16:Quadratic Response Functions
-
-Nlines 18:@   Elements of the electric dipole
+Nlines 1:Value of total response
