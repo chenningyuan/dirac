@@ -198,8 +198,8 @@ int main(void)
   int exponents2[] = {0,1,1};
   /* 1 x y z x^2 xy xz y^2 yz z^2 x^3 x^2y x^2z xy^2 xyz xz^2 y^3 y^2z yz^2 z^3
      0 1 2 3 4   5  6  7   8  9   10  11   12   13   14  15   16  17   18  19*/
-  if (poly_index(3,exponents1) != 12 ||
-      poly_index(3,exponents2) != 8)
+  if (taylor_index(3,exponents1) != 12 ||
+      taylor_index(3,exponents2) != 8)
     {
       cout << "Error in taylor::index_of()\n";
       res++;
