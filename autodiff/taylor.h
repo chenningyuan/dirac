@@ -12,11 +12,25 @@
   continuing all the way down.
 */
 
-
+#ifdef TAYLOR_MPFR 
+// Using MPFR multi precision library with the MPFRCPP C++ wrapper
+// See
+// http://www.mpfr.org/
+// http://beshenov.ru/mpfrcpp/doc/
+// NB: This is work in progress, and the test does not yet
+// compile with MPFR. -Ulf
+#include <mpfrcpp/mpfrcpp.hpp>
+using namespace mpfr;
+typedef Real tnum_t; // Type of coefficients
+typedef Real tlongnum_t; // Type used to accumulate sums
+#else
+// Standard numeric types. Note that long double is not always
+// the same on all machines.
 #include <cmath>
-
 typedef double tnum_t; // Type of coefficients
 typedef long double tlongnum_t; // Type used to accumulate sums
+#endif
+
 
 #include "taylor_multab.h"
 
@@ -117,7 +131,7 @@ class taylor
   tnum_t eval_sumalt(tnum_t x, tnum_t e = 1.0)
     {
       assert(Nvar == 1); // TODO: general case
-      tlongnum_t d = pow(2*e+1+2*sqrt(e*(e+1)),binomial<Ndeg+Nvar,Ndeg>::value);
+      tlongnum_t d = pow(2*e+tnum_t(1)+2*sqrt(e*(e+tnum_t(1))),binomial<Ndeg+Nvar,Ndeg>::value);
       d = (d + 1/d)/2;
       tlongnum_t b = 1;
       tlongnum_t cc = d;
@@ -337,7 +351,7 @@ void taylor_compose(taylor<Nvar2, Ndeg2>& res, const taylor<1,Ndeg1>& t1, const 
 template<int N>
 void inv_taylor(taylor<1,N>& t, const tnum_t &a)
 {
-  assert(a != 0 && "1/(a+x) not analytic at a = 0");
+  assert(a != tnum_t(0) && "1/(a+x) not analytic at a = 0");
   t[0] = 1/a;
   for (int i=1;i<=N;i++)
     t[i] = -t[i-1]/a;
@@ -401,7 +415,7 @@ taylor<Nvar,Ndeg> exp(const taylor<Nvar,Ndeg> &t)
 template<int N>
 void log_taylor(taylor<1,N> &t, const tnum_t &x0)
 {
-  assert(x0 != 0 && "log(x) not analytic at x = 0");
+  assert(x0 != tnum_t(0) && "log(x) not analytic at x = 0");
   t[0] = log(x0);
   tnum_t xn = x0;
   for (int i=1;i<=N;i++)
@@ -426,7 +440,7 @@ taylor<Nvar,Ndeg> log(const taylor<Nvar,Ndeg> &t)
 template<int N>
 void pow_taylor(taylor<1,N>& t, const tnum_t &x0, const tnum_t &a)
 {
-  assert(x0 != 0 && "pow(x,a) not analytic at x = 0");
+  assert(x0 != tnum_t(0) && "pow(x,a) not analytic at x = 0");
   t[0] = pow(x0,a);
   for (int i=1;i<=N;i++)
     t[i] = t[i-1]*(a-i+1)/(x0*i);
