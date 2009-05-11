@@ -3532,6 +3532,7 @@ C
 C***********************************************************************
 #ifdef MOD_DFT
         use dft_cfg
+        use dft_main
 #endif
 
 #include "implicit.h"

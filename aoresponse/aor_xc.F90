@@ -6,7 +6,7 @@ module aor_xc
 
 contains
 
-  subroutine empty()
+  subroutine aor_xc_empty()
   end subroutine
 
 #ifdef MOD_AUTODIFF

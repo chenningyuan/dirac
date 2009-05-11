@@ -14,6 +14,8 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+       use dft_main
+
 #include "implicit.h"
 #include "priunit.h"
 

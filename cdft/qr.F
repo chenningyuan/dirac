@@ -221,6 +221,7 @@ c                                                           radovan bast
 c                                               last revision: june 2007
 c=======================================================================
 
+      use dft_main
       use dft_cfg
 
 #include "implicit.h"
@@ -709,6 +710,7 @@ c                                                           radovan bast
 c                                               last revision: june 2007
 c=======================================================================
 
+      use dft_main
       use dft_cfg
 
 #include "implicit.h"

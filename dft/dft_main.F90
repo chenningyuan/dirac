@@ -1,25 +1,13 @@
-! 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
+module dft_main
 
+  use memory_allocator
+  use dft_cfg
+  use dft_ao_in_mem
+#ifdef MOD_AORESPONSE
+  use aor_xc
+#endif
+
+contains
 
       subroutine dftexc(dmat, &
      &                  dmat_perturbed, &
@@ -36,7 +24,6 @@
 !     written by T. Helgaker
 !     DIRAC adaption by T. Saue
 
-      use dft_cfg
 
       implicit none
 
@@ -239,7 +226,7 @@
         CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO), &
      &              dmat_perturbed,fmat,nr_dmat_perturbed, &
      &              isymop,ihrmop,dft_options, &
-     &              dummy,dummy,WORK(KFREE),LFREE,dft_cfg_print_level)
+     &              (/0/),(/0/),WORK(KFREE),LFREE,dft_cfg_print_level)
         CALL MEMREL('DFTDRV',WORK,kfree_save,kfree_save,KFREE,LFREE)
 #ifdef VAR_MPI
       end if
@@ -307,7 +294,7 @@
       call timtxt('>>>> time used in dftexc:', time_in_xc, lupri)
       write(lupri, '(1x)')
 
-      end
+      end subroutine
 
 
 
@@ -322,7 +309,6 @@
 !     T. Helgaker sep 99
 !
 
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -357,6 +343,7 @@
      &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT), &
      &          IDISP(*),ISEND(*),WORK(LWORK)
       type(dft_options_t) :: dft_options
+      integer, allocatable :: ncnt(:)
 !
 #include "memint.h"
 !
@@ -387,7 +374,8 @@
       IF(dft_options%london) then
         CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
       end if
-      CALL MEMGET('INTE',KCNT,NDIM,WORK,KFREE,LFREE)
+!     CALL MEMGET('INTE',KCNT,NDIM,WORK,KFREE,LFREE)
+      call alloc(ncnt, ndim)
       CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
 !
 !     integrate
@@ -570,7 +558,7 @@
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
      &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1), &
-     &              WORK(KCNT),WORK(KBUF), &
+     &              ncnt,WORK(KBUF), &
      &              WORK(KFREE),LFREE,IPRINT,0)
         CALL MEMREL('DFTDRV.loop',WORK,KWORK,KLOOP,KFREE,LFREE)
         GO TO 100
@@ -582,6 +570,7 @@
      &                       IPRINT)
 #endif
       CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(ncnt)
       IF(MYTID.NE.MPARID) RETURN
       IF (dft_options%london) THEN
 !radovan:
@@ -663,8 +652,7 @@
         END IF
       ENDIF
 !
-      RETURN 
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT, &
@@ -678,12 +666,6 @@
 !     Written by Trond Saue and T.Helgaker
 !
 !***********************************************************************
-
-       use dft_cfg
-       use dft_ao_in_mem
-#ifdef MOD_AORESPONSE
-       use aor_xc
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1215,16 +1197,16 @@
       ENDIF
 !aspg+rbast, 2006-09-21
 #endif /* MOD_DNF */
-      RETURN
-      END
+
+      end subroutine
 !  /* Deck reaqua */
       SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
 #include "implicit.h" 
 #include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD) X,Y,Z,WT
-      RETURN
-      END
+      end subroutine
+      
 #ifndef PRG_DIRAC
 !  /* Deck dftsol */
       SUBROUTINE DFTSOL(WORK,LWORK)
@@ -1240,8 +1222,7 @@
       KLST = KFCK + NNORBT - 1
       IF (KLST .GT. LWORK) CALL STOPIT('DFTSOL',' ',KLST,LWORK)
       CALL DFTSO1(WORK(KVEC),WORK(KFCK))
-      RETURN
-      END
+      end subroutine
 !  /* Deck dftso1 */
       SUBROUTINE DFTSO1(VEC,FCK)
 #include "implicit.h"
@@ -1276,8 +1257,7 @@
          PRFAC = 0.1D0
          CALL PRKAP(NWOPPT,VEC,PRFAC,LUPRI)
       END IF
-      RETURN
-      END
+      end subroutine
 #endif /* ifndef PRG_DIRAC */
 #ifdef ENABLE_DFT_NUMERICAL_TEST
 !  /* Deck dftnum */
@@ -1395,113 +1375,8 @@
          WRITE(LUPRI,'(A,3F15.10)')' LYP11 test',F11,H11,F11-H11
          WRITE(LUPRI,'(A,3F15.10)')' LYP02 test',F02,H02,F02-H02
       END IF
-      RETURN
-      END
+      end subroutine
 #endif /* ENABLE_DFT_NUMERICAL_TEST */
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck doexc1 */
-      SUBROUTINE DOEXC1(VXC,IREPOP,EXCMAT,GAO)      
-!***********************************************************************
-!
-!     Construct Kohn-Sham matrix
-!
-!     Written by T.Saue and T.Helgaker
-!
-!***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
-!
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-!      
-#include "ibtfun.h"
-!
-      DO 10 IRP1 = 0,NBSYM-1
-        IRP2 = IBTXOR(IRP1,IREPOP)
-        DO 20 IC = 1,MC
-          NB1 = NBBAS(IRP1,IC)
-          IF(NB1.EQ.0) GOTO 20
-          NB2 = NBBAS(IRP2,IC)
-          IF(NB2.EQ.0) GOTO 20
-          JB1 = IBBAS(IRP1,IC)
-          JB2 = IBBAS(IRP2,IC)
-          DO J = 1, NBBAS(IRP2,IC)
-            GVXC = VXC*GAO(JB2+J)
-            CALL DAXPY(NBBAS(IRP1,IC),GVXC, &
-     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
-          ENDDO
-   20   CONTINUE
-   10 CONTINUE
-!
-      END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck doexc2 */
-      SUBROUTINE DOEXC2(SXC,VXC,IREPOP,EXCMAT,GAO,GAO1)      
-!***********************************************************************
-!
-!     Construct the matrix
-!
-!     F(i,j) = GAO(I)*SXC*GAO(J)+2*GAO(I)*VXC(K)*nabla[GAO1(J)]
-!
-!     Upon symmetrization 
-!
-!     F(i,j) = (1/2)[F(i,j)+F(j,i)]
-!
-!     later on one obtains
-!
-!     E(i,j) = GAO(I)*SXC*GAO(J)+VXC(K)*nabla[GAO(I)*GAO(J)]
-!
-!     Written by T.Saue and T.Helgaker
-!
-!***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
-!
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST), &
-     &          GAO1(NBAST,3)
-#else
-      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0)), &
-     &          GAO1(NTBAS(0),3)
-#endif
-      DIMENSION VXC(3)
-#include "ibtfun.h"
-!.....Vector part is scaled to get symmetrization right
-      DO I = 1,3
-        VXC(I)=D2*VXC(I)
-      ENDDO
-      DO 10 IRP1 = 0,NBSYM-1
-        IRP2 = IBTXOR(IRP1,IREPOP)
-        DO 20 IC = 1,MC
-          NB1 = NBBAS(IRP1,IC)
-          IF(NB1.EQ.0) GOTO 20
-          NB2 = NBBAS(IRP2,IC)
-          IF(NB2.EQ.0) GOTO 20
-          JB1 = IBBAS(IRP1,IC)
-          JB2 = IBBAS(IRP2,IC)
-          DO J = 1, NBBAS(IRP2,IC)
-            FC = SXC*GAO(JB2+J)      +VXC(1)*GAO1(JB2+J,1) &
-     &         + VXC(2)*GAO1(JB2+J,2)+VXC(3)*GAO1(JB2+J,3)
-            CALL DAXPY(NBBAS(IRP1,IC),FC, &
-     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
-          ENDDO
-   20   CONTINUE
-   10 CONTINUE
-!
-      END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !/* Deck Getavd */
       SUBROUTINE GTDOAV(DMAT,IFAC)
@@ -1526,8 +1401,7 @@
         ENDDO
       ENDIF
 !
-      RETURN
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE sym_ha(AMAT, &
      &                  NMAT, &
@@ -1615,8 +1489,7 @@
         ENDIF
       ENDDO
 
-      RETURN
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE sym_hs(AMAT, &
      &                  NMAT, &
@@ -1696,8 +1569,7 @@
         ENDIF
       ENDDO
 
-      RETURN
-      END
+      end subroutine
 #if defined (VAR_MPI)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !/* Deck dftres */
@@ -1709,7 +1581,6 @@
 !     Written by T.Saue and T.helgaker
 !
 !***********************************************************************
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1748,8 +1619,7 @@
         CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
-      RETURN
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck dftprd */
 !***********************************************************************
@@ -1848,8 +1718,7 @@
      &               MPI_COMM_WORLD,IERR)
 #endif
 !
-      RETURN
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck pardrv */
       SUBROUTINE DFT_PARDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
@@ -1862,7 +1731,6 @@
 !     Based on HER_PARDRV which was
 !     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
 !***********************************************************************
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1881,6 +1749,8 @@
      &          DTRMAT(N2BBASX,NZ,NXCMAT), &
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
       type(dft_options_t) :: dft_options
+      integer, allocatable :: idisp(:)
+      integer, allocatable :: isend(:)
 !
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
@@ -1911,16 +1781,19 @@
 !-----------------------
 !
       NODESALL=NODES+1
-      CALL MEMGET('INTE',KDISP,NODESALL,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KSEND,NODESALL,WORK,KFREE,LFREE)
+!     CALL MEMGET('INTE',KDISP,NODESALL,WORK,KFREE,LFREE)
+!     CALL MEMGET('INTE',KSEND,NODESALL,WORK,KFREE,LFREE)
+      call alloc(idisp, nodesall)
+      call alloc(isend, nodesall)
       CALL DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &            WORK(KDISP),WORK(KSEND),WORK(KFREE),LFREE,IPRINT)
+     &            idisp, isend, WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(idisp)
+      call dealloc(isend)
       CALL QEXIT('DFT_PARDRV')
 !
-      RETURN
-      END
+      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck dftnod */
       SUBROUTINE DFTNOD(WORK,LWORK)
@@ -1931,7 +1804,6 @@
 !    This is the node program for DFT                           *
 !***********************************************************************
 
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1946,6 +1818,8 @@
 !
       DIMENSION WORK(LWORK)
       type(dft_options_t) :: dft_options
+      integer, allocatable :: ksym(:)
+      integer, allocatable :: khrm(:)
 !
       CALL QENTER('DFTNOD')
 #include "memint.h"
@@ -1967,8 +1841,10 @@
 !.....Memory allocation
       LMAT = N2BBASXQ*NXCMAT
       CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
+!     CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
+!     CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
+      call alloc(ksym, nxcmat)
+      call alloc(khrm, nxcmat)
       CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
       IF(dft_options%lr.OR.dft_options%qr) THEN
         CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
@@ -1989,7 +1865,7 @@
 !
 !     Receive initialization data from master 2
 !     =========================================
-      CALL DFTPAR_INIT2(dft_options,NXCMAT,WORK(KSYM),WORK(KHRM), &
+      CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
      &                  WORK(KDEN),WORK(KDTR), &
      &                  WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO))
 !.....Initialization
@@ -1997,12 +1873,13 @@
       CALL DZERO(WORK(KEXC),LMAT)
 !.....Integrate
       CALL DFTDRV(WORK(KDEN),WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO), &
-     &            WORK(KDTR),WORK(KEXC),NXCMAT,WORK(KSYM),WORK(KHRM), &
-     &            dft_options,DUM,DUM,WORK(KFREE),LFREE,IPRINT)
+     &            WORK(KDTR),WORK(KEXC),NXCMAT, ksym, khrm, &
+     &            dft_options,(/0/),(/0/),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(ksym)
+      call dealloc(khrm)
       CALL QEXIT('DFTNOD')
-      RETURN
-      END
+      end subroutine
 
 
 #ifdef VAR_MPI
@@ -2010,7 +1887,6 @@
 
 !     written by T. Saue april 7 2009
 
-      use dft_cfg
 
       implicit none
 
@@ -2121,7 +1997,7 @@
 
       call dftsyncfunc(i_am_the_master)
  
-      end
+      end subroutine
 #endif /* ifdef VAR_MPI */
 
 
@@ -2140,7 +2016,6 @@
 ! 
 !***********************************************************************
 
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2176,9 +2051,14 @@
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
         ENDIF
       ENDIF
-      RETURN
-      END
+      end subroutine
 #endif /* VAR_MPI */
+
+
+end module
+
+!radovan: the following routines cannot be part of the module
+!(circular dep) 
 
 #ifdef MOD_DNF
 ! /* deck fit_DOEXC */
@@ -2221,5 +2101,112 @@
      &                       + D1 * VXC_scalar * GAO(I)
          ENDDO
       END IF
-      END
+      end subroutine
 #endif /* MOD_DNF */
+
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck doexc1 */
+      SUBROUTINE DOEXC1(VXC,IREPOP,EXCMAT,GAO)      
+!***********************************************************************
+!
+!     Construct Kohn-Sham matrix
+!
+!     Written by T.Saue and T.Helgaker
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+!
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+!      
+#include "ibtfun.h"
+!
+      DO 10 IRP1 = 0,NBSYM-1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        DO 20 IC = 1,MC
+          NB1 = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB1 = IBBAS(IRP1,IC)
+          JB2 = IBBAS(IRP2,IC)
+          DO J = 1, NBBAS(IRP2,IC)
+            GVXC = VXC*GAO(JB2+J)
+            CALL DAXPY(NBBAS(IRP1,IC),GVXC, &
+     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
+          ENDDO
+   20   CONTINUE
+   10 CONTINUE
+!
+      end subroutine
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck doexc2 */
+      SUBROUTINE DOEXC2(SXC,VXC,IREPOP,EXCMAT,GAO,GAO1)      
+!***********************************************************************
+!
+!     Construct the matrix
+!
+!     F(i,j) = GAO(I)*SXC*GAO(J)+2*GAO(I)*VXC(K)*nabla[GAO1(J)]
+!
+!     Upon symmetrization 
+!
+!     F(i,j) = (1/2)[F(i,j)+F(j,i)]
+!
+!     later on one obtains
+!
+!     E(i,j) = GAO(I)*SXC*GAO(J)+VXC(K)*nabla[GAO(I)*GAO(J)]
+!
+!     Written by T.Saue and T.Helgaker
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+!
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST), &
+     &          GAO1(NBAST,3)
+#else
+      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0)), &
+     &          GAO1(NTBAS(0),3)
+#endif
+      DIMENSION VXC(3)
+#include "ibtfun.h"
+!.....Vector part is scaled to get symmetrization right
+      DO I = 1,3
+        VXC(I)=D2*VXC(I)
+      ENDDO
+      DO 10 IRP1 = 0,NBSYM-1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        DO 20 IC = 1,MC
+          NB1 = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB1 = IBBAS(IRP1,IC)
+          JB2 = IBBAS(IRP2,IC)
+          DO J = 1, NBBAS(IRP2,IC)
+            FC = SXC*GAO(JB2+J)      +VXC(1)*GAO1(JB2+J,1) &
+     &         + VXC(2)*GAO1(JB2+J,2)+VXC(3)*GAO1(JB2+J,3)
+            CALL DAXPY(NBBAS(IRP1,IC),FC, &
+     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
+          ENDDO
+   20   CONTINUE
+   10 CONTINUE
+!
+      end subroutine

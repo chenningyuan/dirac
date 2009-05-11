@@ -499,6 +499,7 @@ contains
 
 #ifdef PRG_DIRAC
       use dft_cfg
+      use dft_main
 #include "dgroup.h"
 #include "dcbbas.h"
 #endif /* PRG_DIRAC */

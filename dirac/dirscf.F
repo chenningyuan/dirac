@@ -358,6 +358,7 @@ C
 C*****************************************************************************
 
 #ifdef MOD_DFT
+      use dft_main
       use dft_cfg
 #endif
 
@@ -562,12 +563,12 @@ C
           dft_options%energy = .true.
 
           call dftexc(dmat,
-     &                dummy,
+     &                (/0.0d0/),
      &                fock,
      &                1,
      &                1,
-     &                1,
-     &                1,
+     &                (/1/),
+     &                (/1/),
      &                dft_options,
      &                work(kfree),
      &                lfree,
@@ -1183,6 +1184,7 @@ C*****************************************************************************
 
 #ifdef MOD_DFT
       use dft_cfg
+      use dft_main
 #endif
 
 #include "implicit.h"
@@ -1386,12 +1388,12 @@ C
           dft_options%energy = .true.
 
           call dftexc(dmat,
-     &                dummy,
+     &                (/0.0d0/),
      &                fock,
      &                1,
      &                1,
-     &                1,
-     &                1,
+     &                (/1/),
+     &                (/1/),
      &                dft_options,
      &                work(kfree),
      &                lfree,

@@ -48,6 +48,7 @@ c     T. Helgaker, T. Saue
 c                                  last revision: january 2008 (radovan)
 c=======================================================================
 
+      use dft_main
       use dft_cfg
 
 #include "implicit.h"

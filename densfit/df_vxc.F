@@ -73,6 +73,7 @@ C files "FITXCG" and "FITVXC", respectively, in order to avoid
 C much change to the current function calls.
 C 
         use dft_cfg
+        use dft_main
 
 #include "implicit.h"
 #include "mxcent.h"
@@ -105,12 +106,12 @@ C
       end if
 
       call dftexc(dmat,
-     &            dummy,
-     &            dummy,
+     &            (/0.0d0/),
+     &            (/0.0d0/),
      &            1,
      &            1,
-     &            1,
-     &            1,
+     &            (/1/),
+     &            (/1/),
      &            dft_options,
      &            work(kfree),
      &            lfree,

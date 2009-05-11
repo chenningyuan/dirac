@@ -781,6 +781,8 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
+
+      use dft_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -927,6 +929,8 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
+
+         use dft_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"

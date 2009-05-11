@@ -516,6 +516,7 @@ C
 C***********************************************************************
 #ifdef MOD_DFT
        use dft_cfg
+       use dft_main
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -647,12 +648,12 @@ C          Hermitian operator
           dft_options%energy = .true.
 
           call dftexc(fao,
-     &                dum,
+     &                (/0.0d0/),
      &                fmo,
      &                1,
      &                1,
-     &                1,
-     &                1,
+     &                (/1/),
+     &                (/1/),
      &                dft_options,
      &                work(kfree),
      &                lfree,
