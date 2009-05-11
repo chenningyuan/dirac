@@ -929,8 +929,8 @@ C
          INTTYP = 29
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -941,7 +941,7 @@ C
          INTTYP = 30
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of electric field gradients (cartesian)'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
@@ -2804,14 +2804,14 @@ C
 
       end subroutine
 
-      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      DIMENSION INTREP(9*MXCENT)
+      DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
 #include "nuclei.h"
@@ -2834,6 +2834,7 @@ C
      &                              //chrnos(mod(iscoor, 10))//'  '
 
                      INTREP(ITYP) = IREP
+                     INTADR(ISCOOR) = ITYP
                   END IF
  200           CONTINUE
             END IF

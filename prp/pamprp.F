@@ -561,7 +561,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFNINT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
       CALL DEF_EFN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -655,6 +656,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-30)
       CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
@@ -1585,7 +1587,7 @@ C
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,30)
+      CALL SETATM(WORK(KATOM),NATOM,-30)
       CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,WORK(KATOM),WORK(KAXIS),
      &               WORK(KTEMP))
       CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1643,85 +1645,85 @@ C
      &'* Nuclear quadrupole coupling constants (principal components):'
       WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      NATOM = 0
-      IATOMX = 1
+      IATOMD = 0
+      NATOM  = 0
+      IATOMS = 0
       DO 100 IATOM = 1, NUCIND
-         IF (IATOM.GT.1) 
-     %    IATOMX = IATOMX + NUCDEG(IATOM-1)
-
-         IF (.NOT. DOATOM(IATOM)) GOTO 100
-         DO 110 ISYM = 0,MAXOPR
-            IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
-               NATOM = NATOM + 1
-               DO I=1,3
-                  DO J=1,3
-                     EFGTOT(I,J,NATOM)=
-     &                  EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
-                  ENDDO
-               ENDDO
+      IF (DOATOM(IATOM)) THEN
+        DO 110 IDEG = 1,NUCDEG(IATOM)
+          IATOMD = IATOMD + 1
+          NATOM = NATOM + 1
+          DO I=1,3
+            DO J=1,3
+              EFGTOT(I,J,NATOM)=EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
+            ENDDO
+          ENDDO
 C
-C              Diagonalize to get principal components
+C         Diagonalize to get principal components
 C
-               IJ = 1
-               DO I = 1, 3
-                  DO J = 1, I
-                     PVAL(IJ) = EFGTOT(I,J,IATOM)
-                     IJ = IJ + 1
-                  ENDDO
-               ENDDO
-               CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
-               EFGTOT(1,1,IATOM) = PVAL(1)
-               EFGTOT(2,2,IATOM) = PVAL(3)
-               EFGTOT(3,3,IATOM) = PVAL(6)
+          IJ = 1
+          DO I = 1, 3
+            DO J = 1, I
+              PVAL(IJ) = EFGTOT(I,J,IATOM)
+              IJ = IJ + 1
+            ENDDO
+          ENDDO
+          CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
+          EFGTOT(1,1,IATOM) = PVAL(1)
+          EFGTOT(2,2,IATOM) = PVAL(3)
+          EFGTOT(3,3,IATOM) = PVAL(6)
 C
-C              Reorder to calculate eta:
-C              |xx|<|yy|<|zz|
+C         Reorder to calculate eta:
+C            |xx|<|yy|<|zz|
 C
-               PVAL(2) = PVAL(3)
-               PVAL(3) = PVAL(6)
-               IZ = IDAMAX(3,PVAL(1),1)
-               CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-               IX = IDAMIN(3,PVAL(1),1)
-               CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-               ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
-               NUCCHA = NINT(CHARGE(IATOM))
-               DO ISO = 1, 5
-                  QMOM = DISOTP(NUCCHA,ISO,'QMOM')
-                  IF (QMOM .NE. 0.D0) THEN
-                     FACT=CONV*QMOM
+          PVAL(2) = PVAL(3)
+          PVAL(3) = PVAL(6)
+          IZ = IDAMAX(3,PVAL(1),1)
+          CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+          IX = IDAMIN(3,PVAL(1),1)
+          CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+          ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+          NUCCHA = NINT(CHARGE(IATOM))
+          DO ISO = 1, 5
+            QMOM = DISOTP(NUCCHA,ISO,'QMOM')
+            IF (QMOM .NE. 0.D0) THEN
+              IATOMS = IATOMS + 1
+              FACT=CONV*QMOM
 C
-C                    Change to GHz when abs values bigger then 1.0D4
+C             Change to GHz when abs values bigger then 1.0D4
 C
-                     IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
-     &                   (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
-     &                   (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
-                        FACT   = FACT * 1.0D-3
-                        HZUNIT = ' GHz'
-                     ELSE
-                        HZUNIT = ' MHz'
-                     ENDIF
-                     SPIN = DISOTP(NUCCHA,ISO,'SPIN')
-                     MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
-
-CMI                  write(lupri,*) 'IATOM=',IATOM,' NUCCHA=',NUCCHA
-
-                     WRITE (LUPRI,9000)
-     &                  'Nucleus: ',NAMDEP(IATOMX),
-     &                  'Proton charge:',NUCCHA,
-     &                  'Mass: ',MASS,'Spin: ',
-     &                  SPIN,'Quadrupole moment: ',QMOM
-                     DO I=1,3
-                        WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
-     &                     'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
-     &                     EFGTOT(I,I,IATOM)*FACT,HZUNIT
-                     ENDDO
-                     WRITE (LUPRI,'(2X,A3,9X,F16.8)')
-     &                  'Eta', ETA
-                  ENDIF
-               ENDDO
-            END IF
- 110     CONTINUE
+              IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
+     &            (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
+     &            (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
+                FACT   = FACT * 1.0D-3
+                HZUNIT = ' GHz'
+              ELSE
+                HZUNIT = ' MHz'
+              ENDIF
+              SPIN = DISOTP(NUCCHA,ISO,'SPIN')
+              MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
+              WRITE (LUPRI,9000)
+     &          'Nucleus: ',NAMDEP(IATOMD),
+     &          'Proton charge:',NUCCHA,
+     &          'Mass: ',MASS,'Spin: ',
+     &           SPIN,'Quadrupole moment: ',QMOM
+              DO I=1,3
+                WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
+     &                'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
+     &                EFGTOT(I,I,IATOM)*FACT,HZUNIT
+              ENDDO
+              WRITE (LUPRI,'(2X,A3,9X,F16.8)') 'Eta', ETA
+            ENDIF
+          ENDDO
+ 110    CONTINUE
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
  100  CONTINUE
+      IF(IATOMS.EQ.0) THEN
+        WRITE(6,'(2X,A)') 
+     & 'No active atoms with quadrupole moment.'
+      ENDIF
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz'
       RETURN
@@ -1771,27 +1773,27 @@ C
  210        CONTINUE
  200     CONTINUE
  100  CONTINUE
-      NATOM = 1
+      NATOM = 0
       DO 110 IATOM = 1, NUCIND
-         IF (.NOT. DOATOM(IATOM)) GOTO 110
-         DO 310 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
-               DO 220 I = 1, 3
-                  DO 230 J = I, 3
-                     EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &                         PT(IBTAND(IBTXOR(ISYMAX(I,1),
-     &                            ISYMAX(J,1)),IREPC))
-                     IF (I .NE. J) EFGEL(J,I,NATOM) = EFGEL(I,J,NATOM)
- 230              CONTINUE
- 220           CONTINUE
-               IF (IPRINT .GE. 2) THEN
-                  WRITE (LUPRI ,'(/2X,A,A/)')
-     &               'Electronic EFG Tensor of nucleus ',NAMDEP(NATOM)
-                  CALL OUTPUT(EFGEL(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
-               END IF
-               NATOM = NATOM + 1
+        IF (.NOT. DOATOM(IATOM)) GOTO 110
+        DO 310 IREPC = 0, MAXREP
+        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+          NATOM = NATOM + 1
+          DO 220 I = 1, 3
+            DO 230 J = I, 3
+              EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
+     &                           PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                           ISYMAX(J,1)),IREPC))
+              IF (I .NE. J) EFGEL(J,I,NATOM) = EFGEL(I,J,NATOM)
+ 230        CONTINUE
+ 220      CONTINUE
+          IF (IPRINT .GE. 2) THEN
+            WRITE (LUPRI ,'(/2X,A,A/)')
+     &        'Electronic EFG Tensor of nucleus ',NAMDEP(NATOM)
+              CALL OUTPUT(EFGEL(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
             END IF
- 310     CONTINUE
+          END IF
+ 310    CONTINUE
  110  CONTINUE
       RETURN
       END
@@ -1875,37 +1877,37 @@ C     print section
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      IATOM = 0
-      NATOM = 0
-      DO IA = 1, NUCIND
-        DO ISYMOP = 0,MAXOPR
-        IF (IBTAND(ISTBNU(IA),ISYMOP).EQ.0) THEN
-          IATOM = IATOM + 1
-          IF(DOATOM(IA)) THEN
-            NATOM = NATOM + 1
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-            DO I = 1,3
-              DO J = 1,3
-                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,NATOM)
-                EFG_METHOD(I,J,IATOM) = EFGTOT(I,J,IATOM)
-                EFGPRINT1 = EFGEL(I,J,NATOM) 
-                EFGPRINT2 = EFGNUC(I,J,IATOM) 
-                EFGPRINT3 = EFGTOT(I,J,IATOM)
-                IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12) THEN
-                  IF (ABS(EFG_METHOD(I,I,IATOM)).GT.1.0D+04) THEN
-                     FMTEFG = '(2X,A3,3(3X,E16.10,A))'
-                  ELSE
-                     FMTEFG = '(2X,A3,3(3X,F16.10,A))'
-                  ENDIF
-                  WRITE(LUPRI,FMTEFG)
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGPRINT1,
-     &              ' au ',EFGPRINT2,' au ',EFGPRINT3,' au '
+      NATOM  = 0
+      IATOMD = 0
+      DO IATOM = 1, NUCIND
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          IATOMD = IATOMD + 1
+          NATOM  = NATOM + 1
+          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOMD)
+          DO I = 1,3
+            DO J = 1,3
+              EFGTOT(I,J,NATOM)=EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
+              EFG_METHOD(I,J,NATOM) = EFGTOT(I,J,NATOM)
+              EFGPRINT1 = EFGEL(I,J,NATOM) 
+              EFGPRINT2 = EFGNUC(I,J,NATOM) 
+              EFGPRINT3 = EFGTOT(I,J,NATOM)
+              IF (ABS(EFG_METHOD(I,J,NATOM)).GT.1.0D-12) THEN
+                IF (ABS(EFG_METHOD(I,I,NATOM)).GT.1.0D+04) THEN
+                   FMTEFG = '(2X,A3,3(3X,E16.10,A))'
+                ELSE
+                   FMTEFG = '(2X,A3,3(3X,F16.10,A))'
                 ENDIF
-              END DO
+                WRITE(LUPRI,FMTEFG)
+     &            'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGPRINT1,
+     &            ' au ',EFGPRINT2,' au ',EFGPRINT3,' au '
+              ENDIF
             END DO
-          ENDIF
-        ENDIF
+          END DO
         END DO
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
       END DO
 C
 C           diagonalize total efg tensor
@@ -1915,43 +1917,45 @@ C
       WRITE(LUPRI,'(12X,A)')
      &     'Total contribution to principal components '
       CALL PRSYMB(LUPRI,'-',72,2)
-      IATOM = 0
-      DO IA = 1, NUCIND
-        DO ISYMOP = 0,MAXOPR
-        IF (IBTAND(ISTBNU(IA),ISYMOP).EQ.0) THEN
-          IATOM = IATOM + 1
-          IF(DOATOM(IA)) THEN
-            CALL DUNIT(AXIS(1,1,IATOM),3)
-            IJ = 1
-            DO I = 1, 3
-               DO J = 1, I
-                  PVAL(IJ) = EFGTOT(I,J,IATOM)
-                  IJ = IJ + 1
-               ENDDO
+      IATOMD = 0
+      NATOM  = 0
+      DO IATOM = 1, NUCIND
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          IATOMD = IATOMD + 1
+          NATOM  = NATOM + 1
+          CALL DUNIT(AXIS(1,1,NATOM),3)
+          IJ = 1
+          DO I = 1, 3
+            DO J = 1, I
+              PVAL(IJ) = EFGTOT(I,J,NATOM)
+              IJ = IJ + 1
             ENDDO
-            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-            EFGTOT(1,1,IATOM) = PVAL(1)
-            EFGTOT(2,2,IATOM) = PVAL(3)
-            EFGTOT(3,3,IATOM) = PVAL(6)
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-            DO I=1,3
-              FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
-              WRITE(LUPRI,FMTEFG)
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
-     &              ,EFGTOT(I,I,IATOM),' au '
-            ENDDO
+          ENDDO
+          CALL JACO(PVAL,AXIS(1,1,NATOM),3,3,3,TMP,ITMP)
+          EFGTOT(1,1,NATOM) = PVAL(1)
+          EFGTOT(2,2,NATOM) = PVAL(3)
+          EFGTOT(3,3,NATOM) = PVAL(6)
+          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOMD)
+          DO I=1,3
+            FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
+            WRITE(LUPRI,FMTEFG)
+     &            'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
+     &            ,EFGTOT(I,I,NATOM),' au '
+          ENDDO
 C
-C           print section principle axis
+C         print section principle axis
 C
-            IF (IPRINT .GE. 4) THEN
-              WRITE(LUPRI,'(A/)')
-     &           '  Principal axis to total contribution'
-              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-              CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-            END IF
-          ENDIF
-        ENDIF
+          IF (IPRINT .GE. 4) THEN
+            WRITE(LUPRI,'(A/)')
+     &         '  Principal axis to total contribution'
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOMD)
+            CALL OUTPUT(AXIS(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
+          END IF
         END DO
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)')
@@ -7023,7 +7027,8 @@ C
       CALL MEMGET('REAL',KEFN ,9*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-29)
       CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),
      &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
@@ -7069,14 +7074,24 @@ C     print section
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
-         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-         DO I = 1,3
-             EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
-             WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
-     &             EFNVEC(I,IATOM,1),' au ',EFNVEC(I,IATOM,2),' au ',
-     &             EFNTOT,' au '
-         END DO
+      NATOM  = 0
+      IATOMD = 0
+      DO IATOM = 1, NUCIND
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          IATOMD = IATOMD + 1
+          NATOM  = NATOM + 1
+          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOMD)
+          DO I = 1,3
+            EFNTOT=EFNVEC(I,NATOM,1)+EFNVEC(I,NATOM,2)
+            WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+     &           EFNVEC(I,NATOM,1),' au ',EFNVEC(I,NATOM,2),' au ',
+     &           EFNTOT,' au '
+          END DO
+        ENDDO
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
       END DO
       CALL PRSYMB(LUPRI,'-',72,2)
       RETURN
@@ -7121,27 +7136,29 @@ C
  200      CONTINUE
   50    CONTINUE
  100  CONTINUE
-      NATOM = 1
+      NATOM  = 0
+      IATOMD = 0
       DO 110 IATOM = 1, NUCIND
-        IF (.NOT. DOATOM(IATOM)) GOTO 110
-        DO 310 IREPC = 0, MAXREP
-          IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
-            DO 220 I = 1, 3
-              EFNEL(I,NATOM) = TEMP(I,IATOM)*
-     &                         PT(IBTAND(ISYMAX(I,1),IREPC))
- 220        CONTINUE
-            IF (IPRINT .GE. 2) THEN
-              WRITE (LUPRI ,'(/2X,A,A/)')
-     &         'Electronic electronic field at nucleus ',NAMDEP(NATOM)
-              IOFF = ICHAR('w')
-              DO I = 1,3
-                WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+I),
-     &              '-component: ',EFNEL(I,NATOM)
-              ENDDO
-            END IF
-            NATOM = NATOM + 1
+      IF (DOATOM(IATOM)) THEN
+        DO 310 IDEG = 1,NUCDEG(IATOM)
+          NATOM = NATOM + 1
+          DO 220 I = 1, 3
+            EFNEL(I,NATOM) = TEMP(I,IATOM)*
+     &                       PT(IBTAND(ISYMAX(I,1),IREPC))
+ 220      CONTINUE
+          IF (IPRINT .GE. 2) THEN
+            WRITE (LUPRI ,'(/2X,A,A/)')
+     &       'Electronic electric field at nucleus ',NAMDEP(IATOMD)
+            IOFF = ICHAR('w')
+            DO I = 1,3
+              WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+I),
+     &            '-component: ',EFNEL(I,NATOM)
+            ENDDO
           END IF
  310    CONTINUE
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
  110  CONTINUE
       RETURN
       END

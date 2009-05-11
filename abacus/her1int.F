@@ -933,7 +933,7 @@ C
      &                  IPRINT,INTADR)
          ELSE IF (INTTYP .EQ. 29) THEN
             CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
             CALL EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
@@ -4591,7 +4591,7 @@ C
       END
 C  /* Deck eftra */
       SUBROUTINE EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 C
 C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
@@ -4603,7 +4603,8 @@ C
 #include "maxorb.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
-     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
+     &          INTADR(*)
 #include "onecom.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -4621,12 +4622,13 @@ C
                   FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
      &                             *PT(IBTAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) +ICOOR
+                  IADR = INTADR(ISCOOR)
                   IF (IREPC .EQ. 0) THEN
-                     CALL SYM1S(SHLINT(1,ITYP),SOINT(1,ISCOOR),ISYMOP,
+                     CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
                   ELSE
-                     CALL SYM1N(SHLINT(1,ITYP),SOINT(1,ISCOOR),IREPC,
+                     CALL SYM1N(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &                          KHKTB,FACSYM,LDIAG,FULMAT,ANTI,DUM,
      &                          IDUM,IPRINT)

@@ -47,7 +47,7 @@ C
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
-      LOGICAL DOATOM,TEST
+      LOGICAL TEST
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -58,8 +58,6 @@ C
 #include "cbiher.h"
 #include "nuclei.h"
       CALL QENTER('ONEGEN')
-C.....Check if atoms have been selected
-      DOATOM=(ISUM(IPATOM,NUCIND,1).EQ.0)
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -106,14 +104,17 @@ C     these integrals are added as the perturbation to the Hamiltonian
 C
 C Process all other integrals, which are coded in the abacus part !
 C
-        TEST = DOATOM. AND.
-     &         ((CLSINT(I).EQ.'NEFIELD'))
+        TEST = ALLATM.AND.
+     &         ((CLSINT(I).EQ.'NEFIELD').OR.
+     &         (CLSINT(I).EQ.'ELFGRDC'))
         IF(TEST) THEN
+          ALLATM = .FALSE.
           NPATOM = 1
           DO K = 1,NUCIND
             IPATOM(1)=K
             CALL OP1GEN(CLSINT(I),COMB,IORDCL(I),WORK,LWORK,IPRONE)
           ENDDO
+          ALLATM = .TRUE.
           IPATOM(1) = 0
           NPATOM    = 0
         ELSE
