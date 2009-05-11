@@ -1,93 +1,111 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SETUP_ZO_DMAT_AO */
-      SUBROUTINE SETUP_ZO_DMAT_AO(CMO,
-     &                            DMAT_AO,
-     &                            STRING,
-     &                            WORK,LWORK)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+      subroutine setup_zo_dmat_ao(cmo,
+     &                            dmat_ao,
+     &                            occupation,
+     &                            w,
+     &                            lw)
 
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbqal.h"
+      use memory_allocator
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      implicit none
 
-#include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "pgroup.h"
 #include "dcbxrs.h"
 
-      DIMENSION CMO(*),
-     &          DMAT_AO(*),
-     &          STRING(*),
-     &          WORK(LWORK)
+      real(8)              :: cmo(*)
+      real(8)              :: dmat_ao(n2bbasxq)
+      real(8)              :: occupation(norbt)
+      integer              :: lw
+      real(8)              :: w(lw)
+      integer              :: iz, iq, irepop, ioff, ifsym, io
+      real(8), allocatable :: dmat_mo(:)
 
-#include "memint.h"
+      call alloc(dmat_mo, norbt*norbt*nz)
+      dmat_mo = 0.0d0
 
-!     allocate memory
+      do io = 1, norbt
+        dmat_mo((io-1)*norbt + io) = occupation(io)
+      end do
+!     call output(dmat_mo,
+!    &            1,
+!    &            norbt,
+!    &            1,
+!    &            norbt,
+!    &            norbt,
+!    &            norbt,
+!    &            1,
+!    &            6)
 
-      CALL MEMGET('REAL',KDMAT_MO,N2ORBXQ,WORK,KFREE,LFREE)
+      dmat_ao = 0.0d0
 
-!     get MO density matrix
-     
-      CALL MODENS(WORK(KDMAT_MO),STRING,IPRVIS)
+      jsymop = 1
+      irepop = 0
+      jopsy  = jbtof(irepop, 1)
 
-!     get AO density matrix
+!radovan: activate this for negative energy orbital
+!         and virtual orbital densities
+#define ALLOW_NEO_OR_VO_DENSITY
+#ifdef ALLOW_NEO_OR_VO_DENSITY
 
-      CALL DZERO(DMAT_AO,N2BBASXQ)
+      do ifsym = 1, nfsym
+        call qtrans('MOAO',
+     &              'S',
+     &              0.0d0,
+     &              nfbas(ifsym, 0),
+     &              nfbas(ifsym, 0),
+     &              norb(ifsym),
+     &              norb(ifsym),
+     &              dmat_ao(1 + i2basx(ifsym, ifsym)),
+     &              ntbas(0),
+     &              ntbas(0),
+     &              1,
+     &              ipqtoq(1, 0),
+     &              dmat_mo(1 + i2orbx(ifsym, ifsym)),
+     &              norbt,
+     &              norbt,
+     &              1,
+     &              ipqtoq(1, 0),
+     &              cmo(1 + icmoq(ifsym)),
+     &              nfbas(ifsym, 0),
+     &              norb(ifsym),
+     &              nz,
+     &              ipqtoq(1, 0),
+     &              cmo(1 + icmoq(ifsym)),
+     &              nfbas(ifsym, 0),
+     &              norb(ifsym),
+     &              nz,
+     &              ipqtoq(1, 0),
+     &              w,
+     &              lw,
+     &              0)
+      end do
 
-!#ifdef PRG_DIRAC
-#ifdef allow_virtual_orbital_density
-!     radovan: this code part is for Markus
-!              to allow virtual orbital densities
-!              in DMOLI3 this block gets filtered out
-!              i will make the code nicer later, for
-!              the moment this fix is ok ...
-      DO I = 1,NFSYM
-        CALL QTRANS('MOAO','S',D0,
-     &              NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &              DMAT_AO(1+I2BASX(I,I)),
-     &              NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &              WORK(KDMAT_MO+I2ORBX(I,I)),
-     &              NORBT,NORBT,1,IPQTOQ(1,0),
-     &              CMO(1+ICMOQ(I)),
-     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              CMO(1+ICMOQ(I)),
-     &              NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              WORK(KFREE),LFREE,0)
-      ENDDO
-      CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
+      dmat_ao = 2.0d0*dmat_ao
 #else
-      JSYMOP = 1
-      IREPOP = 0
-      JOPSY  = JBTOF(IREPOP,1)
-      IH     = 1
+      call dmoli3(0, 
+     &            1, 
+     &            dmat_ao,
+     &            cmo, 
+     &            dmat_mo,
+     &            work,
+     &            kfree,
+     &            lfree)
+#endif /* ifdef ALLOW_NEO_OR_VO_DENSITY */
 
-      CALL DMOLI3(0,IH,DMAT_AO,CMO,WORK(KDMAT_MO),
-     &            WORK,KFREE,LFREE)
-#endif /* allow_virtual_orbital_density */
+      call dealloc(dmat_mo)
 
-      IF(NZ .LT. 4) THEN
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,IREPOP)
-          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
-        ENDDO
-      ENDIF
+      if (nz < 4) then
+        do iz = 1, nz
+          iq   = ipqtoq(iz, irepop)
+          ioff = ntbas(0)*ntbas(0)*(iz - 1)
+          call q2bphase('D', iq, 1, dmat_ao(1 + ioff))
+        end do
+      end if
 
-!     release memory
+      end subroutine
 
-      CALL MEMREL('SETUP_ZO_DMAT_AO',WORK,KDMAT_MO,KDMAT_MO,KFREE,LFREE)
 
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* SCATTER_BVEC */
       SUBROUTINE SCATTER_BVEC(BVEC,

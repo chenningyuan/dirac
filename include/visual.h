@@ -12,15 +12,27 @@ C     LBIT(LBIT_VISUAL, 8) integrate
 C     LBIT(LBIT_VISUAL, 9)
 C     LBIT(LBIT_VISUAL,10)
 C
-      INTEGER MAX_NR_XVECTORS
+      integer max_nr_xvectors, max_nr_points_in_list
       PARAMETER (MAX_NR_XVECTORS = 25)
       PARAMETER (MAX_NR_POINTS_IN_LIST = 100)
 C
       CHARACTER       XVECTOR_FILE(MAX_NR_XVECTORS)*6,                  &
-     &                ORBITAL_STRING(2)*8,                              &
+     &                ORBITAL_STRING(2)*72,                             &
      &                ORIENTATION(3)*2
-      LOGICAL         DO_VISUAL
-C
+      logical         do_visual
+      integer         lbit_visual,                                      &
+     &                ncube,                                            &
+     &                nr_points_in_list,                                &
+     &                nr_xvectors,                                      &
+     &                iq_xvector,                                       &
+     &                irep_xvector,                                     &
+     &                iwhich_xvector,                                   &
+     &                ioption_xvector, iprvis
+      real(8)         add_3d, common_factor,                            &
+     &                xyz_list,                                         &
+     &                origin_2d, gauge_origin,                          &
+     &                add_2d, step_2d
+
       COMMON /CBVISC/ XVECTOR_FILE,                                     &
      &                ORBITAL_STRING,                                   &
      &                ORIENTATION

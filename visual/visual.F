@@ -284,6 +284,8 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 
@@ -300,6 +302,7 @@ C=======================================================================
 
       LOGICAL   LBIT
       DIMENSION WORK(LWORK)
+      real(8), allocatable :: occupation(:)
 
 #include "memint.h"
 
@@ -316,8 +319,6 @@ C=======================================================================
      &            WORK,KFREE,LFREE)
 !     CALL MEMGET('REAL',KSMAT     ,N2BBASX,
 !    &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSTRING   ,NESHT,
-     &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO      ,NTBAS(0),
      &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGAO1     ,NTBAS(0)*3,
@@ -343,7 +344,9 @@ C=======================================================================
 
 !     orbital string
 
-      CALL SETUP_ORBITAL_STRING(WORK(KSTRING))
+      call alloc(occupation, norbt)
+
+      call setup_orbital_string(occupation, work(kfree), lfree)
 
 !     density matrices
 
@@ -353,15 +356,17 @@ C=======================================================================
           CALL SETUP_FO_DMAT_AO(WORK(KCMO),
      &                          IXVECTOR,
      &                          WORK(KDMAT_AO+IOFF),
-     &                          WORK(KSTRING),
+     &                          occupation,
      &                          WORK(KFREE),LFREE)
         ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO
       CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
      &                      WORK(KDMAT_AO+IOFF),
-     &                      WORK(KSTRING),
+     &                      occupation,
      &                      WORK(KFREE),LFREE)
+
+      call dealloc(occupation)
 
 !     CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
 !     addme = DDOT(N2BBASX,WORK(KDMAT_AO),1,WORK(KSMAT),1)
@@ -1141,68 +1146,68 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SETUP_ORBITAL_STRING */
-      SUBROUTINE SETUP_ORBITAL_STRING(STRING)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
 
-#include "implicit.h"
-#include "priunit.h"
+      subroutine setup_orbital_string(occupation, w, lw)
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      use memory_allocator
+
+      implicit none
 
 #include "dcborb.h"
 #include "dgroup.h"
 #include "visual.h"
 
-      LOGICAL   LBIT
-      DIMENSION STRING(*)
+      real(8)              :: occupation(norbt)
+      integer              :: lw
+      real(8)              :: w(lw)
 
-      DO IFSYM = 1,NFSYM
-        CALL DCOPY(NESH(IFSYM),D0,0,STRING(1+NESH(1)*(IFSYM-1)),1)
-        IF(LBIT(LBIT_VISUAL,7)) THEN !use orbital string
+      logical              :: lbit
+      integer, allocatable :: kvec(:)
+      integer              :: i, ifsym, nvec, ioff, ishift
 
-          IF(ORBITAL_STRING(IFSYM)(4:5) .EQ. '..') THEN
-            READ(ORBITAL_STRING(IFSYM)(1:3),'(I3)') ISTART
-            READ(ORBITAL_STRING(IFSYM)(6:8),'(I3)') IEND
-            GOTO 1
-          ENDIF
-          IF(ORBITAL_STRING(IFSYM)(3:4) .EQ. '..') THEN
-            READ(ORBITAL_STRING(IFSYM)(1:2),'(I3)') ISTART
-            READ(ORBITAL_STRING(IFSYM)(5:8),'(I3)') IEND
-            GOTO 1
-          ENDIF
-          IF(ORBITAL_STRING(IFSYM)(2:3) .EQ. '..') THEN
-            READ(ORBITAL_STRING(IFSYM)(1:1),'(I3)') ISTART
-            READ(ORBITAL_STRING(IFSYM)(4:8),'(I3)') IEND
-            GOTO 1
-          ENDIF
-          WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-          WRITE(LUPRI,'(A)') 'wrong orbital string format'
-          CALL QUIT('ERROR in VISUAL')
- 1        CONTINUE
+      occupation = 0.0d0
 
-          IF(     (.NOT. (ISTART .LE. IEND))
-     &       .OR. (.NOT. (ISTART .GE. 0))
-     &       .OR. (.NOT. (IEND .LE. NESH(IFSYM)))) THEN
-            WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-            WRITE(LUPRI,'(A)') 'wrong orbital string dimension'
-            CALL QUIT('ERROR in VISUAL')
-          ENDIF
+      ioff = 0
 
-          DO I = ISTART,IEND
-            IF(ISTART .NE. 0) STRING(I+NESH(1)*(IFSYM-1)) = D1
-          ENDDO
+      do ifsym = 1, nfsym
 
-        ELSE
-          CALL DCOPY(NISH(IFSYM),D1,0,STRING(1+NESH(1)*(IFSYM-1)),1)
-        ENDIF
-      ENDDO
+        ioff = ioff + npsh(ifsym)
 
-      RETURN
-      END
+!       use orbital string
+        if (lbit(lbit_visual, 7)) then
+
+          call alloc(kvec, norb(ifsym))
+          kvec = 0
+          nvec = 1
+
+          call numlst(orbital_string(ifsym),
+     &                kvec,
+     &                norb(ifsym),
+     &               -npsh(ifsym),
+     &                nesh(ifsym),
+     &                ifsym,
+     &                nvec,
+     &                w,
+     &                lw)
+
+          do i = 1, nvec
+            ishift = kvec(i)
+            if (ishift < 0) ishift = ishift + 1
+            occupation(ioff + ishift) = 1.0d0
+          end do
+
+          call dealloc(kvec)
+
+        else
+
+          do i = 1, nish(ifsym)
+            occupation(ioff + i) = 1.0d0
+          end do
+
+        end if
+
+        ioff = ioff + nesh(ifsym)
+
+      end do
+
+      end subroutine
