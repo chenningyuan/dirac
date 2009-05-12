@@ -33,7 +33,12 @@ static void lda_helper(int functional,
 		       double R,
 		       double *res)
 {
+#ifndef TAYLOR_QD
   taylor<2,Ndeg> *t = reinterpret_cast< taylor<2,Ndeg> * >(res);
+#else
+  taylor<2,Ndeg> tmp;
+  taylor<2,Ndeg> *t = &tmp;
+#endif
   switch(functional)
     {
     case LDA_VWN:
@@ -46,6 +51,10 @@ static void lda_helper(int functional,
       assert(0 && "Unknown LDA functional");
       break;
     }
+#ifdef TAYLOR_QD
+  for (int i=0;i<tmp.size();i++)
+    res[i] = to_double(tmp[i]);
+#endif
 }
 
 extern "C" void
@@ -92,7 +101,12 @@ static void gga_helper(int functional,
 		       double R, double Z,
 		       double *res)
 {
+#ifndef TAYLOR_QD
   taylor<5,Ndeg> *t = reinterpret_cast< taylor<5,Ndeg> * >(res);
+#else
+  taylor<5,Ndeg> tmp;
+  taylor<5,Ndeg> *t = &tmp;
+#endif
   switch(functional)
     {
     case GGA_LYP:
@@ -105,6 +119,10 @@ static void gga_helper(int functional,
       assert(0 && "Unknown GGA functional");
       break;
     }
+#ifdef TAYLOR_QD
+  for (int i=0;i<tmp.size();i++)
+    res[i] = to_double(tmp[i]);
+#endif
 }
 
 extern "C" void

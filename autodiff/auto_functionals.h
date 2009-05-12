@@ -11,15 +11,15 @@
 #define AUTO_FUNCTIONAL_SCALING 1.0
 
 template<int N>
-taylor<2,N> vwn_correlation(double R0);
+taylor<2,N> vwn_correlation(tnum_t R0);
 
 template<int N>
-taylor<2,N> slater_exchange(double R0);
+taylor<2,N> slater_exchange(tnum_t R0);
 
 template<int N>
-taylor<5,N> lyp_correlation(double R0, double Z0);
+taylor<5,N> lyp_correlation(tnum_t R0, tnum_t Z0);
 
 template<int N>
-taylor<5,N> becke_exchange(double R0, double Z0);
+taylor<5,N> becke_exchange(tnum_t R0, tnum_t Z0);
 
 #endif
