@@ -28,7 +28,9 @@ static inline qd_real erf(const qd_real &x)
   double magn = erf(to_double(x)); // order of magnitude of answer.
   qd_real sum = 0;
   qd_real term = x;
-  int k = 0;
+  int k = 0;  
+  if (fabs(x) > 12) // erf(12) = 1 - 1e-64
+    return 1;
   sum += term;
   if (fabs(x) > 1e-64)
     while (fabs(term/magn) > 1e-64)
