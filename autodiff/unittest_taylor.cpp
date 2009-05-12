@@ -49,7 +49,7 @@ int taylor_check(const char *label,
   int nfail = 0;
   for (int i=0;i<NR_COEFF_CHECK;i++)
     {
-      double err = 2*fabs(t[i] - correct[i])/(1 + fabs(correct[i]));
+      tnum_t err = 2*fabs(t[i] - correct[i])/(1 + fabs(correct[i]));
       if (err > thres)
 	{
 	  cout << "Error in coefficient " << i << " of " << label << ". Correct:" << correct[i] << ", taylor:" << t[i] << " error: " <<  correct[i] - t[i] << endl;
@@ -67,7 +67,7 @@ int taylor_compare(const taylor<Nvar,Ndeg>& t1,
   int nfail = 0;
   for (int i=0;i<t1.size();i++)
     {
-      double err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
+      tnum_t err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
       if (err > thres)
 	{
 	  cout << "Difference in coefficient " << i << ". Correct:" << t1[i] << ", taylor:" << t2[i] << " difference: " <<  t1[i] - t2[i] << endl;
@@ -79,9 +79,9 @@ int taylor_compare(const taylor<Nvar,Ndeg>& t1,
 
 
 template<int Nvar, int Ndeg>
-double taylor_sumsq(const taylor<Nvar,Ndeg>& t)
+tnum_t taylor_sumsq(const taylor<Nvar,Ndeg>& t)
 {
-  double s = 0;
+  tnum_t s = 0;
   for (int i=0;i<t.size();i++)
     s += t[i]*t[i];
   return s;
@@ -100,6 +100,11 @@ int main(void)
   double x0 = 2.5;
   taylor<1,6> tin(x0,0);
   int res = 0;
+
+#ifdef TAYLOR_QD
+  unsigned int cw;
+  fpu_fix_start(&cw);
+#endif
 
   cout.precision(16);
 
@@ -204,7 +209,9 @@ int main(void)
       cout << "Error in taylor::index_of()\n";
       res++;
     }
-
+#ifdef TAYLOR_QD
+  fpu_fix_end(&cw);
+#endif
 
   return res;
 }
