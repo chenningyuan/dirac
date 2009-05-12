@@ -56,9 +56,9 @@ static taylor<2,N> vwn_correlation(tnum_t R0)
   assert(R0 > 1e-20);
   taylor<2,N> R(R0,0,AUTO_FUNCTIONAL_SCALING); // R = R0 + x
   taylor<2,N> S(0,1,AUTO_FUNCTIONAL_SCALING); // S = S0 + y
-  taylor<2,N> s = pow(3/(4*TAYLOR_PI),1.0/6)/pow(R,1.0/6);
+  taylor<2,N> s = pow(3/(4*TAYLOR_PI),tnum_t(1.0)/6)/pow(R,tnum_t(1.0)/6);
   taylor<2,N> t = S/R;
-  taylor<2,N> g = 1.92366105093154*(pow(1 + t,4.0/3) + pow(1 - t,4.0/3) - 2);
+  taylor<2,N> g = 1.92366105093154*(pow(1 + t,tnum_t(4.0)/3) + pow(1 - t,tnum_t(4.0)/3) - 2);
   taylor<2,N> d = g*((f(s, ferro) - f(s, para))*pow(t,4) +
     f(s, inter)*(1 - pow(t,4))*0.584822305543806);
   return R*(f(s, para) + d);
@@ -93,8 +93,8 @@ template<int N>
 static taylor<2,N> slater_exchange(tnum_t R0)
 {
   taylor<2,N> R(R0,0,AUTO_FUNCTIONAL_SCALING), S(0,1,AUTO_FUNCTIONAL_SCALING);
-  const tnum_t prefactor = -3.0/4.0*pow(6/TAYLOR_PI, 1.0/3.0);
-  return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));
+  const tnum_t prefactor = -3.0/4.0*pow(6/TAYLOR_PI, tnum_t(1.0)/3.0);
+  return prefactor*(pow((R+S)/2,tnum_t(4.0)/3) + pow((R-S)/2,tnum_t(4.0)/3));
 }
 
 template

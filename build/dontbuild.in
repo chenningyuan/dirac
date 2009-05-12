@@ -61,3 +61,4 @@ prp/esr/.*
 aoresponse/matrix.*new.*
 autodiff/bench_taylor.*
 autodiff/unittest_taylor.*
+autodiff/funtest.*

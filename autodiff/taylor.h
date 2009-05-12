@@ -504,6 +504,7 @@ taylor<Nvar,Ndeg> pow(const taylor<Nvar,Ndeg> &t, int n)
   return res;
 }
 
+
 // Use that d/dx atan(x) = 1/(1 + x^2),
 // Taylor expand in x^2 and integrate.
 template<int Ndeg>

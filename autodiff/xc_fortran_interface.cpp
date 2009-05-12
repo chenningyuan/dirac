@@ -38,6 +38,8 @@ static void lda_helper(int functional,
 #else
   taylor<2,Ndeg> tmp;
   taylor<2,Ndeg> *t = &tmp;
+  unsigned int cw;
+  fpu_fix_start(&cw);
 #endif
   switch(functional)
     {
@@ -54,6 +56,7 @@ static void lda_helper(int functional,
 #ifdef TAYLOR_QD
   for (int i=0;i<tmp.size();i++)
     res[i] = to_double(tmp[i]);
+  fpu_fix_end(&cw);
 #endif
 }
 
@@ -106,6 +109,8 @@ static void gga_helper(int functional,
 #else
   taylor<5,Ndeg> tmp;
   taylor<5,Ndeg> *t = &tmp;
+  unsigned int cw;
+  fpu_fix_start(&cw);
 #endif
   switch(functional)
     {
@@ -122,6 +127,7 @@ static void gga_helper(int functional,
 #ifdef TAYLOR_QD
   for (int i=0;i<tmp.size();i++)
     res[i] = to_double(tmp[i]);
+  fpu_fix_end(&cw);
 #endif
 }
 
