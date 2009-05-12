@@ -87,9 +87,9 @@ double taylor_sumsq(const taylor<Nvar,Ndeg>& t)
   return s;
 }
 
-double fac(int n)
+long fac(int n)
 {
-  double f = 1;
+  long f = 1;
   while (n > 1)
     f *= n--;
   return f;

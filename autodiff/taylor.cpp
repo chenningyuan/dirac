@@ -96,7 +96,7 @@ void taylor_mul(tnum_t dst[], int nvar, int ndeg,
 		const tnum_t p1[], const tnum_t p2[])
 {
   for (int i=0;i<taylor_len(nvar,ndeg);i++)
-    dst[i] = 0;
+    dst[i] = 0.0;
   if (nvar == 1)
     {
       for (int i=0;i<=ndeg;i++)

@@ -11,26 +11,41 @@
   template, and make the recursion terminate at the tables instead of
   continuing all the way down.
 */
-
-#ifdef TAYLOR_MPFR 
-// Using MPFR multi precision library with the MPFRCPP C++ wrapper
-// See
-// http://www.mpfr.org/
-// http://beshenov.ru/mpfrcpp/doc/
-// NB: This is work in progress, and the test does not yet
-// compile with MPFR. -Ulf
-#include <mpfrcpp/mpfrcpp.hpp>
-using namespace mpfr;
-typedef Real tnum_t; // Type of coefficients
-typedef Real tlongnum_t; // Type used to accumulate sums
+#ifdef TAYLOR_QD
+// Using the quadratic-double library QD.
+// See http://crd.lbl.gov/~dhbailey/mpdist/
+// Note that you _need_ to use fpu_fix_start/end on
+// x86 machines for correct rouding.
+#warning Using quadratic double precision
+#include <qd/qd_real.h>
+typedef qd_real tnum_t;
+typedef qd_real tlongnum_t;
+#define TAYLOR_PI qd_real::_pi
+// QD does not provide an error function, so here is a slow and
+// not so smart Taylor expansion.
+static inline qd_real erf(const qd_real &x)
+{
+  double magn = erf(to_double(x)); // order of magnitude of answer.
+  qd_real sum = 0;
+  qd_real term = x;
+  int k = 0;
+  sum += term;
+  while (fabs(term/magn) > 1e-64)
+    {
+      k++;
+      term *= qd_real(-(2*k-1)*x*x)/(k*(2*k+1));
+      sum += term;
+    }
+  return sum*2/sqrt(qd_real::_pi);
+}
 #else
 // Standard numeric types. Note that long double is not always
 // the same on all machines.
 #include <cmath>
 typedef double tnum_t; // Type of coefficients
 typedef long double tlongnum_t; // Type used to accumulate sums
+#define TAYLOR_PI M_PI
 #endif
-
 
 #include "taylor_multab.h"
 
@@ -80,8 +95,8 @@ int taylor_index(int nvar, const int exponents[]);
 
 // Multiply polynomials with coefficients p1 and p2,
 // and _add_ the result to dst.
-void taylor_mul(double dst[], int nvar, int ndeg,
-		const double p1[], const double p2[]);
+void taylor_mul(tnum_t dst[], int nvar, int ndeg,
+		const tnum_t p1[], const tnum_t p2[]);
 
 // A polynomial in Nvar variables of order Ndeg (all terms
 // x^iy^j..z^k: i+j+..+k <= Ndeg). Multiplication
@@ -95,7 +110,7 @@ class taylor
     {
       c[0] = c0;
       for (int i=1;i<binomial<Ndeg+Nvar,Ndeg>::value;i++)
-	c[i] = 0;
+	c[i] = 0.0;
     }
   // Set the constant term to c0 and the first order term of
   // variable var to 1.
@@ -103,7 +118,7 @@ class taylor
     {
       c[0] = c0;
       for (int i=1;i<binomial<Ndeg+Nvar,Ndeg>::value;i++)
-	c[i] = 0;
+	c[i] = 0.0;
       assert(Ndeg>=0);
       assert(Nvar>=1);
       assert(var>=0);
@@ -156,7 +171,7 @@ class taylor
       assert(Nvar == 1 && "Implement this..");
       for (int i=Ndeg;i>0;i--)
 	c[i] = c[i-1]/i;
-      c[0] = 0;
+      c[0] = 0.0;
     }
   // Set x := alpha*x, y = :alpha*y etc
   void stretch(tnum_t alpha)
@@ -173,7 +188,7 @@ class taylor
   void zero(void)
   {
     for (int i=0;i<binomial<Ndeg+Nvar,Ndeg>::value;i++)
-	c[i] = 0;
+	c[i] = 0.0;
   }
   int size(void) const
     {
@@ -243,7 +258,7 @@ class taylor
 	{
 	  // Slow generic code
 	  taylor<Nvar,Ndeg> tmp = *this;
-	  tmp[0] = 0;
+	  tmp[0] = 0.0;
 	  res.zero();
 	  for (int i=Ndeg;i>0;i--)
 	    {
@@ -541,7 +556,7 @@ template<int Ndeg>
 void erf_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
 {
   gauss_taylor(t,a);
-  t*=2/sqrt(M_PI);
+  t*=2/sqrt(TAYLOR_PI);
   //Integrate each term and set the constant
   t.integrate();
   t[0] = erf(a);
