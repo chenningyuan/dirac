@@ -15,7 +15,7 @@
 // Using the quadratic-double library QD.
 // See http://crd.lbl.gov/~dhbailey/mpdist/
 // Note that you _need_ to use fpu_fix_start/end on
-// x86 machines for correct rouding.
+// x86 machines for correct rounding.
 #warning Using quadratic double precision
 #include <qd/qd_real.h>
 typedef qd_real tnum_t;
@@ -30,12 +30,13 @@ static inline qd_real erf(const qd_real &x)
   qd_real term = x;
   int k = 0;
   sum += term;
-  while (fabs(term/magn) > 1e-64)
-    {
-      k++;
-      term *= qd_real(-(2*k-1)*x*x)/(k*(2*k+1));
-      sum += term;
-    }
+  if (fabs(x) > 1e-64)
+    while (fabs(term/magn) > 1e-64)
+      {
+	k++;
+	term *= qd_real(-(2*k-1)*x*x)/(k*(2*k+1));
+	sum += term;
+      }
   return sum*2/sqrt(qd_real::_pi);
 }
 #else
