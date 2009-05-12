@@ -900,16 +900,19 @@ C     (copied from abacus/hergp.F:CMMASS)
 C
       JATOM = 0
       DO IATOM = 1, NUCIND
-        DO IDEG = 1,NUCDEG(IATOM)
-          ICHARG = NINT(CHARGE(IATOM))
-          DO KCOOR = 1, 3
-            GEOM(3*JATOM + KCOOR) =
-     &               PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
-     &              *CORD(KCOOR,IATOM)
-          END DO
-          JATOM = JATOM + 1
-        END DO
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = NINT(CHARGE(IATOM))
+                  DO KCOOR = 1, 3
+                     GEOM(3*JATOM + KCOOR) =
+     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    *CORD(KCOOR,IATOM)
+                  END DO
+                  JATOM = JATOM + 1
+            END IF
+         END DO
       END DO
+C
 C
       CALL DZERO(EFGNUC,9*MXCENT)
       KK = 1
@@ -917,13 +920,13 @@ C
       IATOMD = 0
       DO 10 I1 = 1, NUCIND
       IF(DOATOM(I1)) THEN
-        DO 20 IDEG1 = NUCDEG(I1)
+        DO 20 IDEG1 = 1,NUCDEG(I1)
           NATOM = NATOM + 1
           IATOMD = IATOMD + 1
           LL = 1
           DO 100 I2 = 1, NUCIND
           IF (CHARGE(I2).EQ.D0) GOTO 100
-            DO 110 IDEG2=NUCDEG(I2)
+            DO 110 IDEG2=1,NUCDEG(I2)
               IF (LL .NE. KK) THEN
                 XCOOR = GEOM(LL) - GEOM(KK)
                 YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
@@ -946,13 +949,13 @@ C
               LL = LL + 3
  110        CONTINUE
  100      CONTINUE
-          EFGNUC(2,1,IATOM) = EFGNUC(1,2,IATOM)
-          EFGNUC(3,1,IATOM) = EFGNUC(1,3,IATOM)
-          EFGNUC(3,2,IATOM) = EFGNUC(2,3,IATOM)
+          EFGNUC(2,1,NATOM) = EFGNUC(1,2,NATOM)
+          EFGNUC(3,1,NATOM) = EFGNUC(1,3,NATOM)
+          EFGNUC(3,2,NATOM) = EFGNUC(2,3,NATOM)
           IF (IPRINT .GE. 2) THEN
             WRITE (LUPRI ,'(/2X,2A,/)')
      &             'Nuclear EFG Tensor of nucleus: ',NAMDEP(IATOMD)
-            CALL OUTPUT(EFGNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+            CALL OUTPUT(EFGNUC(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
           END IF
           KK = KK + 3
  20     CONTINUE
@@ -1023,20 +1026,23 @@ C***********************************************************************
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
 #include "ibtfun.h"
 C
+C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
 C
       JATOM = 0
       DO IATOM = 1, NUCIND
-        DO IDEG = 1,NUCDEG(IATOM)
-          ICHARG = NINT(CHARGE(IATOM))
-          DO KCOOR = 1, 3
-            GEOM(3*JATOM + KCOOR) =
-     &               PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
-     &              *CORD(KCOOR,IATOM)
-          END DO
-          JATOM = JATOM + 1
-        END DO
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = NINT(CHARGE(IATOM))
+                  DO KCOOR = 1, 3
+                     GEOM(3*JATOM + KCOOR) =
+     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    *CORD(KCOOR,IATOM)
+                  END DO
+                  JATOM = JATOM + 1
+            END IF
+         END DO
       END DO
 C
       CALL DZERO(EFNNUC,3*NUCDEP)

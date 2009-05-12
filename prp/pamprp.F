@@ -1773,12 +1773,14 @@ C
  210        CONTINUE
  200     CONTINUE
  100  CONTINUE
-      NATOM = 0
+      NATOM =  0
+      IATOMD = 0
       DO 110 IATOM = 1, NUCIND
-        IF (.NOT. DOATOM(IATOM)) GOTO 110
+      IF(DOATOM(IATOM)) THEN
         DO 310 IREPC = 0, MAXREP
         IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
+          IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             DO 230 J = I, 3
               EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
@@ -1789,11 +1791,14 @@ C
  220      CONTINUE
           IF (IPRINT .GE. 2) THEN
             WRITE (LUPRI ,'(/2X,A,A/)')
-     &        'Electronic EFG Tensor of nucleus ',NAMDEP(NATOM)
+     &        'Electronic EFG Tensor of nucleus ',NAMDEP(IATOMD)
               CALL OUTPUT(EFGEL(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
             END IF
-          END IF
+        END IF
  310    CONTINUE
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
  110  CONTINUE
       RETURN
       END
@@ -2521,6 +2526,7 @@ C
             END IF
          END DO
       END DO
+C
 C
       CALL DZERO(EFTNUC,15*NUCDEP)
       KK = 1
@@ -7140,8 +7146,10 @@ C
       IATOMD = 0
       DO 110 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
-        DO 310 IDEG = 1,NUCDEG(IATOM)
+        DO 310 IREPC = 0, MAXREP
+        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
+          IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             EFNEL(I,NATOM) = TEMP(I,IATOM)*
      &                       PT(IBTAND(ISYMAX(I,1),IREPC))
@@ -7155,6 +7163,7 @@ C
      &            '-component: ',EFNEL(I,NATOM)
             ENDDO
           END IF
+        ENDIF
  310    CONTINUE
       ELSE
         IATOMD = IATOMD + NUCDEG(IATOM)
