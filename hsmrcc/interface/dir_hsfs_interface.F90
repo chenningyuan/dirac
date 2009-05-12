@@ -30,12 +30,15 @@ endif
 
 call print_HSFS_Dirac_info
 
-call read_mrconee;  call print_mrconee_data
-
 call StickMemory(WORK,LWORK)
 
+HSFS_mode=.true.
 
-!call read_moltra_files
+call read_mrconee;  call print_mrconee_data
+
+call scan_mdcint
+
+call read_mdcint_hsfs
 
 call UnstickMemory
 
@@ -88,6 +91,7 @@ subroutine HSFSINP(WORD,reset)
 !  Written by Miro ILIAS, Tel Aviv, 2009
 !
 !-----------------------------------------------------------------------------
+  use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
 
@@ -99,7 +103,7 @@ CHARACTER(len=7) :: WORD, KEYWORD=' '
 
 ! ... nice F90 version 
 character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
-                                              '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /)
+                                              '.CONV  ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /)
 
  if (set) then
   if (reset) set = .false.
@@ -143,19 +147,22 @@ Do
      Select Case (WORD)
       Case ('.OPTION')
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
-      Case ('.NCORE')
-        READ(LUCMD,*) NCMO_DIRAC
-        write(LUPRI,*) ' read NCMO_DIRAC=',NCMO_DIRAC
-      Case ('.NACT')
-        READ(LUCMD,*) NACT_DIRAC
-        write(LUPRI,*) ' read NACT_DIRAC=',NACT_DIRAC
-      Case ('.NOHSDIR')
-        nohsccdirac=.true. 
+!      Case ('.NCORE')
+!        READ(LUCMD,*) NCMO_DIRAC
+!        write(LUPRI,*) ' read NCMO_DIRAC=',NCMO_DIRAC
+!      Case ('.NACT')
+!        READ(LUCMD,*) NACT_DIRAC
+!        write(LUPRI,*) ' read NACT_DIRAC=',NACT_DIRAC
+!      Case ('.NOHSDIR')
+!        nohsccdirac=.true. 
       Case ('.PRINT')
-        READ(LUCMD,*) iprint_hscc
-        write(LUPRI,*) ' read IPRINT_hscc=',iprint_hscc
-      Case ('.DRYRUN')
-        nohsccfiles=.true.
+        READ(LUCMD,*) iprint_hsfs
+        write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
+       Case ('.CONV')
+         READ(LUCMD,*) iconv_hsfs
+         write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
+!      Case ('.DRYRUN')
+!        nohsccfiles=.true.
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
         '" is not yet implemented in HSCCINP.'
@@ -176,34 +183,35 @@ EndDo
 
  WRITE (LUPRI,'(//)')
  CALL PRSYMB(LUPRI,'=',75,0)
- WRITE(LUPRI,'(1X,A)') 'HSCCINP: Set-up for the external standalone HSMRCC code'
+ WRITE(LUPRI,'(1X,A)') 'HSFSINP: Set-up for the external standalone HSFS codes'
  CALL PRSYMB(LUPRI,'=',75,0)
- WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hscc
+ WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hsfs
 ! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
 
- WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
- WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
+! WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
+! WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
 ! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
 
- if (nohsccfiles) then
-  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
- else
-  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
- endif
+! if (nohsccfiles) then
+!  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
+! else
+!  WRITE(LUPRI,'(1X,A)') '* Prepare HSCC files by Dirac.'
+! endif
 
- if (nohsccdirac) then
-  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by DIRAC, do not continue with "afterDIRAC" HSCC.'
- endif
+! if (nohsccdirac) then
+!  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by DIRAC, do not continue with "afterDIRAC" HSCC.'
+! endif
 
- print *,' returning from HSCCINP ...'
 
  Return
 
 910  CONTINUE
-        CALL QUIT('Error reading LUCMD, no "*HSCC" input found !')
+        CALL QUIT('Error reading LUCMD, no "*HSFS" input found !')
 920  CONTINUE
-        CALL QUIT('Error reading LUCMD, after "*HSCC" input some error occured...')
+        CALL QUIT('Error reading LUCMD, after "*HSFS" input some error occured...')
 930  CONTINUE
-        CALL QUIT('Error reading LUCMD, after "*HSCC" input end of file reached...')
+        CALL QUIT('Error reading LUCMD, after "*HSFS" input end of file reached...')
 
 end subroutine HSFSINP
+
+

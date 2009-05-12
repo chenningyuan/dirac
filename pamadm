@@ -678,6 +678,7 @@ if [ -n "$HSFSFLG" ]; then
    rmline build/dontbuild "hsmrcc/\.\*"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/\.\*"
    rmline build/dontbuild "hsmrcc/interface/dir_hsfs_interface.F90"
+   rmline build/dontbuild "hsmrcc/interface/dir_hsfs_mod.F90"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csd.F"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csv.F"
    rmline build/dontbuild "hsmrcc/high_sect_fscc_external/csu.F"

@@ -45,11 +45,17 @@ CHARACTER*10 NEXTFIL, INTERFACE
 
 logical :: is_complex, mrconee_read = .false.
 
+! either HSFS mode, or 
+logical :: HSFS_mode=.false.
+
 integer, public :: nelec_tot=0
 
-integer :: nnzi=0, nintbl=0
+integer :: nnzi=0, nintbl=0, nintmaxbl=0
 
 integer :: RCW=0
+
+! array for HSFS indexes
+type(Vect), save :: hsfs_indx, boson_irps_indx, hsfs_orben
 
 ! store also cbuf, pos_ij, pos_kl
 type(Array2Dim), save :: cbuf
@@ -57,10 +63,14 @@ type(Array3Dim), save :: pos_ij, pos_kl
 
 contains
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine alloc_mdcint_data
 !------------------------------------------------------------------------------------
+!
 !         allocate arrays for MDCINT 2-el.integrals & their indexes
+!
+!   cbuf, pos_ij, pos_kl 
+!
 !------------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
@@ -132,6 +142,9 @@ end function get_nonzero_integral_position
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function GetNBSYM() result(nbsym_dirac)
+!
+! get number of bosonic irreps
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -229,7 +242,6 @@ subroutine read_mrconee
 !
 !  read data from MRCONEE 
 !
-!
 !----------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
@@ -305,13 +317,22 @@ logical :: is_mrc
   irrep_product_dirac=0
 
   write(LUPRI,*) 'GetNBSYM=',NBSYM
+
   do i=1,NBSYM
   do j=1,NBSYM
    ! write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1))
+
     write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,1)-2*NBSYM)
+
     irrep_product_dirac(i,j)= MULTB(i,j,1)-2*NBSYM
   enddo
   enddo
+
+!---------------------------------------------------------------------
+!     if HSFS mode, allocate array for HSFS_indexes and fill it 
+!---------------------------------------------------------------------
+ if (HSFS_mode) call get_HSFS_indexes() 
+
 
   return
 
@@ -320,6 +341,87 @@ logical :: is_mrc
   Call Quit('read_mrconee: some error in reading MRCONEE file!')
 
 end subroutine read_mrconee
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine get_HSFS_indexes()
+!----------------------------------------------------------------------------------
+!
+! assumes MRCONEE read !
+!
+!----------------------------------------------------------------------------------
+use DIRAC_HSFS
+#include "implicit.h"
+#include "priunit.h"
+
+write(LUPRI,*)  'get_HSFS_indexes'
+
+hsfs_indx=MakeVector('INTE',NSP/2,'HSFS indexes')
+
+boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
+
+do i=1,GetNBSYM()
+ boson_irps_indx%p_iA1D(i)=0
+ write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+enddo
+
+write(LUPRI,*) '... hsfs_indx vector allocated'
+
+do isp=1,nsp/2
+
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   IREPSP(ISP),IREPSP(NSP+ISP), &
+   ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP))
+
+   boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )=boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1
+ !  write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+enddo
+
+write(LUPRI,*) 'filled irreps'
+do i=1,GetNBSYM()
+! boson_irps_indx%p_iA1D(i)=0
+ write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx%p_iA1D(i)
+enddo
+
+! ... fill "hsfs_indx" vector: map order MRCONEE -> HSFS
+ik=0
+do i=1,GetNBSYM()
+do j=1,nsp/2
+
+ if ( i == IREPSP(NSP+j) ) then
+ !  write(LUPRI,'(a,3i3)') 'i,j,IREPSP(NSP+j):',i,j,IREPSP(NSP+j)
+   k=ik
+   k=k+1
+   hsfs_indx%p_iA1D(j) = k
+   ik=k
+ endif
+
+enddo
+enddo
+
+write(LUPRI,*) 'HSFS index order'
+do isp=1,nsp/2
+
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   IREPSP(ISP),IREPSP(NSP+ISP), &
+   ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+
+enddo
+
+!call quit('get_HSFS_indexes')
+
+call open_dirac_hsfs_file
+
+ ! ... save some stuff 
+write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
+
+do isp=1,nsp/2
+ write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
+ write(LUPRI,*) isp,REPNA(IREPSP(NSP+hsfs_indx%p_iA1D(isp) )), EPS1( hsfs_indx%p_iA1D(isp) )
+enddo
+
+write(LUPRI,*) 'HSFS stuff written into luhsfs file'
+
+end subroutine get_HSFS_indexes
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine print_mrconee_data
@@ -347,10 +449,13 @@ write(LUPRI,'(2x,a,l1)')      ' is BREIT correction=',BREIT
 write(LUPRI,'(2x,a,f12.6)')  ' ECORE=',ECORE
 write(LUPRI,'(2x,a,i3)')     ' NFSYM=',NFSYM
 write(LUPRI,'(2x,a,i3)')     ' NZ=',NZ
-write(LUPRI,'(2x,a,l1)')      ' is spin-free, SPFR=',SPFR
-write(LUPRI,'(2x,a,i3)')     ' NORBT=',NORBT
 
-write(LUPRI,'(/,2x,a,i2)')  ' NSYMRP=',NSYMRP
+write(LUPRI,'(2x,a,l1)')      ' is spin-free, SPFR=',SPFR
+
+write(LUPRI,'(2x,a,i3)')     ' NORBT=',NORBT
+write(LUPRI,'(2x,a,i3)')     ' NSP=',NSP
+
+write(LUPRI,'(/,2x,a,i2)')  'double group irreps, NSYMRP=',NSYMRP
 
 write(LUPRI,'(2x,a)')  '** REPNT(1-NSYMRP) **'
 DO IRP = 1, NSYMRP
@@ -443,6 +548,13 @@ rewind(MDINT)
 write(LUPRI,'(//2x,a,i3)') 'The MDCINT file open and rewinded...lu=',MDINT
 
 READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
+
+
+!---------------------------------------------------------------------
+!     if HSFS mode, allocate array for HSFS_indexes and fill it 
+!---------------------------------------------------------------------
+! if (HSFS_mode) call get_HSFS_indexes()
+
 
 if (NKR > NSP2) then
  call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
@@ -703,21 +815,264 @@ endif
 
 end subroutine read_mdcint
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine read_mdcint_hsfs
+!----------------------------------------------------------------------
+!
+!            read MDCINT for HSFS - save integrals into file
+!
+!----------------------------------------------------------------------
+use DIRAC_HSFS
+#include "implicit.h"
+#include "priunit.h"
+logical :: print_batch_info=.true., print_int=.false.
+type(Vect) :: indk_vect, indl_vect, cbuf_vect
+
+Call Header('MDCINT control print-out',-1)
+
+! ... check if memory block is present
+if (.not.IsMemorySticked() ) then
+ write(LUPRI,*) 'read_mdcint: memory array not present !' 
+ call Quit('read_mdcint: memory array not present !  ')
+else
+ write(LUPRI,*) 'read_mdcint: memory sticked !' 
+endif
+
+! ... check if MRCONEE was read 
+if (.NOT.mrconee_read) then
+ write(LUPRI,*) 'read_mdcint: MRCONEE file was not read before !' 
+ call Quit('read_mdcint: MRCONEE file was not read before !  ')
+!else
+! write(LUPRI,*) 'read_mdcint: memory sticked !' 
+endif
+
+inquire(file="MDCINT",EXIST=is_mdc); if (.not.is_mdc) call Quit('No MDCINT file!')
+
+open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
+rewind(MDINT)
+
+write(LUPRI,'(//2x,a,i3)') 'The MDCINT file open and rewinded...lu=',MDINT
+
+READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
+
+!---------------------------------------------------------------------
+!     if HSFS mode, allocate array for HSFS_indexes and fill it 
+!---------------------------------------------------------------------
+! if (HSFS_mode) call get_HSFS_indexes()
+
+
+if (NKR > NSP2) then
+  call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
+endif
+
+if (NKR /= NORBT .and. 2*NKR /= NORBT) then
+ write(LUPRI,*) 'CHECK: NKR=',NKR,' NORBT=',NORBT
+ !write(LUPRI,*) 'MRCONEE and MDCINT are incompatible !'
+ !call Quit('MRCONEE and MDCINT are incompatible !')
+endif
+
+write(LUPRI,*) 'Info from MDCINT file'
+
+! ... determine whether entering 2-electron integrals are real or complex 
+is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
+
+ !call scan_mdcint(nnzi, nintbl)
+ !call scan_mdcint
+
+ write(LUPRI,*) ' number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
+ write(LUPRI,*) ' number of <I J|-integral BLOCKS on MDCINT=',nintbl
+
+ write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
+ write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
+
+! -----------------------------------------------------------------
+  write(LUPRI,'(2x,a,i3)') 'NKR is ',NKR
+  write(LUPRI,'(/,2x,a)') 'KR array, KR(+I),KR(-I), I=1,NKR :'
+  do I=1,NKR
+   write(LUPRI,'(8X,2I8)') KR(I),KR(-I)
+  enddo
+!
+! ... read the rest ... integrals and indexes  ...
+! ... allocate memmory for integrals/indexes   ...
+
+if (is_complex) then
+  RCW = 2
+else
+  RCW = 1
+endif
+write(LUPRI,'(/2x,a,i1/)') 'the parameter RCW =',RCW
+
+ilenght = (2*NKR)*(2*NKR) ! 
+
+write(LUPRI,*) 'calculated array size, ilenght=NKR*NKR=',ilenght
+
+!call alloc_mdcint_data
+! call print_mem_param
+! ... note: "ccdriv.F":1923 is using RCW !!!
+!cbuf = Make2DimArray('REAL',RCW,nnzi,'MDCINT two-electron integrals') ! big array !!!!
+!pos_ij = Make3DimArray('INTE',NKR,NKR,2,'position of <ij| int.blocks on integral array') 
+!pos_kl = Make3DimArray('INTE',NKR,NKR,nintbl,'position of |kl> integrals in bloks on integral array') ! huge array 
+
+indk_vect = MakeVector('INTE',ilenght,'MDCINT "k" indexes')
+indl_vect = MakeVector('INTE',ilenght,'MDCINT "l" indexes')
+cbuf_vect = MakeVector('REAL',nintmaxbl,'MDCINT largest integral block')
+
+  rewind(MDINT)
+  read(MDINT)
+
+ ! call  set_vect_iprint(30)
+ ! call ZeroObject(cbuf)
+ ! call ZeroObject(pos_ij); call ZeroObject(pos_kl)
+
+  MOINT = 0
+  icbuf = 1
+  iblock = 0
+
+  icount=0 ! counter for read integrals 
+
+ 1 continue
+
+! ... only real integrals !!!
+   READ(MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,                       &
+   ( indk_vect%p_iA1D(INZ), indl_vect%p_iA1D(INZ),  INZ=1,NONZR,1),     &
+   (                        cbuf_vect%p_rA1D(INZ),  INZ=1,NONZR,1) 
+
+  if (NONZR > ilenght) then
+    write(LUPRI,*) 'NONZR :',NONZR,' ilenght :',ilenght
+    write(LUPRI,*) 'NONZR > ilenght; out of memory allocation !'
+    call Quit('NONZR > ilenght; out of memory allocation !')
+  endif
+
+  MOINT = MOINT + NONZR
+
+  if (print_batch_info) then
+    write(LUPRI,'(2x,a,i5)')  '...read <IJ|-integral block:',iblock
+    write(LUPRI,'(2x,a,3i4)') 'read IKR,JKR,NONZR:',IKR,JKR,NONZR
+    write(LUPRI,'(2x,a,i6)')  ' actual number of read integrals :',MOINT
+ !   write(LUPRI,'(2x,a,i6)')  ' position of cbuf_vect array :',icbuf
+    CALL FLSHFO(LUPRI)
+  endif
+
+if (print_int) then
+
+ write(LUPRI,'(/,2x,a,2i4)') 'read ( I J |... indexes',KR(IKR),KR(JKR)
+
+ do INZ=1, NONZR
+   icount = icount + 1
+   !  ... unique, KU indexes ... 
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
+           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
+           cbuf_vect%p_rA1D(INZ)
+     CALL FLSHFO(LUPRI)
+ enddo
+
+endif
+
+  !pos_ij%p_iA3D(KR(IKR),KR(JKR),1) = icbuf
+ ! icbuf = icbuf + NONZR
+
+  iblock = iblock + 1    ! incrememt integral block
+
+ ! pos_ij%p_iA3D(KR(IKR),KR(JKR),2) = iblock
+
+ !  .. write integrals into file block after block ...
+  do INZ=1, NONZR
+   icount = icount + 1
+  
+   i1 = KR(IKR);i2=KR(JKR);i3=KR(indk_vect%p_iA1D(INZ));i4=KR(indl_vect%p_iA1D(INZ))
+
+   i1hsfs=hsfs_indx%p_iA1D(KR(IKR)); i2hsfs=hsfs_indx%p_iA1D(KR(indk_vect%p_iA1D(INZ)))
+   i3hsfs=hsfs_indx%p_iA1D(KR(JKR)); i4hsfs=hsfs_indx%p_iA1D(KR(indl_vect%p_iA1D(INZ)))
+
+!   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
+!           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
+!           cbuf_vect%p_rA1D(INZ)
+
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount,'. (',i1,' ',i2,'|',  & 
+           i3,' ',i4,')=', &
+           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs
+
+   ! dirac notation ...
+   write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
+                 cbuf_vect%p_rA1D(INZ)
+
+  enddo
+
+  call ZeroObject(cbuf_vect)
+
+    IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NONZR = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            write(LUPRI,'(2x,a,a)') 'HSCC: proceeding to the next MDCINTxx file ',NEXTFIL
+            GOTO 1
+         ENDIF
+         !GOTO 1
+    ENDIF
+
+ if (NONZR == -1) then
+  ! call Quit('NONZR == -1!')
+ !  RETURN
+   GoTo 2
+ endif
+
+ write(LUPRI,*) '... jumping to read the next integral batch in the file ... '
+ CALL FLSHFO(LUPRI)
+ GoTo 1
+
+ 2 continue
+
+ write(LUPRI,'(/,2x,a,/)')  &
+ ' all integrals from the MDCINT file read ...closing the file'
+ CALL FLSHFO(LUPRI)
+ CLOSE(MDINT,STATUS='KEEP')
+
+! ... deallocate ...
+ call DeAllocObject(cbuf_vect)
+ call DeAllocObject(indl_vect)
+ call DeAllocObject(indk_vect)
+
+ write(LUPRI,*) 'cbuf_vect, indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
+
+ return
+
+!     ... reading file error outputs ...
+ 10000 WRITE(LUPRI,'(2x,a)') 'error reading MDCINT' 
+      CALL QUIT('ERROR READING HEADER MDCINT')
+
+ 10010 WRITE(6,'(/A/A,L10,2A)') & 
+      'END OF FILE branch taken when reading 2-e integrals', &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+       CALL QUIT('END OF FILE READING 2-E INTEGRALS')
+
+ 10020 WRITE(6,'(/A/A,L10,2A)')   &
+      'ERROR branch taken when reading 2-e integrals',  &
+      'CARITH =',CARITH,', INTERFACE =',INTERFACE
+
+
+end subroutine read_mdcint_hsfs
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine scan_mdcint
-!-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------------
 !
 !   Scan (read once) the integral file MDCINT: 
 ! 
 !  -  count number of nonzero integrals  :      nnzi
 !
-!   - count number of IJ-blocks          :      nintbl
+!  - count number of IJ-blocks           :      nintbl
 !
-!-----------------------------------------------------------------------------
+!  - find out the largest integral block with number of integrals : nintmaxbl
+!
+!--------------------------------------------------------------------------------
 implicit none
 !#include "implicit.h"
 #include "priunit.h"
 integer :: IKR,JKR,NONZR,MOINT,INZ
-logical :: is_open
+logical :: is_open, is_file
 integer :: myIDUMMY, myIDUMMY2
 double precision :: myDUMMY, myDUMMY2
 
@@ -725,7 +1080,21 @@ write(LUPRI,'(///,2x,a)') ' Going to count MDCINT integrals & integral blocks:'
 write(LUPRI,*) 'is_complex=',is_complex
 CALL FLSHFO(LUPRI)
 
-nintbl=0; nnzi=0
+nintbl=0; nnzi=0; nintmaxbl=0
+
+inquire(unit=MDINT,opened=is_open,exist=is_file)
+
+if (.not.is_file) then
+  call quit('scan_mdcint: MDCINT file is not present !')
+else
+  if (.not.is_open) then
+    write(LUPRI,'(2x,a)') 'going to open MDCINT file'
+    open(MDINT,file="MDCINT",form='UNFORMATTED',status='old')
+  else
+    write(LUPRI,'(2x,a)') 'going MDCINT file is already open.'
+  endif
+endif
+
 
 rewind(MDINT)
 read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR ) 
@@ -749,8 +1118,10 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 
   MOINT = MOINT + NONZR
 
- ! nintbl = nintbl + 1 ! increment number of integral blocks
- if (IKR.ne.0.and.JKR.ne.0.and.NONZR.ne.0)  nintbl = nintbl + 1 ! increment number of integral blocks
+  if (IKR.ne.0.and.JKR.ne.0.and.NONZR.ne.0) then
+    nintbl = nintbl + 1 ! increment number of integral blocks
+    if (NONZR.gt.nintmaxbl) nintmaxbl=NONZR
+  endif
 
   IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
@@ -779,8 +1150,11 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 ! finally store total number of integrals
  nnzi=MOINT
 
- write(LUPRI,*)  &
+ write(LUPRI,'(2x,a,i7)')  &
  'all integrals from the MDCINT file counted...number=',MOINT
+
+ write(LUPRI,'(2x,a,i7)')  &
+ 'maximum number of integrals from the MDCINT integral block:',nintmaxbl
 
  write(LUPRI,*) ' while (2*NKR)**4=',16*NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(16*NKR*NKR*NKR*NKR)
 

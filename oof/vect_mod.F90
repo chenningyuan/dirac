@@ -420,9 +420,9 @@ end subroutine print_3Darray
       RETURN
       END  SUBROUTINE PRINT_INT_VECTOR
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 function MakeVector(char_type,isize_in,text) result(self)
-!--------------------------------------------------------------------------
+!-----------------------------------------------------------------------------
 !
 !    basic constructor for s simple vector: real,integer or logical
 !
@@ -434,7 +434,7 @@ function MakeVector(char_type,isize_in,text) result(self)
 !
 !  text     string to be attached to the vector (optional)
 !
-!---------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 use Memory
 use GeneralPointers
 !#include "iratdef.h"
