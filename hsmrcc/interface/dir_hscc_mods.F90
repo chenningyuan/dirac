@@ -349,6 +349,7 @@ subroutine get_HSFS_indexes()
 ! assumes MRCONEE read !
 !
 !----------------------------------------------------------------------------------
+#if defined MOD_HSFS
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
@@ -421,6 +422,7 @@ enddo
 
 write(LUPRI,*) 'HSFS stuff written into luhsfs file'
 
+#endif
 end subroutine get_HSFS_indexes
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -822,6 +824,7 @@ subroutine read_mdcint_hsfs
 !            read MDCINT for HSFS - save integrals into file
 !
 !----------------------------------------------------------------------
+#if defined MOD_HSFS
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
@@ -1052,6 +1055,7 @@ endif
       'ERROR branch taken when reading 2-e integrals',  &
       'CARITH =',CARITH,', INTERFACE =',INTERFACE
 
+#endif
 
 end subroutine read_mdcint_hsfs
 
