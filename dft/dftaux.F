@@ -221,12 +221,22 @@ c=======================================================================
       return
       end
 c
-      SUBROUTINE FORTWRT(str, slength)
+      subroutine fortwrt(str, slength)
+
+      implicit none
+
 #include "priunit.h"
-      INTEGER unit, slength
-      CHARACTER str(slength)
-      WRITE(LUPRI, *) str
-      END
+
+#ifdef INT_STAR8
+      integer(8) :: slength
+#else
+      integer    :: slength
+#endif /* ifdef INT_STAR8 */
+      character  :: str(slength)
+
+      write(lupri, *) str
+
+      end subroutine
 
       SUBROUTINE DFTSETCAM(W,BETA)
 #include "implicit.h"
