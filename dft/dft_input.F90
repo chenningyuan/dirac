@@ -1,6 +1,7 @@
 module dft_input
 
   use dft_cfg
+  use dft_temp
 
   implicit none
 
@@ -85,6 +86,7 @@ contains
     end if
 
     call init_dft_cfg()
+    call init_dft_temp()
 
     if (word_io /= '*DFT   ') return
 

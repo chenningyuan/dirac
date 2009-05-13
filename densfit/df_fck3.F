@@ -63,7 +63,6 @@ C*****************************************************************************
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "iteration.h"
-#include "dfterg.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMT), FMAT(NBASIS*NBASIS,NDMT), 
      &          WORK(LWORK)
       LOGICAL IS_DIAGZERO
@@ -2266,13 +2265,14 @@ C matrix and the ddot(cfit,j_alpha) matrix. my understanding of
 C a suggestion from simen... 
       SUBROUTINE DF_CAL_ApproxERRKS(DMAT,FMAT,CFIT,NDMT,ISYMDM,
      &                              IFCTYP,GABAL,WORK,LWORK,IPRINT)
+      use dft_temp
+
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "densfit.h"
-#include "dfterg.h"
       DIMENSION DMAT(*),FMAT(*),CFIT(*),ISYMDM(*),IFCTYP(*),GABAL(*),
      &          WORK(*)
 #include "memint.h"
@@ -2282,14 +2282,15 @@ C a suggestion from simen...
       IF (NDMT.NE.1)
      &  CALL QUIT('Robust correction not implenented for NDMT .GT. 1')
 
-      ERRKS = TRACE_MAT_PRO(DMAT,FMAT,NBASIS,NBASIS)
+      dft_temp_xc_mat_energy = TRACE_MAT_PRO(DMAT,FMAT,NBASIS,NBASIS)
 
       CALL MEMGET('REAL',KJALPHA,NBASISAUX*NDMT,WORK,KFREE,LFREE)
 
       CALL ITPROD(WORK(KJALPHA),NDMT,ISYMDM,IFCTYP,GABAL,CFIT,DMAT,DMAT,
      &            IPRINT,WORK(KFREE),LFREE)
-      ERRKS = ERRKS - DDOT(NBASISAUX,CFIT,1,WORK(KJALPHA),1)
-      ERRKS = ERRKS * 0.5d0
+      dft_temp_xc_mat_energy = dft_temp_xc_mat_energy 
+     &                       - DDOT(NBASISAUX,CFIT,1,WORK(KJALPHA),1)
+      dft_temp_xc_mat_energy = dft_temp_xc_mat_energy * 0.5d0
 
       CALL MEMREL('AppERRKS',WORK,KJALPHA,KJALPHA,KFREE,LFREE)
       CALL QEXIT('AppERRKS')

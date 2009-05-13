@@ -32,6 +32,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
+      use dft_temp
 
 #include "implicit.h"
 #include "priunit.h"
@@ -47,7 +48,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "memint.h"
 
       iprdft = dft_cfg_print_level
-      dft_cfg_file_unit = 44
+      dft_temp_file_unit = 44
 C
 C     Allocate SMAT and send to  DFTDRV
 C
@@ -80,6 +81,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
+         use dft_temp
 
 #include "implicit.h"
 #include "priunit.h"
@@ -108,7 +110,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "maxaqn.h" 
 #include "symmet.h"
 #include "nuclei.h"
-#include "dfterg.h"
 #include "orgcom.h"
 #include "functionals.h"
 
@@ -170,10 +171,10 @@ C
 C
 C     integrate
 C
-      REWIND dft_cfg_file_unit
+      REWIND dft_temp_file_unit
       NPNTS = 0
   100 CONTINUE
-      READ(dft_cfg_file_unit) NPOINT
+      READ(dft_temp_file_unit) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
@@ -181,7 +182,7 @@ C
          CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
          CALL GRTES3(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
-     &               dft_cfg_file_unit,NPOINT)
+     &               dft_temp_file_unit,NPOINT)
 
       CALL GRTES2(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &               SMAT,
@@ -451,6 +452,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
+      use dft_temp
 
 #include "implicit.h"
 #include "priunit.h"
@@ -462,7 +464,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "dfterg.h"
 #include "functionals.h"
       
       DIMENSION SMAT(*)
@@ -476,7 +477,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION RHG(3)
 
       nder = 0
-      if (dft_cfg_need_gao1) nder = 1
+      if (dft_temp_need_gao1) nder = 1
 
 
       DO 300 IPNT = 1, NPOINT

@@ -226,7 +226,6 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "nuclei.h"
-#include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

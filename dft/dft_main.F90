@@ -2,6 +2,7 @@ module dft_main
 
   use memory_allocator
   use dft_cfg
+  use dft_temp
   use dft_ao_in_mem
 #ifdef MOD_AORESPONSE
   use aor_xc
@@ -41,7 +42,6 @@ contains
 
 #include "nuclei.h"
 #include "dcborb.h"
-#include "dfterg.h"
 #include "dgroup.h"
 #include "functionals.h"
 #include "densfit.h"
@@ -96,7 +96,7 @@ contains
       if (.not. df_fitvxc) then
 #endif
       if (dft_options%energy) then
-        errks = ddot(n2bbasx, dmat, 1, fmat, 1)
+        dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1)
       end if
 #ifdef MOD_DNF
       end if
@@ -143,9 +143,9 @@ contains
       kfree_save = kfree      
 
 !     calculate grid
-      if (.not. dft_cfg_grid_is_done) then
+      if (.not. dft_temp_grid_is_done) then
         call dftgrd(dmat, work(kfree), lfree, 1)
-        dft_cfg_grid_is_done = .true.
+        dft_temp_grid_is_done = .true.
       end if
 
 
@@ -171,12 +171,12 @@ contains
 
 !     check whether gga code structure will be used
 
-      dft_cfg_gga_hs = dftisgga()
-      dft_cfg_gga_ha = dft_cfg_gga_hs
+      dft_temp_gga_hs = dftisgga()
+      dft_temp_gga_ha = dft_temp_gga_hs
 
       if (dft_options%lr .or. dft_options%qr) then
-        if (dft_cfg_alda_hs) dft_cfg_gga_hs = .false.
-        if (dft_cfg_alda_ha) dft_cfg_gga_ha = .false.
+        if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
+        if (dft_cfg_alda_ha) dft_temp_gga_ha = .false.
       end if
 
 !     in QR it is not so easy to separate H+ and H-
@@ -199,15 +199,15 @@ contains
 !     check whether derivatives of basis functions are needed
 
 !     it should already be set to .false. but just to be sure
-      dft_cfg_need_gao1 = .false.
-      dft_cfg_need_gao2 = .false.
+      dft_temp_need_gao1 = .false.
+      dft_temp_need_gao2 = .false.
 
-      if (dft_cfg_gga_hs .or. dft_cfg_gga_ha) then
-        dft_cfg_need_gao1 = .true.
+      if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+        dft_temp_need_gao1 = .true.
       end if
 
       if (dft_cfg_cdft_vrg) then
-        dft_cfg_need_gao1 = .true.
+        dft_temp_need_gao1 = .true.
       end if
 
 
@@ -243,10 +243,10 @@ contains
 #endif
 
 !     in case of gga symmetrize matrices
-      if (dft_cfg_gga_hs) then
+      if (dft_temp_gga_hs) then
         call sym_hs(fmat, nr_fmat, isymop, ihrmop)
       end if
-      if (dft_cfg_gga_ha .and. dft_cfg_sdft) then
+      if (dft_temp_gga_ha .and. dft_cfg_sdft) then
         call sym_ha(fmat, nr_fmat, isymop, ihrmop)
       end if
 
@@ -277,8 +277,9 @@ contains
 
 !     calculate final expectation value of two-electron matrix
       if (dft_options%energy) then
-!       the ks contribution can then be subtracted 
-        errks = ddot(n2bbasx, dmat, 1, fmat, 1) - errks
+!       the xc contribution can then be subtracted 
+        dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1) &
+                               - dft_temp_xc_mat_energy
       end if 
 
 #ifdef MOD_DNF
@@ -329,7 +330,6 @@ contains
 #include "dcbham.h"
 #endif
 #include "nuclei.h"
-#include "dfterg.h"
 #include "orgcom.h"
 #include "functionals.h"
 #include "dgroup.h"
@@ -361,12 +361,12 @@ contains
       CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
       KGA1=KFREE
 
-      if (dft_cfg_need_gao1) then
+      if (dft_temp_need_gao1) then
         call memget('REAL', kga1, 3*ndim, work, kfree, lfree)
       end if
       kga2 = kfree
 
-      if (dft_cfg_need_gao2) then
+      if (dft_temp_need_gao2) then
         call memget('REAL', kga2, 6*ndim, work, kfree, lfree)
       end if
       kgb1 = kfree
@@ -380,8 +380,8 @@ contains
 !
 !     integrate
 !
-      ELCTRN = D0
-      EDFTY  = D0
+      dft_temp_nr_electrons = 0.0d0
+      dft_temp_xc_energy    = 0.0d0
 !
 #ifndef VAR_MPI
       mytid  = 0
@@ -389,7 +389,7 @@ contains
 #endif
 
       IF(MYTID.EQ.MPARID) THEN
-        REWIND dft_cfg_file_unit
+        REWIND dft_temp_file_unit
         NPNTS = 0
       ENDIF
 !*    Loop over batches of grid points
@@ -397,9 +397,9 @@ contains
       KLOOP = KFREE
       IF(MYTID.EQ.MPARID) THEN
         IF(dft_cfg_import_grid) THEN
-          READ(dft_cfg_file_unit,*) NPOINT
+          READ(dft_temp_file_unit,*) NPOINT
         ELSE
-          READ(dft_cfg_file_unit) NPOINT
+          READ(dft_temp_file_unit) NPOINT
         ENDIF
       ENDIF
 #if defined (VAR_MPI) 
@@ -420,10 +420,10 @@ contains
 
           IF(dft_cfg_import_grid) THEN
             CALL import_dft_grid(WORK(KX),WORK(KY),WORK(KZ),WORK(KW), &
-     &                      dft_cfg_file_unit,NPOINT)
+     &                      dft_temp_file_unit,NPOINT)
           ELSE
             CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW), &
-     &                 dft_cfg_file_unit,NPOINT)
+     &                 dft_temp_file_unit,NPOINT)
           ENDIF
         ENDIF
 #if defined (VAR_MPI) 
@@ -584,74 +584,42 @@ contains
 !       ENDDO
       END IF 
 
-!     compare integrated number of electrons to electron count from orbital occupations
-!     =================================================================================
 
-      elctrx = nelect + naelec
-      error  = elctrn - elctrx
+      orbital_nr_electrons = nelect + naelec
+      error_nr_electrons   = dft_temp_nr_electrons - orbital_nr_electrons
 
-      if (abs(error) .gt. dft_cfg_accepted_error) then
-         write(lupri, *)
-         write(lupri, '(3x, a, f14.6)') &
-     &         'number of electrons from numerical integration:', elctrn
-         write(lupri, '(3x, a, f14.6)') &
-     &         'number of electrons from orbital occupations:  ', elctrx
-         write(lupri, '(3x, a, f14.6)') &
-     &         'WARNING: error in the number of electrons:     ', error
-         write(lupri, '(12x, a, f14.6)') &
-     &         'is larger than .ERRELS (set input):    ', &
-     &          dft_cfg_accepted_error
-         write(lupri, '(12x, a)') &
-     &         'this can happen when starting from coefficients'
-         write(lupri, '(12x, a)') &
-     &         'from a different geometry'
-         write(lupri, '(12x, a)') &
-     &         'or it can mean that the quadrature '// &
-     &         'grid is inappropriate'
-         write(lupri, *)
+      write(lupri, *)
+      write(lupri, '(3x, a, i24)')                               &
+              'number of quadrature points:  ',                  &
+              npnts
+      if (dft_options%energy) then
+        write(lupri, '(3x, a, f24.16)')                          &
+              'DFT exchange-correlation energy:               ', &
+              dft_temp_xc_energy
       end if
-!
-!
-!     Print section
-!
-      IF(dft_cfg_print_level .GE. 2) THEN 
-        WRITE(LUPRI,'(2X,A,I24)') &
-     &              ' Number of quadrature points:       ', NPNTS
-        WRITE(LUPRI,'(2X,A,F24.16)') &
-     &              ' Number of electrons:               ', ELCTRN
-        IF(dft_options%energy) THEN
-          WRITE(LUPRI,'(2X,A,F24.16)') &
-     &                ' DFT exchange-correlation energy:   ', EDFTY
-        ENDIF
-      ENDIF
-      IF (IPRINT .GE. 100) THEN
-        IF (dft_options%energy) THEN
-           CALL HEADER('EXCMAT in DFTDRV ',-1)
-           CALL OUTPUT(EXCMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0), &
-     &                  NTBAS(0),1,LUPRI)
-        END IF
-        IF (dft_options%london) THEN
-!         CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
-!         CALL OUTPUT(EXCMAT(1,1,1,1), &
-!    &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-!         CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
-!         CALL OUTPUT(EXCMAT(1,1,1,2), &
-!    &                1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-!         CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
-!         CALL OUTPUT(EXCMAT(1,1,1,3), &
-!    &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-        END IF
-        IF (dft_options%gradient) THEN
-          CALL HEADER('GRADFT in DFTDRV ',-1)
-          CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
-        END IF
-        IF (dft_options%lr.OR.dft_options%qr) THEN
-          CALL HEADER('EXCMAT in DFTDRV ',-1)
-          CALL OUTPUT(EXCMAT, &
-     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
-        END IF
-      ENDIF
-!
+      write(lupri, '(3x, a, f24.16)')                            &
+              'number of electrons from numerical integration:', &
+              dft_temp_nr_electrons
+      if (abs(error_nr_electrons) > dft_cfg_accepted_error) then
+        write(lupri, '(3x, a, f14.6)')                           &
+              'number of electrons from orbital occupations:  ', &
+               orbital_nr_electrons
+        write(lupri, '(3x, a, f14.6)')                           &
+              'WARNING: error in the number of electrons:     ', &
+               error_nr_electrons
+        write(lupri, '(12x, a, f14.6)')                          &
+              'is larger than .ERRELS (set input):   ',          &
+               dft_cfg_accepted_error
+        write(lupri, '(12x, a)') &
+              'this can happen when starting from coefficients'
+        write(lupri, '(12x, a)') &
+              'from a different geometry'
+        write(lupri, '(12x, a)')                      &
+              'or it can mean that the quadrature '// &
+              'grid is inappropriate'
+      end if
+      write(lupri, *)
+
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !/* Deck dftdr1 */
@@ -678,7 +646,6 @@ contains
 #include "shells.h"
 #include "inforb.h"
 #include "orgcom.h"
-#include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
 #include "densfit.h"
@@ -765,7 +732,7 @@ contains
 #endif /* MOD_DNF */
 
         nder = 0
-        if (dft_cfg_need_gao1) nder = 1
+        if (dft_temp_need_gao1) nder = 1
 
         gao_p  => gao(1:nbast)
         gao1_p => gao1(1:nbast*3)
@@ -776,7 +743,7 @@ contains
 !     if (dft_cfg_keep_ao) then
 
 !       itimes = nbast
-!       if (dft_cfg_need_gao1) itimes = itimes*4
+!       if (dft_temp_need_gao1) itimes = itimes*4
 
 !       radovan: hardcoded for testing, will fix later ...
 !       if (.not. associated(ao_in_mem_p)) then
@@ -815,7 +782,7 @@ contains
 !radovan: please don't delete, code under construction
 !        copy gao to mem
 !        if (dft_cfg_keep_ao) then
-!          if (dft_cfg_need_gao1) then
+!          if (dft_temp_need_gao1) then
 !            call dcopy(nbast, &
 !    &                  gao, 1, &
 !    &                  ao_in_mem_p(4*nbast*(ipnt-1) + 1), 1)
@@ -833,7 +800,7 @@ contains
 !        end if
 !      end if
 !      if (dft_cfg_ao_are_in_mem) then
-!        if (dft_cfg_need_gao1) then
+!        if (dft_temp_need_gao1) then
 !          iao  = 4*nbast*(ipnt - 1)         + 1
 !          iao1 = 4*nbast*(ipnt - 1) + nbast + 1
 !          gao1_p => ao_in_mem_p(iao1:iao1 + nbast*3)
@@ -874,7 +841,7 @@ contains
 !       ===================
 !
 
-        IF (dft_cfg_need_gao1) THEN
+        IF (dft_temp_need_gao1) THEN
 #ifdef MOD_DNF
           IF (DF_FITVXC) THEN  ! 
              DO IXYZ = 1,3
@@ -917,7 +884,7 @@ contains
 !       Number of electrons
 !       ===================
 !
-        ELCTRN = ELCTRN + WGHT*RHO
+        dft_temp_nr_electrons = dft_temp_nr_electrons + WGHT*RHO
 
 
 
@@ -925,7 +892,7 @@ contains
 !       energy density
 !       ==============
 
-        if (dft_cfg_gga_hs) Z = rhogrd*rhogrd
+        if (dft_temp_gga_hs) Z = rhogrd*rhogrd
 
         if (dft_options%energy) then
 
@@ -934,7 +901,7 @@ contains
 #ifdef MOD_AUTODIFF
           if (dft_cfg_autodiff) then
 
-            if (dft_cfg_gga_hs) then
+            if (dft_temp_gga_hs) then
               call lda_eval(LDA_SLATER, 0, rho, derv)
               energy_density = energy_density + derv(1)
               call gga_eval(GGA_BECKE, 0, rho, Z, derv)
@@ -957,7 +924,8 @@ contains
           end if
 #endif
 
-          edfty = edfty + wght*energy_density
+          dft_temp_xc_energy = dft_temp_xc_energy &
+                             + wght*energy_density
 
         end if
 
@@ -974,7 +942,7 @@ contains
 
             vx = 0.0d0
 
-            if (dft_cfg_gga_hs) then
+            if (dft_temp_gga_hs) then
               Z = rhogrd*rhogrd
 
 !             remember that BLYP = Slater + Becke correction + LYP
@@ -1011,7 +979,7 @@ contains
           end if
 #endif
 
-          if (dft_cfg_gga_hs) then
+          if (dft_temp_gga_hs) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of Z
@@ -1048,17 +1016,17 @@ contains
 #ifdef MOD_DNF
 ! aspg+rb, 2007-01-19, df-vxc modularized code
            if (DF_FITVXC) then
-               IF (dft_cfg_gga_hs) THEN
+               IF (dft_temp_gga_hs) THEN
                   DO I = 1,3
                      VT(I) = VX(FZ0)*RHG(I)
                   ENDDO
                ENDIF
-               CALL fit_DOEXC(dft_cfg_gga_hs, &
+               CALL fit_DOEXC(dft_temp_gga_hs, &
      &                     VX(FR0),VT,GAO,GAO1, &
      &                     WORK(KXCVEC),NBASISAUX)
            else  ! df_fitvxc
 #endif
-             if (dft_cfg_gga_hs) then
+             if (dft_temp_gga_hs) then
                 DO I = 1,3
                    VT(I) = VX(FZ0)*RHG(I)
                 ENDDO
@@ -1087,7 +1055,7 @@ contains
      &                rhogrd, &
      &                rhg, &
      &                wght, &
-     &                dft_cfg_gga_hs, &
+     &                dft_temp_gga_hs, &
      &                buf)
 
 #ifdef MOD_CDFT
@@ -1096,13 +1064,13 @@ contains
             call sdft_lr(dtrmat,excmat,nxcmat, &
      &                   isymop,ihrmop,.false., &
      &                   gao,gao1, &
-     &                   rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
+     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buf)
           endif
 !         VRG contribution
           if (dft_cfg_cdft_vrg) then
             call vrg_lr(dtrmat,excmat,nxcmat, &
      &                  isymop,ihrmop,gao,gao1, &
-     &                  rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
+     &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
           endif
 #endif /* ifdef MOD_CDFT */
         endif
@@ -1115,7 +1083,7 @@ contains
 !       quadratic response
         if(dft_options%qr) then
 
-          gga_qr = dft_cfg_gga_hs .or. dft_cfg_gga_ha
+          gga_qr = dft_temp_gga_hs .or. dft_temp_gga_ha
           call sdft_qr(gga_qr, &
      &                 sdft, &
      &                 dtrmat,excmat, &
@@ -1135,12 +1103,12 @@ contains
           call dft_lr(dtrmat,excmat,3, &
      &                isymop,ihrmop,.true., &
      &                gao,gao1, &
-     &                rho,rhogrd,rhg,wght,dft_cfg_gga_hs,buf)
+     &                rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,3, &
      &                   isymop,ihrmop,.true., &
      &                   gao,gao1, &
-     &                   rho,rhogrd,rhg,wght,dft_cfg_gga_ha,buf)
+     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buf)
           endif
 
         endif
@@ -1151,7 +1119,7 @@ contains
           if (dft_options%aor_xc_order > 0) then
             call aor_xc_new(dft_options%aor_xc_order,  &
      &                      nxcmat,  &
-     &                      dft_cfg_gga_hs, &
+     &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
      &                      excmat, &
      &                      isymop, &
@@ -1174,9 +1142,6 @@ contains
 !aspg+rbast, 2006-09-21
 ! commented code below is still in use! debugging response with dfvxc
 !
-!     write(LUPRI,'(2(A,E20.12))')  &
-!    &     ' DEBUG, integrated number of electrons: '// &
-!    &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
 !     write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint, &
 !    &               ' integration were skipped while getting b0'
       IF (DF_FITVXC) THEN ! releasing temp space used for the df code
@@ -1596,7 +1561,6 @@ contains
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dfterg.h"
 #include "dgroup.h"
       DIMENSION EXCMAT(*),WORK(*)
       type(dft_options_t) :: dft_options
@@ -1605,17 +1569,35 @@ contains
       LFMAT = N2BBASX*NXCMAT*NZ
 !
       IF (MYTID.EQ.0) CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
-      CALL MPI_REDUCE(ELCTRN,EELCTRN,1,MPI_DOUBLE_PRECISION, &
-     &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+
+      call mpi_reduce(dft_temp_nr_electrons, &
+                      sum_nr_electrons,      &
+                      1,                     &
+                      mpi_double_precision,  &
+                      mpi_sum,               &
+                      0,                     &
+                      mpi_comm_world,        &
+                      ierr) 
+
       CALL MPI_REDUCE(EXCMAT,WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION, &
      &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+
       if (dft_options%energy) then
-        CALL MPI_REDUCE(EDFTY,EEDFTY,1,MPI_DOUBLE_PRECISION, &
-     &                          MPI_SUM,0, MPI_COMM_WORLD, IERR) 
+        call mpi_reduce(dft_temp_xc_energy,   &
+                        sum_xc_energy,        &
+                        1,                    &
+                        mpi_double_precision, &
+                        mpi_sum,              &
+                        0,                    &
+                        mpi_comm_world,       &
+                        ierr) 
       end if
+
       IF(MYTID.EQ.0) THEN
-        ELCTRN=EELCTRN
-        IF(dft_options%energy) EDFTY=EEDFTY
+        dft_temp_nr_electrons = sum_nr_electrons
+        if (dft_options%energy) then
+          dft_temp_xc_energy = sum_xc_energy
+        end if
         CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
@@ -1887,7 +1869,6 @@ contains
 
 !     written by T. Saue april 7 2009
 
-
       implicit none
 
 #include "mpif.h"
@@ -1898,12 +1879,7 @@ contains
       integer,             intent(inout) :: nxcmat
 !     --------------------------------------------------------------------------
       logical                            :: i_am_the_master
-      integer                            :: idx, ierr
-      logical                            :: pack_logical(5)
-      integer                            :: pack_integer(1)
-!                                                    1000 is a phantasy number
-      integer, parameter                 :: nbytes = 1000
-      character                          :: scratch(nbytes)
+      integer                            :: ierr
 !     --------------------------------------------------------------------------
 
       if (mytid == mparid) then
@@ -1913,88 +1889,18 @@ contains
       end if
 
 !     sync nxcmat
-
       call mpi_bcast(nxcmat, &
      &               1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
 
 !     sync various common blocks
-
       call dftprd()
 
-!     sync dft_cfg
-
+!     sync various parameters
       call sync_dft_cfg()
-
-!     sync dft_options
-
-      if (i_am_the_master) then
-
-        pack_logical(1) = dft_options%energy
-        pack_logical(2) = dft_options%gradient
-        pack_logical(3) = dft_options%london
-        pack_logical(4) = dft_options%lr
-        pack_logical(5) = dft_options%qr
-        pack_integer(1) = dft_options%aor_xc_order
-
-        idx = 1
-        call mpi_pack(pack_logical,       &
-     &                size(pack_logical), &
-     &                mpi_logical,        &
-     &                scratch,            &
-     &                nbytes,             &
-     &                idx,                &
-     &                mpi_comm_world,     &
-     &                ierr)
-        call mpi_pack(pack_integer,       &
-     &                size(pack_integer), &
-     &                my_MPI_INTEGER,        &
-     &                scratch,            &
-     &                nbytes,             &
-     &                idx,                &
-     &                mpi_comm_world,     &
-     &                ierr)
-
-      end if
-
-      call mpi_bcast(scratch,         &
-     &               nbytes,          &
-     &               mpi_packed,      &
-     &               0,               &
-     &               mpi_comm_world,  &
-     &               ierr)
-
-
-      if (.not. i_am_the_master) then
-
-        idx = 1
-        call mpi_unpack(scratch,            &
-     &                  nbytes,             &
-     &                  idx,                &
-     &                  pack_logical,       &
-     &                  size(pack_logical), &
-     &                  mpi_logical,        &
-     &                  mpi_comm_world,     &
-     &                  ierr)
-        call mpi_unpack(scratch,            &
-     &                  nbytes,             &
-     &                  idx,                &
-     &                  pack_integer,       &
-     &                  size(pack_integer), &
-     &                  my_MPI_INTEGER,        &
-     &                  mpi_comm_world,     &
-     &                  ierr)
-
-        dft_options%energy       = pack_logical(1)
-        dft_options%gradient     = pack_logical(2)
-        dft_options%london       = pack_logical(3)
-        dft_options%lr           = pack_logical(4)
-        dft_options%qr           = pack_logical(5)
-        dft_options%aor_xc_order = pack_integer(1)
-
-      end if     
+      call sync_dft_temp()
+      call sync_dft_options(dft_options)
 
 !     sync functionals
-
       call dftsyncfunc(i_am_the_master)
  
       end subroutine

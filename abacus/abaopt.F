@@ -2286,7 +2286,7 @@ C
 
       if (dft_cfg_is_dft_calculation) then
 !       get a new grid at new geometry
-        dft_cfg_grid_is_done = .false.
+        dft_temp_grid_is_done = .false.
       end if
 
       IF (.NOT. EXSIR) THEN

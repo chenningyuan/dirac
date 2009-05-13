@@ -1581,6 +1581,11 @@ C     Last revision: 971022-jth
 C                    Sept 2005, Miro Ilias - added control outputs
 C
 C*****************************************************************************
+
+#ifdef MOD_DFT
+      use dft_temp
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
@@ -1596,9 +1601,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DFT
-#include "dfterg.h"
-#endif
 #ifdef MOD_DNF
 #include "densfit.h"
 #endif
@@ -1666,7 +1668,7 @@ C
 C...  If DFT correct for contribution from Kohn-Sham potential
 C...  to two-electron energy
       IF(DODFT) THEN
-        E(1,2,0) = E(1,2,0) - ERRKS
+        E(1,2,0) = E(1,2,0) - dft_temp_xc_mat_energy
       ENDIF
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
@@ -1691,9 +1693,9 @@ C
          DHFERG = DHFERG + CORRLV
       ENDIF
       ELERGY = E1PART + E2PART
-      IF(DODFT) THEN
-        ELERGY = ELERGY + EDFTY
-      ENDIF
+      if (dodft) then
+        elergy = elergy + dft_temp_xc_energy
+      end if
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
@@ -1755,7 +1757,8 @@ CMI      ... print out matrixes ...
    30          CONTINUE
             ENDIF
             IF (DODFT) WRITE(LUPRI,'(6X,A,'//FMT//')')
-     +         '* DFT xc energy              :  ',EDFTY
+     +         '* DFT xc energy              :  ',
+     &         dft_temp_xc_energy
          END IF
       ENDIF
 C

@@ -400,9 +400,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#ifdef MOD_DFT
-#include "dfterg.h"
-#endif
 #include "molinp.h"
 #include "aovec.h"
 C
@@ -1219,9 +1216,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#ifdef MOD_DFT
-#include "dfterg.h"
-#endif
 #include "molinp.h"
 #include "nuclei.h"
 #include "infpar.h"
@@ -1916,9 +1910,6 @@ C
 #else
 #include "energy.h"
 #endif
-#ifdef MOD_DFT
-#include "dfterg.h"
-#endif
 #include "suscpt.h"
 #include "infpar.h"
 #include "inforb.h"
@@ -1932,9 +1923,9 @@ C
      &                 MPI_COMM_WORLD,IERR)
 #ifdef MOD_DFT
       IF(ITYPE.EQ.7) THEN
+!        radovan: this looks like unused code
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-!        radovan: this looks like old unused stuff
          CALL MPI_SEND(ERGDRC,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(ERGVWN,1,MPI_DOUBLE_PRECISION,MPARID,40,
