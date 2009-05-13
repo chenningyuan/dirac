@@ -825,7 +825,7 @@ subroutine read_mdcint_hsfs
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
-logical :: print_batch_info=.true., print_int=.false.
+logical :: print_batch_info=.true., print_int=.false., is_mdc
 type(Vect) :: indk_vect, indl_vect, cbuf_vect
 
 Call Header('MDCINT control print-out',-1)
