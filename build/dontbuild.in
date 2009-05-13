@@ -16,6 +16,8 @@ hsmrcc/hsmrcc_external/source/.*
 hsmrcc/hsmrcc_external/modules/.*
 hsmrcc/second_quant/.*
 hsmrcc/high_sect_fscc_external/.*
+hsmrcc/interface/dir_hsfs_interface.F90
+hsmrcc/interface/dir_hsfs_mod.F90
 hsmrcc/high_sect_fscc_external/csd.F
 hsmrcc/high_sect_fscc_external/csu.F
 hsmrcc/high_sect_fscc_external/csv.F
