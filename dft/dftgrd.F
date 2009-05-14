@@ -1496,7 +1496,7 @@ C     equiavelence statment
 C
 C     GET AO's
 C
-      CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,X,Y,Z,WORK,LWORK,NTBAS(0),
+      CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,X,Y,Z,NTBAS(0),
      &     0,.FALSE.,IPRINT)
 C
 C     Get "overlap" matrix
