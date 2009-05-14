@@ -488,7 +488,7 @@ C       ===
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,WORK,LWORK,NBAST,NDER,.FALSE.,IPRINT) 
+     &              BUF,NBAST,NDER,.FALSE.,IPRINT) 
 C
 C       Test accuracy of numerical integration
 C       ======================================

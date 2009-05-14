@@ -792,14 +792,14 @@ C=======================================================================
       IF(NEED_GAO1) THEN
         IF(NEED_GAO2) THEN
           CALL GETSOS(GAO,GAO1,GAO2,UNUSED,NCNT,PX,PY,PZ,
-     &                BUF,WORK(KFREE),LFREE,NTBAS(0),2,.FALSE.,0)
+     &                BUF,NTBAS(0),2,.FALSE.,0)
         ELSE
           CALL GETSOS(GAO,GAO1,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &                BUF,WORK(KFREE),LFREE,NTBAS(0),1,.FALSE.,0)
+     &                BUF,NTBAS(0),1,.FALSE.,0)
         ENDIF
       ELSE
         CALL GETSOS(GAO,UNUSED,UNUSED,UNUSED,NCNT,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,0)
+     &              BUF,NTBAS(0),0,.FALSE.,0)
       ENDIF
 
       CALL DZERO(QUANTITY_ADDMEUP,4)

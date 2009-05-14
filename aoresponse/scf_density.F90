@@ -154,8 +154,6 @@ contains
                 y,                   &
                 z,                   &
                 self%buffer,         &
-                dummy_dp,            &
-                dummy_i,             &
                 self%gao_center,     &
                 self%max_derivative, &
                 .false., 0)

@@ -163,7 +163,7 @@ C     Initialize variables.
      &               points(1,i),
      &               points(2,i),
      &               points(3,i),BUF,
-     &               work,lwork,ndimension,0,.false.,print_fde)
+     &               ndimension,0,.false.,print_fde)
 
 !        only the upper triangular part of the one electron embedding 
 !        potential matrix is calculated. 
@@ -532,7 +532,7 @@ C     GET an id for LUGRIDOUT.
 C     JHS Get the values of the basisfunctions in every gridpoint
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              points(1,i),points(2,i),points(3,i),
-     &              BUF,WORK,LWORK,NDIMENSION,2,DOLND,print_fde)
+     &              BUF,NDIMENSION,2,DOLND,print_fde)
 C     JHS calculate the SCF density and its derivatives. 
         CALL GETRHO(rho(1,i),0,GAO,DMAT,BUF)
         CALL GETGRHO(grad_rho(3,i),0,GAO,GAO1,DMAT,BUF)

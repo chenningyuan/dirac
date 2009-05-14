@@ -776,7 +776,7 @@ contains
 
          call getsos(gao, gao1, gao2, gab1, ncnt, &
      &               corx(ipnt), cory(ipnt), corz(ipnt), &
-     &               buf, work, lwork, ndim, &
+     &               buf, ndim, &
      &               nder, dft_options%london, iprint)
 
 !radovan: please don't delete, code under construction

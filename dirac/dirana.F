@@ -2198,7 +2198,7 @@ C
         PZ  = COORD(3,1) + PP*DZ
 C       Get value of SOs at (PX,PY,PZ)
         CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
+     &              BUF,NTBAS(0),0,.FALSE.,IPRINT)
 C       Get density in this point
         RHO(0) = D0
         DO IC = 1,MC
@@ -2352,7 +2352,7 @@ C
      &                    +(I3-1)*CUBE(3,3)
 C           Get value of SOs at (PX,PY,PZ)
             CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRRHO)
+     &              BUF,NTBAS(0),0,.FALSE.,IPRRHO)
 C           Get density in this point
             DO IC = 1,2
               IF(LBIT(ILSCUB,IC)) THEN

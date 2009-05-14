@@ -237,7 +237,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getsos */
       SUBROUTINE GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &                  BUF,WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &                  BUF,NBAST,NDER,DOLND,IPRINT)
 C***********************************************************************
 C
 C     Calculate value of symmetry-adapted basis functions in a given
@@ -250,11 +250,11 @@ C***********************************************************************
 #include "priunit.h"
 #include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), BUF(NBAST),WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), BUF(NBAST), NCNT(NBAST)
 C
 C     First get values for the Ao-basis
       CALL GETAOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &            WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &            NBAST,NDER,DOLND,IPRINT)
       IF(NBSYM.EQ.1) RETURN
 C
 C     Functions
@@ -280,7 +280,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C  /* Deck getaos */
       SUBROUTINE GETAOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &                  WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &                  NBAST,NDER,DOLND,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -292,7 +292,7 @@ C
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), NCNT(NBAST)
 C
 #include "dcbham.h"
 #include "onecom.h"
