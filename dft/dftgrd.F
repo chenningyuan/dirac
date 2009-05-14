@@ -1196,8 +1196,7 @@ C
 C     Get atomic size estimates
 C
       CALL CHI1(CHIMT,NAT,C,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
-     &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT,WORK,KFREE,
-     &     LFREE)
+     &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT)
 C
 C     Backtransform density matrix to sorted basis
 C
@@ -1214,7 +1213,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1rh1 */
       SUBROUTINE CHI1(CHIMT,NAT,C,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,
-     &     IPRINT,WORK,KFREE,LFREE)
+     &     IPRINT)
 C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1242,11 +1241,11 @@ C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NBAST,NBAST),
      &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(*)
+     &     ICLAB(NBAST)
 #else
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(*)
+     &     ICLAB(NTBAS(0))
 #endif
 C
 C     
@@ -1268,7 +1267,7 @@ C
             COORD(2,2) = C(J+nat)
             COORD(3,2) = C(J+nat*2)
             CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
-     &              IPRINT,WORK(KFREE),LFREE)
+     &              IPRINT)
  20      END DO
  10   END DO
       RETURN
@@ -1276,7 +1275,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C                                                                      C   
       SUBROUTINE CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,ICENTA,ICENTB,
-     &     COORD,IPRINT,WORK,LWORK)
+     &     COORD,IPRINT)
 C                                                                      C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1301,11 +1300,11 @@ C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NBAST,NBAST),
      &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(LWORK)
+     &     ICLAB(NBAST)
 #else
       DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(LWORK)
+     &     ICLAB(NTBAS(0))
 #endif
 C
 C     Arrays for 2nd order polynomial fit:
@@ -1352,7 +1351,7 @@ C     atom pair (ICENTA,ICENTB).
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &     ASMAT,ICLAB,IPRINT)
 
       PPOLD = PP
       SUMOLD = RHOA +RHOB
@@ -1366,7 +1365,7 @@ C
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &     ASMAT,ICLAB,IPRINT)
 
       SUM = RHOA + RHOB
 C
@@ -1392,7 +1391,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &        SMAT,ASMAT,ICLAB,IPRINT)
 
          SUM = RHOA + RHOB
          IF(SUM.LE.SUMOLD) THEN
@@ -1417,7 +1416,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C     
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &        SMAT,ASMAT,ICLAB,IPRINT)
 C
          X(K) = PP
          Y(K) = RHOA + RHOB
@@ -1457,7 +1456,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
       SUBROUTINE CHI3(X,Y,Z,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &     SMAT,ASMAT,ICLAB,IPRINT,WORK,LWORK)
+     &     SMAT,ASMAT,ICLAB,IPRINT)
 
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1481,11 +1480,11 @@ C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
      &     SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(LWORK)
+     &     ICLAB(NBAST)
 #else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(LWORK)
+     &     ICLAB(NTBAS(0))
 #endif
 
 
