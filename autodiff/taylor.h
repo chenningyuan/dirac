@@ -12,11 +12,11 @@
   continuing all the way down.
 */
 #ifdef TAYLOR_QD
-// Using the quadratic-double library QD.
+// Using the quad-double library QD.
 // See http://crd.lbl.gov/~dhbailey/mpdist/
 // Note that you _need_ to use fpu_fix_start/end on
 // x86 machines for correct rounding.
-#warning Using quadratic double precision
+#warning Using quad double precision
 #include <qd/qd_real.h>
 typedef qd_real tnum_t;
 typedef qd_real tlongnum_t;
@@ -25,20 +25,22 @@ typedef qd_real tlongnum_t;
 // not so smart Taylor expansion.
 static inline qd_real erf(const qd_real &x)
 {
-  double magn = erf(to_double(x)); // order of magnitude of answer.
   qd_real sum = 0;
-  qd_real term = x;
+  qd_real x2 = x*x, term = x;
   int k = 0;  
   if (fabs(x) > 12) // erf(12) = 1 - 1e-64
     return 1;
   sum += term;
   if (fabs(x) > 1e-64)
-    while (fabs(term/magn) > 1e-64)
-      {
-	k++;
-	term *= qd_real(-(2*k-1)*x*x)/(k*(2*k+1));
-	sum += term;
-      }
+    {
+      double magn = erf(to_double(x)); // order of magnitude of answer.
+      while (fabs(term/magn) > 1e-64)
+	{
+	  k++;
+	  term *= qd_real(-(2*k-1)*x2)/(k*(2*k+1));
+	  sum += term;
+	}
+    }
   return sum*2/sqrt(qd_real::_pi);
 }
 #else
@@ -78,7 +80,7 @@ struct binomial<0,k>
 };
 
 // Number of terms in a polynomial of nvar variables
-// up to and including order ndeg.
+// up to and including order ndeg, binomial(nvar+ndeg,ndeg)
 static inline int taylor_len(int nvar, int ndeg)
 {
   if (ndeg < 0)
@@ -144,31 +146,6 @@ class taylor
 	}
       return res;
     }
-  // Evaluate the taylor series using the sumalt algorithm.
-  // Note: This is for the value only, not derivatives!
-  tnum_t eval_sumalt(tnum_t x, tnum_t e = 1.0)
-    {
-      assert(Nvar == 1); // TODO: general case
-      tlongnum_t d = pow(2*e+tnum_t(1)+2*sqrt(e*(e+tnum_t(1))),binomial<Ndeg+Nvar,Ndeg>::value);
-      d = (d + 1/d)/2;
-      tlongnum_t b = 1;
-      tlongnum_t cc = d;
-      tlongnum_t s = 0;
-      tlongnum_t xn = 1;
-      for (int k=0;k<binomial<Ndeg+Nvar,Ndeg>::value;k++)
-	{
-	  cc -= b;
-	  s += cc*xn*c[k];
-	  xn *= x;
-	  b *= (2*(binomial<Ndeg+Nvar,Ndeg>::value+k)*(binomial<Ndeg+Nvar,Ndeg>::value-k))/tnum_t((2*k+1)*(k+1))*e;
-	}
-      return s/d;
-    }
-
-  /* Shift the polynomial so that x:= x + d[0], y:= y + d[1] etc*/
-  void shift(const tnum_t d[])
-  {
-  }
   void integrate(void)
     {
       assert(Nvar == 1 && "Implement this..");
