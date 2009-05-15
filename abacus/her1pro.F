@@ -888,7 +888,7 @@ C
          INTTYP = 26
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of nuclear shieldings without London contr.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSNL',
      &               INTADR)
          ANTI = .FALSE.
@@ -1519,7 +1519,7 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,A/)')
      &'PR1DIR:Calculation of relativ. London contrib.',
      &' to the expect. value of NMR shielding.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'RNST',
      &               INTADR)
          ANTI = .TRUE.

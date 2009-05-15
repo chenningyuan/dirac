@@ -106,7 +106,9 @@ C Process all other integrals, which are coded in the abacus part !
 C
         TEST = ALLATM.AND.
      &         ((CLSINT(I).EQ.'NEFIELD').OR.
-     &         (CLSINT(I).EQ.'ELFGRDC'))
+     &          (CLSINT(I).EQ.'ELFGRDC').OR.
+     &          (CLSINT(I).EQ.'RM1N1H ').OR.
+     &          (CLSINT(I).EQ.'NUCSNLO'))
         IF(TEST) THEN
           ALLATM = .FALSE.
           NPATOM = 1
