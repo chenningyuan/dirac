@@ -87,7 +87,7 @@
 !
 !  basic reading subroutine for integrals & indexes, fock matrix
 !
-!         nint - total number of integrals
+!         nint - total number of 2-el integrals
 !         v    - array for integrals
 !         ind  - array with packed indexes
 !
@@ -246,14 +246,14 @@ C--------------------------------------------------------
       else if (iopt(19).ne.7) then
 
         ! ... get in new GAMESS integrals ...
-        call get_gamess_ints(nort,eps,nn,ind,v,nint) 
+        call get_gamess_ints(nort,eps,nn,ind,v,nint)
 
-        !if (iopt(1).ge.5) then ! control prinout
-        if (iopt(1).ge.4) then ! control prinout
+        if (iopt(1).ge.5) then ! control prinout
           write(LUPRI,'(/,2x,a,i5)') 
      &    'after call get_gamess_ints, nint=',nint
           write(LUPRI,*) 'after, nort=',nort
-          write(LUPRI,*) 'eps:',(eps(i),i=1,nort)
+          write(LUPRI,*) '         nn=',nn
+          write(LUPRI,*) 'eps: ',(eps(i),i=1,nort)
         endif
 
           ! very important - use switch to DIRAC notation of indexes
@@ -267,7 +267,7 @@ C--------------------------------------------------------
             ipckindx=ipack(j1,j3,j2,j4) ! dirac notation !
             ind(i)=ipckindx
 
-           if (iopt(1).ge.4) then ! control prinout
+           if (iopt(1).ge.4) then ! control printout
             write(LUPRI,'(i4,a,f18.12,a,2i11,a,4i3)') 
      &      i,'. int:',v(i),' pck in:',ind(i),ipckindx,
      &      ' indx:',J1,J2,J3,J4
@@ -281,7 +281,9 @@ C--------------------------------------------------------
 
       endif
 
+!
 ! place here the printout
+!
 !     ... printout - orb.energies per symmetries
       WRITE(LUPRI,'(/,2X,A)') 
      &  'Orbitals per symmetry, their irreps, energies...'
@@ -382,18 +384,21 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
       subroutine files_ccsd(name,num,new,ijnum,iii,iiv)
 !-----------------------------------------------------------------------------------
 !
-c   subroutine finds # of file named NAME. if not found,
-c   increases nflcur by 1, starts new file.
+!   subroutine finds # of file named NAME. if not found,
+!   increases nflcur by 1, starts new file.
 !
-c   nflcur set to 0 at start of program.
-c   new is 1 for new file, -1 for new file with indices copied from
-c   another file, 0 for existing file. ijnum=0 used for existing
-c   scratch file, i.e. file to be completely rewritten.
+!   nflcur set to 0 at start of program.
+!
+!   new is 1 for new file, -1 for new file with indices copied from
+!   another file, 0 for existing file. 
+
+!   ijnum=0 used for existing
+!   scratch file, i.e. file to be completely rewritten.
 !
 !  Not dealing with true files, here file=diagram;
 !  organizes room for particular diagram on array gen/igen
 !
-!  Fills common blocks cij[1-6]
+!  Subroutine fills common blocks cij[1-6]
 !
 !  returns num
 !

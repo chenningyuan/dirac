@@ -391,29 +391,59 @@ end function get_moltra_integral
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !------------------------------------------------------------------
-!    provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
+!
+!  provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
 !  
-! called from readv(ccsd3.F)
+!  nort - number of orbitals  
+!  
+!  nint - number of 2-el.integrals
+!  
+!  called from readv(ccsd3.F)
 !
 !------------------------------------------------------------------
- use Memory
- use Vectors
- use io_moltra
+! use Memory
+! use Vectors
+! use io_moltra
+#if defined MOD_HSFS
+use DIRAC_HSFS
 
 #include "implicit.h"
 #include "priunit.h"
    real*8, intent(inout) :: eps(*), v(*)
    integer, intent(inout) :: ind(*),nint, nort
+   integer, dimension(8) :: irreps
 
-  call read_mrconee;  call print_mrconee_data
+ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
 
-  call read_mdcint ! needs WORK memory array !
+   call header('Output from "get_dirac_ints"',-1)
 
-!   call rd_hcrmo(eps, nort)
-!   call rd_mulmo(v,ind,nint)
+   call open_dirac_hsfs_file
 
-   call quit('get_dirac_ints')
+   read(luhsfs) nirp,nort
+   write(LUPRI,*) 'nirp,nort:',nirp,nort
 
- end subroutine get_dirac_ints
+   read(luhsfs) (irreps(i),i=1,nirp)
+   write(LUPRI,*) 'irreps:',(irreps(i),i=1,nirp)
+
+   do i=1, nort
+     read(luhsfs) eps(i)
+     write(LUPRI,*) i,eps(i)
+   enddo 
+
+   read(luhsfs) nint
+   write(LUPRI,*) 'Number of nonzero integrals, nint=',nint
+
+   do i=1,nint
+    read(luhsfs) i1,i2,i3,i4,v(i)
+    ind(i)=ipack(i1,i2,i3,i4)
+    write(LUPRI,*) i1,i2,i3,i4,ind(i),v(i)
+   enddo
+
+   call close_dirac_hsfs_file
+
+!   call quit('get_dirac_ints')
+
+#endif
+end subroutine get_dirac_ints
 
 

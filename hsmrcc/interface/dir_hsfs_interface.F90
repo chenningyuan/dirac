@@ -126,18 +126,18 @@ character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.N
 
 Do 
 
-  Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  print *,'WORD=',WORD
+  Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  ! print *,'WORD=',WORD
   KEYWORD = WORD 
 
 ! Now decide !
 
   If (PROMPT == '*' ) Then
-    print *,'WORD with "*" catched !', WORD
+   ! print *,'WORD with "*" catched !', WORD
     Exit
   EndIf
 
   If ((PROMPT == '#') .or. (PROMPT == '!')) Then
-     print *,'comment catched !', WORD
+   !  print *,'comment catched !', WORD
      Cycle ! ... continue the cycle..
   EndIf
   
@@ -186,6 +186,8 @@ EndDo
  WRITE(LUPRI,'(1X,A)') 'HSFSINP: Set-up for the external standalone HSFS codes'
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hsfs
+ WRITE(LUPRI,'(/1X,A,I3)') '* Convergence           : ',iconv_hsfs
+
 ! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
 
 ! WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
@@ -213,5 +215,4 @@ EndDo
         CALL QUIT('Error reading LUCMD, after "*HSFS" input end of file reached...')
 
 end subroutine HSFSINP
-
 

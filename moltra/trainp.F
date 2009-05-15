@@ -753,6 +753,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
+!&&&& MOLTRA scheme 6 stuff
                READ(LUCMD,*) IS6SORT
                if (is6sort.eq.0) then
                   do_finesort       = .false.

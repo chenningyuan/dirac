@@ -360,11 +360,6 @@ hsfs_indx=MakeVector('INTE',NSP/2,'HSFS indexes')
 
 boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
 
-do i=1,GetNBSYM()
- boson_irps_indx%p_iA1D(i)=0
- write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
-enddo
-
 write(LUPRI,*) '... hsfs_indx vector allocated'
 
 do isp=1,nsp/2
@@ -376,6 +371,16 @@ do isp=1,nsp/2
    boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )=boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1
  !  write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
 enddo
+
+! do the check
+icheck=0
+do i=1,GetNBSYM()
+ write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+ icheck=icheck+boson_irps_indx%p_iA1D(i)
+enddo
+if (icheck /= nsp/2) then
+ call quit('wrong number of spinors !')
+endif
 
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
@@ -413,6 +418,8 @@ enddo
 call open_dirac_hsfs_file
 
  ! ... save some stuff 
+write(luhsfs) GetNBSYM(),nsp/2
+
 write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
 
 do isp=1,nsp/2
@@ -884,6 +891,8 @@ is_complex = .NOT.SPFR .AND. (NZ==2 .or. NZ==4)
 
  write(LUPRI,*) ' number of ALL nonzero 2-el MO-integrals on MDCINT=',nnzi
  write(LUPRI,*) ' number of <I J|-integral BLOCKS on MDCINT=',nintbl
+
+ write(luhsfs) nnzi ! write total number of integrals
 
  write(LUPRI,'(A,$)') 'Integrals have been calculated on the'
  write(LUPRI,'(A,A12,1X,A,A)') '      ',DATEX,' at ',TIMEX
