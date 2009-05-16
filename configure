@@ -2026,7 +2026,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       if [ "$par" = "yes" ]; then
-       ldflag="-i_dynamic" # activate it only for ifort-parallel 
+       ldflag="-i_dynamic -static-libcxa" # activate it only for ifort-parallel 
       fi
       ldflag="$ldflag -cxxlib -lstdc++"
       noformain="-nofor_main"
