@@ -1022,10 +1022,12 @@ compiler_c(){
 #
 #   Set up the c compiler
 #
+# In the case of GNU gfortran the gcc has to be of the same development serie
+#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-# All supported C compilers
-comp_list='icc gcc gcc-3.3 pgcc pathcc cc ecc xlc_r xlc xlc'
+# (Almost) all supported C compilers; gcc-*.* serie has to be continuosly updated
+comp_list='icc gcc gcc-3.3 gcc-4.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
 fi
