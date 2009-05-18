@@ -83,10 +83,9 @@ c     for now we just skip down to the eigenvalues
       NARG = IARGC()
       IF (NARG .NE. 1) THEN
          WRITE(6,'(/3A/)') 'Usage: dfcoef_read FILE'
-         return
+         stop
       END IF
       CALL GETARG(1,ARGC)
-      JARG = LNBLNK(ARGC)
       OPEN(LUINP,FILE=ARGC,STATUS='UNKNOWN',FORM='UNFORMATTED')
       call dumpcmo(luinp)
       END
