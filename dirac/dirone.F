@@ -64,6 +64,9 @@ C     =========================================================================
 C
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
+        IF(IPRONE.GE.1) THEN
+          WRITE(LUPRI,'(A,A7)') '* ONEGEN: ',CLSINT(I)
+        ENDIF
 Chj     CLSCMB and PDOINT is now '+', '-', or '0',
 Chj     corresponding to a factor of +1, -1, or 0 on that block.
 C       The four blocks (AO basis): LL, SL, LS, SS
