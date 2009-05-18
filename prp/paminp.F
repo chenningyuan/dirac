@@ -1992,10 +1992,6 @@ C
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !!')
         ENDIF
-
-CMI     write(lupri,*) 'PLABEL=',PLABEL
-C       write(lupri,*) 'LABINT(ICMP)=',LABINT(ICMP)
-
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
           LABERR = .FALSE.
           INDX   = NPRPLBL

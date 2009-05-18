@@ -754,7 +754,8 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     PVC: INTTYP = 62
-      CALL SETATM(WORK(KDATOM),NATOM,62)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-62)
       CALL DEF_PVC1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2701,7 +2702,8 @@ C
       CALL MEMGET('REAL',KQV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIS,NUCDEP,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,62)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KATOM),NATOM,-62)
       CALL PRP_PVC1(EXPVAL,WORK(KATOM),WORK(KMPV),WORK(KQV),
      &              WORK(KIS),WORK(KTEMP),IPRPRP)
       CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2745,17 +2747,13 @@ C
       CALL DZERO(TEMP,NUCDEP)
       ITYP = 0
       DO 100 IATOM = 1,NUCIND
-         IF (.NOT. DOATOM(IATOM)) GOTO 100
-         DO IREP = 0,MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
-               ITYP = ITYP + 1
-c              write(6,*) 'jth iatom',
-c    &            iatom,ippvc(ityp),ityp,
-c    &            expval(ippvc(ityp)),nucdeg(iatom)
-               TEMP(IATOM) = TEMP(IATOM) +
-     &            EXPVAL(IPPVC(ITYP)) / NUCDEG(IATOM)
-            END IF
-         END DO
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          ITYP = ITYP + 1
+          TEMP(IATOM) = TEMP(IATOM) +
+     &         EXPVAL(IPPVC(ITYP)) / NUCDEG(IATOM)
+        END DO
+      ENDIF
  100  CONTINUE
 C
 C     For each atom calculate exp. value
@@ -2763,21 +2761,20 @@ C
       DTOT = D0
       NATOM = 0
       DO 110 IATOM = 1, NUCIND
-         IF (.NOT. DOATOM(IATOM)) GOTO 110
-         DO IREP = 0 ,MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
-               NATOM =  NATOM + 1
-               DMPV(NATOM) = TEMP(IATOM)
-               ICHARGE = NINT(CHARGE(IATOM))
-               IMASS = NINT(DISOTP(ICHARGE,1,'MASS'))
-               NPROTON  = ICHARGE
-               NNEUTRON = IMASS - ICHARGE
-               IS(NATOM) = IMASS
-               QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON -
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          NATOM =  NATOM + 1
+          DMPV(NATOM) = TEMP(IATOM)
+          ICHARGE = NINT(CHARGE(IATOM))
+          IMASS = NINT(DISOTP(ICHARGE,1,'MASS'))
+          NPROTON  = ICHARGE
+          NNEUTRON = IMASS - ICHARGE
+          IS(NATOM) = IMASS
+          QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON -
      &            D1 * NNEUTRON
-               DTOT = DTOT + DMPV(NATOM)*QW(NATOM)*DFAC
-            END IF
-         END DO
+           DTOT = DTOT + DMPV(NATOM)*QW(NATOM)*DFAC
+        END DO
+      ENDIF
  110  CONTINUE
 C
 C     Output section
@@ -2790,17 +2787,20 @@ C
       WRITE(LUPRI,9000)
      &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
       WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
-      NATOM = 0
+      NATOM  = 0
+      IATOMD = 0
       DO 120 IATOM = 1, NUCIND
-         IF (.NOT. DOATOM(IATOM)) GOTO 120
-         DO IREP = 0 ,MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
-               NATOM =  NATOM + 1
-               WRITE(LUPRI,9010)
-     &            NAMDEP(NATOM),IS(NATOM),DMPV(NATOM),QW(NATOM),
+      IF(DOATOM(IATOM)) THEN
+        DO IDEG = 1,NUCDEG(IATOM)
+          IATOMD = IATOMD + 1
+          NATOM =  NATOM + 1
+          WRITE(LUPRI,9010)
+     &            NAMDEP(IATOMD),IS(NATOM),DMPV(NATOM),QW(NATOM),
      &            DMPV(NATOM)*QW(NATOM)*DFAC
-            END IF
-         END DO
+        END DO
+      ELSE
+        IATOMD = IATOMD + NUCDEG(IATOM)
+      ENDIF
  120  CONTINUE
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,9020) 'Total EPV = ',DTOT
@@ -4294,7 +4294,7 @@ C
 C
 C
       CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+      CALL SETATM(WORK(KDOATOM),NATOM,-62)
       CALL DEFINE_PVC_SHIELD_SUB(WORK(KDOATOM),WORK(KFREE),LFREE)
       CALL MEMREL('DEFINE_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
 C
@@ -4541,7 +4541,7 @@ C
 C
       IREP = 0
       DO IATOM = 1,NUCDEP
-C       IF(DOATOM(IATOM)) THEN
+        IF(DOATOM(IATOM)) THEN
           DO IXYZ = 1,3
             ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
             IF(ISCOOR.GT.0) THEN
@@ -4572,7 +4572,7 @@ C
               CALL WRIXPR(INDEXB,INDXPR)
             ENDIF
           ENDDO
-C       ENDIF
+        ENDIF
       ENDDO
 C
 C
@@ -4602,7 +4602,7 @@ C
       ENDIF
 C
       DO IATOM = 1,NUCDEP
-C       IF(DOATOM(IATOM)) THEN
+        IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
             IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
@@ -4635,7 +4635,7 @@ C
               ENDDO
             ENDIF
           ENDDO
-C       ENDIF
+        ENDIF
       ENDDO
 C
 C
@@ -6348,7 +6348,6 @@ C
              ENDIF
            ELSE
 CMI  ...     first character, like 'X magnetic field'
-             READ (PRPNAM(IBINDEX),'(A1)') CJB
 C            write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
              JB = ICONVXYZ(CJB)
              IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
@@ -6703,7 +6702,7 @@ C
 C
 C
       CALL MEMGET('LOGI',KDOATOM,NUCIND,WORK,KFREE,LFREE)
-      CALL SETATM(WORK(KDOATOM),NATOM,-29)
+      CALL SETATM(WORK(KDOATOM),NATOM,-62)
       CALL PRINTOUT_PVC_SHIELD_SUB(ABLRF,ABCNV,WORK(KDOATOM),
      &                             WORK,KFREE,LFREE)
       CALL MEMREL('PRINTOUT_PVC_SHIELD',WORK,1,KFREE,KFREE,LFREE)
@@ -6952,9 +6951,12 @@ C
 C
       CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
       WRITE(LUPRI,*)
-C
+C     NOTE that we here exploit that we are in C1 symmetry, 
+C     so that all nuclei are symmetry-independent ! (tsaue)
       DO IATOM = 1,NUCDEP-1
+      IF(DOATOM(IATOM)) THEN
         DO JATOM = IATOM+1,NUCDEP
+        IF(DOATOM(JATOM)) THEN
 C
 C
 C         extract nuclear g factors
@@ -6999,7 +7001,9 @@ C
 C
           WRITE(LUPRI,'(2A10,E20.10)')
      &          NAMDEP(IATOM), NAMDEP(JATOM), RESPONSE
+        ENDIF
         ENDDO
+      ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',46,0)
 C

@@ -573,7 +573,7 @@ C
          INTTYP = 9
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of one-electron Fermi contact integrals.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GO TO 200
@@ -1382,7 +1382,7 @@ C
          INTTYP = 62
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      $     'Parity Violation - chirality integrals'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL PVCTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
