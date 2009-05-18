@@ -2898,7 +2898,7 @@ c             write (6,*) ' '
       subroutine rdin
 !--------------------------------------------------------------------------------
 !
-!       input reading routine 
+!     input reading routine called from each executable
 !
 !--------------------------------------------------------------------------------
        use print_level
@@ -2912,8 +2912,10 @@ c             write (6,*) ' '
       character*8 title(10)
       data typ /'c','C','h','H','p','P','g','G','v','V'/
 
-      read (5,'(10a8)')     title
-      write(6,'(1h1,10a8)') title
+!     read (5,'(10a8)')     title
+      read (LUCMD,'(10a8)')     title
+!     write(6,'(1h1,10a8)') title
+      write(LUPRI,'(1h1,10a8)') title
 
 !     read (5,'(40i3)')    (iopt(i),i=1,40)
       read (LUCMD,'(40i3)')    (iopt(i),i=1,40)
@@ -2922,7 +2924,7 @@ c             write (6,*) ' '
       write(LUPRI,'(4x,a)') "iopt(1..40) read in"
 
       call extract_print_level
-      write(LUPRI,'(2x,a,i3,/)') 'Print level:',getiprint()
+      write(LUPRI,'(2x,a,i3,/)') 'Print level (in module):',getiprint()
 
 !     read (5,'(i3/(200a1))') norb,(cc(i),i=1,norb)
       read (LUCMD,'(i3/(200a1))') norb,(cc(i),i=1,norb)
@@ -2938,6 +2940,7 @@ c             write (6,*) ' '
       icv(i)=1
       go to 110
 105        continue
+
 !     ... error branch
       write (6,1050) i,cc(i)
 1050  format ('0 **** error in type of orb',i3,3x,a1)
@@ -3056,6 +3059,8 @@ c             write (6,*) ' '
 !
 !     getting symmetry information
 !
+!   Called from each executable
+!
 !----------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3071,7 +3076,8 @@ c             write (6,*) ' '
      2           7,8,5,6,3,4,1,2,8,7,6,5,4,3,2,1 /
 
       ! mi: save time - no typing of input, data ready
-      logical :: no_inter_rd=.true.
+      !logical :: no_inter_rd=.true.
+      logical :: no_inter_rd=.false.
 
       if (no_inter_rd) then
        nclass=4
@@ -3079,12 +3085,15 @@ c             write (6,*) ' '
      & 'rdsym: nclass variable set to',nclass
       else
         write(LUPRI,'(/,2x,a)') 'rdsym: Enter nclass variable:'
-        read (*,1000,iostat=ios) nclass
+       ! read (*,1000,iostat=ios) nclass
+        read (LUCMD,*,iostat=ios) nclass
         if (ios.ne.0) then
           write(LUPRI,*) 'error in reading nclass!'
           call quit('error in reading nclass!')
         endif
       endif
+
+      write(LUPRI,*) 'nclass=',nclass
 
       write(LUPRI,'(/,2x,a)') 
      & 'Number of of orbitals (20i3) per symmetry(1-nclass):'
@@ -3096,8 +3105,9 @@ c             write (6,*) ' '
         iclass(1)=7; iclass(2)=0; iclass(3)=1; iclass(4)=1
         write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
       else
-
-      read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
+!     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
+!     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
+      read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)
 1000  format(20i3)
       if (ios.ne.0) then
         write(LUPRI,*) 'error in reading iclass!'
@@ -3123,7 +3133,8 @@ c             write (6,*) ' '
          enddo
         ! isym(1,nsym)=9
       else
-        read (*,1000) (isym(i,nsym),i=1,nclass)
+!       read (*,1000) (isym(i,nsym),i=1,nclass)
+        read (LUCMD,1000) (isym(i,nsym),i=1,nclass)
       endif
 
       !if (isym(1,nsym).ge.9) go to 120

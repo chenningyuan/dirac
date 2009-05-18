@@ -86,7 +86,7 @@ subroutine HSFSINP(WORD,reset)
 !  Read parameters for the external HSFS programs, which are passed 
 !  through the formatted input file, together with other DIRAC input
 ! 
-!  Called from TRAINP if DOHFS=.true., i.e. at the beginning
+!  Called from TRAINP if DOHSFS=.true., i.e. at the beginning
 !
 !  Written by Miro ILIAS, Tel Aviv, 2009
 !

@@ -389,7 +389,7 @@ end function get_moltra_integral
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
+subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !------------------------------------------------------------------
 !
 !  provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
@@ -425,6 +425,7 @@ ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
    read(luhsfs) (irreps(i),i=1,nirp)
    write(LUPRI,*) 'irreps:',(irreps(i),i=1,nirp)
 
+   write(LUPRI,*) 'read orbital energies'
    do i=1, nort
      read(luhsfs) eps(i)
      write(LUPRI,*) i,eps(i)
@@ -436,7 +437,7 @@ ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
    do i=1,nint
     read(luhsfs) i1,i2,i3,i4,v(i)
     ind(i)=ipack(i1,i2,i3,i4)
-    write(LUPRI,*) i1,i2,i3,i4,ind(i),v(i)
+    write(LUPRI,'(4i4,a,i11,a,f18.12)') i1,i2,i3,i4,'pck in:',ind(i),' int:',v(i)
    enddo
 
    call close_dirac_hsfs_file
@@ -445,5 +446,4 @@ ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
 
 #endif
 end subroutine get_dirac_ints
-
 

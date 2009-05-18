@@ -407,9 +407,9 @@ enddo
 write(LUPRI,*) 'HSFS index order'
 do isp=1,nsp/2
 
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-   IREPSP(ISP),IREPSP(NSP+ISP), &
-   ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+  write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+  IREPSP(ISP),IREPSP(NSP+ISP), &
+  ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
 
 enddo
 
@@ -422,9 +422,23 @@ write(luhsfs) GetNBSYM(),nsp/2
 
 write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
 
+!write(LUPRI,*) 'boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
+write(LUPRI,*) 
+
 do isp=1,nsp/2
- write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
- write(LUPRI,*) isp,REPNA(IREPSP(NSP+hsfs_indx%p_iA1D(isp) )), EPS1( hsfs_indx%p_iA1D(isp) )
+
+  do j=1,nsp/2
+     if (isp == hsfs_indx%p_iA1D(j) ) then
+      ! write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+       Exit
+     endif
+  enddo
+ 
+! write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
+ write(luhsfs) EPS1( j )
+
+! write(LUPRI,*) isp,hsfs_indx%p_iA1D(isp),REPNA(IREPSP(NSP+hsfs_indx%p_iA1D(isp))),EPS1(hsfs_indx%p_iA1D(isp) )
+ write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
 enddo
 
 write(LUPRI,*) 'HSFS stuff written into luhsfs file'
