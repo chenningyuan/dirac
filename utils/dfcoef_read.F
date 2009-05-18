@@ -82,9 +82,7 @@ c     for now we just skip down to the eigenvalues
       PARAMETER (LUINP = 1, LUPRI = 6)
       NARG = IARGC()
       IF (NARG .NE. 1) THEN
-         CALL GETARG(0,ARGC)
-         JARG = LNBLNK(ARGC)
-         WRITE(6,'(/3A/)') 'Usage: ',ARGC(1:JARG),' FILE'
+         WRITE(6,'(/3A/)') 'Usage: dfcoef_read FILE'
          return
       END IF
       CALL GETARG(1,ARGC)
