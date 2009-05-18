@@ -162,7 +162,7 @@ cbs   check maximum numbers
 
 CMI ... this works only for uncontracted basis functions
          IF (ncontrac(Lrun).ne.nprimit(Lrun)) 
-     &      CALL QUIT('AMFI: only decontracted basis sets needed!')
+     &      CALL QUIT('AMFI: only decontracted basis sets can be used!')
 
          do ILINE=1,nprimit(Lrun)
 CMI         read(IN,*) exponents(ILINE,Lrun), 
