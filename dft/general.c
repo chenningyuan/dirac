@@ -559,7 +559,11 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
+#ifdef INT_STAR8
+extern void fortwrt_(const char *line, const long *linelen);
+#else
 extern void fortwrt_(const char *line, const int *linelen);
+#endif /* ifdef INT_STAR8 */
 int
 fort_print(const char* format, ...)
 {
