@@ -607,10 +607,13 @@ C
             ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
             IF(ISCOOR .GT. 0) THEN
               ITYP = ITYP + 1
-              PLABEL(1) = 'NEF '//CHRNOS(ISCOOR/10)
-     &                          //CHRNOS(MOD(ISCOOR,10))//'  '
-              PNAME    = 'NEF   '//CHRNOS(ISCOOR/10)
-     &                           //CHRNOS(MOD(ISCOOR,10))
+              IFIRST=ISCOOR/100
+              ISECND=MOD(ISCOOR,100)/10
+              ITHIRD = MOD(MOD(ISCOOR,100),10)
+              PLABEL(1) = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+              PNAME    = 'NEF '//CHRNOS(IFIRST)
+     &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
@@ -1068,12 +1071,17 @@ C         Cartesian directions
 C
           DO 300 ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
+            IF (ISCOR1 .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_SPNSP1: Max 1000 coords in this implementation !')
+            ENDIF
             IF (ISCOR1 .GT. 0) THEN
-C Is ITYP used anywhere? /  Feb 25 1998 - jth
-C             ITYP = ITYP + 1
-              PNAME    = 'NUCSPI'//CHRNOS(ISCOR1/10)
-     &                         //CHRNOS(MOD(ISCOR1,10))
-     &                //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
+              IFIRST = ISCOR1/100
+              ISECND = MOD(ISCOR1,100)/10
+              ITHIRD = MOD(MOD(ISCOR1,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
@@ -1084,10 +1092,16 @@ C             ITYP = ITYP + 1
               IF((IS1.LE.0).OR.(IS2.LE.0))
      &          WRITE(LUPRI,'(A,5I5)')
      &          'DEF_SPNSPN: sym. error !',IATOM1,ICOOR1,IC1,IC2
-              PLABEL(1)= 'NEF '//CHRNOS(IS1/10)
-     &                     //CHRNOS(MOD(IS1,10))//'  '
-              PLABEL(2)= 'NEF '//CHRNOS(IS2/10)
-     &                     //CHRNOS(MOD(IS2,10))//'  '
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
               CALL OP1IND('XSPNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
@@ -3834,7 +3848,6 @@ C
 C
       CALL QENTER('DEF_SHIELD1')
 C
-CMI   LABEL = 'RNST'
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
@@ -3868,14 +3881,17 @@ C         Cartesian directions
 C
           DO 300 ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
-            IF (ISCOR1 .GE. 100) THEN
+            IF (ISCOR1 .GE. 1000) THEN
               CALL QUIT(
-     &'DEF_SHIELD1: Max 100 coords in this implementation !')
+     &'DEF_SHIELD1: Max 1000 coords in this implementation !')
             ENDIF
             IF (ISCOR1 .GT. 0) THEN
-              PNAME    = 'NUCSPI'//CHRNOS(ISCOR1/10)
-     &                         //CHRNOS(MOD(ISCOR1,10))
-     &                //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
+              IFIRST = ISCOR1/100
+              ISECND = MOD(ISCOR1,100)/10
+              ITHIRD = MOD(MOD(ISCOR1,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
@@ -3886,10 +3902,16 @@ C
               IF((IS1.LE.0).OR.(IS2.LE.0))
      &          WRITE(LUPRI,'(A,5I5)')
      &          'DEF_SHIELD: sym. error !',IATOM1,ICOOR1,IC1,IC2
-              PLABEL(1)= 'NEF '//CHRNOS(IS1/10)
-     &                     //CHRNOS(MOD(IS1,10))//'  '
-              PLABEL(2)= 'NEF '//CHRNOS(IS2/10)
-     &                     //CHRNOS(MOD(IS2,10))//'  '
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
               IF (SHIELD) THEN
@@ -3913,15 +3935,17 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
                     NNSTIN = NNSTIN + 1
                     ICOORP1 = MOD(ICOOR2+1,3) + 1
                     ICOORP2 = MOD(ICOOR2,3) + 1
-                    PNAME = LABEL//NAMN(IATOM1)//CHRNOS(ISCOR1/100)
-     &                   //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
-     &                   //CHRXYZ(ICOOR2)
-                    PLABEL(1) = CHRNOS(ISCOR1/10)//
-     &                   CHRNOS(MOD(ISCOR1,10))//LABEL//
-     &                   ' '//CHRXYZ(ICOORP1)
-                    PLABEL(2) = CHRNOS(ISCOR1/10)//
-     &                   CHRNOS(MOD(ISCOR1,10))//LABEL//
-     &                   ' '//CHRXYZ(ICOORP2)
+                    IFIRST = ISCOR1/100
+                    ISECND = MOD(ISCOR1,100)/10
+                    ITHIRD = MOD(MOD(ISCOR1,100),10)
+                    PNAME = LABEL//NAMN(IATOM1)//CHRNOS(IFIRST)//
+     &                    CHRNOS(ISECND)//CHRNOS(ITHIRD)//CHRXYZ(ICOOR2)
+                    PLABEL(1) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                          CHRNOS(ITHIRD)//LABEL//
+     &                          CHRXYZ(ICOORP1)
+                    PLABEL(2) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                          CHRNOS(ITHIRD)//LABEL//
+     &                          CHRXYZ(ICOORP2)
                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                          INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                     IF(IPRINT.GE.1) THEN
@@ -4546,11 +4570,12 @@ C
             ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
             IF(ISCOOR.GT.0) THEN
 C
-              PNAME = 'NUCSPI'//CHRNOS(ISCOOR/10)
-     &                        //CHRNOS(MOD(ISCOOR,10))
-     &                        //NAMN(IATOM)
-     &                        //REP(IREP)
-     &                        //CHRXYZ(IXYZ)
+              IFIRST = ISCOOR/100
+              ISECND = MOD(ISCOOR,100)/10
+              ITHIRD = MOD(MOD(ISCOOR,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM)//REP(IREP)//CHRXYZ(IXYZ)
 C
               IPTYP = IOP(IXYZ)
               IC1   = MOD(IXYZ+1,3)+1
@@ -4560,10 +4585,16 @@ C
               IS1   = IPTCNT(3*(IATOM-1)+IC1,IREP1,1)
               IS2   = IPTCNT(3*(IATOM-1)+IC2,IREP2,1)
 C
-              PLABEL(1) = 'NEF '//CHRNOS(IS1/10)
-     &                          //CHRNOS(MOD(IS1,10))//'  '
-              PLABEL(2) = 'NEF '//CHRNOS(IS2/10)
-     &                          //CHRNOS(MOD(IS2,10))//'  '
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
 C
               CALL XPRIND(PNAME,IPTYP,2,PFAC,PLABEL,
      &                    INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
@@ -4751,12 +4782,14 @@ C
                   IF (ISCOR1 .GT. 0) THEN
                      DO 600 ICOOR2 = 1, 3
                         NNSTIN = NNSTIN + 1
-                        PNAME = LABEL//NAMN(IATOM1)//' '
-     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
+                        IFIRST = ISCOR1/100
+                        ISECND = MOD(ISCOR1,100)/10
+                        ITHIRD = MOD(MOD(ISCOR1,100),10)
+                        PNAME = LABEL//NAMN(IATOM1)//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                       //CHRXYZ(ICOOR2)
-                        PLABEL(1) = CHRNOS(ISCOR1/10)//
-     &                       CHRNOS(MOD(ISCOR1,10))//LABEL//
-     &                       ' '//CHRXYZ(ICOOR2)
+                        PLABEL(1) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                       CHRNOS(ITHIRD)//LABEL//CHRXYZ(ICOOR2)
                         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                         IF(IPRINT.GE.0) THEN
@@ -6211,8 +6244,10 @@ C     IF(NSTDIA.AND.XLR_SKIPEP) THEN
          DO I = 1,NNSTIN
             IOP = IPNSTDIA(I)
             IPL = IPRPLBL(1,LEXPP(IOP))
+CTROND
+            WRITE(6,*) 'nstdia..',PRPLBL(IPL)
 CMI       ... take care of the correct form of PRPLBL(IPL) name
-            READ(PRPLBL(IPL)(:2),'(I2)') IA
+            READ(PRPLBL(IPL)(1:3),'(I3)') IA
             IB = MOD(I+2,3) + 1
             TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
          ENDDO

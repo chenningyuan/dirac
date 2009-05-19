@@ -2441,14 +2441,17 @@ C    MI/HJaJ - extended for LAO integral
             IF (DOATOM(IATOM)) THEN
                DO 300 LCOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,2)
-                  IF (ISCOOR .GT. 99)
-     &   CALL QUIT('NSTTYP error: not implemented for > 99 coords!')
+                  IF (ISCOOR .GT. 999)
+     &   CALL QUIT('NSTTYP error: not implemented for > 999 coords!')
                   IF (ISCOOR .GT. 0) THEN
                      DO 400 ICOOR = 1, 3
                         ITYP = ITYP + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//LABEL//
-     &                                 ' '//CHRXYZ(ICOOR)
+                        IFIRST = ISCOOR/100
+                        ISECND = MOD(ISCOOR,100)/10
+                        ITHIRD = MOD(MOD(ISCOOR,100),10)
+                        LABINT(ITYP) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                                 CHRNOS(ITHIRD)//LABEL//
+     &                                 CHRXYZ(ICOOR)
 CMI whether conventional or London orbitals, specify the symmetry
                         IF (LABEL.EQ.'RNST') THEN
 c                          ICOOR2 = MOD(2+ISCOOR,3)+1
@@ -2496,8 +2499,12 @@ C  /* Deck psotyp */
                ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,2)
                IF (ISCOOR .GT. 0) THEN
                   ITYP = ITYP + 1
-                  LABINT(ITYP) = 'PSO '//CHRNOS(ISCOOR/10)
-     &                                 //CHRNOS(MOD(ISCOOR,10))//'  '
+                  IFIRST = ISCOOR/100
+                  ISECND = MOD(ISCOOR,100)/10
+                  ITHIRD = MOD(MOD(ISCOOR,100),10)
+
+                  LABINT(ITYP) = 'PSO '//CHRNOS(IFIRST)//
+     &                           CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
                   INTREP(ITYP) = IREP
                   INTADR(ISCOOR) = ITYP
                END IF
@@ -2834,10 +2841,11 @@ C
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      ITYP = ITYP + 1
-
-                     labint(ityp) = 'NEF '//chrnos(iscoor/10)
-     &                              //chrnos(mod(iscoor, 10))//'  '
-
+                     IFIRST=ISCOOR/100
+                     ISECND=MOD(ISCOOR,100)/10
+                     ITHIRD = MOD(MOD(ISCOOR,100),10)
+                     LABINT(ITYP) = 'NEF '//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
                      INTREP(ITYP) = IREP
                      INTADR(ISCOOR) = ITYP
                   END IF

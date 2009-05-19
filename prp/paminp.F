@@ -1685,17 +1685,17 @@ C
 C
 C     Nuclear shielding integrals without London orbital contribution
 C
-      ELSE IF(LABINT(3:6).EQ.'NSNL') THEN
+      ELSE IF(LABINT(4:7).EQ.'NSNL') THEN
         CLASSLB = 'NUCSNLO'
 C
 C     London orbital contribution to nuclear shielding tensor integrals
 C
-      ELSE IF(LABINT(3:6).EQ.'NSLO') THEN
+      ELSE IF(LABINT(4:7).EQ.'NSLO') THEN
         CLASSLB = 'NUCSLO '
 C
 C     Nuclear shielding tensor integrals
 CMI ... use this rather than 'NST'
-      ELSE IF(LABINT(3:6).EQ.' NST') THEN
+      ELSE IF(LABINT(4:7).EQ.' NST') THEN
         CLASSLB = 'NUCSHI '
 C
 C     Electric field at the individual nuclei
@@ -1757,7 +1757,7 @@ C
 C
 C     Nuclear shielding integrals with common gauge origin
 C
-      ELSE IF(LABINT(3:6).EQ.'NSCO') THEN
+      ELSE IF(LABINT(4:7).EQ.'NSCO') THEN
         CLASSLB='NSTCGO '
 C
 C     Cosine and sine integrals
@@ -1825,7 +1825,7 @@ CMI
         CLASSLB = 'RM1RN'
 
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
-      ELSE IF(LABINT(3:6).EQ.'RNST') THEN
+      ELSE IF(LABINT(4:7).EQ.'RNST') THEN
         CLASSLB = 'RM1N1H '
 
 CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
