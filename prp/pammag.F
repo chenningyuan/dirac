@@ -3591,8 +3591,6 @@ C******************************************************
 #include "priunit.h"
       CHARACTER*1 C
 
-      CALL QENTER('ICONVXYZ')
-
       IF (C.EQ.'X'.OR.C.EQ.'x') THEN
         ICONVXYZ=1
       ELSE IF (C.EQ.'Y'.OR.C.EQ.'y') THEN
@@ -3607,6 +3605,5 @@ C******************************************************
 
 C       write(lupri,*) 'ICONVXYZ: C=',C,' ICONVXYZ=',ICONVXYZ
 
-      CALL QEXIT('ICONVXYZ')
       RETURN
       END

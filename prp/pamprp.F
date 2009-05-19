@@ -6348,7 +6348,8 @@ C
              ENDIF
            ELSE
 CMI  ...     first character, like 'X magnetic field'
-C            write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
+             READ (PRPNAM(IBINDEX),'(A1)') CJB 
+            !write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
              JB = ICONVXYZ(CJB)
              IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
                write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
