@@ -1010,13 +1010,15 @@ endif
    i1hsfs=hsfs_indx%p_iA1D(KR(IKR)); i2hsfs=hsfs_indx%p_iA1D(KR(indk_vect%p_iA1D(INZ)))
    i3hsfs=hsfs_indx%p_iA1D(KR(JKR)); i4hsfs=hsfs_indx%p_iA1D(KR(indl_vect%p_iA1D(INZ)))
 
+   call permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+
 !   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
 !           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
 !           cbuf_vect%p_rA1D(INZ)
 
-   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3)') icount,'. (',i1,' ',i2,'|',  & 
+   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,4i3)') icount,'. (',i1,' ',i2,'|',  & 
            i3,' ',i4,')=', &
-           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs
+           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_
 
    ! dirac notation ...
    write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
@@ -1081,6 +1083,21 @@ endif
 #endif
 
 end subroutine read_mdcint_hsfs
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+subroutine permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+!
+! <p q|r s> to be permuted
+!
+!
+#include "implicit.h"
+#include "priunit.h"
+integer, intent(in)  :: i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs
+integer, intent(out) :: i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
+
+
+
+end subroutine permut_indxs
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine scan_mdcint

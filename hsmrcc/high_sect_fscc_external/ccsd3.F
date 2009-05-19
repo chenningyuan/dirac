@@ -1260,6 +1260,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !  parameters: iparm - printing level for "prt"
 !
+! Important: integrals must be unique ! No repeating
+!
 !------------------------------------------------------------------------
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1352,7 +1354,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       if (iopt(1).ge.4) then ! control printout
          write(LUPRI,'(1x,i5,a,i10,a,4i3,a,d12.6)')
-     &   i,'-',iint(i),'-',j1,j2,j3,j4,' :',vint(i)
+     &   i,'-',iint(i),' -',j1,j2,j3,j4,' :',vint(i)
       endif
 
       njh=0
