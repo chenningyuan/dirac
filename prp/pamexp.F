@@ -335,9 +335,8 @@ Caspg
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
-CMI     ... release the allocated memmory ...
-Caspg     CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
-C         write(lupri,*) 'PRPEX1 memmory release...' 
+CMI     ... release the allocated memory ...
+          CALL MEMREL('PRPEX1.nooana',WORK,KWORK,KPTRI,KFREE,LFREE)
         ENDDO
 
         CALL PRSYMB(LUPRI,'-',76,0)
@@ -432,7 +431,7 @@ Caspg
      &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
-CMI        ... release the memmory
+CMI        ... release the memory
           CALL MEMREL('PRPEX1.orbana',WORK,KWORK,KPTRI,KFREE,LFREE)
         ENDDO
 C        CALL PRSYMB(LUPRI,'-',76,0)
