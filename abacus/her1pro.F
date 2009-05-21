@@ -1100,7 +1100,7 @@ C
          INTTYP = 38
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of nuclear shieldings with common gauge origin'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSCO',
      &               INTADR)
          ANTI = .FALSE.

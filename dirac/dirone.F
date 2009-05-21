@@ -113,7 +113,8 @@ C
      &          (CLSINT(I).EQ.'RM1N1H ').OR.
      &          (CLSINT(I).EQ.'NUCSNLO').OR.
      &          (CLSINT(I).EQ.'FERMI C').OR.
-     &          (CLSINT(I).EQ.'PVC    '))
+     &          (CLSINT(I).EQ.'PVC    ').OR.
+     &          (CLSINT(I).EQ.'NSTCGO '))
         IF(TEST) THEN
           ALLATM = .FALSE.
           NPATOM = 1
