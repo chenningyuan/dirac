@@ -1010,7 +1010,7 @@ endif
    i1hsfs=hsfs_indx%p_iA1D(KR(IKR)); i2hsfs=hsfs_indx%p_iA1D(KR(indk_vect%p_iA1D(INZ)))
    i3hsfs=hsfs_indx%p_iA1D(KR(JKR)); i4hsfs=hsfs_indx%p_iA1D(KR(indl_vect%p_iA1D(INZ)))
 
-   call permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+   call permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs, i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
 
 !   write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12)') icount,'. (',KR(IKR),' ',KR(JKR),'|',  & 
 !           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
@@ -1018,10 +1018,11 @@ endif
 
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,4i3)') icount,'. (',i1,' ',i2,'|',  & 
            i3,' ',i4,')=', &
-           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_
+           cbuf_vect%p_rA1D(INZ),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
 
    ! dirac notation ...
-   write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
+  ! write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
+   write(luhsfs) i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p, & 
                  cbuf_vect%p_rA1D(INZ)
 
   enddo
@@ -1085,17 +1086,46 @@ endif
 end subroutine read_mdcint_hsfs
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+subroutine permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs,  & 
+                        i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+!----------------------------------------------------------------------------------------------
 !
-! <p q|r s> to be permuted
+! <p q|r s> to be permuted so that:
+!       p >= q
+!       r >= s  
+!
+!       (p,q) >= (r,s)
 !
 !
+! <p q|r s> = <p s|r q> = <r q|p s> = <r s|p q>
+!
+! <p q|r s> = <q p|s r>
+!
+!
+! p,q,r,s=i1hsfs,i2hsfs,i3hsfs,i4hsfs
+!
+!----------------------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 integer, intent(in)  :: i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs
 integer, intent(out) :: i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
 
+ i1hsfs_p=i1hsfs; i2hsfs_p=i2hsfs; i3hsfs_p=i3hsfs; i4hsfs_p=i4hsfs
 
+if (i1hsfs_p < i3hsfs_p) then
+  ih =i1hsfs_p; i1hsfs_p=i3hsfs_p; i3hsfs_p=ih
+endif
+
+if (i2hsfs_p < i4hsfs_p) then
+  ih =i2hsfs_p; i2hsfs_p=i4hsfs_p; i4hsfs_p=ih
+endif
+
+if (i1hsfs_p < i2hsfs_p .or. i3hsfs_p < i4hsfs_p) then ! <pq|rs>=<qp|sr>
+ ih = i1hsfs_p; i1hsfs_p=i2hsfs_p; i2hsfs_p=ih
+ ih = i3hsfs_p; i3hsfs_p=i4hsfs_p; i4hsfs_p=ih
+endif
+
+!write(LUPRI,'(a,4i3,a,4i3)') 'permut:',i1hsfs,i2hsfs,i3hsfs,i4hsfs,'->',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
 
 end subroutine permut_indxs
 
