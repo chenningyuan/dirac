@@ -247,11 +247,8 @@ contains
 #endif
 
 !     in case of gga symmetrize matrices
-      if (dft_temp_gga_hs) then
-        call sym_hs(fmat, nr_fmat, isymop, ihrmop)
-      end if
-      if (dft_temp_gga_ha .and. dft_cfg_sdft) then
-        call sym_ha(fmat, nr_fmat, isymop, ihrmop)
+      if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+        call sym_new(fmat, nr_fmat, isymop, ihrmop)
       end if
 
 
@@ -1339,19 +1336,12 @@ contains
       ENDIF
 !
       end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE sym_ha(AMAT, &
+
+
+      SUBROUTINE sym_new(AMAT, &
      &                  NMAT, &
      &                  ISYMOP, &
      &                  IHRMOP)
-!=======================================================================
-!     symmetrize only specific symmetry blocks of a matrix
-!     written by Trond Saue march 2004
-!     adapted to antihermitian matrices
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                           last revision: february 2007
-!=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1377,12 +1367,29 @@ contains
 
 #include "ibtfun.h"
 
+      integer :: iq(0:3)
+      integer :: inter_irep(0:3)
+      logical :: skip(0:3)
+
+      iq(0)         = 1
+      inter_irep(0) = 0
+      do ixyz = 1, 3
+        iq(ixyz)         = jm4pos(4 - ixyz)
+        iq(ixyz)         = iqtopq(iq(ixyz), isymax(ixyz, 2))
+        inter_irep(ixyz) = isymax(ixyz, 2)
+      end do
+
       DO IM = 1,NMAT
-        IF(.NOT. IHRMOP(IM) .EQ. 1) THEN
-          DO IXYZ = 1,3
-            iq = jm4pos(4-ixyz)
-            iq = iqtopq(iq,isymax(ixyz,2))
-            IREPOP = IBTXOR(ISYMAX(IXYZ,2),ISYMOP(IM)-1)
+
+        skip = .false.
+        if (ihrmop(im) ==  1) skip(1:3) = .true.
+        if (ihrmop(im) == -1) skip(0:0) = .true.
+
+          DO IXYZ = 0,3
+
+            if (.not. skip(IXYZ)) then
+
+            IREPOP = IBTXOR(inter_irep(ixyz),ISYMOP(IM)-1)
             DO 110 IREP1 = 0,NBSYM-1
               IREP2 = IBTXOR(IREP1,IREPOP)
               IF(IREP2 .LT. IREP1) THEN
@@ -1397,10 +1404,10 @@ contains
                     II = JB1 + I
                     DO J = 1,NB2
                       JJ = JB2 + J
-                      AVERAGE = DP5*(AMAT(II,JJ,IQ,IM)  &
-     &                             + AMAT(JJ,II,IQ,IM))
-                      AMAT(II,JJ,IQ,IM) = AVERAGE 
-                      AMAT(JJ,II,IQ,IM) = AVERAGE 
+                      AVERAGE = DP5*(AMAT(II,JJ,iq(ixyz),IM)  &
+     &                             + AMAT(JJ,II,iq(ixyz),IM))
+                      AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
+                      AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
                     ENDDO
                   ENDDO
   120           CONTINUE
@@ -1413,97 +1420,17 @@ contains
                     II = JB + I
                     DO J = 1,I-1
                       JJ = JB + J
-                      AVERAGE = DP5*(AMAT(II,JJ,IQ,IM)  &
-     &                             + AMAT(JJ,II,IQ,IM))
-                      AMAT(II,JJ,IQ,IM) = AVERAGE 
-                      AMAT(JJ,II,IQ,IM) = AVERAGE 
+                      AVERAGE = DP5*(AMAT(II,JJ,iq(ixyz),IM)  &
+     &                             + AMAT(JJ,II,iq(ixyz),IM))
+                      AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
+                      AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
                     ENDDO
                   ENDDO
   130           CONTINUE
               ENDIF
   110       CONTINUE
+        ENDIF
           ENDDO
-        ENDIF
-      ENDDO
-
-      end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE sym_hs(AMAT, &
-     &                  NMAT, &
-     &                  ISYMOP, &
-     &                  IHRMOP)
-!=======================================================================
-!     symmetrize only specific symmetry blocks of a matrix
-!     written by Trond Saue march 2004
-!=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (DP5 = 0.5D0,D2 = 2.0D0)
-
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
-#else
-      DIMENSION AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
-#endif
-      DIMENSION ISYMOP(NMAT), &
-     &          IHRMOP(NMAT)
-
-#include "ibtfun.h"
-
-      DO IM = 1,NMAT
-        IF(.NOT. IHRMOP(IM) .EQ. -1) THEN
-          IREPOP = ISYMOP(IM) - 1
-          DO 110 IREP1 = 0,NBSYM-1
-            IREP2 = IBTXOR(IREP1,IREPOP)
-            IF(IREP2 .LT. IREP1) THEN
-              DO 120 IC = 1,MC
-                NB1 = NBBAS(IREP1,IC)
-                IF(NB1 .EQ. 0) GOTO 120
-                NB2 = NBBAS(IREP2,IC)
-                IF(NB2 .EQ. 0) GOTO 120
-                JB1 = IBBAS(IREP1,IC)
-                JB2 = IBBAS(IREP2,IC)
-                DO I = 1,NB1
-                  II = JB1 + I
-                  DO J = 1,NB2
-                    JJ = JB2 + J
-                    AVERAGE = DP5*(AMAT(II,JJ,1,IM)  &
-     &                           + AMAT(JJ,II,1,IM))
-                    AMAT(II,JJ,1,IM) = AVERAGE 
-                    AMAT(JJ,II,1,IM) = AVERAGE 
-                  ENDDO
-                ENDDO
-  120         CONTINUE
-            ELSEIF(IREP2 .EQ. IREP1) THEN
-              DO 130 IC = 1,MC
-                NB = NBBAS(IREP1,IC)
-                IF(NB .EQ. 0) GOTO 130
-                JB = IBBAS(IREP1,IC)
-                DO I = 1,NB
-                  II = JB + I
-                  DO J = 1,I-1
-                    JJ = JB + J
-                    AVERAGE = DP5*(AMAT(II,JJ,1,IM)  &
-     &                           + AMAT(JJ,II,1,IM))
-                    AMAT(II,JJ,1,IM) = AVERAGE 
-                    AMAT(JJ,II,1,IM) = AVERAGE 
-                  ENDDO
-                ENDDO
-  130         CONTINUE
-            ENDIF
-  110     CONTINUE
-        ENDIF
       ENDDO
 
       end subroutine
