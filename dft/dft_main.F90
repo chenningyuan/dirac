@@ -52,7 +52,7 @@ contains
       integer, intent(in) :: nr_fmat
       integer, intent(in) :: isymop(nr_dmat_perturbed)
       integer, intent(in) :: ihrmop(nr_dmat_perturbed)
-      type(dft_options_t), intent(in) :: dft_options
+      type(dft_options_t) :: dft_options
       integer, intent(in) :: iprint
 !     --------------------------------------------------------------------------
       integer             :: iz, im, iq
@@ -195,41 +195,38 @@ contains
         dft_temp_need_gao1 = .true.
       end if
 
-
-!     integrate
-
 #ifdef VAR_MPI
       if (parcal) then
-!       Get hold of slaves
-        call dirac_parctl(4)
-        call dft_pardrv(dmat,               &
-                        dmat_saop_resp,     &
-                        dmat_saop_outer,    &
-                        dmat_perturbed,     &
-                        fmat,               &
-                        nr_dmat_perturbed,  &
-                        isymop,             &
-                        ihrmop,             &
-                        dft_options,        &
-                        dft_cfg_print_level)
-      else
-#endif
-        call dftdrv    (dmat,               &
-                        dmat_saop_resp,     &
-                        dmat_saop_outer,    &
-                        dmat_perturbed,     &
-                        fmat,               &
-                        nr_dmat_perturbed,  &
-                        isymop,             &
-                        ihrmop,             &
-                        dft_options,        &
-                        (/0/),              &
-                        (/0/),              &
-                        dft_cfg_print_level)
 
-#ifdef VAR_MPI
+        call dirac_parctl(4)
+
+        if (nodes > maxnod) then
+          call quit('number of nodes is too large, nodes > maxnod')
+        end if
+
+        write(lupri, '(/5x, a, i5/)') &
+                     'number of nodes in parallel DFT:', nodes
+
+        timing = .false.
+
+        call dftpar_init1(dft_options, nr_dmat_perturbed)
+        call dftpar_init2(dft_options, nr_dmat_perturbed, isymop, ihrmop, &
+     &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
+
       end if
-#endif
+#endif /* ifdef VAR_MPI */
+
+!     integrate
+      call dftdrv(dmat,              &
+                  dmat_saop_resp,    &
+                  dmat_saop_outer,   &
+                  dmat_perturbed,    &
+                  fmat,              &
+                  nr_dmat_perturbed, &
+                  isymop,            &
+                  ihrmop,            &
+                  dft_options,       &
+                  dft_cfg_print_level)
 
 !     deallocate saop density matrices
       if (dft_cfg_saop) then
@@ -312,7 +309,7 @@ contains
 ! /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &                  IDISP,ISEND,IPRINT)
+     &                  IPRINT)
 !
 !     T. Helgaker sep 99
 !
@@ -347,8 +344,7 @@ contains
 #endif
       DIMENSION EXCMAT(*)
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT), &
-     &          IDISP(*),ISEND(*)
+     &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: gao(:)
@@ -363,6 +359,8 @@ contains
       real(8), allocatable :: kz(:)
       real(8), allocatable :: kw(:)
 
+      integer, allocatable :: idisp(:)
+      integer, allocatable :: isend(:)
 !
 !
 !
@@ -445,6 +443,10 @@ contains
 #if defined (VAR_MPI) 
         IF(PARCAL) THEN
           NODESALL=NODES+1
+
+          call alloc(idisp, nodesall)
+          call alloc(isend, nodesall)
+
           NBATCH = NPOINT/NODESALL
           NREST = MOD(NPOINT,NODESALL)
           myNPOINT = NBATCH
@@ -563,6 +565,8 @@ contains
           ENDIF
 !.........add rest to total number of myNPOINT on last node
           IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
+          call dealloc(idisp)
+          call dealloc(isend)
         ELSE
 #endif
             myNPOINT = NPOINT
@@ -1672,75 +1676,6 @@ contains
 !
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck pardrv */
-      SUBROUTINE DFT_PARDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
-     &                      dft_options, &
-     &                      IPRINT)
-!***********************************************************************
-!
-!     A cut and paste job by T. Saue Sep 25 2003
-!     Based on HER_PARDRV which was
-!     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
-!***********************************************************************
-
-#include "implicit.h"
-#include "priunit.h"
-!
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
-!
-#include "infpar.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-!
-!
-      DIMENSION EXCMAT(*),DMAT(N2BBASX), &
-     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &          DTRMAT(N2BBASX,NZ,NXCMAT), &
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
-      type(dft_options_t) :: dft_options
-      integer, allocatable :: idisp(:)
-      integer, allocatable :: isend(:)
-!
-!
-!     Ensure that NODES .LE. MAXNOD
-!
-      IF (NODES .GT. MAXNOD) THEN
-         WRITE(LUPRI,'(/5X,A,/12X,A,/5X,A16,I8,/5X,A16,I8)') &
-     &    'ERROR: Number of nodes allocated has exceeded hardcoded', &
-     &    'limit. Reduce number of nodes or recompile program. ', &
-     &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
-         CALL QUIT('Number of nodes requested/allocated is too large.')
-      ELSE IF (IPRINT .GT. 0) THEN
-         WRITE(LUPRI,'(/5X,A,I5/)') &
-     &    'DFT_PARDRV: Number of nodes allocated:', NODES
-      ENDIF
-      TIMING = .FALSE.
-!
-!-----------------------
-!     Send data
-!-----------------------
-      CALL DFTPAR_INIT1(dft_options,NXCMAT)
-      CALL DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP, &
-     &                  DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
-!
-!-----------------------
-!     Start calculation.
-!-----------------------
-!
-      NODESALL=NODES+1
-      call alloc(idisp, nodesall)
-      call alloc(isend, nodesall)
-      CALL DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &            idisp, isend, IPRINT)
-      call dealloc(idisp)
-      call dealloc(isend)
-!
-      end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck dftnod */
       SUBROUTINE DFTNOD()
 !***********************************************************************
@@ -1814,7 +1749,7 @@ contains
 !.....Integrate
       CALL DFTDRV(KDEN,KDMAT_RESP_AO,KDMAT_OUTER_AO, &
      &            KDTR,KEXC,NXCMAT, ksym, khrm, &
-     &            dft_options,(/0/),(/0/),IPRINT)
+     &            dft_options,IPRINT)
 
       call dealloc(KEXC)
       call dealloc(ksym)
@@ -1844,8 +1779,8 @@ contains
 #include "infpar.h"
 
 !     --------------------------------------------------------------------------
-      type(dft_options_t), intent(inout) :: dft_options
-      integer,             intent(inout) :: nxcmat
+      type(dft_options_t)                :: dft_options
+      integer                            :: nxcmat
 !     --------------------------------------------------------------------------
       logical                            :: i_am_the_master
       integer                            :: ierr
