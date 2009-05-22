@@ -38,7 +38,8 @@ call read_mrconee;  call print_mrconee_data
 
 call scan_mdcint
 
-call read_mdcint_hsfs
+!call read_mdcint_hsfs
+call read_mdcint_hsfs2
 
 call UnstickMemory
 
