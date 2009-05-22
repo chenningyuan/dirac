@@ -358,6 +358,7 @@ contains
 
       integer, allocatable :: idisp(:)
       integer, allocatable :: isend(:)
+      real(8), allocatable :: kxdum(:)
 !
 !
 !
