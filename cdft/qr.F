@@ -1026,12 +1026,19 @@ c=======================================================================
      &               dabs(v_bc_h(3))
      &              )
       if(worth_it .gt. dft_cfg_dfthrl) then
+        if (add_grad) then
         call doexc2(s_bc_h,
      &              v_bc_h,
      &              isymop(3)-1,
      &              excmat(1,1,1,3),
      &              gao,
      &              gao1)
+        else
+        call doexc1(s_bc_h,
+     &              isymop(3)-1,
+     &              excmat(1,1,1,3),
+     &              gao)
+        end if
       endif
 
       if(.not. add_spin) goto 999

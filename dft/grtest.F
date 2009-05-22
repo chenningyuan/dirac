@@ -22,8 +22,7 @@ C
 C 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C     /* Deck grtest */                                                C
-      SUBROUTINE GRTEST(WORK,LWORK,JPRINT)
+      subroutine grtest()
 C                                                                      C
 C     T. Helgaker sep 99                                               C
 C     DIRAC adaption by T.Saue                                         C
@@ -33,47 +32,65 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
       use dft_temp
+      use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
  
       PARAMETER (DP5 = 0.5D0)
-      DIMENSION WORK(LWORK)
 
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "inforb.h"
 #include "nuclei.h"
-#include "memint.h"
 
-      iprdft = dft_cfg_print_level
+      real(8), allocatable :: smat(:)
+      real(8), allocatable :: gao(:)
+      real(8), allocatable :: gao1(:)
+      real(8), allocatable :: gao2(:)
+      real(8), allocatable :: gab1(:)
+      real(8), allocatable :: ncnt(:)
+      real(8), allocatable :: buf(:)
+      integer, allocatable :: iclab(:)
+
       dft_temp_file_unit = 44
-C
-C     Allocate SMAT and send to  DFTDRV
-C
-      CALL MEMGET('REAL',KSMAT,NBAST*NBAST*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGB1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF,NBAST*4,WORK,KFREE,LFREE)
-COLAV
-      CALL MEMGET('INTE',KICLAB,NBAST,WORK,KFREE,LFREE)
-      CALL GRTES1(WORK(KSMAT),WORK(KGAO),WORK(KGA1),WORK(KGA2),
-     &     WORK(KGB1),WORK(KCNT),WORK(KBUF),WORK(KICLAB),
-     &     WORK(KFREE),LFREE,IPRDFT)
-      CALL MEMREL('GRTES1',WORK,KWORK,KWORK,KFREE,LFREE)
 
-      RETURN
-      END
+      call alloc(smat,  nbast*nbast*2)
+      call alloc(gao,   nbast)
+      call alloc(gao1,  nbast*3)
+      call alloc(gao2,  nbast*6)
+      call alloc(gab1,  nbast*3)
+      call alloc(ncnt,  nbast)
+      call alloc(buf,   nbast)
+      call alloc(iclab, nbast)
+
+      call grtes1(smat,
+     &            gao,
+     &            gao1,
+     &            gao2,
+     &            gab1,
+     &            ncnt,
+     &            buf,
+     &            iclab,
+     &            dft_cfg_print_level)
+
+      call dealloc(smat)
+      call dealloc(gao)
+      call dealloc(gao1)
+      call dealloc(gao2)
+      call dealloc(gab1)
+      call dealloc(ncnt)
+      call dealloc(buf)
+      call dealloc(iclab)
+
+      end subroutine
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C /* Deck grtes1 */
       SUBROUTINE GRTES1(SMAT,GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,BUF,ICLAB,WORK,LWORK,IPRINT)
+     &                  NCNT,BUF,ICLAB,IPRINT)
 C                                                                      C
 C     T. Helgaker sep 99                                               C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
@@ -82,6 +99,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
          use dft_temp
+      use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -121,11 +139,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #endif
 
       DIMENSION GAO(*), GAO1(*), 
-     &          GAO2(*), GAB1(*), WORK(LWORK), 
+     &          GAO2(*), GAB1(*),
      &          NCNT(*), BUF(*)
+      real(8), allocatable :: kx(:)
+      real(8), allocatable :: ky(:)
+      real(8), allocatable :: kz(:)
+      real(8), allocatable :: kw(:)
 
 #include "dcbibt.h"
-#include "memint.h"
 
       iprint = dft_cfg_print_level
 
@@ -167,7 +188,7 @@ C     Get analytical SMAT(I,J,2)
 C
       NELM = NTBAS(0)*NTBAS(0)
       CALL DZERO(SMAT(1,1,1),NELM)
-      CALL GTOVLX(SMAT(1,1,2),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX_no_work(SMAT(1,1,2),SSMTRC)
 C
 C     integrate
 C
@@ -177,19 +198,23 @@ C
       READ(dft_temp_file_unit) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
-         CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
-         CALL GRTES3(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),
+         call alloc(kx, npoint)
+         call alloc(ky, npoint)
+         call alloc(kz, npoint)
+         call alloc(kw, npoint)
+         CALL GRTES3(kx, ky, kz, kw,
      &               dft_temp_file_unit,NPOINT)
 
-      CALL GRTES2(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
+      CALL GRTES2(kx, ky, kz, kw,
+     &               NPOINT,
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,BUF,WORK(KFREE),LFREE,IPRINT)
+     &               NCNT,BUF,IPRINT)
 
-         CALL MEMREL('GRTES2',WORK,KWORK,KWORK,KFREE,LFREE)
+         call dealloc(kx)
+         call dealloc(ky)
+         call dealloc(kz)
+         call dealloc(kw)
          GO TO 100
       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 100
@@ -444,7 +469,7 @@ C     /* Deck grtes2 */                                                C
      &               SMAT,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,BUF,
-     &               WORK,LWORK,IPRINT)
+     &               IPRINT)
 C                                                                      C
 C     Written by Trond Saue and T.Helgaker                             C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
@@ -472,8 +497,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3), 
      &            NCNT(NBAST), BUF(NBAST,4),
-     &            VX(DERVS1),
-     &            WORK(LWORK)
+     &            VX(DERVS1)
       DIMENSION RHG(3)
 
       nder = 0
@@ -570,13 +594,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck getwt1 */
-      SUBROUTINE GETWT1(X,Y,Z,WT,IPRINT,WORK,LWORK)
+      SUBROUTINE GETWT1(X,Y,Z,WT,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
 C                                                                      C
 C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -594,10 +620,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-      DIMENSION WT(NATOMS),WORK(LWORK)
+      DIMENSION WT(NATOMS)
 
 #include "ibtfun.h"
-#include "memint.h"
+
+      real(8), allocatable :: psmu(:)
+      real(8), allocatable :: rj(:)
+      real(8), allocatable :: rij(:)
+      real(8), allocatable :: aij(:)
 
 C
 C     ********************************
@@ -633,19 +663,21 @@ C
       NNAT  = NAT*(NAT-1)/2
       N2AT = NAT*NAT 
 
-      CALL MEMGET('REAL',KPSMU ,NAT      ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRJ   ,NAT      ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRIJ  ,NNAT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAIJ  ,NNAT     ,WORK,KFREE,LFREE)
+      call alloc(psmu, nat)
+      call alloc(rj,   nat)
+      call alloc(rij,  nnat)
+      call alloc(aij,  nnat)
 C
 C     Calculate weights in point (X,Y,Z)
 C     ==================================
 C
       CALL WT1CON(X,Y,Z,WT,
-     &              WORK(KPSMU),WORK(KRJ),
-     &              WORK(KRIJ),WORK(KAIJ),IPRINT)
+     &            psmu,rj,rij,aij,iprint)
 
-C      CALL MEMREL('GETBW1',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(psmu)
+      call dealloc(rj)
+      call dealloc(rij)
+      call dealloc(aij)
       RETURN
       END
 
@@ -848,7 +880,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          XPASC(20)
 
 C
-C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
+C     WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
          RJ(INA)=DSQRT((C(1,INA)-X)**2
@@ -895,7 +927,7 @@ C         WRITE(6,*) 'PSMU(',INA,') = ', PSMU(INA)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */
-      SUBROUTINE GT1WT(WORK,LWORK)
+      SUBROUTINE GT1WT()
 C***********************************************************************
 C
 C     Get density in one dimension, that is along bonds
@@ -905,28 +937,27 @@ C     Written by Trond Saue May 9 2000
 C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 C
-      DIMENSION WORK(LWORK)
 #include "dcbgen.h"
 #include "dcbwt1.h"
 #include "nuclei.h"
+      real(8), allocatable :: kwt(:)
+      real(8), allocatable :: kcoor(:)
 C
       CALL QENTER('GT1WT')
-#include "memint.h"
 C
       CALL TITLER('Integration weights along bonds','*',122)
 C
-C     Memory allocation
-      CALL MEMGET('REAL',KWT,NATOMS    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOOR,6       ,WORK,KFREE,LFREE)
+      call alloc(kwt, natoms) 
+      call alloc(kcoor, 6) 
 
-      CALL GT1BW1(WORK(KWT),WORK(KCOOR),IPWT1,WORK,KFREE,LFREE)
-C
-C     Memory deallocation
-      CALL MEMREL('GT1WT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL GT1BW1(KWT, KCOOR, 0)
+      call dealloc(kwt)
+      call dealloc(kcoor)
 C
  9999 CALL QEXIT('GT1WT')
       RETURN
@@ -934,7 +965,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1bw1 */
-      SUBROUTINE GT1BW1(WT,COORD,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE GT1BW1(WT,COORD,IPRINT)
 C***********************************************************************
 C
 C     Get density in one dimension, that is along bonds
@@ -951,7 +982,7 @@ C***********************************************************************
 C
 #include "symmet.h"
 #include "nuclei.h"
-      DIMENSION COORD(3,2),WT(NATOMS),WORK(*)
+      DIMENSION COORD(3,2),WT(NATOMS)
       CHARACTER FILNAM*10
 #include "ibtfun.h"
 C
@@ -981,8 +1012,7 @@ C
                ENDDO
                OPEN(LUWT,FILE =FILNAM,STATUS='NEW',
      &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
-     &              KFREE,LFREE)
+               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT)
                CLOSE(LUWT,STATUS='KEEP')
              ENDIF
            ENDDO
@@ -1002,8 +1032,7 @@ C
                ENDDO
                OPEN(LUWT,FILE =FILNAM,STATUS='NEW',
      &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
-     &              KFREE,LFREE)
+               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT)
                CLOSE(LUWT,STATUS='KEEP')
               ENDIF
            ENDDO
@@ -1013,8 +1042,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Gt1w2 */
-      SUBROUTINE GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
-     &     KFREE,LFREE)
+      SUBROUTINE GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT)
 C***********************************************************************
 C
 C     Get density in one dimension, that is along bonds
@@ -1030,7 +1058,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "nuclei.h"
 C
-      DIMENSION COORD(3,2),WT(NATOMS),WORK(*)
+      DIMENSION COORD(3,2),WT(NATOMS)
 #include "dcbwt1.h"
 #include "sdpre.h"
 C
@@ -1063,7 +1091,7 @@ C     Get weights for each atom at (PX,PY,PZ)
 
         CALL DZERO(WT,NATOMS)
 
-        CALL GETWT1(PX,PY,PZ,WT,IPRINT,WORK(KFREE),LFREE)
+        CALL GETWT1(PX,PY,PZ,WT,IPRINT)
         PP = XTANG*PP
 C        WRITE(LUWT,'(F10.6,3E20.10)') PP,(WT(I),I=1,NATOMS)
         WRITE(LUWT,'(F10.6,3E20.10)') PP,WT(ICENTA),WT(ICENTB)

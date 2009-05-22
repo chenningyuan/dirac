@@ -113,8 +113,6 @@ C
      &            (/1/),
      &            (/1/),
      &            dft_options,
-     &            work(kfree),
-     &            lfree,
      &            iprscf)
 
 #endif /* ifdef PRG_DIRAC */

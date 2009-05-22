@@ -655,8 +655,6 @@ C          Hermitian operator
      &                (/1/),
      &                (/1/),
      &                dft_options,
-     &                work(kfree),
-     &                lfree,
      &                iprint)
 
         end if

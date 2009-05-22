@@ -511,8 +511,6 @@ contains
         integer :: ones(50)     
         integer :: nr_dmat
  
-    integer, parameter       :: lwork = 1000000
-    real(8)                  :: work(lwork)
         integer:: i,j,k,ii,jj,kk,i1,pb,pb1; type(Matrix):: A(9)
         type(dft_options_t) :: dft_options
         do i=1,size(A); A(i)=0d0*D(1); end do
@@ -562,8 +560,6 @@ contains
                             (/ones(1:1)/),   &
                             (/ones(1:1)/),   &
                             dft_options,     &
-                            work,            &
-                            lwork,           &
                             0)
               end if
 
@@ -580,8 +576,6 @@ contains
                             (/ones(1:3)/),   &
                             (/ones(1:3)/),   &
                             dft_options,     &
-                            work,            &
-                            lwork,           &
                             0)
               end if
 
@@ -600,8 +594,6 @@ contains
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
                             dft_options,       &
-                            work,              &
-                            lwork,             &
                             0)
               end if
 
@@ -621,8 +613,6 @@ contains
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
                             dft_options,       &
-                            work,              &
-                            lwork,             &
                             0)
               end if
 
@@ -643,8 +633,6 @@ contains
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
                             dft_options,       &
-                            work,              &
-                            lwork,             &
                             0)
               end if
 
@@ -666,8 +654,6 @@ contains
                             (/ones(1:m - 1)/), &
                             (/ones(1:m - 1)/), &
                             dft_options,       &
-                            work,              &
-                            lwork,             &
                             0)
               end if
 

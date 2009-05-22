@@ -138,6 +138,190 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reacmo */
+      SUBROUTINE REACMO_no_work(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
+C***********************************************************************
+C
+C     Read DHF-coefficients and eigenvalues from unformatted file
+C     Read option is provided from bit-packed IOPT:
+C       0001 - give restart info
+C       0010 - read coefficients
+C       0100 - read eigenvalues
+C       1000 - read boson irrep identification
+C
+C     IDIM(1,J) - number of positronic solutions
+C     IDIM(2,J) - number of electronic solutions
+C     IDIM(3,J) - number of AO-basis functions
+C
+C     Written by T.Saue Sept 1 1995
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      LOGICAL INFO,LBIT,TEST
+      CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
+      DIMENSION IDIM(3,2)
+      real(8), allocatable :: kc(:)
+      real(8), allocatable :: ko(:)
+      integer, allocatable :: ki(:)
+C
+      IF(IOPT.EQ.0) RETURN
+      REWIND IUNIT
+C
+C     Read title line
+C     ===============
+C
+      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+C
+C     Compatibility check for NFSYM and NFBAS
+C     =======================================
+C
+      IERR = 0
+      IF(NSYM .NE. NFSYM) THEN
+         IERR = IERR + 1
+         INFO = .TRUE.
+         WRITE(LUPRI,'(/A/A,2I5)')
+     &      'REACMO FATAL ERROR: Incompatible number of fermion ircops',
+     &      ' from file and in this run:',NSYM,NFSYM
+      ELSE
+         DO IFRP = 1,NFSYM
+           IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
+         END DO
+         IF (IERR.GT.0) THEN
+           INFO = .TRUE.
+           WRITE(LUPRI,'(/A/A,2(/A,I2,2I5))')
+     &     'REACMO FATAL ERROR. Incompatible number of basis functions',
+     &     ' from file and in this run:', (' Fermion ircop no.',IFRP,
+     &     IDIM(3,IFRP),NFBAS(IFRP,0),IFRP=1,NFSYM)
+         END IF
+      END IF
+C
+C     File info
+C     =========
+C
+      IF(LBIT(IOPT,1)) THEN
+        FMT = MXFORM(TOTERG,20)
+        WRITE(LUPRI,'(/3A,'//FMT//')')
+     &   '* REACMO: Coefficients read from file ',CMOFIL,
+     &   ' - Total energy: ',TOTERG
+        WRITE(LUPRI,'(2A)') '* Heading :',TEXT
+      ENDIF
+C
+      IF (IERR.GT.0) CALL QUIT(
+     &'REACMO: old DFCOEF file is not consistent with this calculation')
+C
+      IF(IOPT.LT.2) RETURN
+C
+C     Compatibility tests for number of orbitals
+C     ==========================================
+C
+      TEST = .FALSE.
+      NC = 0
+      NO = 0
+      DO IFRP = 1,NFSYM
+        IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
+        IF(IDIM(3,IFRP).NE.NORB(IFRP)) TEST=.TRUE.
+        NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+        NO = NO + IDIM(3,IFRP)
+      ENDDO
+C
+C     Read coefficients
+C     =================
+C
+      IF(LBIT(IOPT,2)) THEN
+        IF(TEST) THEN
+          call alloc(kc, nc)
+          CALL READT(IUNIT,NC, kc)
+          JC = 1
+          DO IFRP = 1,NFSYM
+            CALL ADACMO(NFBAS(IFRP,0),NZ,
+     &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+            JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+          ENDDO
+          call dealloc(kc)
+        TEST = .FALSE.
+        ELSE
+          READ (IUNIT,END=30,ERR=40) CMO
+        ENDIF
+        IF(IOPT.LT.4) RETURN
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
+C     Read eigenvalues
+C     ================
+C
+      IF(LBIT(IOPT,3)) THEN
+        IF(TEST) THEN
+          call alloc(ko, no)
+          CALL READT(IUNIT,NO,ko)
+          JO = 1
+          DO IFRP = 1,NFSYM
+            CALL ADAEIG(
+     &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
+          ENDDO
+          call dealloc(ko)
+        ELSE
+          READ (IUNIT,END=50,ERR=60) EIG
+        ENDIF
+        IF(IOPT.LT.8) RETURN
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
+C     Read single group irrep (spinfree and Levy-Leblond calcs)
+C     =========================================================
+C
+      IF(LBIT(IOPT,4)) THEN
+        IF(TEST) THEN
+          call alloc(ki, no)
+          CALL READI(IUNIT,NO,ki)
+          CALL ADAIBP(IBEIG,ki,IDIM)
+          call dealloc(ki)
+        ELSE
+          READ (IUNIT,END=70,ERR=80) IBEIG
+        ENDIF
+        IF(IOPT.LT.16) RETURN
+      ELSE
+        READ(IUNIT)
+      ENDIF
+C
+      RETURN
+C
+C     Error messages
+C
+ 10   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('REACMO: ERROR reading TEXT')
+ 30   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading coefficients')
+ 40   CONTINUE
+      CALL QUIT('REACMO: ERROR reading coefficients')
+ 50   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
+ 60   CONTINUE
+c     CALL QUIT('REACMO: ERROR reading eigenvalues')
+      WRITE(LUPRI,'(/A)') 'REACMO: WARNING !!! No eigenvalues read'
+      RETURN
+ 70   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading irrep identification')
+ 80   CONTINUE
+      CALL QUIT('REACMO: ERROR reading irrep identification')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck reacmo */
       SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************

@@ -2405,8 +2405,6 @@ C
      &              isymop,
      &              ihrmop,
      &              dft_options,
-     &              work(kfree),
-     &              lfree,
      &              iprxqr)
 
 !       add the (symmetrized) XC contribution on top of work(kf1ao)

@@ -207,13 +207,13 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dftac_saop_get_dmats */
       SUBROUTINE DFTAC_SAOP_GET_DMATS(DMAT_OUTER_AO,
-     &                                DMAT_RESP_AO,
-     &                                WORK,LWORK)
+     &                                DMAT_RESP_AO)
 C=======================================================================
 C     get orbital energies and density matrices for SAOP
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+       use memory_allocator
        use dft_cfg
 #include "implicit.h"
 #include "priunit.h"
@@ -231,30 +231,26 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       LOGICAL   FILE_IS_THERE,
      &          FILE_IS_OPENED
-      DIMENSION DMAT_OUTER_AO(*),
-     &          DMAT_RESP_AO(*),
-     &          WORK(LWORK)
+      DIMENSION DMAT_OUTER_AO(n2bbasx),
+     &          DMAT_RESP_AO(n2bbasx)
+      real(8), allocatable :: ksaopcmo(:)
+      real(8), allocatable :: dmat_outer_mo(:)
+      real(8), allocatable :: dmat_resp_mo(:)
+      real(8), allocatable :: keig(:)
+      real(8), allocatable :: ksaopenergies(:)
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#include "memint.h"
-      CALL QENTER('DFTAC_SAOP_GET_DMATS')
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C
-C     allocate memory
-C     ===============
-C
-      CALL MEMGET('REAL',KSAOPCMO          ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_OUTER_MO ,N2ORBX,
-     &            WORK,KFREE,LFREE)
-      IF(dft_cfg_saop_with_response_part) THEN
-        CALL MEMGET('REAL',KDMAT_RESP_MO,N2ORBX,
-     &              WORK,KFREE,LFREE)
-      ENDIF
-      CALL MEMGET('REAL',KEIG              ,NORBT,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSAOPENERGIES     ,NORBT,
-     &            WORK,KFREE,LFREE)
+
+!     allocate memory
+      call alloc(ksaopcmo,      n2bbasxq)
+      call alloc(dmat_outer_mo, n2orbx)
+      if (dft_cfg_saop_with_response_part) then
+        call alloc(dmat_resp_mo, n2orbx)
+      end if
+      call alloc(keig,          norbt)
+      call alloc(ksaopenergies, norbt)
 C
 C
 C     read coefficients and give info
@@ -275,10 +271,10 @@ C
         CALL OPNFIL(LUSAOP,'DFCOEF','UNKNOWN','SAOP')
       ENDIF
 C
-      CALL DZERO(WORK(KSAOPCMO),N2BBASXQ)
-      CALL DZERO(WORK(KEIG),NORBT)
-      CALL REACMO(LUSAOP,'DFCOEF',WORK(KSAOPCMO),WORK(KEIG),TEMP,
-     &            TOTERG,6,WORK,KFREE,LFREE)
+      KSAOPCMO = 0.0d0
+      keig = 0.0d0
+      CALL REACMO_no_work(LUSAOP,'DFCOEF',KSAOPCMO,KEIG,TEMP,
+     &            TOTERG,6)
       IF(.NOT.FILE_IS_OPENED) THEN
         CLOSE(LUSAOP,STATUS = 'KEEP')
       ENDIF
@@ -291,7 +287,7 @@ C
       do i = 1, nfsym
         if(nish(i) .gt. 0) then
           do j = 1, nish(i)
-            e = work(keig + j - 1 + (i-1)*norb(1) + npsh(i))
+            e = keig(1 + j - 1 + (i-1)*norb(1) + npsh(i))
             if(e .gt. dft_cfg_homo_eigenvalue) 
      &          dft_cfg_homo_eigenvalue = e
           end do
@@ -303,14 +299,14 @@ C     calculate energy differences
 C     ============================
 C
       K = 0
-      CALL DZERO(WORK(KSAOPENERGIES),NORBT)
+      KSAOPENERGIES = 0.0d0
       DO I = 1,NFSYM
         IF(NISH(I).GT.0) THEN
           DO J = 1,NISH(I)
             K = K+1
-            WORK(KSAOPENERGIES+K-1) =
+            KSAOPENERGIES(k) =
      &            dft_cfg_homo_eigenvalue
-     &           -WORK(KEIG+J-1+(I-1)*NORB(1)+NPSH(I))
+     &           -KEIG(J+(I-1)*NORB(1)+NPSH(I))
           ENDDO
         ENDIF
       ENDDO
@@ -319,12 +315,12 @@ C
 C     get orbital density matrices
 C     ============================
 C
-      CALL DZERO(DMAT_OUTER_AO,N2BBASX)
-      CALL DZERO(WORK(KDMAT_OUTER_MO),N2ORBX)
-      IF(dft_cfg_saop_with_response_part) THEN
-        CALL DZERO(DMAT_RESP_AO,N2BBASX)
-        CALL DZERO(WORK(KDMAT_RESP_MO),N2ORBX)
-      ENDIF
+      dmat_outer_ao = 0.0d0
+      dmat_outer_mo = 0.0d0
+      if (dft_cfg_saop_with_response_part) then
+        dmat_resp_ao = 0.0d0
+        dmat_resp_mo = 0.0d0
+      end if
       K = 0
       DO I = 1,NFSYM
         IF(NISH(I).GT.0) THEN
@@ -334,11 +330,11 @@ C
             JOFF = JOFF+NORB(1)*(I-1)+NPSH(I)
             JOFF = JOFF+(J-1)*NORBT+J-1
             IF(dft_cfg_saop_with_response_part) THEN
-              WORK(KDMAT_RESP_MO+JOFF)
-     &                                 = SQRT(WORK(KSAOPENERGIES+K-1))
+              DMAT_RESP_MO(1+JOFF)
+     &                                 = SQRT(KSAOPENERGIES(K))
             ENDIF
-            WORK(KDMAT_OUTER_MO+JOFF)
-     &                        = EXP(-D2*(WORK(KSAOPENERGIES+K-1)**D2))
+            DMAT_OUTER_MO(1+JOFF)
+     &                        = EXP(-D2*(KSAOPENERGIES(K)**D2))
           ENDDO
         ENDIF
       ENDDO
@@ -359,15 +355,13 @@ C
 C
             JOFFNEXT = JOFF+NORBT+1
 C
-            SOMEDIFF = ABS(WORK(KSAOPENERGIES+KCHECK)
-     &                                  -WORK(KSAOPENERGIES+KCHECK-1))
+            SOMEDIFF = ABS(KSAOPENERGIES(1+KCHECK)
+     &                                  -KSAOPENERGIES(KCHECK))
             IF(SOMEDIFF.LT.1.0D-5) THEN
               IF(dft_cfg_saop_with_response_part) THEN
-                WORK(KDMAT_RESP_MO+JOFF)
-     &                               = WORK(KDMAT_RESP_MO+JOFFNEXT)
+                dmat_resp_mo(1+joff) = dmat_resp_mo(1+joffnext)
               ENDIF
-              WORK(KDMAT_OUTER_MO+JOFF)
-     &                              = WORK(KDMAT_OUTER_MO+JOFFNEXT)
+           dmat_outer_mo(1+joff) = dmat_outer_mo(1+joffnext)
             ENDIF
           ENDDO
         ENDIF
@@ -380,29 +374,29 @@ C
       DO I = 1,NFSYM
         IF(NISH(I).GT.0) THEN
           IF(dft_cfg_saop_with_response_part) THEN
-            CALL QTRANS('MOAO','S',D0,
+            CALL QTRANS90('MOAO','S',D0,
      &                  NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &                  DMAT_RESP_AO(1+I2BASX(I,I)),
      &                  NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &                  WORK(KDMAT_RESP_MO+I2ORBX(I,I)),
+     &                  DMAT_RESP_MO(1+I2ORBX(I,I)),
      &                  NORBT,NORBT,1,IPQTOQ(1,0),
-     &                  WORK(KSAOPCMO+ICMOQ(I)),
+     &                  KSAOPCMO(1+ICMOQ(I)),
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                  WORK(KSAOPCMO+ICMOQ(I)),
+     &                  KSAOPCMO(1+ICMOQ(I)),
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,0)
+     &                  0)
           ENDIF
-          CALL QTRANS('MOAO','S',D0,
+          CALL QTRANS90('MOAO','S',D0,
      &                NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &                DMAT_OUTER_AO(1+I2BASX(I,I)),
      &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &                WORK(KDMAT_OUTER_MO+I2ORBX(I,I)),
+     &                DMAT_OUTER_MO(1+I2ORBX(I,I)),
      &                NORBT,NORBT,1,IPQTOQ(1,0),
-     &                WORK(KSAOPCMO+ICMOQ(I)),
+     &                KSAOPCMO(1+ICMOQ(I)),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KSAOPCMO+ICMOQ(I)),
+     &                KSAOPCMO(1+ICMOQ(I)),
      &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KFREE),LFREE,0)
+     &                0)
         ENDIF
       ENDDO
       IF(dft_cfg_saop_with_response_part) THEN
@@ -411,12 +405,15 @@ C
       CALL DSCAL(N2BBASX,D2,DMAT_OUTER_AO,1)
 C
 C
-C     memory release
-C     ==============
-C
-      CALL MEMREL('DFTAC_SAOP_GET_DMATS',WORK,KSAOPCMO,KSAOPCMO,
-     &            KFREE,LFREE)
-      CALL QEXIT('DFTAC_SAOP_GET_DMATS')
-C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      RETURN
-      END
+
+
+!     release memory
+      call dealloc(ksaopcmo)
+      call dealloc(dmat_outer_mo)
+      if (dft_cfg_saop_with_response_part) then
+        call dealloc(dmat_resp_mo)
+      end if
+      call dealloc(keig)
+      call dealloc(ksaopenergies)
+
+      end subroutine

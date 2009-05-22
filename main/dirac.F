@@ -873,7 +873,7 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD(WORK,LWORK)
+         CALL DFTNOD()
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1001,7 +1001,7 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD(WORK,LWORK)
+         CALL DFTNOD()
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C

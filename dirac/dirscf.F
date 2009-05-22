@@ -570,8 +570,6 @@ C
      &                (/1/),
      &                (/1/),
      &                dft_options,
-     &                work(kfree),
-     &                lfree,
      &                iprscf)
 
            tdxc = second() - tdxc
@@ -1395,8 +1393,6 @@ C
      &                (/1/),
      &                (/1/),
      &                dft_options,
-     &                work(kfree),
-     &                lfree,
      &                iprscf)
 
 #ifdef MOD_DNF

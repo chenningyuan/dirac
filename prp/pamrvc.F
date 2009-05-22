@@ -3635,8 +3635,6 @@ C
      &                isymop,
      &                ihrmop,
      &                dft_options,
-     &                work(kfree),
-     &                lfree,
      &                iprxrs)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)

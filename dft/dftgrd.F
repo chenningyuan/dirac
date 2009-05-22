@@ -23,7 +23,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DFTGRD(DMAT,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -32,6 +32,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use dft_cfg
         use dft_temp
+        use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -45,13 +46,31 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-      DIMENSION DMAT(*),WORK(LWORK)
+      DIMENSION DMAT(*)
+      real(8), allocatable :: kzan(:)
+      real(8), allocatable :: kc(:)
+      real(8), allocatable :: ksp(:)
+      real(8), allocatable :: kx8(:)
+      real(8), allocatable :: ky8(:)
+      real(8), allocatable :: kz8(:)
+      real(8), allocatable :: kw8(:)
+      real(8), allocatable :: kpsmu(:)
+      real(8), allocatable :: krj(:)
+      real(8), allocatable :: kaccum(:)
+      real(8), allocatable :: kxmujn(:)
+      real(8), allocatable :: kxmuj2(:)
+      real(8), allocatable :: krij(:)  
+      real(8), allocatable :: kaij(:)  
+      real(8), allocatable :: krbc(:)  
+      real(8), allocatable :: krvec(:) 
+      real(8), allocatable :: kchimt(:)
+      real(8), allocatable :: kaa(:)   
+      integer, allocatable :: knuco(:)
 
 #include "ibtfun.h"
 
       TIMSTR = SECOND()
 
-#include "memint.h"
 
 C
 C     ********************************
@@ -61,9 +80,9 @@ C
 C     INFOA has been replaced
 C     =====
 
-      CALL MEMGET('REAL',KZAN,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KC  ,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL SET_GRID_INFO(NAT,NUM,WORK(KZAN),WORK(KC))
+      call alloc(kzan, nucdep)
+      call alloc(kc,   nucdep*3)
+      CALL SET_GRID_INFO(NAT,NUM,kzan,kc)
 C
 C     DFTWRK
 C     ======
@@ -84,27 +103,28 @@ CTROND      IBIG  = 100000
       NNAT    = NAT*(NAT-1)/2
       N2AT    = NAT*NAT 
 
-      CALL MEMGET('REAL',KSP   ,4*NUM    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KX8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KY8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KZ8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KW8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPSMU ,IVECL*NAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRJ   ,IVECL*NAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KACCUM,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJN,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJN,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJ2,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRIJ  ,NNAT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAIJ  ,NNAT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRBC  ,N2AT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRVEC ,3*IVECL  ,WORK,KFREE,LFREE)
+      call alloc(KSP   ,4*NUM    )
+      call alloc(KX8   ,IBIG     )
+      call alloc(KY8   ,IBIG     )
+      call alloc(KZ8   ,IBIG     )
+      call alloc(KW8   ,IBIG     )
+      CALL alloc(KPSMU ,IVECL*NAT)
+      CALL alloc(KRJ   ,IVECL*NAT)
+      CALL alloc(KACCUM,IVECL    )
+      CALL alloc(KXMUJN,IVECL    )
+      CALL alloc(KXMUJ2,IVECL    )
+      CALL alloc(KRIJ  ,NNAT     )
+      CALL alloc(KAIJ  ,NNAT     )
+      CALL alloc(KRBC  ,N2AT     )
+      CALL alloc(KRVEC ,3*IVECL  )
+C..added for density-based atomic size estimates
+      CALL alloc(KCHIMT,NATOMS*NATOMS)
 C..added for the MOLCAS scheme:
       NDIM=2*NHTYP*NUCIND
-      CALL MEMGET('INTE',KNUCO,NDIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAA  ,2*NDIM,WORK,KFREE,LFREE)
-C..added for density-based atomic size estimates
-      CALL MEMGET('REAL',KCHIMT,NATOMS*NATOMS  ,WORK,KFREE,LFREE)
+      CALL alloc(KAA  ,2*NDIM)
+      CALL alloc(KNUCO,NDIM  )
+
+
 C
 C     Open unit
 C     ================
@@ -140,33 +160,50 @@ C
 C     Calculate abscissas and weights
 C     ===============================
 C
-      CALL CONSTRUC(WORK(KSP),WORK(KX8),WORK(KY8),WORK(KZ8),WORK(KW8),
-     &              WORK(KPSMU),WORK(KRJ),WORK(KACCUM),
-     &              WORK(KXMUJN),WORK(KXMUJ2),
-     &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
-     &              WORK(KRBC),WORK(KRVEC),
-     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),
-     &              NAT,NUM,WORK(KZAN),WORK(KC),
-     &              IPRINT,WORK(KFREE),LFREE)
-C
-C     Check accuracy of numerical integration
-C     =======================================
-C
-      IF (dft_cfg_integration_check_level .GT.0) THEN
-         CALL GRTEST(WORK(KFREE),LFREE,JPRINT)
-      END IF
+      CALL CONSTRUC(KSP,KX8,KY8,KZ8,KW8,
+     &              KPSMU,KRJ,KACCUM,
+     &              KXMUJN,KXMUJ2,
+     &              KRIJ,KAIJ,IVECL,IBIG,
+     &              KRBC,KRVEC,
+     &              KNUCO,KAA,DMAT,KCHIMT,
+     &              NAT,NUM,KZAN,KC,
+     &              IPRINT)
+
+
+!     check accuracy of numerical integration
+      if (dft_cfg_integration_check_level > 0) then
+        call grtest()
+      end if
+
 
       TIMGRD = SECOND() - TIMSTR
       WRITE (LUPRI,'(1X)')
       CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
       WRITE (LUPRI,'(1X)')
 
-C call to memrel here?
-
  999  CONTINUE
 
-      RETURN
-      END
+      call dealloc(kzan)
+      call dealloc(kc)
+      call dealloc(ksp)
+      call dealloc(kx8)
+      call dealloc(ky8)
+      call dealloc(kz8)
+      call dealloc(kw8)
+      call dealloc(kpsmu)
+      call dealloc(krj)
+      call dealloc(kaccum)
+      call dealloc(kxmujn)
+      call dealloc(kxmuj2)
+      call dealloc(krij)
+      call dealloc(kaij)
+      call dealloc(krbc)
+      call dealloc(krvec)
+      call dealloc(kchimt)
+      call dealloc(kaa)
+      call dealloc(knuco)
+
+      end subroutine
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -174,7 +211,7 @@ C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
      &                    NUCORB,AA,DMAT,CHIMT,
-     &                    NAT,NUM,ZAN,C,IPRINT,WORK,LWORK)
+     &                    NAT,NUM,ZAN,C,IPRINT)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
@@ -215,7 +252,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
      &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND),
-     &     DMAT(*),CHIMT(NATOMS,NATOMS),WORK(LWORK)
+     &     DMAT(*),CHIMT(NATOMS,NATOMS)
 C
 C     CARE: Some equivalencing through argument list!
 C
@@ -248,7 +285,7 @@ C     exist.
 C
       IF(dft_cfg_estimate_radii) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
-         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
+         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
          CALL HEADER('Density based relative atomic sizes',-1)
          CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
          WRITE(LUPRI,*)
@@ -894,7 +931,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          ZAN(*),C(*)
 
 C
-C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
+C     WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
@@ -1144,7 +1181,7 @@ C     Newton-Raphson search
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */
-      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
+      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
 C***********************************************************************
 C
 C     Get relative atomic size estimates by analyzing atomic
@@ -1153,23 +1190,30 @@ C
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION DMAT(*),WORK(LWORK)
+      DIMENSION DMAT(*)
       DIMENSION C(*)
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
 C
       DIMENSION CHIMT(NATOMS,NATOMS)
+      real(8), allocatable :: kcoor(:)
+      real(8), allocatable :: kdmtao(:)
+      real(8), allocatable :: kgao(:)
+      real(8), allocatable :: ksmat(:)
+      real(8), allocatable :: kasmat(:)
+      integer, allocatable :: kiclab(:)
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('GETCHI')
 C
-#include "memint.h"
 C
 C     Quit if open shell
 C
@@ -1181,30 +1225,35 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KCOOR,6        ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMTAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMAT,NTBAS(1)*NTBAS(1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KASMAT,NATOMS*NATOMS,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KICLAB,NTBAS(0),WORK,KFREE,LFREE)
+      call alloc(KCOOR  , 6                 )
+      call alloc(KDMTAO , N2BBASX           )
+      call alloc(KGAO   , NTBAS(0)          )
+      call alloc(KSMAT  , NTBAS(1)*NTBAS(1) )
+      call alloc(KASMAT , NATOMS*NATOMS     )
+      call alloc(KICLAB , NTBAS(0)          )
 C
 C     Transform density matrix to unsorted basis, then to AO basis
 C
-      CALL BSTOBU(DMAT,1,WORK(KFREE),LFREE)
-      CALL DTSOAO(DMAT,WORK(KDMTAO),NTBAS(0),0,IPRINT)
+      CALL BSTOBU_no_work(DMAT,1)
+      CALL DTSOAO(DMAT,KDMTAO,NTBAS(0),0,IPRINT)
 C
 C     Get atomic size estimates
 C
-      CALL CHI1(CHIMT,NAT,C,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
-     &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT)
+      CALL CHI1(CHIMT,NAT,C,KDMTAO,KGAO,KSMAT,
+     &     KASMAT,KICLAB,KCOOR,IPRINT)
 C
 C     Backtransform density matrix to sorted basis
 C
-      CALL BUTOBS(DMAT,1,WORK(KFREE),LFREE)
+      CALL BUTOBS_no_work(DMAT,1)
 C
 C     Memory deallocation
 C
-      CALL MEMREL('GETCHI',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(kcoor)
+      call dealloc(kdmtao)
+      call dealloc(kgao)
+      call dealloc(ksmat)
+      call dealloc(kasmat)
+      call dealloc(kiclab)
 C
  9999  CALL QEXIT('GETCHI')
       RETURN
@@ -1312,7 +1361,6 @@ C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
 #include "sdpre.h"
-#include "memint.h"
 
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//

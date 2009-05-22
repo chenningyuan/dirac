@@ -9,6 +9,8 @@
 .DEBUG          !very coarse grid
 .ZIPGRID
 .SDFT
+.INTCHK
+ 1
 **INTEGRALS
 .NUCMOD
  1

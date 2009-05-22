@@ -1482,6 +1482,126 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bstobu */
+      SUBROUTINE BSTOBU_no_work(AMAT,MZ)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C     to symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), allocatable :: buf(:)
+      CALL QENTER('BSTOBU')
+C
+C     Memory allocation
+C
+      call alloc(buf, mz*n2bbasx)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,BUF,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  IF(NBBAS(IREP,IC).GT.0)
+     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
+     &                                        AMAT(IUOFF+1)   ,1)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
+C     Memory deallocation
+C
+      call dealloc(buf)
+      CALL QEXIT ('BSTOBU')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck butobs */
+      SUBROUTINE BUTOBS_no_work(AMAT,MZ)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), allocatable :: buf(:)
+      CALL QENTER('BUTOBS')
+C
+
+      call alloc(buf, mz*n2bbasx)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  IF(NBBAS(IREP,IC).GT.0) 
+     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
+      call dealloc(buf)
+      CALL QEXIT ('BUTOBS')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtbubs */
       SUBROUTINE VTBUBS(VBU,VBS,NVEC)
 C***********************************************************************

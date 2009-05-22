@@ -11,16 +11,14 @@ module dft_main
 contains
 
       subroutine dftexc(dmat, &
-     &                  dmat_perturbed, &
-     &                  fmat, &
-     &                  nr_dmat_perturbed, &
-     &                  nr_fmat, &
-     &                  isymop, &
-     &                  ihrmop, &
-     &                  dft_options, &
-     &                  work, &
-     &                  lwork, &
-     &                  iprint)
+                        dmat_perturbed, &
+                        fmat, &
+                        nr_dmat_perturbed, &
+                        nr_fmat, &
+                        isymop, &
+                        ihrmop, &
+                        dft_options, &
+                        iprint)
 
 !     written by T. Helgaker
 !     DIRAC adaption by T. Saue
@@ -55,15 +53,15 @@ contains
       integer, intent(in) :: isymop(nr_dmat_perturbed)
       integer, intent(in) :: ihrmop(nr_dmat_perturbed)
       type(dft_options_t), intent(in) :: dft_options
-      real(8)             :: work(lwork)
-      integer             :: lwork
       integer, intent(in) :: iprint
 !     --------------------------------------------------------------------------
-      integer             :: kwork, kfree, kfree_save, lfree
-      integer             :: kdmat_outer_ao, kdmat_resp_ao, kxcveb
       integer             :: iz, im, iq
       real(8)             :: time_start, time_in_xc, second
       real(8)             :: ddot
+
+      real(8), allocatable :: xc_vector_b(:)
+      real(8), allocatable :: dmat_saop_outer(:)
+      real(8), allocatable :: dmat_saop_resp(:)
 
 #ifdef VAR_MPI
 #ifndef INT_STAR8
@@ -73,7 +71,6 @@ contains
 #endif /* ifdef VAR_MPI */
 !     --------------------------------------------------------------------------
 
-#include "memint.h"
 
 !     start timer
       time_start = second()
@@ -81,12 +78,12 @@ contains
 !     prepare for accumulating integrals with density fitting
 #ifdef MOD_DNF
       if (df_fitvxc) then
-        call memget('REAL', kxcveb, nbasisaux, work, kfree, lfree)
-        call dzero(work(kxcveb), nbasisaux)
+        call alloc(xc_vector_b, nbasisaux)
+        xc_vector_b = 0.0d0
         if (dft_options%energy) then 
-          call save_matrix(work(kxcveb), 1, nbasisaux, 'FITVXC')
+          call save_matrix(xc_vector_b, 1, nbasisaux, 'FITVXC')
         else if (dft_options%lr) then 
-          call save_matrix(work(kxcveb), 1, nbasisaux, 'LRDFVX')
+          call save_matrix(xc_vector_b, 1, nbasisaux, 'LRDFVX')
         end if
       end if
 #endif
@@ -139,33 +136,21 @@ contains
       end if
 #endif
 
-!     set memory tag
-      kfree_save = kfree      
-
 !     calculate grid
       if (.not. dft_temp_grid_is_done) then
-        call dftgrd(dmat, work(kfree), lfree, 1)
+        call dftgrd(dmat, 1)
         dft_temp_grid_is_done = .true.
       end if
 
-
-!     get density matrices for saop
-
-      kdmat_outer_ao = kfree
-      kdmat_resp_ao  = kfree
-
+!     allocate and get saop density matrices
       if (dft_cfg_saop) then
         dft_cfg_saop_is_active = .true.
-        call memget('REAL', kdmat_outer_ao, n2bbasx, &
-     &              work, kfree, lfree)
+        call alloc(dmat_saop_outer, n2bbasx)
         if (dft_cfg_saop_with_response_part) then
-          call memget('REAL', kdmat_resp_ao, n2bbasx, &
-     &                work, kfree, lfree)
+          call alloc(dmat_saop_resp, n2bbasx)
         end if
-        call dftac_saop_get_dmats(work(kdmat_outer_ao), &
-     &                            work(kdmat_resp_ao), &
-     &                            work(kfree),  &
-     &                            lfree)
+        call dftac_saop_get_dmats(dmat_saop_outer, &
+                                  dmat_saop_resp)
       end if
 
 
@@ -216,21 +201,43 @@ contains
 #ifdef VAR_MPI
       if (parcal) then
 !       Get hold of slaves
-        CALL DIRAC_PARCTL( 4 )
-        CALL DFT_PARDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO), &
-     &                  dmat_perturbed,fmat,nr_dmat_perturbed, &
-     &                  isymop,ihrmop,dft_options, &
-     &                  WORK(KFREE),LFREE,dft_cfg_print_level)
+        call dirac_parctl(4)
+        call dft_pardrv(dmat,               &
+                        dmat_saop_resp,     &
+                        dmat_saop_outer,    &
+                        dmat_perturbed,     &
+                        fmat,               &
+                        nr_dmat_perturbed,  &
+                        isymop,             &
+                        ihrmop,             &
+                        dft_options,        &
+                        dft_cfg_print_level)
       else
 #endif
-        CALL DFTDRV(DMAT,WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO), &
-     &              dmat_perturbed,fmat,nr_dmat_perturbed, &
-     &              isymop,ihrmop,dft_options, &
-     &              (/0/),(/0/),WORK(KFREE),LFREE,dft_cfg_print_level)
-        CALL MEMREL('DFTDRV',WORK,kfree_save,kfree_save,KFREE,LFREE)
+        call dftdrv    (dmat,               &
+                        dmat_saop_resp,     &
+                        dmat_saop_outer,    &
+                        dmat_perturbed,     &
+                        fmat,               &
+                        nr_dmat_perturbed,  &
+                        isymop,             &
+                        ihrmop,             &
+                        dft_options,        &
+                        (/0/),              &
+                        (/0/),              &
+                        dft_cfg_print_level)
+
 #ifdef VAR_MPI
       end if
 #endif
+
+!     deallocate saop density matrices
+      if (dft_cfg_saop) then
+        call dealloc(dmat_saop_outer)
+        if (dft_cfg_saop_with_response_part) then
+          call dealloc(dmat_saop_resp)
+        end if
+      end if
 
 !     rescale
       call dscal(n2bbasx, 0.5d0, dmat, 1)
@@ -285,7 +292,7 @@ contains
 #ifdef MOD_DNF
       else
 !       df_fitvxc is .true.
-        call memrel('dftexc-xcvec', work, kxcveb, kxcveb, kfree, lfree)
+        call dealloc(xc_vector_b)
       end if
 #endif
 
@@ -305,7 +312,7 @@ contains
 ! /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &                  IDISP,ISEND,WORK,LWORK,IPRINT)
+     &                  IDISP,ISEND,IPRINT)
 !
 !     T. Helgaker sep 99
 !
@@ -341,11 +348,22 @@ contains
       DIMENSION EXCMAT(*)
       DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT), &
-     &          IDISP(*),ISEND(*),WORK(LWORK)
+     &          IDISP(*),ISEND(*)
       type(dft_options_t) :: dft_options
+
+      real(8), allocatable :: gao(:)
+      real(8), allocatable :: gao1(:)
+      real(8), allocatable :: gao2(:)
+      real(8), allocatable :: gab1(:)
+      real(8), allocatable :: buf(:)
       integer, allocatable :: ncnt(:)
+
+      real(8), allocatable :: kx(:)
+      real(8), allocatable :: ky(:)
+      real(8), allocatable :: kz(:)
+      real(8), allocatable :: kw(:)
+
 !
-#include "memint.h"
 !
 !
 
@@ -358,25 +376,24 @@ contains
 #ifdef MOD_DNF
       IF (DF_FITVXC) NDIM = MAX(NTBAS(0),NBASISAUX)
 #endif
-      CALL MEMGET('REAL',KGAO,NDIM,WORK,KFREE,LFREE)
-      KGA1=KFREE
 
+
+
+
+      call alloc(gao, ndim)
       if (dft_temp_need_gao1) then
-        call memget('REAL', kga1, 3*ndim, work, kfree, lfree)
+        call alloc(gao1, ndim*3)
       end if
-      kga2 = kfree
-
       if (dft_temp_need_gao2) then
-        call memget('REAL', kga2, 6*ndim, work, kfree, lfree)
+        call alloc(gao2, ndim*6)
       end if
-      kgb1 = kfree
-
-      IF(dft_options%london) then
-        CALL MEMGET('REAL',KGB1,3*NDIM,WORK,KFREE,LFREE)
+      if (dft_options%london) then
+        call alloc(gab1, ndim*3)
       end if
-!     CALL MEMGET('INTE',KCNT,NDIM,WORK,KFREE,LFREE)
       call alloc(ncnt, ndim)
-      CALL MEMGET('REAL',KBUF,NDIM*4,WORK,KFREE,LFREE)
+      call alloc(buf,  ndim*4)
+
+
 !
 !     integrate
 !
@@ -394,7 +411,6 @@ contains
       ENDIF
 !*    Loop over batches of grid points
   100 CONTINUE
-      KLOOP = KFREE
       IF(MYTID.EQ.MPARID) THEN
         IF(dft_cfg_import_grid) THEN
           READ(dft_temp_file_unit,*) NPOINT
@@ -413,16 +429,16 @@ contains
       ELSE
         IF(MYTID.EQ.MPARID) THEN
           NPNTS = NPNTS + NPOINT
-          CALL MEMGET('REAL',KX,NPOINT,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KY,NPOINT,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KZ,NPOINT,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KW,NPOINT,WORK,KFREE,LFREE)
+          call alloc(kx, npoint)
+          call alloc(ky, npoint)
+          call alloc(kz, npoint)
+          call alloc(kw, npoint)
 
           IF(dft_cfg_import_grid) THEN
-            CALL import_dft_grid(WORK(KX),WORK(KY),WORK(KZ),WORK(KW), &
+            CALL import_dft_grid(kx, ky, kz, kw, &
      &                      dft_temp_file_unit,NPOINT)
           ELSE
-            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),WORK(KW), &
+            CALL REAQUA(kx, ky, kz, kw, &
      &                 dft_temp_file_unit,NPOINT)
           ENDIF
         ENDIF
@@ -443,48 +459,48 @@ contains
             ISEND(NODESALL) = NBATCH + NREST
             IDISP(NODESALL) = NBATCH*NODES
 !           send data to slaves - all grid points in one send chunk
-!           FIXME: scatterv does not work for INT_STAR8...
+!           FIXME: scatterv makes problems with INT_STAR8...
 !                  SK - Apr 2009
 !
 #if !defined (INT_STAR8)
 !............scatterv data
-             CALL MPI_SCATTERV(WORK(KX),ISEND,IDISP,MPI_REAL8, &
+             CALL MPI_SCATTERV(KX,ISEND,IDISP,MPI_REAL8, &
      &                         DUMMY,0,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KY),ISEND,IDISP,MPI_REAL8, &
+             CALL MPI_SCATTERV(KY,ISEND,IDISP,MPI_REAL8, &
      &                         DUMMY,0,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KZ),ISEND,IDISP,MPI_REAL8, &
+             CALL MPI_SCATTERV(KZ,ISEND,IDISP,MPI_REAL8, &
      &                         DUMMY,0,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTERV(WORK(KW),ISEND,IDISP,MPI_REAL8, &
+             CALL MPI_SCATTERV(KW,ISEND,IDISP,MPI_REAL8, &
      &                         DUMMY,0,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
 #else
-             CALL MEMGET('REAL',KXDUM,myNPOINT,WORK,KFREE,LFREE)
-!
 !............scatter data and send remainings to last node
-             CALL MPI_SCATTER(WORK(KX),myNPOINT,MPI_REAL8, &
-     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID, &
+             call alloc(kxdum, mynpoint)
+             CALL MPI_SCATTER(KX,myNPOINT,MPI_REAL8, &
+     &                        KXDUM,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTER(WORK(KY),myNPOINT,MPI_REAL8, &
-     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID, &
+             CALL MPI_SCATTER(KY,myNPOINT,MPI_REAL8, &
+     &                        KXDUM,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTER(WORK(KZ),myNPOINT,MPI_REAL8, &
-     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID, &
+             CALL MPI_SCATTER(KZ,myNPOINT,MPI_REAL8, &
+     &                        KXDUM,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
-             CALL MPI_SCATTER(WORK(KW),myNPOINT,MPI_REAL8, &
-     &                        WORK(KXDUM),myNPOINT,MPI_REAL8,MPARID, &
+             CALL MPI_SCATTER(KW,myNPOINT,MPI_REAL8, &
+     &                        KXDUM,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
+             call dealloc(kxdum)
              IF( NREST .ne. 0 )THEN
                IDISP_REST = IDISP(NODESALL) + NBATCH
-               CALL MPI_SEND(WORK(KX+IDISP_REST),NREST,MPI_REAL8, &
+               CALL MPI_SEND(KX(1+IDISP_REST),NREST,MPI_REAL8, &
      &                       NODES,90,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KY+IDISP_REST),NREST,MPI_REAL8, &
+               CALL MPI_SEND(KY(1+IDISP_REST),NREST,MPI_REAL8, &
      &                       NODES,91,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KZ+IDISP_REST),NREST,MPI_REAL8, &
+               CALL MPI_SEND(KZ(1+IDISP_REST),NREST,MPI_REAL8, &
      &                       NODES,92,MPI_COMM_WORLD,IERR)
-               CALL MPI_SEND(WORK(KW+IDISP_REST),NREST,MPI_REAL8, &
+               CALL MPI_SEND(KW(1+IDISP_REST),NREST,MPI_REAL8, &
      &                       NODES,93,MPI_COMM_WORLD,IERR)
              END IF
 #endif
@@ -493,54 +509,54 @@ contains
 !           the last process gets the rest; these points are usually
 !           the most diffuse ones and therefore the most screened ones
             IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
-            CALL MEMGET('REAL',KX,myNPOINT,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KY,myNPOINT,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KZ,myNPOINT,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KW,myNPOINT,WORK,KFREE,LFREE)
+          call alloc(kx, mynpoint)
+          call alloc(ky, mynpoint)
+          call alloc(kz, mynpoint)
+          call alloc(kw, mynpoint)
 !           receive data from master - all grid points in one receive chunk
 !
-!           FIXME: scatterv does not work for INT_STAR8...
+!           FIXME: scatterv does makes problems with INT_STAR8...
 !                  SK - Apr 2009
 #if !defined (INT_STAR8)
 !...........receive data via scatterv
             CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8, &
-     &                        WORK(KX),myNPOINT,MPI_REAL8,MPARID, &
+     &                        KX,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8, &
-     &                        WORK(KY),myNPOINT,MPI_REAL8,MPARID, &
+     &                        KY,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8, &
-     &                        WORK(KZ),myNPOINT,MPI_REAL8,MPARID, &
+     &                        KZ,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTERV(DUMMY,IDUMMY,IDUMMY,MPI_REAL8, &
-     &                        WORK(KW),myNPOINT,MPI_REAL8,MPARID, &
+     &                        KW,myNPOINT,MPI_REAL8,MPARID, &
      &                        MPI_COMM_WORLD,IERR)
 #else
 !...........reset for scatter length
             IF(MYTID.eq.NODES) myNPOINT = NBATCH
 !...........receive data via scatter
             CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8, &
-     &                       WORK(KX),myNPOINT,MPI_REAL8,MPARID, &
+     &                       KX,myNPOINT,MPI_REAL8,MPARID, &
      &                       MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8, &
-     &                       WORK(KY),myNPOINT,MPI_REAL8,MPARID, &
+     &                       KY,myNPOINT,MPI_REAL8,MPARID, &
      &                       MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8, &
-     &                       WORK(KZ),myNPOINT,MPI_REAL8,MPARID, &
+     &                       KZ,myNPOINT,MPI_REAL8,MPARID, &
      &                       MPI_COMM_WORLD,IERR)
             CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8, &
-     &                       WORK(KW),myNPOINT,MPI_REAL8,MPARID, &
+     &                       KW,myNPOINT,MPI_REAL8,MPARID, &
      &                       MPI_COMM_WORLD,IERR)
 !...........remainings for the last node
             IF(MYTID .eq. NODES .and. NREST .ne. 0 ) THEN
               IDISP_REST = NBATCH
-              CALL MPI_RECV(WORK(KX+IDISP_REST),NREST,MPI_REAL8, &
+              CALL MPI_RECV(KX(1+IDISP_REST),NREST,MPI_REAL8, &
      &                      MPARID,90,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KY+IDISP_REST),NREST,MPI_REAL8, &
+              CALL MPI_RECV(KY(1+IDISP_REST),NREST,MPI_REAL8, &
      &                      MPARID,91,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KZ+IDISP_REST),NREST,MPI_REAL8, &
+              CALL MPI_RECV(KZ(1+IDISP_REST),NREST,MPI_REAL8, &
      &                      MPARID,92,MPI_COMM_WORLD,ISTAT,IERR)
-              CALL MPI_RECV(WORK(KW+IDISP_REST),NREST,MPI_REAL8, &
+              CALL MPI_RECV(KW(1+IDISP_REST),NREST,MPI_REAL8, &
      &                      MPARID,93,MPI_COMM_WORLD,ISTAT,IERR)
             END IF
 #endif
@@ -553,36 +569,44 @@ contains
 #if defined (VAR_MPI) 
         ENDIF
 #endif
-        CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),myNPOINT, &
+        CALL DFTDR1(KX,Ky,KZ,KW,myNPOINT, &
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
-     &              WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1), &
-     &              ncnt,WORK(KBUF), &
-     &              WORK(KFREE),LFREE,IPRINT,0)
-        CALL MEMREL('DFTDRV.loop',WORK,KWORK,KLOOP,KFREE,LFREE)
+     &              gao, gao1, gao2, gab1, ncnt, buf, &
+     &              IPRINT,0)
+
+          call dealloc(kx)
+          call dealloc(ky)
+          call dealloc(kz)
+          call dealloc(kw)
+
+
+
         GO TO 100
         ENDIF
  200    CONTINUE
 #if defined (VAR_MPI)
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
-     &                       WORK,KFREE,LFREE, &
      &                       IPRINT)
 #endif
-      CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+
+
+      call dealloc(gao)
+      if (dft_temp_need_gao1) then
+        call dealloc(gao1)
+      end if
+      if (dft_temp_need_gao2) then
+        call dealloc(gao2)
+      end if
+      if (dft_options%london) then
+        call dealloc(gab1)
+      end if
       call dealloc(ncnt)
+      call dealloc(buf)
+
+
       IF(MYTID.NE.MPARID) RETURN
-      IF (dft_options%london) THEN
-!radovan:
-!       reactivate later, now i need excmat(*)
-!       DO I = 1, NTBAS(0)
-!         DO J = 1, I - 1 
-!           AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
-!           EXCMAT(I,J,1,1) =   AVERAG 
-!           EXCMAT(J,I,1,1) = - AVERAG 
-!         ENDDO
-!       ENDDO
-      END IF 
 
 
       orbital_nr_electrons = nelect + naelec
@@ -628,7 +652,7 @@ contains
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
      &                  GAO,GAO1,GAO2,GAB1, &
-     &                  NCNT,BUF,WORK,LWORK,IPRINT,NYTID)
+     &                  NCNT,BUF,IPRINT,NYTID)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -662,8 +686,7 @@ contains
      &            DTRMAT(*),                 GAO2(*), &
      &            GAB1(*),EXCMAT(*),  &
      &            NCNT(NBAST), BUF(NBAST,4), &
-     &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT), &
-     &            WORK(LWORK)
+     &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       DIMENSION RHG(3),VT(3)
       DIMENSION derv(99)
       type(dft_options_t) :: dft_options
@@ -673,8 +696,12 @@ contains
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
 
+      real(8), allocatable :: kcfit(:)
+      real(8), allocatable :: kxcvec(:)
+      real(8), allocatable :: klrcfit(:)
+      real(8), allocatable :: klrxcvec(:)
+
 !
-#include "memint.h"
 !
 
 
@@ -695,36 +722,29 @@ contains
          dft_options%gradient = .false.
          dft_options%qr  = .false.
          dft_options%london = .false.
-         CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
-         CALL READ_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
+         call alloc(KCFIT,NBASISAUX)
+         call alloc(KXCVEC,NBASISAUX)
+         CALL READ_MATRIX(KXCVEC,1,NBASISAUX,'FITVXC')
          if (using_diffdens) then
-            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITDDC')
+            CALL READ_MATRIX(KCFIT,1,NBASISAUX,'FITDDC')
          else
-            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
+            CALL READ_MATRIX(KCFIT,1,NBASISAUX,'FITCOE')
          endif
          NDIM = MAX(NBAST,NBASISAUX)
 ! aspg+rb, 2007-01-19
 ! aspg: will we need this really for linear response?
-!        write (*,*) ' DEBUG: fit coefficients'
-!        do i=1,ndimension
-!           write (*,*) i,WORK(KCFIT+I-1)
-!        enddo
          if (dft_options%lr) then
 !           DF_FITVXC_LR = .true.
-            CALL MEMGET('REAL',KLRCFIT,NBASISAUX,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KLRXCVEC,NBASISAUX,WORK,KFREE,LFREE)
-            CALL READ_MATRIX(WORK(KLRXCVEC),1,NBASISAUX,'LRDFVX')
+         call alloc(KlrCFIT,NBASISAUX)
+         call alloc(KlrXCVEC,NBASISAUX)
+            CALL READ_MATRIX(KLRXCVEC,1,NBASISAUX,'LRDFVX')
             if (using_diffdens) then
-               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCD')
+               CALL READ_MATRIX(KLRCFIT,1,NBASISAUX,'LRDFCD')
             else
-               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCE')
+               CALL READ_MATRIX(KLRCFIT,1,NBASISAUX,'LRDFCE')
             endif
          write (*,*) ' '
          write (*,*) ' DEBUG: perturbed fit coefficients'
-!        do i=1,ndimension
-!           write (*,*) i,WORK(KLRCFIT+I-1)
-!        enddo
          endif
 ! aspg+rb, 2007-01-19
       ENDIF
@@ -827,7 +847,7 @@ contains
 !
 #ifdef MOD_DNF
         IF (DF_FITVXC) THEN  ! 
-          RHO = DDOT(NBASISAUX,GAO,1,WORK(KCFIT),1)
+          RHO = DDOT(NBASISAUX,GAO,1,KCFIT,1)
         ELSE
 #endif
           CALL GETRHO(RHO,0,GAO,DMAT,BUF)
@@ -847,11 +867,11 @@ contains
              DO IXYZ = 1,3
               IOFF = NBASISAUX * (IXYZ - 1) + 1
               RHG(IXYZ) =  &
-     &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KCFIT),1)
+     &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,KCFIT,1)
 ! enable this later...
 !             if (dft_options%lr)  &
 !    &           b3(ixyz) =  &
-!    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
+!    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,KLRCFIT,1)
              ENDDO
           ELSE
 #endif
@@ -1023,7 +1043,7 @@ contains
                ENDIF
                CALL fit_DOEXC(dft_temp_gga_hs, &
      &                     VX(FR0),VT,GAO,GAO1, &
-     &                     WORK(KXCVEC),NBASISAUX)
+     &                     KXCVEC,NBASISAUX)
            else  ! df_fitvxc
 #endif
              if (dft_temp_gga_hs) then
@@ -1150,15 +1170,15 @@ contains
          if (dft_options%lr) then
 !radovan: KXLRCVEC not set
           call quit('lr and fitvxc not implemented')
-!         CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
-          CALL MEMREL('dftdr1-lrvxc',WORK,KLRXCVEC,KLRXCVEC,KFREE,LFREE)
-          CALL MEMREL('dftdr1-lrfc', WORK,KLRCFIT ,KLRCFIT ,KFREE,LFREE)
+!         CALL SAVE_MATRIX(KXLRCVEC,1,NBASISAUX,'LRDFVX')
+         call dealloc(klrcfit)
+         call dealloc(klrxcvec)
          endif
 ! aspg+rb, 2007-01-19
 !
-         CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
-         CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
-         CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
+         CALL SAVE_MATRIX(KXCVEC,1,NBASISAUX,'FITVXC')
+         call dealloc(kcfit)
+         call dealloc(kxcvec)
       ENDIF
 !aspg+rbast, 2006-09-21
 #endif /* MOD_DNF */
@@ -1172,58 +1192,6 @@ contains
       READ(LUQUAD) X,Y,Z,WT
       end subroutine
       
-#ifndef PRG_DIRAC
-!  /* Deck dftsol */
-      SUBROUTINE DFTSOL(WORK,LWORK)
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION WORK(*)
-#include "mx2orb.h"
-#include "infvar.h"
-#include "inflin.h"
-!
-      KVEC = 1
-      KFCK = KVEC + NWOPPT
-      KLST = KFCK + NNORBT - 1
-      IF (KLST .GT. LWORK) CALL STOPIT('DFTSOL',' ',KLST,LWORK)
-      CALL DFTSO1(WORK(KVEC),WORK(KFCK))
-      end subroutine
-!  /* Deck dftso1 */
-      SUBROUTINE DFTSO1(VEC,FCK)
-#include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-      PARAMETER (FAC = -1.0D0/4.0D0)
-      DIMENSION VEC(*), FCK(*)
-#include "nuctap.h"
-#include "mx2orb.h"
-#include "infvar.h"
-#include "inflin.h"
-#include "inforb.h"
-      IA(I) = JWOP(1,I)
-      IB(I) = JWOP(2,I)
-      IAA(I) = IA(I)*(IA(I)+1)/2
-      IBB(I) = IB(I)*(IB(I)+1)/2
-!
-      REWIND (LUMC)
-      CALL MOLLAB('SIR IPH ',LUMC,LUPRI)
-      READ (LUMC) 
-      READ (LUMC)
-      READ (LUMC) 
-      READ (LUMC)
-      READ (LUMC)
-      READ (LUMC)
-      CALL READSQ(LUMC,IRAT*NNORBT,FCK)
-      DO 100 I = 1,NWOPPT
-         VEC(I) = FAC*VEC(I)/(FCK(IAA(I)) - FCK(IBB(I)))
-  100 CONTINUE
-      IF (.FALSE.) THEN
-         WRITE(LUPRI,'(//,A)')' Orbital part of solution'
-         PRFAC = 0.1D0
-         CALL PRKAP(NWOPPT,VEC,PRFAC,LUPRI)
-      END IF
-      end subroutine
-#endif /* ifndef PRG_DIRAC */
 #ifdef ENABLE_DFT_NUMERICAL_TEST
 !  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
@@ -1539,7 +1507,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !/* Deck dftres */
       SUBROUTINE DFTRES(EXCMAT,NXCMAT,dft_options, &
-     &                  WORK,KFREE,LFREE,IPRINT)
+     &                  IPRINT)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Send receive DFTresults
@@ -1562,13 +1530,15 @@ contains
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      DIMENSION EXCMAT(*),WORK(*)
+      DIMENSION EXCMAT(*)
       type(dft_options_t) :: dft_options
+      real(8), allocatable :: kfbuf(:)
 !
-      KWORK = KFREE
       LFMAT = N2BBASX*NXCMAT*NZ
 !
-      IF (MYTID.EQ.0) CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
+      if (mytid == 0) then
+        call alloc(kfbuf, lfmat)
+      end if
 
       call mpi_reduce(dft_temp_nr_electrons, &
                       sum_nr_electrons,      &
@@ -1579,7 +1549,7 @@ contains
                       mpi_comm_world,        &
                       ierr) 
 
-      CALL MPI_REDUCE(EXCMAT,WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION, &
+      CALL MPI_REDUCE(EXCMAT,KFBUF,LFMAT,MPI_DOUBLE_PRECISION, &
      &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
 
       if (dft_options%energy) then
@@ -1598,8 +1568,8 @@ contains
         if (dft_options%energy) then
           dft_temp_xc_energy = sum_xc_energy
         end if
-        CALL DCOPY(LFMAT,WORK(KFBUF),1,EXCMAT,1)     
-        CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL DCOPY(LFMAT,KFBUF,1,EXCMAT,1)     
+        call dealloc(kfbuf)
       ENDIF
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1706,7 +1676,7 @@ contains
       SUBROUTINE DFT_PARDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                      DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                      dft_options, &
-     &                      WORK,LWORK,IPRINT)
+     &                      IPRINT)
 !***********************************************************************
 !
 !     A cut and paste job by T. Saue Sep 25 2003
@@ -1729,13 +1699,11 @@ contains
       DIMENSION EXCMAT(*),DMAT(N2BBASX), &
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(N2BBASX,NZ,NXCMAT), &
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
       integer, allocatable :: idisp(:)
       integer, allocatable :: isend(:)
 !
-#include "memint.h"
-      CALL QENTER('DFT_PARDRV')
 !
 !     Ensure that NODES .LE. MAXNOD
 !
@@ -1763,22 +1731,18 @@ contains
 !-----------------------
 !
       NODESALL=NODES+1
-!     CALL MEMGET('INTE',KDISP,NODESALL,WORK,KFREE,LFREE)
-!     CALL MEMGET('INTE',KSEND,NODESALL,WORK,KFREE,LFREE)
       call alloc(idisp, nodesall)
       call alloc(isend, nodesall)
       CALL DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &            DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &            idisp, isend, WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+     &            idisp, isend, IPRINT)
       call dealloc(idisp)
       call dealloc(isend)
-      CALL QEXIT('DFT_PARDRV')
 !
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck dftnod */
-      SUBROUTINE DFTNOD(WORK,LWORK)
+      SUBROUTINE DFTNOD()
 !***********************************************************************
 !     Based on HERNOD 
 !     written by T. Saue March 4
@@ -1798,13 +1762,15 @@ contains
 #include "dcbbas.h"
 #include "infpar.h"
 !
-      DIMENSION WORK(LWORK)
       type(dft_options_t) :: dft_options
       integer, allocatable :: ksym(:)
       integer, allocatable :: khrm(:)
+      real(8), allocatable :: kexc(:)
+      real(8), allocatable :: kden(:)
+      real(8), allocatable :: kdtr(:)
+      real(8), allocatable :: KDMAT_OUTER_AO(:)
+      real(8), allocatable :: KDMAT_RESP_AO(:)
 !
-      CALL QENTER('DFTNOD')
-#include "memint.h"
 !
       PARHER = .TRUE.
 !
@@ -1822,45 +1788,48 @@ contains
       CALL DFTPAR_INIT1(dft_options,NXCMAT)
 !.....Memory allocation
       LMAT = N2BBASXQ*NXCMAT
-      CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
-!     CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
-!     CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
+      call alloc(KEXC,LMAT)
       call alloc(ksym, nxcmat)
       call alloc(khrm, nxcmat)
-      CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
+      call alloc(kden,N2BBASX)
       IF(dft_options%lr.OR.dft_options%qr) THEN
-        CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
-      ELSE
-        KDTR = KFREE
+        call alloc(kdtr,LMAT)
       ENDIF
 !.....Allocate density matrices for SAOP
-      KDMAT_OUTER_AO = KFREE
-      KDMAT_RESP_AO  = KFREE
       if (dft_cfg_saop_is_active) then
-        CALL MEMGET('REAL',KDMAT_OUTER_AO,N2BBASX, &
-     &              WORK,KFREE,LFREE)
+        call alloc(KDMAT_OUTER_AO,N2BBASX)
         if (dft_cfg_saop_with_response_part) then
-          CALL MEMGET('REAL',KDMAT_RESP_AO,N2BBASX, &
-     &                WORK,KFREE,LFREE)
+          call alloc(KDMAT_RESP_AO,N2BBASX)
         ENDIF
       ENDIF
 !
 !     Receive initialization data from master 2
 !     =========================================
       CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
-     &                  WORK(KDEN),WORK(KDTR), &
-     &                  WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO))
+     &                  KDEN,KDTR, &
+     &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
 !.....Initialization
       IPRINT = 0
-      CALL DZERO(WORK(KEXC),LMAT)
+      CALL DZERO(KEXC,LMAT)
 !.....Integrate
-      CALL DFTDRV(WORK(KDEN),WORK(KDMAT_RESP_AO),WORK(KDMAT_OUTER_AO), &
-     &            WORK(KDTR),WORK(KEXC),NXCMAT, ksym, khrm, &
-     &            dft_options,(/0/),(/0/),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL DFTDRV(KDEN,KDMAT_RESP_AO,KDMAT_OUTER_AO, &
+     &            KDTR,KEXC,NXCMAT, ksym, khrm, &
+     &            dft_options,(/0/),(/0/),IPRINT)
+
+      call dealloc(KEXC)
       call dealloc(ksym)
       call dealloc(khrm)
-      CALL QEXIT('DFTNOD')
+      call dealloc(kden)
+      IF(dft_options%lr.OR.dft_options%qr) THEN
+        call dealloc(kdtr)
+      ENDIF
+      if (dft_cfg_saop_is_active) then
+        call dealloc(KDMAT_OUTER_AO)
+        if (dft_cfg_saop_with_response_part) then
+          call dealloc(KDMAT_RESP_AO)
+        ENDIF
+      ENDIF
+
       end subroutine
 
 
