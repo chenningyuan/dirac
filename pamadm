@@ -579,7 +579,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -587,6 +587,7 @@ do
     MODS="$mod"
   fi
 done
+
 cp build/dontbuild.in build/dontbuild
 # Some makes cannot cope with nonexisting include files,
 # we therefore make dummy includes so that make depend can
@@ -633,7 +634,7 @@ if [ -n "$ECPFLG" ]; then
 fi
 if [ -n "$CDFTFLG" ]; then
    dirs="$dirs cdft"
-   rmline build/dontbuild "reladc/\.\*"
+   rmline build/dontbuild "cdft/\.\*"
 fi
 if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
