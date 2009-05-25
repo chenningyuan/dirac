@@ -94,7 +94,6 @@ contains
       do i = 1, nr_dmat
 
         call get_gn(gr(1, i),         &
-                    0,                &
                     isymop(i) - 1,    &
                     dmat(1, 1, 1, i), &
                     buf,              &

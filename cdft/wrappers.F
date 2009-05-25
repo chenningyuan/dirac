@@ -239,48 +239,6 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_M_DERVS */
-      SUBROUTINE GET_M_DERVS(LGET,
-     &                       VECTOR_DERVS,
-     &                       IREPOP,
-     &                       GAO,
-     &                       GAO1,
-     &                       DMAT,
-     &                       BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION VECTOR_DERVS(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2213
-      IF(LGET) IOPTION = 1213
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 VECTOR_DERVS,
-     &                 IREPOP,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_J_DERVS */
       SUBROUTINE GET_J_DERVS(LGET,
      &                       VECTOR_DERVS,

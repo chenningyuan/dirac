@@ -61,6 +61,7 @@ c                                            last revision: january 2008
 c=======================================================================
 
       use dft_cfg
+      use dft_density
 
 #include "implicit.h"
 #include "priunit.h"
@@ -126,13 +127,12 @@ c=======================================================================
      &                          dtrmat(1+im_off),
      &                          buf)
           else
-            call get_m_dervs(.true.,
-     &                       gs_b,
-     &                       isymop(im)-1,
-     &                       gao,
-     &                       gao1,
-     &                       dtrmat(1+im_off),
-     &                       buf)
+            call get_gs(gs_b,
+     &                  isymop(im) - 1,
+     &                  dtrmat(1 + im_off),
+     &                  buf,
+     &                  gao,
+     &                  gao1)
           endif
         endif
 

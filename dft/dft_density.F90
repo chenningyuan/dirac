@@ -7,6 +7,7 @@ module dft_density
   public init_density_blocks
   public get_n
   public get_gn
+  public get_gs
   public lda_distribute
   public gga_distribute
 
@@ -17,6 +18,9 @@ module dft_density
   integer :: st_ao(2, 16, 0:3, 0:7)
   integer :: iq(0:3)
   integer :: nr_ao_total
+
+! collinear approximation
+  integer :: ixyz_start = 1
 
 contains
 
@@ -118,7 +122,6 @@ contains
   end subroutine
 
   subroutine get_gn(gn,     &
-                    ixyz,   &
                     irep,   &
                     dmat,   &
                     buffer, &
@@ -127,48 +130,107 @@ contains
 
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: gn(3)
-    integer, intent(in)  :: ixyz
     integer, intent(in)  :: irep
-    real(8), intent(in)  :: dmat(nr_ao_total, nr_ao_total)
+    real(8), intent(in)  :: dmat(nr_ao_total, nr_ao_total, *)
     real(8), intent(in)  :: buffer(nr_ao_total)
     real(8), intent(in)  :: ao(nr_ao_total)
     real(8), intent(in)  :: ao1(nr_ao_total, 3)
 !   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, i
+    integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
     real(8)              :: ddot
 !   ----------------------------------------------------------------------------
 
     gn = 0.0d0
 
-    do iblock = 1, nr_density_blocks(ixyz, irep)
+    do ixyz = 0, 0
+      do iblock = 1, nr_density_blocks(ixyz, irep)
 
-      nr1 = nr_ao(1, iblock, ixyz, irep)
-      st1 = st_ao(1, iblock, ixyz, irep)
-      nr2 = nr_ao(2, iblock, ixyz, irep)
-      st2 = st_ao(2, iblock, ixyz, irep)
+        nr1 = nr_ao(1, iblock, ixyz, irep)
+        st1 = st_ao(1, iblock, ixyz, irep)
+        nr2 = nr_ao(2, iblock, ixyz, irep)
+        st2 = st_ao(2, iblock, ixyz, irep)
 
-      call dgemv('N',            &
-                 nr1,            &
-                 nr2,            &
-                 1.0d0,          &
-                 dmat(st1, st2), &
-                 nr_ao_total,    &
-                 ao(st2),        &
-                 1,              &
-                 0.0d0,          &
-                 buffer,         &
-                 1)
+        call dgemv('N',                      &
+                   nr1,                      &
+                   nr2,                      &
+                   1.0d0,                    &
+                   dmat(st1, st2, iq(ixyz)), &
+                   nr_ao_total,              &
+                   ao(st2),                  &
+                   1,                        &
+                   0.0d0,                    &
+                   buffer,                   &
+                   1)
 
-      do i = 1, 3
-        gn(i) = gn(i) &
-              + ddot(nr1, ao1(st1, i), 1, buffer, 1)
+        do jxyz = 1, 3
+          gn(jxyz) = gn(jxyz) + ddot(nr1, ao1(st1, jxyz), 1, buffer, 1)
+        end do
+
       end do
-
     end do
 
     gn = 2.0d0*gn
 
   end subroutine
+
+  subroutine get_gs(gs,     &
+                    irep,   &
+                    dmat,   &
+                    buffer, &
+                    ao,     &
+                    ao1)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: gs(3, 3)
+    integer, intent(in)  :: irep
+    real(8), intent(in)  :: dmat(nr_ao_total, nr_ao_total, *)
+    real(8), intent(in)  :: buffer(nr_ao_total)
+    real(8), intent(in)  :: ao(nr_ao_total)
+    real(8), intent(in)  :: ao1(nr_ao_total, 3)
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
+    real(8)              :: ddot
+!   ----------------------------------------------------------------------------
+
+    gs = 0.0d0
+
+    do ixyz = ixyz_start, 3
+      do iblock = 1, nr_density_blocks(ixyz, irep)
+
+        nr1 = nr_ao(1, iblock, ixyz, irep)
+        st1 = st_ao(1, iblock, ixyz, irep)
+        nr2 = nr_ao(2, iblock, ixyz, irep)
+        st2 = st_ao(2, iblock, ixyz, irep)
+
+        call dgemv('N',                      &
+                   nr1,                      &
+                   nr2,                      &
+                   1.0d0,                    &
+                   dmat(st1, st2, iq(ixyz)), &
+                   nr_ao_total,              &
+                   ao(st2),                  &
+                   1,                        &
+                   0.0d0,                    &
+                   buffer,                   &
+                   1)
+
+        do jxyz = 1, 3
+          gs(jxyz, ixyz) = gs(jxyz, ixyz) &
+                         + ddot(nr1, ao1(st1, jxyz), 1, buffer, 1)
+        end do
+
+      end do
+    end do
+
+    gs = 2.0d0*gs
+
+  end subroutine
+
+
+
+
+
+
 
   subroutine lda_distribute(s, ixyz, irep, fmat, ao)
 
@@ -272,5 +334,12 @@ contains
     end do
 
   end subroutine
+
+
+
+
+
+
+
 
 end module

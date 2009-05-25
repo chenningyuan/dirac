@@ -767,7 +767,7 @@ contains
 
 !       density gradient
         if (dft_temp_need_gao1) then
-          call get_gn(rhg, 0, 0, dmat, buf, gao, gao1)
+          call get_gn(rhg, 0, dmat, buf, gao, gao1)
           z = ddot(3, rhg, 1, rhg, 1)
           rhogrd = dsqrt(z)
         end if
