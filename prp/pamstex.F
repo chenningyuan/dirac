@@ -1421,6 +1421,7 @@ C
 C
       CALL DZERO(FMO,N2ORBXQ)
 C
+      IPRINT=0
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(NORB(I1).GT.0 .AND. NORB(I2).GT.0) THEN
