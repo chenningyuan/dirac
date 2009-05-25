@@ -91,8 +91,12 @@ c=======================================================================
         if(ihrmop(im) .eq. -1) goto 99
         if((ihrmop(im) .lt. 1) .and. (.not. allow_nonhermitian)) goto 99
 
-        call getrho(r_b,irepop,gao,
-     &              dtrmat(1,1,1,im),buf)
+        call get_n(r_b, 
+     &             0, 
+     &             irepop, 
+     &             dtrmat(1, 1, 1, im),
+     &             buf, 
+     &             gao)
 
         if(.not. is_gga) then
 
@@ -127,7 +131,11 @@ c=======================================================================
 
             vxc_scalar = vxc(fRR)*r_b
 
-            call doexc1(vxc_scalar,irepop,excmat(1,1,1,im),gao)
+            call lda_distribute(vxc_scalar,
+     &                          0,
+     &                          irepop,
+     &                          excmat(1, 1, 1, im),
+     &                          gao)
           endif
         else
 
@@ -140,8 +148,14 @@ c=======================================================================
      &                     dtrmat(1,1,1,im),buf)
           else
 #endif /* MOD_CDFT */
-            call getgrho(gr_b,irepop,gao,gao1,
-     &                   dtrmat(1,1,1,im),buf)
+            call get_gn(gr_b,
+     &                  0,
+     &                  irepop,
+     &                  dtrmat(1, 1, 1, im),
+     &                  buf,
+     &                  gao,
+     &                  gao1)
+
 #ifdef MOD_CDFT
           endif
 #endif /* MOD_CDFT */
@@ -211,8 +225,13 @@ c=======================================================================
 !           this factor is *not* for the symmetrization later
             call dscal(3,d2,vxc_vector,1)
 
-            call doexc2(vxc_scalar,vxc_vector,
-     &                  irepop,excmat(1,1,1,im),gao,gao1)
+            call gga_distribute(vxc_scalar,
+     &                          vxc_vector,
+     &                          0,
+     &                          irepop,
+     &                          excmat(1, 1, 1, im),
+     &                          gao,
+     &                          gao1)
           endif
         endif
  99     continue
@@ -244,110 +263,3 @@ c
       HFXMU = W
       HFXATT = BETA
       END
-C /* Deck dft_df_lr */
-#ifdef MOD_DNF
-      SUBROUTINE fit_DFT_LR(pCFIT,pVXCint,NXCMAT,ISYMOP,IHRMOP,
-     &                      GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,B0,
-     &                      nskipped)
-C
-C adapted from DFT_LR for density fitting
-C andre gomes and radovan bast, january 2007
-C
-      use dft_cfg
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-C
-      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0,D2=2.0D0)
-C
-#include "inforb.h"
-#include "nuclei.h"
-#if defined (PRG_DIRAC)
-#include "dgroup.h"
-#else
-#include "wrkrsp.h"
-#include "dftinf.h"
-#endif
-#include "functionals.h"
-C
-      INTEGER A, B
-      LOGICAL DOGGA, TRPLET, LBIT
-      DIMENSION pCFIT(*),pVXCint(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          GAO(*), GAO1(*),
-     &          RHG(3),VT(3), VXC(DERVS2)
-      DIMENSION B3(3)
-C
-      if (NXCMAT.GT.1)
-     &   CALL QUIT ('DF-VXC not working for multiple densities yet...')
-
-      DO IM = 1,NXCMAT
-      IREPOP = ISYMOP(IM)-1
-      IF(IHRMOP(IM).EQ.1) THEN
-C
-C       Get perturbed density
-C       =====================
-C
-        B0 = DDOT(NBASISAUX,GAO,1,pCFIT,1)
-C
-C       ***************
-C       ***** LDA *****
-C       ***************
-C
-        IF(.NOT.DOGGA) THEN
-          IF(DABS(B0).GT.dft_cfg_DFTHRL) THEN
-C
-C            Calculated VT
-C
-             CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
-             SXC = VXC(FRR)*B0
-C
-C            Linear transformation, saving the integrals
-C
-             CALL fit_DOEXC(DOGGA,SXC,DUMMY,GAO,DUMMY,
-     &                      pVXCint,NBASISAUX)
-          else
-             nskipped=nskipped+1
-          END IF
-        ELSE
-C
-C         ***************
-C         ***** GGA *****
-C         ***************
-C
-C  getting gradient from perturbed fitted density
-C
-           DO IXYZ = 1,3
-              IOFF = NBASISAUX * (IXYZ - 1) + 1
-              b3(ixyz) =
-     &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,pCFIT,1)
-           ENDDO
-           BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
-C
-           IF (BMAX.GT.dft_cfg_DFTHRL) THEN
-              CALL DFTPOT1(VXC,WGHT,RHO,RHOGRD)
-              BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
-              FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
-              SXC = VXC(FRR)*B0 + VXC(FRZ)*BR
-              DO I = 1,3
-                 VT(I) = (VXC(FZ0)*B3(I)+FACR*RHG(I))/RHOGRD
-              ENDDO
-c        write (*,*) 'debug: '
-c        write (*,'(A3,E20.12)') '       b3(i,j,k)',b3(1),b3(2),b3(3)
-c        write (*,'(A3,E20.12)') '      rhg(i,j,k)',rhg(1),rhg(2),rhg(3)
-c        write (*,'(A3,E20.12)') '       vt(i,j,k)',vt(1),vt(2),vt(3)
-c        write (*,'(A2,E20.12)') ' sxc,b0,br,f1,f2',sxc,b0,br,
-c    &                              VXC(FRR)*B0,VXC(FRZ)*BR
-C
-C           Linear transformation, saving the integrals
-C
-              CALL fit_DOEXC(DOGGA,SXC,VT,GAO,GAO1,pVXCint,NBASISAUX)
-          else
-             nskipped=nskipped+1
-          END IF
-        END IF
-
-      ENDIF
-      ENDDO
-      RETURN
-      END
-#endif /* MOD_DNF */

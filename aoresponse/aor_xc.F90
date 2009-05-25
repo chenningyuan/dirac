@@ -1,6 +1,7 @@
 module aor_xc
 
   use dft_cfg
+  use dft_density
 
   implicit none
 
@@ -76,11 +77,12 @@ contains
 #endif
 
     do i = 1, nr_dmat
-      call getrho(r(i),             &
-                  isymop(i) - 1,    &
-                  gao,              &
-                  dmat(1, 1, 1, i), &
-                  buf)
+      call get_n(r(i),             &
+                 0,                &
+                 isymop(i) - 1,    &
+                 dmat(1, 1, 1, i), &
+                 buf,              &
+                 gao)
     end do
 
 !   get perturbed densitiy gradients and gradient norms
@@ -90,12 +92,14 @@ contains
       gr(:, 0) = gr_0
 
       do i = 1, nr_dmat
-        call getgrho(gr(1, i),         &
-                     isymop(i) - 1,    &
-                     gao,              &
-                     gao1,             &
-                     dmat(1, 1, 1, i), &
-                     buf)
+
+        call get_gn(gr(1, i),         &
+                    0,                &
+                    isymop(i) - 1,    &
+                    dmat(1, 1, 1, i), &
+                    buf,              &
+                    gao,              &
+                    gao1)
       end do
 
       do i = 0, nr_dmat
@@ -353,9 +357,9 @@ contains
     end if
 
     if (use_gga) then
-      call doexc2(s, 2.0d0*v, 0, fmat, gao, gao1)
+      call gga_distribute(s, 2.0d0*v, 0, 0, fmat, gao, gao1)
     else
-      call doexc1(s,          0, fmat, gao)
+      call lda_distribute(s,          0, 0, fmat, gao)
     end if
 
   end subroutine

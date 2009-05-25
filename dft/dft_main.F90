@@ -4,6 +4,7 @@ module dft_main
   use dft_cfg
   use dft_temp
   use dft_ao_in_mem
+  use dft_density
 #ifdef MOD_AORESPONSE
   use aor_xc
 #endif
@@ -75,29 +76,10 @@ contains
 !     start timer
       time_start = second()
 
-!     prepare for accumulating integrals with density fitting
-#ifdef MOD_DNF
-      if (df_fitvxc) then
-        call alloc(xc_vector_b, nbasisaux)
-        xc_vector_b = 0.0d0
-        if (dft_options%energy) then 
-          call save_matrix(xc_vector_b, 1, nbasisaux, 'FITVXC')
-        else if (dft_options%lr) then 
-          call save_matrix(xc_vector_b, 1, nbasisaux, 'LRDFVX')
-        end if
-      end if
-#endif
-
 !     initial expectation value of the two-electron matrix
-#ifdef MOD_DNF
-      if (.not. df_fitvxc) then
-#endif
       if (dft_options%energy) then
         dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1)
       end if
-#ifdef MOD_DNF
-      end if
-#endif
 
 !     get average density from open shells
       if (nasht > 0) call gtdoav(dmat, 1)
@@ -108,9 +90,6 @@ contains
 
 !     scale and insert half-phases
 
-#ifdef MOD_DNF
-      if (.not. df_fitvxc) then
-#endif
       if (dft_options%lr  &
      &    .or. dft_options%qr &
      &    .or. (dft_options%aor_xc_order > 0)) then
@@ -132,9 +111,6 @@ contains
         end if
 
       end if
-#ifdef MOD_DNF
-      end if
-#endif
 
 !     calculate grid
       if (.not. dft_temp_grid_is_done) then
@@ -242,10 +218,6 @@ contains
 !     get average density from open shells
       if (nasht > 0) call gtdoav(dmat, -1)
 
-#ifdef MOD_DNF
-      if (.not. df_fitvxc) then
-#endif
-
 !     in case of gga symmetrize matrices
       if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
         call sym_new(fmat, nr_fmat, isymop, ihrmop)
@@ -282,13 +254,6 @@ contains
         dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
       end if 
-
-#ifdef MOD_DNF
-      else
-!       df_fitvxc is .true.
-        call dealloc(xc_vector_b)
-      end if
-#endif
 
 !     timing
       time_in_xc = second() - time_start
@@ -369,9 +334,6 @@ contains
 !     Allocate arrays for basis functions and their derivatives at grid points
 !
       NDIM = NTBAS(0)
-#ifdef MOD_DNF
-      IF (DF_FITVXC) NDIM = MAX(NTBAS(0),NBASISAUX)
-#endif
 
 
 
@@ -687,13 +649,13 @@ contains
      &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &            DTRMAT(*),                 GAO2(*), &
      &            GAB1(*),EXCMAT(*),  &
-     &            NCNT(NBAST), BUF(NBAST,4), &
+     &            NCNT(NBAST), BUF(*), &
      &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       DIMENSION RHG(3),VT(3)
       DIMENSION derv(99)
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(*)
+      real(8), target  :: gao(nbast)
       real(8), target  :: gao1(*)
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
@@ -711,47 +673,6 @@ contains
 
 !
       NDIM = NBAST
-#ifdef MOD_DNF
-      ELCTRB = D0
-      nskipped = 0
-! aspg+rbast 2006-09-21
-! memory allocation for variables to hold information related
-! to density fitting. used in connection to the scheme of
-! Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
-! exchange-correlation contibutions together with density fitting 
-      IF (DF_FITVXC) THEN ! 
-! actions disabled so far...
-         dft_options%gradient = .false.
-         dft_options%qr  = .false.
-         dft_options%london = .false.
-         call alloc(KCFIT,NBASISAUX)
-         call alloc(KXCVEC,NBASISAUX)
-         CALL READ_MATRIX(KXCVEC,1,NBASISAUX,'FITVXC')
-         if (using_diffdens) then
-            CALL READ_MATRIX(KCFIT,1,NBASISAUX,'FITDDC')
-         else
-            CALL READ_MATRIX(KCFIT,1,NBASISAUX,'FITCOE')
-         endif
-         NDIM = MAX(NBAST,NBASISAUX)
-! aspg+rb, 2007-01-19
-! aspg: will we need this really for linear response?
-         if (dft_options%lr) then
-!           DF_FITVXC_LR = .true.
-         call alloc(KlrCFIT,NBASISAUX)
-         call alloc(KlrXCVEC,NBASISAUX)
-            CALL READ_MATRIX(KLRXCVEC,1,NBASISAUX,'LRDFVX')
-            if (using_diffdens) then
-               CALL READ_MATRIX(KLRCFIT,1,NBASISAUX,'LRDFCD')
-            else
-               CALL READ_MATRIX(KLRCFIT,1,NBASISAUX,'LRDFCE')
-            endif
-         write (*,*) ' '
-         write (*,*) ' DEBUG: perturbed fit coefficients'
-         endif
-! aspg+rb, 2007-01-19
-      ENDIF
-!aspg+rbast, 2006-09-21
-#endif /* MOD_DNF */
 
         nder = 0
         if (dft_temp_need_gao1) nder = 1
@@ -783,21 +704,20 @@ contains
 
 
 
+    call init_density_blocks()
+    do ipoint = 1, npoint
 
-      DO 300 IPNT = 1, NPOINT
+
+
        
-        IF (IPRINT .GE. 100) THEN
-          WRITE (LUPRI,'(2X,I6,4F20.12)')  &
-     &       IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
-        END IF
 !
-        WGHT = WEIGHT(IPNT)
+        WGHT = WEIGHT(ipoint)
 
 !radovan: please don't delete, code under construction
 !      if (.not. dft_cfg_ao_are_in_mem) then
 
          call getsos(gao, gao1, gao2, gab1, ncnt, &
-     &               corx(ipnt), cory(ipnt), corz(ipnt), &
+     &               corx(ipoint), cory(ipoint), corz(ipoint), &
      &               buf, ndim, &
      &               nder, dft_options%london, iprint)
 
@@ -807,27 +727,27 @@ contains
 !          if (dft_temp_need_gao1) then
 !            call dcopy(nbast, &
 !    &                  gao, 1, &
-!    &                  ao_in_mem_p(4*nbast*(ipnt-1) + 1), 1)
+!    &                  ao_in_mem_p(4*nbast*(ipoint-1) + 1), 1)
 !            call dcopy(3*nbast, &
 !    &                  gao1, 1, &
-!    &                  ao_in_mem_p(4*nbast*(ipnt-1) + nbast + 1), 1)
+!    &                  ao_in_mem_p(4*nbast*(ipoint-1) + nbast + 1), 1)
 !          else
 !            call dcopy(nbast, &
 !    &                  gao, 1, &
-!    &                  ao_in_mem_p(nbast*(ipnt-1) + 1), 1)
+!    &                  ao_in_mem_p(nbast*(ipoint-1) + 1), 1)
 !          end if
-!          if (ipnt .eq. 8822) then
+!          if (ipoint .eq. 8822) then
 !          dft_cfg_ao_are_in_mem = .true.
 !          end if
 !        end if
 !      end if
 !      if (dft_cfg_ao_are_in_mem) then
 !        if (dft_temp_need_gao1) then
-!          iao  = 4*nbast*(ipnt - 1)         + 1
-!          iao1 = 4*nbast*(ipnt - 1) + nbast + 1
+!          iao  = 4*nbast*(ipoint - 1)         + 1
+!          iao1 = 4*nbast*(ipoint - 1) + nbast + 1
 !          gao1_p => ao_in_mem_p(iao1:iao1 + nbast*3)
 !        else
-!          iao = nbast*(ipnt - 1) + 1
+!          iao = nbast*(ipoint - 1) + 1
 !        end if
 !        gao_p => ao_in_mem_p(iao:iao + nbast)
 !      end if
@@ -840,95 +760,32 @@ contains
 
 
 
+!     density
+      call get_n(rho, 0, 0, dmat, buf, gao)
 
+      if (rho > dft_cfg_dfthr0) then
 
+!       density gradient
+        if (dft_temp_need_gao1) then
+          call get_gn(rhg, 0, 0, dmat, buf, gao, gao1)
+          z = ddot(3, rhg, 1, rhg, 1)
+          rhogrd = dsqrt(z)
+        end if
 
-!
-!       Density
-!       =======
-!
-#ifdef MOD_DNF
-        IF (DF_FITVXC) THEN  ! 
-          RHO = DDOT(NBASISAUX,GAO,1,KCFIT,1)
-        ELSE
-#endif
-          CALL GETRHO(RHO,0,GAO,DMAT,BUF)
-#ifdef MOD_DNF
-        ENDIF
-#endif
-!aspg+rbast, 2006-09-21
-        IF (RHO.LE.dft_cfg_dfthr0) GO TO 300
-!
-!       Gradient of density
-!       ===================
-!
-
-        IF (dft_temp_need_gao1) THEN
-#ifdef MOD_DNF
-          IF (DF_FITVXC) THEN  ! 
-             DO IXYZ = 1,3
-              IOFF = NBASISAUX * (IXYZ - 1) + 1
-              RHG(IXYZ) =  &
-     &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,KCFIT,1)
-! enable this later...
-!             if (dft_options%lr)  &
-!    &           b3(ixyz) =  &
-!    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,KLRCFIT,1)
-             ENDDO
-          ELSE
-#endif
-            CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
-#ifdef MOD_DNF
-          ENDIF
-#endif
-          RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
-        END IF
-
-
-#ifdef ENABLE_HESSIAN_OF_DENSITY
-!
-!       Hessian of density
-!       ===================
-!
-        IF (DOLRHO) THEN
-          CALL GETLRHO(RXX,RXY,RXZ,RYY,RYZ,RZZ,GAO,GAO1,GAO2, &
-     &                 DMAT,BUF)       
-          RHOLAP = RXX + RYY + RZZ
-          RHOGHG = RHG(1)*RXX*RHG(1)+RHG(2)*RYY*RHG(2)+RHG(3)*RZZ*RHG(3) &
-     &           + D2*(RHG(1)*RXY*RHG(2) + RHG(1)*RXZ*RHG(3)  &
-     &               + RHG(2)*RYZ*RHG(3))
-        END IF
-#endif /* ifdef ENABLE_HESSIAN_OF_DENSITY */
-
-
-
-!
-!       Number of electrons
-!       ===================
-!
-        dft_temp_nr_electrons = dft_temp_nr_electrons + WGHT*RHO
-
-
-
+!       number of electrons
+        dft_temp_nr_electrons = dft_temp_nr_electrons + wght*rho
 
 !       energy density
-!       ==============
-
-        if (dft_temp_gga_hs) Z = rhogrd*rhogrd
-
         if (dft_options%energy) then
-
           energy_density = 0.0d0
-
 #ifdef MOD_AUTODIFF
           if (dft_cfg_autodiff) then
-
             if (dft_temp_gga_hs) then
               call lda_eval(LDA_SLATER, 0, rho, derv)
               energy_density = energy_density + derv(1)
-              call gga_eval(GGA_BECKE, 0, rho, Z, derv)
+              call gga_eval(GGA_BECKE, 0, rho, z, derv)
               energy_density = energy_density + derv(1)
-              call gga_eval(GGA_LYP, 0, rho, Z, derv)
+              call gga_eval(GGA_LYP, 0, rho, z, derv)
               energy_density = energy_density + derv(1)
             else
               call lda_eval(LDA_SLATER, 0, rho, derv)
@@ -936,20 +793,22 @@ contains
               call lda_eval(LDA_VWN, 0, rho, derv)
               energy_density = energy_density + derv(1)
             end if
-
           else
 #endif /* ifdef MOD_AUTODIFF */
-
             energy_density = dftenergy(rho, rhogrd)
-
 #ifdef MOD_AUTODIFF
           end if
 #endif
-
           dft_temp_xc_energy = dft_temp_xc_energy &
                              + wght*energy_density
-
         end if
+
+
+
+
+
+
+
 
 
 !       exchange-correlation potential 
@@ -965,7 +824,6 @@ contains
             vx = 0.0d0
 
             if (dft_temp_gga_hs) then
-              Z = rhogrd*rhogrd
 
 !             remember that BLYP = Slater + Becke correction + LYP
               call lda_eval(LDA_SLATER, 1, rho, derv)
@@ -1011,9 +869,19 @@ contains
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
-            call getrho(rho_outer, 0, gao, dmat_outer_ao, buf)
+            call get_n(rho_outer,     &
+                       0,             &
+                       0,             &
+                       dmat_outer_ao, &
+                       buf,           &
+                       gao)
             if (dft_cfg_saop_with_response_part) then
-              call getrho(rho_resp, 0, gao, dmat_resp_ao, buf)
+              call get_n(rho_resp,     &
+                         0,            &
+                         0,            &
+                         dmat_resp_ao, &
+                         buf,          &
+                         gao)
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
@@ -1027,39 +895,20 @@ contains
 
 
 
+!       exchange-correlation contribution to kohn-sham matrix
+        if (dft_options%energy) then
+          if (dft_temp_gga_hs) then
+            vt = vx(fz0)*rhg
+            call gga_distribute(vx(fr0), vt, 0, 0, excmat, gao, gao1)
+          else
+            call lda_distribute(vx(fr0),     0, 0, excmat, gao)
+          end if
+        end if
 
-!
-!
-!       Exchange-correlation contribution to Kohn-Sham matrix
-!       =====================================================
-!
-        IF (dft_options%energy) THEN
-           IREPOP = 0
-#ifdef MOD_DNF
-! aspg+rb, 2007-01-19, df-vxc modularized code
-           if (DF_FITVXC) then
-               IF (dft_temp_gga_hs) THEN
-                  DO I = 1,3
-                     VT(I) = VX(FZ0)*RHG(I)
-                  ENDDO
-               ENDIF
-               CALL fit_DOEXC(dft_temp_gga_hs, &
-     &                     VX(FR0),VT,GAO,GAO1, &
-     &                     KXCVEC,NBASISAUX)
-           else  ! df_fitvxc
-#endif
-             if (dft_temp_gga_hs) then
-                DO I = 1,3
-                   VT(I) = VX(FZ0)*RHG(I)
-                ENDDO
-                CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
-             ELSE
-                CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
-             END IF
-#ifdef MOD_DNF
-           endif ! df_fitvxc
-#endif
-        END IF ! dft_options%energy
+
+
+
+
 
 
 !       linear response
@@ -1156,34 +1005,11 @@ contains
 #endif /* ifdef MOD_AUTODIFF */
 
 
-  300 CONTINUE !end of loop over grid points
+      end if !if (rho > dft_cfg_dfthr0) then
+    end do !do ipoint = 1, npoint
 
 
 
-#ifdef MOD_DNF
-!aspg+rbast, 2006-09-21
-! commented code below is still in use! debugging response with dfvxc
-!
-!     write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint, &
-!    &               ' integration were skipped while getting b0'
-      IF (DF_FITVXC) THEN ! releasing temp space used for the df code
-! aspg+rb, 2007-01-19
-! aspg: do we really need this for linear response?
-         if (dft_options%lr) then
-!radovan: KXLRCVEC not set
-          call quit('lr and fitvxc not implemented')
-!         CALL SAVE_MATRIX(KXLRCVEC,1,NBASISAUX,'LRDFVX')
-         call dealloc(klrcfit)
-         call dealloc(klrxcvec)
-         endif
-! aspg+rb, 2007-01-19
-!
-         CALL SAVE_MATRIX(KXCVEC,1,NBASISAUX,'FITVXC')
-         call dealloc(kcfit)
-         call dealloc(kxcvec)
-      ENDIF
-!aspg+rbast, 2006-09-21
-#endif /* MOD_DNF */
 
       end subroutine
 !  /* Deck reaqua */
@@ -1792,159 +1618,4 @@ contains
       end subroutine
 #endif /* VAR_MPI */
 
-
 end module
-
-!radovan: the following routines cannot be part of the module
-!(circular dep) 
-
-#ifdef MOD_DNF
-! /* deck fit_DOEXC */
-      SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1, &
-     &                     VXC_integrals,NDIM)
-!***********************************************************************
-!
-!     Construct the set of integrals of Vxc over fit fucntions,
-!     <V_{xc}|\Chi_i>
-!
-!     Written by Andre Gomes and Radovan Bast
-!     Strasbourg, January 2007
-!
-!***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
-!
-      DIMENSION GAO(*), GAO1(*), VXC_vector(3), VXC_integrals(*)
-      LOGICAL ISGGA
-!
-! ndim should be equal to nbasisaux...
-!
-      IF (ISGGA) THEN
-         DO I = 1, NDIM
-            IOFF1 = I
-            IOFF2 = IOFF1 + NDIM
-            IOFF3 = IOFF2 + NDIM
-! be careful with the factor below, compared to dalton and to the 
-! evaluation over orbital basis 
-            VXC_integrals(I) = VXC_integrals(I) &
-     &                       + D1 * VXC_scalar * GAO(I) &
-     &                       + D1 * VXC_vector(1) * GAO1(IOFF1) &
-     &                       + D1 * VXC_vector(2) * GAO1(IOFF2) &
-     &                       + D1 * VXC_vector(3) * GAO1(IOFF3)
-         ENDDO
-      ELSE ! only lda
-         DO I = 1, NDIM 
-            VXC_integrals(I) = VXC_integrals(I) &
-     &                       + D1 * VXC_scalar * GAO(I)
-         ENDDO
-      END IF
-      end subroutine
-#endif /* MOD_DNF */
-
-
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck doexc1 */
-      SUBROUTINE DOEXC1(VXC,IREPOP,EXCMAT,GAO)      
-!***********************************************************************
-!
-!     Construct Kohn-Sham matrix
-!
-!     Written by T.Saue and T.Helgaker
-!
-!***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
-!
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST)
-#else
-      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
-#endif
-!      
-#include "ibtfun.h"
-!
-      DO 10 IRP1 = 0,NBSYM-1
-        IRP2 = IBTXOR(IRP1,IREPOP)
-        DO 20 IC = 1,MC
-          NB1 = NBBAS(IRP1,IC)
-          IF(NB1.EQ.0) GOTO 20
-          NB2 = NBBAS(IRP2,IC)
-          IF(NB2.EQ.0) GOTO 20
-          JB1 = IBBAS(IRP1,IC)
-          JB2 = IBBAS(IRP2,IC)
-          DO J = 1, NBBAS(IRP2,IC)
-            GVXC = VXC*GAO(JB2+J)
-            CALL DAXPY(NBBAS(IRP1,IC),GVXC, &
-     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
-          ENDDO
-   20   CONTINUE
-   10 CONTINUE
-!
-      end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck doexc2 */
-      SUBROUTINE DOEXC2(SXC,VXC,IREPOP,EXCMAT,GAO,GAO1)      
-!***********************************************************************
-!
-!     Construct the matrix
-!
-!     F(i,j) = GAO(I)*SXC*GAO(J)+2*GAO(I)*VXC(K)*nabla[GAO1(J)]
-!
-!     Upon symmetrization 
-!
-!     F(i,j) = (1/2)[F(i,j)+F(j,i)]
-!
-!     later on one obtains
-!
-!     E(i,j) = GAO(I)*SXC*GAO(J)+VXC(K)*nabla[GAO(I)*GAO(J)]
-!
-!     Written by T.Saue and T.Helgaker
-!
-!***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
-!
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),EXCMAT(NBAST,NBAST), &
-     &          GAO1(NBAST,3)
-#else
-      DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0)), &
-     &          GAO1(NTBAS(0),3)
-#endif
-      DIMENSION VXC(3)
-#include "ibtfun.h"
-!.....Vector part is scaled to get symmetrization right
-      DO I = 1,3
-        VXC(I)=D2*VXC(I)
-      ENDDO
-      DO 10 IRP1 = 0,NBSYM-1
-        IRP2 = IBTXOR(IRP1,IREPOP)
-        DO 20 IC = 1,MC
-          NB1 = NBBAS(IRP1,IC)
-          IF(NB1.EQ.0) GOTO 20
-          NB2 = NBBAS(IRP2,IC)
-          IF(NB2.EQ.0) GOTO 20
-          JB1 = IBBAS(IRP1,IC)
-          JB2 = IBBAS(IRP2,IC)
-          DO J = 1, NBBAS(IRP2,IC)
-            FC = SXC*GAO(JB2+J)      +VXC(1)*GAO1(JB2+J,1) &
-     &         + VXC(2)*GAO1(JB2+J,2)+VXC(3)*GAO1(JB2+J,3)
-            CALL DAXPY(NBBAS(IRP1,IC),FC, &
-     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
-          ENDDO
-   20   CONTINUE
-   10 CONTINUE
-!
-      end subroutine
