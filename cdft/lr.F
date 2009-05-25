@@ -110,22 +110,20 @@ c=======================================================================
 
         im_off = nbast*nbast*nz*(im-1)
 
-        call get_m(.true.,
-     &             s_b,
-     &             isymop(im)-1,
-     &             gao,
-     &             dtrmat(1+im_off),
-     &             buf)
+        call get_s(s_b,
+     &             isymop(im) - 1,
+     &             dtrmat(1 + im_off),
+     &             buf,
+     &             gao)
 
         if(is_gga) then
           if(allow_nonhermitian) then
-            call get_m_dervs_nh(.true.,
-     &                          gs_b,
-     &                          isymop(im)-1,
-     &                          gao,
-     &                          gao1,
-     &                          dtrmat(1+im_off),
-     &                          buf)
+            call get_gs_nonhermitian(gs_b,
+     &                               isymop(im) - 1,
+     &                               dtrmat(1 + im_off),
+     &                               buf,
+     &                               gao,
+     &                               gao1)
           else
             call get_gs(gs_b,
      &                  isymop(im) - 1,

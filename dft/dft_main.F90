@@ -761,7 +761,7 @@ contains
 
 
 !     density
-      call get_n(rho, 0, 0, dmat, buf, gao)
+      call get_n(rho, 0, dmat, buf, gao)
 
       if (rho > dft_cfg_dfthr0) then
 
@@ -871,13 +871,11 @@ contains
           if (dft_cfg_saop_is_active) then
             call get_n(rho_outer,     &
                        0,             &
-                       0,             &
                        dmat_outer_ao, &
                        buf,           &
                        gao)
             if (dft_cfg_saop_with_response_part) then
               call get_n(rho_resp,     &
-                         0,            &
                          0,            &
                          dmat_resp_ao, &
                          buf,          &

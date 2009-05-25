@@ -92,7 +92,6 @@ c=======================================================================
         if((ihrmop(im) .lt. 1) .and. (.not. allow_nonhermitian)) goto 99
 
         call get_n(r_b, 
-     &             0, 
      &             irepop, 
      &             dtrmat(1, 1, 1, im),
      &             buf, 
@@ -142,22 +141,21 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !         GGA
 
-#ifdef MOD_CDFT
-          if(allow_nonhermitian) then
-            call get_gr_nh(.true.,gr_b,irepop,gao,gao1,
-     &                     dtrmat(1,1,1,im),buf)
+          if (allow_nonhermitian) then
+            call get_gn_nonhermitian(gr_b,
+     &                               irepop,
+     &                               dtrmat(1, 1, 1, im),
+     &                               buf,
+     &                               gao,
+     &                               gao1)
           else
-#endif /* MOD_CDFT */
             call get_gn(gr_b,
      &                  irepop,
      &                  dtrmat(1, 1, 1, im),
      &                  buf,
      &                  gao,
      &                  gao1)
-
-#ifdef MOD_CDFT
-          endif
-#endif /* MOD_CDFT */
+          end if
 
           worth_it = max(
      &                   dabs(r_b),
