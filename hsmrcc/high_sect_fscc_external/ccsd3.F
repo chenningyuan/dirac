@@ -1248,10 +1248,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       subroutine seltyp(iii,iiv,name,iparm)
 !------------------------------------------------------------------------
 !
-!  ints collected in gen, indices in itmp.
-! at the end, arrays are
+!  integrals are collected in "gen", indices are in "itmp"
 !
-!  sorted and expanded according to indices (in igen) generated
+!  at the end, arrays are
+!  sorted and expanded according to indices (in "igen") generated
 !  by tmplt.
 !
 !  routine called many times from high.sector executables
@@ -1286,12 +1286,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       logical lrsp
       data zero / 1.d-13/
 
-!     .. function definition - on 32bit !
+!     .. function definition - on 32bit ! TODO: replace with module file
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8) ,i4) )
 
-!     if (iopt(1).ge.5) then ! control printout
-      if (iopt(1).ge.4) then ! control printout
+      if (iopt(1).ge.5) then ! control printout
         call header('Output from "selftyp"',-1)
         write(LUPRI,'(2x,a,a4)') 'name=',name
         write(LUPRI,'(2x,a,i7)') 'iii=',iii
@@ -1306,8 +1305,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       call tmplt(iii,iiv,name,num)
 
-!     if (iopt(1).ge.5) then ! control printout
-      if (iopt(1).ge.4) then ! control printout
+      if (iopt(1).ge.5) then ! control printout
         write(LUPRI,'(/,2x,a,i6)') 'after tmplt, nint=',nint
         write(LUPRI,'(2x,a,i6)')   '              nij=',nij
         write(LUPRI,'(2x,a,i6)')   '           nflcur=',nflcur
@@ -1319,8 +1317,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       istrt1=nstrt(1,num-1)+2*nij+4
       istrt2=nstrt(2,num-1)
 
-!     if (iopt(1).ge.5) then ! ... control printout
-      if (iopt(1).ge.4) then ! ... control printout
+      if (iopt(1).ge.5) then ! ... control printout
         write(LUPRI,'(/,2x,a,i5)') 'seltyp, lngth=',lngth
         write(LUPRI,'(2x,a,i5)')   '       istrt1=',istrt1
         write(LUPRI,'(2x,a,i5)')   '       istrt2=',istrt2
@@ -1347,13 +1344,14 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       do 190 i=1,nint
       if (abs(vint(i)).lt.zero) go to 190
 
+!      TODO: replace with module function !
       j1=iand(ishft(iint(i),-24),'ff'X)
       j2=iand(ishft(iint(i),-16),'ff'X)
       j3=iand(ishft(iint(i),-8) ,'ff'X)
-      j4=iand(          iint(i) ,'ff'X)
+      j4=iand(      iint(i),     'ff'X)
 
-      if (iopt(1).ge.4) then ! control printout
-         write(LUPRI,'(1x,i5,a,i10,a,4i3,a,d12.6)')
+      if (iopt(1).ge.5) then ! control printout
+         write(LUPRI,'(1x,i5,a,i10,a,4i4,a,f18.12)')
      &   i,'-',iint(i),' -',j1,j2,j3,j4,' :',vint(i)
       endif
 
@@ -1383,7 +1381,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j1,j2,j3,j4)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1403,7 +1401,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j2,j1,j4)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1424,7 +1422,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j1,j4,j3,j2)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1442,7 +1440,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j4,j1,j2)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1461,7 +1459,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j1,j4,j3)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1479,7 +1477,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j2,j3,j4,j1)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1497,7 +1495,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j1,j2,j3)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1515,7 +1513,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j4,j3,j2,j1)
 
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
 
@@ -1523,7 +1521,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
 
 !  control printout before calling vxort
-      if (iopt(1).ge.4) then ! 
+      if (iopt(1).ge.6) then ! 
        write(LUPRI,'(/,2x,a,i6)')
      & 'seltyp-before calling vxsort, nout=',nout
        write(LUPRI,'(2x,a,i6)') 'ije(nij)=',ije(nij)
@@ -1539,8 +1537,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
  
       !call quit('after vxsort')
 
-      call prt(name,name,iparm)
-      call prtime(name,ije(nij),0)
+      call prt(name,name,iparm) ! ... print integrals ...
+
+      call prtime(name,ije(nij),0) ! ... print time ...
 
       return
       end

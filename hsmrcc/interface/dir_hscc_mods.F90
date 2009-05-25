@@ -1096,7 +1096,7 @@ subroutine read_mdcint_hsfs2
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
-logical :: print_batch_info=.true., print_int=.false., is_mdc, duplicity
+logical :: print_batch_info=.true., print_int=.false., is_mdc, duplicity, still_duplicity
 type(Vect) :: indk_vect, indl_vect, cbuf_vect, indx_vect
 
 ! function definition - packing of indexes - to be replaced by include files !
@@ -1323,16 +1323,20 @@ endif
 !  ... sift through array to remove repeating integrals ...
 !-------------------------------------------------------------
  j=1
+   still_duplicity=.true.
  do while ( j< nnzi )
 
+  do while (still_duplicity) 
    duplicity=.false.
+   still_duplicity=.false.
    do k=j+1,nnzi
        if(indx_vect%p_iA1D(j)==indx_vect%p_iA1D(k)) then
           duplicity=.true. ! j < k
-          Exit
+          still_duplicity=.true.
+        !!  write(LUPRI,*) 'duplicity for k,j:',k,j,indx_vect%p_iA1D(j)
+          Exit ! exit this cycle
        endif
    enddo
-
    if (duplicity) then
     do jj=k,nnzi-1
       indx_vect%p_iA1D(jj)=indx_vect%p_iA1D(jj+1)
@@ -1340,9 +1344,9 @@ endif
     enddo
     nnzi=nnzi-1
    endif
-   
-   j=j+1
-
+  enddo
+  still_duplicity=.true.
+  j=j+1
  enddo
 
  write(LUPRI,*) 'original number of integrals nnzi_save=',nnzi_save
@@ -1352,9 +1356,9 @@ endif
       j1=iand(ishft(indx_vect%p_iA1D(j),-24),'ff'X)
       j2=iand(ishft(indx_vect%p_iA1D(j),-16),'ff'X)
       j3=iand(ishft(indx_vect%p_iA1D(j),-8) ,'ff'X)
-      j4=iand(           indx_vect%p_iA1D(j),'ff'X)
+      j4=iand(      indx_vect%p_iA1D(j),     'ff'X)
 
-    write(LUPRI,'(i4,a,4i4,f18.12)') j,'.',j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
+    write(LUPRI,'(i4,a,i9,4i4,f18.12)') j,'.',indx_vect%p_iA1D(j),j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
 
  enddo
  
@@ -1392,7 +1396,7 @@ subroutine permut_indxs(i1hsfs  ,i2hsfs  ,i3hsfs  ,i4hsfs,  &
                         i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
 !----------------------------------------------------------------------------------------------
 !
-! <p q|r s> to be permuted so that:
+! <p q|r s> indexes to be permuted so that:
 !       p >= q
 !       r >= s  
 !
@@ -1414,20 +1418,34 @@ integer, intent(out) :: i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
 
  i1hsfs_p=i1hsfs; i2hsfs_p=i2hsfs; i3hsfs_p=i3hsfs; i4hsfs_p=i4hsfs
 
-if (i1hsfs_p < i3hsfs_p) then
+if (i1hsfs_p < i3hsfs_p) then  ! <pq|rs>=<rq|ps>
   ih =i1hsfs_p; i1hsfs_p=i3hsfs_p; i3hsfs_p=ih
 endif
 
-if (i2hsfs_p < i4hsfs_p) then
+if (i2hsfs_p < i4hsfs_p) then ! <pq|rs>=<ps|rq>
   ih =i2hsfs_p; i2hsfs_p=i4hsfs_p; i4hsfs_p=ih
 endif
 
-if (i1hsfs_p < i2hsfs_p .or. i3hsfs_p < i4hsfs_p) then ! <pq|rs>=<qp|sr>
- ih = i1hsfs_p; i1hsfs_p=i2hsfs_p; i2hsfs_p=ih
- ih = i3hsfs_p; i3hsfs_p=i4hsfs_p; i4hsfs_p=ih
+if (  (i1hsfs_p < i2hsfs_p .or. i3hsfs_p < i4hsfs_p)    ) then
+  
+ if ( (max(i1hsfs_p,i2hsfs_p) < max(i3hsfs_p,i4hsfs_p) ) & 
+    .or.(i1hsfs_p < i2hsfs_p).or.((i1hsfs_p.eq.i2hsfs_p).and.(i3hsfs_p<i4hsfs_p))  ) then ! <pq|rs>=<qp|sr>
+   ih = i1hsfs_p; i1hsfs_p=i2hsfs_p; i2hsfs_p=ih
+   ih = i3hsfs_p; i3hsfs_p=i4hsfs_p; i4hsfs_p=ih
 endif
 
-!write(LUPRI,'(a,4i3,a,4i3)') 'permut:',i1hsfs,i2hsfs,i3hsfs,i4hsfs,'->',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
+endif
+
+! Check permuted indexes of <i1 i2|i3 i4>
+if (.not.( (i1hsfs_p >= i2hsfs_p )  &   
+    ! .and. (i3hsfs_p >= i4hsfs_p)   & 
+     .and.(max(i1hsfs_p,i2hsfs_p) >= max(i3hsfs_p,i4hsfs_p))    & 
+                                                   ) ) then
+
+  write(LUPRI,'(a,4i3,a,4i3)') 'permut:',i1hsfs,i2hsfs,i3hsfs,i4hsfs,'->',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p
+
+  call quit('permut_indxs: inproper permutations !')
+endif
 
 end subroutine permut_indxs
 
