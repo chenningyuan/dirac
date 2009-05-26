@@ -320,6 +320,10 @@ contains
       real(8) :: error_nr_electrons, orbital_nr_electrons
       integer :: i, idummy, ierr, myNPOINT, NBATCH, ndim, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
+#ifndef VAR_MPI
+      integer :: mytid
+      integer :: mparid
+#endif
 !
 !
 !
