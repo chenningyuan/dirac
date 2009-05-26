@@ -9,6 +9,8 @@ module dft_main
   use aor_xc
 #endif
 
+  implicit none
+
 contains
 
       subroutine dftexc(dmat, &
@@ -24,11 +26,7 @@ contains
 !     written by T. Helgaker
 !     DIRAC adaption by T. Saue
 
-
-      implicit none
-
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "dcbbas.h"
 
@@ -268,7 +266,6 @@ contains
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-! /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
      &                  IPRINT)
@@ -277,36 +274,31 @@ contains
 !
 
 
-#include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "pi.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, &
-     &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
+!     PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, &
+!    &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 !
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#ifndef INT_STAR8
+      integer             :: istat(MPI_STATUS_SIZE)
+#else
+      dimension              istat(MPI_STATUS_SIZE)
+#endif /* ifndef INT_STAR8 */
 #endif
-#if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
-#endif
-#include "nuclei.h"
-#include "orgcom.h"
-#include "functionals.h"
-#include "dgroup.h"
-#include "densfit.h"
 !
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
 #endif
-      DIMENSION EXCMAT(*)
-      DIMENSION DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &          DTRMAT(*),ISYMOP(NXCMAT),IHRMOP(NXCMAT)
+      real(8) :: EXCMAT(*)
+      real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
+     &          DTRMAT(*)
+      integer    ::ISYMOP(NXCMAT),IHRMOP(NXCMAT)
+      integer    ::iprint, nxcmat
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: gao(:)
@@ -324,6 +316,10 @@ contains
       integer, allocatable :: idisp(:)
       integer, allocatable :: isend(:)
       real(8), allocatable :: kxdum(:)
+      real(8) :: dummy
+      real(8) :: error_nr_electrons, orbital_nr_electrons
+      integer :: i, idummy, ierr, myNPOINT, NBATCH, ndim, NODESALL
+      integer :: npnts, npoint, nrest, IDISP_REST
 !
 !
 !
@@ -610,7 +606,6 @@ contains
 
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT, &
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
@@ -623,36 +618,36 @@ contains
 !
 !***********************************************************************
 
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, &
-     &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-#include "maxorb.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "shells.h"
 #include "inforb.h"
-#include "orgcom.h"
 #include "functionals.h"
-#include "dgroup.h"
-#include "densfit.h"
 
 #ifdef MOD_AUTODIFF
 #include "../autodiff/xc_fortran_interface.h"
 #endif
 
-      logical gga_qr
+      integer :: npoint, iprint, nytid, nxcmat
+      logical :: gga_qr
+      real(8) :: corx(npoint)
+      real(8) :: cory(npoint)
+      real(8) :: corz(npoint)
+      real(8) :: weight(npoint)
+      real(8) :: dmat(nbast, nbast)
+      real(8) :: dmat_resp_ao(*)
+      real(8) :: dmat_outer_ao(*)
+      real(8) :: dtrmat(*)
+      real(8) :: gao2(*)
+      real(8) :: gab1(*)
+      real(8) :: excmat(*)
+      integer :: ncnt(nbast)
+      real(8) :: buf(*)
+      real(8) :: vx(dervs1)
+      integer :: isymop(nxcmat)
+      integer :: ihrmop(nxcmat)
+      real(8) :: energy_density
 
-      DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT), &
-     &            WEIGHT(NPOINT), &
-     &            DMAT(NBAST,NBAST),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &            DTRMAT(*),                 GAO2(*), &
-     &            GAB1(*),EXCMAT(*),  &
-     &            NCNT(NBAST), BUF(*), &
-     &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT)
-      DIMENSION RHG(3),VT(3)
-      DIMENSION derv(99)
+      real(8) :: RHG(3),VT(3)
+      real(8) :: derv(99)
+      real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
       real(8), target  :: gao(nbast)
@@ -665,6 +660,8 @@ contains
       real(8), allocatable :: klrcfit(:)
       real(8), allocatable :: klrxcvec(:)
 
+      integer :: ipoint, nder, ndim
+      real(8) :: wght, z, ddot, dftenergy
 !
 !
 
@@ -883,7 +880,7 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = rho**dp3
+            rho13 = rho**(1.0d0/3.0d0)
             call dftac(vx, wght, rho, rho13, &
      &                 rho_resp, rho_outer, rhogrd)
           end if
@@ -954,7 +951,7 @@ contains
 
           gga_qr = dft_temp_gga_hs .or. dft_temp_gga_ha
           call sdft_qr(gga_qr, &
-     &                 sdft, &
+     &                 dft_cfg_sdft, &
      &                 dtrmat,excmat, &
      &                 isymop,ihrmop,gao,gao1, &
      &                 rho,rhogrd,rhg,wght,buf)
@@ -1010,21 +1007,18 @@ contains
 
 
       end subroutine
-!  /* Deck reaqua */
       SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
-#include "implicit.h" 
-#include "priunit.h"
-      DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
+      real(8) :: X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
+      integer :: luquad
+      integer :: npoint
       READ(LUQUAD) X,Y,Z,WT
       end subroutine
       
 #ifdef ENABLE_DFT_NUMERICAL_TEST
-!  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
-#include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &
-     &           DP3 = D1/D3, ADD = 1.0D-06)
+!     PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &
+!    &           DP3 = D1/D3, ADD = 1.0D-06)
       LOGICAL DODRC,DOVWN,DOLYP,DOBCK
 !
       ADD2 = D2*ADD
@@ -1137,7 +1131,6 @@ contains
       end subroutine
 #endif /* ENABLE_DFT_NUMERICAL_TEST */
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck Getavd */
       SUBROUTINE GTDOAV(DMAT,IFAC)
 !***********************************************************************
 !
@@ -1145,14 +1138,12 @@ contains
 !     Written by T.Saue March 2004
 !
 !***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-!
 #include "dcbdhf.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-      DIMENSION DMAT(N2BBASX,NZ,NFMAT)
+      integer :: ifac, ishell
+      real(8) :: DMAT(N2BBASX,NZ,NFMAT)
+      real(8) :: fac
       IF(AOC) THEN
         DO ISHELL = 1, NOPEN
           FAC = IFAC*DF(ISHELL)
@@ -1168,10 +1159,6 @@ contains
      &                  ISYMOP, &
      &                  IHRMOP)
 
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (DP5 = 0.5D0,D2 = 2.0D0)
 
 #include "dcbham.h"
 #include "dgroup.h"
@@ -1181,20 +1168,17 @@ contains
 #include "maxorb.h"
 #include "symmet.h"
 
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
-#else
-      DIMENSION AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
-#endif
-      DIMENSION ISYMOP(NMAT), &
-     &          IHRMOP(NMAT)
 
-#include "ibtfun.h"
+      real(8) :: AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
+      integer :: nmat
+      integer :: ISYMOP(NMAT)
+      integer :: IHRMOP(NMAT)
 
       integer :: iq(0:3)
       integer :: inter_irep(0:3)
       logical :: skip(0:3)
+      real(8) :: average
+      integer :: i, ic, ii, im, irep1, irep2, irepop, ixyz, j, jb, jb1, jb2, jj, nb, nb1, nb2
 
       iq(0)         = 1
       inter_irep(0) = 0
@@ -1214,9 +1198,9 @@ contains
 
             if (.not. skip(IXYZ)) then
 
-            IREPOP = IBTXOR(inter_irep(ixyz),ISYMOP(IM)-1)
+            IREPOP = ieor(inter_irep(ixyz),ISYMOP(IM)-1)
             DO 110 IREP1 = 0,NBSYM-1
-              IREP2 = IBTXOR(IREP1,IREPOP)
+              IREP2 = ieor(IREP1,IREPOP)
               IF(IREP2 .LT. IREP1) THEN
                 DO 120 IC = 1,MC
                   NB1 = NBBAS(IREP1,IC)
@@ -1229,7 +1213,7 @@ contains
                     II = JB1 + I
                     DO J = 1,NB2
                       JJ = JB2 + J
-                      AVERAGE = DP5*(AMAT(II,JJ,iq(ixyz),IM)  &
+                      AVERAGE = 0.5d0*(AMAT(II,JJ,iq(ixyz),IM)  &
      &                             + AMAT(JJ,II,iq(ixyz),IM))
                       AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
                       AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
@@ -1245,7 +1229,7 @@ contains
                     II = JB + I
                     DO J = 1,I-1
                       JJ = JB + J
-                      AVERAGE = DP5*(AMAT(II,JJ,iq(ixyz),IM)  &
+                      AVERAGE = 0.5d0*(AMAT(II,JJ,iq(ixyz),IM)  &
      &                             + AMAT(JJ,II,iq(ixyz),IM))
                       AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
                       AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
@@ -1261,7 +1245,6 @@ contains
       end subroutine
 #if defined (VAR_MPI)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck dftres */
       SUBROUTINE DFTRES(EXCMAT,NXCMAT,dft_options, &
      &                  IPRINT)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1271,24 +1254,24 @@ contains
 !
 !***********************************************************************
 
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1=1.0D0)
-!
-#include "maxorb.h"
-#include "mxcent.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#ifndef INT_STAR8
+      integer             :: istat(MPI_STATUS_SIZE)
+#else
+      dimension              istat(MPI_STATUS_SIZE)
+#endif /* ifndef INT_STAR8 */
 #endif
-#include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-      DIMENSION EXCMAT(*)
+      integer :: nxcmat, iprint
+      real(8) :: EXCMAT(*)
       type(dft_options_t) :: dft_options
       real(8), allocatable :: kfbuf(:)
+      integer :: ierr, LFMAT
+      real(8) :: sum_nr_electrons
+      real(8) :: sum_xc_energy
 !
       LFMAT = N2BBASX*NXCMAT*NZ
 !
@@ -1329,7 +1312,6 @@ contains
       ENDIF
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck dftprd */
 !***********************************************************************
       SUBROUTINE DFTPRD
 !
@@ -1342,15 +1324,12 @@ contains
 !     Based on traprd, Written by T. Saue 2000
 !
 !***********************************************************************
-#include "implicit.h"
-      PARAMETER(D0=0.0D0)
+!     PARAMETER(D0=0.0D0)
 !
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#include "priunit.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "dcborb.h"
@@ -1359,13 +1338,16 @@ contains
 #include "symmet.h"
 #include "dgroup.h"
 #include "infpar.h"
-#include "parint.h"
-#include "blocks.h"
 !TROND
 #include "shells.h"
 #include "nuclei.h"
 !
 #if defined (VAR_MPI)
+
+         integer :: ierr
+         integer :: nsaue
+         integer :: numelm
+         integer :: icommsize
 
 !TROND: Temporary fix !!!
       NSAUE=3*NUCIND   
@@ -1428,7 +1410,6 @@ contains
 !
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!  /* Deck dftnod */
       SUBROUTINE DFTNOD()
 !***********************************************************************
 !     Based on HERNOD 
@@ -1438,14 +1419,9 @@ contains
 !***********************************************************************
 
 
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-!
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-!
 #include "dcbbas.h"
 #include "infpar.h"
 !
@@ -1457,6 +1433,10 @@ contains
       real(8), allocatable :: kdtr(:)
       real(8), allocatable :: KDMAT_OUTER_AO(:)
       real(8), allocatable :: KDMAT_RESP_AO(:)
+      integer              :: nxcmat
+      real(8)              :: wall1, cpu1
+      integer              :: lmat
+      integer              :: iprint
 !
 !
       PARHER = .TRUE.
@@ -1525,8 +1505,6 @@ contains
 
 !     written by T. Saue april 7 2009
 
-      implicit none
-
 #include "mpif.h"
 #include "infpar.h"
 
@@ -1567,7 +1545,6 @@ contains
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!/* Deck dftinit2 */
       SUBROUTINE DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP, &
      &                       DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
 !***********************************************************************
@@ -1579,19 +1556,16 @@ contains
 !***********************************************************************
 
 
-#include "implicit.h"
-#include "priunit.h"
-!
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
 #include "infpar.h"
 #include "dcbbas.h"
-#include "dgroup.h"
-      DIMENSION DMAT(N2BBASX),DTRMAT(*), &
-     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
+      real(8) :: DMAT(N2BBASX),DTRMAT(*), &
+     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*)
+      integer ::          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
+      integer :: nxcmat, lmat, ierr
       CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID, &
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID, &
