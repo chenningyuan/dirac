@@ -390,7 +390,7 @@ end function get_moltra_integral
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
-!------------------------------------------------------------------
+!-----------------------------------------------------------------------------
 !
 !  provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
 !  
@@ -400,7 +400,7 @@ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !  
 !  called from readv(ccsd3.F)
 !
-!------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! use Memory
 ! use Vectors
 ! use io_moltra
@@ -431,11 +431,14 @@ ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
      write(LUPRI,*) i,eps(i)
    enddo 
 
-   read(luhsfs) nint
+   read(luhsfs,iostat=ios) nint
+   if (ios.ne.0) call quit('error in luhsfs nint reading!')
+
    write(LUPRI,*) 'Number of nonzero integrals, nint=',nint
 
    do i=1,nint
-    read(luhsfs) i1,i2,i3,i4,v(i)
+    read(luhsfs,iostat=ios) i1,i2,i3,i4,v(i)
+    if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reaidng !')
     ind(i)=ipack(i1,i2,i3,i4)
     write(LUPRI,'(4i4,a,i11,a,f18.12)') i1,i2,i3,i4,'pck in:',ind(i),' int:',v(i)
    enddo

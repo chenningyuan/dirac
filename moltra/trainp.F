@@ -807,6 +807,10 @@ C
 #ifdef MOD_HSCC
       IF (DOHSCC) THEN
         CALL HSCCINP(WORD,.false.)
+      ELSE
+        WRITE(LUPRI,'(2X,A)') 
+     &  '*HSCC input found, but not processed (DOHSCC=.false.).'
+        GOTO 400
       ENDIF
 #else
 C       prevent dirac.x running into an infinite loop here
@@ -819,6 +823,10 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 #ifdef MOD_HSFS
       IF (DOHSFS) THEN
         CALL HSFSINP(WORD,.false.)
+      ELSE
+        WRITE(LUPRI,'(2X,A)') 
+     &  '*HSFS input found, but not processed (DOHSFS=.false.).'
+        GOTO 400
       ENDIF
 #else
 C       prevent dirac.x running into an infinite loop here

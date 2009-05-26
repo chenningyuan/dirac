@@ -1274,7 +1274,8 @@ endif
 
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,4i3,a,i12)') icount,'. (',i1,' ',i2,'|',  & 
            i3,' ',i4,')=', &
-           cbuf_vect%p_rA1D(INZ+icbuf-1),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p,' pck:',indx_vect%p_iA1D(INZ+icbuf-1)
+           cbuf_vect%p_rA1D(INZ+icbuf-1),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',   &  
+           i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p,' pck:',indx_vect%p_iA1D(INZ+icbuf-1)
 
    ! dirac notation ...
   ! write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
@@ -1352,6 +1353,8 @@ endif
  write(LUPRI,*) 'original number of integrals nnzi_save=',nnzi_save
  write(LUPRI,*) 'remaining number of integrals nnzi=',nnzi
 
+ write(luhsfs) nnzi
+
  do j=1,nnzi
       j1=iand(ishft(indx_vect%p_iA1D(j),-24),'ff'X)
       j2=iand(ishft(indx_vect%p_iA1D(j),-16),'ff'X)
@@ -1360,9 +1363,11 @@ endif
 
     write(LUPRI,'(i4,a,i9,4i4,f18.12)') j,'.',indx_vect%p_iA1D(j),j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
 
+    write(luhsfs) j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
+
  enddo
  
- call quit('end')
+ !call quit('end')
 
 ! ... deallocate ...
  call DeAllocObject(indx_vect)
@@ -1432,7 +1437,7 @@ if (  (i1hsfs_p < i2hsfs_p .or. i3hsfs_p < i4hsfs_p)    ) then
     .or.(i1hsfs_p < i2hsfs_p).or.((i1hsfs_p.eq.i2hsfs_p).and.(i3hsfs_p<i4hsfs_p))  ) then ! <pq|rs>=<qp|sr>
    ih = i1hsfs_p; i1hsfs_p=i2hsfs_p; i2hsfs_p=ih
    ih = i3hsfs_p; i3hsfs_p=i4hsfs_p; i4hsfs_p=ih
-endif
+ endif
 
 endif
 
