@@ -63,10 +63,8 @@ c=======================================================================
       use dft_cfg
       use dft_density
 
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-
-      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
 
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -84,18 +82,18 @@ c=======================================================================
       logical   is_gga,
      &          lbit,
      &          allow_nonhermitian
-      dimension dtrmat(*),
-     &          excmat(*),
-     &          isymop(*),
-     &          ihrmop(*),
-     &          gao(*),
+      integer:: nxcmat, im, im_off, irepop, k, k_start, j
+      real(8) ::gr_0_norm, w, r_0, worth_it, ddot
+      real(8) ::dtrmat(*),
+     &          excmat(*)
+      integer:: isymop(*),
+     &          ihrmop(*)
+      real(8) ::gao(*),
      &          gao1(*),
-     &          buf(*),
-!
-     &          gr_0(  3),
-     &          s_b (  3),
+     &          buf(*)
+      real(8):: gr_0(  3),
+     &          s_b (  3), vxc_scalar(3), vxc_vector(3, 3), y_b(3),
      &          gs_b(3,3),
-!
      &          vxc(99),
      &          derv(99)
 
@@ -226,99 +224,57 @@ c=======================================================================
           end if
 
           do k = k_start,3
-            call sdft_lr_collinear(vxc,
-     &                             excmat(1+im_off),
-     &                             isymop(im),
-     &                             gao,
-     &                             gao1,
-     &                             k,
-     &                             s_b(k),
-     &                             gs_b(1,k),
-     &                             gr_0,
-     &                             is_gga)
+!           call sdft_lr_collinear(vxc,
+!    &                             excmat(1+im_off),
+!    &                             isymop(im),
+!    &                             gao,
+!    &                             gao1,
+!    &                             k,
+!    &                             s_b(k),
+!    &                             gs_b(1,k),
+!    &                             gr_0,
+!    &                             is_gga)
+
+
+
+      vxc_scalar(k) = vxc(fss)*s_b(k)
+
+      if(is_gga) then
+        y_b(k) = ddot(3,gr_0,1,gs_b(1,k),1)
+
+        vxc_scalar(k) = vxc_scalar(k) + vxc(fsy)*y_b(k)
+      endif
+
+      if(is_gga) then
+        do j = 1,3
+          vxc_vector(j,k) = (s_b(k)*vxc(fsy) + y_b(k)*vxc(fyy))*gr_0(j)
+     &                  + vxc(fx)*gs_b(j,k)*2.0d0
+        enddo
+      endif
+
+
+
+
           enddo
+
+      if (is_gga) then
+        call gga_distribute_qi(vxc_scalar, 
+     &                         vxc_vector, 
+     &                         isymop(im) - 1,
+     &                         excmat(1 + im_off),
+     &                         gao,              
+     &                         gao1)
+      else
+        call lda_distribute_qi(vxc_scalar, 
+     &                         isymop(im) - 1,
+     &                         excmat(1 + im_off),
+     &                         gao)
+      end if
+
+
         endif
  99     continue
       enddo
-
-      return
-      end
-c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c     /* sdft_lr_collinear */
-      subroutine sdft_lr_collinear(vxc,
-     &                             excmat,
-     &                             isymop,
-     &                             gao,
-     &                             gao1,
-     &                             k,
-     &                             s_b,
-     &                             gs_b,
-     &                             gr_0,
-     &                             is_gga)
-c=======================================================================
-c     describe me ...
-c-----------------------------------------------------------------------
-c                                                           radovan bast
-c                                               last revision: june 2007
-c=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "inforb.h"
-#include "../dft/functionals.h"
-
-      logical   is_gga
-      dimension vxc(*),
-     &          excmat(*),
-     &          gao(*),
-     &          gao1(*),
-     &          gs_b(3),
-     &          gr_0(3),
-     &          y_pq(3),
-     &          x_pq_b(3),
-     &          vxc_vector(3)
-
-
-      vxc_scalar = vxc(fss)*s_b
-
-      if(is_gga) then
-        y_b = ddot(3,gr_0,1,gs_b,1)
-
-        do j = 1,3
-          x_pq_b(j) = vxc(fx)
-
-          y_pq(j) = s_b*vxc(fsy) + y_b*vxc(fyy)
-        enddo
-
-        vxc_scalar = vxc_scalar + vxc(fsy)*y_b
-      endif
-
-      if(is_gga) then
-        do j = 1,3
-          vxc_vector(j) = y_pq(j)*gr_0(j)
-     &                  + x_pq_b(j)*gs_b(j)*d2
-        enddo
-
-        call dscal(3,d2,vxc_vector,1) !symmetrization later in the code
-      endif
-
-      call exc_m(is_gga,
-     &           vxc_scalar,
-     &           vxc_vector,
-     &           k,
-     &           isymop,
-     &           excmat,
-     &           gao,
-     &           gao1)
 
       return
       end

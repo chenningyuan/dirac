@@ -7,7 +7,10 @@ module dft_density
   public init_density_blocks
   public get_n, get_gn, get_gn_nonhermitian
   public get_s, get_gs, get_gs_nonhermitian
-  public lda_distribute, gga_distribute
+  public lda_distribute
+  public gga_distribute
+  public lda_distribute_qi
+  public gga_distribute_qi
 
   private
 
@@ -17,8 +20,10 @@ module dft_density
   integer :: iq(0:3)
   integer :: nr_ao_total
 
-! collinear approximation
+! noncollinear
   integer :: jxyz_start = 1
+! collinear approximation
+! integer :: jxyz_start = 3
 
 contains
 
@@ -95,12 +100,12 @@ contains
 
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
-      
+
         nr1 = nr_ao(1, iblock, jxyz, irep)
         st1 = st_ao(1, iblock, jxyz, irep)
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
-      
+
         call dgemv('N',                      &
                    nr1,                      &
                    nr2,                      &
@@ -112,9 +117,9 @@ contains
                    0.0d0,                    &
                    buffer,                   &
                    1)
-      
+
         n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-      
+
       end do
     end do
 
@@ -137,12 +142,12 @@ contains
 
     do jxyz = jxyz_start, 3
       do iblock = 1, nr_density_blocks(jxyz, irep)
-      
+
         nr1 = nr_ao(1, iblock, jxyz, irep)
         st1 = st_ao(1, iblock, jxyz, irep)
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
-      
+
         call dgemv('N',                      &
                    nr1,                      &
                    nr2,                      &
@@ -154,9 +159,9 @@ contains
                    0.0d0,                    &
                    buffer,                   &
                    1)
-      
+
         s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
-      
+
       end do
     end do
 
@@ -399,114 +404,170 @@ contains
 
   end subroutine
 
-  subroutine lda_distribute(s, jxyz, irep, fmat, ao)
+  subroutine lda_distribute(s, irep, fmat, ao)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s
-    integer, intent(in)    :: jxyz
     integer, intent(in)    :: irep
-    real(8), intent(inout) :: fmat(*)
+    real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
     real(8), intent(in)    :: ao(nr_ao_total)
 !   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do iblock = 1, nr_density_blocks(jxyz, irep)
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
 
-      nr1 = nr_ao(1, iblock, jxyz, irep)
-      st1 = st_ao(1, iblock, jxyz, irep)
-      nr2 = nr_ao(2, iblock, jxyz, irep)
-      st2 = st_ao(2, iblock, jxyz, irep)
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
 
-      do i = 1, nr2
+        do i = 1, nr2
 
-        f = s*ao(st2 + i - 1)
+          ii = st2 + i - 1
 
-        call daxpy(nr1,                                   &
-                   f,                                     &
-                   ao(st1),                               &
-                   1,                                     &
-                   fmat((st2 + i - 2)*nr_ao_total + st1), &
-                   1)
+          f = s*ao(ii)
 
+          call daxpy(nr1,                     &
+                     f,                       &
+                     ao(st1),                 &
+                     1,                       &
+                     fmat(st1, ii, iq(jxyz)), &
+                     1)
+
+        end do
       end do
     end do
 
   end subroutine
 
-  subroutine gga_distribute(s, v, jxyz, irep, fmat, ao, ao1)
+  subroutine gga_distribute(s, v, irep, fmat, ao, ao1)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s
-    real(8)                :: v(3)
-    integer, intent(in)    :: jxyz
+    real(8), intent(in)    :: v(3)
     integer, intent(in)    :: irep
-    real(8), intent(inout) :: fmat(*)
+    real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
     real(8), intent(in)    :: ao(nr_ao_total)
     real(8), intent(in)    :: ao1(nr_ao_total, 3)
 !   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    v = 2.0d0*v
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
 
-    do iblock = 1, nr_density_blocks(jxyz, irep)
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
 
-      nr1 = nr_ao(1, iblock, jxyz, irep)
-      st1 = st_ao(1, iblock, jxyz, irep)
-      nr2 = nr_ao(2, iblock, jxyz, irep)
-      st2 = st_ao(2, iblock, jxyz, irep)
+        do i = 1, nr2
 
-      do i = 1, nr2
+          ii = st2 + i - 1
 
-        f = s   *ao (st2 + i - 1)    &
-          + v(1)*ao1(st2 + i - 1, 1) &
-          + v(2)*ao1(st2 + i - 1, 2) &
-          + v(3)*ao1(st2 + i - 1, 3)
+          f =       s   *ao (ii)    &
+            + 2.0d0*v(1)*ao1(ii, 1) &
+            + 2.0d0*v(2)*ao1(ii, 2) &
+            + 2.0d0*v(3)*ao1(ii, 3)
 
-        call daxpy(nr1,                                   &
-                   f,                                     &
-                   ao(st1),                               &
-                   1,                                     &
-                   fmat((st2 + i - 2)*nr_ao_total + st1), &
-                   1)
+          call daxpy(nr1,                     &
+                     f,                       &
+                     ao(st1),                 &
+                     1,                       &
+                     fmat(st1, ii, iq(jxyz)), &
+                     1)
 
+        end do
       end do
     end do
 
   end subroutine
 
-  subroutine h_anti_wrap_distribute(use_gga, s, v, irep, fmat, ao, ao1)
+  subroutine lda_distribute_qi(s, irep, fmat, ao)
 
 !   ----------------------------------------------------------------------------
-    logical, intent(in)    :: use_gga
+    real(8), intent(in)    :: s(3)
+    integer, intent(in)    :: irep
+    real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
+    real(8), intent(in)    :: ao(nr_ao_total)
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    real(8)                :: f
+!   ----------------------------------------------------------------------------
+
+    do jxyz = jxyz_start, 3
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+        do i = 1, nr2
+
+          ii = st2 + i - 1
+
+          f = s(jxyz)*ao(ii)
+
+          call daxpy(nr1,                     &
+                     f,                       &
+                     ao(st1),                 &
+                     1,                       &
+                     fmat(st1, ii, iq(jxyz)), &
+                     1)
+
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine gga_distribute_qi(s, v, irep, fmat, ao, ao1)
+
+!   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s(3)
     real(8), intent(in)    :: v(3, 3)
     integer, intent(in)    :: irep
     real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
-    real(8), intent(in)    :: ao(*)
-    real(8), intent(in)    :: ao1(*)
+    real(8), intent(in)    :: ao(nr_ao_total)
+    real(8), intent(in)    :: ao1(nr_ao_total, 3)
 !   ----------------------------------------------------------------------------
-    integer                :: jxyz
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do jxyz = 1, 3
-      if (use_gga) then
-        call gga_distribute(s(jxyz), v(1, jxyz), jxyz, irep, fmat(1, 1, iq(jxyz)), ao, ao1)
-      else
-        call lda_distribute(s(jxyz),             jxyz, irep, fmat(1, 1, iq(jxyz)), ao)
-      end if
+    do jxyz = jxyz_start, 3
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+        do i = 1, nr2
+
+          ii = st2 + i - 1
+
+          f =       s(   jxyz)*ao (ii)    &
+            + 2.0d0*v(1, jxyz)*ao1(ii, 1) &
+            + 2.0d0*v(2, jxyz)*ao1(ii, 2) &
+            + 2.0d0*v(3, jxyz)*ao1(ii, 3)
+
+          call daxpy(nr1,                     &
+                     f,                       &
+                     ao(st1),                 &
+                     1,                       &
+                     fmat(st1, ii, iq(jxyz)), &
+                     1)
+
+        end do
+      end do
     end do
 
   end subroutine
-
-
-
-
-
-
-
 
 end module

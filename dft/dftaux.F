@@ -131,7 +131,6 @@ c=======================================================================
             vxc_scalar = vxc(fRR)*r_b
 
             call lda_distribute(vxc_scalar,
-     &                          0,
      &                          irepop,
      &                          excmat(1, 1, 1, im),
      &                          gao)
@@ -224,7 +223,6 @@ c=======================================================================
 
             call gga_distribute(vxc_scalar,
      &                          vxc_vector,
-     &                          0,
      &                          irepop,
      &                          excmat(1, 1, 1, im),
      &                          gao,

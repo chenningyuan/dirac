@@ -898,9 +898,9 @@ contains
         if (dft_options%energy) then
           if (dft_temp_gga_hs) then
             vt = vx(fz0)*rhg
-            call gga_distribute(vx(fr0), vt, 0, 0, excmat, gao, gao1)
+            call gga_distribute(vx(fr0), vt, 0, excmat, gao, gao1)
           else
-            call lda_distribute(vx(fr0),     0, 0, excmat, gao)
+            call lda_distribute(vx(fr0),     0, excmat, gao)
           end if
         end if
 

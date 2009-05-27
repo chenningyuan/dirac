@@ -365,49 +365,36 @@ c=======================================================================
         if (add_grad) then
           call gga_distribute(s_bc_h,
      &                        v_bc_h,
-     &                        0,
      &                        isymop(3) - 1,
      &                        excmat(1, 1, 1, 3),
      &                        gao,
      &                        gao1)
         else
           call lda_distribute(s_bc_h,
-     &                        0,
      &                        isymop(3) - 1,
      &                        excmat(1, 1, 1, 3),
      &                        gao)
         end if
       endif
 
-      if(.not. add_spin) goto 999
+      if (add_spin) then
 
-      call dscal(3,d2,s_bc_ah,1)
-      call dscal(9,d2,v_bc_ah,1)
+        s_bc_ah = 2.0d0*s_bc_ah
+        v_bc_ah = 2.0d0*v_bc_ah
 
-!     scaling the vector h- part v_bc_ah to get symmetrization right
-!     the h+ part v_bc_h is scaled inside doexc2
-      call dscal(9,d2,v_bc_ah,1)
+        if (add_grad) then
+          call gga_distribute_qi(s_bc_ah,
+     &                           v_bc_ah,
+     &                           isymop(3) - 1,
+     &                           excmat(1, 1, 1, 3),
+     &                           gao,
+     &                           gao1)
+        else
+          call lda_distribute_qi(s_bc_ah,
+     &                           isymop(3) - 1,
+     &                           excmat(1, 1, 1, 3),
+     &                           gao)
+        end if
+      end if
 
-      do k = k_start,3
-        worth_it = max(
-     &                 dabs(s_bc_ah(k)),
-     &                 dabs(v_bc_ah(1,k)),
-     &                 dabs(v_bc_ah(2,k)),
-     &                 dabs(v_bc_ah(3,k))
-     &                )
-        if(worth_it .gt. dft_cfg_dfthrl) then
-          call exc_m(add_grad,
-     &               s_bc_ah(k),
-     &               v_bc_ah(1,k),
-     &               k,
-     &               isymop(3),
-     &               excmat(1,1,1,3),
-     &               gao,
-     &               gao1)
-        endif
-      enddo
-
- 999  continue
-
-      return
-      end
+      end subroutine

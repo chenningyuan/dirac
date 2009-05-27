@@ -355,9 +355,9 @@ contains
     end if
 
     if (use_gga) then
-      call gga_distribute(s, 2.0d0*v, 0, 0, fmat, gao, gao1)
+      call gga_distribute(s, 2.0d0*v, 0, fmat, gao, gao1)
     else
-      call lda_distribute(s,          0, 0, fmat, gao)
+      call lda_distribute(s,          0, fmat, gao)
     end if
 
   end subroutine
