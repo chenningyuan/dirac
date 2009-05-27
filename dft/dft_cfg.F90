@@ -104,7 +104,7 @@ contains
     dft_cfg_debug_level             = 0
     dft_cfg_integration_check_level = 0
     dft_cfg_angmin                  = 15
-    dft_cfg_angint                  = 14
+    dft_cfg_angint                  = 41
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block
