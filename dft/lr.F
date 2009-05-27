@@ -224,18 +224,6 @@ c=======================================================================
           end if
 
           do k = k_start,3
-!           call sdft_lr_collinear(vxc,
-!    &                             excmat(1+im_off),
-!    &                             isymop(im),
-!    &                             gao,
-!    &                             gao1,
-!    &                             k,
-!    &                             s_b(k),
-!    &                             gs_b(1,k),
-!    &                             gr_0,
-!    &                             is_gga)
-
-
 
       vxc_scalar(k) = vxc(fss)*s_b(k)
 
@@ -251,9 +239,6 @@ c=======================================================================
      &                  + vxc(fx)*gs_b(j,k)*2.0d0
         enddo
       endif
-
-
-
 
           enddo
 
