@@ -2165,7 +2165,7 @@ C
       CPUTID  = SECTID(CPU2-CPU1)
       WALLTID = SECTID(WLL2-WLL1)
 C
-      WRITE(LUPRI,'(/A,I10,A,I10,A//5A)')
+      WRITE(LUPRI,'(/A,I12,A,I12,A//5A)')
      &      ' (RSETCI) Number of determinants: ',NZCONF,
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
