@@ -7,7 +7,6 @@ utils/.*
 aoresponse/.*
 autodiff/.*
 visual/.*
-cdft/.*
 hsmrcc/.*
 hsmrcc/interface/.*
 hsmrcc/interface/dir_hsfs_interface.F90

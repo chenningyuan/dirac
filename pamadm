@@ -34,7 +34,6 @@ usage()
    echo '     -xml             : Include XML input/output module'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
-   echo '     -cdft            : Include SDFT/CDFT module'
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
    echo '     -autodiff        : Include autodiff module'
@@ -78,7 +77,6 @@ setup()
       XPPMOD=1
       DFTMOD=1
       KRMCMOD=1
-      CDFTMOD=1
       VISUALMOD=1
       IHFSCCMOD=1
       AMFIMOD=1
@@ -188,18 +186,6 @@ setup()
       ECPFLG='-DMOD_ECP'
       ECPTAR=1
       echo " - ECP argos module"
-   fi
-   #
-   #  SDFT/CDFT module
-   #
-   if [ -n "$CDFTMOD" ]; then
-      if [ -n "$DFTMOD" ]; then
-         CDFTFLG='-DMOD_CDFT'
-         CDFTTAR=1
-         echo " - SDFT/CDFT module"
-      else
-         echo "SDFT/CDFT module not included - depends on DFT module "
-      fi
    fi
    #
    #  visualization module
@@ -490,11 +476,6 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/argosecp/{*.F,*.F90,*.f90,*.h,*.c,Makefile,include} 2>> export.log
 EOF
    fi
-   if [ "$CDFTTAR" ]; then
-      cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/cdft/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
-EOF
-   fi
    if [ "$VISUALTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/visual/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -579,7 +560,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $CDFTFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -631,10 +612,6 @@ fi
 if [ -n "$ECPFLG" ]; then
    dirs="$dirs argosecp"
    rmline build/dontbuild "argosecp/\.\*"
-fi
-if [ -n "$CDFTFLG" ]; then
-   dirs="$dirs cdft"
-   rmline build/dontbuild "cdft/\.\*"
 fi
 if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
@@ -828,9 +805,6 @@ while [ -n "$1" ]; do
          ;;
       -ecp)
          ECPMOD=1
-         ;;
-      -cdft)
-         CDFTMOD=1
          ;;
       -visual)
          VISUALMOD=1
