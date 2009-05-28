@@ -117,9 +117,8 @@ character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.N
    set = .true.
  endif
 
-
- write(LUPRI,*) 'in HSCCINP, size of TABLE=',size(TABLE)
- call FLSHFO(LUPRI)
+ !write(LUPRI,*) 'in HSCCINP, size of TABLE=',size(TABLE)
+ !call FLSHFO(LUPRI)
 
 !
 !  Initializations...
@@ -158,10 +157,10 @@ Do
 !        nohsccdirac=.true. 
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hsfs
-        write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
+       ! write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
        Case ('.CONV')
          READ(LUCMD,*) iconv_hsfs
-         write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
+        ! write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
 !      Case ('.DRYRUN')
 !        nohsccfiles=.true.
       Case Default
@@ -184,13 +183,12 @@ EndDo
 
  WRITE (LUPRI,'(//)')
  CALL PRSYMB(LUPRI,'=',75,0)
- WRITE(LUPRI,'(1X,A)') 'HSFSINP: Set-up for the external standalone HSFS codes'
+ WRITE(LUPRI,'(1X,A)') 'HSFSINP: DIRAC set-up for the external standalone HSFS codes'
  CALL PRSYMB(LUPRI,'=',75,0)
- WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',iprint_hsfs
- WRITE(LUPRI,'(/1X,A,I3)') '* Convergence           : ',iconv_hsfs
+ WRITE(LUPRI,'(/,1X,A,I3)') '* General print level   : ',iprint_hsfs
+ WRITE(LUPRI,'(1X,A,I3)')   '* Convergence           : ',iconv_hsfs
 
 ! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
-
 ! WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
 ! WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
 ! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
@@ -204,7 +202,6 @@ EndDo
 ! if (nohsccdirac) then
 !  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by DIRAC, do not continue with "afterDIRAC" HSCC.'
 ! endif
-
 
  Return
 

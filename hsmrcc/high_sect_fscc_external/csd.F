@@ -214,22 +214,24 @@ c     iopt(10) .ne.0 - do not save pppp.
       call diffmax("tc  ","tnew","s2  ",diff,idiff)
       call diffmax("t1c ","t1nw","s2  ",diff1,idiff1)
 
-      write (6,*) ' '
-      write (6,'('' iteration # '',i3,'' diffmx='',e10.3,2x,i12,
+      write (LUPRI,*) ' '
+      write (LUPRI,'('' iteration # '',i3,'' diffmx='',e10.3,2x,i12,
      1 e10.3,2x,i12)') 
      2 iter,diff,idec(idiff),diff1,idec(idiff1)
 
       if (iopt(17).ne.0) then
-        write (6,2402) df3,idec(iddf3),idec(inddf3)
+        write (LUPRI,2402) df3,idec(iddf3),idec(inddf3)
       end if
       if (iopt(17).ge.4) then
-        write (6,2402) df4,idec(iddf4),idec(inddf4)
+        write (LUPRI,2402) df4,idec(iddf4),idec(inddf4)
       end if
+
 !2401  format (24x,f14.9,2x,i8,2x,i8)
 2401  format (24x,d14.9,2x,i8,2x,i8)
 2402  format (22x,e10.3,2x,i8,2x,i8)
-      write (6,*) ' '
-      write (6,2400) tmax,idec(itmax),t1max,idec(it1max)
+
+      write (LUPRI,*) ' '
+      write (LUPRI,2400) tmax,idec(itmax),t1max,idec(it1max)
 !2400  format(' max t, t1, t3, t4=',f15.9,2x,i12,f17.9,2x,i6)
 2400  format(' max t, t1, t3, t4=',d15.9,2x,i12,d17.9,2x,i6)
 
@@ -375,19 +377,20 @@ c  different endings
         end if
       end if
 
-      write (*,*) nstrt(1,nflcur),' words used in igen,',
-     1  nstrt(2,nflcur),' words used in gen'
-      call prtime ("end ",0,0)
-      stop
-      end
+      write (LUPRI,'(/,i8,a,i8,a)')
+     &   nstrt(1,nflcur),' words used in igen,',
+     &   nstrt(2,nflcur),' words used in gen.'
 
-c *********************************************
+      call prtime ("end",0,0)
+      !call prtime ("end     ",0,0)
+
+      stop
+      end ! of program/routine csd
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ordv
-#include "implicit.h"
-!     implicit real*8 (a-h,o-z)
-#include "priunit.h"
-#include "param_ccsd.h"
 !-------------------------------------------------------------------------------
+!
 c va: hhpp
 c vb: hphp
 c vc: hhhp
@@ -406,7 +409,12 @@ c              hppp 2413 = vd7
 c              hppp 2314 = vd8
 c              hppp 2134 = vd12
 c              hppp 2143 = vd14
+!
 !-------------------------------------------------------------------------------
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
+#include "param_ccsd.h"
 #include "cint.h"
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
 #include "dat.h"
@@ -419,20 +427,16 @@ c
         call header('Output from ordv',-1)
       endif
 
-!     ! call dzero(vint,ndint); call izero(iint,ndint)
       call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
 
-      !if (iopt(1).ge.5) then
-      if (iopt(1).ge.4) then
+      if (iopt(1).ge.5) then
         write(LUPRI,'(/,2x,a,i7,1x,i7)') 
      &  'ordv after readv: nint,ndint=',nint,ndint
-        write(LUPRI,*) 'indexes & integrals: '
+        write(LUPRI,*) 'packed indexes & integrals: '
         do i=1,nint
           write(LUPRI,*) i,'. iint(i)=',iint(i),' vint(i)=',vint(i)
         enddo
       endif
-
-! mi: check integrals !!!
 
       call prtime   ("readv   ",nint,0)
 
@@ -473,7 +477,7 @@ c
       return
       end
 
-c **********************************************************************
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tinit
 !------------------------------------------------------------------------
 !
@@ -516,7 +520,7 @@ c**************************************************************
 !            Calculate CCSD correlation energy
 !
 !   id parameter : 2 - final correlation energy
-!                  other than 1,2 - iteration correl.energy
+!        er than 1,2 - iteration correl.energy
 !
 !--------------------------------------------------------------
 #include "implicit.h"
@@ -580,6 +584,9 @@ c   id=1 for rle, 0 regularly.
 
 c *****************************************************
       subroutine ordta
+!
+! does reordering 
+!
       implicit real*8 (a-h,o-z)
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -949,6 +956,7 @@ c  dg3n8,10
       call prtime   ("calt3   ",0,1) 
       return
       end
+
 c *******************************************************
       subroutine calt4
       implicit real*8 (a-h,o-z)

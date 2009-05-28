@@ -2863,7 +2863,7 @@ c             write (6,*) ' '
       subroutine prtime(tit,n,iparm)
 !-----------------------------------------------------------------------
 !
-!       print time using system specific routine
+!  print time using system specific routine
 !
 !  tit - entering string, but here considered as real*8 
 !
@@ -2876,9 +2876,13 @@ c             write (6,*) ' '
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
+      character(*) tit ! to cut off trash characters
       character*8 clockx
       real*4 cputime
+
+      ! return if param > print level
       if (iparm.gt.iopt(1)) return
+
       t = mclock()/1000000.
       diff = t - csdltim
       acum = t - csdstim
@@ -2886,11 +2890,17 @@ c             write (6,*) ' '
 !mi: gfortran does not know time...
       call time(clockx)
 
+!      write(LUPRI,*)        ' * tit=',tit
+!      write(LUPRI,*)        ' * adjustl(tit)=',adjustl(tit)
+!      write(LUPRI,'(a,a8)') 'a8 tit=',tit
+!      write(LUPRI,'(a,a8)') 'a8 temp_tit=',temp_tit
+
       print 900,tit,acum,diff,n,clockx
 900   format (' time aft ',a8,f10.3,';added ',
      1 f8.3,' n=',i8,'. ',a24)
       csdltim = t
       call flush (LUPRI)
+
       return
       end subroutine prtime
 
@@ -2942,7 +2952,7 @@ c             write (6,*) ' '
 105        continue
 
 !     ... error branch
-      write (6,1050) i,cc(i)
+      write (LUPRI,1050) i,cc(i)
 1050  format ('0 **** error in type of orb',i3,3x,a1)
       call abext('rdin    ')
    

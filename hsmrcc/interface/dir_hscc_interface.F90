@@ -413,22 +413,25 @@ use DIRAC_HSFS
    integer, intent(inout) :: ind(*),nint, nort
    integer, dimension(8) :: irreps
 
-ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
+   ! ... to be replaced by module 
+   ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
 
    call header('Output from "get_dirac_ints"',-1)
 
    call open_dirac_hsfs_file
 
    read(luhsfs) nirp,nort
-   write(LUPRI,*) 'nirp,nort:',nirp,nort
+   write(LUPRI,'(2x,a,i2,a,i4)') 'nirp=',nirp,' nort=',nort
 
    read(luhsfs) (irreps(i),i=1,nirp)
-   write(LUPRI,*) 'irreps:',(irreps(i),i=1,nirp)
+   write(LUPRI,'(2x,a,8i2)') 'irreps:',(irreps(i),i=1,nirp)
 
-   write(LUPRI,*) 'read orbital energies'
+   write(LUPRI,'(2x,a,i5)') 'read orbital energies, nort=',nort
    do i=1, nort
-     read(luhsfs) eps(i)
+    read(luhsfs) eps(i)
+    if (iprint_hsfs >= 3) then
      write(LUPRI,*) i,eps(i)
+    endif
    enddo 
 
    read(luhsfs,iostat=ios) nint
@@ -440,7 +443,11 @@ ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
     read(luhsfs,iostat=ios) i1,i2,i3,i4,v(i)
     if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reaidng !')
     ind(i)=ipack(i1,i2,i3,i4)
-    write(LUPRI,'(4i4,a,i11,a,f18.12)') i1,i2,i3,i4,'pck in:',ind(i),' int:',v(i)
+  
+    if (iprint_hsfs >= 8) then
+      write(LUPRI,'(4i4,a,i11,a,f18.12)') i1,i2,i3,i4,'pck in:',ind(i),' int:',v(i)
+    endif
+
    enddo
 
    call close_dirac_hsfs_file

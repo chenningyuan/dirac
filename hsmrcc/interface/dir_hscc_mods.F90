@@ -1096,13 +1096,11 @@ subroutine read_mdcint_hsfs2
 use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
-logical :: print_batch_info=.true., print_int=.false., is_mdc, duplicity, still_duplicity
+logical :: print_batch_info, print_int, is_mdc, duplicity, still_duplicity
 type(Vect) :: indk_vect, indl_vect, cbuf_vect, indx_vect
 
 ! function definition - packing of indexes - to be replaced by include files !
   ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
-
-
 
 Call Header('MDCINT control print-out',-1)
 
@@ -1113,6 +1111,12 @@ if (.not.IsMemorySticked() ) then
 else
  write(LUPRI,*) 'read_mdcint: memory sticked !' 
 endif
+
+print_batch_info = ( iprint_hsfs >= 8 )
+       print_int = ( iprint_hsfs >= 14 )
+
+write(LUPRI,*) 'print_batch_info=',print_batch_info
+write(LUPRI,*) '       print_int=',print_int
 
 ! ... check if MRCONEE was read 
 if (.NOT.mrconee_read) then
@@ -1135,7 +1139,6 @@ READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
 !     if HSFS mode, allocate array for HSFS_indexes and fill it 
 !---------------------------------------------------------------------
 ! if (HSFS_mode) call get_HSFS_indexes()
-
 
 if (NKR > NSP2) then
   call QUIT('(NKR > NSP2 ! Error quit when reading MDCINT !')
@@ -1263,7 +1266,7 @@ endif
    i1hsfs=hsfs_indx%p_iA1D(i1); i2hsfs=hsfs_indx%p_iA1D(i3)
    i3hsfs=hsfs_indx%p_iA1D(i2); i4hsfs=hsfs_indx%p_iA1D(i4)
 
-   call permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs, i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
+   call permut_indxs(i1hsfs,i2hsfs,i3hsfs,i4hsfs,i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
 
    ! store packed index
    indx_vect%p_iA1D(INZ+icbuf-1)=ipack(i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p)
@@ -1272,10 +1275,13 @@ endif
 !           KR(indk_vect%p_iA1D(INZ)),' ',KR(indl_vect%p_iA1D(INZ)),')=', &
 !           cbuf_vect%p_rA1D(INZ)
 
+  if (print_int) then
    write(LUPRI,'(2x,i5,a,i3,a,i3,a,i3,a,i3,a,f18.12,a,4i3,a,4i3,a,i12)') icount,'. (',i1,' ',i2,'|',  & 
            i3,' ',i4,')=', &
            cbuf_vect%p_rA1D(INZ+icbuf-1),'-',i1hsfs,i2hsfs,i3hsfs,i4hsfs,':p:',   &  
            i1hsfs_p,i2hsfs_p,i3hsfs_p,i4hsfs_p,' pck:',indx_vect%p_iA1D(INZ+icbuf-1)
+
+  endif
 
    ! dirac notation ...
   ! write(luhsfs) i1hsfs,i2hsfs,i3hsfs,i4hsfs, & 
@@ -1310,7 +1316,10 @@ endif
    GoTo 2
  endif
 
- write(LUPRI,*) '... jumping to read the next integral batch in the file ... '
+ if (print_int) then
+  write(LUPRI,*) '... jumping to read the next integral batch in the file ... '
+ endif
+
  CALL FLSHFO(LUPRI)
  GoTo 1
 
@@ -1324,7 +1333,7 @@ endif
 !  ... sift through array to remove repeating integrals ...
 !-------------------------------------------------------------
  j=1
-   still_duplicity=.true.
+ still_duplicity=.true.
  do while ( j< nnzi )
 
   do while (still_duplicity) 
@@ -1356,14 +1365,16 @@ endif
  write(luhsfs) nnzi
 
  do j=1,nnzi
-      j1=iand(ishft(indx_vect%p_iA1D(j),-24),'ff'X)
-      j2=iand(ishft(indx_vect%p_iA1D(j),-16),'ff'X)
-      j3=iand(ishft(indx_vect%p_iA1D(j),-8) ,'ff'X)
-      j4=iand(      indx_vect%p_iA1D(j),     'ff'X)
+    j1=iand(ishft(indx_vect%p_iA1D(j),-24),'ff'X)
+    j2=iand(ishft(indx_vect%p_iA1D(j),-16),'ff'X)
+    j3=iand(ishft(indx_vect%p_iA1D(j),-8) ,'ff'X)
+    j4=iand(      indx_vect%p_iA1D(j),     'ff'X)
 
-    write(LUPRI,'(i4,a,i9,4i4,f18.12)') j,'.',indx_vect%p_iA1D(j),j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
+   if (print_int) then
+     write(LUPRI,'(i4,a,i9,4i4,f18.12)') j,'.',indx_vect%p_iA1D(j),j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
+   endif
 
-    write(luhsfs) j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
+   write(luhsfs) j1,j2,j3,j4,cbuf_vect%p_rA1D(j)
 
  enddo
  
@@ -1375,7 +1386,7 @@ endif
  call DeAllocObject(indl_vect)
  call DeAllocObject(indk_vect)
 
- write(LUPRI,*) 'cbuf_vect, indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
+ write(LUPRI,*) 'indx_vect, cbuf_vect, indl_vect, indk_vect released ...'; CALL FLSHFO(LUPRI)
 
  return
 
