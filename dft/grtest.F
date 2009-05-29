@@ -478,6 +478,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
       use dft_temp
+      use dft_ao
 
 #include "implicit.h"
 #include "priunit.h"
@@ -510,9 +511,9 @@ C
 C       AOs
 C       ===
 C
-        CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
+        CALL dft_GETSOS(GAO,GAO1,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,NBAST,NDER,.FALSE.,IPRINT) 
+     &              BUF,NBAST,NDER)
 C
 C       Test accuracy of numerical integration
 C       ======================================

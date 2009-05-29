@@ -4,6 +4,7 @@ module dft_main
   use dft_cfg
   use dft_temp
   use dft_ao_in_mem
+  use dft_ao
   use dft_density
 ! if you really have to use common blocks, then
 ! please put them in dft_cb_interface
@@ -164,7 +165,6 @@ contains
 
 !     it should already be set to .false. but just to be sure
       dft_temp_need_gao1 = .false.
-      dft_temp_need_gao2 = .false.
 
       if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
         dft_temp_need_gao1 = .true.
@@ -287,10 +287,7 @@ contains
 
       real(8), allocatable :: gao(:)
       real(8), allocatable :: gao1(:)
-      real(8), allocatable :: gao2(:)
-      real(8), allocatable :: gab1(:)
       real(8), allocatable :: buf(:)
-      integer, allocatable :: ncnt(:)
 
       real(8), allocatable :: kx(:)
       real(8), allocatable :: ky(:)
@@ -311,14 +308,7 @@ contains
       if (dft_temp_need_gao1) then
         call alloc(gao1, ndim*3)
       end if
-      if (dft_temp_need_gao2) then
-        call alloc(gao2, ndim*6)
-      end if
-      if (dft_options%london) then
-        call alloc(gab1, ndim*3)
-      end if
-      call alloc(ncnt, ndim)
-      call alloc(buf,  ndim*4)
+      call alloc(buf, ndim)
 
 
 !
@@ -508,7 +498,7 @@ contains
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
-     &              gao, gao1, gao2, gab1, ncnt, buf, &
+     &              gao, gao1, buf, &
      &              IPRINT,0)
 
           call dealloc(kx)
@@ -536,13 +526,6 @@ contains
       if (dft_temp_need_gao1) then
         call dealloc(gao1)
       end if
-      if (dft_temp_need_gao2) then
-        call dealloc(gao2)
-      end if
-      if (dft_options%london) then
-        call dealloc(gab1)
-      end if
-      call dealloc(ncnt)
       call dealloc(buf)
 
 
@@ -591,8 +574,8 @@ contains
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
-     &                  GAO,GAO1,GAO2,GAB1, &
-     &                  NCNT,BUF,IPRINT,NYTID)
+     &                  GAO,GAO1, &
+     &                  BUF,IPRINT,NYTID)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -614,10 +597,7 @@ contains
       real(8) :: dmat_resp_ao(*)
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
-      real(8) :: gao2(*)
-      real(8) :: gab1(*)
       real(8) :: excmat(*)
-      integer :: ncnt(nr_ao_total)
       real(8) :: buf(*)
       real(8) :: vx(dervs1)
       integer :: isymop(nxcmat)
@@ -695,10 +675,10 @@ contains
 !radovan: please don't delete, code under construction
 !      if (.not. dft_cfg_ao_are_in_mem) then
 
-         call getsos(gao, gao1, gao2, gab1, ncnt, &
-     &               corx(ipoint), cory(ipoint), corz(ipoint), &
-     &               buf, ndim, &
-     &               nder, dft_options%london, iprint)
+         call dft_getsos(gao, gao1, &
+     &                   corx(ipoint), cory(ipoint), corz(ipoint), &
+     &                   buf, ndim, &
+     &                   nder)
 
 !radovan: please don't delete, code under construction
 !        copy gao to mem
