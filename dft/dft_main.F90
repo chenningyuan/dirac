@@ -32,9 +32,10 @@ module dft_main
 #ifdef VAR_MPI
 #include "mpif.h"
 #ifdef INT_STAR8
-  integer(8) :: istat(mpi_status_size)
-#endif /* ifdef INT_STAR8 */
+  dimension     istat(mpi_status_size)
+#else
   integer    :: istat(mpi_status_size)
+#endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
 
 contains
