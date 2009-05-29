@@ -1250,6 +1250,15 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       NZERO = 0
 *
       TIMING = .TRUE.
+C
+C      set check point parameters - after every 6th iteration
+C      of MAXIT
+       CHECKPOINT_LUCIX = .TRUE.
+       ITER_CHECKP = 0
+       ICHPARAM    = 0
+       IF( CHECKPOINT_LUCIX )THEN
+         ICHPARAM    = 6
+       END IF
 *
       WRITE(LUCIWT,'(7X,A)') '                             '
       WRITE(LUCIWT,'(7X,A)') 
@@ -1307,6 +1316,7 @@ C
       CALL IZERO(LU2LIST,IALL_LU2)
 C
       ITER = 1
+      ITER_CHECKP = 1
 C
       DO 10 IVEC = 1, NINVEC
 *
@@ -1452,6 +1462,7 @@ C
       write(LUCIWT,'(A21,3X,I3)') ' Info from iteration ',ITER
       write(LUCIWT,*) '_______________________'
       ITER = ITER + 1
+      ITER_CHECKP = ITER_CHECKP + 1
 *
 *
 *===========================================================
@@ -1972,6 +1983,28 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
 *     end of resetting business
 *
+C
+C     save current solution vectors after each 6th iteration
+      IF( CHECKPOINT_LUCIX .and. (ITER_CHECKP.ge.ICHPARAM))THEN
+C
+C       reset ITER_CHECKP
+        ITER_CHECKP = 0
+C
+C       copy c-vectors from nodes and master back to the master
+        CALL REWINE(61,-1)
+        DO JXROOT = 1, NROOT
+          CALL REWINE(97,-1)
+          CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
+     &                              IBLOCKL,MPI_COMM_WORLD,-1,JXROOT,
+     &                              LU1LIST,MY_LU1_OFF,1)
+          IF(MYPROC .eq. MASTER) THEN
+             CALL REWINE(97,-1)
+             CALL COPVCD(97,61,VEC1,0,-1)
+          END IF
+        END DO
+        IF(MYPROC .eq. MASTER) CALL REWINE(61,-1)
+      END IF
+C
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
 C
  1001 CONTINUE
