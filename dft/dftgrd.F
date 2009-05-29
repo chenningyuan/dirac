@@ -1539,7 +1539,7 @@ C     equiavelence statment
       GAO = 0.0d0
       SMAT = 0.0d0
       ASMAT = 0.0d0
-      CALL IZERO(ICLAB,NTBAS(0))
+      iclab = 0
 C
 C     GET AO's
 C
