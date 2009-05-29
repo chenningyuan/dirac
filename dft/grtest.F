@@ -187,7 +187,7 @@ C
 C     Get analytical SMAT(I,J,2)
 C
       NELM = NTBAS(0)*NTBAS(0)
-      CALL DZERO(SMAT(1,1,1),NELM)
+      smat = 0.0d0
       CALL GTOVLX_no_work(SMAT(1,1,2),SSMTRC)
 C
 C     integrate
@@ -1090,7 +1090,7 @@ C
 
 C     Get weights for each atom at (PX,PY,PZ)
 
-        CALL DZERO(WT,NATOMS)
+        wt = 0.0d0
 
         CALL GETWT1(PX,PY,PZ,WT,IPRINT)
         PP = XTANG*PP

@@ -322,7 +322,7 @@ C
       APASC=0.5D0/APASC
 
       ITEMP=0
-      CALL DZERO(RBC,NAT*NAT)
+      RBC = 0.0d0
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
@@ -963,7 +963,7 @@ C
   230    CONTINUE
   200 CONTINUE
 
-      CALL DZERO(ACCUM,IPT)
+      ACCUM = 0.0d0
       DO 300 INA=1,NAT
       DO 300 M=1,IPT
          ACCUM(M)=ACCUM(M)+PSMU(M,INA)
@@ -1536,9 +1536,9 @@ C     equiavelence statment
 #endif
 
 
-      CALL DZERO(GAO,NTBAS(0))
-      CALL DZERO(SMAT,NTBAS(1)*NTBAS(1))
-      CALL DZERO(ASMAT,NATOMS*NATOMS)
+      GAO = 0.0d0
+      SMAT = 0.0d0
+      ASMAT = 0.0d0
       CALL IZERO(ICLAB,NTBAS(0))
 C
 C     GET AO's

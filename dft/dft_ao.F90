@@ -66,7 +66,9 @@ contains
 !
 !
       gao = 0.0d0
-      IF (NDER.GT.0) CALL DZERO(GAO1,3*ndim)
+      if (nder > 0) then
+        gao1 = 0.0d0
+      end if
       IADR = 1
        ISHBEGIN=1
        ISHEND  =KMAX

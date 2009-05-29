@@ -1059,13 +1059,10 @@ contains
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
-#include "symmet.h"
 #include "dgroup.h"
+#include "symmet.h"
 #include "infpar.h"
-!TROND
 #include "shells.h"
 #include "nuclei.h"
 !
@@ -1088,23 +1085,8 @@ contains
 !     ****** Send COMMON blocks ******
 !     ********************************
 !
-!.....dcbham.h
-      IF(MYTID.EQ.MPARID) THEN
-        NUMELM = ICOMMSIZE(I1_HAM,I2_HAM)
-      ENDIF
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_HAM,NUMELM,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-!.....dcborb.h
-      IF(MYTID.EQ.MPARID) THEN
-        NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-      ENDIF
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-!.....dcbbas.h
+!  
+!.....dcbbas.h for VTBUBS
       IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
       ENDIF
@@ -1112,7 +1094,7 @@ contains
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID, &
      &               MPI_COMM_WORLD,IERR)
-!.....dgroup.h
+!.....dgroup.h for VTBUBS
       IF(MYTID.EQ.MPARID) THEN
         NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
       ENDIF

@@ -91,11 +91,11 @@ C
 C     bulk potential
 C     ==============
 C
-      CALL DZERO(VX_BULK,DERVS1)
+      vx_bulk = 0.0d0
 C
       IF (dft_cfg_saop_with_response_part) THEN
-        CALL DZERO(VX_SLATER,DERVS1)
-        CALL DZERO(VX_RESP,DERVS1)
+        vx_slater = 0.0d0
+        vx_resp = 0.0d0
 C
         CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,GRADIENT_NORM)
         VX_RESP(FR0) = 0.42D0*WEIGHT*RHO_RESP/RHO
@@ -110,7 +110,7 @@ C
 C     asymptotic potential
 C     ====================
 C
-      CALL DZERO(VX_OUTER,DERVS1)
+      VX_OUTER = 0.0d0
 C
       IF(dft_cfg_asymptote_is_lb94)
      &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
@@ -132,7 +132,7 @@ C
 C     connection
 C     ==========
 C
-      CALL DZERO(VX,DERVS1)
+      VX = 0.0d0
 C
       VX(FZ0) = (D1-FADE)* VX_BULK(FZ0)
       VX(FR0) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)

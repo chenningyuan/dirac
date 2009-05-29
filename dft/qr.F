@@ -251,7 +251,7 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !     collect s_bc_ah
 
-      call dzero(s_bc_ah,3)
+      s_bc_ah = 0.0d0
 
       if(add_spin) then
         do k = k_start,3
@@ -269,8 +269,8 @@ c=======================================================================
 !-------------------------------------------------------------------------------
 !     collect vector components
 
-      call dzero(v_bc_h,3)
-      call dzero(v_bc_ah,9)
+      v_bc_h  = 0.0d0
+      v_bc_ah = 0.0d0
 
       if(add_grad) then
 
@@ -294,12 +294,12 @@ c=======================================================================
 
         if(add_spin) then
 
-          call dzero(v_bc_h_Y_0,3)
-          call dzero(v_bc_h_Y_b,3)
-          call dzero(v_bc_h_Y_c,3)
+          v_bc_h_Y_0 = 0.0d0
+          v_bc_h_Y_b = 0.0d0
+          v_bc_h_Y_c = 0.0d0
 
-          call dzero(v_bc_h_X_b,3)
-          call dzero(v_bc_h_X_c,3)
+          v_bc_h_X_b = 0.0d0
+          v_bc_h_X_c = 0.0d0
 
           do k = k_start,3
             v_bc_h_Z_0  = v_bc_h_Z_0
