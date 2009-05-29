@@ -1,5 +1,7 @@
 module dft_cfg
 
+  use dft_cb_interface
+
 ! radovan: (1) if you modify this module (add new stuff)
 !              don't forget to update
 !              routines init_dft_cfg and sync_dft_cfg (below)
@@ -107,8 +109,9 @@ contains
     dft_cfg_angint                  = 41
 
 #ifdef MOD_AUTODIFF
-    call init_factorial_common_block
+    call init_factorial_common_block()
 #endif
+    call init_dft_cb()
 
   end subroutine
 

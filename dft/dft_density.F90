@@ -1,83 +1,84 @@
 module dft_density
 
-! use blub
+  use dft_cb_interface
 
   implicit none
 
-  public init_density_blocks
-  public get_n, get_gn, get_gn_nonhermitian
-  public get_s, get_gs, get_gs_nonhermitian
+  public get_n
+  public get_gn
+  public get_gn_nonhermitian
+  public get_s
+  public get_gs
+  public get_gs_nonhermitian
   public lda_distribute
   public gga_distribute
   public lda_distribute_qi
   public gga_distribute_qi
+  public gga_sym
 
   private
 
-  integer :: nr_density_blocks(0:3, 0:7)
-  integer :: nr_ao(2, 16, 0:3, 0:7)
-  integer :: st_ao(2, 16, 0:3, 0:7)
-  integer :: iq(0:3)
-  integer :: nr_ao_total
-
-! noncollinear
-  integer :: jxyz_start = 1
-! collinear approximation
-! integer :: jxyz_start = 3
+  integer :: jxyz_start = 1 !noncollinear
+! integer :: jxyz_start = 3 !collinear
 
 contains
 
-  subroutine init_density_blocks()
+  subroutine gga_sym(nr_mat, &
+                     mat,    &
+                     isym,   &
+                     ih)
 
 !   ----------------------------------------------------------------------------
+    integer, intent(in)    :: nr_mat
+    real(8), intent(inout) :: mat(nr_ao_total, nr_ao_total, nr_qu, nr_mat)
+    integer, intent(in)    :: isym(nr_mat)
+    integer, intent(in)    :: ih(nr_mat)
 !   ----------------------------------------------------------------------------
-    integer :: ic, irep, irep1, irep2, nr1, nr2, jxyz, icount
-    integer :: inter_irep(0:3)
+    integer                :: irep, iblock, imat, jxyz
+    integer                :: i, j, ii, jj
+    integer                :: st1, st2, nr1, nr2
+    logical                :: skip(0:3)
+    real(8)                :: average
 !   ----------------------------------------------------------------------------
 
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
+    do imat = 1, nr_mat
 
-    nr_ao_total = ntbas(0)
+      skip = .false.
+      if (ih(imat) ==  1) skip(1:3) = .true.
+      if (ih(imat) == -1) skip(0:0) = .true.
 
-    iq(0) = 1
-    do jxyz = 1, 3
-      iq(jxyz) = jm4pos(4 - jxyz)
-      iq(jxyz) = iqtopq(iq(jxyz), isymax(jxyz, 2))
-    end do
+      irep = isym(imat) - 1
 
-    inter_irep(0) = 0
-    do jxyz = 1, 3
-      inter_irep(jxyz) = isymax(jxyz, 2)
-    end do
-
-    nr_density_blocks = 0
-    do irep = 0, nbsym - 1
       do jxyz = 0, 3
-        icount = 0
-        do ic = 1, mc
-          do irep1 = 0, nbsym - 1
-            irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
+        if (.not. skip(jxyz)) then
 
-            nr1 = nbbas(irep1, ic)
-            nr2 = nbbas(irep2, ic)
+          do iblock = 1, nr_density_blocks(jxyz, irep)
+          
+            nr1 = nr_ao(1, iblock, jxyz, irep)
+            st1 = st_ao(1, iblock, jxyz, irep)
+            nr2 = nr_ao(2, iblock, jxyz, irep)
+            st2 = st_ao(2, iblock, jxyz, irep)
 
-            if ((nr1 > 0) .and. (nr2 > 0)) then
-              icount = icount + 1
-              nr_ao(1, icount, jxyz, irep) = nr1
-              st_ao(1, icount, jxyz, irep) = ibbas(irep1, ic) + 1
-              nr_ao(2, icount, jxyz, irep) = nr2
-              st_ao(2, icount, jxyz, irep) = ibbas(irep2, ic) + 1
+            if (.not. (st2 > st1)) then
+
+              do i = 1, nr1
+                do j = 1, nr2
+
+                  ii = st1 + i - 1
+                  jj = st2 + j - 1
+
+                  average = mat(ii, jj, iq(jxyz), imat) &
+                          + mat(jj, ii, iq(jxyz), imat)
+                  average = 0.5d0*average
+
+                  mat(ii, jj, iq(jxyz), imat) = average
+                  mat(jj, ii, iq(jxyz), imat) = average
+
+                end do
+              end do
             end if
-
           end do
-        end do
-        nr_density_blocks(jxyz, irep) = icount
+        end if
       end do
     end do
 

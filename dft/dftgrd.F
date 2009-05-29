@@ -480,13 +480,13 @@ C
 C           loop over angular points
 C           ========================
 C
-            DO 30 IQ = 1, NANG
+            DO 30 iy = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
-               X8(INDEX)  = XANG(IQ)*RNODE+C(NATOM)
-               Y8(INDEX)  = YANG(IQ)*RNODE+C(NATOM+nat)
-               Z8(INDEX)  = ZANG(IQ)*RNODE+C(NATOM+2*nat)
-               WT8(INDEX) = RWT*ANGWT(IQ)
+               X8(INDEX)  = XANG(iy)*RNODE+C(NATOM)
+               Y8(INDEX)  = YANG(iy)*RNODE+C(NATOM+nat)
+               Z8(INDEX)  = ZANG(iy)*RNODE+C(NATOM+2*nat)
+               WT8(INDEX) = RWT*ANGWT(iy)
 C
 C              Becke partitioning
 C              ==================

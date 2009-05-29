@@ -20,6 +20,7 @@ c=======================================================================
 
       use dft_main
       use dft_cfg
+      use dft_density
 
 #include "implicit.h"
 #include "priunit.h"

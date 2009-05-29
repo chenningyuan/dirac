@@ -5,11 +5,37 @@ module dft_main
   use dft_temp
   use dft_ao_in_mem
   use dft_density
+! if you really have to use common blocks, then
+! please put them in dft_cb_interface
+  use dft_cb_interface
 #ifdef MOD_AORESPONSE
   use aor_xc
 #endif
 
   implicit none
+
+  public dftexc
+  public dftdrv
+  public dftdr1
+  public reaqua
+#ifdef VAR_MPI
+  public dftres
+  public dftprd
+  public dftnod
+  public dftpar_init1
+  public dftpar_init2
+#endif
+
+  private
+
+#include "infpar.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+#ifdef INT_STAR8
+  integer(8) :: istat(mpi_status_size)
+#endif /* ifdef INT_STAR8 */
+  integer    :: istat(mpi_status_size)
+#endif /* ifdef VAR_MPI */
 
 contains
 
@@ -26,27 +52,10 @@ contains
 !     written by T. Helgaker
 !     DIRAC adaption by T. Saue
 
-#include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-
-#ifdef VAR_MPI
-! parcal in dcbgen.h
-#include "dcbgen.h"
-#include "infpar.h"
-#include "mpif.h"
-#endif
-
-#include "nuclei.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "functionals.h"
-#include "densfit.h"
-
 !     --------------------------------------------------------------------------
-      real(8), intent(in) :: dmat(n2bbasx, nz, *)
-      real(8)             :: dmat_perturbed(n2bbasx, nz, *)
-      real(8)             :: fmat(n2bbasx, nz, *)
+      real(8), intent(in) :: dmat(nr_ao_total, nr_ao_total, nr_qu, *)
+      real(8)             :: dmat_perturbed(nr_ao_total, nr_ao_total, nr_qu, *)
+      real(8)             :: fmat(nr_ao_total, nr_ao_total, nr_qu, *)
       integer, intent(in) :: nr_dmat_perturbed
       integer, intent(in) :: nr_fmat
       integer, intent(in) :: isymop(nr_dmat_perturbed)
@@ -62,28 +71,23 @@ contains
       real(8), allocatable :: dmat_saop_outer(:)
       real(8), allocatable :: dmat_saop_resp(:)
 
-#ifdef VAR_MPI
-#ifndef INT_STAR8
-      integer             :: istat
-#endif /* ifndef INT_STAR8 */
-      dimension              istat(mpi_status_size)
-#endif /* ifdef VAR_MPI */
 !     --------------------------------------------------------------------------
 
+      call init_dft_cb()
 
 !     start timer
       time_start = second()
 
 !     initial expectation value of the two-electron matrix
       if (dft_options%energy) then
-        dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1)
+        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat, 1, fmat, 1)
       end if
 
 !     get average density from open shells
-      if (nasht > 0) call gtdoav(dmat, 1)
+      if (nr_open_shells > 0) call gtdoav(dmat, 1)
 
 !     scale
-      call dscal(n2bbasx, 2.0d0, dmat, 1)
+      call dscal(nr_ao_total*nr_ao_total, 2.0d0, dmat, 1)
 
 
 !     scale and insert half-phases
@@ -92,18 +96,18 @@ contains
      &    .or. dft_options%qr &
      &    .or. (dft_options%aor_xc_order > 0)) then
 
-        call dscal(n2bbasxq*nr_dmat_perturbed, &
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed, &
      &             2.0d0, dmat_perturbed, 1)
 
-        if (nz < 4) then
-          do iz = 1, nz
+        if (nr_qu < 4) then
+          do iz = 1, nr_qu
             do im = 1, nr_dmat_perturbed
-              iq = ipqtoq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_perturbed(1, iz, im))
+              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              call q2bphase('D', iq, 1, dmat_perturbed(1, 1, iz, im))
             end do
             do im = 1, nr_fmat
-              iq = ipqtoq(iz, isymop(im) - 1)
-              call q2bphase('F', iq, 1, fmat(1, iz, im))
+              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
             end do
           end do
         end if
@@ -119,9 +123,9 @@ contains
 !     allocate and get saop density matrices
       if (dft_cfg_saop) then
         dft_cfg_saop_is_active = .true.
-        call alloc(dmat_saop_outer, n2bbasx)
+        call alloc(dmat_saop_outer, nr_ao_total*nr_ao_total)
         if (dft_cfg_saop_with_response_part) then
-          call alloc(dmat_saop_resp, n2bbasx)
+          call alloc(dmat_saop_resp, nr_ao_total*nr_ao_total)
         end if
         call dftac_saop_get_dmats(dmat_saop_outer, &
                                   dmat_saop_resp)
@@ -130,8 +134,8 @@ contains
 
 !     check whether gga code structure will be used
 
-      dft_temp_gga_hs = dftisgga()
-      dft_temp_gga_ha = dft_temp_gga_hs
+      dft_temp_gga_hs = is_gga_functional
+      dft_temp_gga_ha = is_gga_functional
 
       if (dft_options%lr .or. dft_options%qr) then
         if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
@@ -170,7 +174,7 @@ contains
       end if
 
 #ifdef VAR_MPI
-      if (parcal) then
+      if (is_parallel_calculation) then
 
         call dirac_parctl(4)
 
@@ -178,11 +182,12 @@ contains
           call quit('number of nodes is too large, nodes > maxnod')
         end if
 
-        write(lupri, '(/5x, a, i5/)') &
-                     'number of nodes in parallel DFT:', nodes
+        write(print_unit, '(/5x, a, i5/)') &
+                          'number of nodes in parallel DFT:', nodes
 
         timing = .false.
 
+        call sync_dft_cb()
         call dftpar_init1(dft_options, nr_dmat_perturbed)
         call dftpar_init2(dft_options, nr_dmat_perturbed, isymop, ihrmop, &
      &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
@@ -211,16 +216,15 @@ contains
       end if
 
 !     rescale
-      call dscal(n2bbasx, 0.5d0, dmat, 1)
+      call dscal(nr_ao_total*nr_ao_total, 0.5d0, dmat, 1)
 
 !     get average density from open shells
-      if (nasht > 0) call gtdoav(dmat, -1)
+      if (nr_open_shells > 0) call gtdoav(dmat, -1)
 
 !     in case of gga symmetrize matrices
       if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
-        call sym_new(fmat, nr_fmat, isymop, ihrmop)
+        call gga_sym(nr_fmat, fmat, isymop, ihrmop)
       end if
-
 
 !     rescale and insert half-phases
 
@@ -228,20 +232,20 @@ contains
      &    .or. dft_options%qr &
      &    .or. (dft_options%aor_xc_order > 0)) then
 
-        if (nz < 4) then
-          do iz = 1, nz
+        if (nr_qu < 4) then
+          do iz = 1, nr_qu
             do im = 1, nr_dmat_perturbed
-              iq = ipqtoq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_perturbed(1, iz, im))
+              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              call q2bphase('D', iq, 1, dmat_perturbed(1, 1, iz, im))
             end do
             do im = 1, nr_fmat
-              iq = ipqtoq(iz, isymop(im) - 1)
-              call q2bphase('F', iq, 1, fmat(1, iz, im))
+              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
             end do
           end do
         end if
 
-        call dscal(n2bbasxq*nr_dmat_perturbed, &
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed, &
      &             0.5d0, dmat_perturbed, 1)
 
       end if
@@ -249,15 +253,15 @@ contains
 !     calculate final expectation value of two-electron matrix
       if (dft_options%energy) then
 !       the xc contribution can then be subtracted 
-        dft_temp_xc_mat_energy = ddot(n2bbasx, dmat, 1, fmat, 1) &
+        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
       end if 
 
 !     timing
       time_in_xc = second() - time_start
-      write(lupri, '(1x)')
-      call timtxt('>>>> time used in dftexc:', time_in_xc, lupri)
-      write(lupri, '(1x)')
+      write(print_unit, '(1x)')
+      call timtxt('>>>> time used in dftexc:', time_in_xc, print_unit)
+      write(print_unit, '(1x)')
 
       end subroutine
 
@@ -273,27 +277,6 @@ contains
 !     T. Helgaker sep 99
 !
 
-
-#include "priunit.h"
-!     PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, &
-!    &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-!
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#include "infpar.h"
-#ifndef INT_STAR8
-      integer             :: istat(MPI_STATUS_SIZE)
-#else
-      dimension              istat(MPI_STATUS_SIZE)
-#endif /* ifndef INT_STAR8 */
-#endif
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-!
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-#endif
       real(8) :: EXCMAT(*)
       real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(*)
@@ -317,26 +300,11 @@ contains
       integer, allocatable :: isend(:)
       real(8), allocatable :: kxdum(:)
       real(8) :: dummy
-      real(8) :: error_nr_electrons, orbital_nr_electrons
+      real(8) :: error_nr_electrons, nr_electrons_orbital_total
       integer :: i, idummy, ierr, myNPOINT, NBATCH, ndim, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
-#ifndef VAR_MPI
-      integer :: mytid
-      integer :: mparid
-#endif
-!
-!
-!
 
-
-
-!
-!     Allocate arrays for basis functions and their derivatives at grid points
-!
-      NDIM = NTBAS(0)
-
-
-
+      NDIM = nr_ao_total
 
       call alloc(gao, ndim)
       if (dft_temp_need_gao1) then
@@ -358,10 +326,6 @@ contains
       dft_temp_nr_electrons = 0.0d0
       dft_temp_xc_energy    = 0.0d0
 !
-#ifndef VAR_MPI
-      mytid  = 0
-      mparid = 0
-#endif
 
       IF(MYTID.EQ.MPARID) THEN
         REWIND dft_temp_file_unit
@@ -376,10 +340,15 @@ contains
           READ(dft_temp_file_unit) NPOINT
         ENDIF
       ENDIF
+
+
 #if defined (VAR_MPI) 
-      IF(PARCAL) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID, &
+      IF(is_parallel_calculation) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID, &
      &                          MPI_COMM_WORLD,IERR)
 #endif
+
+
+
       IF( NPOINT .lt. 0 ) THEN
          GOTO 200
       ELSE IF(  NPOINT .eq. 0 ) THEN
@@ -400,8 +369,9 @@ contains
      &                 dft_temp_file_unit,NPOINT)
           ENDIF
         ENDIF
+
 #if defined (VAR_MPI) 
-        IF(PARCAL) THEN
+        IF(is_parallel_calculation) THEN
           NODESALL=NODES+1
 
           call alloc(idisp, nodesall)
@@ -522,7 +492,7 @@ contains
      &                      MPARID,93,MPI_COMM_WORLD,ISTAT,IERR)
             END IF
 #endif
-          ENDIF
+          end if !IF(MYTID.EQ.MPARID) THEN ! master
 !.........add rest to total number of myNPOINT on last node
           IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
           call dealloc(idisp)
@@ -531,7 +501,7 @@ contains
 #endif
             myNPOINT = NPOINT
 #if defined (VAR_MPI) 
-        ENDIF
+        end if !IF(is_parallel_calculation) THEN
 #endif
         CALL DFTDR1(KX,Ky,KZ,KW,myNPOINT, &
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
@@ -548,10 +518,15 @@ contains
 
 
         GO TO 100
-        ENDIF
+        end if !IF( NPOINT .lt. 0 ) THEN
  200    CONTINUE
+
+
+
+
+
 #if defined (VAR_MPI)
-      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
+      IF(is_parallel_calculation) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
      &                       IPRINT)
 #endif
 
@@ -572,41 +547,42 @@ contains
 
       IF(MYTID.NE.MPARID) RETURN
 
+      nr_electrons_orbital_total = nr_electrons_orbital &
+                                 + nr_electrons_orbital_active
+      error_nr_electrons  = dft_temp_nr_electrons &
+                          - nr_electrons_orbital_total
 
-      orbital_nr_electrons = nelect + naelec
-      error_nr_electrons   = dft_temp_nr_electrons - orbital_nr_electrons
-
-      write(lupri, *)
-      write(lupri, '(3x, a, i24)')                               &
+      write(print_unit, *)
+      write(print_unit, '(3x, a, i24)')                          &
               'number of quadrature points:  ',                  &
               npnts
       if (dft_options%energy) then
-        write(lupri, '(3x, a, f24.16)')                          &
+        write(print_unit, '(3x, a, f24.16)')                     &
               'DFT exchange-correlation energy:               ', &
               dft_temp_xc_energy
       end if
-      write(lupri, '(3x, a, f24.16)')                            &
+      write(print_unit, '(3x, a, f24.16)')                       &
               'number of electrons from numerical integration:', &
               dft_temp_nr_electrons
       if (abs(error_nr_electrons) > dft_cfg_accepted_error) then
-        write(lupri, '(3x, a, f14.6)')                           &
+        write(print_unit, '(3x, a, f14.6)')                      &
               'number of electrons from orbital occupations:  ', &
-               orbital_nr_electrons
-        write(lupri, '(3x, a, f14.6)')                           &
+               nr_electrons_orbital_total
+        write(print_unit, '(3x, a, f14.6)')                      &
               'WARNING: error in the number of electrons:     ', &
                error_nr_electrons
-        write(lupri, '(12x, a, f14.6)')                          &
+        write(print_unit, '(12x, a, f14.6)')                     &
               'is larger than .ERRELS (set input):   ',          &
                dft_cfg_accepted_error
-        write(lupri, '(12x, a)') &
+        write(print_unit, '(12x, a)') &
               'this can happen when starting from coefficients'
-        write(lupri, '(12x, a)') &
+        write(print_unit, '(12x, a)') &
               'from a different geometry'
-        write(lupri, '(12x, a)')                      &
+        write(print_unit, '(12x, a)')                 &
               'or it can mean that the quadrature '// &
               'grid is inappropriate'
       end if
-      write(lupri, *)
+      write(print_unit, *)
 
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -622,9 +598,7 @@ contains
 !
 !***********************************************************************
 
-#include "inforb.h"
 #include "functionals.h"
-
 #ifdef MOD_AUTODIFF
 #include "../autodiff/xc_fortran_interface.h"
 #endif
@@ -635,14 +609,14 @@ contains
       real(8) :: cory(npoint)
       real(8) :: corz(npoint)
       real(8) :: weight(npoint)
-      real(8) :: dmat(nbast, nbast)
+      real(8) :: dmat(nr_ao_total, nr_ao_total)
       real(8) :: dmat_resp_ao(*)
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: gao2(*)
       real(8) :: gab1(*)
       real(8) :: excmat(*)
-      integer :: ncnt(nbast)
+      integer :: ncnt(nr_ao_total)
       real(8) :: buf(*)
       real(8) :: vx(dervs1)
       integer :: isymop(nxcmat)
@@ -654,7 +628,7 @@ contains
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(nbast)
+      real(8), target  :: gao(nr_ao_total)
       real(8), target  :: gao1(*)
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
@@ -673,13 +647,13 @@ contains
 
 
 !
-      NDIM = NBAST
+      NDIM = nr_ao_total
 
         nder = 0
         if (dft_temp_need_gao1) nder = 1
 
-        gao_p  => gao(1:nbast)
-        gao1_p => gao1(1:nbast*3)
+        gao_p  => gao(1:nr_ao_total)
+        gao1_p => gao1(1:nr_ao_total*3)
 
 
 
@@ -705,7 +679,10 @@ contains
 
 
 
-    call init_density_blocks()
+
+
+
+
     do ipoint = 1, npoint
 
 
@@ -928,7 +905,6 @@ contains
      &                dft_temp_gga_hs, &
      &                buf)
 
-#ifdef MOD_CDFT
 !         spin magnetization contribution
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,nxcmat, &
@@ -937,17 +913,12 @@ contains
      &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buf)
           endif
 !         VRG contribution
-          if (dft_cfg_cdft_vrg) then
-            call vrg_lr(dtrmat,excmat,nxcmat, &
-     &                  isymop,ihrmop,gao,gao1, &
-     &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
-          endif
-#endif /* ifdef MOD_CDFT */
+!         if (dft_cfg_cdft_vrg) then
+!           call vrg_lr(dtrmat,excmat,nxcmat, &
+!    &                  isymop,ihrmop,gao,gao1, &
+!    &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
+!         endif
         endif
-
-
-
-
 
 
 !       quadratic response
@@ -1018,236 +989,9 @@ contains
       READ(LUQUAD) X,Y,Z,WT
       end subroutine
       
-#ifdef ENABLE_DFT_NUMERICAL_TEST
-      SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
-#include "priunit.h"
-!     PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &
-!    &           DP3 = D1/D3, ADD = 1.0D-06)
-      LOGICAL DODRC,DOVWN,DOLYP,DOBCK
-!
-      ADD2 = D2*ADD
-!
-      R0 = RHO
-      RP = RHO + ADD
-      RM = RHO - ADD
-      Z0 = RHOGRD
-      ZP = RHOGRD + ADD 
-      ZM = RHOGRD - ADD
-      R013 = R0**DP3
-      RP13 = RP**DP3
-      RM13 = RM**DP3
-!
-      IF (DODRC) THEN
-         CALL VDRC(G10,R013)
-         CALL V1DRC(F10,F20,R0,R013)
-!
-         CALL EDRC(EP,RP,RP13)
-         CALL VDRC(V1P,RP13)
-         CALL EDRC(EM,RM,RM13)
-         CALL VDRC(V1M,RM13)
-         H10 = (EP - EM)/ADD2
-         H20 = (V1P - V1M)/ADD2
-!
-         WRITE(LUPRI,'(A,3F15.10)')' DR010 test',G10,H10,G10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' DRC10 test',F10,H10,F10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' DRC20 test',F20,H20,F20-H20
-      END IF
-      IF (DOVWN) THEN
-         CALL VVWN(G10,R0,R013)
-         CALL V1VWN(F10,F20,R0,R013)
-!
-         CALL EVWN(EP,RP,RP13)
-         CALL VVWN(V1P,RP,RP13)
-         CALL EVWN(EM,RM,RM13)
-         CALL VVWN(V1M,RM,RM13)
-         H10 = (EP - EM)/ADD2
-         H20 = (V1P - V1M)/ADD2
-!
-         WRITE(LUPRI,'(A,3F15.10)')' VW010 test',G10,H10,G10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' VWN10 test',F10,H10,F10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' VWN20 test',F20,H20,F20-H20
-      END IF
-!
-      IF (DOBCK) THEN
-         CALL GBCK(G10,G01,R0,R013,Z0)
-         G01 = DP5*G01*Z0 
-         CALL V1BCK(F10,F01,F20,F11,F02,R0,Z0)
-!
-         CALL EBCK(EP,RP,RP13,Z0)
-         CALL GBCK(V1P,V2P,RP,RP13,Z0)
-         V2P = DP5*Z0*V2P
-         CALL EBCK(EM,RM,RM13,Z0)
-         CALL GBCK(V1M,V2M,RM,RM13,Z0)
-         V2M = DP5*Z0*V2M
-         H10 = (EP - EM)/ADD2
-         H20 = (V1P - V1M)/ADD2
-         H11 = (V2P - V2M)/ADD2
-!
-         CALL EBCK(EP,R0,R013,ZP)
-         CALL GBCK(V1P,V2P,R0,R013,ZP)
-         V2P = DP5*ZP*V2P
-         CALL EBCK(EM,R0,R013,ZM)
-         CALL GBCK(V1M,V2M,R0,R013,ZM)
-         V2M = DP5*ZM*V2M
-         H01 = (EP - EM)/ADD2
-         H02 = (V2P - V2M)/ADD2
-!
-         WRITE(LUPRI,'(A,3F15.10)')' BC010 test',G10,H10,G10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' BC001 test',G01,H01,G01-H01
-         WRITE(LUPRI,'(A,3F15.10)')' BCK10 test',F10,H10,F10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' BCK01 test',F01,H01,F01-H01
-         WRITE(LUPRI,'(A,3F15.10)')' BCK20 test',F20,H20,F20-H20
-         WRITE(LUPRI,'(A,3F15.10)')' BCK11 test',F11,H11,F11-H11
-         WRITE(LUPRI,'(A,3F15.10)')' BCK02 test',F02,H02,F02-H02
-      END IF
-      IF (DOLYP) THEN
-         CALL GLYP(G10,G01,R0,R013,Z0)
-         G01 = DP5*G01*Z0 
-         CALL V1LYP(F10,F01,F20,F11,F02,R0,Z0)
-!
-         CALL ELYP(EP,RP,RP13,Z0)
-         CALL GLYP(V1P,V2P,RP,RP13,Z0)
-         V2P = DP5*Z0*V2P
-         CALL ELYP(EM,RM,RM13,Z0)
-         CALL GLYP(V1M,V2M,RM,RM13,Z0)
-         V2M = DP5*Z0*V2M
-         H10 = (EP - EM)/ADD2
-         H20 = (V1P - V1M)/ADD2
-         H11 = (V2P - V2M)/ADD2
-!
-         CALL ELYP(EP,R0,R013,ZP)
-         CALL GLYP(V1P,V2P,R0,R013,ZP)
-         V2P = DP5*ZP*V2P
-         CALL ELYP(EM,R0,R013,ZM)
-         CALL GLYP(V1M,V2M,R0,R013,ZM)
-         V2M = DP5*ZM*V2M
-         H01 = (EP - EM)/ADD2
-         H02 = (V2P - V2M)/ADD2
-!
-         WRITE(LUPRI,'(A,3F15.10)')' LY010 test',G10,H10,G10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' LY001 test',G01,H01,G01-H01
-         WRITE(LUPRI,'(A,3F15.10)')' LYP10 test',F10,H10,F10-H10
-         WRITE(LUPRI,'(A,3F15.10)')' LYP01 test',F01,H01,F01-H01
-         WRITE(LUPRI,'(A,3F15.10)')' LYP20 test',F20,H20,F20-H20
-         WRITE(LUPRI,'(A,3F15.10)')' LYP11 test',F11,H11,F11-H11
-         WRITE(LUPRI,'(A,3F15.10)')' LYP02 test',F02,H02,F02-H02
-      END IF
-      end subroutine
-#endif /* ENABLE_DFT_NUMERICAL_TEST */
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GTDOAV(DMAT,IFAC)
-!***********************************************************************
-!
-!     Get average density from open shells; only real part !
-!     Written by T.Saue March 2004
-!
-!***********************************************************************
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-      integer :: ifac, ishell
-      real(8) :: DMAT(N2BBASX,NZ,NFMAT)
-      real(8) :: fac
-      IF(AOC) THEN
-        DO ISHELL = 1, NOPEN
-          FAC = IFAC*DF(ISHELL)
-          CALL DAXPY(N2BBASX,FAC,DMAT(1,1,ISHELL+1),1,DMAT,1)
-        ENDDO
-      ENDIF
-!
-      end subroutine
 
 
-      SUBROUTINE sym_new(AMAT, &
-     &                  NMAT, &
-     &                  ISYMOP, &
-     &                  IHRMOP)
-
-
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
-
-
-      real(8) :: AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
-      integer :: nmat
-      integer :: ISYMOP(NMAT)
-      integer :: IHRMOP(NMAT)
-
-      integer :: iq(0:3)
-      integer :: inter_irep(0:3)
-      logical :: skip(0:3)
-      real(8) :: average
-      integer :: i, ic, ii, im, irep1, irep2, irepop, ixyz, j, jb, jb1, jb2, jj, nb, nb1, nb2
-
-      iq(0)         = 1
-      inter_irep(0) = 0
-      do ixyz = 1, 3
-        iq(ixyz)         = jm4pos(4 - ixyz)
-        iq(ixyz)         = iqtopq(iq(ixyz), isymax(ixyz, 2))
-        inter_irep(ixyz) = isymax(ixyz, 2)
-      end do
-
-      DO IM = 1,NMAT
-
-        skip = .false.
-        if (ihrmop(im) ==  1) skip(1:3) = .true.
-        if (ihrmop(im) == -1) skip(0:0) = .true.
-
-          DO IXYZ = 0,3
-
-            if (.not. skip(IXYZ)) then
-
-            IREPOP = ieor(inter_irep(ixyz),ISYMOP(IM)-1)
-            DO 110 IREP1 = 0,NBSYM-1
-              IREP2 = ieor(IREP1,IREPOP)
-              IF(IREP2 .LT. IREP1) THEN
-                DO 120 IC = 1,MC
-                  NB1 = NBBAS(IREP1,IC)
-                  IF(NB1 .EQ. 0) GOTO 120
-                  NB2 = NBBAS(IREP2,IC)
-                  IF(NB2 .EQ. 0) GOTO 120
-                  JB1 = IBBAS(IREP1,IC)
-                  JB2 = IBBAS(IREP2,IC)
-                  DO I = 1,NB1
-                    II = JB1 + I
-                    DO J = 1,NB2
-                      JJ = JB2 + J
-                      AVERAGE = 0.5d0*(AMAT(II,JJ,iq(ixyz),IM)  &
-     &                             + AMAT(JJ,II,iq(ixyz),IM))
-                      AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
-                      AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
-                    ENDDO
-                  ENDDO
-  120           CONTINUE
-              ELSEIF(IREP2 .EQ. IREP1) THEN
-                DO 130 IC = 1,MC
-                  NB = NBBAS(IREP1,IC)
-                  IF(NB .EQ. 0) GOTO 130
-                  JB = IBBAS(IREP1,IC)
-                  DO I = 1,NB
-                    II = JB + I
-                    DO J = 1,I-1
-                      JJ = JB + J
-                      AVERAGE = 0.5d0*(AMAT(II,JJ,iq(ixyz),IM)  &
-     &                             + AMAT(JJ,II,iq(ixyz),IM))
-                      AMAT(II,JJ,iq(ixyz),IM) = AVERAGE 
-                      AMAT(JJ,II,iq(ixyz),IM) = AVERAGE 
-                    ENDDO
-                  ENDDO
-  130           CONTINUE
-              ENDIF
-  110       CONTINUE
-        ENDIF
-          ENDDO
-      ENDDO
-
-      end subroutine
-#if defined (VAR_MPI)
+#ifdef VAR_MPI
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTRES(EXCMAT,NXCMAT,dft_options, &
      &                  IPRINT)
@@ -1258,17 +1002,6 @@ contains
 !
 !***********************************************************************
 
-#include "infpar.h"
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#ifndef INT_STAR8
-      integer             :: istat(MPI_STATUS_SIZE)
-#else
-      dimension              istat(MPI_STATUS_SIZE)
-#endif /* ifndef INT_STAR8 */
-#endif
-#include "dcbbas.h"
-#include "dgroup.h"
       integer :: nxcmat, iprint
       real(8) :: EXCMAT(*)
       type(dft_options_t) :: dft_options
@@ -1277,11 +1010,7 @@ contains
       real(8) :: sum_nr_electrons
       real(8) :: sum_xc_energy
 !
-      LFMAT = N2BBASX*NXCMAT*NZ
 !
-      if (mytid == 0) then
-        call alloc(kfbuf, lfmat)
-      end if
 
       call mpi_reduce(dft_temp_nr_electrons, &
                       sum_nr_electrons,      &
@@ -1291,10 +1020,6 @@ contains
                       0,                     &
                       mpi_comm_world,        &
                       ierr) 
-
-      CALL MPI_REDUCE(EXCMAT,KFBUF,LFMAT,MPI_DOUBLE_PRECISION, &
-     &                MPI_SUM,0, MPI_COMM_WORLD, IERR) 
-
       if (dft_options%energy) then
         call mpi_reduce(dft_temp_xc_energy,   &
                         sum_xc_energy,        &
@@ -1305,18 +1030,36 @@ contains
                         mpi_comm_world,       &
                         ierr) 
       end if
-
-      IF(MYTID.EQ.0) THEN
+      IF(MYTID.EQ.MPARID) THEN
         dft_temp_nr_electrons = sum_nr_electrons
         if (dft_options%energy) then
           dft_temp_xc_energy = sum_xc_energy
         end if
+      ENDIF
+
+      LFMAT = nr_ao_total*nr_ao_total*NXCMAT*nr_qu
+      IF(MYTID.EQ.MPARID) THEN
+        call alloc(kfbuf, lfmat)
+        kfbuf = 0.0d0
+      end if
+      call mpi_reduce(excmat,                &
+                      kfbuf,                 &
+                      lfmat,                 &
+                      mpi_double_precision,  &
+                      mpi_sum,               &
+                      0,                     &
+                      mpi_comm_world,        &
+                      ierr) 
+      IF(MYTID.EQ.MPARID) THEN
         CALL DCOPY(LFMAT,KFBUF,1,EXCMAT,1)     
         call dealloc(kfbuf)
       ENDIF
+
       end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!***********************************************************************
+
+
+
+
       SUBROUTINE DFTPRD
 !
 !     Communicate DIRAC common blocks for parallell DFT-calculation
@@ -1328,7 +1071,6 @@ contains
 !     Based on traprd, Written by T. Saue 2000
 !
 !***********************************************************************
-!     PARAMETER(D0=0.0D0)
 !
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1354,7 +1096,7 @@ contains
          integer :: icommsize
 
 !TROND: Temporary fix !!!
-      NSAUE=3*NUCIND   
+      NSAUE=3*NUCIND
       CALL MPI_BCAST(CORD,NSAUE,MPI_DOUBLE_PRECISION,MPARID, &
      &               MPI_COMM_WORLD,IERR)
       NSAUE=3*MXSHEL
@@ -1423,11 +1165,6 @@ contains
 !***********************************************************************
 
 
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
-#include "dcbbas.h"
-#include "infpar.h"
 !
       type(dft_options_t) :: dft_options
       integer, allocatable :: ksym(:)
@@ -1456,24 +1193,26 @@ contains
 !
 !     Receive initialization data from master 1
 !     =========================================
+      call sync_dft_cb()
       CALL DFTPAR_INIT1(dft_options,NXCMAT)
 !.....Memory allocation
-      LMAT = N2BBASXQ*NXCMAT
+      lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
       call alloc(KEXC,LMAT)
+      kexc = 0.0d0
       call alloc(ksym, nxcmat)
       call alloc(khrm, nxcmat)
-      call alloc(kden,N2BBASX)
+      call alloc(kden,nr_ao_total*nr_ao_total)
       IF(dft_options%lr.OR.dft_options%qr) THEN
         call alloc(kdtr,LMAT)
       ENDIF
 !.....Allocate density matrices for SAOP
       if (dft_cfg_saop_is_active) then
-        call alloc(KDMAT_OUTER_AO,N2BBASX)
+        call alloc(KDMAT_OUTER_AO,nr_ao_total*nr_ao_total)
         if (dft_cfg_saop_with_response_part) then
-          call alloc(KDMAT_RESP_AO,N2BBASX)
+          call alloc(KDMAT_RESP_AO,nr_ao_total*nr_ao_total)
         ENDIF
       ENDIF
-!
+ 
 !     Receive initialization data from master 2
 !     =========================================
       CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
@@ -1481,7 +1220,6 @@ contains
      &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
 !.....Initialization
       IPRINT = 0
-      CALL DZERO(KEXC,LMAT)
 !.....Integrate
       CALL DFTDRV(KDEN,KDMAT_RESP_AO,KDMAT_OUTER_AO, &
      &            KDTR,KEXC,NXCMAT, ksym, khrm, &
@@ -1504,13 +1242,10 @@ contains
       end subroutine
 
 
-#ifdef VAR_MPI
       subroutine dftpar_init1(dft_options, nxcmat)
 
 !     written by T. Saue april 7 2009
 
-#include "mpif.h"
-#include "infpar.h"
 
 !     --------------------------------------------------------------------------
       type(dft_options_t)                :: dft_options
@@ -1542,11 +1277,6 @@ contains
       call dftsyncfunc(i_am_the_master)
  
       end subroutine
-#endif /* ifdef VAR_MPI */
-
-
-
-
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP, &
@@ -1558,14 +1288,7 @@ contains
 !     Written by T. Saue April 7 2009
 ! 
 !***********************************************************************
-
-
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
-#include "infpar.h"
-#include "dcbbas.h"
-      real(8) :: DMAT(N2BBASX),DTRMAT(*), &
+      real(8) :: DMAT(nr_ao_total, nr_ao_total),DTRMAT(*), &
      &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*)
       integer ::          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
@@ -1574,24 +1297,24 @@ contains
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID, &
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID, &
+      CALL MPI_BCAST(DMAT,nr_ao_total*nr_ao_total,MPI_DOUBLE_PRECISION,MPARID, &
      &               MPI_COMM_WORLD,IERR)
       IF(dft_options%lr.OR.dft_options%qr) THEN
-        LMAT = N2BBASXQ*NXCMAT
+        lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
      &                   MPI_COMM_WORLD,IERR)
       ENDIF
 
       if (dft_cfg_saop_is_active) then
-        CALL MPI_BCAST(DMAT_OUTER_AO,N2BBASX, &
+        CALL MPI_BCAST(DMAT_OUTER_AO,nr_ao_total*nr_ao_total, &
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
         if (dft_cfg_saop_with_response_part) then
 !             SAOP with response part
-        CALL MPI_BCAST(DMAT_RESP_AO,N2BBASX, &
+        CALL MPI_BCAST(DMAT_RESP_AO,nr_ao_total*nr_ao_total, &
      &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
         ENDIF
       ENDIF
       end subroutine
-#endif /* VAR_MPI */
+#endif /* ifdef VAR_MPI */
 
 end module

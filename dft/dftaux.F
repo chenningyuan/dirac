@@ -50,18 +50,12 @@ c=======================================================================
 
       use dft_main
       use dft_cfg
+      use dft_density
+      use dft_cb_interface
 
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
+      implicit none
 
-      parameter (d0 = 0.0d0,d1 = 1.0d0,d2 = 2.0d0,d3 = 3.0d0,d4 = 4.0d0)
-
-#include "inforb.h"
-#include "nuclei.h"
-#include "dgroup.h"
 #include "functionals.h"
-
 #ifdef MOD_AUTODIFF
 #include "../autodiff/xc_fortran_interface.h"
 #endif
@@ -69,12 +63,14 @@ c=======================================================================
       logical   is_gga,
      &          lbit,
      &          allow_nonhermitian
-      dimension dtrmat(nbast,nbast,nz,nxcmat),
-     &          excmat(nbast,nbast,nz,nxcmat),
-     &          isymop(nxcmat),
-     &          ihrmop(nxcmat),
-     &          gao(nbast),
-     &          gao1(nbast,3),
+      integer:: nxcmat, im, j, irepop
+      integer:: isymop(nxcmat),
+     &          ihrmop(nxcmat)
+      real(8):: r_0, w, gr_0_norm, dabs, Z_b, vxc_scalar, ddot, r_b
+      real(8):: dtrmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
+     &          excmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
+     &          gao(nr_ao_total),
+     &          gao1(nr_ao_total,3),
      &          buf(*),
 !
      &          gr_0(3),
@@ -156,14 +152,14 @@ c=======================================================================
      &                  gao1)
           end if
 
-          worth_it = max(
-     &                   dabs(r_b),
-     &                   dabs(gr_b(1)),
-     &                   dabs(gr_b(2)),
-     &                   dabs(gr_b(3))
-     &                  )
+!         worth_it = max(
+!    &                   dabs(r_b),
+!    &                   dabs(gr_b(1)),
+!    &                   dabs(gr_b(2)),
+!    &                   dabs(gr_b(3))
+!    &                  )
 
-          if(worth_it .gt. dft_cfg_dfthrl) then
+!         if(worth_it .gt. dft_cfg_dfthrl) then
 
 #ifdef MOD_AUTODIFF
             if (dft_cfg_autodiff) then
@@ -207,7 +203,7 @@ c=======================================================================
             end if
 #endif
 
-            Z_b = d2*ddot(3,gr_0,1,gr_b,1)
+            Z_b = 2.0d0*ddot(3,gr_0,1,gr_b,1)
 
             vxc_scalar = vxc(fRR)*r_b
      &                 + vxc(fRZ)*Z_b
@@ -219,7 +215,7 @@ c=======================================================================
             enddo
 
 !           this factor is *not* for the symmetrization later
-            call dscal(3,d2,vxc_vector,1)
+            call dscal(3,2.0d0,vxc_vector,1)
 
             call gga_distribute(vxc_scalar,
      &                          vxc_vector,
@@ -227,12 +223,11 @@ c=======================================================================
      &                          excmat(1, 1, 1, im),
      &                          gao,
      &                          gao1)
-          endif
+!         endif
         endif
  99     continue
       enddo
 
-      return
       end
 c
       subroutine fortwrt(str, slength)
@@ -258,3 +253,27 @@ c
       HFXMU = W
       HFXATT = BETA
       END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GTDOAV(DMAT,IFAC)
+!***********************************************************************
+!
+!     Get average density from open shells; only real part !
+!     Written by T.Saue March 2004
+!
+!***********************************************************************
+      use dft_cb_interface
+      implicit none
+#include"dcbdhf.h"
+      integer :: ifac, ishell
+      real(8) :: DMAT(nr_ao_total, nr_ao_total, nr_qu, nfmat)
+      real(8) :: fac
+      IF(AOC) THEN
+        DO ISHELL = 1, NOPEN
+          FAC = IFAC*DF(ISHELL)
+          CALL DAXPY(nr_ao_total*nr_ao_total,FAC,
+     &        DMAT(1,1,1,ISHELL+1),1,DMAT,1)
+        ENDDO
+      ENDIF
+!
+      end subroutine
