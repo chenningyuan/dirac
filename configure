@@ -52,7 +52,9 @@ checkbounds=0 # or 1 if "--check" parameter is in the list
 doprofile=0 # or 1 if "--profile" is in the parameter list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
+is_dirac_blas="NO"
 dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
+is_dirac_lapack="NO"
 mcmodel_medium="" # filled later
 LIB="" # initialize, because it's used as parameter in the list
 SRC_DIR=`pwd`
@@ -1453,7 +1455,7 @@ if [ $IPRINT -ge "5" ];  then
  $echo '  get_math_lib: libs='$libs
 fi
 
-question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libraries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK routine.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
+question lib_index "mathematical libraries" "$libs" " Specify a library path to search $row_sep Configure libraries manually." "$default" "y" "You need to specify a BLAS AND a LAPACK libraries routines.\nThere are blas and lapack implementations shipped with dirac.\nHowever they are VERY SLOW compared to optimized libraries."
 
 for index in $lib_index; do
   if [ $index -eq 0 ]; then
@@ -1476,9 +1478,11 @@ for index in $lib_index; do
     fi
     get_math_lib
   elif [ $index -eq 2 ]; then
+    is_dirac_blas="YES"
     $echo "Default BLAS used."
     append cpp_f90 "-DUSE_DIRAC_BLAS"
   elif [ $index -eq 3 ]; then
+    is_dirac_lapack="YES"
     $echo "Default LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
@@ -1595,10 +1599,12 @@ if [ -n "$LIB" ]; then
   if [ $dirac_blas = 1 ]; then
     $echo "\nEmployed default BLAS builtin library (through preprocessor flag) "
     append cpp_f90 "-DUSE_DIRAC_BLAS"
+    is_dirac_blas="YES"
   fi
   if [ $dirac_lapack = 1 ]; then
     $echo "\nEmployed default LAPACK builtin library (through preprocessor flag) "
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
+    is_dirac_lapack="YES"
   fi
   return 0 # leave subroutine - do not query anymore
 fi
@@ -2589,6 +2595,10 @@ cat <<EOF >> Makefile.config
 # mpi (if parallel). For mpi you also need the correct -I flag
 # in F77FLAGS, CFLAGS and F90FLAGS (and their safe versions).
 LIBS      = $LIB
+
+# specify which DIRAC internal libraries are included
+USED_DIRAC_BLAS   = $is_dirac_blas
+USED_DIRAC_LAPACK = $is_dirac_lapack
 
 # preprocessing of Fortran source files
 FPP_FLAGS=$cpp_f90 $depend_flags $parinc
