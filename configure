@@ -1479,11 +1479,11 @@ for index in $lib_index; do
     get_math_lib
   elif [ $index -eq 2 ]; then
     is_dirac_blas="YES"
-    $echo "Default BLAS used."
+    $echo "Default (internal) BLAS used."
     append cpp_f90 "-DUSE_DIRAC_BLAS"
   elif [ $index -eq 3 ]; then
     is_dirac_lapack="YES"
-    $echo "Default LAPACK used."
+    $echo "Default (internal) LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
     get_item "$libs" lib_name $index 2
