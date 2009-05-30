@@ -76,23 +76,22 @@ C
          print *,' *** ERROR: MPI self test failed! *** '
          print *,' sender of message should have ID 0'
          print *,' but has ID ',ISTAT(MPI_SOURCE)
+         print *,''
+         print *,' Make sure that you are using the right mpirun for'
+         print *,' your particular MPI library version.'
+         print *,''
 #ifdef INT_STAR8
-         print *,' ***********************************************'
          print *,' DIRAC is configured to use integer*8 '
-         print *,' (64 bit integers).'
+     &        //'(64 bit integers).'
          print *,' You need to link a MPI library that is compiled'
-         print *,' using integer*8 to fix this mismatch or you'
-         print *,' recompile DIRAC using integer*4.'
-         print *,' ***********************************************'
+         print *,' using integer*8, make sure that this is the case.'
 #else
-         print *,' ***********************************************'
          print *,' DIRAC is configured to use integer*4 '
-         print *,' (32 bit integers).'
+     &        //' (32 bit integers).'
          print *,' You need to link a MPI library that is compiled'
-         print *,' using integer*4 to fix this mismatch or you'
-         print *,' recompile DIRAC using integer*8.'
-         print *,' ***********************************************'
+         print *,' using integer*4, make sure that this is the case.'
 #endif
+         print *,''
          print *,' Cannot continue without a working MPI library.'
          print *,' Quitting.'
          CALL QUIT(' *** ERROR: MPI self test failed ***')
