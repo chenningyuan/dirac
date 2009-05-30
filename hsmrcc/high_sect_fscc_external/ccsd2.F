@@ -2962,6 +2962,7 @@ c             write (6,*) ' '
      &        norb,(cc(i),i=1,norb)
 
       write(LUPRI,'(/,2x,a)') 'end rdin'
+
       return
       end subroutine rdin
 
@@ -3065,11 +3066,11 @@ c             write (6,*) ' '
       subroutine rdsym
 !----------------------------------------------------------------------------
 !
-!                   next reading of the input file ...
+!  continue the reading from  the input file "input"
 !
-!     getting symmetry information
+!  gets in symmetry information
 !
-!   Called from each executable
+!  Called from each executable
 !
 !----------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
@@ -3094,16 +3095,16 @@ c             write (6,*) ' '
        write(LUPRI,'(/,2x,a,i3)') 
      & 'rdsym: nclass variable set to',nclass
       else
-        write(LUPRI,'(/,2x,a)') 'rdsym: Enter nclass variable:'
+        write(LUPRI,'(/,2x,a)') 'Reading "nclass" variable:'
        ! read (*,1000,iostat=ios) nclass
         read (LUCMD,*,iostat=ios) nclass
         if (ios.ne.0) then
-          write(LUPRI,*) 'error in reading nclass!'
-          call quit('error in reading nclass!')
+          write(LUPRI,*) 'error in reading nclass, read nclass=',nclass
+          call quit('rdsym: error in reading nclass!')
         endif
       endif
 
-      write(LUPRI,*) 'nclass=',nclass
+      write(LUPRI,'(2x,a,i2)') 'read nclass=',nclass
 
       write(LUPRI,'(/,2x,a)') 
      & 'Number of of orbitals (20i3) per symmetry(1-nclass):'
@@ -3115,6 +3116,7 @@ c             write (6,*) ' '
         iclass(1)=7; iclass(2)=0; iclass(3)=1; iclass(4)=1
         write(LUPRI,'(/,4x,a,/)') 'Hard set orbitals  7 0 1 1 now in !!'
       else
+
 !     read (*,1000,iostat=ios) (iclass(i),i=1,nclass)
 !     read (LUCMD,1000,iostat=ios) (iclass(i),i=1,nclass)
       read (LUCMD,*,iostat=ios) (iclass(i),i=1,nclass)

@@ -682,7 +682,8 @@ c ******************************************
       call diveps  ("thv ")
       call cmult   ("thv ",-1.d0,"thv ")
       call move    ("vv10","t1hv")
-      call fold    ("t1hv","thvf")
+!     call fold    ("t1hv","thvf")
+      call fold_ccsd ("t1hv","thvf")
       call diveps  ("t1hv")
       call cmult   ("t1hv",-1.d0,"t1hv")
       if (iopt(17).gt.0) then
@@ -1504,7 +1505,8 @@ c  dg1n13,14
         call add       ("s3  ",1.d0,"t1nw",1.d0,"t1nw")
       end if
 c
-      call fold("t1nw","thvf")
+!      call fold("t1nw","thvf")
+      call fold_ccsd("t1nw","thvf")
       call dfold1_chv
       call diveps("t1nw")
       call cmult ("t1nw",-1.d0,"t1nw")

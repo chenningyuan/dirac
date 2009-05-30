@@ -388,9 +388,9 @@ end function get_moltra_integral
 !  end subroutine make_dirac_syminf
 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
-!-----------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 !
 !  provide data (integrals,orbital energies) for high-sect CCSD from DIRAC
 !  

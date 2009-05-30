@@ -247,7 +247,7 @@ subroutine read_mrconee
 #include "priunit.h"
 #include "dgroup.h"
 
-logical :: is_mrc
+logical :: is_mrc, adjust
 !integer, external :: GetNBSYM
 
  inquire(FILE='MRCONEE',EXIST=is_mrc)
@@ -258,7 +258,7 @@ logical :: is_mrc
   READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,NFSYM,NZ,SPFR,NORBT
 
   READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),  & 
-                               (NELEC(IRP),IRP=1,NSYMRP)
+                                      (NELEC(IRP),IRP=1,NSYMRP)
 
   READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
 
@@ -272,8 +272,9 @@ logical :: is_mrc
 
   mrconee_read = .true.
 
+  adjust=.true.
+  if (adjust) then 
 ! ... copied from "ccdriv.F"
-
 !C
 !C      Right adjust representation names
 !C
@@ -310,6 +311,8 @@ logical :: is_mrc
          ENDDO
       ENDDO
 
+endif
+
 !-----------------------------------------------------------
 
 ! fill irrep_product_dirac !
@@ -317,13 +320,12 @@ logical :: is_mrc
   irrep_product_dirac=0
 
   write(LUPRI,*) 'GetNBSYM=',NBSYM
+  write(LUPRI,*) 'Multiplication table'
 
   do i=1,NBSYM
   do j=1,NBSYM
    ! write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1))
-
     write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,1)-2*NBSYM)
-
     irrep_product_dirac(i,j)= MULTB(i,j,1)-2*NBSYM
   enddo
   enddo
@@ -346,7 +348,9 @@ end subroutine read_mrconee
 subroutine get_HSFS_indexes()
 !----------------------------------------------------------------------------------
 !
-! assumes MRCONEE read !
+!
+!          assumes MRCONEE read !
+!
 !
 !----------------------------------------------------------------------------------
 #if defined MOD_HSFS
@@ -354,22 +358,28 @@ use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
 
-write(LUPRI,*)  'get_HSFS_indexes'
+logical :: indx_found
 
-hsfs_indx=MakeVector('INTE',NSP/2,'HSFS indexes')
+write(LUPRI,*) 'get_HSFS_indexes...'
 
+!  ... allocate vectors ...
+!hsfs_indx=MakeVector('INTE',NSP/2,'HSFS indexes')
+hsfs_indx=MakeVector('INTE',NSP,'HSFS indexes')
 boson_irps_indx=MakeVector('INTE',GetNBSYM(),'array for boson irreps')
 
-write(LUPRI,*) '... hsfs_indx vector allocated'
+write(LUPRI,*)  '... hsfs_indx vector allocated'
 
-do isp=1,nsp/2
+do isp=1, nsp
 
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-   IREPSP(ISP),IREPSP(NSP+ISP), &
-   ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP))
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   IREPSP(ISP),IREPSP(NSP+ISP),                          &
+   ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP)),'-',REPNA(IREPSP(ISP))
 
-   boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )=boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1
- !  write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+   if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
+     boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
+  ! write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+   endif
+
 enddo
 
 ! do the check
@@ -378,9 +388,16 @@ do i=1,GetNBSYM()
  write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
  icheck=icheck+boson_irps_indx%p_iA1D(i)
 enddo
+
 if (icheck /= nsp/2) then
+ write(LUPRI,*) 'sum of all spinors, icheck=',icheck
+ write(LUPRI,*) '               while nsp/2=',nsp/2
+
+ call print_mrconee_data
+
  call quit('wrong number of spinors !')
 endif
+!call quit('here')
 
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
@@ -391,7 +408,7 @@ enddo
 ! ... fill "hsfs_indx" vector: map order MRCONEE -> HSFS
 ik=0
 do i=1,GetNBSYM()
-do j=1,nsp/2
+do j=1,nsp
 
  if ( i == IREPSP(NSP+j) ) then
  !  write(LUPRI,'(a,3i3)') 'i,j,IREPSP(NSP+j):',i,j,IREPSP(NSP+j)
@@ -405,11 +422,13 @@ enddo
 enddo
 
 write(LUPRI,*) 'HSFS index order'
-do isp=1,nsp/2
+do isp=1,nsp
 
+if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
   IREPSP(ISP),IREPSP(NSP+ISP), &
-  ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+ ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+endif
 
 enddo
 
@@ -425,25 +444,31 @@ write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
 !write(LUPRI,*) 'boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
 write(LUPRI,*) 
 
-do isp=1,nsp/2
+do isp=1,nsp
 
-  do j=1,nsp/2
-     if (isp == hsfs_indx%p_iA1D(j) ) then
-      ! write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+  indx_found=.false.
+  do j=1,nsp
+     if (isp == hsfs_indx%p_iA1D(j)) then
+        ! write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+       indx_found=.true.
        Exit
      endif
   enddo
  
 ! write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
+if (indx_found) then
  write(luhsfs) EPS1( j )
-
-! write(LUPRI,*) isp,hsfs_indx%p_iA1D(isp),REPNA(IREPSP(NSP+hsfs_indx%p_iA1D(isp))),EPS1(hsfs_indx%p_iA1D(isp) )
  write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
+endif
+
 enddo
 
 write(LUPRI,*) 'HSFS stuff written into luhsfs file'
 
-#endif
+!---------------------------------------------------------------------------------
+!  make   
+
+#endif 
 end subroutine get_HSFS_indexes
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -458,7 +483,7 @@ subroutine print_mrconee_data
 
 integer :: multbs(1:8,1:8)
 
-!logical :: print_mt = .false.
+logical :: print_mt = .false.
 
 if (.not.mrconee_read) then
   Write(LUPRI,*) 'MRCONEE file was not read...'
@@ -504,6 +529,8 @@ DO ISP = 1, NSP
    ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP))
 ENDDO
 
+if  (print_mt) then
+
 write (LUPRI,'(/,2x,a)') 'Multiplication table; *** ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP) ***'
 write (LUPRI,'(2x,a,2i3)') ' NREP, 2*NREP:',NREP,(2*NREP)
 
@@ -514,6 +541,9 @@ do j=1,2*NREP
   i,j,' - multb(i,j,1),multb(i,j,2):',MULTB(i,j,1),MULTB(i,j,2),REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,2))
 enddo
 enddo
+
+endif
+
 
 write(LUPRI,*)
 
