@@ -3979,7 +3979,7 @@ C
       PFAC(2)  = -DMI2*CVAL
       PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
-         PNAME     = 'X magnetic field'
+      PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
@@ -4010,7 +4010,7 @@ C        Sigma_X:
       END IF
 #if !defined (XH4)
 C Y component of B-field
-         PNAME     = 'Y magnetic field'
+      PNAME     = 'Y magnetic field'
 C     PNAME     = 'MAGFLDY'
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
@@ -4040,7 +4040,7 @@ C        Sigma_Y:
          CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 C Z component of B-field
-         PNAME     = 'Z magnetic field'
+      PNAME     = 'Z magnetic field'
 C     PNAME     = 'MAGFLDZ'
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
@@ -6244,8 +6244,6 @@ C     IF(NSTDIA.AND.XLR_SKIPEP) THEN
          DO I = 1,NNSTIN
             IOP = IPNSTDIA(I)
             IPL = IPRPLBL(1,LEXPP(IOP))
-CTROND
-            WRITE(6,*) 'nstdia..',PRPLBL(IPL)
 CMI       ... take care of the correct form of PRPLBL(IPL) name
             READ(PRPLBL(IPL)(1:3),'(I3)') IA
             IB = MOD(I+2,3) + 1
@@ -6372,26 +6370,29 @@ C
 
          CALL DZERO(TMPMAT,2*NCMAT)
          DO IB = 1,NB
-           IBINDEX = LLRBPU(IPSHIELD(MXCOOR+IBUFB(IB)))
-           IF (LONDON) THEN
-             READ (PRPNAM(IBINDEX),'(4X,A1)') CJB
-             JB = ICONVXYZ(CJB)
-             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
-               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
-               write(lupri,*) 'extracted CJB,JB:',CJB,JB
-               CALL QUIT('PRP_SHIELD1: wrong index !')
-             ENDIF
-           ELSE
+CTROND           IBINDEX = LLRBPU(IPSHIELD(MXCOOR+IBUFB(IB)))
+CTROND           IF (LONDON) THEN
+CTROND             READ (PRPNAM(IBINDEX),'(4X,A1)') CJB
+CTROND             JB = ICONVXYZ(CJB)
+CTROND             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
+CTROND               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
+CTROND               write(lupri,*) 'extracted CJB,JB:',CJB,JB
+CTROND               CALL QUIT('PRP_SHIELD1: wrong index !')
+CTROND             ENDIF
+CTROND           ELSE
 CMI  ...     first character, like 'X magnetic field'
-             READ (PRPNAM(IBINDEX),'(A1)') CJB 
-            !write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
-             JB = ICONVXYZ(CJB)
-             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
-               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
-               write(lupri,*) 'extracted CJB,JB:',CJB,JB
-               CALL QUIT('PRP_SHIELD1: wrong index !')
-             ENDIF
-           ENDIF
+CTROND
+CTROND             WRITE(6,*) 'test..',PRPNAM(IBINDEX)
+CTROND             READ (PRPNAM(IBINDEX),'(A1)') CJB 
+CTROND            !write(lupri,*) 'PRPNAM(IBINDEX)=',PRPNAM(IBINDEX)
+CTROND             JB = ICONVXYZ(CJB)
+CTROND             IF (JB.NE.1.AND.JB.NE.2.AND.JB.NE.3) THEN
+CTROND               write(lupri,*) '...operator name:',PRPNAM(IBINDEX)
+CTROND               write(lupri,*) 'extracted CJB,JB:',CJB,JB
+CTROND               CALL QUIT('PRP_SHIELD1: wrong index !')
+CTROND             ENDIF
+CTROND           ENDIF
+            JB = IBUFB(IB)
             KB = IPSHIELD(JB+MXCOOR)
             DO IA = 1,NA
                JA = IBUFA(IA)
