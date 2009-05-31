@@ -25,138 +25,138 @@ module matrix_genop
 !     plus other DIRAC specifics
 #endif /* PRG_DIRAC */  
 
-  implicit none
-
-  public matrix
-  public init_mat
-  public mat_free
-  public mat_same
-  public mat_isdef
-  public mat_iszero
-  public mat_axtpby
-  public mat_gemm
-  public mat_dot
-  public mat_trace_nontmp
-  public mat_print_nontmp
-
-  private
-
-  interface init_mat
-    module procedure init_mat_full
-    module procedure init_mat_from
-  end interface
-
-  integer :: nz = 1
-! nz is introduced to accommodate complex and quaternion algebra for DIRAC
-! it could be part of the matrix type
-! for the moment it is a parameter
+   implicit none
+   
+   public matrix
+   public init_mat
+   public mat_free
+   public mat_same
+   public mat_isdef
+   public mat_iszero
+   public mat_axtpby
+   public mat_gemm
+   public mat_dot
+   public mat_trace_nontmp
+   public mat_print_nontmp
+   
+   private
+   
+   interface init_mat
+     module procedure init_mat_full
+     module procedure init_mat_from
+   end interface
+   
+   integer :: nz = 1
+!  nz is introduced to accommodate complex and quaternion algebra for DIRAC
+!  it could be part of the matrix type
+!  for the moment it is a parameter
 
 contains
 
-    subroutine mat_free(A)
-        type(matrix),intent(inout) :: A
-        !if (associated(A%elms)) print *,'mat_free',loc(A),' elms=',loc(A%elms)
-        if (associated(A%elms)) call mat_free_nonzero(A)
-        A%nrow = -1; A%ncol = -1
-    end subroutine
+   subroutine mat_free(A)
+      type(matrix),intent(inout) :: A
+      !if (associated(A%elms)) print *,'mat_free',loc(A),' elms=',loc(A%elms)
+      if (associated(A%elms)) call mat_free_nonzero(A)
+      A%nrow = -1; A%ncol = -1
+   end subroutine
 
 
-    subroutine init_mat_from(C,A,ta,B,tb,zero,alias,reset)
-        type(matrix),         intent(inout) :: C
-        type(matrix),optional,intent(in)    :: A,B
-        character*1, optional,intent(in)    :: ta,tb
-        logical,     optional,intent(in)    :: zero,alias,reset
-        logical                             :: taa,tbb,zer,ali,res
-        integer                             :: nrow,ncol
-        if (present(ta) .and. .not.present(A)) &
-            call quit('init_mat_as input error : ta present without A')
-        if (present(B) .and. .not.present(ta)) &
-            call quit('init_mat_as input error : B present without A')
-        if (present(tb) .and. .not.present(B)) &
-            call quit('init_mat_as input error : tb present without B')
-        if (present(zero) .and. .not.present(A)) &
-            call quit('init_mat_as input error : zero present without A')
-        if (present(alias) .and. .not.present(A)) &
-            call quit('init_mat_as input error : alias present without A')
-        if (present(alias) .and. present(ta)) &
-            call quit('init_mat_as input error : alias present with ta')
-        if (present(reset) .and. present(A)) &
-            call quit('init_mat_as input error : reset present with A')
-        taa = .false.
-        if (present(ta)) then
-            if (ta/='N'.and.ta/='T') &
-                call quit("init_mat_as input error : ta is not 'N' or 'T'")
-            taa = (ta=='T')
-        end if
-        tbb = .false.
-        if (present(tb)) then
-            if (tb/='N'.and.tb/='T') &
-                call quit("init_mat_as input error : tb is not 'N' or 'T'")
-            tbb = (tb=='T')
-        end if
-        zer = .false.
-        if (present(zero)) zer = zero
-        res = .false.
-        if (present(reset)) res = reset
-        ali = .false.
-        if (present(alias)) ali = alias
-        nrow = -1
-        if (present(A)) nrow = merge(A%ncol,A%nrow,taa)
-        ncol = -1
-        if (present(A)) ncol = merge(A%nrow,A%ncol,taa)
-        if (present(B)) ncol = merge(B%nrow,B%ncol,tbb)
-        if (zer.or.res) then
-            C%nrow = nrow
-            C%ncol = ncol
-            nullify(C%elms)
-        else if (ali) then
-            C = A !copies all fields
-        else
-            !print *,'init_mat',loc(C)
-            call init_mat_full(C,nrow,ncol)
-        end if
-    end subroutine
+   subroutine init_mat_from(C,A,ta,B,tb,zero,alias,reset)
+      type(matrix),         intent(inout) :: C
+      type(matrix),optional,intent(in)    :: A,B
+      character*1, optional,intent(in)    :: ta,tb
+      logical,     optional,intent(in)    :: zero,alias,reset
+      logical                             :: taa,tbb,zer,ali,res
+      integer                             :: nrow,ncol
+      if (present(ta) .and. .not.present(A)) &
+          call quit('init_mat_as input error : ta present without A')
+      if (present(B) .and. .not.present(ta)) &
+          call quit('init_mat_as input error : B present without A')
+      if (present(tb) .and. .not.present(B)) &
+          call quit('init_mat_as input error : tb present without B')
+      if (present(zero) .and. .not.present(A)) &
+          call quit('init_mat_as input error : zero present without A')
+      if (present(alias) .and. .not.present(A)) &
+          call quit('init_mat_as input error : alias present without A')
+      if (present(alias) .and. present(ta)) &
+          call quit('init_mat_as input error : alias present with ta')
+      if (present(reset) .and. present(A)) &
+          call quit('init_mat_as input error : reset present with A')
+      taa = .false.
+      if (present(ta)) then
+          if (ta/='N'.and.ta/='T') &
+              call quit("init_mat_as input error : ta is not 'N' or 'T'")
+          taa = (ta=='T')
+      end if
+      tbb = .false.
+      if (present(tb)) then
+          if (tb/='N'.and.tb/='T') &
+              call quit("init_mat_as input error : tb is not 'N' or 'T'")
+          tbb = (tb=='T')
+      end if
+      zer = .false.
+      if (present(zero)) zer = zero
+      res = .false.
+      if (present(reset)) res = reset
+      ali = .false.
+      if (present(alias)) ali = alias
+      nrow = -1
+      if (present(A)) nrow = merge(A%ncol,A%nrow,taa)
+      ncol = -1
+      if (present(A)) ncol = merge(A%nrow,A%ncol,taa)
+      if (present(B)) ncol = merge(B%nrow,B%ncol,tbb)
+      if (zer.or.res) then
+          C%nrow = nrow
+          C%ncol = ncol
+          nullify(C%elms)
+      else if (ali) then
+          C = A !copies all fields
+      else
+          !print *,'init_mat',loc(C)
+          call init_mat_full(C,nrow,ncol)
+      end if
+   end subroutine
 
 
-    function mat_isdef(A)
-        type(matrix),intent(in) :: A
-        logical                 :: mat_isdef
-        mat_isdef = .not.(A%nrow==-1 .and. A%ncol==-1)
-    end function
+   function mat_isdef(A)
+      type(matrix),intent(in) :: A
+      logical                 :: mat_isdef
+      mat_isdef = .not.(A%nrow==-1 .and. A%ncol==-1)
+   end function
 
-    function mat_iszero(A)
-        type(matrix),intent(in) :: A
-        logical                 :: mat_iszero
-        if (A%nrow==-1 .and. A%ncol==-1) &
-            call quit('mat_iszero(A) : matrix A undefined')
-        mat_iszero = .not.associated(A%elms)
-    end function
+   function mat_iszero(A)
+      type(matrix),intent(in) :: A
+      logical                 :: mat_iszero
+      if (A%nrow==-1 .and. A%ncol==-1) &
+          call quit('mat_iszero(A) : matrix A undefined')
+      mat_iszero = .not.associated(A%elms)
+   end function
 
-    function mat_same(A,B,ta,tb)
-        type(matrix),         intent(in) :: A,B
-        character*1, optional,intent(in) :: ta,tb
-        logical                          :: mat_same
-        character*1                      :: taa,tbb
-        taa = 'N'; if (present(ta)) taa = ta
-        tbb = 'N'; if (present(tb)) tbb = tb
-        if (taa=='N'.and.tbb=='N' .or. taa=='T'.and.tbb=='T') then
-            mat_same = (A%nrow==B%nrow .and. A%ncol==B%ncol)
-        else if (taa=='N'.and.tbb=='T' .or. taa=='T'.and.tbb=='N') then
-            mat_same = (A%nrow==B%ncol .and. A%ncol==B%nrow)
-        else if (taa=='R'.and.tbb=='R') then
-            mat_same = (A%nrow==B%nrow)
-        else if (taa=='R'.and.tbb=='C') then
-            mat_same = (A%nrow==B%ncol)
-        else if (taa=='C'.and.tbb=='R') then
-            mat_same = (A%ncol==B%nrow)
-        else if (taa=='C'.and.tbb=='C') then
-            mat_same = (A%ncol==B%ncol)
-        else
-            call quit('mat_same input error : ta='//taa//' tb='//tbb)
-        end if
-        if (.not.present(ta) .and. .not.present(tb)) &
-            mat_same = mat_same .and. associated(A%elms,B%elms)
-    end function
+   function mat_same(A,B,ta,tb)
+      type(matrix),         intent(in) :: A,B
+      character*1, optional,intent(in) :: ta,tb
+      logical                          :: mat_same
+      character*1                      :: taa,tbb
+      taa = 'N'; if (present(ta)) taa = ta
+      tbb = 'N'; if (present(tb)) tbb = tb
+      if (taa=='N'.and.tbb=='N' .or. taa=='T'.and.tbb=='T') then
+          mat_same = (A%nrow==B%nrow .and. A%ncol==B%ncol)
+      else if (taa=='N'.and.tbb=='T' .or. taa=='T'.and.tbb=='N') then
+          mat_same = (A%nrow==B%ncol .and. A%ncol==B%nrow)
+      else if (taa=='R'.and.tbb=='R') then
+          mat_same = (A%nrow==B%nrow)
+      else if (taa=='R'.and.tbb=='C') then
+          mat_same = (A%nrow==B%ncol)
+      else if (taa=='C'.and.tbb=='R') then
+          mat_same = (A%ncol==B%nrow)
+      else if (taa=='C'.and.tbb=='C') then
+          mat_same = (A%ncol==B%ncol)
+      else
+          call quit('mat_same input error : ta='//taa//' tb='//tbb)
+      end if
+      if (.not.present(ta) .and. .not.present(tb)) &
+          mat_same = mat_same .and. associated(A%elms,B%elms)
+   end function
 
   subroutine mat_axtpby_dag(a, b, Z, X)
 
@@ -244,16 +244,16 @@ contains
 
   end subroutine
 
-    subroutine mat_gemm(rab,A,ta,B,tb,rc,C)
-        !matrix multiply: C = rc*C + rab * A^ta * B^tb
-        !assumed initialied and with corresponding shapes
-        type(matrix),   intent(in) :: A,B
-        type(matrix),intent(inout) :: C
-        real(8),        intent(in) :: rab,rc
-        character*1,    intent(in) :: ta,tb
-        !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
-        call mat_mul(A,B,ta,tb,rab,rc,C)
-    end subroutine
+   subroutine mat_gemm(rab,A,ta,B,tb,rc,C)
+      !matrix multiply: C = rc*C + rab * A^ta * B^tb
+      !assumed initialied and with corresponding shapes
+      type(matrix),   intent(in) :: A,B
+      type(matrix),intent(inout) :: C
+      real(8),        intent(in) :: rab,rc
+      character*1,    intent(in) :: ta,tb
+      !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
+      call mat_mul(A,B,ta,tb,rab,rc,C)
+   end subroutine
 
   function mat_dot(A, B, t) result(r)
 
@@ -320,69 +320,69 @@ contains
             r = sum((/(A%elms(1+(i-1)*(A%nrow+1)),i=1,A%nrow)/))
     end function
 
-    subroutine mat_print_nontmp(A,unit,width,label,braces)
-        !print matrix A to standard out,starting with label
-        type(matrix),         intent(in) :: A
-        integer,     optional,intent(in) :: unit,width
-        character(*),optional,intent(in) :: label,braces
-        integer                          :: u,w,d,i,j
-        character*30                     :: fmt
-        character*1                      :: bra,ces,csep,rsep
+   subroutine mat_print_nontmp(A,unit,width,label,braces)
+      !print matrix A to standard out,starting with label
+      type(matrix),         intent(in) :: A
+      integer,     optional,intent(in) :: unit,width
+      character(*),optional,intent(in) :: label,braces
+      integer                          :: u,w,d,i,j
+      character*30                     :: fmt
+      character*1                      :: bra,ces,csep,rsep
 
 #ifndef PRG_DIRAC
-        !process argument unit, which defaults to standard output
-        u = 6; if (present(unit)) u = unit
-        !set d to the largest number of digits to be printed
-        d = 1 !before the decimal point (including - signs)
-        if (associated(A%elms)) d = &
-           max(max(1,ceiling(log10(maxval(A%elms)))) &
-              ,max(2,1+ceiling(log10(-minval(A%elms)))))
-        w = 7 !process default for width
-        if (present(width)) w = max(width,d+2) !max, to avoid *****
-        d = w-d-1 !set d to the number of decimals to be printed
-        if (present(label)) then
-            fmt = '(a,ikk,a1,ikk,a1)'
-            write (fmt( 5: 6),'(i2)') max(1,ceiling(log10(1d0*A%nrow)))
-            write (fmt(12:13),'(i2)') max(1,ceiling(log10(1d0*A%ncol)))
-            write (u,fmt(1:17)) 'matrix : '//label//'(',A%nrow,',',A%ncol,')'
-        end if
-        fmt = '(a2,fww.dd,nnnn(a1,fww.dd),a2)'
-        write (fmt(6:15),'(i2,a,i2,a,i4)') w,'.',d,',',A%ncol-1
-        fmt(21:25) = fmt(6:10)
-        if (present(braces)) then
-            bra = braces(1:1)
-            if (len(braces)==4) then
-                csep = braces(2:2)
-                ces = braces(3:3)
-                rsep = braces(4:4)
-            else
-                csep = ','; rsep = ','
-                ces = merge(')',merge('}',merge(']',bra &
-                           ,bra=='['),bra=='{'),bra=='(')
-                if (len(braces)==2) ces = braces(2:2)
-            end if
-            do i=1,A%nrow
-                if (associated(A%elms)) &
-                    write (u,fmt) merge(bra,' ',i==1)//bra,A%elms(i) &
-                                 ,(csep,A%elms(i+A%nrow*j),j=1,A%ncol-1) &
-                                 ,ces//merge(ces,rsep,i==A%nrow)
-                if (.not.associated(A%elms)) &
-                    write (u,fmt) merge(bra,' ',i==1)//bra,0d0 &
-                                 ,(csep,0d0,j=1,A%ncol-1) &
-                                 ,ces//merge(ces,rsep,i==A%nrow)
-            end do
-        else
-            fmt(2:4) = '   '   !remove braces
-            fmt(17:18) = ' x'  !and separators
-            fmt(27:29) = '   ' !from the format
-            do i=1,A%nrow
-                if (associated(A%elms)) &
-                    write (u,fmt) A%elms(i:i+A%nrow*(A%ncol-1):A%nrow)
-                if (.not.associated(A%elms)) &
-                    write (u,fmt) (0d0,j=1,A%ncol)
-            end do
-        end if
-        write (u,'()') !final empty line
+      !process argument unit, which defaults to standard output
+      u = 6; if (present(unit)) u = unit
+      !set d to the largest number of digits to be printed
+      d = 1 !before the decimal point (including - signs)
+      if (associated(A%elms)) d = &
+         max(max(1,ceiling(log10(maxval(A%elms)))) &
+            ,max(2,1+ceiling(log10(-minval(A%elms)))))
+      w = 7 !process default for width
+      if (present(width)) w = max(width,d+2) !max, to avoid *****
+      d = w-d-1 !set d to the number of decimals to be printed
+      if (present(label)) then
+          fmt = '(a,ikk,a1,ikk,a1)'
+          write (fmt( 5: 6),'(i2)') max(1,ceiling(log10(1d0*A%nrow)))
+          write (fmt(12:13),'(i2)') max(1,ceiling(log10(1d0*A%ncol)))
+          write (u,fmt(1:17)) 'matrix : '//label//'(',A%nrow,',',A%ncol,')'
+      end if
+      fmt = '(a2,fww.dd,nnnn(a1,fww.dd),a2)'
+      write (fmt(6:15),'(i2,a,i2,a,i4)') w,'.',d,',',A%ncol-1
+      fmt(21:25) = fmt(6:10)
+      if (present(braces)) then
+          bra = braces(1:1)
+          if (len(braces)==4) then
+              csep = braces(2:2)
+              ces = braces(3:3)
+              rsep = braces(4:4)
+          else
+              csep = ','; rsep = ','
+              ces = merge(')',merge('}',merge(']',bra &
+                         ,bra=='['),bra=='{'),bra=='(')
+              if (len(braces)==2) ces = braces(2:2)
+          end if
+          do i=1,A%nrow
+              if (associated(A%elms)) &
+                  write (u,fmt) merge(bra,' ',i==1)//bra,A%elms(i) &
+                               ,(csep,A%elms(i+A%nrow*j),j=1,A%ncol-1) &
+                               ,ces//merge(ces,rsep,i==A%nrow)
+              if (.not.associated(A%elms)) &
+                  write (u,fmt) merge(bra,' ',i==1)//bra,0d0 &
+                               ,(csep,0d0,j=1,A%ncol-1) &
+                               ,ces//merge(ces,rsep,i==A%nrow)
+          end do
+      else
+          fmt(2:4) = '   '   !remove braces
+          fmt(17:18) = ' x'  !and separators
+          fmt(27:29) = '   ' !from the format
+          do i=1,A%nrow
+              if (associated(A%elms)) &
+                  write (u,fmt) A%elms(i:i+A%nrow*(A%ncol-1):A%nrow)
+              if (.not.associated(A%elms)) &
+                  write (u,fmt) (0d0,j=1,A%ncol)
+          end do
+      end if
+      write (u,'()') !final empty line
 #else
     write(*, *) 'matrix        = ', label
     write(*, *) 'ih_sym        = ', A%ih_sym
