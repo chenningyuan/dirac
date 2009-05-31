@@ -79,7 +79,7 @@ c=======================================================================
      &          vxc_vector(3),
 !
      &          vxc(99),
-     &          derv(99)
+     &          derv(99), taylor_deriv, z
 
       do im = 1,nxcmat
         irepop = isymop(im) - 1

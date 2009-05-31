@@ -95,7 +95,7 @@ c=======================================================================
      &          s_b (  3), vxc_scalar(3), vxc_vector(3, 3), y_b(3),
      &          gs_b(3,3),
      &          vxc(99),
-     &          derv(99)
+     &          derv(99), taylor_deriv, z
 
       k_start = 1
       if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation

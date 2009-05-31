@@ -620,7 +620,7 @@ contains
       real(8), allocatable :: klrxcvec(:)
 
       integer :: ipoint, nder, ndim
-      real(8) :: wght, z, ddot, dftenergy
+      real(8) :: wght, z, ddot, dftenergy, taylor_deriv
 !
 !
 
