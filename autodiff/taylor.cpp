@@ -116,26 +116,24 @@ void taylor_mul(tnum_t dst[], int nvar, int ndeg,
 
 void taylor_next_exponents(int n, int m[])
 {
-  if (n == 1)
+  int k = 0;
+  for (int i=0;i<n-1;i++)
+    k += m[i];
+  if (k == 0)
     {
-      m[0]++;
+      m[0] = m[n-1] + 1;
+      m[n-1] = 0;
+      return;
+    }
+  if (m[n-2] > 0)
+    {
+      m[n-1]++;
+      m[n-2]--;
     }
   else
     {
-      int k = 0;
-      for (int i=n-2;n>=0;n--)
-	{
-	  if (m[i] > 0)
-	    {
-	      m[i]--;
-	      m[i+1]++;
-	      return;
-	    }
-	}
-      for (int i=0;i<n;i++)
-	k+=m[i];
-      m[0] = k + 1;
-      for (int i=1;i<n;i++)
-	m[i] = 0;
+      taylor_next_exponents(n-1,m);
+      m[n-2] += m[n-1];
+      m[n-1] = 0;
     }
 }
