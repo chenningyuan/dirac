@@ -10,7 +10,7 @@ module matrix_genop_interface
   public get_ipqtoq
   public matrix
   public mat_mul
-  public mat_init_full
+  public init_mat_full
   public mat_free_nonzero
 
   private
@@ -156,7 +156,7 @@ contains
              call mat_dense_mul(a,b,transa, transb,alpha,beta,c)
       END SUBROUTINE mat_mul
 
-  subroutine mat_init_full(A, nrow, ncol)
+  subroutine init_mat_full(A, nrow, ncol)
 
 !   ----------------------------------------------------------------------------
     type(matrix)            :: A

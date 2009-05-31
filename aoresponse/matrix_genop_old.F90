@@ -18,9 +18,9 @@ module matrix_genop
     logical                :: is_defined    = .false.
   end type
 
-    interface mat_init
-        module procedure mat_init_full
-        module procedure mat_init_from
+    interface init_mat
+        module procedure init_mat_full
+        module procedure init_mat_from
     end interface
 
 contains
@@ -31,7 +31,7 @@ contains
         mat_isdef = .not.(A%nrow==-1 .and. A%ncol==-1)
     end function
 
-    subroutine mat_init_from(C,A,ta,B,tb,zero,alias,reset)
+    subroutine init_mat_from(C,A,ta,B,tb,zero,alias,reset)
         type(matrix),         intent(inout) :: C
         type(matrix),optional,intent(in)    :: A,B
         character*1, optional,intent(in)    :: ta,tb
@@ -39,29 +39,29 @@ contains
         logical                             :: taa,tbb,zer,ali,res
         integer                             :: nrow,ncol
         if (present(ta) .and. .not.present(A)) &
-            call quit('mat_init_as input error : ta present without A')
+            call quit('init_mat_as input error : ta present without A')
         if (present(B) .and. .not.present(ta)) &
-            call quit('mat_init_as input error : B present without A')
+            call quit('init_mat_as input error : B present without A')
         if (present(tb) .and. .not.present(B)) &
-            call quit('mat_init_as input error : tb present without B')
+            call quit('init_mat_as input error : tb present without B')
         if (present(zero) .and. .not.present(A)) &
-            call quit('mat_init_as input error : zero present without A')
+            call quit('init_mat_as input error : zero present without A')
         if (present(alias) .and. .not.present(A)) &
-            call quit('mat_init_as input error : alias present without A')
+            call quit('init_mat_as input error : alias present without A')
         if (present(alias) .and. present(ta)) &
-            call quit('mat_init_as input error : alias present with ta')
+            call quit('init_mat_as input error : alias present with ta')
         if (present(reset) .and. present(A)) &
-            call quit('mat_init_as input error : reset present with A')
+            call quit('init_mat_as input error : reset present with A')
         taa = .false.
         if (present(ta)) then
             if (ta/='N'.and.ta/='T') &
-                call quit("mat_init_as input error : ta is not 'N' or 'T'")
+                call quit("init_mat_as input error : ta is not 'N' or 'T'")
             taa = (ta=='T')
         end if
         tbb = .false.
         if (present(tb)) then
             if (tb/='N'.and.tb/='T') &
-                call quit("mat_init_as input error : tb is not 'N' or 'T'")
+                call quit("init_mat_as input error : tb is not 'N' or 'T'")
             tbb = (tb=='T')
         end if
         zer = .false.
@@ -82,12 +82,12 @@ contains
         else if (ali) then
             C = A !copies all fields
         else
-            !print *,'mat_init',loc(C)
-            call mat_init_full(C,nrow,ncol)
+            !print *,'init_mat',loc(C)
+            call init_mat_full(C,nrow,ncol)
         end if
     end subroutine
 
-  subroutine mat_init_full(A, nrow, ncol)
+  subroutine init_mat_full(A, nrow, ncol)
 
     type(matrix), intent(inout) :: A
     integer,      intent(in)    :: nrow, ncol

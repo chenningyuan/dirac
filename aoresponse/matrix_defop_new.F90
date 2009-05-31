@@ -34,18 +34,18 @@ module matrix_defop
 !     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
 !     gemm:       Y = a * X(^T) * Z(^T) + b * Y
 ! 
-! To create matrices, mat_init (from module matrix_operations)
+! To create matrices, init_mat (from module matrix_operations)
 ! has been generalized. This is to hide context-specific information,
 ! (closed/open shell, real/complex, 1/2/4-component, full/sparse)
 ! and make it possible to write general code:
 ! 
-!     call mat_init(A,nrow,ncol)       original version
-!     call mat_init(A,B)               same shape
-!     call mat_init(A,B,'T')           transpose shape
-!     call mat_init(A,B,'T',C,'N')     rows and columns from diff. mats.
-!     call mat_init(A,B,zero=.true.)   non-allocated zero of same shape
-!     call mat_init(A,reset=.true.)    reset to defaults, nullifying pointers
-!     call mat_init(A,B,alias=.true.)  copy pointers, no new allocation
+!     call init_mat(A,nrow,ncol)       original version
+!     call init_mat(A,B)               same shape
+!     call init_mat(A,B,'T')           transpose shape
+!     call init_mat(A,B,'T',C,'N')     rows and columns from diff. mats.
+!     call init_mat(A,B,zero=.true.)   non-allocated zero of same shape
+!     call init_mat(A,reset=.true.)    reset to defaults, nullifying pointers
+!     call init_mat(A,B,alias=.true.)  copy pointers, no new allocation
 ! 
 ! Comparison of the shapes (and content) of matrices is done with mat_same
 ! 
@@ -86,7 +86,7 @@ module matrix_defop
    implicit none
 
    public matrix
-   public mat_init
+   public init_mat
    public mat_print
    public isdef
    public iszero
@@ -263,10 +263,10 @@ contains
           if (.not.iszero(T%M)) call mat_free(T%M)
       end if
       if (associated(T%Z)) then
-          call mat_init(T%M,T%X,merge('T','N',T%tx) &
+          call init_mat(T%M,T%X,merge('T','N',T%tx) &
                            ,T%Z,merge('T','N',T%tz),zero=.true.)
       else
-          call mat_init(T%M,T%X,merge('T','N',T%tx),zero=.true.)
+          call init_mat(T%M,T%X,merge('T','N',T%tx),zero=.true.)
       end if
       if (T%dx) call mat_free(T%X)
       if (T%dz) call mat_free(T%Z)
@@ -299,16 +299,16 @@ contains
       !if M = M^T + Y, M*Z + Y or X*M + Y, it must not be overwritten
       !during the operation, so move M=X/Z to reM and clear M
       if (associated(T%Z,T%M)) then
-          call mat_init(reM,T%M,alias=.true.)
+          call init_mat(reM,T%M,alias=.true.)
           T%Z => reM
-          call mat_init(T%M,reset=.true.)
+          call init_mat(T%M,reset=.true.)
           zeroM = .true.
           if (associated(T%X,T%M)) T%X => reM
           if (associated(T%Y,T%M)) T%Y => reM
       else if (associated(T%X,T%M).and.(T%tx.or.associated(T%Z))) then
-          call mat_init(reM,T%M,alias=.true.)
+          call init_mat(reM,T%M,alias=.true.)
           T%X => reM
-          call mat_init(T%M,reset=.true.)
+          call init_mat(T%M,reset=.true.)
           zeroM = .true.
           if (associated(T%Y,T%M)) T%Y => reM
       end if
@@ -333,24 +333,24 @@ contains
           !no allocation needed
       else if (associated(T%Y).and.T%dy) then
           !If Y is temporary, no allocation, just transfer Y to M
-          call mat_init(T%M,T%Y,alias=.true.)
-          call mat_init(T%Y,reset=.true.)
+          call init_mat(T%M,T%Y,alias=.true.)
+          call init_mat(T%Y,reset=.true.)
           T%dy = .false.
           T%Y => T%M
       else if (associated(T%Y,T%M)) then
           !if Y=M, no allocation, the result is added to Y
       else if (associated(T%Y).and.associated(T%Z)) then
           !if M=a*X*Z+b*Y, allocate M, and do M=b*Y first
-          if (.not.useM) call mat_init(T%M,T%Y,'N')
+          if (.not.useM) call init_mat(T%M,T%Y,'N')
           call mat_axtpby(T%M, T%ry,T%Y,'N',0d0,T%M)
           T%Y => T%M
           T%ry = 1d0
       else if (associated(T%Z)) then
           !if M=a*X*Z, allocate M
-          call mat_init(T%M,T%X,merge('T','N',T%tx) &
+          call init_mat(T%M,T%X,merge('T','N',T%tx) &
                            ,T%Z,merge('T','N',T%tz))
       else !if M=a*X+b*Y or M=a*X, allocate M
-          call mat_init(T%M,T%X,merge('T','N',T%tx))
+          call init_mat(T%M,T%X,merge('T','N',T%tx))
       end if
       !execute the requested operation, axtpby or gemm
       if (associated(T%Z)) then
@@ -673,8 +673,8 @@ contains
           if (.not.associated(TA%Z).and..not.associated(TA%Y)) then
               r = r*TA%rx
               trps = (trps.neqv.TA%tx)
-              call mat_init(A,TA%X,alias=.true.)
-              call mat_init(TA%X,reset=.true.)
+              call init_mat(A,TA%X,alias=.true.)
+              call init_mat(TA%X,reset=.true.)
               delA = TA%dx
               call del_tmp(TA)
           else
@@ -685,8 +685,8 @@ contains
           if (.not.associated(TB%Z).and..not.associated(TB%Y)) then
               r = r*TB%rx
               trps = (trps.neqv.TB%tx)
-              call mat_init(B,TB%X,alias=.true.)
-              call mat_init(TB%X,reset=.true.)
+              call init_mat(B,TB%X,alias=.true.)
+              call init_mat(TB%X,reset=.true.)
               delB = TB%dx
               call del_tmp(TB)
           else
@@ -737,7 +737,7 @@ contains
           if (associated(T%Y)) &
               r = r + T%ry * mat_trace_nontmp(T%Y)
           call zero_tmp(T) !this leaves A as zero
-          call mat_init(A,reset=.true.) !undefine A
+          call init_mat(A,reset=.true.) !undefine A
       else if (.not.iszero(A)) then
           r = mat_trace_nontmp(A)
       else
@@ -759,8 +759,8 @@ contains
       !if (matrix_defop_debug) print *,'mat_eq_zero A=',loc(A),' elms=',loc(A%elms)
       if (zero/=0) call quit('matrix A = z: z must be 0')
       if (.not.isdef(A)) call quit('A = 0: A undefined')
-      call mat_init(B,A,alias=.true.)
-      call mat_init(A,B,zero=.true.)
+      call init_mat(B,A,alias=.true.)
+      call init_mat(A,B,zero=.true.)
       call mat_free(B)
    end subroutine
 
@@ -830,7 +830,7 @@ contains
       T => find_tmp(A) !look for A in tmp
       if (.not.associated(T)) return !it wasn't previously fixed
       call zero_tmp(T)
-      call mat_init(A,reset=.true.)
+      call init_mat(A,reset=.true.)
    end subroutine
 
    subroutine mat_fix_result(A)
@@ -841,8 +841,8 @@ contains
           call quit('mat_fix_result(A) : A undefined')
       if (isdef(fixA)) &
           call quit('mat_fix_result(A) : another fixed result already exists')
-      call mat_init(fixA,A,alias=.true.) !diplicate A in fixA
-      call mat_init(A,reset=.true.)      !reset/clear/undefine A
+      call init_mat(fixA,A,alias=.true.) !diplicate A in fixA
+      call init_mat(A,reset=.true.)      !reset/clear/undefine A
       T => new_tmp(A,X=fixA,dx=.true.)   !temporary A = 1*fixA, fixA to be deleted
    end subroutine
 

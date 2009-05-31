@@ -608,7 +608,7 @@ contains
 
 #include "dcbbas.h"
 
-    if (.not. mat_isdef(F)) call mat_init(F, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
 
     F1 = 1.0d-100*F
     F2 = 1.0d-100*F
@@ -642,7 +642,7 @@ contains
 #include "dcbbas.h"
 #include "dcbdhf.h"
 
-    if (.not. mat_isdef(G)) call mat_init(G, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
 
@@ -689,8 +689,8 @@ contains
 #include "dcbbas.h"
 
 !   this didn't work with gfortran
-!   if (.not. mat_isdef(C)) call mat_init(C, ntbas(0), norbt)
-                            call mat_init(C, ntbas(0), norbt)
+!   if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
+                            call init_mat(C, ntbas(0), norbt)
 
     C%elms = 0.0d0
 
@@ -822,7 +822,7 @@ contains
 
 #include "memint.h"
 
-    if (.not. mat_isdef(S)) call mat_init(S, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
     lfree = 2*((nnbbasx + n2bbasx)*2)/2
@@ -874,7 +874,7 @@ contains
 
     call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
 
-    if (.not. mat_isdef(P)) call mat_init(P, ntbas(0), ntbas(0))
+    if (.not. mat_isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
 
     P%pg_sym        = iprpsym(op_index)

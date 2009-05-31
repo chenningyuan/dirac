@@ -6,7 +6,7 @@
 ! operations in matrix_operations (Dalton)
 
 ! mainly intended as hidden back-end for matrix_defop
-! mat_init is generalized so that another matrix can fill
+! init_mat is generalized so that another matrix can fill
 ! the role of nrow and ncol
 
 module matrix_genop
@@ -15,20 +15,20 @@ module matrix_genop
   use matrix_operations,                  &
       only: matrix,                       &
             mat_mul,                      &
-            mat_init_full    => mat_init, &
+            init_mat_full    => init_mat, &
             mat_free_nonzero => mat_free
 #else
   use matrix_genop_interface
 !     matrix_genop_interface provides 
 !     DIRAC (only dense) versions of
-!     matrix, mat_mul, mat_init_full, mat_free_nonzero
+!     matrix, mat_mul, init_mat_full, mat_free_nonzero
 !     plus other DIRAC specifics
 #endif /* PRG_DIRAC */  
 
   implicit none
 
   public matrix
-  public mat_init
+  public init_mat
   public mat_free
   public mat_same
   public mat_isdef
@@ -41,9 +41,9 @@ module matrix_genop
 
   private
 
-  interface mat_init
-    module procedure mat_init_full
-    module procedure mat_init_from
+  interface init_mat
+    module procedure init_mat_full
+    module procedure init_mat_from
   end interface
 
   integer :: nz = 1
@@ -61,7 +61,7 @@ contains
     end subroutine
 
 
-    subroutine mat_init_from(C,A,ta,B,tb,zero,alias,reset)
+    subroutine init_mat_from(C,A,ta,B,tb,zero,alias,reset)
         type(matrix),         intent(inout) :: C
         type(matrix),optional,intent(in)    :: A,B
         character*1, optional,intent(in)    :: ta,tb
@@ -69,29 +69,29 @@ contains
         logical                             :: taa,tbb,zer,ali,res
         integer                             :: nrow,ncol
         if (present(ta) .and. .not.present(A)) &
-            call quit('mat_init_as input error : ta present without A')
+            call quit('init_mat_as input error : ta present without A')
         if (present(B) .and. .not.present(ta)) &
-            call quit('mat_init_as input error : B present without A')
+            call quit('init_mat_as input error : B present without A')
         if (present(tb) .and. .not.present(B)) &
-            call quit('mat_init_as input error : tb present without B')
+            call quit('init_mat_as input error : tb present without B')
         if (present(zero) .and. .not.present(A)) &
-            call quit('mat_init_as input error : zero present without A')
+            call quit('init_mat_as input error : zero present without A')
         if (present(alias) .and. .not.present(A)) &
-            call quit('mat_init_as input error : alias present without A')
+            call quit('init_mat_as input error : alias present without A')
         if (present(alias) .and. present(ta)) &
-            call quit('mat_init_as input error : alias present with ta')
+            call quit('init_mat_as input error : alias present with ta')
         if (present(reset) .and. present(A)) &
-            call quit('mat_init_as input error : reset present with A')
+            call quit('init_mat_as input error : reset present with A')
         taa = .false.
         if (present(ta)) then
             if (ta/='N'.and.ta/='T') &
-                call quit("mat_init_as input error : ta is not 'N' or 'T'")
+                call quit("init_mat_as input error : ta is not 'N' or 'T'")
             taa = (ta=='T')
         end if
         tbb = .false.
         if (present(tb)) then
             if (tb/='N'.and.tb/='T') &
-                call quit("mat_init_as input error : tb is not 'N' or 'T'")
+                call quit("init_mat_as input error : tb is not 'N' or 'T'")
             tbb = (tb=='T')
         end if
         zer = .false.
@@ -112,8 +112,8 @@ contains
         else if (ali) then
             C = A !copies all fields
         else
-            !print *,'mat_init',loc(C)
-            call mat_init_full(C,nrow,ncol)
+            !print *,'init_mat',loc(C)
+            call init_mat_full(C,nrow,ncol)
         end if
     end subroutine
 

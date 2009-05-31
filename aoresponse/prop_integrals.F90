@@ -9,8 +9,8 @@ module prop_integ
 !         any explicit (de)allocations (like in twoint and twoctr)
 !         these are specific to programs and matrix/algebra dimensions
 !         they should be moved to program specific interfaces
-!ajt: mat_init(A,B,tb) is now supplied by matrix_defop and has
-!     replaced all mat_init(A,nrow,ncol)
+!ajt: init_mat(A,B,tb) is now supplied by matrix_defop and has
+!     replaced all init_mat(A,nrow,ncol)
 
     use matrix_defop
 #ifndef PRG_DIRAC
@@ -200,8 +200,8 @@ contains
             if (.not.all((/(iszero(D(i)),i=pb1-pb+1,pb1)/))) &
                 stop 'prop_energy: unperturbed Fock matrix needed'
             if (m==2) then !stopping at m=2, for now
-                call mat_init(A(1),A(1)) !de_GET_GbDs expects initialized
-                if (do_dft()) call mat_init(A(2),A(2)) !so does di_get_sigma..
+                call init_mat(A(1),A(1)) !de_GET_GbDs expects initialized
+                if (do_dft()) call init_mat(A(2),A(2)) !so does di_get_sigma..
                 do j=0,b(2)-1
                     call di_GET_GbDs(D(1+b(1)+1+j),A(1))
                     if (do_dft()) then
@@ -256,7 +256,7 @@ contains
             if (.not.all((/(iszero(D(i)),i=pb1-pb+1,pb1)/))) then
                 call twofck('M',D(1:1),A(1:3))
                 if (do_dft()) then
-                    do i=1,3; call mat_init(A(3+i),A(3+i)); end do
+                    do i=1,3; call init_mat(A(3+i),A(3+i)); end do
                     call di_get_MagDeriv_FxD_DFT(A(4:6),D(1))
                     do i=1,3; A(i) = A(i) + A(3+i); A(3+i)=0; end do
                 end if
@@ -273,7 +273,7 @@ contains
                     call twofck('M',D(1+i:1+i),A(1:3))
                     if (do_dft()) then
                         do k=4,6 !since di_get_MagDeriv expects initialized
-                            if (iszero(A(k))) call mat_init(A(k),A(k))
+                            if (iszero(A(k))) call init_mat(A(k),A(k))
                         end do
                         call di_get_MagDeriv_GxD_DFT(D(1),D(1+i),A(4:6))
                         do k=1,3; A(k) = A(k) - A(3+k); end do !sign on KS contrib
@@ -523,7 +523,7 @@ contains
 
           if (m == 0) call quit('fock_core: unperturbed Fock matrix requested')
 
-            call mat_init(A(1), A(1))
+            call init_mat(A(1), A(1))
 
             do i = 1, pb
 
@@ -708,7 +708,7 @@ contains
                     F(i) = F(i) + A(1)
                 end do
             end if
-            do i=1,3; call mat_init(A(i),D(1)); end do
+            do i=1,3; call init_mat(A(i),D(1)); end do
             do i=1,pb; ii=pb1-pb+i
                 if (iszero(D(ii))) cycle
                 do k=0,c(2)-c(1); kk=c(1)+k
@@ -828,7 +828,7 @@ contains
     type(matrix), intent(inout) :: A
 !   ----------------------------------------------------------------------------
 
-    if (iszero(A)) call mat_init(A, A)
+    if (iszero(A)) call init_mat(A, A)
     call di_read_operator_int(l, A)
 
   end subroutine
@@ -864,7 +864,7 @@ contains
                    ,n2*nf,what(1:1)=='G',what(1:1)=='M',len(what),0 &
                    ,.false.,.true.,wrk(1:n2*nd),nd)
         do i=1,nf
-            if (iszero(F(i))) call mat_init(F(i),F(i))
+            if (iszero(F(i))) call init_mat(F(i),F(i))
             F(i)%elms = wrk(1+n2*(nd+i-1):n2*(nd+i))
         end do
         deallocate(wrk)
