@@ -4900,6 +4900,8 @@ CMI    ... quantum dots
 #ifdef MOD_DFT
       IF(DFTHAM) THEN
          CALL DFTREPORT()
+         call consistency_after_dft_input()
+         call report_after_dft_input()
 
 #ifdef MOD_ERI
 C aspg, 20070909
@@ -5379,8 +5381,6 @@ C
     3 CONTINUE
 #ifdef MOD_DFT
       call parse_dft_input(word, .false.)
-      call consistency_after_dft_input()
-      call report_after_dft_input()
 #else
 C       hjaaj 3jun2003: dirac.x went into an infinite loop here
 C       if *DFT in input but MOD_DFT not defined !!!
