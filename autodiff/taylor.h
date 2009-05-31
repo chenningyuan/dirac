@@ -98,6 +98,10 @@ static inline int taylor_len(int nvar, int ndeg)
 // This is a slow operation
 int taylor_index(int nvar, const int exponents[]);
 
+// Given a list of exponents, modify m to be the next
+// set of exponents in lexicographical order.
+void taylor_next_exponents(int n, int m[]);
+
 // Multiply polynomials with coefficients p1 and p2,
 // and _add_ the result to dst.
 void taylor_mul(tnum_t dst[], int nvar, int ndeg,
@@ -130,6 +134,15 @@ class taylor
       assert(var<Nvar);
       c[1+var] = var_value;
     }
+  // Put the Nvar exponents of term in exponents.
+  void exponents(int term, int exponents[])
+  {
+    for (int i=0;i<Nvar;i++)
+      exponents[i] = 0;
+    for (int i=0;i<term;i++)
+      taylor_next_exponents(Ndeg,exponents);
+  }
+
   // Evaluate polynomial or derivative of polynomial at x.
   // This is not a fast or accurate function.
   tnum_t eval(tnum_t x, int derivative_order = 0)
@@ -246,6 +259,25 @@ class taylor
 	      res *= tmp;
 	    }
 	  res[0] += coeff[0];
+	}
+    }
+  // For a two variable expansion, take out an expression in
+  // the second variable where the first variable appears in
+  // Ndeg - Mdeg order. For example (Ndeg = 2)
+  // 1 + ax + by + cx^2 + dxy + ey^2 =
+  // 1 + by + e y^2 + (Mdeg = 2)
+  // ax + dxy + (Mdeg = 1)
+  // cx^2 (Mdeg = 0)
+  // It might be possible to generalize this..
+  template<int Mdeg>
+    void reduce(taylor<1,Mdeg> &dst)
+    {
+      assert(Ndeg == 2);
+      int j = 0, d = Ndeg - Mdeg;
+      for (int i=d;i<=Ndeg;i++)
+	{
+	  dst[j] = c[(i*(i+1))/2 + j];
+	  j++;
 	}
     }
   // protected: //Need taylor<1,Ndeg> be friends with taylor<Nvar,Ndeg>, but how??
@@ -580,5 +612,7 @@ taylor<Nvar,Ndeg> asinh(const taylor<Nvar,Ndeg> &t)
   t.compose(res,tmp);
   return res;
 }
+
+
 
 #endif
