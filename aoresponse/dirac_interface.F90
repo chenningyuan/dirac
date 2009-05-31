@@ -303,10 +303,10 @@ contains
 !   fixme: QO to AO
 
     if (debug_me) then
-      call mat_print(F_mo,     label = 'debug F_mo')
-      call mat_print(F_temp,   label = 'debug F_temp')
-      call mat_print(F_folded, label = 'debug F_folded')
-      call mat_print(D_folded, label = 'debug D_folded')
+      call print_mat(F_mo,     label = 'debug F_mo')
+      call print_mat(F_temp,   label = 'debug F_temp')
+      call print_mat(F_folded, label = 'debug F_folded')
+      call print_mat(D_folded, label = 'debug D_folded')
     end if
 
     grd_nosmlv = .false.
@@ -402,7 +402,7 @@ contains
 
     D = 4.0d0*D
     if (debug_me) then
-      call mat_print(D, label = 'debug D in AO basis')
+      call print_mat(D, label = 'debug D in AO basis')
     end if
 
     do i = 1, 3*mxcent
@@ -905,7 +905,7 @@ contains
     P = 2.0d0*P
 
     if (debug_me) then
-      call mat_print(P, label = 'debug P in AO basis')
+      call print_mat(P, label = 'debug P in AO basis')
     end if
 
     call dealloc(ptri)
@@ -1122,8 +1122,8 @@ contains
     RHS_mo%fermi_pointer = RHS%fermi_pointer
 
     if (debug_me) then
-      call mat_print(RHS,    label = 'debug RHS in AO basis')
-      call mat_print(RHS_mo, label = 'debug RHS in MO basis')
+      call print_mat(RHS,    label = 'debug RHS in AO basis')
+      call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
     if (do_pp) then
@@ -1400,10 +1400,10 @@ contains
     Dp%fermi_pointer = Wp%fermi_pointer
 
     if (debug_me) then
-      call mat_print(Wp, label = 'debug Wp')
-      call mat_print(Dp, label = 'debug Dp')
-      call mat_print(Ci, label = 'debug Ci')
-      call mat_print(Cs, label = 'debug Cs')
+      call print_mat(Wp, label = 'debug Wp')
+      call print_mat(Dp, label = 'debug Dp')
+      call print_mat(Ci, label = 'debug Ci')
+      call print_mat(Cs, label = 'debug Cs')
     end if
 
     Ci = 0

@@ -37,7 +37,7 @@ module matrix_genop
    public mat_gemm
    public mat_dot
    public mat_trace_nontmp
-   public mat_print_nontmp
+   public print_mat_nontmp
    
    private
    
@@ -320,7 +320,7 @@ contains
             r = sum((/(A%elms(1+(i-1)*(A%nrow+1)),i=1,A%nrow)/))
     end function
 
-   subroutine mat_print_nontmp(A,unit,width,label,braces)
+   subroutine print_mat_nontmp(A,unit,width,label,braces)
       !print matrix A to standard out,starting with label
       type(matrix),         intent(in) :: A
       integer,     optional,intent(in) :: unit,width

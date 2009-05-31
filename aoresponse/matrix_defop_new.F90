@@ -9,36 +9,36 @@
 module matrix_defop
 ! Defined operators for type(matrix)
 ! (which in linsca comes from module matrix_operations).
-! 
+!
 ! The operators are as follows:
-! 
-!      equals                       A = B
-!      plus                         A + B
-!      minus                        A - B
-!      matrix product               A * B
-!      scale by real(8)             r * A
-!      divide by real(8)            A / r
-!      (conjugate) transpose        dag(A)
-!      trace                        tr(A)
-!      scalar product               dot(A,B)
-!      product trace                tr(A,B),
-!      for zeroing and freeing      A=0, A(:)=0, A(:,:)=0
-!      norm ie. sqrt(dot(A,A))      norm(A)
-!      mat_to_full                  A = B(:,:)
-!      mat_set_from_full            B(:,:) = A, B(:) = A
-! 
+!
+!     equals                       A = B
+!     plus                         A + B
+!     minus                        A - B
+!     matrix product               A * B
+!     scale by real(8)             r * A
+!     divide by real(8)            A / r
+!     (conjugate) transpose        dag(A)
+!     trace                        tr(A)
+!     scalar product               dot(A,B)
+!     product trace                tr(A,B),
+!     for zeroing and freeing      A=0, A(:)=0, A(:,:)=0
+!     norm ie. sqrt(dot(A,A))      norm(A)
+!     mat_to_full                  A = B(:,:)
+!     mat_set_from_full            B(:,:) = A, B(:) = A
+!
 ! To increase performance and lower memory needs, formulas are not
 ! evaluated by executing the operators immediately, but the operators are
 ! first collected into "batches" of the forms
-! 
+!
 !     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
 !     gemm:       Y = a * X(^T) * Z(^T) + b * Y
-! 
-! To create matrices, init_mat (from module matrix_operations)
-! has been generalized. This is to hide context-specific information,
-! (closed/open shell, real/complex, 1/2/4-component, full/sparse)
-! and make it possible to write general code:
-! 
+!
+! To create matrices, mat_init (from module matrix_operations) is replaced
+! by a more general init_mat. This is to hide context-specific information:
+! closed/open shell, real/complex, 1/2/4-component, full/sparse,
+! and thus make it possible to write general code:
+!
 !     call init_mat(A,nrow,ncol)       original version
 !     call init_mat(A,B)               same shape
 !     call init_mat(A,B,'T')           transpose shape
@@ -46,29 +46,29 @@ module matrix_defop
 !     call init_mat(A,B,zero=.true.)   non-allocated zero of same shape
 !     call init_mat(A,reset=.true.)    reset to defaults, nullifying pointers
 !     call init_mat(A,B,alias=.true.)  copy pointers, no new allocation
-! 
+!
 ! Comparison of the shapes (and content) of matrices is done with mat_same
-! 
+!
 !     if (mat_same(A,B)) ..            if same shape and content (alias)
 !     if (mat_same(A,B,'N')) ..        if same shapes
 !     if (mat_same(A,B,'T')) ..        if transposed shapes
 !     if (mat_same(A,B,'T','R')) ..    if A's rows matches B's columns
 !     if (mat_same(A,B,'N','C')) ..    if A's columns matches B's columns
-! 
-! For printing matrices, mat_print has been replaced:
-! 
-!     call mat_print(A,label='A',width=7,unit=6,braces='{')
-! 
+!
+! For printing matrices, print_mat has been replaced:
+!
+!     call print_mat(A,label='A',colwidth=7,unit=6,braces='{')
+!
 ! The label is printed on the line preceding the matrix. Width specifies the
 ! text width of each column (excluding separator). The number of digits printed
 ! is adjusted so that no columns become overfilled (*****). Braces can either
 ! be one character {, [, (, | etc., or four '{,};', where the comma is column
 ! separator and semicolon row separator. This is convenient for pasting into
 ! python, maple, mathematica, etc.
-! 
+!
 ! To check the state of matrices: Whether defined: isdef(A),
 ! whether zero: iszero(A)
-! 
+!
 ! In order to pass a "formula", such as A+3*dag(B) etc., as argument X to a subroutine,
 ! the subroutine must execute mat_fix_arg(X) before using X inside the subroutine.
 ! At the end of the subroutine mat_unfix_arg(X) should be called in order to free X.
@@ -76,7 +76,7 @@ module matrix_defop
 ! This is neccessary since the Fortran programmer cannot tell whether the temporary
 ! is used inside its own subruoutine, where it should be deleted after use,
 ! or inside a called subroutine, in which it should be non-temporary.
-! 
+!
 ! In order to have type(matrix) as the result of a function, mat_fix_result(X)
 ! should be called before returning from the function. This sets X's status as
 ! temporary, so that it will be deleted once used.
@@ -87,7 +87,7 @@ module matrix_defop
 
    public matrix
    public init_mat
-   public mat_print
+   public print_mat
    public isdef
    public iszero
    public assignment(=)
@@ -797,7 +797,7 @@ contains
       end do
    end subroutine
 
-   subroutine mat_print(A,unit,width,label,braces)
+   subroutine print_mat(A,unit,width,label,braces)
       type(matrix)                     :: A
       integer,     optional,intent(in) :: unit,width
       character(*),optional,intent(in) :: label,braces
@@ -806,11 +806,11 @@ contains
 !       defA = isdef(A)
 !       nullify(T); if (.not.defA) T => find_tmp(A)
 !       if (.not.defA .and. .not.associated(T)) &
-!           call quit('mat_print(A) : A undefined')
-      T => find_tmp(A,'mat_print(A) : A undefined')
+!           call quit('print_mat(A) : A undefined')
+      T => find_tmp(A,'print_mat(A) : A undefined')
       delA = associated(T)
       if (associated(T)) call eval_tmp(T)
-      call mat_print_nontmp(A,unit,width,label,braces)
+      call print_mat_nontmp(A,unit,width,label,braces)
       if (delA) call mat_free(A)
    end subroutine
 

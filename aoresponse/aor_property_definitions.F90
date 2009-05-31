@@ -173,45 +173,45 @@ contains
     F   = 1.0d0*F
     C_i = 1.0d0*C_i
 
-    call mat_print(D, label = 'test_matrix_defop: D')
+    call print_mat(D, label = 'test_matrix_defop: D')
 
-    call mat_print(F, label = 'test_matrix_defop: F')
+    call print_mat(F, label = 'test_matrix_defop: F')
 
     A = F
-    call mat_print(A, label = 'test_matrix_defop: A = F')
+    call print_mat(A, label = 'test_matrix_defop: A = F')
 
     A = F + F
-    call mat_print(A, label = 'test_matrix_defop: A = F + F')
+    call print_mat(A, label = 'test_matrix_defop: A = F + F')
 
     A = F - F
-    call mat_print(A, label = 'test_matrix_defop: A = F - F')
+    call print_mat(A, label = 'test_matrix_defop: A = F - F')
 
     A = F*F
-    call mat_print(A, label = 'test_matrix_defop: A = F*F')
+    call print_mat(A, label = 'test_matrix_defop: A = F*F')
 
     A = D*F
-    call mat_print(A, label = 'test_matrix_defop: A = D*F')
+    call print_mat(A, label = 'test_matrix_defop: A = D*F')
 
     A = 2.0d0*F
-    call mat_print(A, label = 'test_matrix_defop: A = 2.0d0*F')
+    call print_mat(A, label = 'test_matrix_defop: A = 2.0d0*F')
 
     A = F/2.0d0
-    call mat_print(A, label = 'test_matrix_defop: A = F/2.0d0')
+    call print_mat(A, label = 'test_matrix_defop: A = F/2.0d0')
 
     A = C_i
-    call mat_print(A, label = 'test_matrix_defop: A = C_i')
+    call print_mat(A, label = 'test_matrix_defop: A = C_i')
 
     A = dag(C_i)
-    call mat_print(A, label = 'test_matrix_defop: A = dag(C_i)')
+    call print_mat(A, label = 'test_matrix_defop: A = dag(C_i)')
 
     A = C_i*dag(C_i)
-    call mat_print(A, label = 'test_matrix_defop: A = C_i*dag(C_i)')
+    call print_mat(A, label = 'test_matrix_defop: A = C_i*dag(C_i)')
 
     A = C_i*dag(C_i)/2.0d0
-    call mat_print(A, label = 'test_matrix_defop: A = C_i*dag(C_i)/2.0d0')
+    call print_mat(A, label = 'test_matrix_defop: A = C_i*dag(C_i)/2.0d0')
 
     A = F*D*S - S*D*F
-    call mat_print(A, label = 'test_matrix_defop: A = F*D*S - S*D*F')
+    call print_mat(A, label = 'test_matrix_defop: A = F*D*S - S*D*F')
 
 !   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
 
@@ -948,23 +948,23 @@ subroutine beta_debug(S,D,F,w)
 
 !      M = H(1)*D*S - S*D*H(1)
 !      write(*, *) 'debug matrix 1:'
-!      call mat_print(M)
+!      call print_mat(M)
 
 !      M = G(1)*D*S - S*D*G(1)
 !      write(*, *) 'debug matrix 2:'
-!      call mat_print(M)
+!      call print_mat(M)
 
 !      M = Ff(i)*D*S - S*D*Ff(i)
 !      write(*, *) 'debug matrix 3:'
-!      call mat_print(M)
+!      call print_mat(M)
 
 !      M = F*Df(i)*S - S*Df(i)*F
 !      write(*, *) 'debug matrix 4:'
-!      call mat_print(M)
+!      call print_mat(M)
 
        T = Ff(i)*D*S - S*D*Ff(i) + F*Df(i)*S - S*Df(i)*F
 !      write(*, *) 'debug matrix 5:'
-!      call mat_print(T)
+!      call print_mat(T)
 !      write(*, *) 'debug_norm 4:', T**T
 
     end do

@@ -12,7 +12,7 @@ module matrix_defop
   public dot
   public iszero
   public isdef
-  public mat_print
+  public print_mat
   public undef
   public matrixstats
 
@@ -87,7 +87,7 @@ module matrix_defop
     module procedure matrix_is_zero
   end interface
 
-  interface mat_print
+  interface print_mat
     module procedure print_matrix
   end interface
 
