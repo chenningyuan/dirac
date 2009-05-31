@@ -60,6 +60,7 @@ line 2 - iopt(1:20) (20i3)
            t amplitudes agree to 10**(-iopt(3))
 
  iopt(4) .ne.0 - do rle (convergence accelerator) every iopt(4) iterations.
+          good number is 4, must not be 1
 
  iopt(5) - t amplitudes (and other quantities, depending on iopt(1))
            printed only if elements gt 10**(-iopt(5))
