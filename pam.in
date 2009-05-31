@@ -105,7 +105,7 @@ extrausage ()
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
    echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
-   echo '     -prof                  : After finishing run do profilin with "'$PROFILER'"'
+   echo '     -prof                  : After finishing run profiling with "'$PROFILER'"'
 }
 #
 #
