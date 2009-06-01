@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program csd 
-#else
+!#if defined STANDALONE_HSFS
+!      program csd 
+!#else
       subroutine csd
-#endif
+!#endif
 
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -384,7 +384,6 @@ c  different endings
       call prtime ("end",0,0)
       !call prtime ("end     ",0,0)
 
-      stop
       end ! of program/routine csd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

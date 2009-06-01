@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program csu 
-#else
+!#if defined STANDALONE_HSFS
+!      program csu 
+!#else
       subroutine csu
-#endif
+!#endif
 
       implicit real*8 (a-h,o-z)
 !      include 'parameters.f'
@@ -16,6 +16,7 @@
       common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
       common /csdtime/ csdstim,csdltim
+
       character*256 filenm,filenm51,filenm52,filenm54,filenm6,
      1              filenm20,filenm21,filenm22
 c     iopt(1) - print.
@@ -264,7 +265,8 @@ c  different endings
       write (*,*) nstrt(1,nflcur),' words used in igen,',
      1  nstrt(2,nflcur),' words used in gen'
       call prtime("end     ",iter,0)
-      stop
+
+!      stop
       end
 c *********************************************
       subroutine ordvu
@@ -730,7 +732,7 @@ c    diag 34,35
         call add       ("va1 ",2.d0,"va2 ",-1.d0,"s1  ")
         call mult      ("s1  ","t1c ","s3  ",202)
 C (Gal) Feb 95
-	call add       ("s3  ",1.d0,"hp  ",1.d0,"s3  ")
+        call add       ("s3  ",1.d0,"hp  ",1.d0,"s3  ")
         call reord6    ("t32 ","s1  ",124536)
         call reord6    ("t32 ","s2  ",124635)
         call add       ("s1  ",1.d0,"s2  ",-1.d0,"s1  ")

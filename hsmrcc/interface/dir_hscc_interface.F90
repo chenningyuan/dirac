@@ -418,6 +418,8 @@ use DIRAC_HSFS
 
    call header('Output from "get_dirac_ints"',-1)
 
+   write(LUPRI,'(2x,a,i5)') 'iprint_hsfs=',iprint_hsfs
+
    call open_dirac_hsfs_file
 
    read(luhsfs) nirp,nort
@@ -432,6 +434,7 @@ use DIRAC_HSFS
     if (iprint_hsfs >= 3) then
      write(LUPRI,*) i,eps(i)
     endif
+
    enddo 
 
    read(luhsfs,iostat=ios) nint

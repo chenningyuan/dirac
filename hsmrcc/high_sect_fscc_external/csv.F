@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program csv
-#else
+!#if defined STANDALONE_HSFS
+!      program csv
+!#else
       subroutine csv
-#endif
+!#endif
 
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -270,11 +270,14 @@ c  different endings
       end if
       egr0=0.d0
       call eneru2 (egr0,1,3,max(1,iopt(1)))
+
       write (*,*) nstrt(1,nflcur),' words used in igen,',
      1  nstrt(2,nflcur),' words used in gen'
-      call prtime("end     ",iter,0)
+
+      call prtime("end",iter,0)
       call flush (6)
-      stop
+
+!      stop
       end
 
 c *********************************************

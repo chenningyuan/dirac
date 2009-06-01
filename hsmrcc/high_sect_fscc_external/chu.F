@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program chu 
-#else
+!#if defined STANDALONE_HSFS
+!      program chu 
+!#else
       subroutine chu 
-#endif
+!#endif
 
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -256,7 +256,7 @@ c  different endings
       write (*,*) nstrt(1,nflcur),' words used in igen,',
      1  nstrt(2,nflcur),' words used in gen'
       call prtime("end     ",iter,0)
-      stop
+!      stop
       end
 c *********************************************
 !     subroutine ordvu

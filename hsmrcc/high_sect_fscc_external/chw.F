@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program chw 
-#else
+!#if defined STANDALONE_HSFS
+!      program chw 
+!#else
       subroutine chw
-#endif
+!#endif
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 !     include 'parameters.f'
@@ -210,7 +210,7 @@ c     iopt(10) .ne.0 - do not write tape9
       write (6,*) nstrt(1,nflcur),' words used in igen,',
      1nstrt(2,nflcur),' words used in gen'
       call prtime ("end ",0,0)
-      stop
+!      stop
       end
 C ********************************************************************
 !     subroutine ordv

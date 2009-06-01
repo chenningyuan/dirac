@@ -1,8 +1,8 @@
-#if defined STANDALONE_HSFS
-      program chz
-#else
+!#if defined STANDALONE_HSFS
+!      program chz
+!#else
       subroutine chz
-#endif
+!#endif
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 !     include 'parameters.f'
@@ -132,7 +132,7 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       write (6,*) nstrt(1,nflcur),'words used in igen,',
      1nstrt(2,nflcur),' words used in gen'
       call prtime ("end ",0,0)
-      stop
+!      stop
       end
 C  *******************************************************************
 !     subroutine ordv

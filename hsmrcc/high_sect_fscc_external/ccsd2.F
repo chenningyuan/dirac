@@ -2884,6 +2884,7 @@ c             write (6,*) ' '
       if (iparm.gt.iopt(1)) return
 
       t = mclock()/1000000.
+
       diff = t - csdltim
       acum = t - csdstim
 
@@ -2921,6 +2922,9 @@ c             write (6,*) ' '
       character typ(2,5),cc(200)
       character*8 title(10)
       data typ /'c','C','h','H','p','P','g','G','v','V'/
+
+      ! needed for repeating reading by subsequent executables
+      rewind(LUCMD) 
 
 !     read (5,'(10a8)')     title
       read (LUCMD,'(10a8)')     title
@@ -3070,7 +3074,7 @@ c             write (6,*) ' '
 !
 !  gets in symmetry information
 !
-!  Called from each executable
+!  Called from each method (executable)
 !
 !----------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
@@ -3189,4 +3193,3 @@ c             write (6,*) ' '
 
       return
       end subroutine rdsym
-
