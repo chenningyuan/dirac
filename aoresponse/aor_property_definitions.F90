@@ -195,9 +195,6 @@ contains
     A = 2.0d0*F
     call print_mat(A, label = 'test_matrix_defop: A = 2.0d0*F')
 
-    A = F/2.0d0
-    call print_mat(A, label = 'test_matrix_defop: A = F/2.0d0')
-
     A = C_i
     call print_mat(A, label = 'test_matrix_defop: A = C_i')
 
@@ -207,22 +204,17 @@ contains
     A = C_i*dag(C_i)
     call print_mat(A, label = 'test_matrix_defop: A = C_i*dag(C_i)')
 
-    A = C_i*dag(C_i)/2.0d0
-    call print_mat(A, label = 'test_matrix_defop: A = C_i*dag(C_i)/2.0d0')
+    A = 0.5d0*C_i*dag(C_i)
+    call print_mat(A, label = 'test_matrix_defop: A = 0.5d0*C_i*dag(C_i)')
 
     A = F*D*S - S*D*F
     call print_mat(A, label = 'test_matrix_defop: A = F*D*S - S*D*F')
 
-!   write(*, *) 'test_matrix_defop: tr(D)', tr(D)
-
-    write(*, *) 'test_matrix_defop: dot(S, D)', dot(S, D)
-    write(*, *) 'test_matrix_defop: tr(S, D)', tr(S, D)
-
-    write(*, *) 'test_matrix_defop: dot(D, F)', dot(D, F)
-    write(*, *) 'test_matrix_defop: tr(D, F)', tr(D, F)
-
-    write(*, *) 'test_matrix_defop: norm(F)', norm(F)
-
+    write(*, *) 'test_matrix_defop: dot(S, D)',       dot(S, D)
+    write(*, *) 'test_matrix_defop: tr(S, D)',        tr(S, D)
+    write(*, *) 'test_matrix_defop: dot(D, F)',       dot(D, F)
+    write(*, *) 'test_matrix_defop: tr(D, F)',        tr(D, F)
+    write(*, *) 'test_matrix_defop: norm(F)',         norm(F)
     write(*, *) 'test_matrix_defop: sqrt(dot(F, F))', sqrt(dot(F, F))
 
   end subroutine
