@@ -45,17 +45,27 @@ subroutine get_line_arguments
 !
 !    get arguments for order of methods 
 !
+! NOTE: be aware not all F90 are supporting argument
+!      line reading intrinsic function !
+!
 !------------------------------------------------------------------
 #include "priunit.h"
 integer :: nargs,i
 character(len=3):: this_arg
-nargs = command_argument_count()
+
+! get number of arguments
+!nargs = command_argument_count()
+nargs = iargc()
+
 if (nargs == 0) then
   call quit('no argument !')
 else
  allocate (method_name(nargs))
  do i=1,nargs
-    CALL get_command_argument(i, this_arg)
+
+   ! CALL get_command_argument(i, this_arg)
+    CALL getarg(i, this_arg)
+
     if  (.not.check_method_name(this_arg)) then
       write(LUPRI,*) i,'.argument - method',this_arg, ' not found in the list !'
       call PRTAB(size(hs_method_name),hs_method_name,this_arg//'input keywords',LUPRI)
@@ -104,10 +114,34 @@ do i=1, num_methods
 
   if      ( method_name(i) == 'csd' ) then
       call csd
-  else if ( method_name(i) == 'csu' ) then
-      call csu
   else if ( method_name(i) == 'csv' ) then
       call csv
+  else if ( method_name(i) == 'csu' ) then
+      call csu
+  else if ( method_name(i) == 'csw' ) then
+      call csw
+  else if ( method_name(i) == 'csx' ) then
+      call csx
+  else if ( method_name(i) == 'csy' ) then
+      call csy
+  else if ( method_name(i) == 'csz' ) then
+      call csz
+  else if ( method_name(i) == 'chv' ) then
+      call chv
+  else if ( method_name(i) == 'chu' ) then
+      call chu
+  else if ( method_name(i) == 'chw' ) then
+      call chw
+  else if ( method_name(i) == 'chx' ) then
+      call chx
+  else if ( method_name(i) == 'chy' ) then
+      call chy
+  else if ( method_name(i) == 'chz' ) then
+      call chz
+  else if ( method_name(i) == 'chp' ) then
+      call chp
+  else if ( method_name(i) == 'chq' ) then
+      call chq
   else
       write(LUPRI,*) method_name(i),' is not in the list !'
       call quit('launch_hsfs_methods')
@@ -120,13 +154,14 @@ end subroutine launch_hsfs_methods
 end module high_sect_execs
 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ module     get_gamess_mo_ints
+
 !
 ! module for getting MO integrals into higher sector FSCC code
 !
 ! here these are coming in from Sham's modified GAMESS
 !
-
- module     get_gamess_mo_ints
 
    integer, parameter :: LuHCRMO=18
    integer, parameter :: LuMULMO=19
@@ -265,5 +300,4 @@ end module high_sect_execs
  end subroutine rd_mulmo 
 
  end module get_gamess_mo_ints
-
 

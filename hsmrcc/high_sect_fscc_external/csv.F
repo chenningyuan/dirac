@@ -360,7 +360,7 @@ c**************************************************************
       call diag3a_csv
       call diag4b_csv
       call diag5b_csv
-      call diag6b
+      call diag6b_csv
       call diag8_csv
       call diag20b_csv
       call diag18b_csv
@@ -1030,7 +1030,8 @@ c *******************************************************
       return
       end
 c **********************************************************
-      subroutine diag6b
+!     subroutine diag6b
+      subroutine diag6b_csv
       implicit real*8 (a-h,o-z)
       call mult("vphp","tcm2","s3  ",222)
       call add("tb15",1.d0,"s3  ",-1.d0,"tb15")

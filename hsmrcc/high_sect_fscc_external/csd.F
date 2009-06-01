@@ -696,7 +696,8 @@ c ****************************************************
       call diag13_csd
 !     call diag14
       call diag14_csd
-      call diag16
+!     call diag16
+      call diag16_csd
       call diag21_csd
 !     call diag2
       call diag2_csd
@@ -1280,7 +1281,8 @@ c ------------------------------------
       return
       end
 c ****************************************************
-      subroutine diag16
+!     subroutine diag16
+      subroutine diag16_csd
       implicit real*8 (a-h,o-z)
       call mult("t1c ","hppp","s2  ",131)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
