@@ -2877,33 +2877,60 @@ c             write (6,*) ' '
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 
       character(*) tit ! to cut off trash characters
-      character*8 clockx
       real*4 cputime
+      CHARACTER*8  TIMEX,DATEX*10
+      ! generalized function
+!      real*4 cputime
 
       ! return if param > print level
       if (iparm.gt.iopt(1)) return
 
-      t = mclock()/1000000.
+      t=cputime(real(0.0))
+!     t = mclock()/1000000.
 
       diff = t - csdltim
       acum = t - csdstim
 
-!mi: gfortran does not know time...
-      call time(clockx)
+!mi: generalized routine ( gp/gpluuk.F )
+      CALL DAYTIME(DATEX,TIMEX)
 
 !      write(LUPRI,*)        ' * tit=',tit
 !      write(LUPRI,*)        ' * adjustl(tit)=',adjustl(tit)
 !      write(LUPRI,'(a,a8)') 'a8 tit=',tit
 !      write(LUPRI,'(a,a8)') 'a8 temp_tit=',temp_tit
 
-      print 900,tit,acum,diff,n,clockx
-900   format (' time aft ',a8,f10.3,';added ',
-     1 f8.3,' n=',i8,'. ',a24)
+!     print 900,tit,acum,diff,n,clockx
+!900   format (' time aft ',a8,f10.3,';added ',
+!     1 f8.3,' n=',i8,'. ',a24)
+
+      print 900,tit,acum,diff,n,datex,timex
+900   format (' time aft ',a9,f10.3,'; added ',
+     1 f10.3,'. n=',i8,'. ',2A12)
+
       csdltim = t
       call flush (LUPRI)
 
       return
       end subroutine prtime
+
+c *************************************************
+      function cputime(x)
+CDEC  Real*8 Runsec
+      Real*8 Runsec
+C
+CNVX  cputime = CPUTIME(0.0)
+CRAY  cputime = Second()
+CHP9  cputime = RUNSEC()
+CDEC  cputime = RUNSEC()
+      cputime = secnds(0.0)
+CIBM  cputime = MCLOCK()/100.D0
+CSGI  cputime = MCLOCK()/100.D0
+C
+!mi   - old version 
+!     t = mclock()/1000000.
+      return
+      end
+c *************************************************
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rdin

@@ -2010,10 +2010,6 @@ c   namet=f*namef
       call rvmuls(nsize,gen(istrtf+1),f,gen(istrtt+1))
       return
       end
-      function cputime(x)
-      cputime = mclock()/1000000.
-      return
-      end
 
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
       implicit real*8 (a-h,o-z)
