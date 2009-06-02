@@ -281,10 +281,7 @@ contains
         !----------------------------------------------------------------------------
         real*8                      :: x, ww(1)
 
-        type(matrix)                :: DS, RHS(1), SOL(1)
-#ifdef PRG_DIRAC               
-        type(matrix)                :: R
-#endif
+        type(matrix)                :: DS, RHS(1), SOL(1), R
 
         character*4                 :: nop(0)
         logical, save               :: first = .true.
@@ -297,6 +294,7 @@ contains
         DS = D*S
         Dp = DSD - DSD*dag(DS) - DS*DSD
         RHS(1) = FDS*DS - dag(DS)*FDS + Fp
+
         if (debug_me) then
           call print_mat(Dp,     label = 'debug solve_scf_eq: Dp    ')
           call print_mat(Fp,     label = 'debug solve_scf_eq: Fp    ')
@@ -304,9 +302,22 @@ contains
           call print_mat(FDS,    label = 'debug solve_scf_eq: FDS   ')
           call print_mat(RHS(1), label = 'debug solve_scf_eq: RHS(1)')
         end if
+
         FDS = 0
 
         call prop_fock(nop, (/D, Dp/), RHS)
+
+        if (debug_me) then
+          call print_mat(D,      label = 'debug solve_scf_eq: D     ')
+          call print_mat(Dp,     label = 'debug solve_scf_eq: Dp    ')
+          call print_mat(RHS(1), label = 'debug solve_scf_eq: RHS(1)')
+
+          R = RHS(1)*DS
+          call print_mat(R, label = 'debug solve_scf_eq: RHS(1)*DS')
+          R = dag(DS)*RHS(1)
+          call print_mat(R, label = 'debug solve_scf_eq: dag(DS)*RHS(1)')
+          R = 0
+        end if
 
         RHS(1) = -(RHS(1)*DS - dag(DS)*RHS(1)) !-(..) because RHS
         SOL(1) = tiny(1d0)*RHS(1)
@@ -325,6 +336,10 @@ contains
         DSD = SOL(1)*dag(DS) - DS*SOL(1)
         Dp  = Dp + 2.0d0*DSD
 #else
+        if (debug_me) then
+          call print_mat(RHS(1), label = 'debug solve_scf_eq: RHS(1)')
+        end if
+
 !       h+ part
         R = -0.5d0*(RHS(1) - dag(RHS(1)))
         if (debug_me) then
