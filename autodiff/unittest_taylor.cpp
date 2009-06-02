@@ -95,6 +95,21 @@ long fac(int n)
   return f;
 }
 
+long stupid_binomial(int n, int k)
+{
+  if (k < 0 || k > n)
+    return 0;
+  else
+    return fac(n)/(fac(k)*fac(n-k));
+}
+
+template<int N>
+taylor<2,N> binomial_generating_function(void)
+{
+  taylor<2,N> x(0,0),y(0,1);
+  return 1/(1-(1+x)*y); //generating function for the binomial coefficients
+}
+
 int main(void)
 {
   double x0 = 2.5;
@@ -209,6 +224,19 @@ int main(void)
       cout << "Error in taylor::index_of()\n";
       res++;
     }
+
+  // Generating function binomial coeffs.
+  taylor<2,10> nchoosek = binomial_generating_function<10>();
+  for (int i=0;i<=10;i++)
+    for (int j=0;i+j<=10;j++)
+      {
+	int ij[2] = {i,j};
+	if (fabs(nchoosek[taylor_index(2,ij)] - stupid_binomial(j,i)) > 1e-15)
+	  {
+	    cout << "Error evaluating binomial coefficients by generating function\n";
+	    res++;
+	  }
+      }
 #ifdef TAYLOR_QD
   fpu_fix_end(&cw);
 #endif
