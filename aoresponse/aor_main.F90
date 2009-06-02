@@ -33,7 +33,7 @@ contains
     call get_i_or_s_C(C_i, 'i')
 
     D   = C_i*dag(C_i)
-    D   = D/2.0d0
+    D   = 0.5d0*D
 
     call get_F(F)
 

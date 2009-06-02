@@ -20,6 +20,8 @@ module rsp_equations
 
     private
 
+    logical :: debug_me = .true.
+
 contains
 
     subroutine pert_fock(p,D, F, c)
@@ -316,15 +318,23 @@ contains
         DSD = SOL(1)*dag(DS) - DS*SOL(1)
         Dp  = Dp + 2.0d0*DSD
 #else
-        R = -(RHS(1) - dag(RHS(1)))/2.0d0 !ajt: changed sign on RHS
-        if (dot(R,R) > aor_cfg_threshold_rhs) then
+!       h+ part
+        R = -0.5d0*(RHS(1) - dag(RHS(1)))
+        if (debug_me) then
+          call print_mat(R, label = 'debug solve_scf_eq: R h+')
+        end if
+        if (real(dot(R, R)) > aor_cfg_threshold_rhs) then
             R%tr_sym = 1
             call response_solver(w, R, SOL(1))
             Dp = Dp + SOL(1)
         end if
 
-        R = -(RHS(1) + dag(RHS(1)))/2.0d0 !ajt: changed sign on RHS
-        if (dot(R,R) > aor_cfg_threshold_rhs) then
+!       h- part
+        R = -0.5d0*(RHS(1) + dag(RHS(1)))
+        if (debug_me) then
+          call print_mat(R, label = 'debug solve_scf_eq: R h-')
+        end if
+        if (real(dot(R, R)) > aor_cfg_threshold_rhs) then
             R%tr_sym = -1
             call response_solver(w, R, SOL(1))
             Dp = Dp + SOL(1)
