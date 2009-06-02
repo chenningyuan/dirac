@@ -198,8 +198,8 @@ contains
     A = C_i
     call print_mat(A, label = 'test_matrix_defop: A = C_i')
 
-    A = dag(C_i)
-    call print_mat(A, label = 'test_matrix_defop: A = dag(C_i)')
+    A = F - dag(F)
+    call print_mat(A, label = 'test_matrix_defop: A = F - dag(F)')
 
     A = C_i*dag(C_i)
     call print_mat(A, label = 'test_matrix_defop: A = C_i*dag(C_i)')
