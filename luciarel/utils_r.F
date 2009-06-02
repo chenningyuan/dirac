@@ -845,6 +845,11 @@ C***********************************************************************
 #include "ctcc.inc"
 #include "integrals_off.inc"
 *
+#if defined (VAR_MPI2)
+#include "krmc_shmem.h"
+#include "mxdim_mpi2.h"
+      POINTER (MY_T_PTR   , T_BUFFX(IDUMMY_BUFF_SZ))
+#endif
 #include "dgroup.h"
       CHARACTER*6 CIRUN
       DIMENSION   T_BUFF(*), T(NALLINT), F1(*)
@@ -873,11 +878,22 @@ C
 C
       END IF
 C
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+      CALL MPIXMEM_ALLOC( MY_T_PTR, 2, NALLINT,
+     &                          MPI_INFO_NULL, .FALSE. )
+C
+      call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                      ISOBEX,T_BUFFX,T_BUFF,WORK(KITIMSIGN),
+     &                      ISTR_CA,ISTR_CB,ISTR_AA,
+     &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+#else
       call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                      ISOBEX,T,T_BUFF,WORK(KITIMSIGN),
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
      &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+#endif
 C
       WRITE(LUWRT,'(/A)')
      & '  =========================================='
@@ -887,11 +903,19 @@ C
      & '  =========================================='
 
 C
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+      CALL IJKL_OUTPUT( T_BUFFX, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
+     &                  SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT )
+#else
       CALL IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
      &                  SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT )
+#endif
 C
 C     flush local memory
 C
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+      CALL CALL MPIXMEM_FREE( T_BUFFX )
+#endif
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'IJKLRO')
 C
       END

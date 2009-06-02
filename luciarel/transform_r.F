@@ -1701,7 +1701,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
       character*6 SIGDEN_ROUTE
       character*6 CIRUN
       character*1 COORD
-      LOGICAL MCSCF, EX, ALLOC_INT
+      LOGICAL MCSCF, EX, ALLOC_INT, ALLOC_INT_SCR
       dimension INTEG(1000), T_BUFF(*), T_BUFF_D(*), IT_TTPL(*)
       dimension NORB_FULL(MXPIRR)
       integer*8 IDUMMY_LENGTH
@@ -1945,6 +1945,12 @@ C       CIRUN == IJKLRO
 C
  100    CONTINUE
 C
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+        IF( CIRUN .eq. 'IJKLRO' ) THEN
+          ALLOC_INT_SCR = ALLOC_INT
+          ALLOC_INT     = .FALSE.
+        END IF
+#endif
         IF( ALLOC_INT ) THEN
           IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(/A,I16,A)') 
      &         '  Allocating for ',NALLINT,' integrals.'
@@ -1954,6 +1960,9 @@ C
           IDUMMY_LENGTH = 0
           CALL MEMMAR_I8(KT_CC,IDUMMY_LENGTH,'ADDS  ',2,'KT_CC ')
         END IF
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+        IF( CIRUN .eq. 'IJKLRO' ) ALLOC_INT = ALLOC_INT_SCR
+#endif
 C
 C       diagonal integrals
 C
