@@ -1997,13 +1997,14 @@ get_f90_flags(){
       x86_64) march="-march=x86-64";;
       *) march="";;
       esac
+      # mi: -fno-range-check is for DATA i/Z'FFFFFFFF'/ style of variables (in higher sector FSCC stuff)
       c_opt="-g -O3 -ffast-math -funroll-loops -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 $march"
-      opt="-g -O3 -ffast-math -funroll-loops $march"
+      opt="-g -fno-range-check -O3 -ffast-math -funroll-loops $march"
 #     gfortran needs flag -fcray-pointer if MPI-2 is enabled.
       if [ "$mpi2version" = "yes" ]; then
         $opt="$opt -fcray-pointer"
       fi
-      safe="-g $march"
+      safe="-g -fno-range-check $march"
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
       F_check_flags="-fbounds-check" 
