@@ -914,7 +914,7 @@ C
 C     flush local memory
 C
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
-      CALL CALL MPIXMEM_FREE( T_BUFFX )
+      CALL MPIXMEM_FREE( T_BUFFX )
 #endif
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'IJKLRO')
 C
