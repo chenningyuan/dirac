@@ -37,7 +37,7 @@ C     integer*8 call failed, try with integer*4
          print *,'Call to LAPACK(DSYEVR) failed with integer*8, but'
          print *,'worked with integer*4 arguments. However, DIRAC is'
          print *,'configured to use integer*8 (64 bit integers).'
-         print *,''
+         print *,' '
          print *,'You can fix this mismatch by linking to a integer*8'
          print *,'LAPACK library, or recompile DIRAC using integer*4.'
       else
@@ -76,10 +76,10 @@ C
          print *,' *** ERROR: MPI self test failed! *** '
          print *,' sender of message should have ID 0'
          print *,' but has ID ',ISTAT(MPI_SOURCE)
-         print *,''
+         print *,' '
          print *,' Make sure that you are using the right mpirun for'
          print *,' your particular MPI library version.'
-         print *,''
+         print *,' '
 #ifdef INT_STAR8
          print *,' DIRAC is configured to use integer*8 '
      &        //'(64 bit integers).'
@@ -91,7 +91,7 @@ C
          print *,' You need to link a MPI library that is compiled'
          print *,' using integer*4, make sure that this is the case.'
 #endif
-         print *,''
+         print *,' '
          print *,' Cannot continue without a working MPI library.'
          print *,' Quitting.'
          CALL QUIT(' *** ERROR: MPI self test failed ***')
