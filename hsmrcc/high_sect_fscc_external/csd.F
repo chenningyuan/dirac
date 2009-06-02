@@ -1,8 +1,4 @@
-!#if defined STANDALONE_HSFS
-!      program csd 
-!#else
       subroutine csd
-!#endif
 
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -98,7 +94,7 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       call prtime("rdin",0,0)
 
-      call ordv ! sorting integrals
+      call ordv_csd ! sorting integrals
 
       iter=0
 
@@ -162,7 +158,7 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       call prtime("start iter",iter,0)
       call flush (6)
-      call ordta
+      call ordta_csd
       call calt1
       call calt2
 
@@ -387,7 +383,7 @@ c  different endings
       end ! of program/routine csd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine ordv
+      subroutine ordv_csd
 !-------------------------------------------------------------------------------
 !
 c va: hhpp
@@ -582,7 +578,7 @@ c   id=1 for rle, 0 regularly.
       end subroutine ener
 
 c *****************************************************
-      subroutine ordta
+      subroutine ordta_csd
 !
 ! does reordering 
 !

@@ -35,15 +35,16 @@ chx - ionize 4nd electron  (4,0)-sector
 chy - ionize 5nd electron  (5,0)-sector
 chz - ionize 6nd electron  (6,0)-sector
 
-chp,chq - excite 1 electron (1,1) sector [miro: not found in Gal's package]
-    In (1,2) sector do cst.f then m21b.f
-    In (2,1) sector for CCSD or CCSDT-1 do cht.f then m12b.f
-    In (2,1) sector for CCSDT do cht.f only
+chp,chq - excite 1 electron (1,1) sector 
+
+    In (1,2) sector do "cst.f" then "m21b.f"
+    In (2,1) sector for CCSD or CCSDT-1 do "cht.f" then "m12b.f"
+    In (2,1) sector for CCSDT do "cht.f" only
 
 II.    CCSD    available for (2,1)
-      CCSDT   available for (0,0) (1,1) (1,2) 
-                          (0,1) (0,2) (0,3) (0,4) (0,5) (0,6) 
-                          (1,0) (2,0) (3,0) (4,0) (5,0) (6,0) 
+       CCSDT   available for (0,0) (1,1) (1,2) 
+                             (0,1) (0,2) (0,3) (0,4) (0,5) (0,6) 
+                             (1,0) (2,0) (3,0) (4,0) (5,0) (6,0) 
      
 III. Files needed for compilation:
 for all programs - c??.f csdsub.f
@@ -88,15 +89,15 @@ line 2 - iopt(1:20) (20i3)
 
  iopt(10) must be = 0
  
-    six-v and six-h do CCSD+T for the (0,n) and (n,0) sectors respectvely.
+    "sixv" and "sixh" do CCSD+T for the (0,n) and (n,0) sectors respectvely.
 
      iopt (11) - desired value of n (only needed for n.ge.2)
 
-   six-p does CCSD+T for the (1,1) sector and must be preceded by six-v and
-   six-h, run in that order.
+   "sixp" does CCSD+T for the (1,1) sector and must be preceded by "sixv" and
+   "sixh", run in that order.
   
- iopt (16) = 1 : six-p does not follow
-               = 2 : six-p does follow
+ iopt (16) = 1 : sixp does not follow
+               = 2 : sixp does follow
 
  iopt (17) = 1 : CCSDT-1a
                = 2 : CCSDT-1b (= CCSDT-1)

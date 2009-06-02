@@ -135,7 +135,7 @@ c     iopt(9) - incomplete model space
       if (iopt(17).ne.0) then
         call caltv3
       end if
-      call caltv2
+      call caltv2_chp
       call ordtvb
       if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
         fnew=max(dfloat(iopt(6)/100),1.d0)
@@ -353,7 +353,7 @@ c ******************************************
       return
       end
 c **************************************************
-      subroutine ordta0
+      subroutine ordta0_chp
       implicit real*8 (a-h,o-z)
       call reorder("tc  ","tc1 ",1423,4)
       call reorder("tv  ","tv1 ",1324,4)
@@ -376,7 +376,7 @@ c ******************************************************
       subroutine calvv0
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      call ordta0
+      call ordta0_chp
       call seltyp(3232,1001,"vv0 ",3)
       call diag7
 !     call diag16
@@ -453,7 +453,7 @@ c  diags 33b,38b
         call reorder   ("s2  ","s1  ",1432,4)
         call add       ("s1  ",1.d0,"vv0 ",1.d0,"vv0 ")
       end if
-      call ordtb0
+      call ordtb0_chp
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1b,2h
         call mult6     ("tv  ","vga1","s1  ",1)
@@ -702,7 +702,7 @@ c   diag 3
       return
       end 
 C **********************************************************************
-      subroutine ordtb0
+      subroutine ordtb0_chp
       implicit real*8 (a-h,o-z)
       call reorder("tb1 ","s2  ",2143,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
@@ -890,7 +890,7 @@ c   diag 2
       return
       end 
 C  ********************************************************************
-      subroutine caltv2
+      subroutine caltv2_chp
       implicit real*8 (a-h,o-z)
       common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
       call move("vv0 ","tnew")
