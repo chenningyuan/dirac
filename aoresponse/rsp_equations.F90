@@ -87,7 +87,7 @@ contains
 
         X = -sum(ww/2.0d0)*S0
 
-#define AOR_ONLY_INDIVIDUAL_COMPONENTS
+!#define AOR_ONLY_INDIVIDUAL_COMPONENTS
 #ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
         if (all(p == 'EL' .or. p == 'MAGO')) then
 
@@ -273,7 +273,7 @@ contains
         use dirac_interface
 #else
         use newsolver
-#endif /* PRG_DIRAC */
+#endif
 
         real*8                      :: w
         type(matrix)                :: S, D, F
@@ -284,7 +284,7 @@ contains
         type(matrix)                :: DS, RHS(1), SOL(1)
 #ifdef PRG_DIRAC               
         type(matrix)                :: R
-#endif /* PRG_DIRAC */
+#endif
 
         character*4                 :: nop(0)
         logical, save               :: first = .true.
@@ -292,11 +292,18 @@ contains
 #ifndef PRG_DIRAC
         if (first) call rsp2_init(1, 1, 1, 1, 1)
         first = .false.
-#endif /* PRG_DIRAC */
+#endif
 
         DS = D*S
         Dp = DSD - DSD*dag(DS) - DS*DSD
         RHS(1) = FDS*DS - dag(DS)*FDS + Fp
+        if (debug_me) then
+          call print_mat(Dp,     label = 'debug solve_scf_eq: Dp    ')
+          call print_mat(Fp,     label = 'debug solve_scf_eq: Fp    ')
+          call print_mat(DSD,    label = 'debug solve_scf_eq: DSD   ')
+          call print_mat(FDS,    label = 'debug solve_scf_eq: FDS   ')
+          call print_mat(RHS(1), label = 'debug solve_scf_eq: RHS(1)')
+        end if
         FDS = 0
 
         call prop_fock(nop, (/D, Dp/), RHS)
@@ -341,7 +348,7 @@ contains
         end if
 
         R = 0
-#endif /* PRG_DIRAC */
+#endif /* ifndef PRG_DIRAC */
 
         DSD    = 0
         DS     = 0
