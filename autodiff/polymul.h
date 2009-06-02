@@ -3,7 +3,10 @@
 #include <cassert>
 
 /*
-  By Ulf Ekstrom May-June 2009.
+  By Ulf Ekstrom March-June 2009.
+
+  For 5 var 5 deg template taylor multiplication is 
+  about 25% slower than explicit table.
  */
 
 /*
@@ -33,25 +36,25 @@
 
 // Template to evaluate binomial coefficients at compile time.
 template <int n, int k>
-struct binomial
+struct poly_bin
 {
-    enum { value = binomial<n-1,k-1>::value + binomial<n-1,k>::value };
+    enum { value = poly_bin<n-1,k-1>::value + poly_bin<n-1,k>::value };
 };
 
 template <int n>
-struct binomial<n,n>
+struct poly_bin<n,n>
 {
     enum { value = 1 };
 };
 
 template <int n>
-struct binomial<n,0>
+struct poly_bin<n,0>
 {
     enum { value = 1 };
 };
 
 template <int k>
-struct binomial<0,k>
+struct poly_bin<0,k>
 {
     enum { value = 1 };
 };
@@ -64,13 +67,13 @@ class polynomial_multiplier
   static void mul(numtype dst[], const numtype p1[], const numtype p2[])
   { 
     polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2-1>::mul(dst,p1,p2);
-    polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2>::mul_monomial(dst,p1,p2+binomial<Nvar+Ndeg2-1,Ndeg2-1>::value);
+    polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2>::mul_monomial(dst,p1,p2+poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value);
   }
   // m2 is a monomial in Nvar variables and of order Ndeg2
   static void mul_monomial(numtype dst[], const numtype p1[], const numtype m2[])
   { 
-    polynomial_multiplier<numtype,Nvar-1,Ndeg1,Ndeg2>::mul(dst+binomial<Nvar+Ndeg1+Ndeg2-1,Ndeg1+Ndeg2-1>::value,
-							   p1 +binomial<Nvar+Ndeg1-1,Ndeg1-1>::value,
+    polynomial_multiplier<numtype,Nvar-1,Ndeg1,Ndeg2>::mul(dst+poly_bin<Nvar+Ndeg1+Ndeg2-1,Ndeg1+Ndeg2-1>::value,
+							   p1 +poly_bin<Nvar+Ndeg1-1,Ndeg1-1>::value,
 							   m2);
     polynomial_multiplier<numtype,Nvar,Ndeg1-1,Ndeg2>::mul_monomial(dst,p1,m2);
   }
@@ -99,13 +102,13 @@ template<class numtype, int Nvar, int Ndeg2>
  public:
   static void mul(numtype dst[], const numtype p1[], const numtype p2[])
   {
-    for (int i=0;i<binomial<Nvar+Ndeg2,Ndeg2>::value;i++)
+    for (int i=0;i<poly_bin<Nvar+Ndeg2,Ndeg2>::value;i++)
       dst[i] += p1[0]*p2[i];
   }
   static void mul_monomial(numtype dst[], const numtype p1[], const numtype m2[])
   {
-    for (int i=binomial<Nvar+Ndeg2-1,Ndeg2-1>::value;i<binomial<Nvar+Ndeg2,Ndeg2>::value;i++)
-      dst[i] += p1[0]*m2[i-binomial<Nvar+Ndeg2-1,Ndeg2-1>::value];
+    for (int i=poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value;i<poly_bin<Nvar+Ndeg2,Ndeg2>::value;i++)
+      dst[i] += p1[0]*m2[i-poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value];
   }
 };
 
@@ -115,12 +118,12 @@ template<class numtype, int Nvar, int Ndeg1>
  public:
   static void mul(numtype dst[], const numtype p1[], const numtype p2[])
   {
-    for (int i=0;i<binomial<Nvar+Ndeg1,Ndeg1>::value;i++)
+    for (int i=0;i<poly_bin<Nvar+Ndeg1,Ndeg1>::value;i++)
       dst[i] += p1[i]*p2[0];
   }
   static void mul_monomial(numtype dst[], const numtype p1[], const numtype m2[])
   {
-    for (int i=0;i<binomial<Nvar+Ndeg1,Ndeg1>::value;i++)
+    for (int i=0;i<poly_bin<Nvar+Ndeg1,Ndeg1>::value;i++)
       dst[i] += p1[i]*m2[0];
   }
 };
@@ -148,7 +151,7 @@ class taylor_multiplier
  public:
   static void mul(numtype dst[], const numtype p1[], const numtype p2[])
   {
-    polynomial_multiplier<numtype,Nvar,Ndeg1-Ndeg2,Ndeg2>::mul_monomial(dst,p1,p2+binomial<Nvar+Ndeg2-1,Ndeg2-1>::value);   
+    polynomial_multiplier<numtype,Nvar,Ndeg1-Ndeg2,Ndeg2>::mul_monomial(dst,p1,p2+poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value);   
     taylor_multiplier<numtype,Nvar,Ndeg1,Ndeg2-1>::mul(dst,p1,p2);
   }
 };
@@ -159,7 +162,7 @@ template<class numtype, int Nvar, int Ndeg1>
  public:
   static void mul(numtype dst[], const numtype p1[], const numtype p2[])
   {
-    for (int i=0;i<binomial<Ndeg1+Nvar,Ndeg1>::value;i++)
+    for (int i=0;i<poly_bin<Ndeg1+Nvar,Ndeg1>::value;i++)
       dst[i] += p1[i]*p2[0];
   }
 };
@@ -188,24 +191,27 @@ template<class numtype, int Nvar, int Ndeg>
     assert(i<this->size());
     return c[i];
   }
-  int size(void) const { return binomial<Nvar+Ndeg,Ndeg>::value; }
+  int size(void) const { return poly_bin<Nvar+Ndeg,Ndeg>::value; }
   void zero(void)
   {
     for (int i=0;i<this->size();i++)
       c[i] = 0;
   }
+  // This is a _very slow_ function to get the exponents
+  // of a particular term. 
   static void exponents(int term, int exponents[])
   {
     for (int i=0;i<Nvar;i++)
       exponents[i] = 0;
     assert(term >= 0);
-    if (term >= binomial<Nvar+Ndeg,Ndeg>::value)
+    if (term >= poly_bin<Nvar+Ndeg,Ndeg>::value)
       {
-	assert(0 && "term < binomial<Nvar+Ndeg,Ndeg>::value");
+	assert(0 && "term < poly_bin<Nvar+Ndeg,Ndeg>::value");
       }
     for (int i=0;i<term;i++)
       polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);
   }
+  // Return the index of the term with certain exponents
   static int term_index(const int exponents[])
   {
     int N = 0;
@@ -221,16 +227,8 @@ template<class numtype, int Nvar, int Ndeg>
       }
     return idx;
   }
-  numtype term(const int exponents[]) const
-  {
-    return c[term_index(exponents)];
-  }
-  numtype &term(const int exponents[])
-  {
-    return c[term_index(exponents)];
-  }
 
-  numtype c[binomial<Nvar+Ndeg,Ndeg>::value];
+  numtype c[poly_bin<Nvar+Ndeg,Ndeg>::value];
 
  protected:
   static void next_exponents(int nvar, int m[])
@@ -252,7 +250,14 @@ template<class numtype, int Nvar, int Ndeg>
     else
       {
 	next_exponents(nvar-1,m);
-	m[nvar-2] += m[nvar-1];
+	for (int i=nvar-2;i>=0;i--)
+	  {
+	    if (m[i] > 0)
+	      {
+		m[i] += m[nvar-1];
+		break;
+	      }
+	  }
 	m[nvar-1] = 0;
       }
   }
