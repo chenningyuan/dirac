@@ -2,15 +2,31 @@
       subroutine cht 
       implicit real*8 (a-h,o-z)
       external fmax,fmax6
-      parameter (nbig=60000000,ndint=3000000,ndij=960000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /csdtime/ csdstim,csdltim
+
+!     parameter (nbig=60000000,ndint=3000000,ndij=960000)
+#include "param_ccsd.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+
       character*256 filenm,filenm6,
      1filenm51,filenm52,filenm53,filenm55,filenm56,filenm57,filenm58,
      2filenm20,filenm21,filenm31,filenm32,filenm41,filenm42
@@ -297,10 +313,20 @@ c     iopt(10) .ne.0 - do not write tape9
 C ********************************************************************
       subroutine ordv_cht
       implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
-      common /cint/nint,idum1,vint(ndint),iint(ndint)
-      common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+
+!     common /cint/nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime("readv   ",nint,0)
       call selt1    (32,0,"ph  ",4)
@@ -353,7 +379,11 @@ C ********************************************************************
 C  ******************************************************************
       subroutine calvv10
       implicit real*8 (a-h,o-z)
-      common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  diag 1
       call move      ("gv  ","vv10")
 c  diag 2
@@ -432,16 +462,29 @@ C  **********************************************************************
       subroutine caltv1
       implicit real*8 (a-h,o-z)
       external find2,find4
-      parameter (ndij=960000,nbig=60000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1iiia(200),iiva(200)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
+!     parameter (ndij=960000,nbig=60000000)
+#include "param_ccsd.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "strt.h"
+
+! mi- TODO: had set dimensions, need parametric def
       dimension a(500,500),b(500),indlst(500),ipvt(500),z(500)
+
       do 10 i=1,500
         b(i)=0.d0
         do 20 j=1,500
@@ -923,7 +966,11 @@ c   diag 3
 C  *******************************************************************
       subroutine ordta0_cht
       implicit real*8 (a-h,o-z)
-      common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call clear      ("tb1 ",2322,1110)
       call clear      ("tb2 ",2223,1011)
       call clear      ("tb3 ",2223,1101)
@@ -938,7 +985,11 @@ C  *******************************************************************
 C  *********************************************************************
       subroutine calvv0_cht
       implicit real*8 (a-h,o-z)
-      common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  diag 1
       call move      ("ggvh","vv0 ")
 c  diag 2b
@@ -1061,7 +1112,7 @@ c  diag f5
       call reorder   ("thuf","s1  ",1243,4)
       call reorder   ("t11 ","s2  ",1243,4)
       call mult      ("s1  ","s2  ","s3  ",311)
-      call unfold    ("s3  ","s1  ",3)
+      call unfold_ccsd("s3  ","s1  ",3)
       call add       ("s1  ",1.d0,"tb3 ",1.d0,"tb3 ")
 c  diag f6a
       call reorder   ("tpf ","s1  ",1432,4)
@@ -1072,7 +1123,7 @@ c  diag f6a
 c  diag f8 
       call reorder   ("tpf ","s1  ",1432,4)
       call mult      ("t11 ","s1  ","s2  ",131)
-      call unfold    ("s2  ","s1  ",4)
+      call unfold_ccsd("s2  ","s1  ",4)
       call add       ("s1  ",-1.d0,"vv0 ",1.d0,"vv0 ")
 c  diag f10a
       call reorder   ("tqf ","s1  ",1324,4)
@@ -1084,7 +1135,7 @@ c  diag f10a
 c  diag f11 
       call reorder   ("tqf ","s1  ",1342,4)
       call mult      ("s1  ","t11 ","s2  ",311)
-      call unfold    ("s2  ","s1  ",3)
+      call unfold_ccsd("s2  ","s1  ",3)
       call add       ("s1  ",-1.d0,"tb4 ",1.d0,"tb4 ")
 c  dgt1p4
       call mult      ("t1g ","pphh","s1  ",131)
@@ -1150,17 +1201,32 @@ C *********************************************************************
       subroutine caltv2
       implicit real*8 (a-h,o-z)
       external find2,find4
-      parameter (ndij=960000,nbig=60000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1iiia(200),iiva(200)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     parameter (ndij=960000,nbig=60000000)
+#include "param_ccsd.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "strt.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+
+! mi - introduce include file ?
       common /tv2/ a(500,500)
+
       dimension b(500),indlst(500),ipvt(500),z(500)
       call move ("vv0 ","trhs")
       if (iopt(17).ne.0) then
@@ -1365,7 +1431,11 @@ C  *********************************************************************
 C  ********************************************************************
       subroutine calt12p
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1g
         call reorder   ("ggph","s1  ",2143,4)
@@ -1462,7 +1532,11 @@ c
 C  *******************************************************************
       subroutine calt12q
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3nf4
         call reorder   ("tq  ","s1  ",1423,4)
@@ -2140,7 +2214,11 @@ c  diag 27a
 C  *******************************************************************
       subroutine rdbox_cht
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       if (iopt(17).ne.0) then
         call rdfile (41,1,"boxB",-1)
         call rdfile (41,2,"boxC",-1)
@@ -2242,15 +2320,28 @@ c  diag 7
 C  ******************************************************************
       subroutine tvsub1 (idi,idj,i,j)
       implicit real*8 (a-h,o-z)
-      parameter (ndij=960000)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+
+!     parameter (ndij=960000)
+#include "param_ccsd.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "strt.h"
+
       common /tv2/ a(500,500)
+
       dimension iha(120),ipa(120)
       nh=0
       do 90 ii=1,norb
@@ -2343,7 +2434,11 @@ c  diags 34,35a
 C  *********************************************************************
       subroutine tvsub2
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  diags 31b,36b
       call reord6    ("t12q","s1  ",125643)
       call mult6     ("s1  ","boxD","s2  ",2)
@@ -2371,19 +2466,19 @@ c   diag f12
         call reord6     ("ttpf","s1  ",124653)
         call mult6      ("s1  ","t11 ","s2  ",0)
         call reorder    ("s2  ","s1  ",2143,4)
-        call unfold     ("s1  ","s2  ",4)
+        call unfold_ccsd("s1  ","s2  ",4)
         call add        ("s2  ",1.d0,"trhs",1.d0,"trhs")
 c   diag f13
         call reord6     ("ttqf","s1  ",124563)
         call mult6      ("s1  ","t11 ","s2  ",0)
         call reorder    ("s2  ","s1  ",2143,4)
-        call unfold     ("s1  ","s2  ",4)
+        call unfold_ccsd("s1  ","s2  ",4)
         call add        ("s2  ",-2.d0,"trhs",1.d0,"trhs")
 c   diag f14
         call reord6     ("ttqf","s1  ",125643)
         call mult6      ("s1  ","t11 ","s2  ",0)
         call reorder    ("s2  ","s1  ",2134,4)
-        call unfold     ("s1  ","s2  ",4)
+        call unfold_ccsd("s1  ","s2  ",4)
         call add        ("s2  ",1.d0,"trhs",1.d0,"trhs")
 c   diag f15
         call reord6     ("ttpf","s1  ",126345)

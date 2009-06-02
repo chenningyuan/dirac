@@ -474,7 +474,7 @@ c  diag f5
       call reorder   ("tuf ","s1  ",1243,4)
       call reorder   ("t11 ","s2  ",1243,4)
       call mult      ("s1  ","s2  ","s3  ",311)
-      call unfold    ("s3  ","s1  ",3)
+      call unfold_ccsd("s3  ","s1  ",3)
       call add       ("s1  ",-1.d0,"tb3 ",1.d0,"tb3 ")
 c  diag f6a
       call reorder   ("tpf ","s1  ",1432,4)
@@ -485,7 +485,7 @@ c  diag f6a
 c  diag f8 
       call reorder   ("tpf ","s1  ",1432,4)
       call mult      ("t11 ","s1  ","s2  ",131)
-      call unfold    ("s2  ","s1  ",4)
+      call unfold_ccsd("s2  ","s1  ",4)
       call add       ("s1  ",1.d0,"vv0 ",1.d0,"vv0 ")
 c  diag f10a
       call reorder   ("tqf ","s1  ",1324,4)
@@ -497,7 +497,7 @@ c  diag f10a
 c  diag f11 
       call reorder   ("tqf ","s1  ",1342,4)
       call mult      ("s1  ","t11 ","s2  ",311)
-      call unfold    ("s2  ","s1  ",3)
+      call unfold_ccsd("s2  ","s1  ",3)
       call add       ("s1  ",1.d0,"tb4 ",1.d0,"tb4 ")
 c  dgt1p4
       call mult      ("t1v ","hhpp","s1  ",131)

@@ -33,9 +33,9 @@ module high_sect_execs
 
 integer :: num_methods = 0
 
-character(len=3), allocatable :: method_name(:)
+character(len=4), allocatable :: method_name(:)
 
-character(len=3):: hs_method_name(3) = (/'csd','csu','csv'/)
+character(len=4):: hs_method_name(4) = (/'csd','csu','csv','sixh' /)
 
 contains
 
@@ -51,7 +51,7 @@ subroutine get_line_arguments
 !------------------------------------------------------------------
 #include "priunit.h"
 integer :: nargs,i
-character(len=3):: this_arg
+character(len=4):: this_arg
 
 ! get number of arguments
 !nargs = command_argument_count()
@@ -81,7 +81,7 @@ function check_method_name(what_method) result (found_method)
 !--------------------------------------------------------------
 !             checks method name
 !--------------------------------------------------------------
-character(len=3), intent(in) :: what_method
+character(len=4), intent(in) :: what_method
 integer :: i
 logical :: found_method
 
@@ -92,6 +92,10 @@ do i=1,size(hs_method_name)
    Exit
  endif
 enddo
+
+! mi: now skip checking
+found_method=.true.
+return
 
 end function check_method_name
 
@@ -142,6 +146,20 @@ do i=1, num_methods
       call chp
   else if ( method_name(i) == 'chq' ) then
       call chq
+  else if ( method_name(i) == 'cst' ) then
+      call cst
+  else if ( method_name(i) == 'cht' ) then
+      call cht
+  else if ( method_name(i) == 'sixh' ) then
+      call sixh
+  else if ( method_name(i) == 'sixp' ) then
+      call sixp
+  else if ( method_name(i) == 'sixv' ) then
+      call sixv
+  else if ( method_name(i) == 'm12b' ) then
+      call m12b
+  else if ( method_name(i) == 'm21b' ) then
+      call m21b
   else
       write(LUPRI,*) method_name(i),' is not in the list !'
       call quit('launch_hsfs_methods')

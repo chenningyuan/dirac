@@ -1,12 +1,24 @@
 !      program chp 
       subroutine chp 
       implicit real*8 (a-h,o-z)
-      parameter (ndint=3000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /csdtime/ csdstim,csdltim
+
+!     parameter (ndint=3000000)
+#include "param_ccsd.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+
       character*256 filenm,filenm6,filenm51,filenm52,filenm53,filenm56,
      1filenm20,filenm21,filenm31,filenm41,filenm42
       real*4 cputime
@@ -109,11 +121,11 @@ c     iopt(9) - incomplete model space
       call t1sqr("t1v ","t1c ","tv  ","tvm ")
       call reorder("t1c ","s2  ",1243,4)  
       call t1sqr("t1g ","s2  ","tg  ","tgm ")
-      call ordvv
-      call calvv0
+      call ordvv_chp
+      call calvv0_chp
       call pdiag
       iter=0
-      call tvinit
+      call tvinit_chp
       if (iopt(4).ne.0) then
         if (iopt(17).eq.0) then
           call dbdiag ("dum1","vv0 ","dum3","dum4",0100,1)
@@ -159,6 +171,7 @@ c     iopt(9) - incomplete model space
       if (iopt(17).ne.0) then
         call dfmax3 ("t3p ","t3nw","s2  ",df3,iddf3,inddf3)
       end if
+
       write (6,*) ' '
       write (6,'('' iteration # '',i3,'' diffmx='',
      1 e10.3,2x,i12)') iter,diff
@@ -226,6 +239,7 @@ c  different endings
       go to 970
 920   write (6,*) ' iteration limit'
       call abext('limit   ')     
+
 970   call prt("thp ","last t  ",0)
       call prt("thpf","last tf ",0)
       call wrtfile(56,0,"thp ")
@@ -240,9 +254,11 @@ c  different endings
 !      stop
       end
 c *********************************************
-      subroutine ordvv
+      subroutine ordvv_chp
       implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+
 c va: hhpp
 c vb: hphp
 c vc: hhhp
@@ -264,12 +280,19 @@ c              hppp 2134 = vd12
 c              hppp 2143 = vd14
 c              vhpp 1324 = vva1
 c              vhhp 1324 = vvc1
-      common /cint/nint,idum1,vint(ndint),iint(ndint)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /cint/nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
 c
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
-      call prtime("readv   ",nint,0)
+      call prtime("readv",nint,0)
+
       call seltyp(2233,0,"hhpp",4)
       call seltyp(2323,0,"hphp",4)
       call seltyp(2223,0,"hhhp",4)
@@ -340,11 +363,15 @@ c**************************************************************
       return
       end
 c ******************************************
-      subroutine tvinit
+      subroutine tvinit_chp
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move    ("vv0 ","thp ")
-      call fold    ("thp ","thpf")
+      call fold_ccsd ("thp ","thpf")
       call diveps  ("thp ")
       if (iopt(17).gt.0) then
         call move     ("v30 ","t3p ")
@@ -373,16 +400,20 @@ c **************************************************
       return
       end
 c ******************************************************
-      subroutine calvv0
+      subroutine calvv0_chp
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call ordta0_chp
       call seltyp(3232,1001,"vv0 ",3)
-      call diag7
+      call diag7_chp
 !     call diag16
       call diag16_chp
       call diag17
-      call diag9
+      call diag9_chp
       call dgt1p3
       call dgt1p4
       call diag11
@@ -733,7 +764,10 @@ c *****************************************************
 c ****************************************************
       subroutine caltv3
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move        ("v30 ","t3nw")
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1d
@@ -892,7 +926,11 @@ c   diag 2
 C  ********************************************************************
       subroutine caltv2_chp
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move("vv0 ","tnew")
       call diag2
       call diag3b
@@ -966,7 +1004,11 @@ c  diags 34b,35b,35c
 c ******************************************************
       subroutine ordtvb
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       i=1
       call reorder("tb4 ","s2  ",1243,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -975,7 +1017,7 @@ c ******************************************************
       call reorder("tb3 ","s2  ",1432,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       if (i.eq.77) go to 11
-      call fold("tnew","thpf")
+      call fold_ccsd("tnew","thpf")
 c     call heff2
       i=77
       call clear("tb15",3223,1100)
@@ -993,7 +1035,7 @@ c     call heff2
       return
       end
 c *************************************************
-      subroutine diag7
+      subroutine diag7_chp
       implicit real*8 (a-h,o-z)
       call seltyp(3233,100,"s2  ",5)
       call mult("tvm ","s2  ","s3  ",222)
@@ -1205,7 +1247,7 @@ c **********************************************************
       return
       end
 c *************************************************************
-      subroutine diag9
+      subroutine diag9_chp
       implicit real*8 (a-h,o-z)
 c   incl diags 9 10a 20a 23a
 c   9a 10a
@@ -1519,7 +1561,11 @@ c  -2*t1**4 compensates for overcounting.
 c *************************************************
       subroutine dfoldhp
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  f2a
       call mult("thp ","tgf ","s2  ",311)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -1527,7 +1573,7 @@ c  f2a
 c  f3a
       call reorder("thpf","s1  ",1432,5)
       call mult("s1  ","t1gr","s2  ",311)
-      call unfold("s2  ","s1  ",3)
+      call unfold_ccsd("s2  ","s1  ",3)
       call add("tb3 ",1.d0,"s1  ",1.d0,"tb3 ")
       call prt("s1  ","f3a     ",3)
 c  f1a
@@ -1543,7 +1589,7 @@ c  f2b
 c  f3b
       call reorder("t1v ","s1  ",1243,4)
       call mult("s3  ","s1  ","s2  ",311)
-      call unfold("s2  ","s1  ",3)
+      call unfold_ccsd("s2  ","s1  ",3)
       call add("tb15",1.d0,"s1  ",-1.d0,"tb15")
       call prt("s1  ","-f3b    ",3)
       call prtime("dfoldhp ",0,1)
@@ -1594,7 +1640,11 @@ c  diag 5
 C  *******************************************************************
       subroutine wrtbox
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call wrtfile (41,0,"boxA")
       call wrtfile (41,1,"boxB")
       call wrtfile (41,2,"boxC")

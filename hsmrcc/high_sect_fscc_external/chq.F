@@ -1,12 +1,24 @@
 !      program chq 
       subroutine chq 
       implicit real*8 (a-h,o-z)
-      parameter (ndint=3000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /csdtime/ csdstim,csdltim
+
+!     parameter (ndint=3000000)
+#include "param_ccsd.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)a
+#include "cfiles.h"
+
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+
       character*256 filenm,filenm1,filenm6,
      1filenm51,filenm52,filenm53,filenm56,filenm57,
      2filenm20,filenm21,filenm31,filenm41,filenm42
@@ -271,7 +283,10 @@ c *********************************************
 !     subroutine ordvv
       subroutine ordvv_chq
       implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
+
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+
 c va: hhpp
 c vb: hphp
 c vc: hhhp
@@ -293,9 +308,17 @@ c              hppp 2134 = vd12
 c              hppp 2143 = vd14
 c              vhpp 1324 = vva1
 c              vhhp 1324 = vvc1
-      common /cint/nint,idum1,vint(ndint),iint(ndint)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /cint/nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime("readv   ",nint,0)
@@ -368,9 +391,13 @@ c ******************************************
 !     subroutine tvinit
       subroutine tvinit_chq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move("vv0 ","thq ")
-      call fold("thq ","thqf")
+      call fold_ccsd("thq ","thqf")
       call diveps("thq ")
       if (iopt(17).ne.0) then
         call move     ("v30 ","t3q ")
@@ -409,7 +436,11 @@ c ******************************************************
 !     subroutine calvv0
       subroutine calvv0_chq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 !     call ordta0
       call ordta0_chq
       call move("vhgp","vv0 ")
@@ -652,7 +683,11 @@ C  *******************************************************************
 !     subroutine caltv3
       subroutine caltv3_chq
       implicit real*8(a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move         ("v30 ","t3nw")
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1a
@@ -770,7 +805,11 @@ C  *******************************************************************
 !     subroutine caltv2
       subroutine caltv2_chq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call move("vv0 ","tnew")
       call diag2d
       call diag3d
@@ -804,7 +843,11 @@ c ******************************************************
 !     subroutine ordtvb
       subroutine ordtvb_chq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       i=1
       call reorder("tb5 ","s2  ",3412,5,1)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -815,7 +858,7 @@ c ******************************************************
       call reorder("tb6 ","s2  ",1423,5,1)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       if (i.eq.77) go to 11
-      call fold("tnew","thqf")
+      call fold_ccsd("tnew","thqf")
 c     call heff2
       i=77
       call clear("tb2 ",3223,1100)
@@ -1341,7 +1384,11 @@ c  -2*t1**4 ?
 c *************************************************
       subroutine dfoldhq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  f2c
       call reorder("thq ","s1  ",1243,5,1)
       call mult("s1  ","tgf ","s2  ",311)
@@ -1351,7 +1398,7 @@ c  f3c
       call reorder("thqf","s3  ",1342,5,1)
       call mult("t1gr","s3  ","s2  ",131)
       call reorder("s2  ","s1  ",2134,5,1)
-      call unfold("s1  ","s2  ",4)
+      call unfold_ccsd("s1  ","s2  ",4)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call prt("s1  ","f3a ",3)
 c  f1d.1
@@ -1367,7 +1414,7 @@ c  f2d
       call prt("s2  ","f2d ",3)
 c  f3d
       call mult("thqf","t1vr","s2  ",311)
-      call unfold("s2  ","s1  ",2)
+      call unfold_ccsd("s2  ","s1  ",2)
       call add("tnew",1.d0,"s1  ",-1.d0,"tnew")
       call prt("s1  ","-f3d",3)
 c  f1e
@@ -1445,7 +1492,11 @@ C  *******************************************************************
 !     subroutine rdbox
       subroutine rdbox_chq
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call rdfile    (41,0,"boxA",-1)
       call rdfile    (41,1,"boxB",-1)
       call rdfile    (41,2,"boxC",-1)

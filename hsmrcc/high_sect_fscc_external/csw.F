@@ -1,17 +1,22 @@
-!#if defined STANDALONE_HSFS
-!      program csw
-!#else
       subroutine csw                     
-!#endif
 
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
 !     include 'parameters.f'
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /csdtime/ csdstim,csdltim
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+
       character*256 filenm,filenm51,filenm52,filenm54,filenm59,filenm6,
      1              filenm20,filenm21,filenm22,filenm23
       real*4 cputime
@@ -212,9 +217,16 @@ C ********************************************************************
       subroutine ordv_csw
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-      common /cint/nint,idum1,vint(ndint),iint(ndint)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+
+!     common /cint/nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
       call seltyp   (2233,0,"hhpp",4)
@@ -240,7 +252,10 @@ C ********************************************************************
 C *********************************************************************
       subroutine ordta0_csw
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
       call reorder    ("tv  ","tv1 ",1324,4)
       call reorder    ("tv  ","tv3 ",1432,4)
       call reorder    ("tu  ","tu3 ",1432,4)
@@ -255,9 +270,14 @@ C *********************************************************************
 C  ********************************************************************
       subroutine calvw0_csw  
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
+
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+
       if (iopt(17).lt.3) then
 c  dg3n1,2,f1
         call mult6   ("tu  ","vppp","s3  ",1)
@@ -382,7 +402,10 @@ C  *********************************************************************
 !     subroutine endiag
       subroutine endiag_csw
       implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  GROUP I
 c   diag 1
       call reorder    ("pvvv","box1",2431,4)
