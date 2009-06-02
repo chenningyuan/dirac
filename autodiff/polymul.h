@@ -92,7 +92,7 @@ template<class numtype, int Ndeg1, int Ndeg2>
   static void mul_monomial(numtype dst[], const numtype p1[], const numtype m2[])
   {
     for (int i=0;i<Ndeg1;i++)
-      dst[i+Ndeg2] += m2[0];
+      dst[i+Ndeg2] += m2[0]*p1[i];
   }
 };
 
@@ -109,6 +109,22 @@ template<class numtype, int Nvar, int Ndeg2>
   {
     for (int i=poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value;i<poly_bin<Nvar+Ndeg2,Ndeg2>::value;i++)
       dst[i] += p1[0]*m2[i-poly_bin<Nvar+Ndeg2-1,Ndeg2-1>::value];
+  }
+};
+
+template<class numtype, int Ndeg2>
+  class polynomial_multiplier<numtype, 1, 0, Ndeg2>
+{
+ public:
+  static void mul(numtype dst[], const numtype p1[], const numtype p2[])
+  {
+    for (int i=0;i<poly_bin<1+Ndeg2,Ndeg2>::value;i++)
+      dst[i] += p1[0]*p2[i];
+  }
+  static void mul_monomial(numtype dst[], const numtype p1[], const numtype m2[])
+  {
+    for (int i=poly_bin<1+Ndeg2-1,Ndeg2-1>::value;i<poly_bin<1+Ndeg2,Ndeg2>::value;i++)
+      dst[i] += p1[0]*m2[i-poly_bin<1+Ndeg2-1,Ndeg2-1>::value];
   }
 };
 
@@ -141,6 +157,7 @@ template<class numtype, int Nvar>
     dst[0] += p1[0]*m2[0];
   }
 };
+
 
 // Like polymul but truncates the result to Ndeg1 order order.
 // Ndeg2 _must_ be less or equal to Ndeg1, otherwise the recursion
@@ -194,13 +211,18 @@ template<class numtype, int Nvar, int Ndeg>
   int size(void) const { return poly_bin<Nvar+Ndeg,Ndeg>::value; }
   void zero(void)
   {
-    for (int i=0;i<this->size();i++)
+    for (int i=0;i<size();i++)
       c[i] = 0;
   }
   // This is a _very slow_ function to get the exponents
   // of a particular term. 
   static void exponents(int term, int exponents[])
   {
+    if (Nvar == 1)
+      {
+	exponents[0] = term;
+	return;
+      }
     for (int i=0;i<Nvar;i++)
       exponents[i] = 0;
     assert(term >= 0);
