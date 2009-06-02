@@ -879,7 +879,7 @@ C
       END IF
 C
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
-      CALL MPIXMEM_ALLOC( MY_T_PTR, 2, NALLINT,
+      CALL MPIXMEM_ALLOC( MY_T_PTR, 1, NALLINT,
      &                          MPI_INFO_NULL, .FALSE. )
 C
       call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
