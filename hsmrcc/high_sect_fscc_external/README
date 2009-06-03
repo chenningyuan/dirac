@@ -8,7 +8,7 @@ to write own dependencies of each executable. With the so called medium memory m
 Also I had to rename some routines in some (not all) independent executable files because of overlaping their names.
 Now all object files are used for linking executable files, therefore all function names must be unique.
 
-These GAMESS files (produced due to Sham's changes) are read (get_moints.F90) :
+These GAMESS files (produced due to Sham's changes) are read :
  HCRMO  $SCR/$JOB.F281
  MULMO  $SCR/$JOB.F282
 
@@ -16,6 +16,8 @@ I use the "ARCH32BIT" preprocessor flag to specify 32-bit architectures.
 
 Efforts with old ACESII were not fruitfull - despite succesfull compilation there is some memory crash
 at the beginning of the run.
+
+Finally it has been adapted under spin-free DIRAC machinery.
 
 I. Fock-space cc programs:
 ========================================
@@ -35,11 +37,15 @@ chx - ionize 4nd electron  (4,0)-sector
 chy - ionize 5nd electron  (5,0)-sector
 chz - ionize 6nd electron  (6,0)-sector
 
-chp,chq - excite 1 electron (1,1) sector 
+chp,chq - excite 1 electron (1,1) sector; first run (0,1) and (1,0) sectors 
+
+ miro&ephraim: not iterative scheme, some approximations, to be explored
 
     In (1,2) sector do "cst.f" then "m21b.f"
     In (2,1) sector for CCSD or CCSDT-1 do "cht.f" then "m12b.f"
     In (2,1) sector for CCSDT do "cht.f" only
+
+TODO: (2,2) FSCCSD 
 
 II.    CCSD    available for (2,1)
        CCSDT   available for (0,0) (1,1) (1,2) 
@@ -49,6 +55,7 @@ II.    CCSD    available for (2,1)
 III. Files needed for compilation:
 for all programs - c??.f csdsub.f
 for csv-z, chv-z  - also eneru.f (look at the Makefile)
+
 
 Miro: all compilations were moved under the DIRAC makefile system
 
@@ -102,10 +109,11 @@ line 2 - iopt(1:20) (20i3)
  iopt (17) = 1 : CCSDT-1a
                = 2 : CCSDT-1b (= CCSDT-1)
                = 3 : CCSDT
+           = 0 : CCSD
 
- iopt (19) = 1 : ACES II
- iopt (19) = 0 : GAMESS
- iopt (19) = 7 : svn DIRAC (miro's adaptation)
+ iopt (19) = 1 : ACES II (miro: not working now)
+ iopt (19) = 0 : GAMESS (miro: very limited adaptation thanks to Sham's changed in GAMESS)
+ iopt (19) = 7 : svn DIRAC (miro's working adaptation)
 
 
 line 3 - norb = # of (spacial) orbitals in transformed integral file. (i3)

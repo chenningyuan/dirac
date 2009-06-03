@@ -7069,7 +7069,7 @@ C
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck matrix_inversion */
       subroutine matrix_inversion ( A, NP, IPIV, INDXR, INDXC )
 C     !-------------------------------------------------------------------------
@@ -7082,7 +7082,8 @@ C     !
 C     !	      J.P. Griffith  6/88
 C     !
 C     !  Added by Miro Ilias, Strasbourg, 2005
-C     !  Called from dirbss.F.
+C     !
+C     !  Called from SPHGEN (dirac/dirtra.F)
 C     !-------------------------------------------------------------------------
 #include "implicit.h" 
 #include "priunit.h"  
@@ -7153,6 +7154,49 @@ CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
 24    CONTINUE
       RETURN
       END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MINV(AB,N,LDA,SCRATCH,DET,EPS,M,MODE)
+!--------------------------------------------------------------------------------
+!C
+!C     A subroutine that calculates the determinant and inverse of
+!C          a matrix, as well as solving systems of linear equations.
+!C     Martin J. McBride.  11/25/85.
+!C     General Electric CRD, Information System Operation.
+!C
+!C  THE COMMENTS ABOVE REFER TO AN OLD "SCIPORT" VERSION OF THIS ROUTINE,
+!C  PRESUMABLY WRITTEN BY MR. MC BRIDE.  UNFORTUNATELY, IT SEEMS THAT 
+!C  HE IS A BAD PROGRAMMER AND THIS ROUTINE DID NOT WORK.  MINV IS NOW
+!C  A SIMPLE INTERFACE TO LINPACK ROUTINES WHICH *WORK*
+!C
+!CEND
+!
+! miro: called from routine DIIS, hsmrcc/high_sect_fscc_external/ccsd1.F;
+!      routine formerly part of spin-adapted hihger sector FS CC codes
+!
+!--------------------------------------------------------------------------------
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION AB(LDA,1),SCRATCH(1),X(2)
+C
+      IOFF=1+N
+      CALL DGECO(AB,LDA,N,SCRATCH,X,SCRATCH(IOFF))
+      IF(M.EQ.1)CALL DGESL(AB,LDA,N,SCRATCH,AB(1,N+1),0)
+      IF(M.GT.1)THEN
+       WRITE(6,1000)
+1000   FORMAT(T3,'@MINV-F, Only one system can be solved at a time.')
+       CALL QUIT('MINV: Only one system can be solved at a time.')
+      ENDIF
+!              ... library routine pdpack/dge.F
+      IF(M.EQ.0)CALL DGEDI(AB,LDA,N,SCRATCH,X,SCRATCH(IOFF),11)
+!C
+!C THIS IS WRONG, BUT WHO CARES?
+!C
+      DET=X(1)      
+C
+      RETURN
+      END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C*/ Deck Totmass */
       FUNCTION TOTMASS()
