@@ -81,6 +81,7 @@ gp/compinfo.h:
 	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
 	@echo "#define LIBRARIES \"${LIBS}\"" >> $@
+	@echo "#define DIRAC_URL \"${DIRAC_SVN_URL}\"" >> $@
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
 gp/gpc.o: gp/compinfo.h

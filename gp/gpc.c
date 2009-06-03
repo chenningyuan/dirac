@@ -171,7 +171,8 @@ void sysinf_(fortran_int_t *parcal)
    printf(" C compiler        : %s \n", CCOMP);
    printf(" External libraries: %s \n", LIBRARIES);
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
-   printf(" Changeset         : %s \n", VERSION);
+   printf(" SVN URL:          : %s \n", DIRAC_URL);
+   printf(" SVN Changeset     : %s \n", VERSION);
    fflush(stdout);
    free(un);
 }
