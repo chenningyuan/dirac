@@ -559,34 +559,6 @@ contains
 
   end subroutine
 
-  subroutine mat_set_from_full(full, times, A, l)
-
-    real(kind_dp), intent(in)           :: full(*)
-    real(kind_dp), intent(in)           :: times
-    type(matrix)                        :: A
-    character(*),  intent(in), optional :: l
-!   ----------------------------------------------------------------------------
-
-    call dcopy(size(A%elms), full, 1, A%elms, 1)
-
-    if (times .ne. 1.0d0) call dscal(size(A%elms), times, A%elms, 1)
-
-  end subroutine
-
-  subroutine mat_to_full(A, times, full, l)
-
-    type(matrix),  intent(in)           :: A
-    real(kind_dp), intent(in)           :: times
-    real(kind_dp), intent(out)          :: full(*)
-    character(*),  intent(in), optional :: l
-!   ----------------------------------------------------------------------------
-
-    call dcopy(size(A%elms), A%elms, 1, full, 1)
-
-    if (times .ne. 1.0d0) call dscal(size(A%elms), times, full, 1)
-
-  end subroutine
-
   function do_dft() result(l)
 
     use dft_cfg
@@ -608,10 +580,11 @@ contains
 
 #include "dcbbas.h"
 
-    if (.not. mat_isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
+    call init_mat(F1, ntbas(0), ntbas(0))
+    call init_mat(F2, ntbas(0), ntbas(0))
 
-    F1 = 1.0d-100*F
-    F2 = 1.0d-100*F
+    F1%elms = 0.0d0
+    F2%elms = 0.0d0
 
     call opnfil(file_unit, 'DFFCK1', 'OLD', 'get_F')
     call reafck(file_unit, F1%elms, .true., 1)
@@ -621,7 +594,10 @@ contains
     call reafck(file_unit, F2%elms, .true., 1)
     close(file_unit, status = 'keep')
 
-    F = 2.0d0*F1 + 2.0d0*F2
+    if (.not. mat_isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
+
+    F = F1 + F2
+    F = 2.0d0*F
 
     F1 = 0
     F2 = 0
@@ -689,8 +665,8 @@ contains
 #include "dcbbas.h"
 
 !   this didn't work with gfortran
-!   if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
-                            call init_mat(C, ntbas(0), norbt)
+    if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
+!                           call init_mat(C, ntbas(0), norbt)
 
     C%elms = 0.0d0
 
@@ -855,7 +831,7 @@ contains
 #include "dcbgen.h"
 #include "dcbxpr.h"
 
-    write(*, *) 'blub', op_name
+!   write(*, *) 'debug', op_name
     op_index = find_op_index(op_name)
 
     idimension = nnbbasx
@@ -1119,7 +1095,7 @@ contains
     RHS_mo%ih_sym        = RHS%ih_sym
     RHS_mo%tr_sym        = RHS%tr_sym
     RHS_mo%pg_sym        = RHS%pg_sym
-    RHS_mo%fermi_pointer = RHS%fermi_pointer
+!   RHS_mo%fermi_pointer = RHS%fermi_pointer
 
     if (debug_me) then
       call print_mat(RHS,    label = 'debug RHS in AO basis')
@@ -1357,9 +1333,6 @@ contains
 !   construct perturbed AO density matrix Dp
 !   ========================================
 
-    call get_i_or_s_C(Ci, 'i')
-    call get_i_or_s_C(Cs, 's')
-
     Wp%elms = 0.0d0
 
     if (do_pp) then
@@ -1390,14 +1363,18 @@ contains
     Dp%elms = 0.0d0
     if (.not. static) Dp%ih_sym = 0
 
+    call get_i_or_s_C(Ci, 'i')
+    call get_i_or_s_C(Cs, 's')
+
     Dp = (Ci*(Wp*dag(Cs))) - (Cs*(Wp*dag(Ci)))
+!   Dp = (Ci*(dag(Wp)*dag(Cs))) + (Cs*(Wp*dag(Ci)))
     Dp = 0.5d0*Dp
 
 !fixme
     Dp%ih_sym        = Wp%ih_sym
     Dp%tr_sym        = Wp%tr_sym
     Dp%pg_sym        = Wp%pg_sym
-    Dp%fermi_pointer = Wp%fermi_pointer
+!   Dp%fermi_pointer = Wp%fermi_pointer
 
     if (debug_me) then
       call print_mat(Wp, label = 'debug Wp')

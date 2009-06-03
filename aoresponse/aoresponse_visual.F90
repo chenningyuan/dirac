@@ -192,7 +192,7 @@ contains
 
     do ic = 1, size(cube_file)
       if (abs(integral(ic)) > small) then
-        write(*,*) 'blub integral', cube_file(ic)%file_name, integral(ic)
+        write(*,*) 'integral', cube_file(ic)%file_name, integral(ic)
       end if
     end do
 
