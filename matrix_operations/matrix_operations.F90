@@ -38,10 +38,9 @@ module matrix_operations
     real(8),    pointer :: raux(:)
 
 !   DIRAC specific
-    integer             :: ih_sym        = 1
-    integer             :: tr_sym        = 1
-    integer             :: pg_sym        = 1
-    integer             :: fermi_pointer = 1
+    integer             :: ih_sym = 1
+    integer             :: tr_sym = 1
+    integer             :: irep   = 0
   end type
 
 #include "dgroup.h"
@@ -133,9 +132,9 @@ contains
     nza = nz
     nzb = nz
     if (nbsym > 1) then
-      call iqpack(ipqtoq(1, A%pg_sym-1), nza, &
-                  ipqtoq(1, B%pg_sym-1), nzb, &
-                  iq                   , nzc)
+      call iqpack(ipqtoq(1, A%irep), nza, &
+                  ipqtoq(1, B%irep), nzb, &
+                  iq               , nzc)
     end if
 
     ta = 'N'
@@ -145,16 +144,12 @@ contains
     if (transa == 'T') ta = 'H'
     if (transb == 'T') tb = 'H'
 
-!   C%nrow       = m
-!   C%ncol       = n
-    C%pg_sym     = 1 + ieor(A%pg_sym-1, B%pg_sym-1)
-
-    call qgemm(m, n, k,                                                    &
-               alpha,                                                      &
-               ta, 'N', ipqtoq(1, A%pg_sym-1), A%elms, A%nrow, A%ncol, nz, &
-               tb, 'N', ipqtoq(1, B%pg_sym-1), B%elms, B%nrow, B%ncol, nz, &
-               beta,                                                       &
-                        iq                   , C%elms, C%nrow, C%ncol, nz)
+    call qgemm(m, n, k,                                                &
+               alpha,                                                  &
+               ta, 'N', ipqtoq(1, A%irep), A%elms, A%nrow, A%ncol, nz, &
+               tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, nz, &
+               beta,                                                   &
+                        iq               , C%elms, C%nrow, C%ncol, nz)
 
   end subroutine
 
@@ -190,7 +185,7 @@ contains
     do iz = 1, nz
 
       q = 1.0d0
-      if (ipqtoq(iz, A%pg_sym - 1) > 1) q = -1.0d0
+      if (ipqtoq(iz, A%irep) > 1) q = -1.0d0
 
       do j = 1, j_dim
         do i = 1, i_dim
@@ -199,11 +194,6 @@ contains
         end do
       end do
     end do
-
-!   B%ih_sym        = A%ih_sym
-!   B%tr_sym        = A%tr_sym
-!   B%pg_sym        = A%pg_sym
-!   B%fermi_pointer = A%fermi_pointer
 
   end subroutine
 
@@ -222,7 +212,7 @@ contains
 
     r = 0.0d0
 
-    if (ieor(A%pg_sym-1, B%pg_sym-1) == 0) then
+    if (ieor(A%irep, B%irep) == 0) then
       r = ddot(A%nrow*A%ncol*nz, A%elms, 1, B%elms, 1)
     end if
 
@@ -251,8 +241,7 @@ contains
     do iz = 1, nz
 
       q = 1.0d0
-!     if (ipqtoq(iz, A%pg_sym - 1) > 1) q = -1.0d0
-      if (ipqtoq(iz, B%pg_sym - 1) > 1) q = -1.0d0
+      if (ipqtoq(iz, B%irep) > 1) q = -1.0d0
 
       do j = 1, j_dim
         r = r + q*ddot(i_dim, A%elms((iz - 1)*i_dim*j_dim + i_dim*(j - 1) + 1), 1, &

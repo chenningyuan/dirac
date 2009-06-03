@@ -114,25 +114,20 @@ contains
       C%ncol = ncol
       if (zer .or. res) then
          nullify(C%elms)
-         C%pg_sym = 1 !reset to totally symmetric
+#ifdef PRG_DIRAC
+         C%irep = 0 !reset to totally symmetric
+#endif
       else if (ali) then
          C = A !copies all fields
-         C%pg_sym = A%pg_sym !inherit for C = A
       else
          !print *,'mat_init',loc(C)
          call mat_init_full(C, nrow, ncol)
-         if (present(A) .and. .not.present(B)) &
-            C%pg_sym = A%pg_sym !inherit for C = A
-         if (present(B) .and. .not.present(A)) &
-            C%pg_sym = B%pg_sym !inherit for C = B
-         if (present(A) .and. present(B)) &
-            C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
+#ifdef PRG_DIRAC
+         if (present(A) .and. .not. present(B)) C%irep = A%irep
+         if (present(B) .and. .not. present(A)) C%irep = B%irep
+         if (present(A) .and.       present(B)) C%irep = ieor(A%irep, B%irep)
+#endif
       end if
-     if (res) C%pg_sym = 1 !reset to totally symmetric
-      if (present(A) .and. .not.present(B)) &
-         C%pg_sym = A%pg_sym !inherit for C = A
-      if (present(A) .and. present(B)) &
-         C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
    end subroutine
 
    function mat_isdef(A)
@@ -466,20 +461,19 @@ contains
       end if
       write (uni,'()') !final empty line
 #else
-      write(*, *) 'matrix        = ', label
-      write(*, *) 'ih_sym        = ', A%ih_sym
-      write(*, *) 'tr_sym        = ', A%tr_sym
-      write(*, *) 'pg_sym        = ', A%pg_sym
-      write(*, *) 'fermi_pointer = ', A%fermi_pointer
+      write(*, *) 'matrix = ', label
+      write(*, *) 'ih_sym = ', A%ih_sym
+      write(*, *) 'tr_sym = ', A%tr_sym
+      write(*, *) 'irep   = ', A%irep
 
       if (associated(A%elms)) then
-        call prqmat(A%elms,                &
-                    A%nrow,                &
-                    A%ncol,                &
-                    A%nrow,                &
-                    A%ncol,                &
-                    nz,                    &
-                    ipqtoq(1, A%pg_sym-1), &
+        call prqmat(A%elms,            &
+                    A%nrow,            &
+                    A%ncol,            &
+                    A%nrow,            &
+                    A%ncol,            &
+                    nz,                &
+                    ipqtoq(1, A%irep), &
                     lupri)
       else
         write(*, *) 'all elements zero'

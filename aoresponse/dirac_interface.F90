@@ -631,7 +631,7 @@ contains
     call alloc(work, lfree)
     kfree = 1
 
-    call twofck(G%pg_sym, &
+    call twofck(G%irep + 1, &
 !               G%ih_sym, &
                 0,        &
                 1,        &
@@ -853,10 +853,9 @@ contains
     if (.not. mat_isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
 
-    P%pg_sym        = iprpsym(op_index)
-    P%tr_sym        = iprptim(op_index)
-    P%fermi_pointer = jbtof(P%pg_sym - 1, 1)
-    P%ih_sym        = P%tr_sym
+    P%irep   = iprpsym(op_index) - 1
+    P%tr_sym = iprptim(op_index)
+    P%ih_sym = P%tr_sym
 
 !   call alloc_maxsize(freemem, 1, verbose)
 !   lfree = (freemem/2)*2
@@ -1092,10 +1091,9 @@ contains
     C      = 0
 
 !fixme
-    RHS_mo%ih_sym        = RHS%ih_sym
-    RHS_mo%tr_sym        = RHS%tr_sym
-    RHS_mo%pg_sym        = RHS%pg_sym
-!   RHS_mo%fermi_pointer = RHS%fermi_pointer
+    RHS_mo%ih_sym = RHS%ih_sym
+    RHS_mo%tr_sym = RHS%tr_sym
+    RHS_mo%irep   = RHS%irep
 
     if (debug_me) then
       call print_mat(RHS,    label = 'debug RHS in AO basis')
@@ -1209,9 +1207,10 @@ contains
 
 !   nr_freq   = size(freq)
     nr_freq   = 1
-    jsymop    = RHS%pg_sym
+    jsymop    = RHS%irep + 1
     jtimop    = RHS%tr_sym
-    jopsy     = RHS%fermi_pointer
+!   jopsy     = RHS%fermi_pointer
+    jopsy     = 1
     nfreq     = nr_freq
     nexsim    = nr_freq
     nexstv    = nr_freq
@@ -1337,8 +1336,8 @@ contains
 
     if (do_pp) then
 
-      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%pg_sym)
-      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%pg_sym)
+      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%irep + 1)
+      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%irep + 1)
 
       call dealloc(orbital_rotation_vector_pp)
 
@@ -1349,8 +1348,8 @@ contains
 
     if (do_pn) then
 
-      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%pg_sym)
-      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%pg_sym)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%irep + 1)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%irep + 1)
 
       call dealloc(orbital_rotation_vector_pn)
 
@@ -1371,10 +1370,9 @@ contains
     Dp = 0.5d0*Dp
 
 !fixme
-    Dp%ih_sym        = Wp%ih_sym
-    Dp%tr_sym        = Wp%tr_sym
-    Dp%pg_sym        = Wp%pg_sym
-!   Dp%fermi_pointer = Wp%fermi_pointer
+    Dp%ih_sym = Wp%ih_sym
+    Dp%tr_sym = Wp%tr_sym
+    Dp%irep   = Wp%irep
 
     if (debug_me) then
       call print_mat(Wp, label = 'debug Wp')

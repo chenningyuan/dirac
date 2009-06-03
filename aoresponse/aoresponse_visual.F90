@@ -74,7 +74,7 @@ contains
     if (nz < 4) then
       do iz = 1, nz
         do id = 1, size(D)
-          iq = ipqtoq(iz, D(id)%pg_sym - 1)
+          iq = ipqtoq(iz, D(id)%irep)
           call q2bphase('D', iq, 1, D(id)%elms((iz-1)*D(id)%nrow*D(id)%ncol + 1))
         end do
       end do
@@ -301,7 +301,7 @@ contains
     if (nz < 4) then
       do iz = 1, nz
         do id = 1, size(D)
-          iq = ipqtoq(iz, D(id)%pg_sym - 1)
+          iq = ipqtoq(iz, D(id)%irep)
           call q2bphase('D', iq, 1, D(id)%elms((iz-1)*D(id)%nrow*D(id)%ncol + 1))
         end do
       end do

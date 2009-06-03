@@ -394,12 +394,10 @@ contains
       end if
 
 #ifdef PRG_DIRAC
-!     A%ih_sym        = B%ih_sym
-!     A%tr_sym        = B%tr_sym
-      A%pg_sym        = B%pg_sym
-!     A%fermi_pointer = B%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
-
+      A%ih_sym = B%ih_sym
+      A%tr_sym = B%tr_sym
+      A%irep   = B%irep
+#endif
    end subroutine
 
 
@@ -490,12 +488,10 @@ contains
       end if
 
 #ifdef PRG_DIRAC
-!     C%ih_sym        = B%ih_sym
-!     C%tr_sym        = B%tr_sym
-      C%pg_sym        = B%pg_sym
-!     C%fermi_pointer = B%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
-
+      C%ih_sym = B%ih_sym
+      C%tr_sym = B%tr_sym
+      C%irep   = B%irep
+#endif
    end subroutine
 
 
@@ -504,7 +500,6 @@ contains
       type(matrix), target, intent(in) :: A, B
       type(matrix), target             :: C
       call gen_mat_plus_mat(A, .true., B, C)
-      C%pg_sym        = B%pg_sym
    end function
 
 
@@ -514,7 +509,6 @@ contains
       type(matrix), target, intent(in) :: A, B
       type(matrix), target             :: C
       call gen_mat_plus_mat(A, .false., B, C)
-      C%pg_sym        = B%pg_sym
    end function
 
 
@@ -560,7 +554,12 @@ contains
          call quit('matrix A * B : incompatible shapes')
       !if either of X or Z are zero, zero C
       if (zeroA.or.zeroB) call zero_tmp(TC)
-C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
+
+#ifdef PRG_DIRAC
+      C%ih_sym = A%ih_sym*B%ih_sym
+      C%tr_sym = A%tr_sym*B%tr_sym
+      C%irep = ieor(A%irep, B%irep)
+#endif
    end function
 
 
@@ -569,6 +568,12 @@ C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
       type(matrix), target, intent(in) :: A
       type(matrix), target             :: B
       type(tmp_mat), pointer           :: TA, TB
+
+#ifdef PRG_DIRAC
+      B%ih_sym = A%ih_sym
+      B%tr_sym = A%tr_sym
+      B%irep   = A%irep
+#endif
 
       !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
       TA => find_tmp(A, 'matrix r * A : A undefined')
@@ -592,12 +597,6 @@ C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
       type(matrix), target, intent(in) :: A
       type(matrix), target             :: B
       call gen_complex_times_mat(r, A, B)
-#ifdef PRG_DIRAC
-!     B%ih_sym        = A%ih_sym
-!     B%tr_sym        = A%tr_sym
-      B%pg_sym        = A%pg_sym
-!     B%fermi_pointer = A%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
    end function
 
    function real_times_mat(r, A) result(B)
@@ -605,36 +604,18 @@ C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
       type(matrix),target,intent(in) :: A
       type(matrix),target            :: B
       call gen_complex_times_mat(r*(1d0,0d0), A, B)
-#ifdef PRG_DIRAC
-!     B%ih_sym        = A%ih_sym
-!     B%tr_sym        = A%tr_sym
-      B%pg_sym        = A%pg_sym
-!     B%fermi_pointer = A%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
    end function
 
    function plus_mat(A) result(B)
       type(matrix),target,intent(in) :: A
       type(matrix),target            :: B
       call gen_complex_times_mat((1d0,0d0), A, B)
-#ifdef PRG_DIRAC
-!     B%ih_sym        = A%ih_sym
-!     B%tr_sym        = A%tr_sym
-      B%pg_sym        = A%pg_sym
-!     B%fermi_pointer = A%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
    end function
 
    function minus_mat(A) result(B)
       type(matrix),target,intent(in) :: A
       type(matrix),target            :: B
       call gen_complex_times_mat((-1d0,0d0), A, B)
-#ifdef PRG_DIRAC
-!     B%ih_sym        = A%ih_sym
-!     B%tr_sym        = A%tr_sym
-      B%pg_sym        = A%pg_sym
-!     B%fermi_pointer = A%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
    end function
 
    function mat_dagger(A) result(B)
@@ -662,11 +643,10 @@ C%pg_sym = 1+ieor(A%pg_sym-1, B%pg_sym-1) !product C = A*B
       end if
 
 #ifdef PRG_DIRAC
-!     B%ih_sym        = A%ih_sym
-!     B%tr_sym        = A%tr_sym
-      B%pg_sym        = A%pg_sym
-!     B%fermi_pointer = A%fermi_pointer
-#endif /* ifdef PRG_DIRAC */
+      B%ih_sym = A%ih_sym
+      B%tr_sym = A%tr_sym
+      B%irep   = A%irep
+#endif
    end function
 
 

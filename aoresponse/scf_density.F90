@@ -207,26 +207,26 @@ contains
 
         offset = (iz-1)*ntbas(0)*ntbas(0)
 
-        call general_density_block(density%vector(ixyz),                                  &
-                                   M%elms(1+offset),                                      &
-                                   get_density,                                           &
-                                   ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
-                                   gao_slice_left,                                        &
-                                   gao_slice_right,                                       &
-                                   buffer,                                                &
-                                   1,                                                     &
-                                   component_lx,                                          &
+        call general_density_block(density%vector(ixyz),                              &
+                                   M%elms(1+offset),                                  &
+                                   get_density,                                       &
+                                   ieor(isymax(ixyz, density%transforms_as), M%irep), &
+                                   gao_slice_left,                                    &
+                                   gao_slice_right,                                   &
+                                   buffer,                                            &
+                                   1,                                                 &
+                                   component_lx,                                      &
                                    density%factor_lx)
 
-        call general_density_block(density%vector(ixyz),                                  &
-                                   M%elms(1+offset),                                      &
-                                   get_density,                                           &
-                                   ieor(isymax(ixyz, density%transforms_as), M%pg_sym-1), &
-                                   gao_slice_left,                                        &
-                                   gao_slice_right,                                       &
-                                   buffer,                                                &
-                                   component_xs,                                          &
-                                   2,                                                     &
+        call general_density_block(density%vector(ixyz),                              &
+                                   M%elms(1+offset),                                  &
+                                   get_density,                                       &
+                                   ieor(isymax(ixyz, density%transforms_as), M%irep), &
+                                   gao_slice_left,                                    &
+                                   gao_slice_right,                                   &
+                                   buffer,                                            &
+                                   component_xs,                                      &
+                                   2,                                                 &
                                    density%factor_xs)
 
       end do
@@ -236,7 +236,7 @@ contains
         call general_density_block(density%scalar,    &
                                    M%elms(1),         &
                                    get_density,       &
-                                   M%pg_sym - 1,      &
+                                   M%irep,            &
                                    gao_slice_left,    &
                                    gao_slice_right,   &
                                    buffer,            &
@@ -247,7 +247,7 @@ contains
         call general_density_block(density%scalar,    &
                                    M%elms(1),         &
                                    get_density,       &
-                                   M%pg_sym - 1,      &
+                                   M%irep,            &
                                    gao_slice_left,    &
                                    gao_slice_right,   &
                                    buffer,            &
