@@ -1,5 +1,5 @@
 
-! radovan.bast@uit.no (2009-06-01):
+! radovan.bast@uit.no (2009-06-03):
 ! this module is the interface between matrix_genop and DIRAC
 ! please mind that the naming is common with Dalton
 ! so some things make only sense in the larger picture (Dalton and DIRAC)

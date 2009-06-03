@@ -503,7 +503,6 @@ contains
    end function
 
 
-
    function mat_minus_mat(A, B) result(C)
    !verify that shapes match, check for zeros
       type(matrix), target, intent(in) :: A, B
@@ -558,7 +557,7 @@ contains
 #ifdef PRG_DIRAC
       C%ih_sym = A%ih_sym*B%ih_sym
       C%tr_sym = A%tr_sym*B%tr_sym
-      C%irep = ieor(A%irep, B%irep)
+      C%irep   = ieor(A%irep, B%irep)
 #endif
    end function
 

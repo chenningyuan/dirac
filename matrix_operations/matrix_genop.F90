@@ -115,7 +115,9 @@ contains
       if (zer .or. res) then
          nullify(C%elms)
 #ifdef PRG_DIRAC
-         C%irep = 0 !reset to totally symmetric
+         C%ih_sym = 1
+         C%tr_sym = 1
+         C%irep   = 0
 #endif
       else if (ali) then
          C = A !copies all fields
@@ -123,12 +125,25 @@ contains
          !print *,'mat_init',loc(C)
          call mat_init_full(C, nrow, ncol)
 #ifdef PRG_DIRAC
-         if (present(A) .and. .not. present(B)) C%irep = A%irep
-         if (present(B) .and. .not. present(A)) C%irep = B%irep
-         if (present(A) .and.       present(B)) C%irep = ieor(A%irep, B%irep)
-#endif
+         if (present(A) .and. .not. present(B)) then
+           C%ih_sym = A%ih_sym
+           C%tr_sym = A%tr_sym
+           C%irep   = A%irep  
+         end if
+         if (present(B) .and. .not. present(A)) then
+           C%ih_sym = B%ih_sym
+           C%tr_sym = B%tr_sym
+           C%irep   = B%irep  
+         end if
+         if (present(A) .and.       present(B)) then
+           C%ih_sym = A%ih_sym*B%ih_sym
+           C%tr_sym = A%tr_sym*B%tr_sym
+           C%irep   = ieor(A%irep, B%irep)
+         end if
+#endif /* ifdef PRG_DIRAC */
       end if
    end subroutine
+
 
    function mat_isdef(A)
       type(matrix),intent(in) :: A
