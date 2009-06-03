@@ -214,12 +214,13 @@ int main(void)
   res += taylor_check("exp(1/(2.5+3*x+7*y))",ret,composed_good,1e-15);
 
   // Term indexing
+  taylor<3,3> index_tester;
   int exponents1[] = {2,0,1};
   int exponents2[] = {0,1,1};
   /* 1 x y z x^2 xy xz y^2 yz z^2 x^3 x^2y x^2z xy^2 xyz xz^2 y^3 y^2z yz^2 z^3
      0 1 2 3 4   5  6  7   8  9   10  11   12   13   14  15   16  17   18  19*/
-  if (taylor_index(3,exponents1) != 12 ||
-      taylor_index(3,exponents2) != 8)
+  if (index_tester.term_index(exponents1) != 12 ||
+      index_tester.term_index(exponents2) != 8)
     {
       cout << "Error in taylor::index_of()\n";
       res++;
@@ -231,7 +232,7 @@ int main(void)
     for (int j=0;i+j<=10;j++)
       {
 	int ij[2] = {i,j};
-	if (fabs(nchoosek[taylor_index(2,ij)] - stupid_binomial(j,i)) > 1e-15)
+	if (fabs(nchoosek[nchoosek.term_index(ij)] - stupid_binomial(j,i)) > 1e-15)
 	  {
 	    cout << "Error evaluating binomial coefficients by generating function\n";
 	    res++;
