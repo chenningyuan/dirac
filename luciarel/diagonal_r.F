@@ -624,6 +624,8 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
         write(6,*) '  Entering get_dia_2e                 '
         write(6,*) ' //////////////////////////////////// '
       end if
+C     WRITE(LUWRT,*) ' T_BUFF print test'
+C     CALL WRTMATMN8(T_BUFF,1,12,1,12,6)
 *
 * Read in indices from INDICES file
       IDUM = 1
@@ -1205,7 +1207,12 @@ C
      &                '  Integral ',XINT(IPOSDIA(INT))
             end if
 C           XOUT(ICT) = XINT(INT)
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
+            XOUT(ICT) = T_BUFF(IPOSDIA(INT))
+#else
             XOUT(ICT) = XINT(IPOSDIA(INT))
+#endif
             ICT = ICT + 1
             goto 10
           end if
@@ -1319,7 +1326,12 @@ C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
      &             XINT(IPOSDIA(INT))
           end if
 C         XOUT = XINT(INT)
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+C         write(6,*) ' fetch integral (2e) from pos',IPOSDIA(INT)
+          XOUT = T_BUFF(IPOSDIA(INT))
+#else
           XOUT = XINT(IPOSDIA(INT))
+#endif
           IERROR = 0
 * and exit.
           goto 10

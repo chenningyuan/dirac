@@ -14,7 +14,8 @@
      &                               MY_IAPROC_PTR, MY_TTOL_PTR,
      &                               MY_CHECK_F_PTR, MY_XT_PTR,
      &                               MY_VEC1_PTR, MY_VEC2_PTR,
-     &                               MY_BWEIGHT_PTR, MY_DL_PTR 
+     &                               MY_BWEIGHT_PTR, MY_DL_PTR,
+     &                               MY_T_PTRXXX 
 #endif
 !
       COMMON/MPI_MEMPOINTER1/  MY_T_SCR_PTR
@@ -29,6 +30,7 @@
       COMMON/MPI_MEMPOINTER10/ MY_BWEIGHT_PTR
       COMMON/MPI_MEMPOINTER11/ MY_BPROC_PTR
       COMMON/MPI_MEMPOINTER12/ MY_DL_PTR
+      COMMON/MPI_MEMPOINTER13/ MY_T_PTRXXX
 !
 !             MPI memory window handler 
 !     ======================================
