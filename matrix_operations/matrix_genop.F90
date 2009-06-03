@@ -342,7 +342,7 @@ contains
       logical,         intent(in) :: ta, tb, pc
       type(matrix), intent(inout) :: C
       type(matrix)       :: X, Y !temporary matrices
-      logical, parameter :: trps=.true., norm=.false., &
+      logical, parameter ::              norm=.false., &
                             plus=.true., eqls=.false.
       !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
       !call mat_mul(A, B, ta, tb, real(fab), real(fc), C)

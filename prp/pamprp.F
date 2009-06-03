@@ -5691,6 +5691,8 @@ C       ... symmetrize off-diagonal terms ...
 C       ... store non-symmetrized data ...
         IIC=1
         DO II = 19, 27
+!fixme
+!radovan: this goes out of bounds of EXPVAL_NS
          EXPVAL_NS(IIC) = EXPVAL(IPDSUSC(II))
          IIC = IIC + 1
         ENDDO
@@ -5715,6 +5717,8 @@ C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as w
      &   '  symmetrized       diff. from unsymmetrized'
          IIC = 1
          DO II = 19, 27
+!fixme
+!radovan: this goes out of bounds of EXPVAL_NS
            INDXPR = LEXPP(IPDSUSC(II))
            WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
      &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),

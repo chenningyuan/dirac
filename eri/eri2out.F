@@ -1359,7 +1359,10 @@ C
             IOFF = IOFCMP(ICMPX)
             IADR = IOFF*NCCS + ISTR - 1
             DO K = IOFF + 1, IOFF + MLTPX
+!fixme
+!radovan: warning: array subscript is below array bounds
                IDIST = INDXDS(IBTAND(IBTSHR(INDORB(ISTR,K),NB3),IBT))
+
                IBTCH = NBTCHX(IDIST) + 1
                NBTCHX(IDIST) = IBTCH
                LBTCHX(IDIST) = LENGTH
@@ -2179,7 +2182,10 @@ C
                DO I = 1, NCCT 
                   SOINT = SO(I,ICMPAB,ICMPCD)
                   LABEL = INDORB(I,ICMPAB,ICMPCD,1)
+!fixme
+!radovan: warning: array subscript is below array bounds
                   IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
+
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
                      BIN (INT)   = SOINT 
@@ -2191,7 +2197,10 @@ C
                   SOINT  = SO(I,ICMPAB,ICMPCD)
                   LABEL1 = INDORB(I,ICMPAB,ICMPCD,1)
                   LABEL2 = INDORB(I,ICMPAB,ICMPCD,2)
+!fixme
+!radovan: warning: array subscript is below array bounds
                   IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
+
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
                      BIN (INT)   = SOINT 
