@@ -1,7 +1,18 @@
 #include <cassert>
 #include "taylor.h"
-#include <iostream>
+
 using namespace std;
+
+static int taylor_len(int nvar, int ndeg)
+  {
+    int len = 1;
+    for (int k=1;k<=nvar;k++)
+      {
+	len *= ndeg + k;
+	len /= k;
+      }
+    return len;
+  }
 
 // Fortran interface to taylor_len
 extern "C"
@@ -32,6 +43,10 @@ int taylor_index_(const int *nvar, const int exponents[])
 {
   return 1+taylor_index(*nvar,exponents);
 }
+
+#if 0
+
+// Slow generic polynomial multiplication, may be good to keep around.
 
 /*
   Multiply polynomials p1 and p2, both polynomials of nvar variables,
@@ -113,27 +128,4 @@ void taylor_mul(tnum_t dst[], int nvar, int ndeg,
     }
 }
 
-
-void taylor_next_exponents(int n, int m[])
-{
-  int k = 0;
-  for (int i=0;i<n-1;i++)
-    k += m[i];
-  if (k == 0)
-    {
-      m[0] = m[n-1] + 1;
-      m[n-1] = 0;
-      return;
-    }
-  if (m[n-2] > 0)
-    {
-      m[n-1]++;
-      m[n-2]--;
-    }
-  else
-    {
-      taylor_next_exponents(n-1,m);
-      m[n-2] += m[n-1];
-      m[n-1] = 0;
-    }
-}
+#endif
