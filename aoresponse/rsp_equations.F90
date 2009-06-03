@@ -338,28 +338,36 @@ contains
 #else
         if (debug_me) then
           call print_mat(RHS(1), label = 'debug solve_scf_eq: RHS(1)')
+          R = dag(RHS(1))
+          call print_mat(R,      label = 'debug solve_scf_eq: dag(RHS(1))')
+          R = RHS(1) + dag(RHS(1))
+          call print_mat(R,      label = 'debug solve_scf_eq: RHS(1) + dag(RHS(1))')
+          R = -0.5d0*(RHS(1) + dag(RHS(1)))
+          call print_mat(R,      label = 'debug solve_scf_eq: -0.5d0*(RHS(1) + dag(RHS(1)))')
         end if
 
-!       h+ part
+!       isolate h+ part
         R = -0.5d0*(RHS(1) - dag(RHS(1)))
         if (debug_me) then
           call print_mat(R, label = 'debug solve_scf_eq: R h+')
         end if
+!       consider only if significant
         if (real(dot(R, R)) > aor_cfg_threshold_rhs) then
-            R%tr_sym = 1
-            call response_solver(w, R, SOL(1))
-            Dp = Dp + SOL(1)
+          R%tr_sym = 1
+          call response_solver(w, R, SOL(1))
+          Dp = Dp + SOL(1)
         end if
 
-!       h- part
+!       isolate h- part
         R = -0.5d0*(RHS(1) + dag(RHS(1)))
         if (debug_me) then
           call print_mat(R, label = 'debug solve_scf_eq: R h-')
         end if
+!       consider only if significant
         if (real(dot(R, R)) > aor_cfg_threshold_rhs) then
-            R%tr_sym = -1
-            call response_solver(w, R, SOL(1))
-            Dp = Dp + SOL(1)
+          R%tr_sym = -1
+          call response_solver(w, R, SOL(1))
+          Dp = Dp + SOL(1)
         end if
 
         R = 0
