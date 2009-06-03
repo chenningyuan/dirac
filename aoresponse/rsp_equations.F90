@@ -20,7 +20,7 @@ module rsp_equations
 
     private
 
-    logical :: debug_me = .true.
+    logical :: debug_me = .false.
 
 contains
 

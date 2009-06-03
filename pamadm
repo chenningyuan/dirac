@@ -36,6 +36,7 @@ usage()
    echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
+   echo '     -matrixop        : Include matrix operations module'
    echo '     -autodiff        : Include autodiff module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
@@ -204,7 +205,14 @@ setup()
       echo " - AO response module"
    fi
 
-#  autodiff module
+#  matrix operations
+   if [ -n "$MATRIX_OPERATIONS_MOD" ]; then
+      MATRIX_OPERATIONS_FLG='-DMOD_MATRIX_OPERATIONS'
+      MATRIX_OPERATIONS_TAR=1
+      echo " - matrix operations module"
+   fi
+
+#  autodiff
    if [ -n "$AUTODIFFMOD" ]; then
       AUTODIFFFLG='-DMOD_AUTODIFF'
       echo " - autodiff module"
@@ -486,6 +494,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/aoresponse/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$MATRIX_OPERATIONS_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/matrix_operations/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$CAPTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
@@ -560,7 +573,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $VISUALFLG $AORESPONSEFLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -617,9 +630,15 @@ if [ -n "$VISUALFLG" ]; then
    dirs="$dirs visual"
    rmline build/dontbuild "visual/\.\*"
 fi
+
 if [ -n "$AORESPONSEFLG" ]; then
    dirs="$dirs aoresponse"
    rmline build/dontbuild "aoresponse/\.\*"
+fi
+
+if [ -n "$MATRIX_OPERATIONS_FLG" ]; then
+   dirs="$dirs matrix_operations"
+   rmline build/dontbuild "matrix_operations/\.\*"
 fi
 
 if [ -n "$AUTODIFFFLG" ]; then
@@ -795,6 +814,9 @@ while [ -n "$1" ]; do
          ;;
       -aoresponse|-ao)
          AORESPONSEMOD=1
+         ;;
+      -matrixop|-matop)
+         MATRIX_OPERATIONS_MOD=1
          ;;
       -autodiff)
          AUTODIFFMOD=1

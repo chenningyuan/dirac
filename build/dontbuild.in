@@ -5,6 +5,7 @@ build/.*
 oof/.*
 utils/.*
 aoresponse/.*
+matrix_operations/.*
 autodiff/.*
 visual/.*
 hsmrcc/.*
