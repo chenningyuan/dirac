@@ -135,16 +135,20 @@
       return
       end
 
-      subroutine dveps8 (name)           
+      subroutine dveps8 (name) 
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
       call files_ccsd (name,ntape,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) 'file for dveps8 not found'
@@ -175,14 +179,19 @@
       subroutine ehp(ipr)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
-     1 istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /rsp2/  nrsp2,irsp2(500)
+#include "cfiles.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
+!    1 istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
+#include "csize.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /rsp2/  nrsp2,irsp2(500)
+#include "rsp2.h"
+
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),ham(60,60)
       common /cdet/ ldet(2,400),lsdet(400)
@@ -372,27 +381,39 @@ c     order and print collected energies.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine eneru2 (egr0,nval,ihp,ipr)
       implicit real*8 (a-h,o-z)
       external ispin,hmatel
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-      common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
-      common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
-      common /cij6/ nij6,ij6(ndij),ije6(0:ndij),iii6,iiv6
-      common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /det/  nvlspo,lstvso(100),lstdet(1000),ndets,isplit 
-      common /idv/  iv(200),nvalo
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "strt.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij4.h"
+!     common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
+#include "cij5.h"
+!     common /cij6/ nij6,ij6(ndij),ije6(0:ndij),iii6,iiv6
+#include "cij6.h"
+!     common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /det/  nvlspo,lstvso(100),lstdet(1000),ndets,isplit 
+#include "det.h"
+!     common /idv/  iv(200),nvalo
+#include "idv.h"
 
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600),
      1 ntr(12)
@@ -819,6 +840,7 @@ c     order and write collected energies.
 890   continue
       return
       end
+
       subroutine expnd(iwork,iwork1,work,work1,nw,nw1)
       implicit real*8 (a-h,o-z)
 c   move from work1 (indx iwork1) to work, filling out according to
@@ -850,13 +872,17 @@ c   indx iwork
       subroutine fmax6 (namef,tmax,idmax,indmax)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
         write(*,*) ' file for fmax6 not found'
@@ -882,12 +908,18 @@ c   indx iwork
       subroutine fmax8 (namef,tmax,idmax,indmax)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-#include "cfiles.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common // gen(nbig)
-      common /i/ igen(nbig)
+#include "cfiles.h"
+
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
         write(*,*) ' file for fmax8 not found'
@@ -912,17 +944,19 @@ c   indx iwork
 
       subroutine fmax(namef,tmax,itmax)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
 
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
         write(*,*) ' file for fmax not found'
@@ -944,19 +978,24 @@ c   indx iwork
 
       function hdet11(ldet,ia,ib)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
-     1 istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /csize/ nszv,nszhv,nszhp,nszhq,istrv1,istrv2,
+!    1 istrhv1,istrhv2,istrhp1,istrhp2,istrhq1,istrhq2
+#include "csize.h"
+
       dimension ldet(2,*)
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+
 c  calculate heff matrix elements
       hdet11=0.
       if (isign(1,ldet(1,ia))-isign(1,ldet(2,ia)).ne.
@@ -994,13 +1033,23 @@ c  calculate heff matrix elements
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
-      common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
-     1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
-     2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+
+!     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
+!    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
+!    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
+#include "strt.h"
+
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
 
       dimension k1(6),k2(6),k1s(6),k2s(6),
      1k1save(6),k2save(6),j1(6),j2(6)
@@ -1766,13 +1815,17 @@ C
       subroutine move(namef,namet)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
       nbias=2*ndij+4
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
@@ -1792,24 +1845,40 @@ C
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rle (niter,irleop,name1,name2,name3,name4,ising)
+!-----------------------------------------------------------------------
+!
+!
+!-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
       double precision r(31,31),z(31),a(31),rcond,rmult
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
+
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij3.h"
+
 CUK   common /crle/ trle(nrle,4),isize(4)
-      common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
-     1 trle4(nrle4),isize(4)
+!     common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
+!    1 trle4(nrle4),isize(4)
+#include "crle.h"
+
       integer*4 ipvt(31)
       dimension iopa(4),name(4)
+
       call prtime ("rle in  ",0,0)
       name(1)=name1
       name(2)=name2
@@ -1989,17 +2058,18 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       implicit real*8 (a-h,o-z)
 c   expand file namef to namet, turning line iline from valence
 c   to general. (iline=4 is last line).
-      
 #include "param_ccsd.h"
-
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij2.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
       call files_ccsd(namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) ' unfold input file not found'
@@ -2276,17 +2346,21 @@ c   to general. (iline=4 is last line).
       subroutine wrtrle (name,itape,loc) 
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
 CUK   common /crle/ trle(nrle,4),isize(4)
-      common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
-     1 trle4(nrle4),isize(4)
+!     common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
+!    1 trle4(nrle4),isize(4)
+#include "crle.h"
+
       call files_ccsd (name,ntape,new,1,-1,-1)
       istrt=nstrt(2,ntape-1)
       lngth=isize(itape)
@@ -2317,14 +2391,17 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       subroutine zero (name)
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
-#include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+#include "cij1_0.h"
+!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
       call files_ccsd (name,ntape,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) 'zero input tape does not exist, ',name

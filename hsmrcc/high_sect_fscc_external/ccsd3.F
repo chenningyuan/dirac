@@ -1269,8 +1269,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #include "param_ccsd.h"
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
-#include "cij1_0.h"
-!     common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
+!#include "cij1_0.h"
+      common /cij1/ nij,ij(ndij),ije(0:ndij),iiii,iivi
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -1825,7 +1825,7 @@ c  indices not retained for pppp.
 !     integer ch1,ch2
 c   ii1234<0 - collect 1/2 file (i>j)
 #include "param_ccsd.h"
-!#include "cij1_0.h"
+!!!#include "cij1_0.h" ! not suitable !
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -1842,8 +1842,7 @@ c   ii1234<0 - collect 1/2 file (i>j)
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
 
-!     if (iopt(1).ge.5) then ! control printout
-      if (iopt(1).ge.4) then ! control printout
+      if (iopt(1).ge.5) then ! control printout
         call header('Output from "tmplt"',-1)
         !write(LUPRI,'(2x,a,i3)') 'nint=',nint
       endif
@@ -1853,8 +1852,7 @@ c   ii1234<0 - collect 1/2 file (i>j)
       call parse(j1234,j1,j2,j3,j4)
 
       call files_ccsd(name,num,new,1,i1234,j1234)
-!     if (iopt(1).ge.5) then ! control printout
-      if (iopt(1).ge.4) then ! control printout
+      if (iopt(1).ge.5) then ! control printout
         write(LUPRI,*) "tmplt: after files_ccsd, new=",new
         write(LUPRI,*) "tmplt: after files_ccsd, num=",num
       endif
@@ -1869,8 +1867,7 @@ c   ii1234<0 - collect 1/2 file (i>j)
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
 
-!     if (iopt(1).ge.5) then ! ... control printout
-      if (iopt(1).ge.4) then ! ... control printout
+      if (iopt(1).ge.5) then ! ... control printout
         write(LUPRI,'(/,2x,a,i12)') 'tmplt, nt=',nt
       endif
 
@@ -2001,6 +1998,7 @@ c   special for scratch files, which start with "s".
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 
+!#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
 
 #include "dat.h"
@@ -2135,6 +2133,7 @@ c   special for scratch files, which start with s
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+!#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -2281,6 +2280,7 @@ c   special for scratch files, which start with s
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 
+!#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
 
 #include "dat.h"
@@ -2391,6 +2391,7 @@ c   special for scratch files, which start with s
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 !!!#include "cij1.h" ! attention, variable changed names !
+!#include "cij1_0.h"
       common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
@@ -2495,20 +2496,15 @@ c   special for scratch files, which start with s
 
       subroutine t1sqr(name1a,name1b,name2,namet)
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
-
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij2.h"
@@ -2557,10 +2553,10 @@ c
 
       subroutine t1t2 (name1,name2,name3,names,iord,iparm) 
       implicit real*8 (a-h,o-z)
-      
 #include "param_ccsd.h"
 
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
 
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
