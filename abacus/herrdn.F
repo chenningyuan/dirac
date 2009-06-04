@@ -50,7 +50,7 @@ C
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
+            READ (LUCMD, '(A7)',IOSTAT=IOS) WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -70,14 +70,20 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in REAINP.')
     1          CONTINUE
-                  READ (LUCMD, *) IPREAD
+                  READ (LUCMD, *,IOSTAT=IOS) IPREAD
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading...IPREAD')
+                  ENDIF
                   IF (IPREAD .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
     2          CONTINUE
                   OLDNRM = .TRUE.
                GO TO 100
     3          CONTINUE
-                  READ (LUCMD, *) MAXPRI
+                  READ (LUCMD, *,IOSTAT=IOS) MAXPRI
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading...MAXPRI')
+                  ENDIF
                GO TO 100
     4          CONTINUE
                   BIGVC = .TRUE.
@@ -86,15 +92,24 @@ C
                   LUMLCL = LUCMD
                GO TO 100
  6             CONTINUE
-                  READ (LUCMD, *) TOLLRN
+                  READ (LUCMD, *,IOSTAT=IOS) TOLLRN
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading...TOLLRN')
+                  ENDIF
                GO TO 100
  7             CONTINUE
-                  READ (LUCMD,*) LCMMAX, CMSTR, CMEND
+                  READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading..LCMMAX...')
+                  ENDIF
                   NCMSTR = NINT(2*CMSTR)
                   NCMEND = NINT(2*CMEND)
                GO TO 100
  8             CONTINUE
-                  READ (LUCMD,*) ZCMVAL
+                  READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading..ZCMVAL')
+                  ENDIF
                GO TO 100
  9             CONTINUE
                   PRIBAS = .TRUE.
@@ -338,7 +353,11 @@ C     JHS TMP reset the variables with the read .mol file
       NMLINE=0
 
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A6)') KEYWRD
+      READ (MLINE(NMLINE),'(A6)',IOSTAT=IOS) KEYWRD
+      IF (IOS.NE.0) THEN
+         CALL QUIT('Error in reading...KEYWRD')
+      ENDIF
+
 C     In Dirac we do the readin the same way whatever KEYWRD is.
 C
 C     ********************************************
@@ -518,9 +537,9 @@ C***********************************************************************
 C     Card 2-3: Title cards
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A72)') TTITLE(1)
+      READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(1)
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A72)') TTITLE(2)
+      READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Title Cards',1)
          WRITE (LUPRI,'(2X,A,/,2X,A)') TTITLE(1),TTITLE(2)
@@ -539,8 +558,11 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)')
+      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)',IOSTAT=IOS)
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
+      IF (IOS.NE.0) THEN
+       CALL QUIT('Error in basis reading..BN,A1,I4,I3,A11,A1,D10.2,6I5')
+      ENDIF
       IF(NONTYP.GT.KATOM) GOTO 5000
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
@@ -568,7 +590,11 @@ C     Also automatic symmetry detection for Dinfh or Cinfv
       ADDSYM = (SYMTXT(1:1) .EQ. 'D') .OR. ADDSYM
       ADDSYM = (SYMTXT(1:1) .EQ. 'C') .OR. ADDSYM
       IF (.NOT. ADDSYM) THEN
-         READ(SYMTXT,'(BN,I2,9A1)') NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
+         READ(SYMTXT,'(BN,I2,9A1)',IOSTAT=IOS) 
+     &          NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
+         IF (IOS.NE.0) THEN
+          CALL QUIT('Error in sjkjd')
+         ENDIF
       ELSE
          NSYMOP = 0
       END IF
@@ -966,7 +992,10 @@ C        Test if Z-matrix for first line (I.eq.1):
 C
 
          IF (I .EQ. 1 .AND. .NOT. DIRAC) THEN
-           READ (MLINE(NMLINE),'(A1)') ZMATL
+           READ (MLINE(NMLINE),'(A1)',IOSTAT=IOS) ZMATL
+           IF (IOS.NE.0) THEN
+             CALL QUIT('Error read READ..akasjs')
+           ENDIF
            IF (ZMATL .NE. ' ') THEN
               ZMTTST = .TRUE.
               WRITE (LUPRI,'(/A)')
@@ -987,14 +1016,21 @@ C
             ADDSTO = .FALSE.
             READ(LUINFO,'(a)', ADVANCE='yes') str
             BACKSPACE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')
+            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error read READ..akasjsxxkd')
+            ENDIF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (ADDSTO) NSETS = 2
             BSET  = 'Basis'
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)') Q,NONT(I),
+            READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
+     &                           Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error read READ..zzz')
+            ENDIF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               ADDSTO = .FALSE.
@@ -1077,8 +1113,14 @@ C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
 C
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
+               READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
+     &         BSET,BSKEYWORD
 C
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error in reading BSET,BSKEYWORD:',
+     &           BSET,BSKEYWORD
+                 CALL QUIT('Error in reading BSET,BSKEYWORD')
+               ENDIF
                
                IF ( BSET .NE. 'LARGE') THEN
                   WRITE(LUPRI,'(A,I5,A,/,A)')
@@ -1095,18 +1137,30 @@ C              Check what kind of basis set we have
 C
                IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(12X,12I5)')
+                  READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+                  IF (IOS.NE.0)THEN
+                   CALL QUIT('Error in reading INTGRL...')
+                  ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(14X,12I5)')
+                  READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+                  IF (IOS.NE.0)THEN
+                   CALL QUIT('Error in reading EXPLICIT...')
+                  ENDIF
                ELSE IF ( BSKEYWORD(1:7) .EQ. 'MOLFBAS') THEN
                   IBSFLAG = 2
-                  READ (MLINE(NMLINE),'(14X,A20)') BASFIL
+                  READ (MLINE(NMLINE),'(14X,A20)',IOSTAT=IOS) BASFIL
+                  IF (IOS.NE.0)THEN
+                    CALL QUIT('Error in reading MOLFBAS..')
+                  ENDIF
                ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
                   IBSFLAG = 3
-                  READ (MLINE(NMLINE),'(12X,A20)') BASFIL
+                  READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
+                  IF (IOS.NE.0)THEN
+                    CALL QUIT('Error in reading BASIS...')
+                  ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
                   IBSFLAG = 4
                   READ (MLINE(NMLINE)(16:),*,ERR=9000)
@@ -1153,8 +1207,12 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(5X,12I5)')
+                  READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+                  IF (IOS.NE.0) THEN
+                    WRITE(LUPRI,*) 'Error in reading, NMLINE=',NMLINE
+                    CALL QUIT('Error in basis set reading')
+                  ENDIF
                END IF
 
 CMI            IF (INPTST.OR.IPREAD.GE.5) THEN
@@ -1374,7 +1432,11 @@ C              SMALL KINBAL (IBSFLAG = 4)
 C
                CALL FLUSH(LUPRI)
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,1X,A7)') BSET,BSKEYWORD
+               READ (MLINE(NMLINE),'(A5,1X,A7)',IOSTAT=IOS)
+     &             BSET,BSKEYWORD
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading...jsjuduu')
+               ENDIF
 C
 C              Initialize basis set flag
 C
@@ -1399,22 +1461,35 @@ C                 Check what kind of basis set we have
 C
                   IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                      IBSFLAG = 1
-                     READ (MLINE(NMLINE),'(12X,12I5)')
+                     READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT('Error in reading...ssdk123uu')
+                     ENDIF
                   ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                      IBSFLAG = 1
-                     READ (MLINE(NMLINE),'(14X,12I5)')
+                     READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT('Error in reading...3323dd')
+                     ENDIF
                   ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
                      IBSFLAG = 2
-                     READ (MLINE(NMLINE),'(14X,A20)') BASFIL
+                     READ (MLINE(NMLINE),'(14X,A20)',IOSTAT=IOS) BASFIL
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT('Error in reading...asxdd')
+                     ENDIF
                   ELSE IF ( BSKEYWORD(1:6) .EQ. 'KINBAL' ) THEN
                      IBSFLAG = 4
                   ELSE
 C                    Assume it is 'SMALL   2    1....'
                      IBSFLAG = 1
-                     READ (MLINE(NMLINE),'(BN,A5,12I5)')
+                     READ (MLINE(NMLINE),'(BN,A5,12I5)',IOSTAT=IOS)
      &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT('Error in reading...askdjdcn')
+                     ENDIF
+
                   END IF
  
                END IF
@@ -1596,7 +1671,11 @@ C       FTLRG : fitset to be used for only the large component density
 C       FTSML : fitset to be used for only the small component density
 C
         CALL RDLINE(LUINFO)
-        READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
+        READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) BSET,BSKEYWORD
+        IF (IOS.NE.0) THEN
+          CALL QUIT('Error in reading..csmxn')
+        ENDIF
+
 C
 C       Initialize basis set flag
 C
@@ -1625,12 +1704,18 @@ C          Check what kind of basis set we have
 C
            IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
               IBSFLAG = 1
-              READ (MLINE(NMLINE),'(12X,12I5)')
+              READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
+              IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading...ajdcn')
+              ENDIF
            ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
               IBSFLAG = 1
-              READ (MLINE(NMLINE),'(14X,12I5)')
+              READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
+              IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading...ajxxcn')
+              ENDIF
            ELSE IF ( BSKEYWORD(1:7) .EQ. 'DEFAULT') THEN
               IBSFLAG = 2
            ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
@@ -1671,8 +1756,12 @@ C
            ELSE
 C             Assume it is 'FTSET   2    1....'
               IBSFLAG = 1
-              READ (MLINE(NMLINE),'(5X,12I5)')
+              READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
+              IF (IOS.NE.0) THEN
+                CALL QUIT('Error in reading...kdjcn')
+              ENDIF
+
            END IF
 C
            IF ( IBSFLAG .EQ. 1 ) THEN
@@ -2745,8 +2834,14 @@ C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
 C
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
+            READ (MLINE(NMLINE),'(BN,A,I4,2I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK)
+            IF (IOS.NE.0) THEN
+               WRITE(LUPRI,*) 'Error in reading BN,A,I4,2I5, NMLINE=',NMLINE
+               WRITE(LUPRI,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               CALL QUIT('Error in reading BN,A,I4,2I5 ... ')
+            ENDIF
+
             IF (INPTST) THEN
               WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
               WRITE(LUPRI,'(6X,A,I5)')
@@ -2809,10 +2904,18 @@ C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
             IF (J. EQ. 1) THEN
-               READ (MLINE(NMLINE),'(BN,A,I4,1I5)')
+               READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading...ddxm23jdcn')
+               ENDIF
             ELSE
-               READ (MLINE(NMLINE),'(BN,A,I4,1I5)') FRMT,NUCIJ,NRCIJ
+               READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS) 
+     &              FRMT,NUCIJ,NRCIJ
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('Error in reading...d123s0dm3jdcn')
+               ENDIF
+
             END IF
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
@@ -3136,8 +3239,12 @@ C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,A,I4,I5)')
+            READ (MLINE(NMLINE),'(BN,A,I4,I5)',IOSTAT=IOS)
      &           FRMT,NUC(NBLOCK),NRC(NBLOCK)
+            IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading...dd283cn')
+            ENDIF
+
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
                WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUC(NBLOCK),
@@ -3247,15 +3354,29 @@ C
      &                       CPRIMU(L,M),'REA')
               END DO
 #else
-              READ (MLINE(NMLINE),*) ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
+              READ (MLINE(NMLINE),*,IOSTAT=IOS)
+     &         ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
+              IF (IOS.NE.0) THEN
+                WRITE(LUPRI,*) 'error in reading NMLINE=',NMLINE
+                CALL QUIT(
+     &    'Error in reading ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)')
+              ENDIF
 #endif
            ELSE
-              READ (MLINE(NMLINE),FMT1) ALPHA(L),
+              READ (MLINE(NMLINE),FMT1,IOSTAT=IOS) ALPHA(L),
      &           (CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))
+              IF (IOS.NE.0) THEN
+               CALL QUIT(
+     &         'Error in basis set reading ALPHA(L),'//
+     &         '(CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))')
+              ENDIF
               DO 200 K = 2, (NRCIJ - 1)/(NCOL - 1) + 1
                  CALL RDLINE(LUINFO)
-                 READ (MLINE(NMLINE),FMT2) (CPRIMU(L,M),
+                 READ (MLINE(NMLINE),FMT2,IOSTAT=IOS) (CPRIMU(L,M),
      &              M = 1 + (NCOL-1)*(K-1), MIN(NRCIJ,(NCOL-1)*K))
+                 IF (IOS.NE.0) THEN
+                   CALL QUIT('Error in basis set reading...') 
+                 ENDIF
   200         CONTINUE
            END IF
   100   CONTINUE
@@ -3271,10 +3392,19 @@ C
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
 #else
-              READ (MLINE(NMLINE),*) ALPHA(L)
+              READ (MLINE(NMLINE),*,IOSTAT=IOS) ALPHA(L)
+              IF (IOS.NE.0) THEN
+                WRITE(LUPRI,*) 'Error in reading NMLINE=',NMLINE
+                CALL QUIT('Error in basis set reading of ALPHA(L)')
+              ENDIF
 #endif
            ELSE
-              READ (MLINE(NMLINE),FMT3) ALPHA(L)
+              READ (MLINE(NMLINE),FMT3,IOSTAT=IOS) ALPHA(L)
+              IF (IOS.NE.0) THEN
+                WRITE(LUPRI,*)
+     &          'Error in reading of ALPHA(L), NMLINE=',NMLINE
+                CALL QUIT('Error in basis set reading of ALPHA(L)')
+              ENDIF
            END IF
         CPRIMU(L,L) = D1
   300   CONTINUE
@@ -5316,7 +5446,11 @@ C
         CALL GETSPH(WORK,LWORK,IPREAD)
       ELSE
         CALL RDLINE(LUINFO)
-        READ (MLINE(NMLINE),'(BN,I5)') MXSPD
+        READ (MLINE(NMLINE),'(BN,I5)',IOSTAT=IOS) MXSPD
+        IF (IOS.NE.0) THEN
+           CALL QUIT('Error in reading...1jsj38')
+        ENDIF
+
         IF (MXSPD .GT. MXQN) THEN
           WRITE (LUPRI,'(/A/I10,A,I4//A//A/A)')
      &    ' ERROR: specified MXSPD for GTO transformation matrix',
@@ -5328,7 +5462,10 @@ C
         IOFF = 1
         DO 300 I = 1, MXSPD
           CALL RDLINE(LUINFO)
-          READ (MLINE(NMLINE),'(BN,4X,A1,I5)')  KEY, KHK(I)
+          READ (MLINE(NMLINE),'(BN,4X,A1,I5)',IOSTAT=IOS)  KEY, KHK(I)
+          IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading...aj2sjjsn dcn')
+          ENDIF
           IF (KHK(I) .GT. KCK(I)) THEN
             WRITE (LUPRI,'(/A,I5,A,I3/A,I5,A//A//A)')
      &        ' ERROR: you specified',KHK(I),
@@ -5371,8 +5508,11 @@ C  /* Deck rdcsp */
       DIMENSION CSP(KHKI,KCKI)
       DO 100 I = 1, KHKI
          CALL RDLINE(LUINFO)
-         READ (MLINE(NMLINE),'(1X,A,15F5.3)')
+         READ (MLINE(NMLINE),'(1X,A,15F5.3)',IOSTAT=IOS)
      &          GTOTYP(I), (CSP(I,J),J=1,KCKI)
+         IF (IOS.NE.0) THEN
+           CALL QUIT('Error in reading...sajksxn2773')
+         ENDIF
   100 CONTINUE
       RETURN
       END
@@ -5489,8 +5629,8 @@ C
       TABLE4(3) = CTIME
       TABLE5(3) = CTIME
 C
-      READ (TITLE(1),'(12A6)') (RTITLE(I),I= 1,12)
-      READ (TITLE(2),'(12A6)') (RTITLE(I),I=13,24)
+      READ (TITLE(1),'(12A6)',IOSTAT=IOS) (RTITLE(I),I= 1,12)
+      READ (TITLE(2),'(12A6)',IOSTAT=IOS) (RTITLE(I),I=13,24)
 C
       ICENT = 0
       DO 100 N = 1, NUCIND
@@ -5509,8 +5649,8 @@ C
          NBI = NAOS(ISYMOP+1)
          DO 220 L = 1,NBI
             I = I + 1
-            READ(  NAMN(IPCEN(I)),'(A4)') INAMN(I)
-            READ(GTOTYP(IPTYP(I)),'(A4)') IGTO(I)
+            READ(  NAMN(IPCEN(I)),'(A4)',IOSTAT=IOS) INAMN(I)
+            READ(GTOTYP(IPTYP(I)),'(A4)',IOSTAT=IOS) IGTO(I)
   220    CONTINUE
   200 CONTINUE
 C
@@ -5711,14 +5851,17 @@ C
       BL(NUCIND)=D0
       ALP(NUCIND)=D0
       BET(NUCIND)=D0
-      READ (MLINE(NMLINE),'(A4)') NAMN(NUCIND)
+      READ (MLINE(NMLINE),'(A4)',IOSTAT=IOS) NAMN(NUCIND)
       IF (FIRST) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
          ISTART = 5
          CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
          CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
 #else
-         READ (MLINE(NMLINE)(5:80),*) INUM, CHARGE(NUCIND)
+         READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS) INUM, CHARGE(NUCIND)
+         IF (IOS.NE.0) THEN
+           CALL QUIT('Error in reading...12jsj')
+         ENDIF
 #endif
          FIRST = .FALSE.
          GOTO 204
@@ -5753,17 +5896,26 @@ C
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT')
       CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
 #else
-  201 READ (MLINE(NMLINE)(5:80),*)
+  201 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),CHARGE(NUCIND)
+      IF (IOS.NE.0) THEN
+        CALL QUIT('Error in reading...2339jdcn')
+      ENDIF
       GO TO 204
-  202 READ (MLINE(NMLINE)(5:80),*)
+  202 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),CHARGE(NUCIND)
+      IF (IOS.NE.0) THEN
+        CALL QUIT('Error in reading...2dcn')
+      ENDIF
       GO TO 204
-  203 READ (MLINE(NMLINE)(5:80),*)
+  203 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),IZ(NUCIND,3),BET(NUCIND),
      &     IZ(NUCIND,4),CHARGE(NUCIND)
+      IF (IOS.NE.0) THEN
+        CALL QUIT('Error in reading...2xsydcn')
+      ENDIF
 #endif
  204  CONTINUE
       NMLINE = NMLINE + 1
@@ -6219,14 +6371,20 @@ C
          ELSE
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
-         READ (STRING(ISTART:80),FRMT) IVAL
+         READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) IVAL
+         IF (IOS.NE.0) THEN
+           CALL QUIT('Error in reading...asdsd23ln')
+         ENDIF
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
             WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
          END IF
-         READ (STRING(ISTART:80),FRMT) RVAL
+         READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) RVAL
+         IF (IOS.NE.0) THEN
+           CALL QUIT('Error in reading...23as23ln')
+         ENDIF
       ELSE
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
          CALL QUIT('Illegal variable type in FREFRM')
@@ -6307,7 +6465,10 @@ C        Read exponents from file
 C
          DO I = 1,NFAMEXP(1)
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),*) FAMEXP(I, 1)
+            READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 1)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading...askc233n')
+            ENDIF
          END DO
 C
 C        Copy into set 2.
@@ -6323,11 +6484,17 @@ C        Read dual set of exponents from file
 C
          DO I = 1,NFAMEXP(1)
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),*) FAMEXP(I, 1)
+            READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 1)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading...3daskc233n')
+            ENDIF
          END DO
          DO I = 1,NFAMEXP(2)
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),*) FAMEXP(I, 2)
+            READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 2)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading...3cxzx33n')
+            ENDIF
          END DO
 C
       ELSE
