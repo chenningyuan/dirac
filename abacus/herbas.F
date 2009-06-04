@@ -120,6 +120,7 @@ C      except for 2c NR calculations
         WRITE(LUPRI,'(A,A)')
      &    ' - basis file    : ',BASNAM
       ENDIF
+
       IF (ISET .EQ. 2) THEN
 C jan 2000 hjaaj:
 #ifdef STO3G_HUCKEL
@@ -212,6 +213,7 @@ C for backward compatibility the old notation is retained
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
+            !ISTART = 1
          ELSE IF (BASNAM(1:6) .EQ. 'sadlej') THEN
             SADLEJ = .TRUE.
             BASTMP = 'sadlej'
@@ -237,6 +239,15 @@ C
          POLFUN = .TRUE.
          IPOLST = IPOLST + 3
       END IF
+
+      IF (IPREAD.GE.10) THEN
+        WRITE(LUPRI,'(/,4X,A)') 'Output from BASLIB:'
+        WRITE(LUPRI,*) 'ISTART=',ISTART
+        WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
+        WRITE(LUPRI,*) 'IPOLST=',IPOLST
+        WRITE(LUPRI,*) 'POLFUN=',POLFUN
+        WRITE(LUPRI,*) 'ANO=',ANO
+      ENDIF
 C      
 C Finds the right element in the file. 
 C
@@ -307,6 +318,7 @@ C
 C Reading the primitives and contraction-coeffecients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
+!              write(lupri,*) 'NBLOCK,ISTART=',NBLOCK,ISTART
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                     LUBAS)
@@ -574,7 +586,13 @@ C
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('Error in reading sjsjd12k3')
+                    WRITE(LUPRI,*) 'KNTORB=',KNTORB
+                    WRITE(LUPRI,'(A,A)') 'STRING=',STRING
+                    WRITE(LUPRI,*) 'I,J,NBLOCK:',I,J,NBLOCK
+                    WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
+                    WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
+     &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
+                    CALL QUIT('Error in reading basis set...')
                   ENDIF
 
                   IF (IPRINT.GE.6) THEN

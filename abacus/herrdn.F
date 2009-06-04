@@ -6347,24 +6347,44 @@ C
 C     Simulate free format input for Cray computers when reading from an
 C     internal file, K.Ruud-Feb.97
 C
+!
+! MI: Added debugging output (June,2009)
+!
 #include "implicit.h"
 #include "priunit.h"
+#include "cbirea.h"
 C
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
 C
+      IF (IPREAD.GE.10) THEN
+        CALL HEADER('Output from FREFRM',-1)
+        WRITE(LUPRI,'(A,A)') 'STRING=',STRING
+        WRITE(LUPRI,*) 'entering ISTART=',ISTART
+        WRITE(LUPRI,*) 'TYPE=',TYPE
+      ENDIF
+
       IF (TYPE .EQ. 'INT') THEN
          IVAL = 0
       ELSE
          RVAL = 0.0D0
       END IF
       DO 10 IPOS = ISTART, 80
-         IF (STRING(IPOS:IPOS) .NE. ' ') GO TO 20
+         ! leave cycle when found first non-white character
+         IF (STRING(IPOS:IPOS) .NE. ' ') THEN
+            GO TO 20
+         ENDIF
  10   CONTINUE
 C
  20   CONTINUE
       IEND = INDEX(STRING(IPOS:),' ')
       ILEN = IEND - ISTART - 1 + IPOS
+      IF (IPREAD.GE.10) THEN
+        WRITE(LUPRI,*) 'IEND=',IEND
+        WRITE(LUPRI,*) 'ILEN=',ILEN
+        WRITE(LUPRI,*) 'IPOS=',IPOS
+      ENDIF
+
       IF (TYPE .EQ. 'INT') THEN
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(2X,A2,I2,A1)') '(I',ILEN,')'
@@ -6372,15 +6392,15 @@ C
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) IVAL
-         IF (IOS.NE.0) THEN
-           WRITE(LUPRI,*) 'Error in reading of IVAL !'
+         IF (IOS.NE.0.OR.IPREAD.GE.10) THEN
+           IF(IOS.NE.0) WRITE(LUPRI,*) 'Error in reading of IVAL !'
            WRITE(LUPRI,*) 'ISTART=',ISTART
            WRITE(LUPRI,*) 'ILEN=',ILEN
            WRITE(LUPRI,*) 'IVAL=',IVAL
-           WRITE(LUPRI,'(1x,a,a)') 'FRMT=',FRMT
-           WRITE(LUPRI,*) 'STRING(ISTART:80)=',STRING(ISTART:80)
-           WRITE(LUPRI,'(1x,a,a)') 'STRING=',STRING
-           CALL QUIT('Error in reading of IVAL')
+           WRITE(LUPRI,'(a,a)') 'FRMT=',FRMT
+           WRITE(LUPRI,'(a,a)') 'STRING(ISTART:80)=',STRING(ISTART:80)
+           WRITE(LUPRI,'(a,a)') 'STRING=',STRING
+           IF (IOS.NE.0) CALL QUIT('FREFRM: Error in reading of IVAL')
          ENDIF
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
@@ -6396,7 +6416,16 @@ C
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
          CALL QUIT('Illegal variable type in FREFRM')
       END IF
-      ISTART = IEND + IPOS
+
+!      update ISTART !
+      !IF (IPOS.LT.80) THEN ! mi: this does not help
+        ISTART = IEND + IPOS
+      ! ENDIF
+
+      IF (IPREAD.GE.10) THEN
+        WRITE(LUPRI,*) 'updated ISTART=',ISTART
+      ENDIF
+
       RETURN
       END
 C  /* Deck genfamily */
