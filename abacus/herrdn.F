@@ -6376,6 +6376,7 @@ C
            WRITE(LUPRI,*) 'Error in reading of IVAL !'
            WRITE(LUPRI,*) 'ISTART=',ISTART
            WRITE(LUPRI,*) 'ILEN=',ILEN
+           WRITE(LUPRI,*) 'IVAL=',IVAL
            WRITE(LUPRI,'(1x,a,a)') 'FRMT=',FRMT
            WRITE(LUPRI,*) 'STRING(ISTART:80)=',STRING(ISTART:80)
            WRITE(LUPRI,'(1x,a,a)') 'STRING=',STRING

@@ -539,7 +539,10 @@ C
 
                IF (INTORB .LE. 0) THEN
 C                 uncontracted basis set
-                  READ (STRING, '(F16.9)') ALPHA(J,NBLOCK)
+                  READ (STRING, '(F16.9)',IOSTAT=IOS) ALPHA(J,NBLOCK)
+                  IF (IOS.NE.0) THEN
+                   CALL QUIT('Error inreading sjsjd')
+                  ENDIF
 C                 skip contiuation lines for contraction coeff.
 
                   DO I = 2,NUMLIN
@@ -567,9 +570,12 @@ C
 C     
 C     Reading the first line with exponents and contraction- coeffecients
 C
-                  READ (STRING, '(F16.9, 6F12.9)')
+                  READ (STRING, '(F16.9, 6F12.9)',IOSTAT=IOS)
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('Error in reading sjsjd12k3')
+                  ENDIF
 
                   IF (IPRINT.GE.6) THEN
                     write(lupri,*)
@@ -603,9 +609,12 @@ C
 C     
 C     We now have a line with contraction-coeffecients.
 C     
-                           READ (STRING,'(F16.9,6F12.9)') 
+                           READ (STRING,'(F16.9,6F12.9)',IOSTAT=IOS) 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
+                           IF (IOS.NE.0) THEN
+                             CALL QUIT('Error in reading sjjd393jdj')
+                           ENDIF
                            IF (IPRINT.GE.6) THEN
                              WRITE(LUPRI,*) 
      &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
@@ -746,19 +755,33 @@ C
          DO I = 0, NUMEXP
             IF (I .EQ. NUMEXP) THEN
                IF (INTEXP .EQ. MAXEXP) THEN
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+                  READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                              J - 1 + MAXEXP)
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('error in reading skdsjdj')
+                  ENDIF
                ELSE
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+                  READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                    J - 1 + MOD(INTEXP,MAXEXP))
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('error in reading s233jdj')
+                  ENDIF
                END IF
             ELSE
-               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
+               READ (LUBAS,*,IOSTAT=IOS) 
+     &         (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
+               IF (IOS.NE.0) THEN
+                  CALL QUIT('error in reading 2s2adjj')
+               ENDIF
             END IF
             J = J + MAXEXP
          END DO
          DO I = 1, INTEXP
-            READ (LUBAS,*) (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+            READ (LUBAS,*,IOSTAT=IOS) 
+     &       (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('error in reading assjj')
+            ENDIF
          END DO
       ELSE
          DO I = 0, NUMEXP
@@ -969,9 +992,12 @@ C
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
-         READ (STRING, '(A1)') SIGN
+         READ (STRING, '(A1)',IOSTAT=IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
-            READ (STRING, 110) SIGN, NUCEL
+            READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
+            IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading ... skdj3jhn33j')
+            ENDIF
  110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) THEN
                RETURN
@@ -1068,7 +1094,7 @@ C
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
-         READ (STRING, '(A1)') SIGN
+         READ (STRING, '(A1)', IOSTAT = IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             ISTART = 2
             CALL FREFRM(STRING,ISTART,NUCEL,DUMMY,'INT')
@@ -1097,7 +1123,11 @@ C
                IF (NUCEL .LE. 4) THEN
                   ICONT = 1
                   DO ISLOOP = 1, ISPRIM
-                     READ (LUBAS,*) ALPHA(ISLOOP,NBLOCK), CONT
+                     READ (LUBAS,*,IOSTAT=IOS) 
+     &                ALPHA(ISLOOP,NBLOCK), CONT
+                     IF (IOS.NE.0) THEN
+                      CALL QUIT('Error in reading...sj33snxdhdi')
+                     ENDIF
                      IF (NUCEL .EQ. 1) ALPHA(ISLOOP,NBLOCK) =
      &                    ALPHA(ISLOOP,NBLOCK)*1.44D0
                      IF (ICONT .LT. ISCONT) THEN
@@ -1111,8 +1141,12 @@ C
                   ICONTS = 1
                   ICONTP = 1
                   DO IPLOOP = 1, IPPRIM
-                     READ (LUBAS,*) ALPHA(IPLOOP,NBLOCK), CONTS,
+                     READ (LUBAS,*,IOSTAT=IOS) 
+     &                     ALPHA(IPLOOP,NBLOCK), CONTS,
      &                           ALPHA(IPLOOP,NBLOCK + 1), CONTP
+                     IF (IOS.NE.0) THEN
+                        CALL QUIT('Error in reading...339sj33sdi')
+                     ENDIF
                      IF (ICONTP .LT. IPCONT) THEN
                         CPRIMU(IPLOOP,ICONTP,NBLOCK + 1) = 1.0D0
                         ICONTP = ICONTP + 1
@@ -1127,7 +1161,11 @@ C
                      END IF
                   END DO
                   DO ISLOOP = IPLOOP, ISPRIM
-                     READ (LUBAS,*) ALPHA(ISLOOP,NBLOCK), CONT
+                     READ (LUBAS,*,IOSTAT=IOS)
+     &                 ALPHA(ISLOOP,NBLOCK), CONT
+                     IF (IOS.NE.0) THEN
+                        CALL QUIT('Error in reading...3sxmek39i')
+                     ENDIF
                      IF (ICONTS .LT. ISCONT) THEN
                         CPRIMU(ISLOOP,ICONTS,NBLOCK) = 1.0D0
                         ICONTS = ICONTS + 1
@@ -1271,7 +1309,7 @@ C
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
       IF (IOERR .NE. 0) GO TO 200
-      READ (STRING, '(A1)') SIGN
+      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
 C
       IF (SIGN .EQ. '$') THEN
          IF (IREF.EQ.0) THEN
@@ -1358,7 +1396,7 @@ C
  20   CONTINUE
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
-      READ (STRING, '(A1)') SIGN
+      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
 C
       IF (SIGN .EQ. ' ') THEN
 C
@@ -1368,7 +1406,10 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          IF (BLANK) THEN
             GOTO 20
          ELSE
-            READ (STRING, '(BN,3I5)') INTEXP, INTORB, INTISG
+            READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading ... ssjdjncncbhd')
+            ENDIF
             IF (IPRINT.GE.10) THEN
              write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'
              write(lupri,*) 'INTEXP, INTORB, INTISG',
