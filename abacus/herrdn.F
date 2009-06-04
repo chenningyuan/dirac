@@ -6373,7 +6373,13 @@ C
          END IF
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) IVAL
          IF (IOS.NE.0) THEN
-           CALL QUIT('Error in reading...asdsd23ln')
+           WRITE(LUPRI,*) 'Error in reading of IVAL !'
+           WRITE(LUPRI,*) 'ISTART=',ISTART
+           WRITE(LUPRI,*) 'ILEN=',ILEN
+           WRITE(LUPRI,'(1x,a,a)') 'FRMT=',FRMT
+           WRITE(LUPRI,*) 'STRING(ISTART:80)=',STRING(ISTART:80)
+           WRITE(LUPRI,'(1x,a,a)') 'STRING=',STRING
+           CALL QUIT('Error in reading of IVAL')
          ENDIF
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
@@ -6383,7 +6389,7 @@ C
          END IF
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) RVAL
          IF (IOS.NE.0) THEN
-           CALL QUIT('Error in reading...23as23ln')
+           CALL QUIT('Error in reading...RVAL')
          ENDIF
       ELSE
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
