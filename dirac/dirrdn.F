@@ -6068,11 +6068,7 @@ C     Checks related to Gaunt. Allow dft+"hf gaunt" for developers.
 C
       IF (GAUNT.AND.(DOTRA.OR.DODFT)) THEN
        WRITE (LUPRI,*) " Gaunt only available for Hartree-Fock"
-#ifndef MOD_CDFT
-       CALL QUIT ('Gaunt beyond Hartree-Fock not implemented')
-#else
        WRITE (LUPRI,*) ' "HF Gaunt" will be added in DFT'
-#endif
       END IF
 
       IF (GAUNT.AND.LONDON)
