@@ -76,7 +76,7 @@ C
      &          GABFIT(*), CFIT(*)
 
 #if defined VAR_MPI
-      CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
+      IF (PARCAL) CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
 #endif
 c     dofck3rel=.true.
       CALL INIFCK3REL()
@@ -1047,8 +1047,10 @@ C         =======================================
       ENDIF
 
 #if defined VAR_MPI
-      CALL GETTIM(TEFCK31,DUMTIM)
-      CALL FCK3COLLECT(FMAT,NDMAT,TEFCK31-TSFCK31,WORK,LWORK,IPRINT)
+      IF(PARCAL) THEN
+        CALL GETTIM(TEFCK31,DUMTIM)
+        CALL FCK3COLLECT(FMAT,NDMAT,TEFCK31-TSFCK31,WORK,LWORK,IPRINT)
+      ENDIF
 #endif
       RETURN 
       END
