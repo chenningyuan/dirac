@@ -2394,7 +2394,7 @@ echo 'MAKING MAKEFILE.CONFIG'
 echo
 if [ -f Makefile.config ]; then
    echo 'Makefile.config exists. I will take a backup.'
-   backup -v Makefile.config
+   backup  Makefile.config
 fi
 
 # ... special care of include, modules directories - dealt in Makefile.config 
@@ -2694,12 +2694,12 @@ make_pam_runtest ()  {
 pam_file=$INSTALL_DIR/pam
 if [ -f $pam_file ]; then
    echo 'pam exists. I will take a backup.'
-   backup -v $pam_file
+   backup  $pam_file
 fi
 runtest_file=$SRC_DIR/test/runtest
 if [ -f $runtest_file ]; then
    echo 'runtest exists. I will take a backup.'
-   backup -v $runtest_file
+   backup  $runtest_file
 fi
 #
 echo '#!/bin/bash' > $pam_file
