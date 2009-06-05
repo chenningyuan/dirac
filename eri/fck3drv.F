@@ -76,7 +76,9 @@ C
      &          GABFIT(*), CFIT(*)
 
 #if defined VAR_MPI
-      IF (PARCAL) CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
+      IF (PARCAL) THEN
+        CALL MPI3INI(DMAT, NDMT, GAB, GABFIT, CFIT, WORK, LWORK)
+      ENDIF
 #endif
 c     dofck3rel=.true.
       CALL INIFCK3REL()
