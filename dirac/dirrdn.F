@@ -6040,7 +6040,8 @@ C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
-      IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND..NOT.TWOCOMP) THEN
+      IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND.
+     &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.BSS) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)')
      &     " * WARNING: User asked for neglect of SS-integrals "//
