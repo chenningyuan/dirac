@@ -6348,6 +6348,8 @@ C     Simulate free format input for Cray computers when reading from an
 C     internal file, K.Ruud-Feb.97
 C
 !
+!    IVAL - entering INTORB (no of contracted shells for given L)
+!
 ! MI: Added debugging output (June,2009)
 !
 #include "implicit.h"
@@ -6361,6 +6363,7 @@ C
         CALL HEADER('Output from FREFRM',-1)
         WRITE(LUPRI,'(A,A)') 'STRING=',STRING
         WRITE(LUPRI,*) 'entering ISTART=',ISTART
+        WRITE(LUPRI,*) 'entering IVAL=',IVAL
         WRITE(LUPRI,*) 'TYPE=',TYPE
       ENDIF
 
@@ -6380,9 +6383,9 @@ C
       IEND = INDEX(STRING(IPOS:),' ')
       ILEN = IEND - ISTART - 1 + IPOS
       IF (IPREAD.GE.10) THEN
+        WRITE(LUPRI,*) 'IPOS=',IPOS
         WRITE(LUPRI,*) 'IEND=',IEND
         WRITE(LUPRI,*) 'ILEN=',ILEN
-        WRITE(LUPRI,*) 'IPOS=',IPOS
       ENDIF
 
       IF (TYPE .EQ. 'INT') THEN
@@ -6391,13 +6394,17 @@ C
          ELSE
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
+
+!mi: crucial - filling IVAL !
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) IVAL
+
          IF (IOS.NE.0.OR.IPREAD.GE.10) THEN
            IF(IOS.NE.0) WRITE(LUPRI,*) 'Error in reading of IVAL !'
+           WRITE(LUPRI,*) 'IOS=',IOS
            WRITE(LUPRI,*) 'ISTART=',ISTART
            WRITE(LUPRI,*) 'ILEN=',ILEN
            WRITE(LUPRI,*) 'IVAL=',IVAL
-           WRITE(LUPRI,'(a,a)') 'FRMT=',FRMT
+           WRITE(LUPRI,'(a,a)') 'determined FRMT=',FRMT
            WRITE(LUPRI,'(a,a)') 'STRING(ISTART:80)=',STRING(ISTART:80)
            WRITE(LUPRI,'(a,a)') 'STRING=',STRING
            IF (IOS.NE.0) CALL QUIT('FREFRM: Error in reading of IVAL')
@@ -6418,7 +6425,7 @@ C
       END IF
 
 !      update ISTART !
-      !IF (IPOS.LT.80) THEN ! mi: this does not help
+      !IF (IPOS.LT.80) THEN ! mi: this does not help !!!
         ISTART = IEND + IPOS
       ! ENDIF
 

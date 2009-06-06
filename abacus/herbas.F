@@ -241,12 +241,14 @@ C
       END IF
 
       IF (IPREAD.GE.10) THEN
-        WRITE(LUPRI,'(/,4X,A)') 'Output from BASLIB:'
+        CALL HEADER('Output from BASLIB',-1)
         WRITE(LUPRI,*) 'ISTART=',ISTART
         WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
         WRITE(LUPRI,*) 'IPOLST=',IPOLST
         WRITE(LUPRI,*) 'POLFUN=',POLFUN
         WRITE(LUPRI,*) 'ANO=',ANO
+        WRITE(LUPRI,*) 'SADLEJ=',SADLEJ
+        WRITE(LUPRI,*) 'NQVD=',NQVD
       ENDIF
 C      
 C Finds the right element in the file. 
@@ -321,7 +323,7 @@ C
 !              write(lupri,*) 'NBLOCK,ISTART=',NBLOCK,ISTART
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                     LUBAS)
+     +                     LUBAS,IPREAD)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FINPOS ( NEWEL, INTEXP, INTORB,
@@ -746,7 +748,7 @@ C
 C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                  LUBAS)
+     +                  LUBAS,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -760,7 +762,27 @@ C
 C
 C Determine number of contracted functions to be read
 C
-      IF (ANO) CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
+      IF (IPRINT.GE.8) THEN
+        CALL HEADER('Output from REAANO',-1)
+        wRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
+        wRITE(LUPRI,*) 'ISTART=',ISTART
+        wRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
+        WRITE(LUPRI,*) 'NBLOCK=',NBLOCK
+        WRITE(LUPRI,*) ' KPRIM=',KPRIM
+      ENDIF
+
+!
+!      ISTART_ANO=10
+!     IF (ANO) CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
+!     IF (ANO) CALL FREFRM(BASNAM,ISTART_ANO,INTORB,DUMMY,'INT')
+
+      IF (IPRINT.GE.8) THEN
+        WRITE(LUPRI,'(/,8x,a)') 'REAANO - After FREFRM:'
+        WRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
+        WRITE(LUPRI,*) 'ISTART=',ISTART
+        wRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
+      ENDIF
+
 C
  20   CONTINUE
 C
@@ -830,6 +852,17 @@ C
             GOTO 33
          END IF
       END IF
+
+      IF (IPRINT.GE.10) THEN
+        WRITE(LUPRI,*) 'REAANO-read coefficients...'
+        WRITE(LUPRI,*) 'NBLOCK,INTEXP:',NBLOCK,INTEXP
+        WRITE(LUPRI,*) 'INTORB:',INTORB
+        DO I = 1, INTEXP
+          WRITE(LUPRI,*)
+     &   (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+        ENDDO
+      ENDIF
+
       RETURN
       END
 C
