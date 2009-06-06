@@ -1360,6 +1360,8 @@ endif
  CALL FLSHFO(LUPRI)
  CLOSE(MDINT,STATUS='KEEP')
 
+ write(LUPRI,'(2x,a,/)') 'Going to sift through array to remove repeating integrals...'
+
 !  ... sift through array to remove repeating integrals ...
 !-------------------------------------------------------------
  j=1
