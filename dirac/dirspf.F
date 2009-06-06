@@ -148,7 +148,7 @@ C
 C
 C     Get transformation matrix S(-1/2) to go to the orthogonal MO-basis
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KBUF))
 C
 C     Transform the Fock matrix to spinfree MO-basis 

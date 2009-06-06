@@ -2309,7 +2309,7 @@ C
           INQUIRE(FILE='BSSMAT',EXIST=TOBE)
         ENDIF
         IF(TOBE) THEN
-C.........DFTMAT and BSSMAT available:
+C.........AOMOMAT and BSSMAT available:
 C         1) open BSSMAT and remove all property integrals
 C         2) do picture change transformation of integrals on AOPROPER
           WRITE(LUPRI,'(A,A)') '* WARNING: DIRAC found BSSMAT ',
@@ -2478,7 +2478,7 @@ C
 C
 C     Write transformation matrices
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
       CALL ORBDAT
@@ -3212,7 +3212,7 @@ C
 C     Get MO-transformation matrix
 C     ============================
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','HEINZ')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','HEINZ')
       CALL READT(LUTMAT,N2TMT,TMAT)
       CLOSE(LUTMAT,STATUS='KEEP')
 C

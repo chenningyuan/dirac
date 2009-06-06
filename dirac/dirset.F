@@ -1548,7 +1548,7 @@ C
 C
 C     Transform to MO-basis FAO --> FMO
 C
-      CALL OPNFIL(LUBUF,'DFTMAT','OLD','BARVAC')
+      CALL OPNFIL(LUBUF,'AOMOMAT','OLD','BARVAC')
       CALL READT(LUBUF,N2TMT,TMAT)
       CLOSE(LUBUF,STATUS='KEEP')
       CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
@@ -1608,20 +1608,20 @@ C
 C
       LOGICAL GOFAST
       GOFAST = .FALSE.
-      INQUIRE(FILE='DFTMAT',EXIST=GOFAST)
+      INQUIRE(FILE='AOMOMAT',EXIST=GOFAST)
       IF(GOFAST) THEN
         WRITE(LUPRI,'(A,A)') 
-     &  '* WARNING: DIRAC found file DFTMAT (transformation matrices)',
+     &  '* WARNING: DIRAC found file AOMOMAT (transformation matrices)',
      &  '  ...will attempt restart.'
       ENDIF
 C
 C     The necessary files have been found;
 C     try to get the necessary information from
-C     file DFTMAT
+C     file AOMOMAT
 C
       IF(GOFAST) THEN
         NBRP = 4/NZ
-        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','GOFAST')
+        CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GOFAST')
 C.......skip AO2MO transformation matrix
         READ(LUTMAT)
 C.......skip inverse transformation matrix
@@ -1729,7 +1729,7 @@ C/* Deck Orbdat*/
       SUBROUTINE ORBDAT
 C***********************************************************************
 C
-C     Dump information from GMOTRA as rec 3 on DFTMAT
+C     Dump information from GMOTRA as rec 3 on AOMOMAT
 C
 C     Written by T. Saue
 C
@@ -1744,7 +1744,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-C      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
+C      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','ORBDAT')
       NBRP = 4/NZ
 C      READ(LUTMAT)
 C      READ(LUTMAT)

@@ -544,7 +544,7 @@ C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDVEC,N2BBASXQ,WORK,KFREE,LFREE)
 C.....Read inverse MO-transformation
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       READ(LUTMAT)
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT)
@@ -577,7 +577,7 @@ C       Diagonalize and extract the requested density
         OCC = OCC + OCCBUF
       ENDDO
 C.....Read MO-transformation
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT)
 C.....and transform back to AO-basis

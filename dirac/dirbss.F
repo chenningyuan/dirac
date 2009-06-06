@@ -7532,8 +7532,8 @@ C  ... read full picture change transf. matrix into VMAT
 
 C  ... FINALLY: do transform FD_4C in SA-AO into RKB MO ...
 
-C ... read TMAT from DFTMAT...
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','FDTR4C')
+C ... read TMAT from AOMOMAT...
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','FDTR4C')
       CALL READT(LUTMAT,N2TMT,TMAT)
       CLOSE(LUTMAT,STATUS='KEEP')
 C    
