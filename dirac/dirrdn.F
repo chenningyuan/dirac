@@ -4900,8 +4900,6 @@ CMI    ... quantum dots
 #ifdef MOD_DFT
       IF(DFTHAM) THEN
          CALL DFTREPORT()
-         call consistency_after_dft_input()
-         call report_after_dft_input()
 
 #ifdef MOD_ERI
 C aspg, 20070909
@@ -5423,12 +5421,16 @@ CMI  ... reading input routine for AMFI+RELSCF
         GO TO 200
 C
     1 CONTINUE
-C
+
 #ifdef MOD_DFT
-Chjaaj: we need to be sure DFT is initialized (and SET reset for geom.opt.)
-CJuly2003
-      call parse_dft_input(word, .true.)
+      if (dftham) then
+        call parse_dft_input(word, .true.)
+        call consistency_after_dft_input()
+        call report_after_dft_input()
+      end if
 #endif
+
+
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 
 #ifdef MOD_CAP
