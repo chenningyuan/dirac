@@ -1,5 +1,4 @@
 
-
 subroutine printlogo
   print *, '%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:'
   print *, '$?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::'
@@ -136,4 +135,27 @@ print *, '*    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema     
 print *, '*    (see http://dirac.chem.sdu.dk).                                         *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
+end
+
+
+subroutine print_static_alloc
+!
+! extracts  the size of all static allocations in dirac.x executable
+!
+character(len=10) :: dirac_exec
+character(len=150) :: system_commands_string
+call getarg(0, dirac_exec)
+
+!write(*,*) dirac_exec
+
+system_commands_string="size "//dirac_exec//" 2> /dev/null | grep "//dirac_exec  & 
+            //" | awk '{printf $3/(1024*1024)} '; echo ' MB' || echo 'can not be determined'"
+
+!write(*,*)  system_commands_string
+
+write(*,"(A,$)") "Static allocations in DIRAC : "
+
+!call system("size dirac.x 2> /dev/null | grep dirac.x | awk '{print $3/(1024*1024) } ' || echo 'can not be determined'")
+call system(system_commands_string)
+
 end
