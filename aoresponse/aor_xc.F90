@@ -48,15 +48,15 @@ contains
     real(8)                :: s
     real(8)                :: v(3)
 
-    real(8)                :: derv(max_order, max_order)
+    real(8)                :: derv(0:max_order, 0:max_order)
     real(8)                :: derv_i(999, 3)
 !#define CHECK_DERV
 #ifdef CHECK_DERV
     real(8)                :: f, ff
     real(8)                :: derv_ip(999, 3)
     real(8)                :: derv_im(999, 3)
-    real(8)                :: derv_p(max_order, max_order)
-    real(8)                :: derv_m(max_order, max_order)
+    real(8)                :: derv_p(0:max_order, 0:max_order)
+    real(8)                :: derv_m(0:max_order, 0:max_order)
 #endif
     real(8)                :: p, taylor_deriv
 
