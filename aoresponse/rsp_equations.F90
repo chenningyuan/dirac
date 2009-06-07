@@ -83,19 +83,17 @@ contains
             'pert_scf_eq: size(F)/=product(b+1) wrong number of Fock matrices')
         !ajt fixme: This should be written optimized an for general orders
 
-
-
-        X = -sum(ww/2.0d0)*S0
-
 #define AOR_ONLY_INDIVIDUAL_COMPONENTS
 #ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
         if (all(p == 'EL' .or. p == 'MAGO')) then
 
-          DSD(1) = tiny(1.0d0)*D(1)
-          FDS(1) = tiny(1.0d0)*F(1)
-          SDF(1) = tiny(1.0d0)*F(1)
+          X = -sum(ww/2.0d0)*S0
 
           imax = size(D)
+
+          DSD(1) = -D(imax)
+          FDS(1) = X*D(imax)
+          SDF(1) = D(imax)*X
 
           do i = 1, imax
             j = imax - i + 1
@@ -105,12 +103,10 @@ contains
             SDF(1) = SDF(1) + D(i)*F(j)
           end do
 
-          DSD(1) = DSD(1) - D(imax)
-
-          FDS(1) = FDS(1) + X*D(imax)
-          SDF(1) = SDF(1) + D(imax)*X
-
           FDS(1) = FDS(1)*S0 - S0*SDF(1)
+
+          SDF(1) = 0
+          X      = 0
 #else
 
 
@@ -255,7 +251,10 @@ contains
             else
                 stop 'pert_dens: General case not not implemented yet'
             endif
-            !do i=1,product(b); DSD(i)=0; FDS(i)=0; enddo
+            do i = 1, pb
+              DSD(i) = 0
+              FDS(i) = 0
+            end do
         end subroutine
     end subroutine
 
@@ -291,7 +290,6 @@ contains
         DS = D*S
         Dp = DSD - DSD*dag(DS) - DS*DSD
         RHS(1) = FDS*DS - dag(DS)*FDS + Fp
-        FDS = 0
 
         call prop_fock(nop, (/D, Dp/), RHS)
 
@@ -339,14 +337,12 @@ contains
         R = 0
 #endif /* ifndef PRG_DIRAC */
 
-        DSD    = 0
-        DS     = 0
-        SOL(1) = 0
-
         RHS(1) = Fp
         call prop_fock(nop, (/D, Dp/), RHS)
         Fp = RHS(1)
 
+        DS     = 0
+        SOL(1) = 0
         RHS(1) = 0
 
     end subroutine

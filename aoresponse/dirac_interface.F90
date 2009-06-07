@@ -664,9 +664,7 @@ contains
 #include "dcborb.h"
 #include "dcbbas.h"
 
-!   this didn't work with gfortran
     if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
-!                           call init_mat(C, ntbas(0), norbt)
 
     C%elms = 0.0d0
 
@@ -1153,7 +1151,7 @@ contains
 
 !   call alloc_maxsize(freemem, 1, verbose)
 !   lfree = (freemem/2)*2
-    lfree = n2bbasxq*100 !fixme, not necessary
+    lfree = n2bbasxq*20
     call alloc(work, lfree)
     kfree = 1
 

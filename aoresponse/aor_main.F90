@@ -219,9 +219,11 @@ contains
 
     end if
 
-    print '(a30 i10)', '@ nr matrix allocations:',     matrix_stat_allocations
-    print '(a30 i10)', '@ nr matrix deallocations:',   matrix_stat_deallocations
-    print '(a30 i10)', '@ nr matrix multiplications:', matrix_stat_multiplications
+    S = 0
+    D = 0
+    F = 0
+
+    call print_matrix_stat()
 
   end subroutine
 

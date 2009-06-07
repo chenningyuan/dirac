@@ -31,10 +31,6 @@ contains
 
     call get_P('ZDIPLEN', P)
 
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
     do iorder = 1, max_order
       Dp(iorder) = 1.0d-100*D
       Fp(iorder) = 1.0d-100*F
