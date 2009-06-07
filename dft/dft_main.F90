@@ -663,10 +663,10 @@ contains
 
     if (dft_cfg_keep_ao) then
       if (dft_cfg_ao_mem_limit < 1) then
-        write(*, *) 'debug will not keep ao in mem, mem too small'
+!       write(*, *) 'debug will not keep ao in mem, mem too small'
         dft_cfg_keep_ao = .false.
       end if
-      write(*, *) 'debug will try to keep ao in mem', dft_cfg_ao_mem_limit
+!     write(*, *) 'debug will try to keep ao in mem', dft_cfg_ao_mem_limit
 !   else
 !     write(*, *) 'debug will not try to keep ao in mem', dft_cfg_ao_mem_limit
     end if
@@ -676,7 +676,7 @@ contains
 !       ihowmuch = dft_temp_nr_grid_points_node*ndim*itimes
 !       write(*, *) 'debug allocating ao in mem', 8*ihowmuch/1000000
 !       call init_ao_in_mem(ihowmuch)
-        write(*, *) 'debug allocating ao in mem', 8*dft_cfg_ao_mem_limit/1000000
+        write(*, *) 'debug allocating ao in mem'
         call init_ao_in_mem(dft_cfg_ao_mem_limit)
         ao_mem_allocated = .true.
       end if
@@ -689,11 +689,12 @@ contains
       end if
 
       need_limit = ioff + itimes*ndim*npoint
-        write(*, *) 'debug keep batch', ibatch, need_limit, &
-                      dft_cfg_ao_mem_limit, dft_cfg_ao_mem_limit*8/1000000
       if (need_limit > dft_cfg_ao_mem_limit) then
         ioff = ioff + itimes*ndim
         batch_fits_in_mem(ibatch) = .false.
+        write(*, *) 'debug cannot keep batch', ibatch
+        write(*, *) 'debug need', need_limit*8/1000000
+        write(*, *) 'debug have', dft_cfg_ao_mem_limit*8/1000000
       end if
     end if
 
