@@ -19,7 +19,7 @@ module dft_cfg
 
   logical       :: dft_cfg_set
   logical       :: dft_cfg_is_dft_calculation
-                
+
   logical       :: dft_cfg_keep_ao
   logical       :: dft_cfg_explicit_potential
   logical       :: dft_cfg_no_pruning
@@ -44,7 +44,7 @@ module dft_cfg
   logical       :: dft_cfg_saop_with_response_part
   logical       :: dft_cfg_asymptote_is_lb94
   logical       :: dft_cfg_asymptote_is_lbalpha
-                
+
   real(8)       :: dft_cfg_radint
   real(8)       :: dft_cfg_accepted_error
   real(8)       :: dft_cfg_dfthr0
@@ -55,12 +55,13 @@ module dft_cfg
   real(8)       :: dft_cfg_homo_eigenvalue
   real(8)       :: dft_cfg_grac_alpha
   real(8)       :: dft_cfg_grac_beta
-                
+
+  integer       :: dft_cfg_angmin
+  integer       :: dft_cfg_angint
+  integer       :: dft_cfg_ao_mem_limit
   integer       :: dft_cfg_print_level
   integer       :: dft_cfg_debug_level
   integer       :: dft_cfg_integration_check_level
-  integer       :: dft_cfg_angmin
-  integer       :: dft_cfg_angint
 
 contains
 
@@ -102,11 +103,12 @@ contains
     dft_cfg_grac_alpha              = 0.0d0
     dft_cfg_grac_beta               = 0.0d0
 
+    dft_cfg_angmin                  = 15
+    dft_cfg_angint                  = 41
+    dft_cfg_ao_mem_limit            = 0
     dft_cfg_print_level             = 2
     dft_cfg_debug_level             = 0
     dft_cfg_integration_check_level = 0
-    dft_cfg_angmin                  = 15
-    dft_cfg_angint                  = 41
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block()
@@ -126,7 +128,7 @@ contains
     integer             :: idx, ierr
     logical             :: pack_logical(24)
     real(8)             :: pack_double_precision(10)
-    integer             :: pack_integer(5)
+    integer             :: pack_integer(6)
 !                                   1000 is a phantasy number
     integer, parameter  :: nbytes = 1000
     character           :: scratch(nbytes)
@@ -176,11 +178,12 @@ contains
       pack_double_precision( 9) = dft_cfg_grac_alpha
       pack_double_precision(10) = dft_cfg_grac_beta
 
-      pack_integer(1) = dft_cfg_print_level
-      pack_integer(2) = dft_cfg_debug_level
-      pack_integer(3) = dft_cfg_integration_check_level
-      pack_integer(4) = dft_cfg_angmin
-      pack_integer(5) = dft_cfg_angint
+      pack_integer(1) = dft_cfg_angmin
+      pack_integer(2) = dft_cfg_angint
+      pack_integer(3) = dft_cfg_ao_mem_limit
+      pack_integer(4) = dft_cfg_print_level
+      pack_integer(5) = dft_cfg_debug_level
+      pack_integer(6) = dft_cfg_integration_check_level
 
       idx = 1
       call mpi_pack(pack_logical,       &
@@ -281,11 +284,12 @@ contains
       dft_cfg_grac_alpha      = pack_double_precision( 9)
       dft_cfg_grac_beta       = pack_double_precision(10)
 
-      dft_cfg_print_level             = pack_integer(1)
-      dft_cfg_debug_level             = pack_integer(2)
-      dft_cfg_integration_check_level = pack_integer(3)
-      dft_cfg_angmin                  = pack_integer(4)
-      dft_cfg_angint                  = pack_integer(5)
+      dft_cfg_angmin                  = pack_integer(1)
+      dft_cfg_angint                  = pack_integer(2)
+      dft_cfg_ao_mem_limit            = pack_integer(3)
+      dft_cfg_print_level             = pack_integer(4)
+      dft_cfg_debug_level             = pack_integer(5)
+      dft_cfg_integration_check_level = pack_integer(6)
 
     end if
 

@@ -3,7 +3,7 @@ module dft_temp
 ! radovan: (1) if you modify this module (add new stuff)
 !              don't forget to update
 !              routines init_dft_temp and sync_dft_temp (below)
-!          (2) have a look in dft_cfg
+!          (2) the difference between dft_temp and dft_cfg is ...
 
   implicit none
 
@@ -20,20 +20,20 @@ module dft_temp
 
   save
 
-  integer, parameter :: dft_temp_mxbllen = 160
-  integer            :: dft_temp_file_unit
+  integer :: dft_temp_file_unit
+  integer :: dft_temp_nr_grid_points
+  integer :: dft_temp_nr_grid_points_node
 
-  logical            :: dft_temp_grid_is_done
-  logical            :: dft_temp_ao_are_in_mem
-  logical            :: dft_temp_gga_hs
-  logical            :: dft_temp_gga_ha
-  logical            :: dft_temp_need_gao1
-  logical            :: dft_temp_need_gao2
+  logical :: dft_temp_grid_is_done
+  logical :: dft_temp_gga_hs
+  logical :: dft_temp_gga_ha
+  logical :: dft_temp_need_gao1
+  logical :: dft_temp_reload_batches
 
 ! these are not broadcast, only mpi_reduced
-  real(8)            :: dft_temp_xc_energy
-  real(8)            :: dft_temp_xc_mat_energy
-  real(8)            :: dft_temp_nr_electrons
+  real(8) :: dft_temp_xc_energy
+  real(8) :: dft_temp_xc_mat_energy
+  real(8) :: dft_temp_nr_electrons
 
 contains
 
@@ -54,12 +54,11 @@ contains
 
   subroutine init_dft_temp()
 
-    dft_temp_grid_is_done  = .false.
-    dft_temp_ao_are_in_mem = .false.
-    dft_temp_gga_hs        = .false.
-    dft_temp_gga_ha        = .false.
-    dft_temp_need_gao1     = .false.
-    dft_temp_need_gao2     = .false.
+    dft_temp_grid_is_done   = .false.
+    dft_temp_gga_hs         = .false.
+    dft_temp_gga_ha         = .false.
+    dft_temp_need_gao1      = .false.
+    dft_temp_reload_batches = .false.
 
   end subroutine
 
@@ -72,7 +71,7 @@ contains
 !   ----------------------------------------------------------------------------
     logical             :: i_am_the_master
     integer             :: idx, ierr
-    logical             :: pack_logical(6)
+    logical             :: pack_logical(5)
 !                                   1000 is a phantasy number
     integer, parameter  :: nbytes = 1000
     character           :: scratch(nbytes)
@@ -87,11 +86,10 @@ contains
     if (i_am_the_master) then
 
       pack_logical(1) = dft_temp_grid_is_done
-      pack_logical(2) = dft_temp_ao_are_in_mem
-      pack_logical(3) = dft_temp_gga_hs
-      pack_logical(4) = dft_temp_gga_ha
-      pack_logical(5) = dft_temp_need_gao1
-      pack_logical(6) = dft_temp_need_gao2
+      pack_logical(2) = dft_temp_gga_hs
+      pack_logical(3) = dft_temp_gga_ha
+      pack_logical(4) = dft_temp_need_gao1
+      pack_logical(5) = dft_temp_reload_batches
 
       idx = 1
       call mpi_pack(pack_logical,       &
@@ -124,12 +122,11 @@ contains
                       mpi_comm_world,     &
                       ierr)
 
-      dft_temp_grid_is_done  = pack_logical(1)
-      dft_temp_ao_are_in_mem = pack_logical(2)
-      dft_temp_gga_hs        = pack_logical(3)
-      dft_temp_gga_ha        = pack_logical(4)
-      dft_temp_need_gao1     = pack_logical(5)
-      dft_temp_need_gao2     = pack_logical(6)
+      dft_temp_grid_is_done   = pack_logical(1)
+      dft_temp_gga_hs         = pack_logical(2)
+      dft_temp_gga_ha         = pack_logical(3)
+      dft_temp_need_gao1      = pack_logical(4)
+      dft_temp_reload_batches = pack_logical(5)
 
     end if
 

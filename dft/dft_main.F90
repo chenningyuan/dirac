@@ -120,6 +120,7 @@ contains
       if (.not. dft_temp_grid_is_done) then
         call dftgrd(dmat, 1)
         dft_temp_grid_is_done = .true.
+        if (dft_cfg_keep_ao .and. ao_mem_allocated) dft_temp_reload_batches = .true.
       end if
 
 !     allocate and get saop density matrices
@@ -282,12 +283,12 @@ contains
       real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(*)
       integer    ::ISYMOP(NXCMAT),IHRMOP(NXCMAT)
-      integer    ::iprint, nxcmat
+      integer    ::iprint, nxcmat, ibatch
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: gao(:)
       real(8), allocatable :: gao1(:)
-      real(8), allocatable :: buf(:)
+      real(8), allocatable :: buffer(:)
 
       real(8), allocatable :: kx(:)
       real(8), allocatable :: ky(:)
@@ -299,8 +300,9 @@ contains
       real(8), allocatable :: kxdum(:)
       real(8) :: dummy
       real(8) :: error_nr_electrons, nr_electrons_orbital_total
-      integer :: i, idummy, ierr, myNPOINT, NBATCH, ndim, NODESALL
+      integer :: i, idummy, ierr, myNPOINT, nr_points_part, ndim, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
+      logical :: i_am_the_master
 
       NDIM = nr_ao_total
 
@@ -308,79 +310,115 @@ contains
       if (dft_temp_need_gao1) then
         call alloc(gao1, ndim*3)
       end if
-      call alloc(buf, ndim)
+      call alloc(buffer, ndim)
 
 
-!
-!     integrate
-!
-      dft_temp_nr_electrons = 0.0d0
-      dft_temp_xc_energy    = 0.0d0
-!
+    dft_temp_nr_electrons = 0.0d0
+    dft_temp_xc_energy    = 0.0d0
 
-      IF(MYTID.EQ.MPARID) THEN
-        REWIND dft_temp_file_unit
-        NPNTS = 0
-      ENDIF
+    i_am_the_master = .false.
+    if (mytid == mparid) i_am_the_master = .true.
+
+    if (i_am_the_master) then
+      rewind dft_temp_file_unit
+      npnts  = 0
+      ibatch = 0
+    end if
+
+    if (dft_cfg_keep_ao .and. ao_mem_allocated .and. dft_temp_reload_batches) then
+      call kill_ao_in_mem()
+      ao_mem_allocated        = .false.
+      dft_temp_reload_batches = .false.
+    end if
+
 !*    Loop over batches of grid points
   100 CONTINUE
-      IF(MYTID.EQ.MPARID) THEN
-        IF(dft_cfg_import_grid) THEN
-          READ(dft_temp_file_unit,*) NPOINT
-        ELSE
-          READ(dft_temp_file_unit) NPOINT
-        ENDIF
-      ENDIF
 
+      if (i_am_the_master) then
+        if (dft_cfg_import_grid) then
+          read(dft_temp_file_unit, *) npoint
+        else
+          read(dft_temp_file_unit)    npoint
+        end if
+      end if
 
-#if defined (VAR_MPI) 
-      IF(is_parallel_calculation) CALL MPI_BCAST(NPOINT,1,my_MPI_INTEGER,MPARID, &
-     &                          MPI_COMM_WORLD,IERR)
+#ifdef VAR_MPI
+      if (is_parallel_calculation) then
+        call mpi_bcast(npoint,         &
+                       1,              &
+                       my_MPI_INTEGER, &
+                       mparid,         &
+                       mpi_comm_world, &
+                       ierr)
+        call mpi_bcast(dft_temp_nr_grid_points, &
+                       1,                       &
+                       my_MPI_INTEGER,          &
+                       mparid,                  &
+                       mpi_comm_world,          &
+                       ierr)
+      end if
 #endif
-
-
 
       IF( NPOINT .lt. 0 ) THEN
          GOTO 200
-      ELSE IF(  NPOINT .eq. 0 ) THEN
+      ELSE IF(  NPOINT == 0 ) THEN
           GOTO 100      
       ELSE
         IF(MYTID.EQ.MPARID) THEN
-          NPNTS = NPNTS + NPOINT
+          npnts  = npnts  + npoint
+          ibatch = ibatch + 1
+
           call alloc(kx, npoint)
           call alloc(ky, npoint)
           call alloc(kz, npoint)
           call alloc(kw, npoint)
 
-          IF(dft_cfg_import_grid) THEN
-            CALL import_dft_grid(kx, ky, kz, kw, &
-     &                      dft_temp_file_unit,NPOINT)
-          ELSE
-            CALL REAQUA(kx, ky, kz, kw, &
-     &                 dft_temp_file_unit,NPOINT)
-          ENDIF
-        ENDIF
+          if (dft_cfg_import_grid) then
+            call import_dft_grid(kx, ky, kz, kw, dft_temp_file_unit, npoint)
+          else
+            call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
+          end if
+        end if
 
-#if defined (VAR_MPI) 
-        IF(is_parallel_calculation) THEN
-          NODESALL=NODES+1
+        dft_temp_nr_grid_points_node = dft_temp_nr_grid_points
+
+#ifdef VAR_MPI
+        if (is_parallel_calculation) then
+
+          call mpi_bcast(ibatch,         &
+                         1,              &
+                         my_MPI_INTEGER, &
+                         mparid,         &
+                         mpi_comm_world, &
+                         ierr)
+
+          nodesall = nodes + 1
+
+!         do not divide by nodesall
+!         so each node potentially allocates a little bit more
+!         otherwise it would allocate too little
+          dft_temp_nr_grid_points_node = dft_temp_nr_grid_points/nodes
+
+!         if aos are in mem one could skip the broadcast of
+!         x, y, and z (still need the w though)
+!         but for the moment let's do it anyway
 
           call alloc(idisp, nodesall)
           call alloc(isend, nodesall)
 
-          NBATCH = NPOINT/NODESALL
+          nr_points_part = NPOINT/NODESALL
           NREST = MOD(NPOINT,NODESALL)
-          myNPOINT = NBATCH
+          myNPOINT = nr_points_part
 !.........send nothing to master
           IF(MYTID.EQ.MPARID) THEN ! master
-            ISEND(1) = NBATCH
+            ISEND(1) = nr_points_part
             IDISP(1) = 0
             DO I = 1,NODES-1
-              ISEND(I+1) = NBATCH
-              IDISP(I+1) = NBATCH*I
+              ISEND(I+1) = nr_points_part
+              IDISP(I+1) = nr_points_part*I
             ENDDO
-            ISEND(NODESALL) = NBATCH + NREST
-            IDISP(NODESALL) = NBATCH*NODES
+            ISEND(NODESALL) = nr_points_part + NREST
+            IDISP(NODESALL) = nr_points_part*NODES
 !           send data to slaves - all grid points in one send chunk
 !           FIXME: scatterv makes problems with INT_STAR8...
 !                  SK - Apr 2009
@@ -416,7 +454,7 @@ contains
      &                        MPI_COMM_WORLD,IERR)
              call dealloc(kxdum)
              IF( NREST .ne. 0 )THEN
-               IDISP_REST = IDISP(NODESALL) + NBATCH
+               IDISP_REST = IDISP(NODESALL) + nr_points_part
                CALL MPI_SEND(KX(1+IDISP_REST),NREST,MPI_REAL8, &
      &                       NODES,90,MPI_COMM_WORLD,IERR)
                CALL MPI_SEND(KY(1+IDISP_REST),NREST,MPI_REAL8, &
@@ -431,7 +469,7 @@ contains
 !
 !           the last process gets the rest; these points are usually
 !           the most diffuse ones and therefore the most screened ones
-            IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
+            IF(MYTID.eq.NODES) myNPOINT = nr_points_part+NREST
           call alloc(kx, mynpoint)
           call alloc(ky, mynpoint)
           call alloc(kz, mynpoint)
@@ -456,7 +494,7 @@ contains
      &                        MPI_COMM_WORLD,IERR)
 #else
 !...........reset for scatter length
-            IF(MYTID.eq.NODES) myNPOINT = NBATCH
+            IF(MYTID.eq.NODES) myNPOINT = nr_points_part
 !...........receive data via scatter
             CALL MPI_SCATTER(DUMMY,IDUMMY,MPI_REAL8, &
      &                       KX,myNPOINT,MPI_REAL8,MPARID, &
@@ -472,7 +510,7 @@ contains
      &                       MPI_COMM_WORLD,IERR)
 !...........remainings for the last node
             IF(MYTID .eq. NODES .and. NREST .ne. 0 ) THEN
-              IDISP_REST = NBATCH
+              IDISP_REST = nr_points_part
               CALL MPI_RECV(KX(1+IDISP_REST),NREST,MPI_REAL8, &
      &                      MPARID,90,MPI_COMM_WORLD,ISTAT,IERR)
               CALL MPI_RECV(KY(1+IDISP_REST),NREST,MPI_REAL8, &
@@ -485,7 +523,7 @@ contains
 #endif
           end if !IF(MYTID.EQ.MPARID) THEN ! master
 !.........add rest to total number of myNPOINT on last node
-          IF(MYTID.eq.NODES) myNPOINT = NBATCH+NREST
+          IF(MYTID.eq.NODES) myNPOINT = nr_points_part+NREST
           call dealloc(idisp)
           call dealloc(isend)
         ELSE
@@ -494,11 +532,12 @@ contains
 #if defined (VAR_MPI) 
         end if !IF(is_parallel_calculation) THEN
 #endif
-        CALL DFTDR1(KX,Ky,KZ,KW,myNPOINT, &
+        call dftdr1(kx, ky, kz, kw, &
+                    mynpoint, ibatch, &
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
-     &              gao, gao1, buf, &
+     &              gao, gao1, buffer, &
      &              IPRINT,0)
 
           call dealloc(kx)
@@ -526,7 +565,7 @@ contains
       if (dft_temp_need_gao1) then
         call dealloc(gao1)
       end if
-      call dealloc(buf)
+      call dealloc(buffer)
 
 
       IF(MYTID.NE.MPARID) RETURN
@@ -570,12 +609,14 @@ contains
 
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT, &
+      SUBROUTINE DFTDR1(CORX,CORY,CORZ, &
+     &                  WEIGHT, &
+                        NPOINT, ibatch, &
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
      &                  GAO,GAO1, &
-     &                  BUF,IPRINT,NYTID)
+     &                  buffer,IPRINT,NYTID)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -587,18 +628,19 @@ contains
 #include "../autodiff/xc_fortran_interface.h"
 #endif
 
-      integer :: npoint, iprint, nytid, nxcmat
+      integer :: npoint, iprint, nytid, nxcmat, ibatch, ioff, i, itimes
+      integer :: ihowmuch
       logical :: gga_qr
-      real(8) :: corx(npoint)
-      real(8) :: cory(npoint)
-      real(8) :: corz(npoint)
-      real(8) :: weight(npoint)
-      real(8) :: dmat(nr_ao_total, nr_ao_total)
+      real(8) :: corx(*)
+      real(8) :: cory(*)
+      real(8) :: corz(*)
+      real(8) :: weight(*)
+      real(8) :: dmat(*)
       real(8) :: dmat_resp_ao(*)
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: excmat(*)
-      real(8) :: buf(*)
+      real(8) :: buffer(*)
       real(8) :: vx(dervs1)
       integer :: isymop(nxcmat)
       integer :: ihrmop(nxcmat)
@@ -609,7 +651,7 @@ contains
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(nr_ao_total)
+      real(8), target  :: gao(*)
       real(8), target  :: gao1(*)
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
@@ -619,114 +661,101 @@ contains
       real(8), allocatable :: klrcfit(:)
       real(8), allocatable :: klrxcvec(:)
 
-      integer :: ipoint, nder, ndim
+      integer :: ipoint, nder, ndim, need_limit
       real(8) :: wght, z, ddot, dftenergy, taylor_deriv
-!
-!
 
 
+    ndim = nr_ao_total
+
+    nder   = 0
+    itimes = 1
+    if (dft_temp_need_gao1) then
+      nder   = 1
+      itimes = 4
+    end if
+
+    if (dft_cfg_keep_ao) then
+      if (.not. ao_mem_allocated) then
+        ihowmuch = dft_temp_nr_grid_points_node*ndim*itimes
+        write(*, *) 'debug allocating ao in mem', 8*ihowmuch/1000000
+        call init_ao_in_mem(ihowmuch)
+        ao_mem_allocated = .true.
+      end if
+
+      ioff = batch_pointer(ibatch)
+      if (.not. batch_is_in_mem(ibatch)) then
+        do i = ibatch + 1, max_nr_of_batches
+          batch_pointer(i) = batch_pointer(i) + npoint*itimes*ndim
+        end do
+      end if
+
+      need_limit = ioff + itimes*ndim*npoint
+        write(*, *) 'debug keep batch', ibatch, need_limit, &
+                      dft_cfg_ao_mem_limit, dft_cfg_ao_mem_limit*8/1000000
+      if (need_limit > dft_cfg_ao_mem_limit) then
+        ioff = ioff + itimes*ndim
+        batch_fits_in_mem(ibatch) = .false.
+      end if
+    end if
 
 
-!
-      NDIM = nr_ao_total
-
-        nder = 0
-        if (dft_temp_need_gao1) nder = 1
-
-        gao_p  => gao(1:nr_ao_total)
-        gao1_p => gao1(1:nr_ao_total*3)
-
-
-
-!radovan: please don't delete, code under construction
-!     if (dft_cfg_keep_ao) then
-
-!       itimes = nbast
-!       if (dft_temp_need_gao1) itimes = itimes*4
-
-!       radovan: hardcoded for testing, will fix later ...
-!       if (.not. associated(ao_in_mem_p)) then
-!         call init_ao_in_mem(17357*itimes)
-!       end if
-
-!       if (npoint .eq. 8535) then
-!         ao_in_mem_p => ao_in_mem(1:8535*itimes)
-!       end if
-!       if (npoint .eq. 8822) then
-!         ao_in_mem_p => ao_in_mem(8535*itimes+1:17357*itimes)
-!       end if
-
-!     end if
-
-
-
-
-
-
+    if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
+      gao_p  => gao(1:ndim)
+      gao1_p => gao1(1:ndim*3)
+    end if
 
     do ipoint = 1, npoint
 
+      wght = weight(ipoint)
 
+      if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
+        call dft_getsos(gao_p, gao1_p, &
+     &                  corx(ipoint), cory(ipoint), corz(ipoint), &
+     &                  buffer, ndim, &
+     &                  nder)
+      end if
 
-       
-!
-        WGHT = WEIGHT(ipoint)
+      if (dft_cfg_keep_ao) then
 
-!radovan: please don't delete, code under construction
-!      if (.not. dft_cfg_ao_are_in_mem) then
+!       copy ao to mem
+        if (batch_fits_in_mem(ibatch) .and. .not. batch_is_in_mem(ibatch)) then
+          call dcopy(ndim,            &
+                     gao_p,           &
+                     1,               &
+                     ao_in_mem(ioff), &
+                     1)
+          if (dft_temp_need_gao1) then
+            call dcopy(3*ndim,                 &
+                       gao1_p,                 &
+                       1,                      &
+                       ao_in_mem(ioff + ndim), &
+                       1)
+          end if
+        end if
 
-         call dft_getsos(gao, gao1, &
-     &                   corx(ipoint), cory(ipoint), corz(ipoint), &
-     &                   buf, ndim, &
-     &                   nder)
+!       if already in mem, set pointer
+        if (batch_is_in_mem(ibatch)) then
+          gao_p => ao_in_mem(ioff:ioff + ndim)
+          if (dft_temp_need_gao1) then
+            gao1_p => ao_in_mem(ioff + ndim:ioff + ndim*4)
+          end if
+        end if
 
-!radovan: please don't delete, code under construction
-!        copy gao to mem
-!        if (dft_cfg_keep_ao) then
-!          if (dft_temp_need_gao1) then
-!            call dcopy(nbast, &
-!    &                  gao, 1, &
-!    &                  ao_in_mem_p(4*nbast*(ipoint-1) + 1), 1)
-!            call dcopy(3*nbast, &
-!    &                  gao1, 1, &
-!    &                  ao_in_mem_p(4*nbast*(ipoint-1) + nbast + 1), 1)
-!          else
-!            call dcopy(nbast, &
-!    &                  gao, 1, &
-!    &                  ao_in_mem_p(nbast*(ipoint-1) + 1), 1)
-!          end if
-!          if (ipoint .eq. 8822) then
-!          dft_cfg_ao_are_in_mem = .true.
-!          end if
-!        end if
-!      end if
-!      if (dft_cfg_ao_are_in_mem) then
-!        if (dft_temp_need_gao1) then
-!          iao  = 4*nbast*(ipoint - 1)         + 1
-!          iao1 = 4*nbast*(ipoint - 1) + nbast + 1
-!          gao1_p => ao_in_mem_p(iao1:iao1 + nbast*3)
-!        else
-!          iao = nbast*(ipoint - 1) + 1
-!        end if
-!        gao_p => ao_in_mem_p(iao:iao + nbast)
-!      end if
-
-
-
-
-
-
-
-
+        ioff = ioff + itimes*ndim
+        
+        if (ipoint == npoint) then
+          if (batch_fits_in_mem(ibatch)) batch_is_in_mem(ibatch) = .true.
+        end if
+      end if
 
 !     density
-      call get_n(rho, 0, dmat, buf, gao)
+      call get_n(rho, 0, dmat, buffer, gao_p)
 
       if (rho > dft_cfg_dfthr0) then
 
 !       density gradient
         if (dft_temp_need_gao1) then
-          call get_gn(rhg, 0, dmat, buf, gao, gao1)
+          call get_gn(rhg, 0, dmat, buffer, gao_p, gao1_p)
           z = ddot(3, rhg, 1, rhg, 1)
           rhogrd = dsqrt(z)
         end if
@@ -831,14 +860,14 @@ contains
             call get_n(rho_outer,     &
                        0,             &
                        dmat_outer_ao, &
-                       buf,           &
-                       gao)
+                       buffer,           &
+                       gao_p)
             if (dft_cfg_saop_with_response_part) then
               call get_n(rho_resp,     &
                          0,            &
                          dmat_resp_ao, &
-                         buf,          &
-                         gao)
+                         buffer,          &
+                         gao_p)
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
@@ -856,9 +885,9 @@ contains
         if (dft_options%energy) then
           if (dft_temp_gga_hs) then
             vt = vx(fz0)*rhg
-            call gga_distribute(vx(fr0), vt, 0, excmat, gao, gao1)
+            call gga_distribute(vx(fr0), vt, 0, excmat, gao_p, gao1_p)
           else
-            call lda_distribute(vx(fr0),     0, excmat, gao)
+            call lda_distribute(vx(fr0),     0, excmat, gao_p)
           end if
         end if
 
@@ -884,20 +913,20 @@ contains
      &                rhg, &
      &                wght, &
      &                dft_temp_gga_hs, &
-     &                buf)
+     &                buffer)
 
 !         spin magnetization contribution
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,nxcmat, &
      &                   isymop,ihrmop,.false., &
-     &                   gao,gao1, &
-     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buf)
+     &                   gao_p,gao1_p, &
+     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
           endif
 !         VRG contribution
 !         if (dft_cfg_cdft_vrg) then
 !           call vrg_lr(dtrmat,excmat,nxcmat, &
 !    &                  isymop,ihrmop,gao,gao1, &
-!    &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
+!    &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buffer)
 !         endif
         endif
 
@@ -909,8 +938,8 @@ contains
           call sdft_qr(gga_qr, &
      &                 dft_cfg_sdft, &
      &                 dtrmat,excmat, &
-     &                 isymop,ihrmop,gao,gao1, &
-     &                 rho,rhogrd,rhg,wght,buf)
+     &                 isymop,ihrmop,gao_p,gao1_p, &
+     &                 rho,rhogrd,rhg,wght,buffer)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
 !                                 r^[C]               \omega_{ia}^[B]
@@ -924,13 +953,13 @@ contains
           
           call dft_lr(dtrmat,excmat,3, &
      &                isymop,ihrmop,.true., &
-     &                gao,gao1, &
-     &                rho,rhogrd,rhg,wght,dft_temp_gga_hs,buf)
+     &                gao_p,gao1_p, &
+     &                rho,rhogrd,rhg,wght,dft_temp_gga_hs,buffer)
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,3, &
      &                   isymop,ihrmop,.true., &
-     &                   gao,gao1, &
-     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buf)
+     &                   gao_p,gao1_p, &
+     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
           endif
 
         endif
@@ -950,7 +979,7 @@ contains
      &                      rho, &
      &                      rhg, &
      &                      wght, &
-     &                      buf)
+     &                      buffer)
           end if
 #endif /* ifdef MOD_AORESPONSE */
 #endif /* ifdef MOD_AUTODIFF */
@@ -958,7 +987,6 @@ contains
 
       end if !if (rho > dft_cfg_dfthr0) then
     end do !do ipoint = 1, npoint
-
 
 
 
@@ -986,7 +1014,7 @@ contains
       integer :: nxcmat, iprint
       real(8) :: EXCMAT(*)
       type(dft_options_t) :: dft_options
-      real(8), allocatable :: kfbuf(:)
+      real(8), allocatable :: kfbuffer(:)
       integer :: ierr, LFMAT
       real(8) :: sum_nr_electrons
       real(8) :: sum_xc_energy
@@ -1020,11 +1048,11 @@ contains
 
       LFMAT = nr_ao_total*nr_ao_total*NXCMAT*nr_qu
       IF(MYTID.EQ.MPARID) THEN
-        call alloc(kfbuf, lfmat)
-        kfbuf = 0.0d0
+        call alloc(kfbuffer, lfmat)
+        kfbuffer = 0.0d0
       end if
       call mpi_reduce(excmat,                &
-                      kfbuf,                 &
+                      kfbuffer,                 &
                       lfmat,                 &
                       mpi_double_precision,  &
                       mpi_sum,               &
@@ -1032,8 +1060,8 @@ contains
                       mpi_comm_world,        &
                       ierr) 
       IF(MYTID.EQ.MPARID) THEN
-        CALL DCOPY(LFMAT,KFBUF,1,EXCMAT,1)     
-        call dealloc(kfbuf)
+        CALL DCOPY(LFMAT,KFbuffer,1,EXCMAT,1)     
+        call dealloc(kfbuffer)
       ENDIF
 
       end subroutine
