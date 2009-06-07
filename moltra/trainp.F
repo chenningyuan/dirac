@@ -165,9 +165,18 @@ C&&&& String of active virtual pairs in MP2 module
     4          CONTINUE
 C&&&& Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &                  ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading ILLINT,ILSINT,ISSINT,IGTINT')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading ILLINT,ILSINT,ISSINT')
+                     ENDIF
                   END IF
                   MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
@@ -187,7 +196,11 @@ C&&&& SCHEME - Choose transformation scheme
     8          CONTINUE
 C&&&& THROUT - Treshold for output integrals
 C     aug 2001 hjaaj TODO: disabled this option because not implemented
-                  READ(LUCMD,*) THROUT
+                  READ(LUCMD,*,IOSTAT=IOS) THROUT
+                  IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading THROUT !')
+                  ENDIF
                GO TO 100
     9          CONTINUE
 C&&&& SPECIAL: Mostly for testing
@@ -209,7 +222,11 @@ C
    10          CONTINUE
 C&&&& VIRTHR: Only include Kramers pairs with energy below
 C     threshold in Virtual space.
-               READ(LUCMD,'(F20.5)') DMP2_VIRTHR
+               READ(LUCMD,'(F20.5)',IOSTAT=IOS) DMP2_VIRTHR
+               IF (IOS.NE.0) THEN
+                 CALL QUIT(
+     &         'MP2INP: Error in reading DMP2_VIRTHR !')
+               ENDIF
                GO TO 100
    11          CONTINUE
 C&&&& IJTSK: Max number of active I (and J) Kramers
@@ -698,18 +715,41 @@ C
    14          CONTINUE
 C&&&& INTFL2 - Integral classes not included in 2-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading  ILLINT,ILSINT,ISSINT,IGTINT'//
+     &      ' for INTFL2 !')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &     'TRAINP: Error in reading ILLINT,ILSINT,ISSINT for INTFL2!')
+                     ENDIF
                   END IF
                   ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    15          CONTINUE
 C&&&& INTFL4 - Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading ILLINT,ILSINT,ISSINT,IGTINT'
+     &      //' for INTFL4 !')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading ILLINT,ILSINT,ISSINT'
+     &       //' for INTFL4 !')
+                     ENDIF
                   END IF
                   ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
