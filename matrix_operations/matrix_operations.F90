@@ -64,7 +64,12 @@ contains
     A%ncol = ncol
 
     allocate(A%elms(A%nrow*A%ncol*nz*merge(2, 1, A%complex)))
-    matrix_stat_allocations = matrix_stat_allocations + 1
+
+    matrix_stat_allocations      = matrix_stat_allocations      + 1
+    matrix_stat_allocations_diff = matrix_stat_allocations_diff + 1
+    if (matrix_stat_allocations_diff > matrix_stat_allocations_peak) then
+      matrix_stat_allocations_peak = matrix_stat_allocations_diff
+    end if
 
   end subroutine
 
@@ -80,7 +85,9 @@ contains
 
     deallocate(A%elms)
     nullify(A%elms)
-    matrix_stat_deallocations = matrix_stat_deallocations + 1
+
+    matrix_stat_deallocations    = matrix_stat_deallocations    + 1
+    matrix_stat_allocations_diff = matrix_stat_allocations_diff - 1
 
     if (associated(A%iaux)) deallocate(A%iaux)
     if (associated(A%raux)) deallocate(A%raux)
