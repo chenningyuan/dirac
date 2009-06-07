@@ -20,9 +20,8 @@ module dft_temp
 
   save
 
+! only master needs this
   integer :: dft_temp_file_unit
-  integer :: dft_temp_nr_grid_points
-  integer :: dft_temp_nr_grid_points_node
 
   logical :: dft_temp_grid_is_done
   logical :: dft_temp_gga_hs

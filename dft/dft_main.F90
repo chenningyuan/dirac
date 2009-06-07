@@ -350,12 +350,6 @@ contains
                        mparid,         &
                        mpi_comm_world, &
                        ierr)
-        call mpi_bcast(dft_temp_nr_grid_points, &
-                       1,                       &
-                       my_MPI_INTEGER,          &
-                       mparid,                  &
-                       mpi_comm_world,          &
-                       ierr)
       end if
 #endif
 
@@ -380,8 +374,6 @@ contains
           end if
         end if
 
-        dft_temp_nr_grid_points_node = dft_temp_nr_grid_points
-
 #ifdef VAR_MPI
         if (is_parallel_calculation) then
 
@@ -393,11 +385,6 @@ contains
                          ierr)
 
           nodesall = nodes + 1
-
-!         do not divide by nodesall
-!         so each node potentially allocates a little bit more
-!         otherwise it would allocate too little
-          dft_temp_nr_grid_points_node = dft_temp_nr_grid_points/nodes
 
 !         if aos are in mem one could skip the broadcast of
 !         x, y, and z (still need the w though)
@@ -675,10 +662,22 @@ contains
     end if
 
     if (dft_cfg_keep_ao) then
+      if (dft_cfg_ao_mem_limit < 1) then
+        write(*, *) 'debug will not keep ao in mem, mem too small'
+        dft_cfg_keep_ao = .false.
+      end if
+      write(*, *) 'debug will try to keep ao in mem', dft_cfg_ao_mem_limit
+!   else
+!     write(*, *) 'debug will not try to keep ao in mem', dft_cfg_ao_mem_limit
+    end if
+
+    if (dft_cfg_keep_ao) then
       if (.not. ao_mem_allocated) then
-        ihowmuch = dft_temp_nr_grid_points_node*ndim*itimes
-        write(*, *) 'debug allocating ao in mem', 8*ihowmuch/1000000
-        call init_ao_in_mem(ihowmuch)
+!       ihowmuch = dft_temp_nr_grid_points_node*ndim*itimes
+!       write(*, *) 'debug allocating ao in mem', 8*ihowmuch/1000000
+!       call init_ao_in_mem(ihowmuch)
+        write(*, *) 'debug allocating ao in mem', 8*dft_cfg_ao_mem_limit/1000000
+        call init_ao_in_mem(dft_cfg_ao_mem_limit)
         ao_mem_allocated = .true.
       end if
 
@@ -698,13 +697,20 @@ contains
       end if
     end if
 
-
     if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
       gao_p  => gao(1:ndim)
       gao1_p => gao1(1:ndim*3)
     end if
 
     do ipoint = 1, npoint
+
+      if (ipoint == 1) then
+        if (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch)) then
+          write(*, *) 'debug reading ao from mem'
+!       else
+!         write(*, *) 'debug recalculating aos'
+        end if
+      end if
 
       wght = weight(ipoint)
 
@@ -719,6 +725,9 @@ contains
 
 !       copy ao to mem
         if (batch_fits_in_mem(ibatch) .and. .not. batch_is_in_mem(ibatch)) then
+          if (ipoint == 1) then
+            write(*, *) 'debug storing ao to mem'
+          end if
           call dcopy(ndim,            &
                      gao_p,           &
                      1,               &

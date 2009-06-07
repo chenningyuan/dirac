@@ -105,7 +105,8 @@ contains
 
     dft_cfg_angmin                  = 15
     dft_cfg_angint                  = 41
-    dft_cfg_ao_mem_limit            = 0
+!radovan: don't reset here, set with pam
+!   dft_cfg_ao_mem_limit            = 0
     dft_cfg_print_level             = 2
     dft_cfg_debug_level             = 0
     dft_cfg_integration_check_level = 0

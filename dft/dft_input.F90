@@ -272,8 +272,6 @@ contains
 
           case ('.KEEPAO')
             dft_cfg_keep_ao = .true.
-            read(u, *) dft_cfg_ao_mem_limit !in mb
-            dft_cfg_ao_mem_limit = dft_cfg_ao_mem_limit*1000000/8
 
           case ('.OLDDFT')
             dft_cfg_old_dft = .true.

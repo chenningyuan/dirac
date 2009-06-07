@@ -32,6 +32,10 @@ program dirprg
 
   use memory_allocator
   use os_utils
+#ifdef MOD_DFT
+  use dft_cfg
+#endif
+
   implicit none
 #include "priunit.h"
 #include "infpar.h"
@@ -70,6 +74,10 @@ program dirprg
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      maxsize = get_environment_integer('DIRMAX',maxsize)
+
+#ifdef MOD_DFT
+     dft_cfg_ao_mem_limit = get_environment_integer('DFT_AO_MEMORY', -1)
+#endif
   else
 !    memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
 !    SK - Sep 08: DIRNOD is passed to slaves in mpixinit and 

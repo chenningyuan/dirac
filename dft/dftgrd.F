@@ -562,8 +562,6 @@ C
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
      &     ' Number of grid points in quadrature:',NTOTAL,
      &     ' (',FLOAT(100*NTOTAL)/FLOAT(NALL),'%)'
-
-      dft_temp_nr_grid_points = ntotal
 C
 C     Print file
 C
