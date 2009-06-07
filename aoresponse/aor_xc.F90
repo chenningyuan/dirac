@@ -46,6 +46,7 @@ contains
     integer, parameter     :: max_order = 10
 
     real(8)                :: s
+    real(8)                :: s_aux(max_order)
     real(8)                :: v(3)
 
     real(8)                :: derv(0:max_order, 0:max_order)
@@ -272,14 +273,11 @@ contains
 !   pure density contribution
 !   =========================
 
-!   premultiply derivatives
-    do i = 3, order
-      derv(i, 0) = derv(i, 0)*2.0d0**(i - 2)
-    end do
+    s_aux = 0.0d0
 
     if      (order == 2) then
 
-      s = s + derv(2, 0)*r(1)
+      s_aux(2) = r(1)
 
     else if (order == 3) then
 
@@ -288,21 +286,21 @@ contains
 !     perturbations to be identical
 !     here in order 3 it's still explicit
 !     here both r(1) and r(2) are first order densities
-      s = s + derv(3, 0)*r(1)*r(2)
+      s_aux(3) = r(1)*r(2)
 
     else if (order == 4) then
 
 !     from here on r(1) is a first-order density
 !     and r(2) is a second-order density etc.
-      s = s +       derv(4, 0)*r(1)*r(1)*r(1) &
-            + 3.0d0*derv(3, 0)*r(1)*r(2) !i jk, j ik, k ij
+      s_aux(4) =       r(1)*r(1)*r(1)
+      s_aux(3) = 3.0d0*r(1)*r(2)
 
     else if (order == 5) then
 
-      s = s +       derv(5, 0)*r(1)*r(1)*r(1)*r(1) &
-            + 6.0d0*derv(4, 0)*r(1)*r(1)*r(2)      & !i j kl, i k jl, i l jk, j k il, j l ik, k l ij
-            + 4.0d0*derv(3, 0)*r(1)*r(3)           & !i jkl, j ikl, k ijl, l ijk
-            + 3.0d0*derv(3, 0)*r(2)*r(2)             !ij kl, ik jl, il jk
+      s_aux(5) =       r(1)*r(1)*r(1)*r(1)
+      s_aux(4) = 6.0d0*r(1)*r(1)*r(2)
+      s_aux(3) = 4.0d0*r(1)*r(3) &
+               + 3.0d0*r(2)*r(2)
 
     else if (order == 6) then
 
@@ -317,12 +315,12 @@ contains
 !     1 3 1
 !     1 4
 
-      s = s +        derv(6, 0)*r(1)*r(1)*r(1)*r(1)*r(1) &
-            + 10.0d0*derv(5, 0)*r(1)*r(1)*r(1)*r(2)      &
-            + 10.0d0*derv(4, 0)*r(1)*r(1)*r(3)           &
-            +  5.0d0*derv(3, 0)*r(1)*r(4)                &
-            + 15.0d0*derv(4, 0)*r(1)*r(2)*r(2)           &
-            + 10.0d0*derv(3, 0)*r(2)*r(3)
+      s_aux(6) =        r(1)*r(1)*r(1)*r(1)*r(1)
+      s_aux(5) = 10.0d0*r(1)*r(1)*r(1)*r(2)     
+      s_aux(4) = 10.0d0*r(1)*r(1)*r(3) &
+               + 15.0d0*r(1)*r(2)*r(2)          
+      s_aux(3) =  5.0d0*r(1)*r(4) &
+               + 10.0d0*r(2)*r(3)
 
     else if (order == 7) then
 
@@ -342,17 +340,25 @@ contains
 !     1 4 1
 !     1 5
 
-      s = s +        derv(7, 0)*r(1)*r(1)*r(1)*r(1)*r(1)*r(1) & !i j k l m n
-            + 15.0d0*derv(6, 0)*r(1)*r(1)*r(1)*r(1)*r(2)      & !i j k l mn, ...
-            + 20.0d0*derv(5, 0)*r(1)*r(1)*r(1)*r(3)           & !i j k lmn, ...
-            + 15.0d0*derv(4, 0)*r(1)*r(1)*r(4)                & !i j klmn, ...
-            +  6.0d0*derv(3, 0)*r(1)*r(5)                     & !i jklmn, ...
-            + 30.0d0*derv(5, 0)*r(1)*r(1)*r(2)*r(2)           & !i j kl mn, ...
-            + 60.0d0*derv(4, 0)*r(1)*r(2)*r(3)                & !i jk lmn, ...
-            + 15.0d0*derv(3, 0)*r(2)*r(4)                     & !ij klmn, ...
-            + 10.0d0*derv(3, 0)*r(3)*r(3)                       !ijk lmn, ...
+      s_aux(7) =        r(1)*r(1)*r(1)*r(1)*r(1)*r(1)
+      s_aux(6) = 15.0d0*r(1)*r(1)*r(1)*r(1)*r(2)     
+      s_aux(5) = 20.0d0*r(1)*r(1)*r(1)*r(3) &
+               + 30.0d0*r(1)*r(1)*r(2)*r(2)          
+      s_aux(4) = 15.0d0*r(1)*r(1)*r(4) &
+               + 60.0d0*r(1)*r(2)*r(3)               
+      s_aux(3) =  6.0d0*r(1)*r(5) &
+               + 15.0d0*r(2)*r(4) &
+               + 10.0d0*r(3)*r(3)                    
 
     end if
+
+    do i = 3, order
+      s_aux(i) = s_aux(i)*2.0d0**(i - 2)
+    end do
+
+    do i = 1, order
+      s = s + s_aux(i)*derv(i, 0)
+    end do
 
     if (use_gga) then
       call gga_distribute(s, 2.0d0*v, 0, fmat, gao, gao1)
