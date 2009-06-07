@@ -358,7 +358,7 @@ contains
 
 !   compensate AUTO_FUNCTIONAL_SCALING
 !   do i = 1, order
-!     s_aux(i) = s_aux(i)/(0.01**dfloat(i))
+!     s_aux(i) = s_aux(i)/(0.0001d0**dfloat(i))
 !   end do
 
     do i = 1, order
