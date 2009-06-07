@@ -3,6 +3,7 @@ module aor_main
   use kinds_m
   use memory_allocator
   use matrix_defop
+  use matrix_stat
   use dirac_interface
   use aor_cfg
   use aor_property_definitions
@@ -217,6 +218,10 @@ contains
             add_to
 
     end if
+
+    print '(a30 i10)', '@ nr matrix allocations:',     matrix_stat_allocations
+    print '(a30 i10)', '@ nr matrix deallocations:',   matrix_stat_deallocations
+    print '(a30 i10)', '@ nr matrix multiplications:', matrix_stat_multiplications
 
   end subroutine
 

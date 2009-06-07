@@ -87,7 +87,7 @@ contains
 
         X = -sum(ww/2.0d0)*S0
 
-!#define AOR_ONLY_INDIVIDUAL_COMPONENTS
+#define AOR_ONLY_INDIVIDUAL_COMPONENTS
 #ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
         if (all(p == 'EL' .or. p == 'MAGO')) then
 

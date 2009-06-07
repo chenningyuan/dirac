@@ -6,6 +6,8 @@
 
 module matrix_operations
 
+  use matrix_stat
+
   implicit none
 
   public matrix
@@ -62,6 +64,7 @@ contains
     A%ncol = ncol
 
     allocate(A%elms(A%nrow*A%ncol*nz*merge(2, 1, A%complex)))
+    matrix_stat_allocations = matrix_stat_allocations + 1
 
   end subroutine
 
@@ -77,6 +80,7 @@ contains
 
     deallocate(A%elms)
     nullify(A%elms)
+    matrix_stat_deallocations = matrix_stat_deallocations + 1
 
     if (associated(A%iaux)) deallocate(A%iaux)
     if (associated(A%raux)) deallocate(A%raux)
@@ -150,6 +154,8 @@ contains
                tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, nz, &
                beta,                                                   &
                         iq               , C%elms, C%nrow, C%ncol, nz)
+
+    matrix_stat_multiplications = matrix_stat_multiplications + 1
 
   end subroutine
 
