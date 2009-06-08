@@ -6,6 +6,7 @@ module aor_main
   use matrix_stat
   use dirac_interface
   use aor_cfg
+  use aor_binomial
   use aor_property_definitions
   use aor_property_definitions_zzz
 
@@ -23,6 +24,8 @@ contains
     real(kind_dp) :: freq(4)
     real(kind_dp) :: add_to
     integer       :: natoms_ifc
+
+    call init_binomial()
 
     freq(1) = aor_cfg_freq(1)
     freq(2) = aor_cfg_freq(2)
