@@ -293,6 +293,17 @@ contains
       s_aux(3) = 15.0d0*r(2)*r(4) &
                + 10.0d0*r(3)*r(3)                    
 
+    else if (order == 8) then
+
+      s_aux(6) = get_binomial(7, 2)*get_binomial(5, 2)*r(1)*r(1)*r(1)*r(2)*r(2)/2.0d0
+      s_aux(5) = get_binomial(7, 2)*get_binomial(5, 2)*r(1)*r(2)*r(2)*r(2)/6.0d0 &
+               + get_binomial(7, 2)*get_binomial(5, 3)*r(1)*r(1)*r(2)*r(3)
+      s_aux(4) = get_binomial(7, 3)*get_binomial(4, 3)*r(1)*r(3)*r(3)/2.0d0 &
+               + get_binomial(7, 4)*get_binomial(3, 2)*r(1)*r(2)*r(4)       &
+               + get_binomial(7, 2)*get_binomial(5, 2)*r(2)*r(2)*r(3)/2.0d0
+      s_aux(3) = get_binomial(7, 4)*r(3)*r(4) &
+               + get_binomial(7, 5)*r(2)*r(5)
+
     end if
 
 !   highest order terms
