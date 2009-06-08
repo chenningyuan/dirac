@@ -687,10 +687,12 @@ C
      &    ': *WAVE F must be present for readin of wavefunction.'
 
       IF (NOSFCRASH) THEN
-        WRITE(LUPRI,'(3X,A)')'* No segment.fault quit(crash).'//
+        WRITE(LUPRI,'(3X,A)')
+     &  '* If crash, end with no segment.fault.'//
      &  'Necessary for getting profiling file, gmon.out.'
       ELSE
-        WRITE(LUPRI,'(3X,A)')'* Crash with segment.fault. Worth for'// 
+        WRITE(LUPRI,'(3X,A)')
+     &  '* If crash, end with the segment.fault. Worth for'// 
      &  ' debugging.'
       ENDIF
 C
