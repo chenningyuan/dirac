@@ -91,17 +91,17 @@ public:
     }
   void operator-=(const taylor<Nvar,Ndeg>& t)
     {
-      for (int i=0;i<poly_bin<Ndeg+Nvar,Ndeg>::value;i++)
+      for (int i=0;i<this->size();i++)
 	this->c[i] -= t.c[i];
     }
   void operator+=(const taylor<Nvar,Ndeg>& t)
     {
-      for (int i=0;i<poly_bin<Ndeg+Nvar,Ndeg>::value;i++)
+      for (int i=0;i<this->size();i++)
 	this->c[i] += t.c[i];
     }
   void operator*=(const tnum_t& scale)
     {
-      for (int i=0;i<poly_bin<Ndeg+Nvar,Ndeg>::value;i++)
+      for (int i=0;i<this->size();i++)
 	this->c[i] *= scale;
     }
   void operator*=(const taylor<Nvar,Ndeg>& t)
@@ -123,26 +123,10 @@ public:
 	}
       res[0] += coeff[0];
     }
-  // Evaluate polynomial or derivative of polynomial at x.
-  // This is not a fast or accurate function.
-  tnum_t eval(tnum_t x, int derivative_order = 0)
-    {
-      assert(Nvar == 1);
-      tlongnum_t xn = 1, res = 0, a = 1;
-      for (int i=2;i<=derivative_order;i++)
-	a *= i;
-      for (int i=derivative_order;i<poly_bin<Ndeg+Nvar,Ndeg>::value;i++)
-	{
-	  res += a*xn*this->c[i];
-	  xn *= x;
-	  a *= (i + 1)/(tlongnum_t)(i+1-derivative_order);
-	}
-      return res;
-    }
   tnum_t dot(const taylor<Nvar, Ndeg> &t)
   {
     tlongnum_t sum = 0;
-    for (int i=0;i<poly_bin<Ndeg+Nvar,Ndeg>::value;i++)
+    for (int i=0;i<this->size();i++)
       sum += this->c[i]*t.c[i];
     return sum;
   }

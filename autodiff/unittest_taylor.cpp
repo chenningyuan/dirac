@@ -151,60 +151,18 @@ int main(void)
       cout << "Subtraction error\n";
       res++;
     }
-  // Evaluate derivatives at 0 and compare to coefficients
-  for (int i=0;i<tin.size();i++)
-    {
-      tin[i] = 2 + i + i*i;
-      if (fabs(fac(i)*tin[i] - tin.eval(0,i)) > 1e-15)
-	{
-	  cout << "Error evaluating derivative " << i << endl;
-	  res ++;
-	}
-    }
-  // Evaluate a simple second order polynomial and check the results
-  tin.zero();
-  tin[0] = 7;
-  tin[1] = 3;
-  tin[2] = 23;
-  if (fabs(tin.eval(0.0)-7) > 1e-15)
-    {
-      cout << "Error evaluating polynomial (i)\n";
-      res++;
-    }
-  if (fabs(tin.eval(8.0)-1503) > 1e-15)
-    {
-      cout << "Error evaluating polynomial (ii), I got" << tin.eval(8) << endl;
-      res++;
-    }
-  if (fabs(tin.eval(6,1)-279) > 1e-15)
-    {
-      cout << "Error evaluating polynomial (iii)\n";
-      res++;
-    }
-  if (fabs(tin.eval(-2,1)+89) > 1e-15)
-    {
-      cout << "Error evaluating polynomial (iv), got " << tin.eval(-2,1) << endl;
-      res++;
-    }
-  if (fabs(tin.eval(-2,2)-46) > 1e-15)
-    {
-      cout << "Error evaluating polynomial (v), got "  << tin.eval(-2,2) << endl;
-      res++;
-    }
-#ifdef TODO
   // Evaluate multivariate polynomial and check the results
   {
-    taylor<2,1> p;
+    taylor<2,2> p;
     for (int i=0;i<p.size();i++)
       p[i] = i+1;
     double x[2] = {3,7.1};
-    if (fabs(p.eval(x)-473.26) > 1e-15)
+    if (fabs(p.eval(x)-473.26)/473.26 > 1e-15)
       {
-	cout << "Error evaluating multivariate, got " << p.eval(x) << endl;
+	cout << "Error evaluating multivariate, error " << p.eval(x)-473.26 << endl;
 	res++;
       }
   }
-#endif
   
   // composition
   taylor<2,2> p(2.5);
