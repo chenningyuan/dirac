@@ -47,7 +47,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
 
     iorder = 2
@@ -65,7 +65,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
           
     iorder = 3
@@ -91,7 +91,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
           
     iorder = 4
@@ -133,7 +133,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
           
     iorder = 5
@@ -207,7 +207,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
           
     iorder = 6
@@ -345,7 +345,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
           
     iorder = 7
@@ -611,7 +611,7 @@ contains
                      w=g(1:iorder), &
                      c=i(1:iorder))
 
-      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder, real(dot(P, Dp(iorder)))
+      print '("@ static E_{zzz...} order "i2": "f25.10)', iorder + 1, real(dot(P, Dp(iorder)))
     end if
     
     do iorder = 1, max_order

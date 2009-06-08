@@ -2,6 +2,7 @@ module aor_xc
 
   use dft_cfg
   use dft_density
+  use aor_binomial
 
   implicit none
 
@@ -65,7 +66,7 @@ contains
     real(8)                :: gr(3, 0:max_order)
     real(8)                :: z(0:max_order, 0:max_order)
 
-    integer                :: i, j
+    integer                :: i, j, k, n
     integer                :: on, oz, sum_on_oz
     real(8)                :: ddot
 !   ----------------------------------------------------------------------------
@@ -275,90 +276,42 @@ contains
 
     s_aux = 0.0d0
 
-    if      (order == 2) then
+    if      (order == 5) then
 
-      s_aux(2) = r(1)
-
-    else if (order == 3) then
-
-!     the r(1)*r(2) here may be confusing
-!     it's because from order 4 on i restrict
-!     perturbations to be identical
-!     here in order 3 it's still explicit
-!     here both r(1) and r(2) are first order densities
-      s_aux(3) = r(1)*r(2)
-
-    else if (order == 4) then
-
-!     from here on r(1) is a first-order density
-!     and r(2) is a second-order density etc.
-      s_aux(4) =       r(1)*r(1)*r(1)
-      s_aux(3) = 3.0d0*r(1)*r(2)
-
-    else if (order == 5) then
-
-      s_aux(5) =       r(1)*r(1)*r(1)*r(1)
-      s_aux(4) = 6.0d0*r(1)*r(1)*r(2)
-      s_aux(3) = 4.0d0*r(1)*r(3) &
-               + 3.0d0*r(2)*r(2)
+      s_aux(3) = 3.0d0*r(2)*r(2)
 
     else if (order == 6) then
 
-!     4 1
-!     3 1 1
-!     3 2
-!     2 1 1 1
-!     2 2 1
-!     2 3
-!     1 1 1 1 1
-!     1 2 1 1
-!     1 3 1
-!     1 4
-
-      s_aux(6) =        r(1)*r(1)*r(1)*r(1)*r(1)
-      s_aux(5) = 10.0d0*r(1)*r(1)*r(1)*r(2)     
-      s_aux(4) = 10.0d0*r(1)*r(1)*r(3) &
-               + 15.0d0*r(1)*r(2)*r(2)          
-      s_aux(3) =  5.0d0*r(1)*r(4) &
-               + 10.0d0*r(2)*r(3)
+      s_aux(4) = 15.0d0*r(1)*r(2)*r(2)          
+      s_aux(3) = 10.0d0*r(2)*r(3)
 
     else if (order == 7) then
 
-!     5 1
-!     4 1 1
-!     4 2
-!     3 1 1 1
-!     3 2 1
-!     3 3
-!     2 1 1 1 1
-!     2 2 1 1
-!     2 3 1
-!     2 4
-!     1 1 1 1 1 1
-!     1 2 1 1 1
-!     1 3 1 1
-!     1 4 1
-!     1 5
-
-      s_aux(7) =        r(1)*r(1)*r(1)*r(1)*r(1)*r(1)
-      s_aux(6) = 15.0d0*r(1)*r(1)*r(1)*r(1)*r(2)     
-      s_aux(5) = 20.0d0*r(1)*r(1)*r(1)*r(3) &
-               + 30.0d0*r(1)*r(1)*r(2)*r(2)          
-      s_aux(4) = 15.0d0*r(1)*r(1)*r(4) &
-               + 60.0d0*r(1)*r(2)*r(3)               
-      s_aux(3) =  6.0d0*r(1)*r(5) &
-               + 15.0d0*r(2)*r(4) &
+      s_aux(5) = 45.0d0*r(1)*r(1)*r(2)*r(2)          
+      s_aux(4) = 60.0d0*r(1)*r(2)*r(3) &
+               + 15.0d0*r(2)*r(2)*r(2)               
+      s_aux(3) = 15.0d0*r(2)*r(4) &
                + 10.0d0*r(3)*r(3)                    
 
     end if
 
+!   highest order terms
+    s_aux(order) = r(1)**(order - 1)
+
+!   terms that contain r(1)**(n)*r(i)**1
+    do i = 2, order - 2
+      k = order - 1
+      n = k - i
+      s_aux(n + 2) = s_aux(n + 2) + get_binomial(k, n)*r(1)**(n)*r(i)
+    end do
+
     do i = 3, order
-      s_aux(i) = s_aux(i)*2.0d0**dfloat(i - 2)
+      s_aux(i) = s_aux(i)*2.0d0**(i - 2)
     end do
 
 !   compensate AUTO_FUNCTIONAL_SCALING
 !   do i = 1, order
-!     s_aux(i) = s_aux(i)/(0.0001d0**dfloat(i))
+!     s_aux(i) = s_aux(i)/(0.0001d0**(i))
 !   end do
 
     do i = 1, order
