@@ -1465,7 +1465,7 @@ for index in $lib_index; do
   elif [ $index -eq 1 ]; then
     $echo "Enter a directory to search: \c"
     read math_dirs
-    $echo "Also search it's subdirectories? (y/N) \c"
+    $echo "Also search its subdirectories? (y/N) \c"
     read rec_search
 
     echo
