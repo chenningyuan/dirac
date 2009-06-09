@@ -438,10 +438,15 @@ C       ... nothing to do for "inactive" operators
         IF( ISYM_T .le. 0 ) GOTO 100
 C
 C       ... no two-electron excitations
-        NO_TTWO   = 1
-        IPRHAM_CI = 0
-        INDXPR    = LPROP_KRCI(II)
-        ITIM_SYM  = IPRPTIM(INDXPR) 
+        NO_TTWO         = 1
+        IPRHAM_CI       = 0
+        INDXPR          = LPROP_KRCI(II)
+        ITIM_SYM        = IPRPTIM(INDXPR) 
+        ISYM_XXX        = IPRPSYM(INDXPR)
+        IFERM_SYM_T     = JBTOF(ISYM_XXX-1,1)
+        IFERM_XTSYM(II) = IFERM_SYM_T
+        WRITE(LUWRT,*) '  IFERM_SYM_T is ',IFERM_SYM_T, 'for ',
+     &                    PRPNAM(INDXPR)
         CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
 C
 C       generate symmetry info for PICASSO
