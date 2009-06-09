@@ -658,6 +658,28 @@ contains
                             0)
               end if
 
+              if (m == 7) then
+!               restriction: 
+!               all perturbation operators are same
+!               so i pass only the representative density matrices
+                call dftexc(2.0d0*D(1)%elms,   &
+                            (/                 &
+                              D( 7+1)%elms,    &
+                              D(28+1)%elms,    &
+                              D(63+1)%elms,    &
+                              D(98+1)%elms,    &
+                              D(119+1)%elms,   &
+                              D(126+1)%elms    &
+                             /),               &
+                            z,                 &
+                            m - 1,             &
+                            1,                 &
+                            (/ones(1:m - 1)/), &
+                            (/ones(1:m - 1)/), &
+                            dft_options,       &
+                            0)
+              end if
+
               A(1) = tiny(0.0d0)*D(1)
               call daxpy(ntbas(0)*ntbas(0)*nz, 4.0d0, z, 1, A(1)%elms, 1)
               F(1) = F(1) + A(1)

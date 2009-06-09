@@ -86,6 +86,8 @@ template
 taylor<2,6> vwn_correlation(tnum_t R0);
 template
 taylor<2,7> vwn_correlation(tnum_t R0);
+template
+taylor<2,8> vwn_correlation(tnum_t R0);
 
 
 
@@ -113,6 +115,8 @@ template
 taylor<2,6> slater_exchange(tnum_t R0);
 template
 taylor<2,7> slater_exchange(tnum_t R0);
+template
+taylor<2,8> slater_exchange(tnum_t R0);
 
 
 

@@ -92,6 +92,9 @@ lda_eval_(const int *functional,
     case 7:
       lda_helper<7>(*functional,*order,*R,result);
       break;
+    case 8:
+      lda_helper<8>(*functional,*order,*R,result);
+      break;
     default:
       assert(0 && "Unimplemented order of LDA functional");
     };
