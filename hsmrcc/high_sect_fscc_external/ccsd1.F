@@ -2464,6 +2464,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call fmax6 (names,tmax,idmax,indmax)
       return
       end
+
       subroutine dfmax4 (name1,name2,names,tmax,idmax,indmax)
       implicit real*8 (a-h,o-z)
       call add   (name1,-1.d0,name2,1.d0,names)

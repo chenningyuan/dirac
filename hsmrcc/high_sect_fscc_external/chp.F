@@ -108,6 +108,7 @@ c     iopt(9) - incomplete model space
       if (iopt(17).ne.0) then
         call rdfile(52,3,"t3v ",-1)
       end if
+!     tg is prepared by chv, must be there 
       call rdfile(53,0,"tg  ",-1)
       call rdfile(53,1,"t1g ",-1)
       call rdfile(53,2,"tgf ",-1)

@@ -419,7 +419,7 @@ c              hppp 2143 = vd14
 c
 
       if (iopt(1).ge.5) then
-        call header('Output from ordv',-1)
+        call header('Output from ordv_csd',-1)
       endif
 
       call readv (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)

@@ -405,6 +405,7 @@ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 ! use Vectors
 ! use io_moltra
 #if defined MOD_HSFS
+use print_level
 use DIRAC_HSFS
 
 #include "implicit.h"
@@ -412,6 +413,7 @@ use DIRAC_HSFS
    real*8, intent(inout) :: eps(*), v(*)
    integer, intent(inout) :: ind(*),nint, nort
    integer, dimension(8) :: irreps
+   logical :: unread_file
 
    ! ... to be replaced by module 
    ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),ior(ishft(i3,8) ,i4))
@@ -419,6 +421,9 @@ use DIRAC_HSFS
    call header('Output from "get_dirac_ints"',-1)
 
    write(LUPRI,'(2x,a,i5)') 'iprint_hsfs=',iprint_hsfs
+   write(LUPRI,'(2x,a,i5)') 'get_irpint=',getiprint()
+   iprint_hsfs = getiprint()
+
 
    call open_dirac_hsfs_file
 
@@ -437,21 +442,32 @@ use DIRAC_HSFS
 
    enddo 
 
-   read(luhsfs,iostat=ios) nint
+   read(luhsfs,iostat=ios) nkr
    if (ios.ne.0) call quit('error in luhsfs nint reading!')
 
-   write(LUPRI,*) 'Number of nonzero integrals, nint=',nint
+   write(LUPRI,*) 'nkr=',nkr
 
-   do i=1,nint
-    read(luhsfs,iostat=ios) i1,i2,i3,i4,v(i)
+   nintx=0
+
+ ! read until the end 
+
+   unread_file=.true.
+   do while (unread_file) 
+    nintx = nintx + 1
+    read(luhsfs,iostat=ios) i1,i2,i3,i4,v(nintx)
     if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reaidng !')
-    ind(i)=ipack(i1,i2,i3,i4)
-  
+    ind(nintx)=ipack(i1,i2,i3,i4)
+    
+    unread_file=.not.( (i1.eq.0).and.(i2.eq.0)) 
     if (iprint_hsfs >= 8) then
-      write(LUPRI,'(4i4,a,i11,a,f18.12)') i1,i2,i3,i4,'pck in:',ind(i),' int:',v(i)
+      write(LUPRI,'(i5,a,4i4,1x,a,i11,a,f18.12)') nintx,'.',i1,i2,i3,i4,'pck in:',ind(nintx),' int:',v(nintx)
     endif
 
    enddo
+    
+   nint=nintx-1
+
+   write(LUPRI,*) 'read integrals from file, nint=',nint
 
    call close_dirac_hsfs_file
 

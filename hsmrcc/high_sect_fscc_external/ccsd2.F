@@ -2397,8 +2397,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #include "gen.h"
-!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-#include "cij1_0.h"
+      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+!#include "cij1_0.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
 
@@ -3072,26 +3072,38 @@ c *************************************************
 !     common /i/ igen(nbig)
 ! mi: added for control printouts
 !#include "dat.h"
+!     logical :: is_open,is_present
 
-!     if (iopt(1).ge.5) then
+! mi: it's useless
+!     inquire(unit=nt,exist=is_present,opened=is_open,recl=irecl )
+
       if (getiprint().ge.5) then
         call header('Output from rdfile',-1)
-        write(LUPRI,'(2x,a,i5)') 'nt=',nt
+        write(LUPRI,'(2x,a,i5)') 'file nt=',nt
         write(LUPRI,'(2x,a,i5)') 'nrec=',nrec
         write(LUPRI,'(2x,a,a4)') 'name=',name
       endif
 
+      ! write(LUPRI,*) 'rdile:',is_present,is_open,irecl 
+
+!     if (.not.(is_present.or.is_open.or.irecl==0)) then
+!       call quit('rdfile: file tapeXX is NOT present ! ')
+!     endif
+
       rewind nt
+
       if (nrec.gt.0) then
         do 10 i=1,4*nrec
 10      read (nt)
       endif
 
       read (nt,end=190) nij
+
       nflcur=nflcur+1
       nstr1=nstrt(1,nflcur-1)
       nstr2=nstrt(2,nflcur-1)
       igen(nstr1+1)=nij
+
       read (nt) (igen(nstr1+i),i=2,2*nij+4)
       iiia(nflcur)=igen(nstr1+2*nij+3)
       iiva(nflcur)=igen(nstr1+2*nij+4)
@@ -3109,7 +3121,7 @@ c *************************************************
         nstrt(2,nflcur)=nstr2+nsize
       endif
 
-      if (getiprint() >= 5) then
+      if (getiprint() >= 8) then
        write(LUPRI,'(2x,a,i7)') 'nflcur=',nflcur
        write(LUPRI,'(2x,a,i7)') 'nstr2=',nstr2
        ! print out extra big values 

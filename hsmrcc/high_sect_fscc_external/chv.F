@@ -1,8 +1,5 @@
-!#if defined STANDALONE_HSFS
-!      program chv
-!#else
       subroutine chv
-!#endif
+
       implicit real*8 (a-h,o-z)
 
 #include "param_ccsd.h"
