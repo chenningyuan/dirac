@@ -188,12 +188,10 @@ contains
                           'number of nodes in parallel DFT:', nodes
 
         timing = .false.
-
         call sync_dft_cb()
         call dftpar_init1(dft_options, nr_dmat_perturbed)
         call dftpar_init2(dft_options, nr_dmat_perturbed, isymop, ihrmop, &
      &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
-
       end if
 #endif /* ifdef VAR_MPI */
 
@@ -303,9 +301,7 @@ contains
       integer :: i, idummy, ierr, myNPOINT, nr_points_part, ndim, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
-
       NDIM = nr_ao_total
-
       call alloc(gao, ndim)
       if (dft_temp_need_gao1) then
         call alloc(gao1, ndim*3)
@@ -315,7 +311,6 @@ contains
 
     dft_temp_nr_electrons = 0.0d0
     dft_temp_xc_energy    = 0.0d0
-
     i_am_the_master = .false.
     if (mytid == mparid) i_am_the_master = .true.
 
@@ -376,7 +371,6 @@ contains
 
 #ifdef VAR_MPI
         if (is_parallel_calculation) then
-
           call mpi_bcast(ibatch,         &
                          1,              &
                          my_MPI_INTEGER, &
@@ -398,7 +392,7 @@ contains
           myNPOINT = nr_points_part
 !.........send nothing to master
           IF(MYTID.EQ.MPARID) THEN ! master
-            ISEND(1) = nr_points_part
+            ISEND(1) = 0
             IDISP(1) = 0
             DO I = 1,NODES-1
               ISEND(I+1) = nr_points_part
@@ -413,16 +407,16 @@ contains
 #if !defined (INT_STAR8)
 !............scatterv data
              CALL MPI_SCATTERV(KX,ISEND,IDISP,MPI_REAL8, &
-     &                         DUMMY,0,MPI_REAL8,MPARID, &
+     &                         DUMMY,ISEND,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
              CALL MPI_SCATTERV(KY,ISEND,IDISP,MPI_REAL8, &
-     &                         DUMMY,0,MPI_REAL8,MPARID, &
+     &                         DUMMY,ISEND,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
              CALL MPI_SCATTERV(KZ,ISEND,IDISP,MPI_REAL8, &
-     &                         DUMMY,0,MPI_REAL8,MPARID, &
+     &                         DUMMY,ISEND,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
              CALL MPI_SCATTERV(KW,ISEND,IDISP,MPI_REAL8, &
-     &                         DUMMY,0,MPI_REAL8,MPARID, &
+     &                         DUMMY,ISEND,MPI_REAL8,MPARID, &
      &                         MPI_COMM_WORLD,IERR)
 #else
 !............scatter data and send remainings to last node
@@ -457,10 +451,10 @@ contains
 !           the last process gets the rest; these points are usually
 !           the most diffuse ones and therefore the most screened ones
             IF(MYTID.eq.NODES) myNPOINT = nr_points_part+NREST
-          call alloc(kx, mynpoint)
-          call alloc(ky, mynpoint)
-          call alloc(kz, mynpoint)
-          call alloc(kw, mynpoint)
+            call alloc(kx, mynpoint)
+            call alloc(ky, mynpoint)
+            call alloc(kz, mynpoint)
+            call alloc(kw, mynpoint)
 !           receive data from master - all grid points in one receive chunk
 !
 !           FIXME: scatterv does makes problems with INT_STAR8...
@@ -513,7 +507,7 @@ contains
           IF(MYTID.eq.NODES) myNPOINT = nr_points_part+NREST
           call dealloc(idisp)
           call dealloc(isend)
-        ELSE
+        ELSE ! sequential calculation
 #endif
             myNPOINT = NPOINT
 #if defined (VAR_MPI) 
@@ -527,12 +521,10 @@ contains
      &              gao, gao1, buffer, &
      &              IPRINT,0)
 
-          call dealloc(kx)
-          call dealloc(ky)
-          call dealloc(kz)
-          call dealloc(kw)
-
-
+        call dealloc(kx)
+        call dealloc(ky)
+        call dealloc(kz)
+        call dealloc(kw)
 
         GO TO 100
         end if !IF( NPOINT .lt. 0 ) THEN
@@ -541,12 +533,10 @@ contains
 
 
 
-
 #if defined (VAR_MPI)
       IF(is_parallel_calculation) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
      &                       IPRINT)
 #endif
-
 
       call dealloc(gao)
       if (dft_temp_need_gao1) then
