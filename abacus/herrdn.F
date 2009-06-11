@@ -4529,6 +4529,7 @@ C
       ENDDO
 c
 c---------------------------------------------------------------
+#ifdef MOD_ECP
 c For ARGOS
 C
 C     Run over Nuclear Centres
@@ -4597,6 +4598,7 @@ c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
             endif
   411    CONTINUE
   401 CONTINUE
+#endif /* ifdef MOD_ECP */
 c
       RETURN
       END
