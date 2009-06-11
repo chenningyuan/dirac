@@ -283,11 +283,14 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
+
+      use memory_allocator
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
-     &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
+     &                               CSTRA(NCOOR,NCOOR),
      &          SCTRA(NCOOR,NCOOR)
+      real(8), allocatable :: amat(:)
 C
       CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
       DO 100 I = 1, NCOOR
@@ -295,12 +298,14 @@ C
             SHESS(J,I) = SHESS(I,J)
   200    CONTINUE
   100 CONTINUE
+      call alloc(amat, mxcoor*mxcoor)
       CALL MPAB (SCTRA(1,1),NCOOR,NCOOR,NCOOR ,NCOOR ,
      &           SHESS,     NCOOR,NCOOR,NDIMS ,NDIMS ,
      &           AMAT,                  MXCOOR,MXCOOR)
       CALL MPABT(AMAT,      NCOOR,NCOOR,MXCOOR,MXCOOR,
      &           SCTRA(1,1),NCOOR,NCOOR,NCOOR ,NCOOR ,
      &           CHESS,                 NDIMC ,NDIMC )
+      call dealloc(amat)
       RETURN
       END
 C  /* Deck prigeo */
