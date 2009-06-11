@@ -470,7 +470,7 @@ endif
 enddo
 
 write(LUPRI,'(/,2x,a,2i4)') 'one-electron HSFS stuff written into luhsfs file, numbers:',ix,nsp/2
-if (ix .ne .nsp/2) then
+if (ix.ne.nsp/2) then
   call quit('wrongly extracted HSFS indexes !')
 endif
 
