@@ -268,9 +268,12 @@ C             it works !!!
 C
       IGROUP = MIN(7,NINT((4*NROTS+8*NINVC+6*NREFL)/3.0))
       GROUP  = GROUPS(IGROUP)
+
 c     export it to ARGOS
 c     ==================
+#ifdef MOD_ECP
       ndptag = ndptags(IGROUP)
+#endif
 C
 C     Generate character table
 C     ========================
