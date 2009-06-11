@@ -398,7 +398,7 @@ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !  
 !  nint - number of 2-el.integrals
 !  
-!  called from readv(ccsd3.F)
+!  called from readv(ccsd3.F), ie the from HSFS method
 !
 !------------------------------------------------------------------------------
 ! use Memory
@@ -421,23 +421,28 @@ use DIRAC_HSFS
    call header('Output from "get_dirac_ints"',-1)
 
    write(LUPRI,'(2x,a,i5)') 'iprint_hsfs=',iprint_hsfs
-   write(LUPRI,'(2x,a,i5)') 'get_irpint=',getiprint()
+   write(LUPRI,'(2x,a,i5)') 'get_iprint=',getiprint()
    iprint_hsfs = getiprint()
 
+   call open_dirac_hsfs_file; rewind(luhsfs)
+   write(LUPRI,*) luhsfs,' file open'
 
-   call open_dirac_hsfs_file
+   read(luhsfs,iostat=ios) nirp,nort
+   if (ios.ne.0) call quit('error in luhsfs reading 1!')
+   write(LUPRI,'(2x,a,i2,a,i4)') 'read nirp=',nirp,' nort=',nort
 
-   read(luhsfs) nirp,nort
-   write(LUPRI,'(2x,a,i2,a,i4)') 'nirp=',nirp,' nort=',nort
+   read(luhsfs,iostat=ios) (irreps(i),i=1,nirp)
+   if (ios.ne.0) call quit('error in luhsfs reading 2!')
+   write(LUPRI,'(2x,a,8i2)') 'read irreps:',(irreps(i),i=1,nirp)
 
-   read(luhsfs) (irreps(i),i=1,nirp)
-   write(LUPRI,'(2x,a,8i2)') 'irreps:',(irreps(i),i=1,nirp)
+   write(LUPRI,'(2x,a,i5)') 'going to read orbital energies, nort=',nort
 
-   write(LUPRI,'(2x,a,i5)') 'read orbital energies, nort=',nort
    do i=1, nort
-    read(luhsfs) eps(i)
+    read(luhsfs,iostat=ios) eps(i)
+    if (ios.ne.0) call quit('error in luhsfs reading 3 !')
+
     if (iprint_hsfs >= 3) then
-     write(LUPRI,*) i,eps(i)
+      write(LUPRI,*) i,eps(i)
     endif
 
    enddo 
@@ -447,15 +452,14 @@ use DIRAC_HSFS
 
    write(LUPRI,*) 'nkr=',nkr
 
+   write(LUPRI,'(2x,a)') 'Going to read integrals & indexes:'
+
    nintx=0
-
- ! read until the end 
-
    unread_file=.true.
    do while (unread_file) 
     nintx = nintx + 1
     read(luhsfs,iostat=ios) i1,i2,i3,i4,v(nintx)
-    if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reaidng !')
+    if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reading !')
     ind(nintx)=ipack(i1,i2,i3,i4)
     
     unread_file=.not.( (i1.eq.0).and.(i2.eq.0)) 
@@ -467,7 +471,7 @@ use DIRAC_HSFS
     
    nint=nintx-1
 
-   write(LUPRI,*) 'read integrals from file, nint=',nint
+   write(LUPRI,*) 'read all integrals&indexes from file,their number nint=',nint
 
    call close_dirac_hsfs_file
 

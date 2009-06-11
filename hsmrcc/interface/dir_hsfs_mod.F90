@@ -25,7 +25,7 @@ subroutine open_dirac_hsfs_file
 
 open(luhsfs,file="DIRAC_hsfs",form="unformatted",status="unknown")
 
-write(LUPRI,*) 'DIRAC file is open! '
+write(LUPRI,*) 'DIRAC file was open.'
 
 end subroutine open_dirac_hsfs_file
 
@@ -38,7 +38,9 @@ subroutine close_dirac_hsfs_file
 #include "implicit.h"
 #include "priunit.h"
 
- close(luhsfs,status="keep")
+close(luhsfs,status="keep")
+
+write(LUPRI,*) 'DIRAC file was closed.'
 
 end subroutine close_dirac_hsfs_file
 

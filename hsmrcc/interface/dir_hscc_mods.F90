@@ -371,9 +371,9 @@ write(LUPRI,*)  '... hsfs_indx vector allocated'
 
 do isp=1, nsp
 
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
-   IREPSP(ISP),IREPSP(NSP+ISP),                          &
-   ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP)),'-',REPNA(IREPSP(ISP))
+   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
+   ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
 
    if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
      boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
@@ -392,12 +392,9 @@ enddo
 if (icheck /= nsp/2) then
  write(LUPRI,*) 'sum of all spinors, icheck=',icheck
  write(LUPRI,*) '               while nsp/2=',nsp/2
-
  call print_mrconee_data
-
  call quit('wrong number of spinors !')
 endif
-!call quit('here')
 
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
@@ -433,17 +430,25 @@ endif
 enddo
 
 !call quit('get_HSFS_indexes')
+ call open_dirac_hsfs_file
+ rewind (luhsfs)
 
-call open_dirac_hsfs_file
+ write(LUPRI,'(/,2x,a)') 'going to write luhsfs data...'
 
  ! ... save some stuff 
-write(luhsfs) GetNBSYM(),nsp/2
+!write(luhsfs,iostat=ios) GetNBSYM(), nsp/2
+ nirp=GetNBSYM()
 
-write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
+write(luhsfs) nirp, nsp/2
+write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
 
-!write(LUPRI,*) 'boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
+!write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
+write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
+write(LUPRI,*) 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
+
 write(LUPRI,*) 
 
+ix=0
 do isp=1,nsp
 
   indx_found=.false.
@@ -457,16 +462,17 @@ do isp=1,nsp
  
 ! write(luhsfs) EPS1( hsfs_indx%p_iA1D(isp) )
 if (indx_found) then
+ ix = ix + 1
  write(luhsfs) EPS1( j )
  write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
 endif
 
 enddo
 
-write(LUPRI,*) 'HSFS stuff written into luhsfs file'
-
-!---------------------------------------------------------------------------------
-!  make   
+write(LUPRI,'(/,2x,a,2i4)') 'one-electron HSFS stuff written into luhsfs file, numbers:',ix,nsp/2
+if (ix .ne .nsp/2) then
+  call quit('wrongly extracted HSFS indexes !')
+endif
 
 #endif 
 end subroutine get_HSFS_indexes
