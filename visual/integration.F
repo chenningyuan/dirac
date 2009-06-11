@@ -429,6 +429,7 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+      use memory_allocator
 #include "implicit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
@@ -438,12 +439,13 @@ C=======================================================================
 
       CHARACTER*30 FILE_NAME
       CHARACTER*2  GRID_ORIENTATION
-      DIMENSION PX(NMAX*NMAX),
-     &          PY(NMAX*NMAX),
-     &          PZ(NMAX*NMAX),
-     &          WEIGHT(NMAX*NMAX),
-     &          X(NMAX),
-     &          W(NMAX)
+      DIMENSION X(NMAX), W(NMAX)
+      real(8), allocatable :: px(:), py(:), pz(:), weight(:)
+
+      call alloc(px,     nmax*nmax)
+      call alloc(py,     nmax*nmax)
+      call alloc(pz,     nmax*nmax)
+      call alloc(weight, nmax*nmax)
 
       WRITE(FILE_NAME,'(A5,I2)') 'GRID.', LUNIT
 
@@ -493,6 +495,11 @@ C=======================================================================
       NR_POINTS = IPOINT
 
       CALL WRTQUA(PX,PY,PZ,WEIGHT,LUNIT,NR_POINTS)
+
+      call dealloc(px)
+      call dealloc(py)
+      call dealloc(pz)
+      call dealloc(weight)
 
       RETURN
       END
