@@ -401,7 +401,9 @@ C
 c           
 c     For ARGOS
 c     =========
+#ifdef MOD_ECP
             itypag(i) = REP(I)
+#endif            
 c    
   130   CONTINUE
 C

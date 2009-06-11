@@ -788,6 +788,7 @@ c**                This is for generating ARGOSIN            **
 c**                                                          **
 c**************************************************************
 c**************************************************************
+#ifdef MOD_ECP
       nsag   = NUCIND
       naordsag = blk
       ngcsag = blk
@@ -795,6 +796,7 @@ c**************************************************************
       do i = 0, nstag-1
          ndag(i) = 1
       enddo
+#endif
 c
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(NONT)) DEALLOCATE(NONT)
