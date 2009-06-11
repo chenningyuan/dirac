@@ -176,6 +176,7 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -183,8 +184,9 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
+      DIMENSION SHESS(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
+      real(8), allocatable :: chess(:)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -255,9 +257,11 @@ C        Print in non-symmetry basis
 C
          WRITE (LUPRI,'(//)')
          NCOOR = 3*NUCDEP
+         call alloc(chess, mxcoor*mxcoor)
          CALL DZERO(CHESS,NCOOR*NCOOR)
          CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,ITYPE)
          CALL PR2DER(CHESS,NCOOR,MXCOOR,LUPRI)
+         call dealloc(chess)
       END IF
       WRITE (LUPRI,'()')
       CALL FLSHFO(LUPRI)
