@@ -108,4 +108,4 @@ hsfs_clean:
 
 ####
 diag:
-	@make -CC$(BACK) diag
+	@make -C$(BACK) diag
