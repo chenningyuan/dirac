@@ -122,6 +122,6 @@ diag:
 	  size $(TARGET) 2> /dev/null | grep $(TARGET) | awk '{printf $$3/(1024*1024)}'; \
 	  echo ' MB' || echo 'can not be determined'
 	@echo -e "Sorted list of all object sizes (patience please):"
-	@readelf -s $(TARGET) 2> /dev/null| awk '{printf "%8i  %s\n",$$3,$$8}' | sort -n -r -u || \
+	@readelf -s $(TARGET) 2> /dev/null| awk --non-decimal-data '{printf "%10i  %s\n",($$3)+0,$$8}' | sort -n -r -u || \
 	echo 'can not be determined'
 	
