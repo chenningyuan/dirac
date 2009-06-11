@@ -106,3 +106,6 @@ hsfs:
 hsfs_clean:
 	@make -C$(BACK) hsfs_clean
 
+####
+diag:
+	@make -CC$(BACK) diag

@@ -113,3 +113,15 @@ prof: $(OBJ:.o=.p)
 	@echo "Executable $(TARGET) with profiling info is ready."
 	@echo
 
+#
+# mi: added target for analyzing executable
+#
+diag: 
+	@echo -e "\tAnalyzing the dirac.x executable "
+	@echo -e "Size of all static allocations: \c "; \
+	  size $(TARGET) 2> /dev/null | grep $(TARGET) | awk '{printf $$3/(1024*1024)}'; \
+	  echo ' MB' || echo 'can not be determined'
+	@echo -e "Sorted list of all object sizes (patience please):"
+	@readelf -s $(TARGET) 2> /dev/null| awk '{printf "%8i  %s\n",$$3,$$8}' | sort -n -r -u || \
+	echo 'can not be determined'
+	
