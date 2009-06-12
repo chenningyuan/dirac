@@ -4839,6 +4839,7 @@ c    &        SOMESCR)
 *
 CTF
 * Scratch space for rsbb2a, rsbb2bn, rsbb2bvn, skickj
+! miro: very large in size according to readelf printout
       dimension SOMESCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
       dimension XIJILS(MXTSOB)
 *
