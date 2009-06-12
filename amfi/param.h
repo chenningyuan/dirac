@@ -82,6 +82,8 @@ cbs   preXYZ holds some prefactors which are used regulary
      *icheckz(-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),        
      *interxyz(16,0:Lmax,0:Lmax,0:Lmax,0:Lmax),       
      *isgnprod(-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax)
+
+! miro: huge static allocations (according to readelf output)
       common /onepar/ ! one-particle integrals 
      *oneoverR3((MxprimL*MxprimL+MxprimL)/2,Lmax),
      *onecontr(mxcontL,MxcontL,-Lmax:Lmax,3,Lmax),
@@ -108,7 +110,8 @@ cbs   4. index: L-value
      *onecartallZ3((Mxcart*Mxcart+Mxcart)/2)
 cbs  powexp holds powers of exponents and meam exponents 
 cbs  coulovp holds overlap of functions with shifted   
-cbs  l-values   
+cbs  l-values  
+!     miro: huge static allocations (according to readelf output)
       common /coulpow/ powexp(MxprimL,MxprimL,0:Lmax,
      *0:Lmax,0:(Lmax+Lmax+5)),
      *coulovlp(MxprimL,MxprimL,-1:1,-1:1,
