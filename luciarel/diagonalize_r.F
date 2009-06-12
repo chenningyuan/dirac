@@ -314,7 +314,9 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
           CALL Abend2('STOP for IDCOMH == 1 ')
         END IF
 #endif
+#if defined CODE_NOT_WORKING
         CALL COMHAM(VEC1,VEC2,NDIM,T_CC,SIGDEN_ROUTE)
+#endif
       END IF
 *
       IF (IRC.EQ.1) THEN
@@ -1646,6 +1648,7 @@ C
  1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END
+#if defined CODE_NOT_WORKING
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -1850,6 +1853,7 @@ C          CEIGEN(HR,HI,NDIM,EIGVAL,EIGVEC,SCR)
 *
       RETURN
       END
+#endif
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
