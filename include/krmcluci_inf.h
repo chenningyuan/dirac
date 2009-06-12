@@ -25,3 +25,5 @@
       INTEGER NMK2VAL, IRIQ, NIRR_DG_LOC
       COMMON /CIVCINF/ ECI, IBATS_MC, LBATS_MC, I1BATS_MC, LEBATS_MC,   &
      &                 NBAT_MS2_MC, NMK2VAL, IRIQ, NIRR_DG_LOC
+
+! miro: extremely large common block according to readelf printout  
