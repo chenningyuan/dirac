@@ -4328,10 +4328,10 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
      &                  single Block'
         WRITE(LUWRT,*) ' Since I cannot procede I will stop '
         WRITE(LUWRT,*) ' Insufficient buffer detected in PART_CIV3'
-        WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH, LBLOCK
         WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        stop ' In PART_CIV3_PAR. '
+        CALL QUIT( ' In PART_CIV3_PAR. ')
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000
@@ -4538,10 +4538,10 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
             WRITE(LUWRT,*) ' Since I cannot procede I will stop '
             WRITE(LUWRT,*) ' Insufficient buffer detected in '//
      &                     ' PART_CIV3_SPC'
-            WRITE(LUWRT,*) '  LENGTH ',LENGTH
+            WRITE(LUWRT,*) '  LENGTH, LBLOCK ',LENGTH, LBLOCK
             WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
             CALL RMEMCHK
-            stop ' In PART_CIV3_SPC because of N_TRY .ge. 1. '
+            CALL QUIT( ' In PART_CIV3_SPC because of N_TRY .ge. 1. ')
           END IF
 *
           I_SAVE_IBLOCK = IBLOCK
@@ -5380,20 +5380,25 @@ csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     ^ I_SET_L2BLOCK 
 *
 *     test if L2BLOCK has become too large...
-*
+      LTEST_BLOCK = L_COMBI_MAX
       IF( I_USE_PC .ne. 0)THEN
-        LTEST_BLOCK = 0
-        LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+C       LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
+C       WRITE(LUWRT,*) ' LTEST_BLOCK, L2BLOCK, L_COMBI',
+C    &                   LTEST_BLOCK, L2BLOCK, L_COMBI
 *
         IF( L2BLOCK .gt. LTEST_BLOCK )THEN
 *         reset to L_COMBI because that is already enough
+C         WRITE(LUWRT,*) ' reset to: L2BLOCK = LTEST_BLOCK',
+C    &                     L2BLOCK, LTEST_BLOCK
           L2BLOCK = LTEST_BLOCK
 *
         END IF
       END IF
 *
 *     ... set LBLOCK value
-      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
+      LBLOCK  = MAX(L0BLOCK,L2BLOCK,LTEST_BLOCK)
+C     WRITE(LUWRT,*) ' LBLOCK, L0BLOCK, L2BLOCK',
+C    &                 LBLOCK, L0BLOCK, L2BLOCK
       IF( I_SET_L2BLOCK .gt. 1 .or. I_USE_PC .eq. 0 ) THEN
        LBLOCK = MAX(LBLOCK,LCSBLK)
       END IF
@@ -5527,8 +5532,10 @@ C       batches of C vector
 * Transfer information to common block for KRMC - LUCIAREL
 * communication:
       if (INTIMP.eq.6.or.INTIMP.eq.7) then
-        call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
-     &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+        IF( MYPROC .eq. MASTER ) THEN
+          call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
+     &                    WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+        END IF
       end if
 C
 C     this part is only relevant for sigma calculations as part of 
@@ -6133,8 +6140,10 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
 *     transfer information to common block for KRMC - LUCIAREL
 *     communication:
       if (INTIMP.eq.6.or.INTIMP.eq.7) then
-        call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
-     &                  WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+        IF( MYPROC .eq. MASTER ) THEN
+          call civcinf_mc(WORK(KPCIBT),WORK(KPCLBT),WORK(KPCI1BT),
+     &                    WORK(KPCLEBT),NBAT_MS2,NMS2VAL,NBLOCK)
+        END IF
       end if
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLK2')
 *
@@ -6214,13 +6223,15 @@ C     test if L2BLOCK has become too large...
 C
       IF( L2BLOCK .gt. LTEST_BLOCK )THEN
 C       reset to L_COMBI because that is already enough
+C       WRITE(LUWRT,*) '  L2BLOCK,LTEST_BLOCK,L_COMBI_MAX ',
+C    &                    L2BLOCK,LTEST_BLOCK,L_COMBI_MAX
         L2BLOCK = LTEST_BLOCK
       END IF
 C
 C     ... set LBLOCK value
       LBLOCK  = MAX(L0BLOCK,L2BLOCK)
 C     WRITE(LUWRT,*) '  L0BLOCK,L2BLOCK,LCSBLK,LBLOCK ',
-C    &                  L0BLOCK,L2BLOCK,LCSBL,LBLOCKK
+C    &                  L0BLOCK,L2BLOCK,LCSBLK,LBLOCK
 C
       IDUM = 0
       CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'ZBXPRP')

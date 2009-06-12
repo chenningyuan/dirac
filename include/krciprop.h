@@ -37,6 +37,7 @@
 !     IHTYPE_X  :  X operator type
 !     ITIM_SYM  :  symmetry under time reversal (+1,-1)
 !     LXPRPKRCI :  total dimension of KR-CI property matrix
+!     ISCAL_T   :  total symmetric operator?
 !     IPROPPRINT:  print level
 !
 !     ================================================================  
@@ -53,13 +54,15 @@
 !
 	INTEGER NPROP_KRCI, LPROP_KRCI, NPROP_ROOTS_KRCI, ISYMOPPRP_KRCI,
      &        LXPRPKRCI, IN1ELPRP_KRCI, ISYMEIG_KRCI, IXSYMLIST, 
-     &        IXSYMACT, NXSYMPAIRS, IHTYPE_X, ITIM_SYM, IFERM_XTSYM
+     &        IXSYMACT, NXSYMPAIRS, IHTYPE_X, ITIM_SYM, IFERM_XTSYM,
+     &        ISCAL_TA, ISCAL_T
 	COMMON/LUCIIPRP/ NPROP_KRCI, LPROP_KRCI(MXPROP_KRCI),
      &                 NPROP_ROOTS_KRCI,ISYMOPPRP_KRCI(MXPROP_KRCI),
      &                 LXPRPKRCI,IN1ELPRP_KRCI(MXPROP_KRCI),
      &                 ISYMEIG_KRCI(MXPRPE_KRCI), 
      &                 IXSYMLIST(MXPROPKRCI_SYM),IXSYMACT,NXSYMPAIRS,
-     &                 IHTYPE_X, ITIM_SYM, IFERM_XTSYM(MXPROP_KRCI)
+     &                 IHTYPE_X, ITIM_SYM, IFERM_XTSYM(MXPROP_KRCI),
+     &                 ISCAL_TA(MXPROP_KRCI), ISCAL_T
 !	
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
      &        DOPROPREOD, DOSIGPROP, RUNXPROP

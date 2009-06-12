@@ -889,7 +889,7 @@ C
      &                      ISOBEX,T_BUFFX,T_BUFF,WORK(KITIMSIGN),
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,0,IPRNT)
 C     WRITE(LUWRT,*) 'N1DIAINT and N2DIAINT are',N1DIAINT,N2DIAINT
 C     DO I = 1, NALLINT
 C      WRITE(LUWRT,*) 'I, T_BUFFX(I) is',I, T_BUFFX(I)
@@ -899,7 +899,7 @@ C     END DO
      &                      ISOBEX,T,T_BUFF,WORK(KITIMSIGN),
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,0,IPRNT)
 #endif
 C
       WRITE(LUWRT,'(/A)')

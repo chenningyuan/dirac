@@ -2152,7 +2152,8 @@ C
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,WORK(KINTI12),
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,NTEST)
+     &                              WORK(KLABEXTP),CIRUN,0,
+     &                              NTEST)
             ELSE IF( CIRUN .eq. 'PROP1 ') THEN
               IF( DOPROPREOD )THEN
 CSK           NTEST = 20
@@ -2163,7 +2164,8 @@ CSK           NTEST = 20
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,DUMMY,
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,NTEST)
+     &                              WORK(KLABEXTP),CIRUN,ISCAL_T,
+     &                              NTEST)
 CSK           NTEST = 00
               END IF
             ELSE
@@ -2174,7 +2176,8 @@ CSK           NTEST = 00
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,F2,
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,NTEST)
+     &                              WORK(KLABEXTP),CIRUN,0,
+     &                              NTEST)
 C
             END IF
 C           ^ CIRUN eq CIINII .or. CIRUN .eq. 'KR-CI '?

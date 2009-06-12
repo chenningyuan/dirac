@@ -1193,7 +1193,7 @@ C     Symmetry information
 C     Number of integrals
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-      CALL ALLOC
+      CALL ALLOC_LUCITA
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)

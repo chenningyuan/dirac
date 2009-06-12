@@ -165,7 +165,8 @@ C
       NDET = XISPSM(ISM,ISPC)
       write(LUWRT,*) ' Number of determinants/combinations  ',NDET
 C     transfer NDET to common block LUCIPARREL
-      L_COMBI = NDET
+      L_COMBI     = NDET
+      L_COMBI_MAX = NDET
 C
 C     real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN

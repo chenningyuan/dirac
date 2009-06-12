@@ -37,59 +37,6 @@ C
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-*  Fill common block with communication information
-*  KRMC - LUCIAREL.
-*
-*  Timo Fleig        Mar 17, 2002
-*
-      subroutine civcinf_mc(IBATS,LBATS,I1BATS,LEBATS,NBAT_MS2,
-     &                      NMS2VAL,NBLOCK)
-*
-#include "implicit.h"
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
-#include "ipoist8.inc"
-#include "mxpdim.inc"
-*
-#include "krmcluci_inf.h"
-*
-      dimension IBATS(8,NBLOCK),LBATS(NBLOCK),I1BATS(NBLOCK),
-     &          LEBATS(NBLOCK),NBAT_MS2(NMS2VAL)
-*
-      if ((NBLOCK.gt.MXNTTS_MC).or.(NMS2VAL.gt.MXMKSTA)) then
-        write(6,*) ' Problem in civcinf_mc ! '
-        if (NBLOCK.gt.MXNTTS_MC) then
-          write(6,*) ' Increase MXNTTS_MC to ',NBLOCK
-        else if (NMS2VAL.gt.MXMKSTA) then
-          write(6,*) ' Increase MXMKSTA   to ',NMS2VAL
-        end if
-        call quit(' Integer information overflow.' )
-      end if
-*
-      do ITP = 1,NBLOCK,1
-        LBATS_MC(ITP) = LBATS(ITP)
-        I1BATS_MC(ITP) = I1BATS(ITP)
-        LEBATS_MC(ITP) = LEBATS(ITP)
-        do JTP = 1,8,1
-          IBATS_MC(JTP,ITP) = IBATS(JTP,ITP)
-        end do
-      end do
-*
-      NMK2VAL = NMS2VAL
-      do IM = 1,NMS2VAL,1
-        NBAT_MS2_MC(IM) = NBAT_MS2(IM)
-      end do
-*
-      end
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
 *  Distribute external Fock type one-electron integrals
 *  to double group lists
 *  Pick active spin-orbit integrals
@@ -1279,7 +1226,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
      &                            T_BUFF,TRSYM_SIGN,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
      &                            NASHT,F1,F2,MDIASV,IBOSYM,
-     &                            LABEL,CIRUN,IPRNT)
+     &                            LABEL,CIRUN,ISCAL_T,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -1323,7 +1270,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT)
-C     NTEST = 100
+      NTEST = 1
 *
 * Constants
       IZERO = 0
@@ -1787,7 +1734,8 @@ C          WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
                               if (CIRUN.ne.'DENS1 '
      &                            .and.CIRUN.ne.'DENS2 ')
      &                          call getint_sigden(YXINT,I_ADD,IRI,
-     &                                    NDIM_TOT,NASHT,F1,F2,NTEST)
+     &                                    NDIM_TOT,NASHT,F1,F2,
+     &                                    ISCAL_T,NTEST)
                             end if
                           end if
 *
@@ -1885,7 +1833,8 @@ C    &             ' at ',ICOUNT_I8
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
-     &                                  IRI,NDIM_TOT,NASHT,F1,F2,NTEST)
+     &                                  IRI,NDIM_TOT,NASHT,F1,F2,
+     &                                  ISCAL_T,NTEST)
                             end if
 C
 C                           keep track of correct sign for matrix
@@ -3150,7 +3099,7 @@ c       stop
 *=========================
 *
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,INVREO,
-     &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
+     &                      KR,NASHT,NNASHX,DMFC,H2AC,ISCAL_T,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -3174,17 +3123,17 @@ C     dimension DMFC(*),H2AC(*)
         MZ = NZ
       end if
 *
-      if (NTEST.ge.2) then
+C     if (NTEST.ge.2) then
         write(6,*)
         write(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
-      end if
-      if (NTEST.ge.5) then
+C     end if
+C     if (NTEST.ge.5) then
         write(6,*) 
         write(6,*) ' GETIND_NZ3 : '
         write(6,*) '  NZ,MZ : ',NZ,MZ
         write(6,*) '  No. of active orbitals : ',NASHT/2
         write(6,*) '  Compound index dimension: ',NNASHX
-      end if
+C     end if
 *
       if (NTEST.ge.1) then
         write(6,*)
@@ -3210,8 +3159,11 @@ C     dimension DMFC(*),H2AC(*)
         I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
         J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
 * Compute input address
+CSKor   IIN =  (IRI-1)*NASHT*NASHT +
+CSKor&          (J-1) *NASHT +
+CSKor&           I
         IIN =  (IRI-1)*NASHT*NASHT +
-     &          (J-1) *NASHT +
+     &          (J-1) *NASHT + ISCAL_T*(NASHT*NASHT)/2 +
      &           I
         if (NTEST.ge.1) then
           write(6,*) 'Index pair ',I,J,' address :',IIN
@@ -3226,7 +3178,8 @@ C     dimension DMFC(*),H2AC(*)
           write(6,*) ' sign change for YINT'
         end if
 *
-        if (NTEST.ge.1) write(6,'(2I3,2X,1F18.10)') I,J,YINT
+        if (NTEST.ge.1) write(6,'(2I3,2X,1E14.8)') 
+     &                        I,J,YINT
 *
       else if (NCT.eq.4) then
 *
@@ -4709,7 +4662,7 @@ C     STOP ' Jeppe forced me to stop in GETINT '
 * excitation class formalism - driver routine
 *
       subroutine getint_sigden(YINT,INDEX,IRI,ITOTDIM,
-     &                         NASHT,F1,F2,IPRNT)
+     &                         NASHT,F1,F2,ISCAL_T,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -4758,7 +4711,8 @@ C
           call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
           NNASHX = ((NASHT/2) * ((NASHT/2)+1)) / 2
           call getind_nz3(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
-     &                    WORK(KKR),NASHT,NNASHX,F1,F2,IPRNT)
+     &                    WORK(KKR),NASHT,NNASHX,F1,F2,ISCAL_T,
+     &                    IPRNT)
         end if
       end if
 *
@@ -5007,6 +4961,8 @@ C            ZDIPLEN             B1u                     Au
            END IF
            WRITE(LUPRI,'(A11,A15,A21)') 
      &           PRPNAM(INDXPR)(1:8), REP(ISYMVOP-1), REPVOP_KRCI
+           ISCAL_TA(I) = 0
+           IF( REPVOP_KRCI(1:1) .eq. 'B' ) ISCAL_TA(I) = 1
          END DO
       END IF
 C

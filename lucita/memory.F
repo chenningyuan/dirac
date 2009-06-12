@@ -25,7 +25,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE ALLOC
+      SUBROUTINE ALLOC_LUCITA
 *
 * Dimensions and
 * Allocation of static memory
