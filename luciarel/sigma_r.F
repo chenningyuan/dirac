@@ -4841,7 +4841,7 @@ CTF
 * Scratch space for rsbb2a, rsbb2bn, rsbb2bvn, skickj
 ! miro: very large in size according to readelf printout
 CSK   dimension SOMESCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
-CSK   commented out: this LUCIAREL route is not active anyhow!
+CSK   commented out: this LUCIAREL route is not active anymore!
       dimension XIJILS(MXTSOB)
 *
       IDUM = 0
