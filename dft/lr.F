@@ -80,7 +80,6 @@ c=======================================================================
 #endif
 
       logical   is_gga,
-     &          lbit,
      &          allow_nonhermitian
       integer:: nxcmat, im, im_off, irepop, k, k_start, j
       real(8) ::gr_0_norm, w, r_0, worth_it, ddot

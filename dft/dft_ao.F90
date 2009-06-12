@@ -53,7 +53,7 @@ contains
 
 
       integer :: ishbegin, ishend, iadr, ndim, nder
-      integer :: isymop, ishela, i, j
+      integer :: isymop, ishela
       real(8) :: pax, pay, paz, corpx, corpy,corpz
 
 !

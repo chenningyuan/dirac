@@ -41,8 +41,7 @@ c=======================================================================
 #endif
 
       logical   add_grad,
-     &          add_spin,
-     &          lbit
+     &          add_spin
       dimension dtrmat(nbast,nbast,nz,3),
      &          excmat(nbast,nbast,nz,3),
      &          isymop(3),

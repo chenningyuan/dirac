@@ -61,7 +61,6 @@ c=======================================================================
 #endif
 
       logical   is_gga,
-     &          lbit,
      &          allow_nonhermitian
       integer:: nxcmat, im, j, irepop
       integer:: isymop(nxcmat),

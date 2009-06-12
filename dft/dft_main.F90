@@ -69,7 +69,6 @@ contains
       real(8)             :: time_start, time_in_xc, second
       real(8)             :: ddot
 
-      real(8), allocatable :: xc_vector_b(:)
       real(8), allocatable :: dmat_saop_outer(:)
       real(8), allocatable :: dmat_saop_resp(:)
 
@@ -519,7 +518,7 @@ contains
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
      &              gao, gao1, buffer, &
-     &              IPRINT,0)
+     &              IPRINT)
 
         call dealloc(kx)
         call dealloc(ky)
@@ -593,7 +592,7 @@ contains
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
      &                  GAO,GAO1, &
-     &                  buffer,IPRINT,NYTID)
+     &                  buffer,IPRINT)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -605,8 +604,7 @@ contains
 #include "../autodiff/xc_fortran_interface.h"
 #endif
 
-      integer :: npoint, iprint, nytid, nxcmat, ibatch, ioff, i, itimes
-      integer :: ihowmuch
+      integer :: npoint, iprint, nxcmat, ibatch, ioff, i, itimes
       logical :: gga_qr
       real(8) :: corx(*)
       real(8) :: cory(*)
