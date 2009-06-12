@@ -2044,6 +2044,8 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
 #include "r12int.h"
       LOGICAL FIRST
       DATA FIRST /.TRUE./
+      ! miro+rado: extremely large in size (according to readelf -s printout) in size
+      ! please reprogram
       DIMENSION IJ(MXORBT)
       SAVE IJ
       IF (FIRST) THEN
