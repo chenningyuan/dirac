@@ -80,6 +80,7 @@ setup()
       KRMCMOD=1
       VISUALMOD=1
       IHFSCCMOD=1
+      # by deactivating AMFI you save cca 17MB of static alloc (with ILP64)
       AMFIMOD=1
       LONDONMOD=1
       IHFSCCMOD=1
