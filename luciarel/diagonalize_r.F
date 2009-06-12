@@ -1680,6 +1680,7 @@ C
 *
       PARAMETER(MXDIM = 700)
       DIMENSION VEC1(*), VEC2(*)
+!      miro: very huge allocation (make diag output)
       DIMENSION SCR1((2*MXDIM)**2),SCR2((2*MXDIM)**2)
 *
       NTEST = 000
