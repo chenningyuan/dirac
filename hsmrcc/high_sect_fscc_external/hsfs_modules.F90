@@ -104,7 +104,7 @@ end function check_method_name
 subroutine launch_hsfs_methods
 !--------------------------------------------------------------------
 !
-!      launches various HSFS methods according to array list
+!       launches various HSFS methods according to array list   
 !
 !--------------------------------------------------------------------
 #include "priunit.h"
@@ -114,7 +114,8 @@ write(LUPRI,*) 'num_methods=',num_methods
 
 do i=1, num_methods
 
-  write(LUPRI,*) 'going to launch:', method_name(i)
+  call header('going to launch higher sector method:',-1) 
+  write(LUPRI,'(4x,a)') method_name(i)
 
   if      ( method_name(i) == 'csd' ) then
       call csd
