@@ -471,7 +471,7 @@ use DIRAC_HSFS
     
    nint=nintx-1
 
-   write(LUPRI,*) 'read all integrals&indexes from file,their number nint=',nint
+   write(LUPRI,*) 'read all integrals&indexes from the file, their number,  nint=',nint
 
    call close_dirac_hsfs_file
 

@@ -1850,6 +1850,8 @@ C
 !-----------------------------------------------------------------------
 !
 !
+! miro: please add comments...
+!
 !-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 #include "param_ccsd.h"
@@ -1998,6 +2000,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end if
       call dgeco (r,31,niter,ipvt,rcond,z)
       write (6,*) 'rcond=',real(rcond)
+
       ising=0
       if (rcond.lt.1.d-16) then     
         ising=1
@@ -2038,6 +2041,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call prtime ("rle out ",0,0)
       return
       end
+
       subroutine rvmuls(n,a,s,c)
       implicit real*8 (a-h,o-z)
       dimension a(*),c(*)
@@ -2045,6 +2049,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 10    c(i)=a(i)*s
       return
       end
+
       subroutine rvmulv(n,a,b,c)
       implicit real*8 (a-h,o-z)
       dimension a(*),b(*),c(*)
@@ -2214,9 +2219,9 @@ c   to general. (iline=4 is last line).
       RETURN
       END
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vxsort(itmp,ntmp,nt,t,it)
-!-------------------------------------------------------------------
+!---------------------------------------------------------------------------------------
 !  ...  what does it do ?
 !
 !  sort according indexes in "itmp", expand to "it", gather "t" accordingly.
@@ -2227,7 +2232,7 @@ c   to general. (iline=4 is last line).
 !
 !  called many times from ccsd3.F
 !
-!-------------------------------------------------------------------
+!---------------------------------------------------------------------------------------
       use print_level
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
@@ -2235,7 +2240,7 @@ c   to general. (iline=4 is last line).
 !#include "dat.h"
       dimension itmp(ntmp),t(nt),it(nt)
 
-      if (getiprint() >= 1) then
+      if (getiprint() >= 5) then
        call header('Output from vxsort',-1)
        write(LUPRI,'(2x,a,2i6)') 'ntmp,nt=',ntmp,nt
       endif
@@ -2262,7 +2267,7 @@ c   to general. (iline=4 is last line).
       endif
 
       if (ntmp.lt.nt) then
-        write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
+        !write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
         ltmp=ntmp
 !       ... cycle
@@ -2901,15 +2906,15 @@ c             write (6,*) ' '
       return
       end 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prtime(tit,n,iparm)
-!-----------------------------------------------------------------------
+!--------------------------------------------------------------------------
 !
 !  print time using system specific routine
 !
-!  tit - entering string, but here considered as real*8 
+!  tit - while call it's entering string, but here defined as real*8 
 !
-!-----------------------------------------------------------------------
+!--------------------------------------------------------------------------
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -2921,10 +2926,11 @@ c             write (6,*) ' '
       character(*) tit ! to cut off trash characters
       real*4 cputime
       CHARACTER*8  TIMEX,DATEX*10
+      character*12 temp
       ! generalized function
 !      real*4 cputime
 
-      ! return if param > print level
+!       ... return if "param > print level"
       if (iparm.gt.iopt(1)) return
 
       t=cputime(real(0.0))
@@ -2945,8 +2951,12 @@ c             write (6,*) ' '
 !900   format (' time aft ',a8,f10.3,';added ',
 !     1 f8.3,' n=',i8,'. ',a24)
 
+!     temp=tit
+!     call clean_string(temp)
+
+!     print 900,temp,acum,diff,n,datex,timex
       print 900,tit,acum,diff,n,datex,timex
-900   format (' time aft ',a9,f10.3,'; added ',
+900   format (' time after ',a9,1x,f10.3,'; added ',
      1 f10.3,'. n=',i8,'. ',2A12)
 
       csdltim = t
@@ -2954,6 +2964,40 @@ c             write (6,*) ' '
 
       return
       end subroutine prtime
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      subroutine clean_string(temp)
+! ... to cut off trash characters      
+#include "implicit.h"
+#include "priunit.h"
+      character(*) temp
+      !write(LUPRI,'(a,i4)') 'string length:',sizeof(tit)
+!      write(LUPRI,'(a,i4)') 'string length:',len_trim(tit)
+      !write(LUPRI,'(a,i4)') 'string length:',len(tit)
+
+      do i=1,len(temp)
+        ia=iachar(temp(i:i))
+        write(LUPRI,*) i,"ascii=",ia,' char=',char(ia)
+
+       if (.not.( (ia.ge.48.and.ia.le.57).or.
+     &            (ia.ge.65.and.ia.le.90).or.
+     &            (ia.ge.97.and.ia.le.122)  )) then 
+
+          !tit(i:i)=char(32,kind=1) ! place 'space'
+          !tit(i:i)=" " ! place 'space'
+          !s=tit(i:i); write(LUPRI,*) s
+          !s=char(32); write(LUPRI,*) s
+          !write(LUPRI,*) 'trim:',trim(tit)
+          !write(tit(i:i),'(a1)') char(32)
+          !write(tit(i:i),'(a)') s
+          !tit=trim(tit)
+
+           temp(i:i)=char(32,kind=1)
+       endif
+       !write(LUPRI,'(a1,4x,i4)') tit(i:i),iachar(tit(i:i))
+      enddo
+
+      end subroutine clean_string
 
 c *************************************************
       function cputime(x)

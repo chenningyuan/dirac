@@ -1283,8 +1283,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !     common /rsp2/  nrsp2,irsp2(500)
 #include "cint.h"
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+!    ... miro: introduced to have strings clean, without garbage
+      character(*) :: name
       logical lrsp
-      data zero / 1.d-13/
+      data zero / 1.d-13/ ! miro: to generalize in module
 
 !     .. function definition - on 32bit ! TODO: replace with module file
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
