@@ -120,7 +120,7 @@ program dirprg
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
-     call print_static_alloc
+     !call print_static_alloc
      call printtitle
      call printlogo
      call printsubtitle

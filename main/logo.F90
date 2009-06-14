@@ -142,6 +142,10 @@ subroutine print_static_alloc
 !
 ! extracts  the size of all static allocations in dirac.x executable
 !
+! miro: when dirac.x is compiled with profiling flag, call system(...)
+! hangs the run on ! Therefore I prefer to deactivate this routine.
+!
+!
 character(len=10) :: dirac_exec
 character(len=150) :: system_commands_string
 call getarg(0, dirac_exec)
