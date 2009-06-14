@@ -334,7 +334,13 @@ execute_dirac()
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
-      $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
+      # attach size of all static allocations in the executable
+      echo -e "Size of all static allocations: \c" > $OUTPUT_FILE
+      size $DIRAC_CMD 2> /dev/null | grep  $DIRAC_CMD \
+      | awk '{printf $3/(1024*1024)} ' >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
+      || echo 'can not be determined' >> $OUTPUT_FILE
+
+      $NICE_CMD $DIRAC_CMD >> $OUTPUT_FILE || \
          ( \
             $echo "\n   $DIRAC returned non-zero exit code" ; \
             $CLEANUP ; EXIT=1 ; export EXIT \
