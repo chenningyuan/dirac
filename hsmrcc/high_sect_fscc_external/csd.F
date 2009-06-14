@@ -1,10 +1,22 @@
       subroutine csd
+!---------------------------------------------------------------------
+!               closed shell CCSD method
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use gen_mod
+      use cint_mod
+      use dat_mod
+      use cij1_mod
+      use cij2_mod
+!      implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 
+#else
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
@@ -24,6 +36,7 @@
 #include "dbg.h"
 !     common /dbg/ iter,idebug
 
+#endif
       character*256 filenm,filenm51,filenm6,filenm20
 
 c     iopt(1) - print.
@@ -406,6 +419,14 @@ c              hppp 2134 = vd12
 c              hppp 2143 = vd14
 !
 !-------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+!     implicit real*8 (a-h,o-z)
+#include "priunit.h"
+#else
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -416,7 +437,7 @@ c              hppp 2143 = vd14
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "fock.h"
 !     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-c
+#endif
 
       if (iopt(1).ge.5) then
         call header('Output from ordv_csd',-1)
@@ -479,12 +500,18 @@ c
 !  Initialize amplitudes ...
 !
 !------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+#include "implicit.h"
+!      implicit real*8 (a-h,o-z)
+#include "priunit.h"
+      use dat_mod
+#else
 #include "implicit.h"
 !      implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "dat.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
+#endif
 c calc tinit = hhpp / eps
       if (iopt(20).ne.0) then
        call rdfile (51,0,"tc  ",-1)

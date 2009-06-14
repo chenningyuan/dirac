@@ -45,6 +45,7 @@ c  zero out file (create if does not exist)
       end
 
       subroutine clear8 (name,iii,iiv)
+
       implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"

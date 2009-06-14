@@ -1,3 +1,61 @@
+!
+! ===  Modules to replace individual common blocks with dynamical allocations &
+! other object oriented functionalities
+!
+
+module hsfs_parameters
+end module hsfs_parameters
+
+module gen_mod
+! to replace gen.h
+real*8, allocatable :: gen(:)
+integer, allocatable :: igen(:)
+       
+contains
+
+subroutine init_gen_mod
+#include "param_ccsd.h"
+integer :: istat
+ allocate(gen(nbig),stat=istat)
+ allocate(igen(nbig),stat=istat)
+end subroutine init_gen_mod
+
+end module gen_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module cint_mod
+! to replace cint.h
+  integer:: nint,idum
+  integer, allocatable :: iint(:)
+  real*8, allocatable ::  vint(:)
+contains
+subroutine init_cint_mod
+#include "param_ccsd.h"
+integer :: istat
+ allocate(iint(ndint),stat=istat)
+ call alloc_stat_check("iint(ndint)",istat)
+ allocate(vint(ndint),stat=istat)
+ call alloc_stat_check("vint(ndint)",istat)
+end subroutine init_cint_mod
+
+end module cint_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module fock_mod
+! to replace fock.h
+ integer :: nfock,idum3
+ integer, allocatable :: ifock(:)
+ real*8,  allocatable :: fock(:)
+contains
+subroutine init_fock_mod
+ allocate(ifock(ndt1),stat=istat)
+ call alloc_stat_check("ifock(ndt1)",istat)
+ allocate(fock(ndt1),stat=istat)
+ call alloc_stat_check("fock(ndt1)",istat)
+end subroutine init_fock_mod
+
+end module fock_mod
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
 
