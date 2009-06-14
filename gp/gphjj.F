@@ -2046,8 +2046,11 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
       DATA FIRST /.TRUE./
       ! miro+rado: extremely large in size (according to readelf -s printout) in size
       ! please reprogram
-      DIMENSION IJ(MXORBT)
+!     DIMENSION IJ(MXORBT)
+      DIMENSION IJ(1)
       SAVE IJ
+!miro: looks routine is not used (medium test)
+      call quit('INOAUX: dectivated, needs rather dynamic allocation')
       IF (FIRST) THEN
          KL = 0
          MN = 0
