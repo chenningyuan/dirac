@@ -601,7 +601,7 @@ C
      &         (NSELCT(I),I=1,4)
             WRITE (LUPRI,'(1X,A,/)') ' ACTVBT in PICKAO:'
             DO I = 1, NAOBCH
-               WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBT(I,J),J=1,4)
+               WRITE (LUPRI,'(10X,I5,5X,4L5)') I, (ACTVBT(I,J),J=1,4)
             END DO
          ELSE
             WRITE (LUPRI,'(1X,A)') ' All AO batches active.'
