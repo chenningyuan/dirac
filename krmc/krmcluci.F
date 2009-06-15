@@ -443,7 +443,9 @@ C
 C       set operator symmetry (Hamiltonian will be called 'T' 
 C       throughout the KR-CI module)
 C       default: totally symmetric operator
-        ISYM_T  = 1
+        ISYM_T      = 1
+        IFERM_SYM_T = 1
+        ISCAL_T     = 0
 C
 C       ... no two-electron excitations
         NO_TTWO = 0
