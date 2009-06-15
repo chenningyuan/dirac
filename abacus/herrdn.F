@@ -5008,6 +5008,15 @@ C
   600      CONTINUE
   500   CONTINUE
       END IF
+
+!#define DEBUG_PRIMITIVES
+#ifdef DEBUG_PRIMITIVES
+      write(*, *) 'debug: primitives'
+      do i = 1, npri
+        write(*, '(e16.9)') alpha(i)
+      end do
+#endif /* ifdef DEBUG_PRIMITIVES */
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
