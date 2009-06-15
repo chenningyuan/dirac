@@ -1476,7 +1476,7 @@ C
      &      (ICLASSES(I),I=1,4)
          WRITE (LUPRI,'(1X,A,/)') ' ACTVBTH in PICKAO:'
          DO I = 1, NAOBTCH
-            WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBTH(I,J),J=1,4)
+            WRITE (LUPRI,'(10X,I5,5X,4L5)') I, (ACTVBTH(I,J),J=1,4)
          END DO
       END IF
 C
