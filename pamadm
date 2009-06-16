@@ -85,8 +85,8 @@ setup()
       LONDONMOD=1
       IHFSCCMOD=1
       ADCMOD=1
-      MATRIX_OPERATIONS_MOD=1
-      AORESPONSEMOD=1
+#     MATRIX_OPERATIONS_MOD=1
+#     AORESPONSEMOD=1
 # MI  - needs to be fixed for gfortran !!!
 #      EMBMOD=1
 #      ECPMOD=1
