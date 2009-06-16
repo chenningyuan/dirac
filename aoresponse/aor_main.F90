@@ -25,7 +25,9 @@ contains
     real(kind_dp) :: add_to
     integer       :: natoms_ifc
 
+#ifdef MOD_AUTODIFF
     call init_binomial()
+#endif
 
     freq(1) = aor_cfg_freq(1)
     freq(2) = aor_cfg_freq(2)

@@ -282,8 +282,9 @@ contains
       type(tmp_mat),intent(inout) :: T
       logical             :: Azero, complex, fits
       type(matrix),target :: dupA
-      if (matrix_defop_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
-                                           ,' *',loc(T%Z),' +',loc(T%Y)
+!radovan: xlf complains here
+!     if (matrix_defop_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
+!                                          ,' *',loc(T%Z),' +',loc(T%Y)
       !if (matrix_defop_debug) print *, 'fx=', T%fx, ' tx=', T%tx, ' tz=', T%tz, &
       !                                ' dx=', T%dx, ' dz=', T%dz, ' dy=', T%dy 
       !hack: remove the T-reference from A%ncol
@@ -377,8 +378,9 @@ contains
       type(matrix),       intent(in)    :: B
       type(tmp_mat),pointer             :: T
       logical                           :: defB
-      if (matrix_defop_debug) print *, 'mat_eq_mat', loc(A), ' =', &
-                        loc(B), B%nrow, B%ncol, associated(B%elms)
+!radovan: xlf complains here
+!     if (matrix_defop_debug) print *, 'mat_eq_mat', loc(A), ' =', &
+!                       loc(B), B%nrow, B%ncol, associated(B%elms)
       T => find_tmp(B, 'matrix A = B : B undefined')
       if (associated(T)) then
          T%A => A
@@ -406,8 +408,9 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB, swap, ltmp, plus
-      if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
-                                       merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
+!radovan: xlf complains here
+!     if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
+!                                      merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
       if (matrix_defop_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
                                        ' A%elms=', associated(A%elms)
       if (matrix_defop_debug) print *, 'B%nrow=', B%nrow, ' B%ncol=', B%ncol, &
@@ -517,8 +520,9 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB
-      if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
-                                  ' *', loc(B), ' => ', loc(C)
+!radovan: xlf complains here
+!     if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
+!                                 ' *', loc(B), ' => ', loc(C)
       TA => find_tmp(A, 'matrix A * B : A undefined')
       zeroA = .false.
       if (.not.associated(TA)) zeroA = iszero(A)

@@ -2,6 +2,7 @@ module aor_binomial
 
   implicit none
 
+#ifdef MOD_AUTODIFF
   public init_binomial
   public get_binomial
 
@@ -9,9 +10,14 @@ module aor_binomial
 
   integer, parameter :: max_binomial_order = 10
   integer            :: binomial(max_binomial_order, max_binomial_order)
+#endif /* ifdef MOD_AUTODIFF */
 
 contains
 
+#ifndef MOD_AUTODIFF
+  subroutine aor_binomial_empty()
+  end subroutine
+#else
   subroutine init_binomial()
 
 !   ----------------------------------------------------------------------------
@@ -42,4 +48,5 @@ contains
 
   end function
 
+#endif /* ifndef MOD_AUTODIFF */
 end module
