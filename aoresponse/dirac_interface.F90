@@ -1151,7 +1151,7 @@ contains
 
 !   call alloc_maxsize(freemem, 1, verbose)
 !   lfree = (freemem/2)*2
-    lfree = n2bbasxq*20
+    lfree = n2bbasxq*30
     call alloc(work, lfree)
     kfree = 1
 
