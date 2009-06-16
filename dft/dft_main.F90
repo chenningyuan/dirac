@@ -661,12 +661,13 @@ contains
 
     if (dft_cfg_keep_ao) then
       if (.not. ao_mem_allocated) then
-!       ihowmuch = dft_temp_nr_grid_points_node*ndim*itimes
-!       write(*, *) 'debug allocating ao in mem', 8*ihowmuch/1000000
-!       call init_ao_in_mem(ihowmuch)
+!       allocate
         write(*, *) 'debug allocating ao in mem'
         call init_ao_in_mem(dft_cfg_ao_mem_limit)
         ao_mem_allocated = .true.
+!       reset
+        batch_pointer    = 1
+        batch_is_in_mem  = .false.
       end if
 
       ioff = batch_pointer(ibatch)
@@ -678,7 +679,6 @@ contains
 
       need_limit = ioff + itimes*ndim*npoint
       if (need_limit > dft_cfg_ao_mem_limit) then
-        ioff = ioff + itimes*ndim
         batch_fits_in_mem(ibatch) = .false.
         write(*, *) 'debug cannot keep batch', ibatch
         write(*, *) 'debug need', need_limit*8/1000000
@@ -695,7 +695,7 @@ contains
 
       if (ipoint == 1) then
         if (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch)) then
-          write(*, *) 'debug reading ao from mem'
+          write(*, *) 'debug reading ao from mem', ioff
 !       else
 !         write(*, *) 'debug recalculating aos'
         end if
@@ -715,7 +715,7 @@ contains
 !       copy ao to mem
         if (batch_fits_in_mem(ibatch) .and. .not. batch_is_in_mem(ibatch)) then
           if (ipoint == 1) then
-            write(*, *) 'debug storing ao to mem'
+            write(*, *) 'debug storing ao to mem', ioff
           end if
           call dcopy(ndim,            &
                      gao_p,           &
