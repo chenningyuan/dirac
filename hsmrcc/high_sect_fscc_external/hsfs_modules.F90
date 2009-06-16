@@ -10,16 +10,13 @@ module gen_mod
 ! to replace gen.h
 real*8, allocatable :: gen(:)
 integer, allocatable :: igen(:)
-       
 contains
-
 subroutine init_gen_mod
 #include "param_ccsd.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
  allocate(igen(nbig),stat=istat)
 end subroutine init_gen_mod
-
 end module gen_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -48,13 +45,208 @@ module fock_mod
  real*8,  allocatable :: fock(:)
 contains
 subroutine init_fock_mod
+#include "param_ccsd.h"
+integer :: istat
  allocate(ifock(ndt1),stat=istat)
  call alloc_stat_check("ifock(ndt1)",istat)
  allocate(fock(ndt1),stat=istat)
  call alloc_stat_check("fock(ndt1)",istat)
 end subroutine init_fock_mod
-
 end module fock_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module cfiles_mod
+! to replace "cfiles.h"
+ integer, parameter :: cfiles_size=200 ! to be changed
+ integer :: nflcur
+ integer, allocatable :: namefl(:),nstrt(:,:),iiia(:),iiva(:)
+contains
+subroutine init_cfiles_mod
+integer :: istat
+ allocate(namefl(cfiles_size),stat=istat)
+ call alloc_stat_check("namefl(cfiles_size)",istat)
+ allocate(nstrt(2,0:cfiles_size),stat=istat)
+ call alloc_stat_check("nstrt(2,0:cfiles_size",istat)
+ allocate(iiia(cfiles_size),stat=istat)
+ call alloc_stat_check("iiia(cfiles_size)",istat)
+ allocate(iiva(cfiles_size),stat=istat)
+ call alloc_stat_check("iiva(cfiles_size)",istat) 
+end subroutine init_cfiles_mod
+end module cfiles_mod
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+module cij1_mod
+! ... to replace cij1.h
+#include "param_ccsd.h"
+integer :: nij1,iii1,iiv1
+integer, allocatable ::  ij1(:),ije1(:)
+contains
+subroutine init_cij1_mod
+ allocate(ij1(1:ndij))
+ allocate(ije1(0:ndij))
+end subroutine init_cij1_mod
+end module cij1_mod
+
+module cij2_mod
+! ... to replace cij2.h
+integer :: nij2,iii2,iiv2
+integer, allocatable ::  ij2(:),ije2(:)
+contains
+subroutine init_cij2_mod
+#include "param_ccsd.h"
+ allocate(ij2(1:ndij))
+ allocate(ije2(0:ndij))
+end subroutine init_cij2_mod
+end module cij2_mod
+
+module cij3_mod
+! ... to replace cij3.h
+integer :: nij3,iii3,iiv3
+integer, allocatable ::  ij3(:),ije3(:)
+contains
+subroutine init_cij3_mod
+#include "param_ccsd.h"
+ allocate(ij3(1:ndij))
+ allocate(ije3(0:ndij))
+end subroutine init_cij3_mod
+end module cij3_mod
+
+module cij4_mod
+! ... to replace cij4.h
+integer :: nij4,iii4,iiv4
+integer, allocatable :: ij4(:),ije4(:)
+contains
+subroutine init_cij4_mod
+#include "param_ccsd.h"
+ allocate(ij4(1:ndij))
+ allocate(ije4(0:ndij))
+end subroutine init_cij4_mod
+end module cij4_mod
+
+module cij5_mod
+! ... to replace cij5.h
+integer :: nij5,iii5,iiv5
+integer, allocatable :: ij5(:),ije5(:)
+contains
+subroutine init_cij5_mod
+#include "param_ccsd.h"
+ allocate(ij5(1:ndij))
+ allocate(ije5(0:ndij))
+end subroutine init_cij5_mod
+end module cij5_mod
+
+module cij6_mod
+! ... to replace cij6.h
+integer :: nij6,iii6,iiv6
+integer, allocatable :: ij6(:),ije6(:)
+contains
+subroutine init_cij6_mod
+#include "param_ccsd.h"
+ allocate(ij6(1:ndij))
+ allocate(ije6(0:ndij))
+end subroutine init_cij6_mod
+end module cij6_mod
+
+module rsp1_mod
+! .. to replace "rsp1.h"
+integer :: nrsp1
+integer, allocatable ::  irsp1(:)
+contains
+subroutine init_rsp1_mod
+integer, parameter :: rsp1_size=100
+allocate(irsp1(rsp1_size))
+end subroutine init_rsp1_mod
+end module rsp1_mod
+
+module rsp2_mod
+! .. to replace "rsp2.h"
+integer :: nrsp2
+integer, allocatable ::  irsp2(:)
+contains
+subroutine init_rsp2_mod
+integer, parameter :: rsp2_size=500
+allocate(irsp2(rsp2_size))
+end subroutine init_rsp2_mod
+end module rsp2_mod
+
+module dpd_mod
+! .. to replace dpd.h
+integer :: nir
+integer, allocatable :: igmt(:,:),ici(:)
+contains
+subroutine init_dpd_mod
+integer,parameter :: dpd_size=200
+allocate(ici(1:dpd_size))
+allocate(igmt(1:8,1:8))
+end subroutine init_dpd_mod
+end module dpd_mod
+
+module ctmp_mod
+! .. to replace ctmp.h
+integer, allocatable  :: itmp(:)
+ real*8, allocatable  ::  tmp(:)
+contains
+subroutine init_ctmp_mod
+#include "param_ccsd.h"
+allocate(tmp(1:ndp4))
+allocate(itmp(1:ndp4))
+end subroutine init_ctmp_mod
+end module ctmp_mod
+
+module crle_mod
+! .. to replace crle.h
+ real*8, allocatable  :: trle1(:),trle2(:),trle3(:),trle4(:) 
+integer, allocatable  :: isize(:)
+contains
+subroutine init_crle_mod
+#include "param_ccsd.h"
+allocate(trle1(1:nrle1))
+allocate(trle2(1:nrle2))
+allocate(trle3(1:nrle3))
+allocate(trle4(1:nrle4))
+allocate(isize(1:4))
+end subroutine init_crle_mod
+end module crle_mod
+
+module det_mod
+! .. to replace det.h
+integer :: nvlspo, ndets,isplit
+integer, allocatable  :: lstvso(:),lstdet(:)
+contains
+subroutine init_det_mod
+integer, parameter :: lstvso_size=100, lstdet_size=1000
+allocate(lstvso(1:lstvso_size))
+allocate(lstdet(1:lstdet_size))
+end subroutine init_det_mod
+end module det_mod
+
+module dat_mod
+! .. to replace dat.h
+integer :: norb, idum2
+integer, allocatable  :: ic(:), icv(:), iopt(:)
+real*8, allocatable  :: eps(:)
+contains
+subroutine init_dat_mod
+integer, parameter :: dat_size=200, iopt_size=40
+allocate(ic(1:dat_size))
+allocate(icv(1:dat_size))
+allocate(eps(1:dat_size))
+allocate(iopt(1:iopt_size))
+end subroutine init_dat_mod
+end module dat_mod
+
+module idv_mod
+! .. to replace idv.h
+integer :: nvalo
+integer, allocatable  :: iv(:)
+contains
+subroutine init_idv_mod
+integer, parameter :: idv_size=200
+allocate(iv(1:idv_size))
+end subroutine init_idv_mod
+end module idv_mod
+
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level

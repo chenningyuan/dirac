@@ -33,6 +33,7 @@ use fock_mod
 !use cij4_mod
 !use cij5_mod
 !use cij6_mod
+use cfiles_mod
  
   call init_gen_mod
   call init_cint_mod
@@ -44,6 +45,7 @@ use fock_mod
 ! call init_cij4_mod
 ! call init_cij5_mod
 ! call init_cij6_mod
+  call init_cfiles_mod
 
  End Subroutine Init_HSFS_Modules
 

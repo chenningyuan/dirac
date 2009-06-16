@@ -17,7 +17,16 @@ I use the "ARCH32BIT" preprocessor flag to specify 32-bit architectures.
 Efforts with old ACESII were not fruitfull - despite succesfull compilation there is some memory crash
 at the beginning of the run.
 
-Finally it has been adapted under spin-free DIRAC machinery.
+Finally code has been adapted under spin-free DIRAC machinery.
+
+Replacing static allocation with dynamic within modules:
+========================================================
+
+subroutine msub1 (ccsd1.F) - extra dynamic allocation is needed !
+subroutine msub2 (ccsd1.F) - extra dynamic allocation is needed (separate module)
+...  dimension ia(8),ib(10000),ibe(0:10000) ....
+
+replace ipack4(i,j,k,l)=ior(ior(ish... with some module
 
 I. Fock-space cc programs:
 ========================================
