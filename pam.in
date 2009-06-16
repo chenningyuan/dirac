@@ -336,8 +336,8 @@ execute_dirac()
    else
       # attach size of all static allocations in the executable
       echo -e "Size of all static allocations: \c" > $OUTPUT_FILE
-      size $DIRAC_CMD 2> /dev/null | grep  $DIRAC_CMD \
-      | awk '{printf $3/(1024*1024)} ' >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
+      size $DIRAC_CMD 2> /dev/null | grep  $DIRAC_CMD 2> /dev/null \
+      | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
       || echo 'can not be determined' >> $OUTPUT_FILE
 
       $NICE_CMD $DIRAC_CMD >> $OUTPUT_FILE || \
