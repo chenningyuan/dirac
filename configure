@@ -2261,8 +2261,8 @@ case $machine in
             arflag='rv'
             ;;
          *)
-            opt='-g -O3 -qstrict -qextname -q64'
-            safe='-g -qextname -q64'
+            opt='-g -O3 -qstrict -qextname -qzerosize -q64'
+            safe='-g -qextname -qzerosize -q64'
    	    c_opt='-g -O3 -qstrict -qcpluscmt -q64'
    	    c_safe='-g -qcpluscmt -q64'
             ldflag='-q64 -bmaxdata:0x8000000000'
