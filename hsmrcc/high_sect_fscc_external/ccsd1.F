@@ -787,6 +787,9 @@ c   move p to p transitions to folded
       end
 
       subroutine msub1 (name2,name3,namet)
+!
+!        special type of diagrams
+!
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -2792,8 +2795,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end
 
       subroutine dge6n2 (name2,name3,namet,iord)
-      implicit real*8 (a-h,o-z)
 c  6x8=12
+
+      implicit real*8 (a-h,o-z)
       
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
