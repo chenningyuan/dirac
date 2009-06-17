@@ -533,15 +533,37 @@ C
      &      'PCMOIN: Formatted file DFPCMO not found !'
           CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
       ENDIF
+      WRITE(LUPRI,'(2X,A,$)') 'Reading formatted DFPCMO file...'
+      CALL FLUSH(LUPRI)
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
-      READ (LUCOEF,'(A74)') TEXT
-      READ (LUCOEF,'(I4,6I10)') NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
-      READ (LUCOEF,'(D24.16)') TOTERG
-      READ (LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
-      READ (LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
-      READ (LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
+      READ (LUCOEF,'(A74)',IOSTAT=IOS) TEXT
+      READ (LUCOEF,'(I4,6I10)',IOSTAT=IOS) 
+     &      NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
+      IF (IOS.NE.0) THEN
+       CALL QUIT('PCMOI1: error in reading (I4,6I10)')
+      ENDIF
+      READ (LUCOEF,'(D24.16)',IOSTAT=IOS) TOTERG
+      IF (IOS.NE.0) THEN
+       CALL QUIT('PCMOI1: error in reading (D24.16)')
+      ENDIF
+      READ (LUCOEF,'(6F22.16)',IOSTAT=IOS) (CMO(I),I=1,NCMOTQ)
+      IF (IOS.NE.0) THEN
+       CALL QUIT('PCMOI1: error in reading (6F22.16)')
+      ENDIF
+      READ (LUCOEF,'(6D22.12)',IOSTAT=IOS) (EIG(I),I=1,NORBT)
+      IF (IOS.NE.0) THEN
+       CALL QUIT('PCMOI1: error in reading (6D22.12)')
+      ENDIF
+      READ (LUCOEF,'(66I2)',IOSTAT=IOS)   (IBEIG(I),I=1,NORBT)
+      IF (IOS.NE.0) THEN
+       WRITE(LUPRI,*) 
+       WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
+       WRITE(LUPRI,*) (IBEIG(J),J=1,NORBT)
+       CALL QUIT('PCMOI1: error in reading (66I2)')
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
+      WRITE(LUPRI,'(A)') 'Done.'
 C
 C     Write coefficients to either KRMCSCF or DFCOEF
 C
