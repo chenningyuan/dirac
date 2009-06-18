@@ -202,7 +202,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.PCMOI3','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -348,7 +348,9 @@ C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
             DOACIN = .TRUE.
             GO TO 100
+!&&&& .PCMOI3 : in DFPCMO use format I3 of IBEIG reading
   115    CONTINUE
+            DOPIN_I3 = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& FAMILY: Family basis (Not yet implemented)
@@ -471,6 +473,11 @@ C
       IF(DOPIN) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients read from formatted file ',
      &     ' DFPCMO and written to DFCOEF'
+      IF (DOPIN_I3) THEN
+       WRITE(LUPRI,'(1X,A)') 'DFPCMO: IBEIG read in I3 format.'
+      ELSE
+       WRITE(LUPRI,'(1X,A)') 'DFPCMO: IBEIG read in I2 format.'
+      ENDIF
       IF(DOPUT) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
       IF(DOACUT) WRITE(LUPRI,'(1X,A,A)')
@@ -3797,6 +3804,7 @@ C
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
       DOPIN    = .FALSE.
+      DOPIN_I3 = .FALSE.
       DOPUT    = .FALSE.
       DOACUT   = .FALSE.
       DOACIN   = .FALSE.

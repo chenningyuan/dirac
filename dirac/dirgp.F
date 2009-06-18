@@ -555,13 +555,23 @@ C
       IF (IOS.NE.0) THEN
        CALL QUIT('PCMOI1: error in reading (6D22.12)')
       ENDIF
-      READ (LUCOEF,'(66I2)',IOSTAT=IOS)   (IBEIG(I),I=1,NORBT)
-      IF (IOS.NE.0) THEN
-       WRITE(LUPRI,*) 
-       WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
-       WRITE(LUPRI,*) (IBEIG(J),J=1,NORBT)
-       CALL QUIT('PCMOI1: error in reading (66I2)')
+
+      IF (.NOT.DOPIN_I3) THEN
+        READ (LUCOEF,'(66I2)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
+        IF (IOS.NE.0) THEN
+          WRITE(LUPRI,*) 
+          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
+          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I2)')
+        ENDIF
+      ELSE
+        READ (LUCOEF,'(66I3)',IOSTAT=IOS) (IBEIG(I),I=1,NORBT)
+        IF (IOS.NE.0) THEN
+          WRITE(LUPRI,*) 
+          WRITE(LUPRI,*) 'I=',I,'NORBT=',NORBT
+          CALL QUIT('PCMOI1: error in IBEIG(DFPCMO) reading (66I3)')
+        ENDIF
       ENDIF
+
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
 C
@@ -616,7 +626,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE, TOBEK
+      LOGICAL TOBE, TOBEK, I3_IBEIG
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
@@ -674,6 +684,13 @@ C       ... set to zero
 C
 C     Write coefficients to DFPCMO
 C
+      I3_IBEIG=.FALSE. 
+      DO I=1,NORBT
+       IF (IBEIG(I).GE.10) THEN
+         I3_IBEIG=.TRUE.
+         EXIT ! exit cycle
+       ENDIF
+      ENDDO
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
         IDIM(2,I) = NESH(I)
@@ -683,12 +700,21 @@ C
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
+! miro: watch up formats of data, beacause for very larges systems one
+! might get ** due to size overflow
       WRITE(LUCOEF,'(A74)') TEXT
       WRITE(LUCOEF,'(I4,6I10)') NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM)
       WRITE(LUCOEF,'(D24.16)') TOTERG
       WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
       WRITE(LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
-      WRITE(LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
+      IF (I3_IBEIG) THEN
+        WRITE(LUCOEF,'(66I3)') (IBEIG(I),I=1,NORBT)
+        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I3 format,'
+     &  //' use .PCMOI3 for reading.'
+      ELSE
+        WRITE(LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
+        WRITE(LUPRI,'(2X,A)') 'DFPCMO: IBEIG written in 66I2 format'
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
