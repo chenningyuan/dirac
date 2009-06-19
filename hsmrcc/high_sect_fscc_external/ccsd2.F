@@ -266,7 +266,7 @@
 #include "rsp2.h"
 #endif
 
-!!!!!!TODO: replace with modules !!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!TODO: replace with modules !!!!!!
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),ham(60,60)
       common /cdet/ ldet(2,400),lsdet(400)
@@ -517,7 +517,7 @@ c     order and print collected energies.
 
       external ispin,hmatel
 
-!!!!!!! TODO: replace with dyn .alloc !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TODO: replace with dyn .alloc !!
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600),
      1 ntr(12)
       dimension ev(60),evi(60)
@@ -2102,6 +2102,16 @@ C
 ! miro: please add comments...
 !
 !-----------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+      use crle_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2122,7 +2132,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
 !    1 trle4(nrle4),isize(4)
 #include "crle.h"
+#endif
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!!
       double precision r(31,31),z(31),a(31),rcond,rmult
       integer*4 ipvt(31)
       dimension iopa(4),name(4)
@@ -2289,7 +2301,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end
 
       subroutine rvmuls(n,a,s,c)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension a(*),c(*)
       do 10 i=1,n
 10    c(i)=a(i)*s
@@ -2297,18 +2311,37 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       end
 
       subroutine rvmulv(n,a,b,c)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension a(*),b(*),c(*)
       do 10 i=1,n
 10    c(i)=a(i)*b(i)
       return
       end
 
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      subroutine unfold(namef,namet,iline)
       subroutine unfold_ccsd(namef,namet,iline)
-      implicit real*8 (a-h,o-z)
-c   expand file namef to namet, turning line iline from valence
-c   to general. (iline=4 is last line).
+!--------------------------------------------------------------------------------
+!
+!c   expand file namef to namet, turning line iline from valence
+!c   to general. (iline=4 is last line).
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2320,6 +2353,7 @@ c   to general. (iline=4 is last line).
 #include "cij1.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #include "cij2.h"
+#endif
 
       call files_ccsd(namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -2341,21 +2375,29 @@ c   to general. (iline=4 is last line).
       end
 
       subroutine vands(n,ia,is,ic)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension ia(*),ic(*)
       do 10 i=1,n
 10    ic(i)=iand(ia(i),is)
       return
       end
+
       subroutine viorv(n,ia,ib,ic)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension ia(*),ib(*),ic(*)
       do 10 i=1,n
 10    ic(i)=ior(ia(i),ib(i))
       return
       end
+
       subroutine vshfcs(n,ia,j,ic)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension ia(*),ic(*)
       do 10 i=1,n
 10    ic(i)=ishft(ia(i),j)
@@ -2364,6 +2406,11 @@ c   to general. (iline=4 is last line).
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vsort (ivec,N8,rlvec)
+!--------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------
       IMPLICIT INTEGER*4 (A-Z)
       INTEGER*4  ivec(*),TEMP
       integer*4 N8
@@ -2480,10 +2527,9 @@ c   to general. (iline=4 is last line).
 !
 !---------------------------------------------------------------------------------------
       use print_level
-#include "implicit.h"
 !     implicit real*8 (a-h,o-z)
+#include "implicit.h"
 #include "priunit.h"
-!#include "dat.h"
       dimension itmp(ntmp),t(nt),it(nt)
 
       if (getiprint() >= 5) then
@@ -2559,7 +2605,15 @@ c   to general. (iline=4 is last line).
 !c  // contains all files. file namefl(i) starts at nstrt(i-1)+1 (see /cfiles/).
 !
 !----------------------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2567,6 +2621,7 @@ c   to general. (iline=4 is last line).
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+#endif
 
       rewind nt
       if (nrec.gt.0) then
@@ -2594,8 +2649,26 @@ c   to general. (iline=4 is last line).
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine wrtrle (name,itape,loc) 
-      implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
+!
+!
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+      use crle_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2611,6 +2684,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     common /crle/ trle1(nrle1),trle2(nrle2),trle3(nrle3),
 !    1 trle4(nrle4),isize(4)
 #include "crle.h"
+#endif
 
       call files_ccsd (name,ntape,new,1,-1,-1)
       istrt=nstrt(2,ntape-1)
@@ -2639,8 +2713,23 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return     
       end 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zero (name)
-      implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -2648,24 +2737,34 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #include "gen.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
-!#include "cij1_0.h"
-!     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+! mi: original common block
+!     common /cij1/ nij, ij(ndij),ije(0:ndij),iii,iiva
+! mi : replaces with true cij1 block:
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
+#endif
 
       call files_ccsd (name,ntape,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) 'zero input tape does not exist, ',name
         stop                      
       end if
-      istrt1=nstrt(1,ntape-1)+2*nij+4
+!     istrt1=nstrt(1,ntape-1)+2*nij+4
+      istrt1=nstrt(1,ntape-1)+2*nij1+4
       istrt2=nstrt(2,ntape-1)
-      if (iii.le.333333) then
-        do 10 i=1,nij   
-          i1=iand(ishft(ij(i),-16),'ff'x)
-          i2=iand(ishft(ij(i),-8),'ff'x)
-          i3=iand(ij(i),'ff'x)
-          do 20 j=ije(i-1)+1,ije(i)      
+!     if (iii.le.333333) then
+      if (iii1.le.333333) then
+!       do 10 i=1,nij   
+        do 10 i=1,nij1
+!         i1=iand(ishft(ij(i),-16),'ff'x)
+          i1=iand(ishft(ij1(i),-16),'ff'x)
+!         i2=iand(ishft(ij(i),-8),'ff'x)
+          i2=iand(ishft(ij1(i),-8),'ff'x)
+!         i3=iand(ij(i),'ff'x)
+          i3=iand(ij1(i),'ff'x)
+!         do 20 j=ije(i-1)+1,ije(i)      
+          do 20 j=ije1(i-1)+1,ije1(i)      
             i4=iand(ishft(igen(istrt1+j),-16),'ff'x)
             i5=iand(ishft(igen(istrt1+j),-8),'ff'x)
             i6=iand(igen(istrt1+j),'ff'x)
@@ -2676,13 +2775,20 @@ CUK   common /crle/ trle(nrle,4),isize(4)
             end if
 20        continue
 10      continue
-      else if (iii.gt.333333) then
-        do 30 i=1,nij   
-          i1=iand(ishft(ij(i),-24),'ff'x)
-          i2=iand(ishft(ij(i),-16),'ff'x)
-          i3=iand(ishft(ij(i),-8),'ff'x)
-          i4=iand(ij(i),'ff'x)
-          do 40 j=ije(i-1)+1,ije(i)      
+!     else if (iii.gt.333333) then
+      else if (iii1.gt.333333) then
+!       do 30 i=1,nij   
+        do 30 i=1,nij1
+!         i1=iand(ishft(ij(i),-24),'ff'x)
+          i1=iand(ishft(ij1(i),-24),'ff'x)
+!         i2=iand(ishft(ij(i),-16),'ff'x)
+          i2=iand(ishft(ij1(i),-16),'ff'x)
+!         i3=iand(ishft(ij(i),-8),'ff'x)
+          i3=iand(ishft(ij1(i),-8),'ff'x)
+!         i4=iand(ij(i),'ff'x)
+          i4=iand(ij1(i),'ff'x)
+!         do 40 j=ije(i-1)+1,ije(i)      
+          do 40 j=ije1(i-1)+1,ije1(i)      
             i5=iand(ishft(igen(istrt1+j),-24),'ff'x)
             i6=iand(ishft(igen(istrt1+j),-16),'ff'x)
             i7=iand(ishft(igen(istrt1+j),-8),'ff'x)
@@ -2701,8 +2807,12 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine zeroup(ntmp,itmp,t,zero)
+!--------------------------------------------------------------------------------
 !  moves 'zero' elements & their indexes at the end of the array
-      implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension itmp(ntmp),t(ntmp)
       nn=0
       do 120 i=1,ntmp
@@ -2716,10 +2826,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end subroutine zeroup
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse(ii,i1,i2,i3,i4)
-!
 ! extracts 4 digits from the 4-digit integer number
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       ia=ii
       i4=mod(ia,10)
       ia=ia/10
@@ -2730,8 +2843,11 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse6 (ii,i1,i2,i3,i4,i5,i6)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       ia=ii 
       i6=mod(ia,10)
       ia=ia/10
@@ -2745,8 +2861,11 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       i1=ia/10
       return    
       end
+
       subroutine parse8 (ii,i1,i2,i3,i4,i5,i6,i7,i8)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       ia=ii 
       i8=mod(ia,10)
       ia=ia/10
@@ -2764,8 +2883,12 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       i1=ia/10
       return    
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine perm (i1,i2,isign,nval1)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension i1(6),i2(6),j1(6),j2(6)
       do 10 i=1,nval1
         j1(i)=i1(i)
@@ -2788,10 +2911,26 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 20    continue
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine perms(n)
-      implicit real*8 (a-h,o-z)
-      common /prm/ iperm(0:6,720)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use prm_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /prm/ iperm(0:6,720)
+#include "prm.h"
+#endif
       dimension k1(6),k2(6)
+
       if (n.eq.1) then
         iperm(0,1)=1
         iperm(1,1)=1
@@ -2939,8 +3078,16 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 ! iparm : printout parameter 
 !
 !---------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use dat_mod
+      use cij1_mod
 #include "implicit.h"
+#include "priunit.h"
+#else
 !     implicit real*8 (a-h,o-z)
+#include "implicit.h"
 #include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
@@ -2950,9 +3097,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 !     ... needs own include file ...
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+!     common /cij1/ nij, ij(ndij), ije(0:ndij), iii, iiv
+! mi: replaced
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
+
       dimension a(6),ind(4,6)
 
       if (iopt(1).ge.5) then
@@ -2979,13 +3131,17 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         call abext('prt     ')
       endif
 
-      nsize=ije(nij)
+!     nsize=ije(nij)
+      nsize=ije1(nij1)
 
-      write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-110   format(' file ',a4,', size iii iiv=',4i7,' ij records:'/
+!     write (LUPRI,110) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
+      write (LUPRI,110)
+     &   tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+110   format(' file ',a4,', size iii1 iiv1=',4i7,' ij records:'/
      & (8(2x,z4,i8,';')))
 
-      istrt1=nstrt(1,num-1)+2*nij+4
+!     istrt1=nstrt(1,num-1)+2*nij+4
+      istrt1=nstrt(1,num-1)+2*nij1+4
       istrt2=nstrt(2,num-1)
       io=0
       do 30 i=1,nsize
@@ -3020,8 +3176,23 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end subroutine prt
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt6 (name,tit,iparm)
-      implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -3029,11 +3200,15 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+!miro : variables replacement
+!     common /cij1/ nij ,ij(ndij) ,ije(0:ndij), iii ,iiv
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
+#endif
       dimension a(4),id(3),ind(3,4)
+
       if (iparm.gt.iopt(1)) return
       flim=10.d0**(-iopt(5))
       if (iopt(5).le.0) flim=0.d0
@@ -3043,21 +3218,29 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         write (6,*) ' prt6 tried to read nonexistent file'
         stop                  
       endif
-      nsize=ije(nij)  
-      write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
-99    format(' file ',a4,', size iii iiv=',4i9,' ij records:'/
+!     nsize=ije(nij)  
+      nsize=ije1(nij1)
+!     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
+      write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
+99    format(' file ',a4,', size iii1 iiv1=',4i9,' ij records:'/
      1 (3(2x,z8,i8,';')))
-      istrt1=nstrt(1,num-1)+2*nij+4
+!     istrt1=nstrt(1,num-1)+2*nij+4
+      istrt1=nstrt(1,num-1)+2*nij1+4
       istrt2=nstrt(2,num-1)
-      do 40 i=1,nij
+!     do 40 i=1,nij
+      do 40 i=1,nij1
         iflag=1
         io=0
-        do 30 j=ije(i-1)+1,ije(i)
+!       do 30 j=ije(i-1)+1,ije(i)
+        do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-              id(1)=iand(ishft(ij(i),-16),'ff'x)
-              id(2)=iand(ishft(ij(i),-8),'ff'x)
-              id(3)=iand(ij(i),'ff'x)
+!             id(1)=iand(ishft(ij(i),-16),'ff'x)
+              id(1)=iand(ishft(ij1(i),-16),'ff'x)
+!             id(2)=iand(ishft(ij(i),-8),'ff'x)
+              id(2)=iand(ishft(ij1(i),-8),'ff'x)
+!             id(3)=iand(ij(i),'ff'x)
+              id(3)=iand(ij1(i),'ff'x)
 c             write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,3)
 98            format ('record no. ',i6,' is ',3i2)
@@ -3085,8 +3268,24 @@ c             write (6,*) ' '
       return
       end 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine prt8 (name,tit,iparm)
-      implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -3094,9 +3293,13 @@ c             write (6,*) ' '
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii,iiv
+! miro: for replacement
+!     common /cij1/ nij ,ij(ndij), ije(0:ndij),iii,iiv
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
 
       dimension a(4),id(4),ind(4,4)
 
@@ -3108,22 +3311,31 @@ c             write (6,*) ' '
         write (6,*) ' prt8 tried to read nonexistent file'
         stop                  
       endif
-      nsize=ije(nij)  
-      write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
+!     nsize=ije(nij)  
+      nsize=ije1(nij1)  
+!     write (6,99) tit,nsize,iii,iiv,nij,(ij(i),ije(i),i=1,nij)
+      write (6,99) tit,nsize,iii1,iiv1,nij1,(ij1(i),ije1(i),i=1,nij1)
 99    format(' file ',a4,', size iii iiv=',4i9,' ij records:'/
      1 (3(2x,z8,i8,';')))
-      istrt1=nstrt(1,num-1)+2*nij+4
+!     istrt1=nstrt(1,num-1)+2*nij+4
+      istrt1=nstrt(1,num-1)+2*nij1+4
       istrt2=nstrt(2,num-1)
-      do 40 i=1,nij
+!     do 40 i=1,nij
+      do 40 i=1,nij1
         iflag=1
         io=0
-        do 30 j=ije(i-1)+1,ije(i)
+!       do 30 j=ije(i-1)+1,ije(i)
+        do 30 j=ije1(i-1)+1,ije1(i)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
-              id(1)=iand(ishft(ij(i),-24),'ff'x)
-              id(2)=iand(ishft(ij(i),-16),'ff'x)
-              id(3)=iand(ishft(ij(i),-8),'ff'x)
-              id(4)=iand(ij(i),'ff'x)
+!             id(1)=iand(ishft(ij(i),-24),'ff'x)
+              id(1)=iand(ishft(ij1(i),-24),'ff'x)
+!             id(2)=iand(ishft(ij(i),-16),'ff'x)
+              id(2)=iand(ishft(ij1(i),-16),'ff'x)
+!             id(3)=iand(ishft(ij(i),-8),'ff'x)
+              id(3)=iand(ishft(ij1(i),-8),'ff'x)
+!             id(4)=iand(ij(i),'ff'x)
+              id(4)=iand(ij1(i),'ff'x)
               write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,4)
 98            format ('record no. ',i6,' is ',4i2)
@@ -3161,6 +3373,12 @@ c             write (6,*) ' '
 !  tit - while call it's entering string, but here defined as real*8 
 !
 !--------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
@@ -3168,6 +3386,7 @@ c             write (6,*) ' '
 !     common /csdtime/ csdstim,csdltim
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
 
       character(*) tit ! to cut off trash characters
       real*4 cputime
@@ -3272,11 +3491,17 @@ c *************************************************
 !
 !--------------------------------------------------------------------------------
        use print_level
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)
 #include "priunit.h"
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
 
       character typ(2,5),cc(200)
       character*8 title(10)
@@ -3350,6 +3575,12 @@ c *************************************************
 !
 !-------------------------------------------------------------------------------------
       use print_level
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
 #include "implicit.h"
 #include "priunit.h"
 !     implicit real*8 (a-h,o-z)
@@ -3363,6 +3594,7 @@ c *************************************************
 ! mi: added for control printouts
 !#include "dat.h"
 !     logical :: is_open,is_present
+#endif
 
 ! mi: it's useless
 !     inquire(unit=nt,exist=is_present,opened=is_open,recl=irecl )
@@ -3448,6 +3680,12 @@ c *************************************************
 !  Called from each method (executable)
 !
 !----------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use sym_mod
+      use dpd_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3455,6 +3693,7 @@ c *************************************************
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #include "dpd.h"
 !     common /dpd/ nir,igmt(8,8),ici(200)
+#endif
 
       dimension itemp(64) ! 8x8
       data itemp / 1,2,3,4,5,6,7,8,2,1,4,3,6,5,8,7,3,4,1,2,7,8,5,6,

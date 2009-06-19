@@ -246,6 +246,27 @@ allocate(iv(1:idv_size))
 end subroutine init_idv_mod
 end module idv_mod
 
+module prm_mod
+! .. to replace prm.h
+integer, allocatable  :: iperm(:,:)
+contains
+subroutine init_prm_mod
+allocate(iperm(0:6,1:720))
+end subroutine init_prm_mod
+end module prm_mod
+
+module sym_mod
+! .. to replace sym.h
+integer ::  nsym,nclass
+integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
+contains
+subroutine init_sym_mod
+allocate(iclass(1:16))
+allocate(isym(1:16,1:8))
+allocate(ibias(1:17))
+end subroutine init_sym_mod
+end module sym_mod
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
