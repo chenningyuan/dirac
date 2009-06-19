@@ -686,7 +686,7 @@ C     Write coefficients to DFPCMO
 C
       I3_IBEIG=.FALSE. 
       DO I=1,NORBT
-       IF (IBEIG(I).GE.10) THEN
+       IF (IABS(IBEIG(I)).GE.10) THEN
          I3_IBEIG=.TRUE.
          EXIT ! exit cycle
        ENDIF
