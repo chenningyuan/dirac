@@ -267,6 +267,16 @@ allocate(ibias(1:17))
 end subroutine init_sym_mod
 end module sym_mod
 
+module ijtemp_mod
+! .. to replace ijtemp.h
+integer, allocatable  :: ijtmp1(:)
+contains
+subroutine init_ijtemp_mod
+#include "param_ccsd.h"
+allocate(ijtmp1(1:ndp6))
+end subroutine init_ijtemp_mod
+end module ijtemp_mod
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
