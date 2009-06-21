@@ -38,14 +38,18 @@ class PamQVariables:
     self.pam_arguments=''
     self.submit_job=True
 
-    # ... specify the default job name
+    # ... specify the default job name ...
     self.job_name='queue_job.'+str(os.getpid())
 
+    # ... specify the default name of the batch script ...
+    self.queue_script="queue_job."+str(os.getpid())+".batch_script"
+
+    # ... specify the default batch script output ...
     self.job_out='queue_job.'+str(os.getpid())+'.log_out'
 
     self.queue_system='' # must be configured
 
-    self.queue_name=''
+    self.queue_name='' # must be configured
     self.queue_name_specified=False
 
     # time 
@@ -68,8 +72,6 @@ class PamQVariables:
 
     # ... default from currecnt directory
     self.pam_script=self.dirac_home+'/pam' 
-
-    self.queue_script="queue_job."+str(os.getpid())+".batch_script"
 
     # ... home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
@@ -313,20 +315,22 @@ class PamQVariables:
       print 'prepare_batch_script_command:',self.batch_script_command
   
 
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_pbs_script():
+#==========================================================================================
 #
 #
-#   prepare the file of PBS queueing system script and submit it (if specified)
+#   prepare the script file for PBS queueing system script and submit it (if specified)
 #
 #
+#==========================================================================================
   global GlobalVars
 
   if GlobalVars.iprint >8 :
     print '\nin prepare_pbs_script...'
     print ' GlobalVars.pam_script_args=',GlobalVars.batch_script_command
 
-  f=open(GlobalVars.queue_script,'w') # open file with queue commands
+  f=open(GlobalVars.queue_script,'w') # open file with many queue commands
 
   s = ''
   s += '''\
@@ -424,11 +428,9 @@ cat $PBS_NODEFILE
 echo ''
 #
 # ... always change to the home directory 
-#  from where you execute DIRAC pam  
+#  from where you execute DIRAC pam - this is PBS variable 
 #
-cd %s
-''' % GlobalVars.home_dir
-  s += '''\
+cd $PBS_O_WORKDIR
 #
 #   ... execute own DIRAC pam script
 #
