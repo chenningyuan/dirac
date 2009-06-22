@@ -62,6 +62,12 @@ integer :: istat
  allocate(fock(ndt1),stat=istat)
  call alloc_stat_check("fock(ndt1)",istat)
 end subroutine init_fock_mod
+
+subroutine dealloc_fock_mod
+ deallocate(ifock)
+ deallocate(fock)
+end subroutine dealloc_fock_mod
+
 end module fock_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
