@@ -88,6 +88,13 @@ integer :: istat
  allocate(iiva(cfiles_size),stat=istat)
  call alloc_stat_check("iiva(cfiles_size)",istat) 
 end subroutine init_cfiles_mod
+
+subroutine dealloc_cfiles_mod
+ deallocate(namefl)
+ deallocate(nstrt)
+ deallocate(iiia)
+ deallocate(iiva)
+end subroutine dealloc_cfiles_mod
 end module cfiles_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -101,6 +108,11 @@ subroutine init_cij1_mod
  allocate(ij1(1:ndij))
  allocate(ije1(0:ndij))
 end subroutine init_cij1_mod
+
+subroutine dealloc_cij1_mod
+ deallocate(ij1)
+ deallocate(ije1)
+end subroutine dealloc_cij1_mod
 end module cij1_mod
 
 module cij2_mod
@@ -113,6 +125,11 @@ subroutine init_cij2_mod
  allocate(ij2(1:ndij))
  allocate(ije2(0:ndij))
 end subroutine init_cij2_mod
+
+subroutine dealloc_cij2_mod
+ deallocate(ij2)
+ deallocate(ije2)
+end subroutine dealloc_cij2_mod
 end module cij2_mod
 
 module cij3_mod
@@ -125,6 +142,11 @@ subroutine init_cij3_mod
  allocate(ij3(1:ndij))
  allocate(ije3(0:ndij))
 end subroutine init_cij3_mod
+
+subroutine dealloc_cij3_mod
+ deallocate(ij3)
+ deallocate(ije3)
+end subroutine dealloc_cij3_mod
 end module cij3_mod
 
 module cij4_mod
@@ -137,6 +159,11 @@ subroutine init_cij4_mod
  allocate(ij4(1:ndij))
  allocate(ije4(0:ndij))
 end subroutine init_cij4_mod
+
+subroutine dealloc_cij4_mod
+ deallocate(ij4)
+ deallocate(ije4)
+end subroutine dealloc_cij4_mod
 end module cij4_mod
 
 module cij5_mod
@@ -149,6 +176,11 @@ subroutine init_cij5_mod
  allocate(ij5(1:ndij))
  allocate(ije5(0:ndij))
 end subroutine init_cij5_mod
+
+subroutine dealloc_cij5_mod
+ deallocate(ij5)
+ deallocate(ije5)
+end subroutine dealloc_cij5_mod
 end module cij5_mod
 
 module cij6_mod
@@ -161,6 +193,11 @@ subroutine init_cij6_mod
  allocate(ij6(1:ndij))
  allocate(ije6(0:ndij))
 end subroutine init_cij6_mod
+
+subroutine dealloc_cij6_mod
+ deallocate(ij6)
+ deallocate(ije6)
+end subroutine dealloc_cij6_mod
 end module cij6_mod
 
 module rsp1_mod
@@ -172,6 +209,10 @@ subroutine init_rsp1_mod
 integer, parameter :: rsp1_size=100
 allocate(irsp1(rsp1_size))
 end subroutine init_rsp1_mod
+
+subroutine dealloc_rsp1_mod
+ deallocate(irsp1)
+end subroutine dealloc_rsp1_mod
 end module rsp1_mod
 
 module rsp2_mod
@@ -183,6 +224,10 @@ subroutine init_rsp2_mod
 integer, parameter :: rsp2_size=500
 allocate(irsp2(rsp2_size))
 end subroutine init_rsp2_mod
+
+subroutine dealloc_rsp2_mod
+ deallocate(irsp2)
+end subroutine dealloc_rsp2_mod
 end module rsp2_mod
 
 module dpd_mod
@@ -195,6 +240,11 @@ integer,parameter :: dpd_size=200
 allocate(ici(1:dpd_size))
 allocate(igmt(1:8,1:8))
 end subroutine init_dpd_mod
+
+subroutine dealloc_dpd_mod
+ deallocate(ici)
+ deallocate(igmt)
+end subroutine dealloc_dpd_mod
 end module dpd_mod
 
 module ctmp_mod
@@ -207,6 +257,11 @@ subroutine init_ctmp_mod
 allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
 end subroutine init_ctmp_mod
+
+subroutine dealloc_ctmp_mod
+ deallocate(tmp)
+ deallocate(itmp)
+end subroutine dealloc_ctmp_mod
 end module ctmp_mod
 
 module crle_mod
@@ -222,6 +277,14 @@ allocate(trle3(1:nrle3))
 allocate(trle4(1:nrle4))
 allocate(isize(1:4))
 end subroutine init_crle_mod
+
+subroutine dealloc_crle_mod
+ deallocate(trle1)
+ deallocate(trle2)
+ deallocate(trle3)
+ deallocate(trle4)
+ deallocate(isize)
+end subroutine dealloc_crle_mod
 end module crle_mod
 
 module det_mod
@@ -234,6 +297,11 @@ integer, parameter :: lstvso_size=100, lstdet_size=1000
 allocate(lstvso(1:lstvso_size))
 allocate(lstdet(1:lstdet_size))
 end subroutine init_det_mod
+
+subroutine dealloc_det_mod
+ deallocate(lstvso)
+ deallocate(lstdet)
+end subroutine dealloc_det_mod
 end module det_mod
 
 module dat_mod
@@ -249,6 +317,13 @@ allocate(icv(1:dat_size))
 allocate(eps(1:dat_size))
 allocate(iopt(1:iopt_size))
 end subroutine init_dat_mod
+
+subroutine dealloc_dat_mod
+ deallocate(ic)
+ deallocate(icv)
+ deallocate(eps)
+ deallocate(iopt)
+end subroutine dealloc_dat_mod
 end module dat_mod
 
 module idv_mod
@@ -260,6 +335,10 @@ subroutine init_idv_mod
 integer, parameter :: idv_size=200
 allocate(iv(1:idv_size))
 end subroutine init_idv_mod
+
+subroutine dealloc_idv_mod
+ deallocate(iv)
+end subroutine dealloc_idv_mod
 end module idv_mod
 
 module prm_mod
@@ -269,6 +348,10 @@ contains
 subroutine init_prm_mod
 allocate(iperm(0:6,1:720))
 end subroutine init_prm_mod
+
+subroutine dealloc_prm_mod
+ deallocate(iperm)
+end subroutine dealloc_prm_mod
 end module prm_mod
 
 module sym_mod
@@ -281,6 +364,12 @@ allocate(iclass(1:16))
 allocate(isym(1:16,1:8))
 allocate(ibias(1:17))
 end subroutine init_sym_mod
+
+subroutine dealloc_sym_mod
+ deallocate(iclass)
+ deallocate(isym)
+ deallocate(ibias)
+end subroutine dealloc_sym_mod
 end module sym_mod
 
 module ijtemp_mod
@@ -291,6 +380,10 @@ subroutine init_ijtemp_mod
 #include "param_ccsd.h"
 allocate(ijtmp1(1:ndp6))
 end subroutine init_ijtemp_mod
+
+subroutine dealloc_ijtemp_mod
+ deallocate(ijtmp1)
+end subroutine dealloc_ijtemp_mod
 end module ijtemp_mod
 
 
