@@ -1,13 +1,9 @@
 module dft_input
 
   use dft_cfg
-  use dft_temp
 
   implicit none
 
-  public get_lucmd
-  public get_lupri
-  public set_lscale_dft_gaunt
   public parse_dft_input
   public consistency_after_dft_input
   public report_after_dft_input
@@ -48,7 +44,7 @@ contains
 
   end subroutine
 
-  subroutine parse_dft_input(word_io, reset)
+  subroutine parse_dft_input(word_io)
 
 !   radovan: if you add new keywords then it's 
 !            nice if the user gets the confirmation
@@ -57,7 +53,6 @@ contains
 
 !   ----------------------------------------------------------------------------
     character(7), intent(inout) :: word_io
-    logical,      intent(in)    :: reset
 !   ----------------------------------------------------------------------------
     character(7)                :: word
     character(80)               :: line
@@ -66,24 +61,12 @@ contains
     integer                     :: u
 !   ----------------------------------------------------------------------------
 
-    if (dft_cfg_set .and. reset) then
-      dft_cfg_set = .false.
-      return
-    end if
-    if (reset) then
-      dft_cfg_set = .false.
-    else
-      dft_cfg_set = .true.
-    end if
-
-    call init_dft_cfg()
-    call init_dft_temp()
-
     if (word_io /= '*DFT   ') return
 
     u = get_lucmd()
 
     do while (.true.)
+
       read (u, '(a7)') word
       first = word(1:1)
 

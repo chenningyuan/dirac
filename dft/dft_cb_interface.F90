@@ -7,32 +7,34 @@ module dft_cb_interface
 
   implicit none
 
-  integer, parameter, public :: max_nr_shells = 750
-
-  integer, save,      public :: nr_qu
-  integer, save,      public :: nr_ao_total
-  integer, save,      public :: nr_boson_sym
-  integer, save,      public :: nr_ls_components
-  integer, save,      public :: nr_open_shells
-  integer, save,      public :: nr_electrons_orbital
-  integer, save,      public :: nr_electrons_orbital_active
-  integer, save,      public :: print_unit
-  integer, save,      public :: nr_density_blocks(0:3, 0:7)
-  integer, save,      public :: nr_ao(2, 16, 0:3, 0:7)
-  integer, save,      public :: st_ao(2, 16, 0:3, 0:7)
-  integer, save,      public :: iq(0:3)
-  integer, save,      public :: dft_cb_pq_to_uq(4, 0:7)
-  integer, save,      public :: dft_cb_uq_to_pq(4, 0:7)
-
-  logical, save,      public :: is_gga_functional
-  logical, save,      public :: is_parallel_calculation
-
-  real(8), save,      public :: dft_cb_cent(max_nr_shells, 3, 2)
-
   public init_dft_cb
 #ifdef VAR_MPI
   public sync_dft_cb
 #endif
+
+  save
+
+  integer, parameter, public :: max_nr_shells = 750
+
+  integer, public :: nr_qu
+  integer, public :: nr_ao_total
+  integer, public :: nr_boson_sym
+  integer, public :: nr_ls_components
+  integer, public :: nr_open_shells
+  integer, public :: nr_electrons_orbital
+  integer, public :: nr_electrons_orbital_active
+  integer, public :: print_unit
+  integer, public :: nr_density_blocks(0:3, 0:7)
+  integer, public :: nr_ao(2, 16, 0:3, 0:7)
+  integer, public :: st_ao(2, 16, 0:3, 0:7)
+  integer, public :: iq(0:3)
+  integer, public :: dft_cb_pq_to_uq(4, 0:7)
+  integer, public :: dft_cb_uq_to_pq(4, 0:7)
+
+  logical, public :: is_gga_functional
+  logical, public :: is_parallel_calculation
+
+  real(8), public :: dft_cb_cent(max_nr_shells, 3, 2)
 
   private
 

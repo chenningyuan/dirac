@@ -5401,16 +5401,19 @@ C
     2 CONTINUE
         CALL SOLVIN(WORD,WORK,LWORK)
         GO TO 200
-    3 CONTINUE
+
+
+!     *DFT
+    3 continue
 #ifdef MOD_DFT
-      call parse_dft_input(word, .false.)
+      call parse_dft_input(word)
 #else
-C       hjaaj 3jun2003: dirac.x went into an infinite loop here
-C       if *DFT in input but MOD_DFT not defined !!!
-        CALL QUIT(
-     &  '*DFT specified, but DFT is not included in this version')
+      call quit('*DFT specified, but DFT is not included in this version')
 #endif
-        GO TO 200
+      go to 200
+
+
+
     4 CONTINUE
 #ifdef MOD_CAP
 CMI    ... reading the CAP integrals characteristic
@@ -5449,7 +5452,6 @@ C
 
 #ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
-        call parse_dft_input(word, .true.)
         call consistency_after_dft_input()
         call report_after_dft_input()
       end if

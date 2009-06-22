@@ -1,10 +1,8 @@
 module dft_cfg
 
-  use dft_cb_interface
-
 ! radovan: (1) if you modify this module (add new stuff)
 !              don't forget to update
-!              routines init_dft_cfg and sync_dft_cfg (below)
+!              sync_dft_cfg (below)
 !          (2) this module should contain things set by the user
 !              or in principle accessible by the user
 !              temporary parameters used by the program
@@ -13,111 +11,62 @@ module dft_cfg
 
   implicit none
 
+#ifdef VAR_MPI
+  public sync_dft_cfg
+#endif
+
   save
 
-  character(30) :: dft_cfg_gridfile
+  character(30), public :: dft_cfg_gridfile
 
-  logical       :: dft_cfg_set = .false.
+  logical, public :: dft_cfg_keep_ao                 = .false.
+  logical, public :: dft_cfg_explicit_potential      = .false.
+  logical, public :: dft_cfg_no_pruning              = .false.
+  logical, public :: dft_cfg_estimate_radii          = .false.
+  logical, public :: dft_cfg_import_grid             = .false.
+  logical, public :: dft_cfg_export_grid             = .false.
+  logical, public :: dft_cfg_zipgrid                 = .false.
+  logical, public :: dft_cfg_alda_hs                 = .false.
+  logical, public :: dft_cfg_alda_ha                 = .false.
+  logical, public :: dft_cfg_xalda                   = .false.
+  logical, public :: dft_cfg_force_4c_grid           = .false.
+  logical, public :: dft_cfg_old_dft                 = .false.
+  logical, public :: dft_cfg_sdft                    = .false.
+  logical, public :: dft_cfg_sdft_collinear          = .false.
+  logical, public :: dft_cfg_sdft_beta               = .false.
+  logical, public :: dft_cfg_cdft_vrg                = .false.
+  logical, public :: dft_cfg_autodiff                = .false.
+  logical, public :: dft_cfg_grac                    = .false.
+  logical, public :: dft_cfg_grac_is_active          = .false.
+  logical, public :: dft_cfg_saop                    = .false.
+  logical, public :: dft_cfg_saop_is_active          = .false.
+  logical, public :: dft_cfg_saop_with_response_part = .false.
+  logical, public :: dft_cfg_asymptote_is_lb94       = .false.
+  logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
 
-  logical       :: dft_cfg_keep_ao
-  logical       :: dft_cfg_explicit_potential
-  logical       :: dft_cfg_no_pruning
-  logical       :: dft_cfg_estimate_radii
-  logical       :: dft_cfg_import_grid
-  logical       :: dft_cfg_export_grid
-  logical       :: dft_cfg_zipgrid
-  logical       :: dft_cfg_alda_hs
-  logical       :: dft_cfg_alda_ha
-  logical       :: dft_cfg_xalda
-  logical       :: dft_cfg_force_4c_grid
-  logical       :: dft_cfg_old_dft
-  logical       :: dft_cfg_sdft
-  logical       :: dft_cfg_sdft_collinear
-  logical       :: dft_cfg_sdft_beta
-  logical       :: dft_cfg_cdft_vrg
-  logical       :: dft_cfg_autodiff
-  logical       :: dft_cfg_grac
-  logical       :: dft_cfg_grac_is_active
-  logical       :: dft_cfg_saop
-  logical       :: dft_cfg_saop_is_active
-  logical       :: dft_cfg_saop_with_response_part
-  logical       :: dft_cfg_asymptote_is_lb94
-  logical       :: dft_cfg_asymptote_is_lbalpha
+  real(8), public :: dft_cfg_radint          = 1.0d-13
+  real(8), public :: dft_cfg_accepted_error  = 1.0d-3
+  real(8), public :: dft_cfg_dfthr0          = 1.0d-9
+  real(8), public :: dft_cfg_dfthrl          = 1.0d-10
+  real(8), public :: dft_cfg_dfthri          = 1.0d-15
+  real(8), public :: dft_cfg_ac_ip           = 0.0d0
+  real(8), public :: dft_cfg_ac_threshold    = 0.0d0
+  real(8), public :: dft_cfg_homo_eigenvalue = 0.0d0
+  real(8), public :: dft_cfg_grac_alpha      = 0.0d0
+  real(8), public :: dft_cfg_grac_beta       = 0.0d0
 
-  real(8)       :: dft_cfg_radint
-  real(8)       :: dft_cfg_accepted_error
-  real(8)       :: dft_cfg_dfthr0
-  real(8)       :: dft_cfg_dfthrl
-  real(8)       :: dft_cfg_dfthri
-  real(8)       :: dft_cfg_ac_ip
-  real(8)       :: dft_cfg_ac_threshold
-  real(8)       :: dft_cfg_homo_eigenvalue
-  real(8)       :: dft_cfg_grac_alpha
-  real(8)       :: dft_cfg_grac_beta
+  integer, public :: dft_cfg_angmin                  = 15
+  integer, public :: dft_cfg_angint                  = 41
+  integer, public :: dft_cfg_ao_mem_limit            = 0
+  integer, public :: dft_cfg_print_level             = 2
+  integer, public :: dft_cfg_debug_level             = 0
+  integer, public :: dft_cfg_integration_check_level = 0
 
-  integer       :: dft_cfg_angmin
-  integer       :: dft_cfg_angint
-  integer       :: dft_cfg_ao_mem_limit
-  integer       :: dft_cfg_print_level
-  integer       :: dft_cfg_debug_level
-  integer       :: dft_cfg_integration_check_level
-
-contains
-
-  subroutine init_dft_cfg()
-
-    dft_cfg_keep_ao                 = .false.
-    dft_cfg_explicit_potential      = .false.
-    dft_cfg_no_pruning              = .false.
-    dft_cfg_estimate_radii          = .false.
-    dft_cfg_import_grid             = .false.
-    dft_cfg_export_grid             = .false.
-    dft_cfg_zipgrid                 = .false.
-    dft_cfg_alda_hs                 = .false.
-    dft_cfg_alda_ha                 = .false.
-    dft_cfg_xalda                   = .false.
-    dft_cfg_force_4c_grid           = .false.
-    dft_cfg_old_dft                 = .false.
-    dft_cfg_sdft                    = .false.
-    dft_cfg_sdft_collinear          = .false.
-    dft_cfg_sdft_beta               = .false.
-    dft_cfg_cdft_vrg                = .false.
-    dft_cfg_autodiff                = .false.
-    dft_cfg_grac                    = .false.
-    dft_cfg_grac_is_active          = .false.
-    dft_cfg_saop                    = .false.
-    dft_cfg_saop_is_active          = .false.
-    dft_cfg_saop_with_response_part = .false.
-    dft_cfg_asymptote_is_lb94       = .false.
-    dft_cfg_asymptote_is_lbalpha    = .false.
-
-    dft_cfg_radint                  = 1.0d-13
-    dft_cfg_accepted_error          = 1.0d-3
-    dft_cfg_dfthr0                  = 1.0d-9
-    dft_cfg_dfthrl                  = 1.0d-10
-    dft_cfg_dfthri                  = 1.0d-15
-    dft_cfg_ac_ip                   = 0.0d0
-    dft_cfg_ac_threshold            = 0.0d0
-    dft_cfg_homo_eigenvalue         = 0.0d0
-    dft_cfg_grac_alpha              = 0.0d0
-    dft_cfg_grac_beta               = 0.0d0
-
-    dft_cfg_angmin                  = 15
-    dft_cfg_angint                  = 41
-!radovan: don't reset here, set with pam
-!   dft_cfg_ao_mem_limit            = 0
-    dft_cfg_print_level             = 2
-    dft_cfg_debug_level             = 0
-    dft_cfg_integration_check_level = 0
-
-#ifdef MOD_AUTODIFF
-    call init_factorial_common_block()
-#endif
-    call init_dft_cb()
-
-  end subroutine
+  private
 
 #ifdef VAR_MPI
+contains
+
   subroutine sync_dft_cfg()
 
 #include "mpif.h"
