@@ -2362,6 +2362,8 @@ c   special for scratch files, which start with "s".
       use gen_mod
       use dat_mod
       use sym_mod
+#include "implicit.h"
+#include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2521,8 +2523,24 @@ c   special for scratch files, which start with s
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt8 (iii,iiv,name,num)
-      implicit real*8 (a-h,o-z)
-      integer*4 ch1,ch2
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+      use sym_mod
+      use dpd_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2531,22 +2549,31 @@ c   special for scratch files, which start with s
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 !#include "cij1_0.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+! miro - replaced with proper common block
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #include "dpd.h"
 !      common /dpd/ nir,igmt(8,8),ici(200)
+#endif
 
+      integer*4 ch1,ch2
+!!! miro - into module !!!
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
       call parse8 (iii,i1,i2,i3,i4,i5,i6,i7,i8)
       call parse8 (iiv,j1,j2,j3,j4,j5,j6,j7,j8)
       call files_ccsd (name,num,new,1,iii,iiv)
       if (new.le.0) return
-      nij=0
-      ije(0)=0
+!     nij=0
+      nij1=0
+!     ije(0)=0
+      ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       do 10 ica=1,nclass
@@ -2616,13 +2643,19 @@ c   special for scratch files, which start with s
                end if
 50            continue
               if (nt.gt.nt00) then
-               nij=nij+1
-               ije(nij)=nt-nt0
-               ij(nij)=ipack(ja,jb,jc,jd)
+!              nij=nij+1
+               nij1=nij1+1
+!              ije(nij)=nt-nt0
+               ije1(nij1)=nt-nt0
+!              ij(nij)=ipack(ja,jb,jc,jd)
+               ij1(nij1)=ipack(ja,jb,jc,jd)
                call ivsort (igen(nt00+1),nt-nt00)
-               if (nij.gt.ndij) write (6,*) 'nij reached ',
-     1         nij,' at jabcd=',ja,jb,jc,jd
-               call dimx (nij,ndij,"tmpndij ")
+!              if (nij.gt.ndij) write (6,*) 'nij reached ',
+               if (nij1.gt.ndij) write (6,*) 'nij1 reached ',
+!    1         nij,' at jabcd=',ja,jb,jc,jd
+     1         nij1,' at jabcd=',ja,jb,jc,jd
+!              call dimx (nij,ndij,"tmpndij ")
+               call dimx (nij1,ndij,"tmpndij ")
               end if
              end if
 40          continue
@@ -2632,15 +2665,24 @@ c   special for scratch files, which start with s
 20      continue
        end if
 10    continue
-      igen(nstrt(1,num-1)+1)=nij
-      call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-      call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
-      igen(nstrt(1,num-1)+2*nij+3)=iii
-      igen(nstrt(1,num-1)+2*nij+4)=iiv
+
+!     igen(nstrt(1,num-1)+1)=nij
+      igen(nstrt(1,num-1)+1)=nij1
+
+!     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
+      call kcopy (nij1,ij1(1),igen(nstrt(1,num-1)+2))
+!     call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+      call kcopy (nij1+1,ije1(0),igen(nstrt(1,num-1)+nij1+2))
+!     igen(nstrt(1,num-1)+2*nij+3)=iii
+      igen(nstrt(1,num-1)+2*nij1+3)=iii
+!     igen(nstrt(1,num-1)+2*nij+4)=iiv
+      igen(nstrt(1,num-1)+2*nij1+4)=iiv
       do 110 i=1,nt-nt0
-        igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+!       igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+        igen(nt0-2*(ndij-nij1)+i)=igen(nt0+i)
 110   continue
-      nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+!     nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+      nstrt(1,num)=nstrt(1,num-1)+2*nij1+4+(nt-nt0)
       nstrt(2,num)=nstrt(2,num-1)+(nt-nt0)
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
@@ -2662,42 +2704,62 @@ c   special for scratch files, which start with s
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt10 (name,num)
-      implicit real*8 (a-h,o-z)
-      integer*4 ch1,ch2
-!     integer ch1,ch2
-      
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+      use sym_mod
+      use idv_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-
-!#include "cij1_0.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
-
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+! miro - replaced with proper common block
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
-
 #include "idv.h"
 !     common /idv/ iv(200),nvalo
 
+#endif
+
+      integer*4 ch1,ch2
+
+!!!!!!!!!!!!!!!! own dynamic allocation !!!!!!!!!!!!!!!!!!
       dimension icsym(200)
+
       ipack(i,j,k,l,m)=ior(ishft(i,16),
      1ior(ior(ishft(j,12),ishft(k,8)),ior(ishft(l,4),m)))
+
       iii=5
       iiv=1
       call files_ccsd (name,num,new,1,iii,iiv)
       if (new.le.0) return
-      nij=0
-      ije(0)=0
+!     nij=0
+      nij1=0
+!     ije(0)=0
+      ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
@@ -2736,24 +2798,37 @@ c   special for scratch files, which start with s
         end if
 90     continue
        if (nt.gt.nt00) then
-        nij=nij+1
-        ije(nij)=nt-nt0
-        ij(nij)=ipack(ja,jb,jc,jd,je)          
+!       nij=nij+1
+        nij1=nij1+1
+!       ije(nij)=nt-nt0
+        ije1(nij1)=nt-nt0
+!       ij(nij)=ipack(ja,jb,jc,jd,je)          
+        ij1(nij1)=ipack(ja,jb,jc,jd,je)          
         call ivsort (igen(nt00+1),nt-nt00)
-        if (nij.gt.ndij) write (6,*) 'nij reached ',
-     1  nij,' at jabcde=',ja,jb,jc,jd,je
-        call dimx (nij,ndij,"tmpndij ")
+!       if (nij.gt.ndij) write (6,*) 'nij reached ',
+        if (nij1.gt.ndij) write (6,*) 'nij1 reached ',
+!    1  nij,' at jabcde=',ja,jb,jc,jd,je
+     1  nij1,' at jabcde=',ja,jb,jc,jd,je
+!       call dimx (nij,ndij,"tmpndij ")
+        call dimx (nij1,ndij,"tmpndij ")
        end if
 30    continue
-      igen(nstrt(1,num-1)+1)=nij
-      call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-      call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
-      igen(nstrt(1,num-1)+2*nij+3)=iii
-      igen(nstrt(1,num-1)+2*nij+4)=iiv
+!     igen(nstrt(1,num-1)+1)=nij
+      igen(nstrt(1,num-1)+1)=nij1
+!     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
+      call kcopy (nij1,ij1(1),igen(nstrt(1,num-1)+2))
+!     call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+      call kcopy (nij1+1,ije1(0),igen(nstrt(1,num-1)+nij1+2))
+!     igen(nstrt(1,num-1)+2*nij+3)=iii
+      igen(nstrt(1,num-1)+2*nij1+3)=iii
+!     igen(nstrt(1,num-1)+2*nij+4)=iiv
+      igen(nstrt(1,num-1)+2*nij1+4)=iiv
       do 150 i=1,nt-nt0
-        igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+!       igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+        igen(nt0-2*(ndij-nij1)+i)=igen(nt0+i)
 150   continue
-      nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+!     nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+      nstrt(1,num)=nstrt(1,num-1)+2*nij1+4+(nt-nt0)
       nstrt(2,num)=nstrt(2,num-1)+(nt-nt0)
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
@@ -2776,10 +2851,26 @@ c   special for scratch files, which start with s
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmplt12 (name,num)
-      implicit real*8 (a-h,o-z)
-      integer*4 ch1,ch2
-!     integer ch1,ch2
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use dat_mod
+      use sym_mod
+      use idv_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -2787,16 +2878,21 @@ c   special for scratch files, which start with s
 #include "gen.h"
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
-!!!#include "cij1.h" ! attention, variable changed names !
-!#include "cij1_0.h"
-      common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+!     common /cij1/ nij,ij(ndij),ije(0:ndij),iii1,iiv1
+! miro - replaced with proper common block
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "sym.h"
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #include "idv.h"
 !     common /idv/ iv(200),nvalo
+#endif
 
+      integer*4 ch1,ch2
+
+!!!!!!!!!!!!!!!! miro: need replace !!!!!!!!!!!!!!!!!!!
       dimension icsym(200)
 
       ipack(i,j,k,l,m,n)=ior(ior(ishft(i,20),ishft(j,16)),
@@ -2806,8 +2902,10 @@ c   special for scratch files, which start with s
       iiv=1
       call files_ccsd (name,num,new,1,iii,iiv)
       if (new.le.0) return
-      nij=0
-      ije(0)=0
+!     nij=0
+      nij1=0
+!     ije(0)=0
+      ije1(0)=0
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
       isum=0
@@ -2850,25 +2948,38 @@ c   special for scratch files, which start with s
 90     continue
 
        if (nt.gt.nt00) then
-        nij=nij+1
-        ije(nij)=nt-nt0
-        ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
+!       nij=nij+1
+        nij1=nij1+1
+!       ije(nij)=nt-nt0
+        ije1(nij1)=nt-nt0
+!       ij(nij)=ipack(ja,jb,jc,jd,je,jf) 
+        ij1(nij1)=ipack(ja,jb,jc,jd,je,jf) 
         call ivsort (igen(nt00+1),nt-nt00)
-        if (nij.gt.ndij) write (6,*) 'nij reached ',
-     1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
-        call dimx (nij,ndij,"tmpndij ")
+!       if (nij.gt.ndij) write (6,*) 'nij reached ',
+        if (nij1.gt.ndij) write (6,*) 'nij1 reached ',
+!    1  nij,' at jabcdef=',ja,jb,jc,jd,je,jf
+     1  nij1,' at jabcdef=',ja,jb,jc,jd,je,jf
+!       call dimx (nij,ndij,"tmpndij ")
+        call dimx (nij1,ndij,"tmpndij ")
        end if
 
 30    continue
-      igen(nstrt(1,num-1)+1)=nij
-      call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
-      call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
-      igen(nstrt(1,num-1)+2*nij+3)=iii
-      igen(nstrt(1,num-1)+2*nij+4)=iiv
+!     igen(nstrt(1,num-1)+1)=nij
+      igen(nstrt(1,num-1)+1)=nij1
+!     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))
+      call kcopy (nij1,ij1(1),igen(nstrt(1,num-1)+2))
+!     call kcopy (nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
+      call kcopy (nij1+1,ije1(0),igen(nstrt(1,num-1)+nij1+2))
+!     igen(nstrt(1,num-1)+2*nij+3)=iii
+      igen(nstrt(1,num-1)+2*nij1+3)=iii
+!     igen(nstrt(1,num-1)+2*nij+4)=iiv
+      igen(nstrt(1,num-1)+2*nij1+4)=iiv
       do 150 i=1,nt-nt0
-        igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+!       igen(nt0-2*(ndij-nij)+i)=igen(nt0+i)
+        igen(nt0-2*(ndij-nij1)+i)=igen(nt0+i)
 150   continue
-      nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+!     nstrt(1,num)=nstrt(1,num-1)+2*nij+4+(nt-nt0)
+      nstrt(1,num)=nstrt(1,num-1)+2*nij1+4+(nt-nt0)
       nstrt(2,num)=nstrt(2,num-1)+(nt-nt0)
       call dimx (nstrt(1,num),nbig,"tmplt61 ")
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
@@ -2891,8 +3002,26 @@ c   special for scratch files, which start with s
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine t1sqr(name1a,name1b,name2,namet)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use ctmp_mod
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
@@ -2908,6 +3037,7 @@ c   special for scratch files, which start with s
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #include "cij3.h"
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#endif
 
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
       if (new.ne.0) then
@@ -2948,30 +3078,45 @@ c
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine t1t2 (name1,name2,name3,names,iord,iparm) 
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use ctmp_mod
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
-
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
-
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
-
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-
 #include "cij2.h"
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
-
 #include "cij3.h"
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#endif
 
+!!!!!!!!!!!!!!!!!! ninds needs dynamic alloc !!!!!!!!!!!!!!!!!!!!
       dimension ia(5,6),ind(12),ninds(ndij)
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,
      1          6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
@@ -3052,8 +3197,25 @@ c
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine t1t3 (name1,name3,name4,namet,iparm) 
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use ctmp_mod
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
@@ -3069,12 +3231,17 @@ c
 !     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #include "cij3.h"
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#endif
 
+!!!!!!!!!!!!! needs dynamic alloc for ninds !!!!!!!!!!!!!!!
       dimension ia(4,8),ind(16),ninds(ndij)
+
       data ia / 1,3,3,3,3,1,4,4,4,4,1,5,5,5,5,1, 
      1          2,6,6,6,6,2,7,7,7,7,2,8,8,8,8,2 /
+
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
       call files_ccsd (name4,ntape4,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t4 file in t1t3 does not exist'
@@ -3150,10 +3317,29 @@ c
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine t2sqr (name2a,name2b,name4,namet,iparm) 
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use ctmp_mod
+      use cfiles_mod
+      use gen_mod
+      use cij1_mod
+      use cij2_mod
+      use cij3_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-      common /ctmp/ tmp(ndp4),itmp(ndp4)
+#include "ctmp.h"
+!     common /ctmp/ tmp(ndp4),itmp(ndp4)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1 iiia(200),iiva(200)
@@ -3166,7 +3352,9 @@ c
 !      common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
 #include "cij3.h"
 !      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#endif
 
+!!!!!!!!!!!!!!!!! need dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(3,8),ind(16),ninds(ndij)
 
       data ia / 1,1,1,2,5,5,5,2,6,6,6,2,3,3,3,4,7,7,7,4,8,8,8,4 /
@@ -3243,16 +3431,33 @@ c
       return
       end
 
-      subroutine tchng6 (nij,ij,ije,ntapef,iparm)       
-      implicit real*8 (a-h,o-z)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine tchng6 (nij,ij,ije,ntapef,iparm) 
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-      dimension ij(ndij),ije(0:ndij),ij1(ndij),ije1(0:ndij),itmp(ndij)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
+#endif
+
+!!!!!!!!! need own dynamic allocation of ij1,ije1, itmp !!!!!!!!!!!!!!!!!
+      dimension ij(ndij),ije(0:ndij),ij1(ndij),ije1(0:ndij),itmp(ndij)
 
       call dimx (ije(nij),ndp3,"tchng6  ")
       if (iparm.eq.2) then
@@ -3295,10 +3500,24 @@ c
       return
       end
 
-      subroutine tchng8 (nij,ij,ije,ntapef)       
-      implicit real*8 (a-h,o-z)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine tchng8 (nij,ij,ije,ntapef) 
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+      use ctmp_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-      dimension ij(ndij),ije(0:ndij),ije1(0:ndij)
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !     1iiia(200),iiva(200)
@@ -3307,6 +3526,10 @@ c
 !      common /i/ igen(nbig)
 #include "ctmp.h"
 !     common /ctmp/ tmp(ndp4),itmp(ndp4)
+#endif
+
+!!!!!!!!!!! need dynamic alloc of ije1 !!!!!!!!!!
+      dimension ij(ndij),ije(0:ndij),ije1(0:ndij)
 
       call dimx (ije(nij),ndp3,"tchng8  ")
       nij1=0
@@ -3332,11 +3555,22 @@ c
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tmpcng(nij,ij,ije,ntapef,nf,nt)
+!------------------------------------------------------------------------
 !
-c   change nf-index grouping to nt-index grouping.
+!           change nf-index grouping to nt-index grouping
 !
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -3344,7 +3578,11 @@ c   change nf-index grouping to nt-index grouping.
 #include "gen.h"
 !      common // gen(nbig)
 !      common /i/ igen(nbig)
+#endif
+
+!!!!!!!!!!!!!! need dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
       dimension ij(nij),ije(0:nij),ij1(ndij),ije1(0:ndij)
+
       integer*4 ch1,ch2
 
       if (nt.eq.nf) return
@@ -3383,10 +3621,25 @@ c   change nf-index grouping to nt-index grouping.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function v1det (ja,jb)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
+
       v1det=0.d0
       j1=(ja+1)/2
       j2=(jb+1)/2
@@ -3400,8 +3653,16 @@ c   change nf-index grouping to nt-index grouping.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function v2det (ja,jb,jc,jd)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       v2det=0.d0
       j1=(ja+1)/2
       j2=(jb+1)/2
@@ -3414,13 +3675,29 @@ c   change nf-index grouping to nt-index grouping.
       return
       end
 
-      function v3det (ja,jb,jc,jd,je,jf)                   
-      implicit real*8 (a-h,o-z)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      function v3det (ja,jb,jc,jd,je,jf) 
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use prm_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "prm.h"
 !     common /prm/ iperm(0:6,720)
 #include "dat.h"
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
       dimension jj1(6),ii(3)
+
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2
       jj1(3)=(jc+1)/2 
@@ -3451,10 +3728,25 @@ c   change nf-index grouping to nt-index grouping.
       return
       end
 
-      function v4det (ja,jb,jc,jd,je,jf,jg,jh)         
-      implicit real*8 (a-h,o-z)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      function v4det (ja,jb,jc,jd,je,jf,jg,jh) 
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use prm_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "prm.h"
 !      common /prm/ iperm(0:6,720)
+#endif
+
       dimension jj1(8),ii(4)
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2 
@@ -3486,14 +3778,30 @@ c   change nf-index grouping to nt-index grouping.
       return
       end 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function v5det (ja,jb,jc,jd,je,jf,jg,jh,ji,jj)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use prm_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "prm.h"
 !      common /prm/ iperm(0:6,720)
 #include "dat.h"
 !      common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#endif
 
       dimension jj1(10),ii(5)
+
       jj1(1)=(ja+1)/2
       jj1(2)=(jb+1)/2
       jj1(3)=(jc+1)/2
@@ -3532,11 +3840,25 @@ c   change nf-index grouping to nt-index grouping.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function v6det (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use prm_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "prm.h"
 !      common /prm/ iperm(0:6,720)
+#endif
       dimension jj1(12),ii(6)
+
       jj1(1)=(ja+1)/2 
       jj1(2)=(jb+1)/2 
       jj1(3)=(jc+1)/2 
@@ -3574,3 +3896,4 @@ c   change nf-index grouping to nt-index grouping.
 10    continue
       return
       end
+

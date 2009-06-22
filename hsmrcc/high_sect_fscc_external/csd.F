@@ -37,7 +37,6 @@
 !     common /csdtime/ csdstim,csdltim
 #include "dbg.h"
 !     common /dbg/ iter,idebug
-
 #endif
       character*256 filenm,filenm51,filenm6,filenm20
 

@@ -1,5 +1,11 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine clear(name,iii,iiv)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -7,8 +13,8 @@
 #include "implicit.h"
 #include "priunit.h"
 #else
-
 #include "implicit.h"
+#include "priunit.h"
 !     implicit real*8 (a-h,o-z)
 c  zero out file (create if does not exist)
 #include "param_ccsd.h"
@@ -34,6 +40,12 @@ c  zero out file (create if does not exist)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine clear6 (name,iii,iiv)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -44,6 +56,7 @@ c  zero out file (create if does not exist)
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
 #include "cfiles.h"
 !      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
@@ -65,8 +78,13 @@ c  zero out file (create if does not exist)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine clear8 (name,iii,iiv)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-
       use cfiles_mod
       use gen_mod
       use cij1_mod
