@@ -17,6 +17,12 @@ integer :: istat
  allocate(gen(nbig),stat=istat)
  allocate(igen(nbig),stat=istat)
 end subroutine init_gen_mod
+
+subroutine dealloc_gen_mod
+ deallocate(gen)
+ deallocate(igen)
+end subroutine dealloc_gen_mod
+
 end module gen_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -35,6 +41,10 @@ integer :: istat
  call alloc_stat_check("vint(ndint)",istat)
 end subroutine init_cint_mod
 
+subroutine dealloc_cint_mod
+ deallocate(iint)
+ deallocate(vint)
+end subroutine dealloc_cint_mod
 end module cint_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
