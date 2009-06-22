@@ -626,8 +626,8 @@ contains
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(*)
-      real(8), target  :: gao1(*)
+      real(8), target  :: gao(nr_ao_total)
+      real(8), target  :: gao1(nr_ao_total*3)
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
 
@@ -687,8 +687,8 @@ contains
     end if
 
     if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-      gao_p  => gao(1:ndim)
-      gao1_p => gao1(1:ndim*3)
+      gao_p  => gao
+      gao1_p => gao1
     end if
 
     do ipoint = 1, npoint
