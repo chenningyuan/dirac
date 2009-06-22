@@ -7,6 +7,8 @@ export MENU=blyp.inp
 ../run.sh
 export MENU=lda.inp
 ../run.sh
+export MENU=lda_default.inp
+../run.sh
 
 export MOL=he
 export MENU=blyp_sdft.inp
