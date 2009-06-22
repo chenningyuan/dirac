@@ -20,7 +20,7 @@
 .ITRINT
  0 0
 .EVCCNV
- 1.0D-4         !we use poor convergence threshold for the test
+ 1.0D-4
 **PROPERTIES
 *EXCITATIONS
 .EXCITATIONS
