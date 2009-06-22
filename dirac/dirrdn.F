@@ -1003,6 +1003,11 @@ C&&& MAXITR: Maximum number of SCF-iterations
                GO TO 100
     4          CONTINUE
 C&&& ERGCNV: Convergence on energy difference
+!radovan: please rewrite readin of .EVCCNV keyword 
+!         the way it is programmed it can crash if a !comment follows
+!         DIRAC stalled on on IBM p575+ "njord" using:
+!.EVCCNV
+! 1.0D-4         !we use poor convergence threshold for the test
                   READ(LUCMD,'(A80)') LINE
                   READ(LINE,*,END=401,ERR=401) SCFCNV(1),SCFCNV(2)
                   GOTO 402
