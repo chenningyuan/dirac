@@ -2564,10 +2564,20 @@ C
 C     For geometry optimizations to work the INPUT routines
 C     must always be called.
 C
-C     IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
-C     IF (DOMVO) CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
-C     IF (DORES) CALL RESINP(WORD,.TRUE.,WORK,LWORK)
-C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
+
+
+!from an email exchange: (in case you have the same question)
+!radovan:     why is the DIRAC input read in twice, like here [...]
+!Hans Jørgen:
+!             because the input routine is used to initialize its associated common block(s). 
+!             If the user hasn't specified this input module, 
+!             it still needs to be called in order to initialize with default values. 
+!             The SET / RESET code in the beginning of DHFINP takes care of that the variables 
+!             are not re-initialized if the user has specified something in input.
+!             This way of doing it goes back to Trygve in ABACUS, and was adopted by Trond. 
+!             I have usually programmed it differently, with a separate subroutine to initialize variables. 
+!             You can argue for both ways of doing it.
+
       CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
       CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2NOINP(WORD,.TRUE.,WORK,LWORK)
