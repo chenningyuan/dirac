@@ -306,6 +306,7 @@ setup_command()
 #
 execute_dirac()
 {
+#  radovan: on IBM p575+ "njord" there is no short option to hostname
    master=`hostname -s`
    if test -f dirac_machines; then
       unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
@@ -441,6 +442,7 @@ remove_work_dir()
 #  We alays delete the work directories on remote machines.
 #  These directories are not suited for restart.
 #
+#  radovan: on IBM p575+ "njord" there is no short option to hostname
    master=`hostname -s`
 
    if test -f $WRK/dirac_machines; then # check the presence of "dirac_machines" file
@@ -583,6 +585,7 @@ distribute_work_dir()
 #  Initialize value of master (without domain name,
 #  since on some installations it is absent in the machine list).
 #
+#  radovan: on IBM p575+ "njord" there is no short option to hostname
    master=`hostname -s` 
 #
 #  Loop over the remote machines and copy the contents of the work directory.
