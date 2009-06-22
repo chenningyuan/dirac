@@ -514,6 +514,7 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
+       use dirac_cfg
 #ifdef MOD_DFT
        use dft_cfg
        use dft_main
@@ -641,7 +642,7 @@ C          Hermitian operator
 !       construct kohn-sham contribution
 !       ================================
 
-        if (dft_cfg_is_dft_calculation) then
+        if (dirac_cfg_dft_calculation) then
 
           call genden(fao, cmo, 1, iprint)
 
@@ -667,7 +668,7 @@ C          Hermitian operator
 C
 C     Construct Kohn-Sham contribution
 C     ================================
-      IF(dft_cfg_is_dft_calculation) THEN
+      IF(dirac_cfg_dft_calculation) THEN
       ENDIF
 #endif
 

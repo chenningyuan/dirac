@@ -3,10 +3,7 @@
 !
 ! *** Wave function module ***
 !
-!  DOSCF - either DODHF or DODFT true
-!  DODHF - perform Dirac-Hartee-Fock calculation
 !  DOMP2 - perform direct second-order Moeller-Plesset calculation
-!  DODFT - perform Kohn-Sham DFT calculation
 !  L1ORBM- orbital pre-modifications (reordering, rotations) 
 !  L2ORBM- orbital post-modifications (reordering, phase adjustment) 
 !  DORES - resolution of open-shell manifold with GOSCIP
@@ -24,13 +21,13 @@
 !  DOCOSCI- do COSCI calculation 
 !  DOGOSCI- do GOSCI calculation 
 
-      LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
+      LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGOSCI
 
       COMMON /DCLPSI/                                                   &
-     &        DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
+     &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
      &        DOGOSCI

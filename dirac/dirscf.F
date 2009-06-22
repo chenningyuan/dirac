@@ -41,6 +41,7 @@ C     Last revisions: Sep 11 1995 - tsaue
 C                     2005/6 MI to make BSS2DC/DC2BSS available
 C
 C***********************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -66,7 +67,7 @@ C
 #include "memint.h"
 C
       WFCONV = .FALSE.
-      IF(DODFT) THEN
+      IF(dirac_cfg_dft_calculation) THEN
         IF (BSS) THEN
           CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
      &       '*',125)
@@ -357,6 +358,7 @@ C                     July 2005 - MI - adapted for DC2BSS calculations.
 C
 C*****************************************************************************
 
+      use dirac_cfg
 #ifdef MOD_DFT
       use dft_main
       use dft_cfg
@@ -554,7 +556,7 @@ C
 !       construct kohn-sham contribution
 !       ================================
 
-        if (dft_cfg_is_dft_calculation) then
+        if (dirac_cfg_dft_calculation) then
 
 #ifdef MOD_DNF
         if (.not. df_fitvxc) then
@@ -749,7 +751,7 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
 #ifdef MOD_DFT
-          IF(dft_cfg_is_dft_calculation) THEN
+          IF(dirac_cfg_dft_calculation) THEN
           CPUTID = SECTID(TDXC)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
@@ -1181,6 +1183,7 @@ C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
 
+      use dirac_cfg
 #ifdef MOD_DFT
       use dft_cfg
       use dft_main
@@ -1378,7 +1381,7 @@ C
 !       construct kohn-sham contribution
 !       ================================
 
-        if (dft_cfg_is_dft_calculation) then
+        if (dirac_cfg_dft_calculation) then
 
 #ifdef MOD_DNF
         if (.not. df_fitvxc) then
@@ -1580,6 +1583,7 @@ C                    Sept 2005, Miro Ilias - added control outputs
 C
 C*****************************************************************************
 
+      use dirac_cfg
 #ifdef MOD_DFT
       use dft_temp
 #endif
@@ -1663,11 +1667,14 @@ C
             END DO
          END DO
       END DO
-C...  If DFT correct for contribution from Kohn-Sham potential
-C...  to two-electron energy
-      IF(DODFT) THEN
-        E(1,2,0) = E(1,2,0) - dft_temp_xc_mat_energy
-      ENDIF
+
+#ifdef MOD_DFT
+!     correct for contribution from ks potential to two-electron energy
+      if (dirac_cfg_dft_calculation) then
+        e(1, 2, 0) = e(1, 2, 0) - dft_temp_xc_mat_energy
+      end if
+#endif
+
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
@@ -1691,9 +1698,13 @@ C
          DHFERG = DHFERG + CORRLV
       ENDIF
       ELERGY = E1PART + E2PART
-      if (dodft) then
+
+#ifdef MOD_DFT
+      if (dirac_cfg_dft_calculation) then
         elergy = elergy + dft_temp_xc_energy
       end if
+#endif
+
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
@@ -1754,9 +1765,12 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-            IF (DODFT) WRITE(LUPRI,'(6X,A,'//FMT//')')
-     +         '* DFT xc energy              :  ',
+#ifdef MOD_DFT
+            IF (dirac_cfg_dft_calculation) 
+     &         WRITE(LUPRI,'(6X,A,'//FMT//')')
+     &         '* DFT xc energy              :  ',
      &         dft_temp_xc_energy
+#endif
          END IF
       ENDIF
 C

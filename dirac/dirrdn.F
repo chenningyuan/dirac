@@ -759,6 +759,7 @@ C***********************************************************************
 c#ifdef MOD_EMB
 c      USE Embedding
 c#endif
+       use dirac_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -869,7 +870,7 @@ C     ... default do QCDHF if DIIS does not converge
 C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
-      IF(DODFT) AOC = .FALSE.
+      IF (dirac_cfg_dft_calculation) AOC = .FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1634,7 +1635,7 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF(DFTHAM) THEN
+      IF(dirac_cfg_dft_calculation) THEN
         WRITE(LUPRI,'(A)')
      &   ' DHFINP: Set-up for Kohn-Sham calculation:'
       ELSE
@@ -1674,7 +1675,7 @@ C#ifdef MOD_EMB
 C      CALL report_embedding ()
 C#endif
 
-      IF(.NOT.DOSCF) GOTO 999
+      IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
       IF (BNCRON) THEN
          WRITE (LUPRI,'(A)')
@@ -2127,6 +2128,7 @@ C       Written by Trond Saue, Tromsoe April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -2159,9 +2161,6 @@ C
 C     Initialize /CBLPSI/
 C     ===================
 C
-      DOSCF   = .FALSE.
-      DODHF   = .FALSE.
-      DODFT   = .FALSE.
       DOMP2   = .FALSE.
       DORES   = .FALSE.
       DOCCM   = .FALSE.
@@ -2240,12 +2239,10 @@ C
             CALL QUIT('Illegal keyword in PSIINP.')
 C&&&& DHF: Perform Hartree-Fock or Kohn-Sham calculation
   101    CONTINUE
-            DOSCF = .TRUE.
-            IF(DFTHAM) THEN
-              DODFT = .TRUE.
-            ELSE
-              DODHF = .TRUE.
-            ENDIF
+            dirac_cfg_scf_calculation = .true.
+            if (.not. dirac_cfg_dft_calculation) then
+              dirac_cfg_hf_calculation = .true.
+            end if
             NJOBS = NJOBS +1
             GO TO 100
 C&&&& MP2: Perform second-order Moller-Plesset calculation
@@ -2389,14 +2386,21 @@ C
       IF(NJOBS.GT.0) THEN
         WRITE(LUPRI,'(A)') ' Jobs in this run (in execution order):'
       ENDIF
-      IF(DODHF) WRITE(LUPRI,'(A)') ' * Hartree-Fock calculation'
-      IF(DODFT) WRITE(LUPRI,'(A)') ' * Density functional '//
+
+      if (dirac_cfg_hf_calculation) then
+        WRITE(LUPRI,'(A)') ' * Hartree-Fock calculation'
+      end if
+
+      if (dirac_cfg_dft_calculation) then
+#ifdef MOD_DFT
+               WRITE(LUPRI,'(A)') ' * Density functional '//
      &    'calculation (Kohn-Sham method)'
-#ifndef MOD_DFT
-      IF(DODFT) THEN
+#else
         CALL QUIT('*** DFT is not included in this version')
-      ENDIF
-#endif
+#endif /* ifdef MOD_DFT */
+      end if
+
+
       IF(DORES) WRITE(LUPRI,'(A)')
      &   ' * Followed by resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(A)') ' * MP2 calculation'
@@ -3910,6 +3914,7 @@ C     Last revision: May 27 1998 - tsaue and kmi
 C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
+      use dirac_cfg
 #ifdef MOD_EMB
       USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
 #endif
@@ -4012,7 +4017,6 @@ C
       SPINFR2 = .FALSE.
       DOLVC   = .FALSE.
       LVNEW   = .FALSE.
-      DFTHAM  = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
@@ -4084,10 +4088,6 @@ C ... get integral flags in advance
 CMI ... this routine is beeing called after HAMINP, in PAMINP
 CMI   CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
-#ifdef MOD_DFT
-      dft_cfg_set    = .false.
-      dft_cfg_is_dft_calculation = .false.
-#endif
 
 C
 C     Read menu file
@@ -4276,8 +4276,8 @@ c DIRAOF->SKLFC1
 #endif /* MOD_ERI */
 
                END IF
-               DFTHAM = .TRUE.
-      dft_cfg_is_dft_calculation = .true.
+               dirac_cfg_dft_calculation = .true.
+               dirac_cfg_scf_calculation = .true.
                SETFUN = .TRUE.
 #endif
             GO TO 100
@@ -4923,7 +4923,7 @@ CMI    ... quantum dots
       END IF
 
 #ifdef MOD_DFT
-      IF(DFTHAM) THEN
+      IF(dirac_cfg_dft_calculation) THEN
          CALL DFTREPORT()
 
 #ifdef MOD_ERI
@@ -5448,7 +5448,7 @@ C
     1 CONTINUE
 
 #ifdef MOD_DFT
-      if (dftham) then
+      if (dirac_cfg_dft_calculation) then
         call parse_dft_input(word, .true.)
         call consistency_after_dft_input()
         call report_after_dft_input()
@@ -6019,6 +6019,7 @@ C
 C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -6045,7 +6046,7 @@ C
       ENDIF
 
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
-      IF (DORES .AND.DODFT)
+      IF (DORES .AND.dirac_cfg_dft_calculation)
      &   CALL QUIT ('.RESOLVE does not work with DFT')
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
@@ -6094,7 +6095,7 @@ C
 C
 C     Checks related to Gaunt. Allow dft+"hf gaunt" for developers.
 C
-      IF (GAUNT.AND.(DOTRA.OR.DODFT)) THEN
+      IF (GAUNT.AND.(DOTRA.OR.dirac_cfg_dft_calculation)) THEN
        WRITE (LUPRI,*) " Gaunt only available for Hartree-Fock"
        WRITE (LUPRI,*) ' "HF Gaunt" will be added in DFT'
       END IF

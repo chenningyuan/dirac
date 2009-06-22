@@ -37,6 +37,7 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -58,7 +59,8 @@ C
 C
       IF(.NOT.DONGRD) THEN
 C       We want the analytical gradient, check whether it is implemented
-        DONGRD = NOGRAD.OR.DODFT.OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
+        DONGRD = NOGRAD.OR.dirac_cfg_dft_calculation
+     &           .OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
      &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')

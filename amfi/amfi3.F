@@ -1893,6 +1893,7 @@ c     amfi3_verbose = .false.
       enddo
       enddo
 
+!radovan: why is this logical here?
       IF (doscf) THEN
 CMI ... run the relscf.x stuff
 c

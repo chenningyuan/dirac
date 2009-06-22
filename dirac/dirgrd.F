@@ -38,6 +38,7 @@ C
 C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -72,9 +73,7 @@ C
       LUMGRD = 80
       CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      IF (DODHF) THEN
-chj   IF (DODHF .OR. .NOT. (DOMP2 .OR. DODFT) ) THEN
-chj 03-Jul-2002: only for DODHF
+      IF (dirac_cfg_hf_calculation) THEN
 C
 C        Initialize some variables
 C
@@ -82,7 +81,8 @@ C        If calculation of gradient requested without
 C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
 C
-         IF (.NOT. DODHF) THEN
+         IF (.NOT. dirac_cfg_hf_calculation) THEN
+!radovan: this will never happen ...
             WRITE(LUPRI,'(/A)')
      &         'RMOLGRD WARNING: Assuming DHF wave function!'
          END IF

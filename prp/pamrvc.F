@@ -1391,6 +1391,7 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
+       use dirac_cfg
 #ifdef MOD_DFT
        use dft_cfg
 #endif
@@ -1424,7 +1425,7 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dft_cfg_is_dft_calculation .and.
+         if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
@@ -1443,7 +1444,7 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dft_cfg_is_dft_calculation .and.
+         if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
@@ -1465,7 +1466,7 @@ C
 #ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
-         if (dft_cfg_is_dft_calculation .and.
+         if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
 #endif
@@ -3530,6 +3531,7 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+        use dirac_cfg
 #ifdef MOD_DFT
         use dft_cfg
         use dft_main
@@ -3611,7 +3613,7 @@ C
 !       construct kohn-sham contribution
 !       ================================
 
-        if (dft_cfg_is_dft_calculation) then
+        if (dirac_cfg_dft_calculation) then
 
 #ifdef MOD_DNF
         if (.not. df_fitvxc) then

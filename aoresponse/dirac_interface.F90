@@ -561,13 +561,13 @@ contains
 
   function do_dft() result(l)
 
-    use dft_cfg
+    use dirac_cfg
 
 !   ----------------------------------------------------------------------------
     logical :: l
 !   ----------------------------------------------------------------------------
 
-    l = dft_cfg_is_dft_calculation
+    l = dirac_cfg_dft_calculation
 
   end function
 

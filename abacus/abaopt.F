@@ -2253,6 +2253,7 @@ C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
+      use dirac_cfg
       use dft_cfg
 
 #include "implicit.h"
@@ -2284,10 +2285,12 @@ C
       END IF
       NEWGEO = .TRUE.
 
-      if (dft_cfg_is_dft_calculation) then
+#ifdef MOD_DFT
+      if (dirac_cfg_dft_calculation) then
 !       get a new grid at new geometry
         dft_temp_grid_is_done = .false.
       end if
+#endif /* ifdef MOD_DFT */
 
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
@@ -2363,7 +2366,7 @@ C
             ENERGY = RGETCI()
          ELSE IF (DOMP2) THEN
             ENERGY = EMP2+DHFERG
-         ELSE IF (DODHF.OR.DODFT) THEN
+         ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
          ELSE
             call quit('no wave function...')
@@ -7450,6 +7453,9 @@ C     no need to run without symmetry).
 C
 C     K.Ruud, Feb.-6 1997
 C
+#ifdef PRG_DIRAC
+         use dirac_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7483,7 +7489,7 @@ C
          ECORR = RGETCCSD()
       ELSE IF (DOMP2) THEN
          ECORR = DHFERG+EMP2
-      ELSE IF (DODHF.OR.DODFT) THEN
+      ELSE IF (dirac_cfg_scf_calculation) THEN
          ECORR = DHFERG
       ELSE
          call quit('unknown wave function...')
@@ -7591,7 +7597,7 @@ C
             ECORR = RGETCCSD()
          ELSE IF (DOMP2) THEN
             ECORR = DHFERG+EMP2
-         ELSE IF (DODHF.OR.DODFT) THEN
+         ELSE IF (dirac_cfg_scf_calculation) THEN
             ECORR = DHFERG
          ELSE
             call quit('unknown wave function...')

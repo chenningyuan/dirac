@@ -2290,6 +2290,7 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use dirac_cfg
 #ifdef MOD_DFT
       use dft_cfg
       use dft_main
@@ -2380,7 +2381,7 @@ C
 !     construct XC contribution
 !     =========================
 
-      if (dft_cfg_is_dft_calculation) then
+      if (dirac_cfg_dft_calculation) then
 
 !       get unperturbed density matrix
         call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)

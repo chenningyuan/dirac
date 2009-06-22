@@ -11,9 +11,12 @@ module dirac_cfg
 
   save
 
+!                    kohn-sham dft
   logical, public :: dirac_cfg_dft_calculation = .false.
-! logical, public :: dirac_cfg_hf_calculation  = .false.
-!                    etc ...
+!                    hartree-fock
+  logical, public :: dirac_cfg_hf_calculation  = .false.
+!                    hf or ks
+  logical, public :: dirac_cfg_scf_calculation = .false.
 
   private
 

@@ -109,6 +109,7 @@ CONTAINS
 !---------------------------------------------------------------------
 
     SUBROUTINE report_embedding ()
+      use dirac_cfg
       IMPLICIT NONE
 
 #include "priunit.h"
@@ -124,7 +125,7 @@ CONTAINS
 
           ! some consistency checks
 
-          IF (.not. DFTHAM) THEN
+          IF (.not. dirac_cfg_dft_calculation) THEN
              CALL quit ("embedding only works with DFT at the moment")
           end IF
 

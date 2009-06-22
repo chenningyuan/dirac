@@ -17,8 +17,7 @@ module dft_cfg
 
   character(30) :: dft_cfg_gridfile
 
-  logical       :: dft_cfg_set
-  logical       :: dft_cfg_is_dft_calculation
+  logical       :: dft_cfg_set = .false.
 
   logical       :: dft_cfg_keep_ao
   logical       :: dft_cfg_explicit_potential

@@ -136,6 +136,7 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -160,7 +161,8 @@ C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************
 C***********************************************************************
 C
-      IF(DOANA .AND. .NOT.((DOSCF.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
+      IF(DOANA .AND. .NOT.
+     & ((dirac_cfg_scf_calculation.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
      &   CALL PAMANA(WORK,LWORK)
 C
 C
@@ -193,6 +195,7 @@ C     Revision for MCSCF J. Thyssen - Oct 1998
 C     Restructured 2002 by Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -218,7 +221,7 @@ C***** D I R A C - H A R T R E E - F O C K *****************************
 C***** o r   D I R A C - K O H N - S H A M *****************************
 C***********************************************************************
 C
-      IF(DOSCF .AND. DOPSI) THEN
+      IF(dirac_cfg_scf_calculation .AND. DOPSI) THEN
 C
 C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
@@ -240,7 +243,8 @@ C        *************************************************
 C        *** Call PSIOPT for second order optimization ***
 C        *************************************************
 C
-         IF ( .NOT. NOQCDHF .AND. .NOT. DODFT .AND.
+         IF ( .NOT. NOQCDHF .AND. 
+     &        .NOT. dirac_cfg_dft_calculation .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
 #ifdef MOD_KRMC
             CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
@@ -270,7 +274,7 @@ C***** R E S O L V E    O P E N - S H E L L  S T A T E S ***************
 C***********************************************************************
 C
       IF(DORES.AND.DOPSI) THEN
-         IF (.NOT.DOSCF) THEN
+         IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
             CALL TDHFORB
@@ -373,7 +377,7 @@ C*****                  added by sya,2007.01.23,ulp      ***************
 C***********************************************************************
 C
       IF(DOCOSCI.AND.DOPSI) THEN
-!@d      IF (.NOT.DOSCF) THEN
+!@d      IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
 !@d         CALL TDHFORB

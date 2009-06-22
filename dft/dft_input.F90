@@ -8,7 +8,6 @@ module dft_input
   public get_lucmd
   public get_lupri
   public set_lscale_dft_gaunt
-  public set_dftham
   public parse_dft_input
   public consistency_after_dft_input
   public report_after_dft_input
@@ -46,14 +45,6 @@ contains
 #include "dcbham.h"
 
     lscale_dft_gaunt = .true.
-
-  end subroutine
-
-  subroutine set_dftham()
-
-#include "dcbham.h"
-
-    dftham = .true.
 
   end subroutine
 
@@ -200,7 +191,6 @@ contains
             dft_cfg_alda_ha                 = .true.
             call setaldahs(.true.) !activate alda for the h+ part
             call setaldaha(.true.) !activate alda for the h- part
-            call set_dftham()
 
           case ('.SDFT  ')
             dft_cfg_sdft = .true.
