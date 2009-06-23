@@ -1,19 +1,42 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine chv
-
-      implicit real*8 (a-h,o-z)
-
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use gen_mod
+      use cij1_mod
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij1.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+#endif
 
-      common // gen(nbig)
-      common /i/ igen(nbig)
-      common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /csdtime/ csdstim,csdltim
       character*256 filenm,filenm51,filenm53,filenm6,filenm20,filenm31
+
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))
@@ -23,6 +46,7 @@ c     iopt(6) - start avrg.
 c     iopt(8) - fock.
 c     iopt(10) .ne.0 - do not save pppp.
       real*4 cputime
+
       filenm(1:1)=' '
       call getenv('input',filenm)
       if (filenm(1:1).eq.' ') filenm='input'
@@ -309,12 +333,8 @@ c  different endings
       end
 
 c *********************************************
-!     subroutine ordvv
       subroutine ordvv_chv
-      implicit real*8 (a-h,o-z)
-#include "param_ccsd.h"
-!     include 'parameters.f'
-
+!------------------------------------------------------------------------
 c va: pphh
 c vb: phph
 c vc: ppph
@@ -333,9 +353,26 @@ c              phhh 2134 = vd12
 c              phhh 2143 = vd14
 c              gphh 1324 = vva1
 c              gpph 1324 = vvc1
-      common /cint/nint,idum1,vint(ndint),iint(ndint)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use fock_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+#include "param_ccsd.h"
+!     common /cint/nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
 c
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
@@ -379,8 +416,23 @@ c
       end
 c**************************************************************
       subroutine calvv0_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call ordta0_chv
       call move("gphh","vv0 ")
       call diag3a_chv
@@ -427,19 +479,30 @@ c
       call ordtb0_chv
 c
       call move("gh  ","vv10")
-!     call dg1n6
       call dg1n6_chv
-!     call dg1n7
       call dg1n7_chv
-!     call dg1n8
       call dg1n8_chv
 c
       return
       end 
 C  *******************************************************************
       subroutine calvv04
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       if (iopt(17).eq.4) then
 c  dg4n1b
         call reord6   ("t30 ","s1  ",124563)
@@ -551,8 +614,23 @@ c   diag 3
       end
 C  *******************************************************************
       subroutine calvv03
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+!     implicit real*8 (a-h,o-z)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1c 
         call mult6    ("ghhh","tc  ","s1  ",1)
@@ -656,7 +734,6 @@ c   dg3n7a,9a
       return
       end
 c ****************************************
-!     subroutine pdiag
       subroutine pdiag_chv
       call pdig9_chv
       call pdig11_chv
@@ -671,10 +748,19 @@ c      call pdgt1p4
       return
       end
 c ******************************************
-!     subroutine tvinit
       subroutine tvinit_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call move    ("vv0 ","thv ")
       call diveps  ("thv ")
       call cmult   ("thv ",-1.d0,"thv ")
@@ -697,7 +783,7 @@ c ******************************************
       end
 c **************************************************
       subroutine ordta0_chv
-      implicit real*8 (a-h,o-z)
+!------------------------------------------------------------------------
 c  tc1 = tc 1324
 c  tcm1 = tcm 1324
 c  tc2 = tc 1423
@@ -709,6 +795,10 @@ c  t1cor = t1c 21
 c  tb1 = tnew 1324
 c  tb4 = tnew 3412
 c  tb15 = tnew 1342
+!------------------------------------------------------------------------
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call reorder("tc  ","tc1 ",1324,4,0)
       call reorder("tc  ","tc2 ",1423,4,0)
       call reorder("tc  ","tc3 ",1432,4,0)
@@ -726,7 +816,9 @@ c  tb15 = tnew 1342
       end
 c ******************************************************
       subroutine ordtb0_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call reorder("tb1 ","s2  ",1324,4,1)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
       call reorder("tb4 ","s2  ",3412,4,1)
@@ -737,9 +829,11 @@ c ******************************************************
       return
       end
 c *****************************************************
-!     subroutine ordtva
       subroutine ordtva_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call reorder("thv ","ta1 ",1324,4,1)
       call reorder("thv ","ta2 ",1423,4,1)
       call reorder("tm  ","tm2 ",1423,4,1)
@@ -758,8 +852,18 @@ c *****************************************************
       end
 c ****************************************************
       subroutine caltv4
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       if (iopt(17).eq.4) then
 c  dg4n1a
         call reord6   ("t31 ","s1  ",124563)
@@ -1069,10 +1173,24 @@ c   diag 3c
       return
       end
 C  *******************************************************************
-!     subroutine caltv3
       subroutine caltv3_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       if (iopt(17).lt.3) then
 c  dg3n1a
         call mult6     ("thv ","phhh","s1  ",1)
@@ -1346,33 +1464,35 @@ c   dg3n8b,10b,10c
       end
 C  *******************************************************************
       subroutine caltv2_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call move("vv0 ","tnew")
       call diag2a_chv
       call diag4a_chv
       call diag5a_chv
       call diag6a_chv
-!     call diag7
       call diag7_chv
-!     call diag9
       call diag9_chv
-!     call diag11
       call diag11_chv
-!     call diag12
       call diag12_chv
       call diag13a_chv
       call diag13b_chv
-!     call diag14
       call diag14_chv
-!     call diag15
       call diag15_chv
       call diag21a_chv
       call diag22b_chv
       call diag23b_chv
-!     call diag28a
       call diag28a_chv
-!     call dgt1p4
       call dgt1p4_chv
       if (iopt(17).ge.1) then
 c  diag 30a
@@ -1417,7 +1537,7 @@ c    diag 34,35a,35b
         call add       ("va1 ",2.d0,"va2 ",-1.d0,"s1  ")
         call mult      ("s1  ","t1c ","s2  ",202)
 C  g1 Feb 95 (Gal) 
-	call add       ("s2  ",1.d0,"ph  ",1.d0,"s2  ")  
+        call add       ("s2  ",1.d0,"ph  ",1.d0,"s2  ")  
         call mult6     ("s3  ","s2  ","s1  ",0)
         call add       ("s1  ",1.d0,"tnew",1.d0,"tnew")
 c    diag 36a,38a
@@ -1475,20 +1595,29 @@ c  diag 42
       end
 c **********************************************************
       subroutine caltv1_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+!
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call move("vv10","t1nw")
-!     call dg1n2
       call dg1n2_chv
-!     call dg1n3
       call dg1n3_chv
-!     call dg1n5
       call dg1n5_chv
-!     call dg1n9
       call dg1n9_chv
-!     call dg1n10
       call dg1n10_chv
-!     call dg1n11
       call dg1n11_chv
       if (iopt(17).ne.0) then
 c  dg1n13,14
@@ -1502,7 +1631,6 @@ c  dg1n13,14
         call add       ("s3  ",1.d0,"t1nw",1.d0,"t1nw")
       end if
 c
-!      call fold("t1nw","thvf")
       call fold_ccsd("t1nw","thvf")
       call dfold1_chv
       call diveps("t1nw")
@@ -1512,7 +1640,9 @@ c
       end
 C  ********************************************************************
       subroutine ordtvb_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call reorder("tb1 ","s2  ",1324,5,1)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call reorder("tb2 ","s2  ",1423,5,1)
@@ -1529,9 +1659,10 @@ C  ********************************************************************
       return
       end
 c *************************************************
-!     subroutine diag7
       subroutine diag7_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("tm  ","hhhh","s2  ",222)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call prt("s2  ","diag7   ",3)
@@ -1540,7 +1671,9 @@ c *************************************************
       end
 c **********************************************
       subroutine diag3a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("gp  ","tc3 ","s2  ",131)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
       call prt("s2  ","diag3a  ",3)
@@ -1549,7 +1682,9 @@ c **********************************************
       end
 c ***************************************************
       subroutine diag2a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 2a, 2b, 3b
 c   2a
       call mult("ta6 ","hh  ","s2  ",311)
@@ -1568,7 +1703,10 @@ c   3b
       end
 c ******************************************************
       subroutine diag4a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call add("va1 ",2.d0,"phph",-1.d0,"s2  ")
       call mult("ta1 ","s2  ","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
@@ -1578,7 +1716,10 @@ c ******************************************************
       end
 c *****************************************************
       subroutine diag4b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call add("vva1",2.d0,"ghph",-1.d0,"s2  ")
       call mult("s2  ","tc1 ","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",1.d0,"tb1 ")
@@ -1588,7 +1729,10 @@ c *****************************************************
       end
 c ********************************************
       subroutine diag5a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call mult("tm2 ","va1 ","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
       call prt("s3  ","-diag5a ",3)
@@ -1597,7 +1741,9 @@ c ********************************************
       end
 c *********************************************************
       subroutine diag5b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("vva1","tcm2","s3  ",222)
       call add("tb1 ",1.d0,"s3  ",-1.d0,"tb1 ")
       call prt("s3  ","-diag5b ",3)
@@ -1606,7 +1752,9 @@ c *********************************************************
       end
 c *******************************************************
       subroutine diag6a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("tm2 ","phph","s3  ",222)
       call add("tb15",1.d0,"s3  ",-1.d0,"tb15")
       call prt("s3  ","-diag6b ",3)
@@ -1615,7 +1763,9 @@ c *******************************************************
       end
 c **********************************************************
       subroutine diag6b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("ghph","tcm2","s3  ",222)
       call add("tb15",1.d0,"s3  ",-1.d0,"tb15")
       call prt("s3  ","-diag6b ",3)
@@ -1623,9 +1773,10 @@ c **********************************************************
       return
       end
 c *************************************************************
-!     subroutine diag8
       subroutine diag8_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("gppp","tcm4","s2  ",222)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
       call prt("s2  ","diag8   ",3)
@@ -1634,7 +1785,10 @@ c *************************************************************
       end
 c ******************************************************
       subroutine pdig9_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c   incl diags 9 10a 20a 23a
       call add("tc1 ",-2.d0,"tcm2",1.d0,"s2  ")
       call add("va1 ",-2.d0,"va2 ",1.d0,"s3  ")
@@ -1655,8 +1809,9 @@ c   23a
       return
       end
 c **********************************************************
-!     subroutine diag9
       subroutine diag9_chv
+#include "implicit.h"
+#include "priunit.h"
       call mult("ta1 ","pdg9","s2  ",222)
       call add("tb1 ",1.d0,"s2  ",1.d0,"tb1 ")
       call prt("s2  ","diag9   ",3)
@@ -1665,7 +1820,10 @@ c **********************************************************
       end
 c ************************************************************
       subroutine pdig11_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c   incl diags 10b, 11,24a
 c   10b
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
@@ -1681,7 +1839,6 @@ c   24a
       return
       end
 c ************************************************
-!     subroutine diag11
       subroutine diag11_chv
       call mult("tm2 ","pd11","s2  ",222)
       call add("tb1 ",1.d0,"s2  ",1.d0,"tb1 ")
@@ -1691,7 +1848,10 @@ c ************************************************
       end
 c ***************************************************
       subroutine pdig12_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c   incl diags 12, 25a
       call mult("tcm2","va2 ","pd12",222)
 c   25a
@@ -1702,7 +1862,6 @@ c   25a
       return
       end
 c ***************************************************
-!     subroutine diag12
       subroutine diag12_chv
       call mult("tm2 ","pd12","s2  ",222)
       call add("tb15",1.d0,"s2  ",1.d0,"tb15")
@@ -1712,7 +1871,10 @@ c ***************************************************
       end
 c ************************************************************
       subroutine pdig13a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c   incl 13a 18a
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("tcm1","s2  ","pd13",113)
@@ -1736,7 +1898,9 @@ c **********************************************************
       end
 c ******************************************************
       subroutine diag13b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call add("pphh",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("tm  ","s2  ","s3  ",113)
       call mult("s3  ","tc3 ","s2  ",131)
@@ -1747,7 +1911,9 @@ c ******************************************************
       end
 c *********************************************************
       subroutine pdig14_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 14ab, 19ab
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
       call mult("tcm4","s2  ","pd14",113)
@@ -1760,8 +1926,9 @@ c   19
       return
       end
 c *********************************************
-!     subroutine diag14
       subroutine diag14_chv
+#include "implicit.h"
+#include "priunit.h"
 c   14a, 19a
       call mult("thv ","pd14","s2  ",311)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -1775,14 +1942,15 @@ c   14b, 19b
       end
 c ******************************************************
       subroutine pdig15
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("tcm4","va4 ","pd15",222)
       call prt("pd15","pdig15  ",3)
       call prtime("pdig15  ",0,1)
       return
       end
 c ************************************************************
-!     subroutine diag15
       subroutine diag15_chv
       call mult("tm  ","pd15","s2  ",222)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
@@ -1792,7 +1960,9 @@ c ************************************************************
       end
 c ************************************************************
       subroutine diag18b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call add("vvc1",2.d0,"gpph",-1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
       call mult("s3  ","tc3 ","s2  ",131)
@@ -1803,7 +1973,9 @@ c ************************************************************
       end
 c **********************************************************
       subroutine diag20b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 20b, 21b, 17a
       call add("vvc1",2.d0,"gpph",-1.d0,"s2  ")
       call mult("tc1 ","s2  ","s3  ",222)
@@ -1823,7 +1995,9 @@ c ---------------------------------
       end
 c ***************************************************
       subroutine diag21a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 21a, 27a, 29a
 c   27a
       call mult("thv ","vd14","s2  ",222)
@@ -1843,7 +2017,9 @@ c ------------
       end
 c ********************************************
       subroutine diag22a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   diag 17b
       call reorder("gphp","s3  ",2314,5,0)
 c  incl 22a, 17b
@@ -1859,7 +2035,9 @@ c ----------------------------------
       end
 c **************************************************
       subroutine diag22b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 22b, 27b, 29b
       call mult("ta2 ","vc10","s2  ",222)
 c   27b
@@ -1879,7 +2057,9 @@ c -------------
       end
 c ************************************************
       subroutine pdig23b_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 23b, 24b, 25b, 26b, 16a, 18b
 c   23b
       call add("vd7 ",-2.d0,"vd8 ",1.d0,"s3  ")
@@ -1917,9 +2097,10 @@ c *************************************************
       return
       end
 c *************************************************
-!     subroutine diag28a
       subroutine diag28a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("t1c ","ph  ","s2  ",111)
       call mult("ta15","s2  ","s3  ",311)
       call add("tb2 ",1.d0,"s3  ",-1.d0,"tb2 ")
@@ -1929,7 +2110,9 @@ c *************************************************
       end
 c ***************************************************
       subroutine diag26a_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 26a, 16b
       call reorder("tcm ","s1  ",3412,5,0)
       call reorder("gpph","s2  ",1432,5,0)
@@ -1946,9 +2129,11 @@ c --------------------------------------
       return
       end
 c ************************************************
-!     subroutine dgt1p4
       subroutine dgt1p4_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c  -2*t1**4 compensates for overcounting.
       call mult("t1cr","va4 ","s3  ",131)
       call mult("t1cr","s3  ","s2  ",131)
@@ -1961,9 +2146,10 @@ c ------ pdgt1p4 to here
       return
       end
 c *************************************************
-!     subroutine dg1n2
       subroutine dg1n2_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call add("vd14",-2.d0,"vd12",1.d0,"s2  ")
       call mult("tm  ","s2  ","s3  ",113)
       call add("t1nw",1.d0,"s3  ",1.d0,"t1nw")
@@ -1972,9 +2158,10 @@ c *************************************************
       return
       end
 c ***************************************************
-!     subroutine dg1n3
       subroutine dg1n3_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   incl 3 + 4
       call add("ta1 ",2.d0,"tm2 ",-1.d0,"s2  ")
       call mult("s2  ","ph  ","s3  ",202)
@@ -1984,9 +2171,10 @@ c   incl 3 + 4
       return
       end
 c ****************************************************
-!     subroutine dg1n5
       subroutine dg1n5_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("t1hv","hh  ","s2  ",111)
       call add("t1nw",1.d0,"s2  ",-1.d0,"t1nw")
       call prt("s2  ","-dg1n5  ",3)
@@ -1994,9 +2182,11 @@ c ****************************************************
       return
       end
 c *****************************************************
-!     subroutine dg1n6
       subroutine dg1n6_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call add("gpph",2.d0,"vvc1",-1.d0,"s2  ")
       call reorder("tcm ","s1  ",3214,5,0)
       call mult("s2  ","s1  ","s3  ",113)
@@ -2006,9 +2196,10 @@ c *****************************************************
       return
       end
 c ********************************************************
-!     subroutine dg1n7
       subroutine dg1n7_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call add("vva1",2.d0,"ghph",-1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
       call add("vv10",1.d0,"s3  ",1.d0,"vv10")
@@ -2017,9 +2208,10 @@ c ********************************************************
       return
       end
 c *********************************************
-!     subroutine dg1n8
       subroutine dg1n8_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call mult("gp  ","t1cr","s2  ",111)
       call add("vv10",1.d0,"s2  ",1.d0,"vv10")
       call prt("s2  ","dg1n8   ",3)
@@ -2027,9 +2219,10 @@ c *********************************************
       return
       end
 c **********************************************
-!     subroutine dg1n9
       subroutine dg1n9_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call add("pphh",-2.d0,"va6 ",1.d0,"s2  ")
       call mult("thv ","s2  ","s3  ",113)
       call mult("s3  ","t1cr","s2  ",111)
@@ -2039,9 +2232,11 @@ c **********************************************
       return
       end
 c ***********************************************
-!     subroutine dg1n10
       subroutine dg1n10_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
       call mult("tcm4","s2  ","s1  ",113)
 c ----- pdg1n10 to here
@@ -2052,9 +2247,10 @@ c ----- pdg1n10 to here
       return
       end
 c ****************************************************
-!     subroutine dg1n11
       subroutine dg1n11_chv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c   11 & 12
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("s2  ","t1c ","s1  ",202)
@@ -2068,8 +2264,18 @@ c --- pdg1n11 to here
       end
 c **************************************************
       subroutine dfold1_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call reorder("thv ","s2  ",2341,5,1)
       call mult("thvf","s2  ","s3  ",131)
       call add("tnew",1.d0,"s3  ",1.d0,"tnew")
@@ -2102,10 +2308,23 @@ c  diag f1
       return
       end
 C  *********************************************************************
-!     subroutine rdbox
       subroutine rdbox_chv
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+!------------------------------------------------------------------------
+!
+!
+!------------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+#endif
+
       call rdfile  (20,0,"bx1 ",-1)
       call rdfile  (20,1,"bx2 ",-1)
       call reads   (20,2,"s1  ",-1)
@@ -2126,7 +2345,10 @@ C  *********************************************************************
       end 
 C  *******************************************************************
       subroutine box6a
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c  diag 1 
       call move     ("hhhh","bx6a")
 c  diags 2a,2b
@@ -2141,9 +2363,11 @@ c  diag 3
       return
       end
 C  *********************************************************************
-!     subroutine box12 (iparm)
       subroutine box12_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call move     ("ghhh","s3  ")
@@ -2202,7 +2426,10 @@ c
       end
 C  *******************************************************************
       subroutine box13_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call cmult    ("vvc1",1.d0,"s3  ")
@@ -2259,7 +2486,10 @@ c
       end 
 C  *******************************************************************
       subroutine box14_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call cmult    ("gphp",1.d0,"bx14")
@@ -2316,7 +2546,9 @@ c
       end
 C  *******************************************************************
       subroutine box15_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       if (iparm.eq.0) then
 c  diag 1
         call add      ("vva1",2.d0,"ghph",-1.d0,"bx15")
@@ -2346,7 +2578,10 @@ c
       end
 C  *******************************************************************
       subroutine box16_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call cmult    ("vva1",-1.d0,"bx16")
@@ -2372,7 +2607,10 @@ c
       end
 C  *******************************************************************
       subroutine box17_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call cmult    ("ghph",-1.d0,"bx17")
@@ -2394,7 +2632,10 @@ c
       end 
 C  ******************************************************************
       subroutine box18_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call move     ("gppp","bx18")
@@ -2415,7 +2656,10 @@ c
       end
 C  ******************************************************************
       subroutine box19_chv (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call add      ("vvc1",2.d0,"gpph",-1.d0,"s1  ")
@@ -2437,7 +2681,10 @@ c g1 Apr 95
       end
 C  *******************************************************************
       subroutine box20 (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 1
         call reord6    ("t30 ","s1  ",124536)
@@ -2485,7 +2732,10 @@ c
       end
 C  *******************************************************************
       subroutine box21 (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       if (iparm.eq.0) then
 c  diag 3a
         call t1t2      ("t1c ","tc  ","t30 ","s1  ",123456,3)
@@ -2561,7 +2811,9 @@ c   diag 6b
       end
 C  *******************************************************************
       subroutine box22 (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       if (iparm.eq.0) then
 c  diag 4a
         call reord6   ("t30 ","s1  ",124356)
@@ -2682,7 +2934,9 @@ c  diag 9b
       end
 C  *******************************************************************
       subroutine box23
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diag 1
       call reord6    ("t31 ","s1  ",124536)
       call add       ("va1 ",2.d0,"va2 ",-1.d0,"s2  ")
@@ -2704,13 +2958,13 @@ c  diag 2b
       return
       end
 C  *******************************************************************
-!     subroutine wrtbox
       subroutine wrtbox_chv
-      implicit real*8 (a-h,o-z)
-!     call box12    (0)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
       call box12_chv(0)
       call wrtfile  (31,0,"bx12")
-!     call box12    (1)
       call box12_chv(1)
       call reads    (31,0,"s1  ")
       call add      ("s1  ",1.d0,"bx12",1.d0,"bx12")
