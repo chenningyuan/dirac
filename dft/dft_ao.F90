@@ -16,37 +16,63 @@ module dft_ao
 
 contains
 
-         subroutine dft_getsos(gao, gao1, &
-                         corx, cory, corz, &
-                         buf, ndim, &
-                         nder)
+  subroutine dft_getsos(gao,    &
+                        gao1,   &
+                        corx,   &
+                        cory,   &
+                        corz,   &
+                        buffer, &
+                        ndim,   &
+                        nder)
 
-      real(8) :: GAO(ndim), GAO1(ndim,3), &
-     &          BUF(ndim)
-      real(8) :: corx, cory, corz
-      integer :: ndim
-      integer :: nder, j
-!
-!     First get values for the Ao-basis
-      CALL dft_GETAOS(GAO,GAO1,CORX,CORY,CORZ, &
-     &            ndim,NDER)
+!   ----------------------------------------------------------------------------
+    real(8), intent(inout) :: gao(ndim)
+    real(8), intent(inout) :: gao1(ndim, 3)
+    real(8), intent(in)    :: corx
+    real(8), intent(in)    :: cory
+    real(8), intent(in)    :: corz
+    real(8), intent(inout) :: buffer(ndim, 3)
+    integer, intent(in)    :: ndim
+    integer, intent(in)    :: nder
+!   ----------------------------------------------------------------------------
+    integer                :: ixyz
+!   ----------------------------------------------------------------------------
 
-      if (nr_boson_sym == 1) return
-!
-!     Functions
-      CALL WTAOSO(GAO,BUF,ndim,1,0)
-      CALL VTBUBS(BUF,GAO,1)
-!
-!     First derivatives
-      IF(NDER.GE.1) THEN
-        DO J = 1,3
-          CALL WTAOSO(GAO1(1,J),BUF,ndim,1,0)
-          CALL VTBUBS(BUF,GAO1(1,J),1)
-        ENDDO
-      ENDIF
+!   get values in ao basis
+    call dft_getaos(gao,  &
+                    gao1, &
+                    corx, &
+                    cory, &
+                    corz, &
+                    ndim, &
+                    nder)
 
-      end subroutine
+!   without symmetry skip the rest
+    if (nr_boson_sym == 1) return
 
+!   transform to so
+    call wtaoso(gao, buffer, ndim, 1, 0)
+!   transform to boson sorted only if there is a small component
+    if (nr_ao_total > nr_ao_large) then
+      call vtbubs(buffer, gao, 1)
+    else
+      call dcopy(ndim, buffer, 1, gao, 1)
+    end if
+
+    if (nder == 1) then
+      do ixyz = 1, 3
+!       transform to so
+        call wtaoso(gao1(1, ixyz), buffer, ndim, 1, 0)
+!       transform to boson sorted only if there is a small component
+        if (nr_ao_total > nr_ao_large) then
+          call vtbubs(buffer, gao1(1, ixyz), 1)
+        else
+          call dcopy(ndim, buffer, 1, gao1(1, ixyz), 1)
+        end if
+      end do
+    end if
+
+  end subroutine
 
 
       SUBROUTINE dft_GETAOS(GAO,GAO1,CORPX,CORPY,CORPZ, &
@@ -81,6 +107,8 @@ contains
 
 !     if Levy-Leblond or IOTC
 !     don't work on small component shells
+!     this will make problems if you calculate the relativistic current density
+!     expression using Levy-Leblond, in this case comment this out
       IF (nr_ls_components .EQ. 1) ISHEND = NLRGSH
 
       DO 100 ISHELA = ISHBEGIN,ISHEND

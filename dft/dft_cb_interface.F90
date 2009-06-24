@@ -18,6 +18,8 @@ module dft_cb_interface
 
   integer, public :: nr_qu
   integer, public :: nr_ao_total
+  integer, public :: nr_ao_large
+  integer, public :: nr_ao_small
   integer, public :: nr_boson_sym
   integer, public :: nr_ls_components
   integer, public :: nr_open_shells
@@ -65,6 +67,8 @@ contains
 
     nr_qu                       = nz
     nr_ao_total                 = ntbas(0)
+    nr_ao_large                 = ntbas(1)
+    nr_ao_small                 = ntbas(2)
     nr_boson_sym                = nbsym
     nr_ls_components            = mc
     nr_open_shells              = nasht
@@ -182,7 +186,7 @@ contains
     integer             :: idx, ierr, ipos
     logical             :: pack_logical(2)
     real(8)             :: pack_double_precision(max_nr_shells*3*2)
-    integer             :: pack_integer(2156)
+    integer             :: pack_integer(2158)
 !                                   1000000 is a phantasy number
     integer, parameter  :: nbytes = 1000000
     character           :: scratch(nbytes)
@@ -196,15 +200,17 @@ contains
 
     if (i_am_the_master) then
 
-      pack_integer(1) = nr_qu
-      pack_integer(2) = nr_ao_total
-      pack_integer(3) = nr_boson_sym
-      pack_integer(4) = nr_ls_components
-      pack_integer(5) = nr_open_shells
-      pack_integer(6) = nr_electrons_orbital
-      pack_integer(7) = nr_electrons_orbital_active
-      pack_integer(8) = print_unit
-      ipos = 9
+      pack_integer( 1) = nr_qu
+      pack_integer( 2) = nr_ao_total
+      pack_integer( 3) = nr_ao_large
+      pack_integer( 4) = nr_ao_small
+      pack_integer( 5) = nr_boson_sym
+      pack_integer( 6) = nr_ls_components
+      pack_integer( 7) = nr_open_shells
+      pack_integer( 8) = nr_electrons_orbital
+      pack_integer( 9) = nr_electrons_orbital_active
+      pack_integer(10) = print_unit
+      ipos = 11
       call my_pack_integer(pack_integer, ipos, size(nr_density_blocks), nr_density_blocks, i_am_the_master)
       call my_pack_integer(pack_integer, ipos, size(nr_ao            ), nr_ao            , i_am_the_master)
       call my_pack_integer(pack_integer, ipos, size(st_ao            ), st_ao            , i_am_the_master)
@@ -281,15 +287,17 @@ contains
                       mpi_comm_world,              &
                       ierr)
 
-      nr_qu                       = pack_integer(1)
-      nr_ao_total                 = pack_integer(2)
-      nr_boson_sym                = pack_integer(3)
-      nr_ls_components            = pack_integer(4)
-      nr_open_shells              = pack_integer(5)
-      nr_electrons_orbital        = pack_integer(6)
-      nr_electrons_orbital_active = pack_integer(7)
-      print_unit                  = pack_integer(8)
-      ipos = 9
+      nr_qu                       = pack_integer( 1)
+      nr_ao_total                 = pack_integer( 2)
+      nr_ao_large                 = pack_integer( 3)
+      nr_ao_small                 = pack_integer( 4)
+      nr_boson_sym                = pack_integer( 5)
+      nr_ls_components            = pack_integer( 6)
+      nr_open_shells              = pack_integer( 7)
+      nr_electrons_orbital        = pack_integer( 8)
+      nr_electrons_orbital_active = pack_integer( 9)
+      print_unit                  = pack_integer(10)
+      ipos = 11
       call my_pack_integer(pack_integer, ipos, size(nr_density_blocks), nr_density_blocks, i_am_the_master)
       call my_pack_integer(pack_integer, ipos, size(nr_ao            ), nr_ao            , i_am_the_master)
       call my_pack_integer(pack_integer, ipos, size(st_ao            ), st_ao            , i_am_the_master)
