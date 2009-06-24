@@ -7,7 +7,17 @@ export MENU=blyp.inp
 ../run.sh
 export MENU=lda.inp
 ../run.sh
-export MENU=lda_default.inp
+
+export MOL=he
+export MENU=lda_default_dc.inp
+../run.sh
+export MENU=lda_default_ll.inp
+../run.sh
+export MENU=lda_default_nr.inp
+../run.sh
+export MENU=lda_default_x2c.inp
+../run.sh
+export MENU=lda_default_x2c4.inp
 ../run.sh
 
 export MOL=he
