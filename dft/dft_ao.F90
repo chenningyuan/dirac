@@ -7,6 +7,7 @@ module dft_ao
 !   contain garbage but they are not (= should not be) used
 ! * fixme: many things that do not change during a calculation
 !   are re-evaluated in each grid point (prefactors, symmetry info)
+! * todo: exploit mirror symmetries when evaluating gao1 components
 
   use dft_cb_interface
 

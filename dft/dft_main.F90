@@ -883,6 +883,14 @@ contains
         if (dft_options%energy) then
           if (dft_temp_gga_hs) then
             vt = vx(fz0)*rhg
+
+#ifdef TEST_GAO1_SYMMETRY
+            if (abs(corx(ipoint)) > 1.0d-10) then
+              vt(2) = vt(1)*cory(ipoint)/corx(ipoint)
+              vt(3) = vt(1)*corz(ipoint)/corx(ipoint)
+            end if
+#endif
+
             call gga_distribute(vx(fr0), vt, 0, excmat, gao_p, gao1_p)
           else
             call lda_distribute(vx(fr0),     0, excmat, gao_p)
