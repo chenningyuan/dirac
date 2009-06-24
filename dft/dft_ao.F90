@@ -5,6 +5,8 @@ module dft_ao
 !   are not read before they are written for the first time
 !   note that in Levy-Leblond or X2C4 mode some elements will
 !   contain garbage but they are not (= should not be) used
+! * fixme: many things that do not change during a calculation
+!   are re-evaluated in each grid point (prefactors, symmetry info)
 
   use dft_cb_interface
 
@@ -112,16 +114,35 @@ contains
       IF (nr_ls_components .EQ. 1) ISHEND = NLRGSH
 
       DO 100 ISHELA = ISHBEGIN,ISHEND
+
+!        NHKT is l
          NHKTA = NHKT(ISHELA)
+
+!        in principle the degeneracy among spherical Gaussians
+!        KHKT = 2*(l - 1) + 1
+!        but gives cartesian degeneracy
          KHKTA = KHKT(ISHELA)
+
+!        corresponding cartesian degeneracy
+!        KCKT = l*(l + 1)/2
          KCKTA = KCKT(ISHELA)
+
+!        spherical or not (i think)
          SPHRA = SPHR(ISHELA)
+
          IF (NDER.GT.1 .OR. NHKTA.GT.2) THEN
             CALL LMNVAL(NHKTA,KCKTA,LVALUA,MVALUA,NVALUA)
          END IF
+
+!        nr of uncotracted shells (i think)
          NUCA   = NUCO(ISHELA)
+
+!        contracted shell nr
          NUMCFA = NUMCF(ISHELA)
+
+!        offset for the shell
          JSTA   = JSTRT(ISHELA)
+
 !
 !tsaue: Loop over symmetry dependent centers   
 !
