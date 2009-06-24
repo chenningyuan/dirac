@@ -1,15 +1,38 @@
-!     program m12b
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine m12b
-      implicit real*8 (a-h,o-z)
-      parameter (ndint=3000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /csdtime/ csdstim,csdltim
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndint=3000000)
+#include "param_ccsd.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+#endif
+
       character*256 filenm,filenm6,
      1filenm51,filenm52,filenm53,filenm55,filenm56,filenm57,filenm58
       real*4 cputime
+
 c     iopt(1) - print.
 c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 c     iopt(8) - fock.
@@ -146,11 +169,31 @@ c     iopt(10) .ne.0 - do not write tape9
       end
 C  ********************************************************************
       subroutine ordv_m12b
-      implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+#endif
+
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
       call selt1    (23,0,"hp  ",4)   
@@ -249,8 +292,23 @@ C  ********************************************************************
       end
 C  ********************************************************************
       subroutine groupa
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+!
 C
 C     GROUP A
 C
@@ -284,8 +342,22 @@ c  diag a.5
       end
 C  ********************************************************************
       subroutine groupb
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+!
 C
 C     GROUP B
 C
@@ -351,8 +423,23 @@ c  diag b.1
       end
 C  ********************************************************************
       subroutine groupc
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP C
 C
@@ -383,8 +470,22 @@ c
       end
 C  ********************************************************************
       subroutine groupd
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP D
 C
@@ -415,8 +516,18 @@ c
       end
 C  ********************************************************************
       subroutine groupe
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP E
 C
@@ -459,8 +570,18 @@ c  diag e.2,e.3,e.5,e.6
       end
 C  ********************************************************************
       subroutine groupf
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP F
 C
@@ -577,8 +698,18 @@ c  diag f.24
       end
 C  ********************************************************************
       subroutine groupg
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP G
 C
@@ -645,8 +776,18 @@ c   diag g.4
       end
 C  ********************************************************************
       subroutine grouph
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP H
 C
@@ -715,8 +856,18 @@ c
       end
 C  ********************************************************************
       subroutine groupi
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP I
 C
@@ -763,8 +914,18 @@ c
       end
 C  ********************************************************************
       subroutine groupq
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 c  diag q1
       call fold6    ("t3v ","s1  ",2,1)
       call fold6    ("s1  ","s2  ",3,1)
@@ -945,8 +1106,22 @@ c  diag q21
       end
 C  *********************************************************************
       subroutine ord1   
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
       call reord6   ("tb1 ","s1  ",126345)
       call add      ("s1  ",1.d0,"ttqf",1.d0,"ttqf")
       call reord6   ("tb2 ","s1  ",124563)
@@ -970,8 +1145,23 @@ C  *********************************************************************
       end
 C  *********************************************************************
       subroutine groupj
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C 
 C     GROUP J
 C
@@ -993,8 +1183,18 @@ c   diag j.3
       end
 C  ********************************************************************
       subroutine groupk
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP K
 C
@@ -1005,8 +1205,18 @@ C
       end
 C  ********************************************************************
       subroutine groupl
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP L
 C
@@ -1028,8 +1238,23 @@ c
       end
 C  ********************************************************************
       subroutine groupm
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP M
 C
@@ -1062,8 +1287,18 @@ c   diag m.13
       end
 C  ********************************************************************
       subroutine groupn
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C  
 C     GROUP N
 C
@@ -1104,8 +1339,18 @@ c   diag n.4
       end
 C  ********************************************************************
       subroutine groupo
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 C
 C     GROUP O
 C
@@ -1135,8 +1380,18 @@ c
       end
 C  ********************************************************************
       subroutine groupp
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 c
 c  diag p1
       call fold6    ("t3v ","s1  ",2,1)
@@ -1241,8 +1496,23 @@ c
       end 
 C  *********************************************************************
       subroutine ord2  
-      implicit real*8 (a-h,o-z)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+#endif
+
 c
       call reord6   ("tba ","s1  ",126345)
       call add      ("s1  ",1.d0,"ttpf",1.d0,"ttpf")

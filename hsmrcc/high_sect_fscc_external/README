@@ -54,7 +54,7 @@ chp,chq - excite 1 electron (1,1) sector; first run (0,1) and (1,0) sectors
     In (2,1) sector for CCSD or CCSDT-1 do "cht.f" then "m12b.f"
     In (2,1) sector for CCSDT do "cht.f" only
 
-TODO: (2,2) FSCCSD 
+TODO(miro): (2,2) FSCCSD 
 
 II.    CCSD    available for (2,1)
        CCSDT   available for (0,0) (1,1) (1,2) 
@@ -367,7 +367,7 @@ c    *** Be carefull!!! ***
 
 ========================================
 IX. "param.f" file  parameters description: 
-miro:  renamed to "param_ccsd.h"
+ (miro:  renamed to "param_ccsd.h")
 ========================================
 
 
@@ -378,7 +378,7 @@ ndis (=      90 000) - number of symmetry blocks in PseudoFile (PF) [PF - array
 ndij  (=  1 500 000) - number of ij-blocks in PF , where ij - the first two
                        indexes in <ij|kl>.   <See:  common /cij1/  higher>
 
-nbigi (= 70 000 000) - the dimension of the array igen(), where all integral
+nbig (= 70 000 000) - the dimension of the array igen(), where all integral
                        indexes of all PF are placed.  <Used in: common /i/
                        igen(nbigi), subr. dimx( ... ,nbig, ...)>
 

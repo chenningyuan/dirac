@@ -1,15 +1,40 @@
-!     program m21b
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine m21b
-      implicit real*8 (a-h,o-z)
-      parameter (ndint=3000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /csdtime/ csdstim,csdltim
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndint=3000000)
+#include "param_ccsd.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+#endif
+
       character*256 filenm,filenm6,
      1filenm51,filenm52,filenm53,filenm54,filenm56,filenm57,filenm58
+
       real*4 cputime
+
+
 c     iopt(1) - print.
 c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 c     iopt(8) - fock.
@@ -101,11 +126,31 @@ c     iopt(10) .ne.0 - do not write tape9
 
 C  ********************************************************************
       subroutine ordv_m21b
-      implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+#endif
+
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
       call selt1    (32,0,"ph  ",4)   
@@ -185,9 +230,23 @@ C  ********************************************************************
       end
 C  ********************************************************************
       subroutine heffq
-      implicit real*8 (a-h,o-z)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+#endif
+
 C
 C     GROUP A
 C
@@ -670,9 +729,19 @@ c
       end
 C  *********************************************************************
       subroutine heffp
-      implicit real*8 (a-h,o-z)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+#endif
+
 C 
 C     GROUP J
 C

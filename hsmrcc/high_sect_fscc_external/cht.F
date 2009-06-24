@@ -1,36 +1,47 @@
-!     program cht 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine cht 
-      implicit real*8 (a-h,o-z)
-      external fmax,fmax6
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+      use cij1_mod
+      use gen_mod
+#include "csdtime.h"
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     parameter (nbig=60000000,ndint=3000000,ndij=960000)
 #include "param_ccsd.h"
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
 #include "cfiles.h"
-
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
 #include "cint.h"
-
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
-
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #include "gen.h"
-
 !     common /csdtime/ csdstim,csdltim
 #include "csdtime.h"
+#endif
 
       character*256 filenm,filenm6,
      1filenm51,filenm52,filenm53,filenm55,filenm56,filenm57,filenm58,
      2filenm20,filenm21,filenm31,filenm32,filenm41,filenm42
       real*4 cputime
+      external fmax,fmax6
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))
@@ -187,7 +198,7 @@ c     iopt(10) .ne.0 - do not write tape9
           call calt12p
           call calt12q
         end if
-        call caltv2
+        call caltv2_cht
         call fmax ("t12 ",tmax,indmax)
         write (6,99) tmax,idec(indmax)
 99      format (1x,'max t12 = ',f12.6,1x,i12)
@@ -219,7 +230,7 @@ c     iopt(10) .ne.0 - do not write tape9
           call calt12q
           call dfoldp
           call dfoldq
-          call caltv2
+          call caltv2_cht
           if (iopt(6).ne.0.and.iter.ge.mod(iopt(6),100)) then
             fnew=max(dfloat(iopt(6)/100),1.d0)
             if (fnew.le.6.5d0) then
@@ -312,20 +323,31 @@ c     iopt(10) .ne.0 - do not write tape9
 
 C ********************************************************************
       subroutine ordv_cht
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     parameter (ndt1=1000,ndint=3000000)
 #include "param_ccsd.h"
-
 !     common /cint/nint,idum1,vint(ndint),iint(ndint)
 #include "cint.h"
-
 !     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
 #include "fock.h"
+#endif
 
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime("readv   ",nint,0)
@@ -378,11 +400,23 @@ C ********************************************************************
       end 
 C  ******************************************************************
       subroutine calvv10
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
 c  diag 1
       call move      ("gv  ","vv10")
@@ -460,29 +494,41 @@ c  diags 13,14
       end
 C  **********************************************************************
       subroutine caltv1
-      implicit real*8 (a-h,o-z)
-      external find2,find4
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cij1_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "strt.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     parameter (ndij=960000,nbig=60000000)
 #include "param_ccsd.h"
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1iiia(200),iiva(200)
 #include "cfiles.h"
-
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
-
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #include "gen.h"
-
 !     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
 !    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
+#endif
 
-! mi- TODO: had set dimensions, need parametric def
+      external find2,find4
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!! mi- TODO: dynami allocs !!!!!!!!!!!!!!!!!!!!!!!!!
       dimension a(500,500),b(500),indlst(500),ipvt(500),z(500)
 
       do 10 i=1,500
@@ -576,7 +622,9 @@ c   diag f4
       end
 C  *********************************************************************
       subroutine calv30p 
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  GROUP I
 c   diag 1
       call reads     (42,0,"s1  ")
@@ -724,7 +772,9 @@ c   diag 2
       end
 C  *******************************************************************
       subroutine calv30q 
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  GROUP I
 c   diag 1
       call reads     (31,1,"s1  ")
@@ -965,11 +1015,23 @@ c   diag 3
       end
 C  *******************************************************************
       subroutine ordta0_cht
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
       call clear      ("tb1 ",2322,1110)
       call clear      ("tb2 ",2223,1011)
@@ -984,11 +1046,23 @@ C  *******************************************************************
       end 
 C  *********************************************************************
       subroutine calvv0_cht
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_gen
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/ norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
 c  diag 1
       call move      ("ggvh","vv0 ")
@@ -1185,7 +1259,9 @@ c  diags 33a,38a
       end
 C  *********************************************************************
       subroutine ordtb0_cht
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call reorder    ("tb1 ","s1  ",1324,4)
       call add        ("s1  ",1.d0,"vv0 ",1.d0,"vv0 ")
       call reorder    ("tb2 ","s1  ",1342,4)
@@ -1198,36 +1274,49 @@ C  *********************************************************************
       return
       end
 C *********************************************************************
-      subroutine caltv2
-      implicit real*8 (a-h,o-z)
-      external find2,find4
-
+      subroutine caltv2_cht
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cij1_mod
+      use gen_mod
+      use dat_mod
+      use tv2_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "strt.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     parameter (ndij=960000,nbig=60000000)
 #include "param_ccsd.h"
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1iiia(200),iiva(200)
 #include "cfiles.h"
-
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
-
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #include "gen.h"
-
 !     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
 !    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
-
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 #include "dat.h"
+!     common /tv2/ a(500,500)
+#include "tv2.h"
+#endif
+      external find2,find4
 
-! mi - introduce include file ?
-      common /tv2/ a(500,500)
-
+!!!!!!!!!!!!! miro: dynamic allocations needed !!!!!!!!!!!
       dimension b(500),indlst(500),ipvt(500),z(500)
+
       call move ("vv0 ","trhs")
       if (iopt(17).ne.0) then
         call tvsub2
@@ -1410,7 +1499,9 @@ c  diag 2a
       end
 C  *********************************************************************
       subroutine tinit_cht
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call move    ("vv0 ","t12 ")
       call diveps  ("t12 ")
       call cmult   ("t12 ",-1.d0,"t12 ")
@@ -1430,11 +1521,23 @@ C  *********************************************************************
       end 
 C  ********************************************************************
       subroutine calt12p
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3n1g
@@ -1531,11 +1634,23 @@ c
       end
 C  *******************************************************************
       subroutine calt12q
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
 c  dg3nf4
@@ -1700,7 +1815,10 @@ c
       end
 C  ********************************************************************
       subroutine dfoldp
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+
 c  diag 1
       call mult6      ("t12p","tvf ","s1  ",5)
       call add        ("s1  ",-0.5d0,"tpnw",1.d0,"tpnw")
@@ -1804,7 +1922,9 @@ c
       end
 C  ********************************************************************
       subroutine dfoldq
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diag 1
       call reord6     ("t12q","s1  ",123465)
       call mult6      ("s1  ","tvf ","s2  ",5)
@@ -2023,7 +2143,9 @@ c
       end 
 C  *******************************************************************
       subroutine boxZ1
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diag 9
       call reorder    ("tq  ","s1  ",1324,4)
       call add        ("va1 ",2.d0,"va2 ",-1.d0,"s2  ")
@@ -2049,7 +2171,9 @@ c  diag 23a
       end
 C  *******************************************************************
       subroutine boxZ2
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diag 10a
       call reorder    ("tq  ","s1  ",1324,4)
       call add        ("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
@@ -2066,7 +2190,9 @@ c  diag 24b
       end 
 C  *******************************************************************
       subroutine boxZ3
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diags 13a,13b
       call reorder    ("pphh","s1  ",1243,4)
       call add        ("pphh",-2.d0,"s1  ",1.d0,"s1  ")
@@ -2080,7 +2206,10 @@ c  diags 18a,18b
       end
 C  *******************************************************************
       subroutine boxZ4
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 14b
       call reorder    ("pphh","s1  ",3412,4)
       call reorder    ("pphh","s2  ",3421,4)
@@ -2096,7 +2225,10 @@ c  diag 19a
       end
 C  *******************************************************************
       subroutine boxZ5
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 16a
       call move       ("gvhh","bxZ5")
 c  diag 25b
@@ -2118,7 +2250,10 @@ c  diag 28b
       end
 C  *******************************************************************
       subroutine boxZ6
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 16b
       call reorder    ("ghvh","bxZ6",1324,4)
 c  diag 23b
@@ -2153,7 +2288,10 @@ c  diag 28a
       end
 C  *******************************************************************
       subroutine boxZ7
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 17a
       call reorder    ("ggph","bxZ7",1243,4)
 c  diag 22b
@@ -2165,7 +2303,10 @@ c  diag 22b
       end
 C  *******************************************************************
       subroutine boxZ8
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 17b
       call reorder    ("ggvp","bxZ8",1324,4)
 c  diag 20a
@@ -2183,7 +2324,10 @@ c  diag 21a
       end
 C  *******************************************************************
       subroutine boxZ9
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 21b
       call reorder    ("gpph","s1  ",1324,4)
       call reorder    ("tgm ","s2  ",1423,4)
@@ -2201,7 +2345,10 @@ c  diag 29a
       end
 C  *******************************************************************
       subroutine boxZ0
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 22a
       call reorder    ("tp  ","s1  ",1423,4)
       call mult       ("gpph","s1  ","s2  ",222)
@@ -2213,11 +2360,22 @@ c  diag 27a
       end
 C  *******************************************************************
       subroutine rdbox_cht
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
       if (iopt(17).ne.0) then
         call rdfile (41,1,"boxB",-1)
@@ -2242,7 +2400,10 @@ C  *******************************************************************
       end
 C  *********************************************************************
       subroutine box25a
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag 1
       call move      ("ggpp","b25a")
 c  diags 2,3
@@ -2258,7 +2419,10 @@ c   diag 4
       end
 C  ******************************************************************
       subroutine box38 (iparm)
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
       if (iparm.eq.0) then
 c  diag 1
         call reorder    ("ggpv","bx38",1243,4)
@@ -2319,30 +2483,45 @@ c  diag 7
       end
 C  ******************************************************************
       subroutine tvsub1 (idi,idj,i,j)
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
 
+      use dat_mod
+      use cfiles_mod
+      use cij1_mod
+      use tv2_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "strt.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     parameter (ndij=960000)
 #include "param_ccsd.h"
-
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
 #include "cfiles.h"
-
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij1.h"
-
 !     common /strt/ istrt11,istrt12,istrt21,istrt22,istrt31,istrt32,
 !    1istrt41,istrt42,istrt51,istrt52,istrt61,istrt62,
 !    2nsize1,nsize2,nsize3,nsize4,nsize5,nsize6
 #include "strt.h"
+!     common /tv2/ a(500,500)
+#include "tv2.h"
+#endif
 
-      common /tv2/ a(500,500)
-
+!!!!!!!! needs dynamic alloc !!!!!!!!!!!!!!!
       dimension iha(120),ipa(120)
+
       nh=0
       do 90 ii=1,norb
         if (ic(ii).eq.2) then
@@ -2433,11 +2612,23 @@ c  diags 34,35a
       end
 C  *********************************************************************
       subroutine tvsub2
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
 c  diags 31b,36b
       call reord6    ("t12q","s1  ",125643)

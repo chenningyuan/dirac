@@ -386,6 +386,17 @@ subroutine dealloc_ijtemp_mod
 end subroutine dealloc_ijtemp_mod
 end module ijtemp_mod
 
+module tv2_mod
+! ... to replace tv2.h
+real*8, allocatable :: a(:,:)
+contains
+subroutine init_tv2_mod
+ allocate (a(500,500))
+end subroutine init_tv2_mod
+subroutine dealloc_tv2_mod
+ deallocate(a)
+end subroutine dealloc_tv2_mod
+end module tv2_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level

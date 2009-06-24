@@ -1,19 +1,42 @@
-!#if defined STANDALONE_HSFS
-!      program chz
-!#else
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine chz
-!#endif
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+      use fock_mod
+      use idv_mod
+      use prm_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
-      common /csdtime/ csdstim,csdltim
-      common /idv/ iv(200),nvalo
-      common /prm/ iperm (0:6,720)
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+!     common /idv/ iv(200),nvalo
+#include "idv.h"
+!     common /prm/ iperm (0:6,720)
+#include "prm.h"
+#endif
+
       dimension iord(12)
       character*256 filenm,filenm6,
      1filenm51,filenm53,filenm55,filenm60,filenm62
@@ -85,19 +108,14 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
           iv(nvalo)=j      
         end if
 20    continue
-!     call ordv
       call ordv_chz
-!     call ordta
       call ordta_chz
       call t1sqr      ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr      ("t1hv","t1c ","thv ","tvm ")
       call t1sqr      ("t1hv","t1hv","thu ","tum ")
-!     call diags1
       call diags1_chz
       if (iopt(17).eq.3) then
-!       call diags31
         call diags31_chz
-!       call diags32
         call diags32_chz
       end if
       call fmax    ("thzf",tmax,idum)
@@ -135,14 +153,31 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 !      stop
       end
 C  *******************************************************************
-!     subroutine ordv
       subroutine ordv_chz
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+#endif
+
 c
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
@@ -157,9 +192,10 @@ c
       return
       end
 C  *******************************************************************
-!     subroutine ordta
       subroutine ordta_chz
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call fold4      ("t1c ","s1  ",2,2)
       call reorder    ("s1  ","te1 ",1243,4)
       call fold4      ("thu ","te2 ",3,4)
@@ -170,9 +206,10 @@ C  *******************************************************************
       return
       end
 C  ********************************************************************
-!     subroutine diags1
       subroutine diags1_chz
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension iord(12)
       data iord / 1,7,8,3,2,9,4,5,10,6,12,11 /
 c  diag 1       
@@ -184,9 +221,10 @@ c  diag 1
       return
       end
 C  ********************************************************************
-!     subroutine diags31     
       subroutine diags31_chz 
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension iord(12)
       data iord / 1,2,3,7,8,9,10,6,5,4,12,11 /
 c   diag 1
@@ -340,9 +378,10 @@ c
       return
       end
 C  *******************************************************************
-!     subroutine diags32
       subroutine diags32_chz
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       dimension iord(12)
       data iord / 1,2,3,4,7,8,9,6,5,12,11,10 /
 c   diag 4

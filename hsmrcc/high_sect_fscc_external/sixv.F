@@ -1,13 +1,37 @@
-!     program sixv
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine sixv
-      implicit real*8 (a-h,o-z)
-      parameter (ndint=3000000)
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /csdtime/ csdstim,csdltim
-      common /idv/ iv(120),nvalo
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+      use idv_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndint=3000000)
+#include "param_ccsd.h"
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+!     common /idv/ iv(120),nvalo
+#include "idv.h"
+#endif
+
       character*256 filenm,filenm2,filenm6,
      1filenm51,filenm52,filenm54,filenm56,filenm57,filenm59,filenm61
       real*4 cputime
@@ -136,11 +160,31 @@ c     iopt(8) - fock.
       end
 C  *******************************************************************
       subroutine ordv_sixv
-      implicit real*8 (a-h,o-z)
-      parameter (ndt1=1000,ndint=3000000)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/  norb,ic(120),icv(120),idum2,eps(120),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!     parameter (ndt1=1000,ndint=3000000)
+#include "param_ccsd.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/  norb,ic(120),icv(120),idum2,eps(120),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
+#include "fock.h"
+#endif
+!
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
       call seltyp   (2223,0,"hhhp",4)
@@ -172,7 +216,10 @@ C  *******************************************************************
       end 
 C  *******************************************************************
       subroutine ordta_sixv
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
       call reorder  ("tc  ","tc3 ",1432,4)
       call reorder  ("tv  ","tv3 ",1432,4)
       call reorder  ("tv  ","tv6 ",1243,4)
@@ -180,7 +227,10 @@ C  *******************************************************************
       end
 C  *******************************************************************
       subroutine diags1
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diags 1a,2c
       call mult6    ("tv  ","hppp","s1  ",1)
       call mult6    ("vhph","tc3 ","s2  ",1)
@@ -229,7 +279,10 @@ c  diags e1,e2
       end
 C  *******************************************************************
       subroutine diags2
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diags 1a,2c,f1
       call mult6    ("tu  ","hppp","s3  ",1)
       call mult6    ("vvph","tc3 ","s1  ",1)
@@ -310,7 +363,10 @@ cuk
       end
 C  *******************************************************************
       subroutine diags3
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diags 1,2,f1
       call mult6    ("tu  ","vppp","s3  ",1)
       call mult6    ("vvph","tv3 ","s1  ",1)
@@ -382,7 +438,10 @@ cuk
       end 
 C  *******************************************************************
       subroutine diags4
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!
 c  diag e1
       call fold6    ("t33 ","s1  ",4,1)
       call fold6    ("s1  ","s2  ",5,1)

@@ -1,28 +1,45 @@
-!#if defined STANDALONE_HSFS
-!      program csx
-!#else
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine csx
-!#endif
-
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+      use gen_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
-
-      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
-     1 iiia(200),iiva(200)
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /csdtime/ csdstim,csdltim
-
-      common // gen(nbig)
-      common /i/ igen(nbig)
+!     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!    1 iiia(200),iiva(200)
+#include "cfiles.h"
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /csdtime/ csdstim,csdltim
+#include "csdtime.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#include "gen.h"
+#endif
 
       character*256 filenm,filenm2,filenm3,filenm6,
      1filenm51,filenm52,filenm54,filenm59,filenm61,filenm23
+
       real*4 cputime
+
 c     iopt(1) - print.
 c     iopt(5) - print only elements .gt. 10**(-iopt(5))
+
       filenm(1:1)=' '
       call getenv('input',filenm)
       if (filenm(1:1).eq.' ') filenm='input'
@@ -84,11 +101,8 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1v ","t1c ","tv  ","tvm ")
       call t1sqr    ("t1v ","t1v ","tu  ","tum ")
-!     call ordv 
       call ordv_csx 
-!     call ordta
       call ordta_csx
-!     call diags1
       call diags1_csx
       if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
         call diags2_csx
@@ -110,17 +124,28 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 !      stop
       end
 C  *******************************************************************
-!     subroutine ordv 
       subroutine ordv_csx 
-      implicit real*8 (a-h,o-z)
-
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
+!     common /cint/ nint,idum1,vint(ndint),iint(ndint)
+#include "cint.h"
+!     common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "dat.h"
+!     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1) 
+#include "fock.h"
+#endif
 
-      common /cint/ nint,idum1,vint(ndint),iint(ndint)
-      common /dat/  norb,ic(200),icv(200),idum2,eps(200),iopt(40)
-      common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1) 
       call readv    (nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
+
       call seltyp   (2233,0,"hhpp",4)    
       call seltyp   (3332,0010,"ppvh",4)
       call seltyp   (3333,0011,"ppvv",4)
@@ -141,9 +166,10 @@ C  *******************************************************************
       return
       end
 C  *******************************************************************
-!     subroutine ordta
       subroutine ordta_csx
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call fold4    ("t1c ","t1c1",2,2)
       call fold4    ("tv  ","s1  ",3,4)
       call fold4    ("s1  ","s2  ",4,4)
@@ -152,9 +178,10 @@ C  *******************************************************************
       return
       end
 C  *******************************************************************
-!     subroutine diags1
       subroutine diags1_csx
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  GROUP I
 c   diag 1
       call reorder  ("ppvv","s3  ",3412,4)
@@ -263,7 +290,9 @@ c
       end
 C  *******************************************************************
       subroutine diags2_csx
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  diag 1
       call fold6    ("t33 ","s1  ",4,1)
       call fold6    ("s1  ","s2  ",5,1)
@@ -284,7 +313,9 @@ c  diag 2
       end 
 C  *******************************************************************
       subroutine diags3_csx
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 c  GROUP I
 c   diag 1
       call rdfile   (23,0,"boxA",-1)     

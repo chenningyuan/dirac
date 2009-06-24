@@ -1,25 +1,35 @@
       subroutine csw                     
-
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cfiles_mod
+      use cint_mod
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#include "csdtime.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-!     include 'parameters.f'
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
 #include "cfiles.h"
-
 !     common /cint/ nint,idum1,vint(ndint),iint(ndint)
 #include "cint.h"
-
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /csdtime/ csdstim,csdltim
 #include "csdtime.h"
+#endif
 
       character*256 filenm,filenm51,filenm52,filenm54,filenm59,filenm6,
      1              filenm20,filenm21,filenm22,filenm23
       real*4 cputime
+
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))
@@ -27,6 +37,7 @@ c     iopt(4) - do rle every iopt(4) iterations
 c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 c     iopt(6) - start avrg.
 c     iopt(10) .ne.0 - do not write tape9
+
       filenm(1:1)=' '
       call getenv('input',filenm)
       if (filenm(1:1).eq.' ') filenm='input'
@@ -100,14 +111,12 @@ c     iopt(10) .ne.0 - do not write tape9
         call rdfile (52,3,"t31 ",-1)
         call rdfile (54,2,"t32 ",-1)
         if (iopt(17).eq.3) then
-!         call rdbox
           call rdbox_csw
         end if
       end if
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1v ","t1c ","tv  ","tvm ")
       call t1sqr    ("t1v ","t1v ","tu  ","tum ")
-!     call ordv
       call ordv_csw
       call ordta0_csw
       if (iopt(17).ne.0) then
@@ -196,7 +205,6 @@ c     iopt(10) .ne.0 - do not write tape9
           call prt6 ("t33 ","last t33",0)
         end if
       end if
-!     call endiag 
       call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
       call eneru2 (egr0,2,3,max(1,iopt(1)))
@@ -213,19 +221,29 @@ c     iopt(10) .ne.0 - do not write tape9
 !      stop
       end
 C ********************************************************************
-!     subroutine ordv
       subroutine ordv_csw
-      implicit real*8 (a-h,o-z)
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use cint_mod
+      use dat_mod
+      use fock_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 #include "param_ccsd.h"
-
 !     common /cint/nint,idum1,vint(ndint),iint(ndint)
 #include "cint.h"
-
 !     common /dat/ norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /fock/ nfock,idum3,fock(ndt1),ifock(ndt1)
 #include "fock.h"
+#endif
 
       call readv(nint,vint,iint,ndint,nfock,fock,ifock,ndt1)
       call prtime   ("readv   ",nint,0)
@@ -251,10 +269,21 @@ C ********************************************************************
       end
 C *********************************************************************
       subroutine ordta0_csw
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
       call reorder    ("tv  ","tv1 ",1324,4)
       call reorder    ("tv  ","tv3 ",1432,4)
@@ -269,14 +298,26 @@ C *********************************************************************
       end
 C  ********************************************************************
       subroutine calvw0_csw  
-      implicit real*8 (a-h,o-z)
-
+!---------------------------------------------------------------------
+!
+!
+!
+!---------------------------------------------------------------------
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+      use cfiles_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
-
 !     common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
 !    1 iiia(200),iiva(200)
 #include "cfiles.h"
+#endif
 
       if (iopt(17).lt.3) then
 c  dg3n1,2,f1
@@ -325,7 +366,9 @@ c  diag 11
       end
 C  **********************************************************************
       subroutine caltw3_csw
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call move     ("v30 ","t3nw")     
 c   diag 7
       call t1t2     ("t1v ","tu  ","t33 ","s1  ",123456,2)
@@ -399,12 +442,18 @@ c
       return
       end
 C  *********************************************************************
-!     subroutine endiag
       subroutine endiag_csw
-      implicit real*8 (a-h,o-z)
-
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
 !     common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #include "dat.h"
+#endif
 
 c  GROUP I
 c   diag 1
@@ -611,9 +660,10 @@ c  diag e5
       return
       end
 C  ********************************************************************
-!     subroutine rdbox
       subroutine rdbox_csw
-      implicit real*8 (a-h,o-z)
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
       call rdfile  (20,6,"bx7 ",-1)
       call rdfile  (21,0,"bx12",-1)
       call rdfile  (21,3,"bx15",-1)
