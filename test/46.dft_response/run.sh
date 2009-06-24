@@ -8,6 +8,10 @@ export MENU=blyp.inp
 export MENU=lda.inp
 ../run.sh
 
+export MOL=hf_spherical
+export MENU=blyp_spherical.inp
+../run.sh
+
 export MOL=he
 export MENU=lda_default_dc.inp
 ../run.sh
