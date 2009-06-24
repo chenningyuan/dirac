@@ -1,9 +1,18 @@
 module dft_ao
 
+! * gao, gao1, ... are not dzeroed for more performance
+!   if you change the code make sure that elements of these vectors
+!   are not read before they are written for the first time
+!   note that in Levy-Leblond or X2C4 mode some elements will
+!   contain garbage but they are not (= should not be) used
+
   use dft_cb_interface
 
   implicit none
 
+  public dft_getsos
+
+  private
 
 contains
 
@@ -65,13 +74,10 @@ contains
 !
 !
 !
-      gao = 0.0d0
-      if (nder > 0) then
-        gao1 = 0.0d0
-      end if
+
       IADR = 1
-       ISHBEGIN=1
-       ISHEND  =KMAX
+      ISHBEGIN=1
+      ISHEND  =KMAX
 
 !     if Levy-Leblond or IOTC
 !     don't work on small component shells
