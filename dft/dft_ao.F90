@@ -8,6 +8,10 @@ module dft_ao
 ! * fixme: many things that do not change during a calculation
 !   are re-evaluated in each grid point (prefactors, symmetry info)
 ! * todo: exploit mirror symmetries when evaluating gao1 components
+! * todo: with uncontracted basis the code calculates *many* zeros
+!         i think it will pay off to have a separate getsos for cartesian uncontracted
+!         (which is anyway the most common basis), getsos cartesian contracted, and getsos general
+!         a lot of time is spent in this routine and it pays off to have it as efficient as possible
 
   use dft_cb_interface
 
