@@ -153,12 +153,14 @@ contains
            PAX = CORPX-PT(iand(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
            PAY = CORPY-PT(iand(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
            PAZ = CORPZ-PT(iand(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
-           IF (NDER.EQ.0) CALL dft_GETGAO(GAO(IADR),PAX,PAY,PAZ)
-           IF (NDER.GT.0) THEN
+
+           if (nder == 0) then
+             CALL dft_GETGAO(GAO(IADR),PAX,PAY,PAZ)
+           else if (nder == 1) then
              CALL dft_GETGA1(GAO(IADR), &
      &                   GAO1(IADR,1),GAO1(IADR,2),GAO1(IADR,3), &
      &                   PAX,PAY,PAZ)
-           END IF
+           end if
            IADR = IADR + KHKTA
         ENDIF
         ENDDO
