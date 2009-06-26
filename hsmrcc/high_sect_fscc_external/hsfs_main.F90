@@ -5,6 +5,13 @@
  Subroutine HIGH_SECTOR_FSCC_DRIVER
 #endif
 
+  ! next level subroutine (called from main/main.F90)
+  call HIGH_SECTOR_FSCC_METHODS
+
+ End
+
+ Subroutine HIGH_SECTOR_FSCC_METHODS
+
   use high_sect_execs
 
 #if defined STANDALONE_HSFS
@@ -17,35 +24,36 @@
 
   call launch_hsfs_methods
 
- End
+ End Subroutine HIGH_SECTOR_FSCC_METHODS
 
  Subroutine Init_HSFS_Modules
 !
-! iniialize the whole bunch of former static allocations in common blocks
+! initialize the whole bunch of former static allocations in common blocks
+! which now are nice F90 modules with allocatable variables
 !
 use gen_mod
 use cint_mod
-!use dat_mod
+use dat_mod
 use fock_mod
-!use cij1_mod
-!use cij2_mod
-!use cij3_mod
-!use cij4_mod
-!use cij5_mod
-!use cij6_mod
+use cij1_mod
+use cij2_mod
+use cij3_mod
+use cij4_mod
+use cij5_mod
+use cij6_mod
 use cfiles_mod
  
-  call init_gen_mod
-  call init_cint_mod
-! call init_dat_mod
-  call init_fock_mod
-! call init_cij1_mod
-! call init_cij2_mod
-! call init_cij3_mod
-! call init_cij4_mod
-! call init_cij5_mod
-! call init_cij6_mod
-  call init_cfiles_mod
+ call init_gen_mod
+ call init_cint_mod
+ call init_dat_mod
+ call init_fock_mod
+ call init_cij1_mod
+ call init_cij2_mod
+ call init_cij3_mod
+ call init_cij4_mod
+ call init_cij5_mod
+ call init_cij6_mod
+ call init_cfiles_mod
 
  End Subroutine Init_HSFS_Modules
 

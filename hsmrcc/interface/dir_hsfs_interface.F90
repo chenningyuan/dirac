@@ -88,97 +88,101 @@ subroutine HSFSINP(WORD,reset)
 !  Read parameters for the external HSFS programs, which are passed 
 !  through the formatted input file, together with other DIRAC input
 ! 
-!  Called from TRAINP if DOHSFS=.true., i.e. at the beginning
+!  Called from PSIINP (dirrdn.F), entering WORD is label currently read
 !
 !  Written by Miro ILIAS, Tel Aviv, 2009
 !
 !-----------------------------------------------------------------------------
   use DIRAC_HSFS
+  use high_sect_execs
 #include "implicit.h"
 #include "priunit.h"
+
+!CHARACTER(len=7), INTENT(IN) :: WORDIN
 
 Logical, save :: set = .false.
 Logical, intent(in) :: reset
 
-CHARACTER:: PROMPT*1=' '
-CHARACTER(len=7) :: WORD, KEYWORD=' '
+Logical :: PROPER_POS
+
+CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
+CHARACTER(len=7) :: WORD, METHOD, KEYWORD=' '
 
 ! ... nice F90 version 
 character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
-                                              '.CONV  ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /)
+                                              '.CONV  ','.METHOD','.XXXXXX','.XXXXXX','.XXXXXX' /)
 
- if (set) then
-  if (reset) set = .false.
-  write(lupri,*) 'HSFSINP was called .... leaving at the beginning ... '
-  Return
- endif
- if (reset) then
-   set = .false.
- else
-   set = .true.
- endif
+! if (set) then
+!  if (reset) set = .false.
+!  write(lupri,*) 'HSFSINP was called .... leaving at the beginning ... '
+!  Return
+! endif
+! if (reset) then
+!   set = .false.
+! else
+!   set = .true.
+! endif
 
- !write(LUPRI,*) 'in HSCCINP, size of TABLE=',size(TABLE)
- !call FLSHFO(LUPRI)
 
 !
 !  Initializations...
 !
+
+write(LUPRI,*) 'in HSFSINP, entering WORD=',WORDIN
+
+! ... entering label MUST be the beginning of *HSFS input list
+!PROPER_POS = (WORDIN .EQ. '*HSFS')
+PROPER_POS = (WORD .EQ. '*HSFS')
+
+IF (PROPER_POS) THEN
 
 Do 
 
   Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  ! print *,'WORD=',WORD
   KEYWORD = WORD 
 
+  write(LUPRI,*) 'HSFSINP: read WORD=',WORD,' PROMPT=',PROMPT
+
 ! Now decide !
 
   If (PROMPT == '*' ) Then
-   ! print *,'WORD with "*" catched !', WORD
+    write(LUPRI,*) 'HSFSINP: leaving reading cycle !'
     Exit
-  EndIf
-
-  If ((PROMPT == '#') .or. (PROMPT == '!')) Then
-   !  print *,'comment catched !', WORD
-     Cycle ! ... continue the cycle..
-  EndIf
-  
-  If (PROMPT == '.') Then
+  Else If ((PROMPT == '#') .or. (PROMPT == '!')) Then
+    print *,'comment catched !', WORD
+    Cycle ! ... continue the cycle..
+  Else If (PROMPT == '.') Then
     ! ... keywords are beginning ...
     If (Any(TABLE(1:size(TABLE)) == WORD )) Then
      Select Case (WORD)
       Case ('.OPTION')
         Call PRTAB(size(TABLE), TABLE, KEYWORD//' input keywords',LUPRI)
-!      Case ('.NCORE')
-!        READ(LUCMD,*) NCMO_DIRAC
-!        write(LUPRI,*) ' read NCMO_DIRAC=',NCMO_DIRAC
-!      Case ('.NACT')
-!        READ(LUCMD,*) NACT_DIRAC
-!        write(LUPRI,*) ' read NACT_DIRAC=',NACT_DIRAC
-!      Case ('.NOHSDIR')
-!        nohsccdirac=.true. 
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hsfs
-       ! write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
+        write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
        Case ('.CONV')
          READ(LUCMD,*) iconv_hsfs
-        ! write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
+         write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
+       Case('.METHOD')
+         write(LUPRI,*) ' going to read methdos !'
+          call read_hsfs_methods(WORD)
 !      Case ('.DRYRUN')
 !        nohsccfiles=.true.
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
-        '" is not yet implemented in HSCCINP.'
-      End Select
+        '" is not yet implemented in HSFSINP.'
+     End Select
     EndIf
-
   Else
-
-     WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,'" not recognized in HSCCINP.'
-     CALL PRTAB(size(TABLE),TABLE,WORD//' input keywords',LUPRI)
-     CALL QUIT('Illegal keyword in HSCCINP.')
-
+    WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,'" not recognized in HSFSINP.'
+    CALL PRTAB(size(TABLE),TABLE,WORD//' input keywords',LUPRI)
+    CALL QUIT('Illegal keyword in HSFSINP.')
   EndIf
 
 EndDo
+ELSE
+ CALL QUIT('HSFSINP: entering label MUST be *HSFS !')
+ENDIF
 
 !  ... print out read parameters ... 
 
@@ -188,6 +192,16 @@ EndDo
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(/,1X,A,I3)') '* General print level   : ',iprint_hsfs
  WRITE(LUPRI,'(1X,A,I3)')   '* Convergence           : ',iconv_hsfs
+
+ write(LUPRI,'(1X,A,I3)') '* Number of individual HSFS methods: ',num_methods
+ if (num_methods == 0) then
+  write(LUPRI,'(2X,A)') '- no method called'
+ else
+  write(LUPRI,'(2X,A)') '- list of methods:'
+   do i=1,num_methods
+     write(LUPRI,*) i,method_name(i)
+   enddo
+ endif
 
 ! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
 ! WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
@@ -204,6 +218,8 @@ EndDo
 !  WRITE(LUPRI,'(1X,A)') '* Only prepare HSCC files by DIRAC, do not continue with "afterDIRAC" HSCC.'
 ! endif
 
+! call quit('hsfs input reading')
+
  Return
 
 910  CONTINUE
@@ -214,4 +230,44 @@ EndDo
         CALL QUIT('Error reading LUCMD, after "*HSFS" input end of file reached...')
 
 end subroutine HSFSINP
+
+subroutine read_hsfs_methods(WORDIN)
+ use high_sect_execs
+#include "implicit.h"
+#include "priunit.h"
+CHARACTER(len=7) :: WORDIN, METHOD, KEYWORD=' '
+CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
+
+write(LUPRI,*) 'HSFS methods input reading, WORDIN=',WORDIN
+
+         im = 0
+         Do
+           Read(LUCMD,'(A7)') METHOD;  PROMPT_M = METHOD(1:1)
+           write(LUPRI,*) 'HSFS methods; METHOD=',METHOD
+           !If (PROMPT_M == '*' .or. PROMPT_M == '.' ) Then
+           If (METHOD == '.END') Then
+             write(LUPRI,*) 'HSFS methods leaving'
+             Exit
+           Else IF (PROMPT_M == '#' .or. PROMPT_M == '!') Then
+             Cycle
+           Else If (Any(hs_method_name(1:size(hs_method_name)) == METHOD )) Then
+               im = im + 1
+               if (im > max_methods) then
+                write(LUPRI,*) 'im, max_methods=',im, max_methods
+                call quit('number of methods exceeded !')
+               endif
+              ! write(LUPRI,*) 'valid method name=',METHOD
+               method_name(im)=METHOD 
+               write(LUPRI,*) im,method_name(im)
+           Else
+             WRITE (LUPRI,'(/,3A,/)') ' Keyword "',METHOD,'" not recognized in HSFSMETHODS.'
+             CALL PRTAB(size(hs_method_name),hs_method_name,METHOD//' input keywords',LUPRI)
+             CALL QUIT('Illegal keyword in HSFSMETHODS.')
+           EndIf
+         EndDo
+
+        ! store number of methods
+        num_methods = im
+
+end subroutine read_hsfs_methods
 

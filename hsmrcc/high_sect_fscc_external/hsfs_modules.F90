@@ -428,14 +428,18 @@ end function getiprint
 
 end module print_level
 
-
 module high_sect_execs
 
 integer :: num_methods = 0
 
-character(len=4), allocatable :: method_name(:)
+!character(len=4), allocatable :: method_name(:)
+integer, parameter :: max_methods=30
+character(len=4) :: method_name(max_methods)
 
-character(len=4):: hs_method_name(4) = (/'csd','csu','csv','sixh' /)
+! ... all method-names
+character(len=4) :: hs_method_name(19) = (/'csd','csv','csu','csw','csx','csy','csz',  & 
+                                           'chv','chu','chw','chx','chy','chz','chp',  & 
+                                           'chq','cst','cht','m21b','m12b' /)
 
 contains
 
@@ -459,8 +463,10 @@ nargs = iargc()
 
 if (nargs == 0) then
   call quit('no argument !')
+else if (nargs > max_methods) then
+  call quit('number of methods exceeded !')
 else
- allocate (method_name(nargs))
+ !allocate (method_name(nargs))
  do i=1,nargs
 
    ! CALL get_command_argument(i, this_arg)
@@ -474,12 +480,13 @@ else
     method_name(i) = this_arg
  enddo
 endif
+! ... save number of methods
 num_methods=nargs
 end subroutine get_line_arguments
 
 function check_method_name(what_method) result (found_method)
 !--------------------------------------------------------------
-!             checks method name
+!   checks method name entering in "what_method"
 !--------------------------------------------------------------
 character(len=4), intent(in) :: what_method
 integer :: i

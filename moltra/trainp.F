@@ -421,7 +421,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 4, NTABLE = 26)
+      PARAMETER (NDIR = 3, NTABLE = 26)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -439,14 +439,14 @@ C
 
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','*HSFS  '/
+      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.S6FHTS',
-     &            '.HSFS  '/
+     &            '.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -462,8 +462,6 @@ C
 
 !       ... no HSCC
       DOHSCC = .FALSE.
-!       ... no HSFS 
-      DOHSFS = .FALSE.
 
 C
 C     Initialize /DCBTRA/
@@ -804,8 +802,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                endif
                GO TO 100
    26          CONTINUE
-!&&&& HSFS - interface
-                  DOHSFS = .TRUE.
+!&&&& XXXXXXXXXXXXXXXXXXX
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -860,20 +857,6 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 #endif
         GO TO 300
   314 CONTINUE
-#ifdef MOD_HSFS
-      IF (DOHSFS) THEN
-        CALL HSFSINP(WORD,.false.)
-      ELSE
-        WRITE(LUPRI,'(2X,A)') 
-     &  '*HSFS input found, but not processed (DOHSFS=.false.).'
-        GOTO 400
-      ENDIF
-#else
-C       prevent dirac.x running into an infinite loop here
-C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
-        CALL QUIT('*HSFS specified, '//
-     &     'but HSFS module is not included in this version')
-#endif
         GO TO 300
 C
   400 CONTINUE

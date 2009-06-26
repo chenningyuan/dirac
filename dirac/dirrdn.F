@@ -154,6 +154,7 @@ C
         CALL TRAINP(WORK,LWORK)
         CLOSE(LUCMD)
       ENDIF
+
 C
 C     Consistency checks
 C
@@ -2149,12 +2150,12 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
-     &             '*GOSCI ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '*GOSCI ','*HSFS  ','.XXXXXX','.XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
-     &             '.KR CC ','.COSCI ','.GOSCI ','xXXXXXX'/
+     &             '.KR CC ','.COSCI ','.GOSCI ','.HSFS  '/
 C
       NJOBS = 0
 C
@@ -2177,6 +2178,7 @@ C
       CBKRINI = .FALSE.
       DOCOSCI = .FALSE.
       DOGOSCI = .FALSE.
+      DOHSFS  = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2369,6 +2371,9 @@ C&&& GOSCI: Do a GOSCI calculation (new code)
 #endif
             GO TO 100
  120     CONTINUE
+C&&& HSFS : Do High Sect FSCC calculations (new code)
+            DOHSFS = .TRUE.
+            write(LUPRI,*) 'DO HSFS run !'
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2421,6 +2426,9 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          CALL QUIT('.LUCIAREL as stand-alone not implemented yet')
       END IF
       IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
+#ifdef MOD_HSFS
+      IF (DOHSFS) WRITE(LUPRI,'(A)') ' * Run Higher Sectors FSCC code'
+#endif
       IF(DOCOSCI) WRITE(LUPRI,'(A)') ' * Run COSCI CI code'
 #ifdef MOD_KRMC
       IF(DOGOSCI) WRITE(LUPRI,'(A)') ' * Run GOSCI CI code'
@@ -2551,10 +2559,22 @@ C
         CALL GOSCI_INP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
-!.q
-        GO TO 200
 C
    14 CONTINUE
+#ifdef MOD_HSFS
+      IF (DOHSFS) THEN
+        CALL HSFSINP(WORD,.FALSE.,.FALSE.)
+      ELSE
+        WRITE(LUPRI,'(2X,A)')
+     &'*HSFS input found, but not processed (because DOHSFS=.false.).'
+        GOTO 1
+      ENDIF
+#else
+C       prevent dirac.x running into an infinite loop here
+C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
+        CALL QUIT('*HSFS specified, '//
+     &     'but HSFS module is not included in this version')
+#endif
         GO TO 200
 C
    15 CONTINUE
@@ -2588,6 +2608,7 @@ C
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
+
 #ifdef MOD_KRMC
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
@@ -2628,6 +2649,7 @@ C
       IF( DOCOSCI ) THEN
          CALL COSCI_INP(WORD,.TRUE.,WORK,LWORK)
       END IF
+
 #ifdef MOD_KRMC
       IF( DOGOSCI ) THEN
          CALL GOSCI_INP(WORD,.TRUE.,WORK,LWORK)
@@ -2878,9 +2900,9 @@ C&&& MEMFAC     : memory multiplier
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in DHFINP.'
+     *            '" not recognized in LUCTINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in DHFINP.')
+               CALL QUIT('Illegal prompt in LUCTINP.')
             END IF
       END IF
   300 CONTINUE
